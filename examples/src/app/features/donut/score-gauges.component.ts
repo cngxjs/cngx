@@ -25,6 +25,14 @@ import { createManualState } from '@cngx/common/data';
         <cngx-donut [value]="12" [max]="100" [size]="64" [thickness]="8" [label]="'12%'"
           style="--cngx-donut-color: var(--danger, #d2452f)" aria-label="Critical 12 of 100" />
       </div>
+    <details class="cngx-ex-code">
+      <summary>TypeScript</summary>
+      <pre><code>{{ _exTs }}</code></pre>
+    </details>
+    <details class="cngx-ex-code">
+      <summary>Template</summary>
+      <pre><code>{{ _exHtml }}</code></pre>
+    </details>
   `,
 })
 export class DonutScoreGauges {
@@ -32,6 +40,23 @@ export class DonutScoreGauges {
   protected readonly _exDescription: string = 'Circular gauge for a single bounded value. Host carries role="meter"; the optional [label] renders inside the ring.';
   protected readonly _exSectionTitle: string = 'Score gauges';
   protected readonly _exSubtitle: string = 'Three sizes; theming via --cngx-donut-color → --cngx-chart-primary.';
+  protected readonly _exTs: string = `import { CngxDonut } from '@cngx/common/chart';
+import { createManualState } from '@cngx/common/data';
+protected readonly state = createManualState<number>();
+
+protected showSkeleton(): void { this.state.reset(); this.state.set('loading'); }
+protected showSuccess(): void { this.state.setSuccess(72); }
+protected showEmpty(): void { this.state.reset(); this.state.setSuccess(0); }
+protected showError(): void { this.state.reset(); this.state.setError(new Error('Score unavailable')); }`;
+  protected readonly _exHtml: string = `<div style="display:flex;gap:24px;align-items:center;flex-wrap:wrap">
+    <cngx-donut [value]="75" [max]="100" [size]="48" [thickness]="6" [label]="'75%'" aria-label="Score 75 of 100" />
+    <cngx-donut [value]="42" [max]="100" [size]="64" [thickness]="8" [label]="'42%'"
+      style="--cngx-donut-color: var(--accent-secondary, #7d8997)" aria-label="Coverage 42 of 100" />
+    <cngx-donut [value]="98" [max]="100" [size]="80" [thickness]="10" [label]="'A+'"
+      style="--cngx-donut-color: var(--success, #1f9d55)" aria-label="Quality A plus" />
+    <cngx-donut [value]="12" [max]="100" [size]="64" [thickness]="8" [label]="'12%'"
+      style="--cngx-donut-color: var(--danger, #d2452f)" aria-label="Critical 12 of 100" />
+  </div>`;
   protected readonly state = createManualState<number>();
 
   protected showSkeleton(): void { this.state.reset(); this.state.set('loading'); }

@@ -31,6 +31,14 @@ import { createManualState } from '@cngx/common/data';
           />
         </div>
       </div>
+    <details class="cngx-ex-code">
+      <summary>TypeScript</summary>
+      <pre><code>{{ _exTs }}</code></pre>
+    </details>
+    <details class="cngx-ex-code">
+      <summary>Template</summary>
+      <pre><code>{{ _exHtml }}</code></pre>
+    </details>
   `,
 })
 export class MiniAreaInlineAreaTrends {
@@ -38,6 +46,30 @@ export class MiniAreaInlineAreaTrends {
   protected readonly _exDescription: string = 'Inline mini filled-area chart. Sibling of &lt;cngx-sparkline&gt;; renders only the area (no line stroke).';
   protected readonly _exSectionTitle: string = 'Inline area trends';
   protected readonly _exSubtitle: string = 'Default 80×24, theming via --cngx-mini-area-color → --cngx-chart-primary.';
+  protected readonly _exTs: string = `import { CngxMiniArea } from '@cngx/common/chart';
+import { createManualState } from '@cngx/common/data';
+protected readonly stateDemoData: readonly number[] = [10, 14, 18, 16, 22, 28, 32];
+protected readonly state = createManualState<readonly number[]>();
+
+protected showSkeleton(): void { this.state.reset(); this.state.set('loading'); }
+protected showSuccess(): void { this.state.setSuccess(this.stateDemoData); }
+protected showEmpty(): void { this.state.reset(); this.state.setSuccess([]); }
+protected showError(): void { this.state.reset(); this.state.setError(new Error('Network unreachable')); }`;
+  protected readonly _exHtml: string = `<div style="display:flex;gap:24px;align-items:center;flex-wrap:wrap">
+    <div>
+      <span style="font-size:0.75rem;color:var(--text-muted);margin-right:8px">Sessions</span>
+      <cngx-mini-area [data]="[5, 12, 8, 18, 14, 22, 19]" />
+    </div>
+    <div>
+      <span style="font-size:0.75rem;color:var(--text-muted);margin-right:8px">Revenue</span>
+      <cngx-mini-area
+        [data]="[10, 14, 18, 16, 22, 28, 32]"
+        [width]="120"
+        [height]="32"
+        style="--cngx-mini-area-color: var(--success, #1f9d55)"
+      />
+    </div>
+  </div>`;
   protected readonly stateDemoData: readonly number[] = [10, 14, 18, 16, 22, 28, 32];
   protected readonly state = createManualState<readonly number[]>();
 

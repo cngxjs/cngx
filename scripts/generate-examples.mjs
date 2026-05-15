@@ -202,6 +202,14 @@ function tsQuote(s) {
   return "'" + String(s).replaceAll('\\', '\\\\').replaceAll("'", "\\'") + "'";
 }
 
+/** Escape a string for embedding inside a TypeScript backtick template literal. */
+function backtickEscape(s) {
+  return String(s)
+    .replaceAll('\\', '\\\\')
+    .replaceAll('`', '\\`')
+    .replaceAll('${', '\\${');
+}
+
 /**
  * Escape bare custom-element tags (`<cngx-chart>`, `<my-foo>`) so Angular's
  * innerHTML sanitizer doesn't strip them silently. Known formatting tags
@@ -244,6 +252,19 @@ function emitComponentSource(meta, story, section, importMap) {
     `  protected readonly _exSubtitle: string = ${tsQuote(escapeCustomElementTags(section.subtitle ?? ''))};`,
   ].join('\n');
 
+  // Source snippets shown in collapsible <details> blocks so consumers can
+  // see what to write in their own code without leaving the iframe.
+  const sourceImports = lines
+    .filter((l) => !l.includes("from '@angular/core'"))
+    .join('\n')
+    .trim();
+  const sourceTs = [sourceImports, '', setup].filter(Boolean).join('\n').trim();
+  const sourceHtml = section.template.trim();
+  const sourceFields = [
+    `  protected readonly _exTs: string = \`${backtickEscape(sourceTs)}\`;`,
+    `  protected readonly _exHtml: string = \`${backtickEscape(sourceHtml)}\`;`,
+  ].join('\n');
+
   const intro = [
     `    <header class="cngx-ex-intro">`,
     `      @if (_exTitle) { <h1>{{ _exTitle }}</h1> }`,
@@ -251,6 +272,17 @@ function emitComponentSource(meta, story, section, importMap) {
     `      @if (_exSectionTitle && _exSectionTitle !== _exTitle) { <h2>{{ _exSectionTitle }}</h2> }`,
     `      @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }`,
     `    </header>`,
+  ].join('\n');
+
+  const sourceBlocks = [
+    `    <details class="cngx-ex-code">`,
+    `      <summary>TypeScript</summary>`,
+    `      <pre><code>{{ _exTs }}</code></pre>`,
+    `    </details>`,
+    `    <details class="cngx-ex-code">`,
+    `      <summary>Template</summary>`,
+    `      <pre><code>{{ _exHtml }}</code></pre>`,
+    `    </details>`,
   ].join('\n');
 
   const template = section.template.trim();
@@ -266,10 +298,12 @@ ${lines.join('\n')}
   template: \`
 ${intro}
 ${indent(template, 4)}
+${sourceBlocks}
   \`,
 })
 export class ${meta.className} {
-${introFields}${setupBody ? '\n' + setupBody : ''}
+${introFields}
+${sourceFields}${setupBody ? '\n' + setupBody : ''}
 }
 `;
 }

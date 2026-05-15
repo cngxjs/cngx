@@ -26,6 +26,14 @@ import { createManualState } from '@cngx/common/data';
         <span style="font-size:0.75rem;color:var(--text-muted);min-width:80px">status: {{ state.status() }}</span>
         <cngx-mini-bar [value]="64" [state]="state" aria-label="Demo metric" />
       </div>
+    <details class="cngx-ex-code">
+      <summary>TypeScript</summary>
+      <pre><code>{{ _exTs }}</code></pre>
+    </details>
+    <details class="cngx-ex-code">
+      <summary>Template</summary>
+      <pre><code>{{ _exHtml }}</code></pre>
+    </details>
   `,
 })
 export class MiniBarAsyncStateMachine {
@@ -33,6 +41,24 @@ export class MiniBarAsyncStateMachine {
   protected readonly _exDescription: string = 'Single-value bounded indicator. Pure DOM (no SVG). Host carries role="meter" with reactive ARIA value attributes.';
   protected readonly _exSectionTitle: string = 'Async state machine';
   protected readonly _exSubtitle: string = 'Bind [state] to a CngxAsyncState — the bar routes through skeleton / empty / error / content branches automatically.';
+  protected readonly _exTs: string = `import { CngxMiniBar } from '@cngx/common/chart';
+import { createManualState } from '@cngx/common/data';
+protected readonly state = createManualState<number>();
+
+protected showSkeleton(): void { this.state.reset(); this.state.set('loading'); }
+protected showSuccess(): void { this.state.setSuccess(64); }
+protected showEmpty(): void { this.state.reset(); this.state.setSuccess(0); }
+protected showError(): void { this.state.reset(); this.state.setError(new Error('Sensor offline')); }`;
+  protected readonly _exHtml: string = `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+    <button class="chip" (click)="showSkeleton()">loading (skeleton)</button>
+    <button class="chip" (click)="showSuccess()">success</button>
+    <button class="chip" (click)="showEmpty()">empty</button>
+    <button class="chip" (click)="showError()">error</button>
+  </div>
+  <div style="display:flex;align-items:center;gap:24px">
+    <span style="font-size:0.75rem;color:var(--text-muted);min-width:80px">status: {{ state.status() }}</span>
+    <cngx-mini-bar [value]="64" [state]="state" aria-label="Demo metric" />
+  </div>`;
   protected readonly state = createManualState<number>();
 
   protected showSkeleton(): void { this.state.reset(); this.state.set('loading'); }

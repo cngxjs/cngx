@@ -40,6 +40,14 @@ import { createManualState } from '@cngx/common/data';
           />
         </div>
       </div>
+    <details class="cngx-ex-code">
+      <summary>TypeScript</summary>
+      <pre><code>{{ _exTs }}</code></pre>
+    </details>
+    <details class="cngx-ex-code">
+      <summary>Template</summary>
+      <pre><code>{{ _exHtml }}</code></pre>
+    </details>
   `,
 })
 export class StackedBarProportionalShareStrips {
@@ -47,6 +55,43 @@ export class StackedBarProportionalShareStrips {
   protected readonly _exDescription: string = 'Single-bar composition visualising proportional shares of a fixed total. Pure DOM; ARIA enumerates segments + total.';
   protected readonly _exSectionTitle: string = 'Proportional share strips';
   protected readonly _exSubtitle: string = 'Each segment is a labelled coloured slice; ARIA lists them in order with the total.';
+  protected readonly _exTs: string = `import { CngxStackedBar, type CngxStackedSegment } from '@cngx/common/chart';
+import { createManualState } from '@cngx/common/data';
+protected readonly stateDemoSegments: readonly CngxStackedSegment[] = [
+  { value: 40, color: '#4c8bf5', label: 'Active' },
+  { value: 25, color: '#1f9d55', label: 'Idle' },
+  { value: 15, color: '#d2452f', label: 'Errors' },
+];
+protected readonly state = createManualState<readonly CngxStackedSegment[]>();
+
+protected showSkeleton(): void { this.state.reset(); this.state.set('loading'); }
+protected showSuccess(): void { this.state.setSuccess(this.stateDemoSegments); }
+protected showEmpty(): void { this.state.reset(); this.state.setSuccess([]); }
+protected showError(): void { this.state.reset(); this.state.setError(new Error('Service unreachable')); }`;
+  protected readonly _exHtml: string = `<div style="display:flex;flex-direction:column;gap:16px;max-width:400px">
+    <div>
+      <div style="font-size:0.8125rem;color:var(--text-muted);margin-bottom:4px">Storage usage</div>
+      <cngx-stacked-bar
+        [segments]="[
+          { value: 32, color: '#4c8bf5', label: 'Documents' },
+          { value: 28, color: '#7d8997', label: 'Photos' },
+          { value: 18, color: '#1f9d55', label: 'Apps' },
+          { value: 12, color: '#d2452f', label: 'System' }
+        ]"
+      />
+    </div>
+    <div>
+      <div style="font-size:0.8125rem;color:var(--text-muted);margin-bottom:4px">Browser breakdown</div>
+      <cngx-stacked-bar
+        [segments]="[
+          { value: 65, color: '#4c8bf5', label: 'Chrome' },
+          { value: 18, color: '#1f9d55', label: 'Safari' },
+          { value: 10, color: '#d2452f', label: 'Firefox' },
+          { value: 7, color: '#7d8997', label: 'Other' }
+        ]"
+      />
+    </div>
+  </div>`;
   protected readonly stateDemoSegments: readonly CngxStackedSegment[] = [
     { value: 40, color: '#4c8bf5', label: 'Active' },
     { value: 25, color: '#1f9d55', label: 'Idle' },

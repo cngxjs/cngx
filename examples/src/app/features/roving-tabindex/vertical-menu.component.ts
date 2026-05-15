@@ -29,6 +29,14 @@ import { CngxRovingTabindex, CngxRovingItem } from '@cngx/common/a11y';
           <span class="event-value">{{ activeVertical() }}</span>
         </div>
       </div>
+    <details class="cngx-ex-code">
+      <summary>TypeScript</summary>
+      <pre><code>{{ _exTs }}</code></pre>
+    </details>
+    <details class="cngx-ex-code">
+      <summary>Template</summary>
+      <pre><code>{{ _exHtml }}</code></pre>
+    </details>
   `,
 })
 export class RovingTabindexVerticalMenu {
@@ -36,6 +44,23 @@ export class RovingTabindexVerticalMenu {
   protected readonly _exDescription: string = 'WAI-ARIA roving tabindex pattern for composite widgets. Arrow keys move focus within the group; Tab leaves it.';
   protected readonly _exSectionTitle: string = 'Vertical Menu';
   protected readonly _exSubtitle: string = 'Arrow Up/Down navigates. Disabled items are skipped automatically.';
+  protected readonly _exTs: string = `import { CngxRovingTabindex, CngxRovingItem } from '@cngx/common/a11y';
+protected readonly activeToolbar = signal(0);
+  protected readonly activeVertical = signal(0);`;
+  protected readonly _exHtml: string = `<ul cngxRovingTabindex orientation="vertical" [(activeIndex)]="activeVertical"
+      role="menu" aria-label="Actions"
+      style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:2px;max-width:200px">
+    <li cngxRovingItem role="menuitem" class="chip" style="cursor:pointer">Cut</li>
+    <li cngxRovingItem role="menuitem" class="chip" style="cursor:pointer">Copy</li>
+    <li cngxRovingItem role="menuitem" class="chip" style="cursor:pointer">Paste</li>
+    <li cngxRovingItem role="menuitem" class="chip" style="cursor:pointer">Select All</li>
+  </ul>
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row">
+      <span class="event-label">Active index</span>
+      <span class="event-value">{{ activeVertical() }}</span>
+    </div>
+  </div>`;
   protected readonly activeToolbar = signal(0);
     protected readonly activeVertical = signal(0);
 }

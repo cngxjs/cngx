@@ -40,6 +40,14 @@ import { CngxHighlight } from '@cngx/common/layout';
           <span class="event-value">{{ searchTerm() || '(empty)' }}</span>
         </div>
       </div>
+    <details class="cngx-ex-code">
+      <summary>TypeScript</summary>
+      <pre><code>{{ _exTs }}</code></pre>
+    </details>
+    <details class="cngx-ex-code">
+      <summary>Template</summary>
+      <pre><code>{{ _exHtml }}</code></pre>
+    </details>
   `,
 })
 export class HighlightLiveSearchHighlighting {
@@ -47,5 +55,32 @@ export class HighlightLiveSearchHighlighting {
   protected readonly _exDescription: string = 'Search-text highlighting via <mark> elements. Safe text-node walking, no innerHTML.';
   protected readonly _exSectionTitle: string = 'Live Search Highlighting';
   protected readonly _exSubtitle: string = 'Type a search term to see matches highlighted in real time. The <code>matchCount()</code> signal shows the number of matches.';
+  protected readonly _exTs: string = `import { CngxHighlight } from '@cngx/common/layout';
+protected readonly searchTerm = signal('');`;
+  protected readonly _exHtml: string = `<div style="margin-bottom:12px">
+    <input [value]="searchTerm()" (input)="searchTerm.set($any($event.target).value)"
+           placeholder="Type to highlight..."
+           style="padding:8px 12px;border:1px solid var(--cngx-border,#ddd);border-radius:6px;width:240px" />
+  </div>
+
+  <div [cngxHighlight]="searchTerm()" #hl="cngxHighlight"
+       style="line-height:1.8;font-size:0.9375rem;max-width:500px">
+    Angular Signals represent a fundamental shift in how we think about reactivity.
+    Instead of subscribing to streams and manually managing subscriptions, signals
+    provide a synchronous, pull-based model where derived values are automatically
+    tracked and updated. This eliminates entire categories of bugs related to
+    subscription leaks, stale closures, and timing issues.
+  </div>
+
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row">
+      <span class="event-label">Match count</span>
+      <span class="event-value">{{ hl.matchCount() }}</span>
+    </div>
+    <div class="event-row">
+      <span class="event-label">Term</span>
+      <span class="event-value">{{ searchTerm() || '(empty)' }}</span>
+    </div>
+  </div>`;
   protected readonly searchTerm = signal('');
 }

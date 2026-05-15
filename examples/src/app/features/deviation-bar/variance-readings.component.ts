@@ -33,6 +33,14 @@ import { createManualState } from '@cngx/common/data';
           <span style="font-weight:600;width:60px;text-align:right">on target</span>
         </div>
       </div>
+    <details class="cngx-ex-code">
+      <summary>TypeScript</summary>
+      <pre><code>{{ _exTs }}</code></pre>
+    </details>
+    <details class="cngx-ex-code">
+      <summary>Template</summary>
+      <pre><code>{{ _exHtml }}</code></pre>
+    </details>
   `,
 })
 export class DeviationBarVarianceReadings {
@@ -40,6 +48,31 @@ export class DeviationBarVarianceReadings {
   protected readonly _exDescription: string = 'Single-value indicator that diverges from a baseline (default 0). Negative deviations render to the left; positive to the right.';
   protected readonly _exSectionTitle: string = 'Variance readings';
   protected readonly _exSubtitle: string = 'Budget variance, score deltas, KPI swings — symmetric around the baseline mark.';
+  protected readonly _exTs: string = `import { CngxDeviationBar } from '@cngx/common/chart';
+import { createManualState } from '@cngx/common/data';
+protected readonly state = createManualState<number>();
+
+protected showSkeleton(): void { this.state.reset(); this.state.set('loading'); }
+protected showSuccess(): void { this.state.setSuccess(35); }
+protected showEmpty(): void { this.state.reset(); this.state.setSuccess(0); }
+protected showError(): void { this.state.reset(); this.state.setError(new Error('Lookup failed')); }`;
+  protected readonly _exHtml: string = `<div style="display:flex;flex-direction:column;gap:12px;max-width:360px">
+    <div style="display:flex;align-items:center;gap:12px">
+      <span style="flex:1">Q1 budget</span>
+      <cngx-deviation-bar [value]="45" [magnitude]="100" aria-label="Q1 budget +45" />
+      <span style="font-weight:600;color:var(--success,#1f9d55);width:60px;text-align:right">+$45k</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px">
+      <span style="flex:1">Q2 budget</span>
+      <cngx-deviation-bar [value]="-30" [magnitude]="100" aria-label="Q2 budget -30" />
+      <span style="font-weight:600;color:var(--danger,#d2452f);width:60px;text-align:right">−$30k</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px">
+      <span style="flex:1">Q3 budget</span>
+      <cngx-deviation-bar [value]="0" [magnitude]="100" aria-label="Q3 budget on target" />
+      <span style="font-weight:600;width:60px;text-align:right">on target</span>
+    </div>
+  </div>`;
   protected readonly state = createManualState<number>();
 
   protected showSkeleton(): void { this.state.reset(); this.state.set('loading'); }

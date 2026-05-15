@@ -50,6 +50,45 @@ body {
   color: #6b7280;
 }
 
+// Source-code disclosure blocks — collapsed by default so the demo body
+// remains the focus; expand to inspect the underlying template / setup.
+.cngx-ex-code {
+  margin-top: 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  background: #ffffff;
+}
+.cngx-ex-code > summary {
+  padding: 6px 10px;
+  cursor: pointer;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #4b5563;
+  user-select: none;
+}
+.cngx-ex-code > summary:hover {
+  background: #f9fafb;
+}
+.cngx-ex-code[open] > summary {
+  border-bottom: 1px solid #e5e7eb;
+}
+.cngx-ex-code > pre {
+  margin: 0;
+  padding: 10px 14px;
+  overflow-x: auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  background: #fafafa;
+  color: #1f2937;
+}
+.cngx-ex-code > pre > code {
+  font: inherit;
+  background: none;
+  padding: 0;
+  white-space: pre;
+}
+
 // Form atoms get sane defaults
 button {
   font: inherit;

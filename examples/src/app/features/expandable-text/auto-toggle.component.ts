@@ -31,6 +31,14 @@ import { CngxExpandableText } from '@cngx/common/layout';
           <span class="event-value">{{ exp.expanded() }}</span>
         </div>
       </div>
+    <details class="cngx-ex-code">
+      <summary>TypeScript</summary>
+      <pre><code>{{ _exTs }}</code></pre>
+    </details>
+    <details class="cngx-ex-code">
+      <summary>Template</summary>
+      <pre><code>{{ _exHtml }}</code></pre>
+    </details>
   `,
 })
 export class ExpandableTextAutoToggle {
@@ -38,4 +46,21 @@ export class ExpandableTextAutoToggle {
   protected readonly _exDescription: string = 'Molecule wrapping CngxTruncate with a built-in expand/collapse toggle and aria-expanded.';
   protected readonly _exSectionTitle: string = 'Auto-Toggle';
   protected readonly _exSubtitle: string = 'The "Show more" button appears only because the content exceeds 3 lines. Short text would show no button.';
+  protected readonly _exTs: string = `import { CngxExpandableText } from '@cngx/common/layout';`;
+  protected readonly _exHtml: string = `<div style="max-width:400px">
+    <cngx-expandable-text [lines]="3" #exp="cngxExpandableText">
+      Angular Signals represent a fundamental shift in how we think about reactivity.
+      Instead of subscribing to streams and manually managing subscriptions, signals
+      provide a synchronous, pull-based model where derived values are automatically
+      tracked and updated. This eliminates entire categories of bugs related to
+      subscription leaks, stale closures, and timing issues. The computed() function
+      creates derived signals that update automatically when their dependencies change.
+    </cngx-expandable-text>
+  </div>
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row">
+      <span class="event-label">expanded</span>
+      <span class="event-value">{{ exp.expanded() }}</span>
+    </div>
+  </div>`;
 }

@@ -36,6 +36,14 @@ import { createManualState } from '@cngx/common/data';
           <span style="margin-left:8px;font-weight:600;color:var(--danger,#d2452f)">3</span>
         </div>
       </div>
+    <details class="cngx-ex-code">
+      <summary>TypeScript</summary>
+      <pre><code>{{ _exTs }}</code></pre>
+    </details>
+    <details class="cngx-ex-code">
+      <summary>Template</summary>
+      <pre><code>{{ _exHtml }}</code></pre>
+    </details>
   `,
 })
 export class SparklineBasicSparklines {
@@ -43,6 +51,46 @@ export class SparklineBasicSparklines {
   protected readonly _exDescription: string = 'Inline mini line chart for KPI cards and dashboard tiles. Composes &lt;cngx-chart&gt; + &lt;cngx-line&gt; + optional &lt;cngx-area&gt; with hidden axes.';
   protected readonly _exSectionTitle: string = 'Basic sparklines';
   protected readonly _exSubtitle: string = 'Default size, theming via CSS custom properties.';
+  protected readonly _exTs: string = `import { CngxSparkline } from '@cngx/common/chart';
+import { createManualState } from '@cngx/common/data';
+protected readonly stateDemoData: readonly number[] = [12, 18, 14, 22, 19, 28, 24];
+protected readonly state = createManualState<readonly number[]>();
+
+protected showSkeleton(): void {
+  this.state.reset();
+  this.state.set('loading');
+}
+protected showSuccess(): void {
+  this.state.setSuccess(this.stateDemoData);
+}
+protected showEmpty(): void {
+  this.state.reset();
+  this.state.setSuccess([]);
+}
+protected showError(): void {
+  this.state.reset();
+  this.state.setError(new Error('Network unreachable'));
+}`;
+  protected readonly _exHtml: string = `<div style="display:flex;gap:24px;align-items:center;flex-wrap:wrap">
+    <div>
+      <span style="font-size:0.75rem;color:var(--text-muted);margin-right:8px">CPU</span>
+      <cngx-sparkline [data]="[12, 15, 11, 18, 22, 19, 24]" />
+      <span style="margin-left:8px;font-weight:600">24%</span>
+    </div>
+    <div>
+      <span style="font-size:0.75rem;color:var(--text-muted);margin-right:8px">Memory</span>
+      <cngx-sparkline [data]="[60, 62, 58, 64, 68, 71, 70]" />
+      <span style="margin-left:8px;font-weight:600">70%</span>
+    </div>
+    <div>
+      <span style="font-size:0.75rem;color:var(--text-muted);margin-right:8px">Errors</span>
+      <cngx-sparkline
+        [data]="[0, 1, 0, 0, 2, 0, 0]"
+        style="--cngx-sparkline-color: var(--danger, #d2452f)"
+      />
+      <span style="margin-left:8px;font-weight:600;color:var(--danger,#d2452f)">3</span>
+    </div>
+  </div>`;
   protected readonly stateDemoData: readonly number[] = [12, 18, 14, 22, 19, 28, 24];
   protected readonly state = createManualState<readonly number[]>();
 

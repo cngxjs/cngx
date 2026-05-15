@@ -22,6 +22,14 @@ import { CngxExpandableText } from '@cngx/common/layout';
           Jede Komponente ist dafuer verantwortlich, ihren Zustand vollstaendig zu kommunizieren.
         </cngx-expandable-text>
       </div>
+    <details class="cngx-ex-code">
+      <summary>TypeScript</summary>
+      <pre><code>{{ _exTs }}</code></pre>
+    </details>
+    <details class="cngx-ex-code">
+      <summary>Template</summary>
+      <pre><code>{{ _exHtml }}</code></pre>
+    </details>
   `,
 })
 export class ExpandableTextCustomLabels {
@@ -29,4 +37,12 @@ export class ExpandableTextCustomLabels {
   protected readonly _exDescription: string = 'Molecule wrapping CngxTruncate with a built-in expand/collapse toggle and aria-expanded.';
   protected readonly _exSectionTitle: string = 'Custom Labels';
   protected readonly _exSubtitle: string = 'German labels, 2-line limit.';
+  protected readonly _exTs: string = `import { CngxExpandableText } from '@cngx/common/layout';`;
+  protected readonly _exHtml: string = `<div style="max-width:400px">
+    <cngx-expandable-text [lines]="2" moreLabel="Mehr anzeigen" lessLabel="Weniger">
+      CNGX ist die fehlende Kompositionsschicht zwischen Angular CDK und Angular Material.
+      Es macht beides deklarativ, Signal-first und kommunikativ, ohne sie zu ersetzen.
+      Jede Komponente ist dafuer verantwortlich, ihren Zustand vollstaendig zu kommunizieren.
+    </cngx-expandable-text>
+  </div>`;
 }

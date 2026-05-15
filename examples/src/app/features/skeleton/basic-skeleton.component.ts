@@ -28,6 +28,14 @@ import { CngxSkeleton } from '@cngx/common/layout';
         <div [cngxSkeleton]="loading()"
           style="height:20px;width:50%;border-radius:4px;background:var(--cngx-surface-alt,#e0e0e0)"></div>
       </div>
+    <details class="cngx-ex-code">
+      <summary>TypeScript</summary>
+      <pre><code>{{ _exTs }}</code></pre>
+    </details>
+    <details class="cngx-ex-code">
+      <summary>Template</summary>
+      <pre><code>{{ _exHtml }}</code></pre>
+    </details>
   `,
 })
 export class SkeletonBasicSkeleton {
@@ -35,6 +43,25 @@ export class SkeletonBasicSkeleton {
   protected readonly _exDescription: string = 'Skeleton placeholder directives for loading states. Use CngxSkeleton for individual elements or CngxSkeletonContainer with CngxSkeletonPlaceholder for grouped placeholder templates.';
   protected readonly _exSectionTitle: string = 'Basic Skeleton';
   protected readonly _exSubtitle: string = 'Apply <code>[cngxSkeleton]</code> to any element. When the bound value is <code>true</code>, the element shows a shimmer animation.';
+  protected readonly _exTs: string = `import { CngxSkeleton } from '@cngx/common/layout';
+protected readonly loading = signal(true);
+
+  protected toggleLoading(): void {
+    this.loading.update(v => !v);
+  }`;
+  protected readonly _exHtml: string = `<div class="button-row">
+    <button class="chip" [class.chip--active]="loading()" (click)="toggleLoading()">
+      {{ loading() ? 'Loading...' : 'Loaded' }}
+    </button>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:12px;max-width:400px;margin-top:16px">
+    <div [cngxSkeleton]="loading()"
+      style="height:20px;border-radius:4px;background:var(--cngx-surface-alt,#e0e0e0)"></div>
+    <div [cngxSkeleton]="loading()"
+      style="height:20px;width:75%;border-radius:4px;background:var(--cngx-surface-alt,#e0e0e0)"></div>
+    <div [cngxSkeleton]="loading()"
+      style="height:20px;width:50%;border-radius:4px;background:var(--cngx-surface-alt,#e0e0e0)"></div>
+  </div>`;
   protected readonly loading = signal(true);
 
     protected toggleLoading(): void {
