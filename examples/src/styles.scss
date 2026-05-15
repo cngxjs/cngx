@@ -3,7 +3,10 @@
 // No per-component styles allowed — keep selectors structural + ARIA-driven only.
 
 :root {
-  color-scheme: light dark;
+  // Pin the UA color-scheme to match the explicit theme so native form
+  // controls / scrollbars / details disclosure don't flip with the OS
+  // preference when compodocx is light and the user's OS is dark.
+  color-scheme: light;
   font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
   font-size: 14px;
   line-height: 1.5;
@@ -23,6 +26,7 @@
 // prefers-color-scheme would desync the iframe whenever the host doc's
 // user toggle disagreed with the OS, so we read the class instead.
 html.dark {
+  color-scheme: dark;
   --cngx-ex-bg: #111111;
     --cngx-ex-text: #e6e6e6;
     --cngx-ex-muted: #aaaaaa;
