@@ -152,10 +152,9 @@ function buildCngxTree(routes: readonly RouteMeta[]): readonly CngxTreeNode<Node
               [attr.aria-posinset]="n.posinset"
               [routerLink]="['/', ...n.value.route.path.split('/')]"
               class="row leaf"
-              [style.padding-left.px]="56 + n.depth * 18"
             >
               <span class="ico">[&nbsp;&nbsp;&nbsp;]</span>
-              <span class="name">{{ n.value.name }}</span>
+              <span class="name" [style.padding-left.px]="n.depth * 18">{{ n.value.name }}</span>
               <span class="size">—</span>
             </a>
           } @else {
@@ -192,13 +191,13 @@ function buildCngxTree(routes: readonly RouteMeta[]): readonly CngxTreeNode<Node
     `
       :host {
         display: block;
-        max-width: 980px;
-        margin: 0 auto;
+        width: 100%;
         padding: 14px 16px 32px;
         font-family: Verdana, Geneva, Arial, sans-serif;
         font-size: 14px;
         color: #000;
         background: #fff;
+        box-sizing: border-box;
       }
       h1 {
         margin: 0 0 12px;
