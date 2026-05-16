@@ -1,6 +1,10 @@
 // Minimal global reset for examples iframe pages.
 // Goal: atomic directive demos read as intentional, not broken.
-// No per-component styles allowed — keep selectors structural + ARIA-driven only.
+// Allowed: shell tokens (--cngx-ex-*), generator chrome (.cngx-ex-*),
+// bare-element atoms (button, input, kbd, dl), demo-layout helpers
+// (.event-grid, .status-row, .filter-row, .kbd-hint).
+// NOT allowed: per-component styles, ARIA-role styling, component-token
+// fallbacks. Those ship from the component lib's theming/-layer.
 
 // Theming foundation — load layer order first, then system tokens.
 // Relative source path during dev (in-repo); after publish, consumers use
@@ -227,31 +231,12 @@ dl > dd { margin: 0; font-variant-numeric: tabular-nums; }
 .kbd-hint > strong { font-weight: 600; }
 .kbd-hint > span { display: inline-flex; align-items: center; gap: 0.25rem; }
 
-// ARIA-driven structural styling — keeps composite widgets legible without
-// dictating brand. Selectors fire only when the directive actually applied
-// the role/state, so they don't bleed into the inline-styled demos.
-[role='listbox'],
-[role='menu'],
-[role='tree'] {
-  display: flex;
-  flex-direction: column;
-  border: 1px solid var(--cngx-ex-border);
-  border-radius: 6px;
-  padding: 4px;
-  outline: none;
-}
-[role='listbox']:focus-visible,
-[role='menu']:focus-visible,
-[role='tree']:focus-visible {
-  outline: 2px solid var(--cngx-ex-focus);
-  outline-offset: 2px;
-}
-
 // Component-consumer CSS deliberately removed pending the theming sprint.
-// The blocks for [role='option'/'menuitem'/'menuitemcheckbox'/'menuitemradio'/
-// 'treeitem'], .cngx-option--highlighted/--disabled, .cngx-ad-listbox/-option,
-// [aria-current], [role='toolbar'/'tablist'], [aria-live], .cngx-card-grid,
-// .cngx-card, .cngx-card__body, .drawer-backdrop previously lived here.
-// They will be re-introduced as tokenised @layer cngx.components blocks once
-// the system-tokens layer lands. Until then, those demos render unstyled —
-// that's the intended signal for which component-tokens to ship first.
+// Previously here: [role='listbox'/'menu'/'tree'] structural styling and
+// :focus-visible rings, [role='option'/'menuitem'/'menuitemcheckbox'/
+// 'menuitemradio'/'treeitem'], .cngx-option--highlighted/--disabled,
+// .cngx-ad-listbox/-option, [aria-current], [role='toolbar'/'tablist'],
+// [aria-live], .cngx-card-grid, .cngx-card, .cngx-card__body,
+// .drawer-backdrop. All to be re-shipped from each component lib's
+// theming/-layer in Phase 3. Until then those demos render unstyled —
+// that's the intended signal for which component-tokens to ship next.
