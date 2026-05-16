@@ -1,10 +1,27 @@
-:host.cngx-multi-chip-group {
-  display: inline-flex;
-  flex-direction: column;
-  gap: var(--cngx-multi-chip-group-gap, var(--cngx-chip-group-gap, 0.5rem));
+/*
+ * multi-chip-group.component.css — flex layout container for CngxChip multi-select.
+ *
+ * Migrated to @layer cngx.tokens + @layer cngx.components + @scope (Phase 3).
+ * Fallback chains through --cngx-chip-group-gap (sibling single-select group) then
+ * --cngx-space-sm — keeps spacing parity between the two group types unless
+ * consumer overrides one explicitly.
+ */
+
+@layer cngx.tokens {
+  @property --cngx-multi-chip-group-gap { syntax: '*'; inherits: false; initial-value: 0.5rem; }
 }
 
-:host.cngx-multi-chip-group.cngx-multi-chip-group--horizontal {
-  flex-direction: row;
-  flex-wrap: wrap;
+@layer cngx.components {
+  @scope (.cngx-multi-chip-group) {
+    :scope {
+      display: inline-flex;
+      flex-direction: column;
+      gap: var(--cngx-multi-chip-group-gap, var(--cngx-chip-group-gap, var(--cngx-space-sm, 0.5rem)));
+    }
+
+    :scope.cngx-multi-chip-group--horizontal {
+      flex-direction: row;
+      flex-wrap: wrap;
+    }
+  }
 }
