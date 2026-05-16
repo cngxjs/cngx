@@ -1,0 +1,99 @@
+/* cngx-dialog — default styling for the CngxDialog directive.
+ *
+ * Targets <dialog cngxDialog> and the sibling [cngxDialogDraggable] variant.
+ * The directive toggles transition classes (.cngx-dialog--opening/-open/
+ * -closing) on the host.
+ *
+ * Material-Bridge: the sibling dialog-theme.scss exports a Sass mixin that
+ * derives the same tokens from a Material theme (surface-container-high /
+ * on-surface) — that file stays SCSS per Plan §10. */
+
+@layer cngx.tokens {
+  @property --cngx-dialog-bg                  { syntax: '<color>';  inherits: true;  initial-value: oklch(1 0 0); }
+  @property --cngx-dialog-color               { syntax: '<color>';  inherits: true;  initial-value: currentColor; }
+  @property --cngx-dialog-shadow              { syntax: '*';        inherits: false; initial-value: 0 8px 32px oklch(0 0 0 / 0.12); }
+  @property --cngx-dialog-border-radius       { syntax: '<length>'; inherits: false; initial-value: 8px; }
+  @property --cngx-dialog-padding             { syntax: '<length>'; inherits: false; initial-value: 24px; }
+  @property --cngx-dialog-max-width           { syntax: '<length>'; inherits: false; initial-value: 560px; }
+  @property --cngx-dialog-max-height          { syntax: '*';        inherits: false; initial-value: 80vh; }
+  @property --cngx-dialog-backdrop-bg         { syntax: '<color>';  inherits: false; initial-value: oklch(0 0 0 / 0.5); }
+  @property --cngx-dialog-backdrop-blur       { syntax: '<length>'; inherits: false; initial-value: 0px; }
+  @property --cngx-dialog-backdrop-opacity    { syntax: '<number>'; inherits: false; initial-value: 1; }
+  @property --cngx-dialog-transition-duration { syntax: '<time>';   inherits: false; initial-value: 200ms; }
+  @property --cngx-dialog-transition-easing   { syntax: '*';        inherits: false; initial-value: ease; }
+  @property --cngx-dialog-drag-cursor         { syntax: '*';        inherits: false; initial-value: grab; }
+  @property --cngx-dialog-dragging-cursor     { syntax: '*';        inherits: false; initial-value: grabbing; }
+}
+
+@layer cngx.components {
+  @scope (dialog[cngxDialog]) {
+    :scope {
+      border: none;
+      border-radius: var(--cngx-dialog-border-radius, 8px);
+      padding: var(--cngx-dialog-padding, 24px);
+      max-width: var(--cngx-dialog-max-width, 560px);
+      max-height: var(--cngx-dialog-max-height, 80vh);
+      width: 100%;
+      background: var(--cngx-dialog-bg, var(--cngx-color-surface, oklch(1 0 0)));
+      color: var(--cngx-dialog-color, inherit);
+      box-shadow: var(--cngx-dialog-shadow, 0 8px 32px oklch(0 0 0 / 0.12));
+      overflow: auto;
+      scrollbar-gutter: stable;
+      transition:
+        opacity var(--cngx-dialog-transition-duration, 200ms)
+          var(--cngx-dialog-transition-easing, ease),
+        transform var(--cngx-dialog-transition-duration, 200ms)
+          var(--cngx-dialog-transition-easing, ease);
+    }
+
+    /* Backdrop is part of the dialog element itself (::backdrop pseudo).
+       The opacity token controls visibility (CngxDialogStack uses this for
+       nesting). No transition — snaps to avoid double-backdrop flash; the
+       dialog content has its own enter/exit animation. */
+    :scope::backdrop {
+      background: var(--cngx-dialog-backdrop-bg, oklch(0 0 0 / 0.5));
+      opacity: var(--cngx-dialog-backdrop-opacity, 1);
+      backdrop-filter: blur(var(--cngx-dialog-backdrop-blur, 0px));
+    }
+
+    :scope.cngx-dialog--opening {
+      opacity: 0;
+      transform: translateY(8px) scale(0.98);
+    }
+    :scope.cngx-dialog--open {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+    :scope.cngx-dialog--closing {
+      opacity: 0;
+      transform: translateY(8px) scale(0.98);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      :scope {
+        transition: none;
+      }
+    }
+  }
+
+  @scope (dialog[cngxDialogDraggable]) {
+    :scope {
+      transform: translate(var(--cngx-dialog-x, 0px), var(--cngx-dialog-y, 0px));
+    }
+    :scope.cngx-dialog--opening {
+      transform: translate(var(--cngx-dialog-x, 0px), var(--cngx-dialog-y, 0px)) scale(0.98);
+      opacity: 0;
+    }
+    :scope.cngx-dialog--open {
+      transform: translate(var(--cngx-dialog-x, 0px), var(--cngx-dialog-y, 0px)) scale(1);
+      opacity: 1;
+    }
+    :scope.cngx-dialog--closing {
+      transform: translate(var(--cngx-dialog-x, 0px), var(--cngx-dialog-y, 0px)) scale(0.98);
+      opacity: 0;
+    }
+    :scope.cngx-dialog--dragging {
+      transition: none;
+    }
+  }
+}
