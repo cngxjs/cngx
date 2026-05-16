@@ -1,0 +1,64 @@
+/*
+ * icon.component.css — display atom for icons (font glyph, SVG, image,
+ * custom element). Sized relative to text-context via `em` so an icon
+ * next to text always matches the running font.
+ *
+ * Migrated to @layer cngx.components + @scope (Phase 3). Component-token
+ * registrations sit in @layer cngx.tokens alongside. ViewEncapsulation.None
+ * on the @Component, which retires the old `::ng-deep` workaround for the
+ * projected SVG selector.
+ *
+ * Three-Tier-Override:
+ *   per-instance:   <cngx-icon style="--cngx-icon-color: oklch(0.6 0.2 25)">
+ *   per-component:  @layer cngx.theme { :root { --cngx-icon-size-md: 1rem; } }
+ *   per-system:     @layer cngx.theme { :root[data-density="compact"] { --cngx-icon-size-md: 1em; } }
+ */
+
+@layer cngx.tokens {
+  /* Active size + color (consumed by the :scope rule) */
+  @property --cngx-icon-size  { syntax: '*';       inherits: false; initial-value: 1.25em; }
+  @property --cngx-icon-color { syntax: '<color>'; inherits: true;  initial-value: currentColor; }
+
+  /* Size-variant tokens — overrideable per scale step */
+  @property --cngx-icon-size-xs { syntax: '*'; inherits: false; initial-value: 0.75em; }
+  @property --cngx-icon-size-sm { syntax: '*'; inherits: false; initial-value: 1em; }
+  @property --cngx-icon-size-md { syntax: '*'; inherits: false; initial-value: 1.25em; }
+  @property --cngx-icon-size-lg { syntax: '*'; inherits: false; initial-value: 1.5em; }
+  @property --cngx-icon-size-xl { syntax: '*'; inherits: false; initial-value: 2em; }
+}
+
+@layer cngx.components {
+  @scope (.cngx-icon) {
+    :scope {
+      /* Functional — hardcoded */
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      vertical-align: middle;
+      line-height: 1;
+      flex: 0 0 auto;
+
+      /* Themable */
+      font-size: var(--cngx-icon-size, var(--cngx-icon-size-md, 1.25em));
+      color: var(--cngx-icon-color, currentColor);
+    }
+
+    /* Size-variant classes override the active size token. Consumer can
+     * either swap the variant value globally (--cngx-icon-size-xs) or
+     * pin a specific instance via inline --cngx-icon-size. */
+    :scope.cngx-icon--xs { --cngx-icon-size: var(--cngx-icon-size-xs, 0.75em); }
+    :scope.cngx-icon--sm { --cngx-icon-size: var(--cngx-icon-size-sm, 1em); }
+    :scope.cngx-icon--md { --cngx-icon-size: var(--cngx-icon-size-md, 1.25em); }
+    :scope.cngx-icon--lg { --cngx-icon-size: var(--cngx-icon-size-lg, 1.5em); }
+    :scope.cngx-icon--xl { --cngx-icon-size: var(--cngx-icon-size-xl, 2em); }
+
+    /* Projected SVG content — no encapsulation barrier now, so a plain
+     * descendant selector suffices (previously needed ::ng-deep). */
+    :scope > svg {
+      width: 1em;
+      height: 1em;
+      fill: currentColor;
+      display: block;
+    }
+  }
+}

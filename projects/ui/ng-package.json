@@ -6,6 +6,7 @@
   },
   "assets": [
     "speak/speak-button-theme.scss",
-    "mat-tabs/styles/mat-tabs.css"
+    "mat-tabs/styles/mat-tabs.css",
+    { "input": "theming", "glob": "*.css", "output": "theming" }
   ]
 }

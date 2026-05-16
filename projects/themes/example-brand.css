@@ -1,0 +1,133 @@
+/* example-brand.css — reference theme demonstrating EVERY override slot.
+ *
+ * This is a CONSUMER-side example, not a shipped theme. Copy it as a
+ * starting point when building your own brand theme.
+ *
+ * Two consumption patterns:
+ *
+ *   1) Layered on top of @cngx/themes/cngx.css (recommended):
+ *        @import '@cngx/themes/cngx.css';
+ *        @import './my-brand.css';
+ *      cngx.css loads layers + tokens + reset + base + directive-CSS.
+ *      Your theme file only ships overrides in @layer cngx.theme.
+ *
+ *   2) Built from scratch without cngx.css:
+ *        @import '@cngx/core/theming/layers.css';
+ *        @import '@cngx/core/theming/system-tokens.css';
+ *        @import '@cngx/core/theming/reset.css';
+ *        @import '@cngx/core/theming/base.css';
+ *        @import '@cngx/common/theming/components/cngx-backdrop.css';
+ *        @import './my-brand.css';
+ *      Same result, explicit control over what loads.
+ *
+ * EVERY rule in this file goes into @layer cngx.theme — that layer is
+ * canonically reserved for token-overrides only. Adding selectors with
+ * their OWN properties (not just custom-property assignments) belongs
+ * in the consumer's `app` layer instead, which cascades after cngx.theme. */
+
+@layer cngx.theme {
+  /* ============================================================ */
+  /* SYSTEM TOKENS — affect everything that consumes them          */
+  /* ============================================================ */
+
+  :root {
+    /* Color — switch the OKLCH base for the whole library.
+     * Foundation already wires `light-dark()` to follow OS dark mode;
+     * override those entries here too if your brand wants different
+     * dark variants. */
+    --cngx-color-surface: light-dark(oklch(0.99 0.005 290), oklch(0.16 0.01 290));
+    --cngx-color-text:    light-dark(oklch(0.15 0.02 290), oklch(0.95 0.005 290));
+    --cngx-color-border:  light-dark(oklch(0.88 0.015 290), oklch(0.32 0.02 290));
+    --cngx-color-primary: oklch(0.55 0.18 290);              /* brand purple */
+    --cngx-color-danger:  oklch(0.6 0.2 25);
+    --cngx-color-success: oklch(0.6 0.15 145);
+    --cngx-color-warning: oklch(0.72 0.15 75);
+    --cngx-color-info:    oklch(0.65 0.12 240);
+
+    /* Spacing */
+    --cngx-space-xs: 4px;
+    --cngx-space-sm: 8px;
+    --cngx-space-md: 16px;
+    --cngx-space-lg: 24px;
+    --cngx-space-xl: 32px;
+
+    /* Radius — brand-x is squared, not pill */
+    --cngx-radius-sm:   2px;
+    --cngx-radius-md:   4px;
+    --cngx-radius-lg:   8px;
+    --cngx-radius-pill: 0;
+
+    /* Motion */
+    --cngx-duration-fast: 100ms;
+    --cngx-duration-base: 150ms;
+    --cngx-duration-slow: 240ms;
+    --cngx-easing-standard:   cubic-bezier(0.4, 0, 0.2, 1);
+    --cngx-easing-decelerate: cubic-bezier(0, 0, 0.2, 1);
+    --cngx-easing-accelerate: cubic-bezier(0.4, 0, 1, 1);
+
+    /* Typography */
+    --cngx-font-size-sm: 0.875rem;
+    --cngx-font-size-md: 1rem;
+    --cngx-font-size-lg: 1.125rem;
+    --cngx-line-height-base: 1.6;
+
+    /* Elevation */
+    --cngx-shadow-sm: 0 1px 2px oklch(0 0 0 / 0.08);
+    --cngx-shadow-md: 0 4px 12px oklch(0 0 0 / 0.10);
+    --cngx-shadow-lg: 0 12px 32px oklch(0 0 0 / 0.14);
+  }
+
+  /* ============================================================ */
+  /* COMPONENT TOKENS — affect only the named Component             */
+  /* ============================================================ */
+
+  :root {
+    /* CngxBackdrop (directive) */
+    --cngx-backdrop-bg: oklch(0 0 0 / 0.7);
+    --cngx-backdrop-transition-duration: 150ms;
+
+    /* CngxChip — static appearance */
+    --cngx-chip-inner-gap: 6px;
+    --cngx-chip-padding-block: 4px;
+    --cngx-chip-padding-inline: 12px;
+    --cngx-chip-radius: 4px;
+    --cngx-chip-bg: oklch(0.55 0.18 290 / 0.15);
+    --cngx-chip-color: inherit;
+    --cngx-chip-font-size: 0.875rem;
+
+    /* CngxChip — remove-button states */
+    --cngx-chip-remove-opacity: 0.6;
+    --cngx-chip-remove-opacity-hover: 1;
+    --cngx-chip-remove-radius: 2px;
+    --cngx-chip-remove-focus-width: 3px;
+    --cngx-chip-remove-focus-color: oklch(0.55 0.18 290);
+    --cngx-chip-remove-focus-offset: 2px;
+  }
+
+  /* ============================================================ */
+  /* DENSITY & MODE SWITCHES — opt-in via data-* attributes         */
+  /* ============================================================ */
+
+  :root[data-density="compact"] {
+    --cngx-space-md: 12px;
+    --cngx-space-lg: 16px;
+    --cngx-chip-padding-block: 2px;
+    --cngx-chip-padding-inline: 8px;
+    --cngx-chip-radius: 2px;
+  }
+
+  :root[data-density="comfortable"] {
+    --cngx-space-md: 20px;
+    --cngx-space-lg: 32px;
+    --cngx-chip-padding-inline: 16px;
+  }
+
+  /* Force-dark — opt-in alternative when OS-based light-dark() isn't enough */
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --cngx-color-surface: oklch(0.16 0.01 290);
+    --cngx-color-text:    oklch(0.95 0.005 290);
+    --cngx-color-border:  oklch(0.32 0.02 290);
+    --cngx-backdrop-bg: oklch(0 0 0 / 0.8);
+  }
+}

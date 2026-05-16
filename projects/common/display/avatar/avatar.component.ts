@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, signal, ViewEncapsulation } from '@angular/core';
 
 /**
  * Display atom for user/person/entity avatars.
@@ -19,7 +19,8 @@ import { ChangeDetectionStrategy, Component, computed, input, signal } from '@an
   exportAs: 'cngxAvatar',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  styleUrl: './avatar.component.scss',
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './avatar.component.css',
   host: {
     class: 'cngx-avatar',
     '[class.cngx-avatar--xs]': 'size() === "xs"',

@@ -1,6 +1,17 @@
-// Minimal global reset for examples iframe pages.
-// Goal: atomic directive demos read as intentional, not broken.
-// No per-component styles allowed — keep selectors structural + ARIA-driven only.
+// Examples app boilerplate styles. Three concerns only:
+//   - shell tokens (--cngx-ex-*) — chrome colors for compodocx/examples
+//   - app body                   — bg + base text color
+//   - generator chrome (.cngx-ex-*) — intro header + source-code disclosure
+// Bare-element atoms, demo-layout helpers, ARIA-role rules, component
+// fallbacks all ship from the cngx theming layers (reset/base/components),
+// imported below.
+
+// Theming — one consumer import gets everything that can't auto-bundle
+// (foundation + directive-CSS). Components with their own styleUrl bundle
+// independently via Angular and arrive automatically when imported in TS.
+// Replace with @cngx/themes/light.css or @cngx/themes/dark.css to force
+// a mode; write your own theme by pulling in the same source pieces.
+@import '../../projects/themes/cngx.css';
 
 :root {
   // Pin the UA color-scheme to match the explicit theme so native form
@@ -28,120 +39,14 @@
 html.dark {
   color-scheme: dark;
   --cngx-ex-bg: #111111;
-    --cngx-ex-text: #e6e6e6;
-    --cngx-ex-muted: #aaaaaa;
-    --cngx-ex-faint: #777777;
-    --cngx-ex-border: #555555;
-    --cngx-ex-surface: #1a1a1a;
-    --cngx-ex-surface-alt: #1f1f1f;
-    --cngx-ex-highlight-bg: rgba(121, 192, 255, 0.18);
-    --cngx-ex-focus: #79c0ff;
-
-    // Override the cngx-component-level vars story templates reference via
-    // inline `var(--cngx-foo, #lightfallback)` chains. The fallback only
-    // fires when the var is unset; by defining them here we beat the
-    // fallback and the components adapt to dark mode without touching the
-    // story templates.
-    --cngx-surface-default: #1a1a1a;
-    --cngx-surface-alt: #1f1f1f;
-    --cngx-surface: #1a1a1a;
-    --cngx-surface-border: #555555;
-    --cngx-card-bg: #1a1a1a;
-    --cngx-background: #111111;
-    --cngx-text-primary: #e6e6e6;
-    --cngx-text-secondary: #cccccc;
-    --cngx-text-muted: #aaaaaa;
-    --cngx-border: #555555;
-    --cngx-border-color: #555555;
-    --cngx-divider-color: #555555;
-    --cngx-focus-ring: #79c0ff;
-    --cngx-interactive: #79c0ff;
-    --cngx-interactive-text: #111111;
-    --cngx-interactive-subtle-bg: #2a2a3a;
-    --cngx-interactive-subtle-text: #79c0ff;
-    --cngx-accent: #f5a623;
-    --cngx-success-bg: #1c2e22;
-    --cngx-success-border: #2d5a3d;
-    --cngx-success-text: #7fd99a;
-    --cngx-error-bg: #2e1c1c;
-    --cngx-error-border: #5a2d2d;
-    --cngx-error-text: #ff7b72;
-    --cngx-warning-bg: #2e2a1c;
-    --cngx-warning-border: #5a4a2d;
-    --cngx-warning-text: #ffd97b;
-    --cngx-info-bg: #1c242e;
-    --cngx-info-border: #2d465a;
-    --cngx-info-text: #7bb5ff;
-    --cngx-code-bg: #1f1f1f;
-    --cngx-code-text: #ff7b72;
-    --cngx-pg-bar-bg: #1f1f1f;
-    --cngx-pg-seg-bg: #2a2a2a;
-
-    // @cngx/ui/feedback — alert / banner / toast / loading ─
-    // Each component reads `var(--cngx-foo-bg, #lightfallback)` chains.
-    // Dark values here win over the inline light fallback so the components
-    // adapt without per-instance overrides.
-    --cngx-alert-color: #e6e6e6;
-    --cngx-alert-bg: #1a1a1a;
-    --cngx-alert-border-color: #555555;
-    --cngx-alert-info-bg: #1c242e;
-    --cngx-alert-info-border: #2d465a;
-    --cngx-alert-info-icon: #7bb5ff;
-    --cngx-alert-success-bg: #1c2e22;
-    --cngx-alert-success-border: #2d5a3d;
-    --cngx-alert-success-icon: #7fd99a;
-    --cngx-alert-warning-bg: #2e2a1c;
-    --cngx-alert-warning-border: #5a4a2d;
-    --cngx-alert-warning-icon: #ffd97b;
-    --cngx-alert-error-bg: #2e1c1c;
-    --cngx-alert-error-border: #5a2d2d;
-    --cngx-alert-error-icon: #ff7b72;
-    --cngx-alert-collapsed-hover-bg: #2a2a2a;
-    --cngx-alert-stack-overflow-bg: #1a1a1a;
-    --cngx-alert-stack-overflow-border: #555555;
-    --cngx-alert-stack-overflow-color: #e6e6e6;
-    --cngx-alert-stack-overflow-hover-bg: #2a2a2a;
-
-    --cngx-banner-bg: #1a1a1a;
-    --cngx-banner-color: #e6e6e6;
-    --cngx-banner-border-color: #555555;
-    --cngx-banner-accent: #79c0ff;
-    --cngx-banner-action-bg: transparent;
-    --cngx-banner-action-hover-bg: #2a2a2a;
-    --cngx-banner-info-bg: #1c242e;
-    --cngx-banner-info-border: #2d465a;
-    --cngx-banner-info-accent: #7bb5ff;
-    --cngx-banner-success-bg: #1c2e22;
-    --cngx-banner-success-border: #2d5a3d;
-    --cngx-banner-success-accent: #7fd99a;
-    --cngx-banner-warning-bg: #2e2a1c;
-    --cngx-banner-warning-border: #5a4a2d;
-    --cngx-banner-warning-accent: #ffd97b;
-    --cngx-banner-error-bg: #2e1c1c;
-    --cngx-banner-error-border: #5a2d2d;
-    --cngx-banner-error-accent: #ff7b72;
-
-    --cngx-toast-bg: #1a1a1a;
-    --cngx-toast-color: #e6e6e6;
-    --cngx-toast-title-color: #e6e6e6;
-    --cngx-toast-description-color: #aaaaaa;
-    --cngx-toast-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
-    --cngx-toast-info-accent: #7bb5ff;
-    --cngx-toast-success-accent: #7fd99a;
-    --cngx-toast-warning-accent: #ffd97b;
-    --cngx-toast-error-accent: #ff7b72;
-
-    --cngx-loading-indicator-track: #2a2a2a;
-    --cngx-loading-overlay-backdrop-bg: rgba(0, 0, 0, 0.6);
-    --cngx-progress-track-color: #2a2a2a;
-    --cngx-progress-color: #79c0ff;
-    --cngx-progress-label-color: #aaaaaa;
-    --cngx-spinner-color: #555555;
-    --cngx-spinner-active-color: #79c0ff;
-
-    --cngx-close-button-color: #aaaaaa;
-    --cngx-close-button-hover-bg: #2a2a2a;
-    --cngx-close-button-hover-color: #e6e6e6;
+  --cngx-ex-text: #e6e6e6;
+  --cngx-ex-muted: #aaaaaa;
+  --cngx-ex-faint: #777777;
+  --cngx-ex-border: #555555;
+  --cngx-ex-surface: #1a1a1a;
+  --cngx-ex-surface-alt: #1f1f1f;
+  --cngx-ex-highlight-bg: rgba(121, 192, 255, 0.18);
+  --cngx-ex-focus: #79c0ff;
 }
 
 body {
@@ -224,246 +129,17 @@ body {
   white-space: pre;
 }
 
-// Form atoms get sane defaults
-button {
-  font: inherit;
-  padding: 6px 12px;
-  border: 1px solid var(--cngx-ex-border);
-  border-radius: 6px;
-  background: var(--cngx-ex-surface);
-  cursor: pointer;
-}
-button:hover { background: var(--cngx-ex-surface-alt); }
-button:focus-visible { outline: 2px solid var(--cngx-ex-focus); outline-offset: 2px; }
-
-input, textarea, select {
-  font: inherit;
-  padding: 6px 10px;
-  border: 1px solid var(--cngx-ex-border);
-  border-radius: 6px;
-  background: var(--cngx-ex-surface);
-}
-input:focus-visible, textarea:focus-visible, select:focus-visible {
-  outline: 2px solid var(--cngx-ex-focus);
-  outline-offset: 2px;
-  border-color: transparent;
-}
-
-kbd {
-  display: inline-block;
-  padding: 1px 6px;
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 0.85em;
-  border: 1px solid var(--cngx-ex-border);
-  border-bottom-width: 2px;
-  border-radius: 4px;
-  background: var(--cngx-ex-surface-alt);
-  margin: 0 2px;
-}
-
-// Status grids (dl/dt/dd) used in many a11y demos
-dl {
-  display: grid;
-  grid-template-columns: max-content 1fr;
-  gap: 4px 16px;
-  margin: 12px 0;
-  font-size: 0.875rem;
-}
-dl > dt { color: var(--cngx-ex-muted); }
-dl > dd { margin: 0; font-variant-numeric: tabular-nums; }
-
-// Event grid — technical layout used by story templates to show ARIA state.
-// No colors/borders here; only layout + alignment so values line up.
-.event-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  margin-top: 12px;
-}
-.event-row {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  font-size: 0.875rem;
-}
-.event-label {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 0.8125rem;
-  color: var(--cngx-ex-muted);
-  min-width: 12rem;
-}
-.event-value {
-  font-size: 0.8125rem;
-  font-variant-numeric: tabular-nums;
-}
-
-// Status row / chips / badges — purely structural; visual treatment is
-// up to inline styles on the template itself.
-.status-row,
-.button-row,
-.filter-row,
-.search-row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.5rem;
-}
-.filter-container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.375rem;
-}
-
-// Keyboard hint strip used by tree/listbox demos
-.kbd-hint {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 1rem;
-  padding: 0.5rem 0.75rem;
-  margin-bottom: 0.75rem;
-  font-size: 0.8rem;
-}
-.kbd-hint > strong { font-weight: 600; }
-.kbd-hint > span { display: inline-flex; align-items: center; gap: 0.25rem; }
-
-// ARIA-driven structural styling — keeps composite widgets legible without
-// dictating brand. Selectors fire only when the directive actually applied
-// the role/state, so they don't bleed into the inline-styled demos.
-[role='listbox'],
-[role='menu'],
-[role='tree'] {
-  display: flex;
-  flex-direction: column;
-  border: 1px solid var(--cngx-ex-border);
-  border-radius: 6px;
-  padding: 4px;
-  outline: none;
-}
-[role='listbox']:focus-visible,
-[role='menu']:focus-visible,
-[role='tree']:focus-visible {
-  outline: 2px solid var(--cngx-ex-focus);
-  outline-offset: 2px;
-}
-
-[role='option'],
-[role='menuitem'],
-[role='menuitemcheckbox'],
-[role='menuitemradio'],
-[role='treeitem'] {
-  padding: 6px 10px;
-  border-radius: 4px;
-  cursor: default;
-  user-select: none;
-}
-[role='option'][aria-selected='true'],
-[role='option'].cngx-option--highlighted,
-.cngx-option--highlighted,
-[role='menuitem']:hover,
-[role='treeitem'][aria-selected='true'] {
-  background: var(--cngx-ex-highlight-bg);
-}
-.cngx-option--disabled,
-[aria-disabled='true'] {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-// Active-descendant pattern class hooks used in demo templates
-.cngx-ad-listbox {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: 4px;
-  border: 1px solid var(--cngx-ex-border);
-  border-radius: 6px;
-  outline: none;
-}
-.cngx-ad-listbox:focus-visible {
-  outline: 2px solid var(--cngx-ex-focus);
-  outline-offset: 2px;
-}
-.cngx-ad-option {
-  padding: 6px 10px;
-  border-radius: 4px;
-  cursor: default;
-  user-select: none;
-}
-
-// aria-current highlight (used by nav patterns)
-[aria-current='true'],
-[aria-current='page'],
-[aria-current='step'] {
-  font-weight: 600;
-}
-
-// Toolbars / tab strips — horizontal flex
-[role='toolbar'],
-[role='tablist'] {
-  display: flex;
-  gap: 4px;
-  align-items: center;
-}
-
-// Live regions
-[aria-live] {
-  font-size: 0.875rem;
-  color: var(--cngx-ex-text);
-}
-
-// CngxCardGrid + CngxCard — consumer-supplied layout for the examples app.
-// The directive sets host class `cngx-card-grid` and `--cngx-card-grid-min`
-// + `--cngx-card-grid-gap` custom properties; the grid template lives here.
-.cngx-card-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(var(--cngx-card-grid-min, 280px), 1fr));
-  gap: var(--cngx-card-grid-gap, 16px);
-
-  &--compact { gap: 8px; }
-  &--comfortable { gap: 24px; }
-}
-.cngx-card {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 12px 16px;
-  border: 1px solid var(--cngx-ex-border);
-  border-radius: 8px;
-  background: var(--cngx-ex-surface);
-
-  &--interactive {
-    cursor: pointer;
-    transition: box-shadow 150ms ease, border-color 150ms ease;
-
-    &:hover {
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-      border-color: var(--cngx-ex-focus);
-    }
-    &:focus-visible {
-      outline: 2px solid var(--cngx-ex-focus);
-      outline-offset: 2px;
-    }
-  }
-}
-.cngx-card__body {
-  flex: 1;
-  min-width: 0;
-}
-
-// CngxBackdrop — the `drawer-backdrop` class is the consumer hook the
-// demo applies to the directive host. Visibility is class-driven by the
-// directive (`.cngx-backdrop--visible`).
-.drawer-backdrop {
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.4);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 200ms ease;
-
-  &.cngx-backdrop--visible {
-    opacity: 1;
-    pointer-events: auto;
-  }
-}
+// Removed pending the theming sprint — none of these are used by home or
+// boilerplate, so they don't belong in app-shell styles:
+//   - demo-layout helpers: .event-grid, .event-row, .event-label, .event-value,
+//     .status-row, .button-row, .filter-row, .search-row, .filter-container,
+//     .kbd-hint
+//   - ARIA-role rules: [role='listbox'/'menu'/'tree'], [role='option'/
+//     'menuitem'/'menuitemcheckbox'/'menuitemradio'/'treeitem'],
+//     [aria-current], [role='toolbar'/'tablist'], [aria-live]
+//   - component-consumer fallbacks: .cngx-option--highlighted/--disabled,
+//     .cngx-ad-listbox/-option, .cngx-card-grid, .cngx-card, .cngx-card__body,
+//     .drawer-backdrop
+// All ship from each component lib's theming/-layer in Phase 3. Until then,
+// stories using these classes render unstyled — the intended signal for
+// which component tokens to ship next.

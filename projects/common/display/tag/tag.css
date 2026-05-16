@@ -1,105 +1,162 @@
 /*
- * tag.css — thematic skin of `CngxTag`.
+ * tag.css — thematic skin of CngxTag.
  *
- * Structural rules (display, flex, padding, density modifiers,
- * label ellipsis hook) live in `./shared/tag-base.css` — linked
- * first by the directive's `styleUrls` array. This file ships only
- * the colour cascade and radius / weight tokens so the decompose
- * schematic can keep the thematic skin flat without dragging
- * structural rules into the colour cascade.
+ * Migrated to @layer cngx.components + @scope (Phase 3). Structural
+ * rules (display/flex/padding/density modifiers, label ellipsis hook)
+ * stay in ./shared/tag-base.css. This file ships the colour cascade
+ * plus the radius / font-weight tokens.
  *
- * Per-color surfaces resolve through `[data-color="…"]` attribute
+ * Per-color surfaces resolve through [data-color="…"] attribute
  * selectors so the open-string extensibility stays consumer-driven
- * (predefined keys cascade through `--cngx-tag-{name}-*` custom
+ * (predefined keys cascade through --cngx-tag-{name}-* custom
  * properties; arbitrary keys ride the same selector pattern).
+ *
+ * Semantic colour fallbacks: --cngx-tag-{success|warning|error|info}-color
+ * fall back to the corresponding --cngx-color-{success|warning|danger|info}
+ * system tokens, so brand-theme changes propagate without per-component
+ * overrides. Subtle-bg / filled-bg surfaces carry their own defaults
+ * (no good system parent for tinted variants).
  */
 
-.cngx-tag {
-  border-radius: var(--cngx-tag-radius, 4px);
-  font-weight: var(--cngx-tag-font-weight, 500);
-  /* Variant-specific bg/color/border resolve via [data-color] +
-   * --cngx-tag-{name}-* below. Default fills come from neutral. */
-  background: var(--cngx-tag-bg, transparent);
-  color: var(--cngx-tag-color, inherit);
-  border: var(--cngx-tag-border, 1px solid transparent);
+@layer cngx.tokens {
+  /* Static + layout tokens */
+  @property --cngx-tag-radius       { syntax: '<length>'; inherits: false; initial-value: 4px; }
+  @property --cngx-tag-font-weight  { syntax: '*';        inherits: false; initial-value: 500; }
+  @property --cngx-tag-bg           { syntax: '*';        inherits: false; initial-value: transparent; }
+  @property --cngx-tag-color        { syntax: '*';        inherits: true;  initial-value: inherit; }
+  @property --cngx-tag-border       { syntax: '*';        inherits: false; initial-value: 1px solid transparent; }
+  @property --cngx-tag-gap          { syntax: '<length>'; inherits: false; initial-value: 4px; }
+  @property --cngx-tag-padding      { syntax: '*';        inherits: false; initial-value: 2px 8px; }
+  @property --cngx-tag-font-size    { syntax: '*';        inherits: false; initial-value: 0.75rem; }
+
+  /* Density tokens */
+  @property --cngx-tag-sm-padding   { syntax: '*'; inherits: false; initial-value: 0 6px; }
+  @property --cngx-tag-sm-font-size { syntax: '*'; inherits: false; initial-value: 0.6875rem; }
+  @property --cngx-tag-lg-padding   { syntax: '*'; inherits: false; initial-value: 4px 10px; }
+  @property --cngx-tag-lg-font-size { syntax: '*'; inherits: false; initial-value: 0.875rem; }
+  @property --cngx-tag-xl-padding   { syntax: '*'; inherits: false; initial-value: 6px 12px; }
+  @property --cngx-tag-xl-font-size { syntax: '*'; inherits: false; initial-value: 1rem; }
+
+  /* Colour palette — neutral */
+  @property --cngx-tag-neutral-bg         { syntax: '<color>'; inherits: true; initial-value: oklch(0.92 0.005 250); }
+  @property --cngx-tag-neutral-color      { syntax: '<color>'; inherits: true; initial-value: oklch(0.34 0.015 250); }
+  @property --cngx-tag-neutral-border     { syntax: '<color>'; inherits: true; initial-value: oklch(0.68 0.01 250); }
+  @property --cngx-tag-neutral-subtle-bg  { syntax: '<color>'; inherits: true; initial-value: oklch(0.96 0.005 250); }
+
+  /* Colour palette — success */
+  @property --cngx-tag-success-bg         { syntax: '<color>'; inherits: true; initial-value: oklch(0.95 0.05 145); }
+  @property --cngx-tag-success-color      { syntax: '<color>'; inherits: true; initial-value: oklch(0.4 0.1 160); }
+  @property --cngx-tag-success-border     { syntax: '<color>'; inherits: true; initial-value: oklch(0.65 0.15 155); }
+  @property --cngx-tag-success-subtle-bg  { syntax: '<color>'; inherits: true; initial-value: oklch(0.97 0.025 145); }
+
+  /* Colour palette — warning */
+  @property --cngx-tag-warning-bg         { syntax: '<color>'; inherits: true; initial-value: oklch(0.95 0.05 90); }
+  @property --cngx-tag-warning-color      { syntax: '<color>'; inherits: true; initial-value: oklch(0.45 0.12 60); }
+  @property --cngx-tag-warning-border     { syntax: '<color>'; inherits: true; initial-value: oklch(0.72 0.18 70); }
+  @property --cngx-tag-warning-subtle-bg  { syntax: '<color>'; inherits: true; initial-value: oklch(0.98 0.02 90); }
+
+  /* Colour palette — error */
+  @property --cngx-tag-error-bg         { syntax: '<color>'; inherits: true; initial-value: oklch(0.94 0.04 25); }
+  @property --cngx-tag-error-color      { syntax: '<color>'; inherits: true; initial-value: oklch(0.4 0.15 25); }
+  @property --cngx-tag-error-border     { syntax: '<color>'; inherits: true; initial-value: oklch(0.65 0.22 25); }
+  @property --cngx-tag-error-subtle-bg  { syntax: '<color>'; inherits: true; initial-value: oklch(0.98 0.015 25); }
+
+  /* Colour palette — info */
+  @property --cngx-tag-info-bg         { syntax: '<color>'; inherits: true; initial-value: oklch(0.93 0.04 240); }
+  @property --cngx-tag-info-color      { syntax: '<color>'; inherits: true; initial-value: oklch(0.4 0.15 250); }
+  @property --cngx-tag-info-border     { syntax: '<color>'; inherits: true; initial-value: oklch(0.62 0.2 250); }
+  @property --cngx-tag-info-subtle-bg  { syntax: '<color>'; inherits: true; initial-value: oklch(0.97 0.025 240); }
 }
 
-/* Variants resolve --cngx-tag-bg/-color/-border per [data-color]. */
+@layer cngx.components {
+  @scope (.cngx-tag) {
+    :scope {
+      border-radius: var(--cngx-tag-radius, var(--cngx-radius-sm, 4px));
+      font-weight: var(--cngx-tag-font-weight, 500);
+      background: var(--cngx-tag-bg, transparent);
+      color: var(--cngx-tag-color, inherit);
+      border: var(--cngx-tag-border, 1px solid transparent);
+    }
 
-.cngx-tag--filled[data-color='neutral'] {
-  --cngx-tag-bg: var(--cngx-tag-neutral-bg, #e5e7eb);
-  --cngx-tag-color: var(--cngx-tag-neutral-color, #374151);
-  --cngx-tag-border: 1px solid var(--cngx-tag-neutral-border, transparent);
-}
-.cngx-tag--filled[data-color='success'] {
-  --cngx-tag-bg: var(--cngx-tag-success-bg, #d1fae5);
-  --cngx-tag-color: var(--cngx-tag-success-color, #065f46);
-  --cngx-tag-border: 1px solid var(--cngx-tag-success-border, transparent);
-}
-.cngx-tag--filled[data-color='warning'] {
-  --cngx-tag-bg: var(--cngx-tag-warning-bg, #fef3c7);
-  --cngx-tag-color: var(--cngx-tag-warning-color, #92400e);
-  --cngx-tag-border: 1px solid var(--cngx-tag-warning-border, transparent);
-}
-.cngx-tag--filled[data-color='error'] {
-  --cngx-tag-bg: var(--cngx-tag-error-bg, #fee2e2);
-  --cngx-tag-color: var(--cngx-tag-error-color, #991b1b);
-  --cngx-tag-border: 1px solid var(--cngx-tag-error-border, transparent);
-}
-.cngx-tag--filled[data-color='info'] {
-  --cngx-tag-bg: var(--cngx-tag-info-bg, #dbeafe);
-  --cngx-tag-color: var(--cngx-tag-info-color, #1e40af);
-  --cngx-tag-border: 1px solid var(--cngx-tag-info-border, transparent);
-}
+    /* Filled variant — solid tinted background per [data-color] */
+    :scope.cngx-tag--filled[data-color='neutral'] {
+      --cngx-tag-bg: var(--cngx-tag-neutral-bg);
+      --cngx-tag-color: var(--cngx-tag-neutral-color);
+      --cngx-tag-border: 1px solid var(--cngx-tag-neutral-border, transparent);
+    }
+    :scope.cngx-tag--filled[data-color='success'] {
+      --cngx-tag-bg: var(--cngx-tag-success-bg);
+      --cngx-tag-color: var(--cngx-tag-success-color, var(--cngx-color-success));
+      --cngx-tag-border: 1px solid var(--cngx-tag-success-border, transparent);
+    }
+    :scope.cngx-tag--filled[data-color='warning'] {
+      --cngx-tag-bg: var(--cngx-tag-warning-bg);
+      --cngx-tag-color: var(--cngx-tag-warning-color, var(--cngx-color-warning));
+      --cngx-tag-border: 1px solid var(--cngx-tag-warning-border, transparent);
+    }
+    :scope.cngx-tag--filled[data-color='error'] {
+      --cngx-tag-bg: var(--cngx-tag-error-bg);
+      --cngx-tag-color: var(--cngx-tag-error-color, var(--cngx-color-danger));
+      --cngx-tag-border: 1px solid var(--cngx-tag-error-border, transparent);
+    }
+    :scope.cngx-tag--filled[data-color='info'] {
+      --cngx-tag-bg: var(--cngx-tag-info-bg);
+      --cngx-tag-color: var(--cngx-tag-info-color, var(--cngx-color-info));
+      --cngx-tag-border: 1px solid var(--cngx-tag-info-border, transparent);
+    }
 
-.cngx-tag--outline[data-color='neutral'] {
-  --cngx-tag-bg: transparent;
-  --cngx-tag-color: var(--cngx-tag-neutral-color, #374151);
-  --cngx-tag-border: 1px solid var(--cngx-tag-neutral-color, #9ca3af);
-}
-.cngx-tag--outline[data-color='success'] {
-  --cngx-tag-bg: transparent;
-  --cngx-tag-color: var(--cngx-tag-success-color, #065f46);
-  --cngx-tag-border: 1px solid var(--cngx-tag-success-color, #10b981);
-}
-.cngx-tag--outline[data-color='warning'] {
-  --cngx-tag-bg: transparent;
-  --cngx-tag-color: var(--cngx-tag-warning-color, #92400e);
-  --cngx-tag-border: 1px solid var(--cngx-tag-warning-color, #f59e0b);
-}
-.cngx-tag--outline[data-color='error'] {
-  --cngx-tag-bg: transparent;
-  --cngx-tag-color: var(--cngx-tag-error-color, #991b1b);
-  --cngx-tag-border: 1px solid var(--cngx-tag-error-color, #ef4444);
-}
-.cngx-tag--outline[data-color='info'] {
-  --cngx-tag-bg: transparent;
-  --cngx-tag-color: var(--cngx-tag-info-color, #1e40af);
-  --cngx-tag-border: 1px solid var(--cngx-tag-info-color, #3b82f6);
-}
+    /* Outline variant — transparent fill, coloured stroke */
+    :scope.cngx-tag--outline[data-color='neutral'] {
+      --cngx-tag-bg: transparent;
+      --cngx-tag-color: var(--cngx-tag-neutral-color);
+      --cngx-tag-border: 1px solid var(--cngx-tag-neutral-color);
+    }
+    :scope.cngx-tag--outline[data-color='success'] {
+      --cngx-tag-bg: transparent;
+      --cngx-tag-color: var(--cngx-tag-success-color, var(--cngx-color-success));
+      --cngx-tag-border: 1px solid var(--cngx-tag-success-color, var(--cngx-color-success));
+    }
+    :scope.cngx-tag--outline[data-color='warning'] {
+      --cngx-tag-bg: transparent;
+      --cngx-tag-color: var(--cngx-tag-warning-color, var(--cngx-color-warning));
+      --cngx-tag-border: 1px solid var(--cngx-tag-warning-color, var(--cngx-color-warning));
+    }
+    :scope.cngx-tag--outline[data-color='error'] {
+      --cngx-tag-bg: transparent;
+      --cngx-tag-color: var(--cngx-tag-error-color, var(--cngx-color-danger));
+      --cngx-tag-border: 1px solid var(--cngx-tag-error-color, var(--cngx-color-danger));
+    }
+    :scope.cngx-tag--outline[data-color='info'] {
+      --cngx-tag-bg: transparent;
+      --cngx-tag-color: var(--cngx-tag-info-color, var(--cngx-color-info));
+      --cngx-tag-border: 1px solid var(--cngx-tag-info-color, var(--cngx-color-info));
+    }
 
-.cngx-tag--subtle[data-color='neutral'] {
-  --cngx-tag-bg: var(--cngx-tag-neutral-subtle-bg, #f3f4f6);
-  --cngx-tag-color: var(--cngx-tag-neutral-color, #374151);
-  --cngx-tag-border: 1px solid transparent;
-}
-.cngx-tag--subtle[data-color='success'] {
-  --cngx-tag-bg: var(--cngx-tag-success-subtle-bg, #ecfdf5);
-  --cngx-tag-color: var(--cngx-tag-success-color, #065f46);
-  --cngx-tag-border: 1px solid transparent;
-}
-.cngx-tag--subtle[data-color='warning'] {
-  --cngx-tag-bg: var(--cngx-tag-warning-subtle-bg, #fffbeb);
-  --cngx-tag-color: var(--cngx-tag-warning-color, #92400e);
-  --cngx-tag-border: 1px solid transparent;
-}
-.cngx-tag--subtle[data-color='error'] {
-  --cngx-tag-bg: var(--cngx-tag-error-subtle-bg, #fef2f2);
-  --cngx-tag-color: var(--cngx-tag-error-color, #991b1b);
-  --cngx-tag-border: 1px solid transparent;
-}
-.cngx-tag--subtle[data-color='info'] {
-  --cngx-tag-bg: var(--cngx-tag-info-subtle-bg, #eff6ff);
-  --cngx-tag-color: var(--cngx-tag-info-color, #1e40af);
-  --cngx-tag-border: 1px solid transparent;
+    /* Subtle variant — softer tint */
+    :scope.cngx-tag--subtle[data-color='neutral'] {
+      --cngx-tag-bg: var(--cngx-tag-neutral-subtle-bg);
+      --cngx-tag-color: var(--cngx-tag-neutral-color);
+      --cngx-tag-border: 1px solid transparent;
+    }
+    :scope.cngx-tag--subtle[data-color='success'] {
+      --cngx-tag-bg: var(--cngx-tag-success-subtle-bg);
+      --cngx-tag-color: var(--cngx-tag-success-color, var(--cngx-color-success));
+      --cngx-tag-border: 1px solid transparent;
+    }
+    :scope.cngx-tag--subtle[data-color='warning'] {
+      --cngx-tag-bg: var(--cngx-tag-warning-subtle-bg);
+      --cngx-tag-color: var(--cngx-tag-warning-color, var(--cngx-color-warning));
+      --cngx-tag-border: 1px solid transparent;
+    }
+    :scope.cngx-tag--subtle[data-color='error'] {
+      --cngx-tag-bg: var(--cngx-tag-error-subtle-bg);
+      --cngx-tag-color: var(--cngx-tag-error-color, var(--cngx-color-danger));
+      --cngx-tag-border: 1px solid transparent;
+    }
+    :scope.cngx-tag--subtle[data-color='info'] {
+      --cngx-tag-bg: var(--cngx-tag-info-subtle-bg);
+      --cngx-tag-color: var(--cngx-tag-info-color, var(--cngx-color-info));
+      --cngx-tag-border: 1px solid transparent;
+    }
+  }
 }

@@ -1,12 +1,18 @@
 /*
- * tag-group.component.css — thematic skin of `CngxTagGroup`.
+ * tag-group.component.css — thematic skin of CngxTagGroup.
  *
  * Structural rules (column stack, row flex-wrap, gap + align
- * modifiers) live in `../tag/shared/tag-base.css` — linked first
- * by the component's `styleUrls` array. The group is a neutral
- * layout container today (no colour, no border, no background) so
- * this file ships intentionally empty; it stays in `styleUrls` so
- * future per-atom thematic tokens (e.g. backplate colour for a
- * Material wrapper) land here without changing the directive's
- * style-link surface.
+ * modifiers) live in ../tag/shared/tag-base.css — linked first by
+ * the component's styleUrls array. The group is a neutral layout
+ * container today (no colour, no border, no background) so this
+ * file only registers the layout-related @property tokens; a future
+ * thematic skin (e.g. backplate colour for a Material wrapper)
+ * lands here without changing the directive's style-link surface.
  */
+
+@layer cngx.tokens {
+  @property --cngx-tag-group-stack-gap { syntax: '<length>'; inherits: false; initial-value: 8px; }
+  @property --cngx-tag-group-gap       { syntax: '<length>'; inherits: false; initial-value: 8px; }
+  @property --cngx-tag-group-gap-xs    { syntax: '<length>'; inherits: false; initial-value: 4px; }
+  @property --cngx-tag-group-gap-md    { syntax: '<length>'; inherits: false; initial-value: 12px; }
+}

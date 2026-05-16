@@ -3,5 +3,8 @@
   "dest": "../../dist/forms",
   "lib": {
     "entryFile": "public-api.ts"
-  }
+  },
+  "assets": [
+    { "input": "theming", "glob": "*.css", "output": "theming" }
+  ]
 }

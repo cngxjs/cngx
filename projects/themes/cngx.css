@@ -1,0 +1,41 @@
+/* cngx default theme — single-import entry point.
+ *
+ * Consumer contract (one of two paths):
+ *
+ *   1) Import this file (one line):
+ *        @import '@cngx/themes/cngx.css';
+ *      Done. Foundation + directive-CSS loaded, components auto-bundle
+ *      their own styles via Angular's styleUrl. OS-follows dark mode
+ *      via `light-dark()` in system tokens; force a mode with
+ *      @cngx/themes/light.css or @cngx/themes/dark.css (future).
+ *
+ *   2) Write your own theme. Bring in the same foundation pieces, then
+ *      add your overrides in @layer cngx.theme:
+ *        @import '@cngx/core/theming/layers.css';
+ *        @import '@cngx/core/theming/system-tokens.css';
+ *        @import '@cngx/core/theming/reset.css';
+ *        @import '@cngx/core/theming/base.css';
+ *        @import '@cngx/common/theming/components/cngx-backdrop.css';
+ *        @layer cngx.theme {
+ *          :root[data-theme="brand"] { --cngx-color-primary: …; }
+ *        }
+ *
+ * Everything else (cngx-prefixed Component CSS like CngxChip, CngxCard,
+ * CngxIcon) bundles automatically with the component via Angular's
+ * `styleUrl` mechanism. No per-component @import needed.
+ *
+ * What lives here:
+ *   - Cascade-layer order (cngx.reset, .tokens, .base, .components, .theme, app)
+ *   - All system tokens (@property registration + light-dark defaults)
+ *   - cngx.reset (box-sizing, button neutralize, focus-ring base)
+ *   - cngx.base (bare-element atoms: button/input/kbd/dl)
+ *   - Directive-CSS that can't auto-bundle (CngxBackdrop and future
+ *     pure-behavior directives that ship default appearance) */
+
+@import '../core/theming/layers.css';
+@import '../core/theming/system-tokens.css';
+@import '../core/theming/reset.css';
+@import '../core/theming/base.css';
+@import '../common/theming/components/cngx-backdrop.css';
+@import '../common/theming/components/cngx-badge.css';
+@import '../common/theming/components/cngx-divider.css';
