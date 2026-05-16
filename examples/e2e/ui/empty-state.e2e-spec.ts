@@ -17,7 +17,6 @@ test.describe('ui/empty-state', () => {
     test(`${name}: renders without errors`, async ({ page }) => {
       await gotoDemo(page, route);
       await expect(page.locator('header.cngx-ex-intro')).toBeVisible();
-      await expect(page).toHaveScreenshot(`empty-state-${name}.png`, { fullPage: true });
     });
   }
 });

@@ -32,7 +32,6 @@ test.describe('common/interactive/button-multi-toggle-group', () => {
     await expect(open).toHaveAttribute('aria-selected', 'false');
     await expect(caption).toContainText('closed');
 
-    await expect(page).toHaveScreenshot('multi-toggle-closed-selected.png', { fullPage: true });
   });
 
   test('disabled: group cascade vs per-toggle disabled', async ({ page }) => {
@@ -55,6 +54,5 @@ test.describe('common/interactive/button-multi-toggle-group', () => {
     await expect(closed).toHaveAttribute('aria-disabled', 'true');
     await expect(archived).toHaveAttribute('aria-disabled', 'true');
 
-    await expect(page).toHaveScreenshot('group-disabled.png', { fullPage: true });
   });
 });

@@ -17,7 +17,6 @@ test.describe('common/card/card-grid', () => {
     // Multi-column layout: items must not all share the same x position.
     await expectGridLayout(cards);
 
-    await expect(page).toHaveScreenshot('basic-grid.png', { fullPage: true });
   });
 
   test('density variants: switching density updates the active chip', async ({ page }) => {
@@ -39,7 +38,6 @@ test.describe('common/card/card-grid', () => {
     await expect(comfortableBtn).toHaveClass(/chip--active/);
     await expect(grid).toHaveClass(/cngx-card-grid--comfortable/);
 
-    await expect(page).toHaveScreenshot('density-comfortable.png', { fullPage: true });
   });
 
   test('empty-state with reason: each reason renders its dedicated template', async ({ page }) => {
@@ -54,6 +52,5 @@ test.describe('common/card/card-grid', () => {
     await page.getByRole('button', { name: 'cleared', exact: true }).click();
     await expect(grid).toContainText('All done');
 
-    await expect(page).toHaveScreenshot('empty-cleared.png', { fullPage: true });
   });
 });

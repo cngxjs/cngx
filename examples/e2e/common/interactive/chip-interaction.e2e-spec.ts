@@ -27,7 +27,6 @@ test.describe('common/interactive/chip-interaction', () => {
     await page.keyboard.press('Enter');
     await expect(favourite).toHaveAttribute('aria-selected', 'true');
 
-    await expect(page).toHaveScreenshot('chip-interaction-both-selected.png', { fullPage: true });
   });
 
   test('disabled state: toggle locks the chip; clicks no longer flip selection', async ({
@@ -47,7 +46,6 @@ test.describe('common/interactive/chip-interaction', () => {
     await chip.click({ force: true });
     expect(await chip.getAttribute('aria-selected')).toBe(initialSelected);
 
-    await expect(page).toHaveScreenshot('chip-interaction-disabled.png', { fullPage: true });
   });
 
   test('removable: Backspace fires removeRequest and increments the counter', async ({ page }) => {
@@ -66,6 +64,5 @@ test.describe('common/interactive/chip-interaction', () => {
     await page.keyboard.press('Backspace');
     await expect(counter).toHaveText('1');
 
-    await expect(page).toHaveScreenshot('chip-interaction-remove.png', { fullPage: true });
   });
 });

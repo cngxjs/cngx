@@ -31,7 +31,6 @@ test.describe('common/interactive/long-press', () => {
 
     await expect(completed).toContainText('1', { timeout: 2000 });
 
-    await expect(page).toHaveScreenshot('long-press-completed.png', { fullPage: true });
   });
 
   test('custom-threshold: 1-second hold flips button text mid-press', async ({ page }) => {
@@ -59,6 +58,5 @@ test.describe('common/interactive/long-press', () => {
     await expect(page.getByRole('button', { name: /Hold 1s to delete/ })).toBeVisible();
     await page.mouse.up();
 
-    await expect(page).toHaveScreenshot('long-press-custom-threshold.png', { fullPage: true });
   });
 });

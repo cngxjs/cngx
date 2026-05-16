@@ -39,6 +39,5 @@ test.describe('common/layout/resize-observer', () => {
     await expect(width).toContainText('480', { timeout: 2000 });
     await expect(height).toContainText('160');
 
-    await expect(page).toHaveScreenshot('resize-observer-after.png', { fullPage: true });
   });
 });

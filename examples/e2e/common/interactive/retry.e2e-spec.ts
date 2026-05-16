@@ -28,7 +28,6 @@ test.describe('common/interactive/retry', () => {
     // the success/fail terminal label.
     await expect(btn).toHaveText(/Success!|All retries failed/, { timeout: 10_000 });
 
-    await expect(page).toHaveScreenshot('retry-settled.png', { fullPage: true });
   });
 
   test('optimistic: liking updates the signal synchronously (rollback may follow)', async ({
@@ -49,6 +48,5 @@ test.describe('common/interactive/retry', () => {
     // is that the immediate post-click read is true.
     await expect(likedVal).toHaveText('true');
 
-    await expect(page).toHaveScreenshot('retry-optimistic.png', { fullPage: true });
   });
 });

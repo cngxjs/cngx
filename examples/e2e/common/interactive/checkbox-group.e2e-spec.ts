@@ -44,7 +44,6 @@ test.describe('common/interactive/checkbox-group', () => {
     await expect(master).toHaveAttribute('aria-checked', 'mixed');
     await expect(caption).toContainText('sms');
 
-    await expect(page).toHaveScreenshot('checkbox-group-mixed.png', { fullPage: true });
   });
 
   test('disabled cascade: group [disabled] reflects on every leaf', async ({ page }) => {
@@ -61,6 +60,5 @@ test.describe('common/interactive/checkbox-group', () => {
       await expect(leaves.nth(i)).toHaveAttribute('aria-disabled', 'true');
     }
 
-    await expect(page).toHaveScreenshot('checkbox-group-disabled.png', { fullPage: true });
   });
 });

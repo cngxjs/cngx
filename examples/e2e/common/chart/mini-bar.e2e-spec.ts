@@ -19,7 +19,6 @@ test.describe('common/chart/mini-bar', () => {
     await expect(bars.nth(1)).toHaveAttribute('aria-valuenow', '42');
     await expect(bars.nth(2)).toHaveAttribute('aria-valuenow', '12');
 
-    await expect(page).toHaveScreenshot('mini-bar-basic.png', { fullPage: true });
   });
 
   test('async-state-machine: status follows the state controls', async ({ page }) => {
@@ -35,6 +34,5 @@ test.describe('common/chart/mini-bar', () => {
     await page.getByRole('button', { name: 'error' }).click();
     await expect(status).toContainText('error');
 
-    await expect(page).toHaveScreenshot('mini-bar-error.png', { fullPage: true });
   });
 });

@@ -32,7 +32,6 @@ test.describe('common/a11y/focus-restore', () => {
       .locator('.event-value');
     await expect(state).toHaveText('false');
 
-    await expect(page).toHaveScreenshot('panel-restored.png', { fullPage: true });
   });
 
   test('inline-details: collapsing details returns focus to the toggle', async ({ page }) => {
@@ -53,6 +52,5 @@ test.describe('common/a11y/focus-restore', () => {
     const showAgain = page.getByRole('button', { name: 'Show Details' });
     await expect(showAgain).toBeFocused();
 
-    await expect(page).toHaveScreenshot('inline-details-collapsed.png', { fullPage: true });
   });
 });

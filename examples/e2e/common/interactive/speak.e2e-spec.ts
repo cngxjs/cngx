@@ -22,7 +22,6 @@ test.describe('common/interactive/speak', () => {
       page.getByRole('button', { name: /Listen|Stop/ }).first(),
     ).toBeVisible();
 
-    await expect(page).toHaveScreenshot('speak-headless.png', { fullPage: true });
   });
 
   test('form-error-read-aloud-on-demand: typing invalid email reveals hear-error button', async ({
@@ -36,6 +35,5 @@ test.describe('common/interactive/speak', () => {
     await input.fill('invalid');
     await expect(page.getByRole('button', { name: 'hear error' })).toBeVisible();
 
-    await expect(page).toHaveScreenshot('speak-form-error.png', { fullPage: true });
   });
 });

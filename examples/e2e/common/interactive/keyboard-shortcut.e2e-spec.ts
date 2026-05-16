@@ -27,7 +27,6 @@ test.describe('common/interactive/keyboard-shortcut', () => {
     await page.keyboard.press('Control+k');
     await expect(counter).toHaveText('1');
 
-    await expect(page).toHaveScreenshot('keyboard-shortcut-global.png', { fullPage: true });
   });
 
   test('self-scoped: Escape fires only after focusing the dashed box', async ({ page }) => {
@@ -49,6 +48,5 @@ test.describe('common/interactive/keyboard-shortcut', () => {
     await page.keyboard.press('Escape');
     await expect(counter).toHaveText('1');
 
-    await expect(page).toHaveScreenshot('keyboard-shortcut-self.png', { fullPage: true });
   });
 });

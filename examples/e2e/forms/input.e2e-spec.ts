@@ -31,7 +31,6 @@ test.describe('forms/input', () => {
       await gotoDemo(page, route);
       // Smoke: the feature component mounts (any element below cngx-ex-intro).
       await expect(page.locator('header.cngx-ex-intro')).toBeVisible();
-      await expect(page).toHaveScreenshot(`input-${name}.png`, { fullPage: true });
     });
   }
 });

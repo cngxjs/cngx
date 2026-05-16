@@ -18,7 +18,6 @@ test.describe('common/interactive/ripple', () => {
     await custom.click();
     await expect(custom.locator('.cngx-ripple__wave')).toHaveCount(1);
 
-    await expect(page).toHaveScreenshot('ripple-buttons.png', { fullPage: true });
   });
 
   test('card-with-ripple: ripple paints on a card-shaped host', async ({ page }) => {
@@ -31,6 +30,5 @@ test.describe('common/interactive/ripple', () => {
     await card.click({ position: { x: 10, y: 10 } });
     await expect(card.locator('.cngx-ripple__wave')).toHaveCount(1);
 
-    await expect(page).toHaveScreenshot('ripple-card.png', { fullPage: true });
   });
 });

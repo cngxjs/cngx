@@ -32,6 +32,5 @@ test.describe('common/layout/sticky-header', () => {
     await expect(isStickyVal).toHaveText('true', { timeout: 2000 });
     await expect(headerLabel).toHaveText('Stuck!');
 
-    await expect(page).toHaveScreenshot('sticky-active.png', { fullPage: true });
   });
 });

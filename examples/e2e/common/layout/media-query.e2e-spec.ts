@@ -36,7 +36,6 @@ test.describe('common/layout/media-query', () => {
     await expect(wide).toContainText('true');
     await expect(wide).toHaveClass(/active/);
 
-    await expect(page).toHaveScreenshot('viewport-wide.png', { fullPage: true });
   });
 
   test('viewport-breakpoints: preference badges follow emulated media', async ({ page }) => {

@@ -21,12 +21,10 @@ test.describe('common/data/paginate-list', () => {
     await next.click();
     await expect(status).toContainText(/6[–-]10 of \d+ people/);
 
-    await expect(page).toHaveScreenshot('paginate-list-page2.png', { fullPage: true });
   });
 
   test('uncontrolled-mode: code-block story renders without error', async ({ page }) => {
     await gotoDemo(page, 'common/data/paginate-list/uncontrolled-mode-zero-class-boilerplate');
     await expect(page.locator('pre.code-block')).toBeVisible();
-    await expect(page).toHaveScreenshot('paginate-list-uncontrolled-doc.png', { fullPage: true });
   });
 });

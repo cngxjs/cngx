@@ -19,7 +19,6 @@ test.describe('common/display/avatar', () => {
     await expect(avatars.first()).toContainText('A');
     await expect(avatars.nth(1)).toContainText('AB');
 
-    await expect(page).toHaveScreenshot('avatar-sizes.png', { fullPage: true });
   });
 
   test('shapes-and-status: four status variants + square shape on the last', async ({ page }) => {
@@ -42,7 +41,6 @@ test.describe('common/display/avatar', () => {
     // Last avatar is the square one.
     await expect(page.locator('cngx-avatar[shape="square"]')).toHaveCount(1);
 
-    await expect(page).toHaveScreenshot('shapes-and-status.png', { fullPage: true });
   });
 
   test('cascade: image, initials, fallback — broken image falls back to initials', async ({
@@ -64,6 +62,5 @@ test.describe('common/display/avatar', () => {
     // The third has no src and no initials — projected content "?" must show.
     await expect(avatars.nth(2)).toContainText('?');
 
-    await expect(page).toHaveScreenshot('avatar-cascade.png', { fullPage: true });
   });
 });

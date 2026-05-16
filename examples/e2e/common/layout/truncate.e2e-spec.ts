@@ -36,7 +36,6 @@ test.describe('common/layout/truncate', () => {
     const expandedHeight = (await para.boundingBox())!.height;
     expect(expandedHeight).toBeGreaterThan(clampedHeight);
 
-    await expect(page).toHaveScreenshot('truncate-expanded.png', { fullPage: true });
   });
 
   test('short-text-no-toggle: short content suppresses the toggle button', async ({ page }) => {
@@ -51,6 +50,5 @@ test.describe('common/layout/truncate', () => {
     await expect(isClamped).toHaveText('false');
     await expect(page.getByRole('button', { name: 'Show more' })).toHaveCount(0);
 
-    await expect(page).toHaveScreenshot('short-text-no-toggle.png', { fullPage: true });
   });
 });

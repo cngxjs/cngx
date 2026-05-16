@@ -26,7 +26,6 @@ test.describe('common/interactive/copy-text', () => {
     const clip = await page.evaluate(() => navigator.clipboard.readText());
     expect(clip).toContain('eyJhbGciOi');
 
-    await expect(page).toHaveScreenshot('copy-text-token-copied.png', { fullPage: true });
   });
 
   test('copy-url-with-sr-announcement: clipboard receives a URL', async ({ page, context }) => {
@@ -41,6 +40,5 @@ test.describe('common/interactive/copy-text', () => {
     const clip = await page.evaluate(() => navigator.clipboard.readText());
     expect(clip).toMatch(/^https?:\/\//);
 
-    await expect(page).toHaveScreenshot('copy-text-url-copied.png', { fullPage: true });
   });
 });

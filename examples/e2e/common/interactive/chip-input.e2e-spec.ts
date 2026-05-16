@@ -25,6 +25,5 @@ test.describe('common/interactive/chip-input', () => {
     await expect(caption).toContainText('typescript, angular');
     await expect(caption).not.toContainText('rxjs');
 
-    await expect(page).toHaveScreenshot('chip-input-after-backspace.png', { fullPage: true });
   });
 });

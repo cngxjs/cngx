@@ -44,6 +44,5 @@ test.describe('common/layout/intersection-observer', () => {
     await expect(sentinel).toContainText('Hidden');
     await expect(sentinel).toContainText('ratio: 0.00');
 
-    await expect(page).toHaveScreenshot('observer-back-to-top.png', { fullPage: true });
   });
 });

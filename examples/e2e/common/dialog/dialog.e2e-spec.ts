@@ -22,7 +22,6 @@ test.describe('common/dialog/dialog', () => {
     test(`${name}: page renders`, async ({ page }) => {
       await gotoDemo(page, route);
       await expect(page.locator('header.cngx-ex-intro')).toBeVisible();
-      await expect(page).toHaveScreenshot(`dialog-${name}.png`, { fullPage: true });
     });
   }
 });

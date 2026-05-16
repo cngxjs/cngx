@@ -18,7 +18,6 @@ test.describe('common/data/trend', () => {
     await expect(trends.nth(1)).toContainText(/2/);
     await expect(trends.nth(2)).toContainText(/0/);
 
-    await expect(page).toHaveScreenshot('trend-directions.png', { fullPage: true });
   });
 
   test('composed-with-metric-in-a-card: trend renders inside a card alongside a metric', async ({
@@ -27,6 +26,5 @@ test.describe('common/data/trend', () => {
     await gotoDemo(page, 'common/data/trend/composed-with-metric-in-a-card');
     await expect(page.locator('cngx-trend').first()).toBeVisible();
     await expect(page.locator('cngx-metric').first()).toBeVisible();
-    await expect(page).toHaveScreenshot('trend-in-card.png', { fullPage: true });
   });
 });

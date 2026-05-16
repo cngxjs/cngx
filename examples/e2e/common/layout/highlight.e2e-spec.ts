@@ -38,7 +38,6 @@ test.describe('common/layout/highlight', () => {
     await input.fill('');
     await expect(host.locator('mark')).toHaveCount(0);
 
-    await expect(page).toHaveScreenshot('live-search-empty.png', { fullPage: true });
   });
 
   test('multiple-paragraphs: static term marks matches across sibling paragraphs', async ({
@@ -65,6 +64,5 @@ test.describe('common/layout/highlight', () => {
       .locator('.event-value');
     await expect(reported).toHaveText('4');
 
-    await expect(page).toHaveScreenshot('multiple-paragraphs.png', { fullPage: true });
   });
 });

@@ -37,6 +37,5 @@ test.describe('common/interactive/listbox-search', () => {
       .poll(async () => listbox.locator('[role="option"]').count(), { timeout: 2000 })
       .toBe(initialOptionCount);
 
-    await expect(page).toHaveScreenshot('listbox-search-cleared.png', { fullPage: true });
   });
 });

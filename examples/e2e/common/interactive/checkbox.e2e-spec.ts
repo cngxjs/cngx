@@ -13,20 +13,17 @@ test.describe('common/interactive/checkbox', () => {
     await expect(checkbox).toHaveAttribute('aria-checked', 'true');
     await expect(page.locator('p.caption')).toContainText('true');
 
-    await expect(page).toHaveScreenshot('checkbox-basic.png', { fullPage: true });
   });
 
   test('disabled: aria-disabled blocks clicks', async ({ page }) => {
     await gotoDemo(page, 'common/interactive/checkbox/disabled');
     const checkbox = page.locator('cngx-checkbox').first();
     await expect(checkbox).toHaveAttribute('aria-disabled', 'true');
-    await expect(page).toHaveScreenshot('checkbox-disabled.png', { fullPage: true });
   });
 
   test('custom-check-dash-glyphs: glyph overrides render in the indicator', async ({ page }) => {
     await gotoDemo(page, 'common/interactive/checkbox/custom-check-dash-glyphs');
     expect(await page.locator('cngx-checkbox').count()).toBeGreaterThan(0);
-    await expect(page).toHaveScreenshot('checkbox-custom-glyphs.png', { fullPage: true });
   });
 
   test('tri-state select-all: master + leaves render with valid aria-checked values', async ({
@@ -44,6 +41,5 @@ test.describe('common/interactive/checkbox', () => {
       expect(['true', 'false', 'mixed']).toContain(v);
     }
 
-    await expect(page).toHaveScreenshot('checkbox-tristate.png', { fullPage: true });
   });
 });

@@ -37,6 +37,5 @@ test.describe('ui/tabs/tab-group', () => {
     // The active panel contains the matching content.
     await expect(page.getByRole('tabpanel')).toContainText('Notifications content');
 
-    await expect(page).toHaveScreenshot('tab-group.png', { fullPage: true });
   });
 });

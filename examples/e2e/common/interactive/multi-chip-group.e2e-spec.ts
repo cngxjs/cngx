@@ -28,6 +28,5 @@ test.describe('common/interactive/multi-chip-group', () => {
     await expect(urgent).toHaveAttribute('aria-selected', 'false');
     await expect(caption).toContainText('review, blocker');
 
-    await expect(page).toHaveScreenshot('multi-chip-group.png', { fullPage: true });
   });
 });

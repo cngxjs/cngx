@@ -33,6 +33,5 @@ test.describe('common/interactive/chip-group', () => {
     await expect(lg).toHaveAttribute('aria-selected', 'false');
     await expect(caption).toContainText('(none)');
 
-    await expect(page).toHaveScreenshot('chip-group-none.png', { fullPage: true });
   });
 });

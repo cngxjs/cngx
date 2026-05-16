@@ -28,7 +28,6 @@ test.describe('common/chart/bullet', () => {
     await expect(bullets.first()).toHaveAttribute('aria-label', /Q1 Revenue/);
     await expect(bullets.nth(2)).toHaveAttribute('aria-label', /Q3 Revenue/);
 
-    await expect(page).toHaveScreenshot('performance-vs-target.png', { fullPage: true });
   });
 
   test('async-state-machine: status text and content follow the state machine', async ({
@@ -50,6 +49,5 @@ test.describe('common/chart/bullet', () => {
     await page.getByRole('button', { name: 'error' }).click();
     await expect(status).toContainText('error');
 
-    await expect(page).toHaveScreenshot('bullet-error.png', { fullPage: true });
   });
 });

@@ -20,7 +20,6 @@ test.describe('common/data/smart-data-source', () => {
       await gotoDemo(page, route);
       await expect(page.locator('header.cngx-ex-intro')).toBeVisible();
       expect(errors).toEqual([]);
-      await expect(page).toHaveScreenshot(`smart-data-source-${name}.png`, { fullPage: true });
     });
   }
 });

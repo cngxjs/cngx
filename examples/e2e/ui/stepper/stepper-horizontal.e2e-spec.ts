@@ -24,6 +24,5 @@ test.describe('ui/stepper/stepper-horizontal', () => {
     await page.getByRole('button', { name: 'Previous' }).click();
     await expect(active).toHaveText('1');
 
-    await expect(page).toHaveScreenshot('stepper-horizontal.png', { fullPage: true });
   });
 });

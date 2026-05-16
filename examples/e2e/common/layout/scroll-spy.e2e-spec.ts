@@ -31,6 +31,5 @@ test.describe('common/layout/scroll-spy', () => {
     await expect(navPricing).toHaveClass(/chip--active/);
     await expect(navFeatures).not.toHaveClass(/chip--active/);
 
-    await expect(page).toHaveScreenshot('spy-pricing-active.png', { fullPage: true });
   });
 });

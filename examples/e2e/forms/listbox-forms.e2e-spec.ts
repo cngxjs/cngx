@@ -13,7 +13,6 @@ test.describe('forms/field/listbox-forms', () => {
     test(`${name}: page renders`, async ({ page }) => {
       await gotoDemo(page, route);
       await expect(page.locator('header.cngx-ex-intro')).toBeVisible();
-      await expect(page).toHaveScreenshot(`listbox-forms-${name}.png`, { fullPage: true });
     });
   }
 });

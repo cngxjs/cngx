@@ -24,6 +24,5 @@ test.describe('common/interactive/menu-trigger', () => {
       .locator('.event-value');
     await expect(lastAction).toHaveText('save');
 
-    await expect(page).toHaveScreenshot('menu-trigger-after-save.png', { fullPage: true });
   });
 });

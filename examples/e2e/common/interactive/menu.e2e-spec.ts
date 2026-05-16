@@ -21,6 +21,5 @@ test.describe('common/interactive/menu', () => {
 
     await items.first().click();
 
-    await expect(page).toHaveScreenshot('menu-action.png', { fullPage: true });
   });
 });

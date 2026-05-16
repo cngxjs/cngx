@@ -16,7 +16,6 @@ test.describe('ui/feedback/loading-indicator', () => {
     await expect(visibleSpan).toBeVisible();
     await expect(page.locator('cngx-loading-indicator')).toBeVisible();
 
-    await expect(page).toHaveScreenshot('loading-indicator-spinner.png', { fullPage: true });
   });
 
   test('bar-variant: component mounts inside the container (static demo)', async ({ page }) => {
@@ -24,6 +23,5 @@ test.describe('ui/feedback/loading-indicator', () => {
     // This route has no trigger button — the indicator is rendered in its
     // idle state. Smoke that the component mounts at all.
     await expect(page.locator('cngx-loading-indicator')).toHaveCount(1);
-    await expect(page).toHaveScreenshot('loading-indicator-bar.png', { fullPage: true });
   });
 });

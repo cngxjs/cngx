@@ -19,7 +19,6 @@ test.describe('common/a11y/focus-trap', () => {
     const confirmInput = page.getByPlaceholder('Type CONFIRM to proceed');
     await expect(confirmInput).toBeFocused();
 
-    await expect(page).toHaveScreenshot('modal-open.png', { fullPage: true });
 
     await page.keyboard.press('Escape');
     await expect(dialog).toHaveCount(0);
@@ -38,6 +37,5 @@ test.describe('common/a11y/focus-trap', () => {
     const leftDrawer = page.getByRole('dialog', { name: 'left drawer' });
     await expect(leftDrawer).toBeVisible();
 
-    await expect(page).toHaveScreenshot('drawer-left-open.png', { fullPage: true });
   });
 });

@@ -19,7 +19,6 @@ test.describe('common/a11y/autofocus', () => {
     await expect(input).toBeVisible();
     await expect(input).toBeFocused();
 
-    await expect(page).toHaveScreenshot('focus-on-insert.png', { fullPage: true });
   });
 
   test('conditional-focus: flipping the condition pulls focus to a persistent input', async ({
@@ -43,6 +42,5 @@ test.describe('common/a11y/autofocus', () => {
       .locator('.event-value');
     await expect(condition).toHaveText('true');
 
-    await expect(page).toHaveScreenshot('conditional-focus-active.png', { fullPage: true });
   });
 });

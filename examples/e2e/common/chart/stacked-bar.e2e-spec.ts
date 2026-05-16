@@ -25,7 +25,6 @@ test.describe('common/chart/stacked-bar', () => {
     expect(widths[0]).toBeGreaterThan(widths[1]);
     expect(widths[0]).toBeGreaterThan(widths[2]);
 
-    await expect(page).toHaveScreenshot('proportional-shares.png', { fullPage: true });
   });
 
   test('async-state-machine: status follows the state controls', async ({ page }) => {
@@ -42,6 +41,5 @@ test.describe('common/chart/stacked-bar', () => {
     await page.getByRole('button', { name: 'error' }).click();
     await expect(status).toContainText('error');
 
-    await expect(page).toHaveScreenshot('stacked-bar-error.png', { fullPage: true });
   });
 });

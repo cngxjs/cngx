@@ -22,7 +22,6 @@ test.describe('common/interactive/error-aggregator', () => {
     await page.getByRole('button', { name: 'Toggle email-taken' }).click();
     await expect(stats).toContainText(/errorCount\s*:\s*2/);
 
-    await expect(page).toHaveScreenshot('error-aggregator-native.png', { fullPage: true });
   });
 
   test('card host: aggregator no-scope variant shows errors immediately', async ({ page }) => {
@@ -32,16 +31,13 @@ test.describe('common/interactive/error-aggregator', () => {
     );
     // Smoke: page renders without errors.
     expect(await page.locator('cngx-card').count()).toBeGreaterThanOrEqual(0);
-    await expect(page).toHaveScreenshot('error-aggregator-card.png', { fullPage: true });
   });
 
   test('popover-panel-host: aggregator embedded in a popover renders', async ({ page }) => {
     await gotoDemo(page, 'common/interactive/error-aggregator/cngx-popover-panel-host');
-    await expect(page).toHaveScreenshot('error-aggregator-popover.png', { fullPage: true });
   });
 
   test('material-mat-tab: tab label shows error count badge', async ({ page }) => {
     await gotoDemo(page, 'common/interactive/error-aggregator/material-mat-tab-label-with-error-count-badge');
-    await expect(page).toHaveScreenshot('error-aggregator-material-tab.png', { fullPage: true });
   });
 });

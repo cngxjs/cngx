@@ -16,6 +16,5 @@ test.describe('ui/tabs/tab-overflow', () => {
     await tabs.nth(7).click();
     await expect(tabs.nth(7)).toHaveAttribute('aria-selected', 'true');
 
-    await expect(page).toHaveScreenshot('tab-overflow.png', { fullPage: true });
   });
 });

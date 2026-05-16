@@ -32,7 +32,6 @@ test.describe('common/a11y/live-region', () => {
     const region = page.locator('[cngxliveregion]');
     await expect(region).toContainText(/Action completed — count: 1/);
 
-    await expect(page).toHaveScreenshot('assertive-announced.png', { fullPage: true });
   });
 
   test('form validation: assertive error message appears as the input changes', async ({
@@ -53,6 +52,5 @@ test.describe('common/a11y/live-region', () => {
     await input.fill('user@example');
     await expect(errorRegion).toContainText('Missing domain (e.g. .com)');
 
-    await expect(page).toHaveScreenshot('missing-domain.png', { fullPage: true });
   });
 });

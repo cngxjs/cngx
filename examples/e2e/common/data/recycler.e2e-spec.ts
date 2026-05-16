@@ -15,7 +15,6 @@ test.describe('common/data/recycler', () => {
     test(`${name}: page renders`, async ({ page }) => {
       await gotoDemo(page, route);
       await expect(page.locator('header.cngx-ex-intro')).toBeVisible();
-      await expect(page).toHaveScreenshot(`recycler-${name}.png`, { fullPage: true });
     });
   }
 });

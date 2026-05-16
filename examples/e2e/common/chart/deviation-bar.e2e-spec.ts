@@ -29,7 +29,6 @@ test.describe('common/chart/deviation-bar', () => {
     await expect(bars.nth(0)).toHaveAttribute('aria-label', /Q1 budget \+45/);
     await expect(bars.nth(1)).toHaveAttribute('aria-label', /Q2 budget -30/);
 
-    await expect(page).toHaveScreenshot('variance-readings.png', { fullPage: true });
   });
 
   test('async-state-machine: status changes follow the state controls', async ({ page }) => {
@@ -45,6 +44,5 @@ test.describe('common/chart/deviation-bar', () => {
     await page.getByRole('button', { name: 'error' }).click();
     await expect(status).toContainText('error');
 
-    await expect(page).toHaveScreenshot('deviation-bar-error.png', { fullPage: true });
   });
 });

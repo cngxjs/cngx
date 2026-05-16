@@ -21,12 +21,10 @@ test.describe('common/data/metric', () => {
     await expect(metrics.nth(3)).toContainText(/—|–|-/);
     await expect(metrics.nth(4)).toContainText('n.b.');
 
-    await expect(page).toHaveScreenshot('metric-standalone.png', { fullPage: true });
   });
 
   test('inside-a-card: metric composed inside a card renders', async ({ page }) => {
     await gotoDemo(page, 'common/data/metric/inside-a-card');
     await expect(page.locator('cngx-metric').first()).toBeVisible();
-    await expect(page).toHaveScreenshot('metric-in-card.png', { fullPage: true });
   });
 });

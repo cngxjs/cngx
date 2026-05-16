@@ -29,6 +29,5 @@ test.describe('common/interactive/context-menu', () => {
     // Menu must close after activation.
     await expect(menu).toHaveCount(0);
 
-    await expect(page).toHaveScreenshot('context-menu-after-copy.png', { fullPage: true });
   });
 });

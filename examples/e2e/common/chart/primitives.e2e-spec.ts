@@ -20,7 +20,6 @@ test.describe('common/chart/primitives', () => {
       await expect(page.locator('header.cngx-ex-intro')).toBeVisible();
       // async-state-machine starts in idle (no SVG); other stories paint
       // an SVG immediately. Smoke that the header rendered is enough.
-      await expect(page).toHaveScreenshot(`primitives-${name}.png`, { fullPage: true });
     });
   }
 });

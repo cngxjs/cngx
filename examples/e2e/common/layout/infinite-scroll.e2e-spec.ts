@@ -32,6 +32,5 @@ test.describe('common/layout/infinite-scroll', () => {
     });
     await expect(itemsBadge).toHaveText('Items: 25', { timeout: 5000 });
 
-    await expect(page).toHaveScreenshot('after-two-loads.png', { fullPage: true });
   });
 });

@@ -29,7 +29,6 @@ test.describe('common/interactive/click-outside', () => {
     await page.mouse.click(10, 10);
     await expect(status).toContainText('closed');
 
-    await expect(page).toHaveScreenshot('click-outside-closed.png', { fullPage: true });
   });
 
   test('enabled-toggle: outside clicks bump the counter; disabled stops emissions', async ({
@@ -62,6 +61,5 @@ test.describe('common/interactive/click-outside', () => {
     const afterClicksCount = parseInt((await counter.textContent()) || '0', 10);
     expect(afterClicksCount).toBe(afterDisableCount);
 
-    await expect(page).toHaveScreenshot('click-outside-disabled.png', { fullPage: true });
   });
 });

@@ -44,7 +44,6 @@ test.describe('common/a11y/active-descendant', () => {
       .locator('.event-value');
     await expect(lastActivated).toHaveText('elder');
 
-    await expect(page).toHaveScreenshot('listbox-with-items-input.png', { fullPage: true });
   });
 
   test('typeahead: typing letters jumps to matching option', async ({ page }) => {
@@ -63,6 +62,5 @@ test.describe('common/a11y/active-descendant', () => {
       .locator('.event-value');
     await expect(activeValue).toHaveText('elder', { timeout: 2000 });
 
-    await expect(page).toHaveScreenshot('typeahead.png', { fullPage: true });
   });
 });

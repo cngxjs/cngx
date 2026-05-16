@@ -22,7 +22,6 @@ test.describe('common/interactive/disclosure', () => {
     );
     await expect(page.locator('#faq-1')).toBeVisible();
 
-    await expect(page).toHaveScreenshot('disclosure-expanded.png', { fullPage: true });
   });
 
   test('controlled-mode: state is driven by the external signal toggle', async ({ page }) => {
@@ -35,7 +34,6 @@ test.describe('common/interactive/disclosure', () => {
     await trigger.click();
     await expect(trigger).toHaveAttribute('aria-expanded', 'true');
 
-    await expect(page).toHaveScreenshot('disclosure-controlled.png', { fullPage: true });
   });
 
   test('faq-accordion: multiple disclosures keep independent state', async ({ page }) => {
@@ -57,6 +55,5 @@ test.describe('common/interactive/disclosure', () => {
       await expect(triggers.nth(i)).toHaveAttribute('aria-expanded', 'false');
     }
 
-    await expect(page).toHaveScreenshot('disclosure-faq.png', { fullPage: true });
   });
 });

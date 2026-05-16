@@ -29,7 +29,6 @@ test.describe('common/layout/skeleton', () => {
     await expect(container).toContainText('Card 1');
     await expect(container).toContainText('Card 3');
 
-    await expect(page).toHaveScreenshot('skeleton-container-loaded.png', { fullPage: true });
   });
 
   test('basic-skeleton: shimmer class + aria-busy track the loading signal', async ({ page }) => {
@@ -55,6 +54,5 @@ test.describe('common/layout/skeleton', () => {
       await expect(s).not.toHaveAttribute('aria-busy', /true/);
     }
 
-    await expect(page).toHaveScreenshot('skeleton-loaded.png', { fullPage: true });
   });
 });

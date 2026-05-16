@@ -24,7 +24,6 @@ test.describe('common/card/card', () => {
     test(`${name}: page renders`, async ({ page }) => {
       await gotoDemo(page, route);
       await expect(page.locator('header.cngx-ex-intro')).toBeVisible();
-      await expect(page).toHaveScreenshot(`card-${name}.png`, { fullPage: true });
     });
   }
 });

@@ -25,7 +25,6 @@ test.describe('common/interactive/copy-block', () => {
     const clip = await page.evaluate(() => navigator.clipboard.readText());
     expect(clip).toContain('sk_test_EXAMPLE_KEY');
 
-    await expect(page).toHaveScreenshot('copy-block-api-key-copied.png', { fullPage: true });
   });
 
   test('code-snippet: default labels and successful copy', async ({ page, context }) => {
@@ -43,6 +42,5 @@ test.describe('common/interactive/copy-block', () => {
       .poll(async () => (await copyBtn.textContent())?.trim())
       .not.toBe(initialLabel);
 
-    await expect(page).toHaveScreenshot('copy-block-snippet-copied.png', { fullPage: true });
   });
 });

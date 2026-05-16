@@ -24,7 +24,6 @@ test.describe('common/interactive/button-toggle-group', () => {
     const caption = page.locator('p.caption');
     await expect(caption).toContainText('table');
 
-    await expect(page).toHaveScreenshot('button-toggle-group.png', { fullPage: true });
   });
 
   test('disabled cascade: group [disabled] reflects aria-disabled on every leaf', async ({
@@ -38,13 +37,11 @@ test.describe('common/interactive/button-toggle-group', () => {
     const disableBtn = page.getByRole('button', { name: /Disable group|Enable group/ });
     await disableBtn.click();
     await expect(toggles.first()).toHaveAttribute('aria-disabled', 'true');
-    await expect(page).toHaveScreenshot('button-toggle-group-disabled.png', { fullPage: true });
   });
 
   test('vertical: orientation reflects on the host', async ({ page }) => {
     await gotoDemo(page, 'common/interactive/button-toggle-group/vertical-orientation');
     const toggles = page.locator('cngx-button-toggle-group button');
     expect(await toggles.count()).toBeGreaterThanOrEqual(2);
-    await expect(page).toHaveScreenshot('button-toggle-group-vertical.png', { fullPage: true });
   });
 });

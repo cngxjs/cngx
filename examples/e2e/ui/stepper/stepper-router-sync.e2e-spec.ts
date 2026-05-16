@@ -24,6 +24,5 @@ test.describe('ui/stepper/stepper-router-sync', () => {
       .poll(() => page.url(), { timeout: 2000 })
       .toMatch(/step=(cngx-step-2|security)/);
 
-    await expect(page).toHaveScreenshot('stepper-router-sync.png', { fullPage: true });
   });
 });

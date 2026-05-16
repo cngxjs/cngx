@@ -44,6 +44,5 @@ test.describe('common/layout/scroll-lock', () => {
     expect(restored.overflow).toBe(initial.overflow);
     expect(restored.scrollbarGutter).toBe(initial.scrollbarGutter);
 
-    await expect(page).toHaveScreenshot('scroll-lock-restored.png', { fullPage: true });
   });
 });

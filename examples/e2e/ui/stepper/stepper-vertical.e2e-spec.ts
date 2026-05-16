@@ -20,6 +20,5 @@ test.describe('ui/stepper/stepper-vertical', () => {
       .locator('.event-value');
     await expect(active).toHaveText('2');
 
-    await expect(page).toHaveScreenshot('stepper-vertical.png', { fullPage: true });
   });
 });

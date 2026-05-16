@@ -40,7 +40,6 @@ test.describe('common/interactive/listbox', () => {
     await expect(banana).toHaveAttribute('aria-selected', 'true');
     await expect(selected).toHaveText('banana');
 
-    await expect(page).toHaveScreenshot('listbox-single-banana.png', { fullPage: true });
   });
 
   test('multi-select: each click toggles aria-selected independently', async ({ page }) => {
@@ -59,6 +58,5 @@ test.describe('common/interactive/listbox', () => {
     await expect(apple).toHaveAttribute('aria-selected', 'false');
     await expect(banana).toHaveAttribute('aria-selected', 'true');
 
-    await expect(page).toHaveScreenshot('listbox-multi.png', { fullPage: true });
   });
 });

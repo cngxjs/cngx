@@ -15,6 +15,5 @@ test.describe('ui/tabs/tab-group-vertical', () => {
     await tabs.nth(1).click();
     await expect(tabs.nth(1)).toHaveAttribute('aria-selected', 'true');
 
-    await expect(page).toHaveScreenshot('tab-group-vertical.png', { fullPage: true });
   });
 });

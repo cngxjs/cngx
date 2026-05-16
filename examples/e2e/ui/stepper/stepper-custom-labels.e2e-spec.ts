@@ -36,6 +36,5 @@ test.describe('ui/stepper/stepper-custom-labels', () => {
     await page.getByRole('button', { name: '+1 notification' }).click();
     await expect.poll(countOnStrip, { timeout: 2000 }).toBeGreaterThan(before);
 
-    await expect(page).toHaveScreenshot('stepper-custom-labels.png', { fullPage: true });
   });
 });

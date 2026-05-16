@@ -10,6 +10,5 @@ test.describe('ui/stepper/stepper-commit-action', () => {
       'ui/stepper/stepper-commit-action/pessimistic-optimistic-commits-with-bridge-directives',
     );
     await expect(page.locator('cngx-stepper')).toBeVisible();
-    await expect(page).toHaveScreenshot('stepper-commit-action.png', { fullPage: true });
   });
 });

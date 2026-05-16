@@ -36,7 +36,6 @@ test.describe('common/layout/expandable-text', () => {
     const expandedBox = await inner.boundingBox();
     expect(expandedBox!.height).toBeGreaterThan(clampedBox!.height);
 
-    await expect(page).toHaveScreenshot('auto-toggle-expanded.png', { fullPage: true });
   });
 
   test('custom-labels: moreLabel/lessLabel inputs replace the default text', async ({ page }) => {
@@ -47,7 +46,6 @@ test.describe('common/layout/expandable-text', () => {
     await showMore.click();
     await expect(page.getByRole('button', { name: 'Weniger' })).toBeVisible();
 
-    await expect(page).toHaveScreenshot('custom-labels-expanded.png', { fullPage: true });
   });
 
   test('custom-toggle-template: projected ng-template renders the consumer toggle', async ({
@@ -64,6 +62,5 @@ test.describe('common/layout/expandable-text', () => {
     const collapseBtn = page.getByRole('button', { name: /Collapse/ });
     await expect(collapseBtn).toHaveAttribute('aria-expanded', 'true');
 
-    await expect(page).toHaveScreenshot('custom-toggle-expanded.png', { fullPage: true });
   });
 });

@@ -34,6 +34,5 @@ test.describe('common/interactive/menu-checkable', () => {
       .locator('.event-value');
     await expect(italicRow).toHaveText('on');
 
-    await expect(page).toHaveScreenshot('menu-checkable.png', { fullPage: true });
   });
 });

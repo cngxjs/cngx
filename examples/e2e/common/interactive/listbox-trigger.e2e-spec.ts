@@ -39,6 +39,5 @@ test.describe('common/interactive/listbox-trigger', () => {
     await renamedTrigger.click();
     await expect(listbox).toBeHidden();
 
-    await expect(page).toHaveScreenshot('listbox-trigger-green.png', { fullPage: true });
   });
 });

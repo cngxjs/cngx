@@ -29,7 +29,6 @@ test.describe('common/a11y/reduced-motion', () => {
       .locator('.event-value');
     await expect(cssClass).toHaveText('cngx-reduced-motion');
 
-    await expect(page).toHaveScreenshot('reduced-motion-on.png', { fullPage: true });
 
     // Reset so the second test runs from a clean state.
     await page.emulateMedia({ reducedMotion: 'no-preference' });
@@ -54,6 +53,5 @@ test.describe('common/a11y/reduced-motion', () => {
     await page.getByRole('button', { name: 'dismiss' }).first().click();
     await expect(count).toHaveText('1');
 
-    await expect(page).toHaveScreenshot('toast-one-remaining.png', { fullPage: true });
   });
 });

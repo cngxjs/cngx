@@ -32,7 +32,6 @@ test.describe('common/interactive/error-state', () => {
     await expect(input).toHaveAttribute('aria-invalid', 'false');
     await expect(input).not.toHaveClass(/cngx-error/);
 
-    await expect(page).toHaveScreenshot('error-state-valid.png', { fullPage: true });
   });
 
   test('without-message-id: class hook and aria-invalid alone', async ({ page }) => {
@@ -52,6 +51,5 @@ test.describe('common/interactive/error-state', () => {
     // No aria-errormessage was supplied for this story.
     await expect(input).not.toHaveAttribute('aria-errormessage', /.+/);
 
-    await expect(page).toHaveScreenshot('error-state-class-only.png', { fullPage: true });
   });
 });

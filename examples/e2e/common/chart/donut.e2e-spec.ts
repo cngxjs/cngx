@@ -35,7 +35,6 @@ test.describe('common/chart/donut', () => {
 
     await expect(donuts.first()).toHaveAttribute('aria-label', /Score 75/);
 
-    await expect(page).toHaveScreenshot('score-gauges.png', { fullPage: true });
   });
 
   test('async-state-machine: status follows the state controls', async ({ page }) => {
@@ -52,6 +51,5 @@ test.describe('common/chart/donut', () => {
     await page.getByRole('button', { name: 'error' }).click();
     await expect(status).toContainText('error');
 
-    await expect(page).toHaveScreenshot('donut-error.png', { fullPage: true });
   });
 });

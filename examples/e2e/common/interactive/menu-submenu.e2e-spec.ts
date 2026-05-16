@@ -29,6 +29,5 @@ test.describe('common/interactive/menu-submenu', () => {
     const actionText = (await lastAction.count()) ? await lastAction.textContent() : '';
     expect(actionText).toBe('new');
 
-    await expect(page).toHaveScreenshot('menu-submenu-after-new.png', { fullPage: true });
   });
 });

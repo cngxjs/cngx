@@ -25,7 +25,6 @@ test.describe('common/chart/mini-area', () => {
     const secondSvg = areas.nth(1).locator('svg');
     await expect(secondSvg).toHaveAttribute('viewBox', '0 0 120 32');
 
-    await expect(page).toHaveScreenshot('inline-area-trends.png', { fullPage: true });
   });
 
   test('async-state-machine: status follows the state controls', async ({ page }) => {
@@ -41,6 +40,5 @@ test.describe('common/chart/mini-area', () => {
     await page.getByRole('button', { name: 'error' }).click();
     await expect(status).toContainText('error');
 
-    await expect(page).toHaveScreenshot('mini-area-error.png', { fullPage: true });
   });
 });

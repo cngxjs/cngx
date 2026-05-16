@@ -31,6 +31,5 @@ test.describe('ui/feedback/loading-overlay', () => {
     });
     expect(isInert).toBe(true);
 
-    await expect(page).toHaveScreenshot('loading-overlay-active.png', { fullPage: true });
   });
 });

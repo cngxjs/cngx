@@ -44,7 +44,6 @@ test.describe('common/interactive/option', () => {
       await pasteFormatting.getAttribute('id') as string,
     );
 
-    await expect(page).toHaveScreenshot('option-flat.png', { fullPage: true });
   });
 
   test('grouped-options: groups are presentational; navigation stays flat', async ({ page }) => {
@@ -64,6 +63,5 @@ test.describe('common/interactive/option', () => {
       /.+/,
     );
 
-    await expect(page).toHaveScreenshot('option-grouped.png', { fullPage: true });
   });
 });

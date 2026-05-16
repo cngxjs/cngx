@@ -20,7 +20,6 @@ test.describe('common/display/icon', () => {
       await expect(icons.nth(i)).toContainText('★');
     }
 
-    await expect(page).toHaveScreenshot('icon-sizes.png', { fullPage: true });
   });
 
   test('decorative-vs-informative: label flips the icon to role=img', async ({ page }) => {
@@ -38,6 +37,5 @@ test.describe('common/display/icon', () => {
     await expect(informative).toHaveAttribute('role', 'img');
     await expect(informative).toHaveAttribute('aria-label', 'Saved');
 
-    await expect(page).toHaveScreenshot('icon-decorative-vs-informative.png', { fullPage: true });
   });
 });

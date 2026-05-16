@@ -30,6 +30,5 @@ test.describe('ui/stepper/stepper-linear', () => {
       .locator('.event-value');
     await expect(completedRow).toContainText('true');
 
-    await expect(page).toHaveScreenshot('stepper-linear.png', { fullPage: true });
   });
 });

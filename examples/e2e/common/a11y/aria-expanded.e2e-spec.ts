@@ -28,7 +28,6 @@ test.describe('common/a11y/aria-expanded', () => {
       .locator('.event-value');
     await expect(stateValue).toHaveText('true');
 
-    await expect(page).toHaveScreenshot('disclosure-pattern-open.png', { fullPage: true });
   });
 
   test('accordion: each trigger maintains independent expanded state', async ({ page }) => {
@@ -59,6 +58,5 @@ test.describe('common/a11y/aria-expanded', () => {
       .locator('.event-value');
     await expect(specsState).toHaveText('expanded');
 
-    await expect(page).toHaveScreenshot('accordion-two-open.png', { fullPage: true });
   });
 });

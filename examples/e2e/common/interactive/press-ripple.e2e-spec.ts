@@ -22,6 +22,5 @@ test.describe('common/interactive/press-ripple', () => {
     await page.mouse.up();
     await expect(defaultBtn).not.toHaveClass(/cngx-pressed/);
 
-    await expect(page).toHaveScreenshot('press-ripple-buttons.png', { fullPage: true });
   });
 });

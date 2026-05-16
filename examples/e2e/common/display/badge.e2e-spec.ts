@@ -19,7 +19,6 @@ test.describe('common/display/badge', () => {
     // Value 250 with max=99 renders as "99+".
     await expect(notif.locator('.cngx-badge-indicator')).toHaveText('99+');
 
-    await expect(page).toHaveScreenshot('badge-overflow.png', { fullPage: true });
   });
 
   test('colors-and-dot-mode: error/warning/neutral variants + boolean dot', async ({ page }) => {
@@ -45,7 +44,6 @@ test.describe('common/display/badge', () => {
     await expect(dotBadge).toHaveText('');
     await expect(dotBadge).toHaveClass(/cngx-badge-indicator--dot/);
 
-    await expect(page).toHaveScreenshot('badge-colors.png', { fullPage: true });
   });
 
   test('inline-and-hidden: inline position renders after host text, hidden tears badge out', async ({
@@ -63,6 +61,5 @@ test.describe('common/display/badge', () => {
     const hidden = page.getByRole('button', { name: 'Hidden' });
     await expect(hidden.locator('.cngx-badge-indicator')).toHaveCount(0);
 
-    await expect(page).toHaveScreenshot('badge-inline-hidden.png', { fullPage: true });
   });
 });

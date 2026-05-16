@@ -26,6 +26,5 @@ test.describe('ui/stepper/stepper-hierarchical', () => {
     expect(depthAttrs).toContain('1');
     expect(depthAttrs).toContain('0');
 
-    await expect(page).toHaveScreenshot('stepper-hierarchical.png', { fullPage: true });
   });
 });

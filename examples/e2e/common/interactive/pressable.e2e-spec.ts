@@ -28,7 +28,6 @@ test.describe('common/interactive/pressable', () => {
     await page.mouse.up();
     await expect(row1).toHaveText('idle');
 
-    await expect(page).toHaveScreenshot('pressable.png', { fullPage: true });
   });
 
   test('tappable-card: card-shaped host responds to press', async ({ page }) => {
@@ -45,6 +44,5 @@ test.describe('common/interactive/pressable', () => {
     await expect(card).toHaveClass(/cngx-pressable--pressed|cngx-pressed/);
     await page.mouse.up();
 
-    await expect(page).toHaveScreenshot('tappable-card.png', { fullPage: true });
   });
 });

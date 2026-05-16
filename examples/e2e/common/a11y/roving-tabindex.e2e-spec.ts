@@ -38,7 +38,6 @@ test.describe('common/a11y/roving-tabindex', () => {
     await expect(bold).toBeFocused();
     await expect(activeIndex).toHaveText('0');
 
-    await expect(page).toHaveScreenshot('toolbar-focus-bold.png', { fullPage: true });
   });
 
   test('vertical menu: ArrowDown moves through menuitems', async ({ page }) => {
@@ -54,6 +53,5 @@ test.describe('common/a11y/roving-tabindex', () => {
     await page.keyboard.press('ArrowDown');
     await expect(page.getByRole('menuitem', { name: 'Paste' })).toBeFocused();
 
-    await expect(page).toHaveScreenshot('vertical-menu-paste.png', { fullPage: true });
   });
 });

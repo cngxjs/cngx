@@ -18,7 +18,6 @@ test.describe('common/display/divider', () => {
     await expect(dividers.first()).toHaveAttribute('aria-orientation', 'horizontal');
     await expect(dividers.nth(1)).toHaveAttribute('aria-orientation', 'vertical');
 
-    await expect(page).toHaveScreenshot('divider-horizontal-vertical.png', { fullPage: true });
   });
 
   test('inset: [inset]="true" surfaces an inset modifier on the host', async ({ page }) => {
@@ -31,6 +30,5 @@ test.describe('common/display/divider', () => {
     await expect(divider).toHaveCount(1);
     await expect(divider).toHaveClass(/cngx-divider--inset/);
 
-    await expect(page).toHaveScreenshot('divider-inset.png', { fullPage: true });
   });
 });

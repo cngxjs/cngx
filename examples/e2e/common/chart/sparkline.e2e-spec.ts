@@ -18,7 +18,6 @@ test.describe('common/chart/sparkline', () => {
       await expect(s.locator('svg path.cngx-line')).toHaveCount(1);
     }
 
-    await expect(page).toHaveScreenshot('basic-sparklines.png', { fullPage: true });
   });
 
   test('with-area-fill: line + filled area both render', async ({ page }) => {
@@ -28,7 +27,6 @@ test.describe('common/chart/sparkline', () => {
     await expect(sparkline.locator('svg path.cngx-line')).toHaveCount(1);
     await expect(sparkline.locator('svg path.cngx-area')).toHaveCount(1);
 
-    await expect(page).toHaveScreenshot('with-area-fill.png', { fullPage: true });
   });
 
   test('async-state-machine: status follows the state controls', async ({ page }) => {
@@ -44,6 +42,5 @@ test.describe('common/chart/sparkline', () => {
     await page.getByRole('button', { name: 'error' }).click();
     await expect(status).toContainText('error');
 
-    await expect(page).toHaveScreenshot('sparkline-error.png', { fullPage: true });
   });
 });

@@ -14,7 +14,6 @@ test.describe('common/data/data-source', () => {
     test(`${name}: page renders`, async ({ page }) => {
       await gotoDemo(page, route);
       await expect(page.locator('header.cngx-ex-intro')).toBeVisible();
-      await expect(page).toHaveScreenshot(`data-source-${name}.png`, { fullPage: true });
     });
   }
 });

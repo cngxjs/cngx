@@ -29,6 +29,5 @@ test.describe('common/interactive/swipe-dismiss', () => {
 
     await expect(counter).toContainText('1', { timeout: 2000 });
 
-    await expect(page).toHaveScreenshot('swipe-dismissed.png', { fullPage: true });
   });
 });

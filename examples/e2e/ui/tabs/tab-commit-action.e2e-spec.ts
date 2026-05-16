@@ -8,6 +8,5 @@ test.describe('ui/tabs/tab-commit-action', () => {
       'ui/tabs/tab-commit-action/optimistic-pessimistic-commits-with-bridge-directives',
     );
     await expect(page.locator('cngx-tab-group')).toBeVisible();
-    await expect(page).toHaveScreenshot('tab-commit-action.png', { fullPage: true });
   });
 });

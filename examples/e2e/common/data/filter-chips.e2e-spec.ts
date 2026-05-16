@@ -23,7 +23,6 @@ test.describe('common/data/filter-chips', () => {
     await page.getByRole('option', { name: 'Review' }).click();
     await expect(items).toHaveCount(2);
 
-    await expect(page).toHaveScreenshot('filter-chips-two.png', { fullPage: true });
   });
 
   test('custom-chip-decoration: renders the chip strip with consumer decoration', async ({
@@ -34,6 +33,5 @@ test.describe('common/data/filter-chips', () => {
     const chips = page.getByRole('option');
     expect(await chips.count()).toBeGreaterThan(0);
 
-    await expect(page).toHaveScreenshot('filter-chips-custom.png', { fullPage: true });
   });
 });

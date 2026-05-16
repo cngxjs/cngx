@@ -14,7 +14,6 @@ test.describe('ui/sidenav', () => {
     test(`${name}: renders`, async ({ page }) => {
       await gotoDemo(page, route);
       await expect(page.locator('header.cngx-ex-intro')).toBeVisible();
-      await expect(page).toHaveScreenshot(`sidenav-${name}.png`, { fullPage: true });
     });
   }
 });

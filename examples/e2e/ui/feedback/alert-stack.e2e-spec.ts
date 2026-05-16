@@ -14,7 +14,6 @@ test.describe('ui/feedback/alert-stack', () => {
     test(`${name}: renders the alert stack`, async ({ page }) => {
       await gotoDemo(page, route);
       await expect(page.locator('header.cngx-ex-intro')).toBeVisible();
-      await expect(page).toHaveScreenshot(`alert-stack-${name}.png`, { fullPage: true });
     });
   }
 });

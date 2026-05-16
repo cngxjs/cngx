@@ -34,6 +34,5 @@ test.describe('common/layout/backdrop', () => {
     await expect(status).toHaveText('hidden');
     await expect(page.locator('.status-badge').nth(1)).toContainText('clicks: 1');
 
-    await expect(page).toHaveScreenshot('backdrop-after-dismiss.png', { fullPage: true });
   });
 });

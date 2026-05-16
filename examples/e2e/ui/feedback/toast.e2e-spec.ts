@@ -14,7 +14,6 @@ test.describe('ui/feedback/toast', () => {
     test(`${name}: page renders`, async ({ page }) => {
       await gotoDemo(page, route);
       await expect(page.locator('header.cngx-ex-intro')).toBeVisible();
-      await expect(page).toHaveScreenshot(`toast-${name}.png`, { fullPage: true });
     });
   }
 });

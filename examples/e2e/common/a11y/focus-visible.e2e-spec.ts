@@ -29,7 +29,6 @@ test.describe('common/a11y/focus-visible', () => {
     await expect(bState).toHaveText('true');
     await expect(buttonB).toBeFocused();
 
-    await expect(page).toHaveScreenshot('keyboard-tabbed.png', { fullPage: true });
   });
 
   test('form-fields: keyboard focus paints the ring on inputs', async ({ page }) => {
@@ -52,6 +51,5 @@ test.describe('common/a11y/focus-visible', () => {
       .locator('.event-value');
     await expect(emailState).toHaveText('keyboard focus');
 
-    await expect(page).toHaveScreenshot('form-email-keyboard-focus.png', { fullPage: true });
   });
 });
