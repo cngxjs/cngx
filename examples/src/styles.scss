@@ -14,6 +14,10 @@
 @import '../../projects/core/theming/reset.css';
 @import '../../projects/core/theming/base.css';
 
+// Component-Theming-Imports — opt-in per cngx-Component (Phase 3 Migration).
+// Each component lib ships its default styling at theming/components/.
+@import '../../projects/common/theming/components/cngx-backdrop.css';
+
 :root {
   // Pin the UA color-scheme to match the explicit theme so native form
   // controls / scrollbars / details disclosure don't flip with the OS
