@@ -13,12 +13,13 @@ test.describe('common/interactive/error-aggregator', () => {
     );
 
     const stats = page.locator('pre').first();
-    await expect(stats).toContainText(/errorCount\s*:\s*0/);
+    // Initial: emailFormatBad=true, passwordWeak=true → errorCount=2.
+    await expect(stats).toContainText(/errorCount\s*:\s*2/);
 
+    // Toggling email-format off should drop the count.
     await page.getByRole('button', { name: 'Toggle email-format' }).click();
     await expect(stats).toContainText(/errorCount\s*:\s*1/);
-
-    await page.getByRole('button', { name: 'Toggle password-weak' }).click();
+    await page.getByRole('button', { name: 'Toggle email-taken' }).click();
     await expect(stats).toContainText(/errorCount\s*:\s*2/);
 
     await expect(page).toHaveScreenshot('error-aggregator-native.png', { fullPage: true });
