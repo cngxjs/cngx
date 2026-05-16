@@ -46,10 +46,14 @@
   @property --cngx-color-warning { syntax: '<color>'; inherits: true; initial-value: oklch(0.72 0.15 75); }
   @property --cngx-color-info    { syntax: '<color>'; inherits: true; initial-value: oklch(0.65 0.12 240); }
 
-  /* Typography */
-  @property --cngx-font-size-sm     { syntax: '<length>'; inherits: false; initial-value: 0.8125rem; }
-  @property --cngx-font-size-md     { syntax: '<length>'; inherits: false; initial-value: 0.9375rem; }
-  @property --cngx-font-size-lg     { syntax: '<length>'; inherits: false; initial-value: 1.0625rem; }
+  /* Typography — font-size uses syntax: '*' because CSS @property forbids
+   * `rem` in `<length>` initial-value (must be "computationally independent",
+   * i.e. resolvable without font context). Universal syntax keeps the rem
+   * defaults; the tradeoff is no animation interpolation, which font-size
+   * rarely needs. */
+  @property --cngx-font-size-sm     { syntax: '*';        inherits: false; initial-value: 0.8125rem; }
+  @property --cngx-font-size-md     { syntax: '*';        inherits: false; initial-value: 0.9375rem; }
+  @property --cngx-font-size-lg     { syntax: '*';        inherits: false; initial-value: 1.0625rem; }
   @property --cngx-line-height-base { syntax: '<number>'; inherits: true;  initial-value: 1.5; }
 
   /* Elevation — `syntax: '*'` because box-shadow is a composite value
