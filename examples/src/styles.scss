@@ -1,16 +1,18 @@
-// Minimal global reset for examples iframe pages.
-// Goal: atomic directive demos read as intentional, not broken.
-// Allowed: shell tokens (--cngx-ex-*), generator chrome (.cngx-ex-*),
-// bare-element atoms (button, input, kbd, dl), demo-layout helpers
-// (.event-grid, .status-row, .filter-row, .kbd-hint).
-// NOT allowed: per-component styles, ARIA-role styling, component-token
-// fallbacks. Those ship from the component lib's theming/-layer.
+// Examples app boilerplate styles. Three concerns only:
+//   - shell tokens (--cngx-ex-*) — chrome colors for compodocx/examples
+//   - app body                   — bg + base text color
+//   - generator chrome (.cngx-ex-*) — intro header + source-code disclosure
+// Bare-element atoms, demo-layout helpers, ARIA-role rules, component
+// fallbacks all ship from the cngx theming layers (reset/base/components),
+// imported below.
 
-// Theming foundation — load layer order first, then system tokens.
-// Relative source path during dev (in-repo); after publish, consumers use
-// the @cngx/core/theming/*.css paths exported via the ng-packagr build.
+// Theming foundation — load layer order first, then tokens, then bare-
+// element base. Relative source paths during dev (in-repo); after publish
+// consumers use the @cngx/core/theming/*.css paths exported via ng-packagr.
 @import '../../projects/core/theming/layers.css';
 @import '../../projects/core/theming/system-tokens.css';
+@import '../../projects/core/theming/reset.css';
+@import '../../projects/core/theming/base.css';
 
 :root {
   // Pin the UA color-scheme to match the explicit theme so native form
@@ -127,54 +129,6 @@ body {
   padding: 0;
   white-space: pre;
 }
-
-// Form atoms get sane defaults
-button {
-  font: inherit;
-  padding: 6px 12px;
-  border: 1px solid var(--cngx-ex-border);
-  border-radius: 6px;
-  background: var(--cngx-ex-surface);
-  cursor: pointer;
-}
-button:hover { background: var(--cngx-ex-surface-alt); }
-button:focus-visible { outline: 2px solid var(--cngx-ex-focus); outline-offset: 2px; }
-
-input, textarea, select {
-  font: inherit;
-  padding: 6px 10px;
-  border: 1px solid var(--cngx-ex-border);
-  border-radius: 6px;
-  background: var(--cngx-ex-surface);
-}
-input:focus-visible, textarea:focus-visible, select:focus-visible {
-  outline: 2px solid var(--cngx-ex-focus);
-  outline-offset: 2px;
-  border-color: transparent;
-}
-
-kbd {
-  display: inline-block;
-  padding: 1px 6px;
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 0.85em;
-  border: 1px solid var(--cngx-ex-border);
-  border-bottom-width: 2px;
-  border-radius: 4px;
-  background: var(--cngx-ex-surface-alt);
-  margin: 0 2px;
-}
-
-// Status grids (dl/dt/dd) used in many a11y demos
-dl {
-  display: grid;
-  grid-template-columns: max-content 1fr;
-  gap: 4px 16px;
-  margin: 12px 0;
-  font-size: 0.875rem;
-}
-dl > dt { color: var(--cngx-ex-muted); }
-dl > dd { margin: 0; font-variant-numeric: tabular-nums; }
 
 // Event grid — technical layout used by story templates to show ARIA state.
 // No colors/borders here; only layout + alignment so values line up.
