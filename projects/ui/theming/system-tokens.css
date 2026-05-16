@@ -1,0 +1,19 @@
+/* cngx-ui-system-tokens — domain-specific system tokens for @cngx/ui.
+ *
+ * Empty placeholder; the file exists so each lib's theming/-layer has a
+ * canonical home that ng-packagr already ships. Populate when a need
+ * arises for tokens that belong to this lib's domain (Material-bridged
+ * organisms: feedback, sidenav, stepper, tabs, speak, skeleton,
+ * action-button, empty-state — e.g. tokens that bridge between cngx
+ * naming and `--mat-sys-*` Material system tokens).
+ *
+ * System tokens shared across all libs live in
+ * `@cngx/core/theming/system-tokens.css`. Per-component tokens belong in
+ * `<comp>.tokens.css` next to the component. Material-bridge `*-theme.scss`
+ * files stay parallel — they are NOT part of this CSS theming layer. */
+
+@layer cngx.tokens {
+  /* Add @property declarations here when ui-domain system tokens
+   * are needed. Empty layer-block is valid CSS and serves as the
+   * structural anchor for future additions. */
+}
