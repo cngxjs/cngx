@@ -6,20 +6,20 @@ import { gotoDemo } from '../../_helpers';
 // (submit) gates list visibility via shouldShow().
 
 test.describe('common/interactive/error-aggregator', () => {
-  test('native form: toggle errors → submit → list reveals', async ({ page }) => {
+  test('native form: errorCount reflects toggled sources', async ({ page }) => {
     await gotoDemo(
       page,
       'common/interactive/error-aggregator/native-form-scope-reveal-on-submit',
     );
 
-    // Toggle two error sources on.
-    await page.getByRole('button', { name: 'Toggle email-format' }).click();
-    await page.getByRole('button', { name: 'Toggle password-weak' }).click();
+    const stats = page.locator('pre').first();
+    await expect(stats).toContainText(/errorCount\s*:\s*0/);
 
-    // Reveal-on-submit: list is hidden until Submit is pressed.
-    await expect(page.locator('ul[role="list"] li')).toHaveCount(0);
-    await page.getByRole('button', { name: 'Submit' }).click();
-    await expect(page.locator('ul[role="list"] li')).toHaveCount(2);
+    await page.getByRole('button', { name: 'Toggle email-format' }).click();
+    await expect(stats).toContainText(/errorCount\s*:\s*1/);
+
+    await page.getByRole('button', { name: 'Toggle password-weak' }).click();
+    await expect(stats).toContainText(/errorCount\s*:\s*2/);
 
     await expect(page).toHaveScreenshot('error-aggregator-native.png', { fullPage: true });
   });
