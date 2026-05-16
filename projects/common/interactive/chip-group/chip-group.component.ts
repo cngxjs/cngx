@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  ViewEncapsulation,
   computed,
   inject,
   input,
@@ -105,6 +106,7 @@ import {
   ],
   template: `<ng-content />`,
   styleUrl: './chip-group.component.css',
+  encapsulation: ViewEncapsulation.None,
 })
 export class CngxChipGroup<T = unknown>
   implements
