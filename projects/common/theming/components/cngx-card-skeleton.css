@@ -1,0 +1,74 @@
+/* cngx-card-skeleton — default styling for the CngxCardSkeleton component.
+ *
+ * The host element <cngx-card-skeleton> always carries the .cngx-card-skeleton
+ * class. Three slot children render the placeholder geometry:
+ *   .cngx-card-skeleton__media | hero image area
+ *   .cngx-card-skeleton__title | heading bar
+ *   .cngx-card-skeleton__line  | body text line (repeated)
+ *
+ * All three share the same shimmer treatment — the original _card-skeleton.scss
+ * used a Sass `%_shimmer` placeholder to dedupe; in plain CSS we list the
+ * three selectors against a single rule. Prefers-reduced-motion swaps the
+ * animated gradient for a static dim. */
+
+@layer cngx.tokens {
+  @property --cngx-skeleton-gap          { syntax: '<length>'; inherits: false; initial-value: 10px; }
+  @property --cngx-skeleton-bg           { syntax: '<color>';  inherits: false; initial-value: oklch(0.88 0.005 250); }
+  @property --cngx-skeleton-shimmer      { syntax: '<color>';  inherits: false; initial-value: oklch(0.96 0.005 250); }
+  @property --cngx-skeleton-media-height { syntax: '<length>'; inherits: false; initial-value: 120px; }
+  @property --cngx-skeleton-title-height { syntax: '*';        inherits: false; initial-value: 1.25rem; }
+  @property --cngx-skeleton-line-height  { syntax: '*';        inherits: false; initial-value: 0.875rem; }
+}
+
+@layer cngx.components {
+  @scope (.cngx-card-skeleton) {
+    :scope {
+      display: flex;
+      flex-direction: column;
+      gap: var(--cngx-skeleton-gap, 10px);
+    }
+
+    .cngx-card-skeleton__media,
+    .cngx-card-skeleton__title,
+    .cngx-card-skeleton__line {
+      background: linear-gradient(
+        90deg,
+        var(--cngx-skeleton-bg, oklch(0.88 0.005 250)) 25%,
+        var(--cngx-skeleton-shimmer, oklch(0.96 0.005 250)) 50%,
+        var(--cngx-skeleton-bg, oklch(0.88 0.005 250)) 75%
+      );
+      background-size: 200% 100%;
+      animation: cngx-skeleton-shimmer 1.5s ease-in-out infinite;
+      border-radius: var(--cngx-radius-sm, 4px);
+    }
+
+    .cngx-card-skeleton__media {
+      height: var(--cngx-skeleton-media-height, 120px);
+    }
+    .cngx-card-skeleton__title {
+      height: var(--cngx-skeleton-title-height, 1.25rem);
+      width: 55%;
+    }
+    .cngx-card-skeleton__line {
+      height: var(--cngx-skeleton-line-height, 0.875rem);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .cngx-card-skeleton__media,
+      .cngx-card-skeleton__title,
+      .cngx-card-skeleton__line {
+        animation: none;
+        opacity: 0.7;
+      }
+    }
+  }
+
+  @keyframes cngx-skeleton-shimmer {
+    0% {
+      background-position: 200% 0;
+    }
+    100% {
+      background-position: -200% 0;
+    }
+  }
+}
