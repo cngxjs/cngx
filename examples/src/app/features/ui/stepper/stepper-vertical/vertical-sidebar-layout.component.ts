@@ -8,7 +8,7 @@ import { CngxStepper } from '@cngx/ui/stepper';
 @Component({
   selector: 'app-stepper-vertical-vertical-sidebar-layout',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CngxStepper, CngxStep],
+  imports: [CngxStepper, CngxStep, CngxStepContent],
   template: `
     <header class="cngx-ex-intro">
       @if (_exTitle) { <h1>{{ _exTitle }}</h1> }

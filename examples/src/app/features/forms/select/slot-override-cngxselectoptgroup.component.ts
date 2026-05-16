@@ -13,7 +13,7 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
 @Component({
   selector: 'app-select-slot-override-cngxselectoptgroup',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CngxSelect],
+  imports: [CngxSelect, CngxSelectOptgroupTemplate],
   template: `
     <header class="cngx-ex-intro">
       @if (_exTitle) { <h1>{{ _exTitle }}</h1> }

@@ -8,7 +8,7 @@ import { CngxPending, CngxSucceeded, CngxFailed } from '@cngx/common/interactive
 @Component({
   selector: 'app-popover-panel-with-footer-actions',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CngxPopoverPanel, CngxPopoverTrigger, CngxPopoverHeader, CngxPopoverBody, CngxPopoverFooter, CngxPopoverAction],
+  imports: [CngxPopoverPanel, CngxPopoverTrigger, CngxPopoverHeader, CngxPopoverBody, CngxPopoverFooter, CngxPopoverAction, CngxPending, CngxSucceeded, CngxFailed],
   template: `
     <header class="cngx-ex-intro">
       @if (_exTitle) { <h1>{{ _exTitle }}</h1> }

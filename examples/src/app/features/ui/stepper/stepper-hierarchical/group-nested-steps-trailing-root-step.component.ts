@@ -8,7 +8,7 @@ import { CngxStepper } from '@cngx/ui/stepper';
 @Component({
   selector: 'app-stepper-hierarchical-group-nested-steps-trailing-root-step',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CngxStepper, CngxStep, CngxStepGroup],
+  imports: [CngxStepper, CngxStep, CngxStepContent, CngxStepGroup],
   template: `
     <header class="cngx-ex-intro">
       @if (_exTitle) { <h1>{{ _exTitle }}</h1> }

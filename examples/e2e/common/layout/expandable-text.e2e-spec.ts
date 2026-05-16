@@ -50,9 +50,20 @@ test.describe('common/layout/expandable-text', () => {
     await expect(page).toHaveScreenshot('custom-labels-expanded.png', { fullPage: true });
   });
 
-  // custom-toggle-template route is skipped — see .internal/e2e/error-log.md.
-  // The demo's @Component imports CngxExpandableText only; CngxExpandableToggle
-  // is imported as a type at the top of the file but missing from `imports`,
-  // so the consumer's `<ng-template cngxExpandableToggle>` never instantiates
-  // and the component falls back to the default "Show more" toggle.
+  test('custom-toggle-template: projected ng-template renders the consumer toggle', async ({
+    page,
+  }) => {
+    await gotoDemo(page, 'common/layout/expandable-text/custom-toggle-template');
+
+    // The consumer's toggle exposes "Expand" / "Collapse" labels with a chevron.
+    const expandBtn = page.getByRole('button', { name: /Expand/ });
+    await expect(expandBtn).toBeVisible();
+    await expect(expandBtn).toHaveAttribute('aria-expanded', 'false');
+    await expandBtn.click();
+
+    const collapseBtn = page.getByRole('button', { name: /Collapse/ });
+    await expect(collapseBtn).toHaveAttribute('aria-expanded', 'true');
+
+    await expect(page).toHaveScreenshot('custom-toggle-expanded.png', { fullPage: true });
+  });
 });

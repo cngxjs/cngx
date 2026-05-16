@@ -8,7 +8,7 @@ import { CngxStepper } from '@cngx/ui/stepper';
 @Component({
   selector: 'app-stepper-slot-overrides-custom-error-badge-via-code-cngxstepbadge-code',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CngxStepper, CngxStep, CngxStepBadge],
+  imports: [CngxStepper, CngxStep, CngxStepBadge, CngxStepContent],
   template: `
     <header class="cngx-ex-intro">
       @if (_exTitle) { <h1>{{ _exTitle }}</h1> }

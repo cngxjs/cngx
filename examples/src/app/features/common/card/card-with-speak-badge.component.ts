@@ -10,7 +10,7 @@ import { CngxCardBadge } from '@cngx/common/card';
 @Component({
   selector: 'app-card-card-with-speak-badge',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CngxCard, CngxCardTitle, CngxCardSubtitle, CngxCardBody, CngxCardBadge, CngxSpeak, CngxSpeakButton],
+  imports: [CngxCard, CngxCardHeader, CngxCardTitle, CngxCardSubtitle, CngxCardBody, CngxCardBadge, CngxSpeak, CngxSpeakButton],
   template: `
     <header class="cngx-ex-intro">
       @if (_exTitle) { <h1>{{ _exTitle }}</h1> }

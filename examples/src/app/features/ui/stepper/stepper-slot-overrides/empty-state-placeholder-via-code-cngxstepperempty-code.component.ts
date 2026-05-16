@@ -8,7 +8,7 @@ import { CngxStepper } from '@cngx/ui/stepper';
 @Component({
   selector: 'app-stepper-slot-overrides-empty-state-placeholder-via-code-cngxstepperempty-code',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CngxStepper, CngxStep, CngxStepperEmpty],
+  imports: [CngxStepper, CngxStep, CngxStepperEmpty, CngxStepContent],
   template: `
     <header class="cngx-ex-intro">
       @if (_exTitle) { <h1>{{ _exTitle }}</h1> }

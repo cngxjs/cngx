@@ -2,15 +2,12 @@ import { expect, test } from '@playwright/test';
 import { gotoDemo } from '../../_helpers';
 
 // Story: CngxStepper supports per-step label overrides via the
-// `<ng-template cngxStepLabel>` slot. In THIS demo, only the `[label]`
-// input renders — the template slot's icons/chips never appear because
-// the generated component doesn't import CngxStepLabel into its
-// `@Component({ imports })` (logged as the recurring "missing structural
-// directive import" generator bug). Test what works: step count, labels,
-// active-step toggling.
+// `<ng-template cngxStepLabel>` slot. The first step uses the plain
+// `[label]` input; the others project a custom template with an icon
+// glyph, the label text, and a reactive counter chip.
 
 test.describe('ui/stepper/stepper-custom-labels', () => {
-  test('labels render from [label] input, active step changes on click', async ({ page }) => {
+  test('custom-template slots render icon + label + reactive counter', async ({ page }) => {
     await gotoDemo(
       page,
       'ui/stepper/stepper-custom-labels/mixing-code-label-code-input-with-code-cngxsteplabel-code-slot',
@@ -20,18 +17,24 @@ test.describe('ui/stepper/stepper-custom-labels', () => {
     await expect(steps).toHaveCount(4);
     await expect(steps.nth(0)).toContainText('Profile');
     await expect(steps.nth(1)).toContainText('Notifications');
+    // Notifications step renders the bell glyph from the custom template.
+    await expect(steps.nth(1)).toContainText('🔔');
     await expect(steps.nth(2)).toContainText('Security');
-    await expect(steps.nth(3)).toContainText('Done');
+    await expect(steps.nth(2)).toContainText('🔒');
 
-    const activeRow = page
-      .locator('.event-row')
-      .filter({ has: page.getByText('Active step', { exact: true }) })
-      .locator('.event-value');
-    await expect(activeRow).toHaveText('0');
-
-    await steps.nth(2).click();
-    await expect(activeRow).toHaveText('2');
-    await expect(steps.nth(2)).toHaveAttribute('aria-current', 'step');
+    // Counter chip reflects the reactive `notificationCount` signal. Press +1
+    // and assert the chip on the strip climbs by at least 1 from its initial.
+    await steps.nth(1).click();
+    const countOnStrip = async (): Promise<number> => {
+      const txt = (await steps.nth(1).textContent()) ?? '';
+      // The strip label looks like "2🔔 Notifications <N> Step 2 of 4: ...".
+      // The first digit between "Notifications" and "Step" is the chip value.
+      const m = txt.match(/Notifications\s*(\d+)/);
+      return parseInt(m?.[1] ?? '0', 10);
+    };
+    const before = await countOnStrip();
+    await page.getByRole('button', { name: '+1 notification' }).click();
+    await expect.poll(countOnStrip, { timeout: 2000 }).toBeGreaterThan(before);
 
     await expect(page).toHaveScreenshot('stepper-custom-labels.png', { fullPage: true });
   });

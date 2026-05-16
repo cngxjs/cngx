@@ -8,7 +8,7 @@ import { CngxStepper } from '@cngx/ui/stepper';
 @Component({
   selector: 'app-stepper-custom-labels-mixing-code-label-code-input-with-code-cngxsteplabel-code-slot',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CngxStepper, CngxStep],
+  imports: [CngxStepper, CngxStep, CngxStepContent, CngxStepLabel],
   template: `
     <header class="cngx-ex-intro">
       @if (_exTitle) { <h1>{{ _exTitle }}</h1> }
