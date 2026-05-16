@@ -1,5 +1,5 @@
 import { NgTemplateOutlet } from '@angular/common';
-import { ChangeDetectionStrategy, Component, input, type TemplateRef } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, ViewEncapsulation, type TemplateRef } from '@angular/core';
 
 /**
  * Presentational checkbox / checkmark indicator.
@@ -34,6 +34,7 @@ import { ChangeDetectionStrategy, Component, input, type TemplateRef } from '@an
   exportAs: 'cngxCheckboxIndicator',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   styleUrl: './checkbox-indicator.component.css',
   imports: [NgTemplateOutlet],
   host: {

@@ -1,5 +1,5 @@
 import { NgTemplateOutlet } from '@angular/common';
-import { ChangeDetectionStrategy, Component, input, type TemplateRef } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, ViewEncapsulation, type TemplateRef } from '@angular/core';
 
 /**
  * Presentational radio indicator — circle with a centred dot when checked.
@@ -45,6 +45,7 @@ import { ChangeDetectionStrategy, Component, input, type TemplateRef } from '@an
   exportAs: 'cngxRadioIndicator',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   styleUrl: './radio-indicator.component.css',
   imports: [NgTemplateOutlet],
   host: {
