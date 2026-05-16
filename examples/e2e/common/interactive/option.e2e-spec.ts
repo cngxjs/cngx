@@ -53,10 +53,10 @@ test.describe('common/interactive/option', () => {
     const listbox = page.getByRole('listbox', { name: 'Grouped options' });
     await expect(listbox).toBeVisible();
 
-    // Two groups, four options total.
-    const groups = page.getByRole('group');
+    // Two groups, four options total — scope to inside the listbox.
+    const groups = listbox.getByRole('group');
     await expect(groups).toHaveCount(2);
-    await expect(page.getByRole('option')).toHaveCount(4);
+    await expect(listbox.getByRole('option')).toHaveCount(4);
 
     await page.getByRole('option', { name: 'Carrot' }).click();
     await expect(listbox).toHaveAttribute(
