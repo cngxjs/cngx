@@ -1,0 +1,96 @@
+/* cngx-tooltip — default styling for the CngxTooltip directive.
+ *
+ * The directive renders a <div class="cngx-tooltip"> on demand and adds
+ * transition classes (.cngx-popover--opening/-open/-closing) via the
+ * underlying CngxPopover state machine.
+ *
+ * Touch devices get larger padding + font-size by default for readability
+ * (@media (hover: none)) — values match Material's touch density scale.
+ *
+ * Material-Bridge: the sibling tooltip-theme.scss exports a Sass mixin that
+ * derives the same tokens from a Material theme (inverse-surface /
+ * inverse-on-surface) — that file stays SCSS per Plan §10.
+ *
+ * The optional tooltip-indicator.scss (`::after` icon next to triggers)
+ * remains an SCSS opt-in mixin; not aggregated here. */
+
+@layer cngx.tokens {
+  @property --cngx-tooltip-bg                  { syntax: '<color>';  inherits: true;  initial-value: oklch(0.20 0.005 290); }
+  @property --cngx-tooltip-color               { syntax: '<color>';  inherits: true;  initial-value: oklch(0.96 0.005 290); }
+  @property --cngx-tooltip-font-family         { syntax: '*';        inherits: true;  initial-value: inherit; }
+  @property --cngx-tooltip-font-size           { syntax: '*';        inherits: true;  initial-value: 0.75rem; }
+  @property --cngx-tooltip-line-height         { syntax: '*';        inherits: true;  initial-value: 1rem; }
+  @property --cngx-tooltip-font-weight         { syntax: '<number>'; inherits: true;  initial-value: 400; }
+  @property --cngx-tooltip-letter-spacing      { syntax: '*';        inherits: true;  initial-value: 0.033em; }
+  @property --cngx-tooltip-padding-block       { syntax: '<length>'; inherits: false; initial-value: 4px; }
+  @property --cngx-tooltip-padding-inline      { syntax: '<length>'; inherits: false; initial-value: 8px; }
+  @property --cngx-tooltip-border-radius       { syntax: '<length>'; inherits: false; initial-value: 4px; }
+  @property --cngx-tooltip-max-width           { syntax: '<length>'; inherits: false; initial-value: 200px; }
+  @property --cngx-tooltip-transition-duration { syntax: '<time>';   inherits: false; initial-value: 150ms; }
+  @property --cngx-tooltip-transition-easing   { syntax: '*';        inherits: false; initial-value: cubic-bezier(0.4, 0, 0.2, 1); }
+}
+
+@layer cngx.components {
+  @scope (.cngx-tooltip) {
+    :scope {
+      position: fixed;
+      inset: unset;
+      border: none;
+      margin: 0;
+      box-sizing: border-box;
+
+      background: var(--cngx-tooltip-bg, oklch(0.20 0.005 290));
+      color: var(--cngx-tooltip-color, oklch(0.96 0.005 290));
+      font-family: var(--cngx-tooltip-font-family, inherit);
+      font-size: var(--cngx-tooltip-font-size, 0.75rem);
+      line-height: var(--cngx-tooltip-line-height, 1rem);
+      font-weight: var(--cngx-tooltip-font-weight, 400);
+      letter-spacing: var(--cngx-tooltip-letter-spacing, 0.033em);
+      padding: var(--cngx-tooltip-padding-block, 4px)
+               var(--cngx-tooltip-padding-inline, 8px);
+      border-radius: var(--cngx-tooltip-border-radius, 4px);
+      max-width: var(--cngx-tooltip-max-width, 200px);
+      width: max-content;
+      word-wrap: break-word;
+      white-space: normal;
+      pointer-events: none;
+
+      /* Popover API top-layer — no z-index needed. */
+      transition:
+        opacity var(--cngx-tooltip-transition-duration, 150ms)
+          var(--cngx-tooltip-transition-easing, cubic-bezier(0.4, 0, 0.2, 1)),
+        transform var(--cngx-tooltip-transition-duration, 150ms)
+          var(--cngx-tooltip-transition-easing, cubic-bezier(0.4, 0, 0.2, 1));
+    }
+
+    :scope.cngx-popover--opening {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    :scope.cngx-popover--open {
+      opacity: 1;
+      transform: scale(1);
+    }
+    :scope.cngx-popover--closing {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+
+    /* Touch devices: larger padding + font-size for readability. */
+    @media (hover: none) {
+      :scope {
+        --cngx-tooltip-padding-block: 8px;
+        --cngx-tooltip-padding-inline: 16px;
+        --cngx-tooltip-font-size: 0.875rem;
+        --cngx-tooltip-line-height: 1.25rem;
+        --cngx-tooltip-max-width: 280px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      :scope {
+        transition: none;
+      }
+    }
+  }
+}

@@ -1,0 +1,73 @@
+/* cngx-bottom-sheet — default styling for the CngxBottomSheet directive.
+ *
+ * Targets <dialog class="cngx-bottom-sheet"> (used together with cngxDialog).
+ * Overrides the UA top-layer centering for bottom-anchored positioning and
+ * renders a drag handle via ::before. Also rewrites the parent dialog
+ * tokens so any cngx-dialog styling inherits bottom-sheet geometry.
+ *
+ * Material-Bridge: the sibling bottom-sheet-theme.scss exports a Sass mixin
+ * that derives the handle color from a Material theme (outline-variant) —
+ * that file stays SCSS per Plan §10. */
+
+@layer cngx.tokens {
+  @property --cngx-bottom-sheet-radius        { syntax: '*';        inherits: false; initial-value: 16px 16px 0 0; }
+  @property --cngx-bottom-sheet-padding       { syntax: '<length>'; inherits: false; initial-value: 24px; }
+  @property --cngx-bottom-sheet-max-width     { syntax: '*';        inherits: false; initial-value: 100%; }
+  @property --cngx-bottom-sheet-max-height    { syntax: '*';        inherits: false; initial-value: 80vh; }
+  @property --cngx-bottom-sheet-handle-width  { syntax: '<length>'; inherits: false; initial-value: 40px; }
+  @property --cngx-bottom-sheet-handle-height { syntax: '<length>'; inherits: false; initial-value: 4px; }
+  @property --cngx-bottom-sheet-handle-color  { syntax: '<color>';  inherits: false; initial-value: oklch(0.80 0.005 250); }
+  @property --cngx-bottom-sheet-handle-radius { syntax: '<length>'; inherits: false; initial-value: 2px; }
+  @property --cngx-bottom-sheet-handle-margin { syntax: '*';        inherits: false; initial-value: 0 auto 16px; }
+}
+
+@layer cngx.components {
+  @scope (dialog.cngx-bottom-sheet) {
+    :scope {
+      margin: 0;
+      inset: auto 0 0 0;
+      width: 100%;
+      max-width: var(--cngx-bottom-sheet-max-width, 100%);
+      max-height: var(--cngx-bottom-sheet-max-height, 80vh);
+      border-radius: var(--cngx-bottom-sheet-radius, 16px 16px 0 0);
+      padding: var(--cngx-bottom-sheet-padding, 24px);
+
+      /* Rewrite parent dialog tokens so the cngx-dialog default styling
+         (transition, shadow, etc.) picks up bottom-sheet geometry. */
+      --cngx-dialog-border-radius: var(--cngx-bottom-sheet-radius, 16px 16px 0 0);
+      --cngx-dialog-padding: var(--cngx-bottom-sheet-padding, 24px);
+      --cngx-dialog-max-width: var(--cngx-bottom-sheet-max-width, 100%);
+      --cngx-dialog-max-height: var(--cngx-bottom-sheet-max-height, 80vh);
+    }
+
+    /* Drag handle. */
+    :scope::before {
+      content: '';
+      display: block;
+      width: var(--cngx-bottom-sheet-handle-width, 40px);
+      height: var(--cngx-bottom-sheet-handle-height, 4px);
+      background: var(--cngx-bottom-sheet-handle-color, oklch(0.80 0.005 250));
+      border-radius: var(--cngx-bottom-sheet-handle-radius, 2px);
+      margin: var(--cngx-bottom-sheet-handle-margin, 0 auto 16px);
+    }
+
+    :scope.cngx-dialog--opening {
+      opacity: 0;
+      transform: translateY(100%);
+    }
+    :scope.cngx-dialog--open {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    :scope.cngx-dialog--closing {
+      opacity: 0;
+      transform: translateY(100%);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      :scope {
+        transition: none;
+      }
+    }
+  }
+}
