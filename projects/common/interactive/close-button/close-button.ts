@@ -45,7 +45,6 @@ export const CNGX_CLOSE_ICON = new InjectionToken<Type<unknown>>('CngxCloseIcon'
   encapsulation: ViewEncapsulation.None,
   host: {
     class: 'cngx-close-button',
-    style: 'display: contents',
   },
   template: `
     <button type="button" class="cngx-close-button__btn" [attr.aria-label]="label()">
@@ -70,45 +69,7 @@ export const CNGX_CLOSE_ICON = new InjectionToken<Type<unknown>>('CngxCloseIcon'
       </ng-content>
     </button>
   `,
-  styles: `
-    .cngx-close-button__btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      appearance: none;
-      background: var(--cngx-close-button-bg, none);
-      border: var(--cngx-close-button-border, none);
-      min-width: var(--cngx-close-button-size, 32px);
-      min-height: var(--cngx-close-button-size, 32px);
-      padding: var(--cngx-close-button-padding, 8px);
-      cursor: pointer;
-      color: var(--cngx-close-button-color, inherit);
-      opacity: var(--cngx-close-button-opacity, 0.5);
-      border-radius: var(--cngx-close-button-radius, 4px);
-      transition: opacity var(--cngx-close-button-transition, 150ms) ease;
-    }
-
-    .cngx-close-button__btn:hover {
-      opacity: var(--cngx-close-button-hover-opacity, 1);
-      background: var(--cngx-close-button-hover-bg, rgba(0, 0, 0, 0.04));
-    }
-
-    .cngx-close-button__btn:focus-visible {
-      outline: var(--cngx-close-button-focus-outline, 2px solid currentColor);
-      outline-offset: var(--cngx-close-button-focus-offset, 2px);
-      opacity: 1;
-    }
-
-    .cngx-close-button__btn:active {
-      opacity: var(--cngx-close-button-active-opacity, 0.8);
-    }
-
-    .cngx-close-button__icon {
-      width: var(--cngx-close-button-icon-size, 16px);
-      height: var(--cngx-close-button-icon-size, 16px);
-      flex-shrink: 0;
-    }
-  `,
+  styleUrl: './close-button.css',
 })
 export class CngxCloseButton {
   /**
