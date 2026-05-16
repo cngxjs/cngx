@@ -9,6 +9,7 @@ import { PEOPLE, type Person } from '../../../../fixtures';
 @Component({
   selector: 'app-smart-data-source-smartdatasource-cngxpaginate-hostdirective',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  hostDirectives: [CngxSort, CngxFilter],
   template: `
     <header class="cngx-ex-intro">
       @if (_exTitle) { <h1>{{ _exTitle }}</h1> }

@@ -8,7 +8,7 @@ import { createManualState, createAsyncState, injectAsyncState } from '@cngx/com
 @Component({
   selector: 'app-async-container-cngx-async-container-full-control-toast',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CngxAsyncContainer],
+  imports: [CngxAsyncContainer, CngxAsyncSkeletonTpl, CngxAsyncContentTpl, CngxAsyncEmptyTpl, CngxAsyncErrorTpl],
   template: `
     <header class="cngx-ex-intro">
       @if (_exTitle) { <h1>{{ _exTitle }}</h1> }

@@ -8,7 +8,7 @@ import { createManualState } from '@cngx/common/data';
 @Component({
   selector: 'app-alert-auto-collapse',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CngxAlert],
+  imports: [CngxAlert, CngxAlertAction],
   template: `
     <header class="cngx-ex-intro">
       @if (_exTitle) { <h1>{{ _exTitle }}</h1> }

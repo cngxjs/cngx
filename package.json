@@ -18,6 +18,8 @@
     "build:dev-app": "ng build dev-app",
     "start:examples": "ng serve examples --port 4200",
     "build:examples": "ng build examples",
+    "test:e2e:examples": "playwright test --config=examples/playwright.config.ts",
+    "test:e2e:examples:update": "playwright test --config=examples/playwright.config.ts --update-snapshots",
     "examples:generate": "node scripts/generate-examples.mjs",
     "examples:backport-urls": "node scripts/backport-example-urls.mjs",
     "watch": "ng build dev-app --watch --configuration development",

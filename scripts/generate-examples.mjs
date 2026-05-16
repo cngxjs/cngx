@@ -479,11 +479,33 @@ function emitComponentSource(meta, story, section, importMap) {
         if (new RegExp(`\\b${attrMatch[1]}\\b`).test(tpl)) return true;
         continue;
       }
+      // Compound `<tag>[<attr>]` selectors — e.g. structural directives
+      // bound only to `ng-template[cngxExpandableToggle]` or
+      // `cngx-skeleton[cngxSkeletonPlaceholder]`. The previous fall-through
+      // to `tpl.includes(sel)` failed because Angular renders the attribute
+      // without the surrounding brackets: `<ng-template cngxExpandableToggle>`.
+      const compoundMatch = sel.match(/^([a-z][a-z0-9-]*)\[([\w-]+)(?:[*~|^$]?=[^\]]*)?\]$/);
+      if (compoundMatch) {
+        const [, tag, attr] = compoundMatch;
+        const tagOpenRe = new RegExp(`<${tag}\\b[^>]*\\b${attr}\\b`);
+        if (tagOpenRe.test(tpl)) return true;
+        continue;
+      }
       if (tpl.includes(sel)) return true;
     }
     return false;
   });
   const decoratorImports = tplImports.length > 0 ? `\n  imports: [${tplImports.join(', ')}],` : '';
+
+  // Story-level hostDirectives — attach the named directives to the
+  // generated component's host element. Required for stories where
+  // injectXyz() factories use inject() to discover the directive on
+  // the host (e.g. CngxSmartDataSource → CngxSort + CngxFilter).
+  const storyHostDirectives = (story.hostDirectives ?? []).filter(Boolean);
+  const decoratorHostDirectives =
+    storyHostDirectives.length > 0
+      ? `\n  hostDirectives: [${storyHostDirectives.join(', ')}],`
+      : '';
 
   // Indent setup body two spaces (it's class-body code)
   const setupBody = setup
@@ -553,7 +575,7 @@ ${lines.join('\n')}
 
 @Component({
   selector: 'app-${meta.demoSlug}-${meta.sectionSlug}',
-  changeDetection: ChangeDetectionStrategy.OnPush,${decoratorImports}
+  changeDetection: ChangeDetectionStrategy.OnPush,${decoratorImports}${decoratorHostDirectives}
   template: \`
 ${intro}
 ${indent(template, 4)}

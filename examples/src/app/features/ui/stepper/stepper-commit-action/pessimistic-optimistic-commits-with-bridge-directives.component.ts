@@ -10,7 +10,7 @@ import { CngxToastOn, CngxBannerOn } from '@cngx/ui/feedback';
 @Component({
   selector: 'app-stepper-commit-action-pessimistic-optimistic-commits-with-bridge-directives',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CngxStepper, CngxStep, CngxToastOn, CngxBannerOn],
+  imports: [CngxStepper, CngxStep, CngxStepContent, CngxToastOn, CngxBannerOn],
   template: `
     <header class="cngx-ex-intro">
       @if (_exTitle) { <h1>{{ _exTitle }}</h1> }

@@ -8,7 +8,7 @@ import { CngxCard, CngxCardHeader, CngxCardBody } from '@cngx/common/card';
 @Component({
   selector: 'app-error-aggregator-cngx-card-host-no-scope-errors-visible-immediately',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CngxCard, CngxCardBody, CngxErrorAggregator, CngxErrorSource],
+  imports: [CngxCard, CngxCardHeader, CngxCardBody, CngxErrorAggregator, CngxErrorSource],
   template: `
     <header class="cngx-ex-intro">
       @if (_exTitle) { <h1>{{ _exTitle }}</h1> }

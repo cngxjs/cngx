@@ -411,3 +411,59 @@ dl > dd { margin: 0; font-variant-numeric: tabular-nums; }
   font-size: 0.875rem;
   color: var(--cngx-ex-text);
 }
+
+// CngxCardGrid + CngxCard — consumer-supplied layout for the examples app.
+// The directive sets host class `cngx-card-grid` and `--cngx-card-grid-min`
+// + `--cngx-card-grid-gap` custom properties; the grid template lives here.
+.cngx-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(var(--cngx-card-grid-min, 280px), 1fr));
+  gap: var(--cngx-card-grid-gap, 16px);
+
+  &--compact { gap: 8px; }
+  &--comfortable { gap: 24px; }
+}
+.cngx-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 16px;
+  border: 1px solid var(--cngx-ex-border);
+  border-radius: 8px;
+  background: var(--cngx-ex-surface);
+
+  &--interactive {
+    cursor: pointer;
+    transition: box-shadow 150ms ease, border-color 150ms ease;
+
+    &:hover {
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      border-color: var(--cngx-ex-focus);
+    }
+    &:focus-visible {
+      outline: 2px solid var(--cngx-ex-focus);
+      outline-offset: 2px;
+    }
+  }
+}
+.cngx-card__body {
+  flex: 1;
+  min-width: 0;
+}
+
+// CngxBackdrop — the `drawer-backdrop` class is the consumer hook the
+// demo applies to the directive host. Visibility is class-driven by the
+// directive (`.cngx-backdrop--visible`).
+.drawer-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms ease;
+
+  &.cngx-backdrop--visible {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}

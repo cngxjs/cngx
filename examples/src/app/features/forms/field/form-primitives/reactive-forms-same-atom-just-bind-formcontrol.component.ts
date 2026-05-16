@@ -14,7 +14,7 @@ import { createFormPrimitivesFormGroup } from '../../../../_fixtures/form-primit
 @Component({
   selector: 'app-form-primitives-reactive-forms-same-atom-just-bind-formcontrol',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, CngxFormField, CngxLabel, CngxFieldErrors, JsonPipe, CngxToggle, CngxCheckbox, CngxChip, CngxChipInteraction, CngxRadioGroup, CngxRadio, CngxCheckboxGroup, CngxButtonToggleGroup, CngxButtonMultiToggleGroup, CngxButtonToggle, CngxChipGroup, CngxMultiChipGroup, CngxChipInGroup],
+  imports: [ReactiveFormsModule, CngxFormBridge, CngxFormField, CngxLabel, CngxFieldErrors, JsonPipe, CngxToggle, CngxCheckbox, CngxChip, CngxChipInteraction, CngxRadioGroup, CngxRadio, CngxCheckboxGroup, CngxButtonToggleGroup, CngxButtonMultiToggleGroup, CngxButtonToggle, CngxChipGroup, CngxMultiChipGroup, CngxChipInGroup],
   template: `
     <header class="cngx-ex-intro">
       @if (_exTitle) { <h1>{{ _exTitle }}</h1> }
