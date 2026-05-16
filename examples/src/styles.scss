@@ -6,17 +6,12 @@
 // fallbacks all ship from the cngx theming layers (reset/base/components),
 // imported below.
 
-// Theming foundation — load layer order first, then tokens, then bare-
-// element base. Relative source paths during dev (in-repo); after publish
-// consumers use the @cngx/core/theming/*.css paths exported via ng-packagr.
-@import '../../projects/core/theming/layers.css';
-@import '../../projects/core/theming/system-tokens.css';
-@import '../../projects/core/theming/reset.css';
-@import '../../projects/core/theming/base.css';
-
-// Component-Theming-Imports — opt-in per cngx-Component (Phase 3 Migration).
-// Each component lib ships its default styling at theming/components/.
-@import '../../projects/common/theming/components/cngx-backdrop.css';
+// Theming — one consumer import gets everything that can't auto-bundle
+// (foundation + directive-CSS). Components with their own styleUrl bundle
+// independently via Angular and arrive automatically when imported in TS.
+// Replace with @cngx/themes/light.css or @cngx/themes/dark.css to force
+// a mode; write your own theme by pulling in the same source pieces.
+@import '../../projects/themes/cngx.css';
 
 :root {
   // Pin the UA color-scheme to match the explicit theme so native form
