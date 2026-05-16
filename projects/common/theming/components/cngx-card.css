@@ -1,0 +1,342 @@
+/* cngx-card — default styling for the CngxCard component and its slot
+ * directives (CngxCardMedia/Header/Title/Subtitle/Body/Footer/Actions/Badge).
+ *
+ * The host element <cngx-card> always carries the .cngx-card class.
+ * Modifier classes drive state appearance:
+ *   .cngx-card--interactive | --selected | --loading | --disabled
+ *   .cngx-card--accent | --accent-{info,success,warning,danger,neutral}
+ *
+ * Token families:
+ *   - Static layout (padding, radius, bg, border, color, min-width)
+ *   - States (hover-shadow, focus-{width,color,offset}, selected-*, disabled-opacity, loading-*)
+ *   - Typography slots (title-*, subtitle-*)
+ *   - Accent palette (--cngx-card-accent-* + the universal --cngx-accent-* family)
+ *   - Badge placement (badge-offset)
+ *
+ * The --cngx-accent-* tokens (info/success/warning/danger/neutral) are
+ * universal semantic colors that other components also key off; Phase 4
+ * cleanup (Plan §709) renames them to --cngx-color-*. Until then they
+ * remain as written.
+ *
+ * Material-Bridge: projects/ui/card-theme.scss writes the same tokens from
+ * a Material theme. That SCSS bridge stays untouched per Plan §10 —
+ * unlayered SCSS rules win over @layer cngx.components, so Material
+ * consumers keep their derived values; cngx-only consumers pick up these
+ * defaults via the single-import bundle (projects/themes/cngx.css).
+ *
+ * .cngx-sr-only is declared here (not in cngx.base) because base.css is
+ * reserved for bare HTML elements; deduplicating the sr-only utility
+ * across card/dialog/tabs is Phase 4 work. */
+
+@layer cngx.tokens {
+  /* Static layout */
+  @property --cngx-card-padding         { syntax: '<length>'; inherits: false; initial-value: 16px; }
+  @property --cngx-card-radius          { syntax: '<length>'; inherits: false; initial-value: 12px; }
+  @property --cngx-card-bg              { syntax: '<color>';  inherits: true;  initial-value: oklch(1 0 0); }
+  @property --cngx-card-color           { syntax: '<color>';  inherits: true;  initial-value: oklch(0.2 0.01 290); }
+  @property --cngx-card-border          { syntax: '*';        inherits: true;  initial-value: 1px solid oklch(0.81 0.005 250); }
+  @property --cngx-card-min-width       { syntax: '<length>'; inherits: false; initial-value: 120px; }
+
+  /* States — interactive / focus / selected / disabled / loading */
+  @property --cngx-card-hover-shadow    { syntax: '*';        inherits: false; initial-value: 0 2px 8px 0 oklch(0 0 0 / 0.12); }
+  @property --cngx-card-active-opacity  { syntax: '<number>'; inherits: false; initial-value: 0.88; }
+  @property --cngx-card-focus-width     { syntax: '<length>'; inherits: false; initial-value: 2px; }
+  @property --cngx-card-focus-offset    { syntax: '<length>'; inherits: false; initial-value: 2px; }
+  @property --cngx-card-focus-color     { syntax: '<color>';  inherits: true;  initial-value: oklch(0.47 0.16 295); }
+  @property --cngx-card-selected-border { syntax: '<color>';  inherits: true;  initial-value: oklch(0.47 0.16 295); }
+  @property --cngx-card-selected-bg     { syntax: '<color>';  inherits: true;  initial-value: oklch(0.96 0.02 295); }
+  @property --cngx-card-selected-bar-width { syntax: '<length>'; inherits: false; initial-value: 3px; }
+  @property --cngx-card-disabled-opacity { syntax: '<number>'; inherits: false; initial-value: 0.5; }
+  @property --cngx-card-loading-shimmer  { syntax: '<color>';  inherits: false; initial-value: oklch(1 0 0 / 0.4); }
+  @property --cngx-card-loading-overlay  { syntax: '<color>';  inherits: false; initial-value: oklch(1 0 0 / 0.3); }
+
+  /* Typography slots */
+  @property --cngx-card-title-size       { syntax: '*';        inherits: true;  initial-value: 1rem; }
+  @property --cngx-card-title-weight     { syntax: '<number>'; inherits: true;  initial-value: 600; }
+  @property --cngx-card-title-color      { syntax: '<color>';  inherits: true;  initial-value: oklch(0.2 0.01 290); }
+  @property --cngx-card-subtitle-size    { syntax: '*';        inherits: true;  initial-value: 0.8125rem; }
+  @property --cngx-card-subtitle-weight  { syntax: '<number>'; inherits: true;  initial-value: 400; }
+  @property --cngx-card-subtitle-color   { syntax: '<color>';  inherits: true;  initial-value: oklch(0.36 0.02 290); }
+
+  /* Dividers & accent */
+  @property --cngx-card-divider          { syntax: '<color>';  inherits: true;  initial-value: oklch(0.81 0.005 250); }
+  @property --cngx-card-accent-width     { syntax: '<length>'; inherits: false; initial-value: 3px; }
+  @property --cngx-card-accent-color     { syntax: '<color>';  inherits: true;  initial-value: transparent; }
+
+  /* Universal accent palette — also consumed by other components.
+   * Phase 4 rename target: --cngx-color-{info,success,warning,danger}. */
+  @property --cngx-accent-info     { syntax: '<color>'; inherits: true; initial-value: oklch(0.62 0.20 250); }
+  @property --cngx-accent-info-bg  { syntax: '<color>'; inherits: true; initial-value: oklch(0.97 0.03 250); }
+  @property --cngx-accent-success  { syntax: '<color>'; inherits: true; initial-value: oklch(0.65 0.18 145); }
+  @property --cngx-accent-success-bg { syntax: '<color>'; inherits: true; initial-value: oklch(0.97 0.04 145); }
+  @property --cngx-accent-warning  { syntax: '<color>'; inherits: true; initial-value: oklch(0.72 0.18 70); }
+  @property --cngx-accent-warning-bg { syntax: '<color>'; inherits: true; initial-value: oklch(0.97 0.04 75); }
+  @property --cngx-accent-danger   { syntax: '<color>'; inherits: true; initial-value: oklch(0.65 0.22 25); }
+  @property --cngx-accent-danger-bg { syntax: '<color>'; inherits: true; initial-value: oklch(0.97 0.03 25); }
+  @property --cngx-accent-neutral  { syntax: '<color>'; inherits: true; initial-value: oklch(0.81 0.005 250); }
+
+  /* Badge placement */
+  @property --cngx-card-badge-offset { syntax: '<length>'; inherits: false; initial-value: -6px; }
+}
+
+@layer cngx.components {
+  @scope (.cngx-card) {
+    :scope {
+      display: block;
+      position: relative;
+      padding: var(--cngx-card-padding, var(--cngx-space-md, 16px));
+      border-radius: var(--cngx-card-radius, var(--cngx-radius-lg, 12px));
+      background: var(--cngx-card-bg, var(--cngx-color-surface, oklch(1 0 0)));
+      border: var(--cngx-card-border, 1px solid var(--cngx-color-border, oklch(0.81 0.005 250)));
+      color: var(--cngx-card-color, var(--cngx-color-text, oklch(0.2 0.01 290)));
+      transition:
+        box-shadow var(--cngx-duration-fast, 150ms) ease,
+        border-color var(--cngx-duration-fast, 150ms) ease,
+        background var(--cngx-duration-fast, 150ms) ease;
+      min-height: 44px;
+      min-width: var(--cngx-card-min-width, 120px);
+      touch-action: manipulation;
+    }
+
+    :scope.cngx-card--interactive {
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    :scope.cngx-card--interactive:hover {
+      box-shadow: var(--cngx-card-hover-shadow, 0 2px 8px 0 oklch(0 0 0 / 0.12));
+    }
+    @media (hover: none) {
+      :scope.cngx-card--interactive:active {
+        opacity: var(--cngx-card-active-opacity, 0.88);
+      }
+    }
+
+    :scope:focus-visible {
+      outline: var(--cngx-card-focus-width, 2px) solid
+        var(--cngx-card-focus-color, var(--cngx-color-primary, oklch(0.47 0.16 295)));
+      outline-offset: var(--cngx-card-focus-offset, 2px);
+    }
+
+    /* Interactive cards: focus-within for inner buttons without double focus ring */
+    :scope:has(:focus-visible):not(:focus-visible) {
+      outline: var(--cngx-card-focus-width, 2px) solid
+        var(--cngx-card-focus-color, var(--cngx-color-primary, oklch(0.47 0.16 295)));
+      outline-offset: var(--cngx-card-focus-offset, 2px);
+    }
+
+    :scope.cngx-card--selected {
+      border-color: var(--cngx-card-selected-border, var(--cngx-color-primary, oklch(0.47 0.16 295)));
+      background: var(
+        --cngx-card-selected-bg,
+        color-mix(
+          in oklch,
+          var(--cngx-color-primary, oklch(0.47 0.16 295)) 8%,
+          var(--cngx-card-bg, oklch(1 0 0))
+        )
+      );
+    }
+    /* Visual selection indicator (not just color — WCAG 1.4.1) */
+    :scope.cngx-card--selected::before {
+      content: '';
+      position: absolute;
+      inset-inline-start: 0;
+      inset-block: var(--cngx-card-radius, 12px);
+      width: var(--cngx-card-selected-bar-width, 3px);
+      background: var(--cngx-card-selected-border, var(--cngx-color-primary, oklch(0.47 0.16 295)));
+      border-radius: 999px;
+    }
+
+    :scope.cngx-card--disabled {
+      opacity: var(--cngx-card-disabled-opacity, 0.5);
+      pointer-events: none;
+    }
+
+    :scope.cngx-card--loading {
+      pointer-events: none;
+      cursor: wait;
+    }
+    :scope.cngx-card--loading::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: linear-gradient(
+        90deg,
+        transparent 25%,
+        var(--cngx-card-loading-shimmer, oklch(1 0 0 / 0.4)) 50%,
+        transparent 75%
+      );
+      background-size: 200% 100%;
+      animation: cngx-card-shimmer 1.5s ease-in-out infinite;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      :scope.cngx-card--loading::after {
+        animation: none;
+        background: var(--cngx-card-loading-overlay, oklch(1 0 0 / 0.3));
+      }
+    }
+
+    /* Slot children — projected via [cngxCardMedia/Header/Title/...] directives */
+    .cngx-card__media {
+      margin: calc(-1 * var(--cngx-card-padding, var(--cngx-space-md, 16px)));
+      margin-bottom: 0;
+      overflow: hidden;
+      border-radius: var(--cngx-card-radius, var(--cngx-radius-lg, 12px))
+        var(--cngx-card-radius, var(--cngx-radius-lg, 12px)) 0 0;
+    }
+    .cngx-card__media img,
+    .cngx-card__media video {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .cngx-card__header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      gap: var(--cngx-space-sm, 8px);
+      padding-block: var(--cngx-space-xs, 4px);
+    }
+
+    .cngx-card__title {
+      margin: 0;
+      font-size: var(--cngx-card-title-size, 1rem);
+      font-weight: var(--cngx-card-title-weight, 600);
+      color: var(--cngx-card-title-color, var(--cngx-color-text, oklch(0.2 0.01 290)));
+      line-height: 1.3;
+    }
+
+    .cngx-card__subtitle {
+      width: 100%;
+      margin: 0;
+      font-size: var(--cngx-card-subtitle-size, 0.8125rem);
+      font-weight: var(--cngx-card-subtitle-weight, 400);
+      color: var(--cngx-card-subtitle-color, oklch(0.36 0.02 290));
+      line-height: 1.4;
+    }
+
+    .cngx-card__body {
+      padding-block: var(--cngx-space-xs, 4px);
+    }
+
+    .cngx-card__footer {
+      margin-top: auto;
+      padding-block-start: var(--cngx-space-sm, 8px);
+    }
+
+    .cngx-card__actions {
+      display: flex;
+      align-items: center;
+      gap: var(--cngx-space-sm, 8px);
+      padding-block-start: var(--cngx-space-sm, 8px);
+      border-top: 1px solid
+        var(--cngx-card-divider, var(--cngx-color-border, oklch(0.81 0.005 250)));
+    }
+    .cngx-card__actions--end {
+      justify-content: flex-end;
+    }
+
+    /* Accent variants — top border + tinted surface */
+    .cngx-card--accent {
+      border-top: var(--cngx-card-accent-width, 3px) solid
+        var(--cngx-card-accent-color, transparent);
+    }
+
+    .cngx-card--accent-info {
+      --cngx-card-accent-color: var(--cngx-accent-info, var(--cngx-color-info, oklch(0.62 0.20 250)));
+      background: var(
+        --cngx-accent-info-bg,
+        color-mix(
+          in oklch,
+          var(--cngx-accent-info, var(--cngx-color-info, oklch(0.62 0.20 250))) 6%,
+          var(--cngx-card-bg, oklch(1 0 0))
+        )
+      );
+    }
+    .cngx-card--accent-success {
+      --cngx-card-accent-color: var(--cngx-accent-success, var(--cngx-color-success, oklch(0.65 0.18 145)));
+      background: var(
+        --cngx-accent-success-bg,
+        color-mix(
+          in oklch,
+          var(--cngx-accent-success, var(--cngx-color-success, oklch(0.65 0.18 145))) 6%,
+          var(--cngx-card-bg, oklch(1 0 0))
+        )
+      );
+    }
+    .cngx-card--accent-warning {
+      --cngx-card-accent-color: var(--cngx-accent-warning, var(--cngx-color-warning, oklch(0.72 0.18 70)));
+      background: var(
+        --cngx-accent-warning-bg,
+        color-mix(
+          in oklch,
+          var(--cngx-accent-warning, var(--cngx-color-warning, oklch(0.72 0.18 70))) 8%,
+          var(--cngx-card-bg, oklch(1 0 0))
+        )
+      );
+    }
+    .cngx-card--accent-danger {
+      --cngx-card-accent-color: var(--cngx-accent-danger, var(--cngx-color-danger, oklch(0.65 0.22 25)));
+      background: var(
+        --cngx-accent-danger-bg,
+        color-mix(
+          in oklch,
+          var(--cngx-accent-danger, var(--cngx-color-danger, oklch(0.65 0.22 25))) 8%,
+          var(--cngx-card-bg, oklch(1 0 0))
+        )
+      );
+    }
+    .cngx-card--accent-neutral {
+      --cngx-card-accent-color: var(--cngx-accent-neutral, var(--cngx-color-border, oklch(0.81 0.005 250)));
+    }
+
+    /* Badge placement — absolute, four corner variants */
+    .cngx-card__badge {
+      position: absolute;
+      z-index: 1;
+    }
+    .cngx-card__badge--top-end {
+      inset-block-start: var(--cngx-card-badge-offset, -6px);
+      inset-inline-end: var(--cngx-card-badge-offset, -6px);
+    }
+    .cngx-card__badge--top-start {
+      inset-block-start: var(--cngx-card-badge-offset, -6px);
+      inset-inline-start: var(--cngx-card-badge-offset, -6px);
+    }
+    .cngx-card__badge--bottom-end {
+      inset-block-end: var(--cngx-card-badge-offset, -6px);
+      inset-inline-end: var(--cngx-card-badge-offset, -6px);
+    }
+    .cngx-card__badge--bottom-start {
+      inset-block-end: var(--cngx-card-badge-offset, -6px);
+      inset-inline-start: var(--cngx-card-badge-offset, -6px);
+    }
+  }
+
+  /* Shimmer keyframe — declared once at the layer level so it can be
+   * referenced by .cngx-card and other components in the same layer. */
+  @keyframes cngx-card-shimmer {
+    0% {
+      background-position: 200% 0;
+    }
+    100% {
+      background-position: -200% 0;
+    }
+  }
+
+  /* Screen-reader utility — used by card.component.ts directly.
+   * Top-level (outside @scope) so it works for any descendant. */
+  .cngx-sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+}
