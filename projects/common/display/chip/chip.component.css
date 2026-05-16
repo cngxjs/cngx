@@ -17,15 +17,22 @@
  */
 
 @layer cngx.tokens {
-  @property --cngx-chip-inner-gap       { syntax: '<length>';  inherits: false; initial-value: 4px; }
-  @property --cngx-chip-padding-block   { syntax: '<length>';  inherits: false; initial-value: 2px; }
-  @property --cngx-chip-padding-inline  { syntax: '<length>';  inherits: false; initial-value: 8px; }
-  @property --cngx-chip-radius          { syntax: '<length>';  inherits: false; initial-value: 999px; }
-  @property --cngx-chip-bg              { syntax: '<color>';   inherits: true;  initial-value: oklch(0.6 0.2 250 / 0.12); }
-  @property --cngx-chip-color           { syntax: '*';         inherits: true;  initial-value: inherit; }
-  @property --cngx-chip-font-size       { syntax: '*';         inherits: false; initial-value: 0.875em; }
-  @property --cngx-chip-remove-opacity  { syntax: '<number>';  inherits: false; initial-value: 0.7; }
-  @property --cngx-chip-remove-radius   { syntax: '<length>';  inherits: false; initial-value: 2px; }
+  /* Static tokens */
+  @property --cngx-chip-inner-gap            { syntax: '<length>'; inherits: false; initial-value: 4px; }
+  @property --cngx-chip-padding-block        { syntax: '<length>'; inherits: false; initial-value: 2px; }
+  @property --cngx-chip-padding-inline       { syntax: '<length>'; inherits: false; initial-value: 8px; }
+  @property --cngx-chip-radius               { syntax: '<length>'; inherits: false; initial-value: 999px; }
+  @property --cngx-chip-bg                   { syntax: '<color>';  inherits: true;  initial-value: oklch(0.6 0.2 250 / 0.12); }
+  @property --cngx-chip-color                { syntax: '*';        inherits: true;  initial-value: inherit; }
+  @property --cngx-chip-font-size            { syntax: '*';        inherits: false; initial-value: 0.875em; }
+
+  /* Remove-button tokens (static + states) */
+  @property --cngx-chip-remove-opacity       { syntax: '<number>'; inherits: false; initial-value: 0.7; }
+  @property --cngx-chip-remove-opacity-hover { syntax: '<number>'; inherits: false; initial-value: 1; }
+  @property --cngx-chip-remove-radius        { syntax: '<length>'; inherits: false; initial-value: 2px; }
+  @property --cngx-chip-remove-focus-width   { syntax: '<length>'; inherits: false; initial-value: 2px; }
+  @property --cngx-chip-remove-focus-color   { syntax: '<color>';  inherits: true;  initial-value: oklch(0.6 0.2 250); }
+  @property --cngx-chip-remove-focus-offset  { syntax: '<length>'; inherits: false; initial-value: 1px; }
 }
 
 @layer cngx.components {
@@ -69,12 +76,12 @@
       border-radius: var(--cngx-chip-remove-radius, var(--cngx-radius-sm, 2px));
     }
     .cngx-chip__remove:hover {
-      opacity: 1;
+      opacity: var(--cngx-chip-remove-opacity-hover, 1);
     }
     .cngx-chip__remove:focus-visible {
-      /* Reset layer provides the outline color via --cngx-color-primary;
-       * chip just adjusts the offset for a tighter ring around the X. */
-      outline-offset: 1px;
+      outline: var(--cngx-chip-remove-focus-width, 2px) solid
+               var(--cngx-chip-remove-focus-color, var(--cngx-color-primary, oklch(0.6 0.2 250)));
+      outline-offset: var(--cngx-chip-remove-focus-offset, 1px);
     }
   }
 }
