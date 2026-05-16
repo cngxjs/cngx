@@ -31,6 +31,15 @@
 // postMessage fallback for cross-origin iframes — see main.ts). Using
 // prefers-color-scheme would desync the iframe whenever the host doc's
 // user toggle disagreed with the OS, so we read the class instead.
+//
+// The --cngx-* overrides below (everything past --cngx-ex-focus) are a
+// stand-in for missing theme infrastructure: component libs don't yet
+// ship light-dark()-driven defaults from their own theming/-layer, so
+// the dark-mode adaptation has to live here. As each component migrates
+// in Phase 3 (its SCSS adopts light-dark() in @layer cngx.components),
+// the corresponding override line(s) here become redundant and come
+// out in the same PR. Block shrinks until empty, then html.dark only
+// needs the --cngx-ex-* shell tokens.
 html.dark {
   color-scheme: dark;
   --cngx-ex-bg: #111111;
