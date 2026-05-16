@@ -1,10 +1,25 @@
-:host.cngx-checkbox-group {
-  display: inline-flex;
-  flex-direction: column;
-  gap: var(--cngx-checkbox-group-gap, 0.5rem);
+/*
+ * checkbox-group.component.css — flex layout container for CngxCheckbox leaves.
+ *
+ * Migrated to @layer cngx.tokens + @layer cngx.components + @scope (Phase 3).
+ * Single token (gap) falls back to --cngx-space-sm.
+ */
+
+@layer cngx.tokens {
+  @property --cngx-checkbox-group-gap { syntax: '*'; inherits: false; initial-value: 0.5rem; }
 }
 
-:host.cngx-checkbox-group.cngx-checkbox-group--horizontal {
-  flex-direction: row;
-  flex-wrap: wrap;
+@layer cngx.components {
+  @scope (.cngx-checkbox-group) {
+    :scope {
+      display: inline-flex;
+      flex-direction: column;
+      gap: var(--cngx-checkbox-group-gap, var(--cngx-space-sm, 0.5rem));
+    }
+
+    :scope.cngx-checkbox-group--horizontal {
+      flex-direction: row;
+      flex-wrap: wrap;
+    }
+  }
 }
