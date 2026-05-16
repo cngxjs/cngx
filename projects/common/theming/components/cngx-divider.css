@@ -1,0 +1,53 @@
+/* cngx-divider — default styling for the CngxDivider directive.
+ *
+ * The directive sets host class `cngx-divider` plus `--vertical` and
+ * `--inset` modifier classes based on its inputs. Orientation is
+ * communicated via `aria-orientation` for assistive tech.
+ *
+ * Opt-in via the host class — the directive already adds it. Import
+ * this file to consume defaults, or style `.cngx-divider` yourself.
+ *
+ * Three-Tier-Override: --cngx-divider-* tokens cascade through @layer
+ * cngx.theme; colour falls back to --cngx-color-border. */
+
+@layer cngx.tokens {
+  @property --cngx-divider-thickness    { syntax: '<length>'; inherits: false; initial-value: 1px; }
+  @property --cngx-divider-color        { syntax: '<color>';  inherits: true;  initial-value: oklch(0.9 0.01 250); }
+  @property --cngx-divider-spacing      { syntax: '<length>'; inherits: false; initial-value: 8px; }
+  @property --cngx-divider-inset-amount { syntax: '<length>'; inherits: false; initial-value: 16px; }
+}
+
+@layer cngx.components {
+  @scope (.cngx-divider) {
+    /* Horizontal default — full-width thin line, vertical breathing room. */
+    :scope {
+      display: block;
+      box-sizing: border-box;
+      width: 100%;
+      height: var(--cngx-divider-thickness, 1px);
+      margin-block: var(--cngx-divider-spacing, var(--cngx-space-sm, 8px));
+      margin-inline: 0;
+      border: 0;
+      background: var(--cngx-divider-color, var(--cngx-color-border, oklch(0.9 0.01 250)));
+    }
+
+    /* Vertical variant — thin column, horizontal breathing room. */
+    :scope.cngx-divider--vertical {
+      display: inline-block;
+      width: var(--cngx-divider-thickness, 1px);
+      height: 1em;
+      margin-block: 0;
+      margin-inline: var(--cngx-divider-spacing, var(--cngx-space-sm, 8px));
+      align-self: stretch;
+    }
+
+    /* Inset variant — drops the line in from the start/end edge. */
+    :scope.cngx-divider--inset {
+      margin-inline: var(--cngx-divider-inset-amount, var(--cngx-space-md, 16px));
+    }
+    :scope.cngx-divider--vertical.cngx-divider--inset {
+      margin-block: var(--cngx-divider-inset-amount, var(--cngx-space-md, 16px));
+      margin-inline: var(--cngx-divider-spacing, var(--cngx-space-sm, 8px));
+    }
+  }
+}

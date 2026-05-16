@@ -1,0 +1,124 @@
+/* cngx-badge — default styling for the CngxBadge directive.
+ *
+ * The directive injects a `<span class="cngx-badge-indicator …">` into
+ * the host element and toggles modifier classes for color (primary /
+ * error / warning / neutral), position (inline / above-start /
+ * above-end / below-start / below-end), and dot mode.
+ *
+ * Opt-in: no class on the host is required — the .cngx-badge-indicator
+ * span renders automatically. Just import this file to consume the
+ * default appearance, or write your own styling for those classes if
+ * the defaults don't fit.
+ *
+ * Three-Tier-Override: --cngx-badge-* tokens cascade through @layer
+ * cngx.theme; semantic colours fall back to system tokens.
+ */
+
+@layer cngx.tokens {
+  /* Layout + base */
+  @property --cngx-badge-size            { syntax: '<length>'; inherits: false; initial-value: 16px; }
+  @property --cngx-badge-dot-size        { syntax: '<length>'; inherits: false; initial-value: 8px; }
+  @property --cngx-badge-padding-inline  { syntax: '<length>'; inherits: false; initial-value: 5px; }
+  @property --cngx-badge-radius          { syntax: '<length>'; inherits: false; initial-value: 999px; }
+  @property --cngx-badge-font-size       { syntax: '*';        inherits: false; initial-value: 0.6875rem; }
+  @property --cngx-badge-font-weight     { syntax: '*';        inherits: false; initial-value: 600; }
+  @property --cngx-badge-border          { syntax: '*';        inherits: false; initial-value: 2px solid oklch(1 0 0); }
+
+  /* Colour palette */
+  @property --cngx-badge-primary-bg     { syntax: '<color>'; inherits: true; initial-value: oklch(0.6 0.2 250); }
+  @property --cngx-badge-primary-color  { syntax: '<color>'; inherits: true; initial-value: oklch(1 0 0); }
+  @property --cngx-badge-error-bg       { syntax: '<color>'; inherits: true; initial-value: oklch(0.62 0.22 25); }
+  @property --cngx-badge-error-color    { syntax: '<color>'; inherits: true; initial-value: oklch(1 0 0); }
+  @property --cngx-badge-warning-bg     { syntax: '<color>'; inherits: true; initial-value: oklch(0.72 0.18 70); }
+  @property --cngx-badge-warning-color  { syntax: '<color>'; inherits: true; initial-value: oklch(0.2 0.01 250); }
+  @property --cngx-badge-neutral-bg     { syntax: '<color>'; inherits: true; initial-value: oklch(0.68 0.01 240); }
+  @property --cngx-badge-neutral-color  { syntax: '<color>'; inherits: true; initial-value: oklch(1 0 0); }
+}
+
+@layer cngx.components {
+  @scope (.cngx-badge-host) {
+    :scope { position: relative; }
+  }
+
+  /* The indicator lives outside the host class scope (it's a child of
+   * the host element, marked by the cngx-badge-host class) but ARIA
+   * conventions allow the indicator span to be scoped on its own. */
+  @scope (.cngx-badge-indicator) {
+    :scope {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
+      min-width: var(--cngx-badge-size, 16px);
+      height: var(--cngx-badge-size, 16px);
+      padding: 0 var(--cngx-badge-padding-inline, 5px);
+      border-radius: var(--cngx-badge-radius, var(--cngx-radius-pill, 999px));
+      font-size: var(--cngx-badge-font-size, 0.6875rem);
+      font-weight: var(--cngx-badge-font-weight, 600);
+      line-height: 1;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    /* Dot mode — no text, fixed size */
+    :scope.cngx-badge-indicator--dot {
+      min-width: var(--cngx-badge-dot-size, 8px);
+      width: var(--cngx-badge-dot-size, 8px);
+      height: var(--cngx-badge-dot-size, 8px);
+      padding: 0;
+    }
+
+    /* Colour variants */
+    :scope.cngx-badge-indicator--primary {
+      background: var(--cngx-badge-primary-bg, var(--cngx-color-primary, oklch(0.6 0.2 250)));
+      color: var(--cngx-badge-primary-color, oklch(1 0 0));
+    }
+    :scope.cngx-badge-indicator--error {
+      background: var(--cngx-badge-error-bg, var(--cngx-color-danger, oklch(0.62 0.22 25)));
+      color: var(--cngx-badge-error-color, oklch(1 0 0));
+    }
+    :scope.cngx-badge-indicator--warning {
+      background: var(--cngx-badge-warning-bg, var(--cngx-color-warning, oklch(0.72 0.18 70)));
+      color: var(--cngx-badge-warning-color, oklch(0.2 0.01 250));
+    }
+    :scope.cngx-badge-indicator--neutral {
+      background: var(--cngx-badge-neutral-bg, oklch(0.68 0.01 240));
+      color: var(--cngx-badge-neutral-color, oklch(1 0 0));
+    }
+
+    /* Position variants — corner anchors for non-inline placements,
+     * border ring contrasts the indicator against the host surface. */
+    :scope.cngx-badge-indicator--inline {
+      position: static;
+      border: 0;
+    }
+    :scope.cngx-badge-indicator--above-start {
+      position: absolute;
+      top: 0;
+      inset-inline-start: 0;
+      transform: translate(-50%, -50%);
+      border: var(--cngx-badge-border, 2px solid oklch(1 0 0));
+    }
+    :scope.cngx-badge-indicator--above-end {
+      position: absolute;
+      top: 0;
+      inset-inline-end: 0;
+      transform: translate(50%, -50%);
+      border: var(--cngx-badge-border, 2px solid oklch(1 0 0));
+    }
+    :scope.cngx-badge-indicator--below-start {
+      position: absolute;
+      bottom: 0;
+      inset-inline-start: 0;
+      transform: translate(-50%, 50%);
+      border: var(--cngx-badge-border, 2px solid oklch(1 0 0));
+    }
+    :scope.cngx-badge-indicator--below-end {
+      position: absolute;
+      bottom: 0;
+      inset-inline-end: 0;
+      transform: translate(50%, 50%);
+      border: var(--cngx-badge-border, 2px solid oklch(1 0 0));
+    }
+  }
+}

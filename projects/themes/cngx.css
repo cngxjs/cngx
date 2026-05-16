@@ -37,3 +37,5 @@
 @import '../core/theming/reset.css';
 @import '../core/theming/base.css';
 @import '../common/theming/components/cngx-backdrop.css';
+@import '../common/theming/components/cngx-badge.css';
+@import '../common/theming/components/cngx-divider.css';
