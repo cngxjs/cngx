@@ -1,0 +1,69 @@
+/* cngx-base — token-driven appearance for native form-element atoms.
+ *
+ * Bare <button>, <input>, <textarea>, <select>, <kbd>, <dl> in generator
+ * demos (and any consumer app that wants the same defaults) render
+ * intentionally without per-instance overrides. All values come from
+ * system tokens, so dark mode and density switches work automatically.
+ *
+ * Opt out per-element in cngx.components or the app layer. */
+
+@layer cngx.base {
+  button {
+    padding: var(--cngx-space-sm, 8px) var(--cngx-space-md, 16px);
+    border: 1px solid var(--cngx-color-border, oklch(0.9 0.01 250));
+    border-radius: var(--cngx-radius-md, 8px);
+    background: var(--cngx-color-surface, oklch(1 0 0));
+    color: var(--cngx-color-text, oklch(0.2 0.01 250));
+    font-size: var(--cngx-font-size-md, 0.9375rem);
+    transition: background var(--cngx-duration-fast, 150ms);
+  }
+  button:hover {
+    background: color-mix(in oklch, var(--cngx-color-surface), var(--cngx-color-text) 6%);
+  }
+
+  input,
+  textarea,
+  select {
+    padding: var(--cngx-space-sm, 8px) var(--cngx-space-md, 16px);
+    border: 1px solid var(--cngx-color-border, oklch(0.9 0.01 250));
+    border-radius: var(--cngx-radius-md, 8px);
+    background: var(--cngx-color-surface, oklch(1 0 0));
+    color: var(--cngx-color-text, oklch(0.2 0.01 250));
+    font: inherit;
+    font-size: var(--cngx-font-size-md, 0.9375rem);
+  }
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible {
+    border-color: transparent;
+  }
+
+  kbd {
+    display: inline-block;
+    margin: 0 2px;
+    padding: 1px var(--cngx-space-sm, 8px);
+    border: 1px solid var(--cngx-color-border, oklch(0.9 0.01 250));
+    border-bottom-width: 2px;
+    border-radius: var(--cngx-radius-sm, 4px);
+    background: var(--cngx-color-surface, oklch(1 0 0));
+    color: var(--cngx-color-text, oklch(0.2 0.01 250));
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.85em;
+  }
+
+  dl {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: var(--cngx-space-xs, 4px) var(--cngx-space-md, 16px);
+    margin: var(--cngx-space-sm, 8px) 0;
+    font-size: var(--cngx-font-size-sm, 0.8125rem);
+  }
+  dl > dt {
+    color: var(--cngx-color-text, oklch(0.2 0.01 250));
+    opacity: 0.65;
+  }
+  dl > dd {
+    margin: 0;
+    font-variant-numeric: tabular-nums;
+  }
+}
