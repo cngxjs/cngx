@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  ViewEncapsulation,
   computed,
   inject,
   input,
@@ -99,6 +100,7 @@ import {
   ],
   template: `<ng-content />`,
   styleUrl: './button-toggle-group.component.css',
+  encapsulation: ViewEncapsulation.None,
 })
 export class CngxButtonToggleGroup<T = unknown>
   implements

@@ -1,38 +1,59 @@
-:host.cngx-checkbox {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--cngx-checkbox-gap, 0.5rem);
-  cursor: pointer;
-  user-select: none;
-  outline: none;
-  font: inherit;
-  color: var(--cngx-checkbox-color, inherit);
+/*
+ * checkbox.component.css — interactive shell around <cngx-checkbox-indicator>.
+ *
+ * Migrated to @layer cngx.tokens + @layer cngx.components + @scope (Phase 3).
+ * Token-sharing note: --cngx-checkbox-color and --cngx-checkbox-disabled-opacity
+ * are registered by CngxCheckboxIndicator (which this component always renders
+ * via its template). Re-declaring them here would fork the token vocabulary, so
+ * this file registers only the checkbox-shell-specific tokens.
+ */
+
+@layer cngx.tokens {
+  @property --cngx-checkbox-gap           { syntax: '*'; inherits: false; initial-value: 0.5rem; }
+  @property --cngx-checkbox-focus-outline { syntax: '*'; inherits: false; initial-value: 2px solid currentColor; }
+  @property --cngx-checkbox-focus-offset  { syntax: '*'; inherits: false; initial-value: 2px; }
+  @property --cngx-checkbox-focus-radius  { syntax: '*'; inherits: false; initial-value: 0.25rem; }
 }
 
-:host.cngx-checkbox.cngx-checkbox--disabled {
-  cursor: not-allowed;
-  opacity: var(--cngx-checkbox-disabled-opacity, 0.5);
-}
+@layer cngx.components {
+  @scope (.cngx-checkbox) {
+    :scope {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--cngx-checkbox-gap, var(--cngx-space-sm, 0.5rem));
+      cursor: pointer;
+      user-select: none;
+      outline: none;
+      font: inherit;
+      color: var(--cngx-checkbox-color, inherit);
+    }
 
-:host.cngx-checkbox:focus-visible {
-  outline: var(--cngx-checkbox-focus-outline, 2px solid currentColor);
-  outline-offset: var(--cngx-checkbox-focus-offset, 2px);
-  border-radius: var(--cngx-checkbox-focus-radius, 0.25rem);
-}
+    :scope.cngx-checkbox--disabled {
+      cursor: not-allowed;
+      opacity: var(--cngx-checkbox-disabled-opacity, 0.5);
+    }
 
-.cngx-checkbox__label {
-  flex: 0 1 auto;
-  min-inline-size: 0;
-}
+    :scope:focus-visible {
+      outline: var(--cngx-checkbox-focus-outline, 2px solid currentColor);
+      outline-offset: var(--cngx-checkbox-focus-offset, 2px);
+      border-radius: var(--cngx-checkbox-focus-radius, var(--cngx-radius-sm, 0.25rem));
+    }
 
-.cngx-checkbox__sr-only {
-  position: absolute;
-  inline-size: 1px;
-  block-size: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
+    .cngx-checkbox__label {
+      flex: 0 1 auto;
+      min-inline-size: 0;
+    }
+
+    .cngx-checkbox__sr-only {
+      position: absolute;
+      inline-size: 1px;
+      block-size: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+  }
 }

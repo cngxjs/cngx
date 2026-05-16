@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  ViewEncapsulation,
   computed,
   DestroyRef,
   inject,
@@ -119,6 +120,7 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
   ],
   template: `<ng-content />`,
   styleUrl: './checkbox-group.component.css',
+  encapsulation: ViewEncapsulation.None,
 })
 export class CngxCheckboxGroup<T = unknown>
   implements CngxControlValue<T[]>, CngxFormFieldControl

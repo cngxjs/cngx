@@ -1,10 +1,24 @@
-:host.cngx-chip-group {
-  display: inline-flex;
-  flex-direction: column;
-  gap: var(--cngx-chip-group-gap, 0.5rem);
+/*
+ * chip-group.component.css — flex layout container for CngxChip leaves.
+ *
+ * Migrated to @layer cngx.tokens + @layer cngx.components + @scope (Phase 3).
+ */
+
+@layer cngx.tokens {
+  @property --cngx-chip-group-gap { syntax: '*'; inherits: false; initial-value: 0.5rem; }
 }
 
-:host.cngx-chip-group.cngx-chip-group--horizontal {
-  flex-direction: row;
-  flex-wrap: wrap;
+@layer cngx.components {
+  @scope (.cngx-chip-group) {
+    :scope {
+      display: inline-flex;
+      flex-direction: column;
+      gap: var(--cngx-chip-group-gap, var(--cngx-space-sm, 0.5rem));
+    }
+
+    :scope.cngx-chip-group--horizontal {
+      flex-direction: row;
+      flex-wrap: wrap;
+    }
+  }
 }

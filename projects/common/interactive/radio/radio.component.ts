@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  ViewEncapsulation,
   computed,
   DestroyRef,
   inject,
@@ -99,7 +100,8 @@ import {
       [attr.aria-hidden]="disabledReason() ? null : 'true'"
     >{{ disabledReason() }}</span>
   `,
-  styleUrls: ['./radio.component.css'],
+  styleUrl: './radio.component.css',
+  encapsulation: ViewEncapsulation.None,
 })
 export class CngxRadio<T = unknown> {
   protected readonly group = inject<CngxRadioGroupContract<T>>(CNGX_RADIO_GROUP);

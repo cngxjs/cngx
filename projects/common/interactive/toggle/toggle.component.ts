@@ -2,6 +2,7 @@ import { NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
+  ViewEncapsulation,
   computed,
   inject,
   input,
@@ -118,7 +119,8 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
       [attr.aria-hidden]="disabledReason() ? null : 'true'"
     >{{ disabledReason() }}</span>
   `,
-  styleUrls: ['./toggle.component.css'],
+  styleUrl: './toggle.component.css',
+  encapsulation: ViewEncapsulation.None,
 })
 export class CngxToggle
   implements CngxControlValue<boolean>, CngxFormFieldControl

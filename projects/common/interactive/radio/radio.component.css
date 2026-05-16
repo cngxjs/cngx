@@ -1,43 +1,64 @@
-/* Visual state (filled circle vs ring) lives on the inner
-   <cngx-radio-indicator>; the .cngx-radio--checked /
-   .cngx-radio--disabled host classes are unstyled here on purpose
-   and exposed as consumer-theming hooks. */
+/*
+ * radio.component.css — interactive shell around <cngx-radio-indicator>.
+ *
+ * Migrated to @layer cngx.tokens + @layer cngx.components + @scope (Phase 3).
+ * Visual state (filled circle vs ring) lives on the inner <cngx-radio-indicator>;
+ * the .cngx-radio--checked / .cngx-radio--disabled host classes are unstyled
+ * here on purpose and exposed as consumer-theming hooks.
+ *
+ * Token-naming note: CngxRadioIndicator registers its visuals under
+ * --cngx-radio-indicator-* (separate namespace), so the shell registers its
+ * own --cngx-radio-* tokens here without overlap.
+ */
 
-:host.cngx-radio {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--cngx-radio-gap, 0.5rem);
-  cursor: pointer;
-  user-select: none;
-  outline: none;
-  font: inherit;
-  color: var(--cngx-radio-color, inherit);
+@layer cngx.tokens {
+  @property --cngx-radio-gap               { syntax: '*';        inherits: false; initial-value: 0.5rem; }
+  @property --cngx-radio-color             { syntax: '<color>';  inherits: true;  initial-value: currentColor; }
+  @property --cngx-radio-disabled-opacity  { syntax: '<number>'; inherits: false; initial-value: 0.5; }
+  @property --cngx-radio-focus-outline     { syntax: '*';        inherits: false; initial-value: 2px solid currentColor; }
+  @property --cngx-radio-focus-offset      { syntax: '*';        inherits: false; initial-value: 2px; }
+  @property --cngx-radio-focus-radius      { syntax: '*';        inherits: false; initial-value: 0.25rem; }
 }
 
-:host.cngx-radio.cngx-radio--disabled {
-  cursor: not-allowed;
-  opacity: var(--cngx-radio-disabled-opacity, 0.5);
-}
+@layer cngx.components {
+  @scope (.cngx-radio) {
+    :scope {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--cngx-radio-gap, var(--cngx-space-sm, 0.5rem));
+      cursor: pointer;
+      user-select: none;
+      outline: none;
+      font: inherit;
+      color: var(--cngx-radio-color, inherit);
+    }
 
-:host.cngx-radio:focus-visible {
-  outline: var(--cngx-radio-focus-outline, 2px solid currentColor);
-  outline-offset: var(--cngx-radio-focus-offset, 2px);
-  border-radius: var(--cngx-radio-focus-radius, 0.25rem);
-}
+    :scope.cngx-radio--disabled {
+      cursor: not-allowed;
+      opacity: var(--cngx-radio-disabled-opacity, 0.5);
+    }
 
-.cngx-radio__label {
-  flex: 0 1 auto;
-  min-inline-size: 0;
-}
+    :scope:focus-visible {
+      outline: var(--cngx-radio-focus-outline, 2px solid currentColor);
+      outline-offset: var(--cngx-radio-focus-offset, 2px);
+      border-radius: var(--cngx-radio-focus-radius, var(--cngx-radius-sm, 0.25rem));
+    }
 
-.cngx-radio__sr-only {
-  position: absolute;
-  inline-size: 1px;
-  block-size: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
+    .cngx-radio__label {
+      flex: 0 1 auto;
+      min-inline-size: 0;
+    }
+
+    .cngx-radio__sr-only {
+      position: absolute;
+      inline-size: 1px;
+      block-size: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+  }
 }

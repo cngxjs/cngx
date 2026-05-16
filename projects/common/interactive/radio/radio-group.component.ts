@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  ViewEncapsulation,
   computed,
   inject,
   input,
@@ -107,6 +108,7 @@ import {
   ],
   template: `<ng-content />`,
   styleUrl: './radio-group.component.css',
+  encapsulation: ViewEncapsulation.None,
 })
 export class CngxRadioGroup<T = unknown>
   implements

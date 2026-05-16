@@ -53,45 +53,7 @@ import { CngxCopyText } from './copy-text.directive';
       </span>
     </button>
   `,
-  styles: `
-    .cngx-copy-block {
-      display: flex;
-      align-items: flex-start;
-      gap: var(--cngx-copy-block-gap, 8px);
-    }
-    .cngx-copy-block__content {
-      flex: 1;
-      min-width: 0;
-      overflow: hidden;
-    }
-    .cngx-copy-block__button {
-      flex-shrink: 0;
-      cursor: pointer;
-      border: 1px solid var(--cngx-copy-block-btn-border, currentColor);
-      background: var(--cngx-copy-block-btn-bg, transparent);
-      color: var(--cngx-copy-block-btn-color, inherit);
-      border-radius: var(--cngx-copy-block-btn-radius, 4px);
-      padding: var(--cngx-copy-block-btn-padding, 4px 8px);
-      font-size: var(--cngx-copy-block-btn-font-size, 0.75rem);
-      transition:
-        background 0.15s,
-        border-color 0.15s;
-    }
-    .cngx-copy-block__button--copied {
-      background: var(--cngx-copy-block-btn-copied-bg, #e8f5e9);
-      border-color: var(--cngx-copy-block-btn-copied-border, #2e7d32);
-      color: var(--cngx-copy-block-btn-copied-color, #2e7d32);
-    }
-    .cngx-sr-only {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      overflow: hidden;
-      clip: rect(0, 0, 0, 0);
-      white-space: nowrap;
-      border: 0;
-    }
-  `,
+  styleUrl: './copy-block.css',
 })
 export class CngxCopyBlock {
   /** The text value to copy to clipboard. */

@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  ViewEncapsulation,
   computed,
   inject,
   input,
@@ -114,7 +115,8 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
       [attr.aria-hidden]="disabledReason() ? null : 'true'"
     >{{ disabledReason() }}</span>
   `,
-  styleUrls: ['./checkbox.component.css'],
+  styleUrl: './checkbox.component.css',
+  encapsulation: ViewEncapsulation.None,
 })
 export class CngxCheckbox
   implements CngxControlValue<boolean>, CngxFormFieldControl
