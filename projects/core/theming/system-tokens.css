@@ -1,0 +1,70 @@
+/* cngx system-tokens — foundation layer.
+ *
+ * Every component-level token (--cngx-card-padding-block, --cngx-button-bg, …)
+ * falls back to a system token of the same family. Consumers re-skin the
+ * library globally by overriding these in @layer cngx.theme; per-component
+ * tokens stay untouched but inherit the new system value.
+ *
+ * Note on syntax: `@property` is a top-level at-rule. It cannot be nested
+ * inside a selector, but it CAN live inside an `@layer`. Declarations here
+ * register the token type (animation interpolation, type-checking) and a
+ * static default. The `:root` block below provides conditional defaults
+ * (`light-dark()`) that `@property` cannot express directly. */
+
+@layer cngx.tokens {
+  /* Spacing — T-shirt scale. Swapped wholesale by [data-density] in cngx.theme. */
+  @property --cngx-space-xs { syntax: '<length>'; inherits: false; initial-value: 4px; }
+  @property --cngx-space-sm { syntax: '<length>'; inherits: false; initial-value: 8px; }
+  @property --cngx-space-md { syntax: '<length>'; inherits: false; initial-value: 16px; }
+  @property --cngx-space-lg { syntax: '<length>'; inherits: false; initial-value: 24px; }
+  @property --cngx-space-xl { syntax: '<length>'; inherits: false; initial-value: 32px; }
+
+  /* Radius */
+  @property --cngx-radius-sm   { syntax: '<length>'; inherits: false; initial-value: 4px; }
+  @property --cngx-radius-md   { syntax: '<length>'; inherits: false; initial-value: 8px; }
+  @property --cngx-radius-lg   { syntax: '<length>'; inherits: false; initial-value: 12px; }
+  @property --cngx-radius-pill { syntax: '<length>'; inherits: false; initial-value: 999px; }
+
+  /* Motion — durations + easing curves. `syntax: '*'` on easings because
+   * cubic-bezier() isn't an animatable type and interpolation across
+   * transition timing-functions isn't a thing browsers do. */
+  @property --cngx-duration-fast { syntax: '<time>'; inherits: false; initial-value: 150ms; }
+  @property --cngx-duration-base { syntax: '<time>'; inherits: false; initial-value: 200ms; }
+  @property --cngx-duration-slow { syntax: '<time>'; inherits: false; initial-value: 320ms; }
+  @property --cngx-easing-standard   { syntax: '*'; inherits: false; initial-value: cubic-bezier(0.4, 0, 0.2, 1); }
+  @property --cngx-easing-decelerate { syntax: '*'; inherits: false; initial-value: cubic-bezier(0, 0, 0.2, 1); }
+  @property --cngx-easing-accelerate { syntax: '*'; inherits: false; initial-value: cubic-bezier(0.4, 0, 1, 1); }
+
+  /* Color — OKLCH. Static initial-value here gets overridden in the
+   * `:root` block below with `light-dark()` for OS-following dark-mode. */
+  @property --cngx-color-surface { syntax: '<color>'; inherits: true; initial-value: oklch(1 0 0); }
+  @property --cngx-color-text    { syntax: '<color>'; inherits: true; initial-value: oklch(0.2 0.01 250); }
+  @property --cngx-color-border  { syntax: '<color>'; inherits: true; initial-value: oklch(0.9 0.01 250); }
+  @property --cngx-color-primary { syntax: '<color>'; inherits: true; initial-value: oklch(0.6 0.2 250); }
+  @property --cngx-color-danger  { syntax: '<color>'; inherits: true; initial-value: oklch(0.6 0.18 25); }
+  @property --cngx-color-success { syntax: '<color>'; inherits: true; initial-value: oklch(0.6 0.15 145); }
+  @property --cngx-color-warning { syntax: '<color>'; inherits: true; initial-value: oklch(0.72 0.15 75); }
+  @property --cngx-color-info    { syntax: '<color>'; inherits: true; initial-value: oklch(0.65 0.12 240); }
+
+  /* Typography */
+  @property --cngx-font-size-sm     { syntax: '<length>'; inherits: false; initial-value: 0.8125rem; }
+  @property --cngx-font-size-md     { syntax: '<length>'; inherits: false; initial-value: 0.9375rem; }
+  @property --cngx-font-size-lg     { syntax: '<length>'; inherits: false; initial-value: 1.0625rem; }
+  @property --cngx-line-height-base { syntax: '<number>'; inherits: true;  initial-value: 1.5; }
+
+  /* Elevation — `syntax: '*'` because box-shadow is a composite value
+   * that doesn't smoothly interpolate component-by-component. */
+  @property --cngx-shadow-sm { syntax: '*'; inherits: false; initial-value: 0 1px 2px oklch(0 0 0 / 0.05); }
+  @property --cngx-shadow-md { syntax: '*'; inherits: false; initial-value: 0 4px 12px oklch(0 0 0 / 0.08); }
+  @property --cngx-shadow-lg { syntax: '*'; inherits: false; initial-value: 0 12px 32px oklch(0 0 0 / 0.12); }
+
+  /* Conditional defaults — OS-follows dark mode via light-dark().
+   * Consumers can force a mode by setting [data-theme="dark"] in
+   * cngx.theme, which beats this :root by being in a later layer. */
+  :root {
+    color-scheme: light dark;
+    --cngx-color-surface: light-dark(oklch(1 0 0),     oklch(0.2 0.01 250));
+    --cngx-color-text:    light-dark(oklch(0.2 0.01 250), oklch(0.95 0.01 250));
+    --cngx-color-border:  light-dark(oklch(0.9 0.01 250), oklch(0.35 0.01 250));
+  }
+}

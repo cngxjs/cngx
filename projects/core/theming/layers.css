@@ -1,0 +1,5 @@
+/* cngx canonical cascade-layer order — load this file once, before any
+ * other cngx CSS. The declaration is global and idempotent; downstream
+ * files use `@layer cngx.tokens { … }` (etc) and append to the order
+ * established here rather than redefining it. */
+@layer cngx.reset, cngx.tokens, cngx.base, cngx.components, cngx.theme, app;
