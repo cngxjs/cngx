@@ -1,0 +1,30 @@
+/* cngx-card-timestamp — default styling for the CngxCardTimestamp component.
+ *
+ * The host element <cngx-card-timestamp> always carries the
+ * .cngx-card-timestamp class. One slot child:
+ *   .cngx-card-timestamp__prefix | optional label before the date
+ *
+ * Lightweight inline-flex layout, muted color, small font. */
+
+@layer cngx.tokens {
+  @property --cngx-card-timestamp-gap           { syntax: '<length>'; inherits: false; initial-value: 4px; }
+  @property --cngx-card-timestamp-size          { syntax: '*';        inherits: true;  initial-value: 0.75rem; }
+  @property --cngx-card-timestamp-color         { syntax: '<color>';  inherits: true;  initial-value: oklch(0.36 0.02 290); }
+  @property --cngx-card-timestamp-prefix-weight { syntax: '<number>'; inherits: true;  initial-value: 400; }
+}
+
+@layer cngx.components {
+  @scope (.cngx-card-timestamp) {
+    :scope {
+      display: inline-flex;
+      gap: var(--cngx-card-timestamp-gap, var(--cngx-space-xs, 4px));
+      font-size: var(--cngx-card-timestamp-size, 0.75rem);
+      color: var(--cngx-card-timestamp-color, oklch(0.36 0.02 290));
+      line-height: 1.4;
+    }
+
+    .cngx-card-timestamp__prefix {
+      font-weight: var(--cngx-card-timestamp-prefix-weight, 400);
+    }
+  }
+}
