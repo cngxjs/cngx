@@ -1,0 +1,71 @@
+/* cngx-ripple — default styling for the CngxRipple directive.
+ *
+ * The directive injects a `<span class="cngx-ripple__wave">` into the host on
+ * pointerdown and removes it after the animation completes. ALL visual
+ * treatment lives here; the directive only does geometry + DOM injection.
+ *
+ * Three theme tokens (--cngx-ripple-color, --cngx-ripple-opacity,
+ * --cngx-ripple-duration) are registered for consumer overrides.
+ *
+ * The --cngx-ripple-x / -y / -size custom properties are set inline by the
+ * directive per-instance (geometric positioning, not theme surface) so they
+ * are intentionally NOT @property-registered.
+ *
+ * Material-Bridge: the sibling ripple-theme.scss exports a Sass mixin that
+ * derives --cngx-ripple-color from a Material theme — that file stays SCSS
+ * per Plan §10 (Material bridges remain untouched). */
+
+@layer cngx.tokens {
+  @property --cngx-ripple-color    { syntax: '<color>'; inherits: true;  initial-value: currentColor; }
+  @property --cngx-ripple-opacity  { syntax: '<number>'; inherits: false; initial-value: 0.12; }
+  @property --cngx-ripple-duration { syntax: '<time>';   inherits: false; initial-value: 0.5s; }
+}
+
+@layer cngx.components {
+  @scope (.cngx-ripple__wave) {
+    :scope {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: var(--cngx-ripple-size, 100px);
+      height: var(--cngx-ripple-size, 100px);
+      border-radius: 50%;
+      background: var(--cngx-ripple-color, currentColor);
+      opacity: 0;
+      pointer-events: none;
+      transform: translate(
+        calc(var(--cngx-ripple-x, 50%) - var(--cngx-ripple-size, 100px) / 2),
+        calc(var(--cngx-ripple-y, 50%) - var(--cngx-ripple-size, 100px) / 2)
+      );
+      animation: cngx-ripple-expand var(--cngx-ripple-duration, 0.5s) ease-out forwards;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      :scope {
+        animation: none;
+        opacity: var(--cngx-ripple-opacity, 0.12);
+        transition: opacity 0.15s ease;
+      }
+    }
+  }
+
+  @keyframes cngx-ripple-expand {
+    0% {
+      transform: translate(
+          calc(var(--cngx-ripple-x) - var(--cngx-ripple-size) / 2),
+          calc(var(--cngx-ripple-y) - var(--cngx-ripple-size) / 2)
+        )
+        scale(0);
+      opacity: var(--cngx-ripple-opacity, 0.12);
+    }
+
+    100% {
+      transform: translate(
+          calc(var(--cngx-ripple-x) - var(--cngx-ripple-size) / 2),
+          calc(var(--cngx-ripple-y) - var(--cngx-ripple-size) / 2)
+        )
+        scale(1);
+      opacity: 0;
+    }
+  }
+}

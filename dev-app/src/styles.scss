@@ -6,7 +6,7 @@
 @use '../../projects/ui/action-button/action-button-theme' as async-btn;
 @use '../../projects/common/dialog/dialog/dialog-theme' as dialog;
 @use '../../projects/common/dialog/bottom-sheet/bottom-sheet-theme' as bottom-sheet;
-@use '../../projects/common/interactive/ripple/ripple' as cngx-ripple;
+@use '../../projects/common/theming/components/cngx-ripple.css';
 @use '../../projects/common/interactive/ripple/ripple-theme' as ripple;
 @use '../../projects/common/popover/tooltip-theme' as tooltip;
 @use '../../projects/common/popover/tooltip-indicator' as tooltip-indicator;
