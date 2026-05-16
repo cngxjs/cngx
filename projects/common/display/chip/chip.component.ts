@@ -4,6 +4,7 @@ import {
   computed,
   input,
   output,
+  ViewEncapsulation,
 } from '@angular/core';
 
 import { nextUid } from '@cngx/core/utils';
@@ -43,6 +44,7 @@ import { nextUid } from '@cngx/core/utils';
   exportAs: 'cngxChip',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   styleUrl: './chip.component.css',
   host: {
     class: 'cngx-chip',
