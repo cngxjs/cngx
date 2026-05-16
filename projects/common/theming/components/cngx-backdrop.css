@@ -1,0 +1,43 @@
+/* cngx-backdrop — default styling for the CngxBackdrop directive.
+ *
+ * Opt-in: add the `.cngx-backdrop` class alongside the [cngxBackdrop]
+ * directive to consume the default fixed-overlay appearance. The
+ * directive toggles `.cngx-backdrop--visible` and `aria-hidden` based
+ * on its `cngxBackdrop` input — this stylesheet only paints.
+ *
+ * Three-Tier Override (per Plan §2.4):
+ *   per-instance:  <div cngxBackdrop class="cngx-backdrop"
+ *                       style="--cngx-backdrop-bg: oklch(0 0 0 / 0.3)">
+ *   per-component: @layer cngx.theme { :root[data-theme="X"] { --cngx-backdrop-bg: ...; } }
+ *   per-system:    @layer cngx.theme { :root[data-density="compact"] { --cngx-backdrop-transition-duration: 150ms; } }
+ *
+ * Consumer who does NOT want these defaults: just omit the `.cngx-backdrop`
+ * class. The directive works without any CSS — the class is the opt-in. */
+
+@layer cngx.tokens {
+  @property --cngx-backdrop-bg                  { syntax: '<color>'; inherits: true;  initial-value: oklch(0 0 0 / 0.5); }
+  @property --cngx-backdrop-transition-duration { syntax: '<time>';  inherits: false; initial-value: 200ms; }
+}
+
+@layer cngx.components {
+  @scope (.cngx-backdrop) {
+    :scope {
+      /* Functional — hardcoded, not part of theming surface */
+      position: fixed;
+      inset: 0;
+      box-sizing: border-box;
+      opacity: 0;
+      pointer-events: none;
+
+      /* Themable — token-driven, three-tier overridable */
+      background: var(--cngx-backdrop-bg, oklch(0 0 0 / 0.5));
+      transition: opacity var(--cngx-backdrop-transition-duration, var(--cngx-duration-base, 200ms));
+    }
+
+    /* Visible state — class is toggled by the directive */
+    &.cngx-backdrop--visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+  }
+}

@@ -17,26 +17,41 @@ import {
  * attribute, preventing focus and interaction behind the backdrop.
  * This is critical for a11y in modal/drawer overlays.
  *
- * The directive is purely behavioral -- the consumer provides all
- * visual styling (background color, opacity, transitions) via CSS
- * custom properties and the `.cngx-backdrop--visible` class.
+ * The directive is purely behavioral — it toggles the
+ * `.cngx-backdrop--visible` class and `aria-hidden` attribute. Visual
+ * styling is opt-in: either consume the shipped default stylesheet or
+ * provide your own.
  *
- * ### Drawer backdrop
+ * ### Drawer backdrop with shipped defaults (recommended)
  * ```html
  * <div cngxDrawer #drawer="cngxDrawer">
  *   <div [cngxBackdrop]="drawer.opened()" (backdropClick)="drawer.close()"
- *        class="my-backdrop"></div>
+ *        class="cngx-backdrop"></div>
  *   <nav [cngxDrawerPanel]="drawer">…</nav>
  *   <main [cngxDrawerContent]="drawer">…</main>
  * </div>
  * ```
+ * ```css
+ * @import '@cngx/common/theming/components/cngx-backdrop.css';
+ * ```
  *
- * ### CSS (consumer responsibility)
+ * Token surface (Three-Tier-Override):
+ * - `--cngx-backdrop-bg` (scrim color, default `oklch(0 0 0 / 0.5)`)
+ * - `--cngx-backdrop-transition-duration` (default `200ms`)
+ *
+ * ### Custom styling (no opt-in class)
+ * If the shipped defaults don't fit, omit the `.cngx-backdrop` class and
+ * style your own host class — the directive still toggles
+ * `.cngx-backdrop--visible` on the host element.
+ *
+ * ```html
+ * <div [cngxBackdrop]="visible()" class="my-backdrop"></div>
+ * ```
  * ```css
  * .my-backdrop {
  *   position: fixed;
  *   inset: 0;
- *   background: var(--cngx-backdrop-color, rgba(0, 0, 0, 0.5));
+ *   background: rgba(0, 0, 0, 0.3);
  *   opacity: 0;
  *   pointer-events: none;
  *   transition: opacity 0.25s ease;
