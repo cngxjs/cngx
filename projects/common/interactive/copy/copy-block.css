@@ -1,0 +1,67 @@
+/*
+ * copy-block.css — externalised from inline `styles:` for Phase 3 migration.
+ * @property declarations are top-level-only, so they can't live in the inline
+ * string. Copied-state colours fall back to --cngx-color-success / surface so
+ * a brand-theme change propagates to the confirmation visual.
+ */
+
+@layer cngx.tokens {
+  @property --cngx-copy-block-gap                  { syntax: '<length>';     inherits: false; initial-value: 8px; }
+
+  @property --cngx-copy-block-btn-border           { syntax: '<color>';      inherits: false; initial-value: currentColor; }
+  @property --cngx-copy-block-btn-bg               { syntax: '<color>';      inherits: false; initial-value: transparent; }
+  @property --cngx-copy-block-btn-color            { syntax: '<color>';      inherits: false; initial-value: currentColor; }
+  @property --cngx-copy-block-btn-radius           { syntax: '<length>';     inherits: false; initial-value: 4px; }
+  @property --cngx-copy-block-btn-padding          { syntax: '*';            inherits: false; initial-value: 4px 8px; }
+  @property --cngx-copy-block-btn-font-size        { syntax: '<length>';     inherits: false; initial-value: 0.75rem; }
+
+  @property --cngx-copy-block-btn-copied-bg        { syntax: '<color>';      inherits: false; initial-value: oklch(0.96 0.025 145); }
+  @property --cngx-copy-block-btn-copied-border    { syntax: '<color>';      inherits: false; initial-value: oklch(0.5 0.12 145); }
+  @property --cngx-copy-block-btn-copied-color     { syntax: '<color>';      inherits: false; initial-value: oklch(0.5 0.12 145); }
+}
+
+@layer cngx.components {
+  @scope (.cngx-copy-block) {
+    :scope {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--cngx-copy-block-gap, var(--cngx-space-sm, 8px));
+    }
+
+    .cngx-copy-block__content {
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    .cngx-copy-block__button {
+      flex-shrink: 0;
+      cursor: pointer;
+      border: 1px solid var(--cngx-copy-block-btn-border, currentColor);
+      background: var(--cngx-copy-block-btn-bg, transparent);
+      color: var(--cngx-copy-block-btn-color, inherit);
+      border-radius: var(--cngx-copy-block-btn-radius, var(--cngx-radius-sm, 4px));
+      padding: var(--cngx-copy-block-btn-padding, 4px 8px);
+      font-size: var(--cngx-copy-block-btn-font-size, var(--cngx-font-size-sm, 0.75rem));
+      transition:
+        background 0.15s,
+        border-color 0.15s;
+    }
+
+    .cngx-copy-block__button--copied {
+      background: var(--cngx-copy-block-btn-copied-bg, oklch(0.96 0.025 145));
+      border-color: var(--cngx-copy-block-btn-copied-border, var(--cngx-color-success, oklch(0.5 0.12 145)));
+      color: var(--cngx-copy-block-btn-copied-color, var(--cngx-color-success, oklch(0.5 0.12 145)));
+    }
+
+    .cngx-sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+  }
+}
