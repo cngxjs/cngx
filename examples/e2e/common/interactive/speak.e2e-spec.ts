@@ -25,14 +25,16 @@ test.describe('common/interactive/speak', () => {
     await expect(page).toHaveScreenshot('speak-headless.png', { fullPage: true });
   });
 
-  test('form-error-read-aloud-on-demand: error read-aloud button is wired', async ({ page }) => {
+  test('form-error-read-aloud-on-demand: typing invalid email reveals hear-error button', async ({
+    page,
+  }) => {
     await gotoDemo(page, 'common/interactive/speak/form-error-read-aloud-on-demand');
 
-    // The demo exposes at least one button + an associated input with an
-    // error message bound to CngxSpeak. The minimum smoke is that the
-    // page renders without crashing and a button is interactive.
-    const buttons = page.getByRole('button');
-    expect(await buttons.count()).toBeGreaterThan(0);
+    const input = page.getByPlaceholder('user@example.com');
+    await expect(page.getByRole('button', { name: 'hear error' })).toHaveCount(0);
+
+    await input.fill('invalid');
+    await expect(page.getByRole('button', { name: 'hear error' })).toBeVisible();
 
     await expect(page).toHaveScreenshot('speak-form-error.png', { fullPage: true });
   });
