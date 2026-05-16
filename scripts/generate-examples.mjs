@@ -497,6 +497,16 @@ function emitComponentSource(meta, story, section, importMap) {
   });
   const decoratorImports = tplImports.length > 0 ? `\n  imports: [${tplImports.join(', ')}],` : '';
 
+  // Story-level hostDirectives — attach the named directives to the
+  // generated component's host element. Required for stories where
+  // injectXyz() factories use inject() to discover the directive on
+  // the host (e.g. CngxSmartDataSource → CngxSort + CngxFilter).
+  const storyHostDirectives = (story.hostDirectives ?? []).filter(Boolean);
+  const decoratorHostDirectives =
+    storyHostDirectives.length > 0
+      ? `\n  hostDirectives: [${storyHostDirectives.join(', ')}],`
+      : '';
+
   // Indent setup body two spaces (it's class-body code)
   const setupBody = setup
     .split('\n')
@@ -565,7 +575,7 @@ ${lines.join('\n')}
 
 @Component({
   selector: 'app-${meta.demoSlug}-${meta.sectionSlug}',
-  changeDetection: ChangeDetectionStrategy.OnPush,${decoratorImports}
+  changeDetection: ChangeDetectionStrategy.OnPush,${decoratorImports}${decoratorHostDirectives}
   template: \`
 ${intro}
 ${indent(template, 4)}

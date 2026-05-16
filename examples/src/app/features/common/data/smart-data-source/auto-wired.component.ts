@@ -11,6 +11,7 @@ import { CngxSortHeader } from '@cngx/common/data';
   selector: 'app-smart-data-source-auto-wired',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CngxSortHeader],
+  hostDirectives: [CngxSort, CngxFilter],
   template: `
     <header class="cngx-ex-intro">
       @if (_exTitle) { <h1>{{ _exTitle }}</h1> }
