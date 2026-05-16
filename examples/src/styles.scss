@@ -2,6 +2,12 @@
 // Goal: atomic directive demos read as intentional, not broken.
 // No per-component styles allowed — keep selectors structural + ARIA-driven only.
 
+// Theming foundation — load layer order first, then system tokens.
+// Relative source path during dev (in-repo); after publish, consumers use
+// the @cngx/core/theming/*.css paths exported via the ng-packagr build.
+@import '../../projects/core/theming/layers.css';
+@import '../../projects/core/theming/system-tokens.css';
+
 :root {
   // Pin the UA color-scheme to match the explicit theme so native form
   // controls / scrollbars / details disclosure don't flip with the OS
