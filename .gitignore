@@ -63,3 +63,6 @@ CNGX_LLM_REFERENCE.md
 /playwright-report/
 /playwright/.cache/
 .vscode/
+
+# E2E ephemera (screenshots, traces, transient artifacts)
+.tmp/
