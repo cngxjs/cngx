@@ -3,5 +3,8 @@
   "dest": "../../dist/common",
   "lib": {
     "entryFile": "public-api.ts"
-  }
+  },
+  "assets": [
+    { "input": "theming", "glob": "*.css", "output": "theming" }
+  ]
 }
