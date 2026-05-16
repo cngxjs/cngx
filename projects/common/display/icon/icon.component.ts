@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from '@angular/core';
 
 /**
  * Display atom for icons. Projects its content (font glyph, SVG, image, custom
@@ -27,8 +27,9 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
   exportAs: 'cngxIcon',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   template: '<ng-content />',
-  styleUrl: './icon.component.scss',
+  styleUrl: './icon.component.css',
   host: {
     class: 'cngx-icon',
     '[attr.role]': 'label() ? "img" : null',
