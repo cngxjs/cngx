@@ -3,6 +3,7 @@ import {
   afterNextRender,
   ChangeDetectionStrategy,
   Component,
+  ViewEncapsulation,
   computed,
   contentChild,
   inject,
@@ -191,6 +192,7 @@ export interface CngxSelectChange<T = unknown> {
     { provide: CNGX_SELECT_PANEL_VIEW_HOST, useExisting: CngxSelect },
   ],
   host: {
+    'class': 'cngx-select',
     '[id]': 'resolvedId()',
     '[attr.aria-readonly]': 'ariaReadonly()',
   },
@@ -333,6 +335,7 @@ export interface CngxSelectChange<T = unknown> {
     </div>
   `,
   styleUrls: ['../shared/select-base.css', './select.component.css'],
+  encapsulation: ViewEncapsulation.None,
 })
 export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   private readonly presenter = inject(CngxFormFieldPresenter, { optional: true });
