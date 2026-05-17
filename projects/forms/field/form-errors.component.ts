@@ -6,6 +6,7 @@ import {
   inject,
   input,
   TemplateRef,
+  ViewEncapsulation,
 } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 import { CNGX_ERROR_MESSAGES } from './form-field.token';
@@ -64,29 +65,12 @@ import type { CngxFieldAccessor } from './models';
       }
     }
   `,
-  styles: `
-    :host {
-      display: contents;
-    }
-    .cngx-form-errors__list {
-      margin: 0;
-      padding: 0 0 0 1.25em;
-      font-size: var(--cngx-form-errors-font-size, 0.875rem);
-      color: var(--cngx-form-errors-color, var(--cngx-field-error-color, #d32f2f));
-    }
-    .cngx-form-errors__list a {
-      color: inherit;
-      text-decoration: underline;
-      cursor: pointer;
-    }
-    .cngx-form-errors__list a:hover,
-    .cngx-form-errors__list a:focus-visible {
-      text-decoration: none;
-    }
-  `,
+  styleUrl: './form-errors.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   exportAs: 'cngxFormErrors',
   host: {
+    class: 'cngx-form-errors',
     '[attr.role]': 'show() && errorItems().length > 0 ? "alert" : null',
     '[attr.aria-live]': '"polite"',
   },
