@@ -12,6 +12,10 @@
  * because all the real styling is in the shared base.
  */
 
-:host {
-  display: contents;
+@layer cngx.components {
+  @scope (cngx-select-panel) {
+    :scope {
+      display: contents;
+    }
+  }
 }

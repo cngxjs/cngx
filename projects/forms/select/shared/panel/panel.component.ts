@@ -2,6 +2,7 @@ import { NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
+  ViewEncapsulation,
   computed,
   inject,
   viewChildren,
@@ -169,6 +170,7 @@ import { isCngxSelectOptionGroupDef } from '../option.model';
     </ng-template>
   `,
   styleUrls: ['../select-base.css', './panel.component.css'],
+  encapsulation: ViewEncapsulation.None,
 })
 export class CngxSelectPanel<T = unknown> {
   /**
