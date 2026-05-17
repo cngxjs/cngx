@@ -1,0 +1,184 @@
+/*
+ * cngx-action-button.css — default visuals for CngxActionButton and
+ * any element carrying the cngxAsyncClick state classes.
+ *
+ * Shipped via @cngx/themes/cngx.css aggregation. The opt-in Sass mixin
+ * in `action-button-theme.scss` (`@mixin styles()`) stays unchanged so
+ * dev-app and other Sass-consumers keep working — tolerated
+ * duplication, same pattern as file-drop in PR #108.
+ *
+ * Selectors are not @scope-wrapped because:
+ *   - .cngx-async--pending/succeeded/failed are state classes set by
+ *     CngxAsyncClick on any element, not nested under a single host.
+ *   - .cngx-action-button is the inner <button>, not the host.
+ * The cngx-action-* / cngx-async-* class prefix is the namespace.
+ */
+
+@layer cngx.tokens {
+  @property --cngx-action-btn-transition {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.2s ease;
+  }
+  @property --cngx-action-btn-radius {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 6px;
+  }
+  @property --cngx-action-btn-padding {
+    syntax: '*';
+    inherits: false;
+    initial-value: 8px 16px;
+  }
+  @property --cngx-action-btn-border {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: oklch(0.87 0 0);
+  }
+  @property --cngx-action-btn-bg {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: transparent;
+  }
+  @property --cngx-action-btn-pending-opacity {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 0.7;
+  }
+  @property --cngx-action-btn-succeeded-bg {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: oklch(0.95 0.04 145);
+  }
+  @property --cngx-action-btn-succeeded-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.5 0.15 145);
+  }
+  @property --cngx-action-btn-succeeded-border {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: oklch(0.5 0.15 145);
+  }
+  @property --cngx-action-btn-failed-bg {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: oklch(0.95 0.025 25);
+  }
+  @property --cngx-action-btn-failed-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.45 0.15 25);
+  }
+  @property --cngx-action-btn-failed-border {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: oklch(0.45 0.15 25);
+  }
+  @property --cngx-action-btn-ghost-hover-bg {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: oklch(0 0 0 / 0.04);
+  }
+  @property --cngx-action-btn-primary-bg {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: oklch(0.55 0.15 250);
+  }
+  @property --cngx-action-btn-primary-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(1 0 0);
+  }
+  @property --cngx-action-btn-secondary-bg {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: transparent;
+  }
+  @property --cngx-action-btn-secondary-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.55 0.15 250);
+  }
+  @property --cngx-action-btn-secondary-border {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: oklch(0.55 0.005 290);
+  }
+  @property --cngx-action-btn-ghost-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.34 0.005 290);
+  }
+}
+
+@layer cngx.components {
+  .cngx-async--pending {
+    opacity: var(--cngx-action-btn-pending-opacity, 0.7);
+    cursor: wait;
+    transition: opacity var(--cngx-action-btn-transition, 0.2s ease);
+  }
+
+  .cngx-async--succeeded {
+    background-color: var(
+      --cngx-action-btn-succeeded-bg,
+      var(--cngx-color-success, oklch(0.95 0.04 145))
+    );
+    color: var(--cngx-action-btn-succeeded-color, var(--cngx-color-success, oklch(0.5 0.15 145)));
+    border-color: var(--cngx-action-btn-succeeded-border, var(--cngx-color-success, oklch(0.5 0.15 145)));
+    transition:
+      background-color var(--cngx-action-btn-transition, 0.2s ease),
+      color var(--cngx-action-btn-transition, 0.2s ease),
+      border-color var(--cngx-action-btn-transition, 0.2s ease);
+  }
+
+  .cngx-async--failed {
+    background-color: var(
+      --cngx-action-btn-failed-bg,
+      var(--cngx-color-danger, oklch(0.95 0.025 25))
+    );
+    color: var(--cngx-action-btn-failed-color, var(--cngx-color-danger, oklch(0.45 0.15 25)));
+    border-color: var(--cngx-action-btn-failed-border, var(--cngx-color-danger, oklch(0.45 0.15 25)));
+    transition:
+      background-color var(--cngx-action-btn-transition, 0.2s ease),
+      color var(--cngx-action-btn-transition, 0.2s ease),
+      border-color var(--cngx-action-btn-transition, 0.2s ease);
+  }
+
+  .cngx-action-button {
+    cursor: pointer;
+    border: 1px solid var(--cngx-action-btn-border, var(--cngx-color-border, oklch(0.87 0 0)));
+    border-radius: var(--cngx-action-btn-radius, 6px);
+    padding: var(--cngx-action-btn-padding, 8px 16px);
+    font: inherit;
+    background: var(--cngx-action-btn-bg, transparent);
+    color: inherit;
+    transition:
+      background-color var(--cngx-action-btn-transition, 0.2s ease),
+      color var(--cngx-action-btn-transition, 0.2s ease),
+      border-color var(--cngx-action-btn-transition, 0.2s ease),
+      opacity var(--cngx-action-btn-transition, 0.2s ease);
+  }
+
+  .cngx-action-button--primary {
+    background: var(--cngx-action-btn-primary-bg, var(--cngx-color-primary, oklch(0.55 0.15 250)));
+    color: var(--cngx-action-btn-primary-color, oklch(1 0 0));
+    border-color: var(--cngx-action-btn-primary-bg, var(--cngx-color-primary, oklch(0.55 0.15 250)));
+  }
+
+  .cngx-action-button--secondary {
+    background: var(--cngx-action-btn-secondary-bg, transparent);
+    color: var(--cngx-action-btn-secondary-color, var(--cngx-color-primary, oklch(0.55 0.15 250)));
+    border-color: var(--cngx-action-btn-secondary-border, var(--cngx-color-border, oklch(0.55 0.005 290)));
+  }
+
+  .cngx-action-button--ghost {
+    background: transparent;
+    color: var(--cngx-action-btn-ghost-color, var(--cngx-color-text, oklch(0.34 0.005 290)));
+    border-color: transparent;
+  }
+
+  .cngx-action-button--ghost:hover {
+    background: var(--cngx-action-btn-ghost-hover-bg, oklch(0 0 0 / 0.04));
+  }
+}
