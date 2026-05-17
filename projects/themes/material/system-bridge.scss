@@ -76,9 +76,59 @@
   --cngx-color-info: #{$primary};
 }
 
+// Bare-element re-skin. cngx.base defines neutral defaults for
+// <button>, <input>, <textarea>, <select> via cngx foundation tokens.
+// When Material is paired in, those bare elements should read as
+// Material's outlined-button / outlined-input rather than the cngx
+// medium-rounded default — the @layer cngx.components emission below
+// beats the bare cngx.base rules and switches them to Material shapes
+// and sizes per the M3 spec (filled-tonal-button height 40px,
+// corner-full radius; outlined-input height 56px, corner-extra-small
+// radius, transparent fill, outline border).
+@mixin _bare-elements-m3() {
+  :where(button):not([class*='cngx-'], [class*='mat-'], [class*='cdk-']) {
+    min-height: 40px;
+    padding-inline: 24px;
+    padding-block: 10px;
+    border-radius: var(--mat-sys-corner-full, 9999px);
+    border: 1px solid var(--mat-sys-outline);
+    background: transparent;
+    color: var(--mat-sys-primary);
+    font: var(--mat-sys-label-large, inherit);
+  }
+  :where(button):not([class*='cngx-'], [class*='mat-'], [class*='cdk-']):hover {
+    background: color-mix(in srgb, var(--mat-sys-primary) 8%, transparent);
+  }
+
+  :where(input, textarea, select):not(
+      [class*='cngx-'],
+      [class*='mat-'],
+      [class*='cdk-']
+    ) {
+    min-height: 56px;
+    padding-inline: 16px;
+    padding-block: 16px;
+    border-radius: var(--mat-sys-corner-extra-small, 4px);
+    border: 1px solid var(--mat-sys-outline);
+    background: transparent;
+    color: var(--mat-sys-on-surface);
+    font: var(--mat-sys-body-large, inherit);
+  }
+  :where(input, textarea, select):not(
+      [class*='cngx-'],
+      [class*='mat-'],
+      [class*='cdk-']
+    ):focus-visible {
+    outline: none;
+    border-color: var(--mat-sys-primary);
+    border-width: 2px;
+  }
+}
+
 @mixin theme($theme) {
   @if mat.get-theme-version($theme) == 1 {
     @include _m3();
+    @include _bare-elements-m3();
   } @else {
     @include _m2($theme);
   }
