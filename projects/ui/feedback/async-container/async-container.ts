@@ -149,27 +149,7 @@ export class CngxAsyncErrorTpl {
       {{ announcement() }}
     </span>
   `,
-  styles: `
-    .cngx-async-container__refresh {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      z-index: var(--cngx-async-container-refresh-z, 5);
-    }
-
-    .cngx-async-container__sr-only {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      padding: 0;
-      margin: -1px;
-      overflow: hidden;
-      clip: rect(0, 0, 0, 0);
-      white-space: nowrap;
-      border: 0;
-    }
-  `,
+  styleUrl: './async-container.css',
 })
 export class CngxAsyncContainer<T> {
   private readonly toaster = inject(CngxToaster, { optional: true });

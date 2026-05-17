@@ -1,0 +1,206 @@
+/*
+ * toast-outlet.css — CngxToastOutlet skin.
+ *
+ * Fixed-position toast stack with 6 corner/center placements. Each
+ * toast carries a severity-tinted accent stripe on the leading edge
+ * (border-left). Toasts use their own --cngx-toast-* token namespace,
+ * separate from alert and banner so the three feedback channels can
+ * be themed independently.
+ */
+
+@layer cngx.tokens {
+  @property --cngx-toast-z-index             { syntax: '<number>'; inherits: false; initial-value: 9999; }
+  @property --cngx-toast-gap                 { syntax: '<length>'; inherits: false; initial-value: 8px; }
+  @property --cngx-toast-outlet-padding      { syntax: '*'; inherits: false; initial-value: 16px; }
+  @property --cngx-toast-max-width           { syntax: '<length>'; inherits: false; initial-value: 420px; }
+  @property --cngx-toast-inner-gap           { syntax: '<length>'; inherits: false; initial-value: 10px; }
+  @property --cngx-toast-padding             { syntax: '*'; inherits: false; initial-value: 12px 16px; }
+  @property --cngx-toast-border-radius       { syntax: '<length>'; inherits: false; initial-value: 8px; }
+  @property --cngx-toast-bg                  { syntax: '<color>'; inherits: false; initial-value: oklch(1 0 0); }
+  @property --cngx-toast-color               { syntax: '<color>'; inherits: true; initial-value: oklch(0.25 0.015 250); }
+  @property --cngx-toast-shadow              { syntax: '*'; inherits: false; initial-value: 0 4px 12px oklch(0 0 0 / 0.15); }
+  @property --cngx-toast-enter-duration      { syntax: '<time>'; inherits: false; initial-value: 200ms; }
+  @property --cngx-toast-enter-easing        { syntax: '*'; inherits: false; initial-value: ease-out; }
+  @property --cngx-toast-accent-width        { syntax: '<length>'; inherits: false; initial-value: 3px; }
+  @property --cngx-toast-info-accent         { syntax: '<color>'; inherits: false; initial-value: oklch(0.62 0.2 250); }
+  @property --cngx-toast-success-accent      { syntax: '<color>'; inherits: false; initial-value: oklch(0.65 0.15 145); }
+  @property --cngx-toast-warning-accent      { syntax: '<color>'; inherits: false; initial-value: oklch(0.72 0.18 70); }
+  @property --cngx-toast-error-accent        { syntax: '<color>'; inherits: false; initial-value: oklch(0.62 0.22 25); }
+  @property --cngx-toast-icon-size           { syntax: '<length>'; inherits: false; initial-value: 20px; }
+  @property --cngx-toast-font-size           { syntax: '*'; inherits: false; initial-value: 0.875rem; }
+  @property --cngx-toast-line-height         { syntax: '*'; inherits: false; initial-value: 1.5; }
+  @property --cngx-toast-title-font-weight   { syntax: '<number>'; inherits: false; initial-value: 600; }
+  @property --cngx-toast-title-font-size     { syntax: '*'; inherits: false; initial-value: 0.875rem; }
+  @property --cngx-toast-title-color         { syntax: '*'; inherits: true; initial-value: inherit; }
+  @property --cngx-toast-description-max-lines      { syntax: '<integer>'; inherits: false; initial-value: 3; }
+  @property --cngx-toast-description-font-size      { syntax: '*'; inherits: false; initial-value: 0.8125rem; }
+  @property --cngx-toast-description-color          { syntax: '<color>'; inherits: true; initial-value: oklch(0.5 0.01 250); }
+  @property --cngx-toast-description-line-height    { syntax: '*'; inherits: false; initial-value: 1.4; }
+  @property --cngx-toast-count-opacity       { syntax: '<number>'; inherits: false; initial-value: 0.6; }
+  @property --cngx-toast-action-padding      { syntax: '*'; inherits: false; initial-value: 4px 0; }
+  @property --cngx-toast-action-weight       { syntax: '<number>'; inherits: false; initial-value: 600; }
+  @property --cngx-toast-action-size         { syntax: '*'; inherits: false; initial-value: 0.8125rem; }
+}
+
+@layer cngx.components {
+  @scope (.cngx-toast-outlet) {
+    :scope {
+      position: fixed;
+      z-index: var(--cngx-toast-z-index, 9999);
+      display: flex;
+      flex-direction: column;
+      gap: var(--cngx-toast-gap, 8px);
+      padding: var(--cngx-toast-outlet-padding, 16px);
+      pointer-events: none;
+      max-width: var(--cngx-toast-max-width, 420px);
+      width: 100%;
+    }
+
+    :scope.cngx-toast-outlet--top-start {
+      top: 0;
+      left: 0;
+    }
+    :scope.cngx-toast-outlet--top-center {
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    :scope.cngx-toast-outlet--top-end {
+      top: 0;
+      right: 0;
+    }
+    :scope.cngx-toast-outlet--bottom-start {
+      bottom: 0;
+      left: 0;
+    }
+    :scope.cngx-toast-outlet--bottom-center {
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    :scope.cngx-toast-outlet--bottom-end {
+      bottom: 0;
+      right: 0;
+    }
+
+    .cngx-toast {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--cngx-toast-inner-gap, 10px);
+      padding: var(--cngx-toast-padding, 12px 16px);
+      border-radius: var(--cngx-toast-border-radius, 8px);
+      background: var(--cngx-toast-bg, oklch(1 0 0));
+      color: var(--cngx-toast-color, oklch(0.25 0.015 250));
+      box-shadow: var(--cngx-toast-shadow, 0 4px 12px oklch(0 0 0 / 0.15));
+      pointer-events: auto;
+      animation: cngx-toast-enter var(--cngx-toast-enter-duration, 200ms)
+        var(--cngx-toast-enter-easing, ease-out);
+    }
+
+    .cngx-toast--info {
+      border-left: var(--cngx-toast-accent-width, 3px) solid
+        var(--cngx-toast-info-accent, oklch(0.62 0.2 250));
+    }
+    .cngx-toast--success {
+      border-left: var(--cngx-toast-accent-width, 3px) solid
+        var(--cngx-toast-success-accent, oklch(0.65 0.15 145));
+    }
+    .cngx-toast--warning {
+      border-left: var(--cngx-toast-accent-width, 3px) solid
+        var(--cngx-toast-warning-accent, oklch(0.72 0.18 70));
+    }
+    .cngx-toast--error {
+      border-left: var(--cngx-toast-accent-width, 3px) solid
+        var(--cngx-toast-error-accent, oklch(0.62 0.22 25));
+    }
+
+    .cngx-toast__icon {
+      flex-shrink: 0;
+    }
+
+    .cngx-toast--info .cngx-toast__icon {
+      color: var(--cngx-toast-info-accent, oklch(0.62 0.2 250));
+    }
+    .cngx-toast--success .cngx-toast__icon {
+      color: var(--cngx-toast-success-accent, oklch(0.65 0.15 145));
+    }
+    .cngx-toast--warning .cngx-toast__icon {
+      color: var(--cngx-toast-warning-accent, oklch(0.72 0.18 70));
+    }
+    .cngx-toast--error .cngx-toast__icon {
+      color: var(--cngx-toast-error-accent, oklch(0.62 0.22 25));
+    }
+
+    .cngx-toast__default-icon {
+      width: var(--cngx-toast-icon-size, 20px);
+      height: var(--cngx-toast-icon-size, 20px);
+    }
+
+    .cngx-toast__body {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .cngx-toast__message {
+      font-size: var(--cngx-toast-font-size, 0.875rem);
+      line-height: var(--cngx-toast-line-height, 1.5);
+    }
+
+    .cngx-toast__title {
+      display: block;
+      font-weight: var(--cngx-toast-title-font-weight, 600);
+      font-size: var(--cngx-toast-title-font-size, var(--cngx-toast-font-size, 0.875rem));
+      color: var(--cngx-toast-title-color, inherit);
+      line-height: var(--cngx-toast-line-height, 1.5);
+    }
+
+    .cngx-toast__description {
+      display: -webkit-box;
+      -webkit-line-clamp: var(--cngx-toast-description-max-lines, 3);
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      font-size: var(--cngx-toast-description-font-size, 0.8125rem);
+      color: var(--cngx-toast-description-color, oklch(0.5 0.01 250));
+      line-height: var(--cngx-toast-description-line-height, 1.4);
+      margin-top: 2px;
+    }
+
+    .cngx-toast__count {
+      opacity: var(--cngx-toast-count-opacity, 0.6);
+      font-size: var(--cngx-toast-description-font-size, 0.8125rem);
+    }
+
+    .cngx-toast__action {
+      appearance: none;
+      background: none;
+      border: none;
+      padding: var(--cngx-toast-action-padding, 4px 0);
+      cursor: pointer;
+      font-weight: var(--cngx-toast-action-weight, 600);
+      font-size: var(--cngx-toast-action-size, 0.8125rem);
+      color: inherit;
+      text-decoration: underline;
+    }
+
+    .cngx-toast__dismiss {
+      flex-shrink: 0;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .cngx-toast {
+        animation: none;
+      }
+    }
+  }
+}
+
+@keyframes cngx-toast-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

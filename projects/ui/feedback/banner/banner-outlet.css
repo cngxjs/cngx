@@ -1,0 +1,187 @@
+/*
+ * banner-outlet.css — CngxBannerOutlet skin.
+ *
+ * Sticky-top banner stack with severity-tinted surfaces matching the
+ * alert family. Uses its own --cngx-banner-* token namespace (not
+ * shared with --cngx-alert-*) so banners can be themed independently
+ * even though the severity-tint palette is visually identical.
+ */
+
+@layer cngx.tokens {
+  @property --cngx-banner-z-index           { syntax: '<number>'; inherits: false; initial-value: 900; }
+  @property --cngx-banner-gap               { syntax: '<length>'; inherits: false; initial-value: 12px; }
+  @property --cngx-banner-padding           { syntax: '*'; inherits: false; initial-value: 10px 16px; }
+  @property --cngx-banner-bg                { syntax: '<color>'; inherits: false; initial-value: oklch(0.98 0.005 250); }
+  @property --cngx-banner-color             { syntax: '*'; inherits: true; initial-value: currentColor; }
+  @property --cngx-banner-border-color      { syntax: '<color>'; inherits: false; initial-value: transparent; }
+  @property --cngx-banner-enter-duration    { syntax: '<time>'; inherits: false; initial-value: 200ms; }
+  @property --cngx-banner-enter-offset      { syntax: '*'; inherits: false; initial-value: 100%; }
+  @property --cngx-banner-info-bg           { syntax: '<color>'; inherits: false; initial-value: oklch(0.96 0.025 250); }
+  @property --cngx-banner-info-border       { syntax: '<color>'; inherits: false; initial-value: oklch(0.85 0.07 250); }
+  @property --cngx-banner-info-icon         { syntax: '<color>'; inherits: false; initial-value: oklch(0.62 0.2 250); }
+  @property --cngx-banner-success-bg        { syntax: '<color>'; inherits: false; initial-value: oklch(0.96 0.04 145); }
+  @property --cngx-banner-success-border    { syntax: '<color>'; inherits: false; initial-value: oklch(0.85 0.1 145); }
+  @property --cngx-banner-success-icon      { syntax: '<color>'; inherits: false; initial-value: oklch(0.65 0.15 145); }
+  @property --cngx-banner-warning-bg        { syntax: '<color>'; inherits: false; initial-value: oklch(0.97 0.04 80); }
+  @property --cngx-banner-warning-border    { syntax: '<color>'; inherits: false; initial-value: oklch(0.86 0.1 80); }
+  @property --cngx-banner-warning-icon      { syntax: '<color>'; inherits: false; initial-value: oklch(0.72 0.18 70); }
+  @property --cngx-banner-error-bg          { syntax: '<color>'; inherits: false; initial-value: oklch(0.96 0.025 25); }
+  @property --cngx-banner-error-border      { syntax: '<color>'; inherits: false; initial-value: oklch(0.85 0.08 25); }
+  @property --cngx-banner-error-icon        { syntax: '<color>'; inherits: false; initial-value: oklch(0.62 0.22 25); }
+  @property --cngx-banner-icon-color        { syntax: '*'; inherits: true; initial-value: currentColor; }
+  @property --cngx-banner-accent            { syntax: '*'; inherits: true; initial-value: currentColor; }
+  @property --cngx-banner-icon-size         { syntax: '<length>'; inherits: false; initial-value: 20px; }
+  @property --cngx-banner-font-size         { syntax: '*'; inherits: false; initial-value: 0.9375rem; }
+  @property --cngx-banner-line-height       { syntax: '*'; inherits: false; initial-value: 1.5; }
+  @property --cngx-banner-error-font-size   { syntax: '*'; inherits: false; initial-value: 0.875rem; }
+  @property --cngx-banner-error-color       { syntax: '<color>'; inherits: true; initial-value: oklch(0.62 0.22 25); }
+  @property --cngx-banner-action-bg         { syntax: '<color>'; inherits: false; initial-value: transparent; }
+  @property --cngx-banner-action-radius     { syntax: '<length>'; inherits: false; initial-value: 4px; }
+  @property --cngx-banner-action-padding    { syntax: '*'; inherits: false; initial-value: 6px 12px; }
+  @property --cngx-banner-action-min-size   { syntax: '<length>'; inherits: false; initial-value: 44px; }
+  @property --cngx-banner-action-font-size  { syntax: '*'; inherits: false; initial-value: 0.875rem; }
+  @property --cngx-banner-action-font-weight{ syntax: '<number>'; inherits: false; initial-value: 600; }
+  @property --cngx-banner-action-hover-bg   { syntax: '<color>'; inherits: false; initial-value: oklch(0 0 0 / 0.04); }
+  @property --cngx-banner-pending-opacity   { syntax: '<number>'; inherits: false; initial-value: 0.85; }
+}
+
+@layer cngx.components {
+  @scope (.cngx-banner-outlet) {
+    :scope {
+      display: block;
+      position: sticky;
+      top: 0;
+      z-index: var(--cngx-banner-z-index, 900);
+      width: 100%;
+    }
+
+    :scope:empty {
+      display: none;
+    }
+
+    .cngx-banner {
+      display: flex;
+      align-items: center;
+      gap: var(--cngx-banner-gap, 12px);
+      padding: var(--cngx-banner-padding, 10px 16px);
+      background: var(--cngx-banner-bg, oklch(0.98 0.005 250));
+      color: var(--cngx-banner-color, inherit);
+      border-bottom: 1px solid var(--cngx-banner-border-color, transparent);
+    }
+
+    .cngx-banner--animate {
+      animation: cngx-banner-enter var(--cngx-banner-enter-duration, 200ms) ease-out both;
+    }
+
+    .cngx-banner--info {
+      --cngx-banner-bg: var(--cngx-banner-info-bg, oklch(0.96 0.025 250));
+      --cngx-banner-border-color: var(--cngx-banner-info-border, oklch(0.85 0.07 250));
+      --cngx-banner-icon-color: var(--cngx-banner-info-icon, oklch(0.62 0.2 250));
+      --cngx-banner-accent: var(--cngx-banner-info-icon, oklch(0.62 0.2 250));
+    }
+
+    .cngx-banner--success {
+      --cngx-banner-bg: var(--cngx-banner-success-bg, oklch(0.96 0.04 145));
+      --cngx-banner-border-color: var(--cngx-banner-success-border, oklch(0.85 0.1 145));
+      --cngx-banner-icon-color: var(--cngx-banner-success-icon, oklch(0.65 0.15 145));
+      --cngx-banner-accent: var(--cngx-banner-success-icon, oklch(0.65 0.15 145));
+    }
+
+    .cngx-banner--warning {
+      --cngx-banner-bg: var(--cngx-banner-warning-bg, oklch(0.97 0.04 80));
+      --cngx-banner-border-color: var(--cngx-banner-warning-border, oklch(0.86 0.1 80));
+      --cngx-banner-icon-color: var(--cngx-banner-warning-icon, oklch(0.72 0.18 70));
+      --cngx-banner-accent: var(--cngx-banner-warning-icon, oklch(0.72 0.18 70));
+    }
+
+    .cngx-banner--error {
+      --cngx-banner-bg: var(--cngx-banner-error-bg, oklch(0.96 0.025 25));
+      --cngx-banner-border-color: var(--cngx-banner-error-border, oklch(0.85 0.08 25));
+      --cngx-banner-icon-color: var(--cngx-banner-error-icon, oklch(0.62 0.22 25));
+      --cngx-banner-accent: var(--cngx-banner-error-icon, oklch(0.62 0.22 25));
+    }
+
+    .cngx-banner--pending {
+      opacity: var(--cngx-banner-pending-opacity, 0.85);
+      pointer-events: none;
+    }
+
+    .cngx-banner__icon {
+      flex-shrink: 0;
+      color: var(--cngx-banner-icon-color, currentColor);
+    }
+
+    .cngx-banner__default-icon {
+      width: var(--cngx-banner-icon-size, 20px);
+      height: var(--cngx-banner-icon-size, 20px);
+    }
+
+    .cngx-banner__body {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .cngx-banner__message {
+      font-size: var(--cngx-banner-font-size, 0.9375rem);
+      line-height: var(--cngx-banner-line-height, 1.5);
+    }
+
+    .cngx-banner__error {
+      display: block;
+      font-size: var(--cngx-banner-error-font-size, 0.875rem);
+      color: var(--cngx-banner-error-color, var(--cngx-color-danger, oklch(0.62 0.22 25)));
+      margin-top: 2px;
+    }
+
+    .cngx-banner__action {
+      appearance: none;
+      background: var(--cngx-banner-action-bg, transparent);
+      border: 1px solid var(--cngx-banner-accent, currentColor);
+      border-radius: var(--cngx-banner-action-radius, 4px);
+      padding: var(--cngx-banner-action-padding, 6px 12px);
+      min-width: var(--cngx-banner-action-min-size, 44px);
+      min-height: var(--cngx-banner-action-min-size, 44px);
+      cursor: pointer;
+      font-size: var(--cngx-banner-action-font-size, 0.875rem);
+      font-weight: var(--cngx-banner-action-font-weight, 600);
+      color: var(--cngx-banner-accent, currentColor);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .cngx-banner__action:hover:not(:disabled) {
+      background: var(--cngx-banner-action-hover-bg, oklch(0 0 0 / 0.04));
+    }
+
+    .cngx-banner__action:focus-visible {
+      outline: 2px solid currentColor;
+      outline-offset: 2px;
+    }
+
+    .cngx-banner__action:disabled {
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+
+    .cngx-banner__dismiss {
+      flex-shrink: 0;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .cngx-banner--animate {
+        animation: none;
+      }
+    }
+  }
+}
+
+@keyframes cngx-banner-enter {
+  from {
+    opacity: 0;
+    transform: translateY(calc(-1 * var(--cngx-banner-enter-offset, 100%)));
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

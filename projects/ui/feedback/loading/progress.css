@@ -1,0 +1,159 @@
+/*
+ * progress.css — CngxProgress skin.
+ *
+ * Two variants: linear bar and circular SVG ring. Both support
+ * determinate (value-bound) and indeterminate (animated). prefers-
+ * reduced-motion replaces the animation with a slow opacity pulse.
+ *
+ * cngx-spin and cngx-pulse keyframes are shared with
+ * loading-indicator.css — duplicate top-level declarations with
+ * identical bodies are benign and keep this file self-sufficient
+ * for Atomic-Decompose ejection.
+ */
+
+@layer cngx.tokens {
+  @property --cngx-progress-label-gap                { syntax: '<length>'; inherits: false; initial-value: 8px; }
+  @property --cngx-progress-height                   { syntax: '<length>'; inherits: false; initial-value: 4px; }
+  @property --cngx-progress-track-color              { syntax: '<color>'; inherits: false; initial-value: oklch(0 0 0 / 0.1); }
+  @property --cngx-progress-border-radius            { syntax: '<length>'; inherits: false; initial-value: 2px; }
+  @property --cngx-progress-color                    { syntax: '*'; inherits: true; initial-value: currentColor; }
+  @property --cngx-progress-transition-duration      { syntax: '<time>'; inherits: false; initial-value: 300ms; }
+  @property --cngx-progress-transition-easing        { syntax: '*'; inherits: false; initial-value: ease-out; }
+  @property --cngx-progress-indeterminate-duration   { syntax: '<time>'; inherits: false; initial-value: 1.5s; }
+  @property --cngx-progress-indeterminate-easing     { syntax: '*'; inherits: false; initial-value: ease-in-out; }
+  @property --cngx-progress-label-size               { syntax: '*'; inherits: false; initial-value: 0.75rem; }
+  @property --cngx-progress-label-color              { syntax: '*'; inherits: true; initial-value: currentColor; }
+  @property --cngx-progress-circle-size              { syntax: '<length>'; inherits: false; initial-value: 48px; }
+  @property --cngx-progress-circle-label-size        { syntax: '*'; inherits: false; initial-value: 0.625rem; }
+}
+
+@layer cngx.components {
+  @scope (.cngx-progress) {
+    :scope {
+      display: block;
+    }
+
+    :scope.cngx-progress--linear {
+      display: flex;
+      align-items: center;
+      gap: var(--cngx-progress-label-gap, 8px);
+    }
+
+    .cngx-progress__track {
+      flex: 1;
+      height: var(--cngx-progress-height, 4px);
+      background: var(--cngx-progress-track-color, oklch(0 0 0 / 0.1));
+      border-radius: var(--cngx-progress-border-radius, 2px);
+      overflow: hidden;
+    }
+
+    .cngx-progress__fill {
+      height: 100%;
+      background: var(--cngx-progress-color, currentColor);
+      border-radius: inherit;
+      transition: width var(--cngx-progress-transition-duration, 300ms)
+        var(--cngx-progress-transition-easing, ease-out);
+    }
+
+    :scope.cngx-progress--indeterminate .cngx-progress__fill {
+      width: 40%;
+      animation: cngx-progress-indeterminate var(--cngx-progress-indeterminate-duration, 1.5s)
+        var(--cngx-progress-indeterminate-easing, ease-in-out) infinite;
+    }
+
+    .cngx-progress__label {
+      font-size: var(--cngx-progress-label-size, 0.75rem);
+      color: var(--cngx-progress-label-color, currentColor);
+      min-width: 3ch;
+      text-align: right;
+    }
+
+    :scope.cngx-progress--circular {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .cngx-progress__circle {
+      width: var(--cngx-progress-circle-size, 48px);
+      height: var(--cngx-progress-circle-size, 48px);
+      transform: rotate(-90deg);
+    }
+
+    .cngx-progress__circle-track {
+      stroke: var(--cngx-progress-track-color, oklch(0 0 0 / 0.1));
+    }
+
+    .cngx-progress__circle-fill {
+      stroke: var(--cngx-progress-color, currentColor);
+      transition: stroke-dashoffset var(--cngx-progress-transition-duration, 300ms)
+        var(--cngx-progress-transition-easing, ease-out);
+    }
+
+    :scope.cngx-progress--indeterminate .cngx-progress__circle {
+      animation: cngx-progress-spin var(--cngx-spin-duration, 0.8s)
+        var(--cngx-spin-easing, linear) infinite;
+    }
+
+    :scope.cngx-progress--indeterminate .cngx-progress__circle-fill {
+      stroke-dasharray: 80, 200;
+      stroke-dashoffset: 0;
+      transition: none;
+    }
+
+    :scope.cngx-progress--circular .cngx-progress__label {
+      position: absolute;
+      font-size: var(--cngx-progress-circle-label-size, 0.625rem);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      :scope.cngx-progress--indeterminate .cngx-progress__fill,
+      :scope.cngx-progress--indeterminate .cngx-progress__circle {
+        animation: cngx-pulse var(--cngx-pulse-duration, 2s) var(--cngx-pulse-easing, ease-in-out)
+          infinite;
+      }
+
+      :scope.cngx-progress--indeterminate .cngx-progress__fill {
+        width: 100%;
+        transform: none;
+      }
+    }
+  }
+}
+
+@keyframes cngx-progress-indeterminate {
+  0% {
+    transform: translateX(-100%);
+  }
+  50% {
+    transform: translateX(150%);
+  }
+  100% {
+    transform: translateX(400%);
+  }
+}
+
+/* Renamed from cngx-spin (original progress.ts inline used the same
+ * name but with rotate(270deg) — distinct from loading-indicator.css's
+ * cngx-spin which rotates 360deg). The collision was a pre-existing
+ * latent bug: whichever file loaded last under encapsulation:None
+ * would win the global keyframe. Renaming to cngx-progress-spin
+ * fixes it by giving each component its own keyframe identity. */
+@keyframes cngx-progress-spin {
+  to {
+    transform: rotate(270deg);
+  }
+}
+
+/* Duplicate of cngx-pulse from loading-indicator.css — kept for
+ * Atomic-Decompose self-sufficiency, identical body. */
+@keyframes cngx-pulse {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 1;
+  }
+}
