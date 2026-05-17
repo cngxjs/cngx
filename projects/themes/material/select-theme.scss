@@ -1,0 +1,83 @@
+@use '@angular/material' as mat;
+
+// Material bridge for the entire Select family — single, multi, combobox,
+// typeahead, tree-select, reorderable-multi, action-select, action-multi,
+// select-shell. All resolve through the shared --cngx-select-* token
+// surface defined in projects/forms/select/shared/select-base.css.
+//
+//   @use '@cngx/themes/material/select-theme' as select;
+//   html { @include select.theme($theme); }
+
+@mixin color($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-select-panel-bg: var(--mat-sys-surface-container);
+    --cngx-select-panel-border: 1px solid var(--mat-sys-outline-variant);
+    --cngx-select-panel-shadow: var(--mat-sys-level2, 0 4px 12px oklch(0 0 0 / 0.12));
+
+    --cngx-select-option-highlight-bg: color-mix(
+      in srgb,
+      var(--mat-sys-primary) 12%,
+      transparent
+    );
+    --cngx-select-check-color: var(--mat-sys-primary);
+    --cngx-select-error-color: var(--mat-sys-error);
+    --cngx-select-option-error-color: var(--mat-sys-error);
+
+    --cngx-select-spinner-color: var(--mat-sys-primary);
+    --cngx-select-spinner-border: 2px solid var(--mat-sys-outline-variant);
+    --cngx-select-loading-bar-color: var(--mat-sys-primary);
+    --cngx-select-refreshing-color: var(--mat-sys-primary);
+    --cngx-select-option-spinner-color: var(--mat-sys-primary);
+
+    // Reorder visuals (multi-select chip cluster)
+    --cngx-select-chip-drag-bg: var(--mat-sys-primary);
+    --cngx-select-chip-drag-color: var(--mat-sys-on-primary);
+    --cngx-select-chip-drop-bar-color: var(--mat-sys-primary);
+    --cngx-select-chip-handle-color: var(--mat-sys-on-surface-variant);
+    --cngx-select-chip-overflow-badge-bg: color-mix(
+      in srgb,
+      var(--mat-sys-on-surface) 8%,
+      transparent
+    );
+    --cngx-select-chip-overflow-badge-color: var(--mat-sys-on-surface);
+    --cngx-select-chip-remove-hover-bg: color-mix(
+      in srgb,
+      var(--mat-sys-on-surface) 12%,
+      transparent
+    );
+    --cngx-select-chip-remove-hover-color: var(--mat-sys-error);
+
+    // Shell focus ring
+    --cngx-select-shell-focus-ring: var(--mat-sys-primary);
+
+    // Tree-select node states
+    --cngx-tree-select-node-hover-bg: color-mix(
+      in srgb,
+      var(--mat-sys-on-surface) 6%,
+      transparent
+    );
+    --cngx-tree-select-node-selected-bg: color-mix(
+      in srgb,
+      var(--mat-sys-primary) 12%,
+      transparent
+    );
+    --cngx-tree-select-placeholder-color: var(--mat-sys-on-surface-variant);
+  } @else {
+    --cngx-select-panel-bg: #{mat.get-theme-color($theme, background, card)};
+    --cngx-select-check-color: #{mat.get-theme-color($theme, primary)};
+    --cngx-select-error-color: #{mat.get-theme-color($theme, warn)};
+    --cngx-select-option-error-color: #{mat.get-theme-color($theme, warn)};
+    --cngx-select-spinner-color: #{mat.get-theme-color($theme, primary)};
+    --cngx-select-loading-bar-color: #{mat.get-theme-color($theme, primary)};
+    --cngx-select-refreshing-color: #{mat.get-theme-color($theme, primary)};
+    --cngx-select-shell-focus-ring: #{mat.get-theme-color($theme, primary)};
+  }
+}
+
+@mixin theme($theme) {
+  @layer cngx.components {
+    :where(cngx-select-panel, cngx-tree-select-panel) {
+      @include color($theme);
+    }
+  }
+}

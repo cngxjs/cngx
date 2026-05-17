@@ -26,23 +26,33 @@
 
 @use './system-bridge' as cngx-system;
 @use './action-button-theme' as action-button;
+@use './async-container-theme' as async-container;
+@use './avatar-theme' as avatar;
 @use './bottom-sheet-theme' as bottom-sheet;
 @use './card-theme' as card;
+@use './chart-theme' as chart;
+@use './chip-theme' as chip;
+@use './close-button-theme' as close-button;
+@use './copy-block-theme' as copy-block;
 @use './dialog-theme' as dialog;
 @use './empty-state-theme' as empty-state;
 @use './feedback-theme' as feedback;
 @use './field-theme' as field;
 @use './file-drop-theme' as file-drop;
 @use './filter-builder-theme' as filter-builder;
+@use './interactive-controls-theme' as controls;
 @use './mat-treetable-theme' as mat-treetable;
 @use './popover-panel-theme' as popover-panel;
 @use './ripple-theme' as ripple;
+@use './select-theme' as select;
 @use './sidenav-theme' as sidenav;
 @use './skeleton-theme' as skeleton;
 @use './speak-button-theme' as speak;
 @use './stepper-theme' as stepper;
 @use './tabs-theme' as tabs;
+@use './tag-theme' as tag;
 @use './tooltip-theme' as tooltip;
+@use './treetable-theme' as treetable;
 
 @mixin theme($theme) {
   // Foundation tokens come first so every component bridge resolves its
@@ -50,8 +60,15 @@
   @include cngx-system.theme($theme);
 
   @include action-button.theme($theme);
+  @include async-container.theme($theme);
+  @include avatar.theme($theme);
   @include bottom-sheet.theme($theme);
   @include card.theme($theme);
+  @include chart.theme($theme);
+  @include chip.theme($theme);
+  @include close-button.theme($theme);
+  @include controls.theme($theme);
+  @include copy-block.theme($theme);
   @include dialog.theme($theme);
   @include empty-state.theme($theme);
   @include feedback.theme($theme);
@@ -61,10 +78,13 @@
   @include mat-treetable.theme($theme);
   @include popover-panel.theme($theme);
   @include ripple.theme($theme);
+  @include select.theme($theme);
   @include sidenav.theme($theme);
   @include skeleton.theme($theme);
   @include speak.theme($theme);
   @include stepper.theme($theme);
   @include tabs.theme($theme);
+  @include tag.theme($theme);
   @include tooltip.theme($theme);
+  @include treetable.theme($theme);
 }

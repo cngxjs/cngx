@@ -1,0 +1,27 @@
+@use '@angular/material' as mat;
+
+// Material bridge for CngxTag + CngxTagGroup. The tag's semantic colour
+// palette ([data-color]) layers --mat-sys-{primary,tertiary,secondary,error}
+// surfaces onto the per-tag --cngx-tag-bg / -color / -border tokens.
+//
+//   @use '@cngx/themes/material/tag-theme' as tag;
+//   html { @include tag.theme($theme); }
+
+@mixin color($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-tag-bg: transparent;
+    --cngx-tag-color: var(--mat-sys-on-surface);
+    --cngx-tag-border: 1px solid var(--mat-sys-outline-variant);
+  } @else {
+    --cngx-tag-color: #{mat.get-theme-color($theme, foreground, text)};
+    --cngx-tag-border: 1px solid #{mat.get-theme-color($theme, foreground, divider)};
+  }
+}
+
+@mixin theme($theme) {
+  @layer cngx.components {
+    :where(cngx-tag, cngx-tag-group) {
+      @include color($theme);
+    }
+  }
+}

@@ -1,0 +1,45 @@
+@use '@angular/material' as mat;
+
+// Material bridge for CngxTreetable (the CDK variant). Mirrors what
+// mat-treetable-theme.scss does for the Material variant, but resolves
+// onto Material's --mat-sys-* surfaces rather than the
+// --cngx-mat-treetable-* Material-bridge namespace.
+//
+//   @use '@cngx/themes/material/treetable-theme' as treetable;
+//   html { @include treetable.theme($theme); }
+
+@mixin color($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-treetable-bg: var(--mat-sys-surface);
+    --cngx-treetable-header-bg: var(--mat-sys-surface-container);
+    --cngx-treetable-header-color: var(--mat-sys-on-surface);
+    --cngx-treetable-row-color: var(--mat-sys-on-surface);
+    --cngx-treetable-row-hover-bg: color-mix(
+      in srgb,
+      var(--mat-sys-on-surface) 4%,
+      transparent
+    );
+    --cngx-treetable-row-selected-bg: color-mix(
+      in srgb,
+      var(--mat-sys-primary) 12%,
+      transparent
+    );
+    --cngx-treetable-row-border: var(--mat-sys-outline-variant);
+  } @else {
+    --cngx-treetable-header-color: #{mat.get-theme-color($theme, foreground, text)};
+    --cngx-treetable-row-color: #{mat.get-theme-color($theme, foreground, text)};
+    --cngx-treetable-row-hover-bg: #{rgba(
+        mat.get-theme-color($theme, foreground, text),
+        0.04
+      )};
+    --cngx-treetable-row-border: #{mat.get-theme-color($theme, foreground, divider)};
+  }
+}
+
+@mixin theme($theme) {
+  @layer cngx.components {
+    :where(cngx-treetable) {
+      @include color($theme);
+    }
+  }
+}

@@ -1,0 +1,25 @@
+@use '@angular/material' as mat;
+
+// Material bridge for CngxChip + CngxChipGroup + CngxMultiChipGroup +
+// CngxButtonToggleGroup (button-toggle reuses the chip token surface).
+//
+//   @use '@cngx/themes/material/chip-theme' as chip;
+//   html { @include chip.theme($theme); }
+
+@mixin color($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-chip-bg: color-mix(in srgb, var(--mat-sys-primary) 12%, transparent);
+    --cngx-chip-color: var(--mat-sys-on-surface);
+  } @else {
+    --cngx-chip-bg: #{rgba(mat.get-theme-color($theme, primary), 0.12)};
+    --cngx-chip-color: #{mat.get-theme-color($theme, foreground, text)};
+  }
+}
+
+@mixin theme($theme) {
+  @layer cngx.components {
+    :where(cngx-chip, cngx-chip-group, cngx-multi-chip-group) {
+      @include color($theme);
+    }
+  }
+}

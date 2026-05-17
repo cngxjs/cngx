@@ -1,0 +1,29 @@
+@use '@angular/material' as mat;
+
+// Material bridge for CngxAsyncContainer.
+//
+//   @use '@cngx/themes/material/async-container-theme' as async;
+//   html { @include async.theme($theme); }
+
+@mixin color($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-async-container-overlay-bg: color-mix(
+      in srgb,
+      var(--mat-sys-surface) 80%,
+      transparent
+    );
+  } @else {
+    --cngx-async-container-overlay-bg: #{rgba(
+        mat.get-theme-color($theme, background, card),
+        0.8
+      )};
+  }
+}
+
+@mixin theme($theme) {
+  @layer cngx.components {
+    :where(.cngx-async-container) {
+      @include color($theme);
+    }
+  }
+}

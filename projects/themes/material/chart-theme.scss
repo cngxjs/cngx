@@ -1,0 +1,33 @@
+@use '@angular/material' as mat;
+
+// Material bridge for CngxChart. Maps the chart's accent / axis / grid
+// tokens onto Material's primary / outline-variant / on-surface surfaces.
+//
+//   @use '@cngx/themes/material/chart-theme' as chart;
+//   html { @include chart.theme($theme); }
+
+@mixin color($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-chart-text-color: var(--mat-sys-on-surface);
+    --cngx-chart-axis-color: var(--mat-sys-on-surface-variant);
+    --cngx-chart-grid-color: var(--mat-sys-outline-variant);
+    --cngx-chart-accent: var(--mat-sys-primary);
+    --cngx-chart-danger: var(--mat-sys-error);
+    --cngx-chart-tooltip-bg: var(--mat-sys-inverse-surface);
+    --cngx-chart-tooltip-color: var(--mat-sys-inverse-on-surface);
+  } @else {
+    --cngx-chart-text-color: #{mat.get-theme-color($theme, foreground, text)};
+    --cngx-chart-axis-color: #{mat.get-theme-color($theme, foreground, secondary-text)};
+    --cngx-chart-grid-color: #{mat.get-theme-color($theme, foreground, divider)};
+    --cngx-chart-accent: #{mat.get-theme-color($theme, primary)};
+    --cngx-chart-danger: #{mat.get-theme-color($theme, warn)};
+  }
+}
+
+@mixin theme($theme) {
+  @layer cngx.components {
+    :where(cngx-chart) {
+      @include color($theme);
+    }
+  }
+}
