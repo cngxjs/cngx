@@ -3,24 +3,24 @@
  *
  * Table-grid layout for an expandable, selectable tree. Indent is driven
  * by `--cngx-row-depth` set per row by the renderer, multiplied by
- * `--cngx-table-indent-size`. The narrow mobile breakpoint shrinks the
+ * `--cngx-treetable-indent-size`. The narrow mobile breakpoint shrinks the
  * indent step and bumps tap-target sizing on the expand toggle.
  *
- * Tokens live under the `--cngx-table-*` legacy namespace (pre-rename
+ * Tokens live under the `--cngx-treetable-*` legacy namespace (pre-rename
  * from "table" → "treetable"); namespace cleanup is Phase 4 work.
  */
 
 @layer cngx.tokens {
-  @property --cngx-table-header-bg        { syntax: '<color>'; inherits: false; initial-value: oklch(0.98 0.005 250); }
-  @property --cngx-table-header-border    { syntax: '<color>'; inherits: false; initial-value: oklch(0.92 0.005 250); }
-  @property --cngx-table-header-color     { syntax: '<color>'; inherits: true;  initial-value: oklch(0.34 0.015 250); }
-  @property --cngx-table-row-border       { syntax: '<color>'; inherits: false; initial-value: oklch(0.96 0.005 250); }
-  @property --cngx-table-row-hover-bg     { syntax: '<color>'; inherits: false; initial-value: oklch(0.97 0.015 250); }
-  @property --cngx-table-row-selected-bg  { syntax: '<color>'; inherits: false; initial-value: oklch(0.95 0.025 250); }
-  @property --cngx-table-focus-ring       { syntax: '<color>'; inherits: false; initial-value: oklch(0.5 0.2 280); }
-  @property --cngx-table-muted-color      { syntax: '<color>'; inherits: true;  initial-value: oklch(0.5 0.015 250); }
-  @property --cngx-table-cell-color       { syntax: '<color>'; inherits: true;  initial-value: oklch(0.34 0.015 250); }
-  @property --cngx-table-indent-size      { syntax: '*'; inherits: true; initial-value: 1.5rem; }
+  @property --cngx-treetable-header-bg        { syntax: '<color>'; inherits: false; initial-value: oklch(0.98 0.005 250); }
+  @property --cngx-treetable-header-border    { syntax: '<color>'; inherits: false; initial-value: oklch(0.92 0.005 250); }
+  @property --cngx-treetable-header-color     { syntax: '<color>'; inherits: true;  initial-value: oklch(0.34 0.015 250); }
+  @property --cngx-treetable-row-border       { syntax: '<color>'; inherits: false; initial-value: oklch(0.96 0.005 250); }
+  @property --cngx-treetable-row-hover-bg     { syntax: '<color>'; inherits: false; initial-value: oklch(0.97 0.015 250); }
+  @property --cngx-treetable-row-selected-bg  { syntax: '<color>'; inherits: false; initial-value: oklch(0.95 0.025 250); }
+  @property --cngx-treetable-focus-ring       { syntax: '<color>'; inherits: false; initial-value: oklch(0.5 0.2 280); }
+  @property --cngx-treetable-muted-color      { syntax: '<color>'; inherits: true;  initial-value: oklch(0.5 0.015 250); }
+  @property --cngx-treetable-cell-color       { syntax: '<color>'; inherits: true;  initial-value: oklch(0.34 0.015 250); }
+  @property --cngx-treetable-indent-size      { syntax: '*'; inherits: true; initial-value: 1.5rem; }
 }
 
 @layer cngx.components {
@@ -39,15 +39,15 @@
 
     cdk-header-row {
       display: table-row;
-      background: var(--cngx-table-header-bg, oklch(0.98 0.005 250));
-      border-bottom: 2px solid var(--cngx-table-header-border, var(--cngx-color-border, oklch(0.92 0.005 250)));
+      background: var(--cngx-treetable-header-bg, oklch(0.98 0.005 250));
+      border-bottom: 2px solid var(--cngx-treetable-header-border, var(--cngx-color-border, oklch(0.92 0.005 250)));
     }
 
     cdk-header-cell {
       display: table-cell;
       padding: 0.6rem 1rem;
       font-weight: 600;
-      color: var(--cngx-table-header-color, var(--cngx-color-text, oklch(0.34 0.015 250)));
+      color: var(--cngx-treetable-header-color, var(--cngx-color-text, oklch(0.34 0.015 250)));
       text-align: left;
       white-space: nowrap;
     }
@@ -60,7 +60,7 @@
 
     cdk-row {
       display: table-row;
-      border-bottom: 1px solid var(--cngx-table-row-border, var(--cngx-color-border, oklch(0.96 0.005 250)));
+      border-bottom: 1px solid var(--cngx-treetable-row-border, var(--cngx-color-border, oklch(0.96 0.005 250)));
       cursor: pointer;
       transition: background 120ms ease;
     }
@@ -70,33 +70,33 @@
     }
 
     cdk-row.cngx-treetable__row--highlighted {
-      background: var(--cngx-table-row-hover-bg, oklch(0.97 0.015 250));
+      background: var(--cngx-treetable-row-hover-bg, oklch(0.97 0.015 250));
     }
 
     cdk-row.cngx-treetable__row--selected {
-      background: var(--cngx-table-row-selected-bg, oklch(0.95 0.025 250));
+      background: var(--cngx-treetable-row-selected-bg, oklch(0.95 0.025 250));
     }
 
     cdk-row.cngx-treetable__row--focused {
-      outline: 2px solid var(--cngx-table-focus-ring, var(--cngx-color-primary, oklch(0.5 0.2 280)));
+      outline: 2px solid var(--cngx-treetable-focus-ring, var(--cngx-color-primary, oklch(0.5 0.2 280)));
       outline-offset: -2px;
     }
 
     .cngx-treetable__empty {
       padding: 2rem 1rem;
       text-align: center;
-      color: var(--cngx-table-muted-color, oklch(0.5 0.015 250));
+      color: var(--cngx-treetable-muted-color, oklch(0.5 0.015 250));
       font-size: 0.875rem;
     }
 
     .cngx-treetable__first-data-cell {
-      padding-inline-start: calc(var(--cngx-row-depth, 0) * var(--cngx-table-indent-size, 1.5rem) + 1rem);
+      padding-inline-start: calc(var(--cngx-row-depth, 0) * var(--cngx-treetable-indent-size, 1.5rem) + 1rem);
     }
 
     cdk-cell {
       display: table-cell;
       padding: 0.6rem 1rem;
-      color: var(--cngx-table-cell-color, var(--cngx-color-text, oklch(0.34 0.015 250)));
+      color: var(--cngx-treetable-cell-color, var(--cngx-color-text, oklch(0.34 0.015 250)));
       vertical-align: middle;
     }
 
@@ -104,7 +104,7 @@
       white-space: nowrap;
       width: 1px;
       padding-inline-end: 0.25rem;
-      padding-inline-start: calc(var(--cngx-row-depth, 0) * var(--cngx-table-indent-size, 1.5rem) + 0.25rem);
+      padding-inline-start: calc(var(--cngx-row-depth, 0) * var(--cngx-treetable-indent-size, 1.5rem) + 0.25rem);
     }
 
     cdk-cell.cngx-treetable__select-cell {
@@ -118,7 +118,7 @@
       border: none;
       cursor: pointer;
       padding: 0.25rem;
-      color: var(--cngx-table-muted-color, oklch(0.5 0.015 250));
+      color: var(--cngx-treetable-muted-color, oklch(0.5 0.015 250));
       font-size: 0.875rem;
       line-height: 1;
       border-radius: 4px;
@@ -128,13 +128,13 @@
     }
 
     .cngx-treetable__toggle:hover {
-      background: var(--cngx-table-header-border, var(--cngx-color-border, oklch(0.92 0.005 250)));
-      color: var(--cngx-table-header-color, var(--cngx-color-text, oklch(0.34 0.015 250)));
+      background: var(--cngx-treetable-header-border, var(--cngx-color-border, oklch(0.92 0.005 250)));
+      color: var(--cngx-treetable-header-color, var(--cngx-color-text, oklch(0.34 0.015 250)));
     }
 
     @media (max-width: 960px) {
       :scope {
-        --cngx-table-indent-size: 1.25rem;
+        --cngx-treetable-indent-size: 1.25rem;
       }
 
       cdk-table {
@@ -157,7 +157,7 @@
       cdk-cell.cngx-treetable__expand-cell {
         padding-inline-end: 0.125rem;
         padding-inline-start: calc(
-          var(--cngx-row-depth, 0) * var(--cngx-table-indent-size, 1.25rem) + 0.125rem
+          var(--cngx-row-depth, 0) * var(--cngx-treetable-indent-size, 1.25rem) + 0.125rem
         );
       }
 
@@ -166,7 +166,7 @@
       }
 
       .cngx-treetable__first-data-cell {
-        padding-inline-start: calc(var(--cngx-row-depth, 0) * var(--cngx-table-indent-size, 1.25rem) + 0.875rem);
+        padding-inline-start: calc(var(--cngx-row-depth, 0) * var(--cngx-treetable-indent-size, 1.25rem) + 0.875rem);
       }
 
       .cngx-treetable__toggle {

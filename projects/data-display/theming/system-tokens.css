@@ -4,7 +4,7 @@
  * canonical home that ng-packagr already ships. Populate when a need
  * arises for tokens that belong to this lib's domain (table-row sizing,
  * cell padding, header/row alternation, sticky-column shadow — e.g. a
- * future `--cngx-table-row-height-md` shared across CDK and Material
+ * future `--cngx-treetable-row-height-md` shared across CDK and Material
  * variants of treetable).
  *
  * System tokens shared across all libs live in
