@@ -135,15 +135,15 @@
   $scale: math.max(-4, math.min(0, $scale));
 
   // Material 3 menu/select options sit at 48px min-height with 12×16px
-  // padding (Material 3 "Single-line list item"). cngx's default is much
-  // tighter (auto height, 6×8px padding) — bridge widens it to match
-  // Material so a cngx option next to <mat-select> reads the same size.
+  // padding, edge-to-edge with no inner radius and no panel inset around
+  // the option list. The highlight bar spans the full panel width.
   $paddings:   (0: 12px 16px, -1: 10px 14px, -2: 8px 12px, -3: 6px 10px, -4: 4px 8px);
   $min-heights:(0: 48px,      -1: 44px,      -2: 40px,     -3: 36px,    -4: 32px);
 
   --cngx-select-option-padding: #{map.get($paddings, $scale)};
   --cngx-select-option-min-height: #{map.get($min-heights, $scale)};
-  --cngx-select-option-radius: 4px;
+  --cngx-select-option-radius: 0;
+  --cngx-select-panel-padding: 0;
 }
 
 @mixin theme($theme) {
