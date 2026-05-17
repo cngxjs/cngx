@@ -10,13 +10,14 @@
  *   - Static layout (padding, radius, bg, border, color, min-width)
  *   - States (hover-shadow, focus-{width,color,offset}, selected-*, disabled-opacity, loading-*)
  *   - Typography slots (title-*, subtitle-*)
- *   - Accent palette (--cngx-card-accent-* + the universal --cngx-accent-* family)
+ *   - Accent palette (--cngx-card-accent-color + --cngx-card-accent-{info,success,warning,danger}-bg)
  *   - Badge placement (badge-offset)
  *
- * The --cngx-accent-* tokens (info/success/warning/danger/neutral) are
- * universal semantic colors that other components also key off; Phase 4
- * cleanup (Plan §709) renames them to --cngx-color-*. Until then they
- * remain as written.
+ * Solid semantic colours come from foundation
+ * --cngx-color-{info,success,warning,danger} directly. Tinted-surface
+ * variants for the card-accent classes carry the card-specific
+ * --cngx-card-accent-*-bg namespace (no foundation analogue for tinted
+ * surfaces — Plan §709 cleanup completed).
  *
  * Material-Bridge: projects/ui/card-theme.scss writes the same tokens from
  * a Material theme. That SCSS bridge stays untouched per Plan §10 —
@@ -63,17 +64,16 @@
   @property --cngx-card-accent-width     { syntax: '<length>'; inherits: false; initial-value: 3px; }
   @property --cngx-card-accent-color     { syntax: '<color>';  inherits: true;  initial-value: transparent; }
 
-  /* Universal accent palette — also consumed by other components.
-   * Phase 4 rename target: --cngx-color-{info,success,warning,danger}. */
-  @property --cngx-accent-info     { syntax: '<color>'; inherits: true; initial-value: oklch(0.62 0.20 250); }
-  @property --cngx-accent-info-bg  { syntax: '<color>'; inherits: true; initial-value: oklch(0.97 0.03 250); }
-  @property --cngx-accent-success  { syntax: '<color>'; inherits: true; initial-value: oklch(0.65 0.18 145); }
-  @property --cngx-accent-success-bg { syntax: '<color>'; inherits: true; initial-value: oklch(0.97 0.04 145); }
-  @property --cngx-accent-warning  { syntax: '<color>'; inherits: true; initial-value: oklch(0.72 0.18 70); }
-  @property --cngx-accent-warning-bg { syntax: '<color>'; inherits: true; initial-value: oklch(0.97 0.04 75); }
-  @property --cngx-accent-danger   { syntax: '<color>'; inherits: true; initial-value: oklch(0.65 0.22 25); }
-  @property --cngx-accent-danger-bg { syntax: '<color>'; inherits: true; initial-value: oklch(0.97 0.03 25); }
-  @property --cngx-accent-neutral  { syntax: '<color>'; inherits: true; initial-value: oklch(0.81 0.005 250); }
+  /* Card-specific tinted-surface variants. Solid semantic colours come
+   * from foundation --cngx-color-{info,success,warning,danger} directly;
+   * the *-bg tints are card-specific (no foundation analogue) so they
+   * carry the --cngx-card-accent-* namespace. Phase 4 cleanup completed:
+   * --cngx-accent-* family dropped, solid colours folded into foundation,
+   * surface tints scoped to card. */
+  @property --cngx-card-accent-info-bg    { syntax: '<color>'; inherits: true; initial-value: oklch(0.97 0.03 250); }
+  @property --cngx-card-accent-success-bg { syntax: '<color>'; inherits: true; initial-value: oklch(0.97 0.04 145); }
+  @property --cngx-card-accent-warning-bg { syntax: '<color>'; inherits: true; initial-value: oklch(0.97 0.04 75); }
+  @property --cngx-card-accent-danger-bg  { syntax: '<color>'; inherits: true; initial-value: oklch(0.97 0.03 25); }
 
   /* Badge placement */
   @property --cngx-card-badge-offset { syntax: '<length>'; inherits: false; initial-value: -6px; }
@@ -245,51 +245,51 @@
     }
 
     .cngx-card--accent-info {
-      --cngx-card-accent-color: var(--cngx-accent-info, var(--cngx-color-info, oklch(0.62 0.20 250)));
+      --cngx-card-accent-color: var(--cngx-color-info, oklch(0.62 0.20 250));
       background: var(
-        --cngx-accent-info-bg,
+        --cngx-card-accent-info-bg,
         color-mix(
           in oklch,
-          var(--cngx-accent-info, var(--cngx-color-info, oklch(0.62 0.20 250))) 6%,
+          var(--cngx-color-info, oklch(0.62 0.20 250)) 6%,
           var(--cngx-card-bg, oklch(1 0 0))
         )
       );
     }
     .cngx-card--accent-success {
-      --cngx-card-accent-color: var(--cngx-accent-success, var(--cngx-color-success, oklch(0.65 0.18 145)));
+      --cngx-card-accent-color: var(--cngx-color-success, oklch(0.65 0.18 145));
       background: var(
-        --cngx-accent-success-bg,
+        --cngx-card-accent-success-bg,
         color-mix(
           in oklch,
-          var(--cngx-accent-success, var(--cngx-color-success, oklch(0.65 0.18 145))) 6%,
+          var(--cngx-color-success, oklch(0.65 0.18 145)) 6%,
           var(--cngx-card-bg, oklch(1 0 0))
         )
       );
     }
     .cngx-card--accent-warning {
-      --cngx-card-accent-color: var(--cngx-accent-warning, var(--cngx-color-warning, oklch(0.72 0.18 70)));
+      --cngx-card-accent-color: var(--cngx-color-warning, oklch(0.72 0.18 70));
       background: var(
-        --cngx-accent-warning-bg,
+        --cngx-card-accent-warning-bg,
         color-mix(
           in oklch,
-          var(--cngx-accent-warning, var(--cngx-color-warning, oklch(0.72 0.18 70))) 8%,
+          var(--cngx-color-warning, oklch(0.72 0.18 70)) 8%,
           var(--cngx-card-bg, oklch(1 0 0))
         )
       );
     }
     .cngx-card--accent-danger {
-      --cngx-card-accent-color: var(--cngx-accent-danger, var(--cngx-color-danger, oklch(0.65 0.22 25)));
+      --cngx-card-accent-color: var(--cngx-color-danger, oklch(0.65 0.22 25));
       background: var(
-        --cngx-accent-danger-bg,
+        --cngx-card-accent-danger-bg,
         color-mix(
           in oklch,
-          var(--cngx-accent-danger, var(--cngx-color-danger, oklch(0.65 0.22 25))) 8%,
+          var(--cngx-color-danger, oklch(0.65 0.22 25)) 8%,
           var(--cngx-card-bg, oklch(1 0 0))
         )
       );
     }
     .cngx-card--accent-neutral {
-      --cngx-card-accent-color: var(--cngx-accent-neutral, var(--cngx-color-border, oklch(0.81 0.005 250)));
+      --cngx-card-accent-color: var(--cngx-color-border, oklch(0.81 0.005 250));
     }
 
     /* Badge placement — absolute, four corner variants */
