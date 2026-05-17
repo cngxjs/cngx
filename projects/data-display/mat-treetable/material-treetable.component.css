@@ -15,9 +15,9 @@
   @property --cngx-mat-treetable-depth-indent              { syntax: '*'; inherits: true; initial-value: 1.5rem; }
   @property --cngx-mat-treetable-expand-column-width       { syntax: '<length>'; inherits: false; initial-value: 40px; }
   @property --cngx-mat-treetable-utility-padding-inline    { syntax: '<length>'; inherits: false; initial-value: 4px; }
-  @property --cngx-mat-treetable-empty-padding-block       { syntax: '<length>'; inherits: false; initial-value: 2rem; }
-  @property --cngx-mat-treetable-empty-padding-inline      { syntax: '<length>'; inherits: false; initial-value: 1rem; }
-  @property --cngx-mat-treetable-first-data-cell-padding-inline { syntax: '<length>'; inherits: false; initial-value: 1rem; }
+  @property --cngx-mat-treetable-empty-padding-block       { syntax: '*'; inherits: false; initial-value: 2rem; }
+  @property --cngx-mat-treetable-empty-padding-inline      { syntax: '*'; inherits: false; initial-value: 1rem; }
+  @property --cngx-mat-treetable-first-data-cell-padding-inline { syntax: '*'; inherits: false; initial-value: 1rem; }
 
   /* Colors */
   @property --cngx-mat-treetable-row-hover-color           { syntax: '<color>'; inherits: false; initial-value: oklch(0 0 0 / 0.04); }
@@ -43,7 +43,7 @@
   @property --cngx-mat-treetable-narrow-cell-padding-inline   { syntax: '<length>'; inherits: false; initial-value: 8px; }
   @property --cngx-mat-treetable-narrow-cell-font-size        { syntax: '*'; inherits: false; initial-value: 0.8125rem; }
   @property --cngx-mat-treetable-narrow-utility-padding-inline { syntax: '<length>'; inherits: false; initial-value: 2px; }
-  @property --cngx-mat-treetable-narrow-first-data-cell-padding-inline { syntax: '<length>'; inherits: false; initial-value: 0.875rem; }
+  @property --cngx-mat-treetable-narrow-first-data-cell-padding-inline { syntax: '*'; inherits: false; initial-value: 0.875rem; }
   @property --cngx-mat-treetable-narrow-toggle-size           { syntax: '<length>'; inherits: false; initial-value: 44px; }
   @property --cngx-mat-treetable-narrow-toggle-padding        { syntax: '<length>'; inherits: false; initial-value: 10px; }
 }

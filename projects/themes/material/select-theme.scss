@@ -78,7 +78,15 @@
 
 @mixin theme($theme) {
   @layer cngx.components {
-    :where(cngx-select-panel, cngx-tree-select-panel) {
+    // The visible panel is a <div class="cngx-select__panel"> rendered by
+    // every Select-family component (single, multi, combobox, typeahead,
+    // tree-select, reorderable-multi, action-select, action-multi,
+    // select-shell) plus the <cngx-tree-select-panel> internal host.
+    // Targeting the class catches all of them regardless of the wrapping
+    // element-tag; targeting only the host tag missed every variant that
+    // renders its panel as a plain <div popover> (multi-select, combobox,
+    // typeahead, etc.).
+    :where(.cngx-select__panel, cngx-tree-select-panel) {
       @include color($theme);
     }
   }

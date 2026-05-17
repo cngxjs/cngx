@@ -26,9 +26,9 @@
   @property --cngx-tab-focus-ring                { syntax: '*'; inherits: false; initial-value: 2px solid currentColor; }
   @property --cngx-tab-focus-offset              { syntax: '<length>'; inherits: false; initial-value: 2px; }
   @property --cngx-tab-error-badge-color         { syntax: '<color>'; inherits: false; initial-value: oklch(0.45 0.15 25); }
-  @property --cngx-tab-busy-spinner-size         { syntax: '<length>'; inherits: false; initial-value: 1rem; }
+  @property --cngx-tab-busy-spinner-size         { syntax: '*'; inherits: false; initial-value: 1rem; }
   @property --cngx-tab-busy-spinner-color        { syntax: '*'; inherits: true; initial-value: currentColor; }
-  @property --cngx-tab-rejection-icon-size       { syntax: '<length>'; inherits: false; initial-value: 1.25rem; }
+  @property --cngx-tab-rejection-icon-size       { syntax: '*'; inherits: false; initial-value: 1.25rem; }
   @property --cngx-tab-rejection-icon-color      { syntax: '<color>'; inherits: false; initial-value: oklch(0.45 0.15 25); }
   @property --cngx-tab-rejection-icon-text       { syntax: '<color>'; inherits: true; initial-value: oklch(1 0 0); }
   @property --cngx-tab-rejection-icon-font-size  { syntax: '*'; inherits: false; initial-value: 0.875rem; }

@@ -6,7 +6,7 @@
   @property --cngx-close-button-border          { syntax: '*';        inherits: false; initial-value: none; }
   @property --cngx-close-button-size            { syntax: '<length>'; inherits: false; initial-value: 32px; }
   @property --cngx-close-button-padding         { syntax: '<length>'; inherits: false; initial-value: 8px; }
-  @property --cngx-close-button-color           { syntax: '<color>';  inherits: true;  initial-value: currentColor; }
+  @property --cngx-close-button-color           { syntax: '*';  inherits: true;  initial-value: currentColor; }
   @property --cngx-close-button-opacity         { syntax: '<number>'; inherits: false; initial-value: 0.5; }
   @property --cngx-close-button-radius          { syntax: '<length>'; inherits: false; initial-value: 4px; }
   @property --cngx-close-button-transition      { syntax: '<time>';   inherits: false; initial-value: 150ms; }

@@ -17,7 +17,7 @@
   @property --cngx-file-drop-padding           { syntax: '<length>'; inherits: false; initial-value: 32px; }
   @property --cngx-file-drop-transition        { syntax: '*';        inherits: false; initial-value: 200ms ease; }
 
-  @property --cngx-file-drop-active-border     { syntax: '<color>';  inherits: false; initial-value: currentColor; }
+  @property --cngx-file-drop-active-border     { syntax: '*';  inherits: false; initial-value: currentColor; }
   @property --cngx-file-drop-active-bg         { syntax: '<color>';  inherits: false; initial-value: oklch(0 0 0 / 0.03); }
 
   @property --cngx-file-drop-success-border    { syntax: '<color>';  inherits: false; initial-value: oklch(0.65 0.15 155); }

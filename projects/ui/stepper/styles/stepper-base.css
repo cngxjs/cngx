@@ -17,10 +17,10 @@
   @property --cngx-step-disabled-opacity             { syntax: '<number>'; inherits: false; initial-value: 0.55; }
   @property --cngx-step-focus-ring                   { syntax: '*'; inherits: false; initial-value: 2px solid currentColor; }
   @property --cngx-step-focus-offset                 { syntax: '<length>'; inherits: false; initial-value: 2px; }
-  @property --cngx-step-indicator-size               { syntax: '<length>'; inherits: false; initial-value: 1.75rem; }
+  @property --cngx-step-indicator-size               { syntax: '*'; inherits: false; initial-value: 1.75rem; }
   @property --cngx-step-group-font-weight            { syntax: '<number>'; inherits: false; initial-value: 600; }
-  @property --cngx-step-group-indent                 { syntax: '<length>'; inherits: false; initial-value: 1.5rem; }
-  @property --cngx-step-badge-size                   { syntax: '<length>'; inherits: false; initial-value: 1.25rem; }
+  @property --cngx-step-group-indent                 { syntax: '*'; inherits: false; initial-value: 1.5rem; }
+  @property --cngx-step-badge-size                   { syntax: '*'; inherits: false; initial-value: 1.25rem; }
   @property --cngx-step-error-badge-color            { syntax: '<color>'; inherits: false; initial-value: oklch(0.45 0.15 25); }
   @property --cngx-step-error-badge-text-color       { syntax: '<color>'; inherits: true; initial-value: oklch(1 0 0); }
   @property --cngx-step-badge-font-size              { syntax: '*'; inherits: false; initial-value: 0.75em; }
@@ -29,7 +29,7 @@
   @property --cngx-step-rejection-outline-color      { syntax: '<color>'; inherits: false; initial-value: oklch(0.62 0.15 60); }
   @property --cngx-step-rejection-outline-offset     { syntax: '<length>'; inherits: false; initial-value: 2px; }
   @property --cngx-step-rejection-bg                 { syntax: '<color>'; inherits: false; initial-value: transparent; }
-  @property --cngx-step-rejection-icon-size          { syntax: '<length>'; inherits: false; initial-value: 1.25rem; }
+  @property --cngx-step-rejection-icon-size          { syntax: '*'; inherits: false; initial-value: 1.25rem; }
   @property --cngx-step-rejection-icon-bg            { syntax: '<color>'; inherits: false; initial-value: oklch(0.62 0.15 60); }
   @property --cngx-step-rejection-icon-color         { syntax: '<color>'; inherits: true; initial-value: oklch(1 0 0); }
   @property --cngx-step-rejection-icon-font-size     { syntax: '*'; inherits: false; initial-value: 0.75em; }

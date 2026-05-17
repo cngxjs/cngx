@@ -11,7 +11,7 @@
 
 @layer cngx.tokens {
   @property --cngx-radio-gap               { syntax: '*';        inherits: false; initial-value: 0.5rem; }
-  @property --cngx-radio-color             { syntax: '<color>';  inherits: true;  initial-value: currentColor; }
+  @property --cngx-radio-color             { syntax: '*';  inherits: true;  initial-value: currentColor; }
   @property --cngx-radio-disabled-opacity  { syntax: '<number>'; inherits: false; initial-value: 0.5; }
   @property --cngx-radio-focus-outline     { syntax: '*';        inherits: false; initial-value: 2px solid currentColor; }
   @property --cngx-radio-focus-offset      { syntax: '*';        inherits: false; initial-value: 2px; }

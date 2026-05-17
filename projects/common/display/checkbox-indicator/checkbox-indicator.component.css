@@ -6,7 +6,7 @@
 
 @layer cngx.tokens {
   @property --cngx-checkbox-size              { syntax: '*';        inherits: false; initial-value: 1em; }
-  @property --cngx-checkbox-color             { syntax: '<color>';  inherits: true;  initial-value: currentColor; }
+  @property --cngx-checkbox-color             { syntax: '*';  inherits: true;  initial-value: currentColor; }
   @property --cngx-checkbox-bg                { syntax: '*';        inherits: false; initial-value: transparent; }
   @property --cngx-checkbox-border            { syntax: '*';        inherits: false; initial-value: 1.5px solid currentColor; }
   @property --cngx-checkbox-radius            { syntax: '<length>'; inherits: false; initial-value: 2px; }
