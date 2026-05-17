@@ -137,8 +137,6 @@
       flex-shrink: 0;
     }
 
-    /* ── Visibility phases ─────────────────────────────────── */
-
     :scope.cngx-alert--hidden {
       display: none;
     }
@@ -155,8 +153,6 @@
       animation: cngx-alert-exit var(--cngx-alert-exit-duration, 150ms) ease-in both;
     }
 
-    /* ── Reduced motion ────────────────────────────────────── */
-
     @media (prefers-reduced-motion: reduce) {
       :scope.cngx-alert--entering,
       :scope.cngx-alert--entering .cngx-alert__icon {
@@ -171,8 +167,6 @@
         transition: none !important;
       }
     }
-
-    /* ── SR-only ───────────────────────────────────────────── */
 
     .cngx-sr-only {
       position: absolute;

@@ -33,7 +33,6 @@
 
 @layer cngx.components {
   @scope (.cngx-combobox) {
-    /* ── Host + root wrapper ──────────────────────────────────────── */
 
     :scope {
       display: inline-block;
@@ -45,8 +44,6 @@
     .cngx-combobox__root {
       display: contents;
     }
-
-    /* ── role="group" wrapper ─────────────────────────────────────── */
 
     .cngx-combobox__trigger {
       display: flex;
@@ -86,8 +83,6 @@
       cursor: not-allowed;
     }
 
-    /* ── Inline input (the focusable element) ─────────────────────── */
-
     .cngx-combobox__input {
       flex: 1 1 var(--cngx-combobox-input-flex-basis, 4rem);
       min-width: var(--cngx-combobox-input-min-width, 4rem);
@@ -119,8 +114,6 @@
       flex: 0 1 auto;
     }
 
-    /* ── Clear-all button ─────────────────────────────────────────── */
-
     .cngx-combobox__clear-all {
       flex: 0 0 auto;
       appearance: none;
@@ -141,8 +134,6 @@
       outline: 2px solid var(--cngx-color-primary, oklch(0.6 0.2 250));
       border-radius: 0.125rem;
     }
-
-    /* ── Caret ────────────────────────────────────────────────────── */
 
     .cngx-combobox__caret {
       flex: 0 0 auto;
