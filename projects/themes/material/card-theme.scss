@@ -16,9 +16,12 @@
   @if mat.get-theme-version($theme) == 1 {
     --cngx-card-bg: var(--mat-sys-surface-container-low);
     --cngx-card-color: var(--mat-sys-on-surface);
+    --cngx-card-title-color: var(--mat-sys-on-surface);
+    --cngx-card-subtitle-color: var(--mat-sys-on-surface-variant);
     --cngx-card-border: 1px solid var(--mat-sys-outline-variant);
     --cngx-card-focus-color: var(--mat-sys-primary);
     --cngx-card-selected-border: var(--mat-sys-primary);
+    --cngx-card-selected-bg: color-mix(in srgb, var(--mat-sys-primary) 8%, transparent);
     --cngx-card-divider: var(--mat-sys-outline-variant);
     --cngx-metric-value-color: var(--mat-sys-on-surface);
     --cngx-metric-unit-color: var(--mat-sys-on-surface-variant);
@@ -29,9 +32,12 @@
   } @else {
     --cngx-card-bg: #{mat.get-theme-color($theme, background, card)};
     --cngx-card-color: #{mat.get-theme-color($theme, foreground, text)};
+    --cngx-card-title-color: #{mat.get-theme-color($theme, foreground, text)};
+    --cngx-card-subtitle-color: #{mat.get-theme-color($theme, foreground, secondary-text)};
     --cngx-card-border: 1px solid #{mat.get-theme-color($theme, foreground, divider)};
     --cngx-card-focus-color: #{mat.get-theme-color($theme, primary)};
     --cngx-card-selected-border: #{mat.get-theme-color($theme, primary)};
+    --cngx-card-selected-bg: #{rgba(mat.get-theme-color($theme, primary), 0.08)};
     --cngx-card-divider: #{mat.get-theme-color($theme, foreground, divider)};
     --cngx-metric-value-color: #{mat.get-theme-color($theme, foreground, text)};
     --cngx-metric-unit-color: #{mat.get-theme-color($theme, foreground, secondary-text)};

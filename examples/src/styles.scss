@@ -29,28 +29,28 @@
 // --mat-sys-primary, …). Keep both paths in sync per mode: emit the sys
 // tokens with the config map, hand the cngx bridge the equivalent theme
 // object so it can read palette colours and density.
-$light-config: (
-  color: (
-    theme-type: light,
-    primary: mat.$azure-palette,
-  ),
+// mat.theme() takes the shorthand config (typography: Roboto, density: 0).
+// mat.define-theme() only accepts a color config — pass the colour subset so
+// the cngx Material bridge still receives a defined theme object for
+// mat.get-theme-color() / mat.get-theme-version() lookups.
+$light-color: (
+  theme-type: light,
+  primary: mat.$azure-palette,
 );
 
-$dark-config: (
-  color: (
-    theme-type: dark,
-    primary: mat.$azure-palette,
-  ),
+$dark-color: (
+  theme-type: dark,
+  primary: mat.$azure-palette,
 );
 
 html {
-  @include mat.theme($light-config);
-  @include cngx-material.theme(mat.define-theme($light-config));
+  @include mat.theme((color: $light-color, typography: Roboto, density: 0));
+  @include cngx-material.theme(mat.define-theme((color: $light-color)));
 }
 
 html.dark {
-  @include mat.theme($dark-config);
-  @include cngx-material.theme(mat.define-theme($dark-config));
+  @include mat.theme((color: $dark-color, typography: Roboto, density: 0));
+  @include cngx-material.theme(mat.define-theme((color: $dark-color)));
 }
 
 :root {
@@ -58,13 +58,12 @@ html.dark {
   // controls / scrollbars / details disclosure don't flip with the OS
   // preference when compodocx is light and the user's OS is dark.
   color-scheme: light;
-  font-family:
-    system-ui,
-    -apple-system,
-    'Segoe UI',
-    sans-serif;
-  font-size: 14px;
-  line-height: 1.5;
+  // Inherit Material's body-medium type stack (set by mat.theme(...) above).
+  // The previous system-ui override here shadowed --mat-sys-body-medium-font
+  // and made the typography mappings in the cngx bridges look like no-ops.
+  font-family: var(--mat-sys-body-medium-font, system-ui, -apple-system, sans-serif);
+  font-size: var(--mat-sys-body-medium-size, 14px);
+  line-height: var(--mat-sys-body-medium-line-height, 1.5);
   --cngx-ex-bg: #ffffff;
   --cngx-ex-text: #1f2937;
   --cngx-ex-muted: #6b7280;
