@@ -8,226 +8,219 @@
  * dismisses via `clearLastFailed()`.
  *
  * Themed via `--mat-sys-error` by default with `--cngx-mat-tab-error-*`
- * consumer overrides. Three-tier fallback: consumer override →
- * Material design token → hard-coded `#c62828`.
+ * consumer overrides. Material-bridge namespace `--cngx-mat-tab-*` is
+ * preserved per Plan §10 — no system-token fallbacks to
+ * `--cngx-color-*` because the Material design system owns the
+ * canonical theme.
  *
  * No animation: `tabs-accepted-debt §3` covers the cngx-native pulse
  * keyframe limitation; the Material variant ships no pulse for the
- * same architectural reason (avoids competing with Material's
- * existing ink-bar transition + ripple). Re-evaluate when ≥1 consumer
- * issue requests a pulse OR a sibling cngx feature adopts a shared
- * `createPulseOnEdge` factory the Material variant can compose
- * against.
+ * same architectural reason.
  *
  * Shipped as a standalone stylesheet asset (NOT folded into JS via
  * `styleUrls` — Angular only honours `styleUrls` on `@Component`,
  * not on `@Directive`). Consumer imports once in their global
  * stylesheet — Material-ecosystem prebuilt-themes pattern.
+ *
+ * No @scope wrap: consumer imports this file at the global level
+ * (not bound to any single host), and the .mat-mdc-tab selectors
+ * target Material's button which is rendered outside any cngx host.
  */
 
-/*
- * Specificity bump to `.mat-mdc-tab.cngx-mat-tab--error` (0,2,0) is
- * load-bearing — Material 21's `.mdc-tab` rule (0,1,0) sets
- * `outline: none` to suppress the browser's default focus outline,
- * and ships those styles inline via the component decorator. Since
- * the component-scoped CSS is injected into `<head>` AFTER the
- * `angular.json` global styles when the component first renders,
- * a same-specificity rule loses the cascade — `outline` would be
- * stripped and only `color` / `font-weight` would land. Mirrors
- * the same bump on `.mat-mdc-tab.cngx-mat-tab--has-errors::before`
- * below.
- */
-.mat-mdc-tab.cngx-mat-tab--error {
-  color: var(--cngx-mat-tab-error-color, var(--mat-sys-error, #c62828));
-  outline: var(--cngx-mat-tab-error-outline, 2px solid currentColor);
-  outline-offset: var(--cngx-mat-tab-error-outline-offset, 1px);
-  font-weight: var(--cngx-mat-tab-error-font-weight, 600);
+@layer cngx.tokens {
+  @property --cngx-mat-tab-error-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.45 0.15 25);
+  }
+  @property --cngx-mat-tab-error-outline {
+    syntax: '*';
+    inherits: false;
+    initial-value: 2px solid currentColor;
+  }
+  @property --cngx-mat-tab-error-outline-offset {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 1px;
+  }
+  @property --cngx-mat-tab-error-font-weight {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 600;
+  }
+  @property --cngx-mat-tab-has-errors-glyph-offset {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 4px;
+  }
+  @property --cngx-mat-tab-has-errors-glyph-offset-stacked {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 6px;
+  }
+  @property --cngx-mat-tab-has-errors-glyph-size {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 16px;
+  }
+  @property --cngx-mat-tab-has-errors-color {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: oklch(0.45 0.15 25);
+  }
+  @property --cngx-mat-tab-has-errors-glyph-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(1 0 0);
+  }
+  @property --cngx-mat-tab-has-errors-font-weight {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 700;
+  }
+  @property --cngx-mat-tabs-more-z {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 2;
+  }
+  @property --cngx-mat-tabs-more-bg {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: oklch(1 0 0);
+  }
+  @property --cngx-mat-tabs-more-shadow {
+    syntax: '*';
+    inherits: false;
+    initial-value: -8px 0 8px -4px oklch(0 0 0 / 0.1);
+  }
 }
 
-.mat-mdc-tab-disabled.cngx-mat-tab--error {
+@layer cngx.components {
   /*
-   * A disabled-and-rejected tab keeps the rejection signal but
-   * fades to disambiguate it from a healthy disabled tab. Material
-   * itself dims disabled tabs via the `--mat-tab-header-disabled-*`
-   * tokens; this overlay multiplies the dimming.
+   * Specificity bump to `.mat-mdc-tab.cngx-mat-tab--error` (0,2,0) is
+   * load-bearing — Material 21's `.mdc-tab` rule (0,1,0) sets
+   * `outline: none` to suppress the browser's default focus outline,
+   * and ships those styles inline via the component decorator. Since
+   * the component-scoped CSS is injected into `<head>` AFTER the
+   * `angular.json` global styles when the component first renders,
+   * a same-specificity rule loses the cascade.
    */
-  opacity: 0.7;
-}
+  .mat-mdc-tab.cngx-mat-tab--error {
+    color: var(--cngx-mat-tab-error-color, var(--mat-sys-error, oklch(0.45 0.15 25)));
+    outline: var(--cngx-mat-tab-error-outline, 2px solid currentColor);
+    outline-offset: var(--cngx-mat-tab-error-outline-offset, 1px);
+    font-weight: var(--cngx-mat-tab-error-font-weight, 600);
+  }
 
-/*
- * Per-tab form-error aggregation badge. Distinct semantic from
- * `--error` — `--error` means "your last commit was refused";
- * `--has-errors` means "this tab contains form-validation errors
- * right now". The two coexist (different sources, different
- * lifecycles, different remediation paths) and a tab can carry both
- * simultaneously.
- *
- * Three-tier fallback per CSS var: consumer override → Material
- * design token → hard-coded value. The badge glyph is a `::before`
- * pseudo-element so it stacks cleanly with Material's own focus
- * ring and ripple — Material's button uses neither `::before` nor
- * `::after` for its core visuals.
- *
- * No animation: same `tabs-accepted-debt §3` rationale as
- * `--error` — pulse-on-edge is deferred to a future shared
- * `createPulseOnEdge` factory.
- */
-.cngx-mat-tab--has-errors {
-  position: relative;
-}
-
-/*
- * Specificity is `.mat-mdc-tab.cngx-mat-tab--has-errors` (0,2,1)
- * to beat Material's own `.mat-focus-indicator::before` (0,1,1)
- * which sets `inset: 0` on the same pseudo-element. Without the
- * boost, the `top` / `inset-inline-end` declarations get collapsed
- * to 0 by Material's later-cascade rule and the badge sits dead-
- * centred under the focus ring instead of at the trailing-top
- * corner. Right + transform fall back for older inset-inline-end
- * support.
- */
-.mat-mdc-tab.cngx-mat-tab--has-errors::before {
-  content: '!';
-  position: absolute;
-  top: var(--cngx-mat-tab-has-errors-glyph-offset, 4px);
-  right: var(--cngx-mat-tab-has-errors-glyph-offset, 4px);
-  inset-inline-end: var(--cngx-mat-tab-has-errors-glyph-offset, 4px);
-  inset-inline-start: auto;
-  bottom: auto;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: var(--cngx-mat-tab-has-errors-glyph-size, 16px);
-  height: var(--cngx-mat-tab-has-errors-glyph-size, 16px);
-  margin: 0;
-  border: 0;
-  border-radius: 50%;
-  background: var(
-    --cngx-mat-tab-has-errors-color,
-    var(--mat-sys-error, #c62828)
-  );
-  color: var(
-    --cngx-mat-tab-has-errors-glyph-color,
-    var(--mat-sys-on-error, #ffffff)
-  );
-  font-size: calc(var(--cngx-mat-tab-has-errors-glyph-size, 16px) * 0.75);
-  font-weight: var(--cngx-mat-tab-has-errors-font-weight, 700);
-  line-height: 1;
-  pointer-events: none;
-  z-index: 1;
-}
-
-/*
- * Co-occurrence: when a tab is BOTH rejected and carries form
- * errors, the rejection outline already draws focus to the edges;
- * shift the has-errors badge slightly inward so the two signals
- * read as distinct rather than visually merging.
- */
-.mat-mdc-tab.cngx-mat-tab--error.cngx-mat-tab--has-errors::before {
-  top: var(--cngx-mat-tab-has-errors-glyph-offset-stacked, 6px);
-  right: var(--cngx-mat-tab-has-errors-glyph-offset-stacked, 6px);
-  inset-inline-end: var(--cngx-mat-tab-has-errors-glyph-offset-stacked, 6px);
-}
-
-/*
- * Trailing-edge skin for the dynamically-mounted `<cngx-tab-overflow>`
- * molecule. `[cngxMatTabs]` programmatically appends the molecule
- * into `.mat-mdc-tab-header` and adds the `cngx-mat-tabs-more` class
- * via `Renderer2` (`mat-tabs.directive.ts`'s afterNextRender block).
- *
- * Layout: flex item alongside `.mat-mdc-tab-label-container`. Material's
- * `.mat-mdc-tab-header` is itself a flex container, so the More
- * affordance flows naturally as a sibling of the label-container —
- * the label-container shrinks to fit, the More button takes its
- * natural width, and the trailing tab is no longer occluded by an
- * absolutely-positioned overlay. If consumers opt back into
- * Material's pagination (see the auto-hide rule below), the
- * pagination-after arrow becomes a third flex sibling and the
- * available width is split across all three; the IntersectionObserver
- * picks up the new layout automatically.
- *
- * Three-tier fallback per CSS var: consumer override → Material
- * design token → hard-coded value.
- */
-.cngx-mat-tabs-more {
-  flex: 0 0 auto;
-  align-self: stretch;
-  display: flex;
-  align-items: center;
-  z-index: var(--cngx-mat-tabs-more-z, 2);
+  .mat-mdc-tab-disabled.cngx-mat-tab--error {
+    /*
+     * A disabled-and-rejected tab keeps the rejection signal but
+     * fades to disambiguate it from a healthy disabled tab.
+     */
+    opacity: 0.7;
+  }
 
   /*
-   * Drive the molecule's own component-API cascade variables. The
-   * `<cngx-tab-overflow>` :host CSS defaults `--cngx-tab-overflow-bg`
-   * to `transparent` (sensible for the cngx-native variant that sits
-   * in a flow-positioned strip wrapper); the Material variant gives
-   * the More button an opaque surface so it reads as a distinct
-   * affordance against Material's strip background even when the
-   * popover panel is closed. The component's :host rule reads these
-   * variables, so resolution happens at the right specificity tier
-   * without us shouting through a higher-specificity selector.
+   * Per-tab form-error aggregation badge. Distinct semantic from
+   * `--error` — `--error` means "your last commit was refused";
+   * `--has-errors` means "this tab contains form-validation errors
+   * right now". The two coexist and a tab can carry both
+   * simultaneously.
    */
-  --cngx-tab-overflow-bg: var(
-    --cngx-mat-tabs-more-bg,
-    var(--mat-app-background-color, #ffffff)
-  );
-  --cngx-tab-overflow-button-bg: var(
-    --cngx-mat-tabs-more-bg,
-    var(--mat-app-background-color, #ffffff)
-  );
+  .cngx-mat-tab--has-errors {
+    position: relative;
+  }
 
-  box-shadow: var(
-    --cngx-mat-tabs-more-shadow,
-    -8px 0 8px -4px rgba(0, 0, 0, 0.1)
-  );
-}
+  /*
+   * Specificity is `.mat-mdc-tab.cngx-mat-tab--has-errors` (0,2,1)
+   * to beat Material's own `.mat-focus-indicator::before` (0,1,1)
+   * which sets `inset: 0` on the same pseudo-element.
+   */
+  .mat-mdc-tab.cngx-mat-tab--has-errors::before {
+    content: '!';
+    position: absolute;
+    top: var(--cngx-mat-tab-has-errors-glyph-offset, 4px);
+    right: var(--cngx-mat-tab-has-errors-glyph-offset, 4px);
+    inset-inline-end: var(--cngx-mat-tab-has-errors-glyph-offset, 4px);
+    inset-inline-start: auto;
+    bottom: auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--cngx-mat-tab-has-errors-glyph-size, 16px);
+    height: var(--cngx-mat-tab-has-errors-glyph-size, 16px);
+    margin: 0;
+    border: 0;
+    border-radius: 50%;
+    background: var(--cngx-mat-tab-has-errors-color, var(--mat-sys-error, oklch(0.45 0.15 25)));
+    color: var(--cngx-mat-tab-has-errors-glyph-color, var(--mat-sys-on-error, oklch(1 0 0)));
+    font-size: calc(var(--cngx-mat-tab-has-errors-glyph-size, 16px) * 0.75);
+    font-weight: var(--cngx-mat-tab-has-errors-font-weight, 700);
+    line-height: 1;
+    pointer-events: none;
+    z-index: 1;
+  }
 
-/*
- * Collapse the wrapper to zero layout space when the inner trigger
- * button is hidden (= no clipped tabs). Without this, the molecule's
- * `display: inline-flex` :host rule keeps reserving width for an
- * empty wrapper — the label-container would shrink even when no
- * overflow exists.
- */
-.cngx-mat-tabs-more:has(.cngx-tab-overflow__trigger[hidden]) {
-  display: none;
-}
+  /*
+   * Co-occurrence: when a tab is BOTH rejected and carries form
+   * errors, the rejection outline already draws focus to the edges;
+   * shift the has-errors badge slightly inward so the two signals
+   * read as distinct rather than visually merging.
+   */
+  .mat-mdc-tab.cngx-mat-tab--error.cngx-mat-tab--has-errors::before {
+    top: var(--cngx-mat-tab-has-errors-glyph-offset-stacked, 6px);
+    right: var(--cngx-mat-tab-has-errors-glyph-offset-stacked, 6px);
+    inset-inline-end: var(--cngx-mat-tab-has-errors-glyph-offset-stacked, 6px);
+  }
 
-/*
- * Material's pagination arrows (`<` / `>`) remain visible alongside
- * the More button: both are flex siblings of `.mat-mdc-tab-label-container`
- * inside `.mat-mdc-tab-header`, so the available width is split across
- * all of them and the IntersectionObserver picks up the new container
- * width automatically. Consumers who want to hide Material's
- * pagination (More button as the only overflow affordance) can do so
- * with a one-line theme-level override:
- *
- *   .mat-mdc-tab-header:has(cngx-tab-overflow)
- *     .mat-mdc-tab-header-pagination {
- *     display: none;
- *   }
- */
+  /*
+   * Trailing-edge skin for the dynamically-mounted `<cngx-tab-overflow>`
+   * molecule. `[cngxMatTabs]` programmatically appends the molecule
+   * into `.mat-mdc-tab-header` and adds the `cngx-mat-tabs-more` class.
+   */
+  .cngx-mat-tabs-more {
+    flex: 0 0 auto;
+    align-self: stretch;
+    display: flex;
+    align-items: center;
+    z-index: var(--cngx-mat-tabs-more-z, 2);
 
-/*
- * SR-only utility for the per-tab error descriptor span
- * (`<span class="cngx-sr-only" id="${handle.id}-errors">` mounted by
- * the aggregator-decoration effect). The span carries the consumer-
- * supplied `aggregator.announcement()` phrase; AT reads it through
- * the patched `aria-describedby`, sighted users see only the badge
- * glyph. `@cngx/ui/mat-tabs` ships this utility inside its own
- * stylesheet so consumers importing only `mat-tabs.css` (per the
- * README) do not paint the announcement inline next to the tab
- * label. Mirrors the rule in `@cngx/common/tabs/styles/tabs-base.css`
- * for the cngx-native variant.
- */
-.cngx-sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  margin: -1px;
-  padding: 0;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
+    /*
+     * Drive the molecule's own component-API cascade variables.
+     */
+    --cngx-tab-overflow-bg: var(
+      --cngx-mat-tabs-more-bg,
+      var(--mat-app-background-color, oklch(1 0 0))
+    );
+    --cngx-tab-overflow-button-bg: var(
+      --cngx-mat-tabs-more-bg,
+      var(--mat-app-background-color, oklch(1 0 0))
+    );
+
+    box-shadow: var(--cngx-mat-tabs-more-shadow, -8px 0 8px -4px oklch(0 0 0 / 0.1));
+  }
+
+  /*
+   * Collapse the wrapper to zero layout space when the inner trigger
+   * button is hidden (= no clipped tabs).
+   */
+  .cngx-mat-tabs-more:has(.cngx-tab-overflow__trigger[hidden]) {
+    display: none;
+  }
+
+  /*
+   * SR-only utility for the per-tab error descriptor span mounted by
+   * the aggregator-decoration effect.
+   */
+  .cngx-sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
 }
