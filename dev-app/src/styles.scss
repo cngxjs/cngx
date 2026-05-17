@@ -21,7 +21,7 @@
 @use '../../projects/ui/empty-state/empty-state-theme' as empty-state;
 @use '../../projects/ui/empty-state/empty-state' as cngx-empty-state;
 @use '../../projects/forms/input/file-drop' as cngx-file-drop;
-@use '../../projects/forms/input/file-drop-theme' as file-drop;
+@use '../../projects/themes/material/file-drop-theme' as file-drop;
 @use './app/demos/demo-shared';
 
 // `@cngx/ui/mat-tabs` ships its sticky-error skin as a standalone

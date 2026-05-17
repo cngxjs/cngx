@@ -322,7 +322,7 @@ Specialised bridge for `CngxListbox` that handles multi-select arrays and
 ### Optional Material Theme
 
 ```scss
-@use '@cngx/forms/field/material-theme' as form-field;
+@use '@cngx/themes/material/field-theme' as form-field;
 
 html {
   @include mat.all-component-themes($theme);

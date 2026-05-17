@@ -6,7 +6,7 @@
 // to those properties for consumers using @angular/material.
 //
 // Usage:
-//   @use '@cngx/forms/filter-builder/material-theme' as filter-builder;
+//   @use '@cngx/themes/material/filter-builder-theme' as filter-builder;
 //   html {
 //     @include mat.all-component-themes($theme);
 //     @include filter-builder.theme($theme);
