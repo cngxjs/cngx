@@ -11,37 +11,46 @@
 // independently via Angular and arrive automatically when imported in TS.
 // Replace with @cngx/themes/light.css or @cngx/themes/dark.css to force
 // a mode; write your own theme by pulling in the same source pieces.
+
 @use '@angular/material' as mat;
 @use '../../projects/themes/material/theme' as cngx-material;
 
+// Foundation: layer-order + system tokens + reset + base + aggregated
+// directive default CSS (bottom-sheet, backdrop, badge, divider, ripple,
+// async). @Directives cannot ship styleUrl so this single import is the
+// only path that delivers their defaults — leaving it out renders
+// bottom-sheet as a centred plain <dialog>, ripples invisible, etc.
 @import '../../projects/themes/cngx.css';
 
-$theme: mat.define-theme(
-  (
-    color: (
-      theme-type: light,
-      primary: mat.$azure-palette,
-    ),
-  )
+// Material 3 emits its --mat-sys-* tokens via mat.theme(<config-map>) — NOT via
+// mat.define-theme() + mat.all-component-themes(). That combination only
+// registers component-class rules without the system-token assignments the
+// cngx Material bridge relies on (--mat-sys-surface-*, --mat-sys-on-surface,
+// --mat-sys-primary, …). Keep both paths in sync per mode: emit the sys
+// tokens with the config map, hand the cngx bridge the equivalent theme
+// object so it can read palette colours and density.
+$light-config: (
+  color: (
+    theme-type: light,
+    primary: mat.$azure-palette,
+  ),
 );
 
-$dark-theme: mat.define-theme(
-  (
-    color: (
-      theme-type: dark,
-      primary: mat.$azure-palette,
-    ),
-  )
+$dark-config: (
+  color: (
+    theme-type: dark,
+    primary: mat.$azure-palette,
+  ),
 );
 
 html {
-  @include mat.all-component-themes($theme);
-  @include cngx-material.theme($theme);
+  @include mat.theme($light-config);
+  @include cngx-material.theme(mat.define-theme($light-config));
 }
 
 html.dark {
-  @include mat.all-component-colors($dark-theme);
-  @include cngx-material.theme($dark-theme);
+  @include mat.theme($dark-config);
+  @include cngx-material.theme(mat.define-theme($dark-config));
 }
 
 :root {
@@ -49,7 +58,11 @@ html.dark {
   // controls / scrollbars / details disclosure don't flip with the OS
   // preference when compodocx is light and the user's OS is dark.
   color-scheme: light;
-  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-family:
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    sans-serif;
   font-size: 14px;
   line-height: 1.5;
   --cngx-ex-bg: #ffffff;
