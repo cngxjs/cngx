@@ -1,25 +1,25 @@
 #!/usr/bin/env node
 /**
- * Build @cngx/themes — copies CSS assets + package.json to dist/themes.
+ * Build @cngx/themes — copies CSS + SCSS assets + package.json to dist/themes.
  *
- * @cngx/themes is a CSS-only npm package (no Angular code, no
- * ng-package.json entry). Two consumer files are shipped verbatim:
+ * Two consumer paths:
  *
- *   - dist/themes/cngx.css         — single-import default theme
- *   - dist/themes/example-brand.css — example consumer-side brand override
+ *   - dist/themes/cngx.css         — single-import default theme (CDK only)
+ *   - dist/themes/material/<comp>-theme.scss — opt-in Material-bridge mixins
+ *     for consumers who pair cngx with @angular/material. Each file exports
+ *     a Sass @mixin theme($theme) that wires the cngx component to Material's
+ *     theme variables. Consumer @use's the file alongside their Material setup.
  *
  * Relative @imports inside cngx.css (../core/theming/X.css, etc.) resolve
- * correctly at the consumer once @cngx/themes is installed alongside the
- * peer @cngx/core, @cngx/common, @cngx/forms, @cngx/ui packages — npm's
- * flat node_modules layout puts them at the same depth so the relative
- * paths cross between sibling packages without modification.
+ * via npm's flat node_modules layout once @cngx/themes is installed
+ * alongside @cngx/core, @cngx/common, @cngx/forms, @cngx/ui peers.
  *
  * package.json keeps the 0.0.0-PLACEHOLDER token; publish.mjs swaps in
  * the real version before `npm publish`.
  */
 
 import { mkdirSync, copyFileSync, readdirSync, statSync } from 'node:fs';
-import { resolve, join } from 'node:path';
+import { resolve, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
@@ -27,15 +27,21 @@ const ROOT = resolve(__dirname, '..');
 const SRC = join(ROOT, 'projects', 'themes');
 const DEST = join(ROOT, 'dist', 'themes');
 
-mkdirSync(DEST, { recursive: true });
-
-const entries = readdirSync(SRC);
-for (const entry of entries) {
-  const fullSrc = join(SRC, entry);
-  if (!statSync(fullSrc).isFile()) continue;
-  const fullDest = join(DEST, entry);
-  copyFileSync(fullSrc, fullDest);
-  console.log(`  copied ${entry}`);
+function copyRecursive(srcDir, destDir) {
+  mkdirSync(destDir, { recursive: true });
+  for (const entry of readdirSync(srcDir)) {
+    const fullSrc = join(srcDir, entry);
+    const fullDest = join(destDir, entry);
+    const stat = statSync(fullSrc);
+    if (stat.isDirectory()) {
+      copyRecursive(fullSrc, fullDest);
+    } else if (stat.isFile()) {
+      copyFileSync(fullSrc, fullDest);
+      console.log(`  copied ${relative(SRC, fullSrc)}`);
+    }
+  }
 }
+
+copyRecursive(SRC, DEST);
 
 console.log(`\nBuilt @cngx/themes to ${DEST}`);

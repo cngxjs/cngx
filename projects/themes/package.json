@@ -25,13 +25,20 @@
     "@cngx/core": "0.0.0-PLACEHOLDER",
     "@cngx/common": "0.0.0-PLACEHOLDER",
     "@cngx/forms": "0.0.0-PLACEHOLDER",
-    "@cngx/ui": "0.0.0-PLACEHOLDER"
+    "@cngx/ui": "0.0.0-PLACEHOLDER",
+    "@angular/material": "^21.2.0",
+    "@angular/cdk": "^21.2.0"
+  },
+  "peerDependenciesMeta": {
+    "@angular/material": { "optional": true },
+    "@angular/cdk": { "optional": true }
   },
   "sideEffects": [
     "*.css"
   ],
   "exports": {
     "./cngx.css": "./cngx.css",
-    "./example-brand.css": "./example-brand.css"
+    "./example-brand.css": "./example-brand.css",
+    "./material/*": "./material/*"
   }
 }
