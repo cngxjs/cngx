@@ -3,6 +3,7 @@ import {
   afterNextRender,
   ChangeDetectionStrategy,
   Component,
+  ViewEncapsulation,
   computed,
   contentChild,
   inject,
@@ -171,6 +172,7 @@ export interface CngxTreeSelectChange<T = unknown> {
     { provide: CNGX_TREE_SELECT_PANEL_HOST, useExisting: CngxTreeSelect },
   ],
   host: {
+    'class': 'cngx-tree-select',
     '[id]': 'resolvedId()',
     '[attr.aria-readonly]': 'ariaReadonly()',
   },
@@ -315,6 +317,7 @@ export interface CngxTreeSelectChange<T = unknown> {
     </div>
   `,
   styleUrls: ['../shared/select-base.css', './tree-select.component.css'],
+  encapsulation: ViewEncapsulation.None,
 })
 export class CngxTreeSelect<T = unknown>
   implements CngxFormFieldControl, CngxSelectPanelViewHost<T>, CngxTreeSelectPanelHost<T>

@@ -2,6 +2,7 @@ import { NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
+  ViewEncapsulation,
   effect,
   inject,
   untracked,
@@ -152,6 +153,7 @@ import type { CngxTreeSelectNodeContext } from './tree-select.model';
     </cngx-select-panel-shell>
   `,
   styleUrls: ['../shared/select-base.css', './tree-select-panel.component.css'],
+  encapsulation: ViewEncapsulation.None,
 })
 export class CngxTreeSelectPanel<T = unknown> {
   protected readonly host = inject(
