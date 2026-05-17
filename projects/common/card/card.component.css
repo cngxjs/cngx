@@ -21,13 +21,13 @@
  *
  * Material-Bridge: projects/ui/card-theme.scss writes the same tokens from
  * a Material theme. That SCSS bridge stays untouched per Plan §10 —
- * unlayered SCSS rules win over @layer cngx.components, so Material
- * consumers keep their derived values; cngx-only consumers pick up these
- * defaults via the single-import bundle (projects/themes/cngx.css).
+ * Material consumers keep their derived values; cngx-only consumers pick
+ * up these defaults via the component's styleUrl bundling (Angular
+ * injects them on first render).
  *
- * .cngx-sr-only utility moved to @cngx/core/theming/utilities.css
- * (Phase 4 cleanup) — base.css is reserved for bare HTML elements;
- * utilities.css is the canonical home for low-level visual utilities. */
+ * Ships via styleUrl bundling (Track A) — not aggregated in
+ * @cngx/themes/cngx.css. Loading a CngxCard component automatically
+ * pulls the CSS via Angular's per-component injection. */
 
 @layer cngx.tokens {
   /* Static layout */
@@ -326,10 +326,18 @@
     }
   }
 
-  /* .cngx-sr-only canonical declaration moved to
-   * @cngx/core/theming/utilities.css (Phase 4 cleanup). card.component.ts
-   * still uses the class; consumers importing @cngx/themes/cngx.css get
-   * the rule from the foundation utility file. The card-family-specific
-   * comment that previously sat here is obsolete — see utilities.css
-   * for the canonical home. */
+  /* .cngx-sr-only duplicated locally for Atomic-Decompose self-sufficiency.
+   * Canonical declaration lives in @cngx/core/theming/utilities.css;
+   * identical body so the cascade is benign whether one or both load. */
+  .cngx-sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
 }
