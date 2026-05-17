@@ -333,10 +333,12 @@
 }
 
 @mixin theme($theme) {
-  :where(cngx-popover-panel) {
-    @include base();
-    @include color($theme);
+  @layer cngx.components {
+    :where(cngx-popover-panel) {
+      @include base();
+      @include color($theme);
+    }
+    @include _variant-colors($theme);
+    @include styles();
   }
-  @include _variant-colors($theme);
-  @include styles();
 }
