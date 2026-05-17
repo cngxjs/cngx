@@ -1,0 +1,225 @@
+/*
+ * alert.css — CngxAlert skin.
+ *
+ * Externalised from the component's inline `styles:` field (PR #105
+ * CngxCopyBlock pattern). Loaded via styleUrl when the component
+ * renders.
+ *
+ * Severity tokens use a tinted-surface family (--cngx-alert-{severity}-bg/
+ * border/icon) with hardcoded oklch defaults — these are visually
+ * distinct from --cngx-color-{success,danger,warning,info} which are
+ * solid brand colours unsuitable for alert surfaces. Brand-wide
+ * overrides target the severity-specific tokens directly.
+ */
+
+@layer cngx.tokens {
+  @property --cngx-alert-gap                  { syntax: '<length>'; inherits: false; initial-value: 12px; }
+  @property --cngx-alert-padding              { syntax: '*'; inherits: false; initial-value: 12px 16px; }
+  @property --cngx-alert-border-radius        { syntax: '<length>'; inherits: false; initial-value: 8px; }
+  @property --cngx-alert-border-color         { syntax: '<color>'; inherits: false; initial-value: transparent; }
+  @property --cngx-alert-bg                   { syntax: '<color>'; inherits: false; initial-value: oklch(0.98 0.005 250); }
+  @property --cngx-alert-color                { syntax: '*'; inherits: true; initial-value: currentColor; }
+  @property --cngx-alert-info-bg              { syntax: '<color>'; inherits: false; initial-value: oklch(0.96 0.025 250); }
+  @property --cngx-alert-info-border          { syntax: '<color>'; inherits: false; initial-value: oklch(0.85 0.07 250); }
+  @property --cngx-alert-info-icon            { syntax: '<color>'; inherits: false; initial-value: oklch(0.62 0.2 250); }
+  @property --cngx-alert-success-bg           { syntax: '<color>'; inherits: false; initial-value: oklch(0.96 0.04 145); }
+  @property --cngx-alert-success-border       { syntax: '<color>'; inherits: false; initial-value: oklch(0.85 0.1 145); }
+  @property --cngx-alert-success-icon         { syntax: '<color>'; inherits: false; initial-value: oklch(0.65 0.15 145); }
+  @property --cngx-alert-warning-bg           { syntax: '<color>'; inherits: false; initial-value: oklch(0.97 0.04 80); }
+  @property --cngx-alert-warning-border       { syntax: '<color>'; inherits: false; initial-value: oklch(0.86 0.1 80); }
+  @property --cngx-alert-warning-icon         { syntax: '<color>'; inherits: false; initial-value: oklch(0.72 0.18 70); }
+  @property --cngx-alert-error-bg             { syntax: '<color>'; inherits: false; initial-value: oklch(0.96 0.025 25); }
+  @property --cngx-alert-error-border         { syntax: '<color>'; inherits: false; initial-value: oklch(0.85 0.08 25); }
+  @property --cngx-alert-error-icon           { syntax: '<color>'; inherits: false; initial-value: oklch(0.62 0.22 25); }
+  @property --cngx-alert-icon-color           { syntax: '*'; inherits: true; initial-value: currentColor; }
+  @property --cngx-alert-icon-size            { syntax: '<length>'; inherits: false; initial-value: 20px; }
+  @property --cngx-alert-title-weight         { syntax: '<number>'; inherits: false; initial-value: 600; }
+  @property --cngx-alert-title-gap            { syntax: '<length>'; inherits: false; initial-value: 4px; }
+  @property --cngx-alert-collapse-duration    { syntax: '<time>'; inherits: false; initial-value: 200ms; }
+  @property --cngx-alert-collapsed-hover-bg   { syntax: '<color>'; inherits: false; initial-value: oklch(0 0 0 / 0.02); }
+  @property --cngx-alert-actions-gap          { syntax: '<length>'; inherits: false; initial-value: 8px; }
+  @property --cngx-alert-enter-duration       { syntax: '<time>'; inherits: false; initial-value: 200ms; }
+  @property --cngx-alert-exit-duration        { syntax: '<time>'; inherits: false; initial-value: 150ms; }
+  @property --cngx-alert-icon-pulse-duration  { syntax: '<time>'; inherits: false; initial-value: 300ms; }
+  @property --cngx-alert-enter-offset         { syntax: '<length>'; inherits: false; initial-value: 8px; }
+  @property --cngx-alert-exit-offset          { syntax: '<length>'; inherits: false; initial-value: 8px; }
+}
+
+@layer cngx.components {
+  @scope (.cngx-alert) {
+    :scope {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--cngx-alert-gap, 12px);
+      padding: var(--cngx-alert-padding, 12px 16px);
+      border-radius: var(--cngx-alert-border-radius, 8px);
+      border: 1px solid var(--cngx-alert-border-color, transparent);
+      background: var(--cngx-alert-bg, oklch(0.98 0.005 250));
+      color: var(--cngx-alert-color, inherit);
+    }
+
+    :scope.cngx-alert--info {
+      --cngx-alert-bg: var(--cngx-alert-info-bg, oklch(0.96 0.025 250));
+      --cngx-alert-border-color: var(--cngx-alert-info-border, oklch(0.85 0.07 250));
+      --cngx-alert-icon-color: var(--cngx-alert-info-icon, oklch(0.62 0.2 250));
+    }
+
+    :scope.cngx-alert--success {
+      --cngx-alert-bg: var(--cngx-alert-success-bg, oklch(0.96 0.04 145));
+      --cngx-alert-border-color: var(--cngx-alert-success-border, oklch(0.85 0.1 145));
+      --cngx-alert-icon-color: var(--cngx-alert-success-icon, oklch(0.65 0.15 145));
+    }
+
+    :scope.cngx-alert--warning {
+      --cngx-alert-bg: var(--cngx-alert-warning-bg, oklch(0.97 0.04 80));
+      --cngx-alert-border-color: var(--cngx-alert-warning-border, oklch(0.86 0.1 80));
+      --cngx-alert-icon-color: var(--cngx-alert-warning-icon, oklch(0.72 0.18 70));
+    }
+
+    :scope.cngx-alert--error {
+      --cngx-alert-bg: var(--cngx-alert-error-bg, oklch(0.96 0.025 25));
+      --cngx-alert-border-color: var(--cngx-alert-error-border, oklch(0.85 0.08 25));
+      --cngx-alert-icon-color: var(--cngx-alert-error-icon, oklch(0.62 0.22 25));
+    }
+
+    .cngx-alert__icon {
+      flex-shrink: 0;
+      color: var(--cngx-alert-icon-color, currentColor);
+    }
+
+    .cngx-alert__default-icon {
+      width: var(--cngx-alert-icon-size, 20px);
+      height: var(--cngx-alert-icon-size, 20px);
+    }
+
+    .cngx-alert__body {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .cngx-alert__title {
+      display: block;
+      font-weight: var(--cngx-alert-title-weight, 600);
+      margin-bottom: var(--cngx-alert-title-gap, 4px);
+    }
+
+    .cngx-alert__collapsible {
+      display: grid;
+      grid-template-rows: 1fr;
+      transition: grid-template-rows var(--cngx-alert-collapse-duration, 200ms) ease;
+    }
+
+    .cngx-alert__collapsible > * {
+      overflow: hidden;
+    }
+
+    :scope.cngx-alert--collapsed .cngx-alert__collapsible {
+      grid-template-rows: 0fr;
+    }
+
+    :scope.cngx-alert--collapsed {
+      cursor: pointer;
+    }
+
+    :scope.cngx-alert--collapsed:hover {
+      background: var(--cngx-alert-collapsed-hover-bg, oklch(0 0 0 / 0.02));
+    }
+
+    .cngx-alert__actions:empty {
+      display: none;
+    }
+
+    .cngx-alert__actions {
+      margin-top: var(--cngx-alert-actions-gap, 8px);
+    }
+
+    .cngx-alert__dismiss {
+      flex-shrink: 0;
+    }
+
+    /* ── Visibility phases ─────────────────────────────────── */
+
+    :scope.cngx-alert--hidden {
+      display: none;
+    }
+
+    :scope.cngx-alert--entering {
+      animation: cngx-alert-enter var(--cngx-alert-enter-duration, 200ms) ease-out both;
+    }
+
+    :scope.cngx-alert--entering .cngx-alert__icon {
+      animation: cngx-alert-icon-pulse var(--cngx-alert-icon-pulse-duration, 300ms) ease-out;
+    }
+
+    :scope.cngx-alert--exiting {
+      animation: cngx-alert-exit var(--cngx-alert-exit-duration, 150ms) ease-in both;
+    }
+
+    /* ── Reduced motion ────────────────────────────────────── */
+
+    @media (prefers-reduced-motion: reduce) {
+      :scope.cngx-alert--entering,
+      :scope.cngx-alert--entering .cngx-alert__icon {
+        animation: none;
+      }
+
+      :scope.cngx-alert--exiting {
+        animation: none;
+      }
+
+      .cngx-alert__collapsible {
+        transition: none !important;
+      }
+    }
+
+    /* ── SR-only ───────────────────────────────────────────── */
+
+    .cngx-sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border-width: 0;
+    }
+  }
+}
+
+/* Keyframes stay top-level (already cngx-alert- namespaced). */
+
+@keyframes cngx-alert-enter {
+  from {
+    opacity: 0;
+    transform: translateY(calc(-1 * var(--cngx-alert-enter-offset, 8px)));
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes cngx-alert-exit {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(calc(-1 * var(--cngx-alert-exit-offset, 8px)));
+  }
+}
+
+@keyframes cngx-alert-icon-pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
