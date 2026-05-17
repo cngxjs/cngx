@@ -1,0 +1,71 @@
+/*
+ * cngx-file-drop.css — default styling for the [cngxFileDrop] directive.
+ *
+ * Mirrors the token surface of `projects/forms/input/file-drop.scss` (the
+ * opt-in Sass mixin kept for dev-app/Material-bridge consumers) but ships
+ * the rules into @layer cngx.components so the @cngx/themes/cngx.css bundle
+ * delivers them automatically. Hex defaults converted to OKLCH per Phase 3
+ * playbook; State + reduced-motion handled inside @scope.
+ *
+ * `--cngx-file-drop-transition` keeps its mixed `<time> <easing>` shape —
+ * @property syntax stays `*` because animation interpolation isn't needed
+ * for a transition shorthand and forcing two separate tokens would change
+ * the public API surface (see file-drop-theme.scss Material bridge).
+ */
+
+@layer cngx.tokens {
+  @property --cngx-file-drop-border-width      { syntax: '<length>'; inherits: false; initial-value: 2px; }
+  @property --cngx-file-drop-border-color      { syntax: '<color>';  inherits: false; initial-value: oklch(0.8 0 0); }
+  @property --cngx-file-drop-radius            { syntax: '<length>'; inherits: false; initial-value: 8px; }
+  @property --cngx-file-drop-padding           { syntax: '<length>'; inherits: false; initial-value: 32px; }
+  @property --cngx-file-drop-transition        { syntax: '*';        inherits: false; initial-value: 200ms ease; }
+
+  @property --cngx-file-drop-active-border     { syntax: '<color>';  inherits: false; initial-value: currentColor; }
+  @property --cngx-file-drop-active-bg         { syntax: '<color>';  inherits: false; initial-value: oklch(0 0 0 / 0.03); }
+
+  @property --cngx-file-drop-success-border    { syntax: '<color>';  inherits: false; initial-value: oklch(0.65 0.15 155); }
+
+  @property --cngx-file-drop-uploading-opacity { syntax: '<number>'; inherits: false; initial-value: 0.6; }
+}
+
+@layer cngx.components {
+  @scope (.cngx-file-drop) {
+    :scope {
+      display: block;
+      border: var(--cngx-file-drop-border-width, 2px)
+              dashed
+              var(--cngx-file-drop-border-color, oklch(0.8 0 0));
+      border-radius: var(--cngx-file-drop-radius, var(--cngx-radius-md, 8px));
+      padding: var(--cngx-file-drop-padding, var(--cngx-space-xl, 32px));
+      text-align: center;
+      cursor: pointer;
+      transition:
+        border-color var(--cngx-file-drop-transition, 200ms ease),
+        background var(--cngx-file-drop-transition, 200ms ease);
+    }
+
+    :scope.cngx-file-drop--dragging {
+      border-color: var(--cngx-file-drop-active-border, currentColor);
+      border-style: solid;
+      background: var(--cngx-file-drop-active-bg, oklch(0 0 0 / 0.03));
+    }
+
+    :scope.cngx-file-drop--has-files {
+      border-color: var(--cngx-file-drop-success-border,
+                        var(--cngx-color-success, oklch(0.65 0.15 155)));
+      border-style: solid;
+    }
+
+    :scope.cngx-file-drop--uploading {
+      opacity: var(--cngx-file-drop-uploading-opacity, 0.6);
+      pointer-events: none;
+      cursor: wait;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      :scope {
+        transition: none;
+      }
+    }
+  }
+}
