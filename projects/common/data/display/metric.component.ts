@@ -51,6 +51,7 @@ import {
       <span class="cngx-metric__unit">{{ unit() }}</span>
     }
   `,
+  styleUrl: './metric.component.css',
 })
 export class CngxMetric {
   private readonly locale = inject(LOCALE_ID);
