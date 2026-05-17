@@ -3,7 +3,7 @@
  * The component host has `display: contents` and renders a <button class="
  * cngx-popover-action cngx-popover-action--{variant}">. The action is
  * designed to live inside a cngx-popover-panel footer; it picks up the
- * parent panel's --cngx-pp-accent / -text via CSS inheritance so variant
+ * parent panel's --cngx-popover-panel-accent / -text via CSS inheritance so variant
  * colors flow through automatically.
  *
  * Material-Bridge: original Material fallbacks (var(--mat-sys-primary, …))
@@ -30,7 +30,7 @@
       gap: var(--cngx-popover-action-gap, 6px);
       padding: var(--cngx-popover-action-padding-block, 6px)
                var(--cngx-popover-action-padding-inline, 14px);
-      border: 1px solid var(--cngx-pp-border, 1px solid oklch(0 0 0 / 0.08));
+      border: 1px solid var(--cngx-popover-panel-border, 1px solid oklch(0 0 0 / 0.08));
       border-radius: var(--cngx-popover-action-radius, 6px);
       background: transparent;
       color: inherit;
@@ -47,7 +47,7 @@
       background: oklch(0 0 0 / 0.04);
     }
     :scope:focus-visible {
-      outline: 2px solid var(--cngx-pp-accent-text, currentColor);
+      outline: 2px solid var(--cngx-popover-panel-accent-text, currentColor);
       outline-offset: 2px;
     }
     :scope:disabled,
@@ -57,13 +57,13 @@
     }
 
     :scope.cngx-popover-action--primary {
-      background: var(--cngx-pp-accent, var(--cngx-color-primary, oklch(0.62 0.20 250)));
-      color: var(--cngx-pp-accent-text, oklch(1 0 0));
+      background: var(--cngx-popover-panel-accent, var(--cngx-color-primary, oklch(0.62 0.20 250)));
+      color: var(--cngx-popover-panel-accent-text, oklch(1 0 0));
       border-color: transparent;
     }
     :scope.cngx-popover-action--primary:hover {
       filter: brightness(0.95);
-      background: var(--cngx-pp-accent, var(--cngx-color-primary, oklch(0.62 0.20 250)));
+      background: var(--cngx-popover-panel-accent, var(--cngx-color-primary, oklch(0.62 0.20 250)));
     }
 
     :scope.cngx-popover-action--danger {
