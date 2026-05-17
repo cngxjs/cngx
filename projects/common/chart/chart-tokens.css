@@ -15,19 +15,67 @@
  * force overriding the global --cngx-chart-primary, shifting every
  * other layer too — a Pillar-3 violation (configuration-by-side-effect).
  *
- * Override the chart-level tokens at :root, on a wrapping container,
- * or via a consumer's design-system tokens (--accent, --danger, etc.)
- * which the literal fallbacks here defer to.
+ * @property registers each chart-level token with the consumer-side
+ * fallback chain (--accent / --danger / --border / --text-* hooks).
+ * Because @property initial-value cannot reference var(), the literal
+ * defaults are duplicated in :root assignments for the runtime fallback
+ * chain — consumers overriding --accent at :root continue to propagate
+ * through to --cngx-chart-primary.
  */
+
+@layer cngx.tokens {
+  @property --cngx-chart-primary {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.62 0.18 250);
+  }
+  @property --cngx-chart-secondary {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.65 0.02 250);
+  }
+  @property --cngx-chart-danger {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.55 0.18 25);
+  }
+  @property --cngx-chart-success {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.55 0.15 145);
+  }
+  @property --cngx-chart-grid-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.92 0.005 250);
+  }
+  @property --cngx-chart-axis-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.5 0.015 250);
+  }
+  @property --cngx-chart-text-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.25 0.015 250);
+  }
+  @property --cngx-chart-aspect-ratio {
+    syntax: '*';
+    inherits: false;
+    initial-value: 5 / 2;
+  }
+}
+
+/* Consumer-facing var() chains live at :root so an override of
+ * --accent / --danger / --border / --text-* on the document root
+ * propagates into the chart tokens — the @property initial-value
+ * is the leaf default if nothing higher in the chain is set. */
 :root {
-  --cngx-chart-primary: var(--accent, #4c8bf5);
-  --cngx-chart-secondary: var(--accent-secondary, #7d8997);
-  --cngx-chart-danger: var(--danger, #d2452f);
-  --cngx-chart-success: var(--success, #1f9d55);
-  --cngx-chart-grid-color: var(--border, #e5e7eb);
-  --cngx-chart-axis-color: var(--text-secondary, #6b7280);
-  --cngx-chart-text-color: var(--text-primary, #1f2937);
-  /* Default aspect ratio in responsive mode (no width/height bound).
-     5/2 over 16/9 — dashboard cards expect wider, shorter charts. */
-  --cngx-chart-aspect-ratio: 5 / 2;
+  --cngx-chart-primary: var(--accent, oklch(0.62 0.18 250));
+  --cngx-chart-secondary: var(--accent-secondary, oklch(0.65 0.02 250));
+  --cngx-chart-danger: var(--danger, oklch(0.55 0.18 25));
+  --cngx-chart-success: var(--success, oklch(0.55 0.15 145));
+  --cngx-chart-grid-color: var(--border, oklch(0.92 0.005 250));
+  --cngx-chart-axis-color: var(--text-secondary, oklch(0.5 0.015 250));
+  --cngx-chart-text-color: var(--text-primary, oklch(0.25 0.015 250));
 }
