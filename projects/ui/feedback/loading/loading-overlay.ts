@@ -81,44 +81,7 @@ import { createVisibilityTimer } from './visibility-timer';
       </div>
     }
   `,
-  styles: `
-    .cngx-loading-overlay {
-      display: grid;
-      grid-template: 1fr / 1fr;
-    }
-
-    .cngx-loading-overlay__content {
-      grid-area: 1 / 1;
-    }
-
-    .cngx-loading-overlay__backdrop {
-      grid-area: 1 / 1;
-      z-index: var(--cngx-loading-overlay-z-index, 10);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: var(--cngx-loading-overlay-backdrop-bg, rgba(255, 255, 255, 0.5));
-      opacity: var(--cngx-loading-overlay-backdrop-opacity, 1);
-      transition: opacity var(--cngx-overlay-transition-duration, 150ms)
-        var(--cngx-overlay-transition-easing, ease);
-    }
-
-    .cngx-loading-overlay__spinner-wrapper {
-      outline: none;
-    }
-
-    .cngx-loading-overlay__spinner-wrapper:focus-visible {
-      outline: 2px solid var(--cngx-loading-indicator-color, currentColor);
-      outline-offset: 2px;
-      border-radius: 50%;
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      .cngx-loading-overlay__backdrop {
-        transition: none;
-      }
-    }
-  `,
+  styleUrl: './loading-overlay.css',
 })
 export class CngxLoadingOverlay {
   private readonly doc = inject(DOCUMENT);
