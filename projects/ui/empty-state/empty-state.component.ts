@@ -76,6 +76,7 @@ import { type CngxAsyncState, nextUid } from '@cngx/core/utils';
     </div>
     <ng-content select="[cngxEmptyStateSecondary]" />
   `,
+  styleUrl: './empty-state.component.css',
 })
 export class CngxEmptyState {
   private readonly uid = nextUid('cngx-empty');
