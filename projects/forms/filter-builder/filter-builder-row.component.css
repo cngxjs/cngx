@@ -1,14 +1,40 @@
-cngx-filter-row {
-  display: contents;
+/*
+ * filter-builder-row.component.css — CngxFilterBuilderRow skin.
+ *
+ * Row is a `display: contents` wrapper that delegates its visual
+ * appearance to the parent's `.cngx-filter-builder__expression` flex
+ * layout. The duplicated `__expression` rule below is intentional —
+ * it makes the row file self-sufficient when the Atomic Decompose
+ * schematic ejects only the row component (without the parent main
+ * file) into a consumer project.
+ *
+ * --cngx-filter-builder-gap is owned by the parent and registered
+ * there; here it's consumed via the var() fallback chain only.
+ */
+
+@layer cngx.tokens {
+  @property --cngx-filter-builder-empty-row-opacity {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 0.85;
+  }
 }
 
-.cngx-filter-builder__expression {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--cngx-filter-builder-gap, 0.5rem);
-  align-items: center;
-}
+@layer cngx.components {
+  @scope (cngx-filter-row) {
+    :scope {
+      display: contents;
+    }
 
-.cngx-filter-builder__expression--empty {
-  opacity: var(--cngx-filter-builder-empty-row-opacity, 0.85);
+    .cngx-filter-builder__expression {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--cngx-filter-builder-gap, 0.5rem);
+      align-items: center;
+    }
+
+    .cngx-filter-builder__expression--empty {
+      opacity: var(--cngx-filter-builder-empty-row-opacity, 0.85);
+    }
+  }
 }
