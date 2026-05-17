@@ -119,12 +119,14 @@
 
 
 @mixin theme($theme) {
-  :where(.cngx-tooltip) {
-    @include base();
-    @include color($theme);
-    @include typography($theme);
-    @include density($theme);
-  }
+  @layer cngx.components {
+    :where(.cngx-tooltip) {
+      @include base();
+      @include color($theme);
+      @include typography($theme);
+      @include density($theme);
+    }
 
-  @include styles();
+    @include styles();
+  }
 }

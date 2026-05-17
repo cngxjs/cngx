@@ -42,9 +42,11 @@
 }
 
 @mixin theme($theme) {
-  :where(cngx-empty-state) {
-    @include base();
-    @include color($theme);
-    @include typography($theme);
+  @layer cngx.components {
+    :where(cngx-empty-state) {
+      @include base();
+      @include color($theme);
+      @include typography($theme);
+    }
   }
 }

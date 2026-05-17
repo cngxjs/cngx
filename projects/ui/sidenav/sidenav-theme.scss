@@ -73,10 +73,12 @@
 // ─── Public entrypoint ───────────────────────────────────────────
 
 @mixin theme($theme) {
-  cngx-sidenav-layout {
-    @include base();
-    @include color($theme);
-    @include density($theme);
-    @include nav-link.theme($theme);
+  @layer cngx.components {
+    cngx-sidenav-layout {
+      @include base();
+      @include color($theme);
+      @include density($theme);
+      @include nav-link.theme($theme);
+    }
   }
 }

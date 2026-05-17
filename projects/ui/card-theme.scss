@@ -112,10 +112,12 @@
 // ─── Public entrypoint ──────────────────────────────────────────
 
 @mixin theme($theme) {
-  :where(cngx-card, cngx-card-grid, cngx-metric, cngx-trend, cngx-card-timestamp) {
-    @include base();
-    @include color($theme);
-    @include typography($theme);
-    @include density($theme);
+  @layer cngx.components {
+    :where(cngx-card, cngx-card-grid, cngx-metric, cngx-trend, cngx-card-timestamp) {
+      @include base();
+      @include color($theme);
+      @include typography($theme);
+      @include density($theme);
+    }
   }
 }

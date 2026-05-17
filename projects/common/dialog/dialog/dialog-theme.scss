@@ -118,10 +118,12 @@
 }
 
 @mixin theme($theme) {
-  :where(dialog[cngxDialog]) {
-    @include base();
-    @include color($theme);
-  }
+  @layer cngx.components {
+    :where(dialog[cngxDialog]) {
+      @include base();
+      @include color($theme);
+    }
 
-  @include styles();
+    @include styles();
+  }
 }

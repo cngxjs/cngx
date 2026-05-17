@@ -74,10 +74,12 @@
 }
 
 @mixin theme($theme) {
-  :where(dialog.cngx-bottom-sheet) {
-    @include base();
-    @include color($theme);
-  }
+  @layer cngx.components {
+    :where(dialog.cngx-bottom-sheet) {
+      @include base();
+      @include color($theme);
+    }
 
-  @include styles();
+    @include styles();
+  }
 }
