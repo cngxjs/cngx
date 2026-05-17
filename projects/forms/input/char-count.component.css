@@ -1,0 +1,32 @@
+/*
+ * char-count.component.css — externalised from inline `styles:` for Phase 3
+ * migration. @property declarations are top-level-only, so the tokens can't
+ * live in an inline string. Host stays display:contents — the counter has
+ * zero visual footprint of its own, the span inherits the color/font-size.
+ *
+ * `font-size` uses syntax: '*' because @property's `<length>` initial-value
+ * forbids rem (CSS Properties and Values Level 1, §2.4.4).
+ */
+
+@layer cngx.tokens {
+  @property --cngx-field-char-count-font-size  { syntax: '*';       inherits: true; initial-value: 0.75rem; }
+  @property --cngx-field-char-count-color      { syntax: '<color>'; inherits: true; initial-value: oklch(0.45 0 0); }
+  @property --cngx-field-char-count-over-color { syntax: '<color>'; inherits: true; initial-value: oklch(0.55 0.21 27); }
+}
+
+@layer cngx.components {
+  @scope (.cngx-char-count) {
+    :scope {
+      display: contents;
+      font-size: var(--cngx-field-char-count-font-size, var(--cngx-font-size-sm, 0.75rem));
+      color: var(--cngx-field-char-count-color,
+                  var(--cngx-field-hint-color, oklch(0.45 0 0)));
+    }
+
+    :scope.cngx-char-count--over {
+      color: var(--cngx-field-char-count-over-color,
+                  var(--cngx-field-error-color,
+                      var(--cngx-color-danger, oklch(0.55 0.21 27))));
+    }
+  }
+}
