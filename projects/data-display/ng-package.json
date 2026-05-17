@@ -5,7 +5,6 @@
     "entryFile": "public-api.ts"
   },
   "assets": [
-    "treetable/mat-treetable-theme.scss",
     { "input": "theming", "glob": "*.css", "output": "theming" }
   ]
 }
