@@ -234,7 +234,7 @@ cngx-alert {
 Alert components are themed via the shared `_feedback-theme.scss`:
 
 ```scss
-@use '@cngx/ui/feedback/feedback-theme' as feedback;
+@use '@cngx/themes/material/feedback-theme' as feedback;
 
 html {
   @include feedback.theme($theme);

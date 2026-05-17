@@ -80,7 +80,7 @@ Include the theme SCSS in your global stylesheet:
 
 ```scss
 @use '@angular/material' as mat;
-@use '@cngx/ui/skeleton/skeleton-theme' as skeleton;
+@use '@cngx/themes/material/skeleton-theme' as skeleton;
 
 $theme: mat.define-theme((...));
 

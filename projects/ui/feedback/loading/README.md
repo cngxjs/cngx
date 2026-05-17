@@ -257,7 +257,7 @@ cngx-progress {
 All feedback components share `_feedback-theme.scss`:
 
 ```scss
-@use '@cngx/ui/feedback/feedback-theme' as feedback;
+@use '@cngx/themes/material/feedback-theme' as feedback;
 
 html {
   @include feedback.theme($theme);

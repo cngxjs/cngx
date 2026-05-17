@@ -106,8 +106,8 @@ Include the theme SCSS files in your global stylesheet:
 
 ```scss
 @use '@angular/material' as mat;
-@use '@cngx/ui/sidenav/sidenav-theme' as sidenav;
-@use '@cngx/ui/sidenav/nav-link-theme' as nav-link;
+@use '@cngx/themes/material/sidenav-theme' as sidenav;
+@use '@cngx/themes/material/nav-link-theme' as nav-link;
 
 $theme: mat.define-theme((...));
 

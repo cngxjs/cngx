@@ -78,7 +78,7 @@ Include the theme SCSS in your global stylesheet:
 
 ```scss
 @use '@angular/material' as mat;
-@use '@cngx/ui/empty-state/empty-state-theme' as empty-state;
+@use '@cngx/themes/material/empty-state-theme' as empty-state;
 
 $theme: mat.define-theme((...));
 

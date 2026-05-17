@@ -85,7 +85,7 @@ To apply Material Design 3 theme colors, include the theme SCSS in your global s
 
 ```scss
 @use '@angular/material' as mat;
-@use '@cngx/ui/action-button/action-button-theme' as action-btn;
+@use '@cngx/themes/material/action-button-theme' as action-btn;
 
 $theme: mat.define-theme((...));
 
