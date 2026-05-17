@@ -3,6 +3,7 @@ import {
   afterNextRender,
   ChangeDetectionStrategy,
   Component,
+  ViewEncapsulation,
   computed,
   contentChild,
   contentChildren,
@@ -183,6 +184,7 @@ export interface CngxSelectShellChange<T = unknown> {
     { provide: CNGX_SELECT_SHELL_SEARCH_HOST, useExisting: CngxSelectShell },
   ],
   host: {
+    'class': 'cngx-select-shell',
     '[id]': 'resolvedId()',
     '[attr.aria-readonly]': 'ariaReadonly()',
   },
@@ -289,6 +291,7 @@ export interface CngxSelectShellChange<T = unknown> {
     </div>
   `,
   styleUrls: ['../shared/select-base.css', './select-shell.component.css'],
+  encapsulation: ViewEncapsulation.None,
 })
 export class CngxSelectShell<T = unknown>
   implements
