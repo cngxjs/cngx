@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  ViewEncapsulation,
   contentChild,
   contentChildren,
   inject,
@@ -91,7 +92,9 @@ import { resolveCellTpl, resolveHeaderTpl } from './column-template.utils';
     NgTemplateOutlet,
   ],
   templateUrl: './treetable.component.html',
-  styleUrl: './treetable.component.scss',
+  styleUrl: './treetable.component.css',
+  encapsulation: ViewEncapsulation.None,
+  host: { class: 'cngx-treetable' },
 })
 export class CngxTreetable<T> {
   /** @internal */
