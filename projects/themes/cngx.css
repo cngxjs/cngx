@@ -34,6 +34,7 @@
 @import '../core/theming/system-tokens.css';
 @import '../core/theming/reset.css';
 @import '../core/theming/base.css';
+@import '../core/theming/utilities.css';
 @import '../common/theming/components/cngx-backdrop.css';
 @import '../common/theming/components/cngx-badge.css';
 @import '../common/theming/components/cngx-bottom-sheet.css';
