@@ -30,59 +30,10 @@ import { type CngxSpeak } from '@cngx/common';
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   host: {
+    class: 'cngx-speak-button',
     '[class.cngx-speak-button--speaking]': 'speakRef().speaking()',
   },
-  styles: `
-    cngx-speak-button {
-      display: inline-flex;
-    }
-
-    .cngx-speak-button__btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: var(--cngx-speak-btn-size, 36px);
-      height: var(--cngx-speak-btn-size, 36px);
-      padding: 0;
-      border: var(--cngx-speak-btn-border-width, 1px) solid var(--cngx-border, #ddd);
-      border-radius: var(--cngx-speak-btn-radius, 8px);
-      background: var(--cngx-speak-btn-bg, var(--cngx-surface, #fff));
-      color: var(--cngx-speak-btn-color, var(--cngx-text-secondary, #666));
-      cursor: pointer;
-      transition:
-        color var(--cngx-speak-btn-transition, 0.15s),
-        background var(--cngx-speak-btn-transition, 0.15s),
-        border-color var(--cngx-speak-btn-transition, 0.15s);
-      flex-shrink: 0;
-    }
-
-    .cngx-speak-button__btn:hover {
-      color: var(--cngx-speak-btn-active-color, var(--cngx-accent, #f5a623));
-      border-color: var(--cngx-speak-btn-active-color, var(--cngx-accent, #f5a623));
-      background: var(
-        --cngx-speak-btn-hover-bg,
-        var(--cngx-speak-btn-bg, var(--cngx-surface, #fff))
-      );
-    }
-
-    .cngx-speak-button--speaking .cngx-speak-button__btn {
-      color: var(--cngx-speak-btn-speaking-color, #fff);
-      background: var(
-        --cngx-speak-btn-speaking-bg,
-        var(--cngx-speak-btn-active-color, var(--cngx-accent, #f5a623))
-      );
-      border-color: var(
-        --cngx-speak-btn-speaking-bg,
-        var(--cngx-speak-btn-active-color, var(--cngx-accent, #f5a623))
-      );
-    }
-
-    .cngx-speak-button__icon {
-      width: var(--cngx-speak-btn-icon-size, 18px);
-      height: var(--cngx-speak-btn-icon-size, 18px);
-      transform: translateX(1px);
-    }
-  `,
+  styleUrl: './speak-button.css',
   template: `
     <button
       type="button"
