@@ -136,19 +136,7 @@ export type ActionButtonVariant = 'primary' | 'secondary' | 'ghost';
       btn.announcement()
     }}</span>
   `,
-  styles: `
-    .cngx-action-button__sr-only {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      padding: 0;
-      margin: -1px;
-      overflow: hidden;
-      clip-path: inset(50%);
-      white-space: nowrap;
-      border: 0;
-    }
-  `,
+  styleUrl: './action-button.css',
 })
 export class CngxActionButton {
   private readonly toaster = inject(CngxToaster, { optional: true });

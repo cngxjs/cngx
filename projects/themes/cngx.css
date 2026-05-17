@@ -16,7 +16,6 @@
  *        @import '@cngx/core/theming/system-tokens.css';
  *        @import '@cngx/core/theming/reset.css';
  *        @import '@cngx/core/theming/base.css';
- *        @import '@cngx/common/theming/components/cngx-card.css';
  *        @layer cngx.theme {
  *          :root[data-theme="brand"] { --cngx-color-primary: …; }
  *        }
@@ -26,15 +25,17 @@
  *   - All system tokens (@property registration + light-dark defaults)
  *   - cngx.reset (box-sizing, button neutralize, focus-ring base)
  *   - cngx.base (bare-element atoms: button/input/kbd/dl)
- *   - Externalised component/directive CSS for everything without a
- *     styleUrl (CngxBackdrop, CngxBadge, CngxDivider, CngxRipple, the
- *     popover/dialog family, the card/data-display family, …) */
+ *   - cngx.utilities (.cngx-sr-only)
+ *   - Externalised Directive CSS — every @Directive that paints DOM ships
+ *     here because Angular only allows styleUrl on @Component. Components
+ *     ship their CSS via per-component styleUrl bundling. */
 
 @import '../core/theming/layers.css';
 @import '../core/theming/system-tokens.css';
 @import '../core/theming/reset.css';
 @import '../core/theming/base.css';
 @import '../core/theming/utilities.css';
+@import '../common/theming/components/cngx-async.css';
 @import '../common/theming/components/cngx-backdrop.css';
 @import '../common/theming/components/cngx-badge.css';
 @import '../common/theming/components/cngx-bottom-sheet.css';
@@ -43,4 +44,3 @@
 @import '../common/theming/components/cngx-ripple.css';
 @import '../common/theming/components/cngx-tooltip.css';
 @import '../forms/theming/components/cngx-file-drop.css';
-@import '../ui/theming/components/cngx-action-button.css';

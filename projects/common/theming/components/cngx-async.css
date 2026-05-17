@@ -1,0 +1,66 @@
+/*
+ * cngx-async — visual state classes for `cngxAsyncClick` directive
+ * (@cngx/common/interactive). The directive sets `cngx-async--pending`,
+ * `cngx-async--success`, `cngx-async--error` on its host whenever the
+ * async action enters those phases.
+ *
+ * Track B (theming/components) because cngxAsyncClick is a @Directive
+ * — Angular only allows styleUrl on @Component. The state classes can
+ * be applied to any element (not nested under a single host) so the
+ * rules must be globally available, which is what cngx.css aggregation
+ * delivers.
+ *
+ * Tokens (--cngx-action-btn-*) intentionally use the action-button
+ * namespace — CngxActionButton owns the primary look, the standalone
+ * cngxAsyncClick variant inherits the same visual contract.
+ *
+ * NOTE — pre-existing class-name mismatch: the directive emits
+ *   cngx-async--success  and  cngx-async--error
+ * but the rules below target
+ *   cngx-async--succeeded and cngx-async--failed
+ * (verbatim from the original action-button.css). Preserved as-is
+ * during this refactor so behaviour stays identical. Fix is a
+ * separate concern: either rename the rules to match the directive
+ * (likely correct — see async-click.directive.ts:58-60) or rename
+ * the directive's host bindings to match the rules.
+ */
+
+@layer cngx.components {
+  .cngx-async--pending {
+    opacity: var(--cngx-action-btn-pending-opacity, 0.7);
+    cursor: wait;
+    transition: opacity var(--cngx-action-btn-transition, 0.2s ease);
+  }
+
+  .cngx-async--succeeded {
+    background-color: var(
+      --cngx-action-btn-succeeded-bg,
+      var(--cngx-color-success, oklch(0.95 0.04 145))
+    );
+    color: var(--cngx-action-btn-succeeded-color, var(--cngx-color-success, oklch(0.5 0.15 145)));
+    border-color: var(
+      --cngx-action-btn-succeeded-border,
+      var(--cngx-color-success, oklch(0.5 0.15 145))
+    );
+    transition:
+      background-color var(--cngx-action-btn-transition, 0.2s ease),
+      color var(--cngx-action-btn-transition, 0.2s ease),
+      border-color var(--cngx-action-btn-transition, 0.2s ease);
+  }
+
+  .cngx-async--failed {
+    background-color: var(
+      --cngx-action-btn-failed-bg,
+      var(--cngx-color-danger, oklch(0.95 0.025 25))
+    );
+    color: var(--cngx-action-btn-failed-color, var(--cngx-color-danger, oklch(0.45 0.15 25)));
+    border-color: var(
+      --cngx-action-btn-failed-border,
+      var(--cngx-color-danger, oklch(0.45 0.15 25))
+    );
+    transition:
+      background-color var(--cngx-action-btn-transition, 0.2s ease),
+      color var(--cngx-action-btn-transition, 0.2s ease),
+      border-color var(--cngx-action-btn-transition, 0.2s ease);
+  }
+}

@@ -113,37 +113,12 @@
 }
 
 @layer cngx.components {
-  .cngx-async--pending {
-    opacity: var(--cngx-action-btn-pending-opacity, 0.7);
-    cursor: wait;
-    transition: opacity var(--cngx-action-btn-transition, 0.2s ease);
-  }
-
-  .cngx-async--succeeded {
-    background-color: var(
-      --cngx-action-btn-succeeded-bg,
-      var(--cngx-color-success, oklch(0.95 0.04 145))
-    );
-    color: var(--cngx-action-btn-succeeded-color, var(--cngx-color-success, oklch(0.5 0.15 145)));
-    border-color: var(--cngx-action-btn-succeeded-border, var(--cngx-color-success, oklch(0.5 0.15 145)));
-    transition:
-      background-color var(--cngx-action-btn-transition, 0.2s ease),
-      color var(--cngx-action-btn-transition, 0.2s ease),
-      border-color var(--cngx-action-btn-transition, 0.2s ease);
-  }
-
-  .cngx-async--failed {
-    background-color: var(
-      --cngx-action-btn-failed-bg,
-      var(--cngx-color-danger, oklch(0.95 0.025 25))
-    );
-    color: var(--cngx-action-btn-failed-color, var(--cngx-color-danger, oklch(0.45 0.15 25)));
-    border-color: var(--cngx-action-btn-failed-border, var(--cngx-color-danger, oklch(0.45 0.15 25)));
-    transition:
-      background-color var(--cngx-action-btn-transition, 0.2s ease),
-      color var(--cngx-action-btn-transition, 0.2s ease),
-      border-color var(--cngx-action-btn-transition, 0.2s ease);
-  }
+  /* .cngx-async--{pending,succeeded,failed} state-class rules moved to
+   * @cngx/common/theming/components/cngx-async.css — they're set by the
+   * cngxAsyncClick @Directive on any element (not just CngxActionButton
+   * descendants — CngxPopoverAction uses it too, and consumers can
+   * apply it standalone). State rules must stay globally available
+   * which is what cngx.css aggregation delivers. */
 
   .cngx-action-button {
     cursor: pointer;
@@ -180,5 +155,19 @@
 
   .cngx-action-button--ghost:hover {
     background: var(--cngx-action-btn-ghost-hover-bg, oklch(0 0 0 / 0.04));
+  }
+
+  /* sr-only utility on the announcement span — duplicated locally for
+   * Atomic-Decompose self-sufficiency under styleUrl bundling. */
+  .cngx-action-button__sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
   }
 }
