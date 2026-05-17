@@ -1,76 +1,105 @@
-:host {
-  display: contents;
+/*
+ * tree-select-panel.component.css — CngxTreeSelectPanel body skin.
+ *
+ * Tree rendering with indented rows, twisty toggles, and hover/selected
+ * states. Indent is driven by the `--cngx-tree-depth` value the renderer
+ * sets per node, multiplied by `--cngx-tree-select-level-indent`.
+ */
+
+@layer cngx.tokens {
+  @property --cngx-tree-select-tree-padding         { syntax: '*'; inherits: false; initial-value: 0.25rem 0; }
+  @property --cngx-tree-select-node-gap             { syntax: '*'; inherits: false; initial-value: 0.5rem; }
+  @property --cngx-tree-select-node-height          { syntax: '*'; inherits: false; initial-value: 2rem; }
+  @property --cngx-tree-select-base-indent          { syntax: '*'; inherits: false; initial-value: 0.5rem; }
+  @property --cngx-tree-select-level-indent         { syntax: '*'; inherits: false; initial-value: 1.25rem; }
+  @property --cngx-tree-select-node-padding-end     { syntax: '*'; inherits: false; initial-value: 0.75rem; }
+  @property --cngx-tree-select-node-color           { syntax: '*'; inherits: true; initial-value: currentColor; }
+  @property --cngx-tree-select-node-bg              { syntax: '<color>'; inherits: false; initial-value: transparent; }
+  @property --cngx-tree-select-node-hover-bg        { syntax: '<color>'; inherits: false; initial-value: oklch(0 0 0 / 0.04); }
+  @property --cngx-tree-select-node-selected-bg    { syntax: '<color>'; inherits: false; initial-value: oklch(0 0 0 / 0.08); }
+  @property --cngx-tree-select-node-disabled-opacity{ syntax: '<number>'; inherits: false; initial-value: 0.5; }
+  @property --cngx-tree-select-twisty-size          { syntax: '*'; inherits: false; initial-value: 1.25rem; }
+  @property --cngx-tree-select-twisty-color         { syntax: '*'; inherits: true; initial-value: currentColor; }
+  @property --cngx-tree-select-twisty-font-size     { syntax: '*'; inherits: false; initial-value: 0.75rem; }
 }
 
-.cngx-tree-select__tree {
-  outline: none;
-  padding: var(--cngx-tree-select-tree-padding, 0.25rem 0);
-}
+@layer cngx.components {
+  @scope (cngx-tree-select-panel) {
+    :scope {
+      display: contents;
+    }
 
-.cngx-tree-select__node {
-  display: flex;
-  align-items: center;
-  gap: var(--cngx-tree-select-node-gap, 0.5rem);
-  min-height: var(--cngx-tree-select-node-height, 2rem);
-  padding-inline-start: calc(
-    var(--cngx-tree-select-base-indent, 0.5rem) +
-    var(--cngx-tree-depth, 0) * var(--cngx-tree-select-level-indent, 1.25rem)
-  );
-  padding-inline-end: var(--cngx-tree-select-node-padding-end, 0.75rem);
-  cursor: pointer;
-  user-select: none;
-  color: var(--cngx-tree-select-node-color, inherit);
-  background: var(--cngx-tree-select-node-bg, transparent);
-}
+    .cngx-tree-select__tree {
+      outline: none;
+      padding: var(--cngx-tree-select-tree-padding, 0.25rem 0);
+    }
 
-.cngx-tree-select__node:hover {
-  background: var(--cngx-tree-select-node-hover-bg, rgb(0 0 0 / 0.04));
-}
+    .cngx-tree-select__node {
+      display: flex;
+      align-items: center;
+      gap: var(--cngx-tree-select-node-gap, 0.5rem);
+      min-height: var(--cngx-tree-select-node-height, 2rem);
+      padding-inline-start: calc(
+        var(--cngx-tree-select-base-indent, 0.5rem) +
+        var(--cngx-tree-depth, 0) * var(--cngx-tree-select-level-indent, 1.25rem)
+      );
+      padding-inline-end: var(--cngx-tree-select-node-padding-end, 0.75rem);
+      cursor: pointer;
+      user-select: none;
+      color: var(--cngx-tree-select-node-color, inherit);
+      background: var(--cngx-tree-select-node-bg, transparent);
+    }
 
-.cngx-tree-select__node[aria-selected='true'] {
-  background: var(--cngx-tree-select-node-selected-bg, rgb(0 0 0 / 0.08));
-}
+    .cngx-tree-select__node:hover {
+      background: var(--cngx-tree-select-node-hover-bg, oklch(0 0 0 / 0.04));
+    }
 
-.cngx-tree-select__node[aria-disabled='true'] {
-  cursor: not-allowed;
-  opacity: var(--cngx-tree-select-node-disabled-opacity, 0.5);
-}
+    .cngx-tree-select__node[aria-selected='true'] {
+      background: var(--cngx-tree-select-node-selected-bg, oklch(0 0 0 / 0.08));
+    }
 
-.cngx-tree-select__twisty {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  inline-size: var(--cngx-tree-select-twisty-size, 1.25rem);
-  block-size: var(--cngx-tree-select-twisty-size, 1.25rem);
-  padding: 0;
-  border: none;
-  background: transparent;
-  color: var(--cngx-tree-select-twisty-color, inherit);
-  font-size: var(--cngx-tree-select-twisty-font-size, 0.75rem);
-  cursor: pointer;
-  transition: transform 150ms ease;
-}
+    .cngx-tree-select__node[aria-disabled='true'] {
+      cursor: not-allowed;
+      opacity: var(--cngx-tree-select-node-disabled-opacity, 0.5);
+    }
 
-.cngx-tree-select__twisty--open {
-  transform: rotate(90deg);
-}
+    .cngx-tree-select__twisty {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      inline-size: var(--cngx-tree-select-twisty-size, 1.25rem);
+      block-size: var(--cngx-tree-select-twisty-size, 1.25rem);
+      padding: 0;
+      border: none;
+      background: transparent;
+      color: var(--cngx-tree-select-twisty-color, inherit);
+      font-size: var(--cngx-tree-select-twisty-font-size, 0.75rem);
+      cursor: pointer;
+      transition: transform 150ms ease;
+    }
 
-@media (prefers-reduced-motion: reduce) {
-  .cngx-tree-select__twisty {
-    transition: none;
+    .cngx-tree-select__twisty--open {
+      transform: rotate(90deg);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .cngx-tree-select__twisty {
+        transition: none;
+      }
+    }
+
+    /* Reserve the twisty gutter for leaves so labels line up across depths. */
+    .cngx-tree-select__twisty-spacer {
+      display: inline-block;
+      inline-size: var(--cngx-tree-select-twisty-size, 1.25rem);
+      block-size: var(--cngx-tree-select-twisty-size, 1.25rem);
+    }
+
+    .cngx-tree-select__label {
+      flex: 1 1 auto;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
   }
-}
-
-/* Reserve the twisty gutter for leaves so labels line up across depths. */
-.cngx-tree-select__twisty-spacer {
-  display: inline-block;
-  inline-size: var(--cngx-tree-select-twisty-size, 1.25rem);
-  block-size: var(--cngx-tree-select-twisty-size, 1.25rem);
-}
-
-.cngx-tree-select__label {
-  flex: 1 1 auto;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
 }

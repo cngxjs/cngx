@@ -3,6 +3,7 @@ import {
   afterNextRender,
   ChangeDetectionStrategy,
   Component,
+  ViewEncapsulation,
   computed,
   contentChild,
   inject,
@@ -201,6 +202,7 @@ export interface CngxTypeaheadChange<T = unknown> {
     { provide: CNGX_SELECT_PANEL_VIEW_HOST, useExisting: CngxTypeahead },
   ],
   host: {
+    'class': 'cngx-typeahead',
     '[id]': 'resolvedId()',
     '[attr.aria-readonly]': 'ariaReadonly()',
   },
@@ -321,6 +323,7 @@ export interface CngxTypeaheadChange<T = unknown> {
     </div>
   `,
   styleUrls: ['../shared/select-base.css', './typeahead.component.css'],
+  encapsulation: ViewEncapsulation.None,
 })
 export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   private readonly presenter = inject(CngxFormFieldPresenter, { optional: true });

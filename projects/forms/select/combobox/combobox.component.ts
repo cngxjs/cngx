@@ -3,6 +3,7 @@ import {
   afterNextRender,
   ChangeDetectionStrategy,
   Component,
+  ViewEncapsulation,
   computed,
   contentChild,
   inject,
@@ -207,6 +208,7 @@ export interface CngxComboboxChange<T = unknown> {
     { provide: CNGX_SELECT_PANEL_VIEW_HOST, useExisting: CngxCombobox },
   ],
   host: {
+    'class': 'cngx-combobox',
     '[id]': 'resolvedId()',
     '[attr.aria-readonly]': 'ariaReadonly()',
   },
@@ -398,6 +400,7 @@ export interface CngxComboboxChange<T = unknown> {
     </div>
   `,
   styleUrls: ['../shared/select-base.css', './combobox.component.css'],
+  encapsulation: ViewEncapsulation.None,
 })
 export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   private readonly presenter = inject(CngxFormFieldPresenter, { optional: true });

@@ -3,6 +3,7 @@ import {
   afterNextRender,
   ChangeDetectionStrategy,
   Component,
+  ViewEncapsulation,
   computed,
   contentChild,
   inject,
@@ -178,6 +179,7 @@ export interface CngxActionMultiSelectChange<T = unknown> {
     { provide: CNGX_SELECT_PANEL_VIEW_HOST, useExisting: CngxActionMultiSelect },
   ],
   host: {
+    'class': 'cngx-action-multi-select',
     '[id]': 'resolvedId()',
     '[attr.aria-readonly]': 'ariaReadonly()',
   },
@@ -364,6 +366,7 @@ export interface CngxActionMultiSelectChange<T = unknown> {
     </div>
   `,
   styleUrls: ['../shared/select-base.css', './action-multi-select.component.css'],
+  encapsulation: ViewEncapsulation.None,
 })
 export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl {
   private readonly presenter = inject(CngxFormFieldPresenter, { optional: true });
