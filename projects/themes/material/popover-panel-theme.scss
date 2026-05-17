@@ -59,7 +59,12 @@
   $scale: mat.get-theme-density($theme);
   $scale: math.max(-4, math.min(0, $scale));
 
-  $paddings:    (0: 16px, -1: 14px, -2: 12px, -3: 10px, -4: 8px);
+  // Material 3 popover-surface paddings sit lower than cngx's original
+  // 16px default. Card uses corner-medium (12px) inset, Menu vertically
+  // pads at 8px. Drop the bridge defaults to match Material's tighter
+  // surfaces so a cngx popover next to <mat-menu> doesn't read as
+  // chunkier.
+  $paddings:    (0: 12px, -1: 10px, -2: 8px,  -3: 6px,  -4: 4px);
   $header-gaps: (0: 8px,  -1: 6px,  -2: 5px,  -3: 4px,  -4: 4px);
   $footer-gaps: (0: 8px,  -1: 6px,  -2: 5px,  -3: 4px,  -4: 4px);
 

@@ -10,10 +10,53 @@
 
 @mixin color($theme) {
   @if mat.get-theme-version($theme) == 1 {
+    // Panel surface (one shared surface across the whole select family)
     --cngx-select-panel-bg: var(--mat-sys-surface-container);
     --cngx-select-panel-color: var(--mat-sys-on-surface);
     --cngx-select-panel-border: 1px solid var(--mat-sys-outline-variant);
     --cngx-select-panel-shadow: var(--mat-sys-level2, 0 4px 12px oklch(0 0 0 / 0.12));
+
+    // Trigger surfaces — every variant defines its own --cngx-<name>-bg /
+    // -color / -border with hard-coded light defaults that shadow any
+    // system-bridge cascade. Map each variant onto Material's outlined-
+    // input surface so the trigger sits transparently on the Material
+    // background.
+    --cngx-select-bg: transparent;
+    --cngx-select-color: var(--mat-sys-on-surface);
+    --cngx-select-border: 1px solid var(--mat-sys-outline);
+
+    --cngx-multi-select-bg: transparent;
+    --cngx-multi-select-color: var(--mat-sys-on-surface);
+    --cngx-multi-select-border: 1px solid var(--mat-sys-outline);
+
+    --cngx-combobox-bg: transparent;
+    --cngx-combobox-color: var(--mat-sys-on-surface);
+    --cngx-combobox-border: 1px solid var(--mat-sys-outline);
+
+    --cngx-typeahead-bg: transparent;
+    --cngx-typeahead-color: var(--mat-sys-on-surface);
+    --cngx-typeahead-border: 1px solid var(--mat-sys-outline);
+    --cngx-typeahead-action-color: var(--mat-sys-on-surface);
+
+    --cngx-action-select-bg: transparent;
+    --cngx-action-select-color: var(--mat-sys-on-surface);
+    --cngx-action-select-border: 1px solid var(--mat-sys-outline);
+    --cngx-action-select-action-color: var(--mat-sys-on-surface);
+
+    --cngx-action-multi-select-bg: transparent;
+    --cngx-action-multi-select-color: var(--mat-sys-on-surface);
+    --cngx-action-multi-select-border: 1px solid var(--mat-sys-outline);
+
+    --cngx-reorderable-multi-select-bg: transparent;
+    --cngx-reorderable-multi-select-color: var(--mat-sys-on-surface);
+    --cngx-reorderable-multi-select-border: 1px solid var(--mat-sys-outline);
+
+    --cngx-select-shell-bg: transparent;
+    --cngx-select-shell-color: var(--mat-sys-on-surface);
+
+    --cngx-tree-select-caret-color: var(--mat-sys-on-surface-variant);
+    --cngx-tree-select-clear-color: var(--mat-sys-on-surface-variant);
+    --cngx-tree-select-node-color: var(--mat-sys-on-surface);
 
     --cngx-select-option-highlight-bg: color-mix(
       in srgb,
@@ -66,6 +109,15 @@
   } @else {
     --cngx-select-panel-bg: #{mat.get-theme-color($theme, background, card)};
     --cngx-select-panel-color: #{mat.get-theme-color($theme, foreground, text)};
+
+    --cngx-select-color: #{mat.get-theme-color($theme, foreground, text)};
+    --cngx-multi-select-color: #{mat.get-theme-color($theme, foreground, text)};
+    --cngx-combobox-color: #{mat.get-theme-color($theme, foreground, text)};
+    --cngx-typeahead-color: #{mat.get-theme-color($theme, foreground, text)};
+    --cngx-action-select-color: #{mat.get-theme-color($theme, foreground, text)};
+    --cngx-action-multi-select-color: #{mat.get-theme-color($theme, foreground, text)};
+    --cngx-reorderable-multi-select-color: #{mat.get-theme-color($theme, foreground, text)};
+
     --cngx-select-check-color: #{mat.get-theme-color($theme, primary)};
     --cngx-select-error-color: #{mat.get-theme-color($theme, warn)};
     --cngx-select-option-error-color: #{mat.get-theme-color($theme, warn)};
@@ -78,15 +130,28 @@
 
 @mixin theme($theme) {
   @layer cngx.components {
-    // The visible panel is a <div class="cngx-select__panel"> rendered by
-    // every Select-family component (single, multi, combobox, typeahead,
-    // tree-select, reorderable-multi, action-select, action-multi,
-    // select-shell) plus the <cngx-tree-select-panel> internal host.
-    // Targeting the class catches all of them regardless of the wrapping
-    // element-tag; targeting only the host tag missed every variant that
-    // renders its panel as a plain <div popover> (multi-select, combobox,
-    // typeahead, etc.).
-    :where(.cngx-select__panel, cngx-tree-select-panel) {
+    // Token map covers two surfaces simultaneously:
+    //   - the popover panel (.cngx-select__panel) plus the tree-select host
+    //   - the per-variant triggers (cngx-select, cngx-multi-select, …) and
+    //     every descendant via ` *` so tokens registered as inherits:false
+    //     (which most --cngx-<variant>-bg / -color / -border are) actually
+    //     land on the inner trigger / __root / __trigger element where the
+    //     CSS rule reads them. Setting only on the host tag had no effect
+    //     because non-inheriting custom properties resolve to initial-value
+    //     when read on a child.
+    :where(
+      .cngx-select__panel,
+      cngx-tree-select-panel,
+      cngx-select, cngx-select *,
+      cngx-multi-select, cngx-multi-select *,
+      cngx-combobox, cngx-combobox *,
+      cngx-typeahead, cngx-typeahead *,
+      cngx-tree-select, cngx-tree-select *,
+      cngx-reorderable-multi-select, cngx-reorderable-multi-select *,
+      cngx-action-select, cngx-action-select *,
+      cngx-action-multi-select, cngx-action-multi-select *,
+      cngx-select-shell, cngx-select-shell *
+    ) {
       @include color($theme);
     }
   }
