@@ -11,6 +11,7 @@
 @mixin color($theme) {
   @if mat.get-theme-version($theme) == 1 {
     --cngx-select-panel-bg: var(--mat-sys-surface-container);
+    --cngx-select-panel-color: var(--mat-sys-on-surface);
     --cngx-select-panel-border: 1px solid var(--mat-sys-outline-variant);
     --cngx-select-panel-shadow: var(--mat-sys-level2, 0 4px 12px oklch(0 0 0 / 0.12));
 
@@ -64,6 +65,7 @@
     --cngx-tree-select-placeholder-color: var(--mat-sys-on-surface-variant);
   } @else {
     --cngx-select-panel-bg: #{mat.get-theme-color($theme, background, card)};
+    --cngx-select-panel-color: #{mat.get-theme-color($theme, foreground, text)};
     --cngx-select-check-color: #{mat.get-theme-color($theme, primary)};
     --cngx-select-error-color: #{mat.get-theme-color($theme, warn)};
     --cngx-select-option-error-color: #{mat.get-theme-color($theme, warn)};

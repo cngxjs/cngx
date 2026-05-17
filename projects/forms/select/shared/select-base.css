@@ -16,6 +16,14 @@
   @property --cngx-select-panel-border  { syntax: '*'; inherits: false; initial-value: 1px solid oklch(0.85 0.01 250); }
   @property --cngx-select-panel-radius  { syntax: '*'; inherits: false; initial-value: 0.25rem; }
   @property --cngx-select-panel-bg      { syntax: '<color>'; inherits: true; initial-value: oklch(1 0 0); }
+  /* syntax: '*' + initial-value: currentColor lets the panel inherit text
+   * colour from its ancestor by default, which is what we want when no
+   * Material bridge is present (light/dark surface defaults already match
+   * the consumer's body text). The Material bridge overrides this to
+   * --mat-sys-on-surface so the panel sits correctly on the Material
+   * surface-container. Registering as '<color>' would forbid 'currentColor'
+   * since '<color>' requires a computationally-independent value. */
+  @property --cngx-select-panel-color   { syntax: '*'; inherits: true; initial-value: currentColor; }
   @property --cngx-select-panel-shadow  { syntax: '*'; inherits: false; initial-value: 0 4px 12px oklch(0 0 0 / 0.12); }
   @property --cngx-select-panel-padding { syntax: '*'; inherits: false; initial-value: 0.25rem; }
   @property --cngx-select-panel-max-height { syntax: '*'; inherits: false; initial-value: 16rem; }
@@ -98,6 +106,7 @@
     border: var(--cngx-select-panel-border, 1px solid var(--cngx-color-border, oklch(0.85 0.01 250)));
     border-radius: var(--cngx-select-panel-radius, 0.25rem);
     background: var(--cngx-select-panel-bg, var(--cngx-color-surface, oklch(1 0 0)));
+    color: var(--cngx-select-panel-color, var(--cngx-color-text, oklch(0.2 0.01 250)));
     box-shadow: var(--cngx-select-panel-shadow, var(--cngx-shadow-md, 0 4px 12px oklch(0 0 0 / 0.12)));
     padding: var(--cngx-select-panel-padding, 0.25rem);
     margin: 0;
