@@ -1,0 +1,85 @@
+@use 'sass:meta';
+@use '@angular/material' as mat;
+
+// System-token bridge — maps cngx foundation tokens
+// (--cngx-color-*, --cngx-space-*, --cngx-radius-*, --cngx-duration-*,
+// --cngx-shadow-*, --cngx-font-size-*) onto Material's design tokens so
+// every component that falls back through the system layer picks up the
+// Material theme automatically. Component-level bridges (action-button,
+// sidenav, …) become optional — call them only when a component-token
+// needs a Material value the system layer cannot derive.
+//
+// Two modes: M3 ($theme version 1) reads --mat-sys-* custom properties
+// at runtime; M2 (version 0) resolves palette colours at compile time
+// via mat.get-theme-color.
+//
+//   @use '@angular/material' as mat;
+//   @use '@cngx/themes/material/system-bridge' as cngx-system;
+//
+//   html {
+//     @include mat.all-component-themes($theme);
+//     @include cngx-system.theme($theme);
+//   }
+
+@mixin _m3() {
+  // Surfaces and text
+  --cngx-color-surface: var(--mat-sys-surface);
+  --cngx-color-text: var(--mat-sys-on-surface);
+  --cngx-color-border: var(--mat-sys-outline-variant);
+
+  // Brand and semantic colours. Material 3 has no first-class
+  // success/warning/info — leave those at their cngx defaults so the
+  // bridge stays a strict mapping rather than an opinionated
+  // re-interpretation of Material's palette.
+  --cngx-color-primary: var(--mat-sys-primary);
+  --cngx-color-danger: var(--mat-sys-error);
+  --cngx-color-info: var(--mat-sys-primary);
+
+  // Shape — Material's corner scale aligns reasonably with cngx t-shirt sizes.
+  --cngx-radius-sm: var(--mat-sys-corner-extra-small);
+  --cngx-radius-md: var(--mat-sys-corner-small);
+  --cngx-radius-lg: var(--mat-sys-corner-large);
+  --cngx-radius-pill: var(--mat-sys-corner-full);
+
+  // Motion — pick close-enough durations from Material's expressive scale.
+  --cngx-duration-fast: var(--mat-sys-motion-duration-short3, 150ms);
+  --cngx-duration-base: var(--mat-sys-motion-duration-medium2, 200ms);
+  --cngx-duration-slow: var(--mat-sys-motion-duration-long2, 320ms);
+  --cngx-easing-standard: var(--mat-sys-motion-easing-standard, cubic-bezier(0.4, 0, 0.2, 1));
+  --cngx-easing-decelerate: var(
+    --mat-sys-motion-easing-standard-decelerate,
+    cubic-bezier(0, 0, 0.2, 1)
+  );
+  --cngx-easing-accelerate: var(
+    --mat-sys-motion-easing-standard-accelerate,
+    cubic-bezier(0.4, 0, 1, 1)
+  );
+
+  // Elevation — Material's level scale is more granular; pick three.
+  --cngx-shadow-sm: var(--mat-sys-level1);
+  --cngx-shadow-md: var(--mat-sys-level2);
+  --cngx-shadow-lg: var(--mat-sys-level4);
+}
+
+@mixin _m2($theme) {
+  $primary: mat.get-theme-color($theme, primary);
+  $warn: mat.get-theme-color($theme, warn);
+  $surface: mat.get-theme-color($theme, background, card);
+  $on-surface: mat.get-theme-color($theme, foreground, text);
+  $divider: mat.get-theme-color($theme, foreground, divider);
+
+  --cngx-color-surface: #{$surface};
+  --cngx-color-text: #{rgba($on-surface, 0.87)};
+  --cngx-color-border: #{rgba($divider, 0.12)};
+  --cngx-color-primary: #{$primary};
+  --cngx-color-danger: #{$warn};
+  --cngx-color-info: #{$primary};
+}
+
+@mixin theme($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    @include _m3();
+  } @else {
+    @include _m2($theme);
+  }
+}

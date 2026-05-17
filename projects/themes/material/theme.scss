@@ -1,0 +1,66 @@
+@use '@angular/material' as mat;
+
+// Bridge entry point. Wires Material's $theme into the cngx system layer
+// and every component bridge in a single call. Mirrors Material's own
+// mat.all-component-themes($theme) — one include, every cngx component
+// follows the Material theme.
+//
+//   @use '@angular/material' as mat;
+//   @use '@cngx/themes/material/theme' as cngx-material;
+//
+//   $theme: mat.define-theme(/* ... */);
+//
+//   html {
+//     @include mat.all-component-themes($theme);
+//     @include cngx-material.theme($theme);
+//   }
+//
+// Selective wiring stays available — consumers who only ship a subset of
+// cngx can include the system bridge plus the relevant component bridges
+// individually:
+//
+//   @use '@cngx/themes/material/system-bridge' as cngx-system;
+//   @use '@cngx/themes/material/action-button-theme' as action-btn;
+//   @include cngx-system.theme($theme);
+//   @include action-btn.theme($theme);
+
+@use './system-bridge' as cngx-system;
+@use './action-button-theme' as action-button;
+@use './bottom-sheet-theme' as bottom-sheet;
+@use './card-theme' as card;
+@use './dialog-theme' as dialog;
+@use './empty-state-theme' as empty-state;
+@use './feedback-theme' as feedback;
+@use './field-theme' as field;
+@use './file-drop-theme' as file-drop;
+@use './filter-builder-theme' as filter-builder;
+@use './mat-treetable-theme' as mat-treetable;
+@use './popover-panel-theme' as popover-panel;
+@use './ripple-theme' as ripple;
+@use './sidenav-theme' as sidenav;
+@use './skeleton-theme' as skeleton;
+@use './speak-button-theme' as speak;
+@use './tooltip-theme' as tooltip;
+
+@mixin theme($theme) {
+  // Foundation tokens come first so every component bridge resolves its
+  // var() fallbacks against the Material-aligned system layer.
+  @include cngx-system.theme($theme);
+
+  @include action-button.theme($theme);
+  @include bottom-sheet.theme($theme);
+  @include card.theme($theme);
+  @include dialog.theme($theme);
+  @include empty-state.theme($theme);
+  @include feedback.theme($theme);
+  @include field.theme($theme);
+  @include file-drop.theme($theme);
+  @include filter-builder.theme($theme);
+  @include mat-treetable.theme($theme);
+  @include popover-panel.theme($theme);
+  @include ripple.theme($theme);
+  @include sidenav.theme($theme);
+  @include skeleton.theme($theme);
+  @include speak.theme($theme);
+  @include tooltip.theme($theme);
+}
