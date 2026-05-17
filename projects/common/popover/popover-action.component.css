@@ -82,4 +82,22 @@
       background: oklch(0 0 0 / 0.04);
     }
   }
+
+  /* sr-only utility on the announcement span — sibling of the action
+   * button, not a descendant, so it sits outside the @scope wrap.
+   * Component-local copy duplicates the canonical declaration in
+   * @cngx/core/theming/utilities.css for self-sufficiency under styleUrl
+   * bundling (consumers that don't import cngx.css still get visually-
+   * hidden behaviour). */
+  .cngx-popover-action__sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
 }
