@@ -10,6 +10,7 @@ import {
   input,
   signal,
   TemplateRef,
+  ViewEncapsulation,
 } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 import { CngxFormFieldPresenter } from '@cngx/forms/field';
@@ -55,19 +56,12 @@ import { CngxFormFieldPresenter } from '@cngx/forms/field';
     } @else if (resolvedMin() != null) {
       <span>{{ currentLength() }} (min {{ resolvedMin() }})</span>
     }`,
-  styles: `
-    :host {
-      display: contents;
-      font-size: var(--cngx-field-char-count-font-size, 0.75rem);
-      color: var(--cngx-field-char-count-color, var(--cngx-field-hint-color, #666));
-    }
-    :host(.cngx-char-count--over) {
-      color: var(--cngx-field-char-count-over-color, var(--cngx-field-error-color, #d32f2f));
-    }
-  `,
+  styleUrl: './char-count.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   exportAs: 'cngxCharCount',
   host: {
+    class: 'cngx-char-count',
     '[class.cngx-char-count--over]': 'isOver()',
     'aria-hidden': 'true',
   },

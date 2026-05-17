@@ -6,6 +6,7 @@ import {
   inject,
   input,
   TemplateRef,
+  ViewEncapsulation,
 } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 import { CngxFormFieldPresenter } from './form-field-presenter';
@@ -52,17 +53,12 @@ import { CngxFormFieldPresenter } from './form-field-presenter';
       <span>{{ marker() }}</span>
     }
   }`,
-  styles: `
-    :host {
-      display: contents;
-    }
-    span {
-      color: var(--cngx-field-required-color, var(--cngx-field-error-color, #d32f2f));
-    }
-  `,
+  styleUrl: './required.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   exportAs: 'cngxRequired',
   host: {
+    class: 'cngx-required',
     'aria-hidden': 'true',
   },
 })

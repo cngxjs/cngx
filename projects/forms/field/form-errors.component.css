@@ -1,0 +1,41 @@
+/*
+ * form-errors.component.css — externalised from inline `styles:` for Phase 3
+ * migration. Two @property tokens (font-size, color) registered in
+ * @layer cngx.tokens; font-size uses syntax '*' because rem is forbidden in
+ * a <length> initial-value. Anchor hover/focus rules live under @scope so
+ * link styling reflects the inverted contrast pattern (underline by
+ * default, removed on hover/focus).
+ */
+
+@layer cngx.tokens {
+  @property --cngx-form-errors-font-size { syntax: '*';       inherits: true; initial-value: 0.875rem; }
+  @property --cngx-form-errors-color     { syntax: '<color>'; inherits: true; initial-value: oklch(0.55 0.21 27); }
+}
+
+@layer cngx.components {
+  @scope (.cngx-form-errors) {
+    :scope {
+      display: contents;
+    }
+
+    .cngx-form-errors__list {
+      margin: 0;
+      padding: 0 0 0 1.25em;
+      font-size: var(--cngx-form-errors-font-size, var(--cngx-font-size-sm, 0.875rem));
+      color: var(--cngx-form-errors-color,
+                  var(--cngx-field-error-color,
+                      var(--cngx-color-danger, oklch(0.55 0.21 27))));
+    }
+
+    .cngx-form-errors__list a {
+      color: inherit;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+
+    .cngx-form-errors__list a:hover,
+    .cngx-form-errors__list a:focus-visible {
+      text-decoration: none;
+    }
+  }
+}

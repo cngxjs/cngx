@@ -1,0 +1,29 @@
+/*
+ * label.directive.css — externalised from inline `styles:` for Phase 3
+ * migration. The selector is `[cngxLabel]` (attribute) — the host element
+ * is the consumer's <label> (or any element they pick). host-class
+ * `.cngx-label` anchors @scope; the BEM child `.cngx-label__required`
+ * carries the marker visual.
+ *
+ * Single token (`--cngx-field-required-color`) is shared with CngxRequired
+ * — both atoms render the same semantic marker.
+ */
+
+@layer cngx.tokens {
+  @property --cngx-field-required-color { syntax: '<color>'; inherits: true; initial-value: oklch(0.55 0.21 27); }
+}
+
+@layer cngx.components {
+  @scope (.cngx-label) {
+    :scope {
+      display: contents;
+    }
+
+    .cngx-label__required {
+      color: var(--cngx-field-required-color,
+                  var(--cngx-field-error-color,
+                      var(--cngx-color-danger, oklch(0.55 0.21 27))));
+      margin-inline-start: 0.125em;
+    }
+  }
+}
