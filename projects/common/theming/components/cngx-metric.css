@@ -1,0 +1,39 @@
+/* cngx-metric — default styling for the CngxMetric component.
+ *
+ * The host element <cngx-metric> always carries the .cngx-metric class.
+ * Two slot children render the value and its unit:
+ *   .cngx-metric__value | the numeric figure (large, bold)
+ *   .cngx-metric__unit  | the trailing unit/label (small, muted) */
+
+@layer cngx.tokens {
+  @property --cngx-metric-gap          { syntax: '<length>'; inherits: false; initial-value: 2px; }
+  @property --cngx-metric-value-size   { syntax: '*';        inherits: true;  initial-value: 1.75rem; }
+  @property --cngx-metric-value-weight { syntax: '<number>'; inherits: true;  initial-value: 600; }
+  @property --cngx-metric-value-color  { syntax: '<color>';  inherits: true;  initial-value: oklch(0.2 0.01 290); }
+  @property --cngx-metric-unit-size    { syntax: '*';        inherits: true;  initial-value: 0.875rem; }
+  @property --cngx-metric-unit-weight  { syntax: '<number>'; inherits: true;  initial-value: 400; }
+  @property --cngx-metric-unit-color   { syntax: '<color>';  inherits: true;  initial-value: oklch(0.36 0.02 290); }
+}
+
+@layer cngx.components {
+  @scope (.cngx-metric) {
+    :scope {
+      display: inline-flex;
+      align-items: baseline;
+      gap: var(--cngx-metric-gap, 2px);
+    }
+
+    .cngx-metric__value {
+      font-size: var(--cngx-metric-value-size, 1.75rem);
+      font-weight: var(--cngx-metric-value-weight, 600);
+      color: var(--cngx-metric-value-color, var(--cngx-color-text, oklch(0.2 0.01 290)));
+      line-height: 1.2;
+    }
+
+    .cngx-metric__unit {
+      font-size: var(--cngx-metric-unit-size, 0.875rem);
+      font-weight: var(--cngx-metric-unit-weight, 400);
+      color: var(--cngx-metric-unit-color, oklch(0.36 0.02 290));
+    }
+  }
+}

@@ -1,0 +1,42 @@
+/* cngx-trend — default styling for the CngxTrend component.
+ *
+ * The host element <cngx-trend> always carries the .cngx-trend class.
+ * Two directional modifiers:
+ *   .cngx-trend--up   | positive movement, success-coded color
+ *   .cngx-trend--down | negative movement, danger-coded color
+ *
+ * Neutral default falls back through --cngx-color-text; up/down route
+ * through the foundation success/danger system tokens — brand-theme
+ * changes propagate automatically. The original _trend.scss used
+ * --cngx-status-success/-error; here they consolidate on the canonical
+ * --cngx-color-* family. */
+
+@layer cngx.tokens {
+  @property --cngx-trend-gap        { syntax: '<length>'; inherits: false; initial-value: 2px; }
+  @property --cngx-trend-size       { syntax: '*';        inherits: true;  initial-value: 0.8125rem; }
+  @property --cngx-trend-weight     { syntax: '<number>'; inherits: true;  initial-value: 500; }
+  @property --cngx-trend-color      { syntax: '<color>';  inherits: true;  initial-value: oklch(0.36 0.02 290); }
+  @property --cngx-trend-up-color   { syntax: '<color>';  inherits: true;  initial-value: oklch(0.65 0.18 145); }
+  @property --cngx-trend-down-color { syntax: '<color>';  inherits: true;  initial-value: oklch(0.65 0.22 25); }
+}
+
+@layer cngx.components {
+  @scope (.cngx-trend) {
+    :scope {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--cngx-trend-gap, 2px);
+      font-size: var(--cngx-trend-size, 0.8125rem);
+      font-weight: var(--cngx-trend-weight, 500);
+      color: var(--cngx-trend-color, oklch(0.36 0.02 290));
+    }
+
+    :scope.cngx-trend--up {
+      color: var(--cngx-trend-up-color, var(--cngx-color-success, oklch(0.65 0.18 145)));
+    }
+
+    :scope.cngx-trend--down {
+      color: var(--cngx-trend-down-color, var(--cngx-color-danger, oklch(0.65 0.22 25)));
+    }
+  }
+}
