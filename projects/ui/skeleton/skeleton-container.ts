@@ -78,6 +78,7 @@ import {
       <ng-content />
     }
   `,
+  styleUrl: './skeleton-container.css',
 })
 export class CngxSkeletonContainer {
   /** Controls the loading state directly. */
