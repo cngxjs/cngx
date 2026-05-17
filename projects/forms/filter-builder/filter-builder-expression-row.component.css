@@ -1,19 +1,53 @@
-cngx-filter-expression-row {
-  display: contents;
+/*
+ * filter-builder-expression-row.component.css — CngxFilterBuilderExpressionRow skin.
+ *
+ * Expression-row variant of CngxFilterBuilderRow. Same display:contents
+ * shape and same `.cngx-filter-builder__expression` flex layout (rule
+ * duplicated for Atomic-Decompose self-sufficiency), plus the
+ * `.cngx-filter-expression-incomplete` state for an unfinished
+ * expression (consumer hasn't filled all fields yet — dashed warning
+ * outline).
+ *
+ * --cngx-filter-builder-gap is owned by the parent and registered
+ * there; here it's consumed via the var() fallback chain only.
+ */
+
+@layer cngx.tokens {
+  @property --cngx-filter-builder-incomplete-outline {
+    syntax: '*';
+    inherits: false;
+    initial-value: 1px dashed oklch(0.55 0.15 65);
+  }
+  @property --cngx-filter-builder-incomplete-outline-offset {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 2px;
+  }
 }
 
-.cngx-filter-builder__expression {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--cngx-filter-builder-gap, 0.5rem);
-  align-items: center;
-}
+@layer cngx.components {
+  @scope (cngx-filter-expression-row) {
+    :scope {
+      display: contents;
+    }
 
-.cngx-filter-builder__expression--empty {
-  opacity: var(--cngx-filter-builder-empty-row-opacity, 0.85);
-}
+    .cngx-filter-builder__expression {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--cngx-filter-builder-gap, 0.5rem);
+      align-items: center;
+    }
 
-.cngx-filter-expression-incomplete {
-  outline: var(--cngx-filter-builder-incomplete-outline, 1px dashed var(--cngx-warn, #b25e09));
-  outline-offset: var(--cngx-filter-builder-incomplete-outline-offset, 2px);
+    .cngx-filter-builder__expression--empty {
+      opacity: var(--cngx-filter-builder-empty-row-opacity, 0.85);
+    }
+
+    .cngx-filter-expression-incomplete {
+      outline: var(
+        --cngx-filter-builder-incomplete-outline,
+        1px dashed var(--cngx-color-warning, oklch(0.55 0.15 65))
+      );
+      outline-offset: var(--cngx-filter-builder-incomplete-outline-offset, 2px);
+    }
+  }
 }
