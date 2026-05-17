@@ -2,7 +2,7 @@
  * char-count.component.css — externalised from inline `styles:` for Phase 3
  * migration. @property declarations are top-level-only, so the tokens can't
  * live in an inline string. Host stays display:contents — the counter has
- * zero visual footprint of its own, the span inherits the color/font-size.
+ * zero visual footprint of its own, the span inherits color/font-size.
  *
  * `font-size` uses syntax: '*' because @property's `<length>` initial-value
  * forbids rem (CSS Properties and Values Level 1, §2.4.4).

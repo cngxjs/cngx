@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  input,
+  ViewEncapsulation,
+} from '@angular/core';
 import { CngxFormFieldPresenter } from './form-field-presenter';
 import { CNGX_FORM_FIELD_CONFIG } from './form-field.token';
 
@@ -41,18 +48,12 @@ import { CNGX_FORM_FIELD_CONFIG } from './form-field.token';
     @if (markerVisible()) {
       <span class="cngx-label__required" aria-hidden="true">{{ markerText() }}</span>
     }`,
-  styles: `
-    :host {
-      display: contents;
-    }
-    .cngx-label__required {
-      color: var(--cngx-field-required-color, var(--cngx-field-error-color, #d32f2f));
-      margin-inline-start: 0.125em;
-    }
-  `,
+  styleUrl: './label.directive.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   exportAs: 'cngxLabel',
   host: {
+    class: 'cngx-label',
     '[attr.for]': 'presenter.inputId()',
     '[id]': 'presenter.labelId()',
     '[class.cngx-label--required]': 'presenter.required()',
