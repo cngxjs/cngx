@@ -40,6 +40,8 @@
 @use './sidenav-theme' as sidenav;
 @use './skeleton-theme' as skeleton;
 @use './speak-button-theme' as speak;
+@use './stepper-theme' as stepper;
+@use './tabs-theme' as tabs;
 @use './tooltip-theme' as tooltip;
 
 @mixin theme($theme) {
@@ -62,5 +64,7 @@
   @include sidenav.theme($theme);
   @include skeleton.theme($theme);
   @include speak.theme($theme);
+  @include stepper.theme($theme);
+  @include tabs.theme($theme);
   @include tooltip.theme($theme);
 }
