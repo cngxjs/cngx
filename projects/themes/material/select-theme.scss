@@ -12,10 +12,13 @@
 
 @mixin color($theme) {
   @if mat.get-theme-version($theme) == 1 {
-    // Panel surface (one shared surface across the whole select family)
+    // Panel surface (one shared surface across the whole select family).
+    // Material 3 Menu surface is shadow-only — no border, vertical inset
+    // 8px to give the option list breathing room from the panel edge.
     --cngx-select-panel-bg: var(--mat-sys-surface-container);
     --cngx-select-panel-color: var(--mat-sys-on-surface);
-    --cngx-select-panel-border: 1px solid var(--mat-sys-outline-variant);
+    --cngx-select-panel-border: none;
+    --cngx-select-panel-radius: 4px;
     --cngx-select-panel-shadow: var(--mat-sys-level2, 0 4px 12px oklch(0 0 0 / 0.12));
 
     // Trigger surfaces — every variant defines its own --cngx-<name>-bg /
@@ -141,7 +144,9 @@
   --cngx-select-option-padding: #{map.get($opt-paddings, $scale)};
   --cngx-select-option-min-height: #{map.get($opt-min-heights, $scale)};
   --cngx-select-option-radius: 0;
-  --cngx-select-panel-padding: 0;
+  // Material 3 Menu vertical padding: 8px top + 8px bottom, no horizontal
+  // inset so options sit edge-to-edge.
+  --cngx-select-panel-padding: 8px 0;
 
   // Trigger metrics — Material 3 outlined-input scale (56 / 52 / 48 / 44 / 40).
   // Every Select-family variant exposes its own min-height / padding /
