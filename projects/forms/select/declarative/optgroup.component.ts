@@ -90,19 +90,7 @@ import { CngxOptionGroup } from '@cngx/common/interactive';
     <div class="cngx-select__group-header" aria-hidden="true">{{ label() }}</div>
     <ng-content />
   `,
-  styles: `
-    :host {
-      display: block;
-    }
-    .cngx-select__group-header {
-      padding: 0.25rem 0.5rem;
-      font-size: 0.75rem;
-      font-weight: 600;
-      opacity: 0.7;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-    }
-  `,
+  styleUrl: './optgroup.component.css',
 })
 export class CngxSelectOptgroup {
   /** Header text. Mirrors the hostDirective input for template binding. */
