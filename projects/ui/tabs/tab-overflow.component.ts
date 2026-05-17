@@ -3,6 +3,7 @@ import {
   afterNextRender,
   ChangeDetectionStrategy,
   Component,
+  ViewEncapsulation,
   computed,
   contentChild,
   DestroyRef,
@@ -111,6 +112,7 @@ function mapBoolEqual(
   ],
   templateUrl: './tab-overflow.component.html',
   styleUrls: ['./tab-overflow.component.css'],
+  encapsulation: ViewEncapsulation.None,
   host: {
     '[class.cngx-tab-overflow]': 'true',
   },
