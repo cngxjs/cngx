@@ -4,7 +4,7 @@
  * .cngx-popover-panel class (via hostClass()). The CngxPopover host directive
  * toggles transition classes (.cngx-popover--opening/-open/-closing).
  *
- * Tokens keep the legacy --cngx-pp-* prefix. Plan §709 (Phase 4 cleanup)
+ * Tokens keep the legacy --cngx-popover-panel-* prefix. Plan §709 (Phase 4 cleanup)
  * renames these to --cngx-popover-panel-*.
  *
  * Material-Bridge: the sibling popover-panel-theme.scss exports a Sass mixin
@@ -12,26 +12,26 @@
  * per Plan §10 (Material bridges remain untouched). */
 
 @layer cngx.tokens {
-  @property --cngx-pp-bg                  { syntax: '<color>'; inherits: true;  initial-value: oklch(1 0 0); }
-  @property --cngx-pp-color               { syntax: '<color>'; inherits: true;  initial-value: oklch(0.27 0.04 250); }
-  @property --cngx-pp-border-radius       { syntax: '<length>'; inherits: false; initial-value: 12px; }
-  @property --cngx-pp-padding             { syntax: '<length>'; inherits: false; initial-value: 16px; }
-  @property --cngx-pp-max-width           { syntax: '<length>'; inherits: false; initial-value: 360px; }
-  @property --cngx-pp-shadow              { syntax: '*';        inherits: false; initial-value: 0 8px 24px oklch(0 0 0 / 0.12); }
-  @property --cngx-pp-border              { syntax: '*';        inherits: true;  initial-value: 1px solid oklch(0 0 0 / 0.08); }
-  @property --cngx-pp-arrow-size          { syntax: '<length>'; inherits: true;  initial-value: 8px; }
-  @property --cngx-pp-close-size          { syntax: '<length>'; inherits: true;  initial-value: 28px; }
-  @property --cngx-pp-transition-duration { syntax: '<time>';   inherits: true;  initial-value: 200ms; }
-  @property --cngx-pp-transition-easing   { syntax: '*';        inherits: true;  initial-value: cubic-bezier(0.4, 0, 0.2, 1); }
-  @property --cngx-pp-header-font-size    { syntax: '*';        inherits: true;  initial-value: 0.875rem; }
-  @property --cngx-pp-header-font-weight  { syntax: '<number>'; inherits: true;  initial-value: 600; }
-  @property --cngx-pp-header-gap          { syntax: '<length>'; inherits: true;  initial-value: 8px; }
-  @property --cngx-pp-footer-gap          { syntax: '<length>'; inherits: true;  initial-value: 8px; }
-  @property --cngx-pp-footer-border-top   { syntax: '*';        inherits: true;  initial-value: 1px solid oklch(0 0 0 / 0.06); }
-  @property --cngx-pp-footer-padding-top  { syntax: '<length>'; inherits: true;  initial-value: 12px; }
-  @property --cngx-pp-footer-margin-top   { syntax: '<length>'; inherits: true;  initial-value: 12px; }
-  @property --cngx-pp-accent              { syntax: '*';        inherits: true;  initial-value: transparent; }
-  @property --cngx-pp-accent-text         { syntax: '*';        inherits: true;  initial-value: currentColor; }
+  @property --cngx-popover-panel-bg                  { syntax: '<color>'; inherits: true;  initial-value: oklch(1 0 0); }
+  @property --cngx-popover-panel-color               { syntax: '<color>'; inherits: true;  initial-value: oklch(0.27 0.04 250); }
+  @property --cngx-popover-panel-border-radius       { syntax: '<length>'; inherits: false; initial-value: 12px; }
+  @property --cngx-popover-panel-padding             { syntax: '<length>'; inherits: false; initial-value: 16px; }
+  @property --cngx-popover-panel-max-width           { syntax: '<length>'; inherits: false; initial-value: 360px; }
+  @property --cngx-popover-panel-shadow              { syntax: '*';        inherits: false; initial-value: 0 8px 24px oklch(0 0 0 / 0.12); }
+  @property --cngx-popover-panel-border              { syntax: '*';        inherits: true;  initial-value: 1px solid oklch(0 0 0 / 0.08); }
+  @property --cngx-popover-panel-arrow-size          { syntax: '<length>'; inherits: true;  initial-value: 8px; }
+  @property --cngx-popover-panel-close-size          { syntax: '<length>'; inherits: true;  initial-value: 28px; }
+  @property --cngx-popover-panel-transition-duration { syntax: '<time>';   inherits: true;  initial-value: 200ms; }
+  @property --cngx-popover-panel-transition-easing   { syntax: '*';        inherits: true;  initial-value: cubic-bezier(0.4, 0, 0.2, 1); }
+  @property --cngx-popover-panel-header-font-size    { syntax: '*';        inherits: true;  initial-value: 0.875rem; }
+  @property --cngx-popover-panel-header-font-weight  { syntax: '<number>'; inherits: true;  initial-value: 600; }
+  @property --cngx-popover-panel-header-gap          { syntax: '<length>'; inherits: true;  initial-value: 8px; }
+  @property --cngx-popover-panel-footer-gap          { syntax: '<length>'; inherits: true;  initial-value: 8px; }
+  @property --cngx-popover-panel-footer-border-top   { syntax: '*';        inherits: true;  initial-value: 1px solid oklch(0 0 0 / 0.06); }
+  @property --cngx-popover-panel-footer-padding-top  { syntax: '<length>'; inherits: true;  initial-value: 12px; }
+  @property --cngx-popover-panel-footer-margin-top   { syntax: '<length>'; inherits: true;  initial-value: 12px; }
+  @property --cngx-popover-panel-accent              { syntax: '*';        inherits: true;  initial-value: transparent; }
+  @property --cngx-popover-panel-accent-text         { syntax: '*';        inherits: true;  initial-value: currentColor; }
 }
 
 @layer cngx.components {
@@ -40,20 +40,20 @@
       position: fixed;
       inset: unset;
       box-sizing: border-box;
-      background: var(--cngx-pp-bg, var(--cngx-color-surface, oklch(1 0 0)));
-      color: var(--cngx-pp-color, var(--cngx-color-text, oklch(0.27 0.04 250)));
-      border-radius: var(--cngx-pp-border-radius, 12px);
-      border: var(--cngx-pp-border, 1px solid oklch(0 0 0 / 0.08));
-      box-shadow: var(--cngx-pp-shadow, 0 8px 24px oklch(0 0 0 / 0.12));
-      padding: var(--cngx-pp-padding, 16px);
-      max-width: var(--cngx-pp-max-width, 360px);
+      background: var(--cngx-popover-panel-bg, var(--cngx-color-surface, oklch(1 0 0)));
+      color: var(--cngx-popover-panel-color, var(--cngx-color-text, oklch(0.27 0.04 250)));
+      border-radius: var(--cngx-popover-panel-border-radius, 12px);
+      border: var(--cngx-popover-panel-border, 1px solid oklch(0 0 0 / 0.08));
+      box-shadow: var(--cngx-popover-panel-shadow, 0 8px 24px oklch(0 0 0 / 0.12));
+      padding: var(--cngx-popover-panel-padding, 16px);
+      max-width: var(--cngx-popover-panel-max-width, 360px);
       width: max-content;
       overflow: visible;
       transition:
-        opacity var(--cngx-pp-transition-duration, 200ms)
-          var(--cngx-pp-transition-easing, cubic-bezier(0.4, 0, 0.2, 1)),
-        transform var(--cngx-pp-transition-duration, 200ms)
-          var(--cngx-pp-transition-easing, cubic-bezier(0.4, 0, 0.2, 1));
+        opacity var(--cngx-popover-panel-transition-duration, 200ms)
+          var(--cngx-popover-panel-transition-easing, cubic-bezier(0.4, 0, 0.2, 1)),
+        transform var(--cngx-popover-panel-transition-duration, 200ms)
+          var(--cngx-popover-panel-transition-easing, cubic-bezier(0.4, 0, 0.2, 1));
     }
 
     /* Browser hides [popover] by default — restore display when open. */
@@ -75,10 +75,10 @@
     }
 
     .cngx-popover-panel__header {
-      font-size: var(--cngx-pp-header-font-size, 0.875rem);
-      font-weight: var(--cngx-pp-header-font-weight, 600);
-      margin-bottom: var(--cngx-pp-header-gap, 8px);
-      color: var(--cngx-pp-accent-text, inherit);
+      font-size: var(--cngx-popover-panel-header-font-size, 0.875rem);
+      font-weight: var(--cngx-popover-panel-header-font-weight, 600);
+      margin-bottom: var(--cngx-popover-panel-header-gap, 8px);
+      color: var(--cngx-popover-panel-accent-text, inherit);
     }
 
     .cngx-popover-panel__body {
@@ -89,17 +89,17 @@
     .cngx-popover-panel__footer {
       display: flex;
       justify-content: flex-end;
-      gap: var(--cngx-pp-footer-gap, 8px);
-      border-top: var(--cngx-pp-footer-border-top, 1px solid oklch(0 0 0 / 0.06));
-      padding-top: var(--cngx-pp-footer-padding-top, 12px);
-      margin-top: var(--cngx-pp-footer-margin-top, 12px);
+      gap: var(--cngx-popover-panel-footer-gap, 8px);
+      border-top: var(--cngx-popover-panel-footer-border-top, 1px solid oklch(0 0 0 / 0.06));
+      padding-top: var(--cngx-popover-panel-footer-padding-top, 12px);
+      margin-top: var(--cngx-popover-panel-footer-margin-top, 12px);
     }
 
     .cngx-popover-panel__header-row {
       display: flex;
       align-items: center;
       gap: 8px;
-      margin-bottom: var(--cngx-pp-header-gap, 8px);
+      margin-bottom: var(--cngx-popover-panel-header-gap, 8px);
     }
 
     .cngx-popover-panel__header-row > .cngx-popover-panel__header {
@@ -112,8 +112,8 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      width: var(--cngx-pp-close-size);
-      height: var(--cngx-pp-close-size);
+      width: var(--cngx-popover-panel-close-size);
+      height: var(--cngx-popover-panel-close-size);
       padding: 0;
       border: none;
       border-radius: 50%;
@@ -130,17 +130,17 @@
       background: oklch(0 0 0 / 0.06);
     }
     .cngx-popover-panel__close:focus-visible {
-      outline: 2px solid var(--cngx-pp-accent-text, currentColor);
+      outline: 2px solid var(--cngx-popover-panel-accent-text, currentColor);
       outline-offset: 2px;
       opacity: 1;
     }
 
     .cngx-popover-panel__arrow {
       position: absolute;
-      width: calc(var(--cngx-pp-arrow-size, 8px) * 2);
-      height: calc(var(--cngx-pp-arrow-size, 8px) * 2);
-      background: var(--cngx-pp-bg, oklch(1 0 0));
-      border: var(--cngx-pp-border, 1px solid oklch(0 0 0 / 0.08));
+      width: calc(var(--cngx-popover-panel-arrow-size, 8px) * 2);
+      height: calc(var(--cngx-popover-panel-arrow-size, 8px) * 2);
+      background: var(--cngx-popover-panel-bg, oklch(1 0 0));
+      border: var(--cngx-popover-panel-border, 1px solid oklch(0 0 0 / 0.08));
       transform: rotate(45deg);
       pointer-events: none;
     }
@@ -148,58 +148,58 @@
     /* Arrow placement — derived from the host's inline position-area. */
     :scope[style*='position-area: bottom'] > .cngx-popover-panel__arrow,
     :scope[style*='position-area:bottom'] > .cngx-popover-panel__arrow {
-      top: calc(var(--cngx-pp-arrow-size, 8px) * -1);
+      top: calc(var(--cngx-popover-panel-arrow-size, 8px) * -1);
       left: 50%;
-      margin-left: calc(var(--cngx-pp-arrow-size, 8px) * -1);
+      margin-left: calc(var(--cngx-popover-panel-arrow-size, 8px) * -1);
       border-right: none;
       border-bottom: none;
     }
     :scope[style*='position-area: top'] > .cngx-popover-panel__arrow,
     :scope[style*='position-area:top'] > .cngx-popover-panel__arrow {
-      bottom: calc(var(--cngx-pp-arrow-size, 8px) * -1);
+      bottom: calc(var(--cngx-popover-panel-arrow-size, 8px) * -1);
       left: 50%;
-      margin-left: calc(var(--cngx-pp-arrow-size, 8px) * -1);
+      margin-left: calc(var(--cngx-popover-panel-arrow-size, 8px) * -1);
       border-left: none;
       border-top: none;
     }
     :scope[style*='position-area: left'] > .cngx-popover-panel__arrow,
     :scope[style*='position-area:left'] > .cngx-popover-panel__arrow {
-      right: calc(var(--cngx-pp-arrow-size, 8px) * -1);
+      right: calc(var(--cngx-popover-panel-arrow-size, 8px) * -1);
       top: 50%;
-      margin-top: calc(var(--cngx-pp-arrow-size, 8px) * -1);
+      margin-top: calc(var(--cngx-popover-panel-arrow-size, 8px) * -1);
       border-left: none;
       border-bottom: none;
     }
     :scope[style*='position-area: right'] > .cngx-popover-panel__arrow,
     :scope[style*='position-area:right'] > .cngx-popover-panel__arrow {
-      left: calc(var(--cngx-pp-arrow-size, 8px) * -1);
+      left: calc(var(--cngx-popover-panel-arrow-size, 8px) * -1);
       top: 50%;
-      margin-top: calc(var(--cngx-pp-arrow-size, 8px) * -1);
+      margin-top: calc(var(--cngx-popover-panel-arrow-size, 8px) * -1);
       border-right: none;
       border-top: none;
     }
 
-    /* Semantic variants — set --cngx-pp-accent/-text on the panel; children
+    /* Semantic variants — set --cngx-popover-panel-accent/-text on the panel; children
        inherit them and pick them up via var() fallbacks. */
     :scope.cngx-popover-panel--info {
-      --cngx-pp-accent: oklch(0.92 0.05 250);
-      --cngx-pp-accent-text: oklch(0.38 0.16 260);
-      border-left: 3px solid var(--cngx-pp-accent-text);
+      --cngx-popover-panel-accent: oklch(0.92 0.05 250);
+      --cngx-popover-panel-accent-text: oklch(0.38 0.16 260);
+      border-left: 3px solid var(--cngx-popover-panel-accent-text);
     }
     :scope.cngx-popover-panel--success {
-      --cngx-pp-accent: oklch(0.94 0.07 155);
-      --cngx-pp-accent-text: oklch(0.42 0.10 155);
-      border-left: 3px solid var(--cngx-pp-accent-text);
+      --cngx-popover-panel-accent: oklch(0.94 0.07 155);
+      --cngx-popover-panel-accent-text: oklch(0.42 0.10 155);
+      border-left: 3px solid var(--cngx-popover-panel-accent-text);
     }
     :scope.cngx-popover-panel--warning {
-      --cngx-pp-accent: oklch(0.95 0.06 75);
-      --cngx-pp-accent-text: oklch(0.46 0.12 60);
-      border-left: 3px solid var(--cngx-pp-accent-text);
+      --cngx-popover-panel-accent: oklch(0.95 0.06 75);
+      --cngx-popover-panel-accent-text: oklch(0.46 0.12 60);
+      border-left: 3px solid var(--cngx-popover-panel-accent-text);
     }
     :scope.cngx-popover-panel--danger {
-      --cngx-pp-accent: oklch(0.93 0.04 25);
-      --cngx-pp-accent-text: oklch(0.42 0.18 25);
-      border-left: 3px solid var(--cngx-pp-accent-text);
+      --cngx-popover-panel-accent: oklch(0.93 0.04 25);
+      --cngx-popover-panel-accent-text: oklch(0.42 0.18 25);
+      border-left: 3px solid var(--cngx-popover-panel-accent-text);
     }
 
     .cngx-popover-panel__loading,

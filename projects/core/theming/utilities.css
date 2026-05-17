@@ -1,0 +1,25 @@
+/* cngx-utilities — low-level visual utility classes shared across
+ * the library. Lives in @layer cngx.base so component-layer rules
+ * can override the utility without specificity wars.
+ *
+ * Today: only .cngx-sr-only (visually-hidden screen-reader-only
+ * content). Per-component files (alert, mat-tabs, stepper, tabs-base,
+ * copy-block) keep an identical local copy of the rule for
+ * Atomic-Decompose self-sufficiency — ejecting a component into a
+ * consumer project doesn't require pulling in the foundation
+ * utilities file. The canonical declaration here is what consumers
+ * importing @cngx/themes/cngx.css get out of the box. */
+
+@layer cngx.base {
+  .cngx-sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+}
