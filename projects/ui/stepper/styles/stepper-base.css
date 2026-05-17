@@ -1,15 +1,12 @@
 /*
- * @cngx/ui/stepper — structural CSS shared by every stepper skin.
+ * Structural CSS shared by every stepper skin. Layout-only — no
+ * colors / sizes / borders / fonts beyond what's controlled via
+ * --cngx-step-* custom properties. Loaded by <cngx-stepper> via
+ * styleUrls.
  *
- * Layout-only — no colours / sizes / borders / fonts beyond what's
- * controlled via --cngx-step-* custom properties (with fallbacks).
- * Loaded by `<cngx-stepper>` via styleUrls.
- *
- * No @scope wrap: selectors are class-prefixed (.cngx-stepper__*) and
- * apply globally under CngxStepper's encapsulation:None — same pattern
- * as select-base.css from PR #109 and tabs-base.css. The former `:host`
- * selectors are rewritten as `cngx-stepper` since this file is only
- * loaded by that organism.
+ * Selectors are class-prefixed (.cngx-stepper__*) and apply globally
+ * under CngxStepper's encapsulation:None; the cngx-stepper- prefix is
+ * the namespace.
  */
 
 @layer cngx.tokens {

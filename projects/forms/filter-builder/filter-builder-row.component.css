@@ -1,15 +1,12 @@
 /*
- * filter-builder-row.component.css — CngxFilterBuilderRow skin.
+ * Row wrapper inside CngxFilterBuilder. display:contents on the host
+ * delegates visual appearance to the parent's
+ * .cngx-filter-builder__expression flex layout. The duplicated
+ * `__expression` rule below keeps the file self-contained when used
+ * standalone.
  *
- * Row is a `display: contents` wrapper that delegates its visual
- * appearance to the parent's `.cngx-filter-builder__expression` flex
- * layout. The duplicated `__expression` rule below is intentional —
- * it makes the row file self-sufficient when the Atomic Decompose
- * schematic ejects only the row component (without the parent main
- * file) into a consumer project.
- *
- * --cngx-filter-builder-gap is owned by the parent and registered
- * there; here it's consumed via the var() fallback chain only.
+ * --cngx-filter-builder-gap is owned by the parent filter-builder file
+ * and consumed here via the var() fallback chain only.
  */
 
 @layer cngx.tokens {

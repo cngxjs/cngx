@@ -1,0 +1,11 @@
+/* cngx-select-divider declarative — visual separator between options. */
+
+:host {
+  display: block;
+  block-size: 1px;
+  margin: var(--cngx-select-divider-margin, 0.25rem 0);
+  background: var(
+    --cngx-select-divider-color,
+    var(--cngx-color-border, oklch(0.89 0 0))
+  );
+}

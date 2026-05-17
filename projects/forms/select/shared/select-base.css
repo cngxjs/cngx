@@ -93,7 +93,6 @@
 }
 
 @layer cngx.components {
-  /* ── Panel frame ──────────────────────────────────────────────────── */
 
   .cngx-select__panel {
     border: var(--cngx-select-panel-border, 1px solid var(--cngx-color-border, oklch(0.85 0.01 250)));
@@ -110,8 +109,6 @@
       flip-inline,
       flip-block flip-inline;
   }
-
-  /* ── Option row ───────────────────────────────────────────────────── */
 
   .cngx-select__group-header {
     padding: 0.25rem 0.5rem;
@@ -152,16 +149,12 @@
     font-weight: 700;
   }
 
-  /* ── Loading / empty text variants ────────────────────────────────── */
-
   .cngx-select__loading,
   .cngx-select__empty {
     padding: 0.5rem 0.75rem;
     font-style: italic;
     opacity: 0.7;
   }
-
-  /* ── Skeleton rows ────────────────────────────────────────────────── */
 
   .cngx-select__skeleton {
     display: flex;
@@ -185,8 +178,6 @@
     .cngx-select__skeleton-row { animation: none; }
   }
 
-  /* ── Loading spinner (first-load variant) ─────────────────────────── */
-
   .cngx-select__spinner-wrap {
     display: flex;
     align-items: center;
@@ -205,8 +196,6 @@
     .cngx-select__spinner { animation-duration: 3s; }
   }
 
-  /* ── Loading bar (first-load variant) ─────────────────────────────── */
-
   .cngx-select__loading-bar {
     height: var(--cngx-select-loading-bar-height, 3px);
     margin: calc(-1 * var(--cngx-select-panel-padding, 0.25rem))
@@ -223,8 +212,6 @@
   @media (prefers-reduced-motion: reduce) {
     .cngx-select__loading-bar { animation: none; }
   }
-
-  /* ── Refreshing indicator (subsequent-load variant) ───────────────── */
 
   .cngx-select__refreshing {
     height: var(--cngx-select-refreshing-height, 2px);
@@ -266,8 +253,6 @@
     .cngx-select__refreshing-dots > span { animation: none; opacity: 0.8; }
   }
 
-  /* ── Option-row commit feedback ───────────────────────────────────── */
-
   .cngx-select__option-spinner {
     margin-inline-start: auto;
     width: var(--cngx-select-option-spinner-size, 0.875rem);
@@ -287,8 +272,6 @@
     font-size: 0.875rem;
   }
 
-  /* ── Chip strip container (layout only) ───────────────────────────── */
-
   /*
    * Multi-value triggers (CngxMultiSelect, upcoming CngxMultiCombobox and
    * CngxTagInput) all wrap a flex-wrap row of chip pills. The individual
@@ -305,8 +288,6 @@
     align-items: center;
     min-width: 0;
   }
-
-  /* ── Chip-list overflow modes (B3 — chipOverflow config) ─────────── */
 
   .cngx-select__chip-list[data-overflow='scroll-x'] {
     flex-wrap: nowrap;
@@ -341,13 +322,11 @@
     );
   }
 
-  /* ── Reorderable chip strip (layout + drag feedback) ──────────────── */
-
   /*
    * Rules used by CngxReorderableMultiSelect and any future reorder-aware
    * chip surface (e.g. tag-input with user-defined ordering). The structural
    * parts live in select-base so the same ghost/handle look is available
-   * without a per-variant skin rewrite; every colour, shadow, and opacity is
+   * without a per-variant skin rewrite; every color, shadow, and opacity is
    * a `--cngx-select-chip-*` custom property, consumer-overridable.
    */
 
@@ -476,8 +455,6 @@
     border-radius: 2px;
     pointer-events: none;
   }
-
-  /* ── Panel-level error surfaces ───────────────────────────────────── */
 
   .cngx-select__error {
     display: flex;

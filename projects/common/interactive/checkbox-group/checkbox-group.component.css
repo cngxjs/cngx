@@ -1,8 +1,6 @@
 /*
- * checkbox-group.component.css — flex layout container for CngxCheckbox leaves.
- *
- * Migrated to @layer cngx.tokens + @layer cngx.components + @scope (Phase 3).
- * Single token (gap) falls back to --cngx-space-sm.
+ * Flex layout container for CngxCheckbox children. The gap token
+ * falls back to --cngx-space-sm.
  */
 
 @layer cngx.tokens {

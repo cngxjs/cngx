@@ -1,9 +1,5 @@
-/*
- * close-button.css — externalised from inline `styles:` for Phase 3 migration.
- * @property declarations are top-level-only in CSS, so the tokens can't live in
- * the inline string. host display:contents moved from the host: binding into
- * @scope so the rule sits next to the rest of the layered component CSS.
- */
+/* Visual skin for CngxCloseButton — circular icon button with a
+ * neutral idle state and a tinted hover state. */
 
 @layer cngx.tokens {
   @property --cngx-close-button-bg              { syntax: '*';        inherits: false; initial-value: none; }

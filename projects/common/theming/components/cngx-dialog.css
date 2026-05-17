@@ -1,12 +1,12 @@
-/* cngx-dialog — default styling for the CngxDialog directive.
+/*
+ * Default styling for the CngxDialog directive. Targets
+ * <dialog cngxDialog> and the sibling [cngxDialogDraggable] variant.
+ * The directive toggles transition classes
+ * (.cngx-dialog--opening/-open/-closing) on the host.
  *
- * Targets <dialog cngxDialog> and the sibling [cngxDialogDraggable] variant.
- * The directive toggles transition classes (.cngx-dialog--opening/-open/
- * -closing) on the host.
- *
- * Material-Bridge: the sibling dialog-theme.scss exports a Sass mixin that
- * derives the same tokens from a Material theme (surface-container-high /
- * on-surface) — that file stays SCSS per Plan §10. */
+ * A Material bridge for consumers who opt in lives in the sibling
+ * dialog-theme.scss.
+ */
 
 @layer cngx.tokens {
   @property --cngx-dialog-bg                  { syntax: '<color>';  inherits: true;  initial-value: oklch(1 0 0); }

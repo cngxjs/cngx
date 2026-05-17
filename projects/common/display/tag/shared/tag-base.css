@@ -1,16 +1,11 @@
 /*
- * tag-base.css — shared structural skeleton for the tag family.
- *
- * Migrated to @layer cngx.components + @scope (Phase 3). Two scopes
+ * Shared structural skeleton for the tag family. Two scopes
  * (.cngx-tag, .cngx-tag-group) live here because both atoms share
- * structural defaults and link this file FIRST in their styleUrls.
- * Thematic skin (colour cascade, radius, font-weight) is in the
- * per-atom files (tag.css / tag-group.component.css).
- *
- * Per reference_atomic_decompose rule 3 — structural / thematic split.
- * All values cascade through --cngx-* custom properties with English-
- * readable fallbacks; consumers override at :root or component level
- * without forking. Component-token registrations sit in tag.css.
+ * structural defaults and link this file first in their styleUrls.
+ * Thematic skin (color cascade, radius, font-weight) is in the
+ * per-atom files. All values cascade through --cngx-* custom
+ * properties so consumers can override at :root or component level
+ * without forking.
  */
 
 @layer cngx.components {

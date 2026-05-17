@@ -1,14 +1,12 @@
 /*
- * radio.component.css — interactive shell around <cngx-radio-indicator>.
+ * Interactive shell around <cngx-radio-indicator>. Visual state
+ * (filled circle vs ring) lives on the inner indicator; the
+ * .cngx-radio--checked / .cngx-radio--disabled host classes are
+ * unstyled here and exposed as consumer-theming hooks.
  *
- * Migrated to @layer cngx.tokens + @layer cngx.components + @scope (Phase 3).
- * Visual state (filled circle vs ring) lives on the inner <cngx-radio-indicator>;
- * the .cngx-radio--checked / .cngx-radio--disabled host classes are unstyled
- * here on purpose and exposed as consumer-theming hooks.
- *
- * Token-naming note: CngxRadioIndicator registers its visuals under
- * --cngx-radio-indicator-* (separate namespace), so the shell registers its
- * own --cngx-radio-* tokens here without overlap.
+ * CngxRadioIndicator owns --cngx-radio-indicator-* (separate
+ * namespace); this file registers shell-specific --cngx-radio-*
+ * tokens without overlap.
  */
 
 @layer cngx.tokens {

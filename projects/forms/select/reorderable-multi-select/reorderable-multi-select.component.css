@@ -34,7 +34,6 @@
 
 @layer cngx.components {
   @scope (.cngx-reorderable-multi-select) {
-    /* ── Host + root wrapper ──────────────────────────────────────── */
 
     :scope {
       display: inline-block;
@@ -49,8 +48,6 @@
     .cngx-reorderable-multi-select__root {
       display: contents;
     }
-
-    /* ── Trigger ──────────────────────────────────────────────────── */
 
     .cngx-reorderable-multi-select__trigger {
       display: flex;
@@ -117,8 +114,6 @@
       cursor: not-allowed;
     }
 
-    /* ── Placeholder ──────────────────────────────────────────────── */
-
     .cngx-reorderable-multi-select__placeholder {
       overflow: hidden;
       text-overflow: ellipsis;
@@ -128,8 +123,6 @@
         var(--cngx-multi-select-placeholder-opacity, 0.7)
       );
     }
-
-    /* ── Clear-all button ─────────────────────────────────────────── */
 
     .cngx-reorderable-multi-select__clear-all {
       flex: 0 0 auto;
@@ -154,8 +147,6 @@
       outline: 2px solid var(--cngx-color-primary, oklch(0.6 0.2 250));
       border-radius: 0.125rem;
     }
-
-    /* ── Caret ────────────────────────────────────────────────────── */
 
     .cngx-reorderable-multi-select__caret {
       flex: 0 0 auto;

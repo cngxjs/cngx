@@ -1,16 +1,13 @@
 /*
- * avatar.component.css — display atom for user/person/entity avatars.
+ * Display atom for user/person/entity avatars. Renders an image
+ * (.cngx-avatar__img), an initials block (.cngx-avatar__initials), or
+ * projected content. Optional status dot (.cngx-avatar__status) supports
+ * online/offline/busy/away. Size + shape via modifier classes
+ * (--xs..--xl, --circle, --square), each backed by a token.
  *
- * Renders one of: image (.cngx-avatar__img), initials (.cngx-avatar__initials),
- * or projected content. Optional status indicator dot via .cngx-avatar__status
- * with online/offline/busy/away variants. Size + shape driven by class
- * modifiers (cngx-avatar--xs..xl, --circle, --square), each backed by a
- * token so consumers can re-scale or re-shape without forking.
- *
- * Migrated to @layer cngx.components + @scope (Phase 3). Three-Tier-Override
- * applies to every token; status semantics fall back to system color tokens
- * (--cngx-color-success → online, --cngx-color-danger → busy, etc.) so a
- * single brand-color change propagates through.
+ * Status colors fall back to foundation system tokens
+ * (--cngx-color-success → online, --cngx-color-danger → busy, etc.)
+ * so a brand-color change propagates through.
  */
 
 @layer cngx.tokens {

@@ -1,18 +1,16 @@
-/* cngx-tooltip — default styling for the CngxTooltip directive.
+/*
+ * Default styling for the CngxTooltip directive. The directive renders
+ * a <div class="cngx-tooltip"> on demand and adds transition classes
+ * (.cngx-popover--opening/-open/-closing) via the underlying
+ * CngxPopover state machine.
  *
- * The directive renders a <div class="cngx-tooltip"> on demand and adds
- * transition classes (.cngx-popover--opening/-open/-closing) via the
- * underlying CngxPopover state machine.
+ * Touch devices get larger padding + font-size by default for
+ * readability (@media (hover: none)).
  *
- * Touch devices get larger padding + font-size by default for readability
- * (@media (hover: none)) — values match Material's touch density scale.
- *
- * Material-Bridge: the sibling tooltip-theme.scss exports a Sass mixin that
- * derives the same tokens from a Material theme (inverse-surface /
- * inverse-on-surface) — that file stays SCSS per Plan §10.
- *
- * The optional tooltip-indicator.scss (`::after` icon next to triggers)
- * remains an SCSS opt-in mixin; not aggregated here. */
+ * A Material bridge for consumers who opt in lives in the sibling
+ * tooltip-theme.scss. The optional tooltip-indicator.scss (::after
+ * icon next to triggers) remains a Sass opt-in mixin.
+ */
 
 @layer cngx.tokens {
   @property --cngx-tooltip-bg                  { syntax: '<color>';  inherits: true;  initial-value: oklch(0.20 0.005 290); }

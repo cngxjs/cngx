@@ -59,33 +59,7 @@ import { CngxOption } from '@cngx/common/interactive';
       </span>
     }
   `,
-  styles: `
-    :host {
-      display: flex;
-      align-items: center;
-      gap: var(--cngx-option-gap, 0.5rem);
-      justify-content: var(--cngx-option-status-justify, flex-start);
-      padding: var(--cngx-select-option-padding, 0.375rem 0.5rem);
-      cursor: pointer;
-      border-radius: var(--cngx-select-option-radius, 0.125rem);
-    }
-    :host([aria-disabled='true']) {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-    :host(.cngx-option--highlighted) {
-      background: var(--cngx-select-option-highlight-bg, rgba(25, 118, 210, 0.1));
-    }
-    .cngx-option__status {
-      margin-inline-start: auto;
-      flex-shrink: 0;
-      display: inline-flex;
-      align-items: center;
-    }
-    :host([hidden]) {
-      display: none;
-    }
-  `,
+  styleUrl: './option.component.css',
 })
 export class CngxSelectOption {
   protected readonly option = inject(CngxOption, { self: true });

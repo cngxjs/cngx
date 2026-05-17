@@ -36,13 +36,6 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
     'aria-hidden': 'true',
   },
   template: ``,
-  styles: `
-    :host {
-      display: block;
-      block-size: 1px;
-      margin: var(--cngx-select-divider-margin, 0.25rem 0);
-      background: var(--cngx-select-divider-color, var(--cngx-border, #e0e0e0));
-    }
-  `,
+  styleUrl: './divider.component.css',
 })
 export class CngxSelectDivider {}

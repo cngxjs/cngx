@@ -1,16 +1,13 @@
 /*
- * treetable.component.css — CngxTreetable (CDK-based) skin.
- *
- * Table-grid layout for an expandable, selectable tree. Indent is driven
- * by `--cngx-row-depth` set per row by the renderer, multiplied by
- * `--cngx-treetable-indent-size`. The narrow mobile breakpoint shrinks the
- * indent step and bumps tap-target sizing on the expand toggle.
- *
- * Tokens live under the `--cngx-treetable-*` legacy namespace (pre-rename
- * from "table" → "treetable"); namespace cleanup is Phase 4 work.
+ * CDK-based treetable. Table-grid layout for an expandable, selectable
+ * tree. Indent is driven by --cngx-row-depth set per row by the
+ * renderer, multiplied by --cngx-treetable-indent-size. The narrow
+ * mobile breakpoint shrinks the indent step and bumps tap-target
+ * sizing on the expand toggle.
  */
 
 @layer cngx.tokens {
+  /* Colors */
   @property --cngx-treetable-header-bg        { syntax: '<color>'; inherits: false; initial-value: oklch(0.98 0.005 250); }
   @property --cngx-treetable-header-border    { syntax: '<color>'; inherits: false; initial-value: oklch(0.92 0.005 250); }
   @property --cngx-treetable-header-color     { syntax: '<color>'; inherits: true;  initial-value: oklch(0.34 0.015 250); }
@@ -20,7 +17,44 @@
   @property --cngx-treetable-focus-ring       { syntax: '<color>'; inherits: false; initial-value: oklch(0.5 0.2 280); }
   @property --cngx-treetable-muted-color      { syntax: '<color>'; inherits: true;  initial-value: oklch(0.5 0.015 250); }
   @property --cngx-treetable-cell-color       { syntax: '<color>'; inherits: true;  initial-value: oklch(0.34 0.015 250); }
-  @property --cngx-treetable-indent-size      { syntax: '*'; inherits: true; initial-value: 1.5rem; }
+
+  /* Spacing */
+  @property --cngx-treetable-indent-size           { syntax: '*'; inherits: true; initial-value: 1.5rem; }
+  @property --cngx-treetable-cell-padding-block    { syntax: '<length>'; inherits: false; initial-value: 0.6rem; }
+  @property --cngx-treetable-cell-padding-inline   { syntax: '<length>'; inherits: false; initial-value: 1rem; }
+  @property --cngx-treetable-narrow-cell-padding-inline { syntax: '<length>'; inherits: false; initial-value: 0.25rem; }
+  @property --cngx-treetable-empty-padding-block   { syntax: '<length>'; inherits: false; initial-value: 2rem; }
+  @property --cngx-treetable-empty-padding-inline  { syntax: '<length>'; inherits: false; initial-value: 1rem; }
+  @property --cngx-treetable-toggle-padding        { syntax: '<length>'; inherits: false; initial-value: 0.25rem; }
+  @property --cngx-treetable-toggle-radius         { syntax: '<length>'; inherits: false; initial-value: 4px; }
+
+  /* Borders + focus */
+  @property --cngx-treetable-header-border-width   { syntax: '<length>'; inherits: false; initial-value: 2px; }
+  @property --cngx-treetable-row-border-width      { syntax: '<length>'; inherits: false; initial-value: 1px; }
+  @property --cngx-treetable-focus-ring-width      { syntax: '<length>'; inherits: false; initial-value: 2px; }
+
+  /* Typography */
+  @property --cngx-treetable-font-size             { syntax: '*'; inherits: false; initial-value: 0.875rem; }
+  @property --cngx-treetable-header-font-weight    { syntax: '<number>'; inherits: false; initial-value: 600; }
+  @property --cngx-treetable-empty-font-size       { syntax: '*'; inherits: false; initial-value: 0.875rem; }
+  @property --cngx-treetable-toggle-font-size      { syntax: '*'; inherits: false; initial-value: 0.875rem; }
+
+  /* Motion */
+  @property --cngx-treetable-row-transition-duration { syntax: '<time>'; inherits: false; initial-value: 120ms; }
+  @property --cngx-treetable-toggle-transition-duration { syntax: '<time>'; inherits: false; initial-value: 120ms; }
+
+  /* Mobile breakpoint overrides */
+  @property --cngx-treetable-narrow-breakpoint        { syntax: '<length>'; inherits: false; initial-value: 960px; }
+  @property --cngx-treetable-narrow-font-size         { syntax: '*'; inherits: false; initial-value: 0.8125rem; }
+  @property --cngx-treetable-narrow-header-padding-block  { syntax: '<length>'; inherits: false; initial-value: 0.5rem; }
+  @property --cngx-treetable-narrow-header-padding-inline { syntax: '<length>'; inherits: false; initial-value: 0.625rem; }
+  @property --cngx-treetable-narrow-cell-padding-block    { syntax: '<length>'; inherits: false; initial-value: 0.875rem; }
+  @property --cngx-treetable-narrow-cell-padding-inline-default { syntax: '<length>'; inherits: false; initial-value: 0.625rem; }
+  @property --cngx-treetable-narrow-utility-padding-inline { syntax: '<length>'; inherits: false; initial-value: 0.125rem; }
+  @property --cngx-treetable-narrow-utility-padding-inline-large { syntax: '<length>'; inherits: false; initial-value: 0.875rem; }
+  @property --cngx-treetable-narrow-indent-size       { syntax: '*'; inherits: true; initial-value: 1.25rem; }
+  @property --cngx-treetable-narrow-toggle-padding    { syntax: '<length>'; inherits: false; initial-value: 0.5rem; }
+  @property --cngx-treetable-narrow-toggle-font-size  { syntax: '*'; inherits: false; initial-value: 1rem; }
 }
 
 @layer cngx.components {
@@ -34,19 +68,21 @@
       display: table;
       width: 100%;
       border-collapse: collapse;
-      font-size: 0.875rem;
+      font-size: var(--cngx-treetable-font-size, 0.875rem);
     }
 
     cdk-header-row {
       display: table-row;
       background: var(--cngx-treetable-header-bg, oklch(0.98 0.005 250));
-      border-bottom: 2px solid var(--cngx-treetable-header-border, var(--cngx-color-border, oklch(0.92 0.005 250)));
+      border-bottom: var(--cngx-treetable-header-border-width, 2px) solid
+        var(--cngx-treetable-header-border, var(--cngx-color-border, oklch(0.92 0.005 250)));
     }
 
     cdk-header-cell {
       display: table-cell;
-      padding: 0.6rem 1rem;
-      font-weight: 600;
+      padding: var(--cngx-treetable-cell-padding-block, 0.6rem)
+               var(--cngx-treetable-cell-padding-inline, 1rem);
+      font-weight: var(--cngx-treetable-header-font-weight, 600);
       color: var(--cngx-treetable-header-color, var(--cngx-color-text, oklch(0.34 0.015 250)));
       text-align: left;
       white-space: nowrap;
@@ -55,14 +91,15 @@
     cdk-header-cell.cngx-treetable__expand-cell,
     cdk-header-cell.cngx-treetable__select-cell {
       width: 1px;
-      padding-inline: 0.25rem;
+      padding-inline: var(--cngx-treetable-narrow-cell-padding-inline, 0.25rem);
     }
 
     cdk-row {
       display: table-row;
-      border-bottom: 1px solid var(--cngx-treetable-row-border, var(--cngx-color-border, oklch(0.96 0.005 250)));
+      border-bottom: var(--cngx-treetable-row-border-width, 1px) solid
+        var(--cngx-treetable-row-border, var(--cngx-color-border, oklch(0.96 0.005 250)));
       cursor: pointer;
-      transition: background 120ms ease;
+      transition: background var(--cngx-treetable-row-transition-duration, 120ms) ease;
     }
 
     cdk-row:last-child {
@@ -78,24 +115,30 @@
     }
 
     cdk-row.cngx-treetable__row--focused {
-      outline: 2px solid var(--cngx-treetable-focus-ring, var(--cngx-color-primary, oklch(0.5 0.2 280)));
-      outline-offset: -2px;
+      outline: var(--cngx-treetable-focus-ring-width, 2px) solid
+        var(--cngx-treetable-focus-ring, var(--cngx-color-primary, oklch(0.5 0.2 280)));
+      outline-offset: calc(-1 * var(--cngx-treetable-focus-ring-width, 2px));
     }
 
     .cngx-treetable__empty {
-      padding: 2rem 1rem;
+      padding: var(--cngx-treetable-empty-padding-block, 2rem)
+               var(--cngx-treetable-empty-padding-inline, 1rem);
       text-align: center;
       color: var(--cngx-treetable-muted-color, oklch(0.5 0.015 250));
-      font-size: 0.875rem;
+      font-size: var(--cngx-treetable-empty-font-size, 0.875rem);
     }
 
     .cngx-treetable__first-data-cell {
-      padding-inline-start: calc(var(--cngx-row-depth, 0) * var(--cngx-treetable-indent-size, 1.5rem) + 1rem);
+      padding-inline-start: calc(
+        var(--cngx-row-depth, 0) * var(--cngx-treetable-indent-size, 1.5rem)
+          + var(--cngx-treetable-cell-padding-inline, 1rem)
+      );
     }
 
     cdk-cell {
       display: table-cell;
-      padding: 0.6rem 1rem;
+      padding: var(--cngx-treetable-cell-padding-block, 0.6rem)
+               var(--cngx-treetable-cell-padding-inline, 1rem);
       color: var(--cngx-treetable-cell-color, var(--cngx-color-text, oklch(0.34 0.015 250)));
       vertical-align: middle;
     }
@@ -103,13 +146,16 @@
     cdk-cell.cngx-treetable__expand-cell {
       white-space: nowrap;
       width: 1px;
-      padding-inline-end: 0.25rem;
-      padding-inline-start: calc(var(--cngx-row-depth, 0) * var(--cngx-treetable-indent-size, 1.5rem) + 0.25rem);
+      padding-inline-end: var(--cngx-treetable-narrow-cell-padding-inline, 0.25rem);
+      padding-inline-start: calc(
+        var(--cngx-row-depth, 0) * var(--cngx-treetable-indent-size, 1.5rem)
+          + var(--cngx-treetable-narrow-cell-padding-inline, 0.25rem)
+      );
     }
 
     cdk-cell.cngx-treetable__select-cell {
       width: 1px;
-      padding-inline: 0.25rem;
+      padding-inline: var(--cngx-treetable-narrow-cell-padding-inline, 0.25rem);
       white-space: nowrap;
     }
 
@@ -117,14 +163,14 @@
       background: none;
       border: none;
       cursor: pointer;
-      padding: 0.25rem;
+      padding: var(--cngx-treetable-toggle-padding, 0.25rem);
       color: var(--cngx-treetable-muted-color, oklch(0.5 0.015 250));
-      font-size: 0.875rem;
+      font-size: var(--cngx-treetable-toggle-font-size, 0.875rem);
       line-height: 1;
-      border-radius: 4px;
+      border-radius: var(--cngx-treetable-toggle-radius, 4px);
       transition:
-        background 120ms,
-        color 120ms;
+        background var(--cngx-treetable-toggle-transition-duration, 120ms),
+        color var(--cngx-treetable-toggle-transition-duration, 120ms);
     }
 
     .cngx-treetable__toggle:hover {
@@ -134,44 +180,52 @@
 
     @media (max-width: 960px) {
       :scope {
-        --cngx-treetable-indent-size: 1.25rem;
+        --cngx-treetable-indent-size: var(--cngx-treetable-narrow-indent-size, 1.25rem);
       }
 
       cdk-table {
-        font-size: 0.8125rem;
+        font-size: var(--cngx-treetable-narrow-font-size, 0.8125rem);
       }
 
       cdk-header-cell {
-        padding: 0.5rem 0.625rem;
+        padding: var(--cngx-treetable-narrow-header-padding-block, 0.5rem)
+                 var(--cngx-treetable-narrow-header-padding-inline, 0.625rem);
       }
 
       cdk-header-cell.cngx-treetable__expand-cell,
       cdk-header-cell.cngx-treetable__select-cell {
-        padding-inline: 0.125rem;
+        padding-inline: var(--cngx-treetable-narrow-utility-padding-inline, 0.125rem);
       }
 
       cdk-cell {
-        padding: 0.875rem 0.625rem; /* taller row = bigger tap area */
+        /* taller row provides a bigger tap target */
+        padding: var(--cngx-treetable-narrow-cell-padding-block, 0.875rem)
+                 var(--cngx-treetable-narrow-cell-padding-inline-default, 0.625rem);
       }
 
       cdk-cell.cngx-treetable__expand-cell {
-        padding-inline-end: 0.125rem;
+        padding-inline-end: var(--cngx-treetable-narrow-utility-padding-inline, 0.125rem);
         padding-inline-start: calc(
-          var(--cngx-row-depth, 0) * var(--cngx-treetable-indent-size, 1.25rem) + 0.125rem
+          var(--cngx-row-depth, 0) * var(--cngx-treetable-indent-size, 1.25rem)
+            + var(--cngx-treetable-narrow-utility-padding-inline, 0.125rem)
         );
       }
 
       cdk-cell.cngx-treetable__select-cell {
-        padding-inline: 0.125rem;
+        padding-inline: var(--cngx-treetable-narrow-utility-padding-inline, 0.125rem);
       }
 
       .cngx-treetable__first-data-cell {
-        padding-inline-start: calc(var(--cngx-row-depth, 0) * var(--cngx-treetable-indent-size, 1.25rem) + 0.875rem);
+        padding-inline-start: calc(
+          var(--cngx-row-depth, 0) * var(--cngx-treetable-indent-size, 1.25rem)
+            + var(--cngx-treetable-narrow-utility-padding-inline-large, 0.875rem)
+        );
       }
 
       .cngx-treetable__toggle {
-        padding: 0.5rem; /* ~44 px min touch target with the button's own size */
-        font-size: 1rem;
+        /* meets ~44px minimum touch target with the button's own size */
+        padding: var(--cngx-treetable-narrow-toggle-padding, 0.5rem);
+        font-size: var(--cngx-treetable-narrow-toggle-font-size, 1rem);
       }
     }
   }

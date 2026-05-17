@@ -1,10 +1,8 @@
 /*
- * form-errors.component.css — externalised from inline `styles:` for Phase 3
- * migration. Two @property tokens (font-size, color) registered in
- * @layer cngx.tokens; font-size uses syntax '*' because rem is forbidden in
- * a <length> initial-value. Anchor hover/focus rules live under @scope so
- * link styling reflects the inverted contrast pattern (underline by
- * default, removed on hover/focus).
+ * Visual skin for CngxFieldErrors. Two tokens drive the surface:
+ * --cngx-form-errors-font-size (syntax '*' allows rem) and
+ * --cngx-form-errors-color (falls back through --cngx-field-error-color
+ * to --cngx-color-danger). Anchor underline removed on hover/focus.
  */
 
 @layer cngx.tokens {

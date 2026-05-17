@@ -1,17 +1,7 @@
 /*
- * icon.component.css — display atom for icons (font glyph, SVG, image,
- * custom element). Sized relative to text-context via `em` so an icon
- * next to text always matches the running font.
- *
- * Migrated to @layer cngx.components + @scope (Phase 3). Component-token
- * registrations sit in @layer cngx.tokens alongside. ViewEncapsulation.None
- * on the @Component, which retires the old `::ng-deep` workaround for the
- * projected SVG selector.
- *
- * Three-Tier-Override:
- *   per-instance:   <cngx-icon style="--cngx-icon-color: oklch(0.6 0.2 25)">
- *   per-component:  @layer cngx.theme { :root { --cngx-icon-size-md: 1rem; } }
- *   per-system:     @layer cngx.theme { :root[data-density="compact"] { --cngx-icon-size-md: 1em; } }
+ * Display atom for icons (font glyph, SVG, image, custom element).
+ * Sized relative to text-context via `em` so an icon next to text
+ * matches the running font automatically.
  */
 
 @layer cngx.tokens {

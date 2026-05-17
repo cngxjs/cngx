@@ -1,15 +1,12 @@
 /*
- * speak-button.css — CngxSpeakButton skin.
+ * Visual skin for CngxSpeakButton. --cngx-speak-btn-active-color
+ * defaults to a warm orange (oklch(0.72 0.18 70)) rather than
+ * --cngx-color-primary so the speaking state visually distinguishes
+ * itself from primary actions. Brand-wide overrides target
+ * --cngx-speak-btn-active-color directly.
  *
- * Externalised from the component's inline `styles:` field (PR #105
- * CngxCopyBlock pattern). Loaded via the component's styleUrl, so
- * consumers don't need an extra @import. The Material-bridge mixin in
- * `speak-button-theme.scss` stays untouched.
- *
- * --cngx-speak-btn-active-color defaults to a warm orange (oklch(0.72
- * 0.18 70)) rather than --cngx-color-primary so the speaking state
- * visually distinguishes itself from primary actions. Brand-wide
- * override targets --cngx-speak-btn-active-color directly.
+ * A Material bridge for consumers who opt in lives in the sibling
+ * speak-button-theme.scss.
  */
 
 @layer cngx.tokens {

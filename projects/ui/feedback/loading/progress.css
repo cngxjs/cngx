@@ -1,14 +1,12 @@
 /*
- * progress.css — CngxProgress skin.
+ * Visual skin for CngxProgress. Two variants: linear bar and circular
+ * SVG ring. Both support determinate (value-bound) and indeterminate
+ * (animated). prefers-reduced-motion replaces the animation with a
+ * slow opacity pulse.
  *
- * Two variants: linear bar and circular SVG ring. Both support
- * determinate (value-bound) and indeterminate (animated). prefers-
- * reduced-motion replaces the animation with a slow opacity pulse.
- *
- * cngx-spin and cngx-pulse keyframes are shared with
- * loading-indicator.css — duplicate top-level declarations with
- * identical bodies are benign and keep this file self-sufficient
- * for Atomic-Decompose ejection.
+ * cngx-pulse keyframe is duplicated identically in
+ * loading-indicator.css so each file is self-contained under styleUrl
+ * bundling.
  */
 
 @layer cngx.tokens {
@@ -147,7 +145,7 @@
 }
 
 /* Duplicate of cngx-pulse from loading-indicator.css — kept for
- * Atomic-Decompose self-sufficiency, identical body. */
+ * keeping the file self-contained, identical body. */
 @keyframes cngx-pulse {
   0%,
   100% {

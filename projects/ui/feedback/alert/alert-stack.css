@@ -1,13 +1,10 @@
 /*
- * alert-stack.css — CngxAlertStack skin.
- *
- * Externalised from inline `styles:` (PR #105 pattern). Shares the
- * --cngx-alert-* token namespace with CngxAlert so an `:root`-level
- * theme override of e.g. --cngx-alert-success-bg propagates to both.
- * Tokens already registered by alert.css are NOT redundantly
- * re-registered here — only stack-specific tokens get @property
- * declarations (gap, reserve-height, message typography, overflow
- * button surface).
+ * Visual skin for CngxAlertStack. Shares the --cngx-alert-* token
+ * namespace with CngxAlert so a :root-level override of e.g.
+ * --cngx-alert-success-bg propagates to both. Tokens registered by
+ * alert.css are not redundantly re-registered here — only
+ * stack-specific tokens (gap, reserve-height, message typography,
+ * overflow button surface) get @property declarations.
  */
 
 @layer cngx.tokens {
@@ -133,7 +130,7 @@
 
 /* cngx-alert-enter keyframe is also declared in alert.css; the
  * duplicate is benign because the rule body is identical. Stack
- * file is self-sufficient when ejected via Atomic Decompose. */
+ * file is self-contained when ejected on its own. */
 
 @keyframes cngx-alert-enter {
   from {

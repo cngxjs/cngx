@@ -1,19 +1,10 @@
 /*
- * chip.component.css — visual skin of a single chip pill.
+ * Visual skin of a single chip pill. Tokens drive shape, padding,
+ * surface, and state colors; override per-instance via inline style,
+ * or per-theme via :root in the cngx.theme layer.
  *
- * Migrated to @layer cngx.components + @scope (Phase 3). Component-token
- * registrations live alongside in @layer cngx.tokens — they ship with the
- * bundled CSS so the typed defaults are available wherever a cngx-chip
- * lands. Encapsulation: None on the @Component lets the @scope wrapper
- * own isolation without Angular's hash attributes mixing in.
- *
- * Three-Tier-Override (per Plan §2.4):
- *   per-instance:   <cngx-chip style="--cngx-chip-bg: oklch(0.85 0.15 30)">
- *   per-component:  @layer cngx.theme { :root[data-theme="brand"] { --cngx-chip-radius: 4px; } }
- *   per-system:     @layer cngx.theme { :root[data-density="compact"] { --cngx-chip-padding-block: 0; } }
- *
- * Layout concerns of a CONTAINER rendering multiple chips (gap, flex-wrap)
- * stay with that container — e.g. CngxMultiSelect's shared chip-list rules.
+ * Layout of a CONTAINER rendering multiple chips (gap, flex-wrap)
+ * belongs to that container, not here.
  */
 
 @layer cngx.tokens {

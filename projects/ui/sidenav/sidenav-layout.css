@@ -2,16 +2,13 @@
  * Structural styles for CngxSidenavLayout — loaded via the layout
  * component's styleUrl. Targets multiple sibling-component tags
  * (cngx-sidenav-layout / cngx-sidenav / cngx-sidenav-content) — under
- * encapsulation:None these all match globally. No @scope wrap because
- * the rules span three component hosts; the cngx-sidenav- prefix is
- * the namespace.
+ * encapsulation:None these all match globally; the cngx-sidenav-
+ * prefix is the namespace.
  *
- * The Material-bridge mixins in `sidenav-theme.scss` and
- * `nav-link-theme.scss` stay untouched (Plan §10) — consumers using
- * `@include sidenav.theme($theme)` and `@include nav-link.theme($theme)`
- * keep their existing override path. Tokens registered here use
- * conservative defaults (transparent / currentColor / inherit) so the
- * "no defaults without theme" behaviour of the source SCSS is preserved.
+ * Tokens use conservative defaults (transparent, currentColor,
+ * inherit) so the "no defaults without theme" behavior is preserved.
+ * Material bridges for consumers who opt in live in the sibling
+ * sidenav-theme.scss and nav-link-theme.scss.
  */
 
 @layer cngx.tokens {

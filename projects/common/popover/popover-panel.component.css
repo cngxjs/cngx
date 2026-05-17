@@ -1,15 +1,12 @@
-/* cngx-popover-panel — default styling for the CngxPopoverPanel component.
+/*
+ * Default styling for CngxPopoverPanel. The host element is
+ * <cngx-popover-panel> and always carries the .cngx-popover-panel
+ * class via hostClass(); the CngxPopover host directive toggles
+ * transition classes (.cngx-popover--opening/-open/-closing).
  *
- * The host element is <cngx-popover-panel> and always carries the
- * .cngx-popover-panel class (via hostClass()). The CngxPopover host directive
- * toggles transition classes (.cngx-popover--opening/-open/-closing).
- *
- * Tokens keep the legacy --cngx-popover-panel-* prefix. Plan §709 (Phase 4 cleanup)
- * renames these to --cngx-popover-panel-*.
- *
- * Material-Bridge: the sibling popover-panel-theme.scss exports a Sass mixin
- * that derives the same tokens from a Material theme — that file stays SCSS
- * per Plan §10 (Material bridges remain untouched). */
+ * A sibling popover-panel-theme.scss exports a Sass mixin that derives
+ * the same tokens from a Material theme for consumers who opt in.
+ */
 
 @layer cngx.tokens {
   @property --cngx-popover-panel-bg                  { syntax: '<color>'; inherits: true;  initial-value: oklch(1 0 0); }

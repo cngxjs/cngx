@@ -48,35 +48,7 @@ import { CNGX_SELECT_SHELL_SEARCH_HOST } from './select-search-host';
       autocomplete="off"
     />
   `,
-  styles: `
-    :host {
-      display: block;
-      padding: var(--cngx-select-search-padding, 0.5rem);
-      border-bottom: var(
-        --cngx-select-search-divider,
-        1px solid var(--cngx-border, #e5e7eb)
-      );
-    }
-    .cngx-select-search__input {
-      width: 100%;
-      padding: var(--cngx-select-search-input-padding, 0.375rem 0.5rem);
-      border: var(
-        --cngx-select-search-input-border,
-        1px solid var(--cngx-border, #cbd5e1)
-      );
-      border-radius: var(--cngx-select-search-input-radius, 0.25rem);
-      background: var(--cngx-select-search-input-bg, transparent);
-      color: inherit;
-      font: inherit;
-    }
-    .cngx-select-search__input:focus-visible {
-      outline: var(
-        --cngx-select-search-focus-outline,
-        2px solid var(--cngx-focus-ring, #1976d2)
-      );
-      outline-offset: var(--cngx-select-search-focus-offset, 1px);
-    }
-  `,
+  styleUrl: './select-search.component.css',
 })
 export class CngxSelectSearch {
   /** Placeholder text on the input. */

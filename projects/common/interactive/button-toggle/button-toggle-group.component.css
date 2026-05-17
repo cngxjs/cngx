@@ -1,15 +1,8 @@
 /*
- * button-toggle-group.component.css — shared layout for both
- * CngxButtonToggleGroup (single-select) and CngxButtonMultiToggleGroup
- * (multi-select).
- *
- * Migrated to @layer cngx.tokens + @layer cngx.components + @scope (Phase 3).
- * The @scope selector list applies to both host classes — pre-migration the
- * CSS only matched the single-select variant despite both components pointing
- * at this file via styleUrl. Behaviour is preserved: row by default (the
- * --horizontal modifier is added by Angular on the default orientation), with
- * a :not() override flipping to column when neither --horizontal class is
- * present.
+ * Shared layout for CngxButtonToggleGroup (single-select) and
+ * CngxButtonMultiToggleGroup (multi-select). Row by default
+ * (--horizontal modifier); a :not() rule flips to column when
+ * neither --horizontal class is present.
  */
 
 @layer cngx.tokens {

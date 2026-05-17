@@ -1,23 +1,17 @@
 /*
- * @cngx/common/tabs — structural CSS shared by every tab-group skin.
+ * Structural CSS shared by every tab-group skin. Layout-only — no
+ * colors / sizes / borders / fonts beyond what's controlled via
+ * --cngx-tab-* custom properties. CngxTabGroup references this file
+ * via styleUrls; ng-packagr inlines it at publish time so consumers
+ * of @cngx/ui/tabs don't need @cngx/common/tabs at runtime.
  *
- * Layout-only — no colours / sizes / borders / fonts beyond what's
- * controlled via --cngx-tab-* custom properties (with fallbacks).
- * The Level-4 organism (`<cngx-tab-group>`) references this file via
- * styleUrls; ng-packagr inlines it at publish time so consumers of
- * `@cngx/ui/tabs` don't need `@cngx/common/tabs` at runtime for
- * styling.
+ * Headless directive use ([cngxTabGroup] on consumer-authored DOM)
+ * deliberately gets no styling from this file — consumers bring their
+ * own visual opinion.
  *
- * Headless directive use (`[cngxTabGroup]` on consumer-authored DOM)
- * deliberately gets no styling from this file — consumers bring
- * their own visual opinion.
- *
- * No @scope wrap: selectors are class-prefixed (.cngx-tabs__*) and
- * apply globally under CngxTabGroup's encapsulation:None. The
- * cngx-tabs- class prefix is the namespace — same pattern as
- * select-base.css from PR #109. The former `:host` selectors are
- * rewritten as `cngx-tab-group` since this file is only loaded by
- * that organism.
+ * Selectors are class-prefixed (.cngx-tabs__*) and apply globally
+ * under CngxTabGroup's encapsulation:None; the cngx-tabs- prefix is
+ * the namespace.
  */
 
 @layer cngx.tokens {

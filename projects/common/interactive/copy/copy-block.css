@@ -1,9 +1,7 @@
-/*
- * copy-block.css — externalised from inline `styles:` for Phase 3 migration.
- * @property declarations are top-level-only, so they can't live in the inline
- * string. Copied-state colours fall back to --cngx-color-success / surface so
- * a brand-theme change propagates to the confirmation visual.
- */
+/* Visual skin for CngxCopyBlock — copy-to-clipboard button with an
+ * idle and a copied-confirmation state. Copied-state colors fall back
+ * to --cngx-color-success / --cngx-color-surface so a brand-theme
+ * change propagates to the confirmation visual. */
 
 @layer cngx.tokens {
   @property --cngx-copy-block-gap                  { syntax: '<length>';     inherits: false; initial-value: 8px; }

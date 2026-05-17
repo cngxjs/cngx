@@ -1,10 +1,8 @@
 /*
- * multi-chip-group.component.css — flex layout container for CngxChip multi-select.
- *
- * Migrated to @layer cngx.tokens + @layer cngx.components + @scope (Phase 3).
- * Fallback chains through --cngx-chip-group-gap (sibling single-select group) then
- * --cngx-space-sm — keeps spacing parity between the two group types unless
- * consumer overrides one explicitly.
+ * Flex layout container for CngxChip in multi-select mode. The gap
+ * cascades through --cngx-chip-group-gap (sibling single-select
+ * container) and then --cngx-space-sm — spacing stays in sync between
+ * the two group types unless a consumer overrides one explicitly.
  */
 
 @layer cngx.tokens {
