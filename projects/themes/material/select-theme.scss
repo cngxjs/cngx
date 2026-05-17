@@ -134,16 +134,50 @@
   $scale: mat.get-theme-density($theme);
   $scale: math.max(-4, math.min(0, $scale));
 
-  // Material 3 menu/select options sit at 48px min-height with 12×16px
-  // padding, edge-to-edge with no inner radius and no panel inset around
-  // the option list. The highlight bar spans the full panel width.
-  $paddings:   (0: 12px 16px, -1: 10px 14px, -2: 8px 12px, -3: 6px 10px, -4: 4px 8px);
-  $min-heights:(0: 48px,      -1: 44px,      -2: 40px,     -3: 36px,    -4: 32px);
+  // Option metrics — Material 3 menu/select options.
+  $opt-paddings:   (0: 12px 16px, -1: 10px 14px, -2: 8px 12px, -3: 6px 10px, -4: 4px 8px);
+  $opt-min-heights:(0: 48px,      -1: 44px,      -2: 40px,     -3: 36px,    -4: 32px);
 
-  --cngx-select-option-padding: #{map.get($paddings, $scale)};
-  --cngx-select-option-min-height: #{map.get($min-heights, $scale)};
+  --cngx-select-option-padding: #{map.get($opt-paddings, $scale)};
+  --cngx-select-option-min-height: #{map.get($opt-min-heights, $scale)};
   --cngx-select-option-radius: 0;
   --cngx-select-panel-padding: 0;
+
+  // Trigger metrics — Material 3 outlined-input scale (56 / 52 / 48 / 44 / 40).
+  // Every Select-family variant exposes its own min-height / padding /
+  // radius tokens; this map drives them all in lock-step so the trigger
+  // surface reads like an <mat-form-field appearance='outline'> input.
+  $trig-min-heights: (0: 56px, -1: 52px, -2: 48px, -3: 44px, -4: 40px);
+  $trig-paddings:    (0: 0 16px, -1: 0 14px, -2: 0 12px, -3: 0 10px, -4: 0 8px);
+  $trig-radius: 4px; // var(--mat-sys-corner-extra-small)
+
+  --cngx-select-min-height: #{map.get($trig-min-heights, $scale)};
+  --cngx-select-padding: #{map.get($trig-paddings, $scale)};
+  --cngx-select-radius: #{$trig-radius};
+
+  --cngx-multi-select-min-height: #{map.get($trig-min-heights, $scale)};
+  --cngx-multi-select-padding: #{map.get($trig-paddings, $scale)};
+  --cngx-multi-select-radius: #{$trig-radius};
+
+  --cngx-combobox-min-height: #{map.get($trig-min-heights, $scale)};
+  --cngx-combobox-padding: #{map.get($trig-paddings, $scale)};
+  --cngx-combobox-radius: #{$trig-radius};
+
+  --cngx-typeahead-min-height: #{map.get($trig-min-heights, $scale)};
+  --cngx-typeahead-padding: #{map.get($trig-paddings, $scale)};
+  --cngx-typeahead-radius: #{$trig-radius};
+
+  --cngx-action-select-min-height: #{map.get($trig-min-heights, $scale)};
+  --cngx-action-select-padding: #{map.get($trig-paddings, $scale)};
+  --cngx-action-select-radius: #{$trig-radius};
+
+  --cngx-action-multi-select-min-height: #{map.get($trig-min-heights, $scale)};
+  --cngx-action-multi-select-padding: #{map.get($trig-paddings, $scale)};
+  --cngx-action-multi-select-radius: #{$trig-radius};
+
+  --cngx-reorderable-multi-select-min-height: #{map.get($trig-min-heights, $scale)};
+  --cngx-reorderable-multi-select-padding: #{map.get($trig-paddings, $scale)};
+  --cngx-reorderable-multi-select-radius: #{$trig-radius};
 }
 
 @mixin theme($theme) {
