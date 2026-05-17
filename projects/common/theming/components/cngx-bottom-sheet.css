@@ -1,13 +1,14 @@
-/* cngx-bottom-sheet — default styling for the CngxBottomSheet directive.
+/*
+ * Default styling for the CngxBottomSheet directive. Targets
+ * <dialog class="cngx-bottom-sheet"> (used together with cngxDialog).
+ * Overrides the UA top-layer centering for bottom-anchored positioning
+ * and renders a drag handle via ::before. Also rewrites the parent
+ * --cngx-dialog-* tokens so any cngx-dialog styling inherits
+ * bottom-sheet geometry.
  *
- * Targets <dialog class="cngx-bottom-sheet"> (used together with cngxDialog).
- * Overrides the UA top-layer centering for bottom-anchored positioning and
- * renders a drag handle via ::before. Also rewrites the parent dialog
- * tokens so any cngx-dialog styling inherits bottom-sheet geometry.
- *
- * Material-Bridge: the sibling bottom-sheet-theme.scss exports a Sass mixin
- * that derives the handle color from a Material theme (outline-variant) —
- * that file stays SCSS per Plan §10. */
+ * A Material bridge for consumers who opt in lives in the sibling
+ * bottom-sheet-theme.scss.
+ */
 
 @layer cngx.tokens {
   @property --cngx-bottom-sheet-radius        { syntax: '*';        inherits: false; initial-value: 16px 16px 0 0; }

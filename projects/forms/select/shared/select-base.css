@@ -326,7 +326,7 @@
    * Rules used by CngxReorderableMultiSelect and any future reorder-aware
    * chip surface (e.g. tag-input with user-defined ordering). The structural
    * parts live in select-base so the same ghost/handle look is available
-   * without a per-variant skin rewrite; every colour, shadow, and opacity is
+   * without a per-variant skin rewrite; every color, shadow, and opacity is
    * a `--cngx-select-chip-*` custom property, consumer-overridable.
    */
 

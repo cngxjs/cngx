@@ -1,5 +1,6 @@
-/* cngx-card — default styling for the CngxCard component and its slot
- * directives (CngxCardMedia/Header/Title/Subtitle/Body/Footer/Actions/Badge).
+/*
+ * Default styling for CngxCard and its slot directives
+ * (CngxCardMedia/Header/Title/Subtitle/Body/Footer/Actions/Badge).
  *
  * The host element <cngx-card> always carries the .cngx-card class.
  * Modifier classes drive state appearance:
@@ -13,21 +14,16 @@
  *   - Accent palette (--cngx-card-accent-color + --cngx-card-accent-{info,success,warning,danger}-bg)
  *   - Badge placement (badge-offset)
  *
- * Solid semantic colours come from foundation
+ * Solid semantic colors come from foundation
  * --cngx-color-{info,success,warning,danger} directly. Tinted-surface
  * variants for the card-accent classes carry the card-specific
- * --cngx-card-accent-*-bg namespace (no foundation analogue for tinted
- * surfaces — Plan §709 cleanup completed).
+ * --cngx-card-accent-*-bg namespace (no foundation analog for tinted
+ * surfaces).
  *
- * Material-Bridge: projects/ui/card-theme.scss writes the same tokens from
- * a Material theme. That SCSS bridge stays untouched per Plan §10 —
- * Material consumers keep their derived values; cngx-only consumers pick
- * up these defaults via the component's styleUrl bundling (Angular
- * injects them on first render).
- *
- * Ships via styleUrl bundling (Track A) — not aggregated in
- * @cngx/themes/cngx.css. Loading a CngxCard component automatically
- * pulls the CSS via Angular's per-component injection. */
+ * A Material bridge for consumers who opt in lives in
+ * projects/ui/card-theme.scss; it writes the same tokens from a
+ * Material theme.
+ */
 
 @layer cngx.tokens {
   /* Static layout */
@@ -64,12 +60,10 @@
   @property --cngx-card-accent-width     { syntax: '<length>'; inherits: false; initial-value: 3px; }
   @property --cngx-card-accent-color     { syntax: '<color>';  inherits: true;  initial-value: transparent; }
 
-  /* Card-specific tinted-surface variants. Solid semantic colours come
+  /* Card-specific tinted-surface variants. Solid semantic colors come
    * from foundation --cngx-color-{info,success,warning,danger} directly;
-   * the *-bg tints are card-specific (no foundation analogue) so they
-   * carry the --cngx-card-accent-* namespace. Phase 4 cleanup completed:
-   * --cngx-accent-* family dropped, solid colours folded into foundation,
-   * surface tints scoped to card. */
+   * the *-bg tints are card-specific (no foundation analog) so they
+   * carry the --cngx-card-accent-* namespace. */
   @property --cngx-card-accent-info-bg    { syntax: '<color>'; inherits: true; initial-value: oklch(0.97 0.03 250); }
   @property --cngx-card-accent-success-bg { syntax: '<color>'; inherits: true; initial-value: oklch(0.97 0.04 145); }
   @property --cngx-card-accent-warning-bg { syntax: '<color>'; inherits: true; initial-value: oklch(0.97 0.04 75); }
@@ -326,7 +320,7 @@
     }
   }
 
-  /* .cngx-sr-only duplicated locally for Atomic-Decompose self-sufficiency.
+  /* .cngx-sr-only duplicated locally so the file is self-contained when used standalone.
    * Canonical declaration lives in @cngx/core/theming/utilities.css;
    * identical body so the cascade is benign whether one or both load. */
   .cngx-sr-only {

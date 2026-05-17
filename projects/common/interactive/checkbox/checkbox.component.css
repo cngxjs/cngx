@@ -1,11 +1,9 @@
 /*
- * checkbox.component.css — interactive shell around <cngx-checkbox-indicator>.
- *
- * Migrated to @layer cngx.tokens + @layer cngx.components + @scope (Phase 3).
- * Token-sharing note: --cngx-checkbox-color and --cngx-checkbox-disabled-opacity
- * are registered by CngxCheckboxIndicator (which this component always renders
- * via its template). Re-declaring them here would fork the token vocabulary, so
- * this file registers only the checkbox-shell-specific tokens.
+ * Interactive shell around <cngx-checkbox-indicator>. Tokens
+ * --cngx-checkbox-color and --cngx-checkbox-disabled-opacity are
+ * registered by CngxCheckboxIndicator, which this component always
+ * renders via its template. Only checkbox-shell-specific tokens are
+ * registered here to avoid forking the token vocabulary.
  */
 
 @layer cngx.tokens {

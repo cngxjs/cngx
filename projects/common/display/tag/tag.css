@@ -1,21 +1,17 @@
 /*
- * tag.css — thematic skin of CngxTag.
- *
- * Migrated to @layer cngx.components + @scope (Phase 3). Structural
- * rules (display/flex/padding/density modifiers, label ellipsis hook)
- * stay in ./shared/tag-base.css. This file ships the colour cascade
- * plus the radius / font-weight tokens.
+ * Thematic skin of CngxTag — color cascade, radius, font-weight.
+ * Structural rules (display, flex, padding, density modifiers, label
+ * ellipsis) live in ./shared/tag-base.css.
  *
  * Per-color surfaces resolve through [data-color="…"] attribute
- * selectors so the open-string extensibility stays consumer-driven
- * (predefined keys cascade through --cngx-tag-{name}-* custom
- * properties; arbitrary keys ride the same selector pattern).
+ * selectors. Predefined keys cascade through --cngx-tag-{name}-*
+ * custom properties; arbitrary keys ride the same selector pattern,
+ * so consumers can introduce new color names without forking.
  *
- * Semantic colour fallbacks: --cngx-tag-{success|warning|error|info}-color
- * fall back to the corresponding --cngx-color-{success|warning|danger|info}
- * system tokens, so brand-theme changes propagate without per-component
- * overrides. Subtle-bg / filled-bg surfaces carry their own defaults
- * (no good system parent for tinted variants).
+ * Semantic color fallbacks: --cngx-tag-{success|warning|error|info}
+ * fall back to --cngx-color-{success|warning|danger|info} so a brand
+ * change propagates. Subtle/filled tinted surfaces carry their own
+ * defaults (no system token for tinted variants).
  */
 
 @layer cngx.tokens {
@@ -105,7 +101,7 @@
       --cngx-tag-border: 1px solid var(--cngx-tag-info-border, transparent);
     }
 
-    /* Outline variant — transparent fill, coloured stroke */
+    /* Outline variant — transparent fill, colored stroke */
     :scope.cngx-tag--outline[data-color='neutral'] {
       --cngx-tag-bg: transparent;
       --cngx-tag-color: var(--cngx-tag-neutral-color);

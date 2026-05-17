@@ -1,13 +1,9 @@
 /*
- * treetable.component.css — CngxTreetable (CDK-based) skin.
- *
- * Table-grid layout for an expandable, selectable tree. Indent is driven
- * by `--cngx-row-depth` set per row by the renderer, multiplied by
- * `--cngx-treetable-indent-size`. The narrow mobile breakpoint shrinks the
- * indent step and bumps tap-target sizing on the expand toggle.
- *
- * Tokens live under the `--cngx-treetable-*` legacy namespace (pre-rename
- * from "table" → "treetable"); namespace cleanup is Phase 4 work.
+ * CDK-based treetable. Table-grid layout for an expandable, selectable
+ * tree. Indent is driven by --cngx-row-depth set per row by the
+ * renderer, multiplied by --cngx-treetable-indent-size. The narrow
+ * mobile breakpoint shrinks the indent step and bumps tap-target
+ * sizing on the expand toggle.
  */
 
 @layer cngx.tokens {

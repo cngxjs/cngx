@@ -1,13 +1,7 @@
 /*
- * checkbox-indicator.component.css — visual skin for the two variants.
- *
- * Migrated to @layer cngx.components + @scope (Phase 3). Checked-state
- * fills + colors fall back through --cngx-color-primary so a brand
- * change in @layer cngx.theme propagates to selection visuals.
- *
- * The `.cngx-select__check` legacy alias (used in forms/select panels)
- * is applied from the consumer side (class binding on the host) — this
- * file knows nothing about it.
+ * Visual skin for the checkbox-indicator atom (checkbox + checkmark
+ * variants). Checked-state colors fall back through
+ * --cngx-color-primary so a brand change in cngx.theme propagates.
  */
 
 @layer cngx.tokens {
@@ -73,7 +67,7 @@
       user-select: none;
     }
 
-    /* checkmark variant — bare glyph, no box. Honour the checked colour directly. */
+    /* checkmark variant — bare glyph, no box. Honor the checked color directly. */
     :scope.cngx-checkbox-indicator--checkmark .cngx-checkbox-indicator__check,
     :scope.cngx-checkbox-indicator--checkmark .cngx-checkbox-indicator__dash {
       color: var(--cngx-checkbox-color, var(--cngx-color-primary, oklch(0.6 0.2 250)));

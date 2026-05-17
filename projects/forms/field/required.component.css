@@ -1,10 +1,8 @@
 /*
- * required.component.css — externalised from inline `styles:` for Phase 3
- * migration. The single token `--cngx-field-required-color` is the same
- * one CngxLabel uses — both atoms render the required marker, both pick up
- * the same custom property. Redeclaring @property here makes the file
- * self-sufficient (consumers can use <cngx-required> without CngxLabel).
- * The two declarations are identical, so the redundancy is benign.
+ * Visual skin for CngxRequired — the required marker rendered as a
+ * standalone atom. The single token --cngx-field-required-color is
+ * shared with CngxLabel, redeclared here so consumers can use
+ * <cngx-required> without also using CngxLabel.
  */
 
 @layer cngx.tokens {

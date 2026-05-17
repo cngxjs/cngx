@@ -1,28 +1,21 @@
 /*
- * cngx-async — visual state classes for `cngxAsyncClick` directive
+ * Visual state classes for the cngxAsyncClick directive
  * (@cngx/common/interactive). The directive sets `cngx-async--pending`,
  * `cngx-async--success`, `cngx-async--error` on its host whenever the
  * async action enters those phases.
  *
- * Track B (theming/components) because cngxAsyncClick is a @Directive
- * — Angular only allows styleUrl on @Component. The state classes can
- * be applied to any element (not nested under a single host) so the
- * rules must be globally available, which is what cngx.css aggregation
- * delivers.
+ * Lives under theming/components because Angular only allows styleUrl
+ * on @Component, not on @Directive. The state classes can be applied
+ * to any element so the rules must stay globally available.
  *
- * Tokens (--cngx-action-btn-*) intentionally use the action-button
- * namespace — CngxActionButton owns the primary look, the standalone
- * cngxAsyncClick variant inherits the same visual contract.
+ * Tokens reuse the action-button namespace (--cngx-action-btn-*) so
+ * the standalone cngxAsyncClick variant inherits the same visual
+ * contract as CngxActionButton.
  *
- * NOTE — pre-existing class-name mismatch: the directive emits
- *   cngx-async--success  and  cngx-async--error
- * but the rules below target
- *   cngx-async--succeeded and cngx-async--failed
- * (verbatim from the original action-button.css). Preserved as-is
- * during this refactor so behaviour stays identical. Fix is a
- * separate concern: either rename the rules to match the directive
- * (likely correct — see async-click.directive.ts:58-60) or rename
- * the directive's host bindings to match the rules.
+ * NOTE — known class-name mismatch: the directive emits
+ * cngx-async--success / cngx-async--error but the rules below target
+ * cngx-async--succeeded / cngx-async--failed. Tracked as a separate
+ * fix.
  */
 
 @layer cngx.components {

@@ -11,7 +11,7 @@
  * the defaults don't fit.
  *
  * Three-Tier-Override: --cngx-badge-* tokens cascade through @layer
- * cngx.theme; semantic colours fall back to system tokens.
+ * cngx.theme; semantic colors fall back to system tokens.
  */
 
 @layer cngx.tokens {

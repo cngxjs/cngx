@@ -4,9 +4,9 @@
  * Structural rules (column stack, row flex-wrap, gap + align
  * modifiers) live in ../tag/shared/tag-base.css — linked first by
  * the component's styleUrls array. The group is a neutral layout
- * container today (no colour, no border, no background) so this
+ * container today (no color, no border, no background) so this
  * file only registers the layout-related @property tokens; a future
- * thematic skin (e.g. backplate colour for a Material wrapper)
+ * thematic skin (e.g. backplate color for a Material wrapper)
  * lands here without changing the directive's style-link surface.
  */
 

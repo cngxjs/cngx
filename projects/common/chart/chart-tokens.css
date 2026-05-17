@@ -11,7 +11,7 @@
  * --cngx-scatter-color, --cngx-threshold-color, --cngx-band-color) live
  * inside their respective component style blocks and ALWAYS fall back
  * to a chart-level token, never to a hardcoded literal. Without atom-
- * local tokens, recolouring one line on a multi-layer chart would
+ * local tokens, recoloring one line on a multi-layer chart would
  * force overriding the global --cngx-chart-primary, shifting every
  * other layer too — a Pillar-3 violation (configuration-by-side-effect).
  *

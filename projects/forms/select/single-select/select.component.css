@@ -1,13 +1,9 @@
 /*
- * select.component.css — CngxSelect-specific skin.
- *
- * Holds ONLY the trigger-button visual + host layout — the parts that
- * differ per select-type. Panel frame, option rows, skeletons, spinners,
- * error banners, and refreshing indicators are shared via
- * `shared/select-base.css` (loaded through this component's `styleUrls`).
- *
- * This is the file the Atomic Decompose schematic ejects into the
- * consumer's project when they decompose CngxSelect.
+ * CngxSelect-specific skin. Holds ONLY the trigger-button visual and
+ * the host layout — the parts that differ per select-type. Panel
+ * frame, option rows, skeletons, spinners, error banners, and
+ * refreshing indicators are shared via shared/select-base.css
+ * (loaded through this component's styleUrls).
  */
 
 @layer cngx.tokens {

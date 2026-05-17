@@ -1,14 +1,11 @@
 /*
- * cngx-skeleton-shimmer.css — default shimmer animation for CngxSkeleton.
+ * Default shimmer animation for CngxSkeleton. Keyframe stays
+ * top-level (outside @layer) because it's already namespaced with
+ * cngx-skeleton- and keyframes resolve by name regardless of cascade
+ * layer.
  *
- * Shipped via @cngx/themes/cngx.css aggregation. The opt-in Sass mixin
- * in `skeleton-theme.scss` (`@mixin styles()`) stays unchanged so
- * dev-app and other Sass-consumers keep working without breakage —
- * tolerated duplication, same pattern as file-drop in PR #108.
- *
- * Keyframe stays top-level (outside @layer) because it's already
- * namespaced with cngx-skeleton- and keyframes resolve by name
- * regardless of cascade layer.
+ * A Material bridge for consumers who opt in lives in the sibling
+ * skeleton-theme.scss.
  */
 
 @layer cngx.tokens {

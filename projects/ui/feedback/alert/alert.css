@@ -1,15 +1,10 @@
 /*
- * alert.css — CngxAlert skin.
- *
- * Externalised from the component's inline `styles:` field (PR #105
- * CngxCopyBlock pattern). Loaded via styleUrl when the component
- * renders.
- *
- * Severity tokens use a tinted-surface family (--cngx-alert-{severity}-bg/
- * border/icon) with hardcoded oklch defaults — these are visually
- * distinct from --cngx-color-{success,danger,warning,info} which are
- * solid brand colours unsuitable for alert surfaces. Brand-wide
- * overrides target the severity-specific tokens directly.
+ * Visual skin for CngxAlert. Severity tokens use a tinted-surface
+ * family (--cngx-alert-{severity}-bg/border/icon) with their own
+ * defaults — visually distinct from --cngx-color-{success,danger,
+ * warning,info} which are solid brand colors unsuitable for alert
+ * surfaces. Brand-wide overrides target the severity-specific tokens
+ * directly.
  */
 
 @layer cngx.tokens {

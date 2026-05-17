@@ -1,17 +1,16 @@
 /*
- * cngx-action-button.css — default visuals for CngxActionButton and
- * any element carrying the cngxAsyncClick state classes.
+ * Default visuals for CngxActionButton. The component host has
+ * display:contents and renders a <button class="cngx-action-button
+ * cngx-action-button--{variant}"> inside.
  *
- * Shipped via @cngx/themes/cngx.css aggregation. The opt-in Sass mixin
- * in `action-button-theme.scss` (`@mixin styles()`) stays unchanged so
- * dev-app and other Sass-consumers keep working — tolerated
- * duplication, same pattern as file-drop in PR #108.
+ * Selectors are not @scope-wrapped because .cngx-action-button is the
+ * inner <button>, not the host — the cngx-action-button- class prefix
+ * is the namespace. The .cngx-async--* state classes (set by the
+ * cngxAsyncClick directive) live in @cngx/common/theming/components/
+ * cngx-async.css so they apply globally regardless of CngxActionButton.
  *
- * Selectors are not @scope-wrapped because:
- *   - .cngx-async--pending/succeeded/failed are state classes set by
- *     CngxAsyncClick on any element, not nested under a single host.
- *   - .cngx-action-button is the inner <button>, not the host.
- * The cngx-action-* / cngx-async-* class prefix is the namespace.
+ * A Material bridge for consumers who opt in lives in the sibling
+ * action-button-theme.scss.
  */
 
 @layer cngx.tokens {
@@ -157,8 +156,8 @@
     background: var(--cngx-action-btn-ghost-hover-bg, oklch(0 0 0 / 0.04));
   }
 
-  /* sr-only utility on the announcement span — duplicated locally for
-   * Atomic-Decompose self-sufficiency under styleUrl bundling. */
+  /* sr-only utility on the announcement span — duplicated locally so
+   * the file is self-contained under styleUrl bundling. */
   .cngx-action-button__sr-only {
     position: absolute;
     width: 1px;

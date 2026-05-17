@@ -1,14 +1,11 @@
 /*
- * material-treetable.component.css — CngxMaterialTreetable skin.
- *
- * Material-styled variant of the treetable, sharing the same `cdk-table`
- * shape and BEM classes but routing through Material's `mat-mdc-*`
- * selectors. Tokens stay under the `--cngx-mat-treetable-*` namespace
- * (Material-bridge convention per Plan §10) and are not given system-
- * token fallbacks — the consumer is expected to wire them via the
- * mat-treetable-theme.scss mixin (`@include treetable.theme($theme)`)
- * alongside their Material theme. Defaults below keep the component
- * usable even without the mixin.
+ * Material-styled variant of the treetable. Shares the same cdk-table
+ * shape and BEM classes as the CDK variant but routes through
+ * Material's mat-mdc-* selectors. Tokens carry the --cngx-mat-treetable-*
+ * namespace (Material-bridge convention) and are not given system-token
+ * fallbacks — consumers wire them via the mat-treetable-theme.scss mixin
+ * (@include treetable.theme($theme)) alongside their Material theme.
+ * Defaults below keep the component usable even without the mixin.
  */
 
 @layer cngx.tokens {

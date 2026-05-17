@@ -1,8 +1,4 @@
-/*
- * radio-group.component.css — flex layout container for CngxRadio leaves.
- *
- * Migrated to @layer cngx.tokens + @layer cngx.components + @scope (Phase 3).
- */
+/* Flex layout container for CngxRadio children. */
 
 @layer cngx.tokens {
   @property --cngx-radio-group-gap { syntax: '*'; inherits: false; initial-value: 0.5rem; }

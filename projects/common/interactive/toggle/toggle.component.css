@@ -1,10 +1,6 @@
 /*
- * toggle.component.css — Switch/toggle with own track + thumb visuals.
- *
- * Migrated to @layer cngx.tokens + @layer cngx.components + @scope (Phase 3).
- * Hex/RGBA defaults → OKLCH. Checked-state track falls back to
- * --cngx-color-primary so a brand change propagates. Legacy --cngx-primary
- * fallback dropped (was never registered in the foundation).
+ * Switch/toggle with track + thumb visuals. Checked-state track falls
+ * back to --cngx-color-primary so a brand change propagates.
  */
 
 @layer cngx.tokens {

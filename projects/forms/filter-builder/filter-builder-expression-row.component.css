@@ -1,15 +1,12 @@
 /*
- * filter-builder-expression-row.component.css — CngxFilterBuilderExpressionRow skin.
- *
  * Expression-row variant of CngxFilterBuilderRow. Same display:contents
- * shape and same `.cngx-filter-builder__expression` flex layout (rule
- * duplicated for Atomic-Decompose self-sufficiency), plus the
- * `.cngx-filter-expression-incomplete` state for an unfinished
- * expression (consumer hasn't filled all fields yet — dashed warning
- * outline).
+ * shape and the same .cngx-filter-builder__expression flex layout
+ * (rule duplicated so the file is self-contained when used standalone),
+ * plus the .cngx-filter-expression-incomplete state for an unfinished
+ * expression — dashed warning outline.
  *
- * --cngx-filter-builder-gap is owned by the parent and registered
- * there; here it's consumed via the var() fallback chain only.
+ * --cngx-filter-builder-gap is owned by the parent filter-builder file
+ * and consumed here via the var() fallback chain only.
  */
 
 @layer cngx.tokens {

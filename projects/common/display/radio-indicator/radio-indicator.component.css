@@ -1,10 +1,8 @@
 /*
- * radio-indicator.component.css — visual skin for the dot-in-circle atom.
- *
- * Migrated to @layer cngx.components + @scope (Phase 3). Mirrors
+ * Visual skin for the dot-in-circle radio indicator. Mirrors
  * CngxCheckboxIndicator's size scale so both atoms render at identical
- * visual weight inside a select panel. Checked-state colour falls back
- * to --cngx-color-primary.
+ * visual weight when placed side by side. Checked-state color falls
+ * back to --cngx-color-primary.
  */
 
 @layer cngx.tokens {
