@@ -1,68 +1,19 @@
+@use 'sass:map';
+@use 'sass:math';
 @use '@angular/material' as mat;
 
-// ─── cngx-card theming ──────────────────────────────────────
-//
-// Aligns card, metric, trend, badge, and timestamp tokens with
-// Material 3 surface and typography tokens.
+// Material bridge for CngxCard, CngxCardGrid, CngxMetric, CngxTrend,
+// CngxCardTimestamp, CngxCardSkeleton. Default visuals ship with the
+// components themselves; this file aligns colour, typography, and
+// density tokens with Material so cngx cards feel native alongside
+// <mat-card>.
 //
 //   @use '@angular/material' as mat;
 //   @use '@cngx/themes/material/card-theme' as card;
-//
-//   $theme: mat.define-theme((...));
-//
-//   html {
-//     @include mat.all-component-themes($theme);
-//     @include card.theme($theme);
-//   }
-
-// ─── Token definitions ──────────────────────────────────────────
-
-@mixin base() {
-  // Card
-  --cngx-card-padding: 16px;
-  --cngx-card-radius: 12px;
-  --cngx-card-bg: #fff;
-  --cngx-card-color: #1d1b20;
-  --cngx-card-border: 1px solid #c4c7c5;
-  --cngx-card-focus-width: 2px;
-  --cngx-card-focus-offset: 2px;
-  --cngx-card-focus-color: #6750a4;
-  --cngx-card-selected-border: #6750a4;
-  --cngx-card-selected-bar-width: 3px;
-  --cngx-card-disabled-opacity: 0.5;
-  --cngx-card-active-opacity: 0.88;
-  --cngx-card-badge-offset: -6px;
-  --cngx-card-divider: #c4c7c5;
-
-  // Metric
-  --cngx-metric-value-size: 1.75rem;
-  --cngx-metric-value-weight: 600;
-  --cngx-metric-value-color: #1d1b20;
-  --cngx-metric-unit-size: 0.875rem;
-  --cngx-metric-unit-color: #49454f;
-
-  // Trend
-  --cngx-trend-size: 0.8125rem;
-  --cngx-trend-weight: 500;
-  --cngx-trend-color: #49454f;
-  --cngx-trend-up-color: #22c55e;
-  --cngx-trend-down-color: #ef4444;
-
-  // Timestamp
-  --cngx-card-timestamp-size: 0.75rem;
-  --cngx-card-timestamp-color: #49454f;
-
-  // Skeleton
-  --cngx-skeleton-bg: #e0e0e0;
-  --cngx-skeleton-shimmer: #f5f5f5;
-
-  // Grid
-  --cngx-card-grid-min: 280px;
-}
+//   html { @include card.theme($theme); }
 
 @mixin color($theme) {
   @if mat.get-theme-version($theme) == 1 {
-    // M3
     --cngx-card-bg: var(--mat-sys-surface-container-low);
     --cngx-card-color: var(--mat-sys-on-surface);
     --cngx-card-border: 1px solid var(--mat-sys-outline-variant);
@@ -76,7 +27,6 @@
     --cngx-skeleton-bg: var(--mat-sys-surface-container-high);
     --cngx-skeleton-shimmer: var(--mat-sys-surface-container);
   } @else {
-    // M2
     --cngx-card-bg: #{mat.get-theme-color($theme, background, card)};
     --cngx-card-color: #{mat.get-theme-color($theme, foreground, text)};
     --cngx-card-border: 1px solid #{mat.get-theme-color($theme, foreground, divider)};
@@ -92,7 +42,8 @@
 
 @mixin typography($theme) {
   @if mat.get-theme-version($theme) == 1 {
-    // M3
+    --cngx-card-title-size: var(--mat-sys-title-medium-size, 1rem);
+    --cngx-card-subtitle-size: var(--mat-sys-body-medium-size, 0.875rem);
     --cngx-metric-value-size: var(--mat-sys-headline-medium-size, 1.75rem);
     --cngx-metric-value-weight: var(--mat-sys-headline-medium-weight, 600);
     --cngx-metric-unit-size: var(--mat-sys-body-medium-size, 0.875rem);
@@ -103,18 +54,16 @@
 }
 
 @mixin density($theme) {
-  // Touch devices: increase padding for comfortable tap targets
-  @media (hover: none) {
-    --cngx-card-padding: 20px;
-  }
-}
+  $scale: mat.get-theme-density($theme);
+  $scale: math.max(-4, math.min(0, $scale));
 
-// ─── Public entrypoint ──────────────────────────────────────────
+  $paddings: (0: 16px, -1: 14px, -2: 12px, -3: 10px, -4: 8px);
+  --cngx-card-padding: #{map.get($paddings, $scale)};
+}
 
 @mixin theme($theme) {
   @layer cngx.components {
     :where(cngx-card, cngx-card-grid, cngx-metric, cngx-trend, cngx-card-timestamp) {
-      @include base();
       @include color($theme);
       @include typography($theme);
       @include density($theme);

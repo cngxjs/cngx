@@ -1,9 +1,11 @@
+@use 'sass:map';
+@use 'sass:math';
 @use '@angular/material' as mat;
 
 // Material bridge for CngxPopoverPanel (+ CngxPopoverAction variants).
 // Default visuals ship with the component (popover-panel.component.css);
-// this file only overrides tokens Material has a stronger opinion about,
-// including the per-variant accent palette (info/success/warning/danger).
+// this file aligns colour, typography, density, and the per-variant
+// accent palette (info/success/warning/danger) with Material.
 //
 //   @use '@cngx/themes/material/popover-panel-theme' as panel;
 //   html { @include panel.theme($theme); }
@@ -46,10 +48,32 @@
   }
 }
 
+@mixin typography($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-popover-panel-header-font-size: var(--mat-sys-title-small-size, 0.875rem);
+    --cngx-popover-panel-header-font-weight: var(--mat-sys-title-small-weight, 600);
+  }
+}
+
+@mixin density($theme) {
+  $scale: mat.get-theme-density($theme);
+  $scale: math.max(-4, math.min(0, $scale));
+
+  $paddings:    (0: 16px, -1: 14px, -2: 12px, -3: 10px, -4: 8px);
+  $header-gaps: (0: 8px,  -1: 6px,  -2: 5px,  -3: 4px,  -4: 4px);
+  $footer-gaps: (0: 8px,  -1: 6px,  -2: 5px,  -3: 4px,  -4: 4px);
+
+  --cngx-popover-panel-padding: #{map.get($paddings, $scale)};
+  --cngx-popover-panel-header-gap: #{map.get($header-gaps, $scale)};
+  --cngx-popover-panel-footer-gap: #{map.get($footer-gaps, $scale)};
+}
+
 @mixin theme($theme) {
   @layer cngx.components {
     :where(cngx-popover-panel) {
       @include color($theme);
+      @include typography($theme);
+      @include density($theme);
     }
     @include _variant-colors($theme);
   }
