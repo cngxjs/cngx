@@ -70,9 +70,11 @@
 
 
 @mixin theme($theme) {
-  :where(cngx-speak-button) {
-    @include base();
-    @include color($theme);
-    @include density($theme);
+  @layer cngx.components {
+    :where(cngx-speak-button) {
+      @include base();
+      @include color($theme);
+      @include density($theme);
+    }
   }
 }

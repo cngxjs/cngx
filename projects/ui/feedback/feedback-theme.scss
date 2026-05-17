@@ -327,38 +327,40 @@
 }
 
 @mixin theme($theme) {
-  :where(.cngx-loading-indicator) {
-    @include loading-indicator-base();
-    @include loading-indicator-color($theme);
-  }
+  @layer cngx.components {
+    :where(.cngx-loading-indicator) {
+      @include loading-indicator-base();
+      @include loading-indicator-color($theme);
+    }
 
-  :where(.cngx-loading-overlay) {
-    @include loading-overlay-base();
-    @include loading-overlay-color($theme);
-  }
+    :where(.cngx-loading-overlay) {
+      @include loading-overlay-base();
+      @include loading-overlay-color($theme);
+    }
 
-  :where(.cngx-progress) {
-    @include progress-base();
-    @include progress-color($theme);
-  }
+    :where(.cngx-progress) {
+      @include progress-base();
+      @include progress-color($theme);
+    }
 
-  :where(.cngx-alert) {
-    @include alert-base();
-    @include alert-color($theme);
-  }
+    :where(.cngx-alert) {
+      @include alert-base();
+      @include alert-color($theme);
+    }
 
-  :where(.cngx-toast-outlet) {
-    @include toast-base();
-    @include toast-color($theme);
-  }
+    :where(.cngx-toast-outlet) {
+      @include toast-base();
+      @include toast-color($theme);
+    }
 
-  :where(.cngx-alert-stack) {
-    @include alert-stack-base();
-    @include alert-stack-color($theme);
-  }
+    :where(.cngx-alert-stack) {
+      @include alert-stack-base();
+      @include alert-stack-color($theme);
+    }
 
-  :where(.cngx-banner-outlet) {
-    @include banner-base();
-    @include banner-color($theme);
+    :where(.cngx-banner-outlet) {
+      @include banner-base();
+      @include banner-color($theme);
+    }
   }
 }

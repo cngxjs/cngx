@@ -115,11 +115,13 @@
 }
 
 @mixin theme($theme) {
-  :where(cngx-action-button),
-  :where([cngxAsyncClick]) {
-    @include base();
-    @include color($theme);
-  }
+  @layer cngx.components {
+    :where(cngx-action-button),
+    :where([cngxAsyncClick]) {
+      @include base();
+      @include color($theme);
+    }
 
-  @include styles();
+    @include styles();
+  }
 }

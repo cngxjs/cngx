@@ -63,10 +63,12 @@
 }
 
 @mixin theme($theme) {
-  :where(.cngx-skeleton) {
-    @include base();
-    @include color($theme);
-  }
+  @layer cngx.components {
+    :where(.cngx-skeleton) {
+      @include base();
+      @include color($theme);
+    }
 
-  @include styles();
+    @include styles();
+  }
 }
