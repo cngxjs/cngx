@@ -2,139 +2,164 @@
  * reorderable-multi-select.component.css — trigger skin for
  * CngxReorderableMultiSelect.
  *
- * The chip-strip layout, drag ghost, drop indicator, and handle cursor
- * live in shared/select-base.css under `.cngx-select__chip-*` so they
- * stay reusable by future reorder-aware trigger variants (tag-input
- * with user ordering, chip toolbars). This file only owns the
- * reorderable-specific trigger frame and placeholder — matched 1:1
- * with multi-select.component.css's surface so a consumer with a
- * CngxMultiSelect theme gets the reorderable variant for free.
+ * Chip-strip layout, drag ghost, drop indicator, and handle cursor live
+ * in shared/select-base.css under `.cngx-select__chip-*` so they stay
+ * reusable by future reorder-aware trigger variants (tag-input with
+ * user ordering, chip toolbars). This file owns the reorderable-specific
+ * trigger frame and placeholder — matched 1:1 with multi-select's
+ * surface so a consumer with a CngxMultiSelect theme gets the
+ * reorderable variant for free.
+ *
+ * Cascading fallback: var() chains step --cngx-reorderable-multi-select-*
+ * → --cngx-multi-select-* → --cngx-select-* → hardcoded. Registered
+ * @property values shadow the inner steps; consumers seeking brand-wide
+ * overrides should target --cngx-color-*.
  */
 
-/* ── Host + root wrapper ──────────────────────────────────────────── */
-
-:host {
-  display: inline-block;
-  position: relative;
-  font: inherit;
-  min-width: var(
-    --cngx-reorderable-multi-select-min-width,
-    var(--cngx-multi-select-min-width, var(--cngx-select-min-width, 10rem))
-  );
+@layer cngx.tokens {
+  @property --cngx-reorderable-multi-select-min-width           { syntax: '*'; inherits: false; initial-value: 10rem; }
+  @property --cngx-reorderable-multi-select-gap                 { syntax: '*'; inherits: false; initial-value: 0.5rem; }
+  @property --cngx-reorderable-multi-select-padding             { syntax: '*'; inherits: false; initial-value: 0.375rem 0.5rem; }
+  @property --cngx-reorderable-multi-select-border              { syntax: '*'; inherits: false; initial-value: 1px solid oklch(0.85 0.01 250); }
+  @property --cngx-reorderable-multi-select-radius              { syntax: '*'; inherits: false; initial-value: 0.25rem; }
+  @property --cngx-reorderable-multi-select-bg                  { syntax: '<color>'; inherits: false; initial-value: transparent; }
+  @property --cngx-reorderable-multi-select-color               { syntax: '*'; inherits: true;  initial-value: currentColor; }
+  @property --cngx-reorderable-multi-select-min-height          { syntax: '*'; inherits: false; initial-value: 2.25rem; }
+  @property --cngx-reorderable-multi-select-focus-outline       { syntax: '*'; inherits: false; initial-value: 2px solid oklch(0.6 0.2 250); }
+  @property --cngx-reorderable-multi-select-focus-offset        { syntax: '<length>'; inherits: false; initial-value: 2px; }
+  @property --cngx-reorderable-multi-select-disabled-opacity    { syntax: '<number>'; inherits: false; initial-value: 0.5; }
+  @property --cngx-reorderable-multi-select-placeholder-opacity { syntax: '<number>'; inherits: false; initial-value: 0.7; }
+  @property --cngx-reorderable-multi-select-clear-opacity       { syntax: '<number>'; inherits: false; initial-value: 0.6; }
 }
 
-.cngx-reorderable-multi-select__root {
-  display: contents;
-}
+@layer cngx.components {
+  @scope (.cngx-reorderable-multi-select) {
+    /* ── Host + root wrapper ──────────────────────────────────────── */
 
-/* ── Trigger ──────────────────────────────────────────────────────── */
+    :scope {
+      display: inline-block;
+      position: relative;
+      font: inherit;
+      min-width: var(
+        --cngx-reorderable-multi-select-min-width,
+        var(--cngx-multi-select-min-width, var(--cngx-select-min-width, 10rem))
+      );
+    }
 
-.cngx-reorderable-multi-select__trigger {
-  display: flex;
-  align-items: center;
-  gap: var(
-    --cngx-reorderable-multi-select-gap,
-    var(--cngx-multi-select-gap, var(--cngx-select-gap, 0.5rem))
-  );
-  width: 100%;
-  padding: var(
-    --cngx-reorderable-multi-select-padding,
-    var(--cngx-multi-select-padding, var(--cngx-select-padding, 0.375rem 0.5rem))
-  );
-  border: var(
-    --cngx-reorderable-multi-select-border,
-    var(
-      --cngx-multi-select-border,
-      var(--cngx-select-border, 1px solid var(--cngx-border, #c4c4c4))
-    )
-  );
-  border-radius: var(
-    --cngx-reorderable-multi-select-radius,
-    var(--cngx-multi-select-radius, var(--cngx-select-radius, 0.25rem))
-  );
-  background: var(
-    --cngx-reorderable-multi-select-bg,
-    var(--cngx-multi-select-bg, var(--cngx-select-bg, transparent))
-  );
-  color: var(
-    --cngx-reorderable-multi-select-color,
-    var(--cngx-multi-select-color, var(--cngx-select-color, inherit))
-  );
-  font: inherit;
-  cursor: pointer;
-  text-align: start;
-  justify-content: space-between;
-  flex-wrap: nowrap;
-  min-height: var(--cngx-reorderable-multi-select-min-height, 2.25rem);
-  user-select: none;
-}
+    .cngx-reorderable-multi-select__root {
+      display: contents;
+    }
 
-.cngx-reorderable-multi-select__trigger:focus-visible {
-  outline: var(
-    --cngx-reorderable-multi-select-focus-outline,
-    var(
-      --cngx-multi-select-focus-outline,
-      var(--cngx-select-focus-outline, 2px solid var(--cngx-focus-ring, #1976d2))
-    )
-  );
-  outline-offset: var(
-    --cngx-reorderable-multi-select-focus-offset,
-    var(--cngx-multi-select-focus-offset, var(--cngx-select-focus-offset, 2px))
-  );
-}
+    /* ── Trigger ──────────────────────────────────────────────────── */
 
-.cngx-reorderable-multi-select__trigger[aria-disabled='true'] {
-  opacity: var(
-    --cngx-reorderable-multi-select-disabled-opacity,
-    var(
-      --cngx-multi-select-disabled-opacity,
-      var(--cngx-select-disabled-opacity, 0.5)
-    )
-  );
-  cursor: not-allowed;
-}
+    .cngx-reorderable-multi-select__trigger {
+      display: flex;
+      align-items: center;
+      gap: var(
+        --cngx-reorderable-multi-select-gap,
+        var(--cngx-multi-select-gap, var(--cngx-select-gap, 0.5rem))
+      );
+      width: 100%;
+      padding: var(
+        --cngx-reorderable-multi-select-padding,
+        var(--cngx-multi-select-padding, var(--cngx-select-padding, 0.375rem 0.5rem))
+      );
+      border: var(
+        --cngx-reorderable-multi-select-border,
+        var(
+          --cngx-multi-select-border,
+          var(--cngx-select-border, 1px solid var(--cngx-color-border, oklch(0.85 0.01 250)))
+        )
+      );
+      border-radius: var(
+        --cngx-reorderable-multi-select-radius,
+        var(--cngx-multi-select-radius, var(--cngx-select-radius, 0.25rem))
+      );
+      background: var(
+        --cngx-reorderable-multi-select-bg,
+        var(--cngx-multi-select-bg, var(--cngx-select-bg, transparent))
+      );
+      color: var(
+        --cngx-reorderable-multi-select-color,
+        var(--cngx-multi-select-color, var(--cngx-select-color, inherit))
+      );
+      font: inherit;
+      cursor: pointer;
+      text-align: start;
+      justify-content: space-between;
+      flex-wrap: nowrap;
+      min-height: var(--cngx-reorderable-multi-select-min-height, 2.25rem);
+      user-select: none;
+    }
 
-/* ── Placeholder ──────────────────────────────────────────────────── */
+    .cngx-reorderable-multi-select__trigger:focus-visible {
+      outline: var(
+        --cngx-reorderable-multi-select-focus-outline,
+        var(
+          --cngx-multi-select-focus-outline,
+          var(--cngx-select-focus-outline, 2px solid var(--cngx-color-primary, oklch(0.6 0.2 250)))
+        )
+      );
+      outline-offset: var(
+        --cngx-reorderable-multi-select-focus-offset,
+        var(--cngx-multi-select-focus-offset, var(--cngx-select-focus-offset, 2px))
+      );
+    }
 
-.cngx-reorderable-multi-select__placeholder {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  opacity: var(
-    --cngx-reorderable-multi-select-placeholder-opacity,
-    var(--cngx-multi-select-placeholder-opacity, 0.7)
-  );
-}
+    .cngx-reorderable-multi-select__trigger[aria-disabled='true'] {
+      opacity: var(
+        --cngx-reorderable-multi-select-disabled-opacity,
+        var(
+          --cngx-multi-select-disabled-opacity,
+          var(--cngx-select-disabled-opacity, 0.5)
+        )
+      );
+      cursor: not-allowed;
+    }
 
-/* ── Clear-all button ─────────────────────────────────────────────── */
+    /* ── Placeholder ──────────────────────────────────────────────── */
 
-.cngx-reorderable-multi-select__clear-all {
-  flex: 0 0 auto;
-  appearance: none;
-  border: 0;
-  background: transparent;
-  color: inherit;
-  cursor: pointer;
-  padding: 0 0.25rem;
-  font: inherit;
-  opacity: var(
-    --cngx-reorderable-multi-select-clear-opacity,
-    var(--cngx-multi-select-clear-opacity, 0.6)
-  );
-}
+    .cngx-reorderable-multi-select__placeholder {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      opacity: var(
+        --cngx-reorderable-multi-select-placeholder-opacity,
+        var(--cngx-multi-select-placeholder-opacity, 0.7)
+      );
+    }
 
-.cngx-reorderable-multi-select__clear-all:hover {
-  opacity: 1;
-}
+    /* ── Clear-all button ─────────────────────────────────────────── */
 
-.cngx-reorderable-multi-select__clear-all:focus-visible {
-  outline: 2px solid var(--cngx-focus-ring, #1976d2);
-  border-radius: 0.125rem;
-}
+    .cngx-reorderable-multi-select__clear-all {
+      flex: 0 0 auto;
+      appearance: none;
+      border: 0;
+      background: transparent;
+      color: inherit;
+      cursor: pointer;
+      padding: 0 0.25rem;
+      font: inherit;
+      opacity: var(
+        --cngx-reorderable-multi-select-clear-opacity,
+        var(--cngx-multi-select-clear-opacity, 0.6)
+      );
+    }
 
-/* ── Caret ────────────────────────────────────────────────────────── */
+    .cngx-reorderable-multi-select__clear-all:hover {
+      opacity: 1;
+    }
 
-.cngx-reorderable-multi-select__caret {
-  flex: 0 0 auto;
-  opacity: 0.7;
+    .cngx-reorderable-multi-select__clear-all:focus-visible {
+      outline: 2px solid var(--cngx-color-primary, oklch(0.6 0.2 250));
+      border-radius: 0.125rem;
+    }
+
+    /* ── Caret ────────────────────────────────────────────────────── */
+
+    .cngx-reorderable-multi-select__caret {
+      flex: 0 0 auto;
+      opacity: 0.7;
+    }
+  }
 }

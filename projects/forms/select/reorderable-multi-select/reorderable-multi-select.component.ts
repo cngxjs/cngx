@@ -3,6 +3,7 @@ import {
   afterNextRender,
   ChangeDetectionStrategy,
   Component,
+  ViewEncapsulation,
   computed,
   contentChild,
   inject,
@@ -168,6 +169,7 @@ export interface CngxReorderableMultiSelectChange<T = unknown> {
     { provide: CNGX_SELECT_PANEL_VIEW_HOST, useExisting: CngxReorderableMultiSelect },
   ],
   host: {
+    'class': 'cngx-reorderable-multi-select',
     '[id]': 'resolvedId()',
     '[attr.aria-readonly]': 'ariaReadonly()',
   },
@@ -372,6 +374,7 @@ export interface CngxReorderableMultiSelectChange<T = unknown> {
     '../shared/select-base.css',
     './reorderable-multi-select.component.css',
   ],
+  encapsulation: ViewEncapsulation.None,
 })
 export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldControl {
   private readonly presenter = inject(CngxFormFieldPresenter, { optional: true });
