@@ -1,0 +1,37 @@
+{
+  "name": "@cngx/themes",
+  "version": "0.0.0-PLACEHOLDER",
+  "description": "Single-import default theme + example brand theme for the cngx Angular component library.",
+  "keywords": [
+    "cngx",
+    "angular",
+    "theme",
+    "css",
+    "tokens",
+    "cascade-layers"
+  ],
+  "author": "Christian Weiss <c.weiss@sobit.at>",
+  "license": "MIT",
+  "homepage": "https://github.com/cngxjs/cngx#readme",
+  "bugs": {
+    "url": "https://github.com/cngxjs/cngx/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cngxjs/cngx.git",
+    "directory": "projects/themes"
+  },
+  "peerDependencies": {
+    "@cngx/core": "0.0.0-PLACEHOLDER",
+    "@cngx/common": "0.0.0-PLACEHOLDER",
+    "@cngx/forms": "0.0.0-PLACEHOLDER",
+    "@cngx/ui": "0.0.0-PLACEHOLDER"
+  },
+  "sideEffects": [
+    "*.css"
+  ],
+  "exports": {
+    "./cngx.css": "./cngx.css",
+    "./example-brand.css": "./example-brand.css"
+  }
+}

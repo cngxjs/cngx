@@ -16,7 +16,11 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 const ROOT = resolve(__dirname, '..');
-const LIBS = ['utils', 'core', 'common', 'forms', 'data-display', 'ui'];
+const LIBS = ['utils', 'core', 'common', 'forms', 'data-display', 'ui', 'themes'];
+
+// CSS-only libs that don't have an angular.json build target — built via
+// a dedicated node script that copies sources to dist/<lib>/.
+const CSS_ONLY_LIBS = new Set(['themes']);
 const PLACEHOLDER = '0.0.0-PLACEHOLDER';
 
 function readRootPkg() {
@@ -164,7 +168,11 @@ function main() {
     console.log(`\n[${lib}]`);
 
     console.log('  Building...');
-    run(`npx ng build ${lib}`);
+    if (CSS_ONLY_LIBS.has(lib)) {
+      run(`npm run build:${lib}`);
+    } else {
+      run(`npx ng build ${lib}`);
+    }
 
     const distPkgPath = join(ROOT, 'dist', lib, 'package.json');
     const distPkg = JSON.parse(readFileSync(distPkgPath, 'utf8'));
@@ -174,6 +182,18 @@ function main() {
     }
 
     distPkg.version = nextVersion;
+
+    // peerDependencies may carry PLACEHOLDER (e.g. @cngx/themes pins
+    // peer @cngx/core/common/forms/ui to the same release). Rewrite
+    // those inline so the published package locks to the wave it ships
+    // with — keeps the cross-package version graph consistent.
+    if (distPkg.peerDependencies) {
+      for (const dep of Object.keys(distPkg.peerDependencies)) {
+        if (distPkg.peerDependencies[dep] === PLACEHOLDER) {
+          distPkg.peerDependencies[dep] = nextVersion;
+        }
+      }
+    }
 
     if (!dryRun) {
       writeFileSync(distPkgPath, JSON.stringify(distPkg, null, 2) + '\n');
