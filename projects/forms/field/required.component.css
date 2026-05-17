@@ -1,0 +1,26 @@
+/*
+ * required.component.css — externalised from inline `styles:` for Phase 3
+ * migration. The single token `--cngx-field-required-color` is the same
+ * one CngxLabel uses — both atoms render the required marker, both pick up
+ * the same custom property. Redeclaring @property here makes the file
+ * self-sufficient (consumers can use <cngx-required> without CngxLabel).
+ * The two declarations are identical, so the redundancy is benign.
+ */
+
+@layer cngx.tokens {
+  @property --cngx-field-required-color { syntax: '<color>'; inherits: true; initial-value: oklch(0.55 0.21 27); }
+}
+
+@layer cngx.components {
+  @scope (.cngx-required) {
+    :scope {
+      display: contents;
+    }
+
+    span {
+      color: var(--cngx-field-required-color,
+                  var(--cngx-field-error-color,
+                      var(--cngx-color-danger, oklch(0.55 0.21 27))));
+    }
+  }
+}
