@@ -2,6 +2,7 @@ import { NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
+  ViewEncapsulation,
   contentChild,
   contentChildren,
   ElementRef,
@@ -73,6 +74,7 @@ import {
     '../../common/tabs/styles/tabs-base.css',
     './tab-group.component.css',
   ],
+  encapsulation: ViewEncapsulation.None,
   hostDirectives: [
     {
       directive: CngxTabGroupPresenter,
@@ -94,6 +96,7 @@ import {
   providers: [{ provide: CNGX_TAB_PANEL_HOST, useExisting: CngxTabGroup }],
   templateUrl: './tab-group.component.html',
   host: {
+    'class': 'cngx-tab-group',
     role: 'group',
     '[attr.aria-roledescription]': 'announcements.tabsRoleDescription()',
     '[attr.aria-orientation]': 'presenter.orientation()',

@@ -2,78 +2,122 @@
  * `<cngx-tab-group>` thematic skin. Structural rules (flex / grid /
  * positioning, scroll-snap, sr-only, base color / background / sizes)
  * come from the shared `tabs-base.css` in `@cngx/common/tabs` —
- * single source of truth for the structural token defaults
- * (`--cngx-tab-color`, `--cngx-tab-bg`, `--cngx-tab-active-color`,
- * `--cngx-tab-padding`, `--cngx-tab-gap`, `--cngx-tab-focus-ring`,
- * `--cngx-tab-disabled-opacity`, `--cngx-tab-error-badge-color`,
- * `--cngx-tab-busy-spinner-*`). This file owns the skin-exclusive
- * tokens (ink-bar indicator, transition timing, hover affordance,
- * strip border) — those carry their fallbacks here.
+ * single source of truth for the structural token defaults. This
+ * file owns the skin-exclusive tokens (ink-bar indicator, transition
+ * timing, hover affordance, strip border).
  *
  * Tokens consumed but defined in tabs-base.css read with bare
  * `var(--cngx-tab-*)` (no second fallback) — the structural cascade
- * provides the default and a duplicate fallback would create a
- * second source of truth.
+ * provides the default and a duplicate fallback would create a second
+ * source of truth.
  */
 
-:host {
-  font: inherit;
+@layer cngx.tokens {
+  @property --cngx-tab-strip-border {
+    syntax: '*';
+    inherits: false;
+    initial-value: 1px solid currentColor;
+  }
+  @property --cngx-tab-indicator-thickness {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 2px;
+  }
+  @property --cngx-tab-transition-duration {
+    syntax: '<time>';
+    inherits: false;
+    initial-value: 0.15s;
+  }
+  @property --cngx-tab-hover-color {
+    syntax: '*';
+    inherits: true;
+    initial-value: currentColor;
+  }
+  @property --cngx-tab-active-indicator-color {
+    syntax: '*';
+    inherits: true;
+    initial-value: currentColor;
+  }
+  @property --cngx-tab-badge-size {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 1.25rem;
+  }
+  @property --cngx-tab-error-badge-text-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(1 0 0);
+  }
+  @property --cngx-tab-badge-font-size {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.75em;
+  }
+  @property --cngx-tab-badge-font-weight {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 700;
+  }
 }
 
-.cngx-tabs__strip {
-  border-bottom: var(--cngx-tab-strip-border, 1px solid currentColor);
-}
+@layer cngx.components {
+  @scope (.cngx-tab-group) {
+    :scope {
+      font: inherit;
+    }
 
-.cngx-tabs__tab {
-  position: relative;
-  border-bottom: var(--cngx-tab-indicator-thickness, 2px) solid transparent;
-  margin-bottom: calc(var(--cngx-tab-indicator-thickness, 2px) * -1);
-  transition:
-    color var(--cngx-tab-transition-duration, 0.15s) ease,
-    border-color var(--cngx-tab-transition-duration, 0.15s) ease;
-}
+    .cngx-tabs__strip {
+      border-bottom: var(--cngx-tab-strip-border, 1px solid currentColor);
+    }
 
-.cngx-tabs__tab:hover:not([aria-disabled='true']) {
-  color: var(--cngx-tab-hover-color, var(--cngx-tab-active-color));
-}
+    .cngx-tabs__tab {
+      position: relative;
+      border-bottom: var(--cngx-tab-indicator-thickness, 2px) solid transparent;
+      margin-bottom: calc(var(--cngx-tab-indicator-thickness, 2px) * -1);
+      transition:
+        color var(--cngx-tab-transition-duration, 0.15s) ease,
+        border-color var(--cngx-tab-transition-duration, 0.15s) ease;
+    }
 
-.cngx-tabs__tab[aria-selected='true'] {
-  color: var(--cngx-tab-active-color);
-  border-bottom-color: var(--cngx-tab-active-indicator-color, currentColor);
-}
+    .cngx-tabs__tab:hover:not([aria-disabled='true']) {
+      color: var(--cngx-tab-hover-color, var(--cngx-tab-active-color));
+    }
 
-:host([data-orientation='vertical']) .cngx-tabs__strip {
-  border-bottom: 0;
-  border-inline-end: var(--cngx-tab-strip-border, 1px solid currentColor);
-}
+    .cngx-tabs__tab[aria-selected='true'] {
+      color: var(--cngx-tab-active-color);
+      border-bottom-color: var(--cngx-tab-active-indicator-color, currentColor);
+    }
 
-:host([data-orientation='vertical']) .cngx-tabs__tab {
-  border-bottom: 0;
-  margin-bottom: 0;
-  border-inline-end: var(--cngx-tab-indicator-thickness, 2px) solid transparent;
-  margin-inline-end: calc(var(--cngx-tab-indicator-thickness, 2px) * -1);
-}
+    :scope[data-orientation='vertical'] .cngx-tabs__strip {
+      border-bottom: 0;
+      border-inline-end: var(--cngx-tab-strip-border, 1px solid currentColor);
+    }
 
-:host([data-orientation='vertical'])
-  .cngx-tabs__tab[aria-selected='true'] {
-  border-inline-end-color: var(
-    --cngx-tab-active-indicator-color,
-    currentColor
-  );
-}
+    :scope[data-orientation='vertical'] .cngx-tabs__tab {
+      border-bottom: 0;
+      margin-bottom: 0;
+      border-inline-end: var(--cngx-tab-indicator-thickness, 2px) solid transparent;
+      margin-inline-end: calc(var(--cngx-tab-indicator-thickness, 2px) * -1);
+    }
 
-.cngx-tabs__badge {
-  width: var(--cngx-tab-badge-size, 1.25rem);
-  height: var(--cngx-tab-badge-size, 1.25rem);
-  border-radius: 50%;
-  color: var(--cngx-tab-error-badge-text-color, white);
-  font-size: var(--cngx-tab-badge-font-size, 0.75em);
-  font-weight: var(--cngx-tab-badge-font-weight, 700);
-  line-height: 1;
-}
+    :scope[data-orientation='vertical'] .cngx-tabs__tab[aria-selected='true'] {
+      border-inline-end-color: var(--cngx-tab-active-indicator-color, currentColor);
+    }
 
-@media (prefers-reduced-motion: reduce) {
-  .cngx-tabs__tab {
-    transition: none !important;
+    .cngx-tabs__badge {
+      width: var(--cngx-tab-badge-size, 1.25rem);
+      height: var(--cngx-tab-badge-size, 1.25rem);
+      border-radius: 50%;
+      color: var(--cngx-tab-error-badge-text-color, oklch(1 0 0));
+      font-size: var(--cngx-tab-badge-font-size, 0.75em);
+      font-weight: var(--cngx-tab-badge-font-weight, 700);
+      line-height: 1;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .cngx-tabs__tab {
+        transition: none !important;
+      }
+    }
   }
 }

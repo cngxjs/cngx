@@ -2,6 +2,7 @@ import { NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
+  ViewEncapsulation,
   computed,
   contentChild,
   contentChildren,
@@ -78,6 +79,7 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [NgTemplateOutlet, CngxLiveRegion, CngxRovingItem],
   styleUrls: ['./styles/stepper-base.css', './stepper.component.css'],
+  encapsulation: ViewEncapsulation.None,
   hostDirectives: [
     {
       directive: CngxStepperPresenter,
@@ -96,6 +98,7 @@ import {
   providers: [{ provide: CNGX_STEP_PANEL_HOST, useExisting: CngxStepper }],
   templateUrl: './stepper.component.html',
   host: {
+    'class': 'cngx-stepper',
     'role': 'group',
     '[attr.aria-roledescription]': 'stepperRoleDescription()',
     '[attr.aria-orientation]': 'presenter.orientation()',

@@ -46,7 +46,7 @@ import { CngxSidenav } from './sidenav';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  styleUrl: './sidenav-layout.scss',
+  styleUrl: './sidenav-layout.css',
   host: {
     '[class.cngx-sidenav-layout]': 'true',
     '[class.cngx-sidenav-layout--ready]': 'ready()',
