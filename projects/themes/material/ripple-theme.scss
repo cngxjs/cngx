@@ -8,7 +8,7 @@
 /// - `--cngx-ripple-duration`: animation duration (default: `0.5s`)
 ///
 /// @example
-///   @use '@cngx/common/interactive/ripple-theme' as ripple;
+///   @use '@cngx/themes/material/ripple-theme' as ripple;
 ///   html { @include ripple.theme($theme); }
 ///   [data-theme='dark'] { @include ripple.theme($dark-theme); }
 

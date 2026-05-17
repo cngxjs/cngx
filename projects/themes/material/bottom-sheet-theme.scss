@@ -2,7 +2,7 @@
 
 // Include in your global theme stylesheet:
 //
-//   @use '@cngx/common/dialog/bottom-sheet-theme' as bottom-sheet;
+//   @use '@cngx/themes/material/bottom-sheet-theme' as bottom-sheet;
 //   @include bottom-sheet.theme($theme);
 
 @mixin base() {

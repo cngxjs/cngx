@@ -250,10 +250,10 @@ The delay is configurable per element via `[pressableReleaseDelay]`.
 
 ## Material Theme
 
-A Material theme mixin is available in `ripple-theme.scss`:
+A Material theme mixin is available in `@cngx/themes/material/ripple-theme.scss`:
 
 ```scss
-@use '@cngx/common/interactive/ripple-theme' as ripple;
+@use '@cngx/themes/material/ripple-theme' as ripple;
 
 $theme: mat.define-theme((...));
 
