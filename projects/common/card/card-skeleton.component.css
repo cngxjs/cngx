@@ -29,7 +29,7 @@
    */
   @property --cngx-skeleton-bg {
     syntax: '<color>';
-    inherits: false;
+    inherits: true;
     initial-value: oklch(0.88 0.005 250);
   }
 
@@ -39,7 +39,7 @@
    */
   @property --cngx-skeleton-shimmer {
     syntax: '<color>';
-    inherits: false;
+    inherits: true;
     initial-value: oklch(0.96 0.005 250);
   }
 
@@ -71,6 +71,27 @@
     syntax: '*';
     inherits: false;
     initial-value: 0.875rem;
+  }
+
+  /* Dark-mode swap — placeholder bg sits one step above the dark
+   * surface; shimmer one step above that. Both tokens flipped to
+   * `inherits: true` so this `:root` cascade reaches the gradient
+   * fill on `.cngx-card-skeleton__media` etc. */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-color-scheme='light']) {
+      --cngx-skeleton-bg: oklch(0.32 0.005 250);
+      --cngx-skeleton-shimmer: oklch(0.42 0.005 250);
+    }
+  }
+
+  [data-color-scheme='dark'] {
+    --cngx-skeleton-bg: oklch(0.32 0.005 250);
+    --cngx-skeleton-shimmer: oklch(0.42 0.005 250);
+  }
+
+  [data-color-scheme='light'] {
+    --cngx-skeleton-bg: oklch(0.88 0.005 250);
+    --cngx-skeleton-shimmer: oklch(0.96 0.005 250);
   }
 }
 

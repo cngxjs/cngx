@@ -48,6 +48,25 @@
     inherits: true;
     initial-value: 400;
   }
+
+  /* Dark-mode swap — muted text inverts to a soft light gray so
+   * the timestamp keeps its secondary-information weight relative
+   * to body text on either surface. */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-color-scheme='light']):not(.light) {
+      --cngx-card-timestamp-color: oklch(0.72 0.02 290);
+    }
+  }
+
+  [data-color-scheme='dark'],
+  .dark {
+    --cngx-card-timestamp-color: oklch(0.72 0.02 290);
+  }
+
+  [data-color-scheme='light'],
+  .light {
+    --cngx-card-timestamp-color: oklch(0.36 0.02 290);
+  }
 }
 
 @layer cngx.components {
