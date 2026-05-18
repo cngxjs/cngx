@@ -113,7 +113,7 @@ import {
     },
   ],
   template: `<ng-content />`,
-  styleUrl: './button-toggle-group.component.css',
+  styleUrls: ['./button-toggle-group.component.css'],
   encapsulation: ViewEncapsulation.None,
 })
 export class CngxButtonMultiToggleGroup<T = unknown>

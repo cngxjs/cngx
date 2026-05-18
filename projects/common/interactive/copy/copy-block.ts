@@ -53,7 +53,7 @@ import { CngxCopyText } from './copy-text.directive';
       </span>
     </button>
   `,
-  styleUrl: './copy-block.css',
+  styleUrls: ['./copy-block.css'],
 })
 export class CngxCopyBlock {
   /** The text value to copy to clipboard. */

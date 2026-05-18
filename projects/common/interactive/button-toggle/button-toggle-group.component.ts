@@ -99,7 +99,7 @@ import {
     { provide: CNGX_FORM_FIELD_CONTROL, useExisting: CngxButtonToggleGroup },
   ],
   template: `<ng-content />`,
-  styleUrl: './button-toggle-group.component.css',
+  styleUrls: ['./button-toggle-group.component.css'],
   encapsulation: ViewEncapsulation.None,
 })
 export class CngxButtonToggleGroup<T = unknown>

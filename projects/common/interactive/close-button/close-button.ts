@@ -69,7 +69,7 @@ export const CNGX_CLOSE_ICON = new InjectionToken<Type<unknown>>('CngxCloseIcon'
       </ng-content>
     </button>
   `,
-  styleUrl: './close-button.css',
+  styleUrls: ['./close-button.css'],
 })
 export class CngxCloseButton {
   /**

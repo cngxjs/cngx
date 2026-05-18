@@ -1,7 +1,20 @@
-/* Flex layout container for CngxRadio children. */
+/**
+ * @overview
+ * Default visuals for `CngxRadioGroup` — a flex layout container for
+ * `<cngx-radio>` children. Stacks vertically by default;
+ * `.cngx-radio-group--horizontal` flips to a row.
+ */
 
 @layer cngx.tokens {
-  @property --cngx-radio-group-gap { syntax: '*'; inherits: false; initial-value: 0.5rem; }
+  /**
+   * Gap between radio children. Falls back to `--cngx-space-sm`.
+   * @group Layout
+   */
+  @property --cngx-radio-group-gap {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.5rem;
+  }
 }
 
 @layer cngx.components {

@@ -107,7 +107,7 @@ import {
     { provide: CNGX_FORM_FIELD_CONTROL, useExisting: CngxRadioGroup },
   ],
   template: `<ng-content />`,
-  styleUrl: './radio-group.component.css',
+  styleUrls: ['./radio-group.component.css'],
   encapsulation: ViewEncapsulation.None,
 })
 export class CngxRadioGroup<T = unknown>

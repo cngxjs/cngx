@@ -119,7 +119,7 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
     { provide: CNGX_FORM_FIELD_CONTROL, useExisting: CngxCheckboxGroup },
   ],
   template: `<ng-content />`,
-  styleUrl: './checkbox-group.component.css',
+  styleUrls: ['./checkbox-group.component.css'],
   encapsulation: ViewEncapsulation.None,
 })
 export class CngxCheckboxGroup<T = unknown>

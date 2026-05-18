@@ -1,10 +1,20 @@
-/*
- * Flex layout container for CngxCheckbox children. The gap token
- * falls back to --cngx-space-sm.
+/**
+ * @overview
+ * Default visuals for `CngxCheckboxGroup` — a flex layout container
+ * for `<cngx-checkbox>` children. Stacks vertically by default;
+ * `.cngx-checkbox-group--horizontal` flips to a wrapping row.
  */
 
 @layer cngx.tokens {
-  @property --cngx-checkbox-group-gap { syntax: '*'; inherits: false; initial-value: 0.5rem; }
+  /**
+   * Gap between checkbox children. Falls back to `--cngx-space-sm`.
+   * @group Layout
+   */
+  @property --cngx-checkbox-group-gap {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.5rem;
+  }
 }
 
 @layer cngx.components {

@@ -1,21 +1,76 @@
-/*
- * Interactive shell around <cngx-radio-indicator>. Visual state
- * (filled circle vs ring) lives on the inner indicator; the
- * .cngx-radio--checked / .cngx-radio--disabled host classes are
- * unstyled here and exposed as consumer-theming hooks.
+/**
+ * @overview
+ * Default visuals for the interactive shell around
+ * `<cngx-radio-indicator>`. Visual state (filled circle vs ring)
+ * lives on the inner indicator; the `.cngx-radio--checked` /
+ * `.cngx-radio--disabled` host classes are unstyled here and exposed
+ * as consumer-theming hooks.
  *
- * CngxRadioIndicator owns --cngx-radio-indicator-* (separate
- * namespace); this file registers shell-specific --cngx-radio-*
- * tokens without overlap.
+ * `CngxRadioIndicator` owns the `--cngx-radio-indicator-*` namespace;
+ * this file registers shell-specific `--cngx-radio-*` tokens without
+ * overlap.
  */
 
 @layer cngx.tokens {
-  @property --cngx-radio-gap               { syntax: '*';        inherits: false; initial-value: 0.5rem; }
-  @property --cngx-radio-color             { syntax: '*';  inherits: true;  initial-value: currentColor; }
-  @property --cngx-radio-disabled-opacity  { syntax: '<number>'; inherits: false; initial-value: 0.5; }
-  @property --cngx-radio-focus-outline     { syntax: '*';        inherits: false; initial-value: 2px solid currentColor; }
-  @property --cngx-radio-focus-offset      { syntax: '*';        inherits: false; initial-value: 2px; }
-  @property --cngx-radio-focus-radius      { syntax: '*';        inherits: false; initial-value: 0.25rem; }
+  /**
+   * Gap between the indicator and the label slot.
+   * @group Layout
+   */
+  @property --cngx-radio-gap {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.5rem;
+  }
+
+  /**
+   * Text colour of the host shell. Defaults to `currentColor`.
+   * @group Surface
+   */
+  @property --cngx-radio-color {
+    syntax: '*';
+    inherits: true;
+    initial-value: currentColor;
+  }
+
+  /**
+   * Opacity multiplier applied by `.cngx-radio--disabled`.
+   * @group State / Disabled
+   */
+  @property --cngx-radio-disabled-opacity {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 0.5;
+  }
+
+  /**
+   * Focus-ring outline shorthand.
+   * @group State / Focus
+   */
+  @property --cngx-radio-focus-outline {
+    syntax: '*';
+    inherits: false;
+    initial-value: 2px solid currentColor;
+  }
+
+  /**
+   * Outline offset of the focus ring.
+   * @group State / Focus
+   */
+  @property --cngx-radio-focus-offset {
+    syntax: '*';
+    inherits: false;
+    initial-value: 2px;
+  }
+
+  /**
+   * Corner radius applied while focused.
+   * @group State / Focus
+   */
+  @property --cngx-radio-focus-radius {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.25rem;
+  }
 }
 
 @layer cngx.components {

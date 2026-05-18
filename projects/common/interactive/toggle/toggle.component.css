@@ -1,28 +1,186 @@
-/*
- * Switch/toggle with track + thumb visuals. Checked-state track falls
- * back to --cngx-color-primary so a brand change propagates.
+/**
+ * @overview
+ * Default visuals for `CngxToggle` — switch with track + thumb. The
+ * checked-state track falls back to `--cngx-color-primary` so a
+ * brand override in `@layer cngx.theme` propagates.
+ *
+ * Pair with `@cngx/themes/material/interactive-controls-theme` for
+ * a Material 3 switch surface.
  */
 
 @layer cngx.tokens {
-  @property --cngx-toggle-gap              { syntax: '*';        inherits: false; initial-value: 0.5rem; }
-  @property --cngx-toggle-color            { syntax: '*';  inherits: true;  initial-value: currentColor; }
-  @property --cngx-toggle-disabled-opacity { syntax: '<number>'; inherits: false; initial-value: 0.5; }
-  @property --cngx-toggle-focus-outline    { syntax: '*';        inherits: false; initial-value: 2px solid currentColor; }
-  @property --cngx-toggle-focus-offset     { syntax: '*';        inherits: false; initial-value: 2px; }
-  @property --cngx-toggle-focus-radius     { syntax: '*';        inherits: false; initial-value: 0.25rem; }
-  @property --cngx-toggle-transition       { syntax: '*';        inherits: false; initial-value: 150ms ease; }
+  /**
+   * Gap between the track and the label slot. Falls back to
+   * `--cngx-space-sm`.
+   * @group Layout
+   */
+  @property --cngx-toggle-gap {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.5rem;
+  }
 
-  @property --cngx-toggle-track-width   { syntax: '*'; inherits: false; initial-value: 2.25rem; }
-  @property --cngx-toggle-track-height  { syntax: '*'; inherits: false; initial-value: 1.25rem; }
-  @property --cngx-toggle-track-radius  { syntax: '<length>'; inherits: false; initial-value: 9999px; }
-  @property --cngx-toggle-track-bg-off  { syntax: '<color>';  inherits: false; initial-value: oklch(0 0 0 / 0.25); }
-  @property --cngx-toggle-track-bg-on   { syntax: '<color>';  inherits: false; initial-value: oklch(0.55 0.22 260); }
+  /**
+   * Text colour of the host shell. Defaults to `currentColor`.
+   * @group Surface
+   */
+  @property --cngx-toggle-color {
+    syntax: '*';
+    inherits: true;
+    initial-value: currentColor;
+  }
 
-  @property --cngx-toggle-thumb-inset   { syntax: '*'; inherits: false; initial-value: 0.125rem; }
-  @property --cngx-toggle-thumb-size    { syntax: '*'; inherits: false; initial-value: 1rem; }
-  @property --cngx-toggle-thumb-travel  { syntax: '*'; inherits: false; initial-value: 1rem; }
-  @property --cngx-toggle-thumb-bg      { syntax: '<color>';  inherits: false; initial-value: oklch(1 0 0); }
-  @property --cngx-toggle-thumb-shadow  { syntax: '*';        inherits: false; initial-value: 0 1px 2px oklch(0 0 0 / 0.25); }
+  /**
+   * Opacity multiplier applied by `.cngx-toggle--disabled`.
+   * @group State / Disabled
+   */
+  @property --cngx-toggle-disabled-opacity {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 0.5;
+  }
+
+  /**
+   * Focus-ring outline shorthand.
+   * @group State / Focus
+   */
+  @property --cngx-toggle-focus-outline {
+    syntax: '*';
+    inherits: false;
+    initial-value: 2px solid currentColor;
+  }
+
+  /**
+   * Outline offset of the focus ring.
+   * @group State / Focus
+   */
+  @property --cngx-toggle-focus-offset {
+    syntax: '*';
+    inherits: false;
+    initial-value: 2px;
+  }
+
+  /**
+   * Corner radius applied while focused.
+   * @group State / Focus
+   */
+  @property --cngx-toggle-focus-radius {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.25rem;
+  }
+
+  /**
+   * Transition duration + easing for the track/thumb animation.
+   * @group Motion
+   */
+  @property --cngx-toggle-transition {
+    syntax: '*';
+    inherits: false;
+    initial-value: 150ms ease;
+  }
+
+  /**
+   * Width of the track pill.
+   * @group Layout
+   */
+  @property --cngx-toggle-track-width {
+    syntax: '*';
+    inherits: false;
+    initial-value: 2.25rem;
+  }
+
+  /**
+   * Height of the track pill.
+   * @group Layout
+   */
+  @property --cngx-toggle-track-height {
+    syntax: '*';
+    inherits: false;
+    initial-value: 1.25rem;
+  }
+
+  /**
+   * Corner radius of the track. Defaults to a full pill.
+   * @group Layout
+   */
+  @property --cngx-toggle-track-radius {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 9999px;
+  }
+
+  /**
+   * Background of the off-state track — neutral muted by default.
+   * @group State / Off
+   */
+  @property --cngx-toggle-track-bg-off {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: oklch(0 0 0 / 0.25);
+  }
+
+  /**
+   * Background of the on-state track. Falls back to
+   * `--cngx-color-primary`.
+   * @group State / On
+   * @see [[--cngx-color-primary]]
+   */
+  @property --cngx-toggle-track-bg-on {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: oklch(0.66 0.19 50);
+  }
+
+  /**
+   * Inset of the thumb inside the track (resting position).
+   * @group Layout
+   */
+  @property --cngx-toggle-thumb-inset {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.125rem;
+  }
+
+  /**
+   * Diameter of the circular thumb.
+   * @group Layout
+   */
+  @property --cngx-toggle-thumb-size {
+    syntax: '*';
+    inherits: false;
+    initial-value: 1rem;
+  }
+
+  /**
+   * Horizontal translation applied to the thumb when checked.
+   * @group State / On
+   */
+  @property --cngx-toggle-thumb-travel {
+    syntax: '*';
+    inherits: false;
+    initial-value: 1rem;
+  }
+
+  /**
+   * Background of the thumb.
+   * @group Surface
+   */
+  @property --cngx-toggle-thumb-bg {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: oklch(1 0 0);
+  }
+
+  /**
+   * Drop-shadow applied to the thumb so it lifts off the track.
+   * @group Surface
+   */
+  @property --cngx-toggle-thumb-shadow {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0 1px 2px oklch(0 0 0 / 0.25);
+  }
 }
 
 @layer cngx.components {
@@ -64,7 +222,7 @@
     }
 
     :scope.cngx-toggle--checked .cngx-toggle__track {
-      background: var(--cngx-toggle-track-bg-on, var(--cngx-color-primary, oklch(0.55 0.22 260)));
+      background: var(--cngx-toggle-track-bg-on, var(--cngx-color-primary, oklch(0.66 0.19 50)));
     }
 
     .cngx-toggle__thumb {

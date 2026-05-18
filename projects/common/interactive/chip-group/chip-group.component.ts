@@ -105,7 +105,7 @@ import {
     { provide: CNGX_FORM_FIELD_CONTROL, useExisting: CngxChipGroup },
   ],
   template: `<ng-content />`,
-  styleUrl: './chip-group.component.css',
+  styleUrls: ['./chip-group.component.css'],
   encapsulation: ViewEncapsulation.None,
 })
 export class CngxChipGroup<T = unknown>

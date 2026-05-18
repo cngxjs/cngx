@@ -100,7 +100,7 @@ import {
       [attr.aria-hidden]="disabledReason() ? null : 'true'"
     >{{ disabledReason() }}</span>
   `,
-  styleUrl: './radio.component.css',
+  styleUrls: ['./radio.component.css'],
   encapsulation: ViewEncapsulation.None,
 })
 export class CngxRadio<T = unknown> {
