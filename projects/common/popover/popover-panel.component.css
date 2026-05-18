@@ -1,34 +1,233 @@
-/*
- * Default styling for CngxPopoverPanel. The host element is
- * <cngx-popover-panel> and always carries the .cngx-popover-panel
- * class via hostClass(); the CngxPopover host directive toggles
- * transition classes (.cngx-popover--opening/-open/-closing).
+/**
+ * @overview
+ * Default visuals for `CngxPopoverPanel`. The host element is
+ * `<cngx-popover-panel>` and always carries the `.cngx-popover-panel`
+ * class via `hostClass()`; the `CngxPopover` host directive toggles
+ * transition classes (`.cngx-popover--opening` / `-open` / `-closing`).
  *
- * A sibling popover-panel-theme.scss exports a Sass mixin that derives
- * the same tokens from a Material theme for consumers who opt in.
+ * Surface tokens fall back through the foundation
+ * `--cngx-color-surface` / `--cngx-color-text` so brand overrides
+ * propagate. The four semantic-variant accent palettes
+ * (`info` / `success` / `warning` / `danger`) carry their own
+ * default surfaces — they sit outside the foundation primary so
+ * an Ember-toned theme can't accidentally tint a "success" panel.
+ *
+ * Pair with `@cngx/themes/material/popover-panel-theme` for
+ * Material 3 surface + shadow.
  */
 
 @layer cngx.tokens {
-  @property --cngx-popover-panel-bg                  { syntax: '<color>'; inherits: true;  initial-value: oklch(1 0 0); }
-  @property --cngx-popover-panel-color               { syntax: '<color>'; inherits: true;  initial-value: oklch(0.27 0.04 250); }
-  @property --cngx-popover-panel-border-radius       { syntax: '<length>'; inherits: false; initial-value: 12px; }
-  @property --cngx-popover-panel-padding             { syntax: '<length>'; inherits: false; initial-value: 16px; }
-  @property --cngx-popover-panel-max-width           { syntax: '<length>'; inherits: false; initial-value: 360px; }
-  @property --cngx-popover-panel-shadow              { syntax: '*';        inherits: false; initial-value: 0 8px 24px oklch(0 0 0 / 0.12); }
-  @property --cngx-popover-panel-border              { syntax: '*';        inherits: true;  initial-value: 1px solid oklch(0 0 0 / 0.08); }
-  @property --cngx-popover-panel-arrow-size          { syntax: '<length>'; inherits: true;  initial-value: 8px; }
-  @property --cngx-popover-panel-close-size          { syntax: '<length>'; inherits: true;  initial-value: 28px; }
-  @property --cngx-popover-panel-transition-duration { syntax: '<time>';   inherits: true;  initial-value: 200ms; }
-  @property --cngx-popover-panel-transition-easing   { syntax: '*';        inherits: true;  initial-value: cubic-bezier(0.4, 0, 0.2, 1); }
-  @property --cngx-popover-panel-header-font-size    { syntax: '*';        inherits: true;  initial-value: 0.875rem; }
-  @property --cngx-popover-panel-header-font-weight  { syntax: '<number>'; inherits: true;  initial-value: 600; }
-  @property --cngx-popover-panel-header-gap          { syntax: '<length>'; inherits: true;  initial-value: 8px; }
-  @property --cngx-popover-panel-footer-gap          { syntax: '<length>'; inherits: true;  initial-value: 8px; }
-  @property --cngx-popover-panel-footer-border-top   { syntax: '*';        inherits: true;  initial-value: 1px solid oklch(0 0 0 / 0.06); }
-  @property --cngx-popover-panel-footer-padding-top  { syntax: '<length>'; inherits: true;  initial-value: 12px; }
-  @property --cngx-popover-panel-footer-margin-top   { syntax: '<length>'; inherits: true;  initial-value: 12px; }
-  @property --cngx-popover-panel-accent              { syntax: '*';        inherits: true;  initial-value: transparent; }
-  @property --cngx-popover-panel-accent-text         { syntax: '*';        inherits: true;  initial-value: currentColor; }
+  /**
+   * Panel background. Falls back through `--cngx-color-surface`.
+   * @group Surface
+   * @see [[--cngx-color-surface]]
+   */
+  @property --cngx-popover-panel-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(1 0 0);
+  }
+
+  /**
+   * Panel text colour. Falls back through `--cngx-color-text`.
+   * @group Surface
+   * @see [[--cngx-color-text]]
+   */
+  @property --cngx-popover-panel-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.27 0.04 250);
+  }
+
+  /**
+   * Corner radius of the panel.
+   * @group Layout
+   */
+  @property --cngx-popover-panel-border-radius {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 12px;
+  }
+
+  /**
+   * Padding shorthand applied inside the panel.
+   * @group Layout
+   */
+  @property --cngx-popover-panel-padding {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 16px;
+  }
+
+  /**
+   * Maximum inline size — caps long content before the floater
+   * collides with viewport edges.
+   * @group Layout
+   */
+  @property --cngx-popover-panel-max-width {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 360px;
+  }
+
+  /**
+   * Drop-shadow shorthand for the panel.
+   * @group Surface
+   */
+  @property --cngx-popover-panel-shadow {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0 8px 24px oklch(0 0 0 / 0.12);
+  }
+
+  /**
+   * Border shorthand for the panel.
+   * @group Surface
+   */
+  @property --cngx-popover-panel-border {
+    syntax: '*';
+    inherits: true;
+    initial-value: 1px solid oklch(0 0 0 / 0.08);
+  }
+
+  /**
+   * Side length of the arrow square (the rotated 45° diamond — final
+   * arrow side reads as `size * sqrt(2)`).
+   * @group Layout
+   */
+  @property --cngx-popover-panel-arrow-size {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 8px;
+  }
+
+  /**
+   * Diameter of the optional close button in the header row.
+   * @group Layout
+   */
+  @property --cngx-popover-panel-close-size {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 28px;
+  }
+
+  /**
+   * Duration of the opacity + transform transition between the open
+   * states.
+   * @group Motion
+   */
+  @property --cngx-popover-panel-transition-duration {
+    syntax: '<time>';
+    inherits: true;
+    initial-value: 200ms;
+  }
+
+  /**
+   * Easing curve of the open / close transition.
+   * @group Motion
+   */
+  @property --cngx-popover-panel-transition-easing {
+    syntax: '*';
+    inherits: true;
+    initial-value: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /**
+   * Font-size of the optional header slot.
+   * @group Typography
+   */
+  @property --cngx-popover-panel-header-font-size {
+    syntax: '*';
+    inherits: true;
+    initial-value: 0.875rem;
+  }
+
+  /**
+   * Font-weight of the optional header slot.
+   * @group Typography
+   */
+  @property --cngx-popover-panel-header-font-weight {
+    syntax: '<number>';
+    inherits: true;
+    initial-value: 600;
+  }
+
+  /**
+   * Vertical gap between the header and the body slot.
+   * @group Layout
+   */
+  @property --cngx-popover-panel-header-gap {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 8px;
+  }
+
+  /**
+   * Horizontal gap between footer actions.
+   * @group Layout
+   */
+  @property --cngx-popover-panel-footer-gap {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 8px;
+  }
+
+  /**
+   * Border shorthand applied to the top of the footer — visually
+   * separates actions from the body.
+   * @group Surface
+   */
+  @property --cngx-popover-panel-footer-border-top {
+    syntax: '*';
+    inherits: true;
+    initial-value: 1px solid oklch(0 0 0 / 0.06);
+  }
+
+  /**
+   * Padding above the footer divider.
+   * @group Layout
+   */
+  @property --cngx-popover-panel-footer-padding-top {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 12px;
+  }
+
+  /**
+   * Margin above the footer divider — pulls the footer down off the
+   * body.
+   * @group Layout
+   */
+  @property --cngx-popover-panel-footer-margin-top {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 12px;
+  }
+
+  /**
+   * Accent surface for the semantic-variant rules
+   * (`.cngx-popover-panel--info` / `--success` / `--warning` /
+   * `--danger`). Each variant rule pins this token plus the matching
+   * accent-text token — child slots pick them up through
+   * `currentColor` and `var()` fallbacks.
+   * @group Variant / Accent
+   */
+  @property --cngx-popover-panel-accent {
+    syntax: '*';
+    inherits: true;
+    initial-value: transparent;
+  }
+
+  /**
+   * Text / outline colour paired with the accent surface — used by
+   * focus rings and the variant border-left rule.
+   * @group Variant / Accent
+   */
+  @property --cngx-popover-panel-accent-text {
+    syntax: '*';
+    inherits: true;
+    initial-value: currentColor;
+  }
 }
 
 @layer cngx.components {
@@ -185,7 +384,7 @@
     }
     :scope.cngx-popover-panel--success {
       --cngx-popover-panel-accent: oklch(0.94 0.07 155);
-      --cngx-popover-panel-accent-text: oklch(0.42 0.10 155);
+      --cngx-popover-panel-accent-text: oklch(0.42 0.1 155);
       border-left: 3px solid var(--cngx-popover-panel-accent-text);
     }
     :scope.cngx-popover-panel--warning {
@@ -209,7 +408,7 @@
     }
 
     .cngx-popover-panel__error {
-      color: var(--cngx-color-danger, oklch(0.60 0.22 25));
+      color: var(--cngx-color-danger, oklch(0.6 0.22 25));
     }
 
     .cngx-popover-panel__empty {

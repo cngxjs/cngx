@@ -1,31 +1,154 @@
-/*
- * Default styling for the CngxTooltip directive. The directive renders
- * a <div class="cngx-tooltip"> on demand and adds transition classes
- * (.cngx-popover--opening/-open/-closing) via the underlying
- * CngxPopover state machine.
+/**
+ * @overview
+ * Default visuals for the `CngxTooltip` directive. The directive
+ * renders a `<div class="cngx-tooltip">` on demand and adds transition
+ * classes (`.cngx-popover--opening` / `-open` / `-closing`) via the
+ * underlying `CngxPopover` state machine.
  *
- * Touch devices get larger padding + font-size by default for
- * readability (@media (hover: none)).
+ * Surface defaults to a charcoal-on-light-text pill — intentionally
+ * neutral so it stays out of the brand-colour conversation. Touch
+ * devices get larger padding + font-size by default for readability
+ * (`@media (hover: none)`).
  *
- * A Material bridge for consumers who opt in lives in the sibling
- * tooltip-theme.scss. The optional tooltip-indicator.scss (::after
- * icon next to triggers) remains a Sass opt-in mixin.
+ * The optional `tooltip-indicator.scss` (the `::after` info-icon next
+ * to triggers) is a Sass opt-in mixin and ships outside this file.
+ * Pair with `@cngx/themes/material/tooltip-theme` for the Material 3
+ * inverse-surface palette.
  */
 
 @layer cngx.tokens {
-  @property --cngx-tooltip-bg                  { syntax: '<color>';  inherits: true;  initial-value: oklch(0.20 0.005 290); }
-  @property --cngx-tooltip-color               { syntax: '<color>';  inherits: true;  initial-value: oklch(0.96 0.005 290); }
-  @property --cngx-tooltip-font-family         { syntax: '*';        inherits: true;  initial-value: system-ui; }
-  @property --cngx-tooltip-font-size           { syntax: '*';        inherits: true;  initial-value: 0.75rem; }
-  @property --cngx-tooltip-line-height         { syntax: '*';        inherits: true;  initial-value: 1rem; }
-  @property --cngx-tooltip-font-weight         { syntax: '<number>'; inherits: true;  initial-value: 400; }
-  @property --cngx-tooltip-letter-spacing      { syntax: '*';        inherits: true;  initial-value: 0.033em; }
-  @property --cngx-tooltip-padding-block       { syntax: '<length>'; inherits: false; initial-value: 4px; }
-  @property --cngx-tooltip-padding-inline      { syntax: '<length>'; inherits: false; initial-value: 8px; }
-  @property --cngx-tooltip-border-radius       { syntax: '<length>'; inherits: false; initial-value: 4px; }
-  @property --cngx-tooltip-max-width           { syntax: '<length>'; inherits: false; initial-value: 200px; }
-  @property --cngx-tooltip-transition-duration { syntax: '<time>';   inherits: false; initial-value: 150ms; }
-  @property --cngx-tooltip-transition-easing   { syntax: '*';        inherits: false; initial-value: cubic-bezier(0.4, 0, 0.2, 1); }
+  /**
+   * Tooltip surface colour — defaults to a near-black charcoal.
+   * @group Surface
+   */
+  @property --cngx-tooltip-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.2 0.005 290);
+  }
+
+  /**
+   * Tooltip text colour — defaults to near-white to pair with the
+   * default charcoal surface.
+   * @group Surface
+   */
+  @property --cngx-tooltip-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.96 0.005 290);
+  }
+
+  /**
+   * Font-family stack. Inherits `system-ui` from the foundation.
+   * @group Typography
+   */
+  @property --cngx-tooltip-font-family {
+    syntax: '*';
+    inherits: true;
+    initial-value: system-ui;
+  }
+
+  /**
+   * Font-size of the tooltip text.
+   * @group Typography
+   */
+  @property --cngx-tooltip-font-size {
+    syntax: '*';
+    inherits: true;
+    initial-value: 0.75rem;
+  }
+
+  /**
+   * Line-height of the tooltip text.
+   * @group Typography
+   */
+  @property --cngx-tooltip-line-height {
+    syntax: '*';
+    inherits: true;
+    initial-value: 1rem;
+  }
+
+  /**
+   * Font-weight of the tooltip text.
+   * @group Typography
+   */
+  @property --cngx-tooltip-font-weight {
+    syntax: '<number>';
+    inherits: true;
+    initial-value: 400;
+  }
+
+  /**
+   * Letter-spacing — a touch of tracking lifts legibility at the
+   * small font-size.
+   * @group Typography
+   */
+  @property --cngx-tooltip-letter-spacing {
+    syntax: '*';
+    inherits: true;
+    initial-value: 0.033em;
+  }
+
+  /**
+   * Block-axis padding.
+   * @group Layout
+   */
+  @property --cngx-tooltip-padding-block {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 4px;
+  }
+
+  /**
+   * Inline-axis padding.
+   * @group Layout
+   */
+  @property --cngx-tooltip-padding-inline {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 8px;
+  }
+
+  /**
+   * Corner radius.
+   * @group Layout
+   */
+  @property --cngx-tooltip-border-radius {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 4px;
+  }
+
+  /**
+   * Maximum inline size — caps long tooltip content before it wraps
+   * into too narrow a column.
+   * @group Layout
+   */
+  @property --cngx-tooltip-max-width {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 200px;
+  }
+
+  /**
+   * Duration of the open / close transition.
+   * @group Motion
+   */
+  @property --cngx-tooltip-transition-duration {
+    syntax: '<time>';
+    inherits: false;
+    initial-value: 150ms;
+  }
+
+  /**
+   * Easing curve of the open / close transition.
+   * @group Motion
+   */
+  @property --cngx-tooltip-transition-easing {
+    syntax: '*';
+    inherits: false;
+    initial-value: cubic-bezier(0.4, 0, 0.2, 1);
+  }
 }
 
 @layer cngx.components {
@@ -37,15 +160,14 @@
       margin: 0;
       box-sizing: border-box;
 
-      background: var(--cngx-tooltip-bg, oklch(0.20 0.005 290));
+      background: var(--cngx-tooltip-bg, oklch(0.2 0.005 290));
       color: var(--cngx-tooltip-color, oklch(0.96 0.005 290));
       font-family: var(--cngx-tooltip-font-family, inherit);
       font-size: var(--cngx-tooltip-font-size, 0.75rem);
       line-height: var(--cngx-tooltip-line-height, 1rem);
       font-weight: var(--cngx-tooltip-font-weight, 400);
       letter-spacing: var(--cngx-tooltip-letter-spacing, 0.033em);
-      padding: var(--cngx-tooltip-padding-block, 4px)
-               var(--cngx-tooltip-padding-inline, 8px);
+      padding: var(--cngx-tooltip-padding-block, 4px) var(--cngx-tooltip-padding-inline, 8px);
       border-radius: var(--cngx-tooltip-border-radius, 4px);
       max-width: var(--cngx-tooltip-max-width, 200px);
       width: max-content;

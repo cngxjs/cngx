@@ -9,7 +9,7 @@ const localRules = require('./tools/eslint-rules');
 
 module.exports = tseslint.config(
 
-    // ── TypeScript source files ──────────────────────────────────────────────
+    // TypeScript source files 
     {
         files: ['**/*.ts'],
         extends: [
@@ -53,7 +53,7 @@ module.exports = tseslint.config(
                 'error',
                 { prefer: 'type-imports', fixStyle: 'inline-type-imports' },
             ],
-            
+
             curly: ['error', 'all'],
             'no-console': ['warn', { allow: ['warn', 'error', 'info'] }],
             eqeqeq: ['error', 'always', { null: 'ignore' }],
@@ -62,7 +62,7 @@ module.exports = tseslint.config(
         },
     },
 
-    // ── libs: no class suffixes, require host metadata, cngx prefix ──────────
+    // libs: no class suffixes, require host metadata, cngx prefix 
     {
         files: ['projects/core/**/*.ts', 'projects/forms/**/*.ts', 'projects/ui/**/*.ts', 'projects/common/**/*.ts'],
         rules: {
@@ -73,7 +73,7 @@ module.exports = tseslint.config(
         },
     },
 
-    // ── chart layer/axis atoms: attribute selectors on <svg:g> hosts ─────────
+    // chart layer/axis atoms: attribute selectors on <svg:g> hosts 
     // The `[cngxAxis]`, `[cngxLine]`, `[cngxArea]`, `[cngxBar]`, `[cngxScatter]`,
     // `[cngxThreshold]`, `[cngxBand]` components are intentionally attribute-only:
     // an element selector inside `<svg>` would create an XHTML-namespaced custom
@@ -94,7 +94,7 @@ module.exports = tseslint.config(
         },
     },
 
-    // ── HTML templates ────────────────────────────────────────────────────────
+    // HTML templates 
     {
         files: ['**/*.html'],
         plugins: {
@@ -112,7 +112,7 @@ module.exports = tseslint.config(
         },
     },
 
-    // ── External-package allowlists ──────────────────────────────────────────
+    // External-package allowlists ──
     // Sheriff filters externals out before the dep-rule check, so the
     // "common ↛ @angular/material" / "utils ↛ @angular/*" invariants from
     // CLAUDE.md are enforced here rather than in sheriff.config.ts. Keep
@@ -154,7 +154,7 @@ module.exports = tseslint.config(
         },
     },
 
-    // ── Sheriff architecture enforcement ─────────────────────────────────────
+    // Sheriff architecture enforcement 
     // Reads sheriff.config.ts at the workspace root. Applies to library
     // sources and dev-app demos so that demos cannot reach into a library's
     // internals. Specs/e2e/playwright.config.ts stay globally ignored.
@@ -167,7 +167,7 @@ module.exports = tseslint.config(
         },
     },
 
-    // ── dev-app: relax non-Sheriff rules ─────────────────────────────────────
+    // dev-app: relax non-Sheriff rules 
     // dev-app was previously globally ignored. Removing it from the global
     // ignore list is required to give Sheriff bite there, but the demos have
     // never been linted against the library's strict TS rules. Keep those
@@ -214,43 +214,43 @@ module.exports = tseslint.config(
         },
     },
 
-    // ── Ignored paths ─────────────────────────────────────────────────────────
+    // Ignored paths 
     {
         ignores: ['dist/', 'node_modules/', '.angular/', 'out-tsc/', 'docs/', '**/*.spec.ts', 'playwright.config.ts', 'e2e/', 'sheriff.config.ts', 'projects/**/examples/**', 'examples/**'],
     },
 
-  // Re-enable rules that Prettier disables but we want to enforce.
-  // dev-app is excluded — its overrides above keep curly off until the
-  // demos are cleaned up in a separate pass.
-  {
-    files: ['**/*.ts'],
-    ignores: ['dev-app/**/*.ts'],
-    rules: {
-      curly: ['error', 'all'],
+    // Re-enable rules that Prettier disables but we want to enforce.
+    // dev-app is excluded — its overrides above keep curly off until the
+    // demos are cleaned up in a separate pass.
+    {
+        files: ['**/*.ts'],
+        ignores: ['dev-app/**/*.ts'],
+        rules: {
+            curly: ['error', 'all'],
+        },
     },
-  },
 
-  // Level-4 organism class-body LOC guard. Pillar 3 contract:
-  // organism shells stay thin (under 150 source lines of class
-  // body) so brain logic decomposes into Level-2 helper factories
-  // under @cngx/common/<lib>. Scoped to component/directive files
-  // in the five organism libs.
-  {
-    files: [
-      'projects/ui/tabs/**/*.component.ts',
-      'projects/ui/tabs/**/*.directive.ts',
-      'projects/ui/stepper/**/*.component.ts',
-      'projects/ui/stepper/**/*.directive.ts',
-      'projects/ui/mat-stepper/**/*.component.ts',
-      'projects/ui/mat-stepper/**/*.directive.ts',
-      'projects/ui/mat-tabs/**/*.component.ts',
-      'projects/ui/mat-tabs/**/*.directive.ts',
-    ],
-    plugins: { local: localRules },
-    rules: {
-      // Threshold ratchet history (150 → 180 → 200) and per-bump
-      // rationale: `.internal/architektur/tabs-accepted-debt.md §8`.
-      'local/level-4-organism-loc-guard': ['error', { threshold: 200 }],
+    // Level-4 organism class-body LOC guard. Pillar 3 contract:
+    // organism shells stay thin (under 150 source lines of class
+    // body) so brain logic decomposes into Level-2 helper factories
+    // under @cngx/common/<lib>. Scoped to component/directive files
+    // in the five organism libs.
+    {
+        files: [
+            'projects/ui/tabs/**/*.component.ts',
+            'projects/ui/tabs/**/*.directive.ts',
+            'projects/ui/stepper/**/*.component.ts',
+            'projects/ui/stepper/**/*.directive.ts',
+            'projects/ui/mat-stepper/**/*.component.ts',
+            'projects/ui/mat-stepper/**/*.directive.ts',
+            'projects/ui/mat-tabs/**/*.component.ts',
+            'projects/ui/mat-tabs/**/*.directive.ts',
+        ],
+        plugins: { local: localRules },
+        rules: {
+            // Threshold ratchet history (150 → 180 → 200) and per-bump
+            // rationale: `.internal/architektur/tabs-accepted-debt.md §8`.
+            'local/level-4-organism-loc-guard': ['error', { threshold: 200 }],
+        },
     },
-  },
 );

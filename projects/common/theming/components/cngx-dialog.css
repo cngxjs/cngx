@@ -1,28 +1,163 @@
-/*
- * Default styling for the CngxDialog directive. Targets
- * <dialog cngxDialog> and the sibling [cngxDialogDraggable] variant.
- * The directive toggles transition classes
- * (.cngx-dialog--opening/-open/-closing) on the host.
+/**
+ * @overview
+ * Default visuals for the `CngxDialog` directive. Targets
+ * `<dialog cngxDialog>` and the sibling `[cngxDialogDraggable]`
+ * variant. The directive toggles transition classes
+ * (`.cngx-dialog--opening` / `-open` / `-closing`) on the host.
  *
- * A Material bridge for consumers who opt in lives in the sibling
- * dialog-theme.scss.
+ * Surface tokens fall back through the foundation
+ * `--cngx-color-surface` so brand overrides propagate. The
+ * `::backdrop` pseudo-element is part of the dialog itself — no
+ * separate overlay element required.
+ *
+ * Pair with `@cngx/themes/material/dialog-theme` for the Material
+ * surface + elevation.
  */
 
 @layer cngx.tokens {
-  @property --cngx-dialog-bg                  { syntax: '<color>';  inherits: true;  initial-value: oklch(1 0 0); }
-  @property --cngx-dialog-color               { syntax: '*';  inherits: true;  initial-value: currentColor; }
-  @property --cngx-dialog-shadow              { syntax: '*';        inherits: false; initial-value: 0 8px 32px oklch(0 0 0 / 0.12); }
-  @property --cngx-dialog-border-radius       { syntax: '<length>'; inherits: false; initial-value: 8px; }
-  @property --cngx-dialog-padding             { syntax: '<length>'; inherits: false; initial-value: 24px; }
-  @property --cngx-dialog-max-width           { syntax: '<length>'; inherits: false; initial-value: 560px; }
-  @property --cngx-dialog-max-height          { syntax: '*';        inherits: false; initial-value: 80vh; }
-  @property --cngx-dialog-backdrop-bg         { syntax: '<color>';  inherits: false; initial-value: oklch(0 0 0 / 0.5); }
-  @property --cngx-dialog-backdrop-blur       { syntax: '<length>'; inherits: false; initial-value: 0px; }
-  @property --cngx-dialog-backdrop-opacity    { syntax: '<number>'; inherits: false; initial-value: 1; }
-  @property --cngx-dialog-transition-duration { syntax: '<time>';   inherits: false; initial-value: 200ms; }
-  @property --cngx-dialog-transition-easing   { syntax: '*';        inherits: false; initial-value: ease; }
-  @property --cngx-dialog-drag-cursor         { syntax: '*';        inherits: false; initial-value: grab; }
-  @property --cngx-dialog-dragging-cursor     { syntax: '*';        inherits: false; initial-value: grabbing; }
+  /**
+   * Dialog surface colour. Falls back through `--cngx-color-surface`.
+   * @group Surface
+   * @see [[--cngx-color-surface]]
+   */
+  @property --cngx-dialog-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(1 0 0);
+  }
+
+  /**
+   * Dialog text colour. Defaults to `currentColor`.
+   * @group Surface
+   */
+  @property --cngx-dialog-color {
+    syntax: '*';
+    inherits: true;
+    initial-value: currentColor;
+  }
+
+  /**
+   * Drop-shadow shorthand for the dialog.
+   * @group Surface
+   */
+  @property --cngx-dialog-shadow {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0 8px 32px oklch(0 0 0 / 0.12);
+  }
+
+  /**
+   * Corner radius of the dialog.
+   * @group Layout
+   */
+  @property --cngx-dialog-border-radius {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 8px;
+  }
+
+  /**
+   * Padding shorthand inside the dialog.
+   * @group Layout
+   */
+  @property --cngx-dialog-padding {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 24px;
+  }
+
+  /**
+   * Maximum inline size of the dialog.
+   * @group Layout
+   */
+  @property --cngx-dialog-max-width {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 560px;
+  }
+
+  /**
+   * Maximum block size of the dialog.
+   * @group Layout
+   */
+  @property --cngx-dialog-max-height {
+    syntax: '*';
+    inherits: false;
+    initial-value: 80vh;
+  }
+
+  /**
+   * Background of the `::backdrop` pseudo-element.
+   * @group Surface
+   */
+  @property --cngx-dialog-backdrop-bg {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: oklch(0 0 0 / 0.5);
+  }
+
+  /**
+   * Blur radius applied to the `::backdrop`. Zero by default; bump to
+   * apply a frosted-glass effect.
+   * @group Surface
+   */
+  @property --cngx-dialog-backdrop-blur {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 0px;
+  }
+
+  /**
+   * Opacity of the `::backdrop`. `CngxDialogStack` uses this to
+   * suppress the inner backdrop while a parent dialog is also open
+   * (avoids stacked scrim).
+   * @group Surface
+   */
+  @property --cngx-dialog-backdrop-opacity {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 1;
+  }
+
+  /**
+   * Duration of the open / close transition.
+   * @group Motion
+   */
+  @property --cngx-dialog-transition-duration {
+    syntax: '<time>';
+    inherits: false;
+    initial-value: 200ms;
+  }
+
+  /**
+   * Easing curve of the open / close transition.
+   * @group Motion
+   */
+  @property --cngx-dialog-transition-easing {
+    syntax: '*';
+    inherits: false;
+    initial-value: ease;
+  }
+
+  /**
+   * Cursor shown over the draggable variant while resting.
+   * @group State / Draggable
+   */
+  @property --cngx-dialog-drag-cursor {
+    syntax: '*';
+    inherits: false;
+    initial-value: grab;
+  }
+
+  /**
+   * Cursor shown over the draggable variant while dragging.
+   * @group State / Draggable
+   */
+  @property --cngx-dialog-dragging-cursor {
+    syntax: '*';
+    inherits: false;
+    initial-value: grabbing;
+  }
 }
 
 @layer cngx.components {
