@@ -53,7 +53,7 @@ import {
       <div class="cngx-card-skeleton__line" [style.width]="last ? '60%' : '100%'"></div>
     }
   `,
-  styleUrl: './card-skeleton.component.css',
+  styleUrls: ['./card-skeleton.component.css'],
 })
 export class CngxCardSkeleton {
   /** Number of body text lines to show. */

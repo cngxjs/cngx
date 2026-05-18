@@ -1,41 +1,233 @@
-/*
+/**
+ * @overview
  * Structural CSS shared by every tab-group skin. Layout-only — no
  * colors / sizes / borders / fonts beyond what's controlled via
- * --cngx-tab-* custom properties. CngxTabGroup references this file
- * via styleUrls; ng-packagr inlines it at publish time so consumers
- * of @cngx/ui/tabs don't need @cngx/common/tabs at runtime.
+ * `--cngx-tab-*` custom properties. `CngxTabGroup` (in `@cngx/ui/tabs`)
+ * references this file via `styleUrls`; ng-packagr inlines it at
+ * publish time so consumers of `@cngx/ui/tabs` don't need
+ * `@cngx/common/tabs` at runtime.
  *
- * Headless directive use ([cngxTabGroup] on consumer-authored DOM)
+ * Headless directive use (`[cngxTabGroup]` on consumer-authored DOM)
  * deliberately gets no styling from this file — consumers bring their
  * own visual opinion.
  *
- * Selectors are class-prefixed (.cngx-tabs__*) and apply globally
- * under CngxTabGroup's encapsulation:None; the cngx-tabs- prefix is
- * the namespace.
+ * Selectors are class-prefixed (`.cngx-tabs__*`) and apply globally
+ * under `CngxTabGroup`'s `encapsulation: None`; the `cngx-tabs-`
+ * prefix is the namespace.
  */
 
 @layer cngx.tokens {
-  @property --cngx-tab-gap                       { syntax: '*'; inherits: false; initial-value: 0.5rem; }
-  @property --cngx-tab-strip-padding             { syntax: '*'; inherits: false; initial-value: 0.5rem 0; }
-  @property --cngx-tab-strip-bg                  { syntax: '<color>'; inherits: false; initial-value: transparent; }
-  @property --cngx-tab-padding                   { syntax: '*'; inherits: false; initial-value: 0.5rem 0.75rem; }
-  @property --cngx-tab-bg                        { syntax: '<color>'; inherits: false; initial-value: transparent; }
-  @property --cngx-tab-color                     { syntax: '*'; inherits: true; initial-value: currentColor; }
-  @property --cngx-tab-active-color              { syntax: '*'; inherits: true; initial-value: currentColor; }
-  @property --cngx-tab-disabled-opacity          { syntax: '<number>'; inherits: false; initial-value: 0.55; }
-  @property --cngx-tab-focus-ring                { syntax: '*'; inherits: false; initial-value: 2px solid currentColor; }
-  @property --cngx-tab-focus-offset              { syntax: '<length>'; inherits: false; initial-value: 2px; }
-  @property --cngx-tab-error-badge-color         { syntax: '<color>'; inherits: false; initial-value: oklch(0.45 0.15 25); }
-  @property --cngx-tab-busy-spinner-size         { syntax: '*'; inherits: false; initial-value: 1rem; }
-  @property --cngx-tab-busy-spinner-color        { syntax: '*'; inherits: true; initial-value: currentColor; }
-  @property --cngx-tab-rejection-icon-size       { syntax: '*'; inherits: false; initial-value: 1.25rem; }
-  @property --cngx-tab-rejection-icon-color      { syntax: '<color>'; inherits: false; initial-value: oklch(0.45 0.15 25); }
-  @property --cngx-tab-rejection-icon-text       { syntax: '<color>'; inherits: true; initial-value: oklch(1 0 0); }
-  @property --cngx-tab-rejection-icon-font-size  { syntax: '*'; inherits: false; initial-value: 0.875rem; }
-  @property --cngx-tab-rejected-outline          { syntax: '*'; inherits: false; initial-value: 2px solid oklch(0.45 0.15 25); }
-  @property --cngx-tab-rejected-outline-offset   { syntax: '<length>'; inherits: false; initial-value: 1px; }
-  @property --cngx-tab-rejected-pulse-duration   { syntax: '<time>'; inherits: false; initial-value: 600ms; }
-  @property --cngx-tab-rejected-pulse-bg         { syntax: '<color>'; inherits: false; initial-value: oklch(0.45 0.15 25 / 0.18); }
+  /**
+   * Gap between adjacent tab buttons and between a tab's icon / label
+   * / badge slots.
+   * @group Layout
+   */
+  @property --cngx-tab-gap {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.5rem;
+  }
+
+  /**
+   * Padding shorthand of the tab strip (outer container).
+   * @group Layout
+   */
+  @property --cngx-tab-strip-padding {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.5rem 0;
+  }
+
+  /**
+   * Background of the tab strip.
+   * @group Surface
+   */
+  @property --cngx-tab-strip-bg {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: transparent;
+  }
+
+  /**
+   * Padding shorthand of an individual tab button.
+   * @group Layout
+   */
+  @property --cngx-tab-padding {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.5rem 0.75rem;
+  }
+
+  /**
+   * Background of an individual tab button.
+   * @group Surface
+   */
+  @property --cngx-tab-bg {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: transparent;
+  }
+
+  /**
+   * Text color of a resting tab button.
+   * @group Surface
+   */
+  @property --cngx-tab-color {
+    syntax: '*';
+    inherits: true;
+    initial-value: currentColor;
+  }
+
+  /**
+   * Text color of the active (selected) tab.
+   * @group State / Active
+   */
+  @property --cngx-tab-active-color {
+    syntax: '*';
+    inherits: true;
+    initial-value: currentColor;
+  }
+
+  /**
+   * Opacity multiplier applied to disabled tabs.
+   * @group State / Disabled
+   */
+  @property --cngx-tab-disabled-opacity {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 0.55;
+  }
+
+  /**
+   * Focus-ring outline shorthand.
+   * @group State / Focus
+   */
+  @property --cngx-tab-focus-ring {
+    syntax: '*';
+    inherits: false;
+    initial-value: 2px solid currentColor;
+  }
+
+  /**
+   * Outline offset of the focus ring.
+   * @group State / Focus
+   */
+  @property --cngx-tab-focus-offset {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 2px;
+  }
+
+  /**
+   * Background color of the inline error badge.
+   * @group State / Error
+   */
+  @property --cngx-tab-error-badge-color {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: oklch(0.45 0.15 25);
+  }
+
+  /**
+   * Diameter of the busy spinner shown while a tab's commit is
+   * pending.
+   * @group State / Busy
+   */
+  @property --cngx-tab-busy-spinner-size {
+    syntax: '*';
+    inherits: false;
+    initial-value: 1rem;
+  }
+
+  /**
+   * Stroke color of the busy spinner.
+   * @group State / Busy
+   */
+  @property --cngx-tab-busy-spinner-color {
+    syntax: '*';
+    inherits: true;
+    initial-value: currentColor;
+  }
+
+  /**
+   * Diameter of the persistent rejection icon (`!` glyph in a circle).
+   * @group State / Rejected
+   */
+  @property --cngx-tab-rejection-icon-size {
+    syntax: '*';
+    inherits: false;
+    initial-value: 1.25rem;
+  }
+
+  /**
+   * Background color of the rejection icon disc.
+   * @group State / Rejected
+   */
+  @property --cngx-tab-rejection-icon-color {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: oklch(0.45 0.15 25);
+  }
+
+  /**
+   * Text color of the rejection icon glyph.
+   * @group State / Rejected
+   */
+  @property --cngx-tab-rejection-icon-text {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(1 0 0);
+  }
+
+  /**
+   * Font-size of the rejection icon glyph.
+   * @group State / Rejected
+   */
+  @property --cngx-tab-rejection-icon-font-size {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.875rem;
+  }
+
+  /**
+   * Outline shorthand of the rejected tab.
+   * @group State / Rejected
+   */
+  @property --cngx-tab-rejected-outline {
+    syntax: '*';
+    inherits: false;
+    initial-value: 2px solid oklch(0.45 0.15 25);
+  }
+
+  /**
+   * Outline offset of the rejected-tab outline.
+   * @group State / Rejected
+   */
+  @property --cngx-tab-rejected-outline-offset {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 1px;
+  }
+
+  /**
+   * Duration of the rejected-tab pulse animation.
+   * @group State / Rejected
+   */
+  @property --cngx-tab-rejected-pulse-duration {
+    syntax: '<time>';
+    inherits: false;
+    initial-value: 600ms;
+  }
+
+  /**
+   * Background tint used at the peak of the pulse animation.
+   * @group State / Rejected
+   */
+  @property --cngx-tab-rejected-pulse-bg {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: oklch(0.45 0.15 25 / 0.18);
+  }
 }
 
 @layer cngx.components {

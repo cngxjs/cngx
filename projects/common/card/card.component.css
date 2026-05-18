@@ -1,76 +1,350 @@
-/*
- * Default styling for CngxCard and its slot directives
- * (CngxCardMedia/Header/Title/Subtitle/Body/Footer/Actions/Badge).
+/**
+ * @overview
+ * Default visuals for `CngxCard` and its slot directives
+ * (`CngxCardMedia` / `Header` / `Title` / `Subtitle` / `Body` /
+ * `Footer` / `Actions` / `Badge`). The host element `<cngx-card>`
+ * always carries the `.cngx-card` class. Modifier classes drive
+ * state appearance: `.cngx-card--interactive` / `--selected` /
+ * `--loading` / `--disabled` plus the `--accent` / `--accent-{info /
+ * success / warning / danger / neutral}` palette.
  *
- * The host element <cngx-card> always carries the .cngx-card class.
- * Modifier classes drive state appearance:
- *   .cngx-card--interactive | --selected | --loading | --disabled
- *   .cngx-card--accent | --accent-{info,success,warning,danger,neutral}
+ * Surface tokens fall back through the foundation
+ * `--cngx-color-surface` / `--cngx-color-text` / `--cngx-color-border`
+ * so brand overrides propagate. Selected + focus rings track
+ * `--cngx-color-primary`. Solid semantic colors come from the
+ * foundation `--cngx-color-{info / success / warning / danger}`
+ * directly; tinted-surface variants for the card-accent classes
+ * carry the card-specific `--cngx-card-accent-*-bg` namespace
+ * (no foundation analogue for tinted surfaces).
  *
- * Token families:
- *   - Static layout (padding, radius, bg, border, color, min-width)
- *   - States (hover-shadow, focus-{width,color,offset}, selected-*, disabled-opacity, loading-*)
- *   - Typography slots (title-*, subtitle-*)
- *   - Accent palette (--cngx-card-accent-color + --cngx-card-accent-{info,success,warning,danger}-bg)
- *   - Badge placement (badge-offset)
- *
- * Solid semantic colors come from foundation
- * --cngx-color-{info,success,warning,danger} directly. Tinted-surface
- * variants for the card-accent classes carry the card-specific
- * --cngx-card-accent-*-bg namespace (no foundation analog for tinted
- * surfaces).
- *
- * A Material bridge for consumers who opt in lives in
- * projects/ui/card-theme.scss; it writes the same tokens from a
- * Material theme.
+ * Pair with `@cngx/themes/material/card-theme` for Material 3
+ * surface + elevation.
  */
 
 @layer cngx.tokens {
-  /* Static layout */
-  @property --cngx-card-padding         { syntax: '<length>'; inherits: false; initial-value: 16px; }
-  @property --cngx-card-radius          { syntax: '<length>'; inherits: false; initial-value: 12px; }
-  @property --cngx-card-bg              { syntax: '<color>';  inherits: true;  initial-value: oklch(1 0 0); }
-  @property --cngx-card-color           { syntax: '<color>';  inherits: true;  initial-value: oklch(0.2 0.01 290); }
-  @property --cngx-card-border          { syntax: '*';        inherits: true;  initial-value: 1px solid oklch(0.81 0.005 250); }
-  @property --cngx-card-min-width       { syntax: '<length>'; inherits: false; initial-value: 120px; }
+  /**
+   * Padding shorthand inside the card.
+   * @group Layout
+   */
+  @property --cngx-card-padding {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 16px;
+  }
 
-  /* States — interactive / focus / selected / disabled / loading */
-  @property --cngx-card-hover-shadow    { syntax: '*';        inherits: false; initial-value: 0 2px 8px 0 oklch(0 0 0 / 0.12); }
-  @property --cngx-card-active-opacity  { syntax: '<number>'; inherits: false; initial-value: 0.88; }
-  @property --cngx-card-focus-width     { syntax: '<length>'; inherits: false; initial-value: 2px; }
-  @property --cngx-card-focus-offset    { syntax: '<length>'; inherits: false; initial-value: 2px; }
-  @property --cngx-card-focus-color     { syntax: '<color>';  inherits: true;  initial-value: oklch(0.47 0.16 295); }
-  @property --cngx-card-selected-border { syntax: '<color>';  inherits: true;  initial-value: oklch(0.47 0.16 295); }
-  @property --cngx-card-selected-bg     { syntax: '<color>';  inherits: true;  initial-value: oklch(0.96 0.02 295); }
-  @property --cngx-card-selected-bar-width { syntax: '<length>'; inherits: false; initial-value: 3px; }
-  @property --cngx-card-disabled-opacity { syntax: '<number>'; inherits: false; initial-value: 0.5; }
-  @property --cngx-card-loading-shimmer  { syntax: '<color>';  inherits: false; initial-value: oklch(1 0 0 / 0.4); }
-  @property --cngx-card-loading-overlay  { syntax: '<color>';  inherits: false; initial-value: oklch(1 0 0 / 0.3); }
+  /**
+   * Corner radius. Defaults to `--cngx-radius-lg`.
+   * @group Layout
+   */
+  @property --cngx-card-radius {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 12px;
+  }
 
-  /* Typography slots */
-  @property --cngx-card-title-size       { syntax: '*';        inherits: true;  initial-value: 1rem; }
-  @property --cngx-card-title-weight     { syntax: '<number>'; inherits: true;  initial-value: 600; }
-  @property --cngx-card-title-color      { syntax: '<color>';  inherits: true;  initial-value: oklch(0.2 0.01 290); }
-  @property --cngx-card-subtitle-size    { syntax: '*';        inherits: true;  initial-value: 0.8125rem; }
-  @property --cngx-card-subtitle-weight  { syntax: '<number>'; inherits: true;  initial-value: 400; }
-  @property --cngx-card-subtitle-color   { syntax: '<color>';  inherits: true;  initial-value: oklch(0.36 0.02 290); }
+  /**
+   * Card surface color. Falls back through `--cngx-color-surface`.
+   * @group Surface
+   * @see [[--cngx-color-surface]]
+   */
+  @property --cngx-card-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(1 0 0);
+  }
 
-  /* Dividers & accent */
-  @property --cngx-card-divider          { syntax: '<color>';  inherits: true;  initial-value: oklch(0.81 0.005 250); }
-  @property --cngx-card-accent-width     { syntax: '<length>'; inherits: false; initial-value: 3px; }
-  @property --cngx-card-accent-color     { syntax: '<color>';  inherits: true;  initial-value: transparent; }
+  /**
+   * Card text color. Falls back through `--cngx-color-text`.
+   * @group Surface
+   */
+  @property --cngx-card-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.2 0.01 290);
+  }
 
-  /* Card-specific tinted-surface variants. Solid semantic colors come
-   * from foundation --cngx-color-{info,success,warning,danger} directly;
-   * the *-bg tints are card-specific (no foundation analog) so they
-   * carry the --cngx-card-accent-* namespace. */
-  @property --cngx-card-accent-info-bg    { syntax: '<color>'; inherits: true; initial-value: oklch(0.97 0.03 250); }
-  @property --cngx-card-accent-success-bg { syntax: '<color>'; inherits: true; initial-value: oklch(0.97 0.04 145); }
-  @property --cngx-card-accent-warning-bg { syntax: '<color>'; inherits: true; initial-value: oklch(0.97 0.04 75); }
-  @property --cngx-card-accent-danger-bg  { syntax: '<color>'; inherits: true; initial-value: oklch(0.97 0.03 25); }
+  /**
+   * Border shorthand. Falls back through `--cngx-color-border`.
+   * @group Surface
+   */
+  @property --cngx-card-border {
+    syntax: '*';
+    inherits: true;
+    initial-value: 1px solid oklch(0.81 0.005 250);
+  }
 
-  /* Badge placement */
-  @property --cngx-card-badge-offset { syntax: '<length>'; inherits: false; initial-value: -6px; }
+  /**
+   * Minimum inline size of the card so empty cards still read as a
+   * surface.
+   * @group Layout
+   */
+  @property --cngx-card-min-width {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 120px;
+  }
+
+  /**
+   * Drop-shadow applied on hover for `.cngx-card--interactive`.
+   * @group State / Hover
+   */
+  @property --cngx-card-hover-shadow {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0 2px 8px 0 oklch(0 0 0 / 0.12);
+  }
+
+  /**
+   * Opacity multiplier applied on touch-active. Only fires under
+   * `(hover: none)` so it doesn't compete with the hover shadow.
+   * @group State / Active
+   */
+  @property --cngx-card-active-opacity {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 0.88;
+  }
+
+  /**
+   * Focus-ring width.
+   * @group State / Focus
+   */
+  @property --cngx-card-focus-width {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 2px;
+  }
+
+  /**
+   * Outline offset of the focus ring.
+   * @group State / Focus
+   */
+  @property --cngx-card-focus-offset {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 2px;
+  }
+
+  /**
+   * Focus-ring color. Falls back to `--cngx-color-primary`.
+   * @group State / Focus
+   * @see [[--cngx-color-primary]]
+   */
+  @property --cngx-card-focus-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.66 0.19 50);
+  }
+
+  /**
+   * Border color of the selected state and the inset selection bar.
+   * Falls back to `--cngx-color-primary`.
+   * @group State / Selected
+   * @see [[--cngx-color-primary]]
+   */
+  @property --cngx-card-selected-border {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.66 0.19 50);
+  }
+
+  /**
+   * Background of the selected state. The runtime fallback uses
+   * `color-mix()` against `--cngx-color-primary`, so this static
+   * default only matters when a theme pins the token explicitly.
+   * @group State / Selected
+   */
+  @property --cngx-card-selected-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.96 0.04 50);
+  }
+
+  /**
+   * Width of the inset selection bar drawn via `::before` — provides
+   * a non-color-only selection signal (WCAG 1.4.1).
+   * @group State / Selected
+   */
+  @property --cngx-card-selected-bar-width {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 3px;
+  }
+
+  /**
+   * Opacity multiplier applied by `.cngx-card--disabled`.
+   * @group State / Disabled
+   */
+  @property --cngx-card-disabled-opacity {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 0.5;
+  }
+
+  /**
+   * Shimmer band color for the loading overlay gradient.
+   * @group State / Loading
+   */
+  @property --cngx-card-loading-shimmer {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: oklch(1 0 0 / 0.4);
+  }
+
+  /**
+   * Static overlay shown when `prefers-reduced-motion` suppresses
+   * the shimmer animation.
+   * @group State / Loading
+   */
+  @property --cngx-card-loading-overlay {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: oklch(1 0 0 / 0.3);
+  }
+
+  /**
+   * Font-size of the title slot.
+   * @group Typography
+   */
+  @property --cngx-card-title-size {
+    syntax: '*';
+    inherits: true;
+    initial-value: 1rem;
+  }
+
+  /**
+   * Font-weight of the title slot.
+   * @group Typography
+   */
+  @property --cngx-card-title-weight {
+    syntax: '<number>';
+    inherits: true;
+    initial-value: 600;
+  }
+
+  /**
+   * Text color of the title slot.
+   * @group Typography
+   */
+  @property --cngx-card-title-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.2 0.01 290);
+  }
+
+  /**
+   * Font-size of the subtitle slot.
+   * @group Typography
+   */
+  @property --cngx-card-subtitle-size {
+    syntax: '*';
+    inherits: true;
+    initial-value: 0.8125rem;
+  }
+
+  /**
+   * Font-weight of the subtitle slot.
+   * @group Typography
+   */
+  @property --cngx-card-subtitle-weight {
+    syntax: '<number>';
+    inherits: true;
+    initial-value: 400;
+  }
+
+  /**
+   * Text color of the subtitle slot — muted by default.
+   * @group Typography
+   */
+  @property --cngx-card-subtitle-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.36 0.02 290);
+  }
+
+  /**
+   * Border color of the actions divider.
+   * @group Surface
+   */
+  @property --cngx-card-divider {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.81 0.005 250);
+  }
+
+  /**
+   * Width of the top accent stripe applied by `.cngx-card--accent`.
+   * @group Variant / Accent
+   */
+  @property --cngx-card-accent-width {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 3px;
+  }
+
+  /**
+   * Color of the top accent stripe. Per-variant rules set it to the
+   * matching foundation semantic color.
+   * @group Variant / Accent
+   */
+  @property --cngx-card-accent-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: transparent;
+  }
+
+  /**
+   * Tinted background for `.cngx-card--accent-info`. The runtime
+   * fallback uses `color-mix()` against `--cngx-color-info`; this
+   * static default only matters when a theme pins the token directly.
+   * @group Variant / Accent
+   */
+  @property --cngx-card-accent-info-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.97 0.03 250);
+  }
+
+  /**
+   * Tinted background for `.cngx-card--accent-success`.
+   * @group Variant / Accent
+   */
+  @property --cngx-card-accent-success-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.97 0.04 145);
+  }
+
+  /**
+   * Tinted background for `.cngx-card--accent-warning`.
+   * @group Variant / Accent
+   */
+  @property --cngx-card-accent-warning-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.97 0.04 75);
+  }
+
+  /**
+   * Tinted background for `.cngx-card--accent-danger`.
+   * @group Variant / Accent
+   */
+  @property --cngx-card-accent-danger-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.97 0.03 25);
+  }
+
+  /**
+   * Offset of the badge slot from the card corners (negative pulls
+   * the badge half-out so it overlaps the edge).
+   * @group Layout
+   */
+  @property --cngx-card-badge-offset {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: -6px;
+  }
 }
 
 @layer cngx.components {
@@ -107,24 +381,27 @@
 
     :scope:focus-visible {
       outline: var(--cngx-card-focus-width, 2px) solid
-        var(--cngx-card-focus-color, var(--cngx-color-primary, oklch(0.47 0.16 295)));
+        var(--cngx-card-focus-color, var(--cngx-color-primary, oklch(0.66 0.19 50)));
       outline-offset: var(--cngx-card-focus-offset, 2px);
     }
 
     /* Interactive cards: focus-within for inner buttons without double focus ring */
     :scope:has(:focus-visible):not(:focus-visible) {
       outline: var(--cngx-card-focus-width, 2px) solid
-        var(--cngx-card-focus-color, var(--cngx-color-primary, oklch(0.47 0.16 295)));
+        var(--cngx-card-focus-color, var(--cngx-color-primary, oklch(0.66 0.19 50)));
       outline-offset: var(--cngx-card-focus-offset, 2px);
     }
 
     :scope.cngx-card--selected {
-      border-color: var(--cngx-card-selected-border, var(--cngx-color-primary, oklch(0.47 0.16 295)));
+      border-color: var(
+        --cngx-card-selected-border,
+        var(--cngx-color-primary, oklch(0.66 0.19 50))
+      );
       background: var(
         --cngx-card-selected-bg,
         color-mix(
           in oklch,
-          var(--cngx-color-primary, oklch(0.47 0.16 295)) 8%,
+          var(--cngx-color-primary, oklch(0.66 0.19 50)) 8%,
           var(--cngx-card-bg, oklch(1 0 0))
         )
       );
@@ -136,7 +413,7 @@
       inset-inline-start: 0;
       inset-block: var(--cngx-card-radius, 12px);
       width: var(--cngx-card-selected-bar-width, 3px);
-      background: var(--cngx-card-selected-border, var(--cngx-color-primary, oklch(0.47 0.16 295)));
+      background: var(--cngx-card-selected-border, var(--cngx-color-primary, oklch(0.66 0.19 50)));
       border-radius: 999px;
     }
 
@@ -239,45 +516,45 @@
     }
 
     .cngx-card--accent-info {
-      --cngx-card-accent-color: var(--cngx-color-info, oklch(0.62 0.20 250));
+      --cngx-card-accent-color: var(--cngx-color-info, oklch(0.65 0.12 240));
       background: var(
         --cngx-card-accent-info-bg,
         color-mix(
           in oklch,
-          var(--cngx-color-info, oklch(0.62 0.20 250)) 6%,
+          var(--cngx-color-info, oklch(0.65 0.12 240)) 6%,
           var(--cngx-card-bg, oklch(1 0 0))
         )
       );
     }
     .cngx-card--accent-success {
-      --cngx-card-accent-color: var(--cngx-color-success, oklch(0.65 0.18 145));
+      --cngx-card-accent-color: var(--cngx-color-success, oklch(0.6 0.15 145));
       background: var(
         --cngx-card-accent-success-bg,
         color-mix(
           in oklch,
-          var(--cngx-color-success, oklch(0.65 0.18 145)) 6%,
+          var(--cngx-color-success, oklch(0.6 0.15 145)) 6%,
           var(--cngx-card-bg, oklch(1 0 0))
         )
       );
     }
     .cngx-card--accent-warning {
-      --cngx-card-accent-color: var(--cngx-color-warning, oklch(0.72 0.18 70));
+      --cngx-card-accent-color: var(--cngx-color-warning, oklch(0.72 0.15 75));
       background: var(
         --cngx-card-accent-warning-bg,
         color-mix(
           in oklch,
-          var(--cngx-color-warning, oklch(0.72 0.18 70)) 8%,
+          var(--cngx-color-warning, oklch(0.72 0.15 75)) 8%,
           var(--cngx-card-bg, oklch(1 0 0))
         )
       );
     }
     .cngx-card--accent-danger {
-      --cngx-card-accent-color: var(--cngx-color-danger, oklch(0.65 0.22 25));
+      --cngx-card-accent-color: var(--cngx-color-danger, oklch(0.6 0.18 25));
       background: var(
         --cngx-card-accent-danger-bg,
         color-mix(
           in oklch,
-          var(--cngx-color-danger, oklch(0.65 0.22 25)) 8%,
+          var(--cngx-color-danger, oklch(0.6 0.18 25)) 8%,
           var(--cngx-card-bg, oklch(1 0 0))
         )
       );

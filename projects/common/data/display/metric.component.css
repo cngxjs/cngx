@@ -1,18 +1,82 @@
-/* cngx-metric — default styling for the CngxMetric component.
- *
- * The host element <cngx-metric> always carries the .cngx-metric class.
- * Two slot children render the value and its unit:
- *   .cngx-metric__value | the numeric figure (large, bold)
- *   .cngx-metric__unit  | the trailing unit/label (small, muted) */
+/**
+ * @overview
+ * Default visuals for `CngxMetric`. The host element `<cngx-metric>`
+ * always carries the `.cngx-metric` class. Two slot children render
+ * the value and its unit: `.cngx-metric__value` (the numeric figure
+ * — large, bold) and `.cngx-metric__unit` (the trailing unit / label
+ * — small, muted).
+ */
 
 @layer cngx.tokens {
-  @property --cngx-metric-gap          { syntax: '<length>'; inherits: false; initial-value: 2px; }
-  @property --cngx-metric-value-size   { syntax: '*';        inherits: true;  initial-value: 1.75rem; }
-  @property --cngx-metric-value-weight { syntax: '<number>'; inherits: true;  initial-value: 600; }
-  @property --cngx-metric-value-color  { syntax: '<color>';  inherits: true;  initial-value: oklch(0.2 0.01 290); }
-  @property --cngx-metric-unit-size    { syntax: '*';        inherits: true;  initial-value: 0.875rem; }
-  @property --cngx-metric-unit-weight  { syntax: '<number>'; inherits: true;  initial-value: 400; }
-  @property --cngx-metric-unit-color   { syntax: '<color>';  inherits: true;  initial-value: oklch(0.36 0.02 290); }
+  /**
+   * Gap between the value and the unit slot.
+   * @group Layout
+   */
+  @property --cngx-metric-gap {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 2px;
+  }
+
+  /**
+   * Font-size of the value slot.
+   * @group Typography
+   */
+  @property --cngx-metric-value-size {
+    syntax: '*';
+    inherits: true;
+    initial-value: 1.75rem;
+  }
+
+  /**
+   * Font-weight of the value slot.
+   * @group Typography
+   */
+  @property --cngx-metric-value-weight {
+    syntax: '<number>';
+    inherits: true;
+    initial-value: 600;
+  }
+
+  /**
+   * Text color of the value slot.
+   * @group Typography
+   */
+  @property --cngx-metric-value-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.2 0.01 290);
+  }
+
+  /**
+   * Font-size of the unit slot.
+   * @group Typography
+   */
+  @property --cngx-metric-unit-size {
+    syntax: '*';
+    inherits: true;
+    initial-value: 0.875rem;
+  }
+
+  /**
+   * Font-weight of the unit slot.
+   * @group Typography
+   */
+  @property --cngx-metric-unit-weight {
+    syntax: '<number>';
+    inherits: true;
+    initial-value: 400;
+  }
+
+  /**
+   * Text color of the unit slot — muted by default.
+   * @group Typography
+   */
+  @property --cngx-metric-unit-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.36 0.02 290);
+  }
 }
 
 @layer cngx.components {

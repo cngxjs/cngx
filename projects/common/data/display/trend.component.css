@@ -1,23 +1,81 @@
-/* cngx-trend — default styling for the CngxTrend component.
+/**
+ * @overview
+ * Default visuals for `CngxTrend`. The host element `<cngx-trend>`
+ * always carries the `.cngx-trend` class. Two directional modifiers
+ * pin the color to the matching semantic: `.cngx-trend--up`
+ * (positive movement, success-coded) and `.cngx-trend--down`
+ * (negative movement, danger-coded).
  *
- * The host element <cngx-trend> always carries the .cngx-trend class.
- * Two directional modifiers:
- *   .cngx-trend--up   | positive movement, success-coded color
- *   .cngx-trend--down | negative movement, danger-coded color
- *
- * Neutral default falls back through --cngx-color-text; up/down route
- * through the foundation success/danger system tokens — brand-theme
- * changes propagate automatically. The original _trend.scss used
- * --cngx-status-success/-error; here they consolidate on the canonical
- * --cngx-color-* family. */
+ * The neutral default falls back through `--cngx-color-text`; up/down
+ * route through the foundation `--cngx-color-success` /
+ * `--cngx-color-danger` so brand-theme changes propagate
+ * automatically.
+ */
 
 @layer cngx.tokens {
-  @property --cngx-trend-gap        { syntax: '<length>'; inherits: false; initial-value: 2px; }
-  @property --cngx-trend-size       { syntax: '*';        inherits: true;  initial-value: 0.8125rem; }
-  @property --cngx-trend-weight     { syntax: '<number>'; inherits: true;  initial-value: 500; }
-  @property --cngx-trend-color      { syntax: '<color>';  inherits: true;  initial-value: oklch(0.36 0.02 290); }
-  @property --cngx-trend-up-color   { syntax: '<color>';  inherits: true;  initial-value: oklch(0.65 0.18 145); }
-  @property --cngx-trend-down-color { syntax: '<color>';  inherits: true;  initial-value: oklch(0.65 0.22 25); }
+  /**
+   * Gap between the arrow glyph and the trend label.
+   * @group Layout
+   */
+  @property --cngx-trend-gap {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 2px;
+  }
+
+  /**
+   * Font-size of the trend label.
+   * @group Typography
+   */
+  @property --cngx-trend-size {
+    syntax: '*';
+    inherits: true;
+    initial-value: 0.8125rem;
+  }
+
+  /**
+   * Font-weight of the trend label.
+   * @group Typography
+   */
+  @property --cngx-trend-weight {
+    syntax: '<number>';
+    inherits: true;
+    initial-value: 500;
+  }
+
+  /**
+   * Neutral text color applied when no direction modifier is set.
+   * @group Surface
+   */
+  @property --cngx-trend-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.36 0.02 290);
+  }
+
+  /**
+   * Color of the `.cngx-trend--up` modifier. Falls back to
+   * `--cngx-color-success`.
+   * @group Variant / Up
+   * @see [[--cngx-color-success]]
+   */
+  @property --cngx-trend-up-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.65 0.18 145);
+  }
+
+  /**
+   * Color of the `.cngx-trend--down` modifier. Falls back to
+   * `--cngx-color-danger`.
+   * @group Variant / Down
+   * @see [[--cngx-color-danger]]
+   */
+  @property --cngx-trend-down-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.65 0.22 25);
+  }
 }
 
 @layer cngx.components {

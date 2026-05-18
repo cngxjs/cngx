@@ -77,7 +77,7 @@ import type { EmptyReason } from './card.types';
       <ng-container [ngTemplateOutlet]="activeEmptyTemplate()!.templateRef" />
     }
   `,
-  styleUrl: './card-grid.component.css',
+  styleUrls: ['./card-grid.component.css'],
 })
 export class CngxCardGrid {
   /** Minimum card width for the CSS Grid `minmax()` function. */
