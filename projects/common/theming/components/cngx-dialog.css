@@ -16,7 +16,7 @@
 
 @layer cngx.tokens {
   /**
-   * Dialog surface colour. Falls back through `--cngx-color-surface`.
+   * Dialog surface color. Falls back through `--cngx-color-surface`.
    * @group Surface
    * @see [[--cngx-color-surface]]
    */
@@ -27,7 +27,7 @@
   }
 
   /**
-   * Dialog text colour. Defaults to `currentColor`.
+   * Dialog text color. Defaults to `currentColor`.
    * @group Surface
    */
   @property --cngx-dialog-color {

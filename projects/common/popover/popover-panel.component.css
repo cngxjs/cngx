@@ -29,7 +29,7 @@
   }
 
   /**
-   * Panel text colour. Falls back through `--cngx-color-text`.
+   * Panel text color. Falls back through `--cngx-color-text`.
    * @group Surface
    * @see [[--cngx-color-text]]
    */
@@ -219,7 +219,7 @@
   }
 
   /**
-   * Text / outline colour paired with the accent surface — used by
+   * Text / outline color paired with the accent surface — used by
    * focus rings and the variant border-left rule.
    * @group Variant / Accent
    */

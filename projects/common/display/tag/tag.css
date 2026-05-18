@@ -1,18 +1,18 @@
 /**
  * @overview
- * Thematic skin of `CngxTag` — colour cascade, radius, font-weight.
+ * Thematic skin of `CngxTag` — color cascade, radius, font-weight.
  * Structural rules (display, flex, padding, density modifiers, label
  * ellipsis) live in `./shared/tag-base.css` and are linked first by
  * the directive's `styleUrls`.
  *
- * Per-colour surfaces resolve through `[data-color="…"]` attribute
+ * Per-color surfaces resolve through `[data-color="…"]` attribute
  * selectors. Predefined keys cascade through `--cngx-tag-{name}-*`
  * custom properties; arbitrary keys ride the same selector pattern,
- * so consumers can introduce new colour names without forking.
+ * so consumers can introduce new color names without forking.
  *
  * Semantic fallbacks: `--cngx-tag-{success|warning|error|info}-color`
  * falls back to `--cngx-color-{success|warning|danger|info}` so a
- * brand-colour override propagates. Subtle/filled tinted surfaces
+ * brand-color override propagates. Subtle/filled tinted surfaces
  * carry their own defaults (no system token for tinted variants).
  */
 
@@ -39,7 +39,7 @@
   }
 
   /**
-   * Background. Defaults to transparent; variant + colour combinations
+   * Background. Defaults to transparent; variant + color combinations
    * pin a concrete value through the `[data-color]` cascade.
    * @group Surface
    */
@@ -50,7 +50,7 @@
   }
 
   /**
-   * Text colour. Defaults to `currentColor`.
+   * Text color. Defaults to `currentColor`.
    * @group Surface
    */
   @property --cngx-tag-color {
@@ -60,7 +60,7 @@
   }
 
   /**
-   * Border shorthand. Variant + colour combinations override per
+   * Border shorthand. Variant + color combinations override per
    * `[data-color]`.
    * @group Surface
    */
@@ -171,7 +171,7 @@
   }
 
   /**
-   * Text colour of the `[data-color=neutral]` variant.
+   * Text color of the `[data-color=neutral]` variant.
    * @group Variant / Neutral
    */
   @property --cngx-tag-neutral-color {
@@ -181,7 +181,7 @@
   }
 
   /**
-   * Border colour of the `[data-color=neutral]` variant.
+   * Border color of the `[data-color=neutral]` variant.
    * @group Variant / Neutral
    */
   @property --cngx-tag-neutral-border {
@@ -212,7 +212,7 @@
   }
 
   /**
-   * Text colour of the `[data-color=success]` variant.
+   * Text color of the `[data-color=success]` variant.
    * @group Variant / Success
    */
   @property --cngx-tag-success-color {
@@ -222,7 +222,7 @@
   }
 
   /**
-   * Border colour of the `[data-color=success]` variant.
+   * Border color of the `[data-color=success]` variant.
    * @group Variant / Success
    */
   @property --cngx-tag-success-border {
@@ -253,7 +253,7 @@
   }
 
   /**
-   * Text colour of the `[data-color=warning]` variant.
+   * Text color of the `[data-color=warning]` variant.
    * @group Variant / Warning
    */
   @property --cngx-tag-warning-color {
@@ -263,7 +263,7 @@
   }
 
   /**
-   * Border colour of the `[data-color=warning]` variant.
+   * Border color of the `[data-color=warning]` variant.
    * @group Variant / Warning
    */
   @property --cngx-tag-warning-border {
@@ -294,7 +294,7 @@
   }
 
   /**
-   * Text colour of the `[data-color=error]` variant.
+   * Text color of the `[data-color=error]` variant.
    * @group Variant / Error
    */
   @property --cngx-tag-error-color {
@@ -304,7 +304,7 @@
   }
 
   /**
-   * Border colour of the `[data-color=error]` variant.
+   * Border color of the `[data-color=error]` variant.
    * @group Variant / Error
    */
   @property --cngx-tag-error-border {
@@ -335,7 +335,7 @@
   }
 
   /**
-   * Text colour of the `[data-color=info]` variant.
+   * Text color of the `[data-color=info]` variant.
    * @group Variant / Info
    */
   @property --cngx-tag-info-color {
@@ -345,7 +345,7 @@
   }
 
   /**
-   * Border colour of the `[data-color=info]` variant.
+   * Border color of the `[data-color=info]` variant.
    * @group Variant / Info
    */
   @property --cngx-tag-info-border {

@@ -1,14 +1,14 @@
 /**
  * @overview
  * Default visuals for `CngxChip` — a single pill. Tokens drive shape,
- * padding, surface, and state colours; override per-instance via
+ * padding, surface, and state colors; override per-instance via
  * inline style, or per-theme via `:root` in `@layer cngx.theme`.
  *
  * The chip's default (unkeyed) surface carries a primary-flavoured
  * tint so a plain `<cngx-chip>` reads as accented out of the box.
  * Variant surfaces (`[data-color]`) carry semantic tones — `info`
  * stays in the blue band, the others align with the matching
- * foundation semantic colour.
+ * foundation semantic color.
  *
  * Layout of a CONTAINER rendering multiple chips (gap, flex-wrap)
  * belongs to that container, not here.
@@ -70,8 +70,8 @@
   }
 
   /**
-   * Text colour. Defaults to `currentColor` so the chip inherits the
-   * container's text colour.
+   * Text color. Defaults to `currentColor` so the chip inherits the
+   * container's text color.
    * @group Surface
    */
   @property --cngx-chip-color {
@@ -126,7 +126,7 @@
   }
 
   /**
-   * Text colour of the hover state.
+   * Text color of the hover state.
    * @group State / Hover
    */
   @property --cngx-chip-hover-color {
@@ -177,7 +177,7 @@
   }
 
   /**
-   * Text colour of the selected state.
+   * Text color of the selected state.
    * @group State / Selected
    */
   @property --cngx-chip-selected-color {
@@ -198,7 +198,7 @@
   }
 
   /**
-   * Text colour of the `[data-color=info]` variant.
+   * Text color of the `[data-color=info]` variant.
    * @group Variant / Info
    */
   @property --cngx-chip-info-color {
@@ -219,7 +219,7 @@
   }
 
   /**
-   * Text colour of the `[data-color=success]` variant.
+   * Text color of the `[data-color=success]` variant.
    * @group Variant / Success
    */
   @property --cngx-chip-success-color {
@@ -240,7 +240,7 @@
   }
 
   /**
-   * Text colour of the `[data-color=warning]` variant.
+   * Text color of the `[data-color=warning]` variant.
    * @group Variant / Warning
    */
   @property --cngx-chip-warning-color {
@@ -261,7 +261,7 @@
   }
 
   /**
-   * Text colour of the `[data-color=danger]` variant.
+   * Text color of the `[data-color=danger]` variant.
    * @group Variant / Danger
    */
   @property --cngx-chip-danger-color {
@@ -311,7 +311,7 @@
   }
 
   /**
-   * Focus-ring colour of the inline remove button. Falls back to
+   * Focus-ring color of the inline remove button. Falls back to
    * `--cngx-color-primary`.
    * @group State / Remove
    */

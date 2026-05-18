@@ -23,7 +23,7 @@
   }
 
   /**
-   * Text colour of the host shell. Defaults to `currentColor`.
+   * Text color of the host shell. Defaults to `currentColor`.
    * @group Surface
    */
   @property --cngx-radio-color {

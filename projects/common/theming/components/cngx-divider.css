@@ -8,7 +8,7 @@
  * Opt-in via the host class — the directive already adds it. Import
  * this file to consume the defaults, or style `.cngx-divider` yourself.
  * Three-Tier-Override: `--cngx-divider-*` tokens cascade through
- * `@layer cngx.theme`; the divider colour falls back to the foundation
+ * `@layer cngx.theme`; the divider color falls back to the foundation
  * `--cngx-color-border` token so brand changes propagate.
  *
  * Pair with `@cngx/themes/material/divider-theme` for Material 3
@@ -29,7 +29,7 @@
   }
 
   /**
-   * Stroke colour. Falls back through `--cngx-color-border` so the
+   * Stroke color. Falls back through `--cngx-color-border` so the
    * divider tracks the foundation neutral instead of carrying its own
    * tone.
    * @group Surface

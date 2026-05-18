@@ -4,9 +4,9 @@
  * stack, row flex-wrap, gap + alignment modifiers) live in
  * `../tag/shared/tag-base.css` and are linked first by the component's
  * `styleUrls` array. The group is a neutral layout container today
- * (no colour, no border, no background) so this file only registers
+ * (no color, no border, no background) so this file only registers
  * the layout-related `@property` tokens; a future thematic skin (for
- * example a backplate colour for a Material wrapper) lands here
+ * example a backplate color for a Material wrapper) lands here
  * without changing the component's style-link surface.
  */
 

@@ -38,7 +38,7 @@
 
   /* Focus ring offset bumped 2px -> 3px so the ring breathes against
    * the new tighter borders from the foundation pass. Same accent
-   * colour as the primary token — Ember in the default. */
+   * color as the primary token — Ember in the default. */
   :focus-visible {
     outline: 2px solid var(--cngx-color-primary, oklch(0.66 0.19 50));
     outline-offset: 3px;

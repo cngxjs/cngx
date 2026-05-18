@@ -6,7 +6,7 @@
  * underlying `CngxPopover` state machine.
  *
  * Surface defaults to a charcoal-on-light-text pill — intentionally
- * neutral so it stays out of the brand-colour conversation. Touch
+ * neutral so it stays out of the brand-color conversation. Touch
  * devices get larger padding + font-size by default for readability
  * (`@media (hover: none)`).
  *
@@ -18,7 +18,7 @@
 
 @layer cngx.tokens {
   /**
-   * Tooltip surface colour — defaults to a near-black charcoal.
+   * Tooltip surface color — defaults to a near-black charcoal.
    * @group Surface
    */
   @property --cngx-tooltip-bg {
@@ -28,7 +28,7 @@
   }
 
   /**
-   * Tooltip text colour — defaults to near-white to pair with the
+   * Tooltip text color — defaults to near-white to pair with the
    * default charcoal surface.
    * @group Surface
    */

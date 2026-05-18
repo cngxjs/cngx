@@ -22,9 +22,9 @@
   }
 
   /* Bare <button>: transparent + hairline. Components in cngx.components
-   * layer their own emphasis (solid bg, brand colour). Hover lifts a 6%
+   * layer their own emphasis (solid bg, brand color). Hover lifts a 6%
    * color-mix tint so the button reads as interactive without committing
-   * to a brand colour at this layer. */
+   * to a brand color at this layer. */
   button {
     padding: var(--cngx-space-sm, 8px) var(--cngx-space-md, 16px);
     border: 1px solid var(--cngx-color-border, oklch(0.88 0.005 250));

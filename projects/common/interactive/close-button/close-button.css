@@ -47,7 +47,7 @@
   }
 
   /**
-   * Glyph colour. Defaults to `currentColor`.
+   * Glyph color. Defaults to `currentColor`.
    * @group Surface
    */
   @property --cngx-close-button-color {

@@ -7,9 +7,9 @@
  * `away` set. Size and shape are driven by modifier classes
  * (`--xs`..`--xl`, `--circle`, `--square`), each backed by a token.
  *
- * Status colours fall back to the foundation system tokens
+ * Status colors fall back to the foundation system tokens
  * (`--cngx-color-success` → online, `--cngx-color-danger` → busy,
- * etc.) so brand-colour overrides propagate.
+ * etc.) so brand-color overrides propagate.
  */
 
 @layer cngx.tokens {
@@ -48,7 +48,7 @@
   }
 
   /**
-   * Text colour of the initials block.
+   * Text color of the initials block.
    * @group Surface
    */
   @property --cngx-avatar-color {
@@ -189,8 +189,8 @@
   }
 
   /**
-   * Ring colour around the status dot — defaults to the surface
-   * colour so the dot reads as cut out of the avatar.
+   * Ring color around the status dot — defaults to the surface
+   * color so the dot reads as cut out of the avatar.
    * @group State / Status
    */
   @property --cngx-avatar-status-border {
@@ -211,7 +211,7 @@
   }
 
   /**
-   * Dot colour for the `.cngx-avatar__status--online` modifier.
+   * Dot color for the `.cngx-avatar__status--online` modifier.
    * @group State / Status
    * @see [[--cngx-color-success]]
    */
@@ -222,7 +222,7 @@
   }
 
   /**
-   * Dot colour for the `.cngx-avatar__status--offline` modifier.
+   * Dot color for the `.cngx-avatar__status--offline` modifier.
    * @group State / Status
    */
   @property --cngx-avatar-status-offline {
@@ -232,7 +232,7 @@
   }
 
   /**
-   * Dot colour for the `.cngx-avatar__status--busy` modifier.
+   * Dot color for the `.cngx-avatar__status--busy` modifier.
    * @group State / Status
    * @see [[--cngx-color-danger]]
    */
@@ -243,7 +243,7 @@
   }
 
   /**
-   * Dot colour for the `.cngx-avatar__status--away` modifier.
+   * Dot color for the `.cngx-avatar__status--away` modifier.
    * @group State / Status
    * @see [[--cngx-color-warning]]
    */

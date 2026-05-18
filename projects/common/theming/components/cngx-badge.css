@@ -2,7 +2,7 @@
  * @overview
  * Default visuals for the `CngxBadge` directive. The directive injects
  * a `<span class="cngx-badge-indicator …">` into the host element and
- * toggles modifier classes for colour (`primary` / `error` / `warning`
+ * toggles modifier classes for color (`primary` / `error` / `warning`
  * / `neutral`), position (`inline` / `above-start` / `above-end` /
  * `below-start` / `below-end`), and dot mode.
  *
@@ -11,7 +11,7 @@
  * style `.cngx-badge-indicator` yourself if they don't fit.
  *
  * Three-Tier-Override: `--cngx-badge-*` tokens cascade through
- * `@layer cngx.theme`; semantic colours fall back to the foundation
+ * `@layer cngx.theme`; semantic colors fall back to the foundation
  * system tokens.
  */
 
@@ -101,7 +101,7 @@
   }
 
   /**
-   * Text colour of the primary variant.
+   * Text color of the primary variant.
    * @group Variant / Primary
    */
   @property --cngx-badge-primary-color {
@@ -122,7 +122,7 @@
   }
 
   /**
-   * Text colour of the error variant.
+   * Text color of the error variant.
    * @group Variant / Error
    */
   @property --cngx-badge-error-color {
@@ -143,7 +143,7 @@
   }
 
   /**
-   * Text colour of the warning variant.
+   * Text color of the warning variant.
    * @group Variant / Warning
    */
   @property --cngx-badge-warning-color {
@@ -163,7 +163,7 @@
   }
 
   /**
-   * Text colour of the neutral variant.
+   * Text color of the neutral variant.
    * @group Variant / Neutral
    */
   @property --cngx-badge-neutral-color {
@@ -208,7 +208,7 @@
       padding: 0;
     }
 
-    /* Colour variants */
+    /* Color variants */
     :scope.cngx-badge-indicator--primary {
       background: var(--cngx-badge-primary-bg, var(--cngx-color-primary, oklch(0.66 0.19 50)));
       color: var(--cngx-badge-primary-color, oklch(1 0 0));

@@ -4,7 +4,7 @@
  * radio glyph, mirroring `CngxCheckboxIndicator`'s size scale so both
  * atoms read at identical visual weight when placed side by side.
  *
- * The checked-state colour falls back to `--cngx-color-primary` so a
+ * The checked-state color falls back to `--cngx-color-primary` so a
  * brand override in `@layer cngx.theme` propagates without needing
  * per-component token overrides.
  */
@@ -22,8 +22,8 @@
   }
 
   /**
-   * Text colour of the radio glyph. Defaults to `currentColor` so the
-   * indicator inherits its container's text colour.
+   * Text color of the radio glyph. Defaults to `currentColor` so the
+   * indicator inherits its container's text color.
    * @group Surface
    */
   @property --cngx-radio-indicator-color {
@@ -53,7 +53,7 @@
   }
 
   /**
-   * Colour applied to the circle border and the inner dot when the
+   * Color applied to the circle border and the inner dot when the
    * radio is checked. Falls back to `--cngx-color-primary`.
    * @group State / Checked
    * @see [[--cngx-color-primary]]

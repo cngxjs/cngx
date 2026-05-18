@@ -5,7 +5,7 @@
  * `<button class="cngx-popover-action cngx-popover-action--{variant}">`.
  * Designed to live inside a `cngx-popover-panel` footer — it picks up
  * the parent panel's `--cngx-popover-panel-accent` / `-text` via CSS
- * inheritance so variant colours flow through automatically.
+ * inheritance so variant colors flow through automatically.
  *
  * Falls back to foundation system tokens (`--cngx-color-primary`,
  * `--cngx-color-danger`) so brand-theme overrides propagate without

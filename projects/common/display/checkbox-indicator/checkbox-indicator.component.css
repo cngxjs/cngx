@@ -2,7 +2,7 @@
  * @overview
  * Default visuals for `CngxCheckboxIndicator`. Ships two presentation
  * variants: the boxed checkmark/dash (default) and the bare
- * `checkmark` glyph (no box). Checked-state colours fall back through
+ * `checkmark` glyph (no box). Checked-state colors fall back through
  * `--cngx-color-primary` so a brand override in `@layer cngx.theme`
  * propagates automatically.
  *
@@ -24,7 +24,7 @@
   }
 
   /**
-   * Text colour of the inner glyph in the bare `checkmark` variant.
+   * Text color of the inner glyph in the bare `checkmark` variant.
    * Defaults to `currentColor`.
    * @group Surface
    */
@@ -45,7 +45,7 @@
   }
 
   /**
-   * Border shorthand of the unchecked box. Width + style + colour in
+   * Border shorthand of the unchecked box. Width + style + color in
    * one declaration so a consumer can re-skin the stroke with a
    * single override.
    * @group Surface
@@ -79,7 +79,7 @@
   }
 
   /**
-   * Glyph colour inside the checked/indeterminate box.
+   * Glyph color inside the checked/indeterminate box.
    * @group State / Checked
    */
   @property --cngx-checkbox-checked-color {

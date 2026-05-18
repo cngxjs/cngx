@@ -17,8 +17,8 @@
 
 @layer cngx.tokens {
   /**
-   * Wave colour. Defaults to `currentColor` so the ripple inherits
-   * the host's text colour.
+   * Wave color. Defaults to `currentColor` so the ripple inherits
+   * the host's text color.
    * @group Surface
    */
   @property --cngx-ripple-color {

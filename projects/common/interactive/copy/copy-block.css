@@ -1,7 +1,7 @@
 /**
  * @overview
  * Default visuals for `CngxCopyBlock` — copy-to-clipboard button with
- * an idle and a copied-confirmation state. The copied-state colours
+ * an idle and a copied-confirmation state. The copied-state colors
  * fall back to `--cngx-color-success` / `--cngx-color-surface` so a
  * brand-theme change propagates to the confirmation visual.
  */
@@ -19,7 +19,7 @@
   }
 
   /**
-   * Border colour of the idle copy button.
+   * Border color of the idle copy button.
    * @group Surface
    */
   @property --cngx-copy-block-btn-border {
@@ -39,7 +39,7 @@
   }
 
   /**
-   * Text colour of the idle copy button.
+   * Text color of the idle copy button.
    * @group Surface
    */
   @property --cngx-copy-block-btn-color {
@@ -91,7 +91,7 @@
   }
 
   /**
-   * Border colour of the copied-state button. Falls back to
+   * Border color of the copied-state button. Falls back to
    * `--cngx-color-success`.
    * @group State / Copied
    */
@@ -102,7 +102,7 @@
   }
 
   /**
-   * Text colour of the copied-state button. Falls back to
+   * Text color of the copied-state button. Falls back to
    * `--cngx-color-success`.
    * @group State / Copied
    */
