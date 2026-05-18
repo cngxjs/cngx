@@ -28,6 +28,8 @@
 @use './action-button-theme' as action-button;
 @use './async-container-theme' as async-container;
 @use './avatar-theme' as avatar;
+@use './backdrop-theme' as backdrop;
+@use './badge-theme' as badge;
 @use './bottom-sheet-theme' as bottom-sheet;
 @use './card-theme' as card;
 @use './chart-theme' as chart;
@@ -35,11 +37,13 @@
 @use './close-button-theme' as close-button;
 @use './copy-block-theme' as copy-block;
 @use './dialog-theme' as dialog;
+@use './divider-theme' as divider;
 @use './empty-state-theme' as empty-state;
 @use './feedback-theme' as feedback;
 @use './field-theme' as field;
 @use './file-drop-theme' as file-drop;
 @use './filter-builder-theme' as filter-builder;
+@use './icon-theme' as icon;
 @use './interactive-controls-theme' as controls;
 @use './mat-treetable-theme' as mat-treetable;
 @use './popover-panel-theme' as popover-panel;
@@ -62,6 +66,8 @@
   @include action-button.theme($theme);
   @include async-container.theme($theme);
   @include avatar.theme($theme);
+  @include backdrop.theme($theme);
+  @include badge.theme($theme);
   @include bottom-sheet.theme($theme);
   @include card.theme($theme);
   @include chart.theme($theme);
@@ -70,11 +76,13 @@
   @include controls.theme($theme);
   @include copy-block.theme($theme);
   @include dialog.theme($theme);
+  @include divider.theme($theme);
   @include empty-state.theme($theme);
   @include feedback.theme($theme);
   @include field.theme($theme);
   @include file-drop.theme($theme);
   @include filter-builder.theme($theme);
+  @include icon.theme($theme);
   @include mat-treetable.theme($theme);
   @include popover-panel.theme($theme);
   @include ripple.theme($theme);

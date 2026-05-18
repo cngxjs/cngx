@@ -1,0 +1,24 @@
+@use '@angular/material' as mat;
+
+// Material bridge for CngxBackdrop. Re-points the scrim colour to
+// Material 3's --mat-sys-scrim so a cngx drawer / dialog backdrop
+// matches the scrim used by mat-sidenav / mat-dialog.
+//
+//   @use '@cngx/themes/material/backdrop-theme' as backdrop;
+//   html { @include backdrop.theme($theme); }
+
+@mixin color($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-backdrop-bg: color-mix(in srgb, var(--mat-sys-scrim) 32%, transparent);
+  } @else {
+    --cngx-backdrop-bg: rgba(0, 0, 0, 0.32);
+  }
+}
+
+@mixin theme($theme) {
+  @layer cngx.components {
+    :where([cngxBackdrop], .cngx-backdrop) {
+      @include color($theme);
+    }
+  }
+}
