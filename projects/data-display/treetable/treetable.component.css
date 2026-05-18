@@ -22,7 +22,7 @@
    */
   @property --cngx-treetable-header-bg {
     syntax: '<color>';
-    inherits: false;
+    inherits: true;
     initial-value: oklch(0.98 0.005 250);
   }
 
@@ -33,7 +33,7 @@
    */
   @property --cngx-treetable-header-border {
     syntax: '<color>';
-    inherits: false;
+    inherits: true;
     initial-value: oklch(0.92 0.005 250);
   }
 
@@ -53,7 +53,7 @@
    */
   @property --cngx-treetable-row-border {
     syntax: '<color>';
-    inherits: false;
+    inherits: true;
     initial-value: oklch(0.96 0.005 250);
   }
 
@@ -63,7 +63,7 @@
    */
   @property --cngx-treetable-row-hover-bg {
     syntax: '<color>';
-    inherits: false;
+    inherits: true;
     initial-value: oklch(0.97 0.015 250);
   }
 
@@ -73,7 +73,7 @@
    */
   @property --cngx-treetable-row-selected-bg {
     syntax: '<color>';
-    inherits: false;
+    inherits: true;
     initial-value: oklch(0.95 0.025 250);
   }
 
@@ -84,7 +84,7 @@
    */
   @property --cngx-treetable-focus-ring {
     syntax: '<color>';
-    inherits: false;
+    inherits: true;
     initial-value: oklch(0.66 0.19 50);
   }
 
@@ -392,6 +392,55 @@
     syntax: '*';
     inherits: false;
     initial-value: 1rem;
+  }
+
+  /* Delegating tokens — border / text / focus-ring track the
+   * foundation palette so a dark-mode swap on `--cngx-color-*`
+   * cascades through the treetable host. The @property
+   * initial-values above would otherwise shadow the var() chain. */
+  :root {
+    --cngx-treetable-header-border: var(--cngx-color-border);
+    --cngx-treetable-row-border: var(--cngx-color-border);
+    --cngx-treetable-header-color: var(--cngx-color-text);
+    --cngx-treetable-cell-color: var(--cngx-color-text);
+    --cngx-treetable-focus-ring: var(--cngx-color-primary);
+  }
+
+  /* Component-local cool-neutral surface tokens — flipped per color
+   * scheme. Header / hover / selected sit slightly above
+   * `--cngx-color-surface` (light: oklch 0.98–0.95, dark: 0.24–0.28)
+   * so rows stay distinguishable from the table surface in both
+   * modes. Muted color tracks the contrast curve. */
+  :root {
+    --cngx-treetable-header-bg: oklch(0.98 0.005 250);
+    --cngx-treetable-row-hover-bg: oklch(0.97 0.015 250);
+    --cngx-treetable-row-selected-bg: oklch(0.95 0.025 250);
+    --cngx-treetable-muted-color: oklch(0.5 0.015 250);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --cngx-treetable-header-bg: oklch(0.24 0.01 250);
+      --cngx-treetable-row-hover-bg: oklch(0.26 0.015 250);
+      --cngx-treetable-row-selected-bg: oklch(0.28 0.025 250);
+      --cngx-treetable-muted-color: oklch(0.7 0.015 250);
+    }
+  }
+
+  [data-color-scheme='dark'],
+  .dark {
+    --cngx-treetable-header-bg: oklch(0.24 0.01 250);
+    --cngx-treetable-row-hover-bg: oklch(0.26 0.015 250);
+    --cngx-treetable-row-selected-bg: oklch(0.28 0.025 250);
+    --cngx-treetable-muted-color: oklch(0.7 0.015 250);
+  }
+
+  [data-color-scheme='light'],
+  .light {
+    --cngx-treetable-header-bg: oklch(0.98 0.005 250);
+    --cngx-treetable-row-hover-bg: oklch(0.97 0.015 250);
+    --cngx-treetable-row-selected-bg: oklch(0.95 0.025 250);
+    --cngx-treetable-muted-color: oklch(0.5 0.015 250);
   }
 }
 

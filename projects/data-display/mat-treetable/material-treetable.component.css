@@ -99,7 +99,7 @@
    */
   @property --cngx-mat-treetable-row-hover-color {
     syntax: '<color>';
-    inherits: false;
+    inherits: true;
     initial-value: oklch(0 0 0 / 0.04);
   }
 
@@ -110,7 +110,7 @@
    */
   @property --cngx-mat-treetable-row-selected-color {
     syntax: '<color>';
-    inherits: false;
+    inherits: true;
     initial-value: oklch(0.66 0.19 50 / 0.12);
   }
 
@@ -276,6 +276,42 @@
     syntax: '<length>';
     inherits: false;
     initial-value: 10px;
+  }
+
+  /* Color-scheme defaults for the alpha-tinted row backgrounds and
+   * the empty-state text. The Material-bridge convention is to leave
+   * these unanchored from `--cngx-color-*` so the
+   * `mat-treetable-theme.scss` mixin can override per Material theme;
+   * however the bare defaults must still adapt to the user's color
+   * scheme so the component reads correctly even without the mixin.
+   * Hover / selected flip from alpha-on-black to alpha-on-white;
+   * empty-text tracks the same axis. */
+  :root {
+    --cngx-mat-treetable-row-hover-color: oklch(0 0 0 / 0.04);
+    --cngx-mat-treetable-row-selected-color: oklch(0.66 0.19 50 / 0.12);
+    --cngx-mat-treetable-empty-text-color: oklch(0 0 0 / 0.54);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --cngx-mat-treetable-row-hover-color: oklch(1 0 0 / 0.06);
+      --cngx-mat-treetable-row-selected-color: oklch(0.72 0.18 50 / 0.18);
+      --cngx-mat-treetable-empty-text-color: oklch(1 0 0 / 0.6);
+    }
+  }
+
+  [data-color-scheme='dark'],
+  .dark {
+    --cngx-mat-treetable-row-hover-color: oklch(1 0 0 / 0.06);
+    --cngx-mat-treetable-row-selected-color: oklch(0.72 0.18 50 / 0.18);
+    --cngx-mat-treetable-empty-text-color: oklch(1 0 0 / 0.6);
+  }
+
+  [data-color-scheme='light'],
+  .light {
+    --cngx-mat-treetable-row-hover-color: oklch(0 0 0 / 0.04);
+    --cngx-mat-treetable-row-selected-color: oklch(0.66 0.19 50 / 0.12);
+    --cngx-mat-treetable-empty-text-color: oklch(0 0 0 / 0.54);
   }
 }
 
