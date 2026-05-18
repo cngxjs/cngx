@@ -8,6 +8,19 @@
  * Opt out per-element in cngx.components or the app layer. */
 
 @layer cngx.base {
+  /* Page-level native chrome:
+   *  - scrollbar-color sets a hairline thumb on a transparent track so
+   *    page scrollbars match the border tone in both modes. scrollbar-width
+   *    thin trims them in Firefox + Chromium so they read like macOS
+   *    overlay bars rather than fat Windows defaults.
+   *  - caret-color tints the text-input caret with the brand. accent-color
+   *    on :root from cngx.tokens already covers checkbox / radio / range /
+   *    progress — caret-color is the one knob that doesn't piggyback on it. */
+  :root {
+    scrollbar-color: var(--cngx-color-border, oklch(0.88 0.005 250)) transparent;
+    scrollbar-width: thin;
+  }
+
   /* Bare <button>: transparent + hairline. Components in cngx.components
    * layer their own emphasis (solid bg, brand colour). Hover derives a 6%
    * color-mix tint from --cngx-button-bg so themes that re-skin the
@@ -39,6 +52,10 @@
     color: var(--cngx-color-text, oklch(0.2 0.01 250));
     font: inherit;
     font-size: var(--cngx-font-size-md, 0.9375rem);
+  }
+  input,
+  textarea {
+    caret-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
   }
 
   kbd {
