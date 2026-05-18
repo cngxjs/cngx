@@ -1,109 +1,216 @@
-/*
- * Default visuals for CngxActionButton. The component host has
- * display:contents and renders a <button class="cngx-action-button
- * cngx-action-button--{variant}"> inside.
+/**
+ * @overview
+ * Default visuals for `CngxActionButton`. The component host has
+ * `display: contents` and renders a `<button class="cngx-action-button
+ * cngx-action-button--{variant}">` inside.
  *
- * Selectors are not @scope-wrapped because .cngx-action-button is the
- * inner <button>, not the host — the cngx-action-button- class prefix
- * is the namespace. The .cngx-async--* state classes (set by the
- * cngxAsyncClick directive) live in @cngx/common/theming/components/
- * cngx-async.css so they apply globally regardless of CngxActionButton.
+ * Three variants share the same token surface — `primary` (filled),
+ * `secondary` (outlined), and `ghost` (text-only). State classes
+ * `.cngx-async--{pending,succeeded,failed}` are set by the
+ * `cngxAsyncClick` directive and live in
+ * `@cngx/common/theming/components/cngx-async.css` so they apply
+ * globally regardless of CngxActionButton.
  *
- * A Material bridge for consumers who opt in lives in the sibling
- * action-button-theme.scss.
+ * Pair with `@cngx/themes/material/action-button-theme` for Material 3
+ * primary / outline / error surfaces.
  */
 
 @layer cngx.tokens {
+  /**
+   * Transition shorthand for background-color / color / border-color /
+   * opacity transitions across all variants and async states.
+   * @group Motion
+   */
   @property --cngx-action-btn-transition {
     syntax: '*';
     inherits: false;
     initial-value: 0.2s ease;
   }
+
+  /**
+   * Corner radius of every variant.
+   * @group Layout
+   */
   @property --cngx-action-btn-radius {
     syntax: '<length>';
     inherits: false;
     initial-value: 6px;
   }
+
+  /**
+   * Vertical + horizontal padding shorthand. Both axes can be re-driven
+   * individually by overriding with a one- or two-value shorthand.
+   * @group Layout
+   * @example
+   * ```css
+   * .compact { --cngx-action-btn-padding: 4px 10px; }
+   * ```
+   */
   @property --cngx-action-btn-padding {
     syntax: '*';
     inherits: false;
     initial-value: 8px 16px;
   }
+
+  /**
+   * Border colour of the base (non-variant) `.cngx-action-button` rule.
+   * Variant rules override this per appearance.
+   * @group Surface
+   * @see [[--cngx-color-border]]
+   */
   @property --cngx-action-btn-border {
     syntax: '<color>';
     inherits: false;
     initial-value: oklch(0.87 0 0);
   }
+
+  /**
+   * Background of the base rule. Variants override.
+   * @group Surface
+   */
   @property --cngx-action-btn-bg {
     syntax: '<color>';
     inherits: false;
     initial-value: transparent;
   }
+
+  /**
+   * Opacity applied while `cngxAsyncClick` reports `pending`. Combined
+   * with `cursor: wait` on the same state.
+   * @group State / Pending
+   */
   @property --cngx-action-btn-pending-opacity {
     syntax: '<number>';
     inherits: false;
     initial-value: 0.7;
   }
+
+  /**
+   * Background tint after a successful async commit.
+   * @group State / Succeeded
+   */
   @property --cngx-action-btn-succeeded-bg {
     syntax: '<color>';
     inherits: false;
     initial-value: oklch(0.95 0.04 145);
   }
+
+  /**
+   * Text colour after a successful async commit.
+   * @group State / Succeeded
+   */
   @property --cngx-action-btn-succeeded-color {
     syntax: '<color>';
     inherits: true;
     initial-value: oklch(0.5 0.15 145);
   }
+
+  /**
+   * Border colour after a successful async commit.
+   * @group State / Succeeded
+   */
   @property --cngx-action-btn-succeeded-border {
     syntax: '<color>';
     inherits: false;
     initial-value: oklch(0.5 0.15 145);
   }
+
+  /**
+   * Background tint after a failed async commit.
+   * @group State / Failed
+   */
   @property --cngx-action-btn-failed-bg {
     syntax: '<color>';
     inherits: false;
     initial-value: oklch(0.95 0.025 25);
   }
+
+  /**
+   * Text colour after a failed async commit.
+   * @group State / Failed
+   */
   @property --cngx-action-btn-failed-color {
     syntax: '<color>';
     inherits: true;
     initial-value: oklch(0.45 0.15 25);
   }
+
+  /**
+   * Border colour after a failed async commit.
+   * @group State / Failed
+   */
   @property --cngx-action-btn-failed-border {
     syntax: '<color>';
     inherits: false;
     initial-value: oklch(0.45 0.15 25);
   }
+
+  /**
+   * Hover state-layer for the ghost variant — subtle tint so the button
+   * is felt without competing with primary actions.
+   * @group Variant / Ghost
+   */
   @property --cngx-action-btn-ghost-hover-bg {
     syntax: '<color>';
     inherits: false;
     initial-value: oklch(0 0 0 / 0.04);
   }
+
+  /**
+   * Background of the primary variant (filled).
+   * @group Variant / Primary
+   */
   @property --cngx-action-btn-primary-bg {
     syntax: '<color>';
     inherits: false;
     initial-value: oklch(0.55 0.15 250);
   }
+
+  /**
+   * Text colour of the primary variant.
+   * @group Variant / Primary
+   */
   @property --cngx-action-btn-primary-color {
     syntax: '<color>';
     inherits: true;
     initial-value: oklch(1 0 0);
   }
+
+  /**
+   * Background of the secondary variant (outlined). Defaults to
+   * transparent so the surface beneath shines through.
+   * @group Variant / Secondary
+   */
   @property --cngx-action-btn-secondary-bg {
     syntax: '<color>';
     inherits: false;
     initial-value: transparent;
   }
+
+  /**
+   * Text colour of the secondary variant.
+   * @group Variant / Secondary
+   */
   @property --cngx-action-btn-secondary-color {
     syntax: '<color>';
     inherits: true;
     initial-value: oklch(0.55 0.15 250);
   }
+
+  /**
+   * Border colour of the secondary variant.
+   * @group Variant / Secondary
+   */
   @property --cngx-action-btn-secondary-border {
     syntax: '<color>';
     inherits: false;
     initial-value: oklch(0.55 0.005 290);
   }
+
+  /**
+   * Text colour of the ghost variant.
+   * @group Variant / Ghost
+   */
   @property --cngx-action-btn-ghost-color {
     syntax: '<color>';
     inherits: true;
