@@ -45,6 +45,28 @@
     inherits: true;
     initial-value: oklch(0.55 0.21 27);
   }
+
+  /* Delegating token — over-color tracks the danger chain so a
+   * dark-mode swap on `--cngx-color-danger` cascades through. */
+  :root {
+    --cngx-field-char-count-over-color: var(--cngx-color-danger);
+  }
+
+  /* Dark-mode swap — neutral muted gray lifts so the counter keeps
+   * its secondary-information weight on the dark surface. */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-color-scheme='light']):not(.light) {
+      --cngx-field-char-count-color: oklch(0.7 0 0);
+    }
+  }
+  [data-color-scheme='dark'],
+  .dark {
+    --cngx-field-char-count-color: oklch(0.7 0 0);
+  }
+  [data-color-scheme='light'],
+  .light {
+    --cngx-field-char-count-color: oklch(0.45 0 0);
+  }
 }
 
 @layer cngx.components {

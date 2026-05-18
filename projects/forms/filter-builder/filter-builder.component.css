@@ -65,23 +65,26 @@
 
   /**
    * Border shorthand of each group container.
+   * `inherits: true` so the :root delegating value reaches nested
+   * group containers.
    * @group Surface
    */
   @property --cngx-filter-builder-group-border {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 1px solid oklch(0.87 0 0);
   }
 
   /**
    * Border color of group containers and the action-button stroke.
-   * Falls back through `--cngx-color-border`.
+   * Falls back through `--cngx-color-border`. `inherits: true` so a
+   * :root override flows into the builder host.
    * @group Surface
    * @see [[--cngx-color-border]]
    */
   @property --cngx-filter-builder-border-color {
     syntax: '<color>';
-    inherits: false;
+    inherits: true;
     initial-value: oklch(0.87 0 0);
   }
 
@@ -107,12 +110,13 @@
   }
 
   /**
-   * Left rail border shorthand for nested groups.
+   * Left rail border shorthand for nested groups. `inherits: true`
+   * so the :root delegating value reaches nested rails.
    * @group Surface
    */
   @property --cngx-filter-builder-rail {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 2px solid oklch(0.87 0 0);
   }
 
@@ -139,11 +143,13 @@
 
   /**
    * Text color of the empty-state slot — muted by default.
+   * `inherits: true` so the :root dark-mode override reaches the
+   * empty slot inside the builder host.
    * @group State / Empty
    */
   @property --cngx-filter-builder-empty-fg {
     syntax: '<color>';
-    inherits: false;
+    inherits: true;
     initial-value: oklch(0.45 0 0);
   }
 
@@ -208,12 +214,13 @@
   }
 
   /**
-   * Border color of an action button.
+   * Border color of an action button. `inherits: true` so a :root
+   * delegating value reaches the button inside the builder host.
    * @group Surface
    */
   @property --cngx-filter-builder-action-border {
     syntax: '<color>';
-    inherits: false;
+    inherits: true;
     initial-value: oklch(0.82 0 0);
   }
 
@@ -229,12 +236,13 @@
 
   /**
    * Background tint applied on hover / focus-visible of an action
-   * button.
+   * button. `inherits: true` so the :root dark-mode override
+   * (alpha-on-white in dark) reaches the button.
    * @group State / Hover
    */
   @property --cngx-filter-builder-action-hover-bg {
     syntax: '<color>';
-    inherits: false;
+    inherits: true;
     initial-value: oklch(0 0 0 / 0.04);
   }
 
@@ -300,6 +308,42 @@
     syntax: '*';
     inherits: false;
     initial-value: 1em;
+  }
+
+  /* Delegating tokens — borders + remove-tone track the foundation
+   * chain so a dark-mode swap on `--cngx-color-border` /
+   * `--cngx-color-danger` cascades through. Group/rail shorthands
+   * pin their structural part (1px solid / 2px solid) and inherit
+   * the color via the delegating border-color token. */
+  :root {
+    --cngx-filter-builder-border-color: var(--cngx-color-border);
+    --cngx-filter-builder-action-border: var(--cngx-color-border);
+    --cngx-filter-builder-group-border: 1px solid var(--cngx-color-border);
+    --cngx-filter-builder-rail: 2px solid var(--cngx-color-border);
+    --cngx-filter-builder-action-remove-fg: var(--cngx-color-danger);
+    --cngx-filter-builder-error-fg: var(--cngx-color-danger);
+  }
+
+  /* Dark-mode component-local swap — alpha-on-black hover-bg
+   * vanishes on dark surfaces, so the dark block lifts it to
+   * alpha-on-white. Muted empty-state text inverts from a dim
+   * dark gray to a soft light gray so it keeps its
+   * secondary-information weight. */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-color-scheme='light']):not(.light) {
+      --cngx-filter-builder-action-hover-bg: oklch(1 0 0 / 0.06);
+      --cngx-filter-builder-empty-fg: oklch(0.7 0 0);
+    }
+  }
+  [data-color-scheme='dark'],
+  .dark {
+    --cngx-filter-builder-action-hover-bg: oklch(1 0 0 / 0.06);
+    --cngx-filter-builder-empty-fg: oklch(0.7 0 0);
+  }
+  [data-color-scheme='light'],
+  .light {
+    --cngx-filter-builder-action-hover-bg: oklch(0 0 0 / 0.04);
+    --cngx-filter-builder-empty-fg: oklch(0.45 0 0);
   }
 }
 

@@ -16,13 +16,14 @@
   /**
    * Outline shorthand for the incomplete-expression state — dashed
    * warning hue draws attention without committing to an error tone.
-   * Falls back through `--cngx-color-warning`.
+   * Falls back through `--cngx-color-warning`. `inherits: true` so
+   * the :root delegating value reaches the expression-row host.
    * @group State / Incomplete
    * @see [[--cngx-color-warning]]
    */
   @property --cngx-filter-builder-incomplete-outline {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 1px dashed oklch(0.55 0.15 65);
   }
 
@@ -34,6 +35,13 @@
     syntax: '<length>';
     inherits: false;
     initial-value: 2px;
+  }
+
+  /* Delegating token — incomplete-outline pins its structural part
+   * (1px dashed) and inherits the warning hue via the foundation
+   * chain so a dark-mode swap on `--cngx-color-warning` cascades. */
+  :root {
+    --cngx-filter-builder-incomplete-outline: 1px dashed var(--cngx-color-warning);
   }
 }
 

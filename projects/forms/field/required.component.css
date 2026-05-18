@@ -18,6 +18,12 @@
     inherits: true;
     initial-value: oklch(0.55 0.21 27);
   }
+
+  /* Delegating token — required-marker tracks the danger chain so a
+   * dark-mode swap on `--cngx-color-danger` cascades through. */
+  :root {
+    --cngx-field-required-color: var(--cngx-color-danger);
+  }
 }
 
 @layer cngx.components {

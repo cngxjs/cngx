@@ -30,6 +30,12 @@
     inherits: true;
     initial-value: oklch(0.55 0.21 27);
   }
+
+  /* Delegating token — error text tracks the danger chain so a
+   * dark-mode swap on `--cngx-color-danger` cascades through. */
+  :root {
+    --cngx-form-errors-color: var(--cngx-color-danger);
+  }
 }
 
 @layer cngx.components {
