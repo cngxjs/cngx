@@ -98,11 +98,13 @@
 
   /**
    * Background tint applied on hover — a subtle neutral overlay.
+   * `inherits: true` so the :root dark-mode override reaches the
+   * inner `<button>` on hover.
    * @group State / Hover
    */
   @property --cngx-close-button-hover-bg {
     syntax: '<color>';
-    inherits: false;
+    inherits: true;
     initial-value: oklch(0 0 0 / 0.04);
   }
 
@@ -144,6 +146,22 @@
     syntax: '<length>';
     inherits: false;
     initial-value: 16px;
+  }
+
+  /* Dark-mode swap — hover wash inverts to white-alpha so the
+   * subtle hover surface remains visible against the dark page. */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-color-scheme='light']):not(.light) {
+      --cngx-close-button-hover-bg: oklch(1 0 0 / 0.06);
+    }
+  }
+  [data-color-scheme='dark'],
+  .dark {
+    --cngx-close-button-hover-bg: oklch(1 0 0 / 0.06);
+  }
+  [data-color-scheme='light'],
+  .light {
+    --cngx-close-button-hover-bg: oklch(0 0 0 / 0.04);
   }
 }
 

@@ -81,12 +81,14 @@
 
   /**
    * Background of the copied-state button — soft success tint.
+   * `inherits: true` so the :root dark-mode override reaches the
+   * button inside the copy-block host.
    * @group State / Copied
    * @see [[--cngx-color-success]]
    */
   @property --cngx-copy-block-btn-copied-bg {
     syntax: '<color>';
-    inherits: false;
+    inherits: true;
     initial-value: oklch(0.96 0.025 145);
   }
 
@@ -97,19 +99,41 @@
    */
   @property --cngx-copy-block-btn-copied-border {
     syntax: '<color>';
-    inherits: false;
+    inherits: true;
     initial-value: oklch(0.5 0.12 145);
   }
 
   /**
    * Text color of the copied-state button. Falls back to
-   * `--cngx-color-success`.
+   * `--cngx-color-success`. `inherits: true` so the :root dark-mode
+   * override reaches the button.
    * @group State / Copied
    */
   @property --cngx-copy-block-btn-copied-color {
     syntax: '<color>';
-    inherits: false;
+    inherits: true;
     initial-value: oklch(0.5 0.12 145);
+  }
+
+  /* Dark-mode swap — copied-state surface flips from a light-green
+   * tint to a dark-green tint, and the matching text color flips
+   * from a mid-green hue to a light-green hue. The border stays at
+   * mid-green since it reads on either surface. */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-color-scheme='light']):not(.light) {
+      --cngx-copy-block-btn-copied-bg: oklch(0.32 0.06 145);
+      --cngx-copy-block-btn-copied-color: oklch(0.85 0.13 145);
+    }
+  }
+  [data-color-scheme='dark'],
+  .dark {
+    --cngx-copy-block-btn-copied-bg: oklch(0.32 0.06 145);
+    --cngx-copy-block-btn-copied-color: oklch(0.85 0.13 145);
+  }
+  [data-color-scheme='light'],
+  .light {
+    --cngx-copy-block-btn-copied-bg: oklch(0.96 0.025 145);
+    --cngx-copy-block-btn-copied-color: oklch(0.5 0.12 145);
   }
 }
 

@@ -112,11 +112,13 @@
 
   /**
    * Background of the off-state track — neutral muted by default.
+   * `inherits: true` so the :root dark-mode override reaches the
+   * track inside the toggle host.
    * @group State / Off
    */
   @property --cngx-toggle-track-bg-off {
     syntax: '<color>';
-    inherits: false;
+    inherits: true;
     initial-value: oklch(0 0 0 / 0.25);
   }
 
@@ -181,6 +183,23 @@
     inherits: false;
     initial-value: 0 1px 2px oklch(0 0 0 / 0.25);
   }
+
+  /* Dark-mode swap — the off-state track is alpha-on-black, which
+   * dissolves into a dark page. Flip to alpha-on-white so the
+   * unchecked track still reads as a muted pill. */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-color-scheme='light']):not(.light) {
+      --cngx-toggle-track-bg-off: oklch(1 0 0 / 0.25);
+    }
+  }
+  [data-color-scheme='dark'],
+  .dark {
+    --cngx-toggle-track-bg-off: oklch(1 0 0 / 0.25);
+  }
+  [data-color-scheme='light'],
+  .light {
+    --cngx-toggle-track-bg-off: oklch(0 0 0 / 0.25);
+  }
 }
 
 @layer cngx.components {
@@ -231,10 +250,26 @@
       inset-inline-start: var(--cngx-toggle-thumb-inset, 0.125rem);
       inline-size: var(--cngx-toggle-thumb-size, 1rem);
       block-size: var(--cngx-toggle-thumb-size, 1rem);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
       border-radius: 50%;
       background: var(--cngx-toggle-thumb-bg, oklch(1 0 0));
       box-shadow: var(--cngx-toggle-thumb-shadow, 0 1px 2px oklch(0 0 0 / 0.25));
       transition: transform var(--cngx-toggle-transition, 150ms ease);
+    }
+
+    /* Custom glyph projected via [thumbGlyph] — drop the default dot
+     * so the consumer's icon stands alone instead of layering over a
+     * white circle. The glyph inherits currentColor and scales to the
+     * thumb's box via font-size, so a plain `<span>★</span>` fits
+     * without per-consumer sizing. */
+    .cngx-toggle__thumb:has(*) {
+      background: transparent;
+      box-shadow: none;
+      font-size: var(--cngx-toggle-thumb-size, 1rem);
+      color: var(--cngx-toggle-thumb-bg, oklch(1 0 0));
     }
 
     :scope.cngx-toggle--checked .cngx-toggle__thumb {
