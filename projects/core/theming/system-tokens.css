@@ -46,6 +46,13 @@
   @property --cngx-color-warning { syntax: '<color>'; inherits: true; initial-value: oklch(0.72 0.15 75); }
   @property --cngx-color-info    { syntax: '<color>'; inherits: true; initial-value: oklch(0.65 0.12 240); }
 
+  /* Bare-atom backgrounds — exposed as theme hooks. Default is transparent
+   * so bare <button>/<input>/<textarea>/<select> read as hairline shells,
+   * but a consumer theme can override either token at :root to re-skin
+   * every bare atom without re-declaring the base-layer rules. */
+  @property --cngx-button-bg { syntax: '<color>'; inherits: true; initial-value: transparent; }
+  @property --cngx-field-bg  { syntax: '<color>'; inherits: true; initial-value: transparent; }
+
   /* Typography — font-size uses syntax: '*' because CSS @property forbids
    * `rem` in `<length>` initial-value (must be "computationally independent",
    * i.e. resolvable without font context). Universal syntax keeps the rem
