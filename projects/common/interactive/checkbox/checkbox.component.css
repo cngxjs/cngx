@@ -25,6 +25,14 @@
       outline: none;
       font: inherit;
       color: var(--cngx-checkbox-color, inherit);
+
+      /* Pin baseline to the middle of the box. Default vertical-align
+       * for inline-flex is 'baseline' — for two siblings with different
+       * content footprints (empty indicator vs glyph-filled indicator)
+       * the synthesised baseline lands at different y positions, so the
+       * elements shift up/down relative to each other when the checked
+       * state changes which template branch the indicator renders. */
+      vertical-align: middle;
     }
 
     :scope.cngx-checkbox--disabled {
