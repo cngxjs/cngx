@@ -37,11 +37,13 @@
 }
 // main.ts mirrors the compodocx dark-mode preference onto
 // <html data-color-scheme="dark|light"> so the cngx foundation and the
-// examples-app chrome both read the same signal. Absence of the
-// attribute means no explicit preference — the foundation's
-// `@media (prefers-color-scheme: dark)` block then drives OS auto-follow,
-// and this OS-auto block mirrors it for examples-app surfaces.
-html[data-color-scheme='dark'] {
+// examples-app chrome both read the same signal. The `.dark` / `.light`
+// class form is accepted in parallel (Tailwind/shadcn convention) so
+// consumers picking either path still get their shell colours.
+// Absence of every signal means no explicit preference — the
+// `@media (prefers-color-scheme: dark)` block then drives OS auto-follow.
+html[data-color-scheme='dark'],
+html.dark {
   --cngx-ex-bg: #111111;
   --cngx-ex-text: #e6e6e6;
   --cngx-ex-muted: #aaaaaa;
@@ -54,7 +56,7 @@ html[data-color-scheme='dark'] {
 }
 
 @media (prefers-color-scheme: dark) {
-  html:not([data-color-scheme='light']) {
+  html:not([data-color-scheme='light']):not(.light) {
     --cngx-ex-bg: #111111;
     --cngx-ex-text: #e6e6e6;
     --cngx-ex-muted: #aaaaaa;

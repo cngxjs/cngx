@@ -18,10 +18,14 @@
  *   2. `@media (prefers-color-scheme: dark)`         — OS auto-follow,
  *      with `:root:not([data-color-scheme="light"])` so a user opt-out
  *      always wins.
- *   3. `[data-color-scheme="dark"]`                  — explicit dark.
- *      Can be set on `<html>` (user toggle), on a section wrapper
- *      (dark island in a light page) or on a single component.
- *   4. `[data-color-scheme="light"]`                 — explicit light.
+ *   3. `[data-color-scheme="dark"]` OR `.dark`       — explicit dark.
+ *      Either signal can be set on `<html>` (user toggle), on a
+ *      section wrapper (dark island in a light page), or on a
+ *      single component. The `.dark` form is for direct
+ *      compatibility with class-based dark-mode conventions
+ *      (Tailwind `darkMode: 'class'`, shadcn, etc.) so consumers
+ *      can flip a class instead of an attribute.
+ *   4. `[data-color-scheme="light"]` OR `.light`     — explicit light.
  *      Mirror of (3) so a light island inside a dark section works.
  *
  * The pattern uses only Custom Properties + `@media` + attribute
@@ -375,13 +379,13 @@
     accent-color: var(--cngx-color-primary);
   }
 
-  /* Block 2 — OS auto-follow. `:not([data-color-scheme="light"])`
-   * lets a user opt out via the attribute even when the OS prefers
-   * dark. Semantic colors lift +0.06-0.08 L and shed ~0.01 C in
-   * dark mode — keeps the hue identity while staying readable
-   * against the dark surface without crossing into neon territory. */
+  /* Block 2 — OS auto-follow. Both opt-out signals are excluded
+   * here so a user-pinned light island wins over OS dark.
+   * Semantic colors lift +0.06-0.08 L and shed ~0.01 C in dark
+   * mode — keeps the hue identity while staying readable against
+   * the dark surface without crossing into neon territory. */
   @media (prefers-color-scheme: dark) {
-    :root:not([data-color-scheme='light']) {
+    :root:not([data-color-scheme='light']):not(.light) {
       color-scheme: dark;
       --cngx-color-surface: oklch(0.2 0.01 250);
       --cngx-color-text: oklch(0.95 0.01 250);
@@ -394,12 +398,15 @@
     }
   }
 
-  /* Block 3 — explicit dark. Set `data-color-scheme="dark"` on
-   * `<html>` for a user toggle, on a section wrapper for a dark
-   * island in a light page, or on a single component for a one-off
-   * inversion. Same values as Block 2; declared once more so the
+  /* Block 3 — explicit dark. Either signal — the typed attribute
+   * `data-color-scheme="dark"` or the bare `.dark` class — can be
+   * set on `<html>` (user toggle), on a section wrapper (dark
+   * island in a light page), or on a single component. The class
+   * form is for direct compatibility with Tailwind/shadcn-style
+   * conventions. Same values as Block 2; declared once more so the
    * swap works without depending on the media query. */
-  [data-color-scheme='dark'] {
+  [data-color-scheme='dark'],
+  .dark {
     color-scheme: dark;
     --cngx-color-surface: oklch(0.2 0.01 250);
     --cngx-color-text: oklch(0.95 0.01 250);
@@ -412,10 +419,12 @@
   }
 
   /* Block 4 — explicit light. Mirror of Block 3 so a light island
-   * inside a dark ancestor (`<aside data-color-scheme="light">`)
-   * resets cleanly. Same values as Block 1; declared once more so
-   * the override works without `:root` specificity. */
-  [data-color-scheme='light'] {
+   * inside a dark ancestor (`<aside data-color-scheme="light">` or
+   * `<aside class="light">`) resets cleanly. Same values as Block
+   * 1; declared once more so the override works without `:root`
+   * specificity. */
+  [data-color-scheme='light'],
+  .light {
     color-scheme: light;
     --cngx-color-surface: oklch(1 0 0);
     --cngx-color-text: oklch(0.2 0.01 250);
