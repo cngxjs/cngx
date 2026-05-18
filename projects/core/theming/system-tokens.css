@@ -10,9 +10,24 @@
  * Note on syntax: `@property` is a top-level at-rule. It cannot be
  * nested inside a selector, but it CAN live inside an `@layer`.
  * Declarations here register the token type (animation
- * interpolation, type-checking) and a static default. The `:root`
- * block below provides conditional defaults (`light-dark()`) that
- * `@property` cannot express directly.
+ * interpolation, type-checking) and a static default. The four
+ * blocks at the bottom of this file drive the dark-mode swap
+ * across every level it can be triggered from:
+ *
+ *   1. `:root`                                       — light defaults.
+ *   2. `@media (prefers-color-scheme: dark)`         — OS auto-follow,
+ *      with `:root:not([data-color-scheme="light"])` so a user opt-out
+ *      always wins.
+ *   3. `[data-color-scheme="dark"]`                  — explicit dark.
+ *      Can be set on `<html>` (user toggle), on a section wrapper
+ *      (dark island in a light page) or on a single component.
+ *   4. `[data-color-scheme="light"]`                 — explicit light.
+ *      Mirror of (3) so a light island inside a dark section works.
+ *
+ * The pattern uses only Custom Properties + `@media` + attribute
+ * selectors, so it works in every browser that has @property (no
+ * `light-dark()` requirement — that function is a clean DRY win in
+ * modern browsers but its iOS 16 gap is why we don't depend on it).
  *
  * Primary color is Ember `oklch(0.66 0.19 50)`; semantic colors
  * lift +0.06-0.08 L and shed ~0.01 C in dark mode. `accent-color`
@@ -181,8 +196,9 @@
 
   /**
    * Surface color — page / panel background. Static initial-value
-   * here gets overridden in the `:root` block below with
-   * `light-dark()` for OS-following dark mode.
+   * here is the light default; the four blocks at the bottom of
+   * this file swap it under OS auto, explicit `data-color-scheme`,
+   * and light/dark islands.
    * @group Surface
    */
   @property --cngx-color-surface {
@@ -342,27 +358,72 @@
     initial-value: 0 16px 40px oklch(0 0 0 / 0.18);
   }
 
-  /* Conditional defaults — OS-follows dark mode via light-dark().
-   * Consumers can force a mode by setting [data-theme="dark"] in
-   * cngx.theme, which beats this :root by being in a later layer.
-   *
-   * Semantic colors lift +0.06-0.08 L and shed ~0.01 C in dark mode —
-   * keeps the hue identity while staying readable against dark surface
-   * without crossing into neon territory.
-   *
-   * `accent-color` cascades to every native form control (checkbox,
-   * radio, range, progress) so the browser-rendered atoms match the
-   * cngx accent out of the box. Per-element override stays available. */
+  /* Block 1 — light defaults. Single source of truth for every
+   * semantic color. `accent-color` cascades to every native form
+   * control (checkbox, radio, range, progress) so the browser-
+   * rendered atoms match the cngx accent out of the box. */
   :root {
-    color-scheme: light dark;
-    --cngx-color-surface: light-dark(oklch(1 0 0), oklch(0.2 0.01 250));
-    --cngx-color-text: light-dark(oklch(0.2 0.01 250), oklch(0.95 0.01 250));
-    --cngx-color-border: light-dark(oklch(0.88 0.005 250), oklch(0.32 0.005 250));
-    --cngx-color-primary: light-dark(oklch(0.66 0.19 50), oklch(0.72 0.18 50));
-    --cngx-color-danger: light-dark(oklch(0.6 0.18 25), oklch(0.68 0.17 25));
-    --cngx-color-success: light-dark(oklch(0.6 0.15 145), oklch(0.68 0.14 145));
-    --cngx-color-warning: light-dark(oklch(0.72 0.15 75), oklch(0.78 0.14 75));
-    --cngx-color-info: light-dark(oklch(0.65 0.12 240), oklch(0.72 0.11 240));
+    color-scheme: light;
+    --cngx-color-surface: oklch(1 0 0);
+    --cngx-color-text: oklch(0.2 0.01 250);
+    --cngx-color-border: oklch(0.88 0.005 250);
+    --cngx-color-primary: oklch(0.66 0.19 50);
+    --cngx-color-danger: oklch(0.6 0.18 25);
+    --cngx-color-success: oklch(0.6 0.15 145);
+    --cngx-color-warning: oklch(0.72 0.15 75);
+    --cngx-color-info: oklch(0.65 0.12 240);
     accent-color: var(--cngx-color-primary);
+  }
+
+  /* Block 2 — OS auto-follow. `:not([data-color-scheme="light"])`
+   * lets a user opt out via the attribute even when the OS prefers
+   * dark. Semantic colors lift +0.06-0.08 L and shed ~0.01 C in
+   * dark mode — keeps the hue identity while staying readable
+   * against the dark surface without crossing into neon territory. */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-color-scheme='light']) {
+      color-scheme: dark;
+      --cngx-color-surface: oklch(0.2 0.01 250);
+      --cngx-color-text: oklch(0.95 0.01 250);
+      --cngx-color-border: oklch(0.32 0.005 250);
+      --cngx-color-primary: oklch(0.72 0.18 50);
+      --cngx-color-danger: oklch(0.68 0.17 25);
+      --cngx-color-success: oklch(0.68 0.14 145);
+      --cngx-color-warning: oklch(0.78 0.14 75);
+      --cngx-color-info: oklch(0.72 0.11 240);
+    }
+  }
+
+  /* Block 3 — explicit dark. Set `data-color-scheme="dark"` on
+   * `<html>` for a user toggle, on a section wrapper for a dark
+   * island in a light page, or on a single component for a one-off
+   * inversion. Same values as Block 2; declared once more so the
+   * swap works without depending on the media query. */
+  [data-color-scheme='dark'] {
+    color-scheme: dark;
+    --cngx-color-surface: oklch(0.2 0.01 250);
+    --cngx-color-text: oklch(0.95 0.01 250);
+    --cngx-color-border: oklch(0.32 0.005 250);
+    --cngx-color-primary: oklch(0.72 0.18 50);
+    --cngx-color-danger: oklch(0.68 0.17 25);
+    --cngx-color-success: oklch(0.68 0.14 145);
+    --cngx-color-warning: oklch(0.78 0.14 75);
+    --cngx-color-info: oklch(0.72 0.11 240);
+  }
+
+  /* Block 4 — explicit light. Mirror of Block 3 so a light island
+   * inside a dark ancestor (`<aside data-color-scheme="light">`)
+   * resets cleanly. Same values as Block 1; declared once more so
+   * the override works without `:root` specificity. */
+  [data-color-scheme='light'] {
+    color-scheme: light;
+    --cngx-color-surface: oklch(1 0 0);
+    --cngx-color-text: oklch(0.2 0.01 250);
+    --cngx-color-border: oklch(0.88 0.005 250);
+    --cngx-color-primary: oklch(0.66 0.19 50);
+    --cngx-color-danger: oklch(0.6 0.18 25);
+    --cngx-color-success: oklch(0.6 0.15 145);
+    --cngx-color-warning: oklch(0.72 0.15 75);
+    --cngx-color-info: oklch(0.65 0.12 240);
   }
 }

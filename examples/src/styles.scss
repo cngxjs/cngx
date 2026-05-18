@@ -14,10 +14,9 @@
 @import '../../projects/themes/cngx.css';
 
 :root {
-  // Pin the UA color-scheme to match the explicit theme so native form
-  // controls / scrollbars / details disclosure don't flip with the OS
-  // preference when compodocx is light and the user's OS is dark.
-  color-scheme: light;
+  // `color-scheme` is owned by the foundation (`projects/core/theming/
+  // system-tokens.css`). It flips based on `data-color-scheme` and the
+  // OS media query — examples-app no longer pins it here.
   font-family:
     system-ui,
     -apple-system,
@@ -36,12 +35,13 @@
   --cngx-ex-focus: #2563eb;
   color: var(--cngx-ex-text);
 }
-// compodocx coordinates theme via a `.dark` class on <html> (and a
-// postMessage fallback for cross-origin iframes — see main.ts). Using
-// prefers-color-scheme would desync the iframe whenever the host doc's
-// user toggle disagreed with the OS, so we read the class instead.
-html.dark {
-  color-scheme: dark;
+// main.ts mirrors the compodocx dark-mode preference onto
+// <html data-color-scheme="dark|light"> so the cngx foundation and the
+// examples-app chrome both read the same signal. Absence of the
+// attribute means no explicit preference — the foundation's
+// `@media (prefers-color-scheme: dark)` block then drives OS auto-follow,
+// and this OS-auto block mirrors it for examples-app surfaces.
+html[data-color-scheme='dark'] {
   --cngx-ex-bg: #111111;
   --cngx-ex-text: #e6e6e6;
   --cngx-ex-muted: #aaaaaa;
@@ -51,6 +51,20 @@ html.dark {
   --cngx-ex-surface-alt: #1f1f1f;
   --cngx-ex-highlight-bg: rgba(121, 192, 255, 0.18);
   --cngx-ex-focus: #79c0ff;
+}
+
+@media (prefers-color-scheme: dark) {
+  html:not([data-color-scheme='light']) {
+    --cngx-ex-bg: #111111;
+    --cngx-ex-text: #e6e6e6;
+    --cngx-ex-muted: #aaaaaa;
+    --cngx-ex-faint: #777777;
+    --cngx-ex-border: #555555;
+    --cngx-ex-surface: #1a1a1a;
+    --cngx-ex-surface-alt: #1f1f1f;
+    --cngx-ex-highlight-bg: rgba(121, 192, 255, 0.18);
+    --cngx-ex-focus: #79c0ff;
+  }
 }
 
 body {
