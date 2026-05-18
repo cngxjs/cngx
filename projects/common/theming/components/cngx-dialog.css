@@ -68,11 +68,13 @@
   }
 
   /**
-   * Maximum inline size of the dialog.
+   * Maximum inline size of the dialog. `<length-percentage>` so
+   * consumers (e.g. CngxBottomSheet) can override with `100%`
+   * without falling back to the initial-value via syntax rejection.
    * @group Layout
    */
   @property --cngx-dialog-max-width {
-    syntax: '<length>';
+    syntax: '<length-percentage>';
     inherits: false;
     initial-value: 560px;
   }
@@ -88,35 +90,42 @@
   }
 
   /**
-   * Background of the `::backdrop` pseudo-element.
+   * Background of the `::backdrop` pseudo-element. `inherits: true`
+   * so a consumer override on `dialog[cngxDialog]` reaches the
+   * `::backdrop` pseudo (pseudo-elements inherit from the originating
+   * element, but only when the registered property allows it).
    * @group Surface
    */
   @property --cngx-dialog-backdrop-bg {
     syntax: '<color>';
-    inherits: false;
+    inherits: true;
     initial-value: oklch(0 0 0 / 0.5);
   }
 
   /**
    * Blur radius applied to the `::backdrop`. Zero by default; bump to
-   * apply a frosted-glass effect.
+   * apply a frosted-glass effect. `inherits: true` so the override
+   * cascades to the `::backdrop` pseudo.
    * @group Surface
    */
   @property --cngx-dialog-backdrop-blur {
     syntax: '<length>';
-    inherits: false;
+    inherits: true;
     initial-value: 0px;
   }
 
   /**
    * Opacity of the `::backdrop`. `CngxDialogStack` uses this to
    * suppress the inner backdrop while a parent dialog is also open
-   * (avoids stacked scrim).
+   * (avoids stacked scrim). `inherits: true` is load-bearing — the
+   * directive sets this token inline on the dialog element, and the
+   * `::backdrop` pseudo only reads it if the registered property
+   * inherits from the originating element.
    * @group Surface
    */
   @property --cngx-dialog-backdrop-opacity {
     syntax: '<number>';
-    inherits: false;
+    inherits: true;
     initial-value: 1;
   }
 
@@ -197,7 +206,7 @@
       color: var(--cngx-dialog-color, inherit);
       box-shadow: var(--cngx-dialog-shadow, 0 8px 32px oklch(0 0 0 / 0.12));
       overflow: auto;
-      scrollbar-gutter: stable;
+      /* scrollbar-gutter: stable; */
       transition:
         opacity var(--cngx-dialog-transition-duration, 200ms)
           var(--cngx-dialog-transition-easing, ease),

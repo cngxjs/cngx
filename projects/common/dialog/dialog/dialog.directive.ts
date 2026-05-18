@@ -328,7 +328,7 @@ export class CngxDialog<T = unknown> implements DialogRef<T> {
   protected readonly ariaDescribedBy = computed(() => this.descriptionDirective()?.id() ?? null);
 
   protected readonly backdropOpacity = computed(() =>
-    this.dialogStack.topmost() === this.idSignal() ? null : '0',
+    this.dialogStack.topmost() === this.idSignal() ? '1' : '0',
   );
 
   private liveRegion: HTMLSpanElement | null = null;
