@@ -136,7 +136,7 @@ export type ActionButtonVariant = 'primary' | 'secondary' | 'ghost';
       btn.announcement()
     }}</span>
   `,
-  styleUrl: './action-button.css',
+  styleUrls: ['./action-button.css'],
 })
 export class CngxActionButton {
   private readonly toaster = inject(CngxToaster, { optional: true });
