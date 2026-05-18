@@ -1,34 +1,46 @@
-/* cngx default theme — single-import entry point.
+/**
+ * @overview
+ * cngx default theme — single-import entry point.
  *
  * Consumer contract (one of two paths):
  *
- *   1) Import this file (one line):
- *        @import '@cngx/themes/cngx.css';
- *      Done. Foundation + externalised component CSS loaded. Components
- *      with a styleUrl (CngxChip, CngxIcon, CngxAvatar, …) auto-bundle
- *      their own styles via Angular. OS-follows dark mode via
- *      `light-dark()` in system tokens; force a mode with
- *      @cngx/themes/light.css or @cngx/themes/dark.css (future).
+ * 1) Import this file (one line):
+ * ```css
+ *   @import '@cngx/themes/cngx.css';
+ * ```
+ * Done. Foundation + externalised component CSS loaded. Components
+ * with a `styleUrl` (`CngxChip`, `CngxIcon`, `CngxAvatar`, …)
+ * auto-bundle their own styles via Angular. OS-follows dark mode
+ * via `light-dark()` in system tokens; force a mode with
+ * `@cngx/themes/light.css` or `@cngx/themes/dark.css` (future).
  *
- *   2) Write your own theme. Bring in the same foundation pieces, then
- *      add your overrides in @layer cngx.theme:
- *        @import '@cngx/core/theming/layers.css';
- *        @import '@cngx/core/theming/system-tokens.css';
- *        @import '@cngx/core/theming/reset.css';
- *        @import '@cngx/core/theming/base.css';
- *        @layer cngx.theme {
- *          :root[data-theme="brand"] { --cngx-color-primary: …; }
- *        }
+ * 2) Write your own theme. Bring in the same foundation pieces,
+ *    then add your overrides in `@layer cngx.theme`:
+ * ```css
+ *   @import '@cngx/core/theming/layers.css';
+ *   @import '@cngx/core/theming/system-tokens.css';
+ *   @import '@cngx/core/theming/reset.css';
+ *   @import '@cngx/core/theming/base.css';
+ *   @layer cngx.theme {
+ *     :root[data-theme="brand"] { --cngx-color-primary: …; }
+ *   }
+ * ```
  *
  * What lives here:
- *   - Cascade-layer order (cngx.reset, .tokens, .base, .components, .theme, app)
- *   - All system tokens (@property registration + light-dark defaults)
- *   - cngx.reset (box-sizing, button neutralize, focus-ring base)
- *   - cngx.base (bare-element atoms: button/input/kbd/dl)
- *   - cngx.utilities (.cngx-sr-only)
- *   - Externalised Directive CSS — every @Directive that paints DOM ships
- *     here because Angular only allows styleUrl on @Component. Components
- *     ship their CSS via per-component styleUrl bundling. */
+ * - Cascade-layer order
+ *   (`cngx.reset`, `.tokens`, `.base`, `.components`, `.theme`,
+ *   `app`)
+ * - All system tokens (`@property` registration + `light-dark()`
+ *   defaults)
+ * - `cngx.reset` (box-sizing, button neutralize, focus-ring base)
+ * - `cngx.base` (bare-element atoms: button / input / kbd / dl /
+ *   hr)
+ * - `cngx.utilities` (`.cngx-sr-only`)
+ * - Externalised Directive CSS — every `@Directive` that paints
+ *   DOM ships here because Angular only allows `styleUrl` on
+ *   `@Component`. Components ship their CSS via per-component
+ *   `styleUrl` bundling.
+ */
 
 @import '../core/theming/layers.css';
 @import '../core/theming/system-tokens.css';

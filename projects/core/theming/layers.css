@@ -1,5 +1,18 @@
-/* cngx canonical cascade-layer order — load this file once, before any
- * other cngx CSS. The declaration is global and idempotent; downstream
- * files use `@layer cngx.tokens { … }` (etc) and append to the order
- * established here rather than redefining it. */
+/**
+ * @overview
+ * Canonical cascade-layer order for the entire cngx library. Load
+ * this file once, before any other cngx CSS. The declaration is
+ * global and idempotent; downstream files use
+ * `@layer cngx.tokens { … }` (etc) and append to the order
+ * established here rather than redefining it.
+ *
+ * Order:
+ * - `cngx.reset` — universal baseline (box-sizing, button neutralize,
+ *   focus-ring)
+ * - `cngx.tokens` — `@property` registrations + light-dark defaults
+ * - `cngx.base` — bare-element atoms (button / input / kbd / dl / hr)
+ * - `cngx.components` — cngx-prefixed component styles
+ * - `cngx.theme` — consumer-side token overrides
+ * - `app` — consumer's own application styles (overrides everything)
+ */
 @layer cngx.reset, cngx.tokens, cngx.base, cngx.components, cngx.theme, app;

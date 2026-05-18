@@ -1,9 +1,18 @@
-/* cngx-reset — universal baseline so component atoms get a clean canvas.
- * Four jobs:
- *  - box-sizing universal
- *  - native button neutralization (component atoms layer their own appearance on top)
- *  - root rendering knobs (legibility, iOS auto-resize, synthetic faces)
- *  - focus-ring baseline (token-driven, opt-out via outline override in cngx.components) */
+/**
+ * @overview
+ * Universal baseline so component atoms get a clean canvas. Four
+ * jobs:
+ * - box-sizing universal
+ * - native button neutralization (component atoms layer their own
+ *   appearance on top)
+ * - root rendering knobs (legibility, iOS auto-resize, synthetic
+ *   faces)
+ * - focus-ring baseline (token-driven, opt-out via outline override
+ *   in `cngx.components`)
+ *
+ * Lives in `@layer cngx.reset` so component-layer rules can override
+ * the reset without specificity wars.
+ */
 
 @layer cngx.reset {
   *,

@@ -1,181 +1,341 @@
-/* cngx system-tokens — foundation layer.
+/**
+ * @overview
+ * Foundation token registry for the entire cngx library. Every
+ * component-level token (`--cngx-card-padding-block`,
+ * `--cngx-toggle-track-bg-on`, …) falls back to a system token of
+ * the same family. Consumers re-skin the library globally by
+ * overriding these in `@layer cngx.theme`; per-component tokens
+ * stay untouched but inherit the new system value.
  *
- * Every component-level token (--cngx-card-padding-block, --cngx-button-bg, …)
- * falls back to a system token of the same family. Consumers re-skin the
- * library globally by overriding these in @layer cngx.theme; per-component
- * tokens stay untouched but inherit the new system value.
+ * Note on syntax: `@property` is a top-level at-rule. It cannot be
+ * nested inside a selector, but it CAN live inside an `@layer`.
+ * Declarations here register the token type (animation
+ * interpolation, type-checking) and a static default. The `:root`
+ * block below provides conditional defaults (`light-dark()`) that
+ * `@property` cannot express directly.
  *
- * Note on syntax: `@property` is a top-level at-rule. It cannot be nested
- * inside a selector, but it CAN live inside an `@layer`. Declarations here
- * register the token type (animation interpolation, type-checking) and a
- * static default. The `:root` block below provides conditional defaults
- * (`light-dark()`) that `@property` cannot express directly. */
+ * Primary color is Ember `oklch(0.66 0.19 50)`; semantic colors
+ * lift +0.06-0.08 L and shed ~0.01 C in dark mode. `accent-color`
+ * cascades to every native form control so the browser-rendered
+ * atoms match the cngx accent out of the box.
+ */
 
 @layer cngx.tokens {
-  /* Spacing — T-shirt scale. Swapped wholesale by [data-density] in cngx.theme. */
+  /**
+   * Spacing T-shirt scale — extra-small (4px). Swapped wholesale by
+   * `[data-density]` in `cngx.theme`.
+   * @group Layout
+   */
   @property --cngx-space-xs {
     syntax: '<length>';
     inherits: false;
     initial-value: 4px;
   }
+
+  /**
+   * Spacing T-shirt scale — small (8px).
+   * @group Layout
+   */
   @property --cngx-space-sm {
     syntax: '<length>';
     inherits: false;
     initial-value: 8px;
   }
+
+  /**
+   * Spacing T-shirt scale — medium (16px).
+   * @group Layout
+   */
   @property --cngx-space-md {
     syntax: '<length>';
     inherits: false;
     initial-value: 16px;
   }
+
+  /**
+   * Spacing T-shirt scale — large (24px).
+   * @group Layout
+   */
   @property --cngx-space-lg {
     syntax: '<length>';
     inherits: false;
     initial-value: 24px;
   }
+
+  /**
+   * Spacing T-shirt scale — extra-large (32px).
+   * @group Layout
+   */
   @property --cngx-space-xl {
     syntax: '<length>';
     inherits: false;
     initial-value: 32px;
   }
 
-  /* Radius */
+  /**
+   * Corner radius — small (4px).
+   * @group Layout
+   */
   @property --cngx-radius-sm {
     syntax: '<length>';
     inherits: false;
     initial-value: 4px;
   }
+
+  /**
+   * Corner radius — medium (8px).
+   * @group Layout
+   */
   @property --cngx-radius-md {
     syntax: '<length>';
     inherits: false;
     initial-value: 8px;
   }
+
+  /**
+   * Corner radius — large (12px).
+   * @group Layout
+   */
   @property --cngx-radius-lg {
     syntax: '<length>';
     inherits: false;
     initial-value: 12px;
   }
+
+  /**
+   * Corner radius — pill (999px). Used by chips, badges, toggle
+   * tracks, and other fully-rounded surfaces.
+   * @group Layout
+   */
   @property --cngx-radius-pill {
     syntax: '<length>';
     inherits: false;
     initial-value: 999px;
   }
 
-  /* Motion — durations + easing curves. `syntax: '*'` on easings because
-   * cubic-bezier() isn't an animatable type and interpolation across
-   * transition timing-functions isn't a thing browsers do. */
+  /**
+   * Motion duration — fast (150ms). Hover state-layers, focus
+   * crossfades, micro-interactions.
+   * @group Motion
+   */
   @property --cngx-duration-fast {
     syntax: '<time>';
     inherits: false;
     initial-value: 150ms;
   }
+
+  /**
+   * Motion duration — base (200ms). Default for most component
+   * transitions (overlays, dropdowns, dialogs).
+   * @group Motion
+   */
   @property --cngx-duration-base {
     syntax: '<time>';
     inherits: false;
     initial-value: 200ms;
   }
+
+  /**
+   * Motion duration — slow (320ms). Major surface transitions
+   * (dialog open / close, page-level fades).
+   * @group Motion
+   */
   @property --cngx-duration-slow {
     syntax: '<time>';
     inherits: false;
     initial-value: 320ms;
   }
+
+  /**
+   * Standard easing curve — material-style accelerate-decelerate.
+   * `syntax: '*'` because cubic-bezier() isn't an animatable type
+   * and interpolation across transition timing-functions isn't a
+   * thing browsers do.
+   * @group Motion
+   */
   @property --cngx-easing-standard {
     syntax: '*';
     inherits: false;
     initial-value: cubic-bezier(0.4, 0, 0.2, 1);
   }
+
+  /**
+   * Decelerate easing — for enter / show transitions.
+   * @group Motion
+   */
   @property --cngx-easing-decelerate {
     syntax: '*';
     inherits: false;
     initial-value: cubic-bezier(0, 0, 0.2, 1);
   }
+
+  /**
+   * Accelerate easing — for exit / hide transitions.
+   * @group Motion
+   */
   @property --cngx-easing-accelerate {
     syntax: '*';
     inherits: false;
     initial-value: cubic-bezier(0.4, 0, 1, 1);
   }
 
-  /* Color — OKLCH. Static initial-value here gets overridden in the
-   * `:root` block below with `light-dark()` for OS-following dark-mode. */
+  /**
+   * Surface color — page / panel background. Static initial-value
+   * here gets overridden in the `:root` block below with
+   * `light-dark()` for OS-following dark mode.
+   * @group Surface
+   */
   @property --cngx-color-surface {
     syntax: '<color>';
     inherits: true;
     initial-value: oklch(1 0 0);
   }
+
+  /**
+   * Text color — primary foreground against surface.
+   * @group Surface
+   */
   @property --cngx-color-text {
     syntax: '<color>';
     inherits: true;
     initial-value: oklch(0.2 0.01 250);
   }
+
+  /**
+   * Neutral border color — hairlines, dividers, input strokes.
+   * @group Surface
+   */
   @property --cngx-color-border {
     syntax: '<color>';
     inherits: true;
     initial-value: oklch(0.88 0.005 250);
   }
+
+  /**
+   * Brand primary color — Ember. Drives focus rings, selected
+   * surfaces, accent stripes across every cngx-prefixed component.
+   * @group Surface
+   */
   @property --cngx-color-primary {
     syntax: '<color>';
     inherits: true;
     initial-value: oklch(0.66 0.19 50);
   }
+
+  /**
+   * Semantic danger color — red. Drives error states, destructive
+   * actions, validation errors.
+   * @group Surface
+   */
   @property --cngx-color-danger {
     syntax: '<color>';
     inherits: true;
     initial-value: oklch(0.6 0.18 25);
   }
+
+  /**
+   * Semantic success color — green. Drives confirmations,
+   * completed states, validation passes.
+   * @group Surface
+   */
   @property --cngx-color-success {
     syntax: '<color>';
     inherits: true;
     initial-value: oklch(0.6 0.15 145);
   }
+
+  /**
+   * Semantic warning color — amber. Drives caution states,
+   * incomplete data, soft errors.
+   * @group Surface
+   */
   @property --cngx-color-warning {
     syntax: '<color>';
     inherits: true;
     initial-value: oklch(0.72 0.15 75);
   }
+
+  /**
+   * Semantic info color — blue. Drives informational banners,
+   * neutral notifications.
+   * @group Surface
+   */
   @property --cngx-color-info {
     syntax: '<color>';
     inherits: true;
     initial-value: oklch(0.65 0.12 240);
   }
 
-  /* Typography — font-size uses syntax: '*' because CSS @property forbids
-   * `rem` in `<length>` initial-value (must be "computationally independent",
-   * i.e. resolvable without font context). Universal syntax keeps the rem
-   * defaults; the tradeoff is no animation interpolation, which font-size
-   * rarely needs. */
+  /**
+   * Font-size — small (0.8125rem). `syntax: '*'` because CSS
+   * `@property` forbids `rem` in `<length>` initial-value (must be
+   * "computationally independent"). The tradeoff is no animation
+   * interpolation, which font-size rarely needs.
+   * @group Typography
+   */
   @property --cngx-font-size-sm {
     syntax: '*';
     inherits: false;
     initial-value: 0.8125rem;
   }
+
+  /**
+   * Font-size — medium (0.9375rem). Default body / control font.
+   * @group Typography
+   */
   @property --cngx-font-size-md {
     syntax: '*';
     inherits: false;
     initial-value: 0.9375rem;
   }
+
+  /**
+   * Font-size — large (1.0625rem). Emphasized headings, dialog
+   * titles.
+   * @group Typography
+   */
   @property --cngx-font-size-lg {
     syntax: '*';
     inherits: false;
     initial-value: 1.0625rem;
   }
+
+  /**
+   * Default line-height multiplier for body text.
+   * @group Typography
+   */
   @property --cngx-line-height-base {
     syntax: '<number>';
     inherits: true;
     initial-value: 1.5;
   }
 
-  /* Elevation — `syntax: '*'` because box-shadow is a composite value
-   * that doesn't smoothly interpolate component-by-component. */
+  /**
+   * Elevation — small (subtle 1px shadow). `syntax: '*'` because
+   * box-shadow is a composite value that doesn't smoothly
+   * interpolate component-by-component.
+   * @group Surface
+   */
   @property --cngx-shadow-sm {
     syntax: '*';
     inherits: false;
     initial-value: 0 1px 2px oklch(0 0 0 / 0.05);
   }
+
+  /**
+   * Elevation — medium. Dropdowns, popovers, sticky headers.
+   * @group Surface
+   */
   @property --cngx-shadow-md {
     syntax: '*';
     inherits: false;
     initial-value: 0 4px 16px oklch(0 0 0 / 0.12);
   }
+
+  /**
+   * Elevation — large. Dialogs, full-screen modals.
+   * @group Surface
+   */
   @property --cngx-shadow-lg {
     syntax: '*';
     inherits: false;

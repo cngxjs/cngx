@@ -1,11 +1,18 @@
-/* cngx-base — token-driven appearance for native form-element atoms.
+/**
+ * @overview
+ * Token-driven appearance for native form-element atoms. Bare
+ * `<button>`, `<input>`, `<textarea>`, `<select>`, `<kbd>`, `<dl>`,
+ * `<hr>` in generator demos (and any consumer app that wants the
+ * same defaults) render intentionally without per-instance
+ * overrides. All values come from system tokens, so dark mode and
+ * density switches work automatically.
  *
- * Bare <button>, <input>, <textarea>, <select>, <kbd>, <dl> in generator
- * demos (and any consumer app that wants the same defaults) render
- * intentionally without per-instance overrides. All values come from
- * system tokens, so dark mode and density switches work automatically.
- *
- * Opt out per-element in cngx.components or the app layer. */
+ * Opt out per-element in `cngx.components` or the app layer. Per the
+ * cngx theming rule, no per-element token families exist on bare
+ * HTML — consumers escape via `@layer cngx.theme` overrides on the
+ * bare selectors, or use cngx-prefixed components for full
+ * token-driven theming.
+ */
 
 @layer cngx.base {
   /* Page-level native chrome:
