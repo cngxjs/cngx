@@ -22,20 +22,20 @@
   }
 
   /* Bare <button>: transparent + hairline. Components in cngx.components
-   * layer their own emphasis (solid bg, brand colour). Hover derives a 6%
-   * color-mix tint from --cngx-button-bg so themes that re-skin the
-   * resting bg get a proportional hover for free. */
+   * layer their own emphasis (solid bg, brand colour). Hover lifts a 6%
+   * color-mix tint so the button reads as interactive without committing
+   * to a brand colour at this layer. */
   button {
     padding: var(--cngx-space-sm, 8px) var(--cngx-space-md, 16px);
     border: 1px solid var(--cngx-color-border, oklch(0.88 0.005 250));
     border-radius: var(--cngx-radius-md, 8px);
-    background: var(--cngx-button-bg, transparent);
+    background: transparent;
     color: var(--cngx-color-text, oklch(0.2 0.01 250));
     font-size: var(--cngx-font-size-md, 0.9375rem);
     transition: background var(--cngx-duration-fast, 150ms);
   }
   button:hover {
-    background: color-mix(in oklch, var(--cngx-button-bg, transparent), var(--cngx-color-text) 6%);
+    background: color-mix(in oklch, transparent, var(--cngx-color-text) 6%);
   }
 
   /* Bare <input> / <textarea> / <select>: transparent + hairline, same
@@ -48,7 +48,7 @@
     padding: var(--cngx-space-sm, 8px) var(--cngx-space-md, 16px);
     border: 1px solid var(--cngx-color-border, oklch(0.88 0.005 250));
     border-radius: var(--cngx-radius-md, 8px);
-    background: var(--cngx-field-bg, transparent);
+    background: transparent;
     color: var(--cngx-color-text, oklch(0.2 0.01 250));
     font: inherit;
     font-size: var(--cngx-font-size-md, 0.9375rem);
