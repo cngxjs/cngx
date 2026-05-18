@@ -54,7 +54,7 @@
    */
   @property --cngx-select-border {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 1px solid oklch(0.85 0.01 250);
   }
 
@@ -95,7 +95,7 @@
    */
   @property --cngx-select-focus-outline {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 2px solid oklch(0.66 0.19 50);
   }
 
@@ -117,6 +117,16 @@
     syntax: '<number>';
     inherits: false;
     initial-value: 0.5;
+  }
+
+  /* Delegating tokens — trigger border + focus-ring track the
+   * foundation chain so a dark-mode swap on `--cngx-color-border` /
+   * `--cngx-color-primary` cascades through the trigger host.
+   * Shorthands pin their structural part (1px solid / 2px solid)
+   * and inherit only the color. */
+  :root {
+    --cngx-select-border: 1px solid var(--cngx-color-border);
+    --cngx-select-focus-outline: 2px solid var(--cngx-color-primary);
   }
 }
 

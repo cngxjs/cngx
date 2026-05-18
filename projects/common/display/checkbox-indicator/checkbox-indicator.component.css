@@ -127,6 +127,16 @@
     inherits: false;
     initial-value: 1.25em;
   }
+
+  /* Delegating token — checked-state bg tracks the foundation
+   * primary so a dark-mode swap on `--cngx-color-primary` cascades
+   * through the checkbox host. Without this :root override the
+   * @property initial-value (light primary) would shadow the
+   * var() fallback chain, freezing the checked bg at light primary
+   * regardless of color scheme. */
+  :root {
+    --cngx-checkbox-checked-bg: var(--cngx-color-primary);
+  }
 }
 
 @layer cngx.components {

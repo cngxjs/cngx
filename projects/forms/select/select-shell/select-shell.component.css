@@ -50,7 +50,7 @@
    */
   @property --cngx-select-shell-border {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 1px solid oklch(0.85 0.01 250);
   }
 
@@ -91,7 +91,7 @@
    */
   @property --cngx-select-shell-focus-outline {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 2px solid oklch(0.66 0.19 50);
   }
 
@@ -111,7 +111,7 @@
    */
   @property --cngx-select-shell-focus-ring {
     syntax: '<color>';
-    inherits: false;
+    inherits: true;
     initial-value: oklch(0.66 0.19 50);
   }
 
@@ -153,6 +153,14 @@
     syntax: '<number>';
     inherits: false;
     initial-value: 0.6;
+  }
+
+  /* Delegating tokens — trigger border + focus-ring color + focus
+   * outline all track the foundation chain. */
+  :root {
+    --cngx-select-shell-border: 1px solid var(--cngx-color-border);
+    --cngx-select-shell-focus-outline: 2px solid var(--cngx-color-primary);
+    --cngx-select-shell-focus-ring: var(--cngx-color-primary);
   }
 }
 

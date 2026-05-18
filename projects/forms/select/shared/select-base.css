@@ -20,13 +20,15 @@
 @layer cngx.tokens {
   /**
    * Border shorthand of the dropdown panel. Falls back through
-   * `--cngx-color-border`.
+   * `--cngx-color-border`. `inherits: true` so the :root delegating
+   * value reaches the floating panel host (anchor-positioned, may
+   * sit outside the normal DOM flow).
    * @group Surface
    * @see [[--cngx-color-border]]
    */
   @property --cngx-select-panel-border {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 1px solid oklch(0.85 0.01 250);
   }
 
@@ -68,11 +70,13 @@
 
   /**
    * Drop-shadow shorthand. Falls back through `--cngx-shadow-md`.
+   * `inherits: true` so the :root dark-mode override (deeper shadow
+   * on dark) reaches the floating panel host.
    * @group Surface
    */
   @property --cngx-select-panel-shadow {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0 4px 12px oklch(0 0 0 / 0.12);
   }
 
@@ -218,12 +222,14 @@
   }
 
   /**
-   * Track stroke of the first-load spinner ring.
+   * Track stroke of the first-load spinner ring. `inherits: true`
+   * so the :root dark-mode override (alpha-on-white on dark)
+   * reaches the spinner inside the floating panel.
    * @group State / Loading
    */
   @property --cngx-select-spinner-border {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 2px solid oklch(0 0 0 / 0.15);
   }
 
@@ -465,11 +471,13 @@
 
   /**
    * Drop-shadow of the chip lifted into the dragging state.
+   * `inherits: true` so the :root dark-mode override (deeper shadow
+   * on dark) reaches the chip while it's being dragged.
    * @group State / Dragging
    */
   @property --cngx-select-chip-drag-shadow {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0 8px 20px oklch(0 0 0 / 0.28);
   }
 
@@ -616,6 +624,72 @@
     syntax: '*';
     inherits: false;
     initial-value: 0.125rem;
+  }
+
+  /* Delegating tokens — panel surface + every primary-tinted glyph
+   * and danger-toned error surface track the foundation chain so a
+   * dark-mode swap on `--cngx-color-surface` / `--cngx-color-text` /
+   * `--cngx-color-border` / `--cngx-color-primary` / `--cngx-color-danger`
+   * cascades through the floating panel even when anchor positioning
+   * detaches it from the trigger's DOM context. The panel-border
+   * shorthand pins the structural part (1px solid) and inherits the
+   * color via the delegating border-color chain. */
+  :root {
+    --cngx-select-panel-border: 1px solid var(--cngx-color-border);
+    --cngx-select-panel-bg: var(--cngx-color-surface);
+    --cngx-select-panel-color: var(--cngx-color-text);
+    --cngx-select-check-color: var(--cngx-color-primary);
+    --cngx-select-spinner-color: var(--cngx-color-primary);
+    --cngx-select-loading-bar-color: var(--cngx-color-primary);
+    --cngx-select-refreshing-color: var(--cngx-color-primary);
+    --cngx-select-option-spinner-color: var(--cngx-color-primary);
+    --cngx-select-option-error-color: var(--cngx-color-danger);
+    --cngx-select-error-color: var(--cngx-color-danger);
+    --cngx-select-chip-remove-hover-color: var(--cngx-color-danger);
+    --cngx-select-chip-drag-bg: var(--cngx-color-primary);
+    --cngx-select-chip-drop-bar-color: var(--cngx-color-primary);
+  }
+
+  /* Dark-mode component-local swap — alpha-on-black surfaces dissolve
+   * into a dark page, so the dark blocks flip them to alpha-on-white.
+   * Shadows deepen since the page surface is already dark. The
+   * primary-tinted highlight uses an explicit alpha on the dark
+   * primary hue so the option row reads as accented without
+   * competing with the selection check. The chip-handle muted gray
+   * inverts so it keeps its secondary-information weight. */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-color-scheme='light']):not(.light) {
+      --cngx-select-panel-shadow: 0 4px 12px oklch(0 0 0 / 0.5);
+      --cngx-select-option-highlight-bg: oklch(0.72 0.18 50 / 0.18);
+      --cngx-select-spinner-border: 2px solid oklch(1 0 0 / 0.15);
+      --cngx-select-chip-overflow-badge-bg: oklch(1 0 0 / 0.08);
+      --cngx-select-chip-overflow-badge-color: oklch(1 0 0 / 0.6);
+      --cngx-select-chip-remove-hover-bg: oklch(1 0 0 / 0.12);
+      --cngx-select-chip-handle-color: oklch(0.65 0.01 250);
+      --cngx-select-chip-drag-shadow: 0 8px 20px oklch(0 0 0 / 0.6);
+    }
+  }
+  [data-color-scheme='dark'],
+  .dark {
+    --cngx-select-panel-shadow: 0 4px 12px oklch(0 0 0 / 0.5);
+    --cngx-select-option-highlight-bg: oklch(0.72 0.18 50 / 0.18);
+    --cngx-select-spinner-border: 2px solid oklch(1 0 0 / 0.15);
+    --cngx-select-chip-overflow-badge-bg: oklch(1 0 0 / 0.08);
+    --cngx-select-chip-overflow-badge-color: oklch(1 0 0 / 0.6);
+    --cngx-select-chip-remove-hover-bg: oklch(1 0 0 / 0.12);
+    --cngx-select-chip-handle-color: oklch(0.65 0.01 250);
+    --cngx-select-chip-drag-shadow: 0 8px 20px oklch(0 0 0 / 0.6);
+  }
+  [data-color-scheme='light'],
+  .light {
+    --cngx-select-panel-shadow: 0 4px 12px oklch(0 0 0 / 0.12);
+    --cngx-select-option-highlight-bg: oklch(0.66 0.19 50 / 0.1);
+    --cngx-select-spinner-border: 2px solid oklch(0 0 0 / 0.15);
+    --cngx-select-chip-overflow-badge-bg: oklch(0 0 0 / 0.08);
+    --cngx-select-chip-overflow-badge-color: oklch(0 0 0 / 0.6);
+    --cngx-select-chip-remove-hover-bg: oklch(0 0 0 / 0.12);
+    --cngx-select-chip-handle-color: oklch(0.5 0.01 250);
+    --cngx-select-chip-drag-shadow: 0 8px 20px oklch(0 0 0 / 0.28);
   }
 }
 
@@ -1052,6 +1126,48 @@
     border-radius: var(--cngx-select-commit-error-radius, 0.125rem);
     color: var(--cngx-select-error-color, var(--cngx-color-danger, oklch(0.6 0.18 25)));
     font-size: 0.875rem;
+  }
+
+  /* Dark-mode swap for the hardcoded alpha-on-black surfaces that
+   * don't have a dedicated token — the skeleton shimmer gradient
+   * (three alpha stops baked into the rule) and the option-spinner
+   * track. Both flip to alpha-on-white so they read on a dark
+   * panel-bg without dissolving. */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-color-scheme='light']):not(.light) .cngx-select__skeleton-row {
+      background: linear-gradient(
+        90deg,
+        oklch(1 0 0 / 0.08) 25%,
+        oklch(1 0 0 / 0.12) 50%,
+        oklch(1 0 0 / 0.08) 75%
+      );
+      background-size: 200% 100%;
+    }
+    :root:not([data-color-scheme='light']):not(.light) .cngx-select__option-spinner {
+      border-color: oklch(1 0 0 / 0.15);
+      border-top-color: var(
+        --cngx-select-option-spinner-color,
+        var(--cngx-color-primary, oklch(0.72 0.18 50))
+      );
+    }
+  }
+  [data-color-scheme='dark'] .cngx-select__skeleton-row,
+  .dark .cngx-select__skeleton-row {
+    background: linear-gradient(
+      90deg,
+      oklch(1 0 0 / 0.08) 25%,
+      oklch(1 0 0 / 0.12) 50%,
+      oklch(1 0 0 / 0.08) 75%
+    );
+    background-size: 200% 100%;
+  }
+  [data-color-scheme='dark'] .cngx-select__option-spinner,
+  .dark .cngx-select__option-spinner {
+    border-color: oklch(1 0 0 / 0.15);
+    border-top-color: var(
+      --cngx-select-option-spinner-color,
+      var(--cngx-color-primary, oklch(0.72 0.18 50))
+    );
   }
 }
 

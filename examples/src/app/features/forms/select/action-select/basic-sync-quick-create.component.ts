@@ -45,19 +45,6 @@ import { delay, of, throwError } from 'rxjs';
             class="action-slot-btn"
             [disabled]="!term || pending"
             (click)="commit()"
-            style="
-              display: inline-flex;
-              align-items: center;
-              gap: 0.5rem;
-              width: 100%;
-              padding: 0.5rem 0.75rem;
-              border: 0;
-              border-top: 1px solid var(--cngx-border, #e5e7eb);
-              background: transparent;
-              text-align: left;
-              cursor: pointer;
-              font: inherit;
-            "
           >
             @if (pending) {
               <span>⏳ Wird angelegt…</span>
@@ -197,19 +184,6 @@ protected readonly customCreate: CngxSelectCreateAction<{ id: string; name: stri
       class="action-slot-btn"
       [disabled]="!term || pending"
       (click)="commit()"
-      style="
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        width: 100%;
-        padding: 0.5rem 0.75rem;
-        border: 0;
-        border-top: 1px solid var(--cngx-border, #e5e7eb);
-        background: transparent;
-        text-align: left;
-        cursor: pointer;
-        font: inherit;
-      "
     >
       @if (pending) {
         <span>⏳ Wird angelegt…</span>

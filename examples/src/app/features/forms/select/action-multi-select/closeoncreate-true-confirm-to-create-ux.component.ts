@@ -37,16 +37,6 @@ import { delay, of, throwError } from 'rxjs';
             type="button"
             [disabled]="!term || pending"
             (click)="commit()"
-            style="
-              width: 100%;
-              padding: 0.5rem 0.75rem;
-              border: 0;
-              border-top: 1px solid var(--cngx-border, #e5e7eb);
-              background: transparent;
-              text-align: left;
-              cursor: pointer;
-              font: inherit;
-            "
           >
             @if (pending) { ⏳ Einladen… }
             @else { + „{{ term || '…' }}" einladen (schließt Panel) }
@@ -170,16 +160,6 @@ protected readonly closeCreate: CngxSelectCreateAction<{ id: string; name: strin
       type="button"
       [disabled]="!term || pending"
       (click)="commit()"
-      style="
-        width: 100%;
-        padding: 0.5rem 0.75rem;
-        border: 0;
-        border-top: 1px solid var(--cngx-border, #e5e7eb);
-        background: transparent;
-        text-align: left;
-        cursor: pointer;
-        font: inherit;
-      "
     >
       @if (pending) { ⏳ Einladen… }
       @else { + „{{ term || '…' }}" einladen (schließt Panel) }

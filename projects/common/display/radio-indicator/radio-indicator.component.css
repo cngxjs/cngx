@@ -126,6 +126,16 @@
     inherits: false;
     initial-value: 1.25em;
   }
+
+  /* Delegating token — checked-state color tracks the foundation
+   * primary so a dark-mode swap on `--cngx-color-primary` cascades
+   * through the radio host. Without this :root override the
+   * @property initial-value (light primary) would shadow the
+   * var() fallback chain, freezing the checked color at light
+   * primary regardless of color scheme. */
+  :root {
+    --cngx-radio-indicator-checked-color: var(--cngx-color-primary);
+  }
 }
 
 @layer cngx.components {

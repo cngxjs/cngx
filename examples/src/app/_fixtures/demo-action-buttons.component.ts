@@ -47,7 +47,7 @@ export interface DemoActionContext {
         display: flex;
         gap: 0.5rem;
         padding: 0.5rem 0.75rem;
-        border-top: 1px solid var(--cngx-border, #e5e7eb);
+        border-top: 1px solid var(--cngx-color-border);
         justify-content: flex-end;
       "
     >
@@ -58,7 +58,7 @@ export interface DemoActionContext {
           [disabled]="context().isPending"
           style="
             padding: 0.4rem 0.75rem;
-            border: 1px solid var(--cngx-border, #e5e7eb);
+            border: 1px solid var(--cngx-color-border);
             background: transparent;
             border-radius: 4px;
             cursor: pointer;
@@ -75,7 +75,7 @@ export interface DemoActionContext {
         style="
           padding: 0.4rem 0.75rem;
           border: 0;
-          background: var(--cngx-primary, #1976d2);
+          background: var(--cngx-color-primary);
           color: white;
           border-radius: 4px;
           cursor: pointer;

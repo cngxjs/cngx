@@ -43,7 +43,7 @@
    */
   @property --cngx-action-select-border {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 1px solid oklch(0.85 0.01 250);
   }
 
@@ -64,7 +64,7 @@
    */
   @property --cngx-action-select-bg {
     syntax: '<color>';
-    inherits: false;
+    inherits: true;
     initial-value: oklch(1 0 0);
   }
 
@@ -86,6 +86,14 @@
     syntax: '*';
     inherits: true;
     initial-value: currentColor;
+  }
+
+  /* Delegating tokens — trigger border + bg track the foundation
+   * chain so a dark-mode swap on `--cngx-color-border` /
+   * `--cngx-color-surface` cascades through the trigger host. */
+  :root {
+    --cngx-action-select-border: 1px solid var(--cngx-color-border);
+    --cngx-action-select-bg: var(--cngx-color-surface);
   }
 }
 

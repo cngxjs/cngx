@@ -89,22 +89,25 @@
   }
 
   /**
-   * Background applied on hover.
+   * Background applied on hover. `inherits: true` so the :root
+   * dark-mode override (alpha-on-white on dark) reaches each node.
    * @group State / Hover
    */
   @property --cngx-tree-select-node-hover-bg {
     syntax: '<color>';
-    inherits: false;
+    inherits: true;
     initial-value: oklch(0 0 0 / 0.04);
   }
 
   /**
-   * Background of the selected node row.
+   * Background of the selected node row. `inherits: true` so the
+   * :root dark-mode override (alpha-on-white on dark) reaches the
+   * selected node inside the floating panel.
    * @group State / Selected
    */
   @property --cngx-tree-select-node-selected-bg {
     syntax: '<color>';
-    inherits: false;
+    inherits: true;
     initial-value: oklch(0 0 0 / 0.08);
   }
 
@@ -146,6 +149,27 @@
     syntax: '*';
     inherits: false;
     initial-value: 0.75rem;
+  }
+
+  /* Dark-mode component-local swap — alpha-on-black hover/selected
+   * surfaces dissolve into a dark panel-bg, so the dark blocks flip
+   * them to alpha-on-white. The selected bg gets a slightly deeper
+   * alpha than the hover to keep the visual rank. */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-color-scheme='light']):not(.light) {
+      --cngx-tree-select-node-hover-bg: oklch(1 0 0 / 0.06);
+      --cngx-tree-select-node-selected-bg: oklch(1 0 0 / 0.12);
+    }
+  }
+  [data-color-scheme='dark'],
+  .dark {
+    --cngx-tree-select-node-hover-bg: oklch(1 0 0 / 0.06);
+    --cngx-tree-select-node-selected-bg: oklch(1 0 0 / 0.12);
+  }
+  [data-color-scheme='light'],
+  .light {
+    --cngx-tree-select-node-hover-bg: oklch(0 0 0 / 0.04);
+    --cngx-tree-select-node-selected-bg: oklch(0 0 0 / 0.08);
   }
 }
 

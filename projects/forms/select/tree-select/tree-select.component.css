@@ -48,12 +48,13 @@
   }
 
   /**
-   * Border shorthand of the trigger.
+   * Border shorthand of the trigger. `inherits: true` so the :root
+   * delegating value reaches the trigger host.
    * @group Surface
    */
   @property --cngx-tree-select-trigger-border {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 1px solid oklch(0.85 0.01 250);
   }
 
@@ -79,12 +80,14 @@
 
   /**
    * Focus-ring outline shorthand. Falls back to `--cngx-color-primary`.
+   * `inherits: true` so the :root delegating value reaches the
+   * trigger host.
    * @group State / Focus
    * @see [[--cngx-color-primary]]
    */
   @property --cngx-tree-select-focus-ring {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 2px solid oklch(0.66 0.19 50 / 0.8);
   }
 
@@ -136,6 +139,32 @@
     syntax: '*';
     inherits: true;
     initial-value: currentColor;
+  }
+
+  /* Delegating tokens — trigger border + focus-ring track the
+   * foundation chain. The border shorthand pins the structural part
+   * (1px solid) and inherits the color via the delegating
+   * border-color chain; the focus-ring shorthand pins 2px solid
+   * and inherits the primary alpha. */
+  :root {
+    --cngx-tree-select-trigger-border: 1px solid var(--cngx-color-border);
+    --cngx-tree-select-focus-ring: 2px solid color-mix(in oklch, var(--cngx-color-primary) 80%, transparent);
+  }
+
+  /* Dark-mode component-local swap — the alpha-on-black placeholder
+   * dissolves on dark, so the dark blocks flip it to alpha-on-white. */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-color-scheme='light']):not(.light) {
+      --cngx-tree-select-placeholder-color: oklch(1 0 0 / 0.5);
+    }
+  }
+  [data-color-scheme='dark'],
+  .dark {
+    --cngx-tree-select-placeholder-color: oklch(1 0 0 / 0.5);
+  }
+  [data-color-scheme='light'],
+  .light {
+    --cngx-tree-select-placeholder-color: oklch(0 0 0 / 0.5);
   }
 }
 
