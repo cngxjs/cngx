@@ -85,7 +85,7 @@
    */
   @property --cngx-toast-bg {
     syntax: '<color>';
-    inherits: false;
+    inherits: true;
     initial-value: oklch(1 0 0);
   }
 
@@ -105,7 +105,7 @@
    */
   @property --cngx-toast-shadow {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0 4px 12px oklch(0 0 0 / 0.15);
   }
 
@@ -145,7 +145,7 @@
    */
   @property --cngx-toast-info-accent {
     syntax: '<color>';
-    inherits: false;
+    inherits: true;
     initial-value: oklch(0.62 0.2 250);
   }
 
@@ -155,7 +155,7 @@
    */
   @property --cngx-toast-success-accent {
     syntax: '<color>';
-    inherits: false;
+    inherits: true;
     initial-value: oklch(0.65 0.15 145);
   }
 
@@ -165,7 +165,7 @@
    */
   @property --cngx-toast-warning-accent {
     syntax: '<color>';
-    inherits: false;
+    inherits: true;
     initial-value: oklch(0.72 0.18 70);
   }
 
@@ -175,7 +175,7 @@
    */
   @property --cngx-toast-error-accent {
     syntax: '<color>';
-    inherits: false;
+    inherits: true;
     initial-value: oklch(0.62 0.22 25);
   }
 
@@ -318,6 +318,55 @@
     syntax: '*';
     inherits: false;
     initial-value: 0.8125rem;
+  }
+
+  /* Color-scheme defaults. Toast bg + text delegate to foundation
+   * surface/text so a brand swap cascades. Shadow flips to a darker
+   * drop on dark surfaces (oklch alpha 0.15 → 0.5 reads as a deeper
+   * cast that survives the lower-contrast surface). Severity accents
+   * brighten on dark to keep the leading-edge stripe perceptible
+   * against the darker toast bg. Description text follows the muted
+   * cool ramp. */
+  :root {
+    --cngx-toast-bg: var(--cngx-color-surface);
+    --cngx-toast-color: var(--cngx-color-text);
+    --cngx-toast-shadow: 0 4px 12px oklch(0 0 0 / 0.15);
+    --cngx-toast-info-accent: oklch(0.62 0.2 250);
+    --cngx-toast-success-accent: oklch(0.65 0.15 145);
+    --cngx-toast-warning-accent: oklch(0.72 0.18 70);
+    --cngx-toast-error-accent: oklch(0.62 0.22 25);
+    --cngx-toast-description-color: oklch(0.5 0.01 250);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-color-scheme='light']):not(.light) {
+      --cngx-toast-shadow: 0 8px 24px oklch(0 0 0 / 0.5);
+      --cngx-toast-info-accent: oklch(0.78 0.14 250);
+      --cngx-toast-success-accent: oklch(0.78 0.14 145);
+      --cngx-toast-warning-accent: oklch(0.82 0.15 70);
+      --cngx-toast-error-accent: oklch(0.78 0.16 25);
+      --cngx-toast-description-color: oklch(0.75 0.01 250);
+    }
+  }
+
+  [data-color-scheme='dark'],
+  .dark {
+    --cngx-toast-shadow: 0 8px 24px oklch(0 0 0 / 0.5);
+    --cngx-toast-info-accent: oklch(0.78 0.14 250);
+    --cngx-toast-success-accent: oklch(0.78 0.14 145);
+    --cngx-toast-warning-accent: oklch(0.82 0.15 70);
+    --cngx-toast-error-accent: oklch(0.78 0.16 25);
+    --cngx-toast-description-color: oklch(0.75 0.01 250);
+  }
+
+  [data-color-scheme='light'],
+  .light {
+    --cngx-toast-shadow: 0 4px 12px oklch(0 0 0 / 0.15);
+    --cngx-toast-info-accent: oklch(0.62 0.2 250);
+    --cngx-toast-success-accent: oklch(0.65 0.15 145);
+    --cngx-toast-warning-accent: oklch(0.72 0.18 70);
+    --cngx-toast-error-accent: oklch(0.62 0.22 25);
+    --cngx-toast-description-color: oklch(0.5 0.01 250);
   }
 }
 

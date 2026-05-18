@@ -189,6 +189,30 @@ body {
   align-items: center;
   gap: 0.5rem;
 }
+
+// Demo-only "chip" trigger styling. The cngx library deliberately ships
+// no bare-`<button>` defaults (browser-native rule), so the demo
+// templates that scatter trigger buttons need a local visual treatment.
+// Token-driven so it follows the examples-app's color scheme.
+button.chip {
+  appearance: none;
+  padding: 6px 12px;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e5e7eb));
+  border-radius: 6px;
+  background: transparent;
+  color: var(--cngx-color-text, var(--cngx-ex-text, inherit));
+  font-size: 0.8125rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 150ms ease;
+}
+button.chip:hover:not(:disabled) {
+  background: color-mix(in oklch, transparent, currentColor 6%);
+}
+button.chip:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
 .filter-container {
   display: flex;
   flex-wrap: wrap;

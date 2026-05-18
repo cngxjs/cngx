@@ -28,25 +28,15 @@
     scrollbar-width: thin;
   }
 
-  /* Bare <button>: transparent + hairline. Components in cngx.components
-   * layer their own emphasis (solid bg, brand color). Hover lifts a 6%
-   * color-mix tint so the button reads as interactive without committing
-   * to a brand color at this layer. */
-  button {
-    padding: var(--cngx-space-sm, 8px) var(--cngx-space-md, 16px);
-    border: 1px solid var(--cngx-color-border, oklch(0.88 0.005 250));
-    border-radius: var(--cngx-radius-md, 8px);
-    background: transparent;
-    color: var(--cngx-color-text, oklch(0.2 0.01 250));
-    font-size: var(--cngx-font-size-md, 0.9375rem);
-    transition: background var(--cngx-duration-fast, 150ms);
-  }
-  button:hover {
-    background: color-mix(in oklch, transparent, var(--cngx-color-text) 6%);
-  }
+  /* Bare <button>: render as the user agent draws it. Per cngx's
+   * browser-native default-theme rule, bare HTML should NOT carry
+   * cngx token styling — that's a half-contract that forces every
+   * component-projected button (`cngxAlertAction`, banner action,
+   * etc.) to override. Components that need a styled button MUST ship
+   * their own `.cngx-<comp>__action` rule. */
 
   /* Bare <input> / <textarea> / <select>: transparent + hairline, same
-   * footprint as the bare button. Focus ring comes from cngx.reset
+   * footprint cngx inputs use. Focus ring comes from cngx.reset
    * :focus-visible — using outline (not border) so the layout doesn't
    * shift between resting and focused state. */
   input,

@@ -56,7 +56,7 @@
    */
   @property --cngx-alert-stack-overflow-bg {
     syntax: '<color>';
-    inherits: false;
+    inherits: true;
     initial-value: transparent;
   }
 
@@ -66,7 +66,7 @@
    */
   @property --cngx-alert-stack-overflow-border {
     syntax: '<color>';
-    inherits: false;
+    inherits: true;
     initial-value: oklch(0.85 0.005 250);
   }
 
@@ -106,8 +106,113 @@
    */
   @property --cngx-alert-stack-overflow-hover-bg {
     syntax: '<color>';
-    inherits: false;
+    inherits: true;
     initial-value: oklch(0.96 0.005 250);
+  }
+
+  /* Color-scheme defaults for the "show more" overflow button. The
+   * dashed border tracks the foundation `--cngx-color-border`; the
+   * muted text + hover-bg are component-local with explicit dark
+   * counterparts (no foundation muted token in cngx). */
+  :root {
+    --cngx-alert-stack-overflow-border: var(--cngx-color-border);
+    --cngx-alert-stack-overflow-color: oklch(0.5 0.01 250);
+    --cngx-alert-stack-overflow-hover-bg: oklch(0.96 0.005 250);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-color-scheme='light']):not(.light) {
+      --cngx-alert-stack-overflow-color: oklch(0.75 0.01 250);
+      --cngx-alert-stack-overflow-hover-bg: oklch(0.26 0.01 250);
+    }
+  }
+
+  [data-color-scheme='dark'],
+  .dark {
+    --cngx-alert-stack-overflow-color: oklch(0.75 0.01 250);
+    --cngx-alert-stack-overflow-hover-bg: oklch(0.26 0.01 250);
+  }
+
+  [data-color-scheme='light'],
+  .light {
+    --cngx-alert-stack-overflow-color: oklch(0.5 0.01 250);
+    --cngx-alert-stack-overflow-hover-bg: oklch(0.96 0.005 250);
+  }
+
+  /* Mirror of the alert.css severity 4-block. The `--cngx-alert-*`
+   * @property declarations live in alert.css and only load when a
+   * `CngxAlert` instance mounts — but a page that only uses
+   * `CngxAlertStack` (no inline alert) would otherwise see empty
+   * tokens and fall through to the var() fallback (light values).
+   * Custom properties without @property registration still inherit
+   * by default, so duplicating the :root override here keeps the
+   * stack self-sufficient. Values are kept in lockstep with alert.css. */
+  :root {
+    --cngx-alert-bg: oklch(0.98 0.005 250);
+    --cngx-alert-info-bg: oklch(0.96 0.025 250);
+    --cngx-alert-info-border: oklch(0.85 0.07 250);
+    --cngx-alert-info-icon: oklch(0.62 0.2 250);
+    --cngx-alert-success-bg: oklch(0.96 0.04 145);
+    --cngx-alert-success-border: oklch(0.85 0.1 145);
+    --cngx-alert-success-icon: oklch(0.65 0.15 145);
+    --cngx-alert-warning-bg: oklch(0.97 0.04 80);
+    --cngx-alert-warning-border: oklch(0.86 0.1 80);
+    --cngx-alert-warning-icon: oklch(0.72 0.18 70);
+    --cngx-alert-error-bg: oklch(0.96 0.025 25);
+    --cngx-alert-error-border: oklch(0.85 0.08 25);
+    --cngx-alert-error-icon: oklch(0.62 0.22 25);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-color-scheme='light']):not(.light) {
+      --cngx-alert-bg: oklch(0.22 0.01 250);
+      --cngx-alert-info-bg: oklch(0.3 0.05 250);
+      --cngx-alert-info-border: oklch(0.5 0.08 250);
+      --cngx-alert-info-icon: oklch(0.78 0.14 250);
+      --cngx-alert-success-bg: oklch(0.3 0.06 145);
+      --cngx-alert-success-border: oklch(0.5 0.1 145);
+      --cngx-alert-success-icon: oklch(0.78 0.14 145);
+      --cngx-alert-warning-bg: oklch(0.32 0.06 80);
+      --cngx-alert-warning-border: oklch(0.55 0.1 80);
+      --cngx-alert-warning-icon: oklch(0.82 0.15 70);
+      --cngx-alert-error-bg: oklch(0.3 0.05 25);
+      --cngx-alert-error-border: oklch(0.5 0.1 25);
+      --cngx-alert-error-icon: oklch(0.78 0.16 25);
+    }
+  }
+
+  [data-color-scheme='dark'],
+  .dark {
+    --cngx-alert-bg: oklch(0.22 0.01 250);
+    --cngx-alert-info-bg: oklch(0.3 0.05 250);
+    --cngx-alert-info-border: oklch(0.5 0.08 250);
+    --cngx-alert-info-icon: oklch(0.78 0.14 250);
+    --cngx-alert-success-bg: oklch(0.3 0.06 145);
+    --cngx-alert-success-border: oklch(0.5 0.1 145);
+    --cngx-alert-success-icon: oklch(0.78 0.14 145);
+    --cngx-alert-warning-bg: oklch(0.32 0.06 80);
+    --cngx-alert-warning-border: oklch(0.55 0.1 80);
+    --cngx-alert-warning-icon: oklch(0.82 0.15 70);
+    --cngx-alert-error-bg: oklch(0.3 0.05 25);
+    --cngx-alert-error-border: oklch(0.5 0.1 25);
+    --cngx-alert-error-icon: oklch(0.78 0.16 25);
+  }
+
+  [data-color-scheme='light'],
+  .light {
+    --cngx-alert-bg: oklch(0.98 0.005 250);
+    --cngx-alert-info-bg: oklch(0.96 0.025 250);
+    --cngx-alert-info-border: oklch(0.85 0.07 250);
+    --cngx-alert-info-icon: oklch(0.62 0.2 250);
+    --cngx-alert-success-bg: oklch(0.96 0.04 145);
+    --cngx-alert-success-border: oklch(0.85 0.1 145);
+    --cngx-alert-success-icon: oklch(0.65 0.15 145);
+    --cngx-alert-warning-bg: oklch(0.97 0.04 80);
+    --cngx-alert-warning-border: oklch(0.86 0.1 80);
+    --cngx-alert-warning-icon: oklch(0.72 0.18 70);
+    --cngx-alert-error-bg: oklch(0.96 0.025 25);
+    --cngx-alert-error-border: oklch(0.85 0.08 25);
+    --cngx-alert-error-icon: oklch(0.62 0.22 25);
   }
 }
 

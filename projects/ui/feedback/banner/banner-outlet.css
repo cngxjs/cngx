@@ -45,7 +45,7 @@
    */
   @property --cngx-banner-bg {
     syntax: '<color>';
-    inherits: false;
+    inherits: true;
     initial-value: oklch(0.98 0.005 250);
   }
 
@@ -65,7 +65,7 @@
    */
   @property --cngx-banner-border-color {
     syntax: '<color>';
-    inherits: false;
+    inherits: true;
     initial-value: transparent;
   }
 
@@ -95,7 +95,7 @@
    */
   @property --cngx-banner-info-bg {
     syntax: '<color>';
-    inherits: false;
+    inherits: true;
     initial-value: oklch(0.96 0.025 250);
   }
 
@@ -105,7 +105,7 @@
    */
   @property --cngx-banner-info-border {
     syntax: '<color>';
-    inherits: false;
+    inherits: true;
     initial-value: oklch(0.85 0.07 250);
   }
 
@@ -115,7 +115,7 @@
    */
   @property --cngx-banner-info-icon {
     syntax: '<color>';
-    inherits: false;
+    inherits: true;
     initial-value: oklch(0.62 0.2 250);
   }
 
@@ -125,7 +125,7 @@
    */
   @property --cngx-banner-success-bg {
     syntax: '<color>';
-    inherits: false;
+    inherits: true;
     initial-value: oklch(0.96 0.04 145);
   }
 
@@ -135,7 +135,7 @@
    */
   @property --cngx-banner-success-border {
     syntax: '<color>';
-    inherits: false;
+    inherits: true;
     initial-value: oklch(0.85 0.1 145);
   }
 
@@ -145,7 +145,7 @@
    */
   @property --cngx-banner-success-icon {
     syntax: '<color>';
-    inherits: false;
+    inherits: true;
     initial-value: oklch(0.65 0.15 145);
   }
 
@@ -155,7 +155,7 @@
    */
   @property --cngx-banner-warning-bg {
     syntax: '<color>';
-    inherits: false;
+    inherits: true;
     initial-value: oklch(0.97 0.04 80);
   }
 
@@ -165,7 +165,7 @@
    */
   @property --cngx-banner-warning-border {
     syntax: '<color>';
-    inherits: false;
+    inherits: true;
     initial-value: oklch(0.86 0.1 80);
   }
 
@@ -175,7 +175,7 @@
    */
   @property --cngx-banner-warning-icon {
     syntax: '<color>';
-    inherits: false;
+    inherits: true;
     initial-value: oklch(0.72 0.18 70);
   }
 
@@ -185,7 +185,7 @@
    */
   @property --cngx-banner-error-bg {
     syntax: '<color>';
-    inherits: false;
+    inherits: true;
     initial-value: oklch(0.96 0.025 25);
   }
 
@@ -195,7 +195,7 @@
    */
   @property --cngx-banner-error-border {
     syntax: '<color>';
-    inherits: false;
+    inherits: true;
     initial-value: oklch(0.85 0.08 25);
   }
 
@@ -205,7 +205,7 @@
    */
   @property --cngx-banner-error-icon {
     syntax: '<color>';
-    inherits: false;
+    inherits: true;
     initial-value: oklch(0.62 0.22 25);
   }
 
@@ -288,7 +288,7 @@
    */
   @property --cngx-banner-action-bg {
     syntax: '<color>';
-    inherits: false;
+    inherits: true;
     initial-value: transparent;
   }
 
@@ -309,7 +309,7 @@
   @property --cngx-banner-action-padding {
     syntax: '*';
     inherits: false;
-    initial-value: 6px 12px;
+    initial-value: 4px 10px;
   }
 
   /**
@@ -348,7 +348,7 @@
    */
   @property --cngx-banner-action-hover-bg {
     syntax: '<color>';
-    inherits: false;
+    inherits: true;
     initial-value: oklch(0 0 0 / 0.04);
   }
 
@@ -360,6 +360,84 @@
     syntax: '<number>';
     inherits: false;
     initial-value: 0.85;
+  }
+
+  /* Banner shares the alert family's tinted-surface palette but
+   * ships its own token namespace so banners can be themed
+   * independently. The inline-error sub-line delegates to
+   * `--cngx-color-danger` (it's literally the danger semantic). The
+   * action-hover overlay flips alpha-on-black to alpha-on-white. */
+  :root {
+    --cngx-banner-error-color: var(--cngx-color-danger);
+    --cngx-banner-bg: oklch(0.98 0.005 250);
+    --cngx-banner-info-bg: oklch(0.96 0.025 250);
+    --cngx-banner-info-border: oklch(0.85 0.07 250);
+    --cngx-banner-info-icon: oklch(0.62 0.2 250);
+    --cngx-banner-success-bg: oklch(0.96 0.04 145);
+    --cngx-banner-success-border: oklch(0.85 0.1 145);
+    --cngx-banner-success-icon: oklch(0.65 0.15 145);
+    --cngx-banner-warning-bg: oklch(0.97 0.04 80);
+    --cngx-banner-warning-border: oklch(0.86 0.1 80);
+    --cngx-banner-warning-icon: oklch(0.72 0.18 70);
+    --cngx-banner-error-bg: oklch(0.96 0.025 25);
+    --cngx-banner-error-border: oklch(0.85 0.08 25);
+    --cngx-banner-error-icon: oklch(0.62 0.22 25);
+    --cngx-banner-action-hover-bg: oklch(0 0 0 / 0.04);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-color-scheme='light']):not(.light) {
+      --cngx-banner-bg: oklch(0.22 0.01 250);
+      --cngx-banner-info-bg: oklch(0.3 0.05 250);
+      --cngx-banner-info-border: oklch(0.5 0.08 250);
+      --cngx-banner-info-icon: oklch(0.78 0.14 250);
+      --cngx-banner-success-bg: oklch(0.3 0.06 145);
+      --cngx-banner-success-border: oklch(0.5 0.1 145);
+      --cngx-banner-success-icon: oklch(0.78 0.14 145);
+      --cngx-banner-warning-bg: oklch(0.32 0.06 80);
+      --cngx-banner-warning-border: oklch(0.55 0.1 80);
+      --cngx-banner-warning-icon: oklch(0.82 0.15 70);
+      --cngx-banner-error-bg: oklch(0.3 0.05 25);
+      --cngx-banner-error-border: oklch(0.5 0.1 25);
+      --cngx-banner-error-icon: oklch(0.78 0.16 25);
+      --cngx-banner-action-hover-bg: oklch(1 0 0 / 0.04);
+    }
+  }
+
+  [data-color-scheme='dark'],
+  .dark {
+    --cngx-banner-bg: oklch(0.22 0.01 250);
+    --cngx-banner-info-bg: oklch(0.3 0.05 250);
+    --cngx-banner-info-border: oklch(0.5 0.08 250);
+    --cngx-banner-info-icon: oklch(0.78 0.14 250);
+    --cngx-banner-success-bg: oklch(0.3 0.06 145);
+    --cngx-banner-success-border: oklch(0.5 0.1 145);
+    --cngx-banner-success-icon: oklch(0.78 0.14 145);
+    --cngx-banner-warning-bg: oklch(0.32 0.06 80);
+    --cngx-banner-warning-border: oklch(0.55 0.1 80);
+    --cngx-banner-warning-icon: oklch(0.82 0.15 70);
+    --cngx-banner-error-bg: oklch(0.3 0.05 25);
+    --cngx-banner-error-border: oklch(0.5 0.1 25);
+    --cngx-banner-error-icon: oklch(0.78 0.16 25);
+    --cngx-banner-action-hover-bg: oklch(1 0 0 / 0.04);
+  }
+
+  [data-color-scheme='light'],
+  .light {
+    --cngx-banner-bg: oklch(0.98 0.005 250);
+    --cngx-banner-info-bg: oklch(0.96 0.025 250);
+    --cngx-banner-info-border: oklch(0.85 0.07 250);
+    --cngx-banner-info-icon: oklch(0.62 0.2 250);
+    --cngx-banner-success-bg: oklch(0.96 0.04 145);
+    --cngx-banner-success-border: oklch(0.85 0.1 145);
+    --cngx-banner-success-icon: oklch(0.65 0.15 145);
+    --cngx-banner-warning-bg: oklch(0.97 0.04 80);
+    --cngx-banner-warning-border: oklch(0.86 0.1 80);
+    --cngx-banner-warning-icon: oklch(0.72 0.18 70);
+    --cngx-banner-error-bg: oklch(0.96 0.025 25);
+    --cngx-banner-error-border: oklch(0.85 0.08 25);
+    --cngx-banner-error-icon: oklch(0.62 0.22 25);
+    --cngx-banner-action-hover-bg: oklch(0 0 0 / 0.04);
   }
 }
 
@@ -451,14 +529,18 @@
       margin-top: 2px;
     }
 
+    /* Padding-based sizing — no min-width/min-height enforcement.
+     * The earlier 44px hit-target floor made buttons stand taller
+     * than the banner content on desktop; padding + font-size on a
+     * dense banner reaches a comfortable click-target without the
+     * visual bulk. Touch-only consumers can re-pin the hit-target
+     * via padding overrides. */
     .cngx-banner__action {
       appearance: none;
       background: var(--cngx-banner-action-bg, transparent);
       border: 1px solid var(--cngx-banner-accent, currentColor);
       border-radius: var(--cngx-banner-action-radius, 4px);
-      padding: var(--cngx-banner-action-padding, 6px 12px);
-      min-width: var(--cngx-banner-action-min-size, 44px);
-      min-height: var(--cngx-banner-action-min-size, 44px);
+      padding: var(--cngx-banner-action-padding, 4px 10px);
       cursor: pointer;
       font-size: var(--cngx-banner-action-font-size, 0.875rem);
       font-weight: var(--cngx-banner-action-font-weight, 600);
