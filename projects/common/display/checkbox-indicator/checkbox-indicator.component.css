@@ -31,11 +31,14 @@
       color: var(--cngx-checkbox-color, currentColor);
 
       /* Reserve a constant box even when the inner glyph isn't rendered
-       * (the 'checkmark' variant has empty content while unchecked).
-       * Without this the host collapses to zero width and adjacent
-       * labels jump as the checked state toggles. */
-      min-width: var(--cngx-checkbox-size, 1em);
-      min-height: var(--cngx-checkbox-size, 1em);
+       * (the 'checkmark' variant has empty content while unchecked) and
+       * regardless of glyph intrinsic width (some checkmark fonts overrun
+       * the em box). Without this the host collapses or expands as the
+       * checked state toggles and adjacent labels jump horizontally. */
+      width: var(--cngx-checkbox-size, 1em);
+      height: var(--cngx-checkbox-size, 1em);
+      box-sizing: border-box;
+      overflow: hidden;
     }
 
     :scope.cngx-checkbox-indicator--sm { --cngx-checkbox-size: var(--cngx-checkbox-size-sm, 0.875em); }
