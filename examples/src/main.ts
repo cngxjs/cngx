@@ -22,17 +22,20 @@ type ColorScheme = 'dark' | 'light' | null;
 
 function applyColorScheme(mode: ColorScheme): void {
   const el = document.documentElement;
-  if (mode === null) el.removeAttribute('data-color-scheme');
-  else el.setAttribute('data-color-scheme', mode);
+  if (mode === null) {
+    delete el.dataset['colorScheme'];
+  } else el.dataset['colorScheme'] = mode;
 }
 
 function readPersistedColorScheme(): ColorScheme {
   try {
-    const v =
-      localStorage.getItem(COMPODOCX_DARK_KEY) ??
-      localStorage.getItem(COMPODOC_DARK_KEY);
-    if (v === 'true') return 'dark';
-    if (v === 'false') return 'light';
+    const v = localStorage.getItem(COMPODOCX_DARK_KEY) ?? localStorage.getItem(COMPODOC_DARK_KEY);
+    if (v === 'true') {
+      return 'dark';
+    }
+    if (v === 'false') {
+      return 'light';
+    }
   } catch {
     // localStorage may be unavailable in restrictive contexts; treat as no preference.
   }
@@ -41,8 +44,10 @@ function readPersistedColorScheme(): ColorScheme {
 
 applyColorScheme(readPersistedColorScheme());
 
-window.addEventListener('storage', (event) => {
-  if (event.key !== COMPODOCX_DARK_KEY && event.key !== COMPODOC_DARK_KEY) return;
+globalThis.addEventListener('storage', (event) => {
+  if (event.key !== COMPODOCX_DARK_KEY && event.key !== COMPODOC_DARK_KEY) {
+    return;
+  }
   applyColorScheme(readPersistedColorScheme());
 });
 
