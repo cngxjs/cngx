@@ -51,6 +51,10 @@
       justify-content: center;
       color: inherit;
       line-height: 1;
+      /* border-box so the 1.5px border counts INSIDE the 1em width
+       * declared on the host. Without this the box overruns the host
+       * by 3px on each axis and gets clipped by overflow: hidden. */
+      box-sizing: border-box;
       width: var(--cngx-checkbox-size, 1em);
       height: var(--cngx-checkbox-size, 1em);
       border: var(--cngx-checkbox-border, 1.5px solid currentColor);
