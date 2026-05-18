@@ -63,6 +63,12 @@
     inherits: false;
     initial-value: 16px;
   }
+
+  /* Delegating token — :root pulls foundation border so the divider
+   * tracks whichever light/dark value the foundation has resolved. */
+  :root {
+    --cngx-divider-color: var(--cngx-color-border);
+  }
 }
 
 @layer cngx.components {

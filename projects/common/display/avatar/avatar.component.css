@@ -252,6 +252,29 @@
     inherits: true;
     initial-value: oklch(0.72 0.18 70);
   }
+
+  /* Dark-mode swap — avatar plate (initials block) inverts to a
+   * mid-gray surface with light text. The status-dot ring tracks the
+   * dark page surface so the dot reads as cut out of the avatar. */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-color-scheme='light']):not(.light) {
+      --cngx-avatar-bg: oklch(0.36 0.01 250);
+      --cngx-avatar-color: oklch(0.92 0.01 250);
+      --cngx-avatar-status-border: oklch(0.2 0.01 250);
+    }
+  }
+  [data-color-scheme='dark'],
+  .dark {
+    --cngx-avatar-bg: oklch(0.36 0.01 250);
+    --cngx-avatar-color: oklch(0.92 0.01 250);
+    --cngx-avatar-status-border: oklch(0.2 0.01 250);
+  }
+  [data-color-scheme='light'],
+  .light {
+    --cngx-avatar-bg: oklch(0.92 0.01 240);
+    --cngx-avatar-color: oklch(0.28 0 0);
+    --cngx-avatar-status-border: oklch(1 0 0);
+  }
 }
 
 @layer cngx.components {

@@ -79,12 +79,13 @@
   /**
    * Ring around the badge — contrasts the indicator against the host
    * surface so the corner anchors read as separate pills. Only
-   * applied in the corner variants (`above-*` / `below-*`).
+   * applied in the corner variants (`above-*` / `below-*`). `inherits:
+   * true` so the :root dark-mode override reaches the indicator span.
    * @group Surface
    */
   @property --cngx-badge-border {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 2px solid oklch(1 0 0);
   }
 
@@ -170,6 +171,23 @@
     syntax: '<color>';
     inherits: true;
     initial-value: oklch(1 0 0);
+  }
+
+  /* Dark-mode swap — corner-anchor ring matches the surface so the
+   * badge still reads as a cut-out pill (a white ring on dark page
+   * would frame the badge in a contrasting halo). */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-color-scheme='light']):not(.light) {
+      --cngx-badge-border: 2px solid oklch(0.2 0.01 250);
+    }
+  }
+  [data-color-scheme='dark'],
+  .dark {
+    --cngx-badge-border: 2px solid oklch(0.2 0.01 250);
+  }
+  [data-color-scheme='light'],
+  .light {
+    --cngx-badge-border: 2px solid oklch(1 0 0);
   }
 }
 

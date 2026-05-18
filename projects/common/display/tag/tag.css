@@ -363,6 +363,79 @@
     inherits: true;
     initial-value: oklch(0.97 0.025 240);
   }
+
+  /* Dark-mode swap — every filled / subtle variant background flips
+   * from a high-L tinted surface to a low-L tinted surface, and the
+   * matching text colors flip from a dark hue to a light hue so they
+   * remain legible against the new background. Borders (mid-tone)
+   * stay put since they read on either surface. */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-color-scheme='light']):not(.light) {
+      --cngx-tag-neutral-bg: oklch(0.32 0.005 250);
+      --cngx-tag-neutral-color: oklch(0.85 0.005 250);
+      --cngx-tag-neutral-subtle-bg: oklch(0.28 0.005 250);
+
+      --cngx-tag-success-bg: oklch(0.32 0.06 145);
+      --cngx-tag-success-color: oklch(0.85 0.13 145);
+      --cngx-tag-success-subtle-bg: oklch(0.28 0.04 145);
+
+      --cngx-tag-warning-bg: oklch(0.32 0.06 75);
+      --cngx-tag-warning-color: oklch(0.88 0.14 75);
+      --cngx-tag-warning-subtle-bg: oklch(0.28 0.04 75);
+
+      --cngx-tag-error-bg: oklch(0.32 0.05 25);
+      --cngx-tag-error-color: oklch(0.82 0.15 25);
+      --cngx-tag-error-subtle-bg: oklch(0.28 0.04 25);
+
+      --cngx-tag-info-bg: oklch(0.32 0.05 250);
+      --cngx-tag-info-color: oklch(0.85 0.13 250);
+      --cngx-tag-info-subtle-bg: oklch(0.28 0.04 250);
+    }
+  }
+  [data-color-scheme='dark'],
+  .dark {
+    --cngx-tag-neutral-bg: oklch(0.32 0.005 250);
+    --cngx-tag-neutral-color: oklch(0.85 0.005 250);
+    --cngx-tag-neutral-subtle-bg: oklch(0.28 0.005 250);
+
+    --cngx-tag-success-bg: oklch(0.32 0.06 145);
+    --cngx-tag-success-color: oklch(0.85 0.13 145);
+    --cngx-tag-success-subtle-bg: oklch(0.28 0.04 145);
+
+    --cngx-tag-warning-bg: oklch(0.32 0.06 75);
+    --cngx-tag-warning-color: oklch(0.88 0.14 75);
+    --cngx-tag-warning-subtle-bg: oklch(0.28 0.04 75);
+
+    --cngx-tag-error-bg: oklch(0.32 0.05 25);
+    --cngx-tag-error-color: oklch(0.82 0.15 25);
+    --cngx-tag-error-subtle-bg: oklch(0.28 0.04 25);
+
+    --cngx-tag-info-bg: oklch(0.32 0.05 250);
+    --cngx-tag-info-color: oklch(0.85 0.13 250);
+    --cngx-tag-info-subtle-bg: oklch(0.28 0.04 250);
+  }
+  [data-color-scheme='light'],
+  .light {
+    --cngx-tag-neutral-bg: oklch(0.92 0.005 250);
+    --cngx-tag-neutral-color: oklch(0.34 0.015 250);
+    --cngx-tag-neutral-subtle-bg: oklch(0.96 0.005 250);
+
+    --cngx-tag-success-bg: oklch(0.95 0.05 145);
+    --cngx-tag-success-color: oklch(0.4 0.1 160);
+    --cngx-tag-success-subtle-bg: oklch(0.97 0.025 145);
+
+    --cngx-tag-warning-bg: oklch(0.95 0.05 90);
+    --cngx-tag-warning-color: oklch(0.45 0.12 60);
+    --cngx-tag-warning-subtle-bg: oklch(0.98 0.02 90);
+
+    --cngx-tag-error-bg: oklch(0.94 0.04 25);
+    --cngx-tag-error-color: oklch(0.4 0.15 25);
+    --cngx-tag-error-subtle-bg: oklch(0.98 0.015 25);
+
+    --cngx-tag-info-bg: oklch(0.93 0.04 240);
+    --cngx-tag-info-color: oklch(0.4 0.15 250);
+    --cngx-tag-info-subtle-bg: oklch(0.97 0.025 240);
+  }
 }
 
 @layer cngx.components {
