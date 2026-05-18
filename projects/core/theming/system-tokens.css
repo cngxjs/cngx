@@ -39,8 +39,8 @@
    * `:root` block below with `light-dark()` for OS-following dark-mode. */
   @property --cngx-color-surface { syntax: '<color>'; inherits: true; initial-value: oklch(1 0 0); }
   @property --cngx-color-text    { syntax: '<color>'; inherits: true; initial-value: oklch(0.2 0.01 250); }
-  @property --cngx-color-border  { syntax: '<color>'; inherits: true; initial-value: oklch(0.9 0.01 250); }
-  @property --cngx-color-primary { syntax: '<color>'; inherits: true; initial-value: oklch(0.6 0.2 250); }
+  @property --cngx-color-border  { syntax: '<color>'; inherits: true; initial-value: oklch(0.88 0.005 250); }
+  @property --cngx-color-primary { syntax: '<color>'; inherits: true; initial-value: oklch(0.66 0.19 50); }
   @property --cngx-color-danger  { syntax: '<color>'; inherits: true; initial-value: oklch(0.6 0.18 25); }
   @property --cngx-color-success { syntax: '<color>'; inherits: true; initial-value: oklch(0.6 0.15 145); }
   @property --cngx-color-warning { syntax: '<color>'; inherits: true; initial-value: oklch(0.72 0.15 75); }
@@ -59,16 +59,30 @@
   /* Elevation — `syntax: '*'` because box-shadow is a composite value
    * that doesn't smoothly interpolate component-by-component. */
   @property --cngx-shadow-sm { syntax: '*'; inherits: false; initial-value: 0 1px 2px oklch(0 0 0 / 0.05); }
-  @property --cngx-shadow-md { syntax: '*'; inherits: false; initial-value: 0 4px 12px oklch(0 0 0 / 0.08); }
-  @property --cngx-shadow-lg { syntax: '*'; inherits: false; initial-value: 0 12px 32px oklch(0 0 0 / 0.12); }
+  @property --cngx-shadow-md { syntax: '*'; inherits: false; initial-value: 0 4px 16px oklch(0 0 0 / 0.12); }
+  @property --cngx-shadow-lg { syntax: '*'; inherits: false; initial-value: 0 16px 40px oklch(0 0 0 / 0.18); }
 
   /* Conditional defaults — OS-follows dark mode via light-dark().
    * Consumers can force a mode by setting [data-theme="dark"] in
-   * cngx.theme, which beats this :root by being in a later layer. */
+   * cngx.theme, which beats this :root by being in a later layer.
+   *
+   * Semantic colours lift +0.06-0.08 L and shed ~0.01 C in dark mode —
+   * keeps the hue identity while staying readable against dark surface
+   * without crossing into neon territory.
+   *
+   * `accent-color` cascades to every native form control (checkbox,
+   * radio, range, progress) so the browser-rendered atoms match the
+   * cngx accent out of the box. Per-element override stays available. */
   :root {
     color-scheme: light dark;
-    --cngx-color-surface: light-dark(oklch(1 0 0),     oklch(0.2 0.01 250));
-    --cngx-color-text:    light-dark(oklch(0.2 0.01 250), oklch(0.95 0.01 250));
-    --cngx-color-border:  light-dark(oklch(0.9 0.01 250), oklch(0.35 0.01 250));
+    --cngx-color-surface: light-dark(oklch(1 0 0),         oklch(0.2 0.01 250));
+    --cngx-color-text:    light-dark(oklch(0.2 0.01 250),  oklch(0.95 0.01 250));
+    --cngx-color-border:  light-dark(oklch(0.88 0.005 250), oklch(0.32 0.005 250));
+    --cngx-color-primary: light-dark(oklch(0.66 0.19 50),  oklch(0.72 0.18 50));
+    --cngx-color-danger:  light-dark(oklch(0.6 0.18 25),   oklch(0.68 0.17 25));
+    --cngx-color-success: light-dark(oklch(0.6 0.15 145),  oklch(0.68 0.14 145));
+    --cngx-color-warning: light-dark(oklch(0.72 0.15 75),  oklch(0.78 0.14 75));
+    --cngx-color-info:    light-dark(oklch(0.65 0.12 240), oklch(0.72 0.11 240));
+    accent-color: var(--cngx-color-primary);
   }
 }
