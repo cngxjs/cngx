@@ -46,7 +46,7 @@ import { ChangeDetectionStrategy, Component, input, ViewEncapsulation, type Temp
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  styleUrl: './radio-indicator.component.css',
+  styleUrls: ['./radio-indicator.component.css'],
   imports: [NgTemplateOutlet],
   host: {
     class: 'cngx-radio-indicator',

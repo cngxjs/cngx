@@ -1,22 +1,132 @@
-/*
- * Visual skin for the checkbox-indicator atom (checkbox + checkmark
- * variants). Checked-state colors fall back through
- * --cngx-color-primary so a brand change in cngx.theme propagates.
+/**
+ * @overview
+ * Default visuals for `CngxCheckboxIndicator`. Ships two presentation
+ * variants: the boxed checkmark/dash (default) and the bare
+ * `checkmark` glyph (no box). Checked-state colours fall back through
+ * `--cngx-color-primary` so a brand override in `@layer cngx.theme`
+ * propagates automatically.
+ *
+ * The host reserves a constant box even when the inner glyph is not
+ * rendered (the `checkmark` variant has empty content while
+ * unchecked) so adjacent labels stay put across state toggles.
  */
 
 @layer cngx.tokens {
-  @property --cngx-checkbox-size              { syntax: '*';        inherits: false; initial-value: 1em; }
-  @property --cngx-checkbox-color             { syntax: '*';  inherits: true;  initial-value: currentColor; }
-  @property --cngx-checkbox-bg                { syntax: '*';        inherits: false; initial-value: transparent; }
-  @property --cngx-checkbox-border            { syntax: '*';        inherits: false; initial-value: 1.5px solid currentColor; }
-  @property --cngx-checkbox-radius            { syntax: '<length>'; inherits: false; initial-value: 2px; }
-  @property --cngx-checkbox-checked-bg        { syntax: '<color>';  inherits: true;  initial-value: oklch(0.6 0.2 250); }
-  @property --cngx-checkbox-checked-color     { syntax: '<color>';  inherits: true;  initial-value: oklch(1 0 0); }
-  @property --cngx-checkbox-disabled-opacity  { syntax: '<number>'; inherits: false; initial-value: 0.5; }
+  /**
+   * Active size of the indicator box. Pinned by the size-variant
+   * classes; can be set inline for one-off overrides.
+   * @group Layout
+   */
+  @property --cngx-checkbox-size {
+    syntax: '*';
+    inherits: false;
+    initial-value: 1em;
+  }
 
-  @property --cngx-checkbox-size-sm { syntax: '*'; inherits: false; initial-value: 0.875em; }
-  @property --cngx-checkbox-size-md { syntax: '*'; inherits: false; initial-value: 1em; }
-  @property --cngx-checkbox-size-lg { syntax: '*'; inherits: false; initial-value: 1.25em; }
+  /**
+   * Text colour of the inner glyph in the bare `checkmark` variant.
+   * Defaults to `currentColor`.
+   * @group Surface
+   */
+  @property --cngx-checkbox-color {
+    syntax: '*';
+    inherits: true;
+    initial-value: currentColor;
+  }
+
+  /**
+   * Background of the unchecked box.
+   * @group Surface
+   */
+  @property --cngx-checkbox-bg {
+    syntax: '*';
+    inherits: false;
+    initial-value: transparent;
+  }
+
+  /**
+   * Border shorthand of the unchecked box. Width + style + colour in
+   * one declaration so a consumer can re-skin the stroke with a
+   * single override.
+   * @group Surface
+   */
+  @property --cngx-checkbox-border {
+    syntax: '*';
+    inherits: false;
+    initial-value: 1.5px solid currentColor;
+  }
+
+  /**
+   * Corner radius of the box. Defaults to `--cngx-radius-sm`.
+   * @group Layout
+   */
+  @property --cngx-checkbox-radius {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 2px;
+  }
+
+  /**
+   * Background of the box when checked or indeterminate. Falls back
+   * to `--cngx-color-primary`.
+   * @group State / Checked
+   * @see [[--cngx-color-primary]]
+   */
+  @property --cngx-checkbox-checked-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.66 0.19 50);
+  }
+
+  /**
+   * Glyph colour inside the checked/indeterminate box.
+   * @group State / Checked
+   */
+  @property --cngx-checkbox-checked-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(1 0 0);
+  }
+
+  /**
+   * Opacity multiplier applied by `.cngx-checkbox-indicator--disabled`.
+   * @group State / Disabled
+   */
+  @property --cngx-checkbox-disabled-opacity {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 0.5;
+  }
+
+  /**
+   * Size token for the `.cngx-checkbox-indicator--sm` variant.
+   * @group Variant / Size
+   */
+  @property --cngx-checkbox-size-sm {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.875em;
+  }
+
+  /**
+   * Size token for the `.cngx-checkbox-indicator--md` variant (default).
+   * @group Variant / Size
+   */
+  @property --cngx-checkbox-size-md {
+    syntax: '*';
+    inherits: false;
+    initial-value: 1em;
+  }
+
+  /**
+   * Size token for the `.cngx-checkbox-indicator--lg` variant.
+   * @group Variant / Size
+   */
+  @property --cngx-checkbox-size-lg {
+    syntax: '*';
+    inherits: false;
+    initial-value: 1.25em;
+  }
 }
 
 @layer cngx.components {
@@ -41,9 +151,15 @@
       overflow: hidden;
     }
 
-    :scope.cngx-checkbox-indicator--sm { --cngx-checkbox-size: var(--cngx-checkbox-size-sm, 0.875em); }
-    :scope.cngx-checkbox-indicator--md { --cngx-checkbox-size: var(--cngx-checkbox-size-md, 1em); }
-    :scope.cngx-checkbox-indicator--lg { --cngx-checkbox-size: var(--cngx-checkbox-size-lg, 1.25em); }
+    :scope.cngx-checkbox-indicator--sm {
+      --cngx-checkbox-size: var(--cngx-checkbox-size-sm, 0.875em);
+    }
+    :scope.cngx-checkbox-indicator--md {
+      --cngx-checkbox-size: var(--cngx-checkbox-size-md, 1em);
+    }
+    :scope.cngx-checkbox-indicator--lg {
+      --cngx-checkbox-size: var(--cngx-checkbox-size-lg, 1.25em);
+    }
 
     .cngx-checkbox-indicator__box {
       display: inline-flex;
@@ -64,8 +180,8 @@
 
     :scope.cngx-checkbox-indicator--checked .cngx-checkbox-indicator__box,
     :scope.cngx-checkbox-indicator--indeterminate .cngx-checkbox-indicator__box {
-      background: var(--cngx-checkbox-checked-bg, var(--cngx-color-primary, oklch(0.6 0.2 250)));
-      border-color: var(--cngx-checkbox-checked-bg, var(--cngx-color-primary, oklch(0.6 0.2 250)));
+      background: var(--cngx-checkbox-checked-bg, var(--cngx-color-primary, oklch(0.66 0.19 50)));
+      border-color: var(--cngx-checkbox-checked-bg, var(--cngx-color-primary, oklch(0.66 0.19 50)));
       color: var(--cngx-checkbox-checked-color, oklch(1 0 0));
     }
 
@@ -84,7 +200,7 @@
     /* checkmark variant — bare glyph, no box. Honor the checked color directly. */
     :scope.cngx-checkbox-indicator--checkmark .cngx-checkbox-indicator__check,
     :scope.cngx-checkbox-indicator--checkmark .cngx-checkbox-indicator__dash {
-      color: var(--cngx-checkbox-color, var(--cngx-color-primary, oklch(0.6 0.2 250)));
+      color: var(--cngx-checkbox-color, var(--cngx-color-primary, oklch(0.66 0.19 50)));
       font-size: var(--cngx-checkbox-size, 1em);
     }
   }

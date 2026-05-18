@@ -29,7 +29,7 @@ import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from '@a
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   template: '<ng-content />',
-  styleUrl: './icon.component.css',
+  styleUrls: ['./icon.component.css'],
   host: {
     class: 'cngx-icon',
     '[attr.role]': 'label() ? "img" : null',

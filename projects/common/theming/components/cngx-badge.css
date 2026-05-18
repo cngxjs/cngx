@@ -1,43 +1,183 @@
-/* cngx-badge — default styling for the CngxBadge directive.
+/**
+ * @overview
+ * Default visuals for the `CngxBadge` directive. The directive injects
+ * a `<span class="cngx-badge-indicator …">` into the host element and
+ * toggles modifier classes for colour (`primary` / `error` / `warning`
+ * / `neutral`), position (`inline` / `above-start` / `above-end` /
+ * `below-start` / `below-end`), and dot mode.
  *
- * The directive injects a `<span class="cngx-badge-indicator …">` into
- * the host element and toggles modifier classes for color (primary /
- * error / warning / neutral), position (inline / above-start /
- * above-end / below-start / below-end), and dot mode.
+ * Opt-in: no class on the host is required — the indicator span
+ * renders automatically. Import this file to consume the defaults, or
+ * style `.cngx-badge-indicator` yourself if they don't fit.
  *
- * Opt-in: no class on the host is required — the .cngx-badge-indicator
- * span renders automatically. Just import this file to consume the
- * default appearance, or write your own styling for those classes if
- * the defaults don't fit.
- *
- * Three-Tier-Override: --cngx-badge-* tokens cascade through @layer
- * cngx.theme; semantic colors fall back to system tokens.
+ * Three-Tier-Override: `--cngx-badge-*` tokens cascade through
+ * `@layer cngx.theme`; semantic colours fall back to the foundation
+ * system tokens.
  */
 
 @layer cngx.tokens {
-  /* Layout + base */
-  @property --cngx-badge-size            { syntax: '<length>'; inherits: false; initial-value: 16px; }
-  @property --cngx-badge-dot-size        { syntax: '<length>'; inherits: false; initial-value: 8px; }
-  @property --cngx-badge-padding-inline  { syntax: '<length>'; inherits: false; initial-value: 5px; }
-  @property --cngx-badge-radius          { syntax: '<length>'; inherits: false; initial-value: 999px; }
-  @property --cngx-badge-font-size       { syntax: '*';        inherits: false; initial-value: 0.6875rem; }
-  @property --cngx-badge-font-weight     { syntax: '*';        inherits: false; initial-value: 600; }
-  @property --cngx-badge-border          { syntax: '*';        inherits: false; initial-value: 2px solid oklch(1 0 0); }
+  /**
+   * Diameter (and minimum width) of the indicator pill in text mode.
+   * @group Layout
+   */
+  @property --cngx-badge-size {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 16px;
+  }
 
-  /* Colour palette */
-  @property --cngx-badge-primary-bg     { syntax: '<color>'; inherits: true; initial-value: oklch(0.6 0.2 250); }
-  @property --cngx-badge-primary-color  { syntax: '<color>'; inherits: true; initial-value: oklch(1 0 0); }
-  @property --cngx-badge-error-bg       { syntax: '<color>'; inherits: true; initial-value: oklch(0.62 0.22 25); }
-  @property --cngx-badge-error-color    { syntax: '<color>'; inherits: true; initial-value: oklch(1 0 0); }
-  @property --cngx-badge-warning-bg     { syntax: '<color>'; inherits: true; initial-value: oklch(0.72 0.18 70); }
-  @property --cngx-badge-warning-color  { syntax: '<color>'; inherits: true; initial-value: oklch(0.2 0.01 250); }
-  @property --cngx-badge-neutral-bg     { syntax: '<color>'; inherits: true; initial-value: oklch(0.68 0.01 240); }
-  @property --cngx-badge-neutral-color  { syntax: '<color>'; inherits: true; initial-value: oklch(1 0 0); }
+  /**
+   * Diameter of the indicator in `--dot` mode (no text).
+   * @group Variant / Dot
+   */
+  @property --cngx-badge-dot-size {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 8px;
+  }
+
+  /**
+   * Inline padding around the badge text.
+   * @group Layout
+   */
+  @property --cngx-badge-padding-inline {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 5px;
+  }
+
+  /**
+   * Corner radius. Defaults to the pill radius via `--cngx-radius-pill`.
+   * @group Layout
+   */
+  @property --cngx-badge-radius {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 999px;
+  }
+
+  /**
+   * Font-size of the badge text.
+   * @group Typography
+   */
+  @property --cngx-badge-font-size {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.6875rem;
+  }
+
+  /**
+   * Font-weight of the badge text.
+   * @group Typography
+   */
+  @property --cngx-badge-font-weight {
+    syntax: '*';
+    inherits: false;
+    initial-value: 600;
+  }
+
+  /**
+   * Ring around the badge — contrasts the indicator against the host
+   * surface so the corner anchors read as separate pills. Only
+   * applied in the corner variants (`above-*` / `below-*`).
+   * @group Surface
+   */
+  @property --cngx-badge-border {
+    syntax: '*';
+    inherits: false;
+    initial-value: 2px solid oklch(1 0 0);
+  }
+
+  /**
+   * Background of the primary variant. Falls back to
+   * `--cngx-color-primary`.
+   * @group Variant / Primary
+   * @see [[--cngx-color-primary]]
+   */
+  @property --cngx-badge-primary-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.66 0.19 50);
+  }
+
+  /**
+   * Text colour of the primary variant.
+   * @group Variant / Primary
+   */
+  @property --cngx-badge-primary-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(1 0 0);
+  }
+
+  /**
+   * Background of the error variant. Falls back to `--cngx-color-danger`.
+   * @group Variant / Error
+   * @see [[--cngx-color-danger]]
+   */
+  @property --cngx-badge-error-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.62 0.22 25);
+  }
+
+  /**
+   * Text colour of the error variant.
+   * @group Variant / Error
+   */
+  @property --cngx-badge-error-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(1 0 0);
+  }
+
+  /**
+   * Background of the warning variant. Falls back to `--cngx-color-warning`.
+   * @group Variant / Warning
+   * @see [[--cngx-color-warning]]
+   */
+  @property --cngx-badge-warning-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.72 0.18 70);
+  }
+
+  /**
+   * Text colour of the warning variant.
+   * @group Variant / Warning
+   */
+  @property --cngx-badge-warning-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.2 0.01 250);
+  }
+
+  /**
+   * Background of the neutral variant.
+   * @group Variant / Neutral
+   */
+  @property --cngx-badge-neutral-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.68 0.01 240);
+  }
+
+  /**
+   * Text colour of the neutral variant.
+   * @group Variant / Neutral
+   */
+  @property --cngx-badge-neutral-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(1 0 0);
+  }
 }
 
 @layer cngx.components {
   @scope (.cngx-badge-host) {
-    :scope { position: relative; }
+    :scope {
+      position: relative;
+    }
   }
 
   /* The indicator lives outside the host class scope (it's a child of
@@ -70,7 +210,7 @@
 
     /* Colour variants */
     :scope.cngx-badge-indicator--primary {
-      background: var(--cngx-badge-primary-bg, var(--cngx-color-primary, oklch(0.6 0.2 250)));
+      background: var(--cngx-badge-primary-bg, var(--cngx-color-primary, oklch(0.66 0.19 50)));
       color: var(--cngx-badge-primary-color, oklch(1 0 0));
     }
     :scope.cngx-badge-indicator--error {

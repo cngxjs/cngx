@@ -1,23 +1,131 @@
-/*
- * Visual skin for the dot-in-circle radio indicator. Mirrors
- * CngxCheckboxIndicator's size scale so both atoms render at identical
- * visual weight when placed side by side. Checked-state color falls
- * back to --cngx-color-primary.
+/**
+ * @overview
+ * Default visuals for `CngxRadioIndicator`. Renders the dot-in-circle
+ * radio glyph, mirroring `CngxCheckboxIndicator`'s size scale so both
+ * atoms read at identical visual weight when placed side by side.
+ *
+ * The checked-state colour falls back to `--cngx-color-primary` so a
+ * brand override in `@layer cngx.theme` propagates without needing
+ * per-component token overrides.
  */
 
 @layer cngx.tokens {
-  @property --cngx-radio-indicator-size             { syntax: '*';        inherits: false; initial-value: 1em; }
-  @property --cngx-radio-indicator-color            { syntax: '*';  inherits: true;  initial-value: currentColor; }
-  @property --cngx-radio-indicator-bg               { syntax: '*';        inherits: false; initial-value: transparent; }
-  @property --cngx-radio-indicator-border-width     { syntax: '<length>'; inherits: false; initial-value: 1.5px; }
-  @property --cngx-radio-indicator-checked-color    { syntax: '<color>';  inherits: true;  initial-value: oklch(0.6 0.2 250); }
-  @property --cngx-radio-indicator-disabled-opacity { syntax: '<number>'; inherits: false; initial-value: 0.5; }
-  @property --cngx-radio-indicator-transition       { syntax: '*';        inherits: false; initial-value: border-color 120ms ease, background-color 120ms ease; }
-  @property --cngx-radio-indicator-dot-size         { syntax: '*';        inherits: false; initial-value: 0.5em; }
+  /**
+   * Active size of the radio glyph — consumed by the inner circle and
+   * pinned by the size-variant classes.
+   * @group Layout
+   */
+  @property --cngx-radio-indicator-size {
+    syntax: '*';
+    inherits: false;
+    initial-value: 1em;
+  }
 
-  @property --cngx-radio-indicator-size-sm { syntax: '*'; inherits: false; initial-value: 0.875em; }
-  @property --cngx-radio-indicator-size-md { syntax: '*'; inherits: false; initial-value: 1em; }
-  @property --cngx-radio-indicator-size-lg { syntax: '*'; inherits: false; initial-value: 1.25em; }
+  /**
+   * Text colour of the radio glyph. Defaults to `currentColor` so the
+   * indicator inherits its container's text colour.
+   * @group Surface
+   */
+  @property --cngx-radio-indicator-color {
+    syntax: '*';
+    inherits: true;
+    initial-value: currentColor;
+  }
+
+  /**
+   * Background of the unchecked circle.
+   * @group Surface
+   */
+  @property --cngx-radio-indicator-bg {
+    syntax: '*';
+    inherits: false;
+    initial-value: transparent;
+  }
+
+  /**
+   * Stroke width of the unchecked circle.
+   * @group Surface
+   */
+  @property --cngx-radio-indicator-border-width {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 1.5px;
+  }
+
+  /**
+   * Colour applied to the circle border and the inner dot when the
+   * radio is checked. Falls back to `--cngx-color-primary`.
+   * @group State / Checked
+   * @see [[--cngx-color-primary]]
+   */
+  @property --cngx-radio-indicator-checked-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.66 0.19 50);
+  }
+
+  /**
+   * Opacity multiplier applied by `.cngx-radio-indicator--disabled`.
+   * @group State / Disabled
+   */
+  @property --cngx-radio-indicator-disabled-opacity {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 0.5;
+  }
+
+  /**
+   * Transition shorthand for the circle border and dot fade.
+   * @group Motion
+   */
+  @property --cngx-radio-indicator-transition {
+    syntax: '*';
+    inherits: false;
+    initial-value:
+      border-color 120ms ease,
+      background-color 120ms ease;
+  }
+
+  /**
+   * Diameter of the inner dot. Defaults to half the circle size so
+   * the dot reads as concentric without specific tuning.
+   * @group State / Checked
+   */
+  @property --cngx-radio-indicator-dot-size {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.5em;
+  }
+
+  /**
+   * Size token for the `.cngx-radio-indicator--sm` variant.
+   * @group Variant / Size
+   */
+  @property --cngx-radio-indicator-size-sm {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.875em;
+  }
+
+  /**
+   * Size token for the `.cngx-radio-indicator--md` variant (default).
+   * @group Variant / Size
+   */
+  @property --cngx-radio-indicator-size-md {
+    syntax: '*';
+    inherits: false;
+    initial-value: 1em;
+  }
+
+  /**
+   * Size token for the `.cngx-radio-indicator--lg` variant.
+   * @group Variant / Size
+   */
+  @property --cngx-radio-indicator-size-lg {
+    syntax: '*';
+    inherits: false;
+    initial-value: 1.25em;
+  }
 }
 
 @layer cngx.components {
@@ -32,9 +140,15 @@
       color: var(--cngx-radio-indicator-color, currentColor);
     }
 
-    :scope.cngx-radio-indicator--sm { --cngx-radio-indicator-size: var(--cngx-radio-indicator-size-sm, 0.875em); }
-    :scope.cngx-radio-indicator--md { --cngx-radio-indicator-size: var(--cngx-radio-indicator-size-md, 1em); }
-    :scope.cngx-radio-indicator--lg { --cngx-radio-indicator-size: var(--cngx-radio-indicator-size-lg, 1.25em); }
+    :scope.cngx-radio-indicator--sm {
+      --cngx-radio-indicator-size: var(--cngx-radio-indicator-size-sm, 0.875em);
+    }
+    :scope.cngx-radio-indicator--md {
+      --cngx-radio-indicator-size: var(--cngx-radio-indicator-size-md, 1em);
+    }
+    :scope.cngx-radio-indicator--lg {
+      --cngx-radio-indicator-size: var(--cngx-radio-indicator-size-lg, 1.25em);
+    }
 
     .cngx-radio-indicator__circle {
       display: inline-flex;
@@ -47,19 +161,35 @@
       height: var(--cngx-radio-indicator-size, 1em);
       border: var(--cngx-radio-indicator-border-width, 1.5px) solid currentColor;
       background: var(--cngx-radio-indicator-bg, transparent);
-      transition: var(--cngx-radio-indicator-transition, border-color 120ms ease, background-color 120ms ease);
+      transition: var(
+        --cngx-radio-indicator-transition,
+        border-color 120ms ease,
+        background-color 120ms ease
+      );
     }
 
     :scope.cngx-radio-indicator--checked .cngx-radio-indicator__circle {
-      border-color: var(--cngx-radio-indicator-checked-color, var(--cngx-color-primary, oklch(0.6 0.2 250)));
+      border-color: var(
+        --cngx-radio-indicator-checked-color,
+        var(--cngx-color-primary, oklch(0.66 0.19 50))
+      );
     }
 
     .cngx-radio-indicator__dot {
       display: inline-block;
       border-radius: 50%;
-      width: var(--cngx-radio-indicator-dot-size, calc(var(--cngx-radio-indicator-size, 1em) * 0.5));
-      height: var(--cngx-radio-indicator-dot-size, calc(var(--cngx-radio-indicator-size, 1em) * 0.5));
-      background: var(--cngx-radio-indicator-checked-color, var(--cngx-color-primary, oklch(0.6 0.2 250)));
+      width: var(
+        --cngx-radio-indicator-dot-size,
+        calc(var(--cngx-radio-indicator-size, 1em) * 0.5)
+      );
+      height: var(
+        --cngx-radio-indicator-dot-size,
+        calc(var(--cngx-radio-indicator-size, 1em) * 0.5)
+      );
+      background: var(
+        --cngx-radio-indicator-checked-color,
+        var(--cngx-color-primary, oklch(0.66 0.19 50))
+      );
       transition: var(--cngx-radio-indicator-transition, transform 120ms ease);
     }
 
