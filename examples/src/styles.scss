@@ -44,13 +44,37 @@ $dark-color: (
 );
 
 html {
-  @include mat.theme((color: $light-color, typography: Roboto, density: 0));
-  @include cngx-material.theme(mat.define-theme((color: $light-color)));
+  @include mat.theme(
+    (
+      color: $light-color,
+      typography: Roboto,
+      density: 0,
+    )
+  );
+  @include cngx-material.theme(
+    mat.define-theme(
+      (
+        color: $light-color,
+      )
+    )
+  );
 }
 
 html.dark {
-  @include mat.theme((color: $dark-color, typography: Roboto, density: 0));
-  @include cngx-material.theme(mat.define-theme((color: $dark-color)));
+  @include mat.theme(
+    (
+      color: $dark-color,
+      typography: Roboto,
+      density: 0,
+    )
+  );
+  @include cngx-material.theme(
+    mat.define-theme(
+      (
+        color: $dark-color,
+      )
+    )
+  );
 }
 
 :root {
@@ -240,19 +264,19 @@ body {
 // ARIA-driven structural styling — keeps composite widgets legible without
 // dictating brand. Selectors fire only when the directive actually applied
 // the role/state, so they don't bleed into the inline-styled demos.
-[role='listbox'],
-[role='menu'],
-[role='tree'] {
-  display: flex;
-  flex-direction: column;
-  border: 1px solid var(--cngx-ex-border);
-  border-radius: 6px;
-  padding: 4px;
-  outline: none;
-}
-[role='listbox']:focus-visible,
-[role='menu']:focus-visible,
-[role='tree']:focus-visible {
-  outline: 2px solid var(--cngx-ex-focus);
-  outline-offset: 2px;
-}
+// [role='listbox'],
+// [role='menu'],
+// [role='tree'] {
+//   display: flex;
+//   flex-direction: column;
+//   border: 1px solid var(--cngx-ex-border);
+//   border-radius: 6px;
+//   padding: 4px;
+//   outline: none;
+// }
+// [role='listbox']:focus-visible,
+// [role='menu']:focus-visible,
+// [role='tree']:focus-visible {
+//   outline: 2px solid var(--cngx-ex-focus);
+//   outline-offset: 2px;
+// }

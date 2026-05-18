@@ -85,70 +85,16 @@
 // and sizes per the M3 spec (filled-tonal-button height 40px,
 // corner-full radius; outlined-input height 56px, corner-extra-small
 // radius, transparent fill, outline border).
-// Buttons / inputs nested inside cngx components (option templates, action
-// templates, popover actions, listbox search slots, etc.) are consumer-
-// authored or component-authored. The bare-element re-skin must not touch
-// them — only top-level demo/story chrome should pick up the Material
-// outlined defaults. The selector list is interpolated as a string so
-// Sass passes the complex compound through without trying to parse it.
-$_inside-cngx: ':is(cngx-select, cngx-multi-select, cngx-combobox, cngx-typeahead, cngx-tree-select, cngx-reorderable-multi-select, cngx-action-select, cngx-action-multi-select, cngx-select-shell, cngx-popover-panel, cngx-tooltip, cngx-bottom-sheet, cngx-tab-group, cngx-tab-overflow, cngx-stepper, cngx-filter-builder, cngx-form-field, cngx-toast-outlet, cngx-banner-outlet, cngx-alert, cngx-card, cngx-sidenav-layout) *, :is(.cngx-select__panel, .cngx-popover-panel) *';
-
-@mixin _bare-elements-m3() {
-  :where(button):not(
-      [class*='cngx-'],
-      [class*='mat-'],
-      [class*='cdk-'],
-      #{$_inside-cngx}
-    ) {
-    min-height: 40px;
-    padding-inline: 24px;
-    padding-block: 10px;
-    border-radius: var(--mat-sys-corner-full, 9999px);
-    border: 1px solid var(--mat-sys-outline);
-    background: transparent;
-    color: var(--mat-sys-primary);
-    font: var(--mat-sys-label-large, inherit);
-  }
-  :where(button):not(
-      [class*='cngx-'],
-      [class*='mat-'],
-      [class*='cdk-'],
-      #{$_inside-cngx}
-    ):hover {
-    background: color-mix(in srgb, var(--mat-sys-primary) 8%, transparent);
-  }
-
-  :where(input, textarea, select):not(
-      [class*='cngx-'],
-      [class*='mat-'],
-      [class*='cdk-'],
-      #{$_inside-cngx}
-    ) {
-    min-height: 56px;
-    padding-inline: 16px;
-    padding-block: 16px;
-    border-radius: var(--mat-sys-corner-extra-small, 4px);
-    border: 1px solid var(--mat-sys-outline);
-    background: transparent;
-    color: var(--mat-sys-on-surface);
-    font: var(--mat-sys-body-large, inherit);
-  }
-  :where(input, textarea, select):not(
-      [class*='cngx-'],
-      [class*='mat-'],
-      [class*='cdk-'],
-      #{$_inside-cngx}
-    ):focus-visible {
-    outline: none;
-    border-color: var(--mat-sys-primary);
-    border-width: 2px;
-  }
-}
+// Bare <button>/<input> re-skin was tried earlier but it caught chrome
+// elements (examples app filter input, demo state-toggle buttons) that
+// shouldn't read as Material outlined controls. Material-look is an
+// opt-in via [cngxInput] + <cngx-form-field>, the cngx-action-button
+// + cngx-button atoms, or the consumer's own <mat-*> elements — the
+// system bridge stays a pure token mapping.
 
 @mixin theme($theme) {
   @if mat.get-theme-version($theme) == 1 {
     @include _m3();
-    @include _bare-elements-m3();
   } @else {
     @include _m2($theme);
   }
