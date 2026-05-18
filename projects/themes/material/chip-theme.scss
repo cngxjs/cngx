@@ -1,18 +1,58 @@
 @use '@angular/material' as mat;
 
 // Material bridge for CngxChip + CngxChipGroup + CngxMultiChipGroup +
-// CngxButtonToggleGroup (button-toggle reuses the chip token surface).
+// CngxButtonToggleGroup. Maps the chip token surface (idle / hover /
+// focus / selected / disabled / variant palette) onto Material 3
+// surface and state tokens so an interactive chip reads like an M3
+// filter / assist chip.
 //
 //   @use '@cngx/themes/material/chip-theme' as chip;
 //   html { @include chip.theme($theme); }
 
 @mixin color($theme) {
   @if mat.get-theme-version($theme) == 1 {
-    --cngx-chip-bg: color-mix(in srgb, var(--mat-sys-primary) 12%, transparent);
+    // Idle — M3 assist-chip rest surface.
+    --cngx-chip-bg: color-mix(in srgb, var(--mat-sys-on-surface) 8%, transparent);
     --cngx-chip-color: var(--mat-sys-on-surface);
+    --cngx-chip-border: 1px solid var(--mat-sys-outline-variant);
+
+    // Hover — adds the M3 hover state-layer (8% on-surface).
+    --cngx-chip-hover-bg: color-mix(in srgb, var(--mat-sys-on-surface) 16%, transparent);
+    --cngx-chip-hover-color: var(--mat-sys-on-surface);
+
+    // Focus ring uses primary so it stays visible on any chip surface.
+    --cngx-chip-focus-outline: 2px solid var(--mat-sys-primary);
+
+    // Selected — M3 filter-chip selected fill (primary-container surface).
+    --cngx-chip-selected-bg: var(--mat-sys-secondary-container);
+    --cngx-chip-selected-color: var(--mat-sys-on-secondary-container);
+
+    // Variant palette — Material's container tones.
+    --cngx-chip-info-bg: var(--mat-sys-primary-container);
+    --cngx-chip-info-color: var(--mat-sys-on-primary-container);
+    --cngx-chip-success-bg: var(--mat-sys-tertiary-container);
+    --cngx-chip-success-color: var(--mat-sys-on-tertiary-container);
+    --cngx-chip-warning-bg: color-mix(
+      in srgb,
+      var(--mat-sys-tertiary) 24%,
+      var(--mat-sys-surface)
+    );
+    --cngx-chip-warning-color: var(--mat-sys-on-surface);
+    --cngx-chip-danger-bg: var(--mat-sys-error-container);
+    --cngx-chip-danger-color: var(--mat-sys-on-error-container);
+
+    // Remove-button focus ring follows the chip palette.
+    --cngx-chip-remove-focus-color: var(--mat-sys-primary);
   } @else {
-    --cngx-chip-bg: #{rgba(mat.get-theme-color($theme, primary), 0.12)};
+    --cngx-chip-bg: #{rgba(mat.get-theme-color($theme, primary), 0.08)};
     --cngx-chip-color: #{mat.get-theme-color($theme, foreground, text)};
+    --cngx-chip-hover-bg: #{rgba(mat.get-theme-color($theme, primary), 0.16)};
+    --cngx-chip-selected-bg: #{rgba(mat.get-theme-color($theme, primary), 0.24)};
+    --cngx-chip-info-bg: #{rgba(mat.get-theme-color($theme, primary), 0.16)};
+    --cngx-chip-info-color: #{mat.get-theme-color($theme, primary)};
+    --cngx-chip-danger-bg: #{rgba(mat.get-theme-color($theme, warn), 0.16)};
+    --cngx-chip-danger-color: #{mat.get-theme-color($theme, warn)};
+    --cngx-chip-remove-focus-color: #{mat.get-theme-color($theme, primary)};
   }
 }
 
