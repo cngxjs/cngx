@@ -6,8 +6,11 @@
  * underlying `CngxPopover` state machine.
  *
  * Surface defaults to a charcoal-on-light-text pill — intentionally
- * neutral so it stays out of the brand-color conversation. Touch
- * devices get larger padding + font-size by default for readability
+ * neutral so it stays out of the brand-color conversation. Dark
+ * mode inverts to a light pill on dark page (Material-style
+ * inverse-surface) so the tooltip stays as a high-contrast call-out
+ * rather than blending into the surrounding chrome. Touch devices
+ * get larger padding + font-size by default for readability
  * (`@media (hover: none)`).
  *
  * The optional `tooltip-indicator.scss` (the `::after` info-icon next
@@ -148,6 +151,26 @@
     syntax: '*';
     inherits: false;
     initial-value: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Dark-mode swap — flip to inverse-surface (light pill, dark text)
+   * so the tooltip pops off the dark page rather than blending into
+   * the surrounding chrome at low contrast. */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-color-scheme='light']):not(.light) {
+      --cngx-tooltip-bg: oklch(0.95 0.005 290);
+      --cngx-tooltip-color: oklch(0.2 0.005 290);
+    }
+  }
+  [data-color-scheme='dark'],
+  .dark {
+    --cngx-tooltip-bg: oklch(0.95 0.005 290);
+    --cngx-tooltip-color: oklch(0.2 0.005 290);
+  }
+  [data-color-scheme='light'],
+  .light {
+    --cngx-tooltip-bg: oklch(0.2 0.005 290);
+    --cngx-tooltip-color: oklch(0.96 0.005 290);
   }
 }
 

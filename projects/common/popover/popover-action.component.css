@@ -83,6 +83,34 @@
     inherits: false;
     initial-value: 150ms;
   }
+
+  /**
+   * Hover-state surface — neutral default + ghost variant share this
+   * token so a single dark-mode swap covers both. Light: 4% black
+   * wash; dark: 6% white wash.
+   * @group State / Hover
+   */
+  @property --cngx-popover-action-hover-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0 0 0 / 0.04);
+  }
+
+  /* Dark-mode swap — hover wash inverts to white-alpha so it stays
+   * visible against the dark panel surface. */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-color-scheme='light']):not(.light) {
+      --cngx-popover-action-hover-bg: oklch(1 0 0 / 0.06);
+    }
+  }
+  [data-color-scheme='dark'],
+  .dark {
+    --cngx-popover-action-hover-bg: oklch(1 0 0 / 0.06);
+  }
+  [data-color-scheme='light'],
+  .light {
+    --cngx-popover-action-hover-bg: oklch(0 0 0 / 0.04);
+  }
 }
 
 @layer cngx.components {
@@ -107,7 +135,7 @@
         color var(--cngx-popover-action-transition, 150ms);
     }
     :scope:hover {
-      background: oklch(0 0 0 / 0.04);
+      background: var(--cngx-popover-action-hover-bg, oklch(0 0 0 / 0.04));
     }
     :scope:focus-visible {
       outline: 2px solid var(--cngx-popover-panel-accent-text, currentColor);
@@ -142,7 +170,7 @@
       border-color: transparent;
     }
     :scope.cngx-popover-action--ghost:hover {
-      background: oklch(0 0 0 / 0.04);
+      background: var(--cngx-popover-action-hover-bg, oklch(0 0 0 / 0.04));
     }
   }
 

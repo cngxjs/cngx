@@ -37,12 +37,13 @@
   }
 
   /**
-   * Drop-shadow shorthand for the dialog.
+   * Drop-shadow shorthand for the dialog. `inherits: true` so the
+   * :root dark-mode override reaches the open dialog element.
    * @group Surface
    */
   @property --cngx-dialog-shadow {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0 8px 32px oklch(0 0 0 / 0.12);
   }
 
@@ -157,6 +158,29 @@
     syntax: '*';
     inherits: false;
     initial-value: grabbing;
+  }
+
+  /* Delegating tokens — :root pulls foundation surface so the dialog
+   * bg follows whichever light/dark value the foundation has resolved. */
+  :root {
+    --cngx-dialog-bg: var(--cngx-color-surface);
+  }
+
+  /* Dark-mode swap — shadow deepens so the dialog still reads as
+   * elevated over the dark page (a 12% black wash disappears on
+   * dark surfaces). */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-color-scheme='light']):not(.light) {
+      --cngx-dialog-shadow: 0 8px 32px oklch(0 0 0 / 0.5);
+    }
+  }
+  [data-color-scheme='dark'],
+  .dark {
+    --cngx-dialog-shadow: 0 8px 32px oklch(0 0 0 / 0.5);
+  }
+  [data-color-scheme='light'],
+  .light {
+    --cngx-dialog-shadow: 0 8px 32px oklch(0 0 0 / 0.12);
   }
 }
 

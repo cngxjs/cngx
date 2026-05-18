@@ -77,12 +77,13 @@
   }
 
   /**
-   * Color of the drag handle pill.
+   * Color of the drag handle pill. `inherits: true` so the :root
+   * cascade reaches the `::before` pseudo on the open dialog.
    * @group Surface
    */
   @property --cngx-bottom-sheet-handle-color {
     syntax: '<color>';
-    inherits: false;
+    inherits: true;
     initial-value: oklch(0.8 0.005 250);
   }
 
@@ -105,6 +106,22 @@
     syntax: '*';
     inherits: false;
     initial-value: 0 auto 16px;
+  }
+
+  /* Dark-mode swap — handle inverts to a mid-tone gray so the drag
+   * affordance stays visible against the dark sheet surface. */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-color-scheme='light']):not(.light) {
+      --cngx-bottom-sheet-handle-color: oklch(0.5 0.005 250);
+    }
+  }
+  [data-color-scheme='dark'],
+  .dark {
+    --cngx-bottom-sheet-handle-color: oklch(0.5 0.005 250);
+  }
+  [data-color-scheme='light'],
+  .light {
+    --cngx-bottom-sheet-handle-color: oklch(0.8 0.005 250);
   }
 }
 
