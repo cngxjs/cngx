@@ -1,65 +1,123 @@
-/*
- * Visual skin for CngxSpeakButton. --cngx-speak-btn-active-color
- * defaults to a warm orange (oklch(0.72 0.18 70)) rather than
- * --cngx-color-primary so the speaking state visually distinguishes
- * itself from primary actions. Brand-wide overrides target
- * --cngx-speak-btn-active-color directly.
+/**
+ * @overview
+ * Default visuals for `CngxSpeakButton`. The speaking state
+ * deliberately uses warm orange (`oklch(0.72 0.18 70)`) rather than
+ * `--cngx-color-primary` so it visually distinguishes itself from
+ * primary actions — speak is communicative ambient feedback, not a
+ * primary call-to-action. Brand-wide overrides target
+ * `--cngx-speak-btn-active-color` directly.
  *
- * A Material bridge for consumers who opt in lives in the sibling
- * speak-button-theme.scss.
+ * Pair with `@cngx/themes/material/speak-button-theme` for the
+ * Material 3 icon-button surface.
  */
 
 @layer cngx.tokens {
+  /**
+   * Hit-target diameter of the button.
+   * @group Layout
+   */
   @property --cngx-speak-btn-size {
     syntax: '<length>';
     inherits: false;
     initial-value: 36px;
   }
+
+  /**
+   * Inner icon size.
+   * @group Layout
+   */
   @property --cngx-speak-btn-icon-size {
     syntax: '<length>';
     inherits: false;
     initial-value: 18px;
   }
+
+  /**
+   * Corner radius.
+   * @group Layout
+   */
   @property --cngx-speak-btn-radius {
     syntax: '<length>';
     inherits: false;
     initial-value: 8px;
   }
+
+  /**
+   * Border width.
+   * @group Surface
+   */
   @property --cngx-speak-btn-border-width {
     syntax: '<length>';
     inherits: false;
     initial-value: 1px;
   }
+
+  /**
+   * Resting background. Falls back through `--cngx-color-surface`.
+   * @group Surface
+   */
   @property --cngx-speak-btn-bg {
     syntax: '<color>';
     inherits: false;
     initial-value: oklch(1 0 0);
   }
+
+  /**
+   * Resting icon color — muted.
+   * @group Surface
+   */
   @property --cngx-speak-btn-color {
     syntax: '<color>';
     inherits: true;
     initial-value: oklch(0.45 0 0);
   }
+
+  /**
+   * Transition duration for the state-color crossfade.
+   * @group Motion
+   */
   @property --cngx-speak-btn-transition {
     syntax: '<time>';
     inherits: false;
     initial-value: 0.15s;
   }
+
+  /**
+   * Accent color of the speaking / hover state. Warm orange by
+   * design — independent of `--cngx-color-primary`.
+   * @group State / Active
+   */
   @property --cngx-speak-btn-active-color {
     syntax: '<color>';
     inherits: true;
     initial-value: oklch(0.72 0.18 70);
   }
+
+  /**
+   * Background on hover.
+   * @group State / Hover
+   */
   @property --cngx-speak-btn-hover-bg {
     syntax: '<color>';
     inherits: false;
     initial-value: oklch(1 0 0);
   }
+
+  /**
+   * Icon color while actively speaking.
+   * @group State / Speaking
+   */
   @property --cngx-speak-btn-speaking-color {
     syntax: '<color>';
     inherits: true;
     initial-value: oklch(1 0 0);
   }
+
+  /**
+   * Background while actively speaking — filled with the orange
+   * accent for unmistakable feedback.
+   * @group State / Speaking
+   */
   @property --cngx-speak-btn-speaking-bg {
     syntax: '<color>';
     inherits: false;

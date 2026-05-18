@@ -53,7 +53,7 @@
   }
 
   /**
-   * Border colour of the base (non-variant) `.cngx-action-button` rule.
+   * Border color of the base (non-variant) `.cngx-action-button` rule.
    * Variant rules override this per appearance.
    * @group Surface
    * @see [[--cngx-color-border]]
@@ -96,7 +96,7 @@
   }
 
   /**
-   * Text colour after a successful async commit.
+   * Text color after a successful async commit.
    * @group State / Succeeded
    */
   @property --cngx-action-btn-succeeded-color {
@@ -106,7 +106,7 @@
   }
 
   /**
-   * Border colour after a successful async commit.
+   * Border color after a successful async commit.
    * @group State / Succeeded
    */
   @property --cngx-action-btn-succeeded-border {
@@ -126,7 +126,7 @@
   }
 
   /**
-   * Text colour after a failed async commit.
+   * Text color after a failed async commit.
    * @group State / Failed
    */
   @property --cngx-action-btn-failed-color {
@@ -136,7 +136,7 @@
   }
 
   /**
-   * Border colour after a failed async commit.
+   * Border color after a failed async commit.
    * @group State / Failed
    */
   @property --cngx-action-btn-failed-border {
@@ -167,7 +167,7 @@
   }
 
   /**
-   * Text colour of the primary variant.
+   * Text color of the primary variant.
    * @group Variant / Primary
    */
   @property --cngx-action-btn-primary-color {
@@ -188,7 +188,7 @@
   }
 
   /**
-   * Text colour of the secondary variant.
+   * Text color of the secondary variant.
    * @group Variant / Secondary
    */
   @property --cngx-action-btn-secondary-color {
@@ -198,7 +198,7 @@
   }
 
   /**
-   * Border colour of the secondary variant.
+   * Border color of the secondary variant.
    * @group Variant / Secondary
    */
   @property --cngx-action-btn-secondary-border {
@@ -208,7 +208,7 @@
   }
 
   /**
-   * Text colour of the ghost variant.
+   * Text color of the ghost variant.
    * @group Variant / Ghost
    */
   @property --cngx-action-btn-ghost-color {

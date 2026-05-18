@@ -90,7 +90,7 @@ export type LoadingIndicatorVariant = 'spinner' | 'bar';
       }
     }
   `,
-  styleUrl: './loading-indicator.css',
+  styleUrls: ['./loading-indicator.css'],
 })
 export class CngxLoadingIndicator {
   private readonly config = inject(CNGX_FEEDBACK_CONFIG, { optional: true });

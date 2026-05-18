@@ -81,7 +81,7 @@ import { createVisibilityTimer } from './visibility-timer';
       </div>
     }
   `,
-  styleUrl: './loading-overlay.css',
+  styleUrls: ['./loading-overlay.css'],
 })
 export class CngxLoadingOverlay {
   private readonly doc = inject(DOCUMENT);

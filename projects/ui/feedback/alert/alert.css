@@ -1,43 +1,317 @@
-/*
- * Visual skin for CngxAlert. Severity tokens use a tinted-surface
- * family (--cngx-alert-{severity}-bg/border/icon) with their own
- * defaults — visually distinct from --cngx-color-{success,danger,
- * warning,info} which are solid brand colors unsuitable for alert
- * surfaces. Brand-wide overrides target the severity-specific tokens
- * directly.
+/**
+ * @overview
+ * Default visuals for `CngxAlert`. Severity tokens use a tinted-
+ * surface family (`--cngx-alert-{severity}-bg / border / icon`) with
+ * their own defaults — visually distinct from
+ * `--cngx-color-{success / danger / warning / info}` which are
+ * solid brand colors unsuitable for alert surfaces. Brand-wide
+ * overrides target the severity-specific tokens directly.
+ *
+ * Pair with `@cngx/themes/material/feedback-theme` for the
+ * Material 3 surface palette.
  */
 
 @layer cngx.tokens {
-  @property --cngx-alert-gap                  { syntax: '<length>'; inherits: false; initial-value: 12px; }
-  @property --cngx-alert-padding              { syntax: '*'; inherits: false; initial-value: 12px 16px; }
-  @property --cngx-alert-border-radius        { syntax: '<length>'; inherits: false; initial-value: 8px; }
-  @property --cngx-alert-border-color         { syntax: '<color>'; inherits: false; initial-value: transparent; }
-  @property --cngx-alert-bg                   { syntax: '<color>'; inherits: false; initial-value: oklch(0.98 0.005 250); }
-  @property --cngx-alert-color                { syntax: '*'; inherits: true; initial-value: currentColor; }
-  @property --cngx-alert-info-bg              { syntax: '<color>'; inherits: false; initial-value: oklch(0.96 0.025 250); }
-  @property --cngx-alert-info-border          { syntax: '<color>'; inherits: false; initial-value: oklch(0.85 0.07 250); }
-  @property --cngx-alert-info-icon            { syntax: '<color>'; inherits: false; initial-value: oklch(0.62 0.2 250); }
-  @property --cngx-alert-success-bg           { syntax: '<color>'; inherits: false; initial-value: oklch(0.96 0.04 145); }
-  @property --cngx-alert-success-border       { syntax: '<color>'; inherits: false; initial-value: oklch(0.85 0.1 145); }
-  @property --cngx-alert-success-icon         { syntax: '<color>'; inherits: false; initial-value: oklch(0.65 0.15 145); }
-  @property --cngx-alert-warning-bg           { syntax: '<color>'; inherits: false; initial-value: oklch(0.97 0.04 80); }
-  @property --cngx-alert-warning-border       { syntax: '<color>'; inherits: false; initial-value: oklch(0.86 0.1 80); }
-  @property --cngx-alert-warning-icon         { syntax: '<color>'; inherits: false; initial-value: oklch(0.72 0.18 70); }
-  @property --cngx-alert-error-bg             { syntax: '<color>'; inherits: false; initial-value: oklch(0.96 0.025 25); }
-  @property --cngx-alert-error-border         { syntax: '<color>'; inherits: false; initial-value: oklch(0.85 0.08 25); }
-  @property --cngx-alert-error-icon           { syntax: '<color>'; inherits: false; initial-value: oklch(0.62 0.22 25); }
-  @property --cngx-alert-icon-color           { syntax: '*'; inherits: true; initial-value: currentColor; }
-  @property --cngx-alert-icon-size            { syntax: '<length>'; inherits: false; initial-value: 20px; }
-  @property --cngx-alert-title-weight         { syntax: '<number>'; inherits: false; initial-value: 600; }
-  @property --cngx-alert-title-gap            { syntax: '<length>'; inherits: false; initial-value: 4px; }
-  @property --cngx-alert-collapse-duration    { syntax: '<time>'; inherits: false; initial-value: 200ms; }
-  @property --cngx-alert-collapsed-hover-bg   { syntax: '<color>'; inherits: false; initial-value: oklch(0 0 0 / 0.02); }
-  @property --cngx-alert-actions-gap          { syntax: '<length>'; inherits: false; initial-value: 8px; }
-  @property --cngx-alert-enter-duration       { syntax: '<time>'; inherits: false; initial-value: 200ms; }
-  @property --cngx-alert-exit-duration        { syntax: '<time>'; inherits: false; initial-value: 150ms; }
-  @property --cngx-alert-icon-pulse-duration  { syntax: '<time>'; inherits: false; initial-value: 300ms; }
-  @property --cngx-alert-enter-offset         { syntax: '<length>'; inherits: false; initial-value: 8px; }
-  @property --cngx-alert-exit-offset          { syntax: '<length>'; inherits: false; initial-value: 8px; }
+  /**
+   * Gap between the icon, body, and dismiss button.
+   * @group Layout
+   */
+  @property --cngx-alert-gap {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 12px;
+  }
+
+  /**
+   * Padding shorthand inside the alert.
+   * @group Layout
+   */
+  @property --cngx-alert-padding {
+    syntax: '*';
+    inherits: false;
+    initial-value: 12px 16px;
+  }
+
+  /**
+   * Corner radius.
+   * @group Layout
+   */
+  @property --cngx-alert-border-radius {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 8px;
+  }
+
+  /**
+   * Border color — neutral by default; severity rules override.
+   * @group Surface
+   */
+  @property --cngx-alert-border-color {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: transparent;
+  }
+
+  /**
+   * Background — neutral by default; severity rules override.
+   * @group Surface
+   */
+  @property --cngx-alert-bg {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: oklch(0.98 0.005 250);
+  }
+
+  /**
+   * Text color — defaults to `currentColor`.
+   * @group Surface
+   */
+  @property --cngx-alert-color {
+    syntax: '*';
+    inherits: true;
+    initial-value: currentColor;
+  }
+
+  /**
+   * Background tint of the info severity.
+   * @group Variant / Info
+   */
+  @property --cngx-alert-info-bg {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: oklch(0.96 0.025 250);
+  }
+
+  /**
+   * Border color of the info severity.
+   * @group Variant / Info
+   */
+  @property --cngx-alert-info-border {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: oklch(0.85 0.07 250);
+  }
+
+  /**
+   * Icon color of the info severity.
+   * @group Variant / Info
+   */
+  @property --cngx-alert-info-icon {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: oklch(0.62 0.2 250);
+  }
+
+  /**
+   * Background tint of the success severity.
+   * @group Variant / Success
+   */
+  @property --cngx-alert-success-bg {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: oklch(0.96 0.04 145);
+  }
+
+  /**
+   * Border color of the success severity.
+   * @group Variant / Success
+   */
+  @property --cngx-alert-success-border {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: oklch(0.85 0.1 145);
+  }
+
+  /**
+   * Icon color of the success severity.
+   * @group Variant / Success
+   */
+  @property --cngx-alert-success-icon {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: oklch(0.65 0.15 145);
+  }
+
+  /**
+   * Background tint of the warning severity.
+   * @group Variant / Warning
+   */
+  @property --cngx-alert-warning-bg {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: oklch(0.97 0.04 80);
+  }
+
+  /**
+   * Border color of the warning severity.
+   * @group Variant / Warning
+   */
+  @property --cngx-alert-warning-border {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: oklch(0.86 0.1 80);
+  }
+
+  /**
+   * Icon color of the warning severity.
+   * @group Variant / Warning
+   */
+  @property --cngx-alert-warning-icon {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: oklch(0.72 0.18 70);
+  }
+
+  /**
+   * Background tint of the error severity.
+   * @group Variant / Error
+   */
+  @property --cngx-alert-error-bg {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: oklch(0.96 0.025 25);
+  }
+
+  /**
+   * Border color of the error severity.
+   * @group Variant / Error
+   */
+  @property --cngx-alert-error-border {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: oklch(0.85 0.08 25);
+  }
+
+  /**
+   * Icon color of the error severity.
+   * @group Variant / Error
+   */
+  @property --cngx-alert-error-icon {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: oklch(0.62 0.22 25);
+  }
+
+  /**
+   * Icon color override — defaults to `currentColor` and is pinned
+   * by each severity rule.
+   * @group Surface
+   */
+  @property --cngx-alert-icon-color {
+    syntax: '*';
+    inherits: true;
+    initial-value: currentColor;
+  }
+
+  /**
+   * Default icon size when no custom icon is projected.
+   * @group Layout
+   */
+  @property --cngx-alert-icon-size {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 20px;
+  }
+
+  /**
+   * Font-weight of the title slot.
+   * @group Typography
+   */
+  @property --cngx-alert-title-weight {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 600;
+  }
+
+  /**
+   * Gap between the title and the body text.
+   * @group Layout
+   */
+  @property --cngx-alert-title-gap {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 4px;
+  }
+
+  /**
+   * Duration of the collapsed-state grid-row transition.
+   * @group Motion
+   */
+  @property --cngx-alert-collapse-duration {
+    syntax: '<time>';
+    inherits: false;
+    initial-value: 200ms;
+  }
+
+  /**
+   * Background tint applied on hover of a collapsed alert.
+   * @group State / Collapsed
+   */
+  @property --cngx-alert-collapsed-hover-bg {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: oklch(0 0 0 / 0.02);
+  }
+
+  /**
+   * Gap above the actions slot.
+   * @group Layout
+   */
+  @property --cngx-alert-actions-gap {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 8px;
+  }
+
+  /**
+   * Duration of the enter animation.
+   * @group Motion
+   */
+  @property --cngx-alert-enter-duration {
+    syntax: '<time>';
+    inherits: false;
+    initial-value: 200ms;
+  }
+
+  /**
+   * Duration of the exit animation.
+   * @group Motion
+   */
+  @property --cngx-alert-exit-duration {
+    syntax: '<time>';
+    inherits: false;
+    initial-value: 150ms;
+  }
+
+  /**
+   * Duration of the icon-pulse animation that fires on enter.
+   * @group Motion
+   */
+  @property --cngx-alert-icon-pulse-duration {
+    syntax: '<time>';
+    inherits: false;
+    initial-value: 300ms;
+  }
+
+  /**
+   * Vertical offset the alert translates from while entering.
+   * @group Motion
+   */
+  @property --cngx-alert-enter-offset {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 8px;
+  }
+
+  /**
+   * Vertical offset the alert translates to while exiting.
+   * @group Motion
+   */
+  @property --cngx-alert-exit-offset {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 8px;
+  }
 }
 
 @layer cngx.components {

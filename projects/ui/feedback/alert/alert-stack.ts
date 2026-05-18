@@ -109,7 +109,7 @@ import { CngxAlerter, type AlertState } from './alerter.service';
       </button>
     }
   `,
-  styleUrl: './alert-stack.css',
+  styleUrls: ['./alert-stack.css'],
 })
 export class CngxAlertStack {
   /** The scoped alerter instance — use to add/dismiss alerts programmatically. */

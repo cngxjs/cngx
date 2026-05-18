@@ -1,13 +1,19 @@
-/*
- * async-container.css — CngxAsyncContainer skin.
- *
- * Tiny by design — the container is a `display: contents` wrapper that
- * delegates rendering to projected skeleton/content/empty/error
- * templates. Only owns the absolutely-positioned refresh-indicator and
- * the sr-only announcement region.
+/**
+ * @overview
+ * Default visuals for `CngxAsyncContainer`. Tiny by design — the
+ * container is a `display: contents` wrapper that delegates
+ * rendering to projected skeleton / content / empty / error
+ * templates. Only owns the absolutely-positioned refresh-indicator
+ * and the sr-only announcement region.
  */
 
 @layer cngx.tokens {
+  /**
+   * Stacking-context order of the refresh indicator overlay.
+   * Defaults to 5 so it sits above the content stream but below
+   * dialog / popover surfaces.
+   * @group Layout
+   */
   @property --cngx-async-container-refresh-z {
     syntax: '<number>';
     inherits: false;

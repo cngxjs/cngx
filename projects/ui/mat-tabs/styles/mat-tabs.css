@@ -1,80 +1,153 @@
-/*
- * Material-themed sticky-error skin for [cngxMatTabs]. The directive
- * applies cngx-mat-tab--error / --has-errors classes onto the
- * <button>.mat-mdc-tab elements; this stylesheet paints them.
+/**
+ * @overview
+ * Material-themed sticky-error skin for `[cngxMatTabs]`. The
+ * directive applies `cngx-mat-tab--error` / `--has-errors` classes
+ * onto the `<button>.mat-mdc-tab` elements; this stylesheet paints
+ * them.
  *
- * Themed via --mat-sys-error by default with --cngx-mat-tab-error-*
- * consumer overrides. Tokens stay under the Material-bridge namespace
- * (--cngx-mat-tab-*) — no system-token fallbacks because the Material
- * design system owns the canonical theme.
+ * Themed via `--mat-sys-error` by default with
+ * `--cngx-mat-tab-error-*` consumer overrides. Tokens stay under
+ * the Material-bridge namespace (`--cngx-mat-tab-*`) — no
+ * system-token fallbacks because the Material design system owns
+ * the canonical theme.
  *
- * Shipped as a standalone stylesheet asset (consumer imports once in
- * their global stylesheet) because Angular only allows styleUrl on
- * @Component, not on @Directive. The .mat-mdc-tab selectors target
- * Material's button which is rendered outside any cngx host.
+ * Shipped as a standalone stylesheet asset (consumer imports once
+ * in their global stylesheet) because Angular only allows
+ * `styleUrl` on `@Component`, not on `@Directive`. The
+ * `.mat-mdc-tab` selectors target Material's button which is
+ * rendered outside any cngx host.
  */
 
 @layer cngx.tokens {
+  /**
+   * Text + outline color of a rejected tab. Falls back to
+   * `--mat-sys-error`.
+   * @group State / Error
+   */
   @property --cngx-mat-tab-error-color {
     syntax: '<color>';
     inherits: true;
     initial-value: oklch(0.45 0.15 25);
   }
+
+  /**
+   * Outline shorthand of a rejected tab.
+   * @group State / Error
+   */
   @property --cngx-mat-tab-error-outline {
     syntax: '*';
     inherits: false;
     initial-value: 2px solid currentColor;
   }
+
+  /**
+   * Outline offset of the rejected-tab outline.
+   * @group State / Error
+   */
   @property --cngx-mat-tab-error-outline-offset {
     syntax: '<length>';
     inherits: false;
     initial-value: 1px;
   }
+
+  /**
+   * Font-weight bump of a rejected tab.
+   * @group State / Error
+   */
   @property --cngx-mat-tab-error-font-weight {
     syntax: '<number>';
     inherits: false;
     initial-value: 600;
   }
+
+  /**
+   * Inset of the `has-errors` glyph from the tab edges.
+   * @group State / HasErrors
+   */
   @property --cngx-mat-tab-has-errors-glyph-offset {
     syntax: '<length>';
     inherits: false;
     initial-value: 4px;
   }
+
+  /**
+   * Larger inset when the tab is BOTH rejected and carries form
+   * errors — keeps the two signals visually distinct.
+   * @group State / HasErrors
+   */
   @property --cngx-mat-tab-has-errors-glyph-offset-stacked {
     syntax: '<length>';
     inherits: false;
     initial-value: 6px;
   }
+
+  /**
+   * Diameter of the `has-errors` glyph disc.
+   * @group State / HasErrors
+   */
   @property --cngx-mat-tab-has-errors-glyph-size {
     syntax: '<length>';
     inherits: false;
     initial-value: 16px;
   }
+
+  /**
+   * Background of the `has-errors` glyph disc. Falls back to
+   * `--mat-sys-error`.
+   * @group State / HasErrors
+   */
   @property --cngx-mat-tab-has-errors-color {
     syntax: '<color>';
     inherits: false;
     initial-value: oklch(0.45 0.15 25);
   }
+
+  /**
+   * Glyph color inside the `has-errors` disc. Falls back to
+   * `--mat-sys-on-error`.
+   * @group State / HasErrors
+   */
   @property --cngx-mat-tab-has-errors-glyph-color {
     syntax: '<color>';
     inherits: true;
     initial-value: oklch(1 0 0);
   }
+
+  /**
+   * Font-weight of the `has-errors` glyph (`!`).
+   * @group State / HasErrors
+   */
   @property --cngx-mat-tab-has-errors-font-weight {
     syntax: '<number>';
     inherits: false;
     initial-value: 700;
   }
+
+  /**
+   * Stacking-context order of the trailing-edge overflow wrapper.
+   * @group Layout
+   */
   @property --cngx-mat-tabs-more-z {
     syntax: '<number>';
     inherits: false;
     initial-value: 2;
   }
+
+  /**
+   * Background of the trailing-edge overflow wrapper. Falls back to
+   * `--mat-app-background-color`.
+   * @group Surface
+   */
   @property --cngx-mat-tabs-more-bg {
     syntax: '<color>';
     inherits: false;
     initial-value: oklch(1 0 0);
   }
+
+  /**
+   * Drop-shadow of the trailing-edge overflow wrapper.
+   * @group Surface
+   */
   @property --cngx-mat-tabs-more-shadow {
     syntax: '*';
     inherits: false;

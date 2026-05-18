@@ -1,49 +1,95 @@
-/*
- * cngx-empty-state.css — default visuals for CngxEmptyState.
- *
- * Shipped via @cngx/themes/cngx.css aggregation. The opt-in Sass
- * partial `_empty-state.scss` and the Material-bridge mixin
+/**
+ * @overview
+ * Default visuals for `CngxEmptyState`. Shipped via
+ * `@cngx/themes/cngx.css` aggregation. The opt-in Sass partial
+ * `_empty-state.scss` and the Material-bridge mixin
  * `empty-state-theme.scss` stay unchanged so consumers using either
  * `@use '@cngx/ui/empty-state/_empty-state'` directly or
  * `@include empty.theme($theme)` keep working without breakage.
+ *
+ * Pair with `@cngx/themes/material/empty-state-theme` for the
+ * Material 3 surface palette.
  */
 
 @layer cngx.tokens {
+  /**
+   * Vertical gap between the icon, title, description, and actions.
+   * Falls back to `--cngx-space-md`.
+   * @group Layout
+   */
   @property --cngx-empty-gap {
     syntax: '*';
     inherits: false;
     initial-value: 16px;
   }
+
+  /**
+   * Block padding around the entire empty state. Falls back to
+   * `--cngx-space-xl`.
+   * @group Layout
+   */
   @property --cngx-empty-padding {
     syntax: '*';
     inherits: false;
     initial-value: 48px;
   }
+
+  /**
+   * Default text color for the description slot.
+   * @group Surface
+   */
   @property --cngx-empty-color {
     syntax: '<color>';
     inherits: true;
     initial-value: oklch(0.34 0.005 290);
   }
+
+  /**
+   * Color of the default icon glyph (when no custom icon is
+   * projected).
+   * @group Surface
+   */
   @property --cngx-empty-icon-color {
     syntax: '<color>';
     inherits: true;
     initial-value: oklch(0.34 0.005 290);
   }
+
+  /**
+   * Font-size of the title slot.
+   * @group Typography
+   */
   @property --cngx-empty-title-size {
     syntax: '*';
     inherits: false;
     initial-value: 1.125rem;
   }
+
+  /**
+   * Font-weight of the title slot.
+   * @group Typography
+   */
   @property --cngx-empty-title-weight {
     syntax: '<number>';
     inherits: false;
     initial-value: 500;
   }
+
+  /**
+   * Text color of the title slot — slightly darker than the
+   * description for a clear hierarchy.
+   * @group Typography
+   */
   @property --cngx-empty-title-color {
     syntax: '<color>';
     inherits: true;
     initial-value: oklch(0.18 0.005 290);
   }
+
+  /**
+   * Font-size of the description slot.
+   * @group Typography
+   */
   @property --cngx-empty-desc-size {
     syntax: '*';
     inherits: false;

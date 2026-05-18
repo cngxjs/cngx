@@ -149,7 +149,7 @@ export class CngxAsyncErrorTpl {
       {{ announcement() }}
     </span>
   `,
-  styleUrl: './async-container.css',
+  styleUrls: ['./async-container.css'],
 })
 export class CngxAsyncContainer<T> {
   private readonly toaster = inject(CngxToaster, { optional: true });

@@ -33,7 +33,7 @@ import { type CngxSpeak } from '@cngx/common';
     class: 'cngx-speak-button',
     '[class.cngx-speak-button--speaking]': 'speakRef().speaking()',
   },
-  styleUrl: './speak-button.css',
+  styleUrls: ['./speak-button.css'],
   template: `
     <button
       type="button"

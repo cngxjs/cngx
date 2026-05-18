@@ -1,48 +1,366 @@
-/*
- * banner-outlet.css — CngxBannerOutlet skin.
- *
- * Sticky-top banner stack with severity-tinted surfaces matching the
- * alert family. Uses its own --cngx-banner-* token namespace (not
- * shared with --cngx-alert-*) so banners can be themed independently
- * even though the severity-tint palette is visually identical.
+/**
+ * @overview
+ * Default visuals for `CngxBannerOutlet`. Sticky-top banner stack
+ * with severity-tinted surfaces matching the alert family. Uses its
+ * own `--cngx-banner-*` token namespace (not shared with
+ * `--cngx-alert-*`) so banners can be themed independently even
+ * though the severity-tint palette is visually identical.
  */
 
 @layer cngx.tokens {
-  @property --cngx-banner-z-index           { syntax: '<number>'; inherits: false; initial-value: 900; }
-  @property --cngx-banner-gap               { syntax: '<length>'; inherits: false; initial-value: 12px; }
-  @property --cngx-banner-padding           { syntax: '*'; inherits: false; initial-value: 10px 16px; }
-  @property --cngx-banner-bg                { syntax: '<color>'; inherits: false; initial-value: oklch(0.98 0.005 250); }
-  @property --cngx-banner-color             { syntax: '*'; inherits: true; initial-value: currentColor; }
-  @property --cngx-banner-border-color      { syntax: '<color>'; inherits: false; initial-value: transparent; }
-  @property --cngx-banner-enter-duration    { syntax: '<time>'; inherits: false; initial-value: 200ms; }
-  @property --cngx-banner-enter-offset      { syntax: '*'; inherits: false; initial-value: 100%; }
-  @property --cngx-banner-info-bg           { syntax: '<color>'; inherits: false; initial-value: oklch(0.96 0.025 250); }
-  @property --cngx-banner-info-border       { syntax: '<color>'; inherits: false; initial-value: oklch(0.85 0.07 250); }
-  @property --cngx-banner-info-icon         { syntax: '<color>'; inherits: false; initial-value: oklch(0.62 0.2 250); }
-  @property --cngx-banner-success-bg        { syntax: '<color>'; inherits: false; initial-value: oklch(0.96 0.04 145); }
-  @property --cngx-banner-success-border    { syntax: '<color>'; inherits: false; initial-value: oklch(0.85 0.1 145); }
-  @property --cngx-banner-success-icon      { syntax: '<color>'; inherits: false; initial-value: oklch(0.65 0.15 145); }
-  @property --cngx-banner-warning-bg        { syntax: '<color>'; inherits: false; initial-value: oklch(0.97 0.04 80); }
-  @property --cngx-banner-warning-border    { syntax: '<color>'; inherits: false; initial-value: oklch(0.86 0.1 80); }
-  @property --cngx-banner-warning-icon      { syntax: '<color>'; inherits: false; initial-value: oklch(0.72 0.18 70); }
-  @property --cngx-banner-error-bg          { syntax: '<color>'; inherits: false; initial-value: oklch(0.96 0.025 25); }
-  @property --cngx-banner-error-border      { syntax: '<color>'; inherits: false; initial-value: oklch(0.85 0.08 25); }
-  @property --cngx-banner-error-icon        { syntax: '<color>'; inherits: false; initial-value: oklch(0.62 0.22 25); }
-  @property --cngx-banner-icon-color        { syntax: '*'; inherits: true; initial-value: currentColor; }
-  @property --cngx-banner-accent            { syntax: '*'; inherits: true; initial-value: currentColor; }
-  @property --cngx-banner-icon-size         { syntax: '<length>'; inherits: false; initial-value: 20px; }
-  @property --cngx-banner-font-size         { syntax: '*'; inherits: false; initial-value: 0.9375rem; }
-  @property --cngx-banner-line-height       { syntax: '*'; inherits: false; initial-value: 1.5; }
-  @property --cngx-banner-error-font-size   { syntax: '*'; inherits: false; initial-value: 0.875rem; }
-  @property --cngx-banner-error-color       { syntax: '<color>'; inherits: true; initial-value: oklch(0.62 0.22 25); }
-  @property --cngx-banner-action-bg         { syntax: '<color>'; inherits: false; initial-value: transparent; }
-  @property --cngx-banner-action-radius     { syntax: '<length>'; inherits: false; initial-value: 4px; }
-  @property --cngx-banner-action-padding    { syntax: '*'; inherits: false; initial-value: 6px 12px; }
-  @property --cngx-banner-action-min-size   { syntax: '<length>'; inherits: false; initial-value: 44px; }
-  @property --cngx-banner-action-font-size  { syntax: '*'; inherits: false; initial-value: 0.875rem; }
-  @property --cngx-banner-action-font-weight{ syntax: '<number>'; inherits: false; initial-value: 600; }
-  @property --cngx-banner-action-hover-bg   { syntax: '<color>'; inherits: false; initial-value: oklch(0 0 0 / 0.04); }
-  @property --cngx-banner-pending-opacity   { syntax: '<number>'; inherits: false; initial-value: 0.85; }
+  /**
+   * Stacking-context order — sticky-top banner sits below modal
+   * surfaces but above page content.
+   * @group Layout
+   */
+  @property --cngx-banner-z-index {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 900;
+  }
+
+  /**
+   * Gap between icon, body, action, and dismiss slots.
+   * @group Layout
+   */
+  @property --cngx-banner-gap {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 12px;
+  }
+
+  /**
+   * Padding shorthand inside each banner.
+   * @group Layout
+   */
+  @property --cngx-banner-padding {
+    syntax: '*';
+    inherits: false;
+    initial-value: 10px 16px;
+  }
+
+  /**
+   * Background — neutral by default; severity rules override.
+   * @group Surface
+   */
+  @property --cngx-banner-bg {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: oklch(0.98 0.005 250);
+  }
+
+  /**
+   * Text color — defaults to `currentColor`.
+   * @group Surface
+   */
+  @property --cngx-banner-color {
+    syntax: '*';
+    inherits: true;
+    initial-value: currentColor;
+  }
+
+  /**
+   * Border color — neutral by default; severity rules override.
+   * @group Surface
+   */
+  @property --cngx-banner-border-color {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: transparent;
+  }
+
+  /**
+   * Duration of the slide-down enter animation.
+   * @group Motion
+   */
+  @property --cngx-banner-enter-duration {
+    syntax: '<time>';
+    inherits: false;
+    initial-value: 200ms;
+  }
+
+  /**
+   * Vertical offset the banner translates from while entering.
+   * @group Motion
+   */
+  @property --cngx-banner-enter-offset {
+    syntax: '*';
+    inherits: false;
+    initial-value: 100%;
+  }
+
+  /**
+   * Background tint of the info severity.
+   * @group Variant / Info
+   */
+  @property --cngx-banner-info-bg {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: oklch(0.96 0.025 250);
+  }
+
+  /**
+   * Border color of the info severity.
+   * @group Variant / Info
+   */
+  @property --cngx-banner-info-border {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: oklch(0.85 0.07 250);
+  }
+
+  /**
+   * Icon color of the info severity.
+   * @group Variant / Info
+   */
+  @property --cngx-banner-info-icon {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: oklch(0.62 0.2 250);
+  }
+
+  /**
+   * Background tint of the success severity.
+   * @group Variant / Success
+   */
+  @property --cngx-banner-success-bg {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: oklch(0.96 0.04 145);
+  }
+
+  /**
+   * Border color of the success severity.
+   * @group Variant / Success
+   */
+  @property --cngx-banner-success-border {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: oklch(0.85 0.1 145);
+  }
+
+  /**
+   * Icon color of the success severity.
+   * @group Variant / Success
+   */
+  @property --cngx-banner-success-icon {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: oklch(0.65 0.15 145);
+  }
+
+  /**
+   * Background tint of the warning severity.
+   * @group Variant / Warning
+   */
+  @property --cngx-banner-warning-bg {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: oklch(0.97 0.04 80);
+  }
+
+  /**
+   * Border color of the warning severity.
+   * @group Variant / Warning
+   */
+  @property --cngx-banner-warning-border {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: oklch(0.86 0.1 80);
+  }
+
+  /**
+   * Icon color of the warning severity.
+   * @group Variant / Warning
+   */
+  @property --cngx-banner-warning-icon {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: oklch(0.72 0.18 70);
+  }
+
+  /**
+   * Background tint of the error severity.
+   * @group Variant / Error
+   */
+  @property --cngx-banner-error-bg {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: oklch(0.96 0.025 25);
+  }
+
+  /**
+   * Border color of the error severity.
+   * @group Variant / Error
+   */
+  @property --cngx-banner-error-border {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: oklch(0.85 0.08 25);
+  }
+
+  /**
+   * Icon color of the error severity.
+   * @group Variant / Error
+   */
+  @property --cngx-banner-error-icon {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: oklch(0.62 0.22 25);
+  }
+
+  /**
+   * Icon color override — defaults to `currentColor` and is pinned
+   * by each severity rule.
+   * @group Surface
+   */
+  @property --cngx-banner-icon-color {
+    syntax: '*';
+    inherits: true;
+    initial-value: currentColor;
+  }
+
+  /**
+   * Accent color used by the action button border / foreground.
+   * Pinned by each severity rule.
+   * @group Surface
+   */
+  @property --cngx-banner-accent {
+    syntax: '*';
+    inherits: true;
+    initial-value: currentColor;
+  }
+
+  /**
+   * Default icon size when no custom icon is projected.
+   * @group Layout
+   */
+  @property --cngx-banner-icon-size {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 20px;
+  }
+
+  /**
+   * Font-size of the body message.
+   * @group Typography
+   */
+  @property --cngx-banner-font-size {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.9375rem;
+  }
+
+  /**
+   * Line-height of the body message.
+   * @group Typography
+   */
+  @property --cngx-banner-line-height {
+    syntax: '*';
+    inherits: false;
+    initial-value: 1.5;
+  }
+
+  /**
+   * Font-size of the inline-error sub-line.
+   * @group State / Error
+   */
+  @property --cngx-banner-error-font-size {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.875rem;
+  }
+
+  /**
+   * Text color of the inline-error sub-line. Falls back to
+   * `--cngx-color-danger`.
+   * @group State / Error
+   */
+  @property --cngx-banner-error-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.62 0.22 25);
+  }
+
+  /**
+   * Background of the action button.
+   * @group State / Action
+   */
+  @property --cngx-banner-action-bg {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: transparent;
+  }
+
+  /**
+   * Corner radius of the action button.
+   * @group State / Action
+   */
+  @property --cngx-banner-action-radius {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 4px;
+  }
+
+  /**
+   * Padding shorthand of the action button.
+   * @group State / Action
+   */
+  @property --cngx-banner-action-padding {
+    syntax: '*';
+    inherits: false;
+    initial-value: 6px 12px;
+  }
+
+  /**
+   * Minimum hit-target size of the action button (≥ 44 px).
+   * @group State / Action
+   */
+  @property --cngx-banner-action-min-size {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 44px;
+  }
+
+  /**
+   * Font-size of the action button label.
+   * @group State / Action
+   */
+  @property --cngx-banner-action-font-size {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.875rem;
+  }
+
+  /**
+   * Font-weight of the action button label.
+   * @group State / Action
+   */
+  @property --cngx-banner-action-font-weight {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 600;
+  }
+
+  /**
+   * Background tint applied on hover of the action button.
+   * @group State / Action
+   */
+  @property --cngx-banner-action-hover-bg {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: oklch(0 0 0 / 0.04);
+  }
+
+  /**
+   * Opacity multiplier applied while the banner is pending.
+   * @group State / Pending
+   */
+  @property --cngx-banner-pending-opacity {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 0.85;
+  }
 }
 
 @layer cngx.components {

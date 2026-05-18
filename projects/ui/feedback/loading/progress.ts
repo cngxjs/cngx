@@ -93,7 +93,7 @@ const CIRCLE_DASH_ARRAY = `${CIRCUMFERENCE}, ${CIRCUMFERENCE}`;
       }
     }
   `,
-  styleUrl: './progress.css',
+  styleUrls: ['./progress.css'],
 })
 export class CngxProgress {
   /** Bind an async state — reads `progress()` for determinate mode. */

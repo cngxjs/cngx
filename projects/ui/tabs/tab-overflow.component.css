@@ -1,78 +1,151 @@
-/*
- * `<cngx-tab-overflow>` thematic skin. Structural rules (flex/grid,
- * sr-only) come from `tabs-base.css` in `@cngx/common/tabs` via the
- * parent organism's styleUrls — when tab-overflow renders inside
- * tab-group, the base structural rules already loaded. This file
- * owns trigger-button shape, popover panel layout, and per-row
- * affordances.
+/**
+ * @overview
+ * Default visuals for `<cngx-tab-overflow>` — the thematic skin.
+ * Structural rules (flex / grid, sr-only) come from `tabs-base.css`
+ * in `@cngx/common/tabs` via the parent organism's `styleUrls` —
+ * when tab-overflow renders inside tab-group, the base structural
+ * rules already loaded. This file owns trigger-button shape,
+ * popover panel layout, and per-row affordances.
  */
 
 @layer cngx.tokens {
+  /**
+   * Background of the overflow wrapper. Falls back through
+   * `--cngx-tab-strip-bg`.
+   * @group Surface
+   */
   @property --cngx-tab-overflow-bg {
     syntax: '<color>';
     inherits: false;
     initial-value: transparent;
   }
+
+  /**
+   * Background of the trigger button.
+   * @group Surface
+   */
   @property --cngx-tab-overflow-button-bg {
     syntax: '<color>';
     inherits: false;
     initial-value: transparent;
   }
+
+  /**
+   * Corner radius of the trigger button.
+   * @group Layout
+   */
   @property --cngx-tab-overflow-button-radius {
     syntax: '<length>';
     inherits: false;
     initial-value: 0.25rem;
   }
+
+  /**
+   * Minimum inline size of the popover panel.
+   * @group Layout
+   */
   @property --cngx-tab-overflow-popover-min-width {
     syntax: '*';
     inherits: false;
     initial-value: 12rem;
   }
+
+  /**
+   * Maximum block size of the popover panel before vertical
+   * scrolling.
+   * @group Layout
+   */
   @property --cngx-tab-overflow-popover-max-height {
     syntax: '*';
     inherits: false;
     initial-value: 16rem;
   }
+
+  /**
+   * Background of the popover panel.
+   * @group Surface
+   */
   @property --cngx-tab-overflow-popover-bg {
     syntax: '<color>';
     inherits: false;
     initial-value: oklch(1 0 0);
   }
+
+  /**
+   * Border shorthand of the popover panel.
+   * @group Surface
+   */
   @property --cngx-tab-overflow-popover-border {
     syntax: '*';
     inherits: false;
     initial-value: 1px solid currentColor;
   }
+
+  /**
+   * Corner radius of the popover panel.
+   * @group Layout
+   */
   @property --cngx-tab-overflow-popover-radius {
     syntax: '<length>';
     inherits: false;
     initial-value: 0.25rem;
   }
+
+  /**
+   * Padding shorthand of the popover panel.
+   * @group Layout
+   */
   @property --cngx-tab-overflow-popover-padding {
     syntax: '*';
     inherits: false;
     initial-value: 0.25rem 0;
   }
+
+  /**
+   * Padding shorthand of each list item.
+   * @group Layout
+   */
   @property --cngx-tab-overflow-item-padding {
     syntax: '*';
     inherits: false;
     initial-value: 0.5rem 0.75rem;
   }
+
+  /**
+   * Background of the item hover state.
+   * @group State / Hover
+   */
   @property --cngx-tab-overflow-item-hover-bg {
     syntax: '<color>';
     inherits: false;
     initial-value: oklch(0 0 0 / 0.05);
   }
+
+  /**
+   * Background of the AD-active item — APG combobox pattern
+   * requires visible indication of the highlighted option.
+   * @group State / Active
+   */
   @property --cngx-tab-overflow-item-active-bg {
     syntax: '<color>';
     inherits: false;
     initial-value: oklch(0 0 0 / 0.08);
   }
+
+  /**
+   * Outline shorthand applied to the AD-active item.
+   * @group State / Active
+   */
   @property --cngx-tab-overflow-item-active-outline {
     syntax: '*';
     inherits: false;
     initial-value: 2px solid currentColor;
   }
+
+  /**
+   * Outline offset of the AD-active item.
+   * @group State / Active
+   */
   @property --cngx-tab-overflow-item-active-outline-offset {
     syntax: '<length>';
     inherits: false;

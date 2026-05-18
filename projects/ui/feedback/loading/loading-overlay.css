@@ -1,17 +1,62 @@
-/*
- * loading-overlay.css — CngxLoadingOverlay skin.
- *
- * Grid-stacked content + backdrop with a centered spinner. Backdrop
- * defaults to translucent white so dark-mode consumers usually
- * override --cngx-loading-overlay-backdrop-bg.
+/**
+ * @overview
+ * Default visuals for `CngxLoadingOverlay`. Grid-stacked content +
+ * backdrop with a centered spinner. Backdrop defaults to translucent
+ * white so dark-mode consumers usually override
+ * `--cngx-loading-overlay-backdrop-bg`.
  */
 
 @layer cngx.tokens {
-  @property --cngx-loading-overlay-z-index           { syntax: '<number>'; inherits: false; initial-value: 10; }
-  @property --cngx-loading-overlay-backdrop-bg       { syntax: '<color>'; inherits: false; initial-value: oklch(1 0 0 / 0.5); }
-  @property --cngx-loading-overlay-backdrop-opacity  { syntax: '<number>'; inherits: false; initial-value: 1; }
-  @property --cngx-overlay-transition-duration       { syntax: '<time>'; inherits: false; initial-value: 150ms; }
-  @property --cngx-overlay-transition-easing         { syntax: '*'; inherits: false; initial-value: ease; }
+  /**
+   * Stacking-context order of the overlay above its content.
+   * @group Layout
+   */
+  @property --cngx-loading-overlay-z-index {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 10;
+  }
+
+  /**
+   * Backdrop background — translucent white by default; override for
+   * dark themes.
+   * @group Surface
+   */
+  @property --cngx-loading-overlay-backdrop-bg {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: oklch(1 0 0 / 0.5);
+  }
+
+  /**
+   * Backdrop opacity multiplier.
+   * @group Surface
+   */
+  @property --cngx-loading-overlay-backdrop-opacity {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 1;
+  }
+
+  /**
+   * Opacity-fade transition duration for the overlay show/hide.
+   * @group Motion
+   */
+  @property --cngx-overlay-transition-duration {
+    syntax: '<time>';
+    inherits: false;
+    initial-value: 150ms;
+  }
+
+  /**
+   * Easing curve of the overlay show/hide transition.
+   * @group Motion
+   */
+  @property --cngx-overlay-transition-easing {
+    syntax: '*';
+    inherits: false;
+    initial-value: ease;
+  }
 }
 
 @layer cngx.components {

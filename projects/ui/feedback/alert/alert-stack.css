@@ -1,23 +1,114 @@
-/*
- * Visual skin for CngxAlertStack. Shares the --cngx-alert-* token
- * namespace with CngxAlert so a :root-level override of e.g.
- * --cngx-alert-success-bg propagates to both. Tokens registered by
- * alert.css are not redundantly re-registered here — only
- * stack-specific tokens (gap, reserve-height, message typography,
- * overflow button surface) get @property declarations.
+/**
+ * @overview
+ * Default visuals for `CngxAlertStack`. Shares the `--cngx-alert-*`
+ * token namespace with `CngxAlert` so a `:root`-level override of
+ * (e.g.) `--cngx-alert-success-bg` propagates to both. Tokens
+ * registered by `alert.css` are not redundantly re-registered here
+ * — only stack-specific tokens (gap, reserve-height, message
+ * typography, overflow button surface) get `@property` declarations.
  */
 
 @layer cngx.tokens {
-  @property --cngx-alert-stack-gap                 { syntax: '<length>'; inherits: false; initial-value: 8px; }
-  @property --cngx-alert-stack-reserve-height      { syntax: '<length>'; inherits: false; initial-value: 56px; }
-  @property --cngx-alert-stack-message-size        { syntax: '*'; inherits: false; initial-value: 0.875rem; }
-  @property --cngx-alert-stack-message-line-height { syntax: '*'; inherits: false; initial-value: 1.5; }
-  @property --cngx-alert-stack-overflow-bg         { syntax: '<color>'; inherits: false; initial-value: transparent; }
-  @property --cngx-alert-stack-overflow-border     { syntax: '<color>'; inherits: false; initial-value: oklch(0.85 0.005 250); }
-  @property --cngx-alert-stack-overflow-padding    { syntax: '*'; inherits: false; initial-value: 8px 16px; }
-  @property --cngx-alert-stack-overflow-size       { syntax: '*'; inherits: false; initial-value: 0.8125rem; }
-  @property --cngx-alert-stack-overflow-color      { syntax: '<color>'; inherits: true; initial-value: oklch(0.5 0.01 250); }
-  @property --cngx-alert-stack-overflow-hover-bg   { syntax: '<color>'; inherits: false; initial-value: oklch(0.96 0.005 250); }
+  /**
+   * Vertical gap between stacked alert items.
+   * @group Layout
+   */
+  @property --cngx-alert-stack-gap {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 8px;
+  }
+
+  /**
+   * Minimum block-size reserved for the stack so layout doesn't
+   * shift when alerts mount / dismount.
+   * @group Layout
+   */
+  @property --cngx-alert-stack-reserve-height {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 56px;
+  }
+
+  /**
+   * Font-size of the per-item message text.
+   * @group Typography
+   */
+  @property --cngx-alert-stack-message-size {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.875rem;
+  }
+
+  /**
+   * Line-height of the per-item message text.
+   * @group Typography
+   */
+  @property --cngx-alert-stack-message-line-height {
+    syntax: '*';
+    inherits: false;
+    initial-value: 1.5;
+  }
+
+  /**
+   * Background of the "show more" overflow button.
+   * @group State / Overflow
+   */
+  @property --cngx-alert-stack-overflow-bg {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: transparent;
+  }
+
+  /**
+   * Border color of the "show more" overflow button.
+   * @group State / Overflow
+   */
+  @property --cngx-alert-stack-overflow-border {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: oklch(0.85 0.005 250);
+  }
+
+  /**
+   * Padding shorthand of the "show more" overflow button.
+   * @group State / Overflow
+   */
+  @property --cngx-alert-stack-overflow-padding {
+    syntax: '*';
+    inherits: false;
+    initial-value: 8px 16px;
+  }
+
+  /**
+   * Font-size of the "show more" overflow button.
+   * @group State / Overflow
+   */
+  @property --cngx-alert-stack-overflow-size {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.8125rem;
+  }
+
+  /**
+   * Text color of the "show more" overflow button.
+   * @group State / Overflow
+   */
+  @property --cngx-alert-stack-overflow-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.5 0.01 250);
+  }
+
+  /**
+   * Background tint on hover of the "show more" overflow button.
+   * @group State / Overflow
+   */
+  @property --cngx-alert-stack-overflow-hover-bg {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: oklch(0.96 0.005 250);
+  }
 }
 
 @layer cngx.components {
