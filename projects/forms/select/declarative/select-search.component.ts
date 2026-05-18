@@ -48,7 +48,7 @@ import { CNGX_SELECT_SHELL_SEARCH_HOST } from './select-search-host';
       autocomplete="off"
     />
   `,
-  styleUrl: './select-search.component.css',
+  styleUrls: ['./select-search.component.css'],
 })
 export class CngxSelectSearch {
   /** Placeholder text on the input. */

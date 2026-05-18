@@ -1,4 +1,10 @@
-/* cngx-select-divider declarative — visual separator between options. */
+/**
+ * @overview
+ * Default visuals for the declarative `<cngx-select-divider>` —
+ * visual separator between options inside a projected listbox.
+ * Falls back through the foundation `--cngx-color-border` so the
+ * separator tracks the foundation neutral.
+ */
 
 :host {
   display: block;

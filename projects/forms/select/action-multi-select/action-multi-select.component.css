@@ -1,33 +1,170 @@
-/*
- * action-multi-select.component.css — CngxActionMultiSelect trigger skin.
+/**
+ * @overview
+ * `CngxActionMultiSelect` trigger skin. Structural parts (panel
+ * frame, option rows, chip strip, loading variants, error surfaces)
+ * come from `shared/select-base.css`. This file owns the
+ * trigger-specific bits: `role="group"` wrapper, inline input as
+ * focusable element, clear-all button, caret glyph.
  *
- * Structural parts (panel frame, option rows, chip strip, loading
- * variants, error surfaces) come from `shared/select-base.css`. This
- * file owns the trigger-specific bits: role="group" wrapper, inline
- * input as focusable element, clear-all button, caret glyph.
- *
- * Cascading-fallback chain steps --cngx-action-multi-select-* →
- * --cngx-combobox-* → --cngx-select-* → hardcoded; once registered via
- * @property the inner steps are documentation-only (system tokens are
- * the brand-wide override path).
+ * Cascading-fallback chain steps `--cngx-action-multi-select-*` →
+ * `--cngx-combobox-*` → `--cngx-select-*` → hardcoded; once
+ * registered via `@property` the inner steps are
+ * documentation-only (system tokens are the brand-wide override
+ * path).
  */
 
 @layer cngx.tokens {
-  @property --cngx-action-multi-select-min-width            { syntax: '*'; inherits: false; initial-value: 12rem; }
-  @property --cngx-action-multi-select-gap                  { syntax: '*'; inherits: false; initial-value: 0.375rem; }
-  @property --cngx-action-multi-select-padding              { syntax: '*'; inherits: false; initial-value: 0.25rem 0.375rem; }
-  @property --cngx-action-multi-select-border               { syntax: '*'; inherits: false; initial-value: 1px solid oklch(0.85 0.01 250); }
-  @property --cngx-action-multi-select-radius               { syntax: '*'; inherits: false; initial-value: 0.25rem; }
-  @property --cngx-action-multi-select-bg                   { syntax: '<color>'; inherits: false; initial-value: transparent; }
-  @property --cngx-action-multi-select-color                { syntax: '*'; inherits: true;  initial-value: currentColor; }
-  @property --cngx-action-multi-select-min-height           { syntax: '*'; inherits: false; initial-value: 2.25rem; }
-  @property --cngx-action-multi-select-focus-outline        { syntax: '*'; inherits: false; initial-value: 2px solid oklch(0.6 0.2 250); }
-  @property --cngx-action-multi-select-focus-offset         { syntax: '<length>'; inherits: false; initial-value: 2px; }
-  @property --cngx-action-multi-select-disabled-opacity     { syntax: '<number>'; inherits: false; initial-value: 0.5; }
-  @property --cngx-action-multi-select-input-flex-basis     { syntax: '*'; inherits: false; initial-value: 4rem; }
-  @property --cngx-action-multi-select-input-min-width      { syntax: '*'; inherits: false; initial-value: 4rem; }
-  @property --cngx-action-multi-select-placeholder-opacity  { syntax: '<number>'; inherits: false; initial-value: 0.7; }
-  @property --cngx-action-multi-select-clear-opacity        { syntax: '<number>'; inherits: false; initial-value: 0.6; }
+  /**
+   * Minimum inline size of the trigger.
+   * @group Layout
+   */
+  @property --cngx-action-multi-select-min-width {
+    syntax: '*';
+    inherits: false;
+    initial-value: 12rem;
+  }
+
+  /**
+   * Gap between the chip list, input, caret, and clear-all button.
+   * @group Layout
+   */
+  @property --cngx-action-multi-select-gap {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.375rem;
+  }
+
+  /**
+   * Padding shorthand of the trigger.
+   * @group Layout
+   */
+  @property --cngx-action-multi-select-padding {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.25rem 0.375rem;
+  }
+
+  /**
+   * Border shorthand of the trigger.
+   * @group Surface
+   */
+  @property --cngx-action-multi-select-border {
+    syntax: '*';
+    inherits: false;
+    initial-value: 1px solid oklch(0.85 0.01 250);
+  }
+
+  /**
+   * Corner radius of the trigger.
+   * @group Layout
+   */
+  @property --cngx-action-multi-select-radius {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.25rem;
+  }
+
+  /**
+   * Background of the trigger.
+   * @group Surface
+   */
+  @property --cngx-action-multi-select-bg {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: transparent;
+  }
+
+  /**
+   * Text color of the trigger.
+   * @group Surface
+   */
+  @property --cngx-action-multi-select-color {
+    syntax: '*';
+    inherits: true;
+    initial-value: currentColor;
+  }
+
+  /**
+   * Minimum block size of the trigger.
+   * @group Layout
+   */
+  @property --cngx-action-multi-select-min-height {
+    syntax: '*';
+    inherits: false;
+    initial-value: 2.25rem;
+  }
+
+  /**
+   * Focus-ring outline shorthand applied on `:focus-within`. Falls
+   * back to `--cngx-color-primary`.
+   * @group State / Focus
+   * @see [[--cngx-color-primary]]
+   */
+  @property --cngx-action-multi-select-focus-outline {
+    syntax: '*';
+    inherits: false;
+    initial-value: 2px solid oklch(0.66 0.19 50);
+  }
+
+  /**
+   * Outline offset of the focus ring.
+   * @group State / Focus
+   */
+  @property --cngx-action-multi-select-focus-offset {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 2px;
+  }
+
+  /**
+   * Opacity multiplier applied when the trigger is disabled.
+   * @group State / Disabled
+   */
+  @property --cngx-action-multi-select-disabled-opacity {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 0.5;
+  }
+
+  /**
+   * Flex basis of the inline input.
+   * @group Layout
+   */
+  @property --cngx-action-multi-select-input-flex-basis {
+    syntax: '*';
+    inherits: false;
+    initial-value: 4rem;
+  }
+
+  /**
+   * Minimum inline size of the inline input.
+   * @group Layout
+   */
+  @property --cngx-action-multi-select-input-min-width {
+    syntax: '*';
+    inherits: false;
+    initial-value: 4rem;
+  }
+
+  /**
+   * Opacity of the input placeholder text.
+   * @group State / Placeholder
+   */
+  @property --cngx-action-multi-select-placeholder-opacity {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 0.7;
+  }
+
+  /**
+   * Resting opacity of the clear-all button.
+   * @group State / Clear
+   */
+  @property --cngx-action-multi-select-clear-opacity {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 0.6;
+  }
 }
 
 @layer cngx.components {
@@ -91,7 +228,7 @@
         --cngx-action-multi-select-focus-outline,
         var(
           --cngx-combobox-focus-outline,
-          var(--cngx-select-focus-outline, 2px solid var(--cngx-color-primary, oklch(0.6 0.2 250)))
+          var(--cngx-select-focus-outline, 2px solid var(--cngx-color-primary, oklch(0.66 0.19 50)))
         )
       );
       outline-offset: var(
@@ -156,7 +293,7 @@
     }
 
     .cngx-action-multi-select__clear-all:focus-visible {
-      outline: 2px solid var(--cngx-color-primary, oklch(0.6 0.2 250));
+      outline: 2px solid var(--cngx-color-primary, oklch(0.66 0.19 50));
       border-radius: 0.125rem;
     }
 

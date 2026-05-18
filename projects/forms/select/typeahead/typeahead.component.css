@@ -1,21 +1,93 @@
-/*
- * typeahead.component.css — CngxTypeahead trigger skin.
- *
- * Scalar variant of the combobox: a single inline <input> with async
- * autocomplete, no chips. Panel frame, option rows, loading variants,
- * and error surfaces ride on `shared/select-base.css`; this file owns
- * the trigger row, the input, and the clear/caret affordances.
+/**
+ * @overview
+ * `CngxTypeahead` trigger skin. Scalar variant of the combobox —
+ * a single inline `<input>` with async autocomplete, no chips. Panel
+ * frame, option rows, loading variants, and error surfaces ride on
+ * `shared/select-base.css`; this file owns the trigger row, the
+ * input, and the clear / caret affordances.
  */
 
 @layer cngx.tokens {
-  @property --cngx-typeahead-gap              { syntax: '*'; inherits: false; initial-value: 0.5rem; }
-  @property --cngx-typeahead-min-height       { syntax: '*'; inherits: false; initial-value: 2.5rem; }
-  @property --cngx-typeahead-padding          { syntax: '*'; inherits: false; initial-value: 0 0.75rem; }
-  @property --cngx-typeahead-border           { syntax: '*'; inherits: false; initial-value: 1px solid oklch(0.85 0.01 250); }
-  @property --cngx-typeahead-radius           { syntax: '*'; inherits: false; initial-value: 0.375rem; }
-  @property --cngx-typeahead-bg               { syntax: '<color>'; inherits: false; initial-value: oklch(1 0 0); }
-  @property --cngx-typeahead-disabled-opacity { syntax: '<number>'; inherits: false; initial-value: 0.6; }
-  @property --cngx-typeahead-action-color     { syntax: '*'; inherits: true; initial-value: currentColor; }
+  /**
+   * Gap between the input, clear button, and caret.
+   * @group Layout
+   */
+  @property --cngx-typeahead-gap {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.5rem;
+  }
+
+  /**
+   * Minimum block size of the trigger.
+   * @group Layout
+   */
+  @property --cngx-typeahead-min-height {
+    syntax: '*';
+    inherits: false;
+    initial-value: 2.5rem;
+  }
+
+  /**
+   * Padding shorthand of the trigger.
+   * @group Layout
+   */
+  @property --cngx-typeahead-padding {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0 0.75rem;
+  }
+
+  /**
+   * Border shorthand of the trigger.
+   * @group Surface
+   */
+  @property --cngx-typeahead-border {
+    syntax: '*';
+    inherits: false;
+    initial-value: 1px solid oklch(0.85 0.01 250);
+  }
+
+  /**
+   * Corner radius of the trigger.
+   * @group Layout
+   */
+  @property --cngx-typeahead-radius {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.375rem;
+  }
+
+  /**
+   * Background of the trigger. Falls back through `--cngx-color-surface`.
+   * @group Surface
+   * @see [[--cngx-color-surface]]
+   */
+  @property --cngx-typeahead-bg {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: oklch(1 0 0);
+  }
+
+  /**
+   * Opacity multiplier applied when the input is disabled.
+   * @group State / Disabled
+   */
+  @property --cngx-typeahead-disabled-opacity {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 0.6;
+  }
+
+  /**
+   * Color of the clear button and caret glyphs.
+   * @group Surface
+   */
+  @property --cngx-typeahead-action-color {
+    syntax: '*';
+    inherits: true;
+    initial-value: currentColor;
+  }
 }
 
 @layer cngx.components {
@@ -38,14 +110,17 @@
       width: 100%;
       min-height: var(--cngx-typeahead-min-height, 2.5rem);
       padding: var(--cngx-typeahead-padding, 0 0.75rem);
-      border: var(--cngx-typeahead-border, 1px solid var(--cngx-color-border, oklch(0.85 0.01 250)));
+      border: var(
+        --cngx-typeahead-border,
+        1px solid var(--cngx-color-border, oklch(0.85 0.01 250))
+      );
       border-radius: var(--cngx-typeahead-radius, 0.375rem);
       background: var(--cngx-typeahead-bg, var(--cngx-color-surface, oklch(1 0 0)));
       cursor: text;
     }
 
     .cngx-typeahead__trigger:focus-within {
-      outline: 2px solid var(--cngx-color-primary, oklch(0.6 0.2 250));
+      outline: 2px solid var(--cngx-color-primary, oklch(0.66 0.19 50));
       outline-offset: 2px;
     }
 
@@ -77,7 +152,7 @@
     }
 
     .cngx-typeahead__clear:focus-visible {
-      outline: 2px solid var(--cngx-color-primary, oklch(0.6 0.2 250));
+      outline: 2px solid var(--cngx-color-primary, oklch(0.66 0.19 50));
       outline-offset: 1px;
       border-radius: 0.25rem;
     }

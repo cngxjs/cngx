@@ -1,7 +1,10 @@
-/* cngx-select-search declarative — search input above the listbox.
- *
- * Tokens (--cngx-select-search-*) drive padding, border, focus ring.
- * Foundation fallbacks: --cngx-color-border, --cngx-color-primary.
+/**
+ * @overview
+ * Default visuals for the declarative `<cngx-select-search>` —
+ * search input rendered above a projected listbox. The
+ * `--cngx-select-search-*` tokens drive padding, border, and focus
+ * ring; foundation fallbacks via `--cngx-color-border` and
+ * `--cngx-color-primary` let the input track brand changes.
  */
 
 :host {
@@ -29,7 +32,7 @@
 .cngx-select-search__input:focus-visible {
   outline: var(
     --cngx-select-search-focus-outline,
-    2px solid var(--cngx-color-primary, oklch(0.6 0.2 250))
+    2px solid var(--cngx-color-primary, oklch(0.66 0.19 50))
   );
   outline-offset: var(--cngx-select-search-focus-offset, 1px);
 }

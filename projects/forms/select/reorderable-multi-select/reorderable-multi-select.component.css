@@ -1,40 +1,156 @@
-/*
- * reorderable-multi-select.component.css — trigger skin for
- * CngxReorderableMultiSelect.
- *
- * Chip-strip layout, drag ghost, drop indicator, and handle cursor live
- * in shared/select-base.css under `.cngx-select__chip-*` so they stay
+/**
+ * @overview
+ * Trigger skin for `CngxReorderableMultiSelect`. Chip-strip layout,
+ * drag ghost, drop indicator, and handle cursor live in
+ * `shared/select-base.css` under `.cngx-select__chip-*` so they stay
  * reusable by future reorder-aware trigger variants (tag-input with
- * user ordering, chip toolbars). This file owns the reorderable-specific
- * trigger frame and placeholder — matched 1:1 with multi-select's
- * surface so a consumer with a CngxMultiSelect theme gets the
- * reorderable variant for free.
+ * user ordering, chip toolbars). This file owns the reorderable-
+ * specific trigger frame and placeholder — matched 1:1 with
+ * `CngxMultiSelect`'s surface so a consumer with a `CngxMultiSelect`
+ * theme gets the reorderable variant for free.
  *
- * Cascading fallback: var() chains step --cngx-reorderable-multi-select-*
- * → --cngx-multi-select-* → --cngx-select-* → hardcoded. Registered
- * @property values shadow the inner steps; consumers seeking brand-wide
- * overrides should target --cngx-color-*.
+ * Cascading fallback: `var()` chains step
+ * `--cngx-reorderable-multi-select-*` → `--cngx-multi-select-*` →
+ * `--cngx-select-*` → hardcoded. Registered `@property` values
+ * shadow the inner steps; consumers seeking brand-wide overrides
+ * should target `--cngx-color-*`.
  */
 
 @layer cngx.tokens {
-  @property --cngx-reorderable-multi-select-min-width           { syntax: '*'; inherits: false; initial-value: 10rem; }
-  @property --cngx-reorderable-multi-select-gap                 { syntax: '*'; inherits: false; initial-value: 0.5rem; }
-  @property --cngx-reorderable-multi-select-padding             { syntax: '*'; inherits: false; initial-value: 0.375rem 0.5rem; }
-  @property --cngx-reorderable-multi-select-border              { syntax: '*'; inherits: false; initial-value: 1px solid oklch(0.85 0.01 250); }
-  @property --cngx-reorderable-multi-select-radius              { syntax: '*'; inherits: false; initial-value: 0.25rem; }
-  @property --cngx-reorderable-multi-select-bg                  { syntax: '<color>'; inherits: false; initial-value: transparent; }
-  @property --cngx-reorderable-multi-select-color               { syntax: '*'; inherits: true;  initial-value: currentColor; }
-  @property --cngx-reorderable-multi-select-min-height          { syntax: '*'; inherits: false; initial-value: 2.25rem; }
-  @property --cngx-reorderable-multi-select-focus-outline       { syntax: '*'; inherits: false; initial-value: 2px solid oklch(0.6 0.2 250); }
-  @property --cngx-reorderable-multi-select-focus-offset        { syntax: '<length>'; inherits: false; initial-value: 2px; }
-  @property --cngx-reorderable-multi-select-disabled-opacity    { syntax: '<number>'; inherits: false; initial-value: 0.5; }
-  @property --cngx-reorderable-multi-select-placeholder-opacity { syntax: '<number>'; inherits: false; initial-value: 0.7; }
-  @property --cngx-reorderable-multi-select-clear-opacity       { syntax: '<number>'; inherits: false; initial-value: 0.6; }
+  /**
+   * Minimum inline size of the trigger.
+   * @group Layout
+   */
+  @property --cngx-reorderable-multi-select-min-width {
+    syntax: '*';
+    inherits: false;
+    initial-value: 10rem;
+  }
+
+  /**
+   * Gap between the chip list, placeholder, caret, and clear button.
+   * @group Layout
+   */
+  @property --cngx-reorderable-multi-select-gap {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.5rem;
+  }
+
+  /**
+   * Padding shorthand of the trigger.
+   * @group Layout
+   */
+  @property --cngx-reorderable-multi-select-padding {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.375rem 0.5rem;
+  }
+
+  /**
+   * Border shorthand of the trigger.
+   * @group Surface
+   */
+  @property --cngx-reorderable-multi-select-border {
+    syntax: '*';
+    inherits: false;
+    initial-value: 1px solid oklch(0.85 0.01 250);
+  }
+
+  /**
+   * Corner radius of the trigger.
+   * @group Layout
+   */
+  @property --cngx-reorderable-multi-select-radius {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.25rem;
+  }
+
+  /**
+   * Background of the trigger.
+   * @group Surface
+   */
+  @property --cngx-reorderable-multi-select-bg {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: transparent;
+  }
+
+  /**
+   * Text color of the trigger.
+   * @group Surface
+   */
+  @property --cngx-reorderable-multi-select-color {
+    syntax: '*';
+    inherits: true;
+    initial-value: currentColor;
+  }
+
+  /**
+   * Minimum block size of the trigger.
+   * @group Layout
+   */
+  @property --cngx-reorderable-multi-select-min-height {
+    syntax: '*';
+    inherits: false;
+    initial-value: 2.25rem;
+  }
+
+  /**
+   * Focus-ring outline shorthand. Falls back to `--cngx-color-primary`.
+   * @group State / Focus
+   * @see [[--cngx-color-primary]]
+   */
+  @property --cngx-reorderable-multi-select-focus-outline {
+    syntax: '*';
+    inherits: false;
+    initial-value: 2px solid oklch(0.66 0.19 50);
+  }
+
+  /**
+   * Outline offset of the focus ring.
+   * @group State / Focus
+   */
+  @property --cngx-reorderable-multi-select-focus-offset {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 2px;
+  }
+
+  /**
+   * Opacity multiplier applied when the trigger is disabled.
+   * @group State / Disabled
+   */
+  @property --cngx-reorderable-multi-select-disabled-opacity {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 0.5;
+  }
+
+  /**
+   * Opacity of the placeholder text shown when no chips are selected.
+   * @group State / Placeholder
+   */
+  @property --cngx-reorderable-multi-select-placeholder-opacity {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 0.7;
+  }
+
+  /**
+   * Resting opacity of the clear-all button.
+   * @group State / Clear
+   */
+  @property --cngx-reorderable-multi-select-clear-opacity {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 0.6;
+  }
 }
 
 @layer cngx.components {
   @scope (.cngx-reorderable-multi-select) {
-
     :scope {
       display: inline-block;
       position: relative;
@@ -94,7 +210,7 @@
         --cngx-reorderable-multi-select-focus-outline,
         var(
           --cngx-multi-select-focus-outline,
-          var(--cngx-select-focus-outline, 2px solid var(--cngx-color-primary, oklch(0.6 0.2 250)))
+          var(--cngx-select-focus-outline, 2px solid var(--cngx-color-primary, oklch(0.66 0.19 50)))
         )
       );
       outline-offset: var(
@@ -106,10 +222,7 @@
     .cngx-reorderable-multi-select__trigger[aria-disabled='true'] {
       opacity: var(
         --cngx-reorderable-multi-select-disabled-opacity,
-        var(
-          --cngx-multi-select-disabled-opacity,
-          var(--cngx-select-disabled-opacity, 0.5)
-        )
+        var(--cngx-multi-select-disabled-opacity, var(--cngx-select-disabled-opacity, 0.5))
       );
       cursor: not-allowed;
     }
@@ -144,7 +257,7 @@
     }
 
     .cngx-reorderable-multi-select__clear-all:focus-visible {
-      outline: 2px solid var(--cngx-color-primary, oklch(0.6 0.2 250));
+      outline: 2px solid var(--cngx-color-primary, oklch(0.66 0.19 50));
       border-radius: 0.125rem;
     }
 

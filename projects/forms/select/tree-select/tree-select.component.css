@@ -1,26 +1,142 @@
-/*
- * tree-select.component.css — CngxTreeSelect trigger skin.
- *
- * Hierarchical multi-select with cascading children. Trigger is a
- * pill-shaped row with placeholder/value summary, optional clear ✕, and
- * a caret. Panel body (the tree of nodes) lives in
- * tree-select-panel.component.css.
+/**
+ * @overview
+ * `CngxTreeSelect` trigger skin. Hierarchical multi-select with
+ * cascading children. Trigger is a pill-shaped row with placeholder
+ * / value summary, optional clear ✕, and a caret. The panel body
+ * (the tree of nodes) lives in `tree-select-panel.component.css`.
  */
 
 @layer cngx.tokens {
-  @property --cngx-tree-select-min-width          { syntax: '*'; inherits: false; initial-value: 10rem; }
-  @property --cngx-tree-select-trigger-gap        { syntax: '*'; inherits: false; initial-value: 0.5rem; }
-  @property --cngx-tree-select-trigger-height     { syntax: '*'; inherits: false; initial-value: 2.5rem; }
-  @property --cngx-tree-select-trigger-padding    { syntax: '*'; inherits: false; initial-value: 0.25rem 0.5rem; }
-  @property --cngx-tree-select-trigger-border     { syntax: '*'; inherits: false; initial-value: 1px solid oklch(0.85 0.01 250); }
-  @property --cngx-tree-select-trigger-radius     { syntax: '*'; inherits: false; initial-value: 0.375rem; }
-  @property --cngx-tree-select-trigger-bg         { syntax: '<color>'; inherits: false; initial-value: transparent; }
-  @property --cngx-tree-select-focus-ring         { syntax: '*'; inherits: false; initial-value: 2px solid oklch(0.6 0.2 250 / 0.8); }
-  @property --cngx-tree-select-disabled-opacity   { syntax: '<number>'; inherits: false; initial-value: 0.5; }
-  @property --cngx-tree-select-placeholder-color  { syntax: '<color>'; inherits: true; initial-value: oklch(0 0 0 / 0.5); }
-  @property --cngx-tree-select-clear-size         { syntax: '*'; inherits: false; initial-value: 1.25rem; }
-  @property --cngx-tree-select-clear-color        { syntax: '*'; inherits: true; initial-value: currentColor; }
-  @property --cngx-tree-select-caret-color        { syntax: '*'; inherits: true; initial-value: currentColor; }
+  /**
+   * Minimum inline size of the trigger.
+   * @group Layout
+   */
+  @property --cngx-tree-select-min-width {
+    syntax: '*';
+    inherits: false;
+    initial-value: 10rem;
+  }
+
+  /**
+   * Gap between the value summary, clear button, and caret.
+   * @group Layout
+   */
+  @property --cngx-tree-select-trigger-gap {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.5rem;
+  }
+
+  /**
+   * Minimum block size of the trigger.
+   * @group Layout
+   */
+  @property --cngx-tree-select-trigger-height {
+    syntax: '*';
+    inherits: false;
+    initial-value: 2.5rem;
+  }
+
+  /**
+   * Padding shorthand of the trigger.
+   * @group Layout
+   */
+  @property --cngx-tree-select-trigger-padding {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.25rem 0.5rem;
+  }
+
+  /**
+   * Border shorthand of the trigger.
+   * @group Surface
+   */
+  @property --cngx-tree-select-trigger-border {
+    syntax: '*';
+    inherits: false;
+    initial-value: 1px solid oklch(0.85 0.01 250);
+  }
+
+  /**
+   * Corner radius of the trigger.
+   * @group Layout
+   */
+  @property --cngx-tree-select-trigger-radius {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.375rem;
+  }
+
+  /**
+   * Background of the trigger.
+   * @group Surface
+   */
+  @property --cngx-tree-select-trigger-bg {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: transparent;
+  }
+
+  /**
+   * Focus-ring outline shorthand. Falls back to `--cngx-color-primary`.
+   * @group State / Focus
+   * @see [[--cngx-color-primary]]
+   */
+  @property --cngx-tree-select-focus-ring {
+    syntax: '*';
+    inherits: false;
+    initial-value: 2px solid oklch(0.66 0.19 50 / 0.8);
+  }
+
+  /**
+   * Opacity multiplier applied when the trigger is disabled.
+   * @group State / Disabled
+   */
+  @property --cngx-tree-select-disabled-opacity {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 0.5;
+  }
+
+  /**
+   * Color of the placeholder text shown when no values are selected.
+   * @group State / Placeholder
+   */
+  @property --cngx-tree-select-placeholder-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0 0 0 / 0.5);
+  }
+
+  /**
+   * Hit-target diameter of the clear-all button.
+   * @group State / Clear
+   */
+  @property --cngx-tree-select-clear-size {
+    syntax: '*';
+    inherits: false;
+    initial-value: 1.25rem;
+  }
+
+  /**
+   * Color of the clear-all button glyph.
+   * @group State / Clear
+   */
+  @property --cngx-tree-select-clear-color {
+    syntax: '*';
+    inherits: true;
+    initial-value: currentColor;
+  }
+
+  /**
+   * Color of the caret glyph.
+   * @group Surface
+   */
+  @property --cngx-tree-select-caret-color {
+    syntax: '*';
+    inherits: true;
+    initial-value: currentColor;
+  }
 }
 
 @layer cngx.components {
@@ -41,7 +157,10 @@
       gap: var(--cngx-tree-select-trigger-gap, 0.5rem);
       min-height: var(--cngx-tree-select-trigger-height, 2.5rem);
       padding: var(--cngx-tree-select-trigger-padding, 0.25rem 0.5rem);
-      border: var(--cngx-tree-select-trigger-border, 1px solid var(--cngx-color-border, oklch(0.85 0.01 250)));
+      border: var(
+        --cngx-tree-select-trigger-border,
+        1px solid var(--cngx-color-border, oklch(0.85 0.01 250))
+      );
       border-radius: var(--cngx-tree-select-trigger-radius, 0.375rem);
       background: var(--cngx-tree-select-trigger-bg, transparent);
       cursor: pointer;
@@ -49,7 +168,10 @@
     }
 
     .cngx-tree-select__trigger:focus-visible {
-      outline: var(--cngx-tree-select-focus-ring, 2px solid var(--cngx-color-primary, oklch(0.6 0.2 250 / 0.8)));
+      outline: var(
+        --cngx-tree-select-focus-ring,
+        2px solid var(--cngx-color-primary, oklch(0.66 0.19 50 / 0.8))
+      );
       outline-offset: 1px;
     }
 
