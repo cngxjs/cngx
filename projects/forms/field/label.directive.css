@@ -1,15 +1,26 @@
-/*
- * Visual skin for [cngxLabel]. The directive is attribute-based — the
- * host element is the consumer's <label> (or any element they pick).
- * `.cngx-label` anchors @scope; `.cngx-label__required` carries the
- * required marker.
+/**
+ * @overview
+ * Default visuals for `[cngxLabel]`. The component is attribute-based
+ * — the host element is the consumer's `<label>` (or any element they
+ * pick). `.cngx-label` anchors the `@scope` block;
+ * `.cngx-label__required` carries the required marker.
  *
- * Single token (--cngx-field-required-color) is shared with
- * CngxRequired so both atoms render the same semantic marker.
+ * The single token `--cngx-field-required-color` is shared with
+ * `CngxRequired` so both atoms render the same semantic marker.
  */
 
 @layer cngx.tokens {
-  @property --cngx-field-required-color { syntax: '<color>'; inherits: true; initial-value: oklch(0.55 0.21 27); }
+  /**
+   * Color of the required-marker glyph next to the label. Falls back
+   * through `--cngx-field-error-color` and then `--cngx-color-danger`.
+   * @group State / Required
+   * @see [[--cngx-color-danger]]
+   */
+  @property --cngx-field-required-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.55 0.21 27);
+  }
 }
 
 @layer cngx.components {
@@ -19,9 +30,10 @@
     }
 
     .cngx-label__required {
-      color: var(--cngx-field-required-color,
-                  var(--cngx-field-error-color,
-                      var(--cngx-color-danger, oklch(0.55 0.21 27))));
+      color: var(
+        --cngx-field-required-color,
+        var(--cngx-field-error-color, var(--cngx-color-danger, oklch(0.55 0.21 27)))
+      );
       margin-inline-start: 0.125em;
     }
   }

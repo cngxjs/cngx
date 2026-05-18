@@ -1,12 +1,23 @@
-/*
- * Visual skin for CngxRequired — the required marker rendered as a
- * standalone atom. The single token --cngx-field-required-color is
- * shared with CngxLabel, redeclared here so consumers can use
- * <cngx-required> without also using CngxLabel.
+/**
+ * @overview
+ * Default visuals for `CngxRequired` — the required marker rendered
+ * as a standalone atom. The single token `--cngx-field-required-color`
+ * is shared with `CngxLabel`; redeclared here so consumers can use
+ * `<cngx-required>` without also using `[cngxLabel]`.
  */
 
 @layer cngx.tokens {
-  @property --cngx-field-required-color { syntax: '<color>'; inherits: true; initial-value: oklch(0.55 0.21 27); }
+  /**
+   * Color of the required-marker glyph. Falls back through
+   * `--cngx-field-error-color` and then `--cngx-color-danger`.
+   * @group State / Required
+   * @see [[--cngx-color-danger]]
+   */
+  @property --cngx-field-required-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.55 0.21 27);
+  }
 }
 
 @layer cngx.components {
@@ -16,9 +27,10 @@
     }
 
     span {
-      color: var(--cngx-field-required-color,
-                  var(--cngx-field-error-color,
-                      var(--cngx-color-danger, oklch(0.55 0.21 27))));
+      color: var(
+        --cngx-field-required-color,
+        var(--cngx-field-error-color, var(--cngx-color-danger, oklch(0.55 0.21 27)))
+      );
     }
   }
 }

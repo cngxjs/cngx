@@ -54,7 +54,7 @@ import { CNGX_FILTER_BUILDER_BODY_HOST } from './filter-builder-body.host';
   },
   imports: [NgComponentOutlet],
   templateUrl: './filter-builder.component.html',
-  styleUrl: './filter-builder.component.css',
+  styleUrls: ['./filter-builder.component.css'],
   encapsulation: ViewEncapsulation.None,
 })
 export class CngxFilterBuilder {

@@ -79,7 +79,7 @@ function equalStringList(a: readonly string[], b: readonly string[]): boolean {
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [NgComponentOutlet, NgTemplateOutlet, CngxInput, CngxSelect, CngxToggle],
   templateUrl: './filter-builder-expression-row.component.html',
-  styleUrl: './filter-builder-expression-row.component.css',
+  styleUrls: ['./filter-builder-expression-row.component.css'],
   encapsulation: ViewEncapsulation.None,
 })
 export class CngxFilterExpressionRow {

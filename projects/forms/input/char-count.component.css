@@ -1,14 +1,50 @@
-/*
- * Visual skin for CngxCharCount. Host stays display:contents — the
- * counter has no visual footprint of its own, the inner span inherits
- * color and font-size from its surroundings. font-size uses syntax '*'
- * because @property's <length> initial-value forbids rem.
+/**
+ * @overview
+ * Default visuals for `CngxCharCount` — counter atom rendered under a
+ * text input or textarea. The host stays `display: contents` so the
+ * counter has no visual footprint of its own; the inner span inherits
+ * color and font-size from its surroundings.
+ *
+ * Falls back through `--cngx-field-hint-color` (resting) and the
+ * field-error / `--cngx-color-danger` chain (over-limit), so a brand
+ * change in the field-error chain propagates here.
  */
 
 @layer cngx.tokens {
-  @property --cngx-field-char-count-font-size  { syntax: '*';       inherits: true; initial-value: 0.75rem; }
-  @property --cngx-field-char-count-color      { syntax: '<color>'; inherits: true; initial-value: oklch(0.45 0 0); }
-  @property --cngx-field-char-count-over-color { syntax: '<color>'; inherits: true; initial-value: oklch(0.55 0.21 27); }
+  /**
+   * Font-size of the counter text. Falls back through
+   * `--cngx-font-size-sm`. `syntax: '*'` because `@property`'s
+   * `<length>` initial-value forbids `rem`.
+   * @group Typography
+   */
+  @property --cngx-field-char-count-font-size {
+    syntax: '*';
+    inherits: true;
+    initial-value: 0.75rem;
+  }
+
+  /**
+   * Text color while under the limit. Falls back through
+   * `--cngx-field-hint-color`.
+   * @group Surface
+   */
+  @property --cngx-field-char-count-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.45 0 0);
+  }
+
+  /**
+   * Text color once the count exceeds the limit. Falls back through
+   * `--cngx-field-error-color` and then `--cngx-color-danger`.
+   * @group State / Over
+   * @see [[--cngx-color-danger]]
+   */
+  @property --cngx-field-char-count-over-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.55 0.21 27);
+  }
 }
 
 @layer cngx.components {
@@ -16,14 +52,14 @@
     :scope {
       display: contents;
       font-size: var(--cngx-field-char-count-font-size, var(--cngx-font-size-sm, 0.75rem));
-      color: var(--cngx-field-char-count-color,
-                  var(--cngx-field-hint-color, oklch(0.45 0 0)));
+      color: var(--cngx-field-char-count-color, var(--cngx-field-hint-color, oklch(0.45 0 0)));
     }
 
     :scope.cngx-char-count--over {
-      color: var(--cngx-field-char-count-over-color,
-                  var(--cngx-field-error-color,
-                      var(--cngx-color-danger, oklch(0.55 0.21 27))));
+      color: var(
+        --cngx-field-char-count-over-color,
+        var(--cngx-field-error-color, var(--cngx-color-danger, oklch(0.55 0.21 27)))
+      );
     }
   }
 }
