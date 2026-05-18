@@ -14,19 +14,19 @@
   @property --cngx-chip-padding-inline       { syntax: '<length>'; inherits: false; initial-value: 8px; }
   @property --cngx-chip-radius               { syntax: '<length>'; inherits: false; initial-value: 999px; }
   @property --cngx-chip-bg                   { syntax: '<color>';  inherits: true;  initial-value: oklch(0.6 0.2 250 / 0.12); }
-  @property --cngx-chip-color                { syntax: '*';        inherits: true;  initial-value: inherit; }
+  @property --cngx-chip-color                { syntax: '*';        inherits: true;  initial-value: currentColor; }
   @property --cngx-chip-border               { syntax: '*';        inherits: false; initial-value: 0 solid transparent; }
   @property --cngx-chip-font-size            { syntax: '*';        inherits: false; initial-value: 0.875em; }
   @property --cngx-chip-transition           { syntax: '*';        inherits: false; initial-value: background-color 150ms ease, color 150ms ease, border-color 150ms ease; }
 
   /* Interactive states */
   @property --cngx-chip-hover-bg             { syntax: '<color>';  inherits: true;  initial-value: oklch(0.6 0.2 250 / 0.2); }
-  @property --cngx-chip-hover-color          { syntax: '*';        inherits: true;  initial-value: inherit; }
+  @property --cngx-chip-hover-color          { syntax: '*';        inherits: true;  initial-value: currentColor; }
   @property --cngx-chip-focus-outline        { syntax: '*';        inherits: false; initial-value: 2px solid currentColor; }
   @property --cngx-chip-focus-outline-offset { syntax: '<length>'; inherits: false; initial-value: 2px; }
   @property --cngx-chip-disabled-opacity     { syntax: '<number>'; inherits: false; initial-value: 0.38; }
   @property --cngx-chip-selected-bg          { syntax: '<color>';  inherits: true;  initial-value: oklch(0.6 0.2 250 / 0.32); }
-  @property --cngx-chip-selected-color       { syntax: '*';        inherits: true;  initial-value: inherit; }
+  @property --cngx-chip-selected-color       { syntax: '*';        inherits: true;  initial-value: currentColor; }
 
   /* Variant palette (per [data-color] attribute) */
   @property --cngx-chip-info-bg              { syntax: '<color>';  inherits: true;  initial-value: oklch(0.6 0.2 250 / 0.16); }

@@ -19,7 +19,7 @@
   @property --cngx-tag-radius       { syntax: '<length>'; inherits: false; initial-value: 4px; }
   @property --cngx-tag-font-weight  { syntax: '*';        inherits: false; initial-value: 500; }
   @property --cngx-tag-bg           { syntax: '*';        inherits: false; initial-value: transparent; }
-  @property --cngx-tag-color        { syntax: '*';        inherits: true;  initial-value: inherit; }
+  @property --cngx-tag-color        { syntax: '*';        inherits: true;  initial-value: currentColor; }
   @property --cngx-tag-border       { syntax: '*';        inherits: false; initial-value: 1px solid transparent; }
   @property --cngx-tag-gap          { syntax: '<length>'; inherits: false; initial-value: 4px; }
   @property --cngx-tag-padding      { syntax: '*';        inherits: false; initial-value: 2px 8px; }

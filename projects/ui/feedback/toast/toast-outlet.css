@@ -31,7 +31,7 @@
   @property --cngx-toast-line-height         { syntax: '*'; inherits: false; initial-value: 1.5; }
   @property --cngx-toast-title-font-weight   { syntax: '<number>'; inherits: false; initial-value: 600; }
   @property --cngx-toast-title-font-size     { syntax: '*'; inherits: false; initial-value: 0.875rem; }
-  @property --cngx-toast-title-color         { syntax: '*'; inherits: true; initial-value: inherit; }
+  @property --cngx-toast-title-color         { syntax: '*'; inherits: true; initial-value: currentColor; }
   @property --cngx-toast-description-max-lines      { syntax: '<integer>'; inherits: false; initial-value: 3; }
   @property --cngx-toast-description-font-size      { syntax: '*'; inherits: false; initial-value: 0.8125rem; }
   @property --cngx-toast-description-color          { syntax: '<color>'; inherits: true; initial-value: oklch(0.5 0.01 250); }
