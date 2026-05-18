@@ -92,7 +92,7 @@ import { resolveCellTpl, resolveHeaderTpl } from './column-template.utils';
     NgTemplateOutlet,
   ],
   templateUrl: './treetable.component.html',
-  styleUrl: './treetable.component.css',
+  styleUrls: ['./treetable.component.css'],
   encapsulation: ViewEncapsulation.None,
   host: { class: 'cngx-treetable' },
 })
