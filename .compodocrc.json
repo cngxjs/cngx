@@ -28,6 +28,7 @@
         "hostBindings",
         "hostListeners"
     ],
+    "themingTabSections": ["overview", "index", "tokens"],
     "playgroundDependencies": {
         "@cngx/utils": "0.0.1-rc.0",
         "@cngx/core": "0.0.1-rc.0",
