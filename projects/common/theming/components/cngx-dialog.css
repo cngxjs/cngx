@@ -206,7 +206,7 @@
       color: var(--cngx-dialog-color, inherit);
       box-shadow: var(--cngx-dialog-shadow, 0 8px 32px oklch(0 0 0 / 0.12));
       overflow: auto;
-      /* scrollbar-gutter: stable; */
+      scrollbar-gutter: stable both-edges;
       transition:
         opacity var(--cngx-dialog-transition-duration, 200ms)
           var(--cngx-dialog-transition-easing, ease),
