@@ -288,7 +288,7 @@ Apply the theme in your global styles:
 
 ```scss
 @use '@angular/material' as mat;
-@use '@cngx/data-display/mat-treetable/mat-treetable-theme' as treetable;
+@use '@cngx/themes/material/mat-treetable-theme' as treetable;
 
 $theme: mat.define-theme(/* ... */);
 

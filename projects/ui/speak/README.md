@@ -65,7 +65,7 @@ Include the theme SCSS in your global stylesheet:
 
 ```scss
 @use '@angular/material' as mat;
-@use '@cngx/ui/speak/speak-button-theme' as speak;
+@use '@cngx/themes/material/speak-button-theme' as speak;
 
 $theme: mat.define-theme((...));
 

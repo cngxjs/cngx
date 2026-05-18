@@ -1,0 +1,37 @@
+@use '@angular/material' as mat;
+
+// Material bridge for CngxCopyBlock.
+//
+//   @use '@cngx/themes/material/copy-block-theme' as copy-block;
+//   html { @include copy-block.theme($theme); }
+
+@mixin color($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-copy-block-bg: var(--mat-sys-surface-container-high);
+    --cngx-copy-block-color: var(--mat-sys-on-surface);
+    --cngx-copy-block-border: var(--mat-sys-outline-variant);
+    --cngx-copy-block-button-bg: color-mix(
+      in srgb,
+      var(--mat-sys-on-surface) 6%,
+      transparent
+    );
+    --cngx-copy-block-button-hover-bg: color-mix(
+      in srgb,
+      var(--mat-sys-on-surface) 12%,
+      transparent
+    );
+    --cngx-copy-block-copied-color: var(--mat-sys-tertiary);
+  } @else {
+    --cngx-copy-block-bg: #{mat.get-theme-color($theme, background, app-bar)};
+    --cngx-copy-block-color: #{mat.get-theme-color($theme, foreground, text)};
+    --cngx-copy-block-border: #{mat.get-theme-color($theme, foreground, divider)};
+  }
+}
+
+@mixin theme($theme) {
+  @layer cngx.components {
+    :where(.cngx-copy-block) {
+      @include color($theme);
+    }
+  }
+}

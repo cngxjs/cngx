@@ -20,12 +20,12 @@
 
   /* Spacing */
   @property --cngx-treetable-indent-size           { syntax: '*'; inherits: true; initial-value: 1.5rem; }
-  @property --cngx-treetable-cell-padding-block    { syntax: '<length>'; inherits: false; initial-value: 0.6rem; }
-  @property --cngx-treetable-cell-padding-inline   { syntax: '<length>'; inherits: false; initial-value: 1rem; }
-  @property --cngx-treetable-narrow-cell-padding-inline { syntax: '<length>'; inherits: false; initial-value: 0.25rem; }
-  @property --cngx-treetable-empty-padding-block   { syntax: '<length>'; inherits: false; initial-value: 2rem; }
-  @property --cngx-treetable-empty-padding-inline  { syntax: '<length>'; inherits: false; initial-value: 1rem; }
-  @property --cngx-treetable-toggle-padding        { syntax: '<length>'; inherits: false; initial-value: 0.25rem; }
+  @property --cngx-treetable-cell-padding-block    { syntax: '*'; inherits: false; initial-value: 0.6rem; }
+  @property --cngx-treetable-cell-padding-inline   { syntax: '*'; inherits: false; initial-value: 1rem; }
+  @property --cngx-treetable-narrow-cell-padding-inline { syntax: '*'; inherits: false; initial-value: 0.25rem; }
+  @property --cngx-treetable-empty-padding-block   { syntax: '*'; inherits: false; initial-value: 2rem; }
+  @property --cngx-treetable-empty-padding-inline  { syntax: '*'; inherits: false; initial-value: 1rem; }
+  @property --cngx-treetable-toggle-padding        { syntax: '*'; inherits: false; initial-value: 0.25rem; }
   @property --cngx-treetable-toggle-radius         { syntax: '<length>'; inherits: false; initial-value: 4px; }
 
   /* Borders + focus */
@@ -46,14 +46,14 @@
   /* Mobile breakpoint overrides */
   @property --cngx-treetable-narrow-breakpoint        { syntax: '<length>'; inherits: false; initial-value: 960px; }
   @property --cngx-treetable-narrow-font-size         { syntax: '*'; inherits: false; initial-value: 0.8125rem; }
-  @property --cngx-treetable-narrow-header-padding-block  { syntax: '<length>'; inherits: false; initial-value: 0.5rem; }
-  @property --cngx-treetable-narrow-header-padding-inline { syntax: '<length>'; inherits: false; initial-value: 0.625rem; }
-  @property --cngx-treetable-narrow-cell-padding-block    { syntax: '<length>'; inherits: false; initial-value: 0.875rem; }
-  @property --cngx-treetable-narrow-cell-padding-inline-default { syntax: '<length>'; inherits: false; initial-value: 0.625rem; }
-  @property --cngx-treetable-narrow-utility-padding-inline { syntax: '<length>'; inherits: false; initial-value: 0.125rem; }
-  @property --cngx-treetable-narrow-utility-padding-inline-large { syntax: '<length>'; inherits: false; initial-value: 0.875rem; }
+  @property --cngx-treetable-narrow-header-padding-block  { syntax: '*'; inherits: false; initial-value: 0.5rem; }
+  @property --cngx-treetable-narrow-header-padding-inline { syntax: '*'; inherits: false; initial-value: 0.625rem; }
+  @property --cngx-treetable-narrow-cell-padding-block    { syntax: '*'; inherits: false; initial-value: 0.875rem; }
+  @property --cngx-treetable-narrow-cell-padding-inline-default { syntax: '*'; inherits: false; initial-value: 0.625rem; }
+  @property --cngx-treetable-narrow-utility-padding-inline { syntax: '*'; inherits: false; initial-value: 0.125rem; }
+  @property --cngx-treetable-narrow-utility-padding-inline-large { syntax: '*'; inherits: false; initial-value: 0.875rem; }
   @property --cngx-treetable-narrow-indent-size       { syntax: '*'; inherits: true; initial-value: 1.25rem; }
-  @property --cngx-treetable-narrow-toggle-padding    { syntax: '<length>'; inherits: false; initial-value: 0.5rem; }
+  @property --cngx-treetable-narrow-toggle-padding    { syntax: '*'; inherits: false; initial-value: 0.5rem; }
   @property --cngx-treetable-narrow-toggle-font-size  { syntax: '*'; inherits: false; initial-value: 1rem; }
 }
 

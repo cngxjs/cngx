@@ -1,0 +1,29 @@
+@use '@angular/material' as mat;
+
+// Material bridge for CngxCloseButton. Default visuals ship with the
+// directive; this file only re-points the hover surface so it tints
+// according to the Material on-surface colour.
+//
+//   @use '@cngx/themes/material/close-button-theme' as close-button;
+//   html { @include close-button.theme($theme); }
+
+@mixin color($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-close-button-hover-bg: color-mix(
+      in srgb,
+      var(--mat-sys-on-surface) 8%,
+      transparent
+    );
+    --cngx-close-button-color: var(--mat-sys-on-surface-variant);
+  } @else {
+    --cngx-close-button-color: #{mat.get-theme-color($theme, foreground, secondary-text)};
+  }
+}
+
+@mixin theme($theme) {
+  @layer cngx.components {
+    :where(.cngx-close-button) {
+      @include color($theme);
+    }
+  }
+}

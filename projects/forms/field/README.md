@@ -115,11 +115,11 @@ All derived from Signal Forms `FieldState` via `computed()`:
 
 ## Optional Material Theme
 
-`_material-theme.scss` maps Material M3/M2 design tokens to cngx-form-field CSS
-custom properties:
+`@cngx/themes/material/field-theme.scss` maps Material M3/M2 design tokens to
+cngx-form-field CSS custom properties:
 
 ```scss
-@use '@cngx/forms/field/material-theme' as form-field;
+@use '@cngx/themes/material/field-theme' as form-field;
 
 html {
   @include mat.all-component-themes($theme);

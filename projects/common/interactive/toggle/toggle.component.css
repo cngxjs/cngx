@@ -5,22 +5,22 @@
 
 @layer cngx.tokens {
   @property --cngx-toggle-gap              { syntax: '*';        inherits: false; initial-value: 0.5rem; }
-  @property --cngx-toggle-color            { syntax: '<color>';  inherits: true;  initial-value: currentColor; }
+  @property --cngx-toggle-color            { syntax: '*';  inherits: true;  initial-value: currentColor; }
   @property --cngx-toggle-disabled-opacity { syntax: '<number>'; inherits: false; initial-value: 0.5; }
   @property --cngx-toggle-focus-outline    { syntax: '*';        inherits: false; initial-value: 2px solid currentColor; }
   @property --cngx-toggle-focus-offset     { syntax: '*';        inherits: false; initial-value: 2px; }
   @property --cngx-toggle-focus-radius     { syntax: '*';        inherits: false; initial-value: 0.25rem; }
   @property --cngx-toggle-transition       { syntax: '*';        inherits: false; initial-value: 150ms ease; }
 
-  @property --cngx-toggle-track-width   { syntax: '<length>'; inherits: false; initial-value: 2.25rem; }
-  @property --cngx-toggle-track-height  { syntax: '<length>'; inherits: false; initial-value: 1.25rem; }
+  @property --cngx-toggle-track-width   { syntax: '*'; inherits: false; initial-value: 2.25rem; }
+  @property --cngx-toggle-track-height  { syntax: '*'; inherits: false; initial-value: 1.25rem; }
   @property --cngx-toggle-track-radius  { syntax: '<length>'; inherits: false; initial-value: 9999px; }
   @property --cngx-toggle-track-bg-off  { syntax: '<color>';  inherits: false; initial-value: oklch(0 0 0 / 0.25); }
   @property --cngx-toggle-track-bg-on   { syntax: '<color>';  inherits: false; initial-value: oklch(0.55 0.22 260); }
 
-  @property --cngx-toggle-thumb-inset   { syntax: '<length>'; inherits: false; initial-value: 0.125rem; }
-  @property --cngx-toggle-thumb-size    { syntax: '<length>'; inherits: false; initial-value: 1rem; }
-  @property --cngx-toggle-thumb-travel  { syntax: '<length>'; inherits: false; initial-value: 1rem; }
+  @property --cngx-toggle-thumb-inset   { syntax: '*'; inherits: false; initial-value: 0.125rem; }
+  @property --cngx-toggle-thumb-size    { syntax: '*'; inherits: false; initial-value: 1rem; }
+  @property --cngx-toggle-thumb-travel  { syntax: '*'; inherits: false; initial-value: 1rem; }
   @property --cngx-toggle-thumb-bg      { syntax: '<color>';  inherits: false; initial-value: oklch(1 0 0); }
   @property --cngx-toggle-thumb-shadow  { syntax: '*';        inherits: false; initial-value: 0 1px 2px oklch(0 0 0 / 0.25); }
 }

@@ -17,7 +17,7 @@ import { type CngxSpeak } from '@cngx/common';
  *
  * ### Material theme integration
  * ```scss
- * @use '@cngx/ui/speak/speak-button-theme' as speak;
+ * @use '@cngx/themes/material/speak-button-theme' as speak;
  * @include speak.theme($theme);
  * ```
  * <example-url>http://localhost:4200/#/ui/speak/speak-button/material-integration-theme-scss-mat-icon-button</example-url>

@@ -7,7 +7,7 @@
 
 @layer cngx.tokens {
   @property --cngx-radio-indicator-size             { syntax: '*';        inherits: false; initial-value: 1em; }
-  @property --cngx-radio-indicator-color            { syntax: '<color>';  inherits: true;  initial-value: currentColor; }
+  @property --cngx-radio-indicator-color            { syntax: '*';  inherits: true;  initial-value: currentColor; }
   @property --cngx-radio-indicator-bg               { syntax: '*';        inherits: false; initial-value: transparent; }
   @property --cngx-radio-indicator-border-width     { syntax: '<length>'; inherits: false; initial-value: 1.5px; }
   @property --cngx-radio-indicator-checked-color    { syntax: '<color>';  inherits: true;  initial-value: oklch(0.6 0.2 250); }

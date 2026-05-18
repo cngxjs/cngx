@@ -1,0 +1,54 @@
+@use 'sass:map';
+@use 'sass:math';
+@use '@angular/material' as mat;
+
+// Material bridge for CngxActionButton + cngxAsyncClick. Default visuals
+// (host rules, state classes, variant styles) ship with the components
+// themselves (action-button.css and cngx-async.css); this file only
+// overrides the tokens Material has a stronger opinion about.
+//
+//   @use '@angular/material' as mat;
+//   @use '@cngx/themes/material/action-button-theme' as action-btn;
+//   html { @include action-btn.theme($theme); }
+
+@mixin color($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-action-btn-succeeded-bg: color-mix(in srgb, var(--mat-sys-primary) 12%, transparent);
+    --cngx-action-btn-succeeded-color: var(--mat-sys-primary);
+    --cngx-action-btn-succeeded-border: var(--mat-sys-primary);
+    --cngx-action-btn-failed-bg: color-mix(in srgb, var(--mat-sys-error) 12%, transparent);
+    --cngx-action-btn-failed-color: var(--mat-sys-error);
+    --cngx-action-btn-failed-border: var(--mat-sys-error);
+    --cngx-action-btn-border: var(--mat-sys-outline-variant);
+    --cngx-action-btn-ghost-hover-bg: color-mix(
+      in srgb,
+      var(--mat-sys-on-surface) 8%,
+      transparent
+    );
+  } @else {
+    --cngx-action-btn-succeeded-bg: #{rgba(mat.get-theme-color($theme, primary), 0.08)};
+    --cngx-action-btn-succeeded-color: #{mat.get-theme-color($theme, primary)};
+    --cngx-action-btn-succeeded-border: #{mat.get-theme-color($theme, primary)};
+    --cngx-action-btn-failed-bg: #{rgba(mat.get-theme-color($theme, warn), 0.08)};
+    --cngx-action-btn-failed-color: #{mat.get-theme-color($theme, warn)};
+    --cngx-action-btn-failed-border: #{mat.get-theme-color($theme, warn)};
+  }
+}
+
+@mixin density($theme) {
+  $scale: mat.get-theme-density($theme);
+  $scale: math.max(-4, math.min(0, $scale));
+
+  $paddings: (0: 8px 16px, -1: 6px 12px, -2: 5px 10px, -3: 4px 8px, -4: 3px 6px);
+  --cngx-action-btn-padding: #{map.get($paddings, $scale)};
+}
+
+@mixin theme($theme) {
+  @layer cngx.components {
+    :where(cngx-action-button),
+    :where([cngxAsyncClick]) {
+      @include color($theme);
+      @include density($theme);
+    }
+  }
+}

@@ -1,16 +1,16 @@
 @use '@angular/material' as mat;
-@use '../../projects/data-display/treetable/mat-treetable-theme' as treetable;
+@use '../../projects/themes/material/mat-treetable-theme' as treetable;
 @use '../../projects/ui/speak/speak-button-theme' as speak;
 @use '../../projects/ui/sidenav/sidenav-theme' as sidenav;
 @use '../../projects/ui/skeleton/skeleton-theme' as skeleton;
 @use '../../projects/ui/action-button/action-button-theme' as async-btn;
-@use '../../projects/common/dialog/dialog/dialog-theme' as dialog;
-@use '../../projects/common/dialog/bottom-sheet/bottom-sheet-theme' as bottom-sheet;
+@use '../../projects/themes/material/dialog-theme' as dialog;
+@use '../../projects/themes/material/bottom-sheet-theme' as bottom-sheet;
 @use '../../projects/common/theming/components/cngx-ripple.css';
-@use '../../projects/common/interactive/ripple/ripple-theme' as ripple;
-@use '../../projects/common/popover/tooltip-theme' as tooltip;
+@use '../../projects/themes/material/ripple-theme' as ripple;
+@use '../../projects/themes/material/tooltip-theme' as tooltip;
 @use '../../projects/common/popover/tooltip-indicator' as tooltip-indicator;
-@use '../../projects/common/popover/popover-panel-theme' as panel;
+@use '../../projects/themes/material/popover-panel-theme' as panel;
 @use '../../projects/ui/card-theme' as card;
 @use '../../projects/common/card/card' as cngx-card;
 @use '../../projects/common/card/card-grid' as cngx-card-grid;
@@ -21,7 +21,7 @@
 @use '../../projects/ui/empty-state/empty-state-theme' as empty-state;
 @use '../../projects/ui/empty-state/empty-state' as cngx-empty-state;
 @use '../../projects/forms/input/file-drop' as cngx-file-drop;
-@use '../../projects/forms/input/file-drop-theme' as file-drop;
+@use '../../projects/themes/material/file-drop-theme' as file-drop;
 @use './app/demos/demo-shared';
 
 // `@cngx/ui/mat-tabs` ships its sticky-error skin as a standalone

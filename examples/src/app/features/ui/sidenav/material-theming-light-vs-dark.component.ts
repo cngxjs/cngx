@@ -57,7 +57,7 @@ import { CngxNavLink, CngxNavLabel } from '@cngx/common';
       </div>
 
       <pre class="code-block" style="margin-top: 1rem;"><code>@use '@angular/material' as mat;
-    @use '@cngx/ui/sidenav/sidenav-theme' as sidenav;
+    @use '@cngx/themes/material/sidenav-theme' as sidenav;
 
     $theme: mat.define-theme((color: (primary: mat.$azure-palette)));
     $dark:  mat.define-theme((color: (primary: mat.$azure-palette, theme-type: dark)));
@@ -146,7 +146,7 @@ protected selectItem(item: string): void {
   </div>
 
   <pre class="code-block" style="margin-top: 1rem;"><code>@use '@angular/material' as mat;
-@use '@cngx/ui/sidenav/sidenav-theme' as sidenav;
+@use '@cngx/themes/material/sidenav-theme' as sidenav;
 
 $theme: mat.define-theme((color: (primary: mat.$azure-palette)));
 $dark:  mat.define-theme((color: (primary: mat.$azure-palette, theme-type: dark)));

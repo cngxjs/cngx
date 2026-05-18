@@ -14,7 +14,7 @@ export const STORY: DemoSpec = {
     '<code>disabled</code>, and <code>errorState</code> purely from the bound <code>Field</code> via the presenter.</p>' +
     '<p>Value-flow goes through the control\'s own bindings — <code>[control]</code> (Signal Forms) or ' +
     '<code>[formControl]</code> (Reactive Forms). cngx never touches the value layer.</p>' +
-    '<p>An optional Material theme mixin (<code>@cngx/forms/field/material-theme</code>) maps M3/M2 design ' +
+    '<p>An optional Material theme mixin (<code>@cngx/themes/material/field-theme</code>) maps M3/M2 design ' +
     'tokens to cngx-form-field CSS custom properties.</p>',
   moduleImports: [
     "import { form, schema, required, FormField } from '@angular/forms/signals';",

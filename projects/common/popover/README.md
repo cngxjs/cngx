@@ -150,8 +150,8 @@ The `variant` input is a free-form string mapped to CSS class `cngx-popover-pane
 
 ```scss
 @use '@angular/material' as mat;
-@use '@cngx/common/popover/tooltip-theme' as tooltip;
-@use '@cngx/common/popover/popover-panel-theme' as panel;
+@use '@cngx/themes/material/tooltip-theme' as tooltip;
+@use '@cngx/themes/material/popover-panel-theme' as panel;
 
 $theme: mat.define-theme((...));
 

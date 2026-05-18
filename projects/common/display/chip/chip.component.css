@@ -14,8 +14,29 @@
   @property --cngx-chip-padding-inline       { syntax: '<length>'; inherits: false; initial-value: 8px; }
   @property --cngx-chip-radius               { syntax: '<length>'; inherits: false; initial-value: 999px; }
   @property --cngx-chip-bg                   { syntax: '<color>';  inherits: true;  initial-value: oklch(0.6 0.2 250 / 0.12); }
-  @property --cngx-chip-color                { syntax: '*';        inherits: true;  initial-value: inherit; }
+  @property --cngx-chip-color                { syntax: '*';        inherits: true;  initial-value: currentColor; }
+  @property --cngx-chip-border               { syntax: '*';        inherits: false; initial-value: 0 solid transparent; }
   @property --cngx-chip-font-size            { syntax: '*';        inherits: false; initial-value: 0.875em; }
+  @property --cngx-chip-transition           { syntax: '*';        inherits: false; initial-value: background-color 150ms ease, color 150ms ease, border-color 150ms ease; }
+
+  /* Interactive states */
+  @property --cngx-chip-hover-bg             { syntax: '<color>';  inherits: true;  initial-value: oklch(0.6 0.2 250 / 0.2); }
+  @property --cngx-chip-hover-color          { syntax: '*';        inherits: true;  initial-value: currentColor; }
+  @property --cngx-chip-focus-outline        { syntax: '*';        inherits: false; initial-value: 2px solid currentColor; }
+  @property --cngx-chip-focus-outline-offset { syntax: '<length>'; inherits: false; initial-value: 2px; }
+  @property --cngx-chip-disabled-opacity     { syntax: '<number>'; inherits: false; initial-value: 0.38; }
+  @property --cngx-chip-selected-bg          { syntax: '<color>';  inherits: true;  initial-value: oklch(0.6 0.2 250 / 0.32); }
+  @property --cngx-chip-selected-color       { syntax: '*';        inherits: true;  initial-value: currentColor; }
+
+  /* Variant palette (per [data-color] attribute) */
+  @property --cngx-chip-info-bg              { syntax: '<color>';  inherits: true;  initial-value: oklch(0.6 0.2 250 / 0.16); }
+  @property --cngx-chip-info-color           { syntax: '<color>';  inherits: true;  initial-value: oklch(0.45 0.2 250); }
+  @property --cngx-chip-success-bg           { syntax: '<color>';  inherits: true;  initial-value: oklch(0.65 0.15 145 / 0.16); }
+  @property --cngx-chip-success-color        { syntax: '<color>';  inherits: true;  initial-value: oklch(0.45 0.15 145); }
+  @property --cngx-chip-warning-bg           { syntax: '<color>';  inherits: true;  initial-value: oklch(0.72 0.15 75 / 0.18); }
+  @property --cngx-chip-warning-color        { syntax: '<color>';  inherits: true;  initial-value: oklch(0.5 0.15 75); }
+  @property --cngx-chip-danger-bg            { syntax: '<color>';  inherits: true;  initial-value: oklch(0.65 0.22 25 / 0.18); }
+  @property --cngx-chip-danger-color         { syntax: '<color>';  inherits: true;  initial-value: oklch(0.5 0.2 25); }
 
   /* Remove-button tokens (static + states) */
   @property --cngx-chip-remove-opacity       { syntax: '<number>'; inherits: false; initial-value: 0.7; }
@@ -43,7 +64,57 @@
       border-radius: var(--cngx-chip-radius, var(--cngx-radius-pill, 999px));
       background: var(--cngx-chip-bg, oklch(0.6 0.2 250 / 0.12));
       color: var(--cngx-chip-color, inherit);
+      border: var(--cngx-chip-border, 0 solid transparent);
       font-size: var(--cngx-chip-font-size, var(--cngx-font-size-sm, 0.8125rem));
+      transition: var(--cngx-chip-transition, background-color 150ms ease, color 150ms ease, border-color 150ms ease);
+    }
+
+    /* Interactive states only on selectable / removable chips —
+     * a static label-chip should not invite a click. */
+    :scope[role='button'],
+    :scope[tabindex],
+    :scope:has(.cngx-chip__remove) {
+      cursor: pointer;
+    }
+    :scope[role='button']:hover,
+    :scope[tabindex]:hover,
+    :scope:has(.cngx-chip__remove):hover {
+      background: var(--cngx-chip-hover-bg, oklch(0.6 0.2 250 / 0.2));
+      color: var(--cngx-chip-hover-color, inherit);
+    }
+    :scope:focus-visible {
+      outline: var(--cngx-chip-focus-outline, 2px solid currentColor);
+      outline-offset: var(--cngx-chip-focus-outline-offset, 2px);
+    }
+    :scope[aria-selected='true'],
+    :scope[aria-pressed='true'] {
+      background: var(--cngx-chip-selected-bg, oklch(0.6 0.2 250 / 0.32));
+      color: var(--cngx-chip-selected-color, inherit);
+    }
+    :scope[aria-disabled='true'],
+    :scope:disabled {
+      opacity: var(--cngx-chip-disabled-opacity, 0.38);
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    /* Variant palette via [data-color] attribute (open-string so consumers
+     * can add their own families on top of the four built-in ones). */
+    :scope[data-color='info'] {
+      background: var(--cngx-chip-info-bg);
+      color: var(--cngx-chip-info-color);
+    }
+    :scope[data-color='success'] {
+      background: var(--cngx-chip-success-bg);
+      color: var(--cngx-chip-success-color);
+    }
+    :scope[data-color='warning'] {
+      background: var(--cngx-chip-warning-bg);
+      color: var(--cngx-chip-warning-color);
+    }
+    :scope[data-color='danger'] {
+      background: var(--cngx-chip-danger-bg);
+      color: var(--cngx-chip-danger-color);
     }
 
     .cngx-chip__label {

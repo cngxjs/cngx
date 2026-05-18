@@ -7,7 +7,7 @@
 @layer cngx.tokens {
   /* Active size + color (consumed by the :scope rule) */
   @property --cngx-icon-size  { syntax: '*';       inherits: false; initial-value: 1.25em; }
-  @property --cngx-icon-color { syntax: '<color>'; inherits: true;  initial-value: currentColor; }
+  @property --cngx-icon-color { syntax: '*'; inherits: true;  initial-value: currentColor; }
 
   /* Size-variant tokens — overrideable per scale step */
   @property --cngx-icon-size-xs { syntax: '*'; inherits: false; initial-value: 0.75em; }

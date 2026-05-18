@@ -1,0 +1,60 @@
+@use '@angular/material' as mat;
+
+// Material bridge for CngxFormField (+ sub-directives CngxLabel,
+// CngxHint, CngxError, CngxFieldErrors, CngxCharCount, CngxInput).
+// Default visuals + shake animation ship with the components; this
+// file aligns colour and typography tokens with Material.
+//
+//   @use '@angular/material' as mat;
+//   @use '@cngx/themes/material/field-theme' as form-field;
+//   html { @include form-field.theme($theme); }
+
+@mixin color($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-field-label-color: var(--mat-sys-on-surface);
+    --cngx-field-label-required-color: var(--mat-sys-error);
+    --cngx-field-hint-color: var(--mat-sys-on-surface-variant);
+    --cngx-field-error-color: var(--mat-sys-error);
+    --cngx-field-focus-color: var(--mat-sys-primary);
+    --cngx-field-pending-color: var(--mat-sys-primary);
+    --cngx-field-disabled-reason-color: var(--mat-sys-on-surface-variant);
+    --cngx-field-input-border-color: var(--mat-sys-outline);
+    --cngx-field-input-error-border-color: var(--mat-sys-error);
+    --cngx-field-input-focus-border-color: var(--mat-sys-primary);
+    --cngx-field-success-color: var(--mat-sys-primary);
+  } @else {
+    --cngx-field-label-color: #{rgba(mat.get-theme-color($theme, foreground, text), 0.87)};
+    --cngx-field-label-required-color: #{mat.get-theme-color($theme, warn)};
+    --cngx-field-hint-color: #{rgba(mat.get-theme-color($theme, foreground, text), 0.54)};
+    --cngx-field-error-color: #{mat.get-theme-color($theme, warn)};
+    --cngx-field-focus-color: #{mat.get-theme-color($theme, primary)};
+    --cngx-field-pending-color: #{mat.get-theme-color($theme, primary)};
+    --cngx-field-disabled-reason-color: #{rgba(
+        mat.get-theme-color($theme, foreground, text),
+        0.54
+      )};
+    --cngx-field-input-border-color: rgba(0, 0, 0, 0.12);
+    --cngx-field-input-error-border-color: #{mat.get-theme-color($theme, warn)};
+    --cngx-field-input-focus-border-color: #{mat.get-theme-color($theme, primary)};
+    --cngx-field-success-color: oklch(0.5 0.15 145);
+  }
+}
+
+@mixin typography($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-field-label-font-size: var(--mat-sys-body-medium-size, 0.875rem);
+    --cngx-field-label-weight: var(--mat-sys-body-medium-weight, 500);
+    --cngx-field-hint-font-size: var(--mat-sys-body-small-size, 0.75rem);
+    --cngx-field-error-font-size: var(--mat-sys-body-small-size, 0.75rem);
+    --cngx-field-char-count-font-size: var(--mat-sys-body-small-size, 0.75rem);
+  }
+}
+
+@mixin theme($theme) {
+  @layer cngx.components {
+    :where(cngx-form-field) {
+      @include color($theme);
+      @include typography($theme);
+    }
+  }
+}

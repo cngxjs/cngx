@@ -12,6 +12,11 @@
     inherits: false;
     initial-value: 10rem;
   }
+  @property --cngx-select-min-height {
+    syntax: '*';
+    inherits: false;
+    initial-value: auto;
+  }
   @property --cngx-select-gap {
     syntax: '*';
     inherits: false;
@@ -81,6 +86,7 @@
       align-items: center;
       gap: var(--cngx-select-gap, 0.5rem);
       width: 100%;
+      min-height: var(--cngx-select-min-height, auto);
       padding: var(--cngx-select-padding, 0.5rem 0.75rem);
       border: var(--cngx-select-border, 1px solid var(--cngx-color-border, oklch(0.85 0.01 250)));
       border-radius: var(--cngx-select-radius, 0.25rem);

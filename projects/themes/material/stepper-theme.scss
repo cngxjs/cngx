@@ -1,0 +1,88 @@
+@use 'sass:map';
+@use 'sass:math';
+@use '@angular/material' as mat;
+
+// Material bridge for CngxStepper. Default visuals ship with the
+// component (projects/ui/stepper/stepper.component.css + the shared
+// projects/ui/stepper/styles/stepper-base.css); this file aligns the
+// colour, density, and typography tokens with Material so cngx
+// steppers feel native alongside <mat-stepper>.
+//
+//   @use '@angular/material' as mat;
+//   @use '@cngx/themes/material/stepper-theme' as stepper;
+//   html { @include stepper.theme($theme); }
+
+@mixin color($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-step-active-color: var(--mat-sys-primary);
+    --cngx-step-completed-color: var(--mat-sys-primary);
+    --cngx-step-errored-color: var(--mat-sys-error);
+    --cngx-step-pending-color: var(--mat-sys-primary);
+
+    --cngx-step-hover-bg: color-mix(in srgb, var(--mat-sys-on-surface) 8%, transparent);
+
+    --cngx-step-indicator-bg: var(--mat-sys-surface-container);
+    --cngx-step-indicator-color: var(--mat-sys-on-surface);
+    --cngx-step-indicator-active-color: var(--mat-sys-on-primary);
+    --cngx-step-indicator-disabled-bg: color-mix(
+      in srgb,
+      var(--mat-sys-on-surface) 12%,
+      transparent
+    );
+
+    --cngx-step-busy-spinner-color: var(--mat-sys-primary);
+
+    --cngx-step-error-badge-color: var(--mat-sys-error);
+    --cngx-step-error-badge-text-color: var(--mat-sys-on-error);
+
+    --cngx-step-rejection-outline-color: var(--mat-sys-tertiary);
+    --cngx-step-rejection-icon-bg: var(--mat-sys-tertiary);
+    --cngx-step-rejection-icon-color: var(--mat-sys-on-tertiary);
+  } @else {
+    --cngx-step-active-color: #{mat.get-theme-color($theme, primary)};
+    --cngx-step-completed-color: #{mat.get-theme-color($theme, primary)};
+    --cngx-step-errored-color: #{mat.get-theme-color($theme, warn)};
+    --cngx-step-pending-color: #{mat.get-theme-color($theme, primary)};
+    --cngx-step-indicator-active-color: oklch(1 0 0);
+    --cngx-step-busy-spinner-color: #{mat.get-theme-color($theme, primary)};
+    --cngx-step-error-badge-color: #{mat.get-theme-color($theme, warn)};
+    --cngx-step-rejection-outline-color: #{mat.get-theme-color($theme, accent)};
+    --cngx-step-rejection-icon-bg: #{mat.get-theme-color($theme, accent)};
+  }
+}
+
+@mixin typography($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-step-indicator-font-size: var(--mat-sys-label-large-size);
+    --cngx-step-indicator-font-weight: var(--mat-sys-label-large-weight);
+    --cngx-step-badge-font-size: var(--mat-sys-label-small-size);
+    --cngx-step-badge-font-weight: var(--mat-sys-label-small-weight);
+    --cngx-step-rejection-icon-font-size: var(--mat-sys-label-small-size);
+    --cngx-step-rejection-icon-font-weight: var(--mat-sys-label-small-weight);
+  }
+}
+
+// Density scale: 0 (default), -1 (compact), -2 (denser), -3, -4 (most dense).
+// Matches Material's density convention so a single $theme drives both libs.
+@mixin density($theme) {
+  $scale: mat.get-theme-density($theme);
+  $scale: math.max(-4, math.min(0, $scale));
+
+  $indicator-sizes: (0: 1.75rem, -1: 1.5rem, -2: 1.375rem, -3: 1.25rem, -4: 1.125rem);
+  $paddings:        (0: 0.5rem 0.75rem, -1: 0.4rem 0.6rem, -2: 0.3rem 0.5rem, -3: 0.25rem 0.4rem, -4: 0.2rem 0.35rem);
+  $gaps:            (0: 0.5rem, -1: 0.4rem, -2: 0.3rem, -3: 0.25rem, -4: 0.2rem);
+
+  --cngx-step-indicator-size: #{map.get($indicator-sizes, $scale)};
+  --cngx-step-padding: #{map.get($paddings, $scale)};
+  --cngx-step-gap: #{map.get($gaps, $scale)};
+}
+
+@mixin theme($theme) {
+  @layer cngx.components {
+    :where(cngx-stepper) {
+      @include color($theme);
+      @include typography($theme);
+      @include density($theme);
+    }
+  }
+}

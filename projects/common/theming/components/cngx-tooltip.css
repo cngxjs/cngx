@@ -15,7 +15,7 @@
 @layer cngx.tokens {
   @property --cngx-tooltip-bg                  { syntax: '<color>';  inherits: true;  initial-value: oklch(0.20 0.005 290); }
   @property --cngx-tooltip-color               { syntax: '<color>';  inherits: true;  initial-value: oklch(0.96 0.005 290); }
-  @property --cngx-tooltip-font-family         { syntax: '*';        inherits: true;  initial-value: inherit; }
+  @property --cngx-tooltip-font-family         { syntax: '*';        inherits: true;  initial-value: system-ui; }
   @property --cngx-tooltip-font-size           { syntax: '*';        inherits: true;  initial-value: 0.75rem; }
   @property --cngx-tooltip-line-height         { syntax: '*';        inherits: true;  initial-value: 1rem; }
   @property --cngx-tooltip-font-weight         { syntax: '<number>'; inherits: true;  initial-value: 400; }

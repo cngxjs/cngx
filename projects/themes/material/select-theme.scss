@@ -1,0 +1,216 @@
+@use 'sass:map';
+@use 'sass:math';
+@use '@angular/material' as mat;
+
+// Material bridge for the entire Select family — single, multi, combobox,
+// typeahead, tree-select, reorderable-multi, action-select, action-multi,
+// select-shell. All resolve through the shared --cngx-select-* token
+// surface defined in projects/forms/select/shared/select-base.css.
+//
+//   @use '@cngx/themes/material/select-theme' as select;
+//   html { @include select.theme($theme); }
+
+@mixin color($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    // Panel surface (one shared surface across the whole select family).
+    // Material 3 Menu surface is shadow-only — no border, vertical inset
+    // 8px to give the option list breathing room from the panel edge.
+    --cngx-select-panel-bg: var(--mat-sys-surface-container);
+    --cngx-select-panel-color: var(--mat-sys-on-surface);
+    --cngx-select-panel-border: none;
+    --cngx-select-panel-radius: 4px;
+    --cngx-select-panel-shadow: var(--mat-sys-level2, 0 4px 12px oklch(0 0 0 / 0.12));
+
+    // Trigger surfaces — every variant defines its own --cngx-<name>-bg /
+    // -color / -border with hard-coded light defaults that shadow any
+    // system-bridge cascade. Map each variant onto Material's outlined-
+    // input surface so the trigger sits transparently on the Material
+    // background.
+    --cngx-select-bg: transparent;
+    --cngx-select-color: var(--mat-sys-on-surface);
+    --cngx-select-border: 1px solid var(--mat-sys-outline);
+
+    --cngx-multi-select-bg: transparent;
+    --cngx-multi-select-color: var(--mat-sys-on-surface);
+    --cngx-multi-select-border: 1px solid var(--mat-sys-outline);
+
+    --cngx-combobox-bg: transparent;
+    --cngx-combobox-color: var(--mat-sys-on-surface);
+    --cngx-combobox-border: 1px solid var(--mat-sys-outline);
+
+    --cngx-typeahead-bg: transparent;
+    --cngx-typeahead-color: var(--mat-sys-on-surface);
+    --cngx-typeahead-border: 1px solid var(--mat-sys-outline);
+    --cngx-typeahead-action-color: var(--mat-sys-on-surface);
+
+    --cngx-action-select-bg: transparent;
+    --cngx-action-select-color: var(--mat-sys-on-surface);
+    --cngx-action-select-border: 1px solid var(--mat-sys-outline);
+    --cngx-action-select-action-color: var(--mat-sys-on-surface);
+
+    --cngx-action-multi-select-bg: transparent;
+    --cngx-action-multi-select-color: var(--mat-sys-on-surface);
+    --cngx-action-multi-select-border: 1px solid var(--mat-sys-outline);
+
+    --cngx-reorderable-multi-select-bg: transparent;
+    --cngx-reorderable-multi-select-color: var(--mat-sys-on-surface);
+    --cngx-reorderable-multi-select-border: 1px solid var(--mat-sys-outline);
+
+    --cngx-select-shell-bg: transparent;
+    --cngx-select-shell-color: var(--mat-sys-on-surface);
+
+    --cngx-tree-select-caret-color: var(--mat-sys-on-surface-variant);
+    --cngx-tree-select-clear-color: var(--mat-sys-on-surface-variant);
+    --cngx-tree-select-node-color: var(--mat-sys-on-surface);
+
+    --cngx-select-option-highlight-bg: color-mix(
+      in srgb,
+      var(--mat-sys-primary) 12%,
+      transparent
+    );
+    --cngx-select-check-color: var(--mat-sys-primary);
+    --cngx-select-error-color: var(--mat-sys-error);
+    --cngx-select-option-error-color: var(--mat-sys-error);
+
+    --cngx-select-spinner-color: var(--mat-sys-primary);
+    --cngx-select-spinner-border: 2px solid var(--mat-sys-outline-variant);
+    --cngx-select-loading-bar-color: var(--mat-sys-primary);
+    --cngx-select-refreshing-color: var(--mat-sys-primary);
+    --cngx-select-option-spinner-color: var(--mat-sys-primary);
+
+    // Reorder visuals (multi-select chip cluster)
+    --cngx-select-chip-drag-bg: var(--mat-sys-primary);
+    --cngx-select-chip-drag-color: var(--mat-sys-on-primary);
+    --cngx-select-chip-drop-bar-color: var(--mat-sys-primary);
+    --cngx-select-chip-handle-color: var(--mat-sys-on-surface-variant);
+    --cngx-select-chip-overflow-badge-bg: color-mix(
+      in srgb,
+      var(--mat-sys-on-surface) 8%,
+      transparent
+    );
+    --cngx-select-chip-overflow-badge-color: var(--mat-sys-on-surface);
+    --cngx-select-chip-remove-hover-bg: color-mix(
+      in srgb,
+      var(--mat-sys-on-surface) 12%,
+      transparent
+    );
+    --cngx-select-chip-remove-hover-color: var(--mat-sys-error);
+
+    // Shell focus ring
+    --cngx-select-shell-focus-ring: var(--mat-sys-primary);
+
+    // Tree-select node states
+    --cngx-tree-select-node-hover-bg: color-mix(
+      in srgb,
+      var(--mat-sys-on-surface) 6%,
+      transparent
+    );
+    --cngx-tree-select-node-selected-bg: color-mix(
+      in srgb,
+      var(--mat-sys-primary) 12%,
+      transparent
+    );
+    --cngx-tree-select-placeholder-color: var(--mat-sys-on-surface-variant);
+  } @else {
+    --cngx-select-panel-bg: #{mat.get-theme-color($theme, background, card)};
+    --cngx-select-panel-color: #{mat.get-theme-color($theme, foreground, text)};
+
+    --cngx-select-color: #{mat.get-theme-color($theme, foreground, text)};
+    --cngx-multi-select-color: #{mat.get-theme-color($theme, foreground, text)};
+    --cngx-combobox-color: #{mat.get-theme-color($theme, foreground, text)};
+    --cngx-typeahead-color: #{mat.get-theme-color($theme, foreground, text)};
+    --cngx-action-select-color: #{mat.get-theme-color($theme, foreground, text)};
+    --cngx-action-multi-select-color: #{mat.get-theme-color($theme, foreground, text)};
+    --cngx-reorderable-multi-select-color: #{mat.get-theme-color($theme, foreground, text)};
+
+    --cngx-select-check-color: #{mat.get-theme-color($theme, primary)};
+    --cngx-select-error-color: #{mat.get-theme-color($theme, warn)};
+    --cngx-select-option-error-color: #{mat.get-theme-color($theme, warn)};
+    --cngx-select-spinner-color: #{mat.get-theme-color($theme, primary)};
+    --cngx-select-loading-bar-color: #{mat.get-theme-color($theme, primary)};
+    --cngx-select-refreshing-color: #{mat.get-theme-color($theme, primary)};
+    --cngx-select-shell-focus-ring: #{mat.get-theme-color($theme, primary)};
+  }
+}
+
+@mixin density($theme) {
+  $scale: mat.get-theme-density($theme);
+  $scale: math.max(-4, math.min(0, $scale));
+
+  // Option metrics — Material 3 menu/select options.
+  $opt-paddings:   (0: 12px 16px, -1: 10px 14px, -2: 8px 12px, -3: 6px 10px, -4: 4px 8px);
+  $opt-min-heights:(0: 48px,      -1: 44px,      -2: 40px,     -3: 36px,    -4: 32px);
+
+  --cngx-select-option-padding: #{map.get($opt-paddings, $scale)};
+  --cngx-select-option-min-height: #{map.get($opt-min-heights, $scale)};
+  --cngx-select-option-radius: 0;
+  // Material 3 Menu vertical padding: 8px top + 8px bottom, no horizontal
+  // inset so options sit edge-to-edge.
+  --cngx-select-panel-padding: 8px 0;
+
+  // Trigger metrics — Material 3 outlined-input scale (56 / 52 / 48 / 44 / 40).
+  // Every Select-family variant exposes its own min-height / padding /
+  // radius tokens; this map drives them all in lock-step so the trigger
+  // surface reads like an <mat-form-field appearance='outline'> input.
+  $trig-min-heights: (0: 56px, -1: 52px, -2: 48px, -3: 44px, -4: 40px);
+  $trig-paddings:    (0: 0 16px, -1: 0 14px, -2: 0 12px, -3: 0 10px, -4: 0 8px);
+  $trig-radius: 4px; // var(--mat-sys-corner-extra-small)
+
+  --cngx-select-min-height: #{map.get($trig-min-heights, $scale)};
+  --cngx-select-padding: #{map.get($trig-paddings, $scale)};
+  --cngx-select-radius: #{$trig-radius};
+
+  --cngx-multi-select-min-height: #{map.get($trig-min-heights, $scale)};
+  --cngx-multi-select-padding: #{map.get($trig-paddings, $scale)};
+  --cngx-multi-select-radius: #{$trig-radius};
+
+  --cngx-combobox-min-height: #{map.get($trig-min-heights, $scale)};
+  --cngx-combobox-padding: #{map.get($trig-paddings, $scale)};
+  --cngx-combobox-radius: #{$trig-radius};
+
+  --cngx-typeahead-min-height: #{map.get($trig-min-heights, $scale)};
+  --cngx-typeahead-padding: #{map.get($trig-paddings, $scale)};
+  --cngx-typeahead-radius: #{$trig-radius};
+
+  --cngx-action-select-min-height: #{map.get($trig-min-heights, $scale)};
+  --cngx-action-select-padding: #{map.get($trig-paddings, $scale)};
+  --cngx-action-select-radius: #{$trig-radius};
+
+  --cngx-action-multi-select-min-height: #{map.get($trig-min-heights, $scale)};
+  --cngx-action-multi-select-padding: #{map.get($trig-paddings, $scale)};
+  --cngx-action-multi-select-radius: #{$trig-radius};
+
+  --cngx-reorderable-multi-select-min-height: #{map.get($trig-min-heights, $scale)};
+  --cngx-reorderable-multi-select-padding: #{map.get($trig-paddings, $scale)};
+  --cngx-reorderable-multi-select-radius: #{$trig-radius};
+}
+
+@mixin theme($theme) {
+  @layer cngx.components {
+    // Token map covers two surfaces simultaneously:
+    //   - the popover panel (.cngx-select__panel) plus the tree-select host
+    //   - the per-variant triggers (cngx-select, cngx-multi-select, …) and
+    //     every descendant via ` *` so tokens registered as inherits:false
+    //     (which most --cngx-<variant>-bg / -color / -border are) actually
+    //     land on the inner trigger / __root / __trigger element where the
+    //     CSS rule reads them. Setting only on the host tag had no effect
+    //     because non-inheriting custom properties resolve to initial-value
+    //     when read on a child.
+    :where(
+      .cngx-select__panel,
+      cngx-tree-select-panel,
+      cngx-select, cngx-select *,
+      cngx-multi-select, cngx-multi-select *,
+      cngx-combobox, cngx-combobox *,
+      cngx-typeahead, cngx-typeahead *,
+      cngx-tree-select, cngx-tree-select *,
+      cngx-reorderable-multi-select, cngx-reorderable-multi-select *,
+      cngx-action-select, cngx-action-select *,
+      cngx-action-multi-select, cngx-action-multi-select *,
+      cngx-select-shell, cngx-select-shell *
+    ) {
+      @include color($theme);
+      @include density($theme);
+    }
+  }
+}

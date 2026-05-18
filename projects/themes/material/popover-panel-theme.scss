@@ -1,0 +1,85 @@
+@use 'sass:map';
+@use 'sass:math';
+@use '@angular/material' as mat;
+
+// Material bridge for CngxPopoverPanel (+ CngxPopoverAction variants).
+// Default visuals ship with the component (popover-panel.component.css);
+// this file aligns colour, typography, density, and the per-variant
+// accent palette (info/success/warning/danger) with Material.
+//
+//   @use '@cngx/themes/material/popover-panel-theme' as panel;
+//   html { @include panel.theme($theme); }
+
+@mixin color($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-popover-panel-bg: var(--mat-sys-surface-container);
+    --cngx-popover-panel-color: var(--mat-sys-on-surface);
+    --cngx-popover-panel-shadow: 0 8px 24px color-mix(
+      in srgb,
+      var(--mat-sys-shadow) 18%,
+      transparent
+    );
+    --cngx-popover-panel-border: 1px solid var(--mat-sys-outline-variant);
+    --cngx-popover-panel-footer-border-top: 1px solid var(--mat-sys-outline-variant);
+  } @else {
+    --cngx-popover-panel-bg: #{mat.get-theme-color($theme, background, card)};
+    --cngx-popover-panel-color: #{mat.get-theme-color($theme, foreground, text)};
+  }
+}
+
+@mixin _variant-colors($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    :where(.cngx-popover-panel--info) {
+      --cngx-popover-panel-accent: var(--mat-sys-primary-container);
+      --cngx-popover-panel-accent-text: var(--mat-sys-on-primary-container);
+    }
+    :where(.cngx-popover-panel--success) {
+      --cngx-popover-panel-accent: var(--mat-sys-secondary-container);
+      --cngx-popover-panel-accent-text: var(--mat-sys-on-secondary-container);
+    }
+    :where(.cngx-popover-panel--warning) {
+      --cngx-popover-panel-accent: var(--mat-sys-tertiary-container);
+      --cngx-popover-panel-accent-text: var(--mat-sys-on-tertiary-container);
+    }
+    :where(.cngx-popover-panel--danger) {
+      --cngx-popover-panel-accent: var(--mat-sys-error-container);
+      --cngx-popover-panel-accent-text: var(--mat-sys-on-error-container);
+    }
+  }
+}
+
+@mixin typography($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-popover-panel-header-font-size: var(--mat-sys-title-small-size, 0.875rem);
+    --cngx-popover-panel-header-font-weight: var(--mat-sys-title-small-weight, 600);
+  }
+}
+
+@mixin density($theme) {
+  $scale: mat.get-theme-density($theme);
+  $scale: math.max(-4, math.min(0, $scale));
+
+  // Material 3 popover-surface paddings sit lower than cngx's original
+  // 16px default. Card uses corner-medium (12px) inset, Menu vertically
+  // pads at 8px. Drop the bridge defaults to match Material's tighter
+  // surfaces so a cngx popover next to <mat-menu> doesn't read as
+  // chunkier.
+  $paddings:    (0: 12px, -1: 10px, -2: 8px,  -3: 6px,  -4: 4px);
+  $header-gaps: (0: 8px,  -1: 6px,  -2: 5px,  -3: 4px,  -4: 4px);
+  $footer-gaps: (0: 8px,  -1: 6px,  -2: 5px,  -3: 4px,  -4: 4px);
+
+  --cngx-popover-panel-padding: #{map.get($paddings, $scale)};
+  --cngx-popover-panel-header-gap: #{map.get($header-gaps, $scale)};
+  --cngx-popover-panel-footer-gap: #{map.get($footer-gaps, $scale)};
+}
+
+@mixin theme($theme) {
+  @layer cngx.components {
+    :where(cngx-popover-panel) {
+      @include color($theme);
+      @include typography($theme);
+      @include density($theme);
+    }
+    @include _variant-colors($theme);
+  }
+}

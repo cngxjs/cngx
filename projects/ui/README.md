@@ -17,7 +17,7 @@ Every component supports two theming paths:
 
 ```scss
 @use '@angular/material' as mat;
-@use '@cngx/ui/speak/speak-button-theme' as speak;
+@use '@cngx/themes/material/speak-button-theme' as speak;
 
 $theme: mat.define-theme((...));
 
@@ -71,7 +71,7 @@ Ready-made speaker button that connects to `CngxSpeak` (headless,
 | `--cngx-speak-btn-active-color` | `--cngx-accent` / `#f5a623` | Icon color while speaking or on hover |
 | `--cngx-speak-btn-transition` | `0.15s` | Color transition duration |
 
-**Material theme:** `@use '@cngx/ui/speak/speak-button-theme'`
+**Material theme:** `@use '@cngx/themes/material/speak-button-theme'`
 
 ### CngxSkeletonContainer
 
@@ -251,7 +251,7 @@ via the CSS `grid-template-rows: 0fr/1fr` trick (no `@angular/animations` needed
 </div>
 ```
 
-**Material theme:** `@use '@cngx/ui/sidenav/sidenav-theme'` — includes nav-link theme automatically
+**Material theme:** `@use '@cngx/themes/material/sidenav-theme'` — includes nav-link theme automatically
 
 ### CngxToaster — Toast API (`@cngx/ui/feedback`)
 
@@ -547,4 +547,4 @@ Shows banner on `error` transition, auto-dismisses on `success`/`idle`.
 | `--cngx-banner-{severity}-border` | per severity | Border |
 | `--cngx-banner-{severity}-icon` | per severity | Icon color |
 
-**Material theme:** Included in `@use '@cngx/ui/feedback/feedback-theme'` — `theme($theme)` covers alert, alert-stack, banner, toast, loading, and progress.
+**Material theme:** Included in `@use '@cngx/themes/material/feedback-theme'` — `theme($theme)` covers alert, alert-stack, banner, toast, loading, and progress.

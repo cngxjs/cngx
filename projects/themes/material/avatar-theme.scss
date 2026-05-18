@@ -1,0 +1,24 @@
+@use '@angular/material' as mat;
+
+// Material bridge for CngxAvatar.
+//
+//   @use '@cngx/themes/material/avatar-theme' as avatar;
+//   html { @include avatar.theme($theme); }
+
+@mixin color($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-avatar-bg: var(--mat-sys-surface-container-high);
+    --cngx-avatar-color: var(--mat-sys-on-surface);
+  } @else {
+    --cngx-avatar-bg: #{mat.get-theme-color($theme, background, hover)};
+    --cngx-avatar-color: #{mat.get-theme-color($theme, foreground, text)};
+  }
+}
+
+@mixin theme($theme) {
+  @layer cngx.components {
+    :where(cngx-avatar) {
+      @include color($theme);
+    }
+  }
+}

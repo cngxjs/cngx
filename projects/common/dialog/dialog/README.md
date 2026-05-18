@@ -163,10 +163,10 @@ dialog[cngxDialog] {
 
 ## Material Theme
 
-A Material theme mixin is available in `dialog-theme.scss`:
+A Material theme mixin is available in `@cngx/themes/material/dialog-theme.scss`:
 
 ```scss
-@use '@cngx/common/dialog/dialog-theme' as dialog;
+@use '@cngx/themes/material/dialog-theme' as dialog;
 
 html {
   @include dialog.theme($theme);

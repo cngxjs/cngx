@@ -3,7 +3,7 @@
 // Include in your global theme stylesheet:
 //
 //   @use '@angular/material' as mat;
-//   @use '@cngx/ui/feedback/feedback-theme' as feedback;
+//   @use '@cngx/themes/material/feedback-theme' as feedback;
 //
 //   $theme: mat.define-theme((...));
 //
@@ -169,6 +169,8 @@
   @if mat.get-theme-version($theme) == 1 {
     --cngx-toast-bg: var(--mat-sys-surface-container-highest);
     --cngx-toast-color: var(--mat-sys-on-surface);
+    --cngx-toast-title-color: var(--mat-sys-on-surface);
+    --cngx-toast-description-color: var(--mat-sys-on-surface-variant);
     --cngx-toast-shadow: var(--mat-sys-level3, 0 4px 12px rgba(0, 0, 0, 0.15));
 
     --cngx-toast-info-accent: var(--mat-sys-primary);
@@ -178,6 +180,8 @@
   } @else {
     --cngx-toast-bg: #{mat.get-theme-color($theme, background, card)};
     --cngx-toast-color: #{mat.get-theme-color($theme, foreground, text)};
+    --cngx-toast-title-color: #{mat.get-theme-color($theme, foreground, text)};
+    --cngx-toast-description-color: #{mat.get-theme-color($theme, foreground, secondary-text)};
     --cngx-toast-info-accent: #{mat.get-theme-color($theme, primary)};
     --cngx-toast-error-accent: #{mat.get-theme-color($theme, warn)};
   }

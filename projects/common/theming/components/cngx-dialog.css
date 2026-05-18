@@ -10,7 +10,7 @@
 
 @layer cngx.tokens {
   @property --cngx-dialog-bg                  { syntax: '<color>';  inherits: true;  initial-value: oklch(1 0 0); }
-  @property --cngx-dialog-color               { syntax: '<color>';  inherits: true;  initial-value: currentColor; }
+  @property --cngx-dialog-color               { syntax: '*';  inherits: true;  initial-value: currentColor; }
   @property --cngx-dialog-shadow              { syntax: '*';        inherits: false; initial-value: 0 8px 32px oklch(0 0 0 / 0.12); }
   @property --cngx-dialog-border-radius       { syntax: '<length>'; inherits: false; initial-value: 8px; }
   @property --cngx-dialog-padding             { syntax: '<length>'; inherits: false; initial-value: 24px; }

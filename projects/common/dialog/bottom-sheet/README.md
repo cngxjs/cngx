@@ -132,10 +132,10 @@ When a swipe is detected, `CngxBottomSheet` automatically calls `dialogRef.dismi
 
 ## Material Theme
 
-A Material theme mixin is available in `bottom-sheet-theme.scss`:
+A Material theme mixin is available in `@cngx/themes/material/bottom-sheet-theme.scss`:
 
 ```scss
-@use '@cngx/common/dialog/bottom-sheet-theme' as bottom-sheet;
+@use '@cngx/themes/material/bottom-sheet-theme' as bottom-sheet;
 
 html {
   @include bottom-sheet.theme($theme);
