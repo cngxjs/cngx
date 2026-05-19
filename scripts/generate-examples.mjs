@@ -532,13 +532,19 @@ function emitComponentSource(meta, story, importMap) {
     `    </details>`,
   ].join('\n');
 
-  // Live template — artifact first, chrome second. Both backtick-escaped so
-  // the surrounding component template literal stays valid.
-  const liveTemplate = [story.template ?? '', story.templateChrome ?? '']
-    .map((s) => s.trim())
+  // Live template — wrap the artifact and (optional) chrome in their own
+  // sections so the styles can space them apart, and wrap the demo body in
+  // <main> so Lighthouse / a11y tooling sees the landmark it expects.
+  const escape = (s) => s.replaceAll('`', '\\`').replaceAll('${', '\\${');
+  const artifact = escape((story.template ?? '').trim());
+  const chrome = escape((story.templateChrome ?? '').trim());
+  const artifactBlock = `<section class="cngx-ex-artifact">\n${indent(artifact, 2)}\n</section>`;
+  const chromeBlock = chrome
+    ? `<section class="cngx-ex-chrome">\n${indent(chrome, 2)}\n</section>`
+    : '';
+  const mainBody = [artifactBlock, chromeBlock, sourceBlocks.replace(/^    /gm, '')]
     .filter(Boolean)
-    .join('\n\n');
-  const template = liveTemplate.replaceAll('`', '\\`').replaceAll('${', '\\${');
+    .join('\n');
 
   return `${GEN_HEADER}
 // Source: ${meta.storyRelPath}
@@ -550,8 +556,9 @@ ${lines.join('\n')}
   changeDetection: ChangeDetectionStrategy.OnPush,${decoratorImports}${decoratorHostDirectives}
   template: \`
 ${intro}
-${indent(template, 4)}
-${sourceBlocks}
+    <main>
+${indent(mainBody, 6)}
+    </main>
   \`,
 })
 export class ${meta.className} {
