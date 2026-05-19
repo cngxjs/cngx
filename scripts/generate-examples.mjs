@@ -224,13 +224,18 @@ function importedSymbols(importLine) {
 /**
  * Build the file-level imports for a generated section component.
  * Returns the import block string + the set of identifiers available.
+ *
+ * `prunedStorySetup` is the per-section slice of `story.setup` after
+ * `pruneStorySetup` has dropped declarations the section never references.
+ * Using the pruned version (not raw `story.setup`) keeps `moduleImports`
+ * free of dead entries that only the pruned-away declarations needed.
  */
-function buildImports(story, section, importMap, featureDepth = 2) {
+function buildImports(prunedStorySetup, story, section, importMap, featureDepth = 2) {
   // Strip TS comments before auto-detecting Angular core symbols, otherwise
   // a comment like `// viewChild on the ng-template` triggers a viewChild
   // import that the actual code never uses (TS6133).
   const setup =
-    stripCommentsForScan(story.setup) + '\n' + stripCommentsForScan(section.setup);
+    stripCommentsForScan(prunedStorySetup) + '\n' + stripCommentsForScan(section.setup);
   const tpl = section.template ?? '';
   const usesSignal = /\bsignal\s*[<(]/.test(setup);
   const usesComputed = /\bcomputed\s*[<(]/.test(setup);
@@ -264,7 +269,7 @@ function buildImports(story, section, importMap, featureDepth = 2) {
   // generated component (TS setup + template HTML). Strip TS comments first
   // so a section title in `// — CngxFoo standalone` doesn't count as a use.
   const scanText =
-    stripCommentsForScan(story.setup) +
+    stripCommentsForScan(prunedStorySetup) +
     '\n' +
     stripCommentsForScan(section.setup) +
     '\n' +
@@ -480,42 +485,73 @@ function splitSetupDeclarations(setupText) {
       i++;
       continue;
     }
-    const m = new RegExp(/^\s*(?:(?:protected|private|public|readonly|static)\s+)+(\w+)\s*[=(:]/).exec(line);
+    const m = new RegExp(/^\s*(?:(?:protected|private|public|readonly|static)\s+)+(\w+)\s*([=(:])/).exec(line);
     if (!m) {
       i++;
       continue;
     }
     const name = m[1];
+    const trigger = m[2];
+    const isMethod = trigger === '(';
+
+    // Unified walker. Tracks all three bracket families so array / object
+    // literals nested inside an initializer don't falsely terminate the
+    // declaration (`[{...}, {...}]` — the inner `{...}` balances per-line).
+    //
+    // For methods (`name(args): T { body }`, trigger `(`), bracket counting
+    // starts at char 0 — paren args + brace body both get tracked.
+    // For fields and typed fields (`name = ...`, `name: T = ...`), counting
+    // starts at the first `=` seen, so brackets inside type annotations
+    // (`Foo<{ id }>`, `(T | U)[]`) are ignored.
     let block = line;
-    const headBeforeAssign = line.split('=')[0] ?? line;
-    // Treat arrow-function fields (`= (args) => { ... }`) like methods so
-    // brace-balance walks the whole body. Without this, the field-walker
-    // stops at the first `;` inside the arrow body and truncates the decl.
-    const isMethod = /\(/.test(headBeforeAssign) || /=>\s*\{/.test(line);
-    if (isMethod) {
-      let depth = 0;
-      let opened = false;
-      const countBraces = (s) => {
-        for (const ch of s) {
-          if (ch === '{') {
-            depth++;
-            opened = true;
-          } else if (ch === '}') {
-            depth--;
-          }
-        }
-      };
-      countBraces(line);
-      i++;
-      while (i < lines.length && (!opened || depth > 0)) {
-        block += '\n' + lines[i];
-        countBraces(lines[i]);
-        i++;
+    let parenDepth = 0;
+    let bracketDepth = 0;
+    let braceDepth = 0;
+    let braceOpened = false;
+    let counting = isMethod;
+
+    const updateCounts = (s, from = 0) => {
+      for (let k = from; k < s.length; k++) {
+        const ch = s[k];
+        if (ch === '(') parenDepth++;
+        else if (ch === ')') parenDepth--;
+        else if (ch === '[') bracketDepth++;
+        else if (ch === ']') bracketDepth--;
+        else if (ch === '{') { braceDepth++; braceOpened = true; }
+        else if (ch === '}') braceDepth--;
       }
+    };
+
+    if (counting) {
+      updateCounts(line);
     } else {
-      while (!block.trimEnd().endsWith(';') && i + 1 < lines.length) {
-        i++;
-        block += '\n' + lines[i];
+      const eqIdx = line.indexOf('=');
+      if (eqIdx >= 0) {
+        counting = true;
+        updateCounts(line, eqIdx + 1);
+      }
+    }
+
+    const isDone = () => {
+      if (parenDepth !== 0 || bracketDepth !== 0 || braceDepth !== 0) return false;
+      // Methods terminate when the body brace closes (no trailing `;`).
+      // Fields require a `;` terminator after all brackets balance.
+      if (isMethod) return braceOpened;
+      return block.trimEnd().endsWith(';');
+    };
+
+    i++;
+    while (i < lines.length && !isDone()) {
+      const nextLine = lines[i];
+      block += '\n' + nextLine;
+      if (!counting) {
+        const eqIdx = nextLine.indexOf('=');
+        if (eqIdx >= 0) {
+          counting = true;
+          updateCounts(nextLine, eqIdx + 1);
+        }
+      } else {
+        updateCounts(nextLine);
       }
       i++;
     }
@@ -592,8 +628,16 @@ function buildTagPairs(story, section) {
 }
 
 function emitComponentSource(meta, story, section, importMap) {
-  const { lines } = buildImports(story, section, importMap, meta.featureDepth);
-  const setup = [story.setup ?? '', section.setup ?? '']
+  // Prune story-level setup to only the declarations this section references
+  // (transitively). The same pruned slice drives:
+  //   - the live class body (`setupBody` below)
+  //   - the displayed `_exTs` code panel (`rawSetupBlocks` below)
+  //   - the import scan inside `buildImports`
+  // Per-section components don't share state at runtime, so the live class
+  // body has no reason to carry siblings' declarations.
+  const prunedStorySetup = pruneStorySetup(story.setup ?? '', section);
+  const { lines } = buildImports(prunedStorySetup, story, section, importMap, meta.featureDepth);
+  const setup = [prunedStorySetup, section.setup ?? '']
     .map((b) => (b ?? '').trim())
     .filter(Boolean)
     .join('\n\n');
@@ -678,11 +722,9 @@ function emitComponentSource(meta, story, section, importMap) {
   // Dedent the raw setup blocks (NOT the .trim()-ed `setup` variable used
   // for the class body) so the first line still carries its full leading
   // indent and the dedent algorithm can see the true common prefix.
-  // Story-level setup is per-section pruned here: the displayed `_exTs`
-  // shows only declarations this section references. The live class body
-  // (`setupBody` above) keeps the full unpruned setup so cross-section
-  // shared state still works at runtime.
-  const prunedStorySetup = pruneStorySetup(story.setup ?? '', section);
+  // `prunedStorySetup` was computed at the top of emitComponentSource and
+  // shared with the live class body — what the reader sees in `_exTs`
+  // matches what the generated class actually declares.
   const rawSetupBlocks = [prunedStorySetup, section.setup ?? '']
     .filter((b) => b && b.trim().length > 0)
     .join('\n\n');
