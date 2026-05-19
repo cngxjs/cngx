@@ -71,7 +71,12 @@ export class SpeakFormErrorReadAloudOnDemand {
 
 protected email = signal('');
 protected emailError = computed(() => {
-  const v = this.email();`;
+  const v = this.email();
+  if (!v) return '';
+  if (!v.includes('@')) return 'Missing @ symbol';
+  if (!v.includes('.')) return 'Missing domain (e.g. .com)';
+  return '';
+});`;
   protected readonly _exHtml: string = `<div style="display: flex; flex-direction: column; gap: 6px; max-width: 360px;">
   <label style="font-size: 0.875rem; font-weight: 500;">Email address</label>
   <input

@@ -96,7 +96,20 @@ protected readonly mode = signal<'optimistic' | 'pessimistic'>('pessimistic');
 protected readonly shouldFail = signal(false);
 protected readonly latencyMs = signal(800);
 protected readonly commitAction: CngxStepperCommitAction = (from, to) => {
-  const ms = this.latencyMs();`;
+  const ms = this.latencyMs();
+  const fail = this.shouldFail();
+  return new Observable<boolean>((sub) => {
+    const handle = setTimeout(() => {
+      if (fail) {
+        sub.error(new Error('Server refused step ' + from + ' → ' + to));
+      } else {
+        sub.next(true);
+        sub.complete();
+      }
+    }, ms);
+    return () => clearTimeout(handle);
+  });
+};`;
   protected readonly _exHtml: string = `<div class="event-row" style="gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap">
   <button type="button" class="chip"
           [style.background]="mode() === 'optimistic' ? '#c8e6c9' : ''"

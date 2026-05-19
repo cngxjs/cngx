@@ -28,7 +28,7 @@ import { CngxCardGrid, CngxCardGridEmpty } from '@cngx/common/card';
         [sourceHtml]="_srcHtml0"
         [sourceTs]="_srcTs0">
         
-  <div style="border:1px solid var(--border-color,#e0e0e0);border-radius:8px;overflow:hidden">
+  <div style="border:1px solid var(--cngx-color-border);border-radius:8px;overflow:hidden">
     <cngx-empty-state
       title="No items yet"
       description="Create your first item to get started." />
@@ -39,7 +39,7 @@ import { CngxCardGrid, CngxCardGridEmpty } from '@cngx/common/card';
         [sourceHtml]="_srcHtml1"
         [sourceTs]="_srcTs1">
         
-  <div style="border:1px solid var(--border-color,#e0e0e0);border-radius:8px;overflow:hidden">
+  <div style="border:1px solid var(--cngx-color-border);border-radius:8px;overflow:hidden">
     <cngx-empty-state
       title="No results found"
       description="Try adjusting your search or filter criteria.">
@@ -118,7 +118,7 @@ import { CngxCardGrid, CngxCardGridEmpty } from '@cngx/common/card';
         [sourceHtml]="_srcHtml4"
         [sourceTs]="_srcTs4">
         
-  <div style="border:1px solid var(--border-color,#e0e0e0);border-radius:8px;min-height:120px;display:flex;align-items:center;justify-content:center">
+  <div style="border:1px solid var(--cngx-color-border);border-radius:8px;min-height:120px;display:flex;align-items:center;justify-content:center">
     @if (listItems().length === 0) {
       <cngx-empty-state
         title="All tasks completed"
@@ -141,7 +141,7 @@ export class EmptyStateDemoComponent {
   protected readonly _s2 = 'Used via <code>ng-template[cngxCardGridEmpty]</code> — the grid selects the template by reason.';
   protected readonly _s3 = 'Replaces table body when no rows match. The table header stays visible for context.';
   protected readonly _s4 = 'Replaces list content when empty. Works with any container — no special wiring needed.';
-  protected readonly _srcHtml0 = `<div style="border:1px solid var(--border-color,#e0e0e0);border-radius:8px;overflow:hidden">
+  protected readonly _srcHtml0 = `<div style="border:1px solid var(--cngx-color-border);border-radius:8px;overflow:hidden">
     <cngx-empty-state
       title="No items yet"
       description="Create your first item to get started." />
@@ -154,7 +154,7 @@ import { CngxCardGrid, CngxCardGridEmpty } from '@cngx/common/card';
   protected tableItems = signal<string[]>([]);
   protected cardItems = signal<string[]>([]);
   protected listItems = signal<string[]>([]);`;
-  protected readonly _srcHtml1 = `<div style="border:1px solid var(--border-color,#e0e0e0);border-radius:8px;overflow:hidden">
+  protected readonly _srcHtml1 = `<div style="border:1px solid var(--cngx-color-border);border-radius:8px;overflow:hidden">
     <cngx-empty-state
       title="No results found"
       description="Try adjusting your search or filter criteria.">
@@ -239,7 +239,7 @@ import { CngxCardGrid, CngxCardGridEmpty } from '@cngx/common/card';
   protected tableItems = signal<string[]>([]);
   protected cardItems = signal<string[]>([]);
   protected listItems = signal<string[]>([]);`;
-  protected readonly _srcHtml4 = `<div style="border:1px solid var(--border-color,#e0e0e0);border-radius:8px;min-height:120px;display:flex;align-items:center;justify-content:center">
+  protected readonly _srcHtml4 = `<div style="border:1px solid var(--cngx-color-border);border-radius:8px;min-height:120px;display:flex;align-items:center;justify-content:center">
     @if (listItems().length === 0) {
       <cngx-empty-state
         title="All tasks completed"

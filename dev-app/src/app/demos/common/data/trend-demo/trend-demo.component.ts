@@ -33,15 +33,15 @@ import { CngxCard, CngxCardHeader, CngxCardBody } from '@cngx/common/card';
         
   <div style="display:flex;gap:32px;align-items:center">
     <div style="text-align:center">
-      <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:8px">Positive</div>
+      <div style="font-size:0.75rem;color:var(--cngx-color-text-muted);margin-bottom:8px">Positive</div>
       <cngx-trend [value]="5.3" />
     </div>
     <div style="text-align:center">
-      <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:8px">Negative</div>
+      <div style="font-size:0.75rem;color:var(--cngx-color-text-muted);margin-bottom:8px">Negative</div>
       <cngx-trend [value]="-2.1" />
     </div>
     <div style="text-align:center">
-      <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:8px">Flat</div>
+      <div style="font-size:0.75rem;color:var(--cngx-color-text-muted);margin-bottom:8px">Flat</div>
       <cngx-trend [value]="0" />
     </div>
   </div>
@@ -54,7 +54,7 @@ import { CngxCard, CngxCardHeader, CngxCardBody } from '@cngx/common/card';
   <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;max-width:660px">
     <cngx-card>
       <header cngxCardHeader style="justify-content:space-between">
-        <span style="font-size:0.8125rem;color:var(--text-muted)">Revenue</span>
+        <span style="font-size:0.8125rem;color:var(--cngx-color-text-muted)">Revenue</span>
         <cngx-trend [value]="12.5" label="+12.5% vs. last quarter" />
       </header>
       <div cngxCardBody>
@@ -63,7 +63,7 @@ import { CngxCard, CngxCardHeader, CngxCardBody } from '@cngx/common/card';
     </cngx-card>
     <cngx-card>
       <header cngxCardHeader style="justify-content:space-between">
-        <span style="font-size:0.8125rem;color:var(--text-muted)">Care Hours</span>
+        <span style="font-size:0.8125rem;color:var(--cngx-color-text-muted)">Care Hours</span>
         <cngx-trend [value]="-3.2" />
       </header>
       <div cngxCardBody>
@@ -72,7 +72,7 @@ import { CngxCard, CngxCardHeader, CngxCardBody } from '@cngx/common/card';
     </cngx-card>
     <cngx-card>
       <header cngxCardHeader style="justify-content:space-between">
-        <span style="font-size:0.8125rem;color:var(--text-muted)">Residents</span>
+        <span style="font-size:0.8125rem;color:var(--cngx-color-text-muted)">Residents</span>
         <cngx-trend [value]="0" />
       </header>
       <div cngxCardBody>
@@ -89,15 +89,15 @@ export class TrendDemoComponent {
   protected readonly _s1 = 'Trend and Metric combine naturally inside a card — no pre-built molecule needed.';
   protected readonly _srcHtml0 = `<div style="display:flex;gap:32px;align-items:center">
     <div style="text-align:center">
-      <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:8px">Positive</div>
+      <div style="font-size:0.75rem;color:var(--cngx-color-text-muted);margin-bottom:8px">Positive</div>
       <cngx-trend [value]="5.3" />
     </div>
     <div style="text-align:center">
-      <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:8px">Negative</div>
+      <div style="font-size:0.75rem;color:var(--cngx-color-text-muted);margin-bottom:8px">Negative</div>
       <cngx-trend [value]="-2.1" />
     </div>
     <div style="text-align:center">
-      <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:8px">Flat</div>
+      <div style="font-size:0.75rem;color:var(--cngx-color-text-muted);margin-bottom:8px">Flat</div>
       <cngx-trend [value]="0" />
     </div>
   </div>`;
@@ -107,7 +107,7 @@ import { CngxCard, CngxCardHeader, CngxCardBody } from '@cngx/common/card';`;
   protected readonly _srcHtml1 = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;max-width:660px">
     <cngx-card>
       <header cngxCardHeader style="justify-content:space-between">
-        <span style="font-size:0.8125rem;color:var(--text-muted)">Revenue</span>
+        <span style="font-size:0.8125rem;color:var(--cngx-color-text-muted)">Revenue</span>
         <cngx-trend [value]="12.5" label="+12.5% vs. last quarter" />
       </header>
       <div cngxCardBody>
@@ -116,7 +116,7 @@ import { CngxCard, CngxCardHeader, CngxCardBody } from '@cngx/common/card';`;
     </cngx-card>
     <cngx-card>
       <header cngxCardHeader style="justify-content:space-between">
-        <span style="font-size:0.8125rem;color:var(--text-muted)">Care Hours</span>
+        <span style="font-size:0.8125rem;color:var(--cngx-color-text-muted)">Care Hours</span>
         <cngx-trend [value]="-3.2" />
       </header>
       <div cngxCardBody>
@@ -125,7 +125,7 @@ import { CngxCard, CngxCardHeader, CngxCardBody } from '@cngx/common/card';`;
     </cngx-card>
     <cngx-card>
       <header cngxCardHeader style="justify-content:space-between">
-        <span style="font-size:0.8125rem;color:var(--text-muted)">Residents</span>
+        <span style="font-size:0.8125rem;color:var(--cngx-color-text-muted)">Residents</span>
         <cngx-trend [value]="0" />
       </header>
       <div cngxCardBody>

@@ -31,7 +31,7 @@ import { CngxCopyText } from '@cngx/common/interactive';
       {{ token() }}
     </code>
     <button [cngxCopyText]="token()" #cp="cngxCopyText" class="chip"
-            [style.background]="cp.copied() ? 'var(--success-bg, #e8f5e9)' : ''"
+            [style.background]="cp.copied() ? 'var(--cngx-color-success)' : ''"
             [style.borderColor]="cp.copied() ? 'var(--success-fg, #2e7d32)' : ''">
       {{ cp.copied() ? 'Copied!' : 'Copy' }}
     </button>
@@ -74,7 +74,7 @@ export class CopyTextDemoComponent {
       {{ token() }}
     </code>
     <button [cngxCopyText]="token()" #cp="cngxCopyText" class="chip"
-            [style.background]="cp.copied() ? 'var(--success-bg, #e8f5e9)' : ''"
+            [style.background]="cp.copied() ? 'var(--cngx-color-success)' : ''"
             [style.borderColor]="cp.copied() ? 'var(--success-fg, #2e7d32)' : ''">
       {{ cp.copied() ? 'Copied!' : 'Copy' }}
     </button>

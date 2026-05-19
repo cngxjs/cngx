@@ -78,7 +78,11 @@ protected readonly active = signal(0);
 protected readonly busyAttempts = signal(0);
 protected readonly commitAction: CngxStepperCommitAction = (_from, to) => {
   if (to === 2 && this.busyAttempts() === 0) {
-    this.busyAttempts.update((n) => n + 1);`;
+    this.busyAttempts.update((n) => n + 1);
+    return Promise.reject(new Error('Security check failed — retry'));
+  }
+  return Promise.resolve(true);
+};`;
   protected readonly _exHtml: string = `<cngx-stepper
   [(activeStepIndex)]="active"
   [commitAction]="commitAction"

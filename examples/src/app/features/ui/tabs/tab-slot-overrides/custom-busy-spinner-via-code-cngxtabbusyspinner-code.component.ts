@@ -73,8 +73,14 @@ protected readonly slowAttempts = signal(0);
 protected readonly commitAction: CngxTabsCommitAction = (_from, to) => {
   if (to === 2 && this.busyAttempts() === 0) {
     this.busyAttempts.update((n) => n + 1);
+    return Promise.reject(new Error('Security check failed — retry'));
+  }
+  return Promise.resolve(true);
+};
 protected readonly slowCommit: CngxTabsCommitAction = () => {
-  this.slowAttempts.update((n) => n + 1);`;
+  this.slowAttempts.update((n) => n + 1);
+  return new Promise((resolve) => setTimeout(() => resolve(true), 800));
+};`;
   protected readonly _exHtml: string = `<cngx-tab-group
   [(activeIndex)]="active"
   [commitAction]="slowCommit"

@@ -67,7 +67,7 @@ import { CngxPressable } from '@cngx/common/interactive';
         [sourceTs]="_srcTs1">
         
   <div cngxPressable #card="cngxPressable"
-       style="padding:20px;border:1px solid var(--cngx-border,#ddd);border-radius:8px;cursor:pointer;
+       style="padding:20px;border:1px solid var(--cngx-color-border,#ddd);border-radius:8px;cursor:pointer;
               transition:transform 100ms ease,box-shadow 100ms ease;max-width:280px;user-select:none"
        [style.transform]="card.pressed() ? 'scale(0.98)' : ''"
        [style.box-shadow]="card.pressed() ? 'none' : '0 1px 3px rgba(0,0,0,0.08)'">
@@ -120,7 +120,7 @@ export class PressableDemoComponent {
   </div>`;
   protected readonly _srcTs0 = `import { CngxPressable } from '@cngx/common/interactive';`;
   protected readonly _srcHtml1 = `<div cngxPressable #card="cngxPressable"
-       style="padding:20px;border:1px solid var(--cngx-border,#ddd);border-radius:8px;cursor:pointer;
+       style="padding:20px;border:1px solid var(--cngx-color-border,#ddd);border-radius:8px;cursor:pointer;
               transition:transform 100ms ease,box-shadow 100ms ease;max-width:280px;user-select:none"
        [style.transform]="card.pressed() ? 'scale(0.98)' : ''"
        [style.box-shadow]="card.pressed() ? 'none' : '0 1px 3px rgba(0,0,0,0.08)'">

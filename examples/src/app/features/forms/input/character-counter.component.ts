@@ -78,11 +78,15 @@ import { CngxInput, CngxCharCount } from '@cngx/forms/input';
 private readonly bioModel = signal({ bio: '' });
 private readonly bioSchema = schema<{ bio: string }>(root => {
   required(root.bio);
+  minLength(root.bio, 10);
+  maxLength(root.bio, 140);
+});
 protected readonly bioForm = form(this.bioModel, this.bioSchema);
 protected readonly bioField = this.bioForm.bio;
 private readonly bio2Model = signal({ bio: '' });
 private readonly bio2Schema = schema<{ bio: string }>(root => {
   maxLength(root.bio, 140);
+});
 protected readonly bio2Form = form(this.bio2Model, this.bio2Schema);
 protected readonly bio2Field = this.bio2Form.bio;`;
   protected readonly _exHtml: string = `<div class="demo-form">

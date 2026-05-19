@@ -58,10 +58,13 @@ import { CngxChip } from '@cngx/common/display';
 protected readonly tokens = signal<string[]>(['typescript', 'angular']);
 protected readonly addToken = (value: string): void => {
   this.tokens.update((curr) => [...curr, value]);
+};
 protected readonly popToken = (): void => {
   this.tokens.update((curr) => curr.slice(0, -1));
+};
 protected readonly removeToken = (token: string): void => {
-  this.tokens.update((curr) => curr.filter((t) => t !== token));`;
+  this.tokens.update((curr) => curr.filter((t) => t !== token));
+};`;
   protected readonly _exHtml: string = `<div class="chip-strip">
   @for (token of tokens(); track token) {
     <cngx-chip [removable]="true" (remove)="removeToken(token)">{{ token }}</cngx-chip>

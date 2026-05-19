@@ -33,11 +33,11 @@ import { delay, of, throwError } from 'rxjs';
   </div>
 
   <cngx-reorderable-multi-select
-    [label]="'Broadcast-Reihenfolge'"
+    [label]="'Broadcast order'"
     [options]="recipients"
     [clearable]="true"
     [(values)]="basicValues"
-    placeholder="Empfänger auswählen…"
+    placeholder="Choose recipients…"
   />
 
   <div class="event-grid" style="margin-top:12px">
@@ -61,10 +61,10 @@ import { delay, of, throwError } from 'rxjs';
   </div>
 
   <cngx-reorderable-multi-select
-    [label]="'Agenda-Reihenfolge'"
+    [label]="'Agenda order'"
     [options]="recipients"
     [(values)]="keyboardValues"
-    [reorderAriaLabel]="'Agenda-Reihenfolge ändern mit Strg und Pfeiltasten'"
+    [reorderAriaLabel]="'Reorder agenda with Ctrl and arrow keys'"
   />
 
   <div class="event-grid" style="margin-top:12px">
@@ -150,7 +150,7 @@ import { delay, of, throwError } from 'rxjs';
       font-size:.875rem;
       letter-spacing:.1em;
       font-weight:700;
-      color:var(--cngx-primary,#1976d2);
+      color:var(--cngx-color-primary);
     ">&equiv;</span>
   </ng-template>
 
@@ -167,7 +167,7 @@ import { delay, of, throwError } from 'rxjs';
         [sourceTs]="_srcTs4">
         
   <cngx-reorderable-multi-select
-    [label]="'Eskalations-Reihenfolge'"
+    [label]="'Escalation order'"
     [options]="recipients"
     [(values)]="seededValues"
     (reordered)="handleSeededReorder($event)"
@@ -202,11 +202,11 @@ export class ReorderableMultiSelectDemoComponent {
   </div>
 
   <cngx-reorderable-multi-select
-    [label]="'Broadcast-Reihenfolge'"
+    [label]="'Broadcast order'"
     [options]="recipients"
     [clearable]="true"
     [(values)]="basicValues"
-    placeholder="Empfänger auswählen…"
+    placeholder="Choose recipients…"
   />
 
   <div class="event-grid" style="margin-top:12px">
@@ -284,10 +284,10 @@ import { delay, of, throwError } from 'rxjs';
   </div>
 
   <cngx-reorderable-multi-select
-    [label]="'Agenda-Reihenfolge'"
+    [label]="'Agenda order'"
     [options]="recipients"
     [(values)]="keyboardValues"
-    [reorderAriaLabel]="'Agenda-Reihenfolge ändern mit Strg und Pfeiltasten'"
+    [reorderAriaLabel]="'Reorder agenda with Ctrl and arrow keys'"
   />
 
   <div class="event-grid" style="margin-top:12px">
@@ -481,7 +481,7 @@ import { delay, of, throwError } from 'rxjs';
       font-size:.875rem;
       letter-spacing:.1em;
       font-weight:700;
-      color:var(--cngx-primary,#1976d2);
+      color:var(--cngx-color-primary);
     ">&equiv;</span>
   </ng-template>
 
@@ -552,7 +552,7 @@ import { delay, of, throwError } from 'rxjs';
     this.seededLog.update((l) => [...l.slice(-4), line]);
   };`;
   protected readonly _srcHtml4 = `<cngx-reorderable-multi-select
-    [label]="'Eskalations-Reihenfolge'"
+    [label]="'Escalation order'"
     [options]="recipients"
     [(values)]="seededValues"
     (reordered)="handleSeededReorder($event)"

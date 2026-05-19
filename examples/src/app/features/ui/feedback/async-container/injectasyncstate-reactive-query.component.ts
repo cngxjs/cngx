@@ -99,6 +99,13 @@ private readonly filterText = signal('');
 protected readonly filter = this.filterText.asReadonly();
 protected readonly people = injectAsyncState<string[]>(() => {
   const f = this.filter();
+  return new Promise<string[]>(resolve => {
+    setTimeout(() => {
+      const all = ['Alice', 'Bob', 'Charlie', 'Diana', 'Eve'];
+      resolve(f ? all.filter(n => n.toLowerCase().includes(f.toLowerCase())) : all);
+    }, 1500);
+  });
+});
 protected setFilter(value: string): void {
   this.filterText.set(value);
 }`;

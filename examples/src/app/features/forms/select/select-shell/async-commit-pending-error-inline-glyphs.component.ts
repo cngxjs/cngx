@@ -113,6 +113,11 @@ protected readonly commitShouldFail = signal(false);
 protected readonly commitErrors = signal<string[]>([]);
 protected readonly commitAction: CngxSelectCommitAction<string> = (intended) => {
   void intended;
+  if (this.commitShouldFail()) {
+    return throwError(() => new Error('Server rejected the commit')).pipe(delay(1500));
+  }
+  return of(intended).pipe(delay(1500));
+};
 protected handleCommitError(err: unknown): void {
   const msg = err instanceof Error ? err.message : String(err);
   this.commitErrors.update((l) => [...l.slice(-4), new Date().toLocaleTimeString() + ' → ' + msg]);

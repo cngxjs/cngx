@@ -484,7 +484,10 @@ function splitSetupDeclarations(setupText) {
     const name = m[1];
     let block = line;
     const headBeforeAssign = line.split('=')[0] ?? line;
-    const isMethod = /\(/.test(headBeforeAssign);
+    // Treat arrow-function fields (`= (args) => { ... }`) like methods so
+    // brace-balance walks the whole body. Without this, the field-walker
+    // stops at the first `;` inside the arrow body and truncates the decl.
+    const isMethod = /\(/.test(headBeforeAssign) || /=>\s*\{/.test(line);
     if (isMethod) {
       let depth = 0;
       let opened = false;

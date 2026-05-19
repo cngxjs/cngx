@@ -27,11 +27,11 @@ import { createManualState } from '@cngx/common/data';
         
   <div style="display:flex;gap:24px;align-items:center;flex-wrap:wrap">
     <div>
-      <span style="font-size:0.75rem;color:var(--text-muted);margin-right:8px">Sessions</span>
+      <span style="font-size:0.75rem;color:var(--cngx-color-text-muted);margin-right:8px">Sessions</span>
       <cngx-mini-area [data]="[5, 12, 8, 18, 14, 22, 19]" />
     </div>
     <div>
-      <span style="font-size:0.75rem;color:var(--text-muted);margin-right:8px">Revenue</span>
+      <span style="font-size:0.75rem;color:var(--cngx-color-text-muted);margin-right:8px">Revenue</span>
       <cngx-mini-area
         [data]="[10, 14, 18, 16, 22, 28, 32]"
         [width]="120"
@@ -53,7 +53,7 @@ import { createManualState } from '@cngx/common/data';
     <button class="chip" (click)="showError()">error</button>
   </div>
   <div style="display:flex;align-items:center;gap:24px">
-    <span style="font-size:0.75rem;color:var(--text-muted);min-width:80px">status: {{ state.status() }}</span>
+    <span style="font-size:0.75rem;color:var(--cngx-color-text-muted);min-width:80px">status: {{ state.status() }}</span>
     <cngx-mini-area [data]="stateDemoData" [state]="state" [width]="160" [height]="40" />
   </div>
       </app-example-card>
@@ -65,11 +65,11 @@ export class MiniAreaDemoComponent {
   protected readonly _s1 = 'Bind [state] to a CngxAsyncState — the area routes through skeleton / empty / error / content branches automatically.';
   protected readonly _srcHtml0 = `<div style="display:flex;gap:24px;align-items:center;flex-wrap:wrap">
     <div>
-      <span style="font-size:0.75rem;color:var(--text-muted);margin-right:8px">Sessions</span>
+      <span style="font-size:0.75rem;color:var(--cngx-color-text-muted);margin-right:8px">Sessions</span>
       <cngx-mini-area [data]="[5, 12, 8, 18, 14, 22, 19]" />
     </div>
     <div>
-      <span style="font-size:0.75rem;color:var(--text-muted);margin-right:8px">Revenue</span>
+      <span style="font-size:0.75rem;color:var(--cngx-color-text-muted);margin-right:8px">Revenue</span>
       <cngx-mini-area
         [data]="[10, 14, 18, 16, 22, 28, 32]"
         [width]="120"
@@ -96,7 +96,7 @@ protected showError(): void { this.state.reset(); this.state.setError(new Error(
     <button class="chip" (click)="showError()">error</button>
   </div>
   <div style="display:flex;align-items:center;gap:24px">
-    <span style="font-size:0.75rem;color:var(--text-muted);min-width:80px">status: {{ state.status() }}</span>
+    <span style="font-size:0.75rem;color:var(--cngx-color-text-muted);min-width:80px">status: {{ state.status() }}</span>
     <cngx-mini-area [data]="stateDemoData" [state]="state" [width]="160" [height]="40" />
   </div>`;
   protected readonly _srcTs1 = `import { CngxMiniArea } from '@cngx/common/chart';

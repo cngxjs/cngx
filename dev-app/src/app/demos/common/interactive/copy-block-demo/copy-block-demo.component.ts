@@ -25,9 +25,7 @@ import { CngxCopyBlock } from '@cngx/common/interactive';
         [sourceHtml]="_srcHtml0"
         [sourceTs]="_srcTs0">
         
-  <cngx-copy-block [value]="installCmd"
-      style="padding:12px 16px;background:var(--code-bg,#f5f5f5);border:1px solid var(--code-border,#ddd);
-             border-radius:6px;font-family:var(--font-mono,monospace);font-size:0.8125rem">
+  <cngx-copy-block [value]="installCmd">
     {{ installCmd }}
   </cngx-copy-block>
       </app-example-card>
@@ -36,9 +34,7 @@ import { CngxCopyBlock } from '@cngx/common/interactive';
         [sourceHtml]="_srcHtml1"
         [sourceTs]="_srcTs1">
         
-  <cngx-copy-block [value]="apiKey()" buttonLabel="Copy Key" copiedLabel="Key copied!"
-      style="padding:12px 16px;background:var(--code-bg,#f5f5f5);border:1px solid var(--code-border,#ddd);
-             border-radius:6px;font-family:var(--font-mono,monospace);font-size:0.8125rem">
+  <cngx-copy-block [value]="apiKey()" buttonLabel="Copy Key" copiedLabel="Key copied!">
     {{ apiKey() }}
   </cngx-copy-block>
       </app-example-card>
@@ -48,9 +44,7 @@ import { CngxCopyBlock } from '@cngx/common/interactive';
 export class CopyBlockDemoComponent {
   protected readonly _s0 = 'Click "Copy" to copy the install command. The button shows "Copied!" for 2 seconds.';
   protected readonly _s1 = 'Custom labels for copy and copied states.';
-  protected readonly _srcHtml0 = `<cngx-copy-block [value]="installCmd"
-      style="padding:12px 16px;background:var(--code-bg,#f5f5f5);border:1px solid var(--code-border,#ddd);
-             border-radius:6px;font-family:var(--font-mono,monospace);font-size:0.8125rem">
+  protected readonly _srcHtml0 = `<cngx-copy-block [value]="installCmd">
     {{ installCmd }}
   </cngx-copy-block>`;
   protected readonly _srcTs0 = `import { CngxCopyBlock } from '@cngx/common/interactive';
@@ -58,9 +52,7 @@ export class CopyBlockDemoComponent {
 
   protected readonly installCmd = 'npm install @cngx/common';
   protected readonly apiKey = signal('sk_test_EXAMPLE_KEY_1234567890');`;
-  protected readonly _srcHtml1 = `<cngx-copy-block [value]="apiKey()" buttonLabel="Copy Key" copiedLabel="Key copied!"
-      style="padding:12px 16px;background:var(--code-bg,#f5f5f5);border:1px solid var(--code-border,#ddd);
-             border-radius:6px;font-family:var(--font-mono,monospace);font-size:0.8125rem">
+  protected readonly _srcHtml1 = `<cngx-copy-block [value]="apiKey()" buttonLabel="Copy Key" copiedLabel="Key copied!">
     {{ apiKey() }}
   </cngx-copy-block>`;
   protected readonly _srcTs1 = `import { CngxCopyBlock } from '@cngx/common/interactive';

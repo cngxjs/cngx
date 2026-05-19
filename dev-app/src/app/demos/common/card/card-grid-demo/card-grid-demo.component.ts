@@ -36,7 +36,7 @@ import { CngxCard, CngxCardHeader, CngxCardBody, CngxCardGrid, CngxCardGridEmpty
           <h3 style="margin:0;font-weight:600;font-size:0.9375rem">{{ item }}</h3>
         </header>
         <div cngxCardBody>
-          <span style="font-size:0.8125rem;color:var(--text-muted)">Content for {{ item }}</span>
+          <span style="font-size:0.8125rem;color:var(--cngx-color-text-muted)">Content for {{ item }}</span>
         </div>
       </cngx-card>
     }
@@ -79,25 +79,25 @@ import { CngxCard, CngxCardHeader, CngxCardBody, CngxCardGrid, CngxCardGridEmpty
 
   <cngx-card-grid [items]="emptyItems()" [emptyReason]="emptyReason()" minWidth="200px">
     <ng-template cngxCardGridEmpty="first-use">
-      <div style="text-align:center;padding:48px 16px;color:var(--text-muted)">
+      <div style="text-align:center;padding:48px 16px;color:var(--cngx-color-text-muted)">
         <div style="font-size:2rem;margin-bottom:12px;opacity:0.4">+</div>
-        <p style="font-weight:600;font-size:1rem;color:var(--text-primary);margin-bottom:4px">Welcome!</p>
+        <p style="font-weight:600;font-size:1rem;color:var(--cngx-color-text);margin-bottom:4px">Welcome!</p>
         <p style="font-size:0.875rem">Create your first item to get started.</p>
         <button class="chip" style="margin-top:12px">Add item</button>
       </div>
     </ng-template>
     <ng-template cngxCardGridEmpty="no-results">
-      <div style="text-align:center;padding:48px 16px;color:var(--text-muted)">
+      <div style="text-align:center;padding:48px 16px;color:var(--cngx-color-text-muted)">
         <div style="font-size:2rem;margin-bottom:12px;opacity:0.4">?</div>
-        <p style="font-weight:600;font-size:1rem;color:var(--text-primary);margin-bottom:4px">No results found</p>
+        <p style="font-weight:600;font-size:1rem;color:var(--cngx-color-text);margin-bottom:4px">No results found</p>
         <p style="font-size:0.875rem">Try adjusting your filters.</p>
         <button class="chip" style="margin-top:12px">Reset filters</button>
       </div>
     </ng-template>
     <ng-template cngxCardGridEmpty="cleared">
-      <div style="text-align:center;padding:48px 16px;color:var(--text-muted)">
+      <div style="text-align:center;padding:48px 16px;color:var(--cngx-color-text-muted)">
         <div style="font-size:2rem;margin-bottom:12px;opacity:0.4">&#10003;</div>
-        <p style="font-weight:600;font-size:1rem;color:var(--text-primary);margin-bottom:4px">All done</p>
+        <p style="font-weight:600;font-size:1rem;color:var(--cngx-color-text);margin-bottom:4px">All done</p>
         <p style="font-size:0.875rem">Nothing left to process.</p>
       </div>
     </ng-template>
@@ -117,7 +117,7 @@ export class CardGridDemoComponent {
           <h3 style="margin:0;font-weight:600;font-size:0.9375rem">{{ item }}</h3>
         </header>
         <div cngxCardBody>
-          <span style="font-size:0.8125rem;color:var(--text-muted)">Content for {{ item }}</span>
+          <span style="font-size:0.8125rem;color:var(--cngx-color-text-muted)">Content for {{ item }}</span>
         </div>
       </cngx-card>
     }
@@ -162,25 +162,25 @@ export class CardGridDemoComponent {
 
   <cngx-card-grid [items]="emptyItems()" [emptyReason]="emptyReason()" minWidth="200px">
     <ng-template cngxCardGridEmpty="first-use">
-      <div style="text-align:center;padding:48px 16px;color:var(--text-muted)">
+      <div style="text-align:center;padding:48px 16px;color:var(--cngx-color-text-muted)">
         <div style="font-size:2rem;margin-bottom:12px;opacity:0.4">+</div>
-        <p style="font-weight:600;font-size:1rem;color:var(--text-primary);margin-bottom:4px">Welcome!</p>
+        <p style="font-weight:600;font-size:1rem;color:var(--cngx-color-text);margin-bottom:4px">Welcome!</p>
         <p style="font-size:0.875rem">Create your first item to get started.</p>
         <button class="chip" style="margin-top:12px">Add item</button>
       </div>
     </ng-template>
     <ng-template cngxCardGridEmpty="no-results">
-      <div style="text-align:center;padding:48px 16px;color:var(--text-muted)">
+      <div style="text-align:center;padding:48px 16px;color:var(--cngx-color-text-muted)">
         <div style="font-size:2rem;margin-bottom:12px;opacity:0.4">?</div>
-        <p style="font-weight:600;font-size:1rem;color:var(--text-primary);margin-bottom:4px">No results found</p>
+        <p style="font-weight:600;font-size:1rem;color:var(--cngx-color-text);margin-bottom:4px">No results found</p>
         <p style="font-size:0.875rem">Try adjusting your filters.</p>
         <button class="chip" style="margin-top:12px">Reset filters</button>
       </div>
     </ng-template>
     <ng-template cngxCardGridEmpty="cleared">
-      <div style="text-align:center;padding:48px 16px;color:var(--text-muted)">
+      <div style="text-align:center;padding:48px 16px;color:var(--cngx-color-text-muted)">
         <div style="font-size:2rem;margin-bottom:12px;opacity:0.4">&#10003;</div>
-        <p style="font-weight:600;font-size:1rem;color:var(--text-primary);margin-bottom:4px">All done</p>
+        <p style="font-weight:600;font-size:1rem;color:var(--cngx-color-text);margin-bottom:4px">All done</p>
         <p style="font-size:0.875rem">Nothing left to process.</p>
       </div>
     </ng-template>

@@ -31,7 +31,7 @@ import { DecimalPipe } from '@angular/common';
     style="
       height: 200px;
       overflow-y: auto;
-      border: 1px solid var(--cngx-border, #ddd);
+      border: 1px solid var(--cngx-color-border, #ddd);
       border-radius: 6px;
       padding: 0 16px;
     "
@@ -86,7 +86,7 @@ export class IntersectionObserverDemoComponent {
     style="
       height: 200px;
       overflow-y: auto;
-      border: 1px solid var(--cngx-border, #ddd);
+      border: 1px solid var(--cngx-color-border, #ddd);
       border-radius: 6px;
       padding: 0 16px;
     "

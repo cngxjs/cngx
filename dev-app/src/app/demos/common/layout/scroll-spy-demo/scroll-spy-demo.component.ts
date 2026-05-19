@@ -38,9 +38,9 @@ import { CngxScrollSpy } from '@cngx/common/layout';
         </a>
       }
     </nav>
-    <div class="spy-container" style="height:300px;overflow-y:auto;flex:1;border:1px solid var(--cngx-border,#ddd);border-radius:8px">
+    <div class="spy-container" style="height:300px;overflow-y:auto;flex:1;border:1px solid var(--cngx-color-border,#ddd);border-radius:8px">
       @for (id of sectionIds; track id) {
-        <section [id]="id" style="min-height:200px;padding:20px;border-bottom:1px solid var(--cngx-border,#eee)">
+        <section [id]="id" style="min-height:200px;padding:20px;border-bottom:1px solid var(--cngx-color-border,#eee)">
           <h3 style="margin:0 0 8px;text-transform:capitalize">{{ id.replace('spy-', '') }}</h3>
           <p style="color:var(--cngx-text-secondary,#666);font-size:0.875rem">
             Scroll through this section to see the nav update.
@@ -75,9 +75,9 @@ export class ScrollSpyDemoComponent {
         </a>
       }
     </nav>
-    <div class="spy-container" style="height:300px;overflow-y:auto;flex:1;border:1px solid var(--cngx-border,#ddd);border-radius:8px">
+    <div class="spy-container" style="height:300px;overflow-y:auto;flex:1;border:1px solid var(--cngx-color-border,#ddd);border-radius:8px">
       @for (id of sectionIds; track id) {
-        <section [id]="id" style="min-height:200px;padding:20px;border-bottom:1px solid var(--cngx-border,#eee)">
+        <section [id]="id" style="min-height:200px;padding:20px;border-bottom:1px solid var(--cngx-color-border,#eee)">
           <h3 style="margin:0 0 8px;text-transform:capitalize">{{ id.replace('spy-', '') }}</h3>
           <p style="color:var(--cngx-text-secondary,#666);font-size:0.875rem">
             Scroll through this section to see the nav update.

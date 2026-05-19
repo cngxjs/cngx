@@ -115,6 +115,9 @@ protected readonly sfModel = signal<{
   notifications: boolean;
 protected readonly sfForm = form(this.sfModel, schema((root) => {
   required(root.terms, { message: 'Please agree' });
+  required(root.payment, { message: 'Wahl erforderlich' });
+  required(root.notificationChannels, { message: 'Choose at least one channel' });
+}));
 protected readonly channelOptions = ['email', 'sms', 'push'];
 protected handleSfValidate(): void {
   // Mark every required SF field touched so cngx-field-errors renders.

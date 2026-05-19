@@ -43,7 +43,7 @@ import { delay, of, throwError } from 'rxjs';
     [quickCreateAction]="basicCreate"
     [clearable]="true"
     [(value)]="basicValue"
-    placeholder="Tag wählen oder eingeben…"
+    placeholder="Choose or enter a tag…"
   >
     <ng-template
       cngxSelectAction
@@ -63,7 +63,7 @@ import { delay, of, throwError } from 'rxjs';
           width: 100%;
           padding: 0.5rem 0.75rem;
           border: 0;
-          border-top: 1px solid var(--cngx-border, #e5e7eb);
+          border-top: 1px solid var(--cngx-color-border, #e5e7eb);
           background: transparent;
           text-align: left;
           cursor: pointer;
@@ -75,7 +75,7 @@ import { delay, of, throwError } from 'rxjs';
         } @else if (!term) {
           <span style="opacity:.6">Tippen, um einen neuen Tag anzulegen</span>
         } @else {
-          <span>+ Tag „<strong>{{ term }}</strong>" anlegen</span>
+          <span>+ Create tag "<strong>{{ term }}</strong>"</span>
         }
       </button>
     </ng-template>
@@ -116,14 +116,14 @@ import { delay, of, throwError } from 'rxjs';
           width: 100%;
           padding: 0.5rem 0.75rem;
           border: 0;
-          border-top: 1px solid var(--cngx-border, #e5e7eb);
+          border-top: 1px solid var(--cngx-color-border, #e5e7eb);
           background: transparent;
           text-align: left;
           cursor: pointer;
           font: inherit;
         "
       >
-        + „{{ term || '…' }}" anlegen
+        + Create "{{ term || '…' }}"
       </button>
     </ng-template>
   </cngx-action-select>
@@ -181,7 +181,7 @@ import { delay, of, throwError } from 'rxjs';
           width: 100%;
           padding: 0.5rem 0.75rem;
           border: 0;
-          border-top: 1px solid var(--cngx-border, #e5e7eb);
+          border-top: 1px solid var(--cngx-color-border, #e5e7eb);
           background: transparent;
           text-align: left;
           cursor: pointer;
@@ -189,7 +189,7 @@ import { delay, of, throwError } from 'rxjs';
         "
       >
         @if (pending) { ⏳ „{{ term }}" wird angelegt… }
-        @else { + „{{ term || '…' }}" anlegen }
+        @else { + Create "{{ term || '…' }}" }
       </button>
     </ng-template>
   </cngx-action-select>
@@ -241,12 +241,12 @@ import { delay, of, throwError } from 'rxjs';
         flex-direction: column;
         gap: 0.5rem;
         padding: 0.75rem;
-        border-top: 1px solid var(--cngx-border, #e5e7eb);
+        border-top: 1px solid var(--cngx-color-border, #e5e7eb);
         background: var(--cngx-surface-variant, rgba(0,0,0,.02));
       ">
         <div style="font-weight:600; font-size:.875rem">
-          + Neuen Eintrag „{{ term || '…' }}" anlegen
-          @if (dirty) { <span style="color:var(--cngx-primary,#1976d2)">· ungespeichert</span> }
+          + Create new entry "{{ term || '…' }}"
+          @if (dirty) { <span style="color:var(--cngx-color-primary)">· unsaved</span> }
         </div>
         <input
           #dirtyInput
@@ -256,7 +256,7 @@ import { delay, of, throwError } from 'rxjs';
           style="
             width: 100%;
             padding: .35rem .5rem;
-            border: 1px solid var(--cngx-border, #cbd5e1);
+            border: 1px solid var(--cngx-color-border, #cbd5e1);
             border-radius: .25rem;
             font: inherit;
           "
@@ -265,7 +265,7 @@ import { delay, of, throwError } from 'rxjs';
           <button
             type="button"
             (click)="handleDirtyCancel(setDirty); dirtyInput.value = ''"
-            style="padding:.35rem .75rem; border:1px solid var(--cngx-border, #cbd5e1); border-radius:.25rem; background:transparent; cursor:pointer; font:inherit"
+            style="padding:.35rem .75rem; border:1px solid var(--cngx-color-border, #cbd5e1); border-radius:.25rem; background:transparent; cursor:pointer; font:inherit"
           >
             Cancel
           </button>
@@ -273,7 +273,7 @@ import { delay, of, throwError } from 'rxjs';
             type="button"
             [disabled]="!term || pending"
             (click)="commit()"
-            style="padding:.35rem .75rem; border:0; border-radius:.25rem; background:var(--cngx-primary,#1976d2); color:#fff; cursor:pointer; font:inherit"
+            style="padding:.35rem .75rem; border:0; border-radius:.25rem; background:var(--cngx-color-primary); color:#fff; cursor:pointer; font:inherit"
           >
             @if (pending) { Wird angelegt… } @else { Anlegen }
           </button>
@@ -317,7 +317,7 @@ import { delay, of, throwError } from 'rxjs';
         align-items: center;
         gap: .5rem;
         padding: .5rem .75rem;
-        border-bottom: 1px solid var(--cngx-border, #e5e7eb);
+        border-bottom: 1px solid var(--cngx-color-border, #e5e7eb);
         background: var(--cngx-surface-variant, rgba(0,0,0,.02));
       ">
         <span style="font-size:1.25rem" aria-hidden="true">✨</span>
@@ -328,17 +328,17 @@ import { delay, of, throwError } from 'rxjs';
           type="button"
           [disabled]="!term || pending"
           (click)="commit()"
-          style="padding:.25rem .625rem; border:1px solid var(--cngx-border, #cbd5e1); border-radius:.25rem; background:transparent; cursor:pointer; font:inherit; font-size:.8125rem"
+          style="padding:.25rem .625rem; border:1px solid var(--cngx-color-border, #cbd5e1); border-radius:.25rem; background:transparent; cursor:pointer; font:inherit; font-size:.8125rem"
         >
-          anlegen
+          create
         </button>
         <button
           type="button"
           [disabled]="!term || pending"
           (click)="commit(); close()"
-          style="padding:.25rem .625rem; border:0; border-radius:.25rem; background:var(--cngx-primary,#1976d2); color:#fff; cursor:pointer; font:inherit; font-size:.8125rem"
+          style="padding:.25rem .625rem; border:0; border-radius:.25rem; background:var(--cngx-color-primary); color:#fff; cursor:pointer; font:inherit; font-size:.8125rem"
         >
-          anlegen &amp; schließen
+          create &amp; close
         </button>
       </div>
     </ng-template>
@@ -375,7 +375,7 @@ export class ActionSelectDemoComponent {
     [quickCreateAction]="basicCreate"
     [clearable]="true"
     [(value)]="basicValue"
-    placeholder="Tag wählen oder eingeben…"
+    placeholder="Choose or enter a tag…"
   >
     <ng-template
       cngxSelectAction
@@ -395,7 +395,7 @@ export class ActionSelectDemoComponent {
           width: 100%;
           padding: 0.5rem 0.75rem;
           border: 0;
-          border-top: 1px solid var(--cngx-border, #e5e7eb);
+          border-top: 1px solid var(--cngx-color-border, #e5e7eb);
           background: transparent;
           text-align: left;
           cursor: pointer;
@@ -407,7 +407,7 @@ export class ActionSelectDemoComponent {
         } @else if (!term) {
           <span style="opacity:.6">Tippen, um einen neuen Tag anzulegen</span>
         } @else {
-          <span>+ Tag „<strong>{{ term }}</strong>" anlegen</span>
+          <span>+ Create tag "<strong>{{ term }}</strong>"</span>
         }
       </button>
     </ng-template>
@@ -517,14 +517,14 @@ import { delay, of, throwError } from 'rxjs';
           width: 100%;
           padding: 0.5rem 0.75rem;
           border: 0;
-          border-top: 1px solid var(--cngx-border, #e5e7eb);
+          border-top: 1px solid var(--cngx-color-border, #e5e7eb);
           background: transparent;
           text-align: left;
           cursor: pointer;
           font: inherit;
         "
       >
-        + „{{ term || '…' }}" anlegen
+        + Create "{{ term || '…' }}"
       </button>
     </ng-template>
   </cngx-action-select>
@@ -651,7 +651,7 @@ import { delay, of, throwError } from 'rxjs';
           width: 100%;
           padding: 0.5rem 0.75rem;
           border: 0;
-          border-top: 1px solid var(--cngx-border, #e5e7eb);
+          border-top: 1px solid var(--cngx-color-border, #e5e7eb);
           background: transparent;
           text-align: left;
           cursor: pointer;
@@ -659,7 +659,7 @@ import { delay, of, throwError } from 'rxjs';
         "
       >
         @if (pending) { ⏳ „{{ term }}" wird angelegt… }
-        @else { + „{{ term || '…' }}" anlegen }
+        @else { + Create "{{ term || '…' }}" }
       </button>
     </ng-template>
   </cngx-action-select>
@@ -780,12 +780,12 @@ import { delay, of, throwError } from 'rxjs';
         flex-direction: column;
         gap: 0.5rem;
         padding: 0.75rem;
-        border-top: 1px solid var(--cngx-border, #e5e7eb);
+        border-top: 1px solid var(--cngx-color-border, #e5e7eb);
         background: var(--cngx-surface-variant, rgba(0,0,0,.02));
       ">
         <div style="font-weight:600; font-size:.875rem">
-          + Neuen Eintrag „{{ term || '…' }}" anlegen
-          @if (dirty) { <span style="color:var(--cngx-primary,#1976d2)">· ungespeichert</span> }
+          + Create new entry "{{ term || '…' }}"
+          @if (dirty) { <span style="color:var(--cngx-color-primary)">· unsaved</span> }
         </div>
         <input
           #dirtyInput
@@ -795,7 +795,7 @@ import { delay, of, throwError } from 'rxjs';
           style="
             width: 100%;
             padding: .35rem .5rem;
-            border: 1px solid var(--cngx-border, #cbd5e1);
+            border: 1px solid var(--cngx-color-border, #cbd5e1);
             border-radius: .25rem;
             font: inherit;
           "
@@ -804,7 +804,7 @@ import { delay, of, throwError } from 'rxjs';
           <button
             type="button"
             (click)="handleDirtyCancel(setDirty); dirtyInput.value = ''"
-            style="padding:.35rem .75rem; border:1px solid var(--cngx-border, #cbd5e1); border-radius:.25rem; background:transparent; cursor:pointer; font:inherit"
+            style="padding:.35rem .75rem; border:1px solid var(--cngx-color-border, #cbd5e1); border-radius:.25rem; background:transparent; cursor:pointer; font:inherit"
           >
             Cancel
           </button>
@@ -812,7 +812,7 @@ import { delay, of, throwError } from 'rxjs';
             type="button"
             [disabled]="!term || pending"
             (click)="commit()"
-            style="padding:.35rem .75rem; border:0; border-radius:.25rem; background:var(--cngx-primary,#1976d2); color:#fff; cursor:pointer; font:inherit"
+            style="padding:.35rem .75rem; border:0; border-radius:.25rem; background:var(--cngx-color-primary); color:#fff; cursor:pointer; font:inherit"
           >
             @if (pending) { Wird angelegt… } @else { Anlegen }
           </button>
@@ -925,7 +925,7 @@ import { delay, of, throwError } from 'rxjs';
         align-items: center;
         gap: .5rem;
         padding: .5rem .75rem;
-        border-bottom: 1px solid var(--cngx-border, #e5e7eb);
+        border-bottom: 1px solid var(--cngx-color-border, #e5e7eb);
         background: var(--cngx-surface-variant, rgba(0,0,0,.02));
       ">
         <span style="font-size:1.25rem" aria-hidden="true">✨</span>
@@ -936,17 +936,17 @@ import { delay, of, throwError } from 'rxjs';
           type="button"
           [disabled]="!term || pending"
           (click)="commit()"
-          style="padding:.25rem .625rem; border:1px solid var(--cngx-border, #cbd5e1); border-radius:.25rem; background:transparent; cursor:pointer; font:inherit; font-size:.8125rem"
+          style="padding:.25rem .625rem; border:1px solid var(--cngx-color-border, #cbd5e1); border-radius:.25rem; background:transparent; cursor:pointer; font:inherit; font-size:.8125rem"
         >
-          anlegen
+          create
         </button>
         <button
           type="button"
           [disabled]="!term || pending"
           (click)="commit(); close()"
-          style="padding:.25rem .625rem; border:0; border-radius:.25rem; background:var(--cngx-primary,#1976d2); color:#fff; cursor:pointer; font:inherit; font-size:.8125rem"
+          style="padding:.25rem .625rem; border:0; border-radius:.25rem; background:var(--cngx-color-primary); color:#fff; cursor:pointer; font:inherit; font-size:.8125rem"
         >
-          anlegen &amp; schließen
+          create &amp; close
         </button>
       </div>
     </ng-template>

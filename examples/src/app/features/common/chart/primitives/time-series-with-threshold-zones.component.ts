@@ -79,7 +79,9 @@ protected readonly latencyDomain: readonly Date[] = [
 protected readonly latencyTime = (d: { t: Date; v: number }): Date => d.t;
 protected readonly latencyValue = (d: { t: Date; v: number }): number => d.v;
 protected readonly dateFmt = (v: unknown): string => {
-  const d = v instanceof Date ? v : new Date(Number(v));`;
+  const d = v instanceof Date ? v : new Date(Number(v));
+  return d.toLocaleDateString('en', { month: 'short', day: '2-digit' });
+};`;
   protected readonly _exHtml: string = `<div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; display: inline-block; max-width: 100%; box-sizing: border-box">
 <cngx-chart
   [data]="latencyData"

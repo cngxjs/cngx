@@ -63,6 +63,10 @@ export class DialogProgrammaticControl {
 protected readonly progDialog = viewChild<CngxDialog<'saved' | 'discarded'>>('progDialog');
 protected readonly progMessage = computed(() => {
   const result = this.progDialog()?.result();
+  if (result === undefined) return 'No dialog result yet.';
+  if (result === 'dismissed') return 'Dialog was dismissed (Escape or backdrop).';
+  return 'Dialog returned: ' + String(result);
+});
 protected handleOpenProgrammatic(): void {
   this.progDialog()?.open();
 }

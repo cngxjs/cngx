@@ -80,6 +80,7 @@ import { CngxListbox, CngxOption } from '@cngx/common/interactive';
 private readonly singleModel = signal<{ color: string }>({ color: '' });
 private readonly singleSchema = schema<{ color: string }>((root) => {
   required(root.color);
+});
 protected readonly singleForm = form(this.singleModel, this.singleSchema);
 protected handleSingleSubmit(): void {
   submit(this.singleForm, async () => []);

@@ -66,7 +66,8 @@ protected readonly checkedFor = (value: string) =>
 protected readonly toggleValue = (value: string) => (next: boolean): void => {
   this.picked.update((curr) =>
     next ? [...curr, value] : curr.filter((v) => v !== value),
-  );`;
+  );
+};`;
   protected readonly _exHtml: string = `<cngx-checkbox
   [value]="group.allSelected()"
   [indeterminate]="group.someSelected()"

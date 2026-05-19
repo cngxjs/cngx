@@ -57,7 +57,7 @@ import { createManualState } from '@cngx/common/data';
     <button class="chip" (click)="showError()">error</button>
   </div>
   <div style="display:flex;align-items:center;gap:24px">
-    <span style="font-size:0.75rem;color:var(--text-muted);min-width:80px">status: {{ state.status() }}</span>
+    <span style="font-size:0.75rem;color:var(--cngx-color-text-muted);min-width:80px">status: {{ state.status() }}</span>
     <cngx-mini-bar [value]="64" [state]="state" aria-label="Demo metric" />
   </div>
       </app-example-card>
@@ -102,7 +102,7 @@ protected showError(): void { this.state.reset(); this.state.setError(new Error(
     <button class="chip" (click)="showError()">error</button>
   </div>
   <div style="display:flex;align-items:center;gap:24px">
-    <span style="font-size:0.75rem;color:var(--text-muted);min-width:80px">status: {{ state.status() }}</span>
+    <span style="font-size:0.75rem;color:var(--cngx-color-text-muted);min-width:80px">status: {{ state.status() }}</span>
     <cngx-mini-bar [value]="64" [state]="state" aria-label="Demo metric" />
   </div>`;
   protected readonly _srcTs1 = `import { CngxMiniBar } from '@cngx/common/chart';

@@ -109,12 +109,19 @@ import { CngxSelectShell, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivide
 import { delay, of, throwError } from 'rxjs';
 
 protected readonly commitMode = signal<CngxSelectCommitMode>('pessimistic');
+protected readonly commitShouldFail = signal(false);
 protected readonly commitAction: CngxSelectCommitAction<string> = (intended) => {
   void intended;
+  if (this.commitShouldFail()) {
+    return throwError(() => new Error('Server rejected the commit')).pipe(delay(1500));
+  }
+  return of(intended).pipe(delay(1500));
+};
 protected readonly showcaseValue = signal<string | undefined>('design');
 protected readonly showcaseLog = signal<string[]>([]);
 protected readonly showcaseAction: CngxSelectCommitAction<string> = (intended) => {
   return of(intended).pipe(delay(800));
+};
 protected handleShowcaseChange(e: CngxSelectShellChange<string>): void {
   this.showcaseLog.update((l) =>
     [...l.slice(-4), new Date().toLocaleTimeString() + ' → ' + (e.option?.label ?? 'cleared')],

@@ -79,7 +79,7 @@ import { createFormPrimitivesFormGroup } from '../_fixtures/form-primitives-form
     </cngx-form-field>
 
     <cngx-form-field [field]="sfForm.notificationChannels">
-      <label cngxLabel>Kanäle</label>
+      <label cngxLabel>Channels</label>
       <cngx-checkbox-group
         [(selectedValues)]="sfForm.notificationChannels().value"
         [allValues]="channelOptions"
@@ -161,7 +161,7 @@ import { createFormPrimitivesFormGroup } from '../_fixtures/form-primitives-form
       }
     </cngx-button-toggle-group>
 
-    <cngx-chip-group [formControlName]="'size'" label="Größe">
+    <cngx-chip-group [formControlName]="'size'" label="Size">
       @for (opt of sizeOptions; track opt) {
         <cngx-chip cngxChipInGroup [value]="opt">{{ opt }}</cngx-chip>
       }
@@ -169,7 +169,7 @@ import { createFormPrimitivesFormGroup } from '../_fixtures/form-primitives-form
 
     <!-- Required multi-group: wrapped for per-atom error rendering -->
     <cngx-form-field [field]="rfChannelsField">
-      <label cngxLabel>Kanäle</label>
+      <label cngxLabel>Channels</label>
       <cngx-checkbox-group
         [formControlName]="'notificationChannels'"
         [allValues]="channelOptions"
@@ -267,7 +267,7 @@ export class FormPrimitivesDemoComponent {
     </cngx-form-field>
 
     <cngx-form-field [field]="sfForm.notificationChannels">
-      <label cngxLabel>Kanäle</label>
+      <label cngxLabel>Channels</label>
       <cngx-checkbox-group
         [(selectedValues)]="sfForm.notificationChannels().value"
         [allValues]="channelOptions"
@@ -331,9 +331,9 @@ import { createFormPrimitivesFormGroup } from '../_fixtures/form-primitives-form
   });
 
   protected readonly sfForm = form(this.sfModel, schema((root) => {
-    required(root.terms, { message: 'Bitte zustimmen' });
+    required(root.terms, { message: 'Please agree' });
     required(root.payment, { message: 'Wahl erforderlich' });
-    required(root.notificationChannels, { message: 'Mindestens einen Kanal wählen' });
+    required(root.notificationChannels, { message: 'Choose at least one channel' });
   }));
 
   // ── Reactive Forms group (all 9 atoms) ─────────────────────
@@ -417,7 +417,7 @@ import { createFormPrimitivesFormGroup } from '../_fixtures/form-primitives-form
       }
     </cngx-button-toggle-group>
 
-    <cngx-chip-group [formControlName]="'size'" label="Größe">
+    <cngx-chip-group [formControlName]="'size'" label="Size">
       @for (opt of sizeOptions; track opt) {
         <cngx-chip cngxChipInGroup [value]="opt">{{ opt }}</cngx-chip>
       }
@@ -425,7 +425,7 @@ import { createFormPrimitivesFormGroup } from '../_fixtures/form-primitives-form
 
     <!-- Required multi-group: wrapped for per-atom error rendering -->
     <cngx-form-field [field]="rfChannelsField">
-      <label cngxLabel>Kanäle</label>
+      <label cngxLabel>Channels</label>
       <cngx-checkbox-group
         [formControlName]="'notificationChannels'"
         [allValues]="channelOptions"
@@ -505,9 +505,9 @@ import { createFormPrimitivesFormGroup } from '../_fixtures/form-primitives-form
   });
 
   protected readonly sfForm = form(this.sfModel, schema((root) => {
-    required(root.terms, { message: 'Bitte zustimmen' });
+    required(root.terms, { message: 'Please agree' });
     required(root.payment, { message: 'Wahl erforderlich' });
-    required(root.notificationChannels, { message: 'Mindestens einen Kanal wählen' });
+    required(root.notificationChannels, { message: 'Choose at least one channel' });
   }));
 
   // ── Reactive Forms group (all 9 atoms) ─────────────────────
@@ -582,9 +582,9 @@ import { createFormPrimitivesFormGroup } from '../_fixtures/form-primitives-form
   });
 
   protected readonly sfForm = form(this.sfModel, schema((root) => {
-    required(root.terms, { message: 'Bitte zustimmen' });
+    required(root.terms, { message: 'Please agree' });
     required(root.payment, { message: 'Wahl erforderlich' });
-    required(root.notificationChannels, { message: 'Mindestens einen Kanal wählen' });
+    required(root.notificationChannels, { message: 'Choose at least one channel' });
   }));
 
   // ── Reactive Forms group (all 9 atoms) ─────────────────────
@@ -646,9 +646,9 @@ import { createFormPrimitivesFormGroup } from '../_fixtures/form-primitives-form
   });
 
   protected readonly sfForm = form(this.sfModel, schema((root) => {
-    required(root.terms, { message: 'Bitte zustimmen' });
+    required(root.terms, { message: 'Please agree' });
     required(root.payment, { message: 'Wahl erforderlich' });
-    required(root.notificationChannels, { message: 'Mindestens einen Kanal wählen' });
+    required(root.notificationChannels, { message: 'Choose at least one channel' });
   }));
 
   // ── Reactive Forms group (all 9 atoms) ─────────────────────

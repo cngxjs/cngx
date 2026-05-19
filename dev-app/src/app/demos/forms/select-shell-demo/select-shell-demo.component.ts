@@ -41,16 +41,16 @@ import { DestroyRef } from '@angular/core';
         [sourceTs]="_srcTs0">
         
   <cngx-select-shell
-    [label]="'Farbe'"
+    [label]="'Color'"
     [clearable]="true"
     [(value)]="basicValue"
     (selectionChange)="handleBasicChange($event)"
-    placeholder="Bitte wählen…"
+    placeholder="Choose…"
   >
-    <cngx-option [value]="'red'">Rot</cngx-option>
-    <cngx-option [value]="'green'">Grün</cngx-option>
-    <cngx-option [value]="'blue'">Blau</cngx-option>
-    <cngx-option [value]="'disabled'" [disabled]="true">Nicht verfügbar</cngx-option>
+    <cngx-option [value]="'red'">Red</cngx-option>
+    <cngx-option [value]="'green'">Green</cngx-option>
+    <cngx-option [value]="'blue'">Blue</cngx-option>
+    <cngx-option [value]="'disabled'" [disabled]="true">Unavailable</cngx-option>
   </cngx-select-shell>
 
   <div class="event-grid" style="margin-top:12px">
@@ -69,7 +69,7 @@ import { DestroyRef } from '@angular/core';
         [sourceHtml]="_srcHtml1"
         [sourceTs]="_srcTs1">
         
-  <cngx-select-shell [label]="'Priorität'" [(value)]="groupedValue" placeholder="Priorität…">
+  <cngx-select-shell [label]="'Priority'" [(value)]="groupedValue" placeholder="Priority…">
     <cngx-optgroup label="Normal">
       <cngx-option [value]="'low'">Niedrig</cngx-option>
       <cngx-option [value]="'medium'">Mittel</cngx-option>
@@ -116,11 +116,11 @@ import { DestroyRef } from '@angular/core';
         [sourceTs]="_srcTs3">
         
   <cngx-form-field [field]="rfField">
-    <label cngxLabel>Farbe</label>
+    <label cngxLabel>Color</label>
     <cngx-select-shell>
-      <cngx-option [value]="'red'">Rot</cngx-option>
-      <cngx-option [value]="'green'">Grün</cngx-option>
-      <cngx-option [value]="'blue'">Blau</cngx-option>
+      <cngx-option [value]="'red'">Red</cngx-option>
+      <cngx-option [value]="'green'">Green</cngx-option>
+      <cngx-option [value]="'blue'">Blue</cngx-option>
     </cngx-select-shell>
   </cngx-form-field>
 
@@ -143,7 +143,7 @@ import { DestroyRef } from '@angular/core';
       <select
         [value]="commitMode()"
         (change)="commitMode.set($any($event.target).value)"
-        style="padding:.25rem .5rem; border:1px solid var(--cngx-border, #cbd5e1); border-radius:.25rem; font: inherit"
+        style="padding:.25rem .5rem; border:1px solid var(--cngx-color-border, #cbd5e1); border-radius:.25rem; font: inherit"
       >
         <option value="pessimistic">pessimistic (recommended for visible pending)</option>
         <option value="optimistic">optimistic</option>
@@ -173,9 +173,9 @@ import { DestroyRef } from '@angular/core';
     <ng-template cngxSelectOptionError>
       <span aria-hidden="true" class="error-glyph">⚠</span>
     </ng-template>
-    <cngx-option [value]="'red'">Rot</cngx-option>
-    <cngx-option [value]="'green'">Grün</cngx-option>
-    <cngx-option [value]="'blue'">Blau</cngx-option>
+    <cngx-option [value]="'red'">Red</cngx-option>
+    <cngx-option [value]="'green'">Green</cngx-option>
+    <cngx-option [value]="'blue'">Blue</cngx-option>
   </cngx-select-shell>
 
   <div class="event-grid" style="margin-top:12px">
@@ -225,7 +225,7 @@ import { DestroyRef } from '@angular/core';
     </ng-template>
     <ng-template cngxSelectEmpty>
       <div style="padding:.75rem; opacity:.6; text-align:center">
-        Keine Optionen verfügbar
+        No options available
       </div>
     </ng-template>
   </cngx-select-shell>
@@ -287,16 +287,16 @@ import { DestroyRef } from '@angular/core';
   </ng-template>
 
   <cngx-select-shell
-    [label]="'Farbe'"
+    [label]="'Color'"
     [clearable]="true"
     [clearGlyph]="customClear"
     [caretGlyph]="customCaret"
     [(value)]="customValue"
     placeholder="Custom-glyph trigger…"
   >
-    <cngx-option [value]="'red'">Rot</cngx-option>
-    <cngx-option [value]="'green'">Grün</cngx-option>
-    <cngx-option [value]="'blue'">Blau</cngx-option>
+    <cngx-option [value]="'red'">Red</cngx-option>
+    <cngx-option [value]="'green'">Green</cngx-option>
+    <cngx-option [value]="'blue'">Blue</cngx-option>
   </cngx-select-shell>
 
   <div class="event-grid" style="margin-top:12px">
@@ -389,16 +389,16 @@ export class SelectShellDemoComponent {
   protected readonly _s7 = 'Replace the built-in ✕ clear button glyph and ▾ caret with consumer-authored templates. The button frame, ARIA wiring, and click handlers stay intact — only the glyph swaps. <code>*cngxSelectClearButton</code> replaces the entire button when full control is needed.';
   protected readonly _s8 = 'Reactive ARIA, optgroups, divider, async commit (pessimistic so pending is visible), pending + error glyphs, custom caret, custom placeholder, change-event log, keyboard nav (↑↓/Home/End/PageUp/PageDown, typeahead-while-closed), click-outside dismiss, focus restoration on close.';
   protected readonly _srcHtml0 = `<cngx-select-shell
-    [label]="'Farbe'"
+    [label]="'Color'"
     [clearable]="true"
     [(value)]="basicValue"
     (selectionChange)="handleBasicChange($event)"
-    placeholder="Bitte wählen…"
+    placeholder="Choose…"
   >
-    <cngx-option [value]="'red'">Rot</cngx-option>
-    <cngx-option [value]="'green'">Grün</cngx-option>
-    <cngx-option [value]="'blue'">Blau</cngx-option>
-    <cngx-option [value]="'disabled'" [disabled]="true">Nicht verfügbar</cngx-option>
+    <cngx-option [value]="'red'">Red</cngx-option>
+    <cngx-option [value]="'green'">Green</cngx-option>
+    <cngx-option [value]="'blue'">Blue</cngx-option>
+    <cngx-option [value]="'disabled'" [disabled]="true">Unavailable</cngx-option>
   </cngx-select-shell>
 
   <div class="event-grid" style="margin-top:12px">
@@ -483,7 +483,7 @@ import { DestroyRef } from '@angular/core';
       [...l.slice(-4), new Date().toLocaleTimeString() + ' → ' + (e.option?.label ?? 'cleared')],
     );
   }`;
-  protected readonly _srcHtml1 = `<cngx-select-shell [label]="'Priorität'" [(value)]="groupedValue" placeholder="Priorität…">
+  protected readonly _srcHtml1 = `<cngx-select-shell [label]="'Priority'" [(value)]="groupedValue" placeholder="Priority…">
     <cngx-optgroup label="Normal">
       <cngx-option [value]="'low'">Niedrig</cngx-option>
       <cngx-option [value]="'medium'">Mittel</cngx-option>
@@ -662,11 +662,11 @@ import { DestroyRef } from '@angular/core';
     );
   }`;
   protected readonly _srcHtml3 = `<cngx-form-field [field]="rfField">
-    <label cngxLabel>Farbe</label>
+    <label cngxLabel>Color</label>
     <cngx-select-shell>
-      <cngx-option [value]="'red'">Rot</cngx-option>
-      <cngx-option [value]="'green'">Grün</cngx-option>
-      <cngx-option [value]="'blue'">Blau</cngx-option>
+      <cngx-option [value]="'red'">Red</cngx-option>
+      <cngx-option [value]="'green'">Green</cngx-option>
+      <cngx-option [value]="'blue'">Blue</cngx-option>
     </cngx-select-shell>
   </cngx-form-field>
 
@@ -754,7 +754,7 @@ import { DestroyRef } from '@angular/core';
       <select
         [value]="commitMode()"
         (change)="commitMode.set($any($event.target).value)"
-        style="padding:.25rem .5rem; border:1px solid var(--cngx-border, #cbd5e1); border-radius:.25rem; font: inherit"
+        style="padding:.25rem .5rem; border:1px solid var(--cngx-color-border, #cbd5e1); border-radius:.25rem; font: inherit"
       >
         <option value="pessimistic">pessimistic (recommended for visible pending)</option>
         <option value="optimistic">optimistic</option>
@@ -784,9 +784,9 @@ import { DestroyRef } from '@angular/core';
     <ng-template cngxSelectOptionError>
       <span aria-hidden="true" class="error-glyph">⚠</span>
     </ng-template>
-    <cngx-option [value]="'red'">Rot</cngx-option>
-    <cngx-option [value]="'green'">Grün</cngx-option>
-    <cngx-option [value]="'blue'">Blau</cngx-option>
+    <cngx-option [value]="'red'">Red</cngx-option>
+    <cngx-option [value]="'green'">Green</cngx-option>
+    <cngx-option [value]="'blue'">Blue</cngx-option>
   </cngx-select-shell>
 
   <div class="event-grid" style="margin-top:12px">
@@ -914,7 +914,7 @@ import { DestroyRef } from '@angular/core';
     </ng-template>
     <ng-template cngxSelectEmpty>
       <div style="padding:.75rem; opacity:.6; text-align:center">
-        Keine Optionen verfügbar
+        No options available
       </div>
     </ng-template>
   </cngx-select-shell>
@@ -1108,16 +1108,16 @@ import { DestroyRef } from '@angular/core';
   </ng-template>
 
   <cngx-select-shell
-    [label]="'Farbe'"
+    [label]="'Color'"
     [clearable]="true"
     [clearGlyph]="customClear"
     [caretGlyph]="customCaret"
     [(value)]="customValue"
     placeholder="Custom-glyph trigger…"
   >
-    <cngx-option [value]="'red'">Rot</cngx-option>
-    <cngx-option [value]="'green'">Grün</cngx-option>
-    <cngx-option [value]="'blue'">Blau</cngx-option>
+    <cngx-option [value]="'red'">Red</cngx-option>
+    <cngx-option [value]="'green'">Green</cngx-option>
+    <cngx-option [value]="'blue'">Blue</cngx-option>
   </cngx-select-shell>
 
   <div class="event-grid" style="margin-top:12px">

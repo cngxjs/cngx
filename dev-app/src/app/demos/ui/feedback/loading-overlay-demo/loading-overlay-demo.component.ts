@@ -29,9 +29,9 @@ import { CngxLoadingOverlay } from '@cngx/ui/feedback';
   </button>
 
   <cngx-loading-overlay [loading]="isLoading()" label="Saving form">
-    <div style="border:1px solid var(--cngx-border,#ddd);border-radius:8px;padding:24px;display:flex;flex-direction:column;gap:12px">
-      <input placeholder="Name" style="padding:8px 12px;border:1px solid var(--cngx-border,#ddd);border-radius:6px" />
-      <input placeholder="Email" style="padding:8px 12px;border:1px solid var(--cngx-border,#ddd);border-radius:6px" />
+    <div style="border:1px solid var(--cngx-color-border,#ddd);border-radius:8px;padding:24px;display:flex;flex-direction:column;gap:12px">
+      <input placeholder="Name" style="padding:8px 12px;border:1px solid var(--cngx-color-border,#ddd);border-radius:6px" />
+      <input placeholder="Email" style="padding:8px 12px;border:1px solid var(--cngx-color-border,#ddd);border-radius:6px" />
       <button type="button" class="chip">A button inside the overlay</button>
     </div>
   </cngx-loading-overlay>
@@ -46,9 +46,9 @@ export class LoadingOverlayDemoComponent {
   </button>
 
   <cngx-loading-overlay [loading]="isLoading()" label="Saving form">
-    <div style="border:1px solid var(--cngx-border,#ddd);border-radius:8px;padding:24px;display:flex;flex-direction:column;gap:12px">
-      <input placeholder="Name" style="padding:8px 12px;border:1px solid var(--cngx-border,#ddd);border-radius:6px" />
-      <input placeholder="Email" style="padding:8px 12px;border:1px solid var(--cngx-border,#ddd);border-radius:6px" />
+    <div style="border:1px solid var(--cngx-color-border,#ddd);border-radius:8px;padding:24px;display:flex;flex-direction:column;gap:12px">
+      <input placeholder="Name" style="padding:8px 12px;border:1px solid var(--cngx-color-border,#ddd);border-radius:6px" />
+      <input placeholder="Email" style="padding:8px 12px;border:1px solid var(--cngx-color-border,#ddd);border-radius:6px" />
       <button type="button" class="chip">A button inside the overlay</button>
     </div>
   </cngx-loading-overlay>`;

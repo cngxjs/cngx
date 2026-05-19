@@ -78,7 +78,7 @@ import { PEOPLE } from '../../../fixtures';
       @for (item of allItems().slice(pg2.range()[0], pg2.range()[1]); track item.name) {
         <li style="
           padding: 8px 12px;
-          border-bottom: 1px solid var(--cngx-border, #eee);
+          border-bottom: 1px solid var(--cngx-color-border, #eee);
           font-size: 0.875rem;
         ">
           <strong>{{ item.name }}</strong> — {{ item.role }}, {{ item.location }}
@@ -157,7 +157,7 @@ import { PEOPLE } from '../../../fixtures';
       @for (item of allItems().slice(pg2.range()[0], pg2.range()[1]); track item.name) {
         <li style="
           padding: 8px 12px;
-          border-bottom: 1px solid var(--cngx-border, #eee);
+          border-bottom: 1px solid var(--cngx-color-border, #eee);
           font-size: 0.875rem;
         ">
           <strong>{{ item.name }}</strong> — {{ item.role }}, {{ item.location }}

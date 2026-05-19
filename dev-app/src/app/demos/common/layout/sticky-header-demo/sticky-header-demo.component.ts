@@ -25,17 +25,17 @@ import { CngxStickyHeader } from '@cngx/common/layout';
         [sourceHtml]="_srcHtml0"
         [sourceTs]="_srcTs0">
         
-  <div style="height:250px;overflow-y:auto;border:1px solid var(--cngx-border,#ddd);border-radius:8px">
+  <div style="height:250px;overflow-y:auto;border:1px solid var(--cngx-color-border,#ddd);border-radius:8px">
     <div style="padding:16px">
       <p style="margin:0 0 8px;color:var(--cngx-text-secondary,#666);font-size:0.875rem">Scroll down to see the sticky header activate.</p>
     </div>
     <header cngxStickyHeader #sh="cngxStickyHeader"
-            style="padding:12px 16px;background:var(--card-bg,#fff);transition:box-shadow 200ms ease;border-bottom:1px solid var(--cngx-border,#eee)"
+            style="padding:12px 16px;background:var(--card-bg,#fff);transition:box-shadow 200ms ease;border-bottom:1px solid var(--cngx-color-border,#eee)"
             [style.box-shadow]="sh.isSticky() ? '0 2px 8px rgba(0,0,0,0.1)' : 'none'">
       <strong>{{ sh.isSticky() ? 'Stuck!' : 'Header' }}</strong>
     </header>
     @for (i of [1,2,3,4,5,6,7,8,9,10,11,12]; track i) {
-      <div style="padding:12px 16px;border-bottom:1px solid var(--cngx-border,#f0f0f0)">
+      <div style="padding:12px 16px;border-bottom:1px solid var(--cngx-color-border,#f0f0f0)">
         Item {{ i }}
       </div>
     }
@@ -52,17 +52,17 @@ import { CngxStickyHeader } from '@cngx/common/layout';
 })
 export class StickyHeaderDemoComponent {
   protected readonly _s0 = 'Scroll the container below. When the header becomes stuck, a box shadow appears via the <code>cngx-sticky--active</code> class.';
-  protected readonly _srcHtml0 = `<div style="height:250px;overflow-y:auto;border:1px solid var(--cngx-border,#ddd);border-radius:8px">
+  protected readonly _srcHtml0 = `<div style="height:250px;overflow-y:auto;border:1px solid var(--cngx-color-border,#ddd);border-radius:8px">
     <div style="padding:16px">
       <p style="margin:0 0 8px;color:var(--cngx-text-secondary,#666);font-size:0.875rem">Scroll down to see the sticky header activate.</p>
     </div>
     <header cngxStickyHeader #sh="cngxStickyHeader"
-            style="padding:12px 16px;background:var(--card-bg,#fff);transition:box-shadow 200ms ease;border-bottom:1px solid var(--cngx-border,#eee)"
+            style="padding:12px 16px;background:var(--card-bg,#fff);transition:box-shadow 200ms ease;border-bottom:1px solid var(--cngx-color-border,#eee)"
             [style.box-shadow]="sh.isSticky() ? '0 2px 8px rgba(0,0,0,0.1)' : 'none'">
       <strong>{{ sh.isSticky() ? 'Stuck!' : 'Header' }}</strong>
     </header>
     @for (i of [1,2,3,4,5,6,7,8,9,10,11,12]; track i) {
-      <div style="padding:12px 16px;border-bottom:1px solid var(--cngx-border,#f0f0f0)">
+      <div style="padding:12px 16px;border-bottom:1px solid var(--cngx-color-border,#f0f0f0)">
         Item {{ i }}
       </div>
     }

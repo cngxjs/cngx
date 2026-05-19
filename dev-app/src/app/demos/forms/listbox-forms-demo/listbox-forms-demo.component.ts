@@ -47,9 +47,9 @@ import { MatOption } from '@angular/material/core';
          cngxListboxFieldBridge
          [label]="'Lieblingsfarbe'"
          tabindex="0">
-      <div cngxOption value="red">Rot</div>
-      <div cngxOption value="green">Grün</div>
-      <div cngxOption value="blue">Blau</div>
+      <div cngxOption value="red">Red</div>
+      <div cngxOption value="green">Green</div>
+      <div cngxOption value="blue">Blue</div>
     </div>
     <cngx-field-errors />
   </cngx-form-field>
@@ -77,13 +77,13 @@ import { MatOption } from '@angular/material/core';
         [sourceTs]="_srcTs1">
         
   <cngx-form-field [field]="multiForm.toppings">
-    <label cngxLabel>Beläge (mind. 2)</label>
+    <label cngxLabel>Toppings (at least 2)</label>
     <div cngxListbox
          cngxListboxFieldBridge
-         [label]="'Beläge'"
+         [label]="'Toppings'"
          [multiple]="true"
          tabindex="0">
-      <div cngxOption value="cheese">Käse</div>
+      <div cngxOption value="cheese">Cheese</div>
       <div cngxOption value="pepperoni">Pepperoni</div>
       <div cngxOption value="mushroom">Champignons</div>
       <div cngxOption value="olive">Oliven</div>
@@ -108,10 +108,10 @@ import { MatOption } from '@angular/material/core';
         [sourceTs]="_srcTs2">
         
   <cngx-form-field [field]="matSelectField">
-    <label cngxLabel>Größe</label>
+    <label cngxLabel>Size</label>
     <mat-select cngxBindField
                 [formControl]="matSelectControl"
-                placeholder="Bitte wählen"
+                placeholder="Choose…"
                 style="min-width:200px;display:inline-block">
       <mat-option value="s">Small</mat-option>
       <mat-option value="m">Medium</mat-option>
@@ -144,14 +144,14 @@ import { MatOption } from '@angular/material/core';
         [sourceTs]="_srcTs3">
         
   <cngx-form-field [field]="rfField">
-    <label cngxLabel>Farbe (RF)</label>
+    <label cngxLabel>Color (RF)</label>
     <div cngxListbox
          cngxListboxFieldBridge
-         [label]="'Farbe (RF)'"
+         [label]="'Color (RF)'"
          tabindex="0">
-      <div cngxOption value="red">Rot</div>
-      <div cngxOption value="green">Grün</div>
-      <div cngxOption value="blue">Blau</div>
+      <div cngxOption value="red">Red</div>
+      <div cngxOption value="green">Green</div>
+      <div cngxOption value="blue">Blue</div>
     </div>
     <cngx-field-errors />
   </cngx-form-field>
@@ -180,9 +180,9 @@ export class ListboxFormsDemoComponent {
          cngxListboxFieldBridge
          [label]="'Lieblingsfarbe'"
          tabindex="0">
-      <div cngxOption value="red">Rot</div>
-      <div cngxOption value="green">Grün</div>
-      <div cngxOption value="blue">Blau</div>
+      <div cngxOption value="red">Red</div>
+      <div cngxOption value="green">Green</div>
+      <div cngxOption value="blue">Blue</div>
     </div>
     <cngx-field-errors />
   </cngx-form-field>
@@ -248,13 +248,13 @@ import { MatOption } from '@angular/material/core';
     this.matSelectField().markAsTouched();
   }`;
   protected readonly _srcHtml1 = `<cngx-form-field [field]="multiForm.toppings">
-    <label cngxLabel>Beläge (mind. 2)</label>
+    <label cngxLabel>Toppings (at least 2)</label>
     <div cngxListbox
          cngxListboxFieldBridge
-         [label]="'Beläge'"
+         [label]="'Toppings'"
          [multiple]="true"
          tabindex="0">
-      <div cngxOption value="cheese">Käse</div>
+      <div cngxOption value="cheese">Cheese</div>
       <div cngxOption value="pepperoni">Pepperoni</div>
       <div cngxOption value="mushroom">Champignons</div>
       <div cngxOption value="olive">Oliven</div>
@@ -317,10 +317,10 @@ import { MatOption } from '@angular/material/core';
     this.matSelectField().markAsTouched();
   }`;
   protected readonly _srcHtml2 = `<cngx-form-field [field]="matSelectField">
-    <label cngxLabel>Größe</label>
+    <label cngxLabel>Size</label>
     <mat-select cngxBindField
                 [formControl]="matSelectControl"
-                placeholder="Bitte wählen"
+                placeholder="Choose…"
                 style="min-width:200px;display:inline-block">
       <mat-option value="s">Small</mat-option>
       <mat-option value="m">Medium</mat-option>
@@ -391,14 +391,14 @@ import { MatOption } from '@angular/material/core';
     this.matSelectField().markAsTouched();
   }`;
   protected readonly _srcHtml3 = `<cngx-form-field [field]="rfField">
-    <label cngxLabel>Farbe (RF)</label>
+    <label cngxLabel>Color (RF)</label>
     <div cngxListbox
          cngxListboxFieldBridge
-         [label]="'Farbe (RF)'"
+         [label]="'Color (RF)'"
          tabindex="0">
-      <div cngxOption value="red">Rot</div>
-      <div cngxOption value="green">Grün</div>
-      <div cngxOption value="blue">Blau</div>
+      <div cngxOption value="red">Red</div>
+      <div cngxOption value="green">Green</div>
+      <div cngxOption value="blue">Blue</div>
     </div>
     <cngx-field-errors />
   </cngx-form-field>

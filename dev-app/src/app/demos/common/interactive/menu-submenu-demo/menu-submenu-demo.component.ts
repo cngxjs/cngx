@@ -38,17 +38,9 @@ import { CngxPopover } from '@cngx/common/popover';
         [sourceCss]="_srcCss0">
         
   <style>
-    .trigger { min-width: 120px; padding: 8px 12px; border: 1px solid #d0d5dd; border-radius: 6px; background: #fff; cursor: pointer; font: inherit; }
-    .trigger:focus-visible { outline: 2px solid #4a8cff; outline-offset: 2px; }
-    .pop { margin: 4px 0; padding: 4px; min-width: 240px; border: 1px solid #d0d5dd; border-radius: 6px; background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
-    .menu { list-style: none; margin: 0; padding: 0; outline: none; }
-    .menu [cngxMenuItem] { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 4px; cursor: pointer; user-select: none; }
-    .menu [cngxMenuItem]:hover, .menu .cngx-menu-item--highlighted { background: rgba(74, 140, 255, 0.15); }
-    .menu .cngx-menu-item--disabled { opacity: 0.5; cursor: not-allowed; }
-    .menu .cngx-menu-item__icon { display: inline-flex; align-items: center; justify-content: center; min-width: 1.25rem; font-size: 1rem; }
-    .menu .cngx-menu-item__label { flex: 1; min-width: 0; }
-    .menu .cngx-menu-item__kbd { margin-left: auto; padding: 1px 6px; font-family: ui-monospace, monospace; font-size: 0.75rem; color: #64748b; border: 1px solid #d0d5dd; border-radius: 4px; background: #f9fafb; }
-    .menu [cngxMenuSeparator] { display: block; height: 1px; margin: 4px 6px; background: #e5e7eb; list-style: none; }
+    .trigger { min-width: 120px; padding: 8px 12px; border: 1px solid var(--cngx-color-border, #d0d5dd); border-radius: 6px; background: var(--cngx-color-surface, #fff); color: var(--cngx-color-text, inherit); cursor: pointer; font: inherit; }
+    .trigger:focus-visible { outline: 2px solid var(--cngx-color-primary, #4a8cff); outline-offset: 2px; }
+    .pop { margin: 4px 0; min-width: 240px; border: 1px solid var(--cngx-color-border, #d0d5dd); border-radius: 6px; background: var(--cngx-color-surface, #fff); color: var(--cngx-color-text, inherit); box-shadow: 0 4px 12px oklch(0 0 0 / 0.12); }
   </style>
   <button
     type="button"
@@ -134,17 +126,9 @@ import { CngxPopover } from '@cngx/common/popover';
 export class MenuSubmenuDemoComponent {
   protected readonly _s0 = 'Open the menu (ArrowDown / Enter / Space). Highlight "Open Recent" and press ArrowRight to open the submenu — focus transfers to its first file. ArrowLeft / Escape close. Activating a leaf closes everything.';
   protected readonly _srcHtml0 = `<style>
-    .trigger { min-width: 120px; padding: 8px 12px; border: 1px solid #d0d5dd; border-radius: 6px; background: #fff; cursor: pointer; font: inherit; }
-    .trigger:focus-visible { outline: 2px solid #4a8cff; outline-offset: 2px; }
-    .pop { margin: 4px 0; padding: 4px; min-width: 240px; border: 1px solid #d0d5dd; border-radius: 6px; background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
-    .menu { list-style: none; margin: 0; padding: 0; outline: none; }
-    .menu [cngxMenuItem] { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 4px; cursor: pointer; user-select: none; }
-    .menu [cngxMenuItem]:hover, .menu .cngx-menu-item--highlighted { background: rgba(74, 140, 255, 0.15); }
-    .menu .cngx-menu-item--disabled { opacity: 0.5; cursor: not-allowed; }
-    .menu .cngx-menu-item__icon { display: inline-flex; align-items: center; justify-content: center; min-width: 1.25rem; font-size: 1rem; }
-    .menu .cngx-menu-item__label { flex: 1; min-width: 0; }
-    .menu .cngx-menu-item__kbd { margin-left: auto; padding: 1px 6px; font-family: ui-monospace, monospace; font-size: 0.75rem; color: #64748b; border: 1px solid #d0d5dd; border-radius: 4px; background: #f9fafb; }
-    .menu [cngxMenuSeparator] { display: block; height: 1px; margin: 4px 6px; background: #e5e7eb; list-style: none; }
+    .trigger { min-width: 120px; padding: 8px 12px; border: 1px solid var(--cngx-color-border, #d0d5dd); border-radius: 6px; background: var(--cngx-color-surface, #fff); color: var(--cngx-color-text, inherit); cursor: pointer; font: inherit; }
+    .trigger:focus-visible { outline: 2px solid var(--cngx-color-primary, #4a8cff); outline-offset: 2px; }
+    .pop { margin: 4px 0; min-width: 240px; border: 1px solid var(--cngx-color-border, #d0d5dd); border-radius: 6px; background: var(--cngx-color-surface, #fff); color: var(--cngx-color-text, inherit); box-shadow: 0 4px 12px oklch(0 0 0 / 0.12); }
   </style>
   <button
     type="button"
@@ -231,21 +215,21 @@ import { CngxPopover } from '@cngx/common/popover';
   protected readonly _srcCss0 = `.trigger {
   min-width: 120px;
   padding: 8px 12px;
-  border: 1px solid var(--cngx-surface-border, #d0d5dd);
+  border: 1px solid var(--cngx-color-border, #d0d5dd);
   border-radius: var(--cngx-radius-md, 6px);
-  background: var(--cngx-surface-default, #fff);
+  background: var(--cngx-color-surface, #fff);
   cursor: pointer;
   font: inherit;
 }
 .trigger:focus-visible {
-  outline: 2px solid var(--cngx-focus-ring, #4a8cff);
+  outline: 2px solid var(--cngx-color-primary, #4a8cff);
   outline-offset: 2px;
 }
 .pop {
   margin: 4px 0;
   padding: 4px;
   min-width: 240px;
-  border: 1px solid var(--cngx-surface-border, #d0d5dd);
+  border: 1px solid var(--cngx-color-border, #d0d5dd);
   border-radius: 6px;
   background: #fff;
   box-shadow: 0 4px 12px rgba(0,0,0,0.08);
@@ -285,7 +269,7 @@ import { CngxPopover } from '@cngx/common/popover';
   font-family: var(--cngx-font-mono, ui-monospace, monospace);
   font-size: 0.75rem;
   color: var(--cngx-text-muted, #64748b);
-  border: 1px solid var(--cngx-surface-border, #d0d5dd);
+  border: 1px solid var(--cngx-color-border, #d0d5dd);
   border-radius: 4px;
   background: var(--cngx-surface-muted, #f9fafb);
 }
@@ -293,7 +277,7 @@ import { CngxPopover } from '@cngx/common/popover';
   display: block;
   height: 1px;
   margin: 4px 6px;
-  background: var(--cngx-surface-border, #e5e7eb);
+  background: var(--cngx-color-border, #e5e7eb);
   list-style: none;
 }`;
 

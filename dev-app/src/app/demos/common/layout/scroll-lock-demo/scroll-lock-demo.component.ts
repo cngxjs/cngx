@@ -36,7 +36,7 @@ import { CngxScrollLock } from '@cngx/common';
       </span>
     </div>
 
-    <p style="font-size:0.875rem;color:var(--text-muted,#888);margin:0 0 16px">
+    <p style="font-size:0.875rem;color:var(--cngx-color-text-muted);margin:0 0 16px">
       Toggle the lock and try scrolling this page. The body gets <code>overflow: hidden</code>
       while <code>scrollbar-gutter: stable</code> prevents layout shift from the scrollbar disappearing.
       This is ref-counted — nested locks (e.g. stacked dialogs) work correctly.
@@ -44,7 +44,7 @@ import { CngxScrollLock } from '@cngx/common';
 
     <div style="display:flex;flex-direction:column;gap:8px">
       @for (i of [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]; track i) {
-        <div style="padding:12px 16px;background:var(--cngx-card-bg,#f8fafc);border-radius:6px;border:1px solid var(--cngx-border,#eee)">
+        <div style="padding:12px 16px;background:var(--cngx-card-bg,#f8fafc);border-radius:6px;border:1px solid var(--cngx-color-border,#eee)">
           Scrollable content row {{ i }}
         </div>
       }
@@ -68,7 +68,7 @@ export class ScrollLockDemoComponent {
       </span>
     </div>
 
-    <p style="font-size:0.875rem;color:var(--text-muted,#888);margin:0 0 16px">
+    <p style="font-size:0.875rem;color:var(--cngx-color-text-muted);margin:0 0 16px">
       Toggle the lock and try scrolling this page. The body gets <code>overflow: hidden</code>
       while <code>scrollbar-gutter: stable</code> prevents layout shift from the scrollbar disappearing.
       This is ref-counted — nested locks (e.g. stacked dialogs) work correctly.
@@ -76,7 +76,7 @@ export class ScrollLockDemoComponent {
 
     <div style="display:flex;flex-direction:column;gap:8px">
       @for (i of [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]; track i) {
-        <div style="padding:12px 16px;background:var(--cngx-card-bg,#f8fafc);border-radius:6px;border:1px solid var(--cngx-border,#eee)">
+        <div style="padding:12px 16px;background:var(--cngx-card-bg,#f8fafc);border-radius:6px;border:1px solid var(--cngx-color-border,#eee)">
           Scrollable content row {{ i }}
         </div>
       }

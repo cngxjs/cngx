@@ -31,7 +31,7 @@ import { CngxKeyboardShortcut } from '@cngx/common/interactive';
       Then click into the input and try again — it won't fire.
     </p>
     <input placeholder="Type here — Ctrl+K won't fire"
-           style="padding:8px 12px;border:1px solid var(--cngx-border,#ddd);border-radius:6px;width:260px" />
+           style="padding:8px 12px;border:1px solid var(--cngx-color-border,#ddd);border-radius:6px;width:260px" />
   </div>
 
   <div class="event-grid" style="margin-top:12px">
@@ -53,7 +53,7 @@ import { CngxKeyboardShortcut } from '@cngx/common/interactive';
   <div [cngxKeyboardShortcut]="'escape'" [shortcutScope]="'self'"
        (shortcutTriggered)="handleEscape()"
        tabindex="0"
-       style="padding:16px;border:2px dashed var(--cngx-border,#ddd);border-radius:8px;
+       style="padding:16px;border:2px dashed var(--cngx-color-border,#ddd);border-radius:8px;
               max-width:300px;cursor:pointer;outline:none"
        [style.borderColor]="escapeCount() > 0 ? 'var(--interactive,#f5a623)' : ''">
     <p style="margin:0;font-size:0.875rem">Click me, then press <kbd style="padding:2px 6px;background:var(--code-bg,#f5f5f5);border:1px solid var(--code-border,#ddd);border-radius:3px;font-size:0.8rem">Escape</kbd></p>
@@ -77,7 +77,7 @@ export class KeyboardShortcutDemoComponent {
       Then click into the input and try again — it won't fire.
     </p>
     <input placeholder="Type here — Ctrl+K won't fire"
-           style="padding:8px 12px;border:1px solid var(--cngx-border,#ddd);border-radius:6px;width:260px" />
+           style="padding:8px 12px;border:1px solid var(--cngx-color-border,#ddd);border-radius:6px;width:260px" />
   </div>
 
   <div class="event-grid" style="margin-top:12px">
@@ -109,7 +109,7 @@ export class KeyboardShortcutDemoComponent {
   protected readonly _srcHtml1 = `<div [cngxKeyboardShortcut]="'escape'" [shortcutScope]="'self'"
        (shortcutTriggered)="handleEscape()"
        tabindex="0"
-       style="padding:16px;border:2px dashed var(--cngx-border,#ddd);border-radius:8px;
+       style="padding:16px;border:2px dashed var(--cngx-color-border,#ddd);border-radius:8px;
               max-width:300px;cursor:pointer;outline:none"
        [style.borderColor]="escapeCount() > 0 ? 'var(--interactive,#f5a623)' : ''">
     <p style="margin:0;font-size:0.875rem">Click me, then press <kbd style="padding:2px 6px;background:var(--code-bg,#f5f5f5);border:1px solid var(--code-border,#ddd);border-radius:3px;font-size:0.8rem">Escape</kbd></p>

@@ -237,7 +237,7 @@ import { FILTER_BUILDER_FIELDS, FILTER_BUILDER_PEOPLE, type FilterBuilderPerson 
 }
 .demo-table th, .demo-table td {
   padding: var(--cngx-demo-cell-pad, 6px 10px);
-  border-bottom: var(--cngx-demo-row-border, 1px solid var(--cngx-border, #ddd));
+  border-bottom: var(--cngx-demo-row-border, 1px solid var(--cngx-color-border, #ddd));
   text-align: left;
 }
 .demo-table th { background: var(--cngx-surface-variant, #f5f5f5); font-weight: 600; }

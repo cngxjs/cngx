@@ -33,7 +33,7 @@ import { CngxSpeak } from '@cngx/common/interactive';
           padding: 16px 20px;
           border-radius: 8px;
           background: linear-gradient(135deg, var(--cngx-surface-alt, #f8f9fa), var(--cngx-surface, #fff));
-          border: 1px solid var(--cngx-border, #ddd);
+          border: 1px solid var(--cngx-color-border, #ddd);
           line-height: 1.6;
           font-size: 0.875rem;
           flex: 1;
@@ -104,8 +104,8 @@ import { CngxSpeak } from '@cngx/common/interactive';
       placeholder="user@example.com"
       [value]="email()"
       (input)="email.set($any($event.target).value)"
-      [style.borderColor]="emailError() ? '#e53e3e' : 'var(--cngx-border, #ddd)'"
-      style="padding: 8px 12px; border-radius: 6px; border: 1px solid var(--cngx-border, #ddd); font-size: 0.875rem;"
+      [style.borderColor]="emailError() ? '#e53e3e' : 'var(--cngx-color-border, #ddd)'"
+      style="padding: 8px 12px; border-radius: 6px; border: 1px solid var(--cngx-color-border, #ddd); font-size: 0.875rem;"
     />
     <div style="min-height: 1.25rem; font-size: 0.8125rem; display: flex; align-items: center; gap: 6px;"
          [style.color]="emailError() ? '#e53e3e' : 'transparent'">
@@ -142,7 +142,7 @@ export class SpeakDemoComponent {
           padding: 16px 20px;
           border-radius: 8px;
           background: linear-gradient(135deg, var(--cngx-surface-alt, #f8f9fa), var(--cngx-surface, #fff));
-          border: 1px solid var(--cngx-border, #ddd);
+          border: 1px solid var(--cngx-color-border, #ddd);
           line-height: 1.6;
           font-size: 0.875rem;
           flex: 1;
@@ -215,8 +215,8 @@ export class SpeakDemoComponent {
       placeholder="user@example.com"
       [value]="email()"
       (input)="email.set($any($event.target).value)"
-      [style.borderColor]="emailError() ? '#e53e3e' : 'var(--cngx-border, #ddd)'"
-      style="padding: 8px 12px; border-radius: 6px; border: 1px solid var(--cngx-border, #ddd); font-size: 0.875rem;"
+      [style.borderColor]="emailError() ? '#e53e3e' : 'var(--cngx-color-border, #ddd)'"
+      style="padding: 8px 12px; border-radius: 6px; border: 1px solid var(--cngx-color-border, #ddd); font-size: 0.875rem;"
     />
     <div style="min-height: 1.25rem; font-size: 0.8125rem; display: flex; align-items: center; gap: 6px;"
          [style.color]="emailError() ? '#e53e3e' : 'transparent'">

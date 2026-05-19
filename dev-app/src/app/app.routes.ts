@@ -492,6 +492,11 @@ export const routes: Routes = [
           import('./demos/forms/autosize-demo/autosize-demo.component').then((m) => m.AutosizeDemoComponent),
       },
       {
+        path: 'combobox',
+        loadComponent: () =>
+          import('./demos/forms/combobox-demo/combobox-demo.component').then((m) => m.ComboboxDemoComponent),
+      },
+      {
         path: 'field',
         loadComponent: () =>
           import('./demos/forms/field-demo/field-demo.component').then((m) => m.FieldDemoComponent),
@@ -562,6 +567,11 @@ export const routes: Routes = [
           import('./demos/forms/material-demo/material-demo.component').then((m) => m.MaterialDemoComponent),
       },
       {
+        path: 'multi-select',
+        loadComponent: () =>
+          import('./demos/forms/multi-select-demo/multi-select-demo.component').then((m) => m.MultiSelectDemoComponent),
+      },
+      {
         path: 'numeric',
         loadComponent: () =>
           import('./demos/forms/numeric-demo/numeric-demo.component').then((m) => m.NumericDemoComponent),
@@ -575,11 +585,6 @@ export const routes: Routes = [
         path: 'reorderable-multi-select',
         loadComponent: () =>
           import('./demos/forms/reorderable-multi-select-demo/reorderable-multi-select-demo.component').then((m) => m.ReorderableMultiSelectDemoComponent),
-      },
-      {
-        path: 'select',
-        loadComponent: () =>
-          import('./demos/forms/select-demo/select-demo.component').then((m) => m.SelectDemoComponent),
       },
       {
         path: 'select-compare',
@@ -597,9 +602,19 @@ export const routes: Routes = [
           import('./demos/forms/select-virtual-demo/select-virtual-demo.component').then((m) => m.SelectVirtualDemoComponent),
       },
       {
+        path: 'single-select',
+        loadComponent: () =>
+          import('./demos/forms/single-select-demo/single-select-demo.component').then((m) => m.SingleSelectDemoComponent),
+      },
+      {
         path: 'tree-select',
         loadComponent: () =>
           import('./demos/forms/tree-select-demo/tree-select-demo.component').then((m) => m.TreeSelectDemoComponent),
+      },
+      {
+        path: 'typeahead',
+        loadComponent: () =>
+          import('./demos/forms/typeahead-demo/typeahead-demo.component').then((m) => m.TypeaheadDemoComponent),
       },
       {
         path: 'utilities',

@@ -72,7 +72,7 @@ import { CngxExpandableText } from '@cngx/common/layout';
         <button type="button" (click)="toggle()"
                 [attr.aria-expanded]="expanded"
                 style="display:inline-flex;align-items:center;gap:4px;margin-top:4px;
-                       background:none;border:1px solid var(--cngx-border,#ddd);border-radius:4px;
+                       background:none;border:1px solid var(--cngx-color-border,#ddd);border-radius:4px;
                        padding:4px 10px;cursor:pointer;font-size:0.8125rem;
                        color:var(--interactive,#f5a623)">
           {{ expanded ? 'Collapse' : 'Expand' }}
@@ -124,7 +124,7 @@ export class ExpandableTextDemoComponent {
         <button type="button" (click)="toggle()"
                 [attr.aria-expanded]="expanded"
                 style="display:inline-flex;align-items:center;gap:4px;margin-top:4px;
-                       background:none;border:1px solid var(--cngx-border,#ddd);border-radius:4px;
+                       background:none;border:1px solid var(--cngx-color-border,#ddd);border-radius:4px;
                        padding:4px 10px;cursor:pointer;font-size:0.8125rem;
                        color:var(--interactive,#f5a623)">
           {{ expanded ? 'Collapse' : 'Expand' }}

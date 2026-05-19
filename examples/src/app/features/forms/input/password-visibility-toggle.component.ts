@@ -68,6 +68,11 @@ import { CngxInput, CngxPasswordToggle } from '@cngx/forms/input';
 private readonly loginModel = signal({ email: '', password: '' });
 private readonly loginSchema = schema<{ email: string; password: string }>(root => {
   required(root.email);
+  email(root.email);
+  required(root.password);
+  minLength(root.password, 8);
+  maxLength(root.password, 64);
+});
 protected readonly loginForm = form(this.loginModel, this.loginSchema);
 protected readonly passwordField = this.loginForm.password;`;
   protected readonly _exHtml: string = `<div class="demo-form">

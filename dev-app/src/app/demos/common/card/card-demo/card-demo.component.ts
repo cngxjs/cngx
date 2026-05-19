@@ -51,10 +51,10 @@ import { CngxSpeakButton } from '@cngx/ui';
         <span cngxCardSubtitle>Maria Muster, Room 12</span>
       </header>
       <div cngxCardBody>
-        <p style="margin:0;color:var(--text-muted)">Status: Active. Last vitals normal.</p>
+        <p style="margin:0;color:var(--cngx-color-text-muted)">Status: Active. Last vitals normal.</p>
       </div>
       <footer cngxCardFooter>
-        <small style="color:var(--text-muted)">Last updated: today</small>
+        <small style="color:var(--cngx-color-text-muted)">Last updated: today</small>
       </footer>
     </cngx-card>
   </div>
@@ -64,9 +64,15 @@ import { CngxSpeakButton } from '@cngx/ui';
         [sourceHtml]="_srcHtml1"
         [sourceTs]="_srcTs1">
         
+  <div class="button-row" style="margin-bottom:12px">
+    <label style="display:flex;align-items:center;gap:6px;font-size:0.875rem">
+      <input type="checkbox" [checked]="decorativeMedia()" (change)="decorativeMedia.set($any($event.target).checked)" />
+      decorative
+    </label>
+  </div>
   <div style="max-width:320px">
     <cngx-card>
-      <div cngxCardMedia [decorative]="false" aspectRatio="16/9">
+      <div cngxCardMedia [decorative]="decorativeMedia()" aspectRatio="16/9">
         <img src="https://picsum.photos/seed/cngx/640/360" alt="Landscape photo" />
       </div>
       <header cngxCardHeader>
@@ -74,11 +80,21 @@ import { CngxSpeakButton } from '@cngx/ui';
         <span cngxCardSubtitle>Somewhere in the mountains</span>
       </header>
       <div cngxCardBody>
-        <p style="margin:0;color:var(--text-muted);font-size:0.875rem">
+        <p style="margin:0;color:var(--cngx-color-text-muted);font-size:0.875rem">
           A scenic view with full-bleed image using aspect-ratio 16/9.
         </p>
       </div>
     </cngx-card>
+  </div>
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row">
+      <span class="event-label">decorative</span>
+      <span class="event-value">{{ decorativeMedia() }}</span>
+    </div>
+    <div class="event-row">
+      <span class="event-label">Image role</span>
+      <span class="event-value">{{ decorativeMedia() ? 'presentation (alt ignored)' : 'img (alt read by SR)' }}</span>
+    </div>
   </div>
       </app-example-card>
       <app-example-card title="Severity Accent"
@@ -89,49 +105,61 @@ import { CngxSpeakButton } from '@cngx/ui';
   <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px">
     <cngx-card cngxCardAccent="danger">
       <header cngxCardHeader><h3 cngxCardTitle>Danger</h3></header>
-      <div cngxCardBody style="font-size:0.875rem;color:var(--text-muted)">Critical alert</div>
+      <div cngxCardBody style="font-size:0.875rem;color:var(--cngx-color-text-muted)">Critical alert</div>
     </cngx-card>
     <cngx-card cngxCardAccent="warning">
       <header cngxCardHeader><h3 cngxCardTitle>Warning</h3></header>
-      <div cngxCardBody style="font-size:0.875rem;color:var(--text-muted)">Needs attention</div>
+      <div cngxCardBody style="font-size:0.875rem;color:var(--cngx-color-text-muted)">Needs attention</div>
     </cngx-card>
     <cngx-card cngxCardAccent="success">
       <header cngxCardHeader><h3 cngxCardTitle>Success</h3></header>
-      <div cngxCardBody style="font-size:0.875rem;color:var(--text-muted)">All clear</div>
+      <div cngxCardBody style="font-size:0.875rem;color:var(--cngx-color-text-muted)">All clear</div>
     </cngx-card>
     <cngx-card cngxCardAccent="info">
       <header cngxCardHeader><h3 cngxCardTitle>Info</h3></header>
-      <div cngxCardBody style="font-size:0.875rem;color:var(--text-muted)">For your information</div>
+      <div cngxCardBody style="font-size:0.875rem;color:var(--cngx-color-text-muted)">For your information</div>
     </cngx-card>
     <cngx-card cngxCardAccent="neutral">
       <header cngxCardHeader><h3 cngxCardTitle>Neutral</h3></header>
-      <div cngxCardBody style="font-size:0.875rem;color:var(--text-muted)">Default state</div>
+      <div cngxCardBody style="font-size:0.875rem;color:var(--cngx-color-text-muted)">Default state</div>
     </cngx-card>
   </div>
       </app-example-card>
-      <app-example-card title="Skeleton Loading"
+      <app-example-card title="Loading State"
         [subtitle]="_s3"
         [sourceHtml]="_srcHtml3"
         [sourceTs]="_srcTs3">
         
   <div class="button-row" style="margin-bottom:12px">
-    <button (click)="loading.update(v => !v)">Toggle loading</button>
+    <button (click)="loading.update(v => !v)">Toggle loading: {{ loading() ? 'on' : 'off' }}</button>
+    <label style="display:flex;align-items:center;gap:6px;font-size:0.875rem">
+      <input type="checkbox" [checked]="showSkeleton()" (change)="showSkeleton.set($any($event.target).checked)" />
+      Replace with skeleton
+    </label>
   </div>
   <div style="max-width:320px">
     <cngx-card [loading]="loading()">
-      @if (loading()) {
+      @if (loading() && showSkeleton()) {
         <cngx-card-skeleton [lines]="2" />
       } @else {
-        <ng-container>
-          <header cngxCardHeader>
-            <h3 cngxCardTitle>Vitals Overview</h3>
-          </header>
-          <div cngxCardBody>
-            <p style="margin:0;color:var(--text-muted)">Heart rate, blood pressure, SpO2 values from the last 24 hours.</p>
-          </div>
-        </ng-container>
+        <header cngxCardHeader>
+          <h3 cngxCardTitle>Vitals Overview</h3>
+        </header>
+        <div cngxCardBody>
+          <p style="margin:0;color:var(--cngx-color-text-muted)">Heart rate, blood pressure, SpO2 values from the last 24 hours.</p>
+        </div>
       }
     </cngx-card>
+  </div>
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row">
+      <span class="event-label">loading</span>
+      <span class="event-value">{{ loading() }}</span>
+    </div>
+    <div class="event-row">
+      <span class="event-label">aria-busy</span>
+      <span class="event-value">{{ loading() ? 'true' : 'false' }}</span>
+    </div>
   </div>
       </app-example-card>
       <app-example-card title="Action Card with Selection"
@@ -140,62 +168,53 @@ import { CngxSpeakButton } from '@cngx/ui';
         [sourceTs]="_srcTs4">
         
   <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;max-width:660px">
-    <cngx-card as="button" [selectable]="true" [(selected)]="selected"
+    <cngx-card as="button" [selectable]="true" [(selected)]="selectedMaria"
                ariaLabel="Select patient Maria Muster">
       <header cngxCardHeader>
         <h3 style="margin:0;font-weight:600;font-size:0.9375rem">Maria Muster</h3>
       </header>
       <div cngxCardBody>
-        <span style="font-size:0.8125rem;color:var(--text-muted)">Room 12</span>
+        <span style="font-size:0.8125rem;color:var(--cngx-color-text-muted)">Room 12</span>
       </div>
     </cngx-card>
-    <cngx-card as="button" ariaLabel="View patient Hans Huber">
+    <cngx-card as="button" [selectable]="true" [(selected)]="selectedHans"
+               ariaLabel="Select patient Hans Huber">
       <header cngxCardHeader>
         <h3 style="margin:0;font-weight:600;font-size:0.9375rem">Hans Huber</h3>
       </header>
       <div cngxCardBody>
-        <span style="font-size:0.8125rem;color:var(--text-muted)">Room 7</span>
+        <span style="font-size:0.8125rem;color:var(--cngx-color-text-muted)">Room 7</span>
       </div>
     </cngx-card>
-    <cngx-card as="button" ariaLabel="View patient Lisa Lang">
+    <cngx-card as="button" [selectable]="true" [(selected)]="selectedLisa"
+               ariaLabel="Select patient Lisa Lang">
       <header cngxCardHeader>
         <h3 style="margin:0;font-weight:600;font-size:0.9375rem">Lisa Lang</h3>
       </header>
       <div cngxCardBody>
-        <span style="font-size:0.8125rem;color:var(--text-muted)">Room 3</span>
+        <span style="font-size:0.8125rem;color:var(--cngx-color-text-muted)">Room 3</span>
       </div>
     </cngx-card>
   </div>
   <div class="event-grid" style="margin-top:12px">
     <div class="event-row">
-      <span class="event-label">selected</span>
-      <span class="event-value">{{ selected() }}</span>
+      <span class="event-label">Maria</span>
+      <span class="event-value">{{ selectedMaria() }}</span>
+    </div>
+    <div class="event-row">
+      <span class="event-label">Hans</span>
+      <span class="event-value">{{ selectedHans() }}</span>
+    </div>
+    <div class="event-row">
+      <span class="event-label">Lisa</span>
+      <span class="event-value">{{ selectedLisa() }}</span>
     </div>
   </div>
       </app-example-card>
-      <app-example-card title="Loading State"
+      <app-example-card title="Disabled with Reason"
         [subtitle]="_s5"
         [sourceHtml]="_srcHtml5"
         [sourceTs]="_srcTs5">
-        
-  <div class="button-row" style="margin-bottom:12px">
-    <button (click)="loading.update(v => !v)">Toggle loading</button>
-  </div>
-  <div style="max-width:300px">
-    <cngx-card [loading]="loading()">
-      <header cngxCardHeader>
-        <h3 style="margin:0;font-weight:600;font-size:1rem">Vitals</h3>
-      </header>
-      <div cngxCardBody>
-        <p style="margin:0;color:var(--text-muted)">Heart rate, blood pressure, SpO2</p>
-      </div>
-    </cngx-card>
-  </div>
-      </app-example-card>
-      <app-example-card title="Disabled with Reason"
-        [subtitle]="_s6"
-        [sourceHtml]="_srcHtml6"
-        [sourceTs]="_srcTs6">
         
   <div style="max-width:400px">
     <cngx-card as="button" [disabled]="true"
@@ -205,23 +224,23 @@ import { CngxSpeakButton } from '@cngx/ui';
         <h3 style="margin:0;font-weight:600;font-size:1rem">Edit Resident</h3>
       </header>
       <div cngxCardBody>
-        <p style="margin:0;color:var(--text-muted)">This card is disabled with a reason</p>
+        <p style="margin:0;color:var(--cngx-color-text-muted)">This card is disabled with a reason</p>
       </div>
     </cngx-card>
   </div>
       </app-example-card>
       <app-example-card title="Interactive Card with Actions"
-        [subtitle]="_s7"
-        [sourceHtml]="_srcHtml7"
-        [sourceTs]="_srcTs7">
+        [subtitle]="_s6"
+        [sourceHtml]="_srcHtml6"
+        [sourceTs]="_srcTs6">
         
   <div style="max-width:400px">
     <cngx-card>
       <header cngxCardHeader>
-        <h3 style="margin:0;font-weight:600;font-size:1rem">Pflegeplan</h3>
+        <h3 style="margin:0;font-weight:600;font-size:1rem">Care plan</h3>
       </header>
       <div cngxCardBody>
-        <p style="margin:0;color:var(--text-muted)">Next evaluation: 18.07.2025</p>
+        <p style="margin:0;color:var(--cngx-color-text-muted)">Next evaluation: 18.07.2025</p>
       </div>
       <div cngxCardActions align="end">
         <button class="chip">Edit</button>
@@ -231,21 +250,21 @@ import { CngxSpeakButton } from '@cngx/ui';
   </div>
       </app-example-card>
       <app-example-card title="Card with Badge"
-        [subtitle]="_s8"
-        [sourceHtml]="_srcHtml8"
-        [sourceTs]="_srcTs8">
+        [subtitle]="_s7"
+        [sourceHtml]="_srcHtml7"
+        [sourceTs]="_srcTs7">
         
   <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:24px;max-width:760px">
     <cngx-card style="overflow:visible">
       <span cngxCardBadge position="top-end"
             style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;
-                   border-radius:50%;background:#ef4444;color:#fff;font-size:0.7rem;font-weight:700">
+                   border-radius:50%;background:var(--cngx-color-danger);color:var(--cngx-color-surface);font-size:0.7rem;font-weight:700">
         P
       </span>
       <header cngxCardHeader>
         <h3 cngxCardTitle>Static Badge</h3>
       </header>
-      <div cngxCardBody style="font-size:0.875rem;color:var(--text-muted)">
+      <div cngxCardBody style="font-size:0.875rem;color:var(--cngx-color-text-muted)">
         Non-interactive span badge
       </div>
     </cngx-card>
@@ -256,27 +275,27 @@ import { CngxSpeakButton } from '@cngx/ui';
               (click)="handleBadgeClick($event)"
               aria-label="Open permissions dialog"
               style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;
-                     border-radius:50%;background:#ef4444;color:#fff;font-size:0.7rem;font-weight:700;
-                     border:2px solid #fff;cursor:pointer;padding:0">
+                     border-radius:50%;background:var(--cngx-color-danger);color:var(--cngx-color-surface);font-size:0.7rem;font-weight:700;
+                     border:2px solid var(--cngx-color-surface);cursor:pointer;padding:0">
         P
       </button>
       <header cngxCardHeader>
         <h3 cngxCardTitle>Clickable Badge</h3>
       </header>
-      <div cngxCardBody style="font-size:0.875rem;color:var(--text-muted)">
+      <div cngxCardBody style="font-size:0.875rem;color:var(--cngx-color-text-muted)">
         Button card + button badge. Click each to test event bubbling.
       </div>
     </cngx-card>
 
     <cngx-card style="overflow:visible">
       <span cngxCardBadge position="top-start"
-            style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#22c55e"
+            style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--cngx-color-success)"
             role="status" aria-label="Online">
       </span>
       <header cngxCardHeader>
         <h3 cngxCardTitle>Status Dot</h3>
       </header>
-      <div cngxCardBody style="font-size:0.875rem;color:var(--text-muted)">
+      <div cngxCardBody style="font-size:0.875rem;color:var(--cngx-color-text-muted)">
         Badge at top-start
       </div>
     </cngx-card>
@@ -294,9 +313,9 @@ import { CngxSpeakButton } from '@cngx/ui';
   </div>
       </app-example-card>
       <app-example-card title="Card with Expandable Text"
-        [subtitle]="_s9"
-        [sourceHtml]="_srcHtml9"
-        [sourceTs]="_srcTs9">
+        [subtitle]="_s8"
+        [sourceHtml]="_srcHtml8"
+        [sourceTs]="_srcTs8">
         
   <div style="max-width:400px">
     <cngx-card>
@@ -324,9 +343,9 @@ import { CngxSpeakButton } from '@cngx/ui';
   </div>
       </app-example-card>
       <app-example-card title="Card with Disclosure (Expand/Collapse)"
-        [subtitle]="_s10"
-        [sourceHtml]="_srcHtml10"
-        [sourceTs]="_srcTs10">
+        [subtitle]="_s9"
+        [sourceHtml]="_srcHtml9"
+        [sourceTs]="_srcTs9">
         
   <div style="max-width:400px;display:flex;flex-direction:column;gap:12px">
     <cngx-card>
@@ -337,7 +356,7 @@ import { CngxSpeakButton } from '@cngx/ui';
       </header>
       @if (d1.opened()) {
         <div cngxCardBody id="detail-1">
-          <p style="margin:0;color:var(--text-muted);font-size:0.875rem">
+          <p style="margin:0;color:var(--cngx-color-text-muted);font-size:0.875rem">
             Patient has learned preventive measures and applies them independently.
             Evaluation: 17.10.2025. Uses aids correctly. Next evaluation: 27.03.2026.
           </p>
@@ -352,7 +371,7 @@ import { CngxSpeakButton } from '@cngx/ui';
       </header>
       @if (d2.opened()) {
         <div cngxCardBody id="detail-2">
-          <p style="margin:0;color:var(--text-muted);font-size:0.875rem">
+          <p style="margin:0;color:var(--cngx-color-text-muted);font-size:0.875rem">
             Hazard sources in the environment have been reduced.
             Can organize daily routine independently.
           </p>
@@ -362,9 +381,9 @@ import { CngxSpeakButton } from '@cngx/ui';
   </div>
       </app-example-card>
       <app-example-card title="Card with Speak Badge"
-        [subtitle]="_s11"
-        [sourceHtml]="_srcHtml11"
-        [sourceTs]="_srcTs11">
+        [subtitle]="_s10"
+        [sourceHtml]="_srcHtml10"
+        [sourceTs]="_srcTs10">
         
   <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:24px;max-width:760px">
     <cngx-card style="overflow:visible">
@@ -378,13 +397,13 @@ import { CngxSpeakButton } from '@cngx/ui';
            [cngxSpeak]="'Project Summary, Q1 2026. 12 features shipped. 3 bugs resolved. 98 percent uptime. Next milestone: public beta in April.'"
            [enabled]="false"
            #tts1="cngxSpeak">
-        <p style="margin:0 0 4px;color:var(--text-muted);font-size:0.875rem">
+        <p style="margin:0 0 4px;color:var(--cngx-color-text-muted);font-size:0.875rem">
           12 features shipped
         </p>
-        <p style="margin:0 0 4px;color:var(--text-muted);font-size:0.875rem">
+        <p style="margin:0 0 4px;color:var(--cngx-color-text-muted);font-size:0.875rem">
           3 bugs resolved
         </p>
-        <p style="margin:0;color:var(--text-muted);font-size:0.875rem">
+        <p style="margin:0;color:var(--cngx-color-text-muted);font-size:0.875rem">
           98% uptime &mdash; next: public beta
         </p>
       </div>
@@ -401,13 +420,13 @@ import { CngxSpeakButton } from '@cngx/ui';
            [cngxSpeak]="'Team Updates. Anna completed the dashboard redesign. Ben merged the API refactor. Clara started the accessibility audit.'"
            [enabled]="false"
            #tts2="cngxSpeak">
-        <p style="margin:0 0 4px;color:var(--text-muted);font-size:0.875rem">
+        <p style="margin:0 0 4px;color:var(--cngx-color-text-muted);font-size:0.875rem">
           Anna: Dashboard redesign done
         </p>
-        <p style="margin:0 0 4px;color:var(--text-muted);font-size:0.875rem">
+        <p style="margin:0 0 4px;color:var(--cngx-color-text-muted);font-size:0.875rem">
           Ben: API refactor merged
         </p>
-        <p style="margin:0;color:var(--text-muted);font-size:0.875rem">
+        <p style="margin:0;color:var(--cngx-color-text-muted);font-size:0.875rem">
           Clara: A11y audit started
         </p>
       </div>
@@ -419,17 +438,16 @@ import { CngxSpeakButton } from '@cngx/ui';
 })
 export class CardDemoComponent {
   protected readonly _s0 = '<code>[cngxCardTitle]</code> and <code>[cngxCardSubtitle]</code> provide consistent typography inside the header.';
-  protected readonly _s1 = '<code>[cngxCardMedia]</code> handles full-bleed images with <code>aspectRatio</code> and <code>decorative</code> inputs.';
+  protected readonly _s1 = '<code>[cngxCardMedia]</code> handles full-bleed images with <code>aspectRatio</code> and <code>decorative</code> inputs. Toggle <code>decorative</code> to switch between <code>role="img"</code> (alt is read) and <code>role="presentation"</code> (alt ignored, image becomes purely visual).';
   protected readonly _s2 = '<code>[cngxCardAccent]</code> adds a colored top border + tinted background. Five severity levels.';
-  protected readonly _s3 = '<code>cngx-card-skeleton</code> replaces content during loading. Toggle to compare skeleton vs. real content.';
-  protected readonly _s4 = 'The entire card is clickable. <code>[(selected)]</code> toggles on click and keyboard. Try clicking the cards.';
-  protected readonly _s5 = 'Sets <code>aria-busy="true"</code> and announces "Loading" via SR live region. Toggle to see the visual effect.';
-  protected readonly _s6 = 'Communicates <em>why</em> via <code>aria-describedby</code>. Inspect the card in devtools — the disabled-reason span is always in the DOM.';
-  protected readonly _s7 = 'Multiple independent actions inside. The card itself is <code>role="article"</code> — the buttons carry the interaction.';
-  protected readonly _s8 = '<code>[cngxCardBadge]</code> positions any element at a corner. Works on <code>&lt;span&gt;</code>, <code>&lt;button&gt;</code>, or <code>&lt;a&gt;</code>. Clickable badge on a button card: does the click bubble to the card or stay on the badge?';
-  protected readonly _s9 = 'Long card content with <code>cngx-expandable-text</code> — truncated to 3 lines with a read-more toggle.';
-  protected readonly _s10 = 'Card header as disclosure trigger — click to expand/collapse the body content. Uses <code>cngxDisclosure</code> from interactive.';
-  protected readonly _s11 = 'A <code>cngx-speak-button</code> positioned as a badge reads the card content aloud. The <code>[cngxSpeak]</code> directive on the card body provides the text; the button connects via <code>[speakRef]</code>.';
+  protected readonly _s3 = '<code>[loading]="true"</code> sets <code>aria-busy</code> and announces <em>Loading</em> via SR live region. Toggle <em>Replace with skeleton</em> to compare the aria-only path against a visual <code>cngx-card-skeleton</code> placeholder.';
+  protected readonly _s4 = 'Each card maintains its own selection state via <code>[(selected)]</code>. Toggle on click and keyboard (<kbd>Space</kbd> / <kbd>Enter</kbd>). Try clicking and tabbing between cards.';
+  protected readonly _s5 = 'Communicates <em>why</em> via <code>aria-describedby</code>. Inspect the card in devtools — the disabled-reason span is always in the DOM.';
+  protected readonly _s6 = 'Multiple independent actions inside. The card itself is <code>role="article"</code> — the buttons carry the interaction.';
+  protected readonly _s7 = '<code>[cngxCardBadge]</code> positions any element at a corner. Works on <code>&lt;span&gt;</code>, <code>&lt;button&gt;</code>, or <code>&lt;a&gt;</code>. Clickable badge on a button card: does the click bubble to the card or stay on the badge?';
+  protected readonly _s8 = 'Long card content with <code>cngx-expandable-text</code> — truncated to 3 lines with a read-more toggle.';
+  protected readonly _s9 = 'Card header as disclosure trigger — click to expand/collapse the body content. Uses <code>cngxDisclosure</code> from interactive.';
+  protected readonly _s10 = 'A <code>cngx-speak-button</code> positioned as a badge reads the card content aloud. The <code>[cngxSpeak]</code> directive on the card body provides the text; the button connects via <code>[speakRef]</code>.';
   protected readonly _srcHtml0 = `<div style="max-width:400px">
     <cngx-card>
       <header cngxCardHeader>
@@ -437,10 +455,10 @@ export class CardDemoComponent {
         <span cngxCardSubtitle>Maria Muster, Room 12</span>
       </header>
       <div cngxCardBody>
-        <p style="margin:0;color:var(--text-muted)">Status: Active. Last vitals normal.</p>
+        <p style="margin:0;color:var(--cngx-color-text-muted)">Status: Active. Last vitals normal.</p>
       </div>
       <footer cngxCardFooter>
-        <small style="color:var(--text-muted)">Last updated: today</small>
+        <small style="color:var(--cngx-color-text-muted)">Last updated: today</small>
       </footer>
     </cngx-card>
   </div>`;
@@ -450,8 +468,12 @@ import { CngxDisclosure, CngxSpeak } from '@cngx/common/interactive';
 import { CngxSpeakButton } from '@cngx/ui';
 
 
-  protected selected = signal(false);
+  protected decorativeMedia = signal(false);
   protected loading = signal(false);
+  protected showSkeleton = signal(false);
+  protected selectedMaria = signal(false);
+  protected selectedHans = signal(false);
+  protected selectedLisa = signal(false);
   protected cardClicked = signal(0);
   protected badgeClicked = signal(0);
 
@@ -459,9 +481,15 @@ import { CngxSpeakButton } from '@cngx/ui';
     e.stopPropagation();
     this.badgeClicked.update(n => n + 1);
   }`;
-  protected readonly _srcHtml1 = `<div style="max-width:320px">
+  protected readonly _srcHtml1 = `<div class="button-row" style="margin-bottom:12px">
+    <label style="display:flex;align-items:center;gap:6px;font-size:0.875rem">
+      <input type="checkbox" [checked]="decorativeMedia()" (change)="decorativeMedia.set($any($event.target).checked)" />
+      decorative
+    </label>
+  </div>
+  <div style="max-width:320px">
     <cngx-card>
-      <div cngxCardMedia [decorative]="false" aspectRatio="16/9">
+      <div cngxCardMedia [decorative]="decorativeMedia()" aspectRatio="16/9">
         <img src="https://picsum.photos/seed/cngx/640/360" alt="Landscape photo" />
       </div>
       <header cngxCardHeader>
@@ -469,11 +497,21 @@ import { CngxSpeakButton } from '@cngx/ui';
         <span cngxCardSubtitle>Somewhere in the mountains</span>
       </header>
       <div cngxCardBody>
-        <p style="margin:0;color:var(--text-muted);font-size:0.875rem">
+        <p style="margin:0;color:var(--cngx-color-text-muted);font-size:0.875rem">
           A scenic view with full-bleed image using aspect-ratio 16/9.
         </p>
       </div>
     </cngx-card>
+  </div>
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row">
+      <span class="event-label">decorative</span>
+      <span class="event-value">{{ decorativeMedia() }}</span>
+    </div>
+    <div class="event-row">
+      <span class="event-label">Image role</span>
+      <span class="event-value">{{ decorativeMedia() ? 'presentation (alt ignored)' : 'img (alt read by SR)' }}</span>
+    </div>
   </div>`;
   protected readonly _srcTs1 = `import { CngxCard, CngxCardHeader, CngxCardTitle, CngxCardSubtitle, CngxCardBody, CngxCardMedia, CngxCardFooter, CngxCardActions, CngxCardAccent, CngxCardSkeleton } from '@cngx/common/card';
 import { CngxExpandableText, CngxExpandableToggle } from '@cngx/common/layout';
@@ -481,8 +519,12 @@ import { CngxDisclosure, CngxSpeak } from '@cngx/common/interactive';
 import { CngxSpeakButton } from '@cngx/ui';
 
 
-  protected selected = signal(false);
+  protected decorativeMedia = signal(false);
   protected loading = signal(false);
+  protected showSkeleton = signal(false);
+  protected selectedMaria = signal(false);
+  protected selectedHans = signal(false);
+  protected selectedLisa = signal(false);
   protected cardClicked = signal(0);
   protected badgeClicked = signal(0);
 
@@ -493,23 +535,23 @@ import { CngxSpeakButton } from '@cngx/ui';
   protected readonly _srcHtml2 = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px">
     <cngx-card cngxCardAccent="danger">
       <header cngxCardHeader><h3 cngxCardTitle>Danger</h3></header>
-      <div cngxCardBody style="font-size:0.875rem;color:var(--text-muted)">Critical alert</div>
+      <div cngxCardBody style="font-size:0.875rem;color:var(--cngx-color-text-muted)">Critical alert</div>
     </cngx-card>
     <cngx-card cngxCardAccent="warning">
       <header cngxCardHeader><h3 cngxCardTitle>Warning</h3></header>
-      <div cngxCardBody style="font-size:0.875rem;color:var(--text-muted)">Needs attention</div>
+      <div cngxCardBody style="font-size:0.875rem;color:var(--cngx-color-text-muted)">Needs attention</div>
     </cngx-card>
     <cngx-card cngxCardAccent="success">
       <header cngxCardHeader><h3 cngxCardTitle>Success</h3></header>
-      <div cngxCardBody style="font-size:0.875rem;color:var(--text-muted)">All clear</div>
+      <div cngxCardBody style="font-size:0.875rem;color:var(--cngx-color-text-muted)">All clear</div>
     </cngx-card>
     <cngx-card cngxCardAccent="info">
       <header cngxCardHeader><h3 cngxCardTitle>Info</h3></header>
-      <div cngxCardBody style="font-size:0.875rem;color:var(--text-muted)">For your information</div>
+      <div cngxCardBody style="font-size:0.875rem;color:var(--cngx-color-text-muted)">For your information</div>
     </cngx-card>
     <cngx-card cngxCardAccent="neutral">
       <header cngxCardHeader><h3 cngxCardTitle>Neutral</h3></header>
-      <div cngxCardBody style="font-size:0.875rem;color:var(--text-muted)">Default state</div>
+      <div cngxCardBody style="font-size:0.875rem;color:var(--cngx-color-text-muted)">Default state</div>
     </cngx-card>
   </div>`;
   protected readonly _srcTs2 = `import { CngxCard, CngxCardHeader, CngxCardTitle, CngxCardSubtitle, CngxCardBody, CngxCardMedia, CngxCardFooter, CngxCardActions, CngxCardAccent, CngxCardSkeleton } from '@cngx/common/card';
@@ -518,8 +560,12 @@ import { CngxDisclosure, CngxSpeak } from '@cngx/common/interactive';
 import { CngxSpeakButton } from '@cngx/ui';
 
 
-  protected selected = signal(false);
+  protected decorativeMedia = signal(false);
   protected loading = signal(false);
+  protected showSkeleton = signal(false);
+  protected selectedMaria = signal(false);
+  protected selectedHans = signal(false);
+  protected selectedLisa = signal(false);
   protected cardClicked = signal(0);
   protected badgeClicked = signal(0);
 
@@ -528,23 +574,35 @@ import { CngxSpeakButton } from '@cngx/ui';
     this.badgeClicked.update(n => n + 1);
   }`;
   protected readonly _srcHtml3 = `<div class="button-row" style="margin-bottom:12px">
-    <button (click)="loading.update(v => !v)">Toggle loading</button>
+    <button (click)="loading.update(v => !v)">Toggle loading: {{ loading() ? 'on' : 'off' }}</button>
+    <label style="display:flex;align-items:center;gap:6px;font-size:0.875rem">
+      <input type="checkbox" [checked]="showSkeleton()" (change)="showSkeleton.set($any($event.target).checked)" />
+      Replace with skeleton
+    </label>
   </div>
   <div style="max-width:320px">
     <cngx-card [loading]="loading()">
-      @if (loading()) {
+      @if (loading() && showSkeleton()) {
         <cngx-card-skeleton [lines]="2" />
       } @else {
-        <ng-container>
-          <header cngxCardHeader>
-            <h3 cngxCardTitle>Vitals Overview</h3>
-          </header>
-          <div cngxCardBody>
-            <p style="margin:0;color:var(--text-muted)">Heart rate, blood pressure, SpO2 values from the last 24 hours.</p>
-          </div>
-        </ng-container>
+        <header cngxCardHeader>
+          <h3 cngxCardTitle>Vitals Overview</h3>
+        </header>
+        <div cngxCardBody>
+          <p style="margin:0;color:var(--cngx-color-text-muted)">Heart rate, blood pressure, SpO2 values from the last 24 hours.</p>
+        </div>
       }
     </cngx-card>
+  </div>
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row">
+      <span class="event-label">loading</span>
+      <span class="event-value">{{ loading() }}</span>
+    </div>
+    <div class="event-row">
+      <span class="event-label">aria-busy</span>
+      <span class="event-value">{{ loading() ? 'true' : 'false' }}</span>
+    </div>
   </div>`;
   protected readonly _srcTs3 = `import { CngxCard, CngxCardHeader, CngxCardTitle, CngxCardSubtitle, CngxCardBody, CngxCardMedia, CngxCardFooter, CngxCardActions, CngxCardAccent, CngxCardSkeleton } from '@cngx/common/card';
 import { CngxExpandableText, CngxExpandableToggle } from '@cngx/common/layout';
@@ -552,8 +610,12 @@ import { CngxDisclosure, CngxSpeak } from '@cngx/common/interactive';
 import { CngxSpeakButton } from '@cngx/ui';
 
 
-  protected selected = signal(false);
+  protected decorativeMedia = signal(false);
   protected loading = signal(false);
+  protected showSkeleton = signal(false);
+  protected selectedMaria = signal(false);
+  protected selectedHans = signal(false);
+  protected selectedLisa = signal(false);
   protected cardClicked = signal(0);
   protected badgeClicked = signal(0);
 
@@ -562,36 +624,46 @@ import { CngxSpeakButton } from '@cngx/ui';
     this.badgeClicked.update(n => n + 1);
   }`;
   protected readonly _srcHtml4 = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;max-width:660px">
-    <cngx-card as="button" [selectable]="true" [(selected)]="selected"
+    <cngx-card as="button" [selectable]="true" [(selected)]="selectedMaria"
                ariaLabel="Select patient Maria Muster">
       <header cngxCardHeader>
         <h3 style="margin:0;font-weight:600;font-size:0.9375rem">Maria Muster</h3>
       </header>
       <div cngxCardBody>
-        <span style="font-size:0.8125rem;color:var(--text-muted)">Room 12</span>
+        <span style="font-size:0.8125rem;color:var(--cngx-color-text-muted)">Room 12</span>
       </div>
     </cngx-card>
-    <cngx-card as="button" ariaLabel="View patient Hans Huber">
+    <cngx-card as="button" [selectable]="true" [(selected)]="selectedHans"
+               ariaLabel="Select patient Hans Huber">
       <header cngxCardHeader>
         <h3 style="margin:0;font-weight:600;font-size:0.9375rem">Hans Huber</h3>
       </header>
       <div cngxCardBody>
-        <span style="font-size:0.8125rem;color:var(--text-muted)">Room 7</span>
+        <span style="font-size:0.8125rem;color:var(--cngx-color-text-muted)">Room 7</span>
       </div>
     </cngx-card>
-    <cngx-card as="button" ariaLabel="View patient Lisa Lang">
+    <cngx-card as="button" [selectable]="true" [(selected)]="selectedLisa"
+               ariaLabel="Select patient Lisa Lang">
       <header cngxCardHeader>
         <h3 style="margin:0;font-weight:600;font-size:0.9375rem">Lisa Lang</h3>
       </header>
       <div cngxCardBody>
-        <span style="font-size:0.8125rem;color:var(--text-muted)">Room 3</span>
+        <span style="font-size:0.8125rem;color:var(--cngx-color-text-muted)">Room 3</span>
       </div>
     </cngx-card>
   </div>
   <div class="event-grid" style="margin-top:12px">
     <div class="event-row">
-      <span class="event-label">selected</span>
-      <span class="event-value">{{ selected() }}</span>
+      <span class="event-label">Maria</span>
+      <span class="event-value">{{ selectedMaria() }}</span>
+    </div>
+    <div class="event-row">
+      <span class="event-label">Hans</span>
+      <span class="event-value">{{ selectedHans() }}</span>
+    </div>
+    <div class="event-row">
+      <span class="event-label">Lisa</span>
+      <span class="event-value">{{ selectedLisa() }}</span>
     </div>
   </div>`;
   protected readonly _srcTs4 = `import { CngxCard, CngxCardHeader, CngxCardTitle, CngxCardSubtitle, CngxCardBody, CngxCardMedia, CngxCardFooter, CngxCardActions, CngxCardAccent, CngxCardSkeleton } from '@cngx/common/card';
@@ -600,8 +672,12 @@ import { CngxDisclosure, CngxSpeak } from '@cngx/common/interactive';
 import { CngxSpeakButton } from '@cngx/ui';
 
 
-  protected selected = signal(false);
+  protected decorativeMedia = signal(false);
   protected loading = signal(false);
+  protected showSkeleton = signal(false);
+  protected selectedMaria = signal(false);
+  protected selectedHans = signal(false);
+  protected selectedLisa = signal(false);
   protected cardClicked = signal(0);
   protected badgeClicked = signal(0);
 
@@ -609,16 +685,15 @@ import { CngxSpeakButton } from '@cngx/ui';
     e.stopPropagation();
     this.badgeClicked.update(n => n + 1);
   }`;
-  protected readonly _srcHtml5 = `<div class="button-row" style="margin-bottom:12px">
-    <button (click)="loading.update(v => !v)">Toggle loading</button>
-  </div>
-  <div style="max-width:300px">
-    <cngx-card [loading]="loading()">
+  protected readonly _srcHtml5 = `<div style="max-width:400px">
+    <cngx-card as="button" [disabled]="true"
+               disabledReason="Only nursing staff can edit residents"
+               ariaLabel="Edit resident">
       <header cngxCardHeader>
-        <h3 style="margin:0;font-weight:600;font-size:1rem">Vitals</h3>
+        <h3 style="margin:0;font-weight:600;font-size:1rem">Edit Resident</h3>
       </header>
       <div cngxCardBody>
-        <p style="margin:0;color:var(--text-muted)">Heart rate, blood pressure, SpO2</p>
+        <p style="margin:0;color:var(--cngx-color-text-muted)">This card is disabled with a reason</p>
       </div>
     </cngx-card>
   </div>`;
@@ -628,8 +703,12 @@ import { CngxDisclosure, CngxSpeak } from '@cngx/common/interactive';
 import { CngxSpeakButton } from '@cngx/ui';
 
 
-  protected selected = signal(false);
+  protected decorativeMedia = signal(false);
   protected loading = signal(false);
+  protected showSkeleton = signal(false);
+  protected selectedMaria = signal(false);
+  protected selectedHans = signal(false);
+  protected selectedLisa = signal(false);
   protected cardClicked = signal(0);
   protected badgeClicked = signal(0);
 
@@ -638,14 +717,16 @@ import { CngxSpeakButton } from '@cngx/ui';
     this.badgeClicked.update(n => n + 1);
   }`;
   protected readonly _srcHtml6 = `<div style="max-width:400px">
-    <cngx-card as="button" [disabled]="true"
-               disabledReason="Only nursing staff can edit residents"
-               ariaLabel="Edit resident">
+    <cngx-card>
       <header cngxCardHeader>
-        <h3 style="margin:0;font-weight:600;font-size:1rem">Edit Resident</h3>
+        <h3 style="margin:0;font-weight:600;font-size:1rem">Care plan</h3>
       </header>
       <div cngxCardBody>
-        <p style="margin:0;color:var(--text-muted)">This card is disabled with a reason</p>
+        <p style="margin:0;color:var(--cngx-color-text-muted)">Next evaluation: 18.07.2025</p>
+      </div>
+      <div cngxCardActions align="end">
+        <button class="chip">Edit</button>
+        <button class="chip">Delete</button>
       </div>
     </cngx-card>
   </div>`;
@@ -655,8 +736,12 @@ import { CngxDisclosure, CngxSpeak } from '@cngx/common/interactive';
 import { CngxSpeakButton } from '@cngx/ui';
 
 
-  protected selected = signal(false);
+  protected decorativeMedia = signal(false);
   protected loading = signal(false);
+  protected showSkeleton = signal(false);
+  protected selectedMaria = signal(false);
+  protected selectedHans = signal(false);
+  protected selectedLisa = signal(false);
   protected cardClicked = signal(0);
   protected badgeClicked = signal(0);
 
@@ -664,46 +749,17 @@ import { CngxSpeakButton } from '@cngx/ui';
     e.stopPropagation();
     this.badgeClicked.update(n => n + 1);
   }`;
-  protected readonly _srcHtml7 = `<div style="max-width:400px">
-    <cngx-card>
-      <header cngxCardHeader>
-        <h3 style="margin:0;font-weight:600;font-size:1rem">Pflegeplan</h3>
-      </header>
-      <div cngxCardBody>
-        <p style="margin:0;color:var(--text-muted)">Next evaluation: 18.07.2025</p>
-      </div>
-      <div cngxCardActions align="end">
-        <button class="chip">Edit</button>
-        <button class="chip">Delete</button>
-      </div>
-    </cngx-card>
-  </div>`;
-  protected readonly _srcTs7 = `import { CngxCard, CngxCardHeader, CngxCardTitle, CngxCardSubtitle, CngxCardBody, CngxCardMedia, CngxCardFooter, CngxCardActions, CngxCardAccent, CngxCardSkeleton } from '@cngx/common/card';
-import { CngxExpandableText, CngxExpandableToggle } from '@cngx/common/layout';
-import { CngxDisclosure, CngxSpeak } from '@cngx/common/interactive';
-import { CngxSpeakButton } from '@cngx/ui';
-
-
-  protected selected = signal(false);
-  protected loading = signal(false);
-  protected cardClicked = signal(0);
-  protected badgeClicked = signal(0);
-
-  protected handleBadgeClick(e: MouseEvent): void {
-    e.stopPropagation();
-    this.badgeClicked.update(n => n + 1);
-  }`;
-  protected readonly _srcHtml8 = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:24px;max-width:760px">
+  protected readonly _srcHtml7 = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:24px;max-width:760px">
     <cngx-card style="overflow:visible">
       <span cngxCardBadge position="top-end"
             style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;
-                   border-radius:50%;background:#ef4444;color:#fff;font-size:0.7rem;font-weight:700">
+                   border-radius:50%;background:var(--cngx-color-danger);color:var(--cngx-color-surface);font-size:0.7rem;font-weight:700">
         P
       </span>
       <header cngxCardHeader>
         <h3 cngxCardTitle>Static Badge</h3>
       </header>
-      <div cngxCardBody style="font-size:0.875rem;color:var(--text-muted)">
+      <div cngxCardBody style="font-size:0.875rem;color:var(--cngx-color-text-muted)">
         Non-interactive span badge
       </div>
     </cngx-card>
@@ -714,27 +770,27 @@ import { CngxSpeakButton } from '@cngx/ui';
               (click)="handleBadgeClick($event)"
               aria-label="Open permissions dialog"
               style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;
-                     border-radius:50%;background:#ef4444;color:#fff;font-size:0.7rem;font-weight:700;
-                     border:2px solid #fff;cursor:pointer;padding:0">
+                     border-radius:50%;background:var(--cngx-color-danger);color:var(--cngx-color-surface);font-size:0.7rem;font-weight:700;
+                     border:2px solid var(--cngx-color-surface);cursor:pointer;padding:0">
         P
       </button>
       <header cngxCardHeader>
         <h3 cngxCardTitle>Clickable Badge</h3>
       </header>
-      <div cngxCardBody style="font-size:0.875rem;color:var(--text-muted)">
+      <div cngxCardBody style="font-size:0.875rem;color:var(--cngx-color-text-muted)">
         Button card + button badge. Click each to test event bubbling.
       </div>
     </cngx-card>
 
     <cngx-card style="overflow:visible">
       <span cngxCardBadge position="top-start"
-            style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#22c55e"
+            style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--cngx-color-success)"
             role="status" aria-label="Online">
       </span>
       <header cngxCardHeader>
         <h3 cngxCardTitle>Status Dot</h3>
       </header>
-      <div cngxCardBody style="font-size:0.875rem;color:var(--text-muted)">
+      <div cngxCardBody style="font-size:0.875rem;color:var(--cngx-color-text-muted)">
         Badge at top-start
       </div>
     </cngx-card>
@@ -750,14 +806,18 @@ import { CngxSpeakButton } from '@cngx/ui';
       <span class="event-value">{{ badgeClicked() }}</span>
     </div>
   </div>`;
-  protected readonly _srcTs8 = `import { CngxCard, CngxCardHeader, CngxCardTitle, CngxCardSubtitle, CngxCardBody, CngxCardMedia, CngxCardFooter, CngxCardActions, CngxCardAccent, CngxCardSkeleton } from '@cngx/common/card';
+  protected readonly _srcTs7 = `import { CngxCard, CngxCardHeader, CngxCardTitle, CngxCardSubtitle, CngxCardBody, CngxCardMedia, CngxCardFooter, CngxCardActions, CngxCardAccent, CngxCardSkeleton } from '@cngx/common/card';
 import { CngxExpandableText, CngxExpandableToggle } from '@cngx/common/layout';
 import { CngxDisclosure, CngxSpeak } from '@cngx/common/interactive';
 import { CngxSpeakButton } from '@cngx/ui';
 
 
-  protected selected = signal(false);
+  protected decorativeMedia = signal(false);
   protected loading = signal(false);
+  protected showSkeleton = signal(false);
+  protected selectedMaria = signal(false);
+  protected selectedHans = signal(false);
+  protected selectedLisa = signal(false);
   protected cardClicked = signal(0);
   protected badgeClicked = signal(0);
 
@@ -765,7 +825,7 @@ import { CngxSpeakButton } from '@cngx/ui';
     e.stopPropagation();
     this.badgeClicked.update(n => n + 1);
   }`;
-  protected readonly _srcHtml9 = `<div style="max-width:400px">
+  protected readonly _srcHtml8 = `<div style="max-width:400px">
     <cngx-card>
       <header cngxCardHeader>
         <h3 cngxCardTitle>Project Notes</h3>
@@ -789,14 +849,18 @@ import { CngxSpeakButton } from '@cngx/ui';
       </div>
     </cngx-card>
   </div>`;
-  protected readonly _srcTs9 = `import { CngxCard, CngxCardHeader, CngxCardTitle, CngxCardSubtitle, CngxCardBody, CngxCardMedia, CngxCardFooter, CngxCardActions, CngxCardAccent, CngxCardSkeleton } from '@cngx/common/card';
+  protected readonly _srcTs8 = `import { CngxCard, CngxCardHeader, CngxCardTitle, CngxCardSubtitle, CngxCardBody, CngxCardMedia, CngxCardFooter, CngxCardActions, CngxCardAccent, CngxCardSkeleton } from '@cngx/common/card';
 import { CngxExpandableText, CngxExpandableToggle } from '@cngx/common/layout';
 import { CngxDisclosure, CngxSpeak } from '@cngx/common/interactive';
 import { CngxSpeakButton } from '@cngx/ui';
 
 
-  protected selected = signal(false);
+  protected decorativeMedia = signal(false);
   protected loading = signal(false);
+  protected showSkeleton = signal(false);
+  protected selectedMaria = signal(false);
+  protected selectedHans = signal(false);
+  protected selectedLisa = signal(false);
   protected cardClicked = signal(0);
   protected badgeClicked = signal(0);
 
@@ -804,7 +868,7 @@ import { CngxSpeakButton } from '@cngx/ui';
     e.stopPropagation();
     this.badgeClicked.update(n => n + 1);
   }`;
-  protected readonly _srcHtml10 = `<div style="max-width:400px;display:flex;flex-direction:column;gap:12px">
+  protected readonly _srcHtml9 = `<div style="max-width:400px;display:flex;flex-direction:column;gap:12px">
     <cngx-card>
       <header cngxCardHeader cngxDisclosure #d1="cngxDisclosure" [controls]="'detail-1'"
               style="cursor:pointer;user-select:none">
@@ -813,7 +877,7 @@ import { CngxSpeakButton } from '@cngx/ui';
       </header>
       @if (d1.opened()) {
         <div cngxCardBody id="detail-1">
-          <p style="margin:0;color:var(--text-muted);font-size:0.875rem">
+          <p style="margin:0;color:var(--cngx-color-text-muted);font-size:0.875rem">
             Patient has learned preventive measures and applies them independently.
             Evaluation: 17.10.2025. Uses aids correctly. Next evaluation: 27.03.2026.
           </p>
@@ -828,7 +892,7 @@ import { CngxSpeakButton } from '@cngx/ui';
       </header>
       @if (d2.opened()) {
         <div cngxCardBody id="detail-2">
-          <p style="margin:0;color:var(--text-muted);font-size:0.875rem">
+          <p style="margin:0;color:var(--cngx-color-text-muted);font-size:0.875rem">
             Hazard sources in the environment have been reduced.
             Can organize daily routine independently.
           </p>
@@ -836,14 +900,18 @@ import { CngxSpeakButton } from '@cngx/ui';
       }
     </cngx-card>
   </div>`;
-  protected readonly _srcTs10 = `import { CngxCard, CngxCardHeader, CngxCardTitle, CngxCardSubtitle, CngxCardBody, CngxCardMedia, CngxCardFooter, CngxCardActions, CngxCardAccent, CngxCardSkeleton } from '@cngx/common/card';
+  protected readonly _srcTs9 = `import { CngxCard, CngxCardHeader, CngxCardTitle, CngxCardSubtitle, CngxCardBody, CngxCardMedia, CngxCardFooter, CngxCardActions, CngxCardAccent, CngxCardSkeleton } from '@cngx/common/card';
 import { CngxExpandableText, CngxExpandableToggle } from '@cngx/common/layout';
 import { CngxDisclosure, CngxSpeak } from '@cngx/common/interactive';
 import { CngxSpeakButton } from '@cngx/ui';
 
 
-  protected selected = signal(false);
+  protected decorativeMedia = signal(false);
   protected loading = signal(false);
+  protected showSkeleton = signal(false);
+  protected selectedMaria = signal(false);
+  protected selectedHans = signal(false);
+  protected selectedLisa = signal(false);
   protected cardClicked = signal(0);
   protected badgeClicked = signal(0);
 
@@ -851,7 +919,7 @@ import { CngxSpeakButton } from '@cngx/ui';
     e.stopPropagation();
     this.badgeClicked.update(n => n + 1);
   }`;
-  protected readonly _srcHtml11 = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:24px;max-width:760px">
+  protected readonly _srcHtml10 = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:24px;max-width:760px">
     <cngx-card style="overflow:visible">
       <cngx-speak-button cngxCardBadge position="top-end" [speakRef]="tts1"
                           class="speak-btn-round" />
@@ -863,13 +931,13 @@ import { CngxSpeakButton } from '@cngx/ui';
            [cngxSpeak]="'Project Summary, Q1 2026. 12 features shipped. 3 bugs resolved. 98 percent uptime. Next milestone: public beta in April.'"
            [enabled]="false"
            #tts1="cngxSpeak">
-        <p style="margin:0 0 4px;color:var(--text-muted);font-size:0.875rem">
+        <p style="margin:0 0 4px;color:var(--cngx-color-text-muted);font-size:0.875rem">
           12 features shipped
         </p>
-        <p style="margin:0 0 4px;color:var(--text-muted);font-size:0.875rem">
+        <p style="margin:0 0 4px;color:var(--cngx-color-text-muted);font-size:0.875rem">
           3 bugs resolved
         </p>
-        <p style="margin:0;color:var(--text-muted);font-size:0.875rem">
+        <p style="margin:0;color:var(--cngx-color-text-muted);font-size:0.875rem">
           98% uptime &mdash; next: public beta
         </p>
       </div>
@@ -886,26 +954,30 @@ import { CngxSpeakButton } from '@cngx/ui';
            [cngxSpeak]="'Team Updates. Anna completed the dashboard redesign. Ben merged the API refactor. Clara started the accessibility audit.'"
            [enabled]="false"
            #tts2="cngxSpeak">
-        <p style="margin:0 0 4px;color:var(--text-muted);font-size:0.875rem">
+        <p style="margin:0 0 4px;color:var(--cngx-color-text-muted);font-size:0.875rem">
           Anna: Dashboard redesign done
         </p>
-        <p style="margin:0 0 4px;color:var(--text-muted);font-size:0.875rem">
+        <p style="margin:0 0 4px;color:var(--cngx-color-text-muted);font-size:0.875rem">
           Ben: API refactor merged
         </p>
-        <p style="margin:0;color:var(--text-muted);font-size:0.875rem">
+        <p style="margin:0;color:var(--cngx-color-text-muted);font-size:0.875rem">
           Clara: A11y audit started
         </p>
       </div>
     </cngx-card>
   </div>`;
-  protected readonly _srcTs11 = `import { CngxCard, CngxCardHeader, CngxCardTitle, CngxCardSubtitle, CngxCardBody, CngxCardMedia, CngxCardFooter, CngxCardActions, CngxCardAccent, CngxCardSkeleton } from '@cngx/common/card';
+  protected readonly _srcTs10 = `import { CngxCard, CngxCardHeader, CngxCardTitle, CngxCardSubtitle, CngxCardBody, CngxCardMedia, CngxCardFooter, CngxCardActions, CngxCardAccent, CngxCardSkeleton } from '@cngx/common/card';
 import { CngxExpandableText, CngxExpandableToggle } from '@cngx/common/layout';
 import { CngxDisclosure, CngxSpeak } from '@cngx/common/interactive';
 import { CngxSpeakButton } from '@cngx/ui';
 
 
-  protected selected = signal(false);
+  protected decorativeMedia = signal(false);
   protected loading = signal(false);
+  protected showSkeleton = signal(false);
+  protected selectedMaria = signal(false);
+  protected selectedHans = signal(false);
+  protected selectedLisa = signal(false);
   protected cardClicked = signal(0);
   protected badgeClicked = signal(0);
 
@@ -914,8 +986,12 @@ import { CngxSpeakButton } from '@cngx/ui';
     this.badgeClicked.update(n => n + 1);
   }`;
 
-  protected selected = signal(false);
+  protected decorativeMedia = signal(false);
   protected loading = signal(false);
+  protected showSkeleton = signal(false);
+  protected selectedMaria = signal(false);
+  protected selectedHans = signal(false);
+  protected selectedLisa = signal(false);
   protected cardClicked = signal(0);
   protected badgeClicked = signal(0);
 

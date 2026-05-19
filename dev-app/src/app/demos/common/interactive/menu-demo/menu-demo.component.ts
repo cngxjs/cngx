@@ -32,14 +32,7 @@ import { CngxMenu, CngxMenuItem, CngxMenuSeparator, CngxMenuItemIcon, CngxMenuIt
         [sourceCss]="_srcCss0">
         
   <style>
-    .menu { list-style: none; margin: 0; padding: 4px; width: 280px; outline: none; }
-    .menu [cngxMenuItem] { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 4px; cursor: pointer; user-select: none; }
-    .menu [cngxMenuItem]:hover, .menu .cngx-menu-item--highlighted { background: rgba(74, 140, 255, 0.15); }
-    .menu .cngx-menu-item--disabled { opacity: 0.5; cursor: not-allowed; }
-    .menu .cngx-menu-item__icon { display: inline-flex; align-items: center; justify-content: center; min-width: 1.25rem; font-size: 1rem; }
-    .menu .cngx-menu-item__label { flex: 1; min-width: 0; }
-    .menu .cngx-menu-item__kbd { margin-left: auto; padding: 1px 6px; font-family: ui-monospace, monospace; font-size: 0.75rem; color: #64748b; border: 1px solid #d0d5dd; border-radius: 4px; background: #f9fafb; }
-    .menu [cngxMenuSeparator] { display: block; height: 1px; margin: 4px 6px; background: #e5e7eb; list-style: none; }
+    .menu { width: 280px; border: 1px solid var(--cngx-color-border, #d0d5dd); border-radius: 6px; background: var(--cngx-color-surface, #fff); color: var(--cngx-color-text, inherit); box-shadow: 0 4px 12px oklch(0 0 0 / 0.12); }
   </style>
   <ul
     cngxMenu
@@ -89,14 +82,7 @@ import { CngxMenu, CngxMenuItem, CngxMenuSeparator, CngxMenuItemIcon, CngxMenuIt
 export class MenuDemoComponent {
   protected readonly _s0 = 'Use arrow keys, typeahead (type the first letters of an action), Home/End, Enter/Space. Disabled items and separators are skipped.';
   protected readonly _srcHtml0 = `<style>
-    .menu { list-style: none; margin: 0; padding: 4px; width: 280px; outline: none; }
-    .menu [cngxMenuItem] { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 4px; cursor: pointer; user-select: none; }
-    .menu [cngxMenuItem]:hover, .menu .cngx-menu-item--highlighted { background: rgba(74, 140, 255, 0.15); }
-    .menu .cngx-menu-item--disabled { opacity: 0.5; cursor: not-allowed; }
-    .menu .cngx-menu-item__icon { display: inline-flex; align-items: center; justify-content: center; min-width: 1.25rem; font-size: 1rem; }
-    .menu .cngx-menu-item__label { flex: 1; min-width: 0; }
-    .menu .cngx-menu-item__kbd { margin-left: auto; padding: 1px 6px; font-family: ui-monospace, monospace; font-size: 0.75rem; color: #64748b; border: 1px solid #d0d5dd; border-radius: 4px; background: #f9fafb; }
-    .menu [cngxMenuSeparator] { display: block; height: 1px; margin: 4px 6px; background: #e5e7eb; list-style: none; }
+    .menu { width: 280px; border: 1px solid var(--cngx-color-border, #d0d5dd); border-radius: 6px; background: var(--cngx-color-surface, #fff); color: var(--cngx-color-text, inherit); box-shadow: 0 4px 12px oklch(0 0 0 / 0.12); }
   </style>
   <ul
     cngxMenu
@@ -148,13 +134,13 @@ export class MenuDemoComponent {
   margin: 0;
   padding: 4px;
   width: 280px;
-  border: 1px solid var(--cngx-surface-border, #d0d5dd);
+  border: 1px solid var(--cngx-color-border, #d0d5dd);
   border-radius: var(--cngx-radius-md, 8px);
-  background: var(--cngx-surface-default, #fff);
+  background: var(--cngx-color-surface, #fff);
   outline: none;
 }
 .menu:focus-visible {
-  outline: 2px solid var(--cngx-focus-ring, #4a8cff);
+  outline: 2px solid var(--cngx-color-primary, #4a8cff);
   outline-offset: 2px;
 }
 .menu [cngxMenuItem] {
@@ -191,7 +177,7 @@ export class MenuDemoComponent {
   font-family: var(--cngx-font-mono, ui-monospace, monospace);
   font-size: 0.75rem;
   color: var(--cngx-text-muted, #64748b);
-  border: 1px solid var(--cngx-surface-border, #d0d5dd);
+  border: 1px solid var(--cngx-color-border, #d0d5dd);
   border-radius: 4px;
   background: var(--cngx-surface-muted, #f9fafb);
 }
@@ -199,7 +185,7 @@ export class MenuDemoComponent {
   display: block;
   height: 1px;
   margin: 4px 6px;
-  background: var(--cngx-surface-border, #e5e7eb);
+  background: var(--cngx-color-border, #e5e7eb);
   list-style: none;
 }`;
 

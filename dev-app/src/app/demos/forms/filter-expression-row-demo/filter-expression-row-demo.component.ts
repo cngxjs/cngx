@@ -231,13 +231,13 @@ import { FILTER_BUILDER_FIELDS, FILTER_BUILDER_PEOPLE, type FilterBuilderPerson 
 .demo-filter-bar {
   padding: var(--cngx-demo-filter-bar-pad, 8px 12px);
   background: var(--cngx-surface-variant, #f5f5f5);
-  border: var(--cngx-demo-filter-bar-border, 1px solid var(--cngx-border, #ddd));
+  border: var(--cngx-demo-filter-bar-border, 1px solid var(--cngx-color-border, #ddd));
   border-bottom: none;
 }
 .demo-table { width: 100%; border-collapse: collapse; font-size: var(--cngx-demo-table-fs, 0.875rem); }
 .demo-table th, .demo-table td {
   padding: var(--cngx-demo-cell-pad, 6px 10px);
-  border-bottom: var(--cngx-demo-row-border, 1px solid var(--cngx-border, #ddd));
+  border-bottom: var(--cngx-demo-row-border, 1px solid var(--cngx-color-border, #ddd));
   text-align: left;
   vertical-align: top;
 }

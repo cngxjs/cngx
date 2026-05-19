@@ -42,7 +42,7 @@ import { MatIcon } from '@angular/material/icon';
           padding: 16px 20px;
           border-radius: 8px;
           background: var(--cngx-surface-alt, #f8f9fa);
-          border: 1px solid var(--cngx-border, #ddd);
+          border: 1px solid var(--cngx-color-border, #ddd);
           line-height: 1.6;
           font-size: 0.875rem;
           flex: 1;
@@ -286,7 +286,7 @@ export class SpeakButtonDemoComponent {
           padding: 16px 20px;
           border-radius: 8px;
           background: var(--cngx-surface-alt, #f8f9fa);
-          border: 1px solid var(--cngx-border, #ddd);
+          border: 1px solid var(--cngx-color-border, #ddd);
           line-height: 1.6;
           font-size: 0.875rem;
           flex: 1;

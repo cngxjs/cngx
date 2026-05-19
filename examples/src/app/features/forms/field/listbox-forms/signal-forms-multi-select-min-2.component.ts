@@ -76,6 +76,7 @@ import { CngxListbox, CngxOption } from '@cngx/common/interactive';
 private readonly multiModel = signal<{ toppings: string[] }>({ toppings: [] });
 private readonly multiSchema = schema<{ toppings: string[] }>((root) => {
   minLength(root.toppings, 2);
+});
 protected readonly multiForm = form(this.multiModel, this.multiSchema);`;
   protected readonly _exHtml: string = `<cngx-form-field [field]="multiForm.toppings">
   <label cngxLabel>Toppings (at least 2)</label>

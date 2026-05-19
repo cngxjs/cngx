@@ -53,6 +53,8 @@ export class UtilitiesInputFormat {
 
 protected readonly formatCurrency = (v: string) => {
   const n = parseFloat(v);
+  return isNaN(n) ? v : new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n);
+};
 protected readonly parseCurrency = (v: string) => v.replace(/[^0-9.\\-]/g, '');`;
   protected readonly _exHtml: string = `<div class="demo-form">
   <div class="demo-field">

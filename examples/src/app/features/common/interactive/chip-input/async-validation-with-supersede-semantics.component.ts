@@ -58,12 +58,20 @@ import { CngxChip } from '@cngx/common/display';
 protected readonly tokens = signal<string[]>(['typescript', 'angular']);
 protected readonly addToken = (value: string): void => {
   this.tokens.update((curr) => [...curr, value]);
+};
 protected readonly popToken = (): void => {
   this.tokens.update((curr) => curr.slice(0, -1));
+};
 protected readonly removeToken = (token: string): void => {
   this.tokens.update((curr) => curr.filter((t) => t !== token));
+};
 protected readonly validateMinLen = async (value: string): Promise<string> => {
-  await new Promise((resolve) => setTimeout(resolve, 250));`;
+  await new Promise((resolve) => setTimeout(resolve, 250));
+  if (value.length < 3) {
+    throw new Error('Tokens must be at least 3 characters.');
+  }
+  return value.toLowerCase();
+};`;
   protected readonly _exHtml: string = `<div class="chip-strip">
   @for (token of tokens(); track token) {
     <cngx-chip [removable]="true" (remove)="removeToken(token)">{{ token }}</cngx-chip>

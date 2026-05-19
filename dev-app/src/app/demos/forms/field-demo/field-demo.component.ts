@@ -121,7 +121,7 @@ import { DestroyRef } from '@angular/core';
       <cngx-form-field [field]="ariaEmailField">
         <label cngxLabel>Inspect this input</label>
         <input cngxInput [formField]="ariaEmailField" placeholder="Open DevTools, inspect me"
-          style="border: 2px dashed var(--cngx-border,#aaa)" />
+          style="border: 2px dashed var(--cngx-color-border,#aaa)" />
         <span cngxHint>Check aria-describedby, aria-required, aria-invalid</span>
         <cngx-field-errors />
       </cngx-form-field>
@@ -529,7 +529,7 @@ import { DestroyRef } from '@angular/core';
       <cngx-form-field [field]="ariaEmailField">
         <label cngxLabel>Inspect this input</label>
         <input cngxInput [formField]="ariaEmailField" placeholder="Open DevTools, inspect me"
-          style="border: 2px dashed var(--cngx-border,#aaa)" />
+          style="border: 2px dashed var(--cngx-color-border,#aaa)" />
         <span cngxHint>Check aria-describedby, aria-required, aria-invalid</span>
         <cngx-field-errors />
       </cngx-form-field>

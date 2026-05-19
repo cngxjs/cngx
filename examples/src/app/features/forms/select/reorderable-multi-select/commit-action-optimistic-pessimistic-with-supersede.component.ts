@@ -107,7 +107,14 @@ protected readonly commitMode = signal<'optimistic' | 'pessimistic'>('optimistic
 protected readonly commitShouldFail = signal(false);
 protected readonly commitLog = signal<string[]>([]);
 protected readonly commitAction = (intended: string[] | undefined) => {
-  const ts = new Date().toLocaleTimeString();`;
+  const ts = new Date().toLocaleTimeString();
+  const line = ts + ' → [' + (intended ?? []).join(', ') + ']';
+  this.commitLog.update((l) => [...l.slice(-4), line]);
+  if (this.commitShouldFail()) {
+    return throwError(() => new Error('Save failed (demo)')).pipe(delay(700));
+  }
+  return of(intended).pipe(delay(700));
+};`;
   protected readonly _exHtml: string = `<div class="button-row" style="margin-bottom:12px">
   <label>
     <input

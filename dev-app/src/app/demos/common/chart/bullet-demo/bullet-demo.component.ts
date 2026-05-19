@@ -27,7 +27,7 @@ import { createManualState } from '@cngx/common/data';
         
   <div style="display:flex;flex-direction:column;gap:16px;max-width:400px">
     <div>
-      <div style="font-size:0.8125rem;color:var(--text-muted);margin-bottom:4px">Q1 Revenue</div>
+      <div style="font-size:0.8125rem;color:var(--cngx-color-text-muted);margin-bottom:4px">Q1 Revenue</div>
       <cngx-bullet
         [actual]="78"
         [target]="80"
@@ -41,7 +41,7 @@ import { createManualState } from '@cngx/common/data';
       />
     </div>
     <div>
-      <div style="font-size:0.8125rem;color:var(--text-muted);margin-bottom:4px">Q2 Revenue</div>
+      <div style="font-size:0.8125rem;color:var(--cngx-color-text-muted);margin-bottom:4px">Q2 Revenue</div>
       <cngx-bullet
         [actual]="92"
         [target]="80"
@@ -55,7 +55,7 @@ import { createManualState } from '@cngx/common/data';
       />
     </div>
     <div>
-      <div style="font-size:0.8125rem;color:var(--text-muted);margin-bottom:4px">Q3 Revenue</div>
+      <div style="font-size:0.8125rem;color:var(--cngx-color-text-muted);margin-bottom:4px">Q3 Revenue</div>
       <cngx-bullet
         [actual]="35"
         [target]="80"
@@ -83,7 +83,7 @@ import { createManualState } from '@cngx/common/data';
     <button class="chip" (click)="showError()">error</button>
   </div>
   <div style="display:flex;flex-direction:column;gap:6px;max-width:400px">
-    <span style="font-size:0.75rem;color:var(--text-muted)">status: {{ state.status() }}</span>
+    <span style="font-size:0.75rem;color:var(--cngx-color-text-muted)">status: {{ state.status() }}</span>
     <cngx-bullet
       [actual]="78"
       [target]="80"
@@ -106,7 +106,7 @@ export class BulletDemoComponent {
   protected readonly _s1 = 'Bind [state] to a CngxAsyncState — the bullet routes through skeleton / empty / error / content branches automatically.';
   protected readonly _srcHtml0 = `<div style="display:flex;flex-direction:column;gap:16px;max-width:400px">
     <div>
-      <div style="font-size:0.8125rem;color:var(--text-muted);margin-bottom:4px">Q1 Revenue</div>
+      <div style="font-size:0.8125rem;color:var(--cngx-color-text-muted);margin-bottom:4px">Q1 Revenue</div>
       <cngx-bullet
         [actual]="78"
         [target]="80"
@@ -120,7 +120,7 @@ export class BulletDemoComponent {
       />
     </div>
     <div>
-      <div style="font-size:0.8125rem;color:var(--text-muted);margin-bottom:4px">Q2 Revenue</div>
+      <div style="font-size:0.8125rem;color:var(--cngx-color-text-muted);margin-bottom:4px">Q2 Revenue</div>
       <cngx-bullet
         [actual]="92"
         [target]="80"
@@ -134,7 +134,7 @@ export class BulletDemoComponent {
       />
     </div>
     <div>
-      <div style="font-size:0.8125rem;color:var(--text-muted);margin-bottom:4px">Q3 Revenue</div>
+      <div style="font-size:0.8125rem;color:var(--cngx-color-text-muted);margin-bottom:4px">Q3 Revenue</div>
       <cngx-bullet
         [actual]="35"
         [target]="80"
@@ -166,7 +166,7 @@ protected showError(): void { this.state.reset(); this.state.setError(new Error(
     <button class="chip" (click)="showError()">error</button>
   </div>
   <div style="display:flex;flex-direction:column;gap:6px;max-width:400px">
-    <span style="font-size:0.75rem;color:var(--text-muted)">status: {{ state.status() }}</span>
+    <span style="font-size:0.75rem;color:var(--cngx-color-text-muted)">status: {{ state.status() }}</span>
     <cngx-bullet
       [actual]="78"
       [target]="80"

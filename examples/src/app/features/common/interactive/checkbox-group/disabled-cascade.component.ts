@@ -65,7 +65,8 @@ protected readonly checkedFor = (value: string) =>
 protected readonly toggleValue = (value: string) => (next: boolean): void => {
   this.picked.update((curr) =>
     next ? [...curr, value] : curr.filter((v) => v !== value),
-  );`;
+  );
+};`;
   protected readonly _exHtml: string = `<button type="button" (click)="groupDisabled.set(!groupDisabled())">
   {{ groupDisabled() ? 'Enable group' : 'Disable group' }}
 </button>
