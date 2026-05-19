@@ -27,7 +27,7 @@ The workspace is a monorepo containing multiple libraries and a demo application
 | `projects/ui`           | `@cngx/ui`           | Core UI components (Overlay, Layout, etc.) |
 | `projects/common`       | `@cngx/common`       | Common shared utilities                    |
 | `projects/data-display` | `@cngx/data-display` | Data visualization (TreeTable, etc.)       |
-| `projects/dev-app`      | -                    | Local development application (showcase)   |
+| `examples`              | -                    | Examples app (one story per rendered demo). Authoring contract: `scripts/examples-gen/README.md`. |
 
 ## Common Commands
 
@@ -57,6 +57,25 @@ Build all libraries in dependency order:
 ```bash
 npm run build:libs
 ```
+
+### Examples
+
+The examples app under `examples/` is the canonical demo surface — one
+`*.story.ts` per rendered example, mirroring the route. Story files
+live under `examples/stories/<lib>/<category>/<demo>/<slug>.story.ts`;
+the matching component under `examples/src/app/features/` is generated
+and gitignored. `prebuild:examples` and `prestart:examples` run the
+generator automatically, so editing a story and running `npm start` is
+the whole loop.
+
+```bash
+npm run examples:generate   # regenerate features/ + routes (runs on prebuild/prestart anyway)
+npm run start:examples      # serve at http://localhost:4200
+```
+
+Story authoring contract — `DemoSpec` shape, artifact-vs-chrome split
+(`template`/`setup` vs `templateChrome`/`setupChrome`), path-derived
+navigation, tag fields — lives in `scripts/examples-gen/README.md`.
 
 Build specific libraries:
 
