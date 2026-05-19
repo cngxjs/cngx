@@ -58,7 +58,7 @@ export class SelectShellGroupedDividerProjectedHierarchy {
   protected readonly _exDescription: string = 'CngxSelectShell — single-value declarative-options dropdown. Project user-authored &lt;cngx-option&gt; / &lt;cngx-optgroup&gt; children directly; the shell derives a hierarchy-aware option model and runs the same family-level intelligence (createSelectCore, createFieldSync, createScalarCommitHandler, announcer) as CngxSelect.';
   protected readonly _exSectionTitle: string = 'Grouped + divider — projected hierarchy';
   protected readonly _exSubtitle: string = 'Hierarchy preserved through the projection. <code>&lt;cngx-select-divider /&gt;</code> renders a visual separator that ATs ignore (<code>role="presentation"</code>, <code>aria-hidden</code>). Nested <code>&lt;cngx-optgroup&gt;</code> inside another group dev-warns; use <code>CngxTreeSelect</code> for arbitrary tree shapes.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'visual-variants' }, { dim: 'framework', value: 'signal-forms' }];
   protected readonly _exTs: string = `import { FormControl } from '@angular/forms';
 import { adaptFormControl } from '@cngx/forms/field';
 import { CngxSelectShell, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, type CngxSelectCommitAction, type CngxSelectCommitMode, type CngxSelectShellChange } from '@cngx/forms/select';

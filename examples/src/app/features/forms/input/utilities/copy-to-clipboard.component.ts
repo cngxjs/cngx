@@ -54,7 +54,7 @@ export class UtilitiesCopyToClipboard {
   protected readonly _exDescription: string = 'Small headless behaviors: clear button, clipboard copy, and display formatting.';
   protected readonly _exSectionTitle: string = 'Copy to Clipboard';
   protected readonly _exSubtitle: string = '<code>[cngxCopyValue]</code> copies text on click. The <code>copied()</code> signal stays <code>true</code> for 2 seconds.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxCopyValue } from '@cngx/forms/input';
 
 protected readonly formatCurrency = (v: string) => {

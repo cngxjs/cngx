@@ -49,7 +49,7 @@ export class UtilitiesInputClear {
   protected readonly _exDescription: string = 'Small headless behaviors: clear button, clipboard copy, and display formatting.';
   protected readonly _exSectionTitle: string = 'Input Clear';
   protected readonly _exSubtitle: string = '<code>[cngxInputClear]</code> takes a reference to the target input. Exposes <code>hasValue()</code> signal and <code>clear()</code> method.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxInputClear } from '@cngx/forms/input';
 
 protected readonly formatCurrency = (v: string) => {

@@ -7,6 +7,10 @@ export const STORY: DemoSpec = {
   description:
     'Pattern-based input masking with locale-aware presets, multi-pattern support, custom tokens, and Reactive Forms integration.',
   apiComponents: ['CngxInputMask'],
+  level: 'atom',
+  audience: ['dev'],
+  artifact: 'building-block',
+  focus: ['behavior'],
   overview:
     '<p><code>CngxInputMask</code> intercepts keyboard input to enforce a pattern. ' +
     'Supports built-in presets (<code>phone</code>, <code>date</code>, <code>creditcard</code>, <code>iban</code>, etc.), ' +

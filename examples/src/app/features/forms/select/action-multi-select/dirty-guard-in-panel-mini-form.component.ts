@@ -114,7 +114,7 @@ export class ActionMultiSelectDirtyGuardInPanelMiniForm {
   protected readonly _exDescription: string = 'CngxActionMultiSelect — multi-value combobox with inline quick-create. Eighth sibling of the select family; reuses createCreateCommitHandler with a dedicated commit controller so toggle/create lifecycles stay independent.';
   protected readonly _exSectionTitle: string = 'Dirty guard — in-panel mini-form';
   protected readonly _exSubtitle: string = 'Action slot hosts a free-text note + <strong>Cancel</strong> / <strong>Create</strong> buttons. Typing flips <code>setDirty(true)</code>; Escape intercepts to fire <code>cancel()</code>; click-outside is blocked until the workflow resolves.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'visual-variants' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'framework', value: 'signal-forms' }];
   protected readonly _exTs: string = `import { CngxActionMultiSelect, type CngxActionMultiSelectChange, type CngxSelectCreateAction, type CngxSelectOptionDef } from '@cngx/forms/select';
 import { CngxSelectAction } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';

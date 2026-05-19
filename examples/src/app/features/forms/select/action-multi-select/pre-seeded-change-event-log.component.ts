@@ -81,7 +81,7 @@ export class ActionMultiSelectPreSeededChangeEventLog {
   protected readonly _exDescription: string = 'CngxActionMultiSelect — multi-value combobox with inline quick-create. Eighth sibling of the select family; reuses createCreateCommitHandler with a dedicated commit controller so toggle/create lifecycles stay independent.';
   protected readonly _exSectionTitle: string = 'Pre-seeded + change-event log';
   protected readonly _exSubtitle: string = 'Component starts with <em>Design</em> and <em>QA</em> selected. The <code>(selectionChange)</code> log shows the <code>action</code> discriminant for each event — toggle vs create vs clear. Use it to drive audit logs, analytics, or backend sync.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'visual-variants' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'framework', value: 'signal-forms' }];
   protected readonly _exTs: string = `import { CngxActionMultiSelect, type CngxActionMultiSelectChange, type CngxSelectCreateAction, type CngxSelectOptionDef } from '@cngx/forms/select';
 import { CngxSelectAction } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';

@@ -9,6 +9,11 @@ export const STORY: DemoSpec = {
     'ships it to a backend, or stores it as a preset. No table, no predicate evaluation — the ' +
     'builder is the sole UI for assembling a serialisable FilterGroup.',
   apiComponents: ['CngxFilterBuilder'],
+  level: 'organism',
+  audience: ['dev'],
+  artifact: 'building-block',
+  focus: ['async-state', 'integration'],
+  framework: 'signal-forms',
   overview:
     '<p>Use this shape when the builder is the form, not a UI in front of a list. The two-way bound ' +
     '<code>FilterGroup</code> is the value the consumer cares about — typical sinks: HTTP request body, ' +

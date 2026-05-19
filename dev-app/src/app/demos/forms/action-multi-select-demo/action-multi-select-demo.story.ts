@@ -11,6 +11,11 @@ export const STORY: DemoSpec = {
     'CngxSelectAction',
     'provideActionSelectConfig',
   ],
+  level: 'organism',
+  audience: ['dev', 'design', 'a11y'],
+  artifact: 'standalone',
+  focus: ['composition', 'visual-variants', 'a11y-pattern'],
+  framework: 'signal-forms',
   overview:
     '<p><code>&lt;cngx-action-multi-select&gt;</code> mirrors <code>CngxCombobox</code>\'s chip-strip + ' +
     'inline search surface and extends the action-slot protocol: quick-create items append to ' +

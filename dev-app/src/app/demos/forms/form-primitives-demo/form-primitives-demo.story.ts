@@ -21,6 +21,11 @@ export const STORY: DemoSpec = {
     'CngxMultiChipGroup',
     'CngxChipInGroup',
   ],
+  level: 'organism',
+  audience: ['dev', 'a11y'],
+  artifact: 'building-block',
+  focus: ['composition', 'a11y-pattern', 'integration'],
+  framework: 'signal-forms',
   overview:
     '<p><strong>What you get.</strong> One atom layer that fits any forms style. Pick a control (e.g. <code>&lt;cngx-radio-group&gt;</code>) and decide at the template level whether you bind it through Signal Forms (<code>&lt;cngx-form-field [field]="f.payment"&gt;</code>) or Reactive Forms (<code>[formControl]="payment"</code>). The atom does not change. ARIA wiring (<code>aria-invalid</code>, <code>aria-describedby</code>, <code>aria-required</code>, <code>aria-busy</code>), focus tracking, and touch-on-blur all light up automatically through the surrounding form-field or bridge.</p>' +
     '<p><strong>Why this matters.</strong> Most component libraries make you choose a single forms paradigm and pay for it: Material ships its own CVA per control, hand-rolled controls require a CVA each, headless atoms (CDK) give you nothing for forms integration. cngx atoms stay forms-agnostic at the brain level. One bridge in <code>@cngx/forms/controls</code> covers Reactive Forms for every value-bearing atom; the same atom drops into <code>&lt;cngx-form-field [field]&gt;</code> for Signal Forms with no extra wiring. If your team migrates RF → Signal Forms (or vice versa) later, the atom code does not move.</p>' +

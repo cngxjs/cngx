@@ -66,7 +66,7 @@ export class SelectShellCustomGlyphsClearglyphCaretglyph {
   protected readonly _exDescription: string = 'CngxSelectShell — single-value declarative-options dropdown. Project user-authored &lt;cngx-option&gt; / &lt;cngx-optgroup&gt; children directly; the shell derives a hierarchy-aware option model and runs the same family-level intelligence (createSelectCore, createFieldSync, createScalarCommitHandler, announcer) as CngxSelect.';
   protected readonly _exSectionTitle: string = 'Custom glyphs — clearGlyph + caretGlyph';
   protected readonly _exSubtitle: string = 'Replace the built-in ✕ clear button glyph and ▾ caret with consumer-authored templates. The button frame, ARIA wiring, and click handlers stay intact — only the glyph swaps. <code>*cngxSelectClearButton</code> replaces the entire button when full control is needed.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'visual-variants' }, { dim: 'framework', value: 'signal-forms' }];
   protected readonly _exTs: string = `import { FormControl } from '@angular/forms';
 import { adaptFormControl } from '@cngx/forms/field';
 import { CngxSelectShell, CngxSelectOption, type CngxSelectCommitAction, type CngxSelectCommitMode, type CngxSelectShellChange } from '@cngx/forms/select';

@@ -12,6 +12,11 @@ export const STORY: DemoSpec = {
     'CngxSelectOptgroup',
     'CngxSelectDivider',
   ],
+  level: 'organism',
+  audience: ['dev', 'design', 'a11y'],
+  artifact: 'standalone',
+  focus: ['composition', 'visual-variants'],
+  framework: 'signal-forms',
   overview:
     '<p><code>&lt;cngx-select-shell&gt;</code> is the ninth member of the select family. ' +
     'Where <code>&lt;cngx-select&gt;</code> consumes options through the data-driven ' +

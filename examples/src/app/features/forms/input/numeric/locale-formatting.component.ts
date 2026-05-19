@@ -57,7 +57,7 @@ export class NumericLocaleFormatting {
   protected readonly _exDescription: string = 'Locale-aware numeric input with Intl.NumberFormat formatting, arrow key increment/decrement, min/max clamping, and decimal control.';
   protected readonly _exSectionTitle: string = 'Locale Formatting';
   protected readonly _exSubtitle: string = 'Pass <code>[locale]</code> to use a specific locale. German uses <code>.</code> as thousands separator and <code>,</code> for decimals.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxNumericInput } from '@cngx/forms/input';
 
 protected handleSetValue(dir: CngxNumericInput): void {

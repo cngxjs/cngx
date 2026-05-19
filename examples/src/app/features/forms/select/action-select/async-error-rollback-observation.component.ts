@@ -99,7 +99,7 @@ export class ActionSelectAsyncErrorRollbackObservation {
   protected readonly _exDescription: string = 'CngxActionSelect — single-value autocomplete with inline quick-create. Seventh sibling of the select family; thin organism on top of createSelectCore + createCreateCommitHandler.';
   protected readonly _exSectionTitle: string = 'Async + error — rollback observation';
   protected readonly _exSubtitle: string = 'Quick-create routes through an Observable with 600ms delay. Toggle the <strong>Server fails</strong> checkbox to make the next create reject — the error surfaces via <code>(commitError)</code>, the commit-error banner renders above the options, and the value stays untouched (pessimistic flow).';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'visual-variants' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'framework', value: 'signal-forms' }];
   protected readonly _exTs: string = `import { CngxActionSelect, type CngxSelectCreateAction, type CngxSelectOptionDef } from '@cngx/forms/select';
 import { CngxSelectAction } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';

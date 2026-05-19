@@ -58,7 +58,7 @@ export class MaskCustomTokensAndTransform {
   protected readonly _exDescription: string = 'Pattern-based input masking with locale-aware presets, multi-pattern support, custom tokens, and Reactive Forms integration.';
   protected readonly _exSectionTitle: string = 'Custom Tokens and Transform';
   protected readonly _exSubtitle: string = 'Define custom token characters via <code>[customTokens]</code>. Use <code>[transform]</code> for global character transforms.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxInputMask } from '@cngx/forms/input';
 
 protected readonly maskPhoneRaw = signal('');

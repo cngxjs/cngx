@@ -57,7 +57,7 @@ export class ReorderableMultiSelectPreSeededValuesReorderLog {
   protected readonly _exDescription: string = 'CngxReorderableMultiSelect — multi-value picker whose selected chips can be reordered via pointer drag and Ctrl+Arrow keyboard moves. Thin organism on top of createSelectCore + CngxReorder.';
   protected readonly _exSectionTitle: string = 'Pre-seeded values + reorder log';
   protected readonly _exSubtitle: string = 'Component starts with five selected teams. The <code>(reordered)</code> output fires every time a drag or keyboard move settles on a new position, carrying <code>fromIndex</code> / <code>toIndex</code> / the moved <code>option</code>. <code>(selectionChange)</code> fires with the same payload under <code>action: \'reorder\'</code>.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'behavior' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'framework', value: 'signal-forms' }];
   protected readonly _exTs: string = `import { CngxReorderableMultiSelect, type CngxSelectOptionDef } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 

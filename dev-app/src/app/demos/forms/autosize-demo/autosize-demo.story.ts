@@ -7,6 +7,10 @@ export const STORY: DemoSpec = {
   description:
     'Auto-resize textarea based on content. Signal-first alternative to cdkTextareaAutosize.',
   apiComponents: ['CngxAutosize'],
+  level: 'atom',
+  audience: ['dev'],
+  artifact: 'building-block',
+  focus: ['behavior'],
   overview:
     '<p><code>CngxAutosize</code> automatically adjusts textarea height to fit content. ' +
     'Supports <code>minRows</code> / <code>maxRows</code> constraints and exposes a <code>height</code> signal.</p>',

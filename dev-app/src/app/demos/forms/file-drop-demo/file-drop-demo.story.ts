@@ -7,6 +7,10 @@ export const STORY: DemoSpec = {
   description:
     'Headless drag-and-drop file behavior with MIME/size validation, programmatic file picker, and rejection feedback.',
   apiComponents: ['CngxFileDrop'],
+  level: 'atom',
+  audience: ['dev', 'a11y'],
+  artifact: 'building-block',
+  focus: ['behavior', 'a11y-pattern'],
   overview:
     '<p><code>CngxFileDrop</code> adds drag-and-drop file handling to any element. ' +
     'Validates files against <code>accept</code> (MIME types) and <code>maxSize</code>. ' +

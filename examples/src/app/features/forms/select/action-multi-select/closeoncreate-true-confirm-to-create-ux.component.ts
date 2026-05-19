@@ -82,7 +82,7 @@ export class ActionMultiSelectCloseoncreateTrueConfirmToCreateUx {
   protected readonly _exDescription: string = 'CngxActionMultiSelect — multi-value combobox with inline quick-create. Eighth sibling of the select family; reuses createCreateCommitHandler with a dedicated commit controller so toggle/create lifecycles stay independent.';
   protected readonly _exSectionTitle: string = 'closeOnCreate=true — confirm-to-create UX';
   protected readonly _exSubtitle: string = 'Opt into <code>[closeOnCreate]="true"</code> for flows where each create is a discrete transaction — the panel closes after every successful create, matching the single-value <code>CngxActionSelect</code> default. Useful when your UX wants the consumer to pause and confirm before continuing.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'visual-variants' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'framework', value: 'signal-forms' }];
   protected readonly _exTs: string = `import { CngxActionMultiSelect, type CngxActionMultiSelectChange, type CngxSelectCreateAction, type CngxSelectOptionDef } from '@cngx/forms/select';
 import { CngxSelectAction } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';

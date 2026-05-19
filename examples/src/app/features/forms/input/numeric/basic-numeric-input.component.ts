@@ -47,7 +47,7 @@ export class NumericBasicNumericInput {
   protected readonly _exDescription: string = 'Locale-aware numeric input with Intl.NumberFormat formatting, arrow key increment/decrement, min/max clamping, and decimal control.';
   protected readonly _exSectionTitle: string = 'Basic Numeric Input';
   protected readonly _exSubtitle: string = 'Type digits, use Arrow Up/Down to increment. Shift+Arrow for x10. Value is formatted with thousands separator on blur.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxNumericInput } from '@cngx/forms/input';`;
   protected readonly _exHtml: string = `<div class="demo-form">
   <div class="demo-field">

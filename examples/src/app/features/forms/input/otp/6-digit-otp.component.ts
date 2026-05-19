@@ -58,7 +58,7 @@ export class Otp6DigitOtp {
   protected readonly _exDescription: string = 'One-time password / PIN input with auto-advance, paste distribution, and keyboard navigation.';
   protected readonly _exSectionTitle: string = '6-Digit OTP';
   protected readonly _exSubtitle: string = 'Type digits one at a time — cursor auto-advances. Paste a 6-digit code to fill all at once. Backspace navigates to the previous slot.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'behavior' }, { dim: 'focus', value: 'a11y-pattern' }];
   protected readonly _exTs: string = `import { CngxOtpInput, CngxOtpSlot } from '@cngx/forms/input';
 
 protected readonly otpResult = signal('');

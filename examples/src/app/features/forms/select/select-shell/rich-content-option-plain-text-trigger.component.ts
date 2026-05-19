@@ -56,7 +56,7 @@ export class SelectShellRichContentOptionPlainTextTrigger {
   protected readonly _exDescription: string = 'CngxSelectShell — single-value declarative-options dropdown. Project user-authored &lt;cngx-option&gt; / &lt;cngx-optgroup&gt; children directly; the shell derives a hierarchy-aware option model and runs the same family-level intelligence (createSelectCore, createFieldSync, createScalarCommitHandler, announcer) as CngxSelect.';
   protected readonly _exSectionTitle: string = 'Rich-content option — plain-text trigger';
   protected readonly _exSubtitle: string = 'Markup inside <code>&lt;cngx-option&gt;</code> renders in the open panel only. The closed trigger reads <code>option.label()</code> (a <code>Signal&lt;string&gt;</code> with a textContent fallback) and renders it via <code>{{ ... }}</code> text interpolation — XSS-safe by construction.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'visual-variants' }, { dim: 'framework', value: 'signal-forms' }];
   protected readonly _exTs: string = `import { FormControl } from '@angular/forms';
 import { adaptFormControl } from '@cngx/forms/field';
 import { CngxSelectShell, CngxSelectOption, type CngxSelectCommitAction, type CngxSelectCommitMode, type CngxSelectShellChange } from '@cngx/forms/select';

@@ -7,6 +7,10 @@ export const STORY: DemoSpec = {
   description:
     'Smart input directives with ARIA projection, autocomplete inference, password toggle, and character counter.',
   apiComponents: ['CngxInput', 'CngxPasswordToggle', 'CngxCharCount'],
+  level: 'molecule',
+  audience: ['dev', 'design', 'a11y'],
+  artifact: 'standalone',
+  focus: ['behavior', 'composition', 'a11y-pattern'],
   overview:
     '<p><code>CngxInput</code> projects ARIA attributes onto native inputs, auto-infers ' +
     '<code>autocomplete</code> and <code>spellcheck</code> from field names, and tracks focus/empty state.</p>' +

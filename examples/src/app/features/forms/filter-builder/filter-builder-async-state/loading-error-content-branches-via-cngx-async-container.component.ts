@@ -75,7 +75,7 @@ export class FilterBuilderAsyncStateLoadingErrorContentBranchesViaCngxAsyncConta
   protected readonly _exDescription: string = 'Wraps &lt;cngx-filter-builder&gt; in &lt;cngx-async-container&gt; for state-driven UI. Demonstrates the consumer-side loading / error / refreshing pattern after Phase C removed the in-shell async-state branches.';
   protected readonly _exSectionTitle: string = 'Loading + error + content branches via <cngx-async-container>';
   protected readonly _exSubtitle: string = 'Press <code>Load</code> to seed fields, <code>Fail</code> to surface the error template, or <code>Refresh</code> to drive the refresh-indicator overlay above the rendered builder.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'async-state' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'error-handling' }, { dim: 'framework', value: 'signal-forms' }];
   protected readonly _exTs: string = `import { CngxAsyncContainer, CngxAsyncSkeletonTpl, CngxAsyncContentTpl, CngxAsyncErrorTpl, CngxAsyncEmptyTpl } from '@cngx/ui/feedback';
 import { createManualState } from '@cngx/common/data';
 import { CngxFilterBuilder, createEmptyFilterRoot, type FilterFieldDef, type FilterGroup } from '@cngx/forms/filter-builder';

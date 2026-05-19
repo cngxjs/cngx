@@ -98,7 +98,7 @@ export class ActionMultiSelectAsyncErrorRollbackObservation {
   protected readonly _exDescription: string = 'CngxActionMultiSelect — multi-value combobox with inline quick-create. Eighth sibling of the select family; reuses createCreateCommitHandler with a dedicated commit controller so toggle/create lifecycles stay independent.';
   protected readonly _exSectionTitle: string = 'Async + error — rollback observation';
   protected readonly _exSubtitle: string = 'Quick-create routes through an Observable with 500ms delay. Toggle <strong>Server fails</strong> to trigger an error — <code>(commitError)</code> fires, the values array stays untouched (pessimistic), the commit-error banner surfaces above the options.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'visual-variants' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'framework', value: 'signal-forms' }];
   protected readonly _exTs: string = `import { CngxActionMultiSelect, type CngxActionMultiSelectChange, type CngxSelectCreateAction, type CngxSelectOptionDef } from '@cngx/forms/select';
 import { CngxSelectAction } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';

@@ -75,7 +75,7 @@ export class MaskLocalePresets {
   protected readonly _exDescription: string = 'Pattern-based input masking with locale-aware presets, multi-pattern support, custom tokens, and Reactive Forms integration.';
   protected readonly _exSectionTitle: string = 'Locale Presets';
   protected readonly _exSubtitle: string = 'Pass a preset name like <code>phone</code>, <code>date</code>, or <code>creditcard</code>. Region suffix optional: <code>phone:CH</code>, <code>iban:DE</code>.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxInputMask } from '@cngx/forms/input';
 
 protected readonly maskPhoneRaw = signal('');

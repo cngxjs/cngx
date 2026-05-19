@@ -7,6 +7,10 @@ export const STORY: DemoSpec = {
   description:
     'One-time password / PIN input with auto-advance, paste distribution, and keyboard navigation.',
   apiComponents: ['CngxOtpInput', 'CngxOtpSlot'],
+  level: 'molecule',
+  audience: ['dev', 'a11y'],
+  artifact: 'building-block',
+  focus: ['behavior', 'a11y-pattern'],
   overview:
     '<p><code>CngxOtpInput</code> is a container directive. The consumer provides <code>&lt;input [cngxOtpSlot]="i"&gt;</code> ' +
     'elements inside. Auto-advance on input, backspace to go back, arrow keys to navigate, paste to fill all slots.</p>' +

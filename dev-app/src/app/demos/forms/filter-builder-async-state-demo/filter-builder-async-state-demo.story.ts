@@ -9,6 +9,11 @@ export const STORY: DemoSpec = {
     'Demonstrates the consumer-side loading / error / refreshing pattern after Phase C ' +
     'removed the in-shell async-state branches.',
   apiComponents: ['CngxFilterBuilder', 'CngxAsyncContainer'],
+  level: 'organism',
+  audience: ['dev'],
+  artifact: 'building-block',
+  focus: ['async-state', 'composition', 'error-handling'],
+  framework: 'signal-forms',
   overview:
     '<p>Phase C of the Filter-Builder closure dropped the <code>[cngxFilterBuilderState]</code> ' +
     'input and the in-shell loading / error branches. Consumers wrap the builder in ' +

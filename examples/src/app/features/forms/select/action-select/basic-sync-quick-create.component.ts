@@ -102,7 +102,7 @@ export class ActionSelectBasicSyncQuickCreate {
   protected readonly _exDescription: string = 'CngxActionSelect — single-value autocomplete with inline quick-create. Seventh sibling of the select family; thin organism on top of createSelectCore + createCreateCommitHandler.';
   protected readonly _exSectionTitle: string = 'Basic — sync quick-create';
   protected readonly _exSubtitle: string = 'Type a label and press the <strong>Create</strong> button inside the panel to materialise a new entry. The sync create returns a fresh value; the new option becomes the current selection, lands in the persistent local buffer, and the panel closes.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'visual-variants' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'framework', value: 'signal-forms' }];
   protected readonly _exTs: string = `import { CngxActionSelect, type CngxSelectCreateAction, type CngxSelectOptionDef } from '@cngx/forms/select';
 import { CngxSelectAction } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';

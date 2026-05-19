@@ -95,7 +95,7 @@ export class ActionSelectCustomActionTemplateSplitActions {
   protected readonly _exDescription: string = 'CngxActionSelect — single-value autocomplete with inline quick-create. Seventh sibling of the select family; thin organism on top of createSelectCore + createCreateCommitHandler.';
   protected readonly _exSectionTitle: string = 'Custom action template — split actions';
   protected readonly _exSubtitle: string = 'The action slot is just an <code>ng-template</code> with a rich context — project anything: a split button with both <em>Create &amp; close</em> and <em>Create &amp; keep open</em>, keyboard shortcuts, icons, mini-wizards. The component\'s <code>closeOnCreate</code> input is the default; consumer templates can call <code>close()</code> from the context to force-close after an <code>onCreated</code> emit.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'visual-variants' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'framework', value: 'signal-forms' }];
   protected readonly _exTs: string = `import { CngxActionSelect, type CngxSelectCreateAction, type CngxSelectOptionDef } from '@cngx/forms/select';
 import { CngxSelectAction } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';

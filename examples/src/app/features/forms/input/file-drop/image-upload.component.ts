@@ -70,7 +70,7 @@ export class FileDropImageUpload {
   protected readonly _exDescription: string = 'Headless drag-and-drop file behavior with MIME/size validation, programmatic file picker, and rejection feedback.';
   protected readonly _exSectionTitle: string = 'Image Upload';
   protected readonly _exSubtitle: string = 'Accepts images up to 5 MB. Drag a file over the zone or click Browse. Rejected files show in the rejection list.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'behavior' }, { dim: 'focus', value: 'a11y-pattern' }];
   protected readonly _exTs: string = `import { CngxFileDrop } from '@cngx/forms/input';`;
   protected readonly _exHtml: string = `<div class="demo-form">
   <div cngxFileDrop [accept]="['image/*']" [maxSize]="5_000_000" [multiple]="true"

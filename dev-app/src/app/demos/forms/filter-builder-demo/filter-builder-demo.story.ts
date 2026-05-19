@@ -13,6 +13,11 @@ export const STORY: DemoSpec = {
     'CngxFilterGroup',
     'CngxFilterExpression',
   ],
+  level: 'organism',
+  audience: ['dev', 'design'],
+  artifact: 'building-block',
+  focus: ['composition', 'visual-variants'],
+  framework: 'signal-forms',
   overview:
     '<p><code>cngx-filter-builder</code> is a recursive query-builder. ' +
     'The model is a discriminated-union tree (<code>FilterGroup</code> / <code>FilterExpression</code>) ' +

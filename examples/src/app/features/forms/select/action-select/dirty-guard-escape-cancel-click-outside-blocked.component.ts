@@ -115,7 +115,7 @@ export class ActionSelectDirtyGuardEscapeCancelClickOutsideBlocked {
   protected readonly _exDescription: string = 'CngxActionSelect — single-value autocomplete with inline quick-create. Seventh sibling of the select family; thin organism on top of createSelectCore + createCreateCommitHandler.';
   protected readonly _exSectionTitle: string = 'Dirty guard — Escape cancel + click-outside blocked';
   protected readonly _exSubtitle: string = 'The action slot includes a free-text description field. Typing into it calls <code>setDirty(true)</code> through the slot context; while dirty, Escape intercepts (fires <code>cancel()</code>) and click-outside is silently blocked. Press the explicit <strong>Cancel</strong> button or successful create to release the guard.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'visual-variants' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'framework', value: 'signal-forms' }];
   protected readonly _exTs: string = `import { CngxActionSelect, type CngxSelectCreateAction, type CngxSelectOptionDef } from '@cngx/forms/select';
 import { CngxSelectAction } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';

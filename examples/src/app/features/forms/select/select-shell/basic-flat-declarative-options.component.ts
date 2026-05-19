@@ -63,7 +63,7 @@ export class SelectShellBasicFlatDeclarativeOptions {
   protected readonly _exDescription: string = 'CngxSelectShell — single-value declarative-options dropdown. Project user-authored &lt;cngx-option&gt; / &lt;cngx-optgroup&gt; children directly; the shell derives a hierarchy-aware option model and runs the same family-level intelligence (createSelectCore, createFieldSync, createScalarCommitHandler, announcer) as CngxSelect.';
   protected readonly _exSectionTitle: string = 'Basic — flat declarative options';
   protected readonly _exSubtitle: string = 'Project <code>&lt;cngx-option&gt;</code> children directly. The shell builds the option model via <code>contentChildren(CNGX_OPTION_CONTAINER)</code> and feeds the result into the inner <code>cngxListbox</code>. Click + hover delegated by the shell so projected options are interactive end-to-end.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'visual-variants' }, { dim: 'framework', value: 'signal-forms' }];
   protected readonly _exTs: string = `import { FormControl } from '@angular/forms';
 import { adaptFormControl } from '@cngx/forms/field';
 import { CngxSelectShell, CngxSelectOption, type CngxSelectCommitAction, type CngxSelectCommitMode, type CngxSelectShellChange } from '@cngx/forms/select';

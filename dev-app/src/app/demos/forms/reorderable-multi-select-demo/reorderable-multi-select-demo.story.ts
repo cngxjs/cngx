@@ -12,6 +12,11 @@ export const STORY: DemoSpec = {
     'CngxMultiSelectChip',
     'CngxMultiSelectTriggerLabel',
   ],
+  level: 'organism',
+  audience: ['dev', 'design', 'a11y'],
+  artifact: 'standalone',
+  focus: ['composition', 'behavior', 'a11y-pattern'],
+  framework: 'signal-forms',
   overview:
     '<p><code>&lt;cngx-reorderable-multi-select&gt;</code> is a specialized multi-value variant ' +
     'whose trigger chip strip lets the user reorder the selection. Composition: ' +

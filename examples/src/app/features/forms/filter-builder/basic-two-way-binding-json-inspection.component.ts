@@ -45,7 +45,7 @@ export class FilterBuilderBasicTwoWayBindingJsonInspection {
   protected readonly _exDescription: string = 'Recursive query-builder for cngx — composable FilterGroup / FilterExpression tree, pluggable value editors, three logic operators (and/or/xor) plus orthogonal negated modifier.';
   protected readonly _exSectionTitle: string = 'Basic — two-way binding + JSON inspection';
   protected readonly _exSubtitle: string = 'Default editors (string/number/boolean/date). Type or click to add filters; the <code>[(value)]</code> tree is mirrored in the JSON panel below.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'visual-variants' }, { dim: 'framework', value: 'signal-forms' }];
   protected readonly _exTs: string = `import { CngxFilterBuilder, createEmptyFilterRoot, type FilterGroup } from '@cngx/forms/filter-builder';
 import { FILTER_BUILDER_FIELDS, FILTER_BUILDER_SEED } from '../../../fixtures';
 

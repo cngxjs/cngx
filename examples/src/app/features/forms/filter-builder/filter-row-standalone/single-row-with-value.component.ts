@@ -45,7 +45,7 @@ export class FilterRowStandaloneSingleRowWithValue {
   protected readonly _exDescription: string = 'One standalone &lt;cngx-filter-row&gt; with [(value)]. No table, no builder wrapper. Shows the raw two-way binding contract so consumers can copy-paste the pattern.';
   protected readonly _exSectionTitle: string = 'Single row with [(value)]';
   protected readonly _exSubtitle: string = 'Edit field, operator, and value below. The bound signal updates on every change; clicking Remove writes <code>null</code>.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'composition' }, { dim: 'framework', value: 'signal-forms' }];
   protected readonly _exTs: string = `import { CngxFilterRow, type FilterExpression, type FilterFieldDef } from '@cngx/forms/filter-builder';
 import { JsonPipe } from '@angular/common';
 

@@ -70,7 +70,7 @@ export class InputCharacterCounter {
   protected readonly _exDescription: string = 'Smart input directives with ARIA projection, autocomplete inference, password toggle, and character counter.';
   protected readonly _exSectionTitle: string = 'Character Counter';
   protected readonly _exSubtitle: string = '<code>CngxCharCount</code> shows a live counter. Supports <code>[max]</code> input and custom templates.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'behavior' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }];
   protected readonly _exTs: string = `import { form, schema, required, email, minLength, maxLength, FormField } from '@angular/forms/signals';
 import { CngxFormField, CngxLabel, CngxHint, CngxFieldErrors } from '@cngx/forms/field';
 import { CngxInput, CngxCharCount } from '@cngx/forms/input';

@@ -7,6 +7,10 @@ export const STORY: DemoSpec = {
   description:
     'Small headless behaviors: clear button, clipboard copy, and display formatting.',
   apiComponents: ['CngxInputClear', 'CngxCopyValue', 'CngxInputFormat'],
+  level: 'atom',
+  audience: ['dev'],
+  artifact: 'building-block',
+  focus: ['behavior'],
   overview:
     '<p><code>CngxInputClear</code> provides a headless clear behavior for any input/textarea.</p>' +
     '<p><code>CngxCopyValue</code> copies text to clipboard with auto-reset feedback.</p>' +

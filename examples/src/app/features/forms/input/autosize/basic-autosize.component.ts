@@ -47,7 +47,7 @@ export class AutosizeBasicAutosize {
   protected readonly _exDescription: string = 'Auto-resize textarea based on content. Signal-first alternative to cdkTextareaAutosize.';
   protected readonly _exSectionTitle: string = 'Basic Autosize';
   protected readonly _exSubtitle: string = 'Type multiple lines — the textarea grows. Delete lines — it shrinks. The <code>height</code> signal reflects the current computed height.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxAutosize } from '@cngx/forms/input';`;
   protected readonly _exHtml: string = `<div class="demo-form">
   <div class="demo-field">

@@ -7,6 +7,10 @@ export const STORY: DemoSpec = {
   description:
     'Locale-aware numeric input with Intl.NumberFormat formatting, arrow key increment/decrement, min/max clamping, and decimal control.',
   apiComponents: ['CngxNumericInput'],
+  level: 'atom',
+  audience: ['dev'],
+  artifact: 'building-block',
+  focus: ['behavior'],
   overview:
     '<p><code>CngxNumericInput</code> keeps <code>type="text"</code> (no browser spinners) ' +
     'and uses <code>Intl.NumberFormat</code> for locale-aware formatting on blur.</p>' +

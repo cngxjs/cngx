@@ -8,6 +8,11 @@ export const STORY: DemoSpec = {
     'One standalone <cngx-filter-row> with [(value)]. No table, no builder wrapper. ' +
     'Shows the raw two-way binding contract so consumers can copy-paste the pattern.',
   apiComponents: ['CngxFilterRow'],
+  level: 'molecule',
+  audience: ['dev'],
+  artifact: 'building-block',
+  focus: ['composition'],
+  framework: 'signal-forms',
   overview:
     '<p>The minimal standalone shape: pass a field list and a writable signal. The row reads / writes ' +
     'a <code>FilterExpression | null</code> directly. When the bound value is <code>null</code> the ' +

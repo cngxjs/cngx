@@ -48,7 +48,7 @@ export class UtilitiesInputFormat {
   protected readonly _exDescription: string = 'Small headless behaviors: clear button, clipboard copy, and display formatting.';
   protected readonly _exSectionTitle: string = 'Input Format';
   protected readonly _exSubtitle: string = '<code>[cngxInputFormat]</code> formats on blur (display) and parses on focus (edit). Reactive forms receive the raw value.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxInputFormat } from '@cngx/forms/input';
 
 protected readonly formatCurrency = (v: string) => {

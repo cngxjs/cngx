@@ -90,7 +90,7 @@ export class ReorderableMultiSelectCommitActionOptimisticPessimisticWithSupersed
   protected readonly _exDescription: string = 'CngxReorderableMultiSelect — multi-value picker whose selected chips can be reordered via pointer drag and Ctrl+Arrow keyboard moves. Thin organism on top of createSelectCore + CngxReorder.';
   protected readonly _exSectionTitle: string = 'Commit action — optimistic / pessimistic with supersede';
   protected readonly _exSubtitle: string = 'Each reorder hits the commit action. Optimistic applies immediately and rolls back on error; pessimistic freezes the whole strip until the write succeeds. Consecutive reorders supersede any in-flight commit — the state machine is shared with the rest of the select family.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'behavior' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'framework', value: 'signal-forms' }];
   protected readonly _exTs: string = `import { CngxReorderableMultiSelect, type CngxSelectOptionDef } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 

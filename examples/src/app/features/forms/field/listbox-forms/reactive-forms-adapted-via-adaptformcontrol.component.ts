@@ -63,7 +63,7 @@ export class ListboxFormsReactiveFormsAdaptedViaAdaptformcontrol {
   protected readonly _exDescription: string = 'CngxListbox integrated into &lt;cngx-form-field&gt; via CngxListboxFieldBridge, plus the universal CngxBindField bridge for any other control (mat-select, native inputs, custom controls).';
   protected readonly _exSectionTitle: string = 'Reactive Forms — adapted via adaptFormControl';
   protected readonly _exSubtitle: string = 'Same template, <code>[field]</code> receives the adapter output. Listbox and bridge are unchanged.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'integration' }, { dim: 'focus', value: 'composition' }, { dim: 'framework', value: 'signal-forms' }];
   protected readonly _exTs: string = `import { form, schema, required, minLength, submit } from '@angular/forms/signals';
 import { FormControl, Validators } from '@angular/forms';
 import { toSignal } from '@angular/core/rxjs-interop';

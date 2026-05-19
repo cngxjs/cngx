@@ -52,7 +52,7 @@ export class FilterBuilderJsonBuilderJson {
   protected readonly _exDescription: string = '&lt;cngx-filter-builder&gt; driven as a pure form component: the consumer reads the tree as JSON, ships it to a backend, or stores it as a preset. No table, no predicate evaluation — the builder is the sole UI for assembling a serialisable FilterGroup.';
   protected readonly _exSectionTitle: string = 'Builder ↔ JSON';
   protected readonly _exSubtitle: string = 'Build a tree on the left; copy the JSON on the right. No table, no predicate — the FilterGroup IS the form value.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'async-state' }, { dim: 'focus', value: 'integration' }, { dim: 'framework', value: 'signal-forms' }];
   protected readonly _exTs: string = `import { CngxFilterBuilder, createEmptyFilterRoot, createFilterExpression, createFilterGroup, type FilterFieldDef, type FilterGroup } from '@cngx/forms/filter-builder';
 
 protected readonly fields: readonly FilterFieldDef[] = [

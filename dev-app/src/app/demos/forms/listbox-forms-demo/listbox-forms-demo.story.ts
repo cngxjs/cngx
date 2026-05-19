@@ -7,6 +7,11 @@ export const STORY: DemoSpec = {
   description:
     'CngxListbox integrated into <cngx-form-field> via CngxListboxFieldBridge, plus the universal CngxBindField bridge for any other control (mat-select, native inputs, custom controls).',
   apiComponents: ['CngxListboxFieldBridge', 'CngxBindField', 'CngxListbox', 'CngxOption', 'CngxFormField'],
+  level: 'molecule',
+  audience: ['dev', 'a11y'],
+  artifact: 'building-block',
+  focus: ['integration', 'composition'],
+  framework: 'signal-forms',
   overview:
     '<p>The listbox atom in <code>@cngx/common/interactive</code> stays Forms-agnostic. ' +
     'A sibling directive <code>[cngxListboxFieldBridge]</code> in <code>@cngx/forms/field</code> provides ' +

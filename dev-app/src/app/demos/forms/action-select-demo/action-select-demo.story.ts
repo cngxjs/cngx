@@ -12,6 +12,11 @@ export const STORY: DemoSpec = {
     'provideActionSelectConfig',
     'createCreateCommitHandler',
   ],
+  level: 'organism',
+  audience: ['dev', 'design', 'a11y'],
+  artifact: 'standalone',
+  focus: ['composition', 'visual-variants', 'a11y-pattern'],
+  framework: 'signal-forms',
   overview:
     '<p><code>&lt;cngx-action-select&gt;</code> mirrors <code>CngxTypeahead</code>\'s inline-input ' +
     'autocomplete surface (<code>displayWith</code>, <code>clearOnBlur</code>, async commits, ' +

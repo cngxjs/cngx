@@ -55,7 +55,7 @@ export class SelectShellInsideCngxFormFieldReactiveForms {
   protected readonly _exDescription: string = 'CngxSelectShell — single-value declarative-options dropdown. Project user-authored &lt;cngx-option&gt; / &lt;cngx-optgroup&gt; children directly; the shell derives a hierarchy-aware option model and runs the same family-level intelligence (createSelectCore, createFieldSync, createScalarCommitHandler, announcer) as CngxSelect.';
   protected readonly _exSectionTitle: string = 'Inside <cngx-form-field> — Reactive Forms';
   protected readonly _exSubtitle: string = '<code>adaptFormControl(control, name)</code> bridges a Reactive-Forms <code>FormControl</code> into the shell\'s Signal-Forms-first <code>[field]</code> contract. Bidirectional sync runs through <code>createFieldSync</code> with <code>compareWith</code>-aware equality.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'visual-variants' }, { dim: 'framework', value: 'signal-forms' }];
   protected readonly _exTs: string = `import { FormControl } from '@angular/forms';
 import { CngxFormField, CngxLabel, adaptFormControl } from '@cngx/forms/field';
 import { CngxSelectShell, CngxSelectOption, type CngxSelectCommitAction, type CngxSelectCommitMode, type CngxSelectShellChange } from '@cngx/forms/select';
