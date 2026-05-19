@@ -70,10 +70,7 @@ export class EmptyStateInsideATable {
   protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'visual-variants' }, { dim: 'focus', value: 'composition' }];
   protected readonly _exTs: string = `import { CngxEmptyState } from '@cngx/ui/empty-state';
 
-protected showTable = signal(true);
-protected tableItems = signal<string[]>([]);
-protected cardItems = signal<string[]>([]);
-protected listItems = signal<string[]>([]);`;
+protected tableItems = signal<string[]>([]);`;
   protected readonly _exHtml: string = `<div class="table-wrap">
   <table class="demo-table">
     <thead>

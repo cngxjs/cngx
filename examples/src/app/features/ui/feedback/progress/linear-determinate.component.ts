@@ -48,7 +48,6 @@ export class ProgressLinearDeterminate {
 
 protected readonly progress = signal<number | undefined>(undefined);
 private interval: ReturnType<typeof setInterval> | undefined;
-
 protected startDeterminate(): void {
   this.progress.set(0);
   clearInterval(this.interval);

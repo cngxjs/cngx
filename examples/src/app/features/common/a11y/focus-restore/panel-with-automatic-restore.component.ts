@@ -56,8 +56,7 @@ export class FocusRestorePanelWithAutomaticRestore {
   protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'a11y' }, { dim: 'audience', value: 'dev' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxFocusRestore } from '@cngx/common/a11y';
 
-protected readonly panelOpen = signal(false);
-protected readonly detailsOpen = signal(false);`;
+protected readonly panelOpen = signal(false);`;
   protected readonly _exHtml: string = `<button (click)="panelOpen.set(true)" class="chip">Open Panel</button>
 
 @if (panelOpen()) {

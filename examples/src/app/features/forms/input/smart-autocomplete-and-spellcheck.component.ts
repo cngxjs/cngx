@@ -62,36 +62,12 @@ export class InputSmartAutocompleteAndSpellcheck {
 import { CngxFormField, CngxLabel, CngxHint, CngxFieldErrors } from '@cngx/forms/field';
 import { CngxInput } from '@cngx/forms/input';
 
-// ── Login form ─────────────────────────────────────────────
 private readonly loginModel = signal({ email: '', password: '' });
 private readonly loginSchema = schema<{ email: string; password: string }>(root => {
   required(root.email);
-  email(root.email);
-  required(root.password);
-  minLength(root.password, 8);
-  maxLength(root.password, 64);
-});
 protected readonly loginForm = form(this.loginModel, this.loginSchema);
 protected readonly emailField = this.loginForm.email;
-protected readonly passwordField = this.loginForm.password;
-
-// ── Bio form ───────────────────────────────────────────────
-private readonly bioModel = signal({ bio: '' });
-private readonly bioSchema = schema<{ bio: string }>(root => {
-  required(root.bio);
-  minLength(root.bio, 10);
-  maxLength(root.bio, 140);
-});
-protected readonly bioForm = form(this.bioModel, this.bioSchema);
-protected readonly bioField = this.bioForm.bio;
-
-// ── Second bio for custom template ─────────────────────────
-private readonly bio2Model = signal({ bio: '' });
-private readonly bio2Schema = schema<{ bio: string }>(root => {
-  maxLength(root.bio, 140);
-});
-protected readonly bio2Form = form(this.bio2Model, this.bio2Schema);
-protected readonly bio2Field = this.bio2Form.bio;`;
+protected readonly passwordField = this.loginForm.password;`;
   protected readonly _exHtml: string = `<div class="demo-form">
   <div class="demo-field">
     <cngx-form-field [field]="emailField">

@@ -50,37 +50,7 @@ export class AlertBooleanTriggerWhen {
   protected readonly _exTs: string = `import { CngxAlert } from '@cngx/ui/feedback';
 import { createManualState } from '@cngx/common/data';
 
-// ── Static demos ──
-protected readonly dismissed = signal(false);
-
-// ── State-driven demo ──
-protected readonly saveState = createManualState<string>();
-
-protected simulateError(): void {
-  this.saveState.setError('Network timeout');
-}
-
-protected simulateSuccess(): void {
-  this.saveState.setSuccess('done');
-}
-
-protected simulateLoading(): void {
-  this.saveState.set('loading');
-}
-
-protected resetState(): void {
-  this.saveState.reset();
-}
-
-// ── [when] demo ──
-protected readonly showAlert = signal(false);
-
-// ── Collapsible demo ──
-protected readonly collapseState = createManualState<string>();
-
-protected triggerCollapseError(): void {
-  this.collapseState.setError('Validation failed: 3 fields have errors. Please review the form and correct the highlighted fields before submitting again.');
-}`;
+protected readonly showAlert = signal(false);`;
   protected readonly _exHtml: string = `<div style="display:flex;gap:8px;margin-bottom:12px">
   <button (click)="showAlert.set(true)" class="chip">Show</button>
   <button (click)="showAlert.set(false)" class="chip">Hide</button>

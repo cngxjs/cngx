@@ -70,10 +70,6 @@ export class DrawerDirectionAllFourSides {
   protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxDrawer, CngxDrawerPanel, CngxDrawerContent, type DrawerMode } from '@cngx/common';
 
-// Controlled drawer
-protected readonly controlledOpen = signal(false);
-
-// Direction playground
 protected readonly direction = signal<'left' | 'right' | 'top' | 'bottom'>('left');
 protected readonly directions: ('left' | 'right' | 'top' | 'bottom')[] = ['left', 'right', 'top', 'bottom'];
 

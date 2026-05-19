@@ -61,14 +61,12 @@ export class CheckboxGroupBasicSelectAllMasterProjectedLeaves {
 
 protected readonly options = ['email', 'sms', 'push'] as const;
 protected readonly picked = signal<string[]>(['email']);
-protected readonly groupDisabled = signal(false);
 protected readonly checkedFor = (value: string) =>
   computed(() => this.picked().includes(value));
 protected readonly toggleValue = (value: string) => (next: boolean): void => {
   this.picked.update((curr) =>
     next ? [...curr, value] : curr.filter((v) => v !== value),
-  );
-};`;
+  );`;
   protected readonly _exHtml: string = `<cngx-checkbox
   [value]="group.allSelected()"
   [indeterminate]="group.someSelected()"

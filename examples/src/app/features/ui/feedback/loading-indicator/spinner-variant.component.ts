@@ -48,7 +48,6 @@ export class LoadingIndicatorSpinnerVariant {
   protected readonly _exTs: string = `import { CngxLoadingIndicator } from '@cngx/ui/feedback';
 
 protected readonly isLoading = signal(false);
-
 protected handleToggle(): void {
   this.isLoading.set(true);
   setTimeout(() => this.isLoading.set(false), 2000);

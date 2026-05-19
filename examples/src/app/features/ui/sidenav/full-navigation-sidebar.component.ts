@@ -152,7 +152,6 @@ export class SidenavFullNavigationSidebar {
   protected readonly _exTs: string = `import { CngxSidenavLayout, CngxSidenav, CngxSidenavContent, CngxSidenavHeader, CngxSidenavFooter } from '@cngx/ui';
 import { CngxNavLink, CngxNavLabel, CngxNavGroup, CngxNavBadge } from '@cngx/common';
 
-// Demo 1: Full nav
 protected readonly navOpen = signal(true);
 protected readonly navMode = signal<'over' | 'push' | 'side' | 'mini'>('side');
 protected readonly modes: ('over' | 'push' | 'side' | 'mini')[] = ['over', 'push', 'side', 'mini'];

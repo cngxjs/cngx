@@ -89,14 +89,7 @@ export class NavNavGroupAccordionSections {
   protected readonly _exSectionTitle: string = 'Nav Group — Accordion Sections';
   protected readonly _exSubtitle: string = '<code>cngxNavGroup</code> composes <code>CngxDisclosure</code> as a hostDirective. Click a group header to expand/collapse. <code>aria-expanded</code> is set automatically.';
   protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }];
-  protected readonly _exTs: string = `import { CngxNavLink, CngxNavGroup, CngxNavLabel } from '@cngx/common';
-
-protected readonly activeLink = signal('/dashboard');
-protected readonly links = [
-  { path: '/dashboard', label: 'Dashboard' },
-  { path: '/analytics', label: 'Analytics', badge: 3 },
-  { path: '/reports', label: 'Reports' },
-];`;
+  protected readonly _exTs: string = `import { CngxNavLink, CngxNavGroup, CngxNavLabel } from '@cngx/common';`;
   protected readonly _exHtml: string = `<nav class="nav-demo" style="width: 240px; border: 1px solid var(--border-color, #e0e0e0); border-radius: 6px; padding: 0.5rem 0; background: var(--cngx-surface-alt, #f9fafb);">
   <span cngxNavLabel style="display: block; padding: 0.5rem 1rem; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted, #888);">
     Application

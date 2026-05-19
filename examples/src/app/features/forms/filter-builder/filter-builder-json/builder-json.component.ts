@@ -64,7 +64,6 @@ protected readonly fields: readonly FilterFieldDef[] = [
 protected readonly tree = signal<FilterGroup>(createEmptyFilterRoot());
 protected readonly jsonOut = computed(() => JSON.stringify(this.tree(), null, 2));
 protected readonly nodeCount = computed(() => this.countNodes(this.tree()));
-
 private countNodes(group: FilterGroup): number {
   let n = 1;
   for (const child of group.filters) {
@@ -72,11 +71,9 @@ private countNodes(group: FilterGroup): number {
   }
   return n;
 }
-
 protected resetTree(): void {
   this.tree.set(createEmptyFilterRoot());
 }
-
 protected seedExamplePreset(): void {
   this.tree.set(
     createFilterGroup('and', [

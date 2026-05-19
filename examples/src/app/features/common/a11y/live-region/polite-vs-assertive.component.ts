@@ -95,15 +95,6 @@ protected message = signal('');
 protected politeness = signal<'polite' | 'assertive' | 'off'>('polite');
 protected counter = signal(0);
 protected flashActive = signal(false);
-protected email = signal('');
-protected emailError = computed(() => {
-  const v = this.email();
-  if (!v) return '';
-  if (!v.includes('@')) return 'Missing @ symbol';
-  if (!v.includes('.')) return 'Missing domain (e.g. .com)';
-  return '';
-});
-
 protected announce(): void {
   this.counter.update(n => n + 1);
   this.message.set('Action completed — count: ' + this.counter());

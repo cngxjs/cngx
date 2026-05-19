@@ -72,75 +72,7 @@ export class AsyncContainerCompositionOverlayContainerToast {
   protected readonly _exTs: string = `import { CngxAsyncContainer, CngxAsyncSkeletonTpl, CngxAsyncContentTpl, CngxLoadingOverlay } from '@cngx/ui/feedback';
 import { createManualState, createAsyncState, injectAsyncState } from '@cngx/common/data';
 
-// ── Simple *cngxAsync demos ──
-protected readonly simple = createManualState<string[]>();
-
-protected loadSimple(): void {
-  this.simple.set('loading');
-  setTimeout(() => this.simple.setSuccess(['Alice', 'Bob', 'Charlie']), 2000);
-}
-protected emptySimple(): void {
-  this.simple.set('loading');
-  setTimeout(() => this.simple.setSuccess([]), 2000);
-}
-protected errorSimple(): void {
-  this.simple.set('loading');
-  setTimeout(() => this.simple.setError('Network error'), 2000);
-}
-
-// ── Section: injectAsyncState (reactive query) ──
-private readonly filterText = signal('');
-protected readonly filter = this.filterText.asReadonly();
-
-// Simulates an HTTP GET that re-fires when filter changes
-protected readonly people = injectAsyncState<string[]>(() => {
-  const f = this.filter();
-  return new Promise<string[]>(resolve => {
-    setTimeout(() => {
-      const all = ['Alice', 'Bob', 'Charlie', 'Diana', 'Eve'];
-      resolve(f ? all.filter(n => n.toLowerCase().includes(f.toLowerCase())) : all);
-    }, 1500);
-  });
-});
-
-protected setFilter(value: string): void {
-  this.filterText.set(value);
-}
-
-// ── Section 2: createAsyncState (mutation) ──
-protected readonly saveAction = createAsyncState<string>();
-
-protected handleSave(): void {
-  void this.saveAction.execute(() =>
-    new Promise<string>((resolve, reject) => {
-      setTimeout(() => Math.random() > 0.3 ? resolve('OK') : reject(new Error('Server error')), 1500);
-    })
-  );
-}
-
-// ── Section 3: createManualState (full control) ──
-protected readonly manual = createManualState<string[]>();
-
-protected loadManual(): void {
-  this.manual.set('loading');
-  setTimeout(() => this.manual.setSuccess(['Alpha', 'Beta', 'Gamma']), 2000);
-}
-protected refreshManual(): void {
-  this.manual.set('refreshing');
-  setTimeout(() => this.manual.setSuccess(['Alpha', 'Beta', 'Gamma', 'Delta']), 2000);
-}
-protected errorManual(): void {
-  this.manual.set('loading');
-  setTimeout(() => this.manual.setError('Connection refused'), 2000);
-}
-protected emptyManual(): void {
-  this.manual.set('loading');
-  setTimeout(() => this.manual.setSuccess([]), 2000);
-}
-
-// ── Section 4: Composition (overlay + container + toast) ──
 protected readonly composed = createManualState<string[]>();
-
 protected loadComposed(): void {
   this.composed.set('loading');
   setTimeout(() => this.composed.setSuccess(['Item A', 'Item B', 'Item C']), 2000);

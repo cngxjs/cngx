@@ -63,7 +63,6 @@ export class SkeletonSkeletonContainer {
   protected readonly _exTs: string = `import { CngxSkeletonContainer, CngxSkeletonPlaceholder } from '@cngx/ui';
 
 protected readonly loading = signal(true);
-
 protected toggleLoading(): void {
   this.loading.update(v => !v);
 }`;

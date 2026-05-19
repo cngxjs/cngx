@@ -60,26 +60,7 @@ export class SparklineBasicSparklines {
   protected readonly _exSubtitle: string = 'Default size, theming via CSS custom properties.';
   protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'visual-variants' }];
   protected readonly _exTs: string = `import { CngxSparkline } from '@cngx/common/chart';
-import { createManualState } from '@cngx/common/data';
-
-protected readonly stateDemoData: readonly number[] = [12, 18, 14, 22, 19, 28, 24];
-protected readonly state = createManualState<readonly number[]>();
-
-protected showSkeleton(): void {
-  this.state.reset();
-  this.state.set('loading');
-}
-protected showSuccess(): void {
-  this.state.setSuccess(this.stateDemoData);
-}
-protected showEmpty(): void {
-  this.state.reset();
-  this.state.setSuccess([]);
-}
-protected showError(): void {
-  this.state.reset();
-  this.state.setError(new Error('Network unreachable'));
-}`;
+import { createManualState } from '@cngx/common/data';`;
   protected readonly _exHtml: string = `<div style="display:flex;gap:24px;align-items:center;flex-wrap:wrap">
   <div>
     <span style="font-size:0.75rem;color:var(--text-muted);margin-right:8px">CPU</span>

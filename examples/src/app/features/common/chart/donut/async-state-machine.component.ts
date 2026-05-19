@@ -53,7 +53,6 @@ export class DonutAsyncStateMachine {
 import { createManualState } from '@cngx/common/data';
 
 protected readonly state = createManualState<number>();
-
 protected showSkeleton(): void { this.state.reset(); this.state.set('loading'); }
 protected showSuccess(): void { this.state.setSuccess(72); }
 protected showEmpty(): void { this.state.reset(); this.state.setSuccess(0); }

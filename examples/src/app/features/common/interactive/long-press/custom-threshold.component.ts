@@ -47,13 +47,7 @@ export class LongPressCustomThreshold {
   protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxLongPress } from '@cngx/common/interactive';
 
-protected pressCount = signal(0);
-protected lastEvent = signal<string>('none');
-
-protected handleLongPress(event: PointerEvent): void {
-  this.pressCount.update(n => n + 1);
-  this.lastEvent.set(\`(\${Math.round(event.clientX)}, \${Math.round(event.clientY)})\`);
-}`;
+protected pressCount = signal(0);`;
   protected readonly _exHtml: string = `<button cngxLongPress [threshold]="1000" #lp2="cngxLongPress"
         (longPressed)="pressCount.update(n => n + 1)"
         class="chip"

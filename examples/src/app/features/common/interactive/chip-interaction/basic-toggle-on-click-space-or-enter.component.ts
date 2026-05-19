@@ -46,9 +46,7 @@ export class ChipInteractionBasicToggleOnClickSpaceOrEnter {
 import { CngxChip } from '@cngx/common/display';
 
 protected readonly favourite = signal(false);
-protected readonly featured = signal(true);
-protected readonly tagRemoved = signal(0);
-protected readonly locked = signal(false);`;
+protected readonly featured = signal(true);`;
   protected readonly _exHtml: string = `<cngx-chip cngxChipInteraction [value]="'favourite'" [(selected)]="favourite">Favourite</cngx-chip>
 <cngx-chip cngxChipInteraction [value]="'featured'" [(selected)]="featured">Featured</cngx-chip>
 <p class="caption">favourite: <code>{{ favourite() }}</code> • featured: <code>{{ featured() }}</code></p>`;

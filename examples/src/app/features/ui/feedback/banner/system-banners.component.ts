@@ -48,8 +48,6 @@ export class BannerSystemBanners {
   protected readonly _exTs: string = `import { CngxBanner } from '@cngx/ui/feedback';
 
 private readonly banner = inject(CngxBanner);
-
-// ── Basic demos ──
 protected showOffline(): void {
   this.banner.show({
     message: 'You are offline. Changes will sync when reconnected.',
@@ -57,7 +55,6 @@ protected showOffline(): void {
     severity: 'error',
   });
 }
-
 protected showMaintenance(): void {
   this.banner.show({
     message: 'Scheduled maintenance tonight at 22:00 UTC.',
@@ -66,7 +63,6 @@ protected showMaintenance(): void {
     action: { label: 'More Info', handler: () => alert('Maintenance details...') },
   });
 }
-
 protected showSessionTimeout(): void {
   this.banner.show({
     message: 'Your session expires in 5 minutes.',
@@ -78,7 +74,6 @@ protected showSessionTimeout(): void {
     },
   });
 }
-
 protected showNewVersion(): void {
   this.banner.show({
     message: 'A new version is available.',
@@ -87,55 +82,11 @@ protected showNewVersion(): void {
     action: { label: 'Refresh', handler: () => location.reload() },
   });
 }
-
 protected dismissOffline(): void {
   this.banner.dismiss('net:offline');
 }
-
 protected dismissAll(): void {
   this.banner.dismissAll();
-}
-
-// ── Update demo ──
-private countdown = 5;
-private countdownInterval: ReturnType<typeof setInterval> | undefined;
-
-protected startCountdown(): void {
-  this.countdown = 5;
-  this.banner.show({
-    message: 'Session expires in 5 minutes.',
-    id: 'auth:countdown',
-    severity: 'warning',
-    dismissible: false,
-  });
-  clearInterval(this.countdownInterval);
-  this.countdownInterval = setInterval(() => {
-    this.countdown--;
-    if (this.countdown <= 0) {
-      clearInterval(this.countdownInterval);
-      this.banner.dismiss('auth:countdown');
-    } else {
-      this.banner.update('auth:countdown', {
-        message: 'Session expires in ' + this.countdown + ' minutes.',
-        severity: this.countdown <= 2 ? 'error' : 'warning',
-      });
-    }
-  }, 1000);
-}
-
-// ── Async action demo ──
-protected showAsyncAction(): void {
-  this.banner.show({
-    message: 'Payment method expired.',
-    id: 'billing:payment',
-    severity: 'error',
-    action: {
-      label: 'Update Payment',
-      handler: () => new Promise<void>((resolve, reject) => {
-        setTimeout(() => Math.random() > 0.5 ? resolve() : reject(new Error('Card declined')), 2000);
-      }),
-    },
-  });
 }`;
   protected readonly _exHtml: string = `<div style="display:flex;flex-wrap:wrap;gap:8px">
   <button (click)="showOffline()" class="chip">Offline</button>

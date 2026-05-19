@@ -46,9 +46,7 @@ export class RadioBasicVerticalGroup {
   protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }];
   protected readonly _exTs: string = `import { CngxRadioGroup, CngxRadio } from '@cngx/common/interactive';
 
-protected readonly payment = signal<'card' | 'cash' | 'invoice' | undefined>(undefined);
-protected readonly orientation = signal<'horizontal' | 'vertical'>('vertical');
-protected readonly groupDisabled = signal(false);`;
+protected readonly payment = signal<'card' | 'cash' | 'invoice' | undefined>(undefined);`;
   protected readonly _exHtml: string = `<cngx-radio-group [(value)]="payment" name="payment-method">
   <cngx-radio value="card">Credit card</cngx-radio>
   <cngx-radio value="cash">Cash on delivery</cngx-radio>

@@ -55,7 +55,6 @@ export class PopoverPlacementVariants {
   protected readonly _exTs: string = `import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
 import type { PopoverPlacement } from '@cngx/common/popover';
 
-protected readonly menuItems = signal(['Edit', 'Duplicate', 'Archive', 'Delete']);
 protected readonly placements: PopoverPlacement[] = ['bottom', 'bottom-start', 'bottom-end', 'top', 'left', 'right'];`;
   protected readonly _exHtml: string = `<div style="display:flex;gap:16px;flex-wrap:wrap;padding:40px 0">
   @for (p of placements; track p) {

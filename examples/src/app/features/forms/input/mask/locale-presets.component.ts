@@ -78,10 +78,7 @@ export class MaskLocalePresets {
   protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxInputMask } from '@cngx/forms/input';
 
-protected readonly maskPhoneRaw = signal('');
-protected readonly maskDateRaw = signal('');
-protected readonly maskCardRaw = signal('');
-protected readonly maskCustomRaw = signal('');`;
+protected readonly maskPhoneRaw = signal('');`;
   protected readonly _exHtml: string = `<div class="demo-form">
   <div class="demo-field">
     <label class="demo-label">Phone (US)</label>

@@ -46,9 +46,7 @@ export class ButtonToggleGroupBasicViewSwitcher {
   protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }];
   protected readonly _exTs: string = `import { CngxButtonToggleGroup, CngxButtonToggle } from '@cngx/common/interactive';
 
-protected readonly view = signal<'grid' | 'list' | 'table' | undefined>('grid');
-protected readonly groupDisabled = signal(false);
-protected readonly orientation = signal<'horizontal' | 'vertical'>('horizontal');`;
+protected readonly view = signal<'grid' | 'list' | 'table' | undefined>('grid');`;
   protected readonly _exHtml: string = `<cngx-button-toggle-group label="Layout" [(value)]="view">
   <button cngxButtonToggle value="grid">Grid</button>
   <button cngxButtonToggle value="list">List</button>

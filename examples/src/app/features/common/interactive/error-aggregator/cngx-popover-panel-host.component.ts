@@ -69,14 +69,7 @@ export class ErrorAggregatorCngxPopoverPanelHost {
   protected readonly _exTs: string = `import { CngxErrorAggregator, CngxErrorSource } from '@cngx/common/interactive';
 import { CngxPopoverPanel, CngxPopoverTrigger, CngxPopoverHeader, CngxPopoverBody } from '@cngx/common/popover';
 
-protected readonly emailFormatBad = signal(true);
-protected readonly emailTaken = signal(false);
-protected readonly passwordWeak = signal(true);
-protected readonly profileBioEmpty = signal(true);
-protected readonly profileAvatarMissing = signal(false);
-protected readonly billingDeclined = signal(true);
-protected readonly tabAddressIncomplete = signal(true);
-protected readonly tabPaymentInvalid = signal(true);`;
+protected readonly billingDeclined = signal(true);`;
   protected readonly _exHtml: string = `  <button
     [cngxPopoverTrigger]="billingPanel.popover"
     (click)="billingPanel.popover.toggle()"

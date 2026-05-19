@@ -51,34 +51,7 @@ export class AlertAutoCollapse {
   protected readonly _exTs: string = `import { CngxAlert, CngxAlertAction } from '@cngx/ui/feedback';
 import { createManualState } from '@cngx/common/data';
 
-// ── Static demos ──
-protected readonly dismissed = signal(false);
-
-// ── State-driven demo ──
-protected readonly saveState = createManualState<string>();
-
-protected simulateError(): void {
-  this.saveState.setError('Network timeout');
-}
-
-protected simulateSuccess(): void {
-  this.saveState.setSuccess('done');
-}
-
-protected simulateLoading(): void {
-  this.saveState.set('loading');
-}
-
-protected resetState(): void {
-  this.saveState.reset();
-}
-
-// ── [when] demo ──
-protected readonly showAlert = signal(false);
-
-// ── Collapsible demo ──
 protected readonly collapseState = createManualState<string>();
-
 protected triggerCollapseError(): void {
   this.collapseState.setError('Validation failed: 3 fields have errors. Please review the form and correct the highlighted fields before submitting again.');
 }`;

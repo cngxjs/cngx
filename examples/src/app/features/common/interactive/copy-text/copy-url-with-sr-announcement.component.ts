@@ -49,7 +49,6 @@ export class CopyTextCopyUrlWithSrAnnouncement {
   protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxCopyText } from '@cngx/common/interactive';
 
-protected readonly token = signal('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9');
 protected readonly shareUrl = signal('https://cngx.dev/docs/copy-text');`;
   protected readonly _exHtml: string = `<div style="display:flex;align-items:center;gap:8px">
   <span style="font-size:0.875rem;color:var(--cngx-text-secondary,#666)">{{ shareUrl() }}</span>

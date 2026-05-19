@@ -53,12 +53,7 @@ export class Otp4DigitPin {
   protected readonly _exSectionTitle: string = '4-Digit PIN';
   protected readonly _exSubtitle: string = 'Shorter PIN input with password masking via <code>[inputType]="\'password\'"</code>.';
   protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'behavior' }, { dim: 'focus', value: 'a11y-pattern' }];
-  protected readonly _exTs: string = `import { CngxOtpInput, CngxOtpSlot } from '@cngx/forms/input';
-
-protected readonly otpResult = signal('');
-protected handleOtpComplete(code: string): void {
-  this.otpResult.set(code);
-}`;
+  protected readonly _exTs: string = `import { CngxOtpInput, CngxOtpSlot } from '@cngx/forms/input';`;
   protected readonly _exHtml: string = `<div class="demo-form">
   <div class="demo-field">
     <label class="demo-label">PIN</label>

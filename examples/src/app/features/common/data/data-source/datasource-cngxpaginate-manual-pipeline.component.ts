@@ -77,37 +77,19 @@ import { PEOPLE, type Person } from '../../../../fixtures';
 import { CngxPaginate } from '@cngx/common/data';
 import { CngxMatPaginator } from '@cngx/ui/material';
 
-private readonly items = signal(PEOPLE);
-private readonly ds = injectDataSource(this.items);
-
-protected readonly rows = toSignal(this.ds.connect(), { initialValue: [] as Person[] });
-
-// Paginated variant — page state owned by component signals
 protected readonly pageIndex = signal(0);
 protected readonly pageSize  = signal(3);
-
 protected readonly paginated = computed((): Person[] =>
   PEOPLE.slice(
     this.pageIndex() * this.pageSize(),
     (this.pageIndex() + 1) * this.pageSize(),
   ),
 );
-
 protected readonly totalPeople = PEOPLE.length;
-
-protected shuffle(): void {
-  this.items.update((list) => [...list].sort(() => Math.random() - 0.5));
-}
-
-protected reset(): void {
-  this.items.set(PEOPLE);
-}
-
 protected setPage(i: number): void {
   const max = Math.max(0, Math.ceil(PEOPLE.length / this.pageSize()) - 1);
   this.pageIndex.set(Math.max(0, Math.min(i, max)));
 }
-
 protected setPageSize(s: number): void {
   this.pageSize.set(s);
   this.pageIndex.set(0);

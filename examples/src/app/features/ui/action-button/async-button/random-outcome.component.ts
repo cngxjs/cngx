@@ -46,10 +46,6 @@ export class AsyncButtonRandomOutcome {
   protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'async-state' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'visual-variants' }];
   protected readonly _exTs: string = `import { CngxActionButton } from '@cngx/ui';
 
-protected readonly saveAction = () => new Promise<void>(resolve => setTimeout(resolve, 1500));
-protected readonly deleteAction = () => new Promise<void>((_, reject) =>
-  setTimeout(() => reject(new Error('403 Forbidden')), 1000),
-);
 protected readonly submitAction = () => new Promise<void>((resolve, reject) =>
   setTimeout(() => Math.random() > 0.4 ? resolve() : reject(new Error('Random failure')), 1200),
 );`;

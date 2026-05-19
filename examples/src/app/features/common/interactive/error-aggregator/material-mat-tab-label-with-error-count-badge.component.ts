@@ -82,12 +82,6 @@ export class ErrorAggregatorMaterialMatTabLabelWithErrorCountBadge {
   protected readonly _exTs: string = `import { CngxErrorAggregator, CngxErrorSource } from '@cngx/common/interactive';
 import { MatTabsModule } from '@angular/material/tabs';
 
-protected readonly emailFormatBad = signal(true);
-protected readonly emailTaken = signal(false);
-protected readonly passwordWeak = signal(true);
-protected readonly profileBioEmpty = signal(true);
-protected readonly profileAvatarMissing = signal(false);
-protected readonly billingDeclined = signal(true);
 protected readonly tabAddressIncomplete = signal(true);
 protected readonly tabPaymentInvalid = signal(true);`;
   protected readonly _exHtml: string = `<mat-tab-group>

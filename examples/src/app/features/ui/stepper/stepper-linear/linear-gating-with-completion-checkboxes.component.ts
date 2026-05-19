@@ -83,7 +83,6 @@ import { CngxStepper } from '@cngx/ui/stepper';
 
 protected readonly active = signal(0);
 protected readonly completed = signal<readonly boolean[]>([false, false, false]);
-
 protected toggleCompleted(index: number, value: boolean): void {
   this.completed.update((prev) => prev.map((v, i) => (i === index ? value : v)));
 }`;

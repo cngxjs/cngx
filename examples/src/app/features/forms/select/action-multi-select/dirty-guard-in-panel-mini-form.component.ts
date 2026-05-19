@@ -126,51 +126,10 @@ protected readonly tags: CngxSelectOptionDef<{ id: string; name: string }>[] = [
   { value: { id: 't4', name: 'Docs' }, label: 'Docs' },
   { value: { id: 't5', name: 'Review' }, label: 'Review' },
 ];
-
 protected readonly basicCompare = (
   a: { id: string; name: string } | undefined,
   b: { id: string; name: string } | undefined,
 ) => (a?.id ?? null) === (b?.id ?? null);
-
-// Basic — create appends; panel stays open.
-protected readonly basicValues = signal<{ id: string; name: string }[]>([]);
-protected basicCounter = 0;
-protected readonly basicCreate: CngxSelectCreateAction<{ id: string; name: string }> =
-  (_term, draft) => ({ id: 'local-' + ++this.basicCounter, name: draft.label });
-
-// Pre-seeded + change log showing toggle vs create branches.
-protected readonly seededValues = signal<{ id: string; name: string }[]>([
-  { id: 't1', name: 'Design' },
-  { id: 't3', name: 'QA' },
-]);
-protected readonly seededLog = signal<string[]>([]);
-protected seededCounter = 0;
-protected readonly seededCreate: CngxSelectCreateAction<{ id: string; name: string }> =
-  (_term, draft) => ({ id: 'seeded-' + ++this.seededCounter, name: draft.label });
-protected handleSeededChange(ev: CngxActionMultiSelectChange<{ id: string; name: string }>): void {
-  const ts = new Date().toLocaleTimeString();
-  const line = ts + ' → ' + ev.action + ' | values=' + ev.values.map((v) => v.name).join(', ');
-  this.seededLog.update((l) => [...l.slice(-4), line]);
-}
-
-// Async create + error rollback.
-protected readonly asyncValues = signal<{ id: string; name: string }[]>([]);
-protected readonly asyncShouldFail = signal(false);
-protected readonly asyncLog = signal<string[]>([]);
-protected asyncCounter = 0;
-protected readonly asyncCreate: CngxSelectCreateAction<{ id: string; name: string }> =
-  (_term, draft) => {
-    if (this.asyncShouldFail()) {
-      return throwError(() => new Error('Server rejected "' + draft.label + '"')).pipe(delay(500));
-    }
-    return of({ id: 'srv-' + ++this.asyncCounter, name: draft.label }).pipe(delay(500));
-  };
-protected handleAsyncError(err: unknown): void {
-  const msg = err instanceof Error ? err.message : String(err);
-  this.asyncLog.update((l) => [...l.slice(-4), new Date().toLocaleTimeString() + ' → ' + msg]);
-}
-
-// Dirty-guard — same pattern as CngxActionSelect but with multi semantics.
 protected readonly dirtyValues = signal<{ id: string; name: string }[]>([]);
 protected readonly dirtyNote = signal('');
 protected dirtyCounter = 0;
@@ -183,13 +142,7 @@ protected handleDirtyInput(value: string, setDirty: (v: boolean) => void): void 
 protected handleDirtyCancel(setDirty: (v: boolean) => void): void {
   this.dirtyNote.set('');
   setDirty(false);
-}
-
-// Close-on-create — opt-in for confirm-to-create workflows.
-protected readonly closeValues = signal<{ id: string; name: string }[]>([]);
-protected closeCounter = 0;
-protected readonly closeCreate: CngxSelectCreateAction<{ id: string; name: string }> =
-  (_term, draft) => ({ id: 'close-' + ++this.closeCounter, name: draft.label });`;
+}`;
   protected readonly _exHtml: string = `<div class="kbd-hint">
   <strong>Try it:</strong>
   <span>Open + type in the note field → dirty</span>

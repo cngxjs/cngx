@@ -49,8 +49,7 @@ export class ButtonToggleGroupDisabledGroupCascadeVsPerToggle {
   protected readonly _exTs: string = `import { CngxButtonToggleGroup, CngxButtonToggle } from '@cngx/common/interactive';
 
 protected readonly view = signal<'grid' | 'list' | 'table' | undefined>('grid');
-protected readonly groupDisabled = signal(false);
-protected readonly orientation = signal<'horizontal' | 'vertical'>('horizontal');`;
+protected readonly groupDisabled = signal(false);`;
   protected readonly _exHtml: string = `<button type="button" (click)="groupDisabled.set(!groupDisabled())">
   {{ groupDisabled() ? 'Enable group' : 'Disable group' }}
 </button>

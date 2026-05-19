@@ -64,20 +64,6 @@ export class RetryOptimisticInstantLikeToggle {
   protected readonly _exTs: string = `import { withRetry, optimistic } from '@cngx/common/interactive';
 import { of, switchMap, throwError, timer } from 'rxjs';
 
-// Flaky action — fails 60% of the time
-private readonly flakyAction = () => new Promise<void>((resolve, reject) =>
-  setTimeout(() => Math.random() > 0.6 ? resolve() : reject(new Error('Network error')), 500),
-);
-
-private readonly retryResult = withRetry(this.flakyAction, {
-  maxAttempts: 3,
-  delay: 800,
-  backoff: 'exponential',
-});
-protected readonly retryAction = this.retryResult[0];
-protected readonly retryState = this.retryResult[1];
-
-// Optimistic toggle
 protected readonly liked = signal(false);
 private readonly likeResult = optimistic(this.liked, (value: boolean) =>
   timer(1000).pipe(

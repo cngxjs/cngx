@@ -58,10 +58,7 @@ export class PopoverControlledOpen {
   protected readonly _exSubtitle: string = 'Bind <code>[cngxPopoverOpen]</code> to drive the popover reactively — no <code>show()</code>/<code>hide()</code> calls needed.';
   protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
-import type { PopoverPlacement } from '@cngx/common/popover';
-
-protected readonly menuItems = signal(['Edit', 'Duplicate', 'Archive', 'Delete']);
-protected readonly placements: PopoverPlacement[] = ['bottom', 'bottom-start', 'bottom-end', 'top', 'left', 'right'];`;
+import type { PopoverPlacement } from '@cngx/common/popover';`;
   protected readonly _exHtml: string = `<div style="display:flex;gap:12px;align-items:center;padding-top:20px">
   <label [cngxPopoverTrigger]="ctrl"
          style="display:flex;align-items:center;gap:6px;font-size:0.875rem;cursor:pointer">

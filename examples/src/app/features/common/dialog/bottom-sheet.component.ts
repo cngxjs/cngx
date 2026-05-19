@@ -56,32 +56,7 @@ export class DialogBottomSheet {
   protected readonly _exSubtitle: string = '<code>CngxBottomSheet</code> is a molecule directive that positions the dialog at the viewport bottom with a drag handle (via <code>::before</code>) and slide-up animation. Add <code>[cngxSwipeDismiss]</code> for swipe-to-dismiss — the directive auto-wires it. Themed via <code>bottom-sheet-theme.scss</code> with CSS custom properties.';
   protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxDialog, CngxDialogTitle, CngxDialogClose, CngxBottomSheet } from '@cngx/common/dialog';
-import { CngxSwipeDismiss } from '@cngx/common/interactive';
-
-// Fake form data for the form dialog demo
-protected readonly formData = { name: '', email: '' };
-
-// ── Programmatic demo ──────────────────────────────────────────
-protected readonly progDialog = viewChild<CngxDialog<'saved' | 'discarded'>>('progDialog');
-
-protected readonly progMessage = computed(() => {
-  const result = this.progDialog()?.result();
-  if (result === undefined) return 'No dialog result yet.';
-  if (result === 'dismissed') return 'Dialog was dismissed (Escape or backdrop).';
-  return 'Dialog returned: ' + String(result);
-});
-
-protected handleOpenProgrammatic(): void {
-  this.progDialog()?.open();
-}
-
-protected handleSaveProgrammatic(): void {
-  this.progDialog()?.close('saved');
-}
-
-protected handleDiscardProgrammatic(): void {
-  this.progDialog()?.close('discarded');
-}`;
+import { CngxSwipeDismiss } from '@cngx/common/interactive';`;
   protected readonly _exHtml: string = `<button class="chip" (click)="sheetDlg.open()">Open Bottom Sheet</button>
 
 <dialog cngxDialog cngxBottomSheet [cngxSwipeDismiss]="'down'" #sheetDlg="cngxDialog">

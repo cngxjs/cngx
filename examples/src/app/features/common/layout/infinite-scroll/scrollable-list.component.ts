@@ -65,7 +65,6 @@ export class InfiniteScrollScrollableList {
 protected readonly items = signal(Array.from({ length: 5 }, (_, i) => \`Item \${i + 1}\`));
 protected readonly loading = signal(false);
 protected readonly hasMore = computed(() => this.items().length < 100);
-
 protected loadMore(): void {
   if (this.loading() || !this.hasMore()) return;
   this.loading.set(true);

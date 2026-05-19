@@ -54,12 +54,7 @@ export class EmptyStateWithCustomIconActions {
   protected readonly _exSectionTitle: string = 'With custom icon + actions';
   protected readonly _exSubtitle: string = 'Project any icon via <code>[cngxEmptyStateIcon]</code>. Primary and secondary action slots.';
   protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'visual-variants' }, { dim: 'focus', value: 'composition' }];
-  protected readonly _exTs: string = `import { CngxEmptyState } from '@cngx/ui/empty-state';
-
-protected showTable = signal(true);
-protected tableItems = signal<string[]>([]);
-protected cardItems = signal<string[]>([]);
-protected listItems = signal<string[]>([]);`;
+  protected readonly _exTs: string = `import { CngxEmptyState } from '@cngx/ui/empty-state';`;
   protected readonly _exHtml: string = `<div style="border:1px solid var(--border-color,#e0e0e0);border-radius:8px;overflow:hidden">
   <cngx-empty-state
     title="No results found"

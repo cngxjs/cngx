@@ -113,8 +113,6 @@ protected readonly tags: CngxSelectOptionDef<{ id: string; name: string }>[] = [
   { value: { id: 't3', name: 'QA' }, label: 'QA' },
   { value: { id: 't4', name: 'Docs' }, label: 'Docs' },
 ];
-
-// Basic sync quick-create — each create invents a fake id.
 protected readonly basicValue = signal<{ id: string; name: string } | undefined>(undefined);
 protected basicCreateCounter = 0;
 protected readonly basicCreate: CngxSelectCreateAction<{ id: string; name: string }> =
@@ -123,60 +121,7 @@ protected readonly basicCompare = (
   a: { id: string; name: string } | undefined,
   b: { id: string; name: string } | undefined,
 ) => (a?.id ?? null) === (b?.id ?? null);
-protected readonly basicDisplay = (v: { id: string; name: string }) => v.name;
-
-// Pre-seeded — starts with Development selected, consumer can replace via quick-create.
-protected readonly seededValue = signal<{ id: string; name: string } | undefined>(
-  { id: 't2', name: 'Development' },
-);
-protected readonly seededLog = signal<string[]>([]);
-protected seededCounter = 0;
-protected readonly seededCreate: CngxSelectCreateAction<{ id: string; name: string }> =
-  (_term, draft) => ({ id: 'created-' + ++this.seededCounter, name: draft.label });
-protected handleSeededCreated(opt: CngxSelectOptionDef<{ id: string; name: string }>): void {
-  const ts = new Date().toLocaleTimeString();
-  this.seededLog.update((l) =>
-    [...l.slice(-4), ts + ' → created "' + opt.label + '" (id=' + opt.value.id + ')'],
-  );
-}
-
-// Async + error — toggles a failure flag for rollback observation.
-protected readonly asyncValue = signal<{ id: string; name: string } | undefined>(undefined);
-protected readonly asyncShouldFail = signal(false);
-protected readonly asyncLog = signal<string[]>([]);
-protected asyncCounter = 0;
-protected readonly asyncCreate: CngxSelectCreateAction<{ id: string; name: string }> =
-  (_term, draft) => {
-    if (this.asyncShouldFail()) {
-      return throwError(() => new Error('Server rejected "' + draft.label + '"')).pipe(delay(600));
-    }
-    return of({ id: 'srv-' + ++this.asyncCounter, name: draft.label }).pipe(delay(600));
-  };
-protected handleAsyncError(err: unknown): void {
-  const msg = err instanceof Error ? err.message : String(err);
-  this.asyncLog.update((l) => [...l.slice(-4), new Date().toLocaleTimeString() + ' → ' + msg]);
-}
-
-// Dirty guard — a form inside the action slot tracks dirty via setDirty.
-protected readonly dirtyValue = signal<{ id: string; name: string } | undefined>(undefined);
-protected readonly dirtyDescription = signal('');
-protected dirtyCounter = 0;
-protected readonly dirtyCreate: CngxSelectCreateAction<{ id: string; name: string }> =
-  (_term, draft) => of({ id: 'dirty-' + ++this.dirtyCounter, name: draft.label }).pipe(delay(400));
-protected handleDirtyInput(value: string, setDirty: (v: boolean) => void): void {
-  this.dirtyDescription.set(value);
-  setDirty(value.length > 0);
-}
-protected handleDirtyCancel(setDirty: (v: boolean) => void): void {
-  this.dirtyDescription.set('');
-  setDirty(false);
-}
-
-// Custom template — rich action slot with icon + keyboard shortcut.
-protected readonly customValue = signal<{ id: string; name: string } | undefined>(undefined);
-protected customCounter = 0;
-protected readonly customCreate: CngxSelectCreateAction<{ id: string; name: string }> =
-  (_term, draft) => ({ id: 'custom-' + ++this.customCounter, name: draft.label });`;
+protected readonly basicDisplay = (v: { id: string; name: string }) => v.name;`;
   protected readonly _exHtml: string = `<div class="kbd-hint">
   <strong>Try it:</strong>
   <span>Type a non-existent tag (e.g. "Security")</span>

@@ -60,24 +60,7 @@ export class DrawerPatternConsumerWiring {
   protected readonly _exSubtitle: string = 'The drawer system is fully headless. Directives set CSS classes; the consumer styles them. <code>CngxAriaExpanded</code> and <code>CngxFocusTrap</code> are wired by the consumer — not auto-injected.';
   protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { type DrawerMode } from '@cngx/common';
-import { CngxAriaExpanded } from '@cngx/common';
-
-// Controlled drawer
-protected readonly controlledOpen = signal(false);
-
-// Direction playground
-protected readonly direction = signal<'left' | 'right' | 'top' | 'bottom'>('left');
-protected readonly directions: ('left' | 'right' | 'top' | 'bottom')[] = ['left', 'right', 'top', 'bottom'];
-
-// Mode playground
-protected readonly mode = signal<DrawerMode>('over');
-protected readonly modes: DrawerMode[] = ['over', 'push', 'side'];
-
-// Event log
-protected readonly events = signal<string[]>([]);
-protected logEvent(name: string): void {
-  this.events.update(e => [name + ' @ ' + new Date().toLocaleTimeString(), ...e].slice(0, 5));
-}`;
+import { CngxAriaExpanded } from '@cngx/common';`;
   protected readonly _exHtml: string = `  <pre class="code-block"><code>&lt;div cngxDrawer #drawer="cngxDrawer"&gt;
   &lt;!-- Consumer wires CngxAriaExpanded on the trigger --&gt;
   &lt;button [cngxAriaExpanded]="drawer.opened()"

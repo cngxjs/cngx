@@ -79,24 +79,7 @@ export class DrawerModeOverPushSide {
   protected readonly _exSectionTitle: string = 'Mode — Over / Push / Side';
   protected readonly _exSubtitle: string = '<code>[mode]</code> controls how the panel interacts with content. <strong>over</strong> (default) overlays content. <strong>push</strong> pushes content aside. <strong>side</strong> is always visible — no toggle needed.';
   protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'focus', value: 'behavior' }];
-  protected readonly _exTs: string = `import { CngxDrawer, CngxDrawerPanel, CngxDrawerContent, type DrawerMode } from '@cngx/common';
-
-// Controlled drawer
-protected readonly controlledOpen = signal(false);
-
-// Direction playground
-protected readonly direction = signal<'left' | 'right' | 'top' | 'bottom'>('left');
-protected readonly directions: ('left' | 'right' | 'top' | 'bottom')[] = ['left', 'right', 'top', 'bottom'];
-
-// Mode playground
-protected readonly mode = signal<DrawerMode>('over');
-protected readonly modes: DrawerMode[] = ['over', 'push', 'side'];
-
-// Event log
-protected readonly events = signal<string[]>([]);
-protected logEvent(name: string): void {
-  this.events.update(e => [name + ' @ ' + new Date().toLocaleTimeString(), ...e].slice(0, 5));
-}`;
+  protected readonly _exTs: string = `import { CngxDrawer, CngxDrawerPanel, CngxDrawerContent, type DrawerMode } from '@cngx/common';`;
   protected readonly _exHtml: string = `<div class="filter-row">
   <span class="filter-label">Mode:</span>
   @for (m of modes; track m) {

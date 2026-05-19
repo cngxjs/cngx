@@ -50,9 +50,7 @@ export class HighlightMultipleParagraphs {
   protected readonly _exSectionTitle: string = 'Multiple Paragraphs';
   protected readonly _exSubtitle: string = 'Highlight works across nested elements — it walks all text nodes recursively.';
   protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'visual-variants' }];
-  protected readonly _exTs: string = `import { CngxHighlight } from '@cngx/common/layout';
-
-protected readonly searchTerm = signal('');`;
+  protected readonly _exTs: string = `import { CngxHighlight } from '@cngx/common/layout';`;
   protected readonly _exHtml: string = `<div [cngxHighlight]="'angular'" #hl2="cngxHighlight"
      style="max-width:500px;font-size:0.9375rem">
   <p style="margin:0 0 8px"><strong>Angular</strong> is a platform for building web applications.</p>

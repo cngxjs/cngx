@@ -56,7 +56,6 @@ export class PaginateListUncontrolledModeZeroClassBoilerplate {
   protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'behavior' }, { dim: 'focus', value: 'integration' }];
   protected readonly _exTs: string = `import { PEOPLE, type Person } from '../../../../fixtures';
 
-// Expand the dataset so pagination is clearly visible (3 pages of 5)
 protected readonly items = signal<Person[]>([
   ...PEOPLE,
   ...PEOPLE.map((p: Person) => ({ ...p, name: p.name + ' Jr.' })),

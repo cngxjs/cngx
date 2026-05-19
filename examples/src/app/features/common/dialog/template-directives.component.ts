@@ -78,30 +78,7 @@ export class DialogTemplateDirectives {
 import { FormsModule } from '@angular/forms';
 import { JsonPipe } from '@angular/common';
 
-// Fake form data for the form dialog demo
-protected readonly formData = { name: '', email: '' };
-
-// ── Programmatic demo ──────────────────────────────────────────
-protected readonly progDialog = viewChild<CngxDialog<'saved' | 'discarded'>>('progDialog');
-
-protected readonly progMessage = computed(() => {
-  const result = this.progDialog()?.result();
-  if (result === undefined) return 'No dialog result yet.';
-  if (result === 'dismissed') return 'Dialog was dismissed (Escape or backdrop).';
-  return 'Dialog returned: ' + String(result);
-});
-
-protected handleOpenProgrammatic(): void {
-  this.progDialog()?.open();
-}
-
-protected handleSaveProgrammatic(): void {
-  this.progDialog()?.close('saved');
-}
-
-protected handleDiscardProgrammatic(): void {
-  this.progDialog()?.close('discarded');
-}`;
+protected readonly formData = { name: '', email: '' };`;
   protected readonly _exHtml: string = `<button class="chip" (click)="tmplDlg.open()">Edit Profile</button>
 
 <dialog cngxDialog #tmplDlg="cngxDialog">

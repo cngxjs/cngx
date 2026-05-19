@@ -52,32 +52,7 @@ export class DialogCngxdialogopenerProgrammatic {
   protected readonly _exSectionTitle: string = 'CngxDialogOpener (Programmatic)';
   protected readonly _exSubtitle: string = 'For fully programmatic dialogs — no <code>&lt;dialog&gt;</code> in your template — use <code>CngxDialogOpener</code>. Requires <code>provideDialog()</code> in providers. Returns a typed <code>CngxDialogRef</code> with Signal-based result and Observable compat.';
   protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'focus', value: 'behavior' }];
-  protected readonly _exTs: string = `import { CngxDialog } from '@cngx/common/dialog';
-
-// Fake form data for the form dialog demo
-protected readonly formData = { name: '', email: '' };
-
-// ── Programmatic demo ──────────────────────────────────────────
-protected readonly progDialog = viewChild<CngxDialog<'saved' | 'discarded'>>('progDialog');
-
-protected readonly progMessage = computed(() => {
-  const result = this.progDialog()?.result();
-  if (result === undefined) return 'No dialog result yet.';
-  if (result === 'dismissed') return 'Dialog was dismissed (Escape or backdrop).';
-  return 'Dialog returned: ' + String(result);
-});
-
-protected handleOpenProgrammatic(): void {
-  this.progDialog()?.open();
-}
-
-protected handleSaveProgrammatic(): void {
-  this.progDialog()?.close('saved');
-}
-
-protected handleDiscardProgrammatic(): void {
-  this.progDialog()?.close('discarded');
-}`;
+  protected readonly _exTs: string = `import { CngxDialog } from '@cngx/common/dialog';`;
   protected readonly _exHtml: string = `<div class="code-block">
   <strong>CngxDialogOpener</strong> is the imperative escape hatch for cases where
   a declarative &lt;dialog&gt; in the template is impractical — e.g. opening a dialog

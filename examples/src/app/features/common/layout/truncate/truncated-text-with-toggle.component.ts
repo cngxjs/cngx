@@ -70,8 +70,7 @@ export class TruncateTruncatedTextWithToggle {
   protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxTruncate } from '@cngx/common/layout';
 
-protected readonly expanded1 = signal(false);
-protected readonly expanded2 = signal(false);`;
+protected readonly expanded1 = signal(false);`;
   protected readonly _exHtml: string = `<div style="max-width:400px">
   <p [cngxTruncate]="3" [(expanded)]="expanded1" #trunc="cngxTruncate"
      style="margin:0;line-height:1.6;font-size:0.875rem">

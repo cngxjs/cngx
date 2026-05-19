@@ -69,69 +69,11 @@ import { adaptFormControl } from '@cngx/forms/field';
 import { CngxSelectShell, CngxSelectOption, type CngxSelectCommitAction, type CngxSelectCommitMode, type CngxSelectShellChange } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 
-// Basic — flat options.
 protected readonly basicValue = signal<string | undefined>(undefined);
 protected readonly basicLog = signal<string | null>(null);
 protected handleBasicChange(e: CngxSelectShellChange<string>): void {
   this.basicLog.set(
     new Date().toLocaleTimeString() + ' → ' + (e.option?.label ?? '—'),
-  );
-}
-
-// Grouped — optgroups projected via <cngx-optgroup>.
-protected readonly groupedValue = signal<string | undefined>(undefined);
-
-// Rich-content trigger — closed trigger renders plain text from textContent.
-protected readonly richValue = signal<string | undefined>(undefined);
-
-// Form-field — Reactive Forms via adaptFormControl.
-private readonly rfDestroyRef = inject(DestroyRef);
-protected readonly rfControl = new FormControl<string | null>('green');
-protected readonly rfField = adaptFormControl(this.rfControl, 'color', this.rfDestroyRef);
-
-// Commit + error — async commit with toggleable failure + commit mode.
-protected readonly commitValue = signal<string | undefined>('red');
-protected readonly commitMode = signal<CngxSelectCommitMode>('pessimistic');
-protected readonly commitShouldFail = signal(false);
-protected readonly commitErrors = signal<string[]>([]);
-protected readonly commitAction: CngxSelectCommitAction<string> = (intended) => {
-  void intended;
-  if (this.commitShouldFail()) {
-    return throwError(() => new Error('Server rejected the commit')).pipe(delay(1500));
-  }
-  return of(intended).pipe(delay(1500));
-};
-protected handleCommitError(err: unknown): void {
-  const msg = err instanceof Error ? err.message : String(err);
-  this.commitErrors.update((l) => [...l.slice(-4), new Date().toLocaleTimeString() + ' → ' + msg]);
-}
-
-// Empty + loading + state-driven.
-protected readonly emptyValue = signal<string | undefined>(undefined);
-protected readonly loadingFlag = signal(false);
-
-// Custom glyphs.
-protected readonly customValue = signal<string | undefined>(undefined);
-
-// Search — case-insensitive substring filter via CNGX_OPTION_FILTER_HOST.
-protected readonly searchValue = signal<string | undefined>(undefined);
-protected readonly searchTerm = signal<string>('');
-protected readonly cities = [
-  'Amsterdam', 'Berlin', 'Cologne', 'Dresden', 'Edinburgh', 'Frankfurt',
-  'Geneva', 'Hamburg', 'Innsbruck', 'Jena', 'Krakow', 'Lisbon', 'Madrid',
-  'Munich', 'Nice', 'Oslo', 'Paris', 'Reykjavik', 'Stockholm', 'Tallinn',
-  'Utrecht', 'Vienna', 'Warsaw', 'Zurich',
-];
-
-// Showcase — combines all the bells.
-protected readonly showcaseValue = signal<string | undefined>('design');
-protected readonly showcaseLog = signal<string[]>([]);
-protected readonly showcaseAction: CngxSelectCommitAction<string> = (intended) => {
-  return of(intended).pipe(delay(800));
-};
-protected handleShowcaseChange(e: CngxSelectShellChange<string>): void {
-  this.showcaseLog.update((l) =>
-    [...l.slice(-4), new Date().toLocaleTimeString() + ' → ' + (e.option?.label ?? 'cleared')],
   );
 }`;
   protected readonly _exHtml: string = `<cngx-select-shell

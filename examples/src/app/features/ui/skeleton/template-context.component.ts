@@ -50,10 +50,7 @@ export class SkeletonTemplateContext {
   protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'visual-variants' }, { dim: 'focus', value: 'async-state' }];
   protected readonly _exTs: string = `import { CngxSkeletonContainer, CngxSkeletonPlaceholder } from '@cngx/ui';
 
-protected readonly loading = signal(true);
-protected toggleLoading(): void {
-  this.loading.update(v => !v);
-}`;
+protected readonly loading = signal(true);`;
   protected readonly _exHtml: string = `<cngx-skeleton [loading]="true" [count]="5">
   <ng-template cngxSkeletonPlaceholder let-i let-first="first" let-last="last" let-count="count">
     <div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--cngx-color-border,#e0e0e0)">

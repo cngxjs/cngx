@@ -62,7 +62,6 @@ import { createManualState } from '@cngx/common/data';
 
 protected readonly stateDemoData: readonly number[] = [12, 18, 14, 22, 19, 28, 24];
 protected readonly state = createManualState<readonly number[]>();
-
 protected showSkeleton(): void {
   this.state.reset();
   this.state.set('loading');

@@ -71,27 +71,7 @@ export class StepperSlotOverridesEmptyStatePlaceholderViaCodeCngxstepperemptyCod
 import { CngxStepper } from '@cngx/ui/stepper';
 
 protected readonly active = signal(0);
-protected readonly busyAttempts = signal(0);
-protected readonly slowAttempts = signal(0);
-protected readonly hasSteps = signal(true);
-
-// Reject the first commit attempt onto step 2 ('Security'); succeed
-// on retry. Drives the *cngxStepRejection slot — presenter sets
-// lastFailedIndex on the rejection arm and clears it on the next success.
-protected readonly commitAction: CngxStepperCommitAction = (_from, to) => {
-  if (to === 2 && this.busyAttempts() === 0) {
-    this.busyAttempts.update((n) => n + 1);
-    return Promise.reject(new Error('Security check failed — retry'));
-  }
-  return Promise.resolve(true);
-};
-
-// Slow commit so the busy-spinner slot stays visible long enough to
-// observe. Resolves after 800ms — drives the *cngxStepBusySpinner slot.
-protected readonly slowCommit: CngxStepperCommitAction = () => {
-  this.slowAttempts.update((n) => n + 1);
-  return new Promise((resolve) => setTimeout(() => resolve(true), 800));
-};`;
+protected readonly hasSteps = signal(true);`;
   protected readonly _exHtml: string = `<button
   type="button"
   class="chip"

@@ -52,10 +52,7 @@ export class CardGridBasicGrid {
   protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'visual-variants' }, { dim: 'focus', value: 'composition' }];
   protected readonly _exTs: string = `import { CngxCard, CngxCardHeader, CngxCardBody, CngxCardGrid } from '@cngx/common/card';
 
-protected items = signal(['Alpha', 'Beta', 'Gamma', 'Delta', 'Epsilon', 'Zeta']);
-protected emptyItems = signal<string[]>([]);
-protected emptyReason = signal<'first-use' | 'no-results' | 'cleared' | undefined>('first-use');
-protected density = signal<'compact' | 'default' | 'comfortable'>('default');`;
+protected items = signal(['Alpha', 'Beta', 'Gamma', 'Delta', 'Epsilon', 'Zeta']);`;
   protected readonly _exHtml: string = `<cngx-card-grid minWidth="180px">
   @for (item of items(); track item) {
     <cngx-card as="button" [ariaLabel]="item">

@@ -71,32 +71,7 @@ export class DialogNestedDialogsCngxdialogstack {
   protected readonly _exSectionTitle: string = 'Nested Dialogs (CngxDialogStack)';
   protected readonly _exSubtitle: string = 'Multiple modal dialogs can be open simultaneously — the browser handles Top Layer stacking natively. <code>CngxDialogStack</code> manages backdrop visibility: only the topmost dialog shows its <code>::backdrop</code>, preventing cumulative darkening. Escape closes the topmost dialog first. Provide the stack via <code>provideDialogStack()</code> at feature level.';
   protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'focus', value: 'behavior' }];
-  protected readonly _exTs: string = `import { CngxDialog, CngxDialogTitle, CngxDialogDescription, CngxDialogClose } from '@cngx/common/dialog';
-
-// Fake form data for the form dialog demo
-protected readonly formData = { name: '', email: '' };
-
-// ── Programmatic demo ──────────────────────────────────────────
-protected readonly progDialog = viewChild<CngxDialog<'saved' | 'discarded'>>('progDialog');
-
-protected readonly progMessage = computed(() => {
-  const result = this.progDialog()?.result();
-  if (result === undefined) return 'No dialog result yet.';
-  if (result === 'dismissed') return 'Dialog was dismissed (Escape or backdrop).';
-  return 'Dialog returned: ' + String(result);
-});
-
-protected handleOpenProgrammatic(): void {
-  this.progDialog()?.open();
-}
-
-protected handleSaveProgrammatic(): void {
-  this.progDialog()?.close('saved');
-}
-
-protected handleDiscardProgrammatic(): void {
-  this.progDialog()?.close('discarded');
-}`;
+  protected readonly _exTs: string = `import { CngxDialog, CngxDialogTitle, CngxDialogDescription, CngxDialogClose } from '@cngx/common/dialog';`;
   protected readonly _exHtml: string = `<button class="chip" (click)="outerDlg.open()">Open Settings</button>
 
 <!-- Outer dialog -->

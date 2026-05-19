@@ -84,9 +84,6 @@ protected readonly fruits = signal<ActiveDescendantItem[]>([
   { id: 'fruit-elder', value: 'elder', label: 'Elderberry' },
   { id: 'fruit-fig', value: 'fig', label: 'Fig' },
 ]);
-protected readonly typeaheadFruits = computed(() =>
-  this.fruits().map((f): ActiveDescendantItem => ({ ...f, id: f.id + '-ta' })),
-);
 protected readonly lastActivated = signal<string | null>(null);`;
   protected readonly _exHtml: string = `<div class="cngx-ad-listbox"
      style="max-width:260px"

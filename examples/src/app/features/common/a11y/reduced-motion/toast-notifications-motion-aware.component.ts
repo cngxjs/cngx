@@ -98,7 +98,6 @@ export class ReducedMotionToastNotificationsMotionAware {
 
 protected notifications = signal<{ id: number; text: string }[]>([]);
 private _nextId = 0;
-
 protected addNotification(): void {
   const id = this._nextId++;
   const texts = [
@@ -114,7 +113,6 @@ protected addNotification(): void {
   ]);
   setTimeout(() => this.removeNotification(id), 4000);
 }
-
 protected removeNotification(id: number): void {
   this.notifications.update(list => list.filter(n => n.id !== id));
 }`;

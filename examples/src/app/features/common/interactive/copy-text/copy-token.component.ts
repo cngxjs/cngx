@@ -61,8 +61,7 @@ export class CopyTextCopyToken {
   protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxCopyText } from '@cngx/common/interactive';
 
-protected readonly token = signal('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9');
-protected readonly shareUrl = signal('https://cngx.dev/docs/copy-text');`;
+protected readonly token = signal('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9');`;
   protected readonly _exHtml: string = `<div style="display:flex;align-items:center;gap:8px">
   <code style="padding:6px 10px;background:var(--code-bg,#f5f5f5);border:1px solid var(--code-border,#ddd);
                border-radius:4px;font-size:0.8125rem;overflow:hidden;text-overflow:ellipsis;max-width:280px">

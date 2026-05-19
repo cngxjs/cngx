@@ -85,14 +85,7 @@ export class BulletPerformanceVsTarget {
   protected readonly _exSubtitle: string = 'Range bands (poor / fair / good) + actual bar + target marker.';
   protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'visual-variants' }];
   protected readonly _exTs: string = `import { CngxBullet } from '@cngx/common/chart';
-import { createManualState } from '@cngx/common/data';
-
-protected readonly state = createManualState<number>();
-
-protected showSkeleton(): void { this.state.reset(); this.state.set('loading'); }
-protected showSuccess(): void { this.state.setSuccess(78); }
-protected showEmpty(): void { this.state.reset(); this.state.setSuccess(0); }
-protected showError(): void { this.state.reset(); this.state.setError(new Error('Target unavailable')); }`;
+import { createManualState } from '@cngx/common/data';`;
   protected readonly _exHtml: string = `<div style="display:flex;flex-direction:column;gap:16px;max-width:400px">
   <div>
     <div style="font-size:0.8125rem;color:var(--text-muted);margin-bottom:4px">Q1 Revenue</div>

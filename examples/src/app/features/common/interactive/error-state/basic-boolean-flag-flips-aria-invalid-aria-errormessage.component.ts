@@ -68,8 +68,7 @@ export class ErrorStateBasicBooleanFlagFlipsAriaInvalidAriaErrormessage {
   protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'error-handling' }];
   protected readonly _exTs: string = `import { CngxErrorState } from '@cngx/common/interactive';
 
-protected readonly emailInvalid = signal(false);
-protected readonly passwordInvalid = signal(false);`;
+protected readonly emailInvalid = signal(false);`;
   protected readonly _exHtml: string = `  <label style="display: block; margin-bottom: 6px; font-weight: 600;">
     <span>Email</span>
     <input

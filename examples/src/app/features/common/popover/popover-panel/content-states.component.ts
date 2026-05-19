@@ -69,11 +69,8 @@ export class PopoverPanelContentStates {
   protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'visual-variants' }, { dim: 'focus', value: 'composition' }];
   protected readonly _exTs: string = `import { CngxPopoverPanel, CngxPopoverTrigger, CngxPopoverHeader, CngxPopoverBody, CngxPopoverLoading, CngxPopoverError } from '@cngx/common/popover';
 
-protected simulateSave = () => new Promise<void>(resolve => setTimeout(resolve, 1500));
-protected simulateDelete = () => new Promise<void>((_, reject) => setTimeout(() => reject('Permission denied'), 1000));
 protected simulateLoad = signal(false);
 protected loadError = signal<string | undefined>(undefined);
-
 protected startLoading(): void {
   this.simulateLoad.set(true);
   this.loadError.set(undefined);
@@ -81,7 +78,6 @@ protected startLoading(): void {
     this.simulateLoad.set(false);
   }, 2000);
 }
-
 protected startLoadingWithError(): void {
   this.simulateLoad.set(true);
   this.loadError.set(undefined);

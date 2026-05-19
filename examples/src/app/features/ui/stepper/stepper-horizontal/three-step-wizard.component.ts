@@ -67,7 +67,6 @@ export class StepperHorizontalThreeStepWizard {
 import { CngxStepper } from '@cngx/ui/stepper';
 
 protected readonly active = signal(0);
-
 protected handleNext(): void {
   this.active.update(i => Math.min(i + 1, 2));
 }

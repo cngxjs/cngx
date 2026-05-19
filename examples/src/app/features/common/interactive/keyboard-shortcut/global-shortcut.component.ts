@@ -60,17 +60,10 @@ export class KeyboardShortcutGlobalShortcut {
   protected readonly _exTs: string = `import { CngxKeyboardShortcut } from '@cngx/common/interactive';
 
 protected globalCount = signal(0);
-protected escapeCount = signal(0);
 protected lastShortcut = signal('none');
-
 protected handleGlobal(): void {
   this.globalCount.update(n => n + 1);
   this.lastShortcut.set('Ctrl+K / Cmd+K');
-}
-
-protected handleEscape(): void {
-  this.escapeCount.update(n => n + 1);
-  this.lastShortcut.set('Escape (scoped)');
 }`;
   protected readonly _exHtml: string = `<div [cngxKeyboardShortcut]="'mod+k'" (shortcutTriggered)="handleGlobal()">
   <p style="font-size:0.875rem;margin:0 0 12px;color:var(--cngx-text-secondary,#666)">

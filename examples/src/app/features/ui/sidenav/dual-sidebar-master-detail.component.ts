@@ -93,24 +93,7 @@ export class SidenavDualSidebarMasterDetail {
   protected readonly _exSubtitle: string = 'Left sidebar with permanent navigation (<code>push</code> mode). Right sidebar as an overlay detail panel that opens when clicking an item in the content area. Shared backdrop managed by <code>CngxSidenavLayout</code>.';
   protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxSidenavLayout, CngxSidenav, CngxSidenavContent } from '@cngx/ui';
-import { CngxNavLink } from '@cngx/common';
-
-// Demo 1: Full nav
-protected readonly navOpen = signal(true);
-protected readonly navMode = signal<'over' | 'push' | 'side' | 'mini'>('side');
-protected readonly modes: ('over' | 'push' | 'side' | 'mini')[] = ['over', 'push', 'side', 'mini'];
-protected readonly activeLink = signal('/dashboard');
-
-// Demo 2: Dual sidebar
-protected readonly leftOpen = signal(true);
-protected readonly rightOpen = signal(false);
-protected readonly selectedItem = signal<string | null>(null);
-protected readonly items = ['Order #1042', 'Order #1043', 'Order #1044', 'Order #1045'];
-
-protected selectItem(item: string): void {
-  this.selectedItem.set(item);
-  this.rightOpen.set(true);
-}`;
+import { CngxNavLink } from '@cngx/common';`;
   protected readonly _exHtml: string = `<div class="button-row">
   <button class="sort-btn" (click)="leftOpen.set(!leftOpen())">
     Left: {{ leftOpen() ? 'open' : 'closed' }}

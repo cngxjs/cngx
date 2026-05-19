@@ -49,37 +49,7 @@ export class AlertClosable {
   protected readonly _exTs: string = `import { CngxAlert } from '@cngx/ui/feedback';
 import { createManualState } from '@cngx/common/data';
 
-// ── Static demos ──
-protected readonly dismissed = signal(false);
-
-// ── State-driven demo ──
-protected readonly saveState = createManualState<string>();
-
-protected simulateError(): void {
-  this.saveState.setError('Network timeout');
-}
-
-protected simulateSuccess(): void {
-  this.saveState.setSuccess('done');
-}
-
-protected simulateLoading(): void {
-  this.saveState.set('loading');
-}
-
-protected resetState(): void {
-  this.saveState.reset();
-}
-
-// ── [when] demo ──
-protected readonly showAlert = signal(false);
-
-// ── Collapsible demo ──
-protected readonly collapseState = createManualState<string>();
-
-protected triggerCollapseError(): void {
-  this.collapseState.setError('Validation failed: 3 fields have errors. Please review the form and correct the highlighted fields before submitting again.');
-}`;
+protected readonly dismissed = signal(false);`;
   protected readonly _exHtml: string = `@if (!dismissed()) {
   <cngx-alert severity="warning" title="Unsaved changes" [closable]="true" (dismissed)="dismissed.set(true)">
     Your changes will be lost if you leave this page.

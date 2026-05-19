@@ -49,14 +49,7 @@ export class DonutScoreGauges {
   protected readonly _exSubtitle: string = 'Three sizes; theming via --cngx-donut-color → --cngx-chart-primary.';
   protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'visual-variants' }];
   protected readonly _exTs: string = `import { CngxDonut } from '@cngx/common/chart';
-import { createManualState } from '@cngx/common/data';
-
-protected readonly state = createManualState<number>();
-
-protected showSkeleton(): void { this.state.reset(); this.state.set('loading'); }
-protected showSuccess(): void { this.state.setSuccess(72); }
-protected showEmpty(): void { this.state.reset(); this.state.setSuccess(0); }
-protected showError(): void { this.state.reset(); this.state.setError(new Error('Score unavailable')); }`;
+import { createManualState } from '@cngx/common/data';`;
   protected readonly _exHtml: string = `<div style="display:flex;gap:24px;align-items:center;flex-wrap:wrap">
   <cngx-donut [value]="75" [max]="100" [size]="48" [thickness]="6" [label]="'75%'" aria-label="Score 75 of 100" />
   <cngx-donut [value]="42" [max]="100" [size]="64" [thickness]="8" [label]="'42%'"

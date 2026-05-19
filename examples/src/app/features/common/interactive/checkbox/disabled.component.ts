@@ -41,20 +41,7 @@ export class CheckboxDisabled {
   protected readonly _exSectionTitle: string = 'Disabled';
   protected readonly _exSubtitle: string = 'Disabled checkboxes ignore click + keydown and reflect <code>aria-disabled="true"</code>.';
   protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'focus', value: 'behavior' }];
-  protected readonly _exTs: string = `import { CngxCheckbox } from '@cngx/common/interactive';
-
-protected readonly accept = signal(false);
-protected readonly itemA = signal(true);
-protected readonly itemB = signal(false);
-protected readonly itemC = signal(false);
-protected readonly allChecked = computed(() => this.itemA() && this.itemB() && this.itemC());
-protected readonly someChecked = computed(() => this.itemA() || this.itemB() || this.itemC());
-protected readonly groupIndeterminate = computed(() => this.someChecked() && !this.allChecked());
-protected toggleAll(next: boolean): void {
-  this.itemA.set(next);
-  this.itemB.set(next);
-  this.itemC.set(next);
-}`;
+  protected readonly _exTs: string = `import { CngxCheckbox } from '@cngx/common/interactive';`;
   protected readonly _exHtml: string = `<cngx-checkbox [value]="true" [disabled]="true">Locked-on</cngx-checkbox>
 <cngx-checkbox [value]="false" [disabled]="true">Locked-off</cngx-checkbox>
 <cngx-checkbox [value]="false" [indeterminate]="true" [disabled]="true">Locked-mixed</cngx-checkbox>`;

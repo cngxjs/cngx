@@ -76,27 +76,7 @@ import { CngxTabGroup } from '@cngx/ui/tabs';
 import { CngxErrorAggregator, CngxErrorSource } from '@cngx/common/interactive';
 
 protected readonly active = signal(0);
-protected readonly profileInvalid = signal(true);
-protected readonly busyAttempts = signal(0);
-protected readonly slowAttempts = signal(0);
-
-// Reject the first commit attempt onto tab 2 ('Security'); succeed
-// on retry. Drives the *cngxTabRejectionIcon slot — presenter sets
-// lastFailedIndex on the rejection arm and clears it on the next success.
-protected readonly commitAction: CngxTabsCommitAction = (_from, to) => {
-  if (to === 2 && this.busyAttempts() === 0) {
-    this.busyAttempts.update((n) => n + 1);
-    return Promise.reject(new Error('Security check failed — retry'));
-  }
-  return Promise.resolve(true);
-};
-
-// Slow commit so the busy-spinner slot stays visible long enough to
-// observe. Resolves after 800ms — drives the *cngxTabBusySpinner slot.
-protected readonly slowCommit: CngxTabsCommitAction = () => {
-  this.slowAttempts.update((n) => n + 1);
-  return new Promise((resolve) => setTimeout(() => resolve(true), 800));
-};`;
+protected readonly profileInvalid = signal(true);`;
   protected readonly _exHtml: string = `<cngx-tab-group [(activeIndex)]="active" aria-label="Slot-overrides — error badge">
   <ng-template cngxTabErrorBadge let-tab="tab">
     <span class="chip" style="background:#dc2626;color:#fff;font-size:0.7em;padding:0 6px">

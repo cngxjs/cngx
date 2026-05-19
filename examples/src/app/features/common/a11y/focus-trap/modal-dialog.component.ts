@@ -97,9 +97,7 @@ export class FocusTrapModalDialog {
   protected readonly _exTs: string = `import { CngxFocusTrap } from '@cngx/common/a11y';
 
 protected modalOpen = signal(false);
-protected autoFocus = signal(true);
-protected drawerOpen = signal(false);
-protected drawerSide = signal<'left' | 'right'>('right');`;
+protected autoFocus = signal(true);`;
   protected readonly _exHtml: string = `<div class="button-row">
   <button class="sort-btn" (click)="modalOpen.set(true)">Open modal</button>
   <label style="display: flex; align-items: center; gap: 6px; font-size: 0.875rem;">

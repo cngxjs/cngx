@@ -76,8 +76,7 @@ export class CardGridEmptyStateWithReason {
 
 protected items = signal(['Alpha', 'Beta', 'Gamma', 'Delta', 'Epsilon', 'Zeta']);
 protected emptyItems = signal<string[]>([]);
-protected emptyReason = signal<'first-use' | 'no-results' | 'cleared' | undefined>('first-use');
-protected density = signal<'compact' | 'default' | 'comfortable'>('default');`;
+protected emptyReason = signal<'first-use' | 'no-results' | 'cleared' | undefined>('first-use');`;
   protected readonly _exHtml: string = `<div class="button-row" style="margin-bottom:12px">
   <button [class.chip--active]="emptyReason() === 'first-use'" class="chip"
           (click)="emptyReason.set('first-use')">first-use</button>

@@ -44,58 +44,8 @@ export class BannerDedupUpdate {
   protected readonly _exTs: string = `import { CngxBanner } from '@cngx/ui/feedback';
 
 private readonly banner = inject(CngxBanner);
-
-// ── Basic demos ──
-protected showOffline(): void {
-  this.banner.show({
-    message: 'You are offline. Changes will sync when reconnected.',
-    id: 'net:offline',
-    severity: 'error',
-  });
-}
-
-protected showMaintenance(): void {
-  this.banner.show({
-    message: 'Scheduled maintenance tonight at 22:00 UTC.',
-    id: 'sys:maintenance',
-    severity: 'info',
-    action: { label: 'More Info', handler: () => alert('Maintenance details...') },
-  });
-}
-
-protected showSessionTimeout(): void {
-  this.banner.show({
-    message: 'Your session expires in 5 minutes.',
-    id: 'auth:session-timeout',
-    severity: 'warning',
-    action: {
-      label: 'Extend',
-      handler: () => new Promise<void>(r => setTimeout(r, 1500)),
-    },
-  });
-}
-
-protected showNewVersion(): void {
-  this.banner.show({
-    message: 'A new version is available.',
-    id: 'app:version',
-    severity: 'info',
-    action: { label: 'Refresh', handler: () => location.reload() },
-  });
-}
-
-protected dismissOffline(): void {
-  this.banner.dismiss('net:offline');
-}
-
-protected dismissAll(): void {
-  this.banner.dismissAll();
-}
-
-// ── Update demo ──
 private countdown = 5;
 private countdownInterval: ReturnType<typeof setInterval> | undefined;
-
 protected startCountdown(): void {
   this.countdown = 5;
   this.banner.show({
@@ -117,21 +67,6 @@ protected startCountdown(): void {
       });
     }
   }, 1000);
-}
-
-// ── Async action demo ──
-protected showAsyncAction(): void {
-  this.banner.show({
-    message: 'Payment method expired.',
-    id: 'billing:payment',
-    severity: 'error',
-    action: {
-      label: 'Update Payment',
-      handler: () => new Promise<void>((resolve, reject) => {
-        setTimeout(() => Math.random() > 0.5 ? resolve() : reject(new Error('Card declined')), 2000);
-      }),
-    },
-  });
 }`;
   protected readonly _exHtml: string = `<div style="display:flex;gap:8px;margin-bottom:12px">
   <button (click)="startCountdown()" class="chip">Start Session Countdown</button>

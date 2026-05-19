@@ -81,10 +81,7 @@ export class FocusVisibleKeyboardVsPointer {
   protected readonly _exSectionTitle: string = 'CngxFocusVisible — Keyboard vs Pointer';
   protected readonly _exSubtitle: string = '<code>[cngxFocusVisible]</code> adds the <code>cngx-focus-visible</code> class when the element receives keyboard focus. Mouse/touch focus does not add the class. Unlike native <code>:focus-visible</code>, the signal is available in TypeScript for conditional logic beyond CSS.';
   protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'a11y' }, { dim: 'audience', value: 'dev' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'focus', value: 'behavior' }];
-  protected readonly _exTs: string = `import { CngxFocusVisible } from '@cngx/common/a11y';
-
-protected name = signal('');
-protected email = signal('');`;
+  protected readonly _exTs: string = `import { CngxFocusVisible } from '@cngx/common/a11y';`;
   protected readonly _exHtml: string = `<p style="margin-bottom: 12px; font-size: 0.875rem; color: var(--cngx-text-secondary, #666);">
   Tab into the buttons below using the keyboard. Then click with the mouse.
   Only keyboard focus shows the custom ring.

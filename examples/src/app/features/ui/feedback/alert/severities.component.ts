@@ -46,39 +46,7 @@ export class AlertSeverities {
   protected readonly _exSubtitle: string = 'Four severity levels with distinct icons. Color is never the only indicator (WCAG 1.4.1). Enter animation plays on first render.';
   protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'visual-variants' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }];
   protected readonly _exTs: string = `import { CngxAlert } from '@cngx/ui/feedback';
-import { createManualState } from '@cngx/common/data';
-
-// ── Static demos ──
-protected readonly dismissed = signal(false);
-
-// ── State-driven demo ──
-protected readonly saveState = createManualState<string>();
-
-protected simulateError(): void {
-  this.saveState.setError('Network timeout');
-}
-
-protected simulateSuccess(): void {
-  this.saveState.setSuccess('done');
-}
-
-protected simulateLoading(): void {
-  this.saveState.set('loading');
-}
-
-protected resetState(): void {
-  this.saveState.reset();
-}
-
-// ── [when] demo ──
-protected readonly showAlert = signal(false);
-
-// ── Collapsible demo ──
-protected readonly collapseState = createManualState<string>();
-
-protected triggerCollapseError(): void {
-  this.collapseState.setError('Validation failed: 3 fields have errors. Please review the form and correct the highlighted fields before submitting again.');
-}`;
+import { createManualState } from '@cngx/common/data';`;
   protected readonly _exHtml: string = `<div style="display:flex;flex-direction:column;gap:12px">
   <cngx-alert severity="info" title="Info">This is an informational message.</cngx-alert>
   <cngx-alert severity="success" title="Success">Operation completed successfully.</cngx-alert>

@@ -77,39 +77,12 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl, CngxListboxFieldBridge } from '@cngx/forms/field';
 import { CngxListbox, CngxOption } from '@cngx/common/interactive';
 
-// ── Signal Forms single ──────────────────────────────────
 private readonly singleModel = signal<{ color: string }>({ color: '' });
 private readonly singleSchema = schema<{ color: string }>((root) => {
   required(root.color);
-});
 protected readonly singleForm = form(this.singleModel, this.singleSchema);
-
-// ── Signal Forms multi ───────────────────────────────────
-private readonly multiModel = signal<{ toppings: string[] }>({ toppings: [] });
-private readonly multiSchema = schema<{ toppings: string[] }>((root) => {
-  minLength(root.toppings, 2);
-});
-protected readonly multiForm = form(this.multiModel, this.multiSchema);
-
-// ── Reactive Forms single ────────────────────────────────
-protected readonly rfControl = new FormControl<string>('green', { validators: [Validators.required], nonNullable: true });
-protected readonly rfField = adaptFormControl(this.rfControl, 'color', inject(DestroyRef));
-protected readonly rfValue = toSignal(this.rfControl.valueChanges, { initialValue: this.rfControl.value });
-protected readonly rfTouched = signal(false);
-
-// ── mat-select via CngxBindField ─────────────────────────
-protected readonly matSelectControl = new FormControl<string>('', { validators: [Validators.required], nonNullable: true });
-protected readonly matSelectField = adaptFormControl(this.matSelectControl, 'size', inject(DestroyRef));
-protected readonly matSelectValue = toSignal(this.matSelectControl.valueChanges, { initialValue: this.matSelectControl.value });
-
 protected handleSingleSubmit(): void {
   submit(this.singleForm, async () => []);
-}
-protected handleMultiSubmit(): void {
-  submit(this.multiForm, async () => []);
-}
-protected handleMatSelectSubmit(): void {
-  this.matSelectField().markAsTouched();
 }`;
   protected readonly _exHtml: string = `<cngx-form-field [field]="singleForm.color">
   <label cngxLabel>Lieblingsfarbe</label>

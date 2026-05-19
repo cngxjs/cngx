@@ -48,8 +48,7 @@ export class ButtonMultiToggleGroupBasicMultiFilterToolbar {
   protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }];
   protected readonly _exTs: string = `import { CngxButtonMultiToggleGroup, CngxButtonToggle } from '@cngx/common/interactive';
 
-protected readonly filters = signal<string[]>(['open']);
-protected readonly groupDisabled = signal(false);`;
+protected readonly filters = signal<string[]>(['open']);`;
   protected readonly _exHtml: string = `<cngx-button-multi-toggle-group label="Status filters" [(selectedValues)]="filters">
   <button cngxButtonToggle value="open">Open</button>
   <button cngxButtonToggle value="closed">Closed</button>

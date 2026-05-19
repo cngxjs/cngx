@@ -66,7 +66,6 @@ export class LongPressLongPressWithVisualFeedback {
 
 protected pressCount = signal(0);
 protected lastEvent = signal<string>('none');
-
 protected handleLongPress(event: PointerEvent): void {
   this.pressCount.update(n => n + 1);
   this.lastEvent.set(\`(\${Math.round(event.clientX)}, \${Math.round(event.clientY)})\`);

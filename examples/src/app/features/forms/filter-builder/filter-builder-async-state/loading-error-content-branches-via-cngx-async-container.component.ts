@@ -84,25 +84,18 @@ import { JsonPipe } from '@angular/common';
 
 protected readonly state = createManualState<readonly FilterFieldDef[]>();
 protected readonly tree = signal<FilterGroup>(createEmptyFilterRoot());
-protected readonly fieldsFromState = computed<readonly FilterFieldDef[]>(
-  () => this.state.data() ?? [],
-);
-
 protected loadFields(): void {
   this.state.set('loading');
   setTimeout(() => this.state.setSuccess(FILTER_BUILDER_FIELDS), 600);
 }
-
 protected failFields(): void {
   this.state.set('loading');
   setTimeout(() => this.state.setError(new Error('Field schema unavailable')), 400);
 }
-
 protected refreshFields(): void {
   this.state.set('refreshing');
   setTimeout(() => this.state.setSuccess(FILTER_BUILDER_FIELDS), 500);
 }
-
 protected resetState(): void {
   this.state.reset();
   this.tree.set(createEmptyFilterRoot());

@@ -56,8 +56,6 @@ export class CardGridDensityVariants {
   protected readonly _exTs: string = `import { CngxCard, CngxCardBody, CngxCardGrid } from '@cngx/common/card';
 
 protected items = signal(['Alpha', 'Beta', 'Gamma', 'Delta', 'Epsilon', 'Zeta']);
-protected emptyItems = signal<string[]>([]);
-protected emptyReason = signal<'first-use' | 'no-results' | 'cleared' | undefined>('first-use');
 protected density = signal<'compact' | 'default' | 'comfortable'>('default');`;
   protected readonly _exHtml: string = `<div class="button-row" style="margin-bottom:12px">
   <button [class.chip--active]="density() === 'compact'" class="chip"

@@ -47,32 +47,7 @@ export class DialogAlertDialog {
   protected readonly _exSectionTitle: string = 'Alert Dialog';
   protected readonly _exSubtitle: string = 'Uses <code>role="alertdialog"</code> and disables backdrop close. Only the explicit OK button can close it. Screen readers announce the urgency.';
   protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'focus', value: 'behavior' }];
-  protected readonly _exTs: string = `import { CngxDialog, CngxDialogTitle, CngxDialogClose } from '@cngx/common/dialog';
-
-// Fake form data for the form dialog demo
-protected readonly formData = { name: '', email: '' };
-
-// ── Programmatic demo ──────────────────────────────────────────
-protected readonly progDialog = viewChild<CngxDialog<'saved' | 'discarded'>>('progDialog');
-
-protected readonly progMessage = computed(() => {
-  const result = this.progDialog()?.result();
-  if (result === undefined) return 'No dialog result yet.';
-  if (result === 'dismissed') return 'Dialog was dismissed (Escape or backdrop).';
-  return 'Dialog returned: ' + String(result);
-});
-
-protected handleOpenProgrammatic(): void {
-  this.progDialog()?.open();
-}
-
-protected handleSaveProgrammatic(): void {
-  this.progDialog()?.close('saved');
-}
-
-protected handleDiscardProgrammatic(): void {
-  this.progDialog()?.close('discarded');
-}`;
+  protected readonly _exTs: string = `import { CngxDialog, CngxDialogTitle, CngxDialogClose } from '@cngx/common/dialog';`;
   protected readonly _exHtml: string = `<button class="chip" (click)="alertDlg.open()">Show Alert</button>
 
 <dialog cngxDialog role="alertdialog" [closeOnBackdropClick]="false" #alertDlg="cngxDialog">

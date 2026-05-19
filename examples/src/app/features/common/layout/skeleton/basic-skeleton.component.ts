@@ -54,7 +54,6 @@ export class SkeletonBasicSkeleton {
   protected readonly _exTs: string = `import { CngxSkeleton } from '@cngx/common/layout';
 
 protected readonly loading = signal(true);
-
 protected toggleLoading(): void {
   this.loading.update(v => !v);
 }`;

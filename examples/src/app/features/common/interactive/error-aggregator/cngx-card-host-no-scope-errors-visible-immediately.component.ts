@@ -73,14 +73,8 @@ export class ErrorAggregatorCngxCardHostNoScopeErrorsVisibleImmediately {
   protected readonly _exTs: string = `import { CngxErrorAggregator, CngxErrorSource } from '@cngx/common/interactive';
 import { CngxCard, CngxCardHeader, CngxCardBody } from '@cngx/common/card';
 
-protected readonly emailFormatBad = signal(true);
-protected readonly emailTaken = signal(false);
-protected readonly passwordWeak = signal(true);
 protected readonly profileBioEmpty = signal(true);
-protected readonly profileAvatarMissing = signal(false);
-protected readonly billingDeclined = signal(true);
-protected readonly tabAddressIncomplete = signal(true);
-protected readonly tabPaymentInvalid = signal(true);`;
+protected readonly profileAvatarMissing = signal(false);`;
   protected readonly _exHtml: string = `  <cngx-card>
     <header cngxCardHeader>Profile</header>
     <div

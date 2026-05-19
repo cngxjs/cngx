@@ -57,10 +57,7 @@ export class EmptyStateInsideACardGrid {
   protected readonly _exTs: string = `import { CngxEmptyState } from '@cngx/ui/empty-state';
 import { CngxCardGrid, CngxCardGridEmpty } from '@cngx/common/card';
 
-protected showTable = signal(true);
-protected tableItems = signal<string[]>([]);
-protected cardItems = signal<string[]>([]);
-protected listItems = signal<string[]>([]);`;
+protected cardItems = signal<string[]>([]);`;
   protected readonly _exHtml: string = `<cngx-card-grid [items]="cardItems()" emptyReason="first-use" minWidth="200px">
   <ng-template cngxCardGridEmpty="first-use">
     <cngx-empty-state

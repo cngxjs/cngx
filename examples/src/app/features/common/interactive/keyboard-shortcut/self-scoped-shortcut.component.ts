@@ -54,15 +54,8 @@ export class KeyboardShortcutSelfScopedShortcut {
   protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxKeyboardShortcut } from '@cngx/common/interactive';
 
-protected globalCount = signal(0);
 protected escapeCount = signal(0);
 protected lastShortcut = signal('none');
-
-protected handleGlobal(): void {
-  this.globalCount.update(n => n + 1);
-  this.lastShortcut.set('Ctrl+K / Cmd+K');
-}
-
 protected handleEscape(): void {
   this.escapeCount.update(n => n + 1);
   this.lastShortcut.set('Escape (scoped)');

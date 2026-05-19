@@ -50,14 +50,7 @@ export class UtilitiesInputClear {
   protected readonly _exSectionTitle: string = 'Input Clear';
   protected readonly _exSubtitle: string = '<code>[cngxInputClear]</code> takes a reference to the target input. Exposes <code>hasValue()</code> signal and <code>clear()</code> method.';
   protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'behavior' }];
-  protected readonly _exTs: string = `import { CngxInputClear } from '@cngx/forms/input';
-
-protected readonly formatCurrency = (v: string) => {
-  const n = parseFloat(v);
-  return isNaN(n) ? v : new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n);
-};
-protected readonly parseCurrency = (v: string) => v.replace(/[^0-9.\\-]/g, '');
-protected readonly token = signal('sk-proj-abc123def456ghi789');`;
+  protected readonly _exTs: string = `import { CngxInputClear } from '@cngx/forms/input';`;
   protected readonly _exHtml: string = `<div class="demo-form">
   <div class="demo-field">
     <label class="demo-label">Name</label>

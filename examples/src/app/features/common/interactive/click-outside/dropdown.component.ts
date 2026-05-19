@@ -67,9 +67,7 @@ export class ClickOutsideDropdown {
   protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxClickOutside } from '@cngx/common/interactive';
 
-protected open = signal(false);
-protected clickCount = signal(0);
-protected enabled = signal(true);`;
+protected open = signal(false);`;
   protected readonly _exHtml: string = `<div class="button-row">
   <button class="sort-btn" (click)="open.set(!open())">
     Toggle dropdown ({{ open() ? 'open' : 'closed' }})

@@ -107,14 +107,7 @@ export class SpeakHeadlessReadAloud {
   protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxSpeak } from '@cngx/common/interactive';
 
-protected email = signal('');
-protected emailError = computed(() => {
-  const v = this.email();
-  if (!v) return '';
-  if (!v.includes('@')) return 'Missing @ symbol';
-  if (!v.includes('.')) return 'Missing domain (e.g. .com)';
-  return '';
-});`;
+protected email = signal('');`;
   protected readonly _exHtml: string = `<div style="display: flex; flex-direction: column; gap: 16px; max-width: 480px;">
   <div style="display: flex; align-items: flex-start; gap: 8px;">
     <div

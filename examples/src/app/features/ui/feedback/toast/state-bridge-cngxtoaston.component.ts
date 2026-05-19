@@ -62,115 +62,11 @@ export class ToastStateBridgeCngxtoaston {
 import { createManualState } from '@cngx/common/data';
 import { SampleToastBody } from './sample-toast-body';
 
-private readonly toaster = inject(CngxToaster);
-
-// ── Programmatic demos ──
-protected showSuccess(): void {
-  this.toaster.show({ message: 'Item saved successfully', severity: 'success' });
-}
-
-protected showError(): void {
-  this.toaster.show({ message: 'Failed to save item', severity: 'error' });
-}
-
-protected showInfo(): void {
-  this.toaster.show({ message: 'New version available', severity: 'info' });
-}
-
-protected showWarning(): void {
-  this.toaster.show({ message: 'Disk space running low', severity: 'warning' });
-}
-
-protected showWithAction(): void {
-  this.toaster.show({
-    message: 'Item deleted',
-    severity: 'info',
-    action: { label: 'Undo', handler: () => this.toaster.show({ message: 'Undo successful', severity: 'success' }) },
-  });
-}
-
-// ── Title + Description demos ──
-protected showTitleSuccess(): void {
-  this.toaster.show({
-    message: 'Profile updated',
-    title: 'Saved',
-    description: 'Your profile changes have been saved successfully.',
-    severity: 'success',
-    duration: 5000,
-  });
-}
-
-protected showTitleError(): void {
-  this.toaster.show({
-    message: 'Save failed',
-    title: 'Server Error',
-    description: 'The server responded with 503 Service Unavailable. Please try again in a few minutes.',
-    severity: 'error',
-  });
-}
-
-protected showTitleWithAction(): void {
-  this.toaster.show({
-    message: 'Connection lost',
-    title: 'Offline',
-    description: 'Changes saved locally. They will sync when you reconnect.',
-    severity: 'warning',
-    action: { label: 'Retry now', handler: () => this.toaster.show({ message: 'Reconnecting...', severity: 'info' }) },
-  });
-}
-
-// ── Custom Component (Stufe 2) demo ──
-protected showCustomComponent(): void {
-  this.toaster.show({
-    message: 'Validation failed',
-    title: '3 Errors',
-    severity: 'error',
-    content: SampleToastBody,
-    contentInputs: { fields: ['Name is required', 'Email is invalid', 'ZIP must be 5 digits'] },
-  });
-}
-
-protected showCustomNoTitle(): void {
-  this.toaster.show({
-    message: 'Details',
-    severity: 'info',
-    content: SampleToastBody,
-    contentInputs: { fields: ['Build #1234 completed', 'Tests: 754 passed, 0 failed', 'Coverage: 92%'] },
-  });
-}
-
-protected showDuplicates(): void {
-  for (let i = 0; i < 5; i++) {
-    this.toaster.show({ message: 'Batch operation complete', severity: 'success' });
-  }
-}
-
-protected clearAll(): void {
-  this.toaster.dismissAll();
-}
-
-// ── Declarative <cngx-toast> demos ──
-protected readonly showSaved = signal(false);
-protected readonly showDeleted = signal(false);
-
-protected triggerSave(): void {
-  this.showSaved.set(true);
-  setTimeout(() => this.showSaved.set(false), 100);
-}
-
-protected triggerDelete(): void {
-  this.showDeleted.set(true);
-  setTimeout(() => this.showDeleted.set(false), 100);
-}
-
-// ── Declarative [cngxToastOn] demo ──
 protected readonly saveState = createManualState<string>();
-
 protected simulateSave(): void {
   this.saveState.set('pending');
   setTimeout(() => this.saveState.setSuccess('done'), 1500);
 }
-
 protected simulateError(): void {
   this.saveState.set('pending');
   setTimeout(() => this.saveState.setError('Network timeout'), 1500);

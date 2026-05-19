@@ -66,7 +66,6 @@ export class ListboxMultiSelect {
   protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }];
   protected readonly _exTs: string = `import { CngxListbox, CngxOption } from '@cngx/common/interactive';
 
-protected readonly singleValue = signal<string | null>(null);
 protected readonly multiValues = signal<string[]>([]);`;
   protected readonly _exHtml: string = `<div cngxListbox
      [label]="'Fruits (multi)'"

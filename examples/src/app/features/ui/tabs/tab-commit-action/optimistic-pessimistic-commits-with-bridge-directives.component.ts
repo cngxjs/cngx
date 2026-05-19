@@ -104,22 +104,8 @@ protected readonly active = signal(0);
 protected readonly mode = signal<'optimistic' | 'pessimistic'>('optimistic');
 protected readonly shouldFail = signal(false);
 protected readonly latencyMs = signal(600);
-
 protected readonly commitAction: CngxTabsCommitAction = (from, to) => {
-  const ms = this.latencyMs();
-  const fail = this.shouldFail();
-  return new Observable<boolean>((sub) => {
-    const handle = setTimeout(() => {
-      if (fail) {
-        sub.error(new Error('Server refused tab ' + from + ' → ' + to));
-      } else {
-        sub.next(true);
-        sub.complete();
-      }
-    }, ms);
-    return () => clearTimeout(handle);
-  });
-};`;
+  const ms = this.latencyMs();`;
   protected readonly _exHtml: string = `<div class="event-row" style="gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap">
   <button type="button" class="chip"
           [style.background]="mode() === 'optimistic' ? '#c8e6c9' : ''"

@@ -46,20 +46,7 @@ export class CheckboxCustomCheckDashGlyphs {
   protected readonly _exSectionTitle: string = 'Custom check + dash glyphs';
   protected readonly _exSubtitle: string = '<code>cngx-checkbox</code> forwards <code>[checkGlyph]</code> and <code>[dashGlyph]</code> to the inner <code>cngx-checkbox-indicator</code>. Project a <code>TemplateRef&lt;void&gt;</code> each to replace the default ✓ / − glyphs with brand or design-system icons.';
   protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'focus', value: 'behavior' }];
-  protected readonly _exTs: string = `import { CngxCheckbox } from '@cngx/common/interactive';
-
-protected readonly accept = signal(false);
-protected readonly itemA = signal(true);
-protected readonly itemB = signal(false);
-protected readonly itemC = signal(false);
-protected readonly allChecked = computed(() => this.itemA() && this.itemB() && this.itemC());
-protected readonly someChecked = computed(() => this.itemA() || this.itemB() || this.itemC());
-protected readonly groupIndeterminate = computed(() => this.someChecked() && !this.allChecked());
-protected toggleAll(next: boolean): void {
-  this.itemA.set(next);
-  this.itemB.set(next);
-  this.itemC.set(next);
-}`;
+  protected readonly _exTs: string = `import { CngxCheckbox } from '@cngx/common/interactive';`;
   protected readonly _exHtml: string = `<ng-template #brandedCheck><span aria-hidden="true">★</span></ng-template>
 <ng-template #brandedDash><span aria-hidden="true">~</span></ng-template>
 <cngx-checkbox [value]="true" [checkGlyph]="brandedCheck">Custom check</cngx-checkbox>

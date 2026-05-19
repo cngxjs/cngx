@@ -91,17 +91,7 @@ export class CardCardWithSpeakBadge {
   protected readonly _exTs: string = `import { CngxCard, CngxCardHeader, CngxCardTitle, CngxCardSubtitle, CngxCardBody } from '@cngx/common/card';
 import { CngxSpeak } from '@cngx/common/interactive';
 import { CngxSpeakButton } from '@cngx/ui';
-import { CngxCardBadge } from '@cngx/common/card';
-
-protected selected = signal(false);
-protected loading = signal(false);
-protected cardClicked = signal(0);
-protected badgeClicked = signal(0);
-
-protected handleBadgeClick(e: MouseEvent): void {
-  e.stopPropagation();
-  this.badgeClicked.update(n => n + 1);
-}`;
+import { CngxCardBadge } from '@cngx/common/card';`;
   protected readonly _exHtml: string = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:24px;max-width:760px">
   <cngx-card style="overflow:visible">
     <cngx-speak-button cngxCardBadge position="top-end" [speakRef]="tts1"

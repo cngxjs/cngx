@@ -51,9 +51,7 @@ export class DisclosureFaqAccordion {
   protected readonly _exSectionTitle: string = 'FAQ Accordion';
   protected readonly _exSubtitle: string = 'Multiple independent disclosures. Each manages its own state — no coordination by default.';
   protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'focus', value: 'behavior' }];
-  protected readonly _exTs: string = `import { CngxDisclosure } from '@cngx/common';
-
-protected readonly controlledOpen = signal(false);`;
+  protected readonly _exTs: string = `import { CngxDisclosure } from '@cngx/common';`;
   protected readonly _exHtml: string = `@for (q of ['What is cngx?', 'Is it free?', 'How do I install it?']; track q; let i = $index) {
   <div style="border-bottom: 1px solid var(--border-color, #e0e0e0);">
     <button cngxDisclosure #faq="cngxDisclosure" [controls]="'faq-' + i"

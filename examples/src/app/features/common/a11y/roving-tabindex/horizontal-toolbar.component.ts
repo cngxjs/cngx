@@ -55,8 +55,7 @@ export class RovingTabindexHorizontalToolbar {
   protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'a11y' }, { dim: 'audience', value: 'dev' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxRovingTabindex, CngxRovingItem } from '@cngx/common/a11y';
 
-protected readonly activeToolbar = signal(0);
-protected readonly activeVertical = signal(0);`;
+protected readonly activeToolbar = signal(0);`;
   protected readonly _exHtml: string = `<div cngxRovingTabindex orientation="horizontal" [(activeIndex)]="activeToolbar"
      role="toolbar" aria-label="Text formatting"
      style="display:flex;gap:4px">

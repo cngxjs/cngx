@@ -50,8 +50,7 @@ export class AutofocusFocusOnInsert {
   protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'a11y' }, { dim: 'audience', value: 'dev' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxAutofocus } from '@cngx/common/a11y';
 
-protected readonly showSearch = signal(false);
-protected readonly conditionMet = signal(false);`;
+protected readonly showSearch = signal(false);`;
   protected readonly _exHtml: string = `<button (click)="showSearch.set(!showSearch())" class="chip">
   {{ showSearch() ? 'Hide Search' : 'Show Search' }}
 </button>

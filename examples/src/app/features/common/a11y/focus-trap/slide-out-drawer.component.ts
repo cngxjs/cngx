@@ -119,8 +119,6 @@ export class FocusTrapSlideOutDrawer {
   protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'a11y' }, { dim: 'audience', value: 'dev' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxFocusTrap } from '@cngx/common/a11y';
 
-protected modalOpen = signal(false);
-protected autoFocus = signal(true);
 protected drawerOpen = signal(false);
 protected drawerSide = signal<'left' | 'right'>('right');`;
   protected readonly _exHtml: string = `<div class="button-row">

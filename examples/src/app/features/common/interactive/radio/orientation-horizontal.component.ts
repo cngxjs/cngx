@@ -46,8 +46,7 @@ export class RadioOrientationHorizontal {
   protected readonly _exTs: string = `import { CngxRadioGroup, CngxRadio } from '@cngx/common/interactive';
 
 protected readonly payment = signal<'card' | 'cash' | 'invoice' | undefined>(undefined);
-protected readonly orientation = signal<'horizontal' | 'vertical'>('vertical');
-protected readonly groupDisabled = signal(false);`;
+protected readonly orientation = signal<'horizontal' | 'vertical'>('vertical');`;
   protected readonly _exHtml: string = `<cngx-radio-group [(value)]="payment" orientation="horizontal" name="payment-method-h">
   <cngx-radio value="card">Card</cngx-radio>
   <cngx-radio value="cash">Cash</cngx-radio>

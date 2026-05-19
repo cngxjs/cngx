@@ -53,9 +53,7 @@ export class AsyncContainerCngxasyncOneLine {
   protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'async-state' }, { dim: 'focus', value: 'error-handling' }, { dim: 'focus', value: 'composition' }];
   protected readonly _exTs: string = `import { CngxAsync, createManualState, createAsyncState, injectAsyncState } from '@cngx/common/data';
 
-// ── Simple *cngxAsync demos ──
 protected readonly simple = createManualState<string[]>();
-
 protected loadSimple(): void {
   this.simple.set('loading');
   setTimeout(() => this.simple.setSuccess(['Alice', 'Bob', 'Charlie']), 2000);
@@ -67,72 +65,6 @@ protected emptySimple(): void {
 protected errorSimple(): void {
   this.simple.set('loading');
   setTimeout(() => this.simple.setError('Network error'), 2000);
-}
-
-// ── Section: injectAsyncState (reactive query) ──
-private readonly filterText = signal('');
-protected readonly filter = this.filterText.asReadonly();
-
-// Simulates an HTTP GET that re-fires when filter changes
-protected readonly people = injectAsyncState<string[]>(() => {
-  const f = this.filter();
-  return new Promise<string[]>(resolve => {
-    setTimeout(() => {
-      const all = ['Alice', 'Bob', 'Charlie', 'Diana', 'Eve'];
-      resolve(f ? all.filter(n => n.toLowerCase().includes(f.toLowerCase())) : all);
-    }, 1500);
-  });
-});
-
-protected setFilter(value: string): void {
-  this.filterText.set(value);
-}
-
-// ── Section 2: createAsyncState (mutation) ──
-protected readonly saveAction = createAsyncState<string>();
-
-protected handleSave(): void {
-  void this.saveAction.execute(() =>
-    new Promise<string>((resolve, reject) => {
-      setTimeout(() => Math.random() > 0.3 ? resolve('OK') : reject(new Error('Server error')), 1500);
-    })
-  );
-}
-
-// ── Section 3: createManualState (full control) ──
-protected readonly manual = createManualState<string[]>();
-
-protected loadManual(): void {
-  this.manual.set('loading');
-  setTimeout(() => this.manual.setSuccess(['Alpha', 'Beta', 'Gamma']), 2000);
-}
-protected refreshManual(): void {
-  this.manual.set('refreshing');
-  setTimeout(() => this.manual.setSuccess(['Alpha', 'Beta', 'Gamma', 'Delta']), 2000);
-}
-protected errorManual(): void {
-  this.manual.set('loading');
-  setTimeout(() => this.manual.setError('Connection refused'), 2000);
-}
-protected emptyManual(): void {
-  this.manual.set('loading');
-  setTimeout(() => this.manual.setSuccess([]), 2000);
-}
-
-// ── Section 4: Composition (overlay + container + toast) ──
-protected readonly composed = createManualState<string[]>();
-
-protected loadComposed(): void {
-  this.composed.set('loading');
-  setTimeout(() => this.composed.setSuccess(['Item A', 'Item B', 'Item C']), 2000);
-}
-protected refreshComposed(): void {
-  this.composed.set('refreshing');
-  setTimeout(() => this.composed.setSuccess(['Item A', 'Item B', 'Item C', 'Item D']), 4000);
-}
-protected errorComposed(): void {
-  this.composed.set('loading');
-  setTimeout(() => this.composed.setError('Timeout'), 2000);
 }`;
   protected readonly _exHtml: string = `<div style="display:flex;gap:8px;margin-bottom:16px">
   <button (click)="loadSimple()" class="chip">Load</button>

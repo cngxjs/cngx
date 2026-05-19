@@ -50,17 +50,7 @@ export class CardDisabledWithReason {
   protected readonly _exSectionTitle: string = 'Disabled with Reason';
   protected readonly _exSubtitle: string = 'Communicates <em>why</em> via <code>aria-describedby</code>. Inspect the card in devtools — the disabled-reason span is always in the DOM.';
   protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'visual-variants' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }];
-  protected readonly _exTs: string = `import { CngxCard, CngxCardHeader, CngxCardBody } from '@cngx/common/card';
-
-protected selected = signal(false);
-protected loading = signal(false);
-protected cardClicked = signal(0);
-protected badgeClicked = signal(0);
-
-protected handleBadgeClick(e: MouseEvent): void {
-  e.stopPropagation();
-  this.badgeClicked.update(n => n + 1);
-}`;
+  protected readonly _exTs: string = `import { CngxCard, CngxCardHeader, CngxCardBody } from '@cngx/common/card';`;
   protected readonly _exHtml: string = `<div style="max-width:400px">
   <cngx-card as="button" [disabled]="true"
              disabledReason="Only nursing staff can edit residents"

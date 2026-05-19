@@ -42,9 +42,7 @@ export class ToggleLabelPosition {
   protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'visual-variants' }, { dim: 'focus', value: 'a11y-pattern' }];
   protected readonly _exTs: string = `import { CngxToggle } from '@cngx/common/interactive';
 
-protected readonly notifications = signal(false);
-protected readonly dark = signal(true);
-protected readonly systemLocked = signal(false);`;
+protected readonly notifications = signal(false);`;
   protected readonly _exHtml: string = `<cngx-toggle [(value)]="notifications" labelPosition="before">Label before</cngx-toggle>
 <cngx-toggle [(value)]="notifications">Label after (default)</cngx-toggle>`;
   protected readonly notifications = signal(false);

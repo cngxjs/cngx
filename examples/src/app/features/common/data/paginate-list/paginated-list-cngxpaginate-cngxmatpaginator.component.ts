@@ -59,7 +59,6 @@ export class PaginateListPaginatedListCngxpaginateCngxmatpaginator {
 import { CngxPaginate } from '@cngx/common/data';
 import { CngxMatPaginator } from '@cngx/ui/material';
 
-// Expand the dataset so pagination is clearly visible (3 pages of 5)
 protected readonly items = signal<Person[]>([
   ...PEOPLE,
   ...PEOPLE.map((p: Person) => ({ ...p, name: p.name + ' Jr.' })),

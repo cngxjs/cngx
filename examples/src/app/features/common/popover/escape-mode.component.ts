@@ -60,10 +60,7 @@ export class PopoverEscapeMode {
   protected readonly _exSubtitle: string = 'Set <code>[closeOnEscape]="false"</code> to prevent Escape dismiss. Set <code>mode="auto"</code> for browser-native light dismiss.';
   protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
-import type { PopoverPlacement } from '@cngx/common/popover';
-
-protected readonly menuItems = signal(['Edit', 'Duplicate', 'Archive', 'Delete']);
-protected readonly placements: PopoverPlacement[] = ['bottom', 'bottom-start', 'bottom-end', 'top', 'left', 'right'];`;
+import type { PopoverPlacement } from '@cngx/common/popover';`;
   protected readonly _exHtml: string = `<div style="display:flex;gap:16px;flex-wrap:wrap;padding-top:20px">
   <div>
     <button [cngxPopoverTrigger]="noEsc" (click)="noEsc.toggle()" class="chip">

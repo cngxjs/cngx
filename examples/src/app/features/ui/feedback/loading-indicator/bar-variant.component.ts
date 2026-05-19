@@ -45,12 +45,7 @@ export class LoadingIndicatorBarVariant {
   protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'visual-variants' }, { dim: 'focus', value: 'async-state' }];
   protected readonly _exTs: string = `import { CngxLoadingIndicator } from '@cngx/ui/feedback';
 
-protected readonly isLoading = signal(false);
-
-protected handleToggle(): void {
-  this.isLoading.set(true);
-  setTimeout(() => this.isLoading.set(false), 2000);
-}`;
+protected readonly isLoading = signal(false);`;
   protected readonly _exHtml: string = `<div style="position:relative;border:1px solid var(--cngx-color-border,#ddd);border-radius:8px;padding:24px;min-height:80px">
   <cngx-loading-indicator [loading]="isLoading()" variant="bar" label="Refreshing"
     style="position:absolute;top:0;left:0;right:0" />

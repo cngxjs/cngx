@@ -77,22 +77,12 @@ protected readonly allItems = signal(
     description: 'Description for item ' + (i + 1),
   })),
 );
-
 protected readonly recycler = injectRecycler({
   scrollElement: '.recycler-scroll',
   totalCount: () => this.allItems().length,
   estimateSize: 48,
   overscan: 10,
 });
-
-protected readonly visibleItems = this.recycler.sliced(this.allItems);
-
-protected readonly targetIndex = signal(0);
-
-protected handleScrollTo(): void {
-  this.recycler.scrollToIndex(this.targetIndex());
-}
-
 
 
 protected readonly scrollItems = signal(

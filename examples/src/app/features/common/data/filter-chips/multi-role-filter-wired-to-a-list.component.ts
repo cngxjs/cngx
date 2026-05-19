@@ -67,7 +67,6 @@ protected readonly tagItems: readonly unknown[] = [
   { id: 'follow-up', label: 'Follow-up' },
   { id: 'on-hold', label: 'On hold' },
 ];
-
 protected readonly tagLabel = (t: unknown): string =>
   (t as { readonly label: string }).label;
 protected readonly tagId = (t: unknown): string =>

@@ -55,9 +55,7 @@ export class OptionGroupedOptions {
   protected readonly _exSubtitle: string = '<code>[cngxOptionGroup]</code> wraps options under a labeled <code>role="group"</code>. Navigation stays flat — groups are presentational only.';
   protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'composition' }];
   protected readonly _exTs: string = `import { CngxActiveDescendant } from '@cngx/common/a11y';
-import { CngxOption, CngxOptionGroup } from '@cngx/common/interactive';
-
-protected readonly lastActivated = signal<string | null>(null);`;
+import { CngxOption, CngxOptionGroup } from '@cngx/common/interactive';`;
   protected readonly _exHtml: string = `<div class="ad-listbox"
      cngxActiveDescendant
      role="listbox"

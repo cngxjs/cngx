@@ -63,11 +63,6 @@ export class PrimitivesTimeSeriesWithThresholdZones {
   protected readonly _exTs: string = `import { CngxChart, CngxAxis, CngxLine, CngxArea, CngxThreshold } from '@cngx/common/chart';
 import { createManualState } from '@cngx/common/data';
 
-protected readonly months: readonly string[] = [
-  'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'
-];
-protected readonly monthByIndex = (_: unknown, i: number): string => this.months[i];
-
 protected readonly latencyData: readonly { t: Date; v: number }[] = [
   { t: new Date(2026, 0, 5), v: 145 },
   { t: new Date(2026, 0, 12), v: 168 },
@@ -84,26 +79,7 @@ protected readonly latencyDomain: readonly Date[] = [
 protected readonly latencyTime = (d: { t: Date; v: number }): Date => d.t;
 protected readonly latencyValue = (d: { t: Date; v: number }): number => d.v;
 protected readonly dateFmt = (v: unknown): string => {
-  const d = v instanceof Date ? v : new Date(Number(v));
-  return d.toLocaleDateString('en', { month: 'short', day: '2-digit' });
-};
-
-protected readonly scatterData: readonly { x: number; y: number }[] = [
-  { x: 12, y: 18 }, { x: 22, y: 24 }, { x: 18, y: 30 }, { x: 35, y: 42 },
-  { x: 48, y: 55 }, { x: 56, y: 62 }, { x: 64, y: 78 }, { x: 72, y: 70 },
-  { x: 80, y: 88 }, { x: 88, y: 82 }, { x: 30, y: 12 }, { x: 95, y: 60 },
-];
-protected readonly scatterX = (d: { x: number; y: number }): number => d.x;
-protected readonly scatterY = (d: { x: number; y: number }): number => d.y;
-protected readonly priceFmt = (v: unknown): string => '$' + Number(v);
-
-protected readonly chartStateData: readonly number[] = [8, 12, 14, 9, 18, 22, 25, 19, 16, 24, 28, 32];
-protected readonly chartState = createManualState<readonly number[]>();
-
-protected showSkeleton(): void { this.chartState.reset(); this.chartState.set('loading'); }
-protected showSuccess(): void { this.chartState.setSuccess(this.chartStateData); }
-protected showEmpty(): void { this.chartState.reset(); this.chartState.setSuccess([]); }
-protected showError(): void { this.chartState.reset(); this.chartState.setError(new Error('Telemetry feed offline')); }`;
+  const d = v instanceof Date ? v : new Date(Number(v));`;
   protected readonly _exHtml: string = `<div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; display: inline-block; max-width: 100%; box-sizing: border-box">
 <cngx-chart
   [data]="latencyData"

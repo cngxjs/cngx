@@ -43,7 +43,6 @@ export class CopyBlockApiKey {
   protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'visual-variants' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxCopyBlock } from '@cngx/common/interactive';
 
-protected readonly installCmd = 'npm install @cngx/common';
 protected readonly apiKey = signal('sk_test_EXAMPLE_KEY_1234567890');`;
   protected readonly _exHtml: string = `<cngx-copy-block [value]="apiKey()" buttonLabel="Copy Key" copiedLabel="Key copied!">
   {{ apiKey() }}

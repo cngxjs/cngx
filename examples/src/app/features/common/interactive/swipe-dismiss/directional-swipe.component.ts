@@ -86,8 +86,7 @@ export class SwipeDismissDirectionalSwipe {
 
 protected readonly swipeDir = signal<SwipeDirection>('left');
 protected readonly swipeDirs: SwipeDirection[] = ['left', 'right', 'up', 'down'];
-protected readonly swipeCount = signal(0);
-protected readonly lastProgress = signal(0);`;
+protected readonly swipeCount = signal(0);`;
   protected readonly _exHtml: string = `<div class="filter-row">
   <span class="filter-label">Direction:</span>
   @for (d of swipeDirs; track d) {

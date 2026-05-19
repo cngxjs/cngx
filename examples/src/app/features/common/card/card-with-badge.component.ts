@@ -99,11 +99,8 @@ export class CardCardWithBadge {
   protected readonly _exTs: string = `import { CngxCard, CngxCardHeader, CngxCardTitle, CngxCardBody } from '@cngx/common/card';
 import { CngxCardBadge } from '@cngx/common/card';
 
-protected selected = signal(false);
-protected loading = signal(false);
 protected cardClicked = signal(0);
 protected badgeClicked = signal(0);
-
 protected handleBadgeClick(e: MouseEvent): void {
   e.stopPropagation();
   this.badgeClicked.update(n => n + 1);

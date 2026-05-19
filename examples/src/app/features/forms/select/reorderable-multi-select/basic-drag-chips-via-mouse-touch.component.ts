@@ -71,53 +71,7 @@ protected readonly recipients: CngxSelectOptionDef<string>[] = [
   { value: 'support', label: 'Customer Support' },
   { value: 'hr', label: 'Human Resources' },
 ];
-
-protected readonly songs: CngxSelectOptionDef<string>[] = [
-  { value: 's1', label: 'Intro — Mogwai' },
-  { value: 's2', label: 'Heart-Shaped Box — Nirvana' },
-  { value: 's3', label: 'Midnight City — M83' },
-  { value: 's4', label: 'Teardrop — Massive Attack' },
-  { value: 's5', label: 'Breathe — Pink Floyd' },
-  { value: 's6', label: 'Paranoid Android — Radiohead' },
-];
-
-// Basic — user drags chips into preferred broadcast order.
-protected readonly basicValues = signal<string[]>(['ops', 'eng', 'legal']);
-
-// Keyboard-first — pre-seeded with four entries, user tabs into the
-// strip and reorders via Ctrl+Arrow.
-protected readonly keyboardValues = signal<string[]>(['eng', 'legal', 'finance', 'ops']);
-
-// Commit-action playground.
-protected readonly commitValues = signal<string[]>(['s1', 's2', 's3', 's4', 's5']);
-protected readonly commitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
-protected readonly commitShouldFail = signal(false);
-protected readonly commitLog = signal<string[]>([]);
-protected readonly commitAction = (intended: string[] | undefined) => {
-  const ts = new Date().toLocaleTimeString();
-  const line = ts + ' → [' + (intended ?? []).join(', ') + ']';
-  this.commitLog.update((l) => [...l.slice(-4), line]);
-  if (this.commitShouldFail()) {
-    return throwError(() => new Error('Save failed (demo)')).pipe(delay(700));
-  }
-  return of(intended).pipe(delay(700));
-};
-
-// Custom drag-handle playground — needs a viewChild on the ng-template.
-protected readonly customHandleValues = signal<string[]>(['ops', 'sales', 'support']);
-
-// Pre-seeded, with reorder-specific event log.
-protected readonly seededValues = signal<string[]>(['legal', 'finance', 'hr', 'ops', 'eng']);
-protected readonly seededLog = signal<string[]>([]);
-protected readonly handleSeededReorder = (
-  evt: { fromIndex?: number; toIndex?: number; values: readonly string[] },
-) => {
-  const from = evt.fromIndex ?? -1;
-  const to = evt.toIndex ?? -1;
-  const line =
-    new Date().toLocaleTimeString() + ' → [' + from + ' → ' + to + '] ' + evt.values.join(', ');
-  this.seededLog.update((l) => [...l.slice(-4), line]);
-};`;
+protected readonly basicValues = signal<string[]>(['ops', 'eng', 'legal']);`;
   protected readonly _exHtml: string = `<div class="kbd-hint">
   <strong>Try it:</strong>
   <span>Open the panel and select 3–5 recipients.</span>

@@ -47,9 +47,7 @@ export class RadioCustomDotGlyph {
   protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }];
   protected readonly _exTs: string = `import { CngxRadioGroup, CngxRadio } from '@cngx/common/interactive';
 
-protected readonly payment = signal<'card' | 'cash' | 'invoice' | undefined>(undefined);
-protected readonly orientation = signal<'horizontal' | 'vertical'>('vertical');
-protected readonly groupDisabled = signal(false);`;
+protected readonly payment = signal<'card' | 'cash' | 'invoice' | undefined>(undefined);`;
   protected readonly _exHtml: string = `<ng-template #starGlyph><span aria-hidden="true">★</span></ng-template>
 <ng-template #checkGlyph><span aria-hidden="true">✓</span></ng-template>
 <cngx-radio-group [(value)]="payment" name="payment-method-glyph">

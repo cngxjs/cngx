@@ -55,12 +55,7 @@ export class MaskCustomPattern {
   protected readonly _exSectionTitle: string = 'Custom Pattern';
   protected readonly _exSubtitle: string = 'Define a mask with tokens: <code>0</code> (digit), <code>A</code> (letter), <code>*</code> (alphanumeric), <code>9</code> (optional digit), <code>a</code> (optional letter). Escape with <code>\\\\</code>.';
   protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'behavior' }];
-  protected readonly _exTs: string = `import { CngxInputMask } from '@cngx/forms/input';
-
-protected readonly maskPhoneRaw = signal('');
-protected readonly maskDateRaw = signal('');
-protected readonly maskCardRaw = signal('');
-protected readonly maskCustomRaw = signal('');`;
+  protected readonly _exTs: string = `import { CngxInputMask } from '@cngx/forms/input';`;
   protected readonly _exHtml: string = `<div class="demo-form">
   <div class="demo-field">
     <label class="demo-label">Swiss IBAN</label>

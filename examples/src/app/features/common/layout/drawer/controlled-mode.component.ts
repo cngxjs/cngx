@@ -72,22 +72,7 @@ export class DrawerControlledMode {
   protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxDrawer, CngxDrawerPanel, type DrawerMode } from '@cngx/common';
 
-// Controlled drawer
-protected readonly controlledOpen = signal(false);
-
-// Direction playground
-protected readonly direction = signal<'left' | 'right' | 'top' | 'bottom'>('left');
-protected readonly directions: ('left' | 'right' | 'top' | 'bottom')[] = ['left', 'right', 'top', 'bottom'];
-
-// Mode playground
-protected readonly mode = signal<DrawerMode>('over');
-protected readonly modes: DrawerMode[] = ['over', 'push', 'side'];
-
-// Event log
-protected readonly events = signal<string[]>([]);
-protected logEvent(name: string): void {
-  this.events.update(e => [name + ' @ ' + new Date().toLocaleTimeString(), ...e].slice(0, 5));
-}`;
+protected readonly controlledOpen = signal(false);`;
   protected readonly _exHtml: string = `<div class="button-row">
   <button class="sort-btn" (click)="controlledOpen.set(!controlledOpen())">
     External toggle: {{ controlledOpen() ? 'open' : 'closed' }}

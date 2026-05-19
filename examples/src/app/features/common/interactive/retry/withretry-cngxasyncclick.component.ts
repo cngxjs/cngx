@@ -70,30 +70,16 @@ export class RetryWithretryCngxasyncclick {
   protected readonly _exTs: string = `import { CngxAsyncClick, withRetry, optimistic } from '@cngx/common/interactive';
 import { of, switchMap, throwError, timer } from 'rxjs';
 
-// Flaky action — fails 60% of the time
 private readonly flakyAction = () => new Promise<void>((resolve, reject) =>
   setTimeout(() => Math.random() > 0.6 ? resolve() : reject(new Error('Network error')), 500),
 );
-
 private readonly retryResult = withRetry(this.flakyAction, {
   maxAttempts: 3,
   delay: 800,
   backoff: 'exponential',
 });
 protected readonly retryAction = this.retryResult[0];
-protected readonly retryState = this.retryResult[1];
-
-// Optimistic toggle
-protected readonly liked = signal(false);
-private readonly likeResult = optimistic(this.liked, (value: boolean) =>
-  timer(1000).pipe(
-    switchMap(() => Math.random() > 0.3
-      ? of(value)
-      : throwError(() => new Error('Server rejected'))),
-  ),
-);
-protected readonly toggleLike = this.likeResult[0];
-protected readonly likeState = this.likeResult[1];`;
+protected readonly retryState = this.retryResult[1];`;
   protected readonly _exHtml: string = `<div class="button-row">
   <button [cngxAsyncClick]="retryAction" #btn="cngxAsyncClick" class="chip"
           [style.background]="btn.succeeded() ? 'var(--success-bg, #e8f5e9)' : btn.failed() ? '#ffebee' : ''">

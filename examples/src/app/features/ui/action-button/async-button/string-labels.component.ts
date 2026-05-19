@@ -51,9 +51,6 @@ export class AsyncButtonStringLabels {
 protected readonly saveAction = () => new Promise<void>(resolve => setTimeout(resolve, 1500));
 protected readonly deleteAction = () => new Promise<void>((_, reject) =>
   setTimeout(() => reject(new Error('403 Forbidden')), 1000),
-);
-protected readonly submitAction = () => new Promise<void>((resolve, reject) =>
-  setTimeout(() => Math.random() > 0.4 ? resolve() : reject(new Error('Random failure')), 1200),
 );`;
   protected readonly _exHtml: string = `<div class="button-row" style="gap:12px">
   <cngx-action-button [action]="saveAction" pendingLabel="Saving..." succeededLabel="Saved!">

@@ -46,7 +46,6 @@ export class ButtonToggleGroupVerticalOrientation {
   protected readonly _exTs: string = `import { CngxButtonToggleGroup, CngxButtonToggle } from '@cngx/common/interactive';
 
 protected readonly view = signal<'grid' | 'list' | 'table' | undefined>('grid');
-protected readonly groupDisabled = signal(false);
 protected readonly orientation = signal<'horizontal' | 'vertical'>('horizontal');`;
   protected readonly _exHtml: string = `<cngx-button-toggle-group label="Layout (vertical)" [(value)]="view" orientation="vertical">
   <button cngxButtonToggle value="grid">Grid</button>

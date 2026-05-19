@@ -52,9 +52,7 @@ export class ChipInteractionRemovableWithRemoverequestOnBackspaceDelete {
 import { CngxChip } from '@cngx/common/display';
 
 protected readonly favourite = signal(false);
-protected readonly featured = signal(true);
-protected readonly tagRemoved = signal(0);
-protected readonly locked = signal(false);`;
+protected readonly tagRemoved = signal(0);`;
   protected readonly _exHtml: string = `<cngx-chip
   cngxChipInteraction
   [value]="'tag'"

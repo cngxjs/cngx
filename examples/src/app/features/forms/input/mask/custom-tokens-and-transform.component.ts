@@ -61,13 +61,6 @@ export class MaskCustomTokensAndTransform {
   protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxInputMask } from '@cngx/forms/input';
 
-protected readonly maskPhoneRaw = signal('');
-protected readonly maskDateRaw = signal('');
-protected readonly maskCardRaw = signal('');
-protected readonly maskCustomRaw = signal('');
-
-
-
 protected readonly hexTokens = { H: { pattern: /[0-9a-fA-F]/, transform: (c: string) => c.toUpperCase() } };
 protected readonly upper = (c: string) => c.toUpperCase();`;
   protected readonly _exHtml: string = `<div class="demo-form">

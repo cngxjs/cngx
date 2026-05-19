@@ -44,71 +44,7 @@ export class FormPrimitivesComingInAFollowUp {
   protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'focus', value: 'integration' }, { dim: 'framework', value: 'signal-forms' }];
   protected readonly _exTs: string = `import { form, schema, required } from '@angular/forms/signals';
 import { adaptFormControl } from '@cngx/forms/field';
-import { createFormPrimitivesFormGroup } from '../../../../_fixtures/form-primitives-form-group';
-
-private readonly destroyRef = inject(DestroyRef);
-
-// ── Signal Forms model ─────────────────────────────────────
-protected readonly sfModel = signal<{
-  notifications: boolean;
-  terms: boolean;
-  payment: string;
-  notificationChannels: string[];
-}>({
-  notifications: false,
-  terms: false,
-  payment: '',
-  notificationChannels: [],
-});
-
-protected readonly sfForm = form(this.sfModel, schema((root) => {
-  required(root.terms, { message: 'Bitte zustimmen' });
-  required(root.payment, { message: 'Wahl erforderlich' });
-  required(root.notificationChannels, { message: 'Mindestens einen Kanal wählen' });
-}));
-
-// ── Reactive Forms group (all 9 atoms) ─────────────────────
-protected readonly rfForm = createFormPrimitivesFormGroup();
-
-// Per-field accessors so the RF section can wrap the required atoms in
-// <cngx-form-field> for symmetric error rendering. The bridge still
-// owns value flow via [formControl]; the form-field only projects ARIA
-// and renders <cngx-field-errors>.
-protected readonly rfTermsField = adaptFormControl(this.rfForm.controls.terms, 'terms', this.destroyRef);
-protected readonly rfPaymentField = adaptFormControl(this.rfForm.controls.payment, 'payment', this.destroyRef);
-protected readonly rfChannelsField = adaptFormControl(this.rfForm.controls.notificationChannels, 'notificationChannels', this.destroyRef);
-
-// Pool data for selection groups
-protected readonly paymentOptions = ['card', 'cash', 'invoice'];
-protected readonly viewOptions = ['grid', 'list', 'table'];
-protected readonly sizeOptions = ['sm', 'md', 'lg'];
-protected readonly channelOptions = ['email', 'sms', 'push'];
-protected readonly filterOptions = ['open', 'closed', 'archived'];
-protected readonly tagOptions = ['ng', 'rx', 'ts', 'cdk'];
-
-// ── Triggers ───────────────────────────────────────────────
-protected handleSfValidate(): void {
-  // Mark every required SF field touched so cngx-field-errors renders.
-  this.sfForm.terms().markAsTouched();
-  this.sfForm.payment().markAsTouched();
-  this.sfForm.notificationChannels().markAsTouched();
-}
-
-protected handleSfReset(): void {
-  this.sfModel.set({ notifications: false, terms: false, payment: '', notificationChannels: [] });
-}
-
-protected handleRfValidate(): void {
-  // Touching the raw FormControls fires TouchedChangeEvent, which
-  // adaptFormControl now subscribes to — adapted accessors update
-  // synchronously inside the subscribe callback. No accessor-side touch
-  // call needed.
-  Object.values(this.rfForm.controls).forEach((c) => c.markAsTouched());
-}
-
-protected handleRfReset(): void {
-  this.rfForm.reset();
-}`;
+import { createFormPrimitivesFormGroup } from '../../../../_fixtures/form-primitives-form-group';`;
   protected readonly _exHtml: string = `<p style="color:var(--cngx-muted, #6b7280);font-style:italic">
   Demo for CngxChipInput Forms integration ships in Phase 7.x.
 </p>`;

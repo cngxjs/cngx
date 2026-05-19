@@ -53,32 +53,7 @@ export class DialogDraggableDialog {
   protected readonly _exSectionTitle: string = 'Draggable Dialog';
   protected readonly _exSubtitle: string = 'Opt-in via <code>cngxDialogDraggable</code>. Drag the header to move. Keyboard: Arrow keys (10px), Shift+Arrow (50px), Home (reset). Position is exposed as CSS custom properties <code>--cngx-dialog-x</code> / <code>--cngx-dialog-y</code>.';
   protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'focus', value: 'behavior' }];
-  protected readonly _exTs: string = `import { CngxDialog, CngxDialogTitle, CngxDialogClose, CngxDialogDraggable } from '@cngx/common/dialog';
-
-// Fake form data for the form dialog demo
-protected readonly formData = { name: '', email: '' };
-
-// ── Programmatic demo ──────────────────────────────────────────
-protected readonly progDialog = viewChild<CngxDialog<'saved' | 'discarded'>>('progDialog');
-
-protected readonly progMessage = computed(() => {
-  const result = this.progDialog()?.result();
-  if (result === undefined) return 'No dialog result yet.';
-  if (result === 'dismissed') return 'Dialog was dismissed (Escape or backdrop).';
-  return 'Dialog returned: ' + String(result);
-});
-
-protected handleOpenProgrammatic(): void {
-  this.progDialog()?.open();
-}
-
-protected handleSaveProgrammatic(): void {
-  this.progDialog()?.close('saved');
-}
-
-protected handleDiscardProgrammatic(): void {
-  this.progDialog()?.close('discarded');
-}`;
+  protected readonly _exTs: string = `import { CngxDialog, CngxDialogTitle, CngxDialogClose, CngxDialogDraggable } from '@cngx/common/dialog';`;
   protected readonly _exHtml: string = `<button class="chip" (click)="dragDlg.open()">Open Draggable</button>
 
 <dialog cngxDialog cngxDialogDraggable #dragDlg="cngxDialog" #drag="cngxDialogDraggable"

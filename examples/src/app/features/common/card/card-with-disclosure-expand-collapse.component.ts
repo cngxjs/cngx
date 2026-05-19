@@ -72,17 +72,7 @@ export class CardCardWithDisclosureExpandCollapse {
   protected readonly _exSubtitle: string = 'Card header as disclosure trigger — click to expand/collapse the body content. Uses <code>cngxDisclosure</code> from interactive.';
   protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'visual-variants' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }];
   protected readonly _exTs: string = `import { CngxCard, CngxCardHeader, CngxCardTitle, CngxCardSubtitle, CngxCardBody } from '@cngx/common/card';
-import { CngxDisclosure } from '@cngx/common/interactive';
-
-protected selected = signal(false);
-protected loading = signal(false);
-protected cardClicked = signal(0);
-protected badgeClicked = signal(0);
-
-protected handleBadgeClick(e: MouseEvent): void {
-  e.stopPropagation();
-  this.badgeClicked.update(n => n + 1);
-}`;
+import { CngxDisclosure } from '@cngx/common/interactive';`;
   protected readonly _exHtml: string = `<div style="max-width:400px;display:flex;flex-direction:column;gap:12px">
   <cngx-card>
     <header cngxCardHeader cngxDisclosure #d1="cngxDisclosure" [controls]="'detail-1'"

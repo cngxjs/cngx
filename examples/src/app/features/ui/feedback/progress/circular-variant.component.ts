@@ -48,22 +48,7 @@ export class ProgressCircularVariant {
   protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'visual-variants' }, { dim: 'focus', value: 'async-state' }, { dim: 'focus', value: 'a11y-pattern' }];
   protected readonly _exTs: string = `import { CngxProgress } from '@cngx/ui/feedback';
 
-protected readonly progress = signal<number | undefined>(undefined);
-private interval: ReturnType<typeof setInterval> | undefined;
-
-protected startDeterminate(): void {
-  this.progress.set(0);
-  clearInterval(this.interval);
-  this.interval = setInterval(() => {
-    const p = this.progress() ?? 0;
-    if (p >= 100) {
-      clearInterval(this.interval);
-      this.progress.set(undefined);
-      return;
-    }
-    this.progress.set(p + 10);
-  }, 500);
-}`;
+protected readonly progress = signal<number | undefined>(undefined);`;
   protected readonly _exHtml: string = `<div style="display:flex;gap:24px;align-items:center">
   <cngx-progress variant="circular" label="Processing" />
   @if (progress() !== undefined) {

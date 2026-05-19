@@ -47,15 +47,9 @@ export class FilterBuilderSeededTreeAndOrComposition {
 import { FILTER_BUILDER_FIELDS, FILTER_BUILDER_SEED } from '../../../fixtures';
 
 protected readonly fields = FILTER_BUILDER_FIELDS;
-protected readonly tree = signal<FilterGroup>(createEmptyFilterRoot());
 protected readonly seedTree = signal<FilterGroup>(FILTER_BUILDER_SEED);
-
 protected formatTree(t: FilterGroup): string {
   return JSON.stringify(t, null, 2);
-}
-
-protected resetTree(): void {
-  this.tree.set(createEmptyFilterRoot());
 }`;
   protected readonly _exHtml: string = `<div class="demo-form">
   <cngx-filter-builder [fields]="fields" [(value)]="seedTree" />

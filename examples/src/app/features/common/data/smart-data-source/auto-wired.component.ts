@@ -99,16 +99,13 @@ import { CngxSortHeader } from '@cngx/common/data';
 
 protected readonly sort = inject(CngxSort, { host: true });
 protected readonly filter = inject(CngxFilter<Person>, { host: true });
-
 protected readonly locations = [...new Set(PEOPLE.map((p: Person) => p.location))].sort(
   (a: string, b: string) => a.localeCompare(b),
 );
 protected readonly total = PEOPLE.length;
-
 private readonly items = signal(PEOPLE);
 private readonly ds = injectSmartDataSource(this.items);
 protected readonly rows = toSignal(this.ds.connect(), { initialValue: [] as Person[] });
-
 protected filterBy(location: string | null): void {
   if (location === null) {
     this.filter.clear();

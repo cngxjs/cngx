@@ -46,40 +46,8 @@ export class AlertStackOverflowCollapse {
   protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'async-state' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }];
   protected readonly _exTs: string = `import { CngxAlertStack } from '@cngx/ui/feedback';
 
-// Access stack alerters via viewChild — each stack provides its own CngxAlerter via viewProviders
-protected readonly basicStack = viewChild<CngxAlertStack>('basicStack');
 protected readonly overflowStack = viewChild<CngxAlertStack>('overflowStack');
-private basicCounter = 0;
 private overflowCounter = 0;
-
-protected addError(): void {
-  this.basicStack()?.alerter.show({
-    message: 'Validation error #' + (++this.basicCounter),
-    severity: 'error',
-    scope: 'basic',
-  });
-}
-
-protected addWarning(): void {
-  this.basicStack()?.alerter.show({
-    message: 'Warning: field "email" looks unusual',
-    severity: 'warning',
-    scope: 'basic',
-  });
-}
-
-protected addInfo(): void {
-  this.basicStack()?.alerter.show({
-    message: 'Tip: use Tab to navigate between fields',
-    severity: 'info',
-    scope: 'basic',
-  });
-}
-
-protected clearAll(): void {
-  this.basicStack()?.alerter.dismissAll('basic');
-}
-
 protected addMany(): void {
   for (let i = 0; i < 7; i++) {
     this.overflowStack()?.alerter.show({
@@ -89,7 +57,6 @@ protected addMany(): void {
     });
   }
 }
-
 protected clearOverflow(): void {
   this.overflowStack()?.alerter.dismissAll('overflow');
   this.overflowCounter = 0;

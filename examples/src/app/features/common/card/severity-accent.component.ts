@@ -60,17 +60,7 @@ export class CardSeverityAccent {
   protected readonly _exSectionTitle: string = 'Severity Accent';
   protected readonly _exSubtitle: string = '<code>[cngxCardAccent]</code> adds a colored top border + tinted background. Five severity levels.';
   protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'visual-variants' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }];
-  protected readonly _exTs: string = `import { CngxCard, CngxCardHeader, CngxCardTitle, CngxCardBody, CngxCardAccent } from '@cngx/common/card';
-
-protected selected = signal(false);
-protected loading = signal(false);
-protected cardClicked = signal(0);
-protected badgeClicked = signal(0);
-
-protected handleBadgeClick(e: MouseEvent): void {
-  e.stopPropagation();
-  this.badgeClicked.update(n => n + 1);
-}`;
+  protected readonly _exTs: string = `import { CngxCard, CngxCardHeader, CngxCardTitle, CngxCardBody, CngxCardAccent } from '@cngx/common/card';`;
   protected readonly _exHtml: string = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px">
   <cngx-card cngxCardAccent="danger">
     <header cngxCardHeader><h3 cngxCardTitle>Danger</h3></header>

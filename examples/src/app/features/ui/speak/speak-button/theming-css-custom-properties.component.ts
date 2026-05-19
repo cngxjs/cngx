@@ -91,10 +91,7 @@ export class SpeakButtonThemingCssCustomProperties {
   protected readonly _exSubtitle: string = 'Override <code>--cngx-speak-btn-*</code> variables on a parent element to customize size, color, radius, and animation. Each block below shows a different style.';
   protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'integration' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxSpeak } from '@cngx/common/interactive';
-import { CngxSpeakButton } from '@cngx/ui/speak';
-
-protected rate = signal(1);
-protected pitch = signal(1);`;
+import { CngxSpeakButton } from '@cngx/ui/speak';`;
   protected readonly _exHtml: string = `  <div style="display: flex; gap: 24px; flex-wrap: wrap;">
     <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
       <span style="font-size: 0.75rem; color: var(--cngx-text-secondary, #666);">Default</span>

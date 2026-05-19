@@ -51,7 +51,6 @@ export class CheckboxTriStateSelectAllPattern {
   protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxCheckbox } from '@cngx/common/interactive';
 
-protected readonly accept = signal(false);
 protected readonly itemA = signal(true);
 protected readonly itemB = signal(false);
 protected readonly itemC = signal(false);

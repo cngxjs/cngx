@@ -52,7 +52,6 @@ export class LoadingOverlayOverlayWithForm {
   protected readonly _exTs: string = `import { CngxLoadingOverlay } from '@cngx/ui/feedback';
 
 protected readonly isLoading = signal(false);
-
 protected handleLoad(): void {
   this.isLoading.set(true);
   setTimeout(() => this.isLoading.set(false), 3000);

@@ -147,10 +147,7 @@ export class SpeakButtonMaterialIntegrationThemeScssMatIconButton {
   protected readonly _exTs: string = `import { MatIconButton, MatMiniFabButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import { CngxSpeak } from '@cngx/common/interactive';
-import { CngxSpeakButton } from '@cngx/ui/speak';
-
-protected rate = signal(1);
-protected pitch = signal(1);`;
+import { CngxSpeakButton } from '@cngx/ui/speak';`;
   protected readonly _exHtml: string = `  <div style="display: flex; flex-direction: column; gap: 20px; max-width: 480px;">
     <div>
       <h4 style="margin: 0 0 8px; font-size: 0.8125rem; font-weight: 600;">CngxSpeakButton with Material Theme</h4>

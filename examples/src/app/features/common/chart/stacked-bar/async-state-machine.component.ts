@@ -58,7 +58,6 @@ protected readonly stateDemoSegments: readonly CngxStackedSegment[] = [
   { value: 15, color: '#d2452f', label: 'Errors' },
 ];
 protected readonly state = createManualState<readonly CngxStackedSegment[]>();
-
 protected showSkeleton(): void { this.state.reset(); this.state.set('loading'); }
 protected showSuccess(): void { this.state.setSuccess(this.stateDemoSegments); }
 protected showEmpty(): void { this.state.reset(); this.state.setSuccess([]); }

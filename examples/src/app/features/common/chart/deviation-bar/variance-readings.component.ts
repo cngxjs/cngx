@@ -57,14 +57,7 @@ export class DeviationBarVarianceReadings {
   protected readonly _exSubtitle: string = 'Budget variance, score deltas, KPI swings — symmetric around the baseline mark.';
   protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'visual-variants' }];
   protected readonly _exTs: string = `import { CngxDeviationBar } from '@cngx/common/chart';
-import { createManualState } from '@cngx/common/data';
-
-protected readonly state = createManualState<number>();
-
-protected showSkeleton(): void { this.state.reset(); this.state.set('loading'); }
-protected showSuccess(): void { this.state.setSuccess(35); }
-protected showEmpty(): void { this.state.reset(); this.state.setSuccess(0); }
-protected showError(): void { this.state.reset(); this.state.setError(new Error('Lookup failed')); }`;
+import { createManualState } from '@cngx/common/data';`;
   protected readonly _exHtml: string = `<div style="display:flex;flex-direction:column;gap:12px;max-width:360px">
   <div style="display:flex;align-items:center;gap:12px">
     <span style="flex:1">Q1 budget</span>

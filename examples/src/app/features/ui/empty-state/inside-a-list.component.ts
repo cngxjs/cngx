@@ -53,9 +53,6 @@ export class EmptyStateInsideAList {
   protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'visual-variants' }, { dim: 'focus', value: 'composition' }];
   protected readonly _exTs: string = `import { CngxEmptyState } from '@cngx/ui/empty-state';
 
-protected showTable = signal(true);
-protected tableItems = signal<string[]>([]);
-protected cardItems = signal<string[]>([]);
 protected listItems = signal<string[]>([]);`;
   protected readonly _exHtml: string = `<div style="border:1px solid var(--border-color,#e0e0e0);border-radius:8px;min-height:120px;display:flex;align-items:center;justify-content:center">
   @if (listItems().length === 0) {

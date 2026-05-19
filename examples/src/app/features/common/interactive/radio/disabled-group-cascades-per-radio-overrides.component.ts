@@ -49,7 +49,6 @@ export class RadioDisabledGroupCascadesPerRadioOverrides {
   protected readonly _exTs: string = `import { CngxRadioGroup, CngxRadio } from '@cngx/common/interactive';
 
 protected readonly payment = signal<'card' | 'cash' | 'invoice' | undefined>(undefined);
-protected readonly orientation = signal<'horizontal' | 'vertical'>('vertical');
 protected readonly groupDisabled = signal(false);`;
   protected readonly _exHtml: string = `<button type="button" (click)="groupDisabled.set(!groupDisabled())" class="sort-btn">
   {{ groupDisabled() ? 'Enable group' : 'Disable group' }}

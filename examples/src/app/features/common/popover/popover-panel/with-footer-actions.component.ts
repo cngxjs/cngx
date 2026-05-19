@@ -82,26 +82,7 @@ export class PopoverPanelWithFooterActions {
 import { CngxPending, CngxSucceeded, CngxFailed } from '@cngx/common/interactive';
 
 protected simulateSave = () => new Promise<void>(resolve => setTimeout(resolve, 1500));
-protected simulateDelete = () => new Promise<void>((_, reject) => setTimeout(() => reject('Permission denied'), 1000));
-protected simulateLoad = signal(false);
-protected loadError = signal<string | undefined>(undefined);
-
-protected startLoading(): void {
-  this.simulateLoad.set(true);
-  this.loadError.set(undefined);
-  setTimeout(() => {
-    this.simulateLoad.set(false);
-  }, 2000);
-}
-
-protected startLoadingWithError(): void {
-  this.simulateLoad.set(true);
-  this.loadError.set(undefined);
-  setTimeout(() => {
-    this.simulateLoad.set(false);
-    this.loadError.set('Network timeout');
-  }, 1500);
-}`;
+protected simulateDelete = () => new Promise<void>((_, reject) => setTimeout(() => reject('Permission denied'), 1000));`;
   protected readonly _exHtml: string = `<div style="display:flex;gap:16px;flex-wrap:wrap;padding-top:20px">
   <div>
     <button [cngxPopoverTrigger]="savePop.popover" (click)="savePop.popover.toggle()" class="chip">

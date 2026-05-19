@@ -54,17 +54,7 @@ export class CardCardWithImage {
   protected readonly _exSectionTitle: string = 'Card with Image';
   protected readonly _exSubtitle: string = '<code>[cngxCardMedia]</code> handles full-bleed images with <code>aspectRatio</code> and <code>decorative</code> inputs.';
   protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'visual-variants' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }];
-  protected readonly _exTs: string = `import { CngxCard, CngxCardHeader, CngxCardTitle, CngxCardSubtitle, CngxCardBody, CngxCardMedia } from '@cngx/common/card';
-
-protected selected = signal(false);
-protected loading = signal(false);
-protected cardClicked = signal(0);
-protected badgeClicked = signal(0);
-
-protected handleBadgeClick(e: MouseEvent): void {
-  e.stopPropagation();
-  this.badgeClicked.update(n => n + 1);
-}`;
+  protected readonly _exTs: string = `import { CngxCard, CngxCardHeader, CngxCardTitle, CngxCardSubtitle, CngxCardBody, CngxCardMedia } from '@cngx/common/card';`;
   protected readonly _exHtml: string = `<div style="max-width:320px">
   <cngx-card>
     <div cngxCardMedia [decorative]="false" aspectRatio="16/9">

@@ -91,7 +91,6 @@ import { CngxStepper } from '@cngx/ui/stepper';
 protected readonly active = signal(0);
 protected readonly mode = signal<'fragment' | 'queryParam'>('fragment');
 protected readonly lastError = signal<{ message: string; n: number } | null>(null);
-
 protected onSyncError(err: unknown): void {
   const message = err instanceof Error ? err.message : String(err);
   this.lastError.update((prev) => ({ message, n: (prev?.n ?? 0) + 1 }));
