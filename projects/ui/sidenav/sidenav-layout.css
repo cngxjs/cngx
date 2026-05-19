@@ -30,7 +30,7 @@
    */
   @property --cngx-sidenav-bg {
     syntax: '<color>';
-    inherits: false;
+    inherits: true;
     initial-value: oklch(0.97 0.005 250);
   }
 
@@ -81,7 +81,7 @@
    */
   @property --cngx-sidenav-expanded-shadow {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 4px 0 12px oklch(0 0 0 / 0.1);
   }
 
@@ -102,7 +102,7 @@
    */
   @property --cngx-sidenav-border-color {
     syntax: '<color>';
-    inherits: false;
+    inherits: true;
     initial-value: oklch(0.89 0 0);
   }
 
@@ -153,7 +153,7 @@
    */
   @property --cngx-sidenav-footer-border-color {
     syntax: '<color>';
-    inherits: false;
+    inherits: true;
     initial-value: oklch(0.89 0 0);
   }
 
@@ -265,7 +265,7 @@
    */
   @property --cngx-nav-link-hover-bg {
     syntax: '<color>';
-    inherits: false;
+    inherits: true;
     initial-value: oklch(0 0 0 / 0.04);
   }
 
@@ -285,7 +285,7 @@
    */
   @property --cngx-nav-link-active-bg {
     syntax: '<color>';
-    inherits: false;
+    inherits: true;
     initial-value: oklch(0 0 0 / 0.08);
   }
 
@@ -308,6 +308,46 @@
     syntax: '*';
     inherits: false;
     initial-value: 0.875rem;
+  }
+
+  /*
+   * Default-theme palette pass. The @property `initial-value` shadows
+   * any `var(…)` fallback inside component CSS, so we must explicitly
+   * paint the resolved value at :root for each color-flavoured token.
+   * Rail surface + border delegate to the foundation tokens; the
+   * alpha-overlay tints (nav-link hover/active, expanded-shadow) stay
+   * component-local because they need to flip from black-tint to
+   * white-tint between modes.
+   */
+  :root {
+    --cngx-sidenav-bg: var(--cngx-color-surface, oklch(0.97 0.005 250));
+    --cngx-sidenav-border-color: var(--cngx-color-border, oklch(0.89 0 0));
+    --cngx-sidenav-footer-border-color: var(--cngx-color-border, oklch(0.89 0 0));
+    --cngx-sidenav-expanded-shadow: 4px 0 12px oklch(0 0 0 / 0.1);
+    --cngx-nav-link-hover-bg: oklch(0 0 0 / 0.04);
+    --cngx-nav-link-active-bg: oklch(0 0 0 / 0.08);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-color-scheme='light']):not(.light) {
+      --cngx-sidenav-expanded-shadow: 4px 0 12px oklch(0 0 0 / 0.45);
+      --cngx-nav-link-hover-bg: oklch(1 0 0 / 0.06);
+      --cngx-nav-link-active-bg: oklch(1 0 0 / 0.1);
+    }
+  }
+
+  :root[data-color-scheme='dark'],
+  :root.dark {
+    --cngx-sidenav-expanded-shadow: 4px 0 12px oklch(0 0 0 / 0.45);
+    --cngx-nav-link-hover-bg: oklch(1 0 0 / 0.06);
+    --cngx-nav-link-active-bg: oklch(1 0 0 / 0.1);
+  }
+
+  :root[data-color-scheme='light'],
+  :root.light {
+    --cngx-sidenav-expanded-shadow: 4px 0 12px oklch(0 0 0 / 0.1);
+    --cngx-nav-link-hover-bg: oklch(0 0 0 / 0.04);
+    --cngx-nav-link-active-bg: oklch(0 0 0 / 0.08);
   }
 }
 

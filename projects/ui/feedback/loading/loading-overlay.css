@@ -24,7 +24,7 @@
    */
   @property --cngx-loading-overlay-backdrop-bg {
     syntax: '<color>';
-    inherits: false;
+    inherits: true;
     initial-value: oklch(1 0 0 / 0.5);
   }
 
@@ -56,6 +56,33 @@
     syntax: '*';
     inherits: false;
     initial-value: ease;
+  }
+
+  /*
+   * Default-theme palette pass. The translucent-white backdrop reads
+   * fine over light surfaces but inverts to translucent dark over a
+   * dark page so the spinner remains visible. Component-local — the
+   * overlay is a scrim, not a surface, so it does not delegate to
+   * `--cngx-color-surface`.
+   */
+  :root {
+    --cngx-loading-overlay-backdrop-bg: oklch(1 0 0 / 0.5);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-color-scheme='light']):not(.light) {
+      --cngx-loading-overlay-backdrop-bg: oklch(0.15 0 0 / 0.5);
+    }
+  }
+
+  :root[data-color-scheme='dark'],
+  :root.dark {
+    --cngx-loading-overlay-backdrop-bg: oklch(0.15 0 0 / 0.5);
+  }
+
+  :root[data-color-scheme='light'],
+  :root.light {
+    --cngx-loading-overlay-backdrop-bg: oklch(1 0 0 / 0.5);
   }
 }
 

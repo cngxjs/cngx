@@ -140,7 +140,7 @@
    */
   @property --cngx-mat-tabs-more-bg {
     syntax: '<color>';
-    inherits: false;
+    inherits: true;
     initial-value: oklch(1 0 0);
   }
 
@@ -150,8 +150,42 @@
    */
   @property --cngx-mat-tabs-more-shadow {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: -8px 0 8px -4px oklch(0 0 0 / 0.1);
+  }
+
+  /*
+   * Default-theme palette pass. The `cngx-mat-tabs-more` molecule
+   * sits over the Material tab header — its background needs to
+   * match the page surface so the gradient fades into "nothing"
+   * rather than into white-on-dark. Stays under the Material-bridge
+   * namespace (no `--cngx-color-*` delegation) per the file-header
+   * contract; consumers can still override `--cngx-mat-tabs-more-bg`
+   * to point at `--mat-app-background-color` once Material's M3
+   * tokens are wired.
+   */
+  :root {
+    --cngx-mat-tabs-more-bg: oklch(1 0 0);
+    --cngx-mat-tabs-more-shadow: -8px 0 8px -4px oklch(0 0 0 / 0.1);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-color-scheme='light']):not(.light) {
+      --cngx-mat-tabs-more-bg: oklch(0.2 0.01 250);
+      --cngx-mat-tabs-more-shadow: -8px 0 8px -4px oklch(0 0 0 / 0.45);
+    }
+  }
+
+  :root[data-color-scheme='dark'],
+  :root.dark {
+    --cngx-mat-tabs-more-bg: oklch(0.2 0.01 250);
+    --cngx-mat-tabs-more-shadow: -8px 0 8px -4px oklch(0 0 0 / 0.45);
+  }
+
+  :root[data-color-scheme='light'],
+  :root.light {
+    --cngx-mat-tabs-more-bg: oklch(1 0 0);
+    --cngx-mat-tabs-more-shadow: -8px 0 8px -4px oklch(0 0 0 / 0.1);
   }
 }
 

@@ -95,6 +95,19 @@
     inherits: false;
     initial-value: 0.875rem;
   }
+
+  /*
+   * Default-theme palette pass. All three text colors delegate to
+   * the foundation `--cngx-color-text` so the empty-state's body /
+   * title / icon all flip together with the document's color scheme.
+   * No 4-block needed — the foundation token already carries the
+   * light/dark distinction.
+   */
+  :root {
+    --cngx-empty-color: var(--cngx-color-text, oklch(0.34 0.005 290));
+    --cngx-empty-icon-color: var(--cngx-color-text, oklch(0.34 0.005 290));
+    --cngx-empty-title-color: var(--cngx-color-text, oklch(0.18 0.005 290));
+  }
 }
 
 @layer cngx.components {
