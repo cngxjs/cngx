@@ -141,6 +141,21 @@ body {
   color: var(--cngx-ex-muted);
 }
 
+// Artifact = what the example documents. Chrome = config controls + state
+// readouts that drive the demo interactively. The artifact gets visual
+// breathing room and a separator so the rendered docs make the hierarchy
+// obvious: read the artifact first, fiddle with the chrome second.
+.cngx-ex-artifact {
+  display: block;
+  margin: 0 0 24px;
+  padding: 8px 0 24px;
+  border-block-end: 1px solid var(--cngx-ex-border);
+}
+.cngx-ex-chrome {
+  display: block;
+  margin: 0 0 24px;
+}
+
 // Tag chip row rendered by the generator from DemoSpec.{level,audience,
 // artifact,focus,stability,framework}. Sharp corners + monospace match
 // the mod_autoindex aesthetic of the home directory listing. Per-dimension

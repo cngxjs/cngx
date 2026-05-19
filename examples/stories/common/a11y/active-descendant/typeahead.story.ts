@@ -1,0 +1,61 @@
+import type { DemoSpec } from '../../../../dev-tools/demo-spec';
+
+export const STORY: DemoSpec = {
+  title: 'Typeahead',
+  subtitle: 'Press letters to jump to the first matching label. Chained within the debounce window (default 300&nbsp;ms).',
+  description: 'WAI-ARIA active-descendant keyboard model for listbox, menu, and combobox widgets. Keeps focus on the host while highlighting the logical current item.',
+  level: 'atom',
+  audience: ['a11y', 'dev'],
+  artifact: 'building-block',
+  focus: ['a11y-pattern', 'behavior'],
+  apiComponents: [
+    'CngxActiveDescendant',
+  ],
+  moduleImports: [
+    'import { CngxActiveDescendant, type ActiveDescendantItem } from \'@cngx/common/a11y\';',
+  ],
+  imports: ['CngxActiveDescendant'],
+  setup: `protected readonly fruits = signal<ActiveDescendantItem[]>([
+    { id: 'fruit-apple', value: 'apple', label: 'Apple' },
+    { id: 'fruit-banana', value: 'banana', label: 'Banana' },
+    { id: 'fruit-cherry', value: 'cherry', label: 'Cherry' },
+    { id: 'fruit-date', value: 'date', label: 'Date', disabled: true },
+    { id: 'fruit-elder', value: 'elder', label: 'Elderberry' },
+    { id: 'fruit-fig', value: 'fig', label: 'Fig' },
+  ]);
+  protected readonly typeaheadFruits = computed(() =>
+    this.fruits().map((f): ActiveDescendantItem => ({ ...f, id: f.id + '-ta' })),
+  );`,
+  template: `  <div class="cngx-ad-listbox"
+       style="max-width:260px"
+       cngxActiveDescendant
+       role="listbox"
+       aria-label="Fruit typeahead"
+       tabindex="0"
+       [items]="typeaheadFruits()"
+       [typeaheadDebounce]="500"
+       #adT="cngxActiveDescendant">
+    @for (fruit of typeaheadFruits(); track fruit.id) {
+      <div role="option"
+           [id]="fruit.id"
+           [class.cngx-option--highlighted]="adT.activeIndex() === $index"
+           class="cngx-ad-option">
+        {{ fruit.label }}
+      </div>
+    }
+  </div>
+  
+  <p style="margin-top:8px;font-size:0.875rem;color:#6b7280">
+    Click the listbox to focus it, then type <kbd>c</kbd><kbd>h</kbd> quickly to land on Cherry, or <kbd>e</kbd> to land on Elderberry.
+  </p>`,
+  templateChrome: `<div class="event-grid" style="margin-top:8px">
+    <div class="event-row">
+      <span class="event-label">Active id</span>
+      <span class="event-value">{{ adT.activeId() ?? '—' }}</span>
+    </div>
+    <div class="event-row">
+      <span class="event-label">Active value</span>
+      <span class="event-value">{{ adT.activeValue() ?? '—' }}</span>
+    </div>
+  </div>`,
+};

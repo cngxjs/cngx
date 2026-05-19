@@ -2,9 +2,14 @@
  * Typed contract for `*.story.ts` files.
  *
  * Story files are pure TypeScript data — no Angular imports, no runtime deps.
- * They are consumed by `scripts/generate-examples.mjs` to produce naked
- * example components under `examples/src/app/features/**`, plus the routes
- * + metadata files the home directory listing reads from.
+ * They are consumed by `scripts/generate-examples.mjs` to produce one naked
+ * example component under `examples/src/app/features/**` per story, plus the
+ * routes + metadata files the home directory listing reads from.
+ *
+ * One story = one example. Navigation is derived from the filesystem path:
+ * `examples/stories/<lib>/<category>/<demo>/<slug>.story.ts` becomes
+ * `examples/src/app/features/<lib>/<category>/<demo>/<slug>.component.ts`
+ * and routes to `/<lib>/<category>/<demo>/<slug>`.
  */
 
 /** Composition density of the underlying symbol. Toolkit-agnostic. */
@@ -16,7 +21,7 @@ export type Audience = 'dev' | 'design' | 'a11y';
 /** Whether the demo's subject drops in (`standalone`) or needs wiring (`building-block`). */
 export type Artifact = 'standalone' | 'building-block';
 
-/** What aspect of the symbol a demo / section illustrates. */
+/** What aspect of the symbol a demo illustrates. */
 export type Focus =
   | 'visual-variants'
   | 'behavior'
@@ -33,72 +38,83 @@ export type Stability = 'stable' | 'experimental' | 'deprecated';
 export type Framework = 'signal-forms' | 'reactive-forms' | 'template-only' | 'programmatic';
 
 export interface DemoSpec {
-  /** Displayed title of the demo page heading. */
+  /** Displayed page heading. Each story is one example, this is its title. */
   title: string;
-  /** Short label for the sidebar nav. Falls back to `title` if not set. */
-  navLabel?: string;
-  /**
-   * Nav category override. By default the generator groups by filesystem path
-   * (e.g. `behaviors/`). Set this to group under a specific entry point name
-   * (e.g. `'data'` for `@cngx/common/data`).
-   */
-  navCategory?: string;
-  /** Optional description shown as a subtitle on the page. */
+  /** HTML-bearing subtitle rendered below the title. */
+  subtitle?: string;
+  /** Optional short description shown beneath the subtitle. */
   description?: string;
   /**
-   * Playground controls available in all sections.
+   * Playground controls available in this story.
    * Each control becomes a named field in the generated component class.
    * Access values in templates as `key.value()` (e.g. `selectionMode.value()`).
    */
   controls?: ControlSpec[];
   /**
-   * Shared TypeScript class-level statements (fields, methods, lifecycle hooks)
-   * available across all sections. Emitted verbatim into the generated component
-   * class body before any section-level setup.
+   * TypeScript class-level statements (fields, methods, lifecycle hooks).
+   * Emitted verbatim into the generated component class body.
    *
    * Example: `protected readonly rows = computed(() => PEOPLE.filter(...));`
    */
   setup?: string;
   /**
-   * Additional TypeScript import statements inserted at the top of the generated
-   * component file, after the Angular core imports and before the @Component
-   * decorator. Use for fixture imports, rxjs-interop, or any non-Angular-core dep.
+   * Interactive chrome that backs `templateChrome` — config-toggle signals,
+   * fail-flag helpers, log buffers, async-setter methods. Rendered into the
+   * live component's class body alongside `setup` but excluded from the
+   * displayed TypeScript panel, so the reader sees only artifact-relevant code.
+   */
+  setupChrome?: string;
+  /**
+   * Angular template fragment embedded inside the example wrapper.
+   * When `controls` is present, the example wraps in `<app-playground>`;
+   * otherwise in `<app-example-card>`. This is the artifact itself — the
+   * code a consumer would write. Rendered live and shown in the Template panel.
+   */
+  template: string;
+  /**
+   * Interactive chrome that pairs with `template` — mode toggles, fail
+   * checkboxes, state-readout `event-grid` blocks, retry buttons. Rendered
+   * live alongside `template` but stripped from the displayed Template panel
+   * so the reader sees only the artifact, not the demo's instrumentation.
+   */
+  templateChrome?: string;
+  /**
+   * Angular class names that must appear in the generated `@Component.imports`
+   * array. `generate-examples.mjs` resolves import paths from public-api.
+   */
+  imports?: string[];
+  /**
+   * Additional TypeScript import statements inserted at the top of the
+   * generated component file. Use for fixture imports, rxjs-interop, or any
+   * non-Angular-core dep.
    *
    * Example: `["import { PEOPLE, type Person } from '../../../fixtures';"]`
    */
   moduleImports?: string[];
   /**
-   * Angular directive/component class names to add as `hostDirectives` on the
-   * generated component. Classes must be imported via `moduleImports`.
-   * Also adds `inject` to the Angular core imports automatically.
-   *
-   * Example: `['CngxSort', 'CngxFilter']`
+   * Angular directive/component class names to add as `hostDirectives` on
+   * the generated component. Classes must be imported via `moduleImports`.
    */
   hostDirectives?: string[];
-  /**
-   * Compodoc class names whose API should appear in the API tab.
-   * Example: `['CngxSort', 'CngxSortHeader']`
-   */
+  /** Compodoc class names whose API should appear in the API tab. */
   apiComponents?: string[];
   /**
-   * Longer overview text for the Overview tab. Supports HTML.
-   * Falls back to `description` if not set.
+   * Optional CSS snippet shown in the source view CSS tab. Use for
+   * demo-specific styling that illustrates CSS custom property usage.
    */
-  overview?: string;
+  css?: string;
   /** Composition density of the subject. Renders as the `atomic-level` chip. */
   level?: AtomicLevel;
   /** Reader audiences the demo serves. Renders one chip per value. */
   audience?: readonly Audience[];
   /** Drop-in (`standalone`) vs wire-it-up (`building-block`). */
   artifact?: Artifact;
-  /** Story-level default for the `focus` chips. Section-level may override. */
+  /** What this demo illustrates — renders one chip per value. */
   focus?: readonly Focus[];
   /** Stability flag. `stable` renders no chip; `experimental` / `deprecated` do. */
   stability?: Stability;
   /** Forms-binding mode. Only set on `@cngx/forms` demos. */
   framework?: Framework;
-  /** At least one section (= one ExampleCard). */
-  sections: [SectionSpec, ...SectionSpec[]];
 }
 
 export type ControlSpec =
@@ -119,52 +135,4 @@ export type ControlSpec =
 export interface SelectOption {
   label: string;
   value: string;
-}
-
-export interface SectionSpec {
-  title: string;
-  /** HTML string rendered via innerHTML in ExampleCard subtitle. */
-  subtitle?: string;
-  /**
-   * Angular template fragment embedded inside the section wrapper.
-   * When controls are present, the first section wraps in `<app-playground>`.
-   * All other sections wrap in `<app-example-card>`.
-   */
-  template: string;
-  /**
-   * TypeScript class-level statements for this section (fields, methods).
-   * Emitted verbatim into the generated component class body.
-   *
-   * Example: `readonly lastClicked = signal<string | null>(null);`
-   */
-  setup?: string;
-  /**
-   * Angular class names that must appear in the `@Component.imports` array.
-   * `generate-demos.mjs` resolves import paths from compodoc JSON.
-   *
-   * Example: `['CngxSort', 'CngxSortHeader']`
-   */
-  imports?: string[];
-  /**
-   * Optional CSS snippet shown in the source view CSS tab.
-   * Use for demo-specific styling that illustrates CSS custom property usage.
-   */
-  css?: string;
-  /**
-   * Section-level override for the `focus` chips. When set, replaces the
-   * story-level `focus` for this section only.
-   */
-  focus?: readonly Focus[];
-  /**
-   * Section-level override for the `artifact` chip. Use when a single story
-   * mixes drop-in usage with explicit composition (e.g. `select-demo`
-   * contains both standalone `<cngx-select>` sections and an
-   * "assemble it yourself" building-block section).
-   */
-  artifact?: Artifact;
-  /**
-   * Section-level override for the `framework` chip. Use when a story
-   * demonstrates multiple binding paths across sections.
-   */
-  framework?: Framework;
 }

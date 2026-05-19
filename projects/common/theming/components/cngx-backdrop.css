@@ -52,8 +52,11 @@
       transition: opacity var(--cngx-backdrop-transition-duration, var(--cngx-duration-base, 200ms));
     }
 
-    /* Visible state — class is toggled by the directive */
-    &.cngx-backdrop--visible {
+    /* Visible state — class is toggled by the directive. `:scope` form
+     * instead of `&` so the build's CSS optimiser doesn't choke on the
+     * `&`-to-class chain inside `@scope` (NG8000 / esbuild "empty
+     * sub-selector" warning otherwise). */
+    :scope.cngx-backdrop--visible {
       opacity: 1;
       pointer-events: auto;
     }

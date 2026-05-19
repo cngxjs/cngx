@@ -1,0 +1,64 @@
+import type { DemoSpec } from '../../../../dev-tools/demo-spec';
+
+export const STORY: DemoSpec = {
+  title: 'Performance vs target',
+  subtitle: 'Range bands (poor / fair / good) + actual bar + target marker.',
+  description: 'Stephen Few\'s compact KPI visualisation. Three stacked layers: range bands, an actual filled bar, and a target marker.',
+  level: 'atom',
+  audience: ['dev', 'design'],
+  artifact: 'standalone',
+  focus: ['visual-variants'],
+  apiComponents: [
+    'CngxBullet',
+  ],
+  moduleImports: [
+    'import { CngxBullet } from \'@cngx/common/chart\';',
+  ],
+  imports: ['CngxBullet'],
+  template: `
+  <div style="display:flex;flex-direction:column;gap:16px;max-width:400px">
+    <div>
+      <div style="font-size:0.8125rem;color:var(--cngx-color-text-muted);margin-bottom:4px">Q1 Revenue</div>
+      <cngx-bullet
+        [actual]="78"
+        [target]="80"
+        [max]="100"
+        [ranges]="[
+          { from: 0, to: 50, color: 'rgb(0 0 0 / 0.10)', label: 'poor' },
+          { from: 50, to: 75, color: 'rgb(0 0 0 / 0.18)', label: 'fair' },
+          { from: 75, to: 100, color: 'rgb(0 0 0 / 0.28)', label: 'good' }
+        ]"
+        aria-label="Q1 Revenue: 78 of 100, target 80"
+      />
+    </div>
+    <div>
+      <div style="font-size:0.8125rem;color:var(--cngx-color-text-muted);margin-bottom:4px">Q2 Revenue</div>
+      <cngx-bullet
+        [actual]="92"
+        [target]="80"
+        [max]="100"
+        [ranges]="[
+          { from: 0, to: 50, color: 'rgb(0 0 0 / 0.10)', label: 'poor' },
+          { from: 50, to: 75, color: 'rgb(0 0 0 / 0.18)', label: 'fair' },
+          { from: 75, to: 100, color: 'rgb(0 0 0 / 0.28)', label: 'good' }
+        ]"
+        aria-label="Q2 Revenue: 92 of 100, target 80 — exceeded"
+      />
+    </div>
+    <div>
+      <div style="font-size:0.8125rem;color:var(--cngx-color-text-muted);margin-bottom:4px">Q3 Revenue</div>
+      <cngx-bullet
+        [actual]="35"
+        [target]="80"
+        [max]="100"
+        [ranges]="[
+          { from: 0, to: 50, color: 'rgb(0 0 0 / 0.10)', label: 'poor' },
+          { from: 50, to: 75, color: 'rgb(0 0 0 / 0.18)', label: 'fair' },
+          { from: 75, to: 100, color: 'rgb(0 0 0 / 0.28)', label: 'good' }
+        ]"
+        style="--cngx-bullet-actual-color: var(--danger, #d2452f)"
+        aria-label="Q3 Revenue: 35 of 100, target 80 — below target"
+      />
+    </div>
+  </div>`,
+};
