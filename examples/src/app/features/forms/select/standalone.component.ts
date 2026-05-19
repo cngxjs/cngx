@@ -32,7 +32,7 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
         [label]="'Lieblingsfarbe'"
         [options]="colors"
         [(value)]="standaloneValue"
-        placeholder="Farbe wählen…"
+        placeholder="Pick a color…"
         (openedChange)="handleOpened($event)"
       />
       <div class="event-grid" style="margin-top:12px">
@@ -78,7 +78,7 @@ protected handleOpened(open: boolean): void {
   [label]="'Lieblingsfarbe'"
   [options]="colors"
   [(value)]="standaloneValue"
-  placeholder="Farbe wählen…"
+  placeholder="Pick a color…"
   (openedChange)="handleOpened($event)"
 />`;
   protected readonly colors: CngxSelectOptionDef<string>[] = [

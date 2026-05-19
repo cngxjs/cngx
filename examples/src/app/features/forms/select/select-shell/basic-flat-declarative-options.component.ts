@@ -26,15 +26,15 @@ import { delay, of, throwError } from 'rxjs';
       @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
     </header>
     <cngx-select-shell
-        [label]="'Farbe'"
+        [label]="'Color'"
         [clearable]="true"
         [(value)]="basicValue"
         (selectionChange)="handleBasicChange($event)"
         placeholder="Bitte wählen…"
       >
-        <cngx-option [value]="'red'">Rot</cngx-option>
-        <cngx-option [value]="'green'">Grün</cngx-option>
-        <cngx-option [value]="'blue'">Blau</cngx-option>
+        <cngx-option [value]="'red'">Red</cngx-option>
+        <cngx-option [value]="'green'">Green</cngx-option>
+        <cngx-option [value]="'blue'">Blue</cngx-option>
         <cngx-option [value]="'disabled'" [disabled]="true">Nicht verfügbar</cngx-option>
       </cngx-select-shell>
 
@@ -77,15 +77,15 @@ protected handleBasicChange(e: CngxSelectShellChange<string>): void {
   );
 }`;
   protected readonly _exHtml: string = `<cngx-select-shell
-  [label]="'Farbe'"
+  [label]="'Color'"
   [clearable]="true"
   [(value)]="basicValue"
   (selectionChange)="handleBasicChange($event)"
   placeholder="Bitte wählen…"
 >
-  <cngx-option [value]="'red'">Rot</cngx-option>
-  <cngx-option [value]="'green'">Grün</cngx-option>
-  <cngx-option [value]="'blue'">Blau</cngx-option>
+  <cngx-option [value]="'red'">Red</cngx-option>
+  <cngx-option [value]="'green'">Green</cngx-option>
+  <cngx-option [value]="'blue'">Blue</cngx-option>
   <cngx-option [value]="'disabled'" [disabled]="true">Nicht verfügbar</cngx-option>
 </cngx-select-shell>`;
   // Basic — flat options.

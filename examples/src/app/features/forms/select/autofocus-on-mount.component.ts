@@ -33,7 +33,7 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
       </button>
       @if (autofocusVisible()) {
         <cngx-select
-          [label]="'Farbe'"
+          [label]="'Color'"
           [options]="colors"
           [(value)]="autofocusValue"
           [autofocus]="true"
@@ -81,7 +81,7 @@ protected toggleAutofocus(): void { this.autofocusVisible.update(v => !v); }`;
 </button>
 @if (autofocusVisible()) {
   <cngx-select
-    [label]="'Farbe'"
+    [label]="'Color'"
     [options]="colors"
     [(value)]="autofocusValue"
     [autofocus]="true"

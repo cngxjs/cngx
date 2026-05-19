@@ -36,7 +36,7 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
         placeholder="Sprache wählen…"
       >
         <ng-template cngxSelectError let-error let-retry="retry">
-          <div style="padding:0.5rem 0.75rem;color:#b71c1c">
+          <div style="padding:0.5rem 0.75rem;color:var(--cngx-color-danger)">
             Laden fehlgeschlagen: {{ error?.message ?? error }}
           </div>
           <button type="button" class="chip" style="margin:0 0.75rem 0.5rem" (click)="retry()">Erneut laden</button>
@@ -107,7 +107,7 @@ protected asyncSetEmpty(): void { this.asyncState.setSuccess([]); }`;
   placeholder="Sprache wählen…"
 >
   <ng-template cngxSelectError let-error let-retry="retry">
-    <div style="padding:0.5rem 0.75rem;color:#b71c1c">
+    <div style="padding:0.5rem 0.75rem;color:var(--cngx-color-danger)">
       Laden fehlgeschlagen: {{ error?.message ?? error }}
     </div>
     <button type="button" class="chip" style="margin:0 0.75rem 0.5rem" (click)="retry()">Erneut laden</button>

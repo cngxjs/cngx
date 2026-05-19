@@ -29,7 +29,7 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
       @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
     </header>
     <cngx-select
-        [label]="'Farbe'"
+        [label]="'Color'"
         [options]="colors"
         [(value)]="clearableValue"
         [clearable]="true"
@@ -69,7 +69,7 @@ protected readonly colors: CngxSelectOptionDef<string>[] = [
 ];
 protected readonly clearableValue = signal<string | undefined>('red');`;
   protected readonly _exHtml: string = `<cngx-select
-  [label]="'Farbe'"
+  [label]="'Color'"
   [options]="colors"
   [(value)]="clearableValue"
   [clearable]="true"

@@ -30,7 +30,7 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     </header>
     <cngx-form-field [field]="typeaheadColorField">
         <cngx-typeahead
-          [label]="'Farbe'"
+          [label]="'Color'"
           [options]="typeaheadColorOptions"
           [clearable]="true"
           placeholder="Farbe eingeben…"
@@ -74,7 +74,7 @@ protected readonly typeaheadColorModel = signal<string>('');
 protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));`;
   protected readonly _exHtml: string = `<cngx-form-field [field]="typeaheadColorField">
   <cngx-typeahead
-    [label]="'Farbe'"
+    [label]="'Color'"
     [options]="typeaheadColorOptions"
     [clearable]="true"
     placeholder="Farbe eingeben…"

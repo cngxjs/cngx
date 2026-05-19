@@ -29,7 +29,7 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
       @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
     </header>
     <cngx-select
-        [label]="'Farbe'"
+        [label]="'Color'"
         [options]="colors"
         [(value)]="commitValue"
         [commitAction]="commitAction"
@@ -85,7 +85,7 @@ protected readonly commitShouldFail = signal(false);
 protected readonly commitAction: CngxSelectCommitAction<string> = (intended) => {
   const ts = new Date().toLocaleTimeString();`;
   protected readonly _exHtml: string = `<cngx-select
-  [label]="'Farbe'"
+  [label]="'Color'"
   [options]="colors"
   [(value)]="commitValue"
   [commitAction]="commitAction"

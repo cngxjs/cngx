@@ -33,16 +33,16 @@ import { delay, of, throwError } from 'rxjs';
       </ng-template>
 
       <cngx-select-shell
-        [label]="'Farbe'"
+        [label]="'Color'"
         [clearable]="true"
         [clearGlyph]="customClear"
         [caretGlyph]="customCaret"
         [(value)]="customValue"
         placeholder="Custom-glyph trigger…"
       >
-        <cngx-option [value]="'red'">Rot</cngx-option>
-        <cngx-option [value]="'green'">Grün</cngx-option>
-        <cngx-option [value]="'blue'">Blau</cngx-option>
+        <cngx-option [value]="'red'">Red</cngx-option>
+        <cngx-option [value]="'green'">Green</cngx-option>
+        <cngx-option [value]="'blue'">Blue</cngx-option>
       </cngx-select-shell>
 
       <div class="event-grid" style="margin-top:12px">
@@ -81,16 +81,16 @@ protected readonly customValue = signal<string | undefined>(undefined);`;
 </ng-template>
 
 <cngx-select-shell
-  [label]="'Farbe'"
+  [label]="'Color'"
   [clearable]="true"
   [clearGlyph]="customClear"
   [caretGlyph]="customCaret"
   [(value)]="customValue"
   placeholder="Custom-glyph trigger…"
 >
-  <cngx-option [value]="'red'">Rot</cngx-option>
-  <cngx-option [value]="'green'">Grün</cngx-option>
-  <cngx-option [value]="'blue'">Blau</cngx-option>
+  <cngx-option [value]="'red'">Red</cngx-option>
+  <cngx-option [value]="'green'">Green</cngx-option>
+  <cngx-option [value]="'blue'">Blue</cngx-option>
 </cngx-select-shell>`;
   // Basic — flat options.
     protected readonly basicValue = signal<string | undefined>(undefined);

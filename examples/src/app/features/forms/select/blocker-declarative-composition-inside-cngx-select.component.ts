@@ -34,18 +34,18 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
         placeholder="Open me — panel will be empty…"
       >
         <cngx-optgroup label="Warm">
-          <cngx-option [value]="'red'">Rot</cngx-option>
+          <cngx-option [value]="'red'">Red</cngx-option>
           <cngx-option [value]="'orange'">Orange</cngx-option>
         </cngx-optgroup>
         <cngx-select-divider />
         <cngx-optgroup label="Cold">
-          <cngx-option [value]="'blue'">Blau</cngx-option>
-          <cngx-option [value]="'teal'">Türkis</cngx-option>
+          <cngx-option [value]="'blue'">Blue</cngx-option>
+          <cngx-option [value]="'teal'">Teal</cngx-option>
         </cngx-optgroup>
       </cngx-select>
       <div class="event-grid" style="margin-top:12px">
         <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ declarativeValue() ?? '—' }}</span></div>
-        <div class="event-row"><span class="event-label">Status</span><span class="event-value" style="color:#c62828">AD doesn't see projected options — no selection flow.</span></div>
+        <div class="event-row"><span class="event-label">Status</span><span class="event-value" style="color:var(--cngx-color-danger)">AD doesn't see projected options — no selection flow.</span></div>
       </div>
     <details class="cngx-ex-code">
       <summary>TypeScript</summary>
@@ -78,13 +78,13 @@ protected readonly declarativeValue = signal<string | undefined>(undefined);`;
   placeholder="Open me — panel will be empty…"
 >
   <cngx-optgroup label="Warm">
-    <cngx-option [value]="'red'">Rot</cngx-option>
+    <cngx-option [value]="'red'">Red</cngx-option>
     <cngx-option [value]="'orange'">Orange</cngx-option>
   </cngx-optgroup>
   <cngx-select-divider />
   <cngx-optgroup label="Cold">
-    <cngx-option [value]="'blue'">Blau</cngx-option>
-    <cngx-option [value]="'teal'">Türkis</cngx-option>
+    <cngx-option [value]="'blue'">Blue</cngx-option>
+    <cngx-option [value]="'teal'">Teal</cngx-option>
   </cngx-optgroup>
 </cngx-select>`;
   protected readonly colors: CngxSelectOptionDef<string>[] = [

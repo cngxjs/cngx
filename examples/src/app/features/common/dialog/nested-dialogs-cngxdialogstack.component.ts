@@ -30,7 +30,7 @@ import { CngxDialog, CngxDialogTitle, CngxDialogDescription, CngxDialogClose } f
         <p cngxDialogDescription>Manage your preferences.</p>
         <div style="margin: 16px 0; padding: 12px; border: 1px solid var(--cngx-color-border); border-radius: 4px;">
           <p style="margin: 0 0 8px;">Danger zone: reset all settings to defaults.</p>
-          <button class="chip" style="color: #c62828; border-color: #c62828;" (click)="confirmReset.open()">
+          <button class="chip" style="color: var(--cngx-color-danger); border-color: var(--cngx-color-danger);" (click)="confirmReset.open()">
             Reset All
           </button>
         </div>
@@ -45,7 +45,7 @@ import { CngxDialog, CngxDialogTitle, CngxDialogDescription, CngxDialogClose } f
           <p cngxDialogDescription>This will restore all settings to their factory defaults. You cannot undo this.</p>
           <div class="button-row" style="margin-top: 16px; justify-content: flex-end;">
             <button class="chip" [cngxDialogClose]="false">Keep Settings</button>
-            <button class="chip" style="color: #c62828; border-color: #c62828;" [cngxDialogClose]="true">Reset</button>
+            <button class="chip" style="color: var(--cngx-color-danger); border-color: var(--cngx-color-danger);" [cngxDialogClose]="true">Reset</button>
           </div>
         </dialog>
       </dialog>
@@ -80,7 +80,7 @@ export class DialogNestedDialogsCngxdialogstack {
   <p cngxDialogDescription>Manage your preferences.</p>
   <div style="margin: 16px 0; padding: 12px; border: 1px solid var(--cngx-color-border); border-radius: 4px;">
     <p style="margin: 0 0 8px;">Danger zone: reset all settings to defaults.</p>
-    <button class="chip" style="color: #c62828; border-color: #c62828;" (click)="confirmReset.open()">
+    <button class="chip" style="color: var(--cngx-color-danger); border-color: var(--cngx-color-danger);" (click)="confirmReset.open()">
       Reset All
     </button>
   </div>
@@ -95,7 +95,7 @@ export class DialogNestedDialogsCngxdialogstack {
     <p cngxDialogDescription>This will restore all settings to their factory defaults. You cannot undo this.</p>
     <div class="button-row" style="margin-top: 16px; justify-content: flex-end;">
       <button class="chip" [cngxDialogClose]="false">Keep Settings</button>
-      <button class="chip" style="color: #c62828; border-color: #c62828;" [cngxDialogClose]="true">Reset</button>
+      <button class="chip" style="color: var(--cngx-color-danger); border-color: var(--cngx-color-danger);" [cngxDialogClose]="true">Reset</button>
     </div>
   </dialog>
 </dialog>

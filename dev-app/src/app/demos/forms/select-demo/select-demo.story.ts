@@ -305,7 +305,7 @@ export const STORY: DemoSpec = {
     [label]="'Lieblingsfarbe'"
     [options]="colors"
     [(value)]="standaloneValue"
-    placeholder="Farbe wählen…"
+    placeholder="Pick a color…"
     (openedChange)="handleOpened($event)"
   />
   <div class="event-grid" style="margin-top:12px">
@@ -329,18 +329,18 @@ export const STORY: DemoSpec = {
     placeholder="Open me — panel will be empty…"
   >
     <cngx-optgroup label="Warm">
-      <cngx-option [value]="'red'">Rot</cngx-option>
+      <cngx-option [value]="'red'">Red</cngx-option>
       <cngx-option [value]="'orange'">Orange</cngx-option>
     </cngx-optgroup>
     <cngx-select-divider />
     <cngx-optgroup label="Cold">
-      <cngx-option [value]="'blue'">Blau</cngx-option>
-      <cngx-option [value]="'teal'">Türkis</cngx-option>
+      <cngx-option [value]="'blue'">Blue</cngx-option>
+      <cngx-option [value]="'teal'">Teal</cngx-option>
     </cngx-optgroup>
   </cngx-select>
   <div class="event-grid" style="margin-top:12px">
     <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ declarativeValue() ?? '—' }}</span></div>
-    <div class="event-row"><span class="event-label">Status</span><span class="event-value" style="color:#c62828">AD doesn't see projected options — no selection flow.</span></div>
+    <div class="event-row"><span class="event-label">Status</span><span class="event-value" style="color:var(--cngx-color-danger)">AD doesn't see projected options — no selection flow.</span></div>
   </div>`,
     },
     {
@@ -375,23 +375,23 @@ export const STORY: DemoSpec = {
   <div cngxPopover #myPop="cngxPopover" placement="bottom" style="padding:0.25rem">
     <div cngxListbox
          #myLb="cngxListbox"
-         [label]="'Farbe'"
+         [label]="'Color'"
          [(value)]="assembledValue"
          style="display:flex;flex-direction:column;min-inline-size:10rem">
       <cngx-optgroup label="Warm">
-        <cngx-option [value]="'red'">Rot</cngx-option>
+        <cngx-option [value]="'red'">Red</cngx-option>
         <cngx-option [value]="'orange'">Orange</cngx-option>
       </cngx-optgroup>
       <cngx-select-divider />
       <cngx-optgroup label="Cold">
-        <cngx-option [value]="'blue'">Blau</cngx-option>
-        <cngx-option [value]="'teal'">Türkis</cngx-option>
+        <cngx-option [value]="'blue'">Blue</cngx-option>
+        <cngx-option [value]="'teal'">Teal</cngx-option>
       </cngx-optgroup>
     </div>
   </div>
   <div class="event-grid" style="margin-top:12px">
     <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ assembledValue() ?? '—' }}</span></div>
-    <div class="event-row"><span class="event-label">Status</span><span class="event-value" style="color:#2e7d32">Works — consumer owns the listbox, AD sees projected options.</span></div>
+    <div class="event-row"><span class="event-label">Status</span><span class="event-value" style="color:var(--cngx-color-success)">Works — consumer owns the listbox, AD sees projected options.</span></div>
   </div>`,
     },
     {
@@ -415,7 +415,7 @@ export const STORY: DemoSpec = {
       imports: ['CngxSelect'],
       template: `
   <cngx-select
-    [label]="'Farbe'"
+    [label]="'Color'"
     [options]="colors"
     [(value)]="clearableValue"
     [clearable]="true"
@@ -483,7 +483,7 @@ export const STORY: DemoSpec = {
     placeholder="Sprache wählen…"
   >
     <ng-template cngxSelectError let-error let-retry="retry">
-      <div style="padding:0.5rem 0.75rem;color:#b71c1c">
+      <div style="padding:0.5rem 0.75rem;color:var(--cngx-color-danger)">
         Laden fehlgeschlagen: {{ error?.message ?? error }}
       </div>
       <button type="button" class="chip" style="margin:0 0.75rem 0.5rem" (click)="retry()">Erneut laden</button>
@@ -611,10 +611,10 @@ export const STORY: DemoSpec = {
       imports: ['CngxSelect', 'CngxSelectCaret'],
       template: `
   <cngx-select
-    [label]="'Farbe'"
+    [label]="'Color'"
     [options]="colors"
     [(value)]="standaloneValue"
-    placeholder="Farbe wählen…"
+    placeholder="Pick a color…"
   >
     <ng-template cngxSelectCaret let-open="open">
       <span
@@ -637,14 +637,14 @@ export const STORY: DemoSpec = {
       imports: ['CngxSelect', 'CngxSelectCheck'],
       template: `
   <cngx-select
-    [label]="'Farbe'"
+    [label]="'Color'"
     [options]="colors"
     [(value)]="standaloneValue"
-    placeholder="Farbe wählen…"
+    placeholder="Pick a color…"
   >
     <ng-template cngxSelectCheck let-option let-selected="selected">
       @if (selected) {
-        <span style="color:#2e7d32" aria-hidden="true">●</span>
+        <span style="color:var(--cngx-color-success)" aria-hidden="true">●</span>
       }
     </ng-template>
   </cngx-select>`,
@@ -659,10 +659,10 @@ export const STORY: DemoSpec = {
       imports: ['CngxSelect'],
       template: `
   <cngx-select
-    [label]="'Farbe'"
+    [label]="'Color'"
     [options]="colors"
     [(value)]="standaloneValue"
-    placeholder="Farbe wählen…"
+    placeholder="Pick a color…"
     selectionIndicatorVariant="radio"
   />
   <div class="event-grid" style="margin-top:12px">
@@ -701,10 +701,10 @@ export const STORY: DemoSpec = {
       imports: ['CngxSelect'],
       template: `
   <cngx-select
-    [label]="'Farbe'"
+    [label]="'Color'"
     [options]="colors"
     [(value)]="fixedWidthValue"
-    placeholder="Farbe wählen…"
+    placeholder="Pick a color…"
     [panelWidth]="400"
   />
   <div class="event-grid" style="margin-top:12px">
@@ -743,7 +743,7 @@ export const STORY: DemoSpec = {
   </button>
   @if (autofocusVisible()) {
     <cngx-select
-      [label]="'Farbe'"
+      [label]="'Color'"
       [options]="colors"
       [(value)]="autofocusValue"
       [autofocus]="true"
@@ -761,7 +761,7 @@ export const STORY: DemoSpec = {
       template: `
   <cngx-form-field [field]="singleForm.color">
     <label cngxLabel>Lieblingsfarbe</label>
-    <cngx-select [label]="'Lieblingsfarbe'" [options]="colors" placeholder="Farbe wählen…" />
+    <cngx-select [label]="'Lieblingsfarbe'" [options]="colors" placeholder="Pick a color…" />
     <cngx-field-errors />
   </cngx-form-field>
   <div class="event-grid" style="margin-top:12px">
@@ -779,8 +779,8 @@ export const STORY: DemoSpec = {
       imports: ['CngxFormField', 'CngxLabel', 'CngxFieldErrors', 'CngxSelect'],
       template: `
   <cngx-form-field [field]="rfField">
-    <label cngxLabel>Farbe (RF)</label>
-    <cngx-select [label]="'Farbe (RF)'" [options]="colors" placeholder="Farbe wählen…" />
+    <label cngxLabel>Color (RF)</label>
+    <cngx-select [label]="'Color (RF)'" [options]="colors" placeholder="Pick a color…" />
     <cngx-field-errors />
   </cngx-form-field>
   <div class="event-grid" style="margin-top:12px">
@@ -1081,7 +1081,7 @@ export const STORY: DemoSpec = {
       template: `
   <cngx-form-field [field]="typeaheadColorField">
     <cngx-typeahead
-      [label]="'Farbe'"
+      [label]="'Color'"
       [options]="typeaheadColorOptions"
       [clearable]="true"
       placeholder="Farbe eingeben…"
@@ -1097,7 +1097,7 @@ export const STORY: DemoSpec = {
         'Replace the plain placeholder string with custom markup — render an icon + the placeholder text, a stylised hint, or a help link inside the trigger.',
       imports: ['CngxSelect', 'CngxSelectPlaceholder'],
       template: `
-  <cngx-select [label]="'Farbe'" [options]="colors" [(value)]="standaloneValue" placeholder="Farbe wählen…">
+  <cngx-select [label]="'Color'" [options]="colors" [(value)]="standaloneValue" placeholder="Pick a color…">
     <ng-template cngxSelectPlaceholder let-text>
       <span style="display:inline-flex;align-items:center;gap:0.4rem;color:#7a7a7a">
         <span aria-hidden="true">🎨</span>
@@ -1168,7 +1168,7 @@ export const STORY: DemoSpec = {
       imports: ['CngxSelect', 'CngxSelectCommitError'],
       template: `
   <cngx-select
-    [label]="'Farbe'"
+    [label]="'Color'"
     [options]="colors"
     [(value)]="commitValue"
     [commitAction]="commitAction"
@@ -1196,7 +1196,7 @@ export const STORY: DemoSpec = {
       imports: ['CngxSelect', 'CngxSelectOptionPending', 'CngxSelectOptionError'],
       template: `
   <cngx-select
-    [label]="'Farbe'"
+    [label]="'Color'"
     [options]="colors"
     [(value)]="commitValue"
     [commitAction]="commitAction"
@@ -1270,7 +1270,7 @@ export const STORY: DemoSpec = {
     <div>
       <h4 style="margin:0 0 0.5rem 0;font-size:0.85rem;color:#374151">banner</h4>
       <cngx-select
-        [label]="'Farbe'"
+        [label]="'Color'"
         [options]="colors"
         [(value)]="commitValue"
         [commitAction]="commitAction"
@@ -1282,7 +1282,7 @@ export const STORY: DemoSpec = {
     <div>
       <h4 style="margin:0 0 0.5rem 0;font-size:0.85rem;color:#374151">inline</h4>
       <cngx-select
-        [label]="'Farbe'"
+        [label]="'Color'"
         [options]="colors"
         [(value)]="commitValue"
         [commitAction]="commitAction"
@@ -1294,7 +1294,7 @@ export const STORY: DemoSpec = {
     <div>
       <h4 style="margin:0 0 0.5rem 0;font-size:0.85rem;color:#374151">none</h4>
       <cngx-select
-        [label]="'Farbe'"
+        [label]="'Color'"
         [options]="colors"
         [(value)]="commitValue"
         [commitAction]="commitAction"

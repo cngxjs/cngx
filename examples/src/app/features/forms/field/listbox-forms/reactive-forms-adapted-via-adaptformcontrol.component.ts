@@ -27,14 +27,14 @@ import { CngxListbox, CngxOption } from '@cngx/common/interactive';
       @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
     </header>
     <cngx-form-field [field]="rfField">
-        <label cngxLabel>Farbe (RF)</label>
+        <label cngxLabel>Color (RF)</label>
         <div cngxListbox
              cngxListboxFieldBridge
-             [label]="'Farbe (RF)'"
+             [label]="'Color (RF)'"
              tabindex="0">
-          <div cngxOption value="red">Rot</div>
-          <div cngxOption value="green">Grün</div>
-          <div cngxOption value="blue">Blau</div>
+          <div cngxOption value="red">Red</div>
+          <div cngxOption value="green">Green</div>
+          <div cngxOption value="blue">Blue</div>
         </div>
         <cngx-field-errors />
       </cngx-form-field>
@@ -74,14 +74,14 @@ protected readonly rfControl = new FormControl<string>('green', { validators: [V
 protected readonly rfField = adaptFormControl(this.rfControl, 'color', inject(DestroyRef));
 protected readonly rfValue = toSignal(this.rfControl.valueChanges, { initialValue: this.rfControl.value });`;
   protected readonly _exHtml: string = `<cngx-form-field [field]="rfField">
-  <label cngxLabel>Farbe (RF)</label>
+  <label cngxLabel>Color (RF)</label>
   <div cngxListbox
        cngxListboxFieldBridge
-       [label]="'Farbe (RF)'"
+       [label]="'Color (RF)'"
        tabindex="0">
-    <div cngxOption value="red">Rot</div>
-    <div cngxOption value="green">Grün</div>
-    <div cngxOption value="blue">Blau</div>
+    <div cngxOption value="red">Red</div>
+    <div cngxOption value="green">Green</div>
+    <div cngxOption value="blue">Blue</div>
   </div>
   <cngx-field-errors />
 </cngx-form-field>`;

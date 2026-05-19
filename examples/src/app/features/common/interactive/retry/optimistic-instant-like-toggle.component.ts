@@ -41,7 +41,7 @@ import { of, switchMap, throwError, timer } from 'rxjs';
         @if (likeState.error()) {
           <div class="event-row">
             <span class="event-label">Error</span>
-            <span class="event-value" style="color:#c62828">{{ likeState.error() }}</span>
+            <span class="event-value" style="color:var(--cngx-color-danger)">{{ likeState.error() }}</span>
           </div>
         }
       </div>

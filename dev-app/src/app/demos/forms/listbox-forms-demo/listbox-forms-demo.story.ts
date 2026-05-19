@@ -76,9 +76,9 @@ export const STORY: DemoSpec = {
          cngxListboxFieldBridge
          [label]="'Lieblingsfarbe'"
          tabindex="0">
-      <div cngxOption value="red">Rot</div>
-      <div cngxOption value="green">Grün</div>
-      <div cngxOption value="blue">Blau</div>
+      <div cngxOption value="red">Red</div>
+      <div cngxOption value="green">Green</div>
+      <div cngxOption value="blue">Blue</div>
     </div>
     <cngx-field-errors />
   </cngx-form-field>
@@ -177,14 +177,14 @@ export const STORY: DemoSpec = {
       imports: ['CngxFormField', 'CngxLabel', 'CngxFieldErrors', 'CngxListbox', 'CngxOption', 'CngxListboxFieldBridge'],
       template: `
   <cngx-form-field [field]="rfField">
-    <label cngxLabel>Farbe (RF)</label>
+    <label cngxLabel>Color (RF)</label>
     <div cngxListbox
          cngxListboxFieldBridge
-         [label]="'Farbe (RF)'"
+         [label]="'Color (RF)'"
          tabindex="0">
-      <div cngxOption value="red">Rot</div>
-      <div cngxOption value="green">Grün</div>
-      <div cngxOption value="blue">Blau</div>
+      <div cngxOption value="red">Red</div>
+      <div cngxOption value="green">Green</div>
+      <div cngxOption value="blue">Blue</div>
     </div>
     <cngx-field-errors />
   </cngx-form-field>

@@ -42,23 +42,23 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
       <div cngxPopover #myPop="cngxPopover" placement="bottom" style="padding:0.25rem">
         <div cngxListbox
              #myLb="cngxListbox"
-             [label]="'Farbe'"
+             [label]="'Color'"
              [(value)]="assembledValue"
              style="display:flex;flex-direction:column;min-inline-size:10rem">
           <cngx-optgroup label="Warm">
-            <cngx-option [value]="'red'">Rot</cngx-option>
+            <cngx-option [value]="'red'">Red</cngx-option>
             <cngx-option [value]="'orange'">Orange</cngx-option>
           </cngx-optgroup>
           <cngx-select-divider />
           <cngx-optgroup label="Cold">
-            <cngx-option [value]="'blue'">Blau</cngx-option>
-            <cngx-option [value]="'teal'">Türkis</cngx-option>
+            <cngx-option [value]="'blue'">Blue</cngx-option>
+            <cngx-option [value]="'teal'">Teal</cngx-option>
           </cngx-optgroup>
         </div>
       </div>
       <div class="event-grid" style="margin-top:12px">
         <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ assembledValue() ?? '—' }}</span></div>
-        <div class="event-row"><span class="event-label">Status</span><span class="event-value" style="color:#2e7d32">Works — consumer owns the listbox, AD sees projected options.</span></div>
+        <div class="event-row"><span class="event-label">Status</span><span class="event-value" style="color:var(--cngx-color-success)">Works — consumer owns the listbox, AD sees projected options.</span></div>
       </div>
     <details class="cngx-ex-code">
       <summary>TypeScript</summary>
@@ -99,17 +99,17 @@ protected readonly assembledValue = signal<string | undefined>(undefined);`;
 <div cngxPopover #myPop="cngxPopover" placement="bottom" style="padding:0.25rem">
   <div cngxListbox
        #myLb="cngxListbox"
-       [label]="'Farbe'"
+       [label]="'Color'"
        [(value)]="assembledValue"
        style="display:flex;flex-direction:column;min-inline-size:10rem">
     <cngx-optgroup label="Warm">
-      <cngx-option [value]="'red'">Rot</cngx-option>
+      <cngx-option [value]="'red'">Red</cngx-option>
       <cngx-option [value]="'orange'">Orange</cngx-option>
     </cngx-optgroup>
     <cngx-select-divider />
     <cngx-optgroup label="Cold">
-      <cngx-option [value]="'blue'">Blau</cngx-option>
-      <cngx-option [value]="'teal'">Türkis</cngx-option>
+      <cngx-option [value]="'blue'">Blue</cngx-option>
+      <cngx-option [value]="'teal'">Teal</cngx-option>
     </cngx-optgroup>
   </div>
 </div>`;

@@ -29,10 +29,10 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
       @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
     </header>
     <cngx-select
-        [label]="'Farbe'"
+        [label]="'Color'"
         [options]="colors"
         [(value)]="standaloneValue"
-        placeholder="Farbe wählen…"
+        placeholder="Pick a color…"
       >
         <ng-template cngxSelectCaret let-open="open">
           <span
@@ -78,10 +78,10 @@ protected readonly colors: CngxSelectOptionDef<string>[] = [
 ];
 protected readonly standaloneValue = signal<string | undefined>(undefined);`;
   protected readonly _exHtml: string = `<cngx-select
-  [label]="'Farbe'"
+  [label]="'Color'"
   [options]="colors"
   [(value)]="standaloneValue"
-  placeholder="Farbe wählen…"
+  placeholder="Pick a color…"
 >
   <ng-template cngxSelectCaret let-open="open">
     <span

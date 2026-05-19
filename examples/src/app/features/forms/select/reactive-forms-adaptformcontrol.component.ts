@@ -29,8 +29,8 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
       @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
     </header>
     <cngx-form-field [field]="rfField">
-        <label cngxLabel>Farbe (RF)</label>
-        <cngx-select [label]="'Farbe (RF)'" [options]="colors" placeholder="Farbe wählen…" />
+        <label cngxLabel>Color (RF)</label>
+        <cngx-select [label]="'Color (RF)'" [options]="colors" placeholder="Pick a color…" />
         <cngx-field-errors />
       </cngx-form-field>
       <div class="event-grid" style="margin-top:12px">
@@ -71,8 +71,8 @@ protected readonly rfControl = new FormControl<string>('green', { validators: [V
 protected readonly rfField = adaptFormControl(this.rfControl, 'color', inject(DestroyRef));
 protected readonly rfValue = toSignal(this.rfControl.valueChanges, { initialValue: this.rfControl.value });`;
   protected readonly _exHtml: string = `<cngx-form-field [field]="rfField">
-  <label cngxLabel>Farbe (RF)</label>
-  <cngx-select [label]="'Farbe (RF)'" [options]="colors" placeholder="Farbe wählen…" />
+  <label cngxLabel>Color (RF)</label>
+  <cngx-select [label]="'Color (RF)'" [options]="colors" placeholder="Pick a color…" />
   <cngx-field-errors />
 </cngx-form-field>`;
   protected readonly colors: CngxSelectOptionDef<string>[] = [

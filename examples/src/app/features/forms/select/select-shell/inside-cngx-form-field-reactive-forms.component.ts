@@ -26,11 +26,11 @@ import { delay, of, throwError } from 'rxjs';
       @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
     </header>
     <cngx-form-field [field]="rfField">
-        <label cngxLabel>Farbe</label>
+        <label cngxLabel>Color</label>
         <cngx-select-shell>
-          <cngx-option [value]="'red'">Rot</cngx-option>
-          <cngx-option [value]="'green'">Grün</cngx-option>
-          <cngx-option [value]="'blue'">Blau</cngx-option>
+          <cngx-option [value]="'red'">Red</cngx-option>
+          <cngx-option [value]="'green'">Green</cngx-option>
+          <cngx-option [value]="'blue'">Blue</cngx-option>
         </cngx-select-shell>
       </cngx-form-field>
 
@@ -65,11 +65,11 @@ private readonly rfDestroyRef = inject(DestroyRef);
 protected readonly rfControl = new FormControl<string | null>('green');
 protected readonly rfField = adaptFormControl(this.rfControl, 'color', this.rfDestroyRef);`;
   protected readonly _exHtml: string = `<cngx-form-field [field]="rfField">
-  <label cngxLabel>Farbe</label>
+  <label cngxLabel>Color</label>
   <cngx-select-shell>
-    <cngx-option [value]="'red'">Rot</cngx-option>
-    <cngx-option [value]="'green'">Grün</cngx-option>
-    <cngx-option [value]="'blue'">Blau</cngx-option>
+    <cngx-option [value]="'red'">Red</cngx-option>
+    <cngx-option [value]="'green'">Green</cngx-option>
+    <cngx-option [value]="'blue'">Blue</cngx-option>
   </cngx-select-shell>
 </cngx-form-field>`;
   // Basic — flat options.

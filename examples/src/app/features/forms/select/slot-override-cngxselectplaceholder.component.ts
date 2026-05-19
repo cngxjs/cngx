@@ -28,7 +28,7 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
       @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
       @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
     </header>
-    <cngx-select [label]="'Farbe'" [options]="colors" [(value)]="standaloneValue" placeholder="Farbe wählen…">
+    <cngx-select [label]="'Color'" [options]="colors" [(value)]="standaloneValue" placeholder="Pick a color…">
         <ng-template cngxSelectPlaceholder let-text>
           <span style="display:inline-flex;align-items:center;gap:0.4rem;color:#7a7a7a">
             <span aria-hidden="true">🎨</span>
@@ -70,7 +70,7 @@ protected readonly colors: CngxSelectOptionDef<string>[] = [
   { value: 'disabled', label: 'Nicht verfügbar', disabled: true },
 ];
 protected readonly standaloneValue = signal<string | undefined>(undefined);`;
-  protected readonly _exHtml: string = `<cngx-select [label]="'Farbe'" [options]="colors" [(value)]="standaloneValue" placeholder="Farbe wählen…">
+  protected readonly _exHtml: string = `<cngx-select [label]="'Color'" [options]="colors" [(value)]="standaloneValue" placeholder="Pick a color…">
   <ng-template cngxSelectPlaceholder let-text>
     <span style="display:inline-flex;align-items:center;gap:0.4rem;color:#7a7a7a">
       <span aria-hidden="true">🎨</span>

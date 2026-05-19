@@ -29,14 +29,14 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
       @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
     </header>
     <cngx-select
-        [label]="'Farbe'"
+        [label]="'Color'"
         [options]="colors"
         [(value)]="standaloneValue"
-        placeholder="Farbe wählen…"
+        placeholder="Pick a color…"
       >
         <ng-template cngxSelectCheck let-option let-selected="selected">
           @if (selected) {
-            <span style="color:#2e7d32" aria-hidden="true">●</span>
+            <span style="color:var(--cngx-color-success)" aria-hidden="true">●</span>
           }
         </ng-template>
       </cngx-select>
@@ -72,14 +72,14 @@ protected readonly colors: CngxSelectOptionDef<string>[] = [
 ];
 protected readonly standaloneValue = signal<string | undefined>(undefined);`;
   protected readonly _exHtml: string = `<cngx-select
-  [label]="'Farbe'"
+  [label]="'Color'"
   [options]="colors"
   [(value)]="standaloneValue"
-  placeholder="Farbe wählen…"
+  placeholder="Pick a color…"
 >
   <ng-template cngxSelectCheck let-option let-selected="selected">
     @if (selected) {
-      <span style="color:#2e7d32" aria-hidden="true">●</span>
+      <span style="color:var(--cngx-color-success)" aria-hidden="true">●</span>
     }
   </ng-template>
 </cngx-select>`;

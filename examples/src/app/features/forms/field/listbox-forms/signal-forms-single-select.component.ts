@@ -32,9 +32,9 @@ import { CngxListbox, CngxOption } from '@cngx/common/interactive';
              cngxListboxFieldBridge
              [label]="'Lieblingsfarbe'"
              tabindex="0">
-          <div cngxOption value="red">Rot</div>
-          <div cngxOption value="green">Grün</div>
-          <div cngxOption value="blue">Blau</div>
+          <div cngxOption value="red">Red</div>
+          <div cngxOption value="green">Green</div>
+          <div cngxOption value="blue">Blue</div>
         </div>
         <cngx-field-errors />
       </cngx-form-field>
@@ -90,9 +90,9 @@ protected handleSingleSubmit(): void {
        cngxListboxFieldBridge
        [label]="'Lieblingsfarbe'"
        tabindex="0">
-    <div cngxOption value="red">Rot</div>
-    <div cngxOption value="green">Grün</div>
-    <div cngxOption value="blue">Blau</div>
+    <div cngxOption value="red">Red</div>
+    <div cngxOption value="green">Green</div>
+    <div cngxOption value="blue">Blue</div>
   </div>
   <cngx-field-errors />
 </cngx-form-field>`;

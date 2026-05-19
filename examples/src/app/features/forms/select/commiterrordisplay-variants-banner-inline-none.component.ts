@@ -32,7 +32,7 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
         <div>
           <h4 style="margin:0 0 0.5rem 0;font-size:0.85rem;color:#374151">banner</h4>
           <cngx-select
-            [label]="'Farbe'"
+            [label]="'Color'"
             [options]="colors"
             [(value)]="commitValue"
             [commitAction]="commitAction"
@@ -44,7 +44,7 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
         <div>
           <h4 style="margin:0 0 0.5rem 0;font-size:0.85rem;color:#374151">inline</h4>
           <cngx-select
-            [label]="'Farbe'"
+            [label]="'Color'"
             [options]="colors"
             [(value)]="commitValue"
             [commitAction]="commitAction"
@@ -56,7 +56,7 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
         <div>
           <h4 style="margin:0 0 0.5rem 0;font-size:0.85rem;color:#374151">none</h4>
           <cngx-select
-            [label]="'Farbe'"
+            [label]="'Color'"
             [options]="colors"
             [(value)]="commitValue"
             [commitAction]="commitAction"
@@ -110,7 +110,7 @@ protected readonly commitAction: CngxSelectCommitAction<string> = (intended) => 
   <div>
     <h4 style="margin:0 0 0.5rem 0;font-size:0.85rem;color:#374151">banner</h4>
     <cngx-select
-      [label]="'Farbe'"
+      [label]="'Color'"
       [options]="colors"
       [(value)]="commitValue"
       [commitAction]="commitAction"
@@ -122,7 +122,7 @@ protected readonly commitAction: CngxSelectCommitAction<string> = (intended) => 
   <div>
     <h4 style="margin:0 0 0.5rem 0;font-size:0.85rem;color:#374151">inline</h4>
     <cngx-select
-      [label]="'Farbe'"
+      [label]="'Color'"
       [options]="colors"
       [(value)]="commitValue"
       [commitAction]="commitAction"
@@ -134,7 +134,7 @@ protected readonly commitAction: CngxSelectCommitAction<string> = (intended) => 
   <div>
     <h4 style="margin:0 0 0.5rem 0;font-size:0.85rem;color:#374151">none</h4>
     <cngx-select
-      [label]="'Farbe'"
+      [label]="'Color'"
       [options]="colors"
       [(value)]="commitValue"
       [commitAction]="commitAction"

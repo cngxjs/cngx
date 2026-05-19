@@ -30,7 +30,7 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     </header>
     <cngx-form-field [field]="singleForm.color">
         <label cngxLabel>Lieblingsfarbe</label>
-        <cngx-select [label]="'Lieblingsfarbe'" [options]="colors" placeholder="Farbe wählen…" />
+        <cngx-select [label]="'Lieblingsfarbe'" [options]="colors" placeholder="Pick a color…" />
         <cngx-field-errors />
       </cngx-form-field>
       <div class="event-grid" style="margin-top:12px">
@@ -80,7 +80,7 @@ protected handleSingleSubmit(): void {
 }`;
   protected readonly _exHtml: string = `<cngx-form-field [field]="singleForm.color">
   <label cngxLabel>Lieblingsfarbe</label>
-  <cngx-select [label]="'Lieblingsfarbe'" [options]="colors" placeholder="Farbe wählen…" />
+  <cngx-select [label]="'Lieblingsfarbe'" [options]="colors" placeholder="Pick a color…" />
   <cngx-field-errors />
 </cngx-form-field>`;
   protected readonly colors: CngxSelectOptionDef<string>[] = [

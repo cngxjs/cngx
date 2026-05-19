@@ -123,15 +123,15 @@ export const STORY: DemoSpec = {
       imports: ['CngxSelectShell', 'CngxSelectOption'],
       template: `
   <cngx-select-shell
-    [label]="'Farbe'"
+    [label]="'Color'"
     [clearable]="true"
     [(value)]="basicValue"
     (selectionChange)="handleBasicChange($event)"
     placeholder="Bitte wählen…"
   >
-    <cngx-option [value]="'red'">Rot</cngx-option>
-    <cngx-option [value]="'green'">Grün</cngx-option>
-    <cngx-option [value]="'blue'">Blau</cngx-option>
+    <cngx-option [value]="'red'">Red</cngx-option>
+    <cngx-option [value]="'green'">Green</cngx-option>
+    <cngx-option [value]="'blue'">Blue</cngx-option>
     <cngx-option [value]="'disabled'" [disabled]="true">Nicht verfügbar</cngx-option>
   </cngx-select-shell>
 
@@ -208,11 +208,11 @@ export const STORY: DemoSpec = {
       imports: ['CngxSelectShell', 'CngxSelectOption', 'CngxFormField', 'CngxLabel'],
       template: `
   <cngx-form-field [field]="rfField">
-    <label cngxLabel>Farbe</label>
+    <label cngxLabel>Color</label>
     <cngx-select-shell>
-      <cngx-option [value]="'red'">Rot</cngx-option>
-      <cngx-option [value]="'green'">Grün</cngx-option>
-      <cngx-option [value]="'blue'">Blau</cngx-option>
+      <cngx-option [value]="'red'">Red</cngx-option>
+      <cngx-option [value]="'green'">Green</cngx-option>
+      <cngx-option [value]="'blue'">Blue</cngx-option>
     </cngx-select-shell>
   </cngx-form-field>
 
@@ -275,9 +275,9 @@ export const STORY: DemoSpec = {
     <ng-template cngxSelectOptionError>
       <span aria-hidden="true" class="error-glyph">⚠</span>
     </ng-template>
-    <cngx-option [value]="'red'">Rot</cngx-option>
-    <cngx-option [value]="'green'">Grün</cngx-option>
-    <cngx-option [value]="'blue'">Blau</cngx-option>
+    <cngx-option [value]="'red'">Red</cngx-option>
+    <cngx-option [value]="'green'">Green</cngx-option>
+    <cngx-option [value]="'blue'">Blue</cngx-option>
   </cngx-select-shell>
 
   <div class="event-grid" style="margin-top:12px">
@@ -420,16 +420,16 @@ export const STORY: DemoSpec = {
   </ng-template>
 
   <cngx-select-shell
-    [label]="'Farbe'"
+    [label]="'Color'"
     [clearable]="true"
     [clearGlyph]="customClear"
     [caretGlyph]="customCaret"
     [(value)]="customValue"
     placeholder="Custom-glyph trigger…"
   >
-    <cngx-option [value]="'red'">Rot</cngx-option>
-    <cngx-option [value]="'green'">Grün</cngx-option>
-    <cngx-option [value]="'blue'">Blau</cngx-option>
+    <cngx-option [value]="'red'">Red</cngx-option>
+    <cngx-option [value]="'green'">Green</cngx-option>
+    <cngx-option [value]="'blue'">Blue</cngx-option>
   </cngx-select-shell>
 
   <div class="event-grid" style="margin-top:12px">

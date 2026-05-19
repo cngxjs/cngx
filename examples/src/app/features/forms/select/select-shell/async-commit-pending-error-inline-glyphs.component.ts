@@ -61,9 +61,9 @@ import { delay, of, throwError } from 'rxjs';
         <ng-template cngxSelectOptionError>
           <span aria-hidden="true" class="error-glyph">⚠</span>
         </ng-template>
-        <cngx-option [value]="'red'">Rot</cngx-option>
-        <cngx-option [value]="'green'">Grün</cngx-option>
-        <cngx-option [value]="'blue'">Blau</cngx-option>
+        <cngx-option [value]="'red'">Red</cngx-option>
+        <cngx-option [value]="'green'">Green</cngx-option>
+        <cngx-option [value]="'blue'">Blue</cngx-option>
       </cngx-select-shell>
 
       <div class="event-grid" style="margin-top:12px">
@@ -153,9 +153,9 @@ protected handleCommitError(err: unknown): void {
   <ng-template cngxSelectOptionError>
     <span aria-hidden="true" class="error-glyph">⚠</span>
   </ng-template>
-  <cngx-option [value]="'red'">Rot</cngx-option>
-  <cngx-option [value]="'green'">Grün</cngx-option>
-  <cngx-option [value]="'blue'">Blau</cngx-option>
+  <cngx-option [value]="'red'">Red</cngx-option>
+  <cngx-option [value]="'green'">Green</cngx-option>
+  <cngx-option [value]="'blue'">Blue</cngx-option>
 </cngx-select-shell>`;
   // Basic — flat options.
     protected readonly basicValue = signal<string | undefined>(undefined);
