@@ -31,7 +31,7 @@ import { CngxEmptyState } from '@cngx/ui/empty-state';
         <button class="chip" (click)="showError()">error</button>
       </div>
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
-        <span style="font-size:0.75rem;color:var(--text-muted)">status: {{ chartState.status() }}</span>
+        <span style="font-size:0.75rem;color:var(--cngx-color-text-muted)">status: {{ chartState.status() }}</span>
       </div>
       <div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; display: inline-block; max-width: 100%; box-sizing: border-box">
       <cngx-chart
@@ -49,7 +49,7 @@ import { CngxEmptyState } from '@cngx/ui/empty-state';
         <svg:g cngxThreshold [value]="25" [label]="'target'" [dashed]="true"></svg:g>
         <ng-template cngxChartEmpty let-small="small">
           @if (small) {
-            <span style="font-size:0.8125rem;color:var(--text-muted)">No telemetry</span>
+            <span style="font-size:0.8125rem;color:var(--cngx-color-text-muted)">No telemetry</span>
           } @else {
             <cngx-empty-state
               title="No telemetry yet"
@@ -102,7 +102,7 @@ protected showError(): void { this.chartState.reset(); this.chartState.setError(
   <button class="chip" (click)="showError()">error</button>
 </div>
 <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
-  <span style="font-size:0.75rem;color:var(--text-muted)">status: {{ chartState.status() }}</span>
+  <span style="font-size:0.75rem;color:var(--cngx-color-text-muted)">status: {{ chartState.status() }}</span>
 </div>
 <div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; display: inline-block; max-width: 100%; box-sizing: border-box">
 <cngx-chart
@@ -120,7 +120,7 @@ protected showError(): void { this.chartState.reset(); this.chartState.setError(
   <svg:g cngxThreshold [value]="25" [label]="'target'" [dashed]="true"></svg:g>
   <ng-template cngxChartEmpty let-small="small">
     @if (small) {
-      <span style="font-size:0.8125rem;color:var(--text-muted)">No telemetry</span>
+      <span style="font-size:0.8125rem;color:var(--cngx-color-text-muted)">No telemetry</span>
     } @else {
       <cngx-empty-state
         title="No telemetry yet"

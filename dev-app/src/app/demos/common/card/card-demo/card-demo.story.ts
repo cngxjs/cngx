@@ -58,10 +58,10 @@ export const STORY: DemoSpec = {
         <span cngxCardSubtitle>Maria Muster, Room 12</span>
       </header>
       <div cngxCardBody>
-        <p style="margin:0;color:var(--text-muted)">Status: Active. Last vitals normal.</p>
+        <p style="margin:0;color:var(--cngx-color-text-muted)">Status: Active. Last vitals normal.</p>
       </div>
       <footer cngxCardFooter>
-        <small style="color:var(--text-muted)">Last updated: today</small>
+        <small style="color:var(--cngx-color-text-muted)">Last updated: today</small>
       </footer>
     </cngx-card>
   </div>`,
@@ -82,7 +82,7 @@ export const STORY: DemoSpec = {
         <span cngxCardSubtitle>Somewhere in the mountains</span>
       </header>
       <div cngxCardBody>
-        <p style="margin:0;color:var(--text-muted);font-size:0.875rem">
+        <p style="margin:0;color:var(--cngx-color-text-muted);font-size:0.875rem">
           A scenic view with full-bleed image using aspect-ratio 16/9.
         </p>
       </div>
@@ -98,23 +98,23 @@ export const STORY: DemoSpec = {
   <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px">
     <cngx-card cngxCardAccent="danger">
       <header cngxCardHeader><h3 cngxCardTitle>Danger</h3></header>
-      <div cngxCardBody style="font-size:0.875rem;color:var(--text-muted)">Critical alert</div>
+      <div cngxCardBody style="font-size:0.875rem;color:var(--cngx-color-text-muted)">Critical alert</div>
     </cngx-card>
     <cngx-card cngxCardAccent="warning">
       <header cngxCardHeader><h3 cngxCardTitle>Warning</h3></header>
-      <div cngxCardBody style="font-size:0.875rem;color:var(--text-muted)">Needs attention</div>
+      <div cngxCardBody style="font-size:0.875rem;color:var(--cngx-color-text-muted)">Needs attention</div>
     </cngx-card>
     <cngx-card cngxCardAccent="success">
       <header cngxCardHeader><h3 cngxCardTitle>Success</h3></header>
-      <div cngxCardBody style="font-size:0.875rem;color:var(--text-muted)">All clear</div>
+      <div cngxCardBody style="font-size:0.875rem;color:var(--cngx-color-text-muted)">All clear</div>
     </cngx-card>
     <cngx-card cngxCardAccent="info">
       <header cngxCardHeader><h3 cngxCardTitle>Info</h3></header>
-      <div cngxCardBody style="font-size:0.875rem;color:var(--text-muted)">For your information</div>
+      <div cngxCardBody style="font-size:0.875rem;color:var(--cngx-color-text-muted)">For your information</div>
     </cngx-card>
     <cngx-card cngxCardAccent="neutral">
       <header cngxCardHeader><h3 cngxCardTitle>Neutral</h3></header>
-      <div cngxCardBody style="font-size:0.875rem;color:var(--text-muted)">Default state</div>
+      <div cngxCardBody style="font-size:0.875rem;color:var(--cngx-color-text-muted)">Default state</div>
     </cngx-card>
   </div>`,
     },
@@ -137,7 +137,7 @@ export const STORY: DemoSpec = {
             <h3 cngxCardTitle>Vitals Overview</h3>
           </header>
           <div cngxCardBody>
-            <p style="margin:0;color:var(--text-muted)">Heart rate, blood pressure, SpO2 values from the last 24 hours.</p>
+            <p style="margin:0;color:var(--cngx-color-text-muted)">Heart rate, blood pressure, SpO2 values from the last 24 hours.</p>
           </div>
         </ng-container>
       }
@@ -157,7 +157,7 @@ export const STORY: DemoSpec = {
         <h3 style="margin:0;font-weight:600;font-size:0.9375rem">Maria Muster</h3>
       </header>
       <div cngxCardBody>
-        <span style="font-size:0.8125rem;color:var(--text-muted)">Room 12</span>
+        <span style="font-size:0.8125rem;color:var(--cngx-color-text-muted)">Room 12</span>
       </div>
     </cngx-card>
     <cngx-card as="button" ariaLabel="View patient Hans Huber">
@@ -165,7 +165,7 @@ export const STORY: DemoSpec = {
         <h3 style="margin:0;font-weight:600;font-size:0.9375rem">Hans Huber</h3>
       </header>
       <div cngxCardBody>
-        <span style="font-size:0.8125rem;color:var(--text-muted)">Room 7</span>
+        <span style="font-size:0.8125rem;color:var(--cngx-color-text-muted)">Room 7</span>
       </div>
     </cngx-card>
     <cngx-card as="button" ariaLabel="View patient Lisa Lang">
@@ -173,7 +173,7 @@ export const STORY: DemoSpec = {
         <h3 style="margin:0;font-weight:600;font-size:0.9375rem">Lisa Lang</h3>
       </header>
       <div cngxCardBody>
-        <span style="font-size:0.8125rem;color:var(--text-muted)">Room 3</span>
+        <span style="font-size:0.8125rem;color:var(--cngx-color-text-muted)">Room 3</span>
       </div>
     </cngx-card>
   </div>
@@ -199,7 +199,7 @@ export const STORY: DemoSpec = {
         <h3 style="margin:0;font-weight:600;font-size:1rem">Vitals</h3>
       </header>
       <div cngxCardBody>
-        <p style="margin:0;color:var(--text-muted)">Heart rate, blood pressure, SpO2</p>
+        <p style="margin:0;color:var(--cngx-color-text-muted)">Heart rate, blood pressure, SpO2</p>
       </div>
     </cngx-card>
   </div>`,
@@ -218,7 +218,7 @@ export const STORY: DemoSpec = {
         <h3 style="margin:0;font-weight:600;font-size:1rem">Edit Resident</h3>
       </header>
       <div cngxCardBody>
-        <p style="margin:0;color:var(--text-muted)">This card is disabled with a reason</p>
+        <p style="margin:0;color:var(--cngx-color-text-muted)">This card is disabled with a reason</p>
       </div>
     </cngx-card>
   </div>`,
@@ -235,7 +235,7 @@ export const STORY: DemoSpec = {
         <h3 style="margin:0;font-weight:600;font-size:1rem">Pflegeplan</h3>
       </header>
       <div cngxCardBody>
-        <p style="margin:0;color:var(--text-muted)">Next evaluation: 18.07.2025</p>
+        <p style="margin:0;color:var(--cngx-color-text-muted)">Next evaluation: 18.07.2025</p>
       </div>
       <div cngxCardActions align="end">
         <button class="chip">Edit</button>
@@ -261,7 +261,7 @@ export const STORY: DemoSpec = {
       <header cngxCardHeader>
         <h3 cngxCardTitle>Static Badge</h3>
       </header>
-      <div cngxCardBody style="font-size:0.875rem;color:var(--text-muted)">
+      <div cngxCardBody style="font-size:0.875rem;color:var(--cngx-color-text-muted)">
         Non-interactive span badge
       </div>
     </cngx-card>
@@ -279,7 +279,7 @@ export const STORY: DemoSpec = {
       <header cngxCardHeader>
         <h3 cngxCardTitle>Clickable Badge</h3>
       </header>
-      <div cngxCardBody style="font-size:0.875rem;color:var(--text-muted)">
+      <div cngxCardBody style="font-size:0.875rem;color:var(--cngx-color-text-muted)">
         Button card + button badge. Click each to test event bubbling.
       </div>
     </cngx-card>
@@ -292,7 +292,7 @@ export const STORY: DemoSpec = {
       <header cngxCardHeader>
         <h3 cngxCardTitle>Status Dot</h3>
       </header>
-      <div cngxCardBody style="font-size:0.875rem;color:var(--text-muted)">
+      <div cngxCardBody style="font-size:0.875rem;color:var(--cngx-color-text-muted)">
         Badge at top-start
       </div>
     </cngx-card>
@@ -355,7 +355,7 @@ export const STORY: DemoSpec = {
       </header>
       @if (d1.opened()) {
         <div cngxCardBody id="detail-1">
-          <p style="margin:0;color:var(--text-muted);font-size:0.875rem">
+          <p style="margin:0;color:var(--cngx-color-text-muted);font-size:0.875rem">
             Patient has learned preventive measures and applies them independently.
             Evaluation: 17.10.2025. Uses aids correctly. Next evaluation: 27.03.2026.
           </p>
@@ -370,7 +370,7 @@ export const STORY: DemoSpec = {
       </header>
       @if (d2.opened()) {
         <div cngxCardBody id="detail-2">
-          <p style="margin:0;color:var(--text-muted);font-size:0.875rem">
+          <p style="margin:0;color:var(--cngx-color-text-muted);font-size:0.875rem">
             Hazard sources in the environment have been reduced.
             Can organize daily routine independently.
           </p>
@@ -398,13 +398,13 @@ export const STORY: DemoSpec = {
            [cngxSpeak]="'Project Summary, Q1 2026. 12 features shipped. 3 bugs resolved. 98 percent uptime. Next milestone: public beta in April.'"
            [enabled]="false"
            #tts1="cngxSpeak">
-        <p style="margin:0 0 4px;color:var(--text-muted);font-size:0.875rem">
+        <p style="margin:0 0 4px;color:var(--cngx-color-text-muted);font-size:0.875rem">
           12 features shipped
         </p>
-        <p style="margin:0 0 4px;color:var(--text-muted);font-size:0.875rem">
+        <p style="margin:0 0 4px;color:var(--cngx-color-text-muted);font-size:0.875rem">
           3 bugs resolved
         </p>
-        <p style="margin:0;color:var(--text-muted);font-size:0.875rem">
+        <p style="margin:0;color:var(--cngx-color-text-muted);font-size:0.875rem">
           98% uptime &mdash; next: public beta
         </p>
       </div>
@@ -421,13 +421,13 @@ export const STORY: DemoSpec = {
            [cngxSpeak]="'Team Updates. Anna completed the dashboard redesign. Ben merged the API refactor. Clara started the accessibility audit.'"
            [enabled]="false"
            #tts2="cngxSpeak">
-        <p style="margin:0 0 4px;color:var(--text-muted);font-size:0.875rem">
+        <p style="margin:0 0 4px;color:var(--cngx-color-text-muted);font-size:0.875rem">
           Anna: Dashboard redesign done
         </p>
-        <p style="margin:0 0 4px;color:var(--text-muted);font-size:0.875rem">
+        <p style="margin:0 0 4px;color:var(--cngx-color-text-muted);font-size:0.875rem">
           Ben: API refactor merged
         </p>
-        <p style="margin:0;color:var(--text-muted);font-size:0.875rem">
+        <p style="margin:0;color:var(--cngx-color-text-muted);font-size:0.875rem">
           Clara: A11y audit started
         </p>
       </div>

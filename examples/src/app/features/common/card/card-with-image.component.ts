@@ -32,7 +32,7 @@ import { CngxCard, CngxCardHeader, CngxCardTitle, CngxCardSubtitle, CngxCardBody
             <span cngxCardSubtitle>Somewhere in the mountains</span>
           </header>
           <div cngxCardBody>
-            <p style="margin:0;color:var(--text-muted);font-size:0.875rem">
+            <p style="margin:0;color:var(--cngx-color-text-muted);font-size:0.875rem">
               A scenic view with full-bleed image using aspect-ratio 16/9.
             </p>
           </div>
@@ -65,7 +65,7 @@ export class CardCardWithImage {
       <span cngxCardSubtitle>Somewhere in the mountains</span>
     </header>
     <div cngxCardBody>
-      <p style="margin:0;color:var(--text-muted);font-size:0.875rem">
+      <p style="margin:0;color:var(--cngx-color-text-muted);font-size:0.875rem">
         A scenic view with full-bleed image using aspect-ratio 16/9.
       </p>
     </div>

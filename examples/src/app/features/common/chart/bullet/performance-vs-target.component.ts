@@ -25,7 +25,7 @@ import { createManualState } from '@cngx/common/data';
     </header>
     <div style="display:flex;flex-direction:column;gap:16px;max-width:400px">
         <div>
-          <div style="font-size:0.8125rem;color:var(--text-muted);margin-bottom:4px">Q1 Revenue</div>
+          <div style="font-size:0.8125rem;color:var(--cngx-color-text-muted);margin-bottom:4px">Q1 Revenue</div>
           <cngx-bullet
             [actual]="78"
             [target]="80"
@@ -39,7 +39,7 @@ import { createManualState } from '@cngx/common/data';
           />
         </div>
         <div>
-          <div style="font-size:0.8125rem;color:var(--text-muted);margin-bottom:4px">Q2 Revenue</div>
+          <div style="font-size:0.8125rem;color:var(--cngx-color-text-muted);margin-bottom:4px">Q2 Revenue</div>
           <cngx-bullet
             [actual]="92"
             [target]="80"
@@ -53,7 +53,7 @@ import { createManualState } from '@cngx/common/data';
           />
         </div>
         <div>
-          <div style="font-size:0.8125rem;color:var(--text-muted);margin-bottom:4px">Q3 Revenue</div>
+          <div style="font-size:0.8125rem;color:var(--cngx-color-text-muted);margin-bottom:4px">Q3 Revenue</div>
           <cngx-bullet
             [actual]="35"
             [target]="80"
@@ -88,7 +88,7 @@ export class BulletPerformanceVsTarget {
 import { createManualState } from '@cngx/common/data';`;
   protected readonly _exHtml: string = `<div style="display:flex;flex-direction:column;gap:16px;max-width:400px">
   <div>
-    <div style="font-size:0.8125rem;color:var(--text-muted);margin-bottom:4px">Q1 Revenue</div>
+    <div style="font-size:0.8125rem;color:var(--cngx-color-text-muted);margin-bottom:4px">Q1 Revenue</div>
     <cngx-bullet
       [actual]="78"
       [target]="80"
@@ -102,7 +102,7 @@ import { createManualState } from '@cngx/common/data';`;
     />
   </div>
   <div>
-    <div style="font-size:0.8125rem;color:var(--text-muted);margin-bottom:4px">Q2 Revenue</div>
+    <div style="font-size:0.8125rem;color:var(--cngx-color-text-muted);margin-bottom:4px">Q2 Revenue</div>
     <cngx-bullet
       [actual]="92"
       [target]="80"
@@ -116,7 +116,7 @@ import { createManualState } from '@cngx/common/data';`;
     />
   </div>
   <div>
-    <div style="font-size:0.8125rem;color:var(--text-muted);margin-bottom:4px">Q3 Revenue</div>
+    <div style="font-size:0.8125rem;color:var(--cngx-color-text-muted);margin-bottom:4px">Q3 Revenue</div>
     <cngx-bullet
       [actual]="35"
       [target]="80"

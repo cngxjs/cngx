@@ -25,7 +25,7 @@ import { of, switchMap, throwError, timer } from 'rxjs';
     </header>
     <div class="button-row">
         <button [cngxAsyncClick]="retryAction" #btn="cngxAsyncClick" class="chip"
-                [style.background]="btn.succeeded() ? 'var(--success-bg, #e8f5e9)' : btn.failed() ? '#ffebee' : ''">
+                [style.background]="btn.succeeded() ? 'var(--cngx-color-success)' : btn.failed() ? '#ffebee' : ''">
           @if (btn.pending()) {
             Attempt {{ retryState.attempt() }}/{{ retryState.maxAttempts() }}...
           } @else if (btn.succeeded()) {
@@ -82,7 +82,7 @@ protected readonly retryAction = this.retryResult[0];
 protected readonly retryState = this.retryResult[1];`;
   protected readonly _exHtml: string = `<div class="button-row">
   <button [cngxAsyncClick]="retryAction" #btn="cngxAsyncClick" class="chip"
-          [style.background]="btn.succeeded() ? 'var(--success-bg, #e8f5e9)' : btn.failed() ? '#ffebee' : ''">
+          [style.background]="btn.succeeded() ? 'var(--cngx-color-success)' : btn.failed() ? '#ffebee' : ''">
     @if (btn.pending()) {
       Attempt {{ retryState.attempt() }}/{{ retryState.maxAttempts() }}...
     } @else if (btn.succeeded()) {

@@ -25,11 +25,11 @@ import { createManualState } from '@cngx/common/data';
     </header>
     <div style="display:flex;gap:24px;align-items:center;flex-wrap:wrap">
         <div>
-          <span style="font-size:0.75rem;color:var(--text-muted);margin-right:8px">Sessions</span>
+          <span style="font-size:0.75rem;color:var(--cngx-color-text-muted);margin-right:8px">Sessions</span>
           <cngx-mini-area [data]="[5, 12, 8, 18, 14, 22, 19]" />
         </div>
         <div>
-          <span style="font-size:0.75rem;color:var(--text-muted);margin-right:8px">Revenue</span>
+          <span style="font-size:0.75rem;color:var(--cngx-color-text-muted);margin-right:8px">Revenue</span>
           <cngx-mini-area
             [data]="[10, 14, 18, 16, 22, 28, 32]"
             [width]="120"
@@ -58,11 +58,11 @@ export class MiniAreaInlineAreaTrends {
 import { createManualState } from '@cngx/common/data';`;
   protected readonly _exHtml: string = `<div style="display:flex;gap:24px;align-items:center;flex-wrap:wrap">
   <div>
-    <span style="font-size:0.75rem;color:var(--text-muted);margin-right:8px">Sessions</span>
+    <span style="font-size:0.75rem;color:var(--cngx-color-text-muted);margin-right:8px">Sessions</span>
     <cngx-mini-area [data]="[5, 12, 8, 18, 14, 22, 19]" />
   </div>
   <div>
-    <span style="font-size:0.75rem;color:var(--text-muted);margin-right:8px">Revenue</span>
+    <span style="font-size:0.75rem;color:var(--cngx-color-text-muted);margin-right:8px">Revenue</span>
     <cngx-mini-area
       [data]="[10, 14, 18, 16, 22, 28, 32]"
       [width]="120"

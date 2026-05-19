@@ -36,7 +36,7 @@ import { CngxInfiniteScroll } from '@cngx/common/layout';
           </div>
         }
         <div cngxInfiniteScroll [enabled]="hasMore()" [loading]="loading()" [root]="'.scroll-root'" (loadMore)="loadMore()"
-          style="padding:16px;text-align:center;color:var(--text-muted,#999)">
+          style="padding:16px;text-align:center;color:var(--cngx-color-text-muted)">
           @if (loading()) {
             Loading more...
           } @else if (!hasMore()) {
@@ -89,7 +89,7 @@ protected loadMore(): void {
     </div>
   }
   <div cngxInfiniteScroll [enabled]="hasMore()" [loading]="loading()" [root]="'.scroll-root'" (loadMore)="loadMore()"
-    style="padding:16px;text-align:center;color:var(--text-muted,#999)">
+    style="padding:16px;text-align:center;color:var(--cngx-color-text-muted)">
     @if (loading()) {
       Loading more...
     } @else if (!hasMore()) {

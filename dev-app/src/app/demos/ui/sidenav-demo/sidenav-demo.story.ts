@@ -54,13 +54,13 @@ export const STORY: DemoSpec = {
     </button>
   </div>
 
-  <cngx-sidenav-layout style="height: 420px; border: 1px solid var(--border-color, #e0e0e0); border-radius: 6px; margin-top: 0.75rem; --cngx-nav-link-radius: 0; --cngx-nav-link-active-bg: transparent; --cngx-nav-link-active-color: inherit; --cngx-nav-link-active-font-weight: inherit;">
+  <cngx-sidenav-layout style="height: 420px; border: 1px solid var(--cngx-color-border); border-radius: 6px; margin-top: 0.75rem; --cngx-nav-link-radius: 0; --cngx-nav-link-active-bg: transparent; --cngx-nav-link-active-color: inherit; --cngx-nav-link-active-font-weight: inherit;">
     <cngx-sidenav position="start" [(opened)]="navOpen" [mode]="navMode()" width="240px" [resizable]="true" shortcut="mod+b">
       <cngx-sidenav-header style="padding: 1rem; font-weight: 700; font-size: 1rem;">
         Workspace
       </cngx-sidenav-header>
 
-      <span cngxNavLabel style="display: block; padding: 0.75rem 1rem 0.25rem; font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted, #888);">
+      <span cngxNavLabel style="display: block; padding: 0.75rem 1rem 0.25rem; font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--cngx-color-text-muted);">
         Main
       </span>
 
@@ -94,11 +94,11 @@ export const STORY: DemoSpec = {
          [style.font-weight]="activeLink() === '/calendar' ? '600' : '400'">
         Calendar
         <span cngxNavBadge variant="dot" [value]="1"
-              style="width: 7px; height: 7px; border-radius: 50%; background: var(--success-bg, #22c55e); flex-shrink: 0;">
+              style="width: 7px; height: 7px; border-radius: 50%; background: var(--cngx-color-success); flex-shrink: 0;">
         </span>
       </a>
 
-      <span cngxNavLabel style="display: block; padding: 0.75rem 1rem 0.25rem; font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted, #888);">
+      <span cngxNavLabel style="display: block; padding: 0.75rem 1rem 0.25rem; font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--cngx-color-text-muted);">
         Manage
       </span>
 
@@ -139,14 +139,14 @@ export const STORY: DemoSpec = {
         </div>
       </div>
 
-      <cngx-sidenav-footer style="padding: 0.75rem 1rem; font-size: 0.7rem; color: var(--text-muted, #888);">
+      <cngx-sidenav-footer style="padding: 0.75rem 1rem; font-size: 0.7rem; color: var(--cngx-color-text-muted);">
         Workspace v2.1
       </cngx-sidenav-footer>
     </cngx-sidenav>
 
     <cngx-sidenav-content style="padding: 1.25rem;">
       <h3 style="margin: 0 0 0.5rem; font-size: 1.1rem;">{{ activeLink().substring(1) || 'Dashboard' }}</h3>
-      <p style="color: var(--text-muted, #888); font-size: 0.85rem; margin: 0;">
+      <p style="color: var(--cngx-color-text-muted); font-size: 0.85rem; margin: 0;">
         Mode: <strong>{{ navMode() }}</strong> &mdash;
         Click nav items to change the active state.
         Groups expand with <code>CngxNavGroup</code> + <code>CngxDisclosure</code>.
@@ -171,7 +171,7 @@ export const STORY: DemoSpec = {
     </button>
   </div>
 
-  <cngx-sidenav-layout style="height: 320px; border: 1px solid var(--border-color, #e0e0e0); border-radius: 6px; margin-top: 0.75rem;">
+  <cngx-sidenav-layout style="height: 320px; border: 1px solid var(--cngx-color-border); border-radius: 6px; margin-top: 0.75rem;">
     <cngx-sidenav position="start" [(opened)]="leftOpen" mode="push" width="160px">
       @for (item of ['Orders', 'Products', 'Customers', 'Reports']; track item) {
         <a cngxNavLink style="display: block; padding: 0.5rem 1rem; text-decoration: none; font-size: 0.85rem; color: inherit;">
@@ -183,7 +183,7 @@ export const STORY: DemoSpec = {
     <cngx-sidenav-content style="padding: 1rem;">
       <h3 style="margin: 0 0 0.75rem; font-size: 1rem;">Orders</h3>
       @for (item of items; track item) {
-        <div (click)="selectItem(item)" style="padding: 0.5rem 0.75rem; margin-bottom: 0.5rem; border: 1px solid var(--border-color, #e0e0e0); border-radius: 4px; cursor: pointer; font-size: 0.85rem; transition: background 0.15s;"
+        <div (click)="selectItem(item)" style="padding: 0.5rem 0.75rem; margin-bottom: 0.5rem; border: 1px solid var(--cngx-color-border); border-radius: 4px; cursor: pointer; font-size: 0.85rem; transition: background 0.15s;"
              [style.background]="selectedItem() === item ? 'rgba(245, 166, 35, 0.08)' : ''"
              [style.border-color]="selectedItem() === item ? '#f5a623' : ''">
           {{ item }}
@@ -195,14 +195,14 @@ export const STORY: DemoSpec = {
       <div style="padding: 1.25rem;">
         @if (selectedItem()) {
           <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">{{ selectedItem() }}</h3>
-          <p style="font-size: 0.85rem; color: var(--text-muted, #888); margin: 0 0 0.75rem;">
+          <p style="font-size: 0.85rem; color: var(--cngx-color-text-muted); margin: 0 0 0.75rem;">
             Detail view for the selected order. Status, items, shipping info would go here.
           </p>
           <div style="display: flex; gap: 0.5rem;">
             <button class="sort-btn" (click)="rightOpen.set(false)">Close</button>
           </div>
         } @else {
-          <p style="color: var(--text-muted, #888); font-size: 0.85rem;">Select an order to view details.</p>
+          <p style="color: var(--cngx-color-text-muted); font-size: 0.85rem;">Select an order to view details.</p>
         }
       </div>
     </cngx-sidenav>
@@ -227,7 +227,7 @@ export const STORY: DemoSpec = {
   <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
     <!-- Light theme (M3 light via sidenav-theme.scss) -->
     <div>
-      <div style="font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted, #888); margin-bottom: 0.5rem;">Light (M3)</div>
+      <div style="font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--cngx-color-text-muted); margin-bottom: 0.5rem;">Light (M3)</div>
       <cngx-sidenav-layout style="height: 300px; border-radius: 6px; overflow: hidden;">
         <cngx-sidenav position="start" [opened]="true" mode="side" width="170px">
           <cngx-sidenav-header>Workspace</cngx-sidenav-header>
@@ -245,8 +245,8 @@ export const STORY: DemoSpec = {
     </div>
 
     <!-- Dark theme (M3 dark via data-theme="dark") -->
-    <div data-theme="dark" style="background: var(--bg, #121212); color: var(--text-primary, #e0e0e0); border-radius: 6px;">
-      <div style="font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted, #888); margin-bottom: 0.5rem; padding: 0.5rem 0.5rem 0;">Dark (M3)</div>
+    <div data-theme="dark" style="background: var(--cngx-color-surface); color: var(--cngx-color-text); border-radius: 6px;">
+      <div style="font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--cngx-color-text-muted); margin-bottom: 0.5rem; padding: 0.5rem 0.5rem 0;">Dark (M3)</div>
       <cngx-sidenav-layout style="height: 300px; border-radius: 6px; overflow: hidden;">
         <cngx-sidenav position="start" [opened]="true" mode="side" width="170px">
           <cngx-sidenav-header>Workspace</cngx-sidenav-header>

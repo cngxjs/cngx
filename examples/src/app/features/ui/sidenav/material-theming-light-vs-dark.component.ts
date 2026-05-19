@@ -26,7 +26,7 @@ import { CngxNavLink, CngxNavLabel } from '@cngx/common';
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
         <!-- Light theme (M3 light via sidenav-theme.scss) -->
         <div>
-          <div style="font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted, #888); margin-bottom: 0.5rem;">Light (M3)</div>
+          <div style="font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--cngx-color-text-muted); margin-bottom: 0.5rem;">Light (M3)</div>
           <cngx-sidenav-layout style="height: 300px; border-radius: 6px; overflow: hidden;">
             <cngx-sidenav position="start" [opened]="true" mode="side" width="170px">
               <cngx-sidenav-header>Workspace</cngx-sidenav-header>
@@ -44,8 +44,8 @@ import { CngxNavLink, CngxNavLabel } from '@cngx/common';
         </div>
 
         <!-- Dark theme (M3 dark via data-theme="dark") -->
-        <div data-theme="dark" style="background: var(--bg, #121212); color: var(--text-primary, #e0e0e0); border-radius: 6px;">
-          <div style="font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted, #888); margin-bottom: 0.5rem; padding: 0.5rem 0.5rem 0;">Dark (M3)</div>
+        <div data-theme="dark" style="background: var(--cngx-color-surface); color: var(--cngx-color-text); border-radius: 6px;">
+          <div style="font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--cngx-color-text-muted); margin-bottom: 0.5rem; padding: 0.5rem 0.5rem 0;">Dark (M3)</div>
           <cngx-sidenav-layout style="height: 300px; border-radius: 6px; overflow: hidden;">
             <cngx-sidenav position="start" [opened]="true" mode="side" width="170px">
               <cngx-sidenav-header>Workspace</cngx-sidenav-header>
@@ -99,7 +99,7 @@ import { CngxNavLink, CngxNavLabel } from '@cngx/common';`;
   protected readonly _exHtml: string = `  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
     <!-- Light theme (M3 light via sidenav-theme.scss) -->
     <div>
-      <div style="font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted, #888); margin-bottom: 0.5rem;">Light (M3)</div>
+      <div style="font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--cngx-color-text-muted); margin-bottom: 0.5rem;">Light (M3)</div>
       <cngx-sidenav-layout style="height: 300px; border-radius: 6px; overflow: hidden;">
         <cngx-sidenav position="start" [opened]="true" mode="side" width="170px">
           <cngx-sidenav-header>Workspace</cngx-sidenav-header>
@@ -117,8 +117,8 @@ import { CngxNavLink, CngxNavLabel } from '@cngx/common';`;
     </div>
 
     <!-- Dark theme (M3 dark via data-theme="dark") -->
-    <div data-theme="dark" style="background: var(--bg, #121212); color: var(--text-primary, #e0e0e0); border-radius: 6px;">
-      <div style="font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted, #888); margin-bottom: 0.5rem; padding: 0.5rem 0.5rem 0;">Dark (M3)</div>
+    <div data-theme="dark" style="background: var(--cngx-color-surface); color: var(--cngx-color-text); border-radius: 6px;">
+      <div style="font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--cngx-color-text-muted); margin-bottom: 0.5rem; padding: 0.5rem 0.5rem 0;">Dark (M3)</div>
       <cngx-sidenav-layout style="height: 300px; border-radius: 6px; overflow: hidden;">
         <cngx-sidenav position="start" [opened]="true" mode="side" width="170px">
           <cngx-sidenav-header>Workspace</cngx-sidenav-header>

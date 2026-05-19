@@ -30,7 +30,7 @@ import { createManualState } from '@cngx/common/data';
         <button class="chip" (click)="showError()">error</button>
       </div>
       <div style="display:flex;align-items:center;gap:24px">
-        <span style="font-size:0.75rem;color:var(--text-muted);min-width:80px">status: {{ state.status() }}</span>
+        <span style="font-size:0.75rem;color:var(--cngx-color-text-muted);min-width:80px">status: {{ state.status() }}</span>
         <cngx-donut [value]="72" [max]="100" [size]="80" [thickness]="10" [label]="'72%'" [state]="state" aria-label="Demo score" />
       </div>
     <details class="cngx-ex-code">
@@ -64,7 +64,7 @@ protected showError(): void { this.state.reset(); this.state.setError(new Error(
   <button class="chip" (click)="showError()">error</button>
 </div>
 <div style="display:flex;align-items:center;gap:24px">
-  <span style="font-size:0.75rem;color:var(--text-muted);min-width:80px">status: {{ state.status() }}</span>
+  <span style="font-size:0.75rem;color:var(--cngx-color-text-muted);min-width:80px">status: {{ state.status() }}</span>
   <cngx-donut [value]="72" [max]="100" [size]="80" [thickness]="10" [label]="'72%'" [state]="state" aria-label="Demo score" />
 </div>`;
   protected readonly state = createManualState<number>();

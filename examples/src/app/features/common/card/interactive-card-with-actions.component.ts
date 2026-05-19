@@ -28,7 +28,7 @@ import { CngxCard, CngxCardHeader, CngxCardBody, CngxCardActions } from '@cngx/c
             <h3 style="margin:0;font-weight:600;font-size:1rem">Pflegeplan</h3>
           </header>
           <div cngxCardBody>
-            <p style="margin:0;color:var(--text-muted)">Next evaluation: 18.07.2025</p>
+            <p style="margin:0;color:var(--cngx-color-text-muted)">Next evaluation: 18.07.2025</p>
           </div>
           <div cngxCardActions align="end">
             <button class="chip">Edit</button>
@@ -59,7 +59,7 @@ export class CardInteractiveCardWithActions {
       <h3 style="margin:0;font-weight:600;font-size:1rem">Pflegeplan</h3>
     </header>
     <div cngxCardBody>
-      <p style="margin:0;color:var(--text-muted)">Next evaluation: 18.07.2025</p>
+      <p style="margin:0;color:var(--cngx-color-text-muted)">Next evaluation: 18.07.2025</p>
     </div>
     <div cngxCardActions align="end">
       <button class="chip">Edit</button>

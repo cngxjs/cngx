@@ -28,7 +28,7 @@ import { CngxDialog, CngxDialogTitle, CngxDialogDescription, CngxDialogClose } f
       <dialog cngxDialog #outerDlg="cngxDialog">
         <h2 cngxDialogTitle>Settings</h2>
         <p cngxDialogDescription>Manage your preferences.</p>
-        <div style="margin: 16px 0; padding: 12px; border: 1px solid var(--border-color, #eee); border-radius: 4px;">
+        <div style="margin: 16px 0; padding: 12px; border: 1px solid var(--cngx-color-border); border-radius: 4px;">
           <p style="margin: 0 0 8px;">Danger zone: reset all settings to defaults.</p>
           <button class="chip" style="color: #c62828; border-color: #c62828;" (click)="confirmReset.open()">
             Reset All
@@ -78,7 +78,7 @@ export class DialogNestedDialogsCngxdialogstack {
 <dialog cngxDialog #outerDlg="cngxDialog">
   <h2 cngxDialogTitle>Settings</h2>
   <p cngxDialogDescription>Manage your preferences.</p>
-  <div style="margin: 16px 0; padding: 12px; border: 1px solid var(--border-color, #eee); border-radius: 4px;">
+  <div style="margin: 16px 0; padding: 12px; border: 1px solid var(--cngx-color-border); border-radius: 4px;">
     <p style="margin: 0 0 8px;">Danger zone: reset all settings to defaults.</p>
     <button class="chip" style="color: #c62828; border-color: #c62828;" (click)="confirmReset.open()">
       Reset All

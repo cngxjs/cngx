@@ -29,10 +29,10 @@ import { CngxCard, CngxCardHeader, CngxCardTitle, CngxCardSubtitle, CngxCardBody
             <span cngxCardSubtitle>Maria Muster, Room 12</span>
           </header>
           <div cngxCardBody>
-            <p style="margin:0;color:var(--text-muted)">Status: Active. Last vitals normal.</p>
+            <p style="margin:0;color:var(--cngx-color-text-muted)">Status: Active. Last vitals normal.</p>
           </div>
           <footer cngxCardFooter>
-            <small style="color:var(--text-muted)">Last updated: today</small>
+            <small style="color:var(--cngx-color-text-muted)">Last updated: today</small>
           </footer>
         </cngx-card>
       </div>
@@ -60,10 +60,10 @@ export class CardTitleSubtitleFooter {
       <span cngxCardSubtitle>Maria Muster, Room 12</span>
     </header>
     <div cngxCardBody>
-      <p style="margin:0;color:var(--text-muted)">Status: Active. Last vitals normal.</p>
+      <p style="margin:0;color:var(--cngx-color-text-muted)">Status: Active. Last vitals normal.</p>
     </div>
     <footer cngxCardFooter>
-      <small style="color:var(--text-muted)">Last updated: today</small>
+      <small style="color:var(--cngx-color-text-muted)">Last updated: today</small>
     </footer>
   </cngx-card>
 </div>`;

@@ -22,7 +22,7 @@ import { CngxEmptyState } from '@cngx/ui/empty-state';
       @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
       @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
     </header>
-    <div style="border:1px solid var(--border-color,#e0e0e0);border-radius:8px;min-height:120px;display:flex;align-items:center;justify-content:center">
+    <div style="border:1px solid var(--cngx-color-border);border-radius:8px;min-height:120px;display:flex;align-items:center;justify-content:center">
         @if (listItems().length === 0) {
           <cngx-empty-state
             title="All tasks completed"
@@ -54,7 +54,7 @@ export class EmptyStateInsideAList {
   protected readonly _exTs: string = `import { CngxEmptyState } from '@cngx/ui/empty-state';
 
 protected listItems = signal<string[]>([]);`;
-  protected readonly _exHtml: string = `<div style="border:1px solid var(--border-color,#e0e0e0);border-radius:8px;min-height:120px;display:flex;align-items:center;justify-content:center">
+  protected readonly _exHtml: string = `<div style="border:1px solid var(--cngx-color-border);border-radius:8px;min-height:120px;display:flex;align-items:center;justify-content:center">
   @if (listItems().length === 0) {
     <cngx-empty-state
       title="All tasks completed"

@@ -30,7 +30,7 @@ import { CngxCard, CngxCardHeader, CngxCardBody } from '@cngx/common/card';
             <h3 style="margin:0;font-weight:600;font-size:1rem">Edit Resident</h3>
           </header>
           <div cngxCardBody>
-            <p style="margin:0;color:var(--text-muted)">This card is disabled with a reason</p>
+            <p style="margin:0;color:var(--cngx-color-text-muted)">This card is disabled with a reason</p>
           </div>
         </cngx-card>
       </div>
@@ -59,7 +59,7 @@ export class CardDisabledWithReason {
       <h3 style="margin:0;font-weight:600;font-size:1rem">Edit Resident</h3>
     </header>
     <div cngxCardBody>
-      <p style="margin:0;color:var(--text-muted)">This card is disabled with a reason</p>
+      <p style="margin:0;color:var(--cngx-color-text-muted)">This card is disabled with a reason</p>
     </div>
   </cngx-card>
 </div>`;

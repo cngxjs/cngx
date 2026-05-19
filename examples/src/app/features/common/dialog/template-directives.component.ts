@@ -38,12 +38,12 @@ import { JsonPipe } from '@angular/common';
           <label>
             Name
             <input [(ngModel)]="formData.name" name="name"
-              style="display: block; width: 100%; margin-top: 4px; padding: 6px 8px; border: 1px solid var(--border-color, #ddd); border-radius: 4px;" />
+              style="display: block; width: 100%; margin-top: 4px; padding: 6px 8px; border: 1px solid var(--cngx-color-border); border-radius: 4px;" />
           </label>
           <label>
             Email
             <input [(ngModel)]="formData.email" name="email" type="email"
-              style="display: block; width: 100%; margin-top: 4px; padding: 6px 8px; border: 1px solid var(--border-color, #ddd); border-radius: 4px;" />
+              style="display: block; width: 100%; margin-top: 4px; padding: 6px 8px; border: 1px solid var(--cngx-color-border); border-radius: 4px;" />
           </label>
           <div class="button-row" style="justify-content: flex-end;">
             <!-- cngxDialogClose without value: calls dismiss() -->
@@ -93,12 +93,12 @@ protected readonly formData = { name: '', email: '' };`;
     <label>
       Name
       <input [(ngModel)]="formData.name" name="name"
-        style="display: block; width: 100%; margin-top: 4px; padding: 6px 8px; border: 1px solid var(--border-color, #ddd); border-radius: 4px;" />
+        style="display: block; width: 100%; margin-top: 4px; padding: 6px 8px; border: 1px solid var(--cngx-color-border); border-radius: 4px;" />
     </label>
     <label>
       Email
       <input [(ngModel)]="formData.email" name="email" type="email"
-        style="display: block; width: 100%; margin-top: 4px; padding: 6px 8px; border: 1px solid var(--border-color, #ddd); border-radius: 4px;" />
+        style="display: block; width: 100%; margin-top: 4px; padding: 6px 8px; border: 1px solid var(--cngx-color-border); border-radius: 4px;" />
     </label>
     <div class="button-row" style="justify-content: flex-end;">
       <!-- cngxDialogClose without value: calls dismiss() -->

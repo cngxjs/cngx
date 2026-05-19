@@ -26,7 +26,7 @@ import { CngxBackdrop } from '@cngx/common';
         <button class="sort-btn" (click)="showBackdrop.set(true)">Show backdrop</button>
       </div>
 
-      <div style="position: relative; min-height: 200px; border: 1px solid var(--border-color, #e0e0e0); border-radius: 6px; overflow: hidden; margin-top: 0.75rem;">
+      <div style="position: relative; min-height: 200px; border: 1px solid var(--cngx-color-border); border-radius: 6px; overflow: hidden; margin-top: 0.75rem;">
         <div [cngxBackdrop]="showBackdrop()" (backdropClick)="showBackdrop.set(false); clickCount.update(n => n + 1)"
              class="cngx-backdrop" style="position: absolute;"></div>
 
@@ -68,7 +68,7 @@ protected readonly clickCount = signal(0);`;
   <button class="sort-btn" (click)="showBackdrop.set(true)">Show backdrop</button>
 </div>
 
-<div style="position: relative; min-height: 200px; border: 1px solid var(--border-color, #e0e0e0); border-radius: 6px; overflow: hidden; margin-top: 0.75rem;">
+<div style="position: relative; min-height: 200px; border: 1px solid var(--cngx-color-border); border-radius: 6px; overflow: hidden; margin-top: 0.75rem;">
   <div [cngxBackdrop]="showBackdrop()" (backdropClick)="showBackdrop.set(false); clickCount.update(n => n + 1)"
        class="cngx-backdrop" style="position: absolute;"></div>
 

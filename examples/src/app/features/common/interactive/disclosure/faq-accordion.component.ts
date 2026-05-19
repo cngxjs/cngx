@@ -23,13 +23,13 @@ import { CngxDisclosure } from '@cngx/common';
       @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
     </header>
     @for (q of ['What is cngx?', 'Is it free?', 'How do I install it?']; track q; let i = $index) {
-        <div style="border-bottom: 1px solid var(--border-color, #e0e0e0);">
+        <div style="border-bottom: 1px solid var(--cngx-color-border);">
           <button cngxDisclosure #faq="cngxDisclosure" [controls]="'faq-' + i"
-                  style="width: 100%; text-align: left; padding: 0.75rem 0; font-weight: 600; font-size: 0.875rem; background: none; border: none; cursor: pointer; color: var(--text-primary, #333);">
+                  style="width: 100%; text-align: left; padding: 0.75rem 0; font-weight: 600; font-size: 0.875rem; background: none; border: none; cursor: pointer; color: var(--cngx-color-text);">
             {{ faq.opened() ? '−' : '+' }} {{ q }}
           </button>
           @if (faq.opened()) {
-            <div [id]="'faq-' + i" style="padding: 0 0 0.75rem; font-size: 0.875rem; color: var(--text-muted, #666);">
+            <div [id]="'faq-' + i" style="padding: 0 0 0.75rem; font-size: 0.875rem; color: var(--cngx-color-text-muted);">
               Answer to "{{ q }}" goes here.
             </div>
           }
@@ -53,13 +53,13 @@ export class DisclosureFaqAccordion {
   protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxDisclosure } from '@cngx/common';`;
   protected readonly _exHtml: string = `@for (q of ['What is cngx?', 'Is it free?', 'How do I install it?']; track q; let i = $index) {
-  <div style="border-bottom: 1px solid var(--border-color, #e0e0e0);">
+  <div style="border-bottom: 1px solid var(--cngx-color-border);">
     <button cngxDisclosure #faq="cngxDisclosure" [controls]="'faq-' + i"
-            style="width: 100%; text-align: left; padding: 0.75rem 0; font-weight: 600; font-size: 0.875rem; background: none; border: none; cursor: pointer; color: var(--text-primary, #333);">
+            style="width: 100%; text-align: left; padding: 0.75rem 0; font-weight: 600; font-size: 0.875rem; background: none; border: none; cursor: pointer; color: var(--cngx-color-text);">
       {{ faq.opened() ? '−' : '+' }} {{ q }}
     </button>
     @if (faq.opened()) {
-      <div [id]="'faq-' + i" style="padding: 0 0 0.75rem; font-size: 0.875rem; color: var(--text-muted, #666);">
+      <div [id]="'faq-' + i" style="padding: 0 0 0.75rem; font-size: 0.875rem; color: var(--cngx-color-text-muted);">
         Answer to "{{ q }}" goes here.
       </div>
     }

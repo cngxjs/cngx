@@ -32,7 +32,7 @@ import { CngxNavLink } from '@cngx/common';
         </button>
       </div>
 
-      <cngx-sidenav-layout style="height: 320px; border: 1px solid var(--border-color, #e0e0e0); border-radius: 6px; margin-top: 0.75rem;">
+      <cngx-sidenav-layout style="height: 320px; border: 1px solid var(--cngx-color-border); border-radius: 6px; margin-top: 0.75rem;">
         <cngx-sidenav position="start" [(opened)]="leftOpen" mode="push" width="160px">
           @for (item of ['Orders', 'Products', 'Customers', 'Reports']; track item) {
             <a cngxNavLink style="display: block; padding: 0.5rem 1rem; text-decoration: none; font-size: 0.85rem; color: inherit;">
@@ -44,7 +44,7 @@ import { CngxNavLink } from '@cngx/common';
         <cngx-sidenav-content style="padding: 1rem;">
           <h3 style="margin: 0 0 0.75rem; font-size: 1rem;">Orders</h3>
           @for (item of items; track item) {
-            <div (click)="selectItem(item)" style="padding: 0.5rem 0.75rem; margin-bottom: 0.5rem; border: 1px solid var(--border-color, #e0e0e0); border-radius: 4px; cursor: pointer; font-size: 0.85rem; transition: background 0.15s;"
+            <div (click)="selectItem(item)" style="padding: 0.5rem 0.75rem; margin-bottom: 0.5rem; border: 1px solid var(--cngx-color-border); border-radius: 4px; cursor: pointer; font-size: 0.85rem; transition: background 0.15s;"
                  [style.background]="selectedItem() === item ? 'rgba(245, 166, 35, 0.08)' : ''"
                  [style.border-color]="selectedItem() === item ? '#f5a623' : ''">
               {{ item }}
@@ -56,14 +56,14 @@ import { CngxNavLink } from '@cngx/common';
           <div style="padding: 1.25rem;">
             @if (selectedItem()) {
               <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">{{ selectedItem() }}</h3>
-              <p style="font-size: 0.85rem; color: var(--text-muted, #888); margin: 0 0 0.75rem;">
+              <p style="font-size: 0.85rem; color: var(--cngx-color-text-muted); margin: 0 0 0.75rem;">
                 Detail view for the selected order. Status, items, shipping info would go here.
               </p>
               <div style="display: flex; gap: 0.5rem;">
                 <button class="sort-btn" (click)="rightOpen.set(false)">Close</button>
               </div>
             } @else {
-              <p style="color: var(--text-muted, #888); font-size: 0.85rem;">Select an order to view details.</p>
+              <p style="color: var(--cngx-color-text-muted); font-size: 0.85rem;">Select an order to view details.</p>
             }
           </div>
         </cngx-sidenav>
@@ -103,7 +103,7 @@ import { CngxNavLink } from '@cngx/common';`;
   </button>
 </div>
 
-<cngx-sidenav-layout style="height: 320px; border: 1px solid var(--border-color, #e0e0e0); border-radius: 6px; margin-top: 0.75rem;">
+<cngx-sidenav-layout style="height: 320px; border: 1px solid var(--cngx-color-border); border-radius: 6px; margin-top: 0.75rem;">
   <cngx-sidenav position="start" [(opened)]="leftOpen" mode="push" width="160px">
     @for (item of ['Orders', 'Products', 'Customers', 'Reports']; track item) {
       <a cngxNavLink style="display: block; padding: 0.5rem 1rem; text-decoration: none; font-size: 0.85rem; color: inherit;">
@@ -115,7 +115,7 @@ import { CngxNavLink } from '@cngx/common';`;
   <cngx-sidenav-content style="padding: 1rem;">
     <h3 style="margin: 0 0 0.75rem; font-size: 1rem;">Orders</h3>
     @for (item of items; track item) {
-      <div (click)="selectItem(item)" style="padding: 0.5rem 0.75rem; margin-bottom: 0.5rem; border: 1px solid var(--border-color, #e0e0e0); border-radius: 4px; cursor: pointer; font-size: 0.85rem; transition: background 0.15s;"
+      <div (click)="selectItem(item)" style="padding: 0.5rem 0.75rem; margin-bottom: 0.5rem; border: 1px solid var(--cngx-color-border); border-radius: 4px; cursor: pointer; font-size: 0.85rem; transition: background 0.15s;"
            [style.background]="selectedItem() === item ? 'rgba(245, 166, 35, 0.08)' : ''"
            [style.border-color]="selectedItem() === item ? '#f5a623' : ''">
         {{ item }}
@@ -127,14 +127,14 @@ import { CngxNavLink } from '@cngx/common';`;
     <div style="padding: 1.25rem;">
       @if (selectedItem()) {
         <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">{{ selectedItem() }}</h3>
-        <p style="font-size: 0.85rem; color: var(--text-muted, #888); margin: 0 0 0.75rem;">
+        <p style="font-size: 0.85rem; color: var(--cngx-color-text-muted); margin: 0 0 0.75rem;">
           Detail view for the selected order. Status, items, shipping info would go here.
         </p>
         <div style="display: flex; gap: 0.5rem;">
           <button class="sort-btn" (click)="rightOpen.set(false)">Close</button>
         </div>
       } @else {
-        <p style="color: var(--text-muted, #888); font-size: 0.85rem;">Select an order to view details.</p>
+        <p style="color: var(--cngx-color-text-muted); font-size: 0.85rem;">Select an order to view details.</p>
       }
     </div>
   </cngx-sidenav>

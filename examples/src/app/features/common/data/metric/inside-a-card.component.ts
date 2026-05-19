@@ -26,7 +26,7 @@ import { CngxCard, CngxCardHeader, CngxCardBody } from '@cngx/common/card';
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;max-width:600px">
         <cngx-card>
           <header cngxCardHeader>
-            <span style="font-size:0.8125rem;color:var(--text-muted)">Heart Rate</span>
+            <span style="font-size:0.8125rem;color:var(--cngx-color-text-muted)">Heart Rate</span>
           </header>
           <div cngxCardBody>
             <cngx-metric [value]="75" unit="bpm" />
@@ -34,7 +34,7 @@ import { CngxCard, CngxCardHeader, CngxCardBody } from '@cngx/common/card';
         </cngx-card>
         <cngx-card>
           <header cngxCardHeader>
-            <span style="font-size:0.8125rem;color:var(--text-muted)">SpO2</span>
+            <span style="font-size:0.8125rem;color:var(--cngx-color-text-muted)">SpO2</span>
           </header>
           <div cngxCardBody>
             <cngx-metric [value]="96" unit="%" />
@@ -42,7 +42,7 @@ import { CngxCard, CngxCardHeader, CngxCardBody } from '@cngx/common/card';
         </cngx-card>
         <cngx-card>
           <header cngxCardHeader>
-            <span style="font-size:0.8125rem;color:var(--text-muted)">BMI</span>
+            <span style="font-size:0.8125rem;color:var(--cngx-color-text-muted)">BMI</span>
           </header>
           <div cngxCardBody>
             <cngx-metric value="n.b." />
@@ -70,7 +70,7 @@ import { CngxCard, CngxCardHeader, CngxCardBody } from '@cngx/common/card';`;
   protected readonly _exHtml: string = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;max-width:600px">
   <cngx-card>
     <header cngxCardHeader>
-      <span style="font-size:0.8125rem;color:var(--text-muted)">Heart Rate</span>
+      <span style="font-size:0.8125rem;color:var(--cngx-color-text-muted)">Heart Rate</span>
     </header>
     <div cngxCardBody>
       <cngx-metric [value]="75" unit="bpm" />
@@ -78,7 +78,7 @@ import { CngxCard, CngxCardHeader, CngxCardBody } from '@cngx/common/card';`;
   </cngx-card>
   <cngx-card>
     <header cngxCardHeader>
-      <span style="font-size:0.8125rem;color:var(--text-muted)">SpO2</span>
+      <span style="font-size:0.8125rem;color:var(--cngx-color-text-muted)">SpO2</span>
     </header>
     <div cngxCardBody>
       <cngx-metric [value]="96" unit="%" />
@@ -86,7 +86,7 @@ import { CngxCard, CngxCardHeader, CngxCardBody } from '@cngx/common/card';`;
   </cngx-card>
   <cngx-card>
     <header cngxCardHeader>
-      <span style="font-size:0.8125rem;color:var(--text-muted)">BMI</span>
+      <span style="font-size:0.8125rem;color:var(--cngx-color-text-muted)">BMI</span>
     </header>
     <div cngxCardBody>
       <cngx-metric value="n.b." />

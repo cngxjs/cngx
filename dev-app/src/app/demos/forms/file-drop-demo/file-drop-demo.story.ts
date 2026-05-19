@@ -40,7 +40,7 @@ export const STORY: DemoSpec = {
         <p style="margin:0">Drag images here or
           <button class="chip" (click)="drop.browse()">Browse</button>
         </p>
-        <p style="margin:4px 0 0;font-size:0.75rem;color:var(--text-muted,#666)">Max 5 MB per file</p>
+        <p style="margin:4px 0 0;font-size:0.75rem;color:var(--cngx-color-text-muted)">Max 5 MB per file</p>
       }
     </div>
 

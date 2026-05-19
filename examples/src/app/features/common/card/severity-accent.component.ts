@@ -25,23 +25,23 @@ import { CngxCard, CngxCardHeader, CngxCardTitle, CngxCardBody, CngxCardAccent }
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px">
         <cngx-card cngxCardAccent="danger">
           <header cngxCardHeader><h3 cngxCardTitle>Danger</h3></header>
-          <div cngxCardBody style="font-size:0.875rem;color:var(--text-muted)">Critical alert</div>
+          <div cngxCardBody style="font-size:0.875rem;color:var(--cngx-color-text-muted)">Critical alert</div>
         </cngx-card>
         <cngx-card cngxCardAccent="warning">
           <header cngxCardHeader><h3 cngxCardTitle>Warning</h3></header>
-          <div cngxCardBody style="font-size:0.875rem;color:var(--text-muted)">Needs attention</div>
+          <div cngxCardBody style="font-size:0.875rem;color:var(--cngx-color-text-muted)">Needs attention</div>
         </cngx-card>
         <cngx-card cngxCardAccent="success">
           <header cngxCardHeader><h3 cngxCardTitle>Success</h3></header>
-          <div cngxCardBody style="font-size:0.875rem;color:var(--text-muted)">All clear</div>
+          <div cngxCardBody style="font-size:0.875rem;color:var(--cngx-color-text-muted)">All clear</div>
         </cngx-card>
         <cngx-card cngxCardAccent="info">
           <header cngxCardHeader><h3 cngxCardTitle>Info</h3></header>
-          <div cngxCardBody style="font-size:0.875rem;color:var(--text-muted)">For your information</div>
+          <div cngxCardBody style="font-size:0.875rem;color:var(--cngx-color-text-muted)">For your information</div>
         </cngx-card>
         <cngx-card cngxCardAccent="neutral">
           <header cngxCardHeader><h3 cngxCardTitle>Neutral</h3></header>
-          <div cngxCardBody style="font-size:0.875rem;color:var(--text-muted)">Default state</div>
+          <div cngxCardBody style="font-size:0.875rem;color:var(--cngx-color-text-muted)">Default state</div>
         </cngx-card>
       </div>
     <details class="cngx-ex-code">
@@ -64,23 +64,23 @@ export class CardSeverityAccent {
   protected readonly _exHtml: string = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px">
   <cngx-card cngxCardAccent="danger">
     <header cngxCardHeader><h3 cngxCardTitle>Danger</h3></header>
-    <div cngxCardBody style="font-size:0.875rem;color:var(--text-muted)">Critical alert</div>
+    <div cngxCardBody style="font-size:0.875rem;color:var(--cngx-color-text-muted)">Critical alert</div>
   </cngx-card>
   <cngx-card cngxCardAccent="warning">
     <header cngxCardHeader><h3 cngxCardTitle>Warning</h3></header>
-    <div cngxCardBody style="font-size:0.875rem;color:var(--text-muted)">Needs attention</div>
+    <div cngxCardBody style="font-size:0.875rem;color:var(--cngx-color-text-muted)">Needs attention</div>
   </cngx-card>
   <cngx-card cngxCardAccent="success">
     <header cngxCardHeader><h3 cngxCardTitle>Success</h3></header>
-    <div cngxCardBody style="font-size:0.875rem;color:var(--text-muted)">All clear</div>
+    <div cngxCardBody style="font-size:0.875rem;color:var(--cngx-color-text-muted)">All clear</div>
   </cngx-card>
   <cngx-card cngxCardAccent="info">
     <header cngxCardHeader><h3 cngxCardTitle>Info</h3></header>
-    <div cngxCardBody style="font-size:0.875rem;color:var(--text-muted)">For your information</div>
+    <div cngxCardBody style="font-size:0.875rem;color:var(--cngx-color-text-muted)">For your information</div>
   </cngx-card>
   <cngx-card cngxCardAccent="neutral">
     <header cngxCardHeader><h3 cngxCardTitle>Neutral</h3></header>
-    <div cngxCardBody style="font-size:0.875rem;color:var(--text-muted)">Default state</div>
+    <div cngxCardBody style="font-size:0.875rem;color:var(--cngx-color-text-muted)">Default state</div>
   </cngx-card>
 </div>`;
   protected selected = signal(false);

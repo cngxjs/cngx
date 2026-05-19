@@ -34,7 +34,7 @@ export const STORY: DemoSpec = {
       </span>
     </div>
 
-    <p style="font-size:0.875rem;color:var(--text-muted,#888);margin:0 0 16px">
+    <p style="font-size:0.875rem;color:var(--cngx-color-text-muted);margin:0 0 16px">
       Toggle the lock and try scrolling this page. The body gets <code>overflow: hidden</code>
       while <code>scrollbar-gutter: stable</code> prevents layout shift from the scrollbar disappearing.
       This is ref-counted — nested locks (e.g. stacked dialogs) work correctly.

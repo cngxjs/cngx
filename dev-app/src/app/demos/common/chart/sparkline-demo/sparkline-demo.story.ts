@@ -49,17 +49,17 @@ protected showError(): void {
       template: `
   <div style="display:flex;gap:24px;align-items:center;flex-wrap:wrap">
     <div>
-      <span style="font-size:0.75rem;color:var(--text-muted);margin-right:8px">CPU</span>
+      <span style="font-size:0.75rem;color:var(--cngx-color-text-muted);margin-right:8px">CPU</span>
       <cngx-sparkline [data]="[12, 15, 11, 18, 22, 19, 24]" />
       <span style="margin-left:8px;font-weight:600">24%</span>
     </div>
     <div>
-      <span style="font-size:0.75rem;color:var(--text-muted);margin-right:8px">Memory</span>
+      <span style="font-size:0.75rem;color:var(--cngx-color-text-muted);margin-right:8px">Memory</span>
       <cngx-sparkline [data]="[60, 62, 58, 64, 68, 71, 70]" />
       <span style="margin-left:8px;font-weight:600">70%</span>
     </div>
     <div>
-      <span style="font-size:0.75rem;color:var(--text-muted);margin-right:8px">Errors</span>
+      <span style="font-size:0.75rem;color:var(--cngx-color-text-muted);margin-right:8px">Errors</span>
       <cngx-sparkline
         [data]="[0, 1, 0, 0, 2, 0, 0]"
         style="--cngx-sparkline-color: var(--danger, #d2452f)"
@@ -92,7 +92,7 @@ protected showError(): void {
     <button class="chip" (click)="showError()">error</button>
   </div>
   <div style="display:flex;align-items:center;gap:24px">
-    <span style="font-size:0.75rem;color:var(--text-muted);min-width:80px">
+    <span style="font-size:0.75rem;color:var(--cngx-color-text-muted);min-width:80px">
       status: {{ state.status() }}
     </span>
     <cngx-sparkline

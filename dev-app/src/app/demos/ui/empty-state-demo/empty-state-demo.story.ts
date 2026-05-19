@@ -32,7 +32,7 @@ export const STORY: DemoSpec = {
         'When no <code>[cngxEmptyStateIcon]</code> is projected, a built-in inbox SVG is shown.',
       imports: ['CngxEmptyState'],
       template: `
-  <div style="border:1px solid var(--border-color,#e0e0e0);border-radius:8px;overflow:hidden">
+  <div style="border:1px solid var(--cngx-color-border);border-radius:8px;overflow:hidden">
     <cngx-empty-state
       title="No items yet"
       description="Create your first item to get started." />
@@ -44,7 +44,7 @@ export const STORY: DemoSpec = {
         'Project any icon via <code>[cngxEmptyStateIcon]</code>. Primary and secondary action slots.',
       imports: ['CngxEmptyState'],
       template: `
-  <div style="border:1px solid var(--border-color,#e0e0e0);border-radius:8px;overflow:hidden">
+  <div style="border:1px solid var(--cngx-color-border);border-radius:8px;overflow:hidden">
     <cngx-empty-state
       title="No results found"
       description="Try adjusting your search or filter criteria.">
@@ -126,7 +126,7 @@ export const STORY: DemoSpec = {
         'Replaces list content when empty. Works with any container — no special wiring needed.',
       imports: ['CngxEmptyState'],
       template: `
-  <div style="border:1px solid var(--border-color,#e0e0e0);border-radius:8px;min-height:120px;display:flex;align-items:center;justify-content:center">
+  <div style="border:1px solid var(--cngx-color-border);border-radius:8px;min-height:120px;display:flex;align-items:center;justify-content:center">
     @if (listItems().length === 0) {
       <cngx-empty-state
         title="All tasks completed"

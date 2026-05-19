@@ -36,7 +36,7 @@ import { createManualState } from '@cngx/common/data';
           <svg:g cngxThreshold [value]="25" [label]="'target'" [dashed]="true"></svg:g>
         </cngx-chart>
       </div>
-      <p style="font-size:0.75rem;color:var(--text-muted);margin-top:8px">
+      <p style="font-size:0.75rem;color:var(--cngx-color-text-muted);margin-top:8px">
         The wrapper has <code>resize: horizontal</code> — drag its right edge to resize.
         The chart re-flows live.
       </p>
@@ -71,7 +71,7 @@ import { createManualState } from '@cngx/common/data';`;
     <svg:g cngxThreshold [value]="25" [label]="'target'" [dashed]="true"></svg:g>
   </cngx-chart>
 </div>
-<p style="font-size:0.75rem;color:var(--text-muted);margin-top:8px">
+<p style="font-size:0.75rem;color:var(--cngx-color-text-muted);margin-top:8px">
   The wrapper has <code>resize: horizontal</code> — drag its right edge to resize.
   The chart re-flows live.
 </p>`;

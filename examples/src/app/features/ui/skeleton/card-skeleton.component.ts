@@ -42,7 +42,7 @@ import { CngxSkeletonContainer, CngxSkeletonPlaceholder } from '@cngx/ui';
         @for (i of [1, 2, 3]; track i) {
           <div style="padding:16px;border:1px solid var(--cngx-color-border,#e0e0e0);border-radius:8px;margin-bottom:12px">
             <strong>User {{ i }}</strong>
-            <p style="margin:4px 0 0;color:var(--text-muted,#666)">Content loaded successfully.</p>
+            <p style="margin:4px 0 0;color:var(--cngx-color-text-muted)">Content loaded successfully.</p>
           </div>
         }
       </cngx-skeleton>
@@ -88,7 +88,7 @@ protected toggleLoading(): void {
   @for (i of [1, 2, 3]; track i) {
     <div style="padding:16px;border:1px solid var(--cngx-color-border,#e0e0e0);border-radius:8px;margin-bottom:12px">
       <strong>User {{ i }}</strong>
-      <p style="margin:4px 0 0;color:var(--text-muted,#666)">Content loaded successfully.</p>
+      <p style="margin:4px 0 0;color:var(--cngx-color-text-muted)">Content loaded successfully.</p>
     </div>
   }
 </cngx-skeleton>`;

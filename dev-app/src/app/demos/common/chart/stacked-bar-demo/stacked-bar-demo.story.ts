@@ -36,7 +36,7 @@ protected showError(): void { this.state.reset(); this.state.setError(new Error(
       template: `
   <div style="display:flex;flex-direction:column;gap:16px;max-width:400px">
     <div>
-      <div style="font-size:0.8125rem;color:var(--text-muted);margin-bottom:4px">Storage usage</div>
+      <div style="font-size:0.8125rem;color:var(--cngx-color-text-muted);margin-bottom:4px">Storage usage</div>
       <cngx-stacked-bar
         [segments]="[
           { value: 32, color: '#4c8bf5', label: 'Documents' },
@@ -47,7 +47,7 @@ protected showError(): void { this.state.reset(); this.state.setError(new Error(
       />
     </div>
     <div>
-      <div style="font-size:0.8125rem;color:var(--text-muted);margin-bottom:4px">Browser breakdown</div>
+      <div style="font-size:0.8125rem;color:var(--cngx-color-text-muted);margin-bottom:4px">Browser breakdown</div>
       <cngx-stacked-bar
         [segments]="[
           { value: 65, color: '#4c8bf5', label: 'Chrome' },
@@ -71,7 +71,7 @@ protected showError(): void { this.state.reset(); this.state.setError(new Error(
     <button class="chip" (click)="showError()">error</button>
   </div>
   <div style="display:flex;flex-direction:column;gap:6px;max-width:400px">
-    <span style="font-size:0.75rem;color:var(--text-muted)">status: {{ state.status() }}</span>
+    <span style="font-size:0.75rem;color:var(--cngx-color-text-muted)">status: {{ state.status() }}</span>
     <cngx-stacked-bar [segments]="stateDemoSegments" [state]="state" />
   </div>`,
     },

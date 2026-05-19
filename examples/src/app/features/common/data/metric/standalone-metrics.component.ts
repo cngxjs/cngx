@@ -24,23 +24,23 @@ import { CngxMetric } from '@cngx/common/data';
     </header>
     <div style="display:flex;gap:48px;align-items:baseline;flex-wrap:wrap">
         <div>
-          <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:4px">Integer</div>
+          <div style="font-size:0.75rem;color:var(--cngx-color-text-muted);margin-bottom:4px">Integer</div>
           <cngx-metric [value]="1234" />
         </div>
         <div>
-          <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:4px">With unit</div>
+          <div style="font-size:0.75rem;color:var(--cngx-color-text-muted);margin-bottom:4px">With unit</div>
           <cngx-metric [value]="75" unit="bpm" />
         </div>
         <div>
-          <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:4px">Formatted</div>
+          <div style="font-size:0.75rem;color:var(--cngx-color-text-muted);margin-bottom:4px">Formatted</div>
           <cngx-metric [value]="99.6" unit="%" [format]="{ maximumFractionDigits: 1 }" />
         </div>
         <div>
-          <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:4px">Null</div>
+          <div style="font-size:0.75rem;color:var(--cngx-color-text-muted);margin-bottom:4px">Null</div>
           <cngx-metric [value]="null" unit="kg" />
         </div>
         <div>
-          <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:4px">String</div>
+          <div style="font-size:0.75rem;color:var(--cngx-color-text-muted);margin-bottom:4px">String</div>
           <cngx-metric value="n.b." />
         </div>
       </div>
@@ -63,23 +63,23 @@ export class MetricStandaloneMetrics {
   protected readonly _exTs: string = `import { CngxMetric } from '@cngx/common/data';`;
   protected readonly _exHtml: string = `<div style="display:flex;gap:48px;align-items:baseline;flex-wrap:wrap">
   <div>
-    <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:4px">Integer</div>
+    <div style="font-size:0.75rem;color:var(--cngx-color-text-muted);margin-bottom:4px">Integer</div>
     <cngx-metric [value]="1234" />
   </div>
   <div>
-    <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:4px">With unit</div>
+    <div style="font-size:0.75rem;color:var(--cngx-color-text-muted);margin-bottom:4px">With unit</div>
     <cngx-metric [value]="75" unit="bpm" />
   </div>
   <div>
-    <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:4px">Formatted</div>
+    <div style="font-size:0.75rem;color:var(--cngx-color-text-muted);margin-bottom:4px">Formatted</div>
     <cngx-metric [value]="99.6" unit="%" [format]="{ maximumFractionDigits: 1 }" />
   </div>
   <div>
-    <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:4px">Null</div>
+    <div style="font-size:0.75rem;color:var(--cngx-color-text-muted);margin-bottom:4px">Null</div>
     <cngx-metric [value]="null" unit="kg" />
   </div>
   <div>
-    <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:4px">String</div>
+    <div style="font-size:0.75rem;color:var(--cngx-color-text-muted);margin-bottom:4px">String</div>
     <cngx-metric value="n.b." />
   </div>
 </div>`;

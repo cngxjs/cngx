@@ -50,7 +50,7 @@ import { CngxSwipeDismiss, type SwipeDirection } from '@cngx/common';
         <p style="margin: 0; font-size: 1.25rem; font-weight: 600">
           Swipe {{ swipeDir() }}
         </p>
-        <p style="margin: 0.5rem 0 0; font-size: 0.875rem; color: var(--text-muted, #888)">
+        <p style="margin: 0.5rem 0 0; font-size: 0.875rem; color: var(--cngx-color-text-muted)">
           threshold: 60px
         </p>
       </div>
@@ -115,7 +115,7 @@ protected readonly swipeCount = signal(0);`;
   <p style="margin: 0; font-size: 1.25rem; font-weight: 600">
     Swipe {{ swipeDir() }}
   </p>
-  <p style="margin: 0.5rem 0 0; font-size: 0.875rem; color: var(--text-muted, #888)">
+  <p style="margin: 0.5rem 0 0; font-size: 0.875rem; color: var(--cngx-color-text-muted)">
     threshold: 60px
   </p>
 </div>

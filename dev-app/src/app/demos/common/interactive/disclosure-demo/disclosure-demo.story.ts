@@ -42,13 +42,13 @@ export const STORY: DemoSpec = {
       imports: ['CngxDisclosure'],
       template: `
   @for (q of ['What is cngx?', 'Is it free?', 'How do I install it?']; track q; let i = $index) {
-    <div style="border-bottom: 1px solid var(--border-color, #e0e0e0);">
+    <div style="border-bottom: 1px solid var(--cngx-color-border);">
       <button cngxDisclosure #faq="cngxDisclosure" [controls]="'faq-' + i"
-              style="width: 100%; text-align: left; padding: 0.75rem 0; font-weight: 600; font-size: 0.875rem; background: none; border: none; cursor: pointer; color: var(--text-primary, #333);">
+              style="width: 100%; text-align: left; padding: 0.75rem 0; font-weight: 600; font-size: 0.875rem; background: none; border: none; cursor: pointer; color: var(--cngx-color-text);">
         {{ faq.opened() ? '−' : '+' }} {{ q }}
       </button>
       @if (faq.opened()) {
-        <div [id]="'faq-' + i" style="padding: 0 0 0.75rem; font-size: 0.875rem; color: var(--text-muted, #666);">
+        <div [id]="'faq-' + i" style="padding: 0 0 0.75rem; font-size: 0.875rem; color: var(--cngx-color-text-muted);">
           Answer to "{{ q }}" goes here.
         </div>
       }

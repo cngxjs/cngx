@@ -33,25 +33,25 @@ import { CngxCard, CngxCardGrid, CngxCardGridEmpty } from '@cngx/common/card';
 
       <cngx-card-grid [items]="emptyItems()" [emptyReason]="emptyReason()" minWidth="200px">
         <ng-template cngxCardGridEmpty="first-use">
-          <div style="text-align:center;padding:48px 16px;color:var(--text-muted)">
+          <div style="text-align:center;padding:48px 16px;color:var(--cngx-color-text-muted)">
             <div style="font-size:2rem;margin-bottom:12px;opacity:0.4">+</div>
-            <p style="font-weight:600;font-size:1rem;color:var(--text-primary);margin-bottom:4px">Welcome!</p>
+            <p style="font-weight:600;font-size:1rem;color:var(--cngx-color-text);margin-bottom:4px">Welcome!</p>
             <p style="font-size:0.875rem">Create your first item to get started.</p>
             <button class="chip" style="margin-top:12px">Add item</button>
           </div>
         </ng-template>
         <ng-template cngxCardGridEmpty="no-results">
-          <div style="text-align:center;padding:48px 16px;color:var(--text-muted)">
+          <div style="text-align:center;padding:48px 16px;color:var(--cngx-color-text-muted)">
             <div style="font-size:2rem;margin-bottom:12px;opacity:0.4">?</div>
-            <p style="font-weight:600;font-size:1rem;color:var(--text-primary);margin-bottom:4px">No results found</p>
+            <p style="font-weight:600;font-size:1rem;color:var(--cngx-color-text);margin-bottom:4px">No results found</p>
             <p style="font-size:0.875rem">Try adjusting your filters.</p>
             <button class="chip" style="margin-top:12px">Reset filters</button>
           </div>
         </ng-template>
         <ng-template cngxCardGridEmpty="cleared">
-          <div style="text-align:center;padding:48px 16px;color:var(--text-muted)">
+          <div style="text-align:center;padding:48px 16px;color:var(--cngx-color-text-muted)">
             <div style="font-size:2rem;margin-bottom:12px;opacity:0.4">&#10003;</div>
-            <p style="font-weight:600;font-size:1rem;color:var(--text-primary);margin-bottom:4px">All done</p>
+            <p style="font-weight:600;font-size:1rem;color:var(--cngx-color-text);margin-bottom:4px">All done</p>
             <p style="font-size:0.875rem">Nothing left to process.</p>
           </div>
         </ng-template>
@@ -88,25 +88,25 @@ protected emptyReason = signal<'first-use' | 'no-results' | 'cleared' | undefine
 
 <cngx-card-grid [items]="emptyItems()" [emptyReason]="emptyReason()" minWidth="200px">
   <ng-template cngxCardGridEmpty="first-use">
-    <div style="text-align:center;padding:48px 16px;color:var(--text-muted)">
+    <div style="text-align:center;padding:48px 16px;color:var(--cngx-color-text-muted)">
       <div style="font-size:2rem;margin-bottom:12px;opacity:0.4">+</div>
-      <p style="font-weight:600;font-size:1rem;color:var(--text-primary);margin-bottom:4px">Welcome!</p>
+      <p style="font-weight:600;font-size:1rem;color:var(--cngx-color-text);margin-bottom:4px">Welcome!</p>
       <p style="font-size:0.875rem">Create your first item to get started.</p>
       <button class="chip" style="margin-top:12px">Add item</button>
     </div>
   </ng-template>
   <ng-template cngxCardGridEmpty="no-results">
-    <div style="text-align:center;padding:48px 16px;color:var(--text-muted)">
+    <div style="text-align:center;padding:48px 16px;color:var(--cngx-color-text-muted)">
       <div style="font-size:2rem;margin-bottom:12px;opacity:0.4">?</div>
-      <p style="font-weight:600;font-size:1rem;color:var(--text-primary);margin-bottom:4px">No results found</p>
+      <p style="font-weight:600;font-size:1rem;color:var(--cngx-color-text);margin-bottom:4px">No results found</p>
       <p style="font-size:0.875rem">Try adjusting your filters.</p>
       <button class="chip" style="margin-top:12px">Reset filters</button>
     </div>
   </ng-template>
   <ng-template cngxCardGridEmpty="cleared">
-    <div style="text-align:center;padding:48px 16px;color:var(--text-muted)">
+    <div style="text-align:center;padding:48px 16px;color:var(--cngx-color-text-muted)">
       <div style="font-size:2rem;margin-bottom:12px;opacity:0.4">&#10003;</div>
-      <p style="font-weight:600;font-size:1rem;color:var(--text-primary);margin-bottom:4px">All done</p>
+      <p style="font-weight:600;font-size:1rem;color:var(--cngx-color-text);margin-bottom:4px">All done</p>
       <p style="font-size:0.875rem">Nothing left to process.</p>
     </div>
   </ng-template>

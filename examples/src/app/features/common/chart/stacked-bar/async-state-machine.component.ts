@@ -30,7 +30,7 @@ import { createManualState } from '@cngx/common/data';
         <button class="chip" (click)="showError()">error</button>
       </div>
       <div style="display:flex;flex-direction:column;gap:6px;max-width:400px">
-        <span style="font-size:0.75rem;color:var(--text-muted)">status: {{ state.status() }}</span>
+        <span style="font-size:0.75rem;color:var(--cngx-color-text-muted)">status: {{ state.status() }}</span>
         <cngx-stacked-bar [segments]="stateDemoSegments" [state]="state" />
       </div>
     <details class="cngx-ex-code">
@@ -69,7 +69,7 @@ protected showError(): void { this.state.reset(); this.state.setError(new Error(
   <button class="chip" (click)="showError()">error</button>
 </div>
 <div style="display:flex;flex-direction:column;gap:6px;max-width:400px">
-  <span style="font-size:0.75rem;color:var(--text-muted)">status: {{ state.status() }}</span>
+  <span style="font-size:0.75rem;color:var(--cngx-color-text-muted)">status: {{ state.status() }}</span>
   <cngx-stacked-bar [segments]="stateDemoSegments" [state]="state" />
 </div>`;
   protected readonly stateDemoSegments: readonly CngxStackedSegment[] = [

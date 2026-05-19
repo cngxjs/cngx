@@ -37,13 +37,13 @@ import { CngxCardBadge } from '@cngx/common/card';
                [cngxSpeak]="'Project Summary, Q1 2026. 12 features shipped. 3 bugs resolved. 98 percent uptime. Next milestone: public beta in April.'"
                [enabled]="false"
                #tts1="cngxSpeak">
-            <p style="margin:0 0 4px;color:var(--text-muted);font-size:0.875rem">
+            <p style="margin:0 0 4px;color:var(--cngx-color-text-muted);font-size:0.875rem">
               12 features shipped
             </p>
-            <p style="margin:0 0 4px;color:var(--text-muted);font-size:0.875rem">
+            <p style="margin:0 0 4px;color:var(--cngx-color-text-muted);font-size:0.875rem">
               3 bugs resolved
             </p>
-            <p style="margin:0;color:var(--text-muted);font-size:0.875rem">
+            <p style="margin:0;color:var(--cngx-color-text-muted);font-size:0.875rem">
               98% uptime &mdash; next: public beta
             </p>
           </div>
@@ -60,13 +60,13 @@ import { CngxCardBadge } from '@cngx/common/card';
                [cngxSpeak]="'Team Updates. Anna completed the dashboard redesign. Ben merged the API refactor. Clara started the accessibility audit.'"
                [enabled]="false"
                #tts2="cngxSpeak">
-            <p style="margin:0 0 4px;color:var(--text-muted);font-size:0.875rem">
+            <p style="margin:0 0 4px;color:var(--cngx-color-text-muted);font-size:0.875rem">
               Anna: Dashboard redesign done
             </p>
-            <p style="margin:0 0 4px;color:var(--text-muted);font-size:0.875rem">
+            <p style="margin:0 0 4px;color:var(--cngx-color-text-muted);font-size:0.875rem">
               Ben: API refactor merged
             </p>
-            <p style="margin:0;color:var(--text-muted);font-size:0.875rem">
+            <p style="margin:0;color:var(--cngx-color-text-muted);font-size:0.875rem">
               Clara: A11y audit started
             </p>
           </div>
@@ -104,13 +104,13 @@ import { CngxCardBadge } from '@cngx/common/card';`;
          [cngxSpeak]="'Project Summary, Q1 2026. 12 features shipped. 3 bugs resolved. 98 percent uptime. Next milestone: public beta in April.'"
          [enabled]="false"
          #tts1="cngxSpeak">
-      <p style="margin:0 0 4px;color:var(--text-muted);font-size:0.875rem">
+      <p style="margin:0 0 4px;color:var(--cngx-color-text-muted);font-size:0.875rem">
         12 features shipped
       </p>
-      <p style="margin:0 0 4px;color:var(--text-muted);font-size:0.875rem">
+      <p style="margin:0 0 4px;color:var(--cngx-color-text-muted);font-size:0.875rem">
         3 bugs resolved
       </p>
-      <p style="margin:0;color:var(--text-muted);font-size:0.875rem">
+      <p style="margin:0;color:var(--cngx-color-text-muted);font-size:0.875rem">
         98% uptime &mdash; next: public beta
       </p>
     </div>
@@ -127,13 +127,13 @@ import { CngxCardBadge } from '@cngx/common/card';`;
          [cngxSpeak]="'Team Updates. Anna completed the dashboard redesign. Ben merged the API refactor. Clara started the accessibility audit.'"
          [enabled]="false"
          #tts2="cngxSpeak">
-      <p style="margin:0 0 4px;color:var(--text-muted);font-size:0.875rem">
+      <p style="margin:0 0 4px;color:var(--cngx-color-text-muted);font-size:0.875rem">
         Anna: Dashboard redesign done
       </p>
-      <p style="margin:0 0 4px;color:var(--text-muted);font-size:0.875rem">
+      <p style="margin:0 0 4px;color:var(--cngx-color-text-muted);font-size:0.875rem">
         Ben: API refactor merged
       </p>
-      <p style="margin:0;color:var(--text-muted);font-size:0.875rem">
+      <p style="margin:0;color:var(--cngx-color-text-muted);font-size:0.875rem">
         Clara: A11y audit started
       </p>
     </div>

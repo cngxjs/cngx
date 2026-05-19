@@ -32,7 +32,7 @@ import { CngxDisclosure } from '@cngx/common/interactive';
           </header>
           @if (d1.opened()) {
             <div cngxCardBody id="detail-1">
-              <p style="margin:0;color:var(--text-muted);font-size:0.875rem">
+              <p style="margin:0;color:var(--cngx-color-text-muted);font-size:0.875rem">
                 Patient has learned preventive measures and applies them independently.
                 Evaluation: 17.10.2025. Uses aids correctly. Next evaluation: 27.03.2026.
               </p>
@@ -47,7 +47,7 @@ import { CngxDisclosure } from '@cngx/common/interactive';
           </header>
           @if (d2.opened()) {
             <div cngxCardBody id="detail-2">
-              <p style="margin:0;color:var(--text-muted);font-size:0.875rem">
+              <p style="margin:0;color:var(--cngx-color-text-muted);font-size:0.875rem">
                 Hazard sources in the environment have been reduced.
                 Can organize daily routine independently.
               </p>
@@ -82,7 +82,7 @@ import { CngxDisclosure } from '@cngx/common/interactive';`;
     </header>
     @if (d1.opened()) {
       <div cngxCardBody id="detail-1">
-        <p style="margin:0;color:var(--text-muted);font-size:0.875rem">
+        <p style="margin:0;color:var(--cngx-color-text-muted);font-size:0.875rem">
           Patient has learned preventive measures and applies them independently.
           Evaluation: 17.10.2025. Uses aids correctly. Next evaluation: 27.03.2026.
         </p>
@@ -97,7 +97,7 @@ import { CngxDisclosure } from '@cngx/common/interactive';`;
     </header>
     @if (d2.opened()) {
       <div cngxCardBody id="detail-2">
-        <p style="margin:0;color:var(--text-muted);font-size:0.875rem">
+        <p style="margin:0;color:var(--cngx-color-text-muted);font-size:0.875rem">
           Hazard sources in the environment have been reduced.
           Can organize daily routine independently.
         </p>

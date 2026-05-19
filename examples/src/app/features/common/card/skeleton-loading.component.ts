@@ -35,7 +35,7 @@ import { CngxCard, CngxCardHeader, CngxCardTitle, CngxCardBody, CngxCardSkeleton
                 <h3 cngxCardTitle>Vitals Overview</h3>
               </header>
               <div cngxCardBody>
-                <p style="margin:0;color:var(--text-muted)">Heart rate, blood pressure, SpO2 values from the last 24 hours.</p>
+                <p style="margin:0;color:var(--cngx-color-text-muted)">Heart rate, blood pressure, SpO2 values from the last 24 hours.</p>
               </div>
             </ng-container>
           }
@@ -73,7 +73,7 @@ protected loading = signal(false);`;
           <h3 cngxCardTitle>Vitals Overview</h3>
         </header>
         <div cngxCardBody>
-          <p style="margin:0;color:var(--text-muted)">Heart rate, blood pressure, SpO2 values from the last 24 hours.</p>
+          <p style="margin:0;color:var(--cngx-color-text-muted)">Heart rate, blood pressure, SpO2 values from the last 24 hours.</p>
         </div>
       </ng-container>
     }

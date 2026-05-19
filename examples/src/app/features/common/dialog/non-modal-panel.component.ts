@@ -25,7 +25,7 @@ import { CngxDialog, CngxDialogTitle, CngxDialogClose } from '@cngx/common/dialo
     <button class="chip" (click)="panelDlg.open()">Show Help Panel</button>
 
       <dialog cngxDialog [modal]="false" #panelDlg="cngxDialog"
-        style="position: fixed; top: 80px; right: 24px; border: 1px solid var(--border-color, #ddd); border-radius: 8px; padding: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+        style="position: fixed; top: 80px; right: 24px; border: 1px solid var(--cngx-color-border); border-radius: 8px; padding: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
         <h3 cngxDialogTitle>Quick Help</h3>
         <p style="max-width: 240px; margin: 8px 0;">This is a non-modal panel. You can still interact with the page behind it.</p>
         <button class="chip" cngxDialogClose>Close</button>
@@ -55,7 +55,7 @@ export class DialogNonModalPanel {
   protected readonly _exHtml: string = `<button class="chip" (click)="panelDlg.open()">Show Help Panel</button>
 
 <dialog cngxDialog [modal]="false" #panelDlg="cngxDialog"
-  style="position: fixed; top: 80px; right: 24px; border: 1px solid var(--border-color, #ddd); border-radius: 8px; padding: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+  style="position: fixed; top: 80px; right: 24px; border: 1px solid var(--cngx-color-border); border-radius: 8px; padding: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
   <h3 cngxDialogTitle>Quick Help</h3>
   <p style="max-width: 240px; margin: 8px 0;">This is a non-modal panel. You can still interact with the page behind it.</p>
   <button class="chip" cngxDialogClose>Close</button>

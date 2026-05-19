@@ -31,7 +31,7 @@ import { CngxCard, CngxCardHeader, CngxCardBody } from '@cngx/common/card';
             <h3 style="margin:0;font-weight:600;font-size:1rem">Vitals</h3>
           </header>
           <div cngxCardBody>
-            <p style="margin:0;color:var(--text-muted)">Heart rate, blood pressure, SpO2</p>
+            <p style="margin:0;color:var(--cngx-color-text-muted)">Heart rate, blood pressure, SpO2</p>
           </div>
         </cngx-card>
       </div>
@@ -63,7 +63,7 @@ protected loading = signal(false);`;
       <h3 style="margin:0;font-weight:600;font-size:1rem">Vitals</h3>
     </header>
     <div cngxCardBody>
-      <p style="margin:0;color:var(--text-muted)">Heart rate, blood pressure, SpO2</p>
+      <p style="margin:0;color:var(--cngx-color-text-muted)">Heart rate, blood pressure, SpO2</p>
     </div>
   </cngx-card>
 </div>`;

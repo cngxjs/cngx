@@ -26,7 +26,7 @@ import { CngxDialog, CngxDialogTitle, CngxDialogClose, CngxDialogDraggable } fro
 
       <dialog cngxDialog cngxDialogDraggable #dragDlg="cngxDialog" #drag="cngxDialogDraggable"
         style="transform: translate(var(--cngx-dialog-x, 0px), var(--cngx-dialog-y, 0px));">
-        <div style="display: flex; align-items: center; justify-content: space-between; cursor: grab; padding-bottom: 12px; border-bottom: 1px solid var(--border-color, #eee); margin-bottom: 12px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; cursor: grab; padding-bottom: 12px; border-bottom: 1px solid var(--cngx-color-border); margin-bottom: 12px;">
           <h2 cngxDialogTitle style="margin: 0;">Drag Me</h2>
           <button class="chip" cngxDialogClose style="padding: 2px 8px;" aria-label="Close dialog">X</button>
         </div>
@@ -58,7 +58,7 @@ export class DialogDraggableDialog {
 
 <dialog cngxDialog cngxDialogDraggable #dragDlg="cngxDialog" #drag="cngxDialogDraggable"
   style="transform: translate(var(--cngx-dialog-x, 0px), var(--cngx-dialog-y, 0px));">
-  <div style="display: flex; align-items: center; justify-content: space-between; cursor: grab; padding-bottom: 12px; border-bottom: 1px solid var(--border-color, #eee); margin-bottom: 12px;">
+  <div style="display: flex; align-items: center; justify-content: space-between; cursor: grab; padding-bottom: 12px; border-bottom: 1px solid var(--cngx-color-border); margin-bottom: 12px;">
     <h2 cngxDialogTitle style="margin: 0;">Drag Me</h2>
     <button class="chip" cngxDialogClose style="padding: 2px 8px;" aria-label="Close dialog">X</button>
   </div>

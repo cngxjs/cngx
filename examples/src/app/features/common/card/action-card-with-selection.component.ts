@@ -29,7 +29,7 @@ import { CngxCard, CngxCardHeader, CngxCardBody } from '@cngx/common/card';
             <h3 style="margin:0;font-weight:600;font-size:0.9375rem">Maria Muster</h3>
           </header>
           <div cngxCardBody>
-            <span style="font-size:0.8125rem;color:var(--text-muted)">Room 12</span>
+            <span style="font-size:0.8125rem;color:var(--cngx-color-text-muted)">Room 12</span>
           </div>
         </cngx-card>
         <cngx-card as="button" ariaLabel="View patient Hans Huber">
@@ -37,7 +37,7 @@ import { CngxCard, CngxCardHeader, CngxCardBody } from '@cngx/common/card';
             <h3 style="margin:0;font-weight:600;font-size:0.9375rem">Hans Huber</h3>
           </header>
           <div cngxCardBody>
-            <span style="font-size:0.8125rem;color:var(--text-muted)">Room 7</span>
+            <span style="font-size:0.8125rem;color:var(--cngx-color-text-muted)">Room 7</span>
           </div>
         </cngx-card>
         <cngx-card as="button" ariaLabel="View patient Lisa Lang">
@@ -45,7 +45,7 @@ import { CngxCard, CngxCardHeader, CngxCardBody } from '@cngx/common/card';
             <h3 style="margin:0;font-weight:600;font-size:0.9375rem">Lisa Lang</h3>
           </header>
           <div cngxCardBody>
-            <span style="font-size:0.8125rem;color:var(--text-muted)">Room 3</span>
+            <span style="font-size:0.8125rem;color:var(--cngx-color-text-muted)">Room 3</span>
           </div>
         </cngx-card>
       </div>
@@ -81,7 +81,7 @@ protected selected = signal(false);`;
       <h3 style="margin:0;font-weight:600;font-size:0.9375rem">Maria Muster</h3>
     </header>
     <div cngxCardBody>
-      <span style="font-size:0.8125rem;color:var(--text-muted)">Room 12</span>
+      <span style="font-size:0.8125rem;color:var(--cngx-color-text-muted)">Room 12</span>
     </div>
   </cngx-card>
   <cngx-card as="button" ariaLabel="View patient Hans Huber">
@@ -89,7 +89,7 @@ protected selected = signal(false);`;
       <h3 style="margin:0;font-weight:600;font-size:0.9375rem">Hans Huber</h3>
     </header>
     <div cngxCardBody>
-      <span style="font-size:0.8125rem;color:var(--text-muted)">Room 7</span>
+      <span style="font-size:0.8125rem;color:var(--cngx-color-text-muted)">Room 7</span>
     </div>
   </cngx-card>
   <cngx-card as="button" ariaLabel="View patient Lisa Lang">
@@ -97,7 +97,7 @@ protected selected = signal(false);`;
       <h3 style="margin:0;font-weight:600;font-size:0.9375rem">Lisa Lang</h3>
     </header>
     <div cngxCardBody>
-      <span style="font-size:0.8125rem;color:var(--text-muted)">Room 3</span>
+      <span style="font-size:0.8125rem;color:var(--cngx-color-text-muted)">Room 3</span>
     </div>
   </cngx-card>
 </div>`;

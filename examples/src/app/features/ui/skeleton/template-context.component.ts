@@ -25,7 +25,7 @@ import { CngxSkeletonContainer, CngxSkeletonPlaceholder } from '@cngx/ui';
     <cngx-skeleton [loading]="true" [count]="5">
         <ng-template cngxSkeletonPlaceholder let-i let-first="first" let-last="last" let-count="count">
           <div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--cngx-color-border,#e0e0e0)">
-            <span style="font-size:0.75rem;color:var(--text-muted,#999);width:24px">{{ i + 1 }}/{{ count }}</span>
+            <span style="font-size:0.75rem;color:var(--cngx-color-text-muted);width:24px">{{ i + 1 }}/{{ count }}</span>
             <div [style.height]="'12px'" [style.width]="first ? '70%' : last ? '40%' : '55%'"
               style="border-radius:4px;background:var(--cngx-surface-alt,#e0e0e0)"></div>
           </div>
@@ -54,7 +54,7 @@ protected readonly loading = signal(true);`;
   protected readonly _exHtml: string = `<cngx-skeleton [loading]="true" [count]="5">
   <ng-template cngxSkeletonPlaceholder let-i let-first="first" let-last="last" let-count="count">
     <div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--cngx-color-border,#e0e0e0)">
-      <span style="font-size:0.75rem;color:var(--text-muted,#999);width:24px">{{ i + 1 }}/{{ count }}</span>
+      <span style="font-size:0.75rem;color:var(--cngx-color-text-muted);width:24px">{{ i + 1 }}/{{ count }}</span>
       <div [style.height]="'12px'" [style.width]="first ? '70%' : last ? '40%' : '55%'"
         style="border-radius:4px;background:var(--cngx-surface-alt,#e0e0e0)"></div>
     </div>

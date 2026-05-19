@@ -33,7 +33,7 @@ import { CngxCardBadge } from '@cngx/common/card';
           <header cngxCardHeader>
             <h3 cngxCardTitle>Static Badge</h3>
           </header>
-          <div cngxCardBody style="font-size:0.875rem;color:var(--text-muted)">
+          <div cngxCardBody style="font-size:0.875rem;color:var(--cngx-color-text-muted)">
             Non-interactive span badge
           </div>
         </cngx-card>
@@ -51,7 +51,7 @@ import { CngxCardBadge } from '@cngx/common/card';
           <header cngxCardHeader>
             <h3 cngxCardTitle>Clickable Badge</h3>
           </header>
-          <div cngxCardBody style="font-size:0.875rem;color:var(--text-muted)">
+          <div cngxCardBody style="font-size:0.875rem;color:var(--cngx-color-text-muted)">
             Button card + button badge. Click each to test event bubbling.
           </div>
         </cngx-card>
@@ -64,7 +64,7 @@ import { CngxCardBadge } from '@cngx/common/card';
           <header cngxCardHeader>
             <h3 cngxCardTitle>Status Dot</h3>
           </header>
-          <div cngxCardBody style="font-size:0.875rem;color:var(--text-muted)">
+          <div cngxCardBody style="font-size:0.875rem;color:var(--cngx-color-text-muted)">
             Badge at top-start
           </div>
         </cngx-card>
@@ -115,7 +115,7 @@ protected handleBadgeClick(e: MouseEvent): void {
     <header cngxCardHeader>
       <h3 cngxCardTitle>Static Badge</h3>
     </header>
-    <div cngxCardBody style="font-size:0.875rem;color:var(--text-muted)">
+    <div cngxCardBody style="font-size:0.875rem;color:var(--cngx-color-text-muted)">
       Non-interactive span badge
     </div>
   </cngx-card>
@@ -133,7 +133,7 @@ protected handleBadgeClick(e: MouseEvent): void {
     <header cngxCardHeader>
       <h3 cngxCardTitle>Clickable Badge</h3>
     </header>
-    <div cngxCardBody style="font-size:0.875rem;color:var(--text-muted)">
+    <div cngxCardBody style="font-size:0.875rem;color:var(--cngx-color-text-muted)">
       Button card + button badge. Click each to test event bubbling.
     </div>
   </cngx-card>
@@ -146,7 +146,7 @@ protected handleBadgeClick(e: MouseEvent): void {
     <header cngxCardHeader>
       <h3 cngxCardTitle>Status Dot</h3>
     </header>
-    <div cngxCardBody style="font-size:0.875rem;color:var(--text-muted)">
+    <div cngxCardBody style="font-size:0.875rem;color:var(--cngx-color-text-muted)">
       Badge at top-start
     </div>
   </cngx-card>

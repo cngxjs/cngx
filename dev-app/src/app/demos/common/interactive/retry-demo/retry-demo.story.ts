@@ -54,7 +54,7 @@ export const STORY: DemoSpec = {
       template: `
   <div class="button-row">
     <button [cngxAsyncClick]="retryAction" #btn="cngxAsyncClick" class="chip"
-            [style.background]="btn.succeeded() ? 'var(--success-bg, #e8f5e9)' : btn.failed() ? '#ffebee' : ''">
+            [style.background]="btn.succeeded() ? 'var(--cngx-color-success)' : btn.failed() ? '#ffebee' : ''">
       @if (btn.pending()) {
         Attempt {{ retryState.attempt() }}/{{ retryState.maxAttempts() }}...
       } @else if (btn.succeeded()) {

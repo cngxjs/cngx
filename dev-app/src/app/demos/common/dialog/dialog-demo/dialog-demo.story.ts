@@ -169,12 +169,12 @@ export const STORY: DemoSpec = {
       <label>
         Name
         <input [(ngModel)]="formData.name" name="name"
-          style="display: block; width: 100%; margin-top: 4px; padding: 6px 8px; border: 1px solid var(--border-color, #ddd); border-radius: 4px;" />
+          style="display: block; width: 100%; margin-top: 4px; padding: 6px 8px; border: 1px solid var(--cngx-color-border); border-radius: 4px;" />
       </label>
       <label>
         Email
         <input [(ngModel)]="formData.email" name="email" type="email"
-          style="display: block; width: 100%; margin-top: 4px; padding: 6px 8px; border: 1px solid var(--border-color, #ddd); border-radius: 4px;" />
+          style="display: block; width: 100%; margin-top: 4px; padding: 6px 8px; border: 1px solid var(--cngx-color-border); border-radius: 4px;" />
       </label>
       <div class="button-row" style="justify-content: flex-end;">
         <!-- cngxDialogClose without value: calls dismiss() -->
@@ -226,7 +226,7 @@ export const STORY: DemoSpec = {
   <dialog cngxDialog #outerDlg="cngxDialog">
     <h2 cngxDialogTitle>Settings</h2>
     <p cngxDialogDescription>Manage your preferences.</p>
-    <div style="margin: 16px 0; padding: 12px; border: 1px solid var(--border-color, #eee); border-radius: 4px;">
+    <div style="margin: 16px 0; padding: 12px; border: 1px solid var(--cngx-color-border); border-radius: 4px;">
       <p style="margin: 0 0 8px;">Danger zone: reset all settings to defaults.</p>
       <button class="chip" style="color: #c62828; border-color: #c62828;" (click)="confirmReset.open()">
         Reset All
@@ -267,7 +267,7 @@ export const STORY: DemoSpec = {
   <button class="chip" (click)="panelDlg.open()">Show Help Panel</button>
 
   <dialog cngxDialog [modal]="false" #panelDlg="cngxDialog"
-    style="position: fixed; top: 80px; right: 24px; border: 1px solid var(--border-color, #ddd); border-radius: 8px; padding: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+    style="position: fixed; top: 80px; right: 24px; border: 1px solid var(--cngx-color-border); border-radius: 8px; padding: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
     <h3 cngxDialogTitle>Quick Help</h3>
     <p style="max-width: 240px; margin: 8px 0;">This is a non-modal panel. You can still interact with the page behind it.</p>
     <button class="chip" cngxDialogClose>Close</button>
@@ -293,7 +293,7 @@ export const STORY: DemoSpec = {
 
   <dialog cngxDialog cngxDialogDraggable #dragDlg="cngxDialog" #drag="cngxDialogDraggable"
     style="transform: translate(var(--cngx-dialog-x, 0px), var(--cngx-dialog-y, 0px));">
-    <div style="display: flex; align-items: center; justify-content: space-between; cursor: grab; padding-bottom: 12px; border-bottom: 1px solid var(--border-color, #eee); margin-bottom: 12px;">
+    <div style="display: flex; align-items: center; justify-content: space-between; cursor: grab; padding-bottom: 12px; border-bottom: 1px solid var(--cngx-color-border); margin-bottom: 12px;">
       <h2 cngxDialogTitle style="margin: 0;">Drag Me</h2>
       <button class="chip" cngxDialogClose style="padding: 2px 8px;" aria-label="Close dialog">X</button>
     </div>
@@ -333,7 +333,7 @@ export const STORY: DemoSpec = {
   <dialog cngxDialog cngxDialogDraggable [gridSize]="20" snapMode="live"
     #snapLiveDlg="cngxDialog" #snapLiveDrag="cngxDialogDraggable"
     style="transform: translate(var(--cngx-dialog-x, 0px), var(--cngx-dialog-y, 0px));">
-    <div style="display: flex; align-items: center; justify-content: space-between; cursor: grab; padding-bottom: 12px; border-bottom: 1px solid var(--border-color, #eee); margin-bottom: 12px;">
+    <div style="display: flex; align-items: center; justify-content: space-between; cursor: grab; padding-bottom: 12px; border-bottom: 1px solid var(--cngx-color-border); margin-bottom: 12px;">
       <h2 cngxDialogTitle style="margin: 0;">Live Snap (20px)</h2>
       <button class="chip" cngxDialogClose style="padding: 2px 8px;" aria-label="Close dialog">X</button>
     </div>
@@ -349,7 +349,7 @@ export const STORY: DemoSpec = {
   <dialog cngxDialog cngxDialogDraggable [gridSize]="20" snapMode="release"
     #snapReleaseDlg="cngxDialog" #snapReleaseDrag="cngxDialogDraggable"
     style="transform: translate(var(--cngx-dialog-x, 0px), var(--cngx-dialog-y, 0px));">
-    <div style="display: flex; align-items: center; justify-content: space-between; cursor: grab; padding-bottom: 12px; border-bottom: 1px solid var(--border-color, #eee); margin-bottom: 12px;">
+    <div style="display: flex; align-items: center; justify-content: space-between; cursor: grab; padding-bottom: 12px; border-bottom: 1px solid var(--cngx-color-border); margin-bottom: 12px;">
       <h2 cngxDialogTitle style="margin: 0;">Release Snap (20px)</h2>
       <button class="chip" cngxDialogClose style="padding: 2px 8px;" aria-label="Close dialog">X</button>
     </div>

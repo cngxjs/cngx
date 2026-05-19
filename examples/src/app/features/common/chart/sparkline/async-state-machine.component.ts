@@ -30,7 +30,7 @@ import { createManualState } from '@cngx/common/data';
         <button class="chip" (click)="showError()">error</button>
       </div>
       <div style="display:flex;align-items:center;gap:24px">
-        <span style="font-size:0.75rem;color:var(--text-muted);min-width:80px">
+        <span style="font-size:0.75rem;color:var(--cngx-color-text-muted);min-width:80px">
           status: {{ state.status() }}
         </span>
         <cngx-sparkline
@@ -84,7 +84,7 @@ protected showError(): void {
   <button class="chip" (click)="showError()">error</button>
 </div>
 <div style="display:flex;align-items:center;gap:24px">
-  <span style="font-size:0.75rem;color:var(--text-muted);min-width:80px">
+  <span style="font-size:0.75rem;color:var(--cngx-color-text-muted);min-width:80px">
     status: {{ state.status() }}
   </span>
   <cngx-sparkline

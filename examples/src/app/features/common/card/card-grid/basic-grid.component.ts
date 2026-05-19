@@ -29,7 +29,7 @@ import { CngxCard, CngxCardHeader, CngxCardBody, CngxCardGrid } from '@cngx/comm
               <h3 style="margin:0;font-weight:600;font-size:0.9375rem">{{ item }}</h3>
             </header>
             <div cngxCardBody>
-              <span style="font-size:0.8125rem;color:var(--text-muted)">Content for {{ item }}</span>
+              <span style="font-size:0.8125rem;color:var(--cngx-color-text-muted)">Content for {{ item }}</span>
             </div>
           </cngx-card>
         }
@@ -60,7 +60,7 @@ protected items = signal(['Alpha', 'Beta', 'Gamma', 'Delta', 'Epsilon', 'Zeta'])
         <h3 style="margin:0;font-weight:600;font-size:0.9375rem">{{ item }}</h3>
       </header>
       <div cngxCardBody>
-        <span style="font-size:0.8125rem;color:var(--text-muted)">Content for {{ item }}</span>
+        <span style="font-size:0.8125rem;color:var(--cngx-color-text-muted)">Content for {{ item }}</span>
       </div>
     </cngx-card>
   }

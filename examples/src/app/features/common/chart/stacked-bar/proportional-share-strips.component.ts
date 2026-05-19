@@ -25,7 +25,7 @@ import { createManualState } from '@cngx/common/data';
     </header>
     <div style="display:flex;flex-direction:column;gap:16px;max-width:400px">
         <div>
-          <div style="font-size:0.8125rem;color:var(--text-muted);margin-bottom:4px">Storage usage</div>
+          <div style="font-size:0.8125rem;color:var(--cngx-color-text-muted);margin-bottom:4px">Storage usage</div>
           <cngx-stacked-bar
             [segments]="[
               { value: 32, color: '#4c8bf5', label: 'Documents' },
@@ -36,7 +36,7 @@ import { createManualState } from '@cngx/common/data';
           />
         </div>
         <div>
-          <div style="font-size:0.8125rem;color:var(--text-muted);margin-bottom:4px">Browser breakdown</div>
+          <div style="font-size:0.8125rem;color:var(--cngx-color-text-muted);margin-bottom:4px">Browser breakdown</div>
           <cngx-stacked-bar
             [segments]="[
               { value: 65, color: '#4c8bf5', label: 'Chrome' },
@@ -67,7 +67,7 @@ export class StackedBarProportionalShareStrips {
 import { createManualState } from '@cngx/common/data';`;
   protected readonly _exHtml: string = `<div style="display:flex;flex-direction:column;gap:16px;max-width:400px">
   <div>
-    <div style="font-size:0.8125rem;color:var(--text-muted);margin-bottom:4px">Storage usage</div>
+    <div style="font-size:0.8125rem;color:var(--cngx-color-text-muted);margin-bottom:4px">Storage usage</div>
     <cngx-stacked-bar
       [segments]="[
         { value: 32, color: '#4c8bf5', label: 'Documents' },
@@ -78,7 +78,7 @@ import { createManualState } from '@cngx/common/data';`;
     />
   </div>
   <div>
-    <div style="font-size:0.8125rem;color:var(--text-muted);margin-bottom:4px">Browser breakdown</div>
+    <div style="font-size:0.8125rem;color:var(--cngx-color-text-muted);margin-bottom:4px">Browser breakdown</div>
     <cngx-stacked-bar
       [segments]="[
         { value: 65, color: '#4c8bf5', label: 'Chrome' },
