@@ -208,10 +208,3 @@ all of it.
   defensive fallback, but the right fix is to move them to
   `templateChrome`. See `cngx-examples-audit` for batch checks.
 
-## Migration scripts
-
-`scripts/migrate-stories.mjs` and `scripts/extract-chrome.mjs` are
-one-shot historical artifacts from the per-example / chrome-split
-migrations. They live at the scripts root, not here, and are not part
-of any npm pipeline. Safe to delete once their commits are referenced
-nowhere.
