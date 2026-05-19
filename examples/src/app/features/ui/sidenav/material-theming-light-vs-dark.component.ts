@@ -23,11 +23,11 @@ import { CngxNavLink, CngxNavLabel } from '@cngx/common';
       @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
       @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
     </header>
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+    <div class="demo-sidenav__themes-grid">
         <!-- Light theme (M3 light via sidenav-theme.scss) -->
         <div>
-          <div style="font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--cngx-color-text-muted); margin-bottom: 0.5rem;">Light (M3)</div>
-          <cngx-sidenav-layout style="height: 300px; border-radius: 6px; overflow: hidden;">
+          <div class="demo-sidenav__theme-label">Light (M3)</div>
+          <cngx-sidenav-layout class="demo-sidenav__theme-panel">
             <cngx-sidenav position="start" [opened]="true" mode="side" width="170px">
               <cngx-sidenav-header>Workspace</cngx-sidenav-header>
               @for (item of ['Dashboard', 'Inbox', 'Calendar', 'Settings']; track item) {
@@ -44,9 +44,9 @@ import { CngxNavLink, CngxNavLabel } from '@cngx/common';
         </div>
 
         <!-- Dark theme (M3 dark via data-theme="dark") -->
-        <div data-theme="dark" style="background: var(--cngx-color-surface); color: var(--cngx-color-text); border-radius: 6px;">
-          <div style="font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--cngx-color-text-muted); margin-bottom: 0.5rem; padding: 0.5rem 0.5rem 0;">Dark (M3)</div>
-          <cngx-sidenav-layout style="height: 300px; border-radius: 6px; overflow: hidden;">
+        <div data-theme="dark" class="demo-sidenav__theme-panel--dark">
+          <div class="demo-sidenav__theme-label demo-sidenav__theme-label--inset">Dark (M3)</div>
+          <cngx-sidenav-layout class="demo-sidenav__theme-panel">
             <cngx-sidenav position="start" [opened]="true" mode="side" width="170px">
               <cngx-sidenav-header>Workspace</cngx-sidenav-header>
               @for (item of ['Dashboard', 'Inbox', 'Calendar', 'Settings']; track item) {
@@ -96,11 +96,11 @@ export class SidenavMaterialThemingLightVsDark {
   protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxSidenavLayout, CngxSidenav, CngxSidenavContent, CngxSidenavHeader, CngxSidenavFooter } from '@cngx/ui';
 import { CngxNavLink, CngxNavLabel } from '@cngx/common';`;
-  protected readonly _exHtml: string = `  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+  protected readonly _exHtml: string = `  <div class="demo-sidenav__themes-grid">
     <!-- Light theme (M3 light via sidenav-theme.scss) -->
     <div>
-      <div style="font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--cngx-color-text-muted); margin-bottom: 0.5rem;">Light (M3)</div>
-      <cngx-sidenav-layout style="height: 300px; border-radius: 6px; overflow: hidden;">
+      <div class="demo-sidenav__theme-label">Light (M3)</div>
+      <cngx-sidenav-layout class="demo-sidenav__theme-panel">
         <cngx-sidenav position="start" [opened]="true" mode="side" width="170px">
           <cngx-sidenav-header>Workspace</cngx-sidenav-header>
           @for (item of ['Dashboard', 'Inbox', 'Calendar', 'Settings']; track item) {
@@ -117,9 +117,9 @@ import { CngxNavLink, CngxNavLabel } from '@cngx/common';`;
     </div>
 
     <!-- Dark theme (M3 dark via data-theme="dark") -->
-    <div data-theme="dark" style="background: var(--cngx-color-surface); color: var(--cngx-color-text); border-radius: 6px;">
-      <div style="font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--cngx-color-text-muted); margin-bottom: 0.5rem; padding: 0.5rem 0.5rem 0;">Dark (M3)</div>
-      <cngx-sidenav-layout style="height: 300px; border-radius: 6px; overflow: hidden;">
+    <div data-theme="dark" class="demo-sidenav__theme-panel--dark">
+      <div class="demo-sidenav__theme-label demo-sidenav__theme-label--inset">Dark (M3)</div>
+      <cngx-sidenav-layout class="demo-sidenav__theme-panel">
         <cngx-sidenav position="start" [opened]="true" mode="side" width="170px">
           <cngx-sidenav-header>Workspace</cngx-sidenav-header>
           @for (item of ['Dashboard', 'Inbox', 'Calendar', 'Settings']; track item) {
