@@ -13,6 +13,10 @@ export const STORY: DemoSpec = {
     'CngxErrorAggregator',
     'CngxErrorSource',
   ],
+  level: 'organism',
+  audience: ['dev', 'a11y'],
+  artifact: 'standalone',
+  focus: ['error-handling', 'composition', 'a11y-pattern'],
   moduleImports: [
     "import { CngxTab, CngxTabContent } from '@cngx/common/tabs';",
     "import { CngxTabGroup } from '@cngx/ui/tabs';",

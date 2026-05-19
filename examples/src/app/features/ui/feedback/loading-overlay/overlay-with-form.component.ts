@@ -48,7 +48,7 @@ export class LoadingOverlayOverlayWithForm {
   protected readonly _exDescription: string = 'Content container that blocks interaction with inert, renders backdrop + spinner, and manages focus save/restore.';
   protected readonly _exSectionTitle: string = 'Overlay with Form';
   protected readonly _exSubtitle: string = 'Click "Save" to overlay the form. Focus inside is saved and restored after loading completes.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'visual-variants' }, { dim: 'focus', value: 'async-state' }, { dim: 'focus', value: 'a11y-pattern' }];
   protected readonly _exTs: string = `import { CngxLoadingOverlay } from '@cngx/ui/feedback';
 
 protected readonly isLoading = signal(false);

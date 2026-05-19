@@ -60,7 +60,7 @@ export class StepperHierarchicalGroupNestedStepsTrailingRootStep {
   protected readonly _exDescription: string = 'Compose <code>[cngxStepGroup]</code> on a container to nest <code>[cngxStep]</code> children. Group headers carry <code>role="group" aria-roledescription="step group"</code> and roll up child status. Sub-step indicators indent via <code>data-step-depth</code>.';
   protected readonly _exSectionTitle: string = 'Group + nested steps + trailing root step';
   protected readonly _exSubtitle: string = 'The strip walks the tree depth-first. Panels render only for terminal steps; group headers occupy slots in the strip but do not host a panel.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'composition' }];
   protected readonly _exTs: string = `import { CngxStep, CngxStepContent, CngxStepGroup } from '@cngx/common/stepper';
 import { CngxStepper } from '@cngx/ui/stepper';
 

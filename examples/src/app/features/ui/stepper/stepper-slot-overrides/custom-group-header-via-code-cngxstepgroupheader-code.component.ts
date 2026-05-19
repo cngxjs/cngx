@@ -65,7 +65,7 @@ export class StepperSlotOverridesCustomGroupHeaderViaCodeCngxstepgroupheaderCode
   protected readonly _exDescription: string = 'Override every visual region inside <code>&lt;cngx-stepper&gt;</code> via the six new slot directives — <code>*cngxStepIndicator</code>, <code>*cngxStepBadge</code>, <code>*cngxStepBusySpinner</code>, <code>*cngxStepRejection</code>, <code>*cngxStepGroupHeader</code>, <code>*cngxStepperEmpty</code>. Each slot ships a typed context object — destructure via <code>let-status="status"</code> / <code>let-failedIndex="failedIndex"</code> / <code>let-group="group"</code> / etc. The library renders sensible defaults; the slots are purely additive.';
   protected readonly _exSectionTitle: string = 'Custom group header via <code>*cngxStepGroupHeader</code>';
   protected readonly _exSubtitle: string = 'Replace the built-in group label span with richer markup — heading tag, child-count badge, status indicator. Slot context is <code>{ group, expanded, status }</code>. Group nodes are declared with <code>[cngxStepGroup]</code> wrapping nested <code>[cngxStep]</code> atoms.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'visual-variants' }];
   protected readonly _exTs: string = `import { CngxStep, CngxStepContent, CngxStepGroup, CngxStepGroupHeader, type CngxStepperCommitAction } from '@cngx/common/stepper';
 import { CngxStepper } from '@cngx/ui/stepper';
 

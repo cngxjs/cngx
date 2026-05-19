@@ -70,7 +70,7 @@ export class TabOverflow8TabsInANarrowContainer {
   protected readonly _exDescription: string = 'Opt-in <code>&lt;cngx-tab-overflow&gt;</code> molecule projected inside <code>&lt;cngx-tab-group&gt;</code> — surfaces tab buttons that have scrolled out of the strip viewport (or never fit) through a "More" <code>CngxPopover</code> dropdown. Visibility is tracked via a native <code>IntersectionObserver</code> rooted on the strip; partial-clip thresholds fall through to "hidden" so users always reach every tab. Talks to the organism only through <code>CNGX_TAB_PANEL_HOST</code> — no concrete-class injection.';
   protected readonly _exSectionTitle: string = '8 tabs in a narrow container';
   protected readonly _exSubtitle: string = 'The strip wrapper is constrained to 320px. With 8 tabs only the first few fit; the rest report <code>intersectionRatio &lt; 1</code> and surface in the More dropdown. Picking a hidden tab calls <code>panelHost.selectById()</code> — same delegation a real-keyboard ArrowRight roving move uses.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'behavior' }, { dim: 'focus', value: 'a11y-pattern' }];
   protected readonly _exTs: string = `import { CngxTab, CngxTabContent } from '@cngx/common/tabs';
 import { CngxTabGroup, CngxTabOverflow } from '@cngx/ui/tabs';
 

@@ -53,7 +53,7 @@ export class EmptyStateWithCustomIconActions {
   protected readonly _exDescription: string = 'Universal empty-state atom for grids, tables, lists, and dashboards. Communicates why a view is empty and what the user can do next. Shows a default icon when none is projected.';
   protected readonly _exSectionTitle: string = 'With custom icon + actions';
   protected readonly _exSubtitle: string = 'Project any icon via <code>[cngxEmptyStateIcon]</code>. Primary and secondary action slots.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'visual-variants' }, { dim: 'focus', value: 'composition' }];
   protected readonly _exTs: string = `import { CngxEmptyState } from '@cngx/ui/empty-state';
 
 protected showTable = signal(true);

@@ -81,7 +81,7 @@ export class StepperCustomLabelsMixingCodeLabelCodeInputWithCodeCngxsteplabelCod
   protected readonly _exDescription: string = 'Use <code>&lt;ng-template cngxStepLabel&gt;</code> to override the per-step label rendering with arbitrary content — icons, badges, counters, multi-line text. The first step uses the simple <code>[label]="..."</code> Input (default string rendering); the remaining steps use the slot template to demonstrate icon + text + counter composition. Both paths render inside the same strip button — the slot is purely additive.';
   protected readonly _exSectionTitle: string = 'Mixing <code>[label]</code> Input with <code>cngxStepLabel</code> slot';
   protected readonly _exSubtitle: string = 'Step 1 uses the plain <code>[label]</code> Input. Steps 2–4 project a <code>&lt;ng-template cngxStepLabel&gt;</code> with custom content — icon + text + reactive counter. The slot template wins over the Input on a per-step basis.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'visual-variants' }];
   protected readonly _exTs: string = `import { CngxStep, CngxStepContent, CngxStepLabel } from '@cngx/common/stepper';
 import { CngxStepper } from '@cngx/ui/stepper';
 

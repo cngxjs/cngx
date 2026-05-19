@@ -91,7 +91,7 @@ export class AsyncContainerInjectasyncstateReactiveQuery {
   protected readonly _exDescription: string = 'Coordinates skeleton, content, empty, error, refresh, and toast from a single CngxAsyncState. Three factory functions, two template APIs, composable with other feedback atoms.';
   protected readonly _exSectionTitle: string = 'injectAsyncState — Reactive Query';
   protected readonly _exSubtitle: string = 'Auto-loads when signal dependencies change. Type in the filter — the query re-fires after 50ms debounce. Watch the status transitions: <code>loading → success</code> on first load, <code>refreshing → success</code> on filter change (old data stays visible).';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'async-state' }, { dim: 'focus', value: 'error-handling' }, { dim: 'focus', value: 'composition' }];
   protected readonly _exTs: string = `import { CngxAsyncContainer, CngxAsyncSkeletonTpl, CngxAsyncContentTpl, CngxAsyncEmptyTpl } from '@cngx/ui/feedback';
 import { createManualState, createAsyncState, injectAsyncState } from '@cngx/common/data';
 

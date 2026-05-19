@@ -7,6 +7,10 @@ export const STORY: DemoSpec = {
   description:
     'Bind <code>[errorAggregator]</code> on a step to surface a badge + SR phrase whenever the aggregator opts to show errors. Compose <code>CngxErrorAggregator</code> on a fieldset; the step reads <code>shouldShow()</code> and <code>announcement()</code> reactively.',
   apiComponents: ['CngxStepper', 'CngxErrorAggregator', 'CngxStep', 'CngxStepContent'],
+  level: 'organism',
+  audience: ['dev', 'a11y'],
+  artifact: 'standalone',
+  focus: ['error-handling', 'composition', 'a11y-pattern'],
   moduleImports: [
     "import { CngxStep, CngxStepContent } from '@cngx/common/stepper';",
     "import { CngxStepper } from '@cngx/ui/stepper';",

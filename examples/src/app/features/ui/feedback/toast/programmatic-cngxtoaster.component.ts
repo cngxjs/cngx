@@ -47,7 +47,7 @@ export class ToastProgrammaticCngxtoaster {
   protected readonly _exDescription: string = 'Programmatic and declarative toast notifications with dedup, timer pause on hover/touch, and severity-based styling.';
   protected readonly _exSectionTitle: string = 'Programmatic (CngxToaster)';
   protected readonly _exSubtitle: string = 'Inject <code>CngxToaster</code> and call <code>.show()</code>. Four severity levels, dedup, action buttons.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'async-state' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }];
   protected readonly _exTs: string = `import { CngxToaster } from '@cngx/ui/feedback';
 import { createManualState } from '@cngx/common/data';
 import { SampleToastBody } from './sample-toast-body';

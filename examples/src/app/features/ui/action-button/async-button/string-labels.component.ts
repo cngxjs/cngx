@@ -45,7 +45,7 @@ export class AsyncButtonStringLabels {
   protected readonly _exDescription: string = 'Action button molecule with built-in status templates. Zero boilerplate alternative to CngxAsyncClick.';
   protected readonly _exSectionTitle: string = 'String Labels';
   protected readonly _exSubtitle: string = 'The simplest usage: pass <code>pendingLabel</code>, <code>succeededLabel</code>, <code>failedLabel</code> as strings. Default content is shown when idle.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'async-state' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'visual-variants' }];
   protected readonly _exTs: string = `import { CngxActionButton } from '@cngx/ui';
 
 protected readonly saveAction = () => new Promise<void>(resolve => setTimeout(resolve, 1500));

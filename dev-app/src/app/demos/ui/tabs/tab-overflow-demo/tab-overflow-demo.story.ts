@@ -7,6 +7,10 @@ export const STORY: DemoSpec = {
   description:
     'Opt-in <code>&lt;cngx-tab-overflow&gt;</code> molecule projected inside <code>&lt;cngx-tab-group&gt;</code> — surfaces tab buttons that have scrolled out of the strip viewport (or never fit) through a "More" <code>CngxPopover</code> dropdown. Visibility is tracked via a native <code>IntersectionObserver</code> rooted on the strip; partial-clip thresholds fall through to "hidden" so users always reach every tab. Talks to the organism only through <code>CNGX_TAB_PANEL_HOST</code> — no concrete-class injection.',
   apiComponents: ['CngxTabGroup', 'CngxTabOverflow', 'CngxTab', 'CngxTabContent'],
+  level: 'organism',
+  audience: ['dev', 'design', 'a11y'],
+  artifact: 'standalone',
+  focus: ['composition', 'behavior', 'a11y-pattern'],
   moduleImports: [
     "import { CngxTab, CngxTabContent } from '@cngx/common/tabs';",
     "import { CngxTabGroup, CngxTabOverflow } from '@cngx/ui/tabs';",

@@ -43,7 +43,7 @@ export class AsyncButtonRandomOutcome {
   protected readonly _exDescription: string = 'Action button molecule with built-in status templates. Zero boilerplate alternative to CngxAsyncClick.';
   protected readonly _exSectionTitle: string = 'Random Outcome';
   protected readonly _exSubtitle: string = 'The action resolves or rejects randomly. Click multiple times to see both states. Feedback auto-resets after 2 seconds. Uses string labels — no templates needed.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'async-state' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'visual-variants' }];
   protected readonly _exTs: string = `import { CngxActionButton } from '@cngx/ui';
 
 protected readonly saveAction = () => new Promise<void>(resolve => setTimeout(resolve, 1500));

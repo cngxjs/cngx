@@ -61,7 +61,7 @@ export class SkeletonCardSkeleton {
   protected readonly _exDescription: string = 'Skeleton loading container with placeholder template repetition and automatic loading/content switching.';
   protected readonly _exSectionTitle: string = 'Card Skeleton';
   protected readonly _exSubtitle: string = 'The placeholder template is repeated <code>[count]</code> times while loading. Toggle the button to switch between skeleton and content.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'visual-variants' }, { dim: 'focus', value: 'async-state' }];
   protected readonly _exTs: string = `import { CngxSkeletonContainer, CngxSkeletonPlaceholder } from '@cngx/ui';
 
 protected readonly loading = signal(true);

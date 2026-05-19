@@ -7,6 +7,10 @@ export const STORY: DemoSpec = {
   description:
     'Universal empty-state atom for grids, tables, lists, and dashboards. Communicates why a view is empty and what the user can do next. Shows a default icon when none is projected.',
   apiComponents: ['CngxEmptyState'],
+  level: 'molecule',
+  audience: ['dev', 'design'],
+  artifact: 'standalone',
+  focus: ['visual-variants', 'composition'],
   overview:
     '<p><code>cngx-empty-state</code> uses <code>role="status"</code> + <code>aria-live="polite"</code> so screen readers announce state changes. ' +
     'The icon slot accepts any icon system — <code>mat-icon</code>, SVG, or custom. If no icon is projected, a default inbox SVG is shown.</p>' +

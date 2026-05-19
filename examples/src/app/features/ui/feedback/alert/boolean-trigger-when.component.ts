@@ -46,7 +46,7 @@ export class AlertBooleanTriggerWhen {
   protected readonly _exDescription: string = 'Inline alert atom with enter/exit animations, state-driven visibility, auto-dismiss with pause-on-hover/focus, auto-collapse, and action buttons.';
   protected readonly _exSectionTitle: string = 'Boolean Trigger ([when])';
   protected readonly _exSubtitle: string = '<code>[when]</code> controls visibility directly. Enter/exit animations play on transitions.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'visual-variants' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }];
   protected readonly _exTs: string = `import { CngxAlert } from '@cngx/ui/feedback';
 import { createManualState } from '@cngx/common/data';
 

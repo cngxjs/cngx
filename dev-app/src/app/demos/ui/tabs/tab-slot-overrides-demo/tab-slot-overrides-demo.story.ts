@@ -14,6 +14,10 @@ export const STORY: DemoSpec = {
     'CngxTabRejectionIcon',
     'CngxTabBusySpinner',
   ],
+  level: 'organism',
+  audience: ['dev', 'design'],
+  artifact: 'standalone',
+  focus: ['composition', 'visual-variants'],
   moduleImports: [
     "import { CngxTab, CngxTabBusySpinner, CngxTabContent, CngxTabErrorBadge, CngxTabRejectionIcon, type CngxTabsCommitAction } from '@cngx/common/tabs';",
     "import { CngxTabGroup } from '@cngx/ui/tabs';",

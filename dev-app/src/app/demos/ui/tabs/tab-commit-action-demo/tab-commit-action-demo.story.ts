@@ -14,6 +14,10 @@ export const STORY: DemoSpec = {
     'CngxToastOn',
     'CngxBannerOn',
   ],
+  level: 'organism',
+  audience: ['dev'],
+  artifact: 'standalone',
+  focus: ['async-state', 'composition', 'error-handling'],
   moduleImports: [
     "import { Observable } from 'rxjs';",
     "import { CngxTab, CngxTabContent, type CngxTabsCommitAction } from '@cngx/common/tabs';",

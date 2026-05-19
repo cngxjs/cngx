@@ -84,7 +84,7 @@ export class StepperRouterSyncDeepLinkingWithFragmentQueryparamModes {
   protected readonly _exDescription: string = 'Bind <code>cngxStepperRouterSync</code> to deep-link the active step into the URL. Clicking a step updates the fragment (<code>#step=&lt;id&gt;</code>) by default; reloading the page lands on that step; browser-back walks the visited history without reload. Toggle <code>[mode]</code> to swap to query-param mode (<code>?step=&lt;id&gt;</code>). The directive becomes a no-op when <code>@angular/router</code> is not provided — log surfaces a one-time dev warning.';
   protected readonly _exSectionTitle: string = 'Deep-linking with fragment + queryParam modes';
   protected readonly _exSubtitle: string = 'Click any step — the URL updates to match. Reload the demo page with the fragment / query-param intact and the wizard lands on that step. Browser-back replays visited steps. The <code>(syncError)</code> output captures Router rejections (rare in practice, e.g. a guard refusing the navigation).';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'integration' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxStep, CngxStepContent, CngxStepperRouterSync } from '@cngx/common/stepper';
 import { CngxStepper } from '@cngx/ui/stepper';
 

@@ -91,7 +91,7 @@ export class AsyncContainerCngxAsyncContainerFullControlToast {
   protected readonly _exDescription: string = 'Coordinates skeleton, content, empty, error, refresh, and toast from a single CngxAsyncState. Three factory functions, two template APIs, composable with other feedback atoms.';
   protected readonly _exSectionTitle: string = 'cngx-async-container — Full Control + Toast';
   protected readonly _exSubtitle: string = 'Four templates, built-in refresh bar, integrated toast on success/error. Uses <code>createManualState</code> for demo control.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'async-state' }, { dim: 'focus', value: 'error-handling' }, { dim: 'focus', value: 'composition' }];
   protected readonly _exTs: string = `import { CngxAsyncContainer, CngxAsyncSkeletonTpl, CngxAsyncContentTpl, CngxAsyncEmptyTpl, CngxAsyncErrorTpl } from '@cngx/ui/feedback';
 import { createManualState, createAsyncState, injectAsyncState } from '@cngx/common/data';
 

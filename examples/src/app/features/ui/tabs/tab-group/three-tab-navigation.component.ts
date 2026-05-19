@@ -61,7 +61,7 @@ export class TabGroupThreeTabNavigation {
   protected readonly _exDescription: string = '<code>&lt;cngx-tab-group&gt;</code> in horizontal orientation (default). W3C Tabs ARIA pattern — <code>role="tablist"</code> strip, <code>role="tab"</code> headers, <code>role="tabpanel"</code> bodies. Roving tabindex via composed host-directive.';
   protected readonly _exSectionTitle: string = 'Three-tab navigation';
   protected readonly _exSubtitle: string = 'Bind <code>[(activeIndex)]</code> for two-way control. ArrowLeft / ArrowRight cycle tabs; Home / End jump to ends; Tab leaves the strip and lands inside the active panel.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxTab, CngxTabLabel, CngxTabContent } from '@cngx/common/tabs';
 import { CngxTabGroup } from '@cngx/ui/tabs';
 

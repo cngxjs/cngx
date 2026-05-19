@@ -143,7 +143,7 @@ export class SpeakButtonMaterialIntegrationThemeScssMatIconButton {
   protected readonly _exDescription: string = 'Ready-made speaker button component that connects to a CngxSpeak directive. Fully themeable via CSS custom properties.';
   protected readonly _exSectionTitle: string = 'Material Integration — Theme SCSS + mat-icon-button';
   protected readonly _exSubtitle: string = '<code>CngxSpeakButton</code> ships a Material theme SCSS mixin that maps <code>--mat-sys-*</code> tokens to the button CSS variables. Alternatively, skip <code>CngxSpeakButton</code> entirely and use a <code>mat-icon-button</code> with the headless <code>CngxSpeak</code> directive.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'integration' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { MatIconButton, MatMiniFabButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import { CngxSpeak } from '@cngx/common/interactive';

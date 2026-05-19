@@ -6,6 +6,10 @@ export const STORY: DemoSpec = {
   description:
     'Action button molecule with built-in status templates. Zero boilerplate alternative to CngxAsyncClick.',
   apiComponents: ['CngxActionButton', 'CngxPending', 'CngxSucceeded', 'CngxFailed'],
+  level: 'molecule',
+  audience: ['dev', 'design', 'a11y'],
+  artifact: 'standalone',
+  focus: ['async-state', 'composition', 'visual-variants'],
   overview:
     '<p><code>CngxActionButton</code> wraps async actions into a button with automatic state management. ' +
     'Use string labels for simple cases or project <code>cngxPending</code>/<code>cngxSucceeded</code>/<code>cngxFailed</code> ' +

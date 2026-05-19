@@ -42,7 +42,7 @@ export class LoadingIndicatorBarVariant {
   protected readonly _exDescription: string = 'Purely visual loading indicator — spinner or bar variant. Delay + minDuration prevent flash.';
   protected readonly _exSectionTitle: string = 'Bar Variant';
   protected readonly _exSubtitle: string = 'YouTube-style thin line. Place at the top of a container.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'visual-variants' }, { dim: 'focus', value: 'async-state' }];
   protected readonly _exTs: string = `import { CngxLoadingIndicator } from '@cngx/ui/feedback';
 
 protected readonly isLoading = signal(false);

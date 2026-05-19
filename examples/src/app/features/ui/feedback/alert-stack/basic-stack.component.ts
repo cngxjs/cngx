@@ -45,7 +45,7 @@ export class AlertStackBasicStack {
   protected readonly _exDescription: string = 'Scoped inline alert stack with programmatic service, overflow collapse, and DI-scoped nesting for dialogs and forms.';
   protected readonly _exSectionTitle: string = 'Basic Stack';
   protected readonly _exSubtitle: string = 'Each <code>CngxAlertStack</code> provides its own <code>CngxAlerter</code> via <code>viewProviders</code>. Access via <code>viewChild</code> to add alerts programmatically. <code>role="log"</code> with <code>aria-live="polite"</code>.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'async-state' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }];
   protected readonly _exTs: string = `import { CngxAlertStack } from '@cngx/ui/feedback';
 
 // Access stack alerters via viewChild — each stack provides its own CngxAlerter via viewProviders

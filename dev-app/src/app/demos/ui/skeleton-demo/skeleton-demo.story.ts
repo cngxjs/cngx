@@ -6,6 +6,10 @@ export const STORY: DemoSpec = {
   description:
     'Skeleton loading container with placeholder template repetition and automatic loading/content switching.',
   apiComponents: ['CngxSkeletonContainer', 'CngxSkeletonPlaceholder'],
+  level: 'molecule',
+  audience: ['dev', 'design'],
+  artifact: 'standalone',
+  focus: ['visual-variants', 'async-state'],
   overview:
     '<p><code>CngxSkeletonContainer</code> wraps the headless <code>CngxSkeleton</code> directive into a component ' +
     'with content projection. Project a <code>cngxSkeletonPlaceholder</code> template for the loading state ' +

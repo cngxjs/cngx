@@ -18,6 +18,10 @@ export const STORY: DemoSpec = {
     'CngxStepperEmpty',
     'CngxStepRejection',
   ],
+  level: 'organism',
+  audience: ['dev', 'design'],
+  artifact: 'standalone',
+  focus: ['composition', 'visual-variants'],
   moduleImports: [
     "import { CngxStep, CngxStepBadge, CngxStepBusySpinner, CngxStepContent, CngxStepGroup, CngxStepGroupHeader, CngxStepIndicator, type CngxStepperCommitAction, CngxStepperEmpty, CngxStepRejection } from '@cngx/common/stepper';",
     "import { CngxStepper } from '@cngx/ui/stepper';",

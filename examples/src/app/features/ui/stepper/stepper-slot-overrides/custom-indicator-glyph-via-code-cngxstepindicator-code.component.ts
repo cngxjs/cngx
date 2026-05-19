@@ -67,7 +67,7 @@ export class StepperSlotOverridesCustomIndicatorGlyphViaCodeCngxstepindicatorCod
   protected readonly _exDescription: string = 'Override every visual region inside <code>&lt;cngx-stepper&gt;</code> via the six new slot directives — <code>*cngxStepIndicator</code>, <code>*cngxStepBadge</code>, <code>*cngxStepBusySpinner</code>, <code>*cngxStepRejection</code>, <code>*cngxStepGroupHeader</code>, <code>*cngxStepperEmpty</code>. Each slot ships a typed context object — destructure via <code>let-status="status"</code> / <code>let-failedIndex="failedIndex"</code> / <code>let-group="group"</code> / etc. The library renders sensible defaults; the slots are purely additive.';
   protected readonly _exSectionTitle: string = 'Custom indicator glyph via <code>*cngxStepIndicator</code>';
   protected readonly _exSubtitle: string = 'Replace the default 1-based number with a status-aware glyph (✓ on success, ✕ on error, fallback to position number). The slot context carries <code>{ position, node, active, status, busy }</code> — destructure what you need.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'visual-variants' }];
   protected readonly _exTs: string = `import { CngxStep, CngxStepContent, CngxStepIndicator, type CngxStepperCommitAction } from '@cngx/common/stepper';
 import { CngxStepper } from '@cngx/ui/stepper';
 

@@ -6,6 +6,10 @@ export const STORY: DemoSpec = {
   navCategory: 'feedback',
   description: 'Coordinates skeleton, content, empty, error, refresh, and toast from a single CngxAsyncState. Three factory functions, two template APIs, composable with other feedback atoms.',
   apiComponents: ['CngxAsyncContainer', 'CngxAsync'],
+  level: 'molecule',
+  audience: ['dev', 'design', 'a11y'],
+  artifact: 'standalone',
+  focus: ['async-state', 'error-handling', 'composition'],
   moduleImports: [
     "import { CngxAsyncContainer, CngxAsyncSkeletonTpl, CngxAsyncContentTpl, CngxAsyncEmptyTpl, CngxAsyncErrorTpl, CngxLoadingOverlay } from '@cngx/ui/feedback';",
     "import { CngxAsync, createManualState, createAsyncState, injectAsyncState } from '@cngx/common/data';",

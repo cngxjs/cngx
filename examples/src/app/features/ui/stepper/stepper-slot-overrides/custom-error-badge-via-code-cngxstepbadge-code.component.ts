@@ -53,7 +53,7 @@ export class StepperSlotOverridesCustomErrorBadgeViaCodeCngxstepbadgeCode {
   protected readonly _exDescription: string = 'Override every visual region inside <code>&lt;cngx-stepper&gt;</code> via the six new slot directives — <code>*cngxStepIndicator</code>, <code>*cngxStepBadge</code>, <code>*cngxStepBusySpinner</code>, <code>*cngxStepRejection</code>, <code>*cngxStepGroupHeader</code>, <code>*cngxStepperEmpty</code>. Each slot ships a typed context object — destructure via <code>let-status="status"</code> / <code>let-failedIndex="failedIndex"</code> / <code>let-group="group"</code> / etc. The library renders sensible defaults; the slots are purely additive.';
   protected readonly _exSectionTitle: string = 'Custom error badge via <code>*cngxStepBadge</code>';
   protected readonly _exSubtitle: string = 'Replace the default <code>!</code> glyph with a counter pill driven by the step\'s aggregator. Context is <code>{ count, node }</code>; the badge only renders when <code>node.errorAggregator()?.shouldShow()</code> is truthy, so the slot is purely additive — no visibility plumbing in consumer markup.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'visual-variants' }];
   protected readonly _exTs: string = `import { CngxStep, CngxStepBadge, CngxStepContent, type CngxStepperCommitAction } from '@cngx/common/stepper';
 import { CngxStepper } from '@cngx/ui/stepper';
 

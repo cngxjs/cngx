@@ -68,7 +68,7 @@ export class AsyncContainerCompositionOverlayContainerToast {
   protected readonly _exDescription: string = 'Coordinates skeleton, content, empty, error, refresh, and toast from a single CngxAsyncState. Three factory functions, two template APIs, composable with other feedback atoms.';
   protected readonly _exSectionTitle: string = 'Composition — Overlay + Container + Toast';
   protected readonly _exSubtitle: string = 'Stack atoms freely. <code>[firstLoadOnly]</code> restricts the overlay to the initial load — refresh uses the container\'s built-in bar instead, avoiding content jumps under the backdrop.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'async-state' }, { dim: 'focus', value: 'error-handling' }, { dim: 'focus', value: 'composition' }];
   protected readonly _exTs: string = `import { CngxAsyncContainer, CngxAsyncSkeletonTpl, CngxAsyncContentTpl, CngxLoadingOverlay } from '@cngx/ui/feedback';
 import { createManualState, createAsyncState, injectAsyncState } from '@cngx/common/data';
 

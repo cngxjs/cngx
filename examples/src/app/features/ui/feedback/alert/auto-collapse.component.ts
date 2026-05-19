@@ -47,7 +47,7 @@ export class AlertAutoCollapse {
   protected readonly _exDescription: string = 'Inline alert atom with enter/exit animations, state-driven visibility, auto-dismiss with pause-on-hover/focus, auto-collapse, and action buttons.';
   protected readonly _exSectionTitle: string = 'Auto-Collapse';
   protected readonly _exSubtitle: string = '<code>[collapsible]</code> collapses body after <code>[collapseDelay]</code>. Expands on hover/focus, re-collapses on leave. <code>aria-expanded</code> tracks state. SR still reads full content.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'visual-variants' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }];
   protected readonly _exTs: string = `import { CngxAlert, CngxAlertAction } from '@cngx/ui/feedback';
 import { createManualState } from '@cngx/common/data';
 

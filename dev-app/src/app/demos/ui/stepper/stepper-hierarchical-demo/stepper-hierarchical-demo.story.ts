@@ -7,6 +7,10 @@ export const STORY: DemoSpec = {
   description:
     'Compose <code>[cngxStepGroup]</code> on a container to nest <code>[cngxStep]</code> children. Group headers carry <code>role="group" aria-roledescription="step group"</code> and roll up child status. Sub-step indicators indent via <code>data-step-depth</code>.',
   apiComponents: ['CngxStepper', 'CngxStepGroup', 'CngxStep', 'CngxStepContent'],
+  level: 'organism',
+  audience: ['dev', 'design'],
+  artifact: 'standalone',
+  focus: ['composition'],
   moduleImports: [
     "import { CngxStep, CngxStepContent, CngxStepGroup } from '@cngx/common/stepper';",
     "import { CngxStepper } from '@cngx/ui/stepper';",

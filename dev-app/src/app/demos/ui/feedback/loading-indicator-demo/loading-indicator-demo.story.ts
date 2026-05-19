@@ -6,6 +6,10 @@ export const STORY: DemoSpec = {
   navCategory: 'feedback',
   description: 'Purely visual loading indicator — spinner or bar variant. Delay + minDuration prevent flash.',
   apiComponents: ['CngxLoadingIndicator'],
+  level: 'atom',
+  audience: ['dev', 'design'],
+  artifact: 'standalone',
+  focus: ['visual-variants', 'async-state'],
   moduleImports: [
     "import { CngxLoadingIndicator } from '@cngx/ui/feedback';",
   ],

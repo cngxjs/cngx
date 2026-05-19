@@ -66,7 +66,7 @@ export class AsyncContainerCngxasyncWithCustomTemplates {
   protected readonly _exDescription: string = 'Coordinates skeleton, content, empty, error, refresh, and toast from a single CngxAsyncState. Three factory functions, two template APIs, composable with other feedback atoms.';
   protected readonly _exSectionTitle: string = '*cngxAsync — With Custom Templates';
   protected readonly _exSubtitle: string = 'Pass skeleton, empty, and error templates via microsyntax. Each keyword becomes an input: <code>skeleton:</code>, <code>empty:</code>, <code>error:</code>.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'async-state' }, { dim: 'focus', value: 'error-handling' }, { dim: 'focus', value: 'composition' }];
   protected readonly _exTs: string = `import { CngxAsync, createManualState, createAsyncState, injectAsyncState } from '@cngx/common/data';
 
 // ── Simple *cngxAsync demos ──

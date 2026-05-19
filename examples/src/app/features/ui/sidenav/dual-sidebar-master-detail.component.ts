@@ -91,7 +91,7 @@ export class SidenavDualSidebarMasterDetail {
   protected readonly _exDescription: string = 'Declarative sidebar organism with Material theming, nav atoms (links, groups, badges, labels), dual sidebar support, and responsive mode switching.';
   protected readonly _exSectionTitle: string = 'Dual Sidebar -- Master/Detail';
   protected readonly _exSubtitle: string = 'Left sidebar with permanent navigation (<code>push</code> mode). Right sidebar as an overlay detail panel that opens when clicking an item in the content area. Shared backdrop managed by <code>CngxSidenavLayout</code>.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxSidenavLayout, CngxSidenav, CngxSidenavContent } from '@cngx/ui';
 import { CngxNavLink } from '@cngx/common';
 

@@ -148,7 +148,7 @@ export class SidenavFullNavigationSidebar {
   protected readonly _exDescription: string = 'Declarative sidebar organism with Material theming, nav atoms (links, groups, badges, labels), dual sidebar support, and responsive mode switching.';
   protected readonly _exSectionTitle: string = 'Full Navigation Sidebar';
   protected readonly _exSubtitle: string = 'Composing all nav atoms inside <code>cngx-sidenav</code>: <code>CngxNavLabel</code> for section headers, <code>CngxNavLink</code> with active state and badges, <code>CngxNavGroup</code> for collapsible accordion sections. Material theming via <code>sidenav-theme.scss</code> provides surface colors, borders, and density.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxSidenavLayout, CngxSidenav, CngxSidenavContent, CngxSidenavHeader, CngxSidenavFooter } from '@cngx/ui';
 import { CngxNavLink, CngxNavLabel, CngxNavGroup, CngxNavBadge } from '@cngx/common';
 

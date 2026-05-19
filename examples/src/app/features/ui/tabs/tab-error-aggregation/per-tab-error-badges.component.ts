@@ -67,7 +67,7 @@ export class TabErrorAggregationPerTabErrorBadges {
   protected readonly _exDescription: string = 'Bind <code>[errorAggregator]</code> on a tab to surface a badge + SR descriptor whenever the aggregator opts to show errors. Compose <code>CngxErrorAggregator</code> on a fieldset around the tab; the organism reads <code>shouldShow()</code> and <code>announcement()</code> reactively. NO duplicate aggregator — this is pure consumer composition over the existing primitive.';
   protected readonly _exSectionTitle: string = 'Per-tab error badges';
   protected readonly _exSubtitle: string = 'Toggle the validity flags below — the tab badge appears the moment <code>aggregator.shouldShow()</code> turns true. The descriptor span carries the announcement phrase for SR; the ID is always present in the DOM, content is reactive (cngx A11y rule).';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'error-handling' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }];
   protected readonly _exTs: string = `import { CngxTab, CngxTabContent } from '@cngx/common/tabs';
 import { CngxTabGroup } from '@cngx/ui/tabs';
 import { CngxErrorAggregator, CngxErrorSource } from '@cngx/common/interactive';

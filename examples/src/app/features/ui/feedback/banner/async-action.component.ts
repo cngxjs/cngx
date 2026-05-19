@@ -39,7 +39,7 @@ export class BannerAsyncAction {
   protected readonly _exDescription: string = 'Global system-level banners for session timeout, maintenance, offline status. Sticky top, always persistent, dedup by id, async action lifecycle.';
   protected readonly _exSectionTitle: string = 'Async Action';
   protected readonly _exSubtitle: string = 'When <code>action.handler</code> returns a <code>Promise</code>, the button shows <code>aria-busy</code> and disables during execution. On success: banner dismissed. On error: banner stays open with error message. 50/50 chance.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'async-state' }, { dim: 'focus', value: 'visual-variants' }, { dim: 'focus', value: 'a11y-pattern' }];
   protected readonly _exTs: string = `import { CngxBanner } from '@cngx/ui/feedback';
 
 private readonly banner = inject(CngxBanner);

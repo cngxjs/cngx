@@ -108,7 +108,7 @@ export class SpeakButtonStyledSpeakerIcon {
   protected readonly _exDescription: string = 'Ready-made speaker button component that connects to a CngxSpeak directive. Fully themeable via CSS custom properties.';
   protected readonly _exSectionTitle: string = 'CngxSpeakButton — Styled Speaker Icon';
   protected readonly _exSubtitle: string = '<code>&lt;cngx-speak-button&gt;</code> connects to a <code>CngxSpeak</code> directive via <code>[speakRef]</code>. It renders a speaker icon with wave animation while speaking. Fully themeable via <code>--cngx-speak-btn-*</code> CSS custom properties.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'integration' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxSpeak } from '@cngx/common/interactive';
 import { CngxSpeakButton } from '@cngx/ui/speak';
 

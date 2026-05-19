@@ -6,6 +6,10 @@ export const STORY: DemoSpec = {
   navCategory: 'feedback',
   description: 'Scoped inline alert stack with programmatic service, overflow collapse, and DI-scoped nesting for dialogs and forms.',
   apiComponents: ['CngxAlertStack', 'CngxAlerter'],
+  level: 'organism',
+  audience: ['dev', 'design', 'a11y'],
+  artifact: 'standalone',
+  focus: ['async-state', 'composition', 'a11y-pattern'],
   moduleImports: [
     "import { CngxAlertStack } from '@cngx/ui/feedback';",
     "import { viewChild } from '@angular/core';",

@@ -6,6 +6,10 @@ export const STORY: DemoSpec = {
   navCategory: 'feedback',
   description: 'Inline alert atom with enter/exit animations, state-driven visibility, auto-dismiss with pause-on-hover/focus, auto-collapse, and action buttons.',
   apiComponents: ['CngxAlert', 'CngxAlertAction', 'CngxAlertIcon'],
+  level: 'molecule',
+  audience: ['dev', 'design', 'a11y'],
+  artifact: 'standalone',
+  focus: ['visual-variants', 'composition', 'a11y-pattern'],
   moduleImports: [
     "import { CngxAlert, CngxAlertAction } from '@cngx/ui/feedback';",
     "import { createManualState } from '@cngx/common/data';",

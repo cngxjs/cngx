@@ -6,6 +6,10 @@ export const STORY: DemoSpec = {
   description:
     'Declarative sidebar organism with Material theming, nav atoms (links, groups, badges, labels), dual sidebar support, and responsive mode switching.',
   apiComponents: ['CngxSidenav', 'CngxSidenavLayout', 'CngxSidenavContent'],
+  level: 'organism',
+  audience: ['dev', 'design', 'a11y'],
+  artifact: 'standalone',
+  focus: ['composition', 'a11y-pattern', 'behavior'],
   moduleImports: [
     "import { CngxSidenavLayout, CngxSidenav, CngxSidenavContent, CngxSidenavHeader, CngxSidenavFooter } from '@cngx/ui';",
     "import { CngxNavLink, CngxNavLabel, CngxNavGroup, CngxNavBadge } from '@cngx/common';",

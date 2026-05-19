@@ -46,7 +46,7 @@ export class ToastDeclarativeCngxToast {
   protected readonly _exDescription: string = 'Programmatic and declarative toast notifications with dedup, timer pause on hover/touch, and severity-based styling.';
   protected readonly _exSectionTitle: string = 'Declarative (<cngx-toast>)';
   protected readonly _exSubtitle: string = 'Place <code>&lt;cngx-toast&gt;</code> in your template. It renders nothing — pushes into the global outlet when <code>[when]</code> becomes <code>true</code>.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'async-state' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }];
   protected readonly _exTs: string = `import { CngxToaster, CngxToast } from '@cngx/ui/feedback';
 import { createManualState } from '@cngx/common/data';
 import { SampleToastBody } from './sample-toast-body';

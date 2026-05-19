@@ -40,7 +40,7 @@ export class BannerDedupUpdate {
   protected readonly _exDescription: string = 'Global system-level banners for session timeout, maintenance, offline status. Sticky top, always persistent, dedup by id, async action lifecycle.';
   protected readonly _exSectionTitle: string = 'Dedup + Update';
   protected readonly _exSubtitle: string = '<code>id</code> is the dedup key. Calling <code>show()</code> with an existing <code>id</code> updates the message in-place. Great for countdown timers.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'async-state' }, { dim: 'focus', value: 'visual-variants' }, { dim: 'focus', value: 'a11y-pattern' }];
   protected readonly _exTs: string = `import { CngxBanner } from '@cngx/ui/feedback';
 
 private readonly banner = inject(CngxBanner);

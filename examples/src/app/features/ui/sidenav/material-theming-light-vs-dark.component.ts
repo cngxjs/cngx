@@ -93,7 +93,7 @@ export class SidenavMaterialThemingLightVsDark {
   protected readonly _exDescription: string = 'Declarative sidebar organism with Material theming, nav atoms (links, groups, badges, labels), dual sidebar support, and responsive mode switching.';
   protected readonly _exSectionTitle: string = 'Material Theming -- Light vs Dark';
   protected readonly _exSubtitle: string = 'Both panels use the real <code>sidenav-theme.scss</code> mixin applied via <code>styles.scss</code>. The right panel sets <code>data-theme="dark"</code> which activates the dark M3 color tokens. No inline overrides -- purely Material Design 3 system colors.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxSidenavLayout, CngxSidenav, CngxSidenavContent, CngxSidenavHeader, CngxSidenavFooter } from '@cngx/ui';
 import { CngxNavLink, CngxNavLabel } from '@cngx/common';
 

@@ -44,7 +44,7 @@ export class BannerSystemBanners {
   protected readonly _exDescription: string = 'Global system-level banners for session timeout, maintenance, offline status. Sticky top, always persistent, dedup by id, async action lifecycle.';
   protected readonly _exSectionTitle: string = 'System Banners';
   protected readonly _exSubtitle: string = 'Inject <code>CngxBanner</code> and call <code>.show()</code>. Banners are always persistent — dismiss programmatically via <code>dismiss(id)</code>. <code>role="alert"</code> for error/warning, <code>aria-live="assertive"</code> for error only.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'async-state' }, { dim: 'focus', value: 'visual-variants' }, { dim: 'focus', value: 'a11y-pattern' }];
   protected readonly _exTs: string = `import { CngxBanner } from '@cngx/ui/feedback';
 
 private readonly banner = inject(CngxBanner);

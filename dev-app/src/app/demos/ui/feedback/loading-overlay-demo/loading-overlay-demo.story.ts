@@ -6,6 +6,10 @@ export const STORY: DemoSpec = {
   navCategory: 'feedback',
   description: 'Content container that blocks interaction with inert, renders backdrop + spinner, and manages focus save/restore.',
   apiComponents: ['CngxLoadingOverlay'],
+  level: 'molecule',
+  audience: ['dev', 'design', 'a11y'],
+  artifact: 'standalone',
+  focus: ['visual-variants', 'async-state', 'a11y-pattern'],
   moduleImports: [
     "import { CngxLoadingOverlay } from '@cngx/ui/feedback';",
   ],

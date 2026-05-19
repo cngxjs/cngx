@@ -45,7 +45,7 @@ export class ProgressCircularVariant {
   protected readonly _exDescription: string = 'Determinate/indeterminate progress indicator. Linear bar or circular variant. CSS transition smoothing for jumpy updates.';
   protected readonly _exSectionTitle: string = 'Circular Variant';
   protected readonly _exSubtitle: string = 'Indeterminate spinner (left) and determinate with value (right, click Start Upload above).';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'visual-variants' }, { dim: 'focus', value: 'async-state' }, { dim: 'focus', value: 'a11y-pattern' }];
   protected readonly _exTs: string = `import { CngxProgress } from '@cngx/ui/feedback';
 
 protected readonly progress = signal<number | undefined>(undefined);

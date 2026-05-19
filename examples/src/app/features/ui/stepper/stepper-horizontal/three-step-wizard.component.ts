@@ -62,7 +62,7 @@ export class StepperHorizontalThreeStepWizard {
   protected readonly _exDescription: string = '<code>&lt;cngx-stepper&gt;</code> in horizontal orientation (default). Strip + panels stacked. Reactive ARIA + roving tabindex via composed host-directives.';
   protected readonly _exSectionTitle: string = 'Three-step wizard';
   protected readonly _exSubtitle: string = 'Bind <code>[(activeStepIndex)]</code> for two-way control. Click any step header or use ArrowLeft/ArrowRight to navigate. Tab leaves the strip.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxStep, CngxStepContent } from '@cngx/common/stepper';
 import { CngxStepper } from '@cngx/ui/stepper';
 

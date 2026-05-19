@@ -57,7 +57,7 @@ export class ToastStateBridgeCngxtoaston {
   protected readonly _exDescription: string = 'Programmatic and declarative toast notifications with dedup, timer pause on hover/touch, and severity-based styling.';
   protected readonly _exSectionTitle: string = 'State Bridge ([cngxToastOn])';
   protected readonly _exSubtitle: string = 'Bind a <code>CngxAsyncState</code> — fires toast automatically on <code>success</code> or <code>error</code> transitions.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'async-state' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }];
   protected readonly _exTs: string = `import { CngxToaster, CngxToastOn } from '@cngx/ui/feedback';
 import { createManualState } from '@cngx/common/data';
 import { SampleToastBody } from './sample-toast-body';

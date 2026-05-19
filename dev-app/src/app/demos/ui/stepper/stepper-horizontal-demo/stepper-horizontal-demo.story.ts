@@ -7,6 +7,10 @@ export const STORY: DemoSpec = {
   description:
     '<code>&lt;cngx-stepper&gt;</code> in horizontal orientation (default). Strip + panels stacked. Reactive ARIA + roving tabindex via composed host-directives.',
   apiComponents: ['CngxStepper', 'CngxStep', 'CngxStepContent'],
+  level: 'organism',
+  audience: ['dev', 'design', 'a11y'],
+  artifact: 'standalone',
+  focus: ['composition', 'a11y-pattern', 'behavior'],
   moduleImports: [
     "import { CngxStep, CngxStepContent } from '@cngx/common/stepper';",
     "import { CngxStepper } from '@cngx/ui/stepper';",

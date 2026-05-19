@@ -7,6 +7,10 @@ export const STORY: DemoSpec = {
   description:
     'Use <code>&lt;ng-template cngxStepLabel&gt;</code> to override the per-step label rendering with arbitrary content — icons, badges, counters, multi-line text. The first step uses the simple <code>[label]="..."</code> Input (default string rendering); the remaining steps use the slot template to demonstrate icon + text + counter composition. Both paths render inside the same strip button — the slot is purely additive.',
   apiComponents: ['CngxStepper', 'CngxStep', 'CngxStepLabel', 'CngxStepContent'],
+  level: 'organism',
+  audience: ['dev', 'design'],
+  artifact: 'standalone',
+  focus: ['composition', 'visual-variants'],
   moduleImports: [
     "import { CngxStep, CngxStepContent, CngxStepLabel } from '@cngx/common/stepper';",
     "import { CngxStepper } from '@cngx/ui/stepper';",

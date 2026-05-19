@@ -7,6 +7,10 @@ export const STORY: DemoSpec = {
   description:
     '<code>&lt;cngx-tab-group&gt;</code> in horizontal orientation (default). W3C Tabs ARIA pattern — <code>role="tablist"</code> strip, <code>role="tab"</code> headers, <code>role="tabpanel"</code> bodies. Roving tabindex via composed host-directive.',
   apiComponents: ['CngxTabGroup', 'CngxTab', 'CngxTabLabel', 'CngxTabContent'],
+  level: 'organism',
+  audience: ['dev', 'design', 'a11y'],
+  artifact: 'standalone',
+  focus: ['composition', 'a11y-pattern', 'behavior'],
   moduleImports: [
     "import { CngxTab, CngxTabLabel, CngxTabContent } from '@cngx/common/tabs';",
     "import { CngxTabGroup } from '@cngx/ui/tabs';",

@@ -5,6 +5,10 @@ export const STORY: DemoSpec = {
   navLabel: 'SpeakButton',
   description: 'Ready-made speaker button component that connects to a CngxSpeak directive. Fully themeable via CSS custom properties.',
   apiComponents: ['CngxSpeakButton', 'CngxSpeak'],
+  level: 'molecule',
+  audience: ['dev', 'design', 'a11y'],
+  artifact: 'standalone',
+  focus: ['integration', 'a11y-pattern', 'behavior'],
   moduleImports: [
     "import { MatIconButton, MatMiniFabButton } from '@angular/material/button';",
     "import { MatIcon } from '@angular/material/icon';",

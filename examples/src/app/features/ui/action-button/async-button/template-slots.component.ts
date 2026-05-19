@@ -50,7 +50,7 @@ export class AsyncButtonTemplateSlots {
   protected readonly _exDescription: string = 'Action button molecule with built-in status templates. Zero boilerplate alternative to CngxAsyncClick.';
   protected readonly _exSectionTitle: string = 'Template Slots';
   protected readonly _exSubtitle: string = 'Project <code>cngxPending</code>, <code>cngxSucceeded</code>, <code>cngxFailed</code> templates for full control. The <code>cngxFailed</code> template receives the error as <code>let-err</code>.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'async-state' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'visual-variants' }];
   protected readonly _exTs: string = `import { CngxActionButton, CngxPending, CngxSucceeded, CngxFailed } from '@cngx/ui';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 

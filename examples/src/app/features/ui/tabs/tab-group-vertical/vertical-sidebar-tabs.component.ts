@@ -67,7 +67,7 @@ export class TabGroupVerticalVerticalSidebarTabs {
   protected readonly _exDescription: string = 'Sidebar layout — <code>[orientation]="vertical"</code> renders a 2-column grid with a vertical strip and a panel column. Roving tabindex switches to ArrowUp / ArrowDown semantics automatically.';
   protected readonly _exSectionTitle: string = 'Vertical sidebar tabs';
   protected readonly _exSubtitle: string = 'Pass <code>orientation="vertical"</code>. <code>aria-orientation</code> on the tablist plus <code>data-orientation</code> on the wrapper drive the layout split.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'focus', value: 'visual-variants' }];
   protected readonly _exTs: string = `import { CngxTab, CngxTabLabel, CngxTabContent } from '@cngx/common/tabs';
 import { CngxTabGroup } from '@cngx/ui/tabs';
 

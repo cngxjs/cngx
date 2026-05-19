@@ -61,7 +61,7 @@ export class AsyncContainerCreateasyncstateMutation {
   protected readonly _exDescription: string = 'Coordinates skeleton, content, empty, error, refresh, and toast from a single CngxAsyncState. Three factory functions, two template APIs, composable with other feedback atoms.';
   protected readonly _exSectionTitle: string = 'createAsyncState — Mutation';
   protected readonly _exSubtitle: string = 'For POST/PUT/DELETE. Uses <code>execute(fn)</code> which sets status to <code>pending</code>. 70% chance of success, 30% error.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'async-state' }, { dim: 'focus', value: 'error-handling' }, { dim: 'focus', value: 'composition' }];
   protected readonly _exTs: string = `import { CngxAsync, createManualState, createAsyncState, injectAsyncState } from '@cngx/common/data';
 
 // ── Simple *cngxAsync demos ──

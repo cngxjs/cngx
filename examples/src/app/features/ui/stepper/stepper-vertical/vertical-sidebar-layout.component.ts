@@ -61,7 +61,7 @@ export class StepperVerticalVerticalSidebarLayout {
   protected readonly _exDescription: string = '<code>[orientation]="\'vertical\'"</code> swaps the layout to a 2-column grid: strip in the sidebar, panels on the right. ArrowUp/ArrowDown for keyboard nav.';
   protected readonly _exSectionTitle: string = 'Vertical sidebar layout';
   protected readonly _exSubtitle: string = 'Same component, only <code>[orientation]</code> changes. The presenter forwards the value to <code>CngxRovingTabindex</code> so the keyboard semantics swap with the layout.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxStep, CngxStepContent } from '@cngx/common/stepper';
 import { CngxStepper } from '@cngx/ui/stepper';
 

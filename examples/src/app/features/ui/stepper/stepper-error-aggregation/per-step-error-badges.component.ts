@@ -67,7 +67,7 @@ export class StepperErrorAggregationPerStepErrorBadges {
   protected readonly _exDescription: string = 'Bind <code>[errorAggregator]</code> on a step to surface a badge + SR phrase whenever the aggregator opts to show errors. Compose <code>CngxErrorAggregator</code> on a fieldset; the step reads <code>shouldShow()</code> and <code>announcement()</code> reactively.';
   protected readonly _exSectionTitle: string = 'Per-step error badges';
   protected readonly _exSubtitle: string = 'Toggle the validity flags below — the step badge appears the moment <code>aggregator.shouldShow()</code> turns true. The descriptor span carries the announcement phrase for SR.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'error-handling' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }];
   protected readonly _exTs: string = `import { CngxStep, CngxStepContent } from '@cngx/common/stepper';
 import { CngxStepper } from '@cngx/ui/stepper';
 import { CngxErrorAggregator, CngxErrorSource } from '@cngx/common/interactive';

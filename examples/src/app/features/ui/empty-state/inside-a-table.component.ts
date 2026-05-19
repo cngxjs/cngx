@@ -67,7 +67,7 @@ export class EmptyStateInsideATable {
   protected readonly _exDescription: string = 'Universal empty-state atom for grids, tables, lists, and dashboards. Communicates why a view is empty and what the user can do next. Shows a default icon when none is projected.';
   protected readonly _exSectionTitle: string = 'Inside a Table';
   protected readonly _exSubtitle: string = 'Replaces table body when no rows match. The table header stays visible for context.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'visual-variants' }, { dim: 'focus', value: 'composition' }];
   protected readonly _exTs: string = `import { CngxEmptyState } from '@cngx/ui/empty-state';
 
 protected showTable = signal(true);

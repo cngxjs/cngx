@@ -89,7 +89,7 @@ export class SpeakButtonThemingCssCustomProperties {
   protected readonly _exDescription: string = 'Ready-made speaker button component that connects to a CngxSpeak directive. Fully themeable via CSS custom properties.';
   protected readonly _exSectionTitle: string = 'Theming — CSS Custom Properties';
   protected readonly _exSubtitle: string = 'Override <code>--cngx-speak-btn-*</code> variables on a parent element to customize size, color, radius, and animation. Each block below shows a different style.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'integration' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxSpeak } from '@cngx/common/interactive';
 import { CngxSpeakButton } from '@cngx/ui/speak';
 

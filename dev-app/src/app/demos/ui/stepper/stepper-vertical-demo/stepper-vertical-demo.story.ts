@@ -7,6 +7,10 @@ export const STORY: DemoSpec = {
   description:
     '<code>[orientation]="\'vertical\'"</code> swaps the layout to a 2-column grid: strip in the sidebar, panels on the right. ArrowUp/ArrowDown for keyboard nav.',
   apiComponents: ['CngxStepper', 'CngxStep', 'CngxStepContent'],
+  level: 'organism',
+  audience: ['dev', 'design', 'a11y'],
+  artifact: 'standalone',
+  focus: ['composition', 'a11y-pattern', 'behavior'],
   moduleImports: [
     "import { CngxStep, CngxStepContent } from '@cngx/common/stepper';",
     "import { CngxStepper } from '@cngx/ui/stepper';",

@@ -7,6 +7,10 @@ export const STORY: DemoSpec = {
   description:
     'Sidebar layout — <code>[orientation]="vertical"</code> renders a 2-column grid with a vertical strip and a panel column. Roving tabindex switches to ArrowUp / ArrowDown semantics automatically.',
   apiComponents: ['CngxTabGroup', 'CngxTab', 'CngxTabLabel', 'CngxTabContent'],
+  level: 'organism',
+  audience: ['dev', 'design', 'a11y'],
+  artifact: 'standalone',
+  focus: ['composition', 'a11y-pattern', 'visual-variants'],
   moduleImports: [
     "import { CngxTab, CngxTabLabel, CngxTabContent } from '@cngx/common/tabs';",
     "import { CngxTabGroup } from '@cngx/ui/tabs';",

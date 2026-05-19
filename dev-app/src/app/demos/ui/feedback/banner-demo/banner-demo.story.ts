@@ -6,6 +6,10 @@ export const STORY: DemoSpec = {
   navCategory: 'feedback',
   description: 'Global system-level banners for session timeout, maintenance, offline status. Sticky top, always persistent, dedup by id, async action lifecycle.',
   apiComponents: ['CngxBannerOutlet', 'CngxBanner'],
+  level: 'organism',
+  audience: ['dev', 'design', 'a11y'],
+  artifact: 'standalone',
+  focus: ['async-state', 'visual-variants', 'a11y-pattern'],
   moduleImports: [
     "import { CngxBanner } from '@cngx/ui/feedback';",
   ],

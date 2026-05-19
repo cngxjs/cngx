@@ -70,7 +70,7 @@ export class StepperSlotOverridesRejectionDecorationViaCodeCngxsteprejectionCode
   protected readonly _exDescription: string = 'Override every visual region inside <code>&lt;cngx-stepper&gt;</code> via the six new slot directives — <code>*cngxStepIndicator</code>, <code>*cngxStepBadge</code>, <code>*cngxStepBusySpinner</code>, <code>*cngxStepRejection</code>, <code>*cngxStepGroupHeader</code>, <code>*cngxStepperEmpty</code>. Each slot ships a typed context object — destructure via <code>let-status="status"</code> / <code>let-failedIndex="failedIndex"</code> / <code>let-group="group"</code> / etc. The library renders sensible defaults; the slots are purely additive.';
   protected readonly _exSectionTitle: string = 'Rejection-decoration via <code>*cngxStepRejection</code>';
   protected readonly _exSubtitle: string = 'Surface a commit rollback visually — when <code>commitAction</code> rejects, the presenter sets <code>lastFailedIndex</code> and the slot fires for the rejected step. Context is <code>{ failedIndex, originLabel?, node }</code>. Click "Next" to advance to "Security"; the first attempt rejects, the rejection-icon appears, and a retry succeeds.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'visual-variants' }];
   protected readonly _exTs: string = `import { CngxStep, CngxStepContent, type CngxStepperCommitAction, CngxStepRejection } from '@cngx/common/stepper';
 import { CngxStepper } from '@cngx/ui/stepper';
 

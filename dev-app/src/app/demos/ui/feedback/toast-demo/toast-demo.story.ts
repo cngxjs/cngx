@@ -6,6 +6,10 @@ export const STORY: DemoSpec = {
   navCategory: 'feedback',
   description: 'Programmatic and declarative toast notifications with dedup, timer pause on hover/touch, and severity-based styling.',
   apiComponents: ['CngxToastOutlet', 'CngxToastOn', 'CngxToaster', 'CngxToast'],
+  level: 'organism',
+  audience: ['dev', 'design', 'a11y'],
+  artifact: 'standalone',
+  focus: ['async-state', 'composition', 'a11y-pattern'],
   moduleImports: [
     "import { CngxToaster, CngxToast, CngxToastOn } from '@cngx/ui/feedback';",
     "import { createManualState } from '@cngx/common/data';",

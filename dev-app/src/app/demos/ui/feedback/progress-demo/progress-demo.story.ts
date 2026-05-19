@@ -6,6 +6,10 @@ export const STORY: DemoSpec = {
   navCategory: 'feedback',
   description: 'Determinate/indeterminate progress indicator. Linear bar or circular variant. CSS transition smoothing for jumpy updates.',
   apiComponents: ['CngxProgress'],
+  level: 'atom',
+  audience: ['dev', 'design', 'a11y'],
+  artifact: 'standalone',
+  focus: ['visual-variants', 'async-state', 'a11y-pattern'],
   moduleImports: [
     "import { CngxProgress } from '@cngx/ui/feedback';",
   ],

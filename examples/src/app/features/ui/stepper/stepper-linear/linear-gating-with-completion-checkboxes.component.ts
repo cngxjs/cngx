@@ -77,7 +77,7 @@ export class StepperLinearLinearGatingWithCompletionCheckboxes {
   protected readonly _exDescription: string = 'Bind <code>[linear]="true"</code> to enforce sequential progression: the user must complete each step in order before advancing. Steps are toggled <code>completed</code> via the per-step <code>state</code> aggregator (here exposed via per-step checkboxes for the demo). The strip\'s <code>aria-disabled</code> + <code>aria-current</code> reflect the editability rule reactively — non-completed forward steps reject clicks, but past completed steps remain navigable.';
   protected readonly _exSectionTitle: string = 'Linear gating with completion checkboxes';
   protected readonly _exSubtitle: string = 'Tick the per-step "complete" checkbox to unlock the next step. Linear mode enforces ordering — clicks on non-completed forward steps are rejected by the presenter; past completed steps remain editable.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'behavior' }, { dim: 'focus', value: 'a11y-pattern' }];
   protected readonly _exTs: string = `import { CngxStep, CngxStepContent } from '@cngx/common/stepper';
 import { CngxStepper } from '@cngx/ui/stepper';
 
