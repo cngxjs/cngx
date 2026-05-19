@@ -2,8 +2,8 @@
 // Generates naked iframe-target demo components into examples/.
 //
 // Reads:
-//   - examples/_manifest.json      list of approved demo folders (relative to dev-app/src/app/demos/)
-//   - dev-app/src/app/demos/**/*.story.ts
+//   - examples/_manifest.json      list of approved demo folders (relative to examples/stories/)
+//   - examples/stories/**/*.story.ts
 //
 // Writes (overwriting only files marked @generated):
 //   - examples/src/app/features/<demo>/<section-slug>.component.ts
@@ -17,7 +17,7 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
-const DEMOS_ROOT = join(ROOT, 'dev-app', 'src', 'app', 'demos');
+const DEMOS_ROOT = join(ROOT, 'examples', 'stories');
 const EXAMPLES_APP = join(ROOT, 'examples', 'src', 'app');
 const FEATURES_DIR = join(EXAMPLES_APP, 'features');
 const MANIFEST = join(ROOT, 'examples', '_manifest.json');
@@ -174,11 +174,11 @@ async function buildSelectorMap() {
       if (selectorMatches.length === 0 && exportAsMatches.length === 0) continue;
       const selectors = [];
       if (selectorMatches.length > 0) {
-        const last = selectorMatches[selectorMatches.length - 1];
+        const last = selectorMatches.at(-1);
         selectors.push(...last[1].split(',').map((s) => s.trim()).filter(Boolean));
       }
       if (exportAsMatches.length > 0) {
-        const last = exportAsMatches[exportAsMatches.length - 1];
+        const last = exportAsMatches.at(-1);
         // exportAs can also be comma-separated.
         selectors.push(...last[1].split(',').map((s) => s.trim()).filter(Boolean));
       }
@@ -277,7 +277,7 @@ function buildImports(story, section, importMap, featureDepth = 2) {
   /** Check whether `id` appears as a standalone identifier in scanText. */
   function isReferenced(id) {
     if (explicitRefs.has(id)) return true;
-    const re = new RegExp(`\\b${id.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&')}\\b`);
+    const re = new RegExp(String.raw`\b${id.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&')}\b`);
     return re.test(scanText);
   }
 
@@ -301,16 +301,20 @@ function buildImports(story, section, importMap, featureDepth = 2) {
     return `${head} ${kept.join(', ')} ${tail.trim()}`;
   }
 
-  /** Rewrite dev-app-relative paths to the examples app's layout. */
+  // Rewrite story-relative paths to the generated component's layout.
+  // upPrefix walks up to `examples/src/app/`. fixturesUpPrefix walks two
+  // more levels up to `examples/` so the generic `fixtures` rewrite lands
+  // on the relocated `examples/fixtures/` (post dev-app → examples sprint).
+  // `_fixtures` (forms-only runtime helpers) still resolves to
+  // `examples/src/app/_fixtures/`.
   const upPrefix = '../'.repeat(featureDepth);
+  const fixturesUpPrefix = '../'.repeat(featureDepth + 2);
   function rewritePaths(line) {
     if (!line) return line;
-    // forms-only `../_fixtures/<file>` — keep the underscore-prefixed dir.
     if (/'(?:\.\.\/)+_fixtures\//.test(line)) {
       return line.replace(/'(?:\.\.\/)+_fixtures\/([^']+)'/, `'${upPrefix}_fixtures/$1'`);
     }
-    // generic `../...fixtures[/...]` → '<depth>fixtures' (depth-aware).
-    return line.replace(/'(?:\.\.\/)+([^']*fixtures(?:[^']*)?)'/, `'${upPrefix}fixtures'`);
+    return line.replace(/'(?:\.\.\/)+([^']*fixtures(?:[^']*)?)'/, `'${fixturesUpPrefix}fixtures'`);
   }
 
   const filteredModuleImports = (story.moduleImports ?? [])
@@ -355,7 +359,7 @@ function buildImports(story, section, importMap, featureDepth = 2) {
 
 /** Escape a string for use as a TypeScript single-quoted literal. */
 function tsQuote(s) {
-  return "'" + String(s).replaceAll('\\', '\\\\').replaceAll("'", "\\'") + "'";
+  return "'" + String(s).replaceAll('\\', '\\\\').replaceAll("'", String.raw`\'`) + "'";
 }
 
 /** Remove TS line and block comments so a class name buried in a comment doesn't count as a reference. */
@@ -398,7 +402,7 @@ function stripEventGrid(html) {
       if (/^<div\b/.test(rest)) {
         depth++;
         i = lt + 4;
-      } else if (/^<\/div>/.test(rest)) {
+      } else if (rest.startsWith("</div>")) {
         depth--;
         if (depth === 0) {
           end = lt + 6;
@@ -428,9 +432,11 @@ function dedent(s) {
   const indents = lines
     .filter((l) => l.trim().length > 0)
     .map((l) => /^( *)/.exec(l)[1].length);
-  if (indents.length === 0) return text;
+  if (indents.length === 0) {
+    return text;
+  }
   const min = Math.min(...indents);
-  if (min === 0) return text;
+  if (min === 0) { return text; }
   const pad = ' '.repeat(min);
   return lines.map((l) => (l.startsWith(pad) ? l.slice(min) : l)).join('\n');
 }
@@ -446,8 +452,143 @@ const SAFE_HTML_TAGS = new Set([
 ]);
 function escapeCustomElementTags(html) {
   return String(html).replace(/<\/?([a-zA-Z][a-zA-Z0-9-]*)\b[^>]*>/g, (match, tag) => {
-    return SAFE_HTML_TAGS.has(tag.toLowerCase()) ? match : match.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return SAFE_HTML_TAGS.has(tag.toLowerCase()) ? match : match.replaceAll('<', '&lt;').replaceAll('>', '&gt;');
   });
+}
+
+/**
+ * Split a `setup` text block (a string passed verbatim into the generated
+ * component's class body) into individual top-level declarations. Each
+ * declaration is recognised by its head:
+ *   - field initialiser:  protected NAME = ...;
+ *   - method:             protected NAME(args)<: T>? { body }
+ * Multi-line forms are followed by brace-balance for methods and by `;`
+ * terminator for fields.
+ *
+ * Used by `pruneStorySetup` — we never want to emit a story-level
+ * declaration into a section's displayed `_exTs` if the section doesn't
+ * reference it. The live class body still gets the full setup so
+ * cross-section shared state continues to work at runtime.
+ */
+function splitSetupDeclarations(setupText) {
+  const lines = String(setupText).split('\n');
+  const decls = [];
+  let i = 0;
+  while (i < lines.length) {
+    const line = lines[i];
+    if (!line.trim()) {
+      i++;
+      continue;
+    }
+    const m = new RegExp(/^\s*(?:(?:protected|private|public|readonly|static)\s+)+(\w+)\s*[=(:]/).exec(line);
+    if (!m) {
+      i++;
+      continue;
+    }
+    const name = m[1];
+    let block = line;
+    const headBeforeAssign = line.split('=')[0] ?? line;
+    // Treat arrow-function fields (`= (args) => { ... }`) like methods so
+    // brace-balance walks the whole body. Without this, the field-walker
+    // stops at the first `;` inside the arrow body and truncates the decl.
+    const isMethod = /\(/.test(headBeforeAssign) || /=>\s*\{/.test(line);
+    if (isMethod) {
+      let depth = 0;
+      let opened = false;
+      const countBraces = (s) => {
+        for (const ch of s) {
+          if (ch === '{') {
+            depth++;
+            opened = true;
+          } else if (ch === '}') {
+            depth--;
+          }
+        }
+      };
+      countBraces(line);
+      i++;
+      while (i < lines.length && (!opened || depth > 0)) {
+        block += '\n' + lines[i];
+        countBraces(lines[i]);
+        i++;
+      }
+    } else {
+      while (!block.trimEnd().endsWith(';') && i + 1 < lines.length) {
+        i++;
+        block += '\n' + lines[i];
+      }
+      i++;
+    }
+    decls.push({ name, code: block });
+  }
+  return decls;
+}
+
+/** Collect every identifier appearing in `text`. */
+function collectIdentifiers(text) {
+  const refs = new Set();
+  for (const m of String(text).matchAll(/\b([A-Za-z_$][A-Za-z0-9_$]*)\b/g)) {
+    refs.add(m[1]);
+  }
+  return refs;
+}
+
+/**
+ * Prune story-level setup so the section's displayed `_exTs` shows only
+ * declarations the section actually references. Cascades: if a kept
+ * declaration's body references another story-level identifier, that
+ * one is kept too. The live class body uses the unpruned setup.
+ */
+function pruneStorySetup(storySetup, section) {
+  if (!storySetup?.trim()) return '';
+  const decls = splitSetupDeclarations(storySetup);
+  if (decls.length === 0) return storySetup;
+  const refs = collectIdentifiers(
+    (section.setup ?? '') + '\n' + (section.template ?? ''),
+  );
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (const d of decls) {
+      if (!refs.has(d.name)) continue;
+      for (const m of d.code.matchAll(/\b([A-Za-z_$][A-Za-z0-9_$]*)\b/g)) {
+        if (!refs.has(m[1])) {
+          refs.add(m[1]);
+          changed = true;
+        }
+      }
+    }
+  }
+  return decls
+    .filter((d) => refs.has(d.name))
+    .map((d) => d.code)
+    .join('\n');
+}
+
+/**
+ * Merge story-level + section-level tag fields into the effective tag set
+ * for one section. Section-level `artifact`, `focus`, `framework` override
+ * the story-level value when present (per-dimension, not all-or-nothing).
+ * `level`, `audience`, `stability` are story-level only.
+ *
+ * Returns an array of `[dim, value]` pairs in the canonical chip order:
+ * atomic-level, audience, artifact, focus, stability (skipped when `stable`
+ * or null), framework. Multi-value dimensions emit one pair per value.
+ */
+function buildTagPairs(story, section) {
+  const pairs = [];
+  if (story.level) pairs.push(['atomic-level', story.level]);
+  for (const a of story.audience ?? []) pairs.push(['audience', a]);
+  const artifact = section.artifact ?? story.artifact;
+  if (artifact) pairs.push(['artifact', artifact]);
+  const focus = section.focus ?? story.focus ?? [];
+  for (const f of focus) pairs.push(['focus', f]);
+  if (story.stability && story.stability !== 'stable') {
+    pairs.push(['stability', story.stability]);
+  }
+  const framework = section.framework ?? story.framework;
+  if (framework) pairs.push(['framework', framework]);
+  return pairs;
 }
 
 function emitComponentSource(meta, story, section, importMap) {
@@ -465,7 +606,7 @@ function emitComponentSource(meta, story, section, importMap) {
   const tpl = section.template ?? '';
   const tplImports = (section.imports ?? []).filter((cls) => {
     if (!cls.startsWith('Cngx')) return true; // keep Angular / Material / pipes / modules
-    if (new RegExp(`\\b${cls}\\b`).test(tpl)) return true;
+    if (new RegExp(String.raw`\b${cls}\b`).test(tpl)) return true;
     const selectors = meta.selectorMap?.get(cls) ?? [];
     if (selectors.length === 0) return true; // unknown selector — keep to be safe
     for (const sel of selectors) {
@@ -476,7 +617,7 @@ function emitComponentSource(meta, story, section, importMap) {
       }
       const attrMatch = sel.match(/^\[([\w-]+)(?:[*~|^$]?=[^\]]*)?\]$/);
       if (attrMatch) {
-        if (new RegExp(`\\b${attrMatch[1]}\\b`).test(tpl)) return true;
+        if (new RegExp(String.raw`\b${attrMatch[1]}\b`).test(tpl)) return true;
         continue;
       }
       // Compound `<tag>[<attr>]` selectors — e.g. structural directives
@@ -487,7 +628,7 @@ function emitComponentSource(meta, story, section, importMap) {
       const compoundMatch = sel.match(/^([a-z][a-z0-9-]*)\[([\w-]+)(?:[*~|^$]?=[^\]]*)?\]$/);
       if (compoundMatch) {
         const [, tag, attr] = compoundMatch;
-        const tagOpenRe = new RegExp(`<${tag}\\b[^>]*\\b${attr}\\b`);
+        const tagOpenRe = new RegExp(String.raw`<${tag}\b[^>]*\b${attr}\b`);
         if (tagOpenRe.test(tpl)) return true;
         continue;
       }
@@ -516,11 +657,16 @@ function emitComponentSource(meta, story, section, importMap) {
   // Intro header: story title + description, then per-section title + subtitle.
   // description/overview/subtitle may contain HTML — render via [innerHTML]
   // bound to class properties so the template parser doesn't choke.
+  const tagPairs = buildTagPairs(story, section);
+  const tagFieldEntries = tagPairs
+    .map(([dim, value]) => `{ dim: ${tsQuote(dim)}, value: ${tsQuote(value)} }`)
+    .join(', ');
   const introFields = [
     `  protected readonly _exTitle: string = ${tsQuote(story.title ?? '')};`,
     `  protected readonly _exDescription: string = ${tsQuote(escapeCustomElementTags(story.description ?? ''))};`,
     `  protected readonly _exSectionTitle: string = ${tsQuote(section.title ?? '')};`,
     `  protected readonly _exSubtitle: string = ${tsQuote(escapeCustomElementTags(section.subtitle ?? ''))};`,
+    `  protected readonly _exTags: readonly { dim: string; value: string }[] = [${tagFieldEntries}];`,
   ].join('\n');
 
   // Source snippets shown in collapsible <details> blocks so consumers can
@@ -532,7 +678,12 @@ function emitComponentSource(meta, story, section, importMap) {
   // Dedent the raw setup blocks (NOT the .trim()-ed `setup` variable used
   // for the class body) so the first line still carries its full leading
   // indent and the dedent algorithm can see the true common prefix.
-  const rawSetupBlocks = [story.setup ?? '', section.setup ?? '']
+  // Story-level setup is per-section pruned here: the displayed `_exTs`
+  // shows only declarations this section references. The live class body
+  // (`setupBody` above) keeps the full unpruned setup so cross-section
+  // shared state still works at runtime.
+  const prunedStorySetup = pruneStorySetup(story.setup ?? '', section);
+  const rawSetupBlocks = [prunedStorySetup, section.setup ?? '']
     .filter((b) => b && b.trim().length > 0)
     .join('\n\n');
   const dedentedSetup = dedent(rawSetupBlocks);
@@ -546,8 +697,15 @@ function emitComponentSource(meta, story, section, importMap) {
   const intro = [
     `    <header class="cngx-ex-intro">`,
     `      @if (_exTitle) { <h1>{{ _exTitle }}</h1> }`,
-    `      @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }`,
     `      @if (_exSectionTitle && _exSectionTitle !== _exTitle) { <h2>{{ _exSectionTitle }}</h2> }`,
+    `      @if (_exTags.length > 0) {`,
+    `        <ul class="cngx-ex-tags" aria-label="Tags">`,
+    `          @for (t of _exTags; track t.dim + ':' + t.value) {`,
+    `            <li class="cngx-ex-tag" [attr.data-dim]="t.dim" [attr.data-value]="t.value">{{ t.value }}</li>`,
+    `          }`,
+    `        </ul>`,
+    `      }`,
+    `      @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }`,
     `      @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }`,
     `    </header>`,
   ].join('\n');
@@ -569,7 +727,7 @@ function emitComponentSource(meta, story, section, importMap) {
   const template = section.template.trim().replaceAll('`', '\\`').replaceAll('${', '\\${');
 
   return `${GEN_HEADER}
-// Source: dev-app/src/app/demos/${meta.demoFolder}/${meta.storyFileName}#section[${meta.sectionIndex}] "${section.title}"
+// Source: examples/stories/${meta.demoFolder}/${meta.storyFileName}#section[${meta.sectionIndex}] "${section.title}"
 
 ${lines.join('\n')}
 
@@ -634,6 +792,12 @@ function emitRoutesMetaSource(routes) {
     demo: r.demoTitle,
     section: r.sectionTitle,
     apiComponents: r.apiComponents,
+    level: r.level ?? null,
+    audience: r.audience,
+    artifact: r.artifact ?? null,
+    focus: r.focus,
+    stability: r.stability ?? null,
+    framework: r.framework ?? null,
   })},`).join('\n');
   return `${GEN_HEADER}
 export interface RouteMeta {
@@ -646,6 +810,12 @@ export interface RouteMeta {
   demo: string;
   section: string;
   apiComponents: string[];
+  level: 'atom' | 'molecule' | 'organism' | null;
+  audience: ('dev' | 'design' | 'a11y')[];
+  artifact: 'standalone' | 'building-block' | null;
+  focus: ('visual-variants' | 'behavior' | 'a11y-pattern' | 'integration' | 'error-handling' | 'async-state' | 'composition')[];
+  stability: 'stable' | 'experimental' | 'deprecated' | null;
+  framework: 'signal-forms' | 'reactive-forms' | 'template-only' | 'programmatic' | null;
 }
 
 export const ROUTES_META: readonly RouteMeta[] = [
@@ -668,7 +838,7 @@ async function main() {
   const manifestRaw = await readFile(MANIFEST, 'utf8');
   const manifest = JSON.parse(manifestRaw);
   if (!Array.isArray(manifest.approved)) {
-    throw new Error('manifest.approved must be an array of demo folder paths relative to dev-app/src/app/demos/');
+    throw new TypeError('manifest.approved must be an array of demo folder paths relative to examples/stories/');
   }
 
   await resetFeaturesDir();
@@ -705,20 +875,20 @@ async function main() {
     const derivedCategory = parts.length === 3
       ? parts[1]
       : (() => {
-          const counts = new Map();
-          for (const line of story.moduleImports ?? []) {
-            const m = line.match(new RegExp(`from\\s+['"]@cngx/${lib}/([\\w-]+)['"]`));
-            if (m) counts.set(m[1], (counts.get(m[1]) ?? 0) + 1);
-          }
-          for (const sym of story.apiComponents ?? []) {
-            const pkg = importMap.get(sym);
-            if (!pkg) continue;
-            const m = pkg.match(new RegExp(`^@cngx/${lib}/([\\w-]+)$`));
-            if (m) counts.set(m[1], (counts.get(m[1]) ?? 0) + 1);
-          }
-          if (counts.size === 0) return '';
-          return [...counts.entries()].sort((a, b) => b[1] - a[1])[0][0];
-        })();
+        const counts = new Map();
+        for (const line of story.moduleImports ?? []) {
+          const m = line.match(new RegExp(String.raw`from\s+['"]@cngx/${lib}/([\w-]+)['"]`));
+          if (m) counts.set(m[1], (counts.get(m[1]) ?? 0) + 1);
+        }
+        for (const sym of story.apiComponents ?? []) {
+          const pkg = importMap.get(sym);
+          if (!pkg) continue;
+          const m = new RegExp(new RegExp(String.raw`^@cngx/${lib}/([\w-]+)$`)).exec(pkg);
+          if (m) counts.set(m[1], (counts.get(m[1]) ?? 0) + 1);
+        }
+        if (counts.size === 0) return '';
+        return [...counts.entries()].sort((a, b) => b[1] - a[1])[0][0];
+      })();
 
     // Collapse a redundant `category/category-demo` nesting (common/card/card-demo,
     // forms/select-demo with derived category=select, …).
@@ -810,6 +980,12 @@ async function main() {
         demoTitle: story.title,
         sectionTitle: section.title,
         apiComponents: story.apiComponents ?? [],
+        level: story.level,
+        audience: story.audience ?? [],
+        artifact: section.artifact ?? story.artifact,
+        focus: section.focus ?? story.focus ?? [],
+        stability: story.stability,
+        framework: section.framework ?? story.framework,
       });
     }
     console.log(`Generated ${sections.length} components for ${demoFolder}`);

@@ -222,6 +222,19 @@
   }
 
   /**
+   * Muted text color — secondary labels, helper copy, timestamps,
+   * disabled-looking captions. Same hue + chroma as `--cngx-color-text`
+   * with a single-step lightness delta so the muted variant tracks
+   * theme inversions automatically.
+   * @group Surface
+   */
+  @property --cngx-color-text-muted {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.5 0.01 250);
+  }
+
+  /**
    * Neutral border color — hairlines, dividers, input strokes.
    * @group Surface
    */
@@ -370,6 +383,7 @@
     color-scheme: light;
     --cngx-color-surface: oklch(1 0 0);
     --cngx-color-text: oklch(0.2 0.01 250);
+    --cngx-color-text-muted: oklch(0.5 0.01 250);
     --cngx-color-border: oklch(0.88 0.005 250);
     --cngx-color-primary: oklch(0.66 0.19 50);
     --cngx-color-danger: oklch(0.6 0.18 25);
@@ -389,6 +403,7 @@
       color-scheme: dark;
       --cngx-color-surface: oklch(0.2 0.01 250);
       --cngx-color-text: oklch(0.95 0.01 250);
+      --cngx-color-text-muted: oklch(0.7 0.01 250);
       --cngx-color-border: oklch(0.32 0.005 250);
       --cngx-color-primary: oklch(0.72 0.18 50);
       --cngx-color-danger: oklch(0.68 0.17 25);
@@ -410,6 +425,7 @@
     color-scheme: dark;
     --cngx-color-surface: oklch(0.2 0.01 250);
     --cngx-color-text: oklch(0.95 0.01 250);
+    --cngx-color-text-muted: oklch(0.7 0.01 250);
     --cngx-color-border: oklch(0.32 0.005 250);
     --cngx-color-primary: oklch(0.72 0.18 50);
     --cngx-color-danger: oklch(0.68 0.17 25);
@@ -428,6 +444,7 @@
     color-scheme: light;
     --cngx-color-surface: oklch(1 0 0);
     --cngx-color-text: oklch(0.2 0.01 250);
+    --cngx-color-text-muted: oklch(0.5 0.01 250);
     --cngx-color-border: oklch(0.88 0.005 250);
     --cngx-color-primary: oklch(0.66 0.19 50);
     --cngx-color-danger: oklch(0.6 0.18 25);

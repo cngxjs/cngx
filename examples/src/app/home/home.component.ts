@@ -18,6 +18,96 @@ import type { CngxTreeNode } from '@cngx/utils';
 import { ROUTES_META, type RouteMeta } from '../_routes-meta';
 
 const STORAGE_KEY = 'cngx-examples-tree-open';
+const TAG_FILTER_KEY = 'cngx-examples-tag-filter';
+
+/**
+ * Filterable tag dimensions and their values. `stability` lists only
+ * `experimental` and `deprecated` — `stable` is the implicit default and
+ * showing it as a chip would match nearly every route.
+ */
+const TAG_DIMS: readonly { key: string; label: string; values: readonly string[] }[] = [
+  { key: 'atomic-level', label: 'level', values: ['atom', 'molecule', 'organism'] },
+  { key: 'audience', label: 'audience', values: ['dev', 'design', 'a11y'] },
+  { key: 'artifact', label: 'artifact', values: ['standalone', 'building-block'] },
+  {
+    key: 'focus',
+    label: 'focus',
+    values: [
+      'visual-variants',
+      'behavior',
+      'a11y-pattern',
+      'integration',
+      'error-handling',
+      'async-state',
+      'composition',
+    ],
+  },
+  { key: 'stability', label: 'stability', values: ['experimental', 'deprecated'] },
+  {
+    key: 'framework',
+    label: 'framework',
+    values: ['signal-forms', 'reactive-forms', 'template-only', 'programmatic'],
+  },
+];
+
+function matchesTagDim(r: RouteMeta, dim: string, values: ReadonlySet<string>): boolean {
+  switch (dim) {
+    case 'atomic-level':
+      return r.level !== null && values.has(r.level);
+    case 'audience':
+      return r.audience.some((a) => values.has(a));
+    case 'artifact':
+      return r.artifact !== null && values.has(r.artifact);
+    case 'focus':
+      return r.focus.some((f) => values.has(f));
+    case 'stability':
+      return r.stability !== null && values.has(r.stability);
+    case 'framework':
+      return r.framework !== null && values.has(r.framework);
+    default:
+      return true;
+  }
+}
+
+function loadTagFilter(): ReadonlyMap<string, ReadonlySet<string>> {
+  try {
+    const raw = localStorage.getItem(TAG_FILTER_KEY);
+    if (!raw) {
+      return new Map();
+    }
+    const parsed = JSON.parse(raw) as unknown;
+    if (!parsed || typeof parsed !== 'object') {
+      return new Map();
+    }
+    const out = new Map<string, ReadonlySet<string>>();
+    for (const [k, v] of Object.entries(parsed as Record<string, unknown>)) {
+      if (Array.isArray(v)) {
+        out.set(k, new Set(v.filter((x): x is string => typeof x === 'string')));
+      }
+    }
+    return out;
+  } catch {
+    return new Map();
+  }
+}
+
+function saveTagFilter(filter: ReadonlyMap<string, ReadonlySet<string>>): void {
+  try {
+    const obj: Record<string, string[]> = {};
+    for (const [k, v] of filter) {
+      if (v.size > 0) {
+        obj[k] = [...v];
+      }
+    }
+    if (Object.keys(obj).length === 0) {
+      localStorage.removeItem(TAG_FILTER_KEY);
+    } else {
+      localStorage.setItem(TAG_FILTER_KEY, JSON.stringify(obj));
+    }
+  } catch {
+    /* ignore */
+  }
+}
 
 function loadOpenIds(): readonly string[] | null {
   try {
@@ -116,6 +206,40 @@ function buildCngxTree(routes: readonly RouteMeta[]): readonly CngxTreeNode<Node
         {{ allOpen() ? 'Collapse all' : 'Expand all' }}
       </button>
       <span class="meta">{{ routesMatched() }} of {{ totalRoutes }} entries</span>
+    </div>
+
+    <div class="tag-filter">
+      @for (dim of tagDims; track dim.key) {
+        <div class="tag-filter__group">
+          <span class="tag-filter__label">{{ dim.label }}:</span>
+          @for (v of dim.values; track v) {
+            <button
+              type="button"
+              class="tag-filter__chip"
+              [attr.data-dim]="dim.key"
+              [attr.data-value]="v"
+              [class.is-active]="isTagSelected(dim.key, v)"
+              [class.is-empty]="countFor(dim.key, v) === 0"
+              [disabled]="countFor(dim.key, v) === 0"
+              [attr.aria-pressed]="isTagSelected(dim.key, v)"
+              [attr.title]="
+                countFor(dim.key, v) === 0
+                  ? 'No demos tagged with ' + dim.key + ': ' + v + ' yet'
+                  : countFor(dim.key, v) + ' demos'
+              "
+              (click)="toggleTag(dim.key, v)"
+            >
+              {{ v }}
+              <span class="tag-filter__count">{{ countFor(dim.key, v) }}</span>
+            </button>
+          }
+        </div>
+      }
+      @if (anyTagSelected()) {
+        <button type="button" class="tag-filter__clear" (click)="clearTags()">
+          Clear tags
+        </button>
+      }
     </div>
 
     <hr />
@@ -321,6 +445,122 @@ function buildCngxTree(routes: readonly RouteMeta[]): readonly CngxTreeNode<Node
         outline: 1px dotted var(--col-focus);
         outline-offset: 1px;
       }
+      .tag-filter {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 6px 12px;
+        margin: 4px 0 6px;
+        font-size: 0.75rem;
+      }
+      .tag-filter__group {
+        display: inline-flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 3px;
+      }
+      .tag-filter__label {
+        color: var(--col-muted);
+        font-family: 'Courier New', Courier, monospace;
+      }
+      .tag-filter__chip {
+        appearance: none;
+        padding: 0 6px;
+        font: inherit;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 0.75rem;
+        line-height: 1.5;
+        color: var(--col-text);
+        background: var(--col-bg);
+        border: 1px solid var(--col-border);
+        border-left-width: 3px;
+        border-radius: 0;
+        cursor: pointer;
+      }
+      .tag-filter__chip[data-dim='atomic-level'] {
+        border-left-color: #2563eb;
+      }
+      .tag-filter__chip[data-dim='audience'] {
+        border-left-color: #16a34a;
+      }
+      .tag-filter__chip[data-dim='artifact'] {
+        border-left-color: #9333ea;
+      }
+      .tag-filter__chip[data-dim='focus'] {
+        border-left-color: #6b7280;
+      }
+      .tag-filter__chip[data-dim='framework'] {
+        border-left-color: #0891b2;
+      }
+      .tag-filter__chip[data-dim='stability'][data-value='experimental'] {
+        border-left-color: #d97706;
+        color: #d97706;
+      }
+      .tag-filter__chip[data-dim='stability'][data-value='deprecated'] {
+        border-left-color: #dc2626;
+        color: #dc2626;
+      }
+      :host-context(html[data-color-scheme='dark']) .tag-filter__chip[data-dim='atomic-level'],
+      :host-context(html.dark) .tag-filter__chip[data-dim='atomic-level'] {
+        border-left-color: #79c0ff;
+      }
+      :host-context(html[data-color-scheme='dark']) .tag-filter__chip[data-dim='audience'],
+      :host-context(html.dark) .tag-filter__chip[data-dim='audience'] {
+        border-left-color: #56d364;
+      }
+      :host-context(html[data-color-scheme='dark']) .tag-filter__chip[data-dim='artifact'],
+      :host-context(html.dark) .tag-filter__chip[data-dim='artifact'] {
+        border-left-color: #c39df0;
+      }
+      :host-context(html[data-color-scheme='dark']) .tag-filter__chip[data-dim='framework'],
+      :host-context(html.dark) .tag-filter__chip[data-dim='framework'] {
+        border-left-color: #5eead4;
+      }
+      .tag-filter__chip:hover:not(:disabled):not(.is-active) {
+        background: var(--col-hover);
+      }
+      .tag-filter__chip.is-active {
+        background: var(--col-text);
+        color: var(--col-bg);
+      }
+      .tag-filter__chip.is-active:hover:not(:disabled) {
+        background: var(--col-muted);
+      }
+      .tag-filter__chip:focus-visible {
+        outline: 1px dotted var(--col-focus);
+        outline-offset: 1px;
+      }
+      .tag-filter__chip.is-empty,
+      .tag-filter__chip:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+        text-decoration: line-through;
+        text-decoration-thickness: 1px;
+      }
+      .tag-filter__count {
+        margin-left: 4px;
+        color: var(--col-faint);
+        font-size: 0.7rem;
+      }
+      .tag-filter__chip.is-active .tag-filter__count {
+        color: var(--col-bg);
+        opacity: 0.7;
+      }
+      .tag-filter__clear {
+        appearance: none;
+        padding: 0 6px;
+        font: inherit;
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 0.75rem;
+        color: var(--col-link);
+        background: transparent;
+        border: 0;
+        text-decoration: underline;
+        cursor: pointer;
+      }
+      .tag-filter__clear:hover {
+        color: var(--col-link-hover);
+      }
       hr {
         border: none;
         border-top: 1px solid var(--col-border);
@@ -443,16 +683,86 @@ export class HomeComponent {
   private readonly router = inject(Router);
   protected readonly totalRoutes = ROUTES_META.length;
   protected readonly term = signal('');
+  protected readonly tagDims = TAG_DIMS;
+  private readonly tagFilter = signal<ReadonlyMap<string, ReadonlySet<string>>>(loadTagFilter());
+
+  /** Route count per (dim, value) — drives chip enable/disable state and count label. */
+  private readonly countsByTag = computed<ReadonlyMap<string, ReadonlyMap<string, number>>>(() => {
+    const out = new Map<string, Map<string, number>>();
+    for (const dim of TAG_DIMS) {
+      out.set(dim.key, new Map());
+    }
+    const bump = (dim: string, value: string): void => {
+      const m = out.get(dim)!;
+      m.set(value, (m.get(value) ?? 0) + 1);
+    };
+    for (const r of ROUTES_META) {
+      if (r.level) bump('atomic-level', r.level);
+      for (const a of r.audience) bump('audience', a);
+      if (r.artifact) bump('artifact', r.artifact);
+      for (const f of r.focus) bump('focus', f);
+      if (r.stability && r.stability !== 'stable') bump('stability', r.stability);
+      if (r.framework) bump('framework', r.framework);
+    }
+    return out;
+  });
+
+  protected countFor(dim: string, value: string): number {
+    return this.countsByTag().get(dim)?.get(value) ?? 0;
+  }
+
+  protected isTagSelected(dim: string, value: string): boolean {
+    return this.tagFilter().get(dim)?.has(value) ?? false;
+  }
+
+  protected anyTagSelected(): boolean {
+    for (const v of this.tagFilter().values()) {
+      if (v.size > 0) return true;
+    }
+    return false;
+  }
+
+  protected toggleTag(dim: string, value: string): void {
+    const next = new Map<string, ReadonlySet<string>>(this.tagFilter());
+    const prev = next.get(dim) ?? new Set<string>();
+    const draft = new Set(prev);
+    if (draft.has(value)) {
+      draft.delete(value);
+    } else {
+      draft.add(value);
+    }
+    if (draft.size === 0) {
+      next.delete(dim);
+    } else {
+      next.set(dim, draft);
+    }
+    this.tagFilter.set(next);
+    saveTagFilter(next);
+  }
+
+  protected clearTags(): void {
+    this.tagFilter.set(new Map());
+    saveTagFilter(new Map());
+  }
 
   private readonly filtered = computed<readonly RouteMeta[]>(() => {
     const t = this.term().trim().toLowerCase();
-    if (!t) {
+    const tags = this.tagFilter();
+    const hasTags = [...tags.values()].some((s) => s.size > 0);
+    if (!t && !hasTags) {
       return ROUTES_META;
     }
     return ROUTES_META.filter((r) => {
-      const haystack =
-        `${r.lib} ${r.category} ${r.demo} ${r.section} ${r.apiComponents.join(' ')}`.toLowerCase();
-      return haystack.includes(t);
+      if (t) {
+        const haystack =
+          `${r.lib} ${r.category} ${r.demo} ${r.section} ${r.apiComponents.join(' ')}`.toLowerCase();
+        if (!haystack.includes(t)) return false;
+      }
+      for (const [dim, values] of tags) {
+        if (values.size === 0) continue;
+        if (!matchesTagDim(r, dim, values)) return false;
+      }
+      return true;
     });
   });
 
@@ -506,12 +816,20 @@ export class HomeComponent {
 
   private filterSnapshot: ReadonlySet<string> | null = null;
 
+  private readonly isFiltering = computed(() => {
+    if (this.term().trim().length > 0) return true;
+    for (const v of this.tagFilter().values()) {
+      if (v.size > 0) return true;
+    }
+    return false;
+  });
+
   constructor() {
     // Persist user-driven expansion to localStorage, but ignore writes while
     // a filter is active so the snapshot survives the auto-expand churn.
     effect(() => {
       const ids = this.controller.expandedIds();
-      const filtering = this.term().trim().length > 0;
+      const filtering = this.isFiltering();
       if (!filtering) {
         untracked(() => saveOpenIds(ids));
       }
@@ -520,7 +838,7 @@ export class HomeComponent {
     // Filter mode: snapshot the current expanded set, then expand everything
     // so matches stay visible. Restore the snapshot when the filter clears.
     effect(() => {
-      const filtering = this.term().trim().length > 0;
+      const filtering = this.isFiltering();
       untracked(() => {
         if (filtering && this.filterSnapshot === null) {
           this.filterSnapshot = new Set(this.controller.expandedIds());
