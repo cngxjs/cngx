@@ -58,7 +58,7 @@ import { CngxFocusTrap } from '@cngx/common/a11y';
 
             <label style="display: flex; flex-direction: column; gap: 4px; font-size: 0.8125rem;">
               Category
-              <select style="padding: 6px 10px; border-radius: 4px; border: 1px solid var(--cngx-border, #ddd);">
+              <select style="padding: 6px 10px; border-radius: 4px; border: 1px solid var(--cngx-color-border, #ddd);">
                 <option>All categories</option>
                 <option>Electronics</option>
                 <option>Clothing</option>
@@ -158,7 +158,7 @@ protected drawerSide = signal<'left' | 'right'>('right');`;
 
       <label style="display: flex; flex-direction: column; gap: 4px; font-size: 0.8125rem;">
         Category
-        <select style="padding: 6px 10px; border-radius: 4px; border: 1px solid var(--cngx-border, #ddd);">
+        <select style="padding: 6px 10px; border-radius: 4px; border: 1px solid var(--cngx-color-border, #ddd);">
           <option>All categories</option>
           <option>Electronics</option>
           <option>Clothing</option>

@@ -1,13 +1,14 @@
-/*
+/**
+ * @overview
  * Low-level visual utility classes shared across the library. Lives
- * in @layer cngx.base so component-layer rules can override the
+ * in `@layer cngx.base` so component-layer rules can override the
  * utility without specificity wars.
  *
- * Today: only .cngx-sr-only (visually-hidden screen-reader-only
+ * Today: only `.cngx-sr-only` (visually-hidden screen-reader-only
  * content). The canonical declaration here is what consumers
- * importing @cngx/themes/cngx.css get out of the box; several
+ * importing `@cngx/themes/cngx.css` get out of the box; several
  * per-component files keep an identical local copy so each file
- * stays self-contained under styleUrl bundling.
+ * stays self-contained under `styleUrl` bundling.
  */
 
 @layer cngx.base {

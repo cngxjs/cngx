@@ -1,51 +1,318 @@
-/*
- * Material-styled variant of the treetable. Shares the same cdk-table
- * shape and BEM classes as the CDK variant but routes through
- * Material's mat-mdc-* selectors. Tokens carry the --cngx-mat-treetable-*
- * namespace (Material-bridge convention) and are not given system-token
- * fallbacks — consumers wire them via the mat-treetable-theme.scss mixin
- * (@include treetable.theme($theme)) alongside their Material theme.
- * Defaults below keep the component usable even without the mixin.
+/**
+ * @overview
+ * Material-styled variant of the treetable. Shares the same
+ * `cdk-table` shape and BEM classes as the CDK variant but routes
+ * through Material's `mat-mdc-*` selectors. Tokens carry the
+ * `--cngx-mat-treetable-*` namespace (Material-bridge convention)
+ * and are not given system-token fallbacks — consumers wire them via
+ * the `mat-treetable-theme.scss` mixin
+ * (`@include treetable.theme($theme)`) alongside their Material
+ * theme. Defaults below keep the component usable even without the
+ * mixin.
  */
 
 @layer cngx.tokens {
-  /* Layout */
-  @property --cngx-mat-treetable-header-container-height   { syntax: '<length>'; inherits: false; initial-value: 56px; }
-  @property --cngx-mat-treetable-row-item-container-height { syntax: '<length>'; inherits: false; initial-value: 52px; }
-  @property --cngx-mat-treetable-depth-indent              { syntax: '*'; inherits: true; initial-value: 1.5rem; }
-  @property --cngx-mat-treetable-expand-column-width       { syntax: '<length>'; inherits: false; initial-value: 40px; }
-  @property --cngx-mat-treetable-utility-padding-inline    { syntax: '<length>'; inherits: false; initial-value: 4px; }
-  @property --cngx-mat-treetable-empty-padding-block       { syntax: '*'; inherits: false; initial-value: 2rem; }
-  @property --cngx-mat-treetable-empty-padding-inline      { syntax: '*'; inherits: false; initial-value: 1rem; }
-  @property --cngx-mat-treetable-first-data-cell-padding-inline { syntax: '*'; inherits: false; initial-value: 1rem; }
+  /**
+   * Height of the header row container.
+   * @group Layout
+   */
+  @property --cngx-mat-treetable-header-container-height {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 56px;
+  }
 
-  /* Colors */
-  @property --cngx-mat-treetable-row-hover-color           { syntax: '<color>'; inherits: false; initial-value: oklch(0 0 0 / 0.04); }
-  @property --cngx-mat-treetable-row-selected-color        { syntax: '<color>'; inherits: false; initial-value: oklch(0.5 0.2 280 / 0.12); }
-  @property --cngx-mat-treetable-row-focus-ring            { syntax: '*'; inherits: false; initial-value: 2px solid currentColor; }
-  @property --cngx-mat-treetable-row-focus-ring-offset     { syntax: '<length>'; inherits: false; initial-value: -2px; }
-  @property --cngx-mat-treetable-empty-text-color          { syntax: '<color>'; inherits: true; initial-value: oklch(0 0 0 / 0.54); }
+  /**
+   * Height of each body row container.
+   * @group Layout
+   */
+  @property --cngx-mat-treetable-row-item-container-height {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 52px;
+  }
 
-  /* Typography */
-  @property --cngx-mat-treetable-empty-font-size           { syntax: '*'; inherits: false; initial-value: 0.875rem; }
+  /**
+   * Indent step per tree depth level. Multiplied by `--cngx-row-depth`
+   * to compute total inline-start padding.
+   * @group Layout
+   */
+  @property --cngx-mat-treetable-depth-indent {
+    syntax: '*';
+    inherits: true;
+    initial-value: 1.5rem;
+  }
 
-  /* Toggle button */
-  @property --cngx-mat-treetable-toggle-size               { syntax: '<length>'; inherits: false; initial-value: 32px; }
-  @property --cngx-mat-treetable-toggle-padding            { syntax: '<length>'; inherits: false; initial-value: 4px; }
+  /**
+   * Minimum width reserved for the expand column.
+   * @group Layout
+   */
+  @property --cngx-mat-treetable-expand-column-width {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 40px;
+  }
 
-  /* Motion */
-  @property --cngx-mat-treetable-row-transition-duration   { syntax: '<time>'; inherits: false; initial-value: 120ms; }
+  /**
+   * Inline padding applied to the expand and select utility columns.
+   * @group Layout
+   */
+  @property --cngx-mat-treetable-utility-padding-inline {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 4px;
+  }
 
-  /* Mobile breakpoint overrides */
-  @property --cngx-mat-treetable-narrow-row-height            { syntax: '<length>'; inherits: false; initial-value: 56px; }
-  @property --cngx-mat-treetable-narrow-header-height         { syntax: '<length>'; inherits: false; initial-value: 48px; }
-  @property --cngx-mat-treetable-narrow-depth-indent          { syntax: '*'; inherits: true; initial-value: 1.25rem; }
-  @property --cngx-mat-treetable-narrow-cell-padding-inline   { syntax: '<length>'; inherits: false; initial-value: 8px; }
-  @property --cngx-mat-treetable-narrow-cell-font-size        { syntax: '*'; inherits: false; initial-value: 0.8125rem; }
-  @property --cngx-mat-treetable-narrow-utility-padding-inline { syntax: '<length>'; inherits: false; initial-value: 2px; }
-  @property --cngx-mat-treetable-narrow-first-data-cell-padding-inline { syntax: '*'; inherits: false; initial-value: 0.875rem; }
-  @property --cngx-mat-treetable-narrow-toggle-size           { syntax: '<length>'; inherits: false; initial-value: 44px; }
-  @property --cngx-mat-treetable-narrow-toggle-padding        { syntax: '<length>'; inherits: false; initial-value: 10px; }
+  /**
+   * Block padding of the empty-state slot.
+   * @group State / Empty
+   */
+  @property --cngx-mat-treetable-empty-padding-block {
+    syntax: '*';
+    inherits: false;
+    initial-value: 2rem;
+  }
+
+  /**
+   * Inline padding of the empty-state slot.
+   * @group State / Empty
+   */
+  @property --cngx-mat-treetable-empty-padding-inline {
+    syntax: '*';
+    inherits: false;
+    initial-value: 1rem;
+  }
+
+  /**
+   * Inline padding of the first data cell (after the depth indent).
+   * @group Layout
+   */
+  @property --cngx-mat-treetable-first-data-cell-padding-inline {
+    syntax: '*';
+    inherits: false;
+    initial-value: 1rem;
+  }
+
+  /**
+   * Background applied on hover and `.cngx-treetable__row--highlighted`.
+   * @group State / Hover
+   */
+  @property --cngx-mat-treetable-row-hover-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0 0 0 / 0.04);
+  }
+
+  /**
+   * Background of the selected row — primary-tinted at 12% alpha.
+   * @group State / Selected
+   * @see [[--cngx-color-primary]]
+   */
+  @property --cngx-mat-treetable-row-selected-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.66 0.19 50 / 0.12);
+  }
+
+  /**
+   * Focus-ring outline shorthand.
+   * @group State / Focus
+   */
+  @property --cngx-mat-treetable-row-focus-ring {
+    syntax: '*';
+    inherits: false;
+    initial-value: 2px solid currentColor;
+  }
+
+  /**
+   * Outline offset of the row focus-ring — negative so the ring
+   * draws inside the row instead of pushing siblings.
+   * @group State / Focus
+   */
+  @property --cngx-mat-treetable-row-focus-ring-offset {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: -2px;
+  }
+
+  /**
+   * Text color of the empty-state slot.
+   * @group State / Empty
+   */
+  @property --cngx-mat-treetable-empty-text-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0 0 0 / 0.54);
+  }
+
+  /**
+   * Font-size of the empty-state slot.
+   * @group State / Empty
+   */
+  @property --cngx-mat-treetable-empty-font-size {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.875rem;
+  }
+
+  /**
+   * Hit-target diameter of the expand/collapse icon button.
+   * @group Layout
+   */
+  @property --cngx-mat-treetable-toggle-size {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 32px;
+  }
+
+  /**
+   * Padding inside the expand/collapse icon button.
+   * @group Layout
+   */
+  @property --cngx-mat-treetable-toggle-padding {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 4px;
+  }
+
+  /**
+   * Transition duration of the row background change.
+   * @group Motion
+   */
+  @property --cngx-mat-treetable-row-transition-duration {
+    syntax: '<time>';
+    inherits: false;
+    initial-value: 120ms;
+  }
+
+  /**
+   * Row height below the narrow breakpoint — bigger tap target
+   * (Material recommends ≥ 48 px).
+   * @group Variant / Narrow
+   */
+  @property --cngx-mat-treetable-narrow-row-height {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 56px;
+  }
+
+  /**
+   * Header row height below the narrow breakpoint.
+   * @group Variant / Narrow
+   */
+  @property --cngx-mat-treetable-narrow-header-height {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 48px;
+  }
+
+  /**
+   * Indent step per depth level below the narrow breakpoint —
+   * reduced so deep trees still fit on narrow screens.
+   * @group Variant / Narrow
+   */
+  @property --cngx-mat-treetable-narrow-depth-indent {
+    syntax: '*';
+    inherits: true;
+    initial-value: 1.25rem;
+  }
+
+  /**
+   * Cell inline padding below the narrow breakpoint.
+   * @group Variant / Narrow
+   */
+  @property --cngx-mat-treetable-narrow-cell-padding-inline {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 8px;
+  }
+
+  /**
+   * Cell font-size below the narrow breakpoint.
+   * @group Variant / Narrow
+   */
+  @property --cngx-mat-treetable-narrow-cell-font-size {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.8125rem;
+  }
+
+  /**
+   * Utility-cell inline padding below the narrow breakpoint.
+   * @group Variant / Narrow
+   */
+  @property --cngx-mat-treetable-narrow-utility-padding-inline {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 2px;
+  }
+
+  /**
+   * First-data-cell inline padding below the narrow breakpoint.
+   * @group Variant / Narrow
+   */
+  @property --cngx-mat-treetable-narrow-first-data-cell-padding-inline {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.875rem;
+  }
+
+  /**
+   * Toggle button diameter below the narrow breakpoint — ≥ 44 px
+   * touch target.
+   * @group Variant / Narrow
+   */
+  @property --cngx-mat-treetable-narrow-toggle-size {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 44px;
+  }
+
+  /**
+   * Toggle button padding below the narrow breakpoint.
+   * @group Variant / Narrow
+   */
+  @property --cngx-mat-treetable-narrow-toggle-padding {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 10px;
+  }
+
+  /* Color-scheme defaults for the alpha-tinted row backgrounds and
+   * the empty-state text. The Material-bridge convention is to leave
+   * these unanchored from `--cngx-color-*` so the
+   * `mat-treetable-theme.scss` mixin can override per Material theme;
+   * however the bare defaults must still adapt to the user's color
+   * scheme so the component reads correctly even without the mixin.
+   * Hover / selected flip from alpha-on-black to alpha-on-white;
+   * empty-text tracks the same axis. */
+  :root {
+    --cngx-mat-treetable-row-hover-color: oklch(0 0 0 / 0.04);
+    --cngx-mat-treetable-row-selected-color: oklch(0.66 0.19 50 / 0.12);
+    --cngx-mat-treetable-empty-text-color: oklch(0 0 0 / 0.54);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --cngx-mat-treetable-row-hover-color: oklch(1 0 0 / 0.06);
+      --cngx-mat-treetable-row-selected-color: oklch(0.72 0.18 50 / 0.18);
+      --cngx-mat-treetable-empty-text-color: oklch(1 0 0 / 0.6);
+    }
+  }
+
+  [data-color-scheme='dark'],
+  .dark {
+    --cngx-mat-treetable-row-hover-color: oklch(1 0 0 / 0.06);
+    --cngx-mat-treetable-row-selected-color: oklch(0.72 0.18 50 / 0.18);
+    --cngx-mat-treetable-empty-text-color: oklch(1 0 0 / 0.6);
+  }
+
+  [data-color-scheme='light'],
+  .light {
+    --cngx-mat-treetable-row-hover-color: oklch(0 0 0 / 0.04);
+    --cngx-mat-treetable-row-selected-color: oklch(0.66 0.19 50 / 0.12);
+    --cngx-mat-treetable-empty-text-color: oklch(0 0 0 / 0.54);
+  }
 }
 
 @layer cngx.components {
@@ -75,7 +342,7 @@
     }
 
     tr.mat-mdc-row.cngx-treetable__row--selected {
-      background: var(--cngx-mat-treetable-row-selected-color, oklch(0.5 0.2 280 / 0.12));
+      background: var(--cngx-mat-treetable-row-selected-color, oklch(0.66 0.19 50 / 0.12));
     }
 
     tr.mat-mdc-row.cngx-treetable__row--focused {
@@ -85,7 +352,7 @@
 
     .cngx-treetable__empty {
       padding: var(--cngx-mat-treetable-empty-padding-block, 2rem)
-               var(--cngx-mat-treetable-empty-padding-inline, 1rem);
+        var(--cngx-mat-treetable-empty-padding-inline, 1rem);
       text-align: center;
       color: var(--cngx-mat-treetable-empty-text-color, oklch(0 0 0 / 0.54));
       font-size: var(--cngx-mat-treetable-empty-font-size, 0.875rem);
@@ -102,8 +369,8 @@
 
     td.mat-mdc-cell.cngx-treetable__expand-cell {
       padding-inline-start: calc(
-        var(--cngx-row-depth, 0) * var(--cngx-mat-treetable-depth-indent, 1.5rem)
-          + var(--cngx-mat-treetable-utility-padding-inline, 4px)
+        var(--cngx-row-depth, 0) * var(--cngx-mat-treetable-depth-indent, 1.5rem) +
+          var(--cngx-mat-treetable-utility-padding-inline, 4px)
       );
     }
 
@@ -116,8 +383,8 @@
 
     .cngx-treetable__first-data-cell {
       padding-inline-start: calc(
-        var(--cngx-row-depth, 0) * var(--cngx-mat-treetable-depth-indent, 1.5rem)
-          + var(--cngx-mat-treetable-first-data-cell-padding-inline, 1rem)
+        var(--cngx-row-depth, 0) * var(--cngx-mat-treetable-depth-indent, 1.5rem) +
+          var(--cngx-mat-treetable-first-data-cell-padding-inline, 1rem)
       );
     }
 
@@ -131,8 +398,14 @@
     @media (max-width: 960px) {
       :scope {
         /* Taller rows = larger touch targets (Material recommends 48 px minimum) */
-        --cngx-mat-treetable-row-item-container-height: var(--cngx-mat-treetable-narrow-row-height, 56px);
-        --cngx-mat-treetable-header-container-height: var(--cngx-mat-treetable-narrow-header-height, 48px);
+        --cngx-mat-treetable-row-item-container-height: var(
+          --cngx-mat-treetable-narrow-row-height,
+          56px
+        );
+        --cngx-mat-treetable-header-container-height: var(
+          --cngx-mat-treetable-narrow-header-height,
+          48px
+        );
         /* Reduced indent step so deep trees still fit on narrow screens */
         --cngx-mat-treetable-depth-indent: var(--cngx-mat-treetable-narrow-depth-indent, 1.25rem);
       }
@@ -153,15 +426,15 @@
 
       td.mat-mdc-cell.cngx-treetable__expand-cell {
         padding-inline-start: calc(
-          var(--cngx-row-depth, 0) * var(--cngx-mat-treetable-depth-indent, 1.25rem)
-            + var(--cngx-mat-treetable-narrow-utility-padding-inline, 2px)
+          var(--cngx-row-depth, 0) * var(--cngx-mat-treetable-depth-indent, 1.25rem) +
+            var(--cngx-mat-treetable-narrow-utility-padding-inline, 2px)
         );
       }
 
       .cngx-treetable__first-data-cell {
         padding-inline-start: calc(
-          var(--cngx-row-depth, 0) * var(--cngx-mat-treetable-depth-indent, 1.25rem)
-            + var(--cngx-mat-treetable-narrow-first-data-cell-padding-inline, 0.875rem)
+          var(--cngx-row-depth, 0) * var(--cngx-mat-treetable-depth-indent, 1.25rem) +
+            var(--cngx-mat-treetable-narrow-first-data-cell-padding-inline, 0.875rem)
         );
       }
 

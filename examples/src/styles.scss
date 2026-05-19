@@ -6,15 +6,6 @@
 // fallbacks all ship from the cngx theming layers (reset/base/components),
 // imported below.
 
-// Theming — one consumer import gets everything that can't auto-bundle
-// (foundation + directive-CSS). Components with their own styleUrl bundle
-// independently via Angular and arrive automatically when imported in TS.
-// Replace with @cngx/themes/light.css or @cngx/themes/dark.css to force
-// a mode; write your own theme by pulling in the same source pieces.
-
-@use '@angular/material' as mat;
-@use '../../projects/themes/material/theme' as cngx-material;
-
 // Foundation: layer-order + system tokens + reset + base + aggregated
 // directive default CSS (bottom-sheet, backdrop, badge, divider, ripple,
 // async). @Directives cannot ship styleUrl so this single import is the
@@ -22,72 +13,17 @@
 // bottom-sheet as a centred plain <dialog>, ripples invisible, etc.
 @import '../../projects/themes/cngx.css';
 
-// Material 3 emits its --mat-sys-* tokens via mat.theme(<config-map>) — NOT via
-// mat.define-theme() + mat.all-component-themes(). That combination only
-// registers component-class rules without the system-token assignments the
-// cngx Material bridge relies on (--mat-sys-surface-*, --mat-sys-on-surface,
-// --mat-sys-primary, …). Keep both paths in sync per mode: emit the sys
-// tokens with the config map, hand the cngx bridge the equivalent theme
-// object so it can read palette colours and density.
-// mat.theme() takes the shorthand config (typography: Roboto, density: 0).
-// mat.define-theme() only accepts a color config — pass the colour subset so
-// the cngx Material bridge still receives a defined theme object for
-// mat.get-theme-color() / mat.get-theme-version() lookups.
-$light-color: (
-  theme-type: light,
-  primary: mat.$azure-palette,
-);
-
-$dark-color: (
-  theme-type: dark,
-  primary: mat.$azure-palette,
-);
-
-html {
-  @include mat.theme(
-    (
-      color: $light-color,
-      typography: Roboto,
-      density: 0,
-    )
-  );
-  @include cngx-material.theme(
-    mat.define-theme(
-      (
-        color: $light-color,
-      )
-    )
-  );
-}
-
-html.dark {
-  @include mat.theme(
-    (
-      color: $dark-color,
-      typography: Roboto,
-      density: 0,
-    )
-  );
-  @include cngx-material.theme(
-    mat.define-theme(
-      (
-        color: $dark-color,
-      )
-    )
-  );
-}
-
 :root {
-  // Pin the UA color-scheme to match the explicit theme so native form
-  // controls / scrollbars / details disclosure don't flip with the OS
-  // preference when compodocx is light and the user's OS is dark.
-  color-scheme: light;
-  // Inherit Material's body-medium type stack (set by mat.theme(...) above).
-  // The previous system-ui override here shadowed --mat-sys-body-medium-font
-  // and made the typography mappings in the cngx bridges look like no-ops.
-  font-family: var(--mat-sys-body-medium-font, system-ui, -apple-system, sans-serif);
-  font-size: var(--mat-sys-body-medium-size, 14px);
-  line-height: var(--mat-sys-body-medium-line-height, 1.5);
+  // `color-scheme` is owned by the foundation (`projects/core/theming/
+  // system-tokens.css`). It flips based on `data-color-scheme` and the
+  // OS media query — examples-app no longer pins it here.
+  font-family:
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
   --cngx-ex-bg: #ffffff;
   --cngx-ex-text: #1f2937;
   --cngx-ex-muted: #6b7280;
@@ -99,12 +35,15 @@ html.dark {
   --cngx-ex-focus: #2563eb;
   color: var(--cngx-ex-text);
 }
-// compodocx coordinates theme via a `.dark` class on <html> (and a
-// postMessage fallback for cross-origin iframes — see main.ts). Using
-// prefers-color-scheme would desync the iframe whenever the host doc's
-// user toggle disagreed with the OS, so we read the class instead.
+// main.ts mirrors the compodocx dark-mode preference onto
+// <html data-color-scheme="dark|light"> so the cngx foundation and the
+// examples-app chrome both read the same signal. The `.dark` / `.light`
+// class form is accepted in parallel (Tailwind/shadcn convention) so
+// consumers picking either path still get their shell colours.
+// Absence of every signal means no explicit preference — the
+// `@media (prefers-color-scheme: dark)` block then drives OS auto-follow.
+html[data-color-scheme='dark'],
 html.dark {
-  color-scheme: dark;
   --cngx-ex-bg: #111111;
   --cngx-ex-text: #e6e6e6;
   --cngx-ex-muted: #aaaaaa;
@@ -116,11 +55,53 @@ html.dark {
   --cngx-ex-focus: #79c0ff;
 }
 
+@media (prefers-color-scheme: dark) {
+  html:not([data-color-scheme='light']):not(.light) {
+    --cngx-ex-bg: #111111;
+    --cngx-ex-text: #e6e6e6;
+    --cngx-ex-muted: #aaaaaa;
+    --cngx-ex-faint: #777777;
+    --cngx-ex-border: #555555;
+    --cngx-ex-surface: #1a1a1a;
+    --cngx-ex-surface-alt: #1f1f1f;
+    --cngx-ex-highlight-bg: rgba(121, 192, 255, 0.18);
+    --cngx-ex-focus: #79c0ff;
+  }
+}
+
 body {
   margin: 0;
   padding: 16px;
   background: var(--cngx-ex-bg);
   color: var(--cngx-ex-text);
+}
+
+// Floating dark-mode debug toggle (mounted by main.ts after
+// bootstrapApplication). Bottom-right, monospace + sharp corners to
+// match the Apache mod_autoindex aesthetic of the home directory
+// listing. Cycles auto → dark → light → auto.
+#cngx-ex-color-scheme-toggle {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 99999;
+  display: inline-block;
+  padding: 2px 6px;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #d0d5dd));
+  border-radius: 0;
+  background: var(--cngx-color-surface, var(--cngx-ex-surface, #ffffff));
+  color: var(--cngx-color-text, var(--cngx-ex-text, #1f2937));
+  cursor: pointer;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.8125rem;
+  line-height: 1.2;
+}
+#cngx-ex-color-scheme-toggle:hover {
+  background: color-mix(in oklch, var(--cngx-color-surface, #fff), currentColor 6%);
+}
+#cngx-ex-color-scheme-toggle:focus-visible {
+  outline: 1px solid var(--cngx-color-primary, #4a8cff);
+  outline-offset: 1px;
 }
 
 // Intro header rendered by the generator (story description + section subtitle)
@@ -235,6 +216,30 @@ body {
   flex-wrap: wrap;
   align-items: center;
   gap: 0.5rem;
+}
+
+// Demo-only "chip" trigger styling. The cngx library deliberately ships
+// no bare-`<button>` defaults (browser-native rule), so the demo
+// templates that scatter trigger buttons need a local visual treatment.
+// Token-driven so it follows the examples-app's color scheme.
+button.chip {
+  appearance: none;
+  padding: 6px 12px;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e5e7eb));
+  border-radius: 6px;
+  background: transparent;
+  color: var(--cngx-color-text, var(--cngx-ex-text, inherit));
+  font-size: 0.8125rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 150ms ease;
+}
+button.chip:hover:not(:disabled) {
+  background: color-mix(in oklch, transparent, currentColor 6%);
+}
+button.chip:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
 }
 .filter-container {
   display: flex;

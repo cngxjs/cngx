@@ -24,7 +24,7 @@ import { CngxFocusRestore } from '@cngx/common/a11y';
         <div cngxFocusRestore
              style="margin-top:8px;padding:12px;background:var(--cngx-surface-alt,#f9f9f9);border-radius:6px">
           <p style="margin:0">Extra details that appear dynamically. Tab through these fields, then close.</p>
-          <input placeholder="Name" style="margin-top:8px;padding:6px 10px;border:1px solid var(--cngx-border,#ddd);border-radius:4px" />
+          <input placeholder="Name" style="margin-top:8px;padding:6px 10px;border:1px solid var(--cngx-color-border,#ddd);border-radius:4px" />
         </div>
       }
     <details class="cngx-ex-code">
@@ -55,7 +55,7 @@ protected readonly detailsOpen = signal(false);`;
   <div cngxFocusRestore
        style="margin-top:8px;padding:12px;background:var(--cngx-surface-alt,#f9f9f9);border-radius:6px">
     <p style="margin:0">Extra details that appear dynamically. Tab through these fields, then close.</p>
-    <input placeholder="Name" style="margin-top:8px;padding:6px 10px;border:1px solid var(--cngx-border,#ddd);border-radius:4px" />
+    <input placeholder="Name" style="margin-top:8px;padding:6px 10px;border:1px solid var(--cngx-color-border,#ddd);border-radius:4px" />
   </div>
 }`;
   protected readonly panelOpen = signal(false);

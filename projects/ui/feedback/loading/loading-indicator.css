@@ -1,24 +1,123 @@
-/*
- * loading-indicator.css — CngxLoadingIndicator skin.
- *
- * Two variants: a circular spinner and an indeterminate progress bar.
- * Under prefers-reduced-motion both fall back to an opacity pulse.
- * Keyframes (cngx-spin, cngx-bar-indeterminate, cngx-pulse) stay
- * top-level outside @layer because they're already namespaced.
+/**
+ * @overview
+ * Default visuals for `CngxLoadingIndicator`. Two variants — a
+ * circular spinner and an indeterminate progress bar. Under
+ * `prefers-reduced-motion` both fall back to an opacity pulse.
+ * Keyframes (`cngx-spin`, `cngx-bar-indeterminate`, `cngx-pulse`)
+ * stay top-level outside `@layer` because they're already
+ * namespaced.
  */
 
 @layer cngx.tokens {
-  @property --cngx-loading-bar-height        { syntax: '<length>'; inherits: false; initial-value: 3px; }
-  @property --cngx-loading-bar-radius        { syntax: '<length>'; inherits: false; initial-value: 0; }
-  @property --cngx-loading-indicator-size    { syntax: '<length>'; inherits: false; initial-value: 24px; }
-  @property --cngx-loading-indicator-track   { syntax: '<color>'; inherits: false; initial-value: oklch(0 0 0 / 0.1); }
-  @property --cngx-loading-indicator-color   { syntax: '*'; inherits: true; initial-value: currentColor; }
-  @property --cngx-spin-duration             { syntax: '<time>'; inherits: false; initial-value: 0.8s; }
-  @property --cngx-spin-easing               { syntax: '*'; inherits: false; initial-value: linear; }
-  @property --cngx-bar-duration              { syntax: '<time>'; inherits: false; initial-value: 1.5s; }
-  @property --cngx-bar-easing                { syntax: '*'; inherits: false; initial-value: ease-in-out; }
-  @property --cngx-pulse-duration            { syntax: '<time>'; inherits: false; initial-value: 2s; }
-  @property --cngx-pulse-easing              { syntax: '*'; inherits: false; initial-value: ease-in-out; }
+  /**
+   * Track height of the bar variant.
+   * @group Layout
+   */
+  @property --cngx-loading-bar-height {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 3px;
+  }
+
+  /**
+   * Corner radius of the bar variant.
+   * @group Layout
+   */
+  @property --cngx-loading-bar-radius {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 0;
+  }
+
+  /**
+   * Diameter of the spinner ring.
+   * @group Layout
+   */
+  @property --cngx-loading-indicator-size {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 24px;
+  }
+
+  /**
+   * Track color of the spinner ring and the indeterminate bar.
+   * @group Surface
+   */
+  @property --cngx-loading-indicator-track {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: oklch(0 0 0 / 0.1);
+  }
+
+  /**
+   * Stroke / fill color of the active indicator.
+   * @group Surface
+   */
+  @property --cngx-loading-indicator-color {
+    syntax: '*';
+    inherits: true;
+    initial-value: currentColor;
+  }
+
+  /**
+   * Spinner rotation duration.
+   * @group Motion
+   */
+  @property --cngx-spin-duration {
+    syntax: '<time>';
+    inherits: false;
+    initial-value: 0.8s;
+  }
+
+  /**
+   * Spinner easing curve.
+   * @group Motion
+   */
+  @property --cngx-spin-easing {
+    syntax: '*';
+    inherits: false;
+    initial-value: linear;
+  }
+
+  /**
+   * Bar sweep duration.
+   * @group Motion
+   */
+  @property --cngx-bar-duration {
+    syntax: '<time>';
+    inherits: false;
+    initial-value: 1.5s;
+  }
+
+  /**
+   * Bar sweep easing curve.
+   * @group Motion
+   */
+  @property --cngx-bar-easing {
+    syntax: '*';
+    inherits: false;
+    initial-value: ease-in-out;
+  }
+
+  /**
+   * Opacity-pulse duration used as the reduced-motion fallback.
+   * @group Motion
+   */
+  @property --cngx-pulse-duration {
+    syntax: '<time>';
+    inherits: false;
+    initial-value: 2s;
+  }
+
+  /**
+   * Opacity-pulse easing curve.
+   * @group Motion
+   */
+  @property --cngx-pulse-easing {
+    syntax: '*';
+    inherits: false;
+    initial-value: ease-in-out;
+  }
 }
 
 @layer cngx.components {

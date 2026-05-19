@@ -45,7 +45,7 @@ import { nextUid } from '@cngx/core/utils';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  styleUrl: './chip.component.css',
+  styleUrls: ['./chip.component.css'],
   host: {
     class: 'cngx-chip',
     '[attr.id]': 'resolvedId()',

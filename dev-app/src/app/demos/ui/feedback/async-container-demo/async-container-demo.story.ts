@@ -156,7 +156,7 @@ export const STORY: DemoSpec = {
   <div style="display:flex;gap:12px;margin-bottom:16px;align-items:center">
     <input placeholder="Filter people..." [value]="filter()"
       (input)="setFilter($any($event.target).value)"
-      style="padding:8px 12px;border:1px solid var(--cngx-border,#ddd);border-radius:6px;width:240px" />
+      style="padding:8px 12px;border:1px solid var(--cngx-color-border,#ddd);border-radius:6px;width:240px" />
     <button (click)="people.refresh()" class="chip">Refresh</button>
   </div>
 

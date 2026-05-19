@@ -252,7 +252,7 @@ function buildCngxTree(routes: readonly RouteMeta[]): readonly CngxTreeNode<Node
         box-sizing: border-box;
         color-scheme: light dark;
       }
-      :host-context(html.dark) {
+      :host-context(html[data-color-scheme='dark']) {
         --col-bg: #111;
         --col-text: #e6e6e6;
         --col-muted: #aaa;

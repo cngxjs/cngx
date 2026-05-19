@@ -26,7 +26,7 @@ import { CngxSpeakButton } from '@cngx/ui/speak';
             from your Material theme.
           </p>
           <pre class="code-block" style="font-size: 0.75rem; margin: 0 0 12px;"><code>@use '@angular/material' as mat;
-    @use '@cngx/themes/material/speak-button-theme' as speak;
+    @use '@cngx/ui/speak/speak-button-theme' as speak;
 
     $theme: mat.define-theme((
       color: ( theme-type: light, primary: mat.$azure-palette ),
@@ -151,7 +151,7 @@ protected pitch = signal(1);`;
         from your Material theme.
       </p>
       <pre class="code-block" style="font-size: 0.75rem; margin: 0 0 12px;"><code>@use '@angular/material' as mat;
-@use '@cngx/themes/material/speak-button-theme' as speak;
+@use '@cngx/ui/speak/speak-button-theme' as speak;
 
 $theme: mat.define-theme((
   color: ( theme-type: light, primary: mat.$azure-palette ),

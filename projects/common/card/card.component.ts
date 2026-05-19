@@ -93,7 +93,7 @@ import { CngxRovingItem, CngxRovingTabindex } from '@cngx/common/a11y';
       {{ liveAnnouncement() }}
     </span>
   `,
-  styleUrl: './card.component.css',
+  styleUrls: ['./card.component.css'],
 })
 export class CngxCard {
   private readonly uid = nextUid('cngx-card');

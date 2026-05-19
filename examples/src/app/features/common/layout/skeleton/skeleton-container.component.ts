@@ -22,7 +22,7 @@ import { CngxSkeletonContainer, CngxSkeletonPlaceholder } from '@cngx/ui';
       </div>
       <cngx-skeleton [loading]="loading()" [count]="3" style="display:flex;flex-direction:column;gap:16px;margin-top:16px">
         <ng-template cngxSkeletonPlaceholder>
-          <div style="display:flex;flex-direction:column;gap:8px;padding:16px;border:1px solid var(--cngx-border,#e0e0e0);border-radius:8px">
+          <div style="display:flex;flex-direction:column;gap:8px;padding:16px;border:1px solid var(--cngx-color-border,#e0e0e0);border-radius:8px">
             <div style="height:16px;width:40%;border-radius:4px;background:var(--cngx-surface-alt,#e0e0e0)"></div>
             <div style="height:12px;border-radius:4px;background:var(--cngx-surface-alt,#e0e0e0)"></div>
             <div style="height:12px;width:80%;border-radius:4px;background:var(--cngx-surface-alt,#e0e0e0)"></div>
@@ -30,7 +30,7 @@ import { CngxSkeletonContainer, CngxSkeletonPlaceholder } from '@cngx/ui';
         </ng-template>
         @if (!loading()) {
           @for (i of [1, 2, 3]; track i) {
-            <div style="padding:16px;border:1px solid var(--cngx-border,#e0e0e0);border-radius:8px">
+            <div style="padding:16px;border:1px solid var(--cngx-color-border,#e0e0e0);border-radius:8px">
               <strong>Card {{ i }}</strong>
               <p style="margin:4px 0 0">Content loaded successfully.</p>
             </div>
@@ -66,7 +66,7 @@ protected toggleLoading(): void {
 </div>
 <cngx-skeleton [loading]="loading()" [count]="3" style="display:flex;flex-direction:column;gap:16px;margin-top:16px">
   <ng-template cngxSkeletonPlaceholder>
-    <div style="display:flex;flex-direction:column;gap:8px;padding:16px;border:1px solid var(--cngx-border,#e0e0e0);border-radius:8px">
+    <div style="display:flex;flex-direction:column;gap:8px;padding:16px;border:1px solid var(--cngx-color-border,#e0e0e0);border-radius:8px">
       <div style="height:16px;width:40%;border-radius:4px;background:var(--cngx-surface-alt,#e0e0e0)"></div>
       <div style="height:12px;border-radius:4px;background:var(--cngx-surface-alt,#e0e0e0)"></div>
       <div style="height:12px;width:80%;border-radius:4px;background:var(--cngx-surface-alt,#e0e0e0)"></div>
@@ -74,7 +74,7 @@ protected toggleLoading(): void {
   </ng-template>
   @if (!loading()) {
     @for (i of [1, 2, 3]; track i) {
-      <div style="padding:16px;border:1px solid var(--cngx-border,#e0e0e0);border-radius:8px">
+      <div style="padding:16px;border:1px solid var(--cngx-color-border,#e0e0e0);border-radius:8px">
         <strong>Card {{ i }}</strong>
         <p style="margin:4px 0 0">Content loaded successfully.</p>
       </div>

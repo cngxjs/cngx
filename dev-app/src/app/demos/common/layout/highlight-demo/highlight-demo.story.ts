@@ -26,7 +26,7 @@ export const STORY: DemoSpec = {
   <div style="margin-bottom:12px">
     <input [value]="searchTerm()" (input)="searchTerm.set($any($event.target).value)"
            placeholder="Type to highlight..."
-           style="padding:8px 12px;border:1px solid var(--cngx-border,#ddd);border-radius:6px;width:240px" />
+           style="padding:8px 12px;border:1px solid var(--cngx-color-border,#ddd);border-radius:6px;width:240px" />
   </div>
 
   <div [cngxHighlight]="searchTerm()" #hl="cngxHighlight"

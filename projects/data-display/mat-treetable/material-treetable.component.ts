@@ -103,7 +103,7 @@ import {
     NgTemplateOutlet,
   ],
   templateUrl: './material-treetable.component.html',
-  styleUrl: './material-treetable.component.css',
+  styleUrls: ['./material-treetable.component.css'],
   encapsulation: ViewEncapsulation.None,
   host: { class: 'cngx-mat-treetable' },
 })

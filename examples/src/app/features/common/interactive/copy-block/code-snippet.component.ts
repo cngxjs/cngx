@@ -15,9 +15,7 @@ import { CngxCopyBlock } from '@cngx/common/interactive';
       @if (_exSectionTitle && _exSectionTitle !== _exTitle) { <h2>{{ _exSectionTitle }}</h2> }
       @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
     </header>
-    <cngx-copy-block [value]="installCmd"
-          style="padding:12px 16px;background:var(--code-bg,#f5f5f5);border:1px solid var(--code-border,#ddd);
-                 border-radius:6px;font-family:var(--font-mono,monospace);font-size:0.8125rem">
+    <cngx-copy-block [value]="installCmd">
         {{ installCmd }}
       </cngx-copy-block>
     <details class="cngx-ex-code">
@@ -39,9 +37,7 @@ export class CopyBlockCodeSnippet {
 
 protected readonly installCmd = 'npm install @cngx/common';
 protected readonly apiKey = signal('sk_test_EXAMPLE_KEY_1234567890');`;
-  protected readonly _exHtml: string = `<cngx-copy-block [value]="installCmd"
-    style="padding:12px 16px;background:var(--code-bg,#f5f5f5);border:1px solid var(--code-border,#ddd);
-           border-radius:6px;font-family:var(--font-mono,monospace);font-size:0.8125rem">
+  protected readonly _exHtml: string = `<cngx-copy-block [value]="installCmd">
   {{ installCmd }}
 </cngx-copy-block>`;
   protected readonly installCmd = 'npm install @cngx/common';

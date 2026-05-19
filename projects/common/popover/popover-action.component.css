@@ -1,25 +1,116 @@
-/*
- * Default styling for CngxPopoverAction. The component host has
+/**
+ * @overview
+ * Default visuals for `CngxPopoverAction`. The component host has
  * `display: contents` and renders a
- * <button class="cngx-popover-action cngx-popover-action--{variant}">.
- * Designed to live inside a cngx-popover-panel footer — it picks up
- * the parent panel's --cngx-popover-panel-accent / -text via CSS
+ * `<button class="cngx-popover-action cngx-popover-action--{variant}">`.
+ * Designed to live inside a `cngx-popover-panel` footer — it picks up
+ * the parent panel's `--cngx-popover-panel-accent` / `-text` via CSS
  * inheritance so variant colors flow through automatically.
  *
- * Falls back to foundation system tokens (--cngx-color-primary,
- * --cngx-color-danger) so brand-theme overrides propagate without
- * Material. A Material bridge for consumers who opt in lives in the
- * sibling popover-panel-theme.scss.
+ * Falls back to foundation system tokens (`--cngx-color-primary`,
+ * `--cngx-color-danger`) so brand-theme overrides propagate without
+ * Material. Pair with `@cngx/themes/material/popover-panel-theme`
+ * for the Material 3 button-on-surface palette.
  */
 
 @layer cngx.tokens {
-  @property --cngx-popover-action-padding-block  { syntax: '<length>'; inherits: false; initial-value: 6px; }
-  @property --cngx-popover-action-padding-inline { syntax: '<length>'; inherits: false; initial-value: 14px; }
-  @property --cngx-popover-action-gap            { syntax: '<length>'; inherits: false; initial-value: 6px; }
-  @property --cngx-popover-action-radius         { syntax: '<length>'; inherits: false; initial-value: 6px; }
-  @property --cngx-popover-action-font-size      { syntax: '*';        inherits: false; initial-value: 0.8125rem; }
-  @property --cngx-popover-action-font-weight    { syntax: '<number>'; inherits: false; initial-value: 500; }
-  @property --cngx-popover-action-transition     { syntax: '<time>';   inherits: false; initial-value: 150ms; }
+  /**
+   * Block-axis padding of the action button.
+   * @group Layout
+   */
+  @property --cngx-popover-action-padding-block {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 6px;
+  }
+
+  /**
+   * Inline-axis padding of the action button.
+   * @group Layout
+   */
+  @property --cngx-popover-action-padding-inline {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 14px;
+  }
+
+  /**
+   * Gap between the action's icon and label slots.
+   * @group Layout
+   */
+  @property --cngx-popover-action-gap {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 6px;
+  }
+
+  /**
+   * Corner radius of the action button.
+   * @group Layout
+   */
+  @property --cngx-popover-action-radius {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 6px;
+  }
+
+  /**
+   * Font-size of the action label.
+   * @group Typography
+   */
+  @property --cngx-popover-action-font-size {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.8125rem;
+  }
+
+  /**
+   * Font-weight of the action label.
+   * @group Typography
+   */
+  @property --cngx-popover-action-font-weight {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 500;
+  }
+
+  /**
+   * Transition duration for the hover / focus state changes.
+   * @group Motion
+   */
+  @property --cngx-popover-action-transition {
+    syntax: '<time>';
+    inherits: false;
+    initial-value: 150ms;
+  }
+
+  /**
+   * Hover-state surface — neutral default + ghost variant share this
+   * token so a single dark-mode swap covers both. Light: 4% black
+   * wash; dark: 6% white wash.
+   * @group State / Hover
+   */
+  @property --cngx-popover-action-hover-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0 0 0 / 0.04);
+  }
+
+  /* Dark-mode swap — hover wash inverts to white-alpha so it stays
+   * visible against the dark panel surface. */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-color-scheme='light']):not(.light) {
+      --cngx-popover-action-hover-bg: oklch(1 0 0 / 0.06);
+    }
+  }
+  [data-color-scheme='dark'],
+  .dark {
+    --cngx-popover-action-hover-bg: oklch(1 0 0 / 0.06);
+  }
+  [data-color-scheme='light'],
+  .light {
+    --cngx-popover-action-hover-bg: oklch(0 0 0 / 0.04);
+  }
 }
 
 @layer cngx.components {
@@ -29,7 +120,7 @@
       align-items: center;
       gap: var(--cngx-popover-action-gap, 6px);
       padding: var(--cngx-popover-action-padding-block, 6px)
-               var(--cngx-popover-action-padding-inline, 14px);
+        var(--cngx-popover-action-padding-inline, 14px);
       border: 1px solid var(--cngx-popover-panel-border, 1px solid oklch(0 0 0 / 0.08));
       border-radius: var(--cngx-popover-action-radius, 6px);
       background: transparent;
@@ -44,7 +135,7 @@
         color var(--cngx-popover-action-transition, 150ms);
     }
     :scope:hover {
-      background: oklch(0 0 0 / 0.04);
+      background: var(--cngx-popover-action-hover-bg, oklch(0 0 0 / 0.04));
     }
     :scope:focus-visible {
       outline: 2px solid var(--cngx-popover-panel-accent-text, currentColor);
@@ -57,17 +148,17 @@
     }
 
     :scope.cngx-popover-action--primary {
-      background: var(--cngx-popover-panel-accent, var(--cngx-color-primary, oklch(0.62 0.20 250)));
+      background: var(--cngx-popover-panel-accent, var(--cngx-color-primary, oklch(0.66 0.19 50)));
       color: var(--cngx-popover-panel-accent-text, oklch(1 0 0));
       border-color: transparent;
     }
     :scope.cngx-popover-action--primary:hover {
       filter: brightness(0.95);
-      background: var(--cngx-popover-panel-accent, var(--cngx-color-primary, oklch(0.62 0.20 250)));
+      background: var(--cngx-popover-panel-accent, var(--cngx-color-primary, oklch(0.66 0.19 50)));
     }
 
     :scope.cngx-popover-action--danger {
-      background: var(--cngx-color-danger, oklch(0.60 0.22 25));
+      background: var(--cngx-color-danger, oklch(0.6 0.22 25));
       color: oklch(1 0 0);
       border-color: transparent;
     }
@@ -79,7 +170,7 @@
       border-color: transparent;
     }
     :scope.cngx-popover-action--ghost:hover {
-      background: oklch(0 0 0 / 0.04);
+      background: var(--cngx-popover-action-hover-bg, oklch(0 0 0 / 0.04));
     }
   }
 

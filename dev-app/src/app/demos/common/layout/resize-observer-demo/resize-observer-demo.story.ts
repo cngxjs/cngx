@@ -26,7 +26,7 @@ export const STORY: DemoSpec = {
       width: 300px;
       height: 120px;
       background: var(--cngx-surface-alt, #f8f9fa);
-      border: 1px solid var(--cngx-border, #ddd);
+      border: 1px solid var(--cngx-color-border, #ddd);
       border-radius: 6px;
       display: flex;
       align-items: center;

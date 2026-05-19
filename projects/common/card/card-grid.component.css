@@ -1,30 +1,47 @@
-/* cngx-card-grid — default styling for the CngxCardGrid component.
+/**
+ * @overview
+ * Default visuals for `CngxCardGrid`. The host element
+ * `<cngx-card-grid>` always carries the `.cngx-card-grid` class.
+ * Two density modifiers control the layout:
+ * `.cngx-card-grid--compact` (dense, smaller gaps + child padding)
+ * and `.cngx-card-grid--comfortable` (spacious).
  *
- * The host element <cngx-card-grid> always carries the .cngx-card-grid class.
- * Two density modifiers:
- *   .cngx-card-grid--compact     | dense layout, smaller gaps + child padding
- *   .cngx-card-grid--comfortable | spacious layout
- *
- * Grid uses auto-fill + minmax so cards reflow without a media-query ladder.
- *
- * Density modifiers reach down into --cngx-card-padding to keep nested
- * <cngx-card> children visually in sync with the grid's gap rhythm — this
- * is an intentional cross-component coupling and matches the original
- * _card-grid.scss behavior. */
+ * Grid uses `auto-fill` + `minmax()` so cards reflow without a
+ * media-query ladder. Density modifiers reach down into
+ * `--cngx-card-padding` to keep nested `<cngx-card>` children
+ * visually in sync with the grid's gap rhythm — this is an
+ * intentional cross-component coupling.
+ */
 
 @layer cngx.tokens {
-  @property --cngx-card-grid-min { syntax: '<length>'; inherits: false; initial-value: 280px; }
-  @property --cngx-card-grid-gap { syntax: '<length>'; inherits: false; initial-value: 16px; }
+  /**
+   * Minimum inline size of a single grid cell — `auto-fill` packs as
+   * many cells as fit before reflowing.
+   * @group Layout
+   */
+  @property --cngx-card-grid-min {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 280px;
+  }
+
+  /**
+   * Gap between grid cells. Density modifiers re-pin this and the
+   * nested `--cngx-card-padding`.
+   * @group Layout
+   */
+  @property --cngx-card-grid-gap {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 16px;
+  }
 }
 
 @layer cngx.components {
   @scope (.cngx-card-grid) {
     :scope {
       display: grid;
-      grid-template-columns: repeat(
-        auto-fill,
-        minmax(var(--cngx-card-grid-min, 280px), 1fr)
-      );
+      grid-template-columns: repeat(auto-fill, minmax(var(--cngx-card-grid-min, 280px), 1fr));
       gap: var(--cngx-card-grid-gap, var(--cngx-space-md, 16px));
     }
 

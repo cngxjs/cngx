@@ -62,13 +62,13 @@ export const STORY: DemoSpec = {
   margin: 0;
   padding: 4px;
   width: 240px;
-  border: 1px solid var(--cngx-surface-border, #d0d5dd);
+  border: 1px solid var(--cngx-color-border, #d0d5dd);
   border-radius: var(--cngx-radius-md, 8px);
-  background: var(--cngx-surface-default, #fff);
+  background: var(--cngx-color-surface, #fff);
   outline: none;
 }
 .menu:focus-visible {
-  outline: 2px solid var(--cngx-focus-ring, #4a8cff);
+  outline: 2px solid var(--cngx-color-primary, #4a8cff);
   outline-offset: 2px;
 }
 .menu [cngxMenuItemCheckbox], .menu [cngxMenuItemRadio] {
@@ -93,7 +93,7 @@ export const STORY: DemoSpec = {
 }
 .sep {
   height: 1px;
-  background: var(--cngx-surface-border, #d0d5dd);
+  background: var(--cngx-color-border, #d0d5dd);
   margin: 4px 0;
 }`,
     },

@@ -1,18 +1,55 @@
-/*
- * tag-group.component.css — thematic skin of CngxTagGroup.
- *
- * Structural rules (column stack, row flex-wrap, gap + align
- * modifiers) live in ../tag/shared/tag-base.css — linked first by
- * the component's styleUrls array. The group is a neutral layout
- * container today (no color, no border, no background) so this
- * file only registers the layout-related @property tokens; a future
- * thematic skin (e.g. backplate color for a Material wrapper)
- * lands here without changing the directive's style-link surface.
+/**
+ * @overview
+ * Default visuals for `CngxTagGroup`. The structural rules (column
+ * stack, row flex-wrap, gap + alignment modifiers) live in
+ * `../tag/shared/tag-base.css` and are linked first by the component's
+ * `styleUrls` array. The group is a neutral layout container today
+ * (no color, no border, no background) so this file only registers
+ * the layout-related `@property` tokens; a future thematic skin (for
+ * example a backplate color for a Material wrapper) lands here
+ * without changing the component's style-link surface.
  */
 
 @layer cngx.tokens {
-  @property --cngx-tag-group-stack-gap { syntax: '<length>'; inherits: false; initial-value: 8px; }
-  @property --cngx-tag-group-gap       { syntax: '<length>'; inherits: false; initial-value: 8px; }
-  @property --cngx-tag-group-gap-xs    { syntax: '<length>'; inherits: false; initial-value: 4px; }
-  @property --cngx-tag-group-gap-md    { syntax: '<length>'; inherits: false; initial-value: 12px; }
+  /**
+   * Vertical gap between the three group zones (header / row /
+   * accessory). Drives the outer column stack.
+   * @group Layout
+   */
+  @property --cngx-tag-group-stack-gap {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 8px;
+  }
+
+  /**
+   * Horizontal gap between tags in the row when no density modifier
+   * is applied. Falls back to `--cngx-space-sm`.
+   * @group Layout
+   */
+  @property --cngx-tag-group-gap {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 8px;
+  }
+
+  /**
+   * Horizontal gap for the `.cngx-tag-group--gap-xs` density modifier.
+   * @group Variant / Density
+   */
+  @property --cngx-tag-group-gap-xs {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 4px;
+  }
+
+  /**
+   * Horizontal gap for the `.cngx-tag-group--gap-md` density modifier.
+   * @group Variant / Density
+   */
+  @property --cngx-tag-group-gap-md {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 12px;
+  }
 }

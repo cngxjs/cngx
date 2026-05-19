@@ -119,7 +119,7 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
       [attr.aria-hidden]="disabledReason() ? null : 'true'"
     >{{ disabledReason() }}</span>
   `,
-  styleUrl: './toggle.component.css',
+  styleUrls: ['./toggle.component.css'],
   encapsulation: ViewEncapsulation.None,
 })
 export class CngxToggle

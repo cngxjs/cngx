@@ -32,7 +32,7 @@ export const STORY: DemoSpec = {
   <div cngxLongPress (longPressed)="handleLongPress($event)"
        #lp="cngxLongPress"
        style="display:inline-flex;align-items:center;justify-content:center;width:160px;height:80px;
-              border:2px solid var(--cngx-border,#ddd);border-radius:12px;cursor:pointer;user-select:none;
+              border:2px solid var(--cngx-color-border,#ddd);border-radius:12px;cursor:pointer;user-select:none;
               transition:border-color 150ms,background 150ms"
        [style.borderColor]="lp.longPressing() ? 'var(--interactive,#f5a623)' : ''"
        [style.background]="lp.longPressing() ? 'var(--interactive-subtle-bg,#fff8e1)' : ''">

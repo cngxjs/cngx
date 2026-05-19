@@ -53,7 +53,7 @@ import { CngxFormFieldPresenter } from './form-field-presenter';
       <span>{{ marker() }}</span>
     }
   }`,
-  styleUrl: './required.component.css',
+  styleUrls: ['./required.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   exportAs: 'cngxRequired',

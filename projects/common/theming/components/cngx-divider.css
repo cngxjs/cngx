@@ -1,20 +1,74 @@
-/* cngx-divider — default styling for the CngxDivider directive.
- *
- * The directive sets host class `cngx-divider` plus `--vertical` and
- * `--inset` modifier classes based on its inputs. Orientation is
- * communicated via `aria-orientation` for assistive tech.
+/**
+ * @overview
+ * Default visuals for the `CngxDivider` directive. The directive sets
+ * host class `cngx-divider` plus `--vertical` and `--inset` modifier
+ * classes based on its inputs; orientation is communicated via
+ * `aria-orientation` for assistive tech.
  *
  * Opt-in via the host class — the directive already adds it. Import
- * this file to consume defaults, or style `.cngx-divider` yourself.
+ * this file to consume the defaults, or style `.cngx-divider` yourself.
+ * Three-Tier-Override: `--cngx-divider-*` tokens cascade through
+ * `@layer cngx.theme`; the divider color falls back to the foundation
+ * `--cngx-color-border` token so brand changes propagate.
  *
- * Three-Tier-Override: --cngx-divider-* tokens cascade through @layer
- * cngx.theme; color falls back to --cngx-color-border. */
+ * Pair with `@cngx/themes/material/divider-theme` for Material 3
+ * outline-variant surfaces.
+ */
 
 @layer cngx.tokens {
-  @property --cngx-divider-thickness    { syntax: '<length>'; inherits: false; initial-value: 1px; }
-  @property --cngx-divider-color        { syntax: '<color>';  inherits: true;  initial-value: oklch(0.9 0.01 250); }
-  @property --cngx-divider-spacing      { syntax: '<length>'; inherits: false; initial-value: 8px; }
-  @property --cngx-divider-inset-amount { syntax: '<length>'; inherits: false; initial-value: 16px; }
+  /**
+   * Stroke thickness of the divider line. 1px reads as a hairline at
+   * the default zoom; bump to 2px for emphasis without going to a
+   * heavier shape.
+   * @group Layout
+   */
+  @property --cngx-divider-thickness {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 1px;
+  }
+
+  /**
+   * Stroke color. Falls back through `--cngx-color-border` so the
+   * divider tracks the foundation neutral instead of carrying its own
+   * tone.
+   * @group Surface
+   * @see [[--cngx-color-border]]
+   */
+  @property --cngx-divider-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.9 0.01 250);
+  }
+
+  /**
+   * Breathing room around the divider — `margin-block` for horizontal,
+   * `margin-inline` for vertical. Defaults to `--cngx-space-sm`.
+   * @group Layout
+   */
+  @property --cngx-divider-spacing {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 8px;
+  }
+
+  /**
+   * Inset distance applied by the `.cngx-divider--inset` modifier —
+   * drops the line in from the start/end edge so it visually aligns
+   * with indented list content.
+   * @group Variant / Inset
+   */
+  @property --cngx-divider-inset-amount {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 16px;
+  }
+
+  /* Delegating token — :root pulls foundation border so the divider
+   * tracks whichever light/dark value the foundation has resolved. */
+  :root {
+    --cngx-divider-color: var(--cngx-color-border);
+  }
 }
 
 @layer cngx.components {

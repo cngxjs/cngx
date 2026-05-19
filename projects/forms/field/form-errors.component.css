@@ -1,13 +1,41 @@
-/*
- * Visual skin for CngxFieldErrors. Two tokens drive the surface:
- * --cngx-form-errors-font-size (syntax '*' allows rem) and
- * --cngx-form-errors-color (falls back through --cngx-field-error-color
- * to --cngx-color-danger). Anchor underline removed on hover/focus.
+/**
+ * @overview
+ * Default visuals for `CngxFieldErrors` — bulleted error list under a
+ * form field. Falls back through `--cngx-field-error-color` and then
+ * `--cngx-color-danger` so a brand change in the danger chain
+ * propagates. Anchor underline removed on hover / focus so the
+ * interaction state reads independently of the resting decoration.
  */
 
 @layer cngx.tokens {
-  @property --cngx-form-errors-font-size { syntax: '*';       inherits: true; initial-value: 0.875rem; }
-  @property --cngx-form-errors-color     { syntax: '<color>'; inherits: true; initial-value: oklch(0.55 0.21 27); }
+  /**
+   * Font-size of the error list. Falls back through
+   * `--cngx-font-size-sm`. `syntax: '*'` allows `rem`.
+   * @group Typography
+   */
+  @property --cngx-form-errors-font-size {
+    syntax: '*';
+    inherits: true;
+    initial-value: 0.875rem;
+  }
+
+  /**
+   * Text color of the error list. Falls back through
+   * `--cngx-field-error-color` and then `--cngx-color-danger`.
+   * @group Surface
+   * @see [[--cngx-color-danger]]
+   */
+  @property --cngx-form-errors-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.55 0.21 27);
+  }
+
+  /* Delegating token — error text tracks the danger chain so a
+   * dark-mode swap on `--cngx-color-danger` cascades through. */
+  :root {
+    --cngx-form-errors-color: var(--cngx-color-danger);
+  }
 }
 
 @layer cngx.components {
@@ -20,9 +48,10 @@
       margin: 0;
       padding: 0 0 0 1.25em;
       font-size: var(--cngx-form-errors-font-size, var(--cngx-font-size-sm, 0.875rem));
-      color: var(--cngx-form-errors-color,
-                  var(--cngx-field-error-color,
-                      var(--cngx-color-danger, oklch(0.55 0.21 27))));
+      color: var(
+        --cngx-form-errors-color,
+        var(--cngx-field-error-color, var(--cngx-color-danger, oklch(0.55 0.21 27)))
+      );
     }
 
     .cngx-form-errors__list a {

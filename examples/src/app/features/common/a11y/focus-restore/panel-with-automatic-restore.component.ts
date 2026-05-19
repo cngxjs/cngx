@@ -19,7 +19,7 @@ import { CngxFocusRestore } from '@cngx/common/a11y';
 
       @if (panelOpen()) {
         <div cngxFocusRestore
-             style="margin-top:12px;padding:16px;border:1px solid var(--cngx-border,#ddd);border-radius:8px">
+             style="margin-top:12px;padding:16px;border:1px solid var(--cngx-color-border,#ddd);border-radius:8px">
           <p style="margin:0 0 12px">Panel content. Focus will restore on close.</p>
           <button (click)="panelOpen.set(false)" class="chip">Close Panel</button>
         </div>
@@ -54,7 +54,7 @@ protected readonly detailsOpen = signal(false);`;
 
 @if (panelOpen()) {
   <div cngxFocusRestore
-       style="margin-top:12px;padding:16px;border:1px solid var(--cngx-border,#ddd);border-radius:8px">
+       style="margin-top:12px;padding:16px;border:1px solid var(--cngx-color-border,#ddd);border-radius:8px">
     <p style="margin:0 0 12px">Panel content. Focus will restore on close.</p>
     <button (click)="panelOpen.set(false)" class="chip">Close Panel</button>
   </div>

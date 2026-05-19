@@ -1,25 +1,128 @@
-/*
- * Default styling for the CngxBottomSheet directive. Targets
- * <dialog class="cngx-bottom-sheet"> (used together with cngxDialog).
- * Overrides the UA top-layer centering for bottom-anchored positioning
- * and renders a drag handle via ::before. Also rewrites the parent
- * --cngx-dialog-* tokens so any cngx-dialog styling inherits
- * bottom-sheet geometry.
+/**
+ * @overview
+ * Default visuals for the `CngxBottomSheet` directive. Targets
+ * `<dialog class="cngx-bottom-sheet">` (used together with
+ * `cngxDialog`). Overrides the UA top-layer centering for bottom-
+ * anchored positioning and renders a drag handle via `::before`.
  *
- * A Material bridge for consumers who opt in lives in the sibling
- * bottom-sheet-theme.scss.
+ * Re-pins the parent `--cngx-dialog-*` tokens so any cngx-dialog
+ * styling that inherits from the open dialog picks up bottom-sheet
+ * geometry instead of the centered surface defaults.
+ *
+ * Pair with `@cngx/themes/material/bottom-sheet-theme` for the
+ * Material 3 surface treatment.
  */
 
 @layer cngx.tokens {
-  @property --cngx-bottom-sheet-radius        { syntax: '*';        inherits: false; initial-value: 16px 16px 0 0; }
-  @property --cngx-bottom-sheet-padding       { syntax: '<length>'; inherits: false; initial-value: 24px; }
-  @property --cngx-bottom-sheet-max-width     { syntax: '*';        inherits: false; initial-value: 100%; }
-  @property --cngx-bottom-sheet-max-height    { syntax: '*';        inherits: false; initial-value: 80vh; }
-  @property --cngx-bottom-sheet-handle-width  { syntax: '<length>'; inherits: false; initial-value: 40px; }
-  @property --cngx-bottom-sheet-handle-height { syntax: '<length>'; inherits: false; initial-value: 4px; }
-  @property --cngx-bottom-sheet-handle-color  { syntax: '<color>';  inherits: false; initial-value: oklch(0.80 0.005 250); }
-  @property --cngx-bottom-sheet-handle-radius { syntax: '<length>'; inherits: false; initial-value: 2px; }
-  @property --cngx-bottom-sheet-handle-margin { syntax: '*';        inherits: false; initial-value: 0 auto 16px; }
+  /**
+   * Corner radius of the sheet. Defaults to rounded top corners only,
+   * matching the bottom-anchored anatomy.
+   * @group Layout
+   */
+  @property --cngx-bottom-sheet-radius {
+    syntax: '*';
+    inherits: false;
+    initial-value: 16px 16px 0 0;
+  }
+
+  /**
+   * Padding shorthand inside the sheet.
+   * @group Layout
+   */
+  @property --cngx-bottom-sheet-padding {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 24px;
+  }
+
+  /**
+   * Maximum inline size — full viewport by default.
+   * @group Layout
+   */
+  @property --cngx-bottom-sheet-max-width {
+    syntax: '*';
+    inherits: false;
+    initial-value: 100%;
+  }
+
+  /**
+   * Maximum block size — 80vh by default so the dismiss gesture has
+   * room above the sheet.
+   * @group Layout
+   */
+  @property --cngx-bottom-sheet-max-height {
+    syntax: '*';
+    inherits: false;
+    initial-value: 80vh;
+  }
+
+  /**
+   * Width of the drag handle pill.
+   * @group Layout
+   */
+  @property --cngx-bottom-sheet-handle-width {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 40px;
+  }
+
+  /**
+   * Height of the drag handle pill.
+   * @group Layout
+   */
+  @property --cngx-bottom-sheet-handle-height {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 4px;
+  }
+
+  /**
+   * Color of the drag handle pill. `inherits: true` so the :root
+   * cascade reaches the `::before` pseudo on the open dialog.
+   * @group Surface
+   */
+  @property --cngx-bottom-sheet-handle-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.8 0.005 250);
+  }
+
+  /**
+   * Corner radius of the drag handle pill.
+   * @group Layout
+   */
+  @property --cngx-bottom-sheet-handle-radius {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 2px;
+  }
+
+  /**
+   * Margin shorthand around the drag handle — centres it horizontally
+   * and pushes the sheet content down.
+   * @group Layout
+   */
+  @property --cngx-bottom-sheet-handle-margin {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0 auto 16px;
+  }
+
+  /* Dark-mode swap — handle inverts to a mid-tone gray so the drag
+   * affordance stays visible against the dark sheet surface. */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-color-scheme='light']):not(.light) {
+      --cngx-bottom-sheet-handle-color: oklch(0.5 0.005 250);
+    }
+  }
+  [data-color-scheme='dark'],
+  .dark {
+    --cngx-bottom-sheet-handle-color: oklch(0.5 0.005 250);
+  }
+  [data-color-scheme='light'],
+  .light {
+    --cngx-bottom-sheet-handle-color: oklch(0.8 0.005 250);
+  }
 }
 
 @layer cngx.components {
@@ -47,7 +150,7 @@
       display: block;
       width: var(--cngx-bottom-sheet-handle-width, 40px);
       height: var(--cngx-bottom-sheet-handle-height, 4px);
-      background: var(--cngx-bottom-sheet-handle-color, oklch(0.80 0.005 250));
+      background: var(--cngx-bottom-sheet-handle-color, oklch(0.8 0.005 250));
       border-radius: var(--cngx-bottom-sheet-handle-radius, 2px);
       margin: var(--cngx-bottom-sheet-handle-margin, 0 auto 16px);
     }

@@ -1,21 +1,140 @@
-/* Visual skin for CngxCopyBlock — copy-to-clipboard button with an
- * idle and a copied-confirmation state. Copied-state colors fall back
- * to --cngx-color-success / --cngx-color-surface so a brand-theme
- * change propagates to the confirmation visual. */
+/**
+ * @overview
+ * Default visuals for `CngxCopyBlock` — copy-to-clipboard button with
+ * an idle and a copied-confirmation state. The copied-state colors
+ * fall back to `--cngx-color-success` / `--cngx-color-surface` so a
+ * brand-theme change propagates to the confirmation visual.
+ */
 
 @layer cngx.tokens {
-  @property --cngx-copy-block-gap                  { syntax: '<length>';     inherits: false; initial-value: 8px; }
+  /**
+   * Gap between the content block and the copy button. Falls back
+   * to `--cngx-space-sm`.
+   * @group Layout
+   */
+  @property --cngx-copy-block-gap {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 8px;
+  }
 
-  @property --cngx-copy-block-btn-border           { syntax: '*';      inherits: false; initial-value: currentColor; }
-  @property --cngx-copy-block-btn-bg               { syntax: '<color>';      inherits: false; initial-value: transparent; }
-  @property --cngx-copy-block-btn-color            { syntax: '*';      inherits: false; initial-value: currentColor; }
-  @property --cngx-copy-block-btn-radius           { syntax: '<length>';     inherits: false; initial-value: 4px; }
-  @property --cngx-copy-block-btn-padding          { syntax: '*';            inherits: false; initial-value: 4px 8px; }
-  @property --cngx-copy-block-btn-font-size        { syntax: '*';     inherits: false; initial-value: 0.75rem; }
+  /**
+   * Border color of the idle copy button.
+   * @group Surface
+   */
+  @property --cngx-copy-block-btn-border {
+    syntax: '*';
+    inherits: false;
+    initial-value: currentColor;
+  }
 
-  @property --cngx-copy-block-btn-copied-bg        { syntax: '<color>';      inherits: false; initial-value: oklch(0.96 0.025 145); }
-  @property --cngx-copy-block-btn-copied-border    { syntax: '<color>';      inherits: false; initial-value: oklch(0.5 0.12 145); }
-  @property --cngx-copy-block-btn-copied-color     { syntax: '<color>';      inherits: false; initial-value: oklch(0.5 0.12 145); }
+  /**
+   * Background of the idle copy button.
+   * @group Surface
+   */
+  @property --cngx-copy-block-btn-bg {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: transparent;
+  }
+
+  /**
+   * Text color of the idle copy button.
+   * @group Surface
+   */
+  @property --cngx-copy-block-btn-color {
+    syntax: '*';
+    inherits: false;
+    initial-value: currentColor;
+  }
+
+  /**
+   * Corner radius of the copy button. Defaults to `--cngx-radius-sm`.
+   * @group Layout
+   */
+  @property --cngx-copy-block-btn-radius {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 4px;
+  }
+
+  /**
+   * Padding shorthand of the copy button.
+   * @group Layout
+   */
+  @property --cngx-copy-block-btn-padding {
+    syntax: '*';
+    inherits: false;
+    initial-value: 4px 8px;
+  }
+
+  /**
+   * Font-size of the copy-button label. Falls back to
+   * `--cngx-font-size-sm`.
+   * @group Typography
+   */
+  @property --cngx-copy-block-btn-font-size {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.75rem;
+  }
+
+  /**
+   * Background of the copied-state button — soft success tint.
+   * `inherits: true` so the :root dark-mode override reaches the
+   * button inside the copy-block host.
+   * @group State / Copied
+   * @see [[--cngx-color-success]]
+   */
+  @property --cngx-copy-block-btn-copied-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.96 0.025 145);
+  }
+
+  /**
+   * Border color of the copied-state button. Falls back to
+   * `--cngx-color-success`.
+   * @group State / Copied
+   */
+  @property --cngx-copy-block-btn-copied-border {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.5 0.12 145);
+  }
+
+  /**
+   * Text color of the copied-state button. Falls back to
+   * `--cngx-color-success`. `inherits: true` so the :root dark-mode
+   * override reaches the button.
+   * @group State / Copied
+   */
+  @property --cngx-copy-block-btn-copied-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.5 0.12 145);
+  }
+
+  /* Dark-mode swap — copied-state surface flips from a light-green
+   * tint to a dark-green tint, and the matching text color flips
+   * from a mid-green hue to a light-green hue. The border stays at
+   * mid-green since it reads on either surface. */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-color-scheme='light']):not(.light) {
+      --cngx-copy-block-btn-copied-bg: oklch(0.32 0.06 145);
+      --cngx-copy-block-btn-copied-color: oklch(0.85 0.13 145);
+    }
+  }
+  [data-color-scheme='dark'],
+  .dark {
+    --cngx-copy-block-btn-copied-bg: oklch(0.32 0.06 145);
+    --cngx-copy-block-btn-copied-color: oklch(0.85 0.13 145);
+  }
+  [data-color-scheme='light'],
+  .light {
+    --cngx-copy-block-btn-copied-bg: oklch(0.96 0.025 145);
+    --cngx-copy-block-btn-copied-color: oklch(0.5 0.12 145);
+  }
 }
 
 @layer cngx.components {
@@ -48,8 +167,14 @@
 
     .cngx-copy-block__button--copied {
       background: var(--cngx-copy-block-btn-copied-bg, oklch(0.96 0.025 145));
-      border-color: var(--cngx-copy-block-btn-copied-border, var(--cngx-color-success, oklch(0.5 0.12 145)));
-      color: var(--cngx-copy-block-btn-copied-color, var(--cngx-color-success, oklch(0.5 0.12 145)));
+      border-color: var(
+        --cngx-copy-block-btn-copied-border,
+        var(--cngx-color-success, oklch(0.5 0.12 145))
+      );
+      color: var(
+        --cngx-copy-block-btn-copied-color,
+        var(--cngx-color-success, oklch(0.5 0.12 145))
+      );
     }
 
     .cngx-sr-only {

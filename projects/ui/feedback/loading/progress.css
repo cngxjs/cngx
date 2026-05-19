@@ -1,28 +1,146 @@
-/*
- * Visual skin for CngxProgress. Two variants: linear bar and circular
- * SVG ring. Both support determinate (value-bound) and indeterminate
- * (animated). prefers-reduced-motion replaces the animation with a
- * slow opacity pulse.
+/**
+ * @overview
+ * Default visuals for `CngxProgress`. Two variants — a linear bar
+ * and a circular SVG ring. Both support determinate (value-bound)
+ * and indeterminate (animated). `prefers-reduced-motion` replaces
+ * the animation with a slow opacity pulse.
  *
- * cngx-pulse keyframe is duplicated identically in
- * loading-indicator.css so each file is self-contained under styleUrl
- * bundling.
+ * The `cngx-pulse` keyframe is duplicated identically in
+ * `loading-indicator.css` so each file is self-contained under
+ * `styleUrl` bundling.
  */
 
 @layer cngx.tokens {
-  @property --cngx-progress-label-gap                { syntax: '<length>'; inherits: false; initial-value: 8px; }
-  @property --cngx-progress-height                   { syntax: '<length>'; inherits: false; initial-value: 4px; }
-  @property --cngx-progress-track-color              { syntax: '<color>'; inherits: false; initial-value: oklch(0 0 0 / 0.1); }
-  @property --cngx-progress-border-radius            { syntax: '<length>'; inherits: false; initial-value: 2px; }
-  @property --cngx-progress-color                    { syntax: '*'; inherits: true; initial-value: currentColor; }
-  @property --cngx-progress-transition-duration      { syntax: '<time>'; inherits: false; initial-value: 300ms; }
-  @property --cngx-progress-transition-easing        { syntax: '*'; inherits: false; initial-value: ease-out; }
-  @property --cngx-progress-indeterminate-duration   { syntax: '<time>'; inherits: false; initial-value: 1.5s; }
-  @property --cngx-progress-indeterminate-easing     { syntax: '*'; inherits: false; initial-value: ease-in-out; }
-  @property --cngx-progress-label-size               { syntax: '*'; inherits: false; initial-value: 0.75rem; }
-  @property --cngx-progress-label-color              { syntax: '*'; inherits: true; initial-value: currentColor; }
-  @property --cngx-progress-circle-size              { syntax: '<length>'; inherits: false; initial-value: 48px; }
-  @property --cngx-progress-circle-label-size        { syntax: '*'; inherits: false; initial-value: 0.625rem; }
+  /**
+   * Gap between the progress track and the trailing label slot.
+   * @group Layout
+   */
+  @property --cngx-progress-label-gap {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 8px;
+  }
+
+  /**
+   * Height of the linear track.
+   * @group Layout
+   */
+  @property --cngx-progress-height {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 4px;
+  }
+
+  /**
+   * Track color (the unfilled portion).
+   * @group Surface
+   */
+  @property --cngx-progress-track-color {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: oklch(0 0 0 / 0.1);
+  }
+
+  /**
+   * Corner radius of the linear track.
+   * @group Layout
+   */
+  @property --cngx-progress-border-radius {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 2px;
+  }
+
+  /**
+   * Fill color of the progress indicator.
+   * @group Surface
+   */
+  @property --cngx-progress-color {
+    syntax: '*';
+    inherits: true;
+    initial-value: currentColor;
+  }
+
+  /**
+   * Duration of the width / dashoffset transition for the
+   * determinate fill.
+   * @group Motion
+   */
+  @property --cngx-progress-transition-duration {
+    syntax: '<time>';
+    inherits: false;
+    initial-value: 300ms;
+  }
+
+  /**
+   * Easing curve of the determinate transition.
+   * @group Motion
+   */
+  @property --cngx-progress-transition-easing {
+    syntax: '*';
+    inherits: false;
+    initial-value: ease-out;
+  }
+
+  /**
+   * Duration of the indeterminate animation sweep.
+   * @group Motion
+   */
+  @property --cngx-progress-indeterminate-duration {
+    syntax: '<time>';
+    inherits: false;
+    initial-value: 1.5s;
+  }
+
+  /**
+   * Easing curve of the indeterminate animation.
+   * @group Motion
+   */
+  @property --cngx-progress-indeterminate-easing {
+    syntax: '*';
+    inherits: false;
+    initial-value: ease-in-out;
+  }
+
+  /**
+   * Font-size of the linear-variant label.
+   * @group Typography
+   */
+  @property --cngx-progress-label-size {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.75rem;
+  }
+
+  /**
+   * Color of the label slot.
+   * @group Typography
+   */
+  @property --cngx-progress-label-color {
+    syntax: '*';
+    inherits: true;
+    initial-value: currentColor;
+  }
+
+  /**
+   * Diameter of the circular ring variant.
+   * @group Layout
+   */
+  @property --cngx-progress-circle-size {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 48px;
+  }
+
+  /**
+   * Font-size of the circular-variant centered label.
+   * @group Typography
+   */
+  @property --cngx-progress-circle-label-size {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.625rem;
+  }
 }
 
 @layer cngx.components {
@@ -90,8 +208,8 @@
     }
 
     :scope.cngx-progress--indeterminate .cngx-progress__circle {
-      animation: cngx-progress-spin var(--cngx-spin-duration, 0.8s)
-        var(--cngx-spin-easing, linear) infinite;
+      animation: cngx-progress-spin var(--cngx-spin-duration, 0.8s) var(--cngx-spin-easing, linear)
+        infinite;
     }
 
     :scope.cngx-progress--indeterminate .cngx-progress__circle-fill {

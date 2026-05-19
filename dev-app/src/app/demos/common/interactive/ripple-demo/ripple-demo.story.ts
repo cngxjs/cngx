@@ -46,7 +46,7 @@ export const STORY: DemoSpec = {
       imports: ['CngxRipple'],
       template: `
   <div cngxRipple #rp="cngxRipple"
-       style="padding:20px;border:1px solid var(--cngx-border,#ddd);
+       style="padding:20px;border:1px solid var(--cngx-color-border,#ddd);
               border-radius:8px;cursor:pointer;max-width:280px;user-select:none">
     <strong>Tappable Card</strong>
     <p style="margin:8px 0 0;font-size:0.875rem;color:var(--cngx-text-secondary,#666)">

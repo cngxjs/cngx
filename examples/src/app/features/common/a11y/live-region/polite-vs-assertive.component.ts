@@ -42,11 +42,11 @@ import { CngxLiveRegion } from '@cngx/common/a11y';
           padding: 10px 14px;
           border-radius: 6px;
           min-height: 40px;
-          border: 1px solid var(--cngx-border, #ddd);
+          border: 1px solid var(--cngx-color-border, #ddd);
           transition: background 0.3s, border-color 0.3s;
         "
         [style.background]="flashActive() ? 'var(--cngx-accent, #f5a623)' : 'var(--cngx-surface-alt, #f8f9fa)'"
-        [style.borderColor]="flashActive() ? 'var(--cngx-accent, #f5a623)' : 'var(--cngx-border, #ddd)'"
+        [style.borderColor]="flashActive() ? 'var(--cngx-accent, #f5a623)' : 'var(--cngx-color-border, #ddd)'"
         [style.color]="flashActive() ? '#000' : 'inherit'"
       >
         {{ message() || 'Waiting for announcement…' }}
@@ -129,11 +129,11 @@ protected announce(): void {
     padding: 10px 14px;
     border-radius: 6px;
     min-height: 40px;
-    border: 1px solid var(--cngx-border, #ddd);
+    border: 1px solid var(--cngx-color-border, #ddd);
     transition: background 0.3s, border-color 0.3s;
   "
   [style.background]="flashActive() ? 'var(--cngx-accent, #f5a623)' : 'var(--cngx-surface-alt, #f8f9fa)'"
-  [style.borderColor]="flashActive() ? 'var(--cngx-accent, #f5a623)' : 'var(--cngx-border, #ddd)'"
+  [style.borderColor]="flashActive() ? 'var(--cngx-accent, #f5a623)' : 'var(--cngx-color-border, #ddd)'"
   [style.color]="flashActive() ? '#000' : 'inherit'"
 >
   {{ message() || 'Waiting for announcement…' }}

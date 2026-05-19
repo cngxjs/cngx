@@ -18,7 +18,7 @@ import { CngxKeyboardShortcut } from '@cngx/common/interactive';
     <div [cngxKeyboardShortcut]="'escape'" [shortcutScope]="'self'"
            (shortcutTriggered)="handleEscape()"
            tabindex="0"
-           style="padding:16px;border:2px dashed var(--cngx-border,#ddd);border-radius:8px;
+           style="padding:16px;border:2px dashed var(--cngx-color-border,#ddd);border-radius:8px;
                   max-width:300px;cursor:pointer;outline:none"
            [style.borderColor]="escapeCount() > 0 ? 'var(--interactive,#f5a623)' : ''">
         <p style="margin:0;font-size:0.875rem">Click me, then press <kbd style="padding:2px 6px;background:var(--code-bg,#f5f5f5);border:1px solid var(--code-border,#ddd);border-radius:3px;font-size:0.8rem">Escape</kbd></p>
@@ -62,7 +62,7 @@ protected handleEscape(): void {
   protected readonly _exHtml: string = `<div [cngxKeyboardShortcut]="'escape'" [shortcutScope]="'self'"
      (shortcutTriggered)="handleEscape()"
      tabindex="0"
-     style="padding:16px;border:2px dashed var(--cngx-border,#ddd);border-radius:8px;
+     style="padding:16px;border:2px dashed var(--cngx-color-border,#ddd);border-radius:8px;
             max-width:300px;cursor:pointer;outline:none"
      [style.borderColor]="escapeCount() > 0 ? 'var(--interactive,#f5a623)' : ''">
   <p style="margin:0;font-size:0.875rem">Click me, then press <kbd style="padding:2px 6px;background:var(--code-bg,#f5f5f5);border:1px solid var(--code-border,#ddd);border-radius:3px;font-size:0.8rem">Escape</kbd></p>

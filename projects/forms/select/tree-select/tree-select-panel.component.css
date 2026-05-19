@@ -1,26 +1,176 @@
-/*
- * tree-select-panel.component.css — CngxTreeSelectPanel body skin.
- *
- * Tree rendering with indented rows, twisty toggles, and hover/selected
- * states. Indent is driven by the `--cngx-tree-depth` value the renderer
- * sets per node, multiplied by `--cngx-tree-select-level-indent`.
+/**
+ * @overview
+ * `CngxTreeSelectPanel` body skin. Tree rendering with indented
+ * rows, twisty toggles, and hover / selected states. Indent is
+ * driven by the `--cngx-tree-depth` value the renderer sets per
+ * node, multiplied by `--cngx-tree-select-level-indent`.
  */
 
 @layer cngx.tokens {
-  @property --cngx-tree-select-tree-padding         { syntax: '*'; inherits: false; initial-value: 0.25rem 0; }
-  @property --cngx-tree-select-node-gap             { syntax: '*'; inherits: false; initial-value: 0.5rem; }
-  @property --cngx-tree-select-node-height          { syntax: '*'; inherits: false; initial-value: 2rem; }
-  @property --cngx-tree-select-base-indent          { syntax: '*'; inherits: false; initial-value: 0.5rem; }
-  @property --cngx-tree-select-level-indent         { syntax: '*'; inherits: false; initial-value: 1.25rem; }
-  @property --cngx-tree-select-node-padding-end     { syntax: '*'; inherits: false; initial-value: 0.75rem; }
-  @property --cngx-tree-select-node-color           { syntax: '*'; inherits: true; initial-value: currentColor; }
-  @property --cngx-tree-select-node-bg              { syntax: '<color>'; inherits: false; initial-value: transparent; }
-  @property --cngx-tree-select-node-hover-bg        { syntax: '<color>'; inherits: false; initial-value: oklch(0 0 0 / 0.04); }
-  @property --cngx-tree-select-node-selected-bg    { syntax: '<color>'; inherits: false; initial-value: oklch(0 0 0 / 0.08); }
-  @property --cngx-tree-select-node-disabled-opacity{ syntax: '<number>'; inherits: false; initial-value: 0.5; }
-  @property --cngx-tree-select-twisty-size          { syntax: '*'; inherits: false; initial-value: 1.25rem; }
-  @property --cngx-tree-select-twisty-color         { syntax: '*'; inherits: true; initial-value: currentColor; }
-  @property --cngx-tree-select-twisty-font-size     { syntax: '*'; inherits: false; initial-value: 0.75rem; }
+  /**
+   * Padding shorthand around the tree container.
+   * @group Layout
+   */
+  @property --cngx-tree-select-tree-padding {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.25rem 0;
+  }
+
+  /**
+   * Gap between the twisty, checkbox, and label slots inside a node.
+   * @group Layout
+   */
+  @property --cngx-tree-select-node-gap {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.5rem;
+  }
+
+  /**
+   * Minimum block size of each node row.
+   * @group Layout
+   */
+  @property --cngx-tree-select-node-height {
+    syntax: '*';
+    inherits: false;
+    initial-value: 2rem;
+  }
+
+  /**
+   * Base inline-start padding before depth-driven indentation.
+   * @group Layout
+   */
+  @property --cngx-tree-select-base-indent {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.5rem;
+  }
+
+  /**
+   * Indent step multiplied by `--cngx-tree-depth` to compute the
+   * total inline-start padding per node.
+   * @group Layout
+   */
+  @property --cngx-tree-select-level-indent {
+    syntax: '*';
+    inherits: false;
+    initial-value: 1.25rem;
+  }
+
+  /**
+   * Inline-end padding of each node row.
+   * @group Layout
+   */
+  @property --cngx-tree-select-node-padding-end {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.75rem;
+  }
+
+  /**
+   * Text color of a resting node row.
+   * @group Surface
+   */
+  @property --cngx-tree-select-node-color {
+    syntax: '*';
+    inherits: true;
+    initial-value: currentColor;
+  }
+
+  /**
+   * Background of a resting node row.
+   * @group Surface
+   */
+  @property --cngx-tree-select-node-bg {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: transparent;
+  }
+
+  /**
+   * Background applied on hover. `inherits: true` so the :root
+   * dark-mode override (alpha-on-white on dark) reaches each node.
+   * @group State / Hover
+   */
+  @property --cngx-tree-select-node-hover-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0 0 0 / 0.04);
+  }
+
+  /**
+   * Background of the selected node row. `inherits: true` so the
+   * :root dark-mode override (alpha-on-white on dark) reaches the
+   * selected node inside the floating panel.
+   * @group State / Selected
+   */
+  @property --cngx-tree-select-node-selected-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0 0 0 / 0.08);
+  }
+
+  /**
+   * Opacity multiplier applied when a node is disabled.
+   * @group State / Disabled
+   */
+  @property --cngx-tree-select-node-disabled-opacity {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 0.5;
+  }
+
+  /**
+   * Diameter of the expand / collapse twisty toggle.
+   * @group Layout
+   */
+  @property --cngx-tree-select-twisty-size {
+    syntax: '*';
+    inherits: false;
+    initial-value: 1.25rem;
+  }
+
+  /**
+   * Color of the twisty glyph.
+   * @group Surface
+   */
+  @property --cngx-tree-select-twisty-color {
+    syntax: '*';
+    inherits: true;
+    initial-value: currentColor;
+  }
+
+  /**
+   * Font-size of the twisty glyph.
+   * @group Typography
+   */
+  @property --cngx-tree-select-twisty-font-size {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.75rem;
+  }
+
+  /* Dark-mode component-local swap — alpha-on-black hover/selected
+   * surfaces dissolve into a dark panel-bg, so the dark blocks flip
+   * them to alpha-on-white. The selected bg gets a slightly deeper
+   * alpha than the hover to keep the visual rank. */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-color-scheme='light']):not(.light) {
+      --cngx-tree-select-node-hover-bg: oklch(1 0 0 / 0.06);
+      --cngx-tree-select-node-selected-bg: oklch(1 0 0 / 0.12);
+    }
+  }
+  [data-color-scheme='dark'],
+  .dark {
+    --cngx-tree-select-node-hover-bg: oklch(1 0 0 / 0.06);
+    --cngx-tree-select-node-selected-bg: oklch(1 0 0 / 0.12);
+  }
+  [data-color-scheme='light'],
+  .light {
+    --cngx-tree-select-node-hover-bg: oklch(0 0 0 / 0.04);
+    --cngx-tree-select-node-selected-bg: oklch(0 0 0 / 0.08);
+  }
 }
 
 @layer cngx.components {
@@ -40,8 +190,8 @@
       gap: var(--cngx-tree-select-node-gap, 0.5rem);
       min-height: var(--cngx-tree-select-node-height, 2rem);
       padding-inline-start: calc(
-        var(--cngx-tree-select-base-indent, 0.5rem) +
-        var(--cngx-tree-depth, 0) * var(--cngx-tree-select-level-indent, 1.25rem)
+        var(--cngx-tree-select-base-indent, 0.5rem) + var(--cngx-tree-depth, 0) *
+          var(--cngx-tree-select-level-indent, 1.25rem)
       );
       padding-inline-end: var(--cngx-tree-select-node-padding-end, 0.75rem);
       cursor: pointer;

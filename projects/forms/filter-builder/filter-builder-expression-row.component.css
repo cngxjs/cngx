@@ -1,24 +1,47 @@
-/*
- * Expression-row variant of CngxFilterBuilderRow. Same display:contents
- * shape and the same .cngx-filter-builder__expression flex layout
- * (rule duplicated so the file is self-contained when used standalone),
- * plus the .cngx-filter-expression-incomplete state for an unfinished
+/**
+ * @overview
+ * Expression-row variant of `CngxFilterBuilderRow`. Same
+ * `display: contents` shape and the same
+ * `.cngx-filter-builder__expression` flex layout (rule duplicated so
+ * the file is self-contained when consumed standalone), plus the
+ * `.cngx-filter-expression-incomplete` state for an unfinished
  * expression — dashed warning outline.
  *
- * --cngx-filter-builder-gap is owned by the parent filter-builder file
- * and consumed here via the var() fallback chain only.
+ * `--cngx-filter-builder-gap` is owned by the parent
+ * `filter-builder.component.css` and consumed here via the `var()`
+ * fallback chain only.
  */
 
 @layer cngx.tokens {
+  /**
+   * Outline shorthand for the incomplete-expression state — dashed
+   * warning hue draws attention without committing to an error tone.
+   * Falls back through `--cngx-color-warning`. `inherits: true` so
+   * the :root delegating value reaches the expression-row host.
+   * @group State / Incomplete
+   * @see [[--cngx-color-warning]]
+   */
   @property --cngx-filter-builder-incomplete-outline {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 1px dashed oklch(0.55 0.15 65);
   }
+
+  /**
+   * Outline offset of the incomplete-expression outline.
+   * @group State / Incomplete
+   */
   @property --cngx-filter-builder-incomplete-outline-offset {
     syntax: '<length>';
     inherits: false;
     initial-value: 2px;
+  }
+
+  /* Delegating token — incomplete-outline pins its structural part
+   * (1px dashed) and inherits the warning hue via the foundation
+   * chain so a dark-mode swap on `--cngx-color-warning` cascades. */
+  :root {
+    --cngx-filter-builder-incomplete-outline: 1px dashed var(--cngx-color-warning);
   }
 }
 

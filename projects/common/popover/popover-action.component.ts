@@ -121,7 +121,7 @@ export type PopoverActionVariant = 'primary' | 'secondary' | 'danger' | 'ghost';
       </span>
     }
   `,
-  styleUrl: './popover-action.component.css',
+  styleUrls: ['./popover-action.component.css'],
 })
 export class CngxPopoverAction {
   private readonly popover = inject(CngxPopover, { optional: true });

@@ -1,8 +1,10 @@
-/*
- * CngxSelectPanel host wrapper. All visual rules for the panel body
- * (options, skeletons, spinners, error banners, refreshing indicators)
- * live in shared/select-base.css and are loaded via this component's
- * styleUrls.
+/**
+ * @overview
+ * `CngxSelectPanel` host wrapper. All visual rules for the panel
+ * body (options, skeletons, spinners, error banners, refreshing
+ * indicators) live in `shared/select-base.css` and are loaded via
+ * this component's `styleUrls` — this file only neutralises the
+ * host so it doesn't contribute layout.
  */
 
 @layer cngx.components {

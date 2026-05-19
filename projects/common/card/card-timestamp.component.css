@@ -1,16 +1,72 @@
-/* cngx-card-timestamp — default styling for the CngxCardTimestamp component.
+/**
+ * @overview
+ * Default visuals for `CngxCardTimestamp`. The host element
+ * `<cngx-card-timestamp>` always carries the
+ * `.cngx-card-timestamp` class. One slot child renders the optional
+ * label before the date: `.cngx-card-timestamp__prefix`.
  *
- * The host element <cngx-card-timestamp> always carries the
- * .cngx-card-timestamp class. One slot child:
- *   .cngx-card-timestamp__prefix | optional label before the date
- *
- * Lightweight inline-flex layout, muted color, small font. */
+ * Lightweight inline-flex layout, muted color, small font.
+ */
 
 @layer cngx.tokens {
-  @property --cngx-card-timestamp-gap           { syntax: '<length>'; inherits: false; initial-value: 4px; }
-  @property --cngx-card-timestamp-size          { syntax: '*';        inherits: true;  initial-value: 0.75rem; }
-  @property --cngx-card-timestamp-color         { syntax: '<color>';  inherits: true;  initial-value: oklch(0.36 0.02 290); }
-  @property --cngx-card-timestamp-prefix-weight { syntax: '<number>'; inherits: true;  initial-value: 400; }
+  /**
+   * Gap between the prefix slot and the date.
+   * @group Layout
+   */
+  @property --cngx-card-timestamp-gap {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 4px;
+  }
+
+  /**
+   * Font-size of the timestamp text.
+   * @group Typography
+   */
+  @property --cngx-card-timestamp-size {
+    syntax: '*';
+    inherits: true;
+    initial-value: 0.75rem;
+  }
+
+  /**
+   * Text color — muted by default.
+   * @group Typography
+   */
+  @property --cngx-card-timestamp-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.36 0.02 290);
+  }
+
+  /**
+   * Font-weight of the prefix slot.
+   * @group Typography
+   */
+  @property --cngx-card-timestamp-prefix-weight {
+    syntax: '<number>';
+    inherits: true;
+    initial-value: 400;
+  }
+
+  /* Dark-mode swap — muted text inverts to a soft light gray so
+   * the timestamp keeps its secondary-information weight relative
+   * to body text on either surface. */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-color-scheme='light']):not(.light) {
+      --cngx-card-timestamp-color: oklch(0.72 0.02 290);
+    }
+  }
+
+  [data-color-scheme='dark'],
+  .dark {
+    --cngx-card-timestamp-color: oklch(0.72 0.02 290);
+  }
+
+  [data-color-scheme='light'],
+  .light {
+    --cngx-card-timestamp-color: oklch(0.36 0.02 290);
+  }
 }
 
 @layer cngx.components {

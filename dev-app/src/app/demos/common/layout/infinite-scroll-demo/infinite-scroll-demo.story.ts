@@ -48,9 +48,9 @@ export const STORY: DemoSpec = {
       <span class="status-badge">Loading...</span>
     }
   </div>
-  <div class="scroll-root" style="max-height:300px;overflow-y:auto;border:1px solid var(--cngx-border,#e0e0e0);border-radius:8px">
+  <div class="scroll-root" style="max-height:300px;overflow-y:auto;border:1px solid var(--cngx-color-border,#e0e0e0);border-radius:8px">
     @for (item of items(); track item) {
-      <div style="padding:12px 16px;border-bottom:1px solid var(--cngx-border,#e0e0e0)">
+      <div style="padding:12px 16px;border-bottom:1px solid var(--cngx-color-border,#e0e0e0)">
         {{ item }}
       </div>
     }

@@ -108,7 +108,7 @@ function equalFieldMap(
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [NgComponentOutlet, NgTemplateOutlet, CngxInput, CngxSelect, CngxToggle],
   templateUrl: './filter-builder-row.component.html',
-  styleUrl: './filter-builder-row.component.css',
+  styleUrls: ['./filter-builder-row.component.css'],
   encapsulation: ViewEncapsulation.None,
 })
 export class CngxFilterRow {

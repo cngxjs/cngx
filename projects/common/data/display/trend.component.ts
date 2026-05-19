@@ -50,7 +50,7 @@ import {
     <span aria-hidden="true">{{ icon() }}</span>
     {{ formattedValue() }}
   `,
-  styleUrl: './trend.component.css',
+  styleUrls: ['./trend.component.css'],
 })
 export class CngxTrend {
   /** Trend percentage. Positive = up, negative = down, zero = flat. */

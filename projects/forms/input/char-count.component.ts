@@ -56,7 +56,7 @@ import { CngxFormFieldPresenter } from '@cngx/forms/field';
     } @else if (resolvedMin() != null) {
       <span>{{ currentLength() }} (min {{ resolvedMin() }})</span>
     }`,
-  styleUrl: './char-count.component.css',
+  styleUrls: ['./char-count.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   exportAs: 'cngxCharCount',

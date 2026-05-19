@@ -37,7 +37,7 @@ import {
       {{ formattedDate() }}
     </time>
   `,
-  styleUrl: './card-timestamp.component.css',
+  styleUrls: ['./card-timestamp.component.css'],
 })
 export class CngxCardTimestamp {
   private readonly locale = inject(LOCALE_ID);

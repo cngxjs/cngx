@@ -1,12 +1,23 @@
-/*
- * Flex layout container for CngxChip in multi-select mode. The gap
- * cascades through --cngx-chip-group-gap (sibling single-select
- * container) and then --cngx-space-sm — spacing stays in sync between
- * the two group types unless a consumer overrides one explicitly.
+/**
+ * @overview
+ * Default visuals for `CngxMultiChipGroup` — a flex layout container
+ * for `<cngx-chip>` in multi-select mode. The gap cascades through
+ * `--cngx-chip-group-gap` (the single-select sibling container) and
+ * then `--cngx-space-sm` — spacing stays in sync between the two
+ * group types unless a consumer overrides one explicitly.
  */
 
 @layer cngx.tokens {
-  @property --cngx-multi-chip-group-gap { syntax: '*'; inherits: false; initial-value: 0.5rem; }
+  /**
+   * Gap between chip children. Cascades through the single-select
+   * group's `--cngx-chip-group-gap` and then `--cngx-space-sm`.
+   * @group Layout
+   */
+  @property --cngx-multi-chip-group-gap {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.5rem;
+  }
 }
 
 @layer cngx.components {
@@ -14,7 +25,10 @@
     :scope {
       display: inline-flex;
       flex-direction: column;
-      gap: var(--cngx-multi-chip-group-gap, var(--cngx-chip-group-gap, var(--cngx-space-sm, 0.5rem)));
+      gap: var(
+        --cngx-multi-chip-group-gap,
+        var(--cngx-chip-group-gap, var(--cngx-space-sm, 0.5rem))
+      );
     }
 
     :scope.cngx-multi-chip-group--horizontal {

@@ -40,7 +40,7 @@ export const STORY: DemoSpec = {
          touch-action: none;
          user-select: none;
          padding: 2rem;
-         border: 2px dashed var(--cngx-border, #ccc);
+         border: 2px dashed var(--cngx-color-border, #ccc);
          border-radius: 8px;
          text-align: center;
          margin-top: 0.75rem;

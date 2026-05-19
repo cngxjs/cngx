@@ -17,13 +17,9 @@ import { CngxPopover } from '@cngx/common/popover';
       @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
     </header>
     <style>
-        .zone { display: flex; align-items: center; justify-content: center; min-height: 160px; padding: 16px; border: 2px dashed #c7cdd6; border-radius: 8px; background: #f9fafb; color: #475569; cursor: context-menu; user-select: none; }
-        .zone:focus-visible { outline: 2px solid #4a8cff; outline-offset: 2px; }
-        .pop { padding: 4px; min-width: 200px; border: 1px solid #d0d5dd; border-radius: 6px; background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
-        .menu { list-style: none; margin: 0; padding: 0; outline: none; }
-        .menu [cngxMenuItem] { padding: 6px 10px; border-radius: 4px; cursor: pointer; user-select: none; }
-        .menu [cngxMenuItem]:hover, .menu .cngx-menu-item--highlighted { background: rgba(74, 140, 255, 0.15); }
-        .menu [cngxMenuSeparator] { display: block; height: 1px; margin: 4px 6px; background: #e5e7eb; list-style: none; }
+        .zone { display: flex; align-items: center; justify-content: center; min-height: 160px; padding: 16px; border: 2px dashed var(--cngx-color-border, #c7cdd6); border-radius: 8px; background: color-mix(in oklch, var(--cngx-color-surface, #f9fafb), transparent 50%); color: var(--cngx-color-text-muted, #475569); cursor: context-menu; user-select: none; }
+        .zone:focus-visible { outline: 2px solid var(--cngx-color-primary, #4a8cff); outline-offset: 2px; }
+        .pop { min-width: 200px; border: 1px solid var(--cngx-color-border, #d0d5dd); border-radius: 6px; background: var(--cngx-color-surface, #fff); color: var(--cngx-color-text, inherit); box-shadow: 0 4px 12px oklch(0 0 0 / 0.18); }
       </style>
       <div
         class="zone"
@@ -75,13 +71,9 @@ import { CngxPopover } from '@cngx/common/popover';
 
 protected readonly lastAction = signal<string | null>(null);`;
   protected readonly _exHtml: string = `<style>
-  .zone { display: flex; align-items: center; justify-content: center; min-height: 160px; padding: 16px; border: 2px dashed #c7cdd6; border-radius: 8px; background: #f9fafb; color: #475569; cursor: context-menu; user-select: none; }
-  .zone:focus-visible { outline: 2px solid #4a8cff; outline-offset: 2px; }
-  .pop { padding: 4px; min-width: 200px; border: 1px solid #d0d5dd; border-radius: 6px; background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
-  .menu { list-style: none; margin: 0; padding: 0; outline: none; }
-  .menu [cngxMenuItem] { padding: 6px 10px; border-radius: 4px; cursor: pointer; user-select: none; }
-  .menu [cngxMenuItem]:hover, .menu .cngx-menu-item--highlighted { background: rgba(74, 140, 255, 0.15); }
-  .menu [cngxMenuSeparator] { display: block; height: 1px; margin: 4px 6px; background: #e5e7eb; list-style: none; }
+  .zone { display: flex; align-items: center; justify-content: center; min-height: 160px; padding: 16px; border: 2px dashed var(--cngx-color-border, #c7cdd6); border-radius: 8px; background: color-mix(in oklch, var(--cngx-color-surface, #f9fafb), transparent 50%); color: var(--cngx-color-text-muted, #475569); cursor: context-menu; user-select: none; }
+  .zone:focus-visible { outline: 2px solid var(--cngx-color-primary, #4a8cff); outline-offset: 2px; }
+  .pop { min-width: 200px; border: 1px solid var(--cngx-color-border, #d0d5dd); border-radius: 6px; background: var(--cngx-color-surface, #fff); color: var(--cngx-color-text, inherit); box-shadow: 0 4px 12px oklch(0 0 0 / 0.18); }
 </style>
 <div
   class="zone"

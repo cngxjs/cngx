@@ -48,7 +48,7 @@ import { CNGX_FORM_FIELD_CONFIG } from './form-field.token';
     @if (markerVisible()) {
       <span class="cngx-label__required" aria-hidden="true">{{ markerText() }}</span>
     }`,
-  styleUrl: './label.directive.css',
+  styleUrls: ['./label.directive.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   exportAs: 'cngxLabel',

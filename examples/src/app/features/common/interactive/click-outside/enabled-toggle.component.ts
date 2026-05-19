@@ -28,7 +28,7 @@ import { CngxClickOutside } from '@cngx/common/interactive';
         (clickOutside)="clickCount.update(n => n + 1)"
         style="
           padding: 16px;
-          border: 2px dashed var(--cngx-border, #aaa);
+          border: 2px dashed var(--cngx-color-border, #aaa);
           border-radius: 6px;
           margin-top: 8px;
           text-align: center;
@@ -73,7 +73,7 @@ protected enabled = signal(true);`;
   (clickOutside)="clickCount.update(n => n + 1)"
   style="
     padding: 16px;
-    border: 2px dashed var(--cngx-border, #aaa);
+    border: 2px dashed var(--cngx-color-border, #aaa);
     border-radius: 6px;
     margin-top: 8px;
     text-align: center;

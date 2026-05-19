@@ -1,13 +1,33 @@
-/*
- * Shared layout for CngxButtonToggleGroup (single-select) and
- * CngxButtonMultiToggleGroup (multi-select). Row by default
- * (--horizontal modifier); a :not() rule flips to column when
- * neither --horizontal class is present.
+/**
+ * @overview
+ * Default visuals for the shared button-toggle group container —
+ * consumed by both `CngxButtonToggleGroup` (single-select) and
+ * `CngxButtonMultiToggleGroup` (multi-select). Row by default
+ * (`--horizontal` modifier); a `:not()` rule flips to column when
+ * neither `--horizontal` class is present.
  */
 
 @layer cngx.tokens {
-  @property --cngx-button-toggle-group-gap    { syntax: '*';        inherits: false; initial-value: 0; }
-  @property --cngx-button-toggle-group-radius { syntax: '*'; inherits: false; initial-value: 0.375rem; }
+  /**
+   * Gap between toggle children. Zero by default so the buttons
+   * read as a segmented control.
+   * @group Layout
+   */
+  @property --cngx-button-toggle-group-gap {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0;
+  }
+
+  /**
+   * Corner radius of the group container. Defaults to `--cngx-radius-md`.
+   * @group Layout
+   */
+  @property --cngx-button-toggle-group-radius {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.375rem;
+  }
 }
 
 @layer cngx.components {

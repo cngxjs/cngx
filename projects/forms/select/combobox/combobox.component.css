@@ -1,39 +1,185 @@
-/*
- * combobox.component.css — CngxCombobox trigger skin.
+/**
+ * @overview
+ * `CngxCombobox` trigger skin. Structural parts shared with the rest
+ * of the select family (panel frame, option rows, loading variants,
+ * chip-list flex-wrap layout, error surfaces) come from
+ * `shared/select-base.css`. This file owns only the pieces that
+ * differ: the `role="group"` wrapper, the inline `<input>` that IS
+ * the combobox's focusable element, the caret glyph position, and
+ * the clear-all button.
  *
- * Structural parts shared with the rest of the select family (panel frame,
- * option rows, loading variants, chip-list flex-wrap layout, error
- * surfaces) come from `shared/select-base.css`. This file owns only the
- * pieces that differ: the `role="group"` wrapper, the inline `<input>`
- * that IS the combobox's focusable element, the caret glyph position,
- * and the clear-all button.
- *
- * Cascading-fallback note: var() chains step --cngx-combobox-* →
- * --cngx-select-* → hardcoded. Once registered via @property the inner
- * fallback is documentation-only (see multi-select for the same caveat).
+ * Cascading-fallback note: `var()` chains step `--cngx-combobox-*`
+ * → `--cngx-select-*` → hardcoded. Once registered via `@property`
+ * the inner fallback is documentation-only (see multi-select for the
+ * same caveat).
  */
 
 @layer cngx.tokens {
-  @property --cngx-combobox-min-width            { syntax: '*'; inherits: false; initial-value: 12rem; }
-  @property --cngx-combobox-gap                  { syntax: '*'; inherits: false; initial-value: 0.375rem; }
-  @property --cngx-combobox-padding              { syntax: '*'; inherits: false; initial-value: 0.25rem 0.375rem; }
-  @property --cngx-combobox-border               { syntax: '*'; inherits: false; initial-value: 1px solid oklch(0.85 0.01 250); }
-  @property --cngx-combobox-radius               { syntax: '*'; inherits: false; initial-value: 0.25rem; }
-  @property --cngx-combobox-bg                   { syntax: '<color>'; inherits: false; initial-value: transparent; }
-  @property --cngx-combobox-color                { syntax: '*'; inherits: true;  initial-value: currentColor; }
-  @property --cngx-combobox-min-height           { syntax: '*'; inherits: false; initial-value: 2.25rem; }
-  @property --cngx-combobox-focus-outline        { syntax: '*'; inherits: false; initial-value: 2px solid oklch(0.6 0.2 250); }
-  @property --cngx-combobox-focus-offset         { syntax: '<length>'; inherits: false; initial-value: 2px; }
-  @property --cngx-combobox-disabled-opacity     { syntax: '<number>'; inherits: false; initial-value: 0.5; }
-  @property --cngx-combobox-input-flex-basis     { syntax: '*'; inherits: false; initial-value: 4rem; }
-  @property --cngx-combobox-input-min-width      { syntax: '*'; inherits: false; initial-value: 4rem; }
-  @property --cngx-combobox-placeholder-opacity  { syntax: '<number>'; inherits: false; initial-value: 0.7; }
-  @property --cngx-combobox-clear-opacity        { syntax: '<number>'; inherits: false; initial-value: 0.6; }
+  /**
+   * Minimum inline size of the trigger.
+   * @group Layout
+   */
+  @property --cngx-combobox-min-width {
+    syntax: '*';
+    inherits: false;
+    initial-value: 12rem;
+  }
+
+  /**
+   * Gap between the chip list, input, caret, and clear-all button.
+   * @group Layout
+   */
+  @property --cngx-combobox-gap {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.375rem;
+  }
+
+  /**
+   * Padding shorthand of the trigger.
+   * @group Layout
+   */
+  @property --cngx-combobox-padding {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.25rem 0.375rem;
+  }
+
+  /**
+   * Border shorthand of the trigger.
+   * @group Surface
+   */
+  @property --cngx-combobox-border {
+    syntax: '*';
+    inherits: true;
+    initial-value: 1px solid oklch(0.85 0.01 250);
+  }
+
+  /**
+   * Corner radius of the trigger.
+   * @group Layout
+   */
+  @property --cngx-combobox-radius {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.25rem;
+  }
+
+  /**
+   * Background of the trigger.
+   * @group Surface
+   */
+  @property --cngx-combobox-bg {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: transparent;
+  }
+
+  /**
+   * Text color of the trigger.
+   * @group Surface
+   */
+  @property --cngx-combobox-color {
+    syntax: '*';
+    inherits: true;
+    initial-value: currentColor;
+  }
+
+  /**
+   * Minimum block size of the trigger — fits a single row of chips.
+   * @group Layout
+   */
+  @property --cngx-combobox-min-height {
+    syntax: '*';
+    inherits: false;
+    initial-value: 2.25rem;
+  }
+
+  /**
+   * Focus-ring outline shorthand applied on `:focus-within`. Falls
+   * back to `--cngx-color-primary`.
+   * @group State / Focus
+   * @see [[--cngx-color-primary]]
+   */
+  @property --cngx-combobox-focus-outline {
+    syntax: '*';
+    inherits: true;
+    initial-value: 2px solid oklch(0.66 0.19 50);
+  }
+
+  /**
+   * Outline offset of the focus ring.
+   * @group State / Focus
+   */
+  @property --cngx-combobox-focus-offset {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 2px;
+  }
+
+  /**
+   * Opacity multiplier applied when the trigger is disabled.
+   * @group State / Disabled
+   */
+  @property --cngx-combobox-disabled-opacity {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 0.5;
+  }
+
+  /**
+   * Flex basis of the inline input — sets the preferred starting
+   * width before the input grows or shrinks.
+   * @group Layout
+   */
+  @property --cngx-combobox-input-flex-basis {
+    syntax: '*';
+    inherits: false;
+    initial-value: 4rem;
+  }
+
+  /**
+   * Minimum inline size of the inline input — keeps the input
+   * tappable even when chips dominate the trigger row.
+   * @group Layout
+   */
+  @property --cngx-combobox-input-min-width {
+    syntax: '*';
+    inherits: false;
+    initial-value: 4rem;
+  }
+
+  /**
+   * Opacity of the input placeholder text.
+   * @group State / Placeholder
+   */
+  @property --cngx-combobox-placeholder-opacity {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 0.7;
+  }
+
+  /**
+   * Resting opacity of the clear-all button.
+   * @group State / Clear
+   */
+  @property --cngx-combobox-clear-opacity {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 0.6;
+  }
+
+  /* Delegating tokens — trigger border + focus-ring track the
+   * foundation chain. Shorthands pin their structural part and
+   * inherit the color via the delegating foundation token. */
+  :root {
+    --cngx-combobox-border: 1px solid var(--cngx-color-border);
+    --cngx-combobox-focus-outline: 2px solid var(--cngx-color-primary);
+  }
 }
 
 @layer cngx.components {
   @scope (.cngx-combobox) {
-
     :scope {
       display: inline-block;
       position: relative;
@@ -67,19 +213,13 @@
     .cngx-combobox__trigger:focus-within {
       outline: var(
         --cngx-combobox-focus-outline,
-        var(--cngx-select-focus-outline, 2px solid var(--cngx-color-primary, oklch(0.6 0.2 250)))
+        var(--cngx-select-focus-outline, 2px solid var(--cngx-color-primary, oklch(0.66 0.19 50)))
       );
-      outline-offset: var(
-        --cngx-combobox-focus-offset,
-        var(--cngx-select-focus-offset, 2px)
-      );
+      outline-offset: var(--cngx-combobox-focus-offset, var(--cngx-select-focus-offset, 2px));
     }
 
     .cngx-combobox__trigger[aria-disabled='true'] {
-      opacity: var(
-        --cngx-combobox-disabled-opacity,
-        var(--cngx-select-disabled-opacity, 0.5)
-      );
+      opacity: var(--cngx-combobox-disabled-opacity, var(--cngx-select-disabled-opacity, 0.5));
       cursor: not-allowed;
     }
 
@@ -131,7 +271,7 @@
     }
 
     .cngx-combobox__clear-all:focus-visible {
-      outline: 2px solid var(--cngx-color-primary, oklch(0.6 0.2 250));
+      outline: 2px solid var(--cngx-color-primary, oklch(0.66 0.19 50));
       border-radius: 0.125rem;
     }
 

@@ -65,7 +65,7 @@ import type { CngxFieldAccessor } from './models';
       }
     }
   `,
-  styleUrl: './form-errors.component.css',
+  styleUrls: ['./form-errors.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   exportAs: 'cngxFormErrors',

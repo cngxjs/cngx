@@ -16,12 +16,12 @@ import { injectRecycler, CngxMeasure } from '@cngx/common/data';
       @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
     </header>
     <div class="recycler-var-scroll"
-           style="height:400px;overflow-y:auto;border:1px solid var(--cngx-border-color,#e0e0e0);border-radius:8px">
+           style="height:400px;overflow-y:auto;border:1px solid var(--cngx-color-border,#e0e0e0);border-radius:8px">
         <div [style.paddingTop.px]="varRecycler.offsetBefore()"
              [style.paddingBottom.px]="varRecycler.offsetAfter()">
           @for (item of varVisible(); track item.id; let i = $index) {
             <div [cngxMeasure]="varRecycler" [cngxMeasureIndex]="varRecycler.start() + i"
-                 style="padding:12px 16px;border-bottom:1px solid var(--cngx-border-color,#e0e0e0)">
+                 style="padding:12px 16px;border-bottom:1px solid var(--cngx-color-border,#e0e0e0)">
               <strong>{{ item.name }}</strong>
               <p style="margin:4px 0;color:var(--cngx-text-muted,#666)">{{ item.content }}</p>
             </div>
@@ -87,12 +87,12 @@ protected readonly varRecycler = injectRecycler({
 
 protected readonly varVisible = this.varRecycler.sliced(this.variableItems);`;
   protected readonly _exHtml: string = `<div class="recycler-var-scroll"
-     style="height:400px;overflow-y:auto;border:1px solid var(--cngx-border-color,#e0e0e0);border-radius:8px">
+     style="height:400px;overflow-y:auto;border:1px solid var(--cngx-color-border,#e0e0e0);border-radius:8px">
   <div [style.paddingTop.px]="varRecycler.offsetBefore()"
        [style.paddingBottom.px]="varRecycler.offsetAfter()">
     @for (item of varVisible(); track item.id; let i = $index) {
       <div [cngxMeasure]="varRecycler" [cngxMeasureIndex]="varRecycler.start() + i"
-           style="padding:12px 16px;border-bottom:1px solid var(--cngx-border-color,#e0e0e0)">
+           style="padding:12px 16px;border-bottom:1px solid var(--cngx-color-border,#e0e0e0)">
         <strong>{{ item.name }}</strong>
         <p style="margin:4px 0;color:var(--cngx-text-muted,#666)">{{ item.content }}</p>
       </div>

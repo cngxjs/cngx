@@ -15,7 +15,7 @@ import { CngxLoadingIndicator } from '@cngx/ui/feedback';
       @if (_exSectionTitle && _exSectionTitle !== _exTitle) { <h2>{{ _exSectionTitle }}</h2> }
       @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
     </header>
-    <div style="position:relative;border:1px solid var(--cngx-border,#ddd);border-radius:8px;padding:24px;min-height:80px">
+    <div style="position:relative;border:1px solid var(--cngx-color-border,#ddd);border-radius:8px;padding:24px;min-height:80px">
         <cngx-loading-indicator [loading]="isLoading()" variant="bar" label="Refreshing"
           style="position:absolute;top:0;left:0;right:0" />
         <p>Container content. Click "Start Loading" above to see the bar.</p>
@@ -43,7 +43,7 @@ protected handleToggle(): void {
   this.isLoading.set(true);
   setTimeout(() => this.isLoading.set(false), 2000);
 }`;
-  protected readonly _exHtml: string = `<div style="position:relative;border:1px solid var(--cngx-border,#ddd);border-radius:8px;padding:24px;min-height:80px">
+  protected readonly _exHtml: string = `<div style="position:relative;border:1px solid var(--cngx-color-border,#ddd);border-radius:8px;padding:24px;min-height:80px">
   <cngx-loading-indicator [loading]="isLoading()" variant="bar" label="Refreshing"
     style="position:absolute;top:0;left:0;right:0" />
   <p>Container content. Click "Start Loading" above to see the bar.</p>

@@ -28,7 +28,7 @@ export const STORY: DemoSpec = {
   <div cngxPaginate #pg="cngxPaginate" [total]="items().length" [cngxPageSize]="5" style="display:contents">
     <ul style="list-style:none;padding:0;margin:0">
       @for (p of items().slice(pg.range()[0], pg.range()[1]); track p.name) {
-        <li style="padding:8px 0;border-bottom:1px solid var(--cngx-border-color,#e0e0e0)">
+        <li style="padding:8px 0;border-bottom:1px solid var(--cngx-color-border,#e0e0e0)">
           <strong>{{ p.name }}</strong> &mdash; {{ p.role }}, {{ p.location }}
         </li>
       }

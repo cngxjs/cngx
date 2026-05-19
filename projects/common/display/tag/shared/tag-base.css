@@ -1,11 +1,18 @@
-/*
+/**
+ * @overview
  * Shared structural skeleton for the tag family. Two scopes
- * (.cngx-tag, .cngx-tag-group) live here because both atoms share
- * structural defaults and link this file first in their styleUrls.
- * Thematic skin (color cascade, radius, font-weight) is in the
- * per-atom files. All values cascade through --cngx-* custom
- * properties so consumers can override at :root or component level
- * without forking.
+ * (`.cngx-tag`, `.cngx-tag-group`) live here because both atoms
+ * share structural defaults and link this file first in their
+ * `styleUrls`. Thematic skin (color cascade, radius, font-weight) is
+ * in the per-atom files. All values cascade through `--cngx-*`
+ * custom properties so consumers can override at `:root` or
+ * component level without forking.
+ *
+ * Layout-only — no `@property` registrations here. The structural
+ * tokens (`--cngx-tag-gap`, `--cngx-tag-padding`,
+ * `--cngx-tag-font-size`, density variants, `--cngx-tag-group-*`)
+ * are registered in `tag.css` / `tag-group.component.css`; this
+ * file just consumes them.
  */
 
 @layer cngx.components {

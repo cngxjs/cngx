@@ -20,7 +20,7 @@ import { ChangeDetectionStrategy, Component, computed, input, signal, ViewEncaps
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  styleUrl: './avatar.component.css',
+  styleUrls: ['./avatar.component.css'],
   host: {
     class: 'cngx-avatar',
     '[class.cngx-avatar--xs]': 'size() === "xs"',

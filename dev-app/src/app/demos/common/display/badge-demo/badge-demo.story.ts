@@ -27,8 +27,8 @@ export const STORY: DemoSpec = {
   position: relative;
   padding: 8px 14px;
   border-radius: 6px;
-  border: 1px solid var(--cngx-surface-border, #d0d5dd);
-  background: var(--cngx-surface-default, #fff);
+  border: 1px solid var(--cngx-color-border, #d0d5dd);
+  background: var(--cngx-color-surface, #fff);
   cursor: pointer;
   font-size: 0.875rem;
 }

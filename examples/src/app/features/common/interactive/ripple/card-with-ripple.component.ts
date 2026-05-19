@@ -16,7 +16,7 @@ import { CngxRipple } from '@cngx/common/interactive';
       @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
     </header>
     <div cngxRipple #rp="cngxRipple"
-           style="padding:20px;border:1px solid var(--cngx-border,#ddd);
+           style="padding:20px;border:1px solid var(--cngx-color-border,#ddd);
                   border-radius:8px;cursor:pointer;max-width:280px;user-select:none">
         <strong>Tappable Card</strong>
         <p style="margin:8px 0 0;font-size:0.875rem;color:var(--cngx-text-secondary,#666)">
@@ -46,7 +46,7 @@ export class RippleCardWithRipple {
   protected readonly _exSubtitle: string = 'Apply to any container element. The directive sets <code>position: relative</code> and <code>overflow: hidden</code> on the host automatically.';
   protected readonly _exTs: string = `import { CngxRipple } from '@cngx/common/interactive';`;
   protected readonly _exHtml: string = `<div cngxRipple #rp="cngxRipple"
-     style="padding:20px;border:1px solid var(--cngx-border,#ddd);
+     style="padding:20px;border:1px solid var(--cngx-color-border,#ddd);
             border-radius:8px;cursor:pointer;max-width:280px;user-select:none">
   <strong>Tappable Card</strong>
   <p style="margin:8px 0 0;font-size:0.875rem;color:var(--cngx-text-secondary,#666)">

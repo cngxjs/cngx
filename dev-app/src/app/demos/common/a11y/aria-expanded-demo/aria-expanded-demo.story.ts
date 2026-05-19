@@ -41,7 +41,7 @@ export const STORY: DemoSpec = {
       style="
         margin-top: 8px;
         padding: 12px 16px;
-        border: 1px solid var(--cngx-border, #ddd);
+        border: 1px solid var(--cngx-color-border, #ddd);
         border-radius: 6px;
         background: var(--cngx-surface-alt, #f8f9fa);
       "
@@ -71,7 +71,7 @@ export const STORY: DemoSpec = {
         'a typical product-page accordion. Each button controls its own panel.',
       imports: ['CngxAriaExpanded'],
       template: `
-  <div style="display: flex; flex-direction: column; gap: 1px; border: 1px solid var(--cngx-border, #ddd); border-radius: 6px; overflow: hidden;">
+  <div style="display: flex; flex-direction: column; gap: 1px; border: 1px solid var(--cngx-color-border, #ddd); border-radius: 6px; overflow: hidden;">
     @for (item of [
       { key: 'specs', label: 'Specifications', content: 'Display: 6.1" OLED, 120Hz — Processor: A17 Pro — Storage: 256GB — Battery: 4,422 mAh' },
       { key: 'reviews', label: 'Reviews (42)', content: 'Average rating: 4.6 / 5.0 — "Best phone I have ever owned" — "Camera is outstanding in low light"' },

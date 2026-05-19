@@ -1,58 +1,106 @@
-/*
- * `<cngx-tab-group>` thematic skin. Structural rules (flex / grid /
- * positioning, scroll-snap, sr-only, base color / background / sizes)
- * come from the shared `tabs-base.css` in `@cngx/common/tabs` —
- * single source of truth for the structural token defaults. This
- * file owns the skin-exclusive tokens (ink-bar indicator, transition
- * timing, hover affordance, strip border).
+/**
+ * @overview
+ * Default visuals for `<cngx-tab-group>` — the thematic skin layer.
+ * Structural rules (flex / grid / positioning, scroll-snap, sr-only,
+ * base color / background / sizes) come from the shared
+ * `tabs-base.css` in `@cngx/common/tabs` — single source of truth
+ * for the structural token defaults. This file owns the skin-
+ * exclusive tokens (ink-bar indicator, transition timing, hover
+ * affordance, strip border).
  *
- * Tokens consumed but defined in tabs-base.css read with bare
+ * Tokens consumed but defined in `tabs-base.css` read with bare
  * `var(--cngx-tab-*)` (no second fallback) — the structural cascade
- * provides the default and a duplicate fallback would create a second
- * source of truth.
+ * provides the default and a duplicate fallback would create a
+ * second source of truth.
  */
 
 @layer cngx.tokens {
+  /**
+   * Border shorthand of the tab strip's bottom (or inline-end for
+   * vertical orientation) edge.
+   * @group Surface
+   */
   @property --cngx-tab-strip-border {
     syntax: '*';
     inherits: false;
     initial-value: 1px solid currentColor;
   }
+
+  /**
+   * Thickness of the active-tab ink-bar indicator.
+   * @group Surface
+   */
   @property --cngx-tab-indicator-thickness {
     syntax: '<length>';
     inherits: false;
     initial-value: 2px;
   }
+
+  /**
+   * Transition duration for color + border-color crossfade on hover
+   * / active changes.
+   * @group Motion
+   */
   @property --cngx-tab-transition-duration {
     syntax: '<time>';
     inherits: false;
     initial-value: 0.15s;
   }
+
+  /**
+   * Text color of the hover state.
+   * @group State / Hover
+   */
   @property --cngx-tab-hover-color {
     syntax: '*';
     inherits: true;
     initial-value: currentColor;
   }
+
+  /**
+   * Color of the ink-bar indicator under the active tab.
+   * @group State / Active
+   */
   @property --cngx-tab-active-indicator-color {
     syntax: '*';
     inherits: true;
     initial-value: currentColor;
   }
+
+  /**
+   * Hit-target diameter of the per-tab error badge.
+   * @group State / Error
+   */
   @property --cngx-tab-badge-size {
     syntax: '<length>';
     inherits: false;
     initial-value: 1.25rem;
   }
+
+  /**
+   * Text color of the error-badge glyph.
+   * @group State / Error
+   */
   @property --cngx-tab-error-badge-text-color {
     syntax: '<color>';
     inherits: true;
     initial-value: oklch(1 0 0);
   }
+
+  /**
+   * Font-size of the error-badge glyph.
+   * @group State / Error
+   */
   @property --cngx-tab-badge-font-size {
     syntax: '*';
     inherits: false;
     initial-value: 0.75em;
   }
+
+  /**
+   * Font-weight of the error-badge glyph.
+   * @group State / Error
+   */
   @property --cngx-tab-badge-font-weight {
     syntax: '<number>';
     inherits: false;

@@ -63,11 +63,11 @@ export const STORY: DemoSpec = {
       padding: 10px 14px;
       border-radius: 6px;
       min-height: 40px;
-      border: 1px solid var(--cngx-border, #ddd);
+      border: 1px solid var(--cngx-color-border, #ddd);
       transition: background 0.3s, border-color 0.3s;
     "
     [style.background]="flashActive() ? 'var(--cngx-accent, #f5a623)' : 'var(--cngx-surface-alt, #f8f9fa)'"
-    [style.borderColor]="flashActive() ? 'var(--cngx-accent, #f5a623)' : 'var(--cngx-border, #ddd)'"
+    [style.borderColor]="flashActive() ? 'var(--cngx-accent, #f5a623)' : 'var(--cngx-color-border, #ddd)'"
     [style.color]="flashActive() ? '#000' : 'inherit'"
   >
     {{ message() || 'Waiting for announcement…' }}
@@ -103,8 +103,8 @@ export const STORY: DemoSpec = {
       placeholder="user@example.com"
       [value]="email()"
       (input)="email.set($any($event.target).value)"
-      [style.borderColor]="emailError() ? '#e53e3e' : 'var(--cngx-border, #ddd)'"
-      style="padding: 8px 12px; border-radius: 6px; border: 1px solid var(--cngx-border, #ddd); font-size: 0.875rem;"
+      [style.borderColor]="emailError() ? '#e53e3e' : 'var(--cngx-color-border, #ddd)'"
+      style="padding: 8px 12px; border-radius: 6px; border: 1px solid var(--cngx-color-border, #ddd); font-size: 0.875rem;"
       aria-describedby="email-error"
     />
     <div

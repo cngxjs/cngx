@@ -59,7 +59,7 @@ import { CngxOption } from '@cngx/common/interactive';
       </span>
     }
   `,
-  styleUrl: './option.component.css',
+  styleUrls: ['./option.component.css'],
 })
 export class CngxSelectOption {
   protected readonly option = inject(CngxOption, { self: true });

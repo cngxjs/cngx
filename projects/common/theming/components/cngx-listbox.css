@@ -1,0 +1,196 @@
+/**
+ * @overview
+ * Default chrome for the `CngxListbox` family. Ships enough
+ * structural styling that a bare `<ul cngxListbox>…</ul>` renders
+ * as a usable option list: list bullets stripped, options laid out
+ * with vertical breathing room, keyboard-cursor + selected-state
+ * signals painted in.
+ *
+ * Selectors target the directive's class hooks:
+ *   - `[cngxListbox]`     — container
+ *   - `[cngxOption]`      — option host
+ *   - `.cngx-option--selected | --highlighted | --disabled | --hidden`
+ *
+ * Container surface (background, border, radius) is OWNED by the
+ * surrounding panel — the select family's `select-base.css` paints
+ * its own panel chrome at higher specificity. This file ships only
+ * the listbox's internal structure + keyboard-visibility hooks for
+ * bare consumers.
+ *
+ * Pair with `@cngx/themes/material/interactive-controls-theme` for
+ * the Material 3 surface treatment.
+ */
+
+@layer cngx.tokens {
+  /**
+   * Outline of the listbox container when it takes keyboard focus.
+   * The container uses `aria-activedescendant`, so it carries focus
+   * while the highlighted option is signalled separately by the
+   * highlight bg.
+   * @group State / Focus
+   * @see [[--cngx-color-primary]]
+   */
+  @property --cngx-listbox-focus-outline-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.66 0.19 50);
+  }
+
+  /**
+   * Stroke width of the container focus ring.
+   * @group State / Focus
+   */
+  @property --cngx-listbox-focus-outline-width {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 2px;
+  }
+
+  /**
+   * Distance from the container edge to the focus ring.
+   * @group State / Focus
+   */
+  @property --cngx-listbox-focus-outline-offset {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 2px;
+  }
+
+  /**
+   * Background tint of the keyboard-highlighted option. Low-alpha
+   * primary so the highlight reads as an accent without competing
+   * with selected-state visuals.
+   * @group State / Highlighted
+   * @see [[--cngx-color-primary]]
+   */
+  @property --cngx-option-highlight-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.66 0.19 50 / 0.1);
+  }
+
+  /**
+   * Background of a selected option. Slightly higher alpha than the
+   * highlight tint so selection reads as committed state rather than
+   * transient cursor position.
+   * @group State / Selected
+   * @see [[--cngx-color-primary]]
+   */
+  @property --cngx-option-selected-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.66 0.19 50 / 0.18);
+  }
+
+  /**
+   * Opacity multiplier applied to disabled options.
+   * @group State / Disabled
+   */
+  @property --cngx-option-disabled-opacity {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 0.5;
+  }
+
+  /**
+   * Padding shorthand inside the listbox container.
+   * @group Layout
+   */
+  @property --cngx-listbox-padding {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 4px;
+  }
+
+  /**
+   * Padding shorthand on each option.
+   * @group Layout
+   */
+  @property --cngx-option-padding {
+    syntax: '*';
+    inherits: false;
+    initial-value: 6px 10px;
+  }
+
+  /**
+   * Corner radius of each option.
+   * @group Layout
+   */
+  @property --cngx-option-radius {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 4px;
+  }
+
+  /*
+   * Default-theme palette. Highlight + selected tints flip to higher
+   * alphas on dark surfaces so the accent stays perceptible against
+   * the darker background without blowing out into a solid block.
+   */
+  :root {
+    --cngx-listbox-focus-outline-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
+    --cngx-option-highlight-bg: oklch(0.66 0.19 50 / 0.1);
+    --cngx-option-selected-bg: oklch(0.66 0.19 50 / 0.18);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-color-scheme='light']):not(.light) {
+      --cngx-option-highlight-bg: oklch(0.72 0.18 50 / 0.18);
+      --cngx-option-selected-bg: oklch(0.72 0.18 50 / 0.28);
+    }
+  }
+
+  :root[data-color-scheme='dark'],
+  :root.dark {
+    --cngx-option-highlight-bg: oklch(0.72 0.18 50 / 0.18);
+    --cngx-option-selected-bg: oklch(0.72 0.18 50 / 0.28);
+  }
+
+  :root[data-color-scheme='light'],
+  :root.light {
+    --cngx-option-highlight-bg: oklch(0.66 0.19 50 / 0.1);
+    --cngx-option-selected-bg: oklch(0.66 0.19 50 / 0.18);
+  }
+}
+
+@layer cngx.components {
+  [cngxListbox] {
+    list-style: none;
+    margin: 0;
+    padding: var(--cngx-listbox-padding, 4px);
+    outline: none;
+  }
+
+  [cngxListbox]:focus-visible {
+    outline: var(--cngx-listbox-focus-outline-width, 2px) solid
+      var(--cngx-listbox-focus-outline-color, oklch(0.66 0.19 50));
+    outline-offset: var(--cngx-listbox-focus-outline-offset, 2px);
+  }
+
+  [cngxOption] {
+    display: flex;
+    align-items: center;
+    padding: var(--cngx-option-padding, 6px 10px);
+    border-radius: var(--cngx-option-radius, 4px);
+    cursor: pointer;
+    user-select: none;
+    color: inherit;
+  }
+
+  .cngx-option--highlighted {
+    background: var(--cngx-option-highlight-bg, oklch(0.66 0.19 50 / 0.1));
+  }
+
+  .cngx-option--selected {
+    background: var(--cngx-option-selected-bg, oklch(0.66 0.19 50 / 0.18));
+  }
+
+  .cngx-option--disabled {
+    opacity: var(--cngx-option-disabled-opacity, 0.5);
+    cursor: not-allowed;
+  }
+
+  .cngx-option--hidden {
+    display: none;
+  }
+}

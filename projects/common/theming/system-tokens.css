@@ -1,13 +1,16 @@
-/* cngx-common-system-tokens — domain-specific system tokens for @cngx/common.
- *
- * Empty placeholder; the file exists so each lib's theming/-layer has a
+/**
+ * @overview
+ * Domain-specific system tokens for `@cngx/common`. Empty
+ * placeholder — the file exists so each lib's `theming/` layer has a
  * canonical home that ng-packagr already ships. Populate when a need
- * arises for tokens that belong to this lib's domain (atoms/molecules
- * scope: display, interactive, a11y, popover, dialog, card).
+ * arises for tokens that belong to this lib's domain (atoms /
+ * molecules scope: display, interactive, a11y, popover, dialog,
+ * card).
  *
  * System tokens shared across all libs live in
- * `@cngx/core/theming/system-tokens.css`. Per-component tokens belong in
- * `<comp>.tokens.css` next to the component. */
+ * `@cngx/core/theming/system-tokens.css`. Per-component tokens
+ * belong in `<comp>.component.css` next to the component.
+ */
 
 @layer cngx.tokens {
   /* Add @property declarations here when domain-specific system tokens

@@ -1,45 +1,373 @@
-/*
- * toast-outlet.css — CngxToastOutlet skin.
- *
- * Fixed-position toast stack with 6 corner/center placements. Each
- * toast carries a severity-tinted accent stripe on the leading edge
- * (border-left). Toasts use their own --cngx-toast-* token namespace,
- * separate from alert and banner so the three feedback channels can
- * be themed independently.
+/**
+ * @overview
+ * Default visuals for `CngxToastOutlet`. Fixed-position toast stack
+ * with 6 corner / center placements. Each toast carries a severity-
+ * tinted accent stripe on the leading edge (`border-left`). Toasts
+ * use their own `--cngx-toast-*` token namespace, separate from
+ * alert and banner so the three feedback channels can be themed
+ * independently.
  */
 
 @layer cngx.tokens {
-  @property --cngx-toast-z-index             { syntax: '<number>'; inherits: false; initial-value: 9999; }
-  @property --cngx-toast-gap                 { syntax: '<length>'; inherits: false; initial-value: 8px; }
-  @property --cngx-toast-outlet-padding      { syntax: '*'; inherits: false; initial-value: 16px; }
-  @property --cngx-toast-max-width           { syntax: '<length>'; inherits: false; initial-value: 420px; }
-  @property --cngx-toast-inner-gap           { syntax: '<length>'; inherits: false; initial-value: 10px; }
-  @property --cngx-toast-padding             { syntax: '*'; inherits: false; initial-value: 12px 16px; }
-  @property --cngx-toast-border-radius       { syntax: '<length>'; inherits: false; initial-value: 8px; }
-  @property --cngx-toast-bg                  { syntax: '<color>'; inherits: false; initial-value: oklch(1 0 0); }
-  @property --cngx-toast-color               { syntax: '<color>'; inherits: true; initial-value: oklch(0.25 0.015 250); }
-  @property --cngx-toast-shadow              { syntax: '*'; inherits: false; initial-value: 0 4px 12px oklch(0 0 0 / 0.15); }
-  @property --cngx-toast-enter-duration      { syntax: '<time>'; inherits: false; initial-value: 200ms; }
-  @property --cngx-toast-enter-easing        { syntax: '*'; inherits: false; initial-value: ease-out; }
-  @property --cngx-toast-accent-width        { syntax: '<length>'; inherits: false; initial-value: 3px; }
-  @property --cngx-toast-info-accent         { syntax: '<color>'; inherits: false; initial-value: oklch(0.62 0.2 250); }
-  @property --cngx-toast-success-accent      { syntax: '<color>'; inherits: false; initial-value: oklch(0.65 0.15 145); }
-  @property --cngx-toast-warning-accent      { syntax: '<color>'; inherits: false; initial-value: oklch(0.72 0.18 70); }
-  @property --cngx-toast-error-accent        { syntax: '<color>'; inherits: false; initial-value: oklch(0.62 0.22 25); }
-  @property --cngx-toast-icon-size           { syntax: '<length>'; inherits: false; initial-value: 20px; }
-  @property --cngx-toast-font-size           { syntax: '*'; inherits: false; initial-value: 0.875rem; }
-  @property --cngx-toast-line-height         { syntax: '*'; inherits: false; initial-value: 1.5; }
-  @property --cngx-toast-title-font-weight   { syntax: '<number>'; inherits: false; initial-value: 600; }
-  @property --cngx-toast-title-font-size     { syntax: '*'; inherits: false; initial-value: 0.875rem; }
-  @property --cngx-toast-title-color         { syntax: '*'; inherits: true; initial-value: currentColor; }
-  @property --cngx-toast-description-max-lines      { syntax: '<integer>'; inherits: false; initial-value: 3; }
-  @property --cngx-toast-description-font-size      { syntax: '*'; inherits: false; initial-value: 0.8125rem; }
-  @property --cngx-toast-description-color          { syntax: '<color>'; inherits: true; initial-value: oklch(0.5 0.01 250); }
-  @property --cngx-toast-description-line-height    { syntax: '*'; inherits: false; initial-value: 1.4; }
-  @property --cngx-toast-count-opacity       { syntax: '<number>'; inherits: false; initial-value: 0.6; }
-  @property --cngx-toast-action-padding      { syntax: '*'; inherits: false; initial-value: 4px 0; }
-  @property --cngx-toast-action-weight       { syntax: '<number>'; inherits: false; initial-value: 600; }
-  @property --cngx-toast-action-size         { syntax: '*'; inherits: false; initial-value: 0.8125rem; }
+  /**
+   * Stacking-context order — high so toasts overlay dialogs / popovers.
+   * @group Layout
+   */
+  @property --cngx-toast-z-index {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 9999;
+  }
+
+  /**
+   * Vertical gap between stacked toasts.
+   * @group Layout
+   */
+  @property --cngx-toast-gap {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 8px;
+  }
+
+  /**
+   * Outer padding around the toast outlet (viewport offset).
+   * @group Layout
+   */
+  @property --cngx-toast-outlet-padding {
+    syntax: '*';
+    inherits: false;
+    initial-value: 16px;
+  }
+
+  /**
+   * Maximum inline size of each toast — caps long messages.
+   * @group Layout
+   */
+  @property --cngx-toast-max-width {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 420px;
+  }
+
+  /**
+   * Gap between icon, body, and dismiss button inside a toast.
+   * @group Layout
+   */
+  @property --cngx-toast-inner-gap {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 10px;
+  }
+
+  /**
+   * Padding shorthand inside each toast.
+   * @group Layout
+   */
+  @property --cngx-toast-padding {
+    syntax: '*';
+    inherits: false;
+    initial-value: 12px 16px;
+  }
+
+  /**
+   * Corner radius of each toast.
+   * @group Layout
+   */
+  @property --cngx-toast-border-radius {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 8px;
+  }
+
+  /**
+   * Background of each toast.
+   * @group Surface
+   */
+  @property --cngx-toast-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(1 0 0);
+  }
+
+  /**
+   * Text color of each toast.
+   * @group Surface
+   */
+  @property --cngx-toast-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.25 0.015 250);
+  }
+
+  /**
+   * Drop-shadow of each toast.
+   * @group Surface
+   */
+  @property --cngx-toast-shadow {
+    syntax: '*';
+    inherits: true;
+    initial-value: 0 4px 12px oklch(0 0 0 / 0.15);
+  }
+
+  /**
+   * Duration of the enter animation.
+   * @group Motion
+   */
+  @property --cngx-toast-enter-duration {
+    syntax: '<time>';
+    inherits: false;
+    initial-value: 200ms;
+  }
+
+  /**
+   * Easing curve of the enter animation.
+   * @group Motion
+   */
+  @property --cngx-toast-enter-easing {
+    syntax: '*';
+    inherits: false;
+    initial-value: ease-out;
+  }
+
+  /**
+   * Width of the leading-edge severity stripe.
+   * @group Surface
+   */
+  @property --cngx-toast-accent-width {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 3px;
+  }
+
+  /**
+   * Severity stripe of the info variant.
+   * @group Variant / Info
+   */
+  @property --cngx-toast-info-accent {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.62 0.2 250);
+  }
+
+  /**
+   * Severity stripe of the success variant.
+   * @group Variant / Success
+   */
+  @property --cngx-toast-success-accent {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.65 0.15 145);
+  }
+
+  /**
+   * Severity stripe of the warning variant.
+   * @group Variant / Warning
+   */
+  @property --cngx-toast-warning-accent {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.72 0.18 70);
+  }
+
+  /**
+   * Severity stripe of the error variant.
+   * @group Variant / Error
+   */
+  @property --cngx-toast-error-accent {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.62 0.22 25);
+  }
+
+  /**
+   * Default icon size when no custom icon is projected.
+   * @group Layout
+   */
+  @property --cngx-toast-icon-size {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 20px;
+  }
+
+  /**
+   * Font-size of the toast body text.
+   * @group Typography
+   */
+  @property --cngx-toast-font-size {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.875rem;
+  }
+
+  /**
+   * Line-height of the toast body text.
+   * @group Typography
+   */
+  @property --cngx-toast-line-height {
+    syntax: '*';
+    inherits: false;
+    initial-value: 1.5;
+  }
+
+  /**
+   * Font-weight of the title slot.
+   * @group Typography
+   */
+  @property --cngx-toast-title-font-weight {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 600;
+  }
+
+  /**
+   * Font-size of the title slot.
+   * @group Typography
+   */
+  @property --cngx-toast-title-font-size {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.875rem;
+  }
+
+  /**
+   * Color of the title slot.
+   * @group Typography
+   */
+  @property --cngx-toast-title-color {
+    syntax: '*';
+    inherits: true;
+    initial-value: currentColor;
+  }
+
+  /**
+   * Maximum number of lines for the description slot before
+   * truncation kicks in.
+   * @group Typography
+   */
+  @property --cngx-toast-description-max-lines {
+    syntax: '<integer>';
+    inherits: false;
+    initial-value: 3;
+  }
+
+  /**
+   * Font-size of the description slot.
+   * @group Typography
+   */
+  @property --cngx-toast-description-font-size {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.8125rem;
+  }
+
+  /**
+   * Text color of the description slot.
+   * @group Typography
+   */
+  @property --cngx-toast-description-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.5 0.01 250);
+  }
+
+  /**
+   * Line-height of the description slot.
+   * @group Typography
+   */
+  @property --cngx-toast-description-line-height {
+    syntax: '*';
+    inherits: false;
+    initial-value: 1.4;
+  }
+
+  /**
+   * Opacity of the trailing message-count badge.
+   * @group State / Overflow
+   */
+  @property --cngx-toast-count-opacity {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 0.6;
+  }
+
+  /**
+   * Padding shorthand of the inline action button.
+   * @group Layout
+   */
+  @property --cngx-toast-action-padding {
+    syntax: '*';
+    inherits: false;
+    initial-value: 4px 0;
+  }
+
+  /**
+   * Font-weight of the inline action button.
+   * @group Typography
+   */
+  @property --cngx-toast-action-weight {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 600;
+  }
+
+  /**
+   * Font-size of the inline action button.
+   * @group Typography
+   */
+  @property --cngx-toast-action-size {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.8125rem;
+  }
+
+  /* Color-scheme defaults. Toast bg + text delegate to foundation
+   * surface/text so a brand swap cascades. Shadow flips to a darker
+   * drop on dark surfaces (oklch alpha 0.15 → 0.5 reads as a deeper
+   * cast that survives the lower-contrast surface). Severity accents
+   * brighten on dark to keep the leading-edge stripe perceptible
+   * against the darker toast bg. Description text follows the muted
+   * cool ramp. */
+  :root {
+    --cngx-toast-bg: var(--cngx-color-surface);
+    --cngx-toast-color: var(--cngx-color-text);
+    --cngx-toast-shadow: 0 4px 12px oklch(0 0 0 / 0.15);
+    --cngx-toast-info-accent: oklch(0.62 0.2 250);
+    --cngx-toast-success-accent: oklch(0.65 0.15 145);
+    --cngx-toast-warning-accent: oklch(0.72 0.18 70);
+    --cngx-toast-error-accent: oklch(0.62 0.22 25);
+    --cngx-toast-description-color: oklch(0.5 0.01 250);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-color-scheme='light']):not(.light) {
+      --cngx-toast-shadow: 0 8px 24px oklch(0 0 0 / 0.5);
+      --cngx-toast-info-accent: oklch(0.78 0.14 250);
+      --cngx-toast-success-accent: oklch(0.78 0.14 145);
+      --cngx-toast-warning-accent: oklch(0.82 0.15 70);
+      --cngx-toast-error-accent: oklch(0.78 0.16 25);
+      --cngx-toast-description-color: oklch(0.75 0.01 250);
+    }
+  }
+
+  [data-color-scheme='dark'],
+  .dark {
+    --cngx-toast-shadow: 0 8px 24px oklch(0 0 0 / 0.5);
+    --cngx-toast-info-accent: oklch(0.78 0.14 250);
+    --cngx-toast-success-accent: oklch(0.78 0.14 145);
+    --cngx-toast-warning-accent: oklch(0.82 0.15 70);
+    --cngx-toast-error-accent: oklch(0.78 0.16 25);
+    --cngx-toast-description-color: oklch(0.75 0.01 250);
+  }
+
+  [data-color-scheme='light'],
+  .light {
+    --cngx-toast-shadow: 0 4px 12px oklch(0 0 0 / 0.15);
+    --cngx-toast-info-accent: oklch(0.62 0.2 250);
+    --cngx-toast-success-accent: oklch(0.65 0.15 145);
+    --cngx-toast-warning-accent: oklch(0.72 0.18 70);
+    --cngx-toast-error-accent: oklch(0.62 0.22 25);
+    --cngx-toast-description-color: oklch(0.5 0.01 250);
+  }
 }
 
 @layer cngx.components {

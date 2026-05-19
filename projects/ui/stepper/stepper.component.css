@@ -1,83 +1,168 @@
-/*
- * @cngx/ui/stepper — thematic skin. Indicator state colors,
- * connector lines, hover / active states, badge positioning,
- * busy spinner.
+/**
+ * @overview
+ * Thematic skin for `@cngx/ui/stepper`. Owns indicator state colors,
+ * connector lines, hover / active states, badge positioning, and the
+ * busy spinner. Tokens consumed but defined in `stepper-base.css`
+ * read with bare `var()` chains — the structural cascade provides
+ * the default.
  *
- * Tokens consumed but defined in stepper-base.css read with bare
- * var() chains — the structural cascade provides the default.
+ * Pair with `@cngx/themes/material/stepper-theme` for the Material 3
+ * step icon palette.
  */
 
 @layer cngx.tokens {
+  /**
+   * Default text color inherited by step labels.
+   * @group Surface
+   */
   @property --cngx-step-color {
     syntax: '*';
     inherits: true;
     initial-value: currentColor;
   }
+
+  /**
+   * Default background of the stepper root.
+   * @group Surface
+   */
   @property --cngx-step-bg {
     syntax: '<color>';
     inherits: false;
     initial-value: transparent;
   }
+
+  /**
+   * Background of the indicator disc at rest — soft tint of the
+   * inherited text color via `color-mix`.
+   * @group State / Resting
+   */
   @property --cngx-step-indicator-bg {
     syntax: '*';
     inherits: false;
     initial-value: color-mix(in srgb, currentColor 10%, transparent);
   }
+
+  /**
+   * Glyph color inside the indicator disc.
+   * @group State / Resting
+   */
   @property --cngx-step-indicator-color {
     syntax: '*';
     inherits: true;
     initial-value: currentColor;
   }
+
+  /**
+   * Font-size of the indicator glyph.
+   * @group Typography
+   */
   @property --cngx-step-indicator-font-size {
     syntax: '*';
     inherits: false;
     initial-value: 0.85em;
   }
+
+  /**
+   * Font-weight of the indicator glyph.
+   * @group Typography
+   */
   @property --cngx-step-indicator-font-weight {
     syntax: '<number>';
     inherits: false;
     initial-value: 600;
   }
+
+  /**
+   * Glyph color used by the active / completed / errored states
+   * so the filled disc reads against bright surfaces.
+   * @group State / Active
+   */
   @property --cngx-step-indicator-active-color {
     syntax: '<color>';
     inherits: true;
     initial-value: oklch(1 0 0);
   }
+
+  /**
+   * Background of the disabled indicator disc.
+   * @group State / Disabled
+   */
   @property --cngx-step-indicator-disabled-bg {
     syntax: '*';
     inherits: false;
     initial-value: color-mix(in srgb, currentColor 5%, transparent);
   }
+
+  /**
+   * Background of the completed indicator disc. Falls back to
+   * `--cngx-color-success`.
+   * @group State / Completed
+   * @see [[--cngx-color-success]]
+   */
   @property --cngx-step-completed-color {
     syntax: '<color>';
     inherits: false;
     initial-value: oklch(0.5 0.15 145);
   }
+
+  /**
+   * Background of the errored indicator disc. Falls back to
+   * `--cngx-color-danger`.
+   * @group State / Error
+   * @see [[--cngx-color-danger]]
+   */
   @property --cngx-step-errored-color {
     syntax: '<color>';
     inherits: false;
     initial-value: oklch(0.45 0.15 25);
   }
+
+  /**
+   * Background of the active indicator disc — defaults to
+   * `currentColor` so consumers theme via the surrounding text color.
+   * @group State / Active
+   */
   @property --cngx-step-active-color {
     syntax: '*';
     inherits: true;
     initial-value: currentColor;
   }
+
+  /**
+   * Background of the pending indicator disc — same as active by
+   * default so the visual reads as "you're here, work in progress".
+   * @group State / Pending
+   */
   @property --cngx-step-pending-color {
     syntax: '*';
     inherits: true;
     initial-value: currentColor;
   }
+
+  /**
+   * Background tint applied on hover of an enabled step.
+   * @group State / Hover
+   */
   @property --cngx-step-hover-bg {
     syntax: '*';
     inherits: false;
     initial-value: color-mix(in srgb, currentColor 4%, transparent);
   }
+
+  /**
+   * Diameter of the busy spinner ring next to the active step.
+   * @group State / Pending
+   */
   @property --cngx-step-busy-spinner-size {
     syntax: '<length>';
     inherits: false;
     initial-value: 0.875rem;
   }
+
+  /**
+   * Stroke color of the busy spinner ring.
+   * @group State / Pending
+   */
   @property --cngx-step-busy-spinner-color {
     syntax: '*';
     inherits: true;

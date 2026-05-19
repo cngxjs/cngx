@@ -22,8 +22,8 @@ import { CngxLiveRegion } from '@cngx/common/a11y';
           placeholder="user@example.com"
           [value]="email()"
           (input)="email.set($any($event.target).value)"
-          [style.borderColor]="emailError() ? '#e53e3e' : 'var(--cngx-border, #ddd)'"
-          style="padding: 8px 12px; border-radius: 6px; border: 1px solid var(--cngx-border, #ddd); font-size: 0.875rem;"
+          [style.borderColor]="emailError() ? '#e53e3e' : 'var(--cngx-color-border, #ddd)'"
+          style="padding: 8px 12px; border-radius: 6px; border: 1px solid var(--cngx-color-border, #ddd); font-size: 0.875rem;"
           aria-describedby="email-error"
         />
         <div
@@ -84,8 +84,8 @@ protected announce(): void {
     placeholder="user@example.com"
     [value]="email()"
     (input)="email.set($any($event.target).value)"
-    [style.borderColor]="emailError() ? '#e53e3e' : 'var(--cngx-border, #ddd)'"
-    style="padding: 8px 12px; border-radius: 6px; border: 1px solid var(--cngx-border, #ddd); font-size: 0.875rem;"
+    [style.borderColor]="emailError() ? '#e53e3e' : 'var(--cngx-color-border, #ddd)'"
+    style="padding: 8px 12px; border-radius: 6px; border: 1px solid var(--cngx-color-border, #ddd); font-size: 0.875rem;"
     aria-describedby="email-error"
   />
   <div

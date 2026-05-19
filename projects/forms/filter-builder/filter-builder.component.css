@@ -1,42 +1,350 @@
-/*
- * filter-builder.component.css — CngxFilterBuilder main skin.
+/**
+ * @overview
+ * Default visuals for `CngxFilterBuilder`. Owns the group container,
+ * nested group rails, indent / border accents, action-button row, and
+ * the empty-state typography. Group rows (`cngx-filter-row`,
+ * `cngx-filter-expression-row`) are `display: contents` wrappers that
+ * delegate their flex layout back to the `__expression` class
+ * declared here.
  *
- * Owns the group container, nested group rails, indent/border accents,
- * action-button row, and the empty-state typography. Group rows
- * (`cngx-filter-row`, `cngx-filter-expression-row`) are
- * display: contents wrappers that delegate their flex layout back to
- * the `__expression` class declared here.
+ * Surfaces stay neutral — borders track `--cngx-color-border`, the
+ * remove-button error tone tracks `--cngx-color-danger`. No
+ * primary-flavored defaults at this layer.
  */
 
 @layer cngx.tokens {
-  @property --cngx-filter-builder-padding                 { syntax: '*'; inherits: false; initial-value: 0.5rem; }
-  @property --cngx-filter-builder-bg                      { syntax: '<color>'; inherits: false; initial-value: transparent; }
-  @property --cngx-filter-builder-fg                      { syntax: '*'; inherits: true;  initial-value: currentColor; }
-  @property --cngx-filter-builder-gap                     { syntax: '*'; inherits: false; initial-value: 0.5rem; }
-  @property --cngx-filter-builder-group-padding           { syntax: '*'; inherits: false; initial-value: 0.5rem; }
-  @property --cngx-filter-builder-group-border            { syntax: '*'; inherits: false; initial-value: 1px solid oklch(0.87 0 0); }
-  @property --cngx-filter-builder-border-color            { syntax: '<color>'; inherits: false; initial-value: oklch(0.87 0 0); }
-  @property --cngx-filter-builder-radius                  { syntax: '*'; inherits: false; initial-value: 0.375rem; }
-  @property --cngx-filter-builder-indent                  { syntax: '*'; inherits: false; initial-value: 1.25rem; }
-  @property --cngx-filter-builder-rail                    { syntax: '*'; inherits: false; initial-value: 2px solid oklch(0.87 0 0); }
-  @property --cngx-filter-builder-negated-border-style    { syntax: '*'; inherits: false; initial-value: dashed; }
-  @property --cngx-filter-builder-empty-padding           { syntax: '*'; inherits: false; initial-value: 0.75rem; }
-  @property --cngx-filter-builder-empty-fg                { syntax: '<color>'; inherits: false; initial-value: oklch(0.45 0 0); }
-  @property --cngx-filter-builder-action-gap              { syntax: '*'; inherits: false; initial-value: 0.25rem; }
-  @property --cngx-filter-builder-action-padding          { syntax: '*'; inherits: false; initial-value: 0.25rem 0.625rem; }
-  @property --cngx-filter-builder-action-font-size        { syntax: '*'; inherits: false; initial-value: 0.875rem; }
-  @property --cngx-filter-builder-action-fg               { syntax: '*'; inherits: true;  initial-value: currentColor; }
-  @property --cngx-filter-builder-action-bg               { syntax: '<color>'; inherits: false; initial-value: transparent; }
-  @property --cngx-filter-builder-action-border-width     { syntax: '<length>'; inherits: false; initial-value: 1px; }
-  @property --cngx-filter-builder-action-border           { syntax: '<color>'; inherits: false; initial-value: oklch(0.82 0 0); }
-  @property --cngx-filter-builder-action-radius           { syntax: '*'; inherits: false; initial-value: 0.375rem; }
-  @property --cngx-filter-builder-action-hover-bg         { syntax: '<color>'; inherits: false; initial-value: oklch(0 0 0 / 0.04); }
-  @property --cngx-filter-builder-focus-outline           { syntax: '*'; inherits: false; initial-value: 2px solid currentColor; }
-  @property --cngx-filter-builder-focus-outline-offset    { syntax: '<length>'; inherits: false; initial-value: 2px; }
-  @property --cngx-filter-builder-action-disabled-opacity { syntax: '<number>'; inherits: false; initial-value: 0.5; }
-  @property --cngx-filter-builder-action-remove-fg        { syntax: '<color>'; inherits: true;  initial-value: oklch(0.55 0.18 25); }
-  @property --cngx-filter-builder-error-fg                { syntax: '<color>'; inherits: true;  initial-value: oklch(0.55 0.18 25); }
-  @property --cngx-filter-builder-action-glyph-size       { syntax: '*'; inherits: false; initial-value: 1em; }
+  /**
+   * Padding shorthand around the outer builder container.
+   * @group Layout
+   */
+  @property --cngx-filter-builder-padding {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.5rem;
+  }
+
+  /**
+   * Background of the outer builder container.
+   * @group Surface
+   */
+  @property --cngx-filter-builder-bg {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: transparent;
+  }
+
+  /**
+   * Foreground text color of the builder.
+   * @group Surface
+   */
+  @property --cngx-filter-builder-fg {
+    syntax: '*';
+    inherits: true;
+    initial-value: currentColor;
+  }
+
+  /**
+   * Gap between sibling rows / actions / logic-toggle items.
+   * @group Layout
+   */
+  @property --cngx-filter-builder-gap {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.5rem;
+  }
+
+  /**
+   * Padding shorthand inside each group container.
+   * @group Layout
+   */
+  @property --cngx-filter-builder-group-padding {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.5rem;
+  }
+
+  /**
+   * Border shorthand of each group container.
+   * `inherits: true` so the :root delegating value reaches nested
+   * group containers.
+   * @group Surface
+   */
+  @property --cngx-filter-builder-group-border {
+    syntax: '*';
+    inherits: true;
+    initial-value: 1px solid oklch(0.87 0 0);
+  }
+
+  /**
+   * Border color of group containers and the action-button stroke.
+   * Falls back through `--cngx-color-border`. `inherits: true` so a
+   * :root override flows into the builder host.
+   * @group Surface
+   * @see [[--cngx-color-border]]
+   */
+  @property --cngx-filter-builder-border-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.87 0 0);
+  }
+
+  /**
+   * Corner radius of group containers and action buttons.
+   * @group Layout
+   */
+  @property --cngx-filter-builder-radius {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.375rem;
+  }
+
+  /**
+   * Indent applied to nested (non-root) groups so the hierarchy reads
+   * visually.
+   * @group Layout
+   */
+  @property --cngx-filter-builder-indent {
+    syntax: '*';
+    inherits: false;
+    initial-value: 1.25rem;
+  }
+
+  /**
+   * Left rail border shorthand for nested groups. `inherits: true`
+   * so the :root delegating value reaches nested rails.
+   * @group Surface
+   */
+  @property --cngx-filter-builder-rail {
+    syntax: '*';
+    inherits: true;
+    initial-value: 2px solid oklch(0.87 0 0);
+  }
+
+  /**
+   * Border-style applied to negated groups — dashed reads as
+   * "exclusion" without changing the color.
+   * @group Variant / Negated
+   */
+  @property --cngx-filter-builder-negated-border-style {
+    syntax: '*';
+    inherits: false;
+    initial-value: dashed;
+  }
+
+  /**
+   * Padding shorthand of the empty-state slot.
+   * @group Layout
+   */
+  @property --cngx-filter-builder-empty-padding {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.75rem;
+  }
+
+  /**
+   * Text color of the empty-state slot — muted by default.
+   * `inherits: true` so the :root dark-mode override reaches the
+   * empty slot inside the builder host.
+   * @group State / Empty
+   */
+  @property --cngx-filter-builder-empty-fg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.45 0 0);
+  }
+
+  /**
+   * Gap between an action button's glyph and its label.
+   * @group Layout
+   */
+  @property --cngx-filter-builder-action-gap {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.25rem;
+  }
+
+  /**
+   * Padding shorthand of an action button.
+   * @group Layout
+   */
+  @property --cngx-filter-builder-action-padding {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.25rem 0.625rem;
+  }
+
+  /**
+   * Font-size of an action button's label.
+   * @group Typography
+   */
+  @property --cngx-filter-builder-action-font-size {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.875rem;
+  }
+
+  /**
+   * Text color of an action button.
+   * @group Surface
+   */
+  @property --cngx-filter-builder-action-fg {
+    syntax: '*';
+    inherits: true;
+    initial-value: currentColor;
+  }
+
+  /**
+   * Background of an action button at rest.
+   * @group Surface
+   */
+  @property --cngx-filter-builder-action-bg {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: transparent;
+  }
+
+  /**
+   * Border width of an action button.
+   * @group Surface
+   */
+  @property --cngx-filter-builder-action-border-width {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 1px;
+  }
+
+  /**
+   * Border color of an action button. `inherits: true` so a :root
+   * delegating value reaches the button inside the builder host.
+   * @group Surface
+   */
+  @property --cngx-filter-builder-action-border {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.82 0 0);
+  }
+
+  /**
+   * Corner radius of an action button.
+   * @group Layout
+   */
+  @property --cngx-filter-builder-action-radius {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.375rem;
+  }
+
+  /**
+   * Background tint applied on hover / focus-visible of an action
+   * button. `inherits: true` so the :root dark-mode override
+   * (alpha-on-white in dark) reaches the button.
+   * @group State / Hover
+   */
+  @property --cngx-filter-builder-action-hover-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0 0 0 / 0.04);
+  }
+
+  /**
+   * Focus-ring outline shorthand applied to action buttons.
+   * @group State / Focus
+   */
+  @property --cngx-filter-builder-focus-outline {
+    syntax: '*';
+    inherits: false;
+    initial-value: 2px solid currentColor;
+  }
+
+  /**
+   * Outline offset of the focus ring.
+   * @group State / Focus
+   */
+  @property --cngx-filter-builder-focus-outline-offset {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 2px;
+  }
+
+  /**
+   * Opacity multiplier applied to disabled action buttons.
+   * @group State / Disabled
+   */
+  @property --cngx-filter-builder-action-disabled-opacity {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 0.5;
+  }
+
+  /**
+   * Foreground color of the destructive remove button. Falls back
+   * through `--cngx-filter-builder-error-fg` and then
+   * `--cngx-color-danger`.
+   * @group Variant / Remove
+   * @see [[--cngx-color-danger]]
+   */
+  @property --cngx-filter-builder-action-remove-fg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.55 0.18 25);
+  }
+
+  /**
+   * Error-tone foreground shared across the builder's error states.
+   * Falls back through `--cngx-color-danger`.
+   * @group State / Error
+   */
+  @property --cngx-filter-builder-error-fg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.55 0.18 25);
+  }
+
+  /**
+   * Font-size of the action-button glyph slot.
+   * @group Layout
+   */
+  @property --cngx-filter-builder-action-glyph-size {
+    syntax: '*';
+    inherits: false;
+    initial-value: 1em;
+  }
+
+  /* Delegating tokens — borders + remove-tone track the foundation
+   * chain so a dark-mode swap on `--cngx-color-border` /
+   * `--cngx-color-danger` cascades through. Group/rail shorthands
+   * pin their structural part (1px solid / 2px solid) and inherit
+   * the color via the delegating border-color token. */
+  :root {
+    --cngx-filter-builder-border-color: var(--cngx-color-border);
+    --cngx-filter-builder-action-border: var(--cngx-color-border);
+    --cngx-filter-builder-group-border: 1px solid var(--cngx-color-border);
+    --cngx-filter-builder-rail: 2px solid var(--cngx-color-border);
+    --cngx-filter-builder-action-remove-fg: var(--cngx-color-danger);
+    --cngx-filter-builder-error-fg: var(--cngx-color-danger);
+  }
+
+  /* Dark-mode component-local swap — alpha-on-black hover-bg
+   * vanishes on dark surfaces, so the dark block lifts it to
+   * alpha-on-white. Muted empty-state text inverts from a dim
+   * dark gray to a soft light gray so it keeps its
+   * secondary-information weight. */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-color-scheme='light']):not(.light) {
+      --cngx-filter-builder-action-hover-bg: oklch(1 0 0 / 0.06);
+      --cngx-filter-builder-empty-fg: oklch(0.7 0 0);
+    }
+  }
+  [data-color-scheme='dark'],
+  .dark {
+    --cngx-filter-builder-action-hover-bg: oklch(1 0 0 / 0.06);
+    --cngx-filter-builder-empty-fg: oklch(0.7 0 0);
+  }
+  [data-color-scheme='light'],
+  .light {
+    --cngx-filter-builder-action-hover-bg: oklch(0 0 0 / 0.04);
+    --cngx-filter-builder-empty-fg: oklch(0.45 0 0);
+  }
 }
 
 @layer cngx.components {
@@ -117,7 +425,9 @@
         var(--cngx-filter-builder-action-border, var(--cngx-color-border, oklch(0.82 0 0)));
       border-radius: var(--cngx-filter-builder-action-radius, 0.375rem);
       cursor: pointer;
-      transition: background-color 0.12s ease, border-color 0.12s ease;
+      transition:
+        background-color 0.12s ease,
+        border-color 0.12s ease;
     }
 
     .cngx-filter-builder__action-button:hover,

@@ -1,7 +1,10 @@
-/* cngx-optgroup declarative — group wrapper with header.
- *
- * Header selector mirrors .cngx-select__group-header from
- * select-base.css so projected groups visually match data-mode groups. */
+/**
+ * @overview
+ * Default visuals for the declarative `<cngx-optgroup>` wrapper with
+ * a group header. The header selector mirrors
+ * `.cngx-select__group-header` from `select-base.css` so projected
+ * groups visually match data-mode groups.
+ */
 
 :host {
   display: block;

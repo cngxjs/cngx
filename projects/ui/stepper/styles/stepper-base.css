@@ -1,39 +1,257 @@
-/*
+/**
+ * @overview
  * Structural CSS shared by every stepper skin. Layout-only — no
  * colors / sizes / borders / fonts beyond what's controlled via
- * --cngx-step-* custom properties. Loaded by <cngx-stepper> via
- * styleUrls.
+ * `--cngx-step-*` custom properties. Loaded by `<cngx-stepper>` via
+ * `styleUrls`.
  *
- * Selectors are class-prefixed (.cngx-stepper__*) and apply globally
- * under CngxStepper's encapsulation:None; the cngx-stepper- prefix is
- * the namespace.
+ * Selectors are class-prefixed (`.cngx-stepper__*`) and apply
+ * globally under `CngxStepper`'s `encapsulation: None`; the
+ * `cngx-stepper-` prefix is the namespace.
  */
 
 @layer cngx.tokens {
-  @property --cngx-step-gap                          { syntax: '*'; inherits: false; initial-value: 0.5rem; }
-  @property --cngx-step-strip-padding                { syntax: '*'; inherits: false; initial-value: 0.5rem 0; }
-  @property --cngx-step-padding                      { syntax: '*'; inherits: false; initial-value: 0.5rem 0.75rem; }
-  @property --cngx-step-padding-inline               { syntax: '*'; inherits: false; initial-value: 0.75rem; }
-  @property --cngx-step-disabled-opacity             { syntax: '<number>'; inherits: false; initial-value: 0.55; }
-  @property --cngx-step-focus-ring                   { syntax: '*'; inherits: false; initial-value: 2px solid currentColor; }
-  @property --cngx-step-focus-offset                 { syntax: '<length>'; inherits: false; initial-value: 2px; }
-  @property --cngx-step-indicator-size               { syntax: '*'; inherits: false; initial-value: 1.75rem; }
-  @property --cngx-step-group-font-weight            { syntax: '<number>'; inherits: false; initial-value: 600; }
-  @property --cngx-step-group-indent                 { syntax: '*'; inherits: false; initial-value: 1.5rem; }
-  @property --cngx-step-badge-size                   { syntax: '*'; inherits: false; initial-value: 1.25rem; }
-  @property --cngx-step-error-badge-color            { syntax: '<color>'; inherits: false; initial-value: oklch(0.45 0.15 25); }
-  @property --cngx-step-error-badge-text-color       { syntax: '<color>'; inherits: true; initial-value: oklch(1 0 0); }
-  @property --cngx-step-badge-font-size              { syntax: '*'; inherits: false; initial-value: 0.75em; }
-  @property --cngx-step-badge-font-weight            { syntax: '<number>'; inherits: false; initial-value: 700; }
-  @property --cngx-step-rejection-outline-width      { syntax: '<length>'; inherits: false; initial-value: 1px; }
-  @property --cngx-step-rejection-outline-color      { syntax: '<color>'; inherits: false; initial-value: oklch(0.62 0.15 60); }
-  @property --cngx-step-rejection-outline-offset     { syntax: '<length>'; inherits: false; initial-value: 2px; }
-  @property --cngx-step-rejection-bg                 { syntax: '<color>'; inherits: false; initial-value: transparent; }
-  @property --cngx-step-rejection-icon-size          { syntax: '*'; inherits: false; initial-value: 1.25rem; }
-  @property --cngx-step-rejection-icon-bg            { syntax: '<color>'; inherits: false; initial-value: oklch(0.62 0.15 60); }
-  @property --cngx-step-rejection-icon-color         { syntax: '<color>'; inherits: true; initial-value: oklch(1 0 0); }
-  @property --cngx-step-rejection-icon-font-size     { syntax: '*'; inherits: false; initial-value: 0.75em; }
-  @property --cngx-step-rejection-icon-font-weight   { syntax: '<number>'; inherits: false; initial-value: 700; }
+  /**
+   * Gap between adjacent steps and between a step's indicator / label
+   * / badge slots.
+   * @group Layout
+   */
+  @property --cngx-step-gap {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.5rem;
+  }
+
+  /**
+   * Padding shorthand of the strip container.
+   * @group Layout
+   */
+  @property --cngx-step-strip-padding {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.5rem 0;
+  }
+
+  /**
+   * Padding shorthand of an individual step button.
+   * @group Layout
+   */
+  @property --cngx-step-padding {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.5rem 0.75rem;
+  }
+
+  /**
+   * Inline-axis padding of the step button — used by vertical
+   * orientation to combine with the group indent.
+   * @group Layout
+   */
+  @property --cngx-step-padding-inline {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.75rem;
+  }
+
+  /**
+   * Opacity multiplier for disabled steps.
+   * @group State / Disabled
+   */
+  @property --cngx-step-disabled-opacity {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 0.55;
+  }
+
+  /**
+   * Focus-ring outline shorthand.
+   * @group State / Focus
+   */
+  @property --cngx-step-focus-ring {
+    syntax: '*';
+    inherits: false;
+    initial-value: 2px solid currentColor;
+  }
+
+  /**
+   * Outline offset of the focus ring.
+   * @group State / Focus
+   */
+  @property --cngx-step-focus-offset {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 2px;
+  }
+
+  /**
+   * Diameter of the indicator disc.
+   * @group Layout
+   */
+  @property --cngx-step-indicator-size {
+    syntax: '*';
+    inherits: false;
+    initial-value: 1.75rem;
+  }
+
+  /**
+   * Font-weight of the group header.
+   * @group Typography
+   */
+  @property --cngx-step-group-font-weight {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 600;
+  }
+
+  /**
+   * Inline-start indent applied to nested steps and group headers.
+   * @group Layout
+   */
+  @property --cngx-step-group-indent {
+    syntax: '*';
+    inherits: false;
+    initial-value: 1.5rem;
+  }
+
+  /**
+   * Hit-target diameter of the inline error badge.
+   * @group State / Error
+   */
+  @property --cngx-step-badge-size {
+    syntax: '*';
+    inherits: false;
+    initial-value: 1.25rem;
+  }
+
+  /**
+   * Background color of the inline error badge.
+   * @group State / Error
+   */
+  @property --cngx-step-error-badge-color {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: oklch(0.45 0.15 25);
+  }
+
+  /**
+   * Glyph color inside the error badge.
+   * @group State / Error
+   */
+  @property --cngx-step-error-badge-text-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(1 0 0);
+  }
+
+  /**
+   * Font-size of the error-badge glyph.
+   * @group State / Error
+   */
+  @property --cngx-step-badge-font-size {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.75em;
+  }
+
+  /**
+   * Font-weight of the error-badge glyph.
+   * @group State / Error
+   */
+  @property --cngx-step-badge-font-weight {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 700;
+  }
+
+  /**
+   * Outline width of the persistent-rejection decoration.
+   * @group State / Rejected
+   */
+  @property --cngx-step-rejection-outline-width {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 1px;
+  }
+
+  /**
+   * Outline color of the persistent-rejection decoration.
+   * @group State / Rejected
+   */
+  @property --cngx-step-rejection-outline-color {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: oklch(0.62 0.15 60);
+  }
+
+  /**
+   * Outline offset of the persistent-rejection decoration.
+   * @group State / Rejected
+   */
+  @property --cngx-step-rejection-outline-offset {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 2px;
+  }
+
+  /**
+   * Background of the rejected step.
+   * @group State / Rejected
+   */
+  @property --cngx-step-rejection-bg {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: transparent;
+  }
+
+  /**
+   * Hit-target diameter of the persistent-rejection icon (`!` glyph).
+   * @group State / Rejected
+   */
+  @property --cngx-step-rejection-icon-size {
+    syntax: '*';
+    inherits: false;
+    initial-value: 1.25rem;
+  }
+
+  /**
+   * Background of the rejection icon disc.
+   * @group State / Rejected
+   */
+  @property --cngx-step-rejection-icon-bg {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: oklch(0.62 0.15 60);
+  }
+
+  /**
+   * Glyph color inside the rejection icon disc.
+   * @group State / Rejected
+   */
+  @property --cngx-step-rejection-icon-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(1 0 0);
+  }
+
+  /**
+   * Font-size of the rejection icon glyph.
+   * @group State / Rejected
+   */
+  @property --cngx-step-rejection-icon-font-size {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.75em;
+  }
+
+  /**
+   * Font-weight of the rejection icon glyph.
+   * @group State / Rejected
+   */
+  @property --cngx-step-rejection-icon-font-weight {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 700;
+  }
 }
 
 @layer cngx.components {

@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from '@a
 
 /**
  * Display atom for icons. Projects its content (font glyph, SVG, image, custom
- * element) and adds size, colour, and ARIA semantics.
+ * element) and adds size, color, and ARIA semantics.
  *
  * Decorative by default (`aria-hidden="true"`); set `label` to make it
  * informative (`role="img"`, `aria-label`).
@@ -29,7 +29,7 @@ import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from '@a
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   template: '<ng-content />',
-  styleUrl: './icon.component.css',
+  styleUrls: ['./icon.component.css'],
   host: {
     class: 'cngx-icon',
     '[attr.role]': 'label() ? "img" : null',

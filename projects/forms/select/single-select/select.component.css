@@ -1,66 +1,132 @@
-/*
- * CngxSelect-specific skin. Holds ONLY the trigger-button visual and
- * the host layout — the parts that differ per select-type. Panel
+/**
+ * @overview
+ * `CngxSelect`-specific skin. Holds ONLY the trigger-button visual
+ * and the host layout — the parts that differ per select-type. Panel
  * frame, option rows, skeletons, spinners, error banners, and
- * refreshing indicators are shared via shared/select-base.css
- * (loaded through this component's styleUrls).
+ * refreshing indicators are shared via `shared/select-base.css`
+ * (loaded through this component's `styleUrls`).
  */
 
 @layer cngx.tokens {
+  /**
+   * Minimum inline size of the trigger.
+   * @group Layout
+   */
   @property --cngx-select-min-width {
     syntax: '*';
     inherits: false;
     initial-value: 10rem;
   }
+
+  /**
+   * Minimum block size of the trigger.
+   * @group Layout
+   */
   @property --cngx-select-min-height {
     syntax: '*';
     inherits: false;
     initial-value: auto;
   }
+
+  /**
+   * Gap between the label, caret, and clear button.
+   * @group Layout
+   */
   @property --cngx-select-gap {
     syntax: '*';
     inherits: false;
     initial-value: 0.5rem;
   }
+
+  /**
+   * Padding shorthand of the trigger.
+   * @group Layout
+   */
   @property --cngx-select-padding {
     syntax: '*';
     inherits: false;
     initial-value: 0.5rem 0.75rem;
   }
+
+  /**
+   * Border shorthand of the trigger.
+   * @group Surface
+   */
   @property --cngx-select-border {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 1px solid oklch(0.85 0.01 250);
   }
+
+  /**
+   * Corner radius of the trigger.
+   * @group Layout
+   */
   @property --cngx-select-radius {
     syntax: '*';
     inherits: false;
     initial-value: 0.25rem;
   }
+
+  /**
+   * Background of the trigger.
+   * @group Surface
+   */
   @property --cngx-select-bg {
     syntax: '<color>';
     inherits: false;
     initial-value: transparent;
   }
+
+  /**
+   * Text color of the trigger.
+   * @group Surface
+   */
   @property --cngx-select-color {
     syntax: '*';
     inherits: true;
     initial-value: currentColor;
   }
+
+  /**
+   * Focus-ring outline shorthand. Falls back to `--cngx-color-primary`.
+   * @group State / Focus
+   * @see [[--cngx-color-primary]]
+   */
   @property --cngx-select-focus-outline {
     syntax: '*';
-    inherits: false;
-    initial-value: 2px solid oklch(0.6 0.2 250);
+    inherits: true;
+    initial-value: 2px solid oklch(0.66 0.19 50);
   }
+
+  /**
+   * Outline offset of the focus ring.
+   * @group State / Focus
+   */
   @property --cngx-select-focus-offset {
     syntax: '<length>';
     inherits: false;
     initial-value: 2px;
   }
+
+  /**
+   * Opacity multiplier applied when the trigger is disabled.
+   * @group State / Disabled
+   */
   @property --cngx-select-disabled-opacity {
     syntax: '<number>';
     inherits: false;
     initial-value: 0.5;
+  }
+
+  /* Delegating tokens — trigger border + focus-ring track the
+   * foundation chain so a dark-mode swap on `--cngx-color-border` /
+   * `--cngx-color-primary` cascades through the trigger host.
+   * Shorthands pin their structural part (1px solid / 2px solid)
+   * and inherit only the color. */
+  :root {
+    --cngx-select-border: 1px solid var(--cngx-color-border);
+    --cngx-select-focus-outline: 2px solid var(--cngx-color-primary);
   }
 }
 
@@ -102,7 +168,7 @@
     .cngx-select__trigger:focus-visible {
       outline: var(
         --cngx-select-focus-outline,
-        2px solid var(--cngx-color-primary, oklch(0.6 0.2 250))
+        2px solid var(--cngx-color-primary, oklch(0.66 0.19 50))
       );
       outline-offset: var(--cngx-select-focus-offset, 2px);
     }
@@ -147,7 +213,7 @@
       opacity: 1;
     }
     .cngx-select__clear:focus-visible {
-      outline: 2px solid var(--cngx-color-primary, oklch(0.6 0.2 250));
+      outline: 2px solid var(--cngx-color-primary, oklch(0.66 0.19 50));
       border-radius: 0.125rem;
     }
   }

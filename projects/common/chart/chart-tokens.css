@@ -1,64 +1,109 @@
-/*
- * @cngx/common/chart — chart-level CSS custom properties.
+/**
+ * @overview
+ * Chart-level CSS custom properties consumed by every chart atom in
+ * `@cngx/common/chart`. Two-level theming cascade: atom-local var
+ * (e.g. `--cngx-line-color`) → chart-level var
+ * (`--cngx-chart-primary`) → consumer accent (`--accent`,
+ * `--danger`, …) → hardcoded literal fallback.
  *
- * Two-level theming cascade:
- *   atom-local var (e.g. --cngx-line-color)
- *     -> chart-level var (--cngx-chart-primary)
- *       -> consumer accent (--accent, --danger, etc.)
- *         -> hardcoded literal fallback.
- *
- * Atom-local vars (--cngx-line-color, --cngx-area-fill, --cngx-bar-color,
- * --cngx-scatter-color, --cngx-threshold-color, --cngx-band-color) live
- * inside their respective component style blocks and ALWAYS fall back
- * to a chart-level token, never to a hardcoded literal. Without atom-
+ * Atom-local vars (`--cngx-line-color`, `--cngx-area-fill`,
+ * `--cngx-bar-color`, `--cngx-scatter-color`,
+ * `--cngx-threshold-color`, `--cngx-band-color`) live inside their
+ * respective component style blocks and always fall back to a
+ * chart-level token — never to a hardcoded literal. Without atom-
  * local tokens, recoloring one line on a multi-layer chart would
- * force overriding the global --cngx-chart-primary, shifting every
- * other layer too — a Pillar-3 violation (configuration-by-side-effect).
+ * force overriding the global `--cngx-chart-primary`, shifting every
+ * other layer too (a Pillar-3 violation:
+ * configuration-by-side-effect).
  *
- * @property registers each chart-level token with the consumer-side
- * fallback chain (--accent / --danger / --border / --text-* hooks).
- * Because @property initial-value cannot reference var(), the literal
- * defaults are duplicated in :root assignments for the runtime fallback
- * chain — consumers overriding --accent at :root continue to propagate
- * through to --cngx-chart-primary.
+ * `@property` registers each chart-level token with the consumer-side
+ * fallback chain. Because `@property` `initial-value` cannot
+ * reference `var()`, the literal defaults are duplicated in `:root`
+ * assignments for the runtime fallback chain — consumers overriding
+ * `--accent` at `:root` continue to propagate through to
+ * `--cngx-chart-primary`.
  */
 
 @layer cngx.tokens {
+  /**
+   * Primary line / fill color shared by chart atoms. Falls back
+   * through the consumer-facing `--accent` and then to the foundation
+   * `--cngx-color-primary` (Ember).
+   * @group Surface
+   * @see [[--cngx-color-primary]]
+   */
   @property --cngx-chart-primary {
     syntax: '<color>';
     inherits: true;
-    initial-value: oklch(0.62 0.18 250);
+    initial-value: oklch(0.66 0.19 50);
   }
+
+  /**
+   * Secondary fill color for multi-series layers.
+   * @group Surface
+   */
   @property --cngx-chart-secondary {
     syntax: '<color>';
     inherits: true;
     initial-value: oklch(0.65 0.02 250);
   }
+
+  /**
+   * Danger-coded series color.
+   * @group Variant / Danger
+   * @see [[--cngx-color-danger]]
+   */
   @property --cngx-chart-danger {
     syntax: '<color>';
     inherits: true;
     initial-value: oklch(0.55 0.18 25);
   }
+
+  /**
+   * Success-coded series color.
+   * @group Variant / Success
+   * @see [[--cngx-color-success]]
+   */
   @property --cngx-chart-success {
     syntax: '<color>';
     inherits: true;
     initial-value: oklch(0.55 0.15 145);
   }
+
+  /**
+   * Gridline color.
+   * @group Surface
+   */
   @property --cngx-chart-grid-color {
     syntax: '<color>';
     inherits: true;
     initial-value: oklch(0.92 0.005 250);
   }
+
+  /**
+   * Axis stroke color.
+   * @group Surface
+   */
   @property --cngx-chart-axis-color {
     syntax: '<color>';
     inherits: true;
     initial-value: oklch(0.5 0.015 250);
   }
+
+  /**
+   * Axis / legend / annotation text color.
+   * @group Typography
+   */
   @property --cngx-chart-text-color {
     syntax: '<color>';
     inherits: true;
     initial-value: oklch(0.25 0.015 250);
   }
+
+  /**
+   * Default aspect ratio of the chart frame.
+   * @group Layout
+   */
   @property --cngx-chart-aspect-ratio {
     syntax: '*';
     inherits: false;
@@ -71,7 +116,7 @@
  * propagates into the chart tokens — the @property initial-value
  * is the leaf default if nothing higher in the chain is set. */
 :root {
-  --cngx-chart-primary: var(--accent, oklch(0.62 0.18 250));
+  --cngx-chart-primary: var(--accent, oklch(0.66 0.19 50));
   --cngx-chart-secondary: var(--accent-secondary, oklch(0.65 0.02 250));
   --cngx-chart-danger: var(--danger, oklch(0.55 0.18 25));
   --cngx-chart-success: var(--success, oklch(0.55 0.15 145));

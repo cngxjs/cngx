@@ -136,7 +136,7 @@ import { CngxPopover } from './popover.directive';
       }
     }
   `,
-  styleUrl: './popover-panel.component.css',
+  styleUrls: ['./popover-panel.component.css'],
 })
 export class CngxPopoverPanel {
   /** The underlying popover state machine. */

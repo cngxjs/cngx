@@ -1,33 +1,85 @@
-/*
- * Default shimmer animation for CngxSkeleton. Keyframe stays
- * top-level (outside @layer) because it's already namespaced with
- * cngx-skeleton- and keyframes resolve by name regardless of cascade
- * layer.
+/**
+ * @overview
+ * Default visuals for `CngxSkeleton` — shimmer placeholder bone.
+ * The keyframe stays top-level (outside `@layer`) because it's
+ * already namespaced with `cngx-skeleton-` and keyframes resolve
+ * by name regardless of cascade layer.
  *
- * A Material bridge for consumers who opt in lives in the sibling
- * skeleton-theme.scss.
+ * Pair with `@cngx/themes/material/skeleton-theme` for the
+ * Material 3 surface treatment.
  */
 
 @layer cngx.tokens {
+  /**
+   * Base color of the shimmer gradient.
+   * @group Surface
+   */
   @property --cngx-skeleton-bg {
     syntax: '<color>';
-    inherits: false;
+    inherits: true;
     initial-value: oklch(0.88 0 0);
   }
+
+  /**
+   * Highlight color that sweeps across the bone during the
+   * shimmer animation.
+   * @group Surface
+   */
   @property --cngx-skeleton-shimmer-color {
     syntax: '<color>';
-    inherits: false;
+    inherits: true;
     initial-value: oklch(0.96 0 0);
   }
+
+  /**
+   * Corner radius of the bone.
+   * @group Layout
+   */
   @property --cngx-skeleton-radius {
     syntax: '<length>';
     inherits: false;
     initial-value: 4px;
   }
+
+  /**
+   * Duration of one shimmer sweep.
+   * @group Motion
+   */
   @property --cngx-skeleton-shimmer-duration {
     syntax: '<time>';
     inherits: false;
     initial-value: 1.5s;
+  }
+
+  /*
+   * Default-theme palette pass. Skeleton bones sit one step inside
+   * the page surface — dark mode flips both the base and the shimmer
+   * sweep to gray-on-near-black so the shimmer reads as a subtle
+   * gradient rather than a bright streak. Component-local — bones
+   * are placeholder surfaces, not delegated.
+   */
+  :root {
+    --cngx-skeleton-bg: oklch(0.88 0 0);
+    --cngx-skeleton-shimmer-color: oklch(0.96 0 0);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-color-scheme='light']):not(.light) {
+      --cngx-skeleton-bg: oklch(0.25 0 0);
+      --cngx-skeleton-shimmer-color: oklch(0.35 0 0);
+    }
+  }
+
+  :root[data-color-scheme='dark'],
+  :root.dark {
+    --cngx-skeleton-bg: oklch(0.25 0 0);
+    --cngx-skeleton-shimmer-color: oklch(0.35 0 0);
+  }
+
+  :root[data-color-scheme='light'],
+  :root.light {
+    --cngx-skeleton-bg: oklch(0.88 0 0);
+    --cngx-skeleton-shimmer-color: oklch(0.96 0 0);
   }
 }
 

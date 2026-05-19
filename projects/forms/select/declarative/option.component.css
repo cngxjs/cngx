@@ -1,9 +1,10 @@
-/* cngx-option declarative — option row inside a projected listbox.
- *
- * Mirrors the .cngx-select__option layout from select-base.css so the
- * declarative option and the data-bound option look identical. Uses
- * --cngx-select-option-* tokens shared with the rest of the select
- * family.
+/**
+ * @overview
+ * Default visuals for the declarative `<cngx-option>` row inside a
+ * projected listbox. Mirrors the `.cngx-select__option` layout from
+ * `select-base.css` so the declarative option and the data-bound
+ * option look identical. Uses the `--cngx-select-option-*` tokens
+ * shared with the rest of the select family.
  */
 
 :host {
@@ -22,7 +23,7 @@
 }
 
 :host(.cngx-option--highlighted) {
-  background: var(--cngx-select-option-highlight-bg, oklch(0.6 0.2 250 / 0.1));
+  background: var(--cngx-select-option-highlight-bg, oklch(0.66 0.19 50 / 0.1));
 }
 
 .cngx-option__status {

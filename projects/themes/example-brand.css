@@ -1,29 +1,36 @@
-/* example-brand.css — reference theme demonstrating EVERY override slot.
- *
- * This is a CONSUMER-side example, not a shipped theme. Copy it as a
- * starting point when building your own brand theme.
+/**
+ * @overview
+ * Reference theme demonstrating EVERY override slot. This is a
+ * CONSUMER-side example, not a shipped theme. Copy it as a starting
+ * point when building your own brand theme.
  *
  * Two consumption patterns:
  *
- *   1) Layered on top of @cngx/themes/cngx.css (recommended):
- *        @import '@cngx/themes/cngx.css';
- *        @import './my-brand.css';
- *      cngx.css loads layers + tokens + reset + base + directive-CSS.
- *      Your theme file only ships overrides in @layer cngx.theme.
+ * 1) Layered on top of `@cngx/themes/cngx.css` (recommended):
+ * ```css
+ *   @import '@cngx/themes/cngx.css';
+ *   @import './my-brand.css';
+ * ```
+ * `cngx.css` loads layers + tokens + reset + base + directive CSS.
+ * Your theme file only ships overrides in `@layer cngx.theme`.
  *
- *   2) Built from scratch without cngx.css:
- *        @import '@cngx/core/theming/layers.css';
- *        @import '@cngx/core/theming/system-tokens.css';
- *        @import '@cngx/core/theming/reset.css';
- *        @import '@cngx/core/theming/base.css';
- *        @import '@cngx/common/theming/components/cngx-backdrop.css';
- *        @import './my-brand.css';
- *      Same result, explicit control over what loads.
+ * 2) Built from scratch without `cngx.css`:
+ * ```css
+ *   @import '@cngx/core/theming/layers.css';
+ *   @import '@cngx/core/theming/system-tokens.css';
+ *   @import '@cngx/core/theming/reset.css';
+ *   @import '@cngx/core/theming/base.css';
+ *   @import '@cngx/common/theming/components/cngx-backdrop.css';
+ *   @import './my-brand.css';
+ * ```
+ * Same result, explicit control over what loads.
  *
- * EVERY rule in this file goes into @layer cngx.theme — that layer is
- * canonically reserved for token-overrides only. Adding selectors with
- * their OWN properties (not just custom-property assignments) belongs
- * in the consumer's `app` layer instead, which cascades after cngx.theme. */
+ * EVERY rule in this file goes into `@layer cngx.theme` — that
+ * layer is canonically reserved for token overrides only. Adding
+ * selectors with their OWN properties (not just custom-property
+ * assignments) belongs in the consumer's `app` layer instead, which
+ * cascades after `cngx.theme`.
+ */
 
 @layer cngx.theme {
   /* ============================================================ */

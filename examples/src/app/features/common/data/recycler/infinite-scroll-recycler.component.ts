@@ -27,11 +27,11 @@ import { CngxInfiniteScroll } from '@cngx/common/layout';
         }
       </div>
       <div class="inf-scroll"
-           style="height:300px;overflow-y:auto;border:1px solid var(--cngx-border-color,#e0e0e0);border-radius:8px">
+           style="height:300px;overflow-y:auto;border:1px solid var(--cngx-color-border,#e0e0e0);border-radius:8px">
         <div [style.paddingTop.px]="infRecycler.offsetBefore()"
              [style.paddingBottom.px]="infRecycler.offsetAfter()">
           @for (item of infVisible(); track item) {
-            <div style="height:48px;display:flex;align-items:center;padding:0 16px;border-bottom:1px solid var(--cngx-border-color,#e0e0e0)">
+            <div style="height:48px;display:flex;align-items:center;padding:0 16px;border-bottom:1px solid var(--cngx-color-border,#e0e0e0)">
               {{ item }}
             </div>
           }
@@ -128,11 +128,11 @@ protected handleLoadMore(): void {
   }
 </div>
 <div class="inf-scroll"
-     style="height:300px;overflow-y:auto;border:1px solid var(--cngx-border-color,#e0e0e0);border-radius:8px">
+     style="height:300px;overflow-y:auto;border:1px solid var(--cngx-color-border,#e0e0e0);border-radius:8px">
   <div [style.paddingTop.px]="infRecycler.offsetBefore()"
        [style.paddingBottom.px]="infRecycler.offsetAfter()">
     @for (item of infVisible(); track item) {
-      <div style="height:48px;display:flex;align-items:center;padding:0 16px;border-bottom:1px solid var(--cngx-border-color,#e0e0e0)">
+      <div style="height:48px;display:flex;align-items:center;padding:0 16px;border-bottom:1px solid var(--cngx-color-border,#e0e0e0)">
         {{ item }}
       </div>
     }

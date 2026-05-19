@@ -40,7 +40,7 @@ import { delay, of, throwError } from 'rxjs';
             align-items: center;
             gap: .5rem;
             padding: .5rem .75rem;
-            border-bottom: 1px solid var(--cngx-border, #e5e7eb);
+            border-bottom: 1px solid var(--cngx-color-border, #e5e7eb);
             background: var(--cngx-surface-variant, rgba(0,0,0,.02));
           ">
             <span style="font-size:1.25rem" aria-hidden="true">✨</span>
@@ -51,7 +51,7 @@ import { delay, of, throwError } from 'rxjs';
               type="button"
               [disabled]="!term || pending"
               (click)="commit()"
-              style="padding:.25rem .625rem; border:1px solid var(--cngx-border, #cbd5e1); border-radius:.25rem; background:transparent; cursor:pointer; font:inherit; font-size:.8125rem"
+              style="padding:.25rem .625rem; border:1px solid var(--cngx-color-border, #cbd5e1); border-radius:.25rem; background:transparent; cursor:pointer; font:inherit; font-size:.8125rem"
             >
               anlegen
             </button>
@@ -59,7 +59,7 @@ import { delay, of, throwError } from 'rxjs';
               type="button"
               [disabled]="!term || pending"
               (click)="commit(); close()"
-              style="padding:.25rem .625rem; border:0; border-radius:.25rem; background:var(--cngx-primary,#1976d2); color:#fff; cursor:pointer; font:inherit; font-size:.8125rem"
+              style="padding:.25rem .625rem; border:0; border-radius:.25rem; background:var(--cngx-color-primary,#1976d2); color:#fff; cursor:pointer; font:inherit; font-size:.8125rem"
             >
               anlegen &amp; schließen
             </button>
@@ -185,7 +185,7 @@ protected readonly customCreate: CngxSelectCreateAction<{ id: string; name: stri
       align-items: center;
       gap: .5rem;
       padding: .5rem .75rem;
-      border-bottom: 1px solid var(--cngx-border, #e5e7eb);
+      border-bottom: 1px solid var(--cngx-color-border, #e5e7eb);
       background: var(--cngx-surface-variant, rgba(0,0,0,.02));
     ">
       <span style="font-size:1.25rem" aria-hidden="true">✨</span>
@@ -196,7 +196,7 @@ protected readonly customCreate: CngxSelectCreateAction<{ id: string; name: stri
         type="button"
         [disabled]="!term || pending"
         (click)="commit()"
-        style="padding:.25rem .625rem; border:1px solid var(--cngx-border, #cbd5e1); border-radius:.25rem; background:transparent; cursor:pointer; font:inherit; font-size:.8125rem"
+        style="padding:.25rem .625rem; border:1px solid var(--cngx-color-border, #cbd5e1); border-radius:.25rem; background:transparent; cursor:pointer; font:inherit; font-size:.8125rem"
       >
         anlegen
       </button>
@@ -204,7 +204,7 @@ protected readonly customCreate: CngxSelectCreateAction<{ id: string; name: stri
         type="button"
         [disabled]="!term || pending"
         (click)="commit(); close()"
-        style="padding:.25rem .625rem; border:0; border-radius:.25rem; background:var(--cngx-primary,#1976d2); color:#fff; cursor:pointer; font:inherit; font-size:.8125rem"
+        style="padding:.25rem .625rem; border:0; border-radius:.25rem; background:var(--cngx-color-primary,#1976d2); color:#fff; cursor:pointer; font:inherit; font-size:.8125rem"
       >
         anlegen &amp; schließen
       </button>

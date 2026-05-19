@@ -1,46 +1,390 @@
-/*
- * Structural styles for CngxSidenavLayout — loaded via the layout
- * component's styleUrl. Targets multiple sibling-component tags
- * (cngx-sidenav-layout / cngx-sidenav / cngx-sidenav-content) — under
- * encapsulation:None these all match globally; the cngx-sidenav-
- * prefix is the namespace.
+/**
+ * @overview
+ * Structural styles for `CngxSidenavLayout`. Loaded via the layout
+ * component's `styleUrl`. Targets multiple sibling-component tags
+ * (`cngx-sidenav-layout` / `cngx-sidenav` / `cngx-sidenav-content`)
+ * — under `encapsulation: None` these all match globally; the
+ * `cngx-sidenav-` prefix is the namespace.
  *
  * Tokens use conservative defaults (transparent, currentColor,
  * inherit) so the "no defaults without theme" behavior is preserved.
- * Material bridges for consumers who opt in live in the sibling
- * sidenav-theme.scss and nav-link-theme.scss.
+ * Pair with `@cngx/themes/material/sidenav-theme` and
+ * `@cngx/themes/material/nav-link-theme` for the Material 3 navigation
+ * surface.
  */
 
 @layer cngx.tokens {
-  @property --cngx-sidenav-width                  { syntax: '<length>'; inherits: false; initial-value: 280px; }
-  @property --cngx-sidenav-bg                     { syntax: '<color>'; inherits: false; initial-value: oklch(0.97 0.005 250); }
-  @property --cngx-sidenav-color                  { syntax: '*'; inherits: true; initial-value: currentColor; }
-  @property --cngx-sidenav-transition-duration    { syntax: '<time>'; inherits: false; initial-value: 0.25s; }
-  @property --cngx-sidenav-transition-easing      { syntax: '*'; inherits: false; initial-value: ease; }
-  @property --cngx-sidenav-mini-width             { syntax: '<length>'; inherits: false; initial-value: 56px; }
-  @property --cngx-sidenav-expanded-shadow        { syntax: '*'; inherits: false; initial-value: 4px 0 12px oklch(0 0 0 / 0.1); }
-  @property --cngx-sidenav-border-width           { syntax: '<length>'; inherits: false; initial-value: 1px; }
-  @property --cngx-sidenav-border-color           { syntax: '<color>'; inherits: false; initial-value: oklch(0.89 0 0); }
-  @property --cngx-sidenav-padding                { syntax: '<length>'; inherits: false; initial-value: 16px; }
-  @property --cngx-sidenav-header-bg              { syntax: '<color>'; inherits: false; initial-value: transparent; }
-  @property --cngx-sidenav-header-font-size       { syntax: '*'; inherits: false; initial-value: 0.875rem; }
-  @property --cngx-sidenav-footer-bg              { syntax: '<color>'; inherits: false; initial-value: transparent; }
-  @property --cngx-sidenav-footer-border-color    { syntax: '<color>'; inherits: false; initial-value: oklch(0.89 0 0); }
-  @property --cngx-sidenav-footer-font-size       { syntax: '*'; inherits: false; initial-value: 0.75rem; }
-  @property --cngx-sidenav-resize-handle-width    { syntax: '<length>'; inherits: false; initial-value: 4px; }
-  @property --cngx-sidenav-resize-handle-color    { syntax: '<color>'; inherits: false; initial-value: oklch(0.55 0.18 280); }
-  @property --cngx-sidenav-backdrop-bg            { syntax: '<color>'; inherits: false; initial-value: oklch(0 0 0); }
-  @property --cngx-sidenav-backdrop-opacity       { syntax: '<number>'; inherits: false; initial-value: 0.5; }
-  @property --cngx-nav-link-padding               { syntax: '*'; inherits: false; initial-value: 10px 16px; }
-  @property --cngx-nav-link-font-size             { syntax: '*'; inherits: false; initial-value: 0.875rem; }
-  @property --cngx-nav-link-color                 { syntax: '*'; inherits: true; initial-value: currentColor; }
-  @property --cngx-nav-link-radius                { syntax: '<length>'; inherits: false; initial-value: 4px; }
-  @property --cngx-nav-link-hover-color           { syntax: '*'; inherits: true; initial-value: currentColor; }
-  @property --cngx-nav-link-hover-bg              { syntax: '<color>'; inherits: false; initial-value: oklch(0 0 0 / 0.04); }
-  @property --cngx-nav-link-active-color          { syntax: '*'; inherits: true; initial-value: currentColor; }
-  @property --cngx-nav-link-active-bg             { syntax: '<color>'; inherits: false; initial-value: oklch(0 0 0 / 0.08); }
-  @property --cngx-nav-link-active-font-weight    { syntax: '<number>'; inherits: false; initial-value: 600; }
-  @property --cngx-nav-link-initial-size          { syntax: '*'; inherits: false; initial-value: 0.875rem; }
+  /**
+   * Default open-width of the rail.
+   * @group Layout
+   */
+  @property --cngx-sidenav-width {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 280px;
+  }
+
+  /**
+   * Background of the rail surface.
+   * @group Surface
+   */
+  @property --cngx-sidenav-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.97 0.005 250);
+  }
+
+  /**
+   * Text color of the rail. Defaults to `currentColor` so it inherits
+   * from the page.
+   * @group Surface
+   */
+  @property --cngx-sidenav-color {
+    syntax: '*';
+    inherits: true;
+    initial-value: currentColor;
+  }
+
+  /**
+   * Duration of the open / close / mini transitions.
+   * @group Motion
+   */
+  @property --cngx-sidenav-transition-duration {
+    syntax: '<time>';
+    inherits: false;
+    initial-value: 0.25s;
+  }
+
+  /**
+   * Easing curve of the open / close / mini transitions.
+   * @group Motion
+   */
+  @property --cngx-sidenav-transition-easing {
+    syntax: '*';
+    inherits: false;
+    initial-value: ease;
+  }
+
+  /**
+   * Collapsed width in mini mode (icon-rail).
+   * @group Variant / Mini
+   */
+  @property --cngx-sidenav-mini-width {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 56px;
+  }
+
+  /**
+   * Drop-shadow applied when the mini-rail expands over content.
+   * @group Variant / Mini
+   */
+  @property --cngx-sidenav-expanded-shadow {
+    syntax: '*';
+    inherits: true;
+    initial-value: 4px 0 12px oklch(0 0 0 / 0.1);
+  }
+
+  /**
+   * Stroke width of the rail edge border.
+   * @group Surface
+   */
+  @property --cngx-sidenav-border-width {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 1px;
+  }
+
+  /**
+   * Stroke color of the rail edge border. Falls back through
+   * `--cngx-color-border`.
+   * @group Surface
+   */
+  @property --cngx-sidenav-border-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.89 0 0);
+  }
+
+  /**
+   * Padding shorthand inside the header / footer slots.
+   * @group Layout
+   */
+  @property --cngx-sidenav-padding {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 16px;
+  }
+
+  /**
+   * Background of the header slot.
+   * @group Surface
+   */
+  @property --cngx-sidenav-header-bg {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: transparent;
+  }
+
+  /**
+   * Font-size of the header slot.
+   * @group Typography
+   */
+  @property --cngx-sidenav-header-font-size {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.875rem;
+  }
+
+  /**
+   * Background of the footer slot.
+   * @group Surface
+   */
+  @property --cngx-sidenav-footer-bg {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: transparent;
+  }
+
+  /**
+   * Border color of the footer divider. Falls back to the rail
+   * border color.
+   * @group Surface
+   */
+  @property --cngx-sidenav-footer-border-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.89 0 0);
+  }
+
+  /**
+   * Font-size of the footer slot.
+   * @group Typography
+   */
+  @property --cngx-sidenav-footer-font-size {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.75rem;
+  }
+
+  /**
+   * Width of the drag-to-resize handle on the rail's edge.
+   * @group Layout
+   */
+  @property --cngx-sidenav-resize-handle-width {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 4px;
+  }
+
+  /**
+   * Color of the resize handle on hover / drag. Falls back to
+   * `--cngx-color-primary`.
+   * @group State / Resize
+   * @see [[--cngx-color-primary]]
+   */
+  @property --cngx-sidenav-resize-handle-color {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: oklch(0.66 0.19 50);
+  }
+
+  /**
+   * Background of the mobile backdrop scrim.
+   * @group State / Over
+   */
+  @property --cngx-sidenav-backdrop-bg {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: oklch(0 0 0);
+  }
+
+  /**
+   * Opacity of the mobile backdrop scrim.
+   * @group State / Over
+   */
+  @property --cngx-sidenav-backdrop-opacity {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 0.5;
+  }
+
+  /**
+   * Padding shorthand of each nav link.
+   * @group Layout
+   */
+  @property --cngx-nav-link-padding {
+    syntax: '*';
+    inherits: false;
+    initial-value: 10px 16px;
+  }
+
+  /**
+   * Font-size of each nav link.
+   * @group Typography
+   */
+  @property --cngx-nav-link-font-size {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.875rem;
+  }
+
+  /**
+   * Text color of a resting nav link.
+   * @group Surface
+   */
+  @property --cngx-nav-link-color {
+    syntax: '*';
+    inherits: true;
+    initial-value: currentColor;
+  }
+
+  /**
+   * Corner radius of each nav link.
+   * @group Layout
+   */
+  @property --cngx-nav-link-radius {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 4px;
+  }
+
+  /**
+   * Text color on hover.
+   * @group State / Hover
+   */
+  @property --cngx-nav-link-hover-color {
+    syntax: '*';
+    inherits: true;
+    initial-value: currentColor;
+  }
+
+  /**
+   * Background tint on hover.
+   * @group State / Hover
+   */
+  @property --cngx-nav-link-hover-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0 0 0 / 0.04);
+  }
+
+  /**
+   * Text color of the active nav link.
+   * @group State / Active
+   */
+  @property --cngx-nav-link-active-color {
+    syntax: '*';
+    inherits: true;
+    initial-value: currentColor;
+  }
+
+  /**
+   * Background of the active nav link.
+   * @group State / Active
+   */
+  @property --cngx-nav-link-active-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0 0 0 / 0.08);
+  }
+
+  /**
+   * Font-weight of the active nav link.
+   * @group State / Active
+   */
+  @property --cngx-nav-link-active-font-weight {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 600;
+  }
+
+  /**
+   * Outline color of the keyboard focus ring on a nav link. Falls
+   * back to `--cngx-color-primary` so the ring picks up the brand
+   * accent.
+   * @group State / Focus
+   * @see [[--cngx-color-primary]]
+   */
+  @property --cngx-nav-link-focus-outline-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.66 0.19 50);
+  }
+
+  /**
+   * Stroke width of the keyboard focus ring.
+   * @group State / Focus
+   */
+  @property --cngx-nav-link-focus-outline-width {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 2px;
+  }
+
+  /**
+   * Distance from the link edge to the focus ring. Negative offsets
+   * pull the ring inside the link bounds so a fully-padded link
+   * doesn't shove its neighbours when focused.
+   * @group State / Focus
+   */
+  @property --cngx-nav-link-focus-outline-offset {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: -2px;
+  }
+
+  /**
+   * Font-size of the first-letter initial shown in mini mode (when
+   * the full label is hidden).
+   * @group Variant / Mini
+   */
+  @property --cngx-nav-link-initial-size {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.875rem;
+  }
+
+  /*
+   * Default-theme palette pass. The @property `initial-value` shadows
+   * any `var(…)` fallback inside component CSS, so we must explicitly
+   * paint the resolved value at :root for each color-flavoured token.
+   * Rail surface + border delegate to the foundation tokens; the
+   * alpha-overlay tints (nav-link hover/active, expanded-shadow) stay
+   * component-local because they need to flip from black-tint to
+   * white-tint between modes.
+   */
+  :root {
+    --cngx-sidenav-bg: var(--cngx-color-surface, oklch(0.97 0.005 250));
+    --cngx-sidenav-border-color: var(--cngx-color-border, oklch(0.89 0 0));
+    --cngx-sidenav-footer-border-color: var(--cngx-color-border, oklch(0.89 0 0));
+    --cngx-sidenav-expanded-shadow: 4px 0 12px oklch(0 0 0 / 0.1);
+    --cngx-nav-link-hover-bg: oklch(0 0 0 / 0.04);
+    --cngx-nav-link-active-bg: oklch(0 0 0 / 0.08);
+    --cngx-nav-link-focus-outline-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-color-scheme='light']):not(.light) {
+      --cngx-sidenav-expanded-shadow: 4px 0 12px oklch(0 0 0 / 0.45);
+      --cngx-nav-link-hover-bg: oklch(1 0 0 / 0.06);
+      --cngx-nav-link-active-bg: oklch(1 0 0 / 0.1);
+    }
+  }
+
+  :root[data-color-scheme='dark'],
+  :root.dark {
+    --cngx-sidenav-expanded-shadow: 4px 0 12px oklch(0 0 0 / 0.45);
+    --cngx-nav-link-hover-bg: oklch(1 0 0 / 0.06);
+    --cngx-nav-link-active-bg: oklch(1 0 0 / 0.1);
+  }
+
+  :root[data-color-scheme='light'],
+  :root.light {
+    --cngx-sidenav-expanded-shadow: 4px 0 12px oklch(0 0 0 / 0.1);
+    --cngx-nav-link-hover-bg: oklch(0 0 0 / 0.04);
+    --cngx-nav-link-active-bg: oklch(0 0 0 / 0.08);
+  }
 }
 
 @layer cngx.components {
@@ -137,15 +481,11 @@
   }
 
   cngx-sidenav.cngx-sidenav--mini.cngx-sidenav--open.cngx-sidenav--expanded.cngx-sidenav--start {
-    margin-right: calc(
-      var(--cngx-sidenav-mini-width, 56px) - var(--cngx-sidenav-width, 280px)
-    );
+    margin-right: calc(var(--cngx-sidenav-mini-width, 56px) - var(--cngx-sidenav-width, 280px));
   }
 
   cngx-sidenav.cngx-sidenav--mini.cngx-sidenav--open.cngx-sidenav--expanded.cngx-sidenav--end {
-    margin-left: calc(
-      var(--cngx-sidenav-mini-width, 56px) - var(--cngx-sidenav-width, 280px)
-    );
+    margin-left: calc(var(--cngx-sidenav-mini-width, 56px) - var(--cngx-sidenav-width, 280px));
   }
 
   cngx-sidenav.cngx-sidenav--start {
@@ -241,6 +581,19 @@
   }
 
   /*
+   * Keyboard focus ring on a nav link. Inset offset so a focused
+   * link inside the rail doesn't push its neighbours outward. The
+   * outline rides on `--cngx-color-primary` via the :root delegation,
+   * so the brand accent paints both active state and focus state in
+   * coherent tones.
+   */
+  cngx-sidenav .cngx-nav-link:focus-visible {
+    outline: var(--cngx-nav-link-focus-outline-width, 2px) solid
+      var(--cngx-nav-link-focus-outline-color, oklch(0.66 0.19 50));
+    outline-offset: var(--cngx-nav-link-focus-outline-offset, -2px);
+  }
+
+  /*
    * Mini-mode nav links: show first-letter initial, hide full text.
    * Separate rule because .cngx-sidenav--mini is on cngx-sidenav itself.
    */
@@ -314,7 +667,7 @@
   .cngx-sidenav--resizing .cngx-sidenav__resize-handle {
     background: var(
       --cngx-sidenav-resize-handle-color,
-      var(--cngx-color-primary, oklch(0.55 0.18 280))
+      var(--cngx-color-primary, oklch(0.66 0.19 50))
     );
   }
 

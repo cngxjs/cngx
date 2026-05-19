@@ -35,7 +35,7 @@ import { ChangeDetectionStrategy, Component, input, ViewEncapsulation, type Temp
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  styleUrl: './checkbox-indicator.component.css',
+  styleUrls: ['./checkbox-indicator.component.css'],
   imports: [NgTemplateOutlet],
   host: {
     class: 'cngx-checkbox-indicator',

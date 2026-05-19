@@ -1,25 +1,168 @@
-/* Visual skin for CngxCloseButton — circular icon button with a
- * neutral idle state and a tinted hover state. */
+/**
+ * @overview
+ * Default visuals for `CngxCloseButton` — circular icon button with a
+ * neutral idle state and a tinted hover state. The host renders with
+ * `display: contents` so the inner `<button>` carries the box.
+ */
 
 @layer cngx.tokens {
-  @property --cngx-close-button-bg              { syntax: '*';        inherits: false; initial-value: none; }
-  @property --cngx-close-button-border          { syntax: '*';        inherits: false; initial-value: none; }
-  @property --cngx-close-button-size            { syntax: '<length>'; inherits: false; initial-value: 32px; }
-  @property --cngx-close-button-padding         { syntax: '<length>'; inherits: false; initial-value: 8px; }
-  @property --cngx-close-button-color           { syntax: '*';  inherits: true;  initial-value: currentColor; }
-  @property --cngx-close-button-opacity         { syntax: '<number>'; inherits: false; initial-value: 0.5; }
-  @property --cngx-close-button-radius          { syntax: '<length>'; inherits: false; initial-value: 4px; }
-  @property --cngx-close-button-transition      { syntax: '<time>';   inherits: false; initial-value: 150ms; }
+  /**
+   * Background of the resting button.
+   * @group Surface
+   */
+  @property --cngx-close-button-bg {
+    syntax: '*';
+    inherits: false;
+    initial-value: none;
+  }
 
-  @property --cngx-close-button-hover-opacity   { syntax: '<number>'; inherits: false; initial-value: 1; }
-  @property --cngx-close-button-hover-bg        { syntax: '<color>';  inherits: false; initial-value: oklch(0 0 0 / 0.04); }
+  /**
+   * Border shorthand of the resting button.
+   * @group Surface
+   */
+  @property --cngx-close-button-border {
+    syntax: '*';
+    inherits: false;
+    initial-value: none;
+  }
 
-  @property --cngx-close-button-focus-outline   { syntax: '*';        inherits: false; initial-value: 2px solid currentColor; }
-  @property --cngx-close-button-focus-offset    { syntax: '<length>'; inherits: false; initial-value: 2px; }
+  /**
+   * Minimum hit-target size of the button (both axes).
+   * @group Layout
+   */
+  @property --cngx-close-button-size {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 32px;
+  }
 
-  @property --cngx-close-button-active-opacity  { syntax: '<number>'; inherits: false; initial-value: 0.8; }
+  /**
+   * Padding shorthand. Falls back to `--cngx-space-sm`.
+   * @group Layout
+   */
+  @property --cngx-close-button-padding {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 8px;
+  }
 
-  @property --cngx-close-button-icon-size       { syntax: '<length>'; inherits: false; initial-value: 16px; }
+  /**
+   * Glyph color. Defaults to `currentColor`.
+   * @group Surface
+   */
+  @property --cngx-close-button-color {
+    syntax: '*';
+    inherits: true;
+    initial-value: currentColor;
+  }
+
+  /**
+   * Resting opacity. The hover state lifts to full opacity.
+   * @group State / Idle
+   */
+  @property --cngx-close-button-opacity {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 0.5;
+  }
+
+  /**
+   * Corner radius. Defaults to `--cngx-radius-sm`.
+   * @group Layout
+   */
+  @property --cngx-close-button-radius {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 4px;
+  }
+
+  /**
+   * Transition duration for opacity / background changes.
+   * @group Motion
+   */
+  @property --cngx-close-button-transition {
+    syntax: '<time>';
+    inherits: false;
+    initial-value: 150ms;
+  }
+
+  /**
+   * Opacity multiplier applied on hover.
+   * @group State / Hover
+   */
+  @property --cngx-close-button-hover-opacity {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 1;
+  }
+
+  /**
+   * Background tint applied on hover — a subtle neutral overlay.
+   * `inherits: true` so the :root dark-mode override reaches the
+   * inner `<button>` on hover.
+   * @group State / Hover
+   */
+  @property --cngx-close-button-hover-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0 0 0 / 0.04);
+  }
+
+  /**
+   * Focus-ring outline shorthand.
+   * @group State / Focus
+   */
+  @property --cngx-close-button-focus-outline {
+    syntax: '*';
+    inherits: false;
+    initial-value: 2px solid currentColor;
+  }
+
+  /**
+   * Outline offset of the focus ring.
+   * @group State / Focus
+   */
+  @property --cngx-close-button-focus-offset {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 2px;
+  }
+
+  /**
+   * Opacity applied during the active (pressed) state.
+   * @group State / Active
+   */
+  @property --cngx-close-button-active-opacity {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 0.8;
+  }
+
+  /**
+   * Width + height of the inner icon slot.
+   * @group Layout
+   */
+  @property --cngx-close-button-icon-size {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 16px;
+  }
+
+  /* Dark-mode swap — hover wash inverts to white-alpha so the
+   * subtle hover surface remains visible against the dark page. */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-color-scheme='light']):not(.light) {
+      --cngx-close-button-hover-bg: oklch(1 0 0 / 0.06);
+    }
+  }
+  [data-color-scheme='dark'],
+  .dark {
+    --cngx-close-button-hover-bg: oklch(1 0 0 / 0.06);
+  }
+  [data-color-scheme='light'],
+  .light {
+    --cngx-close-button-hover-bg: oklch(0 0 0 / 0.04);
+  }
 }
 
 @layer cngx.components {

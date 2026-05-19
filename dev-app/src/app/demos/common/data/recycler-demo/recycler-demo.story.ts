@@ -52,14 +52,14 @@ export const STORY: DemoSpec = {
       template: `
   <cngx-recycler-announcer [cngxRecyclerAnnouncer]="recycler" />
   <div class="recycler-scroll" role="list" aria-label="Demo items"
-       style="height:400px;overflow-y:auto;border:1px solid var(--cngx-border-color,#e0e0e0);border-radius:8px">
+       style="height:400px;overflow-y:auto;border:1px solid var(--cngx-color-border,#e0e0e0);border-radius:8px">
     <div [style.paddingTop.px]="recycler.offsetBefore()"
          [style.paddingBottom.px]="recycler.offsetAfter()">
       @for (item of visibleItems(); track item.id; let i = $index) {
         <div role="listitem"
              [cngxVirtualItem]="recycler"
              [cngxVirtualItemIndex]="recycler.start() + i"
-             style="height:48px;display:flex;align-items:center;padding:0 16px;border-bottom:1px solid var(--cngx-border-color,#e0e0e0)">
+             style="height:48px;display:flex;align-items:center;padding:0 16px;border-bottom:1px solid var(--cngx-color-border,#e0e0e0)">
           <strong>{{ item.name }}</strong>&nbsp;&mdash;&nbsp;{{ item.description }}
         </div>
       }
@@ -77,10 +77,10 @@ export const STORY: DemoSpec = {
       Go to:
       <input type="number" [value]="targetIndex()" (input)="targetIndex.set(+$any($event.target).value)"
              min="0" [max]="recycler.ariaSetSize() - 1"
-             style="width:80px;padding:4px 8px;border:1px solid var(--cngx-border-color,#ccc);border-radius:4px">
+             style="width:80px;padding:4px 8px;border:1px solid var(--cngx-color-border,#ccc);border-radius:4px">
     </label>
     <button type="button" (click)="handleScrollTo()"
-            style="padding:4px 12px;border:1px solid var(--cngx-border-color,#ccc);border-radius:4px;cursor:pointer">
+            style="padding:4px 12px;border:1px solid var(--cngx-color-border,#ccc);border-radius:4px;cursor:pointer">
       Scroll
     </button>
     @if (recycler.pendingTarget() != null) {
@@ -116,12 +116,12 @@ export const STORY: DemoSpec = {
       `,
       template: `
   <div class="recycler-var-scroll"
-       style="height:400px;overflow-y:auto;border:1px solid var(--cngx-border-color,#e0e0e0);border-radius:8px">
+       style="height:400px;overflow-y:auto;border:1px solid var(--cngx-color-border,#e0e0e0);border-radius:8px">
     <div [style.paddingTop.px]="varRecycler.offsetBefore()"
          [style.paddingBottom.px]="varRecycler.offsetAfter()">
       @for (item of varVisible(); track item.id; let i = $index) {
         <div [cngxMeasure]="varRecycler" [cngxMeasureIndex]="varRecycler.start() + i"
-             style="padding:12px 16px;border-bottom:1px solid var(--cngx-border-color,#e0e0e0)">
+             style="padding:12px 16px;border-bottom:1px solid var(--cngx-color-border,#e0e0e0)">
           <strong>{{ item.name }}</strong>
           <p style="margin:4px 0;color:var(--cngx-text-muted,#666)">{{ item.content }}</p>
         </div>
@@ -163,10 +163,10 @@ export const STORY: DemoSpec = {
       Go to index:
       <input type="number" [value]="scrollTarget()" (input)="scrollTarget.set(+$any($event.target).value)"
              min="0" [max]="scrollRecycler.ariaSetSize() - 1"
-             style="width:80px;padding:4px 8px;border:1px solid var(--cngx-border-color,#ccc);border-radius:4px">
+             style="width:80px;padding:4px 8px;border:1px solid var(--cngx-color-border,#ccc);border-radius:4px">
     </label>
     <button type="button" (click)="handleScrollDemo()"
-            style="padding:6px 16px;border:1px solid var(--cngx-border-color,#ccc);border-radius:4px;cursor:pointer">
+            style="padding:6px 16px;border:1px solid var(--cngx-color-border,#ccc);border-radius:4px;cursor:pointer">
       Scroll
     </button>
     <span class="status-badge">
@@ -179,11 +179,11 @@ export const STORY: DemoSpec = {
     }
   </div>
   <div class="recycler-scroll-demo"
-       style="height:300px;overflow-y:auto;border:1px solid var(--cngx-border-color,#e0e0e0);border-radius:8px">
+       style="height:300px;overflow-y:auto;border:1px solid var(--cngx-color-border,#e0e0e0);border-radius:8px">
     <div [style.paddingTop.px]="scrollRecycler.offsetBefore()"
          [style.paddingBottom.px]="scrollRecycler.offsetAfter()">
       @for (item of scrollVisible(); track item.id) {
-        <div style="height:40px;display:flex;align-items:center;padding:0 16px;border-bottom:1px solid var(--cngx-border-color,#e0e0e0)">
+        <div style="height:40px;display:flex;align-items:center;padding:0 16px;border-bottom:1px solid var(--cngx-color-border,#e0e0e0)">
           {{ item.name }}
         </div>
       }
@@ -236,11 +236,11 @@ export const STORY: DemoSpec = {
     }
   </div>
   <div class="inf-scroll"
-       style="height:300px;overflow-y:auto;border:1px solid var(--cngx-border-color,#e0e0e0);border-radius:8px">
+       style="height:300px;overflow-y:auto;border:1px solid var(--cngx-color-border,#e0e0e0);border-radius:8px">
     <div [style.paddingTop.px]="infRecycler.offsetBefore()"
          [style.paddingBottom.px]="infRecycler.offsetAfter()">
       @for (item of infVisible(); track item) {
-        <div style="height:48px;display:flex;align-items:center;padding:0 16px;border-bottom:1px solid var(--cngx-border-color,#e0e0e0)">
+        <div style="height:48px;display:flex;align-items:center;padding:0 16px;border-bottom:1px solid var(--cngx-color-border,#e0e0e0)">
           {{ item }}
         </div>
       }

@@ -46,12 +46,12 @@ import { delay, of, throwError } from 'rxjs';
             flex-direction: column;
             gap: 0.5rem;
             padding: 0.75rem;
-            border-top: 1px solid var(--cngx-border, #e5e7eb);
+            border-top: 1px solid var(--cngx-color-border, #e5e7eb);
             background: var(--cngx-surface-variant, rgba(0,0,0,.02));
           ">
             <div style="font-weight:600; font-size:.875rem">
               + Neuen Eintrag „{{ term || '…' }}" anlegen
-              @if (dirty) { <span style="color:var(--cngx-primary,#1976d2)">· ungespeichert</span> }
+              @if (dirty) { <span style="color:var(--cngx-color-primary,#1976d2)">· ungespeichert</span> }
             </div>
             <input
               #dirtyInput
@@ -61,7 +61,7 @@ import { delay, of, throwError } from 'rxjs';
               style="
                 width: 100%;
                 padding: .35rem .5rem;
-                border: 1px solid var(--cngx-border, #cbd5e1);
+                border: 1px solid var(--cngx-color-border, #cbd5e1);
                 border-radius: .25rem;
                 font: inherit;
               "
@@ -70,7 +70,7 @@ import { delay, of, throwError } from 'rxjs';
               <button
                 type="button"
                 (click)="handleDirtyCancel(setDirty); dirtyInput.value = ''"
-                style="padding:.35rem .75rem; border:1px solid var(--cngx-border, #cbd5e1); border-radius:.25rem; background:transparent; cursor:pointer; font:inherit"
+                style="padding:.35rem .75rem; border:1px solid var(--cngx-color-border, #cbd5e1); border-radius:.25rem; background:transparent; cursor:pointer; font:inherit"
               >
                 Cancel
               </button>
@@ -78,7 +78,7 @@ import { delay, of, throwError } from 'rxjs';
                 type="button"
                 [disabled]="!term || pending"
                 (click)="commit()"
-                style="padding:.35rem .75rem; border:0; border-radius:.25rem; background:var(--cngx-primary,#1976d2); color:#fff; cursor:pointer; font:inherit"
+                style="padding:.35rem .75rem; border:0; border-radius:.25rem; background:var(--cngx-color-primary,#1976d2); color:#fff; cursor:pointer; font:inherit"
               >
                 @if (pending) { Wird angelegt… } @else { Anlegen }
               </button>
@@ -211,12 +211,12 @@ protected readonly customCreate: CngxSelectCreateAction<{ id: string; name: stri
       flex-direction: column;
       gap: 0.5rem;
       padding: 0.75rem;
-      border-top: 1px solid var(--cngx-border, #e5e7eb);
+      border-top: 1px solid var(--cngx-color-border, #e5e7eb);
       background: var(--cngx-surface-variant, rgba(0,0,0,.02));
     ">
       <div style="font-weight:600; font-size:.875rem">
         + Neuen Eintrag „{{ term || '…' }}" anlegen
-        @if (dirty) { <span style="color:var(--cngx-primary,#1976d2)">· ungespeichert</span> }
+        @if (dirty) { <span style="color:var(--cngx-color-primary,#1976d2)">· ungespeichert</span> }
       </div>
       <input
         #dirtyInput
@@ -226,7 +226,7 @@ protected readonly customCreate: CngxSelectCreateAction<{ id: string; name: stri
         style="
           width: 100%;
           padding: .35rem .5rem;
-          border: 1px solid var(--cngx-border, #cbd5e1);
+          border: 1px solid var(--cngx-color-border, #cbd5e1);
           border-radius: .25rem;
           font: inherit;
         "
@@ -235,7 +235,7 @@ protected readonly customCreate: CngxSelectCreateAction<{ id: string; name: stri
         <button
           type="button"
           (click)="handleDirtyCancel(setDirty); dirtyInput.value = ''"
-          style="padding:.35rem .75rem; border:1px solid var(--cngx-border, #cbd5e1); border-radius:.25rem; background:transparent; cursor:pointer; font:inherit"
+          style="padding:.35rem .75rem; border:1px solid var(--cngx-color-border, #cbd5e1); border-radius:.25rem; background:transparent; cursor:pointer; font:inherit"
         >
           Cancel
         </button>
@@ -243,7 +243,7 @@ protected readonly customCreate: CngxSelectCreateAction<{ id: string; name: stri
           type="button"
           [disabled]="!term || pending"
           (click)="commit()"
-          style="padding:.35rem .75rem; border:0; border-radius:.25rem; background:var(--cngx-primary,#1976d2); color:#fff; cursor:pointer; font:inherit"
+          style="padding:.35rem .75rem; border:0; border-radius:.25rem; background:var(--cngx-color-primary,#1976d2); color:#fff; cursor:pointer; font:inherit"
         >
           @if (pending) { Wird angelegt… } @else { Anlegen }
         </button>

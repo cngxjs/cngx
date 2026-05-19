@@ -1,47 +1,280 @@
-/*
- * Display atom for user/person/entity avatars. Renders an image
- * (.cngx-avatar__img), an initials block (.cngx-avatar__initials), or
- * projected content. Optional status dot (.cngx-avatar__status) supports
- * online/offline/busy/away. Size + shape via modifier classes
- * (--xs..--xl, --circle, --square), each backed by a token.
+/**
+ * @overview
+ * Default visuals for `CngxAvatar`. Renders an image
+ * (`.cngx-avatar__img`), an initials block (`.cngx-avatar__initials`),
+ * or projected content. An optional status dot
+ * (`.cngx-avatar__status`) supports the `online` / `offline` / `busy` /
+ * `away` set. Size and shape are driven by modifier classes
+ * (`--xs`..`--xl`, `--circle`, `--square`), each backed by a token.
  *
- * Status colors fall back to foundation system tokens
- * (--cngx-color-success → online, --cngx-color-danger → busy, etc.)
- * so a brand-color change propagates through.
+ * Status colors fall back to the foundation system tokens
+ * (`--cngx-color-success` → online, `--cngx-color-danger` → busy,
+ * etc.) so brand-color overrides propagate.
  */
 
 @layer cngx.tokens {
-  /* Active container metrics (consumed by :scope) */
-  @property --cngx-avatar-size      { syntax: '*';        inherits: false; initial-value: 2.5rem; }
-  @property --cngx-avatar-font-size { syntax: '*';        inherits: false; initial-value: 1rem; }
-  @property --cngx-avatar-bg        { syntax: '<color>';  inherits: true;  initial-value: oklch(0.92 0.01 240); }
-  @property --cngx-avatar-color     { syntax: '<color>';  inherits: true;  initial-value: oklch(0.28 0 0); }
+  /**
+   * Active size of the avatar — consumed by the `:scope` rule and
+   * pinned by the size-variant classes.
+   * @group Layout
+   */
+  @property --cngx-avatar-size {
+    syntax: '*';
+    inherits: false;
+    initial-value: 2.5rem;
+  }
 
-  /* Shape variants */
-  @property --cngx-avatar-circle-radius { syntax: '<length>'; inherits: false; initial-value: 999px; }
-  @property --cngx-avatar-square-radius { syntax: '<length>'; inherits: false; initial-value: 6px; }
+  /**
+   * Active font-size of the initials block. Scaled in step with
+   * `--cngx-avatar-size` by the size-variant classes.
+   * @group Typography
+   */
+  @property --cngx-avatar-font-size {
+    syntax: '*';
+    inherits: false;
+    initial-value: 1rem;
+  }
 
-  /* Size-variant tokens */
-  @property --cngx-avatar-size-xs { syntax: '*'; inherits: false; initial-value: 1.5rem; }
-  @property --cngx-avatar-size-sm { syntax: '*'; inherits: false; initial-value: 2rem; }
-  @property --cngx-avatar-size-md { syntax: '*'; inherits: false; initial-value: 2.5rem; }
-  @property --cngx-avatar-size-lg { syntax: '*'; inherits: false; initial-value: 3rem; }
-  @property --cngx-avatar-size-xl { syntax: '*'; inherits: false; initial-value: 4rem; }
+  /**
+   * Background of the avatar plate. Defaults to the foundation
+   * border tone so an avatar without an image still reads as a
+   * neutral surface.
+   * @group Surface
+   */
+  @property --cngx-avatar-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.92 0.01 240);
+  }
 
-  @property --cngx-avatar-font-size-xs { syntax: '*'; inherits: false; initial-value: 0.625rem; }
-  @property --cngx-avatar-font-size-sm { syntax: '*'; inherits: false; initial-value: 0.75rem; }
-  @property --cngx-avatar-font-size-md { syntax: '*'; inherits: false; initial-value: 1rem; }
-  @property --cngx-avatar-font-size-lg { syntax: '*'; inherits: false; initial-value: 1.125rem; }
-  @property --cngx-avatar-font-size-xl { syntax: '*'; inherits: false; initial-value: 1.5rem; }
+  /**
+   * Text color of the initials block.
+   * @group Surface
+   */
+  @property --cngx-avatar-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.28 0 0);
+  }
 
-  /* Status indicator — semantic colors fall back to system tokens */
-  @property --cngx-avatar-status-size    { syntax: '*';       inherits: false; initial-value: 0.65em; }
-  @property --cngx-avatar-status-border  { syntax: '<color>'; inherits: true;  initial-value: oklch(1 0 0); }
-  @property --cngx-avatar-status-bg      { syntax: '<color>'; inherits: true;  initial-value: oklch(0.68 0.01 240); }
-  @property --cngx-avatar-status-online  { syntax: '<color>'; inherits: true;  initial-value: oklch(0.68 0.18 145); }
-  @property --cngx-avatar-status-offline { syntax: '<color>'; inherits: true;  initial-value: oklch(0.68 0.01 240); }
-  @property --cngx-avatar-status-busy    { syntax: '<color>'; inherits: true;  initial-value: oklch(0.62 0.22 25); }
-  @property --cngx-avatar-status-away    { syntax: '<color>'; inherits: true;  initial-value: oklch(0.72 0.18 70); }
+  /**
+   * Corner radius applied by `.cngx-avatar--circle` (pill default).
+   * @group Variant / Shape
+   */
+  @property --cngx-avatar-circle-radius {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 999px;
+  }
+
+  /**
+   * Corner radius applied by `.cngx-avatar--square`.
+   * @group Variant / Shape
+   */
+  @property --cngx-avatar-square-radius {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 6px;
+  }
+
+  /**
+   * Size token for the `.cngx-avatar--xs` variant.
+   * @group Variant / Size
+   */
+  @property --cngx-avatar-size-xs {
+    syntax: '*';
+    inherits: false;
+    initial-value: 1.5rem;
+  }
+
+  /**
+   * Size token for the `.cngx-avatar--sm` variant.
+   * @group Variant / Size
+   */
+  @property --cngx-avatar-size-sm {
+    syntax: '*';
+    inherits: false;
+    initial-value: 2rem;
+  }
+
+  /**
+   * Size token for the `.cngx-avatar--md` variant (default).
+   * @group Variant / Size
+   */
+  @property --cngx-avatar-size-md {
+    syntax: '*';
+    inherits: false;
+    initial-value: 2.5rem;
+  }
+
+  /**
+   * Size token for the `.cngx-avatar--lg` variant.
+   * @group Variant / Size
+   */
+  @property --cngx-avatar-size-lg {
+    syntax: '*';
+    inherits: false;
+    initial-value: 3rem;
+  }
+
+  /**
+   * Size token for the `.cngx-avatar--xl` variant.
+   * @group Variant / Size
+   */
+  @property --cngx-avatar-size-xl {
+    syntax: '*';
+    inherits: false;
+    initial-value: 4rem;
+  }
+
+  /**
+   * Font-size token for the `.cngx-avatar--xs` initials.
+   * @group Variant / Size
+   */
+  @property --cngx-avatar-font-size-xs {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.625rem;
+  }
+
+  /**
+   * Font-size token for the `.cngx-avatar--sm` initials.
+   * @group Variant / Size
+   */
+  @property --cngx-avatar-font-size-sm {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.75rem;
+  }
+
+  /**
+   * Font-size token for the `.cngx-avatar--md` initials (default).
+   * @group Variant / Size
+   */
+  @property --cngx-avatar-font-size-md {
+    syntax: '*';
+    inherits: false;
+    initial-value: 1rem;
+  }
+
+  /**
+   * Font-size token for the `.cngx-avatar--lg` initials.
+   * @group Variant / Size
+   */
+  @property --cngx-avatar-font-size-lg {
+    syntax: '*';
+    inherits: false;
+    initial-value: 1.125rem;
+  }
+
+  /**
+   * Font-size token for the `.cngx-avatar--xl` initials.
+   * @group Variant / Size
+   */
+  @property --cngx-avatar-font-size-xl {
+    syntax: '*';
+    inherits: false;
+    initial-value: 1.5rem;
+  }
+
+  /**
+   * Diameter of the status dot, expressed in `em` so it scales with
+   * the avatar's font-size.
+   * @group State / Status
+   */
+  @property --cngx-avatar-status-size {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.65em;
+  }
+
+  /**
+   * Ring color around the status dot — defaults to the surface
+   * color so the dot reads as cut out of the avatar.
+   * @group State / Status
+   */
+  @property --cngx-avatar-status-border {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(1 0 0);
+  }
+
+  /**
+   * Fallback background of the status dot when no state modifier
+   * is applied.
+   * @group State / Status
+   */
+  @property --cngx-avatar-status-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.68 0.01 240);
+  }
+
+  /**
+   * Dot color for the `.cngx-avatar__status--online` modifier.
+   * @group State / Status
+   * @see [[--cngx-color-success]]
+   */
+  @property --cngx-avatar-status-online {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.68 0.18 145);
+  }
+
+  /**
+   * Dot color for the `.cngx-avatar__status--offline` modifier.
+   * @group State / Status
+   */
+  @property --cngx-avatar-status-offline {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.68 0.01 240);
+  }
+
+  /**
+   * Dot color for the `.cngx-avatar__status--busy` modifier.
+   * @group State / Status
+   * @see [[--cngx-color-danger]]
+   */
+  @property --cngx-avatar-status-busy {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.62 0.22 25);
+  }
+
+  /**
+   * Dot color for the `.cngx-avatar__status--away` modifier.
+   * @group State / Status
+   * @see [[--cngx-color-warning]]
+   */
+  @property --cngx-avatar-status-away {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.72 0.18 70);
+  }
+
+  /* Dark-mode swap — avatar plate (initials block) inverts to a
+   * mid-gray surface with light text. The status-dot ring tracks the
+   * dark page surface so the dot reads as cut out of the avatar. */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-color-scheme='light']):not(.light) {
+      --cngx-avatar-bg: oklch(0.36 0.01 250);
+      --cngx-avatar-color: oklch(0.92 0.01 250);
+      --cngx-avatar-status-border: oklch(0.2 0.01 250);
+    }
+  }
+  [data-color-scheme='dark'],
+  .dark {
+    --cngx-avatar-bg: oklch(0.36 0.01 250);
+    --cngx-avatar-color: oklch(0.92 0.01 250);
+    --cngx-avatar-status-border: oklch(0.2 0.01 250);
+  }
+  [data-color-scheme='light'],
+  .light {
+    --cngx-avatar-bg: oklch(0.92 0.01 240);
+    --cngx-avatar-color: oklch(0.28 0 0);
+    --cngx-avatar-status-border: oklch(1 0 0);
+  }
 }
 
 @layer cngx.components {
@@ -67,28 +300,32 @@
     }
 
     /* Shape variants */
-    :scope.cngx-avatar--circle { border-radius: var(--cngx-avatar-circle-radius, var(--cngx-radius-pill, 999px)); }
-    :scope.cngx-avatar--square { border-radius: var(--cngx-avatar-square-radius, 6px); }
+    :scope.cngx-avatar--circle {
+      border-radius: var(--cngx-avatar-circle-radius, var(--cngx-radius-pill, 999px));
+    }
+    :scope.cngx-avatar--square {
+      border-radius: var(--cngx-avatar-square-radius, 6px);
+    }
 
     /* Size-variant classes pin the active size + font-size tokens */
     :scope.cngx-avatar--xs {
-      --cngx-avatar-size:      var(--cngx-avatar-size-xs, 1.5rem);
+      --cngx-avatar-size: var(--cngx-avatar-size-xs, 1.5rem);
       --cngx-avatar-font-size: var(--cngx-avatar-font-size-xs, 0.625rem);
     }
     :scope.cngx-avatar--sm {
-      --cngx-avatar-size:      var(--cngx-avatar-size-sm, 2rem);
+      --cngx-avatar-size: var(--cngx-avatar-size-sm, 2rem);
       --cngx-avatar-font-size: var(--cngx-avatar-font-size-sm, 0.75rem);
     }
     :scope.cngx-avatar--md {
-      --cngx-avatar-size:      var(--cngx-avatar-size-md, 2.5rem);
+      --cngx-avatar-size: var(--cngx-avatar-size-md, 2.5rem);
       --cngx-avatar-font-size: var(--cngx-avatar-font-size-md, 1rem);
     }
     :scope.cngx-avatar--lg {
-      --cngx-avatar-size:      var(--cngx-avatar-size-lg, 3rem);
+      --cngx-avatar-size: var(--cngx-avatar-size-lg, 3rem);
       --cngx-avatar-font-size: var(--cngx-avatar-font-size-lg, 1.125rem);
     }
     :scope.cngx-avatar--xl {
-      --cngx-avatar-size:      var(--cngx-avatar-size-xl, 4rem);
+      --cngx-avatar-size: var(--cngx-avatar-size-xl, 4rem);
       --cngx-avatar-font-size: var(--cngx-avatar-font-size-xl, 1.5rem);
     }
 
@@ -114,9 +351,17 @@
       border: 2px solid var(--cngx-avatar-status-border, var(--cngx-color-surface, oklch(1 0 0)));
       background: var(--cngx-avatar-status-bg, oklch(0.68 0.01 240));
     }
-    .cngx-avatar__status--online  { background: var(--cngx-avatar-status-online,  var(--cngx-color-success, oklch(0.68 0.18 145))); }
-    .cngx-avatar__status--offline { background: var(--cngx-avatar-status-offline, oklch(0.68 0.01 240)); }
-    .cngx-avatar__status--busy    { background: var(--cngx-avatar-status-busy,    var(--cngx-color-danger,  oklch(0.62 0.22 25))); }
-    .cngx-avatar__status--away    { background: var(--cngx-avatar-status-away,    var(--cngx-color-warning, oklch(0.72 0.18 70))); }
+    .cngx-avatar__status--online {
+      background: var(--cngx-avatar-status-online, var(--cngx-color-success, oklch(0.68 0.18 145)));
+    }
+    .cngx-avatar__status--offline {
+      background: var(--cngx-avatar-status-offline, oklch(0.68 0.01 240));
+    }
+    .cngx-avatar__status--busy {
+      background: var(--cngx-avatar-status-busy, var(--cngx-color-danger, oklch(0.62 0.22 25)));
+    }
+    .cngx-avatar__status--away {
+      background: var(--cngx-avatar-status-away, var(--cngx-color-warning, oklch(0.72 0.18 70)));
+    }
   }
 }

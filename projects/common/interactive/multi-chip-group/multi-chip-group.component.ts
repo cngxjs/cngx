@@ -135,7 +135,7 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
     { provide: CNGX_FORM_FIELD_CONTROL, useExisting: CngxMultiChipGroup },
   ],
   template: `<ng-content />`,
-  styleUrl: './multi-chip-group.component.css',
+  styleUrls: ['./multi-chip-group.component.css'],
   encapsulation: ViewEncapsulation.None,
 })
 export class CngxMultiChipGroup<T = unknown>
