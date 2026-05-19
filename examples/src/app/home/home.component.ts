@@ -755,7 +755,7 @@ export class HomeComponent {
     return ROUTES_META.filter((r) => {
       if (t) {
         const haystack =
-          `${r.lib} ${r.category} ${r.demo} ${r.section} ${r.apiComponents.join(' ')}`.toLowerCase();
+          `${r.lib} ${r.category} ${r.pathSegments.join(' ')} ${r.title} ${r.apiComponents.join(' ')}`.toLowerCase();
         if (!haystack.includes(t)) return false;
       }
       for (const [dim, values] of tags) {

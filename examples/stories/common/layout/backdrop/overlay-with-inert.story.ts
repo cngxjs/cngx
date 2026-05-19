@@ -1,0 +1,43 @@
+import type { DemoSpec } from '../../../../dev-tools/demo-spec';
+
+export const STORY: DemoSpec = {
+  title: 'CngxBackdrop — Overlay with inert',
+  subtitle: 'When visible, <code>[cngxBackdrop]</code> adds <code>inert</code> to all sibling elements — they become unfocusable and non-interactive. Click the backdrop to dismiss.',
+  description: 'Overlay behavior with visibility toggle, click-to-close, and automatic inert toggling on sibling elements for a11y.',
+  level: 'atom',
+  audience: ['dev', 'design'],
+  artifact: 'building-block',
+  focus: ['visual-variants', 'behavior'],
+  apiComponents: [
+    'CngxBackdrop',
+  ],
+  moduleImports: [
+    'import { CngxBackdrop } from \'@cngx/common\';',
+  ],
+  imports: ['CngxBackdrop'],
+  setup: `protected readonly showBackdrop = signal(false);
+  protected readonly clickCount = signal(0);`,
+  template: `
+  <div class="button-row">
+    <button class="sort-btn" (click)="showBackdrop.set(true)">Show backdrop</button>
+  </div>
+
+  <div style="position: relative; min-height: 200px; border: 1px solid var(--cngx-color-border); border-radius: 6px; overflow: hidden; margin-top: 0.75rem;">
+    <div [cngxBackdrop]="showBackdrop()" (backdropClick)="showBackdrop.set(false); clickCount.update(n => n + 1)"
+         class="cngx-backdrop" style="position: absolute;"></div>
+
+    <div style="padding: 1rem;">
+      <p>This content becomes <code>inert</code> when the backdrop is visible.</p>
+      <button class="sort-btn" (click)="clickCount.update(n => n + 1)">
+        Try clicking me (won't work when inert)
+      </button>
+    </div>
+  </div>
+
+  <div class="status-row" style="margin-top: 0.75rem;">
+    <span class="status-badge" [class.active]="showBackdrop()">
+      {{ showBackdrop() ? 'visible' : 'hidden' }}
+    </span>
+    <span class="status-badge">clicks: {{ clickCount() }}</span>
+  </div>`,
+};
