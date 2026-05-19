@@ -27,8 +27,7 @@ export const STORY: DemoSpec = {
     { value: 'old', label: 'Nicht mehr gepflegt', disabled: true },
   ];
   protected readonly multiCustomChipValues = signal<string[]>(['angular', 'signals', 'rxjs']);`,
-  template: `
-  <cngx-multi-select
+  template: `  <cngx-multi-select
     [label]="'Topics'"
     [options]="tagOptions"
     [(values)]="multiCustomChipValues"
@@ -40,8 +39,8 @@ export const STORY: DemoSpec = {
         <button type="button" (click)="remove()" style="border:0;background:transparent;color:inherit;cursor:pointer;padding:0 0.125rem;">✕</button>
       </span>
     </ng-template>
-  </cngx-multi-select>
-  <div class="event-grid" style="margin-top:12px">
+  </cngx-multi-select>`,
+  templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row"><span class="event-label">Values</span><span class="event-value">{{ multiCustomChipValues().join(', ') || '—' }}</span></div>
   </div>`,
 };

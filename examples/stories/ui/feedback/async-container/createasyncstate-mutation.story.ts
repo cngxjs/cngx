@@ -24,15 +24,13 @@ export const STORY: DemoSpec = {
       })
     );
   }`,
-  template: `
-  <div style="display:flex;gap:12px;align-items:center;margin-bottom:16px">
+  template: `  <div style="display:flex;gap:12px;align-items:center;margin-bottom:16px">
     <button (click)="handleSave()" class="chip" [disabled]="saveAction.isPending()">
       {{ saveAction.isPending() ? 'Saving...' : 'Save (70% success)' }}
     </button>
     <button (click)="saveAction.reset()" class="chip">Reset</button>
-  </div>
-
-  <div class="event-grid">
+  </div>`,
+  templateChrome: `<div class="event-grid">
     <div class="event-row">
       <span class="event-label">Status</span>
       <span class="event-value">{{ saveAction.status() }}</span>

@@ -44,8 +44,7 @@ export const STORY: DemoSpec = {
     this.dirtyNote.set('');
     setDirty(false);
   }`,
-  template: `
-  <div class="kbd-hint">
+  template: `  <div class="kbd-hint">
     <strong>Try it:</strong>
     <span>Open + type in the note field → dirty</span>
     <span><kbd>Esc</kbd> fires cancel (resets dirty, keeps panel open)</span>
@@ -112,9 +111,8 @@ export const STORY: DemoSpec = {
         </div>
       </div>
     </ng-template>
-  </cngx-action-multi-select>
-
-  <div class="event-grid" style="margin-top:12px">
+  </cngx-action-multi-select>`,
+  templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row">
       <span class="event-label">Tags</span>
       <span class="event-value">{{ dirtyValues().map(v => v.name).join(', ') || '—' }}</span>

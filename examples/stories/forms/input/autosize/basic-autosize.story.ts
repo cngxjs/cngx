@@ -15,15 +15,15 @@ export const STORY: DemoSpec = {
     'import { CngxAutosize } from \'@cngx/forms/input\';',
   ],
   imports: ['CngxAutosize'],
-  template: `
-  <div class="demo-form">
+  template: `  <div class="demo-form">
     <div class="demo-field">
       <label class="demo-label">Auto-growing textarea</label>
       <textarea cngxAutosize #auto="cngxAutosize" placeholder="Type multiple lines..."
         class="demo-input" style="width:100%"></textarea>
-      <div class="status-row">
-        <span class="status-badge">Height: {{ auto.height() }}px</span>
-      </div>
+      
     </div>
   </div>`,
+  templateChrome: `<div class="status-row">
+        <span class="status-badge">Height: {{ auto.height() }}px</span>
+      </div>`,
 };

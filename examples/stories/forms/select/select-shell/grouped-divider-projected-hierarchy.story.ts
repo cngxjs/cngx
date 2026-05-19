@@ -20,8 +20,7 @@ export const STORY: DemoSpec = {
   ],
   imports: ['CngxSelectShell', 'CngxSelectOption', 'CngxSelectOptgroup', 'CngxSelectDivider'],
   setup: `protected readonly groupedValue = signal<string | undefined>(undefined);`,
-  template: `
-  <cngx-select-shell [label]="'Priority'" [(value)]="groupedValue" placeholder="Priority…">
+  template: `  <cngx-select-shell [label]="'Priority'" [(value)]="groupedValue" placeholder="Priority…">
     <cngx-optgroup label="Normal">
       <cngx-option [value]="'low'">Niedrig</cngx-option>
       <cngx-option [value]="'medium'">Mittel</cngx-option>
@@ -31,9 +30,8 @@ export const STORY: DemoSpec = {
       <cngx-option [value]="'high'">Hoch</cngx-option>
       <cngx-option [value]="'critical'">Kritisch</cngx-option>
     </cngx-optgroup>
-  </cngx-select-shell>
-
-  <div class="event-grid" style="margin-top:12px">
+  </cngx-select-shell>`,
+  templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row">
       <span class="event-label">value</span>
       <span class="event-value">{{ groupedValue() ?? '—' }}</span>

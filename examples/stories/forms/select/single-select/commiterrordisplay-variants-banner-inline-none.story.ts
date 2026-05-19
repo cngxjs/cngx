@@ -54,8 +54,7 @@ export const STORY: DemoSpec = {
     }
     return of(intended).pipe(delay(800));
   };`,
-  template: `
-  <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:1rem">
+  template: `  <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:1rem">
     <div>
       <h4 style="margin:0 0 0.5rem 0;font-size:0.85rem">banner</h4>
       <cngx-select
@@ -92,8 +91,8 @@ export const STORY: DemoSpec = {
       />
       <small style="display:block;margin-top:6px;color:var(--cngx-color-text-muted)">No built-in UI — bridge via <code>&lt;cngx-toast-on /&gt;</code> or other transition bridges.</small>
     </div>
-  </div>
-  <div class="button-row" style="margin-top:12px">
+  </div>`,
+  templateChrome: `<div class="button-row" style="margin-top:12px">
     <button type="button" class="chip" (click)="commitShouldFail.set(!commitShouldFail())">
       {{ commitShouldFail() ? 'Fail next: ON' : 'Fail next: off' }}
     </button>

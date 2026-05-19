@@ -42,29 +42,7 @@ export const STORY: DemoSpec = {
       return () => clearTimeout(handle);
     });
   };`,
-  template: `
-  <div class="event-row" style="gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap">
-    <button type="button" class="chip"
-            [style.background]="mode() === 'optimistic' ? '#c8e6c9' : ''"
-            (click)="mode.set('optimistic')">optimistic</button>
-    <button type="button" class="chip"
-            [style.background]="mode() === 'pessimistic' ? '#c8e6c9' : ''"
-            (click)="mode.set('pessimistic')">pessimistic</button>
-    <label style="margin-inline-start:12px">
-      <input type="checkbox"
-             [checked]="shouldFail()"
-             (change)="shouldFail.set($any($event.target).checked)" />
-      simulate error
-    </label>
-    <label style="margin-inline-start:12px">
-      latency
-      <input type="range" min="100" max="2000" step="100"
-             [value]="latencyMs()"
-             (input)="latencyMs.set(+$any($event.target).value)" />
-      {{ latencyMs() }}ms
-    </label>
-  </div>
-  <cngx-tab-group
+  template: `  <cngx-tab-group
     #tg="cngxTabGroup"
     [(activeIndex)]="active"
     [commitAction]="commitAction"
@@ -85,8 +63,29 @@ export const STORY: DemoSpec = {
     <div cngxTab [label]="'Notifications'">
       <ng-template cngxTabContent><p>Notification preferences.</p></ng-template>
     </div>
-  </cngx-tab-group>
-  <div class="event-row" style="gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap">
+  </cngx-tab-group>`,
+  templateChrome: `<div class="event-row" style="gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap">
+    <button type="button" class="chip"
+            [style.background]="mode() === 'optimistic' ? '#c8e6c9' : ''"
+            (click)="mode.set('optimistic')">optimistic</button>
+    <button type="button" class="chip"
+            [style.background]="mode() === 'pessimistic' ? '#c8e6c9' : ''"
+            (click)="mode.set('pessimistic')">pessimistic</button>
+    <label style="margin-inline-start:12px">
+      <input type="checkbox"
+             [checked]="shouldFail()"
+             (change)="shouldFail.set($any($event.target).checked)" />
+      simulate error
+    </label>
+    <label style="margin-inline-start:12px">
+      latency
+      <input type="range" min="100" max="2000" step="100"
+             [value]="latencyMs()"
+             (input)="latencyMs.set(+$any($event.target).value)" />
+      {{ latencyMs() }}ms
+    </label>
+  </div>
+<div class="event-row" style="gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap">
     <button type="button" class="chip" (click)="tg.clearLastFailed()">
       Clear last failed
     </button>
@@ -94,7 +93,7 @@ export const STORY: DemoSpec = {
       programmatic dismissal — calls <code>presenter.clearLastFailed()</code>
     </span>
   </div>
-  <div class="event-grid" style="margin-top:12px">
+<div class="event-grid" style="margin-top:12px">
     <div class="event-row"><span class="event-label">Active tab</span><span class="event-value">{{ active() }}</span></div>
   </div>`,
 };

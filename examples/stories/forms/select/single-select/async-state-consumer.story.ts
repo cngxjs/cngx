@@ -51,8 +51,8 @@ export const STORY: DemoSpec = {
     this.asyncReloads += 1;
     this.asyncState.set('loading');
     setTimeout(() => this.asyncState.setSuccess(this.asyncOptions), 600);
-  };
-  protected asyncSetLoading(): void { this.asyncState.set('loading'); }
+  };`,
+  setupChrome: `  protected asyncSetLoading(): void { this.asyncState.set('loading'); }
   protected asyncSetSuccess(): void { this.asyncState.setSuccess(this.asyncOptions); }
   protected asyncSetRefreshing(): void {
     this.asyncState.setSuccess(this.asyncOptions);
@@ -60,8 +60,7 @@ export const STORY: DemoSpec = {
   }
   protected asyncSetError(): void { this.asyncState.setError(new Error('Network offline')); }
   protected asyncSetEmpty(): void { this.asyncState.setSuccess([]); }`,
-  template: `
-  <cngx-select
+  template: `  <cngx-select
     [label]="'Language'"
     [state]="asyncState"
     [retryFn]="asyncReload"
@@ -74,8 +73,8 @@ export const STORY: DemoSpec = {
       </div>
       <button type="button" class="chip" style="margin:0 0.75rem 0.5rem" (click)="retry()">Erneut laden</button>
     </ng-template>
-  </cngx-select>
-  <div class="event-grid" style="margin-top:12px">
+  </cngx-select>`,
+  templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row"><span class="event-label">Status</span><span class="event-value">{{ asyncState.status() }}</span></div>
     <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ asyncValue() ?? '—' }}</span></div>
     <div class="event-row"><span class="event-label">Reload calls</span><span class="event-value">{{ asyncReloads }}</span></div>

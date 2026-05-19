@@ -32,8 +32,7 @@ export const STORY: DemoSpec = {
     this.pageSize.set(s);
     this.pageIndex.set(0);
   }`,
-  template: `
-  <div class="table-wrap">
+  template: `  <div class="table-wrap">
     <table class="demo-table">
       <thead>
         <tr><th>Name</th><th>Role</th><th>Location</th></tr>
@@ -57,9 +56,8 @@ export const STORY: DemoSpec = {
     (pageSizeChange)="setPageSize($event)"
     style="display:contents">
   </div>
-  <cngx-mat-paginator [cngxPaginateRef]="pg" [pageSizeOptions]="[3, 5, 8]" />
-
-  <div class="status-row">
+  <cngx-mat-paginator [cngxPaginateRef]="pg" [pageSizeOptions]="[3, 5, 8]" />`,
+  templateChrome: `<div class="status-row">
     <span class="status-badge">page {{ pageIndex() + 1 }} of {{ pg.totalPages() }}</span>
   </div>`,
 };

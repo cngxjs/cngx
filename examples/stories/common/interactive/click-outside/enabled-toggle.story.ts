@@ -14,15 +14,7 @@ export const STORY: DemoSpec = {
   imports: ['CngxClickOutside'],
   setup: `protected clickCount = signal(0);
   protected enabled = signal(true);`,
-  template: `
-  <div class="button-row">
-    <button class="sort-btn" (click)="enabled.set(!enabled())">
-      {{ enabled() ? 'Disable' : 'Enable' }} outside detection
-    </button>
-    <span class="chip" [class.chip--active]="enabled()">{{ enabled() ? 'enabled' : 'disabled' }}</span>
-  </div>
-
-  <div
+  template: `  <div
     cngxClickOutside
     [enabled]="enabled()"
     (clickOutside)="clickCount.update(n => n + 1)"
@@ -39,5 +31,11 @@ export const STORY: DemoSpec = {
 
   <div class="output-badge" style="margin-top:12px">
     Outside clicks detected: <strong>{{ clickCount() }}</strong>
+  </div>`,
+  templateChrome: `<div class="button-row">
+    <button class="sort-btn" (click)="enabled.set(!enabled())">
+      {{ enabled() ? 'Disable' : 'Enable' }} outside detection
+    </button>
+    <span class="chip" [class.chip--active]="enabled()">{{ enabled() ? 'enabled' : 'disabled' }}</span>
   </div>`,
 };

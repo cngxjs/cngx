@@ -29,8 +29,7 @@ export const STORY: DemoSpec = {
     { value: 'hr', label: 'Human Resources' },
   ];
   protected readonly keyboardValues = signal<string[]>(['eng', 'legal', 'finance', 'ops']);`,
-  template: `
-  <div class="kbd-hint">
+  template: `  <div class="kbd-hint">
     <strong>Keyboard:</strong>
     <span><kbd>Tab</kbd> into the strip</span>
     <span><kbd>←</kbd><kbd>→</kbd> move focus</span>
@@ -43,9 +42,8 @@ export const STORY: DemoSpec = {
     [options]="recipients"
     [(values)]="keyboardValues"
     [reorderAriaLabel]="'Reorder agenda with Ctrl and arrow keys'"
-  />
-
-  <div class="event-grid" style="margin-top:12px">
+  />`,
+  templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row">
       <span class="event-label">Current order</span>
       <span class="event-value">{{ keyboardValues().join(' → ') || '—' }}</span>

@@ -18,8 +18,7 @@ export const STORY: DemoSpec = {
     'import { createManualState, type ManualAsyncState } from \'@cngx/common/data\';',
   ],
   imports: ['CngxTypeahead'],
-  setup: `protected readonly loading = signal(true);
-  protected readonly typeaheadUsers: CngxSelectOptionDef<{ id: number; name: string }>[] = [
+  setup: `  protected readonly typeaheadUsers: CngxSelectOptionDef<{ id: number; name: string }>[] = [
     { value: { id: 1, name: 'Alice Meier' },  label: 'Alice Meier' },
     { value: { id: 2, name: 'Bob Schmidt' },  label: 'Bob Schmidt' },
     { value: { id: 3, name: 'Charlotte Fischer' }, label: 'Charlotte Fischer' },
@@ -31,12 +30,12 @@ export const STORY: DemoSpec = {
   protected readonly typeaheadDisplay = (u: { id: number; name: string }): string => u.name;
   protected readonly typeaheadAsyncState: ManualAsyncState<CngxSelectOptionsInput<{ id: number; name: string }>> =
     createManualState<CngxSelectOptionsInput<{ id: number; name: string }>>();
-  protected readonly typeaheadAsyncValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadAsyncValue = signal<{ id: number; name: string } | undefined>(undefined);`,
+  setupChrome: `protected readonly loading = signal(true);
   protected typeaheadAsyncSetLoading(): void { this.typeaheadAsyncState.set('loading'); }
   protected typeaheadAsyncSetSuccess(): void { this.typeaheadAsyncState.setSuccess(this.typeaheadUsers); }
   protected typeaheadAsyncSetError(): void { this.typeaheadAsyncState.setError(new Error('Network offline')); }`,
-  template: `
-  <cngx-typeahead
+  template: `  <cngx-typeahead
     [label]="'User'"
     [options]="typeaheadUsers"
     [compareWith]="typeaheadCompare"
@@ -45,8 +44,8 @@ export const STORY: DemoSpec = {
     [clearable]="true"
     placeholder="Search by name…"
     [(value)]="typeaheadAsyncValue"
-  />
-  <div class="button-row" style="margin-top:12px">
+  />`,
+  templateChrome: `<div class="button-row" style="margin-top:12px">
     <button type="button" class="chip" (click)="typeaheadAsyncSetLoading()">Set loading</button>
     <button type="button" class="chip" (click)="typeaheadAsyncSetSuccess()">Set success</button>
     <button type="button" class="chip" (click)="typeaheadAsyncSetError()">Set error</button>

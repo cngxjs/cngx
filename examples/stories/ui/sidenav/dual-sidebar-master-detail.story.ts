@@ -26,17 +26,7 @@ export const STORY: DemoSpec = {
     this.selectedItem.set(item);
     this.rightOpen.set(true);
   }`,
-  template: `
-  <div class="button-row">
-    <button class="sort-btn" (click)="leftOpen.set(!leftOpen())">
-      Left: {{ leftOpen() ? 'open' : 'closed' }}
-    </button>
-    <button class="sort-btn" (click)="rightOpen.set(!rightOpen())">
-      Right: {{ rightOpen() ? 'open' : 'closed' }}
-    </button>
-  </div>
-
-  <cngx-sidenav-layout class="demo-sidenav__container demo-sidenav__container--short">
+  template: `  <cngx-sidenav-layout class="demo-sidenav__container demo-sidenav__container--short">
     <cngx-sidenav position="start" [(opened)]="leftOpen" mode="push" width="160px">
       @for (item of ['Orders', 'Products', 'Customers', 'Reports']; track item) {
         <a cngxNavLink class="demo-sidenav__link demo-sidenav__link--plain">
@@ -71,9 +61,16 @@ export const STORY: DemoSpec = {
         }
       </div>
     </cngx-sidenav>
-  </cngx-sidenav-layout>
-
-  <div class="status-row" style="margin-top: 0.5rem;">
+  </cngx-sidenav-layout>`,
+  templateChrome: `<div class="button-row">
+    <button class="sort-btn" (click)="leftOpen.set(!leftOpen())">
+      Left: {{ leftOpen() ? 'open' : 'closed' }}
+    </button>
+    <button class="sort-btn" (click)="rightOpen.set(!rightOpen())">
+      Right: {{ rightOpen() ? 'open' : 'closed' }}
+    </button>
+  </div>
+<div class="status-row" style="margin-top: 0.5rem;">
     <span class="status-badge" [class.active]="leftOpen()">left: {{ leftOpen() ? 'open' : 'closed' }}</span>
     <span class="status-badge" [class.active]="rightOpen()">right: {{ rightOpen() ? 'open' : 'closed' }}</span>
     @if (selectedItem()) {

@@ -21,8 +21,7 @@ export const STORY: DemoSpec = {
   imports: ['CngxStepper', 'CngxStep', 'CngxStepContent', 'CngxStepLabel'],
   setup: `protected readonly active = signal(0);
   protected readonly notificationCount = signal(3);`,
-  template: `
-  <cngx-stepper [(activeStepIndex)]="active" aria-label="Custom-label wizard">
+  template: `  <cngx-stepper [(activeStepIndex)]="active" aria-label="Custom-label wizard">
     <div cngxStep label="Profile">
       <ng-template cngxStepContent>
         <p>This step uses the <code>[label]="Profile"</code> Input — default string rendering.</p>
@@ -60,8 +59,8 @@ export const STORY: DemoSpec = {
         <p>Bold-text override — slot accepts arbitrary inline markup, the strip button keeps its layout.</p>
       </ng-template>
     </div>
-  </cngx-stepper>
-  <div class="event-grid" style="margin-top:var(--demo-grid-gap, 12px)">
+  </cngx-stepper>`,
+  templateChrome: `<div class="event-grid" style="margin-top:var(--demo-grid-gap, 12px)">
     <div class="event-row"><span class="event-label">Active step</span><span class="event-value">{{ active() }}</span></div>
     <div class="event-row"><span class="event-label">Notification count</span><span class="event-value">{{ notificationCount() }}</span></div>
   </div>`,

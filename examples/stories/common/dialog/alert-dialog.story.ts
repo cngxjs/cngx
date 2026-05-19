@@ -20,14 +20,14 @@ export const STORY: DemoSpec = {
     'import { CngxDialog, CngxDialogTitle, CngxDialogClose } from \'@cngx/common/dialog\';',
   ],
   imports: ['CngxDialog', 'CngxDialogTitle', 'CngxDialogClose'],
-  template: `
-  <button class="chip" (click)="alertDlg.open()">Show Alert</button>
+  template: `  <button class="chip" (click)="alertDlg.open()">Show Alert</button>
 
   <dialog cngxDialog role="alertdialog" [closeOnBackdropClick]="false" #alertDlg="cngxDialog">
     <h2 cngxDialogTitle>Session Expired</h2>
     <p>Your session has expired. Please log in again to continue.</p>
-    <div class="button-row" style="margin-top: 16px; justify-content: flex-end;">
-      <button class="chip chip--active" [cngxDialogClose]="undefined">OK</button>
-    </div>
+    
   </dialog>`,
+  templateChrome: `<div class="button-row" style="margin-top: 16px; justify-content: flex-end;">
+      <button class="chip chip--active" [cngxDialogClose]="undefined">OK</button>
+    </div>`,
 };

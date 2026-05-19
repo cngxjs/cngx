@@ -21,8 +21,7 @@ export const STORY: DemoSpec = {
     this.pressCount.update(n => n + 1);
     this.lastEvent.set(\`(\${Math.round(event.clientX)}, \${Math.round(event.clientY)})\`);
   }`,
-  template: `
-  <div cngxLongPress (longPressed)="handleLongPress($event)"
+  template: `  <div cngxLongPress (longPressed)="handleLongPress($event)"
        #lp="cngxLongPress"
        style="display:inline-flex;align-items:center;justify-content:center;width:160px;height:80px;
               border:2px solid var(--cngx-color-border,#ddd);border-radius:12px;cursor:pointer;user-select:none;
@@ -30,9 +29,8 @@ export const STORY: DemoSpec = {
        [style.borderColor]="lp.longPressing() ? 'var(--interactive,#f5a623)' : ''"
        [style.background]="lp.longPressing() ? 'var(--interactive-subtle-bg,#fff8e1)' : ''">
     {{ lp.longPressing() ? 'Hold...' : 'Long press me' }}
-  </div>
-
-  <div class="event-grid" style="margin-top:12px">
+  </div>`,
+  templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row">
       <span class="event-label">Long pressing</span>
       <span class="event-value">{{ lp.longPressing() }}</span>

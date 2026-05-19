@@ -15,8 +15,7 @@ export const STORY: DemoSpec = {
     'import { CngxFileDrop } from \'@cngx/forms/input\';',
   ],
   imports: ['CngxFileDrop'],
-  template: `
-  <div class="demo-form">
+  template: `  <div class="demo-form">
     <div cngxFileDrop [accept]="['image/*']" [maxSize]="5_000_000" [multiple]="true"
       #drop="cngxFileDrop"
     >
@@ -33,11 +32,7 @@ export const STORY: DemoSpec = {
     </div>
 
     @if (drop.files().length) {
-      <div class="status-row" style="margin-top:8px">
-        @for (file of drop.files(); track file.name) {
-          <span class="status-badge">{{ file.name }} ({{ (file.size / 1024).toFixed(1) }} KB)</span>
-        }
-      </div>
+      
       <button class="chip" (click)="drop.clear()" style="margin-top:4px">Clear</button>
     }
 
@@ -49,4 +44,9 @@ export const STORY: DemoSpec = {
       </div>
     }
   </div>`,
+  templateChrome: `<div class="status-row" style="margin-top:8px">
+        @for (file of drop.files(); track file.name) {
+          <span class="status-badge">{{ file.name }} ({{ (file.size / 1024).toFixed(1) }} KB)</span>
+        }
+      </div>`,
 };

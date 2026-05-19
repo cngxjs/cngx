@@ -19,14 +19,7 @@ export const STORY: DemoSpec = {
   imports: ['CngxDrawer', 'CngxDrawerPanel'],
   setup: `protected readonly controlledOpen = signal(false);
   protected readonly mode = signal<DrawerMode>('over');`,
-  template: `
-  <div class="button-row">
-    <button class="sort-btn" (click)="controlledOpen.set(!controlledOpen())">
-      External toggle: {{ controlledOpen() ? 'open' : 'closed' }}
-    </button>
-  </div>
-
-  <div cngxDrawer #ctrlDrawer="cngxDrawer"
+  template: `  <div cngxDrawer #ctrlDrawer="cngxDrawer"
        [cngxDrawerOpened]="controlledOpen()"
        (openedChange)="controlledOpen.set($event)"
        class="drawer-container drawer-container--bordered">
@@ -45,9 +38,13 @@ export const STORY: DemoSpec = {
         <p>Controlled mode — drawer opens/closes via the external signal.</p>
       </main>
     </div>
+  </div>`,
+  templateChrome: `<div class="button-row">
+    <button class="sort-btn" (click)="controlledOpen.set(!controlledOpen())">
+      External toggle: {{ controlledOpen() ? 'open' : 'closed' }}
+    </button>
   </div>
-
-  <div class="status-row">
+<div class="status-row">
     <span class="status-badge" [class.active]="controlledOpen()">
       controlledOpen: {{ controlledOpen() }}
     </span>

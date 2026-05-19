@@ -21,8 +21,7 @@ export const STORY: DemoSpec = {
     'import { CngxSwipeDismiss } from \'@cngx/common/interactive\';',
   ],
   imports: ['CngxDialog', 'CngxDialogTitle', 'CngxDialogClose', 'CngxBottomSheet', 'CngxSwipeDismiss'],
-  template: `
-  <button class="chip" (click)="sheetDlg.open()">Open Bottom Sheet</button>
+  template: `  <button class="chip" (click)="sheetDlg.open()">Open Bottom Sheet</button>
 
   <dialog cngxDialog cngxBottomSheet [cngxSwipeDismiss]="'down'" #sheetDlg="cngxDialog">
     <h2 cngxDialogTitle>Share Options</h2>
@@ -32,9 +31,8 @@ export const STORY: DemoSpec = {
       <button class="chip" [cngxDialogClose]="'message'" style="text-align: left;">Send Message</button>
     </div>
     <button class="chip" cngxDialogClose style="margin-top: 16px; width: 100%;">Cancel</button>
-  </dialog>
-
-  <div class="status-row" style="margin-top: 12px">
+  </dialog>`,
+  templateChrome: `<div class="status-row" style="margin-top: 12px">
     <span class="status-badge">state: {{ sheetDlg.lifecycle() }}</span>
     <span class="status-badge">result: {{ sheetDlg.result() ?? '-' }}</span>
   </div>`,

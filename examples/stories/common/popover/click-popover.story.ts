@@ -17,8 +17,7 @@ export const STORY: DemoSpec = {
   ],
   imports: ['CngxPopover', 'CngxPopoverTrigger'],
   setup: `protected readonly menuItems = signal(['Edit', 'Duplicate', 'Archive', 'Delete']);`,
-  template: `
-  <div style="padding-top:20px">
+  template: `  <div style="padding-top:20px">
     <button [cngxPopoverTrigger]="pop" (click)="pop.toggle()" class="chip"
             haspopup="menu">
       Actions
@@ -37,8 +36,8 @@ export const STORY: DemoSpec = {
         }
       </menu>
     </div>
-  </div>
-  <div class="event-grid" style="margin-top:12px">
+  </div>`,
+  templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row">
       <span class="event-label">state</span>
       <span class="event-value">{{ pop.state() }}</span>

@@ -15,8 +15,7 @@ export const STORY: DemoSpec = {
     'import { DecimalPipe } from \'@angular/common\';',
   ],
   imports: ['CngxResizeObserver', 'DecimalPipe'],
-  template: `
-  <p style="margin-bottom: 8px; color: var(--cngx-text-secondary, #666);">
+  template: `  <p style="margin-bottom: 8px; color: var(--cngx-text-secondary, #666);">
     Drag the handle to resize the box below.
   </p>
   <div
@@ -44,9 +43,8 @@ export const STORY: DemoSpec = {
     } @else {
       Waiting for first measurement…
     }
-  </div>
-
-  <div class="event-grid" style="margin-top: 12px">
+  </div>`,
+  templateChrome: `<div class="event-grid" style="margin-top: 12px">
     <div class="event-row">
       <span class="event-label">isReady</span>
       <span class="event-value">{{ ro.isReady() }}</span>

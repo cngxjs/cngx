@@ -22,8 +22,7 @@ export const STORY: DemoSpec = {
   ],
   imports: ['CngxMenu', 'CngxMenuItem', 'CngxMenuSeparator', 'CngxMenuItemIcon', 'CngxMenuItemLabel', 'CngxMenuItemKbd'],
   setup: `protected readonly lastAction = signal<string | null>(null);`,
-  template: `
-  <style>
+  template: `  <style>
     .menu { width: 280px; border: 1px solid var(--cngx-color-border, #d0d5dd); border-radius: 6px; background: var(--cngx-color-surface, #fff); color: var(--cngx-color-text, inherit); box-shadow: 0 4px 12px oklch(0 0 0 / 0.12); }
   </style>
   <ul
@@ -60,8 +59,8 @@ export const STORY: DemoSpec = {
       <span cngxMenuItemLabel>Close</span>
       <kbd cngxMenuItemKbd>⌘W</kbd>
     </li>
-  </ul>
-  <div class="event-grid" style="margin-top:12px">
+  </ul>`,
+  templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row">
       <span class="event-label">Last action</span>
       <span class="event-value">{{ lastAction() ?? '—' }}</span>

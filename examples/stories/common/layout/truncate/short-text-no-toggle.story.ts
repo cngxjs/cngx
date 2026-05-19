@@ -16,8 +16,7 @@ export const STORY: DemoSpec = {
   ],
   imports: ['CngxTruncate'],
   setup: `protected readonly expanded2 = signal(false);`,
-  template: `
-  <div style="max-width:400px">
+  template: `  <div style="max-width:400px">
     <p [cngxTruncate]="3" [(expanded)]="expanded2" #trunc2="cngxTruncate"
        style="margin:0;line-height:1.6;font-size:0.875rem">
       This text is short enough to fit in 3 lines.
@@ -28,8 +27,8 @@ export const STORY: DemoSpec = {
         {{ expanded2() ? 'Show less' : 'Show more' }}
       </button>
     }
-  </div>
-  <div class="event-grid" style="margin-top:12px">
+  </div>`,
+  templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row">
       <span class="event-label">isClamped</span>
       <span class="event-value">{{ trunc2.isClamped() }}</span>

@@ -20,8 +20,7 @@ export const STORY: DemoSpec = {
   protected handleOtpComplete(code: string): void {
     this.otpResult.set(code);
   }`,
-  template: `
-  <div class="demo-form">
+  template: `  <div class="demo-form">
     <div class="demo-field">
       <label class="demo-label">Verification Code</label>
       <div cngxOtpInput [length]="6" #otp="cngxOtpInput"
@@ -32,14 +31,15 @@ export const STORY: DemoSpec = {
             style="width:48px;height:48px;text-align:center;font-size:1.25rem;font-family:var(--font-mono)" />
         }
       </div>
-      <div class="status-row">
+      
+      <button class="chip" (click)="otp.clear()">Clear</button>
+    </div>
+  </div>`,
+  templateChrome: `<div class="status-row">
         <span class="status-badge">Value: {{ otp.value() || '—' }}</span>
         <span class="status-badge">Complete: {{ otp.isComplete() }}</span>
         @if (otpResult()) {
           <span class="status-badge" style="color:var(--success-fg,green)">Verified: {{ otpResult() }}</span>
         }
-      </div>
-      <button class="chip" (click)="otp.clear()">Clear</button>
-    </div>
-  </div>`,
+      </div>`,
 };

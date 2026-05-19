@@ -13,14 +13,7 @@ export const STORY: DemoSpec = {
   ],
   imports: ['CngxClickOutside'],
   setup: `protected open = signal(false);`,
-  template: `
-  <div class="button-row">
-    <button class="sort-btn" (click)="open.set(!open())">
-      Toggle dropdown ({{ open() ? 'open' : 'closed' }})
-    </button>
-  </div>
-
-  @if (open()) {
+  template: `  @if (open()) {
     <div
       cngxClickOutside
       (clickOutside)="open.set(false)"
@@ -40,5 +33,10 @@ export const STORY: DemoSpec = {
 
   <div class="output-badge" style="margin-top:12px">
     Dropdown: <strong>{{ open() ? 'open' : 'closed' }}</strong>
+  </div>`,
+  templateChrome: `<div class="button-row">
+    <button class="sort-btn" (click)="open.set(!open())">
+      Toggle dropdown ({{ open() ? 'open' : 'closed' }})
+    </button>
   </div>`,
 };

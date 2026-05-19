@@ -54,8 +54,7 @@ export const STORY: DemoSpec = {
     }
     return of(intended).pipe(delay(800));
   };`,
-  template: `
-  <cngx-select
+  template: `  <cngx-select
     [label]="'Color'"
     [options]="colors"
     [(value)]="commitValue"
@@ -70,8 +69,8 @@ export const STORY: DemoSpec = {
         <button type="button" class="chip" (click)="retry()">Replay</button>
       </div>
     </ng-template>
-  </cngx-select>
-  <div class="button-row" style="margin-top:12px">
+  </cngx-select>`,
+  templateChrome: `<div class="button-row" style="margin-top:12px">
     <button type="button" class="chip" (click)="commitShouldFail.set(!commitShouldFail())">
       {{ commitShouldFail() ? 'Fail next: ON' : 'Fail next: off' }}
     </button>

@@ -23,16 +23,13 @@ export const STORY: DemoSpec = {
   protected readonly infiniteLoading = signal(false);
   protected readonly infiniteHasMore = computed(() => this.infiniteItems().length < 500);
   private infinitePage = 0;
-
   protected readonly infRecycler = injectRecycler({
     scrollElement: '.inf-scroll',
     totalCount: () => this.infiniteItems().length,
     estimateSize: 48,
     overscan: 5,
   });
-
   protected readonly infVisible = this.infRecycler.sliced(this.infiniteItems);
-
   protected handleLoadMore(): void {
     if (this.infiniteLoading() || !this.infiniteHasMore()) { return; }
     this.infiniteLoading.set(true);
@@ -44,18 +41,7 @@ export const STORY: DemoSpec = {
       this.infinitePage++;
     }, 300);
   }`,
-  template: `
-  <div class="status-row" style="margin-bottom:8px">
-    <span class="status-badge">Loaded: {{ infiniteItems().length }}</span>
-    <span class="status-badge">
-      Visible: {{ infRecycler.firstVisible() + 1 }}&ndash;{{ infRecycler.lastVisible() + 1 }}
-    </span>
-    <span class="status-badge">DOM: {{ infRecycler.end() - infRecycler.start() }}</span>
-    @if (infiniteLoading()) {
-      <span class="status-badge">Loading...</span>
-    }
-  </div>
-  <div class="inf-scroll"
+  template: `  <div class="inf-scroll"
        style="height:300px;overflow-y:auto;border:1px solid var(--cngx-color-border,#e0e0e0);border-radius:8px">
     <div [style.paddingTop.px]="infRecycler.offsetBefore()"
          [style.paddingBottom.px]="infRecycler.offsetAfter()">
@@ -77,5 +63,15 @@ export const STORY: DemoSpec = {
         All 500 items loaded.
       }
     </div>
+  </div>`,
+  templateChrome: `<div class="status-row" style="margin-bottom:8px">
+    <span class="status-badge">Loaded: {{ infiniteItems().length }}</span>
+    <span class="status-badge">
+      Visible: {{ infRecycler.firstVisible() + 1 }}&ndash;{{ infRecycler.lastVisible() + 1 }}
+    </span>
+    <span class="status-badge">DOM: {{ infRecycler.end() - infRecycler.start() }}</span>
+    @if (infiniteLoading()) {
+      <span class="status-badge">Loading...</span>
+    }
   </div>`,
 };

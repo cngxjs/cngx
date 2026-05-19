@@ -15,8 +15,8 @@ export const STORY: DemoSpec = {
     'import { CngxPressable } from \'@cngx/common/interactive\';',
   ],
   imports: ['CngxPressable'],
-  template: `
-  <div class="button-row" style="gap:8px">
+  template: ``,
+  templateChrome: `<div class="button-row" style="gap:8px">
     <button cngxPressable #p1="cngxPressable" class="chip"
             style="transition:transform 80ms ease,opacity 80ms ease"
             [style.transform]="p1.pressed() ? 'scale(0.95)' : ''"
@@ -36,8 +36,7 @@ export const STORY: DemoSpec = {
       200ms Delay
     </button>
   </div>
-
-  <div class="event-grid" style="margin-top:12px">
+<div class="event-grid" style="margin-top:12px">
     <div class="event-row">
       <span class="event-label">Button 1</span>
       <span class="event-value">{{ p1.pressed() ? 'pressed' : 'idle' }}</span>

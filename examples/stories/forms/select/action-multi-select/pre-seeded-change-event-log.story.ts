@@ -44,8 +44,7 @@ export const STORY: DemoSpec = {
     const line = ts + ' → ' + ev.action + ' | values=' + ev.values.map((v) => v.name).join(', ');
     this.seededLog.update((l) => [...l.slice(-4), line]);
   }`,
-  template: `
-  <cngx-action-multi-select
+  template: `  <cngx-action-multi-select
     [label]="'Tags (pre-seeded)'"
     [options]="tags"
     [compareWith]="basicCompare"
@@ -73,9 +72,8 @@ export const STORY: DemoSpec = {
         + Create "{{ term || '…' }}"
       </button>
     </ng-template>
-  </cngx-action-multi-select>
-
-  <div class="event-grid" style="margin-top:12px">
+  </cngx-action-multi-select>`,
+  templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row">
       <span class="event-label">Values</span>
       <span class="event-value">{{ seededValues().map(v => v.name).join(', ') || '—' }}</span>

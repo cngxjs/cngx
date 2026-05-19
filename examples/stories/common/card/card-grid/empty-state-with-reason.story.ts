@@ -19,17 +19,7 @@ export const STORY: DemoSpec = {
   setup: `protected items = signal(['Alpha', 'Beta', 'Gamma', 'Delta', 'Epsilon', 'Zeta']);
   protected emptyItems = signal<string[]>([]);
   protected emptyReason = signal<'first-use' | 'no-results' | 'cleared' | undefined>('first-use');`,
-  template: `
-  <div class="button-row" style="margin-bottom:12px">
-    <button [class.chip--active]="emptyReason() === 'first-use'" class="chip"
-            (click)="emptyReason.set('first-use')">first-use</button>
-    <button [class.chip--active]="emptyReason() === 'no-results'" class="chip"
-            (click)="emptyReason.set('no-results')">no-results</button>
-    <button [class.chip--active]="emptyReason() === 'cleared'" class="chip"
-            (click)="emptyReason.set('cleared')">cleared</button>
-  </div>
-
-  <cngx-card-grid [items]="emptyItems()" [emptyReason]="emptyReason()" minWidth="200px">
+  template: `  <cngx-card-grid [items]="emptyItems()" [emptyReason]="emptyReason()" minWidth="200px">
     <ng-template cngxCardGridEmpty="first-use">
       <div style="text-align:center;padding:48px 16px;color:var(--cngx-color-text-muted)">
         <div style="font-size:2rem;margin-bottom:12px;opacity:0.4">+</div>
@@ -54,4 +44,12 @@ export const STORY: DemoSpec = {
       </div>
     </ng-template>
   </cngx-card-grid>`,
+  templateChrome: `<div class="button-row" style="margin-bottom:12px">
+    <button [class.chip--active]="emptyReason() === 'first-use'" class="chip"
+            (click)="emptyReason.set('first-use')">first-use</button>
+    <button [class.chip--active]="emptyReason() === 'no-results'" class="chip"
+            (click)="emptyReason.set('no-results')">no-results</button>
+    <button [class.chip--active]="emptyReason() === 'cleared'" class="chip"
+            (click)="emptyReason.set('cleared')">cleared</button>
+  </div>`,
 };

@@ -35,8 +35,25 @@ export const STORY: DemoSpec = {
     const msg = err instanceof Error ? err.message : String(err);
     this.commitErrors.update((l) => [...l.slice(-4), new Date().toLocaleTimeString() + ' → ' + msg]);
   }`,
-  template: `
-  <div class="button-row" style="margin-bottom:12px; display:flex; gap:1rem; align-items:center">
+  template: `  <cngx-select-shell
+    [label]="'Farbe (committable)'"
+    [commitAction]="commitAction"
+    [commitMode]="commitMode()"
+    [clearable]="true"
+    [(value)]="commitValue"
+    (commitError)="handleCommitError($event)"
+  >
+    <ng-template cngxSelectOptionPending>
+      <span aria-hidden="true" class="pending-glyph">⏳</span>
+    </ng-template>
+    <ng-template cngxSelectOptionError>
+      <span aria-hidden="true" class="error-glyph">⚠</span>
+    </ng-template>
+    <cngx-option [value]="'red'">Red</cngx-option>
+    <cngx-option [value]="'green'">Green</cngx-option>
+    <cngx-option [value]="'blue'">Blue</cngx-option>
+  </cngx-select-shell>`,
+  templateChrome: `<div class="button-row" style="margin-bottom:12px; display:flex; gap:1rem; align-items:center">
     <label style="display:inline-flex; gap:.5rem; align-items:center">
       <span>Mode:</span>
       <select
@@ -57,27 +74,7 @@ export const STORY: DemoSpec = {
       Server fails next commit
     </label>
   </div>
-
-  <cngx-select-shell
-    [label]="'Farbe (committable)'"
-    [commitAction]="commitAction"
-    [commitMode]="commitMode()"
-    [clearable]="true"
-    [(value)]="commitValue"
-    (commitError)="handleCommitError($event)"
-  >
-    <ng-template cngxSelectOptionPending>
-      <span aria-hidden="true" class="pending-glyph">⏳</span>
-    </ng-template>
-    <ng-template cngxSelectOptionError>
-      <span aria-hidden="true" class="error-glyph">⚠</span>
-    </ng-template>
-    <cngx-option [value]="'red'">Red</cngx-option>
-    <cngx-option [value]="'green'">Green</cngx-option>
-    <cngx-option [value]="'blue'">Blue</cngx-option>
-  </cngx-select-shell>
-
-  <div class="event-grid" style="margin-top:12px">
+<div class="event-grid" style="margin-top:12px">
     <div class="event-row">
       <span class="event-label">value</span>
       <span class="event-value">{{ commitValue() ?? '—' }}</span>

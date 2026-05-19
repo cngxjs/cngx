@@ -14,13 +14,7 @@ export const STORY: DemoSpec = {
   imports: ['CngxFocusTrap'],
   setup: `protected drawerOpen = signal(false);
   protected drawerSide = signal<'left' | 'right'>('right');`,
-  template: `
-  <div class="button-row">
-    <button class="sort-btn" (click)="drawerSide.set('left'); drawerOpen.set(true)">Open left drawer</button>
-    <button class="sort-btn" (click)="drawerSide.set('right'); drawerOpen.set(true)">Open right drawer</button>
-  </div>
-
-  @if (drawerOpen()) {
+  template: `  @if (drawerOpen()) {
     <div
       style="
         position: fixed; inset: 0;
@@ -83,10 +77,6 @@ export const STORY: DemoSpec = {
 
         <div style="flex: 1;"></div>
 
-        <div class="button-row">
-          <button class="sort-btn" (click)="drawerOpen.set(false)">Apply filters</button>
-          <button class="sort-btn" (click)="drawerOpen.set(false)">Reset</button>
-        </div>
       </div>
     </div>
   }
@@ -94,4 +84,12 @@ export const STORY: DemoSpec = {
   <div class="output-badge" style="margin-top: 12px">
     Drawer: <strong>{{ drawerOpen() ? drawerSide() + ' — focus trapped' : 'closed' }}</strong>
   </div>`,
+  templateChrome: `<div class="button-row">
+    <button class="sort-btn" (click)="drawerSide.set('left'); drawerOpen.set(true)">Open left drawer</button>
+    <button class="sort-btn" (click)="drawerSide.set('right'); drawerOpen.set(true)">Open right drawer</button>
+  </div>
+<div class="button-row">
+          <button class="sort-btn" (click)="drawerOpen.set(false)">Apply filters</button>
+          <button class="sort-btn" (click)="drawerOpen.set(false)">Reset</button>
+        </div>`,
 };

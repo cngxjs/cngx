@@ -31,31 +31,11 @@ export const STORY: DemoSpec = {
   protected setFilter(value: string): void {
     this.filterText.set(value);
   }`,
-  template: `
-  <div style="display:flex;gap:12px;margin-bottom:16px;align-items:center">
+  template: `  <div style="display:flex;gap:12px;margin-bottom:16px;align-items:center">
     <input placeholder="Filter people..." [value]="filter()"
       (input)="setFilter($any($event.target).value)"
       style="padding:8px 12px;border:1px solid var(--cngx-color-border,#ddd);border-radius:6px;width:240px" />
     <button (click)="people.refresh()" class="chip">Refresh</button>
-  </div>
-
-  <div class="event-grid" style="margin-bottom:12px">
-    <div class="event-row">
-      <span class="event-label">Status</span>
-      <span class="event-value">{{ people.status() }}</span>
-    </div>
-    <div class="event-row">
-      <span class="event-label">isFirstLoad</span>
-      <span class="event-value">{{ people.isFirstLoad() }}</span>
-    </div>
-    <div class="event-row">
-      <span class="event-label">isRefreshing</span>
-      <span class="event-value">{{ people.isRefreshing() }}</span>
-    </div>
-    <div class="event-row">
-      <span class="event-label">Filter</span>
-      <span class="event-value">{{ filter() || '(none)' }}</span>
-    </div>
   </div>
 
   <cngx-async-container [state]="people" ariaLabel="People"
@@ -85,4 +65,22 @@ export const STORY: DemoSpec = {
       </div>
     </ng-template>
   </cngx-async-container>`,
+  templateChrome: `<div class="event-grid" style="margin-bottom:12px">
+    <div class="event-row">
+      <span class="event-label">Status</span>
+      <span class="event-value">{{ people.status() }}</span>
+    </div>
+    <div class="event-row">
+      <span class="event-label">isFirstLoad</span>
+      <span class="event-value">{{ people.isFirstLoad() }}</span>
+    </div>
+    <div class="event-row">
+      <span class="event-label">isRefreshing</span>
+      <span class="event-value">{{ people.isRefreshing() }}</span>
+    </div>
+    <div class="event-row">
+      <span class="event-label">Filter</span>
+      <span class="event-value">{{ filter() || '(none)' }}</span>
+    </div>
+  </div>`,
 };

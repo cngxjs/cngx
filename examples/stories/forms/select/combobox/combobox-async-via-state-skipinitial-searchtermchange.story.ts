@@ -19,7 +19,11 @@ export const STORY: DemoSpec = {
     'import { createManualState, type ManualAsyncState } from \'@cngx/common/data\';',
   ],
   imports: ['CngxCombobox'],
-  setup: `protected readonly loading = signal(true);
+  setup: `  protected readonly comboLastTerm = signal<string>('');
+  protected readonly comboAsyncValues = signal<string[]>([]);
+  protected readonly comboAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
+    createManualState<CngxSelectOptionsInput<string>>();`,
+  setupChrome: `protected readonly loading = signal(true);
   protected readonly tagOptions: CngxSelectOptionDef<string>[] = [
     { value: 'angular', label: 'Angular' },
     { value: 'signals', label: 'Signals' },
@@ -28,24 +32,19 @@ export const STORY: DemoSpec = {
     { value: 'ts', label: 'TypeScript' },
     { value: 'old', label: 'Nicht mehr gepflegt', disabled: true },
   ];
-  protected readonly comboLastTerm = signal<string>('');
-  protected readonly comboAsyncValues = signal<string[]>([]);
-  protected readonly comboAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
-    createManualState<CngxSelectOptionsInput<string>>();
   protected comboAsyncSetLoading(): void { this.comboAsyncState.set('loading'); }
   protected comboAsyncSetSuccess(): void {
     this.comboAsyncState.setSuccess(this.tagOptions);
   }`,
-  template: `
-  <cngx-combobox
+  template: `  <cngx-combobox
     [label]="'Topics'"
     [state]="comboAsyncState"
     [(values)]="comboAsyncValues"
     [skipInitial]="true"
     (searchTermChange)="comboLastTerm.set($event)"
     placeholder="Search topics…"
-  />
-  <div class="event-grid" style="margin-top:12px">
+  />`,
+  templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row" style="margin-top:8px">
       <button type="button" class="chip" (click)="comboAsyncSetLoading()">Set loading</button>
       <button type="button" class="chip" (click)="comboAsyncSetSuccess()">Set success</button>

@@ -42,8 +42,7 @@ export const STORY: DemoSpec = {
     { value: 'disabled', label: 'Unavailable', disabled: true },
   ];
   protected readonly standaloneValue = signal<string | undefined>(undefined);`,
-  template: `
-  <cngx-select
+  template: `  <cngx-select
     [label]="'Color'"
     [options]="colors"
     [(value)]="standaloneValue"
@@ -57,8 +56,8 @@ export const STORY: DemoSpec = {
         [style.transition]="'transform 0.15s ease'"
       >▾</span>
     </ng-template>
-  </cngx-select>
-  <div class="event-grid" style="margin-top:12px">
+  </cngx-select>`,
+  templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ standaloneValue() || '—' }}</span></div>
   </div>`,
 };

@@ -23,8 +23,7 @@ export const STORY: DemoSpec = {
   setup: `protected readonly active = signal(0);
   protected readonly profileInvalid = signal(true);
   protected readonly addressInvalid = signal(false);`,
-  template: `
-  <cngx-stepper [(activeStepIndex)]="active" aria-label="Validated wizard">
+  template: `  <cngx-stepper [(activeStepIndex)]="active" aria-label="Validated wizard">
     <fieldset cngxErrorAggregator #profileAgg="cngxErrorAggregator" style="display:contents">
       <input cngxErrorSource="profile-name" [when]="profileInvalid()" hidden />
       <div cngxStep label="Profile" [errorAggregator]="profileAgg">
@@ -44,8 +43,8 @@ export const STORY: DemoSpec = {
     <div cngxStep label="Confirm">
       <ng-template cngxStepContent><p>Final review.</p></ng-template>
     </div>
-  </cngx-stepper>
-  <div class="event-grid" style="margin-top:12px;gap:8px">
+  </cngx-stepper>`,
+  templateChrome: `<div class="event-grid" style="margin-top:12px;gap:8px">
     <div class="event-row" style="gap:8px">
       <label><input type="checkbox" [checked]="profileInvalid()" (change)="profileInvalid.set($any($event.target).checked)" /> profile invalid</label>
       <label><input type="checkbox" [checked]="addressInvalid()" (change)="addressInvalid.set($any($event.target).checked)" /> address invalid</label>

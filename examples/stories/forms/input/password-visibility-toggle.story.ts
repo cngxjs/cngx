@@ -29,8 +29,7 @@ export const STORY: DemoSpec = {
   });
   protected readonly loginForm = form(this.loginModel, this.loginSchema);
   protected readonly passwordField = this.loginForm.password;`,
-  template: `
-  <div class="demo-form">
+  template: `  <div class="demo-form">
     <div class="demo-field">
       <cngx-form-field [field]="passwordField">
         <label cngxLabel>Password</label>
@@ -47,8 +46,9 @@ export const STORY: DemoSpec = {
         <cngx-field-errors />
       </cngx-form-field>
     </div>
-    <div class="status-row">
-      <span class="status-badge">Visible: {{ pwd.visible() }}</span>
-    </div>
+    
   </div>`,
+  templateChrome: `<div class="status-row">
+      <span class="status-badge">Visible: {{ pwd.visible() }}</span>
+    </div>`,
 };

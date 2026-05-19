@@ -32,8 +32,7 @@ export const STORY: DemoSpec = {
   protected removeNotification(id: number): void {
     this.notifications.update(list => list.filter(n => n.id !== id));
   }`,
-  template: `
-  <div cngxReducedMotion #rm2="cngxReducedMotion">
+  template: `  <div cngxReducedMotion #rm2="cngxReducedMotion">
     <button class="sort-btn" (click)="addNotification()">
       Add notification
     </button>
@@ -78,7 +77,8 @@ export const STORY: DemoSpec = {
       }
     </div>
 
-    <div class="event-grid" style="margin-top: 12px">
+  </div>`,
+  templateChrome: `<div class="event-grid" style="margin-top: 12px">
       <div class="event-row">
         <span class="event-label">Active notifications</span>
         <span class="event-value">{{ notifications().length }}</span>
@@ -87,6 +87,5 @@ export const STORY: DemoSpec = {
         <span class="event-label">Animation</span>
         <span class="event-value">{{ rm2.prefersReducedMotion() ? 'instant (no motion)' : 'slide-in 0.3s' }}</span>
       </div>
-    </div>
-  </div>`,
+    </div>`,
 };

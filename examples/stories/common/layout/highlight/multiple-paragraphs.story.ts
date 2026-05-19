@@ -15,14 +15,13 @@ export const STORY: DemoSpec = {
     'import { CngxHighlight } from \'@cngx/common/layout\';',
   ],
   imports: ['CngxHighlight'],
-  template: `
-  <div [cngxHighlight]="'angular'" #hl2="cngxHighlight"
+  template: `  <div [cngxHighlight]="'angular'" #hl2="cngxHighlight"
        style="max-width:500px;font-size:0.9375rem">
     <p style="margin:0 0 8px"><strong>Angular</strong> is a platform for building web applications.</p>
     <p style="margin:0 0 8px">The Angular CLI makes it easy to create and maintain Angular apps.</p>
     <p style="margin:0">Use Angular with TypeScript for type safety.</p>
-  </div>
-  <div class="event-grid" style="margin-top:12px">
+  </div>`,
+  templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row">
       <span class="event-label">Matches for "angular"</span>
       <span class="event-value">{{ hl2.matchCount() }}</span>

@@ -29,8 +29,7 @@ export const STORY: DemoSpec = {
     { value: 'hr', label: 'Human Resources' },
   ];
   protected readonly customHandleValues = signal<string[]>(['ops', 'sales', 'support']);`,
-  template: `
-  <cngx-reorderable-multi-select
+  template: `  <cngx-reorderable-multi-select
     [label]="'Teams'"
     [options]="recipients"
     [(values)]="customHandleValues"
@@ -45,9 +44,8 @@ export const STORY: DemoSpec = {
       font-weight:700;
       color:var(--cngx-color-primary);
     ">&equiv;</span>
-  </ng-template>
-
-  <div class="event-grid" style="margin-top:12px">
+  </ng-template>`,
+  templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row">
       <span class="event-label">Team order</span>
       <span class="event-value">{{ customHandleValues().join(' → ') || '—' }}</span>

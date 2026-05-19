@@ -17,17 +17,11 @@ export const STORY: DemoSpec = {
     'import { CngxSkeletonContainer, CngxSkeletonPlaceholder } from \'@cngx/ui\';',
   ],
   imports: ['CngxSkeletonContainer', 'CngxSkeletonPlaceholder'],
-  setup: `protected readonly loading = signal(true);
-  protected toggleLoading(): void {
+  setup: `protected readonly loading = signal(true);`,
+  setupChrome: `  protected toggleLoading(): void {
     this.loading.update(v => !v);
   }`,
-  template: `
-  <div class="button-row">
-    <button class="chip" [class.chip--active]="loading()" (click)="toggleLoading()">
-      {{ loading() ? 'Loading...' : 'Loaded' }}
-    </button>
-  </div>
-  <cngx-skeleton [loading]="loading()" [count]="3" style="display:flex;flex-direction:column;gap:16px;margin-top:16px">
+  template: `  <cngx-skeleton [loading]="loading()" [count]="3" style="display:flex;flex-direction:column;gap:16px;margin-top:16px">
     <ng-template cngxSkeletonPlaceholder>
       <div style="display:flex;flex-direction:column;gap:8px;padding:16px;border:1px solid var(--cngx-color-border,#e0e0e0);border-radius:8px">
         <div style="height:16px;width:40%;border-radius:4px;background:var(--cngx-surface-alt,#e0e0e0)"></div>
@@ -44,4 +38,9 @@ export const STORY: DemoSpec = {
       }
     }
   </cngx-skeleton>`,
+  templateChrome: `<div class="button-row">
+    <button class="chip" [class.chip--active]="loading()" (click)="toggleLoading()">
+      {{ loading() ? 'Loading...' : 'Loaded' }}
+    </button>
+  </div>`,
 };

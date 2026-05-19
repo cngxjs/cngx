@@ -26,13 +26,12 @@ export const STORY: DemoSpec = {
   ],
   imports: ['CngxFormField', 'CngxLabel', 'CngxFieldErrors', 'CngxBindField', 'MatSelect', 'MatOption', 'ReactiveFormsModule'],
   setup: `protected readonly matSelectControl = new FormControl<string>('', { validators: [Validators.required], nonNullable: true });
-  protected readonly matSelectField = adaptFormControl(this.matSelectControl, 'size', inject(DestroyRef));
-  protected readonly matSelectValue = toSignal(this.matSelectControl.valueChanges, { initialValue: this.matSelectControl.value });
+  protected readonly matSelectField = adaptFormControl(this.matSelectControl, 'size', inject(DestroyRef));`,
+  setupChrome: `  protected readonly matSelectValue = toSignal(this.matSelectControl.valueChanges, { initialValue: this.matSelectControl.value });
   protected handleMatSelectSubmit(): void {
     this.matSelectField().markAsTouched();
   }`,
-  template: `
-  <cngx-form-field [field]="matSelectField">
+  template: `  <cngx-form-field [field]="matSelectField">
     <label cngxLabel>Size</label>
     <mat-select cngxBindField
                 [formControl]="matSelectControl"
@@ -44,8 +43,8 @@ export const STORY: DemoSpec = {
       <mat-option value="xl">X-Large</mat-option>
     </mat-select>
     <cngx-field-errors />
-  </cngx-form-field>
-  <div class="event-grid" style="margin-top:12px">
+  </cngx-form-field>`,
+  templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row">
       <span class="event-label">mat-select value</span>
       <span class="event-value">{{ matSelectValue() || '—' }}</span>

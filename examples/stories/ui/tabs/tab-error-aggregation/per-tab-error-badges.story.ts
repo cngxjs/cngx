@@ -24,8 +24,7 @@ export const STORY: DemoSpec = {
   setup: `protected readonly active = signal(0);
   protected readonly profileInvalid = signal(true);
   protected readonly accountInvalid = signal(false);`,
-  template: `
-  <cngx-tab-group [(activeIndex)]="active" aria-label="Validated tabs">
+  template: `  <cngx-tab-group [(activeIndex)]="active" aria-label="Validated tabs">
     <fieldset cngxErrorAggregator #profileAgg="cngxErrorAggregator" style="display:contents">
       <input cngxErrorSource="profile-name" [when]="profileInvalid()" hidden />
       <div cngxTab [label]="'Profile'" [errorAggregator]="profileAgg">
@@ -45,8 +44,8 @@ export const STORY: DemoSpec = {
     <div cngxTab [label]="'Confirm'">
       <ng-template cngxTabContent><p>Final review.</p></ng-template>
     </div>
-  </cngx-tab-group>
-  <div class="event-grid" style="margin-top:12px;gap:8px">
+  </cngx-tab-group>`,
+  templateChrome: `<div class="event-grid" style="margin-top:12px;gap:8px">
     <div class="event-row" style="gap:8px">
       <label><input type="checkbox" [checked]="profileInvalid()" (change)="profileInvalid.set($any($event.target).checked)" /> profile invalid</label>
       <label><input type="checkbox" [checked]="accountInvalid()" (change)="accountInvalid.set($any($event.target).checked)" /> account invalid</label>

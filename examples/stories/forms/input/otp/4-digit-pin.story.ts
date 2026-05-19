@@ -16,8 +16,7 @@ export const STORY: DemoSpec = {
     'import { CngxOtpInput, CngxOtpSlot } from \'@cngx/forms/input\';',
   ],
   imports: ['CngxOtpInput', 'CngxOtpSlot'],
-  template: `
-  <div class="demo-form">
+  template: `  <div class="demo-form">
     <div class="demo-field">
       <label class="demo-label">PIN</label>
       <div cngxOtpInput [length]="4" inputType="password" #pin="cngxOtpInput"
@@ -27,9 +26,10 @@ export const STORY: DemoSpec = {
             style="width:48px;height:48px;text-align:center;font-size:1.5rem" />
         }
       </div>
-      <div class="status-row">
-        <span class="status-badge">Complete: {{ pin.isComplete() }}</span>
-      </div>
+      
     </div>
   </div>`,
+  templateChrome: `<div class="status-row">
+        <span class="status-badge">Complete: {{ pin.isComplete() }}</span>
+      </div>`,
 };

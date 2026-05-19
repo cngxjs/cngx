@@ -18,8 +18,7 @@ export const STORY: DemoSpec = {
   setup: `protected readonly swipeDir = signal<SwipeDirection>('left');
   protected readonly swipeDirs: SwipeDirection[] = ['left', 'right', 'up', 'down'];
   protected readonly swipeCount = signal(0);`,
-  template: `
-  <div class="filter-row">
+  template: `  <div class="filter-row">
     <span class="filter-label">Direction:</span>
     @for (d of swipeDirs; track d) {
       <button class="chip" [class.chip--active]="swipeDir() === d"
@@ -50,9 +49,8 @@ export const STORY: DemoSpec = {
     <p style="margin: 0.5rem 0 0; font-size: 0.875rem; color: var(--cngx-color-text-muted)">
       threshold: 60px
     </p>
-  </div>
-
-  <div class="status-row" style="margin-top: 0.75rem;">
+  </div>`,
+  templateChrome: `<div class="status-row" style="margin-top: 0.75rem;">
     <span class="status-badge" [class.active]="swipe.swiping()">
       {{ swipe.swiping() ? 'swiping' : 'idle' }}
     </span>

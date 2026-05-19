@@ -18,8 +18,7 @@ export const STORY: DemoSpec = {
     'import { CngxAriaExpanded } from \'@cngx/common\';',
   ],
   imports: ['CngxDrawer', 'CngxDrawerPanel', 'CngxDrawerContent', 'CngxAriaExpanded', 'CngxScrollLock', 'CngxBackdrop'],
-  template: `
-  <div cngxDrawer #drawer="cngxDrawer" [cngxScrollLock]="drawer.opened()" class="drawer-container">
+  template: `  <div cngxDrawer #drawer="cngxDrawer" [cngxScrollLock]="drawer.opened()" class="drawer-container">
     <button class="sort-btn"
             [cngxAriaExpanded]="drawer.opened()" [controls]="'basic-panel'"
             (click)="drawer.toggle()">
@@ -49,9 +48,8 @@ export const STORY: DemoSpec = {
         <p><code>[cngxScrollLock]</code> prevents background scrolling.</p>
       </main>
     </div>
-  </div>
-
-  <div class="status-row">
+  </div>`,
+  templateChrome: `<div class="status-row">
     <span class="status-badge" [class.active]="drawer.opened()">
       {{ drawer.opened() ? 'open' : 'closed' }}
     </span>

@@ -37,12 +37,11 @@ export const STORY: DemoSpec = {
   imports: ['CngxSelect', 'CngxSelectEmpty'],
   setup: `protected readonly loadingOptions: CngxSelectOptionDef<string>[] = [];
   protected readonly loadingValue = signal<string | undefined>(undefined);
-  protected readonly loading = signal(true);
-  protected toggleLoading(): void {
+  protected readonly loading = signal(true);`,
+  setupChrome: `  protected toggleLoading(): void {
     this.loading.update(v => !v);
   }`,
-  template: `
-  <cngx-select
+  template: `  <cngx-select
     [label]="'Async'"
     [options]="loadingOptions"
     [(value)]="loadingValue"
@@ -52,8 +51,8 @@ export const STORY: DemoSpec = {
     <ng-template cngxSelectEmpty>
       <span style="opacity:.7">No entries — adjust filters.</span>
     </ng-template>
-  </cngx-select>
-  <div class="event-grid" style="margin-top:12px">
+  </cngx-select>`,
+  templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row">
       <button type="button" class="chip" (click)="toggleLoading()">Toggle loading</button>
     </div>

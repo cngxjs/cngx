@@ -39,8 +39,7 @@ export const STORY: DemoSpec = {
     this.slowAttempts.update((n) => n + 1);
     return new Promise((resolve) => setTimeout(() => resolve(true), 800));
   };`,
-  template: `
-  <cngx-stepper
+  template: `  <cngx-stepper
     [(activeStepIndex)]="active"
     [commitAction]="slowCommit"
     commitMode="pessimistic"
@@ -59,8 +58,8 @@ export const STORY: DemoSpec = {
         <p>Step 2. Defaults restored after commit resolves.</p>
       </ng-template>
     </div>
-  </cngx-stepper>
-  <div class="event-grid" style="margin-top:var(--demo-grid-gap, 12px)">
+  </cngx-stepper>`,
+  templateChrome: `<div class="event-grid" style="margin-top:var(--demo-grid-gap, 12px)">
     <div class="event-row"><span class="event-label">Slow commit attempts</span><span class="event-value">{{ slowAttempts() }}</span></div>
   </div>`,
 };

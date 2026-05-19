@@ -24,8 +24,7 @@ export const STORY: DemoSpec = {
     { id: 'fruit-fig', value: 'fig', label: 'Fig' },
   ]);
   protected readonly lastActivated = signal<string | null>(null);`,
-  template: `
-  <div class="cngx-ad-listbox"
+  template: `  <div class="cngx-ad-listbox"
        style="max-width:260px"
        cngxActiveDescendant
        role="listbox"
@@ -46,8 +45,8 @@ export const STORY: DemoSpec = {
         {{ fruit.label }}
       </div>
     }
-  </div>
-  <div class="event-grid" style="margin-top:12px">
+  </div>`,
+  templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row">
       <span class="event-label">Active id</span>
       <span class="event-value">{{ ad.activeId() ?? '—' }}</span>

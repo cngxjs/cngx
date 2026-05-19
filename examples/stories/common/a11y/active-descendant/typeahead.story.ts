@@ -26,8 +26,7 @@ export const STORY: DemoSpec = {
   protected readonly typeaheadFruits = computed(() =>
     this.fruits().map((f): ActiveDescendantItem => ({ ...f, id: f.id + '-ta' })),
   );`,
-  template: `
-  <div class="cngx-ad-listbox"
+  template: `  <div class="cngx-ad-listbox"
        style="max-width:260px"
        cngxActiveDescendant
        role="listbox"
@@ -45,7 +44,11 @@ export const STORY: DemoSpec = {
       </div>
     }
   </div>
-  <div class="event-grid" style="margin-top:8px">
+  
+  <p style="margin-top:8px;font-size:0.875rem;color:#6b7280">
+    Click the listbox to focus it, then type <kbd>c</kbd><kbd>h</kbd> quickly to land on Cherry, or <kbd>e</kbd> to land on Elderberry.
+  </p>`,
+  templateChrome: `<div class="event-grid" style="margin-top:8px">
     <div class="event-row">
       <span class="event-label">Active id</span>
       <span class="event-value">{{ adT.activeId() ?? '—' }}</span>
@@ -54,8 +57,5 @@ export const STORY: DemoSpec = {
       <span class="event-label">Active value</span>
       <span class="event-value">{{ adT.activeValue() ?? '—' }}</span>
     </div>
-  </div>
-  <p style="margin-top:8px;font-size:0.875rem;color:#6b7280">
-    Click the listbox to focus it, then type <kbd>c</kbd><kbd>h</kbd> quickly to land on Cherry, or <kbd>e</kbd> to land on Elderberry.
-  </p>`,
+  </div>`,
 };

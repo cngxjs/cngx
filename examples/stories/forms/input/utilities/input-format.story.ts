@@ -22,16 +22,16 @@ export const STORY: DemoSpec = {
     return isNaN(n) ? v : new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n);
   };
   protected readonly parseCurrency = (v: string) => v.replace(/[^0-9.\\-]/g, '');`,
-  template: `
-  <div class="demo-form">
+  template: `  <div class="demo-form">
     <div class="demo-field">
       <label class="demo-label">Amount (formatted as USD on blur)</label>
       <input [cngxInputFormat]="formatCurrency" [parse]="parseCurrency"
         #fmt="cngxInputFormat" placeholder="Enter amount..." class="demo-input" />
-      <div class="status-row">
-        <span class="status-badge">Raw: {{ fmt.rawValue() }}</span>
-        <span class="status-badge">Display: {{ fmt.displayValue() }}</span>
-      </div>
+      
     </div>
   </div>`,
+  templateChrome: `<div class="status-row">
+        <span class="status-badge">Raw: {{ fmt.rawValue() }}</span>
+        <span class="status-badge">Display: {{ fmt.displayValue() }}</span>
+      </div>`,
 };

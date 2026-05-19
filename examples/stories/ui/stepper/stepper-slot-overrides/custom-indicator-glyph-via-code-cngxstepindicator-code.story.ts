@@ -26,8 +26,7 @@ export const STORY: DemoSpec = {
   ],
   imports: ['CngxStepper', 'CngxStep', 'CngxStepContent', 'CngxStepIndicator'],
   setup: `protected readonly active = signal(0);`,
-  template: `
-  <cngx-stepper [(activeStepIndex)]="active" aria-label="Slot-overrides — indicator">
+  template: `  <cngx-stepper [(activeStepIndex)]="active" aria-label="Slot-overrides — indicator">
     <ng-template cngxStepIndicator let-position let-status="status">
       @if (status === 'success') {
         <span aria-hidden="true">✓</span>
@@ -52,8 +51,8 @@ export const STORY: DemoSpec = {
         <p>Final step. Notice the indicator on completed steps.</p>
       </ng-template>
     </div>
-  </cngx-stepper>
-  <div class="event-grid" style="margin-top:var(--demo-grid-gap, 12px)">
+  </cngx-stepper>`,
+  templateChrome: `<div class="event-grid" style="margin-top:var(--demo-grid-gap, 12px)">
     <div class="event-row"><span class="event-label">Active step</span><span class="event-value">{{ active() }}</span></div>
   </div>`,
 };

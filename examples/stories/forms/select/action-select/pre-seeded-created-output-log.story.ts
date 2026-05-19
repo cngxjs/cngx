@@ -45,8 +45,7 @@ export const STORY: DemoSpec = {
       [...l.slice(-4), ts + ' → created "' + opt.label + '" (id=' + opt.value.id + ')'],
     );
   }`,
-  template: `
-  <cngx-action-select
+  template: `  <cngx-action-select
     [label]="'Tag (pre-seeded)'"
     [options]="tags"
     [compareWith]="basicCompare"
@@ -75,9 +74,8 @@ export const STORY: DemoSpec = {
         + Create "{{ term || '…' }}"
       </button>
     </ng-template>
-  </cngx-action-select>
-
-  <div class="event-grid" style="margin-top:12px">
+  </cngx-action-select>`,
+  templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row">
       <span class="event-label">Current</span>
       <span class="event-value">{{ seededValue()?.name ?? '—' }}</span>

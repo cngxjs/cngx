@@ -35,8 +35,7 @@ export const STORY: DemoSpec = {
   protected customCounter = 0;
   protected readonly customCreate: CngxSelectCreateAction<{ id: string; name: string }> =
     (_term, draft) => ({ id: 'custom-' + ++this.customCounter, name: draft.label });`,
-  template: `
-  <cngx-action-select
+  template: `  <cngx-action-select
     [label]="'Custom'"
     [options]="tags"
     [compareWith]="basicCompare"
@@ -84,9 +83,8 @@ export const STORY: DemoSpec = {
         </button>
       </div>
     </ng-template>
-  </cngx-action-select>
-
-  <div class="event-grid" style="margin-top:12px">
+  </cngx-action-select>`,
+  templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row">
       <span class="event-label">Custom</span>
       <span class="event-value">{{ customValue()?.name ?? '—' }}</span>

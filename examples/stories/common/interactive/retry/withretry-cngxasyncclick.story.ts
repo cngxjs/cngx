@@ -15,7 +15,7 @@ export const STORY: DemoSpec = {
     'import { CngxAsyncClick, withRetry } from \'@cngx/common/interactive\';',
   ],
   imports: ['CngxAsyncClick'],
-  setup: `private readonly flakyAction = () => new Promise<void>((resolve, reject) =>
+  setupChrome: `private readonly flakyAction = () => new Promise<void>((resolve, reject) =>
     setTimeout(() => Math.random() > 0.6 ? resolve() : reject(new Error('Network error')), 500),
   );
   private readonly retryResult = withRetry(this.flakyAction, {
@@ -25,8 +25,8 @@ export const STORY: DemoSpec = {
   });
   protected readonly retryAction = this.retryResult[0];
   protected readonly retryState = this.retryResult[1];`,
-  template: `
-  <div class="button-row">
+  template: ``,
+  templateChrome: `<div class="button-row">
     <button [cngxAsyncClick]="retryAction" #btn="cngxAsyncClick" class="chip"
             [style.background]="btn.succeeded() ? 'var(--cngx-color-success)' : btn.failed() ? '#ffebee' : ''">
       @if (btn.pending()) {
@@ -40,7 +40,7 @@ export const STORY: DemoSpec = {
       }
     </button>
   </div>
-  <div class="event-grid" style="margin-top:12px">
+<div class="event-grid" style="margin-top:12px">
     <div class="event-row">
       <span class="event-label">Attempt</span>
       <span class="event-value">{{ retryState.attempt() }} / {{ retryState.maxAttempts() }}</span>

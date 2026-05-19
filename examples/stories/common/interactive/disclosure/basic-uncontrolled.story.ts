@@ -15,16 +15,15 @@ export const STORY: DemoSpec = {
     'import { CngxDisclosure } from \'@cngx/common\';',
   ],
   imports: ['CngxDisclosure'],
-  template: `
-  <button cngxDisclosure #d="cngxDisclosure" [controls]="'faq-1'" class="sort-btn">
+  template: `  <button cngxDisclosure #d="cngxDisclosure" [controls]="'faq-1'" class="sort-btn">
     {{ d.opened() ? 'Collapse' : 'Expand' }} answer
   </button>
   @if (d.opened()) {
     <div id="faq-1" style="padding: 0.75rem; margin-top: 0.5rem; border-left: 3px solid var(--interactive, #f5a623); background: var(--cngx-surface-alt, #f9fafb);">
       <p style="margin: 0; font-size: 0.875rem;">This content is revealed by the disclosure trigger above.</p>
     </div>
-  }
-  <div class="status-row" style="margin-top: 0.5rem;">
+  }`,
+  templateChrome: `<div class="status-row" style="margin-top: 0.5rem;">
     <span class="status-badge" [class.active]="d.opened()">{{ d.opened() ? 'expanded' : 'collapsed' }}</span>
   </div>`,
 };

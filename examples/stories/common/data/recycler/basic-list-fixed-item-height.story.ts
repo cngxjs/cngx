@@ -31,13 +31,12 @@ export const STORY: DemoSpec = {
     estimateSize: 48,
     overscan: 10,
   });
-  protected readonly visibleItems = this.recycler.sliced(this.allItems);
-  protected readonly targetIndex = signal(0);
+  protected readonly visibleItems = this.recycler.sliced(this.allItems);`,
+  setupChrome: `  protected readonly targetIndex = signal(0);
   protected handleScrollTo(): void {
     this.recycler.scrollToIndex(this.targetIndex());
   }`,
-  template: `
-  <cngx-recycler-announcer [cngxRecyclerAnnouncer]="recycler" />
+  template: `  <cngx-recycler-announcer [cngxRecyclerAnnouncer]="recycler" />
   <div class="recycler-scroll" role="list" aria-label="Demo items"
        style="height:400px;overflow-y:auto;border:1px solid var(--cngx-color-border,#e0e0e0);border-radius:8px">
     <div [style.paddingTop.px]="recycler.offsetBefore()"
@@ -51,8 +50,8 @@ export const STORY: DemoSpec = {
         </div>
       }
     </div>
-  </div>
-  <div class="status-row" style="margin-top:8px;display:flex;gap:16px;flex-wrap:wrap;align-items:center">
+  </div>`,
+  templateChrome: `<div class="status-row" style="margin-top:8px;display:flex;gap:16px;flex-wrap:wrap;align-items:center">
     <span class="status-badge">
       Showing {{ recycler.firstVisible() + 1 }}&ndash;{{ recycler.lastVisible() + 1 }}
       of {{ recycler.ariaSetSize() }}

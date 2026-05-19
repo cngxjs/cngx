@@ -21,19 +21,7 @@ export const STORY: DemoSpec = {
   imports: ['CngxSelectShell', 'CngxSelectOption', 'CngxSelectEmpty', 'CngxSelectPlaceholder'],
   setup: `protected readonly emptyValue = signal<string | undefined>(undefined);
   protected readonly loadingFlag = signal(false);`,
-  template: `
-  <div class="button-row" style="margin-bottom:12px">
-    <label>
-      <input
-        type="checkbox"
-        [checked]="loadingFlag()"
-        (change)="loadingFlag.set($any($event.target).checked)"
-      />
-      Loading
-    </label>
-  </div>
-
-  <cngx-select-shell
+  template: `  <cngx-select-shell
     [label]="'Item'"
     [loading]="loadingFlag()"
     [(value)]="emptyValue"
@@ -46,9 +34,18 @@ export const STORY: DemoSpec = {
         No options available
       </div>
     </ng-template>
-  </cngx-select-shell>
-
-  <div class="event-grid" style="margin-top:12px">
+  </cngx-select-shell>`,
+  templateChrome: `<div class="button-row" style="margin-bottom:12px">
+    <label>
+      <input
+        type="checkbox"
+        [checked]="loadingFlag()"
+        (change)="loadingFlag.set($any($event.target).checked)"
+      />
+      Loading
+    </label>
+  </div>
+<div class="event-grid" style="margin-top:12px">
     <div class="event-row">
       <span class="event-label">value</span>
       <span class="event-value">{{ emptyValue() ?? '—' }}</span>

@@ -19,8 +19,7 @@ export const STORY: DemoSpec = {
   ],
   imports: ['CngxStepper', 'CngxStep', 'CngxStepContent'],
   setup: `protected readonly active = signal(0);`,
-  template: `
-  <cngx-stepper [(activeStepIndex)]="active" [orientation]="'vertical'" aria-label="Account setup">
+  template: `  <cngx-stepper [(activeStepIndex)]="active" [orientation]="'vertical'" aria-label="Account setup">
     <div cngxStep label="Profile">
       <ng-template cngxStepContent>
         <p>Set your display name and avatar.</p>
@@ -41,6 +40,6 @@ export const STORY: DemoSpec = {
         <p>You are ready to go.</p>
       </ng-template>
     </div>
-  </cngx-stepper>
-  <div class="event-grid" style="margin-top:12px"><div class="event-row"><span class="event-label">Active step</span><span class="event-value">{{ active() }}</span></div></div>`,
+  </cngx-stepper>`,
+  templateChrome: `<div class="event-grid" style="margin-top:12px"><div class="event-row"><span class="event-label">Active step</span><span class="event-value">{{ active() }}</span></div></div>`,
 };

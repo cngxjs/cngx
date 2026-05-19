@@ -42,15 +42,14 @@ export const STORY: DemoSpec = {
     { value: 'disabled', label: 'Unavailable', disabled: true },
   ];
   protected readonly standaloneValue = signal<string | undefined>(undefined);`,
-  template: `
-  <cngx-select
+  template: `  <cngx-select
     [label]="'Color'"
     [options]="colors"
     [(value)]="standaloneValue"
     placeholder="Pick a color…"
     selectionIndicatorVariant="radio"
-  />
-  <div class="event-grid" style="margin-top:12px">
+  />`,
+  templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row"><span class="event-label">Variant</span><span class="event-value">radio — dot-in-circle</span></div>
     <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ standaloneValue() || '—' }}</span></div>
   </div>`,

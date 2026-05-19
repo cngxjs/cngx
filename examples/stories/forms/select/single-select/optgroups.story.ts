@@ -46,14 +46,13 @@ export const STORY: DemoSpec = {
     ]},
   ];
   protected readonly groupedValue = signal<string | undefined>(undefined);`,
-  template: `
-  <cngx-select
+  template: `  <cngx-select
     [label]="'Priority'"
     [options]="priorities"
     [(value)]="groupedValue"
     placeholder="Choose priority…"
-  />
-  <div class="event-grid" style="margin-top:12px">
+  />`,
+  templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ groupedValue() || '—' }}</span></div>
   </div>`,
 };

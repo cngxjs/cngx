@@ -27,8 +27,7 @@ export const STORY: DemoSpec = {
     minLength(root.toppings, 2);
   });
   protected readonly multiForm = form(this.multiModel, this.multiSchema);`,
-  template: `
-  <cngx-form-field [field]="multiForm.toppings">
+  template: `  <cngx-form-field [field]="multiForm.toppings">
     <label cngxLabel>Toppings (at least 2)</label>
     <div cngxListbox
          cngxListboxFieldBridge
@@ -42,8 +41,8 @@ export const STORY: DemoSpec = {
       <div cngxOption value="onion">Zwiebel</div>
     </div>
     <cngx-field-errors />
-  </cngx-form-field>
-  <div class="event-grid" style="margin-top:12px">
+  </cngx-form-field>`,
+  templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row">
       <span class="event-label">Field value</span>
       <span class="event-value">{{ multiForm.toppings().value().join(', ') || '—' }}</span>

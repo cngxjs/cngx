@@ -40,8 +40,28 @@ export const STORY: DemoSpec = {
       return () => clearTimeout(handle);
     });
   };`,
-  template: `
-  <div class="event-row" style="gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap">
+  template: `  <cngx-stepper
+    [(activeStepIndex)]="active"
+    [commitAction]="commitAction"
+    [commitMode]="mode()"
+    cngxToastOn
+    [toastError]="'Step transition failed'"
+    cngxBannerOn
+    bannerId="stepper:commit-error"
+    [bannerError]="'Step transition refused by the server.'"
+    aria-label="Async wizard"
+  >
+    <div cngxStep label="Customer">
+      <ng-template cngxStepContent><p>Customer details.</p></ng-template>
+    </div>
+    <div cngxStep label="Payment">
+      <ng-template cngxStepContent><p>Payment method.</p></ng-template>
+    </div>
+    <div cngxStep label="Confirm">
+      <ng-template cngxStepContent><p>Review the order.</p></ng-template>
+    </div>
+  </cngx-stepper>`,
+  templateChrome: `<div class="event-row" style="gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap">
     <button type="button" class="chip"
             [style.background]="mode() === 'optimistic' ? '#c8e6c9' : ''"
             (click)="mode.set('optimistic')">optimistic</button>
@@ -62,28 +82,7 @@ export const STORY: DemoSpec = {
       {{ latencyMs() }}ms
     </label>
   </div>
-  <cngx-stepper
-    [(activeStepIndex)]="active"
-    [commitAction]="commitAction"
-    [commitMode]="mode()"
-    cngxToastOn
-    [toastError]="'Step transition failed'"
-    cngxBannerOn
-    bannerId="stepper:commit-error"
-    [bannerError]="'Step transition refused by the server.'"
-    aria-label="Async wizard"
-  >
-    <div cngxStep label="Customer">
-      <ng-template cngxStepContent><p>Customer details.</p></ng-template>
-    </div>
-    <div cngxStep label="Payment">
-      <ng-template cngxStepContent><p>Payment method.</p></ng-template>
-    </div>
-    <div cngxStep label="Confirm">
-      <ng-template cngxStepContent><p>Review the order.</p></ng-template>
-    </div>
-  </cngx-stepper>
-  <div class="event-grid" style="margin-top:12px">
+<div class="event-grid" style="margin-top:12px">
     <div class="event-row"><span class="event-label">Active step</span><span class="event-value">{{ active() }}</span></div>
   </div>`,
 };

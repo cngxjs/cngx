@@ -54,8 +54,7 @@ export const STORY: DemoSpec = {
     }
     return of(intended).pipe(delay(800));
   };`,
-  template: `
-  <cngx-select
+  template: `  <cngx-select
     [label]="'Color'"
     [options]="colors"
     [(value)]="commitValue"
@@ -69,8 +68,8 @@ export const STORY: DemoSpec = {
     <ng-template cngxSelectOptionError let-opt let-error="error">
       <span aria-hidden="true" [title]="error?.message" style="margin-inline-start:auto;color:var(--cngx-color-danger)">✕</span>
     </ng-template>
-  </cngx-select>
-  <div class="button-row" style="margin-top:12px">
+  </cngx-select>`,
+  templateChrome: `<div class="button-row" style="margin-top:12px">
     <button type="button" class="chip" (click)="commitShouldFail.set(!commitShouldFail())">
       {{ commitShouldFail() ? 'Fail next: ON' : 'Fail next: off' }}
     </button>

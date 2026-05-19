@@ -17,8 +17,7 @@ export const STORY: DemoSpec = {
   ],
   imports: ['CngxListbox', 'CngxOption'],
   setup: `protected readonly singleValue = signal<string | null>(null);`,
-  template: `
-  <div cngxListbox
+  template: `  <div cngxListbox
        [label]="'Fruits (single)'"
        tabindex="0"
        class="ad-listbox"
@@ -28,8 +27,8 @@ export const STORY: DemoSpec = {
     <div cngxOption value="banana">Banana</div>
     <div cngxOption value="cherry" [disabled]="true">Cherry (disabled)</div>
     <div cngxOption value="date">Date</div>
-  </div>
-  <div class="event-grid" style="margin-top:12px">
+  </div>`,
+  templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row">
       <span class="event-label">Selected</span>
       <span class="event-value">{{ singleValue() ?? '—' }}</span>

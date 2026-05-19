@@ -19,8 +19,7 @@ export const STORY: DemoSpec = {
     ...PEOPLE,
     ...PEOPLE.map((p: Person) => ({ ...p, name: p.name + ' Jr.' })),
   ]);`,
-  template: `
-  <div cngxPaginate #pg="cngxPaginate" [total]="items().length" [cngxPageSize]="5" style="display:contents">
+  template: `  <div cngxPaginate #pg="cngxPaginate" [total]="items().length" [cngxPageSize]="5" style="display:contents">
     <ul style="list-style:none;padding:0;margin:0">
       @for (p of items().slice(pg.range()[0], pg.range()[1]); track p.name) {
         <li style="padding:8px 0;border-bottom:1px solid var(--cngx-color-border,#e0e0e0)">
@@ -29,10 +28,11 @@ export const STORY: DemoSpec = {
       }
     </ul>
     <cngx-mat-paginator [cngxPaginateRef]="pg" [pageSizeOptions]="[5, 10, 16]" />
-    <div class="status-row">
+    
+  </div>`,
+  templateChrome: `<div class="status-row">
       <span class="status-badge">
         {{ pg.range()[0] + 1 }}–{{ pg.range()[1] > pg.total() ? pg.total() : pg.range()[1] }} of {{ pg.total() }} people
       </span>
-    </div>
-  </div>`,
+    </div>`,
 };

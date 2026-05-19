@@ -16,8 +16,7 @@ export const STORY: DemoSpec = {
   ],
   imports: ['CngxCopyText'],
   setup: `protected readonly token = signal('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9');`,
-  template: `
-  <div style="display:flex;align-items:center;gap:8px">
+  template: `  <div style="display:flex;align-items:center;gap:8px">
     <code style="padding:6px 10px;background:var(--code-bg,#f5f5f5);border:1px solid var(--code-border,#ddd);
                  border-radius:4px;font-size:0.8125rem;overflow:hidden;text-overflow:ellipsis;max-width:280px">
       {{ token() }}
@@ -27,8 +26,8 @@ export const STORY: DemoSpec = {
             [style.borderColor]="cp.copied() ? 'var(--success-fg, #2e7d32)' : ''">
       {{ cp.copied() ? 'Copied!' : 'Copy' }}
     </button>
-  </div>
-  <div class="event-grid" style="margin-top:12px">
+  </div>`,
+  templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row">
       <span class="event-label">copied</span>
       <span class="event-value">{{ cp.copied() }}</span>

@@ -51,8 +51,7 @@ export const STORY: DemoSpec = {
     }
     return of(intended).pipe(delay(800));
   };`,
-  template: `
-  <cngx-typeahead
+  template: `  <cngx-typeahead
     [label]="'User'"
     [options]="typeaheadUsers"
     [compareWith]="typeaheadCompare"
@@ -61,8 +60,8 @@ export const STORY: DemoSpec = {
     [commitMode]="typeaheadCommitMode()"
     [(value)]="typeaheadCommitValue"
     placeholder="Search by name…"
-  />
-  <div class="button-row" style="margin-top:12px">
+  />`,
+  templateChrome: `<div class="button-row" style="margin-top:12px">
     <button type="button" class="chip" (click)="typeaheadCommitMode.set(typeaheadCommitMode() === 'optimistic' ? 'pessimistic' : 'optimistic')">
       Mode: {{ typeaheadCommitMode() }}
     </button>
@@ -70,7 +69,7 @@ export const STORY: DemoSpec = {
       {{ typeaheadCommitShouldFail() ? 'Fail next: ON' : 'Fail next: off' }}
     </button>
   </div>
-  <div class="event-grid" style="margin-top:12px">
+<div class="event-grid" style="margin-top:12px">
     <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ typeaheadCommitValue()?.name ?? '—' }}</span></div>
     <div class="event-row"><span class="event-label">Log</span><span class="event-value">{{ typeaheadCommitLog().slice(-3).join(' · ') || '—' }}</span></div>
   </div>`,

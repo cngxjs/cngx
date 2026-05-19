@@ -17,8 +17,7 @@ export const STORY: DemoSpec = {
     'import { MatIcon } from \'@angular/material/icon\';',
   ],
   imports: ['CngxSpeak', 'CngxSpeakButton', 'MatIconButton', 'MatMiniFabButton', 'MatIcon'],
-  template: `
-  <div style="display: flex; flex-direction: column; gap: 20px; max-width: 480px;">
+  template: `  <div style="display: flex; flex-direction: column; gap: 20px; max-width: 480px;">
     <div>
       <h4 style="margin: 0 0 8px; font-size: 0.8125rem; font-weight: 600;">CngxSpeakButton with Material Theme</h4>
       <p style="margin: 0 0 8px; font-size: 0.8125rem; color: var(--cngx-text-secondary, #666);">
@@ -105,9 +104,8 @@ html {{ '{' }}
         </button>
       </div>
     </div>
-  </div>
-
-  <div class="event-grid" style="margin-top: 12px">
+  </div>`,
+  templateChrome: `<div class="event-grid" style="margin-top: 12px">
     <div class="event-row">
       <span class="event-label">CngxSpeakButton</span>
       <span class="event-value">{{ ttsMat.speaking() ? 'speaking' : 'idle' }}</span>

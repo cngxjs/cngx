@@ -28,8 +28,7 @@ export const STORY: DemoSpec = {
   setup: `protected selectedMaria = signal(false);
   protected selectedHans = signal(false);
   protected selectedLisa = signal(false);`,
-  template: `
-  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;max-width:660px">
+  template: `  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;max-width:660px">
     <cngx-card as="button" [selectable]="true" [(selected)]="selectedMaria"
                ariaLabel="Select patient Maria Muster">
       <header cngxCardHeader>
@@ -57,8 +56,8 @@ export const STORY: DemoSpec = {
         <span style="font-size:0.8125rem;color:var(--cngx-color-text-muted)">Room 3</span>
       </div>
     </cngx-card>
-  </div>
-  <div class="event-grid" style="margin-top:12px">
+  </div>`,
+  templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row">
       <span class="event-label">Maria</span>
       <span class="event-value">{{ selectedMaria() }}</span>

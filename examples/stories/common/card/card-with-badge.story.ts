@@ -31,8 +31,7 @@ export const STORY: DemoSpec = {
     e.stopPropagation();
     this.badgeClicked.update(n => n + 1);
   }`,
-  template: `
-  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:24px;max-width:760px">
+  template: `  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:24px;max-width:760px">
     <cngx-card style="overflow:visible">
       <span cngxCardBadge position="top-end"
             style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;
@@ -77,9 +76,8 @@ export const STORY: DemoSpec = {
         Badge at top-start
       </div>
     </cngx-card>
-  </div>
-
-  <div class="event-grid" style="margin-top:12px">
+  </div>`,
+  templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row">
       <span class="event-label">Card clicked</span>
       <span class="event-value">{{ cardClicked() }}</span>

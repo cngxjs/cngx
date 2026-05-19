@@ -46,8 +46,8 @@ export const STORY: DemoSpec = {
     required(root.payment, { message: 'Wahl erforderlich' });
     required(root.notificationChannels, { message: 'Choose at least one channel' });
   }));
-  protected readonly channelOptions = ['email', 'sms', 'push'];
-  protected handleSfValidate(): void {
+  protected readonly channelOptions = ['email', 'sms', 'push'];`,
+  setupChrome: `  protected handleSfValidate(): void {
     // Mark every required SF field touched so cngx-field-errors renders.
     this.sfForm.terms().markAsTouched();
     this.sfForm.payment().markAsTouched();
@@ -56,8 +56,7 @@ export const STORY: DemoSpec = {
   protected handleSfReset(): void {
     this.sfModel.set({ notifications: false, terms: false, payment: '', notificationChannels: [] });
   }`,
-  template: `
-  <div style="display:grid;gap:16px;max-width:480px">
+  template: `  <div style="display:grid;gap:16px;max-width:480px">
     <cngx-form-field [field]="sfForm.notifications">
       <label cngxLabel>Benachrichtigungen</label>
       <cngx-toggle [(value)]="sfForm.notifications().value">
@@ -102,12 +101,12 @@ export const STORY: DemoSpec = {
       <cngx-field-errors />
     </cngx-form-field>
 
-    <div class="button-row" style="margin-top:8px;display:flex;gap:8px">
+  </div>`,
+  templateChrome: `<div class="button-row" style="margin-top:8px;display:flex;gap:8px">
       <button type="button" class="chip" (click)="handleSfValidate()">Validate (mark touched)</button>
       <button type="button" class="chip" (click)="handleSfReset()">Reset</button>
     </div>
-
-    <div class="event-grid" style="margin-top:8px">
+<div class="event-grid" style="margin-top:8px">
       <div class="event-row">
         <span class="event-label">Form valid</span>
         <span class="event-value">{{ sfForm().valid() ? 'yes' : 'no' }}</span>
@@ -120,6 +119,5 @@ export const STORY: DemoSpec = {
           channels: {{ sfForm.notificationChannels().touched() && sfForm.notificationChannels().invalid() ? 'shown' : '—' }}
         </span>
       </div>
-    </div>
-  </div>`,
+    </div>`,
 };

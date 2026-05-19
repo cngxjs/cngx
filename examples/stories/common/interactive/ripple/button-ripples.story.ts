@@ -15,8 +15,8 @@ export const STORY: DemoSpec = {
     'import { CngxRipple } from \'@cngx/common/interactive\';',
   ],
   imports: ['CngxRipple'],
-  template: `
-  <div class="button-row" style="gap:12px">
+  template: ``,
+  templateChrome: `<div class="button-row" style="gap:12px">
     <button cngxRipple class="chip" >
       Default Ripple
     </button>

@@ -27,8 +27,7 @@ export const STORY: DemoSpec = {
     { value: 'old', label: 'Nicht mehr gepflegt', disabled: true },
   ];
   protected readonly multiTextValues = signal<string[]>(['angular', 'signals']);`,
-  template: `
-  <cngx-multi-select
+  template: `  <cngx-multi-select
     [label]="'Topics'"
     [options]="tagOptions"
     [(values)]="multiTextValues"
@@ -41,8 +40,8 @@ export const STORY: DemoSpec = {
         {{ count }} topics selected
       }
     </ng-template>
-  </cngx-multi-select>
-  <div class="event-grid" style="margin-top:12px">
+  </cngx-multi-select>`,
+  templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row"><span class="event-label">Values</span><span class="event-value">{{ multiTextValues().join(', ') || '—' }}</span></div>
     <div class="event-row"><span class="event-label">Count</span><span class="event-value">{{ multiTextValues().length }}</span></div>
   </div>`,

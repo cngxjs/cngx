@@ -32,8 +32,7 @@ export const STORY: DemoSpec = {
   protected handleTypeaheadSearch(term: string): void {
     this.typeaheadSearchLog.update(l => [...l.slice(-4), term]);
   }`,
-  template: `
-  <cngx-typeahead
+  template: `  <cngx-typeahead
     [label]="'User'"
     [options]="typeaheadUsers"
     [compareWith]="typeaheadCompare"
@@ -42,8 +41,8 @@ export const STORY: DemoSpec = {
     placeholder="Search by name…"
     [(value)]="typeaheadValue"
     (searchTermChange)="handleTypeaheadSearch($event)"
-  />
-  <div class="event-grid" style="margin-top:12px">
+  />`,
+  templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ typeaheadValue()?.name || '—' }}</span></div>
     <div class="event-row"><span class="event-label">Search log</span><span class="event-value">{{ typeaheadSearchLog().join(' → ') || '—' }}</span></div>
   </div>`,

@@ -46,16 +46,15 @@ export const STORY: DemoSpec = {
     ]},
   ];
   protected readonly groupedValue = signal<string | undefined>(undefined);`,
-  template: `
-  <cngx-select [label]="'Priority'" [options]="priorities" [(value)]="groupedValue" placeholder="Choose priority…">
+  template: `  <cngx-select [label]="'Priority'" [options]="priorities" [(value)]="groupedValue" placeholder="Choose priority…">
     <ng-template cngxSelectOptgroup let-group>
       <span style="display:inline-flex;align-items:center;gap:0.5rem">
         <span aria-hidden="true" style="font-size:0.75rem;padding:2px 6px;border-radius:999px;background:color-mix(in oklch, var(--cngx-color-text) 8%, transparent);color:var(--cngx-color-text-muted)">{{ group.children?.length ?? 0 }}</span>
         <strong>{{ group.label }}</strong>
       </span>
     </ng-template>
-  </cngx-select>
-  <div class="event-grid" style="margin-top:12px">
+  </cngx-select>`,
+  templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ groupedValue() || '—' }}</span></div>
   </div>`,
 };

@@ -45,8 +45,8 @@ export const STORY: DemoSpec = {
   protected readonly sizeOptions = ['sm', 'md', 'lg'];
   protected readonly channelOptions = ['email', 'sms', 'push'];
   protected readonly filterOptions = ['open', 'closed', 'archived'];
-  protected readonly tagOptions = ['ng', 'rx', 'ts', 'cdk'];
-  protected handleRfValidate(): void {
+  protected readonly tagOptions = ['ng', 'rx', 'ts', 'cdk'];`,
+  setupChrome: `  protected handleRfValidate(): void {
     // Touching the raw FormControls fires TouchedChangeEvent, which
     // adaptFormControl now subscribes to — adapted accessors update
     // synchronously inside the subscribe callback. No accessor-side touch
@@ -56,8 +56,7 @@ export const STORY: DemoSpec = {
   protected handleRfReset(): void {
     this.rfForm.reset();
   }`,
-  template: `
-  <form [formGroup]="rfForm" style="display:grid;gap:16px;max-width:560px">
+  template: `  <form [formGroup]="rfForm" style="display:grid;gap:16px;max-width:560px">
     <!-- Boolean atom (no validator → bare bridge) -->
     <cngx-toggle [formControlName]="'notifications'">
       Benachrichtigungen
@@ -129,13 +128,12 @@ export const STORY: DemoSpec = {
       }
     </cngx-multi-chip-group>
 
-    <div class="button-row" style="margin-top:8px;display:flex;gap:8px">
+  </form>`,
+  templateChrome: `<div class="button-row" style="margin-top:8px;display:flex;gap:8px">
       <button type="button" class="chip" (click)="handleRfValidate()">Validate (mark touched)</button>
       <button type="button" class="chip" (click)="handleRfReset()">Reset</button>
     </div>
-  </form>
-
-  <div class="event-grid" style="margin-top:16px">
+<div class="event-grid" style="margin-top:16px">
     <div class="event-row">
       <span class="event-label">FormGroup value</span>
       <span class="event-value">{{ rfForm.value | json }}</span>

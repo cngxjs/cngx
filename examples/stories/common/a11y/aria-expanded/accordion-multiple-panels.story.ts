@@ -16,8 +16,7 @@ export const STORY: DemoSpec = {
   protected togglePanel(key: string): void {
     this.panels.update(p => ({ ...p, [key]: !p[key] }));
   }`,
-  template: `
-  <div style="display: flex; flex-direction: column; gap: 1px; border: 1px solid var(--cngx-color-border, #ddd); border-radius: 6px; overflow: hidden;">
+  template: `  <div style="display: flex; flex-direction: column; gap: 1px; border: 1px solid var(--cngx-color-border, #ddd); border-radius: 6px; overflow: hidden;">
     @for (item of [
       { key: 'specs', label: 'Specifications', content: 'Display: 6.1" OLED, 120Hz — Processor: A17 Pro — Storage: 256GB — Battery: 4,422 mAh' },
       { key: 'reviews', label: 'Reviews (42)', content: 'Average rating: 4.6 / 5.0 — "Best phone I have ever owned" — "Camera is outstanding in low light"' },
@@ -57,9 +56,8 @@ export const STORY: DemoSpec = {
         </div>
       }
     }
-  </div>
-
-  <div class="event-grid" style="margin-top: 12px">
+  </div>`,
+  templateChrome: `<div class="event-grid" style="margin-top: 12px">
     @for (key of ['specs', 'reviews', 'shipping']; track key) {
       <div class="event-row">
         <span class="event-label">{{ key }}</span>

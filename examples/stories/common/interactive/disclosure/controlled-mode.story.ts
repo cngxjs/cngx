@@ -16,13 +16,7 @@ export const STORY: DemoSpec = {
   ],
   imports: ['CngxDisclosure'],
   setup: `protected readonly controlledOpen = signal(false);`,
-  template: `
-  <div class="button-row">
-    <button class="sort-btn" (click)="controlledOpen.set(!controlledOpen())">
-      External: {{ controlledOpen() ? 'open' : 'closed' }}
-    </button>
-  </div>
-  <button cngxDisclosure #cd="cngxDisclosure"
+  template: `  <button cngxDisclosure #cd="cngxDisclosure"
           [cngxDisclosureOpened]="controlledOpen()"
           (openedChange)="controlledOpen.set($event)"
           [controls]="'ctrl-content'"
@@ -34,4 +28,9 @@ export const STORY: DemoSpec = {
       Controlled content — state owned by parent signal.
     </div>
   }`,
+  templateChrome: `<div class="button-row">
+    <button class="sort-btn" (click)="controlledOpen.set(!controlledOpen())">
+      External: {{ controlledOpen() ? 'open' : 'closed' }}
+    </button>
+  </div>`,
 };

@@ -17,10 +17,8 @@ export const STORY: DemoSpec = {
   imports: ['CngxIntersectionObserver', 'DecimalPipe'],
   setup: `protected enterCount = signal(0);
   protected leaveCount = signal(0);
-  // 21 thresholds: 0, 0.05, 0.10, ..., 1.0 — ratio updates live as you scroll
   protected readonly thresholds = Array.from({ length: 21 }, (_, i) => i / 20);`,
-  template: `
-  <div
+  template: `  <div
     class="io-scroll-root"
     style="
       height: 200px;
@@ -57,9 +55,8 @@ export const STORY: DemoSpec = {
     <div style="height: 400px; display: flex; align-items: flex-start; padding-top: 16px; color: var(--cngx-text-secondary, #666);">
       ↑ Scroll back up
     </div>
-  </div>
-
-  <div class="event-grid" style="margin-top: 12px">
+  </div>`,
+  templateChrome: `<div class="event-grid" style="margin-top: 12px">
     <div class="event-row">
       <span class="event-label">entered</span>
       <span class="event-value">{{ enterCount() }}×</span>

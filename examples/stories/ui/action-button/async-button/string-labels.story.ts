@@ -18,12 +18,12 @@ export const STORY: DemoSpec = {
     'import { CngxActionButton } from \'@cngx/ui\';',
   ],
   imports: ['CngxActionButton'],
-  setup: `protected readonly saveAction = () => new Promise<void>(resolve => setTimeout(resolve, 1500));
+  setupChrome: `protected readonly saveAction = () => new Promise<void>(resolve => setTimeout(resolve, 1500));
   protected readonly deleteAction = () => new Promise<void>((_, reject) =>
     setTimeout(() => reject(new Error('403 Forbidden')), 1000),
   );`,
-  template: `
-  <div class="button-row" style="gap:12px">
+  template: ``,
+  templateChrome: `<div class="button-row" style="gap:12px">
     <cngx-action-button [action]="saveAction" pendingLabel="Saving..." succeededLabel="Saved!">
       Save Draft
     </cngx-action-button>

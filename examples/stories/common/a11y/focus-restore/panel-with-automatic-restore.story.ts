@@ -16,8 +16,7 @@ export const STORY: DemoSpec = {
   ],
   imports: ['CngxFocusRestore'],
   setup: `protected readonly panelOpen = signal(false);`,
-  template: `
-  <button (click)="panelOpen.set(true)" class="chip">Open Panel</button>
+  template: `  <button (click)="panelOpen.set(true)" class="chip">Open Panel</button>
 
   @if (panelOpen()) {
     <div cngxFocusRestore
@@ -25,9 +24,8 @@ export const STORY: DemoSpec = {
       <p style="margin:0 0 12px">Panel content. Focus will restore on close.</p>
       <button (click)="panelOpen.set(false)" class="chip">Close Panel</button>
     </div>
-  }
-
-  <div class="event-grid" style="margin-top:12px">
+  }`,
+  templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row">
       <span class="event-label">Panel open</span>
       <span class="event-value">{{ panelOpen() }}</span>

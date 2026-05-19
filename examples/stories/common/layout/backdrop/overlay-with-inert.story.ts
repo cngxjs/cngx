@@ -17,12 +17,7 @@ export const STORY: DemoSpec = {
   imports: ['CngxBackdrop'],
   setup: `protected readonly showBackdrop = signal(false);
   protected readonly clickCount = signal(0);`,
-  template: `
-  <div class="button-row">
-    <button class="sort-btn" (click)="showBackdrop.set(true)">Show backdrop</button>
-  </div>
-
-  <div style="position: relative; min-height: 200px; border: 1px solid var(--cngx-color-border); border-radius: 6px; overflow: hidden; margin-top: 0.75rem;">
+  template: `  <div style="position: relative; min-height: 200px; border: 1px solid var(--cngx-color-border); border-radius: 6px; overflow: hidden; margin-top: 0.75rem;">
     <div [cngxBackdrop]="showBackdrop()" (backdropClick)="showBackdrop.set(false); clickCount.update(n => n + 1)"
          class="cngx-backdrop" style="position: absolute;"></div>
 
@@ -32,9 +27,11 @@ export const STORY: DemoSpec = {
         Try clicking me (won't work when inert)
       </button>
     </div>
+  </div>`,
+  templateChrome: `<div class="button-row">
+    <button class="sort-btn" (click)="showBackdrop.set(true)">Show backdrop</button>
   </div>
-
-  <div class="status-row" style="margin-top: 0.75rem;">
+<div class="status-row" style="margin-top: 0.75rem;">
     <span class="status-badge" [class.active]="showBackdrop()">
       {{ showBackdrop() ? 'visible' : 'hidden' }}
     </span>

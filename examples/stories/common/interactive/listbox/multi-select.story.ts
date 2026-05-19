@@ -17,8 +17,7 @@ export const STORY: DemoSpec = {
   ],
   imports: ['CngxListbox', 'CngxOption'],
   setup: `protected readonly multiValues = signal<string[]>([]);`,
-  template: `
-  <div cngxListbox
+  template: `  <div cngxListbox
        [label]="'Fruits (multi)'"
        [multiple]="true"
        tabindex="0"
@@ -29,8 +28,8 @@ export const STORY: DemoSpec = {
     <div cngxOption value="banana">Banana</div>
     <div cngxOption value="cherry">Cherry</div>
     <div cngxOption value="date">Date</div>
-  </div>
-  <div class="event-grid" style="margin-top:12px">
+  </div>`,
+  templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row">
       <span class="event-label">Selection</span>
       <span class="event-value">{{ multiValues().length ? multiValues().join(', ') : '—' }}</span>

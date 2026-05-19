@@ -18,15 +18,14 @@ export const STORY: DemoSpec = {
   ],
   setup: `private readonly items = signal(PEOPLE);
   private readonly ds = injectDataSource(this.items);
-  protected readonly rows = toSignal(this.ds.connect(), { initialValue: [] as Person[] });
-  protected shuffle(): void {
+  protected readonly rows = toSignal(this.ds.connect(), { initialValue: [] as Person[] });`,
+  setupChrome: `  protected shuffle(): void {
     this.items.update((list) => [...list].sort(() => Math.random() - 0.5));
   }
   protected reset(): void {
     this.items.set(PEOPLE);
   }`,
-  template: `
-  <div class="table-wrap">
+  template: `  <div class="table-wrap">
     <table class="demo-table">
       <thead>
         <tr><th>Name</th><th>Role</th><th>Location</th></tr>
@@ -37,8 +36,8 @@ export const STORY: DemoSpec = {
         }
       </tbody>
     </table>
-  </div>
-  <div class="button-row">
+  </div>`,
+  templateChrome: `<div class="button-row">
     <button type="button" (click)="shuffle()">Shuffle</button>
     <button type="button" (click)="reset()">Reset</button>
   </div>`,

@@ -44,18 +44,17 @@ export const STORY: DemoSpec = {
   ];
   protected readonly asyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
     createManualState<CngxSelectOptionsInput<string>>();
-  protected readonly asyncValue = signal<string | undefined>(undefined);
-  protected asyncSetSuccess(): void { this.asyncState.setSuccess(this.asyncOptions); }
+  protected readonly asyncValue = signal<string | undefined>(undefined);`,
+  setupChrome: `  protected asyncSetSuccess(): void { this.asyncState.setSuccess(this.asyncOptions); }
   protected asyncSetError(): void { this.asyncState.setError(new Error('Network offline')); }`,
-  template: `
-  <cngx-select [label]="'Language'" [options]="asyncOptions" [(value)]="asyncValue" [state]="asyncState" placeholder="Choose language…">
+  template: `  <cngx-select [label]="'Language'" [options]="asyncOptions" [(value)]="asyncValue" [state]="asyncState" placeholder="Choose language…">
     <ng-template cngxSelectRetryButton let-retry let-label="label" let-disabled="disabled">
       <button type="button" class="chip" [disabled]="disabled" (click)="retry()" style="background:color-mix(in oklch, var(--cngx-color-warning) 10%, transparent);border-color:color-mix(in oklch, var(--cngx-color-warning) 35%, transparent);color:var(--cngx-color-warning)">
         ↻ {{ label }}
       </button>
     </ng-template>
-  </cngx-select>
-  <div class="button-row" style="margin-top:12px">
+  </cngx-select>`,
+  templateChrome: `<div class="button-row" style="margin-top:12px">
     <button type="button" class="chip" (click)="asyncSetError()">Trigger load error</button>
     <button type="button" class="chip" (click)="asyncSetSuccess()">Reset</button>
   </div>`,

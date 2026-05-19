@@ -20,8 +20,7 @@ export const STORY: DemoSpec = {
     event.preventDefault();
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }`,
-  template: `
-  <div style="display:flex;gap:16px;max-width:600px">
+  template: `  <div style="display:flex;gap:16px;max-width:600px">
     <nav [cngxScrollSpy]="sectionIds" [root]="'.spy-container'" [threshold]="0.1" #spy="cngxScrollSpy"
          style="position:sticky;top:0;display:flex;flex-direction:column;gap:4px;min-width:100px;padding-top:8px">
       @for (id of sectionIds; track id) {
@@ -45,8 +44,8 @@ export const STORY: DemoSpec = {
         </section>
       }
     </div>
-  </div>
-  <div class="event-grid" style="margin-top:12px">
+  </div>`,
+  templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row">
       <span class="event-label">Active section</span>
       <span class="event-value">{{ spy.activeId() ?? 'none' }}</span>

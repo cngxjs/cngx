@@ -28,15 +28,7 @@ export const STORY: DemoSpec = {
       this.loading.set(false);
     }, 800);
   }`,
-  template: `
-  <div class="status-row" style="margin-bottom:12px">
-    <span class="status-badge">Items: {{ items().length }}</span>
-    <span class="status-badge">Has more: {{ hasMore() }}</span>
-    @if (loading()) {
-      <span class="status-badge">Loading...</span>
-    }
-  </div>
-  <div class="scroll-root" style="max-height:300px;overflow-y:auto;border:1px solid var(--cngx-color-border,#e0e0e0);border-radius:8px">
+  template: `  <div class="scroll-root" style="max-height:300px;overflow-y:auto;border:1px solid var(--cngx-color-border,#e0e0e0);border-radius:8px">
     @for (item of items(); track item) {
       <div style="padding:12px 16px;border-bottom:1px solid var(--cngx-color-border,#e0e0e0)">
         {{ item }}
@@ -50,5 +42,12 @@ export const STORY: DemoSpec = {
         All items loaded.
       }
     </div>
+  </div>`,
+  templateChrome: `<div class="status-row" style="margin-bottom:12px">
+    <span class="status-badge">Items: {{ items().length }}</span>
+    <span class="status-badge">Has more: {{ hasMore() }}</span>
+    @if (loading()) {
+      <span class="status-badge">Loading...</span>
+    }
   </div>`,
 };

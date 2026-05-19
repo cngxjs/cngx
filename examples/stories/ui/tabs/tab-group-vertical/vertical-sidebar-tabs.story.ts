@@ -20,8 +20,7 @@ export const STORY: DemoSpec = {
   ],
   imports: ['CngxTabGroup', 'CngxTab', 'CngxTabLabel', 'CngxTabContent'],
   setup: `protected readonly active = signal(0);`,
-  template: `
-  <cngx-tab-group orientation="vertical" [(activeIndex)]="active" aria-label="Vertical tabs">
+  template: `  <cngx-tab-group orientation="vertical" [(activeIndex)]="active" aria-label="Vertical tabs">
     <div cngxTab [label]="'Overview'">
       <ng-template cngxTabLabel>Overview</ng-template>
       <ng-template cngxTabContent>
@@ -46,8 +45,8 @@ export const STORY: DemoSpec = {
         <p>Billing content — plan, invoices, payment method.</p>
       </ng-template>
     </div>
-  </cngx-tab-group>
-  <div class="event-grid" style="margin-top:12px;gap:8px">
+  </cngx-tab-group>`,
+  templateChrome: `<div class="event-grid" style="margin-top:12px;gap:8px">
     <div class="event-row"><span class="event-label">Active tab</span><span class="event-value">{{ active() }}</span></div>
   </div>`,
 };

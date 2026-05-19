@@ -41,8 +41,15 @@ export const STORY: DemoSpec = {
     }
     return of(intended).pipe(delay(700));
   };`,
-  template: `
-  <div class="button-row" style="margin-bottom:12px">
+  template: `  <cngx-reorderable-multi-select
+    [label]="'Playlist'"
+    [options]="songs"
+    [clearable]="true"
+    [commitAction]="commitAction"
+    [commitMode]="commitMode()"
+    [(values)]="commitValues"
+  />`,
+  templateChrome: `<div class="button-row" style="margin-bottom:12px">
     <label>
       <input
         type="radio"
@@ -72,17 +79,7 @@ export const STORY: DemoSpec = {
       Server fails
     </label>
   </div>
-
-  <cngx-reorderable-multi-select
-    [label]="'Playlist'"
-    [options]="songs"
-    [clearable]="true"
-    [commitAction]="commitAction"
-    [commitMode]="commitMode()"
-    [(values)]="commitValues"
-  />
-
-  <div class="event-grid" style="margin-top:12px">
+<div class="event-grid" style="margin-top:12px">
     <div class="event-row">
       <span class="event-label">Playlist order</span>
       <span class="event-value">{{ commitValues().join(' → ') || '—' }}</span>

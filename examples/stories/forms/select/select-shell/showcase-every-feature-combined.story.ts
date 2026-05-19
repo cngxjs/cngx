@@ -39,8 +39,7 @@ export const STORY: DemoSpec = {
       [...l.slice(-4), new Date().toLocaleTimeString() + ' → ' + (e.option?.label ?? 'cleared')],
     );
   }`,
-  template: `
-  <div class="kbd-hint">
+  template: `  <div class="kbd-hint">
     <strong>Try it:</strong>
     <span>focus the trigger and press a letter (typeahead-while-closed)</span>
     <span>open + use <kbd>↑</kbd> <kbd>↓</kbd> <kbd>Home</kbd> <kbd>End</kbd> <kbd>PgUp</kbd> <kbd>PgDn</kbd></span>
@@ -88,9 +87,8 @@ export const STORY: DemoSpec = {
       <cngx-option [value]="'finance'">Finance</cngx-option>
       <cngx-option [value]="'legal'">Legal</cngx-option>
     </cngx-optgroup>
-  </cngx-select-shell>
-
-  <div class="event-grid" style="margin-top:12px">
+  </cngx-select-shell>`,
+  templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row">
       <span class="event-label">value</span>
       <span class="event-value">{{ showcaseValue() ?? '—' }}</span>

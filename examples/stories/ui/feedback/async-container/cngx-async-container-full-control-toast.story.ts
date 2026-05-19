@@ -34,24 +34,12 @@ export const STORY: DemoSpec = {
     this.manual.set('loading');
     setTimeout(() => this.manual.setSuccess([]), 2000);
   }`,
-  template: `
-  <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px">
+  template: `  <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px">
     <button (click)="loadManual()" class="chip">Load</button>
     <button (click)="emptyManual()" class="chip">Empty</button>
     <button (click)="errorManual()" class="chip">Error</button>
     <button (click)="refreshManual()" class="chip" [disabled]="manual.isFirstLoad()">Refresh</button>
     <button (click)="manual.reset()" class="chip">Reset</button>
-  </div>
-
-  <div class="event-grid" style="margin-bottom:12px">
-    <div class="event-row">
-      <span class="event-label">Status</span>
-      <span class="event-value">{{ manual.status() }}</span>
-    </div>
-    <div class="event-row">
-      <span class="event-label">isFirstLoad</span>
-      <span class="event-value">{{ manual.isFirstLoad() }}</span>
-    </div>
   </div>
 
   <cngx-async-container [state]="manual" ariaLabel="Items"
@@ -88,4 +76,14 @@ export const STORY: DemoSpec = {
       </div>
     </ng-template>
   </cngx-async-container>`,
+  templateChrome: `<div class="event-grid" style="margin-bottom:12px">
+    <div class="event-row">
+      <span class="event-label">Status</span>
+      <span class="event-value">{{ manual.status() }}</span>
+    </div>
+    <div class="event-row">
+      <span class="event-label">isFirstLoad</span>
+      <span class="event-value">{{ manual.isFirstLoad() }}</span>
+    </div>
+  </div>`,
 };

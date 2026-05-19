@@ -26,8 +26,7 @@ export const STORY: DemoSpec = {
     { value: 'reload', label: 'Reload' },
   ]);
   protected readonly lastSelected = signal<string | null>(null);`,
-  template: `
-  <input
+  template: `  <input
     cngxListboxSearch
     class="palette-search"
     type="search"
@@ -53,8 +52,8 @@ export const STORY: DemoSpec = {
   </div>
   @if (palette.options().length === 0) {
     <p class="empty">No matching commands.</p>
-  }
-  <div class="event-grid" style="margin-top:8px">
+  }`,
+  templateChrome: `<div class="event-grid" style="margin-top:8px">
     <div class="event-row">
       <span class="event-label">Last selected</span>
       <span class="event-value">{{ lastSelected() ?? '—' }}</span>

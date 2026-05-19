@@ -44,21 +44,20 @@ export const STORY: DemoSpec = {
   ];
   protected readonly asyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
     createManualState<CngxSelectOptionsInput<string>>();
-  protected readonly asyncValue = signal<string | undefined>(undefined);
-  protected asyncSetSuccess(): void { this.asyncState.setSuccess(this.asyncOptions); }
+  protected readonly asyncValue = signal<string | undefined>(undefined);`,
+  setupChrome: `  protected asyncSetSuccess(): void { this.asyncState.setSuccess(this.asyncOptions); }
   protected asyncSetRefreshing(): void {
     this.asyncState.setSuccess(this.asyncOptions);
     this.asyncState.set('refreshing');
   }`,
-  template: `
-  <cngx-select [label]="'Language'" [options]="asyncOptions" [(value)]="asyncValue" [state]="asyncState" placeholder="Choose language…">
+  template: `  <cngx-select [label]="'Language'" [options]="asyncOptions" [(value)]="asyncValue" [state]="asyncState" placeholder="Choose language…">
     <ng-template cngxSelectRefreshing let-previousCount="previousCount">
       <div role="status" aria-live="polite" style="padding:0.4rem 0.75rem;font-size:0.8rem;color:var(--cngx-color-info);background:linear-gradient(90deg,color-mix(in oklch, var(--cngx-color-info) 10%, transparent),color-mix(in oklch, var(--cngx-color-info) 25%, transparent),color-mix(in oklch, var(--cngx-color-info) 10%, transparent));background-size:200% 100%;animation:cngx-select-refresh-shimmer 1.6s linear infinite">
         🔄 Refreshing {{ previousCount }} options…
       </div>
     </ng-template>
-  </cngx-select>
-  <div class="button-row" style="margin-top:12px">
+  </cngx-select>`,
+  templateChrome: `<div class="button-row" style="margin-top:12px">
     <button type="button" class="chip" (click)="asyncSetSuccess()">Reset</button>
     <button type="button" class="chip" (click)="asyncSetRefreshing()">Trigger refresh</button>
   </div>`,

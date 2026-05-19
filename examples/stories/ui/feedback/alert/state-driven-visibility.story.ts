@@ -31,8 +31,7 @@ export const STORY: DemoSpec = {
   protected resetState(): void {
     this.saveState.reset();
   }`,
-  template: `
-  <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px">
+  template: `  <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px">
     <button (click)="simulateError()" class="chip">Error</button>
     <button (click)="simulateSuccess()" class="chip">Success (5s auto-dismiss)</button>
     <button (click)="simulateLoading()" class="chip">Loading</button>
@@ -45,9 +44,8 @@ export const STORY: DemoSpec = {
       @case ('success') { Saved successfully. This will auto-dismiss in 5s. Hover to pause. }
       @case ('loading') { Loading... please wait. }
     }
-  </cngx-alert>
-
-  <div class="event-grid" style="margin-top:12px">
+  </cngx-alert>`,
+  templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row">
       <span class="event-label">Status</span>
       <span class="event-value">{{ saveState.status() }}</span>

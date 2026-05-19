@@ -35,8 +35,7 @@ export const STORY: DemoSpec = {
     b: { id: string; name: string } | undefined,
   ) => (a?.id ?? null) === (b?.id ?? null);
   protected readonly basicDisplay = (v: { id: string; name: string }) => v.name;`,
-  template: `
-  <div class="kbd-hint">
+  template: `  <div class="kbd-hint">
     <strong>Try it:</strong>
     <span>Type a non-existent tag (e.g. "Security")</span>
     <span>Press the <kbd>Create</kbd> button inside the panel</span>
@@ -87,9 +86,8 @@ export const STORY: DemoSpec = {
         }
       </button>
     </ng-template>
-  </cngx-action-select>
-
-  <div class="event-grid" style="margin-top:12px">
+  </cngx-action-select>`,
+  templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row">
       <span class="event-label">Selected</span>
       <span class="event-value">{{ basicValue()?.name ?? '—' }}</span>

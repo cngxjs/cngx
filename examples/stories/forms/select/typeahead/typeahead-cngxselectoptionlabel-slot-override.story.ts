@@ -28,8 +28,7 @@ export const STORY: DemoSpec = {
   protected readonly typeaheadCompare = (a: { id: number } | undefined, b: { id: number } | undefined): boolean =>
     (a?.id ?? NaN) === (b?.id ?? NaN);
   protected readonly typeaheadDisplay = (u: { id: number; name: string }): string => u.name;`,
-  template: `
-  <cngx-typeahead
+  template: `  <cngx-typeahead
     [label]="'User'"
     [options]="typeaheadUsers"
     [compareWith]="typeaheadCompare"
@@ -48,8 +47,8 @@ export const STORY: DemoSpec = {
         </span>
       </span>
     </ng-template>
-  </cngx-typeahead>
-  <div class="event-grid" style="margin-top:12px">
+  </cngx-typeahead>`,
+  templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ typeaheadValue()?.name ?? '—' }}</span></div>
   </div>`,
 };

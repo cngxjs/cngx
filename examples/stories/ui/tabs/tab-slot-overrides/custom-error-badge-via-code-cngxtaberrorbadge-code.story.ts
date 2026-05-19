@@ -24,8 +24,7 @@ export const STORY: DemoSpec = {
   imports: ['CngxTabGroup', 'CngxTab', 'CngxTabContent', 'CngxTabErrorBadge', 'CngxErrorAggregator', 'CngxErrorSource'],
   setup: `protected readonly active = signal(0);
   protected readonly profileInvalid = signal(true);`,
-  template: `
-  <cngx-tab-group [(activeIndex)]="active" aria-label="Slot-overrides — error badge">
+  template: `  <cngx-tab-group [(activeIndex)]="active" aria-label="Slot-overrides — error badge">
     <ng-template cngxTabErrorBadge let-tab="tab">
       <span class="chip" style="background:#dc2626;color:#fff;font-size:0.7em;padding:0 6px">
         {{ tab.errorAggregator()?.errorCount() }}
@@ -44,8 +43,8 @@ export const STORY: DemoSpec = {
         <p>No aggregator bound — no badge rendered.</p>
       </ng-template>
     </div>
-  </cngx-tab-group>
-  <div class="event-grid" style="margin-top:var(--demo-grid-gap, 12px);gap:8px">
+  </cngx-tab-group>`,
+  templateChrome: `<div class="event-grid" style="margin-top:var(--demo-grid-gap, 12px);gap:8px">
     <div class="event-row" style="gap:8px">
       <label>
         <input type="checkbox"

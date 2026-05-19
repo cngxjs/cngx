@@ -18,8 +18,7 @@ export const STORY: DemoSpec = {
   ],
   imports: ['CngxActiveDescendant', 'CngxOption'],
   setup: `protected readonly lastActivated = signal<string | null>(null);`,
-  template: `
-  <div class="ad-listbox"
+  template: `  <div class="ad-listbox"
        cngxActiveDescendant
        role="listbox"
        aria-label="Flat options"
@@ -30,8 +29,8 @@ export const STORY: DemoSpec = {
     <div cngxOption value="paste-special">Paste Special</div>
     <div cngxOption value="paste-values" [disabled]="true">Paste Values (disabled)</div>
     <div cngxOption value="paste-formatting">Paste Formatting</div>
-  </div>
-  <div class="event-grid" style="margin-top:12px">
+  </div>`,
+  templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row">
       <span class="event-label">Active value</span>
       <span class="event-value">{{ adFlat.activeValue() ?? '—' }}</span>

@@ -25,10 +25,9 @@ export const STORY: DemoSpec = {
   ],
   imports: ['CngxFormField', 'CngxLabel', 'CngxFieldErrors', 'CngxListbox', 'CngxOption', 'CngxListboxFieldBridge'],
   setup: `protected readonly rfControl = new FormControl<string>('green', { validators: [Validators.required], nonNullable: true });
-  protected readonly rfField = adaptFormControl(this.rfControl, 'color', inject(DestroyRef));
-  protected readonly rfValue = toSignal(this.rfControl.valueChanges, { initialValue: this.rfControl.value });`,
-  template: `
-  <cngx-form-field [field]="rfField">
+  protected readonly rfField = adaptFormControl(this.rfControl, 'color', inject(DestroyRef));`,
+  setupChrome: `  protected readonly rfValue = toSignal(this.rfControl.valueChanges, { initialValue: this.rfControl.value });`,
+  template: `  <cngx-form-field [field]="rfField">
     <label cngxLabel>Color (RF)</label>
     <div cngxListbox
          cngxListboxFieldBridge
@@ -39,8 +38,8 @@ export const STORY: DemoSpec = {
       <div cngxOption value="blue">Blue</div>
     </div>
     <cngx-field-errors />
-  </cngx-form-field>
-  <div class="event-grid" style="margin-top:12px">
+  </cngx-form-field>`,
+  templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row">
       <span class="event-label">RF control value</span>
       <span class="event-value">{{ rfValue() }}</span>

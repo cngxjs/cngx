@@ -27,8 +27,7 @@ export const STORY: DemoSpec = {
     { value: 'old', label: 'Nicht mehr gepflegt', disabled: true },
   ];
   protected readonly comboClearableValues = signal<string[]>(['angular', 'a11y']);`,
-  template: `
-  <cngx-combobox
+  template: `  <cngx-combobox
     [label]="'Topics'"
     [options]="tagOptions"
     [clearable]="true"
@@ -40,8 +39,8 @@ export const STORY: DemoSpec = {
         Reset all
       </button>
     </ng-template>
-  </cngx-combobox>
-  <div class="event-grid" style="margin-top:12px">
+  </cngx-combobox>`,
+  templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row"><span class="event-label">Values</span><span class="event-value">{{ comboClearableValues().join(', ') || '—' }}</span></div>
   </div>`,
 };

@@ -15,8 +15,10 @@ export const STORY: DemoSpec = {
     'import { CngxPressRipple } from \'@cngx/common/interactive\';',
   ],
   imports: ['CngxPressRipple'],
-  template: `
-  <div class="button-row" style="gap:12px">
+  template: `  <p style="margin-top:12px;font-size:0.8125rem;color:var(--cngx-text-secondary,#666)">
+    One directive, two behaviors. The molecule composes <code>CngxPressable</code> + <code>CngxRipple</code> via hostDirectives.
+  </p>`,
+  templateChrome: `<div class="button-row" style="gap:12px">
     <button cngxPressRipple class="chip"
             style="transition:transform 80ms ease"
             [class.cngx-pressed]="">
@@ -32,9 +34,5 @@ export const STORY: DemoSpec = {
             style="width:48px;height:48px;border-radius:50%;padding:0;transition:transform 80ms ease">
       C
     </button>
-  </div>
-
-  <p style="margin-top:12px;font-size:0.8125rem;color:var(--cngx-text-secondary,#666)">
-    One directive, two behaviors. The molecule composes <code>CngxPressable</code> + <code>CngxRipple</code> via hostDirectives.
-  </p>`,
+  </div>`,
 };

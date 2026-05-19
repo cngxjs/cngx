@@ -34,8 +34,7 @@ export const STORY: DemoSpec = {
   protected closeCounter = 0;
   protected readonly closeCreate: CngxSelectCreateAction<{ id: string; name: string }> =
     (_term, draft) => ({ id: 'close-' + ++this.closeCounter, name: draft.label });`,
-  template: `
-  <cngx-action-multi-select
+  template: `  <cngx-action-multi-select
     [label]="'Invitees'"
     [options]="tags"
     [compareWith]="basicCompare"
@@ -70,9 +69,8 @@ export const STORY: DemoSpec = {
         @else { + „{{ term || '…' }}" invite (closes panel) }
       </button>
     </ng-template>
-  </cngx-action-multi-select>
-
-  <div class="event-grid" style="margin-top:12px">
+  </cngx-action-multi-select>`,
+  templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row">
       <span class="event-label">Invited</span>
       <span class="event-value">{{ closeValues().map(v => v.name).join(', ') || '—' }}</span>

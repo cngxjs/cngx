@@ -44,8 +44,7 @@ export const STORY: DemoSpec = {
   protected readonly autofocusValue = signal<string | undefined>(undefined);
   protected readonly autofocusVisible = signal(false);
   protected toggleAutofocus(): void { this.autofocusVisible.update(v => !v); }`,
-  template: `
-  <button type="button" class="chip" (click)="toggleAutofocus()" style="margin-bottom:8px">
+  template: `  <button type="button" class="chip" (click)="toggleAutofocus()" style="margin-bottom:8px">
     {{ autofocusVisible() ? 'Hide select' : 'Mount select (autofocus)' }}
   </button>
   @if (autofocusVisible()) {
@@ -56,8 +55,8 @@ export const STORY: DemoSpec = {
       [autofocus]="true"
       placeholder="Autofocus…"
     />
-  }
-  <div class="event-grid" style="margin-top:12px">
+  }`,
+  templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ autofocusValue() ?? '—' }}</span></div>
   </div>`,
 };

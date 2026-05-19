@@ -30,8 +30,7 @@ export const STORY: DemoSpec = {
     }
     return Promise.resolve(true);
   };`,
-  template: `
-  <cngx-tab-group
+  template: `  <cngx-tab-group
     [(activeIndex)]="active"
     [commitAction]="commitAction"
     commitMode="optimistic"
@@ -58,8 +57,8 @@ export const STORY: DemoSpec = {
         <p>Tab 3 — the commit target. The first click rejects with "Security check failed — retry"; the slot renders the ↶ glyph until the second attempt succeeds.</p>
       </ng-template>
     </div>
-  </cngx-tab-group>
-  <div class="event-grid" style="margin-top:var(--demo-grid-gap, 12px)">
+  </cngx-tab-group>`,
+  templateChrome: `<div class="event-grid" style="margin-top:var(--demo-grid-gap, 12px)">
     <div class="event-row"><span class="event-label">Active tab</span><span class="event-value">{{ active() }}</span></div>
     <div class="event-row"><span class="event-label">Commit attempts</span><span class="event-value">{{ busyAttempts() }}</span></div>
   </div>`,

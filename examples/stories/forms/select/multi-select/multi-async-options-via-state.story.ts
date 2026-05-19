@@ -19,7 +19,10 @@ export const STORY: DemoSpec = {
     'import { createManualState, type ManualAsyncState } from \'@cngx/common/data\';',
   ],
   imports: ['CngxMultiSelect'],
-  setup: `protected readonly loading = signal(true);
+  setup: `  protected readonly multiAsyncValues = signal<string[]>([]);
+  protected readonly multiAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
+    createManualState<CngxSelectOptionsInput<string>>();`,
+  setupChrome: `protected readonly loading = signal(true);
   protected readonly tagOptions: CngxSelectOptionDef<string>[] = [
     { value: 'angular', label: 'Angular' },
     { value: 'signals', label: 'Signals' },
@@ -28,19 +31,15 @@ export const STORY: DemoSpec = {
     { value: 'ts', label: 'TypeScript' },
     { value: 'old', label: 'Nicht mehr gepflegt', disabled: true },
   ];
-  protected readonly multiAsyncValues = signal<string[]>([]);
-  protected readonly multiAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
-    createManualState<CngxSelectOptionsInput<string>>();
   protected multiAsyncSetLoading(): void { this.multiAsyncState.set('loading'); }
   protected multiAsyncSetSuccess(): void { this.multiAsyncState.setSuccess(this.tagOptions); }`,
-  template: `
-  <cngx-multi-select
+  template: `  <cngx-multi-select
     [label]="'Topics'"
     [state]="multiAsyncState"
     [(values)]="multiAsyncValues"
     placeholder="Choose topics…"
-  />
-  <div class="event-grid" style="margin-top:12px">
+  />`,
+  templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row" style="margin-top:8px">
       <button type="button" class="chip" (click)="multiAsyncSetLoading()">Set loading</button>
       <button type="button" class="chip" (click)="multiAsyncSetSuccess()">Set success</button>

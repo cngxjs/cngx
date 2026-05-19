@@ -47,17 +47,16 @@ export const STORY: DemoSpec = {
   private readonly singleSchema = schema<{ color: string }>((root) => {
     required(root.color);
   });
-  protected readonly singleForm = form(this.singleModel, this.singleSchema);
-  protected handleSingleSubmit(): void {
+  protected readonly singleForm = form(this.singleModel, this.singleSchema);`,
+  setupChrome: `  protected handleSingleSubmit(): void {
     submit(this.singleForm, async () => []);
   }`,
-  template: `
-  <cngx-form-field [field]="singleForm.color">
+  template: `  <cngx-form-field [field]="singleForm.color">
     <label cngxLabel>Lieblingsfarbe</label>
     <cngx-select [label]="'Lieblingsfarbe'" [options]="colors" placeholder="Pick a color…" />
     <cngx-field-errors />
-  </cngx-form-field>
-  <div class="event-grid" style="margin-top:12px">
+  </cngx-form-field>`,
+  templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row"><span class="event-label">Field value</span><span class="event-value">{{ singleForm.color().value() || '—' }}</span></div>
     <div class="event-row"><span class="event-label">Valid</span><span class="event-value">{{ singleForm.color().valid() ? 'yes' : 'no' }}</span></div>
     <div class="event-row"><span class="event-label">Touched</span><span class="event-value">{{ singleForm.color().touched() ? 'yes' : 'no' }}</span></div>

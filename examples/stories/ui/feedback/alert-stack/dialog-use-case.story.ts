@@ -15,8 +15,8 @@ export const STORY: DemoSpec = {
   moduleImports: [
     'import { CngxAlertStack } from \'@cngx/ui/feedback\';',
   ],
-  template: `
-  <div class="event-grid">
+  template: ``,
+  templateChrome: `<div class="event-grid">
     <div class="event-row">
       <span class="event-label">Architecture</span>
       <span class="event-value">CngxAlertStack provides CngxAlerter via viewProviders</span>

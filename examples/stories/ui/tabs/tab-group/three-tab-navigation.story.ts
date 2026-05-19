@@ -20,8 +20,7 @@ export const STORY: DemoSpec = {
   ],
   imports: ['CngxTabGroup', 'CngxTab', 'CngxTabLabel', 'CngxTabContent'],
   setup: `protected readonly active = signal(0);`,
-  template: `
-  <cngx-tab-group [(activeIndex)]="active" aria-label="Settings tabs">
+  template: `  <cngx-tab-group [(activeIndex)]="active" aria-label="Settings tabs">
     <div cngxTab [label]="'Profile'">
       <ng-template cngxTabLabel>Profile</ng-template>
       <ng-template cngxTabContent>
@@ -40,8 +39,8 @@ export const STORY: DemoSpec = {
         <p>Notifications content — email + push channel preferences.</p>
       </ng-template>
     </div>
-  </cngx-tab-group>
-  <div class="event-grid" style="margin-top:12px;gap:8px">
+  </cngx-tab-group>`,
+  templateChrome: `<div class="event-grid" style="margin-top:12px;gap:8px">
     <div class="event-row"><span class="event-label">Active tab</span><span class="event-value">{{ active() }}</span></div>
   </div>`,
 };

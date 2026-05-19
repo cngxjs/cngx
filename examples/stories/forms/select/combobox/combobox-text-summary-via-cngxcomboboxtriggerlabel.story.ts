@@ -27,8 +27,7 @@ export const STORY: DemoSpec = {
     { value: 'old', label: 'Nicht mehr gepflegt', disabled: true },
   ];
   protected readonly comboTextValues = signal<string[]>(['angular', 'signals']);`,
-  template: `
-  <cngx-combobox
+  template: `  <cngx-combobox
     [label]="'Topics'"
     [options]="tagOptions"
     [(values)]="comboTextValues"
@@ -43,8 +42,8 @@ export const STORY: DemoSpec = {
         <span style="padding-inline-end:0.5rem;font-weight:500">{{ count }} topics</span>
       }
     </ng-template>
-  </cngx-combobox>
-  <div class="event-grid" style="margin-top:12px">
+  </cngx-combobox>`,
+  templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row"><span class="event-label">Values</span><span class="event-value">{{ comboTextValues().join(', ') || '—' }}</span></div>
     <div class="event-row"><span class="event-label">Count</span><span class="event-value">{{ comboTextValues().length }}</span></div>
   </div>`,

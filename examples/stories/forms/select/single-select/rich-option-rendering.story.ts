@@ -42,8 +42,7 @@ export const STORY: DemoSpec = {
     { value: 'ops', label: 'DevOps', meta: { icon: '🚀' } },
   ];
   protected readonly richValue = signal<string | undefined>(undefined);`,
-  template: `
-  <cngx-select
+  template: `  <cngx-select
     [label]="'Trade'"
     [options]="richOptions"
     [(value)]="richValue"
@@ -53,8 +52,8 @@ export const STORY: DemoSpec = {
       <span>{{ opt.meta?.icon }}</span>
       <strong>{{ opt.label }}</strong>
     </ng-template>
-  </cngx-select>
-  <div class="event-grid" style="margin-top:12px">
+  </cngx-select>`,
+  templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ richValue() || '—' }}</span></div>
   </div>`,
 };

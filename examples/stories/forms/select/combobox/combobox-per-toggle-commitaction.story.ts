@@ -50,8 +50,15 @@ export const STORY: DemoSpec = {
     }
     return of(intended).pipe(delay(800));
   };`,
-  template: `
-  <div class="event-row" style="gap:8px;align-items:center;margin-bottom:8px">
+  template: `  <cngx-combobox
+    [label]="'Topics (commit)'"
+    [options]="tagOptions"
+    [(values)]="comboCommitValues"
+    [commitAction]="comboCommitAction"
+    [commitMode]="comboCommitMode()"
+    placeholder="Search topics…"
+  />`,
+  templateChrome: `<div class="event-row" style="gap:8px;align-items:center;margin-bottom:8px">
     <button type="button" class="chip"
             [style.background]="comboCommitMode() === 'optimistic' ? 'color-mix(in oklch, var(--cngx-color-success) 18%, transparent)' : ''"
             (click)="comboCommitMode.set('optimistic')">optimistic</button>
@@ -65,15 +72,7 @@ export const STORY: DemoSpec = {
       simulate error
     </label>
   </div>
-  <cngx-combobox
-    [label]="'Topics (commit)'"
-    [options]="tagOptions"
-    [(values)]="comboCommitValues"
-    [commitAction]="comboCommitAction"
-    [commitMode]="comboCommitMode()"
-    placeholder="Search topics…"
-  />
-  <div class="event-grid" style="margin-top:12px">
+<div class="event-grid" style="margin-top:12px">
     <div class="event-row"><span class="event-label">Values</span><span class="event-value">{{ comboCommitValues().join(', ') || '—' }}</span></div>
     <div class="event-row"><span class="event-label">Commit log</span>
       <span class="event-value" style="white-space:pre">{{ comboCommitLog().slice(-4).join('\\n') || '—' }}</span>

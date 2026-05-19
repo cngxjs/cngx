@@ -28,8 +28,7 @@ export const STORY: DemoSpec = {
     this.saveState.set('pending');
     setTimeout(() => this.saveState.setError('Network timeout'), 1500);
   }`,
-  template: `
-  <div style="display:flex;gap:8px;margin-bottom:12px">
+  template: `  <div style="display:flex;gap:8px;margin-bottom:12px">
     <button (click)="simulateSave()"
       [cngxToastOn]="saveState" toastSuccess="Saved successfully" toastError="Save failed" [toastErrorDetail]="true"
       class="chip">
@@ -39,9 +38,8 @@ export const STORY: DemoSpec = {
       class="chip">
       Simulate Error (1.5s)
     </button>
-  </div>
-
-  <div class="event-grid">
+  </div>`,
+  templateChrome: `<div class="event-grid">
     <div class="event-row">
       <span class="event-label">Status</span>
       <span class="event-value">{{ saveState.status() }}</span>

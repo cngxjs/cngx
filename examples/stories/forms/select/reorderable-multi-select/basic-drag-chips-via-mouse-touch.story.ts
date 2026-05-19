@@ -29,8 +29,7 @@ export const STORY: DemoSpec = {
     { value: 'hr', label: 'Human Resources' },
   ];
   protected readonly basicValues = signal<string[]>(['ops', 'eng', 'legal']);`,
-  template: `
-  <div class="kbd-hint">
+  template: `  <div class="kbd-hint">
     <strong>Try it:</strong>
     <span>Open the panel and select 3–5 recipients.</span>
     <span>Drag any chip — anywhere outside the ✕ button.</span>
@@ -42,9 +41,8 @@ export const STORY: DemoSpec = {
     [clearable]="true"
     [(values)]="basicValues"
     placeholder="Choose recipients…"
-  />
-
-  <div class="event-grid" style="margin-top:12px">
+  />`,
+  templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row">
       <span class="event-label">Current order</span>
       <span class="event-value">{{ basicValues().join(' → ') || '—' }}</span>

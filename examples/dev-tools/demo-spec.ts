@@ -58,11 +58,26 @@ export interface DemoSpec {
    */
   setup?: string;
   /**
+   * Interactive chrome that backs `templateChrome` — config-toggle signals,
+   * fail-flag helpers, log buffers, async-setter methods. Rendered into the
+   * live component's class body alongside `setup` but excluded from the
+   * displayed TypeScript panel, so the reader sees only artifact-relevant code.
+   */
+  setupChrome?: string;
+  /**
    * Angular template fragment embedded inside the example wrapper.
    * When `controls` is present, the example wraps in `<app-playground>`;
-   * otherwise in `<app-example-card>`.
+   * otherwise in `<app-example-card>`. This is the artifact itself — the
+   * code a consumer would write. Rendered live and shown in the Template panel.
    */
   template: string;
+  /**
+   * Interactive chrome that pairs with `template` — mode toggles, fail
+   * checkboxes, state-readout `event-grid` blocks, retry buttons. Rendered
+   * live alongside `template` but stripped from the displayed Template panel
+   * so the reader sees only the artifact, not the demo's instrumentation.
+   */
+  templateChrome?: string;
   /**
    * Angular class names that must appear in the generated `@Component.imports`
    * array. `generate-examples.mjs` resolves import paths from public-api.

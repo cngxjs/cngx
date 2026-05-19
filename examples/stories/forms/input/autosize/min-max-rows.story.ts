@@ -15,16 +15,16 @@ export const STORY: DemoSpec = {
     'import { CngxAutosize } from \'@cngx/forms/input\';',
   ],
   imports: ['CngxAutosize'],
-  template: `
-  <div class="demo-form">
+  template: `  <div class="demo-form">
     <div class="demo-field">
       <label class="demo-label">Min 3 rows, max 8 rows</label>
       <textarea cngxAutosize [minRows]="3" [maxRows]="8" #bounded="cngxAutosize"
         placeholder="Starts at 3 rows, scrollbar appears after 8..."
         class="demo-input" style="width:100%"></textarea>
-      <div class="status-row">
-        <span class="status-badge">Height: {{ bounded.height() }}px</span>
-      </div>
+      
     </div>
   </div>`,
+  templateChrome: `<div class="status-row">
+        <span class="status-badge">Height: {{ bounded.height() }}px</span>
+      </div>`,
 };

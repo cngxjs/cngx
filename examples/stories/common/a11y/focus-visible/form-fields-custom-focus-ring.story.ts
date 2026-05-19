@@ -14,8 +14,7 @@ export const STORY: DemoSpec = {
   imports: ['CngxFocusVisible'],
   setup: `protected name = signal('');
   protected email = signal('');`,
-  template: `
-  <div style="display: flex; flex-direction: column; gap: 12px; max-width: 320px;">
+  template: `  <div style="display: flex; flex-direction: column; gap: 12px; max-width: 320px;">
     <div>
       <label style="display: block; font-size: 0.8125rem; font-weight: 500; margin-bottom: 4px;">Name</label>
       <input
@@ -68,9 +67,8 @@ export const STORY: DemoSpec = {
     >
       Submit
     </button>
-  </div>
-
-  <div class="event-grid" style="margin-top: 12px">
+  </div>`,
+  templateChrome: `<div class="event-grid" style="margin-top: 12px">
     <div class="event-row">
       <span class="event-label">Name field</span>
       <span class="event-value">{{ fvName.focusVisible() ? 'keyboard focus' : 'no keyboard focus' }}</span>

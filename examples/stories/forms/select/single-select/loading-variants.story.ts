@@ -37,28 +37,27 @@ export const STORY: DemoSpec = {
     'import { createManualState } from \'@cngx/common/data\';',
   ],
   imports: ['CngxSelect'],
-  setup: `protected readonly loading = signal(true);
+  setup: `  protected readonly loadingVariantSel = signal<'skeleton' | 'spinner' | 'bar' | 'text'>('spinner');
+  protected readonly variantValue = signal<string | undefined>(undefined);
+  protected readonly variantState = createManualState<CngxSelectOptionsInput<string>>();`,
+  setupChrome: `protected readonly loading = signal(true);
   protected readonly asyncOptions: CngxSelectOptionDef<string>[] = [
     { value: 'de', label: 'Deutsch' },
     { value: 'en', label: 'English' },
     { value: 'fr', label: 'Français' },
     { value: 'es', label: 'Español' },
   ];
-  protected readonly loadingVariantSel = signal<'skeleton' | 'spinner' | 'bar' | 'text'>('spinner');
-  protected readonly variantValue = signal<string | undefined>(undefined);
-  protected readonly variantState = createManualState<CngxSelectOptionsInput<string>>();
   protected triggerVariantLoading(): void { this.variantState.set('loading'); }
   protected triggerVariantSuccess(): void { this.variantState.setSuccess(this.asyncOptions); }`,
-  template: `
-  <cngx-select
+  template: `  <cngx-select
     [label]="'Language'"
     [state]="variantState"
     [loadingVariant]="loadingVariantSel()"
     [skeletonRowCount]="5"
     [(value)]="variantValue"
     placeholder="Choose language…"
-  />
-  <div class="event-grid" style="margin-top:12px;gap:8px">
+  />`,
+  templateChrome: `<div class="event-grid" style="margin-top:12px;gap:8px">
     <div class="event-row" style="gap:8px">
       <span class="event-label">Variant</span>
       @for (v of ['spinner','skeleton','bar','text']; track v) {

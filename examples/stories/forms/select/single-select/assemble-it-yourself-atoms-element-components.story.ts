@@ -2,10 +2,8 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
   title: 'Assemble it yourself — atoms + element components',
-  subtitle:
-    "Composing <code>&lt;cngx-option&gt;</code> / <code>&lt;cngx-optgroup&gt;</code> / <code>&lt;cngx-select-divider&gt;</code> directly inside <code>&lt;cngx-select&gt;</code> <strong>does not work</strong> — content-projection scoping puts the projected children in <code>cngx-select</code>'s injector tree, not the inner listbox's, so <code>CngxActiveDescendant</code> registration fails and the panel opens empty. They <strong>do work</strong> when you compose the listbox yourself using the Level-2 atoms (<code>CngxPopover</code> + <code>CngxListboxTrigger</code> + <code>CngxListbox</code>), because the options sit inside the listbox's own content-children scope.",
-  description:
-    'CngxSelect — native-feeling single-select dropdown with template overrides, optgroups, clearable, loading, commit-action, and signal-/reactive-forms bridges.',
+  subtitle: 'Composing <code>&lt;cngx-option&gt;</code> / <code>&lt;cngx-optgroup&gt;</code> / <code>&lt;cngx-select-divider&gt;</code> directly inside <code>&lt;cngx-select&gt;</code> <strong>does not work</strong> — content-projection scoping puts the projected children in <code>cngx-select</code>\'s injector tree, not the inner listbox\'s, so <code>CngxActiveDescendant</code> registration fails and the panel opens empty. They <strong>do work</strong> when you compose the listbox yourself using the Level-2 atoms (<code>CngxPopover</code> + <code>CngxListboxTrigger</code> + <code>CngxListbox</code>), because the options sit inside the listbox\'s own content-children scope.',
+  description: 'CngxSelect — native-feeling single-select dropdown with template overrides, optgroups, clearable, loading, commit-action, and signal-/reactive-forms bridges.',
   level: 'organism',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'building-block',
@@ -34,22 +32,13 @@ export const STORY: DemoSpec = {
     'provideSelectConfig',
   ],
   moduleImports: [
-    "import { CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider } from '@cngx/forms/select';",
-    "import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';",
-    "import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';",
+    'import { CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider } from \'@cngx/forms/select\';',
+    'import { CngxListbox, CngxListboxTrigger } from \'@cngx/common/interactive\';',
+    'import { CngxPopover, CngxPopoverTrigger } from \'@cngx/common/popover\';',
   ],
-  imports: [
-    'CngxSelectOption',
-    'CngxSelectOptgroup',
-    'CngxSelectDivider',
-    'CngxListbox',
-    'CngxListboxTrigger',
-    'CngxPopover',
-    'CngxPopoverTrigger',
-  ],
+  imports: ['CngxSelectOption', 'CngxSelectOptgroup', 'CngxSelectDivider', 'CngxListbox', 'CngxListboxTrigger', 'CngxPopover', 'CngxPopoverTrigger'],
   setup: `protected readonly assembledValue = signal<string | undefined>(undefined);`,
-  template: `
-  <button type="button"
+  template: `  <button type="button"
           class="chip"
           [cngxPopoverTrigger]="myPop"
           [haspopup]="'listbox'"
@@ -74,8 +63,8 @@ export const STORY: DemoSpec = {
         <cngx-option [value]="'teal'">Teal</cngx-option>
       </cngx-optgroup>
     </div>
-  </div>
-  <div class="event-grid" style="margin-top:12px">
+  </div>`,
+  templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ assembledValue() ?? '—' }}</span></div>
     <div class="event-row"><span class="event-label">Status</span><span class="event-value" style="color:var(--cngx-color-success)">Works — consumer owns the listbox, AD sees projected options.</span></div>
   </div>`,

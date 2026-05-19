@@ -24,7 +24,6 @@ export const STORY: DemoSpec = {
   protected readonly locations = [...new Set(PEOPLE.map((p: Person) => p.location))].sort(
     (a: string, b: string) => a.localeCompare(b),
   );
-  protected readonly total = PEOPLE.length;
   private readonly items = signal(PEOPLE);
   private readonly ds = injectSmartDataSource(this.items);
   protected readonly rows = toSignal(this.ds.connect(), { initialValue: [] as Person[] });
@@ -35,8 +34,8 @@ export const STORY: DemoSpec = {
       this.filter.setPredicate((p) => p.location === location);
     }
   }`,
-  template: `
-  <div class="filter-row">
+  setupChrome: `  protected readonly total = PEOPLE.length;`,
+  template: `  <div class="filter-row">
     <span class="filter-label">Filter location:</span>
     <button type="button" class="chip" (click)="filterBy(null)">All</button>
     @for (loc of locations; track loc) {
@@ -76,8 +75,8 @@ export const STORY: DemoSpec = {
         }
       </tbody>
     </table>
-  </div>
-  <div class="status-row">
+  </div>`,
+  templateChrome: `<div class="status-row">
     <span class="status-badge" [class.active]="filter.isActive()">
       filter {{ filter.isActive() ? 'active' : 'off' }}
     </span>

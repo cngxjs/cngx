@@ -24,17 +24,15 @@ export const STORY: DemoSpec = {
   setup: `private readonly rfDestroyRef = inject(DestroyRef);
   protected readonly rfControl = new FormControl<string | null>('green');
   protected readonly rfField = adaptFormControl(this.rfControl, 'color', this.rfDestroyRef);`,
-  template: `
-  <cngx-form-field [field]="rfField">
+  template: `  <cngx-form-field [field]="rfField">
     <label cngxLabel>Color</label>
     <cngx-select-shell>
       <cngx-option [value]="'red'">Red</cngx-option>
       <cngx-option [value]="'green'">Green</cngx-option>
       <cngx-option [value]="'blue'">Blue</cngx-option>
     </cngx-select-shell>
-  </cngx-form-field>
-
-  <div class="event-grid" style="margin-top:12px">
+  </cngx-form-field>`,
+  templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row">
       <span class="event-label">FormControl.value</span>
       <span class="event-value">{{ rfControl.value ?? '—' }}</span>

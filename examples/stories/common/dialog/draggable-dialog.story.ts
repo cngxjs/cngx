@@ -20,8 +20,7 @@ export const STORY: DemoSpec = {
     'import { CngxDialog, CngxDialogTitle, CngxDialogClose, CngxDialogDraggable } from \'@cngx/common/dialog\';',
   ],
   imports: ['CngxDialog', 'CngxDialogTitle', 'CngxDialogClose', 'CngxDialogDraggable'],
-  template: `
-  <button class="chip" (click)="dragDlg.open()">Open Draggable</button>
+  template: `  <button class="chip" (click)="dragDlg.open()">Open Draggable</button>
 
   <dialog cngxDialog cngxDialogDraggable #dragDlg="cngxDialog" #drag="cngxDialogDraggable"
     style="transform: translate(var(--cngx-dialog-x, 0px), var(--cngx-dialog-y, 0px));">
@@ -30,11 +29,12 @@ export const STORY: DemoSpec = {
       <button class="chip" cngxDialogClose style="padding: 2px 8px;" aria-label="Close dialog">X</button>
     </div>
     <p>Drag the header bar to reposition this dialog.</p>
-    <div class="status-row" style="margin-top: 8px">
+    
+  </dialog>`,
+  templateChrome: `<div class="status-row" style="margin-top: 8px">
       <span class="status-badge">x: {{ drag.position().x }}px</span>
       <span class="status-badge">y: {{ drag.position().y }}px</span>
       <span class="status-badge">dragging: {{ drag.isDragging() }}</span>
-    </div>
-  </dialog>`,
+    </div>`,
   css: `dialog[cngxDialogDraggable] { transform: translate(var(--cngx-dialog-x, 0px), var(--cngx-dialog-y, 0px)); }`,
 };

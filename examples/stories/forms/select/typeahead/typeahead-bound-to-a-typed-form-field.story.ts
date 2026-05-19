@@ -28,16 +28,15 @@ export const STORY: DemoSpec = {
   ];
   protected readonly typeaheadColorModel = signal<string>('');
   protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));`,
-  template: `
-  <cngx-form-field [field]="typeaheadColorField">
+  template: `  <cngx-form-field [field]="typeaheadColorField">
     <cngx-typeahead
       [label]="'Color'"
       [options]="typeaheadColorOptions"
       [clearable]="true"
       placeholder="Farbe eingeben…"
     />
-  </cngx-form-field>
-  <div class="event-grid" style="margin-top:12px">
+  </cngx-form-field>`,
+  templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row"><span class="event-label">Field value</span><span class="event-value">{{ typeaheadColorField().value() || '—' }}</span></div>
   </div>`,
 };

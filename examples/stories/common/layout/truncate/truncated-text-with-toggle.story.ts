@@ -16,8 +16,7 @@ export const STORY: DemoSpec = {
   ],
   imports: ['CngxTruncate'],
   setup: `protected readonly expanded1 = signal(false);`,
-  template: `
-  <div style="max-width:400px">
+  template: `  <div style="max-width:400px">
     <p [cngxTruncate]="3" [(expanded)]="expanded1" #trunc="cngxTruncate"
        style="margin:0;line-height:1.6;font-size:0.875rem">
       Angular Signals represent a fundamental shift in how we think about reactivity.
@@ -36,8 +35,8 @@ export const STORY: DemoSpec = {
         {{ expanded1() ? 'Show less' : 'Show more' }}
       </button>
     }
-  </div>
-  <div class="event-grid" style="margin-top:12px">
+  </div>`,
+  templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row">
       <span class="event-label">isClamped</span>
       <span class="event-value">{{ trunc.isClamped() }}</span>

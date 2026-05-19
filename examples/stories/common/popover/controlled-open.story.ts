@@ -16,8 +16,7 @@ export const STORY: DemoSpec = {
     'import { CngxPopover, CngxPopoverTrigger } from \'@cngx/common/popover\';',
   ],
   imports: ['CngxPopover', 'CngxPopoverTrigger'],
-  template: `
-  <div style="display:flex;gap:12px;align-items:center;padding-top:20px">
+  template: `  <div style="display:flex;gap:12px;align-items:center;padding-top:20px">
     <label [cngxPopoverTrigger]="ctrl"
            style="display:flex;align-items:center;gap:6px;font-size:0.875rem;cursor:pointer">
       <input type="checkbox" #chk (change)="0" />
@@ -28,8 +27,8 @@ export const STORY: DemoSpec = {
          style="padding:8px 12px;font-size:0.8125rem">
       Controlled by checkbox
     </div>
-  </div>
-  <div class="event-grid" style="margin-top:12px">
+  </div>`,
+  templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row">
       <span class="event-label">state</span>
       <span class="event-value">{{ ctrl.state() }}</span>

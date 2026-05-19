@@ -20,8 +20,7 @@ export const STORY: DemoSpec = {
   setup: `protected readonly bold = signal(true);
   protected readonly italic = signal(false);
   protected readonly underline = signal(false);`,
-  template: `
-  <ul cngxMenu [label]="'Text formatting'" class="menu" tabindex="0">
+  template: `  <ul cngxMenu [label]="'Text formatting'" class="menu" tabindex="0">
     <li cngxMenuItemCheckbox value="bold" [(checked)]="bold">
       Bold
     </li>
@@ -37,8 +36,8 @@ export const STORY: DemoSpec = {
       <li cngxMenuItemRadio value="center">Center</li>
       <li cngxMenuItemRadio value="right">Right</li>
     </div>
-  </ul>
-  <div class="event-grid" style="margin-top:12px">
+  </ul>`,
+  templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row">
       <span class="event-label">Bold</span>
       <span class="event-value">{{ bold() ? 'on' : 'off' }}</span>

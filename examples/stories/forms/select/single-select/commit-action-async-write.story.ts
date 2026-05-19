@@ -54,15 +54,14 @@ export const STORY: DemoSpec = {
     }
     return of(intended).pipe(delay(800));
   };`,
-  template: `
-  <cngx-select
+  template: `  <cngx-select
     [label]="'Farbe (commit)'"
     [options]="colors"
     [commitAction]="commitAction"
     [commitMode]="commitMode()"
     [(value)]="commitValue"
-  />
-  <div class="event-grid" style="margin-top:12px">
+  />`,
+  templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ commitValue() ?? '—' }}</span></div>
     <div class="event-row" style="gap:8px;align-items:center">
       <label style="display:inline-flex;align-items:center;gap:4px">

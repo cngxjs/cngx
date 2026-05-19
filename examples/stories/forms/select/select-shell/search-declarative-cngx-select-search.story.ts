@@ -28,8 +28,7 @@ export const STORY: DemoSpec = {
     'Munich', 'Nice', 'Oslo', 'Paris', 'Reykjavik', 'Stockholm', 'Tallinn',
     'Utrecht', 'Vienna', 'Warsaw', 'Zurich',
   ];`,
-  template: `
-  <cngx-select-shell
+  template: `  <cngx-select-shell
     [label]="'City'"
     [(value)]="searchValue"
     [(searchTerm)]="searchTerm"
@@ -40,9 +39,8 @@ export const STORY: DemoSpec = {
     @for (city of cities; track city) {
       <cngx-option [value]="city">{{ city }}</cngx-option>
     }
-  </cngx-select-shell>
-
-  <div class="event-grid" style="margin-top:12px">
+  </cngx-select-shell>`,
+  templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row">
       <span class="event-label">searchTerm</span>
       <span class="event-value">{{ searchTerm() || '(none)' }}</span>

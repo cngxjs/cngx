@@ -26,14 +26,7 @@ export const STORY: DemoSpec = {
   ],
   imports: ['CngxCard', 'CngxCardHeader', 'CngxCardTitle', 'CngxCardSubtitle', 'CngxCardBody', 'CngxCardMedia'],
   setup: `protected decorativeMedia = signal(false);`,
-  template: `
-  <div class="button-row" style="margin-bottom:12px">
-    <label style="display:flex;align-items:center;gap:6px;font-size:0.875rem">
-      <input type="checkbox" [checked]="decorativeMedia()" (change)="decorativeMedia.set($any($event.target).checked)" />
-      decorative
-    </label>
-  </div>
-  <div style="max-width:320px">
+  template: `  <div style="max-width:320px">
     <cngx-card>
       <div cngxCardMedia [decorative]="decorativeMedia()" aspectRatio="16/9">
         <img src="https://picsum.photos/seed/cngx/640/360" alt="Landscape photo" />
@@ -48,8 +41,14 @@ export const STORY: DemoSpec = {
         </p>
       </div>
     </cngx-card>
+  </div>`,
+  templateChrome: `<div class="button-row" style="margin-bottom:12px">
+    <label style="display:flex;align-items:center;gap:6px;font-size:0.875rem">
+      <input type="checkbox" [checked]="decorativeMedia()" (change)="decorativeMedia.set($any($event.target).checked)" />
+      decorative
+    </label>
   </div>
-  <div class="event-grid" style="margin-top:12px">
+<div class="event-grid" style="margin-top:12px">
     <div class="event-row">
       <span class="event-label">decorative</span>
       <span class="event-value">{{ decorativeMedia() }}</span>

@@ -21,8 +21,7 @@ export const STORY: DemoSpec = {
   protected logEvent(name: string): void {
     this.events.update(e => [name + ' @ ' + new Date().toLocaleTimeString(), ...e].slice(0, 5));
   }`,
-  template: `
-  <div cngxDrawer #evDrawer="cngxDrawer"
+  template: `  <div cngxDrawer #evDrawer="cngxDrawer"
        (openedChange)="logEvent('openedChange: ' + $event)"
        (closed)="logEvent('closed')"
        class="drawer-container drawer-container--bordered">
@@ -42,9 +41,8 @@ export const STORY: DemoSpec = {
         <p>Open/close to see events logged below.</p>
       </main>
     </div>
-  </div>
-
-  <div class="event-grid">
+  </div>`,
+  templateChrome: `<div class="event-grid">
     @for (ev of events(); track $index) {
       <div class="event-row">
         <span class="event-value">{{ ev }}</span>

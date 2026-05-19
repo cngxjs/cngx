@@ -18,11 +18,11 @@ export const STORY: DemoSpec = {
     'import { CngxActionButton } from \'@cngx/ui\';',
   ],
   imports: ['CngxActionButton'],
-  setup: `protected readonly submitAction = () => new Promise<void>((resolve, reject) =>
+  setupChrome: `protected readonly submitAction = () => new Promise<void>((resolve, reject) =>
     setTimeout(() => Math.random() > 0.4 ? resolve() : reject(new Error('Random failure')), 1200),
   );`,
-  template: `
-  <div class="button-row">
+  template: ``,
+  templateChrome: `<div class="button-row">
     <cngx-action-button [action]="submitAction"
       pendingLabel="Rolling..." succeededLabel="Won!" failedLabel="Lost">
       Roll the Dice

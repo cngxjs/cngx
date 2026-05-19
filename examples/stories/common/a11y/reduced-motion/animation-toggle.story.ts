@@ -12,8 +12,7 @@ export const STORY: DemoSpec = {
     'CngxReducedMotion',
   ],
   imports: ['CngxReducedMotion'],
-  template: `
-  <div
+  template: `  <div
     cngxReducedMotion
     #rm="cngxReducedMotion"
   >
@@ -50,17 +49,6 @@ export const STORY: DemoSpec = {
       </div>
     </div>
 
-    <div class="event-grid" style="margin-top: 16px">
-      <div class="event-row">
-        <span class="event-label">prefersReducedMotion</span>
-        <span class="event-value">{{ rm.prefersReducedMotion() }}</span>
-      </div>
-      <div class="event-row">
-        <span class="event-label">CSS class</span>
-        <span class="event-value">{{ rm.prefersReducedMotion() ? 'cngx-reduced-motion' : '(none)' }}</span>
-      </div>
-    </div>
-
     <p style="margin-top: 12px; font-size: 0.8125rem; color: var(--cngx-text-secondary, #666);">
       @if (rm.prefersReducedMotion()) {
         Reduced motion is active — animations disabled. Turn off "Reduce motion"
@@ -86,4 +74,14 @@ export const STORY: DemoSpec = {
       to { transform: translateX(0); opacity: 1; }
     }
   </style>`,
+  templateChrome: `<div class="event-grid" style="margin-top: 16px">
+      <div class="event-row">
+        <span class="event-label">prefersReducedMotion</span>
+        <span class="event-value">{{ rm.prefersReducedMotion() }}</span>
+      </div>
+      <div class="event-row">
+        <span class="event-label">CSS class</span>
+        <span class="event-value">{{ rm.prefersReducedMotion() ? 'cngx-reduced-motion' : '(none)' }}</span>
+      </div>
+    </div>`,
 };

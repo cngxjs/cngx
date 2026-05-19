@@ -13,8 +13,7 @@ export const STORY: DemoSpec = {
   ],
   imports: ['CngxSpeak'],
   setup: `protected email = signal('');`,
-  template: `
-  <div style="display: flex; flex-direction: column; gap: 16px; max-width: 480px;">
+  template: `  <div style="display: flex; flex-direction: column; gap: 16px; max-width: 480px;">
     <div style="display: flex; align-items: flex-start; gap: 8px;">
       <div
         [cngxSpeak]="'Welcome to the CNGX component library. This is a headless, typed, production-grade set of Angular directives built for serious applications.'"
@@ -69,9 +68,8 @@ export const STORY: DemoSpec = {
         {{ tts2.speaking() ? 'Stop' : 'Listen' }}
       </button>
     </div>
-  </div>
-
-  <div class="event-grid" style="margin-top: 12px">
+  </div>`,
+  templateChrome: `<div class="event-grid" style="margin-top: 12px">
     <div class="event-row">
       <span class="event-label">TTS supported</span>
       <span class="event-value">{{ tts1.supported }}</span>

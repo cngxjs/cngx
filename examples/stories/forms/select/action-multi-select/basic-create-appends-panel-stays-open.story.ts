@@ -34,8 +34,7 @@ export const STORY: DemoSpec = {
   protected basicCounter = 0;
   protected readonly basicCreate: CngxSelectCreateAction<{ id: string; name: string }> =
     (_term, draft) => ({ id: 'local-' + ++this.basicCounter, name: draft.label });`,
-  template: `
-  <div class="kbd-hint">
+  template: `  <div class="kbd-hint">
     <strong>Try it:</strong>
     <span>Type a new tag name (e.g. "Security")</span>
     <span>Press the <kbd>Create</kbd> button inside the panel</span>
@@ -77,9 +76,8 @@ export const STORY: DemoSpec = {
         @else { + Create tag "<strong>{{ term }}</strong>" }
       </button>
     </ng-template>
-  </cngx-action-multi-select>
-
-  <div class="event-grid" style="margin-top:12px">
+  </cngx-action-multi-select>`,
+  templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row">
       <span class="event-label">Count</span>
       <span class="event-value">{{ basicValues().length }}</span>

@@ -46,19 +46,7 @@ export const STORY: DemoSpec = {
     const msg = err instanceof Error ? err.message : String(err);
     this.asyncLog.update((l) => [...l.slice(-4), new Date().toLocaleTimeString() + ' → ' + msg]);
   }`,
-  template: `
-  <div class="button-row" style="margin-bottom:12px">
-    <label>
-      <input
-        type="checkbox"
-        [checked]="asyncShouldFail()"
-        (change)="asyncShouldFail.set($any($event.target).checked)"
-      />
-      Server fails
-    </label>
-  </div>
-
-  <cngx-action-multi-select
+  template: `  <cngx-action-multi-select
     [label]="'Async Tags'"
     [options]="tags"
     [compareWith]="basicCompare"
@@ -92,9 +80,18 @@ export const STORY: DemoSpec = {
         @else { + Create "{{ term || '…' }}" }
       </button>
     </ng-template>
-  </cngx-action-multi-select>
-
-  <div class="event-grid" style="margin-top:12px">
+  </cngx-action-multi-select>`,
+  templateChrome: `<div class="button-row" style="margin-bottom:12px">
+    <label>
+      <input
+        type="checkbox"
+        [checked]="asyncShouldFail()"
+        (change)="asyncShouldFail.set($any($event.target).checked)"
+      />
+      Server fails
+    </label>
+  </div>
+<div class="event-grid" style="margin-top:12px">
     <div class="event-row">
       <span class="event-label">Values</span>
       <span class="event-value">{{ asyncValues().map(v => v.name).join(', ') || '—' }}</span>

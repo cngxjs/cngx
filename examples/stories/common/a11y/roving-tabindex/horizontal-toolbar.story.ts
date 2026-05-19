@@ -17,8 +17,7 @@ export const STORY: DemoSpec = {
   ],
   imports: ['CngxRovingTabindex', 'CngxRovingItem'],
   setup: `protected readonly activeToolbar = signal(0);`,
-  template: `
-  <div cngxRovingTabindex orientation="horizontal" [(activeIndex)]="activeToolbar"
+  template: `  <div cngxRovingTabindex orientation="horizontal" [(activeIndex)]="activeToolbar"
        role="toolbar" aria-label="Text formatting"
        style="display:flex;gap:4px">
     <button cngxRovingItem class="chip">Bold</button>
@@ -26,8 +25,8 @@ export const STORY: DemoSpec = {
     <button cngxRovingItem class="chip">Underline</button>
     <button cngxRovingItem [cngxRovingItemDisabled]="true" class="chip" style="opacity:0.4">Strikethrough</button>
     <button cngxRovingItem class="chip">Code</button>
-  </div>
-  <div class="event-grid" style="margin-top:12px">
+  </div>`,
+  templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row">
       <span class="event-label">Active index</span>
       <span class="event-value">{{ activeToolbar() }}</span>

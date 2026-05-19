@@ -15,14 +15,12 @@ export const STORY: DemoSpec = {
     'import { CngxMediaQuery } from \'@cngx/common\';',
   ],
   imports: ['CngxMediaQuery'],
-  template: `
-  <div cngxMediaQuery="(min-width: 768px)" #tablet="cngxMediaQuery"></div>
+  template: `  <div cngxMediaQuery="(min-width: 768px)" #tablet="cngxMediaQuery"></div>
   <div cngxMediaQuery="(min-width: 1024px)" #desktop="cngxMediaQuery"></div>
   <div cngxMediaQuery="(min-width: 1440px)" #wide="cngxMediaQuery"></div>
   <div cngxMediaQuery="(prefers-reduced-motion: reduce)" #motion="cngxMediaQuery"></div>
-  <div cngxMediaQuery="(prefers-color-scheme: dark)" #darkPref="cngxMediaQuery"></div>
-
-  <div class="status-row">
+  <div cngxMediaQuery="(prefers-color-scheme: dark)" #darkPref="cngxMediaQuery"></div>`,
+  templateChrome: `<div class="status-row">
     <span class="status-badge" [class.active]="tablet.matches()">
       tablet (768px+): {{ tablet.matches() }}
     </span>
@@ -33,8 +31,7 @@ export const STORY: DemoSpec = {
       wide (1440px+): {{ wide.matches() }}
     </span>
   </div>
-
-  <div class="status-row" style="margin-top: 0.5rem;">
+<div class="status-row" style="margin-top: 0.5rem;">
     <span class="status-badge" [class.active]="motion.matches()">
       reduced-motion: {{ motion.matches() }}
     </span>

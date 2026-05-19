@@ -26,8 +26,7 @@ export const STORY: DemoSpec = {
     const message = err instanceof Error ? err.message : String(err);
     this.lastError.update((prev) => ({ message, n: (prev?.n ?? 0) + 1 }));
   }`,
-  template: `
-  <fieldset class="event-row"
+  template: `  <fieldset class="event-row"
             style="border:0;padding:0;margin:0 0 var(--demo-row-gap, 8px);gap:8px;align-items:center;flex-wrap:wrap">
     <legend class="cngx-sr-only">URL sync mode</legend>
     <label class="chip" [class.chip--active]="mode() === 'fragment'">
@@ -63,8 +62,8 @@ export const STORY: DemoSpec = {
     <div cngxStep id="confirm" label="Confirm">
       <ng-template cngxStepContent><p>Review your choices and finish.</p></ng-template>
     </div>
-  </cngx-stepper>
-  <div class="event-grid" style="margin-top:var(--demo-grid-gap, 12px)">
+  </cngx-stepper>`,
+  templateChrome: `<div class="event-grid" style="margin-top:var(--demo-grid-gap, 12px)">
     <div class="event-row"><span class="event-label">Active step</span><span class="event-value">{{ active() }}</span></div>
     <div class="event-row"><span class="event-label">URL mode</span><span class="event-value">{{ mode() }}</span></div>
     <div role="status" aria-live="polite" aria-atomic="true">

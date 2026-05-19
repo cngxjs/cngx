@@ -26,8 +26,8 @@ export const STORY: DemoSpec = {
     if (result === undefined) return 'No dialog result yet.';
     if (result === 'dismissed') return 'Dialog was dismissed (Escape or backdrop).';
     return 'Dialog returned: ' + String(result);
-  });
-  protected handleOpenProgrammatic(): void {
+  });`,
+  setupChrome: `  protected handleOpenProgrammatic(): void {
     this.progDialog()?.open();
   }
   protected handleSaveProgrammatic(): void {
@@ -36,24 +36,23 @@ export const STORY: DemoSpec = {
   protected handleDiscardProgrammatic(): void {
     this.progDialog()?.close('discarded');
   }`,
-  template: `
-  <div class="button-row">
-    <button class="chip" (click)="handleOpenProgrammatic()">Open from Code</button>
-  </div>
-
-  <dialog cngxDialog #progDialog="cngxDialog">
+  template: `  <dialog cngxDialog #progDialog="cngxDialog">
     <h2 cngxDialogTitle>Unsaved Changes</h2>
     <p style="margin: 12px 0;">You have unsaved changes. What would you like to do?</p>
-    <div class="button-row" style="justify-content: flex-end;">
-      <button class="chip" (click)="handleDiscardProgrammatic()">Discard</button>
-      <button class="chip chip--active" (click)="handleSaveProgrammatic()">Save</button>
-    </div>
+    
   </dialog>
 
   <div class="code-block" style="margin-top: 12px">
     {{ progMessage() }}
+  </div>`,
+  templateChrome: `<div class="button-row">
+    <button class="chip" (click)="handleOpenProgrammatic()">Open from Code</button>
   </div>
-  <div class="status-row" style="margin-top: 8px">
+<div class="button-row" style="justify-content: flex-end;">
+      <button class="chip" (click)="handleDiscardProgrammatic()">Discard</button>
+      <button class="chip chip--active" (click)="handleSaveProgrammatic()">Save</button>
+    </div>
+<div class="status-row" style="margin-top: 8px">
     <span class="status-badge">state: {{ progDialog.lifecycle() }}</span>
     <span class="status-badge">result: {{ progDialog.result() ?? 'undefined' }}</span>
   </div>`,

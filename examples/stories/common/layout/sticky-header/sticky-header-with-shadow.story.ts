@@ -15,8 +15,7 @@ export const STORY: DemoSpec = {
     'import { CngxStickyHeader } from \'@cngx/common/layout\';',
   ],
   imports: ['CngxStickyHeader'],
-  template: `
-  <div style="height:250px;overflow-y:auto;border:1px solid var(--cngx-color-border,#ddd);border-radius:8px">
+  template: `  <div style="height:250px;overflow-y:auto;border:1px solid var(--cngx-color-border,#ddd);border-radius:8px">
     <div style="padding:16px">
       <p style="margin:0 0 8px;color:var(--cngx-text-secondary,#666);font-size:0.875rem">Scroll down to see the sticky header activate.</p>
     </div>
@@ -30,8 +29,8 @@ export const STORY: DemoSpec = {
         Item {{ i }}
       </div>
     }
-  </div>
-  <div class="event-grid" style="margin-top:12px">
+  </div>`,
+  templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row">
       <span class="event-label">isSticky</span>
       <span class="event-value">{{ sh.isSticky() }}</span>

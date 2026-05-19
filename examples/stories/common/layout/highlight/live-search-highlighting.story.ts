@@ -16,8 +16,7 @@ export const STORY: DemoSpec = {
   ],
   imports: ['CngxHighlight'],
   setup: `protected readonly searchTerm = signal('');`,
-  template: `
-  <div style="margin-bottom:12px">
+  template: `  <div style="margin-bottom:12px">
     <input [value]="searchTerm()" (input)="searchTerm.set($any($event.target).value)"
            placeholder="Type to highlight..."
            style="padding:8px 12px;border:1px solid var(--cngx-color-border,#ddd);border-radius:6px;width:240px" />
@@ -30,9 +29,8 @@ export const STORY: DemoSpec = {
     provide a synchronous, pull-based model where derived values are automatically
     tracked and updated. This eliminates entire categories of bugs related to
     subscription leaks, stale closures, and timing issues.
-  </div>
-
-  <div class="event-grid" style="margin-top:12px">
+  </div>`,
+  templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row">
       <span class="event-label">Match count</span>
       <span class="event-value">{{ hl.matchCount() }}</span>

@@ -20,8 +20,7 @@ export const STORY: DemoSpec = {
   ],
   imports: ['CngxListbox', 'CngxListboxTrigger', 'CngxOption', 'CngxPopover', 'CngxPopoverTrigger'],
   setup: `protected readonly selectedColor = signal<string | null>(null);`,
-  template: `
-  <button
+  template: `  <button
     type="button"
     class="trigger"
     [cngxListboxTrigger]="lb"
@@ -48,8 +47,8 @@ export const STORY: DemoSpec = {
       <div cngxOption value="orange">Orange</div>
       <div cngxOption value="purple">Purple</div>
     </div>
-  </div>
-  <div class="event-grid" style="margin-top:12px">
+  </div>`,
+  templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row">
       <span class="event-label">Selected</span>
       <span class="event-value">{{ selectedColor() ?? '—' }}</span>

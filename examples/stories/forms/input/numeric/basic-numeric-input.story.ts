@@ -15,15 +15,15 @@ export const STORY: DemoSpec = {
     'import { CngxNumericInput } from \'@cngx/forms/input\';',
   ],
   imports: ['CngxNumericInput'],
-  template: `
-  <div class="demo-form">
+  template: `  <div class="demo-form">
     <div class="demo-field">
       <label class="demo-label">Amount</label>
       <input cngxNumericInput #num="cngxNumericInput" class="demo-input" />
-      <div class="status-row">
-        <span class="status-badge">Value: {{ num.numericValue() }}</span>
-        <span class="status-badge">Valid: {{ num.isValid() }}</span>
-      </div>
+      
     </div>
   </div>`,
+  templateChrome: `<div class="status-row">
+        <span class="status-badge">Value: {{ num.numericValue() }}</span>
+        <span class="status-badge">Valid: {{ num.isValid() }}</span>
+      </div>`,
 };

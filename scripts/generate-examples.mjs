@@ -61,8 +61,17 @@ function backtickEscape(s) {
     .replaceAll('${', '\\${');
 }
 
-function stripEventGrid(html) {
-  const opener = /<div\b[^>]*\bclass=["'][^"']*\bevent-grid\b[^"']*["'][^>]*>/g;
+/**
+ * Strip demo-chrome divs from a displayed template — `event-grid`/`event-row`
+ * (state readouts), `button-row`/`status-row` (config toggles), `cngx-ex-chrome`
+ * (explicit opt-in marker). Walks balanced <div>/</div> so nested chrome
+ * inside an outer chrome block is removed together. The live rendered
+ * template keeps everything; this only affects the Template-panel display
+ * and complements the `templateChrome` field for sections that haven't
+ * been migrated to the split yet.
+ */
+function stripDemoChrome(html) {
+  const opener = /<div\b[^>]*\bclass=["'][^"']*\b(?:event-grid|event-row|button-row|status-row|cngx-ex-chrome)\b[^"']*["'][^>]*>/g;
   let result = html;
   while (true) {
     opener.lastIndex = 0;
@@ -269,8 +278,11 @@ function importedSymbols(importLine) {
 // ---------- Component imports ----------
 
 function buildImports(story, importMap, featureDepth) {
-  const setup = stripCommentsForScan(story.setup ?? '');
-  const tpl = story.template ?? '';
+  // Imports are scanned against the LIVE class — setup + setupChrome —
+  // because both halves end up in the class body. The displayed _exTs
+  // panel (see emitComponentSource) re-filters against `setup` alone.
+  const setup = stripCommentsForScan((story.setup ?? '') + '\n' + (story.setupChrome ?? ''));
+  const tpl = (story.template ?? '') + '\n' + (story.templateChrome ?? '');
 
   const usesSignal = /\bsignal\s*[<(]/.test(setup);
   const usesComputed = /\bcomputed\s*[<(]/.test(setup);
@@ -398,7 +410,7 @@ function indent(s, n) {
 function emitComponentSource(meta, story, importMap) {
   const { lines } = buildImports(story, importMap, meta.featureDepth);
 
-  const tpl = story.template ?? '';
+  const tpl = (story.template ?? '') + '\n' + (story.templateChrome ?? '');
   const tplImports = (story.imports ?? []).filter((cls) => {
     if (!cls.startsWith('Cngx')) return true;
     if (new RegExp(String.raw`\b${cls}\b`).test(tpl)) return true;
@@ -434,7 +446,13 @@ function emitComponentSource(meta, story, importMap) {
       ? `\n  hostDirectives: [${storyHostDirectives.join(', ')}],`
       : '';
 
-  const setupBody = (story.setup ?? '')
+  // Live class body — setup (artifact code) + setupChrome (instrumentation).
+  // The displayed _exTs panel below shows setup only.
+  const liveSetup = [story.setup ?? '', story.setupChrome ?? '']
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .join('\n\n');
+  const setupBody = liveSetup
     .split('\n')
     .map((l) => (l.trim() ? '  ' + l : ''))
     .join('\n');
@@ -450,13 +468,39 @@ function emitComponentSource(meta, story, importMap) {
     `  protected readonly _exTags: readonly { dim: string; value: string }[] = [${tagFieldEntries}];`,
   ].join('\n');
 
+  // Displayed _exTs: filter imports a SECOND time against `setup` only.
+  // The earlier buildImports() scanned setup + setupChrome to keep the live
+  // class compiling; here we re-scan to drop imports the chrome-only code
+  // would have needed (rxjs `delay`, fail-flag helpers, log buffers, etc.).
+  const setupOnlyScan = stripCommentsForScan(story.setup ?? '') + '\n' + (story.template ?? '');
   const sourceImports = lines
     .filter((l) => !l.includes("from '@angular/core'"))
+    .map((line) => {
+      const match = line.match(/^(\s*import\s*(?:type\s+)?\{)([^}]+)(\}\s*from\s*['"][^'"]+['"];?\s*)$/);
+      if (!match) return line;
+      const [, head, body, tail] = match;
+      const kept = body
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean)
+        .filter((spec) => {
+          const parts = spec.replace(/^type\s+/, '').split(/\s+as\s+/);
+          const id = (parts.length > 1 ? parts[1] : parts[0])?.trim();
+          if ((story.imports ?? []).includes(id)) return true;
+          return new RegExp(String.raw`\b${id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\b`).test(setupOnlyScan);
+        });
+      if (kept.length === 0) return null;
+      return `${head} ${kept.join(', ')} ${tail.trim()}`;
+    })
+    .filter((l) => l !== null)
     .join('\n')
     .trim();
   const dedentedSetup = dedent(story.setup ?? '');
   const sourceTs = [sourceImports, dedentedSetup].filter(Boolean).join('\n\n').trim();
-  const sourceHtml = dedent(stripEventGrid(story.template));
+  // Strip chrome blocks from the displayed template. Even when a story has
+  // migrated chrome into `templateChrome`, stray button-row blocks in the
+  // remaining `template` are still scrubbed defensively.
+  const sourceHtml = dedent(stripDemoChrome(story.template));
   const sourceFields = [
     `  protected readonly _exTs: string = \`${backtickEscape(sourceTs)}\`;`,
     `  protected readonly _exHtml: string = \`${backtickEscape(sourceHtml)}\`;`,
@@ -488,7 +532,13 @@ function emitComponentSource(meta, story, importMap) {
     `    </details>`,
   ].join('\n');
 
-  const template = story.template.trim().replaceAll('`', '\\`').replaceAll('${', '\\${');
+  // Live template — artifact first, chrome second. Both backtick-escaped so
+  // the surrounding component template literal stays valid.
+  const liveTemplate = [story.template ?? '', story.templateChrome ?? '']
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .join('\n\n');
+  const template = liveTemplate.replaceAll('`', '\\`').replaceAll('${', '\\${');
 
   return `${GEN_HEADER}
 // Source: ${meta.storyRelPath}

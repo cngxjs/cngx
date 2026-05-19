@@ -40,15 +40,13 @@ export const STORY: DemoSpec = {
       new Date().toLocaleTimeString() + ' → [' + from + ' → ' + to + '] ' + evt.values.join(', ');
     this.seededLog.update((l) => [...l.slice(-4), line]);
   };`,
-  template: `
-  <cngx-reorderable-multi-select
+  template: `  <cngx-reorderable-multi-select
     [label]="'Escalation order'"
     [options]="recipients"
     [(values)]="seededValues"
     (reordered)="handleSeededReorder($event)"
-  />
-
-  <div class="event-grid" style="margin-top:12px">
+  />`,
+  templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row">
       <span class="event-label">Order</span>
       <span class="event-value">{{ seededValues().join(' → ') }}</span>

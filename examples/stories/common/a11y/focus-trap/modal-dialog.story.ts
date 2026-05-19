@@ -14,16 +14,7 @@ export const STORY: DemoSpec = {
   imports: ['CngxFocusTrap'],
   setup: `protected modalOpen = signal(false);
   protected autoFocus = signal(true);`,
-  template: `
-  <div class="button-row">
-    <button class="sort-btn" (click)="modalOpen.set(true)">Open modal</button>
-    <label style="display: flex; align-items: center; gap: 6px; font-size: 0.875rem;">
-      <input type="checkbox" [checked]="autoFocus()" (change)="autoFocus.set($any($event.target).checked)" />
-      autoFocus
-    </label>
-  </div>
-
-  @if (modalOpen()) {
+  template: `  @if (modalOpen()) {
     <div
       style="
         position: fixed; inset: 0;
@@ -60,10 +51,7 @@ export const STORY: DemoSpec = {
           Tab cycles only within this dialog. Press Escape or click outside to close.
         </p>
         <input placeholder="Type CONFIRM to proceed" style="padding: 8px 12px; border-radius: 6px; border: 1px solid var(--cngx-color-border, #ddd); font-size: 0.875rem;" />
-        <div class="button-row" style="justify-content: flex-end;">
-          <button class="sort-btn" (click)="modalOpen.set(false)">Cancel</button>
-          <button class="sort-btn" style="background: var(--cngx-accent, #f5a623); color: #000; font-weight: 500;" (click)="modalOpen.set(false)">Confirm</button>
-        </div>
+        
       </div>
     </div>
   }
@@ -71,4 +59,15 @@ export const STORY: DemoSpec = {
   <div class="output-badge" style="margin-top: 12px">
     Modal: <strong>{{ modalOpen() ? 'open — focus trapped' : 'closed' }}</strong>
   </div>`,
+  templateChrome: `<div class="button-row">
+    <button class="sort-btn" (click)="modalOpen.set(true)">Open modal</button>
+    <label style="display: flex; align-items: center; gap: 6px; font-size: 0.875rem;">
+      <input type="checkbox" [checked]="autoFocus()" (change)="autoFocus.set($any($event.target).checked)" />
+      autoFocus
+    </label>
+  </div>
+<div class="button-row" style="justify-content: flex-end;">
+          <button class="sort-btn" (click)="modalOpen.set(false)">Cancel</button>
+          <button class="sort-btn" style="background: var(--cngx-accent, #f5a623); color: #000; font-weight: 500;" (click)="modalOpen.set(false)">Confirm</button>
+        </div>`,
 };

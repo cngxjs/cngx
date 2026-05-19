@@ -42,14 +42,13 @@ export const STORY: DemoSpec = {
     { value: 'disabled', label: 'Unavailable', disabled: true },
   ];
   protected readonly clearableValue = signal<string | undefined>('red');`,
-  template: `
-  <cngx-select
+  template: `  <cngx-select
     [label]="'Color'"
     [options]="colors"
     [(value)]="clearableValue"
     [clearable]="true"
-  />
-  <div class="event-grid" style="margin-top:12px">
+  />`,
+  templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ clearableValue() || '—' }}</span></div>
   </div>`,
 };

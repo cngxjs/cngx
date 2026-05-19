@@ -37,29 +37,28 @@ export const STORY: DemoSpec = {
     'import { createManualState } from \'@cngx/common/data\';',
   ],
   imports: ['CngxSelect'],
-  setup: `protected readonly asyncOptions: CngxSelectOptionDef<string>[] = [
+  setup: `  protected readonly refreshingVariantSel = signal<'bar' | 'spinner' | 'dots' | 'none'>('bar');
+  protected readonly variantValue = signal<string | undefined>(undefined);
+  protected readonly variantState = createManualState<CngxSelectOptionsInput<string>>();`,
+  setupChrome: `protected readonly asyncOptions: CngxSelectOptionDef<string>[] = [
     { value: 'de', label: 'Deutsch' },
     { value: 'en', label: 'English' },
     { value: 'fr', label: 'Français' },
     { value: 'es', label: 'Español' },
   ];
-  protected readonly refreshingVariantSel = signal<'bar' | 'spinner' | 'dots' | 'none'>('bar');
-  protected readonly variantValue = signal<string | undefined>(undefined);
-  protected readonly variantState = createManualState<CngxSelectOptionsInput<string>>();
   protected triggerVariantSuccess(): void { this.variantState.setSuccess(this.asyncOptions); }
   protected triggerVariantRefreshing(): void {
     this.variantState.setSuccess(this.asyncOptions);
     this.variantState.set('refreshing');
   }`,
-  template: `
-  <cngx-select
+  template: `  <cngx-select
     [label]="'Language'"
     [state]="variantState"
     [refreshingVariant]="refreshingVariantSel()"
     [(value)]="variantValue"
     placeholder="Choose language…"
-  />
-  <div class="event-grid" style="margin-top:12px;gap:8px">
+  />`,
+  templateChrome: `<div class="event-grid" style="margin-top:12px;gap:8px">
     <div class="event-row" style="gap:8px">
       <span class="event-label">Variant</span>
       @for (v of ['bar','spinner','dots','none']; track v) {

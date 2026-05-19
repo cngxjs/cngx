@@ -27,15 +27,7 @@ export const STORY: DemoSpec = {
   imports: ['CngxCard', 'CngxCardHeader', 'CngxCardTitle', 'CngxCardBody', 'CngxCardSkeleton'],
   setup: `protected loading = signal(false);
   protected showSkeleton = signal(false);`,
-  template: `
-  <div class="button-row" style="margin-bottom:12px">
-    <button (click)="loading.update(v => !v)">Toggle loading: {{ loading() ? 'on' : 'off' }}</button>
-    <label style="display:flex;align-items:center;gap:6px;font-size:0.875rem">
-      <input type="checkbox" [checked]="showSkeleton()" (change)="showSkeleton.set($any($event.target).checked)" />
-      Replace with skeleton
-    </label>
-  </div>
-  <div style="max-width:320px">
+  template: `  <div style="max-width:320px">
     <cngx-card [loading]="loading()">
       @if (loading() && showSkeleton()) {
         <cngx-card-skeleton [lines]="2" />
@@ -50,8 +42,15 @@ export const STORY: DemoSpec = {
         </ng-container>
       }
     </cngx-card>
+  </div>`,
+  templateChrome: `<div class="button-row" style="margin-bottom:12px">
+    <button (click)="loading.update(v => !v)">Toggle loading: {{ loading() ? 'on' : 'off' }}</button>
+    <label style="display:flex;align-items:center;gap:6px;font-size:0.875rem">
+      <input type="checkbox" [checked]="showSkeleton()" (change)="showSkeleton.set($any($event.target).checked)" />
+      Replace with skeleton
+    </label>
   </div>
-  <div class="event-grid" style="margin-top:12px">
+<div class="event-grid" style="margin-top:12px">
     <div class="event-row">
       <span class="event-label">loading</span>
       <span class="event-value">{{ loading() }}</span>

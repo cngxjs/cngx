@@ -20,8 +20,7 @@ export const STORY: DemoSpec = {
   ],
   imports: ['CngxTabGroup', 'CngxTabOverflow', 'CngxTab', 'CngxTabContent'],
   setup: `protected readonly active = signal(0);`,
-  template: `
-  <div style="max-width: 320px; border: 1px dashed currentColor; padding: 4px; resize: horizontal; overflow: auto">
+  template: `  <div style="max-width: 320px; border: 1px dashed currentColor; padding: 4px; resize: horizontal; overflow: auto">
     <cngx-tab-group [(activeIndex)]="active" aria-label="Overflow demo">
       <div cngxTab [label]="'Profile'">
         <ng-template cngxTabContent><p>Profile</p></ng-template>
@@ -49,8 +48,8 @@ export const STORY: DemoSpec = {
       </div>
       <cngx-tab-overflow></cngx-tab-overflow>
     </cngx-tab-group>
-  </div>
-  <div class="event-grid" style="margin-top:12px">
+  </div>`,
+  templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row"><span class="event-label">Active tab</span><span class="event-value">{{ active() }}</span></div>
   </div>`,
 };

@@ -23,8 +23,7 @@ export const STORY: DemoSpec = {
   protected toggleCompleted(index: number, value: boolean): void {
     this.completed.update((prev) => prev.map((v, i) => (i === index ? value : v)));
   }`,
-  template: `
-  <cngx-stepper [(activeStepIndex)]="active" [linear]="true" aria-label="Linear wizard">
+  template: `  <cngx-stepper [(activeStepIndex)]="active" [linear]="true" aria-label="Linear wizard">
     <div cngxStep label="Profile" [completed]="completed()[0]">
       <ng-template cngxStepContent>
         <p>Set your display name and avatar.</p>
@@ -58,8 +57,8 @@ export const STORY: DemoSpec = {
         </label>
       </ng-template>
     </div>
-  </cngx-stepper>
-  <div class="event-grid" style="margin-top:var(--demo-grid-gap, 12px)">
+  </cngx-stepper>`,
+  templateChrome: `<div class="event-grid" style="margin-top:var(--demo-grid-gap, 12px)">
     <div class="event-row"><span class="event-label">Active step</span><span class="event-value">{{ active() }}</span></div>
     <div class="event-row"><span class="event-label">Completed</span><span class="event-value">{{ completed().join(', ') }}</span></div>
   </div>`,

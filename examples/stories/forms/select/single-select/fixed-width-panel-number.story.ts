@@ -43,15 +43,14 @@ export const STORY: DemoSpec = {
     { value: 'disabled', label: 'Unavailable', disabled: true },
   ];
   protected readonly fixedWidthValue = signal<string | undefined>(undefined);`,
-  template: `
-  <cngx-select
+  template: `  <cngx-select
     [label]="'Color'"
     [options]="colors"
     [(value)]="fixedWidthValue"
     placeholder="Pick a color…"
     [panelWidth]="400"
-  />
-  <div class="event-grid" style="margin-top:12px">
+  />`,
+  templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ fixedWidthValue() || '—' }}</span></div>
     <div class="event-row"><span class="event-label">Panel</span><span class="event-value">400px — locked independent of trigger</span></div>
   </div>`,

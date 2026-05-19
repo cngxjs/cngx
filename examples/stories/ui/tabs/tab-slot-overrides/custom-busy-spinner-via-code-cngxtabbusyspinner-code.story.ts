@@ -35,8 +35,7 @@ export const STORY: DemoSpec = {
     this.slowAttempts.update((n) => n + 1);
     return new Promise((resolve) => setTimeout(() => resolve(true), 800));
   };`,
-  template: `
-  <cngx-tab-group
+  template: `  <cngx-tab-group
     [(activeIndex)]="active"
     [commitAction]="slowCommit"
     commitMode="pessimistic"
@@ -57,8 +56,8 @@ export const STORY: DemoSpec = {
         <p>Tab 2. Defaults restored after commit resolves.</p>
       </ng-template>
     </div>
-  </cngx-tab-group>
-  <div class="event-grid" style="margin-top:var(--demo-grid-gap, 12px)">
+  </cngx-tab-group>`,
+  templateChrome: `<div class="event-grid" style="margin-top:var(--demo-grid-gap, 12px)">
     <div class="event-row"><span class="event-label">Slow commit attempts</span><span class="event-value">{{ slowAttempts() }}</span></div>
   </div>`,
 };

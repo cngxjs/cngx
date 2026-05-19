@@ -26,8 +26,7 @@ export const STORY: DemoSpec = {
       new Date().toLocaleTimeString() + ' → ' + (e.option?.label ?? '—'),
     );
   }`,
-  template: `
-  <cngx-select-shell
+  template: `  <cngx-select-shell
     [label]="'Color'"
     [clearable]="true"
     [(value)]="basicValue"
@@ -38,9 +37,8 @@ export const STORY: DemoSpec = {
     <cngx-option [value]="'green'">Green</cngx-option>
     <cngx-option [value]="'blue'">Blue</cngx-option>
     <cngx-option [value]="'disabled'" [disabled]="true">Unavailable</cngx-option>
-  </cngx-select-shell>
-
-  <div class="event-grid" style="margin-top:12px">
+  </cngx-select-shell>`,
+  templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row">
       <span class="event-label">value</span>
       <span class="event-value">{{ basicValue() ?? '—' }}</span>

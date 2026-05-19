@@ -20,8 +20,7 @@ export const STORY: DemoSpec = {
   ],
   imports: ['CngxSelectShell', 'CngxSelectOption'],
   setup: `protected readonly customValue = signal<string | undefined>(undefined);`,
-  template: `
-  <ng-template #customClear>
+  template: `  <ng-template #customClear>
     <span aria-hidden="true" style="font-weight:700; font-family:monospace">×</span>
   </ng-template>
   <ng-template #customCaret>
@@ -39,9 +38,8 @@ export const STORY: DemoSpec = {
     <cngx-option [value]="'red'">Red</cngx-option>
     <cngx-option [value]="'green'">Green</cngx-option>
     <cngx-option [value]="'blue'">Blue</cngx-option>
-  </cngx-select-shell>
-
-  <div class="event-grid" style="margin-top:12px">
+  </cngx-select-shell>`,
+  templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row">
       <span class="event-label">value</span>
       <span class="event-value">{{ customValue() ?? '—' }}</span>

@@ -12,13 +12,11 @@ export const STORY: DemoSpec = {
     'CngxFocusVisible',
   ],
   imports: ['CngxFocusVisible'],
-  template: `
-  <p style="margin-bottom: 12px; font-size: 0.875rem; color: var(--cngx-text-secondary, #666);">
+  template: `  <p style="margin-bottom: 12px; font-size: 0.875rem; color: var(--cngx-text-secondary, #666);">
     Tab into the buttons below using the keyboard. Then click with the mouse.
     Only keyboard focus shows the custom ring.
-  </p>
-
-  <div class="button-row">
+  </p>`,
+  templateChrome: `<div class="button-row">
     <button
       cngxFocusVisible
       #fv1="cngxFocusVisible"
@@ -45,8 +43,7 @@ export const STORY: DemoSpec = {
       }
     </button>
   </div>
-
-  <div class="event-grid" style="margin-top: 12px">
+<div class="event-grid" style="margin-top: 12px">
     <div class="event-row">
       <span class="event-label">Button A focusVisible</span>
       <span class="event-value">{{ fv1.focusVisible() }}</span>

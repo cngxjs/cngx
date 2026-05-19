@@ -24,17 +24,16 @@ export const STORY: DemoSpec = {
   protected readonly tree = signal<FilterGroup>(createEmptyFilterRoot());
   protected formatTree(t: FilterGroup): string {
     return JSON.stringify(t, null, 2);
-  }
-  protected resetTree(): void {
+  }`,
+  setupChrome: `  protected resetTree(): void {
     this.tree.set(createEmptyFilterRoot());
   }`,
-  template: `
-  <div class="demo-form">
+  template: `  <div class="demo-form">
     <cngx-filter-builder [fields]="fields" [(value)]="tree" />
-    <div class="status-row">
-      <button class="chip" (click)="resetTree()">Reset to empty</button>
-    </div>
+    
     <pre class="code-block"><code>{{ formatTree(tree()) }}</code></pre>
-  </div>
-      `,
+  </div>`,
+  templateChrome: `<div class="status-row">
+      <button class="chip" (click)="resetTree()">Reset to empty</button>
+    </div>`,
 };

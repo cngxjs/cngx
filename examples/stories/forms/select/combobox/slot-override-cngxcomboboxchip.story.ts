@@ -27,8 +27,7 @@ export const STORY: DemoSpec = {
     { value: 'old', label: 'Nicht mehr gepflegt', disabled: true },
   ];
   protected readonly comboValues = signal<string[]>(['angular']);`,
-  template: `
-  <cngx-combobox [label]="'Topics'" [options]="tagOptions" [(values)]="comboValues" placeholder="Choose tag…">
+  template: `  <cngx-combobox [label]="'Topics'" [options]="tagOptions" [(values)]="comboValues" placeholder="Choose tag…">
     <ng-template cngxComboboxChip let-opt let-remove="remove" let-i="index">
       <span style="display:inline-flex;align-items:center;gap:0.25rem;padding:0.15rem 0.5rem;border-radius:999px;background:color-mix(in oklch, var(--cngx-color-info) 15%, transparent);color:var(--cngx-color-info);font-size:0.8rem">
         <span aria-hidden="true">#{{ i + 1 }}</span>
@@ -36,8 +35,8 @@ export const STORY: DemoSpec = {
         <button type="button" (click)="remove()" aria-label="Remove" style="background:none;border:none;color:inherit;cursor:pointer;padding:0 2px">×</button>
       </span>
     </ng-template>
-  </cngx-combobox>
-  <div class="event-grid" style="margin-top:12px">
+  </cngx-combobox>`,
+  templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row"><span class="event-label">Values</span><span class="event-value">{{ comboValues().join(', ') || '—' }}</span></div>
   </div>`,
 };

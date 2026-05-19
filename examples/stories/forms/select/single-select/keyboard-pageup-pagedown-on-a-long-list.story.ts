@@ -40,14 +40,13 @@ export const STORY: DemoSpec = {
     (_, i) => ({ value: i + 1, label: 'Item ' + (i + 1) + ' (#' + (i + 1).toString().padStart(2, '0') + ')' })
   );
   protected readonly manyValue = signal<number | undefined>(undefined);`,
-  template: `
-  <cngx-select
+  template: `  <cngx-select
     [label]="'Item'"
     [options]="manyOptions"
     [(value)]="manyValue"
     placeholder="Choose item…"
-  />
-  <div class="event-grid" style="margin-top:12px">
+  />`,
+  templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ manyValue() ?? '—' }}</span></div>
     <div class="event-row"><span class="event-label">Options</span><span class="event-value">40 entries — PageUp/Down jumps 10</span></div>
   </div>`,

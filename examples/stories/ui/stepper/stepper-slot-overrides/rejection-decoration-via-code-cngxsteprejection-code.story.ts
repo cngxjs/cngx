@@ -34,8 +34,7 @@ export const STORY: DemoSpec = {
     }
     return Promise.resolve(true);
   };`,
-  template: `
-  <cngx-stepper
+  template: `  <cngx-stepper
     [(activeStepIndex)]="active"
     [commitAction]="commitAction"
     commitMode="optimistic"
@@ -62,8 +61,8 @@ export const STORY: DemoSpec = {
         <p>Step 3 — the commit target. The first attempt rejects with "Security check failed — retry"; the slot renders the ↶ glyph until the second attempt succeeds.</p>
       </ng-template>
     </div>
-  </cngx-stepper>
-  <div class="event-grid" style="margin-top:var(--demo-grid-gap, 12px)">
+  </cngx-stepper>`,
+  templateChrome: `<div class="event-grid" style="margin-top:var(--demo-grid-gap, 12px)">
     <div class="event-row"><span class="event-label">Active step</span><span class="event-value">{{ active() }}</span></div>
     <div class="event-row"><span class="event-label">Commit attempts</span><span class="event-value">{{ busyAttempts() }}</span></div>
   </div>`,

@@ -45,8 +45,7 @@ export const STORY: DemoSpec = {
     this.dirtyDescription.set('');
     setDirty(false);
   }`,
-  template: `
-  <div class="kbd-hint">
+  template: `  <div class="kbd-hint">
     <strong>Try it:</strong>
     <span>Open the panel + type into the description field</span>
     <span>Press <kbd>Esc</kbd> or click outside — panel stays open</span>
@@ -114,9 +113,8 @@ export const STORY: DemoSpec = {
         </div>
       </div>
     </ng-template>
-  </cngx-action-select>
-
-  <div class="event-grid" style="margin-top:12px">
+  </cngx-action-select>`,
+  templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row">
       <span class="event-label">Project</span>
       <span class="event-value">{{ dirtyValue()?.name ?? '—' }}</span>

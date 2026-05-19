@@ -21,17 +21,10 @@ export const STORY: DemoSpec = {
   ],
   imports: ['CngxDialog', 'CngxDialogTitle', 'CngxDialogClose', 'CngxDialogDraggable'],
   setup: `protected readonly snapModeToggle = signal<'live' | 'release'>('live');
-
   protected toggleSnapMode(): void {
     this.snapModeToggle.update(m => m === 'live' ? 'release' : 'live');
   }`,
-  template: `
-  <div class="button-row">
-    <button class="chip" (click)="snapLiveDlg.open()">Live Snap (20px)</button>
-    <button class="chip" (click)="snapReleaseDlg.open()">Release Snap (20px)</button>
-  </div>
-
-  <!-- Live snap: position snaps every frame -->
+  template: `  <!-- Live snap: position snaps every frame -->
   <dialog cngxDialog cngxDialogDraggable [gridSize]="20" snapMode="live"
     #snapLiveDlg="cngxDialog" #snapLiveDrag="cngxDialogDraggable"
     style="transform: translate(var(--cngx-dialog-x, 0px), var(--cngx-dialog-y, 0px));">
@@ -40,11 +33,7 @@ export const STORY: DemoSpec = {
       <button class="chip" cngxDialogClose style="padding: 2px 8px;" aria-label="Close dialog">X</button>
     </div>
     <p>Drag the header. Position snaps to grid every frame.</p>
-    <div class="status-row" style="margin-top: 8px">
-      <span class="status-badge">mode: live</span>
-      <span class="status-badge">x: {{ snapLiveDrag.position().x }}px</span>
-      <span class="status-badge">y: {{ snapLiveDrag.position().y }}px</span>
-    </div>
+    
   </dialog>
 
   <!-- Release snap: free drag, snaps on pointer up -->
@@ -56,14 +45,23 @@ export const STORY: DemoSpec = {
       <button class="chip" cngxDialogClose style="padding: 2px 8px;" aria-label="Close dialog">X</button>
     </div>
     <p>Drag freely — position snaps to grid only when you release.</p>
-    <div class="status-row" style="margin-top: 8px">
+    
+  </dialog>`,
+  templateChrome: `<div class="button-row">
+    <button class="chip" (click)="snapLiveDlg.open()">Live Snap (20px)</button>
+    <button class="chip" (click)="snapReleaseDlg.open()">Release Snap (20px)</button>
+  </div>
+<div class="status-row" style="margin-top: 8px">
+      <span class="status-badge">mode: live</span>
+      <span class="status-badge">x: {{ snapLiveDrag.position().x }}px</span>
+      <span class="status-badge">y: {{ snapLiveDrag.position().y }}px</span>
+    </div>
+<div class="status-row" style="margin-top: 8px">
       <span class="status-badge">mode: release</span>
       <span class="status-badge">x: {{ snapReleaseDrag.position().x }}px</span>
       <span class="status-badge">y: {{ snapReleaseDrag.position().y }}px</span>
     </div>
-  </dialog>
-
-  <div class="status-row" style="margin-top: 12px">
+<div class="status-row" style="margin-top: 12px">
     <span class="status-badge">live x: {{ snapLiveDrag.position().x }}px</span>
     <span class="status-badge">release x: {{ snapReleaseDrag.position().x }}px</span>
   </div>`,
