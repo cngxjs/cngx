@@ -30,7 +30,7 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     </header>
     <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:1rem">
         <div>
-          <h4 style="margin:0 0 0.5rem 0;font-size:0.85rem;color:#374151">banner</h4>
+          <h4 style="margin:0 0 0.5rem 0;font-size:0.85rem">banner</h4>
           <cngx-select
             [label]="'Color'"
             [options]="colors"
@@ -39,10 +39,10 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
             [commitMode]="'optimistic'"
             commitErrorDisplay="banner"
           />
-          <small style="display:block;margin-top:6px;color:#6b7280">Default. Inline alert above the option list.</small>
+          <small style="display:block;margin-top:6px;color:var(--cngx-color-text-muted)">Default. Inline alert above the option list.</small>
         </div>
         <div>
-          <h4 style="margin:0 0 0.5rem 0;font-size:0.85rem;color:#374151">inline</h4>
+          <h4 style="margin:0 0 0.5rem 0;font-size:0.85rem">inline</h4>
           <cngx-select
             [label]="'Color'"
             [options]="colors"
@@ -51,10 +51,10 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
             [commitMode]="'optimistic'"
             commitErrorDisplay="inline"
           />
-          <small style="display:block;margin-top:6px;color:#6b7280">Per-row visual badge on the failing option (AT feedback via the announcer).</small>
+          <small style="display:block;margin-top:6px;color:var(--cngx-color-text-muted)">Per-row visual badge on the failing option (AT feedback via the announcer).</small>
         </div>
         <div>
-          <h4 style="margin:0 0 0.5rem 0;font-size:0.85rem;color:#374151">none</h4>
+          <h4 style="margin:0 0 0.5rem 0;font-size:0.85rem">none</h4>
           <cngx-select
             [label]="'Color'"
             [options]="colors"
@@ -63,7 +63,7 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
             [commitMode]="'optimistic'"
             commitErrorDisplay="none"
           />
-          <small style="display:block;margin-top:6px;color:#6b7280">No built-in UI — bridge via <code>&lt;cngx-toast-on /&gt;</code> or other transition bridges.</small>
+          <small style="display:block;margin-top:6px;color:var(--cngx-color-text-muted)">No built-in UI — bridge via <code>&lt;cngx-toast-on /&gt;</code> or other transition bridges.</small>
         </div>
       </div>
       <div class="button-row" style="margin-top:12px">
@@ -108,7 +108,7 @@ protected readonly commitAction: CngxSelectCommitAction<string> = (intended) => 
   const ts = new Date().toLocaleTimeString();`;
   protected readonly _exHtml: string = `<div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:1rem">
   <div>
-    <h4 style="margin:0 0 0.5rem 0;font-size:0.85rem;color:#374151">banner</h4>
+    <h4 style="margin:0 0 0.5rem 0;font-size:0.85rem">banner</h4>
     <cngx-select
       [label]="'Color'"
       [options]="colors"
@@ -117,10 +117,10 @@ protected readonly commitAction: CngxSelectCommitAction<string> = (intended) => 
       [commitMode]="'optimistic'"
       commitErrorDisplay="banner"
     />
-    <small style="display:block;margin-top:6px;color:#6b7280">Default. Inline alert above the option list.</small>
+    <small style="display:block;margin-top:6px;color:var(--cngx-color-text-muted)">Default. Inline alert above the option list.</small>
   </div>
   <div>
-    <h4 style="margin:0 0 0.5rem 0;font-size:0.85rem;color:#374151">inline</h4>
+    <h4 style="margin:0 0 0.5rem 0;font-size:0.85rem">inline</h4>
     <cngx-select
       [label]="'Color'"
       [options]="colors"
@@ -129,10 +129,10 @@ protected readonly commitAction: CngxSelectCommitAction<string> = (intended) => 
       [commitMode]="'optimistic'"
       commitErrorDisplay="inline"
     />
-    <small style="display:block;margin-top:6px;color:#6b7280">Per-row visual badge on the failing option (AT feedback via the announcer).</small>
+    <small style="display:block;margin-top:6px;color:var(--cngx-color-text-muted)">Per-row visual badge on the failing option (AT feedback via the announcer).</small>
   </div>
   <div>
-    <h4 style="margin:0 0 0.5rem 0;font-size:0.85rem;color:#374151">none</h4>
+    <h4 style="margin:0 0 0.5rem 0;font-size:0.85rem">none</h4>
     <cngx-select
       [label]="'Color'"
       [options]="colors"
@@ -141,7 +141,7 @@ protected readonly commitAction: CngxSelectCommitAction<string> = (intended) => 
       [commitMode]="'optimistic'"
       commitErrorDisplay="none"
     />
-    <small style="display:block;margin-top:6px;color:#6b7280">No built-in UI — bridge via <code>&lt;cngx-toast-on /&gt;</code> or other transition bridges.</small>
+    <small style="display:block;margin-top:6px;color:var(--cngx-color-text-muted)">No built-in UI — bridge via <code>&lt;cngx-toast-on /&gt;</code> or other transition bridges.</small>
   </div>
 </div>
 <div class="button-row" style="margin-top:12px">

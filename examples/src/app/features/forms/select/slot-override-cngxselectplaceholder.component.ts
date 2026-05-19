@@ -30,7 +30,7 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     </header>
     <cngx-select [label]="'Color'" [options]="colors" [(value)]="standaloneValue" placeholder="Pick a color…">
         <ng-template cngxSelectPlaceholder let-text>
-          <span style="display:inline-flex;align-items:center;gap:0.4rem;color:#7a7a7a">
+          <span style="display:inline-flex;align-items:center;gap:0.4rem;color:var(--cngx-color-text-muted)">
             <span aria-hidden="true">🎨</span>
             <em>{{ text }}</em>
           </span>
@@ -72,7 +72,7 @@ protected readonly colors: CngxSelectOptionDef<string>[] = [
 protected readonly standaloneValue = signal<string | undefined>(undefined);`;
   protected readonly _exHtml: string = `<cngx-select [label]="'Color'" [options]="colors" [(value)]="standaloneValue" placeholder="Pick a color…">
   <ng-template cngxSelectPlaceholder let-text>
-    <span style="display:inline-flex;align-items:center;gap:0.4rem;color:#7a7a7a">
+    <span style="display:inline-flex;align-items:center;gap:0.4rem;color:var(--cngx-color-text-muted)">
       <span aria-hidden="true">🎨</span>
       <em>{{ text }}</em>
     </span>

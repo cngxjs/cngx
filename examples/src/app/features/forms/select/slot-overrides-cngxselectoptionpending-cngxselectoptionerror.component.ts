@@ -40,7 +40,7 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
           <span aria-hidden="true" style="margin-inline-start:auto;font-size:0.75rem">⏳</span>
         </ng-template>
         <ng-template cngxSelectOptionError let-opt let-error="error">
-          <span aria-hidden="true" [title]="error?.message" style="margin-inline-start:auto;color:#b00020">✕</span>
+          <span aria-hidden="true" [title]="error?.message" style="margin-inline-start:auto;color:var(--cngx-color-danger)">✕</span>
         </ng-template>
       </cngx-select>
       <div class="button-row" style="margin-top:12px">
@@ -98,7 +98,7 @@ protected readonly commitAction: CngxSelectCommitAction<string> = (intended) => 
     <span aria-hidden="true" style="margin-inline-start:auto;font-size:0.75rem">⏳</span>
   </ng-template>
   <ng-template cngxSelectOptionError let-opt let-error="error">
-    <span aria-hidden="true" [title]="error?.message" style="margin-inline-start:auto;color:#b00020">✕</span>
+    <span aria-hidden="true" [title]="error?.message" style="margin-inline-start:auto;color:var(--cngx-color-danger)">✕</span>
   </ng-template>
 </cngx-select>
 <div class="button-row" style="margin-top:12px">

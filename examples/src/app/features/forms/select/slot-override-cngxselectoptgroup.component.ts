@@ -31,7 +31,7 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     <cngx-select [label]="'Priority'" [options]="priorities" [(value)]="groupedValue" placeholder="Choose priority…">
         <ng-template cngxSelectOptgroup let-group>
           <span style="display:inline-flex;align-items:center;gap:0.5rem">
-            <span aria-hidden="true" style="font-size:0.75rem;padding:2px 6px;border-radius:999px;background:#eef;color:#447">{{ group.children?.length ?? 0 }}</span>
+            <span aria-hidden="true" style="font-size:0.75rem;padding:2px 6px;border-radius:999px;background:color-mix(in oklch, var(--cngx-color-text) 8%, transparent);color:var(--cngx-color-text-muted)">{{ group.children?.length ?? 0 }}</span>
             <strong>{{ group.label }}</strong>
           </span>
         </ng-template>
@@ -77,7 +77,7 @@ protected readonly groupedValue = signal<string | undefined>(undefined);`;
   protected readonly _exHtml: string = `<cngx-select [label]="'Priority'" [options]="priorities" [(value)]="groupedValue" placeholder="Choose priority…">
   <ng-template cngxSelectOptgroup let-group>
     <span style="display:inline-flex;align-items:center;gap:0.5rem">
-      <span aria-hidden="true" style="font-size:0.75rem;padding:2px 6px;border-radius:999px;background:#eef;color:#447">{{ group.children?.length ?? 0 }}</span>
+      <span aria-hidden="true" style="font-size:0.75rem;padding:2px 6px;border-radius:999px;background:color-mix(in oklch, var(--cngx-color-text) 8%, transparent);color:var(--cngx-color-text-muted)">{{ group.children?.length ?? 0 }}</span>
       <strong>{{ group.label }}</strong>
     </span>
   </ng-template>

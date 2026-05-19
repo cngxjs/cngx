@@ -30,10 +30,10 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     </header>
     <div class="event-row" style="gap:8px;align-items:center;margin-bottom:8px">
         <button type="button" class="chip"
-                [style.background]="multiCommitMode() === 'optimistic' ? '#c8e6c9' : ''"
+                [style.background]="multiCommitMode() === 'optimistic' ? 'color-mix(in oklch, var(--cngx-color-success) 18%, transparent)' : ''"
                 (click)="multiCommitMode.set('optimistic')">optimistic</button>
         <button type="button" class="chip"
-                [style.background]="multiCommitMode() === 'pessimistic' ? '#c8e6c9' : ''"
+                [style.background]="multiCommitMode() === 'pessimistic' ? 'color-mix(in oklch, var(--cngx-color-success) 18%, transparent)' : ''"
                 (click)="multiCommitMode.set('pessimistic')">pessimistic</button>
         <label style="margin-inline-start:12px">
           <input type="checkbox"
@@ -99,10 +99,10 @@ protected readonly multiCommitAction: CngxSelectCommitAction<string[]> = (intend
   const ts = new Date().toLocaleTimeString();`;
   protected readonly _exHtml: string = `<div class="event-row" style="gap:8px;align-items:center;margin-bottom:8px">
   <button type="button" class="chip"
-          [style.background]="multiCommitMode() === 'optimistic' ? '#c8e6c9' : ''"
+          [style.background]="multiCommitMode() === 'optimistic' ? 'color-mix(in oklch, var(--cngx-color-success) 18%, transparent)' : ''"
           (click)="multiCommitMode.set('optimistic')">optimistic</button>
   <button type="button" class="chip"
-          [style.background]="multiCommitMode() === 'pessimistic' ? '#c8e6c9' : ''"
+          [style.background]="multiCommitMode() === 'pessimistic' ? 'color-mix(in oklch, var(--cngx-color-success) 18%, transparent)' : ''"
           (click)="multiCommitMode.set('pessimistic')">pessimistic</button>
   <label style="margin-inline-start:12px">
     <input type="checkbox"

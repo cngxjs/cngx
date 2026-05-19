@@ -30,7 +30,7 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     </header>
     <cngx-select [label]="'Language'" [options]="asyncOptions" [(value)]="asyncValue" [state]="asyncState" placeholder="Choose language…">
         <ng-template cngxSelectRefreshing let-previousCount="previousCount">
-          <div role="status" aria-live="polite" style="padding:0.4rem 0.75rem;font-size:0.8rem;color:#557;background:linear-gradient(90deg,#e3f2fd,#bbdefb,#e3f2fd);background-size:200% 100%;animation:cngx-select-refresh-shimmer 1.6s linear infinite">
+          <div role="status" aria-live="polite" style="padding:0.4rem 0.75rem;font-size:0.8rem;color:var(--cngx-color-info);background:linear-gradient(90deg,color-mix(in oklch, var(--cngx-color-info) 10%, transparent),color-mix(in oklch, var(--cngx-color-info) 25%, transparent),color-mix(in oklch, var(--cngx-color-info) 10%, transparent));background-size:200% 100%;animation:cngx-select-refresh-shimmer 1.6s linear infinite">
             🔄 Refreshing {{ previousCount }} options…
           </div>
         </ng-template>
@@ -79,7 +79,7 @@ protected asyncSetRefreshing(): void {
 }`;
   protected readonly _exHtml: string = `<cngx-select [label]="'Language'" [options]="asyncOptions" [(value)]="asyncValue" [state]="asyncState" placeholder="Choose language…">
   <ng-template cngxSelectRefreshing let-previousCount="previousCount">
-    <div role="status" aria-live="polite" style="padding:0.4rem 0.75rem;font-size:0.8rem;color:#557;background:linear-gradient(90deg,#e3f2fd,#bbdefb,#e3f2fd);background-size:200% 100%;animation:cngx-select-refresh-shimmer 1.6s linear infinite">
+    <div role="status" aria-live="polite" style="padding:0.4rem 0.75rem;font-size:0.8rem;color:var(--cngx-color-info);background:linear-gradient(90deg,color-mix(in oklch, var(--cngx-color-info) 10%, transparent),color-mix(in oklch, var(--cngx-color-info) 25%, transparent),color-mix(in oklch, var(--cngx-color-info) 10%, transparent));background-size:200% 100%;animation:cngx-select-refresh-shimmer 1.6s linear infinite">
       🔄 Refreshing {{ previousCount }} options…
     </div>
   </ng-template>

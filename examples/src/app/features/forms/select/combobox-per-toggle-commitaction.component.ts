@@ -30,10 +30,10 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     </header>
     <div class="event-row" style="gap:8px;align-items:center;margin-bottom:8px">
         <button type="button" class="chip"
-                [style.background]="comboCommitMode() === 'optimistic' ? '#c8e6c9' : ''"
+                [style.background]="comboCommitMode() === 'optimistic' ? 'color-mix(in oklch, var(--cngx-color-success) 18%, transparent)' : ''"
                 (click)="comboCommitMode.set('optimistic')">optimistic</button>
         <button type="button" class="chip"
-                [style.background]="comboCommitMode() === 'pessimistic' ? '#c8e6c9' : ''"
+                [style.background]="comboCommitMode() === 'pessimistic' ? 'color-mix(in oklch, var(--cngx-color-success) 18%, transparent)' : ''"
                 (click)="comboCommitMode.set('pessimistic')">pessimistic</button>
         <label style="margin-inline-start:12px">
           <input type="checkbox"
@@ -99,10 +99,10 @@ protected readonly comboCommitAction: CngxSelectCommitAction<string[]> = (intend
   const ts = new Date().toLocaleTimeString();`;
   protected readonly _exHtml: string = `<div class="event-row" style="gap:8px;align-items:center;margin-bottom:8px">
   <button type="button" class="chip"
-          [style.background]="comboCommitMode() === 'optimistic' ? '#c8e6c9' : ''"
+          [style.background]="comboCommitMode() === 'optimistic' ? 'color-mix(in oklch, var(--cngx-color-success) 18%, transparent)' : ''"
           (click)="comboCommitMode.set('optimistic')">optimistic</button>
   <button type="button" class="chip"
-          [style.background]="comboCommitMode() === 'pessimistic' ? '#c8e6c9' : ''"
+          [style.background]="comboCommitMode() === 'pessimistic' ? 'color-mix(in oklch, var(--cngx-color-success) 18%, transparent)' : ''"
           (click)="comboCommitMode.set('pessimistic')">pessimistic</button>
   <label style="margin-inline-start:12px">
     <input type="checkbox"

@@ -30,7 +30,7 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     </header>
     <cngx-combobox [label]="'Topics'" [options]="tagOptions" [(values)]="comboValues" placeholder="Choose tag…">
         <ng-template cngxComboboxChip let-opt let-remove="remove" let-i="index">
-          <span style="display:inline-flex;align-items:center;gap:0.25rem;padding:0.15rem 0.5rem;border-radius:999px;background:#dbeafe;color:#1e40af;font-size:0.8rem">
+          <span style="display:inline-flex;align-items:center;gap:0.25rem;padding:0.15rem 0.5rem;border-radius:999px;background:color-mix(in oklch, var(--cngx-color-info) 15%, transparent);color:var(--cngx-color-info);font-size:0.8rem">
             <span aria-hidden="true">#{{ i + 1 }}</span>
             <strong>{{ opt.label }}</strong>
             <button type="button" (click)="remove()" aria-label="Remove" style="background:none;border:none;color:inherit;cursor:pointer;padding:0 2px">×</button>
@@ -75,7 +75,7 @@ protected readonly tagOptions: CngxSelectOptionDef<string>[] = [
 protected readonly comboValues = signal<string[]>(['angular']);`;
   protected readonly _exHtml: string = `<cngx-combobox [label]="'Topics'" [options]="tagOptions" [(values)]="comboValues" placeholder="Choose tag…">
   <ng-template cngxComboboxChip let-opt let-remove="remove" let-i="index">
-    <span style="display:inline-flex;align-items:center;gap:0.25rem;padding:0.15rem 0.5rem;border-radius:999px;background:#dbeafe;color:#1e40af;font-size:0.8rem">
+    <span style="display:inline-flex;align-items:center;gap:0.25rem;padding:0.15rem 0.5rem;border-radius:999px;background:color-mix(in oklch, var(--cngx-color-info) 15%, transparent);color:var(--cngx-color-info);font-size:0.8rem">
       <span aria-hidden="true">#{{ i + 1 }}</span>
       <strong>{{ opt.label }}</strong>
       <button type="button" (click)="remove()" aria-label="Remove" style="background:none;border:none;color:inherit;cursor:pointer;padding:0 2px">×</button>

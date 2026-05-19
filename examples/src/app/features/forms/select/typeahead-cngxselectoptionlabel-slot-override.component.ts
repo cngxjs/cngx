@@ -38,12 +38,12 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
       >
         <ng-template cngxSelectOptionLabel let-opt>
           <span style="display:flex;align-items:center;gap:0.5rem">
-            <span aria-hidden="true" style="display:inline-flex;align-items:center;justify-content:center;width:1.5rem;height:1.5rem;border-radius:50%;background:#dbeafe;color:#1e40af;font-size:0.7rem">
+            <span aria-hidden="true" style="display:inline-flex;align-items:center;justify-content:center;width:1.5rem;height:1.5rem;border-radius:50%;background:color-mix(in oklch, var(--cngx-color-info) 18%, transparent);color:var(--cngx-color-info);font-size:0.7rem">
               {{ opt.label.charAt(0) }}
             </span>
             <span>
               <strong>{{ opt.label }}</strong>
-              <small style="display:block;color:#6b7280">id: {{ opt.value.id }}</small>
+              <small style="display:block;color:var(--cngx-color-text-muted)">id: {{ opt.value.id }}</small>
             </span>
           </span>
         </ng-template>
@@ -96,12 +96,12 @@ protected readonly typeaheadDisplay = (u: { id: number; name: string }): string 
 >
   <ng-template cngxSelectOptionLabel let-opt>
     <span style="display:flex;align-items:center;gap:0.5rem">
-      <span aria-hidden="true" style="display:inline-flex;align-items:center;justify-content:center;width:1.5rem;height:1.5rem;border-radius:50%;background:#dbeafe;color:#1e40af;font-size:0.7rem">
+      <span aria-hidden="true" style="display:inline-flex;align-items:center;justify-content:center;width:1.5rem;height:1.5rem;border-radius:50%;background:color-mix(in oklch, var(--cngx-color-info) 18%, transparent);color:var(--cngx-color-info);font-size:0.7rem">
         {{ opt.label.charAt(0) }}
       </span>
       <span>
         <strong>{{ opt.label }}</strong>
-        <small style="display:block;color:#6b7280">id: {{ opt.value.id }}</small>
+        <small style="display:block;color:var(--cngx-color-text-muted)">id: {{ opt.value.id }}</small>
       </span>
     </span>
   </ng-template>

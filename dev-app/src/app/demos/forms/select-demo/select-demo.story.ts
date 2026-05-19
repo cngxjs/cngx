@@ -851,10 +851,10 @@ export const STORY: DemoSpec = {
       template: `
   <div class="event-row" style="gap:8px;align-items:center;margin-bottom:8px">
     <button type="button" class="chip"
-            [style.background]="multiCommitMode() === 'optimistic' ? '#c8e6c9' : ''"
+            [style.background]="multiCommitMode() === 'optimistic' ? 'color-mix(in oklch, var(--cngx-color-success) 18%, transparent)' : ''"
             (click)="multiCommitMode.set('optimistic')">optimistic</button>
     <button type="button" class="chip"
-            [style.background]="multiCommitMode() === 'pessimistic' ? '#c8e6c9' : ''"
+            [style.background]="multiCommitMode() === 'pessimistic' ? 'color-mix(in oklch, var(--cngx-color-success) 18%, transparent)' : ''"
             (click)="multiCommitMode.set('pessimistic')">pessimistic</button>
     <label style="margin-inline-start:12px">
       <input type="checkbox"
@@ -916,7 +916,7 @@ export const STORY: DemoSpec = {
     placeholder="Choose topics…"
   >
     <ng-template cngxMultiSelectChip let-opt let-remove="remove">
-      <span style="display:inline-flex;align-items:center;gap:0.25rem;padding:0.125rem 0.5rem;border-radius:0.25rem;background:#ede7f6;color:#4527a0;font-weight:500;">
+      <span style="display:inline-flex;align-items:center;gap:0.25rem;padding:0.125rem 0.5rem;border-radius:0.25rem;background:color-mix(in oklch, var(--cngx-color-info) 15%, transparent);color:var(--cngx-color-info);font-weight:500;">
         <span>#{{ opt.label }}</span>
         <button type="button" (click)="remove()" style="border:0;background:transparent;color:inherit;cursor:pointer;padding:0 0.125rem;">✕</button>
       </span>
@@ -975,10 +975,10 @@ export const STORY: DemoSpec = {
       template: `
   <div class="event-row" style="gap:8px;align-items:center;margin-bottom:8px">
     <button type="button" class="chip"
-            [style.background]="comboCommitMode() === 'optimistic' ? '#c8e6c9' : ''"
+            [style.background]="comboCommitMode() === 'optimistic' ? 'color-mix(in oklch, var(--cngx-color-success) 18%, transparent)' : ''"
             (click)="comboCommitMode.set('optimistic')">optimistic</button>
     <button type="button" class="chip"
-            [style.background]="comboCommitMode() === 'pessimistic' ? '#c8e6c9' : ''"
+            [style.background]="comboCommitMode() === 'pessimistic' ? 'color-mix(in oklch, var(--cngx-color-success) 18%, transparent)' : ''"
             (click)="comboCommitMode.set('pessimistic')">pessimistic</button>
     <label style="margin-inline-start:12px">
       <input type="checkbox"
@@ -1099,7 +1099,7 @@ export const STORY: DemoSpec = {
       template: `
   <cngx-select [label]="'Color'" [options]="colors" [(value)]="standaloneValue" placeholder="Pick a color…">
     <ng-template cngxSelectPlaceholder let-text>
-      <span style="display:inline-flex;align-items:center;gap:0.4rem;color:#7a7a7a">
+      <span style="display:inline-flex;align-items:center;gap:0.4rem;color:var(--cngx-color-text-muted)">
         <span aria-hidden="true">🎨</span>
         <em>{{ text }}</em>
       </span>
@@ -1134,7 +1134,7 @@ export const STORY: DemoSpec = {
   <cngx-select [label]="'Priority'" [options]="priorities" [(value)]="groupedValue" placeholder="Choose priority…">
     <ng-template cngxSelectOptgroup let-group>
       <span style="display:inline-flex;align-items:center;gap:0.5rem">
-        <span aria-hidden="true" style="font-size:0.75rem;padding:2px 6px;border-radius:999px;background:#eef;color:#447">{{ group.children?.length ?? 0 }}</span>
+        <span aria-hidden="true" style="font-size:0.75rem;padding:2px 6px;border-radius:999px;background:color-mix(in oklch, var(--cngx-color-text) 8%, transparent);color:var(--cngx-color-text-muted)">{{ group.children?.length ?? 0 }}</span>
         <strong>{{ group.label }}</strong>
       </span>
     </ng-template>
@@ -1151,7 +1151,7 @@ export const STORY: DemoSpec = {
       template: `
   <cngx-select [label]="'Language'" [options]="asyncOptions" [(value)]="asyncValue" [state]="asyncState" placeholder="Choose language…">
     <ng-template cngxSelectRefreshing let-previousCount="previousCount">
-      <div role="status" aria-live="polite" style="padding:0.4rem 0.75rem;font-size:0.8rem;color:#557;background:linear-gradient(90deg,#e3f2fd,#bbdefb,#e3f2fd);background-size:200% 100%;animation:cngx-select-refresh-shimmer 1.6s linear infinite">
+      <div role="status" aria-live="polite" style="padding:0.4rem 0.75rem;font-size:0.8rem;color:var(--cngx-color-info);background:linear-gradient(90deg,color-mix(in oklch, var(--cngx-color-info) 10%, transparent),color-mix(in oklch, var(--cngx-color-info) 25%, transparent),color-mix(in oklch, var(--cngx-color-info) 10%, transparent));background-size:200% 100%;animation:cngx-select-refresh-shimmer 1.6s linear infinite">
         🔄 Refreshing {{ previousCount }} options…
       </div>
     </ng-template>
@@ -1176,7 +1176,7 @@ export const STORY: DemoSpec = {
     commitErrorDisplay="banner"
   >
     <ng-template cngxSelectCommitError let-error let-option="option" let-retry="retry">
-      <div role="alert" style="display:flex;align-items:center;gap:0.5rem;padding:0.5rem;background:#fef2f2;color:#7f1d1d;border-radius:6px">
+      <div role="alert" style="display:flex;align-items:center;gap:0.5rem;padding:0.5rem;background:color-mix(in oklch, var(--cngx-color-danger) 10%, transparent);color:var(--cngx-color-danger);border-radius:6px">
         <span aria-hidden="true">⚠</span>
         <span style="flex:1">Could not save <strong>{{ option?.label }}</strong>: {{ error?.message }}</span>
         <button type="button" class="chip" (click)="retry()">Replay</button>
@@ -1207,7 +1207,7 @@ export const STORY: DemoSpec = {
       <span aria-hidden="true" style="margin-inline-start:auto;font-size:0.75rem">⏳</span>
     </ng-template>
     <ng-template cngxSelectOptionError let-opt let-error="error">
-      <span aria-hidden="true" [title]="error?.message" style="margin-inline-start:auto;color:#b00020">✕</span>
+      <span aria-hidden="true" [title]="error?.message" style="margin-inline-start:auto;color:var(--cngx-color-danger)">✕</span>
     </ng-template>
   </cngx-select>
   <div class="button-row" style="margin-top:12px">
@@ -1227,7 +1227,7 @@ export const STORY: DemoSpec = {
       template: `
   <cngx-select [label]="'Language'" [options]="asyncOptions" [(value)]="asyncValue" [state]="asyncState" placeholder="Choose language…">
     <ng-template cngxSelectRetryButton let-retry let-label="label" let-disabled="disabled">
-      <button type="button" class="chip" [disabled]="disabled" (click)="retry()" style="background:#fff7ed;border-color:#fed7aa;color:#9a3412">
+      <button type="button" class="chip" [disabled]="disabled" (click)="retry()" style="background:color-mix(in oklch, var(--cngx-color-warning) 10%, transparent);border-color:color-mix(in oklch, var(--cngx-color-warning) 35%, transparent);color:var(--cngx-color-warning)">
         ↻ {{ label }}
       </button>
     </ng-template>
@@ -1268,7 +1268,7 @@ export const STORY: DemoSpec = {
       template: `
   <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:1rem">
     <div>
-      <h4 style="margin:0 0 0.5rem 0;font-size:0.85rem;color:#374151">banner</h4>
+      <h4 style="margin:0 0 0.5rem 0;font-size:0.85rem">banner</h4>
       <cngx-select
         [label]="'Color'"
         [options]="colors"
@@ -1277,10 +1277,10 @@ export const STORY: DemoSpec = {
         [commitMode]="'optimistic'"
         commitErrorDisplay="banner"
       />
-      <small style="display:block;margin-top:6px;color:#6b7280">Default. Inline alert above the option list.</small>
+      <small style="display:block;margin-top:6px;color:var(--cngx-color-text-muted)">Default. Inline alert above the option list.</small>
     </div>
     <div>
-      <h4 style="margin:0 0 0.5rem 0;font-size:0.85rem;color:#374151">inline</h4>
+      <h4 style="margin:0 0 0.5rem 0;font-size:0.85rem">inline</h4>
       <cngx-select
         [label]="'Color'"
         [options]="colors"
@@ -1289,10 +1289,10 @@ export const STORY: DemoSpec = {
         [commitMode]="'optimistic'"
         commitErrorDisplay="inline"
       />
-      <small style="display:block;margin-top:6px;color:#6b7280">Per-row visual badge on the failing option (AT feedback via the announcer).</small>
+      <small style="display:block;margin-top:6px;color:var(--cngx-color-text-muted)">Per-row visual badge on the failing option (AT feedback via the announcer).</small>
     </div>
     <div>
-      <h4 style="margin:0 0 0.5rem 0;font-size:0.85rem;color:#374151">none</h4>
+      <h4 style="margin:0 0 0.5rem 0;font-size:0.85rem">none</h4>
       <cngx-select
         [label]="'Color'"
         [options]="colors"
@@ -1301,7 +1301,7 @@ export const STORY: DemoSpec = {
         [commitMode]="'optimistic'"
         commitErrorDisplay="none"
       />
-      <small style="display:block;margin-top:6px;color:#6b7280">No built-in UI — bridge via <code>&lt;cngx-toast-on /&gt;</code> or other transition bridges.</small>
+      <small style="display:block;margin-top:6px;color:var(--cngx-color-text-muted)">No built-in UI — bridge via <code>&lt;cngx-toast-on /&gt;</code> or other transition bridges.</small>
     </div>
   </div>
   <div class="button-row" style="margin-top:12px">
@@ -1377,12 +1377,12 @@ export const STORY: DemoSpec = {
   >
     <ng-template cngxSelectOptionLabel let-opt>
       <span style="display:flex;align-items:center;gap:0.5rem">
-        <span aria-hidden="true" style="display:inline-flex;align-items:center;justify-content:center;width:1.5rem;height:1.5rem;border-radius:50%;background:#dbeafe;color:#1e40af;font-size:0.7rem">
+        <span aria-hidden="true" style="display:inline-flex;align-items:center;justify-content:center;width:1.5rem;height:1.5rem;border-radius:50%;background:color-mix(in oklch, var(--cngx-color-info) 18%, transparent);color:var(--cngx-color-info);font-size:0.7rem">
           {{ opt.label.charAt(0) }}
         </span>
         <span>
           <strong>{{ opt.label }}</strong>
-          <small style="display:block;color:#6b7280">id: {{ opt.value.id }}</small>
+          <small style="display:block;color:var(--cngx-color-text-muted)">id: {{ opt.value.id }}</small>
         </span>
       </span>
     </ng-template>
@@ -1399,7 +1399,7 @@ export const STORY: DemoSpec = {
       template: `
   <cngx-combobox [label]="'Topics'" [options]="tagOptions" [(values)]="comboValues" placeholder="Choose tag…">
     <ng-template cngxComboboxChip let-opt let-remove="remove" let-i="index">
-      <span style="display:inline-flex;align-items:center;gap:0.25rem;padding:0.15rem 0.5rem;border-radius:999px;background:#dbeafe;color:#1e40af;font-size:0.8rem">
+      <span style="display:inline-flex;align-items:center;gap:0.25rem;padding:0.15rem 0.5rem;border-radius:999px;background:color-mix(in oklch, var(--cngx-color-info) 15%, transparent);color:var(--cngx-color-info);font-size:0.8rem">
         <span aria-hidden="true">#{{ i + 1 }}</span>
         <strong>{{ opt.label }}</strong>
         <button type="button" (click)="remove()" aria-label="Remove" style="background:none;border:none;color:inherit;cursor:pointer;padding:0 2px">×</button>

@@ -37,7 +37,7 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
         commitErrorDisplay="banner"
       >
         <ng-template cngxSelectCommitError let-error let-option="option" let-retry="retry">
-          <div role="alert" style="display:flex;align-items:center;gap:0.5rem;padding:0.5rem;background:#fef2f2;color:#7f1d1d;border-radius:6px">
+          <div role="alert" style="display:flex;align-items:center;gap:0.5rem;padding:0.5rem;background:color-mix(in oklch, var(--cngx-color-danger) 10%, transparent);color:var(--cngx-color-danger);border-radius:6px">
             <span aria-hidden="true">⚠</span>
             <span style="flex:1">Could not save <strong>{{ option?.label }}</strong>: {{ error?.message }}</span>
             <button type="button" class="chip" (click)="retry()">Replay</button>
@@ -93,7 +93,7 @@ protected readonly commitAction: CngxSelectCommitAction<string> = (intended) => 
   commitErrorDisplay="banner"
 >
   <ng-template cngxSelectCommitError let-error let-option="option" let-retry="retry">
-    <div role="alert" style="display:flex;align-items:center;gap:0.5rem;padding:0.5rem;background:#fef2f2;color:#7f1d1d;border-radius:6px">
+    <div role="alert" style="display:flex;align-items:center;gap:0.5rem;padding:0.5rem;background:color-mix(in oklch, var(--cngx-color-danger) 10%, transparent);color:var(--cngx-color-danger);border-radius:6px">
       <span aria-hidden="true">⚠</span>
       <span style="flex:1">Could not save <strong>{{ option?.label }}</strong>: {{ error?.message }}</span>
       <button type="button" class="chip" (click)="retry()">Replay</button>

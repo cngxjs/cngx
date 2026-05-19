@@ -35,7 +35,7 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
         placeholder="Choose topics…"
       >
         <ng-template cngxMultiSelectChip let-opt let-remove="remove">
-          <span style="display:inline-flex;align-items:center;gap:0.25rem;padding:0.125rem 0.5rem;border-radius:0.25rem;background:#ede7f6;color:#4527a0;font-weight:500;">
+          <span style="display:inline-flex;align-items:center;gap:0.25rem;padding:0.125rem 0.5rem;border-radius:0.25rem;background:color-mix(in oklch, var(--cngx-color-info) 15%, transparent);color:var(--cngx-color-info);font-weight:500;">
             <span>#{{ opt.label }}</span>
             <button type="button" (click)="remove()" style="border:0;background:transparent;color:inherit;cursor:pointer;padding:0 0.125rem;">✕</button>
           </span>
@@ -84,7 +84,7 @@ protected readonly multiCustomChipValues = signal<string[]>(['angular', 'signals
   placeholder="Choose topics…"
 >
   <ng-template cngxMultiSelectChip let-opt let-remove="remove">
-    <span style="display:inline-flex;align-items:center;gap:0.25rem;padding:0.125rem 0.5rem;border-radius:0.25rem;background:#ede7f6;color:#4527a0;font-weight:500;">
+    <span style="display:inline-flex;align-items:center;gap:0.25rem;padding:0.125rem 0.5rem;border-radius:0.25rem;background:color-mix(in oklch, var(--cngx-color-info) 15%, transparent);color:var(--cngx-color-info);font-weight:500;">
       <span>#{{ opt.label }}</span>
       <button type="button" (click)="remove()" style="border:0;background:transparent;color:inherit;cursor:pointer;padding:0 0.125rem;">✕</button>
     </span>

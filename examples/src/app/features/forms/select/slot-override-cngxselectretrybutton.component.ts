@@ -30,7 +30,7 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     </header>
     <cngx-select [label]="'Language'" [options]="asyncOptions" [(value)]="asyncValue" [state]="asyncState" placeholder="Choose language…">
         <ng-template cngxSelectRetryButton let-retry let-label="label" let-disabled="disabled">
-          <button type="button" class="chip" [disabled]="disabled" (click)="retry()" style="background:#fff7ed;border-color:#fed7aa;color:#9a3412">
+          <button type="button" class="chip" [disabled]="disabled" (click)="retry()" style="background:color-mix(in oklch, var(--cngx-color-warning) 10%, transparent);border-color:color-mix(in oklch, var(--cngx-color-warning) 35%, transparent);color:var(--cngx-color-warning)">
             ↻ {{ label }}
           </button>
         </ng-template>
@@ -76,7 +76,7 @@ protected asyncSetSuccess(): void { this.asyncState.setSuccess(this.asyncOptions
 protected asyncSetError(): void { this.asyncState.setError(new Error('Network offline')); }`;
   protected readonly _exHtml: string = `<cngx-select [label]="'Language'" [options]="asyncOptions" [(value)]="asyncValue" [state]="asyncState" placeholder="Choose language…">
   <ng-template cngxSelectRetryButton let-retry let-label="label" let-disabled="disabled">
-    <button type="button" class="chip" [disabled]="disabled" (click)="retry()" style="background:#fff7ed;border-color:#fed7aa;color:#9a3412">
+    <button type="button" class="chip" [disabled]="disabled" (click)="retry()" style="background:color-mix(in oklch, var(--cngx-color-warning) 10%, transparent);border-color:color-mix(in oklch, var(--cngx-color-warning) 35%, transparent);color:var(--cngx-color-warning)">
       ↻ {{ label }}
     </button>
   </ng-template>
