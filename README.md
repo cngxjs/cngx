@@ -38,7 +38,7 @@ Full entry list and per-library READMEs under `projects/`.
 ## Documentation
 
 - **API and concepts** — [https://cngxjs.github.io/cngx/](https://cngxjs.github.io/cngx/) (compodocx-generated, includes the Core Concepts sidebar).
-- **Live examples** — [https://cngxjs.github.io/cngx/examples/](https://cngxjs.github.io/cngx/examples/). Naked iframe-target routes compodocx embeds on each component's Examples tab.
+- **Live examples** — [https://cngxjs.github.io/cngx/examples/](https://cngxjs.github.io/cngx/examples/). Naked iframe-target routes compodocx embeds on each component's Examples tab. One story file per rendered example under `examples/stories/<lib>/<category>/<demo>/<slug>.story.ts`; the matching component is generated and gitignored. Authoring contract: `scripts/examples-gen/README.md`.
 
 Run locally:
 
@@ -46,6 +46,8 @@ Run locally:
 npm run start:examples   # examples app on http://localhost:4200
 npm run docs:serve       # API reference on http://localhost:8080
 ```
+
+`prestart:examples` regenerates the demo components from the stories, so editing a story and re-running `npm start` is the whole loop — no manual generate step.
 
 ## Installation
 
