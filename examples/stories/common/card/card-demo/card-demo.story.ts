@@ -158,12 +158,14 @@ export const STORY: DemoSpec = {
       @if (loading() && showSkeleton()) {
         <cngx-card-skeleton [lines]="2" />
       } @else {
-        <header cngxCardHeader>
-          <h3 cngxCardTitle>Vitals Overview</h3>
-        </header>
-        <div cngxCardBody>
-          <p style="margin:0;color:var(--cngx-color-text-muted)">Heart rate, blood pressure, SpO2 values from the last 24 hours.</p>
-        </div>
+        <ng-container>
+          <header cngxCardHeader>
+            <h3 cngxCardTitle>Vitals Overview</h3>
+          </header>
+          <div cngxCardBody>
+            <p style="margin:0;color:var(--cngx-color-text-muted)">Heart rate, blood pressure, SpO2 values from the last 24 hours.</p>
+          </div>
+        </ng-container>
       }
     </cngx-card>
   </div>
