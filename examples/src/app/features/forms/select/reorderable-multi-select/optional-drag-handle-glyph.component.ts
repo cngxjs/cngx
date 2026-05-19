@@ -29,7 +29,7 @@ import { delay, of, throwError } from 'rxjs';
           font-size:.875rem;
           letter-spacing:.1em;
           font-weight:700;
-          color:var(--cngx-primary,#1976d2);
+          color:var(--cngx-color-primary,#1976d2);
         ">&equiv;</span>
       </ng-template>
 
@@ -126,7 +126,7 @@ protected readonly handleSeededReorder = (
     font-size:.875rem;
     letter-spacing:.1em;
     font-weight:700;
-    color:var(--cngx-primary,#1976d2);
+    color:var(--cngx-color-primary,#1976d2);
   ">&equiv;</span>
 </ng-template>`;
   protected readonly recipients: CngxSelectOptionDef<string>[] = [

@@ -16,7 +16,7 @@ import { CngxPressable } from '@cngx/common/interactive';
       @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
     </header>
     <div cngxPressable #card="cngxPressable"
-           style="padding:20px;border:1px solid var(--cngx-border,#ddd);border-radius:8px;cursor:pointer;
+           style="padding:20px;border:1px solid var(--cngx-color-border,#ddd);border-radius:8px;cursor:pointer;
                   transition:transform 100ms ease,box-shadow 100ms ease;max-width:280px;user-select:none"
            [style.transform]="card.pressed() ? 'scale(0.98)' : ''"
            [style.box-shadow]="card.pressed() ? 'none' : '0 1px 3px rgba(0,0,0,0.08)'">
@@ -42,7 +42,7 @@ export class PressableTappableCard {
   protected readonly _exSubtitle: string = 'Apply to any element — cards, list items, nav links. The <code>pressed()</code> signal drives visual feedback.';
   protected readonly _exTs: string = `import { CngxPressable } from '@cngx/common/interactive';`;
   protected readonly _exHtml: string = `<div cngxPressable #card="cngxPressable"
-     style="padding:20px;border:1px solid var(--cngx-border,#ddd);border-radius:8px;cursor:pointer;
+     style="padding:20px;border:1px solid var(--cngx-color-border,#ddd);border-radius:8px;cursor:pointer;
             transition:transform 100ms ease,box-shadow 100ms ease;max-width:280px;user-select:none"
      [style.transform]="card.pressed() ? 'scale(0.98)' : ''"
      [style.box-shadow]="card.pressed() ? 'none' : '0 1px 3px rgba(0,0,0,0.08)'">

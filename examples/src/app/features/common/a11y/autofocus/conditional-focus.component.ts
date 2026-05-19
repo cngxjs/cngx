@@ -20,7 +20,7 @@ import { CngxAutofocus } from '@cngx/common/a11y';
       </button>
       <div style="margin-top:12px">
         <input [cngxAutofocus]="conditionMet()" placeholder="Focused when active"
-               style="padding:8px 12px;border:1px solid var(--cngx-border,#ddd);border-radius:6px;width:240px" />
+               style="padding:8px 12px;border:1px solid var(--cngx-color-border,#ddd);border-radius:6px;width:240px" />
       </div>
       <div class="event-grid" style="margin-top:12px">
         <div class="event-row">
@@ -52,7 +52,7 @@ protected readonly conditionMet = signal(false);`;
 </button>
 <div style="margin-top:12px">
   <input [cngxAutofocus]="conditionMet()" placeholder="Focused when active"
-         style="padding:8px 12px;border:1px solid var(--cngx-border,#ddd);border-radius:6px;width:240px" />
+         style="padding:8px 12px;border:1px solid var(--cngx-color-border,#ddd);border-radius:6px;width:240px" />
 </div>`;
   protected readonly showSearch = signal(false);
     protected readonly conditionMet = signal(false);

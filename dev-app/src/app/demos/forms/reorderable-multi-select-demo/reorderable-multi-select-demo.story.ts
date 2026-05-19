@@ -247,7 +247,7 @@ export const STORY: DemoSpec = {
       font-size:.875rem;
       letter-spacing:.1em;
       font-weight:700;
-      color:var(--cngx-primary,#1976d2);
+      color:var(--cngx-color-primary,#1976d2);
     ">&equiv;</span>
   </ng-template>
 

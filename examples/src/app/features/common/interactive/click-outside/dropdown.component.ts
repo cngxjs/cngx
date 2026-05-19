@@ -28,7 +28,7 @@ import { CngxClickOutside } from '@cngx/common/interactive';
           style="
             display: inline-block;
             padding: 12px 16px;
-            border: 1px solid var(--cngx-border, #ddd);
+            border: 1px solid var(--cngx-color-border, #ddd);
             border-radius: 6px;
             background: var(--cngx-surface-alt, #f8f9fa);
             margin-top: 8px;
@@ -75,7 +75,7 @@ protected enabled = signal(true);`;
     style="
       display: inline-block;
       padding: 12px 16px;
-      border: 1px solid var(--cngx-border, #ddd);
+      border: 1px solid var(--cngx-color-border, #ddd);
       border-radius: 6px;
       background: var(--cngx-surface-alt, #f8f9fa);
       margin-top: 8px;

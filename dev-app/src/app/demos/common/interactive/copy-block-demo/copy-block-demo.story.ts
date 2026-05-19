@@ -24,9 +24,7 @@ export const STORY: DemoSpec = {
         'Click "Copy" to copy the install command. The button shows "Copied!" for 2 seconds.',
       imports: ['CngxCopyBlock'],
       template: `
-  <cngx-copy-block [value]="installCmd"
-      style="padding:12px 16px;background:var(--code-bg,#f5f5f5);border:1px solid var(--code-border,#ddd);
-             border-radius:6px;font-family:var(--font-mono,monospace);font-size:0.8125rem">
+  <cngx-copy-block [value]="installCmd">
     {{ installCmd }}
   </cngx-copy-block>`,
     },
@@ -36,9 +34,7 @@ export const STORY: DemoSpec = {
         'Custom labels for copy and copied states.',
       imports: ['CngxCopyBlock'],
       template: `
-  <cngx-copy-block [value]="apiKey()" buttonLabel="Copy Key" copiedLabel="Key copied!"
-      style="padding:12px 16px;background:var(--code-bg,#f5f5f5);border:1px solid var(--code-border,#ddd);
-             border-radius:6px;font-family:var(--font-mono,monospace);font-size:0.8125rem">
+  <cngx-copy-block [value]="apiKey()" buttonLabel="Copy Key" copiedLabel="Key copied!">
     {{ apiKey() }}
   </cngx-copy-block>`,
     },

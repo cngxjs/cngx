@@ -38,7 +38,7 @@ export const STORY: DemoSpec = {
 
     <div style="display:flex;flex-direction:column;gap:8px">
       @for (i of [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]; track i) {
-        <div style="padding:12px 16px;background:var(--cngx-card-bg,#f8fafc);border-radius:6px;border:1px solid var(--cngx-border,#eee)">
+        <div style="padding:12px 16px;background:var(--cngx-card-bg,#f8fafc);border-radius:6px;border:1px solid var(--cngx-color-border,#eee)">
           Scrollable content row {{ i }}
         </div>
       }

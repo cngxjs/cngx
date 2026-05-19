@@ -67,7 +67,7 @@ export const STORY: DemoSpec = {
       css: `.palette-search {
   width: 260px;
   padding: 6px 10px;
-  border: 1px solid var(--cngx-surface-border, #d0d5dd);
+  border: 1px solid var(--cngx-color-border, #d0d5dd);
   border-radius: var(--cngx-radius-md, 8px);
   font: inherit;
 }
@@ -80,12 +80,12 @@ export const STORY: DemoSpec = {
   overflow: auto;
   padding: 4px;
   margin-top: 8px;
-  border: 1px solid var(--cngx-surface-border, #d0d5dd);
+  border: 1px solid var(--cngx-color-border, #d0d5dd);
   border-radius: var(--cngx-radius-md, 8px);
   outline: none;
 }
 .ad-listbox:focus-visible {
-  outline: 2px solid var(--cngx-focus-ring, #4a8cff);
+  outline: 2px solid var(--cngx-color-primary, #4a8cff);
   outline-offset: 2px;
 }
 .ad-listbox [cngxOption] {

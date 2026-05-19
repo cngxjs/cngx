@@ -34,7 +34,7 @@ export const STORY: DemoSpec = {
   </div>
   <cngx-skeleton [loading]="loading()" [count]="3">
     <ng-template cngxSkeletonPlaceholder let-i let-last="last">
-      <div style="display:flex;gap:12px;padding:16px;border:1px solid var(--cngx-border,#e0e0e0);border-radius:8px;margin-bottom:12px">
+      <div style="display:flex;gap:12px;padding:16px;border:1px solid var(--cngx-color-border,#e0e0e0);border-radius:8px;margin-bottom:12px">
         <div style="width:48px;height:48px;border-radius:50%;background:var(--cngx-surface-alt,#e0e0e0);flex-shrink:0"></div>
         <div style="flex:1;display:flex;flex-direction:column;gap:8px">
           <div style="height:14px;width:40%;border-radius:4px;background:var(--cngx-surface-alt,#e0e0e0)"></div>
@@ -45,7 +45,7 @@ export const STORY: DemoSpec = {
       </div>
     </ng-template>
     @for (i of [1, 2, 3]; track i) {
-      <div style="padding:16px;border:1px solid var(--cngx-border,#e0e0e0);border-radius:8px;margin-bottom:12px">
+      <div style="padding:16px;border:1px solid var(--cngx-color-border,#e0e0e0);border-radius:8px;margin-bottom:12px">
         <strong>User {{ i }}</strong>
         <p style="margin:4px 0 0;color:var(--text-muted,#666)">Content loaded successfully.</p>
       </div>
@@ -61,7 +61,7 @@ export const STORY: DemoSpec = {
       template: `
   <cngx-skeleton [loading]="true" [count]="5">
     <ng-template cngxSkeletonPlaceholder let-i let-first="first" let-last="last" let-count="count">
-      <div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--cngx-border,#e0e0e0)">
+      <div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--cngx-color-border,#e0e0e0)">
         <span style="font-size:0.75rem;color:var(--text-muted,#999);width:24px">{{ i + 1 }}/{{ count }}</span>
         <div [style.height]="'12px'" [style.width]="first ? '70%' : last ? '40%' : '55%'"
           style="border-radius:4px;background:var(--cngx-surface-alt,#e0e0e0)"></div>

@@ -240,7 +240,7 @@ export const STORY: DemoSpec = {
       <select
         [value]="commitMode()"
         (change)="commitMode.set($any($event.target).value)"
-        style="padding:.25rem .5rem; border:1px solid var(--cngx-border, #cbd5e1); border-radius:.25rem; font: inherit"
+        style="padding:.25rem .5rem; border:1px solid var(--cngx-color-border, #cbd5e1); border-radius:.25rem; font: inherit"
       >
         <option value="pessimistic">pessimistic (recommended for visible pending)</option>
         <option value="optimistic">optimistic</option>

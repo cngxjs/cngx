@@ -33,7 +33,7 @@ import { CngxReducedMotion } from '@cngx/common/a11y';
                 padding: 10px 14px;
                 border-radius: 6px;
                 background: var(--cngx-surface-alt, #f8f9fa);
-                border: 1px solid var(--cngx-border, #ddd);
+                border: 1px solid var(--cngx-color-border, #ddd);
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
@@ -128,7 +128,7 @@ protected removeNotification(id: number): void {
           padding: 10px 14px;
           border-radius: 6px;
           background: var(--cngx-surface-alt, #f8f9fa);
-          border: 1px solid var(--cngx-border, #ddd);
+          border: 1px solid var(--cngx-color-border, #ddd);
           display: flex;
           align-items: center;
           justify-content: space-between;

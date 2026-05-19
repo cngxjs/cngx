@@ -59,7 +59,7 @@ import { CngxFocusTrap } from '@cngx/common/a11y';
               Are you sure you want to proceed? This action cannot be undone.
               Tab cycles only within this dialog. Press Escape or click outside to close.
             </p>
-            <input placeholder="Type CONFIRM to proceed" style="padding: 8px 12px; border-radius: 6px; border: 1px solid var(--cngx-border, #ddd); font-size: 0.875rem;" />
+            <input placeholder="Type CONFIRM to proceed" style="padding: 8px 12px; border-radius: 6px; border: 1px solid var(--cngx-color-border, #ddd); font-size: 0.875rem;" />
             <div class="button-row" style="justify-content: flex-end;">
               <button class="sort-btn" (click)="modalOpen.set(false)">Cancel</button>
               <button class="sort-btn" style="background: var(--cngx-accent, #f5a623); color: #000; font-weight: 500;" (click)="modalOpen.set(false)">Confirm</button>
@@ -136,7 +136,7 @@ protected drawerSide = signal<'left' | 'right'>('right');`;
         Are you sure you want to proceed? This action cannot be undone.
         Tab cycles only within this dialog. Press Escape or click outside to close.
       </p>
-      <input placeholder="Type CONFIRM to proceed" style="padding: 8px 12px; border-radius: 6px; border: 1px solid var(--cngx-border, #ddd); font-size: 0.875rem;" />
+      <input placeholder="Type CONFIRM to proceed" style="padding: 8px 12px; border-radius: 6px; border: 1px solid var(--cngx-color-border, #ddd); font-size: 0.875rem;" />
       <div class="button-row" style="justify-content: flex-end;">
         <button class="sort-btn" (click)="modalOpen.set(false)">Cancel</button>
         <button class="sort-btn" style="background: var(--cngx-accent, #f5a623); color: #000; font-weight: 500;" (click)="modalOpen.set(false)">Confirm</button>

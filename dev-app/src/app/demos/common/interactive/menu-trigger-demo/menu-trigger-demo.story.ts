@@ -25,6 +25,11 @@ export const STORY: DemoSpec = {
         'Press ArrowDown/Enter/Space to open, Escape to close. Arrow keys navigate, typeahead jumps to matching labels.',
       imports: ['CngxMenu', 'CngxMenuItem', 'CngxMenuTrigger', 'CngxPopover', 'CngxPopoverTrigger'],
       template: `
+  <style>
+    .trigger { min-width: 160px; padding: 8px 12px; border: 1px solid var(--cngx-color-border, #d0d5dd); border-radius: 6px; background: var(--cngx-color-surface, #fff); color: var(--cngx-color-text, inherit); cursor: pointer; font: inherit; }
+    .trigger:focus-visible { outline: 2px solid var(--cngx-color-primary, #4a8cff); outline-offset: 2px; }
+    .pop { margin-top: 4px; min-width: 180px; border: 1px solid var(--cngx-color-border, #d0d5dd); border-radius: 6px; background: var(--cngx-color-surface, #fff); color: var(--cngx-color-text, inherit); box-shadow: 0 4px 12px oklch(0 0 0 / 0.12); }
+  </style>
   <button
     type="button"
     class="trigger"
@@ -65,21 +70,21 @@ export const STORY: DemoSpec = {
       css: `.trigger {
   min-width: 160px;
   padding: 8px 12px;
-  border: 1px solid var(--cngx-surface-border, #d0d5dd);
+  border: 1px solid var(--cngx-color-border, #d0d5dd);
   border-radius: var(--cngx-radius-md, 6px);
-  background: var(--cngx-surface-default, #fff);
+  background: var(--cngx-color-surface, #fff);
   cursor: pointer;
   font: inherit;
 }
 .trigger:focus-visible {
-  outline: 2px solid var(--cngx-focus-ring, #4a8cff);
+  outline: 2px solid var(--cngx-color-primary, #4a8cff);
   outline-offset: 2px;
 }
 .pop {
   margin-top: 4px;
   padding: 4px;
   min-width: 180px;
-  border: 1px solid var(--cngx-surface-border, #d0d5dd);
+  border: 1px solid var(--cngx-color-border, #d0d5dd);
   border-radius: 6px;
   background: #fff;
   box-shadow: 0 4px 12px rgba(0,0,0,0.08);

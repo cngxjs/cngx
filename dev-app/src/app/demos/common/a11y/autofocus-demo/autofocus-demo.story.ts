@@ -31,7 +31,7 @@ export const STORY: DemoSpec = {
   @if (showSearch()) {
     <div style="margin-top:12px">
       <input [cngxAutofocus]="true" placeholder="Search..."
-             style="padding:8px 12px;border:1px solid var(--cngx-border,#ddd);border-radius:6px;width:240px" />
+             style="padding:8px 12px;border:1px solid var(--cngx-color-border,#ddd);border-radius:6px;width:240px" />
     </div>
   }`,
     },
@@ -46,7 +46,7 @@ export const STORY: DemoSpec = {
   </button>
   <div style="margin-top:12px">
     <input [cngxAutofocus]="conditionMet()" placeholder="Focused when active"
-           style="padding:8px 12px;border:1px solid var(--cngx-border,#ddd);border-radius:6px;width:240px" />
+           style="padding:8px 12px;border:1px solid var(--cngx-color-border,#ddd);border-radius:6px;width:240px" />
   </div>
   <div class="event-grid" style="margin-top:12px">
     <div class="event-row">

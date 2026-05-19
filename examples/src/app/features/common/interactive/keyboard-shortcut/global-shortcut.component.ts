@@ -21,7 +21,7 @@ import { CngxKeyboardShortcut } from '@cngx/common/interactive';
           Then click into the input and try again — it won't fire.
         </p>
         <input placeholder="Type here — Ctrl+K won't fire"
-               style="padding:8px 12px;border:1px solid var(--cngx-border,#ddd);border-radius:6px;width:260px" />
+               style="padding:8px 12px;border:1px solid var(--cngx-color-border,#ddd);border-radius:6px;width:260px" />
       </div>
 
       <div class="event-grid" style="margin-top:12px">
@@ -70,7 +70,7 @@ protected handleEscape(): void {
     Then click into the input and try again — it won't fire.
   </p>
   <input placeholder="Type here — Ctrl+K won't fire"
-         style="padding:8px 12px;border:1px solid var(--cngx-border,#ddd);border-radius:6px;width:260px" />
+         style="padding:8px 12px;border:1px solid var(--cngx-color-border,#ddd);border-radius:6px;width:260px" />
 </div>`;
   protected globalCount = signal(0);
     protected escapeCount = signal(0);

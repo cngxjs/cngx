@@ -140,7 +140,7 @@ export const STORY: DemoSpec = {
           width: 100%;
           padding: 0.5rem 0.75rem;
           border: 0;
-          border-top: 1px solid var(--cngx-border, #e5e7eb);
+          border-top: 1px solid var(--cngx-color-border, #e5e7eb);
           background: transparent;
           text-align: left;
           cursor: pointer;
@@ -191,7 +191,7 @@ export const STORY: DemoSpec = {
           width: 100%;
           padding: 0.5rem 0.75rem;
           border: 0;
-          border-top: 1px solid var(--cngx-border, #e5e7eb);
+          border-top: 1px solid var(--cngx-color-border, #e5e7eb);
           background: transparent;
           text-align: left;
           cursor: pointer;
@@ -258,7 +258,7 @@ export const STORY: DemoSpec = {
           width: 100%;
           padding: 0.5rem 0.75rem;
           border: 0;
-          border-top: 1px solid var(--cngx-border, #e5e7eb);
+          border-top: 1px solid var(--cngx-color-border, #e5e7eb);
           background: transparent;
           text-align: left;
           cursor: pointer;
@@ -320,12 +320,12 @@ export const STORY: DemoSpec = {
         flex-direction: column;
         gap: 0.5rem;
         padding: 0.75rem;
-        border-top: 1px solid var(--cngx-border, #e5e7eb);
+        border-top: 1px solid var(--cngx-color-border, #e5e7eb);
         background: var(--cngx-surface-variant, rgba(0,0,0,.02));
       ">
         <div style="font-weight:600; font-size:.875rem">
           + Neuen Tag „{{ term || '…' }}" anlegen
-          @if (dirty) { <span style="color:var(--cngx-primary,#1976d2)">· ungespeichert</span> }
+          @if (dirty) { <span style="color:var(--cngx-color-primary,#1976d2)">· ungespeichert</span> }
         </div>
         <input
           #dirtyNoteInput
@@ -335,7 +335,7 @@ export const STORY: DemoSpec = {
           style="
             width: 100%;
             padding: .35rem .5rem;
-            border: 1px solid var(--cngx-border, #cbd5e1);
+            border: 1px solid var(--cngx-color-border, #cbd5e1);
             border-radius: .25rem;
             font: inherit;
           "
@@ -344,7 +344,7 @@ export const STORY: DemoSpec = {
           <button
             type="button"
             (click)="handleDirtyCancel(setDirty); dirtyNoteInput.value = ''"
-            style="padding:.35rem .75rem; border:1px solid var(--cngx-border, #cbd5e1); border-radius:.25rem; background:transparent; cursor:pointer; font:inherit"
+            style="padding:.35rem .75rem; border:1px solid var(--cngx-color-border, #cbd5e1); border-radius:.25rem; background:transparent; cursor:pointer; font:inherit"
           >
             Cancel
           </button>
@@ -352,7 +352,7 @@ export const STORY: DemoSpec = {
             type="button"
             [disabled]="!term || pending"
             (click)="commit()"
-            style="padding:.35rem .75rem; border:0; border-radius:.25rem; background:var(--cngx-primary,#1976d2); color:#fff; cursor:pointer; font:inherit"
+            style="padding:.35rem .75rem; border:0; border-radius:.25rem; background:var(--cngx-color-primary,#1976d2); color:#fff; cursor:pointer; font:inherit"
           >
             @if (pending) { Wird angelegt… } @else { Anlegen }
           </button>
@@ -401,7 +401,7 @@ export const STORY: DemoSpec = {
           width: 100%;
           padding: 0.5rem 0.75rem;
           border: 0;
-          border-top: 1px solid var(--cngx-border, #e5e7eb);
+          border-top: 1px solid var(--cngx-color-border, #e5e7eb);
           background: transparent;
           text-align: left;
           cursor: pointer;

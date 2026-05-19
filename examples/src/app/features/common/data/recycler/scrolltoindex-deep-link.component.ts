@@ -19,10 +19,10 @@ import { injectRecycler } from '@cngx/common/data';
           Go to index:
           <input type="number" [value]="scrollTarget()" (input)="scrollTarget.set(+$any($event.target).value)"
                  min="0" [max]="scrollRecycler.ariaSetSize() - 1"
-                 style="width:80px;padding:4px 8px;border:1px solid var(--cngx-border-color,#ccc);border-radius:4px">
+                 style="width:80px;padding:4px 8px;border:1px solid var(--cngx-color-border,#ccc);border-radius:4px">
         </label>
         <button type="button" (click)="handleScrollDemo()"
-                style="padding:6px 16px;border:1px solid var(--cngx-border-color,#ccc);border-radius:4px;cursor:pointer">
+                style="padding:6px 16px;border:1px solid var(--cngx-color-border,#ccc);border-radius:4px;cursor:pointer">
           Scroll
         </button>
         <span class="status-badge">
@@ -35,11 +35,11 @@ import { injectRecycler } from '@cngx/common/data';
         }
       </div>
       <div class="recycler-scroll-demo"
-           style="height:300px;overflow-y:auto;border:1px solid var(--cngx-border-color,#e0e0e0);border-radius:8px">
+           style="height:300px;overflow-y:auto;border:1px solid var(--cngx-color-border,#e0e0e0);border-radius:8px">
         <div [style.paddingTop.px]="scrollRecycler.offsetBefore()"
              [style.paddingBottom.px]="scrollRecycler.offsetAfter()">
           @for (item of scrollVisible(); track item.id) {
-            <div style="height:40px;display:flex;align-items:center;padding:0 16px;border-bottom:1px solid var(--cngx-border-color,#e0e0e0)">
+            <div style="height:40px;display:flex;align-items:center;padding:0 16px;border-bottom:1px solid var(--cngx-color-border,#e0e0e0)">
               {{ item.name }}
             </div>
           }
@@ -112,10 +112,10 @@ protected handleScrollDemo(): void {
     Go to index:
     <input type="number" [value]="scrollTarget()" (input)="scrollTarget.set(+$any($event.target).value)"
            min="0" [max]="scrollRecycler.ariaSetSize() - 1"
-           style="width:80px;padding:4px 8px;border:1px solid var(--cngx-border-color,#ccc);border-radius:4px">
+           style="width:80px;padding:4px 8px;border:1px solid var(--cngx-color-border,#ccc);border-radius:4px">
   </label>
   <button type="button" (click)="handleScrollDemo()"
-          style="padding:6px 16px;border:1px solid var(--cngx-border-color,#ccc);border-radius:4px;cursor:pointer">
+          style="padding:6px 16px;border:1px solid var(--cngx-color-border,#ccc);border-radius:4px;cursor:pointer">
     Scroll
   </button>
   <span class="status-badge">
@@ -128,11 +128,11 @@ protected handleScrollDemo(): void {
   }
 </div>
 <div class="recycler-scroll-demo"
-     style="height:300px;overflow-y:auto;border:1px solid var(--cngx-border-color,#e0e0e0);border-radius:8px">
+     style="height:300px;overflow-y:auto;border:1px solid var(--cngx-color-border,#e0e0e0);border-radius:8px">
   <div [style.paddingTop.px]="scrollRecycler.offsetBefore()"
        [style.paddingBottom.px]="scrollRecycler.offsetAfter()">
     @for (item of scrollVisible(); track item.id) {
-      <div style="height:40px;display:flex;align-items:center;padding:0 16px;border-bottom:1px solid var(--cngx-border-color,#e0e0e0)">
+      <div style="height:40px;display:flex;align-items:center;padding:0 16px;border-bottom:1px solid var(--cngx-color-border,#e0e0e0)">
         {{ item.name }}
       </div>
     }

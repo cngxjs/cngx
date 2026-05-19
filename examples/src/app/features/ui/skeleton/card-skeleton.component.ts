@@ -22,7 +22,7 @@ import { CngxSkeletonContainer, CngxSkeletonPlaceholder } from '@cngx/ui';
       </div>
       <cngx-skeleton [loading]="loading()" [count]="3">
         <ng-template cngxSkeletonPlaceholder let-i let-last="last">
-          <div style="display:flex;gap:12px;padding:16px;border:1px solid var(--cngx-border,#e0e0e0);border-radius:8px;margin-bottom:12px">
+          <div style="display:flex;gap:12px;padding:16px;border:1px solid var(--cngx-color-border,#e0e0e0);border-radius:8px;margin-bottom:12px">
             <div style="width:48px;height:48px;border-radius:50%;background:var(--cngx-surface-alt,#e0e0e0);flex-shrink:0"></div>
             <div style="flex:1;display:flex;flex-direction:column;gap:8px">
               <div style="height:14px;width:40%;border-radius:4px;background:var(--cngx-surface-alt,#e0e0e0)"></div>
@@ -33,7 +33,7 @@ import { CngxSkeletonContainer, CngxSkeletonPlaceholder } from '@cngx/ui';
           </div>
         </ng-template>
         @for (i of [1, 2, 3]; track i) {
-          <div style="padding:16px;border:1px solid var(--cngx-border,#e0e0e0);border-radius:8px;margin-bottom:12px">
+          <div style="padding:16px;border:1px solid var(--cngx-color-border,#e0e0e0);border-radius:8px;margin-bottom:12px">
             <strong>User {{ i }}</strong>
             <p style="margin:4px 0 0;color:var(--text-muted,#666)">Content loaded successfully.</p>
           </div>
@@ -67,7 +67,7 @@ protected toggleLoading(): void {
 </div>
 <cngx-skeleton [loading]="loading()" [count]="3">
   <ng-template cngxSkeletonPlaceholder let-i let-last="last">
-    <div style="display:flex;gap:12px;padding:16px;border:1px solid var(--cngx-border,#e0e0e0);border-radius:8px;margin-bottom:12px">
+    <div style="display:flex;gap:12px;padding:16px;border:1px solid var(--cngx-color-border,#e0e0e0);border-radius:8px;margin-bottom:12px">
       <div style="width:48px;height:48px;border-radius:50%;background:var(--cngx-surface-alt,#e0e0e0);flex-shrink:0"></div>
       <div style="flex:1;display:flex;flex-direction:column;gap:8px">
         <div style="height:14px;width:40%;border-radius:4px;background:var(--cngx-surface-alt,#e0e0e0)"></div>
@@ -78,7 +78,7 @@ protected toggleLoading(): void {
     </div>
   </ng-template>
   @for (i of [1, 2, 3]; track i) {
-    <div style="padding:16px;border:1px solid var(--cngx-border,#e0e0e0);border-radius:8px;margin-bottom:12px">
+    <div style="padding:16px;border:1px solid var(--cngx-color-border,#e0e0e0);border-radius:8px;margin-bottom:12px">
       <strong>User {{ i }}</strong>
       <p style="margin:4px 0 0;color:var(--text-muted,#666)">Content loaded successfully.</p>
     </div>

@@ -17,14 +17,14 @@ import { injectRecycler, CngxVirtualItem, CngxRecyclerAnnouncer } from '@cngx/co
     </header>
     <cngx-recycler-announcer [cngxRecyclerAnnouncer]="recycler" />
       <div class="recycler-scroll" role="list" aria-label="Demo items"
-           style="height:400px;overflow-y:auto;border:1px solid var(--cngx-border-color,#e0e0e0);border-radius:8px">
+           style="height:400px;overflow-y:auto;border:1px solid var(--cngx-color-border,#e0e0e0);border-radius:8px">
         <div [style.paddingTop.px]="recycler.offsetBefore()"
              [style.paddingBottom.px]="recycler.offsetAfter()">
           @for (item of visibleItems(); track item.id; let i = $index) {
             <div role="listitem"
                  [cngxVirtualItem]="recycler"
                  [cngxVirtualItemIndex]="recycler.start() + i"
-                 style="height:48px;display:flex;align-items:center;padding:0 16px;border-bottom:1px solid var(--cngx-border-color,#e0e0e0)">
+                 style="height:48px;display:flex;align-items:center;padding:0 16px;border-bottom:1px solid var(--cngx-color-border,#e0e0e0)">
               <strong>{{ item.name }}</strong>&nbsp;&mdash;&nbsp;{{ item.description }}
             </div>
           }
@@ -42,10 +42,10 @@ import { injectRecycler, CngxVirtualItem, CngxRecyclerAnnouncer } from '@cngx/co
           Go to:
           <input type="number" [value]="targetIndex()" (input)="targetIndex.set(+$any($event.target).value)"
                  min="0" [max]="recycler.ariaSetSize() - 1"
-                 style="width:80px;padding:4px 8px;border:1px solid var(--cngx-border-color,#ccc);border-radius:4px">
+                 style="width:80px;padding:4px 8px;border:1px solid var(--cngx-color-border,#ccc);border-radius:4px">
         </label>
         <button type="button" (click)="handleScrollTo()"
-                style="padding:4px 12px;border:1px solid var(--cngx-border-color,#ccc);border-radius:4px;cursor:pointer">
+                style="padding:4px 12px;border:1px solid var(--cngx-color-border,#ccc);border-radius:4px;cursor:pointer">
           Scroll
         </button>
         @if (recycler.pendingTarget() != null) {
@@ -95,14 +95,14 @@ protected handleScrollTo(): void {
 }`;
   protected readonly _exHtml: string = `<cngx-recycler-announcer [cngxRecyclerAnnouncer]="recycler" />
 <div class="recycler-scroll" role="list" aria-label="Demo items"
-     style="height:400px;overflow-y:auto;border:1px solid var(--cngx-border-color,#e0e0e0);border-radius:8px">
+     style="height:400px;overflow-y:auto;border:1px solid var(--cngx-color-border,#e0e0e0);border-radius:8px">
   <div [style.paddingTop.px]="recycler.offsetBefore()"
        [style.paddingBottom.px]="recycler.offsetAfter()">
     @for (item of visibleItems(); track item.id; let i = $index) {
       <div role="listitem"
            [cngxVirtualItem]="recycler"
            [cngxVirtualItemIndex]="recycler.start() + i"
-           style="height:48px;display:flex;align-items:center;padding:0 16px;border-bottom:1px solid var(--cngx-border-color,#e0e0e0)">
+           style="height:48px;display:flex;align-items:center;padding:0 16px;border-bottom:1px solid var(--cngx-color-border,#e0e0e0)">
         <strong>{{ item.name }}</strong>&nbsp;&mdash;&nbsp;{{ item.description }}
       </div>
     }
@@ -120,10 +120,10 @@ protected handleScrollTo(): void {
     Go to:
     <input type="number" [value]="targetIndex()" (input)="targetIndex.set(+$any($event.target).value)"
            min="0" [max]="recycler.ariaSetSize() - 1"
-           style="width:80px;padding:4px 8px;border:1px solid var(--cngx-border-color,#ccc);border-radius:4px">
+           style="width:80px;padding:4px 8px;border:1px solid var(--cngx-color-border,#ccc);border-radius:4px">
   </label>
   <button type="button" (click)="handleScrollTo()"
-          style="padding:4px 12px;border:1px solid var(--cngx-border-color,#ccc);border-radius:4px;cursor:pointer">
+          style="padding:4px 12px;border:1px solid var(--cngx-color-border,#ccc);border-radius:4px;cursor:pointer">
     Scroll
   </button>
   @if (recycler.pendingTarget() != null) {

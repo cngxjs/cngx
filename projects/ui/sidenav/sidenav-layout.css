@@ -300,6 +300,41 @@
   }
 
   /**
+   * Outline color of the keyboard focus ring on a nav link. Falls
+   * back to `--cngx-color-primary` so the ring picks up the brand
+   * accent.
+   * @group State / Focus
+   * @see [[--cngx-color-primary]]
+   */
+  @property --cngx-nav-link-focus-outline-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.66 0.19 50);
+  }
+
+  /**
+   * Stroke width of the keyboard focus ring.
+   * @group State / Focus
+   */
+  @property --cngx-nav-link-focus-outline-width {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 2px;
+  }
+
+  /**
+   * Distance from the link edge to the focus ring. Negative offsets
+   * pull the ring inside the link bounds so a fully-padded link
+   * doesn't shove its neighbours when focused.
+   * @group State / Focus
+   */
+  @property --cngx-nav-link-focus-outline-offset {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: -2px;
+  }
+
+  /**
    * Font-size of the first-letter initial shown in mini mode (when
    * the full label is hidden).
    * @group Variant / Mini
@@ -326,6 +361,7 @@
     --cngx-sidenav-expanded-shadow: 4px 0 12px oklch(0 0 0 / 0.1);
     --cngx-nav-link-hover-bg: oklch(0 0 0 / 0.04);
     --cngx-nav-link-active-bg: oklch(0 0 0 / 0.08);
+    --cngx-nav-link-focus-outline-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
   }
 
   @media (prefers-color-scheme: dark) {
@@ -542,6 +578,19 @@
     color: var(--cngx-nav-link-active-color, currentColor);
     background: var(--cngx-nav-link-active-bg, oklch(0 0 0 / 0.08));
     font-weight: var(--cngx-nav-link-active-font-weight, 600);
+  }
+
+  /*
+   * Keyboard focus ring on a nav link. Inset offset so a focused
+   * link inside the rail doesn't push its neighbours outward. The
+   * outline rides on `--cngx-color-primary` via the :root delegation,
+   * so the brand accent paints both active state and focus state in
+   * coherent tones.
+   */
+  cngx-sidenav .cngx-nav-link:focus-visible {
+    outline: var(--cngx-nav-link-focus-outline-width, 2px) solid
+      var(--cngx-nav-link-focus-outline-color, oklch(0.66 0.19 50));
+    outline-offset: var(--cngx-nav-link-focus-outline-offset, -2px);
   }
 
   /*

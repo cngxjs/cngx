@@ -21,7 +21,7 @@ import { CngxIntersectionObserver } from '@cngx/common/layout';
         style="
           height: 200px;
           overflow-y: auto;
-          border: 1px solid var(--cngx-border, #ddd);
+          border: 1px solid var(--cngx-color-border, #ddd);
           border-radius: 6px;
           padding: 0 16px;
         "
@@ -92,7 +92,7 @@ protected readonly thresholds = Array.from({ length: 21 }, (_, i) => i / 20);`;
   style="
     height: 200px;
     overflow-y: auto;
-    border: 1px solid var(--cngx-border, #ddd);
+    border: 1px solid var(--cngx-color-border, #ddd);
     border-radius: 6px;
     padding: 0 16px;
   "

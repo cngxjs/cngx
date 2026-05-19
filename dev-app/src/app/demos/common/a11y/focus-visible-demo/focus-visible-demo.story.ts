@@ -85,7 +85,7 @@ export const STORY: DemoSpec = {
           width: 100%;
           padding: 8px 12px;
           border-radius: 6px;
-          border: 1px solid var(--cngx-border, #ddd);
+          border: 1px solid var(--cngx-color-border, #ddd);
           outline: none;
           font-size: 0.875rem;
           transition: box-shadow 0.15s;
@@ -107,7 +107,7 @@ export const STORY: DemoSpec = {
           width: 100%;
           padding: 8px 12px;
           border-radius: 6px;
-          border: 1px solid var(--cngx-border, #ddd);
+          border: 1px solid var(--cngx-color-border, #ddd);
           outline: none;
           font-size: 0.875rem;
           transition: box-shadow 0.15s;

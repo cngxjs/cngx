@@ -89,6 +89,30 @@
   }
 
   /**
+   * Underline color of the active tab — a 2px box-shadow inset
+   * stripe along the inline-end edge of the tab button. Falls back
+   * to `--cngx-color-primary` so the brand accent paints the
+   * selection indicator without competing with text contrast.
+   * @group State / Active
+   * @see [[--cngx-color-primary]]
+   */
+  @property --cngx-tab-active-indicator-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.66 0.19 50);
+  }
+
+  /**
+   * Thickness of the active-tab underline indicator.
+   * @group State / Active
+   */
+  @property --cngx-tab-active-indicator-width {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 2px;
+  }
+
+  /**
    * Opacity multiplier applied to disabled tabs.
    * @group State / Disabled
    */
@@ -228,6 +252,16 @@
     inherits: false;
     initial-value: oklch(0.45 0.15 25 / 0.18);
   }
+
+  /*
+   * Default-theme palette. The active-indicator delegates to
+   * `--cngx-color-primary` so the underline tracks the brand accent
+   * automatically in both modes. No 4-block needed — the foundation
+   * primary already carries its own light/dark distinction.
+   */
+  :root {
+    --cngx-tab-active-indicator-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
+  }
 }
 
 @layer cngx.components {
@@ -280,6 +314,14 @@
 
   .cngx-tabs__tab[aria-selected='true'] {
     color: var(--cngx-tab-active-color, currentColor);
+    /*
+     * Bottom-edge underline drawn via inset box-shadow so the active
+     * tab doesn't shift layout vs. its resting neighbours. Color +
+     * thickness are both tokenised; the brand accent paints the
+     * indicator in both modes via the :root primary delegation.
+     */
+    box-shadow: inset 0 calc(var(--cngx-tab-active-indicator-width, 2px) * -1) 0
+      var(--cngx-tab-active-indicator-color, oklch(0.66 0.19 50));
   }
 
   .cngx-tabs__tab[aria-disabled='true'] {

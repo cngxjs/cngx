@@ -32,7 +32,7 @@ import { CngxNavLink, CngxNavBadge } from '@cngx/common';
         <a cngxNavLink style="display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 1rem; text-decoration: none; font-size: 0.875rem; color: var(--text-primary, #333);">
           Archive
           <span cngxNavBadge [value]="0"
-                style="background: var(--cngx-border, #ddd); color: var(--text-muted, #888); font-size: 0.7rem; padding: 0.1em 0.5em; border-radius: 10px;">
+                style="background: var(--cngx-color-border, #ddd); color: var(--text-muted, #888); font-size: 0.7rem; padding: 0.1em 0.5em; border-radius: 10px;">
             0
           </span>
         </a>
@@ -80,7 +80,7 @@ protected readonly links = [
   <a cngxNavLink style="display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 1rem; text-decoration: none; font-size: 0.875rem; color: var(--text-primary, #333);">
     Archive
     <span cngxNavBadge [value]="0"
-          style="background: var(--cngx-border, #ddd); color: var(--text-muted, #888); font-size: 0.7rem; padding: 0.1em 0.5em; border-radius: 10px;">
+          style="background: var(--cngx-color-border, #ddd); color: var(--text-muted, #888); font-size: 0.7rem; padding: 0.1em 0.5em; border-radius: 10px;">
       0
     </span>
   </a>

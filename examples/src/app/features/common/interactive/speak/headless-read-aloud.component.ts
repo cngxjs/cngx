@@ -24,7 +24,7 @@ import { CngxSpeak } from '@cngx/common/interactive';
               padding: 16px 20px;
               border-radius: 8px;
               background: linear-gradient(135deg, var(--cngx-surface-alt, #f8f9fa), var(--cngx-surface, #fff));
-              border: 1px solid var(--cngx-border, #ddd);
+              border: 1px solid var(--cngx-color-border, #ddd);
               line-height: 1.6;
               font-size: 0.875rem;
               flex: 1;
@@ -116,7 +116,7 @@ protected emailError = computed(() => {
         padding: 16px 20px;
         border-radius: 8px;
         background: linear-gradient(135deg, var(--cngx-surface-alt, #f8f9fa), var(--cngx-surface, #fff));
-        border: 1px solid var(--cngx-border, #ddd);
+        border: 1px solid var(--cngx-color-border, #ddd);
         line-height: 1.6;
         font-size: 0.875rem;
         flex: 1;

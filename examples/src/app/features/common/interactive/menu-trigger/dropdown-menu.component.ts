@@ -16,7 +16,12 @@ import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
       @if (_exSectionTitle && _exSectionTitle !== _exTitle) { <h2>{{ _exSectionTitle }}</h2> }
       @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
     </header>
-    <button
+    <style>
+        .trigger { min-width: 160px; padding: 8px 12px; border: 1px solid var(--cngx-color-border, #d0d5dd); border-radius: 6px; background: var(--cngx-color-surface, #fff); color: var(--cngx-color-text, inherit); cursor: pointer; font: inherit; }
+        .trigger:focus-visible { outline: 2px solid var(--cngx-color-primary, #4a8cff); outline-offset: 2px; }
+        .pop { margin-top: 4px; min-width: 180px; border: 1px solid var(--cngx-color-border, #d0d5dd); border-radius: 6px; background: var(--cngx-color-surface, #fff); color: var(--cngx-color-text, inherit); box-shadow: 0 4px 12px oklch(0 0 0 / 0.12); }
+      </style>
+      <button
         type="button"
         class="trigger"
         [cngxMenuTrigger]="menu"
@@ -72,7 +77,12 @@ export class MenuTriggerDropdownMenu {
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
 
 protected readonly lastAction = signal<string | null>(null);`;
-  protected readonly _exHtml: string = `<button
+  protected readonly _exHtml: string = `<style>
+  .trigger { min-width: 160px; padding: 8px 12px; border: 1px solid var(--cngx-color-border, #d0d5dd); border-radius: 6px; background: var(--cngx-color-surface, #fff); color: var(--cngx-color-text, inherit); cursor: pointer; font: inherit; }
+  .trigger:focus-visible { outline: 2px solid var(--cngx-color-primary, #4a8cff); outline-offset: 2px; }
+  .pop { margin-top: 4px; min-width: 180px; border: 1px solid var(--cngx-color-border, #d0d5dd); border-radius: 6px; background: var(--cngx-color-surface, #fff); color: var(--cngx-color-text, inherit); box-shadow: 0 4px 12px oklch(0 0 0 / 0.12); }
+</style>
+<button
   type="button"
   class="trigger"
   [cngxMenuTrigger]="menu"

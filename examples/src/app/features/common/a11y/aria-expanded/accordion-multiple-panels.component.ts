@@ -15,7 +15,7 @@ import { CngxAriaExpanded } from '@cngx/common/a11y';
       @if (_exSectionTitle && _exSectionTitle !== _exTitle) { <h2>{{ _exSectionTitle }}</h2> }
       @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
     </header>
-    <div style="display: flex; flex-direction: column; gap: 1px; border: 1px solid var(--cngx-border, #ddd); border-radius: 6px; overflow: hidden;">
+    <div style="display: flex; flex-direction: column; gap: 1px; border: 1px solid var(--cngx-color-border, #ddd); border-radius: 6px; overflow: hidden;">
         @for (item of [
           { key: 'specs', label: 'Specifications', content: 'Display: 6.1" OLED, 120Hz — Processor: A17 Pro — Storage: 256GB — Battery: 4,422 mAh' },
           { key: 'reviews', label: 'Reviews (42)', content: 'Average rating: 4.6 / 5.0 — "Best phone I have ever owned" — "Camera is outstanding in low light"' },
@@ -88,7 +88,7 @@ protected panels = signal<Record<string, boolean>>({ specs: false, reviews: fals
 protected togglePanel(key: string): void {
   this.panels.update(p => ({ ...p, [key]: !p[key] }));
 }`;
-  protected readonly _exHtml: string = `<div style="display: flex; flex-direction: column; gap: 1px; border: 1px solid var(--cngx-border, #ddd); border-radius: 6px; overflow: hidden;">
+  protected readonly _exHtml: string = `<div style="display: flex; flex-direction: column; gap: 1px; border: 1px solid var(--cngx-color-border, #ddd); border-radius: 6px; overflow: hidden;">
   @for (item of [
     { key: 'specs', label: 'Specifications', content: 'Display: 6.1" OLED, 120Hz — Processor: A17 Pro — Storage: 256GB — Battery: 4,422 mAh' },
     { key: 'reviews', label: 'Reviews (42)', content: 'Average rating: 4.6 / 5.0 — "Best phone I have ever owned" — "Camera is outstanding in low light"' },

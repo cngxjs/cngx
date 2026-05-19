@@ -28,7 +28,7 @@ export const STORY: DemoSpec = {
 
   @if (panelOpen()) {
     <div cngxFocusRestore
-         style="margin-top:12px;padding:16px;border:1px solid var(--cngx-border,#ddd);border-radius:8px">
+         style="margin-top:12px;padding:16px;border:1px solid var(--cngx-color-border,#ddd);border-radius:8px">
       <p style="margin:0 0 12px">Panel content. Focus will restore on close.</p>
       <button (click)="panelOpen.set(false)" class="chip">Close Panel</button>
     </div>
@@ -56,7 +56,7 @@ export const STORY: DemoSpec = {
     <div cngxFocusRestore
          style="margin-top:8px;padding:12px;background:var(--cngx-surface-alt,#f9f9f9);border-radius:6px">
       <p style="margin:0">Extra details that appear dynamically. Tab through these fields, then close.</p>
-      <input placeholder="Name" style="margin-top:8px;padding:6px 10px;border:1px solid var(--cngx-border,#ddd);border-radius:4px" />
+      <input placeholder="Name" style="margin-top:8px;padding:6px 10px;border:1px solid var(--cngx-color-border,#ddd);border-radius:4px" />
     </div>
   }`,
     },
