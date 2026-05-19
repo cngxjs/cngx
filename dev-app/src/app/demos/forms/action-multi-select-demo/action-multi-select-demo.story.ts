@@ -129,7 +129,7 @@ export const STORY: DemoSpec = {
     [quickCreateAction]="basicCreate"
     [clearable]="true"
     [(values)]="basicValues"
-    placeholder="Tags wählen oder eingeben…"
+    placeholder="Choose or enter tags…"
   >
     <ng-template
       cngxSelectAction
@@ -154,7 +154,7 @@ export const STORY: DemoSpec = {
       >
         @if (pending) { ⏳ „{{ term }}" wird angelegt… }
         @else if (!term) { <span style="opacity:.6">Tippen, um einen neuen Tag anzulegen</span> }
-        @else { + Tag „<strong>{{ term }}</strong>" anlegen }
+        @else { + Create tag "<strong>{{ term }}</strong>" }
       </button>
     </ng-template>
   </cngx-action-multi-select>
@@ -203,7 +203,7 @@ export const STORY: DemoSpec = {
           font: inherit;
         "
       >
-        + „{{ term || '…' }}" anlegen
+        + Create "{{ term || '…' }}"
       </button>
     </ng-template>
   </cngx-action-multi-select>
@@ -271,7 +271,7 @@ export const STORY: DemoSpec = {
         "
       >
         @if (pending) { ⏳ „{{ term }}" wird angelegt… }
-        @else { + „{{ term || '…' }}" anlegen }
+        @else { + Create "{{ term || '…' }}" }
       </button>
     </ng-template>
   </cngx-action-multi-select>
@@ -329,8 +329,8 @@ export const STORY: DemoSpec = {
         background: var(--cngx-surface-variant, rgba(0,0,0,.02));
       ">
         <div style="font-weight:600; font-size:.875rem">
-          + Neuen Tag „{{ term || '…' }}" anlegen
-          @if (dirty) { <span style="color:var(--cngx-color-primary,#1976d2)">· ungespeichert</span> }
+          + Create new tag "{{ term || '…' }}"
+          @if (dirty) { <span style="color:var(--cngx-color-primary,#1976d2)">· unsaved</span> }
         </div>
         <input
           #dirtyNoteInput
@@ -413,8 +413,8 @@ export const STORY: DemoSpec = {
           font: inherit;
         "
       >
-        @if (pending) { ⏳ Einladen… }
-        @else { + „{{ term || '…' }}" einladen (schließt Panel) }
+        @if (pending) { ⏳ Inviting… }
+        @else { + „{{ term || '…' }}" invite (closes panel) }
       </button>
     </ng-template>
   </cngx-action-multi-select>

@@ -29,10 +29,10 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
       @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
     </header>
     <cngx-multi-select
-        [label]="'Themen'"
+        [label]="'Topics'"
         [state]="multiAsyncState"
         [(values)]="multiAsyncValues"
-        placeholder="Themen wählen…"
+        placeholder="Choose topics…"
       />
       <div class="event-grid" style="margin-top:12px">
         <div class="event-row" style="margin-top:8px">
@@ -81,16 +81,16 @@ protected readonly multiAsyncState: ManualAsyncState<CngxSelectOptionsInput<stri
 protected multiAsyncSetLoading(): void { this.multiAsyncState.set('loading'); }
 protected multiAsyncSetSuccess(): void { this.multiAsyncState.setSuccess(this.tagOptions); }`;
   protected readonly _exHtml: string = `<cngx-multi-select
-  [label]="'Themen'"
+  [label]="'Topics'"
   [state]="multiAsyncState"
   [(values)]="multiAsyncValues"
-  placeholder="Themen wählen…"
+  placeholder="Choose topics…"
 />`;
   protected readonly colors: CngxSelectOptionDef<string>[] = [
       { value: 'red', label: 'Rot' },
-      { value: 'green', label: 'Grün' },
+      { value: 'green', label: 'Green' },
       { value: 'blue', label: 'Blau' },
-      { value: 'disabled', label: 'Nicht verfügbar', disabled: true },
+      { value: 'disabled', label: 'Unavailable', disabled: true },
     ];
 
     protected readonly priorities: CngxSelectOptionsInput<string> = [
@@ -299,7 +299,7 @@ protected multiAsyncSetSuccess(): void { this.multiAsyncState.setSuccess(this.ta
     // Typeahead + Signal Forms
     protected readonly typeaheadColorOptions: CngxSelectOptionDef<string>[] = [
       { value: 'red', label: 'Rot' },
-      { value: 'green', label: 'Grün' },
+      { value: 'green', label: 'Green' },
       { value: 'blue', label: 'Blau' },
       { value: 'yellow', label: 'Gelb' },
       { value: 'orange', label: 'Orange' },

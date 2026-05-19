@@ -29,11 +29,11 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
       @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
     </header>
     <cngx-select
-        [label]="'Sprache'"
+        [label]="'Language'"
         [state]="asyncState"
         [retryFn]="asyncReload"
         [(value)]="asyncValue"
-        placeholder="Sprache wählen…"
+        placeholder="Choose language…"
       >
         <ng-template cngxSelectError let-error let-retry="retry">
           <div style="padding:0.5rem 0.75rem;color:var(--cngx-color-danger)">
@@ -100,11 +100,11 @@ protected asyncSetRefreshing(): void {
 protected asyncSetError(): void { this.asyncState.setError(new Error('Network offline')); }
 protected asyncSetEmpty(): void { this.asyncState.setSuccess([]); }`;
   protected readonly _exHtml: string = `<cngx-select
-  [label]="'Sprache'"
+  [label]="'Language'"
   [state]="asyncState"
   [retryFn]="asyncReload"
   [(value)]="asyncValue"
-  placeholder="Sprache wählen…"
+  placeholder="Choose language…"
 >
   <ng-template cngxSelectError let-error let-retry="retry">
     <div style="padding:0.5rem 0.75rem;color:var(--cngx-color-danger)">
@@ -115,9 +115,9 @@ protected asyncSetEmpty(): void { this.asyncState.setSuccess([]); }`;
 </cngx-select>`;
   protected readonly colors: CngxSelectOptionDef<string>[] = [
       { value: 'red', label: 'Rot' },
-      { value: 'green', label: 'Grün' },
+      { value: 'green', label: 'Green' },
       { value: 'blue', label: 'Blau' },
-      { value: 'disabled', label: 'Nicht verfügbar', disabled: true },
+      { value: 'disabled', label: 'Unavailable', disabled: true },
     ];
 
     protected readonly priorities: CngxSelectOptionsInput<string> = [
@@ -326,7 +326,7 @@ protected asyncSetEmpty(): void { this.asyncState.setSuccess([]); }`;
     // Typeahead + Signal Forms
     protected readonly typeaheadColorOptions: CngxSelectOptionDef<string>[] = [
       { value: 'red', label: 'Rot' },
-      { value: 'green', label: 'Grün' },
+      { value: 'green', label: 'Green' },
       { value: 'blue', label: 'Blau' },
       { value: 'yellow', label: 'Gelb' },
       { value: 'orange', label: 'Orange' },

@@ -29,10 +29,10 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
       @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
     </header>
     <cngx-select
-        [label]="'Priorität'"
+        [label]="'Priority'"
         [options]="priorities"
         [(value)]="groupedValue"
-        placeholder="Priorität wählen…"
+        placeholder="Choose priority…"
       />
       <div class="event-grid" style="margin-top:12px">
         <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ groupedValue() || '—' }}</span></div>
@@ -73,16 +73,16 @@ protected readonly priorities: CngxSelectOptionsInput<string> = [
 ];
 protected readonly groupedValue = signal<string | undefined>(undefined);`;
   protected readonly _exHtml: string = `<cngx-select
-  [label]="'Priorität'"
+  [label]="'Priority'"
   [options]="priorities"
   [(value)]="groupedValue"
-  placeholder="Priorität wählen…"
+  placeholder="Choose priority…"
 />`;
   protected readonly colors: CngxSelectOptionDef<string>[] = [
       { value: 'red', label: 'Rot' },
-      { value: 'green', label: 'Grün' },
+      { value: 'green', label: 'Green' },
       { value: 'blue', label: 'Blau' },
-      { value: 'disabled', label: 'Nicht verfügbar', disabled: true },
+      { value: 'disabled', label: 'Unavailable', disabled: true },
     ];
 
     protected readonly priorities: CngxSelectOptionsInput<string> = [
@@ -291,7 +291,7 @@ protected readonly groupedValue = signal<string | undefined>(undefined);`;
     // Typeahead + Signal Forms
     protected readonly typeaheadColorOptions: CngxSelectOptionDef<string>[] = [
       { value: 'red', label: 'Rot' },
-      { value: 'green', label: 'Grün' },
+      { value: 'green', label: 'Green' },
       { value: 'blue', label: 'Blau' },
       { value: 'yellow', label: 'Gelb' },
       { value: 'orange', label: 'Orange' },

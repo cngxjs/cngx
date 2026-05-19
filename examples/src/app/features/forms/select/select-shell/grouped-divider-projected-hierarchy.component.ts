@@ -25,7 +25,7 @@ import { delay, of, throwError } from 'rxjs';
       @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
       @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
     </header>
-    <cngx-select-shell [label]="'Priorität'" [(value)]="groupedValue" placeholder="Priorität…">
+    <cngx-select-shell [label]="'Priority'" [(value)]="groupedValue" placeholder="Priority…">
         <cngx-optgroup label="Normal">
           <cngx-option [value]="'low'">Niedrig</cngx-option>
           <cngx-option [value]="'medium'">Mittel</cngx-option>
@@ -65,7 +65,7 @@ import { CngxSelectShell, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivide
 import { delay, of, throwError } from 'rxjs';
 
 protected readonly groupedValue = signal<string | undefined>(undefined);`;
-  protected readonly _exHtml: string = `<cngx-select-shell [label]="'Priorität'" [(value)]="groupedValue" placeholder="Priorität…">
+  protected readonly _exHtml: string = `<cngx-select-shell [label]="'Priority'" [(value)]="groupedValue" placeholder="Priority…">
   <cngx-optgroup label="Normal">
     <cngx-option [value]="'low'">Niedrig</cngx-option>
     <cngx-option [value]="'medium'">Mittel</cngx-option>

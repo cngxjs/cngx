@@ -27,13 +27,13 @@ import { CngxListbox, CngxOption } from '@cngx/common/interactive';
       @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
     </header>
     <cngx-form-field [field]="multiForm.toppings">
-        <label cngxLabel>Beläge (mind. 2)</label>
+        <label cngxLabel>Toppings (at least 2)</label>
         <div cngxListbox
              cngxListboxFieldBridge
-             [label]="'Beläge'"
+             [label]="'Toppings'"
              [multiple]="true"
              tabindex="0">
-          <div cngxOption value="cheese">Käse</div>
+          <div cngxOption value="cheese">Cheese</div>
           <div cngxOption value="pepperoni">Pepperoni</div>
           <div cngxOption value="mushroom">Champignons</div>
           <div cngxOption value="olive">Oliven</div>
@@ -78,13 +78,13 @@ private readonly multiSchema = schema<{ toppings: string[] }>((root) => {
   minLength(root.toppings, 2);
 protected readonly multiForm = form(this.multiModel, this.multiSchema);`;
   protected readonly _exHtml: string = `<cngx-form-field [field]="multiForm.toppings">
-  <label cngxLabel>Beläge (mind. 2)</label>
+  <label cngxLabel>Toppings (at least 2)</label>
   <div cngxListbox
        cngxListboxFieldBridge
-       [label]="'Beläge'"
+       [label]="'Toppings'"
        [multiple]="true"
        tabindex="0">
-    <div cngxOption value="cheese">Käse</div>
+    <div cngxOption value="cheese">Cheese</div>
     <div cngxOption value="pepperoni">Pepperoni</div>
     <div cngxOption value="mushroom">Champignons</div>
     <div cngxOption value="olive">Oliven</div>

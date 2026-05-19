@@ -39,7 +39,7 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
         <ng-template cngxSelectCommitError let-error let-option="option" let-retry="retry">
           <div role="alert" style="display:flex;align-items:center;gap:0.5rem;padding:0.5rem;background:#fef2f2;color:#7f1d1d;border-radius:6px">
             <span aria-hidden="true">⚠</span>
-            <span style="flex:1">Konnte <strong>{{ option?.label }}</strong> nicht speichern: {{ error?.message }}</span>
+            <span style="flex:1">Could not save <strong>{{ option?.label }}</strong>: {{ error?.message }}</span>
             <button type="button" class="chip" (click)="retry()">Replay</button>
           </div>
         </ng-template>
@@ -75,9 +75,9 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
 
 protected readonly colors: CngxSelectOptionDef<string>[] = [
   { value: 'red', label: 'Rot' },
-  { value: 'green', label: 'Grün' },
+  { value: 'green', label: 'Green' },
   { value: 'blue', label: 'Blau' },
-  { value: 'disabled', label: 'Nicht verfügbar', disabled: true },
+  { value: 'disabled', label: 'Unavailable', disabled: true },
 ];
 protected readonly commitValue = signal<string | undefined>('red');
 protected readonly commitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
@@ -95,7 +95,7 @@ protected readonly commitAction: CngxSelectCommitAction<string> = (intended) => 
   <ng-template cngxSelectCommitError let-error let-option="option" let-retry="retry">
     <div role="alert" style="display:flex;align-items:center;gap:0.5rem;padding:0.5rem;background:#fef2f2;color:#7f1d1d;border-radius:6px">
       <span aria-hidden="true">⚠</span>
-      <span style="flex:1">Konnte <strong>{{ option?.label }}</strong> nicht speichern: {{ error?.message }}</span>
+      <span style="flex:1">Could not save <strong>{{ option?.label }}</strong>: {{ error?.message }}</span>
       <button type="button" class="chip" (click)="retry()">Replay</button>
     </div>
   </ng-template>
@@ -107,9 +107,9 @@ protected readonly commitAction: CngxSelectCommitAction<string> = (intended) => 
 </div>`;
   protected readonly colors: CngxSelectOptionDef<string>[] = [
       { value: 'red', label: 'Rot' },
-      { value: 'green', label: 'Grün' },
+      { value: 'green', label: 'Green' },
       { value: 'blue', label: 'Blau' },
-      { value: 'disabled', label: 'Nicht verfügbar', disabled: true },
+      { value: 'disabled', label: 'Unavailable', disabled: true },
     ];
 
     protected readonly priorities: CngxSelectOptionsInput<string> = [
@@ -318,7 +318,7 @@ protected readonly commitAction: CngxSelectCommitAction<string> = (intended) => 
     // Typeahead + Signal Forms
     protected readonly typeaheadColorOptions: CngxSelectOptionDef<string>[] = [
       { value: 'red', label: 'Rot' },
-      { value: 'green', label: 'Grün' },
+      { value: 'green', label: 'Green' },
       { value: 'blue', label: 'Blau' },
       { value: 'yellow', label: 'Gelb' },
       { value: 'orange', label: 'Orange' },

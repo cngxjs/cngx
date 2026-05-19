@@ -32,10 +32,10 @@ import { delay, of, throwError } from 'rxjs';
       </div>
 
       <cngx-reorderable-multi-select
-        [label]="'Agenda-Reihenfolge'"
+        [label]="'Agenda order'"
         [options]="recipients"
         [(values)]="keyboardValues"
-        [reorderAriaLabel]="'Agenda-Reihenfolge ändern mit Strg und Pfeiltasten'"
+        [reorderAriaLabel]="'Reorder agenda with Ctrl and arrow keys'"
       />
 
       <div class="event-grid" style="margin-top:12px">
@@ -82,10 +82,10 @@ protected readonly keyboardValues = signal<string[]>(['eng', 'legal', 'finance',
 </div>
 
 <cngx-reorderable-multi-select
-  [label]="'Agenda-Reihenfolge'"
+  [label]="'Agenda order'"
   [options]="recipients"
   [(values)]="keyboardValues"
-  [reorderAriaLabel]="'Agenda-Reihenfolge ändern mit Strg und Pfeiltasten'"
+  [reorderAriaLabel]="'Reorder agenda with Ctrl and arrow keys'"
 />`;
   protected readonly recipients: CngxSelectOptionDef<string>[] = [
       { value: 'ops', label: 'Operations' },

@@ -43,12 +43,12 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
         </label>
       </div>
       <cngx-combobox
-        [label]="'Themen (commit)'"
+        [label]="'Topics (commit)'"
         [options]="tagOptions"
         [(values)]="comboCommitValues"
         [commitAction]="comboCommitAction"
         [commitMode]="comboCommitMode()"
-        placeholder="Themen suchen…"
+        placeholder="Search topics…"
       />
       <div class="event-grid" style="margin-top:12px">
         <div class="event-row"><span class="event-label">Values</span><span class="event-value">{{ comboCommitValues().join(', ') || '—' }}</span></div>
@@ -112,18 +112,18 @@ protected readonly comboCommitAction: CngxSelectCommitAction<string[]> = (intend
   </label>
 </div>
 <cngx-combobox
-  [label]="'Themen (commit)'"
+  [label]="'Topics (commit)'"
   [options]="tagOptions"
   [(values)]="comboCommitValues"
   [commitAction]="comboCommitAction"
   [commitMode]="comboCommitMode()"
-  placeholder="Themen suchen…"
+  placeholder="Search topics…"
 />`;
   protected readonly colors: CngxSelectOptionDef<string>[] = [
       { value: 'red', label: 'Rot' },
-      { value: 'green', label: 'Grün' },
+      { value: 'green', label: 'Green' },
       { value: 'blue', label: 'Blau' },
-      { value: 'disabled', label: 'Nicht verfügbar', disabled: true },
+      { value: 'disabled', label: 'Unavailable', disabled: true },
     ];
 
     protected readonly priorities: CngxSelectOptionsInput<string> = [
@@ -332,7 +332,7 @@ protected readonly comboCommitAction: CngxSelectCommitAction<string[]> = (intend
     // Typeahead + Signal Forms
     protected readonly typeaheadColorOptions: CngxSelectOptionDef<string>[] = [
       { value: 'red', label: 'Rot' },
-      { value: 'green', label: 'Grün' },
+      { value: 'green', label: 'Green' },
       { value: 'blue', label: 'Blau' },
       { value: 'yellow', label: 'Gelb' },
       { value: 'orange', label: 'Orange' },

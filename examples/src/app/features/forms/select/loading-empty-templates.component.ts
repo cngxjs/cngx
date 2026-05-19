@@ -36,7 +36,7 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
         placeholder="Nichts geladen…"
       >
         <ng-template cngxSelectEmpty>
-          <span style="opacity:.7">Keine Einträge vorhanden — bitte Filter anpassen.</span>
+          <span style="opacity:.7">No entries — adjust filters.</span>
         </ng-template>
       </cngx-select>
       <div class="event-grid" style="margin-top:12px">
@@ -82,14 +82,14 @@ protected toggleLoading(): void {
   placeholder="Nichts geladen…"
 >
   <ng-template cngxSelectEmpty>
-    <span style="opacity:.7">Keine Einträge vorhanden — bitte Filter anpassen.</span>
+    <span style="opacity:.7">No entries — adjust filters.</span>
   </ng-template>
 </cngx-select>`;
   protected readonly colors: CngxSelectOptionDef<string>[] = [
       { value: 'red', label: 'Rot' },
-      { value: 'green', label: 'Grün' },
+      { value: 'green', label: 'Green' },
       { value: 'blue', label: 'Blau' },
-      { value: 'disabled', label: 'Nicht verfügbar', disabled: true },
+      { value: 'disabled', label: 'Unavailable', disabled: true },
     ];
 
     protected readonly priorities: CngxSelectOptionsInput<string> = [
@@ -298,7 +298,7 @@ protected toggleLoading(): void {
     // Typeahead + Signal Forms
     protected readonly typeaheadColorOptions: CngxSelectOptionDef<string>[] = [
       { value: 'red', label: 'Rot' },
-      { value: 'green', label: 'Grün' },
+      { value: 'green', label: 'Green' },
       { value: 'blue', label: 'Blau' },
       { value: 'yellow', label: 'Gelb' },
       { value: 'orange', label: 'Orange' },

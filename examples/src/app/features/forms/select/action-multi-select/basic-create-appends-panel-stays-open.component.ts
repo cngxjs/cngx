@@ -38,7 +38,7 @@ import { delay, of, throwError } from 'rxjs';
         [quickCreateAction]="basicCreate"
         [clearable]="true"
         [(values)]="basicValues"
-        placeholder="Tags wählen oder eingeben…"
+        placeholder="Choose or enter tags…"
       >
         <ng-template
           cngxSelectAction
@@ -63,7 +63,7 @@ import { delay, of, throwError } from 'rxjs';
           >
             @if (pending) { ⏳ „{{ term }}" wird angelegt… }
             @else if (!term) { <span style="opacity:.6">Tippen, um einen neuen Tag anzulegen</span> }
-            @else { + Tag „<strong>{{ term }}</strong>" anlegen }
+            @else { + Create tag "<strong>{{ term }}</strong>" }
           </button>
         </ng-template>
       </cngx-action-multi-select>
@@ -127,7 +127,7 @@ protected readonly basicCreate: CngxSelectCreateAction<{ id: string; name: strin
   [quickCreateAction]="basicCreate"
   [clearable]="true"
   [(values)]="basicValues"
-  placeholder="Tags wählen oder eingeben…"
+  placeholder="Choose or enter tags…"
 >
   <ng-template
     cngxSelectAction
@@ -152,7 +152,7 @@ protected readonly basicCreate: CngxSelectCreateAction<{ id: string; name: strin
     >
       @if (pending) { ⏳ „{{ term }}" wird angelegt… }
       @else if (!term) { <span style="opacity:.6">Tippen, um einen neuen Tag anzulegen</span> }
-      @else { + Tag „<strong>{{ term }}</strong>" anlegen }
+      @else { + Create tag "<strong>{{ term }}</strong>" }
     </button>
   </ng-template>
 </cngx-action-multi-select>`;

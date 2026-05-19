@@ -29,10 +29,10 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
       @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
     </header>
     <cngx-select
-        [label]="'Gewerk'"
+        [label]="'Trade'"
         [options]="richOptions"
         [(value)]="richValue"
-        placeholder="Gewerk wählen…"
+        placeholder="Choose trade…"
       >
         <ng-template cngxSelectTriggerLabel let-opt>
           <span>{{ opt?.meta?.icon }}</span>
@@ -74,10 +74,10 @@ protected readonly richOptions: CngxSelectOptionDef<string>[] = [
 ];
 protected readonly richValue = signal<string | undefined>(undefined);`;
   protected readonly _exHtml: string = `<cngx-select
-  [label]="'Gewerk'"
+  [label]="'Trade'"
   [options]="richOptions"
   [(value)]="richValue"
-  placeholder="Gewerk wählen…"
+  placeholder="Choose trade…"
 >
   <ng-template cngxSelectTriggerLabel let-opt>
     <span>{{ opt?.meta?.icon }}</span>
@@ -86,9 +86,9 @@ protected readonly richValue = signal<string | undefined>(undefined);`;
 </cngx-select>`;
   protected readonly colors: CngxSelectOptionDef<string>[] = [
       { value: 'red', label: 'Rot' },
-      { value: 'green', label: 'Grün' },
+      { value: 'green', label: 'Green' },
       { value: 'blue', label: 'Blau' },
-      { value: 'disabled', label: 'Nicht verfügbar', disabled: true },
+      { value: 'disabled', label: 'Unavailable', disabled: true },
     ];
 
     protected readonly priorities: CngxSelectOptionsInput<string> = [
@@ -297,7 +297,7 @@ protected readonly richValue = signal<string | undefined>(undefined);`;
     // Typeahead + Signal Forms
     protected readonly typeaheadColorOptions: CngxSelectOptionDef<string>[] = [
       { value: 'red', label: 'Rot' },
-      { value: 'green', label: 'Grün' },
+      { value: 'green', label: 'Green' },
       { value: 'blue', label: 'Blau' },
       { value: 'yellow', label: 'Gelb' },
       { value: 'orange', label: 'Orange' },

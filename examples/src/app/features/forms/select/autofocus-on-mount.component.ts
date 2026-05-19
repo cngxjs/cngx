@@ -69,9 +69,9 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
 
 protected readonly colors: CngxSelectOptionDef<string>[] = [
   { value: 'red', label: 'Rot' },
-  { value: 'green', label: 'Grün' },
+  { value: 'green', label: 'Green' },
   { value: 'blue', label: 'Blau' },
-  { value: 'disabled', label: 'Nicht verfügbar', disabled: true },
+  { value: 'disabled', label: 'Unavailable', disabled: true },
 ];
 protected readonly autofocusValue = signal<string | undefined>(undefined);
 protected readonly autofocusVisible = signal(false);
@@ -90,9 +90,9 @@ protected toggleAutofocus(): void { this.autofocusVisible.update(v => !v); }`;
 }`;
   protected readonly colors: CngxSelectOptionDef<string>[] = [
       { value: 'red', label: 'Rot' },
-      { value: 'green', label: 'Grün' },
+      { value: 'green', label: 'Green' },
       { value: 'blue', label: 'Blau' },
-      { value: 'disabled', label: 'Nicht verfügbar', disabled: true },
+      { value: 'disabled', label: 'Unavailable', disabled: true },
     ];
 
     protected readonly priorities: CngxSelectOptionsInput<string> = [
@@ -301,7 +301,7 @@ protected toggleAutofocus(): void { this.autofocusVisible.update(v => !v); }`;
     // Typeahead + Signal Forms
     protected readonly typeaheadColorOptions: CngxSelectOptionDef<string>[] = [
       { value: 'red', label: 'Rot' },
-      { value: 'green', label: 'Grün' },
+      { value: 'green', label: 'Green' },
       { value: 'blue', label: 'Blau' },
       { value: 'yellow', label: 'Gelb' },
       { value: 'orange', label: 'Orange' },

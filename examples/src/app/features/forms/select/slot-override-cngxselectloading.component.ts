@@ -28,11 +28,11 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
       @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
       @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
     </header>
-    <cngx-select [label]="'Sprache'" [options]="loadingOptions" [(value)]="loadingValue" [loading]="loading()" placeholder="Sprache wählen…">
+    <cngx-select [label]="'Language'" [options]="loadingOptions" [(value)]="loadingValue" [loading]="loading()" placeholder="Choose language…">
         <ng-template cngxSelectLoading let-retry="retry">
           <div role="status" aria-live="polite" style="display:flex;flex-direction:column;align-items:center;gap:0.5rem;padding:1rem">
             <span aria-hidden="true" style="font-size:1.5rem">⏳</span>
-            <span>Lade verfügbare Sprachen…</span>
+            <span>Loading available languages…</span>
           </div>
         </ng-template>
       </cngx-select>
@@ -67,20 +67,20 @@ protected readonly loading = signal(true);
 protected toggleLoading(): void {
   this.loading.update(v => !v);
 }`;
-  protected readonly _exHtml: string = `<cngx-select [label]="'Sprache'" [options]="loadingOptions" [(value)]="loadingValue" [loading]="loading()" placeholder="Sprache wählen…">
+  protected readonly _exHtml: string = `<cngx-select [label]="'Language'" [options]="loadingOptions" [(value)]="loadingValue" [loading]="loading()" placeholder="Choose language…">
   <ng-template cngxSelectLoading let-retry="retry">
     <div role="status" aria-live="polite" style="display:flex;flex-direction:column;align-items:center;gap:0.5rem;padding:1rem">
       <span aria-hidden="true" style="font-size:1.5rem">⏳</span>
-      <span>Lade verfügbare Sprachen…</span>
+      <span>Loading available languages…</span>
     </div>
   </ng-template>
 </cngx-select>
 <button type="button" class="chip" (click)="toggleLoading()" style="margin-top:8px">{{ loading() ? 'Stop loading' : 'Start loading' }}</button>`;
   protected readonly colors: CngxSelectOptionDef<string>[] = [
       { value: 'red', label: 'Rot' },
-      { value: 'green', label: 'Grün' },
+      { value: 'green', label: 'Green' },
       { value: 'blue', label: 'Blau' },
-      { value: 'disabled', label: 'Nicht verfügbar', disabled: true },
+      { value: 'disabled', label: 'Unavailable', disabled: true },
     ];
 
     protected readonly priorities: CngxSelectOptionsInput<string> = [
@@ -289,7 +289,7 @@ protected toggleLoading(): void {
     // Typeahead + Signal Forms
     protected readonly typeaheadColorOptions: CngxSelectOptionDef<string>[] = [
       { value: 'red', label: 'Rot' },
-      { value: 'green', label: 'Grün' },
+      { value: 'green', label: 'Green' },
       { value: 'blue', label: 'Blau' },
       { value: 'yellow', label: 'Gelb' },
       { value: 'orange', label: 'Orange' },

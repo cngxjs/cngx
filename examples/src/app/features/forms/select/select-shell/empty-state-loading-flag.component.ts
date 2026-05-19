@@ -46,7 +46,7 @@ import { delay, of, throwError } from 'rxjs';
         </ng-template>
         <ng-template cngxSelectEmpty>
           <div style="padding:.75rem; opacity:.6; text-align:center">
-            Keine Optionen verfügbar
+            No options available
           </div>
         </ng-template>
       </cngx-select-shell>
@@ -105,7 +105,7 @@ protected readonly loadingFlag = signal(false);`;
   </ng-template>
   <ng-template cngxSelectEmpty>
     <div style="padding:.75rem; opacity:.6; text-align:center">
-      Keine Optionen verfügbar
+      No options available
     </div>
   </ng-template>
 </cngx-select-shell>`;

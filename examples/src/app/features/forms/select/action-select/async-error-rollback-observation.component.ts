@@ -67,7 +67,7 @@ import { delay, of, throwError } from 'rxjs';
             "
           >
             @if (pending) { ⏳ „{{ term }}" wird angelegt… }
-            @else { + „{{ term || '…' }}" anlegen }
+            @else { + Create "{{ term || '…' }}" }
           </button>
         </ng-template>
       </cngx-action-select>
@@ -169,7 +169,7 @@ protected handleAsyncError(err: unknown): void {
       "
     >
       @if (pending) { ⏳ „{{ term }}" wird angelegt… }
-      @else { + „{{ term || '…' }}" anlegen }
+      @else { + Create "{{ term || '…' }}" }
     </button>
   </ng-template>
 </cngx-action-select>`;

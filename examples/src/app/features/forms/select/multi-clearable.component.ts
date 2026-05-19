@@ -29,11 +29,11 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
       @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
     </header>
     <cngx-multi-select
-        [label]="'Themen'"
+        [label]="'Topics'"
         [options]="tagOptions"
         [(values)]="multiClearableValues"
         [clearable]="true"
-        placeholder="Themen wählen…"
+        placeholder="Choose topics…"
       />
       <div class="event-grid" style="margin-top:12px">
         <div class="event-row"><span class="event-label">Values</span><span class="event-value">{{ multiClearableValues().join(', ') || '—' }}</span></div>
@@ -72,17 +72,17 @@ protected readonly tagOptions: CngxSelectOptionDef<string>[] = [
 ];
 protected readonly multiClearableValues = signal<string[]>(['angular', 'a11y']);`;
   protected readonly _exHtml: string = `<cngx-multi-select
-  [label]="'Themen'"
+  [label]="'Topics'"
   [options]="tagOptions"
   [(values)]="multiClearableValues"
   [clearable]="true"
-  placeholder="Themen wählen…"
+  placeholder="Choose topics…"
 />`;
   protected readonly colors: CngxSelectOptionDef<string>[] = [
       { value: 'red', label: 'Rot' },
-      { value: 'green', label: 'Grün' },
+      { value: 'green', label: 'Green' },
       { value: 'blue', label: 'Blau' },
-      { value: 'disabled', label: 'Nicht verfügbar', disabled: true },
+      { value: 'disabled', label: 'Unavailable', disabled: true },
     ];
 
     protected readonly priorities: CngxSelectOptionsInput<string> = [
@@ -291,7 +291,7 @@ protected readonly multiClearableValues = signal<string[]>(['angular', 'a11y']);
     // Typeahead + Signal Forms
     protected readonly typeaheadColorOptions: CngxSelectOptionDef<string>[] = [
       { value: 'red', label: 'Rot' },
-      { value: 'green', label: 'Grün' },
+      { value: 'green', label: 'Green' },
       { value: 'blue', label: 'Blau' },
       { value: 'yellow', label: 'Gelb' },
       { value: 'orange', label: 'Orange' },

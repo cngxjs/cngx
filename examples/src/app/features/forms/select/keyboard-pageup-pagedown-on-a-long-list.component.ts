@@ -32,7 +32,7 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
         [label]="'Item'"
         [options]="manyOptions"
         [(value)]="manyValue"
-        placeholder="Item wählen…"
+        placeholder="Choose item…"
       />
       <div class="event-grid" style="margin-top:12px">
         <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ manyValue() ?? '—' }}</span></div>
@@ -71,13 +71,13 @@ protected readonly manyValue = signal<number | undefined>(undefined);`;
   [label]="'Item'"
   [options]="manyOptions"
   [(value)]="manyValue"
-  placeholder="Item wählen…"
+  placeholder="Choose item…"
 />`;
   protected readonly colors: CngxSelectOptionDef<string>[] = [
       { value: 'red', label: 'Rot' },
-      { value: 'green', label: 'Grün' },
+      { value: 'green', label: 'Green' },
       { value: 'blue', label: 'Blau' },
-      { value: 'disabled', label: 'Nicht verfügbar', disabled: true },
+      { value: 'disabled', label: 'Unavailable', disabled: true },
     ];
 
     protected readonly priorities: CngxSelectOptionsInput<string> = [
@@ -286,7 +286,7 @@ protected readonly manyValue = signal<number | undefined>(undefined);`;
     // Typeahead + Signal Forms
     protected readonly typeaheadColorOptions: CngxSelectOptionDef<string>[] = [
       { value: 'red', label: 'Rot' },
-      { value: 'green', label: 'Grün' },
+      { value: 'green', label: 'Green' },
       { value: 'blue', label: 'Blau' },
       { value: 'yellow', label: 'Gelb' },
       { value: 'orange', label: 'Orange' },

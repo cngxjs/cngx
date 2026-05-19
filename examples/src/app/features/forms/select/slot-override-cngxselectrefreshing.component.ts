@@ -28,7 +28,7 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
       @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
       @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
     </header>
-    <cngx-select [label]="'Sprache'" [options]="asyncOptions" [(value)]="asyncValue" [state]="asyncState" placeholder="Sprache wählen…">
+    <cngx-select [label]="'Language'" [options]="asyncOptions" [(value)]="asyncValue" [state]="asyncState" placeholder="Choose language…">
         <ng-template cngxSelectRefreshing let-previousCount="previousCount">
           <div role="status" aria-live="polite" style="padding:0.4rem 0.75rem;font-size:0.8rem;color:#557;background:linear-gradient(90deg,#e3f2fd,#bbdefb,#e3f2fd);background-size:200% 100%;animation:cngx-select-refresh-shimmer 1.6s linear infinite">
             🔄 Refreshing {{ previousCount }} options…
@@ -77,7 +77,7 @@ protected asyncSetRefreshing(): void {
   this.asyncState.setSuccess(this.asyncOptions);
   this.asyncState.set('refreshing');
 }`;
-  protected readonly _exHtml: string = `<cngx-select [label]="'Sprache'" [options]="asyncOptions" [(value)]="asyncValue" [state]="asyncState" placeholder="Sprache wählen…">
+  protected readonly _exHtml: string = `<cngx-select [label]="'Language'" [options]="asyncOptions" [(value)]="asyncValue" [state]="asyncState" placeholder="Choose language…">
   <ng-template cngxSelectRefreshing let-previousCount="previousCount">
     <div role="status" aria-live="polite" style="padding:0.4rem 0.75rem;font-size:0.8rem;color:#557;background:linear-gradient(90deg,#e3f2fd,#bbdefb,#e3f2fd);background-size:200% 100%;animation:cngx-select-refresh-shimmer 1.6s linear infinite">
       🔄 Refreshing {{ previousCount }} options…
@@ -90,9 +90,9 @@ protected asyncSetRefreshing(): void {
 </div>`;
   protected readonly colors: CngxSelectOptionDef<string>[] = [
       { value: 'red', label: 'Rot' },
-      { value: 'green', label: 'Grün' },
+      { value: 'green', label: 'Green' },
       { value: 'blue', label: 'Blau' },
-      { value: 'disabled', label: 'Nicht verfügbar', disabled: true },
+      { value: 'disabled', label: 'Unavailable', disabled: true },
     ];
 
     protected readonly priorities: CngxSelectOptionsInput<string> = [
@@ -301,7 +301,7 @@ protected asyncSetRefreshing(): void {
     // Typeahead + Signal Forms
     protected readonly typeaheadColorOptions: CngxSelectOptionDef<string>[] = [
       { value: 'red', label: 'Rot' },
-      { value: 'green', label: 'Grün' },
+      { value: 'green', label: 'Green' },
       { value: 'blue', label: 'Blau' },
       { value: 'yellow', label: 'Gelb' },
       { value: 'orange', label: 'Orange' },

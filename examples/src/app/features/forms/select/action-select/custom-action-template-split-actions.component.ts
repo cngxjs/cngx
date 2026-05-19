@@ -60,7 +60,7 @@ import { delay, of, throwError } from 'rxjs';
               (click)="commit()"
               style="padding:.25rem .625rem; border:1px solid var(--cngx-color-border, #cbd5e1); border-radius:.25rem; background:transparent; cursor:pointer; font:inherit; font-size:.8125rem"
             >
-              anlegen
+              create
             </button>
             <button
               type="button"
@@ -68,7 +68,7 @@ import { delay, of, throwError } from 'rxjs';
               (click)="commit(); close()"
               style="padding:.25rem .625rem; border:0; border-radius:.25rem; background:var(--cngx-color-primary,#1976d2); color:#fff; cursor:pointer; font:inherit; font-size:.8125rem"
             >
-              anlegen &amp; schließen
+              create &amp; close
             </button>
           </div>
         </ng-template>
@@ -151,7 +151,7 @@ protected readonly customCreate: CngxSelectCreateAction<{ id: string; name: stri
         (click)="commit()"
         style="padding:.25rem .625rem; border:1px solid var(--cngx-color-border, #cbd5e1); border-radius:.25rem; background:transparent; cursor:pointer; font:inherit; font-size:.8125rem"
       >
-        anlegen
+        create
       </button>
       <button
         type="button"
@@ -159,7 +159,7 @@ protected readonly customCreate: CngxSelectCreateAction<{ id: string; name: stri
         (click)="commit(); close()"
         style="padding:.25rem .625rem; border:0; border-radius:.25rem; background:var(--cngx-color-primary,#1976d2); color:#fff; cursor:pointer; font:inherit; font-size:.8125rem"
       >
-        anlegen &amp; schließen
+        create &amp; close
       </button>
     </div>
   </ng-template>

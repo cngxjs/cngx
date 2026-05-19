@@ -28,10 +28,10 @@ import { MatOption } from '@angular/material/core';
       @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
     </header>
     <cngx-form-field [field]="matSelectField">
-        <label cngxLabel>Größe</label>
+        <label cngxLabel>Size</label>
         <mat-select cngxBindField
                     [formControl]="matSelectControl"
-                    placeholder="Bitte wählen"
+                    placeholder="Choose…"
                     style="min-width:200px;display:inline-block">
           <mat-option value="s">Small</mat-option>
           <mat-option value="m">Medium</mat-option>
@@ -87,10 +87,10 @@ protected handleMatSelectSubmit(): void {
   this.matSelectField().markAsTouched();
 }`;
   protected readonly _exHtml: string = `<cngx-form-field [field]="matSelectField">
-  <label cngxLabel>Größe</label>
+  <label cngxLabel>Size</label>
   <mat-select cngxBindField
               [formControl]="matSelectControl"
-              placeholder="Bitte wählen"
+              placeholder="Choose…"
               style="min-width:200px;display:inline-block">
     <mat-option value="s">Small</mat-option>
     <mat-option value="m">Medium</mat-option>

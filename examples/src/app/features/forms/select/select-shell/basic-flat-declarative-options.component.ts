@@ -30,12 +30,12 @@ import { delay, of, throwError } from 'rxjs';
         [clearable]="true"
         [(value)]="basicValue"
         (selectionChange)="handleBasicChange($event)"
-        placeholder="Bitte wählen…"
+        placeholder="Choose…"
       >
         <cngx-option [value]="'red'">Red</cngx-option>
         <cngx-option [value]="'green'">Green</cngx-option>
         <cngx-option [value]="'blue'">Blue</cngx-option>
-        <cngx-option [value]="'disabled'" [disabled]="true">Nicht verfügbar</cngx-option>
+        <cngx-option [value]="'disabled'" [disabled]="true">Unavailable</cngx-option>
       </cngx-select-shell>
 
       <div class="event-grid" style="margin-top:12px">
@@ -81,12 +81,12 @@ protected handleBasicChange(e: CngxSelectShellChange<string>): void {
   [clearable]="true"
   [(value)]="basicValue"
   (selectionChange)="handleBasicChange($event)"
-  placeholder="Bitte wählen…"
+  placeholder="Choose…"
 >
   <cngx-option [value]="'red'">Red</cngx-option>
   <cngx-option [value]="'green'">Green</cngx-option>
   <cngx-option [value]="'blue'">Blue</cngx-option>
-  <cngx-option [value]="'disabled'" [disabled]="true">Nicht verfügbar</cngx-option>
+  <cngx-option [value]="'disabled'" [disabled]="true">Unavailable</cngx-option>
 </cngx-select-shell>`;
   // Basic — flat options.
     protected readonly basicValue = signal<string | undefined>(undefined);

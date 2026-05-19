@@ -63,9 +63,9 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
 
 protected readonly colors: CngxSelectOptionDef<string>[] = [
   { value: 'red', label: 'Rot' },
-  { value: 'green', label: 'Grün' },
+  { value: 'green', label: 'Green' },
   { value: 'blue', label: 'Blau' },
-  { value: 'disabled', label: 'Nicht verfügbar', disabled: true },
+  { value: 'disabled', label: 'Unavailable', disabled: true },
 ];
 protected readonly rfControl = new FormControl<string>('green', { validators: [Validators.required], nonNullable: true });
 protected readonly rfField = adaptFormControl(this.rfControl, 'color', inject(DestroyRef));
@@ -77,9 +77,9 @@ protected readonly rfValue = toSignal(this.rfControl.valueChanges, { initialValu
 </cngx-form-field>`;
   protected readonly colors: CngxSelectOptionDef<string>[] = [
       { value: 'red', label: 'Rot' },
-      { value: 'green', label: 'Grün' },
+      { value: 'green', label: 'Green' },
       { value: 'blue', label: 'Blau' },
-      { value: 'disabled', label: 'Nicht verfügbar', disabled: true },
+      { value: 'disabled', label: 'Unavailable', disabled: true },
     ];
 
     protected readonly priorities: CngxSelectOptionsInput<string> = [
@@ -288,7 +288,7 @@ protected readonly rfValue = toSignal(this.rfControl.valueChanges, { initialValu
     // Typeahead + Signal Forms
     protected readonly typeaheadColorOptions: CngxSelectOptionDef<string>[] = [
       { value: 'red', label: 'Rot' },
-      { value: 'green', label: 'Grün' },
+      { value: 'green', label: 'Green' },
       { value: 'blue', label: 'Blau' },
       { value: 'yellow', label: 'Gelb' },
       { value: 'orange', label: 'Orange' },

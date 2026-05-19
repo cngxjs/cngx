@@ -28,7 +28,7 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
       @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
       @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
     </header>
-    <cngx-combobox [label]="'Themen'" [options]="tagOptions" [(values)]="comboValues" placeholder="Tag wählen…">
+    <cngx-combobox [label]="'Topics'" [options]="tagOptions" [(values)]="comboValues" placeholder="Choose tag…">
         <ng-template cngxComboboxChip let-opt let-remove="remove" let-i="index">
           <span style="display:inline-flex;align-items:center;gap:0.25rem;padding:0.15rem 0.5rem;border-radius:999px;background:#dbeafe;color:#1e40af;font-size:0.8rem">
             <span aria-hidden="true">#{{ i + 1 }}</span>
@@ -73,7 +73,7 @@ protected readonly tagOptions: CngxSelectOptionDef<string>[] = [
   { value: 'old', label: 'Nicht mehr gepflegt', disabled: true },
 ];
 protected readonly comboValues = signal<string[]>(['angular']);`;
-  protected readonly _exHtml: string = `<cngx-combobox [label]="'Themen'" [options]="tagOptions" [(values)]="comboValues" placeholder="Tag wählen…">
+  protected readonly _exHtml: string = `<cngx-combobox [label]="'Topics'" [options]="tagOptions" [(values)]="comboValues" placeholder="Choose tag…">
   <ng-template cngxComboboxChip let-opt let-remove="remove" let-i="index">
     <span style="display:inline-flex;align-items:center;gap:0.25rem;padding:0.15rem 0.5rem;border-radius:999px;background:#dbeafe;color:#1e40af;font-size:0.8rem">
       <span aria-hidden="true">#{{ i + 1 }}</span>
@@ -84,9 +84,9 @@ protected readonly comboValues = signal<string[]>(['angular']);`;
 </cngx-combobox>`;
   protected readonly colors: CngxSelectOptionDef<string>[] = [
       { value: 'red', label: 'Rot' },
-      { value: 'green', label: 'Grün' },
+      { value: 'green', label: 'Green' },
       { value: 'blue', label: 'Blau' },
-      { value: 'disabled', label: 'Nicht verfügbar', disabled: true },
+      { value: 'disabled', label: 'Unavailable', disabled: true },
     ];
 
     protected readonly priorities: CngxSelectOptionsInput<string> = [
@@ -295,7 +295,7 @@ protected readonly comboValues = signal<string[]>(['angular']);`;
     // Typeahead + Signal Forms
     protected readonly typeaheadColorOptions: CngxSelectOptionDef<string>[] = [
       { value: 'red', label: 'Rot' },
-      { value: 'green', label: 'Grün' },
+      { value: 'green', label: 'Green' },
       { value: 'blue', label: 'Blau' },
       { value: 'yellow', label: 'Gelb' },
       { value: 'orange', label: 'Orange' },

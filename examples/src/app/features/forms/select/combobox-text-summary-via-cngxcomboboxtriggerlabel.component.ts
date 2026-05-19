@@ -29,10 +29,10 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
       @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
     </header>
     <cngx-combobox
-        [label]="'Themen'"
+        [label]="'Topics'"
         [options]="tagOptions"
         [(values)]="comboTextValues"
-        placeholder="Themen suchen…"
+        placeholder="Search topics…"
       >
         <ng-template cngxComboboxTriggerLabel let-opts let-count="count">
           @if (count === 0) {
@@ -40,7 +40,7 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
           } @else if (count === 1) {
             <span style="padding-inline-end:0.5rem">{{ opts[0].label }}</span>
           } @else {
-            <span style="padding-inline-end:0.5rem;font-weight:500">{{ count }} Themen</span>
+            <span style="padding-inline-end:0.5rem;font-weight:500">{{ count }} topics</span>
           }
         </ng-template>
       </cngx-combobox>
@@ -62,7 +62,7 @@ export class SelectComboboxTextSummaryViaCngxcomboboxtriggerlabel {
   protected readonly _exTitle: string = 'Select';
   protected readonly _exDescription: string = 'CngxSelect — native-feeling single-select dropdown with template overrides, optgroups, clearable, loading, and full mat-select API parity.';
   protected readonly _exSectionTitle: string = 'Combobox — text summary via *cngxComboboxTriggerLabel';
-  protected readonly _exSubtitle: string = 'Replace the chip strip with a plain-text summary while keeping the filter input visible. Context exposes the resolved options, raw values, and count — ideal for compact variants ("3 Themen ausgewählt" + input on the same row).';
+  protected readonly _exSubtitle: string = 'Replace the chip strip with a plain-text summary while keeping the filter input visible. Context exposes the resolved options, raw values, and count — ideal for compact variants ("3 topics selected" + input on the same row).';
   protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'visual-variants' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'focus', value: 'composition' }, { dim: 'framework', value: 'signal-forms' }];
   protected readonly _exTs: string = `import { form, schema, required, submit } from '@angular/forms/signals';
 import { FormControl, Validators } from '@angular/forms';
@@ -82,10 +82,10 @@ protected readonly tagOptions: CngxSelectOptionDef<string>[] = [
 ];
 protected readonly comboTextValues = signal<string[]>(['angular', 'signals']);`;
   protected readonly _exHtml: string = `<cngx-combobox
-  [label]="'Themen'"
+  [label]="'Topics'"
   [options]="tagOptions"
   [(values)]="comboTextValues"
-  placeholder="Themen suchen…"
+  placeholder="Search topics…"
 >
   <ng-template cngxComboboxTriggerLabel let-opts let-count="count">
     @if (count === 0) {
@@ -93,15 +93,15 @@ protected readonly comboTextValues = signal<string[]>(['angular', 'signals']);`;
     } @else if (count === 1) {
       <span style="padding-inline-end:0.5rem">{{ opts[0].label }}</span>
     } @else {
-      <span style="padding-inline-end:0.5rem;font-weight:500">{{ count }} Themen</span>
+      <span style="padding-inline-end:0.5rem;font-weight:500">{{ count }} topics</span>
     }
   </ng-template>
 </cngx-combobox>`;
   protected readonly colors: CngxSelectOptionDef<string>[] = [
       { value: 'red', label: 'Rot' },
-      { value: 'green', label: 'Grün' },
+      { value: 'green', label: 'Green' },
       { value: 'blue', label: 'Blau' },
-      { value: 'disabled', label: 'Nicht verfügbar', disabled: true },
+      { value: 'disabled', label: 'Unavailable', disabled: true },
     ];
 
     protected readonly priorities: CngxSelectOptionsInput<string> = [
@@ -310,7 +310,7 @@ protected readonly comboTextValues = signal<string[]>(['angular', 'signals']);`;
     // Typeahead + Signal Forms
     protected readonly typeaheadColorOptions: CngxSelectOptionDef<string>[] = [
       { value: 'red', label: 'Rot' },
-      { value: 'green', label: 'Grün' },
+      { value: 'green', label: 'Green' },
       { value: 'blue', label: 'Blau' },
       { value: 'yellow', label: 'Gelb' },
       { value: 'orange', label: 'Orange' },

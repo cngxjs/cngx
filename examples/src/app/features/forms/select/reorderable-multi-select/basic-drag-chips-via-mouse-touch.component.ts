@@ -30,11 +30,11 @@ import { delay, of, throwError } from 'rxjs';
       </div>
 
       <cngx-reorderable-multi-select
-        [label]="'Broadcast-Reihenfolge'"
+        [label]="'Broadcast order'"
         [options]="recipients"
         [clearable]="true"
         [(values)]="basicValues"
-        placeholder="Empfänger auswählen…"
+        placeholder="Choose recipients…"
       />
 
       <div class="event-grid" style="margin-top:12px">
@@ -79,11 +79,11 @@ protected readonly basicValues = signal<string[]>(['ops', 'eng', 'legal']);`;
 </div>
 
 <cngx-reorderable-multi-select
-  [label]="'Broadcast-Reihenfolge'"
+  [label]="'Broadcast order'"
   [options]="recipients"
   [clearable]="true"
   [(values)]="basicValues"
-  placeholder="Empfänger auswählen…"
+  placeholder="Choose recipients…"
 />`;
   protected readonly recipients: CngxSelectOptionDef<string>[] = [
       { value: 'ops', label: 'Operations' },

@@ -49,7 +49,7 @@ import { delay, of, throwError } from 'rxjs';
               font: inherit;
             "
           >
-            + „{{ term || '…' }}" anlegen
+            + Create "{{ term || '…' }}"
           </button>
         </ng-template>
       </cngx-action-multi-select>
@@ -135,7 +135,7 @@ protected handleSeededChange(ev: CngxActionMultiSelectChange<{ id: string; name:
         font: inherit;
       "
     >
-      + „{{ term || '…' }}" anlegen
+      + Create "{{ term || '…' }}"
     </button>
   </ng-template>
 </cngx-action-multi-select>`;

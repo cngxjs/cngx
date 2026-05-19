@@ -55,8 +55,8 @@ import { delay, of, throwError } from 'rxjs';
               font: inherit;
             "
           >
-            @if (pending) { ⏳ Einladen… }
-            @else { + „{{ term || '…' }}" einladen (schließt Panel) }
+            @if (pending) { ⏳ Inviting… }
+            @else { + „{{ term || '…' }}" invite (closes panel) }
           </button>
         </ng-template>
       </cngx-action-multi-select>
@@ -133,8 +133,8 @@ protected readonly closeCreate: CngxSelectCreateAction<{ id: string; name: strin
         font: inherit;
       "
     >
-      @if (pending) { ⏳ Einladen… }
-      @else { + „{{ term || '…' }}" einladen (schließt Panel) }
+      @if (pending) { ⏳ Inviting… }
+      @else { + „{{ term || '…' }}" invite (closes panel) }
     </button>
   </ng-template>
 </cngx-action-multi-select>`;

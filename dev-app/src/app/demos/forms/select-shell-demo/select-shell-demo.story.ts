@@ -127,12 +127,12 @@ export const STORY: DemoSpec = {
     [clearable]="true"
     [(value)]="basicValue"
     (selectionChange)="handleBasicChange($event)"
-    placeholder="Bitte wählen…"
+    placeholder="Choose…"
   >
     <cngx-option [value]="'red'">Red</cngx-option>
     <cngx-option [value]="'green'">Green</cngx-option>
     <cngx-option [value]="'blue'">Blue</cngx-option>
-    <cngx-option [value]="'disabled'" [disabled]="true">Nicht verfügbar</cngx-option>
+    <cngx-option [value]="'disabled'" [disabled]="true">Unavailable</cngx-option>
   </cngx-select-shell>
 
   <div class="event-grid" style="margin-top:12px">
@@ -155,7 +155,7 @@ export const STORY: DemoSpec = {
         'for arbitrary tree shapes.',
       imports: ['CngxSelectShell', 'CngxSelectOption', 'CngxSelectOptgroup', 'CngxSelectDivider'],
       template: `
-  <cngx-select-shell [label]="'Priorität'" [(value)]="groupedValue" placeholder="Priorität…">
+  <cngx-select-shell [label]="'Priority'" [(value)]="groupedValue" placeholder="Priority…">
     <cngx-optgroup label="Normal">
       <cngx-option [value]="'low'">Niedrig</cngx-option>
       <cngx-option [value]="'medium'">Mittel</cngx-option>
@@ -349,7 +349,7 @@ export const STORY: DemoSpec = {
     </ng-template>
     <ng-template cngxSelectEmpty>
       <div style="padding:.75rem; opacity:.6; text-align:center">
-        Keine Optionen verfügbar
+        No options available
       </div>
     </ng-template>
   </cngx-select-shell>

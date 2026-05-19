@@ -28,7 +28,7 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
       @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
       @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
     </header>
-    <cngx-select [label]="'Sprache'" [options]="asyncOptions" [(value)]="asyncValue" [state]="asyncState" placeholder="Sprache wählen…">
+    <cngx-select [label]="'Language'" [options]="asyncOptions" [(value)]="asyncValue" [state]="asyncState" placeholder="Choose language…">
         <ng-template cngxSelectRetryButton let-retry let-label="label" let-disabled="disabled">
           <button type="button" class="chip" [disabled]="disabled" (click)="retry()" style="background:#fff7ed;border-color:#fed7aa;color:#9a3412">
             ↻ {{ label }}
@@ -74,7 +74,7 @@ protected readonly asyncState: ManualAsyncState<CngxSelectOptionsInput<string>> 
 protected readonly asyncValue = signal<string | undefined>(undefined);
 protected asyncSetSuccess(): void { this.asyncState.setSuccess(this.asyncOptions); }
 protected asyncSetError(): void { this.asyncState.setError(new Error('Network offline')); }`;
-  protected readonly _exHtml: string = `<cngx-select [label]="'Sprache'" [options]="asyncOptions" [(value)]="asyncValue" [state]="asyncState" placeholder="Sprache wählen…">
+  protected readonly _exHtml: string = `<cngx-select [label]="'Language'" [options]="asyncOptions" [(value)]="asyncValue" [state]="asyncState" placeholder="Choose language…">
   <ng-template cngxSelectRetryButton let-retry let-label="label" let-disabled="disabled">
     <button type="button" class="chip" [disabled]="disabled" (click)="retry()" style="background:#fff7ed;border-color:#fed7aa;color:#9a3412">
       ↻ {{ label }}
@@ -87,9 +87,9 @@ protected asyncSetError(): void { this.asyncState.setError(new Error('Network of
 </div>`;
   protected readonly colors: CngxSelectOptionDef<string>[] = [
       { value: 'red', label: 'Rot' },
-      { value: 'green', label: 'Grün' },
+      { value: 'green', label: 'Green' },
       { value: 'blue', label: 'Blau' },
-      { value: 'disabled', label: 'Nicht verfügbar', disabled: true },
+      { value: 'disabled', label: 'Unavailable', disabled: true },
     ];
 
     protected readonly priorities: CngxSelectOptionsInput<string> = [
@@ -298,7 +298,7 @@ protected asyncSetError(): void { this.asyncState.setError(new Error('Network of
     // Typeahead + Signal Forms
     protected readonly typeaheadColorOptions: CngxSelectOptionDef<string>[] = [
       { value: 'red', label: 'Rot' },
-      { value: 'green', label: 'Grün' },
+      { value: 'green', label: 'Green' },
       { value: 'blue', label: 'Blau' },
       { value: 'yellow', label: 'Gelb' },
       { value: 'orange', label: 'Orange' },

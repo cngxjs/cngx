@@ -37,7 +37,7 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
               [cngxListboxTrigger]="myLb"
               [popover]="myPop"
               (click)="myPop.toggle()">
-        {{ assembledValue() ?? 'Farbe wählen…' }} ▾
+        {{ assembledValue() ?? 'Pick a color…' }} ▾
       </button>
       <div cngxPopover #myPop="cngxPopover" placement="bottom" style="padding:0.25rem">
         <div cngxListbox
@@ -94,7 +94,7 @@ protected readonly assembledValue = signal<string | undefined>(undefined);`;
         [cngxListboxTrigger]="myLb"
         [popover]="myPop"
         (click)="myPop.toggle()">
-  {{ assembledValue() ?? 'Farbe wählen…' }} ▾
+  {{ assembledValue() ?? 'Pick a color…' }} ▾
 </button>
 <div cngxPopover #myPop="cngxPopover" placement="bottom" style="padding:0.25rem">
   <div cngxListbox
@@ -115,9 +115,9 @@ protected readonly assembledValue = signal<string | undefined>(undefined);`;
 </div>`;
   protected readonly colors: CngxSelectOptionDef<string>[] = [
       { value: 'red', label: 'Rot' },
-      { value: 'green', label: 'Grün' },
+      { value: 'green', label: 'Green' },
       { value: 'blue', label: 'Blau' },
-      { value: 'disabled', label: 'Nicht verfügbar', disabled: true },
+      { value: 'disabled', label: 'Unavailable', disabled: true },
     ];
 
     protected readonly priorities: CngxSelectOptionsInput<string> = [
@@ -326,7 +326,7 @@ protected readonly assembledValue = signal<string | undefined>(undefined);`;
     // Typeahead + Signal Forms
     protected readonly typeaheadColorOptions: CngxSelectOptionDef<string>[] = [
       { value: 'red', label: 'Rot' },
-      { value: 'green', label: 'Grün' },
+      { value: 'green', label: 'Green' },
       { value: 'blue', label: 'Blau' },
       { value: 'yellow', label: 'Gelb' },
       { value: 'orange', label: 'Orange' },

@@ -97,9 +97,9 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
 
 protected readonly colors: CngxSelectOptionDef<string>[] = [
   { value: 'red', label: 'Rot' },
-  { value: 'green', label: 'Grün' },
+  { value: 'green', label: 'Green' },
   { value: 'blue', label: 'Blau' },
-  { value: 'disabled', label: 'Nicht verfügbar', disabled: true },
+  { value: 'disabled', label: 'Unavailable', disabled: true },
 ];
 protected readonly commitValue = signal<string | undefined>('red');
 protected readonly commitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
@@ -151,9 +151,9 @@ protected readonly commitAction: CngxSelectCommitAction<string> = (intended) => 
 </div>`;
   protected readonly colors: CngxSelectOptionDef<string>[] = [
       { value: 'red', label: 'Rot' },
-      { value: 'green', label: 'Grün' },
+      { value: 'green', label: 'Green' },
       { value: 'blue', label: 'Blau' },
-      { value: 'disabled', label: 'Nicht verfügbar', disabled: true },
+      { value: 'disabled', label: 'Unavailable', disabled: true },
     ];
 
     protected readonly priorities: CngxSelectOptionsInput<string> = [
@@ -362,7 +362,7 @@ protected readonly commitAction: CngxSelectCommitAction<string> = (intended) => 
     // Typeahead + Signal Forms
     protected readonly typeaheadColorOptions: CngxSelectOptionDef<string>[] = [
       { value: 'red', label: 'Rot' },
-      { value: 'green', label: 'Grün' },
+      { value: 'green', label: 'Green' },
       { value: 'blue', label: 'Blau' },
       { value: 'yellow', label: 'Gelb' },
       { value: 'orange', label: 'Orange' },

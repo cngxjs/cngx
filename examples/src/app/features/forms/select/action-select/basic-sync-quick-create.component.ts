@@ -39,7 +39,7 @@ import { delay, of, throwError } from 'rxjs';
         [quickCreateAction]="basicCreate"
         [clearable]="true"
         [(value)]="basicValue"
-        placeholder="Tag wählen oder eingeben…"
+        placeholder="Choose or enter a tag…"
       >
         <ng-template
           cngxSelectAction
@@ -71,7 +71,7 @@ import { delay, of, throwError } from 'rxjs';
             } @else if (!term) {
               <span style="opacity:.6">Tippen, um einen neuen Tag anzulegen</span>
             } @else {
-              <span>+ Tag „<strong>{{ term }}</strong>" anlegen</span>
+              <span>+ Create tag "<strong>{{ term }}</strong>"</span>
             }
           </button>
         </ng-template>
@@ -137,7 +137,7 @@ protected readonly basicDisplay = (v: { id: string; name: string }) => v.name;`;
   [quickCreateAction]="basicCreate"
   [clearable]="true"
   [(value)]="basicValue"
-  placeholder="Tag wählen oder eingeben…"
+  placeholder="Choose or enter a tag…"
 >
   <ng-template
     cngxSelectAction
@@ -169,7 +169,7 @@ protected readonly basicDisplay = (v: { id: string; name: string }) => v.name;`;
       } @else if (!term) {
         <span style="opacity:.6">Tippen, um einen neuen Tag anzulegen</span>
       } @else {
-        <span>+ Tag „<strong>{{ term }}</strong>" anlegen</span>
+        <span>+ Create tag "<strong>{{ term }}</strong>"</span>
       }
     </button>
   </ng-template>

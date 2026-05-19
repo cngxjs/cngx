@@ -106,13 +106,13 @@ export const STORY: DemoSpec = {
       imports: ['CngxFormField', 'CngxLabel', 'CngxFieldErrors', 'CngxListbox', 'CngxOption', 'CngxListboxFieldBridge'],
       template: `
   <cngx-form-field [field]="multiForm.toppings">
-    <label cngxLabel>Beläge (mind. 2)</label>
+    <label cngxLabel>Toppings (at least 2)</label>
     <div cngxListbox
          cngxListboxFieldBridge
-         [label]="'Beläge'"
+         [label]="'Toppings'"
          [multiple]="true"
          tabindex="0">
-      <div cngxOption value="cheese">Käse</div>
+      <div cngxOption value="cheese">Cheese</div>
       <div cngxOption value="pepperoni">Pepperoni</div>
       <div cngxOption value="mushroom">Champignons</div>
       <div cngxOption value="olive">Oliven</div>
@@ -140,10 +140,10 @@ export const STORY: DemoSpec = {
       imports: ['CngxFormField', 'CngxLabel', 'CngxFieldErrors', 'CngxBindField', 'MatSelect', 'MatOption', 'ReactiveFormsModule'],
       template: `
   <cngx-form-field [field]="matSelectField">
-    <label cngxLabel>Größe</label>
+    <label cngxLabel>Size</label>
     <mat-select cngxBindField
                 [formControl]="matSelectControl"
-                placeholder="Bitte wählen"
+                placeholder="Choose…"
                 style="min-width:200px;display:inline-block">
       <mat-option value="s">Small</mat-option>
       <mat-option value="m">Medium</mat-option>

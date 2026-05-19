@@ -54,9 +54,9 @@ export const STORY: DemoSpec = {
   setup: `
   protected readonly colors: CngxSelectOptionDef<string>[] = [
     { value: 'red', label: 'Rot' },
-    { value: 'green', label: 'Grün' },
+    { value: 'green', label: 'Green' },
     { value: 'blue', label: 'Blau' },
-    { value: 'disabled', label: 'Nicht verfügbar', disabled: true },
+    { value: 'disabled', label: 'Unavailable', disabled: true },
   ];
 
   protected readonly priorities: CngxSelectOptionsInput<string> = [
@@ -265,7 +265,7 @@ export const STORY: DemoSpec = {
   // Typeahead + Signal Forms
   protected readonly typeaheadColorOptions: CngxSelectOptionDef<string>[] = [
     { value: 'red', label: 'Rot' },
-    { value: 'green', label: 'Grün' },
+    { value: 'green', label: 'Green' },
     { value: 'blue', label: 'Blau' },
     { value: 'yellow', label: 'Gelb' },
     { value: 'orange', label: 'Orange' },
@@ -370,7 +370,7 @@ export const STORY: DemoSpec = {
           [cngxListboxTrigger]="myLb"
           [popover]="myPop"
           (click)="myPop.toggle()">
-    {{ assembledValue() ?? 'Farbe wählen…' }} ▾
+    {{ assembledValue() ?? 'Pick a color…' }} ▾
   </button>
   <div cngxPopover #myPop="cngxPopover" placement="bottom" style="padding:0.25rem">
     <div cngxListbox
@@ -400,10 +400,10 @@ export const STORY: DemoSpec = {
       imports: ['CngxSelect'],
       template: `
   <cngx-select
-    [label]="'Priorität'"
+    [label]="'Priority'"
     [options]="priorities"
     [(value)]="groupedValue"
-    placeholder="Priorität wählen…"
+    placeholder="Choose priority…"
   />
   <div class="event-grid" style="margin-top:12px">
     <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ groupedValue() || '—' }}</span></div>
@@ -430,10 +430,10 @@ export const STORY: DemoSpec = {
       imports: ['CngxSelect', 'CngxSelectOptionLabel'],
       template: `
   <cngx-select
-    [label]="'Gewerk'"
+    [label]="'Trade'"
     [options]="richOptions"
     [(value)]="richValue"
-    placeholder="Gewerk wählen…"
+    placeholder="Choose trade…"
   >
     <ng-template cngxSelectOptionLabel let-opt>
       <span>{{ opt.meta?.icon }}</span>
@@ -457,7 +457,7 @@ export const STORY: DemoSpec = {
     placeholder="Nichts geladen…"
   >
     <ng-template cngxSelectEmpty>
-      <span style="opacity:.7">Keine Einträge vorhanden — bitte Filter anpassen.</span>
+      <span style="opacity:.7">No entries — adjust filters.</span>
     </ng-template>
   </cngx-select>
   <div class="event-grid" style="margin-top:12px">
@@ -476,11 +476,11 @@ export const STORY: DemoSpec = {
       imports: ['CngxSelect', 'CngxSelectError'],
       template: `
   <cngx-select
-    [label]="'Sprache'"
+    [label]="'Language'"
     [state]="asyncState"
     [retryFn]="asyncReload"
     [(value)]="asyncValue"
-    placeholder="Sprache wählen…"
+    placeholder="Choose language…"
   >
     <ng-template cngxSelectError let-error let-retry="retry">
       <div style="padding:0.5rem 0.75rem;color:var(--cngx-color-danger)">
@@ -551,12 +551,12 @@ export const STORY: DemoSpec = {
       imports: ['CngxSelect'],
       template: `
   <cngx-select
-    [label]="'Sprache'"
+    [label]="'Language'"
     [state]="variantState"
     [loadingVariant]="loadingVariantSel()"
     [skeletonRowCount]="5"
     [(value)]="variantValue"
-    placeholder="Sprache wählen…"
+    placeholder="Choose language…"
   />
   <div class="event-grid" style="margin-top:12px;gap:8px">
     <div class="event-row" style="gap:8px">
@@ -582,11 +582,11 @@ export const STORY: DemoSpec = {
       imports: ['CngxSelect'],
       template: `
   <cngx-select
-    [label]="'Sprache'"
+    [label]="'Language'"
     [state]="variantState"
     [refreshingVariant]="refreshingVariantSel()"
     [(value)]="variantValue"
-    placeholder="Sprache wählen…"
+    placeholder="Choose language…"
   />
   <div class="event-grid" style="margin-top:12px;gap:8px">
     <div class="event-row" style="gap:8px">
@@ -678,10 +678,10 @@ export const STORY: DemoSpec = {
       imports: ['CngxSelect', 'CngxSelectTriggerLabel'],
       template: `
   <cngx-select
-    [label]="'Gewerk'"
+    [label]="'Trade'"
     [options]="richOptions"
     [(value)]="richValue"
-    placeholder="Gewerk wählen…"
+    placeholder="Choose trade…"
   >
     <ng-template cngxSelectTriggerLabel let-opt>
       <span>{{ opt?.meta?.icon }}</span>
@@ -724,7 +724,7 @@ export const STORY: DemoSpec = {
     [label]="'Item'"
     [options]="manyOptions"
     [(value)]="manyValue"
-    placeholder="Item wählen…"
+    placeholder="Choose item…"
   />
   <div class="event-grid" style="margin-top:12px">
     <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ manyValue() ?? '—' }}</span></div>
@@ -795,10 +795,10 @@ export const STORY: DemoSpec = {
       imports: ['CngxMultiSelect'],
       template: `
   <cngx-multi-select
-    [label]="'Themen'"
+    [label]="'Topics'"
     [options]="tagOptions"
     [(values)]="multiValues"
-    placeholder="Themen wählen…"
+    placeholder="Choose topics…"
   />
   <div class="event-grid" style="margin-top:12px">
     <div class="event-row"><span class="event-label">Values</span><span class="event-value">{{ multiValues().join(', ') || '—' }}</span></div>
@@ -812,11 +812,11 @@ export const STORY: DemoSpec = {
       imports: ['CngxMultiSelect'],
       template: `
   <cngx-multi-select
-    [label]="'Themen'"
+    [label]="'Topics'"
     [options]="tagOptions"
     [(values)]="multiClearableValues"
     [clearable]="true"
-    placeholder="Themen wählen…"
+    placeholder="Choose topics…"
   />
   <div class="event-grid" style="margin-top:12px">
     <div class="event-row"><span class="event-label">Values</span><span class="event-value">{{ multiClearableValues().join(', ') || '—' }}</span></div>
@@ -829,10 +829,10 @@ export const STORY: DemoSpec = {
       imports: ['CngxMultiSelect'],
       template: `
   <cngx-multi-select
-    [label]="'Themen'"
+    [label]="'Topics'"
     [state]="multiAsyncState"
     [(values)]="multiAsyncValues"
-    placeholder="Themen wählen…"
+    placeholder="Choose topics…"
   />
   <div class="event-grid" style="margin-top:12px">
     <div class="event-row" style="margin-top:8px">
@@ -864,12 +864,12 @@ export const STORY: DemoSpec = {
     </label>
   </div>
   <cngx-multi-select
-    [label]="'Themen (commit)'"
+    [label]="'Topics (commit)'"
     [options]="tagOptions"
     [(values)]="multiCommitValues"
     [commitAction]="multiCommitAction"
     [commitMode]="multiCommitMode()"
-    placeholder="Themen wählen…"
+    placeholder="Choose topics…"
   />
   <div class="event-grid" style="margin-top:12px">
     <div class="event-row"><span class="event-label">Values</span><span class="event-value">{{ multiCommitValues().join(', ') || '—' }}</span></div>
@@ -885,16 +885,16 @@ export const STORY: DemoSpec = {
       imports: ['CngxMultiSelect', 'CngxMultiSelectTriggerLabel'],
       template: `
   <cngx-multi-select
-    [label]="'Themen'"
+    [label]="'Topics'"
     [options]="tagOptions"
     [(values)]="multiTextValues"
-    placeholder="Themen wählen…"
+    placeholder="Choose topics…"
   >
     <ng-template cngxMultiSelectTriggerLabel let-opts let-count="count">
       @if (count === 1) {
         {{ opts[0].label }}
       } @else {
-        {{ count }} Themen ausgewählt
+        {{ count }} topics selected
       }
     </ng-template>
   </cngx-multi-select>
@@ -910,10 +910,10 @@ export const STORY: DemoSpec = {
       imports: ['CngxMultiSelect', 'CngxMultiSelectChip'],
       template: `
   <cngx-multi-select
-    [label]="'Themen'"
+    [label]="'Topics'"
     [options]="tagOptions"
     [(values)]="multiCustomChipValues"
-    placeholder="Themen wählen…"
+    placeholder="Choose topics…"
   >
     <ng-template cngxMultiSelectChip let-opt let-remove="remove">
       <span style="display:inline-flex;align-items:center;gap:0.25rem;padding:0.125rem 0.5rem;border-radius:0.25rem;background:#ede7f6;color:#4527a0;font-weight:500;">
@@ -933,10 +933,10 @@ export const STORY: DemoSpec = {
       imports: ['CngxCombobox'],
       template: `
   <cngx-combobox
-    [label]="'Themen'"
+    [label]="'Topics'"
     [options]="tagOptions"
     [(values)]="comboValues"
-    placeholder="Themen suchen…"
+    placeholder="Search topics…"
   />
   <div class="event-grid" style="margin-top:12px">
     <div class="event-row"><span class="event-label">Values</span><span class="event-value">{{ comboValues().join(', ') || '—' }}</span></div>
@@ -950,12 +950,12 @@ export const STORY: DemoSpec = {
       imports: ['CngxCombobox'],
       template: `
   <cngx-combobox
-    [label]="'Themen'"
+    [label]="'Topics'"
     [state]="comboAsyncState"
     [(values)]="comboAsyncValues"
     [skipInitial]="true"
     (searchTermChange)="comboLastTerm.set($event)"
-    placeholder="Themen suchen…"
+    placeholder="Search topics…"
   />
   <div class="event-grid" style="margin-top:12px">
     <div class="event-row" style="margin-top:8px">
@@ -988,12 +988,12 @@ export const STORY: DemoSpec = {
     </label>
   </div>
   <cngx-combobox
-    [label]="'Themen (commit)'"
+    [label]="'Topics (commit)'"
     [options]="tagOptions"
     [(values)]="comboCommitValues"
     [commitAction]="comboCommitAction"
     [commitMode]="comboCommitMode()"
-    placeholder="Themen suchen…"
+    placeholder="Search topics…"
   />
   <div class="event-grid" style="margin-top:12px">
     <div class="event-row"><span class="event-label">Values</span><span class="event-value">{{ comboCommitValues().join(', ') || '—' }}</span></div>
@@ -1009,15 +1009,15 @@ export const STORY: DemoSpec = {
       imports: ['CngxCombobox', 'CngxSelectClearButton'],
       template: `
   <cngx-combobox
-    [label]="'Themen'"
+    [label]="'Topics'"
     [options]="tagOptions"
     [clearable]="true"
     [(values)]="comboClearableValues"
-    placeholder="Themen suchen…"
+    placeholder="Search topics…"
   >
     <ng-template cngxSelectClearButton let-clear let-disabled="disabled">
       <button type="button" class="chip" [disabled]="disabled" (click)="clear()">
-        Alle zurücksetzen
+        Reset all
       </button>
     </ng-template>
   </cngx-combobox>
@@ -1028,14 +1028,14 @@ export const STORY: DemoSpec = {
     {
       title: 'Combobox — text summary via *cngxComboboxTriggerLabel',
       subtitle:
-        'Replace the chip strip with a plain-text summary while keeping the filter input visible. Context exposes the resolved options, raw values, and count — ideal for compact variants ("3 Themen ausgewählt" + input on the same row).',
+        'Replace the chip strip with a plain-text summary while keeping the filter input visible. Context exposes the resolved options, raw values, and count — ideal for compact variants ("3 topics selected" + input on the same row).',
       imports: ['CngxCombobox', 'CngxComboboxTriggerLabel'],
       template: `
   <cngx-combobox
-    [label]="'Themen'"
+    [label]="'Topics'"
     [options]="tagOptions"
     [(values)]="comboTextValues"
-    placeholder="Themen suchen…"
+    placeholder="Search topics…"
   >
     <ng-template cngxComboboxTriggerLabel let-opts let-count="count">
       @if (count === 0) {
@@ -1043,7 +1043,7 @@ export const STORY: DemoSpec = {
       } @else if (count === 1) {
         <span style="padding-inline-end:0.5rem">{{ opts[0].label }}</span>
       } @else {
-        <span style="padding-inline-end:0.5rem;font-weight:500">{{ count }} Themen</span>
+        <span style="padding-inline-end:0.5rem;font-weight:500">{{ count }} topics</span>
       }
     </ng-template>
   </cngx-combobox>
@@ -1115,11 +1115,11 @@ export const STORY: DemoSpec = {
         'Replace the panel-shell\'s default loading indicator with a consumer-authored body — useful for branded spinners, progress text, or a cancel-and-restart affordance.',
       imports: ['CngxSelect', 'CngxSelectLoading'],
       template: `
-  <cngx-select [label]="'Sprache'" [options]="loadingOptions" [(value)]="loadingValue" [loading]="loading()" placeholder="Sprache wählen…">
+  <cngx-select [label]="'Language'" [options]="loadingOptions" [(value)]="loadingValue" [loading]="loading()" placeholder="Choose language…">
     <ng-template cngxSelectLoading let-retry="retry">
       <div role="status" aria-live="polite" style="display:flex;flex-direction:column;align-items:center;gap:0.5rem;padding:1rem">
         <span aria-hidden="true" style="font-size:1.5rem">⏳</span>
-        <span>Lade verfügbare Sprachen…</span>
+        <span>Loading available languages…</span>
       </div>
     </ng-template>
   </cngx-select>
@@ -1131,7 +1131,7 @@ export const STORY: DemoSpec = {
         'Re-skin grouped-option labels — render badges, icons, or counts in the optgroup header without touching the option rows themselves. Class name <code>CngxSelectOptgroupTemplate</code> distinguishes this directive from the <code>&lt;cngx-optgroup&gt;</code> element component used in declarative composition.',
       imports: ['CngxSelect', 'CngxSelectOptgroupTemplate'],
       template: `
-  <cngx-select [label]="'Priorität'" [options]="priorities" [(value)]="groupedValue" placeholder="Priorität wählen…">
+  <cngx-select [label]="'Priority'" [options]="priorities" [(value)]="groupedValue" placeholder="Choose priority…">
     <ng-template cngxSelectOptgroup let-group>
       <span style="display:inline-flex;align-items:center;gap:0.5rem">
         <span aria-hidden="true" style="font-size:0.75rem;padding:2px 6px;border-radius:999px;background:#eef;color:#447">{{ group.children?.length ?? 0 }}</span>
@@ -1149,7 +1149,7 @@ export const STORY: DemoSpec = {
         'Replace the default 2px progress bar overlaid on stale options. Override receives <code>previousCount</code> so consumer templates can render context-aware status like <em>"Refreshing 4 items"</em>.',
       imports: ['CngxSelect', 'CngxSelectRefreshing'],
       template: `
-  <cngx-select [label]="'Sprache'" [options]="asyncOptions" [(value)]="asyncValue" [state]="asyncState" placeholder="Sprache wählen…">
+  <cngx-select [label]="'Language'" [options]="asyncOptions" [(value)]="asyncValue" [state]="asyncState" placeholder="Choose language…">
     <ng-template cngxSelectRefreshing let-previousCount="previousCount">
       <div role="status" aria-live="polite" style="padding:0.4rem 0.75rem;font-size:0.8rem;color:#557;background:linear-gradient(90deg,#e3f2fd,#bbdefb,#e3f2fd);background-size:200% 100%;animation:cngx-select-refresh-shimmer 1.6s linear infinite">
         🔄 Refreshing {{ previousCount }} options…
@@ -1178,7 +1178,7 @@ export const STORY: DemoSpec = {
     <ng-template cngxSelectCommitError let-error let-option="option" let-retry="retry">
       <div role="alert" style="display:flex;align-items:center;gap:0.5rem;padding:0.5rem;background:#fef2f2;color:#7f1d1d;border-radius:6px">
         <span aria-hidden="true">⚠</span>
-        <span style="flex:1">Konnte <strong>{{ option?.label }}</strong> nicht speichern: {{ error?.message }}</span>
+        <span style="flex:1">Could not save <strong>{{ option?.label }}</strong>: {{ error?.message }}</span>
         <button type="button" class="chip" (click)="retry()">Replay</button>
       </div>
     </ng-template>
@@ -1225,7 +1225,7 @@ export const STORY: DemoSpec = {
         'Swap the visual frame of every Retry / Try again button rendered by the shared panel-shell — load-error, inline refresh-error, and commit-error banner all read from this single override. Context: <code>{ retry, error, disabled, label }</code>.',
       imports: ['CngxSelect', 'CngxSelectRetryButton'],
       template: `
-  <cngx-select [label]="'Sprache'" [options]="asyncOptions" [(value)]="asyncValue" [state]="asyncState" placeholder="Sprache wählen…">
+  <cngx-select [label]="'Language'" [options]="asyncOptions" [(value)]="asyncValue" [state]="asyncState" placeholder="Choose language…">
     <ng-template cngxSelectRetryButton let-retry let-label="label" let-disabled="disabled">
       <button type="button" class="chip" [disabled]="disabled" (click)="retry()" style="background:#fff7ed;border-color:#fed7aa;color:#9a3412">
         ↻ {{ label }}
@@ -1244,12 +1244,12 @@ export const STORY: DemoSpec = {
       imports: ['CngxSelect', 'CngxSelectLoadingGlyph'],
       template: `
   <cngx-select
-    [label]="'Sprache'"
+    [label]="'Language'"
     [options]="asyncOptions"
     [(value)]="asyncValue"
     [state]="asyncState"
     loadingVariant="spinner"
-    placeholder="Sprache wählen…"
+    placeholder="Choose language…"
   >
     <ng-template cngxSelectLoadingGlyph>
       <span aria-hidden="true" style="font-size:1.25rem;display:inline-block;animation:cngx-select-spin 1s linear infinite">⚙</span>
@@ -1397,7 +1397,7 @@ export const STORY: DemoSpec = {
         'Per-chip override for the combobox\'s tag strip — same context shape as <code>*cngxMultiSelectChip</code> (<code>{ option, remove, index }</code>), so a consumer-authored chip template can be projected into either variant unchanged.',
       imports: ['CngxCombobox', 'CngxComboboxChip'],
       template: `
-  <cngx-combobox [label]="'Themen'" [options]="tagOptions" [(values)]="comboValues" placeholder="Tag wählen…">
+  <cngx-combobox [label]="'Topics'" [options]="tagOptions" [(values)]="comboValues" placeholder="Choose tag…">
     <ng-template cngxComboboxChip let-opt let-remove="remove" let-i="index">
       <span style="display:inline-flex;align-items:center;gap:0.25rem;padding:0.15rem 0.5rem;border-radius:999px;background:#dbeafe;color:#1e40af;font-size:0.8rem">
         <span aria-hidden="true">#{{ i + 1 }}</span>

@@ -123,11 +123,11 @@ export const STORY: DemoSpec = {
   </div>
 
   <cngx-reorderable-multi-select
-    [label]="'Broadcast-Reihenfolge'"
+    [label]="'Broadcast order'"
     [options]="recipients"
     [clearable]="true"
     [(values)]="basicValues"
-    placeholder="Empfänger auswählen…"
+    placeholder="Choose recipients…"
   />
 
   <div class="event-grid" style="margin-top:12px">
@@ -154,10 +154,10 @@ export const STORY: DemoSpec = {
   </div>
 
   <cngx-reorderable-multi-select
-    [label]="'Agenda-Reihenfolge'"
+    [label]="'Agenda order'"
     [options]="recipients"
     [(values)]="keyboardValues"
-    [reorderAriaLabel]="'Agenda-Reihenfolge ändern mit Strg und Pfeiltasten'"
+    [reorderAriaLabel]="'Reorder agenda with Ctrl and arrow keys'"
   />
 
   <div class="event-grid" style="margin-top:12px">
@@ -273,7 +273,7 @@ export const STORY: DemoSpec = {
       imports: ['CngxReorderableMultiSelect'],
       template: `
   <cngx-reorderable-multi-select
-    [label]="'Eskalations-Reihenfolge'"
+    [label]="'Escalation order'"
     [options]="recipients"
     [(values)]="seededValues"
     (reordered)="handleSeededReorder($event)"

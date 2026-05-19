@@ -29,16 +29,16 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
       @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
     </header>
     <cngx-multi-select
-        [label]="'Themen'"
+        [label]="'Topics'"
         [options]="tagOptions"
         [(values)]="multiTextValues"
-        placeholder="Themen wählen…"
+        placeholder="Choose topics…"
       >
         <ng-template cngxMultiSelectTriggerLabel let-opts let-count="count">
           @if (count === 1) {
             {{ opts[0].label }}
           } @else {
-            {{ count }} Themen ausgewählt
+            {{ count }} topics selected
           }
         </ng-template>
       </cngx-multi-select>
@@ -80,24 +80,24 @@ protected readonly tagOptions: CngxSelectOptionDef<string>[] = [
 ];
 protected readonly multiTextValues = signal<string[]>(['angular', 'signals']);`;
   protected readonly _exHtml: string = `<cngx-multi-select
-  [label]="'Themen'"
+  [label]="'Topics'"
   [options]="tagOptions"
   [(values)]="multiTextValues"
-  placeholder="Themen wählen…"
+  placeholder="Choose topics…"
 >
   <ng-template cngxMultiSelectTriggerLabel let-opts let-count="count">
     @if (count === 1) {
       {{ opts[0].label }}
     } @else {
-      {{ count }} Themen ausgewählt
+      {{ count }} topics selected
     }
   </ng-template>
 </cngx-multi-select>`;
   protected readonly colors: CngxSelectOptionDef<string>[] = [
       { value: 'red', label: 'Rot' },
-      { value: 'green', label: 'Grün' },
+      { value: 'green', label: 'Green' },
       { value: 'blue', label: 'Blau' },
-      { value: 'disabled', label: 'Nicht verfügbar', disabled: true },
+      { value: 'disabled', label: 'Unavailable', disabled: true },
     ];
 
     protected readonly priorities: CngxSelectOptionsInput<string> = [
@@ -306,7 +306,7 @@ protected readonly multiTextValues = signal<string[]>(['angular', 'signals']);`;
     // Typeahead + Signal Forms
     protected readonly typeaheadColorOptions: CngxSelectOptionDef<string>[] = [
       { value: 'red', label: 'Rot' },
-      { value: 'green', label: 'Grün' },
+      { value: 'green', label: 'Green' },
       { value: 'blue', label: 'Blau' },
       { value: 'yellow', label: 'Gelb' },
       { value: 'orange', label: 'Orange' },

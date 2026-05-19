@@ -29,11 +29,11 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
       @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
     </header>
     <cngx-select
-        [label]="'Sprache'"
+        [label]="'Language'"
         [state]="variantState"
         [refreshingVariant]="refreshingVariantSel()"
         [(value)]="variantValue"
-        placeholder="Sprache wählen…"
+        placeholder="Choose language…"
       />
       <div class="event-grid" style="margin-top:12px;gap:8px">
         <div class="event-row" style="gap:8px">
@@ -88,17 +88,17 @@ protected triggerVariantRefreshing(): void {
   this.variantState.set('refreshing');
 }`;
   protected readonly _exHtml: string = `<cngx-select
-  [label]="'Sprache'"
+  [label]="'Language'"
   [state]="variantState"
   [refreshingVariant]="refreshingVariantSel()"
   [(value)]="variantValue"
-  placeholder="Sprache wählen…"
+  placeholder="Choose language…"
 />`;
   protected readonly colors: CngxSelectOptionDef<string>[] = [
       { value: 'red', label: 'Rot' },
-      { value: 'green', label: 'Grün' },
+      { value: 'green', label: 'Green' },
       { value: 'blue', label: 'Blau' },
-      { value: 'disabled', label: 'Nicht verfügbar', disabled: true },
+      { value: 'disabled', label: 'Unavailable', disabled: true },
     ];
 
     protected readonly priorities: CngxSelectOptionsInput<string> = [
@@ -307,7 +307,7 @@ protected triggerVariantRefreshing(): void {
     // Typeahead + Signal Forms
     protected readonly typeaheadColorOptions: CngxSelectOptionDef<string>[] = [
       { value: 'red', label: 'Rot' },
-      { value: 'green', label: 'Grün' },
+      { value: 'green', label: 'Green' },
       { value: 'blue', label: 'Blau' },
       { value: 'yellow', label: 'Gelb' },
       { value: 'orange', label: 'Orange' },

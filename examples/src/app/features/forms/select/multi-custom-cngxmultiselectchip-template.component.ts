@@ -29,10 +29,10 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
       @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
     </header>
     <cngx-multi-select
-        [label]="'Themen'"
+        [label]="'Topics'"
         [options]="tagOptions"
         [(values)]="multiCustomChipValues"
-        placeholder="Themen wählen…"
+        placeholder="Choose topics…"
       >
         <ng-template cngxMultiSelectChip let-opt let-remove="remove">
           <span style="display:inline-flex;align-items:center;gap:0.25rem;padding:0.125rem 0.5rem;border-radius:0.25rem;background:#ede7f6;color:#4527a0;font-weight:500;">
@@ -78,10 +78,10 @@ protected readonly tagOptions: CngxSelectOptionDef<string>[] = [
 ];
 protected readonly multiCustomChipValues = signal<string[]>(['angular', 'signals', 'rxjs']);`;
   protected readonly _exHtml: string = `<cngx-multi-select
-  [label]="'Themen'"
+  [label]="'Topics'"
   [options]="tagOptions"
   [(values)]="multiCustomChipValues"
-  placeholder="Themen wählen…"
+  placeholder="Choose topics…"
 >
   <ng-template cngxMultiSelectChip let-opt let-remove="remove">
     <span style="display:inline-flex;align-items:center;gap:0.25rem;padding:0.125rem 0.5rem;border-radius:0.25rem;background:#ede7f6;color:#4527a0;font-weight:500;">
@@ -92,9 +92,9 @@ protected readonly multiCustomChipValues = signal<string[]>(['angular', 'signals
 </cngx-multi-select>`;
   protected readonly colors: CngxSelectOptionDef<string>[] = [
       { value: 'red', label: 'Rot' },
-      { value: 'green', label: 'Grün' },
+      { value: 'green', label: 'Green' },
       { value: 'blue', label: 'Blau' },
-      { value: 'disabled', label: 'Nicht verfügbar', disabled: true },
+      { value: 'disabled', label: 'Unavailable', disabled: true },
     ];
 
     protected readonly priorities: CngxSelectOptionsInput<string> = [
@@ -303,7 +303,7 @@ protected readonly multiCustomChipValues = signal<string[]>(['angular', 'signals
     // Typeahead + Signal Forms
     protected readonly typeaheadColorOptions: CngxSelectOptionDef<string>[] = [
       { value: 'red', label: 'Rot' },
-      { value: 'green', label: 'Grün' },
+      { value: 'green', label: 'Green' },
       { value: 'blue', label: 'Blau' },
       { value: 'yellow', label: 'Gelb' },
       { value: 'orange', label: 'Orange' },

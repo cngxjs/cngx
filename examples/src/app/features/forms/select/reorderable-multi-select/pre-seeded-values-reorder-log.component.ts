@@ -24,7 +24,7 @@ import { delay, of, throwError } from 'rxjs';
       @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
     </header>
     <cngx-reorderable-multi-select
-        [label]="'Eskalations-Reihenfolge'"
+        [label]="'Escalation order'"
         [options]="recipients"
         [(values)]="seededValues"
         (reordered)="handleSeededReorder($event)"
@@ -77,7 +77,7 @@ protected readonly handleSeededReorder = (
 ) => {
   const from = evt.fromIndex ?? -1;`;
   protected readonly _exHtml: string = `<cngx-reorderable-multi-select
-  [label]="'Eskalations-Reihenfolge'"
+  [label]="'Escalation order'"
   [options]="recipients"
   [(values)]="seededValues"
   (reordered)="handleSeededReorder($event)"

@@ -64,9 +64,9 @@ import { createFormPrimitivesFormGroup } from '../../../../_fixtures/form-primit
     });
 
     protected readonly sfForm = form(this.sfModel, schema((root) => {
-      required(root.terms, { message: 'Bitte zustimmen' });
+      required(root.terms, { message: 'Please agree' });
       required(root.payment, { message: 'Wahl erforderlich' });
-      required(root.notificationChannels, { message: 'Mindestens einen Kanal wählen' });
+      required(root.notificationChannels, { message: 'Choose at least one channel' });
     }));
 
     // ── Reactive Forms group (all 9 atoms) ─────────────────────

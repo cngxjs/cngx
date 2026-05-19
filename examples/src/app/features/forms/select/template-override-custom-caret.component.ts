@@ -72,9 +72,9 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
 
 protected readonly colors: CngxSelectOptionDef<string>[] = [
   { value: 'red', label: 'Rot' },
-  { value: 'green', label: 'Grün' },
+  { value: 'green', label: 'Green' },
   { value: 'blue', label: 'Blau' },
-  { value: 'disabled', label: 'Nicht verfügbar', disabled: true },
+  { value: 'disabled', label: 'Unavailable', disabled: true },
 ];
 protected readonly standaloneValue = signal<string | undefined>(undefined);`;
   protected readonly _exHtml: string = `<cngx-select
@@ -94,9 +94,9 @@ protected readonly standaloneValue = signal<string | undefined>(undefined);`;
 </cngx-select>`;
   protected readonly colors: CngxSelectOptionDef<string>[] = [
       { value: 'red', label: 'Rot' },
-      { value: 'green', label: 'Grün' },
+      { value: 'green', label: 'Green' },
       { value: 'blue', label: 'Blau' },
-      { value: 'disabled', label: 'Nicht verfügbar', disabled: true },
+      { value: 'disabled', label: 'Unavailable', disabled: true },
     ];
 
     protected readonly priorities: CngxSelectOptionsInput<string> = [
@@ -305,7 +305,7 @@ protected readonly standaloneValue = signal<string | undefined>(undefined);`;
     // Typeahead + Signal Forms
     protected readonly typeaheadColorOptions: CngxSelectOptionDef<string>[] = [
       { value: 'red', label: 'Rot' },
-      { value: 'green', label: 'Grün' },
+      { value: 'green', label: 'Green' },
       { value: 'blue', label: 'Blau' },
       { value: 'yellow', label: 'Gelb' },
       { value: 'orange', label: 'Orange' },

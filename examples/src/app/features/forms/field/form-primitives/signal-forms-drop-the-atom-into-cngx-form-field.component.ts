@@ -53,7 +53,7 @@ import { createFormPrimitivesFormGroup } from '../../../../_fixtures/form-primit
         </cngx-form-field>
 
         <cngx-form-field [field]="sfForm.notificationChannels">
-          <label cngxLabel>Kanäle</label>
+          <label cngxLabel>Channels</label>
           <cngx-checkbox-group
             [(selectedValues)]="sfForm.notificationChannels().value"
             [allValues]="channelOptions"
@@ -114,7 +114,7 @@ import { createFormPrimitivesFormGroup } from '../../../../_fixtures/form-primit
 protected readonly sfModel = signal<{
   notifications: boolean;
 protected readonly sfForm = form(this.sfModel, schema((root) => {
-  required(root.terms, { message: 'Bitte zustimmen' });
+  required(root.terms, { message: 'Please agree' });
 protected readonly channelOptions = ['email', 'sms', 'push'];
 protected handleSfValidate(): void {
   // Mark every required SF field touched so cngx-field-errors renders.
@@ -153,7 +153,7 @@ protected handleSfReset(): void {
   </cngx-form-field>
 
   <cngx-form-field [field]="sfForm.notificationChannels">
-    <label cngxLabel>Kanäle</label>
+    <label cngxLabel>Channels</label>
     <cngx-checkbox-group
       [(selectedValues)]="sfForm.notificationChannels().value"
       [allValues]="channelOptions"
@@ -192,9 +192,9 @@ protected handleSfReset(): void {
     });
 
     protected readonly sfForm = form(this.sfModel, schema((root) => {
-      required(root.terms, { message: 'Bitte zustimmen' });
+      required(root.terms, { message: 'Please agree' });
       required(root.payment, { message: 'Wahl erforderlich' });
-      required(root.notificationChannels, { message: 'Mindestens einen Kanal wählen' });
+      required(root.notificationChannels, { message: 'Choose at least one channel' });
     }));
 
     // ── Reactive Forms group (all 9 atoms) ─────────────────────

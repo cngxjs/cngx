@@ -28,7 +28,7 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
       @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
       @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
     </header>
-    <cngx-select [label]="'Priorität'" [options]="priorities" [(value)]="groupedValue" placeholder="Priorität wählen…">
+    <cngx-select [label]="'Priority'" [options]="priorities" [(value)]="groupedValue" placeholder="Choose priority…">
         <ng-template cngxSelectOptgroup let-group>
           <span style="display:inline-flex;align-items:center;gap:0.5rem">
             <span aria-hidden="true" style="font-size:0.75rem;padding:2px 6px;border-radius:999px;background:#eef;color:#447">{{ group.children?.length ?? 0 }}</span>
@@ -74,7 +74,7 @@ protected readonly priorities: CngxSelectOptionsInput<string> = [
   ]},
 ];
 protected readonly groupedValue = signal<string | undefined>(undefined);`;
-  protected readonly _exHtml: string = `<cngx-select [label]="'Priorität'" [options]="priorities" [(value)]="groupedValue" placeholder="Priorität wählen…">
+  protected readonly _exHtml: string = `<cngx-select [label]="'Priority'" [options]="priorities" [(value)]="groupedValue" placeholder="Choose priority…">
   <ng-template cngxSelectOptgroup let-group>
     <span style="display:inline-flex;align-items:center;gap:0.5rem">
       <span aria-hidden="true" style="font-size:0.75rem;padding:2px 6px;border-radius:999px;background:#eef;color:#447">{{ group.children?.length ?? 0 }}</span>
@@ -84,9 +84,9 @@ protected readonly groupedValue = signal<string | undefined>(undefined);`;
 </cngx-select>`;
   protected readonly colors: CngxSelectOptionDef<string>[] = [
       { value: 'red', label: 'Rot' },
-      { value: 'green', label: 'Grün' },
+      { value: 'green', label: 'Green' },
       { value: 'blue', label: 'Blau' },
-      { value: 'disabled', label: 'Nicht verfügbar', disabled: true },
+      { value: 'disabled', label: 'Unavailable', disabled: true },
     ];
 
     protected readonly priorities: CngxSelectOptionsInput<string> = [
@@ -295,7 +295,7 @@ protected readonly groupedValue = signal<string | undefined>(undefined);`;
     // Typeahead + Signal Forms
     protected readonly typeaheadColorOptions: CngxSelectOptionDef<string>[] = [
       { value: 'red', label: 'Rot' },
-      { value: 'green', label: 'Grün' },
+      { value: 'green', label: 'Green' },
       { value: 'blue', label: 'Blau' },
       { value: 'yellow', label: 'Gelb' },
       { value: 'orange', label: 'Orange' },

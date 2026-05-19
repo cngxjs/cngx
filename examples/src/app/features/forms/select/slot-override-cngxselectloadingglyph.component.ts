@@ -29,12 +29,12 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
       @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
     </header>
     <cngx-select
-        [label]="'Sprache'"
+        [label]="'Language'"
         [options]="asyncOptions"
         [(value)]="asyncValue"
         [state]="asyncState"
         loadingVariant="spinner"
-        placeholder="Sprache wählen…"
+        placeholder="Choose language…"
       >
         <ng-template cngxSelectLoadingGlyph>
           <span aria-hidden="true" style="font-size:1.25rem;display:inline-block;animation:cngx-select-spin 1s linear infinite">⚙</span>
@@ -81,12 +81,12 @@ protected readonly asyncValue = signal<string | undefined>(undefined);
 protected asyncSetLoading(): void { this.asyncState.set('loading'); }
 protected asyncSetSuccess(): void { this.asyncState.setSuccess(this.asyncOptions); }`;
   protected readonly _exHtml: string = `<cngx-select
-  [label]="'Sprache'"
+  [label]="'Language'"
   [options]="asyncOptions"
   [(value)]="asyncValue"
   [state]="asyncState"
   loadingVariant="spinner"
-  placeholder="Sprache wählen…"
+  placeholder="Choose language…"
 >
   <ng-template cngxSelectLoadingGlyph>
     <span aria-hidden="true" style="font-size:1.25rem;display:inline-block;animation:cngx-select-spin 1s linear infinite">⚙</span>
@@ -98,9 +98,9 @@ protected asyncSetSuccess(): void { this.asyncState.setSuccess(this.asyncOptions
 </div>`;
   protected readonly colors: CngxSelectOptionDef<string>[] = [
       { value: 'red', label: 'Rot' },
-      { value: 'green', label: 'Grün' },
+      { value: 'green', label: 'Green' },
       { value: 'blue', label: 'Blau' },
-      { value: 'disabled', label: 'Nicht verfügbar', disabled: true },
+      { value: 'disabled', label: 'Unavailable', disabled: true },
     ];
 
     protected readonly priorities: CngxSelectOptionsInput<string> = [
@@ -309,7 +309,7 @@ protected asyncSetSuccess(): void { this.asyncState.setSuccess(this.asyncOptions
     // Typeahead + Signal Forms
     protected readonly typeaheadColorOptions: CngxSelectOptionDef<string>[] = [
       { value: 'red', label: 'Rot' },
-      { value: 'green', label: 'Grün' },
+      { value: 'green', label: 'Green' },
       { value: 'blue', label: 'Blau' },
       { value: 'yellow', label: 'Gelb' },
       { value: 'orange', label: 'Orange' },

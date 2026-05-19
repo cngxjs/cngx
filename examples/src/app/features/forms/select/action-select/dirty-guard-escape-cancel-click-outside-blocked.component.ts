@@ -57,8 +57,8 @@ import { delay, of, throwError } from 'rxjs';
             background: var(--cngx-surface-variant, rgba(0,0,0,.02));
           ">
             <div style="font-weight:600; font-size:.875rem">
-              + Neuen Eintrag „{{ term || '…' }}" anlegen
-              @if (dirty) { <span style="color:var(--cngx-color-primary,#1976d2)">· ungespeichert</span> }
+              + Create new entry "{{ term || '…' }}"
+              @if (dirty) { <span style="color:var(--cngx-color-primary,#1976d2)">· unsaved</span> }
             </div>
             <input
               #dirtyInput
@@ -177,8 +177,8 @@ protected handleDirtyCancel(setDirty: (v: boolean) => void): void {
       background: var(--cngx-surface-variant, rgba(0,0,0,.02));
     ">
       <div style="font-weight:600; font-size:.875rem">
-        + Neuen Eintrag „{{ term || '…' }}" anlegen
-        @if (dirty) { <span style="color:var(--cngx-color-primary,#1976d2)">· ungespeichert</span> }
+        + Create new entry "{{ term || '…' }}"
+        @if (dirty) { <span style="color:var(--cngx-color-primary,#1976d2)">· unsaved</span> }
       </div>
       <input
         #dirtyInput
