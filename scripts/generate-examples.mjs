@@ -2,8 +2,8 @@
 // Generates naked iframe-target demo components into examples/.
 //
 // Reads:
-//   - examples/_manifest.json      list of approved demo folders (relative to dev-app/src/app/demos/)
-//   - dev-app/src/app/demos/**/*.story.ts
+//   - examples/_manifest.json      list of approved demo folders (relative to examples/stories/)
+//   - examples/stories/**/*.story.ts
 //
 // Writes (overwriting only files marked @generated):
 //   - examples/src/app/features/<demo>/<section-slug>.component.ts
@@ -17,7 +17,7 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
-const DEMOS_ROOT = join(ROOT, 'dev-app', 'src', 'app', 'demos');
+const DEMOS_ROOT = join(ROOT, 'examples', 'stories');
 const EXAMPLES_APP = join(ROOT, 'examples', 'src', 'app');
 const FEATURES_DIR = join(EXAMPLES_APP, 'features');
 const MANIFEST = join(ROOT, 'examples', '_manifest.json');
@@ -301,16 +301,20 @@ function buildImports(story, section, importMap, featureDepth = 2) {
     return `${head} ${kept.join(', ')} ${tail.trim()}`;
   }
 
-  /** Rewrite dev-app-relative paths to the examples app's layout. */
+  // Rewrite story-relative paths to the generated component's layout.
+  // upPrefix walks up to `examples/src/app/`. fixturesUpPrefix walks two
+  // more levels up to `examples/` so the generic `fixtures` rewrite lands
+  // on the relocated `examples/fixtures/` (post dev-app → examples sprint).
+  // `_fixtures` (forms-only runtime helpers) still resolves to
+  // `examples/src/app/_fixtures/`.
   const upPrefix = '../'.repeat(featureDepth);
+  const fixturesUpPrefix = '../'.repeat(featureDepth + 2);
   function rewritePaths(line) {
     if (!line) return line;
-    // forms-only `../_fixtures/<file>` — keep the underscore-prefixed dir.
     if (/'(?:\.\.\/)+_fixtures\//.test(line)) {
       return line.replace(/'(?:\.\.\/)+_fixtures\/([^']+)'/, `'${upPrefix}_fixtures/$1'`);
     }
-    // generic `../...fixtures[/...]` → '<depth>fixtures' (depth-aware).
-    return line.replace(/'(?:\.\.\/)+([^']*fixtures(?:[^']*)?)'/, `'${upPrefix}fixtures'`);
+    return line.replace(/'(?:\.\.\/)+([^']*fixtures(?:[^']*)?)'/, `'${fixturesUpPrefix}fixtures'`);
   }
 
   const filteredModuleImports = (story.moduleImports ?? [])
@@ -723,7 +727,7 @@ function emitComponentSource(meta, story, section, importMap) {
   const template = section.template.trim().replaceAll('`', '\\`').replaceAll('${', '\\${');
 
   return `${GEN_HEADER}
-// Source: dev-app/src/app/demos/${meta.demoFolder}/${meta.storyFileName}#section[${meta.sectionIndex}] "${section.title}"
+// Source: examples/stories/${meta.demoFolder}/${meta.storyFileName}#section[${meta.sectionIndex}] "${section.title}"
 
 ${lines.join('\n')}
 
@@ -834,7 +838,7 @@ async function main() {
   const manifestRaw = await readFile(MANIFEST, 'utf8');
   const manifest = JSON.parse(manifestRaw);
   if (!Array.isArray(manifest.approved)) {
-    throw new TypeError('manifest.approved must be an array of demo folder paths relative to dev-app/src/app/demos/');
+    throw new TypeError('manifest.approved must be an array of demo folder paths relative to examples/stories/');
   }
 
   await resetFeaturesDir();

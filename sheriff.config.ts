@@ -4,7 +4,7 @@
  *
  * Tag axes (every module carries the full set):
  *   level:N     0..4   ordinal level in the dependency hierarchy
- *   lib:X       utils|core|common|forms|data-display|ui|testing|dev-app|e2e
+ *   lib:X       utils|core|common|forms|data-display|ui|testing|examples|e2e
  *   entry:Y     name of the secondary entry (or 'src' for the primary)
  *   scope:Z     lib | app | test
  *   grant:*     ad-hoc allow tokens (currently only `grant:material` on the
@@ -102,7 +102,7 @@ export const config: SheriffConfig = {
       'scope:lib',
     ],
     'projects/testing': ['lib:testing', 'level:0', 'scope:test'],
-    'dev-app': ['lib:dev-app', 'scope:app'],
+    'examples': ['lib:examples', 'scope:app'],
     'e2e': ['lib:e2e', 'scope:test'],
   },
 
@@ -120,7 +120,7 @@ export const config: SheriffConfig = {
 
     // Tooling / fixtures / demos can pull from any lib.
     'lib:testing':      anyTag,
-    'lib:dev-app':      anyTag,
+    'lib:examples':     anyTag,
     'lib:e2e':          anyTag,
 
     // Diagnostic axes — every from-tag must be matched by some rule, so the

@@ -225,8 +225,8 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     process.exit(1);
   }
 
-  const DEMOS_ROOT = join(WORKSPACE_ROOT, 'dev-app', 'src', 'app', 'demos');
-  const FIXTURES_DIR = join(WORKSPACE_ROOT, 'dev-app', 'src', 'app', 'fixtures');
+  const DEMOS_ROOT = join(WORKSPACE_ROOT, 'examples', 'stories');
+  const FIXTURES_DIR = join(WORKSPACE_ROOT, 'examples', 'fixtures');
   const FIXTURES_INDEX = join(FIXTURES_DIR, 'index.ts');
 
   (async () => {

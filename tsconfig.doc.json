@@ -3,7 +3,7 @@
   "include": ["projects/**/*.ts"],
   "exclude": [
     "projects/**/*.spec.ts",
-    "dev-app/**/*",
+    "examples/**/*",
     "projects/**/examples/**/*",
     "projects/testing/**/*"
   ]

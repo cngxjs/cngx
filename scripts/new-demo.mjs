@@ -2,10 +2,57 @@
 import { mkdir, writeFile, access } from 'node:fs/promises';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { compodocInputsToControls } from './generate-demos.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const DEFAULT_DEMOS_ROOT = join(__dirname, '..', 'dev-app', 'src', 'app', 'demos');
+const DEFAULT_DEMOS_ROOT = join(__dirname, '..', 'examples', 'stories');
+
+/** 'selectionMode' → 'Selection Mode' */
+function camelToTitleCase(str) {
+  return str
+    .replaceAll(/([A-Z])/g, ' $1')
+    .replace(/^./, (s) => s.toUpperCase())
+    .trim();
+}
+
+/**
+ * Inline of the former `compodocInputsToControls` export from the deleted
+ * `scripts/generate-demos.mjs`. Converts a compodoc inputs array into the
+ * DemoSpec `controls` shape — `boolean` → bool, `string` → text,
+ * `number` → number, single-quoted-literal-unions → select. Anything else
+ * (generics, functions, arrays, objects) returns null and is dropped.
+ */
+function typeStringToControlSpec(name, typeString, defaultValue) {
+  let type = typeString.trim();
+  let isOptional = false;
+  if (/\|\s*undefined$/.test(type)) {
+    type = type.replace(/\s*\|\s*undefined$/, '').trim();
+    isOptional = true;
+  } else if (/^undefined\s*\|/.test(type)) {
+    type = type.replace(/^undefined\s*\|\s*/, '').trim();
+    isOptional = true;
+  }
+  const def = isOptional ? undefined : defaultValue;
+  if (type === 'boolean') {
+    return { key: name, type: 'bool', label: camelToTitleCase(name), default: def === undefined ? undefined : def === 'true' };
+  }
+  if (type === 'string') {
+    return { key: name, type: 'text', label: camelToTitleCase(name), default: def === undefined ? undefined : def === 'undefined' ? undefined : def };
+  }
+  if (type === 'number') {
+    return { key: name, type: 'number', label: camelToTitleCase(name), default: def === undefined ? undefined : def === 'undefined' ? undefined : Number(def) };
+  }
+  if (/^'[^']+'(\s*\|\s*'[^']+')*$/.test(type)) {
+    const options = [...type.matchAll(/'([^']+)'/g)].map(([, v]) => ({ label: v, value: v }));
+    const rawDefault = (def ?? '').replaceAll(/^'|'$/g, '');
+    return { key: name, type: 'select', label: camelToTitleCase(name), options, default: rawDefault || options[0]?.value };
+  }
+  return null;
+}
+function compodocInputsToControls(inputsClass) {
+  return inputsClass
+    .map((inp) => typeStringToControlSpec(inp.name, inp.type, inp.defaultValue ?? 'undefined'))
+    .filter(Boolean);
+}
 
 /** 'data-source' → 'Data Source' */
 function kebabToTitle(str) {
@@ -70,7 +117,7 @@ function buildStoryStub(options) {
 
 /**
  * @param {{ lib: string, name: string, category?: string, compodocMeta?: object }} options
- * @param {string} [rootDir]  demos root directory (defaults to dev-app demos)
+ * @param {string} [rootDir]  demos root directory (defaults to examples/stories/)
  */
 export async function createDemoStub(options, rootDir = DEFAULT_DEMOS_ROOT) {
   const { lib, name, category } = options;
