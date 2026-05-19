@@ -43,7 +43,7 @@ jobs:
 
       - name: Regenerate examples + backport <example-url> tags (prod URLs)
         run: |
-          node scripts/generate-examples.mjs
+          node scripts/examples-gen/index.mjs
           node scripts/backport-example-urls.mjs
 
       - name: Build Docs

@@ -13,7 +13,7 @@
  * to find the source section, then emit a self-contained .story.ts at
  * the mirrored path.
  *
- * After this runs, scripts/generate-examples.mjs is refactored to walk
+ * After this runs, scripts/examples-gen/index.mjs is refactored to walk
  * examples/stories/**\/*.story.ts recursively. Old <demo>-demo folders
  * become obsolete and get deleted.
  */

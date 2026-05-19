@@ -202,4 +202,28 @@ module.exports = tseslint.config(
             'local/level-4-organism-loc-guard': ['error', { threshold: 200 }],
         },
     },
+
+    // Examples generator — plain ESM, no Angular / no TypeScript. Light
+    // hygiene rules so the script stays linted alongside the rest of the
+    // codebase. Add new files under scripts/examples-gen/ to extend coverage.
+    {
+        files: ['scripts/examples-gen/**/*.mjs'],
+        languageOptions: {
+            ecmaVersion: 2024,
+            sourceType: 'module',
+            globals: {
+                console: 'readonly',
+                process: 'readonly',
+                URL: 'readonly',
+                RegExp: 'readonly',
+            },
+        },
+        rules: {
+            'no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
+            'no-undef': 'error',
+            'prefer-const': 'error',
+            'no-var': 'error',
+            eqeqeq: ['error', 'always', { null: 'ignore' }],
+        },
+    },
 );
