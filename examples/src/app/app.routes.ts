@@ -1298,11 +1298,6 @@ export const routes: Routes = [
     data: { lib: 'forms', category: 'select', demo: "Select", section: "Autofocus on mount" },
   },
   {
-    path: 'forms/select/blocker-declarative-composition-inside-cngx-select',
-    loadComponent: () => import('./features/forms/select/blocker-declarative-composition-inside-cngx-select.component').then((m) => m.SelectBlockerDeclarativeCompositionInsideCngxSelect),
-    data: { lib: 'forms', category: 'select', demo: "Select", section: "⚠ BLOCKER — declarative composition inside <cngx-select>" },
-  },
-  {
     path: 'forms/select/clearable',
     loadComponent: () => import('./features/forms/select/clearable.component').then((m) => m.SelectClearable),
     data: { lib: 'forms', category: 'select', demo: "Select", section: "Clearable" },

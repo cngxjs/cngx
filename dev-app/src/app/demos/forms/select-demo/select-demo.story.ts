@@ -81,7 +81,6 @@ export const STORY: DemoSpec = {
 
   // Standalone single
   protected readonly standaloneValue = signal<string | undefined>(undefined);
-  protected readonly declarativeValue = signal<string | undefined>(undefined);
   protected readonly assembledValue = signal<string | undefined>(undefined);
   protected readonly groupedValue = signal<string | undefined>(undefined);
   protected readonly clearableValue = signal<string | undefined>('red');
@@ -314,43 +313,16 @@ export const STORY: DemoSpec = {
   </div>`,
     },
     {
-      title: '⚠ BLOCKER — declarative composition inside <cngx-select>',
-      subtitle:
-        '<strong>Does not work yet.</strong> Projected <code>&lt;cngx-option&gt;</code> / ' +
-        '<code>&lt;cngx-optgroup&gt;</code> children are invisible to the inner listbox\'s ' +
-        '<code>CngxActiveDescendant</code> because Angular content-projection scoping puts ' +
-        'them in <code>cngx-select</code>\'s injector tree, not the listbox\'s. Panel opens ' +
-        'empty / clicks don\'t register. Tracked for the Combobox architectural pass.',
-      imports: ['CngxSelect', 'CngxSelectOption', 'CngxSelectOptgroup', 'CngxSelectDivider'],
-      template: `
-  <cngx-select
-    [label]="'Declarative (broken)'"
-    [(value)]="declarativeValue"
-    placeholder="Open me — panel will be empty…"
-  >
-    <cngx-optgroup label="Warm">
-      <cngx-option [value]="'red'">Red</cngx-option>
-      <cngx-option [value]="'orange'">Orange</cngx-option>
-    </cngx-optgroup>
-    <cngx-select-divider />
-    <cngx-optgroup label="Cold">
-      <cngx-option [value]="'blue'">Blue</cngx-option>
-      <cngx-option [value]="'teal'">Teal</cngx-option>
-    </cngx-optgroup>
-  </cngx-select>
-  <div class="event-grid" style="margin-top:12px">
-    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ declarativeValue() ?? '—' }}</span></div>
-    <div class="event-row"><span class="event-label">Status</span><span class="event-value" style="color:var(--cngx-color-danger)">AD doesn't see projected options — no selection flow.</span></div>
-  </div>`,
-    },
-    {
       title: 'Assemble it yourself — atoms + element components',
       subtitle:
-        'Element components <code>&lt;cngx-option&gt;</code>, <code>&lt;cngx-optgroup&gt;</code>, ' +
-        '<code>&lt;cngx-select-divider&gt;</code> <strong>do work</strong> when you compose the ' +
-        'listbox yourself using the Level-2 atoms (<code>CngxPopover</code> + ' +
-        '<code>CngxListboxTrigger</code> + <code>CngxListbox</code>). The options sit inside the ' +
-        'listbox\'s own content-children scope, so AD registration succeeds.',
+        'Composing <code>&lt;cngx-option&gt;</code> / <code>&lt;cngx-optgroup&gt;</code> / ' +
+        '<code>&lt;cngx-select-divider&gt;</code> directly inside <code>&lt;cngx-select&gt;</code> ' +
+        '<strong>does not work</strong> — content-projection scoping puts the projected children in ' +
+        '<code>cngx-select</code>\'s injector tree, not the inner listbox\'s, so ' +
+        '<code>CngxActiveDescendant</code> registration fails and the panel opens empty. ' +
+        'They <strong>do work</strong> when you compose the listbox yourself using the Level-2 atoms ' +
+        '(<code>CngxPopover</code> + <code>CngxListboxTrigger</code> + <code>CngxListbox</code>), ' +
+        'because the options sit inside the listbox\'s own content-children scope.',
       artifact: 'building-block',
       focus: ['composition', 'a11y-pattern'],
       imports: [

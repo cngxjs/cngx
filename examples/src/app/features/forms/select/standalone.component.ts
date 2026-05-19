@@ -110,7 +110,6 @@ protected handleOpened(open: boolean): void {
 
     // Standalone single
     protected readonly standaloneValue = signal<string | undefined>(undefined);
-    protected readonly declarativeValue = signal<string | undefined>(undefined);
     protected readonly assembledValue = signal<string | undefined>(undefined);
     protected readonly groupedValue = signal<string | undefined>(undefined);
     protected readonly clearableValue = signal<string | undefined>('red');
