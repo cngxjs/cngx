@@ -67,8 +67,8 @@ export const STORY: DemoSpec = {
       <a cngxNavLink [active]="activeLink() === '/dashboard'"
          (click)="activeLink.set('/dashboard'); $event.preventDefault()"
          style="display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 1rem; text-decoration: none; font-size: 0.85rem; color: inherit; border-left: 3px solid transparent;"
-         [style.border-left-color]="activeLink() === '/dashboard' ? '#f5a623' : 'transparent'"
-         [style.background]="activeLink() === '/dashboard' ? 'rgba(245, 166, 35, 0.08)' : ''"
+         [style.border-left-color]="activeLink() === '/dashboard' ? 'var(--cngx-color-primary)' : 'transparent'"
+         [style.background]="activeLink() === '/dashboard' ? 'color-mix(in oklch, var(--cngx-color-primary) 8%, transparent)' : ''"
          [style.font-weight]="activeLink() === '/dashboard' ? '600' : '400'">
         Dashboard
       </a>
@@ -76,12 +76,12 @@ export const STORY: DemoSpec = {
       <a cngxNavLink [active]="activeLink() === '/inbox'"
          (click)="activeLink.set('/inbox'); $event.preventDefault()"
          style="display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 1rem; text-decoration: none; font-size: 0.85rem; color: inherit; border-left: 3px solid transparent;"
-         [style.border-left-color]="activeLink() === '/inbox' ? '#f5a623' : 'transparent'"
-         [style.background]="activeLink() === '/inbox' ? 'rgba(245, 166, 35, 0.08)' : ''"
+         [style.border-left-color]="activeLink() === '/inbox' ? 'var(--cngx-color-primary)' : 'transparent'"
+         [style.background]="activeLink() === '/inbox' ? 'color-mix(in oklch, var(--cngx-color-primary) 8%, transparent)' : ''"
          [style.font-weight]="activeLink() === '/inbox' ? '600' : '400'">
         Inbox
         <span cngxNavBadge [value]="7" ariaLabel="7 unread"
-              style="background: #f5a623; color: #fff; font-size: 0.65rem; font-weight: 700; padding: 0.1em 0.45em; border-radius: 10px; min-width: 1.1em; text-align: center;">
+              style="background: var(--cngx-color-danger); color: var(--cngx-color-surface); font-size: 0.65rem; font-weight: 700; padding: 0.1em 0.45em; border-radius: 10px; min-width: 1.1em; text-align: center;">
           7
         </span>
       </a>
@@ -89,8 +89,8 @@ export const STORY: DemoSpec = {
       <a cngxNavLink [active]="activeLink() === '/calendar'"
          (click)="activeLink.set('/calendar'); $event.preventDefault()"
          style="display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 1rem; text-decoration: none; font-size: 0.85rem; color: inherit; border-left: 3px solid transparent;"
-         [style.border-left-color]="activeLink() === '/calendar' ? '#f5a623' : 'transparent'"
-         [style.background]="activeLink() === '/calendar' ? 'rgba(245, 166, 35, 0.08)' : ''"
+         [style.border-left-color]="activeLink() === '/calendar' ? 'var(--cngx-color-primary)' : 'transparent'"
+         [style.background]="activeLink() === '/calendar' ? 'color-mix(in oklch, var(--cngx-color-primary) 8%, transparent)' : ''"
          [style.font-weight]="activeLink() === '/calendar' ? '600' : '400'">
         Calendar
         <span cngxNavBadge variant="dot" [value]="1"
@@ -114,7 +114,7 @@ export const STORY: DemoSpec = {
             <a cngxNavLink [depth]="1" [active]="activeLink() === '/settings/' + sub.toLowerCase()"
                (click)="activeLink.set('/settings/' + sub.toLowerCase()); $event.preventDefault()"
                style="display: block; padding: 0.4rem 1rem 0.4rem calc(1rem + 14px); text-decoration: none; font-size: 0.8rem; color: inherit;"
-               [style.color]="activeLink() === '/settings/' + sub.toLowerCase() ? '#f5a623' : ''"
+               [style.color]="activeLink() === '/settings/' + sub.toLowerCase() ? 'var(--cngx-color-primary)' : ''"
                [style.font-weight]="activeLink() === '/settings/' + sub.toLowerCase() ? '600' : '400'">
               {{ sub }}
             </a>
@@ -184,8 +184,8 @@ export const STORY: DemoSpec = {
       <h3 style="margin: 0 0 0.75rem; font-size: 1rem;">Orders</h3>
       @for (item of items; track item) {
         <div (click)="selectItem(item)" style="padding: 0.5rem 0.75rem; margin-bottom: 0.5rem; border: 1px solid var(--cngx-color-border); border-radius: 4px; cursor: pointer; font-size: 0.85rem; transition: background 0.15s;"
-             [style.background]="selectedItem() === item ? 'rgba(245, 166, 35, 0.08)' : ''"
-             [style.border-color]="selectedItem() === item ? '#f5a623' : ''">
+             [style.background]="selectedItem() === item ? 'color-mix(in oklch, var(--cngx-color-primary) 8%, transparent)' : ''"
+             [style.border-color]="selectedItem() === item ? 'var(--cngx-color-primary)' : ''">
           {{ item }}
         </div>
       }

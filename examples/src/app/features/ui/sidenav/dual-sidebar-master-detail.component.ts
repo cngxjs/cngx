@@ -45,8 +45,8 @@ import { CngxNavLink } from '@cngx/common';
           <h3 style="margin: 0 0 0.75rem; font-size: 1rem;">Orders</h3>
           @for (item of items; track item) {
             <div (click)="selectItem(item)" style="padding: 0.5rem 0.75rem; margin-bottom: 0.5rem; border: 1px solid var(--cngx-color-border); border-radius: 4px; cursor: pointer; font-size: 0.85rem; transition: background 0.15s;"
-                 [style.background]="selectedItem() === item ? 'rgba(245, 166, 35, 0.08)' : ''"
-                 [style.border-color]="selectedItem() === item ? '#f5a623' : ''">
+                 [style.background]="selectedItem() === item ? 'color-mix(in oklch, var(--cngx-color-primary) 8%, transparent)' : ''"
+                 [style.border-color]="selectedItem() === item ? 'var(--cngx-color-primary)' : ''">
               {{ item }}
             </div>
           }
@@ -116,8 +116,8 @@ import { CngxNavLink } from '@cngx/common';`;
     <h3 style="margin: 0 0 0.75rem; font-size: 1rem;">Orders</h3>
     @for (item of items; track item) {
       <div (click)="selectItem(item)" style="padding: 0.5rem 0.75rem; margin-bottom: 0.5rem; border: 1px solid var(--cngx-color-border); border-radius: 4px; cursor: pointer; font-size: 0.85rem; transition: background 0.15s;"
-           [style.background]="selectedItem() === item ? 'rgba(245, 166, 35, 0.08)' : ''"
-           [style.border-color]="selectedItem() === item ? '#f5a623' : ''">
+           [style.background]="selectedItem() === item ? 'color-mix(in oklch, var(--cngx-color-primary) 8%, transparent)' : ''"
+           [style.border-color]="selectedItem() === item ? 'var(--cngx-color-primary)' : ''">
         {{ item }}
       </div>
     }
