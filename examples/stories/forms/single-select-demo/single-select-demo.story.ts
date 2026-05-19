@@ -4,7 +4,8 @@ export const STORY: DemoSpec = {
   title: 'Single Select',
   navLabel: 'Select',
   navCategory: 'field',
-  description: 'CngxSelect — native-feeling single-select dropdown with template overrides, optgroups, clearable, loading, commit-action, and signal-/reactive-forms bridges.',
+  description:
+    'CngxSelect — native-feeling single-select dropdown with template overrides, optgroups, clearable, loading, commit-action, and signal-/reactive-forms bridges.',
   apiComponents: [
     'CngxSelect',
     'CngxSelectOption',
@@ -33,22 +34,22 @@ export const STORY: DemoSpec = {
   focus: ['visual-variants', 'a11y-pattern', 'composition'],
   framework: 'signal-forms',
   moduleImports: [
-    'import { form, schema, required, submit } from \'@angular/forms/signals\';',
-    'import { FormControl, Validators } from \'@angular/forms\';',
-    'import { DestroyRef } from \'@angular/core\';',
-    'import { toSignal } from \'@angular/core/rxjs-interop\';',
-    'import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from \'@cngx/forms/field\';',
-    'import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectOptgroupTemplate, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectRetryButton, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxSelectPlaceholder, CngxSelectLoading, CngxSelectLoadingGlyph, CngxSelectRefreshing, CngxSelectCommitError, CngxSelectOptionPending, CngxSelectOptionError, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxChip, CngxComboboxTriggerLabel, CngxTypeahead, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from \'@cngx/forms/select\';',
-    'import { delay, of, throwError } from \'rxjs\';',
-    'import { CngxListbox, CngxListboxTrigger } from \'@cngx/common/interactive\';',
-    'import { CngxPopover, CngxPopoverTrigger } from \'@cngx/common/popover\';',
-    'import { createManualState, type ManualAsyncState } from \'@cngx/common/data\';',
+    "import { form, schema, required, submit } from '@angular/forms/signals';",
+    "import { FormControl, Validators } from '@angular/forms';",
+    "import { DestroyRef } from '@angular/core';",
+    "import { toSignal } from '@angular/core/rxjs-interop';",
+    "import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';",
+    "import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectOptgroupTemplate, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectRetryButton, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxSelectPlaceholder, CngxSelectLoading, CngxSelectLoadingGlyph, CngxSelectRefreshing, CngxSelectCommitError, CngxSelectOptionPending, CngxSelectOptionError, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxChip, CngxComboboxTriggerLabel, CngxTypeahead, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';",
+    "import { delay, of, throwError } from 'rxjs';",
+    "import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';",
+    "import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';",
+    "import { createManualState, type ManualAsyncState } from '@cngx/common/data';",
   ],
   setup: `
   protected readonly colors: CngxSelectOptionDef<string>[] = [
-    { value: 'red', label: 'Rot' },
+    { value: 'red', label: 'Red' },
     { value: 'green', label: 'Green' },
-    { value: 'blue', label: 'Blau' },
+    { value: 'blue', label: 'Blue' },
     { value: 'disabled', label: 'Unavailable', disabled: true },
   ];
 
@@ -203,7 +204,7 @@ export const STORY: DemoSpec = {
       imports: ['CngxSelect'],
       template: `
   <cngx-select
-    [label]="'Lieblingsfarbe'"
+    [label]="'Favorite color'"
     [options]="colors"
     [(value)]="standaloneValue"
     placeholder="Pick a color…"
@@ -216,10 +217,19 @@ export const STORY: DemoSpec = {
     },
     {
       title: 'Assemble it yourself — atoms + element components',
-      subtitle: 'Composing <code>&lt;cngx-option&gt;</code> / <code>&lt;cngx-optgroup&gt;</code> / <code>&lt;cngx-select-divider&gt;</code> directly inside <code>&lt;cngx-select&gt;</code> <strong>does not work</strong> — content-projection scoping puts the projected children in <code>cngx-select</code>\'s injector tree, not the inner listbox\'s, so <code>CngxActiveDescendant</code> registration fails and the panel opens empty. They <strong>do work</strong> when you compose the listbox yourself using the Level-2 atoms (<code>CngxPopover</code> + <code>CngxListboxTrigger</code> + <code>CngxListbox</code>), because the options sit inside the listbox\'s own content-children scope.',
+      subtitle:
+        "Composing <code>&lt;cngx-option&gt;</code> / <code>&lt;cngx-optgroup&gt;</code> / <code>&lt;cngx-select-divider&gt;</code> directly inside <code>&lt;cngx-select&gt;</code> <strong>does not work</strong> — content-projection scoping puts the projected children in <code>cngx-select</code>'s injector tree, not the inner listbox's, so <code>CngxActiveDescendant</code> registration fails and the panel opens empty. They <strong>do work</strong> when you compose the listbox yourself using the Level-2 atoms (<code>CngxPopover</code> + <code>CngxListboxTrigger</code> + <code>CngxListbox</code>), because the options sit inside the listbox's own content-children scope.",
       artifact: 'building-block',
       focus: ['composition', 'a11y-pattern'],
-      imports: ['CngxSelectOption', 'CngxSelectOptgroup', 'CngxSelectDivider', 'CngxListbox', 'CngxListboxTrigger', 'CngxPopover', 'CngxPopoverTrigger'],
+      imports: [
+        'CngxSelectOption',
+        'CngxSelectOptgroup',
+        'CngxSelectDivider',
+        'CngxListbox',
+        'CngxListboxTrigger',
+        'CngxPopover',
+        'CngxPopoverTrigger',
+      ],
       template: `
   <button type="button"
           class="chip"
@@ -254,7 +264,8 @@ export const STORY: DemoSpec = {
     },
     {
       title: 'Optgroups',
-      subtitle: 'Grouped options: pass an array mixing <code>CngxSelectOption</code> and <code>CngxSelectOptionGroup</code>.',
+      subtitle:
+        'Grouped options: pass an array mixing <code>CngxSelectOption</code> and <code>CngxSelectOptionGroup</code>.',
       imports: ['CngxSelect'],
       template: `
   <cngx-select
@@ -284,7 +295,8 @@ export const STORY: DemoSpec = {
     },
     {
       title: 'Rich option rendering',
-      subtitle: 'Project a <code>*cngxSelectOptionLabel</code> template to render icons/badges per option.',
+      subtitle:
+        'Project a <code>*cngxSelectOptionLabel</code> template to render icons/badges per option.',
       imports: ['CngxSelect', 'CngxSelectOptionLabel'],
       template: `
   <cngx-select
@@ -304,7 +316,8 @@ export const STORY: DemoSpec = {
     },
     {
       title: 'Loading + empty templates',
-      subtitle: 'Override panel content via <code>*cngxSelectLoading</code> / <code>*cngxSelectEmpty</code>.',
+      subtitle:
+        'Override panel content via <code>*cngxSelectLoading</code> / <code>*cngxSelectEmpty</code>.',
       imports: ['CngxSelect', 'CngxSelectEmpty'],
       template: `
   <cngx-select
@@ -326,7 +339,8 @@ export const STORY: DemoSpec = {
     },
     {
       title: 'Async state consumer',
-      subtitle: '<code>[state]</code> drives the panel via <code>CngxAsyncState</code>: loading → skeleton, success → options, empty → empty template, refreshing → top-bar + options, error → retry panel. Replaces <code>[options]</code> while the state has data.',
+      subtitle:
+        '<code>[state]</code> drives the panel via <code>CngxAsyncState</code>: loading → skeleton, success → options, empty → empty template, refreshing → top-bar + options, error → retry panel. Replaces <code>[options]</code> while the state has data.',
       imports: ['CngxSelect', 'CngxSelectError'],
       template: `
   <cngx-select
@@ -358,7 +372,8 @@ export const STORY: DemoSpec = {
     },
     {
       title: 'Commit action (async write)',
-      subtitle: '<code>[commitAction]</code> defers selection until the async write resolves. <code>[commitMode]="optimistic"</code> closes the panel immediately and rolls back on error; <code>[commitMode]="pessimistic"</code> keeps the panel open with a pending spinner on the picked option and shows an inline banner on error.',
+      subtitle:
+        '<code>[commitAction]</code> defers selection until the async write resolves. <code>[commitMode]="optimistic"</code> closes the panel immediately and rolls back on error; <code>[commitMode]="pessimistic"</code> keeps the panel open with a pending spinner on the picked option and shows an inline banner on error.',
       imports: ['CngxSelect', 'CngxSelectError'],
       template: `
   <cngx-select
@@ -393,7 +408,8 @@ export const STORY: DemoSpec = {
     },
     {
       title: 'Loading variants',
-      subtitle: '<code>[loadingVariant]</code> picks one of four built-in first-load visuals: <code>spinner</code> (default), <code>skeleton</code> (with configurable <code>[skeletonRowCount]</code>), <code>bar</code>, or <code>text</code>. Globally configurable via <code>provideSelectConfig(withLoadingVariant(\'skeleton\'), withSkeletonRowCount(5))</code>.',
+      subtitle:
+        "<code>[loadingVariant]</code> picks one of four built-in first-load visuals: <code>spinner</code> (default), <code>skeleton</code> (with configurable <code>[skeletonRowCount]</code>), <code>bar</code>, or <code>text</code>. Globally configurable via <code>provideSelectConfig(withLoadingVariant('skeleton'), withSkeletonRowCount(5))</code>.",
       imports: ['CngxSelect'],
       template: `
   <cngx-select
@@ -421,7 +437,8 @@ export const STORY: DemoSpec = {
     },
     {
       title: 'Refreshing variants',
-      subtitle: '<code>[refreshingVariant]</code> controls the subsequent-load indicator when options stay visible: <code>bar</code> (default), <code>spinner</code>, <code>dots</code>, or <code>none</code>. Triggered by <code>state.status() === \'refreshing\'</code>.',
+      subtitle:
+        "<code>[refreshingVariant]</code> controls the subsequent-load indicator when options stay visible: <code>bar</code> (default), <code>spinner</code>, <code>dots</code>, or <code>none</code>. Triggered by <code>state.status() === 'refreshing'</code>.",
       imports: ['CngxSelect'],
       template: `
   <cngx-select
@@ -448,7 +465,8 @@ export const STORY: DemoSpec = {
     },
     {
       title: 'Template override: custom caret',
-      subtitle: 'Project a <code>*cngxSelectCaret</code> template — the default ▾ glyph gets replaced with any markup you want, with <code>let-open="open"</code> available for rotation state.',
+      subtitle:
+        'Project a <code>*cngxSelectCaret</code> template — the default ▾ glyph gets replaced with any markup you want, with <code>let-open="open"</code> available for rotation state.',
       imports: ['CngxSelect', 'CngxSelectCaret'],
       template: `
   <cngx-select
@@ -472,7 +490,8 @@ export const STORY: DemoSpec = {
     },
     {
       title: 'Template override: custom check',
-      subtitle: 'Project <code>*cngxSelectCheck</code> to replace the ✓ glyph shown on the selected row. Context: <code>let-option</code>, <code>let-selected="selected"</code>.',
+      subtitle:
+        'Project <code>*cngxSelectCheck</code> to replace the ✓ glyph shown on the selected row. Context: <code>let-option</code>, <code>let-selected="selected"</code>.',
       imports: ['CngxSelect', 'CngxSelectCheck'],
       template: `
   <cngx-select
@@ -490,7 +509,8 @@ export const STORY: DemoSpec = {
     },
     {
       title: 'Selection indicator variant: radio',
-      subtitle: '<code>[selectionIndicatorVariant]="\'radio\'"</code> swaps the panel\'s built-in indicator from the checkmark to <code>cngx-radio-indicator</code> (dot-in-circle). Useful for single-select panels that want a radio-style visual without losing dropdown ergonomics. Set globally via <code>provideSelectConfig(withSelectionIndicatorVariant(\'radio\'))</code>.',
+      subtitle:
+        "<code>[selectionIndicatorVariant]=\"'radio'\"</code> swaps the panel's built-in indicator from the checkmark to <code>cngx-radio-indicator</code> (dot-in-circle). Useful for single-select panels that want a radio-style visual without losing dropdown ergonomics. Set globally via <code>provideSelectConfig(withSelectionIndicatorVariant('radio'))</code>.",
       imports: ['CngxSelect'],
       template: `
   <cngx-select
@@ -507,7 +527,8 @@ export const STORY: DemoSpec = {
     },
     {
       title: 'Template override: rich trigger label',
-      subtitle: '<code>*cngxSelectTriggerLabel</code> replaces the trigger\'s text node with your own markup — ideal for icons + label combos that mirror the option rendering.',
+      subtitle:
+        "<code>*cngxSelectTriggerLabel</code> replaces the trigger's text node with your own markup — ideal for icons + label combos that mirror the option rendering.",
       imports: ['CngxSelect', 'CngxSelectTriggerLabel'],
       template: `
   <cngx-select
@@ -527,7 +548,8 @@ export const STORY: DemoSpec = {
     },
     {
       title: 'Fixed-width panel (number)',
-      subtitle: '<code>[panelWidth]="400"</code> locks the panel\'s min-inline-size to 400px, independent of the trigger width. <code>\'trigger\'</code> (default) matches trigger width via CSS <code>anchor-size()</code>; <code>null</code> lets the panel size to content.',
+      subtitle:
+        "<code>[panelWidth]=\"400\"</code> locks the panel's min-inline-size to 400px, independent of the trigger width. <code>'trigger'</code> (default) matches trigger width via CSS <code>anchor-size()</code>; <code>null</code> lets the panel size to content.",
       imports: ['CngxSelect'],
       template: `
   <cngx-select
@@ -544,7 +566,8 @@ export const STORY: DemoSpec = {
     },
     {
       title: 'Keyboard: PageUp/PageDown on a long list',
-      subtitle: 'Open the panel and press <kbd>PageDown</kbd> / <kbd>PageUp</kbd> to jump 10 rows at a time (clamped at boundaries, skipping disabled rows). Typeahead-while-closed still works — focus the trigger and press a letter to commit without opening.',
+      subtitle:
+        'Open the panel and press <kbd>PageDown</kbd> / <kbd>PageUp</kbd> to jump 10 rows at a time (clamped at boundaries, skipping disabled rows). Typeahead-while-closed still works — focus the trigger and press a letter to commit without opening.',
       imports: ['CngxSelect'],
       template: `
   <cngx-select
@@ -560,7 +583,8 @@ export const STORY: DemoSpec = {
     },
     {
       title: 'Autofocus on mount',
-      subtitle: '<code>[autofocus]="true"</code> focuses the trigger on first render — evaluated once, later bound changes have no effect (matches native <code>&lt;select autofocus&gt;</code>).',
+      subtitle:
+        '<code>[autofocus]="true"</code> focuses the trigger on first render — evaluated once, later bound changes have no effect (matches native <code>&lt;select autofocus&gt;</code>).',
       imports: ['CngxSelect'],
       template: `
   <button type="button" class="chip" (click)="toggleAutofocus()" style="margin-bottom:8px">
@@ -581,7 +605,8 @@ export const STORY: DemoSpec = {
     },
     {
       title: 'Signal Forms (required)',
-      subtitle: 'Drop <code>&lt;cngx-select&gt;</code> into <code>&lt;cngx-form-field&gt;</code>. Everything flows automatically.',
+      subtitle:
+        'Drop <code>&lt;cngx-select&gt;</code> into <code>&lt;cngx-form-field&gt;</code>. Everything flows automatically.',
       imports: ['CngxFormField', 'CngxLabel', 'CngxFieldErrors', 'CngxSelect'],
       template: `
   <cngx-form-field [field]="singleForm.color">
@@ -600,7 +625,8 @@ export const STORY: DemoSpec = {
     },
     {
       title: 'Reactive Forms (adaptFormControl)',
-      subtitle: '<code>adaptFormControl</code> wraps the <code>FormControl</code> as a <code>Field&lt;T&gt;</code>.',
+      subtitle:
+        '<code>adaptFormControl</code> wraps the <code>FormControl</code> as a <code>Field&lt;T&gt;</code>.',
       imports: ['CngxFormField', 'CngxLabel', 'CngxFieldErrors', 'CngxSelect'],
       template: `
   <cngx-form-field [field]="rfField">
@@ -615,7 +641,8 @@ export const STORY: DemoSpec = {
     },
     {
       title: 'Slot override: *cngxSelectPlaceholder',
-      subtitle: 'Replace the plain placeholder string with custom markup — render an icon + the placeholder text, a stylised hint, or a help link inside the trigger.',
+      subtitle:
+        'Replace the plain placeholder string with custom markup — render an icon + the placeholder text, a stylised hint, or a help link inside the trigger.',
       imports: ['CngxSelect', 'CngxSelectPlaceholder'],
       template: `
   <cngx-select [label]="'Color'" [options]="colors" [(value)]="standaloneValue" placeholder="Pick a color…">
@@ -632,7 +659,8 @@ export const STORY: DemoSpec = {
     },
     {
       title: 'Slot override: *cngxSelectLoading',
-      subtitle: 'Replace the panel-shell\'s default loading indicator with a consumer-authored body — useful for branded spinners, progress text, or a cancel-and-restart affordance.',
+      subtitle:
+        "Replace the panel-shell's default loading indicator with a consumer-authored body — useful for branded spinners, progress text, or a cancel-and-restart affordance.",
       imports: ['CngxSelect', 'CngxSelectLoading'],
       template: `
   <cngx-select [label]="'Language'" [options]="loadingOptions" [(value)]="loadingValue" [loading]="loading()" placeholder="Choose language…">
@@ -647,7 +675,8 @@ export const STORY: DemoSpec = {
     },
     {
       title: 'Slot override: *cngxSelectOptgroup',
-      subtitle: 'Re-skin grouped-option labels — render badges, icons, or counts in the optgroup header without touching the option rows themselves. Class name <code>CngxSelectOptgroupTemplate</code> distinguishes this directive from the <code>&lt;cngx-optgroup&gt;</code> element component used in declarative composition.',
+      subtitle:
+        'Re-skin grouped-option labels — render badges, icons, or counts in the optgroup header without touching the option rows themselves. Class name <code>CngxSelectOptgroupTemplate</code> distinguishes this directive from the <code>&lt;cngx-optgroup&gt;</code> element component used in declarative composition.',
       imports: ['CngxSelect', 'CngxSelectOptgroupTemplate'],
       template: `
   <cngx-select [label]="'Priority'" [options]="priorities" [(value)]="groupedValue" placeholder="Choose priority…">
@@ -664,7 +693,8 @@ export const STORY: DemoSpec = {
     },
     {
       title: 'Slot override: *cngxSelectRefreshing',
-      subtitle: 'Replace the default 2px progress bar overlaid on stale options. Override receives <code>previousCount</code> so consumer templates can render context-aware status like <em>"Refreshing 4 items"</em>.',
+      subtitle:
+        'Replace the default 2px progress bar overlaid on stale options. Override receives <code>previousCount</code> so consumer templates can render context-aware status like <em>"Refreshing 4 items"</em>.',
       imports: ['CngxSelect', 'CngxSelectRefreshing'],
       template: `
   <cngx-select [label]="'Language'" [options]="asyncOptions" [(value)]="asyncValue" [state]="asyncState" placeholder="Choose language…">
@@ -681,7 +711,8 @@ export const STORY: DemoSpec = {
     },
     {
       title: 'Slot override: *cngxSelectCommitError',
-      subtitle: 'Replace the panel-shell\'s default commit-error banner with custom markup. Override receives <code>error</code>, the <code>option</code> the user was trying to pick, and a <code>retry()</code> callback that replays the commit.',
+      subtitle:
+        "Replace the panel-shell's default commit-error banner with custom markup. Override receives <code>error</code>, the <code>option</code> the user was trying to pick, and a <code>retry()</code> callback that replays the commit.",
       imports: ['CngxSelect', 'CngxSelectCommitError'],
       template: `
   <cngx-select
@@ -708,7 +739,8 @@ export const STORY: DemoSpec = {
     },
     {
       title: 'Slot overrides: *cngxSelectOptionPending + *cngxSelectOptionError',
-      subtitle: 'Per-option-row indicators driven by <code>[commitAction]</code>. Pending shows while the commit is in flight; the error glyph appears on the row that failed (with <code>commitErrorDisplay="inline"</code>).',
+      subtitle:
+        'Per-option-row indicators driven by <code>[commitAction]</code>. Pending shows while the commit is in flight; the error glyph appears on the row that failed (with <code>commitErrorDisplay="inline"</code>).',
       imports: ['CngxSelect', 'CngxSelectOptionPending', 'CngxSelectOptionError'],
       template: `
   <cngx-select
@@ -737,7 +769,8 @@ export const STORY: DemoSpec = {
     },
     {
       title: 'Slot override: *cngxSelectRetryButton',
-      subtitle: 'Swap the visual frame of every Retry / Try again button rendered by the shared panel-shell — load-error, inline refresh-error, and commit-error banner all read from this single override. Context: <code>{ retry, error, disabled, label }</code>.',
+      subtitle:
+        'Swap the visual frame of every Retry / Try again button rendered by the shared panel-shell — load-error, inline refresh-error, and commit-error banner all read from this single override. Context: <code>{ retry, error, disabled, label }</code>.',
       imports: ['CngxSelect', 'CngxSelectRetryButton'],
       template: `
   <cngx-select [label]="'Language'" [options]="asyncOptions" [(value)]="asyncValue" [state]="asyncState" placeholder="Choose language…">
@@ -754,7 +787,8 @@ export const STORY: DemoSpec = {
     },
     {
       title: 'Slot override: *cngxSelectLoadingGlyph',
-      subtitle: 'Replace the inner CSS-driven glyph of the spinner / bar / dots loading variants while keeping the shell\'s ARIA wiring (<code>role="status"</code>, <code>aria-live</code>, <code>aria-label</code>). Skeleton variant ignores this slot — its rows are layout, not glyph.',
+      subtitle:
+        'Replace the inner CSS-driven glyph of the spinner / bar / dots loading variants while keeping the shell\'s ARIA wiring (<code>role="status"</code>, <code>aria-live</code>, <code>aria-label</code>). Skeleton variant ignores this slot — its rows are layout, not glyph.',
       imports: ['CngxSelect', 'CngxSelectLoadingGlyph'],
       template: `
   <cngx-select
@@ -776,7 +810,8 @@ export const STORY: DemoSpec = {
     },
     {
       title: 'commitErrorDisplay variants — banner / inline / none',
-      subtitle: 'Three identical selects bound to the same fail-on-demand <code>commitAction</code> with the three <code>commitErrorDisplay</code> values side by side. Toggle <em>Fail next</em>, click a value, and watch how each display mode surfaces the rejection.',
+      subtitle:
+        'Three identical selects bound to the same fail-on-demand <code>commitAction</code> with the three <code>commitErrorDisplay</code> values side by side. Toggle <em>Fail next</em>, click a value, and watch how each display mode surfaces the rejection.',
       imports: ['CngxSelect'],
       template: `
   <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:1rem">
