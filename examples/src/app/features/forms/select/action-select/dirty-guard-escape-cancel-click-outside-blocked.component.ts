@@ -58,7 +58,7 @@ import { delay, of, throwError } from 'rxjs';
           ">
             <div style="font-weight:600; font-size:.875rem">
               + Create new entry "{{ term || '…' }}"
-              @if (dirty) { <span style="color:var(--cngx-color-primary,#1976d2)">· unsaved</span> }
+              @if (dirty) { <span style="color:var(--cngx-color-primary)">· unsaved</span> }
             </div>
             <input
               #dirtyInput
@@ -85,7 +85,7 @@ import { delay, of, throwError } from 'rxjs';
                 type="button"
                 [disabled]="!term || pending"
                 (click)="commit()"
-                style="padding:.35rem .75rem; border:0; border-radius:.25rem; background:var(--cngx-color-primary,#1976d2); color:#fff; cursor:pointer; font:inherit"
+                style="padding:.35rem .75rem; border:0; border-radius:.25rem; background:var(--cngx-color-primary); color:#fff; cursor:pointer; font:inherit"
               >
                 @if (pending) { Wird angelegt… } @else { Anlegen }
               </button>
@@ -178,7 +178,7 @@ protected handleDirtyCancel(setDirty: (v: boolean) => void): void {
     ">
       <div style="font-weight:600; font-size:.875rem">
         + Create new entry "{{ term || '…' }}"
-        @if (dirty) { <span style="color:var(--cngx-color-primary,#1976d2)">· unsaved</span> }
+        @if (dirty) { <span style="color:var(--cngx-color-primary)">· unsaved</span> }
       </div>
       <input
         #dirtyInput
@@ -205,7 +205,7 @@ protected handleDirtyCancel(setDirty: (v: boolean) => void): void {
           type="button"
           [disabled]="!term || pending"
           (click)="commit()"
-          style="padding:.35rem .75rem; border:0; border-radius:.25rem; background:var(--cngx-color-primary,#1976d2); color:#fff; cursor:pointer; font:inherit"
+          style="padding:.35rem .75rem; border:0; border-radius:.25rem; background:var(--cngx-color-primary); color:#fff; cursor:pointer; font:inherit"
         >
           @if (pending) { Wird angelegt… } @else { Anlegen }
         </button>

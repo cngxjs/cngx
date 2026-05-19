@@ -66,7 +66,7 @@ import { delay, of, throwError } from 'rxjs';
               type="button"
               [disabled]="!term || pending"
               (click)="commit(); close()"
-              style="padding:.25rem .625rem; border:0; border-radius:.25rem; background:var(--cngx-color-primary,#1976d2); color:#fff; cursor:pointer; font:inherit; font-size:.8125rem"
+              style="padding:.25rem .625rem; border:0; border-radius:.25rem; background:var(--cngx-color-primary); color:#fff; cursor:pointer; font:inherit; font-size:.8125rem"
             >
               create &amp; close
             </button>
@@ -157,7 +157,7 @@ protected readonly customCreate: CngxSelectCreateAction<{ id: string; name: stri
         type="button"
         [disabled]="!term || pending"
         (click)="commit(); close()"
-        style="padding:.25rem .625rem; border:0; border-radius:.25rem; background:var(--cngx-color-primary,#1976d2); color:#fff; cursor:pointer; font:inherit; font-size:.8125rem"
+        style="padding:.25rem .625rem; border:0; border-radius:.25rem; background:var(--cngx-color-primary); color:#fff; cursor:pointer; font:inherit; font-size:.8125rem"
       >
         create &amp; close
       </button>
