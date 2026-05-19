@@ -7,6 +7,10 @@ export const STORY: DemoSpec = {
   description:
     'Skeleton placeholder directives for loading states. Use CngxSkeleton for individual elements or CngxSkeletonContainer with CngxSkeletonPlaceholder for grouped placeholder templates.',
   apiComponents: ['CngxSkeleton', 'CngxSkeletonContainer', 'CngxSkeletonPlaceholder'],
+  level: 'molecule',
+  audience: ['dev', 'design'],
+  artifact: 'standalone',
+  focus: ['visual-variants', 'async-state'],
   overview:
     '<p><code>CngxSkeleton</code> is a directive that adds a shimmer animation to any element while loading. ' +
     '<code>CngxSkeletonContainer</code> orchestrates multiple skeleton placeholders via a <code>count</code> input ' +

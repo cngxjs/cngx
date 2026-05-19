@@ -40,7 +40,7 @@ export class CopyBlockCodeSnippet {
   protected readonly _exDescription: string = 'Molecule: code/text block with built-in copy button and SR announcement.';
   protected readonly _exSectionTitle: string = 'Code Snippet';
   protected readonly _exSubtitle: string = 'Click "Copy" to copy the install command. The button shows "Copied!" for 2 seconds.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'visual-variants' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxCopyBlock } from '@cngx/common/interactive';
 
 protected readonly installCmd = 'npm install @cngx/common';

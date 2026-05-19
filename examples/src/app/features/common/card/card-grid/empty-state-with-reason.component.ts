@@ -71,7 +71,7 @@ export class CardGridEmptyStateWithReason {
   protected readonly _exDescription: string = 'Responsive card grid with intrinsic sizing, keyboard navigation via roving tabindex, density levels, and reason-based empty state template selection.';
   protected readonly _exSectionTitle: string = 'Empty State with Reason';
   protected readonly _exSubtitle: string = 'Templates are matched by <code>emptyReason</code>. Select a reason to see the corresponding empty state.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'visual-variants' }, { dim: 'focus', value: 'composition' }];
   protected readonly _exTs: string = `import { CngxCard, CngxCardGrid, CngxCardGridEmpty } from '@cngx/common/card';
 
 protected items = signal(['Alpha', 'Beta', 'Gamma', 'Delta', 'Epsilon', 'Zeta']);

@@ -67,7 +67,7 @@ export class TruncateTruncatedTextWithToggle {
   protected readonly _exDescription: string = 'Text truncation with expand/collapse and clamped-state detection. Shows a toggle only when content actually overflows.';
   protected readonly _exSectionTitle: string = 'Truncated Text with Toggle';
   protected readonly _exSubtitle: string = 'Long text clamped to 3 lines. The "Show more" button appears only because <code>isClamped()</code> is <code>true</code>.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxTruncate } from '@cngx/common/layout';
 
 protected readonly expanded1 = signal(false);

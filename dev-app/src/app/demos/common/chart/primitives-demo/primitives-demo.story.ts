@@ -16,6 +16,10 @@ export const STORY: DemoSpec = {
     'CngxThreshold',
     'CngxBand',
   ],
+  level: 'organism',
+  audience: ['dev', 'design'],
+  artifact: 'building-block',
+  focus: ['composition', 'visual-variants'],
   overview:
     '<p>Every preset molecule is a thin wrapper over <code>&lt;cngx-chart&gt;</code> + axes + ' +
     'layer atoms. When the presets do not fit a use case (multi-layer dashboards, custom ' +

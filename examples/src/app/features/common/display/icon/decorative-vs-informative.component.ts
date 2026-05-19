@@ -41,7 +41,7 @@ export class IconDecorativeVsInformative {
   protected readonly _exDescription: string = 'Display atom for icons. Projects its content (font glyph, SVG, image) and adds ARIA semantics and sizing.';
   protected readonly _exSectionTitle: string = 'Decorative vs informative';
   protected readonly _exSubtitle: string = 'The top icon is decorative (hidden from AT). The bottom icon has <code>label</code>, so it is announced.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'visual-variants' }];
   protected readonly _exTs: string = `import { CngxIcon } from '@cngx/common/display';`;
   protected readonly _exHtml: string = `<div style="display:flex;flex-direction:column;gap:8px">
   <span>Status: <cngx-icon>✓</cngx-icon> Saved</span>

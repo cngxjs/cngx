@@ -48,7 +48,7 @@ export class DisclosureBasicUncontrolled {
   protected readonly _exDescription: string = 'Generic expand/collapse atom. Manages aria-expanded, keyboard interaction (Enter, Space, click), and controlled+uncontrolled state. Usable for accordions, FAQs, nav groups, collapsible panels.';
   protected readonly _exSectionTitle: string = 'Basic — Uncontrolled';
   protected readonly _exSubtitle: string = 'Click the trigger or press <strong>Enter</strong>/<strong>Space</strong> to toggle. <code>aria-expanded</code> and <code>aria-controls</code> are set automatically.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxDisclosure } from '@cngx/common';
 
 protected readonly controlledOpen = signal(false);`;

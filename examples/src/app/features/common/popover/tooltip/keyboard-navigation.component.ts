@@ -48,7 +48,7 @@ export class TooltipKeyboardNavigation {
   protected readonly _exDescription: string = 'String-input tooltip directive using the native Popover API. CSS Anchor Positioning, WCAG 1.4.13 compliant, SR-friendly.';
   protected readonly _exSectionTitle: string = 'Keyboard Navigation';
   protected readonly _exSubtitle: string = 'Tab through the buttons — tooltips appear on focus with a 50ms debounce to prevent screen reader announcement storms. Press Escape to dismiss without closing parent overlays.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'visual-variants' }, { dim: 'focus', value: 'a11y-pattern' }];
   protected readonly _exTs: string = `import { CngxTooltip } from '@cngx/common/popover';`;
   protected readonly _exHtml: string = `<p style="font-size:0.875rem;color:var(--cngx-text-secondary,#666);margin-bottom:12px">
   Use Tab/Shift+Tab to navigate. Each button shows its tooltip on focus.

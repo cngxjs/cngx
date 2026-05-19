@@ -54,7 +54,7 @@ export class DataSourceSignalObservableBridge {
   protected readonly _exDescription: string = '';
   protected readonly _exSectionTitle: string = 'CngxDataSource — Signal → Observable Bridge';
   protected readonly _exSubtitle: string = '<code>injectDataSource(signal)</code> is a thin CDK <code>DataSource</code> wrapper. Every time the signal changes, <code>connect()</code> emits a new value. Use <code>toSignal(ds.connect())</code> to drive a template directly. Zero logic — consumer wires up sort/filter/search via a <code>computed()</code> passed as the signal.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'integration' }, { dim: 'focus', value: 'async-state' }];
   protected readonly _exTs: string = `import { toSignal } from '@angular/core/rxjs-interop';
 import { injectDataSource } from '@cngx/common';
 import { PEOPLE, type Person } from '../../../../fixtures';

@@ -7,6 +7,10 @@ export const STORY: DemoSpec = {
   description:
     'Rich popover molecule with header/body/footer slots, variant styling, arrow, close button, content state templates, and async action buttons.',
   apiComponents: ['CngxPopoverPanel', 'CngxPopoverAction'],
+  level: 'molecule',
+  audience: ['dev', 'design', 'a11y'],
+  artifact: 'standalone',
+  focus: ['visual-variants', 'composition'],
   overview:
     '<p><code>cngx-popover-panel</code> composes <code>CngxPopover</code> with structured layout, ' +
     'variant-based styling, and content state management. Use <code>cngx-popover-action</code> for ' +

@@ -81,7 +81,7 @@ export class MenuActionMenuWithSeparator {
   protected readonly _exDescription: string = 'Keyboard-navigable menu with role="menu" and cngxMenuItem children. Activation fires itemActivated; no selection state. Supports separators (skipped by AD nav) and inline static menu rendering.';
   protected readonly _exSectionTitle: string = 'Action menu with separator';
   protected readonly _exSubtitle: string = 'Use arrow keys, typeahead (type the first letters of an action), Home/End, Enter/Space. Disabled items and separators are skipped.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'focus', value: 'visual-variants' }];
   protected readonly _exTs: string = `import { CngxMenu, CngxMenuItem, CngxMenuSeparator, CngxMenuItemIcon, CngxMenuItemLabel, CngxMenuItemKbd } from '@cngx/common/interactive';
 
 protected readonly lastAction = signal<string | null>(null);`;

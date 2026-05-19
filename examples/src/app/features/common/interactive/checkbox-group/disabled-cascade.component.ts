@@ -54,7 +54,7 @@ export class CheckboxGroupDisabledCascade {
   protected readonly _exDescription: string = 'Multi-value checkbox-group molecule. Owns selectedValues (multi-value model), exposes allSelected/someSelected/noneSelected/selectedCount as computed signals, plus a toggleAll/select/deselect API. The "select all" pattern wires a master CngxCheckbox to the group\'s [allSelected] (value) and [someSelected] (indeterminate) so aria-checked="mixed" reflects partial state automatically. Provides CNGX_CONTROL_VALUE for forms-bridge integration. Composes CngxRovingTabindex via hostDirectives for arrow navigation across projected leaves.';
   protected readonly _exSectionTitle: string = 'Disabled cascade';
   protected readonly _exSubtitle: string = 'Group <code>[disabled]</code> blocks all mutation pathways (<code>select</code>, <code>deselect</code>, <code>toggleAll</code>) and reflects <code>aria-disabled="true"</code> on the host. Projected children inherit the disabled state via the consumer-bound <code>[disabled]</code> on each leaf.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }];
   protected readonly _exTs: string = `import { CngxCheckboxGroup, CngxCheckbox } from '@cngx/common/interactive';
 
 protected readonly options = ['email', 'sms', 'push'] as const;

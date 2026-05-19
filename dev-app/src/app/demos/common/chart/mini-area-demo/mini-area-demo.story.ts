@@ -7,6 +7,10 @@ export const STORY: DemoSpec = {
   description:
     'Inline mini filled-area chart. Sibling of <cngx-sparkline>; renders only the area (no line stroke).',
   apiComponents: ['CngxMiniArea'],
+  level: 'atom',
+  audience: ['dev', 'design'],
+  artifact: 'standalone',
+  focus: ['visual-variants'],
   moduleImports: [
     "import { CngxMiniArea } from '@cngx/common/chart';",
     "import { createManualState } from '@cngx/common/data';",

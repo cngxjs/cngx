@@ -59,7 +59,7 @@ export class SkeletonSkeletonContainer {
   protected readonly _exDescription: string = 'Skeleton placeholder directives for loading states. Use CngxSkeleton for individual elements or CngxSkeletonContainer with CngxSkeletonPlaceholder for grouped placeholder templates.';
   protected readonly _exSectionTitle: string = 'Skeleton Container';
   protected readonly _exSubtitle: string = 'Use <code>cngx-skeleton</code> with a <code>count</code> input to repeat placeholder templates. Project your real content and a <code>CngxSkeletonPlaceholder</code> template.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'visual-variants' }, { dim: 'focus', value: 'async-state' }];
   protected readonly _exTs: string = `import { CngxSkeletonContainer, CngxSkeletonPlaceholder } from '@cngx/ui';
 
 protected readonly loading = signal(true);

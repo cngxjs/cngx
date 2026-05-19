@@ -72,7 +72,7 @@ export class PressablePressFeedbackOnButtons {
   protected readonly _exDescription: string = 'Instant press feedback via CSS class on pointerdown. 0ms latency — the class appears before click fires.';
   protected readonly _exSectionTitle: string = 'Press Feedback on Buttons';
   protected readonly _exSubtitle: string = 'Press and hold each button. The scale/opacity change is instant — applied via <code>.cngx-pressed</code> CSS, not inline styles.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'behavior' }, { dim: 'focus', value: 'a11y-pattern' }];
   protected readonly _exTs: string = `import { CngxPressable } from '@cngx/common/interactive';`;
   protected readonly _exHtml: string = `<div class="button-row" style="gap:8px">
   <button cngxPressable #p1="cngxPressable" class="chip"

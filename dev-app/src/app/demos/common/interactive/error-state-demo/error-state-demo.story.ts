@@ -14,6 +14,10 @@ export const STORY: DemoSpec = {
     'convention; visibility of the linked message is the consumer\'s ' +
     '<code>aria-hidden</code> to wire.',
   apiComponents: ['CngxErrorState'],
+  level: 'atom',
+  audience: ['dev'],
+  artifact: 'building-block',
+  focus: ['error-handling'],
   moduleImports: ["import { CngxErrorState } from '@cngx/common/interactive';"],
   setup: `
   protected readonly emailInvalid = signal(false);

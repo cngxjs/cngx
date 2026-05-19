@@ -63,7 +63,7 @@ export class LiveRegionFormValidationAssertiveErrorAnnouncements {
   protected readonly _exDescription: string = 'Configures the host element as an ARIA live region for screen reader announcements.';
   protected readonly _exSectionTitle: string = 'Form Validation — Assertive Error Announcements';
   protected readonly _exSubtitle: string = '<code>[cngxLiveRegion]</code> with <code>assertive</code> politeness on a validation error message. Screen readers interrupt to announce the error immediately when the message content changes.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'a11y' }, { dim: 'audience', value: 'dev' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'a11y-pattern' }];
   protected readonly _exTs: string = `import { CngxLiveRegion } from '@cngx/common/a11y';
 
 protected message = signal('');

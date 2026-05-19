@@ -7,6 +7,10 @@ export const STORY: DemoSpec = {
   description:
     'Molecule: code/text block with built-in copy button and SR announcement.',
   apiComponents: ['CngxCopyBlock'],
+  level: 'molecule',
+  audience: ['dev', 'design'],
+  artifact: 'standalone',
+  focus: ['visual-variants', 'behavior'],
   overview:
     '<p><code>cngx-copy-block</code> combines a content container with a <code>CngxCopyText</code>-powered ' +
     'copy button. "Copied!" feedback and screen reader announcement are built in.</p>',

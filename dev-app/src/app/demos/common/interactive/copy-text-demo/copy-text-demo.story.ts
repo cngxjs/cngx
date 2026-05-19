@@ -7,6 +7,10 @@ export const STORY: DemoSpec = {
   description:
     'Clipboard copy behavior without forms dependency. Clipboard API with execCommand fallback.',
   apiComponents: ['CngxCopyText'],
+  level: 'atom',
+  audience: ['dev'],
+  artifact: 'building-block',
+  focus: ['behavior'],
   overview:
     '<p><code>[cngxCopyText]</code> copies text to the clipboard on click. Shows a <code>copied()</code> ' +
     'signal for visual feedback that auto-resets after <code>resetDelay</code> ms. Falls back to ' +

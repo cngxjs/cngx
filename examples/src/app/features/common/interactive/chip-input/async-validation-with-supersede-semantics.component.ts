@@ -51,7 +51,7 @@ export class ChipInputAsyncValidationWithSupersedeSemantics {
   protected readonly _exDescription: string = 'Tokenizing input on a native <code>&lt;input&gt;</code>. Type a value and press Enter (or any configured separator) to emit <code>(tokenCreated)</code>. Backspace at empty input emits <code>(tokenRemoved)</code> — the consumer drops the last chip. Paste with embedded separators emits one token per non-empty fragment. Optional async <code>[validateToken]</code> drives an internal <code>CngxStateful</code> validation slot — bridge directives like <code>&lt;cngx-toast-on /&gt;</code> auto-discover it.';
   protected readonly _exSectionTitle: string = 'Async validation with supersede semantics';
   protected readonly _exSubtitle: string = '<code>[validateToken]</code> runs on every separator-key creation. Concurrent validations supersede via a monotonic id — the last one wins. <code>aria-busy</code> reflects pending state; <code>aria-invalid</code> reflects rejection.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'behavior' }, { dim: 'focus', value: 'a11y-pattern' }];
   protected readonly _exTs: string = `import { CngxChipInput } from '@cngx/common/interactive';
 import { CngxChip } from '@cngx/common/display';
 

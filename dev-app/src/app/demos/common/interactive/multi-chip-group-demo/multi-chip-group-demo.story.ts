@@ -16,6 +16,10 @@ export const STORY: DemoSpec = {
     'CngxChip',
     'CNGX_CHIP_GROUP_HOST',
   ],
+  level: 'molecule',
+  audience: ['dev', 'design'],
+  artifact: 'building-block',
+  focus: ['composition', 'a11y-pattern'],
   moduleImports: [
     "import { CngxMultiChipGroup, CngxChipInGroup } from '@cngx/common/interactive';",
     "import { CngxChip } from '@cngx/common/display';",

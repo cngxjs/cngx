@@ -60,7 +60,7 @@ export class PrimitivesScatterWithPerformanceZones {
   protected readonly _exDescription: string = 'Compose &lt;cngx-chart&gt; + [cngxAxis] + layer atoms ([cngxLine], [cngxArea], [cngxBar], [cngxScatter], [cngxThreshold], [cngxBand]) directly. The seven preset molecules wrap these primitives; this demo shows how to compose them.';
   protected readonly _exSectionTitle: string = 'Scatter with performance zones';
   protected readonly _exSubtitle: string = 'Scatter plot of (price, sales) points with low / mid / high performance zones via three stacked [cngxBand]s. Bands span the full chart width; their Y-range partitions the value space into traffic-light tiers.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'visual-variants' }];
   protected readonly _exTs: string = `import { CngxChart, CngxAxis, CngxScatter, CngxBand } from '@cngx/common/chart';
 import { createManualState } from '@cngx/common/data';
 

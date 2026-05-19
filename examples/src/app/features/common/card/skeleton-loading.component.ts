@@ -56,7 +56,7 @@ export class CardSkeletonLoading {
   protected readonly _exDescription: string = 'Semantic card component with three archetypes: display (article), action (button), and link. Supports selection, loading, disabled with reason, and SR live announcements.';
   protected readonly _exSectionTitle: string = 'Skeleton Loading';
   protected readonly _exSubtitle: string = '<code>cngx-card-skeleton</code> replaces content during loading. Toggle to compare skeleton vs. real content.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'visual-variants' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }];
   protected readonly _exTs: string = `import { CngxCard, CngxCardHeader, CngxCardTitle, CngxCardBody, CngxCardSkeleton } from '@cngx/common/card';
 
 protected selected = signal(false);

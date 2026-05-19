@@ -7,6 +7,10 @@ export const STORY: DemoSpec = {
   description:
     'Button that opens a CngxMenu inside a CngxPopover. Full keyboard support; activation always closes the menu (menu semantics).',
   apiComponents: ['CngxMenuTrigger', 'CngxMenu', 'CngxMenuItem'],
+  level: 'molecule',
+  audience: ['dev', 'a11y'],
+  artifact: 'building-block',
+  focus: ['composition', 'a11y-pattern', 'behavior'],
   overview:
     '<p><code>[cngxMenuTrigger]</code> wires a button to a menu wrapped in a popover. ' +
     'Unlike <code>CngxListboxTrigger</code>, activating an item always closes the menu — consistent with ' +

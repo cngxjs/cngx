@@ -7,6 +7,10 @@ export const STORY: DemoSpec = {
   description:
     "Stephen Few's compact KPI visualisation. Three stacked layers: range bands, an actual filled bar, and a target marker.",
   apiComponents: ['CngxBullet'],
+  level: 'atom',
+  audience: ['dev', 'design'],
+  artifact: 'standalone',
+  focus: ['visual-variants'],
   moduleImports: [
     "import { CngxBullet } from '@cngx/common/chart';",
     "import { createManualState } from '@cngx/common/data';",

@@ -53,7 +53,7 @@ export class FocusRestorePanelWithAutomaticRestore {
   protected readonly _exDescription: string = 'Captures the previously focused element and restores focus when the host is destroyed. Prevents focus loss to body.';
   protected readonly _exSectionTitle: string = 'Panel with Automatic Restore';
   protected readonly _exSubtitle: string = 'Click "Open Panel" — focus moves into the panel. Close it — focus returns to the button that opened it.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'a11y' }, { dim: 'audience', value: 'dev' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxFocusRestore } from '@cngx/common/a11y';
 
 protected readonly panelOpen = signal(false);

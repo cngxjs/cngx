@@ -6,6 +6,10 @@ export const STORY: DemoSpec = {
   navCategory: 'a11y',
   description: 'Configures the host element as an ARIA live region for screen reader announcements.',
   apiComponents: ['CngxLiveRegion'],
+  level: 'atom',
+  audience: ['a11y', 'dev'],
+  artifact: 'building-block',
+  focus: ['a11y-pattern'],
   setup: `
   protected message = signal('');
   protected politeness = signal<'polite' | 'assertive' | 'off'>('polite');

@@ -17,6 +17,10 @@ export const STORY: DemoSpec = {
     'CNGX_BUTTON_TOGGLE_GROUP',
     'CNGX_CONTROL_VALUE',
   ],
+  level: 'molecule',
+  audience: ['dev', 'design', 'a11y'],
+  artifact: 'building-block',
+  focus: ['composition', 'a11y-pattern'],
   moduleImports: [
     "import { CngxButtonToggleGroup, CngxButtonToggle } from '@cngx/common/interactive';",
   ],

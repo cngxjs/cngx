@@ -49,7 +49,7 @@ export class CardGridBasicGrid {
   protected readonly _exDescription: string = 'Responsive card grid with intrinsic sizing, keyboard navigation via roving tabindex, density levels, and reason-based empty state template selection.';
   protected readonly _exSectionTitle: string = 'Basic Grid';
   protected readonly _exSubtitle: string = 'Cards auto-fill with a minimum width of 180px. Resize the browser to see the grid reflow.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'visual-variants' }, { dim: 'focus', value: 'composition' }];
   protected readonly _exTs: string = `import { CngxCard, CngxCardHeader, CngxCardBody, CngxCardGrid } from '@cngx/common/card';
 
 protected items = signal(['Alpha', 'Beta', 'Gamma', 'Delta', 'Epsilon', 'Zeta']);

@@ -73,7 +73,7 @@ export class ContextMenuRightClickTargetZone {
   protected readonly _exDescription: string = 'Right-click or Shift+F10 opens a CngxMenu inside a CngxPopover anchored at the pointer location. Escape closes; arrow keys navigate.';
   protected readonly _exSectionTitle: string = 'Right-click target zone';
   protected readonly _exSubtitle: string = 'Right-click anywhere inside the dashed zone, or focus it and press Shift+F10. Escape closes the menu.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }];
   protected readonly _exTs: string = `import { CngxContextMenuTrigger, CngxMenu, CngxMenuItem, CngxMenuSeparator } from '@cngx/common/interactive';
 import { CngxPopover } from '@cngx/common/popover';
 

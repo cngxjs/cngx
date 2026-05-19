@@ -59,7 +59,7 @@ export class BulletAsyncStateMachine {
   protected readonly _exDescription: string = 'Stephen Few\'s compact KPI visualisation. Three stacked layers: range bands, an actual filled bar, and a target marker.';
   protected readonly _exSectionTitle: string = 'Async state machine';
   protected readonly _exSubtitle: string = 'Bind [state] to a CngxAsyncState — the bullet routes through skeleton / empty / error / content branches automatically.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'visual-variants' }];
   protected readonly _exTs: string = `import { CngxBullet } from '@cngx/common/chart';
 import { createManualState } from '@cngx/common/data';
 

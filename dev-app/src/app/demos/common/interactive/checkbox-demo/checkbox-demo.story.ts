@@ -11,6 +11,10 @@ export const STORY: DemoSpec = {
     'in a single step — there is no path that lands the checkbox back in <code>mixed</code> ' +
     'from a user click.',
   apiComponents: ['CngxCheckbox'],
+  level: 'atom',
+  audience: ['dev', 'a11y'],
+  artifact: 'building-block',
+  focus: ['a11y-pattern', 'behavior'],
   moduleImports: ["import { CngxCheckbox } from '@cngx/common/interactive';"],
   setup: `
   protected readonly accept = signal(false);

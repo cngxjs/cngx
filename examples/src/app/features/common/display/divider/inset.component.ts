@@ -40,7 +40,7 @@ export class DividerInset {
   protected readonly _exDescription: string = 'Presentational separator with proper ARIA semantics. Horizontal or vertical, optionally inset.';
   protected readonly _exSectionTitle: string = 'Inset';
   protected readonly _exSubtitle: string = 'The <code>inset</code> modifier adds margin on the inline axis — useful inside lists.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'visual-variants' }];
   protected readonly _exTs: string = `import { CngxDivider } from '@cngx/common/display';`;
   protected readonly _exHtml: string = `<div class="section">Item A</div>
 <cngx-divider [inset]="true"></cngx-divider>

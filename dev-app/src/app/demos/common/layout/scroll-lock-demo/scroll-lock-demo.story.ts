@@ -6,6 +6,10 @@ export const STORY: DemoSpec = {
   navCategory: 'layout',
   description: 'Prevents body scrolling when active. Essential for modals, drawers, and overlays.',
   apiComponents: ['CngxScrollLock'],
+  level: 'atom',
+  audience: ['dev', 'a11y'],
+  artifact: 'building-block',
+  focus: ['behavior', 'a11y-pattern'],
   moduleImports: ["import { CngxScrollLock } from '@cngx/common';"],
   setup: `
   protected readonly locked = signal(false);

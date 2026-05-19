@@ -60,7 +60,7 @@ export class OptionFlatOptionsWithAd {
   protected readonly _exDescription: string = 'Single option directive that registers with a surrounding CngxActiveDescendant. Click highlights + activates, pointerenter highlights only.';
   protected readonly _exSectionTitle: string = 'Flat options with AD';
   protected readonly _exSubtitle: string = 'Arrow keys navigate. Enter/Space or click activates. Pointerenter follows the mouse without firing the activation output.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'composition' }];
   protected readonly _exTs: string = `import { CngxActiveDescendant } from '@cngx/common/a11y';
 import { CngxOption } from '@cngx/common/interactive';
 

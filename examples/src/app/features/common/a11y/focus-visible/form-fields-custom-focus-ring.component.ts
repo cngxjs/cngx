@@ -106,7 +106,7 @@ export class FocusVisibleFormFieldsCustomFocusRing {
   protected readonly _exDescription: string = 'Tracks keyboard-initiated focus to distinguish it from pointer focus. Adds the cngx-focus-visible CSS class only when focus was triggered by keyboard.';
   protected readonly _exSectionTitle: string = 'Form Fields — Custom Focus Ring';
   protected readonly _exSubtitle: string = 'Apply <code>[cngxFocusVisible]</code> to form elements to show a focus ring only for keyboard users. Mouse-clicking an input focuses it but does not trigger the ring — reducing visual noise for pointer users.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'a11y' }, { dim: 'audience', value: 'dev' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxFocusVisible } from '@cngx/common/a11y';
 
 protected name = signal('');

@@ -7,6 +7,10 @@ export const STORY: DemoSpec = {
   description:
     'Display atom for icons. Projects its content (font glyph, SVG, image) and adds ARIA semantics and sizing.',
   apiComponents: ['CngxIcon'],
+  level: 'atom',
+  audience: ['dev', 'design'],
+  artifact: 'standalone',
+  focus: ['visual-variants'],
   overview:
     '<p><code>cngx-icon</code> is decorative by default (<code>aria-hidden="true"</code>) and becomes informative when <code>label</code> is set (<code>role="img"</code>, <code>aria-label</code>). No icon registry — bring your own font or SVG.</p>',
   moduleImports: ["import { CngxIcon } from '@cngx/common/display';"],

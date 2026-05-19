@@ -121,7 +121,7 @@ export class MenuSubmenuTwoLevelSubmenu {
   protected readonly _exDescription: string = 'Nested menu with cngxMenuItemSubmenu. ArrowRight on a submenu parent opens the inner menu and transfers AD focus to its first item; ArrowLeft / Escape close. Two-level keyboard navigation through one trigger button.';
   protected readonly _exSectionTitle: string = 'Two-level submenu';
   protected readonly _exSubtitle: string = 'Open the menu (ArrowDown / Enter / Space). Highlight "Open Recent" and press ArrowRight to open the submenu — focus transfers to its first file. ArrowLeft / Escape close. Activating a leaf closes everything.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }];
   protected readonly _exTs: string = `import { CngxMenu, CngxMenuItem, CngxMenuItemSubmenu, CngxMenuSeparator, CngxMenuTrigger, CngxMenuItemIcon, CngxMenuItemLabel, CngxMenuItemKbd } from '@cngx/common/interactive';
 import { CngxPopover } from '@cngx/common/popover';
 import { CngxPopoverTrigger } from '@cngx/common/popover';

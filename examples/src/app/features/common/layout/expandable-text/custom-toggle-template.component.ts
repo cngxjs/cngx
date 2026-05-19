@@ -57,7 +57,7 @@ export class ExpandableTextCustomToggleTemplate {
   protected readonly _exDescription: string = 'Molecule wrapping CngxTruncate with a built-in expand/collapse toggle and aria-expanded.';
   protected readonly _exSectionTitle: string = 'Custom Toggle Template';
   protected readonly _exSubtitle: string = 'Use <code>ng-template[cngxExpandableToggle]</code> for a fully custom toggle — icon buttons, links, or any element.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxExpandableText } from '@cngx/common/layout';
 import { CngxExpandableToggle } from '@cngx/common/layout';`;
   protected readonly _exHtml: string = `<div style="max-width:400px">

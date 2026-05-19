@@ -7,6 +7,10 @@ export const STORY: DemoSpec = {
   description:
     'Right-click or Shift+F10 opens a CngxMenu inside a CngxPopover anchored at the pointer location. Escape closes; arrow keys navigate.',
   apiComponents: ['CngxContextMenuTrigger', 'CngxMenu', 'CngxMenuItem'],
+  level: 'molecule',
+  audience: ['dev', 'a11y'],
+  artifact: 'building-block',
+  focus: ['composition', 'a11y-pattern'],
   overview:
     '<p><code>[cngxContextMenuTrigger]</code> turns any focusable region into a context-menu host. ' +
     'Right-click (<code>contextmenu</code> event) opens the menu at the pointer; <kbd>Shift</kbd>+<kbd>F10</kbd> opens at the element center. ' +

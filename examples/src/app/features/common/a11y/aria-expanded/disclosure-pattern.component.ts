@@ -77,7 +77,7 @@ export class AriaExpandedDisclosurePattern {
   protected readonly _exDescription: string = 'Manages aria-expanded and aria-controls attributes for disclosure patterns (accordions, dropdowns, details panels).';
   protected readonly _exSectionTitle: string = 'CngxAriaExpanded — Disclosure Pattern';
   protected readonly _exSubtitle: string = '<code>[cngxAriaExpanded]</code> sets <code>aria-expanded</code> on the host element. Combine with <code>[controls]</code> to add <code>aria-controls</code>, linking the trigger to its controlled panel by ID.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'a11y' }, { dim: 'audience', value: 'dev' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'a11y-pattern' }];
   protected readonly _exTs: string = `import { CngxAriaExpanded } from '@cngx/common/a11y';
 
 protected open = signal(false);

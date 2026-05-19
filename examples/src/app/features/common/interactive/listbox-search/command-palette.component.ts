@@ -70,7 +70,7 @@ export class ListboxSearchCommandPalette {
   protected readonly _exDescription: string = 'Search input that drives a sibling CngxListbox. Term is debounced via the underlying CngxSearch hostDirective; listboxes read term + matchFn reactively.';
   protected readonly _exSectionTitle: string = 'Command palette';
   protected readonly _exSubtitle: string = 'Type to filter; the listbox shows only matching options. <code>hasSearchResults</code> drives the empty state.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxListbox, CngxListboxSearch, CngxOption } from '@cngx/common/interactive';
 
 protected readonly commands = signal<Array<{ value: string; label: string }>>([

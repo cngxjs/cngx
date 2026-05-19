@@ -68,7 +68,7 @@ export class MenuCheckableTextFormattingMenu {
   protected readonly _exDescription: string = 'Menu items with their own state: checkboxes for toggles, radios for mutually exclusive choices inside a CngxMenuGroup.';
   protected readonly _exSectionTitle: string = 'Text formatting menu';
   protected readonly _exSubtitle: string = 'Checkboxes for independent toggles, radios inside a group for exclusive selection.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }];
   protected readonly _exTs: string = `import { CngxMenu, CngxMenuGroup, CngxMenuItemCheckbox, CngxMenuItemRadio } from '@cngx/common/interactive';
 
 protected readonly bold = signal(true);

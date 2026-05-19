@@ -48,7 +48,7 @@ export class PopoverPanelVariants {
   protected readonly _exDescription: string = 'Rich popover molecule with header/body/footer slots, variant styling, arrow, close button, content state templates, and async action buttons.';
   protected readonly _exSectionTitle: string = 'Variants';
   protected readonly _exSubtitle: string = 'The <code>variant</code> input is a free-form string mapped to CSS class <code>cngx-popover-panel--{variant}</code>. Five are pre-themed: <code>default</code>, <code>info</code>, <code>success</code>, <code>warning</code>, <code>danger</code>.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'visual-variants' }, { dim: 'focus', value: 'composition' }];
   protected readonly _exTs: string = `import { CngxPopoverPanel, CngxPopoverTrigger, CngxPopoverHeader, CngxPopoverBody } from '@cngx/common/popover';
 
 protected simulateSave = () => new Promise<void>(resolve => setTimeout(resolve, 1500));

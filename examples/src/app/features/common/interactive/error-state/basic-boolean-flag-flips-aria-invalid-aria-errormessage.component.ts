@@ -65,7 +65,7 @@ export class ErrorStateBasicBooleanFlagFlipsAriaInvalidAriaErrormessage {
   protected readonly _exDescription: string = '<code>[cngxErrorState]</code> is a generic host-element marker. Toggles <code>.cngx-error</code> + reactive <code>aria-invalid</code> + <code>aria-errormessage</code> on any DOM element — cngx, Material, CDK, native, or third-party host. Works without an aggregator; pair with <code>cngxErrorScope</code> when you need reveal-on-submit semantics. Both ARIA attributes stay in the DOM with explicit values per cngx convention; visibility of the linked message is the consumer\'s <code>aria-hidden</code> to wire.';
   protected readonly _exSectionTitle: string = 'Basic — boolean flag flips aria-invalid + aria-errormessage';
   protected readonly _exSubtitle: string = 'Toggle the button to flip the boolean. Watch the input border + the <code>aria-invalid</code> attribute switch between <code>"false"</code> and <code>"true"</code> on every render. The <code>aria-errormessage</code> ID stays in the DOM regardless — the message element\'s own <code>aria-hidden</code> gates whether the text is announced.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'error-handling' }];
   protected readonly _exTs: string = `import { CngxErrorState } from '@cngx/common/interactive';
 
 protected readonly emailInvalid = signal(false);

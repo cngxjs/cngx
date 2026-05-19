@@ -59,7 +59,7 @@ export class SmartDataSourceHowItWorksHostdirectivesInject {
   protected readonly _exDescription: string = '';
   protected readonly _exSectionTitle: string = 'How It Works — hostDirectives + inject()';
   protected readonly _exSubtitle: string = 'The key is calling <code>injectSmartDataSource()</code> inside a component whose host element has <code>[cngxSort]</code> / <code>[cngxFilter]</code> as <code>hostDirectives</code>. The factory uses optional <code>inject()</code> to auto-discover them.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'integration' }];
   protected readonly _exTs: string = `import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFilter, CngxSort, injectSmartDataSource } from '@cngx/common';
 import { PEOPLE, type Person } from '../../../../fixtures';

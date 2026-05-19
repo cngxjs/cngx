@@ -50,7 +50,7 @@ export class AutofocusConditionalFocus {
   protected readonly _exDescription: string = 'Reactive autofocus for dynamically inserted elements. Works where native autofocus fails (dialogs, panels, conditional views).';
   protected readonly _exSectionTitle: string = 'Conditional Focus';
   protected readonly _exSubtitle: string = 'The input is always rendered, but focus is applied only when the condition becomes <code>true</code>.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'a11y' }, { dim: 'audience', value: 'dev' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxAutofocus } from '@cngx/common/a11y';
 
 protected readonly showSearch = signal(false);

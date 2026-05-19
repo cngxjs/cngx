@@ -42,7 +42,7 @@ export class RadioIndicatorThemingViaCssCustomProperties {
   protected readonly _exDescription: string = 'Decorative dot-in-circle atom. Mirrors CngxCheckboxIndicator: aria-hidden, no outputs, full --cngx-radio-indicator-* theming. Used by the CngxSelect "radio" indicator variant; future single-value form atoms compose the same skin.';
   protected readonly _exSectionTitle: string = 'Theming via CSS custom properties';
   protected readonly _exSubtitle: string = 'Override <code>--cngx-radio-indicator-checked-color</code>, <code>--cngx-radio-indicator-border-width</code>, <code>--cngx-radio-indicator-dot-size</code>, and friends per consumer.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'visual-variants' }];
   protected readonly _exTs: string = `import { CngxRadioIndicator } from '@cngx/common/display';`;
   protected readonly _exHtml: string = `<div class="row themed">
   <cngx-radio-indicator [checked]="true" size="lg" />

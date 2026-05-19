@@ -50,7 +50,7 @@ export class TagGroupWithHeaderAccessory {
   protected readonly _exDescription: string = 'Decorative label / badge / status indicator. Dual selector ([cngxTag] and &lt;cngx-tag&gt;) so it composes onto any host element including <a> for link-mode tags. Removable affordances live in CngxChip; clickable interactions live on native &lt;button cngxTag&gt; / <a cngxTag>.';
   protected readonly _exSectionTitle: string = 'Group with header + accessory';
   protected readonly _exSubtitle: string = 'Project <code>&lt;ng-template cngxTagGroupHeader&gt;</code> above the tag row and <code>&lt;ng-template cngxTagGroupAccessory&gt;</code> below it. Both slot contexts expose the live <code>count</code> of projected <code>cngxTag</code> children plus the group\'s reactive state — consumer "Filters ({{ count }})" patterns work without injecting the directive.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'visual-variants' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }];
   protected readonly _exTs: string = `import { CngxTag, CngxTagGroup, CngxTagGroupHeader, CngxTagGroupAccessory } from '@cngx/common/display';`;
   protected readonly _exHtml: string = `<cngx-tag-group [semanticList]="true" label="Active filters">
   <ng-template cngxTagGroupHeader let-count="count">

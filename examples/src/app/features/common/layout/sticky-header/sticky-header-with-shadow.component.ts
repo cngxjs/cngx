@@ -58,7 +58,7 @@ export class StickyHeaderStickyHeaderWithShadow {
   protected readonly _exDescription: string = 'Detects when a sticky-positioned element becomes stuck. Toggles a CSS class for shadow or style changes.';
   protected readonly _exSectionTitle: string = 'Sticky Header with Shadow';
   protected readonly _exSubtitle: string = 'Scroll the container below. When the header becomes stuck, a box shadow appears via the <code>cngx-sticky--active</code> class.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxStickyHeader } from '@cngx/common/layout';`;
   protected readonly _exHtml: string = `<div style="height:250px;overflow-y:auto;border:1px solid var(--cngx-color-border,#ddd);border-radius:8px">
   <div style="padding:16px">

@@ -44,7 +44,7 @@ export class AvatarCascadeImageInitialsFallback {
   protected readonly _exDescription: string = 'Avatar display atom with image / initials / content fallback cascade and optional status indicator.';
   protected readonly _exSectionTitle: string = 'Cascade: image, initials, fallback';
   protected readonly _exSubtitle: string = 'Image takes priority. If it errors (try the second one), initials render. The third falls back to projected content.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'visual-variants' }];
   protected readonly _exTs: string = `import { CngxAvatar } from '@cngx/common/display';`;
   protected readonly _exHtml: string = `<div class="row">
   <cngx-avatar src="https://i.pravatar.cc/80?u=jane" alt="Jane" initials="JD"></cngx-avatar>

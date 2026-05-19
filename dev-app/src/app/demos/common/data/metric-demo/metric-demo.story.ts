@@ -7,6 +7,10 @@ export const STORY: DemoSpec = {
   description:
     'Displays a locale-aware formatted number with optional unit. Composable — works inside any card variant or standalone.',
   apiComponents: ['CngxMetric'],
+  level: 'atom',
+  audience: ['dev', 'design'],
+  artifact: 'standalone',
+  focus: ['visual-variants'],
   overview:
     '<p><code>cngx-metric</code> uses <code>Intl.NumberFormat</code> with the injected <code>LOCALE_ID</code>. ' +
     'Null values render as an em-dash. The <code>aria-label</code> includes value and unit.</p>',

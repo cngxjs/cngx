@@ -25,6 +25,10 @@ export const STORY: DemoSpec = {
     'CngxTagGroupHeader',
     'CngxTagGroupAccessory',
   ],
+  level: 'molecule',
+  audience: ['dev', 'design', 'a11y'],
+  artifact: 'standalone',
+  focus: ['visual-variants', 'composition', 'a11y-pattern'],
   overview:
     '<p><code>[cngxTag]</code> applies host classes for variant / color / size / truncate / maxWidth. ' +
     'Predefined colours (<code>neutral</code>, <code>success</code>, <code>warning</code>, <code>error</code>, <code>info</code>) cascade through <code>--cngx-tag-{name}-*</code> custom properties; ' +

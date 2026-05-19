@@ -7,6 +7,10 @@ export const STORY: DemoSpec = {
   description:
     'Presentational separator with proper ARIA semantics. Horizontal or vertical, optionally inset.',
   apiComponents: ['CngxDivider'],
+  level: 'atom',
+  audience: ['dev', 'design'],
+  artifact: 'standalone',
+  focus: ['visual-variants'],
   overview:
     '<p><code>cngx-divider</code> renders <code>role="separator"</code> + <code>aria-orientation</code>. ' +
     'Visual style is driven by CSS custom properties so consumers can restyle without subclassing.</p>',

@@ -7,6 +7,10 @@ export const STORY: DemoSpec = {
   description:
     'Inline mini line chart for KPI cards and dashboard tiles. Composes <cngx-chart> + <cngx-line> + optional <cngx-area> with hidden axes.',
   apiComponents: ['CngxSparkline'],
+  level: 'atom',
+  audience: ['dev', 'design'],
+  artifact: 'standalone',
+  focus: ['visual-variants'],
   overview:
     '<p><code>cngx-sparkline</code> ships a tiny line chart sized at 80×24 by default. ' +
     'Default theming flows via <code>--cngx-sparkline-color</code> (atom-local) → ' +

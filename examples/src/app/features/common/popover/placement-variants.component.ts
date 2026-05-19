@@ -51,7 +51,7 @@ export class PopoverPlacementVariants {
   protected readonly _exDescription: string = 'Signal-driven state machine for the native Popover API. CSS Anchor Positioning, transition-aware lifecycle, no CDK Overlay dependency.';
   protected readonly _exSectionTitle: string = 'Placement Variants';
   protected readonly _exSubtitle: string = 'CSS Anchor Positioning handles all placement. No JavaScript repositioning needed.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
 import type { PopoverPlacement } from '@cngx/common/popover';
 

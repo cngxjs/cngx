@@ -42,7 +42,7 @@ export class TooltipDisabledState {
   protected readonly _exDescription: string = 'String-input tooltip directive using the native Popover API. CSS Anchor Positioning, WCAG 1.4.13 compliant, SR-friendly.';
   protected readonly _exSectionTitle: string = 'Disabled State';
   protected readonly _exSubtitle: string = 'Set <code>[enabled]="false"</code> to disable the tooltip. The <code>aria-describedby</code> is cleared.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'visual-variants' }, { dim: 'focus', value: 'a11y-pattern' }];
   protected readonly _exTs: string = `import { CngxTooltip } from '@cngx/common/popover';`;
   protected readonly _exHtml: string = `<div style="display:flex;gap:16px;align-items:center;padding-top:40px">
   <button cngxTooltip="This tooltip is active" class="chip">Enabled</button>

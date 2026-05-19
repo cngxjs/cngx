@@ -6,6 +6,10 @@ export const STORY: DemoSpec = {
   navCategory: 'interactive',
   description: 'Emits an event when the user interacts outside the host element. Useful for closing dropdowns, tooltips, and overlays.',
   apiComponents: ['CngxClickOutside'],
+  level: 'atom',
+  audience: ['dev'],
+  artifact: 'building-block',
+  focus: ['behavior'],
   setup: `
   protected open = signal(false);
   protected clickCount = signal(0);

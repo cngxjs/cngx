@@ -59,7 +59,7 @@ export class InfiniteScrollScrollableList {
   protected readonly _exDescription: string = 'Intersection-based infinite scroll directive that triggers a callback when a sentinel element enters the viewport.';
   protected readonly _exSectionTitle: string = 'Scrollable List';
   protected readonly _exSubtitle: string = 'Scroll to the bottom to load more items. The sentinel element triggers <code>(scrolled)</code> when it enters the viewport. Loading stops at 100 items.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'behavior' }, { dim: 'focus', value: 'async-state' }];
   protected readonly _exTs: string = `import { CngxInfiniteScroll } from '@cngx/common/layout';
 
 protected readonly items = signal(Array.from({ length: 5 }, (_, i) => \`Item \${i + 1}\`));

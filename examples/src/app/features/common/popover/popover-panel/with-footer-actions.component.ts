@@ -77,7 +77,7 @@ export class PopoverPanelWithFooterActions {
   protected readonly _exDescription: string = 'Rich popover molecule with header/body/footer slots, variant styling, arrow, close button, content state templates, and async action buttons.';
   protected readonly _exSectionTitle: string = 'With Footer Actions';
   protected readonly _exSubtitle: string = 'Use <code>cngx-popover-action</code> for dismiss and confirm buttons. Confirm buttons support async actions with status templates.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'visual-variants' }, { dim: 'focus', value: 'composition' }];
   protected readonly _exTs: string = `import { CngxPopoverPanel, CngxPopoverTrigger, CngxPopoverHeader, CngxPopoverBody, CngxPopoverFooter, CngxPopoverAction } from '@cngx/common/popover';
 import { CngxPending, CngxSucceeded, CngxFailed } from '@cngx/common/interactive';
 

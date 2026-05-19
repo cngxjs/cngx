@@ -43,7 +43,7 @@ export class ButtonToggleGroupBasicViewSwitcher {
   protected readonly _exDescription: string = 'Single-select button-toggle group. W3C APG radiogroup semantics — Tab enters the group, arrow keys MOVE focus AND auto-select the next toggle (auto-select-on-arrow), Space and Enter pick the focused toggle. Tab-into-group does not auto-select (no preceding arrow keydown). Mode is static: this is the single half of a deliberate split, never a runtime [selectionMode] flag. The leaf &lt;button cngxButtonToggle&gt; binds aria-checked. Provides CNGX_BUTTON_TOGGLE_GROUP for the leaf to inject (never the concrete class).';
   protected readonly _exSectionTitle: string = 'Basic — view switcher';
   protected readonly _exSubtitle: string = 'Click any toggle, or Tab into the group and use ArrowLeft/ArrowRight to move + select. <strong>Space</strong>/<strong>Enter</strong> on the focused toggle pick it idempotently. aria-checked reflects the group value reactively via <code>group.value() === toggle.value()</code>.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }];
   protected readonly _exTs: string = `import { CngxButtonToggleGroup, CngxButtonToggle } from '@cngx/common/interactive';
 
 protected readonly view = signal<'grid' | 'list' | 'table' | undefined>('grid');

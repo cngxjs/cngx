@@ -82,7 +82,7 @@ export class ResizeObserverLiveSize {
   protected readonly _exDescription: string = 'Tracks the size of the host element via the ResizeObserver API and exposes width, height, and contentRect as signals.';
   protected readonly _exSectionTitle: string = 'CngxResizeObserver — Live Size';
   protected readonly _exSubtitle: string = '<code>[cngxResizeObserver]</code> wraps the ResizeObserver API. <code>width()</code>, <code>height()</code>, and <code>isReady()</code> are readonly signals updated on every resize.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { DecimalPipe } from '@angular/common';
 import { CngxResizeObserver } from '@cngx/common/layout';`;
   protected readonly _exHtml: string = `<p style="margin-bottom: 8px; color: var(--cngx-text-secondary, #666);">

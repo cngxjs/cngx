@@ -7,6 +7,10 @@ export const STORY: DemoSpec = {
   description:
     'Single option directive that registers with a surrounding CngxActiveDescendant. Click highlights + activates, pointerenter highlights only.',
   apiComponents: ['CngxOption', 'CngxOptionGroup'],
+  level: 'atom',
+  audience: ['dev'],
+  artifact: 'building-block',
+  focus: ['composition'],
   overview:
     '<p><code>[cngxOption]</code> is the smallest selectable leaf of the listbox/menu stack. ' +
     'It provides <code>CNGX_AD_ITEM</code> via DI so the enclosing <code>CngxActiveDescendant</code> ' +

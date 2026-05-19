@@ -7,6 +7,10 @@ export const STORY: DemoSpec = {
   description:
     'Responsive card grid with intrinsic sizing, keyboard navigation via roving tabindex, density levels, and reason-based empty state template selection.',
   apiComponents: ['CngxCardGrid', 'CngxCardGridEmpty'],
+  level: 'molecule',
+  audience: ['dev', 'design'],
+  artifact: 'standalone',
+  focus: ['visual-variants', 'composition'],
   overview:
     '<p>CSS Grid with <code>auto-fill</code> + <code>minmax</code> — no breakpoints needed. ' +
     '<code>CngxRovingTabindex</code> is a host directive for arrow-key navigation between cards.</p>' +

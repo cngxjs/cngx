@@ -15,6 +15,10 @@ export const STORY: DemoSpec = {
     'chip option — they must share a shape. A future <code>[itemValue]</code> input will ' +
     'separate the two extractors; tracked as a follow-up.',
   apiComponents: ['CngxFilterChips', 'CngxFilterChip', 'CngxFilter'],
+  level: 'molecule',
+  audience: ['dev', 'design'],
+  artifact: 'building-block',
+  focus: ['visual-variants', 'integration'],
   moduleImports: [
     "import { CngxFilter, CngxFilterChips, CngxFilterChip } from '@cngx/common/data';",
   ],

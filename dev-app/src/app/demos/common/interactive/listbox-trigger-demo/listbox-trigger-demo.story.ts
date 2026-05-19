@@ -7,6 +7,10 @@ export const STORY: DemoSpec = {
   description:
     'Dropdown select composed from CngxListboxTrigger + CngxPopover + CngxListbox. Full keyboard model (open/close, navigate, activate, focus return).',
   apiComponents: ['CngxListboxTrigger', 'CngxListbox', 'CngxOption', 'CngxPopover'],
+  level: 'molecule',
+  audience: ['dev', 'a11y'],
+  artifact: 'building-block',
+  focus: ['composition', 'a11y-pattern', 'behavior'],
   overview:
     '<p><code>[cngxListboxTrigger]</code> wires a button to a listbox wrapped in a popover. ' +
     'Keyboard: ArrowDown opens and highlights first; ArrowUp opens and highlights last; ' +

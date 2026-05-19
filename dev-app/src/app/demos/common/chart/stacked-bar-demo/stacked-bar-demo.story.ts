@@ -7,6 +7,10 @@ export const STORY: DemoSpec = {
   description:
     'Single-bar composition visualising proportional shares of a fixed total. Pure DOM; ARIA enumerates segments + total.',
   apiComponents: ['CngxStackedBar'],
+  level: 'atom',
+  audience: ['dev', 'design'],
+  artifact: 'standalone',
+  focus: ['visual-variants'],
   moduleImports: [
     "import { CngxStackedBar, type CngxStackedSegment } from '@cngx/common/chart';",
     "import { createManualState } from '@cngx/common/data';",

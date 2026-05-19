@@ -84,7 +84,7 @@ export class PrimitivesAsyncStateMachineOnThePrimitive {
   protected readonly _exDescription: string = 'Compose &lt;cngx-chart&gt; + [cngxAxis] + layer atoms ([cngxLine], [cngxArea], [cngxBar], [cngxScatter], [cngxThreshold], [cngxBand]) directly. The seven preset molecules wrap these primitives; this demo shows how to compose them.';
   protected readonly _exSectionTitle: string = 'Async state machine on the primitive';
   protected readonly _exSubtitle: string = 'Bind [state] to &lt;cngx-chart&gt; and the primitive composition routes through loading / empty / error / content branches automatically. The default loading view is a centred spinner; default empty/error are inline text. Use the *cngxChartLoading / *cngxChartEmpty / *cngxChartError slots to project richer fallbacks (here: &lt;cngx-empty-state&gt; from @cngx/ui).';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'visual-variants' }];
   protected readonly _exTs: string = `import { CngxChart, CngxAxis, CngxLine, CngxArea, CngxThreshold, CngxBand, CngxChartEmpty, CngxChartError } from '@cngx/common/chart';
 import { createManualState } from '@cngx/common/data';
 import { CngxEmptyState } from '@cngx/ui/empty-state';

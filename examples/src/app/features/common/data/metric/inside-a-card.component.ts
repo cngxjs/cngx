@@ -64,7 +64,7 @@ export class MetricInsideACard {
   protected readonly _exDescription: string = 'Displays a locale-aware formatted number with optional unit. Composable — works inside any card variant or standalone.';
   protected readonly _exSectionTitle: string = 'Inside a Card';
   protected readonly _exSubtitle: string = 'Metric as the primary value inside a card body — composable with any card archetype.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'visual-variants' }];
   protected readonly _exTs: string = `import { CngxMetric } from '@cngx/common/data';
 import { CngxCard, CngxCardHeader, CngxCardBody } from '@cngx/common/card';`;
   protected readonly _exHtml: string = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;max-width:600px">

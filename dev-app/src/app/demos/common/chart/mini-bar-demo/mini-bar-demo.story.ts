@@ -7,6 +7,10 @@ export const STORY: DemoSpec = {
   description:
     'Single-value bounded indicator. Pure DOM (no SVG). Host carries role="meter" with reactive ARIA value attributes.',
   apiComponents: ['CngxMiniBar'],
+  level: 'atom',
+  audience: ['dev', 'design'],
+  artifact: 'standalone',
+  focus: ['visual-variants'],
   overview:
     '<p><code>cngx-mini-bar</code> is a horizontal bounded indicator for KPI rows — battery levels, ' +
     'progress percentages, scoring strips. <code>role="meter"</code> ' +

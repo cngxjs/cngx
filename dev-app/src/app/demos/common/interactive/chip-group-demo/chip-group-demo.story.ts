@@ -11,6 +11,10 @@ export const STORY: DemoSpec = {
     '<code>role="listbox"</code>; composes <code>CngxRovingTabindex</code> for arrow-key navigation. ' +
     'Single-mode behaviour: re-clicking the active chip clears the selection (toggle off).',
   apiComponents: ['CngxChipGroup', 'CngxChipInGroup', 'CngxChip', 'CNGX_CHIP_GROUP_HOST'],
+  level: 'molecule',
+  audience: ['dev', 'design'],
+  artifact: 'building-block',
+  focus: ['visual-variants', 'composition'],
   moduleImports: [
     "import { CngxChipGroup, CngxChipInGroup } from '@cngx/common/interactive';",
     "import { CngxChip } from '@cngx/common/display';",

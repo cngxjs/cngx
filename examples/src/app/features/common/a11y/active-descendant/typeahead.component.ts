@@ -68,7 +68,7 @@ export class ActiveDescendantTypeahead {
   protected readonly _exDescription: string = 'WAI-ARIA active-descendant keyboard model for listbox, menu, and combobox widgets. Keeps focus on the host while highlighting the logical current item.';
   protected readonly _exSectionTitle: string = 'Typeahead';
   protected readonly _exSubtitle: string = 'Press letters to jump to the first matching label. Chained within the debounce window (default 300&nbsp;ms).';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'a11y' }, { dim: 'audience', value: 'dev' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxActiveDescendant, type ActiveDescendantItem } from '@cngx/common/a11y';
 
 protected readonly fruits = signal<ActiveDescendantItem[]>([

@@ -47,7 +47,7 @@ export class AutofocusFocusOnInsert {
   protected readonly _exDescription: string = 'Reactive autofocus for dynamically inserted elements. Works where native autofocus fails (dialogs, panels, conditional views).';
   protected readonly _exSectionTitle: string = 'Focus on Insert';
   protected readonly _exSubtitle: string = 'Toggle the search bar. The input is automatically focused when it appears.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'a11y' }, { dim: 'audience', value: 'dev' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxAutofocus } from '@cngx/common/a11y';
 
 protected readonly showSearch = signal(false);

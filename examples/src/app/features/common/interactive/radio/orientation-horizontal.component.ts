@@ -42,7 +42,7 @@ export class RadioOrientationHorizontal {
   protected readonly _exDescription: string = 'Single-select radio-group molecule and its CngxRadio leaves. Group provides CNGX_RADIO_GROUP for parent-child contract (never injects the concrete class) and CngxRovingTabindex as host directive for arrow-key focus movement. Auto-select-on-arrow is wired via a transient pendingArrowSelect flag — Tab-into-group does NOT auto-select; only an arrow keydown followed by focus moves the value.';
   protected readonly _exSectionTitle: string = 'Orientation — horizontal';
   protected readonly _exSubtitle: string = '<code>[orientation]="\'horizontal\'"</code> flips the layout AND tells the host roving directive to use ArrowLeft/ArrowRight for navigation.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }];
   protected readonly _exTs: string = `import { CngxRadioGroup, CngxRadio } from '@cngx/common/interactive';
 
 protected readonly payment = signal<'card' | 'cash' | 'invoice' | undefined>(undefined);

@@ -56,7 +56,7 @@ export class CheckboxGroupBasicSelectAllMasterProjectedLeaves {
   protected readonly _exDescription: string = 'Multi-value checkbox-group molecule. Owns selectedValues (multi-value model), exposes allSelected/someSelected/noneSelected/selectedCount as computed signals, plus a toggleAll/select/deselect API. The "select all" pattern wires a master CngxCheckbox to the group\'s [allSelected] (value) and [someSelected] (indeterminate) so aria-checked="mixed" reflects partial state automatically. Provides CNGX_CONTROL_VALUE for forms-bridge integration. Composes CngxRovingTabindex via hostDirectives for arrow navigation across projected leaves.';
   protected readonly _exSectionTitle: string = 'Basic — select-all master + projected leaves';
   protected readonly _exSubtitle: string = 'The master <code>cngx-checkbox</code> binds <code>[value]="group.allSelected()"</code> and <code>[indeterminate]="group.someSelected()"</code> — its <code>aria-checked</code> flips between <code>true</code>, <code>false</code>, and <code>"mixed"</code> as the picked array changes. Each leaf\'s checked-ness is wired by the consumer via a derived signal; no implicit identity injection.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }];
   protected readonly _exTs: string = `import { CngxCheckboxGroup, CngxCheckbox } from '@cngx/common/interactive';
 
 protected readonly options = ['email', 'sms', 'push'] as const;

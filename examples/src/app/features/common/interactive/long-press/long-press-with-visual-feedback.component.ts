@@ -61,7 +61,7 @@ export class LongPressLongPressWithVisualFeedback {
   protected readonly _exDescription: string = 'Detects long-press gestures via Pointer Events. Cancels on move to prevent accidental triggers during scrolling.';
   protected readonly _exSectionTitle: string = 'Long Press with Visual Feedback';
   protected readonly _exSubtitle: string = 'Hold for 500ms (default). The holding state is shown via <code>longPressing()</code> signal. Moving >10px cancels.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxLongPress } from '@cngx/common/interactive';
 
 protected pressCount = signal(0);

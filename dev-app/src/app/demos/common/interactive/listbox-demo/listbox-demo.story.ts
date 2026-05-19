@@ -7,6 +7,10 @@ export const STORY: DemoSpec = {
   description:
     'Composite listbox primitive with single/multi selection, keyboard navigation, and signal-first ARIA state.',
   apiComponents: ['CngxListbox', 'CngxOption'],
+  level: 'molecule',
+  audience: ['dev', 'a11y'],
+  artifact: 'building-block',
+  focus: ['composition', 'a11y-pattern'],
   overview:
     '<p><code>[cngxListbox]</code> composes <code>CngxActiveDescendant</code> and <code>CngxOption</code> into a fully accessible listbox region. ' +
     'Selection is emitted via <code>valueChange</code> (single mode) or <code>selectedValuesChange</code> (multi mode). ' +

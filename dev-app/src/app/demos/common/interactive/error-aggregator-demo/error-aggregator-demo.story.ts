@@ -14,6 +14,10 @@ export const STORY: DemoSpec = {
     'section below shows the reactive state at the top so the consumer sees ' +
     'every signal toggle live.',
   apiComponents: ['CngxErrorAggregator', 'CngxErrorScope', 'CngxErrorSource'],
+  level: 'molecule',
+  audience: ['dev', 'a11y'],
+  artifact: 'building-block',
+  focus: ['composition', 'a11y-pattern', 'error-handling'],
   moduleImports: [
     "import { CngxErrorAggregator, CngxErrorScope, CngxErrorSource } from '@cngx/common/interactive';",
     "import { CngxCard, CngxCardHeader, CngxCardBody } from '@cngx/common/card';",

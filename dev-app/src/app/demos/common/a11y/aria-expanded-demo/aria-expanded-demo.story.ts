@@ -6,6 +6,10 @@ export const STORY: DemoSpec = {
   navCategory: 'a11y',
   description: 'Manages aria-expanded and aria-controls attributes for disclosure patterns (accordions, dropdowns, details panels).',
   apiComponents: ['CngxAriaExpanded'],
+  level: 'atom',
+  audience: ['a11y', 'dev'],
+  artifact: 'building-block',
+  focus: ['a11y-pattern'],
   setup: `
   protected open = signal(false);
   protected panels = signal<Record<string, boolean>>({ specs: false, reviews: false, shipping: false });

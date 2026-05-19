@@ -9,6 +9,10 @@ export const STORY: DemoSpec = {
     'aria-describedby for the consumer-supplied disabled reason. Click + Space + Enter all flip. ' +
     'Provides CNGX_CONTROL_VALUE so CngxFormBridge (Phase 7) can bind to it without per-atom CVA.',
   apiComponents: ['CngxToggle'],
+  level: 'atom',
+  audience: ['dev', 'design', 'a11y'],
+  artifact: 'standalone',
+  focus: ['visual-variants', 'a11y-pattern'],
   moduleImports: ["import { CngxToggle } from '@cngx/common/interactive';"],
   setup: `
   protected readonly notifications = signal(false);

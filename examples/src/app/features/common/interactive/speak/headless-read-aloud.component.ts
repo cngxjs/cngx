@@ -104,7 +104,7 @@ export class SpeakHeadlessReadAloud {
   protected readonly _exDescription: string = 'Headless text-to-speech directive using the browser SpeechSynthesis API. For dyslexia support, reading assistance, and convenience.';
   protected readonly _exSectionTitle: string = 'CngxSpeak — Headless Read-aloud';
   protected readonly _exSubtitle: string = '<code>[cngxSpeak]</code> is headless — no DOM, no CSS, no button. It exposes <code>speaking()</code>, <code>supported()</code>, <code>toggle()</code>, <code>speak()</code>, and <code>cancel()</code>. The consumer renders their own button. For a ready-made button, see <code>CngxSpeakButton</code> in the <code>@cngx/ui</code> section.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxSpeak } from '@cngx/common/interactive';
 
 protected email = signal('');

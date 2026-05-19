@@ -7,6 +7,10 @@ export const STORY: DemoSpec = {
   description:
     'Touch/click ripple feedback without Material dependency. CSS-var positioned, consumer-styled.',
   apiComponents: ['CngxRipple'],
+  level: 'atom',
+  audience: ['dev', 'design'],
+  artifact: 'building-block',
+  focus: ['visual-variants'],
   overview:
     '<p><code>[cngxRipple]</code> creates ripple waves on pointer contact. Position is set via CSS custom ' +
     'properties (<code>--cngx-ripple-x</code>, <code>--cngx-ripple-y</code>, <code>--cngx-ripple-size</code>). ' +

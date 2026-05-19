@@ -73,7 +73,7 @@ export class ActiveDescendantListboxWithItemsInput {
   protected readonly _exDescription: string = 'WAI-ARIA active-descendant keyboard model for listbox, menu, and combobox widgets. Keeps focus on the host while highlighting the logical current item.';
   protected readonly _exSectionTitle: string = 'Listbox with items input';
   protected readonly _exSubtitle: string = 'Focus stays on the container. Arrow keys, Home/End, Enter/Space and typeahead all navigate via <code>aria-activedescendant</code>. Disabled items are skipped.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'a11y' }, { dim: 'audience', value: 'dev' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxActiveDescendant, type ActiveDescendantItem } from '@cngx/common/a11y';
 
 protected readonly fruits = signal<ActiveDescendantItem[]>([

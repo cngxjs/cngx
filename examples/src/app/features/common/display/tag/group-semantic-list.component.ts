@@ -44,7 +44,7 @@ export class TagGroupSemanticList {
   protected readonly _exDescription: string = 'Decorative label / badge / status indicator. Dual selector ([cngxTag] and &lt;cngx-tag&gt;) so it composes onto any host element including <a> for link-mode tags. Removable affordances live in CngxChip; clickable interactions live on native &lt;button cngxTag&gt; / <a cngxTag>.';
   protected readonly _exSectionTitle: string = 'Group + semantic list';
   protected readonly _exSubtitle: string = 'Wrap projected tags in <code>&lt;cngx-tag-group [semanticList]="true" label="…"&gt;</code> to expose a real <code>role="list"</code> with reactive <code>role="listitem"</code> children — AT reads "Filters, list, 5 items".';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'visual-variants' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }];
   protected readonly _exTs: string = `import { CngxTag, CngxTagGroup } from '@cngx/common/display';`;
   protected readonly _exHtml: string = `<cngx-tag-group [semanticList]="true" label="Filters">
   <span cngxTag color="info">Frontend</span>

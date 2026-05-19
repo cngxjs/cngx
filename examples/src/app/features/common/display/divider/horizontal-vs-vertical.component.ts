@@ -45,7 +45,7 @@ export class DividerHorizontalVsVertical {
   protected readonly _exDescription: string = 'Presentational separator with proper ARIA semantics. Horizontal or vertical, optionally inset.';
   protected readonly _exSectionTitle: string = 'Horizontal vs vertical';
   protected readonly _exSubtitle: string = 'Default orientation is horizontal. Use vertical in flex rows to split inline content.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'visual-variants' }];
   protected readonly _exTs: string = `import { CngxDivider } from '@cngx/common/display';`;
   protected readonly _exHtml: string = `<div class="section">First row</div>
 <cngx-divider></cngx-divider>

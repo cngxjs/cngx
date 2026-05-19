@@ -65,7 +65,7 @@ export class PrimitivesMultiSeriesLineAxisLabelsLegend {
   protected readonly _exDescription: string = 'Compose &lt;cngx-chart&gt; + [cngxAxis] + layer atoms ([cngxLine], [cngxArea], [cngxBar], [cngxScatter], [cngxThreshold], [cngxBand]) directly. The seven preset molecules wrap these primitives; this demo shows how to compose them.';
   protected readonly _exSectionTitle: string = 'Multi-series line + axis labels + legend';
   protected readonly _exSubtitle: string = 'Two metrics on shared scales. Adds [label]="..." on each axis for X/Y titles, and pairs the chart with a presentational &lt;cngx-chart-legend&gt; driven by an [items] array — decoupled from the layer atoms by design.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'visual-variants' }];
   protected readonly _exTs: string = `import { CngxChart, CngxAxis, CngxLine, CngxChartLegend } from '@cngx/common/chart';
 import { createManualState } from '@cngx/common/data';
 

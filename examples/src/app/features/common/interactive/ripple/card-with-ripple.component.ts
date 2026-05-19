@@ -51,7 +51,7 @@ export class RippleCardWithRipple {
   protected readonly _exDescription: string = 'Touch/click ripple feedback without Material dependency. CSS-var positioned, consumer-styled.';
   protected readonly _exSectionTitle: string = 'Card with Ripple';
   protected readonly _exSubtitle: string = 'Apply to any container element. The directive sets <code>position: relative</code> and <code>overflow: hidden</code> on the host automatically.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'visual-variants' }];
   protected readonly _exTs: string = `import { CngxRipple } from '@cngx/common/interactive';`;
   protected readonly _exHtml: string = `<div cngxRipple #rp="cngxRipple"
      style="padding:20px;border:1px solid var(--cngx-color-border,#ddd);

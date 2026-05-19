@@ -51,7 +51,7 @@ export class ChipInputSynchronousTokenization {
   protected readonly _exDescription: string = 'Tokenizing input on a native <code>&lt;input&gt;</code>. Type a value and press Enter (or any configured separator) to emit <code>(tokenCreated)</code>. Backspace at empty input emits <code>(tokenRemoved)</code> — the consumer drops the last chip. Paste with embedded separators emits one token per non-empty fragment. Optional async <code>[validateToken]</code> drives an internal <code>CngxStateful</code> validation slot — bridge directives like <code>&lt;cngx-toast-on /&gt;</code> auto-discover it.';
   protected readonly _exSectionTitle: string = 'Synchronous tokenization';
   protected readonly _exSubtitle: string = 'Default separators: comma and Enter. Backspace at empty input removes the last chip. Paste <code>"foo, bar, baz"</code> to emit three tokens at once.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'behavior' }, { dim: 'focus', value: 'a11y-pattern' }];
   protected readonly _exTs: string = `import { CngxChipInput } from '@cngx/common/interactive';
 import { CngxChip } from '@cngx/common/display';
 

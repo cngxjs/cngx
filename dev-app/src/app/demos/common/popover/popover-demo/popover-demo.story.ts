@@ -7,6 +7,10 @@ export const STORY: DemoSpec = {
   description:
     'Signal-driven state machine for the native Popover API. CSS Anchor Positioning, transition-aware lifecycle, no CDK Overlay dependency.',
   apiComponents: ['CngxPopover', 'CngxPopoverTrigger'],
+  level: 'atom',
+  audience: ['dev', 'design', 'a11y'],
+  artifact: 'building-block',
+  focus: ['composition', 'a11y-pattern', 'behavior'],
   overview:
     '<p><code>[cngxPopover]</code> wraps the browser Popover API with a reactive state machine ' +
     '(<code>closed → opening → open → closing → closed</code>). ' +

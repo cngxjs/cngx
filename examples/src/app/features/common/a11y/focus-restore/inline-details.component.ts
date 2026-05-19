@@ -49,7 +49,7 @@ export class FocusRestoreInlineDetails {
   protected readonly _exDescription: string = 'Captures the previously focused element and restores focus when the host is destroyed. Prevents focus loss to body.';
   protected readonly _exSectionTitle: string = 'Inline Details';
   protected readonly _exSubtitle: string = 'A collapsible detail section. When collapsed, focus returns to the toggle button.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'a11y' }, { dim: 'audience', value: 'dev' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxFocusRestore } from '@cngx/common/a11y';
 
 protected readonly panelOpen = signal(false);

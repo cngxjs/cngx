@@ -6,6 +6,10 @@ export const STORY: DemoSpec = {
   navCategory: 'interactive',
   description: 'Headless text-to-speech directive using the browser SpeechSynthesis API. For dyslexia support, reading assistance, and convenience.',
   apiComponents: ['CngxSpeak'],
+  level: 'atom',
+  audience: ['dev', 'a11y'],
+  artifact: 'building-block',
+  focus: ['a11y-pattern', 'behavior'],
   setup: `
   protected email = signal('');
   protected emailError = computed(() => {

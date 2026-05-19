@@ -68,7 +68,7 @@ export class SmartDataSourceSmartdatasourceCngxpaginateHostdirective {
   protected readonly _exDescription: string = '';
   protected readonly _exSectionTitle: string = 'SmartDataSource + CngxPaginate (hostDirective)';
   protected readonly _exSubtitle: string = 'Adding <code>CngxPaginate</code> as a third <code>hostDirective</code> enables automatic pagination in <code>CngxSmartDataSource</code>. The data source applies the page slice <em>after</em> sort. <code>ds.filteredCount()</code> gives the pre-pagination count to bind as <code>[total]</code> on the paginator. The consumer re-exports the <code>total</code> input from the hostDirective so the parent can set it.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'integration' }];
   protected readonly _exTs: string = `import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFilter, CngxSort, injectSmartDataSource } from '@cngx/common';
 import { PEOPLE, type Person } from '../../../../fixtures';

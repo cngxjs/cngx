@@ -65,7 +65,7 @@ export class ErrorAggregatorCngxPopoverPanelHost {
   protected readonly _exDescription: string = '<code>cngxErrorAggregator</code> rolls up child <code>cngxErrorSource</code> directives into one live A11y surface. Derived signals (<code>hasError</code>, <code>errorCount</code>, <code>activeErrors</code>, <code>errorLabels</code>, <code>shouldShow</code>, <code>announcement</code>) all carry structural <code>equal</code> fns so unrelated re-emissions do not cascade. The directive is template-free — render the SR live region yourself. Each section below shows the reactive state at the top so the consumer sees every signal toggle live.';
   protected readonly _exSectionTitle: string = 'cngx-popover-panel host';
   protected readonly _exSubtitle: string = 'The aggregator binds to a popover-panel body. Click the trigger to open the popover; inside the panel, the aggregator rolls up its sources just like any other host.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'focus', value: 'error-handling' }];
   protected readonly _exTs: string = `import { CngxErrorAggregator, CngxErrorSource } from '@cngx/common/interactive';
 import { CngxPopoverPanel, CngxPopoverTrigger, CngxPopoverHeader, CngxPopoverBody } from '@cngx/common/popover';
 

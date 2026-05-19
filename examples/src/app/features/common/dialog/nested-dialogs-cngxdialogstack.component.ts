@@ -70,7 +70,7 @@ export class DialogNestedDialogsCngxdialogstack {
   protected readonly _exDescription: string = 'Signal-driven state machine for native &lt;dialog&gt;. Typed results, deterministic focus return, ARIA communication, CSS transition support, and opt-in draggable behavior.';
   protected readonly _exSectionTitle: string = 'Nested Dialogs (CngxDialogStack)';
   protected readonly _exSubtitle: string = 'Multiple modal dialogs can be open simultaneously — the browser handles Top Layer stacking natively. <code>CngxDialogStack</code> manages backdrop visibility: only the topmost dialog shows its <code>::backdrop</code>, preventing cumulative darkening. Escape closes the topmost dialog first. Provide the stack via <code>provideDialogStack()</code> at feature level.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxDialog, CngxDialogTitle, CngxDialogDescription, CngxDialogClose } from '@cngx/common/dialog';
 
 // Fake form data for the form dialog demo

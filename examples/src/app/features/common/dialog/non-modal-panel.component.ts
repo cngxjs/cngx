@@ -50,7 +50,7 @@ export class DialogNonModalPanel {
   protected readonly _exDescription: string = 'Signal-driven state machine for native &lt;dialog&gt;. Typed results, deterministic focus return, ARIA communication, CSS transition support, and opt-in draggable behavior.';
   protected readonly _exSectionTitle: string = 'Non-Modal Panel';
   protected readonly _exSubtitle: string = 'Opens with <code>[modal]="false"</code> via <code>dialog.show()</code>. No focus trap, no backdrop, no <code>aria-modal</code>. The page remains fully interactive behind the dialog.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxDialog, CngxDialogTitle, CngxDialogClose } from '@cngx/common/dialog';
 
 // Fake form data for the form dialog demo

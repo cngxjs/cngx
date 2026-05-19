@@ -48,7 +48,7 @@ export class MiniAreaAsyncStateMachine {
   protected readonly _exDescription: string = 'Inline mini filled-area chart. Sibling of &lt;cngx-sparkline&gt;; renders only the area (no line stroke).';
   protected readonly _exSectionTitle: string = 'Async state machine';
   protected readonly _exSubtitle: string = 'Bind [state] to a CngxAsyncState — the area routes through skeleton / empty / error / content branches automatically.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'visual-variants' }];
   protected readonly _exTs: string = `import { CngxMiniArea } from '@cngx/common/chart';
 import { createManualState } from '@cngx/common/data';
 

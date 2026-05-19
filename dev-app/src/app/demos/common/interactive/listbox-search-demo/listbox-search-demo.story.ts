@@ -7,6 +7,10 @@ export const STORY: DemoSpec = {
   description:
     'Search input that drives a sibling CngxListbox. Term is debounced via the underlying CngxSearch hostDirective; listboxes read term + matchFn reactively.',
   apiComponents: ['CngxListboxSearch', 'CngxListbox', 'CngxOption'],
+  level: 'molecule',
+  audience: ['dev', 'a11y'],
+  artifact: 'building-block',
+  focus: ['composition', 'a11y-pattern', 'behavior'],
   overview:
     '<p><code>input[cngxListboxSearch]</code> wraps <code>CngxSearch</code> and adds a <code>matchFn</code>. ' +
     'A <code>CngxListbox</code> nested inside the same view injects the search directive and exposes <code>filteredOptions</code> + <code>hasSearchResults</code>.</p>',

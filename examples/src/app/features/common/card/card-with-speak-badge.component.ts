@@ -87,7 +87,7 @@ export class CardCardWithSpeakBadge {
   protected readonly _exDescription: string = 'Semantic card component with three archetypes: display (article), action (button), and link. Supports selection, loading, disabled with reason, and SR live announcements.';
   protected readonly _exSectionTitle: string = 'Card with Speak Badge';
   protected readonly _exSubtitle: string = 'A <code>cngx-speak-button</code> positioned as a badge reads the card content aloud. The <code>[cngxSpeak]</code> directive on the card body provides the text; the button connects via <code>[speakRef]</code>.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'visual-variants' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }];
   protected readonly _exTs: string = `import { CngxCard, CngxCardHeader, CngxCardTitle, CngxCardSubtitle, CngxCardBody } from '@cngx/common/card';
 import { CngxSpeak } from '@cngx/common/interactive';
 import { CngxSpeakButton } from '@cngx/ui';

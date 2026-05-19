@@ -7,6 +7,10 @@ export const STORY: DemoSpec = {
   description:
     'Floating counter / dot indicator attached to any host element. Purely visual — semantics live on the host via aria-label.',
   apiComponents: ['CngxBadge'],
+  level: 'atom',
+  audience: ['dev', 'design'],
+  artifact: 'standalone',
+  focus: ['visual-variants'],
   overview:
     '<p><code>[cngxBadge]</code> accepts a number, string, or boolean. Numbers respect <code>max</code> (default 99). ' +
     'Boolean <code>true</code> renders as a solid dot. String values render verbatim.</p>',

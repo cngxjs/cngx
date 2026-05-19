@@ -47,7 +47,7 @@ export class PressableTappableCard {
   protected readonly _exDescription: string = 'Instant press feedback via CSS class on pointerdown. 0ms latency — the class appears before click fires.';
   protected readonly _exSectionTitle: string = 'Tappable Card';
   protected readonly _exSubtitle: string = 'Apply to any element — cards, list items, nav links. The <code>pressed()</code> signal drives visual feedback.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'behavior' }, { dim: 'focus', value: 'a11y-pattern' }];
   protected readonly _exTs: string = `import { CngxPressable } from '@cngx/common/interactive';`;
   protected readonly _exHtml: string = `<div cngxPressable #card="cngxPressable"
      style="padding:20px;border:1px solid var(--cngx-color-border,#ddd);border-radius:8px;cursor:pointer;

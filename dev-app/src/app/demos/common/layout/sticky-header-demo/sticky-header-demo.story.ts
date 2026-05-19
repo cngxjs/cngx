@@ -7,6 +7,10 @@ export const STORY: DemoSpec = {
   description:
     'Detects when a sticky-positioned element becomes stuck. Toggles a CSS class for shadow or style changes.',
   apiComponents: ['CngxStickyHeader'],
+  level: 'atom',
+  audience: ['dev', 'design'],
+  artifact: 'building-block',
+  focus: ['behavior'],
   overview:
     '<p><code>[cngxStickyHeader]</code> applies <code>position: sticky; top: 0</code> on the host and ' +
     'inserts an invisible sentinel element to detect when the header becomes stuck. ' +

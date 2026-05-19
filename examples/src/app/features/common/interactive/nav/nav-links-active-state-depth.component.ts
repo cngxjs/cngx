@@ -65,7 +65,7 @@ export class NavNavLinksActiveStateDepth {
   protected readonly _exDescription: string = 'Composable navigation atoms: CngxNavLink (active state + depth), CngxNavGroup (accordion), CngxNavLabel (section header), CngxNavBadge (counter/dot). Combine them to build sidebar menus.';
   protected readonly _exSectionTitle: string = 'Nav Links — Active State + Depth';
   protected readonly _exSubtitle: string = '<code>cngxNavLink</code> sets a <code>--cngx-nav-depth</code> CSS var for indentation and toggles <code>cngx-nav-link--active</code>. Click a link to change the active state.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }];
   protected readonly _exTs: string = `import { CngxNavLink } from '@cngx/common';
 
 protected readonly activeLink = signal('/dashboard');

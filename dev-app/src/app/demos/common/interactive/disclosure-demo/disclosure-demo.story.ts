@@ -7,6 +7,10 @@ export const STORY: DemoSpec = {
   description:
     'Generic expand/collapse atom. Manages aria-expanded, keyboard interaction (Enter, Space, click), and controlled+uncontrolled state. Usable for accordions, FAQs, nav groups, collapsible panels.',
   apiComponents: ['CngxDisclosure'],
+  level: 'atom',
+  audience: ['dev', 'a11y'],
+  artifact: 'building-block',
+  focus: ['a11y-pattern', 'behavior'],
   moduleImports: ["import { CngxDisclosure } from '@cngx/common';"],
   setup: `
   protected readonly controlledOpen = signal(false);

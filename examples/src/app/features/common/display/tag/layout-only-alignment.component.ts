@@ -55,7 +55,7 @@ export class TagLayoutOnlyAlignment {
   protected readonly _exDescription: string = 'Decorative label / badge / status indicator. Dual selector ([cngxTag] and &lt;cngx-tag&gt;) so it composes onto any host element including <a> for link-mode tags. Removable affordances live in CngxChip; clickable interactions live on native &lt;button cngxTag&gt; / <a cngxTag>.';
   protected readonly _exSectionTitle: string = 'Layout-only — alignment';
   protected readonly _exSubtitle: string = 'When the group has more horizontal room than its tags, <code>[align]</code> picks the cross-axis distribution. <code>between</code> resolves to <code>justify-content: space-between</code>.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'visual-variants' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }];
   protected readonly _exTs: string = `import { CngxTag, CngxTagGroup } from '@cngx/common/display';`;
   protected readonly _exHtml: string = `<div style="display: flex; flex-direction: column; gap: 16px;">
   <cngx-tag-group align="start" style="border: 1px dashed #d1d5db; padding: 8px; min-width: 24rem;">

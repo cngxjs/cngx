@@ -87,7 +87,7 @@ export class IntersectionObserverScrollSentinel {
   protected readonly _exDescription: string = 'Tracks whether the host element is visible in the viewport. Exposes isIntersecting, intersectionRatio, and entered/left events as signals.';
   protected readonly _exSectionTitle: string = 'CngxIntersectionObserver — Scroll Sentinel';
   protected readonly _exSubtitle: string = '<code>[cngxIntersectionObserver]</code> wraps the IntersectionObserver API. <code>isIntersecting()</code> is <code>true</code> when any part of the element is visible. <code>intersectionRatio()</code> is a float from <code>0.0</code> (invisible) to <code>1.0</code> (fully visible). <code>(entered)</code> fires when the element goes from invisible to visible, <code>(left)</code> fires the opposite. Set <code>[root]</code> to observe within a scroll container instead of the viewport.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { DecimalPipe } from '@angular/common';
 import { CngxIntersectionObserver } from '@cngx/common/layout';
 

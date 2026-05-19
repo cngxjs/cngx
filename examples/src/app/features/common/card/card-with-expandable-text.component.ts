@@ -62,7 +62,7 @@ export class CardCardWithExpandableText {
   protected readonly _exDescription: string = 'Semantic card component with three archetypes: display (article), action (button), and link. Supports selection, loading, disabled with reason, and SR live announcements.';
   protected readonly _exSectionTitle: string = 'Card with Expandable Text';
   protected readonly _exSubtitle: string = 'Long card content with <code>cngx-expandable-text</code> — truncated to 3 lines with a read-more toggle.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'visual-variants' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }];
   protected readonly _exTs: string = `import { CngxCard, CngxCardHeader, CngxCardTitle, CngxCardBody } from '@cngx/common/card';
 import { CngxExpandableText, CngxExpandableToggle } from '@cngx/common/layout';
 

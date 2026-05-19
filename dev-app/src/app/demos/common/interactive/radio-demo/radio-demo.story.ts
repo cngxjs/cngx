@@ -11,6 +11,10 @@ export const STORY: DemoSpec = {
     'Auto-select-on-arrow is wired via a transient pendingArrowSelect flag — Tab-into-group ' +
     'does NOT auto-select; only an arrow keydown followed by focus moves the value.',
   apiComponents: ['CngxRadioGroup', 'CngxRadio', 'CNGX_RADIO_GROUP'],
+  level: 'molecule',
+  audience: ['dev', 'a11y'],
+  artifact: 'building-block',
+  focus: ['composition', 'a11y-pattern'],
   moduleImports: ["import { CngxRadioGroup, CngxRadio } from '@cngx/common/interactive';"],
   setup: `
   protected readonly payment = signal<'card' | 'cash' | 'invoice' | undefined>(undefined);

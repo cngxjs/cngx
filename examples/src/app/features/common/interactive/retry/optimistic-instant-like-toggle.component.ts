@@ -60,7 +60,7 @@ export class RetryOptimisticInstantLikeToggle {
   protected readonly _exDescription: string = 'withRetry() wraps AsyncAction with automatic retry. optimistic() updates signals immediately with rollback on error.';
   protected readonly _exSectionTitle: string = 'optimistic() — Instant Like Toggle';
   protected readonly _exSubtitle: string = 'Click to toggle. The state updates instantly (optimistic). If the server rejects (30% chance), it rolls back.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'async-state' }, { dim: 'focus', value: 'error-handling' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { withRetry, optimistic } from '@cngx/common/interactive';
 import { of, switchMap, throwError, timer } from 'rxjs';
 

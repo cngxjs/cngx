@@ -42,7 +42,7 @@ export class ToggleCustomThumbGlyph {
   protected readonly _exDescription: string = 'Single-value boolean switch atom. role="switch" with reactive aria-checked, aria-disabled, aria-describedby for the consumer-supplied disabled reason. Click + Space + Enter all flip. Provides CNGX_CONTROL_VALUE so CngxFormBridge (Phase 7) can bind to it without per-atom CVA.';
   protected readonly _exSectionTitle: string = 'Custom thumb glyph';
   protected readonly _exSubtitle: string = '<code>cngx-toggle</code> projects an optional <code>[thumbGlyph]</code> <code>TemplateRef&lt;void&gt;</code> inside the thumb span — useful for design-system icons or branded glyphs. The thumb wrapper stays <code>aria-hidden="true"</code>, so the glyph is decorative regardless of consumer markup.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'visual-variants' }, { dim: 'focus', value: 'a11y-pattern' }];
   protected readonly _exTs: string = `import { CngxToggle } from '@cngx/common/interactive';
 
 protected readonly notifications = signal(false);

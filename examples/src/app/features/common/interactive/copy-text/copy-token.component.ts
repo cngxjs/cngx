@@ -58,7 +58,7 @@ export class CopyTextCopyToken {
   protected readonly _exDescription: string = 'Clipboard copy behavior without forms dependency. Clipboard API with execCommand fallback.';
   protected readonly _exSectionTitle: string = 'Copy Token';
   protected readonly _exSubtitle: string = 'Click the button to copy the API token. The <code>copied()</code> signal drives "Copied!" feedback.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxCopyText } from '@cngx/common/interactive';
 
 protected readonly token = signal('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9');

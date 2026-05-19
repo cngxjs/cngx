@@ -7,6 +7,10 @@ export const STORY: DemoSpec = {
   description:
     'Headless drawer/sidebar system: CngxDrawer (state), CngxDrawerPanel (sliding panel), CngxDrawerContent (content offset). Supports left/right/top/bottom, focus trapping, click-outside close, Escape key, and controlled+uncontrolled modes.',
   apiComponents: ['CngxDrawer', 'CngxDrawerPanel', 'CngxDrawerContent'],
+  level: 'organism',
+  audience: ['dev', 'design', 'a11y'],
+  artifact: 'standalone',
+  focus: ['composition', 'a11y-pattern', 'behavior'],
   moduleImports: [
     "import { CngxDrawer, CngxDrawerPanel, CngxDrawerContent, CngxScrollLock, CngxBackdrop, type DrawerMode } from '@cngx/common';",
     "import { CngxAriaExpanded } from '@cngx/common';",

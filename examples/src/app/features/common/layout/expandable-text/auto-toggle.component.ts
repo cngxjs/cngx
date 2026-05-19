@@ -53,7 +53,7 @@ export class ExpandableTextAutoToggle {
   protected readonly _exDescription: string = 'Molecule wrapping CngxTruncate with a built-in expand/collapse toggle and aria-expanded.';
   protected readonly _exSectionTitle: string = 'Auto-Toggle';
   protected readonly _exSubtitle: string = 'The "Show more" button appears only because the content exceeds 3 lines. Short text would show no button.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxExpandableText } from '@cngx/common/layout';`;
   protected readonly _exHtml: string = `<div style="max-width:400px">
   <cngx-expandable-text [lines]="3" #exp="cngxExpandableText">

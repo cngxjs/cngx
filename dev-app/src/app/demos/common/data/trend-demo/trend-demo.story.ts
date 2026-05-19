@@ -7,6 +7,10 @@ export const STORY: DemoSpec = {
   description:
     'Displays a directional trend indicator with arrow icon and formatted percentage. Consumer can override the SR label for full context.',
   apiComponents: ['CngxTrend'],
+  level: 'atom',
+  audience: ['dev', 'design'],
+  artifact: 'standalone',
+  focus: ['visual-variants'],
   overview:
     '<p><code>cngx-trend</code> shows an up/down/flat arrow with the formatted percentage. ' +
     'The <code>label</code> input overrides the generated SR label — the consumer knows context better ' +

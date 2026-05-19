@@ -81,7 +81,7 @@ export class SwipeDismissDirectionalSwipe {
   protected readonly _exDescription: string = 'Detects directional swipe gestures via Pointer Events. Emits when the gesture exceeds a threshold. Exposes swiping and progress signals.';
   protected readonly _exSectionTitle: string = 'CngxSwipeDismiss — Directional Swipe';
   protected readonly _exSubtitle: string = 'Swipe the box in the selected direction to trigger dismissal. <code>swipeProgress</code> updates in real time during the gesture (0 to 1). <code>(swiped)</code> emits when the threshold is exceeded.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'behavior' }, { dim: 'focus', value: 'a11y-pattern' }];
   protected readonly _exTs: string = `import { CngxSwipeDismiss, type SwipeDirection } from '@cngx/common';
 
 protected readonly swipeDir = signal<SwipeDirection>('left');

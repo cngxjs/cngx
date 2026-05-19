@@ -63,7 +63,7 @@ export class ListboxMultiSelect {
   protected readonly _exDescription: string = 'Composite listbox primitive with single/multi selection, keyboard navigation, and signal-first ARIA state.';
   protected readonly _exSectionTitle: string = 'Multi-select';
   protected readonly _exSubtitle: string = 'Toggle each option on Enter/Space or click. <code>aria-multiselectable="true"</code> is set automatically. <code>isAllSelected</code> derives from options.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }];
   protected readonly _exTs: string = `import { CngxListbox, CngxOption } from '@cngx/common/interactive';
 
 protected readonly singleValue = signal<string | null>(null);

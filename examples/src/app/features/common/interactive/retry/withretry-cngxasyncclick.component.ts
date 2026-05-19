@@ -66,7 +66,7 @@ export class RetryWithretryCngxasyncclick {
   protected readonly _exDescription: string = 'withRetry() wraps AsyncAction with automatic retry. optimistic() updates signals immediately with rollback on error.';
   protected readonly _exSectionTitle: string = 'withRetry + CngxAsyncClick';
   protected readonly _exSubtitle: string = 'This button uses a flaky API (40% success rate). <code>withRetry</code> retries up to 3 times with exponential backoff. The retry state signals drive the UI.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'async-state' }, { dim: 'focus', value: 'error-handling' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxAsyncClick, withRetry, optimistic } from '@cngx/common/interactive';
 import { of, switchMap, throwError, timer } from 'rxjs';
 

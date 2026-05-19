@@ -91,7 +91,7 @@ export class SmartDataSourceAutoWired {
   protected readonly _exDescription: string = '';
   protected readonly _exSectionTitle: string = 'CngxSmartDataSource — Auto-Wired';
   protected readonly _exSubtitle: string = '<code>injectSmartDataSource()</code> is called inside a component whose host element carries <code>[cngxSort]</code> and <code>[cngxFilter]</code> as <code>hostDirectives</code>. The data source auto-discovers them via <code>inject()</code> — no explicit wiring.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'integration' }];
   protected readonly _exTs: string = `import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFilter, CngxSort, injectSmartDataSource } from '@cngx/common';
 import { PEOPLE, type Person } from '../../../../fixtures';

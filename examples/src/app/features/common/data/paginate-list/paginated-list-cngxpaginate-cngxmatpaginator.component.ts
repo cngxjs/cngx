@@ -54,7 +54,7 @@ export class PaginateListPaginatedListCngxpaginateCngxmatpaginator {
   protected readonly _exDescription: string = '';
   protected readonly _exSectionTitle: string = 'Paginated List — CngxPaginate + CngxMatPaginator';
   protected readonly _exSubtitle: string = '<code>CngxPaginate</code> works with any list, not just tables. Put <code>[cngxPaginate]</code> on any wrapper element, bind <code>[total]</code> to the full item count, and slice the array with <code>pg.range()</code> in the <code>@for</code> loop. <code>CngxMatPaginator</code> provides the Material paginator UI via <code>[cngxPaginateRef]</code>.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'behavior' }, { dim: 'focus', value: 'integration' }];
   protected readonly _exTs: string = `import { PEOPLE, type Person } from '../../../../fixtures';
 import { CngxPaginate } from '@cngx/common/data';
 import { CngxMatPaginator } from '@cngx/ui/material';

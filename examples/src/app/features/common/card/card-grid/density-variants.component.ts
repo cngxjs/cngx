@@ -52,7 +52,7 @@ export class CardGridDensityVariants {
   protected readonly _exDescription: string = 'Responsive card grid with intrinsic sizing, keyboard navigation via roving tabindex, density levels, and reason-based empty state template selection.';
   protected readonly _exSectionTitle: string = 'Density Variants';
   protected readonly _exSubtitle: string = 'Toggle density to see gap and padding changes. <code>compact</code> for dashboards, <code>comfortable</code> for browsing.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'visual-variants' }, { dim: 'focus', value: 'composition' }];
   protected readonly _exTs: string = `import { CngxCard, CngxCardBody, CngxCardGrid } from '@cngx/common/card';
 
 protected items = signal(['Alpha', 'Beta', 'Gamma', 'Delta', 'Epsilon', 'Zeta']);

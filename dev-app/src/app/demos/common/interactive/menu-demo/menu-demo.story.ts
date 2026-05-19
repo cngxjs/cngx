@@ -15,6 +15,10 @@ export const STORY: DemoSpec = {
     'CngxMenuItemSuffix',
     'CngxMenuItemKbd',
   ],
+  level: 'organism',
+  audience: ['dev', 'design', 'a11y'],
+  artifact: 'building-block',
+  focus: ['composition', 'a11y-pattern', 'visual-variants'],
   overview:
     '<p><code>[cngxMenu]</code> composes <code>CngxActiveDescendant</code> and role="menu". ' +
     'Arrow keys navigate, Home/End jump to boundaries, typeahead jumps to matching labels, ' +

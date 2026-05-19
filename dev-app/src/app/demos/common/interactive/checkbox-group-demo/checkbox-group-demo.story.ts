@@ -13,6 +13,10 @@ export const STORY: DemoSpec = {
     'for forms-bridge integration. Composes CngxRovingTabindex via hostDirectives for arrow ' +
     'navigation across projected leaves.',
   apiComponents: ['CngxCheckboxGroup', 'CngxCheckbox', 'CNGX_CONTROL_VALUE'],
+  level: 'molecule',
+  audience: ['dev', 'a11y'],
+  artifact: 'building-block',
+  focus: ['composition', 'a11y-pattern'],
   moduleImports: [
     "import { CngxCheckboxGroup, CngxCheckbox } from '@cngx/common/interactive';",
   ],

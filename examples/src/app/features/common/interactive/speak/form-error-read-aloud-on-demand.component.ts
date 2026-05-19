@@ -66,7 +66,7 @@ export class SpeakFormErrorReadAloudOnDemand {
   protected readonly _exDescription: string = 'Headless text-to-speech directive using the browser SpeechSynthesis API. For dyslexia support, reading assistance, and convenience.';
   protected readonly _exSectionTitle: string = 'Form Error — Read-aloud on Demand';
   protected readonly _exSubtitle: string = 'Pair <code>[cngxSpeak]</code> with a custom button to let users hear validation errors. The button only appears when there is an error.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxSpeak } from '@cngx/common/interactive';
 
 protected email = signal('');

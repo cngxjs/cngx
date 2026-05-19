@@ -47,7 +47,7 @@ export class ChipInteractionRemovableWithRemoverequestOnBackspaceDelete {
   protected readonly _exDescription: string = 'Standalone interactive chip atom — applies <code>[cngxChipInteraction]</code> onto the existing <code>&lt;cngx-chip&gt;</code> display pill and adds <code>role="option"</code> selection semantics with a local-owned <code>selected</code> model. Provides <code>CNGX_CONTROL_VALUE</code> so <code>CngxFormBridge</code> can adapt it to Reactive Forms. Use this when a chip stands alone (filter tag, single suggestion); use <code>[cngxChipInGroup]</code> instead for chips inside a chip-group.';
   protected readonly _exSectionTitle: string = 'Removable with (removeRequest) on Backspace / Delete';
   protected readonly _exSubtitle: string = 'Backspace and Delete fire the <code>(removeRequest)</code> output — the consumer decides what removal means. Click on the chip body still toggles selection; click on the close button fires <code>(remove)</code> from <code>&lt;cngx-chip&gt;</code> (no double-toggle).';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxChipInteraction } from '@cngx/common/interactive';
 import { CngxChip } from '@cngx/common/display';
 

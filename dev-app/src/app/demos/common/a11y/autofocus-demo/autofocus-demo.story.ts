@@ -7,6 +7,10 @@ export const STORY: DemoSpec = {
   description:
     'Reactive autofocus for dynamically inserted elements. Works where native autofocus fails (dialogs, panels, conditional views).',
   apiComponents: ['CngxAutofocus'],
+  level: 'atom',
+  audience: ['a11y', 'dev'],
+  artifact: 'building-block',
+  focus: ['a11y-pattern', 'behavior'],
   overview:
     '<p>The native <code>autofocus</code> attribute only works on initial page load. ' +
     '<code>[cngxAutofocus]</code> handles dynamic content — focusing elements when they appear or when a condition becomes true.</p>',

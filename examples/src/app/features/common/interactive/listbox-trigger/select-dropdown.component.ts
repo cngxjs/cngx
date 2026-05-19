@@ -76,7 +76,7 @@ export class ListboxTriggerSelectDropdown {
   protected readonly _exDescription: string = 'Dropdown select composed from CngxListboxTrigger + CngxPopover + CngxListbox. Full keyboard model (open/close, navigate, activate, focus return).';
   protected readonly _exSectionTitle: string = 'Select dropdown';
   protected readonly _exSubtitle: string = 'Click or press ArrowDown to open. Enter / click on an option to select and close.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxListbox, CngxListboxTrigger, CngxOption } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
 

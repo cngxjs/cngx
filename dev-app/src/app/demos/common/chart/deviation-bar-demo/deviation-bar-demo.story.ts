@@ -7,6 +7,10 @@ export const STORY: DemoSpec = {
   description:
     'Single-value indicator that diverges from a baseline (default 0). Negative deviations render to the left; positive to the right.',
   apiComponents: ['CngxDeviationBar'],
+  level: 'atom',
+  audience: ['dev', 'design'],
+  artifact: 'standalone',
+  focus: ['visual-variants'],
   moduleImports: [
     "import { CngxDeviationBar } from '@cngx/common/chart';",
     "import { createManualState } from '@cngx/common/data';",

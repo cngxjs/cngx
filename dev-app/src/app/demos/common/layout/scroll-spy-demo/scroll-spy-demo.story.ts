@@ -7,6 +7,10 @@ export const STORY: DemoSpec = {
   description:
     'Tracks which section is most visible in the viewport. Ideal for scroll-based navigation highlighting.',
   apiComponents: ['CngxScrollSpy'],
+  level: 'atom',
+  audience: ['dev', 'a11y'],
+  artifact: 'building-block',
+  focus: ['behavior', 'a11y-pattern'],
   overview:
     '<p><code>[cngxScrollSpy]</code> observes section elements by ID using <code>IntersectionObserver</code> ' +
     'and reports the one with the highest visibility ratio. Pairs naturally with <code>CngxNavLink</code> for navigation highlighting.</p>',

@@ -49,7 +49,7 @@ export class TooltipPlacement {
   protected readonly _exDescription: string = 'String-input tooltip directive using the native Popover API. CSS Anchor Positioning, WCAG 1.4.13 compliant, SR-friendly.';
   protected readonly _exSectionTitle: string = 'Placement';
   protected readonly _exSubtitle: string = 'Set <code>tooltipPlacement</code> to position the tooltip relative to the trigger.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'visual-variants' }, { dim: 'focus', value: 'a11y-pattern' }];
   protected readonly _exTs: string = `import { CngxTooltip } from '@cngx/common/popover';`;
   protected readonly _exHtml: string = `<div style="display:grid;grid-template-columns:repeat(3,auto);gap:16px;justify-content:center;
             padding:60px 20px">

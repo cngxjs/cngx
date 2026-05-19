@@ -73,7 +73,7 @@ export class DialogTemplateDirectives {
   protected readonly _exDescription: string = 'Signal-driven state machine for native &lt;dialog&gt;. Typed results, deterministic focus return, ARIA communication, CSS transition support, and opt-in draggable behavior.';
   protected readonly _exSectionTitle: string = 'Template Directives';
   protected readonly _exSubtitle: string = 'The dialog is composed from focused directives: <code>cngxDialogTitle</code> auto-wires <code>aria-labelledby</code>, <code>cngxDialogDescription</code> wires <code>aria-describedby</code>, <code>cngxDialogClose</code> handles close with a typed value or dismiss without one. Each directive generates deterministic ARIA IDs — no manual <code>id</code> management.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxDialog, CngxDialogTitle, CngxDialogDescription, CngxDialogClose } from '@cngx/common/dialog';
 import { FormsModule } from '@angular/forms';
 import { JsonPipe } from '@angular/common';

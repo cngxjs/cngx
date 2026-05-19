@@ -53,7 +53,7 @@ export class PrimitivesLineAreaThresholdBand {
   protected readonly _exDescription: string = 'Compose &lt;cngx-chart&gt; + [cngxAxis] + layer atoms ([cngxLine], [cngxArea], [cngxBar], [cngxScatter], [cngxThreshold], [cngxBand]) directly. The seven preset molecules wrap these primitives; this demo shows how to compose them.';
   protected readonly _exSectionTitle: string = 'Line + area + threshold + band';
   protected readonly _exSubtitle: string = 'A multi-layer chart with a target threshold and a "watch zone" band.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'visual-variants' }];
   protected readonly _exTs: string = `import { CngxChart, CngxAxis, CngxLine, CngxArea, CngxThreshold, CngxBand } from '@cngx/common/chart';
 import { createManualState } from '@cngx/common/data';
 

@@ -64,7 +64,7 @@ export class ClickOutsideDropdown {
   protected readonly _exDescription: string = 'Emits an event when the user interacts outside the host element. Useful for closing dropdowns, tooltips, and overlays.';
   protected readonly _exSectionTitle: string = 'CngxClickOutside — Dropdown';
   protected readonly _exSubtitle: string = '<code>[cngxClickOutside]</code> listens for <code>pointerdown</code> on the document and emits <code>(clickOutside)</code> when the event target is outside the host. Works for both mouse and touch via the Pointer Events API.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxClickOutside } from '@cngx/common/interactive';
 
 protected open = signal(false);

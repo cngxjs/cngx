@@ -63,7 +63,7 @@ export class TagSlotOverridesPrefixLabelSuffix {
   protected readonly _exDescription: string = 'Decorative label / badge / status indicator. Dual selector ([cngxTag] and &lt;cngx-tag&gt;) so it composes onto any host element including <a> for link-mode tags. Removable affordances live in CngxChip; clickable interactions live on native &lt;button cngxTag&gt; / <a cngxTag>.';
   protected readonly _exSectionTitle: string = 'Slot overrides — prefix / label / suffix';
   protected readonly _exSubtitle: string = 'Project <code>&lt;ng-template cngxTagPrefix&gt;</code>, <code>&lt;ng-template cngxTagLabel&gt;</code>, or <code>&lt;ng-template cngxTagSuffix&gt;</code> to control each region. Prefix and suffix slots render no DOM when omitted; the default label wraps content in <code>cngx-tag__label</code> for ellipsis support.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'visual-variants' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }];
   protected readonly _exTs: string = `import { CngxTag, CngxTagPrefix, CngxTagSuffix, CngxIcon } from '@cngx/common/display';`;
   protected readonly _exHtml: string = `<div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
   <span cngxTag color="success">

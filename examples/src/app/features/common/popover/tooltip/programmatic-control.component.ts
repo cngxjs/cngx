@@ -50,7 +50,7 @@ export class TooltipProgrammaticControl {
   protected readonly _exDescription: string = 'String-input tooltip directive using the native Popover API. CSS Anchor Positioning, WCAG 1.4.13 compliant, SR-friendly.';
   protected readonly _exSectionTitle: string = 'Programmatic Control';
   protected readonly _exSubtitle: string = 'Use <code>#tip="cngxTooltip"</code> to access <code>show()</code>, <code>hide()</code>, and <code>state()</code>.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'visual-variants' }, { dim: 'focus', value: 'a11y-pattern' }];
   protected readonly _exTs: string = `import { CngxTooltip } from '@cngx/common/popover';`;
   protected readonly _exHtml: string = `<div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding-top:40px">
   <button cngxTooltip="Programmatically controlled" #tip="cngxTooltip" class="chip">

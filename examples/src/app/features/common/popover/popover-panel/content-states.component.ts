@@ -66,7 +66,7 @@ export class PopoverPanelContentStates {
   protected readonly _exDescription: string = 'Rich popover molecule with header/body/footer slots, variant styling, arrow, close button, content state templates, and async action buttons.';
   protected readonly _exSectionTitle: string = 'Content States';
   protected readonly _exSubtitle: string = 'Use <code>[loading]</code>, <code>[error]</code>, <code>[empty]</code> inputs with matching templates for content lifecycle.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'visual-variants' }, { dim: 'focus', value: 'composition' }];
   protected readonly _exTs: string = `import { CngxPopoverPanel, CngxPopoverTrigger, CngxPopoverHeader, CngxPopoverBody, CngxPopoverLoading, CngxPopoverError } from '@cngx/common/popover';
 
 protected simulateSave = () => new Promise<void>(resolve => setTimeout(resolve, 1500));

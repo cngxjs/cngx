@@ -52,7 +52,7 @@ export class RippleButtonRipples {
   protected readonly _exDescription: string = 'Touch/click ripple feedback without Material dependency. CSS-var positioned, consumer-styled.';
   protected readonly _exSectionTitle: string = 'Button Ripples';
   protected readonly _exSubtitle: string = 'Click each button to see the ripple expand from the pointer position. The ripple color follows <code>currentColor</code> by default.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'visual-variants' }];
   protected readonly _exTs: string = `import { CngxRipple } from '@cngx/common/interactive';`;
   protected readonly _exHtml: string = `<div class="button-row" style="gap:12px">
   <button cngxRipple class="chip" >

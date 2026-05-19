@@ -56,7 +56,7 @@ export class KeyboardShortcutGlobalShortcut {
   protected readonly _exDescription: string = 'Declarative keyboard shortcut handler. Supports mod (Meta/Ctrl), global/self scope, and input element filtering.';
   protected readonly _exSectionTitle: string = 'Global Shortcut';
   protected readonly _exSubtitle: string = 'Press <code>Ctrl+K</code> (or <code>Cmd+K</code> on macOS) anywhere on the page. It will not fire while typing in the input field below — global scope filters input elements.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxKeyboardShortcut } from '@cngx/common/interactive';
 
 protected globalCount = signal(0);

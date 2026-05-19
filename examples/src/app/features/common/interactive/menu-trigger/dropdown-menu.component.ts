@@ -80,7 +80,7 @@ export class MenuTriggerDropdownMenu {
   protected readonly _exDescription: string = 'Button that opens a CngxMenu inside a CngxPopover. Full keyboard support; activation always closes the menu (menu semantics).';
   protected readonly _exSectionTitle: string = 'Dropdown menu';
   protected readonly _exSubtitle: string = 'Press ArrowDown/Enter/Space to open, Escape to close. Arrow keys navigate, typeahead jumps to matching labels.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxMenu, CngxMenuItem, CngxMenuTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
 

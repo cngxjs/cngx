@@ -13,6 +13,10 @@ export const STORY: DemoSpec = {
     'CngxVirtualItem',
     'CngxRecyclerAnnouncer',
   ],
+  level: 'molecule',
+  audience: ['dev', 'a11y'],
+  artifact: 'building-block',
+  focus: ['behavior', 'a11y-pattern', 'async-state'],
   moduleImports: [
     "import { injectRecycler, CngxMeasure, CngxVirtualItem, CngxRecyclerAnnouncer } from '@cngx/common/data';",
     "import { CngxInfiniteScroll } from '@cngx/common/layout';",

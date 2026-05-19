@@ -51,7 +51,7 @@ export class DialogCngxdialogopenerProgrammatic {
   protected readonly _exDescription: string = 'Signal-driven state machine for native &lt;dialog&gt;. Typed results, deterministic focus return, ARIA communication, CSS transition support, and opt-in draggable behavior.';
   protected readonly _exSectionTitle: string = 'CngxDialogOpener (Programmatic)';
   protected readonly _exSubtitle: string = 'For fully programmatic dialogs — no <code>&lt;dialog&gt;</code> in your template — use <code>CngxDialogOpener</code>. Requires <code>provideDialog()</code> in providers. Returns a typed <code>CngxDialogRef</code> with Signal-based result and Observable compat.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxDialog } from '@cngx/common/dialog';
 
 // Fake form data for the form dialog demo

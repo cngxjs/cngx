@@ -110,7 +110,7 @@ export class ReducedMotionAnimationToggle {
   protected readonly _exDescription: string = 'Reads the prefers-reduced-motion media query and adds the cngx-reduced-motion CSS class when the user prefers reduced motion.';
   protected readonly _exSectionTitle: string = 'CngxReducedMotion — Animation Toggle';
   protected readonly _exSubtitle: string = '<code>[cngxReducedMotion]</code> reflects <code>prefers-reduced-motion: reduce</code> as a signal. Use it in TypeScript to conditionally skip animations, transitions, or auto-playing media — not just CSS. The <code>cngx-reduced-motion</code> class on the host element enables CSS-only overrides too.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'a11y' }, { dim: 'audience', value: 'dev' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxReducedMotion } from '@cngx/common/a11y';
 
 protected notifications = signal<{ id: number; text: string }[]>([]);

@@ -39,7 +39,7 @@ export class ToggleLabelPosition {
   protected readonly _exDescription: string = 'Single-value boolean switch atom. role="switch" with reactive aria-checked, aria-disabled, aria-describedby for the consumer-supplied disabled reason. Click + Space + Enter all flip. Provides CNGX_CONTROL_VALUE so CngxFormBridge (Phase 7) can bind to it without per-atom CVA.';
   protected readonly _exSectionTitle: string = 'Label position';
   protected readonly _exSubtitle: string = '<code>[labelPosition]="\'before\'"</code> renders the label to the left of the track via <code>flex-direction: row-reverse</code> on the host class.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'visual-variants' }, { dim: 'focus', value: 'a11y-pattern' }];
   protected readonly _exTs: string = `import { CngxToggle } from '@cngx/common/interactive';
 
 protected readonly notifications = signal(false);

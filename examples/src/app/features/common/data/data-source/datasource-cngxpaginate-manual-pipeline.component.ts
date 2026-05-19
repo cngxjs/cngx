@@ -70,7 +70,7 @@ export class DataSourceDatasourceCngxpaginateManualPipeline {
   protected readonly _exDescription: string = '';
   protected readonly _exSectionTitle: string = 'DataSource + CngxPaginate — Manual Pipeline';
   protected readonly _exSubtitle: string = 'Pagination slots naturally into the manual pipeline. Pass a <code>computed()</code> that includes the slice to <code>injectDataSource()</code>. <code>CngxPaginate</code> is placed in the template via a template ref (<code>#pg</code>). Controlled mode wires the component\'s <code>pageIndex</code> / <code>pageSize</code> signals to the directive — <code>(pageChange)</code> / <code>(pageSizeChange)</code> keep them in sync.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'integration' }, { dim: 'focus', value: 'async-state' }];
   protected readonly _exTs: string = `import { toSignal } from '@angular/core/rxjs-interop';
 import { injectDataSource } from '@cngx/common';
 import { PEOPLE, type Person } from '../../../../fixtures';

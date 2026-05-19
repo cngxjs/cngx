@@ -69,7 +69,7 @@ export class ErrorAggregatorCngxCardHostNoScopeErrorsVisibleImmediately {
   protected readonly _exDescription: string = '<code>cngxErrorAggregator</code> rolls up child <code>cngxErrorSource</code> directives into one live A11y surface. Derived signals (<code>hasError</code>, <code>errorCount</code>, <code>activeErrors</code>, <code>errorLabels</code>, <code>shouldShow</code>, <code>announcement</code>) all carry structural <code>equal</code> fns so unrelated re-emissions do not cascade. The directive is template-free — render the SR live region yourself. Each section below shows the reactive state at the top so the consumer sees every signal toggle live.';
   protected readonly _exSectionTitle: string = 'cngx-card host (no scope — errors visible immediately)';
   protected readonly _exSubtitle: string = 'Without a <code>cngxErrorScope</code> ancestor the aggregator falls back to <code>shouldShow === hasError</code>. Errors render the moment a source toggles. The card body host element carries <code>.cngx-error</code> + <code>aria-invalid="true"</code> reactively.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'focus', value: 'error-handling' }];
   protected readonly _exTs: string = `import { CngxErrorAggregator, CngxErrorSource } from '@cngx/common/interactive';
 import { CngxCard, CngxCardHeader, CngxCardBody } from '@cngx/common/card';
 

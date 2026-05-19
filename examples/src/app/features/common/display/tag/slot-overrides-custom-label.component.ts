@@ -50,7 +50,7 @@ export class TagSlotOverridesCustomLabel {
   protected readonly _exDescription: string = 'Decorative label / badge / status indicator. Dual selector ([cngxTag] and &lt;cngx-tag&gt;) so it composes onto any host element including <a> for link-mode tags. Removable affordances live in CngxChip; clickable interactions live on native &lt;button cngxTag&gt; / <a cngxTag>.';
   protected readonly _exSectionTitle: string = 'Slot overrides — custom label';
   protected readonly _exSubtitle: string = 'Replace the default <code>cngx-tag__label</code> wrapper with a richer inner element. Use <code>&lt;bdi&gt;</code> for bidi-safe rendering of user-supplied names; replacing the label drops the default ellipsis hook so the consumer template owns the overflow strategy. The label slot context exposes <code>variant</code>, <code>color</code>, <code>size</code>, and <code>truncate</code> reactively via <code>let-*</code> bindings.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'visual-variants' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }];
   protected readonly _exTs: string = `import { CngxTag, CngxTagLabel } from '@cngx/common/display';`;
   protected readonly _exHtml: string = `<div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
   <span cngxTag color="info">

@@ -7,6 +7,10 @@ export const STORY: DemoSpec = {
   description:
     'Composable navigation atoms: CngxNavLink (active state + depth), CngxNavGroup (accordion), CngxNavLabel (section header), CngxNavBadge (counter/dot). Combine them to build sidebar menus.',
   apiComponents: ['CngxNavLink', 'CngxNavGroup', 'CngxNavBadge', 'CngxNavLabel'],
+  level: 'molecule',
+  audience: ['dev', 'design', 'a11y'],
+  artifact: 'building-block',
+  focus: ['composition', 'a11y-pattern'],
   moduleImports: [
     "import { CngxNavLink, CngxNavGroup, CngxNavLabel, CngxNavBadge } from '@cngx/common';",
   ],

@@ -44,7 +44,7 @@ export class IconSizes {
   protected readonly _exDescription: string = 'Display atom for icons. Projects its content (font glyph, SVG, image) and adds ARIA semantics and sizing.';
   protected readonly _exSectionTitle: string = 'Sizes';
   protected readonly _exSubtitle: string = 'Five size presets driven by CSS custom properties. Default font size is 1.25em; override via <code>--cngx-icon-size</code>.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'visual-variants' }];
   protected readonly _exTs: string = `import { CngxIcon } from '@cngx/common/display';`;
   protected readonly _exHtml: string = `<div class="icon-row">
   <cngx-icon size="xs">★</cngx-icon>

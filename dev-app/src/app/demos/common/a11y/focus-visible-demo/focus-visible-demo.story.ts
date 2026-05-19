@@ -6,6 +6,10 @@ export const STORY: DemoSpec = {
   navCategory: 'a11y',
   description: 'Tracks keyboard-initiated focus to distinguish it from pointer focus. Adds the cngx-focus-visible CSS class only when focus was triggered by keyboard.',
   apiComponents: ['CngxFocusVisible'],
+  level: 'atom',
+  audience: ['a11y', 'dev'],
+  artifact: 'building-block',
+  focus: ['a11y-pattern', 'behavior'],
   setup: `
   protected name = signal('');
   protected email = signal('');

@@ -5,6 +5,10 @@ export const STORY: DemoSpec = {
   navLabel: 'Paginate (List)',
   navCategory: 'data',
   apiComponents: ['CngxPaginate', 'CngxMatPaginator'],
+  level: 'atom',
+  audience: ['dev'],
+  artifact: 'building-block',
+  focus: ['behavior', 'integration'],
   moduleImports: [
     "import { PEOPLE, type Person } from '../../../../fixtures';",
   ],

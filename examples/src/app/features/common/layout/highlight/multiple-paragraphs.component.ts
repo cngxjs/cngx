@@ -49,7 +49,7 @@ export class HighlightMultipleParagraphs {
   protected readonly _exDescription: string = 'Search-text highlighting via <mark> elements. Safe text-node walking, no innerHTML.';
   protected readonly _exSectionTitle: string = 'Multiple Paragraphs';
   protected readonly _exSubtitle: string = 'Highlight works across nested elements — it walks all text nodes recursively.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'visual-variants' }];
   protected readonly _exTs: string = `import { CngxHighlight } from '@cngx/common/layout';
 
 protected readonly searchTerm = signal('');`;

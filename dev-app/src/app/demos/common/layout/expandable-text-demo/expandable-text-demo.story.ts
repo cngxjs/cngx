@@ -7,6 +7,10 @@ export const STORY: DemoSpec = {
   description:
     'Molecule wrapping CngxTruncate with a built-in expand/collapse toggle and aria-expanded.',
   apiComponents: ['CngxExpandableText'],
+  level: 'atom',
+  audience: ['dev'],
+  artifact: 'building-block',
+  focus: ['behavior'],
   overview:
     '<p><code>cngx-expandable-text</code> wraps content in a truncated container with a toggle button. ' +
     'The button only appears when content actually overflows. <code>aria-expanded</code> is managed automatically.</p>',

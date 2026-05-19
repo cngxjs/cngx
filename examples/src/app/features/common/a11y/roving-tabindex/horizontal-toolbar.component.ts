@@ -52,7 +52,7 @@ export class RovingTabindexHorizontalToolbar {
   protected readonly _exDescription: string = 'WAI-ARIA roving tabindex pattern for composite widgets. Arrow keys move focus within the group; Tab leaves it.';
   protected readonly _exSectionTitle: string = 'Horizontal Toolbar';
   protected readonly _exSubtitle: string = 'Arrow Left/Right moves focus. Home/End jumps to first/last. Tab leaves the toolbar entirely.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'a11y' }, { dim: 'audience', value: 'dev' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxRovingTabindex, CngxRovingItem } from '@cngx/common/a11y';
 
 protected readonly activeToolbar = signal(0);

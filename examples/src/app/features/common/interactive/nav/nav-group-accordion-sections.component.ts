@@ -88,7 +88,7 @@ export class NavNavGroupAccordionSections {
   protected readonly _exDescription: string = 'Composable navigation atoms: CngxNavLink (active state + depth), CngxNavGroup (accordion), CngxNavLabel (section header), CngxNavBadge (counter/dot). Combine them to build sidebar menus.';
   protected readonly _exSectionTitle: string = 'Nav Group — Accordion Sections';
   protected readonly _exSubtitle: string = '<code>cngxNavGroup</code> composes <code>CngxDisclosure</code> as a hostDirective. Click a group header to expand/collapse. <code>aria-expanded</code> is set automatically.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }];
   protected readonly _exTs: string = `import { CngxNavLink, CngxNavGroup, CngxNavLabel } from '@cngx/common';
 
 protected readonly activeLink = signal('/dashboard');

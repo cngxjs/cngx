@@ -12,6 +12,10 @@ export const STORY: DemoSpec = {
     '<code>[validateToken]</code> drives an internal <code>CngxStateful</code> validation ' +
     'slot — bridge directives like <code>&lt;cngx-toast-on /&gt;</code> auto-discover it.',
   apiComponents: ['CngxChipInput', 'CNGX_STATEFUL'],
+  level: 'molecule',
+  audience: ['dev', 'design', 'a11y'],
+  artifact: 'standalone',
+  focus: ['behavior', 'a11y-pattern'],
   moduleImports: [
     "import { CngxChipInput } from '@cngx/common/interactive';",
     "import { CngxChip } from '@cngx/common/display';",

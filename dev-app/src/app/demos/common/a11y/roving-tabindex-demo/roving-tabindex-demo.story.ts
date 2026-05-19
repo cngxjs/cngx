@@ -7,6 +7,10 @@ export const STORY: DemoSpec = {
   description:
     'WAI-ARIA roving tabindex pattern for composite widgets. Arrow keys move focus within the group; Tab leaves it.',
   apiComponents: ['CngxRovingTabindex', 'CngxRovingItem'],
+  level: 'atom',
+  audience: ['a11y', 'dev'],
+  artifact: 'building-block',
+  focus: ['a11y-pattern', 'behavior'],
   overview:
     '<p><code>[cngxRovingTabindex]</code> manages keyboard navigation in composite widgets ' +
     'like toolbars, tab lists, and card grids. Only one item has <code>tabindex="0"</code> at a time. ' +

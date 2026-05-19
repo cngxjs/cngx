@@ -7,6 +7,10 @@ export const STORY: DemoSpec = {
   description:
     'Menu items with their own state: checkboxes for toggles, radios for mutually exclusive choices inside a CngxMenuGroup.',
   apiComponents: ['CngxMenuItemCheckbox', 'CngxMenuItemRadio', 'CngxMenuGroup'],
+  level: 'molecule',
+  audience: ['dev', 'a11y'],
+  artifact: 'building-block',
+  focus: ['composition', 'a11y-pattern'],
   overview:
     '<p><code>[cngxMenuItemCheckbox]</code> renders <code>role="menuitemcheckbox"</code> with a ' +
     'two-way <code>[(checked)]</code> model. <code>[cngxMenuItemRadio]</code> renders ' +

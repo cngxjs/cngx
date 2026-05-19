@@ -7,6 +7,10 @@ export const STORY: DemoSpec = {
   description:
     'Declarative keyboard shortcut handler. Supports mod (Meta/Ctrl), global/self scope, and input element filtering.',
   apiComponents: ['CngxKeyboardShortcut'],
+  level: 'atom',
+  audience: ['dev', 'a11y'],
+  artifact: 'building-block',
+  focus: ['a11y-pattern', 'behavior'],
   overview:
     '<p><code>[cngxKeyboardShortcut]</code> binds keyboard combos declaratively. ' +
     '<code>mod</code> resolves to Meta on macOS, Ctrl elsewhere. ' +

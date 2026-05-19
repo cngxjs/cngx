@@ -47,7 +47,7 @@ export class MultiChipGroupMultiSelectChipsWithSelectionCount {
   protected readonly _exDescription: string = 'Multi-select chip group molecule. Owns <code>selectedValues = model&lt;T[]&gt;</code>, provides <code>CNGX_CHIP_GROUP_HOST</code> with multi-select semantics, and uses <code>createSelectionController</code> internally for membership tracking. Renders <code>role="listbox" aria-multiselectable="true"</code>; chips toggle independently. Use <code>[keyFn]</code> for object-valued options where reference equality is unstable.';
   protected readonly _exSectionTitle: string = 'Multi-select chips with selection count';
   protected readonly _exSubtitle: string = 'Independent toggle per chip. <code>selectedCount</code> is exposed on the group for label hints. Multi-select uses <code>createSelectionController</code> with structural-equality membership tracking.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }];
   protected readonly _exTs: string = `import { CngxMultiChipGroup, CngxChipInGroup } from '@cngx/common/interactive';
 import { CngxChip } from '@cngx/common/display';
 

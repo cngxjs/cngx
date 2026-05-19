@@ -19,6 +19,10 @@ export const STORY: DemoSpec = {
     'CngxCardAccent',
     'CngxCardSkeleton',
   ],
+  level: 'organism',
+  audience: ['dev', 'design', 'a11y'],
+  artifact: 'standalone',
+  focus: ['visual-variants', 'composition', 'a11y-pattern'],
   overview:
     '<p><code>cngx-card</code> uses the host element as the semantic role — no inner wrapper. ' +
     'The <code>as</code> input sets the archetype: <code>"article"</code> (display), <code>"button"</code> (action), or <code>"link"</code> (navigation).</p>' +

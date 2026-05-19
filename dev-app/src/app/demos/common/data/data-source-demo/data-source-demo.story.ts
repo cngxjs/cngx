@@ -5,6 +5,10 @@ export const STORY: DemoSpec = {
   navLabel: 'DataSource',
   navCategory: 'data',
   apiComponents: ['CngxPaginate', 'CngxMatPaginator'],
+  level: 'molecule',
+  audience: ['dev'],
+  artifact: 'building-block',
+  focus: ['integration', 'async-state'],
   moduleImports: [
     "import { toSignal } from '@angular/core/rxjs-interop';",
     "import { injectDataSource } from '@cngx/common';",

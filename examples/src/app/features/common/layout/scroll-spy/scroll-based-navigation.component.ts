@@ -68,7 +68,7 @@ export class ScrollSpyScrollBasedNavigation {
   protected readonly _exDescription: string = 'Tracks which section is most visible in the viewport. Ideal for scroll-based navigation highlighting.';
   protected readonly _exSectionTitle: string = 'Scroll-Based Navigation';
   protected readonly _exSubtitle: string = 'Scroll the container. The nav highlights the most visible section. Active section ID is exposed as a signal.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'behavior' }, { dim: 'focus', value: 'a11y-pattern' }];
   protected readonly _exTs: string = `import { CngxScrollSpy } from '@cngx/common/layout';
 
 protected readonly sectionIds = ['spy-intro', 'spy-features', 'spy-pricing', 'spy-faq'];

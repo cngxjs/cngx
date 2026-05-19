@@ -50,7 +50,7 @@ export class SkeletonBasicSkeleton {
   protected readonly _exDescription: string = 'Skeleton placeholder directives for loading states. Use CngxSkeleton for individual elements or CngxSkeletonContainer with CngxSkeletonPlaceholder for grouped placeholder templates.';
   protected readonly _exSectionTitle: string = 'Basic Skeleton';
   protected readonly _exSubtitle: string = 'Apply <code>[cngxSkeleton]</code> to any element. When the bound value is <code>true</code>, the element shows a shimmer animation.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'visual-variants' }, { dim: 'focus', value: 'async-state' }];
   protected readonly _exTs: string = `import { CngxSkeleton } from '@cngx/common/layout';
 
 protected readonly loading = signal(true);

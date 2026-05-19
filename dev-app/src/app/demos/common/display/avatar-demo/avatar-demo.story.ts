@@ -7,6 +7,10 @@ export const STORY: DemoSpec = {
   description:
     'Avatar display atom with image / initials / content fallback cascade and optional status indicator.',
   apiComponents: ['CngxAvatar'],
+  level: 'atom',
+  audience: ['dev', 'design'],
+  artifact: 'standalone',
+  focus: ['visual-variants'],
   overview:
     '<p><code>cngx-avatar</code> renders an image when provided, falls back to initials, and finally to projected content. ' +
     'Status dot and sizes are driven by CSS custom properties.</p>',

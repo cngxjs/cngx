@@ -56,7 +56,7 @@ export class PrimitivesComboBarsMovingAverageLine {
   protected readonly _exDescription: string = 'Compose &lt;cngx-chart&gt; + [cngxAxis] + layer atoms ([cngxLine], [cngxArea], [cngxBar], [cngxScatter], [cngxThreshold], [cngxBand]) directly. The seven preset molecules wrap these primitives; this demo shows how to compose them.';
   protected readonly _exSectionTitle: string = 'Combo: bars + moving-average line';
   protected readonly _exSubtitle: string = 'Bars carry monthly values; an overlay line shows the 3-month moving average via local [data]. Both layers share the same scales — one X axis, one Y axis. Uses a band X axis so tick labels align with bar centres (a linear axis would place ticks at bar edges).';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'visual-variants' }];
   protected readonly _exTs: string = `import { CngxChart, CngxAxis, CngxLine, CngxBar } from '@cngx/common/chart';
 import { createManualState } from '@cngx/common/data';
 

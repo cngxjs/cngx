@@ -7,6 +7,10 @@ export const STORY: DemoSpec = {
   description:
     'withRetry() wraps AsyncAction with automatic retry. optimistic() updates signals immediately with rollback on error.',
   apiComponents: ['CngxAsyncClick'],
+  level: 'atom',
+  audience: ['dev'],
+  artifact: 'building-block',
+  focus: ['async-state', 'error-handling', 'behavior'],
   overview:
     '<p><code>withRetry()</code> composes with <code>CngxAsyncClick</code> — the button gets retry for free. ' +
     '<code>optimistic()</code> is a standalone utility that updates any signal immediately and rolls back on failure.</p>',

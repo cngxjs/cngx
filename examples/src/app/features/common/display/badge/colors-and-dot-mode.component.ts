@@ -43,7 +43,7 @@ export class BadgeColorsAndDotMode {
   protected readonly _exDescription: string = 'Floating counter / dot indicator attached to any host element. Purely visual — semantics live on the host via aria-label.';
   protected readonly _exSectionTitle: string = 'Colors and dot mode';
   protected readonly _exSubtitle: string = 'Boolean <code>true</code> flips to dot mode (no text).';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'visual-variants' }];
   protected readonly _exTs: string = `import { CngxBadge } from '@cngx/common/display';`;
   protected readonly _exHtml: string = `<div class="row">
   <button type="button" class="chip" [cngxBadge]="1" color="error">Errors</button>

@@ -7,6 +7,10 @@ export const STORY: DemoSpec = {
   description:
     'Circular gauge for a single bounded value. Host carries role="meter"; the optional [label] renders inside the ring.',
   apiComponents: ['CngxDonut'],
+  level: 'atom',
+  audience: ['dev', 'design'],
+  artifact: 'standalone',
+  focus: ['visual-variants'],
   moduleImports: [
     "import { CngxDonut } from '@cngx/common/chart';",
     "import { createManualState } from '@cngx/common/data';",

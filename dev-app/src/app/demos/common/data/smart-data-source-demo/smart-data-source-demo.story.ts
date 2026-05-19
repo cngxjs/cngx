@@ -5,6 +5,10 @@ export const STORY: DemoSpec = {
   navLabel: 'SmartDataSource',
   navCategory: 'data',
   apiComponents: ['CngxSort', 'CngxFilter', 'CngxPaginate'],
+  level: 'molecule',
+  audience: ['dev'],
+  artifact: 'building-block',
+  focus: ['composition', 'integration'],
   hostDirectives: ['CngxSort', 'CngxFilter'],
   moduleImports: [
     "import { toSignal } from '@angular/core/rxjs-interop';",

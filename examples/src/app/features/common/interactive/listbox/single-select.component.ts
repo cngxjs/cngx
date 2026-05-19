@@ -58,7 +58,7 @@ export class ListboxSingleSelect {
   protected readonly _exDescription: string = 'Composite listbox primitive with single/multi selection, keyboard navigation, and signal-first ARIA state.';
   protected readonly _exSectionTitle: string = 'Single select';
   protected readonly _exSubtitle: string = 'Arrow keys navigate; Enter/Space activates. Click also selects. Disabled options are skipped in navigation and clicks.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }];
   protected readonly _exTs: string = `import { CngxListbox, CngxOption } from '@cngx/common/interactive';
 
 protected readonly singleValue = signal<string | null>(null);

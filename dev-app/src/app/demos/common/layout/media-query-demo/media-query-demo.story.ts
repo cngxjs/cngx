@@ -7,6 +7,10 @@ export const STORY: DemoSpec = {
   description:
     'Reactive media query directive for viewport breakpoints and user preferences. Exposes a matches signal that updates live — use when CSS alone cannot drive component logic.',
   apiComponents: ['CngxMediaQuery'],
+  level: 'atom',
+  audience: ['dev', 'design'],
+  artifact: 'building-block',
+  focus: ['behavior'],
   moduleImports: ["import { CngxMediaQuery } from '@cngx/common';"],
   sections: [
     {

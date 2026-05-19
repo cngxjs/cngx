@@ -54,7 +54,7 @@ export class DialogBottomSheet {
   protected readonly _exDescription: string = 'Signal-driven state machine for native &lt;dialog&gt;. Typed results, deterministic focus return, ARIA communication, CSS transition support, and opt-in draggable behavior.';
   protected readonly _exSectionTitle: string = 'Bottom Sheet';
   protected readonly _exSubtitle: string = '<code>CngxBottomSheet</code> is a molecule directive that positions the dialog at the viewport bottom with a drag handle (via <code>::before</code>) and slide-up animation. Add <code>[cngxSwipeDismiss]</code> for swipe-to-dismiss — the directive auto-wires it. Themed via <code>bottom-sheet-theme.scss</code> with CSS custom properties.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxDialog, CngxDialogTitle, CngxDialogClose, CngxBottomSheet } from '@cngx/common/dialog';
 import { CngxSwipeDismiss } from '@cngx/common/interactive';
 

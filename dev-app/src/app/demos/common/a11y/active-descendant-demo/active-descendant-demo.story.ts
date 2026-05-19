@@ -7,6 +7,10 @@ export const STORY: DemoSpec = {
   description:
     'WAI-ARIA active-descendant keyboard model for listbox, menu, and combobox widgets. Keeps focus on the host while highlighting the logical current item.',
   apiComponents: ['CngxActiveDescendant'],
+  level: 'atom',
+  audience: ['a11y', 'dev'],
+  artifact: 'building-block',
+  focus: ['a11y-pattern', 'behavior'],
   overview:
     '<p><code>[cngxActiveDescendant]</code> is the counterpart to <code>CngxRovingTabindex</code> ' +
     'for composite widgets where focus stays on a single container and the currently active option is ' +

@@ -62,7 +62,7 @@ export class NavNavBadgeCountsAndDots {
   protected readonly _exDescription: string = 'Composable navigation atoms: CngxNavLink (active state + depth), CngxNavGroup (accordion), CngxNavLabel (section header), CngxNavBadge (counter/dot). Combine them to build sidebar menus.';
   protected readonly _exSectionTitle: string = 'Nav Badge — Counts and Dots';
   protected readonly _exSubtitle: string = '<code>cngxNavBadge</code> adds count/dot/status indicators. <code>aria-hidden="true"</code> by default — provide <code>[ariaLabel]</code> for unique information.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }];
   protected readonly _exTs: string = `import { CngxNavLink, CngxNavBadge } from '@cngx/common';
 
 protected readonly activeLink = signal('/dashboard');

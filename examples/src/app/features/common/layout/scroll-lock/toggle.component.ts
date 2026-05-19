@@ -63,7 +63,7 @@ export class ScrollLockToggle {
   protected readonly _exDescription: string = 'Prevents body scrolling when active. Essential for modals, drawers, and overlays.';
   protected readonly _exSectionTitle: string = 'CngxScrollLock — Toggle';
   protected readonly _exSubtitle: string = '<code>[cngxScrollLock]</code> sets <code>overflow: hidden</code> and <code>scrollbar-gutter: stable</code> on the document to prevent scrolling while avoiding layout shift from the scrollbar disappearing.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'behavior' }, { dim: 'focus', value: 'a11y-pattern' }];
   protected readonly _exTs: string = `import { CngxScrollLock } from '@cngx/common';
 
 protected readonly locked = signal(false);`;

@@ -45,7 +45,7 @@ export class ToggleDisabledWithReason {
   protected readonly _exDescription: string = 'Single-value boolean switch atom. role="switch" with reactive aria-checked, aria-disabled, aria-describedby for the consumer-supplied disabled reason. Click + Space + Enter all flip. Provides CNGX_CONTROL_VALUE so CngxFormBridge (Phase 7) can bind to it without per-atom CVA.';
   protected readonly _exSectionTitle: string = 'Disabled with reason';
   protected readonly _exSubtitle: string = 'When <code>[disabled]</code> is true and <code>disabledReason</code> is non-empty, the host emits <code>aria-describedby</code> pointing to a hidden span — screen-readers announce <em>why</em> the control is disabled.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'visual-variants' }, { dim: 'focus', value: 'a11y-pattern' }];
   protected readonly _exTs: string = `import { CngxToggle } from '@cngx/common/interactive';
 
 protected readonly notifications = signal(false);

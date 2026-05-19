@@ -57,7 +57,7 @@ export class FilterChipsMultiRoleFilterWiredToAList {
   protected readonly _exDescription: string = 'Bridge between a multi-select chip strip and a parent <code>CngxFilter</code>. The bridge registers a single closure-style predicate ONCE on mount; chip toggles update the bridge\'s internal <code>selectedValues</code>; downstream filtered consumers recompute via the predicate\'s lazy read of <code>selectedValues()</code>. Pillar 1 derivation — no <code>effect()</code> write-back. Empty selection short-circuits to "no filter applied". <strong>Phase 5 limitation:</strong> the bridge\'s <code>[optionValue]</code> function extracts a key from each list item AND each chip option — they must share a shape. A future <code>[itemValue]</code> input will separate the two extractors; tracked as a follow-up.';
   protected readonly _exSectionTitle: string = 'Multi-role filter wired to a list';
   protected readonly _exSubtitle: string = 'The <code>&lt;cngx-filter-chips&gt;</code> bridge synchronises with the parent <code>CngxFilter</code>. The list reads <code>filter.predicate()</code> in a <code>computed</code>; toggling chips re-runs the filter without any <code>effect()</code> write-back.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'visual-variants' }, { dim: 'focus', value: 'integration' }];
   protected readonly _exTs: string = `import { CngxFilter, CngxFilterChips } from '@cngx/common/data';
 
 protected readonly tagItems: readonly unknown[] = [

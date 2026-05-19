@@ -45,7 +45,7 @@ export class ChipGroupBasicPickExactlyOneSize {
   protected readonly _exDescription: string = 'Single-select chip group molecule. Owns <code>selected = model&lt;T | undefined&gt;</code>, provides <code>CNGX_CHIP_GROUP_HOST</code> so projected <code>&lt;cngx-chip cngxChipInGroup&gt;</code> leaves derive their <code>aria-selected</code> from the parent\'s selection. Renders <code>role="listbox"</code>; composes <code>CngxRovingTabindex</code> for arrow-key navigation. Single-mode behaviour: re-clicking the active chip clears the selection (toggle off).';
   protected readonly _exSectionTitle: string = 'Basic — pick exactly one size';
   protected readonly _exSubtitle: string = 'Click any chip to select it; click again to deselect. Only one chip is <code>aria-selected</code> at a time.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'visual-variants' }, { dim: 'focus', value: 'composition' }];
   protected readonly _exTs: string = `import { CngxChipGroup, CngxChipInGroup } from '@cngx/common/interactive';
 import { CngxChip } from '@cngx/common/display';
 

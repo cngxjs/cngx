@@ -12,6 +12,10 @@ export const STORY: DemoSpec = {
     'adapt it to Reactive Forms. Use this when a chip stands alone (filter tag, single ' +
     'suggestion); use <code>[cngxChipInGroup]</code> instead for chips inside a chip-group.',
   apiComponents: ['CngxChipInteraction', 'CngxChip', 'CNGX_CONTROL_VALUE'],
+  level: 'molecule',
+  audience: ['dev', 'design', 'a11y'],
+  artifact: 'standalone',
+  focus: ['a11y-pattern', 'behavior'],
   moduleImports: [
     "import { CngxChipInteraction } from '@cngx/common/interactive';",
     "import { CngxChip } from '@cngx/common/display';",

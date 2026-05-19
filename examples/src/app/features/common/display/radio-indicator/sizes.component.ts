@@ -51,7 +51,7 @@ export class RadioIndicatorSizes {
   protected readonly _exDescription: string = 'Decorative dot-in-circle atom. Mirrors CngxCheckboxIndicator: aria-hidden, no outputs, full --cngx-radio-indicator-* theming. Used by the CngxSelect "radio" indicator variant; future single-value form atoms compose the same skin.';
   protected readonly _exSectionTitle: string = 'Sizes';
   protected readonly _exSubtitle: string = 'Three presets driven by <code>--cngx-radio-indicator-size</code>. Defaults to <code>md</code> (1em).';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'visual-variants' }];
   protected readonly _exTs: string = `import { CngxRadioIndicator } from '@cngx/common/display';`;
   protected readonly _exHtml: string = `<div class="row">
   <div class="cell">

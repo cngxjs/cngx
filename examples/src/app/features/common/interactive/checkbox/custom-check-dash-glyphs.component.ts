@@ -45,7 +45,7 @@ export class CheckboxCustomCheckDashGlyphs {
   protected readonly _exDescription: string = 'Single-value boolean checkbox atom with WAI-ARIA tristate semantics. Composes <code>cngx-checkbox-indicator</code> from @cngx/common/display for the visual state. Click on an indeterminate checkbox advances to <code>value=true, indeterminate=false</code> in a single step — there is no path that lands the checkbox back in <code>mixed</code> from a user click.';
   protected readonly _exSectionTitle: string = 'Custom check + dash glyphs';
   protected readonly _exSubtitle: string = '<code>cngx-checkbox</code> forwards <code>[checkGlyph]</code> and <code>[dashGlyph]</code> to the inner <code>cngx-checkbox-indicator</code>. Project a <code>TemplateRef&lt;void&gt;</code> each to replace the default ✓ / − glyphs with brand or design-system icons.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxCheckbox } from '@cngx/common/interactive';
 
 protected readonly accept = signal(false);

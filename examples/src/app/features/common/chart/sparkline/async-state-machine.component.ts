@@ -56,7 +56,7 @@ export class SparklineAsyncStateMachine {
   protected readonly _exDescription: string = 'Inline mini line chart for KPI cards and dashboard tiles. Composes &lt;cngx-chart&gt; + &lt;cngx-line&gt; + optional &lt;cngx-area&gt; with hidden axes.';
   protected readonly _exSectionTitle: string = 'Async state machine';
   protected readonly _exSubtitle: string = 'Bind [state] to a CngxAsyncState and the sparkline routes through skeleton / empty / error / content branches automatically. Toggle the buttons below to flip the state.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'visual-variants' }];
   protected readonly _exTs: string = `import { CngxSparkline } from '@cngx/common/chart';
 import { createManualState } from '@cngx/common/data';
 

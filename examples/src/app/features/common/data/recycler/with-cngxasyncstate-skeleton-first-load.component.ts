@@ -59,7 +59,7 @@ export class RecyclerWithCngxasyncstateSkeletonFirstLoad {
   protected readonly _exDescription: string = 'Signal-based virtualizer for long lists. Items outside the viewport are removed from the DOM. Consumer renders with @for and two spacer containers.';
   protected readonly _exSectionTitle: string = 'With CngxAsyncState — Skeleton First Load';
   protected readonly _exSubtitle: string = 'The recycler derives <code>isLoading</code>, <code>showSkeleton</code>, and <code>isEmpty</code> from a <code>CngxAsyncState</code> source — same pattern as <code>CngxCardGrid</code> and <code>CngxTreetable</code>. Skeleton slots fill the viewport height automatically.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'behavior' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'focus', value: 'async-state' }];
   protected readonly _exTs: string = `import { injectRecycler } from '@cngx/common/data';
 
 protected readonly allItems = signal(

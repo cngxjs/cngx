@@ -6,6 +6,10 @@ export const STORY: DemoSpec = {
   navCategory: 'a11y',
   description: 'Reads the prefers-reduced-motion media query and adds the cngx-reduced-motion CSS class when the user prefers reduced motion.',
   apiComponents: ['CngxReducedMotion'],
+  level: 'atom',
+  audience: ['a11y', 'dev'],
+  artifact: 'building-block',
+  focus: ['a11y-pattern', 'behavior'],
   setup: `
   protected notifications = signal<{ id: number; text: string }[]>([]);
   private _nextId = 0;

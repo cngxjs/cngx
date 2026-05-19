@@ -7,6 +7,10 @@ export const STORY: DemoSpec = {
   description:
     'String-input tooltip directive using the native Popover API. CSS Anchor Positioning, WCAG 1.4.13 compliant, SR-friendly.',
   apiComponents: ['CngxTooltip'],
+  level: 'atom',
+  audience: ['dev', 'design', 'a11y'],
+  artifact: 'standalone',
+  focus: ['visual-variants', 'a11y-pattern'],
   overview:
     '<p><code>[cngxTooltip]</code> adds a tooltip to any element via a single attribute. ' +
     'The tooltip element is created internally — no extra template markup needed. ' +

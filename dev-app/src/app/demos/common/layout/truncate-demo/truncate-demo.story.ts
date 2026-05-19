@@ -7,6 +7,10 @@ export const STORY: DemoSpec = {
   description:
     'Text truncation with expand/collapse and clamped-state detection. Shows a toggle only when content actually overflows.',
   apiComponents: ['CngxTruncate'],
+  level: 'atom',
+  audience: ['dev'],
+  artifact: 'building-block',
+  focus: ['behavior'],
   overview:
     '<p><code>[cngxTruncate]</code> applies <code>-webkit-line-clamp</code> when collapsed and uses ' +
     '<code>ResizeObserver</code> to detect whether the text actually overflows. The <code>isClamped()</code> signal ' +

@@ -71,7 +71,7 @@ export class RecyclerInfiniteScrollRecycler {
   protected readonly _exDescription: string = 'Signal-based virtualizer for long lists. Items outside the viewport are removed from the DOM. Consumer renders with @for and two spacer containers.';
   protected readonly _exSectionTitle: string = 'Infinite Scroll + Recycler';
   protected readonly _exSubtitle: string = 'Combine <code>CngxInfiniteScroll</code> with the recycler for large HTTP-loaded lists. The sentinel sits outside the spacer container. Items append to the array — scrolling back up never re-fetches because already-loaded items stay in memory.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'behavior' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'focus', value: 'async-state' }];
   protected readonly _exTs: string = `import { injectRecycler } from '@cngx/common/data';
 import { CngxInfiniteScroll } from '@cngx/common/layout';
 

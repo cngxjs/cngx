@@ -7,6 +7,10 @@ export const STORY: DemoSpec = {
   description:
     'Intersection-based infinite scroll directive that triggers a callback when a sentinel element enters the viewport.',
   apiComponents: ['CngxInfiniteScroll'],
+  level: 'atom',
+  audience: ['dev'],
+  artifact: 'building-block',
+  focus: ['behavior', 'async-state'],
   overview:
     '<p><code>CngxInfiniteScroll</code> uses <code>IntersectionObserver</code> to detect when a sentinel element ' +
     'becomes visible. Bind a loading function to the <code>scrolled</code> output. ' +

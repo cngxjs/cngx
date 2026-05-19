@@ -59,7 +59,7 @@ export class MetricStandaloneMetrics {
   protected readonly _exDescription: string = 'Displays a locale-aware formatted number with optional unit. Composable — works inside any card variant or standalone.';
   protected readonly _exSectionTitle: string = 'Standalone Metrics';
   protected readonly _exSubtitle: string = 'Number formatted with locale. Unit displayed as suffix. Null renders em-dash.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'visual-variants' }];
   protected readonly _exTs: string = `import { CngxMetric } from '@cngx/common/data';`;
   protected readonly _exHtml: string = `<div style="display:flex;gap:48px;align-items:baseline;flex-wrap:wrap">
   <div>

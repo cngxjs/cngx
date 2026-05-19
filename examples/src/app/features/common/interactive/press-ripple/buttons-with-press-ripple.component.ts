@@ -58,7 +58,7 @@ export class PressRippleButtonsWithPressRipple {
   protected readonly _exDescription: string = 'Molecule combining CngxPressable + CngxRipple in one directive. Press feedback + ripple wave with a single attribute.';
   protected readonly _exSectionTitle: string = 'Buttons with Press + Ripple';
   protected readonly _exSubtitle: string = 'Click or tap each button. You get both instant press feedback (scale via <code>.cngx-pressed</code>) and a ripple wave expanding from the pointer position.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'visual-variants' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxPressRipple } from '@cngx/common/interactive';`;
   protected readonly _exHtml: string = `<div class="button-row" style="gap:12px">
   <button cngxPressRipple class="chip"

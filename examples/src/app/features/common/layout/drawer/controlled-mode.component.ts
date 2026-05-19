@@ -69,7 +69,7 @@ export class DrawerControlledMode {
   protected readonly _exDescription: string = 'Headless drawer/sidebar system: CngxDrawer (state), CngxDrawerPanel (sliding panel), CngxDrawerContent (content offset). Supports left/right/top/bottom, focus trapping, click-outside close, Escape key, and controlled+uncontrolled modes.';
   protected readonly _exSectionTitle: string = 'Controlled Mode';
   protected readonly _exSubtitle: string = 'Bind <code>[cngxDrawerOpened]</code> to a signal for controlled state. The parent owns the truth — internal <code>toggle()</code> still emits <code>(openedChange)</code> but the controlled input wins.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxDrawer, CngxDrawerPanel, type DrawerMode } from '@cngx/common';
 
 // Controlled drawer

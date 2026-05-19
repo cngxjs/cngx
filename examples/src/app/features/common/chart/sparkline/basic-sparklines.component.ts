@@ -58,7 +58,7 @@ export class SparklineBasicSparklines {
   protected readonly _exDescription: string = 'Inline mini line chart for KPI cards and dashboard tiles. Composes &lt;cngx-chart&gt; + &lt;cngx-line&gt; + optional &lt;cngx-area&gt; with hidden axes.';
   protected readonly _exSectionTitle: string = 'Basic sparklines';
   protected readonly _exSubtitle: string = 'Default size, theming via CSS custom properties.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'visual-variants' }];
   protected readonly _exTs: string = `import { CngxSparkline } from '@cngx/common/chart';
 import { createManualState } from '@cngx/common/data';
 

@@ -6,6 +6,10 @@ export const STORY: DemoSpec = {
   navCategory: 'layout',
   description: 'Tracks whether the host element is visible in the viewport. Exposes isIntersecting, intersectionRatio, and entered/left events as signals.',
   apiComponents: ['CngxIntersectionObserver'],
+  level: 'atom',
+  audience: ['dev'],
+  artifact: 'building-block',
+  focus: ['behavior'],
   sections: [
     {
       title: 'CngxIntersectionObserver — Scroll Sentinel',

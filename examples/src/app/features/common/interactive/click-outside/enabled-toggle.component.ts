@@ -62,7 +62,7 @@ export class ClickOutsideEnabledToggle {
   protected readonly _exDescription: string = 'Emits an event when the user interacts outside the host element. Useful for closing dropdowns, tooltips, and overlays.';
   protected readonly _exSectionTitle: string = 'CngxClickOutside — enabled toggle';
   protected readonly _exSubtitle: string = 'When <code>[enabled]="false"</code> the directive is inactive and no events are emitted.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxClickOutside } from '@cngx/common/interactive';
 
 protected open = signal(false);

@@ -42,7 +42,7 @@ export class TooltipBasicTooltip {
   protected readonly _exDescription: string = 'String-input tooltip directive using the native Popover API. CSS Anchor Positioning, WCAG 1.4.13 compliant, SR-friendly.';
   protected readonly _exSectionTitle: string = 'Basic Tooltip';
   protected readonly _exSubtitle: string = 'Hover or focus the button to see the tooltip. Default placement is <code>top</code>, default delay is 300ms.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'visual-variants' }, { dim: 'focus', value: 'a11y-pattern' }];
   protected readonly _exTs: string = `import { CngxTooltip } from '@cngx/common/popover';`;
   protected readonly _exHtml: string = `<div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;padding-top:40px">
   <button cngxTooltip="Save your changes (Ctrl+S)" class="chip">Save</button>

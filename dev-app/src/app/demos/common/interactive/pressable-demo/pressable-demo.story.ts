@@ -7,6 +7,10 @@ export const STORY: DemoSpec = {
   description:
     'Instant press feedback via CSS class on pointerdown. 0ms latency — the class appears before click fires.',
   apiComponents: ['CngxPressable'],
+  level: 'atom',
+  audience: ['dev', 'a11y'],
+  artifact: 'building-block',
+  focus: ['behavior', 'a11y-pattern'],
   overview:
     '<p><code>[cngxPressable]</code> toggles the <code>cngx-pressed</code> CSS class immediately on pointer contact. ' +
     'All visual treatment (scale, opacity, color) is consumer CSS. The directive only manages the state.</p>',

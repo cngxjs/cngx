@@ -7,6 +7,10 @@ export const STORY: DemoSpec = {
   description:
     'Detects long-press gestures via Pointer Events. Cancels on move to prevent accidental triggers during scrolling.',
   apiComponents: ['CngxLongPress'],
+  level: 'atom',
+  audience: ['dev', 'a11y'],
+  artifact: 'building-block',
+  focus: ['behavior'],
   overview:
     '<p><code>[cngxLongPress]</code> fires after the pointer is held for a configurable duration without moving. ' +
     'The <code>longPressing</code> signal enables real-time visual feedback (progress indicator) while the user holds.</p>',

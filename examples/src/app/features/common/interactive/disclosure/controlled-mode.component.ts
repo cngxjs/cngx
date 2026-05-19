@@ -54,7 +54,7 @@ export class DisclosureControlledMode {
   protected readonly _exDescription: string = 'Generic expand/collapse atom. Manages aria-expanded, keyboard interaction (Enter, Space, click), and controlled+uncontrolled state. Usable for accordions, FAQs, nav groups, collapsible panels.';
   protected readonly _exSectionTitle: string = 'Controlled Mode';
   protected readonly _exSubtitle: string = 'Bind <code>[cngxDisclosureOpened]</code> to a signal for external state control.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxDisclosure } from '@cngx/common';
 
 protected readonly controlledOpen = signal(false);`;

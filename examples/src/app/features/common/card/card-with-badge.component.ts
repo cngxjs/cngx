@@ -95,7 +95,7 @@ export class CardCardWithBadge {
   protected readonly _exDescription: string = 'Semantic card component with three archetypes: display (article), action (button), and link. Supports selection, loading, disabled with reason, and SR live announcements.';
   protected readonly _exSectionTitle: string = 'Card with Badge';
   protected readonly _exSubtitle: string = '<code>[cngxCardBadge]</code> positions any element at a corner. Works on <code>&lt;span&gt;</code>, <code>&lt;button&gt;</code>, or <code>&lt;a&gt;</code>. Clickable badge on a button card: does the click bubble to the card or stay on the badge?';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'visual-variants' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }];
   protected readonly _exTs: string = `import { CngxCard, CngxCardHeader, CngxCardTitle, CngxCardBody } from '@cngx/common/card';
 import { CngxCardBadge } from '@cngx/common/card';
 

@@ -57,7 +57,7 @@ export class TagCompositionWithCngxicon {
   protected readonly _exDescription: string = 'Decorative label / badge / status indicator. Dual selector ([cngxTag] and &lt;cngx-tag&gt;) so it composes onto any host element including <a> for link-mode tags. Removable affordances live in CngxChip; clickable interactions live on native &lt;button cngxTag&gt; / <a cngxTag>.';
   protected readonly _exSectionTitle: string = 'Composition with CngxIcon';
   protected readonly _exSubtitle: string = 'Drop <code>&lt;cngx-icon&gt;</code> directly inside <code>&lt;span cngxTag&gt;</code> — no tag-specific icon atom needed. CngxIcon handles sizing, vertical alignment, and <code>aria-hidden</code>.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'molecule' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'visual-variants' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }];
   protected readonly _exTs: string = `import { CngxTag, CngxIcon } from '@cngx/common/display';`;
   protected readonly _exHtml: string = `<div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
   <span cngxTag color="success">

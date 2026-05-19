@@ -56,7 +56,7 @@ export class MiniBarBasicReadings {
   protected readonly _exDescription: string = 'Single-value bounded indicator. Pure DOM (no SVG). Host carries role="meter" with reactive ARIA value attributes.';
   protected readonly _exSectionTitle: string = 'Basic readings';
   protected readonly _exSubtitle: string = 'Default 80px width, theming via --cngx-bar-color → --cngx-chart-primary.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'visual-variants' }];
   protected readonly _exTs: string = `import { CngxMiniBar } from '@cngx/common/chart';
 import { createManualState } from '@cngx/common/data';
 

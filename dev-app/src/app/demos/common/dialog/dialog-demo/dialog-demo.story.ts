@@ -15,6 +15,10 @@ export const STORY: DemoSpec = {
     'CngxDialogDraggable',
     'CngxDialogStack',
   ],
+  level: 'organism',
+  audience: ['dev', 'design', 'a11y'],
+  artifact: 'standalone',
+  focus: ['composition', 'a11y-pattern', 'behavior'],
   overview:
     '<p><code>CngxDialog</code> wraps the native <code>&lt;dialog&gt;</code> element in a reactive ' +
     'Signal state machine. State flows through <code>closed → opening → open → closing → closed</code>. ' +

@@ -7,6 +7,10 @@ export const STORY: DemoSpec = {
   description:
     'Search-text highlighting via <mark> elements. Safe text-node walking, no innerHTML.',
   apiComponents: ['CngxHighlight'],
+  level: 'atom',
+  audience: ['dev', 'design'],
+  artifact: 'building-block',
+  focus: ['visual-variants'],
   overview:
     '<p><code>[cngxHighlight]</code> wraps matching text in <code>&lt;mark&gt;</code> elements ' +
     'with correct native SR semantics. Case-insensitive by default. Original DOM restored on change or destroy.</p>',

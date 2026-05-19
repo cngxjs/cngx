@@ -57,7 +57,7 @@ export class DialogProgrammaticControl {
   protected readonly _exDescription: string = 'Signal-driven state machine for native &lt;dialog&gt;. Typed results, deterministic focus return, ARIA communication, CSS transition support, and opt-in draggable behavior.';
   protected readonly _exSectionTitle: string = 'Programmatic Control';
   protected readonly _exSubtitle: string = 'Open and close from component code via <code>viewChild</code>. The <code>result()</code> signal feeds into <code>computed()</code> — no subscriptions, no event handlers, pure reactive derivation.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxDialog, CngxDialogTitle } from '@cngx/common/dialog';
 
 // Fake form data for the form dialog demo

@@ -83,7 +83,7 @@ export class BulletPerformanceVsTarget {
   protected readonly _exDescription: string = 'Stephen Few\'s compact KPI visualisation. Three stacked layers: range bands, an actual filled bar, and a target marker.';
   protected readonly _exSectionTitle: string = 'Performance vs target';
   protected readonly _exSubtitle: string = 'Range bands (poor / fair / good) + actual bar + target marker.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'visual-variants' }];
   protected readonly _exTs: string = `import { CngxBullet } from '@cngx/common/chart';
 import { createManualState } from '@cngx/common/data';
 

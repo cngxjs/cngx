@@ -78,7 +78,7 @@ export class DialogGridSnapLiveVsRelease {
   protected readonly _exDescription: string = 'Signal-driven state machine for native &lt;dialog&gt;. Typed results, deterministic focus return, ARIA communication, CSS transition support, and opt-in draggable behavior.';
   protected readonly _exSectionTitle: string = 'Grid Snap — Live vs Release';
   protected readonly _exSubtitle: string = '<code>[gridSize]="20"</code> snaps position to 20px increments. <code>snapMode</code> controls when: <code>live</code> snaps every frame during drag, <code>release</code> lets you drag freely and snaps only on pointer up. Keyboard arrow step adapts to grid size (20px, Shift = 100px).';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxDialog, CngxDialogTitle, CngxDialogClose, CngxDialogDraggable } from '@cngx/common/dialog';
 
 // Fake form data for the form dialog demo

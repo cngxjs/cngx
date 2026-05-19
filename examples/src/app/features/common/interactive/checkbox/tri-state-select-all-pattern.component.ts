@@ -48,7 +48,7 @@ export class CheckboxTriStateSelectAllPattern {
   protected readonly _exDescription: string = 'Single-value boolean checkbox atom with WAI-ARIA tristate semantics. Composes <code>cngx-checkbox-indicator</code> from @cngx/common/display for the visual state. Click on an indeterminate checkbox advances to <code>value=true, indeterminate=false</code> in a single step — there is no path that lands the checkbox back in <code>mixed</code> from a user click.';
   protected readonly _exSectionTitle: string = 'Tri-state — Select-all pattern';
   protected readonly _exSubtitle: string = 'The header checkbox is <code>indeterminate</code> when some-but-not-all items are selected. Clicking it cascades: indeterminate → checked (selects all), checked → unchecked (clears all), unchecked → checked (selects all).';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxCheckbox } from '@cngx/common/interactive';
 
 protected readonly accept = signal(false);

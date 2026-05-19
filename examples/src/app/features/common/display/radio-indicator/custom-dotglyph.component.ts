@@ -50,7 +50,7 @@ export class RadioIndicatorCustomDotglyph {
   protected readonly _exDescription: string = 'Decorative dot-in-circle atom. Mirrors CngxCheckboxIndicator: aria-hidden, no outputs, full --cngx-radio-indicator-* theming. Used by the CngxSelect "radio" indicator variant; future single-value form atoms compose the same skin.';
   protected readonly _exSectionTitle: string = 'Custom dotGlyph';
   protected readonly _exSubtitle: string = 'Project a <code>TemplateRef&lt;void&gt;</code> via <code>[dotGlyph]</code> to replace the default dot with a brand glyph or SVG. Glyph still gates on <code>checked</code>.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'visual-variants' }];
   protected readonly _exTs: string = `import { CngxRadioIndicator } from '@cngx/common/display';`;
   protected readonly _exHtml: string = `<ng-template #starGlyph>
   <span aria-hidden="true" style="font-size:0.6em">★</span>

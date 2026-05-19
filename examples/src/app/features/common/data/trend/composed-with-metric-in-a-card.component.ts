@@ -68,7 +68,7 @@ export class TrendComposedWithMetricInACard {
   protected readonly _exDescription: string = 'Displays a directional trend indicator with arrow icon and formatted percentage. Consumer can override the SR label for full context.';
   protected readonly _exSectionTitle: string = 'Composed with Metric in a Card';
   protected readonly _exSubtitle: string = 'Trend and Metric combine naturally inside a card — no pre-built molecule needed.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'visual-variants' }];
   protected readonly _exTs: string = `import { CngxTrend } from '@cngx/common/data';
 import { CngxMetric } from '@cngx/common/data';
 import { CngxCard, CngxCardHeader, CngxCardBody } from '@cngx/common/card';`;

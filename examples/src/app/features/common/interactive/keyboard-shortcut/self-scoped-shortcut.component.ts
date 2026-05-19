@@ -51,7 +51,7 @@ export class KeyboardShortcutSelfScopedShortcut {
   protected readonly _exDescription: string = 'Declarative keyboard shortcut handler. Supports mod (Meta/Ctrl), global/self scope, and input element filtering.';
   protected readonly _exSectionTitle: string = 'Self-Scoped Shortcut';
   protected readonly _exSubtitle: string = 'Escape only fires when this box has focus. Click it first, then press Escape.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxKeyboardShortcut } from '@cngx/common/interactive';
 
 protected globalCount = signal(0);

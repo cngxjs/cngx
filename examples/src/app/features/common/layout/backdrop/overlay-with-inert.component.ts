@@ -59,7 +59,7 @@ export class BackdropOverlayWithInert {
   protected readonly _exDescription: string = 'Overlay behavior with visibility toggle, click-to-close, and automatic inert toggling on sibling elements for a11y.';
   protected readonly _exSectionTitle: string = 'CngxBackdrop — Overlay with inert';
   protected readonly _exSubtitle: string = 'When visible, <code>[cngxBackdrop]</code> adds <code>inert</code> to all sibling elements — they become unfocusable and non-interactive. Click the backdrop to dismiss.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'visual-variants' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxBackdrop } from '@cngx/common';
 
 protected readonly showBackdrop = signal(false);

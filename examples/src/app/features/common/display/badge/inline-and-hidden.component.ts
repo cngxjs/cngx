@@ -41,7 +41,7 @@ export class BadgeInlineAndHidden {
   protected readonly _exDescription: string = 'Floating counter / dot indicator attached to any host element. Purely visual — semantics live on the host via aria-label.';
   protected readonly _exSectionTitle: string = 'Inline and hidden';
   protected readonly _exSubtitle: string = 'Inline renders after the host content. Hidden tears the badge out of the DOM — useful for toggle states.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'visual-variants' }];
   protected readonly _exTs: string = `import { CngxBadge } from '@cngx/common/display';`;
   protected readonly _exHtml: string = `<div class="row">
   <span [cngxBadge]="'NEW'" position="inline" color="warning">Feature</span>

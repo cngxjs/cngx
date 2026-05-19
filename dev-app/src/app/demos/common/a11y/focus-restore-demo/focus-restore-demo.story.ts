@@ -7,6 +7,10 @@ export const STORY: DemoSpec = {
   description:
     'Captures the previously focused element and restores focus when the host is destroyed. Prevents focus loss to body.',
   apiComponents: ['CngxFocusRestore'],
+  level: 'atom',
+  audience: ['a11y', 'dev'],
+  artifact: 'building-block',
+  focus: ['a11y-pattern', 'behavior'],
   overview:
     '<p><code>[cngxFocusRestore]</code> solves the focus-loss problem when dynamic content is removed. ' +
     'Without it, focus falls to <code>&lt;body&gt;</code> and screen reader users lose their place.</p>',

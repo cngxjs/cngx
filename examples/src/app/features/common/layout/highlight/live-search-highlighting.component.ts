@@ -62,7 +62,7 @@ export class HighlightLiveSearchHighlighting {
   protected readonly _exDescription: string = 'Search-text highlighting via <mark> elements. Safe text-node walking, no innerHTML.';
   protected readonly _exSectionTitle: string = 'Live Search Highlighting';
   protected readonly _exSubtitle: string = 'Type a search term to see matches highlighted in real time. The <code>matchCount()</code> signal shows the number of matches.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'visual-variants' }];
   protected readonly _exTs: string = `import { CngxHighlight } from '@cngx/common/layout';
 
 protected readonly searchTerm = signal('');`;

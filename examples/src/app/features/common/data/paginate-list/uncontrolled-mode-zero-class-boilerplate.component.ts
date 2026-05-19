@@ -53,7 +53,7 @@ export class PaginateListUncontrolledModeZeroClassBoilerplate {
   protected readonly _exDescription: string = '';
   protected readonly _exSectionTitle: string = 'Uncontrolled Mode — Zero Class Boilerplate';
   protected readonly _exSubtitle: string = 'In uncontrolled mode, <code>CngxPaginate</code> manages its own <code>pageIndex</code> and <code>pageSize</code> internally. No component signals needed — just bind <code>[total]</code> and read <code>pg.range()</code> in the template. <code>CngxMatPaginator</code> writes directly to the directive\'s internal state via <code>setPage()</code> / <code>setPageSize()</code>. Use controlled mode (<code>[cngxPageIndex]</code>, <code>(pageChange)</code>) when you need the page state in your component class.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'behavior' }, { dim: 'focus', value: 'integration' }];
   protected readonly _exTs: string = `import { PEOPLE, type Person } from '../../../../fixtures';
 
 // Expand the dataset so pagination is clearly visible (3 pages of 5)

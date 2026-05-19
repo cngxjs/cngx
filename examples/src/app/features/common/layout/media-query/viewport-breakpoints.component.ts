@@ -63,7 +63,7 @@ export class MediaQueryViewportBreakpoints {
   protected readonly _exDescription: string = 'Reactive media query directive for viewport breakpoints and user preferences. Exposes a matches signal that updates live — use when CSS alone cannot drive component logic.';
   protected readonly _exSectionTitle: string = 'CngxMediaQuery — Viewport Breakpoints';
   protected readonly _exSubtitle: string = '<code>[cngxMediaQuery]</code> wraps <code>window.matchMedia()</code> as a reactive signal with automatic cleanup. Use this when component logic (not just CSS) needs to respond to viewport or preference changes — e.g. switching between a chart and a table on mobile, or loading different data on narrow screens. For pure styling, CSS <code>@media</code> or <code>@container</code> queries are preferred. Resize your browser to see the signals update live.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'artifact', value: 'building-block' }, { dim: 'focus', value: 'behavior' }];
   protected readonly _exTs: string = `import { CngxMediaQuery } from '@cngx/common';`;
   protected readonly _exHtml: string = `<div cngxMediaQuery="(min-width: 768px)" #tablet="cngxMediaQuery"></div>
 <div cngxMediaQuery="(min-width: 1024px)" #desktop="cngxMediaQuery"></div>

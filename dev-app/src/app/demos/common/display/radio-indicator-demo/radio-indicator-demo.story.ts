@@ -10,6 +10,10 @@ export const STORY: DemoSpec = {
     '"radio" indicator variant; future single-value form atoms compose the ' +
     'same skin.',
   apiComponents: ['CngxRadioIndicator'],
+  level: 'atom',
+  audience: ['dev', 'design'],
+  artifact: 'standalone',
+  focus: ['visual-variants'],
   overview:
     '<p><code>cngx-radio-indicator</code> renders a circle with a centred dot when ' +
     '<code>checked</code> is true. Always <code>aria-hidden="true"</code> — the ' +

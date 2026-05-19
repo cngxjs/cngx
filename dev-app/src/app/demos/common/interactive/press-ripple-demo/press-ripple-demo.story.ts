@@ -7,6 +7,10 @@ export const STORY: DemoSpec = {
   description:
     'Molecule combining CngxPressable + CngxRipple in one directive. Press feedback + ripple wave with a single attribute.',
   apiComponents: ['CngxPressRipple'],
+  level: 'atom',
+  audience: ['dev', 'design'],
+  artifact: 'building-block',
+  focus: ['visual-variants', 'behavior'],
   overview:
     '<p><code>[cngxPressRipple]</code> composes <code>CngxPressable</code> and <code>CngxRipple</code> ' +
     'as <code>hostDirectives</code>. One attribute gives both the <code>cngx-pressed</code> class and the ripple wave.</p>',

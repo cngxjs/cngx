@@ -13,6 +13,10 @@ export const STORY: DemoSpec = {
     'CngxMenuSeparator',
     'CngxMenuTrigger',
   ],
+  level: 'organism',
+  audience: ['dev', 'a11y'],
+  artifact: 'building-block',
+  focus: ['composition', 'a11y-pattern'],
   overview:
     '<p><code>[cngxMenuItemSubmenu]</code> is the companion directive for a menu-item that opens a nested submenu. Two inputs:</p>' +
     '<ul>' +

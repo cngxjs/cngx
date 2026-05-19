@@ -42,7 +42,7 @@ export class BadgeCountsWithOverflow {
   protected readonly _exDescription: string = 'Floating counter / dot indicator attached to any host element. Purely visual — semantics live on the host via aria-label.';
   protected readonly _exSectionTitle: string = 'Counts with overflow';
   protected readonly _exSubtitle: string = 'Values over <code>max</code> render as <code>{max}+</code>.';
-  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'atom' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'visual-variants' }];
   protected readonly _exTs: string = `import { CngxBadge } from '@cngx/common/display';`;
   protected readonly _exHtml: string = `<div class="row">
   <button type="button" class="chip" [cngxBadge]="3">Inbox</button>
