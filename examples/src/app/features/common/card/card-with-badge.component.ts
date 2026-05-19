@@ -27,7 +27,7 @@ import { CngxCardBadge } from '@cngx/common/card';
         <cngx-card style="overflow:visible">
           <span cngxCardBadge position="top-end"
                 style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;
-                       border-radius:50%;background:#ef4444;color:#fff;font-size:0.7rem;font-weight:700">
+                       border-radius:50%;background:var(--cngx-color-danger);color:var(--cngx-color-surface);font-size:0.7rem;font-weight:700">
             P
           </span>
           <header cngxCardHeader>
@@ -44,8 +44,8 @@ import { CngxCardBadge } from '@cngx/common/card';
                   (click)="handleBadgeClick($event)"
                   aria-label="Open permissions dialog"
                   style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;
-                         border-radius:50%;background:#ef4444;color:#fff;font-size:0.7rem;font-weight:700;
-                         border:2px solid #fff;cursor:pointer;padding:0">
+                         border-radius:50%;background:var(--cngx-color-danger);color:var(--cngx-color-surface);font-size:0.7rem;font-weight:700;
+                         border:2px solid var(--cngx-color-surface);cursor:pointer;padding:0">
             P
           </button>
           <header cngxCardHeader>
@@ -58,7 +58,7 @@ import { CngxCardBadge } from '@cngx/common/card';
 
         <cngx-card style="overflow:visible">
           <span cngxCardBadge position="top-start"
-                style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#22c55e"
+                style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--cngx-color-success)"
                 role="status" aria-label="Online">
           </span>
           <header cngxCardHeader>
@@ -109,7 +109,7 @@ protected handleBadgeClick(e: MouseEvent): void {
   <cngx-card style="overflow:visible">
     <span cngxCardBadge position="top-end"
           style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;
-                 border-radius:50%;background:#ef4444;color:#fff;font-size:0.7rem;font-weight:700">
+                 border-radius:50%;background:var(--cngx-color-danger);color:var(--cngx-color-surface);font-size:0.7rem;font-weight:700">
       P
     </span>
     <header cngxCardHeader>
@@ -126,8 +126,8 @@ protected handleBadgeClick(e: MouseEvent): void {
             (click)="handleBadgeClick($event)"
             aria-label="Open permissions dialog"
             style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;
-                   border-radius:50%;background:#ef4444;color:#fff;font-size:0.7rem;font-weight:700;
-                   border:2px solid #fff;cursor:pointer;padding:0">
+                   border-radius:50%;background:var(--cngx-color-danger);color:var(--cngx-color-surface);font-size:0.7rem;font-weight:700;
+                   border:2px solid var(--cngx-color-surface);cursor:pointer;padding:0">
       P
     </button>
     <header cngxCardHeader>
@@ -140,7 +140,7 @@ protected handleBadgeClick(e: MouseEvent): void {
 
   <cngx-card style="overflow:visible">
     <span cngxCardBadge position="top-start"
-          style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#22c55e"
+          style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--cngx-color-success)"
           role="status" aria-label="Online">
     </span>
     <header cngxCardHeader>
