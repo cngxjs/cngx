@@ -13,8 +13,26 @@ import { CngxErrorAggregator, CngxErrorSource } from '@cngx/common/interactive';
   template: `
     <header class="cngx-ex-intro">
       @if (_exTitle) { <h1>{{ _exTitle }}</h1> }
-      @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
       @if (_exSectionTitle && _exSectionTitle !== _exTitle) { <h2>{{ _exSectionTitle }}</h2> }
+      @if (_exTags.length > 0 || _exUses.length > 0) {
+        <div class="cngx-ex-meta">
+          @if (_exTags.length > 0) {
+            <ul class="cngx-ex-tags" aria-label="Tags">
+              @for (t of _exTags; track t.dim + ':' + t.value) {
+                <li class="cngx-ex-tag" [attr.data-dim]="t.dim" [attr.data-value]="t.value">{{ t.value }}</li>
+              }
+            </ul>
+          }
+          @if (_exUses.length > 0) {
+            <p class="cngx-ex-uses"><span class="cngx-ex-uses__label">uses</span>
+              @for (u of _exUses; track u; let last = $last) {
+                <code>{{ u }}</code>@if (!last) {<span class="cngx-ex-uses__sep">, </span>}
+              }
+            </p>
+          }
+        </div>
+      }
+      @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
       @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
     </header>
     <cngx-stepper [(activeStepIndex)]="active" aria-label="Validated wizard">
@@ -60,6 +78,8 @@ export class StepperErrorAggregationPerStepErrorBadges {
   protected readonly _exDescription: string = 'Bind <code>[errorAggregator]</code> on a step to surface a badge + SR phrase whenever the aggregator opts to show errors. Compose <code>CngxErrorAggregator</code> on a fieldset; the step reads <code>shouldShow()</code> and <code>announcement()</code> reactively.';
   protected readonly _exSectionTitle: string = 'Per-step error badges';
   protected readonly _exSubtitle: string = 'Toggle the validity flags below — the step badge appears the moment <code>aggregator.shouldShow()</code> turns true. The descriptor span carries the announcement phrase for SR.';
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exUses: readonly string[] = ['CngxStepper', 'CngxErrorAggregator', 'CngxStep', 'CngxStepContent'];
   protected readonly _exTs: string = `import { CngxStep, CngxStepContent } from '@cngx/common/stepper';
 import { CngxStepper } from '@cngx/ui/stepper';
 import { CngxErrorAggregator, CngxErrorSource } from '@cngx/common/interactive';

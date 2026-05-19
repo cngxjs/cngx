@@ -11,8 +11,26 @@ import { CngxTag } from '@cngx/common/display';
   template: `
     <header class="cngx-ex-intro">
       @if (_exTitle) { <h1>{{ _exTitle }}</h1> }
-      @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
       @if (_exSectionTitle && _exSectionTitle !== _exTitle) { <h2>{{ _exSectionTitle }}</h2> }
+      @if (_exTags.length > 0 || _exUses.length > 0) {
+        <div class="cngx-ex-meta">
+          @if (_exTags.length > 0) {
+            <ul class="cngx-ex-tags" aria-label="Tags">
+              @for (t of _exTags; track t.dim + ':' + t.value) {
+                <li class="cngx-ex-tag" [attr.data-dim]="t.dim" [attr.data-value]="t.value">{{ t.value }}</li>
+              }
+            </ul>
+          }
+          @if (_exUses.length > 0) {
+            <p class="cngx-ex-uses"><span class="cngx-ex-uses__label">uses</span>
+              @for (u of _exUses; track u; let last = $last) {
+                <code>{{ u }}</code>@if (!last) {<span class="cngx-ex-uses__sep">, </span>}
+              }
+            </p>
+          }
+        </div>
+      }
+      @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
       @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
     </header>
     <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
@@ -35,6 +53,8 @@ export class TagAppWideDefaultsViaProvidetagconfig {
   protected readonly _exDescription: string = 'Decorative label / badge / status indicator. Dual selector ([cngxTag] and &lt;cngx-tag&gt;) so it composes onto any host element including <a> for link-mode tags. Removable affordances live in CngxChip; clickable interactions live on native &lt;button cngxTag&gt; / <a cngxTag>.';
   protected readonly _exSectionTitle: string = 'App-wide defaults via provideTagConfig';
   protected readonly _exSubtitle: string = 'Wrap a sub-tree in <code>provideTagConfigAt(...)</code> (component-scoped) or pass the same features to <code>provideTagConfig(...)</code> at <code>bootstrapApplication</code> for app-wide defaults. Four feature factories compose freely: <code>withTagDefaults</code> / <code>withTagGroupDefaults</code> / <code>withTagColors</code> / <code>withTagSlots</code>. Resolution priority: per-instance Input → <code>viewProviders</code> → root provider → library defaults. The tags below mimic the cascade result with inline bindings — in a real app, none of these per-instance values would be needed.';
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exUses: readonly string[] = ['CngxTag', 'CngxTagLabel', 'CngxTagPrefix', 'CngxTagSuffix', 'CngxIcon', 'CngxTagGroup', 'CngxTagGroupHeader', 'CngxTagGroupAccessory'];
   protected readonly _exTs: string = `import { CngxTag } from '@cngx/common/display';`;
   protected readonly _exHtml: string = `<div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
   <span cngxTag variant="subtle" color="info" size="sm">subtle/sm/info</span>

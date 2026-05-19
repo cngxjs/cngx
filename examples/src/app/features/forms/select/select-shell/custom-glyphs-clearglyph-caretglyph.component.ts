@@ -14,8 +14,26 @@ import { delay, of, throwError } from 'rxjs';
   template: `
     <header class="cngx-ex-intro">
       @if (_exTitle) { <h1>{{ _exTitle }}</h1> }
-      @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
       @if (_exSectionTitle && _exSectionTitle !== _exTitle) { <h2>{{ _exSectionTitle }}</h2> }
+      @if (_exTags.length > 0 || _exUses.length > 0) {
+        <div class="cngx-ex-meta">
+          @if (_exTags.length > 0) {
+            <ul class="cngx-ex-tags" aria-label="Tags">
+              @for (t of _exTags; track t.dim + ':' + t.value) {
+                <li class="cngx-ex-tag" [attr.data-dim]="t.dim" [attr.data-value]="t.value">{{ t.value }}</li>
+              }
+            </ul>
+          }
+          @if (_exUses.length > 0) {
+            <p class="cngx-ex-uses"><span class="cngx-ex-uses__label">uses</span>
+              @for (u of _exUses; track u; let last = $last) {
+                <code>{{ u }}</code>@if (!last) {<span class="cngx-ex-uses__sep">, </span>}
+              }
+            </p>
+          }
+        </div>
+      }
+      @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
       @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
     </header>
     <ng-template #customClear>
@@ -59,6 +77,8 @@ export class SelectShellCustomGlyphsClearglyphCaretglyph {
   protected readonly _exDescription: string = 'CngxSelectShell — single-value declarative-options dropdown. Project user-authored &lt;cngx-option&gt; / &lt;cngx-optgroup&gt; children directly; the shell derives a hierarchy-aware option model and runs the same family-level intelligence (createSelectCore, createFieldSync, createScalarCommitHandler, announcer) as CngxSelect.';
   protected readonly _exSectionTitle: string = 'Custom glyphs — clearGlyph + caretGlyph';
   protected readonly _exSubtitle: string = 'Replace the built-in ✕ clear button glyph and ▾ caret with consumer-authored templates. The button frame, ARIA wiring, and click handlers stay intact — only the glyph swaps. <code>*cngxSelectClearButton</code> replaces the entire button when full control is needed.';
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exUses: readonly string[] = ['CngxSelectShell', 'CngxSelectOption', 'CngxSelectOptgroup', 'CngxSelectDivider'];
   protected readonly _exTs: string = `import { FormControl } from '@angular/forms';
 import { adaptFormControl } from '@cngx/forms/field';
 import { CngxSelectShell, CngxSelectOption, type CngxSelectCommitAction, type CngxSelectCommitMode, type CngxSelectShellChange } from '@cngx/forms/select';

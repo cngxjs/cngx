@@ -12,8 +12,26 @@ import { createManualState } from '@cngx/common/data';
   template: `
     <header class="cngx-ex-intro">
       @if (_exTitle) { <h1>{{ _exTitle }}</h1> }
-      @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
       @if (_exSectionTitle && _exSectionTitle !== _exTitle) { <h2>{{ _exSectionTitle }}</h2> }
+      @if (_exTags.length > 0 || _exUses.length > 0) {
+        <div class="cngx-ex-meta">
+          @if (_exTags.length > 0) {
+            <ul class="cngx-ex-tags" aria-label="Tags">
+              @for (t of _exTags; track t.dim + ':' + t.value) {
+                <li class="cngx-ex-tag" [attr.data-dim]="t.dim" [attr.data-value]="t.value">{{ t.value }}</li>
+              }
+            </ul>
+          }
+          @if (_exUses.length > 0) {
+            <p class="cngx-ex-uses"><span class="cngx-ex-uses__label">uses</span>
+              @for (u of _exUses; track u; let last = $last) {
+                <code>{{ u }}</code>@if (!last) {<span class="cngx-ex-uses__sep">, </span>}
+              }
+            </p>
+          }
+        </div>
+      }
+      @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
       @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
     </header>
     <div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; resize: horizontal; overflow: auto; max-width: 600px; min-width: 0; width: 100%; box-sizing: border-box">
@@ -48,6 +66,8 @@ export class PrimitivesResponsiveFillsParentWidth {
   protected readonly _exDescription: string = 'Compose &lt;cngx-chart&gt; + [cngxAxis] + layer atoms ([cngxLine], [cngxArea], [cngxBar], [cngxScatter], [cngxThreshold], [cngxBand]) directly. The seven preset molecules wrap these primitives; this demo shows how to compose them.';
   protected readonly _exSectionTitle: string = 'Responsive (fills parent width)';
   protected readonly _exSubtitle: string = 'Omit [width]/[height] and the chart switches into responsive mode: host fills the parent width, height comes from the --cngx-chart-aspect-ratio CSS variable (default 16/9). The resize observer drives dimensions() which feeds the SVG sizing + scale math, so axes and layer atoms re-flow on every container resize. Open the dev tools and drag the viewport to see the live re-flow.';
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exUses: readonly string[] = ['CngxChart', 'CngxAxis', 'CngxLine', 'CngxArea', 'CngxBar', 'CngxScatter', 'CngxThreshold', 'CngxBand'];
   protected readonly _exTs: string = `import { CngxChart, CngxAxis, CngxLine, CngxArea, CngxThreshold, CngxBand } from '@cngx/common/chart';
 import { createManualState } from '@cngx/common/data';
 

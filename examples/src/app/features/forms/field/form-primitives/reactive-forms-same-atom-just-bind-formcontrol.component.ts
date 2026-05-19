@@ -18,8 +18,26 @@ import { createFormPrimitivesFormGroup } from '../../../../_fixtures/form-primit
   template: `
     <header class="cngx-ex-intro">
       @if (_exTitle) { <h1>{{ _exTitle }}</h1> }
-      @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
       @if (_exSectionTitle && _exSectionTitle !== _exTitle) { <h2>{{ _exSectionTitle }}</h2> }
+      @if (_exTags.length > 0 || _exUses.length > 0) {
+        <div class="cngx-ex-meta">
+          @if (_exTags.length > 0) {
+            <ul class="cngx-ex-tags" aria-label="Tags">
+              @for (t of _exTags; track t.dim + ':' + t.value) {
+                <li class="cngx-ex-tag" [attr.data-dim]="t.dim" [attr.data-value]="t.value">{{ t.value }}</li>
+              }
+            </ul>
+          }
+          @if (_exUses.length > 0) {
+            <p class="cngx-ex-uses"><span class="cngx-ex-uses__label">uses</span>
+              @for (u of _exUses; track u; let last = $last) {
+                <code>{{ u }}</code>@if (!last) {<span class="cngx-ex-uses__sep">, </span>}
+              }
+            </p>
+          }
+        </div>
+      }
+      @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
       @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
     </header>
     <form [formGroup]="rfForm" style="display:grid;gap:16px;max-width:560px">
@@ -137,6 +155,8 @@ export class FormPrimitivesReactiveFormsSameAtomJustBindFormcontrol {
   protected readonly _exDescription: string = 'Nine cngx form controls — toggle, checkbox, radio group, two flavours of checkbox/button-toggle/chip group, plus the standalone chip — bind to whatever forms paradigm your app uses. Drop them into &lt;cngx-form-field [field]&gt; for Signal Forms, or bind [formControl] for Reactive Forms. Same atom, same template. No CVA-per-control boilerplate, and switching paradigms later costs nothing in the atom layer.';
   protected readonly _exSectionTitle: string = 'Reactive Forms — same atom, just bind [formControl]';
   protected readonly _exSubtitle: string = 'A full <code>FormGroup</code> wired through <code>[formControlName]</code> on every kind of value-bearing atom: boolean (toggle, checkbox, chip), single-pick group (radio, button-toggle, chip-group), multi-pick group (checkbox-group, button-multi-toggle, multi-chip). Import <code>CngxFormBridge</code> in the component and the binding works. The three required atoms (terms, payment, channels) are wrapped in <code>&lt;cngx-form-field [field]&gt;</code> via <code>adaptFormControl</code> so error messages render per atom — exactly like the Signal Forms section above. Click <strong>Validate</strong> to mark every control touched at once; the readout shows the form-state and the live error visibility per field.';
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exUses: readonly string[] = ['CngxFormBridge', 'CngxFormField', 'CngxToggle', 'CngxCheckbox', 'CngxChipInteraction', 'CngxRadioGroup', 'CngxRadio', 'CngxCheckboxGroup', 'CngxButtonToggleGroup', 'CngxButtonMultiToggleGroup', 'CngxChipGroup', 'CngxMultiChipGroup', 'CngxChipInGroup'];
   protected readonly _exTs: string = `import { form, schema, required } from '@angular/forms/signals';
 import { ReactiveFormsModule } from '@angular/forms';
 import { JsonPipe } from '@angular/common';

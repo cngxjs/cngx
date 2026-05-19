@@ -12,8 +12,26 @@ import { createManualState } from '@cngx/common/data';
   template: `
     <header class="cngx-ex-intro">
       @if (_exTitle) { <h1>{{ _exTitle }}</h1> }
-      @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
       @if (_exSectionTitle && _exSectionTitle !== _exTitle) { <h2>{{ _exSectionTitle }}</h2> }
+      @if (_exTags.length > 0 || _exUses.length > 0) {
+        <div class="cngx-ex-meta">
+          @if (_exTags.length > 0) {
+            <ul class="cngx-ex-tags" aria-label="Tags">
+              @for (t of _exTags; track t.dim + ':' + t.value) {
+                <li class="cngx-ex-tag" [attr.data-dim]="t.dim" [attr.data-value]="t.value">{{ t.value }}</li>
+              }
+            </ul>
+          }
+          @if (_exUses.length > 0) {
+            <p class="cngx-ex-uses"><span class="cngx-ex-uses__label">uses</span>
+              @for (u of _exUses; track u; let last = $last) {
+                <code>{{ u }}</code>@if (!last) {<span class="cngx-ex-uses__sep">, </span>}
+              }
+            </p>
+          }
+        </div>
+      }
+      @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
       @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
     </header>
     <div style="display:flex;gap:24px;align-items:center;flex-wrap:wrap">
@@ -40,6 +58,8 @@ export class DonutScoreGauges {
   protected readonly _exDescription: string = 'Circular gauge for a single bounded value. Host carries role="meter"; the optional [label] renders inside the ring.';
   protected readonly _exSectionTitle: string = 'Score gauges';
   protected readonly _exSubtitle: string = 'Three sizes; theming via --cngx-donut-color → --cngx-chart-primary.';
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exUses: readonly string[] = ['CngxDonut'];
   protected readonly _exTs: string = `import { CngxDonut } from '@cngx/common/chart';
 import { createManualState } from '@cngx/common/data';
 

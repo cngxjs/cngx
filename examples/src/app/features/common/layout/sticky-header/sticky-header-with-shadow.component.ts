@@ -11,8 +11,26 @@ import { CngxStickyHeader } from '@cngx/common/layout';
   template: `
     <header class="cngx-ex-intro">
       @if (_exTitle) { <h1>{{ _exTitle }}</h1> }
-      @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
       @if (_exSectionTitle && _exSectionTitle !== _exTitle) { <h2>{{ _exSectionTitle }}</h2> }
+      @if (_exTags.length > 0 || _exUses.length > 0) {
+        <div class="cngx-ex-meta">
+          @if (_exTags.length > 0) {
+            <ul class="cngx-ex-tags" aria-label="Tags">
+              @for (t of _exTags; track t.dim + ':' + t.value) {
+                <li class="cngx-ex-tag" [attr.data-dim]="t.dim" [attr.data-value]="t.value">{{ t.value }}</li>
+              }
+            </ul>
+          }
+          @if (_exUses.length > 0) {
+            <p class="cngx-ex-uses"><span class="cngx-ex-uses__label">uses</span>
+              @for (u of _exUses; track u; let last = $last) {
+                <code>{{ u }}</code>@if (!last) {<span class="cngx-ex-uses__sep">, </span>}
+              }
+            </p>
+          }
+        </div>
+      }
+      @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
       @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
     </header>
     <div style="height:250px;overflow-y:auto;border:1px solid var(--cngx-color-border,#ddd);border-radius:8px">
@@ -51,6 +69,8 @@ export class StickyHeaderStickyHeaderWithShadow {
   protected readonly _exDescription: string = 'Detects when a sticky-positioned element becomes stuck. Toggles a CSS class for shadow or style changes.';
   protected readonly _exSectionTitle: string = 'Sticky Header with Shadow';
   protected readonly _exSubtitle: string = 'Scroll the container below. When the header becomes stuck, a box shadow appears via the <code>cngx-sticky--active</code> class.';
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exUses: readonly string[] = ['CngxStickyHeader'];
   protected readonly _exTs: string = `import { CngxStickyHeader } from '@cngx/common/layout';`;
   protected readonly _exHtml: string = `<div style="height:250px;overflow-y:auto;border:1px solid var(--cngx-color-border,#ddd);border-radius:8px">
   <div style="padding:16px">

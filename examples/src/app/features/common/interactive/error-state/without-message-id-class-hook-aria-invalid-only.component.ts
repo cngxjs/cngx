@@ -11,8 +11,26 @@ import { CngxErrorState } from '@cngx/common/interactive';
   template: `
     <header class="cngx-ex-intro">
       @if (_exTitle) { <h1>{{ _exTitle }}</h1> }
-      @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
       @if (_exSectionTitle && _exSectionTitle !== _exTitle) { <h2>{{ _exSectionTitle }}</h2> }
+      @if (_exTags.length > 0 || _exUses.length > 0) {
+        <div class="cngx-ex-meta">
+          @if (_exTags.length > 0) {
+            <ul class="cngx-ex-tags" aria-label="Tags">
+              @for (t of _exTags; track t.dim + ':' + t.value) {
+                <li class="cngx-ex-tag" [attr.data-dim]="t.dim" [attr.data-value]="t.value">{{ t.value }}</li>
+              }
+            </ul>
+          }
+          @if (_exUses.length > 0) {
+            <p class="cngx-ex-uses"><span class="cngx-ex-uses__label">uses</span>
+              @for (u of _exUses; track u; let last = $last) {
+                <code>{{ u }}</code>@if (!last) {<span class="cngx-ex-uses__sep">, </span>}
+              }
+            </p>
+          }
+        </div>
+      }
+      @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
       @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
     </header>
     <label style="display: block; margin-bottom: 6px; font-weight: 600;">
@@ -49,6 +67,8 @@ export class ErrorStateWithoutMessageIdClassHookAriaInvalidOnly {
   protected readonly _exDescription: string = '<code>[cngxErrorState]</code> is a generic host-element marker. Toggles <code>.cngx-error</code> + reactive <code>aria-invalid</code> + <code>aria-errormessage</code> on any DOM element — cngx, Material, CDK, native, or third-party host. Works without an aggregator; pair with <code>cngxErrorScope</code> when you need reveal-on-submit semantics. Both ARIA attributes stay in the DOM with explicit values per cngx convention; visibility of the linked message is the consumer\'s <code>aria-hidden</code> to wire.';
   protected readonly _exSectionTitle: string = 'Without message id — class hook + aria-invalid only';
   protected readonly _exSubtitle: string = '<code>cngxErrorMessageId</code> is optional. Skip it when the error message is rendered elsewhere (e.g. a summary panel) or when only the visual cue is needed. <code>aria-invalid</code> still flips between <code>"false"</code> and <code>"true"</code>; <code>aria-errormessage</code> simply never appears.';
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exUses: readonly string[] = ['CngxErrorState'];
   protected readonly _exTs: string = `import { CngxErrorState } from '@cngx/common/interactive';
 
 protected readonly emailInvalid = signal(false);

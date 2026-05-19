@@ -450,6 +450,29 @@ function escapeCustomElementTags(html) {
   });
 }
 
+/**
+ * Merge story-level + section-level tag fields into the effective tag set
+ * for one section. Section `focus` (if any) replaces story `focus`. Other
+ * dimensions are story-level only.
+ *
+ * Returns an array of `[dim, value]` pairs in the canonical chip order:
+ * atomic-level, audience, artifact, focus, stability (skipped when `stable`),
+ * framework. Multi-value dimensions emit one pair per value.
+ */
+function buildTagPairs(story, section) {
+  const pairs = [];
+  if (story.level) pairs.push(['atomic-level', story.level]);
+  for (const a of story.audience ?? []) pairs.push(['audience', a]);
+  if (story.artifact) pairs.push(['artifact', story.artifact]);
+  const focus = section.focus ?? story.focus ?? [];
+  for (const f of focus) pairs.push(['focus', f]);
+  if (story.stability && story.stability !== 'stable') {
+    pairs.push(['stability', story.stability]);
+  }
+  if (story.framework) pairs.push(['framework', story.framework]);
+  return pairs;
+}
+
 function emitComponentSource(meta, story, section, importMap) {
   const { lines } = buildImports(story, section, importMap, meta.featureDepth);
   const setup = [story.setup ?? '', section.setup ?? '']
@@ -516,11 +539,19 @@ function emitComponentSource(meta, story, section, importMap) {
   // Intro header: story title + description, then per-section title + subtitle.
   // description/overview/subtitle may contain HTML — render via [innerHTML]
   // bound to class properties so the template parser doesn't choke.
+  const tagPairs = buildTagPairs(story, section);
+  const tagFieldEntries = tagPairs
+    .map(([dim, value]) => `{ dim: ${tsQuote(dim)}, value: ${tsQuote(value)} }`)
+    .join(', ');
+  const usesList = (story.apiComponents ?? []).slice();
+  const usesFieldEntries = usesList.map((s) => tsQuote(s)).join(', ');
   const introFields = [
     `  protected readonly _exTitle: string = ${tsQuote(story.title ?? '')};`,
     `  protected readonly _exDescription: string = ${tsQuote(escapeCustomElementTags(story.description ?? ''))};`,
     `  protected readonly _exSectionTitle: string = ${tsQuote(section.title ?? '')};`,
     `  protected readonly _exSubtitle: string = ${tsQuote(escapeCustomElementTags(section.subtitle ?? ''))};`,
+    `  protected readonly _exTags: readonly { dim: string; value: string }[] = [${tagFieldEntries}];`,
+    `  protected readonly _exUses: readonly string[] = [${usesFieldEntries}];`,
   ].join('\n');
 
   // Source snippets shown in collapsible <details> blocks so consumers can
@@ -546,8 +577,26 @@ function emitComponentSource(meta, story, section, importMap) {
   const intro = [
     `    <header class="cngx-ex-intro">`,
     `      @if (_exTitle) { <h1>{{ _exTitle }}</h1> }`,
-    `      @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }`,
     `      @if (_exSectionTitle && _exSectionTitle !== _exTitle) { <h2>{{ _exSectionTitle }}</h2> }`,
+    `      @if (_exTags.length > 0 || _exUses.length > 0) {`,
+    `        <div class="cngx-ex-meta">`,
+    `          @if (_exTags.length > 0) {`,
+    `            <ul class="cngx-ex-tags" aria-label="Tags">`,
+    `              @for (t of _exTags; track t.dim + ':' + t.value) {`,
+    `                <li class="cngx-ex-tag" [attr.data-dim]="t.dim" [attr.data-value]="t.value">{{ t.value }}</li>`,
+    `              }`,
+    `            </ul>`,
+    `          }`,
+    `          @if (_exUses.length > 0) {`,
+    `            <p class="cngx-ex-uses"><span class="cngx-ex-uses__label">uses</span>`,
+    `              @for (u of _exUses; track u; let last = $last) {`,
+    `                <code>{{ u }}</code>@if (!last) {<span class="cngx-ex-uses__sep">, </span>}`,
+    `              }`,
+    `            </p>`,
+    `          }`,
+    `        </div>`,
+    `      }`,
+    `      @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }`,
     `      @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }`,
     `    </header>`,
   ].join('\n');
@@ -634,6 +683,12 @@ function emitRoutesMetaSource(routes) {
     demo: r.demoTitle,
     section: r.sectionTitle,
     apiComponents: r.apiComponents,
+    level: r.level ?? null,
+    audience: r.audience,
+    artifact: r.artifact ?? null,
+    focus: r.focus,
+    stability: r.stability ?? null,
+    framework: r.framework ?? null,
   })},`).join('\n');
   return `${GEN_HEADER}
 export interface RouteMeta {
@@ -646,6 +701,12 @@ export interface RouteMeta {
   demo: string;
   section: string;
   apiComponents: string[];
+  level: 'atom' | 'molecule' | 'organism' | null;
+  audience: ('dev' | 'design' | 'a11y')[];
+  artifact: 'standalone' | 'building-block' | null;
+  focus: ('visual-variants' | 'behavior' | 'a11y-pattern' | 'integration' | 'error-handling' | 'async-state' | 'composition')[];
+  stability: 'stable' | 'experimental' | 'deprecated' | null;
+  framework: 'signal-forms' | 'reactive-forms' | 'template-only' | 'programmatic' | null;
 }
 
 export const ROUTES_META: readonly RouteMeta[] = [
@@ -810,6 +871,12 @@ async function main() {
         demoTitle: story.title,
         sectionTitle: section.title,
         apiComponents: story.apiComponents ?? [],
+        level: story.level,
+        audience: story.audience ?? [],
+        artifact: story.artifact,
+        focus: section.focus ?? story.focus ?? [],
+        stability: story.stability,
+        framework: story.framework,
       });
     }
     console.log(`Generated ${sections.length} components for ${demoFolder}`);

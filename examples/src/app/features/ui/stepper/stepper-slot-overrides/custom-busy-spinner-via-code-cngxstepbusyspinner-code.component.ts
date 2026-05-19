@@ -12,8 +12,26 @@ import { CngxStepper } from '@cngx/ui/stepper';
   template: `
     <header class="cngx-ex-intro">
       @if (_exTitle) { <h1>{{ _exTitle }}</h1> }
-      @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
       @if (_exSectionTitle && _exSectionTitle !== _exTitle) { <h2>{{ _exSectionTitle }}</h2> }
+      @if (_exTags.length > 0 || _exUses.length > 0) {
+        <div class="cngx-ex-meta">
+          @if (_exTags.length > 0) {
+            <ul class="cngx-ex-tags" aria-label="Tags">
+              @for (t of _exTags; track t.dim + ':' + t.value) {
+                <li class="cngx-ex-tag" [attr.data-dim]="t.dim" [attr.data-value]="t.value">{{ t.value }}</li>
+              }
+            </ul>
+          }
+          @if (_exUses.length > 0) {
+            <p class="cngx-ex-uses"><span class="cngx-ex-uses__label">uses</span>
+              @for (u of _exUses; track u; let last = $last) {
+                <code>{{ u }}</code>@if (!last) {<span class="cngx-ex-uses__sep">, </span>}
+              }
+            </p>
+          }
+        </div>
+      }
+      @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
       @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
     </header>
     <cngx-stepper
@@ -54,6 +72,8 @@ export class StepperSlotOverridesCustomBusySpinnerViaCodeCngxstepbusyspinnerCode
   protected readonly _exDescription: string = 'Override every visual region inside <code>&lt;cngx-stepper&gt;</code> via the six new slot directives — <code>*cngxStepIndicator</code>, <code>*cngxStepBadge</code>, <code>*cngxStepBusySpinner</code>, <code>*cngxStepRejection</code>, <code>*cngxStepGroupHeader</code>, <code>*cngxStepperEmpty</code>. Each slot ships a typed context object — destructure via <code>let-status="status"</code> / <code>let-failedIndex="failedIndex"</code> / <code>let-group="group"</code> / etc. The library renders sensible defaults; the slots are purely additive.';
   protected readonly _exSectionTitle: string = 'Custom busy-spinner via <code>*cngxStepBusySpinner</code>';
   protected readonly _exSubtitle: string = 'Replace the default pulse-animation span with branded markup while a commit is in flight. Slot context is <code>{ node }</code>; the slot only fires when the step row matches <code>presenter.intendedStepIndex()</code> with <code>commitState.status() === \'pending\'</code>. Press Next to trigger an 800ms pessimistic commit — the spinner slot replaces the default chrome on the target row.';
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exUses: readonly string[] = ['CngxStepper', 'CngxStep', 'CngxStepGroup', 'CngxStepContent', 'CngxStepIndicator', 'CngxStepBadge', 'CngxStepBusySpinner', 'CngxStepGroupHeader', 'CngxStepperEmpty', 'CngxStepRejection'];
   protected readonly _exTs: string = `import { CngxStep, CngxStepBusySpinner, CngxStepContent, type CngxStepperCommitAction } from '@cngx/common/stepper';
 import { CngxStepper } from '@cngx/ui/stepper';
 

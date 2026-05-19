@@ -13,8 +13,26 @@ import { CngxErrorAggregator, CngxErrorSource } from '@cngx/common/interactive';
   template: `
     <header class="cngx-ex-intro">
       @if (_exTitle) { <h1>{{ _exTitle }}</h1> }
-      @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
       @if (_exSectionTitle && _exSectionTitle !== _exTitle) { <h2>{{ _exSectionTitle }}</h2> }
+      @if (_exTags.length > 0 || _exUses.length > 0) {
+        <div class="cngx-ex-meta">
+          @if (_exTags.length > 0) {
+            <ul class="cngx-ex-tags" aria-label="Tags">
+              @for (t of _exTags; track t.dim + ':' + t.value) {
+                <li class="cngx-ex-tag" [attr.data-dim]="t.dim" [attr.data-value]="t.value">{{ t.value }}</li>
+              }
+            </ul>
+          }
+          @if (_exUses.length > 0) {
+            <p class="cngx-ex-uses"><span class="cngx-ex-uses__label">uses</span>
+              @for (u of _exUses; track u; let last = $last) {
+                <code>{{ u }}</code>@if (!last) {<span class="cngx-ex-uses__sep">, </span>}
+              }
+            </p>
+          }
+        </div>
+      }
+      @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
       @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
     </header>
     <cngx-tab-group [(activeIndex)]="active" aria-label="Validated tabs">
@@ -60,6 +78,8 @@ export class TabErrorAggregationPerTabErrorBadges {
   protected readonly _exDescription: string = 'Bind <code>[errorAggregator]</code> on a tab to surface a badge + SR descriptor whenever the aggregator opts to show errors. Compose <code>CngxErrorAggregator</code> on a fieldset around the tab; the organism reads <code>shouldShow()</code> and <code>announcement()</code> reactively. NO duplicate aggregator — this is pure consumer composition over the existing primitive.';
   protected readonly _exSectionTitle: string = 'Per-tab error badges';
   protected readonly _exSubtitle: string = 'Toggle the validity flags below — the tab badge appears the moment <code>aggregator.shouldShow()</code> turns true. The descriptor span carries the announcement phrase for SR; the ID is always present in the DOM, content is reactive (cngx A11y rule).';
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exUses: readonly string[] = ['CngxTabGroup', 'CngxTab', 'CngxTabContent', 'CngxErrorAggregator', 'CngxErrorSource'];
   protected readonly _exTs: string = `import { CngxTab, CngxTabContent } from '@cngx/common/tabs';
 import { CngxTabGroup } from '@cngx/ui/tabs';
 import { CngxErrorAggregator, CngxErrorSource } from '@cngx/common/interactive';

@@ -10,8 +10,26 @@ import { injectRecycler } from '@cngx/common/data';
   template: `
     <header class="cngx-ex-intro">
       @if (_exTitle) { <h1>{{ _exTitle }}</h1> }
-      @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
       @if (_exSectionTitle && _exSectionTitle !== _exTitle) { <h2>{{ _exSectionTitle }}</h2> }
+      @if (_exTags.length > 0 || _exUses.length > 0) {
+        <div class="cngx-ex-meta">
+          @if (_exTags.length > 0) {
+            <ul class="cngx-ex-tags" aria-label="Tags">
+              @for (t of _exTags; track t.dim + ':' + t.value) {
+                <li class="cngx-ex-tag" [attr.data-dim]="t.dim" [attr.data-value]="t.value">{{ t.value }}</li>
+              }
+            </ul>
+          }
+          @if (_exUses.length > 0) {
+            <p class="cngx-ex-uses"><span class="cngx-ex-uses__label">uses</span>
+              @for (u of _exUses; track u; let last = $last) {
+                <code>{{ u }}</code>@if (!last) {<span class="cngx-ex-uses__sep">, </span>}
+              }
+            </p>
+          }
+        </div>
+      }
+      @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
       @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
     </header>
     <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap">
@@ -60,6 +78,8 @@ export class RecyclerScrolltoindexDeepLink {
   protected readonly _exDescription: string = 'Signal-based virtualizer for long lists. Items outside the viewport are removed from the DOM. Consumer renders with @for and two spacer containers.';
   protected readonly _exSectionTitle: string = 'ScrollToIndex + Deep-Link';
   protected readonly _exSubtitle: string = '<code>scrollToIndex()</code> scrolls to any item by index. When the index exceeds <code>totalCount</code> (data not loaded yet), <code>pendingTarget</code> stores it and resolves automatically when <code>totalCount</code> grows past the target.';
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exUses: readonly string[] = ['CngxRecycler', 'CngxMeasure', 'CngxVirtualItem', 'CngxRecyclerAnnouncer'];
   protected readonly _exTs: string = `import { injectRecycler } from '@cngx/common/data';
 
 protected readonly allItems = signal(

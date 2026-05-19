@@ -11,8 +11,26 @@ import { CngxFocusVisible } from '@cngx/common/a11y';
   template: `
     <header class="cngx-ex-intro">
       @if (_exTitle) { <h1>{{ _exTitle }}</h1> }
-      @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
       @if (_exSectionTitle && _exSectionTitle !== _exTitle) { <h2>{{ _exSectionTitle }}</h2> }
+      @if (_exTags.length > 0 || _exUses.length > 0) {
+        <div class="cngx-ex-meta">
+          @if (_exTags.length > 0) {
+            <ul class="cngx-ex-tags" aria-label="Tags">
+              @for (t of _exTags; track t.dim + ':' + t.value) {
+                <li class="cngx-ex-tag" [attr.data-dim]="t.dim" [attr.data-value]="t.value">{{ t.value }}</li>
+              }
+            </ul>
+          }
+          @if (_exUses.length > 0) {
+            <p class="cngx-ex-uses"><span class="cngx-ex-uses__label">uses</span>
+              @for (u of _exUses; track u; let last = $last) {
+                <code>{{ u }}</code>@if (!last) {<span class="cngx-ex-uses__sep">, </span>}
+              }
+            </p>
+          }
+        </div>
+      }
+      @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
       @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
     </header>
     <p style="margin-bottom: 12px; font-size: 0.875rem; color: var(--cngx-text-secondary, #666);">
@@ -73,6 +91,8 @@ export class FocusVisibleKeyboardVsPointer {
   protected readonly _exDescription: string = 'Tracks keyboard-initiated focus to distinguish it from pointer focus. Adds the cngx-focus-visible CSS class only when focus was triggered by keyboard.';
   protected readonly _exSectionTitle: string = 'CngxFocusVisible — Keyboard vs Pointer';
   protected readonly _exSubtitle: string = '<code>[cngxFocusVisible]</code> adds the <code>cngx-focus-visible</code> class when the element receives keyboard focus. Mouse/touch focus does not add the class. Unlike native <code>:focus-visible</code>, the signal is available in TypeScript for conditional logic beyond CSS.';
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exUses: readonly string[] = ['CngxFocusVisible'];
   protected readonly _exTs: string = `import { CngxFocusVisible } from '@cngx/common/a11y';
 
 protected name = signal('');

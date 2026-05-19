@@ -21,6 +21,11 @@ export const STORY: DemoSpec = {
     'CngxComboboxTriggerLabel',
     'provideSelectConfig',
   ],
+  level: 'organism',
+  audience: ['dev', 'design', 'a11y'],
+  artifact: 'standalone',
+  focus: ['visual-variants', 'a11y-pattern', 'composition'],
+  framework: 'signal-forms',
   overview:
     '<p><code>&lt;cngx-select&gt;</code> composes <code>CngxListboxTrigger</code> + <code>CngxPopover</code> + ' +
     '<code>CngxListbox</code> into a native-feeling dropdown. Single-select only — for multi use <code>CngxMultiSelect</code>.</p>' +

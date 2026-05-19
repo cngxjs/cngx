@@ -5,6 +5,32 @@
  * They are consumed by `scripts/generate-demos.mjs` to produce demo components,
  * app.routes.ts, app-nav.ts, and the nav block in app.html.
  */
+
+/** Composition density of the underlying symbol. Toolkit-agnostic. */
+export type AtomicLevel = 'atom' | 'molecule' | 'organism';
+
+/** Reader audience the demo serves. */
+export type Audience = 'dev' | 'design' | 'a11y';
+
+/** Whether the demo's subject drops in (`standalone`) or needs wiring (`building-block`). */
+export type Artifact = 'standalone' | 'building-block';
+
+/** What aspect of the symbol a demo / section illustrates. */
+export type Focus =
+  | 'visual-variants'
+  | 'behavior'
+  | 'a11y-pattern'
+  | 'integration'
+  | 'error-handling'
+  | 'async-state'
+  | 'composition';
+
+/** Release / maintenance stability. Default is `stable` and renders no chip. */
+export type Stability = 'stable' | 'experimental' | 'deprecated';
+
+/** Forms-binding mode. Only set on `@cngx/forms` demos. */
+export type Framework = 'signal-forms' | 'reactive-forms' | 'template-only' | 'programmatic';
+
 export interface DemoSpec {
   /** Displayed title of the demo page heading. */
   title: string;
@@ -58,6 +84,18 @@ export interface DemoSpec {
    * Falls back to `description` if not set.
    */
   overview?: string;
+  /** Composition density of the subject. Renders as the `atomic-level` chip. */
+  level?: AtomicLevel;
+  /** Reader audiences the demo serves. Renders one chip per value. */
+  audience?: readonly Audience[];
+  /** Drop-in (`standalone`) vs wire-it-up (`building-block`). */
+  artifact?: Artifact;
+  /** Story-level default for the `focus` chips. Section-level may override. */
+  focus?: readonly Focus[];
+  /** Stability flag. `stable` renders no chip; `experimental` / `deprecated` do. */
+  stability?: Stability;
+  /** Forms-binding mode. Only set on `@cngx/forms` demos. */
+  framework?: Framework;
   /** At least one section (= one ExampleCard). */
   sections: [SectionSpec, ...SectionSpec[]];
 }
@@ -111,4 +149,9 @@ export interface SectionSpec {
    * Use for demo-specific styling that illustrates CSS custom property usage.
    */
   css?: string;
+  /**
+   * Section-level override for the `focus` chips. When set, replaces the
+   * story-level `focus` for this section only.
+   */
+  focus?: readonly Focus[];
 }

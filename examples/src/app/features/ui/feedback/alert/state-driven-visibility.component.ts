@@ -12,8 +12,26 @@ import { createManualState } from '@cngx/common/data';
   template: `
     <header class="cngx-ex-intro">
       @if (_exTitle) { <h1>{{ _exTitle }}</h1> }
-      @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
       @if (_exSectionTitle && _exSectionTitle !== _exTitle) { <h2>{{ _exSectionTitle }}</h2> }
+      @if (_exTags.length > 0 || _exUses.length > 0) {
+        <div class="cngx-ex-meta">
+          @if (_exTags.length > 0) {
+            <ul class="cngx-ex-tags" aria-label="Tags">
+              @for (t of _exTags; track t.dim + ':' + t.value) {
+                <li class="cngx-ex-tag" [attr.data-dim]="t.dim" [attr.data-value]="t.value">{{ t.value }}</li>
+              }
+            </ul>
+          }
+          @if (_exUses.length > 0) {
+            <p class="cngx-ex-uses"><span class="cngx-ex-uses__label">uses</span>
+              @for (u of _exUses; track u; let last = $last) {
+                <code>{{ u }}</code>@if (!last) {<span class="cngx-ex-uses__sep">, </span>}
+              }
+            </p>
+          }
+        </div>
+      }
+      @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
       @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
     </header>
     <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px">
@@ -52,6 +70,8 @@ export class AlertStateDrivenVisibility {
   protected readonly _exDescription: string = 'Inline alert atom with enter/exit animations, state-driven visibility, auto-dismiss with pause-on-hover/focus, auto-collapse, and action buttons.';
   protected readonly _exSectionTitle: string = 'State-Driven Visibility';
   protected readonly _exSubtitle: string = 'Bind <code>[state]</code> to a <code>CngxAsyncState</code>. Shows on error/success/loading, hides on idle. Success auto-dismisses after 5s. Hover/focus pauses the timer (WCAG 2.2.1).';
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exUses: readonly string[] = ['CngxAlert', 'CngxAlertAction', 'CngxAlertIcon'];
   protected readonly _exTs: string = `import { CngxAlert } from '@cngx/ui/feedback';
 import { createManualState } from '@cngx/common/data';
 

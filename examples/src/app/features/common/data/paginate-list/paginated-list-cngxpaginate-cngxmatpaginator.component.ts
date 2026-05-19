@@ -13,8 +13,26 @@ import { CngxMatPaginator } from '@cngx/ui/material';
   template: `
     <header class="cngx-ex-intro">
       @if (_exTitle) { <h1>{{ _exTitle }}</h1> }
-      @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
       @if (_exSectionTitle && _exSectionTitle !== _exTitle) { <h2>{{ _exSectionTitle }}</h2> }
+      @if (_exTags.length > 0 || _exUses.length > 0) {
+        <div class="cngx-ex-meta">
+          @if (_exTags.length > 0) {
+            <ul class="cngx-ex-tags" aria-label="Tags">
+              @for (t of _exTags; track t.dim + ':' + t.value) {
+                <li class="cngx-ex-tag" [attr.data-dim]="t.dim" [attr.data-value]="t.value">{{ t.value }}</li>
+              }
+            </ul>
+          }
+          @if (_exUses.length > 0) {
+            <p class="cngx-ex-uses"><span class="cngx-ex-uses__label">uses</span>
+              @for (u of _exUses; track u; let last = $last) {
+                <code>{{ u }}</code>@if (!last) {<span class="cngx-ex-uses__sep">, </span>}
+              }
+            </p>
+          }
+        </div>
+      }
+      @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
       @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
     </header>
     <div cngxPaginate #pg="cngxPaginate" [total]="items().length" [cngxPageSize]="5" style="display:contents">
@@ -47,6 +65,8 @@ export class PaginateListPaginatedListCngxpaginateCngxmatpaginator {
   protected readonly _exDescription: string = '';
   protected readonly _exSectionTitle: string = 'Paginated List — CngxPaginate + CngxMatPaginator';
   protected readonly _exSubtitle: string = '<code>CngxPaginate</code> works with any list, not just tables. Put <code>[cngxPaginate]</code> on any wrapper element, bind <code>[total]</code> to the full item count, and slice the array with <code>pg.range()</code> in the <code>@for</code> loop. <code>CngxMatPaginator</code> provides the Material paginator UI via <code>[cngxPaginateRef]</code>.';
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exUses: readonly string[] = ['CngxPaginate', 'CngxMatPaginator'];
   protected readonly _exTs: string = `import { PEOPLE, type Person } from '../../../../fixtures';
 import { CngxPaginate } from '@cngx/common/data';
 import { CngxMatPaginator } from '@cngx/ui/material';

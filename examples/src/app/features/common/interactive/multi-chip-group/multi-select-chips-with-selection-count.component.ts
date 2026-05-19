@@ -12,8 +12,26 @@ import { CngxChip } from '@cngx/common/display';
   template: `
     <header class="cngx-ex-intro">
       @if (_exTitle) { <h1>{{ _exTitle }}</h1> }
-      @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
       @if (_exSectionTitle && _exSectionTitle !== _exTitle) { <h2>{{ _exSectionTitle }}</h2> }
+      @if (_exTags.length > 0 || _exUses.length > 0) {
+        <div class="cngx-ex-meta">
+          @if (_exTags.length > 0) {
+            <ul class="cngx-ex-tags" aria-label="Tags">
+              @for (t of _exTags; track t.dim + ':' + t.value) {
+                <li class="cngx-ex-tag" [attr.data-dim]="t.dim" [attr.data-value]="t.value">{{ t.value }}</li>
+              }
+            </ul>
+          }
+          @if (_exUses.length > 0) {
+            <p class="cngx-ex-uses"><span class="cngx-ex-uses__label">uses</span>
+              @for (u of _exUses; track u; let last = $last) {
+                <code>{{ u }}</code>@if (!last) {<span class="cngx-ex-uses__sep">, </span>}
+              }
+            </p>
+          }
+        </div>
+      }
+      @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
       @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
     </header>
     <cngx-multi-chip-group #group="cngxMultiChipGroup" label="Tags" [(selectedValues)]="picked">
@@ -40,6 +58,8 @@ export class MultiChipGroupMultiSelectChipsWithSelectionCount {
   protected readonly _exDescription: string = 'Multi-select chip group molecule. Owns <code>selectedValues = model&lt;T[]&gt;</code>, provides <code>CNGX_CHIP_GROUP_HOST</code> with multi-select semantics, and uses <code>createSelectionController</code> internally for membership tracking. Renders <code>role="listbox" aria-multiselectable="true"</code>; chips toggle independently. Use <code>[keyFn]</code> for object-valued options where reference equality is unstable.';
   protected readonly _exSectionTitle: string = 'Multi-select chips with selection count';
   protected readonly _exSubtitle: string = 'Independent toggle per chip. <code>selectedCount</code> is exposed on the group for label hints. Multi-select uses <code>createSelectionController</code> with structural-equality membership tracking.';
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exUses: readonly string[] = ['CngxMultiChipGroup', 'CngxChipInGroup', 'CngxChip', 'CNGX_CHIP_GROUP_HOST'];
   protected readonly _exTs: string = `import { CngxMultiChipGroup, CngxChipInGroup } from '@cngx/common/interactive';
 import { CngxChip } from '@cngx/common/display';
 

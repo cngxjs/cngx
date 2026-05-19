@@ -6,6 +6,10 @@ export const STORY: DemoSpec = {
   navCategory: 'a11y',
   description: 'Traps keyboard focus within the host element using the Angular CDK FocusTrap. Useful for modals, drawers, and other overlay components.',
   apiComponents: ['CngxFocusTrap'],
+  level: 'atom',
+  audience: ['a11y', 'dev'],
+  artifact: 'building-block',
+  focus: ['a11y-pattern', 'behavior'],
   setup: `
   protected modalOpen = signal(false);
   protected autoFocus = signal(true);

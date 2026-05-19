@@ -12,8 +12,26 @@ import { delay, of, throwError } from 'rxjs';
   template: `
     <header class="cngx-ex-intro">
       @if (_exTitle) { <h1>{{ _exTitle }}</h1> }
-      @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
       @if (_exSectionTitle && _exSectionTitle !== _exTitle) { <h2>{{ _exSectionTitle }}</h2> }
+      @if (_exTags.length > 0 || _exUses.length > 0) {
+        <div class="cngx-ex-meta">
+          @if (_exTags.length > 0) {
+            <ul class="cngx-ex-tags" aria-label="Tags">
+              @for (t of _exTags; track t.dim + ':' + t.value) {
+                <li class="cngx-ex-tag" [attr.data-dim]="t.dim" [attr.data-value]="t.value">{{ t.value }}</li>
+              }
+            </ul>
+          }
+          @if (_exUses.length > 0) {
+            <p class="cngx-ex-uses"><span class="cngx-ex-uses__label">uses</span>
+              @for (u of _exUses; track u; let last = $last) {
+                <code>{{ u }}</code>@if (!last) {<span class="cngx-ex-uses__sep">, </span>}
+              }
+            </p>
+          }
+        </div>
+      }
+      @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
       @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
     </header>
     <cngx-reorderable-multi-select
@@ -54,6 +72,8 @@ export class ReorderableMultiSelectOptionalDragHandleGlyph {
   protected readonly _exDescription: string = 'CngxReorderableMultiSelect — multi-value picker whose selected chips can be reordered via pointer drag and Ctrl+Arrow keyboard moves. Thin organism on top of createSelectCore + CngxReorder.';
   protected readonly _exSectionTitle: string = 'Optional drag-handle glyph';
   protected readonly _exSubtitle: string = 'By default no grip glyph renders — the whole chip is the drag surface and the ✕ button\'s hover state visually divides "drag here" from "remove here". Project a <code>TemplateRef&lt;void&gt;</code> through the <code>[chipDragHandle]</code> input to add a custom glyph back when your design language calls for one. The slot stays <code>aria-hidden="true"</code> — the semantic reorder is owned by the chip wrapper\'s keyboard handler plus <code>CngxReorder</code>.';
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exUses: readonly string[] = ['CngxReorderableMultiSelect', 'CngxReorder', 'CngxMultiSelectChip', 'CngxMultiSelectTriggerLabel'];
   protected readonly _exTs: string = `import { CngxReorderableMultiSelect, type CngxSelectOptionDef } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 

@@ -12,8 +12,26 @@ import { CngxChip } from '@cngx/common/display';
   template: `
     <header class="cngx-ex-intro">
       @if (_exTitle) { <h1>{{ _exTitle }}</h1> }
-      @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
       @if (_exSectionTitle && _exSectionTitle !== _exTitle) { <h2>{{ _exSectionTitle }}</h2> }
+      @if (_exTags.length > 0 || _exUses.length > 0) {
+        <div class="cngx-ex-meta">
+          @if (_exTags.length > 0) {
+            <ul class="cngx-ex-tags" aria-label="Tags">
+              @for (t of _exTags; track t.dim + ':' + t.value) {
+                <li class="cngx-ex-tag" [attr.data-dim]="t.dim" [attr.data-value]="t.value">{{ t.value }}</li>
+              }
+            </ul>
+          }
+          @if (_exUses.length > 0) {
+            <p class="cngx-ex-uses"><span class="cngx-ex-uses__label">uses</span>
+              @for (u of _exUses; track u; let last = $last) {
+                <code>{{ u }}</code>@if (!last) {<span class="cngx-ex-uses__sep">, </span>}
+              }
+            </p>
+          }
+        </div>
+      }
+      @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
       @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
     </header>
     <cngx-chip-group label="T-shirt size" [(selected)]="size" [disabled]="groupDisabled()">
@@ -38,6 +56,8 @@ export class ChipGroupBasicPickExactlyOneSize {
   protected readonly _exDescription: string = 'Single-select chip group molecule. Owns <code>selected = model&lt;T | undefined&gt;</code>, provides <code>CNGX_CHIP_GROUP_HOST</code> so projected <code>&lt;cngx-chip cngxChipInGroup&gt;</code> leaves derive their <code>aria-selected</code> from the parent\'s selection. Renders <code>role="listbox"</code>; composes <code>CngxRovingTabindex</code> for arrow-key navigation. Single-mode behaviour: re-clicking the active chip clears the selection (toggle off).';
   protected readonly _exSectionTitle: string = 'Basic — pick exactly one size';
   protected readonly _exSubtitle: string = 'Click any chip to select it; click again to deselect. Only one chip is <code>aria-selected</code> at a time.';
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exUses: readonly string[] = ['CngxChipGroup', 'CngxChipInGroup', 'CngxChip', 'CNGX_CHIP_GROUP_HOST'];
   protected readonly _exTs: string = `import { CngxChipGroup, CngxChipInGroup } from '@cngx/common/interactive';
 import { CngxChip } from '@cngx/common/display';
 

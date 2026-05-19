@@ -11,8 +11,26 @@ import { CngxFilter, CngxFilterChips, CngxFilterChip } from '@cngx/common/data';
   template: `
     <header class="cngx-ex-intro">
       @if (_exTitle) { <h1>{{ _exTitle }}</h1> }
-      @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
       @if (_exSectionTitle && _exSectionTitle !== _exTitle) { <h2>{{ _exSectionTitle }}</h2> }
+      @if (_exTags.length > 0 || _exUses.length > 0) {
+        <div class="cngx-ex-meta">
+          @if (_exTags.length > 0) {
+            <ul class="cngx-ex-tags" aria-label="Tags">
+              @for (t of _exTags; track t.dim + ':' + t.value) {
+                <li class="cngx-ex-tag" [attr.data-dim]="t.dim" [attr.data-value]="t.value">{{ t.value }}</li>
+              }
+            </ul>
+          }
+          @if (_exUses.length > 0) {
+            <p class="cngx-ex-uses"><span class="cngx-ex-uses__label">uses</span>
+              @for (u of _exUses; track u; let last = $last) {
+                <code>{{ u }}</code>@if (!last) {<span class="cngx-ex-uses__sep">, </span>}
+              }
+            </p>
+          }
+        </div>
+      }
+      @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
       @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
     </header>
     <ng-container [cngxFilter]="null" #filter="cngxFilter">
@@ -44,6 +62,8 @@ export class FilterChipsCustomChipDecorationViaCngxfilterchip {
   protected readonly _exDescription: string = 'Bridge between a multi-select chip strip and a parent <code>CngxFilter</code>. The bridge registers a single closure-style predicate ONCE on mount; chip toggles update the bridge\'s internal <code>selectedValues</code>; downstream filtered consumers recompute via the predicate\'s lazy read of <code>selectedValues()</code>. Pillar 1 derivation — no <code>effect()</code> write-back. Empty selection short-circuits to "no filter applied". <strong>Phase 5 limitation:</strong> the bridge\'s <code>[optionValue]</code> function extracts a key from each list item AND each chip option — they must share a shape. A future <code>[itemValue]</code> input will separate the two extractors; tracked as a follow-up.';
   protected readonly _exSectionTitle: string = 'Custom chip decoration via *cngxFilterChip';
   protected readonly _exSubtitle: string = 'The slot customizes <em>decoration</em> inside each chip. The bridge always wraps every option in <code>&lt;cngx-chip cngxChipInGroup [value]&gt;</code> itself, so the projected template never has to wire selection. Slot context exposes <code>$implicit</code>/<code>option</code>, <code>value</code>, and <code>label</code>.';
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exUses: readonly string[] = ['CngxFilterChips', 'CngxFilterChip', 'CngxFilter'];
   protected readonly _exTs: string = `import { CngxFilter, CngxFilterChips, CngxFilterChip } from '@cngx/common/data';
 
 protected readonly tagItems: readonly unknown[] = [

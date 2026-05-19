@@ -12,8 +12,26 @@ import { CngxTabGroup } from '@cngx/ui/tabs';
   template: `
     <header class="cngx-ex-intro">
       @if (_exTitle) { <h1>{{ _exTitle }}</h1> }
-      @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
       @if (_exSectionTitle && _exSectionTitle !== _exTitle) { <h2>{{ _exSectionTitle }}</h2> }
+      @if (_exTags.length > 0 || _exUses.length > 0) {
+        <div class="cngx-ex-meta">
+          @if (_exTags.length > 0) {
+            <ul class="cngx-ex-tags" aria-label="Tags">
+              @for (t of _exTags; track t.dim + ':' + t.value) {
+                <li class="cngx-ex-tag" [attr.data-dim]="t.dim" [attr.data-value]="t.value">{{ t.value }}</li>
+              }
+            </ul>
+          }
+          @if (_exUses.length > 0) {
+            <p class="cngx-ex-uses"><span class="cngx-ex-uses__label">uses</span>
+              @for (u of _exUses; track u; let last = $last) {
+                <code>{{ u }}</code>@if (!last) {<span class="cngx-ex-uses__sep">, </span>}
+              }
+            </p>
+          }
+        </div>
+      }
+      @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
       @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
     </header>
     <cngx-tab-group
@@ -56,6 +74,8 @@ export class TabSlotOverridesCustomBusySpinnerViaCodeCngxtabbusyspinnerCode {
   protected readonly _exDescription: string = 'Override every visual region inside <code>&lt;cngx-tab-group&gt;</code> via the three new slot directives — <code>*cngxTabErrorBadge</code>, <code>*cngxTabRejectionIcon</code>, <code>*cngxTabBusySpinner</code>. Each slot ships a typed context object — destructure via <code>let-tab="tab"</code> / <code>let-failedIndex="failedIndex"</code> / <code>let-originLabel="originLabel"</code> / <code>let-intendedIndex="intendedIndex"</code>. Sibling-shape parity with the stepper Phase-3 slots, so consumer-authored templates port across families with zero re-authoring. The library renders sensible defaults; the slots are purely additive.';
   protected readonly _exSectionTitle: string = 'Custom busy-spinner via <code>*cngxTabBusySpinner</code>';
   protected readonly _exSubtitle: string = 'Replace the default pulse-animation span with branded markup while a commit is in flight. Slot context is <code>{ tab, intendedIndex }</code>; the slot only fires when the tab matches <code>presenter.intendedIndex()</code> with <code>commitState.status() === \'pending\'</code>. Click "Review" to trigger an 800ms pessimistic commit — the spinner slot replaces the default chrome on the target tab.';
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exUses: readonly string[] = ['CngxTabGroup', 'CngxTab', 'CngxTabContent', 'CngxTabErrorBadge', 'CngxTabRejectionIcon', 'CngxTabBusySpinner'];
   protected readonly _exTs: string = `import { CngxTab, CngxTabBusySpinner, CngxTabContent, type CngxTabsCommitAction } from '@cngx/common/tabs';
 import { CngxTabGroup } from '@cngx/ui/tabs';
 

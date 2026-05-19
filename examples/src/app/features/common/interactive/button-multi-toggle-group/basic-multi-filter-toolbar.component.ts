@@ -11,8 +11,26 @@ import { CngxButtonMultiToggleGroup, CngxButtonToggle } from '@cngx/common/inter
   template: `
     <header class="cngx-ex-intro">
       @if (_exTitle) { <h1>{{ _exTitle }}</h1> }
-      @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
       @if (_exSectionTitle && _exSectionTitle !== _exTitle) { <h2>{{ _exSectionTitle }}</h2> }
+      @if (_exTags.length > 0 || _exUses.length > 0) {
+        <div class="cngx-ex-meta">
+          @if (_exTags.length > 0) {
+            <ul class="cngx-ex-tags" aria-label="Tags">
+              @for (t of _exTags; track t.dim + ':' + t.value) {
+                <li class="cngx-ex-tag" [attr.data-dim]="t.dim" [attr.data-value]="t.value">{{ t.value }}</li>
+              }
+            </ul>
+          }
+          @if (_exUses.length > 0) {
+            <p class="cngx-ex-uses"><span class="cngx-ex-uses__label">uses</span>
+              @for (u of _exUses; track u; let last = $last) {
+                <code>{{ u }}</code>@if (!last) {<span class="cngx-ex-uses__sep">, </span>}
+              }
+            </p>
+          }
+        </div>
+      }
+      @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
       @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
     </header>
     <cngx-button-multi-toggle-group label="Status filters" [(selectedValues)]="filters">
@@ -38,6 +56,8 @@ export class ButtonMultiToggleGroupBasicMultiFilterToolbar {
   protected readonly _exDescription: string = 'Multi-select button-toggle group. W3C APG toolbar semantics — Tab enters the group, arrow keys MOVE focus only (no auto-select), Space and Enter toggle membership of the focused leaf. Mode is static: this is the multi half of a deliberate split, never a runtime [selectionMode] flag. The leaf &lt;button cngxButtonToggle&gt; binds aria-selected (toolbar APG) instead of aria-checked (radiogroup APG); the choice happens AT INJECTION TIME based on which parent token resolves. Provides CNGX_BUTTON_MULTI_TOGGLE_GROUP for the leaf to inject (never the concrete class) and CNGX_CONTROL_VALUE for forms-bridge integration.';
   protected readonly _exSectionTitle: string = 'Basic — multi-filter toolbar';
   protected readonly _exSubtitle: string = 'Click any toggle to add or remove it from the selection. Tab into the group and use <strong>ArrowLeft</strong>/<strong>ArrowRight</strong> to move focus (no auto-select); <strong>Space</strong>/<strong>Enter</strong> on the focused toggle flips its membership. aria-selected reflects per-leaf membership reactively via the selection controller.';
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exUses: readonly string[] = ['CngxButtonMultiToggleGroup', 'CngxButtonToggle', 'CNGX_BUTTON_MULTI_TOGGLE_GROUP', 'CNGX_CONTROL_VALUE'];
   protected readonly _exTs: string = `import { CngxButtonMultiToggleGroup, CngxButtonToggle } from '@cngx/common/interactive';
 
 protected readonly filters = signal<string[]>(['open']);

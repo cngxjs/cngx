@@ -19,8 +19,26 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   template: `
     <header class="cngx-ex-intro">
       @if (_exTitle) { <h1>{{ _exTitle }}</h1> }
-      @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
       @if (_exSectionTitle && _exSectionTitle !== _exTitle) { <h2>{{ _exSectionTitle }}</h2> }
+      @if (_exTags.length > 0 || _exUses.length > 0) {
+        <div class="cngx-ex-meta">
+          @if (_exTags.length > 0) {
+            <ul class="cngx-ex-tags" aria-label="Tags">
+              @for (t of _exTags; track t.dim + ':' + t.value) {
+                <li class="cngx-ex-tag" [attr.data-dim]="t.dim" [attr.data-value]="t.value">{{ t.value }}</li>
+              }
+            </ul>
+          }
+          @if (_exUses.length > 0) {
+            <p class="cngx-ex-uses"><span class="cngx-ex-uses__label">uses</span>
+              @for (u of _exUses; track u; let last = $last) {
+                <code>{{ u }}</code>@if (!last) {<span class="cngx-ex-uses__sep">, </span>}
+              }
+            </p>
+          }
+        </div>
+      }
+      @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
       @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
     </header>
     <button type="button"
@@ -68,6 +86,8 @@ export class SelectAssembleItYourselfAtomsElementComponents {
   protected readonly _exDescription: string = 'CngxSelect — native-feeling single-select dropdown with template overrides, optgroups, clearable, loading, and full mat-select API parity.';
   protected readonly _exSectionTitle: string = 'Assemble it yourself — atoms + element components';
   protected readonly _exSubtitle: string = 'Element components <code>&lt;cngx-option&gt;</code>, <code>&lt;cngx-optgroup&gt;</code>, <code>&lt;cngx-select-divider&gt;</code> <strong>do work</strong> when you compose the listbox yourself using the Level-2 atoms (<code>CngxPopover</code> + <code>CngxListboxTrigger</code> + <code>CngxListbox</code>). The options sit inside the listbox\'s own content-children scope, so AD registration succeeds.';
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'visual-variants' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'focus', value: 'composition' }, { dim: 'framework', value: 'signal-forms' }];
+  protected readonly _exUses: readonly string[] = ['CngxSelect', 'CngxMultiSelect', 'CngxCombobox', 'CngxTypeahead', 'CngxSelectCheck', 'CngxSelectCaret', 'CngxSelectOptgroup', 'CngxSelectEmpty', 'CngxSelectLoading', 'CngxSelectTriggerLabel', 'CngxSelectOptionLabel', 'CngxComboboxTriggerLabel', 'provideSelectConfig'];
   protected readonly _exTs: string = `import { form, schema, required, submit } from '@angular/forms/signals';
 import { FormControl, Validators } from '@angular/forms';
 import { toSignal } from '@angular/core/rxjs-interop';

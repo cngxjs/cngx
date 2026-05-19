@@ -14,8 +14,26 @@ import { CngxToastOn, CngxBannerOn } from '@cngx/ui/feedback';
   template: `
     <header class="cngx-ex-intro">
       @if (_exTitle) { <h1>{{ _exTitle }}</h1> }
-      @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
       @if (_exSectionTitle && _exSectionTitle !== _exTitle) { <h2>{{ _exSectionTitle }}</h2> }
+      @if (_exTags.length > 0 || _exUses.length > 0) {
+        <div class="cngx-ex-meta">
+          @if (_exTags.length > 0) {
+            <ul class="cngx-ex-tags" aria-label="Tags">
+              @for (t of _exTags; track t.dim + ':' + t.value) {
+                <li class="cngx-ex-tag" [attr.data-dim]="t.dim" [attr.data-value]="t.value">{{ t.value }}</li>
+              }
+            </ul>
+          }
+          @if (_exUses.length > 0) {
+            <p class="cngx-ex-uses"><span class="cngx-ex-uses__label">uses</span>
+              @for (u of _exUses; track u; let last = $last) {
+                <code>{{ u }}</code>@if (!last) {<span class="cngx-ex-uses__sep">, </span>}
+              }
+            </p>
+          }
+        </div>
+      }
+      @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
       @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
     </header>
     <div class="event-row" style="gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap">
@@ -78,6 +96,8 @@ export class StepperCommitActionPessimisticOptimisticCommitsWithBridgeDirectives
   protected readonly _exDescription: string = 'Bind <code>[commitAction]</code> to gate every step transition through an async write. <code>[commitMode]="pessimistic"</code> (default) keeps the user on the origin step until the action resolves and renders <code>aria-busy="true"</code> + a spinner on the target step row. <code>[commitMode]="optimistic"</code> advances immediately and rolls back on rejection. Rapid consecutive picks supersede any in-flight commit. <code>&lt;cngx-toast-on /&gt;</code> + <code>&lt;cngx-banner-on /&gt;</code> compose against the presenter\'s <code>CNGX_STATEFUL</code> producer with zero <code>[state]</code> wiring — proving the bridge fallback contract.';
   protected readonly _exSectionTitle: string = 'Pessimistic + optimistic commits with bridge directives';
   protected readonly _exSubtitle: string = 'Toggle the mode and "simulate error" to exercise the four quadrants. The toast + banner bridges fire on commit failure without any explicit <code>[state]</code> binding — they read <code>CNGX_STATEFUL</code> from the presenter via <code>{ host: true }</code>.';
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exUses: readonly string[] = ['CngxStepper', 'CngxStepperPresenter', 'CngxStep', 'CngxStepContent'];
   protected readonly _exTs: string = `import { Observable } from 'rxjs';
 import { CngxStep, CngxStepContent, type CngxStepperCommitAction } from '@cngx/common/stepper';
 import { CngxStepper } from '@cngx/ui/stepper';

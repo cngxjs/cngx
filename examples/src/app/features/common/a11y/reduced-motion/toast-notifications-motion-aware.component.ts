@@ -11,8 +11,26 @@ import { CngxReducedMotion } from '@cngx/common/a11y';
   template: `
     <header class="cngx-ex-intro">
       @if (_exTitle) { <h1>{{ _exTitle }}</h1> }
-      @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
       @if (_exSectionTitle && _exSectionTitle !== _exTitle) { <h2>{{ _exSectionTitle }}</h2> }
+      @if (_exTags.length > 0 || _exUses.length > 0) {
+        <div class="cngx-ex-meta">
+          @if (_exTags.length > 0) {
+            <ul class="cngx-ex-tags" aria-label="Tags">
+              @for (t of _exTags; track t.dim + ':' + t.value) {
+                <li class="cngx-ex-tag" [attr.data-dim]="t.dim" [attr.data-value]="t.value">{{ t.value }}</li>
+              }
+            </ul>
+          }
+          @if (_exUses.length > 0) {
+            <p class="cngx-ex-uses"><span class="cngx-ex-uses__label">uses</span>
+              @for (u of _exUses; track u; let last = $last) {
+                <code>{{ u }}</code>@if (!last) {<span class="cngx-ex-uses__sep">, </span>}
+              }
+            </p>
+          }
+        </div>
+      }
+      @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
       @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
     </header>
     <div cngxReducedMotion #rm2="cngxReducedMotion">
@@ -86,6 +104,8 @@ export class ReducedMotionToastNotificationsMotionAware {
   protected readonly _exDescription: string = 'Reads the prefers-reduced-motion media query and adds the cngx-reduced-motion CSS class when the user prefers reduced motion.';
   protected readonly _exSectionTitle: string = 'Toast Notifications — Motion-aware';
   protected readonly _exSubtitle: string = 'Notifications that slide in with animation, or appear instantly when <code>prefersReducedMotion()</code> is <code>true</code>. This demonstrates using the signal in TypeScript logic, not just CSS.';
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exUses: readonly string[] = ['CngxReducedMotion'];
   protected readonly _exTs: string = `import { CngxReducedMotion } from '@cngx/common/a11y';
 
 protected notifications = signal<{ id: number; text: string }[]>([]);

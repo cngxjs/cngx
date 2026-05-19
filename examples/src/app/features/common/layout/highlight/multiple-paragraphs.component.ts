@@ -11,8 +11,26 @@ import { CngxHighlight } from '@cngx/common/layout';
   template: `
     <header class="cngx-ex-intro">
       @if (_exTitle) { <h1>{{ _exTitle }}</h1> }
-      @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
       @if (_exSectionTitle && _exSectionTitle !== _exTitle) { <h2>{{ _exSectionTitle }}</h2> }
+      @if (_exTags.length > 0 || _exUses.length > 0) {
+        <div class="cngx-ex-meta">
+          @if (_exTags.length > 0) {
+            <ul class="cngx-ex-tags" aria-label="Tags">
+              @for (t of _exTags; track t.dim + ':' + t.value) {
+                <li class="cngx-ex-tag" [attr.data-dim]="t.dim" [attr.data-value]="t.value">{{ t.value }}</li>
+              }
+            </ul>
+          }
+          @if (_exUses.length > 0) {
+            <p class="cngx-ex-uses"><span class="cngx-ex-uses__label">uses</span>
+              @for (u of _exUses; track u; let last = $last) {
+                <code>{{ u }}</code>@if (!last) {<span class="cngx-ex-uses__sep">, </span>}
+              }
+            </p>
+          }
+        </div>
+      }
+      @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
       @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
     </header>
     <div [cngxHighlight]="'angular'" #hl2="cngxHighlight"
@@ -42,6 +60,8 @@ export class HighlightMultipleParagraphs {
   protected readonly _exDescription: string = 'Search-text highlighting via <mark> elements. Safe text-node walking, no innerHTML.';
   protected readonly _exSectionTitle: string = 'Multiple Paragraphs';
   protected readonly _exSubtitle: string = 'Highlight works across nested elements — it walks all text nodes recursively.';
+  protected readonly _exTags: readonly { dim: string; value: string }[] = [];
+  protected readonly _exUses: readonly string[] = ['CngxHighlight'];
   protected readonly _exTs: string = `import { CngxHighlight } from '@cngx/common/layout';
 
 protected readonly searchTerm = signal('');`;
