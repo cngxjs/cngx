@@ -76,6 +76,34 @@ body {
   color: var(--cngx-ex-text);
 }
 
+// Floating dark-mode debug toggle (mounted by main.ts after
+// bootstrapApplication). Bottom-right, monospace + sharp corners to
+// match the Apache mod_autoindex aesthetic of the home directory
+// listing. Cycles auto → dark → light → auto.
+#cngx-ex-color-scheme-toggle {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 99999;
+  display: inline-block;
+  padding: 2px 6px;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #d0d5dd));
+  border-radius: 0;
+  background: var(--cngx-color-surface, var(--cngx-ex-surface, #ffffff));
+  color: var(--cngx-color-text, var(--cngx-ex-text, #1f2937));
+  cursor: pointer;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.8125rem;
+  line-height: 1.2;
+}
+#cngx-ex-color-scheme-toggle:hover {
+  background: color-mix(in oklch, var(--cngx-color-surface, #fff), currentColor 6%);
+}
+#cngx-ex-color-scheme-toggle:focus-visible {
+  outline: 1px solid var(--cngx-color-primary, #4a8cff);
+  outline-offset: 1px;
+}
+
 // Intro header rendered by the generator (story description + section subtitle)
 .cngx-ex-intro {
   margin: 0 0 16px;

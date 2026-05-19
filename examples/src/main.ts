@@ -42,13 +42,90 @@ function readPersistedColorScheme(): ColorScheme {
   return null;
 }
 
-applyColorScheme(readPersistedColorScheme());
+// Resolve the effective scheme: a persisted preference always wins;
+// when nothing is persisted, fall back to the OS preference. This
+// mirrors compodocx's inline init script so the examples app picks up
+// OS-dark even when running standalone without a user toggle.
+function resolveEffectiveScheme(persisted: ColorScheme): 'dark' | 'light' {
+  if (persisted !== null) {
+    return persisted;
+  }
+  return globalThis.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+
+function syncFromState(): void {
+  applyColorScheme(resolveEffectiveScheme(readPersistedColorScheme()));
+}
+
+syncFromState();
 
 globalThis.addEventListener('storage', (event) => {
   if (event.key !== COMPODOCX_DARK_KEY && event.key !== COMPODOC_DARK_KEY) {
     return;
   }
-  applyColorScheme(readPersistedColorScheme());
+  syncFromState();
 });
 
-bootstrapApplication(App, appConfig).catch((err) => console.error(err));
+// OS-preference change: only re-sync when no persisted preference is
+// in play (otherwise the user-pinned value still wins).
+globalThis.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+  if (readPersistedColorScheme() === null) {
+    syncFromState();
+  }
+});
+
+// Floating dark-mode debug toggle. Bottom-right of the viewport,
+// cycles auto → dark → light → auto by writing the same localStorage
+// key compodocx uses. Useful when running the examples app standalone
+// (no compodocx parent toggle available) or when you need to flip
+// modes mid-debug without rummaging through the application tab.
+function installColorSchemeToggle(): void {
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.id = 'cngx-ex-color-scheme-toggle';
+  btn.setAttribute('aria-label', 'Cycle color scheme: auto / dark / light');
+  document.body.appendChild(btn);
+
+  function setPersistedColorScheme(mode: ColorScheme): void {
+    try {
+      if (mode === null) {
+        localStorage.removeItem(COMPODOCX_DARK_KEY);
+        localStorage.removeItem(COMPODOC_DARK_KEY);
+      } else {
+        localStorage.setItem(COMPODOCX_DARK_KEY, mode === 'dark' ? 'true' : 'false');
+      }
+    } catch {
+      // localStorage may be unavailable; the toggle still updates the DOM.
+    }
+  }
+
+  function render(): void {
+    const mode = readPersistedColorScheme();
+    // Apache-style bracket marker: matches the `[ICO]` / `[+]` / `[-]`
+    // / `[ ]` aesthetic of the home directory listing.
+    btn.textContent = mode === 'dark' ? '[D]' : mode === 'light' ? '[L]' : '[A]';
+    btn.title = `Color scheme: ${mode ?? 'auto (OS preference)'} — click to cycle`;
+  }
+
+  btn.addEventListener('click', () => {
+    const current = readPersistedColorScheme();
+    // auto (null) → dark → light → auto
+    const next: ColorScheme = current === null ? 'dark' : current === 'dark' ? 'light' : null;
+    setPersistedColorScheme(next);
+    // Auto means "follow OS"; delegate to syncFromState so the resolved
+    // value (dark or light) is what actually paints. Explicit dark / light
+    // bypass the OS query.
+    if (next === null) {
+      syncFromState();
+    } else {
+      applyColorScheme(next);
+    }
+    render();
+  });
+
+  render();
+}
+
+bootstrapApplication(App, appConfig)
+  .then(() => installColorSchemeToggle())
+  .catch((err) => console.error(err));
