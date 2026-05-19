@@ -141,22 +141,12 @@ body {
   color: var(--cngx-ex-muted);
 }
 
-// Metadata block: tag chip row + `uses:` line. Framed with thin rules so the
-// triage metadata reads as a discrete band, not as competing prose above the
-// description. Sharp corners + monospace match the mod_autoindex aesthetic
-// on the home directory listing. Per-dimension accent is a subtle left-border
-// tint — no garish backgrounds.
-.cngx-ex-meta {
-  margin: 10px 0 12px;
-  padding: 8px 0;
-  border-top: 1px solid var(--cngx-ex-border);
-  border-bottom: 1px solid var(--cngx-ex-border);
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
+// Tag chip row rendered by the generator from DemoSpec.{level,audience,
+// artifact,focus,stability,framework}. Sharp corners + monospace match
+// the mod_autoindex aesthetic of the home directory listing. Per-dimension
+// accent is a subtle left-border tint — no garish backgrounds.
 .cngx-ex-tags {
-  margin: 0;
+  margin: 8px 0 0;
   padding: 0;
   list-style: none;
   display: flex;
@@ -266,35 +256,6 @@ html.dark .cngx-ex-tag[data-dim='stability'][data-value='deprecated'] {
   }
 }
 
-// `uses:` line listing the apiComponents the demo composes. Soft wraps on
-// long lists so a 12-symbol uses-line (CngxSelect family) doesn't overflow.
-.cngx-ex-uses {
-  margin: 0;
-  font-size: 0.75rem;
-  line-height: 1.7;
-  color: var(--cngx-ex-muted);
-  word-break: normal;
-  overflow-wrap: anywhere;
-}
-.cngx-ex-uses__label {
-  margin-right: 6px;
-  font-family: 'Courier New', Courier, monospace;
-  color: var(--cngx-ex-faint);
-}
-.cngx-ex-uses__label::after {
-  content: ':';
-}
-.cngx-ex-uses__sep {
-  color: var(--cngx-ex-faint);
-}
-.cngx-ex-uses code {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 0.95em;
-  padding: 0 3px;
-  background: transparent;
-  border-radius: 0;
-  color: var(--cngx-ex-text);
-}
 
 // Source-code disclosure blocks — collapsed by default so the demo body
 // remains the focus; expand to inspect the underlying template / setup.

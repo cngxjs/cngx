@@ -452,24 +452,27 @@ function escapeCustomElementTags(html) {
 
 /**
  * Merge story-level + section-level tag fields into the effective tag set
- * for one section. Section `focus` (if any) replaces story `focus`. Other
- * dimensions are story-level only.
+ * for one section. Section-level `artifact`, `focus`, `framework` override
+ * the story-level value when present (per-dimension, not all-or-nothing).
+ * `level`, `audience`, `stability` are story-level only.
  *
  * Returns an array of `[dim, value]` pairs in the canonical chip order:
- * atomic-level, audience, artifact, focus, stability (skipped when `stable`),
- * framework. Multi-value dimensions emit one pair per value.
+ * atomic-level, audience, artifact, focus, stability (skipped when `stable`
+ * or null), framework. Multi-value dimensions emit one pair per value.
  */
 function buildTagPairs(story, section) {
   const pairs = [];
   if (story.level) pairs.push(['atomic-level', story.level]);
   for (const a of story.audience ?? []) pairs.push(['audience', a]);
-  if (story.artifact) pairs.push(['artifact', story.artifact]);
+  const artifact = section.artifact ?? story.artifact;
+  if (artifact) pairs.push(['artifact', artifact]);
   const focus = section.focus ?? story.focus ?? [];
   for (const f of focus) pairs.push(['focus', f]);
   if (story.stability && story.stability !== 'stable') {
     pairs.push(['stability', story.stability]);
   }
-  if (story.framework) pairs.push(['framework', story.framework]);
+  const framework = section.framework ?? story.framework;
+  if (framework) pairs.push(['framework', framework]);
   return pairs;
 }
 
@@ -543,15 +546,12 @@ function emitComponentSource(meta, story, section, importMap) {
   const tagFieldEntries = tagPairs
     .map(([dim, value]) => `{ dim: ${tsQuote(dim)}, value: ${tsQuote(value)} }`)
     .join(', ');
-  const usesList = (story.apiComponents ?? []).slice();
-  const usesFieldEntries = usesList.map((s) => tsQuote(s)).join(', ');
   const introFields = [
     `  protected readonly _exTitle: string = ${tsQuote(story.title ?? '')};`,
     `  protected readonly _exDescription: string = ${tsQuote(escapeCustomElementTags(story.description ?? ''))};`,
     `  protected readonly _exSectionTitle: string = ${tsQuote(section.title ?? '')};`,
     `  protected readonly _exSubtitle: string = ${tsQuote(escapeCustomElementTags(section.subtitle ?? ''))};`,
     `  protected readonly _exTags: readonly { dim: string; value: string }[] = [${tagFieldEntries}];`,
-    `  protected readonly _exUses: readonly string[] = [${usesFieldEntries}];`,
   ].join('\n');
 
   // Source snippets shown in collapsible <details> blocks so consumers can
@@ -578,23 +578,12 @@ function emitComponentSource(meta, story, section, importMap) {
     `    <header class="cngx-ex-intro">`,
     `      @if (_exTitle) { <h1>{{ _exTitle }}</h1> }`,
     `      @if (_exSectionTitle && _exSectionTitle !== _exTitle) { <h2>{{ _exSectionTitle }}</h2> }`,
-    `      @if (_exTags.length > 0 || _exUses.length > 0) {`,
-    `        <div class="cngx-ex-meta">`,
-    `          @if (_exTags.length > 0) {`,
-    `            <ul class="cngx-ex-tags" aria-label="Tags">`,
-    `              @for (t of _exTags; track t.dim + ':' + t.value) {`,
-    `                <li class="cngx-ex-tag" [attr.data-dim]="t.dim" [attr.data-value]="t.value">{{ t.value }}</li>`,
-    `              }`,
-    `            </ul>`,
+    `      @if (_exTags.length > 0) {`,
+    `        <ul class="cngx-ex-tags" aria-label="Tags">`,
+    `          @for (t of _exTags; track t.dim + ':' + t.value) {`,
+    `            <li class="cngx-ex-tag" [attr.data-dim]="t.dim" [attr.data-value]="t.value">{{ t.value }}</li>`,
     `          }`,
-    `          @if (_exUses.length > 0) {`,
-    `            <p class="cngx-ex-uses"><span class="cngx-ex-uses__label">uses</span>`,
-    `              @for (u of _exUses; track u; let last = $last) {`,
-    `                <code>{{ u }}</code>@if (!last) {<span class="cngx-ex-uses__sep">, </span>}`,
-    `              }`,
-    `            </p>`,
-    `          }`,
-    `        </div>`,
+    `        </ul>`,
     `      }`,
     `      @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }`,
     `      @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }`,
@@ -873,10 +862,10 @@ async function main() {
         apiComponents: story.apiComponents ?? [],
         level: story.level,
         audience: story.audience ?? [],
-        artifact: story.artifact,
+        artifact: section.artifact ?? story.artifact,
         focus: section.focus ?? story.focus ?? [],
         stability: story.stability,
-        framework: story.framework,
+        framework: section.framework ?? story.framework,
       });
     }
     console.log(`Generated ${sections.length} components for ${demoFolder}`);

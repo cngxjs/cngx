@@ -12,23 +12,12 @@ import { CngxCheckboxGroup, CngxCheckbox } from '@cngx/common/interactive';
     <header class="cngx-ex-intro">
       @if (_exTitle) { <h1>{{ _exTitle }}</h1> }
       @if (_exSectionTitle && _exSectionTitle !== _exTitle) { <h2>{{ _exSectionTitle }}</h2> }
-      @if (_exTags.length > 0 || _exUses.length > 0) {
-        <div class="cngx-ex-meta">
-          @if (_exTags.length > 0) {
-            <ul class="cngx-ex-tags" aria-label="Tags">
-              @for (t of _exTags; track t.dim + ':' + t.value) {
-                <li class="cngx-ex-tag" [attr.data-dim]="t.dim" [attr.data-value]="t.value">{{ t.value }}</li>
-              }
-            </ul>
+      @if (_exTags.length > 0) {
+        <ul class="cngx-ex-tags" aria-label="Tags">
+          @for (t of _exTags; track t.dim + ':' + t.value) {
+            <li class="cngx-ex-tag" [attr.data-dim]="t.dim" [attr.data-value]="t.value">{{ t.value }}</li>
           }
-          @if (_exUses.length > 0) {
-            <p class="cngx-ex-uses"><span class="cngx-ex-uses__label">uses</span>
-              @for (u of _exUses; track u; let last = $last) {
-                <code>{{ u }}</code>@if (!last) {<span class="cngx-ex-uses__sep">, </span>}
-              }
-            </p>
-          }
-        </div>
+        </ul>
       }
       @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
       @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
@@ -66,7 +55,6 @@ export class CheckboxGroupDisabledCascade {
   protected readonly _exSectionTitle: string = 'Disabled cascade';
   protected readonly _exSubtitle: string = 'Group <code>[disabled]</code> blocks all mutation pathways (<code>select</code>, <code>deselect</code>, <code>toggleAll</code>) and reflects <code>aria-disabled="true"</code> on the host. Projected children inherit the disabled state via the consumer-bound <code>[disabled]</code> on each leaf.';
   protected readonly _exTags: readonly { dim: string; value: string }[] = [];
-  protected readonly _exUses: readonly string[] = ['CngxCheckboxGroup', 'CngxCheckbox', 'CNGX_CONTROL_VALUE'];
   protected readonly _exTs: string = `import { CngxCheckboxGroup, CngxCheckbox } from '@cngx/common/interactive';
 
 protected readonly options = ['email', 'sms', 'push'] as const;

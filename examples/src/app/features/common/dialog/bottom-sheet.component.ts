@@ -13,23 +13,12 @@ import { CngxSwipeDismiss } from '@cngx/common/interactive';
     <header class="cngx-ex-intro">
       @if (_exTitle) { <h1>{{ _exTitle }}</h1> }
       @if (_exSectionTitle && _exSectionTitle !== _exTitle) { <h2>{{ _exSectionTitle }}</h2> }
-      @if (_exTags.length > 0 || _exUses.length > 0) {
-        <div class="cngx-ex-meta">
-          @if (_exTags.length > 0) {
-            <ul class="cngx-ex-tags" aria-label="Tags">
-              @for (t of _exTags; track t.dim + ':' + t.value) {
-                <li class="cngx-ex-tag" [attr.data-dim]="t.dim" [attr.data-value]="t.value">{{ t.value }}</li>
-              }
-            </ul>
+      @if (_exTags.length > 0) {
+        <ul class="cngx-ex-tags" aria-label="Tags">
+          @for (t of _exTags; track t.dim + ':' + t.value) {
+            <li class="cngx-ex-tag" [attr.data-dim]="t.dim" [attr.data-value]="t.value">{{ t.value }}</li>
           }
-          @if (_exUses.length > 0) {
-            <p class="cngx-ex-uses"><span class="cngx-ex-uses__label">uses</span>
-              @for (u of _exUses; track u; let last = $last) {
-                <code>{{ u }}</code>@if (!last) {<span class="cngx-ex-uses__sep">, </span>}
-              }
-            </p>
-          }
-        </div>
+        </ul>
       }
       @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
       @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
@@ -66,7 +55,6 @@ export class DialogBottomSheet {
   protected readonly _exSectionTitle: string = 'Bottom Sheet';
   protected readonly _exSubtitle: string = '<code>CngxBottomSheet</code> is a molecule directive that positions the dialog at the viewport bottom with a drag handle (via <code>::before</code>) and slide-up animation. Add <code>[cngxSwipeDismiss]</code> for swipe-to-dismiss — the directive auto-wires it. Themed via <code>bottom-sheet-theme.scss</code> with CSS custom properties.';
   protected readonly _exTags: readonly { dim: string; value: string }[] = [];
-  protected readonly _exUses: readonly string[] = ['CngxDialog', 'CngxDialogTitle', 'CngxDialogDescription', 'CngxDialogClose', 'CngxDialogDraggable', 'CngxDialogStack'];
   protected readonly _exTs: string = `import { CngxDialog, CngxDialogTitle, CngxDialogClose, CngxBottomSheet } from '@cngx/common/dialog';
 import { CngxSwipeDismiss } from '@cngx/common/interactive';
 

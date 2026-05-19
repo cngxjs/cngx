@@ -351,6 +351,8 @@ export const STORY: DemoSpec = {
         'listbox yourself using the Level-2 atoms (<code>CngxPopover</code> + ' +
         '<code>CngxListboxTrigger</code> + <code>CngxListbox</code>). The options sit inside the ' +
         'listbox\'s own content-children scope, so AD registration succeeds.',
+      artifact: 'building-block',
+      focus: ['composition', 'a11y-pattern'],
       imports: [
         'CngxSelectOption',
         'CngxSelectOptgroup',

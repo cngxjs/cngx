@@ -12,23 +12,12 @@ import { CngxMediaQuery } from '@cngx/common';
     <header class="cngx-ex-intro">
       @if (_exTitle) { <h1>{{ _exTitle }}</h1> }
       @if (_exSectionTitle && _exSectionTitle !== _exTitle) { <h2>{{ _exSectionTitle }}</h2> }
-      @if (_exTags.length > 0 || _exUses.length > 0) {
-        <div class="cngx-ex-meta">
-          @if (_exTags.length > 0) {
-            <ul class="cngx-ex-tags" aria-label="Tags">
-              @for (t of _exTags; track t.dim + ':' + t.value) {
-                <li class="cngx-ex-tag" [attr.data-dim]="t.dim" [attr.data-value]="t.value">{{ t.value }}</li>
-              }
-            </ul>
+      @if (_exTags.length > 0) {
+        <ul class="cngx-ex-tags" aria-label="Tags">
+          @for (t of _exTags; track t.dim + ':' + t.value) {
+            <li class="cngx-ex-tag" [attr.data-dim]="t.dim" [attr.data-value]="t.value">{{ t.value }}</li>
           }
-          @if (_exUses.length > 0) {
-            <p class="cngx-ex-uses"><span class="cngx-ex-uses__label">uses</span>
-              @for (u of _exUses; track u; let last = $last) {
-                <code>{{ u }}</code>@if (!last) {<span class="cngx-ex-uses__sep">, </span>}
-              }
-            </p>
-          }
-        </div>
+        </ul>
       }
       @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
       @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
@@ -75,7 +64,6 @@ export class MediaQueryViewportBreakpoints {
   protected readonly _exSectionTitle: string = 'CngxMediaQuery — Viewport Breakpoints';
   protected readonly _exSubtitle: string = '<code>[cngxMediaQuery]</code> wraps <code>window.matchMedia()</code> as a reactive signal with automatic cleanup. Use this when component logic (not just CSS) needs to respond to viewport or preference changes — e.g. switching between a chart and a table on mobile, or loading different data on narrow screens. For pure styling, CSS <code>@media</code> or <code>@container</code> queries are preferred. Resize your browser to see the signals update live.';
   protected readonly _exTags: readonly { dim: string; value: string }[] = [];
-  protected readonly _exUses: readonly string[] = ['CngxMediaQuery'];
   protected readonly _exTs: string = `import { CngxMediaQuery } from '@cngx/common';`;
   protected readonly _exHtml: string = `<div cngxMediaQuery="(min-width: 768px)" #tablet="cngxMediaQuery"></div>
 <div cngxMediaQuery="(min-width: 1024px)" #desktop="cngxMediaQuery"></div>

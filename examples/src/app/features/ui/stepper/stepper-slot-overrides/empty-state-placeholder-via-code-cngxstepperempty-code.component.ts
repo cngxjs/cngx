@@ -13,23 +13,12 @@ import { CngxStepper } from '@cngx/ui/stepper';
     <header class="cngx-ex-intro">
       @if (_exTitle) { <h1>{{ _exTitle }}</h1> }
       @if (_exSectionTitle && _exSectionTitle !== _exTitle) { <h2>{{ _exSectionTitle }}</h2> }
-      @if (_exTags.length > 0 || _exUses.length > 0) {
-        <div class="cngx-ex-meta">
-          @if (_exTags.length > 0) {
-            <ul class="cngx-ex-tags" aria-label="Tags">
-              @for (t of _exTags; track t.dim + ':' + t.value) {
-                <li class="cngx-ex-tag" [attr.data-dim]="t.dim" [attr.data-value]="t.value">{{ t.value }}</li>
-              }
-            </ul>
+      @if (_exTags.length > 0) {
+        <ul class="cngx-ex-tags" aria-label="Tags">
+          @for (t of _exTags; track t.dim + ':' + t.value) {
+            <li class="cngx-ex-tag" [attr.data-dim]="t.dim" [attr.data-value]="t.value">{{ t.value }}</li>
           }
-          @if (_exUses.length > 0) {
-            <p class="cngx-ex-uses"><span class="cngx-ex-uses__label">uses</span>
-              @for (u of _exUses; track u; let last = $last) {
-                <code>{{ u }}</code>@if (!last) {<span class="cngx-ex-uses__sep">, </span>}
-              }
-            </p>
-          }
-        </div>
+        </ul>
       }
       @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
       @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
@@ -78,7 +67,6 @@ export class StepperSlotOverridesEmptyStatePlaceholderViaCodeCngxstepperemptyCod
   protected readonly _exSectionTitle: string = 'Empty-state placeholder via <code>*cngxStepperEmpty</code>';
   protected readonly _exSubtitle: string = 'When the registered step list is empty (e.g. async-loaded wizard with no data yet), the slot renders in place of the strip + panels. No context — render static markup or read injected services directly. Toggle the button below to register / unregister all steps and watch the slot swap in.';
   protected readonly _exTags: readonly { dim: string; value: string }[] = [];
-  protected readonly _exUses: readonly string[] = ['CngxStepper', 'CngxStep', 'CngxStepGroup', 'CngxStepContent', 'CngxStepIndicator', 'CngxStepBadge', 'CngxStepBusySpinner', 'CngxStepGroupHeader', 'CngxStepperEmpty', 'CngxStepRejection'];
   protected readonly _exTs: string = `import { CngxStep, CngxStepContent, type CngxStepperCommitAction, CngxStepperEmpty } from '@cngx/common/stepper';
 import { CngxStepper } from '@cngx/ui/stepper';
 

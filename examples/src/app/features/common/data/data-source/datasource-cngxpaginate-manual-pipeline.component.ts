@@ -16,23 +16,12 @@ import { CngxMatPaginator } from '@cngx/ui/material';
     <header class="cngx-ex-intro">
       @if (_exTitle) { <h1>{{ _exTitle }}</h1> }
       @if (_exSectionTitle && _exSectionTitle !== _exTitle) { <h2>{{ _exSectionTitle }}</h2> }
-      @if (_exTags.length > 0 || _exUses.length > 0) {
-        <div class="cngx-ex-meta">
-          @if (_exTags.length > 0) {
-            <ul class="cngx-ex-tags" aria-label="Tags">
-              @for (t of _exTags; track t.dim + ':' + t.value) {
-                <li class="cngx-ex-tag" [attr.data-dim]="t.dim" [attr.data-value]="t.value">{{ t.value }}</li>
-              }
-            </ul>
+      @if (_exTags.length > 0) {
+        <ul class="cngx-ex-tags" aria-label="Tags">
+          @for (t of _exTags; track t.dim + ':' + t.value) {
+            <li class="cngx-ex-tag" [attr.data-dim]="t.dim" [attr.data-value]="t.value">{{ t.value }}</li>
           }
-          @if (_exUses.length > 0) {
-            <p class="cngx-ex-uses"><span class="cngx-ex-uses__label">uses</span>
-              @for (u of _exUses; track u; let last = $last) {
-                <code>{{ u }}</code>@if (!last) {<span class="cngx-ex-uses__sep">, </span>}
-              }
-            </p>
-          }
-        </div>
+        </ul>
       }
       @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
       @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
@@ -82,7 +71,6 @@ export class DataSourceDatasourceCngxpaginateManualPipeline {
   protected readonly _exSectionTitle: string = 'DataSource + CngxPaginate — Manual Pipeline';
   protected readonly _exSubtitle: string = 'Pagination slots naturally into the manual pipeline. Pass a <code>computed()</code> that includes the slice to <code>injectDataSource()</code>. <code>CngxPaginate</code> is placed in the template via a template ref (<code>#pg</code>). Controlled mode wires the component\'s <code>pageIndex</code> / <code>pageSize</code> signals to the directive — <code>(pageChange)</code> / <code>(pageSizeChange)</code> keep them in sync.';
   protected readonly _exTags: readonly { dim: string; value: string }[] = [];
-  protected readonly _exUses: readonly string[] = ['CngxPaginate', 'CngxMatPaginator'];
   protected readonly _exTs: string = `import { toSignal } from '@angular/core/rxjs-interop';
 import { injectDataSource } from '@cngx/common';
 import { PEOPLE, type Person } from '../../../../fixtures';

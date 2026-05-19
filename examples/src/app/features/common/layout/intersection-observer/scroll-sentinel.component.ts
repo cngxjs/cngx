@@ -13,23 +13,12 @@ import { CngxIntersectionObserver } from '@cngx/common/layout';
     <header class="cngx-ex-intro">
       @if (_exTitle) { <h1>{{ _exTitle }}</h1> }
       @if (_exSectionTitle && _exSectionTitle !== _exTitle) { <h2>{{ _exSectionTitle }}</h2> }
-      @if (_exTags.length > 0 || _exUses.length > 0) {
-        <div class="cngx-ex-meta">
-          @if (_exTags.length > 0) {
-            <ul class="cngx-ex-tags" aria-label="Tags">
-              @for (t of _exTags; track t.dim + ':' + t.value) {
-                <li class="cngx-ex-tag" [attr.data-dim]="t.dim" [attr.data-value]="t.value">{{ t.value }}</li>
-              }
-            </ul>
+      @if (_exTags.length > 0) {
+        <ul class="cngx-ex-tags" aria-label="Tags">
+          @for (t of _exTags; track t.dim + ':' + t.value) {
+            <li class="cngx-ex-tag" [attr.data-dim]="t.dim" [attr.data-value]="t.value">{{ t.value }}</li>
           }
-          @if (_exUses.length > 0) {
-            <p class="cngx-ex-uses"><span class="cngx-ex-uses__label">uses</span>
-              @for (u of _exUses; track u; let last = $last) {
-                <code>{{ u }}</code>@if (!last) {<span class="cngx-ex-uses__sep">, </span>}
-              }
-            </p>
-          }
-        </div>
+        </ul>
       }
       @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
       @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
@@ -99,7 +88,6 @@ export class IntersectionObserverScrollSentinel {
   protected readonly _exSectionTitle: string = 'CngxIntersectionObserver — Scroll Sentinel';
   protected readonly _exSubtitle: string = '<code>[cngxIntersectionObserver]</code> wraps the IntersectionObserver API. <code>isIntersecting()</code> is <code>true</code> when any part of the element is visible. <code>intersectionRatio()</code> is a float from <code>0.0</code> (invisible) to <code>1.0</code> (fully visible). <code>(entered)</code> fires when the element goes from invisible to visible, <code>(left)</code> fires the opposite. Set <code>[root]</code> to observe within a scroll container instead of the viewport.';
   protected readonly _exTags: readonly { dim: string; value: string }[] = [];
-  protected readonly _exUses: readonly string[] = ['CngxIntersectionObserver'];
   protected readonly _exTs: string = `import { DecimalPipe } from '@angular/common';
 import { CngxIntersectionObserver } from '@cngx/common/layout';
 

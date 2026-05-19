@@ -154,4 +154,16 @@ export interface SectionSpec {
    * story-level `focus` for this section only.
    */
   focus?: readonly Focus[];
+  /**
+   * Section-level override for the `artifact` chip. Use when a single story
+   * mixes drop-in usage with explicit composition (e.g. `select-demo`
+   * contains both standalone `<cngx-select>` sections and an
+   * "assemble it yourself" building-block section).
+   */
+  artifact?: Artifact;
+  /**
+   * Section-level override for the `framework` chip. Use when a story
+   * demonstrates multiple binding paths across sections.
+   */
+  framework?: Framework;
 }

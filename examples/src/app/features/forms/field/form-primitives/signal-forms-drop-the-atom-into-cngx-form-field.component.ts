@@ -15,23 +15,12 @@ import { createFormPrimitivesFormGroup } from '../../../../_fixtures/form-primit
     <header class="cngx-ex-intro">
       @if (_exTitle) { <h1>{{ _exTitle }}</h1> }
       @if (_exSectionTitle && _exSectionTitle !== _exTitle) { <h2>{{ _exSectionTitle }}</h2> }
-      @if (_exTags.length > 0 || _exUses.length > 0) {
-        <div class="cngx-ex-meta">
-          @if (_exTags.length > 0) {
-            <ul class="cngx-ex-tags" aria-label="Tags">
-              @for (t of _exTags; track t.dim + ':' + t.value) {
-                <li class="cngx-ex-tag" [attr.data-dim]="t.dim" [attr.data-value]="t.value">{{ t.value }}</li>
-              }
-            </ul>
+      @if (_exTags.length > 0) {
+        <ul class="cngx-ex-tags" aria-label="Tags">
+          @for (t of _exTags; track t.dim + ':' + t.value) {
+            <li class="cngx-ex-tag" [attr.data-dim]="t.dim" [attr.data-value]="t.value">{{ t.value }}</li>
           }
-          @if (_exUses.length > 0) {
-            <p class="cngx-ex-uses"><span class="cngx-ex-uses__label">uses</span>
-              @for (u of _exUses; track u; let last = $last) {
-                <code>{{ u }}</code>@if (!last) {<span class="cngx-ex-uses__sep">, </span>}
-              }
-            </p>
-          }
-        </div>
+        </ul>
       }
       @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
       @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
@@ -117,7 +106,6 @@ export class FormPrimitivesSignalFormsDropTheAtomIntoCngxFormField {
   protected readonly _exSectionTitle: string = 'Signal Forms — drop the atom into <cngx-form-field>';
   protected readonly _exSubtitle: string = 'You write <code>&lt;cngx-form-field [field]="f.payment"&gt;&lt;cngx-radio-group ...&gt;</code> and that is it. The form-field finds the atom on its own, projects ARIA onto the host, and shows validator messages through <code>&lt;cngx-field-errors&gt;</code>. Three fields are required (terms, payment, channels). Either tab into and out of a field to surface its error, or click <strong>Validate</strong> below to mark every required field touched at once. Pick a value (or check the box / select a chip) to see the error clear instantly.';
   protected readonly _exTags: readonly { dim: string; value: string }[] = [];
-  protected readonly _exUses: readonly string[] = ['CngxFormBridge', 'CngxFormField', 'CngxToggle', 'CngxCheckbox', 'CngxChipInteraction', 'CngxRadioGroup', 'CngxRadio', 'CngxCheckboxGroup', 'CngxButtonToggleGroup', 'CngxButtonMultiToggleGroup', 'CngxChipGroup', 'CngxMultiChipGroup', 'CngxChipInGroup'];
   protected readonly _exTs: string = `import { form, schema, required } from '@angular/forms/signals';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
 import { CngxToggle, CngxCheckbox, CngxRadioGroup, CngxRadio, CngxCheckboxGroup } from '@cngx/common/interactive';

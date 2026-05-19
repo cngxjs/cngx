@@ -18,23 +18,12 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     <header class="cngx-ex-intro">
       @if (_exTitle) { <h1>{{ _exTitle }}</h1> }
       @if (_exSectionTitle && _exSectionTitle !== _exTitle) { <h2>{{ _exSectionTitle }}</h2> }
-      @if (_exTags.length > 0 || _exUses.length > 0) {
-        <div class="cngx-ex-meta">
-          @if (_exTags.length > 0) {
-            <ul class="cngx-ex-tags" aria-label="Tags">
-              @for (t of _exTags; track t.dim + ':' + t.value) {
-                <li class="cngx-ex-tag" [attr.data-dim]="t.dim" [attr.data-value]="t.value">{{ t.value }}</li>
-              }
-            </ul>
+      @if (_exTags.length > 0) {
+        <ul class="cngx-ex-tags" aria-label="Tags">
+          @for (t of _exTags; track t.dim + ':' + t.value) {
+            <li class="cngx-ex-tag" [attr.data-dim]="t.dim" [attr.data-value]="t.value">{{ t.value }}</li>
           }
-          @if (_exUses.length > 0) {
-            <p class="cngx-ex-uses"><span class="cngx-ex-uses__label">uses</span>
-              @for (u of _exUses; track u; let last = $last) {
-                <code>{{ u }}</code>@if (!last) {<span class="cngx-ex-uses__sep">, </span>}
-              }
-            </p>
-          }
-        </div>
+        </ul>
       }
       @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
       @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
@@ -78,7 +67,6 @@ export class SelectTypeaheadCngxselectoptionlabelSlotOverride {
   protected readonly _exSectionTitle: string = 'Typeahead — *cngxSelectOptionLabel slot override';
   protected readonly _exSubtitle: string = 'Same slot family as CngxSelect — project a custom <code>*cngxSelectOptionLabel</code> template to render avatars / badges / two-line layouts in the typeahead listbox.';
   protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'visual-variants' }, { dim: 'focus', value: 'a11y-pattern' }, { dim: 'focus', value: 'composition' }, { dim: 'framework', value: 'signal-forms' }];
-  protected readonly _exUses: readonly string[] = ['CngxSelect', 'CngxMultiSelect', 'CngxCombobox', 'CngxTypeahead', 'CngxSelectCheck', 'CngxSelectCaret', 'CngxSelectOptgroup', 'CngxSelectEmpty', 'CngxSelectLoading', 'CngxSelectTriggerLabel', 'CngxSelectOptionLabel', 'CngxComboboxTriggerLabel', 'provideSelectConfig'];
   protected readonly _exTs: string = `import { form, schema, required, submit } from '@angular/forms/signals';
 import { FormControl, Validators } from '@angular/forms';
 import { toSignal } from '@angular/core/rxjs-interop';

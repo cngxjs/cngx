@@ -13,23 +13,12 @@ import { CngxStepper } from '@cngx/ui/stepper';
     <header class="cngx-ex-intro">
       @if (_exTitle) { <h1>{{ _exTitle }}</h1> }
       @if (_exSectionTitle && _exSectionTitle !== _exTitle) { <h2>{{ _exSectionTitle }}</h2> }
-      @if (_exTags.length > 0 || _exUses.length > 0) {
-        <div class="cngx-ex-meta">
-          @if (_exTags.length > 0) {
-            <ul class="cngx-ex-tags" aria-label="Tags">
-              @for (t of _exTags; track t.dim + ':' + t.value) {
-                <li class="cngx-ex-tag" [attr.data-dim]="t.dim" [attr.data-value]="t.value">{{ t.value }}</li>
-              }
-            </ul>
+      @if (_exTags.length > 0) {
+        <ul class="cngx-ex-tags" aria-label="Tags">
+          @for (t of _exTags; track t.dim + ':' + t.value) {
+            <li class="cngx-ex-tag" [attr.data-dim]="t.dim" [attr.data-value]="t.value">{{ t.value }}</li>
           }
-          @if (_exUses.length > 0) {
-            <p class="cngx-ex-uses"><span class="cngx-ex-uses__label">uses</span>
-              @for (u of _exUses; track u; let last = $last) {
-                <code>{{ u }}</code>@if (!last) {<span class="cngx-ex-uses__sep">, </span>}
-              }
-            </p>
-          }
-        </div>
+        </ul>
       }
       @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
       @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
@@ -79,7 +68,6 @@ export class StepperSlotOverridesCustomIndicatorGlyphViaCodeCngxstepindicatorCod
   protected readonly _exSectionTitle: string = 'Custom indicator glyph via <code>*cngxStepIndicator</code>';
   protected readonly _exSubtitle: string = 'Replace the default 1-based number with a status-aware glyph (✓ on success, ✕ on error, fallback to position number). The slot context carries <code>{ position, node, active, status, busy }</code> — destructure what you need.';
   protected readonly _exTags: readonly { dim: string; value: string }[] = [];
-  protected readonly _exUses: readonly string[] = ['CngxStepper', 'CngxStep', 'CngxStepGroup', 'CngxStepContent', 'CngxStepIndicator', 'CngxStepBadge', 'CngxStepBusySpinner', 'CngxStepGroupHeader', 'CngxStepperEmpty', 'CngxStepRejection'];
   protected readonly _exTs: string = `import { CngxStep, CngxStepContent, CngxStepIndicator, type CngxStepperCommitAction } from '@cngx/common/stepper';
 import { CngxStepper } from '@cngx/ui/stepper';
 
