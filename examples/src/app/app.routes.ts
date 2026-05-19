@@ -158,11 +158,6 @@ export const routes: Routes = [
     data: { lib: 'common', category: 'card', demo: "Card", section: "Severity Accent" },
   },
   {
-    path: 'common/card/skeleton-loading',
-    loadComponent: () => import('./features/common/card/skeleton-loading.component').then((m) => m.CardSkeletonLoading),
-    data: { lib: 'common', category: 'card', demo: "Card", section: "Skeleton Loading" },
-  },
-  {
     path: 'common/card/title-subtitle-footer',
     loadComponent: () => import('./features/common/card/title-subtitle-footer.component').then((m) => m.CardTitleSubtitleFooter),
     data: { lib: 'common', category: 'card', demo: "Card", section: "Title + Subtitle + Footer" },

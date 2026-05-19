@@ -67,8 +67,12 @@ export class CardTitleSubtitleFooter {
     </footer>
   </cngx-card>
 </div>`;
-  protected selected = signal(false);
+  protected decorativeMedia = signal(false);
     protected loading = signal(false);
+    protected showSkeleton = signal(false);
+    protected selectedMaria = signal(false);
+    protected selectedHans = signal(false);
+    protected selectedLisa = signal(false);
     protected cardClicked = signal(0);
     protected badgeClicked = signal(0);
 

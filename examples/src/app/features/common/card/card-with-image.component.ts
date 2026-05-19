@@ -22,9 +22,15 @@ import { CngxCard, CngxCardHeader, CngxCardTitle, CngxCardSubtitle, CngxCardBody
       @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
       @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
     </header>
-    <div style="max-width:320px">
+    <div class="button-row" style="margin-bottom:12px">
+        <label style="display:flex;align-items:center;gap:6px;font-size:0.875rem">
+          <input type="checkbox" [checked]="decorativeMedia()" (change)="decorativeMedia.set($any($event.target).checked)" />
+          decorative
+        </label>
+      </div>
+      <div style="max-width:320px">
         <cngx-card>
-          <div cngxCardMedia [decorative]="false" aspectRatio="16/9">
+          <div cngxCardMedia [decorative]="decorativeMedia()" aspectRatio="16/9">
             <img src="https://picsum.photos/seed/cngx/640/360" alt="Landscape photo" />
           </div>
           <header cngxCardHeader>
@@ -37,6 +43,16 @@ import { CngxCard, CngxCardHeader, CngxCardTitle, CngxCardSubtitle, CngxCardBody
             </p>
           </div>
         </cngx-card>
+      </div>
+      <div class="event-grid" style="margin-top:12px">
+        <div class="event-row">
+          <span class="event-label">decorative</span>
+          <span class="event-value">{{ decorativeMedia() }}</span>
+        </div>
+        <div class="event-row">
+          <span class="event-label">Image role</span>
+          <span class="event-value">{{ decorativeMedia() ? 'presentation (alt ignored)' : 'img (alt read by SR)' }}</span>
+        </div>
       </div>
     <details class="cngx-ex-code">
       <summary>TypeScript</summary>
@@ -52,12 +68,20 @@ export class CardCardWithImage {
   protected readonly _exTitle: string = 'Card';
   protected readonly _exDescription: string = 'Semantic card component with three archetypes: display (article), action (button), and link. Supports selection, loading, disabled with reason, and SR live announcements.';
   protected readonly _exSectionTitle: string = 'Card with Image';
-  protected readonly _exSubtitle: string = '<code>[cngxCardMedia]</code> handles full-bleed images with <code>aspectRatio</code> and <code>decorative</code> inputs.';
+  protected readonly _exSubtitle: string = '<code>[cngxCardMedia]</code> handles full-bleed images with <code>aspectRatio</code> and <code>decorative</code> inputs. Toggle <code>decorative</code> to switch between <code>role="img"</code> (alt is read) and <code>role="presentation"</code> (alt ignored, image becomes purely visual).';
   protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'visual-variants' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }];
-  protected readonly _exTs: string = `import { CngxCard, CngxCardHeader, CngxCardTitle, CngxCardSubtitle, CngxCardBody, CngxCardMedia } from '@cngx/common/card';`;
-  protected readonly _exHtml: string = `<div style="max-width:320px">
+  protected readonly _exTs: string = `import { CngxCard, CngxCardHeader, CngxCardTitle, CngxCardSubtitle, CngxCardBody, CngxCardMedia } from '@cngx/common/card';
+
+protected decorativeMedia = signal(false);`;
+  protected readonly _exHtml: string = `<div class="button-row" style="margin-bottom:12px">
+  <label style="display:flex;align-items:center;gap:6px;font-size:0.875rem">
+    <input type="checkbox" [checked]="decorativeMedia()" (change)="decorativeMedia.set($any($event.target).checked)" />
+    decorative
+  </label>
+</div>
+<div style="max-width:320px">
   <cngx-card>
-    <div cngxCardMedia [decorative]="false" aspectRatio="16/9">
+    <div cngxCardMedia [decorative]="decorativeMedia()" aspectRatio="16/9">
       <img src="https://picsum.photos/seed/cngx/640/360" alt="Landscape photo" />
     </div>
     <header cngxCardHeader>
@@ -71,8 +95,12 @@ export class CardCardWithImage {
     </div>
   </cngx-card>
 </div>`;
-  protected selected = signal(false);
+  protected decorativeMedia = signal(false);
     protected loading = signal(false);
+    protected showSkeleton = signal(false);
+    protected selectedMaria = signal(false);
+    protected selectedHans = signal(false);
+    protected selectedLisa = signal(false);
     protected cardClicked = signal(0);
     protected badgeClicked = signal(0);
 

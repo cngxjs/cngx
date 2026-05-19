@@ -34,8 +34,12 @@ export const STORY: DemoSpec = {
     "import { CngxSpeakButton } from '@cngx/ui';",
   ],
   setup: `
-  protected selected = signal(false);
+  protected decorativeMedia = signal(false);
   protected loading = signal(false);
+  protected showSkeleton = signal(false);
+  protected selectedMaria = signal(false);
+  protected selectedHans = signal(false);
+  protected selectedLisa = signal(false);
   protected cardClicked = signal(0);
   protected badgeClicked = signal(0);
 
@@ -69,12 +73,19 @@ export const STORY: DemoSpec = {
     {
       title: 'Card with Image',
       subtitle:
-        '<code>[cngxCardMedia]</code> handles full-bleed images with <code>aspectRatio</code> and <code>decorative</code> inputs.',
+        '<code>[cngxCardMedia]</code> handles full-bleed images with <code>aspectRatio</code> and <code>decorative</code> inputs. ' +
+        'Toggle <code>decorative</code> to switch between <code>role="img"</code> (alt is read) and <code>role="presentation"</code> (alt ignored, image becomes purely visual).',
       imports: ['CngxCard', 'CngxCardHeader', 'CngxCardTitle', 'CngxCardSubtitle', 'CngxCardBody', 'CngxCardMedia'],
       template: `
+  <div class="button-row" style="margin-bottom:12px">
+    <label style="display:flex;align-items:center;gap:6px;font-size:0.875rem">
+      <input type="checkbox" [checked]="decorativeMedia()" (change)="decorativeMedia.set($any($event.target).checked)" />
+      decorative
+    </label>
+  </div>
   <div style="max-width:320px">
     <cngx-card>
-      <div cngxCardMedia [decorative]="false" aspectRatio="16/9">
+      <div cngxCardMedia [decorative]="decorativeMedia()" aspectRatio="16/9">
         <img src="https://picsum.photos/seed/cngx/640/360" alt="Landscape photo" />
       </div>
       <header cngxCardHeader>
@@ -87,6 +98,16 @@ export const STORY: DemoSpec = {
         </p>
       </div>
     </cngx-card>
+  </div>
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row">
+      <span class="event-label">decorative</span>
+      <span class="event-value">{{ decorativeMedia() }}</span>
+    </div>
+    <div class="event-row">
+      <span class="event-label">Image role</span>
+      <span class="event-value">{{ decorativeMedia() ? 'presentation (alt ignored)' : 'img (alt read by SR)' }}</span>
+    </div>
   </div>`,
     },
     {
@@ -119,39 +140,52 @@ export const STORY: DemoSpec = {
   </div>`,
     },
     {
-      title: 'Skeleton Loading',
+      title: 'Loading State',
       subtitle:
-        '<code>cngx-card-skeleton</code> replaces content during loading. Toggle to compare skeleton vs. real content.',
+        '<code>[loading]="true"</code> sets <code>aria-busy</code> and announces <em>Loading</em> via SR live region. ' +
+        'Toggle <em>Replace with skeleton</em> to compare the aria-only path against a visual <code>cngx-card-skeleton</code> placeholder.',
       imports: ['CngxCard', 'CngxCardHeader', 'CngxCardTitle', 'CngxCardBody', 'CngxCardSkeleton'],
       template: `
   <div class="button-row" style="margin-bottom:12px">
-    <button (click)="loading.update(v => !v)">Toggle loading</button>
+    <button (click)="loading.update(v => !v)">Toggle loading: {{ loading() ? 'on' : 'off' }}</button>
+    <label style="display:flex;align-items:center;gap:6px;font-size:0.875rem">
+      <input type="checkbox" [checked]="showSkeleton()" (change)="showSkeleton.set($any($event.target).checked)" />
+      Replace with skeleton
+    </label>
   </div>
   <div style="max-width:320px">
     <cngx-card [loading]="loading()">
-      @if (loading()) {
+      @if (loading() && showSkeleton()) {
         <cngx-card-skeleton [lines]="2" />
       } @else {
-        <ng-container>
-          <header cngxCardHeader>
-            <h3 cngxCardTitle>Vitals Overview</h3>
-          </header>
-          <div cngxCardBody>
-            <p style="margin:0;color:var(--cngx-color-text-muted)">Heart rate, blood pressure, SpO2 values from the last 24 hours.</p>
-          </div>
-        </ng-container>
+        <header cngxCardHeader>
+          <h3 cngxCardTitle>Vitals Overview</h3>
+        </header>
+        <div cngxCardBody>
+          <p style="margin:0;color:var(--cngx-color-text-muted)">Heart rate, blood pressure, SpO2 values from the last 24 hours.</p>
+        </div>
       }
     </cngx-card>
+  </div>
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row">
+      <span class="event-label">loading</span>
+      <span class="event-value">{{ loading() }}</span>
+    </div>
+    <div class="event-row">
+      <span class="event-label">aria-busy</span>
+      <span class="event-value">{{ loading() ? 'true' : 'false' }}</span>
+    </div>
   </div>`,
     },
     {
       title: 'Action Card with Selection',
       subtitle:
-        'The entire card is clickable. <code>[(selected)]</code> toggles on click and keyboard. Try clicking the cards.',
+        'Each card maintains its own selection state via <code>[(selected)]</code>. Toggle on click and keyboard (<kbd>Space</kbd> / <kbd>Enter</kbd>). Try clicking and tabbing between cards.',
       imports: ['CngxCard', 'CngxCardHeader', 'CngxCardBody'],
       template: `
   <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;max-width:660px">
-    <cngx-card as="button" [selectable]="true" [(selected)]="selected"
+    <cngx-card as="button" [selectable]="true" [(selected)]="selectedMaria"
                ariaLabel="Select patient Maria Muster">
       <header cngxCardHeader>
         <h3 style="margin:0;font-weight:600;font-size:0.9375rem">Maria Muster</h3>
@@ -160,7 +194,8 @@ export const STORY: DemoSpec = {
         <span style="font-size:0.8125rem;color:var(--cngx-color-text-muted)">Room 12</span>
       </div>
     </cngx-card>
-    <cngx-card as="button" ariaLabel="View patient Hans Huber">
+    <cngx-card as="button" [selectable]="true" [(selected)]="selectedHans"
+               ariaLabel="Select patient Hans Huber">
       <header cngxCardHeader>
         <h3 style="margin:0;font-weight:600;font-size:0.9375rem">Hans Huber</h3>
       </header>
@@ -168,7 +203,8 @@ export const STORY: DemoSpec = {
         <span style="font-size:0.8125rem;color:var(--cngx-color-text-muted)">Room 7</span>
       </div>
     </cngx-card>
-    <cngx-card as="button" ariaLabel="View patient Lisa Lang">
+    <cngx-card as="button" [selectable]="true" [(selected)]="selectedLisa"
+               ariaLabel="Select patient Lisa Lang">
       <header cngxCardHeader>
         <h3 style="margin:0;font-weight:600;font-size:0.9375rem">Lisa Lang</h3>
       </header>
@@ -179,29 +215,17 @@ export const STORY: DemoSpec = {
   </div>
   <div class="event-grid" style="margin-top:12px">
     <div class="event-row">
-      <span class="event-label">selected</span>
-      <span class="event-value">{{ selected() }}</span>
+      <span class="event-label">Maria</span>
+      <span class="event-value">{{ selectedMaria() }}</span>
     </div>
-  </div>`,
-    },
-    {
-      title: 'Loading State',
-      subtitle:
-        'Sets <code>aria-busy="true"</code> and announces "Loading" via SR live region. Toggle to see the visual effect.',
-      imports: ['CngxCard', 'CngxCardHeader', 'CngxCardBody'],
-      template: `
-  <div class="button-row" style="margin-bottom:12px">
-    <button (click)="loading.update(v => !v)">Toggle loading</button>
-  </div>
-  <div style="max-width:300px">
-    <cngx-card [loading]="loading()">
-      <header cngxCardHeader>
-        <h3 style="margin:0;font-weight:600;font-size:1rem">Vitals</h3>
-      </header>
-      <div cngxCardBody>
-        <p style="margin:0;color:var(--cngx-color-text-muted)">Heart rate, blood pressure, SpO2</p>
-      </div>
-    </cngx-card>
+    <div class="event-row">
+      <span class="event-label">Hans</span>
+      <span class="event-value">{{ selectedHans() }}</span>
+    </div>
+    <div class="event-row">
+      <span class="event-label">Lisa</span>
+      <span class="event-value">{{ selectedLisa() }}</span>
+    </div>
   </div>`,
     },
     {

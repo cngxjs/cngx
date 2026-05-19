@@ -23,7 +23,7 @@ import { CngxCard, CngxCardHeader, CngxCardBody } from '@cngx/common/card';
       @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
     </header>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;max-width:660px">
-        <cngx-card as="button" [selectable]="true" [(selected)]="selected"
+        <cngx-card as="button" [selectable]="true" [(selected)]="selectedMaria"
                    ariaLabel="Select patient Maria Muster">
           <header cngxCardHeader>
             <h3 style="margin:0;font-weight:600;font-size:0.9375rem">Maria Muster</h3>
@@ -32,7 +32,8 @@ import { CngxCard, CngxCardHeader, CngxCardBody } from '@cngx/common/card';
             <span style="font-size:0.8125rem;color:var(--cngx-color-text-muted)">Room 12</span>
           </div>
         </cngx-card>
-        <cngx-card as="button" ariaLabel="View patient Hans Huber">
+        <cngx-card as="button" [selectable]="true" [(selected)]="selectedHans"
+                   ariaLabel="Select patient Hans Huber">
           <header cngxCardHeader>
             <h3 style="margin:0;font-weight:600;font-size:0.9375rem">Hans Huber</h3>
           </header>
@@ -40,7 +41,8 @@ import { CngxCard, CngxCardHeader, CngxCardBody } from '@cngx/common/card';
             <span style="font-size:0.8125rem;color:var(--cngx-color-text-muted)">Room 7</span>
           </div>
         </cngx-card>
-        <cngx-card as="button" ariaLabel="View patient Lisa Lang">
+        <cngx-card as="button" [selectable]="true" [(selected)]="selectedLisa"
+                   ariaLabel="Select patient Lisa Lang">
           <header cngxCardHeader>
             <h3 style="margin:0;font-weight:600;font-size:0.9375rem">Lisa Lang</h3>
           </header>
@@ -51,8 +53,16 @@ import { CngxCard, CngxCardHeader, CngxCardBody } from '@cngx/common/card';
       </div>
       <div class="event-grid" style="margin-top:12px">
         <div class="event-row">
-          <span class="event-label">selected</span>
-          <span class="event-value">{{ selected() }}</span>
+          <span class="event-label">Maria</span>
+          <span class="event-value">{{ selectedMaria() }}</span>
+        </div>
+        <div class="event-row">
+          <span class="event-label">Hans</span>
+          <span class="event-value">{{ selectedHans() }}</span>
+        </div>
+        <div class="event-row">
+          <span class="event-label">Lisa</span>
+          <span class="event-value">{{ selectedLisa() }}</span>
         </div>
       </div>
     <details class="cngx-ex-code">
@@ -69,13 +79,15 @@ export class CardActionCardWithSelection {
   protected readonly _exTitle: string = 'Card';
   protected readonly _exDescription: string = 'Semantic card component with three archetypes: display (article), action (button), and link. Supports selection, loading, disabled with reason, and SR live announcements.';
   protected readonly _exSectionTitle: string = 'Action Card with Selection';
-  protected readonly _exSubtitle: string = 'The entire card is clickable. <code>[(selected)]</code> toggles on click and keyboard. Try clicking the cards.';
+  protected readonly _exSubtitle: string = 'Each card maintains its own selection state via <code>[(selected)]</code>. Toggle on click and keyboard (<kbd>Space</kbd> / <kbd>Enter</kbd>). Try clicking and tabbing between cards.';
   protected readonly _exTags: readonly { dim: string; value: string }[] = [{ dim: 'atomic-level', value: 'organism' }, { dim: 'audience', value: 'dev' }, { dim: 'audience', value: 'design' }, { dim: 'audience', value: 'a11y' }, { dim: 'artifact', value: 'standalone' }, { dim: 'focus', value: 'visual-variants' }, { dim: 'focus', value: 'composition' }, { dim: 'focus', value: 'a11y-pattern' }];
   protected readonly _exTs: string = `import { CngxCard, CngxCardHeader, CngxCardBody } from '@cngx/common/card';
 
-protected selected = signal(false);`;
+protected selectedMaria = signal(false);
+protected selectedHans = signal(false);
+protected selectedLisa = signal(false);`;
   protected readonly _exHtml: string = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;max-width:660px">
-  <cngx-card as="button" [selectable]="true" [(selected)]="selected"
+  <cngx-card as="button" [selectable]="true" [(selected)]="selectedMaria"
              ariaLabel="Select patient Maria Muster">
     <header cngxCardHeader>
       <h3 style="margin:0;font-weight:600;font-size:0.9375rem">Maria Muster</h3>
@@ -84,7 +96,8 @@ protected selected = signal(false);`;
       <span style="font-size:0.8125rem;color:var(--cngx-color-text-muted)">Room 12</span>
     </div>
   </cngx-card>
-  <cngx-card as="button" ariaLabel="View patient Hans Huber">
+  <cngx-card as="button" [selectable]="true" [(selected)]="selectedHans"
+             ariaLabel="Select patient Hans Huber">
     <header cngxCardHeader>
       <h3 style="margin:0;font-weight:600;font-size:0.9375rem">Hans Huber</h3>
     </header>
@@ -92,7 +105,8 @@ protected selected = signal(false);`;
       <span style="font-size:0.8125rem;color:var(--cngx-color-text-muted)">Room 7</span>
     </div>
   </cngx-card>
-  <cngx-card as="button" ariaLabel="View patient Lisa Lang">
+  <cngx-card as="button" [selectable]="true" [(selected)]="selectedLisa"
+             ariaLabel="Select patient Lisa Lang">
     <header cngxCardHeader>
       <h3 style="margin:0;font-weight:600;font-size:0.9375rem">Lisa Lang</h3>
     </header>
@@ -101,8 +115,12 @@ protected selected = signal(false);`;
     </div>
   </cngx-card>
 </div>`;
-  protected selected = signal(false);
+  protected decorativeMedia = signal(false);
     protected loading = signal(false);
+    protected showSkeleton = signal(false);
+    protected selectedMaria = signal(false);
+    protected selectedHans = signal(false);
+    protected selectedLisa = signal(false);
     protected cardClicked = signal(0);
     protected badgeClicked = signal(0);
 
