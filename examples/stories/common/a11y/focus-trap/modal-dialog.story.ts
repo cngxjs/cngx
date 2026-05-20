@@ -1,73 +1,99 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxFocusTrap — Modal Dialog',
-  subtitle: '<code>[cngxFocusTrap]</code> wraps the CDK <code>FocusTrap</code>. When <code>[enabled]="true"</code>, Tab and Shift+Tab cycle only within the host. <code>[autoFocus]="true"</code> (default) moves focus to the first tabbable element automatically.',
-  description: 'Traps keyboard focus within the host element using the Angular CDK FocusTrap. Useful for modals, drawers, and other overlay components.',
+  title: 'CngxFocusTrap: Modal dialog',
+  subtitle:
+    '<code>[cngxFocusTrap]</code> wraps the CDK <code>FocusTrap</code>. When <code>[enabled]="true"</code>, Tab and Shift+Tab cycle only within the host. <code>[autoFocus]="true"</code> (default) moves focus to the first tabbable element on open.',
+  description:
+    'Confines Tab cycling to the dialog while it is open: <code>cngxFocusTrap</code> with <code>[enabled]</code> gates the cycle, <code>[autoFocus]</code> lands focus on the first tabbable control on mount, an Escape handler or backdrop click closes the panel. Paired with <code>cngxFocusRestore</code> on the same host so closing returns focus to the trigger instead of dropping it on <code>body</code>: trap and restore are the two atoms a real modal needs. The browser\'s <code>:focus-visible</code> ring only paints reliably after keyboard interaction, so the <code>Focused id</code> readout below makes the restore visible for mouse-driven runs too.',
   level: 'atom',
   audience: ['a11y', 'dev'],
   artifact: 'building-block',
-  focus: ['a11y-pattern', 'behavior'],
-  apiComponents: [
-    'CngxFocusTrap',
+  focus: ['a11y-pattern', 'behavior', 'composition'],
+  apiComponents: ['CngxFocusTrap', 'CngxFocusRestore'],
+  imports: ['CngxFocusTrap', 'CngxFocusRestore'],
+  references: [
+    {
+      label: 'WAI-ARIA APG: Dialog (Modal) pattern',
+      href: 'https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/',
+    },
+    {
+      label: 'WCAG 2.1 SC 2.1.2 No Keyboard Trap (modal exception)',
+      href: 'https://www.w3.org/WAI/WCAG21/Understanding/no-keyboard-trap.html',
+    },
   ],
-  imports: ['CngxFocusTrap'],
-  setup: `protected modalOpen = signal(false);
-  protected autoFocus = signal(true);`,
-  template: `  @if (modalOpen()) {
-    <div
-      style="
-        position: fixed; inset: 0;
-        background: rgba(0,0,0,0.4);
-        display: flex; align-items: center; justify-content: center;
-        z-index: 100;
-      "
-      (click)="modalOpen.set(false)"
-    >
-      <div
-        cngxFocusTrap
-        [enabled]="modalOpen()"
-        [autoFocus]="autoFocus()"
-        (keydown.escape)="modalOpen.set(false)"
-        (click)="$event.stopPropagation()"
-        style="
-          background: var(--cngx-surface, #fff);
-          border-radius: 8px;
-          padding: 24px;
-          width: 380px;
-          box-shadow: 0 8px 32px rgba(0,0,0,0.18);
-          display: flex;
-          flex-direction: column;
-          gap: 12px;
-        "
-        tabindex="-1"
-        role="dialog"
-        aria-modal="true"
-        aria-label="Confirm action"
-      >
-        <h3 style="margin: 0;">Confirm Action</h3>
-        <p style="margin: 0; font-size: 0.875rem; color: var(--cngx-text-secondary, #666);">
-          Are you sure you want to proceed? This action cannot be undone.
+  setup: `protected readonly modalOpen = signal(false);
+  protected readonly autoFocus = signal(true);`,
+  setupChrome: `protected readonly focusedId = signal<string>('—');
+
+  constructor() {
+    const host = inject(ElementRef).nativeElement as HTMLElement;
+    afterNextRender(() => {
+      host.addEventListener('focusin', (e) => {
+        const t = e.target as HTMLElement | null;
+        this.focusedId.set(t?.id || (t?.tagName.toLowerCase() ?? '—'));
+      });
+      host.addEventListener('focusout', () => {
+        setTimeout(() => {
+          if (!host.contains(document.activeElement)) {
+            this.focusedId.set('—');
+          }
+        }, 0);
+      });
+    });
+  }`,
+  template: `  <button type="button"
+          id="cngx-focus-trap-modal-trigger"
+          class="chip"
+          (click)="modalOpen.set(true)">Open modal</button>
+
+  @if (modalOpen()) {
+    <div class="cngx-ex-overlay-backdrop" (click)="modalOpen.set(false)">
+      <div class="cngx-ex-overlay-panel"
+           cngxFocusTrap
+           [enabled]="modalOpen()"
+           [autoFocus]="autoFocus()"
+           cngxFocusRestore
+           (keydown.escape)="modalOpen.set(false)"
+           (click)="$event.stopPropagation()"
+           tabindex="-1"
+           role="dialog"
+           aria-modal="true"
+           aria-labelledby="cngx-focus-trap-modal-title"
+           aria-describedby="cngx-focus-trap-modal-desc">
+        <h3 id="cngx-focus-trap-modal-title" style="margin:0">Confirm action</h3>
+        <p id="cngx-focus-trap-modal-desc" style="margin:0;font-size:0.875rem">
           Tab cycles only within this dialog. Press Escape or click outside to close.
         </p>
-        <input placeholder="Type CONFIRM to proceed" style="padding: 8px 12px; border-radius: 6px; border: 1px solid var(--cngx-color-border, #ddd); font-size: 0.875rem;" />
-        
+        <label for="cngx-focus-trap-modal-input">Type CONFIRM to proceed</label>
+        <input id="cngx-focus-trap-modal-input" />
+        <div style="display:flex;justify-content:flex-end;gap:8px">
+          <button type="button" class="chip" (click)="modalOpen.set(false)">Cancel</button>
+          <button type="button" class="chip" (click)="modalOpen.set(false)">Confirm</button>
+        </div>
       </div>
     </div>
-  }
-
-  <div class="output-badge" style="margin-top: 12px">
-    Modal: <strong>{{ modalOpen() ? 'open — focus trapped' : 'closed' }}</strong>
-  </div>`,
-  templateChrome: `<div class="button-row">
-    <button class="sort-btn" (click)="modalOpen.set(true)">Open modal</button>
-    <label style="display: flex; align-items: center; gap: 6px; font-size: 0.875rem;">
-      <input type="checkbox" [checked]="autoFocus()" (change)="autoFocus.set($any($event.target).checked)" />
+  }`,
+  templateChrome: `<div class="button-row" style="margin-top:12px">
+    <label style="display:flex;align-items:center;gap:6px;font-size:0.875rem">
+      <input type="checkbox"
+             [checked]="autoFocus()"
+             (change)="autoFocus.set($any($event.target).checked)" />
       autoFocus
     </label>
   </div>
-<div class="button-row" style="justify-content: flex-end;">
-          <button class="sort-btn" (click)="modalOpen.set(false)">Cancel</button>
-          <button class="sort-btn" style="background: var(--cngx-accent, #f5a623); color: #000; font-weight: 500;" (click)="modalOpen.set(false)">Confirm</button>
-        </div>`,
+  <div class="event-grid" style="margin-top:8px">
+    <div class="event-row">
+      <span class="event-label">Modal</span>
+      <span class="event-value">{{ modalOpen() ? 'open, focus trapped' : 'closed' }}</span>
+    </div>
+    <div class="event-row">
+      <span class="event-label">Focused id</span>
+      <span class="event-value">{{ focusedId() }}</span>
+    </div>
+    <div class="event-row">
+      <span class="event-label">autoFocus</span>
+      <span class="event-value">{{ autoFocus() }}</span>
+    </div>
+  </div>`,
 };
