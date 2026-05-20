@@ -32,7 +32,6 @@ import {
  * <example-url>http://localhost:4200/#/common/card/interactive-card-with-actions</example-url>
  * <example-url>http://localhost:4200/#/common/card/loading-state</example-url>
  * <example-url>http://localhost:4200/#/common/card/severity-accent</example-url>
- * <example-url>http://localhost:4200/#/common/card/skeleton-loading</example-url>
  * <example-url>http://localhost:4200/#/common/card/title-subtitle-footer</example-url>
  */
 @Component({
