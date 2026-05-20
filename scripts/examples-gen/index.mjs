@@ -109,11 +109,50 @@ function dedent(s) {
     .replace(/\s+$/, '');
 }
 
+// Allowlist of inline-formatting tags that may appear in story `description`
+// / `subtitle` prose and pass through to the rendered _exDescription /
+// _exSubtitle interpolations. Everything else gets its `<` escaped to `&lt;`
+// so accidental references to custom elements (`<cngx-foo>`) or other markup
+// in prose render as text instead of broken HTML.
+//
+// Security is handled at runtime by Angular's DomSanitizer on the
+// `[innerHTML]` binding — scripts, inline event handlers, and unsafe URLs
+// are stripped regardless of what arrives here. This filter exists for
+// content-correctness, not security.
+const ALLOWED_PAIRED_TAGS = [
+  'code',
+  'pre',
+  'em',
+  'strong',
+  'b',
+  'i',
+  'kbd',
+  'mark',
+  'small',
+  'sub',
+  'sup',
+  'var',
+  'samp',
+  'del',
+  'ins',
+  'abbr',
+  'q',
+  'cite',
+  'a',
+];
+const ALLOWED_VOID_TAGS = ['br', 'wbr'];
+
 function escapeCustomElementTags(html) {
   if (!html) return '';
   const parts = [];
   let i = 0;
-  const re = /<(code|pre)\b[^>]*>[\s\S]*?<\/\1>/g;
+  const pairedAlt = ALLOWED_PAIRED_TAGS.join('|');
+  const voidAlt = ALLOWED_VOID_TAGS.join('|');
+  // Each match is either a paired tag with content + closing, or a void tag.
+  const re = new RegExp(
+    `<(${pairedAlt})\\b[^>]*>[\\s\\S]*?<\\/\\1>|<(${voidAlt})\\b[^>]*\\/?>`,
+    'gi',
+  );
   let m;
   while ((m = re.exec(html)) !== null) {
     parts.push({ kind: 'escape', text: html.slice(i, m.index) });
@@ -302,7 +341,12 @@ function buildImports(story, importMap, featureDepth) {
   // because both halves end up in the class body. The displayed _exTs
   // panel (see emitComponentSource) re-filters against `setup` alone.
   const setup = stripCommentsForScan((story.setup ?? '') + '\n' + (story.setupChrome ?? ''));
-  const tpl = (story.template ?? '') + '\n' + (story.templateChrome ?? '');
+  const tpl =
+    (story.template ?? '') +
+    '\n' +
+    (story.templateChrome ?? '') +
+    '\n' +
+    (story.templateChromeBefore ?? '');
 
   const usesSignal = /\bsignal\s*[<(]/.test(setup);
   const usesComputed = /\bcomputed\s*[<(]/.test(setup);
@@ -429,7 +473,12 @@ function indent(s, n) {
 function emitComponentSource(meta, story, importMap) {
   const { lines } = buildImports(story, importMap, meta.featureDepth);
 
-  const tpl = (story.template ?? '') + '\n' + (story.templateChrome ?? '');
+  const tpl =
+    (story.template ?? '') +
+    '\n' +
+    (story.templateChrome ?? '') +
+    '\n' +
+    (story.templateChromeBefore ?? '');
   const tplImports = (story.imports ?? []).filter((cls) => {
     if (!cls.startsWith('Cngx')) return true;
     if (new RegExp(String.raw`\b${cls}\b`).test(tpl)) return true;
@@ -480,11 +529,15 @@ function emitComponentSource(meta, story, importMap) {
   const tagFieldEntries = tagPairs
     .map(([dim, value]) => `{ dim: ${tsQuote(dim)}, value: ${tsQuote(value)} }`)
     .join(', ');
+  const refEntries = ((story.references ?? []) || [])
+    .map(({ label, href }) => `{ label: ${tsQuote(label)}, href: ${tsQuote(href)} }`)
+    .join(', ');
   const introFields = [
     `  protected readonly _exTitle: string = ${tsQuote(story.title ?? '')};`,
     `  protected readonly _exDescription: string = ${tsQuote(escapeCustomElementTags(story.description ?? ''))};`,
     `  protected readonly _exSubtitle: string = ${tsQuote(escapeCustomElementTags(story.subtitle ?? ''))};`,
     `  protected readonly _exTags: readonly { dim: string; value: string }[] = [${tagFieldEntries}];`,
+    `  protected readonly _exRefs: readonly { label: string; href: string }[] = [${refEntries}];`,
   ].join('\n');
 
   // Displayed _exTs: filter imports a SECOND time against `setup` only.
@@ -541,6 +594,13 @@ function emitComponentSource(meta, story, importMap) {
     `      }`,
     `      @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }`,
     `      @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }`,
+    `      @if (_exRefs.length > 0) {`,
+    `        <ul class="cngx-ex-refs" aria-label="Implements">`,
+    `          @for (r of _exRefs; track r.href) {`,
+    `            <li class="cngx-ex-ref"><a [href]="r.href" target="_blank" rel="noopener">{{ r.label }}</a></li>`,
+    `          }`,
+    `        </ul>`,
+    `      }`,
     `    </header>`,
   ].join('\n');
 
@@ -561,11 +621,15 @@ function emitComponentSource(meta, story, importMap) {
   const escape = (s) => s.replaceAll('`', '\\`').replaceAll('${', '\\${');
   const artifact = escape((story.template ?? '').trim());
   const chrome = escape((story.templateChrome ?? '').trim());
+  const chromeBefore = escape((story.templateChromeBefore ?? '').trim());
   const artifactBlock = `<section class="cngx-ex-artifact">\n${indent(artifact, 2)}\n</section>`;
   const chromeBlock = chrome
     ? `<section class="cngx-ex-chrome">\n${indent(chrome, 2)}\n</section>`
     : '';
-  const mainBody = [artifactBlock, chromeBlock, sourceBlocks.replace(/^    /gm, '')]
+  const chromeBeforeBlock = chromeBefore
+    ? `<section class="cngx-ex-chrome cngx-ex-chrome--before">\n${indent(chromeBefore, 2)}\n</section>`
+    : '';
+  const mainBody = [chromeBeforeBlock, artifactBlock, chromeBlock, sourceBlocks.replace(/^    /gm, '')]
     .filter(Boolean)
     .join('\n');
 

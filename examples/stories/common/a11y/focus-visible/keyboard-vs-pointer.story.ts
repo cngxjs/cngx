@@ -1,49 +1,52 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxFocusVisible — Keyboard vs Pointer',
-  subtitle: '<code>[cngxFocusVisible]</code> adds the <code>cngx-focus-visible</code> class when the element receives keyboard focus. Mouse/touch focus does not add the class. Unlike native <code>:focus-visible</code>, the signal is available in TypeScript for conditional logic beyond CSS.',
-  description: 'Tracks keyboard-initiated focus to distinguish it from pointer focus. Adds the cngx-focus-visible CSS class only when focus was triggered by keyboard.',
+  title: 'CngxFocusVisible: Keyboard vs pointer',
+  subtitle:
+    '<code>[cngxFocusVisible]</code> adds the <code>cngx-focus-visible</code> class only when the element receives keyboard focus. Mouse / touch focus does not. Unlike native <code>:focus-visible</code>, the signal is also exposed in TypeScript for any logic CSS cannot express.',
+  description:
+    'Side-by-side buttons isolate the directive\'s decision rule: Tab through them and the keyboard-ring paints, click them with a pointer and it stays off. Each button also exposes a "kbd" indicator chip via the signal, so the reader can confirm the same state is available programmatically, not just as a class hook.',
   level: 'atom',
   audience: ['a11y', 'dev'],
   artifact: 'building-block',
   focus: ['a11y-pattern', 'behavior'],
-  apiComponents: [
-    'CngxFocusVisible',
-  ],
+  apiComponents: ['CngxFocusVisible'],
   imports: ['CngxFocusVisible'],
-  template: `  <p style="margin-bottom: 12px; font-size: 0.875rem; color: var(--cngx-text-secondary, #666);">
-    Tab into the buttons below using the keyboard. Then click with the mouse.
-    Only keyboard focus shows the custom ring.
-  </p>`,
-  templateChrome: `<div class="button-row">
-    <button
-      cngxFocusVisible
-      #fv1="cngxFocusVisible"
-      class="sort-btn"
-      style="outline: none; position: relative;"
-      [style.box-shadow]="fv1.focusVisible() ? '0 0 0 3px var(--cngx-accent, #f5a623)' : 'none'"
-    >
+  references: [
+    {
+      label: 'WCAG 2.1 SC 2.4.7 Focus Visible',
+      href: 'https://www.w3.org/WAI/WCAG21/Understanding/focus-visible.html',
+    },
+    {
+      label: 'CSS Selectors Level 4: :focus-visible',
+      href: 'https://www.w3.org/TR/selectors-4/#the-focus-visible-pseudo',
+    },
+  ],
+  template: `  <div class="button-row">
+    <button type="button"
+            id="cngx-focus-visible-button-a"
+            cngxFocusVisible
+            #fv1="cngxFocusVisible"
+            class="chip cngx-ex-keyboard-ring">
       Button A
       @if (fv1.focusVisible()) {
-        <span class="chip chip--active" style="margin-left: 4px; font-size: 0.7rem;">kbd</span>
+        <span style="margin-left:6px;font-size:0.7rem">kbd</span>
       }
     </button>
 
-    <button
-      cngxFocusVisible
-      #fv2="cngxFocusVisible"
-      class="sort-btn"
-      style="outline: none; position: relative;"
-      [style.box-shadow]="fv2.focusVisible() ? '0 0 0 3px var(--cngx-accent, #f5a623)' : 'none'"
-    >
+    <button type="button"
+            id="cngx-focus-visible-button-b"
+            cngxFocusVisible
+            #fv2="cngxFocusVisible"
+            class="chip cngx-ex-keyboard-ring">
       Button B
       @if (fv2.focusVisible()) {
-        <span class="chip chip--active" style="margin-left: 4px; font-size: 0.7rem;">kbd</span>
+        <span style="margin-left:6px;font-size:0.7rem">kbd</span>
       }
     </button>
-  </div>
-<div class="event-grid" style="margin-top: 12px">
+  </div>`,
+  templateChromeBefore: `<p>Tab into the buttons below using the keyboard, then click them with the mouse. Only keyboard focus paints the custom ring and shows the <em>kbd</em> chip.</p>`,
+  templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row">
       <span class="event-label">Button A focusVisible</span>
       <span class="event-value">{{ fv1.focusVisible() }}</span>

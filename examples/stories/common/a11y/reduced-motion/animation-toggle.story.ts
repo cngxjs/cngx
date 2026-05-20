@@ -1,87 +1,53 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxReducedMotion — Animation Toggle',
-  subtitle: '<code>[cngxReducedMotion]</code> reflects <code>prefers-reduced-motion: reduce</code> as a signal. Use it in TypeScript to conditionally skip animations, transitions, or auto-playing media — not just CSS. The <code>cngx-reduced-motion</code> class on the host element enables CSS-only overrides too.',
-  description: 'Reads the prefers-reduced-motion media query and adds the cngx-reduced-motion CSS class when the user prefers reduced motion.',
+  title: 'CngxReducedMotion: Animation toggle',
+  subtitle:
+    '<code>[cngxReducedMotion]</code> reflects <code>prefers-reduced-motion: reduce</code> as a host CSS class and as a signal. Pure-CSS demos hang their <code>animation: none</code> override off the class; this story shows that path.',
+  description:
+    'Two looping animations on the host. The directive toggles a <code>.cngx-reduced-motion</code> class on the host whenever the OS preference flips. A single CSS rule under that class disables the animations, so the artifact template carries no signal logic. Toggle "Reduce motion" in your OS to see the spinner and progress bar freeze without a page reload.',
   level: 'atom',
   audience: ['a11y', 'dev'],
   artifact: 'building-block',
   focus: ['a11y-pattern', 'behavior'],
-  apiComponents: [
-    'CngxReducedMotion',
-  ],
+  apiComponents: ['CngxReducedMotion'],
   imports: ['CngxReducedMotion'],
-  template: `  <div
-    cngxReducedMotion
-    #rm="cngxReducedMotion"
-  >
-    <div style="display: flex; gap: 24px; align-items: center;">
-      <div
-        style="
-          width: 60px;
-          height: 60px;
-          border-radius: 50%;
-          background: var(--cngx-accent, #f5a623);
-          flex-shrink: 0;
-        "
-        [style.animation]="rm.prefersReducedMotion() ? 'none' : 'cngx-demo-spin 2s linear infinite'"
-      ></div>
-
-      <div
-        style="
-          width: 120px;
-          height: 8px;
-          border-radius: 4px;
-          background: var(--cngx-surface-alt, #f0f0f0);
-          overflow: hidden;
-        "
-      >
-        <div
-          style="
-            width: 40%;
-            height: 100%;
-            border-radius: 4px;
-            background: var(--cngx-accent, #f5a623);
-          "
-          [style.animation]="rm.prefersReducedMotion() ? 'none' : 'cngx-demo-progress 1.5s ease-in-out infinite'"
-        ></div>
-      </div>
+  references: [
+    {
+      label: 'WCAG 2.1 SC 2.3.3 Animation from Interactions',
+      href: 'https://www.w3.org/WAI/WCAG21/Understanding/animation-from-interactions.html',
+    },
+    {
+      label: 'CSS Media Queries Level 5: prefers-reduced-motion',
+      href: 'https://drafts.csswg.org/mediaqueries-5/#prefers-reduced-motion',
+    },
+  ],
+  template: `  <div cngxReducedMotion #rm="cngxReducedMotion" style="display:flex;gap:24px;align-items:center">
+    <div class="cngx-ex-demo-spinner" aria-hidden="true"></div>
+    <div class="cngx-ex-demo-progress" aria-hidden="true">
+      <div class="cngx-ex-demo-progress-bar"></div>
     </div>
-
-    <p style="margin-top: 12px; font-size: 0.8125rem; color: var(--cngx-text-secondary, #666);">
-      @if (rm.prefersReducedMotion()) {
-        Reduced motion is active — animations disabled. Turn off "Reduce motion"
-        in your OS accessibility settings to see them.
-      } @else {
-        Animations are running. Enable "Reduce motion" in your OS to test.
-        On macOS: System Settings > Accessibility > Display > Reduce motion.
-      }
-    </p>
-  </div>
-
-  <style>
-    @keyframes cngx-demo-spin {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
-    }
-    @keyframes cngx-demo-progress {
-      0%, 100% { transform: translateX(-100%); }
-      50% { transform: translateX(200%); }
-    }
-    @keyframes cngx-demo-slide-in {
-      from { transform: translateX(100%); opacity: 0; }
-      to { transform: translateX(0); opacity: 1; }
-    }
-  </style>`,
-  templateChrome: `<div class="event-grid" style="margin-top: 16px">
-      <div class="event-row">
-        <span class="event-label">prefersReducedMotion</span>
-        <span class="event-value">{{ rm.prefersReducedMotion() }}</span>
-      </div>
-      <div class="event-row">
-        <span class="event-label">CSS class</span>
-        <span class="event-value">{{ rm.prefersReducedMotion() ? 'cngx-reduced-motion' : '(none)' }}</span>
-      </div>
-    </div>`,
+  </div>`,
+  templateChromeBefore: `<details class="cngx-ex-help-disclosure">
+    <summary>How to toggle reduced motion in your OS</summary>
+    <div class="cngx-ex-help-disclosure-panel">
+      <ul>
+        <li><strong>macOS:</strong> System Settings &rsaquo; Accessibility &rsaquo; Display &rsaquo; Reduce motion</li>
+        <li><strong>Windows 11:</strong> Settings &rsaquo; Accessibility &rsaquo; Visual effects &rsaquo; Animation effects</li>
+        <li><strong>Windows 10:</strong> Settings &rsaquo; Ease of Access &rsaquo; Display &rsaquo; Show animations in Windows</li>
+        <li><strong>GNOME:</strong> Settings &rsaquo; Accessibility &rsaquo; Enable animations</li>
+      </ul>
+      <p style="margin:8px 0 0">The animations below freeze the moment the preference flips, no reload needed.</p>
+    </div>
+  </details>`,
+  templateChrome: `<div class="event-grid" style="margin-top:16px">
+    <div class="event-row">
+      <span class="event-label">prefersReducedMotion</span>
+      <span class="event-value">{{ rm.prefersReducedMotion() }}</span>
+    </div>
+    <div class="event-row">
+      <span class="event-label">Host class</span>
+      <span class="event-value">{{ rm.prefersReducedMotion() ? 'cngx-reduced-motion' : '(none)' }}</span>
+    </div>
+  </div>`,
 };

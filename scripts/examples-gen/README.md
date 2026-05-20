@@ -55,6 +55,8 @@ Every story exports a single `STORY` constant typed as `DemoSpec`
 | `template` | Angular template fragment for the **artifact**. Rendered live AND shown in the Template code panel. |
 | `setupChrome` | TypeScript class-body for **demo chrome** — mode toggles, fail flags, log buffers. Live in the class, hidden from the displayed TypeScript panel. |
 | `templateChrome` | Template fragment for **demo chrome** — radio rows, fail checkboxes, state readouts. Live below the artifact, hidden from the displayed Template panel. |
+| `templateChromeBefore` | Chrome that should render **above** the artifact instead of below: usage hints, intro callouts. Same stripping rules as `templateChrome`. |
+| `references` | Optional `readonly { label; href }[]`. Standards / patterns the artifact implements (WAI-ARIA APG, WCAG SC, RFC numbers). Rendered as a small `Implements: …` link list in the intro header. |
 | `css` | Optional. Demo-specific CSS shown in the source view. |
 | `controls` | Optional playground controls. Each becomes a named field on the class; access in templates as `key.value()`. |
 
