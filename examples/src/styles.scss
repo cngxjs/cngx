@@ -136,6 +136,37 @@ body {
   background: var(--cngx-ex-surface-alt);
   border-radius: 3px;
 }
+.cngx-ex-intro em,
+.cngx-ex-intro i {
+  font-style: italic;
+  font-weight: 600;
+  color: var(--cngx-ex-text, var(--cngx-color-text, inherit));
+}
+.cngx-ex-intro strong,
+.cngx-ex-intro b {
+  font-weight: 700;
+  color: var(--cngx-ex-text, var(--cngx-color-text, inherit));
+}
+.cngx-ex-intro kbd {
+  display: inline-block;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.78em;
+  line-height: 1;
+  padding: 2px 6px;
+  margin: 0 1px;
+  border: 1px solid var(--cngx-ex-border);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  background: var(--cngx-ex-surface-alt);
+  color: var(--cngx-ex-text, var(--cngx-color-text, inherit));
+  vertical-align: baseline;
+}
+.cngx-ex-intro mark {
+  background: color-mix(in oklch, transparent, currentColor 14%);
+  color: inherit;
+  padding: 0 3px;
+  border-radius: 2px;
+}
 .cngx-ex-intro .cngx-ex-hint {
   font-style: italic;
   color: var(--cngx-ex-muted);

@@ -109,11 +109,50 @@ function dedent(s) {
     .replace(/\s+$/, '');
 }
 
+// Allowlist of inline-formatting tags that may appear in story `description`
+// / `subtitle` prose and pass through to the rendered _exDescription /
+// _exSubtitle interpolations. Everything else gets its `<` escaped to `&lt;`
+// so accidental references to custom elements (`<cngx-foo>`) or other markup
+// in prose render as text instead of broken HTML.
+//
+// Security is handled at runtime by Angular's DomSanitizer on the
+// `[innerHTML]` binding — scripts, inline event handlers, and unsafe URLs
+// are stripped regardless of what arrives here. This filter exists for
+// content-correctness, not security.
+const ALLOWED_PAIRED_TAGS = [
+  'code',
+  'pre',
+  'em',
+  'strong',
+  'b',
+  'i',
+  'kbd',
+  'mark',
+  'small',
+  'sub',
+  'sup',
+  'var',
+  'samp',
+  'del',
+  'ins',
+  'abbr',
+  'q',
+  'cite',
+  'a',
+];
+const ALLOWED_VOID_TAGS = ['br', 'wbr'];
+
 function escapeCustomElementTags(html) {
   if (!html) return '';
   const parts = [];
   let i = 0;
-  const re = /<(code|pre)\b[^>]*>[\s\S]*?<\/\1>/g;
+  const pairedAlt = ALLOWED_PAIRED_TAGS.join('|');
+  const voidAlt = ALLOWED_VOID_TAGS.join('|');
+  // Each match is either a paired tag with content + closing, or a void tag.
+  const re = new RegExp(
+    `<(${pairedAlt})\\b[^>]*>[\\s\\S]*?<\\/\\1>|<(${voidAlt})\\b[^>]*\\/?>`,
+    'gi',
+  );
   let m;
   while ((m = re.exec(html)) !== null) {
     parts.push({ kind: 'escape', text: html.slice(i, m.index) });
