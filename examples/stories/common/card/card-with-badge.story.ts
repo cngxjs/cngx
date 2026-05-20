@@ -33,11 +33,7 @@ export const STORY: DemoSpec = {
   }`,
   template: `  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:24px;max-width:760px">
     <cngx-card style="overflow:visible">
-      <span cngxCardBadge position="top-end"
-            style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;
-                   border-radius:50%;background:var(--cngx-color-danger);color:var(--cngx-color-surface);font-size:0.7rem;font-weight:700">
-        P
-      </span>
+      <span cngxCardBadge position="top-end" intent="danger" size="md">P</span>
       <header cngxCardHeader>
         <h3 cngxCardTitle>Static Badge</h3>
       </header>
@@ -48,12 +44,9 @@ export const STORY: DemoSpec = {
 
     <cngx-card as="button" (clicked)="cardClicked.update(n => n + 1)"
                ariaLabel="Open care plan" style="overflow:visible">
-      <button cngxCardBadge position="top-end"
+      <button cngxCardBadge position="top-end" intent="danger" size="md"
               (click)="handleBadgeClick($event)"
-              aria-label="Open permissions dialog"
-              style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;
-                     border-radius:50%;background:var(--cngx-color-danger);color:var(--cngx-color-surface);font-size:0.7rem;font-weight:700;
-                     border:2px solid var(--cngx-color-surface);cursor:pointer;padding:0">
+              aria-label="Open permissions dialog">
         P
       </button>
       <header cngxCardHeader>
@@ -65,10 +58,8 @@ export const STORY: DemoSpec = {
     </cngx-card>
 
     <cngx-card style="overflow:visible">
-      <span cngxCardBadge position="top-start"
-            style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--cngx-color-success)"
-            role="status" aria-label="Online">
-      </span>
+      <span cngxCardBadge position="top-start" intent="success" size="sm"
+            role="status" aria-label="Online"></span>
       <header cngxCardHeader>
         <h3 cngxCardTitle>Status Dot</h3>
       </header>
