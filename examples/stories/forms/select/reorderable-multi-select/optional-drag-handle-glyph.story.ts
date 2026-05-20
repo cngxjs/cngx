@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'Optional drag-handle glyph',
   subtitle: 'By default no grip glyph renders — the whole chip is the drag surface and the ✕ button\'s hover state visually divides "drag here" from "remove here". Project a <code>TemplateRef&lt;void&gt;</code> through the <code>[chipDragHandle]</code> input to add a custom glyph back when your design language calls for one. The slot stays <code>aria-hidden="true"</code> — the semantic reorder is owned by the chip wrapper\'s keyboard handler plus <code>CngxReorder</code>.',
-  description: 'CngxReorderableMultiSelect — multi-value picker whose selected chips can be reordered via pointer drag and Ctrl+Arrow keyboard moves. Thin organism on top of createSelectCore + CngxReorder.',
+  description: 'CngxReorderableMultiSelect — multi-value picker whose selected chips can be reordered via pointer drag and Alt+Arrow keyboard moves. Thin organism on top of createSelectCore + CngxReorder.',
   level: 'organism',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
