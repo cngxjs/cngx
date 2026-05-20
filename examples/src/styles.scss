@@ -328,7 +328,6 @@ html.dark .cngx-ex-tag[data-dim='stability'][data-value='deprecated'] {
   }
 }
 
-
 // Source-code disclosure blocks — collapsed by default so the demo body
 // remains the focus; expand to inspect the underlying template / setup.
 .cngx-ex-code {
@@ -511,6 +510,178 @@ button.chip[aria-pressed='true'] {
 }
 .cngx-ex-form-error:empty {
   visibility: hidden;
+}
+
+// Demo-only motion chrome for reduced-motion stories. Keyframes are
+// global so both demos can share them; the .cngx-reduced-motion descendant
+// override is the canonical CSS-hook pattern the directive supports.
+@keyframes cngx-ex-demo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes cngx-ex-demo-progress {
+  0%,
+  100% {
+    transform: translateX(-100%);
+  }
+  50% {
+    transform: translateX(200%);
+  }
+}
+@keyframes cngx-ex-demo-slide-in {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+.cngx-ex-demo-spinner {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: 6px solid var(--cngx-ex-surface-alt);
+  border-top-color: var(--cngx-color-accent, var(--cngx-color-primary, #f5a623));
+  flex-shrink: 0;
+  box-sizing: border-box;
+  animation: cngx-ex-demo-spin 2s linear infinite;
+}
+.cngx-ex-demo-progress {
+  width: 120px;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--cngx-ex-surface-alt);
+  overflow: hidden;
+}
+.cngx-ex-demo-progress-bar {
+  width: 40%;
+  height: 100%;
+  border-radius: 4px;
+  background: var(--cngx-color-accent, var(--cngx-color-primary, #f5a623));
+  animation: cngx-ex-demo-progress 1.5s ease-in-out infinite;
+}
+.cngx-reduced-motion .cngx-ex-demo-spinner,
+.cngx-reduced-motion .cngx-ex-demo-progress-bar {
+  animation: none;
+}
+.cngx-ex-toast {
+  padding: 10px 14px;
+  border-radius: 6px;
+  background: var(--cngx-ex-surface-alt);
+  border: 1px solid var(--cngx-ex-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.8125rem;
+}
+.cngx-ex-toast--animate {
+  animation: cngx-ex-demo-slide-in 0.3s ease-out;
+}
+.cngx-ex-toast-list {
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 60px;
+}
+.cngx-ex-toast-list__empty {
+  padding: 16px;
+  text-align: center;
+  font-size: 0.8125rem;
+  color: var(--cngx-ex-muted);
+}
+
+// Demo-only help disclosure. Native <details> with a question-mark
+// summary that the reader clicks to reveal extra guidance. Keeps the
+// intro / artifact area uncluttered while preserving the option to
+// surface long-form OS-specific or platform-specific instructions.
+.cngx-ex-help-disclosure {
+  margin: 8px 0 0;
+}
+.cngx-ex-help-disclosure > summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font-size: 0.8125rem;
+  color: var(--cngx-ex-muted);
+  user-select: none;
+  list-style: none;
+}
+.cngx-ex-help-disclosure > summary::-webkit-details-marker {
+  display: none;
+}
+.cngx-ex-help-disclosure > summary::before {
+  content: '?';
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1px solid currentColor;
+  font-size: 0.72rem;
+  font-weight: 700;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  line-height: 1;
+}
+.cngx-ex-help-disclosure[open] > summary {
+  color: var(--cngx-ex-text);
+}
+.cngx-ex-help-disclosure-panel {
+  margin: 8px 0 0;
+  padding: 10px 12px;
+  border-radius: 6px;
+  background: var(--cngx-ex-surface-alt);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+.cngx-ex-help-disclosure-panel ul {
+  margin: 0;
+  padding-inline-start: 1.25rem;
+}
+.cngx-ex-help-disclosure-panel li + li {
+  margin-top: 4px;
+}
+
+// Demo-only menu chrome for the roving-tabindex vertical-menu story.
+// chip styling is button-scoped; non-button items need their own surface.
+.cngx-ex-menu-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  max-width: 220px;
+}
+.cngx-ex-menu-item {
+  padding: 6px 12px;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e5e7eb));
+  border-radius: 6px;
+  background: transparent;
+  color: var(--cngx-color-text, var(--cngx-ex-text, inherit));
+  font-size: 0.8125rem;
+  font-family: inherit;
+  cursor: pointer;
+  user-select: none;
+  transition: background 150ms ease;
+}
+.cngx-ex-menu-item:hover,
+.cngx-ex-menu-item:focus-visible {
+  background: color-mix(in oklch, transparent, currentColor 6%);
+}
+.cngx-ex-menu-item[aria-disabled='true'] {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 button.chip:hover:not(:disabled) {
   background: color-mix(in oklch, transparent, currentColor 6%);
