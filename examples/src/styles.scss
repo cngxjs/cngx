@@ -464,6 +464,17 @@ button.chip {
   border-radius: 0;
   box-shadow: 0 0 24px rgba(0, 0, 0, 0.15);
 }
+
+// Demo-only focus-ring chrome for the focus-visible stories. Hooks into
+// the .cngx-focus-visible class the directive auto-toggles on keyboard
+// focus, so the story only has to wire the directive itself.
+.cngx-ex-keyboard-ring {
+  outline: none;
+  transition: box-shadow 150ms ease;
+}
+.cngx-ex-keyboard-ring.cngx-focus-visible {
+  box-shadow: 0 0 0 2px var(--cngx-color-accent, var(--cngx-color-primary, #f5a623));
+}
 button.chip:hover:not(:disabled) {
   background: color-mix(in oklch, transparent, currentColor 6%);
 }
