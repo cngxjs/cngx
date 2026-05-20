@@ -241,7 +241,7 @@ describe('CngxReorderableMultiSelect — keyboard reorder', () => {
     flush(fixture);
     const root = fixture.nativeElement as HTMLElement;
 
-    fireKey(chipAt(root, 1), 'ArrowRight', { ctrl: true });
+    fireKey(chipAt(root, 1), 'ArrowRight', { alt: true });
     flush(fixture);
 
     expect(fixture.componentInstance.values()).toEqual(['a', 'c', 'b', 'd']);
@@ -255,7 +255,7 @@ describe('CngxReorderableMultiSelect — keyboard reorder', () => {
     flush(fixture);
     const root = fixture.nativeElement as HTMLElement;
 
-    fireKey(chipAt(root, 2), 'Home', { ctrl: true });
+    fireKey(chipAt(root, 2), 'Home', { alt: true });
     flush(fixture);
 
     expect(fixture.componentInstance.values()).toEqual(['c', 'a', 'b', 'd']);
@@ -275,7 +275,7 @@ describe('CngxReorderableMultiSelect — commit action', () => {
     flush(fixture);
     const root = fixture.nativeElement as HTMLElement;
 
-    fireKey(chipAt(root, 0), 'ArrowRight', { ctrl: true });
+    fireKey(chipAt(root, 0), 'ArrowRight', { alt: true });
     flush(fixture);
 
     // Optimistic: values already reflect the move.
@@ -304,7 +304,7 @@ describe('CngxReorderableMultiSelect — commit action', () => {
     flush(fixture);
     const root = fixture.nativeElement as HTMLElement;
 
-    fireKey(chipAt(root, 0), 'ArrowRight', { ctrl: true });
+    fireKey(chipAt(root, 0), 'ArrowRight', { alt: true });
     flush(fixture);
 
     // Pessimistic: values are NOT yet updated.
@@ -328,7 +328,7 @@ describe('CngxReorderableMultiSelect — a11y + surface', () => {
     const root = fixture.nativeElement as HTMLElement;
     const strip = chipStrip(root);
     expect(strip.getAttribute('role')).toBe('group');
-    expect(strip.getAttribute('aria-label')).toMatch(/Reihenfolge/i);
+    expect(strip.getAttribute('aria-label')).toMatch(/Reorder with Alt/i);
   });
 
   it('inline roving: only the active chip has tabindex="0"', () => {
@@ -367,7 +367,7 @@ describe('CngxReorderableMultiSelect — a11y + surface', () => {
     pointerDown(handleOf(chipAt(root, 0)));
     pointerMoveOver(chipAt(root, 2));
     pointerUp();
-    fireKey(chipAt(root, 0), 'ArrowRight', { ctrl: true });
+    fireKey(chipAt(root, 0), 'ArrowRight', { alt: true });
     flush(fixture);
 
     expect(fixture.componentInstance.values()).toEqual(['a', 'b', 'c', 'd']);
@@ -378,7 +378,7 @@ describe('CngxReorderableMultiSelect — a11y + surface', () => {
     const fixture = TestBed.createComponent(Host);
     flush(fixture);
     const root = fixture.nativeElement as HTMLElement;
-    fireKey(chipAt(root, 3), 'ArrowRight', { ctrl: true });
+    fireKey(chipAt(root, 3), 'ArrowRight', { alt: true });
     flush(fixture);
     expect(fixture.componentInstance.values()).toEqual(['a', 'b', 'c', 'd']);
     expect(fixture.componentInstance.lastReorder()).toBeNull();
@@ -391,7 +391,7 @@ describe('CngxReorderableMultiSelect — a11y + surface', () => {
     flush(fixture);
     const root = fixture.nativeElement as HTMLElement;
 
-    fireKey(chipAt(root, 0), 'ArrowRight', { ctrl: true });
+    fireKey(chipAt(root, 0), 'ArrowRight', { alt: true });
     flush(fixture);
 
     expect(spy).toHaveBeenCalled();
@@ -440,9 +440,9 @@ describe('CngxReorderableMultiSelect — selection preservation', () => {
     const root = fixture.nativeElement as HTMLElement;
 
     // Multiple keyboard moves — membership stays {a,b,c,d}.
-    fireKey(chipAt(root, 0), 'End', { ctrl: true });
+    fireKey(chipAt(root, 0), 'End', { alt: true });
     flush(fixture);
-    fireKey(chipAt(root, 0), 'End', { ctrl: true });
+    fireKey(chipAt(root, 0), 'End', { alt: true });
     flush(fixture);
 
     expect([...fixture.componentInstance.values()].sort()).toEqual(['a', 'b', 'c', 'd']);

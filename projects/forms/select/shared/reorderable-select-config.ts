@@ -35,8 +35,8 @@ export interface CngxReorderableSelectConfig {
 export const CNGX_REORDERABLE_SELECT_DEFAULTS: Required<
   Omit<CngxReorderableSelectConfig, 'dragHandle'>
 > & { readonly dragHandle: TemplateRef<void> | null } = {
-  keyboardModifier: 'ctrl',
-  ariaLabel: 'Reihenfolge ändern mit Strg+Pfeiltasten',
+  keyboardModifier: 'alt',
+  ariaLabel: 'Reorder with Alt + arrow keys',
   dragHandle: null,
   freezeStripOnCommit: true,
 };
