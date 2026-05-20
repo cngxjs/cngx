@@ -208,6 +208,32 @@ body {
   text-decoration: line-through;
 }
 
+.cngx-ex-refs {
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  font-size: 0.75rem;
+}
+.cngx-ex-refs::before {
+  content: 'Implements:';
+  color: var(--cngx-ex-muted);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.cngx-ex-ref a {
+  color: var(--cngx-ex-link, var(--cngx-color-link, #2563eb));
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.cngx-ex-ref a:hover {
+  text-decoration: none;
+}
+
 html[data-color-scheme='dark'] .cngx-ex-tag[data-dim='atomic-level'],
 html.dark .cngx-ex-tag[data-dim='atomic-level'] {
   border-left-color: #79c0ff;

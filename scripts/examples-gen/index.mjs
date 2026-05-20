@@ -302,7 +302,12 @@ function buildImports(story, importMap, featureDepth) {
   // because both halves end up in the class body. The displayed _exTs
   // panel (see emitComponentSource) re-filters against `setup` alone.
   const setup = stripCommentsForScan((story.setup ?? '') + '\n' + (story.setupChrome ?? ''));
-  const tpl = (story.template ?? '') + '\n' + (story.templateChrome ?? '');
+  const tpl =
+    (story.template ?? '') +
+    '\n' +
+    (story.templateChrome ?? '') +
+    '\n' +
+    (story.templateChromeBefore ?? '');
 
   const usesSignal = /\bsignal\s*[<(]/.test(setup);
   const usesComputed = /\bcomputed\s*[<(]/.test(setup);
@@ -429,7 +434,12 @@ function indent(s, n) {
 function emitComponentSource(meta, story, importMap) {
   const { lines } = buildImports(story, importMap, meta.featureDepth);
 
-  const tpl = (story.template ?? '') + '\n' + (story.templateChrome ?? '');
+  const tpl =
+    (story.template ?? '') +
+    '\n' +
+    (story.templateChrome ?? '') +
+    '\n' +
+    (story.templateChromeBefore ?? '');
   const tplImports = (story.imports ?? []).filter((cls) => {
     if (!cls.startsWith('Cngx')) return true;
     if (new RegExp(String.raw`\b${cls}\b`).test(tpl)) return true;
@@ -480,11 +490,15 @@ function emitComponentSource(meta, story, importMap) {
   const tagFieldEntries = tagPairs
     .map(([dim, value]) => `{ dim: ${tsQuote(dim)}, value: ${tsQuote(value)} }`)
     .join(', ');
+  const refEntries = ((story.references ?? []) || [])
+    .map(({ label, href }) => `{ label: ${tsQuote(label)}, href: ${tsQuote(href)} }`)
+    .join(', ');
   const introFields = [
     `  protected readonly _exTitle: string = ${tsQuote(story.title ?? '')};`,
     `  protected readonly _exDescription: string = ${tsQuote(escapeCustomElementTags(story.description ?? ''))};`,
     `  protected readonly _exSubtitle: string = ${tsQuote(escapeCustomElementTags(story.subtitle ?? ''))};`,
     `  protected readonly _exTags: readonly { dim: string; value: string }[] = [${tagFieldEntries}];`,
+    `  protected readonly _exRefs: readonly { label: string; href: string }[] = [${refEntries}];`,
   ].join('\n');
 
   // Displayed _exTs: filter imports a SECOND time against `setup` only.
@@ -541,6 +555,13 @@ function emitComponentSource(meta, story, importMap) {
     `      }`,
     `      @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }`,
     `      @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }`,
+    `      @if (_exRefs.length > 0) {`,
+    `        <ul class="cngx-ex-refs" aria-label="Implements">`,
+    `          @for (r of _exRefs; track r.href) {`,
+    `            <li class="cngx-ex-ref"><a [href]="r.href" target="_blank" rel="noopener">{{ r.label }}</a></li>`,
+    `          }`,
+    `        </ul>`,
+    `      }`,
     `    </header>`,
   ].join('\n');
 
@@ -561,11 +582,15 @@ function emitComponentSource(meta, story, importMap) {
   const escape = (s) => s.replaceAll('`', '\\`').replaceAll('${', '\\${');
   const artifact = escape((story.template ?? '').trim());
   const chrome = escape((story.templateChrome ?? '').trim());
+  const chromeBefore = escape((story.templateChromeBefore ?? '').trim());
   const artifactBlock = `<section class="cngx-ex-artifact">\n${indent(artifact, 2)}\n</section>`;
   const chromeBlock = chrome
     ? `<section class="cngx-ex-chrome">\n${indent(chrome, 2)}\n</section>`
     : '';
-  const mainBody = [artifactBlock, chromeBlock, sourceBlocks.replace(/^    /gm, '')]
+  const chromeBeforeBlock = chromeBefore
+    ? `<section class="cngx-ex-chrome cngx-ex-chrome--before">\n${indent(chromeBefore, 2)}\n</section>`
+    : '';
+  const mainBody = [chromeBeforeBlock, artifactBlock, chromeBlock, sourceBlocks.replace(/^    /gm, '')]
     .filter(Boolean)
     .join('\n');
 
