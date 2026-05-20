@@ -146,8 +146,8 @@ export class CngxReorder<T = unknown> {
    */
   readonly ignoreSelector = input<string | null>(null);
 
-  /** Modifier key required for keyboard-driven reorder. Defaults to `'ctrl'`. */
-  readonly keyboardModifier = input<CngxReorderModifier>('ctrl');
+  /** Modifier key required for keyboard-driven reorder. Defaults to `'alt'`. */
+  readonly keyboardModifier = input<CngxReorderModifier>('alt');
 
   /** Disables both pointer and keyboard flows. */
   readonly disabled = input<boolean>(false);
