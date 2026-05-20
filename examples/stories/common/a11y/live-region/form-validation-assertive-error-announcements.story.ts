@@ -1,60 +1,59 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Form Validation — Assertive Error Announcements',
-  subtitle: '<code>[cngxLiveRegion]</code> with <code>assertive</code> politeness on a validation error message. Screen readers interrupt to announce the error immediately when the message content changes.',
-  description: 'Configures the host element as an ARIA live region for screen reader announcements.',
+  title: 'CngxLiveRegion: Form validation assertive error announcements',
+  subtitle:
+    '<code>[cngxLiveRegion]</code> with <code>politeness="assertive"</code> on a validation error message. The directive paints <code>aria-live="assertive"</code> and <code>role="alert"</code> on the host so screen readers interrupt to announce the error the moment the message changes.',
+  description:
+    'Realistic form-validation pattern: a single input with a computed error signal that drives an assertive live region next to it. <code>aria-describedby</code> points the input at the error region by id, so the same message is announced via the live region and exposed to AT as the field\'s description. Type an invalid email to see the message paint and hear it announced.',
   level: 'atom',
   audience: ['a11y', 'dev'],
   artifact: 'building-block',
-  focus: ['a11y-pattern'],
-  apiComponents: [
-    'CngxLiveRegion',
-  ],
+  focus: ['a11y-pattern', 'integration'],
+  apiComponents: ['CngxLiveRegion'],
   imports: ['CngxLiveRegion'],
-  setup: `protected message = signal('');
-  protected politeness = signal<'polite' | 'assertive' | 'off'>('polite');
-  protected counter = signal(0);
-  protected flashActive = signal(false);
-  protected email = signal('');
-  protected emailError = computed(() => {
+  references: [
+    {
+      label: 'WAI-ARIA APG: Alert pattern',
+      href: 'https://www.w3.org/WAI/ARIA/apg/patterns/alert/',
+    },
+    {
+      label: 'WCAG 2.1 SC 4.1.3 Status Messages',
+      href: 'https://www.w3.org/WAI/WCAG21/Understanding/status-messages.html',
+    },
+    {
+      label: 'WAI-ARIA 1.2: aria-live',
+      href: 'https://www.w3.org/TR/wai-aria-1.2/#aria-live',
+    },
+  ],
+  setup: `protected readonly email = signal('');
+  protected readonly emailError = computed(() => {
     const v = this.email();
-    if (!v) return '';
-    if (!v.includes('@')) return 'Missing @ symbol';
-    if (!v.includes('.')) return 'Missing domain (e.g. .com)';
+    if (!v) {
+      return '';
+    }
+    if (!v.includes('@')) {
+      return 'Missing @ symbol';
+    }
+    if (!v.includes('.')) {
+      return 'Missing domain (e.g. .com)';
+    }
     return '';
-  });
-  protected announce(): void {
-    this.counter.update(n => n + 1);
-    this.message.set('Action completed — count: ' + this.counter());
-    this.flashActive.set(true);
-    setTimeout(() => this.flashActive.set(false), 600);
-  }`,
-  template: `
-  <div style="display: flex; flex-direction: column; gap: 6px; max-width: 360px;">
-    <label style="font-size: 0.875rem; font-weight: 500;">Email address</label>
-    <input
-      type="text"
-      placeholder="user@example.com"
-      [value]="email()"
-      (input)="email.set($any($event.target).value)"
-      [style.borderColor]="emailError() ? '#e53e3e' : 'var(--cngx-color-border, #ddd)'"
-      style="padding: 8px 12px; border-radius: 6px; border: 1px solid var(--cngx-color-border, #ddd); font-size: 0.875rem;"
-      aria-describedby="email-error"
-    />
-    <div
-      id="email-error"
-      cngxLiveRegion
-      [politeness]="'assertive'"
-      style="min-height: 1.25rem; font-size: 0.8125rem;"
-      [style.color]="emailError() ? '#e53e3e' : 'transparent'"
-    >
+  });`,
+  template: `  <div style="display:flex;flex-direction:column;gap:6px;max-width:360px">
+    <label for="cngx-live-region-email" style="font-size:0.875rem">Email address</label>
+    <input id="cngx-live-region-email"
+           type="email"
+           placeholder="user@example.com"
+           [value]="email()"
+           (input)="email.set($any($event.target).value)"
+           [attr.aria-invalid]="!!emailError() || null"
+           aria-describedby="cngx-live-region-email-error" />
+    <div id="cngx-live-region-email-error"
+         cngxLiveRegion
+         politeness="assertive"
+         class="cngx-ex-form-error">
       {{ emailError() }}
     </div>
-  </div>
-
-  <p style="margin-top: 12px; font-size: 0.75rem; color: var(--cngx-text-secondary, #999);">
-    Type an invalid email to see the error. A screen reader would announce the error
-    message immediately due to <code>aria-live="assertive"</code> and <code>role="alert"</code>.
-  </p>`,
+  </div>`,
 };

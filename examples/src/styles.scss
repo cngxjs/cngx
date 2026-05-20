@@ -475,6 +475,43 @@ button.chip {
 .cngx-ex-keyboard-ring.cngx-focus-visible {
   box-shadow: 0 0 0 2px var(--cngx-color-accent, var(--cngx-color-primary, #f5a623));
 }
+
+// Demo-only surface for live-region stories. The flash variant exists so
+// sighted readers can confirm the announcement fired alongside the
+// screen-reader event.
+.cngx-ex-live-region {
+  margin-top: 12px;
+  padding: 10px 14px;
+  border: 1px solid var(--cngx-ex-border);
+  border-radius: 6px;
+  min-height: 40px;
+  transition:
+    background 300ms ease,
+    border-color 300ms ease;
+}
+.cngx-ex-live-region--flash {
+  background: var(--cngx-color-accent, var(--cngx-color-primary, #f5a623));
+  border-color: var(--cngx-color-accent, var(--cngx-color-primary, #f5a623));
+  color: var(--cngx-color-on-accent, #000);
+}
+
+// Pressed state hook for the demo chip toggle buttons. The button itself
+// owns aria-pressed; this rule just paints the active background.
+button.chip[aria-pressed='true'] {
+  background: var(--cngx-ex-surface-alt);
+  border-color: currentColor;
+}
+
+// Demo-only inline form-error treatment. Hidden while empty so the
+// surrounding flex layout doesn't reserve space for an absent message.
+.cngx-ex-form-error {
+  min-height: 1.25rem;
+  font-size: 0.8125rem;
+  color: var(--cngx-color-danger, #e53e3e);
+}
+.cngx-ex-form-error:empty {
+  visibility: hidden;
+}
 button.chip:hover:not(:disabled) {
   background: color-mix(in oklch, transparent, currentColor 6%);
 }
