@@ -43,8 +43,8 @@ Most inputs mirror [`CngxMultiSelect`](../multi-select/README.md#inputs-cheat-sh
 
 | Input                       | Type                        | Purpose                                                         |
 | --------------------------- | --------------------------- | --------------------------------------------------------------- |
-| `[reorderKeyboardModifier]` | `'ctrl' \| 'alt' \| 'meta'` | Modifier required for keyboard reorder (default `'ctrl'`)       |
-| `[reorderAriaLabel]`        | `string`                    | ARIA label on the chip-strip group (default DE / EN per config) |
+| `[reorderKeyboardModifier]` | `'ctrl' \| 'alt' \| 'meta'` | Modifier required for keyboard reorder (default `'alt'` — cross-platform; `'ctrl'` is OS-bound to Spaces on macOS) |
+| `[reorderAriaLabel]`        | `string`                    | ARIA label on the chip-strip group (default `'Reorder with Alt + arrow keys'`; override via `withReorderAriaLabel(...)`) |
 | `[chipDragHandle]`          | `TemplateRef<void> \| null` | Override the default ⋮⋮ grip glyph                              |
 
 `[(values)]` IS the order signal — array index = chip position.

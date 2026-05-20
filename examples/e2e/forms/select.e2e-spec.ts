@@ -43,7 +43,7 @@ const routes: ReadonlyArray<readonly [string, string]> = [
   ['refreshing-variants', 'forms/select/refreshing-variants'],
   ['reorderable-multi-select_basic-drag-chips-via-mouse-touch', 'forms/select/reorderable-multi-select/basic-drag-chips-via-mouse-touch'],
   ['reorderable-multi-select_commit-action-optimistic-pessimistic-with-supersede', 'forms/select/reorderable-multi-select/commit-action-optimistic-pessimistic-with-supersede'],
-  ['reorderable-multi-select_keyboard-reorder-ctrl-arrow-home-end', 'forms/select/reorderable-multi-select/keyboard-reorder-ctrl-arrow-home-end'],
+  ['reorderable-multi-select_keyboard-reorder-alt-arrow-home-end', 'forms/select/reorderable-multi-select/keyboard-reorder-alt-arrow-home-end'],
   ['reorderable-multi-select_optional-drag-handle-glyph', 'forms/select/reorderable-multi-select/optional-drag-handle-glyph'],
   ['reorderable-multi-select_pre-seeded-values-reorder-log', 'forms/select/reorderable-multi-select/pre-seeded-values-reorder-log'],
   ['rich-option-rendering', 'forms/select/rich-option-rendering'],

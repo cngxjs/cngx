@@ -153,7 +153,7 @@ describe('CngxReorder', () => {
   function fireKey(
     target: HTMLElement,
     key: string,
-    modifiers: { ctrl?: boolean; alt?: boolean; meta?: boolean } = { ctrl: true },
+    modifiers: { ctrl?: boolean; alt?: boolean; meta?: boolean } = { alt: true },
   ): KeyboardEvent {
     const event = new KeyboardEvent('keydown', {
       key,
@@ -206,14 +206,14 @@ describe('CngxReorder', () => {
 
   it('Ctrl+ArrowRight / ArrowLeft / Home / End drive keyboard moves', () => {
     const { host, listEl } = setup();
-    fireKey(itemAt(listEl, 0), 'ArrowRight', { ctrl: true });
+    fireKey(itemAt(listEl, 0), 'ArrowRight', { alt: true });
     expect(host.reorders.at(-1)?.toIndex).toBe(1);
     // After the host updates the signal, 'b' ist the new index-0 chip.
-    fireKey(itemAt(listEl, 2), 'ArrowLeft', { ctrl: true });
+    fireKey(itemAt(listEl, 2), 'ArrowLeft', { alt: true });
     expect(host.reorders.at(-1)?.toIndex).toBe(1);
-    fireKey(itemAt(listEl, 2), 'End', { ctrl: true });
+    fireKey(itemAt(listEl, 2), 'End', { alt: true });
     expect(host.reorders.at(-1)?.toIndex).toBe(3);
-    fireKey(itemAt(listEl, 3), 'Home', { ctrl: true });
+    fireKey(itemAt(listEl, 3), 'Home', { alt: true });
     expect(host.reorders.at(-1)?.toIndex).toBe(0);
     // Four successful moves total.
     expect(host.reorders).toHaveLength(4);
@@ -232,7 +232,7 @@ describe('CngxReorder', () => {
     pointerDown(handleOf(itemAt(listEl, 0)));
     pointerMoveOver(itemAt(listEl, 2));
     pointerUp();
-    fireKey(itemAt(listEl, 0), 'ArrowRight', { ctrl: true });
+    fireKey(itemAt(listEl, 0), 'ArrowRight', { alt: true });
     expect(host.reorders).toHaveLength(0);
     expect(host.dragStarts).toEqual([]);
   });
@@ -261,7 +261,7 @@ describe('CngxReorder', () => {
 
   it('clamps the emitted toIndex to array bounds on End from the last item', () => {
     const { host, listEl } = setup();
-    fireKey(itemAt(listEl, 3), 'End', { ctrl: true });
+    fireKey(itemAt(listEl, 3), 'End', { alt: true });
     expect(host.reorders).toHaveLength(0);
   });
 });

@@ -136,7 +136,7 @@ export interface CngxReorderableMultiSelectChange<T = unknown> {
  * drive the commit controller directly.
  * <example-url>http://localhost:4200/#/forms/select/reorderable-multi-select/basic-drag-chips-via-mouse-touch</example-url>
  * <example-url>http://localhost:4200/#/forms/select/reorderable-multi-select/commit-action-optimistic-pessimistic-with-supersede</example-url>
- * <example-url>http://localhost:4200/#/forms/select/reorderable-multi-select/keyboard-reorder-ctrl-arrow-home-end</example-url>
+ * <example-url>http://localhost:4200/#/forms/select/reorderable-multi-select/keyboard-reorder-alt-arrow-home-end</example-url>
  * <example-url>http://localhost:4200/#/forms/select/reorderable-multi-select/optional-drag-handle-glyph</example-url>
  * <example-url>http://localhost:4200/#/forms/select/reorderable-multi-select/pre-seeded-values-reorder-log</example-url>
  */
@@ -445,7 +445,7 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
    * keep roving-focus semantics; only modifier+arrow emits a reorder.
    * Forwarded to the inner {@link CngxReorder}. Default cascades
    * through `provideReorderableSelectConfig(withReorderKeyboardModifier(...))`
-   * → `'ctrl'`.
+   * → `'alt'` (cross-platform; `'ctrl'` is OS-bound to Spaces on macOS).
    */
   readonly reorderKeyboardModifier = input<CngxReorderModifier>(
     this.reorderableConfig.keyboardModifier,
