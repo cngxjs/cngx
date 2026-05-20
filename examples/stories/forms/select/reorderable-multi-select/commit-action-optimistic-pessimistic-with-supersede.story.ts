@@ -32,6 +32,7 @@ export const STORY: DemoSpec = {
   protected readonly commitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
   protected readonly commitShouldFail = signal(false);
   protected readonly commitLog = signal<string[]>([]);
+  protected readonly commitErrors = signal<string[]>([]);
   protected readonly commitAction = (intended: string[] | undefined) => {
     const ts = new Date().toLocaleTimeString();
     const line = ts + ' → [' + (intended ?? []).join(', ') + ']';
@@ -40,7 +41,12 @@ export const STORY: DemoSpec = {
       return throwError(() => new Error('Save failed (demo)')).pipe(delay(700));
     }
     return of(intended).pipe(delay(700));
-  };`,
+  };
+  protected handleCommitError(err: unknown): void {
+    const ts = new Date().toLocaleTimeString();
+    const msg = err instanceof Error ? err.message : String(err);
+    this.commitErrors.update((l) => [...l.slice(-4), ts + ' → ' + msg]);
+  }`,
   template: `  <cngx-reorderable-multi-select
     [label]="'Playlist'"
     [options]="songs"
@@ -48,6 +54,7 @@ export const STORY: DemoSpec = {
     [commitAction]="commitAction"
     [commitMode]="commitMode()"
     [(values)]="commitValues"
+    (commitError)="handleCommitError($event)"
   />`,
   templateChrome: `<div class="button-row" style="margin-bottom:12px">
     <label>
@@ -87,6 +94,12 @@ export const STORY: DemoSpec = {
     @for (line of commitLog(); track line) {
       <div class="event-row">
         <span class="event-label">commit</span>
+        <span class="event-value">{{ line }}</span>
+      </div>
+    }
+    @for (line of commitErrors(); track line) {
+      <div class="event-row">
+        <span class="event-label">error</span>
         <span class="event-value">{{ line }}</span>
       </div>
     }
