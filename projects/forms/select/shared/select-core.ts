@@ -549,9 +549,22 @@ export function createSelectCore<T, TCommit>(
     return controllerInstance?.isIndeterminate(value)() ?? false;
   }
 
+  // Built early so ariaInvalid + ariaBusy below can read commit state.
+  const commitController: CngxCommitController<TCommit> =
+    inject(CNGX_SELECT_COMMIT_CONTROLLER_FACTORY)<TCommit>();
+  const commitState = commitController.state;
+  const isCommitting = commitController.isCommitting;
+  // Pillar 2: `aria-invalid` projects both form-field validation and a
+  // failed commit. The trigger surface CSS keys off this single attribute
+  // so the closed-panel error case stays visible to sighted users without
+  // duplicating the predicate in every variant.
+  const showCommitError = computed<boolean>(
+    () => commitState.status() === 'error' && deps.commitErrorDisplay() !== 'none',
+  );
+
   const describedBy = computed(() => presenter?.describedBy() ?? null);
   const ariaInvalid = computed<boolean | null>(() =>
-    deps.errorState() ? true : null,
+    deps.errorState() || showCommitError() ? true : null,
   );
   const ariaReadonly = computed<boolean | null>(() =>
     presenter?.readonly() ? true : null,
@@ -559,10 +572,6 @@ export function createSelectCore<T, TCommit>(
   const ariaErrorMessage = computed<string | null>(() =>
     deps.errorState() ? (presenter?.errorId() ?? null) : null,
   );
-
-  // Built early so ariaBusy below can read commitState.
-  const commitController: CngxCommitController<TCommit> =
-    inject(CNGX_SELECT_COMMIT_CONTROLLER_FACTORY)<TCommit>();
 
   const ariaBusy = computed<boolean | null>(() => {
     if (presenter?.pending()) {
@@ -609,14 +618,8 @@ export function createSelectCore<T, TCommit>(
   );
 
   const togglingOption = signal<CngxSelectOptionDef<T> | null>(null);
-  const commitState = commitController.state;
-  const isCommitting = commitController.isCommitting;
 
   const externalActivation = computed<boolean>(() => deps.commitAction() !== null);
-
-  const showCommitError = computed<boolean>(
-    () => commitState.status() === 'error' && deps.commitErrorDisplay() !== 'none',
-  );
 
   const commitErrorValue = computed<unknown>(() => commitState.error());
 

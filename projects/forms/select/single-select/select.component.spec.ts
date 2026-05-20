@@ -865,6 +865,33 @@ describe('CngxSelect — commit action producer', () => {
     expect(host.statuses[host.statuses.length - 1]).toBe('error');
   });
 
+  it('commit failure projects aria-invalid="true" on the trigger; success clears it', () => {
+    const { fixture, host, triggerBtn, secondOption } = setup();
+
+    expect(triggerBtn.getAttribute('aria-invalid')).toBeNull();
+
+    triggerBtn.click();
+    flush(fixture);
+    secondOption().click();
+    flush(fixture);
+
+    host.pending!.error(new Error('server down'));
+    flush(fixture);
+
+    expect(triggerBtn.getAttribute('aria-invalid')).toBe('true');
+
+    triggerBtn.click();
+    flush(fixture);
+    secondOption().click();
+    flush(fixture);
+
+    host.pending!.next('green');
+    host.pending!.complete();
+    flush(fixture);
+
+    expect(triggerBtn.getAttribute('aria-invalid')).toBeNull();
+  });
+
   it('pessimistic success: panel stays open during pending, value written on success', () => {
     const { fixture, host, select, triggerBtn, secondOption } = setup();
     host.mode.set('pessimistic');
