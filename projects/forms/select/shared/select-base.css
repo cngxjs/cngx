@@ -607,6 +607,49 @@
   }
 
   /**
+   * Border color painted on the trigger wrapper when `aria-invalid="true"`.
+   * Defaults track `--cngx-color-danger` via the delegating :root entry below.
+   * @group State / Trigger invalid
+   */
+  @property --cngx-select-trigger-invalid-border-color {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: oklch(0.6 0.18 25);
+  }
+
+  /**
+   * Border width painted on the trigger wrapper when `aria-invalid="true"`.
+   * @group State / Trigger invalid
+   */
+  @property --cngx-select-trigger-invalid-border-width {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 1px;
+  }
+
+  /**
+   * Outline color layered on the invalid trigger when focus is inside it.
+   * Defaults track `--cngx-color-danger` via the delegating :root entry below.
+   * @group State / Trigger invalid
+   */
+  @property --cngx-select-trigger-invalid-outline-color {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: oklch(0.6 0.18 25);
+  }
+
+  /**
+   * Soft halo layered behind the invalid trigger at focus time. Authored as a
+   * `box-shadow` so it composes with any consumer-supplied focus outline.
+   * @group State / Trigger invalid
+   */
+  @property --cngx-select-trigger-invalid-glow {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0 0 0 3px oklch(0.6 0.18 25 / 0.2);
+  }
+
+  /**
    * Padding of the commit error banner.
    * @group State / Commit
    */
@@ -648,6 +691,8 @@
     --cngx-select-chip-remove-hover-color: var(--cngx-color-danger);
     --cngx-select-chip-drag-bg: var(--cngx-color-primary);
     --cngx-select-chip-drop-bar-color: var(--cngx-color-primary);
+    --cngx-select-trigger-invalid-border-color: var(--cngx-color-danger);
+    --cngx-select-trigger-invalid-outline-color: var(--cngx-color-danger);
   }
 
   /* Dark-mode component-local swap — alpha-on-black surfaces dissolve

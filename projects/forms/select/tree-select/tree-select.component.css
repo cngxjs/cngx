@@ -209,6 +209,20 @@
       opacity: var(--cngx-tree-select-disabled-opacity, 0.5);
     }
 
+    .cngx-tree-select__trigger[aria-invalid='true'] {
+      border-color: var(--cngx-select-trigger-invalid-border-color, oklch(0.6 0.18 25));
+      border-width: var(--cngx-select-trigger-invalid-border-width, 1px);
+    }
+    .cngx-tree-select__trigger[aria-invalid='true']:focus-within {
+      outline: 2px solid
+        var(--cngx-select-trigger-invalid-outline-color, oklch(0.6 0.18 25));
+      outline-offset: 1px;
+      box-shadow: var(
+        --cngx-select-trigger-invalid-glow,
+        0 0 0 3px oklch(0.6 0.18 25 / 0.2)
+      );
+    }
+
     .cngx-tree-select__placeholder {
       color: var(--cngx-tree-select-placeholder-color, oklch(0 0 0 / 0.5));
     }
