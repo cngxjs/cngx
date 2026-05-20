@@ -346,6 +346,212 @@
     initial-value: -6px;
   }
 
+  /**
+   * Diameter (and minimum width) of the badge pill at the `sm` size.
+   * Also drives the `:empty` status-dot fallback regardless of the
+   * `size` input.
+   * @group Sizing
+   */
+  @property --cngx-card-badge-size-sm {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 10px;
+  }
+
+  /**
+   * Diameter (and minimum width) of the badge pill at the `md` size.
+   * @group Sizing
+   */
+  @property --cngx-card-badge-size-md {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 22px;
+  }
+
+  /**
+   * Diameter (and minimum width) of the badge pill at the `lg` size.
+   * @group Sizing
+   */
+  @property --cngx-card-badge-size-lg {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 28px;
+  }
+
+  /**
+   * Inline padding around content-bearing badges. Zeroed by the
+   * `:empty` dot fallback.
+   * @group Sizing
+   */
+  @property --cngx-card-badge-padding-inline {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 5px;
+  }
+
+  /**
+   * Font-size at the `sm` size.
+   * @group Sizing
+   */
+  @property --cngx-card-badge-font-size-sm {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.625rem;
+  }
+
+  /**
+   * Font-size at the `md` size.
+   * @group Sizing
+   */
+  @property --cngx-card-badge-font-size-md {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.7rem;
+  }
+
+  /**
+   * Font-size at the `lg` size.
+   * @group Sizing
+   */
+  @property --cngx-card-badge-font-size-lg {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.8125rem;
+  }
+
+  /**
+   * Corner radius. Defaults to the pill radius via `--cngx-radius-pill`
+   * so the surface reads as a round indicator across all three sizes.
+   * @group Sizing
+   */
+  @property --cngx-card-badge-radius {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 999px;
+  }
+
+  /**
+   * Ring around the badge — contrasts the pill against the card
+   * surface so the corner anchor reads as a separate element. The
+   * `:root` dark-mode override swaps the colour; `inherits: true` so
+   * the swap reaches the host element through the cascade.
+   * @group Surface
+   */
+  @property --cngx-card-badge-border {
+    syntax: '*';
+    inherits: true;
+    initial-value: 2px solid oklch(1 0 0);
+  }
+
+  /**
+   * Background of the `primary` intent. Falls back through
+   * `--cngx-badge-primary-bg` then `--cngx-color-primary`.
+   * @group Variant / Primary
+   * @see [[--cngx-color-primary]]
+   */
+  @property --cngx-card-badge-primary-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.66 0.19 50);
+  }
+
+  /**
+   * Text colour of the `primary` intent.
+   * @group Variant / Primary
+   */
+  @property --cngx-card-badge-primary-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(1 0 0);
+  }
+
+  /**
+   * Background of the `danger` intent. Falls back through
+   * `--cngx-badge-error-bg` then `--cngx-color-danger`.
+   * @group Variant / Danger
+   * @see [[--cngx-color-danger]]
+   */
+  @property --cngx-card-badge-danger-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.62 0.22 25);
+  }
+
+  /**
+   * Text colour of the `danger` intent.
+   * @group Variant / Danger
+   */
+  @property --cngx-card-badge-danger-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(1 0 0);
+  }
+
+  /**
+   * Background of the `warning` intent. Falls back through
+   * `--cngx-badge-warning-bg` then `--cngx-color-warning`.
+   * @group Variant / Warning
+   * @see [[--cngx-color-warning]]
+   */
+  @property --cngx-card-badge-warning-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.72 0.18 70);
+  }
+
+  /**
+   * Text colour of the `warning` intent.
+   * @group Variant / Warning
+   */
+  @property --cngx-card-badge-warning-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.2 0.01 250);
+  }
+
+  /**
+   * Background of the `success` intent. No `CngxBadge` analogue —
+   * falls straight back to `--cngx-color-success`.
+   * @group Variant / Success
+   * @see [[--cngx-color-success]]
+   */
+  @property --cngx-card-badge-success-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.6 0.15 145);
+  }
+
+  /**
+   * Text colour of the `success` intent.
+   * @group Variant / Success
+   */
+  @property --cngx-card-badge-success-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(1 0 0);
+  }
+
+  /**
+   * Background of the `neutral` intent. Falls back through
+   * `--cngx-badge-neutral-bg` then `--cngx-color-text-muted`.
+   * @group Variant / Neutral
+   */
+  @property --cngx-card-badge-neutral-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.68 0.01 240);
+  }
+
+  /**
+   * Text colour of the `neutral` intent.
+   * @group Variant / Neutral
+   */
+  @property --cngx-card-badge-neutral-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(1 0 0);
+  }
+
   /* Dark-mode swap — mirrors `core/theming/system-tokens.css`.
    * Foundation-delegated tokens (bg / text / border / divider /
    * title) ride the foundation cascade via `var()`. Component-
@@ -367,6 +573,7 @@
       --cngx-card-accent-success-bg: oklch(0.32 0.06 145);
       --cngx-card-accent-warning-bg: oklch(0.32 0.06 75);
       --cngx-card-accent-danger-bg: oklch(0.32 0.05 25);
+      --cngx-card-badge-border: 2px solid oklch(0.2 0.01 250);
     }
   }
 
@@ -378,6 +585,7 @@
     --cngx-card-accent-success-bg: oklch(0.32 0.06 145);
     --cngx-card-accent-warning-bg: oklch(0.32 0.06 75);
     --cngx-card-accent-danger-bg: oklch(0.32 0.05 25);
+    --cngx-card-badge-border: 2px solid oklch(0.2 0.01 250);
   }
 
   [data-color-scheme='light'],
@@ -388,6 +596,7 @@
     --cngx-card-accent-success-bg: oklch(0.97 0.04 145);
     --cngx-card-accent-warning-bg: oklch(0.97 0.04 75);
     --cngx-card-accent-danger-bg: oklch(0.97 0.03 25);
+    --cngx-card-badge-border: 2px solid oklch(1 0 0);
   }
 }
 
@@ -614,6 +823,19 @@
     .cngx-card__badge {
       position: absolute;
       z-index: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
+      min-width: var(--cngx-card-badge-size-md, 22px);
+      height: var(--cngx-card-badge-size-md, 22px);
+      padding: 0 var(--cngx-card-badge-padding-inline, 5px);
+      border-radius: var(--cngx-card-badge-radius, var(--cngx-radius-pill, 999px));
+      border: var(--cngx-card-badge-border, 2px solid oklch(1 0 0));
+      font-size: var(--cngx-card-badge-font-size-md, 0.7rem);
+      font-weight: 700;
+      line-height: 1;
+      user-select: none;
     }
     .cngx-card__badge--top-end {
       inset-block-start: var(--cngx-card-badge-offset, -6px);
@@ -630,6 +852,74 @@
     .cngx-card__badge--bottom-start {
       inset-block-end: var(--cngx-card-badge-offset, -6px);
       inset-inline-start: var(--cngx-card-badge-offset, -6px);
+    }
+
+    /* Size variants — over-set the four size-dependent values from
+     * the `md` default. */
+    .cngx-card__badge--size-sm {
+      min-width: var(--cngx-card-badge-size-sm, 10px);
+      height: var(--cngx-card-badge-size-sm, 10px);
+      padding: 0 var(--cngx-card-badge-padding-inline, 5px);
+      font-size: var(--cngx-card-badge-font-size-sm, 0.625rem);
+    }
+    .cngx-card__badge--size-md {
+      min-width: var(--cngx-card-badge-size-md, 22px);
+      height: var(--cngx-card-badge-size-md, 22px);
+      padding: 0 var(--cngx-card-badge-padding-inline, 5px);
+      font-size: var(--cngx-card-badge-font-size-md, 0.7rem);
+    }
+    .cngx-card__badge--size-lg {
+      min-width: var(--cngx-card-badge-size-lg, 28px);
+      height: var(--cngx-card-badge-size-lg, 28px);
+      padding: 0 var(--cngx-card-badge-padding-inline, 5px);
+      font-size: var(--cngx-card-badge-font-size-lg, 0.8125rem);
+    }
+
+    /* Intent variants — chain through the CngxBadge palette then the
+     * foundation semantic colour tokens. */
+    .cngx-card__badge--intent-primary {
+      background: var(
+        --cngx-card-badge-primary-bg,
+        var(--cngx-badge-primary-bg, var(--cngx-color-primary, oklch(0.66 0.19 50)))
+      );
+      color: var(--cngx-card-badge-primary-color, oklch(1 0 0));
+    }
+    .cngx-card__badge--intent-danger {
+      background: var(
+        --cngx-card-badge-danger-bg,
+        var(--cngx-badge-error-bg, var(--cngx-color-danger, oklch(0.62 0.22 25)))
+      );
+      color: var(--cngx-card-badge-danger-color, oklch(1 0 0));
+    }
+    .cngx-card__badge--intent-warning {
+      background: var(
+        --cngx-card-badge-warning-bg,
+        var(--cngx-badge-warning-bg, var(--cngx-color-warning, oklch(0.72 0.18 70)))
+      );
+      color: var(--cngx-card-badge-warning-color, oklch(0.2 0.01 250));
+    }
+    .cngx-card__badge--intent-success {
+      background: var(
+        --cngx-card-badge-success-bg,
+        var(--cngx-color-success, oklch(0.6 0.15 145))
+      );
+      color: var(--cngx-card-badge-success-color, oklch(1 0 0));
+    }
+    .cngx-card__badge--intent-neutral {
+      background: var(
+        --cngx-card-badge-neutral-bg,
+        var(--cngx-badge-neutral-bg, var(--cngx-color-text-muted, oklch(0.68 0.01 240)))
+      );
+      color: var(--cngx-card-badge-neutral-color, oklch(1 0 0));
+    }
+
+    /* Empty content → status-dot fallback: zero out padding and lock
+     * to the `sm` size token regardless of the `size` input. */
+    .cngx-card__badge:empty {
+      min-width: var(--cngx-card-badge-size-sm, 10px);
+      width: var(--cngx-card-badge-size-sm, 10px);
+      height: var(--cngx-card-badge-size-sm, 10px);
+      padding: 0;
     }
   }
 
