@@ -1,9 +1,9 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Listbox with items input',
+  title: 'CngxActiveDescendant: Listbox with items input',
   subtitle: 'Focus stays on the container. Arrow keys, Home/End, Enter/Space and typeahead all navigate via <code>aria-activedescendant</code>. Disabled items are skipped.',
-  description: 'WAI-ARIA active-descendant keyboard model for listbox, menu, and combobox widgets. Keeps focus on the host while highlighting the logical current item.',
+  description: 'Drives the active item from an <code>[items]</code> signal, auto-highlights the first entry via <code>[autoHighlightFirst]</code>, and emits the activated item through <code>(activated)</code>. The host stays focused; the option DOM is rendered by the consumer.',
   level: 'atom',
   audience: ['a11y', 'dev'],
   artifact: 'building-block',
@@ -15,6 +15,16 @@ export const STORY: DemoSpec = {
     'import { CngxActiveDescendant, type ActiveDescendantItem } from \'@cngx/common/a11y\';',
   ],
   imports: ['CngxActiveDescendant'],
+  references: [
+    {
+      label: 'WAI-ARIA APG: Listbox pattern',
+      href: 'https://www.w3.org/WAI/ARIA/apg/patterns/listbox/',
+    },
+    {
+      label: 'WAI-ARIA APG: aria-activedescendant focus model',
+      href: 'https://www.w3.org/WAI/ARIA/apg/practices/keyboard-interface/#kbd_focus_activedescendant',
+    },
+  ],
   setup: `protected readonly fruits = signal<ActiveDescendantItem[]>([
     { id: 'fruit-apple', value: 'apple', label: 'Apple' },
     { id: 'fruit-banana', value: 'banana', label: 'Banana' },
@@ -60,32 +70,4 @@ export const STORY: DemoSpec = {
       <span class="event-value">{{ lastActivated() ?? '—' }}</span>
     </div>
   </div>`,
-  css: `.ad-listbox {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  max-width: 260px;
-  padding: 4px;
-  border: 1px solid var(--cngx-color-border, #d0d5dd);
-  border-radius: var(--cngx-radius-md, 8px);
-  background: var(--cngx-color-surface, #ffffff);
-  outline: none;
-}
-.ad-listbox:focus-visible {
-  outline: 2px solid var(--cngx-color-primary, #4a8cff);
-  outline-offset: 2px;
-}
-.ad-listbox [role="option"] {
-  padding: 6px 10px;
-  border-radius: var(--cngx-radius-sm, 4px);
-  cursor: default;
-  user-select: none;
-}
-.ad-option--active {
-  background: var(--cngx-ad-highlight-bg, rgba(74, 140, 255, 0.15));
-}
-.ad-option--disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}`,
 };
