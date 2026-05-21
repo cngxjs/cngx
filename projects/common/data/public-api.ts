@@ -31,8 +31,8 @@ export {
 
 export { CngxAsync, type CngxAsyncContext } from './async/async.directive';
 
-export { CngxMetric } from './display/metric.component';
-export { CngxTrend } from './display/trend.component';
+export { CngxMetric } from './display/metric/metric.component';
+export { CngxTrend } from './display/trend/trend.component';
 
 export {
   injectRecycler,
