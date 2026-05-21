@@ -530,6 +530,64 @@ html.dark .cngx-ex-tag[data-dim='stability'][data-value='deprecated'] {
   cursor: pointer;
 }
 
+// Dialog demo helpers - keep dialog surface CSS out of stories so the
+// directive composition stays the lesson, not the per-story border /
+// padding / box-shadow scatter.
+.demo-dialog-handle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: grab;
+  margin: 0 0 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e0e0e0));
+}
+.demo-dialog-section {
+  margin: 16px 0;
+  padding: 12px;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e0e0e0));
+  border-radius: 4px;
+}
+.demo-dialog-input {
+  display: block;
+  width: 100%;
+  margin-top: 4px;
+  padding: 6px 8px;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e0e0e0));
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+}
+.demo-dialog-floating {
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e0e0e0));
+  border-radius: 8px;
+  padding: 16px;
+  background: var(--cngx-color-surface, var(--cngx-ex-surface, #fff));
+  box-shadow: 0 4px 12px var(--cngx-color-shadow, oklch(0 0 0 / 0.18));
+}
+// CSS Anchor Positioning helpers for the non-modal-panel story. The
+// trigger names an anchor; the dialog binds to that name and places
+// itself in the bottom + inline-end region of the trigger - no JS-side
+// positioning, no inline-style scaffolding in the story.
+.demo-dialog-anchor {
+  anchor-name: --demo-help-anchor;
+}
+.demo-dialog-anchored {
+  position-anchor: --demo-help-anchor;
+  inset: auto;
+  position-area: bottom span-inline-end;
+  margin-block-start: 8px;
+  max-width: 280px;
+}
+button.chip--icon-close {
+  padding: 2px 8px;
+}
+button.chip--danger {
+  color: var(--cngx-color-danger, currentColor);
+  border-color: var(--cngx-color-danger, currentColor);
+}
+
 // Demo-only "chip" trigger styling. The cngx library deliberately ships
 // no bare-`<button>` defaults (browser-native rule), so the demo
 // templates that scatter trigger buttons need a local visual treatment.
