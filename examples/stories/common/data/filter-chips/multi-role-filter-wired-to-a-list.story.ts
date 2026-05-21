@@ -1,13 +1,17 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Multi-role filter wired to a list',
+  title: 'CngxFilterChips: Multi-role filter wired to a list',
   subtitle: 'The <code>&lt;cngx-filter-chips&gt;</code> bridge synchronises with the parent <code>CngxFilter</code>. The list reads <code>filter.predicate()</code> in a <code>computed</code>; toggling chips re-runs the filter without any <code>effect()</code> write-back.',
-  description: 'Bridge between a multi-select chip strip and a parent <code>CngxFilter</code>. The bridge registers a single closure-style predicate ONCE on mount; chip toggles update the bridge\'s internal <code>selectedValues</code>; downstream filtered consumers recompute via the predicate\'s lazy read of <code>selectedValues()</code>. Pillar 1 derivation — no <code>effect()</code> write-back. Empty selection short-circuits to "no filter applied". <strong>Phase 5 limitation:</strong> the bridge\'s <code>[optionValue]</code> function extracts a key from each list item AND each chip option — they must share a shape. A future <code>[itemValue]</code> input will separate the two extractors; tracked as a follow-up.',
+  description: 'End-to-end wiring: a chip strip drives a <code>CngxFilter</code> predicate; a sibling <code>&lt;ul&gt;</code> reads that predicate to decide which items to render. A <code>role="status"</code> live region announces the new count whenever chips toggle, so screen-reader users hear the result change.',
   level: 'molecule',
-  audience: ['dev', 'design'],
+  audience: ['dev', 'design', 'a11y'],
   artifact: 'building-block',
-  focus: ['visual-variants', 'integration'],
+  focus: ['integration', 'a11y-pattern'],
+  references: [
+    { label: 'WAI-ARIA: status role', href: 'https://www.w3.org/TR/wai-aria-1.2/#status' },
+    { label: 'WCAG 4.1.3 Status Messages', href: 'https://www.w3.org/WAI/WCAG21/Understanding/status-messages.html' },
+  ],
   apiComponents: [
     'CngxFilterChips',
     'CngxFilterChip',
@@ -27,7 +31,9 @@ export const STORY: DemoSpec = {
   protected readonly tagLabel = (t: unknown): string =>
     (t as { readonly label: string }).label;
   protected readonly tagId = (t: unknown): string =>
-    (t as { readonly id: string }).id;`,
+    (t as { readonly id: string }).id;
+  protected readonly visibleTags = (predicate: ((t: unknown) => boolean) | null): readonly unknown[] =>
+    predicate === null ? this.tagItems : this.tagItems.filter(predicate);`,
   template: `
   <ng-container [cngxFilter]="null" #filter="cngxFilter">
     <cngx-filter-chips
@@ -38,14 +44,15 @@ export const STORY: DemoSpec = {
       [filterRef]="filter"
       filterKey="tags"
     />
-    <ul>
-      @for (item of tagItems; track tagId(item)) {
-        @if (filter.predicate() === null || filter.predicate()!(item)) {
-          <li>
-            <strong>{{ tagLabel(item) }}</strong>
-            (id: <code>{{ tagId(item) }}</code>)
-          </li>
-        }
+    <p role="status" aria-live="polite">
+      Showing {{ visibleTags(filter.predicate()).length }} of {{ tagItems.length }} tags
+    </p>
+    <ul aria-label="Tagged items">
+      @for (item of visibleTags(filter.predicate()); track tagId(item)) {
+        <li>
+          <strong>{{ tagLabel(item) }}</strong>
+          (id: <code>{{ tagId(item) }}</code>)
+        </li>
       }
     </ul>
   </ng-container>`,
