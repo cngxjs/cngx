@@ -55,6 +55,7 @@ vitest.config.*.timestamp*
 /.claude/skills
 .internal/
 .compodoc/
+.compodoc-llm/
 /screenshots
 CNGX_LLM_REFERENCE.md
 
