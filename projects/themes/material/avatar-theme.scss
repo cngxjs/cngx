@@ -1,17 +1,80 @@
 @use '@angular/material' as mat;
 
-// Material bridge for CngxAvatar.
+// Material bridge for CngxAvatar. Maps the avatar plate, the four-value
+// presence palette (`online` / `busy` / `away` / `offline`), the status
+// dot's cut-out ring, and the circle/square corner tokens onto Material 3
+// surface, semantic, and corner tokens so a cngx avatar reads native
+// next to <mat-card> headers, <mat-list> rows, and <mat-chip> rosters.
 //
 //   @use '@cngx/themes/material/avatar-theme' as avatar;
 //   html { @include avatar.theme($theme); }
 
 @mixin color($theme) {
   @if mat.get-theme-version($theme) == 1 {
+    // Plate — initials block sits on a low-contrast container surface so
+    // it reads like a Material avatar slot rather than a stamped badge.
     --cngx-avatar-bg: var(--mat-sys-surface-container-high);
     --cngx-avatar-color: var(--mat-sys-on-surface);
+
+    // Status palette — M3 has no first-class success/warning. Follow the
+    // same fold cngx already uses elsewhere (chip-theme, badge-theme):
+    // online -> tertiary, busy -> error, away -> tertiary-container fold,
+    // offline -> outline so it reads as "muted, not absent".
+    --cngx-avatar-status-online: var(--mat-sys-tertiary);
+    --cngx-avatar-status-busy: var(--mat-sys-error);
+    --cngx-avatar-status-away: color-mix(
+      in srgb,
+      var(--mat-sys-tertiary) 60%,
+      var(--mat-sys-error) 40%
+    );
+    --cngx-avatar-status-offline: var(--mat-sys-outline);
+
+    // Fallback dot color when `status` is set to an unrecognised value.
+    --cngx-avatar-status-bg: var(--mat-sys-surface-variant);
+
+    // Cut-out ring around the status dot follows the page surface so the
+    // dot reads punched out of the avatar plate even when the page sits
+    // on a tonal Material surface.
+    --cngx-avatar-status-border: var(--mat-sys-surface);
   } @else {
     --cngx-avatar-bg: #{mat.get-theme-color($theme, background, hover)};
     --cngx-avatar-color: #{mat.get-theme-color($theme, foreground, text)};
+
+    // Material 2 has no semantic success/warning tones. Map onto the
+    // closest palette roles: primary for online, warn for busy, accent
+    // for away. Offline rides the divider tone so it reads as muted.
+    --cngx-avatar-status-online: #{mat.get-theme-color($theme, primary)};
+    --cngx-avatar-status-busy: #{mat.get-theme-color($theme, warn)};
+    --cngx-avatar-status-away: #{mat.get-theme-color($theme, accent)};
+    --cngx-avatar-status-offline: #{mat.get-theme-color($theme, foreground, divider)};
+    --cngx-avatar-status-bg: #{mat.get-theme-color($theme, foreground, divider)};
+    --cngx-avatar-status-border: #{mat.get-theme-color($theme, background, card)};
+  }
+}
+
+@mixin typography($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    // Initials follow Material's label scale so an avatar set next to
+    // a <mat-list-item> shares the same character weight class.
+    --cngx-avatar-font-size: var(--mat-sys-label-large-size, 1rem);
+    --cngx-avatar-font-size-xs: var(--mat-sys-label-small-size, 0.625rem);
+    --cngx-avatar-font-size-sm: var(--mat-sys-label-medium-size, 0.75rem);
+    --cngx-avatar-font-size-md: var(--mat-sys-label-large-size, 1rem);
+    --cngx-avatar-font-size-lg: var(--mat-sys-title-small-size, 1.125rem);
+    --cngx-avatar-font-size-xl: var(--mat-sys-title-medium-size, 1.5rem);
+  }
+}
+
+@mixin base($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    // Square avatars adopt Material's medium corner so they line up
+    // with <mat-card> and <mat-list> tile radii. Circle keeps the
+    // pill default; M3's corner-full token (9999px) matches exactly.
+    --cngx-avatar-circle-radius: var(--mat-sys-corner-full, 9999px);
+    --cngx-avatar-square-radius: var(--mat-sys-corner-medium, 12px);
+  } @else {
+    --cngx-avatar-circle-radius: 9999px;
+    --cngx-avatar-square-radius: 4px;
   }
 }
 
@@ -19,6 +82,8 @@
   @layer cngx.components {
     :where(cngx-avatar) {
       @include color($theme);
+      @include typography($theme);
+      @include base($theme);
     }
   }
 }
