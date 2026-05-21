@@ -79,6 +79,13 @@ export interface DemoSpec {
    */
   templateChrome?: string;
   /**
+   * Chrome that should render *above* the artifact instead of below — usage
+   * hints, intro callouts, "click here then type X" instructions. Same
+   * stripping rules as `templateChrome`: live but absent from the displayed
+   * Template panel.
+   */
+  templateChromeBefore?: string;
+  /**
    * Angular class names that must appear in the generated `@Component.imports`
    * array. `generate-examples.mjs` resolves import paths from public-api.
    */
@@ -115,6 +122,14 @@ export interface DemoSpec {
   stability?: Stability;
   /** Forms-binding mode. Only set on `@cngx/forms` demos. */
   framework?: Framework;
+  /**
+   * Standards / patterns the artifact implements. Rendered as a small
+   * link list in the intro header (label + external href). Use sparingly:
+   * one or two references that the reader can click to verify the demo
+   * against the spec. Typical sources are WAI-ARIA APG patterns, WCAG
+   * success criteria, HTML / WHATWG sections, RFC numbers.
+   */
+  references?: readonly { label: string; href: string }[];
 }
 
 export type ControlSpec =

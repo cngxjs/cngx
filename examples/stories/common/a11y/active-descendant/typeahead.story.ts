@@ -1,20 +1,26 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Typeahead',
-  subtitle: 'Press letters to jump to the first matching label. Chained within the debounce window (default 300&nbsp;ms).',
-  description: 'WAI-ARIA active-descendant keyboard model for listbox, menu, and combobox widgets. Keeps focus on the host while highlighting the logical current item.',
+  title: 'CngxActiveDescendant: Typeahead',
+  subtitle:
+    'Press letters to jump to the first matching label. Chained within the debounce window (default 300&nbsp;ms).',
+  description:
+    'Demonstrates the built-in typeahead search inside <code>cngxActiveDescendant</code>: keystrokes within the debounce window accumulate into a prefix, and the directive activates the first matching label without leaving the host.',
   level: 'atom',
   audience: ['a11y', 'dev'],
   artifact: 'building-block',
   focus: ['a11y-pattern', 'behavior'],
-  apiComponents: [
-    'CngxActiveDescendant',
-  ],
+  apiComponents: ['CngxActiveDescendant'],
   moduleImports: [
-    'import { CngxActiveDescendant, type ActiveDescendantItem } from \'@cngx/common/a11y\';',
+    "import { CngxActiveDescendant, type ActiveDescendantItem } from '@cngx/common/a11y';",
   ],
   imports: ['CngxActiveDescendant'],
+  references: [
+    {
+      label: 'WAI-ARIA APG: Listbox keyboard typeahead',
+      href: 'https://www.w3.org/WAI/ARIA/apg/patterns/listbox/#keyboardinteraction',
+    },
+  ],
   setup: `protected readonly fruits = signal<ActiveDescendantItem[]>([
     { id: 'fruit-apple', value: 'apple', label: 'Apple' },
     { id: 'fruit-banana', value: 'banana', label: 'Banana' },
@@ -33,7 +39,6 @@ export const STORY: DemoSpec = {
        aria-label="Fruit typeahead"
        tabindex="0"
        [items]="typeaheadFruits()"
-       [typeaheadDebounce]="500"
        #adT="cngxActiveDescendant">
     @for (fruit of typeaheadFruits(); track fruit.id) {
       <div role="option"
@@ -43,9 +48,8 @@ export const STORY: DemoSpec = {
         {{ fruit.label }}
       </div>
     }
-  </div>
-  
-  <p style="margin-top:8px;font-size:0.875rem;color:#6b7280">
+  </div>`,
+  templateChromeBefore: `<p>
     Click the listbox to focus it, then type <kbd>c</kbd><kbd>h</kbd> quickly to land on Cherry, or <kbd>e</kbd> to land on Elderberry.
   </p>`,
   templateChrome: `<div class="event-grid" style="margin-top:8px">

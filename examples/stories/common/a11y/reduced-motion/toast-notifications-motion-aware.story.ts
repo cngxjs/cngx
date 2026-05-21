@@ -1,91 +1,68 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Toast Notifications — Motion-aware',
-  subtitle: 'Notifications that slide in with animation, or appear instantly when <code>prefersReducedMotion()</code> is <code>true</code>. This demonstrates using the signal in TypeScript logic, not just CSS.',
-  description: 'Reads the prefers-reduced-motion media query and adds the cngx-reduced-motion CSS class when the user prefers reduced motion.',
+  title: 'CngxReducedMotion: Toast notifications motion-aware',
+  subtitle:
+    'Notifications slide in by default, or appear instantly when <code>prefersReducedMotion()</code> is <code>true</code>. The signal drives the conditional class binding directly from the template, which is the path to take when CSS alone cannot decide.',
+  description:
+    'Same directive, signal-in-TypeScript variant: the toast row gets the <code>cngx-ex-toast--animate</code> class only when motion is allowed. The conditional is on the binding, not in CSS, because a real consumer might also use the signal to skip a confetti effect, shorten an auto-dismiss timer, or refuse to autoplay video. The CSS-hook sibling shows the simpler path for pure-style cases.',
   level: 'atom',
   audience: ['a11y', 'dev'],
   artifact: 'building-block',
   focus: ['a11y-pattern', 'behavior'],
-  apiComponents: [
-    'CngxReducedMotion',
-  ],
+  apiComponents: ['CngxReducedMotion'],
   imports: ['CngxReducedMotion'],
-  setup: `protected notifications = signal<{ id: number; text: string }[]>([]);
-  private _nextId = 0;
+  references: [
+    {
+      label: 'WCAG 2.1 SC 2.3.3 Animation from Interactions',
+      href: 'https://www.w3.org/WAI/WCAG21/Understanding/animation-from-interactions.html',
+    },
+    {
+      label: 'CSS Media Queries Level 5: prefers-reduced-motion',
+      href: 'https://drafts.csswg.org/mediaqueries-5/#prefers-reduced-motion',
+    },
+  ],
+  setup: `protected readonly notifications = signal<{ id: number; text: string }[]>([]);
+  private nextId = 0;
   protected addNotification(): void {
-    const id = this._nextId++;
+    const id = this.nextId++;
     const texts = [
       'Order shipped successfully',
       'New comment on your post',
-      'Payment received — $42.00',
+      'Payment received: $42.00',
       'Backup completed',
       'Profile updated',
     ];
-    this.notifications.update(list => [
-      ...list,
-      { id, text: texts[id % texts.length] },
-    ]);
+    this.notifications.update((list) => [...list, { id, text: texts[id % texts.length] }]);
     setTimeout(() => this.removeNotification(id), 4000);
   }
   protected removeNotification(id: number): void {
-    this.notifications.update(list => list.filter(n => n.id !== id));
+    this.notifications.update((list) => list.filter((n) => n.id !== id));
   }`,
-  template: `  <div cngxReducedMotion #rm2="cngxReducedMotion">
-    <button class="sort-btn" (click)="addNotification()">
-      Add notification
-    </button>
+  template: `  <div cngxReducedMotion #rm="cngxReducedMotion">
+    <button type="button" class="chip" (click)="addNotification()">Add notification</button>
 
-    <div style="
-      margin-top: 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      min-height: 60px;
-    ">
+    <ul class="cngx-ex-toast-list">
       @for (n of notifications(); track n.id) {
-        <div
-          style="
-            padding: 10px 14px;
-            border-radius: 6px;
-            background: var(--cngx-surface-alt, #f8f9fa);
-            border: 1px solid var(--cngx-color-border, #ddd);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            font-size: 0.8125rem;
-          "
-          [style.animation]="rm2.prefersReducedMotion() ? 'none' : 'cngx-demo-slide-in 0.3s ease-out'"
-        >
+        <li class="cngx-ex-toast" [class.cngx-ex-toast--animate]="!rm.prefersReducedMotion()">
           <span>{{ n.text }}</span>
-          <button
-            class="sort-btn"
-            style="padding: 2px 8px; font-size: 0.75rem;"
-            (click)="removeNotification(n.id)"
-          >dismiss</button>
-        </div>
+          <button type="button" class="chip" (click)="removeNotification(n.id)">dismiss</button>
+        </li>
       } @empty {
-        <div style="
-          padding: 16px;
-          text-align: center;
-          color: var(--cngx-text-secondary, #999);
-          font-size: 0.8125rem;
-        ">
+        <li class="cngx-ex-toast-list__empty">
           No notifications. Click the button above to add one.
-        </div>
+        </li>
       }
-    </div>
-
+    </ul>
   </div>`,
-  templateChrome: `<div class="event-grid" style="margin-top: 12px">
-      <div class="event-row">
-        <span class="event-label">Active notifications</span>
-        <span class="event-value">{{ notifications().length }}</span>
-      </div>
-      <div class="event-row">
-        <span class="event-label">Animation</span>
-        <span class="event-value">{{ rm2.prefersReducedMotion() ? 'instant (no motion)' : 'slide-in 0.3s' }}</span>
-      </div>
-    </div>`,
+  templateChrome: `<div class="event-grid" style="margin-top:12px">
+    <div class="event-row">
+      <span class="event-label">Active notifications</span>
+      <span class="event-value">{{ notifications().length }}</span>
+    </div>
+    <div class="event-row">
+      <span class="event-label">Animation</span>
+      <span class="event-value">{{ rm.prefersReducedMotion() ? 'instant (no motion)' : 'slide-in 0.3s' }}</span>
+    </div>
+  </div>`,
 };
