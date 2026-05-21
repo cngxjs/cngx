@@ -11,6 +11,16 @@ export const STORY: DemoSpec = {
   artifact: 'building-block',
   focus: ['composition', 'visual-variants'],
   apiComponents: ['CngxChart', 'CngxAxis', 'CngxLine', 'CngxArea', 'CngxThreshold'],
+  references: [
+    {
+      label: 'WCAG 1.1.1 Non-text Content',
+      href: 'https://www.w3.org/WAI/WCAG21/Understanding/non-text-content.html',
+    },
+    {
+      label: 'W3C WAI: Complex images',
+      href: 'https://www.w3.org/WAI/tutorials/images/complex/',
+    },
+  ],
   moduleImports: [
     "import { CngxChart, CngxAxis, CngxLine, CngxArea, CngxThreshold } from '@cngx/common/chart';",
   ],
@@ -34,7 +44,7 @@ export const STORY: DemoSpec = {
     const d = v instanceof Date ? v : new Date(Number(v));
     return d.toLocaleDateString('en', { month: 'short', day: '2-digit' });
   };`,
-  template: `  <div style="border:1px solid var(--cngx-color-border, #e5e7eb); border-radius:4px; padding:8px; display:inline-block; max-width:100%; box-sizing:border-box">
+  template: `  <div class="cngx-ex-chart-frame">
     <cngx-chart
       [data]="latencyData"
       [summaryAccessor]="latencyValue"

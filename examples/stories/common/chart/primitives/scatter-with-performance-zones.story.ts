@@ -11,6 +11,16 @@ export const STORY: DemoSpec = {
   artifact: 'building-block',
   focus: ['composition', 'visual-variants'],
   apiComponents: ['CngxChart', 'CngxAxis', 'CngxScatter', 'CngxBand'],
+  references: [
+    {
+      label: 'WCAG 1.1.1 Non-text Content',
+      href: 'https://www.w3.org/WAI/WCAG21/Understanding/non-text-content.html',
+    },
+    {
+      label: 'W3C WAI: Complex images',
+      href: 'https://www.w3.org/WAI/tutorials/images/complex/',
+    },
+  ],
   moduleImports: [
     "import { CngxChart, CngxAxis, CngxScatter, CngxBand } from '@cngx/common/chart';",
   ],
@@ -23,7 +33,7 @@ export const STORY: DemoSpec = {
   protected readonly scatterX = (d: { x: number; y: number }): number => d.x;
   protected readonly scatterY = (d: { x: number; y: number }): number => d.y;
   protected readonly priceFmt = (v: unknown): string => '$' + Number(v);`,
-  template: `  <div style="border:1px solid var(--cngx-color-border, #e5e7eb); border-radius:4px; padding:8px; display:inline-block; max-width:100%; box-sizing:border-box">
+  template: `  <div class="cngx-ex-chart-frame">
     <cngx-chart
       [data]="scatterData"
       [summaryAccessor]="scatterY"

@@ -21,6 +21,16 @@ export const STORY: DemoSpec = {
     'CngxChartError',
     'CngxEmptyState',
   ],
+  references: [
+    {
+      label: 'WCAG 1.1.1 Non-text Content',
+      href: 'https://www.w3.org/WAI/WCAG21/Understanding/non-text-content.html',
+    },
+    {
+      label: 'W3C WAI: Complex images',
+      href: 'https://www.w3.org/WAI/tutorials/images/complex/',
+    },
+  ],
   moduleImports: [
     "import { CngxChart, CngxAxis, CngxLine, CngxArea, CngxThreshold, CngxBand, CngxChartEmpty, CngxChartError } from '@cngx/common/chart';",
     "import { createManualState } from '@cngx/common/data';",
@@ -38,8 +48,8 @@ export const STORY: DemoSpec = {
     'CngxEmptyState',
   ],
   setup: `protected readonly chartStateData: readonly number[] = [8, 12, 14, 9, 18, 22, 25, 19, 16, 24, 28, 32];
-  protected readonly chartState = createManualState<readonly number[]>();
-  protected showSkeleton(): void {
+  protected readonly chartState = createManualState<readonly number[]>();`,
+  setupChrome: `protected showSkeleton(): void {
     this.chartState.reset();
     this.chartState.set('loading');
   }
@@ -54,16 +64,16 @@ export const STORY: DemoSpec = {
     this.chartState.reset();
     this.chartState.setError(new Error('Telemetry feed offline'));
   }`,
-  template: `  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+  templateChromeBefore: `<div class="button-row" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
     <button type="button" class="chip" (click)="showSkeleton()">loading (spinner)</button>
     <button type="button" class="chip" (click)="showSuccess()">success</button>
     <button type="button" class="chip" (click)="showEmpty()">empty</button>
     <button type="button" class="chip" (click)="showError()">error</button>
-  </div>
-  <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+  </div>`,
+  templateChrome: `<div class="status-row" style="margin-top:8px">
     <span class="cngx-ex-status-readout">status: {{ chartState.status() }}</span>
-  </div>
-  <div style="border:1px solid var(--cngx-color-border, #e5e7eb); border-radius:4px; padding:8px; display:inline-block; max-width:100%; box-sizing:border-box">
+  </div>`,
+  template: `  <div class="cngx-ex-chart-frame">
     <cngx-chart
       [data]="chartStateData"
       [state]="chartState"
