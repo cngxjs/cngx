@@ -1,20 +1,21 @@
 import type { DemoSpec } from '../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Template Directives',
-  subtitle: 'The dialog is composed from focused directives: <code>cngxDialogTitle</code> auto-wires <code>aria-labelledby</code>, <code>cngxDialogDescription</code> wires <code>aria-describedby</code>, <code>cngxDialogClose</code> handles close with a typed value or dismiss without one. Each directive generates deterministic ARIA IDs — no manual <code>id</code> management.',
-  description: 'Signal-driven state machine for native <dialog>. Typed results, deterministic focus return, ARIA communication, CSS transition support, and opt-in draggable behavior.',
+  title: 'CngxDialog: Template directives',
+  subtitle: 'The dialog is composed from focused directives: <code>cngxDialogTitle</code> auto-wires <code>aria-labelledby</code>, <code>cngxDialogDescription</code> wires <code>aria-describedby</code>, <code>cngxDialogClose</code> handles close with a typed value or dismiss without one. Each directive generates deterministic ARIA IDs, no manual <code>id</code> management.',
+  description: 'Builds the dialog from three slot directives instead of a monolithic component. Each child directive injects the parent dialog, generates its own ARIA id, and writes the matching aria-labelledby / aria-describedby on the host. cngxDialogClose carries a typed value or, when bound bare, calls dismiss().',
   level: 'organism',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
   focus: ['composition', 'a11y-pattern', 'behavior'],
+  references: [
+    { label: 'WAI-ARIA APG: Dialog (modal)', href: 'https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/' },
+  ],
   apiComponents: [
     'CngxDialog',
     'CngxDialogTitle',
     'CngxDialogDescription',
     'CngxDialogClose',
-    'CngxDialogDraggable',
-    'CngxDialogStack',
   ],
   moduleImports: [
     'import { CngxDialog, CngxDialogTitle, CngxDialogDescription, CngxDialogClose } from \'@cngx/common/dialog\';',
@@ -32,28 +33,25 @@ export const STORY: DemoSpec = {
     <!-- cngxDialogDescription: sets aria-describedby on the dialog -->
     <p cngxDialogDescription>Update your name and email. Changes are saved immediately.</p>
 
-    <form style="display: flex; flex-direction: column; gap: 12px; margin-top: 12px; min-width: 300px;"
+    <form style="display:flex;flex-direction:column;gap:12px;margin-top:12px;min-width:300px"
           (ngSubmit)="tmplDlg.close({ name: formData.name, email: formData.email })">
       <label>
         Name
-        <input [(ngModel)]="formData.name" name="name"
-          style="display: block; width: 100%; margin-top: 4px; padding: 6px 8px; border: 1px solid var(--cngx-color-border); border-radius: 4px;" />
+        <input [(ngModel)]="formData.name" name="name" class="demo-dialog-input" />
       </label>
       <label>
         Email
-        <input [(ngModel)]="formData.email" name="email" type="email"
-          style="display: block; width: 100%; margin-top: 4px; padding: 6px 8px; border: 1px solid var(--cngx-color-border); border-radius: 4px;" />
+        <input [(ngModel)]="formData.email" name="email" type="email" class="demo-dialog-input" />
       </label>
-      
-    </form>
-  </dialog>`,
-  templateChrome: `<div class="button-row" style="justify-content: flex-end;">
+      <div class="button-row" style="justify-content:flex-end">
         <!-- cngxDialogClose without value: calls dismiss() -->
         <button type="button" class="chip" cngxDialogClose>Cancel</button>
         <!-- Form submit calls close() with the typed result -->
         <button type="submit" class="chip chip--active">Save</button>
       </div>
-<div class="status-row" style="margin-top: 12px">
+    </form>
+  </dialog>`,
+  templateChrome: `<div class="status-row" style="margin-top:12px">
     <span class="status-badge">state: {{ tmplDlg.lifecycle() }}</span>
     <span class="status-badge">result: {{ tmplDlg.result() | json }}</span>
   </div>`,

@@ -1,20 +1,20 @@
 import type { DemoSpec } from '../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Alert Dialog',
-  subtitle: 'Uses <code>role="alertdialog"</code> and disables backdrop close. Only the explicit OK button can close it. Screen readers announce the urgency.',
-  description: 'Signal-driven state machine for native <dialog>. Typed results, deterministic focus return, ARIA communication, CSS transition support, and opt-in draggable behavior.',
+  title: 'CngxDialog: Alert dialog (role="alertdialog")',
+  subtitle: 'Switches the host role to <code>alertdialog</code> and disables backdrop close. Only the explicit OK button can close it. Screen readers announce the urgency.',
+  description: 'When the user must acknowledge an interrupting message, role="alertdialog" combined with [closeOnBackdropClick]="false" prevents accidental dismissal. The only path out is the typed cngxDialogClose action.',
   level: 'organism',
-  audience: ['dev', 'design', 'a11y'],
+  audience: ['dev', 'a11y'],
   artifact: 'standalone',
-  focus: ['composition', 'a11y-pattern', 'behavior'],
+  focus: ['behavior', 'a11y-pattern'],
+  references: [
+    { label: 'WAI-ARIA APG: Alert Dialog', href: 'https://www.w3.org/WAI/ARIA/apg/patterns/alertdialog/' },
+  ],
   apiComponents: [
     'CngxDialog',
     'CngxDialogTitle',
-    'CngxDialogDescription',
     'CngxDialogClose',
-    'CngxDialogDraggable',
-    'CngxDialogStack',
   ],
   moduleImports: [
     'import { CngxDialog, CngxDialogTitle, CngxDialogClose } from \'@cngx/common/dialog\';',
@@ -25,9 +25,11 @@ export const STORY: DemoSpec = {
   <dialog cngxDialog role="alertdialog" [closeOnBackdropClick]="false" #alertDlg="cngxDialog">
     <h2 cngxDialogTitle>Session Expired</h2>
     <p>Your session has expired. Please log in again to continue.</p>
-    
-  </dialog>`,
-  templateChrome: `<div class="button-row" style="margin-top: 16px; justify-content: flex-end;">
+    <div class="button-row" style="margin-top:16px;justify-content:flex-end">
       <button class="chip chip--active" [cngxDialogClose]="undefined">OK</button>
-    </div>`,
+    </div>
+  </dialog>`,
+  templateChrome: `<div class="status-row" style="margin-top:12px">
+    <span class="status-badge">state: {{ alertDlg.lifecycle() }}</span>
+  </div>`,
 };

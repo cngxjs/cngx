@@ -1,20 +1,17 @@
 import type { DemoSpec } from '../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Grid Snap — Live vs Release',
+  title: 'CngxDialogDraggable: Grid snap, live vs release',
   subtitle: '<code>[gridSize]="20"</code> snaps position to 20px increments. <code>snapMode</code> controls when: <code>live</code> snaps every frame during drag, <code>release</code> lets you drag freely and snaps only on pointer up. Keyboard arrow step adapts to grid size (20px, Shift = 100px).',
-  description: 'Signal-driven state machine for native <dialog>. Typed results, deterministic focus return, ARIA communication, CSS transition support, and opt-in draggable behavior.',
+  description: 'Two dialogs with the same gridSize but different snapMode contrast the two snap strategies side by side. The live mode reads the snapped position from the host transform on every frame; the release mode lets the pointer path stay smooth and snaps only on pointer up.',
   level: 'organism',
-  audience: ['dev', 'design', 'a11y'],
+  audience: ['dev', 'design'],
   artifact: 'standalone',
-  focus: ['composition', 'a11y-pattern', 'behavior'],
+  focus: ['behavior', 'visual-variants'],
   apiComponents: [
     'CngxDialog',
-    'CngxDialogTitle',
-    'CngxDialogDescription',
-    'CngxDialogClose',
     'CngxDialogDraggable',
-    'CngxDialogStack',
+    'CngxDialogClose',
   ],
   moduleImports: [
     'import { CngxDialog, CngxDialogTitle, CngxDialogClose, CngxDialogDraggable } from \'@cngx/common/dialog\';',
@@ -27,25 +24,23 @@ export const STORY: DemoSpec = {
   template: `  <!-- Live snap: position snaps every frame -->
   <dialog cngxDialog cngxDialogDraggable [gridSize]="20" snapMode="live"
     #snapLiveDlg="cngxDialog" #snapLiveDrag="cngxDialogDraggable"
-    style="transform: translate(var(--cngx-dialog-x, 0px), var(--cngx-dialog-y, 0px));">
-    <div style="display: flex; align-items: center; justify-content: space-between; cursor: grab; padding-bottom: 12px; border-bottom: 1px solid var(--cngx-color-border); margin-bottom: 12px;">
-      <h2 cngxDialogTitle style="margin: 0;">Live Snap (20px)</h2>
-      <button class="chip" cngxDialogClose style="padding: 2px 8px;" aria-label="Close dialog">X</button>
+    style="transform:translate(var(--cngx-dialog-x, 0px), var(--cngx-dialog-y, 0px))">
+    <div class="demo-dialog-handle">
+      <h2 cngxDialogTitle style="margin:0">Live Snap (20px)</h2>
+      <button class="chip chip--icon-close" cngxDialogClose aria-label="Close dialog">X</button>
     </div>
     <p>Drag the header. Position snaps to grid every frame.</p>
-    
   </dialog>
 
   <!-- Release snap: free drag, snaps on pointer up -->
   <dialog cngxDialog cngxDialogDraggable [gridSize]="20" snapMode="release"
     #snapReleaseDlg="cngxDialog" #snapReleaseDrag="cngxDialogDraggable"
-    style="transform: translate(var(--cngx-dialog-x, 0px), var(--cngx-dialog-y, 0px));">
-    <div style="display: flex; align-items: center; justify-content: space-between; cursor: grab; padding-bottom: 12px; border-bottom: 1px solid var(--cngx-color-border); margin-bottom: 12px;">
-      <h2 cngxDialogTitle style="margin: 0;">Release Snap (20px)</h2>
-      <button class="chip" cngxDialogClose style="padding: 2px 8px;" aria-label="Close dialog">X</button>
+    style="transform:translate(var(--cngx-dialog-x, 0px), var(--cngx-dialog-y, 0px))">
+    <div class="demo-dialog-handle">
+      <h2 cngxDialogTitle style="margin:0">Release Snap (20px)</h2>
+      <button class="chip chip--icon-close" cngxDialogClose aria-label="Close dialog">X</button>
     </div>
-    <p>Drag freely — position snaps to grid only when you release.</p>
-    
+    <p>Drag freely, position snaps to grid only when you release.</p>
   </dialog>`,
   templateChrome: `<div class="button-row">
     <button class="chip" (click)="snapLiveDlg.open()">Live Snap (20px)</button>
