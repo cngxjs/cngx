@@ -1,37 +1,38 @@
 import type { DemoSpec } from '../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Card with Expandable Text',
-  subtitle: 'Long card content with <code>cngx-expandable-text</code> — truncated to 3 lines with a read-more toggle.',
-  description: 'Semantic card component with three archetypes: display (article), action (button), and link. Supports selection, loading, disabled with reason, and SR live announcements.',
+  title: 'CngxCard: Card with expandable text',
+  subtitle:
+    'Long card body content wrapped in <code>&lt;cngx-expandable-text&gt;</code>: truncated to three lines by default with a slot-overridden <em>Read more</em> trigger that flips to <em>Show less</em>.',
+  description:
+    'Card body hosting a clamped-text molecule. <code>[lines]="3"</code> sets the truncation; the <code>cngxExpandableToggle</code> slot is a plain button whose label switches on the exposed <code>expanded</code> context. The expansion is purely visual; the full text is always in the DOM so screen readers can read it without interaction.',
   level: 'organism',
-  audience: ['dev', 'design', 'a11y'],
+  audience: ['dev', 'design'],
   artifact: 'standalone',
-  focus: ['visual-variants', 'composition', 'a11y-pattern'],
+  focus: ['composition', 'visual-variants'],
   apiComponents: [
     'CngxCard',
     'CngxCardHeader',
     'CngxCardTitle',
-    'CngxCardSubtitle',
     'CngxCardBody',
-    'CngxCardMedia',
-    'CngxCardFooter',
-    'CngxCardActions',
-    'CngxCardBadge',
-    'CngxCardAccent',
-    'CngxCardSkeleton',
+    'CngxExpandableText',
+    'CngxExpandableToggle',
   ],
   moduleImports: [
-    'import { CngxCard, CngxCardHeader, CngxCardTitle, CngxCardBody } from \'@cngx/common/card\';',
-    'import { CngxExpandableText, CngxExpandableToggle } from \'@cngx/common/layout\';',
+    "import { CngxCard, CngxCardHeader, CngxCardTitle, CngxCardBody } from '@cngx/common/card';",
+    "import { CngxExpandableText, CngxExpandableToggle } from '@cngx/common/layout';",
   ],
-  imports: ['CngxCard', 'CngxCardHeader', 'CngxCardTitle', 'CngxCardBody', 'CngxExpandableText', 'CngxExpandableToggle'],
-  template: `
-  <div style="max-width:400px">
+  imports: [
+    'CngxCard',
+    'CngxCardHeader',
+    'CngxCardTitle',
+    'CngxCardBody',
+    'CngxExpandableText',
+    'CngxExpandableToggle',
+  ],
+  template: `  <div style="max-width:400px">
     <cngx-card>
-      <header cngxCardHeader>
-        <h3 cngxCardTitle>Project Notes</h3>
-      </header>
+      <header cngxCardHeader><h3 cngxCardTitle>Project notes</h3></header>
       <div cngxCardBody>
         <cngx-expandable-text [lines]="3" #exp="cngxExpandableText">
           The project was initialized on 15.03.2026 with a focus on improving user
@@ -43,7 +44,7 @@ export const STORY: DemoSpec = {
           customers, GDPR-compliant data handling for EU users.
           Next review planned for 22.03.2026.
           <ng-template cngxExpandableToggle let-expanded let-toggle="toggle">
-            <button (click)="toggle()" class="chip" style="margin-top:8px">
+            <button type="button" class="chip" style="margin-top:8px" (click)="toggle()">
               {{ expanded ? 'Show less' : 'Read more' }}
             </button>
           </ng-template>

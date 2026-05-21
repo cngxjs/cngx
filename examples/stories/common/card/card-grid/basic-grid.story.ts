@@ -1,31 +1,29 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Basic Grid',
-  subtitle: 'Cards auto-fill with a minimum width of 180px. Resize the browser to see the grid reflow.',
-  description: 'Responsive card grid with intrinsic sizing, keyboard navigation via roving tabindex, density levels, and reason-based empty state template selection.',
+  title: 'CngxCardGrid: Basic grid',
+  subtitle:
+    '<code>&lt;cngx-card-grid&gt;</code> auto-fills cards using <code>repeat(auto-fill, minmax(<em>minWidth</em>, 1fr))</code>. Resize the viewport to watch the grid reflow without breakpoint code.',
+  description:
+    'Intrinsic-sized grid driven entirely by a CSS <code>minWidth</code> input. Cards keep their own role (here, <code>as="button"</code>) and the grid only owns layout; the result reflows from one column on narrow screens to many columns on wider ones without any media queries.',
   level: 'molecule',
   audience: ['dev', 'design'],
   artifact: 'standalone',
   focus: ['visual-variants', 'composition'],
-  apiComponents: [
-    'CngxCardGrid',
-    'CngxCardGridEmpty',
-  ],
+  apiComponents: ['CngxCard', 'CngxCardHeader', 'CngxCardTitle', 'CngxCardSubtitle', 'CngxCardBody', 'CngxCardGrid'],
   moduleImports: [
-    'import { CngxCard, CngxCardHeader, CngxCardBody, CngxCardGrid } from \'@cngx/common/card\';',
+    "import { CngxCard, CngxCardHeader, CngxCardTitle, CngxCardSubtitle, CngxCardBody, CngxCardGrid } from '@cngx/common/card';",
   ],
-  imports: ['CngxCard', 'CngxCardHeader', 'CngxCardBody', 'CngxCardGrid'],
-  setup: `protected items = signal(['Alpha', 'Beta', 'Gamma', 'Delta', 'Epsilon', 'Zeta']);`,
-  template: `
-  <cngx-card-grid minWidth="180px">
+  imports: ['CngxCard', 'CngxCardHeader', 'CngxCardTitle', 'CngxCardSubtitle', 'CngxCardBody', 'CngxCardGrid'],
+  setup: `protected readonly items = signal(['Alpha', 'Beta', 'Gamma', 'Delta', 'Epsilon', 'Zeta']);`,
+  template: `  <cngx-card-grid minWidth="180px">
     @for (item of items(); track item) {
       <cngx-card as="button" [ariaLabel]="item">
         <header cngxCardHeader>
-          <h3 style="margin:0;font-weight:600;font-size:0.9375rem">{{ item }}</h3>
+          <h3 cngxCardTitle>{{ item }}</h3>
         </header>
         <div cngxCardBody>
-          <span style="font-size:0.8125rem;color:var(--cngx-color-text-muted)">Content for {{ item }}</span>
+          <span cngxCardSubtitle>Content for {{ item }}</span>
         </div>
       </cngx-card>
     }

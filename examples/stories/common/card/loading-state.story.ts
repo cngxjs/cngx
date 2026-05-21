@@ -1,56 +1,66 @@
 import type { DemoSpec } from '../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Loading State',
-  subtitle: '<code>[loading]="true"</code> sets <code>aria-busy</code> and announces <em>Loading</em> via SR live region. Toggle <em>Replace with skeleton</em> to compare the aria-only path against a visual <code>cngx-card-skeleton</code> placeholder.',
-  description: 'Semantic card component with three archetypes: display (article), action (button), and link. Supports selection, loading, disabled with reason, and SR live announcements.',
+  title: 'CngxCard: Loading state',
+  subtitle:
+    '<code>[loading]="true"</code> paints <code>aria-busy</code> on the host and announces <em>Loading</em> via the card\'s SR live region. The <em>Replace with skeleton</em> toggle swaps the body for <code>&lt;cngx-card-skeleton&gt;</code>, comparing the ARIA-only path against a visual placeholder.',
+  description:
+    'Two loading communication strategies on the same card: aria-busy alone (the screen reader hears the status, the eye sees the existing content) versus aria-busy paired with a skeleton placeholder (both channels carry the same message). Flip both toggles to compare; the readout shows the resulting <code>aria-busy</code> attribute.',
   level: 'organism',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
-  focus: ['visual-variants', 'composition', 'a11y-pattern'],
+  focus: ['async-state', 'a11y-pattern'],
   apiComponents: [
     'CngxCard',
     'CngxCardHeader',
     'CngxCardTitle',
-    'CngxCardSubtitle',
     'CngxCardBody',
-    'CngxCardMedia',
-    'CngxCardFooter',
-    'CngxCardActions',
-    'CngxCardBadge',
-    'CngxCardAccent',
     'CngxCardSkeleton',
   ],
   moduleImports: [
-    'import { CngxCard, CngxCardHeader, CngxCardTitle, CngxCardBody, CngxCardSkeleton } from \'@cngx/common/card\';',
+    "import { CngxCard, CngxCardHeader, CngxCardTitle, CngxCardBody, CngxCardSkeleton } from '@cngx/common/card';",
   ],
   imports: ['CngxCard', 'CngxCardHeader', 'CngxCardTitle', 'CngxCardBody', 'CngxCardSkeleton'],
-  setup: `protected loading = signal(false);
-  protected showSkeleton = signal(false);`,
+  references: [
+    {
+      label: 'WAI-ARIA 1.2: aria-busy',
+      href: 'https://www.w3.org/TR/wai-aria-1.2/#aria-busy',
+    },
+    {
+      label: 'WCAG 2.1 SC 4.1.3 Status Messages',
+      href: 'https://www.w3.org/WAI/WCAG21/Understanding/status-messages.html',
+    },
+  ],
+  setup: `protected readonly loading = signal(false);
+  protected readonly showSkeleton = signal(false);
+  protected readonly skeletonActive = computed(() => this.loading() && this.showSkeleton());`,
   template: `  <div style="max-width:320px">
     <cngx-card [loading]="loading()">
-      @if (loading() && showSkeleton()) {
+      @if (skeletonActive()) {
         <cngx-card-skeleton [lines]="2" />
-      } @else {
-        <ng-container>
-          <header cngxCardHeader>
-            <h3 cngxCardTitle>Vitals Overview</h3>
-          </header>
-          <div cngxCardBody>
-            <p style="margin:0;color:var(--cngx-color-text-muted)">Heart rate, blood pressure, SpO2 values from the last 24 hours.</p>
-          </div>
-        </ng-container>
+      }
+      @if (!skeletonActive()) {
+        <header cngxCardHeader><h3 cngxCardTitle>Build metrics</h3></header>
+      }
+      @if (!skeletonActive()) {
+        <div cngxCardBody>
+          <p style="margin:0">Build duration, test coverage, and error rate over the last 24 hours.</p>
+        </div>
       }
     </cngx-card>
   </div>`,
   templateChrome: `<div class="button-row" style="margin-bottom:12px">
-    <button (click)="loading.update(v => !v)">Toggle loading: {{ loading() ? 'on' : 'off' }}</button>
+    <button type="button" class="chip" (click)="loading.update((v) => !v)">
+      Toggle loading: {{ loading() ? 'on' : 'off' }}
+    </button>
     <label style="display:flex;align-items:center;gap:6px;font-size:0.875rem">
-      <input type="checkbox" [checked]="showSkeleton()" (change)="showSkeleton.set($any($event.target).checked)" />
+      <input type="checkbox"
+             [checked]="showSkeleton()"
+             (change)="showSkeleton.set($any($event.target).checked)" />
       Replace with skeleton
     </label>
   </div>
-<div class="event-grid" style="margin-top:12px">
+  <div class="event-grid" style="margin-top:12px">
     <div class="event-row">
       <span class="event-label">loading</span>
       <span class="event-value">{{ loading() }}</span>

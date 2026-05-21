@@ -1,42 +1,45 @@
 import type { DemoSpec } from '../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Title + Subtitle + Footer',
-  subtitle: '<code>[cngxCardTitle]</code> and <code>[cngxCardSubtitle]</code> provide consistent typography inside the header.',
-  description: 'Semantic card component with three archetypes: display (article), action (button), and link. Supports selection, loading, disabled with reason, and SR live announcements.',
+  title: 'CngxCard: Title subtitle footer',
+  subtitle:
+    '<code>[cngxCardTitle]</code> and <code>[cngxCardSubtitle]</code> provide consistent typography inside <code>[cngxCardHeader]</code>; <code>[cngxCardFooter]</code> closes the slot row.',
+  description:
+    'Plain display card with the canonical slot composition: header carrying a title and subtitle, a body, and a footer. No interaction, no ARIA wiring beyond <code>role="article"</code> on the card itself.',
   level: 'organism',
-  audience: ['dev', 'design', 'a11y'],
+  audience: ['dev', 'design'],
   artifact: 'standalone',
-  focus: ['visual-variants', 'composition', 'a11y-pattern'],
+  focus: ['visual-variants', 'composition'],
   apiComponents: [
     'CngxCard',
     'CngxCardHeader',
     'CngxCardTitle',
     'CngxCardSubtitle',
     'CngxCardBody',
-    'CngxCardMedia',
     'CngxCardFooter',
-    'CngxCardActions',
-    'CngxCardBadge',
-    'CngxCardAccent',
-    'CngxCardSkeleton',
   ],
   moduleImports: [
-    'import { CngxCard, CngxCardHeader, CngxCardTitle, CngxCardSubtitle, CngxCardBody, CngxCardFooter } from \'@cngx/common/card\';',
+    "import { CngxCard, CngxCardHeader, CngxCardTitle, CngxCardSubtitle, CngxCardBody, CngxCardFooter } from '@cngx/common/card';",
   ],
-  imports: ['CngxCard', 'CngxCardHeader', 'CngxCardTitle', 'CngxCardSubtitle', 'CngxCardBody', 'CngxCardFooter'],
-  template: `
-  <div style="max-width:400px">
+  imports: [
+    'CngxCard',
+    'CngxCardHeader',
+    'CngxCardTitle',
+    'CngxCardSubtitle',
+    'CngxCardBody',
+    'CngxCardFooter',
+  ],
+  template: `  <div style="max-width:400px">
     <cngx-card>
       <header cngxCardHeader>
-        <h3 cngxCardTitle>Patient Overview</h3>
-        <span cngxCardSubtitle>Maria Muster, Room 12</span>
+        <h3 cngxCardTitle>Project Phoenix</h3>
+        <span cngxCardSubtitle>Release 4.2, Sprint 12</span>
       </header>
       <div cngxCardBody>
-        <p style="margin:0;color:var(--cngx-color-text-muted)">Status: Active. Last vitals normal.</p>
+        <p style="margin:0">Status: On track. Last build passing on main.</p>
       </div>
       <footer cngxCardFooter>
-        <small style="color:var(--cngx-color-text-muted)">Last updated: today</small>
+        <small>Last updated: today</small>
       </footer>
     </cngx-card>
   </div>`,
