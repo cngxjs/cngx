@@ -46,6 +46,7 @@
 @use './icon-theme' as icon;
 @use './interactive-controls-theme' as controls;
 @use './mat-treetable-theme' as mat-treetable;
+@use './metric-theme' as metric;
 @use './popover-panel-theme' as popover-panel;
 @use './ripple-theme' as ripple;
 @use './select-theme' as select;
@@ -56,6 +57,7 @@
 @use './tabs-theme' as tabs;
 @use './tag-theme' as tag;
 @use './tooltip-theme' as tooltip;
+@use './trend-theme' as trend;
 @use './treetable-theme' as treetable;
 
 @mixin theme($theme) {
@@ -84,6 +86,7 @@
   @include filter-builder.theme($theme);
   @include icon.theme($theme);
   @include mat-treetable.theme($theme);
+  @include metric.theme($theme);
   @include popover-panel.theme($theme);
   @include ripple.theme($theme);
   @include select.theme($theme);
@@ -94,5 +97,6 @@
   @include tabs.theme($theme);
   @include tag.theme($theme);
   @include tooltip.theme($theme);
+  @include trend.theme($theme);
   @include treetable.theme($theme);
 }

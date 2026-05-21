@@ -1,0 +1,26 @@
+@use '@angular/material' as mat;
+
+// Material bridge for CngxMetric. Routes the value + unit text colors
+// through Material 3 surface roles so a metric next to a <mat-card>
+// reads with the same typography hierarchy as Material's own labels.
+//
+//   @use '@cngx/themes/material/metric-theme' as metric;
+//   html { @include metric.theme($theme); }
+
+@mixin color($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-metric-value-color: var(--mat-sys-on-surface);
+    --cngx-metric-unit-color: var(--mat-sys-on-surface-variant);
+  } @else {
+    --cngx-metric-value-color: #{mat.get-theme-color($theme, foreground, text)};
+    --cngx-metric-unit-color: #{mat.get-theme-color($theme, foreground, secondary-text)};
+  }
+}
+
+@mixin theme($theme) {
+  @layer cngx.components {
+    :where(cngx-metric, .cngx-metric) {
+      @include color($theme);
+    }
+  }
+}
