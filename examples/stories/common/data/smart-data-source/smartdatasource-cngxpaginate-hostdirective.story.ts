@@ -8,27 +8,18 @@ export const STORY: DemoSpec = {
   artifact: 'building-block',
   focus: ['composition', 'integration'],
   apiComponents: [
+    'CngxSmartDataSource',
     'CngxSort',
     'CngxFilter',
     'CngxPaginate',
   ],
-  moduleImports: [
-    'import { CngxFilter, CngxSort, injectSmartDataSource } from \'@cngx/common\';',
-    'import { PEOPLE, type Person } from \'../../../../fixtures\';',
-  ],
-  hostDirectives: ['CngxSort', 'CngxFilter'],
-  setup: `protected readonly sort = inject(CngxSort, { host: true });
-  protected readonly filter = inject(CngxFilter<Person>, { host: true });
-  protected readonly total = PEOPLE.length;
-  private readonly items = signal(PEOPLE);
-  private readonly ds = injectSmartDataSource(this.items);`,
   template: `
   <pre class="code-block"><code>@Component(&#123;
   selector: 'my-table',
   hostDirectives: [
     &#123; directive: CngxSort &#125;,
     &#123; directive: CngxFilter &#125;,
-    // Add CngxPaginate — SmartDataSource discovers it automatically
+    // Add CngxPaginate - SmartDataSource discovers it automatically
     &#123; directive: CngxPaginate, inputs: ['total'] &#125;,
   ],
 &#125;)

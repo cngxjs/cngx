@@ -1,28 +1,17 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'How It Works — hostDirectives + inject()',
+  title: 'How it works: hostDirectives + inject()',
   subtitle: 'The key is calling <code>injectSmartDataSource()</code> inside a component whose host element has <code>[cngxSort]</code> / <code>[cngxFilter]</code> as <code>hostDirectives</code>. The factory uses optional <code>inject()</code> to auto-discover them.',
   level: 'molecule',
   audience: ['dev'],
   artifact: 'building-block',
   focus: ['composition', 'integration'],
   apiComponents: [
+    'CngxSmartDataSource',
     'CngxSort',
     'CngxFilter',
-    'CngxPaginate',
   ],
-  moduleImports: [
-    'import { toSignal } from \'@angular/core/rxjs-interop\';',
-    'import { CngxFilter, CngxSort, injectSmartDataSource } from \'@cngx/common\';',
-    'import { PEOPLE, type Person } from \'../../../../fixtures\';',
-  ],
-  hostDirectives: ['CngxSort', 'CngxFilter'],
-  setup: `protected readonly sort = inject(CngxSort, { host: true });
-  protected readonly filter = inject(CngxFilter<Person>, { host: true });
-  private readonly items = signal(PEOPLE);
-  private readonly ds = injectSmartDataSource(this.items);
-  protected readonly rows = toSignal(this.ds.connect(), { initialValue: [] as Person[] });`,
   template: `
   <pre class="code-block"><code>@Component(&#123;
   selector: 'my-table',
