@@ -1,13 +1,13 @@
 # @cngx/forms/filter-builder
 
-Recursive query-builder (`<cngx-filter-builder>`) for cngx — composable `FilterGroup` / `FilterExpression` discriminated-union tree, pluggable value editors, three logic operators (`and` / `or` / `xor`) plus orthogonal `negated: boolean`, and a `predicate` signal on the
+Recursive query-builder (`<cngx-filter-builder>`) for cngx - composable `FilterGroup` / `FilterExpression` discriminated-union tree, pluggable value editors, three logic operators (`and` / `or` / `xor`) plus orthogonal `negated: boolean`, and a `predicate` signal on the
 presenter that bridges into `CngxFilter` or any consumer-side filtered list.
 
 ## When to reach for which surface
 
 | Surface | Use when |
 |-|-|
-| `<cngx-filter-builder>` | The user assembles a multi-expression query with `and` / `or` / `xor` nesting — saved-filter presets, advanced search panels, report builders. Output is a serialisable `FilterGroup`. |
+| `<cngx-filter-builder>` | The user assembles a multi-expression query with `and` / `or` / `xor` nesting - saved-filter presets, advanced search panels, report builders. Output is a serialisable `FilterGroup`. |
 | `<cngx-filter-row>` | One ad-hoc expression. Top-of-table quick filter, side-panel filter, anywhere a full builder tree is overkill but the user still picks the field. |
 | `toFilterPredicate(tree, fields)` | Library-free conversion of any `FilterGroup` into an item predicate. Use when you hold the tree in your own signal (preset preview, server-trip serialisation) and never mount the builder. |
 | `presenter.predicate()` | The same predicate when the builder _is_ mounted. Already null-on-empty + NG0950-defensive; prefer over re-deriving via `toFilterPredicate`. |
@@ -39,7 +39,7 @@ export class PeopleFilter {
 }
 ```
 
-Thin shell; brain lives in `CngxFilterBuilderPresenter` (host directive). `[(value)]` writes through `model<FilterGroup>` mutators —
+Thin shell; brain lives in `CngxFilterBuilderPresenter` (host directive). `[(value)]` writes through `model<FilterGroup>` mutators -
 every change emits a new frozen tree.
 
 ## Controlled usage
@@ -115,7 +115,7 @@ import {
   selector: 'app-country-picker',
   template: `
     <select [value]="value() ?? ''" (change)="value.set($any($event.target).value)">
-      <option value="">—</option>
+      <option value="">-</option>
       <option *ngFor="let c of countries" [value]="c">{{ c }}</option>
     </select>
   `,
@@ -137,11 +137,11 @@ bootstrapApplication(AppComponent, {
 
 Declare a field with `editorType: 'country'`. The row mounts the component via `*ngComponentOutlet` and reads / writes through `value`.
 
-For one-off overrides without a registry entry, use the `cngxFilterBuilderValueEditor` template slot — see [Template slots](#template-slots).
+For one-off overrides without a registry entry, use the `cngxFilterBuilderValueEditor` template slot - see [Template slots](#template-slots).
 
 ## CngxFilter bridge
 
-The presenter exposes `predicate: Signal<((item: T) => boolean) | null>` as a pure derivation of `tree()` and `fields()`. Read it directly — no manual `toFilterPredicate()` call, no per-mutation bridge wiring:
+The presenter exposes `predicate: Signal<((item: T) => boolean) | null>` as a pure derivation of `tree()` and `fields()`. Read it directly - no manual `toFilterPredicate()` call, no per-mutation bridge wiring:
 
 ```typescript
 import { effect, untracked, viewChild } from '@angular/core';
@@ -179,7 +179,7 @@ export class People {
 
 `predicate()` returns `null` when the tree is empty (root clear), so `setPredicate(null)` cascades to `activeCount = 0` instead of latching a vacuous-true predicate that still counts as active.
 
-Mount `[cngxFilter]` directly on the data element (the `<table>`, `<ul>`, etc.) — no separate host `<div>` needed.
+Mount `[cngxFilter]` directly on the data element (the `<table>`, `<ul>`, etc.) - no separate host `<div>` needed.
 
 ## Pure-function variant
 
@@ -194,7 +194,7 @@ readonly filtered = computed(() => {
 });
 ```
 
-When the builder _is_ mounted, prefer `presenter.predicate()` — it already encodes the empty-tree → `null` semantic and shields against the early-read NG0950 race when an effect resolves the presenter
+When the builder _is_ mounted, prefer `presenter.predicate()` - it already encodes the empty-tree → `null` semantic and shields against the early-read NG0950 race when an effect resolves the presenter
 before the host-directive `fields` input has propagated.
 
 ## Form-field bridge
@@ -220,7 +220,7 @@ export class FormFieldDriven {
 }
 ```
 
-Listeners stay on the directive, not on the presenter — consumers without the form-field bridge pay no event-listener cost. 
+Listeners stay on the directive, not on the presenter - consumers without the form-field bridge pay no event-listener cost. 
 For Reactive Forms, wrap the `FormControl` with `adaptFormControl()` from `@cngx/forms/field` and pass the returned accessor as `[field]`.
 
 ## Operator semantics
@@ -231,7 +231,7 @@ For Reactive Forms, wrap the `FormControl` with `adaptFormControl()` from `@cngx
 | `or` | At least one direct child evaluates to `true`. Empty group → `false`. |
 | `xor` | Exactly one direct child evaluates to `true` (n ≥ 2 required). |
 
-`negated: boolean` on a group flips the result of the logic combinator — `negated: true` over `and` denotes the rejected `nand`; over `or` denotes `nor`.
+`negated: boolean` on a group flips the result of the logic combinator - `negated: true` over `and` denotes the rejected `nand`; over `or` denotes `nor`.
 
 `xor` is not associative across nested groups; nest a sub-group of the desired arity to express XOR over more children.
 
@@ -278,9 +278,9 @@ Three-stage cascade: `contentChild` directive → `CNGX_FILTER_BUILDER_CONFIG.te
 | Decorative glyphs in default buttons | `aria-hidden="true"` (decorative) |
 | Live region (always in DOM) | `aria-live="polite"`; mutation announcements via `CngxFilterBuilderAnnouncer` |
 
-Loading / refreshing / error ARIA (`aria-busy`, `role="alert"`, skeleton placeholders) lives on the consumer's `<cngx-async-container>` wrap — see [State-driven UI](#state-driven-ui).
+Loading / refreshing / error ARIA (`aria-busy`, `role="alert"`, skeleton placeholders) lives on the consumer's `<cngx-async-container>` wrap - see [State-driven UI](#state-driven-ui).
 
-Dev-mode guards (`isDevMode()`) warn when `fields()` is empty or when `value()` references unknown field keys — see `CngxFilterBuilderPresenter` constructor.
+Dev-mode guards (`isDevMode()`) warn when `fields()` is empty or when `value()` references unknown field keys - see `CngxFilterBuilderPresenter` constructor.
 
 ## CSS variables
 
@@ -306,7 +306,7 @@ Each nested group also exposes a depth host style, `--cngx-filter-builder-depth`
 
 ## Standalone filter rows
 
-`CngxFilterRow` is a single-row surface for ad-hoc filter contexts: a top-of-table quick filter, a side-panel filter, or any place where a full builder tree is overkill but the user still needs to pick the field. Owns one `FilterExpression | null` via `[(value)]` directly — no
+`CngxFilterRow` is a single-row surface for ad-hoc filter contexts: a top-of-table quick filter, a side-panel filter, or any place where a full builder tree is overkill but the user still needs to pick the field. Owns one `FilterExpression | null` via `[(value)]` directly - no
 presenter, no host token.
 
 Pass `[fields]` and a writable `[(value)]` binding. With more than one field and an empty value the row renders only the field-picker; with a single field it auto-seeds and skips the picker (one Option = no choice). The Remove button writes `null`.
@@ -336,7 +336,7 @@ const PEOPLE = [
     <cngx-filter-row [fields]="fields" [(value)]="filter" />
     <ul>
       @for (p of filtered(); track p.name) {
-        <li>{{ p.name }} — {{ p.role }}</li>
+        <li>{{ p.name }} - {{ p.role }}</li>
       }
     </ul>
   `,

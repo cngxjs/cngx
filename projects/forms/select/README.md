@@ -1,6 +1,6 @@
 # @cngx/forms/select
 
-The select family — eight specialised dropdown components sharing one signal-native core. Replaces the monolithic `[multiple]` / `[searchable]` / `[hierarchical]` flag pattern with one component per intent.
+The select family - eight specialised dropdown components sharing one signal-native core. Replaces the monolithic `[multiple]` / `[searchable]` / `[hierarchical]` flag pattern with one component per intent.
 
 > For the deep architectural rationale and accepted-debt notes, see [`ARCHITECTURE.md`](./ARCHITECTURE.md) in this folder.
 
@@ -19,7 +19,7 @@ You need a dropdown surface in a form. The right variant follows the value shape
 | Pick one and dispatch an action immediately              | `<cngx-action-select>`            |
 | Pick many and dispatch on each toggle                    | `<cngx-action-multi-select>`      |
 
-All eight integrate directly with `<cngx-form-field>` — no bridge directive needed.
+All eight integrate directly with `<cngx-form-field>` - no bridge directive needed.
 
 ## Mental model
 
@@ -36,7 +36,7 @@ Three properties make the family feel consistent:
 Every variant ships full WAI-ARIA 1.2:
 
 - `role="combobox"` on the focusable trigger.
-- `aria-expanded`, `aria-controls`, `aria-haspopup`, `aria-busy`, `aria-invalid`, `aria-required` all reactive — derived in the `computed` graph.
+- `aria-expanded`, `aria-controls`, `aria-haspopup`, `aria-busy`, `aria-invalid`, `aria-required` all reactive - derived in the `computed` graph.
 - Focus stays on the trigger; the active option is announced via `aria-activedescendant`.
 - Tree variant: `role="tree"`, `aria-multiselectable`, per-node `aria-level` / `aria-posinset` / `aria-setsize` / `aria-expanded` / `aria-selected`.
 - Reorderable variant: chip-strip `role="group"` with manual roving tabindex; reorder moves announced through the live region.

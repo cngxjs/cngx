@@ -1,6 +1,6 @@
 # CngxCombobox
 
-Multi-value tag picker with an inline `<input role="combobox">` —type to filter, pick to commit.
+Multi-value tag picker with an inline `<input role="combobox">` -type to filter, pick to commit.
 Same chip strip as [`CngxMultiSelect`](../multi-select/README.md), but the trigger lets users narrow the option list with live search.
 
 ## When to use
@@ -106,7 +106,7 @@ The chip strip is suppressed; the search input stays visible next to the summary
 
 ### Backspace-on-empty removes the trailing chip
 
-Wired natively — pressing Backspace in an empty input triggers the same commit-aware path as the chip ✕ button.
+Wired natively - pressing Backspace in an empty input triggers the same commit-aware path as the chip ✕ button.
 
 ### Input adornments
 
@@ -140,6 +140,6 @@ All [`CngxMultiSelect` slots](../multi-select/README.md#template-slots) plus:
 | ------------------------- | ------------------------------------------------------------------- |
 | Printable key             | Filter the panel options                                            |
 | `Arrow Down` / `Up`       | Move highlight                                                      |
-| `Enter`                   | Toggle highlighted option (no panel close — `closeOnSelect: false`) |
+| `Enter`                   | Toggle highlighted option (no panel close - `closeOnSelect: false`) |
 | `Backspace` (empty input) | Remove the trailing chip (commit-aware)                             |
 | `Escape`                  | Close panel                                                         |

@@ -1,13 +1,13 @@
 # CngxActionSelect
 
 Single-value variant of [`CngxTypeahead`](../typeahead/README.md) that hosts an inline action workflow inside the panel.
-The `*cngxSelectAction` slot lets consumers render a quick-create form, a filter bar, or a "manage tags" pop-out without closing the panel — the slot context exposes `commit()` / `close()` / `isPending` / `dirty` / `retry()` / `error` so consumer markup orchestrates the inline workflow declaratively.
+The `*cngxSelectAction` slot lets consumers render a quick-create form, a filter bar, or a "manage tags" pop-out without closing the panel - the slot context exposes `commit()` / `close()` / `isPending` / `dirty` / `retry()` / `error` so consumer markup orchestrates the inline workflow declaratively.
 
 ## When to use
 
 - Pickers that need an inline "create a new option" affordance.
 - Workflows where the user should be able to act on the option list without losing panel context (filter, manage, bulk-edit).
-- Single-value selection — the multi-value sibling is [`CngxActionMultiSelect`](../action-multi-select/README.md).
+- Single-value selection - the multi-value sibling is [`CngxActionMultiSelect`](../action-multi-select/README.md).
 
 For pure single-value autocomplete reach for [`CngxTypeahead`](../typeahead/README.md).
 
@@ -80,7 +80,7 @@ The `*cngxSelectAction` template receives a context object with:
 | `error`                    | `unknown`    | Last `commit()` error (or `null`)                                           |
 | `hasError`                 | `boolean`    | Convenience flag                                                            |
 | `value`                    | `T`          | Current `value()` (type-erased)                                             |
-| `setDirty(dirty: boolean)` | `() => void` | Imperative dirty-flag write (rare — usually the bridge tracks this for you) |
+| `setDirty(dirty: boolean)` | `() => void` | Imperative dirty-flag write (rare - usually the bridge tracks this for you) |
 
 ## Common patterns
 
@@ -97,7 +97,7 @@ The `*cngxSelectAction` template receives a context object with:
 >
   @if (error) {
   <div role="alert">
-    Couldn't create — {{ error?.message }}
+    Couldn't create - {{ error?.message }}
     <button type="button" (click)="retry()">Try again</button>
   </div>
   } @else {
@@ -112,7 +112,7 @@ The retry replays with the same term that failed, no need to re-type.
 
 ### Use the shared OK/Cancel fixture
 
-For demos that just need a canonical button pair, drop in the shared fixture from `dev-app/.../_fixtures/`:
+For demos that just need a canonical button pair, drop in the shared fixture from `examples/fixtures/`:
 
 ```html
 <ng-template
@@ -130,11 +130,11 @@ For demos that just need a canonical button pair, drop in the shared fixture fro
 </ng-template>
 ```
 
-Demo fixture only — not part of the published `@cngx/forms/select` API.
+Demo fixture only - not part of the published `@cngx/forms/select` API.
 
 ### Dismiss-guard during a dirty workflow
 
-When the action slot is `dirty` (per the bridge — typically tracked automatically while `quickCreateAction` is mid-flight), Escape and click-outside are intercepted so the user can't accidentally dump unsaved input.
+When the action slot is `dirty` (per the bridge - typically tracked automatically while `quickCreateAction` is mid-flight), Escape and click-outside are intercepted so the user can't accidentally dump unsaved input.
 Configurable via:
 
 ```typescript
@@ -147,7 +147,7 @@ provideCngxSelect(
 
 ### Persistent local-items buffer
 
-Just-created items survive a server `[state]` refetch — useful when the consumer creates an option locally before the next list refresh sees it.
+Just-created items survive a server `[state]` refetch - useful when the consumer creates an option locally before the next list refresh sees it.
 
 ```typescript
 import { CNGX_LOCAL_ITEMS_BUFFER_FACTORY } from '@cngx/forms/select';
@@ -181,8 +181,8 @@ Same as `CngxTypeahead` plus:
 
 | Key                                                 | Behaviour                                                                                        |
 | --------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| `Enter` (in action slot when no option highlighted) | Whatever the action template wires up — typically `commit()`                                     |
-| `Escape` (action workflow dirty)                    | Intercepted per `focusTrapBehavior` — the consumer's `close()` callback owns the cancel decision |
+| `Enter` (in action slot when no option highlighted) | Whatever the action template wires up - typically `commit()`                                     |
+| `Escape` (action workflow dirty)                    | Intercepted per `focusTrapBehavior` - the consumer's `close()` callback owns the cancel decision |
 
 ## Configuration
 

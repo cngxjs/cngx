@@ -2,7 +2,7 @@
 
 Multi-value select where the chip strip is reorderable.
 Same surface as [`CngxMultiSelect`](../multi-select/README.md) plus pointer-drag and keyboard reorder (modifier + arrow keys).
-Reorder commits flow through the same `[commitAction]` machinery — useful for ranked lists that persist their order to the server.
+Reorder commits flow through the same `[commitAction]` machinery - useful for ranked lists that persist their order to the server.
 
 ## When to use
 
@@ -39,7 +39,7 @@ export class RankPicker {
 
 ## Forms integration
 
-Identical to [`CngxMultiSelect`](../multi-select/README.md#forms-integration). The `Field<T[]>` syncs both membership AND order — your form model is the source of truth for sequence.
+Identical to [`CngxMultiSelect`](../multi-select/README.md#forms-integration). The `Field<T[]>` syncs both membership AND order - your form model is the source of truth for sequence.
 
 ## Common patterns
 
@@ -66,7 +66,7 @@ The chip strip freezes during a commit in flight (`reorderDisabled = disabled() 
 
 ### Chip drag-handle override
 
-Three-stage cascade — directive wins over Input, Input wins over the default `CNGX_SELECT_GLYPHS.dragHandle` (`⋮⋮`):
+Three-stage cascade - directive wins over Input, Input wins over the default `CNGX_SELECT_GLYPHS.dragHandle` (`⋮⋮`):
 
 ```html
 <cngx-reorderable-multi-select [options]="people" [(values)]="values">
@@ -78,7 +78,7 @@ Three-stage cascade — directive wins over Input, Input wins over the default `
 </cngx-reorderable-multi-select>
 ```
 
-The handle wrapper stays `aria-hidden="true"` — drag affordance is exposed to AT via `[reorderAriaLabel]`.
+The handle wrapper stays `aria-hidden="true"` - drag affordance is exposed to AT via `[reorderAriaLabel]`.
 
 ### Custom chip rendering with positional labels
 
@@ -118,7 +118,7 @@ All [`CngxMultiSelect` slots](../multi-select/README.md#template-slots) plus:
 Modifier defaults to `Ctrl`; configurable via
 `provideReorderableSelectConfig(withReorderKeyboardModifier('alt'))`.
 
-Pointer drag works regardless of keyboard modifier — drag a chip's
+Pointer drag works regardless of keyboard modifier - drag a chip's
 handle (`⋮⋮` or your custom slot template) to reorder. Escape during a
 drag cancels without commit; pointer release commits.
 

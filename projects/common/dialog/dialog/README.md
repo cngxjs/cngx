@@ -177,9 +177,9 @@ Sets backdrop, border-radius, padding, surface colors, and shadow from the Mater
 
 ## See Also
 
-- [CngxBottomSheet](../bottom-sheet/README.md) — Bottom sheet variant
-- [CngxDialogDraggable](../draggable/README.md) — Drag behavior
-- [CngxFocusTrap](../../a11y/src/focus/README.md) — Focus trap for modals
-- [CngxFocusRestore](../../a11y/src/focus/README.md) — Focus restoration
-- [CngxAutofocus](../../a11y/src/focus/README.md) — Autofocus on insertion
+- [CngxBottomSheet](../bottom-sheet/README.md) - Bottom sheet variant
+- [CngxDialogDraggable](../draggable/README.md) - Drag behavior
+- [CngxFocusTrap](../../a11y/src/focus/README.md) - Focus trap for modals
+- [CngxFocusRestore](../../a11y/src/focus/README.md) - Focus restoration
+- [CngxAutofocus](../../a11y/src/focus/README.md) - Autofocus on insertion
 - Compodoc API documentation: `npm run docs:serve`

@@ -1,4 +1,4 @@
-# CngxValidators — Custom Form Validators
+# CngxValidators - Custom Form Validators
 
 Specialized validators for pattern matching and checkbox agreement validation.
 

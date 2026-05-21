@@ -1,9 +1,9 @@
-# `shared/` — Select-family infrastructure
+# `shared/` - Select-family infrastructure
 
 This folder is the spine of `@cngx/forms/select`.
 The eight variants (`single-select`, `multi-select`, `combobox`, `typeahead`, `tree-select`, `reorderable-multi-select`, `action-select`, `action-multi-select`) are thin `@Component` declarations that delegate every cross-cutting concern to factories, tokens, slot directives, and config helpers defined here.
 
-If you're consuming the public API, you usually don't import from here directly — pull from `@cngx/forms/select` and the right facade is re-exported.
+If you're consuming the public API, you usually don't import from here directly - pull from `@cngx/forms/select` and the right facade is re-exported.
 If you're extending the family (new variant, telemetry override, custom commit policy), this README is the navigation guide.
 
 For the architectural overview see [`../../../ARCHITECTURE.md`](../../../ARCHITECTURE.md).
@@ -12,13 +12,13 @@ For the architectural overview see [`../../../ARCHITECTURE.md`](../../../ARCHITE
 
 The artifacts cluster into seven concerns:
 
-1. [Core factory](#1-core-factory) — `createSelectCore` and its inputs/outputs.
-2. [Commit machinery](#2-commit-machinery) — controller + four flow handlers + announcer.
-3. [Panel infrastructure](#3-panel-infrastructure) — host tokens, panel-shell, renderer.
-4. [Lifecycle helpers](#4-lifecycle-helpers) — emitter, dismiss, search, focus, field-sync, AD-dispatch, display-binding.
-5. [Template slot system](#5-template-slot-system) — directives + cascade registry.
-6. [Configuration cascade](#6-configuration-cascade) — three config surfaces + aggregator.
-7. [Family primitives](#7-family-primitives) — option model, navigation helpers, glyphs, CSS.
+1. [Core factory](#1-core-factory) - `createSelectCore` and its inputs/outputs.
+2. [Commit machinery](#2-commit-machinery) - controller + four flow handlers + announcer.
+3. [Panel infrastructure](#3-panel-infrastructure) - host tokens, panel-shell, renderer.
+4. [Lifecycle helpers](#4-lifecycle-helpers) - emitter, dismiss, search, focus, field-sync, AD-dispatch, display-binding.
+5. [Template slot system](#5-template-slot-system) - directives + cascade registry.
+6. [Configuration cascade](#6-configuration-cascade) - three config surfaces + aggregator.
+7. [Family primitives](#7-family-primitives) - option model, navigation helpers, glyphs, CSS.
 
 Every public token follows the `provide` / `with` / `inject` / `create` prefix convention (see global memory `reference_api_prefix_convention.md`).
 Every factory has a corresponding DI token (`Cngx<Name>Factory` type + `CNGX_<NAME>_FACTORY` constant) for swap-without-fork extensibility.
@@ -31,7 +31,7 @@ Every factory has a corresponding DI token (`Cngx<Name>Factory` type + `CNGX_<NA
 
 `createSelectCore<T, TCommit>(deps, announcerInputs)` is the heart of every variant. It bundles the pure-derivation signal graph (option model, panel view, ARIA projection, selection, commit infrastructure, announcer hook) into one object that the variant's `@Component` body delegates to.
 
-Every variant calls it once in a field initialiser and stores the returned `CngxSelectCore<T, TCommit>` instance. What stays in the variant body is the trigger template and the value-shape adapter — everything else flows through this factory.
+Every variant calls it once in a field initialiser and stores the returned `CngxSelectCore<T, TCommit>` instance. What stays in the variant body is the trigger template and the value-shape adapter - everything else flows through this factory.
 
 Public exports re-emitted from `@cngx/forms/select`:
 
@@ -82,7 +82,7 @@ Low-level state machine for the async-commit lifecycle. Owns the `ManualAsyncSta
 | `CngxSelectCommitControllerFactory`     | DI factory type                           |
 | `CNGX_SELECT_COMMIT_CONTROLLER_FACTORY` | DI token                                  |
 
-Override the token to wrap the controller with retry-with-backoff, offline queues, or telemetry — every variant picks up the override without a fork.
+Override the token to wrap the controller with retry-with-backoff, offline queues, or telemetry - every variant picks up the override without a fork.
 
 ### `array-commit-handler.ts`
 
@@ -138,8 +138,8 @@ Action-host quick-create commit flow (used by `CngxActionSelect` and `CngxAction
 
 Declarative scalar commit-error announce policy. Two policies:
 
-- `{ kind: 'verbose'; severity: 'assertive' \| 'polite' }` — `CngxSelect` reads.
-- `{ kind: 'soft' }` — `CngxTypeahead` reads (announces "removed" politely).
+- `{ kind: 'verbose'; severity: 'assertive' \| 'polite' }` - `CngxSelect` reads.
+- `{ kind: 'soft' }` - `CngxTypeahead` reads (announces "removed" politely).
 
 | Symbol                                | Purpose              |
 | ------------------------------------- | -------------------- |
@@ -150,7 +150,7 @@ Declarative scalar commit-error announce policy. Two policies:
 | `CngxCommitErrorAnnouncerFactory`     | DI factory type      |
 | `CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY` | DI token             |
 
-The two-policy split is documented as accepted debt — see
+The two-policy split is documented as accepted debt - see
 `select-family-accepted-debt.md` entry #1.
 
 ### `chip-removal-handler.ts`
@@ -180,22 +180,22 @@ Two host-contract tokens that the panel-shell + panel components consume from th
 
 | Symbol                             | Purpose                                                                                                                                                                                        |
 | ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `CngxSelectPanelViewHost<T>`       | Narrow shell contract — `activeView`, `skeletonIndices`, error/commit-error contexts, `tpl`, `fallbackLabels`, `ariaLabels`, optional `searchTerm` / `unfilteredCount` / `previousLoadedCount` |
-| `CNGX_SELECT_PANEL_VIEW_HOST`      | Token for the narrow contract — provided by all 8 variants, injected by `CngxSelectPanelShell`                                                                                                 |
-| `CngxSelectPanelHost<T>`           | Full option-loop contract — extends the view host with `options`, `isSelected`, `isIndeterminate`, indicator resolution, listbox comparator, AD active id, commit-error value                  |
-| `CNGX_SELECT_PANEL_HOST`           | Token for the full contract — provided by 7 of 8 variants (tree-select uses `CNGX_TREE_SELECT_PANEL_HOST` instead)                                                                             |
+| `CngxSelectPanelViewHost<T>`       | Narrow shell contract - `activeView`, `skeletonIndices`, error/commit-error contexts, `tpl`, `fallbackLabels`, `ariaLabels`, optional `searchTerm` / `unfilteredCount` / `previousLoadedCount` |
+| `CNGX_SELECT_PANEL_VIEW_HOST`      | Token for the narrow contract - provided by all 8 variants, injected by `CngxSelectPanelShell`                                                                                                 |
+| `CngxSelectPanelHost<T>`           | Full option-loop contract - extends the view host with `options`, `isSelected`, `isIndeterminate`, indicator resolution, listbox comparator, AD active id, commit-error value                  |
+| `CNGX_SELECT_PANEL_HOST`           | Token for the full contract - provided by 7 of 8 variants (tree-select uses `CNGX_TREE_SELECT_PANEL_HOST` instead)                                                                             |
 | `CngxSelectPanelShellTemplates<T>` | Narrow 7-slot template bundle the shell reads                                                                                                                                                  |
 | `CngxSelectActionCallbacks`        | Action-slot callback bundle                                                                                                                                                                    |
 
 ### `panel-shell/`
 
-Subfolder containing `panel-shell.component.ts` — the shared frame around every variant's panel body.
-Owns the `activeView()` switch (loading variants, empty/none, first-load error, refresh indicator, commit-error banner) and projects the variant-specific body via `<ng-content />`. Internal — `@internal` JSDoc tag — but exported as
+Subfolder containing `panel-shell.component.ts` - the shared frame around every variant's panel body.
+Owns the `activeView()` switch (loading variants, empty/none, first-load error, refresh indicator, commit-error banner) and projects the variant-specific body via `<ng-content />`. Internal - `@internal` JSDoc tag - but exported as
 `CngxSelectPanelShell` for variant components that compose it.
 
 ### `panel/`
 
-Subfolder containing `panel.component.ts` — the flat option-loop panel body.
+Subfolder containing `panel.component.ts` - the flat option-loop panel body.
 Wraps `<cngx-select-panel-shell>` and contributes the grouped/flat `@for` option loop with `viewChildren(CngxOption)`, `items` computed, and `isHighlighted(opt)`.
 Used by 4 variants:
 `CngxSelect`, `CngxMultiSelect`, `CngxCombobox`, `CngxTypeahead`.
@@ -237,7 +237,7 @@ Single shared `effect()` that emits `openedChange` + `opened` + `closed` outputs
 
 ### `dismiss-handler.ts`
 
-Click-outside dismissal. Action-host-aware — when an action workflow is dirty, the handler's `shouldBlockDismiss` callback intercepts the dismissal so unsaved input doesn't get dumped.
+Click-outside dismissal. Action-host-aware - when an action workflow is dirty, the handler's `shouldBlockDismiss` callback intercepts the dismissal so unsaved input doesn't get dumped.
 
 | Symbol                         | Purpose                   |
 | ------------------------------ | ------------------------- |
@@ -344,7 +344,7 @@ Two thin convenience helpers for the most-injected tokens:
 The 17 public slot directives + their context interfaces.
 Each slot is a structural directive whose only job is to project a `TemplateRef` with the documented context shape.
 
-Slot list (with the cascade tier each slot belongs to — every slot flows through the three-stage cascade in `template-registry.ts`):
+Slot list (with the cascade tier each slot belongs to - every slot flows through the three-stage cascade in `template-registry.ts`):
 
 | Directive                                         | Context interface                   |
 | ------------------------------------------------- | ----------------------------------- |
@@ -401,7 +401,7 @@ Used internally by the registry + by tree-select for tree-specific slots that ar
 ### `glyphs.ts`
 
 **Internal-only**, NOT exported from `public-api.ts`. The 5 default glyph strings (`✕ ▾ ▸ ⋮⋮ !`) shared by the slot fallbacks.
-Plain `as const` object — tree-shakeable, `aria-hidden` stays at the call site.
+Plain `as const` object - tree-shakeable, `aria-hidden` stays at the call site.
 
 | Symbol               | Purpose                           |
 | -------------------- | --------------------------------- |
@@ -453,7 +453,7 @@ Unified aggregator across all three config surfaces.
 | `provideCngxSelectAt(...features): Provider[]`           | Component-scoped (viewProviders)                                                                 |
 | `CngxSelectAggregatorFeature`                            | `CngxSelectConfigFeature \| CngxActionSelectConfigFeature \| CngxReorderableSelectConfigFeature` |
 
-The three individual `provide*` providers stay exported for back-compat — the aggregator is purely additive.
+The three individual `provide*` providers stay exported for back-compat - the aggregator is purely additive.
 See [`ARCHITECTURE.md` § Configuration cascade](../../../ARCHITECTURE.md#configuration-cascade).
 
 ### `resolve-config.ts`
@@ -463,7 +463,7 @@ Variants call `resolveSelectConfig()` once at construction.
 
 ### `announcer.ts`
 
-`CngxSelectAnnouncer` is `providedIn: 'root'` — owns the global ARIA-live region and the `announce(message, politeness)` API.
+`CngxSelectAnnouncer` is `providedIn: 'root'` - owns the global ARIA-live region and the `announce(message, politeness)` API.
 The `format()` function in `CngxSelectAnnouncerConfig` builds the sentence; `withAnnouncer({ format: ... })` overrides per-locale.
 
 ---
@@ -476,8 +476,8 @@ The option-shape contract:
 
 | Symbol                                            | Purpose                                                                                                                   |
 | ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| `CngxSelectOptionDef<T>`                          | `{ value, label, disabled?, meta? }` — the canonical option                                                               |
-| `CngxSelectOptionGroupDef<T>`                     | `{ label, children, disabled? }` — for grouped options                                                                    |
+| `CngxSelectOptionDef<T>`                          | `{ value, label, disabled?, meta? }` - the canonical option                                                               |
+| `CngxSelectOptionGroupDef<T>`                     | `{ label, children, disabled? }` - for grouped options                                                                    |
 | `CngxSelectOptionsInput<T>`                       | `(CngxSelectOptionDef<T> \| CngxSelectOptionGroupDef<T>)[]`                                                               |
 | `isCngxSelectOptionGroupDef`                      | Discriminator predicate                                                                                                   |
 | `isOptionDisabled`                                | Handles dual-shape `boolean \| (() => boolean)` (element-component options expose `disabled` as a callable signal-getter) |
@@ -518,7 +518,7 @@ Returns a discriminated `CngxFlatNavAction` (`'select' \| 'highlight' \| 'noop'`
 
 ### `page-jump-handler.ts`
 
-Internal helper used by combobox/typeahead/action variants — they delegate to `CngxListboxSearch` for keyboard input but still need to intercept `PageUp` / `PageDown` directly. `handlePageJumpKey(event, ctx)` returns a boolean indicating whether the key was handled.
+Internal helper used by combobox/typeahead/action variants - they delegate to `CngxListboxSearch` for keyboard input but still need to intercept `PageUp` / `PageDown` directly. `handlePageJumpKey(event, ctx)` returns a boolean indicating whether the key was handled.
 
 ### `select-base.css`
 
@@ -532,4 +532,4 @@ The schematic can eject the trigger skin into the consumer's project while keepi
 
 ## How to extend
 
-See [`ARCHITECTURE.md` § How to extend](../../../ARCHITECTURE.md#how-to-extend) — four walkthroughs covering new slots, new ariaLabels keys, factory overrides, and adding a ninth variant.
+See [`ARCHITECTURE.md` § How to extend](../../../ARCHITECTURE.md#how-to-extend) - four walkthroughs covering new slots, new ariaLabels keys, factory overrides, and adding a ninth variant.

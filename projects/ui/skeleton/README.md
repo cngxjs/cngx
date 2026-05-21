@@ -39,10 +39,10 @@ export class ExampleComponent {
 - **Repetition:** Repeats placeholder template via `[count]` input
 - **Shimmer animation:** Optional shimmer effect that respects `prefers-reduced-motion`
 - **Async state integration:** Automatically hides when data arrives (via `[state]` input)
-- **DOM efficiency:** Uses `display: contents` — no wrapper overhead
+- **DOM efficiency:** Uses `display: contents` - no wrapper overhead
 - **ARIA:** Sets `aria-busy="true"` while loading
 
-The component is composable with `CngxSkeletonPlaceholder` directive (content projection). No boilerplate `@if/@for` needed — the component handles template repetition internally.
+The component is composable with `CngxSkeletonPlaceholder` directive (content projection). No boilerplate `@if/@for` needed - the component handles template repetition internally.
 
 ## Accessibility
 

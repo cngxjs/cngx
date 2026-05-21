@@ -107,10 +107,10 @@ All derived from Signal Forms `FieldState` via `computed()`:
 
 ## Bridging Controls to a Field
 
-- `[cngxBindField]` — universal bridge; place on any Material, native, or custom
+- `[cngxBindField]` - universal bridge; place on any Material, native, or custom
   control. Derives all form-field state from the bound field. Value-flow runs
   through the control's own bindings (`[control]` or `[formControl]`).
-- `CngxListboxFieldBridge` — specialised bridge for `CngxListbox` that handles
+- `CngxListboxFieldBridge` - specialised bridge for `CngxListbox` that handles
   multi-select and `compareWith` value-sync.
 
 ## Optional Material Theme

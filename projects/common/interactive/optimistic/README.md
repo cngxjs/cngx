@@ -19,7 +19,7 @@ import { optimistic } from '@cngx/common/interactive';
   template: `
     <input [value]="name()" (change)="updateName($event.target.value)" />
     @if (optimisticState.rolledBack()) {
-      <span class="error">Reverted — server rejected the change</span>
+      <span class="error">Reverted - server rejected the change</span>
     }
   `,
 })
@@ -75,11 +75,11 @@ private readonly [incrementCount, countState] = optimistic(
 
 ## Styling
 
-optimistic provides no styling — it exposes state signals for consumers:
+optimistic provides no styling - it exposes state signals for consumers:
 
-- `rolledBack()` — Show a rollback indicator
-- `error()` — Display the error message
-- `state.status()` — Use the full async state for complex feedback
+- `rolledBack()` - Show a rollback indicator
+- `error()` - Display the error message
+- `state.status()` - Use the full async state for complex feedback
 
 ## Examples
 
@@ -265,52 +265,10 @@ private readonly [setRating, ratingState] = optimistic(
 }
 ```
 
-## Implementation Notes
-
-### Subscription Management
-
-optimistic uses a managed subscription to handle the Observable:
-
-```typescript
-activeSub = action(newValue)
-  .pipe(take(1))
-  .subscribe({
-    next: (confirmed) => {
-      confirmedValue = confirmed;
-      current.set(confirmed);
-      statusState.set('success');
-      activeSub = undefined;
-    },
-    error: (err) => {
-      current.set(confirmedValue);  // Rollback to last confirmed
-      rolledBackState.set(true);
-      errorState.set(err);
-      statusState.set('error');
-      activeSub = undefined;
-    },
-  });
-```
-
-**Important:** The internal subscription is unmanaged — there is no `DestroyRef` in a plain factory function. If the component is destroyed mid-flight, the subscription completes silently. This is acceptable because:
-
-1. The rollback always restores to the last server-confirmed value (not stale optimistic state)
-2. Rapid re-invocations automatically cancel in-flight subscriptions
-3. For long-running actions, ensure the component outlives the action or cancel via the Observable
-
-### Confirmed Value Tracking
-
-The factory tracks `confirmedValue` — the last server-confirmed state. On rollback, it restores to this value, not the stale optimistic update. Rapid concurrent calls are handled correctly:
-
-```typescript
-signal.set(valueA);  // Optimistic, in-flight
-signal.set(valueB);  // Cancels valueA, new action with valueB
-// On error: rolls back to previous confirmedValue, not valueA
-```
-
 ## See Also
 
-- [compodoc API documentation](https://cngxjs.github.io/cngx/)
-- [CngxAsyncState](../../../core/utils/) — The shared state interface
-- [withRetry](../retry/) — Combines well with optimistic for resilient updates
-- Demo: `dev-app/src/app/demos/common/optimistic-demo/`
+- [API on compodocx](https://cngxjs.github.io/cngx/)
+- [CngxAsyncState](../../../core/utils/) - The shared state interface
+- [withRetry](../retry/) - Combines well with optimistic for resilient updates
+- Demo: `examples/stories/common/optimistic-demo/`
 - Tests: `projects/common/interactive/optimistic/optimistic.spec.ts`

@@ -116,7 +116,7 @@ Replace the built-in SVG spinner with a custom component.
 withSpinnerTemplate(CustomSpinnerComponent)
 ```
 
-The custom component receives **no inputs** — styling is entirely via CSS custom properties.
+The custom component receives **no inputs** - styling is entirely via CSS custom properties.
 
 #### Example
 
@@ -272,19 +272,19 @@ Global animation and styling configuration via CSS:
 
 ### Spinner
 
-- `--cngx-spin-duration` (default `2s`) — Rotation duration
-- `--cngx-spin-easing` (default `linear`) — Rotation easing
+- `--cngx-spin-duration` (default `2s`) - Rotation duration
+- `--cngx-spin-easing` (default `linear`) - Rotation easing
 
 ### Progress Bar
 
-- `--cngx-progress-transition-duration` (default `300ms`) — Value change transition
-- `--cngx-progress-easing` (default `ease-out`) — Value change easing
+- `--cngx-progress-transition-duration` (default `300ms`) - Value change transition
+- `--cngx-progress-easing` (default `ease-out`) - Value change easing
 
 ### Toast / Alert / Banner
 
-- `--cngx-toast-enter-duration` (default `200ms`) — Slide-in animation
-- `--cngx-overlay-transition-duration` (default `300ms`) — Overlay fade
-- `--cngx-overlay-transition-easing` (default `ease-out`) — Overlay easing
+- `--cngx-toast-enter-duration` (default `200ms`) - Slide-in animation
+- `--cngx-overlay-transition-duration` (default `300ms`) - Overlay fade
+- `--cngx-overlay-transition-easing` (default `ease-out`) - Overlay easing
 
 #### Example
 
@@ -381,8 +381,8 @@ bootstrapApplication(AppComponent, {
 
 ## See Also
 
-- [CngxAlert](../alert/README.md) — Inline alerts
-- [CngxBanner](../banner/README.md) — System banners
-- [CngxToaster](../toast/README.md) — Toasts
-- [CngxLoadingIndicator](../loading/README.md) — Loading spinners
+- [CngxAlert](../alert/README.md) - Inline alerts
+- [CngxBanner](../banner/README.md) - System banners
+- [CngxToaster](../toast/README.md) - Toasts
+- [CngxLoadingIndicator](../loading/README.md) - Loading spinners
 - Compodoc API documentation: `npm run docs:serve`

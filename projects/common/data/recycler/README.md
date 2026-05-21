@@ -1,6 +1,6 @@
-# Recycler — DOM Recycling
+# Recycler - DOM Recycling
 
-Signal-based virtualizer for long lists. Items outside the viewport are removed from the DOM while scroll position stays correct. No special viewport component, no structural directive — the consumer renders with `@for` and two spacer containers.
+Signal-based virtualizer for long lists. Items outside the viewport are removed from the DOM while scroll position stays correct. No special viewport component, no structural directive - the consumer renders with `@for` and two spacer containers.
 
 ```typescript
 import {
@@ -31,7 +31,7 @@ paddingBottom = (5000 - 62) * 48px          ← spacer keeps scrollbar correct
 
 ## Pattern 1: Fixed Height List
 
-The simplest case — all items loaded upfront or via initial fetch.
+The simplest case - all items loaded upfront or via initial fetch.
 
 ```typescript
 @Component({
@@ -114,7 +114,7 @@ export class InfiniteProductList {
     this.loadingMore.set(true);
     this.http.get<Product[]>(`/api/products?page=${this.nextPage}`).subscribe(page => {
       this.items.update(prev => [...prev, ...page]);
-      // sliced() recomputes automatically — Signal reactivity
+      // sliced() recomputes automatically - Signal reactivity
       // SR announces "20 more items loaded. 120 total."
       this.loadingMore.set(false);
       this.nextPage++;
@@ -123,7 +123,7 @@ export class InfiniteProductList {
 }
 ```
 
-Scrolling back up doesn't re-fetch: the items array only grows (append-only). Already-loaded items stay in memory; the recycler just slices a different window — no HTTP call, no re-rendering of the full list.
+Scrolling back up doesn't re-fetch: the items array only grows (append-only). Already-loaded items stay in memory; the recycler just slices a different window - no HTTP call, no re-rendering of the full list.
 
 ```
 Page 1 loaded → items = [0..49]    → recycler shows 0-20
@@ -147,7 +147,7 @@ Add `[cngxMeasure]` to each item. The recycler accumulates measured heights for 
 }
 ```
 
-`CngxMeasure` uses `ResizeObserver` — measurements stay current when content changes (font loading, image load, expansion). Measured heights are cached permanently in `SizeCache` — scrolling back to previously-visited items uses the cached height, not the estimate.
+`CngxMeasure` uses `ResizeObserver` - measurements stay current when content changes (font loading, image load, expansion). Measured heights are cached permanently in `SizeCache` - scrolling back to previously-visited items uses the cached height, not the estimate.
 
 ## Pattern 4: With CngxAsyncState
 
@@ -186,9 +186,9 @@ readonly visible = this.recycler.sliced(computed(() => this.state.data() ?? []))
 
 ## Pattern 5: Grid Layout
 
-Grid mode uses placeholder counts instead of pixel spacers. CSS Grid with `auto-fill` + `minmax` distributes items across columns — invisible placeholders hold grid positions.
+Grid mode uses placeholder counts instead of pixel spacers. CSS Grid with `auto-fill` + `minmax` distributes items across columns - invisible placeholders hold grid positions.
 
-`placeholdersBefore()` and `placeholdersAfter()` are only non-zero in grid mode. In list mode they are always 0 — use `offsetBefore`/`offsetAfter` instead.
+`placeholdersBefore()` and `placeholdersAfter()` are only non-zero in grid mode. In list mode they are always 0 - use `offsetBefore`/`offsetAfter` instead.
 
 ```typescript
 readonly recycler = injectRecycler({
@@ -242,7 +242,7 @@ effect(() => {
 
 ## Pattern 7: Infinite Scroll + Pagination Combined
 
-Both scrolling and clicking a page number work together. The data source is append-only (infinite scroll), the paginator acts as **navigation** — it scrolls to the page position instead of re-fetching.
+Both scrolling and clicking a page number work together. The data source is append-only (infinite scroll), the paginator acts as **navigation** - it scrolls to the page position instead of re-fetching.
 
 ```typescript
 @Component({
@@ -292,7 +292,7 @@ export class HybridList {
       const page = pg()?.pageIndex();
       if (page != null) {
         this.recycler.scrollToIndex(page * this.pageSize);
-        // If the page isn't loaded yet, pendingTarget kicks in —
+        // If the page isn't loaded yet, pendingTarget kicks in -
         // CngxInfiniteScroll keeps loading until the target is reachable.
       }
     });
@@ -317,7 +317,7 @@ How they stay in sync:
 
 ## Pattern 8: Windowed / Page-Based Loading (Advanced)
 
-For datasets too large to keep in memory (100k+ items), use `recycler.neededRange()` (returns `Signal<{ start: number; end: number }>`) to load only the pages around the viewport and discard distant pages. **Most apps don't need this** — 10,000 items in an array is a few MB. Use this only when memory is a real constraint.
+For datasets too large to keep in memory (100k+ items), use `recycler.neededRange()` (returns `Signal<{ start: number; end: number }>`) to load only the pages around the viewport and discard distant pages. **Most apps don't need this** - 10,000 items in an array is a few MB. Use this only when memory is a real constraint.
 
 The recycler provides `neededRange` and `totalCount`. The consumer manages the sparse data cache.
 
@@ -343,7 +343,7 @@ export class WindowedList {
   private readonly PAGE_SIZE = 50;
   private readonly MAX_CACHED_PAGES = 10;
 
-  // Total count from server — the recycler uses this for scroll height
+  // Total count from server - the recycler uses this for scroll height
   readonly serverTotal = signal(0);
 
   readonly recycler = injectRecycler({
@@ -352,11 +352,11 @@ export class WindowedList {
     estimateSize: 48,
   });
 
-  // Sparse page cache — only pages near the viewport
+  // Sparse page cache - only pages near the viewport
   private readonly pageCache = signal(new Map<number, Product[]>());
   private readonly loadingPages = new Set<number>();
 
-  // Visible indices array (NOT sliced — we don't have a dense array)
+  // Visible indices array (NOT sliced - we don't have a dense array)
   readonly visibleIndices = computed(() => {
     const s = this.recycler.start();
     const e = this.recycler.end();
@@ -427,10 +427,10 @@ Key differences from append-only:
 | | Append-only (Pattern 2) | Windowed (Pattern 8) |
 |-|-|-|
 | `totalCount` | Loaded item count (grows) | Server total (fixed) |
-| `sliced()` | Yes — dense array | No — sparse cache, use `start()`/`end()` directly |
+| `sliced()` | Yes - dense array | No - sparse cache, use `start()`/`end()` directly |
 | Memory | Grows with loaded pages | Bounded by `MAX_CACHED_PAGES` |
 | Scroll back | Instant (data in array) | May need re-fetch (evicted pages) |
-| Complexity | Low | High — manage cache, eviction, loading states |
+| Complexity | Low | High - manage cache, eviction, loading states |
 | When to use | 99% of apps | 100k+ items AND memory is a real constraint |
 
 ## Sort / Filter Reset

@@ -45,9 +45,9 @@ import { CngxSort, CngxSortHeader } from '@cngx/common/data';
 export class TableComponent {}
 ```
 
-## CngxSort — Sort State Atom
+## CngxSort - Sort State Atom
 
-Tracks the active sort field and direction. Supports both single-sort and multi-sort (Shift+click) modes. Nothing is injected automatically — consumer explicitly wires headers via `[cngxSortRef]`.
+Tracks the active sort field and direction. Supports both single-sort and multi-sort (Shift+click) modes. Nothing is injected automatically - consumer explicitly wires headers via `[cngxSortRef]`.
 
 ### `setSort(field, additive?)` semantics
 
@@ -75,9 +75,9 @@ this.sort.setSort('age', false);
 
 `clear()` removes all sorts and emits both `sortChange(undefined)` and `sortsChange([])`.
 
-## CngxSortHeader — Sort Header Molecule
+## CngxSortHeader - Sort Header Molecule
 
-Apply to clickable header elements. Consumer provides explicit `[cngxSortRef]` — no ancestor injection, no hidden wiring.
+Apply to clickable header elements. Consumer provides explicit `[cngxSortRef]` - no ancestor injection, no hidden wiring.
 
 Supports multi-sort: Shift+click adds column to stack (when `multiSort` enabled on owning `CngxSort`). Shows `priority()` badge for visual sort-order indication.
 
@@ -132,7 +132,7 @@ handleSortChange(entry: SortEntry | undefined) {
 }
 ```
 
-**Multi-sort is always uncontrolled** — there is no controlled input for `sortsChange`, only the internal `sorts()` signal.
+**Multi-sort is always uncontrolled** - there is no controlled input for `sortsChange`, only the internal `sorts()` signal.
 
 ## Composition with Data Processing
 
@@ -240,7 +240,7 @@ All ARIA attributes are automatically managed:
 
 ## See Also
 
-- [CngxFilter](../filter/README.md) — predicate-based filtering
-- [CngxPaginate](../paginate/README.md) — pagination
-- [CngxSmartDataSource](../data-source/README.md) — auto-wires sort + filter + paginate
+- [CngxFilter](../filter/README.md) - predicate-based filtering
+- [CngxPaginate](../paginate/README.md) - pagination
+- [CngxSmartDataSource](../data-source/README.md) - auto-wires sort + filter + paginate
 - Compodoc: Full API reference at `/docs`

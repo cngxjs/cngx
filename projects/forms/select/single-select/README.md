@@ -1,6 +1,6 @@
 # CngxSelect
 
-Native-feeling single-select dropdown — the closest replacement for `<select>` with the cngx Signal-first toolkit, full ARIA combobox semantics, async-state support, and a pluggable commit lifecycle.
+Native-feeling single-select dropdown - the closest replacement for `<select>` with the cngx Signal-first toolkit, full ARIA combobox semantics, async-state support, and a pluggable commit lifecycle.
 
 ## When to use
 
@@ -166,7 +166,7 @@ Full list with context shapes: [`ARCHITECTURE.md` § Template slot system](../..
 | `Space` / `Enter` (trigger)           | Toggle panel open                                                              |
 | `Arrow Up` / `Down` (trigger)         | Open + move highlight                                                          |
 | `Page Up` / `Page Down` (trigger)     | Open + jump ±10 (clamped, disabled-aware)                                      |
-| Printable key (trigger, panel closed) | Native-`<select>`-style typeahead pick — opt-in via `withTypeaheadWhileClosed` |
+| Printable key (trigger, panel closed) | Native-`<select>`-style typeahead pick - opt-in via `withTypeaheadWhileClosed` |
 | `Escape`                              | Close panel                                                                    |
 
 ## Configuration

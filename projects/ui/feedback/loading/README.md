@@ -26,9 +26,9 @@ import { CngxLoadingIndicator } from '@cngx/ui/feedback';
 
 #### Accessibility
 
-- `role="status"` — Announces loading state to screen readers
-- `aria-busy="true"` — Communicates busy state
-- `aria-label` — Customizable label
+- `role="status"` - Announces loading state to screen readers
+- `aria-busy="true"` - Communicates busy state
+- `aria-label` - Customizable label
 
 ---
 
@@ -44,7 +44,7 @@ import { CngxLoadingOverlay } from '@cngx/ui/feedback';
 
 #### Structure
 
-The overlay uses `display: grid` with shared `grid-area: 1/1` — both backdrop and content occupy the same space:
+The overlay uses `display: grid` with shared `grid-area: 1/1` - both backdrop and content occupy the same space:
 
 ```scss
 .overlay {
@@ -98,11 +98,11 @@ readonly state = injectAsyncState(() => this.saveData$);
 
 #### CSS Custom Properties
 
-- `--cngx-loading-overlay-z-index` (default `10`) — Stacking context
-- `--cngx-loading-overlay-backdrop-bg` (default `rgba(255,255,255,0.5)`) — Backdrop color
-- `--cngx-loading-overlay-backdrop-opacity` (default `1`) — Backdrop opacity
-- `--cngx-overlay-transition-duration` (default `300ms`) — Transition timing
-- `--cngx-overlay-transition-easing` (default `ease-out`) — Easing function
+- `--cngx-loading-overlay-z-index` (default `10`) - Stacking context
+- `--cngx-loading-overlay-backdrop-bg` (default `rgba(255,255,255,0.5)`) - Backdrop color
+- `--cngx-loading-overlay-backdrop-opacity` (default `1`) - Backdrop opacity
+- `--cngx-overlay-transition-duration` (default `300ms`) - Transition timing
+- `--cngx-overlay-transition-easing` (default `ease-out`) - Easing function
 
 #### Accessibility
 
@@ -138,16 +138,16 @@ readonly progress = computed(() => this.uploadState().progress() ?? 0);
 
 #### CSS Custom Properties
 
-- `--cngx-progress-color` (default `#1976d2`) — Bar color
-- `--cngx-progress-height` (default `4px`) — Bar height
-- `--cngx-progress-transition-duration` (default `300ms`) — Value change transition
+- `--cngx-progress-color` (default `#1976d2`) - Bar color
+- `--cngx-progress-height` (default `4px`) - Bar height
+- `--cngx-progress-transition-duration` (default `300ms`) - Value change transition
 
 #### Accessibility
 
-- `role="progressbar"` — Communicates progress purpose
-- `aria-valuenow` — Current progress value
-- `aria-valuemin="0"` / `aria-valuemax="100"` — Progress range
-- `aria-label` — Customizable label
+- `role="progressbar"` - Communicates progress purpose
+- `aria-valuenow` - Current progress value
+- `aria-valuemin="0"` / `aria-valuemax="100"` - Progress range
+- `aria-label` - Customizable label
 
 ---
 
@@ -270,7 +270,7 @@ Sets loading indicator colors (`--cngx-loading-indicator-color/track`), bar dime
 
 ## See Also
 
-- [CngxAsyncState](https://github.com/cngxjs/cngx) — Async state management
-- [CngxAsyncContainer](../async-container/README.md) — Integrated loading UI
-- [CngxSkeleton](../../README.md) — Placeholder content during load
+- [CngxAsyncState](https://github.com/cngxjs/cngx) - Async state management
+- [CngxAsyncContainer](../async-container/README.md) - Integrated loading UI
+- [CngxSkeleton](../../README.md) - Placeholder content during load
 - Compodoc API documentation: `npm run docs:serve`

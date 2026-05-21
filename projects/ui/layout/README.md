@@ -48,7 +48,7 @@ Flex-based stack layout component with named gap tokens and alignment control.
 
 | Input     | Type                                             | Default     | Description                                                                                                                    |
 | --------- | ------------------------------------------------ | ----------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| direction | `'row' \| 'column'`                              | `'column'`  | Flex direction — stack items vertically (column) or horizontally (row).                                                        |
+| direction | `'row' \| 'column'`                              | `'column'`  | Flex direction - stack items vertically (column) or horizontally (row).                                                        |
 | gap       | `'none' \| 'xs' \| 'sm' \| 'md' \| 'lg' \| 'xl'` | `'md'`      | Named gap token that resolves via CSS custom properties (`--cngx-gap-*`). Defaults: xs=4px, sm=8px, md=16px, lg=24px, xl=32px. |
 | align     | `'start' \| 'center' \| 'end' \| 'stretch'`      | `'stretch'` | Cross-axis alignment. Maps to `align-items`: `flex-start`, `center`, `flex-end`, or `stretch`.                                 |
 
@@ -121,13 +121,13 @@ cngx-stack {
 
 ## Accessibility
 
-Both components are purely structural — no ARIA roles, no focus management. They inherit accessibility properties from their children. A grid of cards, for example, relies on each card's own `role="article"` or `role="button"`.
+Both components are purely structural - no ARIA roles, no focus management. They inherit accessibility properties from their children. A grid of cards, for example, relies on each card's own `role="article"` or `role="button"`.
 
 ## Performance
 
-- **Zero JavaScript state** — Pure CSS grid/flex
-- **Display: contents** — No extra DOM layer
-- **No animation overhead** — Static layout, no transitions
-- **Signal-free** — No change detection overhead for layout itself
+- **Zero JavaScript state** - Pure CSS grid/flex
+- **Display: contents** - No extra DOM layer
+- **No animation overhead** - Static layout, no transitions
+- **Signal-free** - No change detection overhead for layout itself
 
 Use these components as the foundation for responsive layouts without JavaScript weight.

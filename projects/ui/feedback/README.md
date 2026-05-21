@@ -1,12 +1,12 @@
 # @cngx/ui/feedback
 
-The communication surfaces of cngx — toasts, banners, alerts, loading indicators, and the async-container molecule. The bridge between an async state and the user's eyes.
+The communication surfaces of cngx - toasts, banners, alerts, loading indicators, and the async-container molecule. The bridge between an async state and the user's eyes.
 
 ## When you reach for it
 
 You have a piece of async state (loading a list, saving a form, retrying a request) and want the user to see what is happening without you wiring four signals into four templates:
 
-- **Loading indicators** — spinner, bar, dots, text — whenever a region is busy.
+- **Loading indicators** - spinner, bar, dots, text - whenever a region is busy.
 - **An async-aware container** that swaps between skeleton, content, empty, and error views with a single binding.
 - **Toasts** for ephemeral success and error notifications.
 - **Banners** for persistent top-of-page errors that should clear themselves on the next success.
@@ -25,7 +25,7 @@ Two patterns make the whole feedback layer feel cohesive:
 
 ## Bootstrap requirement
 
-Toast, banner, and alerter services are **not** `providedIn: 'root'`. Provide them via `provideFeedback(...)` in your application bootstrap, and render the outlets once at the application root. This is intentional — feedback presentation is application-level, not library-level, and forcing the consumer to opt in keeps a tree-shake-friendly footprint when only a subset of surfaces is in use.
+Toast, banner, and alerter services are **not** `providedIn: 'root'`. Provide them via `provideFeedback(...)` in your application bootstrap, and render the outlets once at the application root. This is intentional - feedback presentation is application-level, not library-level, and forcing the consumer to opt in keeps a tree-shake-friendly footprint when only a subset of surfaces is in use.
 
 ## See also
 

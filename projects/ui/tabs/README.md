@@ -9,13 +9,13 @@ You want a tab strip with:
 - Async-aware tab activation (optimistic or pessimistic commit, per-tab busy and error markers).
 - An overflow menu when the tabs do not fit available width.
 - Full keyboard navigation (roving tabindex, arrow keys, `Home`/`End`, `Enter`/`Space`).
-- No Material runtime — either because you ship your own design system or because the bundle cost matters.
+- No Material runtime - either because you ship your own design system or because the bundle cost matters.
 
 If you want the same behaviour rendered in Material 3, import `@cngx/ui/mat-tabs` instead. The brain is shared between the two skins.
 
 ## Mental model
 
-`<cngx-tab-group>` is a presenter applied as a `hostDirective`. The tab group component itself is thin — it forwards inputs and renders a CDK-based `<div role="tablist">`. All the state — active tab, commit lifecycle, overflow recompute, ARIA wiring — lives in the presenter from `@cngx/common/tabs`. That separation is what makes a Material twin possible without duplication.
+`<cngx-tab-group>` is a presenter applied as a `hostDirective`. The tab group component itself is thin - it forwards inputs and renders a CDK-based `<div role="tablist">`. All the state - active tab, commit lifecycle, overflow recompute, ARIA wiring - lives in the presenter from `@cngx/common/tabs`. That separation is what makes a Material twin possible without duplication.
 
 Two pieces give the tab strip its character:
 
@@ -24,5 +24,5 @@ Two pieces give the tab strip its character:
 
 ## Companion entries
 
-- **`@cngx/common/tabs`** — the headless brain, configuration cascade, slot directives.
-- **`@cngx/ui/mat-tabs`** — Material twin of this skin.
+- **`@cngx/common/tabs`** - the headless brain, configuration cascade, slot directives.
+- **`@cngx/ui/mat-tabs`** - Material twin of this skin.

@@ -54,7 +54,7 @@ type AsyncStatus = 'idle' | 'loading' | 'pending' | 'refreshing' | 'success' | '
 
 ## CngxPressable
 
-Instant press feedback via CSS class on `pointerdown`. Click feedback fires too late — press feedback is immediate (0ms latency). The class is removed on `pointerup` with an optional delay to prevent a visual flash on quick taps.
+Instant press feedback via CSS class on `pointerdown`. Click feedback fires too late - press feedback is immediate (0ms latency). The class is removed on `pointerup` with an optional delay to prevent a visual flash on quick taps.
 
 The directive only toggles the `cngx-pressed` class. All visual treatment (scale, opacity, color) is the consumer's CSS.
 
@@ -79,13 +79,13 @@ Detects long-press gestures via Pointer Events. Fires after the pointer is held 
 
 ### Notes
 
-- Pointer events on `document` for up/move — captures gestures that drift outside the element.
+- Pointer events on `document` for up/move - captures gestures that drift outside the element.
 - Cancels on: `pointerup`, `pointercancel`, `pointerleave`, or movement > `moveThreshold` px.
 - Uses `Math.hypot` for Euclidean distance (diagonal movement measured correctly).
 
 ## CngxKeyboardShortcut
 
-Declarative keyboard shortcut handler. No global event listener service — each directive manages its own subscription, cleaned up via `takeUntilDestroyed`.
+Declarative keyboard shortcut handler. No global event listener service - each directive manages its own subscription, cleaned up via `takeUntilDestroyed`.
 
 Supports `mod` as a platform-aware modifier (`Meta` on macOS, `Ctrl` elsewhere). Uses `parseKeyCombo` and `matchesKeyCombo` from `@cngx/core/utils`.
 
@@ -100,7 +100,7 @@ Supports `mod` as a platform-aware modifier (`Meta` on macOS, `Ctrl` elsewhere).
 - `global` scope ignores events from `<input>`, `<textarea>`, `<select>`, and `contenteditable` elements.
 - `self` scope only fires when the host element (or a descendant) has focus.
 - `preventDefault()` is called on matching events.
-- Combo string is memoised — re-parsed only when the input changes.
+- Combo string is memoised - re-parsed only when the input changes.
 
 ## withRetry
 
@@ -201,7 +201,7 @@ readonly [updateName, nameState] = optimistic(
 
 - Rapid successive calls cancel the previous in-flight Observable. Rollback always
   returns to the last server-confirmed value, not a stale optimistic value.
-- No `DestroyRef` cleanup — the subscription is unmanaged. If the component is
+- No `DestroyRef` cleanup - the subscription is unmanaged. If the component is
   destroyed mid-flight, the subscription completes silently.
 
 ## Other Exports

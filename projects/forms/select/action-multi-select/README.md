@@ -1,6 +1,6 @@
 # CngxActionMultiSelect
 
-Multi-value variant of [`CngxActionSelect`](../action-select/README.md) — the same inline `*cngxSelectAction` workflow, but with a chip strip + inline `<input>` like [`CngxCombobox`](../combobox/README.md).
+Multi-value variant of [`CngxActionSelect`](../action-select/README.md) - the same inline `*cngxSelectAction` workflow, but with a chip strip + inline `<input>` like [`CngxCombobox`](../combobox/README.md).
 Pick multiple values, create new ones inline, all without leaving the panel.
 
 ## When to use
@@ -71,7 +71,7 @@ Identical to [`CngxCombobox`](../combobox/README.md#forms-integration). The `Fie
 
 ## Action slot context
 
-Same shape as `CngxActionSelect` — see [`../action-select/README.md`](../action-select/README.md#action-slot-context). The bridge tracks `dirty` automatically while the `<input>` term is non-empty.
+Same shape as `CngxActionSelect` - see [`../action-select/README.md`](../action-select/README.md#action-slot-context). The bridge tracks `dirty` automatically while the `<input>` term is non-empty.
 
 ## Common patterns
 
@@ -106,7 +106,7 @@ readonly localItems = inject(CNGX_LOCAL_ITEMS_BUFFER_FACTORY)<Tag>({
 />
 ```
 
-The buffer survives state refetches — items drop out silently once the server-side list contains them (deduped via `compareWith`).
+The buffer survives state refetches - items drop out silently once the server-side list contains them (deduped via `compareWith`).
 
 ### Custom chip rendering
 

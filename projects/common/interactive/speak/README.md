@@ -55,7 +55,7 @@ CngxSpeak provides cognitive accessibility (dyslexia support, reading assistance
 
 ## Composition
 
-CngxSpeak is a headless atom — the consumer owns the UI:
+CngxSpeak is a headless atom - the consumer owns the UI:
 
 - **Host directives:** None
 - **Combines with:** Any element needing read-aloud capability (articles, docs, notifications)
@@ -92,7 +92,7 @@ CngxSpeak is a headless atom — the consumer owns the UI:
 
 ## Styling
 
-CngxSpeak has no styling — it's purely behavioral. Use the `speaking()` signal for visual feedback:
+CngxSpeak has no styling - it's purely behavioral. Use the `speaking()` signal for visual feedback:
 
 ```scss
 button {
@@ -400,70 +400,10 @@ export class DyslexiaFriendlyComponent {
 </div>
 ```
 
-## Implementation Notes
-
-### Browser Support
-
-The SpeechSynthesis API is supported in all modern browsers. Check `supported` property before using:
-
-```typescript
-@if (tts.supported) {
-  <button (click)="tts.speak(text)">Read</button>
-} @else {
-  <p>Text-to-speech not supported</p>
-}
-```
-
-### Auto-Speak Behavior
-
-When `enabled` is true and the text input changes to a non-empty value:
-
-```typescript
-effect(() => {
-  const value = this.text();
-  if (!this.initialized() || !value || !this.enabled() || !this.synth) {
-    return;
-  }
-  this.performSpeak(value);
-});
-```
-
-This means:
-- First render: waits for `afterNextRender()` (prevents jank on page load)
-- Subsequent changes: auto-speaks immediately
-- Empty text: skipped
-- `enabled: false`: skipped
-
-Set `enabled: false` to prevent auto-speak for rapidly changing content (live counters, real-time updates).
-
-### Lifecycle Management
-
-On component destroy, `synth.cancel()` is called:
-
-```typescript
-inject(DestroyRef).onDestroy(() => this.synth?.cancel());
-```
-
-This ensures any in-flight speech is stopped when the component is destroyed.
-
-### Language Tags
-
-Use BCP 47 tags for the `lang` input:
-
-- `'en'` — English (any region)
-- `'en-US'` — English (United States)
-- `'en-GB'` — English (British)
-- `'de-DE'` — German (Germany)
-- `'fr-FR'` — French (France)
-- `'es-ES'` — Spanish (Spain)
-- `''` (empty) — Browser default
-
-Invalid tags are silently ignored by the browser.
-
 ## See Also
 
-- [compodoc API documentation](https://cngxjs.github.io/cngx/)
+- [API on compodocx](https://cngxjs.github.io/cngx/)
 - [SpeechSynthesis API - MDN](https://developer.mozilla.org/en-US/docs/Web/API/SpeechSynthesis)
 - [Cognitive Accessibility - WebAIM](https://webaim.org/articles/cognitive/)
-- Demo: `dev-app/src/app/demos/common/speak-demo/`
+- Demo: `examples/stories/common/speak-demo/`
 - Tests: `projects/common/interactive/speak/speak.directive.spec.ts`

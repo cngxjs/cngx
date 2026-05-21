@@ -59,9 +59,9 @@ The drawer system is fully accessible out of the box:
 
 - **ARIA roles:** Panel marked as `role="complementary"`. Backdrop is `aria-hidden`. Content has no special role, allowing natural semantic flow.
 - **Keyboard interaction:**
-  - `Escape` — Closes the drawer (handled by `CngxDrawer`)
-  - Arrow keys — Managed by `CngxFocusTrap` (if enabled)
-  - Tab — Trapped within the panel when open (via `CngxFocusTrap`)
+  - `Escape` - Closes the drawer (handled by `CngxDrawer`)
+  - Arrow keys - Managed by `CngxFocusTrap` (if enabled)
+  - Tab - Trapped within the panel when open (via `CngxFocusTrap`)
 - **Screen reader:** Siblings are marked `inert` when backdrop is visible, preventing SR navigation behind the overlay. Focus is automatically trapped and restored.
 - **Focus management:** `CngxFocusTrap` (composed by `CngxDrawerPanel`) handles focus on open and restoration on close. Set `[autoFocus]` to control the focus target.
 
@@ -108,18 +108,18 @@ readonly isOpen = signal(false);
 
 ## Styling
 
-All colors and spacing use CSS Custom Properties with Material 3 defaults. The drawer itself is unstyled — the consumer is responsible for positioning, sizing, and animations.
+All colors and spacing use CSS Custom Properties with Material 3 defaults. The drawer itself is unstyled - the consumer is responsible for positioning, sizing, and animations.
 
 ### Variables
 
 Consumer-provided CSS should cover:
 
-- `--cngx-drawer-panel-width` — Width of a left/right drawer (e.g., `320px`)
-- `--cngx-drawer-panel-height` — Height of a top/bottom drawer (e.g., `200px`)
-- `--cngx-drawer-panel-shadow` — Shadow when in `'over'` mode
-- `--cngx-drawer-panel-z-index` — Z-index of the panel (e.g., `100`)
-- `--cngx-backdrop-color` — Background color of the backdrop (e.g., `rgba(0, 0, 0, 0.5)`)
-- `--cngx-sticky-z-index` — Z-index for sticky positioning (default `1`)
+- `--cngx-drawer-panel-width` - Width of a left/right drawer (e.g., `320px`)
+- `--cngx-drawer-panel-height` - Height of a top/bottom drawer (e.g., `200px`)
+- `--cngx-drawer-panel-shadow` - Shadow when in `'over'` mode
+- `--cngx-drawer-panel-z-index` - Z-index of the panel (e.g., `100`)
+- `--cngx-backdrop-color` - Background color of the backdrop (e.g., `rgba(0, 0, 0, 0.5)`)
+- `--cngx-sticky-z-index` - Z-index for sticky positioning (default `1`)
 
 ### Example CSS
 
@@ -250,7 +250,7 @@ export class ResponsiveDrawerComponent {}
 ## See Also
 
 - [compodocx API documentation](https://cngxjs.github.io/cngx/)
-- Demo: `dev-app/src/app/demos/common/drawer-demo/`
+- Demo: `examples/stories/common/drawer-demo/`
 - Tests: `projects/common/layout/drawer/*.spec.ts`
-- `CngxFocusTrap` in `@cngx/common/a11y` — Composed by `CngxDrawerPanel`
-- `CngxScrollLock` in `@cngx/common/layout` — Pair with drawer to prevent scrolling
+- `CngxFocusTrap` in `@cngx/common/a11y` - Composed by `CngxDrawerPanel`
+- `CngxScrollLock` in `@cngx/common/layout` - Pair with drawer to prevent scrolling

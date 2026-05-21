@@ -78,7 +78,7 @@ CngxCloseButton is used internally by cngx feedback components:
 
 ## Styling
 
-CngxCloseButton uses `display: contents` so the host element produces no DOM box — only the inner `<button>` renders.
+CngxCloseButton uses `display: contents` so the host element produces no DOM box - only the inner `<button>` renders.
 
 ### Default Styling
 
@@ -295,52 +295,11 @@ cngx-close-button {
 <cngx-close-button label="Remove item" />
 ```
 
-## Implementation Notes
-
-### Display: Contents
-
-CngxCloseButton uses `display: contents` on the host so the host element contributes no box to the layout:
-
-```scss
-:host {
-  display: contents;
-}
-```
-
-This means:
-- The inner `<button>` is the only box in the layout
-- No extra wrapper padding/margin
-- Clean focus ring (no double outline)
-- Works with flexbox/grid parents without interference
-
-### Icon Injection
-
-The custom icon is injected via `NgComponentOutlet`:
-
-```typescript
-protected readonly customIcon = inject(CNGX_CLOSE_ICON, { optional: true });
-```
-
-If a custom icon is provided, it renders instead of the built-in SVG X.
-
-### Built-in Icon
-
-A simple X SVG renders by default:
-
-```xml
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-  <line x1="18" y1="6" x2="6" y2="18" />
-  <line x1="6" y1="6" x2="18" y2="18" />
-</svg>
-```
-
-This is lightweight and respects the button's color via `currentColor`.
-
 ## See Also
 
-- [compodoc API documentation](https://cngxjs.github.io/cngx/)
-- [CngxAlert](../../../ui/feedback/) — Uses CngxCloseButton
-- [CngxToastOutlet](../../../ui/feedback/) — Uses CngxCloseButton
-- [provideFeedback with withCloseIcon](../../../ui/feedback/) — Global icon override
-- Demo: `dev-app/src/app/demos/common/close-button-demo/`
+- [API on compodocx](https://cngxjs.github.io/cngx/)
+- [CngxAlert](../../../ui/feedback/) - Uses CngxCloseButton
+- [CngxToastOutlet](../../../ui/feedback/) - Uses CngxCloseButton
+- [provideFeedback with withCloseIcon](../../../ui/feedback/) - Global icon override
+- Demo: `examples/stories/common/close-button-demo/`
 - Tests: `projects/common/interactive/close-button/close-button.spec.ts`

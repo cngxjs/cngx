@@ -41,7 +41,7 @@ export class ListComponent {
 }
 ```
 
-## CngxPaginate — Pagination State
+## CngxPaginate - Pagination State
 
 Tracks current page index and page size. Supports both **uncontrolled** (internal state) and **controlled** (`cngxPageIndex` / `cngxPageSize` inputs) modes.
 
@@ -236,8 +236,8 @@ Example:
 
 ## See Also
 
-- [CngxSort](../sort/README.md) — multi-column sorting
-- [CngxFilter](../filter/README.md) — predicate-based filtering
-- [CngxSmartDataSource](../data-source/README.md) — auto-wires paginate + sort + filter
-- [Async State System](../async-state/README.md) — `CngxAsyncState<T>`
+- [CngxSort](../sort/README.md) - multi-column sorting
+- [CngxFilter](../filter/README.md) - predicate-based filtering
+- [CngxSmartDataSource](../data-source/README.md) - auto-wires paginate + sort + filter
+- [Async State System](../async-state/README.md) - `CngxAsyncState<T>`
 - Compodoc: Full API reference at `/docs`

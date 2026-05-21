@@ -1,12 +1,12 @@
 # @cngx/ui/stepper
 
-CNGX-standard `<cngx-stepper>` organism. Composes the `CngxStepperPresenter` brain (from `@cngx/common/stepper`) with `CngxRovingTabindex` and `CngxFocusRestore` via `hostDirectives`. W3C step pattern compliant — `role="group"` + `aria-roledescription="stepper"` host, `role="region"` panels, reactive `aria-current` / `aria-busy` / `aria-describedby` on every step button.
+CNGX-standard `<cngx-stepper>` organism. Composes the `CngxStepperPresenter` brain (from `@cngx/common/stepper`) with `CngxRovingTabindex` and `CngxFocusRestore` via `hostDirectives`. W3C step pattern compliant - `role="group"` + `aria-roledescription="stepper"` host, `role="region"` panels, reactive `aria-current` / `aria-busy` / `aria-describedby` on every step button.
 
 ## What it does
 
-`<cngx-stepper>` is the cngx-native stepper skin: thin component, signals everywhere, full ARIA, optional commit-action lifecycle, optional router sync, optional error aggregation. Material consumers reach for `<cngx-mat-stepper>` (sibling `@cngx/ui/mat-stepper` entry) instead — both share the same `CngxStepperPresenter` brain.
+`<cngx-stepper>` is the cngx-native stepper skin: thin component, signals everywhere, full ARIA, optional commit-action lifecycle, optional router sync, optional error aggregation. Material consumers reach for `<cngx-mat-stepper>` (sibling `@cngx/ui/mat-stepper` entry) instead - both share the same `CngxStepperPresenter` brain.
 
-The organism's body is template + reactive ARIA only. All state lives in the presenter (composed via `hostDirectives`). The component class is ~260 LOC; the template is ~70 lines; structural CSS lives in `styles/stepper-base.css`, thematic CSS in `stepper.component.css` — both routed through `--cngx-stepper-*` custom properties for theming.
+The organism's body is template + reactive ARIA only. All state lives in the presenter (composed via `hostDirectives`). The component class is ~260 LOC; the template is ~70 lines; structural CSS lives in `styles/stepper-base.css`, thematic CSS in `stepper.component.css` - both routed through `--cngx-stepper-*` custom properties for theming.
 
 ## Exports
 

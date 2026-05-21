@@ -16,8 +16,8 @@ import { CngxAlert, CngxAlertIcon, CngxAlertAction } from '@cngx/ui/feedback';
 
 #### Slot Directives
 
-- `cngxAlertIcon` — Custom icon template (overrides global `withAlertIcons()` config)
-- `cngxAlertAction` — Action button/link inside the alert (restricts to `<button>` and `<a>`)
+- `cngxAlertIcon` - Custom icon template (overrides global `withAlertIcons()` config)
+- `cngxAlertAction` - Action button/link inside the alert (restricts to `<button>` and `<a>`)
 
 #### Example
 
@@ -49,15 +49,15 @@ readonly saveState = injectAsyncState(() => this.save$);
 
 #### CSS Custom Properties
 
-- `--cngx-alert-gap` (default `8px`) — Gap between icon and message
-- `--cngx-alert-padding` (default `12px 16px`) — Padding inside alert
-- `--cngx-alert-border-radius` (default `4px`) — Border radius
-- `--cngx-alert-border-color` (default severity-specific) — Border color
-- `--cngx-alert-bg` (default severity-specific) — Background color
-- `--cngx-alert-color` (default severity-specific) — Text color
-- `--cngx-alert-{severity}-bg` — Per-severity background
-- `--cngx-alert-{severity}-border` — Per-severity border color
-- `--cngx-alert-{severity}-icon` — Per-severity icon color
+- `--cngx-alert-gap` (default `8px`) - Gap between icon and message
+- `--cngx-alert-padding` (default `12px 16px`) - Padding inside alert
+- `--cngx-alert-border-radius` (default `4px`) - Border radius
+- `--cngx-alert-border-color` (default severity-specific) - Border color
+- `--cngx-alert-bg` (default severity-specific) - Background color
+- `--cngx-alert-color` (default severity-specific) - Text color
+- `--cngx-alert-{severity}-bg` - Per-severity background
+- `--cngx-alert-{severity}-border` - Per-severity border color
+- `--cngx-alert-{severity}-icon` - Per-severity icon color
 
 #### Accessibility
 
@@ -80,7 +80,7 @@ import { CngxAlertStack, CngxAlerter } from '@cngx/ui/feedback';
 
 #### CSS Custom Properties
 
-- `--cngx-alert-stack-reserve-height` — Minimum height when `reserveSpace=true`
+- `--cngx-alert-stack-reserve-height` - Minimum height when `reserveSpace=true`
 
 #### Example
 
@@ -247,6 +247,6 @@ Sets per-severity colors (`--cngx-alert-{info/success/warning/error}-{bg,border,
 
 ## See Also
 
-- [CngxBanner](../banner/README.md) — System-level persistent banners
-- [CngxToaster](../toast/README.md) — Toast notifications
+- [CngxBanner](../banner/README.md) - System-level persistent banners
+- [CngxToaster](../toast/README.md) - Toast notifications
 - Compodoc API documentation: `npm run docs:serve`

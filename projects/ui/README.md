@@ -1,7 +1,7 @@
 # @cngx/ui
 
 Finished, styled Angular components that compose headless directives from
-`@cngx/common` with opinionated rendering. These are the "organism" layer —
+`@cngx/common` with opinionated rendering. These are the "organism" layer -
 ready to drop into an application without additional template work.
 
 ## Components
@@ -161,17 +161,17 @@ switching, mini/rail mode, resize handle, and keyboard shortcut toggle.
 
 | Input | Type | Default | Description |
 |-|-|-|-|
-| `ariaLabel` | `string` | — | Accessible label for the complementary landmark |
+| `ariaLabel` | `string` | - | Accessible label for the complementary landmark |
 | `position` | `'start' \| 'end'` | `'start'` | Logical position (flips in RTL) |
 | `mode` | `SidenavMode` | `'over'` | Interaction mode |
-| `responsive` | `string` | — | CSS media query; matches = `'side'`, else falls back to `mode` |
+| `responsive` | `string` | - | CSS media query; matches = `'side'`, else falls back to `mode` |
 | `width` | `string` (model) | `'280px'` | Panel width, two-way `[(width)]` for resize |
 | `miniWidth` | `string` | `'56px'` | Collapsed rail width in mini mode |
 | `expandOnHover` | `boolean` | `true` | Expand mini rail on mouse hover |
 | `resizable` | `boolean` | `false` | Show drag handle for user resize |
 | `minWidth` | `string` | `'120px'` | Min width constraint during resize |
 | `maxWidth` | `string` | `'600px'` | Max width constraint during resize |
-| `shortcut` | `string` | — | Keyboard shortcut, e.g. `'mod+b'` (`mod` = Cmd on Mac, Ctrl elsewhere) |
+| `shortcut` | `string` | - | Keyboard shortcut, e.g. `'mod+b'` (`mod` = Cmd on Mac, Ctrl elsewhere) |
 
 **CngxSidenav signals:** `opened` (model), `expanded` (mini hover state), `effectiveMode`, `effectiveWidth`, `resizing`, `isOverlay`
 **Methods:** `open()`, `close()`, `toggle()`, `expand()`, `collapse()`
@@ -225,25 +225,25 @@ via the CSS `grid-template-rows: 0fr/1fr` trick (no `@angular/animations` needed
 </div>
 ```
 
-**Material theme:** `@use '@cngx/themes/material/sidenav-theme'` — includes nav-link theme automatically
+**Material theme:** `@use '@cngx/themes/material/sidenav-theme'` - includes nav-link theme automatically
 
-### CngxToaster — Toast API (`@cngx/ui/feedback`)
+### CngxToaster - Toast API (`@cngx/ui/feedback`)
 
-Programmatic toast service. Not `providedIn: 'root'` — provide via
+Programmatic toast service. Not `providedIn: 'root'` - provide via
 `provideFeedback(withToasts())` or `provideToasts()`.
 
 #### ToastConfig
 
 ```typescript
 this.toaster.show({
-  message: 'Saved',                    // Required — sole text when title not set
-  title: 'Save successful',            // Optional — bold primary text
-  description: 'Profile updated.',     // Optional — secondary text below title
+  message: 'Saved',                    // Required - sole text when title not set
+  title: 'Save successful',            // Optional - bold primary text
+  description: 'Profile updated.',     // Optional - secondary text below title
   severity: 'success',                 // 'info' | 'success' | 'warning' | 'error'
   duration: 5000,                      // ms or 'persistent'
   action: { label: 'Undo', handler: () => this.undo() },
   dismissible: true,                   // default: true
-  content: MyCustomToastBody,          // Optional — component as toast body
+  content: MyCustomToastBody,          // Optional - component as toast body
   contentInputs: { error: err },       // Inputs for the content component
 });
 ```
@@ -255,11 +255,11 @@ this.toaster.show({
 - `content` only: custom component fills the body
 
 **A11y:** Avoid focusable elements (`<a>`, `<button>`) inside `content` components
-— they are unreachable inside a `role="status"` live region.
+- they are unreachable inside a `role="status"` live region.
 
 **Dedup:** Toasts with same `message + severity + title` within `dedupWindow` (default
 1000ms) are merged (count incremented). `description` is intentionally excluded from
-dedup — same event with different context detail is still the same event.
+dedup - same event with different context detail is still the same event.
 
 #### Toast CSS Custom Properties
 
@@ -273,7 +273,7 @@ dedup — same event with different context detail is still the same event.
 | `--cngx-toast-description-line-height` | `1.4` | Description line height |
 | `--cngx-toast-description-max-lines` | `3` | Line-clamp for description |
 
-### CngxAlert — Inline Alert Atom (`@cngx/ui/feedback`)
+### CngxAlert - Inline Alert Atom (`@cngx/ui/feedback`)
 
 Inline alert with enter/exit animations, state-driven visibility, auto-dismiss
 with pause-on-hover/focus (WCAG 2.2.1), optional auto-collapse, and action buttons.
@@ -347,10 +347,10 @@ Exit: `ease-in 150ms`. Icon pulse on enter (one-shot, 300ms).
 | `--cngx-alert-{severity}-border` | per severity | Border color |
 | `--cngx-alert-{severity}-icon` | per severity | Icon color |
 
-### CngxAlertStack + CngxAlerter — Scoped Alert System (`@cngx/ui/feedback`)
+### CngxAlertStack + CngxAlerter - Scoped Alert System (`@cngx/ui/feedback`)
 
 Scoped inline alert stacking with programmatic service. Each `CngxAlertStack` provides
-its own `CngxAlerter` via `viewProviders` — nested stacks (e.g. in dialogs) are fully
+its own `CngxAlerter` via `viewProviders` - nested stacks (e.g. in dialogs) are fully
 isolated.
 
 ```html
@@ -400,7 +400,7 @@ For root-level injection (outside a stack), add `withAlerts()` to `provideFeedba
 **ARIA:** `role="log"` + `aria-live="polite"` on container. `aria-expanded` + `aria-controls`
 on overflow button.
 
-#### CngxAlertOn — State Bridge
+#### CngxAlertOn - State Bridge
 
 ```html
 <button [cngxAsyncClick]="save"
@@ -414,7 +414,7 @@ on overflow button.
 **Inputs:** `cngxAlertOn` (required `CngxAsyncState`), `alertSuccess`, `alertError`,
 `alertErrorDetail` (boolean), `alertScope`.
 
-### CngxBanner + CngxBannerOutlet — Global Banner System (`@cngx/ui/feedback`)
+### CngxBanner + CngxBannerOutlet - Global Banner System (`@cngx/ui/feedback`)
 
 System-level banners for session timeout, maintenance, offline status. Sticky top,
 always persistent (no auto-dismiss), dedup by required `id`.
@@ -477,7 +477,7 @@ disables during execution. Success: banner dismissed. Error: banner stays open.
 **Layout:** `position: sticky; top: 0; z-index: 900` (below Material dialogs at 1000).
 `:empty` hides the outlet completely (`display: none`).
 
-#### CngxBannerTrigger — Declarative Banner
+#### CngxBannerTrigger - Declarative Banner
 
 ```html
 <cngx-banner-trigger
@@ -493,7 +493,7 @@ Dismissed on component destroy.
 **Inputs:** `when` (required), `message` (required), `id` (required), `severity`,
 `dismissible`, `actionLabel`, `actionHandler`.
 
-#### CngxBannerOn — State Bridge
+#### CngxBannerOn - State Bridge
 
 ```html
 <div [cngxBannerOn]="connectionState"
@@ -521,4 +521,4 @@ Shows banner on `error` transition, auto-dismisses on `success`/`idle`.
 | `--cngx-banner-{severity}-border` | per severity | Border |
 | `--cngx-banner-{severity}-icon` | per severity | Icon color |
 
-**Material theme:** Included in `@use '@cngx/themes/material/feedback-theme'` — `theme($theme)` covers alert, alert-stack, banner, toast, loading, and progress.
+**Material theme:** Included in `@use '@cngx/themes/material/feedback-theme'` - `theme($theme)` covers alert, alert-stack, banner, toast, loading, and progress.

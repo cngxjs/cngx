@@ -1,6 +1,6 @@
 # CngxMultiSelect
 
-Multi-value select with the same button-style trigger as [`CngxSelect`](../single-select/README.md), plus a chip strip showing the selected options. Same async-state, slot, and commit machinery — the value is `T[]` instead of `T | undefined`.
+Multi-value select with the same button-style trigger as [`CngxSelect`](../single-select/README.md), plus a chip strip showing the selected options. Same async-state, slot, and commit machinery - the value is `T[]` instead of `T | undefined`.
 
 ## When to use
 
@@ -108,7 +108,7 @@ All [`CngxSelect` slots](../single-select/README.md#template-slots) plus:
 | `*cngxMultiSelectChip`         | Per-chip rendering                       |
 | `*cngxMultiSelectTriggerLabel` | Whole chip strip with text/badge summary |
 
-The selected-option label inside the default `<cngx-chip>` is also overridable via `*cngxSelectOptionLabel` — that template renders both in the panel rows AND in the default chip body.
+The selected-option label inside the default `<cngx-chip>` is also overridable via `*cngxSelectOptionLabel` - that template renders both in the panel rows AND in the default chip body.
 
 ## Keyboard
 

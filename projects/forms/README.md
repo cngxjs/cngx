@@ -1,6 +1,6 @@
 # @cngx/forms
 
-Signal Forms-native form utilities for Angular 21+ — typed controls,
+Signal Forms-native form utilities for Angular 21+ - typed controls,
 validators, ARIA-coordinated form field, and input directives.
 Opinionated about ARIA, agnostic about styling. Reactive Forms supported
 via a one-shot `adaptFormControl` adapter.
@@ -171,7 +171,7 @@ if (!success) focusFirstError(form);
 #### `adaptFormControl(control, name, destroyRef)`
 
 Adapts a Reactive Forms `AbstractControl` for use without Signal Forms.
-`destroyRef` is required — pass `inject(DestroyRef)` for automatic
+`destroyRef` is required - pass `inject(DestroyRef)` for automatic
 subscription cleanup.
 
 ```typescript

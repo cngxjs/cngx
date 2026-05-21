@@ -1,6 +1,6 @@
 # CngxCard
 
-Semantic card component that adapts its host element role based on the archetype (article/button/link). The host element **is** the semantic element — no inner wrapper, no double focus rings.
+Semantic card component that adapts its host element role based on the archetype (article/button/link). The host element **is** the semantic element - no inner wrapper, no double focus rings.
 
 ## Quick Start
 
@@ -58,7 +58,7 @@ CngxCard is fully accessible:
 
 CngxCard composes `CngxRovingItem` as a host directive for keyboard navigation within `CngxCardGrid`.
 
-CngxCardGrid composes `CngxRovingTabindex` as a host directive — all arrow key/Home/End navigation is built in automatically.
+CngxCardGrid composes `CngxRovingTabindex` as a host directive - all arrow key/Home/End navigation is built in automatically.
 
 ## Material Theme
 

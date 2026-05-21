@@ -68,7 +68,7 @@ Identical to [`CngxMultiSelect`](../multi-select/README.md#forms-integration). T
 Single-toggle path (chip ✕ + node-row click without cascade) deselects exactly one value. Cascade-toggle (parent click with `cascadeChildren=true`) selects/deselects the whole subtree atomically and emits one `selectionChange` with `action: 'cascade-toggle'`.
 
 Chip-remove always stays single-deselect even with `cascadeChildren=true`
-— the consumer explicitly removed one chip; cascading would surprise remove invisible descendants.
+- the consumer explicitly removed one chip; cascading would surprise remove invisible descendants.
 
 ### Custom node-row rendering
 
@@ -97,7 +97,7 @@ Panel keeps the `role="treeitem"` ARIA wiring (aria-level / posinset / setsize /
 ### Custom chip / trigger summary
 
 `*cngxTreeSelectChip` overrides individual chips; `*cngxTreeSelectTriggerLabel` replaces the entire chip strip.
-Same context shape as the multi-select equivalents — see [`ARCHITECTURE.md`](../../../ARCHITECTURE.md#template-slot-system).
+Same context shape as the multi-select equivalents - see [`ARCHITECTURE.md`](../../../ARCHITECTURE.md#template-slot-system).
 
 ## Template slots
 
@@ -127,6 +127,6 @@ on the trigger.
 ## Limitations
 
 The flat panels (`CngxSelect`, `CngxMultiSelect`, `CngxCombobox`, `CngxTypeahead`, `CngxReorderableMultiSelect`) support virtualisation via `CNGX_PANEL_RENDERER_FACTORY` + `injectRecycler`.
-Tree virtualisation is **not implemented** — the recycler contract conflicts with expand-state mutations.
+Tree virtualisation is **not implemented** - the recycler contract conflicts with expand-state mutations.
 Tracked as accepted debt; deferred until real-world demand emerges. See [`ARCHITECTURE.md` § Tracked architectural debt](../../../ARCHITECTURE.md#tracked-architectural-debt)
 entry #4.

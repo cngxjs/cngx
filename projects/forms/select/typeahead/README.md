@@ -1,6 +1,6 @@
 # CngxTypeahead
 
-Single-value autocomplete with an inline `<input role="combobox">` and `displayWith` formatter — the inline-input twin of [`CngxSelect`](../single-select/README.md).
+Single-value autocomplete with an inline `<input role="combobox">` and `displayWith` formatter - the inline-input twin of [`CngxSelect`](../single-select/README.md).
 Type to filter, pick to commit; the input shows the formatted selection after the pick so it survives blur/refocus.
 
 ## When to use
@@ -141,7 +141,7 @@ Context: `{ disabled, focused, panelOpen }`.
 
 ## Template slots
 
-All [`CngxSelect` slots](../single-select/README.md#template-slots) except `*cngxSelectTriggerLabel` (no chip strip — the input IS the trigger). Plus:
+All [`CngxSelect` slots](../single-select/README.md#template-slots) except `*cngxSelectTriggerLabel` (no chip strip - the input IS the trigger). Plus:
 
 | Slot                     | Replaces                                          |
 | ------------------------ | ------------------------------------------------- |
@@ -154,5 +154,5 @@ All [`CngxSelect` slots](../single-select/README.md#template-slots) except `*cng
 | ------------------- | -------------------------------------------------------------- |
 | Printable key       | Filter; auto-opens the panel                                   |
 | `Arrow Down` / `Up` | Move highlight                                                 |
-| `Enter`             | Pick highlighted option (closes panel — `closeOnSelect: true`) |
+| `Enter`             | Pick highlighted option (closes panel - `closeOnSelect: true`) |
 | `Escape`            | Close panel; clear pending input on second press               |

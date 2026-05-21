@@ -6,7 +6,7 @@ System-level persistent banner notifications that never auto-dismiss. Typically 
 
 ### CngxBanner
 
-Injectable service for managing persistent banners. Not `providedIn: 'root'` — must be provided via `provideFeedback(withBanners())`.
+Injectable service for managing persistent banners. Not `providedIn: 'root'` - must be provided via `provideFeedback(withBanners())`.
 
 #### Import
 
@@ -19,8 +19,8 @@ import { provideFeedback, withBanners } from '@cngx/ui/feedback';
 
 ```typescript
 interface BannerConfig {
-  id: string;                    // Required — unique dedup key
-  message: string;               // Required — primary message
+  id: string;                    // Required - unique dedup key
+  message: string;               // Required - primary message
   severity?: 'info' | 'warning' | 'error'; // Default: 'info'
   action?: {                     // Optional action button
     label: string;
@@ -89,18 +89,18 @@ export class AppComponent {}
 
 #### CSS Custom Properties
 
-- `--cngx-banner-z-index` (default `900`) — Stacking context
-- `--cngx-banner-gap` (default `8px`) — Gap between banners
-- `--cngx-banner-padding` (default `12px 16px`) — Banner padding
-- `--cngx-banner-bg` (default severity-specific) — Background color
-- `--cngx-banner-color` (default severity-specific) — Text color
-- `--cngx-banner-border-color` (default severity-specific) — Border color
-- `--cngx-banner-{severity}-{bg,border,icon}` — Per-severity overrides
-- `--cngx-banner-enter-duration` (default `300ms`) — Entry animation
-- `--cngx-banner-pending-opacity` (default `0.8`) — During action execution
-- `--cngx-banner-action-bg` — Action button background
-- `--cngx-banner-action-radius` — Action button border radius
-- `--cngx-banner-action-padding` — Action button padding
+- `--cngx-banner-z-index` (default `900`) - Stacking context
+- `--cngx-banner-gap` (default `8px`) - Gap between banners
+- `--cngx-banner-padding` (default `12px 16px`) - Banner padding
+- `--cngx-banner-bg` (default severity-specific) - Background color
+- `--cngx-banner-color` (default severity-specific) - Text color
+- `--cngx-banner-border-color` (default severity-specific) - Border color
+- `--cngx-banner-{severity}-{bg,border,icon}` - Per-severity overrides
+- `--cngx-banner-enter-duration` (default `300ms`) - Entry animation
+- `--cngx-banner-pending-opacity` (default `0.8`) - During action execution
+- `--cngx-banner-action-bg` - Action button background
+- `--cngx-banner-action-radius` - Action button border radius
+- `--cngx-banner-action-padding` - Action button padding
 
 ---
 
@@ -276,7 +276,7 @@ cngx-banner-outlet {
 
 ## See Also
 
-- [CngxAlert](../alert/README.md) — Inline alerts (scoped)
-- [CngxToaster](../toast/README.md) — Temporary toast notifications
-- [CngxAsyncState](https://github.com/cngxjs/cngx) — Async state management
+- [CngxAlert](../alert/README.md) - Inline alerts (scoped)
+- [CngxToaster](../toast/README.md) - Temporary toast notifications
+- [CngxAsyncState](https://github.com/cngxjs/cngx) - Async state management
 - Compodoc API documentation: `npm run docs:serve`

@@ -72,8 +72,8 @@ Key features:
 
 - **ARIA roles:** Sidebar carries `role="complementary"` with optional `[attr.aria-label]`. In overlay mode, `aria-hidden="true"` when closed.
 - **Keyboard interaction:**
-  - `Escape` — Closes overlay mode sidenav
-  - Custom shortcut (if configured) — Toggles opened state globally
+  - `Escape` - Closes overlay mode sidenav
+  - Custom shortcut (if configured) - Toggles opened state globally
 - **Screen reader:** Complementary landmark announces the sidebar label; scroll lock prevents reading body content when sidebar is open in overlay.
 - **Focus management:** On overlay close, focus is not automatically restored (consumer must manage).
 

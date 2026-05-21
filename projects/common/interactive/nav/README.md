@@ -79,9 +79,9 @@ provideNavConfig(...features: NavConfigFeature[]): Provider[]
 Provides nav system configuration with composable feature functions.
 
 **Features:**
-- `withSingleAccordion()` — Only one group open at a time
-- `withNavIndent(px: number)` — Indentation per depth level (default: 12)
-- `withNavAnimation(ms: number)` — Animation duration (default: 150)
+- `withSingleAccordion()` - Only one group open at a time
+- `withNavIndent(px: number)` - Indentation per depth level (default: 12)
+- `withNavAnimation(ms: number)` - Animation duration (default: 150)
 
 **Example:**
 ```typescript
@@ -177,9 +177,9 @@ Nav directives are orthogonal atoms that compose to build sidebars:
 
 All nav elements use CSS custom properties for indentation, animation, and spacing:
 
-- `--cngx-nav-depth` (set by directive, integer) — Current nesting depth
-- `--cngx-nav-indent` (CSS custom property, default 12px) — Indent per level
-- `--cngx-nav-transition` (CSS custom property, default 150ms) — Animation duration
+- `--cngx-nav-depth` (set by directive, integer) - Current nesting depth
+- `--cngx-nav-indent` (CSS custom property, default 12px) - Indent per level
+- `--cngx-nav-transition` (CSS custom property, default 150ms) - Animation duration
 
 ### Basic Stylesheet
 
@@ -484,37 +484,8 @@ export class FAQComponent {
 }
 ```
 
-## Implementation Notes
-
-### Indentation via CSS Custom Properties
-
-The `--cngx-nav-depth` custom property is set by the directives based on the `[depth]` input. Calculate indentation in CSS:
-
-```scss
-padding-left: calc(var(--cngx-nav-depth) * var(--cngx-nav-indent, 12px));
-```
-
-This allows:
-- Per-component overrides via `--cngx-nav-indent`
-- Per-level calculation without JavaScript
-- Smooth animation on depth changes
-
-### Single Accordion Mode
-
-When `withSingleAccordion()` is provided, opening one group closes all others in the same scope:
-
-```typescript
-providers: [provideNavConfig(withSingleAccordion())]
-```
-
-Internally uses `CngxNavGroupRegistry` to track registered groups and close siblings.
-
-### Disclosure as Composition Primitive
-
-`CngxDisclosure` is generic — it works for any expand/collapse pattern (FAQs, accordions, popovers, etc.). Not limited to navigation.
-
 ## See Also
 
 - [compodocx API documentation](https://cngxjs.github.io/cngx/)
-- Demo: `dev-app/src/app/demos/common/nav-demo/`
+- Demo: `examples/stories/common/nav-demo/`
 - Tests: `projects/common/interactive/nav/nav-group.directive.spec.ts`
