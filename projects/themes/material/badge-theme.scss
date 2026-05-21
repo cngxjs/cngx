@@ -1,9 +1,12 @@
 @use '@angular/material' as mat;
 
 // Material bridge for CngxBadge. Maps the badge's four-colour palette
-// (primary / error / warning / neutral) onto Material 3 surfaces so a
-// badge next to <mat-badge> reads the same.
+// (primary / error / warning / neutral), the indicator's corner radius,
+// the cut-out ring, and the typography scale onto Material 3 surface,
+// semantic, and label tokens so a cngx badge reads native next to
+// <mat-badge>, <mat-chip>, and <mat-card> headers.
 //
+//   @use '@angular/material' as mat;
 //   @use '@cngx/themes/material/badge-theme' as badge;
 //   html { @include badge.theme($theme); }
 
@@ -24,11 +27,6 @@
     // than competing with primary alerts.
     --cngx-badge-neutral-bg: var(--mat-sys-surface-variant);
     --cngx-badge-neutral-color: var(--mat-sys-on-surface-variant);
-
-    // Outline ring lives between the badge and its surface — re-point to
-    // Material's container surface so the ring disappears against panels
-    // that match.
-    --cngx-badge-border: 2px solid var(--mat-sys-surface);
   } @else {
     --cngx-badge-primary-bg: #{mat.get-theme-color($theme, primary)};
     --cngx-badge-error-bg: #{mat.get-theme-color($theme, warn)};
@@ -38,10 +36,38 @@
   }
 }
 
+@mixin typography($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    // Badge text follows Material's label-small scale so a count next to
+    // a <mat-chip> shares the same character class. Weight stays at the
+    // library default (600) for legibility on the smallest surface.
+    --cngx-badge-font-size: var(--mat-sys-label-small-size, 0.6875rem);
+  }
+}
+
+@mixin base($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    // Pill radius adopts Material's full-corner token so the indicator
+    // matches <mat-badge>, which uses the same radius.
+    --cngx-badge-radius: var(--mat-sys-corner-full, 999px);
+  } @else {
+    --cngx-badge-radius: 999px;
+  }
+}
+
 @mixin theme($theme) {
   @layer cngx.components {
-    :where([cngxBadge], .cngx-badge) {
+    // Color tokens inherit, so setting them on the host cascades into
+    // the indicator span. Typography and radius tokens are declared
+    // `inherits: false` (see projects/common/theming/components/
+    // cngx-badge.css), so they must land on the indicator element
+    // itself to take effect.
+    :where([cngxBadge], .cngx-badge-host) {
       @include color($theme);
+    }
+    :where(.cngx-badge-indicator) {
+      @include typography($theme);
+      @include base($theme);
     }
   }
 }
