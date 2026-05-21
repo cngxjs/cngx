@@ -1,34 +1,30 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Inside a Card',
-  subtitle: 'Metric as the primary value inside a card body — composable with any card archetype.',
-  description: 'Displays a locale-aware formatted number with optional unit. Composable — works inside any card variant or standalone.',
+  title: 'CngxMetric: Inside a card',
+  subtitle: 'Metric as the primary value inside a card body; composable with any card archetype.',
   level: 'atom',
   audience: ['dev', 'design'],
   artifact: 'standalone',
   focus: ['visual-variants'],
-  apiComponents: [
-    'CngxMetric',
-  ],
+  apiComponents: ['CngxMetric'],
   moduleImports: [
-    'import { CngxMetric } from \'@cngx/common/data\';',
-    'import { CngxCard, CngxCardHeader, CngxCardBody } from \'@cngx/common/card\';',
+    "import { CngxMetric } from '@cngx/common/data';",
+    "import { CngxCard, CngxCardHeader, CngxCardBody } from '@cngx/common/card';",
   ],
   imports: ['CngxMetric', 'CngxCard', 'CngxCardHeader', 'CngxCardBody'],
-  template: `
-  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;max-width:600px">
+  template: `<cngx-card style="max-width:240px">
+    <header cngxCardHeader>
+      <span class="demo-card-label">Heart Rate</span>
+    </header>
+    <div cngxCardBody>
+      <cngx-metric [value]="75" unit="bpm" />
+    </div>
+  </cngx-card>`,
+  templateChrome: `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;max-width:600px;margin-top:24px">
     <cngx-card>
       <header cngxCardHeader>
-        <span style="font-size:0.8125rem;color:var(--cngx-color-text-muted)">Heart Rate</span>
-      </header>
-      <div cngxCardBody>
-        <cngx-metric [value]="75" unit="bpm" />
-      </div>
-    </cngx-card>
-    <cngx-card>
-      <header cngxCardHeader>
-        <span style="font-size:0.8125rem;color:var(--cngx-color-text-muted)">SpO2</span>
+        <span class="demo-card-label">SpO2 (percent)</span>
       </header>
       <div cngxCardBody>
         <cngx-metric [value]="96" unit="%" />
@@ -36,7 +32,7 @@ export const STORY: DemoSpec = {
     </cngx-card>
     <cngx-card>
       <header cngxCardHeader>
-        <span style="font-size:0.8125rem;color:var(--cngx-color-text-muted)">BMI</span>
+        <span class="demo-card-label">BMI (string fallback)</span>
       </header>
       <div cngxCardBody>
         <cngx-metric value="n.b." />

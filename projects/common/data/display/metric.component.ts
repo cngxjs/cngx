@@ -14,7 +14,7 @@ import {
  * Uses `Intl.NumberFormat` with the injected `LOCALE_ID` for locale-aware
  * formatting. Null values render as an em-dash.
  *
- * Composable — works inside any card variant, header, body, or standalone.
+ * Composable - works inside any card variant, header, body, or standalone.
  *
  * ### Basic
  * ```html
@@ -56,7 +56,7 @@ import {
 export class CngxMetric {
   private readonly locale = inject(LOCALE_ID);
 
-  /** Numeric or string value. `null` renders as em-dash. */
+  /** Numeric or string value. `null` renders as a placeholder hyphen. */
   readonly value = input.required<number | string | null>();
 
   /** Unit suffix (e.g. "bpm", "h", "%", "kg"). */
