@@ -20,11 +20,7 @@ Every atom here is a thin visual surface that reads inputs and produces ARIA-cor
 
 `CngxChip` and `CngxTag` are easy to confuse: a chip is **removable and ephemeral** (the user added it, the user can remove it), a tag is **applied and static** (a label that classifies something). When in doubt, ask whether the user can dismiss it; if yes, it is a chip.
 
-## Theming
-
-Every visual property — colour, radius, spacing, sizing — is a CSS custom property with a Material 3 fallback. Override at any DOM level via standard cascade. The full token list lives next to each component in the API tab.
-
 ## See also
 
 - Each component's inputs, slots, and CSS variables in the **API** tab.
-- Live demos under `dev-app/src/app/demos/common/display/`.
+- Live demos under `examples/stories/common/display/`.
