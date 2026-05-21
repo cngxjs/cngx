@@ -1,33 +1,30 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Inline area trends',
-  subtitle: 'Default 80×24, theming via --cngx-mini-area-color → --cngx-chart-primary.',
-  description: 'Inline mini filled-area chart. Sibling of <cngx-sparkline>; renders only the area (no line stroke).',
+  title: 'CngxMiniArea: Inline area trends',
+  subtitle:
+    'Default 80x24, theming via <code>--cngx-mini-area-color</code> with fallback to <code>--cngx-chart-primary</code>.',
+  description:
+    'Two area sparks side by side: the first runs the default size and palette, the second overrides width / height and tints the fill via the public custom property. No axis, no labels, just the trend.',
   level: 'atom',
   audience: ['dev', 'design'],
   artifact: 'standalone',
   focus: ['visual-variants'],
-  apiComponents: [
-    'CngxMiniArea',
-  ],
-  moduleImports: [
-    'import { CngxMiniArea } from \'@cngx/common/chart\';',
-  ],
+  apiComponents: ['CngxMiniArea'],
+  moduleImports: ["import { CngxMiniArea } from '@cngx/common/chart';"],
   imports: ['CngxMiniArea'],
-  template: `
-  <div style="display:flex;gap:24px;align-items:center;flex-wrap:wrap">
+  template: `  <div style="display:flex;gap:24px;align-items:center;flex-wrap:wrap">
     <div>
-      <span style="font-size:0.75rem;color:var(--cngx-color-text-muted);margin-right:8px">Sessions</span>
+      <span class="cngx-ex-status-readout" style="margin-right:8px">Sessions</span>
       <cngx-mini-area [data]="[5, 12, 8, 18, 14, 22, 19]" />
     </div>
     <div>
-      <span style="font-size:0.75rem;color:var(--cngx-color-text-muted);margin-right:8px">Revenue</span>
+      <span class="cngx-ex-status-readout" style="margin-right:8px">Revenue</span>
       <cngx-mini-area
         [data]="[10, 14, 18, 16, 22, 28, 32]"
         [width]="120"
         [height]="32"
-        style="--cngx-mini-area-color: var(--success, #1f9d55)"
+        style="--cngx-mini-area-color: var(--cngx-color-success, #1f9d55)"
       />
     </div>
   </div>`,

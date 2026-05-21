@@ -25,7 +25,4 @@ Three properties make the chart system feel different from a wrapped library:
 
 Under active development. Treat the **preset molecules** as stable for adoption. Treat the **atom internals** (axis tick computation, layer projection caching, custom-layer authoring) as still in flux until the chart-area master plan closes — APIs may move between minor releases.
 
-## See also
 
-- Components, atoms, scales, and slot directives are listed in the **API** tab.
-- Live examples and theming in the demo app under `dev-app/src/app/demos/common/chart/`.

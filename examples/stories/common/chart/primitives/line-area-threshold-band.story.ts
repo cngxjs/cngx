@@ -1,29 +1,21 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Line + area + threshold + band',
-  subtitle: 'A multi-layer chart with a target threshold and a "watch zone" band.',
-  description: 'Compose <cngx-chart> + [cngxAxis] + layer atoms ([cngxLine], [cngxArea], [cngxBar], [cngxScatter], [cngxThreshold], [cngxBand]) directly. The seven preset molecules wrap these primitives; this demo shows how to compose them.',
+  title: 'CngxChart: Line area threshold band',
+  subtitle:
+    'A multi-layer chart that stacks band, area, line, and threshold over the same axes. The "watch zone" band sits behind the line; the threshold draws a dashed target across the chart.',
+  description:
+    'Composes the four most common annotation layers in declaration order: a value band, an area fill, the line, and a threshold marker. Each layer reads the same axes, so they remain in sync without coupling between atoms.',
   level: 'organism',
   audience: ['dev', 'design'],
   artifact: 'building-block',
   focus: ['composition', 'visual-variants'],
-  apiComponents: [
-    'CngxChart',
-    'CngxAxis',
-    'CngxLine',
-    'CngxArea',
-    'CngxBar',
-    'CngxScatter',
-    'CngxThreshold',
-    'CngxBand',
-  ],
+  apiComponents: ['CngxChart', 'CngxAxis', 'CngxLine', 'CngxArea', 'CngxThreshold', 'CngxBand'],
   moduleImports: [
-    'import { CngxChart, CngxAxis, CngxLine, CngxArea, CngxThreshold, CngxBand } from \'@cngx/common/chart\';',
+    "import { CngxChart, CngxAxis, CngxLine, CngxArea, CngxThreshold, CngxBand } from '@cngx/common/chart';",
   ],
   imports: ['CngxChart', 'CngxAxis', 'CngxLine', 'CngxArea', 'CngxThreshold', 'CngxBand'],
-  template: `
-  <div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; display: inline-block; max-width: 100%; box-sizing: border-box">
+  template: `  <div style="border:1px solid var(--cngx-color-border, #e5e7eb); border-radius:4px; padding:8px; display:inline-block; max-width:100%; box-sizing:border-box">
     <cngx-chart
       [data]="[8, 12, 14, 9, 18, 22, 25, 19, 16, 24, 28, 32]"
       [width]="480"

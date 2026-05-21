@@ -72,6 +72,7 @@ import { injectPresetState } from './preset-state';
       }
     }
   `,
+  styleUrls: ['../chart-tokens.css'],
   styles: [
     `
       cngx-sparkline {

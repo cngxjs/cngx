@@ -72,6 +72,7 @@ interface SegmentRendering {
       }
     }
   `,
+  styleUrls: ['../chart-tokens.css'],
   styles: [
     `
       cngx-stacked-bar {
