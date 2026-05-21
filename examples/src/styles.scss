@@ -652,6 +652,40 @@ button.chip[aria-pressed='true'] {
   margin-top: 4px;
 }
 
+// Demo-only typography for inline status readouts above charts and other
+// async-state demos. Muted, small, monospace number-aligned.
+.cngx-ex-status-readout {
+  font-size: 0.75rem;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted));
+  font-variant-numeric: tabular-nums;
+}
+
+
+// Demo-only KPI strip layout used by the deviation-bar variance-readings
+// story. Three rows of [label | chart | readout] share spacing, so the
+// per-row markup stays a one-liner.
+.cngx-ex-kpi-strip {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 360px;
+}
+.cngx-ex-kpi-strip > li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.cngx-ex-kpi-strip > li > :first-child {
+  flex: 1;
+}
+.cngx-ex-kpi-strip > li > :last-child {
+  width: 60px;
+  text-align: right;
+}
+
 // Demo-only menu chrome for the roving-tabindex vertical-menu story.
 // chip styling is button-scoped; non-button items need their own surface.
 .cngx-ex-menu-list {
