@@ -37,13 +37,15 @@
   }
 
   /**
-   * Inline padding around the badge text.
+   * Inline padding around the badge text. Capped at 3px so a single-digit
+   * count fits within the 16px min-width and renders as a true circle;
+   * multi-character content widens the pill naturally.
    * @group Layout
    */
   @property --cngx-badge-padding-inline {
     syntax: '<length>';
     inherits: false;
-    initial-value: 5px;
+    initial-value: 3px;
   }
 
   /**
@@ -54,6 +56,17 @@
     syntax: '<length>';
     inherits: false;
     initial-value: 999px;
+  }
+
+  /**
+   * Gap between the host content and the indicator in the `inline`
+   * position variant. Has no effect on corner anchors.
+   * @group Layout / Inline
+   */
+  @property --cngx-badge-inline-gap {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 0.375rem;
   }
 
   /**
@@ -77,16 +90,21 @@
   }
 
   /**
-   * Ring around the badge — contrasts the indicator against the host
-   * surface so the corner anchors read as separate pills. Only
-   * applied in the corner variants (`above-*` / `below-*`). `inherits:
-   * true` so the :root dark-mode override reaches the indicator span.
+   * Ring around the badge. Defaults to `0` so the indicator reads as a
+   * solid pill that sits flush on its host (the dot variant in
+   * particular would shrink to a single visible pixel under a 2px ring).
+   * Set a non-zero border at consumer level when the badge needs to
+   * cut out from a busy host surface — e.g. `--cngx-badge-border: 2px
+   * solid var(--mat-sys-surface)`. Only applied in the corner variants
+   * (`above-*` / `below-*`); the `inline` variant is borderless either
+   * way. `inherits: true` so a single `:root` override reaches every
+   * indicator span at once.
    * @group Surface
    */
   @property --cngx-badge-border {
     syntax: '*';
     inherits: true;
-    initial-value: 2px solid oklch(1 0 0);
+    initial-value: 0;
   }
 
   /**
@@ -140,7 +158,7 @@
   @property --cngx-badge-warning-bg {
     syntax: '<color>';
     inherits: true;
-    initial-value: oklch(0.72 0.18 70);
+    initial-value: oklch(0.65 0.20 70);
   }
 
   /**
@@ -173,21 +191,28 @@
     initial-value: oklch(1 0 0);
   }
 
-  /* Dark-mode swap — corner-anchor ring matches the surface so the
-   * badge still reads as a cut-out pill (a white ring on dark page
-   * would frame the badge in a contrasting halo). */
+  /* Theming hook — `--cngx-badge-border` defaults to `0` (no ring) so
+   * the indicator reads as a flat pill on its host. Consumers that
+   * want a cut-out ring against a busy host surface can opt in at the
+   * root, e.g.:
+   *
+   *   :root { --cngx-badge-border: 2px solid var(--mat-sys-surface); }
+   *
+   * Once opted in, the dark / light selectors below repaint the ring
+   * for the active color-scheme so it stays in contrast with the
+   * background. They are no-ops at the library default. */
   @media (prefers-color-scheme: dark) {
     :root:not([data-color-scheme='light']):not(.light) {
-      --cngx-badge-border: 2px solid oklch(0.2 0.01 250);
+      --cngx-badge-border: var(--cngx-badge-border-dark, var(--cngx-badge-border, 0));
     }
   }
   [data-color-scheme='dark'],
   .dark {
-    --cngx-badge-border: 2px solid oklch(0.2 0.01 250);
+    --cngx-badge-border: var(--cngx-badge-border-dark, var(--cngx-badge-border, 0));
   }
   [data-color-scheme='light'],
   .light {
-    --cngx-badge-border: 2px solid oklch(1 0 0);
+    --cngx-badge-border: var(--cngx-badge-border-light, var(--cngx-badge-border, 0));
   }
 }
 
@@ -209,7 +234,7 @@
       box-sizing: border-box;
       min-width: var(--cngx-badge-size, 16px);
       height: var(--cngx-badge-size, 16px);
-      padding: 0 var(--cngx-badge-padding-inline, 5px);
+      padding: 0 var(--cngx-badge-padding-inline, 3px);
       border-radius: var(--cngx-badge-radius, var(--cngx-radius-pill, 999px));
       font-size: var(--cngx-badge-font-size, 0.6875rem);
       font-weight: var(--cngx-badge-font-weight, 600);
@@ -236,7 +261,7 @@
       color: var(--cngx-badge-error-color, oklch(1 0 0));
     }
     :scope.cngx-badge-indicator--warning {
-      background: var(--cngx-badge-warning-bg, var(--cngx-color-warning, oklch(0.72 0.18 70)));
+      background: var(--cngx-badge-warning-bg, var(--cngx-color-warning, oklch(0.65 0.20 70)));
       color: var(--cngx-badge-warning-color, oklch(0.2 0.01 250));
     }
     :scope.cngx-badge-indicator--neutral {
@@ -249,34 +274,35 @@
     :scope.cngx-badge-indicator--inline {
       position: static;
       border: 0;
+      margin-inline-start: var(--cngx-badge-inline-gap, 0.375rem);
     }
     :scope.cngx-badge-indicator--above-start {
       position: absolute;
       top: 0;
       inset-inline-start: 0;
       transform: translate(-50%, -50%);
-      border: var(--cngx-badge-border, 2px solid oklch(1 0 0));
+      border: var(--cngx-badge-border, 0);
     }
     :scope.cngx-badge-indicator--above-end {
       position: absolute;
       top: 0;
       inset-inline-end: 0;
       transform: translate(50%, -50%);
-      border: var(--cngx-badge-border, 2px solid oklch(1 0 0));
+      border: var(--cngx-badge-border, 0);
     }
     :scope.cngx-badge-indicator--below-start {
       position: absolute;
       bottom: 0;
       inset-inline-start: 0;
       transform: translate(-50%, 50%);
-      border: var(--cngx-badge-border, 2px solid oklch(1 0 0));
+      border: var(--cngx-badge-border, 0);
     }
     :scope.cngx-badge-indicator--below-end {
       position: absolute;
       bottom: 0;
       inset-inline-end: 0;
       transform: translate(50%, 50%);
-      border: var(--cngx-badge-border, 2px solid oklch(1 0 0));
+      border: var(--cngx-badge-border, 0);
     }
   }
 }
