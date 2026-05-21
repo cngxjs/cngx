@@ -42,29 +42,6 @@ export class TagCombo {
 }
 ```
 
-## Inputs (cheat-sheet)
-
-Most inputs mirror [`CngxMultiSelect`](../multi-select/README.md#inputs-cheat-sheet). Combobox-specific:
-
-| Input                | Type                               | Purpose                                                                                                   |
-| -------------------- | ---------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| `[searchMatchFn]`    | `ListboxMatchFn`                   | Custom matcher; default = label `startsWith` (case-insensitive). Pass `() => true` for server-driven mode |
-| `[searchDebounceMs]` | `number`                           | Debounce window for `(searchTermChange)` (default from config: `300ms`)                                   |
-| `[skipInitial]`      | `boolean`                          | Suppress the first `(searchTermChange)` emission (server-driven seed flow)                                |
-| `[closeOnSelect]`    | `boolean`                          | Default `false` — picking adds to chips and keeps the panel open                                          |
-| `[inputMode]`        | `'text' \| 'search' \| ...`        | HTML `inputmode` attribute for mobile keyboards                                                           |
-| `[enterKeyHint]`     | `'enter' \| 'done' \| 'go' \| ...` | HTML `enterkeyhint` attribute                                                                             |
-
-## Outputs
-
-| Output                                     | Payload                 | Fires on                                                |
-| ------------------------------------------ | ----------------------- | ------------------------------------------------------- |
-| `(selectionChange)`                        | `CngxComboboxChange<T>` | Any user-driven values change                           |
-| `(optionToggled)`                          | `{ option, added }`     | Single option flipped                                   |
-| `(searchTermChange)`                       | `string`                | Debounced live search term — wire to your HTTP endpoint |
-| `(cleared)` / `(retry)` / `(commitError)`  | as `CngxMultiSelect`    | Same surfaces                                           |
-| `(openedChange)` / `(opened)` / `(closed)` | as `CngxMultiSelect`    | Panel lifecycle                                         |
-
 ## Forms integration
 
 Identical to [`CngxMultiSelect`](../multi-select/README.md#forms-integration). The bound `Field<T[]>` syncs bidirectionally with `(values)`.
@@ -156,17 +133,6 @@ All [`CngxMultiSelect` slots](../multi-select/README.md#template-slots) plus:
 | `*cngxComboboxTriggerLabel` | Chip strip → text summary (search input stays visible)                         |
 | `*cngxSelectInputPrefix`    | Adornment before the `<input>`                                                 |
 | `*cngxSelectInputSuffix`    | Adornment after the `<input>`, before clear/caret                              |
-
-## Theming
-
-| Variable                               | Default                              |
-| -------------------------------------- | ------------------------------------ |
-| `--cngx-combobox-min-width`            | `var(--cngx-select-min-width, 16ch)` |
-| `--cngx-combobox-input-padding-inline` | `0.25rem`                            |
-| `--cngx-combobox-input-min-width`      | `4rem`                               |
-| `--cngx-combobox-clear-color`          | `currentColor`                       |
-
-Plus the family-shared chip-strip variables from `select-base.css`.
 
 ## Keyboard
 

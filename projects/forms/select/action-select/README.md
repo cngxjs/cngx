@@ -61,25 +61,6 @@ export class TagPicker {
 }
 ```
 
-## Inputs (cheat-sheet)
-
-Most inputs mirror [`CngxTypeahead`](../typeahead/README.md#inputs-cheat-sheet). Action-host-specific:
-
-| Input                 | Type                                                 | Purpose                                                                                        |
-| --------------------- | ---------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| `[(value)]`           | `model<T \| undefined>`                              | Two-way bound scalar value                                                                     |
-| `[quickCreateAction]` | `(term: string) => Observable<T> \| Promise<T> \| T` | Async "create and commit" handler invoked by `commit()`                                        |
-| `[actionPosition]`    | `'top' \| 'bottom' \| 'both' \| 'none'`              | Where in the panel-shell stack the action slot renders                                         |
-| `[localItems]`        | `Signal<readonly CngxSelectOptionDef<T>[]>`          | Persistent buffer of just-created items merged into the option list (survives state refetches) |
-
-## Outputs
-
-All [`CngxTypeahead` outputs](../typeahead/README.md#outputs) plus:
-
-| Output      | Payload | Fires on                                  |
-| ----------- | ------- | ----------------------------------------- |
-| `(created)` | `T`     | `quickCreateAction` resolved successfully |
-
 ## Forms integration
 
 Identical to [`CngxTypeahead`](../typeahead/README.md#forms-integration). The bound `Field<T>` syncs with `(value)`.
@@ -193,10 +174,6 @@ All [`CngxTypeahead` slots](../typeahead/README.md#template-slots) plus:
 | Slot                | Replaces                                            |
 | ------------------- | --------------------------------------------------- |
 | `*cngxSelectAction` | Inline action workflow inside the panel-shell stack |
-
-## Theming
-
-Same trigger surface as [`CngxTypeahead`](../typeahead/README.md#theming) (`--cngx-typeahead-*`). Action-slot positioning sits in the panel-shell's own variables — see `select-base.css`.
 
 ## Keyboard
 

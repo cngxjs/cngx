@@ -53,32 +53,6 @@ export class StackPicker {
 }
 ```
 
-## Inputs (cheat-sheet)
-
-Most inputs mirror [`CngxMultiSelect`](../multi-select/README.md#inputs-cheat-sheet). Tree-specific:
-
-| Input                                           | Type                                            | Purpose                                                                                                                                         |
-| ----------------------------------------------- | ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| `[(values)]`                                    | `model<T[]>`                                    | Two-way bound array of selected values                                                                                                          |
-| `[nodes]`                                       | `readonly CngxTreeNode<T>[]`                    | Source tree                                                                                                                                     |
-| `[nodeIdFn]`                                    | `(value: T, path: readonly number[]) => string` | **Required** — must survive re-ordering / filtering. Use a domain id (e.g. `(v) => v.id`) — positional fallback silently breaks expansion state |
-| `[labelFn]`                                     | `(value: T) => string`                          | Defaults to `String(value)`                                                                                                                     |
-| `[keyFn]`                                       | `(value: T) => unknown`                         | Membership key for selection (defaults to identity)                                                                                             |
-| `[initiallyExpanded]`                           | `'all' \| 'none' \| readonly string[]`          | One-shot at mount                                                                                                                               |
-| `[cascadeChildren]`                             | `boolean`                                       | When `true`, toggling a parent atomically selects/deselects all descendants                                                                     |
-| `[twistyExpandLabel]` / `[twistyCollapseLabel]` | `string`                                        | ARIA labels on the twisty button (defaults from config)                                                                                         |
-
-## Outputs
-
-| Output                                     | Payload                   | Fires on                      |
-| ------------------------------------------ | ------------------------- | ----------------------------- |
-| `(selectionChange)`                        | `CngxTreeSelectChange<T>` | Any user-driven values change |
-| `(openedChange)` / `(opened)` / `(closed)` | as `CngxMultiSelect`      | Panel lifecycle               |
-| `(cleared)`                                | `void`                    | Clear-all clicked             |
-| `(retry)` / `(commitError)`                | as `CngxMultiSelect`      | Async surfaces                |
-
-`CngxTreeSelectChange<T>` carries `{ values, previousValues, added, removed, node, action: 'toggle' \| 'cascade-toggle' \| 'clear' }`. Cascade-toggle aggregates the `added` / `removed` arrays into a single event.
-
 ## Forms integration
 
 Identical to [`CngxMultiSelect`](../multi-select/README.md#forms-integration). The `Field<T[]>` syncs bidirectionally with `(values)`.
@@ -134,25 +108,6 @@ All [`CngxMultiSelect` shared slots](../multi-select/README.md#template-slots) (
 | `*cngxTreeSelectNode`         | Per-node row markup                      |
 | `*cngxTreeSelectChip`         | Per-chip in the trigger strip            |
 | `*cngxTreeSelectTriggerLabel` | Whole chip strip with text/badge summary |
-
-## Theming
-
-| Variable                              | Default                                           |
-| ------------------------------------- | ------------------------------------------------- |
-| `--cngx-tree-select-min-width`        | `16ch`                                            |
-| `--cngx-tree-select-trigger-height`   | `2.25rem`                                         |
-| `--cngx-tree-select-tree-padding`     | `0.25rem`                                         |
-| `--cngx-tree-select-node-height`      | `1.75rem`                                         |
-| `--cngx-tree-select-base-indent`      | `0.5rem`                                          |
-| `--cngx-tree-select-level-indent`     | `1rem`                                            |
-| `--cngx-tree-select-node-bg`          | `transparent`                                     |
-| `--cngx-tree-select-node-hover-bg`    | `var(--cngx-surface-2, rgba(0,0,0,0.04))`         |
-| `--cngx-tree-select-node-selected-bg` | `var(--cngx-primary-soft, rgba(25,118,210,0.08))` |
-| `--cngx-tree-select-twisty-size`      | `1.25rem`                                         |
-| `--cngx-tree-select-twisty-color`     | `currentColor`                                    |
-| `--cngx-tree-select-twisty-font-size` | `0.875rem`                                        |
-
-Plus the family-shared chip-strip variables from `select-base.css`.
 
 ## Keyboard
 

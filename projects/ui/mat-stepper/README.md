@@ -29,6 +29,3 @@ The organism's constructor wires two effects (after `afterNextRender` ensures `v
 
 Material's commit-action gate works because `presenter.select()` routes through the commit handler — pessimistic mode keeps Material's `selectedIndex` on origin until success.
 
-## Theming
-
-Material's own theming applies — `<mat-stepper>` reads `--mat-sys-*` tokens. `<cngx-mat-stepper>` adds no skin of its own; the host element is `display: contents` so the rendered `<mat-stepper>` flows through the consumer's Material theme.

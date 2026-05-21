@@ -4,32 +4,6 @@ Finished, styled Angular components that compose headless directives from
 `@cngx/common` with opinionated rendering. These are the "organism" layer —
 ready to drop into an application without additional template work.
 
-## Theming
-
-Every component supports two theming paths:
-
-1. **CSS Custom Properties** — override `--cngx-*` variables on any parent
-   element. Works without Angular Material.
-
-2. **Material Theme SCSS** — each component ships a `*-theme.scss` file with
-   `base()`, `color($theme)`, `density($theme)`, and `theme($theme)` mixins
-   that map Material design tokens to the CSS custom properties.
-
-```scss
-@use '@angular/material' as mat;
-@use '@cngx/themes/material/speak-button-theme' as speak;
-
-$theme: mat.define-theme((...));
-
-html {
-  @include mat.all-component-themes($theme);
-  @include speak.theme($theme);
-}
-```
-
-M3 themes use `var(--mat-sys-*)` tokens. M2 themes derive from the palette.
-Density scales sizes from default (0) to compact (-4).
-
 ## Components
 
 ### CngxMatPaginator

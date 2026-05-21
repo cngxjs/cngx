@@ -49,32 +49,6 @@ export class UserPicker {
 }
 ```
 
-## Inputs (cheat-sheet)
-
-Most inputs mirror [`CngxSelect`](../single-select/README.md#inputs-cheat-sheet). Typeahead-specific:
-
-| Input                            | Type                    | Purpose                                                                          |
-| -------------------------------- | ----------------------- | -------------------------------------------------------------------------------- |
-| `[(value)]`                      | `model<T \| undefined>` | Two-way bound scalar value                                                       |
-| `[displayWith]`                  | `(value: T) => string`  | Format the selection for the `<input>` text                                      |
-| `[clearOnBlur]`                  | `boolean`               | Restore last-committed display on blur if user typed stray text (default `true`) |
-| `[searchMatchFn]`                | `ListboxMatchFn`        | Custom matcher; default = label `startsWith` (case-insensitive)                  |
-| `[searchDebounceMs]`             | `number`                | Debounce window for `(searchTermChange)`                                         |
-| `[skipInitial]`                  | `boolean`               | Suppress the first `(searchTermChange)` emission                                 |
-| `[inputMode]` / `[enterKeyHint]` | string                  | HTML attributes for mobile keyboards                                             |
-
-## Outputs
-
-| Output                                     | Payload                  | Fires on                   |
-| ------------------------------------------ | ------------------------ | -------------------------- |
-| `(selectionChange)`                        | `CngxTypeaheadChange<T>` | User picked an option      |
-| `(searchTermChange)`                       | `string`                 | Debounced live search term |
-| `(openedChange)` / `(opened)` / `(closed)` | as `CngxSelect`          | Panel lifecycle            |
-| `(cleared)`                                | `void`                   | Clear ✕ clicked            |
-| `(retry)` / `(commitError)`                | as `CngxSelect`          | Async surfaces             |
-
-`CngxTypeaheadChange<T>` carries `{ source, value, previousValue, option }`.
-
 ## Forms integration
 
 Identical to [`CngxSelect`](../single-select/README.md#forms-integration). Bind `Field<T>` (Signal Forms) or use `adaptFormControl` for RF.
@@ -173,20 +147,6 @@ All [`CngxSelect` slots](../single-select/README.md#template-slots) except `*cng
 | ------------------------ | ------------------------------------------------- |
 | `*cngxSelectInputPrefix` | Adornment before the `<input>`                    |
 | `*cngxSelectInputSuffix` | Adornment after the `<input>`, before clear/caret |
-
-## Theming
-
-| Variable                            | Default                                 |
-| ----------------------------------- | --------------------------------------- |
-| `--cngx-typeahead-min-width`        | `var(--cngx-select-min-width, 16ch)`    |
-| `--cngx-typeahead-gap`              | `0.25rem`                               |
-| `--cngx-typeahead-min-height`       | `2.25rem`                               |
-| `--cngx-typeahead-padding`          | `0.5rem 0.75rem`                        |
-| `--cngx-typeahead-bg`               | `var(--cngx-surface, #fff)`             |
-| `--cngx-typeahead-border`           | `1px solid var(--cngx-border, #d0d7de)` |
-| `--cngx-typeahead-radius`           | `var(--cngx-radius, 6px)`               |
-| `--cngx-typeahead-disabled-opacity` | `0.55`                                  |
-| `--cngx-typeahead-action-color`     | `currentColor`                          |
 
 ## Keyboard
 

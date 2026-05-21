@@ -37,28 +37,6 @@ export class RankPicker {
 }
 ```
 
-## Inputs (cheat-sheet)
-
-Most inputs mirror [`CngxMultiSelect`](../multi-select/README.md#inputs-cheat-sheet). Reorder-specific:
-
-| Input                       | Type                        | Purpose                                                         |
-| --------------------------- | --------------------------- | --------------------------------------------------------------- |
-| `[reorderKeyboardModifier]` | `'ctrl' \| 'alt' \| 'meta'` | Modifier required for keyboard reorder (default `'alt'` — cross-platform; `'ctrl'` is OS-bound to Spaces on macOS) |
-| `[reorderAriaLabel]`        | `string`                    | ARIA label on the chip-strip group (default `'Reorder with Alt + arrow keys'`; override via `withReorderAriaLabel(...)`) |
-| `[chipDragHandle]`          | `TemplateRef<void> \| null` | Override the default ⋮⋮ grip glyph                              |
-
-`[(values)]` IS the order signal — array index = chip position.
-
-## Outputs
-
-All [`CngxMultiSelect` outputs](../multi-select/README.md#outputs) plus:
-
-| Output        | Payload                               | Fires on                                                                                             |
-| ------------- | ------------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| `(reordered)` | `CngxReorderableMultiSelectChange<T>` | Position-only change (membership preserved) — fires after `selectionChange` with `action: 'reorder'` |
-
-`CngxReorderableMultiSelectChange<T>` extends the multi-select shape with `action: 'toggle' \| 'clear' \| 'reorder'` and adds `fromIndex` / `toIndex` on reorder events.
-
 ## Forms integration
 
 Identical to [`CngxMultiSelect`](../multi-select/README.md#forms-integration). The `Field<T[]>` syncs both membership AND order — your form model is the source of truth for sequence.
@@ -125,29 +103,6 @@ All [`CngxMultiSelect` slots](../multi-select/README.md#template-slots) plus:
 | Slot                         | Replaces                                                                           |
 | ---------------------------- | ---------------------------------------------------------------------------------- |
 | `*cngxMultiSelectChipHandle` | Drag-handle glyph inside each chip (highest precedence in the three-stage cascade) |
-
-## Theming
-
-| Variable                                        | Default                                 |
-| ----------------------------------------------- | --------------------------------------- |
-| `--cngx-reorderable-multi-select-min-width`     | `var(--cngx-multi-select-min-width)`    |
-| `--cngx-reorderable-multi-select-gap`           | `0.25rem`                               |
-| `--cngx-reorderable-multi-select-padding`       | `0.5rem 0.75rem`                        |
-| `--cngx-reorderable-multi-select-min-height`    | `2.25rem`                               |
-| `--cngx-reorderable-multi-select-bg`            | `var(--cngx-surface, #fff)`             |
-| `--cngx-reorderable-multi-select-border`        | `1px solid var(--cngx-border, #d0d7de)` |
-| `--cngx-reorderable-multi-select-radius`        | `var(--cngx-radius, 6px)`               |
-| `--cngx-reorderable-multi-select-focus-outline` | `var(--cngx-focus-ring)`                |
-
-Family-shared drag/drop variables in `select-base.css`:
-
-| Variable                          | Default                                   |
-| --------------------------------- | ----------------------------------------- |
-| `--cngx-select-chip-handle-color` | `currentColor`                            |
-| `--cngx-select-chip-handle-size`  | `1rem`                                    |
-| `--cngx-select-chip-drag-opacity` | `0.55`                                    |
-| `--cngx-select-chip-drag-shadow`  | `0 4px 8px rgba(0,0,0,0.15)`              |
-| `--cngx-select-chip-drop-outline` | `2px dashed var(--cngx-primary, #1976d2)` |
 
 ## Keyboard
 
