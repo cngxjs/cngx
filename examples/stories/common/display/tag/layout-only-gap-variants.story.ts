@@ -1,29 +1,18 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Layout-only — gap variants',
-  subtitle: 'Without <code>[semanticList]</code> the group is a decorative flex-wrap row; <code>[gap]</code> scales the spacing through <code>--cngx-tag-group-gap-*</code> custom properties.',
-  description: 'Decorative label / badge / status indicator. Dual selector ([cngxTag] and <cngx-tag>) so it composes onto any host element including <a> for link-mode tags. Removable affordances live in CngxChip; clickable interactions live on native <button cngxTag> / <a cngxTag>.',
+  title: 'CngxTagGroup: gap variants',
+  subtitle: 'Without <code>[semanticList]</code> the group is a decorative flex-wrap row; <code>[gap]</code> scales the spacing through <code>--cngx-tag-group-gap-{xs,sm,md}</code> custom properties.',
+  description: 'Three steps: <code>xs</code> for tight chip strips, <code>sm</code> default, <code>md</code> for roomy taxonomy clusters.',
   level: 'molecule',
-  audience: ['dev', 'design', 'a11y'],
+  audience: ['dev', 'design'],
   artifact: 'standalone',
-  focus: ['visual-variants', 'composition', 'a11y-pattern'],
-  apiComponents: [
-    'CngxTag',
-    'CngxTagLabel',
-    'CngxTagPrefix',
-    'CngxTagSuffix',
-    'CngxIcon',
-    'CngxTagGroup',
-    'CngxTagGroupHeader',
-    'CngxTagGroupAccessory',
-  ],
-  moduleImports: [
-    'import { CngxTag, CngxTagGroup } from \'@cngx/common/display\';',
-  ],
+  focus: ['visual-variants'],
+  apiComponents: ['CngxTagGroup', 'CngxTag'],
+  moduleImports: ["import { CngxTag, CngxTagGroup } from '@cngx/common/display';"],
   imports: ['CngxTag', 'CngxTagGroup'],
   template: `
-  <div style="display: flex; flex-direction: column; gap: 16px;">
+  <div class="demo-tag-stack">
     <cngx-tag-group gap="xs">
       <span cngxTag color="neutral">xs</span>
       <span cngxTag color="neutral">gap</span>
@@ -40,5 +29,4 @@ export const STORY: DemoSpec = {
       <span cngxTag color="neutral">roomy</span>
     </cngx-tag-group>
   </div>`,
-  css: `cngx-tag-group { /* gap resolves through --cngx-tag-group-gap-{xs,sm,md} */ }`,
 };

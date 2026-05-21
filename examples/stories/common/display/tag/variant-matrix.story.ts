@@ -1,32 +1,20 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Variant matrix',
-  subtitle: 'Same colour, three visual variants — filled, outline, subtle.',
-  description: 'Decorative label / badge / status indicator. Dual selector ([cngxTag] and <cngx-tag>) so it composes onto any host element including <a> for link-mode tags. Removable affordances live in CngxChip; clickable interactions live on native <button cngxTag> / <a cngxTag>.',
+  title: 'CngxTag: variant matrix',
+  subtitle: 'Same colour, three visual variants: <code>filled</code>, <code>outline</code>, <code>subtle</code>.',
+  description: 'Filled is the solid tinted pill, outline swaps fill for a coloured border, subtle softens both. All three resolve through the same <code>[data-color]</code> cascade so a single colour key drives the three surfaces.',
   level: 'molecule',
-  audience: ['dev', 'design', 'a11y'],
+  audience: ['dev', 'design'],
   artifact: 'standalone',
-  focus: ['visual-variants', 'composition', 'a11y-pattern'],
-  apiComponents: [
-    'CngxTag',
-    'CngxTagLabel',
-    'CngxTagPrefix',
-    'CngxTagSuffix',
-    'CngxIcon',
-    'CngxTagGroup',
-    'CngxTagGroupHeader',
-    'CngxTagGroupAccessory',
-  ],
-  moduleImports: [
-    'import { CngxTag } from \'@cngx/common/display\';',
-  ],
+  focus: ['visual-variants'],
+  apiComponents: ['CngxTag'],
+  moduleImports: ["import { CngxTag } from '@cngx/common/display';"],
   imports: ['CngxTag'],
   template: `
-  <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+  <div class="demo-tag-row">
     <span cngxTag variant="filled" color="success">Filled</span>
     <span cngxTag variant="outline" color="success">Outline</span>
     <span cngxTag variant="subtle" color="success">Subtle</span>
   </div>`,
-  css: `.row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }`,
 };

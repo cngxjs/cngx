@@ -1,39 +1,29 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Color palette',
-  subtitle: 'Five predefined semantic colours plus open-string extension via <code>data-color</code>.',
-  description: 'Decorative label / badge / status indicator. Dual selector ([cngxTag] and <cngx-tag>) so it composes onto any host element including <a> for link-mode tags. Removable affordances live in CngxChip; clickable interactions live on native <button cngxTag> / <a cngxTag>.',
+  title: 'CngxTag: color palette',
+  subtitle: 'Five predefined semantic colour keys plus open-string extension via the <code>[data-color]</code> attribute.',
+  description: 'Consumer-defined colour keys flow through the same <code>--cngx-tag-{name}-bg/-color/-border</code> cascade as the predefined values; the example app ships a <code>[data-color="my-brand"]</code> rule that maps onto the cngx primary token.',
   level: 'molecule',
-  audience: ['dev', 'design', 'a11y'],
+  audience: ['dev', 'design'],
   artifact: 'standalone',
-  focus: ['visual-variants', 'composition', 'a11y-pattern'],
-  apiComponents: [
-    'CngxTag',
-    'CngxTagLabel',
-    'CngxTagPrefix',
-    'CngxTagSuffix',
-    'CngxIcon',
-    'CngxTagGroup',
-    'CngxTagGroupHeader',
-    'CngxTagGroupAccessory',
-  ],
-  moduleImports: [
-    'import { CngxTag } from \'@cngx/common/display\';',
-  ],
+  focus: ['visual-variants'],
+  apiComponents: ['CngxTag'],
+  moduleImports: ["import { CngxTag } from '@cngx/common/display';"],
   imports: ['CngxTag'],
   template: `
-  <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+  <div class="demo-tag-row">
     <span cngxTag color="neutral">Neutral</span>
     <span cngxTag color="success">Active</span>
     <span cngxTag color="warning">Pending</span>
     <span cngxTag color="error">Failed</span>
     <span cngxTag color="info">Beta</span>
-    <span cngxTag color="my-brand" style="--cngx-tag-bg: #4f46e5; --cngx-tag-color: #ffffff;">Branded</span>
+    <span cngxTag color="my-brand">Branded</span>
   </div>`,
-  css: `.row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  css: `/* Consumer-side rule that backs the [data-color="my-brand"] tag:
 [data-color="my-brand"] {
-  --cngx-tag-bg: #4f46e5;
-  --cngx-tag-color: #ffffff;
-}`,
+  --cngx-tag-bg: var(--cngx-color-primary);
+  --cngx-tag-color: var(--cngx-color-on-primary);
+}
+*/`,
 };

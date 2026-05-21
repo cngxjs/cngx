@@ -1147,3 +1147,42 @@ button.chip:disabled {
   color: var(--cngx-color-text);
   border-radius: 6px;
 }
+
+// Tag-family demo helpers. Stories under common/display/tag share these
+// so individual templates don't scatter thematic CSS inline.
+.demo-tag-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.demo-tag-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.demo-tag-group-frame {
+  border: 1px dashed var(--cngx-color-border, var(--cngx-ex-border, #d1d5db));
+  padding: 8px;
+}
+.demo-tag-link {
+  text-decoration: none;
+}
+.demo-tag-link:hover {
+  filter: brightness(0.92);
+}
+.demo-tag-label-strong {
+  font-weight: 700;
+}
+.demo-tag-label-meta {
+  opacity: 0.7;
+}
+// Consumer-defined `[data-color="my-brand"]` extension demonstrated by
+// the color-palette + provideTagConfig stories. Maps the open-string
+// key onto the cngx primary token so dark/light flips track the rest
+// of the page chrome.
+.cngx-tag[data-color='my-brand'] {
+  --cngx-tag-bg: var(--cngx-color-primary, oklch(0.55 0.21 280));
+  --cngx-tag-color: var(--cngx-color-on-primary, oklch(0.99 0 0));
+  --cngx-tag-border: 1px solid transparent;
+}

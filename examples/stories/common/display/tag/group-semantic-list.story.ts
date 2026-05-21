@@ -1,27 +1,26 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Group + semantic list',
-  subtitle: 'Wrap projected tags in <code>&lt;cngx-tag-group [semanticList]="true" label="…"&gt;</code> to expose a real <code>role="list"</code> with reactive <code>role="listitem"</code> children — AT reads "Filters, list, 5 items".',
-  description: 'Decorative label / badge / status indicator. Dual selector ([cngxTag] and <cngx-tag>) so it composes onto any host element including <a> for link-mode tags. Removable affordances live in CngxChip; clickable interactions live on native <button cngxTag> / <a cngxTag>.',
+  title: 'CngxTagGroup: semantic list',
+  subtitle: 'Set <code>[semanticList]="true"</code> and <code>label="…"</code> to expose a real <code>role="list"</code> with reactive <code>role="listitem"</code> on every projected tag. AT reads "Filters, list, 5 items".',
+  description: 'The cascade reads <code>CNGX_TAG_GROUP.semanticList()</code> on the tag side, so the role propagates whether the group is the component or any other host that implements the token.',
   level: 'molecule',
-  audience: ['dev', 'design', 'a11y'],
+  audience: ['dev', 'a11y'],
   artifact: 'standalone',
-  focus: ['visual-variants', 'composition', 'a11y-pattern'],
-  apiComponents: [
-    'CngxTag',
-    'CngxTagLabel',
-    'CngxTagPrefix',
-    'CngxTagSuffix',
-    'CngxIcon',
-    'CngxTagGroup',
-    'CngxTagGroupHeader',
-    'CngxTagGroupAccessory',
-  ],
-  moduleImports: [
-    'import { CngxTag, CngxTagGroup } from \'@cngx/common/display\';',
-  ],
+  focus: ['composition', 'a11y-pattern'],
+  apiComponents: ['CngxTagGroup', 'CngxTag'],
+  moduleImports: ["import { CngxTag, CngxTagGroup } from '@cngx/common/display';"],
   imports: ['CngxTag', 'CngxTagGroup'],
+  references: [
+    {
+      label: 'WAI-ARIA APG: list pattern',
+      href: 'https://www.w3.org/WAI/ARIA/apg/patterns/list/',
+    },
+    {
+      label: 'WCAG 2.2 SC 1.3.1 Info and Relationships',
+      href: 'https://www.w3.org/WAI/WCAG22/Understanding/info-and-relationships.html',
+    },
+  ],
   template: `
   <cngx-tag-group [semanticList]="true" label="Filters">
     <span cngxTag color="info">Frontend</span>
@@ -30,5 +29,4 @@ export const STORY: DemoSpec = {
     <span cngxTag color="warning">Pending</span>
     <span cngxTag color="error">Failed</span>
   </cngx-tag-group>`,
-  css: `cngx-tag-group { /* role="list", aria-label="Filters" applied automatically */ }`,
 };
