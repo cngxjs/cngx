@@ -2,8 +2,7 @@
 
 // Material bridge for CngxDialog (+ CngxDialogDraggable). Default visuals
 // ship with the directive (projects/common/theming/components/cngx-dialog.css);
-// this file only overrides the tokens Material has a stronger opinion
-// about.
+// this file routes the per-token defaults onto Material's system layer.
 //
 //   @use '@angular/material' as mat;
 //   @use '@cngx/themes/material/dialog-theme' as dialog;
@@ -13,21 +12,63 @@
 //     @include mat.all-component-themes($theme);
 //     @include dialog.theme($theme);
 //   }
+//
+// Concerns split per the cngx mixin convention:
+//   color($theme)     - surface, on-surface, scrim, focus accent
+//   base($theme)      - shape, elevation, motion (Material 3 only;
+//                       Material 2 has no first-class shape/motion sys
+//                       tokens worth bridging here)
 
 @mixin color($theme) {
   @if mat.get-theme-version($theme) == 1 {
+    // Surface + on-surface follow Material 3's container-high tone.
     --cngx-dialog-bg: var(--mat-sys-surface-container-high);
     --cngx-dialog-color: var(--mat-sys-on-surface);
-    --cngx-dialog-shadow: 0 8px 32px color-mix(in srgb, var(--mat-sys-shadow) 25%, transparent);
+
+    // Backdrop scrim - same token sidenav uses, keeps overlay surfaces
+    // aligned across the library.
+    --cngx-dialog-backdrop-bg: var(--mat-sys-scrim);
+
+    // Focus ring uses the primary tone so AT users see the same accent
+    // Material uses on every other focused surface.
+    --cngx-dialog-focus-outline: 2px solid var(--mat-sys-primary);
   } @else {
     --cngx-dialog-bg: #{mat.get-theme-color($theme, background, dialog)};
     --cngx-dialog-color: #{mat.get-theme-color($theme, foreground, text)};
+    --cngx-dialog-backdrop-bg: #{rgba(
+        mat.get-theme-color($theme, foreground, base),
+        0.32
+      )};
+    --cngx-dialog-focus-outline: 2px solid
+      #{mat.get-theme-color($theme, primary)};
   }
+}
+
+@mixin base($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    // Shape: M3 extra-large corner is the canonical radius for surfaces
+    // that live above the page (dialogs, bottom-sheets, full-screen).
+    --cngx-dialog-border-radius: var(--mat-sys-corner-extra-large);
+
+    // Elevation: M3 ships dialogs at level3.
+    --cngx-dialog-shadow: var(--mat-sys-level3);
+
+    // Motion: emphasized-decelerate for enter feels right for a surface
+    // that grows onto the page; medium2 matches M3's canonical
+    // dialog-open duration.
+    --cngx-dialog-transition-duration: var(--mat-sys-motion-duration-medium2);
+    --cngx-dialog-transition-easing: var(
+      --mat-sys-motion-easing-emphasized-decelerate
+    );
+  }
+  // M2: corner / elevation / motion stay on the component's initial
+  // values - Material 2 has no first-class sys tokens worth bridging.
 }
 
 @mixin theme($theme) {
   @layer cngx.components {
     :where(dialog[cngxDialog]) {
+      @include base($theme);
       @include color($theme);
     }
   }
