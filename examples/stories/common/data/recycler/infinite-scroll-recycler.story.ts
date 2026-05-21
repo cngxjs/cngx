@@ -1,18 +1,16 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Infinite Scroll + Recycler',
-  subtitle: 'Combine <code>CngxInfiniteScroll</code> with the recycler for large HTTP-loaded lists. The sentinel sits outside the spacer container. Items append to the array — scrolling back up never re-fetches because already-loaded items stay in memory.',
-  description: 'Signal-based virtualizer for long lists. Items outside the viewport are removed from the DOM. Consumer renders with @for and two spacer containers.',
+  title: 'CngxRecycler: Infinite-scroll integration',
+  subtitle: 'Combine <code>CngxInfiniteScroll</code> with the recycler for large HTTP-loaded lists. The sentinel sits outside the spacer container. Items append to the array; scrolling back up never refetches because already-loaded items stay in memory.',
+  description: 'Composes CngxInfiniteScroll with the recycler for HTTP-loaded lists. The sentinel sits outside the spacer block, so the IntersectionObserver fires whenever the bottom enters the viewport. Loaded pages stay in memory; scrolling back never refetches.',
   level: 'molecule',
-  audience: ['dev', 'a11y'],
+  audience: ['dev'],
   artifact: 'building-block',
-  focus: ['behavior', 'a11y-pattern', 'async-state'],
+  focus: ['behavior', 'async-state', 'composition'],
   apiComponents: [
     'CngxRecycler',
-    'CngxMeasure',
-    'CngxVirtualItem',
-    'CngxRecyclerAnnouncer',
+    'CngxInfiniteScroll',
   ],
   moduleImports: [
     'import { injectRecycler } from \'@cngx/common/data\';',
@@ -41,22 +39,21 @@ export const STORY: DemoSpec = {
       this.infinitePage++;
     }, 300);
   }`,
-  template: `  <div class="inf-scroll"
-       style="height:300px;overflow-y:auto;border:1px solid var(--cngx-color-border,#e0e0e0);border-radius:8px">
+  template: `  <div class="inf-scroll demo-scroll-frame" style="height:300px">
     <div [style.paddingTop.px]="infRecycler.offsetBefore()"
          [style.paddingBottom.px]="infRecycler.offsetAfter()">
       @for (item of infVisible(); track item) {
-        <div style="height:48px;display:flex;align-items:center;padding:0 16px;border-bottom:1px solid var(--cngx-color-border,#e0e0e0)">
+        <div class="demo-scroll-row" style="height:48px">
           {{ item }}
         </div>
       }
     </div>
     <div cngxInfiniteScroll
+         class="demo-card-label demo-scroll-sentinel"
          [enabled]="infiniteHasMore()"
          [loading]="infiniteLoading()"
          [root]="'.inf-scroll'"
-         (loadMore)="handleLoadMore()"
-         style="padding:8px;text-align:center;color:var(--cngx-text-muted,#999)">
+         (loadMore)="handleLoadMore()">
       @if (infiniteLoading()) {
         Loading more...
       } @else if (!infiniteHasMore()) {
@@ -67,7 +64,7 @@ export const STORY: DemoSpec = {
   templateChrome: `<div class="status-row" style="margin-bottom:8px">
     <span class="status-badge">Loaded: {{ infiniteItems().length }}</span>
     <span class="status-badge">
-      Visible: {{ infRecycler.firstVisible() + 1 }}&ndash;{{ infRecycler.lastVisible() + 1 }}
+      Visible: {{ infRecycler.firstVisible() + 1 }}-{{ infRecycler.lastVisible() + 1 }}
     </span>
     <span class="status-badge">DOM: {{ infRecycler.end() - infRecycler.start() }}</span>
     @if (infiniteLoading()) {
