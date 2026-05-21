@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxChart: Combo bars and moving-average line',
+  title: 'CngxChart: Combo bars moving-average line',
   subtitle:
     'Bars carry monthly values, an overlay line plots the 3-month moving average via a local <code>[data]</code> input. Both layers share scales; the band x-axis aligns ticks with bar centres rather than edges.',
   description:
@@ -11,6 +11,16 @@ export const STORY: DemoSpec = {
   artifact: 'building-block',
   focus: ['composition', 'visual-variants'],
   apiComponents: ['CngxChart', 'CngxAxis', 'CngxBar', 'CngxLine'],
+  references: [
+    {
+      label: 'WCAG 1.1.1 Non-text Content',
+      href: 'https://www.w3.org/WAI/WCAG21/Understanding/non-text-content.html',
+    },
+    {
+      label: 'W3C WAI: Complex images',
+      href: 'https://www.w3.org/WAI/tutorials/images/complex/',
+    },
+  ],
   moduleImports: [
     "import { CngxChart, CngxAxis, CngxLine, CngxBar } from '@cngx/common/chart';",
   ],
@@ -19,7 +29,7 @@ export const STORY: DemoSpec = {
     'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec',
   ];
   protected readonly monthByIndex = (_: unknown, i: number): string => this.months[i];`,
-  template: `  <div style="border:1px solid var(--cngx-color-border, #e5e7eb); border-radius:4px; padding:8px 8px 32px 8px; display:inline-block; max-width:100%; box-sizing:border-box">
+  template: `  <div class="cngx-ex-chart-frame cngx-ex-chart-frame--bottom-axis-room">
     <cngx-chart
       [data]="[8, 12, 14, 9, 18, 22, 25, 19, 16, 24, 28, 32]"
       [width]="520"

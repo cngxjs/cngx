@@ -11,6 +11,16 @@ export const STORY: DemoSpec = {
   artifact: 'standalone',
   focus: ['visual-variants'],
   apiComponents: ['CngxSparkline'],
+  references: [
+    {
+      label: 'WCAG 1.1.1 Non-text Content',
+      href: 'https://www.w3.org/WAI/WCAG21/Understanding/non-text-content.html',
+    },
+    {
+      label: 'W3C WAI: Complex images',
+      href: 'https://www.w3.org/WAI/tutorials/images/complex/',
+    },
+  ],
   moduleImports: ["import { CngxSparkline } from '@cngx/common/chart';"],
   imports: ['CngxSparkline'],
   template: `  <div style="display:flex;gap:24px;align-items:center;flex-wrap:wrap">

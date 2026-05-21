@@ -11,6 +11,16 @@ export const STORY: DemoSpec = {
   artifact: 'standalone',
   focus: ['visual-variants'],
   apiComponents: ['CngxMiniBar'],
+  references: [
+    {
+      label: 'WAI-ARIA: meter role',
+      href: 'https://www.w3.org/TR/wai-aria-1.2/#meter',
+    },
+    {
+      label: 'WCAG 1.1.1 Non-text Content',
+      href: 'https://www.w3.org/WAI/WCAG21/Understanding/non-text-content.html',
+    },
+  ],
   moduleImports: ["import { CngxMiniBar } from '@cngx/common/chart';"],
   imports: ['CngxMiniBar'],
   template: `  <div style="display:flex;flex-direction:column;gap:12px;max-width:300px">

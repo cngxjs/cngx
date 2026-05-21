@@ -661,6 +661,33 @@ button.chip[aria-pressed='true'] {
 }
 
 
+// Demo-only chart frame used by the chart-primitives stories. Wraps the
+// composed <cngx-chart> in a bordered, padded surface so the SVG sits on a
+// visible canvas without each story re-stating the same inline border /
+// border-radius / padding triple.
+.cngx-ex-chart-frame {
+  display: inline-block;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 8px;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e5e7eb));
+  border-radius: 4px;
+}
+.cngx-ex-chart-frame--bottom-axis-room {
+  padding-bottom: 32px;
+}
+.cngx-ex-chart-frame--left-axis-room {
+  padding-left: 40px;
+}
+.cngx-ex-chart-frame--responsive {
+  resize: horizontal;
+  overflow: auto;
+  max-width: 600px;
+  min-width: 0;
+  width: 100%;
+}
+
+
 // Demo-only KPI strip layout used by the deviation-bar variance-readings
 // story. Three rows of [label | chart | readout] share spacing, so the
 // per-row markup stays a one-liner.

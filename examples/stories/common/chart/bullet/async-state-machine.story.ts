@@ -11,13 +11,23 @@ export const STORY: DemoSpec = {
   artifact: 'standalone',
   focus: ['async-state', 'visual-variants'],
   apiComponents: ['CngxBullet'],
+  references: [
+    {
+      label: 'WAI-ARIA: meter role',
+      href: 'https://www.w3.org/TR/wai-aria-1.2/#meter',
+    },
+    {
+      label: 'WCAG 1.1.1 Non-text Content',
+      href: 'https://www.w3.org/WAI/WCAG21/Understanding/non-text-content.html',
+    },
+  ],
   moduleImports: [
     "import { CngxBullet } from '@cngx/common/chart';",
     "import { createManualState } from '@cngx/common/data';",
   ],
   imports: ['CngxBullet'],
-  setup: `protected readonly state = createManualState<number>();
-  protected showSkeleton(): void {
+  setup: `protected readonly state = createManualState<number>();`,
+  setupChrome: `protected showSkeleton(): void {
     this.state.reset();
     this.state.set('loading');
   }
@@ -32,14 +42,7 @@ export const STORY: DemoSpec = {
     this.state.reset();
     this.state.setError(new Error('Target unavailable'));
   }`,
-  template: `  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
-    <button type="button" class="chip" (click)="showSkeleton()">loading (skeleton)</button>
-    <button type="button" class="chip" (click)="showSuccess()">success</button>
-    <button type="button" class="chip" (click)="showEmpty()">empty</button>
-    <button type="button" class="chip" (click)="showError()">error</button>
-  </div>
-  <div style="display:flex;flex-direction:column;gap:6px;max-width:400px">
-    <span class="cngx-ex-status-readout">status: {{ state.status() }}</span>
+  template: `  <div style="max-width:400px">
     <cngx-bullet
       [actual]="78"
       [target]="80"
@@ -52,5 +55,14 @@ export const STORY: DemoSpec = {
       ]"
       aria-label="Demo bullet"
     />
+  </div>`,
+  templateChromeBefore: `<div class="button-row" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+    <button type="button" class="chip" (click)="showSkeleton()">loading (skeleton)</button>
+    <button type="button" class="chip" (click)="showSuccess()">success</button>
+    <button type="button" class="chip" (click)="showEmpty()">empty</button>
+    <button type="button" class="chip" (click)="showError()">error</button>
+  </div>`,
+  templateChrome: `<div class="status-row" style="margin-top:8px">
+    <span class="cngx-ex-status-readout">status: {{ state.status() }}</span>
   </div>`,
 };

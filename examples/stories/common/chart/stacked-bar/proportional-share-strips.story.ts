@@ -11,6 +11,16 @@ export const STORY: DemoSpec = {
   artifact: 'standalone',
   focus: ['visual-variants'],
   apiComponents: ['CngxStackedBar'],
+  references: [
+    {
+      label: 'WCAG 1.1.1 Non-text Content',
+      href: 'https://www.w3.org/WAI/WCAG21/Understanding/non-text-content.html',
+    },
+    {
+      label: 'W3C WAI: Complex images',
+      href: 'https://www.w3.org/WAI/tutorials/images/complex/',
+    },
+  ],
   moduleImports: ["import { CngxStackedBar } from '@cngx/common/chart';"],
   imports: ['CngxStackedBar'],
   template: `  <div style="display:flex;flex-direction:column;gap:16px;max-width:400px">

@@ -11,6 +11,16 @@ export const STORY: DemoSpec = {
   artifact: 'standalone',
   focus: ['async-state', 'visual-variants'],
   apiComponents: ['CngxStackedBar'],
+  references: [
+    {
+      label: 'WCAG 1.1.1 Non-text Content',
+      href: 'https://www.w3.org/WAI/WCAG21/Understanding/non-text-content.html',
+    },
+    {
+      label: 'W3C WAI: Complex images',
+      href: 'https://www.w3.org/WAI/tutorials/images/complex/',
+    },
+  ],
   moduleImports: [
     "import { CngxStackedBar, type CngxStackedSegment } from '@cngx/common/chart';",
     "import { createManualState } from '@cngx/common/data';",
@@ -21,8 +31,8 @@ export const STORY: DemoSpec = {
     { value: 25, color: '#1f9d55', label: 'Idle' },
     { value: 15, color: '#d2452f', label: 'Errors' },
   ];
-  protected readonly state = createManualState<readonly CngxStackedSegment[]>();
-  protected showSkeleton(): void {
+  protected readonly state = createManualState<readonly CngxStackedSegment[]>();`,
+  setupChrome: `protected showSkeleton(): void {
     this.state.reset();
     this.state.set('loading');
   }
@@ -37,14 +47,16 @@ export const STORY: DemoSpec = {
     this.state.reset();
     this.state.setError(new Error('Service unreachable'));
   }`,
-  template: `  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+  template: `  <div style="max-width:400px">
+    <cngx-stacked-bar [segments]="stateDemoSegments" [state]="state" />
+  </div>`,
+  templateChromeBefore: `<div class="button-row" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
     <button type="button" class="chip" (click)="showSkeleton()">loading (skeleton)</button>
     <button type="button" class="chip" (click)="showSuccess()">success</button>
     <button type="button" class="chip" (click)="showEmpty()">empty</button>
     <button type="button" class="chip" (click)="showError()">error</button>
-  </div>
-  <div style="display:flex;flex-direction:column;gap:6px;max-width:400px">
+  </div>`,
+  templateChrome: `<div class="status-row" style="margin-top:8px">
     <span class="cngx-ex-status-readout">status: {{ state.status() }}</span>
-    <cngx-stacked-bar [segments]="stateDemoSegments" [state]="state" />
   </div>`,
 };

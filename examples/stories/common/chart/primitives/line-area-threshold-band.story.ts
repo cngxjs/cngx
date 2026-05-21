@@ -11,11 +11,21 @@ export const STORY: DemoSpec = {
   artifact: 'building-block',
   focus: ['composition', 'visual-variants'],
   apiComponents: ['CngxChart', 'CngxAxis', 'CngxLine', 'CngxArea', 'CngxThreshold', 'CngxBand'],
+  references: [
+    {
+      label: 'WCAG 1.1.1 Non-text Content',
+      href: 'https://www.w3.org/WAI/WCAG21/Understanding/non-text-content.html',
+    },
+    {
+      label: 'W3C WAI: Complex images',
+      href: 'https://www.w3.org/WAI/tutorials/images/complex/',
+    },
+  ],
   moduleImports: [
     "import { CngxChart, CngxAxis, CngxLine, CngxArea, CngxThreshold, CngxBand } from '@cngx/common/chart';",
   ],
   imports: ['CngxChart', 'CngxAxis', 'CngxLine', 'CngxArea', 'CngxThreshold', 'CngxBand'],
-  template: `  <div style="border:1px solid var(--cngx-color-border, #e5e7eb); border-radius:4px; padding:8px; display:inline-block; max-width:100%; box-sizing:border-box">
+  template: `  <div class="cngx-ex-chart-frame">
     <cngx-chart
       [data]="[8, 12, 14, 9, 18, 22, 25, 19, 16, 24, 28, 32]"
       [width]="480"

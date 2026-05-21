@@ -11,14 +11,21 @@ export const STORY: DemoSpec = {
   artifact: 'building-block',
   focus: ['composition', 'visual-variants'],
   apiComponents: ['CngxChart', 'CngxAxis', 'CngxLine', 'CngxChartLegend'],
+  references: [
+    {
+      label: 'WCAG 1.1.1 Non-text Content',
+      href: 'https://www.w3.org/WAI/WCAG21/Understanding/non-text-content.html',
+    },
+    {
+      label: 'W3C WAI: Complex images',
+      href: 'https://www.w3.org/WAI/tutorials/images/complex/',
+    },
+  ],
   moduleImports: [
     "import { CngxChart, CngxAxis, CngxLine, CngxChartLegend } from '@cngx/common/chart';",
   ],
   imports: ['CngxChart', 'CngxAxis', 'CngxLine', 'CngxChartLegend'],
-  setup: `protected readonly months: readonly string[] = [
-    'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec',
-  ];`,
-  template: `  <div style="border:1px solid var(--cngx-color-border, #e5e7eb); border-radius:4px; padding:8px 8px 32px 40px; display:inline-block; max-width:100%; box-sizing:border-box">
+  template: `  <div class="cngx-ex-chart-frame cngx-ex-chart-frame--bottom-axis-room cngx-ex-chart-frame--left-axis-room">
     <cngx-chart
       [data]="[10, 12, 18, 22, 24, 28, 32, 30, 27, 26, 30, 35]"
       [width]="480"

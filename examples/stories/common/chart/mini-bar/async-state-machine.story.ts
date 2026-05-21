@@ -11,13 +11,23 @@ export const STORY: DemoSpec = {
   artifact: 'standalone',
   focus: ['async-state', 'visual-variants'],
   apiComponents: ['CngxMiniBar'],
+  references: [
+    {
+      label: 'WAI-ARIA: meter role',
+      href: 'https://www.w3.org/TR/wai-aria-1.2/#meter',
+    },
+    {
+      label: 'WCAG 1.1.1 Non-text Content',
+      href: 'https://www.w3.org/WAI/WCAG21/Understanding/non-text-content.html',
+    },
+  ],
   moduleImports: [
     "import { CngxMiniBar } from '@cngx/common/chart';",
     "import { createManualState } from '@cngx/common/data';",
   ],
   imports: ['CngxMiniBar'],
-  setup: `protected readonly state = createManualState<number>();
-  protected showSkeleton(): void {
+  setup: `protected readonly state = createManualState<number>();`,
+  setupChrome: `protected showSkeleton(): void {
     this.state.reset();
     this.state.set('loading');
   }
@@ -32,14 +42,14 @@ export const STORY: DemoSpec = {
     this.state.reset();
     this.state.setError(new Error('Sensor offline'));
   }`,
-  template: `  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+  template: `  <cngx-mini-bar [value]="64" [state]="state" aria-label="Demo metric" />`,
+  templateChromeBefore: `<div class="button-row" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
     <button type="button" class="chip" (click)="showSkeleton()">loading (skeleton)</button>
     <button type="button" class="chip" (click)="showSuccess()">success</button>
     <button type="button" class="chip" (click)="showEmpty()">empty</button>
     <button type="button" class="chip" (click)="showError()">error</button>
-  </div>
-  <div style="display:flex;align-items:center;gap:24px">
-    <span class="cngx-ex-status-readout" style="min-width:80px">status: {{ state.status() }}</span>
-    <cngx-mini-bar [value]="64" [state]="state" aria-label="Demo metric" />
+  </div>`,
+  templateChrome: `<div class="status-row" style="margin-top:8px">
+    <span class="cngx-ex-status-readout">status: {{ state.status() }}</span>
   </div>`,
 };
