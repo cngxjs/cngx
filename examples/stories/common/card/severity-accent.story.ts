@@ -1,51 +1,46 @@
 import type { DemoSpec } from '../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Severity Accent',
-  subtitle: '<code>[cngxCardAccent]</code> adds a colored top border + tinted background. Five severity levels.',
-  description: 'Semantic card component with three archetypes: display (article), action (button), and link. Supports selection, loading, disabled with reason, and SR live announcements.',
+  title: 'CngxCard: Severity accent',
+  subtitle:
+    '<code>cngxCardAccent</code> takes one of <code>danger</code>, <code>warning</code>, <code>success</code>, <code>info</code>, <code>neutral</code> and paints a top-border + tinted surface so the card communicates severity at a glance.',
+  description:
+    'Five severity variants side by side, each driven only by the accent attribute. The directive owns the colour assignment, so consumers do not pick palette values; switching variant changes the chrome without touching the card body content.',
   level: 'organism',
-  audience: ['dev', 'design', 'a11y'],
+  audience: ['dev', 'design'],
   artifact: 'standalone',
-  focus: ['visual-variants', 'composition', 'a11y-pattern'],
+  focus: ['visual-variants'],
   apiComponents: [
     'CngxCard',
     'CngxCardHeader',
     'CngxCardTitle',
-    'CngxCardSubtitle',
     'CngxCardBody',
-    'CngxCardMedia',
-    'CngxCardFooter',
-    'CngxCardActions',
-    'CngxCardBadge',
     'CngxCardAccent',
-    'CngxCardSkeleton',
   ],
   moduleImports: [
-    'import { CngxCard, CngxCardHeader, CngxCardTitle, CngxCardBody, CngxCardAccent } from \'@cngx/common/card\';',
+    "import { CngxCard, CngxCardHeader, CngxCardTitle, CngxCardBody, CngxCardAccent } from '@cngx/common/card';",
   ],
   imports: ['CngxCard', 'CngxCardHeader', 'CngxCardTitle', 'CngxCardBody', 'CngxCardAccent'],
-  template: `
-  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px">
+  template: `  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px">
     <cngx-card cngxCardAccent="danger">
       <header cngxCardHeader><h3 cngxCardTitle>Danger</h3></header>
-      <div cngxCardBody style="font-size:0.875rem;color:var(--cngx-color-text-muted)">Critical alert</div>
+      <div cngxCardBody>Critical alert</div>
     </cngx-card>
     <cngx-card cngxCardAccent="warning">
       <header cngxCardHeader><h3 cngxCardTitle>Warning</h3></header>
-      <div cngxCardBody style="font-size:0.875rem;color:var(--cngx-color-text-muted)">Needs attention</div>
+      <div cngxCardBody>Needs attention</div>
     </cngx-card>
     <cngx-card cngxCardAccent="success">
       <header cngxCardHeader><h3 cngxCardTitle>Success</h3></header>
-      <div cngxCardBody style="font-size:0.875rem;color:var(--cngx-color-text-muted)">All clear</div>
+      <div cngxCardBody>All clear</div>
     </cngx-card>
     <cngx-card cngxCardAccent="info">
       <header cngxCardHeader><h3 cngxCardTitle>Info</h3></header>
-      <div cngxCardBody style="font-size:0.875rem;color:var(--cngx-color-text-muted)">For your information</div>
+      <div cngxCardBody>For your information</div>
     </cngx-card>
     <cngx-card cngxCardAccent="neutral">
       <header cngxCardHeader><h3 cngxCardTitle>Neutral</h3></header>
-      <div cngxCardBody style="font-size:0.875rem;color:var(--cngx-color-text-muted)">Default state</div>
+      <div cngxCardBody>Default state</div>
     </cngx-card>
   </div>`,
 };

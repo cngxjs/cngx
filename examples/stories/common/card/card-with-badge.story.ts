@@ -1,71 +1,67 @@
 import type { DemoSpec } from '../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Card with Badge',
-  subtitle: '<code>[cngxCardBadge]</code> positions any element at a corner. Works on <code>&lt;span&gt;</code>, <code>&lt;button&gt;</code>, or <code>&lt;a&gt;</code>. Clickable badge on a button card: does the click bubble to the card or stay on the badge?',
-  description: 'Semantic card component with three archetypes: display (article), action (button), and link. Supports selection, loading, disabled with reason, and SR live announcements.',
+  title: 'CngxCard: Card with badge',
+  subtitle:
+    '<code>cngxCardBadge</code> positions any host element at a card corner. Works on <code>&lt;span&gt;</code>, <code>&lt;button&gt;</code>, <code>&lt;a&gt;</code>; a clickable badge on a button card needs <code>event.stopPropagation()</code> so the click stays on the badge instead of bubbling to the card.',
+  description:
+    'Three badge use cases side by side: non-interactive label, clickable button-on-button-card with event bubbling control, and a tiny status dot at <code>top-start</code>. The counters in the readout confirm which handler fired when the badge is clicked.',
   level: 'organism',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
-  focus: ['visual-variants', 'composition', 'a11y-pattern'],
-  apiComponents: [
-    'CngxCard',
-    'CngxCardHeader',
-    'CngxCardTitle',
-    'CngxCardSubtitle',
-    'CngxCardBody',
-    'CngxCardMedia',
-    'CngxCardFooter',
-    'CngxCardActions',
-    'CngxCardBadge',
-    'CngxCardAccent',
-    'CngxCardSkeleton',
-  ],
+  focus: ['visual-variants', 'a11y-pattern'],
+  apiComponents: ['CngxCard', 'CngxCardHeader', 'CngxCardTitle', 'CngxCardBody', 'CngxCardBadge'],
   moduleImports: [
-    'import { CngxCard, CngxCardHeader, CngxCardTitle, CngxCardBody } from \'@cngx/common/card\';',
+    "import { CngxCard, CngxCardHeader, CngxCardTitle, CngxCardBody, CngxCardBadge } from '@cngx/common/card';",
   ],
   imports: ['CngxCard', 'CngxCardHeader', 'CngxCardTitle', 'CngxCardBody', 'CngxCardBadge'],
-  setup: `protected cardClicked = signal(0);
-  protected badgeClicked = signal(0);
+  references: [
+    {
+      label: 'WAI-ARIA 1.2: button role',
+      href: 'https://www.w3.org/TR/wai-aria-1.2/#button',
+    },
+    {
+      label: 'WAI-ARIA 1.2: status role',
+      href: 'https://www.w3.org/TR/wai-aria-1.2/#status',
+    },
+  ],
+  setup: `protected readonly cardClicked = signal(0);
+  protected readonly badgeClicked = signal(0);
   protected handleBadgeClick(e: MouseEvent): void {
     e.stopPropagation();
-    this.badgeClicked.update(n => n + 1);
+    this.badgeClicked.update((n) => n + 1);
   }`,
   template: `  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:24px;max-width:760px">
     <cngx-card style="overflow:visible">
       <span cngxCardBadge position="top-end" intent="danger" size="md">P</span>
-      <header cngxCardHeader>
-        <h3 cngxCardTitle>Static Badge</h3>
-      </header>
-      <div cngxCardBody style="font-size:0.875rem;color:var(--cngx-color-text-muted)">
-        Non-interactive span badge
-      </div>
+      <header cngxCardHeader><h3 cngxCardTitle>Static badge</h3></header>
+      <div cngxCardBody>Non-interactive span badge</div>
     </cngx-card>
 
-    <cngx-card as="button" (clicked)="cardClicked.update(n => n + 1)"
-               ariaLabel="Open care plan" style="overflow:visible">
-      <button cngxCardBadge position="top-end" intent="danger" size="md"
-              (click)="handleBadgeClick($event)"
-              aria-label="Open permissions dialog">
-        P
-      </button>
-      <header cngxCardHeader>
-        <h3 cngxCardTitle>Clickable Badge</h3>
-      </header>
-      <div cngxCardBody style="font-size:0.875rem;color:var(--cngx-color-text-muted)">
-        Button card + button badge. Click each to test event bubbling.
-      </div>
+    <cngx-card as="button"
+               (clicked)="cardClicked.update((n) => n + 1)"
+               ariaLabel="Open project details"
+               style="overflow:visible">
+      <button type="button"
+              cngxCardBadge
+              position="top-end"
+              intent="danger"
+              size="md"
+              aria-label="Open permissions dialog"
+              (click)="handleBadgeClick($event)">P</button>
+      <header cngxCardHeader><h3 cngxCardTitle>Clickable badge</h3></header>
+      <div cngxCardBody>Button card + button badge. Click each to test event bubbling.</div>
     </cngx-card>
 
     <cngx-card style="overflow:visible">
-      <span cngxCardBadge position="top-start" intent="success" size="sm"
-            role="status" aria-label="Online"></span>
-      <header cngxCardHeader>
-        <h3 cngxCardTitle>Status Dot</h3>
-      </header>
-      <div cngxCardBody style="font-size:0.875rem;color:var(--cngx-color-text-muted)">
-        Badge at top-start
-      </div>
+      <span cngxCardBadge
+            position="top-start"
+            intent="success"
+            size="sm"
+            role="status"
+            aria-label="Online"></span>
+      <header cngxCardHeader><h3 cngxCardTitle>Status dot</h3></header>
+      <div cngxCardBody>Badge at top-start</div>
     </cngx-card>
   </div>`,
   templateChrome: `<div class="event-grid" style="margin-top:12px">

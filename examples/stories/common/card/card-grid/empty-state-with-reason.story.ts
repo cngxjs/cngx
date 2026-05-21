@@ -1,55 +1,56 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Empty State with Reason',
-  subtitle: 'Templates are matched by <code>emptyReason</code>. Select a reason to see the corresponding empty state.',
-  description: 'Responsive card grid with intrinsic sizing, keyboard navigation via roving tabindex, density levels, and reason-based empty state template selection.',
+  title: 'CngxCardGrid: Empty state with reason',
+  subtitle:
+    'Empty-state templates are matched by <code>[emptyReason]</code>. The grid picks the matching <code>cngxCardGridEmpty="<em>reason</em>"</code> template, so the same empty surface communicates different intents to the reader.',
+  description:
+    'Reason-driven empty state: the grid receives <code>emptyReason</code> and renders the template that declares the matching reason value. Switching the reason in the chrome flips the rendered placeholder without touching the grid\'s item list, demonstrating that the user-facing message belongs to the reason, not to the absence of data.',
   level: 'molecule',
   audience: ['dev', 'design'],
   artifact: 'standalone',
   focus: ['visual-variants', 'composition'],
-  apiComponents: [
-    'CngxCardGrid',
-    'CngxCardGridEmpty',
-  ],
+  apiComponents: ['CngxCardGrid', 'CngxCardGridEmpty'],
   moduleImports: [
-    'import { CngxCard, CngxCardGrid, CngxCardGridEmpty } from \'@cngx/common/card\';',
+    "import { CngxCard, CngxCardGrid, CngxCardGridEmpty } from '@cngx/common/card';",
   ],
   imports: ['CngxCard', 'CngxCardGrid', 'CngxCardGridEmpty'],
-  setup: `protected items = signal(['Alpha', 'Beta', 'Gamma', 'Delta', 'Epsilon', 'Zeta']);
-  protected emptyItems = signal<string[]>([]);
-  protected emptyReason = signal<'first-use' | 'no-results' | 'cleared' | undefined>('first-use');`,
+  setup: `protected readonly emptyItems = signal<string[]>([]);
+  protected readonly emptyReason = signal<'first-use' | 'no-results' | 'cleared' | undefined>('first-use');`,
   template: `  <cngx-card-grid [items]="emptyItems()" [emptyReason]="emptyReason()" minWidth="200px">
     <ng-template cngxCardGridEmpty="first-use">
-      <div style="text-align:center;padding:48px 16px;color:var(--cngx-color-text-muted)">
+      <div style="text-align:center;padding:48px 16px">
         <div style="font-size:2rem;margin-bottom:12px;opacity:0.4">+</div>
-        <p style="font-weight:600;font-size:1rem;color:var(--cngx-color-text);margin-bottom:4px">Welcome!</p>
-        <p style="font-size:0.875rem">Create your first item to get started.</p>
-        <button class="chip" style="margin-top:12px">Add item</button>
+        <p style="margin:0 0 4px"><strong>Welcome!</strong></p>
+        <p style="margin:0;font-size:0.875rem">Create your first item to get started.</p>
+        <button type="button" class="chip" style="margin-top:12px">Add item</button>
       </div>
     </ng-template>
     <ng-template cngxCardGridEmpty="no-results">
-      <div style="text-align:center;padding:48px 16px;color:var(--cngx-color-text-muted)">
+      <div style="text-align:center;padding:48px 16px">
         <div style="font-size:2rem;margin-bottom:12px;opacity:0.4">?</div>
-        <p style="font-weight:600;font-size:1rem;color:var(--cngx-color-text);margin-bottom:4px">No results found</p>
-        <p style="font-size:0.875rem">Try adjusting your filters.</p>
-        <button class="chip" style="margin-top:12px">Reset filters</button>
+        <p style="margin:0 0 4px"><strong>No results found</strong></p>
+        <p style="margin:0;font-size:0.875rem">Try adjusting your filters.</p>
+        <button type="button" class="chip" style="margin-top:12px">Reset filters</button>
       </div>
     </ng-template>
     <ng-template cngxCardGridEmpty="cleared">
-      <div style="text-align:center;padding:48px 16px;color:var(--cngx-color-text-muted)">
+      <div style="text-align:center;padding:48px 16px">
         <div style="font-size:2rem;margin-bottom:12px;opacity:0.4">&#10003;</div>
-        <p style="font-weight:600;font-size:1rem;color:var(--cngx-color-text);margin-bottom:4px">All done</p>
-        <p style="font-size:0.875rem">Nothing left to process.</p>
+        <p style="margin:0 0 4px"><strong>All done</strong></p>
+        <p style="margin:0;font-size:0.875rem">Nothing left to process.</p>
       </div>
     </ng-template>
   </cngx-card-grid>`,
   templateChrome: `<div class="button-row" style="margin-bottom:12px">
-    <button [class.chip--active]="emptyReason() === 'first-use'" class="chip"
-            (click)="emptyReason.set('first-use')">first-use</button>
-    <button [class.chip--active]="emptyReason() === 'no-results'" class="chip"
-            (click)="emptyReason.set('no-results')">no-results</button>
-    <button [class.chip--active]="emptyReason() === 'cleared'" class="chip"
-            (click)="emptyReason.set('cleared')">cleared</button>
+    <button type="button" class="chip" [attr.aria-pressed]="emptyReason() === 'first-use'" (click)="emptyReason.set('first-use')">first-use</button>
+    <button type="button" class="chip" [attr.aria-pressed]="emptyReason() === 'no-results'" (click)="emptyReason.set('no-results')">no-results</button>
+    <button type="button" class="chip" [attr.aria-pressed]="emptyReason() === 'cleared'" (click)="emptyReason.set('cleared')">cleared</button>
+  </div>
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row">
+      <span class="event-label">emptyReason</span>
+      <span class="event-value">{{ emptyReason() }}</span>
+    </div>
   </div>`,
 };
