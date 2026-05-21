@@ -24,15 +24,6 @@ import { CngxTrend } from '@cngx/common/data';
 <cngx-trend [value]="5.3" label="Revenue up 5.3 percent versus last quarter" />
 ```
 
-## Inputs
-
-| Input | Type | Notes |
-|-|-|-|
-| `value` | `number` (required) | Signed percentage. Direction is derived: `> 0` up, `< 0` down, `0` flat. |
-| `label` | `string \| undefined` | SR override for the generated default. When set, replaces the entire `aria-label`. |
-
-The value is always rendered with one fractional digit (`(+|-)X.X %`, narrow no-break space before the percent sign). For different precision, format the input yourself and use a static label; the precision is intentionally not configurable to keep the visual tight.
-
 ## Accessibility
 
 | Direction | Host class | Default `aria-label` |

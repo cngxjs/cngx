@@ -27,14 +27,6 @@ import { CngxMetric } from '@cngx/common/data';
 <cngx-metric [value]="'N/A'" />
 ```
 
-## Inputs
-
-| Input | Type | Notes |
-|-|-|-|
-| `value` | `number \| string \| null` (required) | `null` renders the `U+2014` placeholder glyph. Strings are not reformatted. Numbers run through `Intl.NumberFormat`. |
-| `unit` | `string \| undefined` | Optional suffix slot. Hidden when empty. |
-| `format` | `Intl.NumberFormatOptions \| undefined` | Forwarded to `Intl.NumberFormat`. When omitted, falls back to `value.toLocaleString(LOCALE_ID)`. |
-
 ## Accessibility
 
 The host carries the full announcement; the two inner spans (`.cngx-metric__value`, `.cngx-metric__unit`) stay visually distinct without needing their own ARIA.
