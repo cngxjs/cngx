@@ -683,6 +683,19 @@ button.chip[aria-pressed='true'] {
   opacity: 0.4;
   cursor: not-allowed;
 }
+
+// cngxCardBadge paints its intent background on the host. When the host is
+// an interactive component that already owns its own surface
+// (cngx-speak-button: an inline-flex wrapper around a 36x36 button), the
+// badge's background + inline padding bleed out as "ears" on either side
+// of the inner button. Strip the badge surface so the inner component
+// remains the only visible chrome; positioning + classes from
+// cngxCardBadge are kept.
+cngx-speak-button[cngxCardBadge] {
+  background: transparent;
+  padding: 0;
+  min-width: 0;
+}
 button.chip:hover:not(:disabled) {
   background: color-mix(in oklch, transparent, currentColor 6%);
 }
