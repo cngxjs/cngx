@@ -48,6 +48,18 @@
   }
 
   /**
+   * Border shorthand of the dialog. `none` by default; brand themes or
+   * Material outlined variants set this to a 1px ring without forking
+   * the component CSS.
+   * @group Surface
+   */
+  @property --cngx-dialog-border {
+    syntax: '*';
+    inherits: false;
+    initial-value: none;
+  }
+
+  /**
    * Corner radius of the dialog.
    * @group Layout
    */
@@ -117,7 +129,7 @@
   /**
    * Opacity of the `::backdrop`. `CngxDialogStack` uses this to
    * suppress the inner backdrop while a parent dialog is also open
-   * (avoids stacked scrim). `inherits: true` is load-bearing — the
+   * (avoids stacked scrim). `inherits: true` is load-bearing - the
    * directive sets this token inline on the dialog element, and the
    * `::backdrop` pseudo only reads it if the registered property
    * inherits from the originating element.
@@ -127,6 +139,22 @@
     syntax: '<number>';
     inherits: true;
     initial-value: 1;
+  }
+
+  /**
+   * Transition shorthand applied to the `::backdrop`. Default `none`
+   * keeps the snap-in behaviour `CngxDialogStack` depends on (toggling
+   * backdrop-opacity between nested dialogs must not animate, or the
+   * inner dialog open flashes through a half-opacity scrim). Single
+   * non-stacked dialogs can opt in to a fade by setting this to e.g.
+   * `opacity 150ms ease`. `inherits: true` so the override cascades
+   * to the `::backdrop` pseudo from the dialog host.
+   * @group Motion
+   */
+  @property --cngx-dialog-backdrop-transition {
+    syntax: '*';
+    inherits: true;
+    initial-value: none;
   }
 
   /**
@@ -169,6 +197,19 @@
     initial-value: grabbing;
   }
 
+  /**
+   * Focus-ring shorthand applied via `outline` on `:focus-visible` of
+   * the dialog host itself. Relevant when no autofocus target exists
+   * inside the dialog and AT focuses the `<dialog>` element directly.
+   * Default `auto` keeps the browser-native focus indicator.
+   * @group State / Focus
+   */
+  @property --cngx-dialog-focus-outline {
+    syntax: '*';
+    inherits: false;
+    initial-value: auto;
+  }
+
   /* Delegating tokens — :root pulls foundation surface so the dialog
    * bg follows whichever light/dark value the foundation has resolved. */
   :root {
@@ -196,7 +237,7 @@
 @layer cngx.components {
   @scope (dialog[cngxDialog]) {
     :scope {
-      border: none;
+      border: var(--cngx-dialog-border, none);
       border-radius: var(--cngx-dialog-border-radius, 8px);
       padding: var(--cngx-dialog-padding, 24px);
       max-width: var(--cngx-dialog-max-width, 560px);
@@ -214,14 +255,21 @@
           var(--cngx-dialog-transition-easing, ease);
     }
 
+    :scope:focus-visible {
+      outline: var(--cngx-dialog-focus-outline, auto);
+    }
+
     /* Backdrop is part of the dialog element itself (::backdrop pseudo).
        The opacity token controls visibility (CngxDialogStack uses this for
-       nesting). No transition — snaps to avoid double-backdrop flash; the
-       dialog content has its own enter/exit animation. */
+       nesting). Default transition is `none` so toggling backdrop-opacity
+       between stacked dialogs snaps - a fade here would flash the inner
+       dialog through a half-opacity scrim. Single dialogs can opt in via
+       --cngx-dialog-backdrop-transition. */
     :scope::backdrop {
       background: var(--cngx-dialog-backdrop-bg, oklch(0 0 0 / 0.5));
       opacity: var(--cngx-dialog-backdrop-opacity, 1);
       backdrop-filter: blur(var(--cngx-dialog-backdrop-blur, 0px));
+      transition: var(--cngx-dialog-backdrop-transition, none);
     }
 
     :scope.cngx-dialog--opening {
@@ -239,6 +287,9 @@
 
     @media (prefers-reduced-motion: reduce) {
       :scope {
+        transition: none;
+      }
+      :scope::backdrop {
         transition: none;
       }
     }
