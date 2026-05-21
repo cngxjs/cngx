@@ -111,16 +111,30 @@
   }
 }
 
-/* Consumer-facing var() chains live at :root so an override of
- * --accent / --danger / --border / --text-* on the document root
- * propagates into the chart tokens — the @property initial-value
- * is the leaf default if nothing higher in the chain is set. */
+/* Consumer-facing var() chains. Each chart token chains through the
+ * cngx-color-* foundation tokens (which carry light + dark variants)
+ * so charts inherit the active color scheme automatically. The
+ * `--accent` / `--danger` / `--border` / `--text-*` consumer tier
+ * remains a higher-priority override; the @property `initial-value`
+ * is the leaf default if nothing higher in the chain is set.
+ *
+ * Grid + skeleton surfaces use a `color-mix(currentColor)` overlay
+ * so they paint at consistent contrast against any body background:
+ * a dark overlay on light surfaces, a light overlay on dark surfaces.
+ */
 :root {
-  --cngx-chart-primary: var(--accent, oklch(0.66 0.19 50));
-  --cngx-chart-secondary: var(--accent-secondary, oklch(0.65 0.02 250));
-  --cngx-chart-danger: var(--danger, oklch(0.55 0.18 25));
-  --cngx-chart-success: var(--success, oklch(0.55 0.15 145));
-  --cngx-chart-grid-color: var(--border, oklch(0.92 0.005 250));
-  --cngx-chart-axis-color: var(--text-secondary, oklch(0.5 0.015 250));
-  --cngx-chart-text-color: var(--text-primary, oklch(0.25 0.015 250));
+  --cngx-chart-primary: var(--accent, var(--cngx-color-primary, oklch(0.66 0.19 50)));
+  --cngx-chart-secondary: var(
+    --accent-secondary,
+    var(--cngx-color-text-muted, oklch(0.65 0.02 250))
+  );
+  --cngx-chart-danger: var(--danger, var(--cngx-color-danger, oklch(0.55 0.18 25)));
+  --cngx-chart-success: var(--success, var(--cngx-color-success, oklch(0.55 0.15 145)));
+  --cngx-chart-grid-color: color-mix(in oklch, currentColor 14%, transparent);
+  --cngx-chart-axis-color: var(
+    --text-secondary,
+    var(--cngx-color-text-muted, oklch(0.5 0.015 250))
+  );
+  --cngx-chart-text-color: var(--text-primary, var(--cngx-color-text, oklch(0.25 0.015 250)));
+  --cngx-skeleton-bg: color-mix(in oklch, currentColor 14%, transparent);
 }

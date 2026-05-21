@@ -86,6 +86,7 @@ interface RangeRendering {
       }
     }
   `,
+  styleUrls: ['../chart-tokens.css'],
   styles: [
     `
       cngx-bullet {

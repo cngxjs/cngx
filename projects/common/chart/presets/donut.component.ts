@@ -84,6 +84,7 @@ const TWO_PI = Math.PI * 2;
       }
     }
   `,
+  styleUrls: ['../chart-tokens.css'],
   styles: [
     `
       cngx-donut {
