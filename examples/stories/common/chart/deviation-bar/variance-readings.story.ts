@@ -1,36 +1,30 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Variance readings',
-  subtitle: 'Budget variance, score deltas, KPI swings — symmetric around the baseline mark.',
-  description: 'Single-value indicator that diverges from a baseline (default 0). Negative deviations render to the left; positive to the right.',
+  title: 'CngxDeviationBar: Variance readings',
+  subtitle:
+    'Budget variance, score deltas, and KPI swings render symmetrically around the baseline. Positive deviations extend right, negative deviations extend left; the magnitude bound sets the symmetry.',
+  description:
+    'Three labelled rows feed the same bar with positive, negative, and zero deviations. The bar takes its sign-and-magnitude routing from <code>[value]</code> alone; <code>[magnitude]</code> sets the symmetric upper bound. Surrounding numeric labels stay separate, so the demo composes a small KPI strip without coupling the bar to its label.',
   level: 'atom',
   audience: ['dev', 'design'],
   artifact: 'standalone',
   focus: ['visual-variants'],
-  apiComponents: [
-    'CngxDeviationBar',
-  ],
-  moduleImports: [
-    'import { CngxDeviationBar } from \'@cngx/common/chart\';',
-  ],
+  apiComponents: ['CngxDeviationBar'],
+  moduleImports: ["import { CngxDeviationBar } from '@cngx/common/chart';"],
   imports: ['CngxDeviationBar'],
-  template: `
-  <div style="display:flex;flex-direction:column;gap:12px;max-width:360px">
-    <div style="display:flex;align-items:center;gap:12px">
-      <span style="flex:1">Q1 budget</span>
-      <cngx-deviation-bar [value]="45" [magnitude]="100" aria-label="Q1 budget +45" />
-      <span style="font-weight:600;color:var(--success,#1f9d55);width:60px;text-align:right">+$45k</span>
-    </div>
-    <div style="display:flex;align-items:center;gap:12px">
-      <span style="flex:1">Q2 budget</span>
-      <cngx-deviation-bar [value]="-30" [magnitude]="100" aria-label="Q2 budget -30" />
-      <span style="font-weight:600;color:var(--danger,#d2452f);width:60px;text-align:right">−$30k</span>
-    </div>
-    <div style="display:flex;align-items:center;gap:12px">
-      <span style="flex:1">Q3 budget</span>
-      <cngx-deviation-bar [value]="0" [magnitude]="100" aria-label="Q3 budget on target" />
-      <span style="font-weight:600;width:60px;text-align:right">on target</span>
-    </div>
-  </div>`,
+  setup: `protected readonly variance: ReadonlyArray<{ label: string; value: number; display: string }> = [
+    { label: 'Q1 budget', value: 45, display: '+$45k' },
+    { label: 'Q2 budget', value: -30, display: '-$30k' },
+    { label: 'Q3 budget', value: 0, display: 'on target' },
+  ];`,
+  template: `  <ul class="cngx-ex-kpi-strip">
+    @for (row of variance; track row.label) {
+      <li>
+        <span>{{ row.label }}</span>
+        <cngx-deviation-bar [value]="row.value" [magnitude]="100" [attr.aria-label]="row.label + ' ' + row.display" />
+        <span>{{ row.display }}</span>
+      </li>
+    }
+  </ul>`,
 };
