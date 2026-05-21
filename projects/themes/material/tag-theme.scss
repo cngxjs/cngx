@@ -1,27 +1,159 @@
+@use 'sass:map';
+@use 'sass:math';
 @use '@angular/material' as mat;
 
-// Material bridge for CngxTag + CngxTagGroup. The tag's semantic colour
-// palette ([data-color]) layers --mat-sys-{primary,tertiary,secondary,error}
-// surfaces onto the per-tag --cngx-tag-bg / -color / -border tokens.
+// Material bridge for CngxTag + CngxTagGroup. Maps the tag token surface
+// (base, five semantic colour keys, density-scaled padding, label
+// typography, shape) onto Material 3 surface and palette tokens so a
+// `<span cngxTag>` reads alongside an M3 assist / suggestion chip.
 //
 //   @use '@cngx/themes/material/tag-theme' as tag;
 //   html { @include tag.theme($theme); }
+//
+// Selector includes both `.cngx-tag` (directive host class — covers
+// `<span cngxTag>`, `<a cngxTag>`, `<button cngxTag>` consumers) and
+// the `cngx-tag-group` element form.
 
 @mixin color($theme) {
   @if mat.get-theme-version($theme) == 1 {
+    // Base surface — used when no [data-color] cascade fires.
     --cngx-tag-bg: transparent;
     --cngx-tag-color: var(--mat-sys-on-surface);
     --cngx-tag-border: 1px solid var(--mat-sys-outline-variant);
+
+    // Neutral — surface-variant sits below tinted variants without
+    // competing with primary or error surfaces.
+    --cngx-tag-neutral-bg: var(--mat-sys-surface-variant);
+    --cngx-tag-neutral-color: var(--mat-sys-on-surface-variant);
+    --cngx-tag-neutral-border: var(--mat-sys-outline-variant);
+    --cngx-tag-neutral-subtle-bg: var(--mat-sys-surface-container);
+
+    // Info — M3 primary container tone.
+    --cngx-tag-info-bg: var(--mat-sys-primary-container);
+    --cngx-tag-info-color: var(--mat-sys-on-primary-container);
+    --cngx-tag-info-border: var(--mat-sys-primary);
+    --cngx-tag-info-subtle-bg: color-mix(
+      in srgb,
+      var(--mat-sys-primary) 8%,
+      var(--mat-sys-surface)
+    );
+
+    // Success — M3 tertiary container tone (tertiary leans
+    // green-positive in most generated palettes).
+    --cngx-tag-success-bg: var(--mat-sys-tertiary-container);
+    --cngx-tag-success-color: var(--mat-sys-on-tertiary-container);
+    --cngx-tag-success-border: var(--mat-sys-tertiary);
+    --cngx-tag-success-subtle-bg: color-mix(
+      in srgb,
+      var(--mat-sys-tertiary) 8%,
+      var(--mat-sys-surface)
+    );
+
+    // Warning — Material 3 has no warning slot. Fold onto secondary so
+    // the hue stays distinct from success (tertiary) and info (primary).
+    --cngx-tag-warning-bg: var(--mat-sys-secondary-container);
+    --cngx-tag-warning-color: var(--mat-sys-on-secondary-container);
+    --cngx-tag-warning-border: var(--mat-sys-secondary);
+    --cngx-tag-warning-subtle-bg: color-mix(
+      in srgb,
+      var(--mat-sys-secondary) 8%,
+      var(--mat-sys-surface)
+    );
+
+    // Error — M3 error container tone.
+    --cngx-tag-error-bg: var(--mat-sys-error-container);
+    --cngx-tag-error-color: var(--mat-sys-on-error-container);
+    --cngx-tag-error-border: var(--mat-sys-error);
+    --cngx-tag-error-subtle-bg: color-mix(
+      in srgb,
+      var(--mat-sys-error) 8%,
+      var(--mat-sys-surface)
+    );
   } @else {
-    --cngx-tag-color: #{mat.get-theme-color($theme, foreground, text)};
-    --cngx-tag-border: 1px solid #{mat.get-theme-color($theme, foreground, divider)};
+    $_primary: mat.get-theme-color($theme, primary);
+    $_accent: mat.get-theme-color($theme, accent);
+    $_warn: mat.get-theme-color($theme, warn);
+    $_text: mat.get-theme-color($theme, foreground, text);
+    $_divider: mat.get-theme-color($theme, foreground, divider);
+    $_surface: mat.get-theme-color($theme, background, card);
+
+    --cngx-tag-bg: transparent;
+    --cngx-tag-color: #{$_text};
+    --cngx-tag-border: 1px solid #{$_divider};
+
+    --cngx-tag-neutral-bg: #{rgba($_text, 0.08)};
+    --cngx-tag-neutral-color: #{$_text};
+    --cngx-tag-neutral-border: #{$_divider};
+    --cngx-tag-neutral-subtle-bg: #{rgba($_text, 0.04)};
+
+    --cngx-tag-info-bg: #{rgba($_primary, 0.16)};
+    --cngx-tag-info-color: #{$_primary};
+    --cngx-tag-info-border: #{$_primary};
+    --cngx-tag-info-subtle-bg: #{rgba($_primary, 0.08)};
+
+    --cngx-tag-success-bg: #{rgba($_accent, 0.16)};
+    --cngx-tag-success-color: #{$_accent};
+    --cngx-tag-success-border: #{$_accent};
+    --cngx-tag-success-subtle-bg: #{rgba($_accent, 0.08)};
+
+    --cngx-tag-warning-bg: #{rgba($_accent, 0.24)};
+    --cngx-tag-warning-color: #{$_text};
+    --cngx-tag-warning-border: #{$_accent};
+    --cngx-tag-warning-subtle-bg: #{rgba($_accent, 0.12)};
+
+    --cngx-tag-error-bg: #{rgba($_warn, 0.16)};
+    --cngx-tag-error-color: #{$_warn};
+    --cngx-tag-error-border: #{$_warn};
+    --cngx-tag-error-subtle-bg: #{rgba($_warn, 0.08)};
   }
+}
+
+@mixin typography($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    // md default → label-medium; the four size variants step through
+    // M3's label / body type roles so density and size remain
+    // independently composable.
+    --cngx-tag-font-weight: var(--mat-sys-label-medium-weight, 500);
+    --cngx-tag-font-size: var(--mat-sys-label-medium-size, 0.75rem);
+    --cngx-tag-sm-font-size: var(--mat-sys-label-small-size, 0.6875rem);
+    --cngx-tag-lg-font-size: var(--mat-sys-label-large-size, 0.875rem);
+    --cngx-tag-xl-font-size: var(--mat-sys-body-large-size, 1rem);
+  }
+}
+
+@mixin density($theme) {
+  $scale: mat.get-theme-density($theme);
+  $scale: math.clamp(-4, $scale, 0);
+
+  // Only the md (default) padding is density-scaled. The sm / lg / xl
+  // size variants stay at their library defaults so size and density
+  // remain orthogonal — a consumer that picks `size="lg"` at density
+  // -2 still gets the size-large rhythm.
+  $paddings: (
+    0: 2px 8px,
+    -1: 2px 7px,
+    -2: 1px 6px,
+    -3: 1px 5px,
+    -4: 0 4px,
+  );
+
+  --cngx-tag-padding: #{map.get($paddings, $scale)};
+}
+
+@mixin base() {
+  // Shape — `corner-extra-small` (4px in stock M3) matches the cngx
+  // default radius and stays consistent with how `system-bridge.scss`
+  // routes the cngx radius scale onto Material corners.
+  --cngx-tag-radius: var(--mat-sys-corner-extra-small, 4px);
 }
 
 @mixin theme($theme) {
   @layer cngx.components {
-    :where(cngx-tag, cngx-tag-group) {
+    :where(.cngx-tag, .cngx-tag-group) {
+      @include base();
       @include color($theme);
+      @include typography($theme);
+      @include density($theme);
     }
   }
 }
