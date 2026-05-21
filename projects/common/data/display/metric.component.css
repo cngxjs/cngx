@@ -69,13 +69,32 @@
   }
 
   /**
-   * Text color of the unit slot — muted by default.
+   * Text color of the unit slot - muted by default.
    * @group Typography
    */
   @property --cngx-metric-unit-color {
     syntax: '<color>';
     inherits: true;
     initial-value: oklch(0.36 0.02 290);
+  }
+
+  /* Dark-mode swap. Value and unit text both flip to the foundation's
+   * dark-mode-readable lightness; same chroma/hue identity. */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-color-scheme='light']):not(.light) {
+      --cngx-metric-value-color: oklch(0.95 0.01 290);
+      --cngx-metric-unit-color: oklch(0.7 0.01 290);
+    }
+  }
+  [data-color-scheme='dark'],
+  .dark {
+    --cngx-metric-value-color: oklch(0.95 0.01 290);
+    --cngx-metric-unit-color: oklch(0.7 0.01 290);
+  }
+  [data-color-scheme='light'],
+  .light {
+    --cngx-metric-value-color: oklch(0.2 0.01 290);
+    --cngx-metric-unit-color: oklch(0.36 0.02 290);
   }
 }
 

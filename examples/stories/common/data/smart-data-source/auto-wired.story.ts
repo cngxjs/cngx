@@ -1,16 +1,16 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxSmartDataSource — Auto-Wired',
-  subtitle: '<code>injectSmartDataSource()</code> is called inside a component whose host element carries <code>[cngxSort]</code> and <code>[cngxFilter]</code> as <code>hostDirectives</code>. The data source auto-discovers them via <code>inject()</code> — no explicit wiring.',
+  title: 'CngxSmartDataSource: auto-wired',
+  subtitle: '<code>injectSmartDataSource()</code> is called inside a component whose host element carries <code>[cngxSort]</code> and <code>[cngxFilter]</code> as <code>hostDirectives</code>. The data source auto-discovers them via <code>inject()</code>; no explicit wiring.',
   level: 'molecule',
   audience: ['dev'],
   artifact: 'building-block',
   focus: ['composition', 'integration'],
   apiComponents: [
+    'CngxSmartDataSource',
     'CngxSort',
     'CngxFilter',
-    'CngxPaginate',
   ],
   moduleImports: [
     'import { toSignal } from \'@angular/core/rxjs-interop\';',

@@ -1,20 +1,21 @@
 import type { DemoSpec } from '../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Bottom Sheet',
-  subtitle: '<code>CngxBottomSheet</code> is a molecule directive that positions the dialog at the viewport bottom with a drag handle (via <code>::before</code>) and slide-up animation. Add <code>[cngxSwipeDismiss]</code> for swipe-to-dismiss — the directive auto-wires it. Themed via <code>bottom-sheet-theme.scss</code> with CSS custom properties.',
-  description: 'Signal-driven state machine for native <dialog>. Typed results, deterministic focus return, ARIA communication, CSS transition support, and opt-in draggable behavior.',
+  title: 'CngxBottomSheet: Sheet with swipe-dismiss',
+  subtitle: '<code>CngxBottomSheet</code> is a molecule directive that pins the dialog to the viewport bottom with a slide-up animation and a drag handle (rendered via <code>::before</code>). Pair with <code>[cngxSwipeDismiss]="\'down\'"</code> for swipe-to-dismiss. Themed via <code>bottom-sheet-theme.scss</code>.',
+  description: 'Composes CngxDialog with CngxBottomSheet to anchor the dialog to the viewport bottom, and with CngxSwipeDismiss to dismiss on a downward swipe. The dialog still exposes the typed cngxDialogClose contract for option selection.',
   level: 'organism',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
   focus: ['composition', 'a11y-pattern', 'behavior'],
+  references: [
+    { label: 'WAI-ARIA APG: Dialog (modal)', href: 'https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/' },
+  ],
   apiComponents: [
+    'CngxBottomSheet',
     'CngxDialog',
-    'CngxDialogTitle',
-    'CngxDialogDescription',
     'CngxDialogClose',
-    'CngxDialogDraggable',
-    'CngxDialogStack',
+    'CngxSwipeDismiss',
   ],
   moduleImports: [
     'import { CngxDialog, CngxDialogTitle, CngxDialogClose, CngxBottomSheet } from \'@cngx/common/dialog\';',

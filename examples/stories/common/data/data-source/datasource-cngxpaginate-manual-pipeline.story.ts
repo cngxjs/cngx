@@ -1,8 +1,8 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'DataSource + CngxPaginate — Manual Pipeline',
-  subtitle: 'Pagination slots naturally into the manual pipeline. Pass a <code>computed()</code> that includes the slice to <code>injectDataSource()</code>. <code>CngxPaginate</code> is placed in the template via a template ref (<code>#pg</code>). Controlled mode wires the component\'s <code>pageIndex</code> / <code>pageSize</code> signals to the directive — <code>(pageChange)</code> / <code>(pageSizeChange)</code> keep them in sync.',
+  title: 'CngxPaginate + manual DataSource pipeline',
+  subtitle: 'Pagination slots naturally into the manual pipeline. Pass a <code>computed()</code> that includes the slice to <code>injectDataSource()</code>. <code>CngxPaginate</code> is placed in the template via a template ref (<code>#pg</code>). Controlled mode wires the component\'s <code>pageIndex</code> / <code>pageSize</code> signals to the directive; <code>(pageChange)</code> / <code>(pageSizeChange)</code> keep them in sync.',
   level: 'molecule',
   audience: ['dev'],
   artifact: 'building-block',

@@ -21,7 +21,6 @@ import type { CngxAsyncState } from '@cngx/core/utils';
  * <cngx-mat-paginator [cngxPaginateRef]="pg" />
  * <example-url>http://localhost:4200/#/common/data/data-source/datasource-cngxpaginate-manual-pipeline</example-url>
  * <example-url>http://localhost:4200/#/common/data/data-source/signal-observable-bridge</example-url>
- * <example-url>http://localhost:4200/#/common/data/data-source/usage-pattern-consumer-wires-it-up</example-url>
  * <example-url>http://localhost:4200/#/common/data/paginate-list/paginated-list-cngxpaginate-cngxmatpaginator</example-url>
  * <example-url>http://localhost:4200/#/common/data/paginate-list/uncontrolled-mode-zero-class-boilerplate</example-url>
  * <example-url>http://localhost:4200/#/common/data/smart-data-source/auto-wired</example-url>

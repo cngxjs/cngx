@@ -1,15 +1,14 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxDataSource — Signal → Observable Bridge',
-  subtitle: '<code>injectDataSource(signal)</code> is a thin CDK <code>DataSource</code> wrapper. Every time the signal changes, <code>connect()</code> emits a new value. Use <code>toSignal(ds.connect())</code> to drive a template directly. Zero logic — consumer wires up sort/filter/search via a <code>computed()</code> passed as the signal.',
+  title: 'CngxDataSource: signal-to-Observable bridge',
+  subtitle: '<code>injectDataSource(signal)</code> is a thin CDK <code>DataSource</code> wrapper. Every time the signal changes, <code>connect()</code> emits a new value. Use <code>toSignal(ds.connect())</code> to drive a template directly. Zero logic; consumer wires up sort/filter/search via a <code>computed()</code> passed as the signal.',
   level: 'molecule',
   audience: ['dev'],
   artifact: 'building-block',
   focus: ['integration', 'async-state'],
   apiComponents: [
-    'CngxPaginate',
-    'CngxMatPaginator',
+    'CngxDataSource',
   ],
   moduleImports: [
     'import { toSignal } from \'@angular/core/rxjs-interop\';',

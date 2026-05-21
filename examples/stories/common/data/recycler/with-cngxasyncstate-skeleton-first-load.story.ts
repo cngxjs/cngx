@@ -1,57 +1,79 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'With CngxAsyncState — Skeleton First Load',
-  subtitle: 'The recycler derives <code>isLoading</code>, <code>showSkeleton</code>, and <code>isEmpty</code> from a <code>CngxAsyncState</code> source — same pattern as <code>CngxCardGrid</code> and <code>CngxTreetable</code>. Skeleton slots fill the viewport height automatically.',
-  description: 'Signal-based virtualizer for long lists. Items outside the viewport are removed from the DOM. Consumer renders with @for and two spacer containers.',
+  title: 'CngxRecycler: First-load skeleton via CngxAsyncState',
+  subtitle: 'The recycler derives <code>isLoading</code>, <code>showSkeleton</code>, and <code>isEmpty</code> from a <code>CngxAsyncState</code> source; same pattern as <code>CngxCardGrid</code> and <code>CngxTreetable</code>. Skeleton slots fill the viewport height automatically.',
+  description: 'Passing a CngxAsyncState source lets the recycler derive isLoading, showSkeleton, and isEmpty automatically. Skeleton slots fill the viewport while data loads; skeletonDelay suppresses the skeleton on fast loads to prevent flashes.',
   level: 'molecule',
-  audience: ['dev', 'a11y'],
+  audience: ['dev'],
   artifact: 'building-block',
-  focus: ['behavior', 'a11y-pattern', 'async-state'],
+  focus: ['async-state', 'composition'],
   apiComponents: [
     'CngxRecycler',
-    'CngxMeasure',
-    'CngxVirtualItem',
-    'CngxRecyclerAnnouncer',
   ],
   moduleImports: [
-    'import { injectRecycler } from \'@cngx/common/data\';',
+    'import { computed } from \'@angular/core\';',
+    'import { injectRecycler, createManualState } from \'@cngx/common/data\';',
   ],
-  setup: `protected readonly allItems = signal(
-    Array.from({ length: 5000 }, (_, i) => ({
-      id: i,
-      name: 'Item ' + (i + 1),
-      description: 'Description for item ' + (i + 1),
-    })),
-  );
-  protected readonly recycler = injectRecycler({
-    scrollElement: '.recycler-scroll',
-    totalCount: () => this.allItems().length,
+  setup: `protected readonly asyncState = createManualState<{ id: number; name: string }[]>();
+  protected readonly asyncRecycler = injectRecycler({
+    scrollElement: '.async-scroll',
+    totalCount: () => (this.asyncState.data() ?? []).length,
     estimateSize: 48,
-    overscan: 10,
-  });`,
-  template: `
-  <pre class="code-block"><code>// With CngxAsyncState integration
-readonly state = injectAsyncState(() => this.api.getAll());
+    state: this.asyncState,
+    skeletonDelay: 0,
+  });
+  protected readonly asyncVisible = this.asyncRecycler.sliced(
+    computed(() => this.asyncState.data() ?? []),
+  );
 
-readonly recycler = injectRecycler({{ '{' }}
-  scrollElement: '.scroll',
-  totalCount: () => (this.state.data() ?? []).length,
-  estimateSize: 64,
-  state: this.state,         // drives isLoading, isRefreshing, isEmpty
-  skeletonDelay: 300,        // fast loads never show skeleton
-{{ '}' }});
-
-readonly visible = this.recycler.sliced(
-  computed(() => this.state.data() ?? [])
-);
-
-// Template:
-// &#64;if (recycler.showSkeleton()) {{ '{' }}
-//   &#64;for (_ of skeletonRange(recycler.skeletonSlots()); track $index) {{ '{' }}
-//     &lt;div class="skeleton-item" aria-hidden="true"&gt;&lt;/div&gt;
-//   {{ '}' }}
-// {{ '}' }} &#64;else {{ '{' }}
-//   &#64;for (item of visible(); track item.id) {{ '{' }} ... {{ '}' }}
-// {{ '}' }}</code></pre>`,
+  protected skeletonRange(n: number): readonly number[] {
+    return Array.from({ length: n }, (_, i) => i);
+  }`,
+  setupChrome: `  constructor() {
+    this.loadAsyncDemo();
+  }
+  protected handleReloadAsync(): void {
+    this.asyncState.reset();
+    this.loadAsyncDemo();
+  }
+  private loadAsyncDemo(): void {
+    this.asyncState.set('loading');
+    setTimeout(() => {
+      this.asyncState.setSuccess(
+        Array.from({ length: 200 }, (_, i) => ({
+          id: i,
+          name: 'Entry ' + (i + 1),
+        })),
+      );
+    }, 1500);
+  }`,
+  template: `  <div class="async-scroll demo-scroll-frame" role="list" aria-label="Demo items"
+       style="height:300px;overflow-y:auto">
+    @if (asyncRecycler.showSkeleton()) {
+      @for (_ of skeletonRange(asyncRecycler.skeletonSlots()); track $index) {
+        <div role="presentation" aria-hidden="true"
+             class="demo-scroll-row demo-skeleton-row"
+             style="height:48px"></div>
+      }
+    } @else {
+      <div [style.paddingTop.px]="asyncRecycler.offsetBefore()"
+           [style.paddingBottom.px]="asyncRecycler.offsetAfter()">
+        @for (item of asyncVisible(); track item.id) {
+          <div role="listitem" class="demo-scroll-row" style="height:48px">
+            {{ item.name }}
+          </div>
+        }
+      </div>
+    }
+  </div>`,
+  templateChrome: `<div class="status-row" style="margin-bottom:8px">
+    <span class="status-badge">Status: {{ asyncState.status() }}</span>
+    @if (asyncRecycler.showSkeleton()) {
+      <span class="status-badge">Skeleton slots: {{ asyncRecycler.skeletonSlots() }}</span>
+    }
+    <button type="button" class="demo-icon-button" (click)="handleReloadAsync()">
+      Reload
+    </button>
+  </div>`,
 };

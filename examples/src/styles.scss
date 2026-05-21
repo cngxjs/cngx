@@ -396,7 +396,7 @@ html.dark .cngx-ex-tag[data-dim='stability'][data-value='deprecated'] {
   font-variant-numeric: tabular-nums;
 }
 
-// Status row / chips / badges — purely structural; visual treatment is
+// Status row / chips / badges - purely structural; visual treatment is
 // up to inline styles on the template itself.
 .status-row,
 .button-row,
@@ -406,6 +406,186 @@ html.dark .cngx-ex-tag[data-dim='stability'][data-value='deprecated'] {
   flex-wrap: wrap;
   align-items: center;
   gap: 0.5rem;
+}
+
+// Demo-only label utilities. Shared by metric, trend, card-composition
+// demos so individual stories don't redeclare thematic colors inline.
+.demo-card-label,
+.demo-metric-label {
+  font-size: 0.8125rem;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted));
+}
+.demo-metric-label {
+  margin-bottom: 4px;
+}
+
+// Demo-only scroll frame + row utilities. Used by the recycler and
+// paginated-list demos so border/border-radius/border-color don't
+// scatter through inline styles.
+.demo-scroll-frame {
+  overflow-y: auto;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e0e0e0));
+  border-radius: 8px;
+}
+.demo-scroll-row {
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e0e0e0));
+}
+.demo-scroll-row-stack {
+  display: block;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e0e0e0));
+}
+.demo-scroll-sentinel {
+  padding: 8px;
+  text-align: center;
+}
+// Mirror of @cngx/common/data/recycler/content-visibility mixin output,
+// inlined so the content-visibility story can demonstrate it without a
+// load-path resolver in the examples app.
+.demo-cv-item {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 48px;
+}
+// Demo-only "screen-reader transcript" layout. Pairs a card/variant name
+// (left, with auto/overridden badge) with the literal spoken text (right,
+// monospace + quoted). Used by trend demos to make the [label] override
+// vs. auto-generated aria-label contrast scannable.
+.demo-sr-transcript {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  align-items: baseline;
+  column-gap: 16px;
+  row-gap: 6px;
+  margin: 0;
+}
+.demo-sr-transcript dt {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-weight: 500;
+}
+.demo-sr-transcript dd {
+  margin: 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.8125rem;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted));
+}
+.demo-sr-tag {
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 1px 6px;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e0e0e0));
+  border-radius: 999px;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted));
+}
+.demo-sr-tag--accent {
+  border-color: var(--cngx-color-accent-positive, currentColor);
+  color: var(--cngx-color-accent-positive, currentColor);
+}
+// Demo-only skeleton placeholder row. The cngx skeleton atom is the real
+// abstraction; this mirrors its surface treatment so a recycler demo can
+// show the showSkeleton branch without pulling the atom into the artifact.
+.demo-skeleton-row {
+  background: linear-gradient(
+    90deg,
+    var(--cngx-color-surface-2, var(--cngx-ex-surface-2, #f0f0f0)) 25%,
+    var(--cngx-color-surface-3, var(--cngx-ex-surface-3, #e5e5e5)) 50%,
+    var(--cngx-color-surface-2, var(--cngx-ex-surface-2, #f0f0f0)) 75%
+  );
+  background-size: 200% 100%;
+  animation: demo-skeleton-shimmer 1.4s ease-in-out infinite;
+}
+@keyframes demo-skeleton-shimmer {
+  0% { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
+}
+.demo-list-row {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e0e0e0));
+}
+.demo-list-flush {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.demo-numeric-input,
+.demo-icon-button {
+  padding: 4px 8px;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #ccc));
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+}
+.demo-numeric-input {
+  width: 80px;
+}
+.demo-icon-button {
+  padding: 6px 16px;
+  cursor: pointer;
+}
+
+// Dialog demo helpers - keep dialog surface CSS out of stories so the
+// directive composition stays the lesson, not the per-story border /
+// padding / box-shadow scatter.
+.demo-dialog-handle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: grab;
+  margin: 0 0 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e0e0e0));
+}
+.demo-dialog-section {
+  margin: 16px 0;
+  padding: 12px;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e0e0e0));
+  border-radius: 4px;
+}
+.demo-dialog-input {
+  display: block;
+  width: 100%;
+  margin-top: 4px;
+  padding: 6px 8px;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e0e0e0));
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+}
+.demo-dialog-floating {
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e0e0e0));
+  border-radius: 8px;
+  padding: 16px;
+  background: var(--cngx-color-surface, var(--cngx-ex-surface, #fff));
+  box-shadow: 0 4px 12px var(--cngx-color-shadow, oklch(0 0 0 / 0.18));
+}
+// CSS Anchor Positioning helpers for the non-modal-panel story. The
+// trigger names an anchor; the dialog binds to that name and places
+// itself in the bottom + inline-end region of the trigger - no JS-side
+// positioning, no inline-style scaffolding in the story.
+.demo-dialog-anchor {
+  anchor-name: --demo-help-anchor;
+}
+.demo-dialog-anchored {
+  position-anchor: --demo-help-anchor;
+  inset: auto;
+  position-area: bottom span-inline-end;
+  margin-block-start: 8px;
+  max-width: 280px;
+}
+button.chip--icon-close {
+  padding: 2px 8px;
+}
+button.chip--danger {
+  color: var(--cngx-color-danger, currentColor);
+  border-color: var(--cngx-color-danger, currentColor);
 }
 
 // Demo-only "chip" trigger styling. The cngx library deliberately ships

@@ -1,16 +1,18 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Basic List — Fixed Item Height',
+  title: 'CngxRecycler: Basic list with fixed item heights',
   subtitle: '<code>injectRecycler()</code> returns computed signals for the visible range. The consumer renders with <code>@for</code> and two padding spacers. 5000 items, only ~20 in the DOM at any time.',
-  description: 'Signal-based virtualizer for long lists. Items outside the viewport are removed from the DOM. Consumer renders with @for and two spacer containers.',
+  description: 'Fixed 48px row height with 5000 items. Only ~20 rows live in the DOM at any time; offsetBefore and offsetAfter spacers reserve the remaining scroll height. CngxRecyclerAnnouncer covers the WAI-ARIA Feed pattern for screen readers.',
   level: 'molecule',
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
   focus: ['behavior', 'a11y-pattern', 'async-state'],
+  references: [
+    { label: 'WAI-ARIA APG: Feed pattern', href: 'https://www.w3.org/WAI/ARIA/apg/patterns/feed/' },
+  ],
   apiComponents: [
     'CngxRecycler',
-    'CngxMeasure',
     'CngxVirtualItem',
     'CngxRecyclerAnnouncer',
   ],
@@ -37,23 +39,24 @@ export const STORY: DemoSpec = {
     this.recycler.scrollToIndex(this.targetIndex());
   }`,
   template: `  <cngx-recycler-announcer [cngxRecyclerAnnouncer]="recycler" />
-  <div class="recycler-scroll" role="list" aria-label="Demo items"
-       style="height:400px;overflow-y:auto;border:1px solid var(--cngx-color-border,#e0e0e0);border-radius:8px">
+  <div class="recycler-scroll demo-scroll-frame" role="list" aria-label="Demo items"
+       style="height:400px">
     <div [style.paddingTop.px]="recycler.offsetBefore()"
          [style.paddingBottom.px]="recycler.offsetAfter()">
       @for (item of visibleItems(); track item.id; let i = $index) {
         <div role="listitem"
+             class="demo-scroll-row"
              [cngxVirtualItem]="recycler"
              [cngxVirtualItemIndex]="recycler.start() + i"
-             style="height:48px;display:flex;align-items:center;padding:0 16px;border-bottom:1px solid var(--cngx-color-border,#e0e0e0)">
-          <strong>{{ item.name }}</strong>&nbsp;&mdash;&nbsp;{{ item.description }}
+             style="height:48px">
+          <strong>{{ item.name }}</strong>&nbsp;-&nbsp;{{ item.description }}
         </div>
       }
     </div>
   </div>`,
-  templateChrome: `<div class="status-row" style="margin-top:8px;display:flex;gap:16px;flex-wrap:wrap;align-items:center">
+  templateChrome: `<div class="status-row" style="margin-top:8px;gap:16px">
     <span class="status-badge">
-      Showing {{ recycler.firstVisible() + 1 }}&ndash;{{ recycler.lastVisible() + 1 }}
+      Showing {{ recycler.firstVisible() + 1 }}-{{ recycler.lastVisible() + 1 }}
       of {{ recycler.ariaSetSize() }}
     </span>
     <span class="status-badge">
@@ -61,16 +64,15 @@ export const STORY: DemoSpec = {
     </span>
     <label style="display:flex;align-items:center;gap:4px">
       Go to:
-      <input type="number" [value]="targetIndex()" (input)="targetIndex.set(+$any($event.target).value)"
-             min="0" [max]="recycler.ariaSetSize() - 1"
-             style="width:80px;padding:4px 8px;border:1px solid var(--cngx-color-border,#ccc);border-radius:4px">
+      <input type="number" class="demo-numeric-input"
+             [value]="targetIndex()" (input)="targetIndex.set(+$any($event.target).value)"
+             min="0" [max]="recycler.ariaSetSize() - 1">
     </label>
-    <button type="button" (click)="handleScrollTo()"
-            style="padding:4px 12px;border:1px solid var(--cngx-color-border,#ccc);border-radius:4px;cursor:pointer">
+    <button type="button" class="demo-icon-button" (click)="handleScrollTo()">
       Scroll
     </button>
     @if (recycler.pendingTarget() != null) {
-      <span aria-live="polite" style="color:var(--cngx-text-muted,#666)">
+      <span aria-live="polite" class="demo-card-label">
         Waiting for item {{ recycler.pendingTarget()! + 1 }}...
       </span>
     }
