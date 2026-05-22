@@ -1,55 +1,70 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Two-level submenu',
-  subtitle: 'Open the menu (ArrowDown / Enter / Space). Highlight "Open Recent" and press ArrowRight to open the submenu — focus transfers to its first file. ArrowLeft / Escape close. Activating a leaf closes everything.',
-  description: 'Nested menu with cngxMenuItemSubmenu. ArrowRight on a submenu parent opens the inner menu and transfers AD focus to its first item; ArrowLeft / Escape close. Two-level keyboard navigation through one trigger button.',
+  title: 'CngxMenuItemSubmenu: two-level submenu',
+  subtitle:
+    'Open the outer menu (ArrowDown / Enter / Space). Highlight "Open Recent" and press ArrowRight to open the submenu - focus transfers to its first item. ArrowLeft / Escape close. Activating a leaf closes everything.',
+  description:
+    'Nested menu via <code>cngxMenuItemSubmenu</code> as a companion on a <code>cngxMenuItem</code>. <code>aria-haspopup="menu"</code> and <code>aria-expanded</code> live on the parent item; <code>CngxMenuTrigger</code> drives ArrowRight to push the inner <code>CngxMenu</code> onto its focus stack and ArrowLeft / Escape to pop it. The submenu popover is <code>[exclusive]="false"</code> so opening it does not light-dismiss the outer popover.',
   level: 'organism',
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
   focus: ['composition', 'a11y-pattern'],
-  apiComponents: [
+  references: [
+    {
+      label: 'WAI-ARIA APG: Menu and Menubar Pattern',
+      href: 'https://www.w3.org/WAI/ARIA/apg/patterns/menubar/',
+    },
+    {
+      label: 'WAI-ARIA APG: Menu Button Pattern',
+      href: 'https://www.w3.org/WAI/ARIA/apg/patterns/menu-button/',
+    },
+    {
+      label: 'WCAG 2.1.1 Keyboard',
+      href: 'https://www.w3.org/WAI/WCAG21/Understanding/keyboard.html',
+    },
+  ],
+  apiComponents: ['CngxMenuTrigger', 'CngxMenuItemSubmenu', 'CngxMenu', 'CngxMenuItem'],
+  moduleImports: [
+    "import { CngxMenu, CngxMenuItem, CngxMenuItemSubmenu, CngxMenuSeparator, CngxMenuTrigger, CngxMenuItemIcon, CngxMenuItemLabel, CngxMenuItemKbd } from '@cngx/common/interactive';",
+    "import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';",
+  ],
+  imports: [
     'CngxMenu',
     'CngxMenuItem',
     'CngxMenuItemSubmenu',
     'CngxMenuSeparator',
     'CngxMenuTrigger',
+    'CngxMenuItemIcon',
+    'CngxMenuItemLabel',
+    'CngxMenuItemKbd',
+    'CngxPopover',
+    'CngxPopoverTrigger',
   ],
-  moduleImports: [
-    'import { CngxMenu, CngxMenuItem, CngxMenuItemSubmenu, CngxMenuSeparator, CngxMenuTrigger, CngxMenuItemIcon, CngxMenuItemLabel, CngxMenuItemKbd } from \'@cngx/common/interactive\';',
-    'import { CngxPopover } from \'@cngx/common/popover\';',
-  ],
-  imports: ['CngxMenu', 'CngxMenuItem', 'CngxMenuItemSubmenu', 'CngxMenuSeparator', 'CngxMenuTrigger', 'CngxMenuItemIcon', 'CngxMenuItemLabel', 'CngxMenuItemKbd', 'CngxPopover', 'CngxPopoverTrigger'],
   setup: `protected readonly lastAction = signal<string | null>(null);`,
-  template: `  <style>
-    .trigger { min-width: 120px; padding: 8px 12px; border: 1px solid var(--cngx-color-border, #d0d5dd); border-radius: 6px; background: var(--cngx-color-surface, #fff); color: var(--cngx-color-text, inherit); cursor: pointer; font: inherit; }
-    .trigger:focus-visible { outline: 2px solid var(--cngx-color-primary, #4a8cff); outline-offset: 2px; }
-    .pop { margin: 4px 0; min-width: 240px; border: 1px solid var(--cngx-color-border, #d0d5dd); border-radius: 6px; background: var(--cngx-color-surface, #fff); color: var(--cngx-color-text, inherit); box-shadow: 0 4px 12px oklch(0 0 0 / 0.12); }
-  </style>
-  <button
+  template: `  <button
     type="button"
-    class="trigger"
     [cngxMenuTrigger]="outer"
     [cngxPopoverTrigger]="outerPop"
     [popover]="outerPop"
     [haspopup]="'menu'"
     (click)="outerPop.toggle()"
+    aria-label="File menu"
   >
     File
   </button>
-  <div cngxPopover #outerPop="cngxPopover" placement="bottom-start" class="pop">
+  <div cngxPopover #outerPop="cngxPopover" placement="bottom-start">
     <ul
       cngxMenu
       [label]="'File'"
-      class="menu"
       tabindex="0"
       #outer="cngxMenu"
       (itemActivated)="lastAction.set($any($event)); recentPop.hide(); outerPop.hide()"
     >
       <li cngxMenuItem value="new">
-        <span cngxMenuItemIcon>📄</span>
+        <span cngxMenuItemIcon>N</span>
         <span cngxMenuItemLabel>New</span>
-        <kbd cngxMenuItemKbd>⌘N</kbd>
+        <kbd cngxMenuItemKbd>Ctrl+N</kbd>
       </li>
       <li
         cngxMenuItem
@@ -57,42 +72,41 @@ export const STORY: DemoSpec = {
         [submenuMenu]="recentMenu"
         value="recent"
       >
-        <span cngxMenuItemIcon>🕒</span>
+        <span cngxMenuItemIcon>R</span>
         <span cngxMenuItemLabel>Open Recent</span>
-        <kbd cngxMenuItemKbd>▸</kbd>
+        <kbd cngxMenuItemKbd>&gt;</kbd>
       </li>
       <li cngxMenuSeparator></li>
       <li cngxMenuItem value="save">
-        <span cngxMenuItemIcon>💾</span>
+        <span cngxMenuItemIcon>S</span>
         <span cngxMenuItemLabel>Save</span>
-        <kbd cngxMenuItemKbd>⌘S</kbd>
+        <kbd cngxMenuItemKbd>Ctrl+S</kbd>
       </li>
       <li cngxMenuItem value="close">
-        <span cngxMenuItemIcon>✕</span>
+        <span cngxMenuItemIcon>X</span>
         <span cngxMenuItemLabel>Close</span>
-        <kbd cngxMenuItemKbd>⌘W</kbd>
+        <kbd cngxMenuItemKbd>Ctrl+W</kbd>
       </li>
     </ul>
   </div>
-  <div cngxPopover #recentPop="cngxPopover" placement="right-start" [exclusive]="false" class="pop">
+  <div cngxPopover #recentPop="cngxPopover" placement="right-start" [exclusive]="false">
     <ul
       cngxMenu
       [label]="'Recent files'"
-      class="menu"
       tabindex="0"
       #recentMenu="cngxMenu"
       (itemActivated)="lastAction.set($any($event)); recentPop.hide(); outerPop.hide()"
     >
       <li cngxMenuItem value="recent:plan.md">
-        <span cngxMenuItemIcon>📄</span>
+        <span cngxMenuItemIcon>F</span>
         <span cngxMenuItemLabel>plan.md</span>
       </li>
       <li cngxMenuItem value="recent:notes.txt">
-        <span cngxMenuItemIcon>📄</span>
+        <span cngxMenuItemIcon>F</span>
         <span cngxMenuItemLabel>notes.txt</span>
       </li>
       <li cngxMenuItem value="recent:CHANGELOG.md">
-        <span cngxMenuItemIcon>📄</span>
+        <span cngxMenuItemIcon>F</span>
         <span cngxMenuItemLabel>CHANGELOG.md</span>
       </li>
     </ul>
@@ -100,75 +114,7 @@ export const STORY: DemoSpec = {
   templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row">
       <span class="event-label">Last action</span>
-      <span class="event-value">{{ lastAction() ?? '—' }}</span>
+      <span class="event-value">{{ lastAction() ?? '-' }}</span>
     </div>
   </div>`,
-  css: `.trigger {
-  min-width: 120px;
-  padding: 8px 12px;
-  border: 1px solid var(--cngx-color-border, #d0d5dd);
-  border-radius: var(--cngx-radius-md, 6px);
-  background: var(--cngx-color-surface, #fff);
-  cursor: pointer;
-  font: inherit;
-}
-.trigger:focus-visible {
-  outline: 2px solid var(--cngx-color-primary, #4a8cff);
-  outline-offset: 2px;
-}
-.pop {
-  margin: 4px 0;
-  padding: 4px;
-  min-width: 240px;
-  border: 1px solid var(--cngx-color-border, #d0d5dd);
-  border-radius: 6px;
-  background: #fff;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-}
-.menu {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  outline: none;
-}
-.menu [cngxMenuItem] {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 10px;
-  border-radius: 4px;
-  cursor: pointer;
-  user-select: none;
-}
-.cngx-menu-item--highlighted {
-  background: var(--cngx-menu-highlight-bg, rgba(74, 140, 255, 0.15));
-}
-.cngx-menu-item__icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 1.25rem;
-  font-size: 1rem;
-}
-.cngx-menu-item__label {
-  flex: 1;
-  min-width: 0;
-}
-.cngx-menu-item__kbd {
-  margin-left: auto;
-  padding: 1px 6px;
-  font-family: var(--cngx-font-mono, ui-monospace, monospace);
-  font-size: 0.75rem;
-  color: var(--cngx-text-muted, #64748b);
-  border: 1px solid var(--cngx-color-border, #d0d5dd);
-  border-radius: 4px;
-  background: var(--cngx-surface-muted, #f9fafb);
-}
-[cngxMenuSeparator] {
-  display: block;
-  height: 1px;
-  margin: 4px 6px;
-  background: var(--cngx-color-border, #e5e7eb);
-  list-style: none;
-}`,
 };

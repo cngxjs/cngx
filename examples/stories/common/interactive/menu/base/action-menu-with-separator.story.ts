@@ -1,128 +1,83 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Action menu with separator',
-  subtitle: 'Use arrow keys, typeahead (type the first letters of an action), Home/End, Enter/Space. Disabled items and separators are skipped.',
-  description: 'Keyboard-navigable menu with role="menu" and cngxMenuItem children. Activation fires itemActivated; no selection state. Supports separators (skipped by AD nav) and inline static menu rendering.',
+  title: 'CngxMenu: action menu with separator',
+  subtitle:
+    'Arrow keys, typeahead (type the first letters), Home/End, Enter/Space. Disabled items and separators are skipped by navigation.',
+  description:
+    'Static <code>role="menu"</code> with <code>cngxMenuItem</code> children. Activation fires <code>itemActivated</code> with the item value; the menu carries no selection state. <code>cngxMenuSeparator</code> renders <code>role="separator"</code> and is skipped by arrow-key navigation and typeahead.',
   level: 'organism',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'building-block',
   focus: ['composition', 'a11y-pattern', 'visual-variants'],
+  references: [
+    {
+      label: 'WAI-ARIA APG: Menu and Menubar Pattern',
+      href: 'https://www.w3.org/WAI/ARIA/apg/patterns/menubar/',
+    },
+    {
+      label: 'WCAG 2.1.1 Keyboard',
+      href: 'https://www.w3.org/WAI/WCAG21/Understanding/keyboard.html',
+    },
+  ],
   apiComponents: [
     'CngxMenu',
     'CngxMenuItem',
     'CngxMenuSeparator',
     'CngxMenuItemIcon',
     'CngxMenuItemLabel',
-    'CngxMenuItemSuffix',
     'CngxMenuItemKbd',
   ],
   moduleImports: [
-    'import { CngxMenu, CngxMenuItem, CngxMenuSeparator, CngxMenuItemIcon, CngxMenuItemLabel, CngxMenuItemKbd } from \'@cngx/common/interactive\';',
+    "import { CngxMenu, CngxMenuItem, CngxMenuSeparator, CngxMenuItemIcon, CngxMenuItemLabel, CngxMenuItemKbd } from '@cngx/common/interactive';",
   ],
-  imports: ['CngxMenu', 'CngxMenuItem', 'CngxMenuSeparator', 'CngxMenuItemIcon', 'CngxMenuItemLabel', 'CngxMenuItemKbd'],
+  imports: [
+    'CngxMenu',
+    'CngxMenuItem',
+    'CngxMenuSeparator',
+    'CngxMenuItemIcon',
+    'CngxMenuItemLabel',
+    'CngxMenuItemKbd',
+  ],
   setup: `protected readonly lastAction = signal<string | null>(null);`,
-  template: `  <style>
-    .menu { width: 280px; border: 1px solid var(--cngx-color-border, #d0d5dd); border-radius: 6px; background: var(--cngx-color-surface, #fff); color: var(--cngx-color-text, inherit); box-shadow: 0 4px 12px oklch(0 0 0 / 0.12); }
-  </style>
-  <ul
+  template: `  <ul
     cngxMenu
     [label]="'File actions'"
-    class="menu"
     tabindex="0"
     (itemActivated)="lastAction.set($any($event))"
   >
     <li cngxMenuItem value="new">
-      <span cngxMenuItemIcon>📄</span>
+      <span cngxMenuItemIcon>N</span>
       <span cngxMenuItemLabel>New</span>
-      <kbd cngxMenuItemKbd>⌘N</kbd>
+      <kbd cngxMenuItemKbd>Ctrl+N</kbd>
     </li>
     <li cngxMenuItem value="open">
-      <span cngxMenuItemIcon>📂</span>
-      <span cngxMenuItemLabel>Open…</span>
-      <kbd cngxMenuItemKbd>⌘O</kbd>
+      <span cngxMenuItemIcon>O</span>
+      <span cngxMenuItemLabel>Open...</span>
+      <kbd cngxMenuItemKbd>Ctrl+O</kbd>
     </li>
     <li cngxMenuSeparator></li>
     <li cngxMenuItem value="save">
-      <span cngxMenuItemIcon>💾</span>
+      <span cngxMenuItemIcon>S</span>
       <span cngxMenuItemLabel>Save</span>
-      <kbd cngxMenuItemKbd>⌘S</kbd>
+      <kbd cngxMenuItemKbd>Ctrl+S</kbd>
     </li>
     <li cngxMenuItem value="save-as" [disabled]="true">
-      <span cngxMenuItemIcon>📝</span>
-      <span cngxMenuItemLabel>Save as… (disabled)</span>
-      <kbd cngxMenuItemKbd>⇧⌘S</kbd>
+      <span cngxMenuItemIcon>A</span>
+      <span cngxMenuItemLabel>Save as... (disabled)</span>
+      <kbd cngxMenuItemKbd>Ctrl+Shift+S</kbd>
     </li>
     <li cngxMenuSeparator></li>
     <li cngxMenuItem value="close">
-      <span cngxMenuItemIcon>✕</span>
+      <span cngxMenuItemIcon>X</span>
       <span cngxMenuItemLabel>Close</span>
-      <kbd cngxMenuItemKbd>⌘W</kbd>
+      <kbd cngxMenuItemKbd>Ctrl+W</kbd>
     </li>
   </ul>`,
   templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row">
       <span class="event-label">Last action</span>
-      <span class="event-value">{{ lastAction() ?? '—' }}</span>
+      <span class="event-value">{{ lastAction() ?? '-' }}</span>
     </div>
   </div>`,
-  css: `.menu {
-  list-style: none;
-  margin: 0;
-  padding: 4px;
-  width: 280px;
-  border: 1px solid var(--cngx-color-border, #d0d5dd);
-  border-radius: var(--cngx-radius-md, 8px);
-  background: var(--cngx-color-surface, #fff);
-  outline: none;
-}
-.menu:focus-visible {
-  outline: 2px solid var(--cngx-color-primary, #4a8cff);
-  outline-offset: 2px;
-}
-.menu [cngxMenuItem] {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 10px;
-  border-radius: 4px;
-  cursor: pointer;
-  user-select: none;
-}
-.cngx-menu-item--highlighted {
-  background: var(--cngx-menu-highlight-bg, rgba(74, 140, 255, 0.15));
-}
-.cngx-menu-item--disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-.cngx-menu-item__icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 1.25rem;
-  font-size: 1rem;
-  line-height: 1;
-}
-.cngx-menu-item__label {
-  flex: 1;
-  min-width: 0;
-}
-.cngx-menu-item__kbd {
-  margin-left: auto;
-  padding: 1px 6px;
-  font-family: var(--cngx-font-mono, ui-monospace, monospace);
-  font-size: 0.75rem;
-  color: var(--cngx-text-muted, #64748b);
-  border: 1px solid var(--cngx-color-border, #d0d5dd);
-  border-radius: 4px;
-  background: var(--cngx-surface-muted, #f9fafb);
-}
-[cngxMenuSeparator] {
-  display: block;
-  height: 1px;
-  margin: 4px 6px;
-  background: var(--cngx-color-border, #e5e7eb);
-  list-style: none;
-}`,
 };

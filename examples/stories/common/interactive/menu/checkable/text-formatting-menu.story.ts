@@ -1,37 +1,44 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Text formatting menu',
-  subtitle: 'Checkboxes for independent toggles, radios inside a group for exclusive selection.',
-  description: 'Menu items with their own state: checkboxes for toggles, radios for mutually exclusive choices inside a CngxMenuGroup.',
+  title: 'CngxMenuItemCheckbox + CngxMenuItemRadio: text formatting menu',
+  subtitle:
+    'Checkboxes for independent toggles, radios inside a <code>cngxMenuGroup</code> for exclusive selection.',
+  description:
+    'Two menuitem roles that carry their own state. <code>cngxMenuItemCheckbox</code> renders <code>role="menuitemcheckbox"</code> with <code>aria-checked</code> bound to a two-way <code>[(checked)]</code>. <code>cngxMenuItemRadio</code> renders <code>role="menuitemradio"</code> and resolves its mutual-exclusion scope through the enclosing <code>cngxMenuGroup</code> (which provides <code>CNGX_MENU_RADIO_GROUP</code>).',
   level: 'molecule',
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
   focus: ['composition', 'a11y-pattern'],
-  apiComponents: [
-    'CngxMenuItemCheckbox',
-    'CngxMenuItemRadio',
-    'CngxMenuGroup',
+  references: [
+    {
+      label: 'WAI-ARIA APG: Menu and Menubar Pattern',
+      href: 'https://www.w3.org/WAI/ARIA/apg/patterns/menubar/',
+    },
+    {
+      label: 'ARIA: menuitemcheckbox role',
+      href: 'https://www.w3.org/TR/wai-aria-1.2/#menuitemcheckbox',
+    },
+    {
+      label: 'ARIA: menuitemradio role',
+      href: 'https://www.w3.org/TR/wai-aria-1.2/#menuitemradio',
+    },
   ],
+  apiComponents: ['CngxMenuItemCheckbox', 'CngxMenuItemRadio', 'CngxMenuGroup'],
   moduleImports: [
-    'import { CngxMenu, CngxMenuGroup, CngxMenuItemCheckbox, CngxMenuItemRadio } from \'@cngx/common/interactive\';',
+    "import { CngxMenu, CngxMenuGroup, CngxMenuItemCheckbox, CngxMenuItemRadio, CngxMenuSeparator } from '@cngx/common/interactive';",
   ],
-  imports: ['CngxMenu', 'CngxMenuGroup', 'CngxMenuItemCheckbox', 'CngxMenuItemRadio'],
+  imports: ['CngxMenu', 'CngxMenuGroup', 'CngxMenuItemCheckbox', 'CngxMenuItemRadio', 'CngxMenuSeparator'],
   setup: `protected readonly bold = signal(true);
   protected readonly italic = signal(false);
-  protected readonly underline = signal(false);`,
-  template: `  <ul cngxMenu [label]="'Text formatting'" class="menu" tabindex="0">
-    <li cngxMenuItemCheckbox value="bold" [(checked)]="bold">
-      Bold
-    </li>
-    <li cngxMenuItemCheckbox value="italic" [(checked)]="italic">
-      Italic
-    </li>
-    <li cngxMenuItemCheckbox value="underline" [(checked)]="underline">
-      Underline
-    </li>
-    <li role="separator" class="sep"></li>
-    <div cngxMenuGroup [label]="'Alignment'" name="alignment">
+  protected readonly underline = signal(false);
+  protected readonly alignment = signal<'left' | 'center' | 'right'>('left');`,
+  template: `  <ul cngxMenu [label]="'Text formatting'" tabindex="0">
+    <li cngxMenuItemCheckbox value="bold" [(checked)]="bold">Bold</li>
+    <li cngxMenuItemCheckbox value="italic" [(checked)]="italic">Italic</li>
+    <li cngxMenuItemCheckbox value="underline" [(checked)]="underline">Underline</li>
+    <li cngxMenuSeparator></li>
+    <div cngxMenuGroup [label]="'Alignment'" name="alignment" [(selectedValue)]="alignment">
       <li cngxMenuItemRadio value="left">Left</li>
       <li cngxMenuItemRadio value="center">Center</li>
       <li cngxMenuItemRadio value="right">Right</li>
@@ -50,44 +57,9 @@ export const STORY: DemoSpec = {
       <span class="event-label">Underline</span>
       <span class="event-value">{{ underline() ? 'on' : 'off' }}</span>
     </div>
+    <div class="event-row">
+      <span class="event-label">Alignment</span>
+      <span class="event-value">{{ alignment() }}</span>
+    </div>
   </div>`,
-  css: `.menu {
-  list-style: none;
-  margin: 0;
-  padding: 4px;
-  width: 240px;
-  border: 1px solid var(--cngx-color-border, #d0d5dd);
-  border-radius: var(--cngx-radius-md, 8px);
-  background: var(--cngx-color-surface, #fff);
-  outline: none;
-}
-.menu:focus-visible {
-  outline: 2px solid var(--cngx-color-primary, #4a8cff);
-  outline-offset: 2px;
-}
-.menu [cngxMenuItemCheckbox], .menu [cngxMenuItemRadio] {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 10px;
-  border-radius: 4px;
-  cursor: pointer;
-  position: relative;
-}
-.cngx-menu-item--highlighted {
-  background: var(--cngx-menu-highlight-bg, rgba(74, 140, 255, 0.15));
-}
-.cngx-menu-item--checked::before {
-  content: '\\2713';
-  width: 1em;
-  margin-right: 4px;
-}
-[cngxMenuItemRadio].cngx-menu-item--checked::before {
-  content: '\\2022';
-}
-.sep {
-  height: 1px;
-  background: var(--cngx-color-border, #d0d5dd);
-  margin: 4px 0;
-}`,
 };
