@@ -16,7 +16,12 @@ import { hasTransition, nextUid, onTransitionDone } from '@cngx/core/utils';
 
 import { ANCHOR_AREA_PROPERTY, POSITION_AREA, SUPPORTS_ANCHOR } from './anchor-positioning';
 import { CNGX_FLOATING_FALLBACK, FLOATING_PLACEMENT } from './floating-fallback';
-import type { PopoverMode, PopoverPlacement, PopoverState } from './popover.types';
+import type {
+  PopoverMode,
+  PopoverPlacement,
+  PopoverPositionTryFallback,
+  PopoverState,
+} from './popover.types';
 
 /** Module-level registry of open popovers (insertion-ordered). */
 const openPopovers = new Set<CngxPopover>();
@@ -90,6 +95,25 @@ function warnMissingPopoverApi(el: HTMLElement): void {
  * <example-url>http://localhost:4200/#/common/popover/controlled-open</example-url>
  * <example-url>http://localhost:4200/#/common/popover/escape-mode</example-url>
  * <example-url>http://localhost:4200/#/common/popover/placement-variants</example-url>
+ *
+ * ### Collision recovery with `<try-tactic>` fallbacks
+ * Apply CSS Anchor Positioning's `position-try-fallbacks` declaratively
+ * by binding the new `positionTryFallbacks` input. Each entry is a CSS
+ * `<try-tactic>` keyword (or composed pair) written verbatim into the
+ * host's `position-try-fallbacks` property. Mirrors the precedent in
+ * `@cngx/forms/select` panels.
+ *
+ * ```html
+ * <div cngxPopover
+ *      placement="right-start"
+ *      [positionTryFallbacks]="['flip-inline', 'flip-block', 'flip-block flip-inline']">
+ *   <!-- popover content -->
+ * </div>
+ * ```
+ *
+ * When the array is empty (default), the host does not write a
+ * `position-try-fallbacks` style — the browser positions the popover at
+ * the declared `placement` regardless of viewport clipping.
  */
 @Directive({
   selector: '[cngxPopover]',
@@ -125,6 +149,14 @@ export class CngxPopover {
 
   /** Anchor-relative placement. */
   readonly placement = input<PopoverPlacement>('bottom');
+
+  /**
+   * CSS `<try-tactic>` fallbacks for `position-try-fallbacks`. Empty
+   * array (default) means the host does not write the property at all.
+   * Non-empty entries are written verbatim, comma-joined, in declaration
+   * order. Spec-compatible vocabulary only (no cngx placement tokens).
+   */
+  readonly positionTryFallbacks = input<readonly PopoverPositionTryFallback[]>([]);
 
   /** Gap between anchor and popover in px. */
   readonly offset = input(8);
@@ -180,10 +212,14 @@ export class CngxPopover {
     // Host binding needs a static property name; position-area/inset-area name flips per browser.
     if (SUPPORTS_ANCHOR) {
       effect(() => {
-        this.elRef.nativeElement.style.setProperty(
-          ANCHOR_AREA_PROPERTY,
-          POSITION_AREA[this.placement()],
-        );
+        const el = this.elRef.nativeElement;
+        el.style.setProperty(ANCHOR_AREA_PROPERTY, POSITION_AREA[this.placement()]);
+        const fallbacks = this.positionTryFallbacks();
+        if (fallbacks.length > 0) {
+          el.style.setProperty('position-try-fallbacks', fallbacks.join(', '));
+        } else {
+          el.style.removeProperty('position-try-fallbacks');
+        }
       });
     }
     effect(() => {
