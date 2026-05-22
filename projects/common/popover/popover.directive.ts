@@ -127,6 +127,7 @@ function warnMissingPopoverApi(el: HTMLElement): void {
     '[class.cngx-popover--open]': 'isOpen()',
     '[class.cngx-popover--closing]': 'isClosing()',
     '[style.position-anchor]': 'cssAnchorRef()',
+    '[style.position-try-fallbacks]': 'cssPositionTryFallbacks()',
     '[style.margin]': 'cssMargin()',
     '(toggle)': 'handleToggle($event)',
   },
@@ -208,18 +209,25 @@ export class CngxPopover {
 
   protected readonly cssMargin = computed(() => (SUPPORTS_ANCHOR ? `${this.offset()}px` : null));
 
+  /**
+   * Comma-joined `position-try-fallbacks` value, or `null` to skip the
+   * style write. Bound via host binding so empty / cleared lists drop the
+   * property cleanly. Unsupported browsers ignore the unknown property —
+   * gating on `SUPPORTS_ANCHOR` would only suppress a harmless write.
+   */
+  protected readonly cssPositionTryFallbacks = computed(() => {
+    const list = this.positionTryFallbacks();
+    return list.length > 0 ? list.join(', ') : null;
+  });
+
   constructor() {
     // Host binding needs a static property name; position-area/inset-area name flips per browser.
     if (SUPPORTS_ANCHOR) {
       effect(() => {
-        const el = this.elRef.nativeElement;
-        el.style.setProperty(ANCHOR_AREA_PROPERTY, POSITION_AREA[this.placement()]);
-        const fallbacks = this.positionTryFallbacks();
-        if (fallbacks.length > 0) {
-          el.style.setProperty('position-try-fallbacks', fallbacks.join(', '));
-        } else {
-          el.style.removeProperty('position-try-fallbacks');
-        }
+        this.elRef.nativeElement.style.setProperty(
+          ANCHOR_AREA_PROPERTY,
+          POSITION_AREA[this.placement()],
+        );
       });
     }
     effect(() => {

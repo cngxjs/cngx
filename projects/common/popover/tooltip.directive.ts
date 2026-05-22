@@ -131,7 +131,6 @@ export class CngxTooltip {
     effect(() => {
       const placement = this.placement();
       const offset = this.offset();
-      const fallbacks = this.positionTryFallbacks();
       const el = untracked(() => this.tooltipEl);
       if (!el) {
         return;
@@ -141,11 +140,22 @@ export class CngxTooltip {
         el.style.setProperty('position-anchor', `--cngx-tip-${this.idSignal()}`);
         el.style.setProperty(ANCHOR_AREA_PROPERTY, POSITION_AREA[placement]);
         el.style.setProperty('margin', `${offset}px`);
-        if (fallbacks.length > 0) {
-          el.style.setProperty('position-try-fallbacks', fallbacks.join(', '));
-        } else {
-          el.style.removeProperty('position-try-fallbacks');
-        }
+      }
+    });
+
+    // position-try-fallbacks is written unconditionally — unsupported
+    // browsers ignore the unknown property, and the write keeps a uniform
+    // test surface across jsdom + real browsers.
+    effect(() => {
+      const fallbacks = this.positionTryFallbacks();
+      const el = untracked(() => this.tooltipEl);
+      if (!el) {
+        return;
+      }
+      if (fallbacks.length > 0) {
+        el.style.setProperty('position-try-fallbacks', fallbacks.join(', '));
+      } else {
+        el.style.removeProperty('position-try-fallbacks');
       }
     });
 
