@@ -1329,3 +1329,73 @@ button.chip:disabled {
   font-size: 0.75em;
   color: var(--cngx-color-text-muted, var(--cngx-ex-muted, oklch(0.5 0.01 250)));
 }
+
+// Gesture-folder helpers — keep thematic decisions (border, surface, accent)
+// in classes so each story carries only layout-level inline styles.
+.demo-gesture-panel {
+  display: inline-block;
+  padding: 12px 16px;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, oklch(0.88 0.005 250)));
+  border-radius: var(--cngx-radius-md, 6px);
+  background: var(--cngx-color-surface-variant, var(--cngx-color-surface, oklch(0.98 0.005 250)));
+}
+.demo-gesture-target {
+  padding: 16px;
+  border: 2px dashed var(--cngx-color-border, var(--cngx-ex-border, oklch(0.88 0.005 250)));
+  border-radius: var(--cngx-radius-md, 6px);
+  text-align: center;
+  outline: none;
+}
+.demo-gesture-target--accent {
+  border-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
+  background: color-mix(in oklch, var(--cngx-color-surface, oklch(1 0 0)), var(--cngx-color-primary, oklch(0.66 0.19 50)) 6%);
+}
+.demo-gesture-target--danger {
+  border-color: var(--cngx-color-error, oklch(0.6 0.2 25));
+  background: color-mix(in oklch, var(--cngx-color-surface, oklch(1 0 0)), var(--cngx-color-error, oklch(0.6 0.2 25)) 8%);
+}
+.demo-gesture-card {
+  padding: 20px;
+  max-width: 280px;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, oklch(0.88 0.005 250)));
+  border-radius: var(--cngx-radius-md, 8px);
+  background: var(--cngx-color-surface, oklch(1 0 0));
+  text-align: left;
+  user-select: none;
+  transition: transform 100ms ease, box-shadow 100ms ease;
+}
+.demo-gesture-card[aria-pressed='true'],
+.demo-gesture-card.is-pressed {
+  box-shadow: none;
+}
+.demo-gesture-flash,
+button.chip.demo-gesture-flash {
+  background: color-mix(in oklch, var(--cngx-color-surface, oklch(1 0 0)), var(--cngx-color-primary, oklch(0.66 0.19 50)) 18%);
+  border-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
+}
+.demo-gesture-hint {
+  margin: 0 0 8px;
+  font-size: 0.875rem;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted, oklch(0.5 0.01 250)));
+}
+.demo-swipe-target {
+  padding: 2rem;
+  border: 2px dashed var(--cngx-color-border, var(--cngx-ex-border, oklch(0.88 0.005 250)));
+  border-radius: var(--cngx-radius-md, 8px);
+  background: var(--cngx-color-surface-variant, var(--cngx-color-surface, oklch(0.98 0.005 250)));
+  text-align: center;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  transition: transform 0.1s ease, border-color 0.1s ease;
+}
+.demo-swipe-target--active {
+  border-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
+}
+@media (prefers-reduced-motion: reduce) {
+  .demo-gesture-target,
+  .demo-swipe-target,
+  .demo-gesture-card {
+    transition: none;
+  }
+}

@@ -1,9 +1,9 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxClickOutside — enabled toggle',
-  subtitle: 'When <code>[enabled]="false"</code> the directive is inactive and no events are emitted.',
-  description: 'Emits an event when the user interacts outside the host element. Useful for closing dropdowns, tooltips, and overlays.',
+  title: 'CngxClickOutside: enabled toggle',
+  subtitle: 'When <code>[enabled]="false"</code> the directive stays mounted but stops emitting. Useful for pausing outside-dismiss while a child overlay handles its own pointer events.',
+  description: 'Toggle the enabled flag and watch outside-click detection start and stop without remounting the directive.',
   level: 'atom',
   audience: ['dev'],
   artifact: 'building-block',
@@ -18,13 +18,8 @@ export const STORY: DemoSpec = {
     cngxClickOutside
     [enabled]="enabled()"
     (clickOutside)="clickCount.update(n => n + 1)"
-    style="
-      padding: 16px;
-      border: 2px dashed var(--cngx-color-border, #aaa);
-      border-radius: 6px;
-      margin-top: 8px;
-      text-align: center;
-    "
+    class="demo-gesture-target"
+    style="margin-top: 8px;"
   >
     Click outside this box
   </div>
@@ -33,7 +28,7 @@ export const STORY: DemoSpec = {
     Outside clicks detected: <strong>{{ clickCount() }}</strong>
   </div>`,
   templateChrome: `<div class="button-row">
-    <button class="sort-btn" (click)="enabled.set(!enabled())">
+    <button type="button" class="sort-btn" (click)="enabled.set(!enabled())">
       {{ enabled() ? 'Disable' : 'Enable' }} outside detection
     </button>
     <span class="chip" [class.chip--active]="enabled()">{{ enabled() ? 'enabled' : 'disabled' }}</span>

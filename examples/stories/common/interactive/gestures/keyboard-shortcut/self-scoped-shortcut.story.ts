@@ -1,13 +1,16 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Self-Scoped Shortcut',
-  subtitle: 'Escape only fires when this box has focus. Click it first, then press Escape.',
-  description: 'Declarative keyboard shortcut handler. Supports mod (Meta/Ctrl), global/self scope, and input element filtering.',
+  title: 'CngxKeyboardShortcut: self-scoped shortcut',
+  subtitle: 'With <code>[shortcutScope]="\'self\'"</code> the listener binds to the host element instead of <code>document</code>. The target is a focusable region (<code>tabindex="0"</code>, <code>role="group"</code>, <code>aria-keyshortcuts</code>) so screen readers announce the combo and Escape only fires while focus is inside.',
+  description: 'Self-scoped shortcuts compose with focus management; only the focused widget reacts. Used by dialogs, comboboxes, and inline editors that need a local Escape handler without colliding with document-level shortcuts.',
   level: 'atom',
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
   focus: ['a11y-pattern', 'behavior'],
+  references: [
+    { label: 'WAI-ARIA aria-keyshortcuts', href: 'https://www.w3.org/TR/wai-aria-1.2/#aria-keyshortcuts' },
+  ],
   apiComponents: [
     'CngxKeyboardShortcut',
   ],
@@ -21,13 +24,19 @@ export const STORY: DemoSpec = {
     this.escapeCount.update(n => n + 1);
     this.lastShortcut.set('Escape (scoped)');
   }`,
-  template: `  <div [cngxKeyboardShortcut]="'escape'" [shortcutScope]="'self'"
-       (shortcutTriggered)="handleEscape()"
-       tabindex="0"
-       style="padding:16px;border:2px dashed var(--cngx-color-border,#ddd);border-radius:8px;
-              max-width:300px;cursor:pointer;outline:none"
-       [style.borderColor]="escapeCount() > 0 ? 'var(--interactive,#f5a623)' : ''">
-    <p style="margin:0;font-size:0.875rem">Click me, then press <kbd style="padding:2px 6px;background:var(--code-bg,#f5f5f5);border:1px solid var(--code-border,#ddd);border-radius:3px;font-size:0.8rem">Escape</kbd></p>
+  template: `  <div
+    [cngxKeyboardShortcut]="'escape'"
+    [shortcutScope]="'self'"
+    (shortcutTriggered)="handleEscape()"
+    role="group"
+    aria-label="Press Escape to dismiss"
+    aria-keyshortcuts="Escape"
+    tabindex="0"
+    class="demo-gesture-target"
+    [class.demo-gesture-target--accent]="escapeCount() > 0"
+    style="max-width:300px; cursor:pointer;"
+  >
+    <p style="margin:0;font-size:0.875rem">Focus me, then press <kbd>Escape</kbd></p>
   </div>`,
   templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row">

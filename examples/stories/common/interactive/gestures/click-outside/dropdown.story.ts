@@ -1,13 +1,16 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxClickOutside — Dropdown',
-  subtitle: '<code>[cngxClickOutside]</code> listens for <code>pointerdown</code> on the document and emits <code>(clickOutside)</code> when the event target is outside the host. Works for both mouse and touch via the Pointer Events API.',
-  description: 'Emits an event when the user interacts outside the host element. Useful for closing dropdowns, tooltips, and overlays.',
+  title: 'CngxClickOutside: dropdown',
+  subtitle: '<code>[cngxClickOutside]</code> listens for <code>pointerdown</code> on the document and emits <code>(clickOutside)</code> when the target is outside the host. The directive is sighted-only, so the dropdown also binds <code>(keydown.escape)</code> as the keyboard equivalent (WCAG 2.1.1).',
+  description: 'Outside-pointer dismissal plus a keyboard-equivalent Escape binding. The directive itself does not bind any keyboard handlers; consumers wire Escape alongside it.',
   level: 'atom',
-  audience: ['dev'],
+  audience: ['dev', 'a11y'],
   artifact: 'building-block',
-  focus: ['behavior'],
+  focus: ['behavior', 'a11y-pattern'],
+  references: [
+    { label: 'WCAG 2.1.1 Keyboard', href: 'https://www.w3.org/WAI/WCAG21/Understanding/keyboard.html' },
+  ],
   apiComponents: [
     'CngxClickOutside',
   ],
@@ -17,17 +20,15 @@ export const STORY: DemoSpec = {
     <div
       cngxClickOutside
       (clickOutside)="open.set(false)"
-      style="
-        display: inline-block;
-        padding: 12px 16px;
-        border: 1px solid var(--cngx-color-border, #ddd);
-        border-radius: 6px;
-        background: var(--cngx-surface-alt, #f8f9fa);
-        margin-top: 8px;
-      "
+      (keydown.escape)="open.set(false)"
+      role="dialog"
+      aria-label="Demo dropdown"
+      tabindex="-1"
+      class="demo-gesture-panel"
+      style="margin-top: 8px;"
     >
-      <p style="margin: 0 0 8px">I close when you click outside me.</p>
-      <button class="sort-btn" (click)="$event.stopPropagation()">Inner button (won't close)</button>
+      <p style="margin: 0 0 8px">I close on outside pointer or Escape.</p>
+      <button type="button" class="sort-btn">Inner button (does not close)</button>
     </div>
   }
 
@@ -35,7 +36,7 @@ export const STORY: DemoSpec = {
     Dropdown: <strong>{{ open() ? 'open' : 'closed' }}</strong>
   </div>`,
   templateChrome: `<div class="button-row">
-    <button class="sort-btn" (click)="open.set(!open())">
+    <button type="button" class="sort-btn" (click)="open.set(!open())">
       Toggle dropdown ({{ open() ? 'open' : 'closed' }})
     </button>
   </div>`,

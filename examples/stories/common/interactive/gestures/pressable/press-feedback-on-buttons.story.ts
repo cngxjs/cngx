@@ -1,13 +1,13 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Press Feedback on Buttons',
-  subtitle: 'Press and hold each button. The scale/opacity change is instant — applied via <code>.cngx-pressed</code> CSS, not inline styles.',
-  description: 'Instant press feedback via CSS class on pointerdown. 0ms latency — the class appears before click fires.',
+  title: 'CngxPressable: press feedback on buttons',
+  subtitle: 'Press and hold each button. The <code>.cngx-pressed</code> class is added on <code>pointerdown</code> with 0ms latency. The directive is presentation-only and does not write <code>aria-pressed</code>, because press feedback is not a toggle state.',
+  description: 'Press-feedback layer applied to native buttons. Each variant illustrates a different visual treatment driven by the pressed() signal.',
   level: 'atom',
-  audience: ['dev', 'a11y'],
+  audience: ['dev'],
   artifact: 'building-block',
-  focus: ['behavior', 'a11y-pattern'],
+  focus: ['behavior'],
   apiComponents: [
     'CngxPressable',
   ],
@@ -15,34 +15,49 @@ export const STORY: DemoSpec = {
     'import { CngxPressable } from \'@cngx/common/interactive\';',
   ],
   imports: ['CngxPressable'],
-  template: ``,
-  templateChrome: `<div class="button-row" style="gap:8px">
-    <button cngxPressable #p1="cngxPressable" class="chip"
-            style="transition:transform 80ms ease,opacity 80ms ease"
-            [style.transform]="p1.pressed() ? 'scale(0.95)' : ''"
-            [style.opacity]="p1.pressed() ? '0.8' : ''">
-      Scale Down
+  template: `  <div style="display:flex; flex-wrap:wrap; gap:8px">
+    <button
+      type="button"
+      cngxPressable
+      #p1="cngxPressable"
+      class="chip"
+      style="transition:transform 80ms ease, opacity 80ms ease"
+      [style.transform]="p1.pressed() ? 'scale(0.95)' : ''"
+      [style.opacity]="p1.pressed() ? '0.8' : ''"
+    >
+      Scale down
     </button>
 
-    <button cngxPressable #p2="cngxPressable" class="chip"
-            style="transition:background 80ms ease"
-            [style.background]="p2.pressed() ? 'var(--interactive-subtle-bg, #e3f2fd)' : ''">
-      Color Flash
+    <button
+      type="button"
+      cngxPressable
+      #p2="cngxPressable"
+      class="chip"
+      [class.demo-gesture-flash]="p2.pressed()"
+      style="transition:background 80ms ease, border-color 80ms ease"
+    >
+      Color flash
     </button>
 
-    <button cngxPressable [pressableReleaseDelay]="200" #p3="cngxPressable" class="chip"
-            style="transition:transform 80ms ease"
-            [style.transform]="p3.pressed() ? 'scale(0.92)' : ''">
-      200ms Delay
+    <button
+      type="button"
+      cngxPressable
+      [pressableReleaseDelay]="200"
+      #p3="cngxPressable"
+      class="chip"
+      style="transition:transform 80ms ease"
+      [style.transform]="p3.pressed() ? 'scale(0.92)' : ''"
+    >
+      200ms release delay
     </button>
-  </div>
-<div class="event-grid" style="margin-top:12px">
+  </div>`,
+  templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row">
-      <span class="event-label">Button 1</span>
+      <span class="event-label">Button 1 (scale)</span>
       <span class="event-value">{{ p1.pressed() ? 'pressed' : 'idle' }}</span>
     </div>
     <div class="event-row">
-      <span class="event-label">Button 2</span>
+      <span class="event-label">Button 2 (flash)</span>
       <span class="event-value">{{ p2.pressed() ? 'pressed' : 'idle' }}</span>
     </div>
     <div class="event-row">

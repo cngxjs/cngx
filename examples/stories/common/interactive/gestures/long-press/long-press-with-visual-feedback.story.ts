@@ -1,11 +1,11 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Long Press with Visual Feedback',
-  subtitle: 'Hold for 500ms (default). The holding state is shown via <code>longPressing()</code> signal. Moving >10px cancels.',
-  description: 'Detects long-press gestures via Pointer Events. Cancels on move to prevent accidental triggers during scrolling.',
+  title: 'CngxLongPress: visual feedback',
+  subtitle: 'Hold for 500ms (default). The <code>longPressing()</code> signal reflects whether the gesture is currently building. Moving the pointer more than 10px cancels the hold so accidental scrolls do not trigger.',
+  description: 'Demonstrates the longPressing signal as a hold indicator. The progress transition respects prefers-reduced-motion via the .demo-gesture-target helper.',
   level: 'atom',
-  audience: ['dev', 'a11y'],
+  audience: ['dev'],
   artifact: 'building-block',
   focus: ['behavior'],
   apiComponents: [
@@ -21,13 +21,14 @@ export const STORY: DemoSpec = {
     this.pressCount.update(n => n + 1);
     this.lastEvent.set(\`(\${Math.round(event.clientX)}, \${Math.round(event.clientY)})\`);
   }`,
-  template: `  <div cngxLongPress (longPressed)="handleLongPress($event)"
-       #lp="cngxLongPress"
-       style="display:inline-flex;align-items:center;justify-content:center;width:160px;height:80px;
-              border:2px solid var(--cngx-color-border,#ddd);border-radius:12px;cursor:pointer;user-select:none;
-              transition:border-color 150ms,background 150ms"
-       [style.borderColor]="lp.longPressing() ? 'var(--interactive,#f5a623)' : ''"
-       [style.background]="lp.longPressing() ? 'var(--interactive-subtle-bg,#fff8e1)' : ''">
+  template: `  <div
+    cngxLongPress
+    (longPressed)="handleLongPress($event)"
+    #lp="cngxLongPress"
+    class="demo-gesture-target"
+    [class.demo-gesture-target--accent]="lp.longPressing()"
+    style="display:inline-flex;align-items:center;justify-content:center;width:160px;height:80px;cursor:pointer;user-select:none;"
+  >
     {{ lp.longPressing() ? 'Hold...' : 'Long press me' }}
   </div>`,
   templateChrome: `<div class="event-grid" style="margin-top:12px">

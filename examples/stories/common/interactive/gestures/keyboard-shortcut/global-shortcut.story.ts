@@ -1,13 +1,16 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Global Shortcut',
-  subtitle: 'Press <code>Ctrl+K</code> (or <code>Cmd+K</code> on macOS) anywhere on the page. It will not fire while typing in the input field below — global scope filters input elements.',
-  description: 'Declarative keyboard shortcut handler. Supports mod (Meta/Ctrl), global/self scope, and input element filtering.',
+  title: 'CngxKeyboardShortcut: global shortcut',
+  subtitle: 'Press <kbd>Ctrl</kbd>+<kbd>K</kbd> (<kbd>Cmd</kbd>+<kbd>K</kbd> on macOS) anywhere on the page. The actuator carries <code>aria-keyshortcuts</code> so screen readers announce the combo. Global scope skips <code>INPUT</code>, <code>TEXTAREA</code>, <code>SELECT</code> and <code>contenteditable</code> targets so typing in the field below does not fire it.',
+  description: 'Global keyboard shortcut bound declaratively on a focusable actuator. Discoverability via aria-keyshortcuts is the consumer\'s responsibility; the directive only intercepts keydown.',
   level: 'atom',
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
   focus: ['a11y-pattern', 'behavior'],
+  references: [
+    { label: 'WAI-ARIA aria-keyshortcuts', href: 'https://www.w3.org/TR/wai-aria-1.2/#aria-keyshortcuts' },
+  ],
   apiComponents: [
     'CngxKeyboardShortcut',
   ],
@@ -21,14 +24,23 @@ export const STORY: DemoSpec = {
     this.globalCount.update(n => n + 1);
     this.lastShortcut.set('Ctrl+K / Cmd+K');
   }`,
-  template: `  <div [cngxKeyboardShortcut]="'mod+k'" (shortcutTriggered)="handleGlobal()">
-    <p style="font-size:0.875rem;margin:0 0 12px;color:var(--cngx-text-secondary,#666)">
-      Try pressing <kbd style="padding:2px 6px;background:var(--code-bg,#f5f5f5);border:1px solid var(--code-border,#ddd);border-radius:3px;font-size:0.8rem">Ctrl+K</kbd> now.
-      Then click into the input and try again — it won't fire.
-    </p>
-    <input placeholder="Type here — Ctrl+K won't fire"
-           style="padding:8px 12px;border:1px solid var(--cngx-color-border,#ddd);border-radius:6px;width:260px" />
-  </div>`,
+  template: `  <button
+    type="button"
+    [cngxKeyboardShortcut]="'mod+k'"
+    (shortcutTriggered)="handleGlobal()"
+    aria-keyshortcuts="Control+K Meta+K"
+    class="sort-btn"
+  >
+    Run command (<kbd>Ctrl</kbd>+<kbd>K</kbd>)
+  </button>
+
+  <p class="demo-gesture-hint" style="margin-top:12px">
+    Press <kbd>Ctrl</kbd>+<kbd>K</kbd> anywhere on the page. Then focus the input and try again: it stays silent because global scope filters form fields.
+  </p>
+  <label class="demo-gesture-hint" style="display:block">
+    <span style="display:block;margin-bottom:4px">Type here (shortcut suppressed)</span>
+    <input type="text" placeholder="Ctrl+K does not fire while focused" style="width:260px" />
+  </label>`,
   templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row">
       <span class="event-label">Global triggers</span>
