@@ -1,5 +1,3 @@
-import type { PopoverPositionTryFallback } from '@cngx/common/popover';
-
 /**
  * Recommended `position-try-fallbacks` chain for menu submenu popovers.
  *
@@ -21,9 +19,17 @@ import type { PopoverPositionTryFallback } from '@cngx/common/popover';
  * `CngxMenuItemSubmenu` emits a one-shot dev-mode warning when a
  * submenu popover ships without `positionTryFallbacks` — the const
  * is documented as the canonical opt-in.
+ *
+ * Typed as a string-literal tuple via `as const` rather than the
+ * `PopoverPositionTryFallback` union from `@cngx/common/popover` —
+ * the cross-entry-point import would reverse the existing
+ * `popover -> interactive` dependency direction and break ng-packagr.
+ * Consumers binding the const to `[positionTryFallbacks]` get
+ * compile-time type checking from the input's typed signature on the
+ * popover side.
  */
-export const CNGX_SUBMENU_TRY_FALLBACKS: readonly PopoverPositionTryFallback[] = Object.freeze([
+export const CNGX_SUBMENU_TRY_FALLBACKS = Object.freeze([
   'flip-inline',
   'flip-block',
   'flip-block flip-inline',
-]);
+] as const);
