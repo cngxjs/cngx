@@ -306,7 +306,7 @@ export class ResponsiveWidgetComponent {
 
 ## Styling
 
-Observers are behavioral only — no default styling. CSS custom properties are available for consumer use.
+Observers are behavioral only - no default styling. CSS custom properties are available for consumer use.
 
 ### Variables
 
@@ -359,10 +359,10 @@ export class ResponsiveTableComponent {}
 ## See Also
 
 - [compodocx API documentation](https://cngxjs.github.io/cngx/)
-- Demo: `dev-app/src/app/demos/common/observers-demo/`
+- Demo: `examples/stories/common/observers-demo/`
 - Tests: `projects/common/layout/observers/*.spec.ts`
-- `CngxScrollSpy` in `@cngx/common/layout` — Uses `CngxIntersectionObserver` internally
-- `CngxTruncate` in `@cngx/common/layout` — Uses `CngxResizeObserver` internally
+- `CngxScrollSpy` in `@cngx/common/layout` - Uses `CngxIntersectionObserver` internally
+- `CngxTruncate` in `@cngx/common/layout` - Uses `CngxResizeObserver` internally
 - [MDN: IntersectionObserver](https://developer.mozilla.org/en-US/docs/Web/API/Intersection_Observer_API)
 - [MDN: ResizeObserver](https://developer.mozilla.org/en-US/docs/Web/API/ResizeObserver)
 - [MDN: Window.matchMedia()](https://developer.mozilla.org/en-US/docs/Web/API/Window/matchMedia)

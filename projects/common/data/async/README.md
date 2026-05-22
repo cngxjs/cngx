@@ -1,4 +1,4 @@
-# CngxAsync — Async Structural Directive
+# CngxAsync - Async Structural Directive
 
 Template-level async state rendering with microsyntax. Renders different views based on `CngxAsyncState` status: skeleton (loading), content (success), empty, or error.
 
@@ -76,11 +76,11 @@ Structural directive that renders different template slots based on `CngxAsyncSt
 *cngxAsync="state; let data; skeleton: skelTpl; empty: emptyTpl; error: errTpl"
 ```
 
-- `state` — required, the `CngxAsyncState<T>`
-- `let data` — binds `$implicit` to template as `data` variable
-- `skeleton: tpl` — (optional) template shown during first load
-- `empty: tpl` — (optional) template shown when data empty after success
-- `error: tpl` — (optional) template shown on error (first load only)
+- `state` - required, the `CngxAsyncState<T>`
+- `let data` - binds `$implicit` to template as `data` variable
+- `skeleton: tpl` - (optional) template shown during first load
+- `empty: tpl` - (optional) template shown when data empty after success
+- `error: tpl` - (optional) template shown on error (first load only)
 
 ## Rendering Logic
 
@@ -135,7 +135,7 @@ interface CngxAsyncContext<T> {
 
 ## Minimal Usage (Content Only)
 
-No optional templates — skeleton and error hidden:
+No optional templates - skeleton and error hidden:
 
 ```html
 <ul *cngxAsync="residents; let data">
@@ -265,7 +265,7 @@ Error template receives the error as context:
 </ng-template>
 ```
 
-Error template only shows on error during first load. If error occurs after data loads (refresh error), the error template is not shown — data stays visible. Error should be communicated via an alert or toast separately in that case.
+Error template only shows on error during first load. If error occurs after data loads (refresh error), the error template is not shown - data stays visible. Error should be communicated via an alert or toast separately in that case.
 
 ```typescript
 // Show error alert for refresh errors
@@ -295,7 +295,7 @@ The directive includes `ngTemplateContextGuard` for template type inference:
 
 ## See Also
 
-- [Async State System](../async-state/README.md) — `CngxAsyncState<T>`, factories, operators
-- [CngxAsyncContainer](../../ui/feedback/README.md) — component alternative with named slots
-- [resolveAsyncView](../async-state/README.md#view-resolution) — view state machine
+- [Async State System](../async-state/README.md) - `CngxAsyncState<T>`, factories, operators
+- [CngxAsyncContainer](../../ui/feedback/README.md) - component alternative with named slots
+- [resolveAsyncView](../async-state/README.md#view-resolution) - view state machine
 - Compodoc: Full API reference at `/docs`

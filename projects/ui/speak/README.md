@@ -34,18 +34,18 @@ export class ExampleComponent {
 
 `CngxSpeakButton` is a ready-made speaker button that connects to a `CngxSpeak` directive via an explicit `[speakRef]` input. It provides:
 
-- **Speaker and stop icons** — Built-in SVGs that toggle based on speaking state
-- **Accessible labels** — ARIA labels that reflect the current state ("Read aloud" / "Stop speaking")
-- **Cognitive accessibility** — Part of CngxSpeak, targeting dyslexia and reading ease
-- **Full theming control** — CSS custom properties for styling, Material theme SCSS integration
-- **No ancestor injection** — Explicit `[speakRef]` wiring prevents hidden dependencies
+- **Speaker and stop icons** - Built-in SVGs that toggle based on speaking state
+- **Accessible labels** - ARIA labels that reflect the current state ("Read aloud" / "Stop speaking")
+- **Cognitive accessibility** - Part of CngxSpeak, targeting dyslexia and reading ease
+- **Full theming control** - CSS custom properties for styling, Material theme SCSS integration
+- **No ancestor injection** - Explicit `[speakRef]` wiring prevents hidden dependencies
 
 ## Accessibility
 
 `CngxSpeakButton` is designed for cognitive accessibility:
 
 - **ARIA labels:** Button label dynamically changes between "Read aloud" (idle) and "Stop speaking" (active).
-- **Icon semantics:** SVG icons are marked `aria-hidden="true"` — the text label carries the meaning.
+- **Icon semantics:** SVG icons are marked `aria-hidden="true"` - the text label carries the meaning.
 - **CngxSpeak integration:** The underlying `CngxSpeak` directive handles the speech synthesis API, managing pause/resume, focus restoration, and `prefers-reduced-motion` respect.
 - **Cognitive focus:** Targets users with dyslexia, ADHD, and reading difficulties by providing auditory reinforcement alongside visual text.
 
@@ -53,11 +53,11 @@ export class ExampleComponent {
 
 `CngxSpeakButton` is a simple wrapper around:
 
-- **CngxSpeak directive** — Provides the `speaking()` signal and `toggle()` method
-- **Built-in SVGs** — Speaker icon (idle state) and stop icon (speaking state)
-- **CSS custom properties** — Full theming support
+- **CngxSpeak directive** - Provides the `speaking()` signal and `toggle()` method
+- **Built-in SVGs** - Speaker icon (idle state) and stop icon (speaking state)
+- **CSS custom properties** - Full theming support
 
-No host directives or internal atoms — purely a UI shell for the speech synthesis API.
+No host directives or internal atoms - purely a UI shell for the speech synthesis API.
 
 ## Material Theme
 
@@ -85,9 +85,9 @@ The theme mixin provides:
 
 CngxSpeak / CngxSpeakButton are part of cngx's commitment to cognitive accessibility. Rather than treating a11y as an audit checkbox, these components embed accessibility into the architecture:
 
-- **Dyslexia support** — Auditory reinforcement helps users with dyslexia parse text more effectively
-- **ADHD support** — Multi-modal input (visual + audio) aids concentration and retention
-- **Aging users** — Larger, clear button with obvious visual feedback
-- **Non-native speakers** — Audio pronunciation aids comprehension
+- **Dyslexia support** - Auditory reinforcement helps users with dyslexia parse text more effectively
+- **ADHD support** - Multi-modal input (visual + audio) aids concentration and retention
+- **Aging users** - Larger, clear button with obvious visual feedback
+- **Non-native speakers** - Audio pronunciation aids comprehension
 
 The philosophy is: communication is architecture, not a side effect. Every component owes users clarity at every point in time.

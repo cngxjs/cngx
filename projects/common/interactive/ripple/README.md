@@ -1,6 +1,6 @@
 # Ripple and Pressable
 
-Touch and click feedback atoms — no Material dependency.
+Touch and click feedback atoms - no Material dependency.
 
 ## Import
 
@@ -41,11 +41,11 @@ export class ButtonComponent {}
 
 ## Accessibility
 
-Ripple and Pressable are low-level feedback atoms — no ARIA management required:
+Ripple and Pressable are low-level feedback atoms - no ARIA management required:
 
 - **ARIA roles:** None (visual feedback only, not semantic)
 - **Keyboard interaction:**
-  - Native button behavior — no intervention
+  - Native button behavior - no intervention
   - Ripple fires on both pointer and keyboard activation
 - **Screen reader:**
   - No announcements (purely visual feedback)
@@ -149,7 +149,7 @@ Both directives respect `prefers-reduced-motion`:
 - CngxRipple: Skips animation entirely if reduced motion is preferred
 - CngxPressable: Still applies the class (instant visual feedback is usually okay)
 
-No configuration needed — the directives detect motion preference automatically.
+No configuration needed - the directives detect motion preference automatically.
 
 ## Examples
 
@@ -226,28 +226,6 @@ No configuration needed — the directives detect motion preference automaticall
 </style>
 ```
 
-## Implementation Notes
-
-### Ripple Wave Element
-
-The ripple creates a temporary `<span class="cngx-ripple__wave">` as a child of the host element. The directive sets:
-
-- Position via `--cngx-ripple-x/y` (center coordinates)
-- Size via `--cngx-ripple-size` (diameter in px)
-- Color via `--cngx-ripple-color`
-
-The element is removed after the `animationend` event (with a 1s fallback timeout).
-
-### Press Feedback Timing
-
-CngxPressable uses:
-
-1. **pointerdown** → Set `cngx-pressed` immediately (0ms latency)
-2. **pointerup** → Schedule removal with `releaseDelay` (prevents flash on quick taps)
-3. **pointercancel/leave** → Immediate removal (no delay)
-
-The delay is configurable per element via `[pressableReleaseDelay]`.
-
 ## Material Theme
 
 A Material theme mixin is available in `@cngx/themes/material/ripple-theme.scss`:
@@ -267,6 +245,6 @@ The `theme()` mixin sets `--cngx-ripple-color` from the Material palette (`on-su
 ## See Also
 
 - [compodocx API documentation](https://cngxjs.github.io/cngx/)
-- `_ripple.scss` — Default ripple animation styles
-- Demo: `dev-app/src/app/demos/common/ripple-demo/`
+- `_ripple.scss` - Default ripple animation styles
+- Demo: `examples/stories/common/ripple-demo/`
 - Tests: `projects/common/interactive/ripple/ripple.directive.spec.ts`

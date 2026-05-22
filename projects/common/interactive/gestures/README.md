@@ -315,34 +315,9 @@ isSelected(id: string) {
 </div>
 ```
 
-## Implementation Notes
-
-### Long Press Gesture
-
-1. **pointerdown** on host → Set `longPressing` true, start timer
-2. **Timer** (threshold ms) → Emit `longPressed` event, set `longPressing` false
-3. **Cancel conditions:** pointerup, pointercancel, pointerleave, or movement > moveThreshold
-
-Movement detection is calculated using Euclidean distance to allow natural hand drift while preventing accidental triggers during scrolling.
-
-### Swipe Gesture
-
-1. **pointerdown** on host → Start tracking position
-2. **pointermove** on document → Calculate delta in specified direction, update `swipeProgress`
-3. **pointerup** on document → If delta >= threshold, emit `swiped`; reset progress
-
-Directional deltas:
-
-- **left**: startX - endX
-- **right**: endX - startX
-- **up**: startY - endY
-- **down**: endY - startY
-
-Progress is clamped to 0–1: `min(1, delta / threshold)`
-
 ## See Also
 
-- [compodoc API documentation](https://cngxjs.github.io/cngx/)
-- [CngxKeyboardShortcut](../keyboard/) — Pair with gestures for keyboard alternatives
-- Demo: `dev-app/src/app/demos/common/gestures-demo/`
+- [API on compodocx](https://cngxjs.github.io/cngx/)
+- [CngxKeyboardShortcut](../keyboard/) - Pair with gestures for keyboard alternatives
+- Demo: `examples/stories/common/gestures-demo/`
 - Tests: `projects/common/interactive/gestures/long-press.directive.spec.ts`

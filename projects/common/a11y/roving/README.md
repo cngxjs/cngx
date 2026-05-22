@@ -90,10 +90,10 @@ Marker directive for focusable items within a `[cngxRovingTabindex]` container. 
 Roving tabindex is a core WAI-ARIA pattern for composite widgets:
 
 - **Single tab stop**: Only the active item can be reached via Tab (WCAG 2.1 SC 2.1.1)
-- **Keyboard navigation**: Arrow keys provide intuitive item selection (WCAG 2.1 SC 2.1.1)
+- **Keyboard navigation**: Arrow keys move the active item (WCAG 2.1 SC 2.1.1)
 - **Disabled items**: Automatically skipped during navigation (WCAG 2.1 SC 2.4.3)
 - **Semantic HTML**: Works with any focusable element (`<button>`, `<a>`, `[tabindex]`)
-- **ARIA roles**: Consumer applies roles (`role="toolbar"`, `role="menubar"`, etc.) — roving tabindex is role-agnostic
+- **ARIA roles**: Consumer applies roles (`role="toolbar"`, `role="menubar"`, etc.) - roving tabindex is role-agnostic
 
 ### ARIA Requirements
 
@@ -176,7 +176,7 @@ Roving tabindex manages `tabindex` attributes only; styling is the consumer's re
 
 ## See Also
 
-- [CngxCardGrid](../../card/README.md) — Automatic roving tabindex for card layouts
-- [CngxAriaExpanded](../aria/README.md) — Pair with roving tabindex for disclosure patterns
+- [CngxCardGrid](../../card/README.md) - Automatic roving tabindex for card layouts
+- [CngxAriaExpanded](../aria/README.md) - Pair with roving tabindex for disclosure patterns
 - Compodoc API documentation: `npm run docs:serve`
 - [WAI-ARIA: Roving Tabindex](https://www.w3.org/WAI/ARIA/apg/patterns/roving_tabindex/)

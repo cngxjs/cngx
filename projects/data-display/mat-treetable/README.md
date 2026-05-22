@@ -92,9 +92,9 @@ Same as CDK variant, plus Material token overrides:
 
 All template directives from the CDK variant work identically:
 
-- **`[cngxCell]="'columnName'`** — Custom cell template
-- **`[cngxHeader]="'columnName'`** — Custom header template
-- **`cngxEmpty`** — Empty state template
+- **`[cngxCell]="'columnName'`** - Custom cell template
+- **`[cngxHeader]="'columnName'`** - Custom header template
+- **`cngxEmpty`** - Empty state template
 
 ```html
 <cngx-mat-treetable [tree]="data()">
@@ -116,10 +116,10 @@ All template directives from the CDK variant work identically:
 
 Identical to CDK variant, using Material-provided accessibility features:
 
-- **Keyboard navigation** — Arrow keys, Space, Enter, Home, End
-- **Screen reader announcements** — Native Material table ARIA, expand state via `aria-expanded`, selection via `aria-selected`
-- **Focus management** — Automatic focus ring styling (Material focus ring)
-- **Checkboxes** — Native `<mat-checkbox>` with full accessibility
+- **Keyboard navigation** - Arrow keys, Space, Enter, Home, End
+- **Screen reader announcements** - Native Material table ARIA, expand state via `aria-expanded`, selection via `aria-selected`
+- **Focus management** - Automatic focus ring styling (Material focus ring)
+- **Checkboxes** - Native `<mat-checkbox>` with full accessibility
 
 ## Composition
 
@@ -279,10 +279,10 @@ readonly employees = computed(() => this.state().data() ?? []);
 
 The library ships `mat-treetable-theme.scss` which defines:
 
-1. **Color tokens** — Mapsto Material 3 color palette (surface, outline, primary, etc.)
-2. **Typography** — Uses Material font scale
-3. **Density mixins** — Responsive spacing based on Material density system
-4. **Focus ring** — Material focus ring implementation
+1. **Color tokens** - Mapsto Material 3 color palette (surface, outline, primary, etc.)
+2. **Typography** - Uses Material font scale
+3. **Density mixins** - Responsive spacing based on Material density system
+4. **Focus ring** - Material focus ring implementation
 
 Apply the theme in your global styles:
 
@@ -323,7 +323,7 @@ Choose **Material** for:
 
 ## See Also
 
-- [compodoc API documentation](https://cngxjs.dev/docs/modules/data_display_mat_treetable.html)
+- [API on compodocx](https://cngxjs.github.io/cngx/)
 - CDK variant: `@cngx/data-display/treetable`
-- Demo: `dev-app/src/app/demos/data-display/mat-treetable-demo/`
+- Demo: `examples/stories/data-display/mat-treetable-demo/`
 - Tests: `projects/data-display/mat-treetable/` (spec files)

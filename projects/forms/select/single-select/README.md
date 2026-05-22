@@ -1,6 +1,6 @@
 # CngxSelect
 
-Native-feeling single-select dropdown — the closest replacement for `<select>` with the cngx Signal-first toolkit, full ARIA combobox semantics, async-state support, and a pluggable commit lifecycle.
+Native-feeling single-select dropdown - the closest replacement for `<select>` with the cngx Signal-first toolkit, full ARIA combobox semantics, async-state support, and a pluggable commit lifecycle.
 
 ## When to use
 
@@ -39,39 +39,6 @@ export class ColorPicker {
   ];
 }
 ```
-
-## Inputs (cheat-sheet)
-
-| Input                         | Type                                          | Purpose                                                       |
-| ----------------------------- | --------------------------------------------- | ------------------------------------------------------------- |
-| `[(value)]`                   | `model<T \| undefined>`                       | Two-way bound primary value                                   |
-| `[label]`                     | `string`                                      | Field label (also feeds `aria-label` if `[aria-label]` unset) |
-| `[options]`                   | `CngxSelectOptionsInput<T>`                   | Options or option-groups array                                |
-| `[state]`                     | `CngxAsyncState<CngxSelectOptionsInput<T>>`   | Drives async panel views                                      |
-| `[loading]`                   | `boolean`                                     | Force the loading view (without `[state]`)                    |
-| `[disabled]`                  | `boolean`                                     | Disable trigger + clear button                                |
-| `[required]`                  | `boolean`                                     | Adds `aria-required`                                          |
-| `[clearable]`                 | `boolean`                                     | Show ✕ clear button when value is set                         |
-| `[compareWith]`               | `(a, b) => boolean`                           | Custom equality (default: `Object.is`)                        |
-| `[panelWidth]`                | `'trigger' \| number \| null`                 | Panel width strategy                                          |
-| `[panelClass]`                | `string \| string[]`                          | Extra panel classes                                           |
-| `[autofocus]`                 | `boolean`                                     | One-shot focus on mount                                       |
-| `[commitAction]`              | `CngxSelectCommitAction<T>`                   | Async write before committing the value                       |
-| `[commitMode]`                | `'optimistic' \| 'pessimistic'`               | Commit UX policy                                              |
-| `[commitErrorDisplay]`        | `'banner' \| 'inline' \| 'none'`              | How to surface commit failures                                |
-| `[selectionIndicatorVariant]` | `'auto' \| 'checkbox' \| 'checkmark' \| null` | Override per-instance                                         |
-
-## Outputs
-
-| Output              | Payload                  | Fires on                                        |
-| ------------------- | ------------------------ | ----------------------------------------------- |
-| `(selectionChange)` | `CngxSelectChange<T>`    | User-driven selection (not programmatic writes) |
-| `(optionSelected)`  | `CngxSelectOptionDef<T>` | The picked option, with full meta               |
-| `(openedChange)`    | `boolean`                | Every panel open/close                          |
-| `(opened)`          | `void`                   | Panel opened                                    |
-| `(closed)`          | `void`                   | Panel closed                                    |
-| `(retry)`           | `void`                   | Consumer clicked the retry button               |
-| `(commitError)`     | `unknown`                | `commitAction` rejected                         |
 
 ## Forms integration
 
@@ -192,25 +159,6 @@ Drop a `<ng-template>` with one of these directives inside `<cngx-select>` to ov
 
 Full list with context shapes: [`ARCHITECTURE.md` § Template slot system](../../../ARCHITECTURE.md#template-slot-system).
 
-## Theming
-
-CSS variables consumed by the trigger skin (set on the host or any ancestor). Every value falls back to a sensible default if unset.
-
-| Variable                         | Default                                     |
-| -------------------------------- | ------------------------------------------- |
-| `--cngx-select-min-width`        | `16ch`                                      |
-| `--cngx-select-trigger-bg`       | `var(--cngx-surface, #fff)`                 |
-| `--cngx-select-trigger-border`   | `1px solid var(--cngx-border, #d0d7de)`     |
-| `--cngx-select-trigger-radius`   | `var(--cngx-radius, 6px)`                   |
-| `--cngx-select-trigger-padding`  | `0.5rem 0.75rem`                            |
-| `--cngx-select-trigger-height`   | `2.25rem`                                   |
-| `--cngx-select-focus-ring`       | `var(--cngx-focus-ring, 0 0 0 2px #1976d2)` |
-| `--cngx-select-disabled-opacity` | `0.55`                                      |
-| `--cngx-select-clear-color`      | `currentColor`                              |
-| `--cngx-select-caret-color`      | `currentColor`                              |
-
-Family-shared structural variables (panel, skeleton, shimmer, refresh-bar) live in `select-base.css` — see the source for the full list.
-
 ## Keyboard
 
 | Key                                   | Behaviour                                                                      |
@@ -218,7 +166,7 @@ Family-shared structural variables (panel, skeleton, shimmer, refresh-bar) live 
 | `Space` / `Enter` (trigger)           | Toggle panel open                                                              |
 | `Arrow Up` / `Down` (trigger)         | Open + move highlight                                                          |
 | `Page Up` / `Page Down` (trigger)     | Open + jump ±10 (clamped, disabled-aware)                                      |
-| Printable key (trigger, panel closed) | Native-`<select>`-style typeahead pick — opt-in via `withTypeaheadWhileClosed` |
+| Printable key (trigger, panel closed) | Native-`<select>`-style typeahead pick - opt-in via `withTypeaheadWhileClosed` |
 | `Escape`                              | Close panel                                                                    |
 
 ## Configuration

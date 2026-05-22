@@ -1,6 +1,6 @@
 # Copy Text and Copy Block
 
-Clipboard copy atoms — forms-free versions for @cngx/common.
+Clipboard copy atoms - forms-free versions for @cngx/common.
 
 ## Import
 
@@ -128,7 +128,7 @@ export class TokenComponent {
 ```typescript
 <button [cngxCopyText]="text" #cp="cngxCopyText">
   @if (cp.failed()) {
-    Copy failed — please try again
+    Copy failed - please try again
   } @else {
     {{ cp.copied() ? 'Copied!' : 'Copy' }}
   }
@@ -181,6 +181,6 @@ CngxCopyText automatically uses `document.execCommand('copy')` fallback when the
 
 ## See Also
 
-- [compodoc API documentation](https://cngxjs.github.io/cngx/)
-- Demo: `dev-app/src/app/demos/common/copy-demo/`
+- [API on compodocx](https://cngxjs.github.io/cngx/)
+- Demo: `examples/stories/common/copy-demo/`
 - Tests: `projects/common/interactive/copy/copy-text.directive.spec.ts`

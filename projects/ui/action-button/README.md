@@ -26,13 +26,13 @@ export class ExampleComponent {
 
 ## Overview
 
-`CngxActionButton` is a molecule wrapping the `CngxAsyncClick` directive with built-in state communication, template slots, and optional toast integration. It uses `display: contents` — the host produces no DOM box; the inner `<button>` carries the directive directly.
+`CngxActionButton` is a molecule wrapping the `CngxAsyncClick` directive with built-in state communication, template slots, and optional toast integration. It uses `display: contents` - the host produces no DOM box; the inner `<button>` carries the directive directly.
 
 The component supports three visual feedback pathways:
 
-1. **Fallback labels** — `pendingLabel`, `succeededLabel`, `failedLabel` strings
-2. **Template slots** — `cngxPending`, `cngxSucceeded`, `cngxFailed` directives
-3. **Automatic state prop** — bind `btn.state` to any state consumer
+1. **Fallback labels** - `pendingLabel`, `succeededLabel`, `failedLabel` strings
+2. **Template slots** - `cngxPending`, `cngxSucceeded`, `cngxFailed` directives
+3. **Automatic state prop** - bind `btn.state` to any state consumer
 
 A screen-reader-only `aria-live` region announces state transitions without visual noise.
 
@@ -40,12 +40,12 @@ A screen-reader-only `aria-live` region announces state transitions without visu
 
 `CngxActionButton` is fully accessible out of the box:
 
-- **ARIA roles:** The inner `<button>` carries all ARIA attributes from `CngxAsyncClick` — `aria-busy` when pending, no explicit role (semantic `<button>`).
+- **ARIA roles:** The inner `<button>` carries all ARIA attributes from `CngxAsyncClick` - `aria-busy` when pending, no explicit role (semantic `<button>`).
 - **Keyboard interaction:**
-  - `Enter` / `Space` — Activate the action
-  - `Escape` — No special behavior (standard button)
+  - `Enter` / `Space` - Activate the action
+  - `Escape` - No special behavior (standard button)
 - **Screen reader:** `aria-live="polite"` region announces state transitions: "Action succeeded", "Action failed", and the optional custom announcements via `succeededAnnouncement` / `failedAnnouncement`.
-- **Focus management:** Focus remains on the button throughout the lifecycle — no focus trap or restoration.
+- **Focus management:** Focus remains on the button throughout the lifecycle - no focus trap or restoration.
 
 ## Composition
 

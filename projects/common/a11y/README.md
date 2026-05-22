@@ -1,10 +1,10 @@
 # @cngx/common/a11y
 
-Accessibility behavior directives — focus management, keyboard navigation, live regions, and motion detection.
+Accessibility behavior directives - focus management, keyboard navigation, live regions, and motion detection.
 
 ## CngxRovingTabindex
 
-Implements the [WAI-ARIA roving tabindex](https://www.w3.org/WAI/ARIA/apg/practices/keyboard-interface/#kbd_roving_tabindex) pattern for composite widgets. Only the active item has `tabindex="0"` — all others get `tabindex="-1"`. Arrow keys move focus within the group; Tab leaves it entirely.
+Implements the [WAI-ARIA roving tabindex](https://www.w3.org/WAI/ARIA/apg/practices/keyboard-interface/#kbd_roving_tabindex) pattern for composite widgets. Only the active item has `tabindex="0"` - all others get `tabindex="-1"`. Arrow keys move focus within the group; Tab leaves it entirely.
 
 ```html
 <div cngxRovingTabindex orientation="horizontal" [loop]="true" #rv="cngxRovingTabindex">
@@ -56,7 +56,7 @@ Captures the previously focused element on init and restores focus when the host
 
 ## CngxAutofocus
 
-Reactive autofocus for dynamically inserted elements. The native `autofocus` attribute only works on initial page load — this directive handles dialogs, panels, steppers, and conditional views.
+Reactive autofocus for dynamically inserted elements. The native `autofocus` attribute only works on initial page load - this directive handles dialogs, panels, steppers, and conditional views.
 
 ```html
 @if (showSearch()) {
@@ -66,9 +66,9 @@ Reactive autofocus for dynamically inserted elements. The native `autofocus` att
 
 ### Notes
 
-- Uses `afterNextRender` for initial focus — never synchronous.
+- Uses `afterNextRender` for initial focus - never synchronous.
 - `delay > 0` uses `setTimeout`; `delay === 0` uses `afterNextRender`.
-- Tracks `when` transitions via `effect()` — only re-focuses on `false → true`.
+- Tracks `when` transitions via `effect()` - only re-focuses on `false → true`.
 
 ---
 

@@ -89,7 +89,7 @@ Tracks which section is currently most visible in the viewport using `Intersecti
 
 ## CngxScrollLock
 
-Prevents scrolling on the document body by setting `overflow: hidden` and `scrollbar-gutter: stable` on `<html>`. Multiple instances are ref-counted — original styles are only restored when the last lock is released.
+Prevents scrolling on the document body by setting `overflow: hidden` and `scrollbar-gutter: stable` on `<html>`. Multiple instances are ref-counted - original styles are only restored when the last lock is released.
 
 ### Behavior
 
@@ -189,8 +189,8 @@ The scroll system is fully accessible out of the box:
 
 - **ARIA roles:** Scroll utilities do not add roles (no semantic DOM changes). Content structure remains natural.
 - **Keyboard interaction:**
-  - `Escape` — Closes any modals with `CngxScrollLock` active
-  - Scroll wheel / arrow keys — Native scroll behavior preserved (only `overflow` is hidden, not prevented)
+  - `Escape` - Closes any modals with `CngxScrollLock` active
+  - Scroll wheel / arrow keys - Native scroll behavior preserved (only `overflow` is hidden, not prevented)
 - **Screen reader:** `aria-busy="true"` on infinite scroll sentinel when loading. Sticky header state available via `isSticky()` signal for dynamic aria-labels.
 - **Focus management:** Scroll lock does not trap focus; it only prevents viewport scrolling. Use with focus-trapping directives (`CngxFocusTrap`) for modal behavior.
 
@@ -266,7 +266,7 @@ Scroll utilities are mostly unstyled (behavior-only). CSS custom properties are 
 
 ### Variables
 
-- `--cngx-sticky-z-index` (default `1`) — Z-index for sticky headers.
+- `--cngx-sticky-z-index` (default `1`) - Z-index for sticky headers.
 
 ### Example CSS
 
@@ -295,7 +295,7 @@ div[cngxInfiniteScroll] {
 ## See Also
 
 - [compodocx API documentation](https://cngxjs.github.io/cngx/)
-- Demo: `dev-app/src/app/demos/common/scroll-demo/`
+- Demo: `examples/stories/common/scroll-demo/`
 - Tests: `projects/common/layout/scroll/*.spec.ts`
-- `CngxIntersectionObserver` in `@cngx/common/layout` — Low-level observer primitive
-- `CngxResizeObserver` in `@cngx/common/layout` — Element size tracking
+- `CngxIntersectionObserver` in `@cngx/common/layout` - Low-level observer primitive
+- `CngxResizeObserver` in `@cngx/common/layout` - Element size tracking

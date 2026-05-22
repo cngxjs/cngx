@@ -1,12 +1,12 @@
 # @cngx/common/stepper
 
-Level-2 directive-only logic for stepper / wizard flows. Zero `@Component`, zero `.html`, zero `.css` — those live in `@cngx/ui/stepper` (CNGX-standard skin) and `@cngx/ui/mat-stepper` (Material twin).
+Level-2 directive-only logic for stepper / wizard flows. Zero `@Component`, zero `.html`, zero `.css` - those live in `@cngx/ui/stepper` (CNGX-standard skin) and `@cngx/ui/mat-stepper` (Material twin).
 
 ## What it does
 
 Ships the **brain** that both stepper organisms compose: the presenter directive that owns active-step state, linear/non-linear navigation, async commit lifecycle, and a register/unregister contract for content-projected step atoms. Plus a router-sync directive for URL deep-linking, a config cascade for app-wide defaults, an i18n bundle, and a commit-handler factory for swappable async-commit semantics.
 
-The presenter is a pure-derivation host directive — every visible piece of state (step tree, flat projection, active id, orientation, linear flag) is a `Signal<T>` derived from inputs and the registered atom set. Group nodes nest; flat-projection indices are computed once via `flattenStepTree` and cached.
+The presenter is a pure-derivation host directive - every visible piece of state (step tree, flat projection, active id, orientation, linear flag) is a `Signal<T>` derived from inputs and the registered atom set. Group nodes nest; flat-projection indices are computed once via `flattenStepTree` and cached.
 
 ## Exports
 
@@ -14,9 +14,9 @@ The presenter is a pure-derivation host directive — every visible piece of sta
 
 | Export | Selector | Description |
 |-|-|-|
-| `CngxStepperPresenter` | `[cngxStepper]` | The brain. Owns active step, linear, orientation, commit lifecycle. Composed via `hostDirectives` by `<cngx-stepper>` and `<cngx-mat-stepper>` — never instantiated directly by consumers. |
-| `CngxStep` | `[cngxStep]` | Step atom — registers itself with the enclosing presenter (or `CngxStepGroup`) at construction time, unregisters on destroy. Carries `id`, `label`, `disabled`, `state`, optional `errorAggregator`. |
-| `CngxStepGroup` | `[cngxStepGroup]` | Group atom — nests child `cngxStep`s under a labelled cluster. Aggregates child status (`success` / `error` / `pending`) for the strip's group-header rendering. |
+| `CngxStepperPresenter` | `[cngxStepper]` | The brain. Owns active step, linear, orientation, commit lifecycle. Composed via `hostDirectives` by `<cngx-stepper>` and `<cngx-mat-stepper>` - never instantiated directly by consumers. |
+| `CngxStep` | `[cngxStep]` | Step atom - registers itself with the enclosing presenter (or `CngxStepGroup`) at construction time, unregisters on destroy. Carries `id`, `label`, `disabled`, `state`, optional `errorAggregator`. |
+| `CngxStepGroup` | `[cngxStepGroup]` | Group atom - nests child `cngxStep`s under a labelled cluster. Aggregates child status (`success` / `error` / `pending`) for the strip's group-header rendering. |
 | `CngxStepLabel` | `ng-template[cngxStepLabel]` | Per-step label override (replaces the default `node.label()` text rendering). |
 | `CngxStepContent` | `ng-template[cngxStepContent]` | Per-step panel body. The cngx-side organisms render this template inside the step's panel region. |
 | `CngxStepperRouterSync` | `[cngxStepperRouterSync]` | Bidirectional URL deep-linking. Toggleable between `'fragment'` (default, `#step=<id>`) and `'queryParam'` (`?step=<id>`) via the `[mode]` Input or the `withStepperRouterSync` config feature. Optional `(syncError)` Output for router-rejection observers. |
@@ -97,6 +97,6 @@ class WizardCmp {
 
 ## See also
 
-- `@cngx/ui/stepper` — `<cngx-stepper>` CNGX-standard organism
-- `@cngx/ui/mat-stepper` — `<cngx-mat-stepper>` Material-twin organism
-- `.internal/architektur/stepper-accepted-debt.md` — tracked architectural debt (single §1: native `<mat-step>` adoption is structurally impossible via Angular content projection)
+- `@cngx/ui/stepper` - `<cngx-stepper>` CNGX-standard organism
+- `@cngx/ui/mat-stepper` - `<cngx-mat-stepper>` Material-twin organism
+- `.internal/architektur/stepper-accepted-debt.md` - tracked architectural debt (single §1: native `<mat-step>` adoption is structurally impossible via Angular content projection)

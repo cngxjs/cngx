@@ -1,6 +1,6 @@
 # CngxActionMultiSelect
 
-Multi-value variant of [`CngxActionSelect`](../action-select/README.md) — the same inline `*cngxSelectAction` workflow, but with a chip strip + inline `<input>` like [`CngxCombobox`](../combobox/README.md).
+Multi-value variant of [`CngxActionSelect`](../action-select/README.md) - the same inline `*cngxSelectAction` workflow, but with a chip strip + inline `<input>` like [`CngxCombobox`](../combobox/README.md).
 Pick multiple values, create new ones inline, all without leaving the panel.
 
 ## When to use
@@ -65,32 +65,13 @@ export class TagMultiPicker {
 }
 ```
 
-## Inputs (cheat-sheet)
-
-Most inputs mirror [`CngxCombobox`](../combobox/README.md#inputs-cheat-sheet) plus the action-host inputs from [`CngxActionSelect`](../action-select/README.md#inputs-cheat-sheet):
-
-| Input                 | Type                                                 | Purpose                                                |
-| --------------------- | ---------------------------------------------------- | ------------------------------------------------------ |
-| `[(values)]`          | `model<T[]>`                                         | Two-way bound array value                              |
-| `[quickCreateAction]` | `(term: string) => Observable<T> \| Promise<T> \| T` | Async "create + select" handler                        |
-| `[actionPosition]`    | `'top' \| 'bottom' \| 'both' \| 'none'`              | Where in the panel-shell stack the action slot renders |
-| `[localItems]`        | `Signal<readonly CngxSelectOptionDef<T>[]>`          | Persistent quick-create buffer                         |
-
-## Outputs
-
-All [`CngxCombobox` outputs](../combobox/README.md#outputs) plus:
-
-| Output      | Payload | Fires on                                                                                            |
-| ----------- | ------- | --------------------------------------------------------------------------------------------------- |
-| `(created)` | `T`     | `quickCreateAction` resolved successfully — the new value is also automatically added to `values()` |
-
 ## Forms integration
 
 Identical to [`CngxCombobox`](../combobox/README.md#forms-integration). The `Field<T[]>` syncs with `(values)`.
 
 ## Action slot context
 
-Same shape as `CngxActionSelect` — see [`../action-select/README.md`](../action-select/README.md#action-slot-context). The bridge tracks `dirty` automatically while the `<input>` term is non-empty.
+Same shape as `CngxActionSelect` - see [`../action-select/README.md`](../action-select/README.md#action-slot-context). The bridge tracks `dirty` automatically while the `<input>` term is non-empty.
 
 ## Common patterns
 
@@ -125,7 +106,7 @@ readonly localItems = inject(CNGX_LOCAL_ITEMS_BUFFER_FACTORY)<Tag>({
 />
 ```
 
-The buffer survives state refetches — items drop out silently once the server-side list contains them (deduped via `compareWith`).
+The buffer survives state refetches - items drop out silently once the server-side list contains them (deduped via `compareWith`).
 
 ### Custom chip rendering
 
@@ -147,10 +128,6 @@ All [`CngxCombobox` slots](../combobox/README.md#template-slots) plus the action
 | Slot                | Replaces                                            |
 | ------------------- | --------------------------------------------------- |
 | `*cngxSelectAction` | Inline action workflow inside the panel-shell stack |
-
-## Theming
-
-Reuses the chip-strip and trigger variables from [`CngxCombobox`](../combobox/README.md#theming) and the action-slot positioning from `select-base.css`.
 
 ## Keyboard
 

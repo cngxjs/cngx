@@ -6,7 +6,7 @@ Temporary notification system with auto-dismiss, deduplication, and programmatic
 
 ### CngxToaster
 
-Feature-scoped service for managing toasts. Not `providedIn: 'root'` — must be provided via `provideFeedback(withToasts())` or `provideToasts()`.
+Feature-scoped service for managing toasts. Not `providedIn: 'root'` - must be provided via `provideFeedback(withToasts())` or `provideToasts()`.
 
 #### Import
 
@@ -19,7 +19,7 @@ import { provideFeedback, withToasts } from '@cngx/ui/feedback';
 
 ```typescript
 interface ToastConfig {
-  message: string;              // Required — main message
+  message: string;              // Required - main message
   title?: string;               // Bold primary text (enables 2-line layout)
   description?: string;         // Secondary text (below title or fallback for message)
   severity?: AlertSeverity;     // 'info' | 'success' | 'warning' | 'error'
@@ -103,9 +103,9 @@ export class AppComponent {}
 
 #### CSS Custom Properties
 
-- `--cngx-toast-outlet-padding` (default `16px`) — Distance from viewport edge
-- `--cngx-toast-gap` (default `8px`) — Gap between toasts
-- `--cngx-toast-max-width` (default `400px`) — Toast width
+- `--cngx-toast-outlet-padding` (default `16px`) - Distance from viewport edge
+- `--cngx-toast-gap` (default `8px`) - Gap between toasts
+- `--cngx-toast-max-width` (default `400px`) - Toast width
 
 ---
 
@@ -321,7 +321,7 @@ cngx-toast {
 
 ## See Also
 
-- [CngxAlert](../alert/README.md) — Inline alerts (scoped, permanent)
-- [CngxBanner](../banner/README.md) — System banners (persistent, full-width)
-- [CngxActionButton](../../action-button/README.md) — Auto-toast on async action
+- [CngxAlert](../alert/README.md) - Inline alerts (scoped, permanent)
+- [CngxBanner](../banner/README.md) - System banners (persistent, full-width)
+- [CngxActionButton](../../action-button/README.md) - Auto-toast on async action
 - Compodoc API documentation: `npm run docs:serve`

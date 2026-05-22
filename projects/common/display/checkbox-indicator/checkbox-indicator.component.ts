@@ -28,6 +28,11 @@ import { ChangeDetectionStrategy, Component, input, ViewEncapsulation, type Temp
  * - Accessibility announcements — `aria-hidden="true"` unconditionally. The
  *   truth about "selected" is communicated by the row's own `aria-selected`
  *   / `role="option"` ARIA, not by this decoration.
+ *
+ * <example-url>http://localhost:4200/#/common/display/checkbox-indicator/states</example-url>
+ * <example-url>http://localhost:4200/#/common/display/checkbox-indicator/variant-matrix</example-url>
+ * <example-url>http://localhost:4200/#/common/display/checkbox-indicator/sizes</example-url>
+ * <example-url>http://localhost:4200/#/common/display/checkbox-indicator/custom-glyph</example-url>
  */
 @Component({
   selector: 'cngx-checkbox-indicator',

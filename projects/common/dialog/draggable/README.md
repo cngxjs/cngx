@@ -32,12 +32,12 @@ When `[handle]` is specified:
 
 Arrow keys move the dialog (mandatory for accessibility):
 
-- `Arrow Left` — Move 10px left (or grid size left)
-- `Arrow Right` — Move 10px right (or grid size right)
-- `Arrow Up` — Move 10px up (or grid size up)
-- `Arrow Down` — Move 10px down (or grid size down)
-- `Shift + Arrow` — Move 50px (or 5x grid size)
-- `Home` — Reset to origin (0, 0)
+- `Arrow Left` - Move 10px left (or grid size left)
+- `Arrow Right` - Move 10px right (or grid size right)
+- `Arrow Up` - Move 10px up (or grid size up)
+- `Arrow Down` - Move 10px down (or grid size down)
+- `Shift + Arrow` - Move 50px (or 5x grid size)
+- `Home` - Reset to origin (0, 0)
 
 Grid size affects arrow key stepping: when grid is active, arrows step by the grid size (or 5x with Shift).
 
@@ -198,6 +198,6 @@ dialog[cngxDialog][cngxDialogDraggable] {
 
 ## See Also
 
-- [CngxDialog](../dialog/README.md) — Base dialog directive
-- [CngxBottomSheet](../bottom-sheet/README.md) — Bottom sheet (typically not draggable)
+- [CngxDialog](../dialog/README.md) - Base dialog directive
+- [CngxBottomSheet](../bottom-sheet/README.md) - Bottom sheet (typically not draggable)
 - Compodoc API documentation: `npm run docs:serve`

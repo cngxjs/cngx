@@ -1,6 +1,6 @@
 # @cngx/testing
 
-Internal test utilities and helpers for the cngx component library. Not published to npm — consumed directly from source via tsconfig paths.
+Internal test utilities and helpers for the cngx component library. Not published to npm - consumed directly from source via tsconfig paths.
 
 ## Import
 
@@ -41,9 +41,9 @@ async function createDirectiveFixture<D, H>(
 
 #### Parameters
 
-- `directive` — The directive class to test.
-- `hostType` — A pre-defined standalone host component class with signal inputs.
-- `options` — Optional configuration object.
+- `directive` - The directive class to test.
+- `hostType` - A pre-defined standalone host component class with signal inputs.
+- `options` - Optional configuration object.
 
 #### Options
 
@@ -99,7 +99,7 @@ function spyOnOutput<T>(output: OutputRef<T>): OutputSpy<T>
 
 #### Parameters
 
-- `output` — Angular `output()` signal to spy on.
+- `output` - Angular `output()` signal to spy on.
 
 #### Returns
 
@@ -137,9 +137,9 @@ function updateAndFlush<T>(
 
 #### Parameters
 
-- `fixture` — The component fixture.
-- `signal` — The writable signal to update.
-- `value` — The new value to set.
+- `fixture` - The component fixture.
+- `signal` - The writable signal to update.
+- `value` - The new value to set.
 
 #### Example
 
@@ -173,9 +173,9 @@ expect.extend(cngxMatchers);
 
 #### Matchers
 
-- **`toHaveClass(className: string)`** — Asserts the element has the given CSS class.
-- **`toHaveAttribute(name: string, value?: string)`** — Asserts the element has the given attribute, optionally with a specific value.
-- **`toHaveCSSVariable(name: string, value: string)`** — Asserts the element has a CSS custom property with the given value.
+- **`toHaveClass(className: string)`** - Asserts the element has the given CSS class.
+- **`toHaveAttribute(name: string, value?: string)`** - Asserts the element has the given attribute, optionally with a specific value.
+- **`toHaveCSSVariable(name: string, value: string)`** - Asserts the element has a CSS custom property with the given value.
 
 #### Example
 
@@ -201,7 +201,7 @@ interface MatchMediaMock {
 
 #### Parameters
 
-- `initialMatches` — Initial `matches` value (default: `false`).
+- `initialMatches` - Initial `matches` value (default: `false`).
 
 #### Example
 
@@ -342,15 +342,15 @@ it('debounces input', async () => {
 
 1. **Always use `flush()`** after signal mutations and event dispatches to ensure effects run and DOM updates are detected.
 
-2. **Scope mocks to the test** — Always restore mocks (`mock.restore()`) at test end via `afterEach()` or explicit cleanup.
+2. **Scope mocks to the test** - Always restore mocks (`mock.restore()`) at test end via `afterEach()` or explicit cleanup.
 
-3. **Use `createDirectiveFixture`** for directive tests — it handles TestBed setup, signal input binding, and provides a convenient `flush()` shorthand.
+3. **Use `createDirectiveFixture`** for directive tests - it handles TestBed setup, signal input binding, and provides a convenient `flush()` shorthand.
 
-4. **Spy early, assert late** — Create spies before triggering events, then assert after flushing.
+4. **Spy early, assert late** - Create spies before triggering events, then assert after flushing.
 
-5. **Test the public API** — Use `directive.signal()` and `directive.method()`, not private internals.
+5. **Test the public API** - Use `directive.signal()` and `directive.method()`, not private internals.
 
-6. **Use fake timers for debounce/throttle** — Combine `vi.useFakeTimers()` and `vi.runAllTimers()` to control timing-sensitive behavior.
+6. **Use fake timers for debounce/throttle** - Combine `vi.useFakeTimers()` and `vi.runAllTimers()` to control timing-sensitive behavior.
 
 ## See Also
 

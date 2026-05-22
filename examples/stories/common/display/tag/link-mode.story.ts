@@ -1,34 +1,26 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Link mode',
-  subtitle: 'Native <code>&lt;a cngxTag&gt;</code> preserves anchor semantics — focus, keyboard, navigation.',
-  description: 'Decorative label / badge / status indicator. Dual selector ([cngxTag] and <cngx-tag>) so it composes onto any host element including <a> for link-mode tags. Removable affordances live in CngxChip; clickable interactions live on native <button cngxTag> / <a cngxTag>.',
+  title: 'CngxTag: link mode',
+  subtitle: 'Native <code>&lt;a cngxTag&gt;</code> preserves anchor semantics: focus, keyboard activation, navigation.',
+  description: 'The directive selector targets both <code>[cngxTag]</code> and <code>&lt;cngx-tag&gt;</code>, so the same visual contract drops onto a real anchor without a wrapper. The example app strips the default underline via a helper class; the directive itself never touches text-decoration.',
   level: 'molecule',
-  audience: ['dev', 'design', 'a11y'],
+  audience: ['dev', 'a11y'],
   artifact: 'standalone',
-  focus: ['visual-variants', 'composition', 'a11y-pattern'],
-  apiComponents: [
-    'CngxTag',
-    'CngxTagLabel',
-    'CngxTagPrefix',
-    'CngxTagSuffix',
-    'CngxIcon',
-    'CngxTagGroup',
-    'CngxTagGroupHeader',
-    'CngxTagGroupAccessory',
-  ],
-  moduleImports: [
-    'import { CngxTag } from \'@cngx/common/display\';',
-  ],
+  focus: ['composition', 'a11y-pattern'],
+  apiComponents: ['CngxTag'],
+  moduleImports: ["import { CngxTag } from '@cngx/common/display';"],
   imports: ['CngxTag'],
+  references: [
+    {
+      label: 'HTML Living Standard: the a element',
+      href: 'https://html.spec.whatwg.org/multipage/text-level-semantics.html#the-a-element',
+    },
+  ],
   template: `
-  <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
-    <a cngxTag color="info" href="#category/frontend" style="text-decoration: none;">frontend</a>
-    <a cngxTag color="success" href="#category/cleared" style="text-decoration: none;">cleared</a>
-    <a cngxTag color="warning" href="#category/pending" style="text-decoration: none;">pending</a>
+  <div class="demo-tag-row">
+    <a cngxTag color="info" href="#category/frontend" class="demo-tag-link">frontend</a>
+    <a cngxTag color="success" href="#category/cleared" class="demo-tag-link">cleared</a>
+    <a cngxTag color="warning" href="#category/pending" class="demo-tag-link">pending</a>
   </div>`,
-  css: `.row { display: flex; gap: 12px; align-items: center; }
-.row a { text-decoration: none; }
-.row a:hover { filter: brightness(0.92); }`,
 };

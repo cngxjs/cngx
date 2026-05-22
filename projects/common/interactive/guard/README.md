@@ -36,7 +36,7 @@ export class EditorComponent {
 
 ## Accessibility
 
-Unload guards are low-level navigation protection — no ARIA needed:
+Unload guards are low-level navigation protection - no ARIA needed:
 
 - **ARIA roles:** None (browser-managed dialog)
 - **Keyboard interaction:**
@@ -77,7 +77,7 @@ export class EditComponent {
 
 ## Styling
 
-Unload guards have no styling — they show the browser's native confirmation dialog.
+Unload guards have no styling - they show the browser's native confirmation dialog.
 
 ## Examples
 
@@ -205,86 +205,12 @@ saveContent() {
 </button>
 ```
 
-## Implementation Notes
-
-### CngxBeforeUnload Behavior
-
-The directive uses the browser's native `beforeunload` event:
-
-```typescript
-const handler = (event: BeforeUnloadEvent) => {
-  if (this.enabled()) {
-    event.preventDefault();
-  }
-};
-
-window.addEventListener('beforeunload', handler);
-```
-
-When active (`enabled() === true`), the browser shows its native "Leave this site?" dialog. The user can click "Leave" or "Stay".
-
-This only protects against browser close, tab close, or URL bar navigation. It does NOT protect against:
-- Router navigation (use `canDeactivate` guard for that)
-- Programmatic `window.location` changes
-- Browser refresh (F5)
-
-### canDeactivateWhenClean Behavior
-
-The function returns a guard compatible with Angular's `CanDeactivateFn`:
-
-```typescript
-return () => {
-  if (!isDirty()) {
-    return true;  // Allow navigation
-  }
-
-  const win = inject(DOCUMENT).defaultView;
-  if (!win) {
-    return true;  // SSR — allow navigation
-  }
-
-  return win.confirm(message);  // Show browser confirm dialog
-};
-```
-
-Returns `true` (allow) or `false` (block) based on the user's choice in the confirmation dialog.
-
-The guard uses `inject()` which is valid in Angular's guard execution context.
-
-### Coverage Recommendations
-
-For complete protection, use both:
-
-1. **CngxBeforeUnload** — Protects browser close (Cmd+W, Cmd+Q, browser close button)
-2. **canDeactivateWhenClean** — Protects router navigation (routerLink, router.navigate)
-
-Together they cover all navigation paths:
-
-```typescript
-@Component({
-  template: `
-    <form [cngxBeforeUnload]="isDirty()">
-      <!-- Form content -->
-    </form>
-  `,
-  imports: [CngxBeforeUnload],
-  providers: [
-    withCanDeactivate([
-      canDeactivateWhenClean(() => this.isDirty())
-    ])
-  ]
-})
-export class EditComponent {
-  readonly isDirty = signal(false);
-}
-```
-
 ## Browser Compatibility
 
 Both CngxBeforeUnload and canDeactivateWhenClean use standard browser APIs:
 
-- `beforeunload` event — Supported in all modern browsers
-- `window.confirm()` — Supported in all modern browsers
+- `beforeunload` event - Supported in all modern browsers
+- `window.confirm()` - Supported in all modern browsers
 
 No polyfills or fallbacks needed.
 
@@ -299,8 +225,8 @@ This ensures SSR doesn't throw errors.
 
 ## See Also
 
-- [compodoc API documentation](https://cngxjs.github.io/cngx/)
+- [API on compodocx](https://cngxjs.github.io/cngx/)
 - [Angular Route Guards](https://angular.io/guide/router-tutorial-toh#preventing-unsaved-changes)
 - [MDN: beforeunload event](https://developer.mozilla.org/en-US/docs/Web/API/Window/beforeunload_event)
-- Demo: `dev-app/src/app/demos/common/guard-demo/`
+- Demo: `examples/stories/common/guard-demo/`
 - Tests: `projects/common/interactive/guard/before-unload.directive.spec.ts`

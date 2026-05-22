@@ -13,13 +13,17 @@
 
 @layer cngx.tokens {
   /**
-   * Active size of the indicator box. Pinned by the size-variant
-   * classes; can be set inline for one-off overrides.
+   * Active size of the indicator box. `inherits: true` is load-bearing —
+   * the inner `__box` is a child of the host, and the size-variant
+   * classes (`--sm` / `--md` / `--lg`) set this token on the host. With
+   * `inherits: false` the child would only see the registered initial
+   * value and the size variants would render with a constant-sized box
+   * inside a variable-sized host frame.
    * @group Layout
    */
   @property --cngx-checkbox-size {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 1em;
   }
 
@@ -35,34 +39,37 @@
   }
 
   /**
-   * Background of the unchecked box.
+   * Background of the unchecked box. Inherited so a host-level
+   * override reaches the `__box` child that consumes it.
    * @group Surface
    */
   @property --cngx-checkbox-bg {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: transparent;
   }
 
   /**
    * Border shorthand of the unchecked box. Width + style + color in
    * one declaration so a consumer can re-skin the stroke with a
-   * single override.
+   * single override. Inherited so a host-level override reaches the
+   * `__box` child that consumes it.
    * @group Surface
    */
   @property --cngx-checkbox-border {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 1.5px solid currentColor;
   }
 
   /**
-   * Corner radius of the box. Defaults to `--cngx-radius-sm`.
+   * Corner radius of the box. Defaults to `--cngx-radius-sm`. Inherited
+   * so a host-level override reaches the `__box` child that consumes it.
    * @group Layout
    */
   @property --cngx-checkbox-radius {
     syntax: '<length>';
-    inherits: false;
+    inherits: true;
     initial-value: 2px;
   }
 
@@ -104,7 +111,7 @@
    */
   @property --cngx-checkbox-size-sm {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0.875em;
   }
 
@@ -114,7 +121,7 @@
    */
   @property --cngx-checkbox-size-md {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 1em;
   }
 
@@ -124,7 +131,7 @@
    */
   @property --cngx-checkbox-size-lg {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 1.25em;
   }
 

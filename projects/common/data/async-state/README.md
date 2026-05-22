@@ -1,6 +1,6 @@
 # Async State System
 
-The canonical system for managing async operation lifecycle across `@cngx`. Every async operation—data loading, mutations, HTTP requests, Web Worker tasks—flows through these unified factories and interfaces.
+The canonical system for managing async operation lifecycle across `@cngx`. Every async operation-data loading, mutations, HTTP requests, Web Worker tasks-flows through these unified factories and interfaces.
 
 ## Import
 
@@ -34,7 +34,7 @@ import {
 
 ### `createManualState<T>(): ManualAsyncState<T>`
 
-Create fully manual async state — no HTTP, no automatic loading. Use for:
+Create fully manual async state - no HTTP, no automatic loading. Use for:
 - Heavy local computations
 - Web Worker operations
 - Complex choreography with multiple steps
@@ -80,12 +80,12 @@ async handleSave() {
 
 Create reactive query state that auto-loads when signal dependencies change. Sets `loading` on first load, `refreshing` on subsequent reloads (data stays visible). Debounces requests by default (50ms configurable).
 
-**Requires:** Injection context. The function `fn` is tracked by Angular's `effect()` — any signal read inside triggers a reload.
+**Requires:** Injection context. The function `fn` is tracked by Angular's `effect()` - any signal read inside triggers a reload.
 
 **Returns:** `ReactiveAsyncState<T>` with `refresh()` method.
 
 **Options:**
-- `debounce?: number` (default 50) — ms delay before executing the query after dependencies change
+- `debounce?: number` (default 50) - ms delay before executing the query after dependencies change
 
 ```typescript
 readonly residents = injectAsyncState(
@@ -113,7 +113,7 @@ private readonly res = resource({
 });
 
 readonly items = fromResource(this.res);
-// items.status(), items.data(), items.isFirstLoad() — all work
+// items.status(), items.data(), items.isFirstLoad() - all work
 ```
 
 ### `fromHttpResource<T>(ref: HttpResourceRef<T>): CngxAsyncState<T>`
@@ -136,13 +136,13 @@ readonly items = fromHttpResource(this.res);
 
 ## RxJS Operators
 
-All operators work with `ManualAsyncState` — they only need the write interface (`set`, `setSuccess`, `setError`, `setProgress`).
+All operators work with `ManualAsyncState` - they only need the write interface (`set`, `setSuccess`, `setError`, `setProgress`).
 
 ### `tapAsyncState<T>(state, options?): MonoTypeOperatorFunction<T>`
 
 Wires an Observable's lifecycle to async state. On subscribe: sets loading (or refreshing if data loaded). On next: calls `setSuccess`. On error: calls `setError` and re-throws.
 
-The Observable passes through unchanged — side-effect operator.
+The Observable passes through unchanged - side-effect operator.
 
 **Options:**
 - `status?: 'loading' | 'refreshing' | 'pending'` (default `'loading'`)
@@ -276,7 +276,7 @@ Example: A button with async action:
 </button>
 ```
 
-The state is fully communicated without extra ARIA attributes — the component handles that.
+The state is fully communicated without extra ARIA attributes - the component handles that.
 
 ## Composition
 
@@ -294,7 +294,7 @@ readonly myState = injectAsyncState(() => this.load());
 
 **No status watchers.** All UI derived via `computed()` from the state signals.
 
-**Full Observable/Promise support.** All factories accept both — handled transparently.
+**Full Observable/Promise support.** All factories accept both - handled transparently.
 
 ## Error Handling
 
@@ -310,7 +310,7 @@ readonly data = injectAsyncState(() => this.fetch());
 }
 ```
 
-RxJS operators re-throw errors after updating state — subscriptions handle error handling:
+RxJS operators re-throw errors after updating state - subscriptions handle error handling:
 
 ```typescript
 source.pipe(tapAsyncState(state)).subscribe({
@@ -320,7 +320,7 @@ source.pipe(tapAsyncState(state)).subscribe({
 
 ## See Also
 
-- [CngxSmartDataSource](../data-source/README.md) — integrates async state with table rendering
-- [CngxAsyncContainer](../../ui/feedback/README.md) — built-in skeleton/error/empty templates for async state
-- [CngxAsyncClick](../../interactive/README.md) — directive that wires async action buttons to this system
+- [CngxSmartDataSource](../data-source/README.md) - integrates async state with table rendering
+- [CngxAsyncContainer](../../ui/feedback/README.md) - built-in skeleton/error/empty templates for async state
+- [CngxAsyncClick](../../interactive/README.md) - directive that wires async action buttons to this system
 - Compodoc: Full type reference at `/docs`

@@ -61,7 +61,7 @@ export class ListComponent {
 }
 ```
 
-## CngxFilter — Filter State Atom
+## CngxFilter - Filter State Atom
 
 Holds one or more named predicates. All active predicates are AND-combined: an item must pass **every** predicate to appear in results.
 
@@ -76,7 +76,7 @@ The directive enforces **AND across dimensions** (keys). **OR logic within a dim
 filter.addPredicate('location', (p) => selectedLocations.has(p.location));
 filter.addPredicate('role', (p) => selectedRoles.has(p.role));
 
-// OR within a dimension: London OR Paris — one predicate with a Set inside
+// OR within a dimension: London OR Paris - one predicate with a Set inside
 filter.addPredicate('location', (p) => selectedCities.has(p.location));
 // selectedCities = new Set(['London', 'Paris'])
 ```
@@ -265,7 +265,7 @@ Example:
 
 ## See Also
 
-- [CngxSort](../sort/README.md) — multi-column sorting
-- [CngxPaginate](../paginate/README.md) — pagination
-- [CngxSmartDataSource](../data-source/README.md) — auto-wires filter + sort + paginate
+- [CngxSort](../sort/README.md) - multi-column sorting
+- [CngxPaginate](../paginate/README.md) - pagination
+- [CngxSmartDataSource](../data-source/README.md) - auto-wires filter + sort + paginate
 - Compodoc: Full API reference at `/docs`

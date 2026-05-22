@@ -125,18 +125,18 @@ to remember on the consumer side.
 | `registerOnTouched(fn)` | Stored. Fired from the host's `(focusout)` listener. |
 | `setDisabledState(b)` | `untracked(() => control.disabled.set(b))`. |
 
-### `untracked()` partition — why all four hooks wrap
+### `untracked()` partition - why all four hooks wrap
 
 The load-bearing case is `registerOnChange`: the effect's body reads
 `control.value()` (tracked) and invokes the consumer-supplied `fn(value)`
 inside `untracked(() => fn(value))`. Without that wrap, any signal `fn`
-touches would feed back into the bridge effect's dependency set —
+touches would feed back into the bridge effect's dependency set -
 producing an infinite loop the moment Angular Forms migrates an
 internal `_pendingValue` / dirty-state field to a signal.
 
 The other three hooks (`writeValue`, `registerOnTouched` callback fire,
 `setDisabledState`) wrap defensively. Angular Forms calls them
-imperatively today, so the wrap is a no-op — but it future-proofs
+imperatively today, so the wrap is a no-op - but it future-proofs
 against the Forms internals migrating to a signal-effect-based control
 update path. Same defensive pattern Phase 6b uses for the
 `errorScope.showErrors` / strategy callback in
@@ -146,14 +146,14 @@ update path. Same defensive pattern Phase 6b uses for the
 
 `registerOnChange(fn)` registers a listener for *future* changes. The
 initial value is delivered via `writeValue`. The bridge's effect skips
-its first observation — `fn(initialValue)` is never called, matching
+its first observation - `fn(initialValue)` is never called, matching
 Angular Forms' `DefaultValueAccessor` semantics.
 
 ### Selector list does not include `[ngModel]`
 
 Template-driven forms are not in scope. Bind `[formControl]` (or
 `[formControlName]` inside a `[formGroup]`) explicitly. The negative
-case is documented inline on the directive's selector — `<cngx-toggle
+case is documented inline on the directive's selector - `<cngx-toggle
 [(ngModel)]>` does **not** activate the bridge.
 
 ### exportAs
@@ -241,10 +241,10 @@ You can use both on the same form. They are independent.
 
 Both directives live in `@cngx/forms` (Level 3). They consume:
 
-- `CNGX_CONTROL_VALUE` from `@cngx/common/interactive` (Level 2) — the
+- `CNGX_CONTROL_VALUE` from `@cngx/common/interactive` (Level 2) - the
   value-shape contract atoms expose.
 - `CNGX_FORM_FIELD_CONTROL` and `CNGX_FORM_FIELD_HOST` from
-  `@cngx/core/tokens` (Level 1) — the atom-side and host-side
+  `@cngx/core/tokens` (Level 1) - the atom-side and host-side
   form-field contracts hoisted there in Phase 7 commit 2a so atoms in
   `@cngx/common/interactive` can provide / inject them without
   crossing the Sheriff layer boundary.
@@ -258,11 +258,11 @@ falls out for free.
 
 ## See also
 
-- `@cngx/forms/field` README — `CngxFormField`, `CngxBindField`,
+- `@cngx/forms/field` README - `CngxFormField`, `CngxBindField`,
   `CngxListboxFieldBridge`, `adaptFormControl`, error scope, error
   strategy.
-- `@cngx/common/interactive` — the nine value-bearing atoms the bridge
+- `@cngx/common/interactive` - the nine value-bearing atoms the bridge
   attaches to.
 - Tests: `projects/forms/controls/*.spec.ts` (bridge unit + integration).
-- Demo: `dev-app/src/app/demos/forms/form-primitives-demo/` — runs both
+- Demo: `examples/stories/forms/form-primitives-demo/` - runs both
   Signal Forms and Reactive Forms paths side by side.

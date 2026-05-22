@@ -61,7 +61,7 @@ Tracks keyboard-initiated focus and applies the `cngx-focus-visible` CSS class. 
 
 ## Composition
 
-These focus directives are orthogonal — they do not interfere with each other and can be combined:
+These focus directives are orthogonal - they do not interfere with each other and can be combined:
 
 ```typescript
 // Dialog with autofocus, focus trap, and focus restoration

@@ -37,10 +37,10 @@ export class ExampleComponent {
 
 Key features:
 
-- **Type-safe result streams** — `CngxOverlayRef<R>` with generic result type
-- **Sensible defaults** — Centered backdrop by default; customize via CDK `OverlayConfig`
-- **Simple API** — `open(component, config)` and `close(result)`
-- **Backdrop dismiss** — Auto-closes on backdrop click (configurable)
+- **Type-safe result streams** - `CngxOverlayRef<R>` with generic result type
+- **Sensible defaults** - Centered backdrop by default; customize via CDK `OverlayConfig`
+- **Simple API** - `open(component, config)` and `close(result)`
+- **Backdrop dismiss** - Auto-closes on backdrop click (configurable)
 
 ## Configuration
 
@@ -71,18 +71,18 @@ Default behavior:
 
 `CngxOverlay` provides the CDK overlay service and component portal attachment. Accessibility is the responsibility of the overlay component:
 
-- **Focus trap** — Use CDK's `cdkTrapFocus` on your overlay content
-- **Backdrop dismissal** — Backdrop click auto-closes; use `closeOnBackdropClick` in your component
-- **Focus restoration** — Store focus before opening, restore on close (standard pattern)
-- **ARIA roles** — Overlay component must declare `role="dialog"`, `role="menu"`, etc.
+- **Focus trap** - Use CDK's `cdkTrapFocus` on your overlay content
+- **Backdrop dismissal** - Backdrop click auto-closes; use `closeOnBackdropClick` in your component
+- **Focus restoration** - Store focus before opening, restore on close (standard pattern)
+- **ARIA roles** - Overlay component must declare `role="dialog"`, `role="menu"`, etc.
 
 ## Composition
 
 `CngxOverlay` composes:
 
-- **CDK Overlay service** — Position strategies, scroll strategies, portal attachment
-- **ComponentPortal** — Attaches components to the overlay DOM
-- **Injector.create** — Creates a child injector with the overlay ref available to the component
+- **CDK Overlay service** - Position strategies, scroll strategies, portal attachment
+- **ComponentPortal** - Attaches components to the overlay DOM
+- **Injector.create** - Creates a child injector with the overlay ref available to the component
 
 ## Type Safety
 

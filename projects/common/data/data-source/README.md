@@ -41,7 +41,7 @@ export class ListComponent {
 }
 ```
 
-## CngxDataSource — Minimal Signal Bridge
+## CngxDataSource - Minimal Signal Bridge
 
 Dumb CDK bridge with zero logic. The consumer builds all transformations via `computed()`. Use `injectDataSource(data)` inside an injection context.
 
@@ -56,7 +56,7 @@ readonly processed = computed(() => {
 readonly dataSource = injectDataSource(this.processed);
 ```
 
-## CngxSmartDataSource — Auto-Wiring
+## CngxSmartDataSource - Auto-Wiring
 
 CDK `DataSource` that optionally discovers and wires:
 - `CngxSort` (multi-column sorting)
@@ -64,7 +64,7 @@ CDK `DataSource` that optionally discovers and wires:
 - `CngxSearch` (full-text search on child inputs)
 - `CngxPaginate` (pagination range slicing)
 
-All directives are injected **optionally** — missing directives simply skip that processing step.
+All directives are injected **optionally** - missing directives simply skip that processing step.
 
 Accepts either a plain `Signal<T[]>` or `CngxAsyncState<T[]>`. When async state is provided, the data source exposes the full UX state: loading, error, refreshing, empty.
 
@@ -98,7 +98,7 @@ readonly dataSource = injectSmartDataSource(this.items);
 // Discovers CngxSort, CngxFilter, CngxSearch, CngxPaginate in same injector
 ```
 
-**With Async State — Full UX:**
+**With Async State - Full UX:**
 
 ```typescript
 readonly residents = injectAsyncState(() => this.api.getAll());
@@ -129,13 +129,13 @@ readonly dataSource = injectSmartDataSource(this.items, {
 
 `CngxSmartDataSource` applies transformations in order:
 
-1. **Raw data** — from `source` signal (or `source.data()` if async state)
-2. **Filter** — `CngxFilter.predicate()` removes non-matching items
-3. **Search** — `CngxSearch.term()` + `searchFn` finds matches
-4. **Sort** — `CngxSort.sorts()` + `sortFn` orders items
-5. **Paginate** — `CngxPaginate.range()` slices to current page
+1. **Raw data** - from `source` signal (or `source.data()` if async state)
+2. **Filter** - `CngxFilter.predicate()` removes non-matching items
+3. **Search** - `CngxSearch.term()` + `searchFn` finds matches
+4. **Sort** - `CngxSort.sorts()` + `sortFn` orders items
+5. **Paginate** - `CngxPaginate.range()` slices to current page
 
-The source signal is unmodified — all transformations are derived via `computed()`.
+The source signal is unmodified - all transformations are derived via `computed()`.
 
 ## Async State Integration
 
@@ -143,7 +143,7 @@ When constructed with `CngxAsyncState<T[]>`:
 
 - `data` comes from `state.data()` (defaults to empty array if undefined)
 - `isLoading`, `isRefreshing`, `isBusy`, `isFirstLoad`, `error` all wire from state
-- `isEmpty` ignores busy state — only true when `filteredCount() === 0` AND not busy
+- `isEmpty` ignores busy state - only true when `filteredCount() === 0` AND not busy
 - All navigation methods (`CngxPaginate.setPage()`, etc.) are no-ops while busy
 
 Use this to show skeleton rows during load, error overlay on failure, loading bar during refresh:
@@ -164,7 +164,7 @@ Use this to show skeleton rows during load, error overlay on failure, loading ba
 />
 ```
 
-## Search — Special Handling
+## Search - Special Handling
 
 `CngxSearch` typically lives on a child `<input>` element below the component injector (e.g. in a header), so `inject(CngxSearch, { optional: true })` returns `null` in the common case.
 
@@ -257,12 +257,12 @@ readonly dataSource = injectSmartDataSource(this.state);
 }
 ```
 
-The error does **not** block table rendering — `isEmpty()` becomes `false` (data is still visible), and the error is communicated separately via the UX layer (error overlay, alert, etc.).
+The error does **not** block table rendering - `isEmpty()` becomes `false` (data is still visible), and the error is communicated separately via the UX layer (error overlay, alert, etc.).
 
 ## See Also
 
-- [CngxSort](../sort/README.md) — multi-column sorting
-- [CngxFilter](../filter/README.md) — predicate-based filtering
-- [CngxPaginate](../paginate/README.md) — pagination
-- [Async State System](../async-state/README.md) — `CngxAsyncState<T>`
+- [CngxSort](../sort/README.md) - multi-column sorting
+- [CngxFilter](../filter/README.md) - predicate-based filtering
+- [CngxPaginate](../paginate/README.md) - pagination
+- [Async State System](../async-state/README.md) - `CngxAsyncState<T>`
 - Compodoc: Full API reference at `/docs`

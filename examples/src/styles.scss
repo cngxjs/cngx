@@ -1147,3 +1147,93 @@ button.chip:disabled {
   color: var(--cngx-color-text);
   border-radius: 6px;
 }
+
+// Tag-family demo helpers. Stories under common/display/tag share these
+// so individual templates don't scatter thematic CSS inline.
+.demo-tag-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.demo-tag-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.demo-tag-group-frame {
+  border: 1px dashed var(--cngx-color-border, var(--cngx-ex-border, #d1d5db));
+  padding: 8px;
+}
+.demo-tag-link {
+  text-decoration: none;
+}
+.demo-tag-link:hover {
+  filter: brightness(0.92);
+}
+.demo-tag-label-strong {
+  font-weight: 700;
+}
+.demo-tag-label-meta {
+  opacity: 0.7;
+}
+// Consumer-defined `[data-color="my-brand"]` extension demonstrated by
+// the color-palette + provideTagConfig stories. Maps the open-string
+// key onto the cngx primary token so dark/light flips track the rest
+// of the page chrome.
+.cngx-tag[data-color='my-brand'] {
+  --cngx-tag-bg: var(--cngx-color-primary, oklch(0.55 0.21 280));
+  --cngx-tag-color: var(--cngx-color-on-primary, oklch(0.99 0 0));
+  --cngx-tag-border: 1px solid transparent;
+}
+
+// Radio-indicator demo helpers. Stories under
+// common/display/radio-indicator share these so individual templates
+// don't repeat layout / caption styling inline (caption font-size and
+// muted color are thematic and would trip the STYLE-THEME audit rule
+// if inlined).
+.demo-radio-row {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  font-size: 1.5em;
+  color: var(--cngx-color-primary, var(--cngx-ex-accent, oklch(0.66 0.19 50)));
+}
+.demo-radio-row--baseline {
+  align-items: baseline;
+}
+.demo-radio-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.demo-radio-caption {
+  font-size: 0.625em;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-text-muted, oklch(0.5 0.01 250)));
+}
+// Brand-override examples for the theming story. OKLCH equivalents of
+// the original magenta / emerald hex literals — wrapped in foundation
+// tokens so a downstream theme can re-point them without forking the
+// demo.
+.demo-radio-brand-magenta {
+  --cngx-radio-indicator-checked-color: var(--cngx-color-magenta, oklch(0.55 0.25 350));
+  --cngx-radio-indicator-border-width: 2px;
+}
+.demo-radio-brand-emerald {
+  --cngx-radio-indicator-checked-color: var(--cngx-color-success, oklch(0.55 0.13 165));
+  --cngx-radio-indicator-dot-size: 0.6em;
+}
+// Required-marker custom-template variants (cngx-required story).
+.required-badge {
+  display: inline-block;
+  margin-left: 0.25em;
+  padding: 0 0.4em;
+  border-radius: 999px;
+  font-size: 0.6875em;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--cngx-color-danger-on, #fff);
+  background: var(--cngx-color-danger, #c0392b);
+}

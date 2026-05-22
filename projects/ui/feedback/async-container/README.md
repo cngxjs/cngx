@@ -183,8 +183,8 @@ readonly state = injectAsyncState(() => this.loadData$);
 
 ## See Also
 
-- [CngxAsync (microsyntax)](../README.md) — Structural directive alternative
-- [CngxAsyncState](https://github.com/cngxjs/cngx) — State management
-- [CngxAlert](../alert/README.md) — Error display
-- [CngxToaster](../toast/README.md) — Toast notifications
+- [CngxAsync (microsyntax)](../README.md) - Structural directive alternative
+- [CngxAsyncState](https://github.com/cngxjs/cngx) - State management
+- [CngxAlert](../alert/README.md) - Error display
+- [CngxToaster](../toast/README.md) - Toast notifications
 - Compodoc API documentation: `npm run docs:serve`

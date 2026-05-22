@@ -1,29 +1,28 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Slot overrides — prefix / label / suffix',
-  subtitle: 'Project <code>&lt;ng-template cngxTagPrefix&gt;</code>, <code>&lt;ng-template cngxTagLabel&gt;</code>, or <code>&lt;ng-template cngxTagSuffix&gt;</code> to control each region. Prefix and suffix slots render no DOM when omitted; the default label wraps content in <code>cngx-tag__label</code> for ellipsis support.',
-  description: 'Decorative label / badge / status indicator. Dual selector ([cngxTag] and <cngx-tag>) so it composes onto any host element including <a> for link-mode tags. Removable affordances live in CngxChip; clickable interactions live on native <button cngxTag> / <a cngxTag>.',
+  title: 'CngxTag: prefix and suffix slots',
+  subtitle: 'Project <code>&lt;ng-template cngxTagPrefix&gt;</code>, <code>&lt;ng-template cngxTagLabel&gt;</code>, or <code>&lt;ng-template cngxTagSuffix&gt;</code> to control each region. Prefix and suffix render no DOM when omitted; the default label wraps content in <code>cngx-tag__label</code> for ellipsis support.',
+  description: 'The three positional slots are independent; mix and match per host. Every projected <code>&lt;cngx-icon&gt;</code> carries <code>aria-hidden="true"</code> so the icons stay decorative; the label text ("Active", "Frontend", "Pending review") is the sole accessible name and the prefix / suffix glyphs add nothing to it.',
   level: 'molecule',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
-  focus: ['visual-variants', 'composition', 'a11y-pattern'],
-  apiComponents: [
-    'CngxTag',
-    'CngxTagLabel',
-    'CngxTagPrefix',
-    'CngxTagSuffix',
-    'CngxIcon',
-    'CngxTagGroup',
-    'CngxTagGroupHeader',
-    'CngxTagGroupAccessory',
-  ],
-  moduleImports: [
-    'import { CngxTag, CngxTagPrefix, CngxTagSuffix, CngxIcon } from \'@cngx/common/display\';',
-  ],
+  focus: ['composition', 'a11y-pattern'],
+  apiComponents: ['CngxTag', 'CngxTagPrefix', 'CngxTagSuffix', 'CngxIcon'],
+  moduleImports: ["import { CngxTag, CngxTagPrefix, CngxTagSuffix, CngxIcon } from '@cngx/common/display';"],
   imports: ['CngxTag', 'CngxTagPrefix', 'CngxTagSuffix', 'CngxIcon'],
+  references: [
+    {
+      label: 'WAI Web Accessibility Tutorials: Decorative Images',
+      href: 'https://www.w3.org/WAI/tutorials/images/decorative/',
+    },
+    {
+      label: 'WCAG 2.2 SC 1.1.1 Non-text Content',
+      href: 'https://www.w3.org/WAI/WCAG22/Understanding/non-text-content.html',
+    },
+  ],
   template: `
-  <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+  <div class="demo-tag-row">
     <span cngxTag color="success">
       <ng-template cngxTagPrefix>
         <cngx-icon size="sm" aria-hidden="true">
@@ -49,5 +48,4 @@ export const STORY: DemoSpec = {
       Pending review
     </span>
   </div>`,
-  css: `.row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }`,
 };

@@ -107,7 +107,7 @@ Uses `-webkit-line-clamp` which is widely supported (Chrome, Firefox, Safari, Ed
 
 ## CngxHighlight
 
-Search-text highlighting via `<mark>` elements. Walks text nodes of the host, splits at match boundaries, and wraps matches in `<mark>` elements. No `innerHTML` — safe by construction. The `<mark>` element has native SR semantics.
+Search-text highlighting via `<mark>` elements. Walks text nodes of the host, splits at match boundaries, and wraps matches in `<mark>` elements. No `innerHTML` - safe by construction. The `<mark>` element has native SR semantics.
 
 ### Behavior
 
@@ -465,11 +465,11 @@ Text utilities expose CSS classes for consumer styling:
 
 ### User Preference Handling
 
-`CngxSkeleton` automatically respects `prefers-reduced-motion` — shimmer animation is disabled for users who prefer reduced motion.
+`CngxSkeleton` automatically respects `prefers-reduced-motion` - shimmer animation is disabled for users who prefer reduced motion.
 
 ## See Also
 
-- [compodoc API documentation](https://cngxjs.github.io/cngx/)
-- Demo: `dev-app/src/app/demos/common/text-demo/`
+- [API on compodocx](https://cngxjs.github.io/cngx/)
+- Demo: `examples/stories/common/text-demo/`
 - Tests: `projects/common/layout/text/*.spec.ts`
-- `CngxResizeObserver` in `@cngx/common/layout` — Used internally by `CngxTruncate` for overflow detection
+- `CngxResizeObserver` in `@cngx/common/layout` - Used internally by `CngxTruncate` for overflow detection

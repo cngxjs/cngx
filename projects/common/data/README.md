@@ -1,7 +1,7 @@
-# @cngx/common/data — Async State System
+# @cngx/common/data - Async State System
 
 Signal-based state machine for async operations. One typed source drives
-skeleton, loading bar, empty state, error, toast, and ARIA — automatically.
+skeleton, loading bar, empty state, error, toast, and ARIA - automatically.
 
 ## This Is UX State, Not Data State
 
@@ -19,7 +19,7 @@ different question:
 
 A SignalStore holds your `Resident[]` collection and knows which
 residents are selected. A `CngxAsyncState<Resident[]>` knows whether
-that collection is currently loading, refreshing, empty, or failed —
+that collection is currently loading, refreshing, empty, or failed -
 and tells every UI component about it.
 
 They compose naturally:
@@ -84,7 +84,7 @@ readonly residents = injectAsyncState(() =>
 );
 // residents.status(), residents.data(), residents.isFirstLoad(),
 // residents.isEmpty(), residents.error(), residents.isBusy()
-// — all computed(), all reactive, all consistent
+// - all computed(), all reactive, all consistent
 ```
 
 ---
@@ -93,17 +93,17 @@ readonly residents = injectAsyncState(() =>
 
 | Factory | Use Case | Injection Context |
 |-|-|-|
-| `injectAsyncState(fn)` | Reactive query (GET) — auto-reloads on signal change | Required |
-| `createAsyncState()` | Mutation (POST/PUT/DELETE) — explicit `execute()` | Required |
-| `createManualState()` | Full manual control — Web Workers, computations | Not needed |
+| `injectAsyncState(fn)` | Reactive query (GET) - auto-reloads on signal change | Required |
+| `createAsyncState()` | Mutation (POST/PUT/DELETE) - explicit `execute()` | Required |
+| `createManualState()` | Full manual control - Web Workers, computations | Not needed |
 | `fromResource(ref)` | Bridge for Angular `resource()` | Required |
 | `fromHttpResource(ref)` | Bridge for Angular `httpResource()` with progress | Required |
 
-All return `CngxAsyncState<T>` — the same interface every UI component accepts.
+All return `CngxAsyncState<T>` - the same interface every UI component accepts.
 
 ---
 
-## 1. injectAsyncState — Reactive Query
+## 1. injectAsyncState - Reactive Query
 
 Auto-loads when signal dependencies change. First load is `loading`,
 subsequent loads are `refreshing` (old data stays visible).
@@ -116,7 +116,7 @@ private readonly filterText = signal('');
 
 readonly residents = injectAsyncState(() =>
   this.http.get<Resident[]>('/api/residents', {
-    params: { q: this.filterText() },  // tracked — re-queries on change
+    params: { q: this.filterText() },  // tracked - re-queries on change
   })
 );
 ```
@@ -148,7 +148,7 @@ Network error:      loading → error
 Refresh:            success → refreshing → success
 ```
 
-### Template — Structural Directive
+### Template - Structural Directive
 
 ```html
 <ul *cngxAsync="residents; let data; skeleton: skelTpl; empty: emptyTpl; error: errTpl">
@@ -172,7 +172,7 @@ Refresh:            success → refreshing → success
 </ng-template>
 ```
 
-### Template — Async Container (named slots)
+### Template - Async Container (named slots)
 
 ```html
 <cngx-async-container [state]="residents" ariaLabel="Residents"
@@ -205,7 +205,7 @@ Refresh:            success → refreshing → success
 
 ---
 
-## 2. createAsyncState — Mutation
+## 2. createAsyncState - Mutation
 
 For user-triggered actions (POST, PUT, DELETE). Uses `execute(fn)` which
 sets `pending`, then `success` or `error`.
@@ -274,7 +274,7 @@ When `saveAction` is `error`: dialog shows `cngx-dialog--error` class.
 
 ---
 
-## 3. createManualState — Full Control
+## 3. createManualState - Full Control
 
 No HTTP, no injection context. For Web Workers, heavy computations,
 WebSocket streams, or any scenario where you drive the state yourself.
@@ -353,7 +353,7 @@ automatically. No manual `subscribe({ next, error })` boilerplate.
 | `tapAsyncProgress(state)` | `Observable<HttpEvent>` | `Observable<HttpEvent>` | Extracts progress events, calls `setProgress(0-100)` |
 | `tapHttpAsyncState(state)` | `Observable<HttpEvent>` | `Observable<T>` | Combines: loading + progress + body extraction + success/error |
 
-### tapAsyncState — Simple Observable Wiring
+### tapAsyncState - Simple Observable Wiring
 
 ```typescript
 readonly residents = createManualState<Resident[]>();
@@ -385,7 +385,7 @@ interval(5000).pipe(
 ).subscribe();
 ```
 
-Refresh mode — pass `{ status: 'refreshing' }` for subsequent loads:
+Refresh mode - pass `{ status: 'refreshing' }` for subsequent loads:
 
 ```typescript
 refresh(): void {
@@ -397,7 +397,7 @@ refresh(): void {
 }
 ```
 
-### tapAsyncProgress — HTTP Progress Tracking
+### tapAsyncProgress - HTTP Progress Tracking
 
 Use with `{ observe: 'events', reportProgress: true }`:
 
@@ -422,7 +422,7 @@ handleUpload(file: File): void {
 }
 ```
 
-### tapHttpAsyncState — All-in-One HTTP Operator
+### tapHttpAsyncState - All-in-One HTTP Operator
 
 Combines `tapAsyncState` + `tapAsyncProgress` + response body extraction.
 One operator, zero boilerplate:
@@ -444,7 +444,7 @@ handleUpload(file: File): void {
 }
 ```
 
-Template — everything wired from one source:
+Template - everything wired from one source:
 
 ```html
 <!-- Progress bar during upload -->
@@ -501,10 +501,10 @@ handleSave(): void {
 
 ---
 
-## 4. fromResource — Angular resource() Bridge
+## 4. fromResource - Angular resource() Bridge
 
 Wraps Angular's `resource()` as `CngxAsyncState<T>`. The resource stays
-the single source of truth — all signals are derived projections.
+the single source of truth - all signals are derived projections.
 
 ```typescript
 private readonly res = resource({
@@ -517,17 +517,17 @@ private readonly res = resource({
 readonly items = fromResource(this.res);
 ```
 
-### Template — same as any CngxAsyncState
+### Template - same as any CngxAsyncState
 
 ```html
 <cngx-async-container [state]="items" ariaLabel="Items">
-  <!-- identical template slots — UI doesn't know the source -->
+  <!-- identical template slots - UI doesn't know the source -->
 </cngx-async-container>
 ```
 
 ---
 
-## 5. fromHttpResource — Angular httpResource() Bridge
+## 5. fromHttpResource - Angular httpResource() Bridge
 
 Like `fromResource` but maps HTTP progress (0-1 float) to
 `CngxAsyncState.progress` (0-100 integer).
@@ -563,7 +563,7 @@ readonly report = fromHttpResource(this.res);
 ## Full Example: Resident Management
 
 A complete feature combining query, mutation, skeleton, loading bar,
-error handling, toast, and empty state — all from typed sources.
+error handling, toast, and empty state - all from typed sources.
 
 ### Service
 
@@ -655,12 +655,12 @@ export class ResidentList {
   private readonly api = inject(ResidentApi);
   private readonly filterText = signal('');
 
-  // Query — auto-reloads when filter changes
+  // Query - auto-reloads when filter changes
   readonly residents = injectAsyncState(() =>
     this.api.getAll(this.filterText())
   );
 
-  // Mutation — explicit execute()
+  // Mutation - explicit execute()
   readonly deleteState = createAsyncState<void>();
 
   protected makeDelete(id: string): () => Promise<void> {
@@ -705,7 +705,7 @@ cannot become inconsistent.
 
 ## CngxAsyncState Interface
 
-Every factory returns this interface — every UI component accepts it.
+Every factory returns this interface - every UI component accepts it.
 
 | Signal | Type | Description |
 |-|-|-|
@@ -716,14 +716,14 @@ Every factory returns this interface — every UI component accepts it.
 | `isLoading` | `boolean` | `loading`, `pending`, or `refreshing` |
 | `isPending` | `boolean` | Only `pending` (mutation in flight) |
 | `isRefreshing` | `boolean` | Only `refreshing` (re-query, data visible) |
-| `isBusy` | `boolean` | Same as `isLoading` — maps to `aria-busy` |
+| `isBusy` | `boolean` | Same as `isLoading` - maps to `aria-busy` |
 | `isFirstLoad` | `boolean` | No successful load yet |
 | `isEmpty` | `boolean` | Data is `null`, `undefined`, or empty array |
 | `hasData` | `boolean` | Inverse of `isEmpty` |
 | `isSettled` | `boolean` | `success` or `error` |
 | `lastUpdated` | `Date \| undefined` | Timestamp of last success |
 
-## SmartDataSource — Table with Full UX State
+## SmartDataSource - Table with Full UX State
 
 Pass a `CngxAsyncState<T[]>` to `injectSmartDataSource` and the table
 receives skeleton, error, empty, and loading-bar projections automatically.
@@ -736,11 +736,11 @@ readonly residents = injectAsyncState(() =>
   this.api.getAll(this.filter())
 );
 
-// DataSource — accepts CngxAsyncState directly
+// DataSource - accepts CngxAsyncState directly
 readonly dataSource = injectSmartDataSource(this.residents);
 ```
 
-### Template — every state mapped to a table view
+### Template - every state mapped to a table view
 
 ```html
 <div cngxPaginate #pg="cngxPaginate"
@@ -768,7 +768,7 @@ readonly dataSource = injectSmartDataSource(this.residents);
     <cngx-empty-state title="No residents" />
   }
 
-  <!-- Content — with loading bar during refresh -->
+  <!-- Content - with loading bar during refresh -->
   @else {
     @if (dataSource.isRefreshing()) {
       <cngx-loading-indicator [loading]="true" variant="bar" />
@@ -807,7 +807,7 @@ readonly residents = injectAsyncState(() =>
 
 ---
 
-## CngxPaginate — Async-Aware Pagination
+## CngxPaginate - Async-Aware Pagination
 
 The paginator accepts `[state]` and blocks navigation while busy:
 
@@ -825,7 +825,7 @@ The paginator accepts `[state]` and blocks navigation while busy:
 
 ---
 
-## CngxFileDrop — Upload State
+## CngxFileDrop - Upload State
 
 The file drop accepts `[state]` for upload lifecycle feedback:
 

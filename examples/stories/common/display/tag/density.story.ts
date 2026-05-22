@@ -1,33 +1,21 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Density',
-  subtitle: 'Four sizes scale padding + font-size; <code>md</code> is the default.',
-  description: 'Decorative label / badge / status indicator. Dual selector ([cngxTag] and <cngx-tag>) so it composes onto any host element including <a> for link-mode tags. Removable affordances live in CngxChip; clickable interactions live on native <button cngxTag> / <a cngxTag>.',
+  title: 'CngxTag: density',
+  subtitle: 'Four density steps scale padding and font-size; <code>md</code> is the default.',
+  description: 'Each step drives the <code>--cngx-tag-{sm|md|lg|xl}-padding</code> and matching <code>-font-size</code> custom properties; nested atom sizes (icon, avatar) remain the consumer\'s call.',
   level: 'molecule',
-  audience: ['dev', 'design', 'a11y'],
+  audience: ['dev', 'design'],
   artifact: 'standalone',
-  focus: ['visual-variants', 'composition', 'a11y-pattern'],
-  apiComponents: [
-    'CngxTag',
-    'CngxTagLabel',
-    'CngxTagPrefix',
-    'CngxTagSuffix',
-    'CngxIcon',
-    'CngxTagGroup',
-    'CngxTagGroupHeader',
-    'CngxTagGroupAccessory',
-  ],
-  moduleImports: [
-    'import { CngxTag } from \'@cngx/common/display\';',
-  ],
+  focus: ['visual-variants'],
+  apiComponents: ['CngxTag'],
+  moduleImports: ["import { CngxTag } from '@cngx/common/display';"],
   imports: ['CngxTag'],
   template: `
-  <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+  <div class="demo-tag-row">
     <span cngxTag size="sm" color="info">Small</span>
     <span cngxTag size="md" color="info">Medium</span>
     <span cngxTag size="lg" color="info">Large</span>
     <span cngxTag size="xl" color="info">Extra large</span>
   </div>`,
-  css: `.row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }`,
 };

@@ -144,38 +144,6 @@ The `variant` input is a free-form string mapped to CSS class `cngx-popover-pane
 }
 ```
 
-## Theming
-
-### Material Theme
-
-```scss
-@use '@angular/material' as mat;
-@use '@cngx/themes/material/tooltip-theme' as tooltip;
-@use '@cngx/themes/material/popover-panel-theme' as panel;
-
-$theme: mat.define-theme((...));
-
-html {
-  @include mat.all-component-themes($theme);
-  @include tooltip.theme($theme);
-  @include panel.theme($theme);
-}
-```
-
-### Tooltip Indicator (opt-in)
-
-```scss
-@use '@cngx/common/popover/tooltip-indicator' as indicator;
-
-// Touch devices only (recommended)
-@include indicator.touch-only();
-
-// Or always visible
-@include indicator.always();
-```
-
-Customizable via CSS custom properties: `--cngx-tooltip-indicator-size`, `--cngx-tooltip-indicator-gap`, `--cngx-tooltip-indicator-color`, `--cngx-tooltip-indicator-opacity`, `--cngx-tooltip-indicator-icon`.
-
 ## Browser Support
 
 ### Native Support (zero polyfills needed)

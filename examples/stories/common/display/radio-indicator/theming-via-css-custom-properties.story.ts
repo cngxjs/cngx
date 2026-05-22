@@ -1,9 +1,9 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Theming via CSS custom properties',
+  title: 'CngxRadioIndicator: Theming via CSS custom properties',
   subtitle: 'Override <code>--cngx-radio-indicator-checked-color</code>, <code>--cngx-radio-indicator-border-width</code>, <code>--cngx-radio-indicator-dot-size</code>, and friends per consumer.',
-  description: 'Decorative dot-in-circle atom. Mirrors CngxCheckboxIndicator: aria-hidden, no outputs, full --cngx-radio-indicator-* theming. Used by the CngxSelect "radio" indicator variant; future single-value form atoms compose the same skin.',
+  description: 'Three checked <code>lg</code> indicators sit next to each other. The first inherits the default skin from the cngx theme layer. The second is a brand-magenta variant that re-points <code>--cngx-radio-indicator-checked-color</code> and bumps <code>--cngx-radio-indicator-border-width</code> via a consumer-supplied class. The third is a brand-emerald variant that overrides the checked color and the dot size. No directive output, no DI wiring: every override is a pure CSS custom property the consumer drops on a class or inline.',
   level: 'atom',
   audience: ['dev', 'design'],
   artifact: 'standalone',
@@ -16,24 +16,9 @@ export const STORY: DemoSpec = {
   ],
   imports: ['CngxRadioIndicator'],
   template: `
-  <div class="row themed">
+  <div class="demo-radio-row" style="font-size:1.75em">
     <cngx-radio-indicator [checked]="true" size="lg" />
-    <cngx-radio-indicator [checked]="true" size="lg" class="brand-magenta" />
-    <cngx-radio-indicator [checked]="true" size="lg" class="brand-emerald" />
+    <cngx-radio-indicator [checked]="true" size="lg" class="demo-radio-brand-magenta" />
+    <cngx-radio-indicator [checked]="true" size="lg" class="demo-radio-brand-emerald" />
   </div>`,
-  css: `.row.themed {
-  display: flex;
-  gap: 16px;
-  align-items: center;
-  font-size: 1.75em;
-  color: var(--cngx-accent, #4a8cff);
-}
-.brand-magenta {
-  --cngx-radio-indicator-checked-color: #d6266a;
-  --cngx-radio-indicator-border-width: 2px;
-}
-.brand-emerald {
-  --cngx-radio-indicator-checked-color: #059669;
-  --cngx-radio-indicator-dot-size: 0.6em;
-}`,
 };

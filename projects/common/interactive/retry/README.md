@@ -89,12 +89,12 @@ const [saveWithRetry, retryState] = withRetry(
 
 ## Styling
 
-withRetry provides no styling — it exposes state signals for consumers to style based on:
+withRetry provides no styling - it exposes state signals for consumers to style based on:
 
-- `attempt()` — Show which attempt is in progress
-- `retrying()` — Show a "retrying..." indicator
-- `exhausted()` — Show an error state when all retries are exhausted
-- `state.status()` — Use the full async state for complex feedback
+- `attempt()` - Show which attempt is in progress
+- `retrying()` - Show a "retrying..." indicator
+- `exhausted()` - Show an error state when all retries are exhausted
+- `state.status()` - Use the full async state for complex feedback
 
 ## Examples
 
@@ -172,7 +172,7 @@ const [saveWithRetry, retryState] = withRetry(
 ```typescript
 <button [cngxAsyncClick]="saveWithRetry" #btn="cngxAsyncClick">
   @if (retryState.exhausted()) {
-    Exhausted — click to retry
+    Exhausted - click to retry
   } @else {
     {{ btn.status() === 'success' ? 'Saved' : 'Save' }}
   }
@@ -229,39 +229,10 @@ const [retryAction, state] = withRetry(
 await retryAction();
 ```
 
-## Implementation Notes
-
-### Generation Counter
-
-withRetry uses a generation counter to cancel in-flight retry loops if the action is invoked again. This prevents stale closures and race conditions in rapid re-invocations.
-
-### Status Mapping
-
-RetryState.status maps to CngxAsyncState:
-
-- **idle** — Before first invocation (attempt === 0)
-- **pending** — Waiting for retry delay (retrying() === true)
-- **success** — Action succeeded
-- **error** — All attempts exhausted (exhausted() === true)
-
-The retrying delay is mapped to 'pending' so the feedback system sees "still working" during waits.
-
-### Error Propagation
-
-The wrapped action throws the error from the final failed attempt. Consumers can catch it:
-
-```typescript
-try {
-  await saveWithRetry();
-} catch (finalError) {
-  console.error('All retries failed:', finalError);
-}
-```
-
 ## See Also
 
-- [compodoc API documentation](https://cngxjs.github.io/cngx/)
-- [CngxAsyncClick](../async-click/) — The most common consumer of retry actions
-- [CngxAsyncState](../../../core/utils/) — The shared state interface
-- Demo: `dev-app/src/app/demos/common/retry-demo/`
+- [API on compodocx](https://cngxjs.github.io/cngx/)
+- [CngxAsyncClick](../async-click/) - The most common consumer of retry actions
+- [CngxAsyncState](../../../core/utils/) - The shared state interface
+- Demo: `examples/stories/common/retry-demo/`
 - Tests: `projects/common/interactive/retry/with-retry.spec.ts`

@@ -146,6 +146,6 @@ Sets surface color, border-radius (top corners only), drag handle styling, and s
 
 ## See Also
 
-- [CngxDialog](../dialog/README.md) — Base dialog directive
-- [CngxSwipeDismiss](../../interactive/README.md) — Swipe gesture detection
+- [CngxDialog](../dialog/README.md) - Base dialog directive
+- [CngxSwipeDismiss](../../interactive/README.md) - Swipe gesture detection
 - Compodoc API documentation: `npm run docs:serve`

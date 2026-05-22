@@ -40,7 +40,7 @@ CngxHoverable is a low-level interaction atom:
 - **Screen reader:** No announcements (purely visual feedback)
 - **Focus management:** No focus changes
 
-Hover state is mouse-only. Use `cngxHoverable` for visual feedback only — never gate critical functionality behind hover states. Provide keyboard alternatives.
+Hover state is mouse-only. Use `cngxHoverable` for visual feedback only - never gate critical functionality behind hover states. Provide keyboard alternatives.
 
 ## Composition
 
@@ -371,38 +371,10 @@ export class HelpIconComponent {
 }
 ```
 
-## Implementation Notes
-
-### Mouse-Only Interaction
-
-CngxHoverable uses mouseenter/mouseleave events, which are **mouse-only**. Touch and keyboard users will not trigger hover state.
-
-This is appropriate for:
-- Visual polish (shadows, highlights, animations)
-- Non-critical UI (hidden actions on hover)
-- Aesthetic effects
-
-This is **NOT appropriate for**:
-- Critical functionality (hide important controls behind hover)
-- Essential information (show important content only on hover)
-
-Always provide keyboard alternatives for any functionality that depends on hover.
-
-### Writable Signal
-
-The `hovered` signal is writable (`WritableSignal<boolean>`), allowing parent components to manually control hover state if needed:
-
-```typescript
-const hover = inject(CngxHoverable, { host: true });
-hover.hovered.set(true);  // Force hover state
-```
-
-This is rarely needed but enables special cases like testing or forced states.
-
 ## See Also
 
-- [compodoc API documentation](https://cngxjs.github.io/cngx/)
-- [CngxPressable](../ripple/) — Press feedback (pointer-down)
-- [CngxRipple](../ripple/) — Ripple animation (pointer-down)
-- Demo: `dev-app/src/app/demos/common/hoverable-demo/`
+- [API on compodocx](https://cngxjs.github.io/cngx/)
+- [CngxPressable](../ripple/) - Press feedback (pointer-down)
+- [CngxRipple](../ripple/) - Ripple animation (pointer-down)
+- Demo: `examples/stories/common/hoverable-demo/`
 - Tests: `projects/common/interactive/hoverable/hoverable.directive.spec.ts`

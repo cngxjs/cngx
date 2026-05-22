@@ -1,7 +1,7 @@
 # @cngx/ui/mat-tabs
 
 Material instrumentation directive for `<mat-tab-group>`. One attribute
-upgrade — composes `CngxTabGroupPresenter` via `hostDirectives`, so
+upgrade - composes `CngxTabGroupPresenter` via `hostDirectives`, so
 consumers gain commit-action lifecycle, `CNGX_STATEFUL` provision (and
 therefore `<cngx-toast-on />` / `<cngx-banner-on />` composition), and
 the cngx tab-handle registry without rewriting their template.
@@ -13,19 +13,19 @@ the cngx tab-handle registry without rewriting their template.
 </mat-tab-group>
 ```
 
-See compodoc for the full API surface (inputs, outputs, methods).
+See compodocx for the full API surface (inputs, outputs, methods).
 
 ## Styling
 
 The Material sticky-error skin (`.cngx-mat-tab--error`) is shipped as a
-**standalone stylesheet asset**, not bundled via component metadata —
+**standalone stylesheet asset**, not bundled via component metadata -
 Angular only honours `styleUrls` on `@Component`, not on `@Directive`,
 and `[cngxMatTabs]` instruments raw `<mat-tab-group>` (no template
 surface of its own). The consumer imports the file once in the app's
 global stylesheet:
 
 ```css
-/* dev-app/src/styles.css or your equivalent global stylesheet */
+/* examples/src/styles.scss or your equivalent global stylesheet */
 @import '@cngx/ui/mat-tabs/styles/mat-tabs.css';
 ```
 
@@ -72,7 +72,7 @@ the matching `.mat-mdc-tab` button via `Renderer2`:
 - **Cleared** on programmatic `presenter.clearLastFailed()` call.
 
 The decoration adds `class="cngx-mat-tab--error"` and
-`aria-invalid="true"` — consumers using AT pick up the standard ARIA
+`aria-invalid="true"` - consumers using AT pick up the standard ARIA
 signal automatically. For a richer announcement phrase, compose
 `<cngx-toast-on />` next to `[cngxMatTabs]` on the `<mat-tab-group>`
 element; the bridge reads the same `CNGX_STATEFUL` source as the
@@ -83,15 +83,15 @@ decoration.
 `[cngxMatTabError]` binds a `CngxErrorAggregatorContract` to a
 single `<mat-tab>`. The contract carries its own reactive surface
 (`shouldShow`, `announcement` are Signals); consumers pass the
-aggregator instance directly — no outer Signal wrapper required.
+aggregator instance directly - no outer Signal wrapper required.
 When the bound aggregator's `shouldShow()` flips `true` the
 matching Material tab button gains:
 
-- A `cngx-mat-tab--has-errors` class — visual badge (`!` glyph at
+- A `cngx-mat-tab--has-errors` class - visual badge (`!` glyph at
   the trailing-top corner of the button).
 - A child `<span class="cngx-sr-only" id="<handle-id>-errors">`
   carrying the aggregator's `announcement()` phrase.
-- An `aria-describedby` token referencing that span — the directive
+- An `aria-describedby` token referencing that span - the directive
   preserves any prior `aria-describedby` value and appends only its
   own token.
 
@@ -106,7 +106,7 @@ matching Material tab button gains:
 
 The aggregators come from `injectErrorAggregator()` (in
 `@cngx/common/interactive`). The visual is **independent** of the
-commit-action rejection lifecycle — a tab can carry both
+commit-action rejection lifecycle - a tab can carry both
 `--error` and `--has-errors` simultaneously, and the CSS skin offsets
 the `--has-errors` badge slightly when both classes co-occur so the
 two signals read as distinct.
@@ -137,7 +137,7 @@ Material's built-in horizontal scroll buttons (`<` / `>`) remain
 visible alongside the More button. The More button is laid out as a
 flex sibling of `.mat-mdc-tab-label-container` inside
 `.mat-mdc-tab-header`, so the available width is split across the
-pagination arrows, the label-container, and the More button — and
+pagination arrows, the label-container, and the More button - and
 the `IntersectionObserver` rooted on the label-container picks up
 the new container width automatically (`hiddenTabs` re-derives as
 the container shrinks).
@@ -159,5 +159,5 @@ The directive's afterNextRender block sets `position: relative` on
 `.mat-mdc-tab-header` only when the header's computed `position` is
 not already a positioning context (`relative` / `absolute` /
 `fixed` / `sticky`). Consumers who themed the header with their own
-non-static positioning keep their value — the directive does not
+non-static positioning keep their value - the directive does not
 overwrite.

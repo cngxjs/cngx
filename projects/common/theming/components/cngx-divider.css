@@ -69,6 +69,23 @@
   :root {
     --cngx-divider-color: var(--cngx-color-border);
   }
+
+  /* Dark-mode contrast lift — the foundation `--cngx-color-border` is
+   * tuned conservatively (browser-native aesthetic) and resolves to
+   * roughly 1.7:1 against the dark surface, which fails WCAG 2.1 SC
+   * 1.4.11 (Non-text Contrast 3:1) for a separator. Dividers are
+   * graphical UI components, so we override locally with a brighter
+   * neutral that lands around 3.2:1 against `--cngx-color-surface` in
+   * dark mode. Other border consumers keep the conservative default. */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-color-scheme='light']):not(.light) {
+      --cngx-divider-color: oklch(0.45 0.005 250);
+    }
+  }
+  [data-color-scheme='dark'],
+  .dark {
+    --cngx-divider-color: oklch(0.45 0.005 250);
+  }
 }
 
 @layer cngx.components {

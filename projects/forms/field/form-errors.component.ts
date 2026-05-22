@@ -42,6 +42,11 @@ import type { CngxFieldAccessor } from './models';
  *   </ng-template>
  * </cngx-form-errors>
  * ```
+ *
+ * <example-url>http://localhost:4200/#/forms/field/form-errors/basic</example-url>
+ * <example-url>http://localhost:4200/#/forms/field/form-errors/show-on-submit</example-url>
+ * <example-url>http://localhost:4200/#/forms/field/form-errors/custom-summary-template</example-url>
+ * <example-url>http://localhost:4200/#/forms/field/form-errors/server-error-injection</example-url>
  */
 @Component({
   selector: 'cngx-form-errors',

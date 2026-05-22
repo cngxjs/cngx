@@ -1,6 +1,6 @@
 # CngxMultiSelect
 
-Multi-value select with the same button-style trigger as [`CngxSelect`](../single-select/README.md), plus a chip strip showing the selected options. Same async-state, slot, and commit machinery — the value is `T[]` instead of `T | undefined`.
+Multi-value select with the same button-style trigger as [`CngxSelect`](../single-select/README.md), plus a chip strip showing the selected options. Same async-state, slot, and commit machinery - the value is `T[]` instead of `T | undefined`.
 
 ## When to use
 
@@ -39,31 +39,6 @@ export class TagPicker {
   ];
 }
 ```
-
-## Inputs (cheat-sheet)
-
-Most inputs mirror [`CngxSelect`](../single-select/README.md#inputs-cheat-sheet). Multi-specific:
-
-| Input                      | Type                                 | Purpose                            |
-| -------------------------- | ------------------------------------ | ---------------------------------- |
-| `[(values)]`               | `model<T[]>`                         | Two-way bound primary array        |
-| `[chipRemoveAriaLabel]`    | `string`                             | Per-chip remove-button ARIA prefix |
-| `[chipOverflow]`           | `'wrap' \| 'scroll-x' \| 'truncate'` | Chip-strip overflow strategy       |
-| `[maxVisibleChips]`        | `number`                             | Truncate after N with "+M" badge   |
-| `[hideSelectionIndicator]` | `boolean`                            | Suppress the per-row checkbox      |
-
-## Outputs
-
-| Output                                     | Payload                    | Fires on                      |
-| ------------------------------------------ | -------------------------- | ----------------------------- |
-| `(selectionChange)`                        | `CngxMultiSelectChange<T>` | Any user-driven values change |
-| `(optionToggled)`                          | `{ option, added }`        | Single option flipped on/off  |
-| `(cleared)`                                | `void`                     | Clear-all clicked             |
-| `(openedChange)` / `(opened)` / `(closed)` | as `CngxSelect`            | Panel lifecycle               |
-| `(retry)`                                  | `void`                     | Consumer retry                |
-| `(commitError)`                            | `unknown`                  | `commitAction` rejected       |
-
-`CngxMultiSelectChange<T>` carries `{ source, values, previousValues, added, removed, option, action: 'toggle' \| 'clear' \| 'select-all' }`.
 
 ## Forms integration
 
@@ -133,20 +108,7 @@ All [`CngxSelect` slots](../single-select/README.md#template-slots) plus:
 | `*cngxMultiSelectChip`         | Per-chip rendering                       |
 | `*cngxMultiSelectTriggerLabel` | Whole chip strip with text/badge summary |
 
-The selected-option label inside the default `<cngx-chip>` is also overridable via `*cngxSelectOptionLabel` — that template renders both in the panel rows AND in the default chip body.
-
-## Theming
-
-CSS variables on top of the [`CngxSelect` set](../single-select/README.md#theming):
-
-| Variable                                 | Default                          |
-| ---------------------------------------- | -------------------------------- |
-| `--cngx-multi-select-min-width`          | `var(--cngx-select-min-width)`   |
-| `--cngx-multi-select-chip-gap`           | `0.25rem`                        |
-| `--cngx-multi-select-chip-padding-block` | `0.15rem`                        |
-| `--cngx-select-chip-overflow-badge-bg`   | `var(--cngx-surface-2, #f3f4f6)` |
-
-Family-shared chip-strip layout variables (`--cngx-select-chip-list`, `--cngx-select-chip-radius`, …) come from `select-base.css`.
+The selected-option label inside the default `<cngx-chip>` is also overridable via `*cngxSelectOptionLabel` - that template renders both in the panel rows AND in the default chip body.
 
 ## Keyboard
 

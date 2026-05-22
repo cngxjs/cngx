@@ -99,7 +99,7 @@ Keyboard directives are orthogonal interaction atoms:
 
 ## Styling
 
-All keyboard directives are behavioral — no built-in styling.
+All keyboard directives are behavioral - no built-in styling.
 
 ## Examples
 
@@ -302,11 +302,11 @@ openPalette() {
 Shortcut strings use modifiers and keys separated by `+`:
 
 **Modifiers:**
-- `mod` — Platform-aware: Cmd on macOS, Ctrl elsewhere
-- `ctrl` — Control key
-- `shift` — Shift key
-- `alt` — Alt/Option key
-- `meta` — Windows/Command key
+- `mod` - Platform-aware: Cmd on macOS, Ctrl elsewhere
+- `ctrl` - Control key
+- `shift` - Shift key
+- `alt` - Alt/Option key
+- `meta` - Windows/Command key
 
 **Keys:**
 - Single keys: `'a'`, `'1'`, `'escape'`, `'enter'`, `'space'`
@@ -314,66 +314,15 @@ Shortcut strings use modifiers and keys separated by `+`:
 - Function keys: `'f1'`, `'f2'`, ... `'f12'`
 
 **Examples:**
-- `'mod+s'` — Cmd+S (macOS) or Ctrl+S (Windows/Linux)
-- `'ctrl+shift+k'` — Ctrl+Shift+K
-- `'escape'` — Escape key alone
-- `'enter'` — Enter key alone
-
-## Implementation Notes
-
-### CngxSearch Debouncing
-
-RxJS is used here legitimately: converting a DOM event stream to a Signal at the API boundary. The raw Observable is never exposed:
-
-```typescript
-fromEvent<InputEvent>(inputElement, 'input')
-  .pipe(
-    map((e) => (e.target as HTMLInputElement).value),
-    switchMap((value) => timer(debounceMs).pipe(map(() => value))),
-    takeUntilDestroyed()
-  )
-  .subscribe((term) => {
-    termState.set(term);
-    searchChange.emit(term);
-  });
-```
-
-### Click-Outside Logic
-
-CngxClickOutside checks if the event target is outside the host's subtree:
-
-```typescript
-if (this.enabled() && !hostElement.contains(eventTarget)) {
-  this.clickOutside.emit(event);
-}
-```
-
-This is cheap and accurate — no z-index or DOM position calculations needed.
-
-### Keyboard Shortcut Matching
-
-Shortcuts are memoized after parsing to avoid re-parsing on every keystroke:
-
-```typescript
-private parsedCombo: KeyCombo | null = null;
-private parsedComboStr = '';
-
-parseCurrentCombo(): KeyCombo | null {
-  const str = this.shortcut();
-  if (str !== this.parsedComboStr) {
-    this.parsedComboStr = str;
-    this.parsedCombo = parseKeyCombo(str);
-  }
-  return this.parsedCombo;
-}
-```
-
-Global scope shortcuts skip input elements automatically via `INPUT_TAGS` check.
+- `'mod+s'` - Cmd+S (macOS) or Ctrl+S (Windows/Linux)
+- `'ctrl+shift+k'` - Ctrl+Shift+K
+- `'escape'` - Escape key alone
+- `'enter'` - Enter key alone
 
 ## See Also
 
 - [compodocx API documentation](https://cngxjs.github.io/cngx/)
-- [CngxLongPress and CngxSwipeDismiss](../gestures/) — Gesture-based interactions
-- [parseKeyCombo from @cngx/core/utils](../../../core/utils/) — Keyboard parsing utilities
-- Demo: `dev-app/src/app/demos/common/keyboard-demo/`
+- [CngxLongPress and CngxSwipeDismiss](../gestures/) - Gesture-based interactions
+- [parseKeyCombo from @cngx/core/utils](../../../core/utils/) - Keyboard parsing utilities
+- Demo: `examples/stories/common/keyboard-demo/`
 - Tests: `projects/common/interactive/keyboard/keyboard-shortcut.directive.spec.ts`

@@ -33,6 +33,11 @@ import { nextUid } from '@cngx/core/utils';
  * - Commit/async behaviour — remove simply fires an event; the parent
  *   decides whether to write state directly or route through a commit
  *   flow. This keeps the chip usable from any level of the stack.
+ *
+ * <example-url>http://localhost:4200/#/common/display/chip/basic</example-url>
+ * <example-url>http://localhost:4200/#/common/display/chip/removable</example-url>
+ * <example-url>http://localhost:4200/#/common/display/chip/color-palette</example-url>
+ * <example-url>http://localhost:4200/#/common/display/chip/custom-close-icon</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/chip-group/basic-pick-exactly-one-size</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/chip-interaction/basic-toggle-on-click-space-or-enter</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/chip-interaction/disabled-state</example-url>

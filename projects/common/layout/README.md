@@ -47,7 +47,7 @@ bottom of a list. Fires `loadMore` when the sentinel enters the viewport.
 
 ## CngxStickyHeader
 
-Communicates when a `position: sticky` element becomes stuck. Does NOT apply sticky positioning — CSS handles that. Inserts a sentinel element before the host and uses `IntersectionObserver` to detect when the sentinel scrolls out.
+Communicates when a `position: sticky` element becomes stuck. Does NOT apply sticky positioning - CSS handles that. Inserts a sentinel element before the host and uses `IntersectionObserver` to detect when the sentinel scrolls out.
 
 ```html
 <header cngxStickyHeader style="position: sticky; top: 0;">
@@ -108,7 +108,7 @@ Manages text truncation with expand/collapse state detection. Applies `-webkit-l
 - Host styles applied automatically: `-webkit-line-clamp`, `display: -webkit-box`, `-webkit-box-orient: vertical`, `overflow: hidden`.
 - All styles removed when expanded.
 - `ResizeObserver` re-checks on container resize.
-- `isClamped` is only updated when collapsed — expanded state preserves the last known value.
+- `isClamped` is only updated when collapsed - expanded state preserves the last known value.
 - Consumer is responsible for the toggle button and `aria-expanded` attribute.
 
 ## Other Exports

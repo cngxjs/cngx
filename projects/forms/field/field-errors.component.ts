@@ -36,6 +36,11 @@ import { CNGX_ERROR_MESSAGES } from './form-field.token';
  *   </ng-template>
  * </cngx-field-errors>
  * ```
+ *
+ * <example-url>http://localhost:4200/#/forms/field/field-errors/basic</example-url>
+ * <example-url>http://localhost:4200/#/forms/field/field-errors/multiple-validators</example-url>
+ * <example-url>http://localhost:4200/#/forms/field/field-errors/custom-error-template</example-url>
+ * <example-url>http://localhost:4200/#/forms/field/field-errors/with-registry-messages</example-url>
  */
 @Component({
   selector: 'cngx-field-errors',
