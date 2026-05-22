@@ -33,20 +33,29 @@ export const ANCHOR_AREA_PROPERTY = ANCHOR_SUPPORT.propertyName;
  *
  * Uses physical keywords only — Chrome does not support logical keywords
  * (`start`/`end`/`span-inline-*`) in `position-area` as of Chrome 140.
- * Supported: `top`, `bottom`, `left`, `right`, `span-all`,
- * `top left`, `top right`, `bottom left`, `bottom right`.
+ *
+ * `*-start` and `*-end` resolve to a `<direction> <span-*>` pair, NOT a
+ * corner cell (`top right` etc.). Corner-cell values produce diagonal
+ * placement relative to the anchor — visually wrong for edge-aligned
+ * popovers. The `<direction> <span-*>` form keeps the popover on the
+ * named edge while spanning toward the named alignment:
+ *   `right-start` → `right span-bottom` (right column, anchor's top edge aligned)
+ *   `right-end`   → `right span-top`    (right column, anchor's bottom edge aligned)
+ * Single-keyword placements (`top`/`bottom`/`left`/`right`) resolve to
+ * the edge-centered case (`position-area: right` + default
+ * `justify-self: anchor-center`) and need no span keyword.
  */
 export const POSITION_AREA: Record<PopoverPlacement, string> = {
-  top: 'top',
-  'top-start': 'top left',
-  'top-end': 'top right',
-  bottom: 'bottom',
-  'bottom-start': 'bottom left',
-  'bottom-end': 'bottom right',
-  left: 'left',
-  'left-start': 'top left',
-  'left-end': 'bottom left',
-  right: 'right',
-  'right-start': 'top right',
-  'right-end': 'bottom right',
+  top: 'top span-all',
+  'top-start': 'top span-right',
+  'top-end': 'top span-left',
+  bottom: 'bottom span-all',
+  'bottom-start': 'bottom span-right',
+  'bottom-end': 'bottom span-left',
+  left: 'left span-all',
+  'left-start': 'left span-bottom',
+  'left-end': 'left span-top',
+  right: 'right span-all',
+  'right-start': 'right span-bottom',
+  'right-end': 'right span-top',
 };
