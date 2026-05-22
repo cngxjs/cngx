@@ -426,6 +426,18 @@ html.dark .cngx-ex-tag[data-dim='stability'][data-value='deprecated'] {
   margin-bottom: 4px;
 }
 
+// Demo-only card surface used by inside-a-dismissible-card. Keeps thematic
+// chrome (border, surface, radius, padding) off inline styles so the close
+// button atom keeps its absolute-positioned corner without bleeding tokens
+// into the story body.
+.demo-dismissible-card {
+  padding: 16px 40px 16px 16px;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e0e0e0));
+  border-radius: var(--cngx-radius-md, 8px);
+  background: var(--cngx-color-surface, var(--cngx-ex-surface, #ffffff));
+  color: var(--cngx-color-text, var(--cngx-ex-text, inherit));
+}
+
 // Demo-only scroll frame + row utilities. Used by the recycler and
 // paginated-list demos so border/border-radius/border-color don't
 // scatter through inline styles.
