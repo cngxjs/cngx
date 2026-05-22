@@ -14,7 +14,7 @@ export const STORY: DemoSpec = {
     { label: 'WCAG 3.3.1 Error Identification', href: 'https://www.w3.org/WAI/WCAG21/Understanding/error-identification.html' },
   ],
   moduleImports: [
-    "import { form, schema, required, submit, type ValidationError } from '@angular/forms/signals';",
+    "import { form, schema, required, submit, type FieldTree, type ValidationError } from '@angular/forms/signals';",
     "import { CngxFormField, CngxLabel, CngxFieldErrors, CngxFormErrors } from '@cngx/forms/field';",
     "import { CngxInput } from '@cngx/forms/input';",
   ],
@@ -37,12 +37,13 @@ export const STORY: DemoSpec = {
       if (!this.failNext()) {
         return undefined;
       }
+      // FieldTree is invariant in TModel; per-field errors require widening to FieldTree<unknown>.
       const errors: ValidationError.WithFieldTree[] = [];
       if (f.username().value()) {
-        errors.push({ fieldTree: f.username, kind: 'server', message: 'Username already taken' });
+        errors.push({ fieldTree: f.username as FieldTree<unknown>, kind: 'server', message: 'Username already taken' });
       }
       if (f.email().value()) {
-        errors.push({ fieldTree: f.email, kind: 'server', message: 'Email already registered' });
+        errors.push({ fieldTree: f.email as FieldTree<unknown>, kind: 'server', message: 'Email already registered' });
       }
       return errors.length ? errors : undefined;
     });
