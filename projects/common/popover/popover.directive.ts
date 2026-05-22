@@ -67,6 +67,15 @@ function warnMissingPopoverApi(el: HTMLElement): void {
 
 /** Tracks which Documents have already warned about missing Floating-UI middleware. */
 const floatingMiddlewareWarnedDocs = new WeakSet<Document>();
+
+/**
+ * @internal — test hook. Resets the per-Document warning suppression so
+ * specs can exercise the warning path against a shared jsdom Document.
+ * Do not call from production code.
+ */
+export function __resetFloatingMiddlewareWarnings(doc: Document): void {
+  floatingMiddlewareWarnedDocs.delete(doc);
+}
 function warnMissingFloatingMiddleware(doc: Document): void {
   if (floatingMiddlewareWarnedDocs.has(doc) || !isDevMode()) {
     return;

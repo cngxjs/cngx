@@ -6,9 +6,13 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { CngxPopover } from '@cngx/common/popover';
 
 import { CngxMenuItem } from './menu-item.directive';
-import { CngxMenuItemSubmenu } from './menu-item-submenu.directive';
+import {
+  CngxMenuItemSubmenu,
+  __resetSubmenuFallbackWarnings,
+} from './menu-item-submenu.directive';
 import { CngxMenuTrigger } from './menu-trigger.directive';
 import { CngxMenu } from './menu.directive';
+import { CNGX_SUBMENU_TRY_FALLBACKS } from './submenu-defaults';
 
 function polyfillPopover(): void {
   const proto = HTMLElement.prototype as unknown as {
@@ -246,9 +250,123 @@ describe('CngxMenuItemSubmenu — applied without a sibling [cngxMenuItem]', () 
       const submenuDe = fixture.debugElement.query(By.directive(CngxMenuItemSubmenu));
       const submenu = submenuDe.injector.get(CngxMenuItemSubmenu);
       expect(submenu.id).toMatch(/^cngx-menu-submenu-/);
-      expect(warnSpy).toHaveBeenCalledOnce();
-      expect(warnSpy.mock.calls[0][0]).toContain('cngxMenuItemSubmenu');
-      expect(warnSpy.mock.calls[0][0]).toContain('cngxMenuItem');
+      expect(warnSpy).toHaveBeenCalled();
+      const submenuWarn = warnSpy.mock.calls.find((call) =>
+        String(call[0]).includes('cngxMenuItemSubmenu'),
+      );
+      expect(submenuWarn).toBeDefined();
+      expect(submenuWarn![0]).toContain('cngxMenuItem');
+    } finally {
+      warnSpy.mockRestore();
+    }
+  });
+});
+
+@Component({
+  template: `
+    <button
+      type="button"
+      [cngxMenuTrigger]="outer"
+      [popover]="outerPop"
+      #trigger="cngxMenuTrigger"
+    >
+      Actions
+    </button>
+    <div cngxPopover #outerPop="cngxPopover">
+      <ul cngxMenu [label]="'Outer'" tabindex="0" #outer="cngxMenu">
+        <li
+          cngxMenuItem
+          [cngxMenuItemSubmenu]="innerPop"
+          [submenuMenu]="inner"
+          value="recent"
+        >
+          Open Recent
+        </li>
+      </ul>
+    </div>
+    <div
+      cngxPopover
+      #innerPop="cngxPopover"
+      [exclusive]="false"
+      [positionTryFallbacks]="fallbacks"
+    >
+      <ul cngxMenu [label]="'Recent'" tabindex="0" #inner="cngxMenu">
+        <li cngxMenuItem value="file1">file1.ts</li>
+      </ul>
+    </div>
+  `,
+  imports: [CngxMenu, CngxMenuItem, CngxMenuItemSubmenu, CngxMenuTrigger, CngxPopover],
+})
+class WiredFallbacksHost {
+  readonly fallbacks = CNGX_SUBMENU_TRY_FALLBACKS;
+}
+
+describe('CngxMenuItemSubmenu submenu try-fallbacks dev warning', () => {
+  beforeEach(() => {
+    polyfillPopover();
+    __resetSubmenuFallbackWarnings(document);
+  });
+
+  it('does not warn when CNGX_SUBMENU_TRY_FALLBACKS is wired on the submenu popover', () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    try {
+      TestBed.configureTestingModule({ imports: [WiredFallbacksHost] });
+      const fixture = TestBed.createComponent(WiredFallbacksHost);
+      fixture.detectChanges();
+      TestBed.tick();
+      fixture.detectChanges();
+      const fallbackWarn = warnSpy.mock.calls.find((call) =>
+        String(call[0]).includes('positionTryFallbacks'),
+      );
+      expect(fallbackWarn).toBeUndefined();
+    } finally {
+      warnSpy.mockRestore();
+    }
+  });
+
+  it('warns once per Document when the submenu popover lacks try-fallbacks', () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    try {
+      TestBed.configureTestingModule({ imports: [SubmenuHost] });
+      const fixture = TestBed.createComponent(SubmenuHost);
+      fixture.detectChanges();
+      TestBed.tick();
+      fixture.detectChanges();
+      const fallbackWarn = warnSpy.mock.calls.filter((call) =>
+        String(call[0]).includes('positionTryFallbacks'),
+      );
+      expect(fallbackWarn.length).toBe(1);
+      expect(fallbackWarn[0][0]).toContain('CNGX_SUBMENU_TRY_FALLBACKS');
+    } finally {
+      warnSpy.mockRestore();
+    }
+  });
+
+  it('does not re-warn for the same Document on a second submenu instance', () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    try {
+      TestBed.configureTestingModule({ imports: [SubmenuHost] });
+      const first = TestBed.createComponent(SubmenuHost);
+      first.detectChanges();
+      TestBed.tick();
+      first.detectChanges();
+
+      const callsAfterFirst = warnSpy.mock.calls.filter((call) =>
+        String(call[0]).includes('positionTryFallbacks'),
+      ).length;
+
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({ imports: [SubmenuHost] });
+      const second = TestBed.createComponent(SubmenuHost);
+      second.detectChanges();
+      TestBed.tick();
+      second.detectChanges();
+
+      const callsAfterSecond = warnSpy.mock.calls.filter((call) =>
+        String(call[0]).includes('positionTryFallbacks'),
+      ).length;
+      expect(callsAfterFirst).toBe(1);
+      expect(callsAfterSecond).toBe(1);
     } finally {
       warnSpy.mockRestore();
     }

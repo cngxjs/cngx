@@ -232,6 +232,15 @@ export class CngxMenuItemSubmenu implements CngxMenuSubmenuLike {
 
 /** Tracks which Documents have already warned about a submenu popover missing position-try-fallbacks. */
 const submenuFallbackWarnedDocs = new WeakSet<Document>();
+
+/**
+ * @internal — test hook. Resets the per-Document warning suppression so
+ * specs can exercise the warning path against a shared jsdom Document.
+ * Do not call from production code.
+ */
+export function __resetSubmenuFallbackWarnings(doc: Document): void {
+  submenuFallbackWarnedDocs.delete(doc);
+}
 function warnMissingSubmenuFallbacks(popoverEl: HTMLElement): void {
   const doc = popoverEl.ownerDocument;
   if (submenuFallbackWarnedDocs.has(doc)) {

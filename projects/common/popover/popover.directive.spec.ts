@@ -2,7 +2,8 @@ import { Component, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { CngxPopover } from './popover.directive';
+import { CngxPopover, __resetFloatingMiddlewareWarnings } from './popover.directive';
+import { CNGX_FLOATING_FALLBACK, provideFloatingFallback } from './floating-fallback';
 import type { PopoverPositionTryFallback } from './popover.types';
 
 // Test helpers
@@ -279,6 +280,93 @@ describe('CngxPopover', () => {
       fixture.detectChanges();
       TestBed.flushEffects();
       expect(popoverEl.style.getPropertyValue('position-try-fallbacks')).toBe('');
+    });
+  });
+
+  describe('floating fallback middleware warning', () => {
+    it('warns once when provideFloatingFallback ships without middleware', () => {
+      __resetFloatingMiddlewareWarnings(document);
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+      const computePosition = vi.fn().mockResolvedValue({ x: 0, y: 0, placement: 'bottom' });
+      try {
+        TestBed.configureTestingModule({
+          imports: [BasicHost],
+          providers: [provideFloatingFallback(computePosition)],
+        });
+        const { fixture, popoverEl } = setup(BasicHost);
+        const host = fixture.componentInstance as BasicHost;
+        host.popover().anchorElement.set(popoverEl);
+        host.popover().show();
+        const middlewareWarn = warnSpy.mock.calls.find((call) =>
+          String(call[0]).includes('provideFloatingFallback'),
+        );
+        expect(middlewareWarn).toBeDefined();
+        expect(middlewareWarn![0]).toContain('flip()');
+        expect(middlewareWarn![0]).toContain('shift()');
+      } finally {
+        warnSpy.mockRestore();
+      }
+    });
+
+    it('does not warn when middleware is provided on registration', () => {
+      __resetFloatingMiddlewareWarnings(document);
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+      const computePosition = vi.fn().mockResolvedValue({ x: 0, y: 0, placement: 'bottom' });
+      const fakeFlip = { name: 'flip' };
+      const fakeShift = { name: 'shift' };
+      try {
+        TestBed.configureTestingModule({
+          imports: [BasicHost],
+          providers: [provideFloatingFallback(computePosition, [fakeFlip, fakeShift])],
+        });
+        const { fixture, popoverEl } = setup(BasicHost);
+        const host = fixture.componentInstance as BasicHost;
+        host.popover().anchorElement.set(popoverEl);
+        host.popover().show();
+        const middlewareWarn = warnSpy.mock.calls.find((call) =>
+          String(call[0]).includes('provideFloatingFallback'),
+        );
+        expect(middlewareWarn).toBeUndefined();
+      } finally {
+        warnSpy.mockRestore();
+      }
+    });
+
+    it('does not re-warn for the same Document on subsequent shows', () => {
+      __resetFloatingMiddlewareWarnings(document);
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+      const computePosition = vi.fn().mockResolvedValue({ x: 0, y: 0, placement: 'bottom' });
+      try {
+        TestBed.configureTestingModule({
+          imports: [BasicHost],
+          providers: [provideFloatingFallback(computePosition)],
+        });
+        const first = setup(BasicHost);
+        (first.fixture.componentInstance as BasicHost).popover().anchorElement.set(first.popoverEl);
+        (first.fixture.componentInstance as BasicHost).popover().show();
+
+        TestBed.resetTestingModule();
+        TestBed.configureTestingModule({
+          imports: [BasicHost],
+          providers: [provideFloatingFallback(computePosition)],
+        });
+        const second = setup(BasicHost);
+        (second.fixture.componentInstance as BasicHost)
+          .popover()
+          .anchorElement.set(second.popoverEl);
+        (second.fixture.componentInstance as BasicHost).popover().show();
+
+        const middlewareWarns = warnSpy.mock.calls.filter((call) =>
+          String(call[0]).includes('provideFloatingFallback'),
+        );
+        expect(middlewareWarns.length).toBe(1);
+      } finally {
+        warnSpy.mockRestore();
+      }
+    });
+
+    it('compiles against the typed CNGX_FLOATING_FALLBACK token shape', () => {
+      expect(CNGX_FLOATING_FALLBACK).toBeDefined();
     });
   });
 });
