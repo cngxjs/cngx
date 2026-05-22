@@ -51,7 +51,7 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
  * exposed flags. Per Pillar 3 (Komposition statt Konfiguration), the
  * group composes `CngxRovingTabindex` as a host directive and emits
  * no implicit children — consumers project `<cngx-checkbox>` instances
- * (or any other CNGX_CONTROL_VALUE-bearing atom) and bind each leaf's
+ * (or any other CNGX_CONTROL_VALUE-bearing leaf) and bind each leaf's
  * value-tracking themselves.
  *
  * `[allValues]` is optional; when supplied, `allSelected` reflects

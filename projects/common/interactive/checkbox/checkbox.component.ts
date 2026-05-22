@@ -40,9 +40,10 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
  * across the family.
  *
  * Visual indicator state is delegated to `<cngx-checkbox-indicator>`
- * from `@cngx/common/display`; the interactive atom owns role,
- * keyboard, and ARIA wiring. Per Pillar 3 (Komposition statt
- * Konfiguration), the visual atom is reused — never re-drawn here.
+ * from `@cngx/common/display`; this interactive molecule owns role,
+ * keyboard, and ARIA wiring and composes the display atom. Per
+ * Pillar 3 (Komposition statt Konfiguration), the visual atom is
+ * reused — never re-drawn here.
  *
  * `aria-checked` is a reactive computed: `indeterminate() ? 'mixed' :
  * value() ? 'true' : 'false'`. The description span for
