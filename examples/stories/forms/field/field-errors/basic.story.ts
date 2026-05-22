@@ -14,7 +14,7 @@ export const STORY: DemoSpec = {
     'import { form, schema, required } from \'@angular/forms/signals\';',
     'import { CngxFormField, CngxLabel, CngxFieldErrors } from \'@cngx/forms/field\';',
   ],
-  imports: ['CngxFormField', 'CngxLabel', 'CngxFieldErrors'],
+  imports: ['FormsModule', 'CngxFormField', 'CngxLabel', 'CngxFieldErrors'],
   references: [
     { label: 'WCAG 3.3.1 Error Identification', href: 'https://www.w3.org/WAI/WCAG21/Understanding/error-identification.html' },
   ],

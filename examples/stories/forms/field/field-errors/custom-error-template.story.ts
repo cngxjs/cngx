@@ -14,7 +14,7 @@ export const STORY: DemoSpec = {
     'import { form, schema, required, minLength } from \'@angular/forms/signals\';',
     'import { CngxFormField, CngxLabel, CngxFieldErrors } from \'@cngx/forms/field\';',
   ],
-  imports: ['CngxFormField', 'CngxLabel', 'CngxFieldErrors'],
+  imports: ['FormsModule', 'CngxFormField', 'CngxLabel', 'CngxFieldErrors'],
   setup: `protected readonly model = signal<{ password: string }>({ password: '' });
   protected readonly profile = form(this.model, schema((root) => {
     required(root.password, { message: 'Password is required.' });
