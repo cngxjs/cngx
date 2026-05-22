@@ -11,13 +11,16 @@
 
 @layer cngx.tokens {
   /**
-   * Active size of the radio glyph — consumed by the inner circle and
-   * pinned by the size-variant classes.
+   * Active size of the radio glyph. `inherits: true` is load-bearing —
+   * the inner `__circle` is a child of the host, and the size-variant
+   * classes (`--sm` / `--md` / `--lg`) set this token on the host. With
+   * `inherits: false` the child would only see the registered initial
+   * value, and the size variants would render identically.
    * @group Layout
    */
   @property --cngx-radio-indicator-size {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 1em;
   }
 
@@ -33,22 +36,24 @@
   }
 
   /**
-   * Background of the unchecked circle.
+   * Background of the unchecked circle. Inherited so a host-level
+   * override reaches the `__circle` child that consumes it.
    * @group Surface
    */
   @property --cngx-radio-indicator-bg {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: transparent;
   }
 
   /**
-   * Stroke width of the unchecked circle.
+   * Stroke width of the unchecked circle. Inherited so a host-level
+   * override reaches the `__circle` child that consumes it.
    * @group Surface
    */
   @property --cngx-radio-indicator-border-width {
     syntax: '<length>';
-    inherits: false;
+    inherits: true;
     initial-value: 1.5px;
   }
 
@@ -86,16 +91,23 @@
       background-color 120ms ease;
   }
 
-  /**
-   * Diameter of the inner dot. Defaults to half the circle size so
-   * the dot reads as concentric without specific tuning.
+  /* `--cngx-radio-indicator-dot-size` is intentionally NOT registered
+   * via `@property`. The dot's width / height rule provides a calc
+   * fallback that derives from `--cngx-radio-indicator-size`, so the
+   * dot scales with the ring across the `sm` / `md` / `lg` variants
+   * by default. Consumers can still set
+   * `--cngx-radio-indicator-dot-size: 0.6em` to fix the dot at a
+   * specific length and break the scaling — that consumer-side
+   * override wins over the calc fallback because the variable is
+   * then defined. Registering it with an initial-value would shadow
+   * the fallback, freezing the dot at a constant size regardless of
+   * the active size variant.
+   *
+   * Documented for consumers as: "Diameter of the inner dot. Defaults
+   * to half the circle size so the dot reads as concentric without
+   * specific tuning. Set to a length to opt out of auto-scaling."
    * @group State / Checked
    */
-  @property --cngx-radio-indicator-dot-size {
-    syntax: '*';
-    inherits: false;
-    initial-value: 0.5em;
-  }
 
   /**
    * Size token for the `.cngx-radio-indicator--sm` variant.
@@ -103,7 +115,7 @@
    */
   @property --cngx-radio-indicator-size-sm {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0.875em;
   }
 
@@ -113,7 +125,7 @@
    */
   @property --cngx-radio-indicator-size-md {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 1em;
   }
 
@@ -123,7 +135,7 @@
    */
   @property --cngx-radio-indicator-size-lg {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 1.25em;
   }
 
