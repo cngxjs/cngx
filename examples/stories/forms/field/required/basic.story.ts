@@ -27,32 +27,38 @@ export const STORY: DemoSpec = {
       href: 'https://www.w3.org/TR/wai-aria-1.2/#aria-required',
     },
   ],
-  controls: [
-    { key: 'mandatory', type: 'bool', label: 'Required validator', default: true },
-  ],
   setup: `protected readonly model = signal<{ email: string }>({ email: '' });
   protected readonly requiredForm = form(this.model, schema((root) => {
     required(root.email, { message: 'Please enter an email' });
   }));
   protected readonly optionalForm = form(this.model);`,
+  setupChrome: `protected readonly mandatory = signal(true);`,
   template: `  <div style="display:grid;gap:16px;max-width:420px">
-    <cngx-form-field [field]="mandatory.value() ? requiredForm.email : optionalForm.email">
+    <cngx-form-field [field]="mandatory() ? requiredForm.email : optionalForm.email">
       <label cngxLabel>Email <cngx-required /></label>
       <input
         type="email"
-        [ngModel]="mandatory.value() ? requiredForm.email().value() : optionalForm.email().value()"
-        (ngModelChange)="mandatory.value() ? requiredForm.email().value.set($event) : optionalForm.email().value.set($event)"
+        [ngModel]="mandatory() ? requiredForm.email().value() : optionalForm.email().value()"
+        (ngModelChange)="mandatory() ? requiredForm.email().value.set($event) : optionalForm.email().value.set($event)"
       />
     </cngx-form-field>
   </div>`,
-  templateChrome: `<div class="event-grid" style="margin-top:8px">
+  templateChrome: `<div class="button-row">
+      <label class="chip" style="cursor:pointer">
+        <input type="checkbox" [checked]="mandatory()"
+               (change)="mandatory.set($any($event.target).checked)"
+               style="margin-right:6px" />
+        Required validator
+      </label>
+    </div>
+<div class="event-grid" style="margin-top:8px">
       <div class="event-row">
         <span class="event-label">Validator</span>
-        <span class="event-value">{{ mandatory.value() ? 'required' : 'optional' }}</span>
+        <span class="event-value">{{ mandatory() ? 'required' : 'optional' }}</span>
       </div>
       <div class="event-row">
         <span class="event-label">Marker rendered</span>
-        <span class="event-value">{{ mandatory.value() ? 'yes' : 'no' }}</span>
+        <span class="event-value">{{ mandatory() ? 'yes' : 'no' }}</span>
       </div>
     </div>`,
 };
