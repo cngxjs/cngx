@@ -73,13 +73,24 @@ A `cngxMenu` with `cngxMenuItem` children. The menu fires `itemActivated` on Ent
   Open recent
 </li>
 
-<div cngxPopover #recentPop="cngxPopover" placement="right-start" [exclusive]="false">
+<div cngxPopover #recentPop="cngxPopover" placement="right-start" [exclusive]="false"
+     [positionTryFallbacks]="CNGX_SUBMENU_TRY_FALLBACKS">
   <ul cngxMenu [label]="'Recent files'" tabindex="0" #recentMenu="cngxMenu">
     <li cngxMenuItem value="plan.md">plan.md</li>
     <li cngxMenuItem value="notes.txt">notes.txt</li>
   </ul>
 </div>
 ```
+
+#### Submenu collision recovery
+
+When the preferred edge clips the viewport, CSS Anchor Positioning's `position-try-fallbacks` flips the submenu to a fitting edge. The library ships `CNGX_SUBMENU_TRY_FALLBACKS` (`['flip-inline', 'flip-block', 'flip-block flip-inline']`) as the recommended chain — matches the `@cngx/forms/select` panel precedent and covers right-edge, bottom-edge, and diagonal clipping.
+
+```ts
+import { CNGX_SUBMENU_TRY_FALLBACKS } from '@cngx/common/interactive';
+```
+
+`CngxMenuItemSubmenu` emits a one-shot dev-mode warning when a submenu popover ships without `positionTryFallbacks` so the wiring stays explicit.
 
 ### Checkable items and radio groups
 
