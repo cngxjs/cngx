@@ -59,9 +59,13 @@
   }
 
   /**
-   * Background tint of the keyboard-highlighted item. Low-alpha
-   * primary so the highlight reads as an accent without competing
-   * with checked-state visuals.
+   * Background tint of the keyboard-highlighted item. Resolved at
+   * `:root` as `color-mix(in oklch, var(--cngx-color-primary) 10%,
+   * transparent)` so the tint tracks whichever primary the theme
+   * (cngx default, Material bridge, brand override) feeds. The
+   * `@property` initial-value below is the literal fallback used
+   * when neither the foundation token nor the `:root` declaration
+   * resolves.
    * @group State / Highlighted
    * @see [[--cngx-color-primary]]
    */
@@ -182,36 +186,54 @@
   }
 
   /*
-   * Default-theme palette. Highlight tint flips to a higher-alpha
-   * primary on dark surfaces so the accent stays perceptible without
-   * blowing out into a solid block. The kbd muted-color flips on
-   * the same axis so the shortcut hint stays readable on dark
-   * popover surfaces.
+   * Default-theme palette. Highlight tint is a `color-mix()` of the
+   * foundation primary so the accent follows the bridge — Material's
+   * `--mat-sys-primary` (or any other theme that overrides
+   * `--cngx-color-primary`) flows through unchanged. Alpha lifts on
+   * dark surfaces so the tint stays perceptible without blowing out
+   * into a solid block. The kbd muted-color flips on the same axis
+   * so the shortcut hint stays readable on dark popover surfaces.
    */
   :root {
     --cngx-menu-focus-outline-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
     --cngx-menu-item-checked-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
     --cngx-menu-separator-color: var(--cngx-color-border, oklch(0.89 0 0));
-    --cngx-menu-item-highlight-bg: oklch(0.66 0.19 50 / 0.1);
+    --cngx-menu-item-highlight-bg: color-mix(
+      in oklch,
+      var(--cngx-color-primary, oklch(0.66 0.19 50)) 10%,
+      transparent
+    );
     --cngx-menu-item-kbd-color: oklch(0.45 0 0);
   }
 
   @media (prefers-color-scheme: dark) {
     :root:not([data-color-scheme='light']):not(.light) {
-      --cngx-menu-item-highlight-bg: oklch(0.72 0.18 50 / 0.18);
+      --cngx-menu-item-highlight-bg: color-mix(
+        in oklch,
+        var(--cngx-color-primary, oklch(0.72 0.18 50)) 18%,
+        transparent
+      );
       --cngx-menu-item-kbd-color: oklch(0.7 0 0);
     }
   }
 
   :root[data-color-scheme='dark'],
   :root.dark {
-    --cngx-menu-item-highlight-bg: oklch(0.72 0.18 50 / 0.18);
+    --cngx-menu-item-highlight-bg: color-mix(
+      in oklch,
+      var(--cngx-color-primary, oklch(0.72 0.18 50)) 18%,
+      transparent
+    );
     --cngx-menu-item-kbd-color: oklch(0.7 0 0);
   }
 
   :root[data-color-scheme='light'],
   :root.light {
-    --cngx-menu-item-highlight-bg: oklch(0.66 0.19 50 / 0.1);
+    --cngx-menu-item-highlight-bg: color-mix(
+      in oklch,
+      var(--cngx-color-primary, oklch(0.66 0.19 50)) 10%,
+      transparent
+    );
     --cngx-menu-item-kbd-color: oklch(0.45 0 0);
   }
 }
