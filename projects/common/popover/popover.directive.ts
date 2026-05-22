@@ -65,6 +65,24 @@ function warnMissingPopoverApi(el: HTMLElement): void {
   }
 }
 
+/** Tracks which Documents have already warned about missing Floating-UI middleware. */
+const floatingMiddlewareWarnedDocs = new WeakSet<Document>();
+function warnMissingFloatingMiddleware(doc: Document): void {
+  if (floatingMiddlewareWarnedDocs.has(doc) || !isDevMode()) {
+    return;
+  }
+  floatingMiddlewareWarnedDocs.add(doc);
+  console.warn(
+    'CngxPopover: provideFloatingFallback(computePosition) was registered without middleware. ' +
+      'Popovers in browsers without CSS Anchor Positioning will clip against the viewport edge ' +
+      'because no flip/shift recovery is configured. Pass middleware on registration:\n\n' +
+      "  import { computePosition, flip, offset, shift } from '@floating-ui/dom';\n\n" +
+      '  providers: [\n' +
+      '    provideFloatingFallback(computePosition, [offset(8), flip(), shift()]),\n' +
+      '  ],\n',
+  );
+}
+
 /**
  * Signal-driven state machine for the native Popover API.
  *
@@ -319,6 +337,9 @@ export class CngxPopover {
     const offsetVal = this.offset();
 
     const middleware = fb.middleware ?? [];
+    if (middleware.length === 0) {
+      warnMissingFloatingMiddleware(el.ownerDocument);
+    }
 
     void fb.computePosition(anchor, el, { placement, middleware }).then(({ x, y }) => {
       el.style.left = `${x}px`;
