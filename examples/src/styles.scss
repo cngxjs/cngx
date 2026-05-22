@@ -1570,3 +1570,20 @@ button.chip.demo-gesture-flash {
     transition: none;
   }
 }
+.demo-context-menu-zone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 160px;
+  padding: 16px;
+  border: 2px dashed var(--cngx-color-border, oklch(0.88 0.005 250));
+  border-radius: var(--cngx-radius-md, 8px);
+  background: var(--cngx-color-surface-variant, var(--cngx-color-surface, oklch(0.98 0.005 250)));
+  color: var(--cngx-color-text-muted, oklch(0.5 0.01 250));
+  cursor: context-menu;
+  user-select: none;
+}
+.demo-context-menu-zone:focus-visible {
+  outline: 2px solid var(--cngx-color-primary, oklch(0.66 0.19 50));
+  outline-offset: 2px;
+}
