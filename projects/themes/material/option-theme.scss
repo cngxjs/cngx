@@ -1,0 +1,101 @@
+@use 'sass:map';
+@use 'sass:math';
+@use '@angular/material' as mat;
+
+// Material bridge for CngxOption (the [cngxOption] directive used by
+// listbox, menu, and select panels). Maps the cngx option token surface
+// onto Material 3 system tokens so a [cngxOption] reads like a
+// <mat-option> / <mat-list-option> sitting in a popover panel:
+//   - color: highlight = on-surface state-layer at 8%, selected =
+//     secondary-container (M3 filter-chip / mat-list-option selected fill)
+//   - density: padding scales with mat density (M3 default option = 48px
+//     row, 12px block / 16px inline)
+//   - base: corner-small for the option's own radius; M3 disabled-emphasis
+//     0.38 instead of the cngx default 0.5
+//
+// Typography is intentionally NOT bridged: cngx-listbox.css ships no
+// --cngx-option-font-size token (the directive inherits font from the
+// surrounding panel). Adding one would be a library change, tracked as a
+// follow-up rather than a bridge concern.
+//
+//   @use '@cngx/themes/material/option-theme' as option;
+//   html { @include option.theme($theme); }
+
+@mixin color($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    // Hover / keyboard-highlighted state — M3 state-layer (on-surface @ 8%).
+    --cngx-option-highlight-bg: color-mix(
+      in srgb,
+      var(--mat-sys-on-surface) 8%,
+      transparent
+    );
+
+    // Selected state — M3 filled-selection fill (secondary-container).
+    // Matches <mat-list-option> selected behaviour and <mat-chip-option>
+    // selected fill so a listbox sitting next to a chip set reads as
+    // visually consistent committed state.
+    --cngx-option-selected-bg: var(--mat-sys-secondary-container);
+  } @else {
+    --cngx-option-highlight-bg: #{rgba(mat.get-theme-color($theme, primary), 0.08)};
+    --cngx-option-selected-bg: #{rgba(mat.get-theme-color($theme, primary), 0.16)};
+  }
+}
+
+@mixin density($theme) {
+  $scale: mat.get-theme-density($theme);
+  $scale: math.max(-4, math.min(0, $scale));
+
+  // M3 default option is 48px tall with 12px block + 16px inline padding
+  // (mat-option / mat-list-option spec). Negative scales tighten the
+  // vertical axis first because horizontal padding carries the
+  // touch-target width.
+  $padding-block: (
+    0: 12px,
+    -1: 10px,
+    -2: 8px,
+    -3: 6px,
+    -4: 4px,
+  );
+  $padding-inline: (
+    0: 16px,
+    -1: 14px,
+    -2: 12px,
+    -3: 10px,
+    -4: 8px,
+  );
+
+  --cngx-option-padding: #{map.get($padding-block, $scale)}
+    #{map.get($padding-inline, $scale)};
+}
+
+@mixin base($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    // M3 options carry corner-small (8px). The cngx default (4px) keeps
+    // a flatter look; aligning here lets options nest inside mat-card
+    // surfaces without visual mismatch.
+    --cngx-option-radius: var(--mat-sys-corner-small, 8px);
+
+    // M3 disabled emphasis is 0.38, not 0.5. Anchor on the system token
+    // so a consumer flipping the Material disabled curve picks it up.
+    --cngx-option-disabled-opacity: 0.38;
+  } @else {
+    --cngx-option-radius: 4px;
+    --cngx-option-disabled-opacity: 0.38;
+  }
+}
+
+@mixin theme($theme) {
+  @layer cngx.components {
+    // The bg tokens are `inherits: true` in cngx-listbox.css, so writing
+    // them on the listbox container cascades into projected options. The
+    // base + density tokens are `inherits: false` and must land on the
+    // option element directly.
+    :where([cngxListbox], [cngxOption]) {
+      @include color($theme);
+    }
+    :where([cngxOption]) {
+      @include density($theme);
+      @include base($theme);
+    }
+  }
+}
