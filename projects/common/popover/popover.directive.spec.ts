@@ -2,9 +2,11 @@ import { Component, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { CngxPopover } from './popover.directive';
+import { CngxPopover, __resetFloatingMiddlewareWarnings } from './popover.directive';
+import { CNGX_FLOATING_FALLBACK, provideFloatingFallback } from './floating-fallback';
+import type { PopoverPositionTryFallback } from './popover.types';
 
-// ── Test helpers ────────────────────────────────────────────────────────
+// Test helpers
 
 // JSDOM Popover API support varies by version. Always install own-property
 // stubs that shadow whatever sits on the prototype — `??=` would skip the
@@ -24,7 +26,7 @@ function stubPopoverElement(el: HTMLElement): void {
   } as unknown as CSSStyleDeclaration);
 }
 
-// ── Test hosts ──────────────────────────────────────────────────────────
+// Test hosts
 
 @Component({
   template: `<div cngxPopover #pop="cngxPopover">Content</div>`,
@@ -63,6 +65,17 @@ class AutoModeHost {
   readonly popover = viewChild.required(CngxPopover);
 }
 
+@Component({
+  template: `
+    <div cngxPopover #pop="cngxPopover" [positionTryFallbacks]="fallbacks()">Fallback host</div>
+  `,
+  imports: [CngxPopover],
+})
+class FallbackHost {
+  readonly fallbacks = signal<readonly PopoverPositionTryFallback[]>([]);
+  readonly popover = viewChild.required(CngxPopover);
+}
+
 function setup<T>(hostType: new () => T) {
   const fixture = TestBed.createComponent(hostType);
   fixture.detectChanges();
@@ -72,7 +85,7 @@ function setup<T>(hostType: new () => T) {
   return { fixture, popoverEl };
 }
 
-// ── Tests ───────────────────────────────────────────────────────────────
+// Tests
 
 describe('CngxPopover', () => {
   afterEach(() => {
@@ -222,6 +235,138 @@ describe('CngxPopover', () => {
       host.popover().show();
       fixture.destroy();
       expect(popoverEl.hidePopover).toHaveBeenCalled();
+    });
+  });
+
+  describe('positionTryFallbacks', () => {
+    it('writes no position-try-fallbacks style for an empty array', () => {
+      const { popoverEl } = setup(FallbackHost);
+      expect(popoverEl.style.getPropertyValue('position-try-fallbacks')).toBe('');
+    });
+
+    it('writes a single try-tactic value verbatim', () => {
+      const fixture = TestBed.createComponent(FallbackHost);
+      fixture.componentInstance.fallbacks.set(['flip-inline']);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      const popoverEl = fixture.nativeElement.querySelector('[cngxpopover]') as HTMLElement;
+      expect(popoverEl.style.getPropertyValue('position-try-fallbacks')).toBe('flip-inline');
+    });
+
+    it('comma-joins multiple try-tactic values in declaration order', () => {
+      const fixture = TestBed.createComponent(FallbackHost);
+      fixture.componentInstance.fallbacks.set([
+        'flip-block',
+        'flip-inline',
+        'flip-block flip-inline',
+      ]);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      const popoverEl = fixture.nativeElement.querySelector('[cngxpopover]') as HTMLElement;
+      expect(popoverEl.style.getPropertyValue('position-try-fallbacks')).toBe(
+        'flip-block, flip-inline, flip-block flip-inline',
+      );
+    });
+
+    it('removes the property when the consumer clears a previously-set list', () => {
+      const fixture = TestBed.createComponent(FallbackHost);
+      fixture.componentInstance.fallbacks.set(['flip-inline']);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      const popoverEl = fixture.nativeElement.querySelector('[cngxpopover]') as HTMLElement;
+      expect(popoverEl.style.getPropertyValue('position-try-fallbacks')).toBe('flip-inline');
+
+      fixture.componentInstance.fallbacks.set([]);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(popoverEl.style.getPropertyValue('position-try-fallbacks')).toBe('');
+    });
+  });
+
+  describe('floating fallback middleware warning', () => {
+    it('warns once when provideFloatingFallback ships without middleware', () => {
+      __resetFloatingMiddlewareWarnings(document);
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+      const computePosition = vi.fn().mockResolvedValue({ x: 0, y: 0, placement: 'bottom' });
+      try {
+        TestBed.configureTestingModule({
+          imports: [BasicHost],
+          providers: [provideFloatingFallback(computePosition)],
+        });
+        const { fixture, popoverEl } = setup(BasicHost);
+        const host = fixture.componentInstance as BasicHost;
+        host.popover().anchorElement.set(popoverEl);
+        host.popover().show();
+        const middlewareWarn = warnSpy.mock.calls.find((call) =>
+          String(call[0]).includes('provideFloatingFallback'),
+        );
+        expect(middlewareWarn).toBeDefined();
+        expect(middlewareWarn![0]).toContain('flip()');
+        expect(middlewareWarn![0]).toContain('shift()');
+      } finally {
+        warnSpy.mockRestore();
+      }
+    });
+
+    it('does not warn when middleware is provided on registration', () => {
+      __resetFloatingMiddlewareWarnings(document);
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+      const computePosition = vi.fn().mockResolvedValue({ x: 0, y: 0, placement: 'bottom' });
+      const fakeFlip = { name: 'flip' };
+      const fakeShift = { name: 'shift' };
+      try {
+        TestBed.configureTestingModule({
+          imports: [BasicHost],
+          providers: [provideFloatingFallback(computePosition, [fakeFlip, fakeShift])],
+        });
+        const { fixture, popoverEl } = setup(BasicHost);
+        const host = fixture.componentInstance as BasicHost;
+        host.popover().anchorElement.set(popoverEl);
+        host.popover().show();
+        const middlewareWarn = warnSpy.mock.calls.find((call) =>
+          String(call[0]).includes('provideFloatingFallback'),
+        );
+        expect(middlewareWarn).toBeUndefined();
+      } finally {
+        warnSpy.mockRestore();
+      }
+    });
+
+    it('does not re-warn for the same Document on subsequent shows', () => {
+      __resetFloatingMiddlewareWarnings(document);
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+      const computePosition = vi.fn().mockResolvedValue({ x: 0, y: 0, placement: 'bottom' });
+      try {
+        TestBed.configureTestingModule({
+          imports: [BasicHost],
+          providers: [provideFloatingFallback(computePosition)],
+        });
+        const first = setup(BasicHost);
+        (first.fixture.componentInstance as BasicHost).popover().anchorElement.set(first.popoverEl);
+        (first.fixture.componentInstance as BasicHost).popover().show();
+
+        TestBed.resetTestingModule();
+        TestBed.configureTestingModule({
+          imports: [BasicHost],
+          providers: [provideFloatingFallback(computePosition)],
+        });
+        const second = setup(BasicHost);
+        (second.fixture.componentInstance as BasicHost)
+          .popover()
+          .anchorElement.set(second.popoverEl);
+        (second.fixture.componentInstance as BasicHost).popover().show();
+
+        const middlewareWarns = warnSpy.mock.calls.filter((call) =>
+          String(call[0]).includes('provideFloatingFallback'),
+        );
+        expect(middlewareWarns.length).toBe(1);
+      } finally {
+        warnSpy.mockRestore();
+      }
+    });
+
+    it('compiles against the typed CNGX_FLOATING_FALLBACK token shape', () => {
+      expect(CNGX_FLOATING_FALLBACK).toBeDefined();
     });
   });
 });

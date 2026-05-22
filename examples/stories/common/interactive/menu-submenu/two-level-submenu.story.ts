@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'Two-level submenu',
   subtitle: 'Open the menu (ArrowDown / Enter / Space). Highlight "Open Recent" and press ArrowRight to open the submenu — focus transfers to its first file. ArrowLeft / Escape close. Activating a leaf closes everything.',
-  description: 'Nested menu with cngxMenuItemSubmenu. ArrowRight on a submenu parent opens the inner menu and transfers AD focus to its first item; ArrowLeft / Escape close. Two-level keyboard navigation through one trigger button.',
+  description: 'Nested menu with cngxMenuItemSubmenu. ArrowRight on a submenu parent opens the inner menu and transfers AD focus to its first item; ArrowLeft / Escape close. Two-level keyboard navigation through one trigger button. The Recent submenu wires CNGX_SUBMENU_TRY_FALLBACKS so the popover flips to the opposite edge when the right side clips; the resolved placement appears in the event grid.',
   level: 'organism',
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
@@ -16,11 +16,28 @@ export const STORY: DemoSpec = {
     'CngxMenuTrigger',
   ],
   moduleImports: [
-    'import { CngxMenu, CngxMenuItem, CngxMenuItemSubmenu, CngxMenuSeparator, CngxMenuTrigger, CngxMenuItemIcon, CngxMenuItemLabel, CngxMenuItemKbd } from \'@cngx/common/interactive\';',
-    'import { CngxPopover } from \'@cngx/common/popover\';',
+    "import { CngxMenu, CngxMenuItem, CngxMenuItemSubmenu, CngxMenuSeparator, CngxMenuTrigger, CngxMenuItemIcon, CngxMenuItemLabel, CngxMenuItemKbd, CNGX_SUBMENU_TRY_FALLBACKS } from '@cngx/common/interactive';",
+    "import { CngxPopover } from '@cngx/common/popover';",
   ],
   imports: ['CngxMenu', 'CngxMenuItem', 'CngxMenuItemSubmenu', 'CngxMenuSeparator', 'CngxMenuTrigger', 'CngxMenuItemIcon', 'CngxMenuItemLabel', 'CngxMenuItemKbd', 'CngxPopover', 'CngxPopoverTrigger'],
-  setup: `protected readonly lastAction = signal<string | null>(null);`,
+  setup: `protected readonly lastAction = signal<string | null>(null);
+  protected readonly resolvedPlacement = signal<string>('—');
+  protected readonly submenuFallbacks = CNGX_SUBMENU_TRY_FALLBACKS;
+
+  protected onRecentToggle(e: Event, pop: HTMLElement): void {
+    if ((e as ToggleEvent).newState !== 'open') {
+      this.resolvedPlacement.set('—');
+      return;
+    }
+    // Defer one microtask so the browser settles position-try-fallbacks
+    // resolution before the read — matches the focus-restoration precedent
+    // used elsewhere in cngx. afterRender would fire too early on
+    // layout-thrash frames.
+    queueMicrotask(() => {
+      const resolved = getComputedStyle(pop).getPropertyValue('position-area').trim();
+      this.resolvedPlacement.set(resolved || '—');
+    });
+  }`,
   template: `  <style>
     .trigger { min-width: 120px; padding: 8px 12px; border: 1px solid var(--cngx-color-border, #d0d5dd); border-radius: 6px; background: var(--cngx-color-surface, #fff); color: var(--cngx-color-text, inherit); cursor: pointer; font: inherit; }
     .trigger:focus-visible { outline: 2px solid var(--cngx-color-primary, #4a8cff); outline-offset: 2px; }
@@ -74,7 +91,10 @@ export const STORY: DemoSpec = {
       </li>
     </ul>
   </div>
-  <div cngxPopover #recentPop="cngxPopover" placement="right-start" [exclusive]="false" class="pop">
+  <div cngxPopover #recentPop="cngxPopover" placement="right-start" [exclusive]="false"
+       [positionTryFallbacks]="submenuFallbacks"
+       (toggle)="onRecentToggle($event, recentPop.elementRef.nativeElement)"
+       class="pop">
     <ul
       cngxMenu
       [label]="'Recent files'"
@@ -101,6 +121,10 @@ export const STORY: DemoSpec = {
     <div class="event-row">
       <span class="event-label">Last action</span>
       <span class="event-value">{{ lastAction() ?? '—' }}</span>
+    </div>
+    <div class="event-row">
+      <span class="event-label">Resolved submenu placement</span>
+      <span class="event-value">{{ resolvedPlacement() }}</span>
     </div>
   </div>`,
   css: `.trigger {
