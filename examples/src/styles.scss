@@ -1237,3 +1237,28 @@ button.chip:disabled {
   color: var(--cngx-color-danger-on, #fff);
   background: var(--cngx-color-danger, #c0392b);
 }
+
+// Hoverable composition-demo card. Used by
+// stories/common/interactive/hoverable/as-host-directive.story.ts and
+// its co-located _hover-card.component.ts fixture. The fixture sets
+// .demo-hover-card--active when the hostDirective signal flips, the
+// styles below provide the visual cue.
+.demo-hover-card {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 1.25rem;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, oklch(0.88 0.005 250)));
+  background: var(--cngx-color-surface, var(--cngx-ex-surface, oklch(1 0 0)));
+  color: var(--cngx-color-text, var(--cngx-ex-text, oklch(0.2 0.01 250)));
+  transition: transform 120ms ease, background 120ms ease;
+}
+.demo-hover-card--active {
+  background: color-mix(in oklch, var(--cngx-color-surface, oklch(1 0 0)), var(--cngx-color-primary, oklch(0.66 0.19 50)) 8%);
+  transform: scale(1.02);
+}
+.demo-hover-card__state {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.75em;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted, oklch(0.5 0.01 250)));
+}
