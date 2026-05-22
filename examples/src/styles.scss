@@ -507,6 +507,66 @@ html.dark .cngx-ex-tag[data-dim='stability'][data-value='deprecated'] {
   background-size: 200% 100%;
   animation: demo-skeleton-shimmer 1.4s ease-in-out infinite;
 }
+
+// Demo-only error-presentation helpers. Used by the
+// `examples/stories/common/interactive/error/**` stories so the visible
+// error styling (input border, message colour, summary list, count badge,
+// surface tint) reads from `--cngx-color-danger` rather than scattering
+// hex literals through inline styles. `--cngx-color-danger` is the system
+// token bridged from Material's `--mat-sys-error`; the fallback covers
+// theme-less consumers.
+.demo-error-list {
+  margin: 8px 0;
+  padding-inline-start: 24px;
+  color: var(--cngx-color-danger, #b00020);
+}
+.demo-error-message {
+  margin: 4px 0 12px;
+  color: var(--cngx-color-danger, #b00020);
+  font-size: 0.875em;
+}
+.demo-error-input {
+  padding: 6px 8px;
+  min-width: 240px;
+  border-radius: 4px;
+  border: 1px solid var(--cngx-color-border, #d1d5db);
+  display: block;
+  margin-top: 4px;
+}
+.demo-error-input.cngx-error,
+.demo-error-input[aria-invalid='true'] {
+  border-color: var(--cngx-color-danger, #b00020);
+  outline-color: var(--cngx-color-danger, #b00020);
+}
+.demo-error-surface {
+  padding: 12px 16px;
+  margin-bottom: 1rem;
+  border-radius: 6px;
+  border: 1px solid var(--cngx-color-border, #d1d5db);
+}
+.demo-error-surface.cngx-error,
+.demo-error-surface[aria-invalid='true'] {
+  border-color: var(--cngx-color-danger, #b00020);
+  background: color-mix(
+    in srgb,
+    var(--cngx-color-danger, #b00020) 4%,
+    transparent
+  );
+}
+.demo-error-count-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  margin-inline-start: 6px;
+  border-radius: 9px;
+  background: var(--cngx-color-danger, #b00020);
+  color: var(--cngx-color-on-danger, #ffffff);
+  font-size: 0.75em;
+  line-height: 1;
+}
 @keyframes demo-skeleton-shimmer {
   0% { background-position: 100% 0; }
   100% { background-position: -100% 0; }

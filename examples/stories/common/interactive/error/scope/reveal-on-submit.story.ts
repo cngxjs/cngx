@@ -43,7 +43,7 @@ export const STORY: DemoSpec = {
       type="text"
       [value]="email()"
       (input)="handleInput($event)"
-      [attr.aria-invalid]="scope.showErrors() && emailInvalid() ? 'true' : null"
+      [attr.aria-invalid]="scope.showErrors() && emailInvalid() ? 'true' : 'false'"
     />
     @if (scope.showErrors() && emailInvalid()) {
       <span role="alert" style="font-size:0.875em">Email is required and must contain @.</span>

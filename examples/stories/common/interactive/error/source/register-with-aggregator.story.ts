@@ -14,8 +14,9 @@ export const STORY: DemoSpec = {
   ],
   moduleImports: [
     'import { CngxErrorSource, CngxErrorAggregator } from \'@cngx/common/interactive\';',
+    "import { CngxLiveRegion } from '@cngx/common/a11y';",
   ],
-  imports: ['CngxErrorSource', 'CngxErrorAggregator'],
+  imports: ['CngxErrorSource', 'CngxErrorAggregator', 'CngxLiveRegion'],
   references: [
     { label: 'WAI-ARIA 1.2: `aria-live`', href: 'https://www.w3.org/TR/wai-aria-1.2/#aria-live' },
     { label: 'WCAG 2.1 SC 3.3.1 Error Identification', href: 'https://www.w3.org/WAI/WCAG21/Understanding/error-identification.html' },
@@ -33,14 +34,14 @@ export const STORY: DemoSpec = {
     <span cngxErrorSource="email-business-rule" [when]="conflictsWithBusinessRule()" label="Conflicts with another contact"></span>
 
     @if (agg.shouldShow()) {
-      <ul role="alert" style="margin:0; padding-inline-start:1.25rem">
-        @for (entry of agg.activeErrors(); track entry.key) {
-          <li>{{ entry.label ?? entry.key }}</li>
+      <ul role="alert" class="demo-error-list" style="margin:0">
+        @for (label of agg.errorLabels(); track label) {
+          <li>{{ label }}</li>
         }
       </ul>
     }
   </fieldset>
-  <span class="cngx-sr-only" aria-live="polite" aria-atomic="true">{{ agg.announcement() }}</span>`,
+  <span class="cngx-sr-only" cngxLiveRegion>{{ agg.announcement() }}</span>`,
   templateChrome: `
   <div class="button-row" style="margin-top:12px">
     <label>
@@ -67,12 +68,12 @@ export const STORY: DemoSpec = {
     </div>
     <div class="event-row">
       <span class="event-label">announcement()</span>
-      <span class="event-value">{{ agg.announcement() || '—' }}</span>
+      <span class="event-value">{{ agg.announcement() || '-' }}</span>
     </div>
   </div>`,
   setupChrome: `
-  protected activeKeysLabel(entries: readonly { key: string }[]): string {
-    if (entries.length === 0) return '—';
-    return entries.map((e) => e.key).join(', ');
+  protected activeKeysLabel(keys: readonly string[]): string {
+    if (keys.length === 0) return '-';
+    return keys.join(', ');
   }`,
 };

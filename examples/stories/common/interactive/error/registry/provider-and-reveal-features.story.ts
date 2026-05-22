@@ -1,11 +1,11 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxErrorRegistry: Provider and reveal features',
+  title: 'provideErrorRegistry: Provider and reveal features',
   subtitle: '<code>provideErrorRegistry(withGlobalRevealOnSubmit(), withRevealOnNavigate())</code> wires ambient reveal triggers at the application root.',
   description: 'The registry itself is an <code>@Injectable()</code>, not <code>providedIn: \'root\'</code> - consumers opt in via <code>provideErrorRegistry(...features)</code> in <code>bootstrapApplication</code> providers (or in a lazy-loaded route\'s <code>providers</code>). Without features the call only registers the registry class; pair with feature flags to install ambient reveal behaviour. <code>withGlobalRevealOnSubmit()</code> attaches a capture-phase document listener that calls <code>registry.revealAll()</code> on any submit event, anywhere in the document. <code>withRevealOnNavigate()</code> subscribes to <code>Router.NavigationStart</code> and calls <code>revealAll()</code> on every navigation attempt; no-ops when <code>Router</code> is not provided. The bootstrap snippet below shows the canonical setup; the live area below it renders a banner gating on a named scope so you can see the contract surface that the registry hands back. The reveal-triggers themselves only fire in a fully bootstrapped app, not in this isolated demo.',
   level: 'molecule',
-  audience: ['dev', 'a11y'],
+  audience: ['dev'],
   artifact: 'building-block',
   focus: ['behavior', 'integration'],
   apiComponents: [
@@ -51,7 +51,7 @@ export const STORY: DemoSpec = {
     </div>
     <div class="event-row">
       <span class="event-label">scope.scopeName()</span>
-      <span class="event-value">{{ checkoutScope.scopeName() ?? '—' }}</span>
+      <span class="event-value">{{ checkoutScope.scopeName() ?? '-' }}</span>
     </div>
   </div>`,
 };
