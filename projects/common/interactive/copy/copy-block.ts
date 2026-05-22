@@ -34,7 +34,6 @@ import { CngxCopyText } from './copy-text.directive';
   encapsulation: ViewEncapsulation.None,
   host: {
     class: 'cngx-copy-block',
-    '[class.cngx-copy-block--copied]': 'false',
   },
   template: `
     <div class="cngx-copy-block__content">
