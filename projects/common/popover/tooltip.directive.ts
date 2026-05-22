@@ -16,7 +16,11 @@ import { nextUid } from '@cngx/core/utils';
 
 import { ANCHOR_AREA_PROPERTY, POSITION_AREA, SUPPORTS_ANCHOR } from './anchor-positioning';
 import { CNGX_FLOATING_FALLBACK, FLOATING_PLACEMENT } from './floating-fallback';
-import type { PopoverPlacement, PopoverState } from './popover.types';
+import type {
+  PopoverPlacement,
+  PopoverPositionTryFallback,
+  PopoverState,
+} from './popover.types';
 
 /** Small debounce to prevent SR announcement storms during rapid Tab navigation. */
 const FOCUS_DEBOUNCE_MS = 50;
@@ -87,6 +91,16 @@ export class CngxTooltip {
   /** Whether the tooltip is active. When `false`, no tooltip appears and ARIA is cleared. */
   readonly enabled = input(true);
 
+  /**
+   * CSS `<try-tactic>` fallbacks for `position-try-fallbacks`. Empty array
+   * (default) means no fallback CSS is written; the tooltip stays at the
+   * declared `tooltipPlacement` regardless of viewport clipping. Tooltips
+   * are decorative — collision recovery is opt-in per-tooltip.
+   */
+  readonly positionTryFallbacks = input<readonly PopoverPositionTryFallback[]>([], {
+    alias: 'tooltipPositionTryFallbacks',
+  });
+
   private readonly stateSignal = signal<PopoverState>('closed');
   private readonly idSignal = signal(nextUid('cngx-tooltip'));
 
@@ -117,6 +131,7 @@ export class CngxTooltip {
     effect(() => {
       const placement = this.placement();
       const offset = this.offset();
+      const fallbacks = this.positionTryFallbacks();
       const el = untracked(() => this.tooltipEl);
       if (!el) {
         return;
@@ -126,6 +141,11 @@ export class CngxTooltip {
         el.style.setProperty('position-anchor', `--cngx-tip-${this.idSignal()}`);
         el.style.setProperty(ANCHOR_AREA_PROPERTY, POSITION_AREA[placement]);
         el.style.setProperty('margin', `${offset}px`);
+        if (fallbacks.length > 0) {
+          el.style.setProperty('position-try-fallbacks', fallbacks.join(', '));
+        } else {
+          el.style.removeProperty('position-try-fallbacks');
+        }
       }
     });
 
