@@ -373,6 +373,13 @@ html.dark .cngx-ex-tag[data-dim='stability'][data-value='deprecated'] {
 
 // Event grid — technical layout to show ARIA/Signal state in a story panel.
 // No colours/borders here; only layout + alignment so values line up.
+.chip-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 .event-grid {
   display: flex;
   flex-direction: column;
