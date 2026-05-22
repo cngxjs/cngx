@@ -16,7 +16,12 @@ import { hasTransition, nextUid, onTransitionDone } from '@cngx/core/utils';
 
 import { ANCHOR_AREA_PROPERTY, POSITION_AREA, SUPPORTS_ANCHOR } from './anchor-positioning';
 import { CNGX_FLOATING_FALLBACK, FLOATING_PLACEMENT } from './floating-fallback';
-import type { PopoverMode, PopoverPlacement, PopoverState } from './popover.types';
+import type {
+  PopoverMode,
+  PopoverPlacement,
+  PopoverPositionTryFallback,
+  PopoverState,
+} from './popover.types';
 
 /** Module-level registry of open popovers (insertion-ordered). */
 const openPopovers = new Set<CngxPopover>();
@@ -60,6 +65,33 @@ function warnMissingPopoverApi(el: HTMLElement): void {
   }
 }
 
+/** Tracks which Documents have already warned about missing Floating-UI middleware. */
+const floatingMiddlewareWarnedDocs = new WeakSet<Document>();
+
+/**
+ * @internal — test hook. Resets the per-Document warning suppression so
+ * specs can exercise the warning path against a shared jsdom Document.
+ * Do not call from production code.
+ */
+export function __resetFloatingMiddlewareWarnings(doc: Document): void {
+  floatingMiddlewareWarnedDocs.delete(doc);
+}
+function warnMissingFloatingMiddleware(doc: Document): void {
+  if (floatingMiddlewareWarnedDocs.has(doc) || !isDevMode()) {
+    return;
+  }
+  floatingMiddlewareWarnedDocs.add(doc);
+  console.warn(
+    'CngxPopover: provideFloatingFallback(computePosition) was registered without middleware. ' +
+      'Popovers in browsers without CSS Anchor Positioning will clip against the viewport edge ' +
+      'because no flip/shift recovery is configured. Pass middleware on registration:\n\n' +
+      "  import { computePosition, flip, offset, shift } from '@floating-ui/dom';\n\n" +
+      '  providers: [\n' +
+      '    provideFloatingFallback(computePosition, [offset(8), flip(), shift()]),\n' +
+      '  ],\n',
+  );
+}
+
 /**
  * Signal-driven state machine for the native Popover API.
  *
@@ -90,6 +122,25 @@ function warnMissingPopoverApi(el: HTMLElement): void {
  * <example-url>http://localhost:4200/#/common/popover/controlled-open</example-url>
  * <example-url>http://localhost:4200/#/common/popover/escape-mode</example-url>
  * <example-url>http://localhost:4200/#/common/popover/placement-variants</example-url>
+ *
+ * ### Collision recovery with `<try-tactic>` fallbacks
+ * Apply CSS Anchor Positioning's `position-try-fallbacks` declaratively
+ * by binding the new `positionTryFallbacks` input. Each entry is a CSS
+ * `<try-tactic>` keyword (or composed pair) written verbatim into the
+ * host's `position-try-fallbacks` property. Mirrors the precedent in
+ * `@cngx/forms/select` panels.
+ *
+ * ```html
+ * <div cngxPopover
+ *      placement="right-start"
+ *      [positionTryFallbacks]="['flip-inline', 'flip-block', 'flip-block flip-inline']">
+ *   <!-- popover content -->
+ * </div>
+ * ```
+ *
+ * When the array is empty (default), the host does not write a
+ * `position-try-fallbacks` style — the browser positions the popover at
+ * the declared `placement` regardless of viewport clipping.
  */
 @Directive({
   selector: '[cngxPopover]',
@@ -103,6 +154,7 @@ function warnMissingPopoverApi(el: HTMLElement): void {
     '[class.cngx-popover--open]': 'isOpen()',
     '[class.cngx-popover--closing]': 'isClosing()',
     '[style.position-anchor]': 'cssAnchorRef()',
+    '[style.position-try-fallbacks]': 'cssPositionTryFallbacks()',
     '[style.margin]': 'cssMargin()',
     '(toggle)': 'handleToggle($event)',
   },
@@ -125,6 +177,14 @@ export class CngxPopover {
 
   /** Anchor-relative placement. */
   readonly placement = input<PopoverPlacement>('bottom');
+
+  /**
+   * CSS `<try-tactic>` fallbacks for `position-try-fallbacks`. Empty
+   * array (default) means the host does not write the property at all.
+   * Non-empty entries are written verbatim, comma-joined, in declaration
+   * order. Spec-compatible vocabulary only (no cngx placement tokens).
+   */
+  readonly positionTryFallbacks = input<readonly PopoverPositionTryFallback[]>([]);
 
   /** Gap between anchor and popover in px. */
   readonly offset = input(8);
@@ -175,6 +235,17 @@ export class CngxPopover {
   );
 
   protected readonly cssMargin = computed(() => (SUPPORTS_ANCHOR ? `${this.offset()}px` : null));
+
+  /**
+   * Comma-joined `position-try-fallbacks` value, or `null` to skip the
+   * style write. Bound via host binding so empty / cleared lists drop the
+   * property cleanly. Unsupported browsers ignore the unknown property —
+   * gating on `SUPPORTS_ANCHOR` would only suppress a harmless write.
+   */
+  protected readonly cssPositionTryFallbacks = computed(() => {
+    const list = this.positionTryFallbacks();
+    return list.length > 0 ? list.join(', ') : null;
+  });
 
   constructor() {
     // Host binding needs a static property name; position-area/inset-area name flips per browser.
@@ -275,6 +346,9 @@ export class CngxPopover {
     const offsetVal = this.offset();
 
     const middleware = fb.middleware ?? [];
+    if (middleware.length === 0) {
+      warnMissingFloatingMiddleware(el.ownerDocument);
+    }
 
     void fb.computePosition(anchor, el, { placement, middleware }).then(({ x, y }) => {
       el.style.left = `${x}px`;

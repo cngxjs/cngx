@@ -3,7 +3,12 @@
  */
 
 // Atoms
-export type { PopoverPlacement, PopoverState, PopoverMode } from './popover.types';
+export type {
+  PopoverPlacement,
+  PopoverPositionTryFallback,
+  PopoverState,
+  PopoverMode,
+} from './popover.types';
 export { CngxPopover } from './popover.directive';
 export { CngxPopoverTrigger } from './popover-trigger.directive';
 export { CngxTooltip } from './tooltip.directive';

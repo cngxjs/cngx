@@ -224,7 +224,40 @@ export class CngxMenuItemSubmenu implements CngxMenuSubmenuLike {
               'Add [cngxMenuItem] alongside [cngxMenuItemSubmenu] on the same element.',
           );
         }
+        warnMissingSubmenuFallbacks(this.popover().elementRef.nativeElement);
       });
     }
   }
+}
+
+/** Tracks which Documents have already warned about a submenu popover missing position-try-fallbacks. */
+const submenuFallbackWarnedDocs = new WeakSet<Document>();
+
+/**
+ * @internal — test hook. Resets the per-Document warning suppression so
+ * specs can exercise the warning path against a shared jsdom Document.
+ * Do not call from production code.
+ */
+export function __resetSubmenuFallbackWarnings(doc: Document): void {
+  submenuFallbackWarnedDocs.delete(doc);
+}
+function warnMissingSubmenuFallbacks(popoverEl: HTMLElement): void {
+  const doc = popoverEl.ownerDocument;
+  if (submenuFallbackWarnedDocs.has(doc)) {
+    return;
+  }
+  const resolved = getComputedStyle(popoverEl).getPropertyValue('position-try-fallbacks').trim();
+  if (resolved !== '') {
+    return;
+  }
+  submenuFallbackWarnedDocs.add(doc);
+  console.warn(
+    'CngxMenuItemSubmenu: the companion popover ships without [positionTryFallbacks]. ' +
+      'Submenus that clip the viewport edge will not flip without a try-fallback chain. ' +
+      'Wire the recommended default:\n\n' +
+      "  import { CNGX_SUBMENU_TRY_FALLBACKS } from '@cngx/common/interactive';\n\n" +
+      '  <div cngxPopover [positionTryFallbacks]="CNGX_SUBMENU_TRY_FALLBACKS">\n' +
+      '    <!-- submenu items -->\n' +
+      '  </div>\n',
+  );
 }

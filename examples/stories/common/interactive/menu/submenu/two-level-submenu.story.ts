@@ -5,7 +5,7 @@ export const STORY: DemoSpec = {
   subtitle:
     'Open the outer menu (ArrowDown / Enter / Space). Highlight "Open Recent" and press ArrowRight to open the submenu - focus transfers to its first item. ArrowLeft / Escape close. Activating a leaf closes everything.',
   description:
-    'Nested menu via <code>cngxMenuItemSubmenu</code> as a companion on a <code>cngxMenuItem</code>. <code>aria-haspopup="menu"</code> and <code>aria-expanded</code> live on the parent item; <code>CngxMenuTrigger</code> drives ArrowRight to push the inner <code>CngxMenu</code> onto its focus stack and ArrowLeft / Escape to pop it. The submenu popover is <code>[exclusive]="false"</code> so opening it does not light-dismiss the outer popover.',
+    'Nested menu via <code>cngxMenuItemSubmenu</code> as a companion on a <code>cngxMenuItem</code>. <code>aria-haspopup="menu"</code> and <code>aria-expanded</code> live on the parent item; <code>CngxMenuTrigger</code> drives ArrowRight to push the inner <code>CngxMenu</code> onto its focus stack and ArrowLeft / Escape to pop it. The submenu popover is <code>[exclusive]="false"</code> so opening it does not light-dismiss the outer popover. The Recent submenu wires <code>CNGX_SUBMENU_TRY_FALLBACKS</code> so the popover flips to the opposite edge when the right side clips; the resolved placement appears in the event grid.',
   level: 'organism',
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
@@ -26,7 +26,7 @@ export const STORY: DemoSpec = {
   ],
   apiComponents: ['CngxMenuTrigger', 'CngxMenuItemSubmenu', 'CngxMenu', 'CngxMenuItem'],
   moduleImports: [
-    "import { CngxMenu, CngxMenuItem, CngxMenuItemSubmenu, CngxMenuSeparator, CngxMenuTrigger, CngxMenuItemIcon, CngxMenuItemLabel, CngxMenuItemKbd } from '@cngx/common/interactive';",
+    "import { CngxMenu, CngxMenuItem, CngxMenuItemSubmenu, CngxMenuSeparator, CngxMenuTrigger, CngxMenuItemIcon, CngxMenuItemLabel, CngxMenuItemKbd, CNGX_SUBMENU_TRY_FALLBACKS } from '@cngx/common/interactive';",
     "import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';",
   ],
   imports: [
@@ -41,7 +41,23 @@ export const STORY: DemoSpec = {
     'CngxPopover',
     'CngxPopoverTrigger',
   ],
-  setup: `protected readonly lastAction = signal<string | null>(null);`,
+  setup: `protected readonly lastAction = signal<string | null>(null);
+  protected readonly resolvedPlacement = signal<string>('—');
+  protected readonly submenuFallbacks = CNGX_SUBMENU_TRY_FALLBACKS;
+
+  protected onRecentToggle(e: Event, pop: HTMLElement): void {
+    if ((e as ToggleEvent).newState !== 'open') {
+      this.resolvedPlacement.set('—');
+      return;
+    }
+    // Defer one microtask so the browser settles position-try-fallbacks
+    // resolution before the read — afterRender would fire too early on
+    // layout-thrash frames.
+    queueMicrotask(() => {
+      const resolved = getComputedStyle(pop).getPropertyValue('position-area').trim();
+      this.resolvedPlacement.set(resolved || '—');
+    });
+  }`,
   template: `  <button
     type="button"
     [cngxMenuTrigger]="outer"
@@ -89,7 +105,9 @@ export const STORY: DemoSpec = {
       </li>
     </ul>
   </div>
-  <div cngxPopover #recentPop="cngxPopover" placement="right-start" [exclusive]="false">
+  <div cngxPopover #recentPop="cngxPopover" placement="right-start" [exclusive]="false"
+       [positionTryFallbacks]="submenuFallbacks"
+       (toggle)="onRecentToggle($event, recentPop.elementRef.nativeElement)">
     <ul
       cngxMenu
       [label]="'Recent files'"
@@ -115,6 +133,10 @@ export const STORY: DemoSpec = {
     <div class="event-row">
       <span class="event-label">Last action</span>
       <span class="event-value">{{ lastAction() ?? '-' }}</span>
+    </div>
+    <div class="event-row">
+      <span class="event-label">Resolved submenu placement</span>
+      <span class="event-value">{{ resolvedPlacement() }}</span>
     </div>
   </div>`,
 };

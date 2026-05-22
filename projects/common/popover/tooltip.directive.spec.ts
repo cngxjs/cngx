@@ -3,8 +3,9 @@ import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CngxTooltip } from './tooltip.directive';
+import type { PopoverPositionTryFallback } from './popover.types';
 
-// ── Test helpers ────────────────────────────────────────────────────────
+// Test helpers
 
 /** Stubs matchMedia for CngxReducedMotion hostDirective. */
 function installMatchMediaStub(): void {
@@ -37,7 +38,7 @@ function installPopoverStubs(): void {
   } as unknown as CSSStyleDeclaration);
 }
 
-// ── Test hosts ──────────────────────────────────────────────────────────
+// Test hosts
 
 @Component({
   template: `<button cngxTooltip="Save shortcut" id="trigger">Save</button>`,
@@ -75,6 +76,19 @@ class DisabledTooltipHost {
   readonly tooltip = viewChild.required(CngxTooltip);
 }
 
+@Component({
+  template: `
+    <button cngxTooltip="Fallback tip" [tooltipPositionTryFallbacks]="fallbacks()" id="trigger">
+      Btn
+    </button>
+  `,
+  imports: [CngxTooltip],
+})
+class FallbackTooltipHost {
+  readonly fallbacks = signal<readonly PopoverPositionTryFallback[]>([]);
+  readonly tooltip = viewChild.required(CngxTooltip);
+}
+
 function setup<T>(hostType: new () => T) {
   installMatchMediaStub();
   installPopoverStubs();
@@ -89,7 +103,7 @@ function getTooltipEl(triggerEl: HTMLElement): HTMLElement | null {
   return triggerEl.parentElement?.querySelector('[role="tooltip"]') ?? null;
 }
 
-// ── Tests ───────────────────────────────────────────────────────────────
+// Tests
 
 describe('CngxTooltip', () => {
   beforeEach(() => {
@@ -320,6 +334,61 @@ describe('CngxTooltip', () => {
       fixture.destroy();
 
       expect(parent.querySelector('[role="tooltip"]')).toBeNull();
+    });
+  });
+
+  describe('tooltipPositionTryFallbacks', () => {
+    it('writes no position-try-fallbacks style for an empty array', () => {
+      const { triggerEl } = setup(FallbackTooltipHost);
+      const tooltipEl = getTooltipEl(triggerEl)!;
+      expect(tooltipEl.style.getPropertyValue('position-try-fallbacks')).toBe('');
+    });
+
+    it('writes a single try-tactic value verbatim', () => {
+      installMatchMediaStub();
+      installPopoverStubs();
+      const fixture = TestBed.createComponent(FallbackTooltipHost);
+      fixture.componentInstance.fallbacks.set(['flip-inline']);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      const triggerEl = fixture.nativeElement.querySelector('#trigger') as HTMLElement;
+      const tooltipEl = getTooltipEl(triggerEl)!;
+      expect(tooltipEl.style.getPropertyValue('position-try-fallbacks')).toBe('flip-inline');
+    });
+
+    it('comma-joins multiple try-tactic values in declaration order', () => {
+      installMatchMediaStub();
+      installPopoverStubs();
+      const fixture = TestBed.createComponent(FallbackTooltipHost);
+      fixture.componentInstance.fallbacks.set([
+        'flip-block',
+        'flip-inline',
+        'flip-block flip-inline',
+      ]);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      const triggerEl = fixture.nativeElement.querySelector('#trigger') as HTMLElement;
+      const tooltipEl = getTooltipEl(triggerEl)!;
+      expect(tooltipEl.style.getPropertyValue('position-try-fallbacks')).toBe(
+        'flip-block, flip-inline, flip-block flip-inline',
+      );
+    });
+
+    it('removes the property when the consumer clears a previously-set list', () => {
+      installMatchMediaStub();
+      installPopoverStubs();
+      const fixture = TestBed.createComponent(FallbackTooltipHost);
+      fixture.componentInstance.fallbacks.set(['flip-inline']);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      const triggerEl = fixture.nativeElement.querySelector('#trigger') as HTMLElement;
+      const tooltipEl = getTooltipEl(triggerEl)!;
+      expect(tooltipEl.style.getPropertyValue('position-try-fallbacks')).toBe('flip-inline');
+
+      fixture.componentInstance.fallbacks.set([]);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(tooltipEl.style.getPropertyValue('position-try-fallbacks')).toBe('');
     });
   });
 });
