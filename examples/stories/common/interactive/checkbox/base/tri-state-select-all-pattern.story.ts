@@ -1,18 +1,28 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Tri-state — Select-all pattern',
-  subtitle: 'The header checkbox is <code>indeterminate</code> when some-but-not-all items are selected. Clicking it cascades: indeterminate → checked (selects all), checked → unchecked (clears all), unchecked → checked (selects all).',
-  description: 'Single-value boolean checkbox atom with WAI-ARIA tristate semantics. Composes <code>cngx-checkbox-indicator</code> from @cngx/common/display for the visual state. Click on an indeterminate checkbox advances to <code>value=true, indeterminate=false</code> in a single step — there is no path that lands the checkbox back in <code>mixed</code> from a user click.',
-  level: 'atom',
+  title: 'CngxCheckbox: tri-state select-all pattern',
+  subtitle:
+    'The header binds <code>[indeterminate]="someChecked() &amp;&amp; !allChecked()"</code> so its <code>aria-checked</code> flips through <code>true</code>, <code>false</code>, and <code>"mixed"</code> as the leaves change. A click on a <code>mixed</code> checkbox advances straight to <code>true</code> in one step, per WAI-ARIA tristate semantics.',
+  description:
+    'Builds the master/leaves tristate pattern entirely from <code>CngxCheckbox</code> atoms and consumer-owned <code>computed()</code> signals - no group molecule. <code>allChecked()</code> and <code>someChecked()</code> derive off the three item signals; <code>groupIndeterminate()</code> derives off those. The master\'s <code>(valueChange)</code> mirrors the next boolean into every leaf via <code>toggleAll()</code>. Read this demo as the contract every projected-leaves group has to honour at the ARIA layer.',
+  level: 'molecule',
   audience: ['dev', 'a11y'],
-  artifact: 'building-block',
-  focus: ['a11y-pattern', 'behavior'],
-  apiComponents: [
-    'CngxCheckbox',
+  artifact: 'standalone',
+  focus: ['a11y-pattern', 'composition'],
+  references: [
+    {
+      label: 'WAI-ARIA APG: Tri-State Checkbox Example',
+      href: 'https://www.w3.org/WAI/ARIA/apg/patterns/checkbox/examples/checkbox-mixed/',
+    },
+    {
+      label: 'WCAG 4.1.2 Name, Role, Value',
+      href: 'https://www.w3.org/WAI/WCAG21/Understanding/name-role-value.html',
+    },
   ],
+  apiComponents: ['CngxCheckbox'],
   moduleImports: [
-    'import { CngxCheckbox } from \'@cngx/common/interactive\';',
+    "import { CngxCheckbox } from '@cngx/common/interactive';",
   ],
   imports: ['CngxCheckbox'],
   setup: `protected readonly itemA = signal(true);
@@ -32,12 +42,10 @@ export const STORY: DemoSpec = {
     [indeterminate]="groupIndeterminate()"
     (valueChange)="toggleAll($event)"
   >Select all</cngx-checkbox>
-  <div class="children">
+  <div [style.display]="'flex'" [style.flex-direction]="'column'" [style.gap.px]="8" [style.padding-inline-start.px]="24" [style.margin-top.px]="8">
     <cngx-checkbox [(value)]="itemA">Item A</cngx-checkbox>
     <cngx-checkbox [(value)]="itemB">Item B</cngx-checkbox>
     <cngx-checkbox [(value)]="itemC">Item C</cngx-checkbox>
   </div>
-  <p class="caption">aria-checked = <code>{{ groupIndeterminate() ? 'mixed' : allChecked() ? 'true' : 'false' }}</code></p>`,
-  css: `.children { display: flex; flex-direction: column; gap: 8px; padding-inline-start: 24px; margin-top: 8px; }
-.caption { font-size: 0.875em; color: var(--cngx-text-muted, #6b7280); margin-top: 12px; }`,
+  <p class="demo-checkbox-caption">aria-checked = <code>{{ groupIndeterminate() ? 'mixed' : allChecked() ? 'true' : 'false' }}</code></p>`,
 };

@@ -1,23 +1,36 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Basic — two-way binding',
-  subtitle: 'Click the box or focus + press <strong>Space</strong>/<strong>Enter</strong>.',
-  description: 'Single-value boolean checkbox atom with WAI-ARIA tristate semantics. Composes <code>cngx-checkbox-indicator</code> from @cngx/common/display for the visual state. Click on an indeterminate checkbox advances to <code>value=true, indeterminate=false</code> in a single step — there is no path that lands the checkbox back in <code>mixed</code> from a user click.',
-  level: 'atom',
+  title: 'CngxCheckbox: basic two-way binding',
+  subtitle:
+    'Click the box, or focus and press <strong>Space</strong>/<strong>Enter</strong>. The same <code>[(value)]</code> binding flows in both directions, so the consumer signal is the single source of truth.',
+  description:
+    'Demonstrates the canonical <code>model&lt;boolean&gt;</code> contract on <code>CngxCheckbox</code>. The host carries <code>role="checkbox"</code>, a stable <code>id</code>, and a reactive <code>aria-checked</code> derived as a <code>computed()</code> off <code>value()</code>. Click, Space, and Enter all run the same <code>advance()</code> path; there is no parallel keyboard branch that can drift from the click semantics.',
+  level: 'molecule',
   audience: ['dev', 'a11y'],
-  artifact: 'building-block',
+  artifact: 'standalone',
   focus: ['a11y-pattern', 'behavior'],
-  apiComponents: [
-    'CngxCheckbox',
+  references: [
+    {
+      label: 'WAI-ARIA APG: Checkbox Pattern',
+      href: 'https://www.w3.org/WAI/ARIA/apg/patterns/checkbox/',
+    },
+    {
+      label: 'WCAG 2.1.1 Keyboard',
+      href: 'https://www.w3.org/WAI/WCAG21/Understanding/keyboard.html',
+    },
+    {
+      label: 'WCAG 4.1.2 Name, Role, Value',
+      href: 'https://www.w3.org/WAI/WCAG21/Understanding/name-role-value.html',
+    },
   ],
+  apiComponents: ['CngxCheckbox'],
   moduleImports: [
-    'import { CngxCheckbox } from \'@cngx/common/interactive\';',
+    "import { CngxCheckbox } from '@cngx/common/interactive';",
   ],
   imports: ['CngxCheckbox'],
   setup: `protected readonly accept = signal(false);`,
   template: `
   <cngx-checkbox [(value)]="accept">I accept the terms</cngx-checkbox>
-  <p class="caption">Bound: <code>{{ accept() }}</code></p>`,
-  css: `.caption { font-size: 0.875em; color: var(--cngx-text-muted, #6b7280); margin-top: 8px; }`,
+  <p class="demo-checkbox-caption">Bound: <code>{{ accept() }}</code></p>`,
 };

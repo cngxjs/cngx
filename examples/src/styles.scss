@@ -1356,6 +1356,16 @@ button.chip:disabled {
   color: var(--cngx-color-text-muted, var(--cngx-ex-text-muted, oklch(0.5 0.01 250)));
 }
 
+// Checkbox demo caption. Shared by stories under
+// common/interactive/checkbox/** so the bound-value readout under each
+// demo reads from the muted-text token instead of repeating a hex
+// literal inline in every story.
+.demo-checkbox-caption {
+  font-size: 0.875em;
+  margin-top: 12px;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted));
+}
+
 // Button-toggle demo skin. The cngx-button-toggle directive currently
 // ships no default visual treatment - only the group container has CSS
 // (display: inline-flex, gap, border-radius). Until the library grows a
