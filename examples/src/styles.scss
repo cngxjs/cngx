@@ -1345,6 +1345,101 @@ button.chip:disabled {
   --cngx-radio-indicator-checked-color: var(--cngx-color-success, oklch(0.55 0.13 165));
   --cngx-radio-indicator-dot-size: 0.6em;
 }
+
+// Button-toggle demo caption. Shared by stories under
+// common/interactive/button-toggle/** so the value-readout line under
+// the group reads from the muted-text token instead of repeating a hex
+// literal inline in every story.
+.demo-button-toggle-caption {
+  font-size: 0.875em;
+  margin-top: 12px;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-text-muted, oklch(0.5 0.01 250)));
+}
+
+// Button-toggle demo skin. The cngx-button-toggle directive currently
+// ships no default visual treatment - only the group container has CSS
+// (display: inline-flex, gap, border-radius). Until the library grows a
+// leaf default, this wrapper class gives the demos a presentable
+// segmented-control look so radiogroup / toolbar semantics read as such
+// instead of as plain inline text. Scoped to the demo wrapper class so
+// it never leaks into consumer apps that import @cngx/common.
+.demo-button-toggle-group .cngx-button-toggle {
+  padding: 0.5rem 1rem;
+  // The examples-app's --cngx-ex-border is intentionally faint for app
+  // chrome, so the border fallback here skips it and lands on a
+  // darker neutral - segmented controls need a visible boundary.
+  border: 1px solid var(--cngx-color-outline, oklch(0.72 0.01 250));
+  background: var(--cngx-color-surface, var(--cngx-ex-surface, #ffffff));
+  color: var(--cngx-color-on-surface, var(--cngx-ex-text, currentColor));
+  font: inherit;
+  cursor: pointer;
+  transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+.demo-button-toggle-group .cngx-button-toggle + .cngx-button-toggle {
+  margin-left: -1px;
+}
+.demo-button-toggle-group .cngx-button-toggle:first-child {
+  border-top-left-radius: var(--cngx-radius-md, 0.375rem);
+  border-bottom-left-radius: var(--cngx-radius-md, 0.375rem);
+}
+.demo-button-toggle-group .cngx-button-toggle:last-child {
+  border-top-right-radius: var(--cngx-radius-md, 0.375rem);
+  border-bottom-right-radius: var(--cngx-radius-md, 0.375rem);
+}
+.demo-button-toggle-group[aria-orientation='vertical'] .cngx-button-toggle + .cngx-button-toggle {
+  margin-left: 0;
+  margin-top: -1px;
+}
+.demo-button-toggle-group[aria-orientation='vertical'] .cngx-button-toggle:first-child {
+  border-radius: var(--cngx-radius-md, 0.375rem) var(--cngx-radius-md, 0.375rem) 0 0;
+}
+.demo-button-toggle-group[aria-orientation='vertical'] .cngx-button-toggle:last-child {
+  border-radius: 0 0 var(--cngx-radius-md, 0.375rem) var(--cngx-radius-md, 0.375rem);
+}
+// Unchecked + hover: tint the surface toward the text color so the hint is
+// visible in both light and dark mode. The checked branch below overrides
+// this so the orange-on-white selection state stays orange on hover.
+.demo-button-toggle-group .cngx-button-toggle:not(.cngx-button-toggle--checked):hover:not([disabled]) {
+  background: color-mix(
+    in oklch,
+    var(--cngx-color-surface, #ffffff),
+    var(--cngx-color-on-surface, oklch(0.25 0 0)) 8%
+  );
+}
+// Checked + hover: shift the primary background toward black so the selected
+// state still gets a hover hint instead of being painted over by a
+// currentColor mix (currentColor on checked == on-primary == white in light
+// mode, which made the previous universal rule render white-on-white).
+.demo-button-toggle-group .cngx-button-toggle--checked:hover:not([disabled]) {
+  background: color-mix(
+    in oklch,
+    var(--cngx-color-primary, var(--cngx-ex-accent, oklch(0.6 0.15 250))) 88%,
+    #000
+  );
+  border-color: color-mix(
+    in oklch,
+    var(--cngx-color-primary, var(--cngx-ex-accent, oklch(0.6 0.15 250))) 88%,
+    #000
+  );
+}
+.demo-button-toggle-group .cngx-button-toggle:focus-visible {
+  outline: 2px solid var(--cngx-color-primary, var(--cngx-ex-accent, oklch(0.6 0.15 250)));
+  outline-offset: 2px;
+  position: relative;
+  z-index: 1;
+}
+.demo-button-toggle-group .cngx-button-toggle--checked {
+  background: var(--cngx-color-primary, var(--cngx-ex-accent, oklch(0.6 0.15 250)));
+  color: var(--cngx-color-on-primary, #ffffff);
+  border-color: var(--cngx-color-primary, var(--cngx-ex-accent, oklch(0.6 0.15 250)));
+  z-index: 1;
+}
+.demo-button-toggle-group .cngx-button-toggle--disabled,
+.demo-button-toggle-group .cngx-button-toggle[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 // Required-marker custom-template variants (cngx-required story).
 .required-badge {
   display: inline-block;

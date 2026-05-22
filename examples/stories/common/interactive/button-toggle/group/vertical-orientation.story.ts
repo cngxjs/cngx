@@ -1,27 +1,41 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Vertical orientation',
-  subtitle: '<code>[orientation]="\'vertical\'"</code> stacks the toggles and tells the host roving directive to use ArrowUp/ArrowDown for navigation.',
-  description: 'Single-select button-toggle group. W3C APG radiogroup semantics — Tab enters the group, arrow keys MOVE focus AND auto-select the next toggle (auto-select-on-arrow), Space and Enter pick the focused toggle. Tab-into-group does not auto-select (no preceding arrow keydown). Mode is static: this is the single half of a deliberate split, never a runtime [selectionMode] flag. The leaf <button cngxButtonToggle> binds aria-checked. Provides CNGX_BUTTON_TOGGLE_GROUP for the leaf to inject (never the concrete class).',
+  title: 'CngxButtonToggleGroup: vertical orientation',
+  subtitle:
+    '<code>[orientation]="\'vertical\'"</code> stacks the toggles via the shared layer-1 CSS and forwards the value to the <code>CngxRovingTabindex</code> host directive so <strong>ArrowUp</strong>/<strong>ArrowDown</strong> drive roving + auto-select instead of <strong>ArrowLeft</strong>/<strong>ArrowRight</strong>.',
+  description:
+    'Same radiogroup semantics as the horizontal demo, with the navigation axis flipped. The orientation input is forwarded into the <code>CngxRovingTabindex</code> host directive via the explicit <code>inputs: [\'orientation\']</code> declaration on the group; <code>aria-orientation</code> on the host follows the same signal. The shared layer-1 CSS keys off <code>:not(.cngx-button-toggle-group--horizontal)</code> to flip <code>flex-direction</code> to column.',
   level: 'molecule',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'building-block',
   focus: ['composition', 'a11y-pattern'],
+  references: [
+    {
+      label: 'WAI-ARIA APG: Radio Group Pattern',
+      href: 'https://www.w3.org/WAI/ARIA/apg/patterns/radio/',
+    },
+    {
+      label: 'WAI-ARIA aria-orientation',
+      href: 'https://www.w3.org/TR/wai-aria-1.2/#aria-orientation',
+    },
+    {
+      label: 'WCAG 2.1.1 Keyboard',
+      href: 'https://www.w3.org/WAI/WCAG21/Understanding/keyboard.html',
+    },
+  ],
   apiComponents: [
     'CngxButtonToggleGroup',
     'CngxButtonToggle',
     'CNGX_BUTTON_TOGGLE_GROUP',
-    'CNGX_CONTROL_VALUE',
   ],
   moduleImports: [
-    'import { CngxButtonToggleGroup, CngxButtonToggle } from \'@cngx/common/interactive\';',
+    "import { CngxButtonToggleGroup, CngxButtonToggle } from '@cngx/common/interactive';",
   ],
   imports: ['CngxButtonToggleGroup', 'CngxButtonToggle'],
-  setup: `protected readonly view = signal<'grid' | 'list' | 'table' | undefined>('grid');
-  protected readonly orientation = signal<'horizontal' | 'vertical'>('horizontal');`,
+  setup: `protected readonly view = signal<'grid' | 'list' | 'table' | undefined>('grid');`,
   template: `
-  <cngx-button-toggle-group label="Layout (vertical)" [(value)]="view" orientation="vertical">
+  <cngx-button-toggle-group class="demo-button-toggle-group" label="Layout (vertical)" [(value)]="view" orientation="vertical">
     <button cngxButtonToggle value="grid">Grid</button>
     <button cngxButtonToggle value="list">List</button>
     <button cngxButtonToggle value="table">Table</button>
