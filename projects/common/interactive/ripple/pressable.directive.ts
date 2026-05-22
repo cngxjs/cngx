@@ -25,8 +25,8 @@ import { DestroyRef, Directive, inject, input, signal } from '@angular/core';
  *   Tappable card
  * </div>
  * ```
- * <example-url>http://localhost:4200/#/common/interactive/pressable/press-feedback-on-buttons</example-url>
- * <example-url>http://localhost:4200/#/common/interactive/pressable/tappable-card</example-url>
+ * <example-url>http://localhost:4200/#/common/interactive/gestures/pressable/press-feedback-on-buttons</example-url>
+ * <example-url>http://localhost:4200/#/common/interactive/gestures/pressable/tappable-card</example-url>
  */
 @Directive({
   selector: '[cngxPressable]',
