@@ -1186,3 +1186,41 @@ button.chip:disabled {
   --cngx-tag-color: var(--cngx-color-on-primary, oklch(0.99 0 0));
   --cngx-tag-border: 1px solid transparent;
 }
+
+// Radio-indicator demo helpers. Stories under
+// common/display/radio-indicator share these so individual templates
+// don't repeat layout / caption styling inline (caption font-size and
+// muted color are thematic and would trip the STYLE-THEME audit rule
+// if inlined).
+.demo-radio-row {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  font-size: 1.5em;
+  color: var(--cngx-color-primary, var(--cngx-ex-accent, oklch(0.66 0.19 50)));
+}
+.demo-radio-row--baseline {
+  align-items: baseline;
+}
+.demo-radio-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.demo-radio-caption {
+  font-size: 0.625em;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-text-muted, oklch(0.5 0.01 250)));
+}
+// Brand-override examples for the theming story. OKLCH equivalents of
+// the original magenta / emerald hex literals — wrapped in foundation
+// tokens so a downstream theme can re-point them without forking the
+// demo.
+.demo-radio-brand-magenta {
+  --cngx-radio-indicator-checked-color: var(--cngx-color-magenta, oklch(0.55 0.25 350));
+  --cngx-radio-indicator-border-width: 2px;
+}
+.demo-radio-brand-emerald {
+  --cngx-radio-indicator-checked-color: var(--cngx-color-success, oklch(0.55 0.13 165));
+  --cngx-radio-indicator-dot-size: 0.6em;
+}

@@ -1,9 +1,9 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Sizes',
+  title: 'CngxRadioIndicator: Sizes',
   subtitle: 'Three presets driven by <code>--cngx-radio-indicator-size</code>. Defaults to <code>md</code> (1em).',
-  description: 'Decorative dot-in-circle atom. Mirrors CngxCheckboxIndicator: aria-hidden, no outputs, full --cngx-radio-indicator-* theming. Used by the CngxSelect "radio" indicator variant; future single-value form atoms compose the same skin.',
+  description: 'Three checked indicators baseline-aligned in a flex row, one per <code>size</code> preset (<code>sm</code> / <code>md</code> / <code>lg</code>). Each preset toggles a host class that points the indicator size token at a different scale step, so the atom matches the size scale of its sibling <code>CngxCheckboxIndicator</code> inside a select panel without per-instance overrides.',
   level: 'atom',
   audience: ['dev', 'design'],
   artifact: 'standalone',
@@ -16,21 +16,18 @@ export const STORY: DemoSpec = {
   ],
   imports: ['CngxRadioIndicator'],
   template: `
-  <div class="row">
-    <div class="cell">
+  <div class="demo-radio-row demo-radio-row--baseline">
+    <div class="demo-radio-cell">
       <cngx-radio-indicator [checked]="true" size="sm" />
-      <span class="caption">sm — 0.875em</span>
+      <span class="demo-radio-caption">sm (0.875em)</span>
     </div>
-    <div class="cell">
+    <div class="demo-radio-cell">
       <cngx-radio-indicator [checked]="true" size="md" />
-      <span class="caption">md — 1em</span>
+      <span class="demo-radio-caption">md (1em)</span>
     </div>
-    <div class="cell">
+    <div class="demo-radio-cell">
       <cngx-radio-indicator [checked]="true" size="lg" />
-      <span class="caption">lg — 1.25em</span>
+      <span class="demo-radio-caption">lg (1.25em)</span>
     </div>
   </div>`,
-  css: `.row { display: flex; gap: 24px; align-items: baseline; color: var(--cngx-accent, #4a8cff); font-size: 1.5em; }
-.cell { display: flex; flex-direction: column; align-items: center; gap: 8px; }
-.caption { font-size: 0.625em; color: var(--cngx-text-muted, #6b7280); }`,
 };
