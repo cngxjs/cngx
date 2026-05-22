@@ -16,10 +16,11 @@ import {
 export const CNGX_CLOSE_ICON = new InjectionToken<Type<unknown>>('CngxCloseIcon');
 
 /**
- * Shared close/dismiss button atom.
+ * Shared close/dismiss button molecule.
  *
- * Renders a configurable X-icon button with consistent styling, ARIA,
- * focus ring, and density support across all cngx components.
+ * Composes the native `<button>` shell with an optional projected icon
+ * and the `CNGX_CLOSE_ICON` DI swap; owns ARIA wiring, focus ring,
+ * density, and a default X glyph as the projection fallback.
  *
  * Used internally by `CngxAlert`, `CngxToastOutlet`, and `CngxPopoverPanel`.
  * Can also be used standalone by consumers for dialogs, drawers, chips, etc.
@@ -29,13 +30,17 @@ export const CNGX_CLOSE_ICON = new InjectionToken<Type<unknown>>('CngxCloseIcon'
  *
  * ### Standalone
  * ```html
- * <cngx-close-button (pressed)="close()" label="Close dialog" />
+ * <cngx-close-button label="Close dialog" (click)="close()" />
  * ```
  *
  * ### Inside a component (click handled by parent)
  * ```html
- * <cngx-close-button />
+ * <cngx-close-button label="Close" />
  * ```
+ *
+ * Note: the host uses `display: contents`, so applying
+ * `position: absolute` directly on `<cngx-close-button>` is silently
+ * ignored. Wrap in a positioned element when corner-pinning.
  *
  * <example-url>http://localhost:4200/#/common/interactive/close-button/basic</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/close-button/projected-icon</example-url>
@@ -78,9 +83,10 @@ export const CNGX_CLOSE_ICON = new InjectionToken<Type<unknown>>('CngxCloseIcon'
 })
 export class CngxCloseButton {
   /**
-   * Accessible label for the button.
-   * Default `"Close"` is generic — provide a contextual label for standalone use
-   * (e.g. `"Close dialog"`, `"Dismiss notification"`).
+   * Required accessible label for the inner `<button>` (`aria-label`).
+   * Describe the dismissable artifact, not the affordance:
+   * `"Close session-expired alert"`, not `"Close"`. A bare `"Close"`
+   * reads identically across every dismiss target on the page.
    */
   readonly label = input.required<string>();
 
