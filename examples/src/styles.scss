@@ -647,6 +647,60 @@ html.dark .cngx-ex-tag[data-dim='stability'][data-value='deprecated'] {
   margin-block-start: 8px;
   max-width: 280px;
 }
+
+// Listbox demo helpers. The cngx default theme styles option states
+// (.cngx-option--highlighted / --selected / --disabled / --hidden) and
+// the listbox container's keyboard focus ring; the container's surface
+// (border, radius, max-width, scroll) is consumer-owned and lives here
+// so each listbox story stays focused on the directive contract, not
+// per-story chrome.
+.demo-listbox-surface {
+  display: flex;
+  flex-direction: column;
+  max-width: 260px;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #d0d5dd));
+  border-radius: var(--cngx-radius-md, 8px);
+  background: var(--cngx-color-surface, var(--cngx-ex-surface, #fff));
+}
+.demo-listbox-surface--scroll {
+  max-height: 260px;
+  overflow: auto;
+}
+.demo-listbox-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 200px;
+  padding: 8px 12px;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #d0d5dd));
+  border-radius: var(--cngx-radius-md, 6px);
+  background: var(--cngx-color-surface, var(--cngx-ex-surface, #fff));
+  color: var(--cngx-color-text, var(--cngx-ex-text, inherit));
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.demo-listbox-trigger:focus-visible {
+  outline: 2px solid var(--cngx-color-primary, var(--cngx-ex-accent, #4a8cff));
+  outline-offset: 2px;
+}
+.demo-listbox-search {
+  width: 260px;
+  padding: 6px 10px;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #d0d5dd));
+  border-radius: var(--cngx-radius-md, 8px);
+  background: var(--cngx-color-surface, var(--cngx-ex-surface, #fff));
+  color: var(--cngx-color-text, var(--cngx-ex-text, inherit));
+  font: inherit;
+}
+.demo-listbox-empty {
+  margin: 6px 0 0;
+  padding: 6px 10px;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted));
+  font-size: 0.875rem;
+}
+
 button.chip--icon-close {
   padding: 2px 8px;
 }

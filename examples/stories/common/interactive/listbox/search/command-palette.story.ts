@@ -1,44 +1,59 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Command palette',
-  subtitle: 'Type to filter; the listbox shows only matching options. <code>hasSearchResults</code> drives the empty state.',
-  description: 'Search input that drives a sibling CngxListbox. Term is debounced via the underlying CngxSearch hostDirective; listboxes read term + matchFn reactively.',
+  title: 'CngxListboxSearch: command palette',
+  subtitle:
+    'Typing the input feeds CngxListboxSearch (debounced via the CngxSearch host directive); the listbox reads term + matchFn reactively, palette.hasSearchResults() drives the empty state, and aria-controls links the input to the listbox.',
+  description:
+    'Search-filtered command palette: a separate <input cngxListboxSearch> drives a sibling listbox via [cngxSearchRef], and the listbox owns aria-activedescendant while the input keeps focus and native text-editing keystrokes.',
   level: 'molecule',
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
   focus: ['composition', 'a11y-pattern', 'behavior'],
-  apiComponents: [
-    'CngxListboxSearch',
-    'CngxListbox',
-    'CngxOption',
+  references: [
+    {
+      label: 'WAI-ARIA APG: Listbox pattern',
+      href: 'https://www.w3.org/WAI/ARIA/apg/patterns/listbox/',
+    },
+    {
+      label: 'WCAG 2.1.1 Keyboard',
+      href: 'https://www.w3.org/WAI/WCAG21/Understanding/keyboard',
+    },
+    {
+      label: 'WCAG 1.3.1 Info and Relationships',
+      href: 'https://www.w3.org/WAI/WCAG21/Understanding/info-and-relationships',
+    },
   ],
+  apiComponents: ['CngxListboxSearch', 'CngxListbox', 'CngxOption'],
   moduleImports: [
-    'import { CngxListbox, CngxListboxSearch, CngxOption } from \'@cngx/common/interactive\';',
+    "import { CngxListbox, CngxListboxSearch, CngxOption } from '@cngx/common/interactive';",
   ],
   imports: ['CngxListbox', 'CngxListboxSearch', 'CngxOption'],
   setup: `protected readonly commands = signal<Array<{ value: string; label: string }>>([
-    { value: 'open-file', label: 'Open file…' },
-    { value: 'open-folder', label: 'Open folder…' },
+    { value: 'open-file', label: 'Open file...' },
+    { value: 'open-folder', label: 'Open folder...' },
     { value: 'save', label: 'Save' },
-    { value: 'save-as', label: 'Save as…' },
+    { value: 'save-as', label: 'Save as...' },
     { value: 'close', label: 'Close' },
     { value: 'reload', label: 'Reload' },
   ]);
   protected readonly lastSelected = signal<string | null>(null);`,
   template: `  <input
     cngxListboxSearch
-    class="palette-search"
+    class="demo-listbox-search"
     type="search"
-    placeholder="Search commands…"
+    placeholder="Search commands..."
     aria-label="Search commands"
+    aria-controls="palette-listbox"
     #search="cngxListboxSearch"
   />
   <div
     cngxListbox
+    id="palette-listbox"
     [label]="'Palette'"
     [cngxSearchRef]="search"
-    class="ad-listbox"
+    class="demo-listbox-surface demo-listbox-surface--scroll"
+    style="margin-top:8px"
     tabindex="0"
     (valueChange)="lastSelected.set($any($event))"
     #palette="cngxListbox"
@@ -50,53 +65,17 @@ export const STORY: DemoSpec = {
       }
     }
   </div>
-  @if (palette.options().length === 0) {
-    <p class="empty">No matching commands.</p>
+  @if (!palette.hasSearchResults()) {
+    <p class="demo-listbox-empty">No matching commands.</p>
   }`,
-  templateChrome: `<div class="event-grid" style="margin-top:8px">
+  templateChrome: `<div class="event-grid">
     <div class="event-row">
       <span class="event-label">Last selected</span>
-      <span class="event-value">{{ lastSelected() ?? '—' }}</span>
+      <span class="event-value">{{ lastSelected() ?? '-' }}</span>
+    </div>
+    <div class="event-row">
+      <span class="event-label">Search term</span>
+      <span class="event-value">{{ search.term() || '-' }}</span>
     </div>
   </div>`,
-  css: `.palette-search {
-  width: 260px;
-  padding: 6px 10px;
-  border: 1px solid var(--cngx-color-border, #d0d5dd);
-  border-radius: var(--cngx-radius-md, 8px);
-  font: inherit;
-}
-.ad-listbox {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  width: 260px;
-  max-height: 260px;
-  overflow: auto;
-  padding: 4px;
-  margin-top: 8px;
-  border: 1px solid var(--cngx-color-border, #d0d5dd);
-  border-radius: var(--cngx-radius-md, 8px);
-  outline: none;
-}
-.ad-listbox:focus-visible {
-  outline: 2px solid var(--cngx-color-primary, #4a8cff);
-  outline-offset: 2px;
-}
-.ad-listbox [cngxOption] {
-  padding: 6px 10px;
-  border-radius: var(--cngx-radius-sm, 4px);
-}
-.cngx-option--highlighted {
-  background: var(--cngx-option-highlight-bg, rgba(74, 140, 255, 0.15));
-}
-.cngx-option--selected {
-  background: var(--cngx-option-selected-bg, rgba(74, 140, 255, 0.25));
-}
-.empty {
-  margin: 6px 0 0;
-  padding: 6px 10px;
-  color: var(--cngx-text-muted, #6b7280);
-  font-size: 0.875rem;
-}`,
 };

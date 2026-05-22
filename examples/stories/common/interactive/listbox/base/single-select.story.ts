@@ -1,26 +1,39 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Single select',
-  subtitle: 'Arrow keys navigate; Enter/Space activates. Click also selects. Disabled options are skipped in navigation and clicks.',
-  description: 'Composite listbox primitive with single/multi selection, keyboard navigation, and signal-first ARIA state.',
+  title: 'CngxListbox: single select',
+  subtitle:
+    'ArrowUp/Down navigate, Home/End jump, Enter or Space activates, printable keys typeahead. Click also selects. Disabled options are skipped in both keyboard and click paths.',
+  description:
+    'Single-value listbox: the host carries focus while aria-activedescendant points at the highlighted option, and the activated value is written back through the value model binding.',
   level: 'molecule',
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
   focus: ['composition', 'a11y-pattern'],
-  apiComponents: [
-    'CngxListbox',
-    'CngxOption',
+  references: [
+    {
+      label: 'WAI-ARIA APG: Listbox pattern',
+      href: 'https://www.w3.org/WAI/ARIA/apg/patterns/listbox/',
+    },
+    {
+      label: 'WCAG 2.1.1 Keyboard',
+      href: 'https://www.w3.org/WAI/WCAG21/Understanding/keyboard',
+    },
+    {
+      label: 'WCAG 4.1.2 Name, Role, Value',
+      href: 'https://www.w3.org/WAI/WCAG21/Understanding/name-role-value',
+    },
   ],
+  apiComponents: ['CngxListbox', 'CngxOption'],
   moduleImports: [
-    'import { CngxListbox, CngxOption } from \'@cngx/common/interactive\';',
+    "import { CngxListbox, CngxOption } from '@cngx/common/interactive';",
   ],
   imports: ['CngxListbox', 'CngxOption'],
   setup: `protected readonly singleValue = signal<string | null>(null);`,
   template: `  <div cngxListbox
        [label]="'Fruits (single)'"
        tabindex="0"
-       class="ad-listbox"
+       class="demo-listbox-surface"
        (valueChange)="singleValue.set($any($event))"
        #lbSingle="cngxListbox">
     <div cngxOption value="apple">Apple</div>
@@ -28,52 +41,14 @@ export const STORY: DemoSpec = {
     <div cngxOption value="cherry" [disabled]="true">Cherry (disabled)</div>
     <div cngxOption value="date">Date</div>
   </div>`,
-  templateChrome: `<div class="event-grid" style="margin-top:12px">
+  templateChrome: `<div class="event-grid">
     <div class="event-row">
       <span class="event-label">Selected</span>
-      <span class="event-value">{{ singleValue() ?? '—' }}</span>
+      <span class="event-value">{{ singleValue() ?? '-' }}</span>
     </div>
     <div class="event-row">
       <span class="event-label">Selected label</span>
-      <span class="event-value">{{ lbSingle.selectedLabel() ?? '—' }}</span>
+      <span class="event-value">{{ lbSingle.selectedLabel() ?? '-' }}</span>
     </div>
   </div>`,
-  css: `.ad-listbox {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  max-width: 260px;
-  padding: 4px;
-  border: 1px solid var(--cngx-color-border, #d0d5dd);
-  border-radius: var(--cngx-radius-md, 8px);
-  outline: none;
-}
-.ad-listbox:focus-visible {
-  outline: 2px solid var(--cngx-color-primary, #4a8cff);
-  outline-offset: 2px;
-}
-.ad-listbox [cngxOption] {
-  padding: 6px 10px;
-  border-radius: var(--cngx-radius-sm, 4px);
-  cursor: default;
-  user-select: none;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.cngx-option--highlighted {
-  background: var(--cngx-option-highlight-bg, rgba(74, 140, 255, 0.15));
-}
-.cngx-option--selected {
-  background: var(--cngx-option-selected-bg, rgba(74, 140, 255, 0.25));
-  font-weight: 600;
-}
-.cngx-option--selected::after {
-  content: '\\2713';
-  margin-left: auto;
-}
-.cngx-option--disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}`,
 };
