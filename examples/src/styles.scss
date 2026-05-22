@@ -1224,3 +1224,16 @@ button.chip:disabled {
   --cngx-radio-indicator-checked-color: var(--cngx-color-success, oklch(0.55 0.13 165));
   --cngx-radio-indicator-dot-size: 0.6em;
 }
+// Required-marker custom-template variants (cngx-required story).
+.required-badge {
+  display: inline-block;
+  margin-left: 0.25em;
+  padding: 0 0.4em;
+  border-radius: 999px;
+  font-size: 0.6875em;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--cngx-color-danger-on, #fff);
+  background: var(--cngx-color-danger, #c0392b);
+}

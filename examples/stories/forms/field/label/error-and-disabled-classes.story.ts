@@ -47,17 +47,17 @@ export const STORY: DemoSpec = {
   template: `  <div style="display:grid;gap:16px;max-width:360px">
     <cngx-form-field [field]="stateForm.valid">
       <label cngxLabel>Valid field</label>
-      <input type="email" [field]="stateForm.valid" />
+      <input type="email" />
     </cngx-form-field>
 
     <cngx-form-field [field]="stateForm.invalid">
       <label cngxLabel>Invalid (touched)</label>
-      <input type="email" [field]="stateForm.invalid" />
+      <input type="email" />
     </cngx-form-field>
 
     <cngx-form-field [field]="stateForm.locked">
       <label cngxLabel>Disabled field</label>
-      <input type="text" [field]="stateForm.locked" />
+      <input type="text" />
     </cngx-form-field>
   </div>`,
   templateChrome: `<div class="button-row" style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">

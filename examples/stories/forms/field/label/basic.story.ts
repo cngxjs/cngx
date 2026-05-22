@@ -27,7 +27,7 @@ export const STORY: DemoSpec = {
   template: `  <div style="display:grid;gap:8px;max-width:360px">
     <cngx-form-field [field]="basicForm.email">
       <label cngxLabel>Email</label>
-      <input type="email" [field]="basicForm.email" />
+      <input type="email" />
     </cngx-form-field>
   </div>`,
 };

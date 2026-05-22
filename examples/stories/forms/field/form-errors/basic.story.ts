@@ -46,7 +46,7 @@ export const STORY: DemoSpec = {
     <div class="demo-field">
       <cngx-form-field [field]="userForm.email">
         <label cngxLabel>Email</label>
-        <input cngxInput [formField]="userForm.email" placeholder="max@example.com" />
+        <input cngxInput placeholder="max@example.com" />
         <cngx-field-errors />
       </cngx-form-field>
     </div>
@@ -54,7 +54,7 @@ export const STORY: DemoSpec = {
     <div class="demo-field">
       <cngx-form-field [field]="userForm.password">
         <label cngxLabel>Password</label>
-        <input cngxInput [formField]="userForm.password" type="password" />
+        <input cngxInput type="password" />
         <cngx-field-errors />
       </cngx-form-field>
     </div>
@@ -62,7 +62,7 @@ export const STORY: DemoSpec = {
     <div class="demo-field">
       <cngx-form-field [field]="userForm.displayName">
         <label cngxLabel>Display name</label>
-        <input cngxInput [formField]="userForm.displayName" />
+        <input cngxInput />
         <cngx-field-errors />
       </cngx-form-field>
     </div>

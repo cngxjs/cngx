@@ -17,8 +17,9 @@ export const STORY: DemoSpec = {
   ],
   imports: ['CngxSort', 'CngxSortHeader'],
   references: [
-    { label: 'aria-sort (WAI-ARIA 1.2)', href: 'https://www.w3.org/TR/wai-aria-1.2/#aria-sort' },
-    { label: 'WCAG 2.1.1 Keyboard', href: 'https://www.w3.org/WAI/WCAG21/Understanding/keyboard.html' },
+    { label: 'WAI-ARIA 1.2: `aria-sort`', href: 'https://www.w3.org/TR/wai-aria-1.2/#aria-sort' },
+    { label: 'WAI-ARIA APG: Sortable Table pattern', href: 'https://www.w3.org/WAI/ARIA/apg/patterns/table/examples/sortable-table.html' },
+    { label: 'WCAG 2.1 SC 2.1.1 Keyboard', href: 'https://www.w3.org/WAI/WCAG21/Understanding/keyboard.html' },
   ],
   setup: `
   protected readonly people = [

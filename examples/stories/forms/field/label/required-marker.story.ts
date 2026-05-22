@@ -27,12 +27,12 @@ export const STORY: DemoSpec = {
   template: `  <div style="display:grid;gap:16px;max-width:360px">
     <cngx-form-field [field]="markerForm.email">
       <label cngxLabel>Email <cngx-required /></label>
-      <input type="email" [field]="markerForm.email" />
+      <input type="email" />
     </cngx-form-field>
 
     <cngx-form-field [field]="markerForm.phone">
       <label cngxLabel>Phone <cngx-required marker="(required)" /></label>
-      <input type="tel" [field]="markerForm.phone" />
+      <input type="tel" />
     </cngx-form-field>
   </div>`,
 };

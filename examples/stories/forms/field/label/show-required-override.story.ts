@@ -43,12 +43,12 @@ export const STORY: DemoSpec = {
   template: `  <div style="display:grid;gap:16px;max-width:360px">
     <cngx-form-field [field]="overrideForm.name">
       <label cngxLabel>Name</label>
-      <input type="text" [field]="overrideForm.name" />
+      <input type="text" />
     </cngx-form-field>
 
     <cngx-form-field [field]="overrideForm.nickname">
       <label cngxLabel [showRequired]="false">Nickname (still required, marker suppressed)</label>
-      <input type="text" [field]="overrideForm.nickname" />
+      <input type="text" />
     </cngx-form-field>
   </div>`,
 };

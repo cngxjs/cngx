@@ -63,7 +63,7 @@ export const STORY: DemoSpec = {
     <div class="demo-field">
       <cngx-form-field [field]="signupForm.username">
         <label cngxLabel>Username</label>
-        <input cngxInput [formField]="signupForm.username" />
+        <input cngxInput />
         <cngx-field-errors />
       </cngx-form-field>
     </div>
@@ -71,7 +71,7 @@ export const STORY: DemoSpec = {
     <div class="demo-field">
       <cngx-form-field [field]="signupForm.email">
         <label cngxLabel>Email</label>
-        <input cngxInput [formField]="signupForm.email" />
+        <input cngxInput />
         <cngx-field-errors />
       </cngx-form-field>
     </div>
