@@ -1,10 +1,16 @@
+@use 'sass:map';
+@use 'sass:math';
 @use '@angular/material' as mat;
 
 // Material bridge for CngxChip + CngxChipGroup + CngxMultiChipGroup +
-// CngxButtonToggleGroup. Maps the chip token surface (idle / hover /
-// focus / selected / disabled / variant palette) onto Material 3
-// surface and state tokens so an interactive chip reads like an M3
-// filter / assist chip.
+// CngxButtonToggleGroup. Maps the chip token surface onto Material 3
+// system tokens so an interactive chip reads like an M3 assist /
+// filter chip:
+//   - color: idle / hover / focus / selected / disabled / variants
+//   - typography: label-large (matches M3 chip text scale)
+//   - density: padding scales with Material's density token
+//   - base: corner radius via corner-small (M3 chips are rounded
+//     squares, not pills)
 //
 //   @use '@cngx/themes/material/chip-theme' as chip;
 //   html { @include chip.theme($theme); }
@@ -56,10 +62,56 @@
   }
 }
 
+@mixin typography($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    // M3 chip label uses label-large (14px). Falls back to the library's
+    // default when the system token is absent (Material < 3 themes).
+    --cngx-chip-font-size: var(--mat-sys-label-large-size, 0.875rem);
+  }
+}
+
+@mixin density($theme) {
+  $scale: mat.get-theme-density($theme);
+  $scale: math.max(-4, math.min(0, $scale));
+
+  // M3 default chip is 32px tall with 16px inline + 6px block padding.
+  // Negative scales tighten both axes proportionally; the inner gap
+  // between leading icon / label / trailing remove follows the same curve.
+  $padding-block: (0: 6px, -1: 4px, -2: 3px, -3: 2px, -4: 1px);
+  $padding-inline: (0: 16px, -1: 12px, -2: 10px, -3: 8px, -4: 6px);
+  $inner-gap: (0: 8px, -1: 6px, -2: 4px, -3: 4px, -4: 2px);
+
+  --cngx-chip-padding-block: #{map.get($padding-block, $scale)};
+  --cngx-chip-padding-inline: #{map.get($padding-inline, $scale)};
+  --cngx-chip-inner-gap: #{map.get($inner-gap, $scale)};
+}
+
+@mixin base($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    // M3 chips use corner-small (8px), NOT the pill radius the cngx
+    // default ships with. Bridge into the M3 shape so chips line up
+    // with <mat-chip-set>.
+    --cngx-chip-radius: var(--mat-sys-corner-small, 8px);
+  } @else {
+    --cngx-chip-radius: 8px;
+  }
+}
+
 @mixin theme($theme) {
   @layer cngx.components {
+    // Color tokens that are `inherits: true` (bg, color) cascade from
+    // the group into projected chips, so writing them on the parent is
+    // fine — and lets a consumer set `aria-busy` / `aria-disabled` on
+    // the group surface without re-aliasing.
     :where(cngx-chip, cngx-chip-group, cngx-multi-chip-group) {
       @include color($theme);
+    }
+    // Typography + density + radius are `inherits: false` per the chip
+    // component spec, so they must land on the chip element itself.
+    :where(cngx-chip) {
+      @include typography($theme);
+      @include density($theme);
+      @include base($theme);
     }
   }
 }
