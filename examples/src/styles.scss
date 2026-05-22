@@ -1587,3 +1587,69 @@ button.chip.demo-gesture-flash {
   outline: 2px solid var(--cngx-color-primary, oklch(0.66 0.19 50));
   outline-offset: 2px;
 }
+
+// Inline code chip for copy-text stories. Token-driven so it tracks the
+// examples-app color scheme; no literal hex fallbacks. The container
+// owns layout (display/gap/max-width) via inline style; this class owns
+// only the thematic surface.
+.demo-copy-token__code {
+  padding: 6px 10px;
+  border: 1px solid var(--cngx-color-border, oklch(0.88 0.005 250));
+  border-radius: var(--cngx-radius-sm, 4px);
+  background: var(--cngx-color-surface-variant, var(--cngx-color-surface, oklch(0.98 0.005 250)));
+  color: var(--cngx-color-text, currentColor);
+  font-family: var(--cngx-font-family-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: var(--cngx-font-size-sm, 0.8125rem);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// Copied-state surface for any chip-styled copy trigger. Mirrors the
+// CngxCopyBlock library default exactly: same green-hue Copied tint
+// (light: oklch(0.96 0.025 145), dark: oklch(0.32 0.06 145)), same
+// success-token border and label. A color-mix on `--cngx-color-surface`
+// drowned in the surface's blue-grey hue and didn't read as green,
+// hence the explicit hue tints.
+button.chip.demo-chip--copied {
+  background: oklch(0.96 0.025 145);
+  border-color: var(--cngx-color-success, oklch(0.5 0.12 145));
+  color: var(--cngx-color-success, oklch(0.5 0.12 145));
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-color-scheme='light']):not(.light) button.chip.demo-chip--copied {
+    background: oklch(0.32 0.06 145);
+  }
+}
+[data-color-scheme='dark'] button.chip.demo-chip--copied,
+.dark button.chip.demo-chip--copied {
+  background: oklch(0.32 0.06 145);
+}
+[data-color-scheme='light'] button.chip.demo-chip--copied,
+.light button.chip.demo-chip--copied {
+  background: oklch(0.96 0.025 145);
+}
+
+// Muted URL label for the copy-url-with-sr-announcement story. The
+// real token is `--cngx-color-text-muted` (system-tokens.css), not the
+// invented `--cngx-text-secondary` previously used inline.
+.demo-copy-url__label {
+  font-size: var(--cngx-font-size-sm, 0.875rem);
+  color: var(--cngx-color-text-muted, oklch(0.5 0.01 250));
+}
+
+// Screen-reader-only utility for demo templates that wire their own
+// aria-live region. Mirrors the WAI-ARIA practice "visually hidden"
+// pattern; identical visual rules to the library's internal
+// `.cngx-sr-only` (scoped to `.cngx-copy-block`).
+.demo-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+  padding: 0;
+  margin: -1px;
+}
