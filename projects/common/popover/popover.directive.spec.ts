@@ -3,8 +3,9 @@ import { TestBed } from '@angular/core/testing';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { CngxPopover } from './popover.directive';
+import type { PopoverPositionTryFallback } from './popover.types';
 
-// ── Test helpers ────────────────────────────────────────────────────────
+// Test helpers
 
 // JSDOM Popover API support varies by version. Always install own-property
 // stubs that shadow whatever sits on the prototype — `??=` would skip the
@@ -24,7 +25,7 @@ function stubPopoverElement(el: HTMLElement): void {
   } as unknown as CSSStyleDeclaration);
 }
 
-// ── Test hosts ──────────────────────────────────────────────────────────
+// Test hosts
 
 @Component({
   template: `<div cngxPopover #pop="cngxPopover">Content</div>`,
@@ -63,6 +64,17 @@ class AutoModeHost {
   readonly popover = viewChild.required(CngxPopover);
 }
 
+@Component({
+  template: `
+    <div cngxPopover #pop="cngxPopover" [positionTryFallbacks]="fallbacks()">Fallback host</div>
+  `,
+  imports: [CngxPopover],
+})
+class FallbackHost {
+  readonly fallbacks = signal<readonly PopoverPositionTryFallback[]>([]);
+  readonly popover = viewChild.required(CngxPopover);
+}
+
 function setup<T>(hostType: new () => T) {
   const fixture = TestBed.createComponent(hostType);
   fixture.detectChanges();
@@ -72,7 +84,7 @@ function setup<T>(hostType: new () => T) {
   return { fixture, popoverEl };
 }
 
-// ── Tests ───────────────────────────────────────────────────────────────
+// Tests
 
 describe('CngxPopover', () => {
   afterEach(() => {
@@ -222,6 +234,51 @@ describe('CngxPopover', () => {
       host.popover().show();
       fixture.destroy();
       expect(popoverEl.hidePopover).toHaveBeenCalled();
+    });
+  });
+
+  describe('positionTryFallbacks', () => {
+    it('writes no position-try-fallbacks style for an empty array', () => {
+      const { popoverEl } = setup(FallbackHost);
+      expect(popoverEl.style.getPropertyValue('position-try-fallbacks')).toBe('');
+    });
+
+    it('writes a single try-tactic value verbatim', () => {
+      const fixture = TestBed.createComponent(FallbackHost);
+      fixture.componentInstance.fallbacks.set(['flip-inline']);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      const popoverEl = fixture.nativeElement.querySelector('[cngxpopover]') as HTMLElement;
+      expect(popoverEl.style.getPropertyValue('position-try-fallbacks')).toBe('flip-inline');
+    });
+
+    it('comma-joins multiple try-tactic values in declaration order', () => {
+      const fixture = TestBed.createComponent(FallbackHost);
+      fixture.componentInstance.fallbacks.set([
+        'flip-block',
+        'flip-inline',
+        'flip-block flip-inline',
+      ]);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      const popoverEl = fixture.nativeElement.querySelector('[cngxpopover]') as HTMLElement;
+      expect(popoverEl.style.getPropertyValue('position-try-fallbacks')).toBe(
+        'flip-block, flip-inline, flip-block flip-inline',
+      );
+    });
+
+    it('removes the property when the consumer clears a previously-set list', () => {
+      const fixture = TestBed.createComponent(FallbackHost);
+      fixture.componentInstance.fallbacks.set(['flip-inline']);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      const popoverEl = fixture.nativeElement.querySelector('[cngxpopover]') as HTMLElement;
+      expect(popoverEl.style.getPropertyValue('position-try-fallbacks')).toBe('flip-inline');
+
+      fixture.componentInstance.fallbacks.set([]);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(popoverEl.style.getPropertyValue('position-try-fallbacks')).toBe('');
     });
   });
 });
