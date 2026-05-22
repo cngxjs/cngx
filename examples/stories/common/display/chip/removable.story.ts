@@ -7,7 +7,7 @@ export const STORY: DemoSpec = {
   level: 'atom',
   audience: ['dev', 'a11y'],
   artifact: 'standalone',
-  focus: ['behavior'],
+  focus: ['behavior', 'a11y-pattern'],
   apiComponents: [
     'CngxChip',
   ],
@@ -15,6 +15,10 @@ export const STORY: DemoSpec = {
     'import { CngxChip } from \'@cngx/common/display\';',
   ],
   imports: ['CngxChip'],
+  references: [
+    { label: 'WAI-ARIA 1.2: `aria-label`', href: 'https://www.w3.org/TR/wai-aria-1.2/#aria-label' },
+    { label: 'WCAG 2.1 SC 4.1.2 Name, Role, Value', href: 'https://www.w3.org/WAI/WCAG21/Understanding/name-role-value.html' },
+  ],
   setup: `
   protected readonly tags = signal<string[]>(['Frontend', 'Cleared', 'Pending review']);
 
