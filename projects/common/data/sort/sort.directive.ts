@@ -23,6 +23,11 @@ export interface SortEntry {
  *
  * Consumer connects this to a table or list via a `computed()` — nothing is
  * injected automatically.
+ *
+ * <example-url>http://localhost:4200/#/common/data/sort/basic</example-url>
+ * <example-url>http://localhost:4200/#/common/data/sort/multi-sort</example-url>
+ * <example-url>http://localhost:4200/#/common/data/sort/controlled</example-url>
+ * <example-url>http://localhost:4200/#/common/data/sort/aria-and-keyboard</example-url>
  * <example-url>http://localhost:4200/#/common/data/smart-data-source/auto-wired</example-url>
  * <example-url>http://localhost:4200/#/common/data/smart-data-source/how-it-works-hostdirectives-inject</example-url>
  * <example-url>http://localhost:4200/#/common/data/smart-data-source/smartdatasource-cngxpaginate-hostdirective</example-url>
