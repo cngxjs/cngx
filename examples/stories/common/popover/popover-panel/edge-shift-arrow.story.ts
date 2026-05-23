@@ -108,5 +108,20 @@ export const STORY: DemoSpec = {
         <p cngxPopoverBody>Block-axis shift recovery — arrow stays on the trigger.</p>
       </cngx-popover-panel>
     </section>
+
+    <section>
+      <p style="margin:0 0 12px">
+        <strong>Flip recovery</strong> — requested <code>placement="bottom"</code> with <code>[positionTryFallbacks]="['flip-block']"</code>; if no space below, the browser flips to <code>top</code> and the arrow follows to the panel's opposite edge.
+      </p>
+      <div style="display:flex;justify-content:flex-start;gap:8px">
+        <button [cngxPopoverTrigger]="flip.popover" (click)="flip.popover.toggle()" class="chip">flip if no room below</button>
+      </div>
+      <cngx-popover-panel #flip [showArrow]="true" placement="bottom"
+                          [positionTryFallbacks]="['flip-block']">
+        <span cngxPopoverHeader>Flip-block fallback</span>
+        <p cngxPopoverBody>Scroll the demo card so the trigger is near the bottom of the viewport — the panel flips to render above, and the arrow moves to the panel's bottom edge so it still points at the trigger.</p>
+        <p cngxPopoverBody>The library derives the arrow's edge from the live trigger/panel geometry, so no consumer wiring is required when the browser picks a fallback.</p>
+      </cngx-popover-panel>
+    </section>
   </div>`,
 };

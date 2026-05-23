@@ -27,18 +27,35 @@ import type {
 /** Module-level registry of open popovers (insertion-ordered). */
 const openPopovers = new Set<CngxPopover>();
 
+/** Primary axis edges the arrow can land on. */
+type ArrowEdge = 'top' | 'bottom' | 'left' | 'right';
+
 /**
- * Placements whose arrow tracks the trigger along the horizontal axis
- * (panel sits above or below the anchor). The rest track vertically.
+ * Derive the panel's actual placement relative to the trigger from the live
+ * rects. The arrow always sits on the panel edge that *faces* the trigger,
+ * so a `position-try-fallbacks` flip (e.g. requested `bottom`, browser
+ * resolved to `top` because there is no room below) routes the arrow to the
+ * opposite edge without the consumer touching anything.
+ *
+ * Returns the requested placement's primary edge when the rects overlap —
+ * the only case where no clean side is geometrically correct.
  */
-const HORIZONTAL_ARROW_PLACEMENTS: ReadonlySet<PopoverPlacement> = new Set([
-  'top',
-  'top-start',
-  'top-end',
-  'bottom',
-  'bottom-start',
-  'bottom-end',
-]);
+function resolveActualEdge(trigger: DOMRect, panel: DOMRect, requested: PopoverPlacement): ArrowEdge {
+  const tolerance = 4;
+  if (panel.top >= trigger.bottom - tolerance) {
+    return 'bottom';
+  }
+  if (panel.bottom <= trigger.top + tolerance) {
+    return 'top';
+  }
+  if (panel.right <= trigger.left + tolerance) {
+    return 'left';
+  }
+  if (panel.left >= trigger.right - tolerance) {
+    return 'right';
+  }
+  return requested.split('-')[0] as ArrowEdge;
+}
 
 /** Tracks which Documents already have the global Escape listener. */
 const escapeListenerDocs = new WeakSet<Document>();
@@ -164,7 +181,7 @@ function warnMissingFloatingMiddleware(doc: Document): void {
     '[attr.popover]': 'mode()',
     '[id]': 'id()',
     '[attr.aria-hidden]': '!isVisible()',
-    '[attr.data-arrow-placement]': 'primaryPlacement()',
+    '[attr.data-arrow-placement]': 'resolvedEdge()',
     '[class.cngx-popover--opening]': 'isOpening()',
     '[class.cngx-popover--open]': 'isOpen()',
     '[class.cngx-popover--closing]': 'isClosing()',
@@ -276,14 +293,17 @@ export class CngxPopover {
   );
 
   /**
-   * Primary edge of the placement (`top` / `bottom` / `left` / `right`),
-   * used to select the arrow's side without parsing the host's inline
-   * `position-area` style. Browsers normalise compound `position-area`
-   * values to a non-deterministic keyword order, so substring matching
-   * on `style` is unreliable; an explicit attribute is the stable hook.
+   * Primary edge of the placement, written from the live trigger and panel
+   * rects so the arrow lands on the side that actually faces the trigger.
+   * Falls back to the requested placement's edge before the first geometry
+   * read so the arrow CSS rules still match on the very first paint.
+   * Browsers normalise compound `position-area` values to a
+   * non-deterministic keyword order; an explicit attribute is the stable
+   * hook for the arrow stylesheet.
    */
-  protected readonly primaryPlacement = computed(
-    () => this.placement().split('-')[0] as 'top' | 'bottom' | 'left' | 'right',
+  private readonly resolvedEdgeSignal = signal<ArrowEdge | null>(null);
+  protected readonly resolvedEdge = computed<ArrowEdge>(
+    () => this.resolvedEdgeSignal() ?? (this.placement().split('-')[0] as ArrowEdge),
   );
 
   protected readonly cssMargin = computed(() => (SUPPORTS_ANCHOR ? `${this.offset()}px` : null));
@@ -423,25 +443,30 @@ export class CngxPopover {
   };
 
   /**
-   * Recompute the arrow offset from the live trigger and panel rects.
-   * Clamps inside the panel's rounded-corner bounds so the arrow's base
-   * stays flush with the panel's straight edge even when the trigger
-   * sits outside the panel's inline extent.
+   * Recompute the arrow's edge and inline offset from the live trigger and
+   * panel rects. The resolved edge captures any browser-driven flip; the
+   * offset is clamped inside the panel's rounded-corner bounds so the
+   * arrow's base stays flush with the panel's straight edge even when the
+   * trigger sits outside the panel's inline extent.
    */
   private updateArrowOffset(): void {
     const anchor = this.anchorElement();
     if (!anchor) {
       this.arrowOffsetSignal.set(null);
+      this.resolvedEdgeSignal.set(null);
       return;
     }
     const panel = this.elRef.nativeElement;
     const panelRect = panel.getBoundingClientRect();
     if (panelRect.width === 0 || panelRect.height === 0) {
       this.arrowOffsetSignal.set(null);
+      this.resolvedEdgeSignal.set(null);
       return;
     }
     const triggerRect = anchor.getBoundingClientRect();
-    const horizontal = HORIZONTAL_ARROW_PLACEMENTS.has(this.placement());
+    const edge = resolveActualEdge(triggerRect, panelRect, this.placement());
+    this.resolvedEdgeSignal.set(edge);
+    const horizontal = edge === 'top' || edge === 'bottom';
     const triggerCentre = horizontal
       ? triggerRect.left + triggerRect.width / 2
       : triggerRect.top + triggerRect.height / 2;
@@ -471,6 +496,7 @@ export class CngxPopover {
     openPopovers.delete(this);
     this.doc.defaultView?.removeEventListener('resize', this.handleWindowResize);
     this.arrowOffsetSignal.set(null);
+    this.resolvedEdgeSignal.set(null);
     const el = this.popoverElement;
     try {
       el.hidePopover();

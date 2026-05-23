@@ -85,4 +85,38 @@ test.describe('common/popover/popover-panel', () => {
     const arrowCentreX = arrowBox!.x + arrowBox!.width / 2;
     expect(Math.abs(arrowCentreX - triggerCentreX), 'arrow should pin to trigger centre').toBeLessThan(5);
   });
+
+  // Regression: when positionTryFallbacks lets the browser flip the panel
+  // from `bottom` to `top`, the arrow's edge must follow. The library reads
+  // the live trigger/panel rects on every show and routes the arrow to the
+  // panel edge that faces the trigger — no consumer wiring required.
+  test('edge-shift-arrow: arrow follows browser flip recovery', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await gotoDemo(page, 'common/popover/popover-panel/edge-shift-arrow');
+    const trigger = page.getByRole('button', { name: 'flip if no room below' });
+
+    // Park the trigger near the viewport bottom: enough room above for the
+    // panel, almost none below. Forces position-try-fallbacks to flip.
+    await trigger.evaluate((el) => el.scrollIntoView({ block: 'end' }));
+    await trigger.click();
+
+    const panel = page.locator('cngx-popover-panel.cngx-popover--open').first();
+    await panel.waitFor({ state: 'visible' });
+
+    const dataPlacement = await panel.evaluate((el) => el.getAttribute('data-arrow-placement'));
+    const arrow = panel.locator('.cngx-popover-panel__arrow');
+    const panelBox = await panel.boundingBox();
+    const triggerBox = await trigger.boundingBox();
+    const arrowBox = await arrow.boundingBox();
+
+    // Browser should have flipped: requested bottom, but no room below,
+    // so the panel sits ABOVE the trigger. The arrow must therefore sit
+    // on the panel's BOTTOM edge (data-arrow-placement === 'top').
+    expect(panelBox!.y + panelBox!.height).toBeLessThanOrEqual(triggerBox!.y + 6);
+    expect(dataPlacement, 'arrow edge should reflect actual rendered placement').toBe('top');
+
+    const arrowCentreY = arrowBox!.y + arrowBox!.height / 2;
+    const panelBottom = panelBox!.y + panelBox!.height;
+    expect(Math.abs(arrowCentreY - panelBottom), 'arrow should sit on panel bottom edge after flip').toBeLessThan(6);
+  });
 });
