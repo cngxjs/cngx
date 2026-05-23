@@ -131,7 +131,12 @@ export class CngxSpeak {
 
   private performSpeak(text: string): void {
     const synth = this.synth!;
-    synth.cancel();
+    // Chrome silently drops the next speak() when cancel() runs on an
+    // idle synth; only cancel when there's actually a queued or in-flight
+    // utterance. Firefox tolerates the unconditional cancel either way.
+    if (synth.speaking || synth.pending) {
+      synth.cancel();
+    }
 
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.rate = this.rate();
