@@ -1951,8 +1951,44 @@ button.chip.demo-chip--copied {
   color: var(--cngx-color-danger, #b00020);
 }
 .demo-speak-hear-btn {
-  padding: 2px 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 2px 10px;
+  border-radius: var(--cngx-radius-sm, 4px);
+  border: 1px solid var(--cngx-color-danger, #b00020);
+  background: color-mix(in srgb, var(--cngx-color-danger, #b00020) 8%, transparent);
+  color: var(--cngx-color-danger, #b00020);
   font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+.demo-speak-hear-btn:focus-visible {
+  outline: 2px solid var(--cngx-color-danger, #b00020);
+  outline-offset: 2px;
+}
+.demo-speak-hear-btn::before {
+  content: '\1F50A';
+  font-size: 0.9rem;
+  line-height: 1;
+}
+.demo-speak-listen-btn--active {
+  background: var(--cngx-color-primary, var(--cngx-ex-focus, #2563eb));
+  color: var(--cngx-color-surface, var(--cngx-ex-surface, #fff));
+}
+.demo-speak-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  font-size: 0.875rem;
+  line-height: 1;
+}
+.demo-speak-icon-btn--active {
+  background: var(--cngx-color-primary, var(--cngx-ex-focus, #2563eb));
+  color: var(--cngx-color-surface, var(--cngx-ex-surface, #fff));
 }
 .demo-speak-note {
   font-size: 0.75rem;
@@ -1970,8 +2006,34 @@ button.chip.demo-chip--copied {
 .demo-speak-passage--accent {
   border-left: 4px solid var(--cngx-color-primary, var(--cngx-ex-focus, #2563eb));
 }
-.demo-speak-listen-btn--active {
+.demo-speak-passage--speaking {
+  outline: 2px solid var(--cngx-color-primary, var(--cngx-ex-focus, #2563eb));
+  outline-offset: 2px;
+}
+.demo-speak-reading-badge {
+  position: absolute;
+  top: -0.7rem;
+  right: 0.5rem;
+  padding: 0.05rem 0.5rem;
+  border-radius: 999px;
   background: var(--cngx-color-primary, var(--cngx-ex-focus, #2563eb));
+  color: var(--cngx-color-surface, var(--cngx-ex-surface, #fff));
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.demo-speak-reading-pulse {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 0.4rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--cngx-color-primary, #2563eb) 12%, transparent);
+  color: var(--cngx-color-primary, var(--cngx-ex-focus, #2563eb));
+  font-size: 0.6875rem;
+  font-weight: 600;
+}
+.demo-speak-hear-btn--active {
+  background: var(--cngx-color-danger, #b00020);
   color: var(--cngx-color-surface, var(--cngx-ex-surface, #fff));
 }
 
