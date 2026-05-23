@@ -1799,3 +1799,31 @@ button.chip.demo-chip--copied {
   color: var(--cngx-color-text-muted, var(--cngx-ex-muted, #6b7280));
 }
 
+// Combobox-typeahead demo. Built from raw <li role="option"> nodes (not
+// the cngx-option directive), so the highlight chrome lives here. Every
+// color reads from a cngx token first, with a safe ASCII-only fallback.
+.demo-typeahead-listbox {
+  display: flex;
+  flex-direction: column;
+  list-style: none;
+  margin: 0;
+  padding: 4px 0;
+  max-height: 12rem;
+  overflow: auto;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #d0d5dd));
+  border-radius: var(--cngx-radius-md, 6px);
+  background: var(--cngx-color-surface, var(--cngx-ex-surface, #fff));
+}
+.demo-typeahead-option {
+  padding: 4px 10px;
+  cursor: pointer;
+  color: var(--cngx-color-text, var(--cngx-ex-text, inherit));
+}
+.demo-typeahead-option[aria-selected='true'] {
+  background: var(--cngx-color-surface-alt, var(--cngx-ex-surface-alt, #f3f4f6));
+}
+.demo-typeahead-empty {
+  padding: 4px 10px;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted, #6b7280));
+  font-style: italic;
+}
