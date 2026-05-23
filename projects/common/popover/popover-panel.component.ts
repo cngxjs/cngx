@@ -20,9 +20,12 @@ import {
   CngxPopoverClose,
   CngxPopoverEmpty,
   CngxPopoverError,
+  CngxPopoverFooter,
+  CngxPopoverHeader,
   CngxPopoverLoading,
 } from './popover-panel-slots';
 import { CngxPopover } from './popover.directive';
+import type { PopoverPanelRole } from './popover.types';
 
 /**
  * Rich popover panel molecule with header/body/footer slots, variant
@@ -79,6 +82,7 @@ import { CngxPopover } from './popover.directive';
   ],
   host: {
     '[class]': 'hostClass()',
+    '[attr.role]': 'role()',
     '[attr.aria-labelledby]': 'headerId',
     '[attr.aria-describedby]': 'ariaDescribedBy()',
     '[attr.aria-busy]': 'effectiveLoading() || null',
@@ -151,6 +155,19 @@ export class CngxPopoverPanel {
    */
   readonly variant = input<string | undefined>(undefined);
 
+  /**
+   * ARIA role applied to the panel host. Defaults to `'dialog'` because
+   * the panel pairs `aria-labelledby` (header) with `aria-describedby`
+   * (body) — the standard dialog pattern. Override with `'alertdialog'`
+   * for irrecoverable confirmations, `'tooltip'` for passive callouts,
+   * or `'menu'` when the panel hosts a menu.
+   *
+   * The trigger's `aria-haspopup` is hinted to `'dialog'` in tandem via
+   * the popover's `haspopup` signal; consumers overriding `role` here
+   * should also override `haspopup` on the trigger to match.
+   */
+  readonly role = input<PopoverPanelRole>('dialog');
+
   /** Show a close button. Falls back to global config from `providePopoverPanel(withCloseButton())`. */
   readonly showCloseInput = input<boolean | undefined>(undefined, { alias: 'showClose' });
 
@@ -189,16 +206,18 @@ export class CngxPopoverPanel {
   /** @internal Resolved empty — state takes precedence over boolean input. */
   protected readonly effectiveEmpty = computed(() => this.state()?.isEmpty() ?? this.empty());
 
-  /** Whether the header slot has projected content. */
-  readonly hasHeader = input(true);
-
-  /** Whether the footer slot has projected content. */
-  readonly hasFooter = input(false);
-
+  protected readonly headerSlot = contentChild(CngxPopoverHeader);
+  protected readonly footerSlot = contentChild(CngxPopoverFooter);
   protected readonly closeTpl = contentChild(CngxPopoverClose);
   protected readonly loadingTpl = contentChild(CngxPopoverLoading);
   protected readonly emptyTpl = contentChild(CngxPopoverEmpty);
   protected readonly errorTpl = contentChild(CngxPopoverError);
+
+  /** Auto-detected from projected `[cngxPopoverHeader]` content. */
+  protected readonly hasHeader = computed(() => !!this.headerSlot());
+
+  /** Auto-detected from projected `[cngxPopoverFooter]` content. */
+  protected readonly hasFooter = computed(() => !!this.footerSlot());
 
   private readonly uid = nextUid('cngx-pp');
   protected readonly headerId = `${this.uid}-header`;
@@ -221,6 +240,10 @@ export class CngxPopoverPanel {
   private autoDismissTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor() {
+    // Hint any CngxPopoverTrigger pointing at this popover to default
+    // `aria-haspopup="dialog"`. Consumer override on the trigger wins.
+    this.popover.haspopup.set('dialog');
+
     effect(() => {
       const isVisible = this.popover.isVisible();
       const v = this.variant() ?? untracked(() => this.config.defaultVariant) ?? 'default';

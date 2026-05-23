@@ -1,19 +1,17 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Placement',
-  subtitle: 'Set <code>tooltipPlacement</code> to position the tooltip relative to the trigger.',
-  description: 'String-input tooltip directive using the native Popover API. CSS Anchor Positioning, WCAG 1.4.13 compliant, SR-friendly.',
+  title: 'CngxTooltip: Placement',
+  subtitle:
+    'Set <code>tooltipPlacement</code> to position the tooltip relative to the trigger.',
+  description:
+    'Four cardinal placements (<code>top</code>, <code>bottom</code>, <code>left</code>, <code>right</code>) routed through the directive\'s placement effect. In browsers that support CSS Anchor Positioning the value resolves via <code>POSITION_AREA</code>; the Floating UI fallback maps it through <code>FLOATING_PLACEMENT</code> when <code>provideFloatingFallback()</code> is registered.',
   level: 'atom',
-  audience: ['dev', 'design', 'a11y'],
+  audience: ['dev', 'design'],
   artifact: 'standalone',
-  focus: ['visual-variants', 'a11y-pattern'],
-  apiComponents: [
-    'CngxTooltip',
-  ],
-  moduleImports: [
-    'import { CngxTooltip } from \'@cngx/common/popover\';',
-  ],
+  focus: ['visual-variants', 'composition'],
+  apiComponents: ['CngxTooltip'],
+  moduleImports: ["import { CngxTooltip } from '@cngx/common/popover';"],
   imports: ['CngxTooltip'],
   template: `
   <div style="display:grid;grid-template-columns:repeat(3,auto);gap:16px;justify-content:center;

@@ -1,6 +1,6 @@
 import { Component, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CngxPopover } from './popover.directive';
 import { CngxPopoverTrigger } from './popover-trigger.directive';
@@ -40,6 +40,18 @@ class BasicTriggerHost {
   imports: [CngxPopover, CngxPopoverTrigger],
 })
 class MenuTriggerHost {
+  readonly popover = viewChild.required(CngxPopover);
+  readonly trigger = viewChild.required(CngxPopoverTrigger);
+}
+
+@Component({
+  template: `
+    <button [cngxPopoverTrigger]="pop" [restoreFocus]="true" id="trigger">Open</button>
+    <div cngxPopover #pop="cngxPopover">Restorable</div>
+  `,
+  imports: [CngxPopover, CngxPopoverTrigger],
+})
+class RestoreFocusHost {
   readonly popover = viewChild.required(CngxPopover);
   readonly trigger = viewChild.required(CngxPopoverTrigger);
 }
@@ -89,6 +101,78 @@ describe('CngxPopoverTrigger', () => {
     it('should set aria-haspopup to menu when configured', () => {
       const { triggerEl } = setup(MenuTriggerHost);
       expect(triggerEl.getAttribute('aria-haspopup')).toBe('menu');
+    });
+
+    it('should pick up the popover haspopup signal as default', () => {
+      const { fixture, triggerEl } = setup(BasicTriggerHost);
+      const host = fixture.componentInstance as BasicTriggerHost;
+      host.popover().haspopup.set('dialog');
+      fixture.detectChanges();
+      expect(triggerEl.getAttribute('aria-haspopup')).toBe('dialog');
+    });
+
+    it('should let consumer haspopup override the popover hint', () => {
+      const { fixture, triggerEl } = setup(MenuTriggerHost);
+      const host = fixture.componentInstance as MenuTriggerHost;
+      host.popover().haspopup.set('dialog');
+      fixture.detectChanges();
+      expect(triggerEl.getAttribute('aria-haspopup')).toBe('menu');
+    });
+  });
+
+  describe('focus restoration', () => {
+    let testRoot: HTMLElement;
+
+    beforeEach(() => {
+      testRoot = document.createElement('div');
+      document.body.appendChild(testRoot);
+    });
+
+    afterEach(() => {
+      testRoot.remove();
+    });
+
+    it('should not move focus on close by default', () => {
+      const fixture = TestBed.createComponent(BasicTriggerHost);
+      testRoot.appendChild(fixture.nativeElement);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      const triggerEl = fixture.nativeElement.querySelector('#trigger') as HTMLElement;
+      const popoverEl = fixture.nativeElement.querySelector('[cngxpopover]') as HTMLElement;
+      stubPopoverElement(popoverEl);
+
+      const externalBtn = document.createElement('button');
+      testRoot.appendChild(externalBtn);
+      externalBtn.focus();
+      const host = fixture.componentInstance as BasicTriggerHost;
+      host.popover().show();
+      fixture.detectChanges();
+      host.popover().hide();
+      fixture.detectChanges();
+      expect(document.activeElement).not.toBe(triggerEl);
+      fixture.destroy();
+    });
+
+    it('should restore focus on close when restoreFocus is true', () => {
+      const fixture = TestBed.createComponent(RestoreFocusHost);
+      testRoot.appendChild(fixture.nativeElement);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      const triggerEl = fixture.nativeElement.querySelector('#trigger') as HTMLElement;
+      const popoverEl = fixture.nativeElement.querySelector('[cngxpopover]') as HTMLElement;
+      stubPopoverElement(popoverEl);
+
+      triggerEl.focus();
+      const host = fixture.componentInstance as RestoreFocusHost;
+      host.popover().show();
+      fixture.detectChanges();
+      const sneaky = document.createElement('button');
+      testRoot.appendChild(sneaky);
+      sneaky.focus();
+      host.popover().hide();
+      fixture.detectChanges();
+      expect(document.activeElement).toBe(triggerEl);
+      fixture.destroy();
     });
   });
 

@@ -4,6 +4,30 @@ export type PopoverState = 'closed' | 'opening' | 'open' | 'closing';
 /** Native popover attribute mode. */
 export type PopoverMode = 'manual' | 'auto';
 
+/**
+ * Permitted values for `aria-haspopup` on a popover trigger. Mirrors the
+ * W3C-spec union for popup-container roles plus the bare `'true'`
+ * compatibility value. Composers (such as `CngxPopoverPanel`) write the
+ * popover's `haspopup` signal to hint the trigger toward the right value
+ * without forcing the consumer to repeat it.
+ */
+export type PopoverHaspopup = 'dialog' | 'listbox' | 'menu' | 'tree' | 'true';
+
+/** ARIA roles applicable to a `CngxPopoverPanel` host element. */
+export type PopoverPanelRole = 'dialog' | 'alertdialog' | 'tooltip' | 'menu' | 'group' | 'region';
+
+/**
+ * Which event sources may open `CngxTooltip`.
+ *
+ * - `'auto'` (default) - hover and focus open the tooltip with the
+ *   configured `tooltipDelay` / `closeDelay`. `show()` and `hide()`
+ *   remain available for programmatic overrides.
+ * - `'manual'` - hover and focus are inert. Only `show()` / `hide()`
+ *   open or close the tooltip. Escape still dismisses an open tooltip
+ *   for keyboard accessibility.
+ */
+export type TooltipTriggerMode = 'auto' | 'manual';
+
 /** Anchor-relative placement of a popover. */
 export type PopoverPlacement =
   | 'top'

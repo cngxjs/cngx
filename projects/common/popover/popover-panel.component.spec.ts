@@ -30,7 +30,7 @@ function stubPopoverElement(el: HTMLElement): void {
 
 @Component({
   template: `
-    <cngx-popover-panel #panel="cngxPopoverPanel" [hasFooter]="true">
+    <cngx-popover-panel #panel="cngxPopoverPanel">
       <span cngxPopoverHeader>Title</span>
       <p cngxPopoverBody>Body content</p>
       <div cngxPopoverFooter>Footer</div>
@@ -39,6 +39,18 @@ function stubPopoverElement(el: HTMLElement): void {
   imports: [CngxPopoverPanel, CngxPopoverHeader, CngxPopoverBody, CngxPopoverFooter],
 })
 class BasicHost {
+  readonly panel = viewChild.required(CngxPopoverPanel);
+}
+
+@Component({
+  template: `
+    <cngx-popover-panel #panel="cngxPopoverPanel">
+      <p cngxPopoverBody>Body only</p>
+    </cngx-popover-panel>
+  `,
+  imports: [CngxPopoverPanel, CngxPopoverBody],
+})
+class BodyOnlyHost {
   readonly panel = viewChild.required(CngxPopoverPanel);
 }
 
@@ -219,6 +231,29 @@ describe('CngxPopoverPanel', () => {
     const headerEl = panelEl.querySelector('.cngx-popover-panel__header');
     const headerId = headerEl!.getAttribute('id');
     expect(panelEl.getAttribute('aria-labelledby')).toBe(headerId);
+  });
+
+  it('should set role="dialog" on the host by default', () => {
+    const { panelEl } = setup(BasicHost);
+    expect(panelEl.getAttribute('role')).toBe('dialog');
+  });
+
+  it('should hint the composed popover haspopup signal to "dialog"', () => {
+    const { fixture } = setup(BasicHost);
+    const host = fixture.componentInstance as BasicHost;
+    expect(host.panel().popover.haspopup()).toBe('dialog');
+  });
+
+  it('should auto-render header + footer slots when content is projected', () => {
+    const { panelEl } = setup(BasicHost);
+    expect(panelEl.querySelector('.cngx-popover-panel__header')).not.toBeNull();
+    expect(panelEl.querySelector('.cngx-popover-panel__footer')).not.toBeNull();
+  });
+
+  it('should skip header + footer slot wrappers when no marker content is projected', () => {
+    const { panelEl } = setup(BodyOnlyHost);
+    expect(panelEl.querySelector('.cngx-popover-panel__header')).toBeNull();
+    expect(panelEl.querySelector('.cngx-popover-panel__footer')).toBeNull();
   });
 
   it('should set aria-describedby to null when loading', () => {

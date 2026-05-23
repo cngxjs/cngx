@@ -1,21 +1,27 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Content States',
-  subtitle: 'Use <code>[loading]</code>, <code>[error]</code>, <code>[empty]</code> inputs with matching templates for content lifecycle.',
-  description: 'Rich popover molecule with header/body/footer slots, variant styling, arrow, close button, content state templates, and async action buttons.',
-  level: 'molecule',
+  title: 'CngxPopoverPanel: Content states',
+  subtitle:
+    'Bind <code>[loading]</code>, <code>[error]</code>, or a single <code>[state]</code> <code>CngxAsyncState</code>. Matching <code>cngxPopoverLoading</code> / <code>cngxPopoverError</code> templates swap into the body slot.',
+  description:
+    'When any content state is active the panel sets <code>aria-busy</code>, clears its <code>aria-describedby</code> body pointer, and renders the matching slot template. The first popover fakes a 2s load; the second resolves with an error after 1.5s and shows the <code>cngxPopoverError</code> template with the rejection value as <code>$implicit</code>.',
+  level: 'organism',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
-  focus: ['visual-variants', 'composition'],
-  apiComponents: [
-    'CngxPopoverPanel',
-    'CngxPopoverAction',
-  ],
+  focus: ['async-state', 'composition'],
+  apiComponents: ['CngxPopoverPanel'],
   moduleImports: [
-    'import { CngxPopoverPanel, CngxPopoverTrigger, CngxPopoverHeader, CngxPopoverBody, CngxPopoverLoading, CngxPopoverError } from \'@cngx/common/popover\';',
+    "import { CngxPopoverPanel, CngxPopoverTrigger, CngxPopoverHeader, CngxPopoverBody, CngxPopoverLoading, CngxPopoverError } from '@cngx/common/popover';",
   ],
-  imports: ['CngxPopoverPanel', 'CngxPopoverTrigger', 'CngxPopoverHeader', 'CngxPopoverBody', 'CngxPopoverLoading', 'CngxPopoverError'],
+  imports: [
+    'CngxPopoverPanel',
+    'CngxPopoverTrigger',
+    'CngxPopoverHeader',
+    'CngxPopoverBody',
+    'CngxPopoverLoading',
+    'CngxPopoverError',
+  ],
   setup: `protected simulateLoad = signal(false);
   protected loadError = signal<string | undefined>(undefined);
   protected startLoading(): void {
@@ -34,7 +40,7 @@ export const STORY: DemoSpec = {
     }, 1500);
   }`,
   template: `
-  <div style="display:flex;gap:12px;flex-wrap:wrap;padding-top:20px">
+  <div class="demo-popover-stage" style="display:flex;gap:12px;flex-wrap:wrap">
     <div>
       <button [cngxPopoverTrigger]="loadPop.popover" (click)="loadPop.popover.toggle(); startLoading()" class="chip">
         Load Data

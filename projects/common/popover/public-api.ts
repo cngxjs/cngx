@@ -8,6 +8,9 @@ export type {
   PopoverPositionTryFallback,
   PopoverState,
   PopoverMode,
+  PopoverHaspopup,
+  PopoverPanelRole,
+  TooltipTriggerMode,
 } from './popover.types';
 export { CngxPopover } from './popover.directive';
 export { CngxPopoverTrigger } from './popover-trigger.directive';
@@ -43,3 +46,4 @@ export {
   CngxPopoverEmpty,
   CngxPopoverError,
 } from './popover-panel-slots';
+export { CngxPopoverDivider } from './popover-divider.directive';

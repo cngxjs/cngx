@@ -1,35 +1,42 @@
 import type { DemoSpec } from '../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Click Popover',
-  subtitle: 'The consumer binds <code>(click)="pop.toggle()"</code> — the trigger directive only handles ARIA.',
-  description: 'Signal-driven state machine for the native Popover API. CSS Anchor Positioning, transition-aware lifecycle, no CDK Overlay dependency.',
-  level: 'atom',
+  title: 'CngxPopover: Click popover',
+  subtitle:
+    'The consumer binds <code>(click)="pop.toggle()"</code>. <code>CngxPopoverTrigger</code> only handles ARIA wiring.',
+  description:
+    'Click-triggered popover with the default <code>mode="manual"</code>. The button uses <code>haspopup="menu"</code> because the popover hosts a native <code>&lt;menu&gt;</code>; CngxPopoverTrigger projects that value as <code>aria-haspopup</code> alongside <code>aria-expanded</code> and <code>aria-controls</code>. <code>[restoreFocus]="true"</code> sends focus back to the Actions button after a menu item closes the popover. Each menu item closes the popover via <code>pop.hide()</code>.',
+  level: 'molecule',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'building-block',
-  focus: ['composition', 'a11y-pattern', 'behavior'],
-  apiComponents: [
-    'CngxPopover',
-    'CngxPopoverTrigger',
+  focus: ['composition', 'a11y-pattern'],
+  references: [
+    {
+      label: 'WAI-ARIA APG: Menu Button',
+      href: 'https://www.w3.org/WAI/ARIA/apg/patterns/menu-button/',
+    },
+    {
+      label: 'WCAG 2.4.3 Focus Order',
+      href: 'https://www.w3.org/WAI/WCAG21/Understanding/focus-order.html',
+    },
   ],
-  moduleImports: [
-    'import { CngxPopover, CngxPopoverTrigger } from \'@cngx/common/popover\';',
-  ],
+  apiComponents: ['CngxPopover', 'CngxPopoverTrigger'],
+  moduleImports: ["import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';"],
   imports: ['CngxPopover', 'CngxPopoverTrigger'],
   setup: `protected readonly menuItems = signal(['Edit', 'Duplicate', 'Archive', 'Delete']);`,
-  template: `  <div style="padding-top:20px">
-    <button [cngxPopoverTrigger]="pop" (click)="pop.toggle()" class="chip"
+  template: `  <div class="demo-popover-stage">
+    <button [cngxPopoverTrigger]="pop" [restoreFocus]="true" (click)="pop.toggle()" class="chip"
             haspopup="menu">
       Actions
     </button>
-    <div cngxPopover #pop="cngxPopover" placement="bottom-start"
-         style="list-style:none;margin:0">
-      <menu style="margin:0;padding:4px 0;min-width:140px">
+    <div cngxPopover #pop="cngxPopover" placement="bottom-start" class="demo-popover-surface">
+      <menu class="demo-popover-menu">
         @for (item of menuItems(); track item) {
           <li>
-            <button (click)="pop.hide()" type="button"
-                    style="display:block;width:100%;padding:8px 16px;border:none;background:none;
-                           text-align:left;cursor:pointer;font:inherit">
+            <button
+              type="button"
+              class="demo-popover-menu-item"
+              (click)="pop.hide()">
               {{ item }}
             </button>
           </li>

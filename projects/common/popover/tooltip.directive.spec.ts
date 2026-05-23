@@ -89,6 +89,17 @@ class FallbackTooltipHost {
   readonly tooltip = viewChild.required(CngxTooltip);
 }
 
+@Component({
+  template: `
+    <button cngxTooltip="Manual tip" [triggers]="'manual'" [tooltipDelay]="0" [closeDelay]="0"
+            id="trigger">Btn</button>
+  `,
+  imports: [CngxTooltip],
+})
+class ManualTooltipHost {
+  readonly tooltip = viewChild.required(CngxTooltip);
+}
+
 function setup<T>(hostType: new () => T) {
   installMatchMediaStub();
   installPopoverStubs();
@@ -233,6 +244,55 @@ describe('CngxTooltip', () => {
       triggerEl.dispatchEvent(new FocusEvent('blur'));
       fixture.detectChanges();
       vi.advanceTimersByTime(50);
+
+      expect(host.tooltip().state()).toBe('closed');
+    });
+  });
+
+  describe('triggers="manual"', () => {
+    it('should not open on mouseenter', () => {
+      const { fixture, triggerEl } = setup(ManualTooltipHost);
+      const host = fixture.componentInstance as ManualTooltipHost;
+
+      triggerEl.dispatchEvent(new MouseEvent('mouseenter'));
+      vi.advanceTimersByTime(500);
+      fixture.detectChanges();
+
+      expect(host.tooltip().state()).toBe('closed');
+    });
+
+    it('should not open on focus', () => {
+      const { fixture, triggerEl } = setup(ManualTooltipHost);
+      const host = fixture.componentInstance as ManualTooltipHost;
+
+      triggerEl.dispatchEvent(new FocusEvent('focus'));
+      vi.advanceTimersByTime(500);
+      fixture.detectChanges();
+
+      expect(host.tooltip().state()).toBe('closed');
+    });
+
+    it('should still open via show() and close via hide()', () => {
+      const { fixture } = setup(ManualTooltipHost);
+      const host = fixture.componentInstance as ManualTooltipHost;
+
+      host.tooltip().show();
+      fixture.detectChanges();
+      expect(host.tooltip().state()).not.toBe('closed');
+
+      host.tooltip().hide();
+      fixture.detectChanges();
+      expect(host.tooltip().state()).toBe('closed');
+    });
+
+    it('should still dismiss on Escape when open', () => {
+      const { fixture, triggerEl } = setup(ManualTooltipHost);
+      const host = fixture.componentInstance as ManualTooltipHost;
+
+      host.tooltip().show();
+      fixture.detectChanges();
+      triggerEl.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+      fixture.detectChanges();
 
       expect(host.tooltip().state()).toBe('closed');
     });

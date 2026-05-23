@@ -2459,3 +2459,203 @@ pre.code-block code {
   background: none;
   padding: 0;
 }
+
+// Demo-only stage padding so popover/tooltip stories have room above the
+// trigger row for the popover/tooltip to render without clipping the
+// example card. Layout-only — no thematic CSS in here.
+.demo-popover-stage {
+  padding-top: 20px;
+}
+.demo-popover-stage--tall {
+  padding-top: 40px;
+}
+
+// Demo-only surface for bare `[cngxPopover]` content. The directive ships
+// no host CSS by default (only `cngx-popover-panel` does) - these classes
+// give the unstyled popover a minimum readable surface so the demo focuses
+// on behaviour, not on raw browser popover defaults.
+.demo-popover-surface {
+  padding: 8px 12px;
+  font-size: 0.8125rem;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e5e7eb));
+  border-radius: 6px;
+  background: var(--cngx-color-surface, var(--cngx-ex-surface, Canvas));
+  color: var(--cngx-color-text, var(--cngx-ex-text, inherit));
+}
+
+// Menu list inside a bare `[cngxPopover]` - resets the UA list defaults
+// and sets a minimum width so the menu does not collapse to its widest
+// item only when the popover surrounds short labels.
+.demo-popover-menu {
+  list-style: none;
+  margin: 0;
+  padding: 4px 0;
+  min-width: 140px;
+}
+
+// Button row inside `.demo-popover-menu`. Hover state intentionally
+// muted; the focus ring is the browser default.
+.demo-popover-menu-item {
+  display: block;
+  width: 100%;
+  padding: 8px 16px;
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+}
+.demo-popover-menu-item:hover {
+  background: var(--cngx-ex-surface-alt, transparent);
+}
+
+// Placement-matrix preview tile - one per `PopoverPlacement` value.
+// Renders a small labelled chip so the auto-open matrix proves the
+// `position-area` mapping table without leaking colours from the host
+// page. The fixed `width` is deliberately wider than the trigger chip
+// so the start/end alignment edge is visually unambiguous.
+.demo-popover-tile {
+  width: 140px;
+  padding: 6px 10px;
+  font-size: 0.75rem;
+  text-align: center;
+  border: 1px solid currentColor;
+  border-radius: 4px;
+  background: var(--cngx-color-surface, var(--cngx-ex-surface, Canvas));
+  color: var(--cngx-color-text, var(--cngx-ex-text, inherit));
+}
+
+// Placement-matrix grid - presentation layout for the 12 trigger+popover
+// pairs. Pure demo chrome; a real consumer would render one popover at a
+// time. The wide gap and cell padding exist so each popover has room to
+// render without overlapping its neighbours.
+.demo-popover-placement-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 72px;
+  padding: 48px 16px;
+  justify-items: center;
+  align-items: center;
+}
+.demo-popover-placement-cell {
+  position: relative;
+  padding: 24px;
+}
+
+// Disabled-tooltip trigger gets a muted opacity so the disabled state is
+// visible alongside the enabled sibling. Visual-only - the `[enabled]`
+// input is what actually suppresses the tooltip.
+.demo-tooltip-disabled-chip {
+  opacity: 0.5;
+}
+
+// Caption above the keyboard-tooltip toolbar - muted so it reads as
+// instruction text rather than competing with the chip row.
+.demo-tooltip-caption {
+  font-size: 0.875rem;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted, #6b7280));
+  margin-bottom: 12px;
+}
+
+// Inline label wrapping the `cngxPopoverOpen` checkbox in the controlled
+// popover demo. Sits in the trigger row alongside the chip.
+.demo-popover-control-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+// Boarding-pass layout for the popover-panel divider demo. The body
+// section stacks label/value pairs with a muted label tone. The footer
+// pairs a dismiss action and a primary action with a vertical divider
+// between them.
+.demo-flight-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 4px 0;
+}
+.demo-flight-section h4 {
+  margin: 0;
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted, #6b7280));
+}
+.demo-flight-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 0.875rem;
+}
+.demo-flight-row dt {
+  margin: 0;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted, #6b7280));
+}
+.demo-flight-row dd {
+  margin: 0;
+  font-weight: 500;
+  color: var(--cngx-color-text, var(--cngx-ex-text, inherit));
+  font-variant-numeric: tabular-nums;
+}
+.demo-flight-footer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+.demo-flight-footer-spacer {
+  flex: 1;
+}
+
+// Small status pill used in the flight-info popover header row to
+// surface delay / gate-change semantics. Three tones (ok / warn / hot)
+// map to neutral green / amber / red foundation tokens with sensible
+// dark-mode fallbacks.
+.demo-flight-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+}
+.demo-flight-pill--ok {
+  color: var(--cngx-color-success, #15803d);
+  background: var(--cngx-color-success-surface, rgba(21, 128, 61, 0.08));
+}
+.demo-flight-pill--warn {
+  color: var(--cngx-color-warning, #b45309);
+  background: var(--cngx-color-warning-surface, rgba(180, 83, 9, 0.08));
+}
+
+// Inline header strip for body sections: section title + optional pill
+// on the right, no horizontal divider needed.
+.demo-flight-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+// Travel-docs callout - mild surface highlight so the passport reminder
+// reads as a notice without competing with the dialog's danger variant.
+.demo-flight-doc-note {
+  display: flex;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: var(--cngx-color-info-surface, rgba(59, 130, 246, 0.08));
+  font-size: 0.8125rem;
+  line-height: 1.45;
+}
+.demo-flight-doc-note strong {
+  font-weight: 600;
+}

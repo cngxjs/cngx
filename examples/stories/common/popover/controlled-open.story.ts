@@ -1,30 +1,25 @@
 import type { DemoSpec } from '../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Controlled Open',
-  subtitle: 'Bind <code>[cngxPopoverOpen]</code> to drive the popover reactively — no <code>show()</code>/<code>hide()</code> calls needed.',
-  description: 'Signal-driven state machine for the native Popover API. CSS Anchor Positioning, transition-aware lifecycle, no CDK Overlay dependency.',
-  level: 'atom',
+  title: 'CngxPopover: Controlled open',
+  subtitle:
+    'Bind <code>[cngxPopoverOpen]</code> to drive the popover reactively. No <code>show()</code> / <code>hide()</code> calls in the consumer.',
+  description:
+    'The checkbox state flows directly into <code>[cngxPopoverOpen]</code>; the directive\'s open effect handles the show/hide round-trip. <code>[exclusive]="false"</code> keeps this popover from auto-closing other popovers in the same document, so it can coexist with a global popover stack.',
+  level: 'molecule',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'building-block',
-  focus: ['composition', 'a11y-pattern', 'behavior'],
-  apiComponents: [
-    'CngxPopover',
-    'CngxPopoverTrigger',
-  ],
-  moduleImports: [
-    'import { CngxPopover, CngxPopoverTrigger } from \'@cngx/common/popover\';',
-  ],
+  focus: ['composition', 'behavior'],
+  apiComponents: ['CngxPopover', 'CngxPopoverTrigger'],
+  moduleImports: ["import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';"],
   imports: ['CngxPopover', 'CngxPopoverTrigger'],
-  template: `  <div style="display:flex;gap:12px;align-items:center;padding-top:20px">
-    <label [cngxPopoverTrigger]="ctrl"
-           style="display:flex;align-items:center;gap:6px;font-size:0.875rem;cursor:pointer">
+  template: `  <div class="demo-popover-stage" style="display:flex;gap:12px;align-items:center">
+    <label [cngxPopoverTrigger]="ctrl" class="demo-popover-control-label">
       <input type="checkbox" #chk (change)="0" />
       Show popover
     </label>
     <div cngxPopover #ctrl="cngxPopover" [cngxPopoverOpen]="chk.checked" placement="bottom"
-         [exclusive]="false"
-         style="padding:8px 12px;font-size:0.8125rem">
+         [exclusive]="false" class="demo-popover-surface">
       Controlled by checkbox
     </div>
   </div>`,
