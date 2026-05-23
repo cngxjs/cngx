@@ -1509,6 +1509,21 @@ button.chip:disabled {
   background: var(--cngx-color-danger, #c0392b);
 }
 
+// Hoverable atom-demo target. Used by
+// stories/common/interactive/hoverable/basic.story.ts so the reader can
+// see the bounding box the hover signal observes; otherwise the demo
+// would only surface state via the chrome readout.
+.demo-hoverable-target {
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, oklch(0.88 0.005 250)));
+  border-radius: var(--cngx-radius-md, 6px);
+  background: var(--cngx-color-surface, var(--cngx-ex-surface, oklch(1 0 0)));
+  color: var(--cngx-color-text, var(--cngx-ex-text, oklch(0.2 0.01 250)));
+  transition: transform 120ms ease, background 120ms ease;
+}
+.demo-hoverable-target--active {
+  background: color-mix(in oklch, var(--cngx-color-surface, oklch(1 0 0)), var(--cngx-color-primary, oklch(0.66 0.19 50)) 8%);
+}
+
 // Hoverable composition-demo card. Used by
 // stories/common/interactive/hoverable/as-host-directive.story.ts and
 // its co-located _hover-card.component.ts fixture. The fixture sets

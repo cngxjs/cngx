@@ -17,6 +17,7 @@ import { CngxHoverable } from '@cngx/common/interactive';
   encapsulation: ViewEncapsulation.None,
   hostDirectives: [CngxHoverable],
   host: {
+    class: 'demo-hover-card',
     '[class.demo-hover-card--active]': 'hover.hovered()',
   },
   template: `

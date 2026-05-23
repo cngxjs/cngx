@@ -6,7 +6,7 @@ export const STORY: DemoSpec = {
   description: 'Three independent <code>demo-hover-card</code> instances. Each card declares <code>hostDirectives: [CngxHoverable]</code> on its own decorator, injects the directive via <code>inject(CngxHoverable, { host: true })</code>, and binds its own <code>:host</code> class on the hover signal. The cards do not share state and they do not need an outer <code>mouseenter</code>/<code>mouseleave</code> handler; the composition primitive lives on each host. The fixture component sits next to this story as <code>_hover-card.component.ts</code> so the composition code reads at a glance.',
   level: 'atom',
   audience: ['dev'],
-  artifact: 'standalone',
+  artifact: 'building-block',
   focus: ['composition'],
   apiComponents: [
     'CngxHoverable',

@@ -19,8 +19,10 @@ export const STORY: DemoSpec = {
   <div
     cngxHoverable
     #h="cngxHoverable"
+    class="demo-hoverable-target"
+    [class.demo-hoverable-target--active]="h.hovered()"
     [style.transform]="h.hovered() ? 'scale(1.05)' : 'none'"
-    style="display:inline-flex; align-items:center; justify-content:center; min-width:12rem; height:5rem; transition:transform 120ms ease"
+    style="display:inline-flex; align-items:center; justify-content:center; min-width:12rem; height:5rem"
   >
     Hover me
   </div>`,
