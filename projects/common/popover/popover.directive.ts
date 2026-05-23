@@ -164,6 +164,7 @@ function warnMissingFloatingMiddleware(doc: Document): void {
     '[attr.popover]': 'mode()',
     '[id]': 'id()',
     '[attr.aria-hidden]': '!isVisible()',
+    '[attr.data-arrow-placement]': 'primaryPlacement()',
     '[class.cngx-popover--opening]': 'isOpening()',
     '[class.cngx-popover--open]': 'isOpen()',
     '[class.cngx-popover--closing]': 'isClosing()',
@@ -272,6 +273,17 @@ export class CngxPopover {
 
   protected readonly cssAnchorRef = computed(() =>
     SUPPORTS_ANCHOR ? `--cngx-pop-${this.idSignal()}` : null,
+  );
+
+  /**
+   * Primary edge of the placement (`top` / `bottom` / `left` / `right`),
+   * used to select the arrow's side without parsing the host's inline
+   * `position-area` style. Browsers normalise compound `position-area`
+   * values to a non-deterministic keyword order, so substring matching
+   * on `style` is unreliable; an explicit attribute is the stable hook.
+   */
+  protected readonly primaryPlacement = computed(
+    () => this.placement().split('-')[0] as 'top' | 'bottom' | 'left' | 'right',
   );
 
   protected readonly cssMargin = computed(() => (SUPPORTS_ANCHOR ? `${this.offset()}px` : null));

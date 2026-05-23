@@ -388,37 +388,35 @@
       pointer-events: none;
     }
 
-    /* Arrow placement — derived from the host's inline position-area.
+    /* Arrow placement — keyed off CngxPopover's `data-arrow-placement`
+       host attribute, which exposes the primary edge of the active
+       placement (`top` / `bottom` / `left` / `right`).
        --cngx-popover-arrow-offset is written by CngxPopover from the
        live trigger / panel geometry; the 50% fallback keeps the arrow
        visually centred when the popover renders before the first
        offset computation. */
-    :scope[style*='position-area: bottom'] > .cngx-popover-panel__arrow,
-    :scope[style*='position-area:bottom'] > .cngx-popover-panel__arrow {
+    :scope[data-arrow-placement='bottom'] > .cngx-popover-panel__arrow {
       top: calc(var(--cngx-popover-panel-arrow-size, 8px) * -1);
       left: var(--cngx-popover-arrow-offset, 50%);
       margin-left: calc(var(--cngx-popover-panel-arrow-size, 8px) * -1);
       border-right: none;
       border-bottom: none;
     }
-    :scope[style*='position-area: top'] > .cngx-popover-panel__arrow,
-    :scope[style*='position-area:top'] > .cngx-popover-panel__arrow {
+    :scope[data-arrow-placement='top'] > .cngx-popover-panel__arrow {
       bottom: calc(var(--cngx-popover-panel-arrow-size, 8px) * -1);
       left: var(--cngx-popover-arrow-offset, 50%);
       margin-left: calc(var(--cngx-popover-panel-arrow-size, 8px) * -1);
       border-left: none;
       border-top: none;
     }
-    :scope[style*='position-area: left'] > .cngx-popover-panel__arrow,
-    :scope[style*='position-area:left'] > .cngx-popover-panel__arrow {
+    :scope[data-arrow-placement='left'] > .cngx-popover-panel__arrow {
       right: calc(var(--cngx-popover-panel-arrow-size, 8px) * -1);
       top: var(--cngx-popover-arrow-offset, 50%);
       margin-top: calc(var(--cngx-popover-panel-arrow-size, 8px) * -1);
       border-left: none;
       border-bottom: none;
     }
-    :scope[style*='position-area: right'] > .cngx-popover-panel__arrow,
-    :scope[style*='position-area:right'] > .cngx-popover-panel__arrow {
+    :scope[data-arrow-placement='right'] > .cngx-popover-panel__arrow {
       left: calc(var(--cngx-popover-panel-arrow-size, 8px) * -1);
       top: var(--cngx-popover-arrow-offset, 50%);
       margin-top: calc(var(--cngx-popover-panel-arrow-size, 8px) * -1);

@@ -51,4 +51,38 @@ test.describe('common/popover/popover-panel', () => {
     // should land within a pixel of the trigger centre).
     expect(delta, `arrow off trigger centre by ${delta.toFixed(1)}px`).toBeLessThan(5);
   });
+
+  // Regression: compound placements (`bottom-start`, `top-end`, …) write
+  // `position-area: bottom span-right` which browsers serialise back as
+  // `span-right bottom`. Earlier the arrow CSS selected on substring
+  // `style*='position-area: bottom'` which never matched the reordered
+  // value, leaving the arrow at its static-flow position in the panel
+  // corner. The placement is now keyed off `data-arrow-placement` so the
+  // arrow sits at the expected edge regardless of keyword order.
+  test('with-dividers: bottom-start arrow sits on the top edge of the panel', async ({ page }) => {
+    await gotoDemo(page, 'common/popover/popover-panel/with-dividers');
+    const trigger = page.getByRole('button', { name: 'BA 247 to NRT' });
+    await trigger.click();
+
+    const panel = page.locator('cngx-popover-panel');
+    await panel.waitFor({ state: 'visible' });
+
+    const arrow = panel.locator('.cngx-popover-panel__arrow');
+    const panelBox = await panel.boundingBox();
+    const arrowBox = await arrow.boundingBox();
+    expect(panelBox).not.toBeNull();
+    expect(arrowBox).not.toBeNull();
+
+    // Arrow should hug the panel's top edge for `bottom-*` placements,
+    // not be tucked inside the padding (the visual bug we were fixing).
+    const arrowCentreY = arrowBox!.y + arrowBox!.height / 2;
+    const panelTop = panelBox!.y;
+    expect(Math.abs(arrowCentreY - panelTop), 'arrow centre should sit on panel top edge').toBeLessThan(6);
+
+    // Horizontal pin: trigger centre vs arrow centre within the clamp.
+    const triggerBox = await trigger.boundingBox();
+    const triggerCentreX = triggerBox!.x + triggerBox!.width / 2;
+    const arrowCentreX = arrowBox!.x + arrowBox!.width / 2;
+    expect(Math.abs(arrowCentreX - triggerCentreX), 'arrow should pin to trigger centre').toBeLessThan(5);
+  });
 });
