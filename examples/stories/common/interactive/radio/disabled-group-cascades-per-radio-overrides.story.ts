@@ -1,9 +1,9 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Disabled — group cascades, per-radio overrides',
-  subtitle: 'Group <code>[disabled]</code> cascades to every leaf via <code>radioDisabled = computed(() => group.disabled() || disabled())</code>. Per-radio <code>[disabled]</code> blocks only that leaf and is skipped by roving navigation.',
-  description: 'Single-select radio-group molecule and its CngxRadio leaves. Group provides CNGX_RADIO_GROUP for parent-child contract (never injects the concrete class) and CngxRovingTabindex as host directive for arrow-key focus movement. Auto-select-on-arrow is wired via a transient pendingArrowSelect flag — Tab-into-group does NOT auto-select; only an arrow keydown followed by focus moves the value.',
+  title: 'CngxRadioGroup: Disabled cascade with per-radio overrides',
+  subtitle: 'Group <code>[disabled]</code> cascades to every leaf via <code>radioDisabled = computed(() =&gt; group.disabled() || disabled())</code>. Per-radio <code>[disabled]</code> blocks only that leaf and is skipped by roving navigation.',
+  description: 'Two disabled axes meet in one group. Group-level [disabled] short-circuits every selection pathway (click, Space, Enter, auto-select on arrow) but does NOT remove leaves from the roving sequence - focus still transits them so a screen-reader user can read the labels and understand why the choices are unavailable. Per-radio [disabled] is forwarded into the host CngxRovingItem, so disabled leaves drop OUT of the roving sequence entirely (arrow keys skip them).',
   level: 'molecule',
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
@@ -11,22 +11,34 @@ export const STORY: DemoSpec = {
   apiComponents: [
     'CngxRadioGroup',
     'CngxRadio',
-    'CNGX_RADIO_GROUP',
+  ],
+  references: [
+    { label: 'WAI-ARIA APG: Radio Group', href: 'https://www.w3.org/WAI/ARIA/apg/patterns/radio/' },
+    { label: 'WCAG 2.4.3 Focus Order', href: 'https://www.w3.org/WAI/WCAG21/Understanding/focus-order.html' },
   ],
   moduleImports: [
     'import { CngxRadioGroup, CngxRadio } from \'@cngx/common/interactive\';',
   ],
   imports: ['CngxRadioGroup', 'CngxRadio'],
   setup: `protected readonly payment = signal<'card' | 'cash' | 'invoice' | undefined>(undefined);
-  protected readonly groupDisabled = signal(false);`,
+  protected readonly groupDisabled = signal<boolean>(false);`,
+  templateChromeBefore: `
+  <div class="demo-kbd-hint">
+    <span><kbd>Tab</kbd> enter / leave group</span>
+    <span><kbd>&uarr;</kbd><kbd>&darr;</kbd> / <kbd>&larr;</kbd><kbd>&rarr;</kbd> navigate + select</span>
+    <span><kbd>Home</kbd> / <kbd>End</kbd> first / last</span>
+    <span><kbd>Space</kbd> / <kbd>Enter</kbd> select focused</span>
+  </div>`,
   template: `
-  <button type="button" (click)="groupDisabled.set(!groupDisabled())" class="sort-btn">
-    {{ groupDisabled() ? 'Enable group' : 'Disable group' }}
-  </button>
-  <cngx-radio-group [(value)]="payment" [disabled]="groupDisabled()" name="payment-method-d">
+  <cngx-radio-group [(value)]="payment" [disabled]="groupDisabled()" name="payment-method-d" label="Payment method">
     <cngx-radio value="card">Card</cngx-radio>
-    <cngx-radio value="cash">Cash (per-radio disabled)</cngx-radio>
+    <cngx-radio value="cash">Cash</cngx-radio>
     <cngx-radio value="invoice" [disabled]="true">Invoice (per-radio disabled)</cngx-radio>
   </cngx-radio-group>`,
-  css: `.sort-btn { margin-bottom: 16px; }`,
+  templateChrome: `
+  <div class="button-row" style="margin-bottom:16px">
+    <button type="button" (click)="groupDisabled.set(!groupDisabled())">
+      {{ groupDisabled() ? 'Enable group' : 'Disable group' }}
+    </button>
+  </div>`,
 };

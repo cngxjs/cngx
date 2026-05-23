@@ -3,8 +3,8 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxCloseButton: Basic',
   subtitle: 'Standalone use: required <code>[label]</code> for ARIA, click handled by bubbled <code>(click)</code> from the inner native button.',
-  description: 'The atom renders a single <code>&lt;button type="button"&gt;</code> with the cngx X icon and propagates its native click event up through the host. There is no <code>(pressed)</code> output; bind <code>(click)</code> on the host element. The label is required and must describe the action in context (e.g. "Close dialog" rather than "Close"). Click the button below to hide it; press Show to restore.',
-  level: 'atom',
+  description: 'The close button renders a single <code>&lt;button type="button"&gt;</code> with the cngx X icon and propagates its native click event up through the host. There is no <code>(pressed)</code> output; bind <code>(click)</code> on the host element. The label is required and must describe the action in context (e.g. "Close dialog" rather than "Close"). Click the button below to hide it; press Show to restore.',
+  level: 'molecule',
   audience: ['dev', 'a11y'],
   artifact: 'standalone',
   focus: ['behavior'],

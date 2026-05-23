@@ -79,12 +79,7 @@ import {
   exportAs: 'cngxRadioGroup',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  hostDirectives: [
-    {
-      directive: CngxRovingTabindex,
-      inputs: ['orientation'],
-    },
-  ],
+  hostDirectives: [CngxRovingTabindex],
   host: {
     class: 'cngx-radio-group',
     role: 'radiogroup',
@@ -169,6 +164,16 @@ export class CngxRadioGroup<T = unknown>
     () =>
       this.fieldHost?.showError() ?? this.aggregator?.shouldShow() ?? false,
   );
+
+  constructor() {
+    /* Per WAI-ARIA APG Radio Group, all four arrow keys navigate
+       regardless of the cosmetic group layout - the consumer-set
+       `orientation` controls aria-orientation + the visual flex
+       direction only, never the keyboard axis. Force the host
+       roving directive to `'both'` so a vertical group still
+       responds to ArrowLeft / ArrowRight and vice versa. */
+    inject(CngxRovingTabindex).orientation.set('both');
+  }
 
   register(radio: CngxRadioRegistration<T>): void {
     this.registry.set(radio.id, radio);

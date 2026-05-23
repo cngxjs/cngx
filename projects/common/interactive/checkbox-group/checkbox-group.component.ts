@@ -51,7 +51,7 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
  * exposed flags. Per Pillar 3 (Komposition statt Konfiguration), the
  * group composes `CngxRovingTabindex` as a host directive and emits
  * no implicit children — consumers project `<cngx-checkbox>` instances
- * (or any other CNGX_CONTROL_VALUE-bearing atom) and bind each leaf's
+ * (or any other CNGX_CONTROL_VALUE-bearing leaf) and bind each leaf's
  * value-tracking themselves.
  *
  * `[allValues]` is optional; when supplied, `allSelected` reflects
@@ -83,8 +83,8 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
  *   >{{ opt }}</cngx-checkbox>
  * </cngx-checkbox-group>
  * ```
- * <example-url>http://localhost:4200/#/common/interactive/checkbox-group/basic-select-all-master-projected-leaves</example-url>
- * <example-url>http://localhost:4200/#/common/interactive/checkbox-group/disabled-cascade</example-url>
+ * <example-url>http://localhost:4200/#/common/interactive/checkbox/group/basic-select-all-master-projected-leaves</example-url>
+ * <example-url>http://localhost:4200/#/common/interactive/checkbox/group/disabled-cascade</example-url>
  * <example-url>http://localhost:4200/#/forms/field/form-primitives/coming-in-a-follow-up</example-url>
  * <example-url>http://localhost:4200/#/forms/field/form-primitives/reactive-forms-same-atom-just-bind-formcontrol</example-url>
  * <example-url>http://localhost:4200/#/forms/field/form-primitives/signal-forms-drop-the-atom-into-cngx-form-field</example-url>

@@ -1,53 +1,68 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Form Error — Read-aloud on Demand',
-  subtitle: 'Pair <code>[cngxSpeak]</code> with a custom button to let users hear validation errors. The button only appears when there is an error.',
-  description: 'Headless text-to-speech directive using the browser SpeechSynthesis API. For dyslexia support, reading assistance, and convenience.',
+  title: 'CngxSpeak: Form error read-aloud on demand',
+  subtitle:
+    'Pair <code>[cngxSpeak]</code> with a custom button so users can opt into hearing a validation error. The button only renders while an error is present and toggles the speech state.',
+  description:
+    'Wires CngxSpeak into a form-error row with a consumer-owned "hear error" button. The directive itself is headless: no DOM, no styling. [enabled]="false" suppresses the default auto-speak so the directive only fires when the button calls toggle(). The input lands pre-filled with an invalid value so the error row + button render immediately; clearing the field collapses both. CngxSpeak targets cognitive UX (dyslexia, reading load), not screen-reader announcements - use CngxLiveRegion for that.',
   level: 'atom',
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
-  focus: ['a11y-pattern', 'behavior'],
-  apiComponents: [
-    'CngxSpeak',
-  ],
+  focus: ['behavior'],
+  apiComponents: ['CngxSpeak'],
   imports: ['CngxSpeak'],
-  setup: `protected email = signal('');
+  setup: `protected email = signal('not-an-email');
   protected emailError = computed(() => {
     const v = this.email();
-    if (!v) return '';
-    if (!v.includes('@')) return 'Missing @ symbol';
-    if (!v.includes('.')) return 'Missing domain (e.g. .com)';
+    if (!v) {
+      return '';
+    }
+    if (!v.includes('@')) {
+      return 'Missing @ symbol';
+    }
+    if (!v.includes('.')) {
+      return 'Missing domain (e.g. .com)';
+    }
     return '';
   });`,
   template: `
   <div style="display: flex; flex-direction: column; gap: 6px; max-width: 360px;">
-    <label style="font-size: 0.875rem; font-weight: 500;">Email address</label>
+    <label class="demo-speak-label" for="speak-email">Email address</label>
     <input
-      type="text"
+      id="speak-email"
+      type="email"
+      class="demo-speak-input"
+      [class.demo-speak-input--invalid]="!!emailError()"
       placeholder="user@example.com"
       [value]="email()"
       (input)="email.set($any($event.target).value)"
-      [style.borderColor]="emailError() ? '#e53e3e' : 'var(--cngx-color-border, #ddd)'"
-      style="padding: 8px 12px; border-radius: 6px; border: 1px solid var(--cngx-color-border, #ddd); font-size: 0.875rem;"
     />
-    <div style="min-height: 1.25rem; font-size: 0.8125rem; display: flex; align-items: center; gap: 6px;"
-         [style.color]="emailError() ? '#e53e3e' : 'transparent'">
-      <span [cngxSpeak]="emailError()" #ttsErr="cngxSpeak">{{ emailError() }}</span>
+    <div
+      class="demo-speak-error-row"
+      [class.demo-speak-error-row--shown]="!!emailError()"
+      style="display: flex; align-items: center; gap: 6px; min-height: 1.25rem;"
+    >
+      <span [cngxSpeak]="emailError()" [enabled]="false" #ttsErr="cngxSpeak">{{ emailError() }}</span>
       @if (emailError()) {
         <button
-          class="sort-btn"
-          style="padding: 2px 8px; font-size: 0.75rem;"
+          type="button"
+          class="sort-btn demo-speak-hear-btn"
+          [class.demo-speak-hear-btn--active]="ttsErr.speaking()"
+          [attr.aria-pressed]="ttsErr.speaking()"
           (click)="ttsErr.toggle()"
         >
           {{ ttsErr.speaking() ? 'stop' : 'hear error' }}
         </button>
       }
+      @if (ttsErr.speaking()) {
+        <span class="demo-speak-reading-pulse" aria-hidden="true">Reading...</span>
+      }
     </div>
   </div>
 
-  <p style="margin-top: 12px; font-size: 0.75rem; color: var(--cngx-text-secondary, #999);">
-    For screen reader a11y, use <code>[cngxLiveRegion]</code> on the error element
-    (see LiveRegion demo). CngxSpeak is a cognitive UX feature, not an a11y tool.
+  <p class="demo-speak-note" style="margin-top: 12px;">
+    For screen-reader a11y, use <code>[cngxLiveRegion]</code> on the error element
+    (see LiveRegion demo). CngxSpeak is a cognitive UX feature, not an assistive-tech tool.
   </p>`,
 };

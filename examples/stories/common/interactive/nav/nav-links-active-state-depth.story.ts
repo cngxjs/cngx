@@ -1,55 +1,58 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Nav Links — Active State + Depth',
-  subtitle: '<code>cngxNavLink</code> sets a <code>--cngx-nav-depth</code> CSS var for indentation and toggles <code>cngx-nav-link--active</code>. Click a link to change the active state.',
-  description: 'Composable navigation atoms: CngxNavLink (active state + depth), CngxNavGroup (accordion), CngxNavLabel (section header), CngxNavBadge (counter/dot). Combine them to build sidebar menus.',
-  level: 'molecule',
+  title: 'CngxNavLink: active state and depth',
+  subtitle:
+    '<code>cngxNavLink</code> toggles <code>cngx-nav-link--active</code> and emits <code>aria-current="page"</code> when <code>[active]</code> is true. <code>[depth]</code> writes a <code>--cngx-nav-depth</code> CSS var the consumer maps to indentation.',
+  description:
+    'Top list demonstrates active-state switching against a tracked signal; each link sets <code>aria-current="page"</code> only while selected. Bottom list shows three depths so the indentation modifier classes can be compared side by side.',
+  level: 'atom',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'building-block',
   focus: ['composition', 'a11y-pattern'],
-  apiComponents: [
-    'CngxNavLink',
-    'CngxNavGroup',
-    'CngxNavBadge',
-    'CngxNavLabel',
+  references: [
+    {
+      label: 'WAI-ARIA 1.2: aria-current',
+      href: 'https://www.w3.org/TR/wai-aria-1.2/#aria-current',
+    },
+    {
+      label: 'WCAG 2.1 SC 1.3.1 Info and Relationships',
+      href: 'https://www.w3.org/WAI/WCAG21/Understanding/info-and-relationships.html',
+    },
   ],
-  moduleImports: [
-    'import { CngxNavLink } from \'@cngx/common\';',
-  ],
+  apiComponents: ['CngxNavLink'],
+  moduleImports: [`import { CngxNavLink } from '@cngx/common';`],
   imports: ['CngxNavLink'],
   setup: `protected readonly activeLink = signal('/dashboard');
   protected readonly links = [
     { path: '/dashboard', label: 'Dashboard' },
-    { path: '/analytics', label: 'Analytics', badge: 3 },
+    { path: '/analytics', label: 'Analytics' },
     { path: '/reports', label: 'Reports' },
   ];`,
   template: `
-  <nav class="nav-demo" style="width: 240px; border: 1px solid var(--cngx-color-border); border-radius: 6px; padding: 0.5rem 0; background: var(--cngx-surface-alt, #f9fafb);">
+  <nav class="demo-nav__frame">
     @for (link of links; track link.path) {
-      <a cngxNavLink [active]="activeLink() === link.path"
-         (click)="activeLink.set(link.path); $event.preventDefault()"
-         [href]="link.path"
-         style="display: block; padding: 0.5rem 1rem; text-decoration: none; font-size: 0.875rem; color: var(--cngx-color-text); border-left: 3px solid transparent; transition: all 0.15s ease;"
-         [style.border-left-color]="activeLink() === link.path ? 'var(--interactive, #f5a623)' : 'transparent'"
-         [style.background]="activeLink() === link.path ? 'var(--interactive-subtle-bg, rgba(245, 166, 35, 0.08))' : 'transparent'"
-         [style.font-weight]="activeLink() === link.path ? '600' : '400'">
+      <a
+        cngxNavLink
+        [active]="activeLink() === link.path"
+        [href]="link.path"
+        (click)="activeLink.set(link.path); $event.preventDefault()"
+        class="demo-nav__link"
+        [class.demo-nav__link--active]="activeLink() === link.path"
+      >
         {{ link.label }}
       </a>
     }
 
-    <div style="margin: 0.5rem 1rem; border-top: 1px solid var(--cngx-color-border);"></div>
+    <div class="demo-nav__divider"></div>
 
-    <a cngxNavLink [depth]="0" [active]="false"
-       style="display: block; padding: 0.5rem 1rem; text-decoration: none; font-size: 0.875rem; color: var(--cngx-color-text);">
+    <a cngxNavLink [depth]="0" [active]="false" href="#depth-0" class="demo-nav__link">
       Top level (depth 0)
     </a>
-    <a cngxNavLink [depth]="1" [active]="false"
-       style="display: block; padding: 0.5rem 1rem; padding-left: calc(1rem + 12px); text-decoration: none; font-size: 0.875rem; color: var(--cngx-color-text);">
+    <a cngxNavLink [depth]="1" [active]="false" href="#depth-1" class="demo-nav__link demo-nav__link--indent-1">
       Nested (depth 1)
     </a>
-    <a cngxNavLink [depth]="2" [active]="false"
-       style="display: block; padding: 0.5rem 1rem; padding-left: calc(1rem + 24px); text-decoration: none; font-size: 0.875rem; color: var(--cngx-color-text);">
+    <a cngxNavLink [depth]="2" [active]="false" href="#depth-2" class="demo-nav__link demo-nav__link--indent-2">
       Deep nested (depth 2)
     </a>
   </nav>`,

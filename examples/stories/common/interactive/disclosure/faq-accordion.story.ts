@@ -1,13 +1,17 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'FAQ Accordion',
-  subtitle: 'Multiple independent disclosures. Each manages its own state — no coordination by default.',
-  description: 'Generic expand/collapse atom. Manages aria-expanded, keyboard interaction (Enter, Space, click), and controlled+uncontrolled state. Usable for accordions, FAQs, nav groups, collapsible panels.',
+  title: 'CngxDisclosure: FAQ accordion',
+  subtitle: 'Multiple independent disclosures. Each manages its own state, no coordination by default.',
+  description: 'Composing the atom into a list of questions: every trigger is its own <code>cngxDisclosure</code> instance with a unique <code>controls</code> id. Matches the APG "Disclosure" recommendation for FAQ-style content - independent open/close, no single-open enforcement.',
   level: 'atom',
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
   focus: ['a11y-pattern', 'behavior'],
+  references: [
+    { label: 'WAI-ARIA APG: Disclosure (FAQ)', href: 'https://www.w3.org/WAI/ARIA/apg/patterns/disclosure/examples/disclosure-faq/' },
+    { label: 'WCAG 2.1.1 Keyboard (Level A)', href: 'https://www.w3.org/WAI/WCAG21/Understanding/keyboard.html' },
+  ],
   apiComponents: [
     'CngxDisclosure',
   ],
@@ -17,13 +21,15 @@ export const STORY: DemoSpec = {
   imports: ['CngxDisclosure'],
   template: `
   @for (q of ['What is cngx?', 'Is it free?', 'How do I install it?']; track q; let i = $index) {
-    <div style="border-bottom: 1px solid var(--cngx-color-border);">
+    <div class="demo-disclosure-faq-row">
       <button cngxDisclosure #faq="cngxDisclosure" [controls]="'faq-' + i"
-              style="width: 100%; text-align: left; padding: 0.75rem 0; font-weight: 600; font-size: 0.875rem; background: none; border: none; cursor: pointer; color: var(--cngx-color-text);">
+              type="button"
+              class="demo-disclosure-faq-trigger"
+              style="width: 100%;">
         {{ faq.opened() ? '−' : '+' }} {{ q }}
       </button>
       @if (faq.opened()) {
-        <div [id]="'faq-' + i" style="padding: 0 0 0.75rem; font-size: 0.875rem; color: var(--cngx-color-text-muted);">
+        <div [id]="'faq-' + i" class="demo-disclosure-faq-answer">
           Answer to "{{ q }}" goes here.
         </div>
       }

@@ -27,8 +27,8 @@ import { DestroyRef, Directive, inject, input, output, signal, type Signal } fro
  *   {{ cp.copied() ? 'Link copied to clipboard' : '' }}
  * </span>
  * ```
- * <example-url>http://localhost:4200/#/common/interactive/copy-text/copy-token</example-url>
- * <example-url>http://localhost:4200/#/common/interactive/copy-text/copy-url-with-sr-announcement</example-url>
+ * <example-url>http://localhost:4200/#/common/interactive/copy/text/copy-token</example-url>
+ * <example-url>http://localhost:4200/#/common/interactive/copy/text/copy-url-with-sr-announcement</example-url>
  */
 @Directive({
   selector: '[cngxCopyText]',

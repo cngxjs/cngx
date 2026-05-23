@@ -1,6 +1,9 @@
 # Close Button
 
-Shared close/dismiss button atom for alerts, toasts, and popovers.
+Shared close/dismiss button molecule for alerts, toasts, and popovers.
+Composes the native `<button>` shell with an optional projected icon
+and the `CNGX_CLOSE_ICON` DI swap; owns ARIA wiring and the default X
+glyph as the projection fallback.
 
 ## Import
 
@@ -19,7 +22,7 @@ import { CngxCloseButton } from '@cngx/common/interactive';
   template: `
     <div role="alert">
       <p>Something went wrong.</p>
-      <cngx-close-button label="Close alert" (pressed)="closeAlert()" />
+      <cngx-close-button label="Close alert" (click)="closeAlert()" />
     </div>
   `,
   imports: [CngxCloseButton],
@@ -62,7 +65,7 @@ CngxCloseButton is used internally by cngx feedback components:
 // Inside a dismissible notification
 <div class="notification">
   <span>{{ message }}</span>
-  <cngx-close-button label="Dismiss notification" (pressed)="dismiss()" />
+  <cngx-close-button label="Dismiss notification" (click)="dismiss()" />
 </div>
 
 // Inside a dialog
@@ -71,7 +74,7 @@ CngxCloseButton is used internally by cngx feedback components:
   <p>{{ content }}</p>
   <div class="actions">
     <button (click)="confirm()">Confirm</button>
-    <cngx-close-button label="Close dialog" (pressed)="cancel()" />
+    <cngx-close-button label="Close dialog" (click)="cancel()" />
   </div>
 </dialog>
 ```
@@ -79,6 +82,21 @@ CngxCloseButton is used internally by cngx feedback components:
 ## Styling
 
 CngxCloseButton uses `display: contents` so the host element produces no DOM box - only the inner `<button>` renders.
+
+Consequence: layout properties applied directly to
+`<cngx-close-button>` (notably `position: absolute`) are silently
+ignored, because elements with `display: contents` do not generate a
+principal box. To corner-pin the close button, wrap it in a
+positioned element:
+
+```html
+<div style="position: relative">
+  <!-- card content -->
+  <span style="position: absolute; top: 4px; right: 4px">
+    <cngx-close-button label="Dismiss card" (click)="dismiss()" />
+  </span>
+</div>
+```
 
 ### Default Styling
 
@@ -133,7 +151,7 @@ bootstrapApplication(AppComponent, {
         <h3>{{ title }}</h3>
         <p>{{ message }}</p>
       </div>
-      <cngx-close-button label="Close alert" (pressed)="onClose()" />
+      <cngx-close-button label="Close alert" (click)="onClose()" />
     </div>
   `,
   imports: [CngxCloseButton],
@@ -173,7 +191,11 @@ export class AlertComponent {
     <div class="card">
       <h3>{{ title }}</h3>
       <p>{{ content }}</p>
-      <cngx-close-button label="Dismiss" (pressed)="isDismissed.set(true)" />
+      <span class="card-close">
+        <cngx-close-button
+          label="Dismiss saved-successfully card"
+          (click)="isDismissed.set(true)" />
+      </span>
     </div>
   `,
   imports: [CngxCloseButton],
@@ -185,7 +207,7 @@ export class AlertComponent {
       border-radius: 8px;
     }
 
-    cngx-close-button {
+    .card-close {
       position: absolute;
       top: 8px;
       right: 8px;
@@ -211,7 +233,7 @@ export class DismissibleCardComponent {
     <div class="toast" role="status">
       <span class="message">{{ message }}</span>
       @if (dismissible()) {
-        <cngx-close-button label="Dismiss" (pressed)="dismiss()" />
+        <cngx-close-button label="Dismiss" (click)="dismiss()" />
       }
     </div>
   `,
@@ -301,5 +323,5 @@ cngx-close-button {
 - [CngxAlert](../../../ui/feedback/) - Uses CngxCloseButton
 - [CngxToastOutlet](../../../ui/feedback/) - Uses CngxCloseButton
 - [provideFeedback with withCloseIcon](../../../ui/feedback/) - Global icon override
-- Demo: `examples/stories/common/close-button-demo/`
+- Demo: `examples/stories/common/interactive/close-button/`
 - Tests: `projects/common/interactive/close-button/close-button.spec.ts`

@@ -19,7 +19,7 @@ import { CngxRipple } from './ripple.directive';
  * ```html
  * <button cngxPressRipple [rippleColor]="'rgba(0,0,0,0.2)'">Click</button>
  * ```
- * <example-url>http://localhost:4200/#/common/interactive/press-ripple/buttons-with-press-ripple</example-url>
+ * <example-url>http://localhost:4200/#/common/interactive/ripple/press/buttons-with-press-ripple</example-url>
  */
 @Directive({
   selector: '[cngxPressRipple]',

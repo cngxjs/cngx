@@ -40,9 +40,10 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
  * across the family.
  *
  * Visual indicator state is delegated to `<cngx-checkbox-indicator>`
- * from `@cngx/common/display`; the interactive atom owns role,
- * keyboard, and ARIA wiring. Per Pillar 3 (Komposition statt
- * Konfiguration), the visual atom is reused — never re-drawn here.
+ * from `@cngx/common/display`; this interactive molecule owns role,
+ * keyboard, and ARIA wiring and composes the display atom. Per
+ * Pillar 3 (Komposition statt Konfiguration), the visual atom is
+ * reused — never re-drawn here.
  *
  * `aria-checked` is a reactive computed: `indeterminate() ? 'mixed' :
  * value() ? 'true' : 'false'`. The description span for
@@ -58,12 +59,12 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
  *   (valueChange)="toggleAll($event)"
  * >Select all</cngx-checkbox>
  * ```
- * <example-url>http://localhost:4200/#/common/interactive/checkbox-group/basic-select-all-master-projected-leaves</example-url>
- * <example-url>http://localhost:4200/#/common/interactive/checkbox-group/disabled-cascade</example-url>
- * <example-url>http://localhost:4200/#/common/interactive/checkbox/basic-two-way-binding</example-url>
- * <example-url>http://localhost:4200/#/common/interactive/checkbox/custom-check-dash-glyphs</example-url>
- * <example-url>http://localhost:4200/#/common/interactive/checkbox/disabled</example-url>
- * <example-url>http://localhost:4200/#/common/interactive/checkbox/tri-state-select-all-pattern</example-url>
+ * <example-url>http://localhost:4200/#/common/interactive/checkbox/group/basic-select-all-master-projected-leaves</example-url>
+ * <example-url>http://localhost:4200/#/common/interactive/checkbox/group/disabled-cascade</example-url>
+ * <example-url>http://localhost:4200/#/common/interactive/checkbox/base/basic-two-way-binding</example-url>
+ * <example-url>http://localhost:4200/#/common/interactive/checkbox/base/custom-check-dash-glyphs</example-url>
+ * <example-url>http://localhost:4200/#/common/interactive/checkbox/base/disabled</example-url>
+ * <example-url>http://localhost:4200/#/common/interactive/checkbox/base/tri-state-select-all-pattern</example-url>
  * <example-url>http://localhost:4200/#/forms/field/form-primitives/coming-in-a-follow-up</example-url>
  * <example-url>http://localhost:4200/#/forms/field/form-primitives/reactive-forms-same-atom-just-bind-formcontrol</example-url>
  * <example-url>http://localhost:4200/#/forms/field/form-primitives/signal-forms-drop-the-atom-into-cngx-form-field</example-url>

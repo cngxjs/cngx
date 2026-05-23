@@ -43,23 +43,27 @@
   }
 
   /**
-   * Focus-ring outline shorthand.
+   * Focus-ring outline shorthand. Matches the foundation reset's
+   * `:focus-visible` accent so the radio reads consistently with
+   * every other focusable atom in the library.
    * @group State / Focus
    */
   @property --cngx-radio-focus-outline {
     syntax: '*';
     inherits: false;
-    initial-value: 2px solid currentColor;
+    initial-value: 2px solid oklch(0.66 0.19 50);
   }
 
   /**
-   * Outline offset of the focus ring.
+   * Outline offset of the focus ring. Matches the foundation reset's
+   * `:focus-visible` offset so the ring breathes the same against the
+   * indicator + label as it does against any other atom.
    * @group State / Focus
    */
   @property --cngx-radio-focus-offset {
     syntax: '*';
     inherits: false;
-    initial-value: 2px;
+    initial-value: 3px;
   }
 
   /**
@@ -92,8 +96,11 @@
     }
 
     :scope:focus-visible {
-      outline: var(--cngx-radio-focus-outline, 2px solid currentColor);
-      outline-offset: var(--cngx-radio-focus-offset, 2px);
+      outline: var(
+        --cngx-radio-focus-outline,
+        2px solid var(--cngx-color-primary, oklch(0.66 0.19 50))
+      );
+      outline-offset: var(--cngx-radio-focus-offset, 3px);
       border-radius: var(--cngx-radio-focus-radius, var(--cngx-radius-sm, 0.25rem));
     }
 

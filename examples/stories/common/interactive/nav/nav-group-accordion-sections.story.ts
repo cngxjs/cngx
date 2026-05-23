@@ -1,72 +1,78 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Nav Group — Accordion Sections',
-  subtitle: '<code>cngxNavGroup</code> composes <code>CngxDisclosure</code> as a hostDirective. Click a group header to expand/collapse. <code>aria-expanded</code> is set automatically.',
-  description: 'Composable navigation atoms: CngxNavLink (active state + depth), CngxNavGroup (accordion), CngxNavLabel (section header), CngxNavBadge (counter/dot). Combine them to build sidebar menus.',
+  title: 'CngxNavGroup: accordion sections',
+  subtitle:
+    '<code>cngxNavGroup</code> composes <code>CngxDisclosure</code> as a host directive, so the trigger toggles via click, <kbd>Enter</kbd>, or <kbd>Space</kbd> and exposes <code>aria-expanded</code>/<code>aria-controls</code> automatically.',
+  description:
+    'Sidebar layout with a section label, an active top-level link, and two collapsible groups. Each group trigger is a real <code>&lt;button&gt;</code>; its content is rendered with <code>&#64;if</code> and wired to the trigger via <code>id</code>/<code>aria-labelledby</code>/<code>role="group"</code>.',
   level: 'molecule',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'building-block',
   focus: ['composition', 'a11y-pattern'],
-  apiComponents: [
-    'CngxNavLink',
-    'CngxNavGroup',
-    'CngxNavBadge',
-    'CngxNavLabel',
+  references: [
+    {
+      label: 'WAI-ARIA APG: Disclosure pattern',
+      href: 'https://www.w3.org/WAI/ARIA/apg/patterns/disclosure/',
+    },
+    {
+      label: 'WCAG 2.1 SC 2.1.1 Keyboard',
+      href: 'https://www.w3.org/WAI/WCAG21/Understanding/keyboard.html',
+    },
   ],
-  moduleImports: [
-    'import { CngxNavLink, CngxNavGroup, CngxNavLabel } from \'@cngx/common\';',
-  ],
+  apiComponents: ['CngxNavGroup', 'CngxNavLink', 'CngxNavLabel'],
+  moduleImports: [`import { CngxNavLink, CngxNavGroup, CngxNavLabel } from '@cngx/common';`],
   imports: ['CngxNavGroup', 'CngxNavLink', 'CngxNavLabel'],
   template: `
-  <nav class="nav-demo" style="width: 240px; border: 1px solid var(--cngx-color-border); border-radius: 6px; padding: 0.5rem 0; background: var(--cngx-surface-alt, #f9fafb);">
-    <span cngxNavLabel style="display: block; padding: 0.5rem 1rem; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--cngx-color-text-muted);">
-      Application
-    </span>
+  <nav class="demo-nav__frame">
+    <span cngxNavLabel class="demo-nav__label">Application</span>
 
-    <a cngxNavLink [active]="true"
-       style="display: block; padding: 0.5rem 1rem; text-decoration: none; font-size: 0.875rem; color: var(--cngx-color-text); border-left: 3px solid var(--interactive, #f5a623); background: var(--interactive-subtle-bg, rgba(245, 166, 35, 0.08)); font-weight: 600;">
+    <a cngxNavLink [active]="true" href="#dashboard" class="demo-nav__link demo-nav__link--active">
       Dashboard
     </a>
 
-    <button cngxNavGroup #settings="cngxNavGroup" [controls]="'settings-content'" id="settings-trigger"
-            style="width: 100%; text-align: left; padding: 0.5rem 1rem; border: none; background: none; cursor: pointer; font-size: 0.875rem; color: var(--cngx-color-text); display: flex; align-items: center; justify-content: space-between;">
+    <button
+      cngxNavGroup
+      #settings="cngxNavGroup"
+      type="button"
+      id="settings-trigger"
+      [controls]="'settings-content'"
+      class="demo-nav__trigger"
+    >
       Settings
-      <span style="font-size: 0.75rem; transition: transform 0.15s;"
-            [style.transform]="settings.disclosure.opened() ? 'rotate(90deg)' : 'rotate(0)'">
-        &#9654;
-      </span>
+      <span
+        class="demo-nav__caret"
+        aria-hidden="true"
+        [style.transform]="settings.disclosure.opened() ? 'rotate(90deg)' : 'rotate(0)'"
+      >&#9654;</span>
     </button>
     @if (settings.disclosure.opened()) {
-      <div id="settings-content" role="group" [attr.aria-labelledby]="'settings-trigger'">
-        <a cngxNavLink [depth]="1" style="display: block; padding: 0.5rem 1rem; padding-left: calc(1rem + 12px); text-decoration: none; font-size: 0.875rem; color: var(--cngx-color-text);">
-          General
-        </a>
-        <a cngxNavLink [depth]="1" style="display: block; padding: 0.5rem 1rem; padding-left: calc(1rem + 12px); text-decoration: none; font-size: 0.875rem; color: var(--cngx-color-text);">
-          Security
-        </a>
-        <a cngxNavLink [depth]="1" style="display: block; padding: 0.5rem 1rem; padding-left: calc(1rem + 12px); text-decoration: none; font-size: 0.875rem; color: var(--cngx-color-text);">
-          Notifications
-        </a>
+      <div id="settings-content" role="group" aria-labelledby="settings-trigger">
+        <a cngxNavLink [depth]="1" href="#settings-general" class="demo-nav__link demo-nav__link--indent-1">General</a>
+        <a cngxNavLink [depth]="1" href="#settings-security" class="demo-nav__link demo-nav__link--indent-1">Security</a>
+        <a cngxNavLink [depth]="1" href="#settings-notifications" class="demo-nav__link demo-nav__link--indent-1">Notifications</a>
       </div>
     }
 
-    <button cngxNavGroup #account="cngxNavGroup" [controls]="'account-content'" id="account-trigger"
-            style="width: 100%; text-align: left; padding: 0.5rem 1rem; border: none; background: none; cursor: pointer; font-size: 0.875rem; color: var(--cngx-color-text); display: flex; align-items: center; justify-content: space-between;">
+    <button
+      cngxNavGroup
+      #account="cngxNavGroup"
+      type="button"
+      id="account-trigger"
+      [controls]="'account-content'"
+      class="demo-nav__trigger"
+    >
       Account
-      <span style="font-size: 0.75rem; transition: transform 0.15s;"
-            [style.transform]="account.disclosure.opened() ? 'rotate(90deg)' : 'rotate(0)'">
-        &#9654;
-      </span>
+      <span
+        class="demo-nav__caret"
+        aria-hidden="true"
+        [style.transform]="account.disclosure.opened() ? 'rotate(90deg)' : 'rotate(0)'"
+      >&#9654;</span>
     </button>
     @if (account.disclosure.opened()) {
-      <div id="account-content" role="group" [attr.aria-labelledby]="'account-trigger'">
-        <a cngxNavLink [depth]="1" style="display: block; padding: 0.5rem 1rem; padding-left: calc(1rem + 12px); text-decoration: none; font-size: 0.875rem; color: var(--cngx-color-text);">
-          Profile
-        </a>
-        <a cngxNavLink [depth]="1" style="display: block; padding: 0.5rem 1rem; padding-left: calc(1rem + 12px); text-decoration: none; font-size: 0.875rem; color: var(--cngx-color-text);">
-          Billing
-        </a>
+      <div id="account-content" role="group" aria-labelledby="account-trigger">
+        <a cngxNavLink [depth]="1" href="#account-profile" class="demo-nav__link demo-nav__link--indent-1">Profile</a>
+        <a cngxNavLink [depth]="1" href="#account-billing" class="demo-nav__link demo-nav__link--indent-1">Billing</a>
       </div>
     }
   </nav>`,

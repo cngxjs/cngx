@@ -373,6 +373,13 @@ html.dark .cngx-ex-tag[data-dim='stability'][data-value='deprecated'] {
 
 // Event grid — technical layout to show ARIA/Signal state in a story panel.
 // No colours/borders here; only layout + alignment so values line up.
+.chip-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 .event-grid {
   display: flex;
   flex-direction: column;
@@ -417,6 +424,51 @@ html.dark .cngx-ex-tag[data-dim='stability'][data-value='deprecated'] {
 }
 .demo-metric-label {
   margin-bottom: 4px;
+}
+
+// Demo-only card surface used by inside-a-dismissible-card. Keeps thematic
+// chrome (border, surface, radius, padding) off inline styles so the close
+// button atom keeps its absolute-positioned corner without bleeding tokens
+// into the story body.
+.demo-dismissible-card {
+  padding: 16px 40px 16px 16px;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e0e0e0));
+  border-radius: var(--cngx-radius-md, 8px);
+  background: var(--cngx-color-surface, var(--cngx-ex-surface, #ffffff));
+  color: var(--cngx-color-text, var(--cngx-ex-text, inherit));
+}
+
+// Disclosure atom demos. The trigger renders as the consumer styles it
+// (browser-native or .sort-btn). These classes only shape the revealed
+// content panel so stories don't redeclare padding / surface / border.
+.demo-disclosure-panel {
+  padding: 0.75rem;
+  border-left: 3px solid var(--cngx-color-primary, var(--cngx-ex-accent, currentColor));
+  background: var(--cngx-color-surface-alt, var(--cngx-ex-surface-alt, #f9fafb));
+  border-radius: var(--cngx-radius-sm, 4px);
+  font-size: 0.875rem;
+  color: var(--cngx-color-text, var(--cngx-ex-text, inherit));
+}
+
+.demo-disclosure-faq-row {
+  border-bottom: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e0e0e0));
+}
+
+.demo-disclosure-faq-trigger {
+  text-align: left;
+  padding: 0.75rem 0;
+  font-weight: 600;
+  font-size: 0.875rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--cngx-color-text, var(--cngx-ex-text, inherit));
+}
+
+.demo-disclosure-faq-answer {
+  padding: 0 0 0.75rem;
+  font-size: 0.875rem;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted));
 }
 
 // Demo-only scroll frame + row utilities. Used by the recycler and
@@ -500,6 +552,66 @@ html.dark .cngx-ex-tag[data-dim='stability'][data-value='deprecated'] {
   background-size: 200% 100%;
   animation: demo-skeleton-shimmer 1.4s ease-in-out infinite;
 }
+
+// Demo-only error-presentation helpers. Used by the
+// `examples/stories/common/interactive/error/**` stories so the visible
+// error styling (input border, message colour, summary list, count badge,
+// surface tint) reads from `--cngx-color-danger` rather than scattering
+// hex literals through inline styles. `--cngx-color-danger` is the system
+// token bridged from Material's `--mat-sys-error`; the fallback covers
+// theme-less consumers.
+.demo-error-list {
+  margin: 8px 0;
+  padding-inline-start: 24px;
+  color: var(--cngx-color-danger, #b00020);
+}
+.demo-error-message {
+  margin: 4px 0 12px;
+  color: var(--cngx-color-danger, #b00020);
+  font-size: 0.875em;
+}
+.demo-error-input {
+  padding: 6px 8px;
+  min-width: 240px;
+  border-radius: 4px;
+  border: 1px solid var(--cngx-color-border, #d1d5db);
+  display: block;
+  margin-top: 4px;
+}
+.demo-error-input.cngx-error,
+.demo-error-input[aria-invalid='true'] {
+  border-color: var(--cngx-color-danger, #b00020);
+  outline-color: var(--cngx-color-danger, #b00020);
+}
+.demo-error-surface {
+  padding: 12px 16px;
+  margin-bottom: 1rem;
+  border-radius: 6px;
+  border: 1px solid var(--cngx-color-border, #d1d5db);
+}
+.demo-error-surface.cngx-error,
+.demo-error-surface[aria-invalid='true'] {
+  border-color: var(--cngx-color-danger, #b00020);
+  background: color-mix(
+    in srgb,
+    var(--cngx-color-danger, #b00020) 4%,
+    transparent
+  );
+}
+.demo-error-count-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  margin-inline-start: 6px;
+  border-radius: 9px;
+  background: var(--cngx-color-danger, #b00020);
+  color: var(--cngx-color-on-danger, #ffffff);
+  font-size: 0.75em;
+  line-height: 1;
+}
 @keyframes demo-skeleton-shimmer {
   0% { background-position: 100% 0; }
   100% { background-position: -100% 0; }
@@ -580,6 +692,155 @@ html.dark .cngx-ex-tag[data-dim='stability'][data-value='deprecated'] {
   margin-block-start: 8px;
   max-width: 280px;
 }
+
+// Listbox demo helpers. The cngx default theme styles option states
+// (.cngx-option--highlighted / --selected / --disabled / --hidden) and
+// the listbox container's keyboard focus ring; the container's surface
+// (border, radius, max-width, scroll) is consumer-owned and lives here
+// so each listbox story stays focused on the directive contract, not
+// per-story chrome.
+.demo-listbox-surface {
+  display: flex;
+  flex-direction: column;
+  max-width: 260px;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #d0d5dd));
+  border-radius: var(--cngx-radius-md, 8px);
+  background: var(--cngx-color-surface, var(--cngx-ex-surface, #fff));
+}
+.demo-listbox-surface--scroll {
+  max-height: 260px;
+  overflow: auto;
+}
+.demo-listbox-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 200px;
+  padding: 8px 12px;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #d0d5dd));
+  border-radius: var(--cngx-radius-md, 6px);
+  background: var(--cngx-color-surface, var(--cngx-ex-surface, #fff));
+  color: var(--cngx-color-text, var(--cngx-ex-text, inherit));
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.demo-listbox-trigger:focus-visible {
+  outline: 2px solid var(--cngx-color-primary, var(--cngx-ex-accent, #4a8cff));
+  outline-offset: 2px;
+}
+.demo-listbox-search {
+  width: 260px;
+  padding: 6px 10px;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #d0d5dd));
+  border-radius: var(--cngx-radius-md, 8px);
+  background: var(--cngx-color-surface, var(--cngx-ex-surface, #fff));
+  color: var(--cngx-color-text, var(--cngx-ex-text, inherit));
+  font: inherit;
+}
+.demo-listbox-empty {
+  margin: 6px 0 0;
+  padding: 6px 10px;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted));
+  font-size: 0.875rem;
+}
+
+// Container framing for the cngxActiveDescendant option demos. The cngx
+// library ships option state classes (.cngx-option--highlighted etc.) via
+// cngx-listbox.css, but those rules attach to the option itself; an
+// AD-only container (no [cngxListbox]) still needs its own surface +
+// focus ring. Demos under common/interactive/option share this class so
+// the flat + grouped stories render the same shell.
+.demo-ad-listbox {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-width: 260px;
+  padding: 4px;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #d0d5dd));
+  border-radius: var(--cngx-radius-md, 8px);
+  outline: none;
+  background: var(--cngx-color-surface, var(--cngx-ex-surface, #fff));
+}
+.demo-ad-listbox:focus-visible {
+  outline: 2px solid var(--cngx-color-primary, var(--cngx-ex-accent, #4a8cff));
+  outline-offset: 2px;
+}
+
+// Bound-value readout under a radio-group demo. Body type, muted color
+// via cngx tokens with fallbacks. Distinct from `.demo-radio-caption`
+// (theming demo's cell label - smaller, no top margin).
+.demo-radio-bound {
+  margin-top: 12px;
+  font-size: 0.875em;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted, #6b7280));
+}
+// Reserved slot for the echoed value so swapping between values of
+// different widths does not visibly shift the line. 8ch covers the
+// widest payment value in the demos (invoice / cash / card / (none))
+// with a small buffer.
+.demo-radio-bound > code {
+  display: inline-block;
+  min-width: 8ch;
+}
+
+// Compact keyboard-cheatsheet row rendered above an interactive demo
+// so the WAI-ARIA pattern is visible without making the reader open
+// the references panel. Lives in styles.scss (not per-story) so every
+// roving-tabindex demo can drop the same chrome line in via
+// templateChromeBefore.
+.demo-kbd-hint {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin-bottom: 12px;
+  font-size: 0.8125rem;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted, #6b7280));
+}
+.demo-kbd-hint kbd {
+  display: inline-block;
+  margin: 0 1px;
+  padding: 1px 6px;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #d0d5dd));
+  border-radius: 4px;
+  background: var(--cngx-color-surface-alt, var(--cngx-ex-surface-alt, #f9fafb));
+  color: var(--cngx-color-text, var(--cngx-ex-text, inherit));
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.6875rem;
+  line-height: 1.2;
+}
+
+// Ripple demo helpers. The cngxRipple directive ships the pointer logic
+// + .cngx-ripple__wave defaults; visual chrome around the host (round
+// icon button, tappable card, press-feedback transition) is consumer
+// territory and lives here so each ripple story stays focused on the
+// directive contract.
+.demo-ripple-icon-button {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  padding: 0;
+}
+.demo-ripple-card {
+  display: inline-block;
+  max-width: 280px;
+  padding: 20px;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #d0d5dd));
+  border-radius: var(--cngx-radius-md, 8px);
+  background: var(--cngx-color-surface, var(--cngx-ex-surface, #fff));
+  cursor: pointer;
+  user-select: none;
+}
+.demo-ripple-card-hint {
+  margin: 8px 0 0;
+  font-size: 0.875rem;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted, #6b7280));
+}
+.demo-press-ripple-button {
+  transition: transform 80ms ease;
+}
+
 button.chip--icon-close {
   padding: 2px 8px;
 }
@@ -1224,6 +1485,111 @@ button.chip:disabled {
   --cngx-radio-indicator-checked-color: var(--cngx-color-success, oklch(0.55 0.13 165));
   --cngx-radio-indicator-dot-size: 0.6em;
 }
+
+// Button-toggle demo caption. Shared by stories under
+// common/interactive/button-toggle/** so the value-readout line under
+// the group reads from the muted-text token instead of repeating a hex
+// literal inline in every story.
+.demo-button-toggle-caption {
+  font-size: 0.875em;
+  margin-top: 12px;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-text-muted, oklch(0.5 0.01 250)));
+}
+
+// Checkbox demo caption. Shared by stories under
+// common/interactive/checkbox/** so the bound-value readout under each
+// demo reads from the muted-text token instead of repeating a hex
+// literal inline in every story.
+.demo-checkbox-caption {
+  font-size: 0.875em;
+  margin-top: 12px;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted));
+}
+
+// Button-toggle demo skin. The cngx-button-toggle directive currently
+// ships no default visual treatment - only the group container has CSS
+// (display: inline-flex, gap, border-radius). Until the library grows a
+// leaf default, this wrapper class gives the demos a presentable
+// segmented-control look so radiogroup / toolbar semantics read as such
+// instead of as plain inline text. Scoped to the demo wrapper class so
+// it never leaks into consumer apps that import @cngx/common.
+.demo-button-toggle-group .cngx-button-toggle {
+  padding: 0.5rem 1rem;
+  // The examples-app's --cngx-ex-border is intentionally faint for app
+  // chrome, so the border fallback here skips it and lands on a
+  // darker neutral - segmented controls need a visible boundary.
+  border: 1px solid var(--cngx-color-outline, oklch(0.72 0.01 250));
+  background: var(--cngx-color-surface, var(--cngx-ex-surface, #ffffff));
+  color: var(--cngx-color-on-surface, var(--cngx-ex-text, currentColor));
+  font: inherit;
+  cursor: pointer;
+  transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+.demo-button-toggle-group .cngx-button-toggle + .cngx-button-toggle {
+  margin-left: -1px;
+}
+.demo-button-toggle-group .cngx-button-toggle:first-child {
+  border-top-left-radius: var(--cngx-radius-md, 0.375rem);
+  border-bottom-left-radius: var(--cngx-radius-md, 0.375rem);
+}
+.demo-button-toggle-group .cngx-button-toggle:last-child {
+  border-top-right-radius: var(--cngx-radius-md, 0.375rem);
+  border-bottom-right-radius: var(--cngx-radius-md, 0.375rem);
+}
+.demo-button-toggle-group[aria-orientation='vertical'] .cngx-button-toggle + .cngx-button-toggle {
+  margin-left: 0;
+  margin-top: -1px;
+}
+.demo-button-toggle-group[aria-orientation='vertical'] .cngx-button-toggle:first-child {
+  border-radius: var(--cngx-radius-md, 0.375rem) var(--cngx-radius-md, 0.375rem) 0 0;
+}
+.demo-button-toggle-group[aria-orientation='vertical'] .cngx-button-toggle:last-child {
+  border-radius: 0 0 var(--cngx-radius-md, 0.375rem) var(--cngx-radius-md, 0.375rem);
+}
+// Unchecked + hover: tint the surface toward the text color so the hint is
+// visible in both light and dark mode. The checked branch below overrides
+// this so the orange-on-white selection state stays orange on hover.
+.demo-button-toggle-group .cngx-button-toggle:not(.cngx-button-toggle--checked):hover:not([disabled]) {
+  background: color-mix(
+    in oklch,
+    var(--cngx-color-surface, #ffffff),
+    var(--cngx-color-on-surface, oklch(0.25 0 0)) 8%
+  );
+}
+// Checked + hover: shift the primary background toward black so the selected
+// state still gets a hover hint instead of being painted over by a
+// currentColor mix (currentColor on checked == on-primary == white in light
+// mode, which made the previous universal rule render white-on-white).
+.demo-button-toggle-group .cngx-button-toggle--checked:hover:not([disabled]) {
+  background: color-mix(
+    in oklch,
+    var(--cngx-color-primary, var(--cngx-ex-accent, oklch(0.6 0.15 250))) 88%,
+    #000
+  );
+  border-color: color-mix(
+    in oklch,
+    var(--cngx-color-primary, var(--cngx-ex-accent, oklch(0.6 0.15 250))) 88%,
+    #000
+  );
+}
+.demo-button-toggle-group .cngx-button-toggle:focus-visible {
+  outline: 2px solid var(--cngx-color-primary, var(--cngx-ex-accent, oklch(0.6 0.15 250)));
+  outline-offset: 2px;
+  position: relative;
+  z-index: 1;
+}
+.demo-button-toggle-group .cngx-button-toggle--checked {
+  background: var(--cngx-color-primary, var(--cngx-ex-accent, oklch(0.6 0.15 250)));
+  color: var(--cngx-color-on-primary, #ffffff);
+  border-color: var(--cngx-color-primary, var(--cngx-ex-accent, oklch(0.6 0.15 250)));
+  z-index: 1;
+}
+.demo-button-toggle-group .cngx-button-toggle--disabled,
+.demo-button-toggle-group .cngx-button-toggle[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 // Required-marker custom-template variants (cngx-required story).
 .required-badge {
   display: inline-block;
@@ -1236,4 +1602,445 @@ button.chip:disabled {
   text-transform: uppercase;
   color: var(--cngx-color-danger-on, #fff);
   background: var(--cngx-color-danger, #c0392b);
+}
+
+// Hoverable atom-demo target. Used by
+// stories/common/interactive/hoverable/basic.story.ts so the reader can
+// see the bounding box the hover signal observes; otherwise the demo
+// would only surface state via the chrome readout.
+.demo-hoverable-target {
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, oklch(0.88 0.005 250)));
+  border-radius: var(--cngx-radius-md, 6px);
+  background: var(--cngx-color-surface, var(--cngx-ex-surface, oklch(1 0 0)));
+  color: var(--cngx-color-text, var(--cngx-ex-text, oklch(0.2 0.01 250)));
+  transition: transform 120ms ease, background 120ms ease;
+}
+.demo-hoverable-target--active {
+  background: color-mix(in oklch, var(--cngx-color-surface, oklch(1 0 0)), var(--cngx-color-primary, oklch(0.66 0.19 50)) 8%);
+}
+
+// Hoverable composition-demo card. Used by
+// stories/common/interactive/hoverable/as-host-directive.story.ts and
+// its co-located _hover-card.component.ts fixture. The fixture sets
+// .demo-hover-card--active when the hostDirective signal flips, the
+// styles below provide the visual cue.
+.demo-hover-card {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 1.25rem;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, oklch(0.88 0.005 250)));
+  background: var(--cngx-color-surface, var(--cngx-ex-surface, oklch(1 0 0)));
+  color: var(--cngx-color-text, var(--cngx-ex-text, oklch(0.2 0.01 250)));
+  transition: transform 120ms ease, background 120ms ease;
+}
+.demo-hover-card--active {
+  background: color-mix(in oklch, var(--cngx-color-surface, oklch(1 0 0)), var(--cngx-color-primary, oklch(0.66 0.19 50)) 8%);
+  transform: scale(1.02);
+}
+.demo-hover-card__state {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.75em;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted, oklch(0.5 0.01 250)));
+}
+
+// Gesture-folder helpers — keep thematic decisions (border, surface, accent)
+// in classes so each story carries only layout-level inline styles.
+.demo-gesture-panel {
+  display: inline-block;
+  padding: 12px 16px;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, oklch(0.88 0.005 250)));
+  border-radius: var(--cngx-radius-md, 6px);
+  background: var(--cngx-color-surface-variant, var(--cngx-color-surface, oklch(0.98 0.005 250)));
+}
+.demo-gesture-target {
+  padding: 16px;
+  border: 2px dashed var(--cngx-color-border, var(--cngx-ex-border, oklch(0.88 0.005 250)));
+  border-radius: var(--cngx-radius-md, 6px);
+  text-align: center;
+  outline: none;
+}
+.demo-gesture-target--accent {
+  border-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
+  background: color-mix(in oklch, var(--cngx-color-surface, oklch(1 0 0)), var(--cngx-color-primary, oklch(0.66 0.19 50)) 6%);
+}
+.demo-gesture-target--danger {
+  border-color: var(--cngx-color-error, oklch(0.6 0.2 25));
+  background: color-mix(in oklch, var(--cngx-color-surface, oklch(1 0 0)), var(--cngx-color-error, oklch(0.6 0.2 25)) 8%);
+}
+.demo-gesture-card {
+  padding: 20px;
+  max-width: 280px;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, oklch(0.88 0.005 250)));
+  border-radius: var(--cngx-radius-md, 8px);
+  background: var(--cngx-color-surface, oklch(1 0 0));
+  text-align: left;
+  user-select: none;
+  transition: transform 100ms ease, box-shadow 100ms ease;
+}
+.demo-gesture-card[aria-pressed='true'],
+.demo-gesture-card.is-pressed {
+  box-shadow: none;
+}
+.demo-gesture-flash,
+button.chip.demo-gesture-flash {
+  background: color-mix(in oklch, var(--cngx-color-surface, oklch(1 0 0)), var(--cngx-color-primary, oklch(0.66 0.19 50)) 18%);
+  border-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
+}
+.demo-gesture-hint {
+  margin: 0 0 8px;
+  font-size: 0.875rem;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted, oklch(0.5 0.01 250)));
+}
+.demo-swipe-target {
+  padding: 2rem;
+  border: 2px dashed var(--cngx-color-border, var(--cngx-ex-border, oklch(0.88 0.005 250)));
+  border-radius: var(--cngx-radius-md, 8px);
+  background: var(--cngx-color-surface-variant, var(--cngx-color-surface, oklch(0.98 0.005 250)));
+  text-align: center;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  transition: transform 0.1s ease, border-color 0.1s ease;
+}
+.demo-swipe-target--active {
+  border-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
+}
+@media (prefers-reduced-motion: reduce) {
+  .demo-gesture-target,
+  .demo-swipe-target,
+  .demo-gesture-card {
+    transition: none;
+  }
+}
+.demo-context-menu-zone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 160px;
+  padding: 16px;
+  border: 2px dashed var(--cngx-color-border, oklch(0.88 0.005 250));
+  border-radius: var(--cngx-radius-md, 8px);
+  background: var(--cngx-color-surface-variant, var(--cngx-color-surface, oklch(0.98 0.005 250)));
+  color: var(--cngx-color-text-muted, oklch(0.5 0.01 250));
+  cursor: context-menu;
+  user-select: none;
+}
+.demo-context-menu-zone:focus-visible {
+  outline: 2px solid var(--cngx-color-primary, oklch(0.66 0.19 50));
+  outline-offset: 2px;
+}
+
+// Inline code chip for copy-text stories. Token-driven so it tracks the
+// examples-app color scheme; no literal hex fallbacks. The container
+// owns layout (display/gap/max-width) via inline style; this class owns
+// only the thematic surface.
+.demo-copy-token__code {
+  padding: 6px 10px;
+  border: 1px solid var(--cngx-color-border, oklch(0.88 0.005 250));
+  border-radius: var(--cngx-radius-sm, 4px);
+  background: var(--cngx-color-surface-variant, var(--cngx-color-surface, oklch(0.98 0.005 250)));
+  color: var(--cngx-color-text, currentColor);
+  font-family: var(--cngx-font-family-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: var(--cngx-font-size-sm, 0.8125rem);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// Copied-state surface for any chip-styled copy trigger. Mirrors the
+// CngxCopyBlock library default exactly: same green-hue Copied tint
+// (light: oklch(0.96 0.025 145), dark: oklch(0.32 0.06 145)), same
+// success-token border and label. A color-mix on `--cngx-color-surface`
+// drowned in the surface's blue-grey hue and didn't read as green,
+// hence the explicit hue tints.
+button.chip.demo-chip--copied {
+  background: oklch(0.96 0.025 145);
+  border-color: var(--cngx-color-success, oklch(0.5 0.12 145));
+  color: var(--cngx-color-success, oklch(0.5 0.12 145));
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-color-scheme='light']):not(.light) button.chip.demo-chip--copied {
+    background: oklch(0.32 0.06 145);
+  }
+}
+[data-color-scheme='dark'] button.chip.demo-chip--copied,
+.dark button.chip.demo-chip--copied {
+  background: oklch(0.32 0.06 145);
+}
+[data-color-scheme='light'] button.chip.demo-chip--copied,
+.light button.chip.demo-chip--copied {
+  background: oklch(0.96 0.025 145);
+}
+
+// Muted URL label for the copy-url-with-sr-announcement story. The
+// real token is `--cngx-color-text-muted` (system-tokens.css), not the
+// invented `--cngx-text-secondary` previously used inline.
+.demo-copy-url__label {
+  font-size: var(--cngx-font-size-sm, 0.875rem);
+  color: var(--cngx-color-text-muted, oklch(0.5 0.01 250));
+}
+
+// Screen-reader-only utility for demo templates that wire their own
+// aria-live region. Mirrors the WAI-ARIA practice "visually hidden"
+// pattern; identical visual rules to the library's internal
+// `.cngx-sr-only` (scoped to `.cngx-copy-block`).
+.demo-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+  padding: 0;
+  margin: -1px;
+}
+
+/* Demo-specific styles: common/interactive/nav. The nav directives ship */
+/* host classes (cngx-nav-link, cngx-nav-group, cngx-nav-badge) without */
+/* default visual styling, so the demos theme themselves through these */
+/* helpers; every color reads from a cngx token first, then a safe fallback. */
+.demo-nav__frame {
+  width: 240px;
+  padding: 0.5rem 0;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #d0d5dd));
+  border-radius: var(--cngx-radius-md, 6px);
+  background: var(--cngx-surface-alt, #f9fafb);
+}
+.demo-nav__label {
+  display: block;
+  padding: 0.5rem 1rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted, #6b7280));
+}
+.demo-nav__link {
+  display: block;
+  padding: 0.5rem 1rem;
+  text-decoration: none;
+  font-size: 0.875rem;
+  color: var(--cngx-color-text, var(--cngx-ex-text, #1f2937));
+  border-left: 3px solid transparent;
+  transition:
+    background 0.15s ease,
+    border-left-color 0.15s ease;
+}
+.demo-nav__link--row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.demo-nav__link--active {
+  border-left-color: var(--cngx-color-primary, #2563eb);
+  background: color-mix(in oklch, var(--cngx-color-primary, #2563eb) 8%, transparent);
+  font-weight: 600;
+}
+.demo-nav__link--indent-1 {
+  padding-left: calc(1rem + 12px);
+}
+.demo-nav__link--indent-2 {
+  padding-left: calc(1rem + 24px);
+}
+.demo-nav__divider {
+  margin: 0.5rem 1rem;
+  border-top: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #d0d5dd));
+}
+.demo-nav__trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 1rem;
+  border: none;
+  background: none;
+  cursor: pointer;
+  text-align: left;
+  font-size: 0.875rem;
+  color: var(--cngx-color-text, var(--cngx-ex-text, #1f2937));
+}
+.demo-nav__caret {
+  font-size: 0.75rem;
+  transition: transform 0.15s ease;
+}
+.demo-nav__badge--count {
+  padding: 0.1em 0.5em;
+  min-width: 1.2em;
+  border-radius: 10px;
+  background: var(--cngx-color-primary, #2563eb);
+  color: var(--cngx-color-surface, #fff);
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-align: center;
+}
+.demo-nav__badge--muted {
+  padding: 0.1em 0.5em;
+  border-radius: 10px;
+  background: var(--cngx-color-border, var(--cngx-ex-border, #d0d5dd));
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted, #6b7280));
+  font-size: 0.7rem;
+}
+.demo-nav__badge--dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--cngx-color-success, #16a34a);
+}
+.demo-nav__note {
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted, #6b7280));
+}
+
+// Combobox-typeahead demo. Built from raw <li role="option"> nodes (not
+// the cngx-option directive), so the highlight chrome lives here. Every
+// color reads from a cngx token first, with a safe ASCII-only fallback.
+.demo-typeahead-listbox {
+  display: flex;
+  flex-direction: column;
+  list-style: none;
+  margin: 0;
+  padding: 4px 0;
+  max-height: 12rem;
+  overflow: auto;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #d0d5dd));
+  border-radius: var(--cngx-radius-md, 6px);
+  background: var(--cngx-color-surface, var(--cngx-ex-surface, #fff));
+}
+.demo-typeahead-option {
+  padding: 4px 10px;
+  cursor: pointer;
+  color: var(--cngx-color-text, var(--cngx-ex-text, inherit));
+}
+.demo-typeahead-option[aria-selected='true'] {
+  background: var(--cngx-color-surface-alt, var(--cngx-ex-surface-alt, #f3f4f6));
+}
+.demo-typeahead-empty {
+  padding: 4px 10px;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted, #6b7280));
+  font-style: italic;
+}
+
+// CngxSpeak demos. The directive is headless - no DOM, no CSS - so the
+// example chrome (text passage frame, input + error row, hear-button)
+// lives entirely here so stories don't redeclare padding/border/colour
+// inline. Every colour reads from a cngx token first, then a shell
+// fallback, then a safe literal.
+.demo-speak-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+.demo-speak-input {
+  padding: 8px 12px;
+  border-radius: var(--cngx-radius-md, 6px);
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #d0d5dd));
+  background: var(--cngx-color-surface, var(--cngx-ex-surface, #fff));
+  color: var(--cngx-color-text, var(--cngx-ex-text, inherit));
+  font-size: 0.875rem;
+}
+.demo-speak-input--invalid {
+  border-color: var(--cngx-color-danger, #b00020);
+}
+.demo-speak-error-row {
+  font-size: 0.8125rem;
+  color: transparent;
+}
+.demo-speak-error-row--shown {
+  color: var(--cngx-color-danger, #b00020);
+}
+.demo-speak-hear-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 2px 10px;
+  border-radius: var(--cngx-radius-sm, 4px);
+  border: 1px solid var(--cngx-color-danger, #b00020);
+  background: color-mix(in srgb, var(--cngx-color-danger, #b00020) 8%, transparent);
+  color: var(--cngx-color-danger, #b00020);
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+.demo-speak-hear-btn:focus-visible {
+  outline: 2px solid var(--cngx-color-danger, #b00020);
+  outline-offset: 2px;
+}
+.demo-speak-hear-btn::before {
+  content: '\1F50A';
+  font-size: 0.9rem;
+  line-height: 1;
+}
+.demo-speak-listen-btn--active {
+  background: var(--cngx-color-primary, var(--cngx-ex-focus, #2563eb));
+  color: var(--cngx-color-surface, var(--cngx-ex-surface, #fff));
+}
+.demo-speak-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  font-size: 0.875rem;
+  line-height: 1;
+}
+.demo-speak-icon-btn--active {
+  background: var(--cngx-color-primary, var(--cngx-ex-focus, #2563eb));
+  color: var(--cngx-color-surface, var(--cngx-ex-surface, #fff));
+}
+.demo-speak-note {
+  font-size: 0.75rem;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted, #6b7280));
+}
+.demo-speak-passage {
+  padding: 16px 20px;
+  border-radius: var(--cngx-radius-md, 8px);
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #d0d5dd));
+  background: var(--cngx-color-surface-alt, var(--cngx-ex-surface-alt, #f9fafb));
+  color: var(--cngx-color-text, var(--cngx-ex-text, inherit));
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+.demo-speak-passage--accent {
+  border-left: 4px solid var(--cngx-color-primary, var(--cngx-ex-focus, #2563eb));
+}
+.demo-speak-passage--speaking {
+  outline: 2px solid var(--cngx-color-primary, var(--cngx-ex-focus, #2563eb));
+  outline-offset: 2px;
+}
+.demo-speak-reading-badge {
+  position: absolute;
+  top: -0.7rem;
+  right: 0.5rem;
+  padding: 0.05rem 0.5rem;
+  border-radius: 999px;
+  background: var(--cngx-color-primary, var(--cngx-ex-focus, #2563eb));
+  color: var(--cngx-color-surface, var(--cngx-ex-surface, #fff));
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.demo-speak-reading-pulse {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 0.4rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--cngx-color-primary, #2563eb) 12%, transparent);
+  color: var(--cngx-color-primary, var(--cngx-ex-focus, #2563eb));
+  font-size: 0.6875rem;
+  font-weight: 600;
+}
+.demo-speak-hear-btn--active {
+  background: var(--cngx-color-danger, #b00020);
+  color: var(--cngx-color-surface, var(--cngx-ex-surface, #fff));
+}
+
+// CngxToggle caption strip beneath the basic two-way demo. The toggle
+// component already ships a track/thumb skin, so the story only needs a
+// muted caption colour that follows the cngx text-muted token.
+.demo-toggle-caption {
+  font-size: 0.875em;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted, #6b7280));
 }

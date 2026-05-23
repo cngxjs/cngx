@@ -376,5 +376,5 @@ export class HelpIconComponent {
 - [API on compodocx](https://cngxjs.github.io/cngx/)
 - [CngxPressable](../ripple/) - Press feedback (pointer-down)
 - [CngxRipple](../ripple/) - Ripple animation (pointer-down)
-- Demo: `examples/stories/common/hoverable-demo/`
+- Demo: `examples/stories/common/interactive/hoverable/`
 - Tests: `projects/common/interactive/hoverable/hoverable.directive.spec.ts`

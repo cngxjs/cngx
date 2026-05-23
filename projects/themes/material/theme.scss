@@ -47,6 +47,7 @@
 @use './interactive-controls-theme' as controls;
 @use './mat-treetable-theme' as mat-treetable;
 @use './metric-theme' as metric;
+@use './option-theme' as option;
 @use './popover-panel-theme' as popover-panel;
 @use './ripple-theme' as ripple;
 @use './select-theme' as select;
@@ -87,6 +88,7 @@
   @include icon.theme($theme);
   @include mat-treetable.theme($theme);
   @include metric.theme($theme);
+  @include option.theme($theme);
   @include popover-panel.theme($theme);
   @include ripple.theme($theme);
   @include select.theme($theme);

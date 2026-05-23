@@ -1,13 +1,17 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Basic — Uncontrolled',
+  title: 'CngxDisclosure: basic uncontrolled',
   subtitle: 'Click the trigger or press <strong>Enter</strong>/<strong>Space</strong> to toggle. <code>aria-expanded</code> and <code>aria-controls</code> are set automatically.',
-  description: 'Generic expand/collapse atom. Manages aria-expanded, keyboard interaction (Enter, Space, click), and controlled+uncontrolled state. Usable for accordions, FAQs, nav groups, collapsible panels.',
+  description: 'Default uncontrolled mode: the directive owns its open/closed state internally. No signal binding needed - just attach <code>cngxDisclosure</code> to a trigger and let the consumer render content conditionally on <code>opened()</code>.',
   level: 'atom',
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
   focus: ['a11y-pattern', 'behavior'],
+  references: [
+    { label: 'WAI-ARIA APG: Disclosure (Show/Hide)', href: 'https://www.w3.org/WAI/ARIA/apg/patterns/disclosure/' },
+    { label: 'WCAG 2.1.1 Keyboard (Level A)', href: 'https://www.w3.org/WAI/WCAG21/Understanding/keyboard.html' },
+  ],
   apiComponents: [
     'CngxDisclosure',
   ],
@@ -19,8 +23,8 @@ export const STORY: DemoSpec = {
     {{ d.opened() ? 'Collapse' : 'Expand' }} answer
   </button>
   @if (d.opened()) {
-    <div id="faq-1" style="padding: 0.75rem; margin-top: 0.5rem; border-left: 3px solid var(--interactive, #f5a623); background: var(--cngx-surface-alt, #f9fafb);">
-      <p style="margin: 0; font-size: 0.875rem;">This content is revealed by the disclosure trigger above.</p>
+    <div id="faq-1" class="demo-disclosure-panel" style="margin-top: 0.5rem;">
+      <p style="margin: 0;">This content is revealed by the disclosure trigger above.</p>
     </div>
   }`,
   templateChrome: `<div class="status-row" style="margin-top: 0.5rem;">

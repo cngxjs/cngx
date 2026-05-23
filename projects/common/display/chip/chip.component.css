@@ -137,12 +137,17 @@
 
   /**
    * Focus-ring shorthand applied via `outline` on `:focus-visible`.
+   * Defaults to the brand primary so the ring contrasts with the chip's
+   * own tinted fill (selected or unkeyed) instead of inheriting
+   * `currentColor`, which would render the ring in the text color and
+   * read as a generic dark border on top of the orange fill.
    * @group State / Focus
+   * @see [[--cngx-color-primary]]
    */
   @property --cngx-chip-focus-outline {
     syntax: '*';
     inherits: false;
-    initial-value: 2px solid currentColor;
+    initial-value: 2px solid oklch(0.66 0.19 50);
   }
 
   /**
@@ -401,7 +406,7 @@
       color: var(--cngx-chip-hover-color, inherit);
     }
     :scope:focus-visible {
-      outline: var(--cngx-chip-focus-outline, 2px solid currentColor);
+      outline: var(--cngx-chip-focus-outline, 2px solid var(--cngx-color-primary, oklch(0.66 0.19 50)));
       outline-offset: var(--cngx-chip-focus-outline-offset, 2px);
     }
     :scope[aria-selected='true'],

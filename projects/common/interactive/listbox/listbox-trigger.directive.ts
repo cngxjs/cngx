@@ -31,7 +31,7 @@ interface PopoverController {
  * | open | ArrowDown / ArrowUp / Home / End | delegate to AD primitives |
  * | open | Enter / Space | activate; close if `closeOnSelect()` |
  * | any | Escape | close and restore focus to trigger |
- * <example-url>http://localhost:4200/#/common/interactive/listbox-trigger/select-dropdown</example-url>
+ * <example-url>http://localhost:4200/#/common/interactive/listbox/trigger/select-dropdown</example-url>
  */
 @Directive({
   selector: '[cngxListboxTrigger]',

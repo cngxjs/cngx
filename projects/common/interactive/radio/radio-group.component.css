@@ -23,6 +23,10 @@
       display: inline-flex;
       flex-direction: column;
       gap: var(--cngx-radio-group-gap, var(--cngx-space-sm, 0.5rem));
+      /* Anchor to line-box top so the host position does not shift when
+         the first leaf's indicator paints / unpaints its dot (the dot's
+         appearance changes the inline-flex baseline by ~2px). */
+      vertical-align: top;
     }
 
     :scope.cngx-radio-group--horizontal {

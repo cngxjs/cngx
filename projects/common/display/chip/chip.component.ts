@@ -38,11 +38,11 @@ import { nextUid } from '@cngx/core/utils';
  * <example-url>http://localhost:4200/#/common/display/chip/removable</example-url>
  * <example-url>http://localhost:4200/#/common/display/chip/color-palette</example-url>
  * <example-url>http://localhost:4200/#/common/display/chip/custom-close-icon</example-url>
- * <example-url>http://localhost:4200/#/common/interactive/chip-group/basic-pick-exactly-one-size</example-url>
- * <example-url>http://localhost:4200/#/common/interactive/chip-interaction/basic-toggle-on-click-space-or-enter</example-url>
- * <example-url>http://localhost:4200/#/common/interactive/chip-interaction/disabled-state</example-url>
- * <example-url>http://localhost:4200/#/common/interactive/chip-interaction/removable-with-removerequest-on-backspace-delete</example-url>
- * <example-url>http://localhost:4200/#/common/interactive/multi-chip-group/multi-select-chips-with-selection-count</example-url>
+ * <example-url>http://localhost:4200/#/common/interactive/chip/group/basic-pick-exactly-one-size</example-url>
+ * <example-url>http://localhost:4200/#/common/interactive/chip/interaction/basic-toggle-on-click-space-or-enter</example-url>
+ * <example-url>http://localhost:4200/#/common/interactive/chip/interaction/disabled-state</example-url>
+ * <example-url>http://localhost:4200/#/common/interactive/chip/interaction/removable-with-removerequest-on-backspace-delete</example-url>
+ * <example-url>http://localhost:4200/#/common/interactive/chip/multi-group/multi-select-chips-with-selection-count</example-url>
  */
 @Component({
   selector: 'cngx-chip',
