@@ -13,20 +13,23 @@ import { computed, Directive, input, output, signal } from '@angular/core';
  * directive or to a dedicated twisty button.
  *
  * ```html
- * <div
- *   role="treeitem"
- *   cngxExpandable
- *   [cngxExpandableOpen]="ctrl.isExpanded(id)()"
- *   [controls]="childrenId"
- * >
- *   <button
- *     type="button"
- *     tabindex="-1"
- *     (click)="ctrl.toggle(id)"
- *   >▸</button>
- *   <span>{{ label }}</span>
+ * <div role="tree" aria-label="Files">
+ *   <div
+ *     role="treeitem"
+ *     aria-level="1"
+ *     cngxExpandable
+ *     [cngxExpandableOpen]="ctrl.isExpanded(id)()"
+ *     [controls]="childrenId"
+ *   >
+ *     <button
+ *       type="button"
+ *       tabindex="-1"
+ *       (click)="ctrl.toggle(id)"
+ *     >▸</button>
+ *     <span>{{ label }}</span>
+ *   </div>
+ *   <div [id]="childrenId" [hidden]="!ctrl.isExpanded(id)()">…</div>
  * </div>
- * <div [id]="childrenId" [hidden]="!ctrl.isExpanded(id)()">…</div>
  * ```
  */
 @Directive({

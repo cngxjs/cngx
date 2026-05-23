@@ -13,28 +13,39 @@ import { CngxExpandable } from '@cngx/common/interactive';
 Uncontrolled, toggled via a sibling button:
 
 ```html
-<div cngxExpandable #row="cngxExpandable" [controls]="'children-1'" role="treeitem">
-  <button type="button" tabindex="-1" (click)="row.toggle()">
-    {{ row.expanded() ? '▾' : '▸' }}
-  </button>
-  <span>Documents</span>
+<div role="tree" aria-label="Files">
+  <div
+    role="treeitem"
+    aria-level="1"
+    cngxExpandable
+    #row="cngxExpandable"
+    [controls]="'children-1'"
+  >
+    <button type="button" tabindex="-1" (click)="row.toggle()">
+      {{ row.expanded() ? '▾' : '▸' }}
+    </button>
+    <span>Documents</span>
+  </div>
+  <div id="children-1" [hidden]="!row.expanded()">…</div>
 </div>
-<div id="children-1" [hidden]="!row.expanded()">…</div>
 ```
 
 Controlled by a tree controller. The bound input wins over internal state:
 
 ```html
-<div
-  role="treeitem"
-  cngxExpandable
-  [cngxExpandableOpen]="ctrl.isExpanded(id)()"
-  [controls]="childrenId"
->
-  <button type="button" tabindex="-1" (click)="ctrl.toggle(id)">▸</button>
-  <span>{{ label }}</span>
+<div role="tree" aria-label="Files">
+  <div
+    role="treeitem"
+    aria-level="1"
+    cngxExpandable
+    [cngxExpandableOpen]="ctrl.isExpanded(id)()"
+    [controls]="childrenId"
+  >
+    <button type="button" tabindex="-1" (click)="ctrl.toggle(id)">▸</button>
+    <span>{{ label }}</span>
+  </div>
+  <div [id]="childrenId" [hidden]="!ctrl.isExpanded(id)()">…</div>
 </div>
-<div [id]="childrenId" [hidden]="!ctrl.isExpanded(id)()">…</div>
 ```
 
 ## Accessibility
