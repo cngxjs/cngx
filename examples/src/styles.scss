@@ -746,6 +746,28 @@ html.dark .cngx-ex-tag[data-dim='stability'][data-value='deprecated'] {
   font-size: 0.875rem;
 }
 
+// Container framing for the cngxActiveDescendant option demos. The cngx
+// library ships option state classes (.cngx-option--highlighted etc.) via
+// cngx-listbox.css, but those rules attach to the option itself; an
+// AD-only container (no [cngxListbox]) still needs its own surface +
+// focus ring. Demos under common/interactive/option share this class so
+// the flat + grouped stories render the same shell.
+.demo-ad-listbox {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-width: 260px;
+  padding: 4px;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #d0d5dd));
+  border-radius: var(--cngx-radius-md, 8px);
+  outline: none;
+  background: var(--cngx-color-surface, var(--cngx-ex-surface, #fff));
+}
+.demo-ad-listbox:focus-visible {
+  outline: 2px solid var(--cngx-color-primary, var(--cngx-ex-accent, #4a8cff));
+  outline-offset: 2px;
+}
+
 button.chip--icon-close {
   padding: 2px 8px;
 }
