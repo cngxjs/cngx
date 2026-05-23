@@ -21,27 +21,30 @@ export const STORY: DemoSpec = {
     { label: 'WAI-ARIA APG: Disclosure pattern', href: 'https://www.w3.org/WAI/ARIA/apg/patterns/disclosure/' },
   ],
   template: `
-  <div
-    role="treeitem"
-    cngxExpandable
-    #e="cngxExpandable"
-    [controls]="'expandable-demo-children'"
-    style="display:flex; align-items:center; gap:8px"
-  >
-    <button type="button" tabindex="-1" aria-label="Toggle children" (click)="e.toggle()">
-      {{ e.expanded() ? '▾' : '▸' }}
-    </button>
-    <span>Parent row</span>
-  </div>
-  <ul
-    id="expandable-demo-children"
-    [hidden]="!e.expanded()"
-    style="margin:8px 0 0 1.5rem"
-  >
-    <li>Child row A</li>
-    <li>Child row B</li>
-    <li>Child row C</li>
-  </ul>`,
+  <div role="tree" aria-label="Files">
+    <div
+      role="treeitem"
+      aria-level="1"
+      cngxExpandable
+      #e="cngxExpandable"
+      [controls]="'expandable-demo-children'"
+      style="display:flex; align-items:center; gap:8px"
+    >
+      <button type="button" aria-label="Toggle children" (click)="e.toggle()">
+        {{ e.expanded() ? '▾' : '▸' }}
+      </button>
+      <span>Parent row</span>
+    </div>
+    <ul
+      id="expandable-demo-children"
+      [hidden]="!e.expanded()"
+      style="margin:8px 0 0 1.5rem"
+    >
+      <li>Child row A</li>
+      <li>Child row B</li>
+      <li>Child row C</li>
+    </ul>
+  </div>`,
   templateChrome: `
   <div class="event-grid" style="margin-top:12px">
     <div class="event-row">
