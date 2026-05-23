@@ -1,19 +1,17 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxMediaQuery — Viewport Breakpoints',
-  subtitle: '<code>[cngxMediaQuery]</code> wraps <code>window.matchMedia()</code> as a reactive signal with automatic cleanup. Use this when component logic (not just CSS) needs to respond to viewport or preference changes — e.g. switching between a chart and a table on mobile, or loading different data on narrow screens. For pure styling, CSS <code>@media</code> or <code>@container</code> queries are preferred. Resize your browser to see the signals update live.',
-  description: 'Reactive media query directive for viewport breakpoints and user preferences. Exposes a matches signal that updates live — use when CSS alone cannot drive component logic.',
+  title: 'CngxMediaQuery: Viewport breakpoints',
+  subtitle:
+    '<code>[cngxMediaQuery]</code> wraps <code>window.matchMedia()</code> as a reactive signal with automatic cleanup. Use it when component logic (not just CSS) needs to respond to viewport or preference changes - for example switching between a chart and a table on mobile, or loading different data on narrow screens. For pure styling, CSS <code>@media</code> or <code>@container</code> queries are preferred. Resize the browser to see the signals update live.',
+  description:
+    'Five sibling [cngxMediaQuery] hosts watch three viewport breakpoints plus prefers-reduced-motion and prefers-color-scheme. Each exposes its matches() signal to the status badges so the live result of every query is visible at once.',
   level: 'atom',
   audience: ['dev', 'design'],
   artifact: 'building-block',
   focus: ['behavior'],
-  apiComponents: [
-    'CngxMediaQuery',
-  ],
-  moduleImports: [
-    'import { CngxMediaQuery } from \'@cngx/common\';',
-  ],
+  apiComponents: ['CngxMediaQuery'],
+  moduleImports: ["import { CngxMediaQuery } from '@cngx/common/layout';"],
   imports: ['CngxMediaQuery'],
   template: `  <div cngxMediaQuery="(min-width: 768px)" #tablet="cngxMediaQuery"></div>
   <div cngxMediaQuery="(min-width: 1024px)" #desktop="cngxMediaQuery"></div>

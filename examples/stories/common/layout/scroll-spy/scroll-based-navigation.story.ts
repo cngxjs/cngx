@@ -1,45 +1,49 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Scroll-Based Navigation',
-  subtitle: 'Scroll the container. The nav highlights the most visible section. Active section ID is exposed as a signal.',
-  description: 'Tracks which section is most visible in the viewport. Ideal for scroll-based navigation highlighting.',
+  title: 'CngxScrollSpy: Scroll based navigation',
+  subtitle:
+    'Scroll the container. The nav highlights the most visible section and the active section ID is exposed as a signal that doubles as an <code>aria-current</code> source.',
+  description:
+    'Sticky nav whose [cngxScrollSpy] watches four section IDs inside a scroll container. The directive emits the section with the highest intersection ratio; the demo binds activeId() both to the visual chip state and to aria-current on the matching link.',
   level: 'atom',
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
   focus: ['behavior', 'a11y-pattern'],
-  apiComponents: [
-    'CngxScrollSpy',
+  references: [
+    {
+      label: 'WAI-ARIA aria-current',
+      href: 'https://www.w3.org/TR/wai-aria-1.2/#aria-current',
+    },
   ],
-  moduleImports: [
-    'import { CngxScrollSpy } from \'@cngx/common/layout\';',
-  ],
+  apiComponents: ['CngxScrollSpy'],
+  moduleImports: ["import { CngxScrollSpy } from '@cngx/common/layout';"],
   imports: ['CngxScrollSpy'],
   setup: `protected readonly sectionIds = ['spy-intro', 'spy-features', 'spy-pricing', 'spy-faq'];
-  protected scrollTo(event: Event, id: string): void {
-    event.preventDefault();
+  protected scrollTo(id: string): void {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }`,
   template: `  <div style="display:flex;gap:16px;max-width:600px">
     <nav [cngxScrollSpy]="sectionIds" [root]="'.spy-container'" [threshold]="0.1" #spy="cngxScrollSpy"
-         style="position:sticky;top:0;display:flex;flex-direction:column;gap:4px;min-width:100px;padding-top:8px">
+         aria-label="Section navigation"
+         style="position:sticky;top:0;display:flex;flex-direction:column;gap:4px;min-width:100px">
       @for (id of sectionIds; track id) {
-        <a href="javascript:void(0)"
-           (click)="scrollTo($event, id)"
-           class="chip"
-           [class.chip--active]="spy.activeId() === id"
-           style="text-decoration:none;font-size:0.8125rem;text-transform:capitalize">
+        <button type="button"
+                class="chip demo-spy-nav-link"
+                [attr.aria-current]="spy.activeId() === id ? 'location' : null"
+                [attr.aria-pressed]="spy.activeId() === id"
+                (click)="scrollTo(id)">
           {{ id.replace('spy-', '') }}
-        </a>
+        </button>
       }
     </nav>
-    <div class="spy-container" style="height:300px;overflow-y:auto;flex:1;border:1px solid var(--cngx-color-border,#ddd);border-radius:8px">
+    <div class="spy-container demo-spy-container" style="height:300px;overflow-y:auto;flex:1">
       @for (id of sectionIds; track id) {
-        <section [id]="id" style="min-height:200px;padding:20px;border-bottom:1px solid var(--cngx-color-border,#eee)">
-          <h3 style="margin:0 0 8px;text-transform:capitalize">{{ id.replace('spy-', '') }}</h3>
-          <p style="color:var(--cngx-text-secondary,#666);font-size:0.875rem">
+        <section [id]="id" class="demo-spy-section" style="min-height:200px">
+          <h3>{{ id.replace('spy-', '') }}</h3>
+          <p>
             Scroll through this section to see the nav update.
-            This section has enough height to demonstrate the intersection ratio tracking.
+            Each section is tall enough to demonstrate the intersection-ratio tracking.
           </p>
         </section>
       }

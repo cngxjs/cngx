@@ -1,19 +1,27 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Auto-Toggle',
-  subtitle: 'The "Show more" button appears only because the content exceeds 3 lines. Short text would show no button.',
-  description: 'Molecule wrapping CngxTruncate with a built-in expand/collapse toggle and aria-expanded.',
-  level: 'atom',
-  audience: ['dev'],
-  artifact: 'building-block',
-  focus: ['behavior'],
-  apiComponents: [
-    'CngxExpandableText',
+  title: 'CngxExpandableText: Auto toggle',
+  subtitle:
+    'The "Show more" button appears only because the content exceeds 3 lines. Short text would render with no button.',
+  description:
+    'Disclosure pattern that wraps long copy in a three-line clamp and renders the toggle only when CngxTruncate reports the content as actually clamped. The button carries aria-expanded and writes the [(expanded)] model.',
+  level: 'molecule',
+  audience: ['dev', 'a11y'],
+  artifact: 'standalone',
+  focus: ['behavior', 'a11y-pattern'],
+  references: [
+    {
+      label: 'WAI-ARIA APG: Disclosure Pattern',
+      href: 'https://www.w3.org/WAI/ARIA/apg/patterns/disclosure/',
+    },
+    {
+      label: 'WAI-ARIA aria-expanded',
+      href: 'https://www.w3.org/TR/wai-aria-1.2/#aria-expanded',
+    },
   ],
-  moduleImports: [
-    'import { CngxExpandableText } from \'@cngx/common/layout\';',
-  ],
+  apiComponents: ['CngxExpandableText'],
+  moduleImports: ["import { CngxExpandableText } from '@cngx/common/layout';"],
   imports: ['CngxExpandableText'],
   template: `  <div style="max-width:400px">
     <cngx-expandable-text [lines]="3" #exp="cngxExpandableText">

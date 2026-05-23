@@ -27,7 +27,7 @@ export const STORY: DemoSpec = {
   <div class="filter-row">
     <span class="filter-label">Mode:</span>
     @for (m of modes; track m) {
-      <button class="chip" [class.chip--active]="navMode() === m"
+      <button type="button" class="chip" [attr.aria-pressed]="navMode() === m"
               (click)="navMode.set(m)">{{ m }}</button>
     }
     <button class="sort-btn" (click)="navOpen.set(!navOpen())">

@@ -1,43 +1,41 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxScrollLock — Toggle',
-  subtitle: '<code>[cngxScrollLock]</code> sets <code>overflow: hidden</code> and <code>scrollbar-gutter: stable</code> on the document to prevent scrolling while avoiding layout shift from the scrollbar disappearing.',
-  description: 'Prevents body scrolling when active. Essential for modals, drawers, and overlays.',
+  title: 'CngxScrollLock: Toggle',
+  subtitle:
+    '<code>[cngxScrollLock]</code> sets <code>overflow: hidden</code> and <code>scrollbar-gutter: stable</code> on the document to prevent scrolling while avoiding the layout shift from the scrollbar disappearing.',
+  description:
+    'Toggles [cngxScrollLock] on a wrapper around a 20-row scroll list. While locked, the document gets overflow:hidden plus a stable scrollbar gutter; the chip flips into the danger-red state so the lock is visible alongside the actual scroll behaviour.',
   level: 'atom',
-  audience: ['dev', 'a11y'],
+  audience: ['dev'],
   artifact: 'building-block',
-  focus: ['behavior', 'a11y-pattern'],
-  apiComponents: [
-    'CngxScrollLock',
-  ],
-  moduleImports: [
-    'import { CngxScrollLock } from \'@cngx/common\';',
-  ],
+  focus: ['behavior'],
+  apiComponents: ['CngxScrollLock'],
+  moduleImports: ["import { CngxScrollLock } from '@cngx/common/layout';"],
   imports: ['CngxScrollLock'],
   setup: `protected readonly locked = signal(false);`,
   template: `
   <div [cngxScrollLock]="locked()">
     <div style="display:flex;gap:12px;align-items:center;margin-bottom:16px">
-      <button class="chip" (click)="locked.set(!locked())"
-        [style.background]="locked() ? 'var(--cngx-alert-error-icon,#ef4444)' : ''"
-        [style.color]="locked() ? '#fff' : ''">
+      <button type="button" class="chip demo-scroll-lock-chip"
+              [attr.aria-pressed]="locked()"
+              (click)="locked.set(!locked())">
         {{ locked() ? 'Unlock scroll' : 'Lock scroll' }}
       </button>
       <span class="status-badge" [class.active]="locked()">
-        {{ locked() ? 'LOCKED — try scrolling the page' : 'unlocked' }}
+        {{ locked() ? 'LOCKED - try scrolling the page' : 'unlocked' }}
       </span>
     </div>
 
-    <p style="font-size:0.875rem;color:var(--cngx-color-text-muted);margin:0 0 16px">
-      Toggle the lock and try scrolling this page. The body gets <code>overflow: hidden</code>
+    <p class="demo-scroll-lock-hint" style="margin:0 0 16px">
+      Toggle the lock and try scrolling this page. The document gets <code>overflow: hidden</code>
       while <code>scrollbar-gutter: stable</code> prevents layout shift from the scrollbar disappearing.
-      This is ref-counted — nested locks (e.g. stacked dialogs) work correctly.
+      The lock is ref-counted, so nested locks (for example stacked dialogs) compose without losing the original styles.
     </p>
 
     <div style="display:flex;flex-direction:column;gap:8px">
       @for (i of [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]; track i) {
-        <div style="padding:12px 16px;background:var(--cngx-card-bg,#f8fafc);border-radius:6px;border:1px solid var(--cngx-color-border,#eee)">
+        <div class="demo-scroll-lock-row">
           Scrollable content row {{ i }}
         </div>
       }

@@ -1,19 +1,17 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Custom Labels',
-  subtitle: 'German labels, 2-line limit.',
-  description: 'Molecule wrapping CngxTruncate with a built-in expand/collapse toggle and aria-expanded.',
-  level: 'atom',
-  audience: ['dev'],
-  artifact: 'building-block',
-  focus: ['behavior'],
-  apiComponents: [
-    'CngxExpandableText',
-  ],
-  moduleImports: [
-    'import { CngxExpandableText } from \'@cngx/common/layout\';',
-  ],
+  title: 'CngxExpandableText: Custom labels',
+  subtitle:
+    'Override <code>moreLabel</code> and <code>lessLabel</code> for localized copy. Two-line clamp shown with German labels.',
+  description:
+    'Swaps the default "Show more" / "Show less" strings via the moreLabel and lessLabel inputs so the toggle reads in the consumer locale. The default English copy stays in the library; localized copy is consumer-supplied.',
+  level: 'molecule',
+  audience: ['dev', 'design'],
+  artifact: 'standalone',
+  focus: ['behavior', 'visual-variants'],
+  apiComponents: ['CngxExpandableText'],
+  moduleImports: ["import { CngxExpandableText } from '@cngx/common/layout';"],
   imports: ['CngxExpandableText'],
   template: `
   <div style="max-width:400px">

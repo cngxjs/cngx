@@ -1,35 +1,24 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxIntersectionObserver — Scroll Sentinel',
-  subtitle: '<code>[cngxIntersectionObserver]</code> wraps the IntersectionObserver API. <code>isIntersecting()</code> is <code>true</code> when any part of the element is visible. <code>intersectionRatio()</code> is a float from <code>0.0</code> (invisible) to <code>1.0</code> (fully visible). <code>(entered)</code> fires when the element goes from invisible to visible, <code>(left)</code> fires the opposite. Set <code>[root]</code> to observe within a scroll container instead of the viewport.',
-  description: 'Tracks whether the host element is visible in the viewport. Exposes isIntersecting, intersectionRatio, and entered/left events as signals.',
+  title: 'CngxIntersectionObserver: Scroll sentinel',
+  subtitle:
+    '<code>[cngxIntersectionObserver]</code> wraps the IntersectionObserver API. <code>isIntersecting()</code> is true when any pixel of the host is visible, <code>intersectionRatio()</code> is a 0-1 fraction. <code>(entered)</code> and <code>(left)</code> fire on edge transitions; <code>[root]</code> scopes the observer to a scroll container.',
+  description:
+    'Observes a sentinel inside a scroll container with a granular threshold ladder. The host signals isIntersecting() and intersectionRatio() drive the background swap, while (entered) and (left) increment the counters in the readout.',
   level: 'atom',
   audience: ['dev'],
   artifact: 'building-block',
   focus: ['behavior'],
-  apiComponents: [
-    'CngxIntersectionObserver',
-  ],
-  moduleImports: [
-    'import { DecimalPipe } from \'@angular/common\';',
-  ],
+  apiComponents: ['CngxIntersectionObserver'],
+  moduleImports: ["import { DecimalPipe } from '@angular/common';"],
   imports: ['CngxIntersectionObserver', 'DecimalPipe'],
   setup: `protected enterCount = signal(0);
   protected leaveCount = signal(0);
   protected readonly thresholds = Array.from({ length: 21 }, (_, i) => i / 20);`,
-  template: `  <div
-    class="io-scroll-root"
-    style="
-      height: 200px;
-      overflow-y: auto;
-      border: 1px solid var(--cngx-color-border, #ddd);
-      border-radius: 6px;
-      padding: 0 16px;
-    "
-  >
-    <div style="height: 400px; display: flex; align-items: flex-end; padding-bottom: 16px; color: var(--cngx-text-secondary, #666);">
-      ↓ Scroll down to reach the sentinel
+  template: `  <div class="io-scroll-root demo-io-frame">
+    <div class="demo-io-spacer demo-io-spacer--top">
+      Scroll down to reach the sentinel
     </div>
 
     <div
@@ -40,30 +29,25 @@ export const STORY: DemoSpec = {
       [threshold]="thresholds"
       (entered)="enterCount.update(n => n + 1)"
       (left)="leaveCount.update(n => n + 1)"
-      style="
-        padding: 16px;
-        text-align: center;
-        border-radius: 6px;
-        transition: background 0.3s;
-      "
-      [style.background]="io.isIntersecting() ? 'var(--cngx-accent, #f5a623)' : 'var(--cngx-surface-alt, #f8f9fa)'"
+      class="demo-io-sentinel"
+      [class.demo-io-sentinel--visible]="io.isIntersecting()"
     >
       {{ io.isIntersecting() ? 'Visible!' : 'Hidden' }}
-      — ratio: {{ io.intersectionRatio() | number:'1.2-2' }}
+      - ratio: {{ io.intersectionRatio() | number:'1.2-2' }}
     </div>
 
-    <div style="height: 400px; display: flex; align-items: flex-start; padding-top: 16px; color: var(--cngx-text-secondary, #666);">
-      ↑ Scroll back up
+    <div class="demo-io-spacer demo-io-spacer--bottom">
+      Scroll back up
     </div>
   </div>`,
   templateChrome: `<div class="event-grid" style="margin-top: 12px">
     <div class="event-row">
       <span class="event-label">entered</span>
-      <span class="event-value">{{ enterCount() }}×</span>
+      <span class="event-value">{{ enterCount() }}x</span>
     </div>
     <div class="event-row">
       <span class="event-label">left</span>
-      <span class="event-value">{{ leaveCount() }}×</span>
+      <span class="event-value">{{ leaveCount() }}x</span>
     </div>
   </div>`,
 };
