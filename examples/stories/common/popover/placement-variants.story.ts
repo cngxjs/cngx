@@ -1,14 +1,15 @@
 import type { DemoSpec } from '../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Placement Variants',
-  subtitle: 'All 12 PopoverPlacement values render edge-aligned via position-area.',
+  title: 'CngxPopover: Placement variants',
+  subtitle:
+    'Twelve trigger and popover pairs, one per <code>PopoverPlacement</code> value. Click any chip to open its placement and verify the <code>position-area</code> mapping.',
   description:
-    'A 4x3 matrix of every PopoverPlacement value against a single anchor. Each popover renders auto-open so the layout proves the position-area mapping table is spec-correct. Hover or click the central anchor to toggle the matrix.',
-  level: 'atom',
-  audience: ['dev', 'design', 'a11y'],
+    'A 3x4 grid grouped by direction (top, left, right, bottom). Each pair proves one entry of the <code>POSITION_AREA</code> table: cardinal placements resolve to the edge-centred case via <code>span-all</code>; <code>*-start</code> / <code>*-end</code> resolve to a <code>&lt;direction&gt; &lt;span-*&gt;</code> pair. Convention matches Floating UI: <code>*-start</code> aligns the popover\'s start edge with the anchor\'s start edge (popover extends inward), <code>*-end</code> aligns the end edge. The demo tile is wider than the trigger chip so the alignment edge is visible.',
+  level: 'molecule',
+  audience: ['dev', 'design'],
   artifact: 'building-block',
-  focus: ['composition', 'a11y-pattern', 'behavior'],
+  focus: ['visual-variants', 'composition'],
   apiComponents: ['CngxPopover', 'CngxPopoverTrigger'],
   moduleImports: [
     "import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';",
@@ -17,30 +18,21 @@ export const STORY: DemoSpec = {
   imports: ['CngxPopover', 'CngxPopoverTrigger'],
   setup: `protected readonly placements: readonly PopoverPlacement[] = [
     'top-start', 'top', 'top-end',
-    'left-start', 'right-start', 'right',
-    'left', 'right-end', 'left-end',
+    'left-start', 'left', 'left-end',
+    'right-start', 'right', 'right-end',
     'bottom-start', 'bottom', 'bottom-end',
-  ];
-
-  protected readonly open = signal(false);
-
-  protected toggle(): void {
-    this.open.update((v) => !v);
-  }`,
+  ];`,
   template: `
-  <div style="display:flex;justify-content:center;align-items:center;min-height:320px;padding:80px 16px">
-    <div style="position:relative">
-      <button type="button" (click)="toggle()" class="chip">
-        {{ open() ? 'Hide all 12' : 'Show all 12' }}
-      </button>
-      @for (p of placements; track p) {
-        <div cngxPopover
-             [cngxPopoverOpen]="open()"
-             [placement]="p"
-             style="padding:6px 10px;font-size:0.75rem;border:1px solid currentColor;border-radius:4px;background:Canvas">
+  <div class="demo-popover-placement-grid">
+    @for (p of placements; track p) {
+      <div class="demo-popover-placement-cell">
+        <button type="button" [cngxPopoverTrigger]="pop" (click)="pop.toggle()" class="chip">
+          {{ p }}
+        </button>
+        <div cngxPopover #pop="cngxPopover" [placement]="p" class="demo-popover-tile">
           {{ p }}
         </div>
-      }
-    </div>
+      </div>
+    }
   </div>`,
 };

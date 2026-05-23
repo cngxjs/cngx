@@ -1,22 +1,30 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Basic Tooltip',
-  subtitle: 'Hover or focus the button to see the tooltip. Default placement is <code>top</code>, default delay is 300ms.',
-  description: 'String-input tooltip directive using the native Popover API. CSS Anchor Positioning, WCAG 1.4.13 compliant, SR-friendly.',
+  title: 'CngxTooltip: Basic tooltip',
+  subtitle:
+    'Hover or focus the button to reveal the tooltip. Default placement is <code>top</code>, default open delay is 300 ms.',
+  description:
+    'A bare <code>cngxTooltip="..."</code> directive on three buttons. The directive creates a sibling <code>role="tooltip"</code> element, points the trigger\'s <code>aria-describedby</code> at it while visible, and unwinds both on blur or pointer leave.',
   level: 'atom',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
-  focus: ['visual-variants', 'a11y-pattern'],
-  apiComponents: [
-    'CngxTooltip',
+  focus: ['a11y-pattern', 'composition'],
+  references: [
+    {
+      label: 'WAI-ARIA APG: Tooltip',
+      href: 'https://www.w3.org/WAI/ARIA/apg/patterns/tooltip/',
+    },
+    {
+      label: 'WCAG 1.4.13 Content on Hover or Focus',
+      href: 'https://www.w3.org/WAI/WCAG21/Understanding/content-on-hover-or-focus.html',
+    },
   ],
-  moduleImports: [
-    'import { CngxTooltip } from \'@cngx/common/popover\';',
-  ],
+  apiComponents: ['CngxTooltip'],
+  moduleImports: ["import { CngxTooltip } from '@cngx/common/popover';"],
   imports: ['CngxTooltip'],
   template: `
-  <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;padding-top:40px">
+  <div class="demo-popover-stage--tall" style="display:flex;gap:16px;align-items:center;flex-wrap:wrap">
     <button cngxTooltip="Save your changes (Ctrl+S)" class="chip">Save</button>
     <button cngxTooltip="Undo last action (Ctrl+Z)" class="chip">Undo</button>
     <button cngxTooltip="Redo last action (Ctrl+Y)" class="chip">Redo</button>

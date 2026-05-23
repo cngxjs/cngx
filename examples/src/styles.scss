@@ -2459,3 +2459,111 @@ pre.code-block code {
   background: none;
   padding: 0;
 }
+
+// Demo-only stage padding so popover/tooltip stories have room above the
+// trigger row for the popover/tooltip to render without clipping the
+// example card. Layout-only — no thematic CSS in here.
+.demo-popover-stage {
+  padding-top: 20px;
+}
+.demo-popover-stage--tall {
+  padding-top: 40px;
+}
+
+// Demo-only surface for bare `[cngxPopover]` content. The directive ships
+// no host CSS by default (only `cngx-popover-panel` does) - these classes
+// give the unstyled popover a minimum readable surface so the demo focuses
+// on behaviour, not on raw browser popover defaults.
+.demo-popover-surface {
+  padding: 8px 12px;
+  font-size: 0.8125rem;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e5e7eb));
+  border-radius: 6px;
+  background: var(--cngx-color-surface, var(--cngx-ex-surface, Canvas));
+  color: var(--cngx-color-text, var(--cngx-ex-text, inherit));
+}
+
+// Menu list inside a bare `[cngxPopover]` - resets the UA list defaults
+// and sets a minimum width so the menu does not collapse to its widest
+// item only when the popover surrounds short labels.
+.demo-popover-menu {
+  list-style: none;
+  margin: 0;
+  padding: 4px 0;
+  min-width: 140px;
+}
+
+// Button row inside `.demo-popover-menu`. Hover state intentionally
+// muted; the focus ring is the browser default.
+.demo-popover-menu-item {
+  display: block;
+  width: 100%;
+  padding: 8px 16px;
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+}
+.demo-popover-menu-item:hover {
+  background: var(--cngx-ex-surface-alt, transparent);
+}
+
+// Placement-matrix preview tile - one per `PopoverPlacement` value.
+// Renders a small labelled chip so the auto-open matrix proves the
+// `position-area` mapping table without leaking colours from the host
+// page. The fixed `width` is deliberately wider than the trigger chip
+// so the start/end alignment edge is visually unambiguous.
+.demo-popover-tile {
+  width: 140px;
+  padding: 6px 10px;
+  font-size: 0.75rem;
+  text-align: center;
+  border: 1px solid currentColor;
+  border-radius: 4px;
+  background: var(--cngx-color-surface, var(--cngx-ex-surface, Canvas));
+  color: var(--cngx-color-text, var(--cngx-ex-text, inherit));
+}
+
+// Placement-matrix grid - presentation layout for the 12 trigger+popover
+// pairs. Pure demo chrome; a real consumer would render one popover at a
+// time. The wide gap and cell padding exist so each popover has room to
+// render without overlapping its neighbours.
+.demo-popover-placement-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 72px;
+  padding: 48px 16px;
+  justify-items: center;
+  align-items: center;
+}
+.demo-popover-placement-cell {
+  position: relative;
+  padding: 24px;
+}
+
+// Disabled-tooltip trigger gets a muted opacity so the disabled state is
+// visible alongside the enabled sibling. Visual-only - the `[enabled]`
+// input is what actually suppresses the tooltip.
+.demo-tooltip-disabled-chip {
+  opacity: 0.5;
+}
+
+// Caption above the keyboard-tooltip toolbar - muted so it reads as
+// instruction text rather than competing with the chip row.
+.demo-tooltip-caption {
+  font-size: 0.875rem;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted, #6b7280));
+  margin-bottom: 12px;
+}
+
+// Inline label wrapping the `cngxPopoverOpen` checkbox in the controlled
+// popover demo. Sits in the trigger row alongside the chip.
+.demo-popover-control-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.875rem;
+  cursor: pointer;
+}

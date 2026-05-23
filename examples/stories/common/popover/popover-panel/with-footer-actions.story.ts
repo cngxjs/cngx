@@ -1,32 +1,40 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'With Footer Actions',
-  subtitle: 'Use <code>cngx-popover-action</code> for dismiss and confirm buttons. Confirm buttons support async actions with status templates.',
-  description: 'Rich popover molecule with header/body/footer slots, variant styling, arrow, close button, content state templates, and async action buttons.',
-  level: 'molecule',
+  title: 'CngxPopoverPanel: With footer actions',
+  subtitle:
+    'Compose <code>cngx-popover-action</code> inside <code>cngxPopoverFooter</code>. <code>role="dismiss"</code> closes the panel; <code>role="confirm"</code> runs an async action with <code>cngxPending</code> / <code>cngxSucceeded</code> / <code>cngxFailed</code> templates.',
+  description:
+    'A confirm panel pairs a dismiss button with an async confirm. The confirm button drives <code>CngxAsyncClick</code> under the hood, so the projected templates swap based on the returned promise. The first popover resolves in 1.5s and renders the success template; the second rejects after 1s and surfaces the rejection value via <code>cngxFailed</code> with <code>$implicit</code>.',
+  level: 'organism',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
-  focus: ['visual-variants', 'composition'],
-  apiComponents: [
-    'CngxPopoverPanel',
-    'CngxPopoverAction',
-  ],
+  focus: ['async-state', 'composition'],
+  apiComponents: ['CngxPopoverPanel', 'CngxPopoverAction'],
   moduleImports: [
-    'import { CngxPopoverPanel, CngxPopoverTrigger, CngxPopoverHeader, CngxPopoverBody, CngxPopoverFooter, CngxPopoverAction } from \'@cngx/common/popover\';',
-    'import { CngxPending, CngxSucceeded, CngxFailed } from \'@cngx/common/interactive\';',
+    "import { CngxPopoverPanel, CngxPopoverTrigger, CngxPopoverHeader, CngxPopoverBody, CngxPopoverFooter, CngxPopoverAction } from '@cngx/common/popover';",
+    "import { CngxPending, CngxSucceeded, CngxFailed } from '@cngx/common/interactive';",
   ],
-  imports: ['CngxPopoverPanel', 'CngxPopoverTrigger', 'CngxPopoverHeader', 'CngxPopoverBody', 'CngxPopoverFooter', 'CngxPopoverAction', 'CngxPending', 'CngxSucceeded', 'CngxFailed'],
+  imports: [
+    'CngxPopoverPanel',
+    'CngxPopoverTrigger',
+    'CngxPopoverHeader',
+    'CngxPopoverBody',
+    'CngxPopoverFooter',
+    'CngxPopoverAction',
+    'CngxPending',
+    'CngxSucceeded',
+    'CngxFailed',
+  ],
   setup: `protected simulateSave = () => new Promise<void>(resolve => setTimeout(resolve, 1500));
   protected simulateDelete = () => new Promise<void>((_, reject) => setTimeout(() => reject('Permission denied'), 1000));`,
   template: `
-  <div style="display:flex;gap:16px;flex-wrap:wrap;padding-top:20px">
+  <div class="demo-popover-stage" style="display:flex;gap:16px;flex-wrap:wrap">
     <div>
       <button [cngxPopoverTrigger]="savePop.popover" (click)="savePop.popover.toggle()" class="chip">
         Save Confirm
       </button>
-      <cngx-popover-panel #savePop variant="info" [showClose]="true" [showArrow]="true"
-                          [hasFooter]="true" placement="bottom">
+      <cngx-popover-panel #savePop variant="info" [showClose]="true" [showArrow]="true" placement="bottom">
         <span cngxPopoverHeader>Save Changes?</span>
         <p cngxPopoverBody>Your unsaved changes will be saved to the server.</p>
         <div cngxPopoverFooter>
@@ -44,8 +52,7 @@ export const STORY: DemoSpec = {
       <button [cngxPopoverTrigger]="delPop.popover" (click)="delPop.popover.toggle()" class="chip">
         Delete Confirm
       </button>
-      <cngx-popover-panel #delPop variant="danger" [showClose]="true" [showArrow]="true"
-                          [hasFooter]="true" placement="bottom">
+      <cngx-popover-panel #delPop variant="danger" [showClose]="true" [showArrow]="true" placement="bottom">
         <span cngxPopoverHeader>Delete Item?</span>
         <p cngxPopoverBody>This action cannot be undone.</p>
         <div cngxPopoverFooter>

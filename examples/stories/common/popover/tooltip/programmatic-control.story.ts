@@ -1,22 +1,22 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Programmatic Control',
-  subtitle: 'Use <code>#tip="cngxTooltip"</code> to access <code>show()</code>, <code>hide()</code>, and <code>state()</code>.',
-  description: 'String-input tooltip directive using the native Popover API. CSS Anchor Positioning, WCAG 1.4.13 compliant, SR-friendly.',
+  title: 'CngxTooltip: Programmatic control',
+  subtitle:
+    '<code>[triggers]="\'manual\'"</code> opts the host out of the hover/focus listeners. <code>#tip="cngxTooltip"</code> exposes the directive instance for <code>show()</code> / <code>hide()</code> and the lifecycle <code>state()</code> signal.',
+  description:
+    'In manual mode the directive ignores hover and focus on the trigger; only <code>show()</code> / <code>hide()</code> open and close the tooltip. Escape still dismisses an open tooltip for keyboard a11y. Useful for app-state driven tooltips (validation hints, onboarding callouts) where pointer interaction should not interfere.',
   level: 'atom',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
-  focus: ['visual-variants', 'a11y-pattern'],
-  apiComponents: [
-    'CngxTooltip',
-  ],
-  moduleImports: [
-    'import { CngxTooltip } from \'@cngx/common/popover\';',
-  ],
+  focus: ['behavior', 'composition'],
+  apiComponents: ['CngxTooltip'],
+  moduleImports: ["import { CngxTooltip } from '@cngx/common/popover';"],
   imports: ['CngxTooltip'],
-  template: `  <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding-top:40px">
-    <button cngxTooltip="Programmatically controlled" #tip="cngxTooltip" class="chip">
+  template: `  <div class="demo-popover-stage--tall"
+       style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+    <button cngxTooltip="Programmatically controlled" [triggers]="'manual'" #tip="cngxTooltip"
+            class="chip">
       Target
     </button>
     <button (click)="tip.show()" class="chip" type="button">Show</button>
