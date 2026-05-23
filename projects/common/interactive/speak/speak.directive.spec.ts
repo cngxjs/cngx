@@ -29,7 +29,24 @@ class TestHost {
 
 describe('CngxSpeak', () => {
   beforeEach(() => {
-    vi.stubGlobal('speechSynthesis', { speak: vi.fn(), cancel: vi.fn() });
+    // performSpeak gates cancel() on `synth.speaking || synth.pending` to
+    // dodge Chrome's idle-cancel utterance-drop bug. The mock therefore
+    // has to track those flags so the "cancels previous speech" contract
+    // is observable.
+    const synth = {
+      speaking: false,
+      pending: false,
+      speak: vi.fn(),
+      cancel: vi.fn(),
+    };
+    synth.speak.mockImplementation(() => {
+      synth.speaking = true;
+    });
+    synth.cancel.mockImplementation(() => {
+      synth.speaking = false;
+      synth.pending = false;
+    });
+    vi.stubGlobal('speechSynthesis', synth);
     TestBed.configureTestingModule({ imports: [TestHost] });
   });
 
