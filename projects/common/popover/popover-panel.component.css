@@ -388,11 +388,15 @@
       pointer-events: none;
     }
 
-    /* Arrow placement — derived from the host's inline position-area. */
+    /* Arrow placement — derived from the host's inline position-area.
+       --cngx-popover-arrow-offset is written by CngxPopover from the
+       live trigger / panel geometry; the 50% fallback keeps the arrow
+       visually centred when the popover renders before the first
+       offset computation. */
     :scope[style*='position-area: bottom'] > .cngx-popover-panel__arrow,
     :scope[style*='position-area:bottom'] > .cngx-popover-panel__arrow {
       top: calc(var(--cngx-popover-panel-arrow-size, 8px) * -1);
-      left: 50%;
+      left: var(--cngx-popover-arrow-offset, 50%);
       margin-left: calc(var(--cngx-popover-panel-arrow-size, 8px) * -1);
       border-right: none;
       border-bottom: none;
@@ -400,7 +404,7 @@
     :scope[style*='position-area: top'] > .cngx-popover-panel__arrow,
     :scope[style*='position-area:top'] > .cngx-popover-panel__arrow {
       bottom: calc(var(--cngx-popover-panel-arrow-size, 8px) * -1);
-      left: 50%;
+      left: var(--cngx-popover-arrow-offset, 50%);
       margin-left: calc(var(--cngx-popover-panel-arrow-size, 8px) * -1);
       border-left: none;
       border-top: none;
@@ -408,7 +412,7 @@
     :scope[style*='position-area: left'] > .cngx-popover-panel__arrow,
     :scope[style*='position-area:left'] > .cngx-popover-panel__arrow {
       right: calc(var(--cngx-popover-panel-arrow-size, 8px) * -1);
-      top: 50%;
+      top: var(--cngx-popover-arrow-offset, 50%);
       margin-top: calc(var(--cngx-popover-panel-arrow-size, 8px) * -1);
       border-left: none;
       border-bottom: none;
@@ -416,7 +420,7 @@
     :scope[style*='position-area: right'] > .cngx-popover-panel__arrow,
     :scope[style*='position-area:right'] > .cngx-popover-panel__arrow {
       left: calc(var(--cngx-popover-panel-arrow-size, 8px) * -1);
-      top: 50%;
+      top: var(--cngx-popover-arrow-offset, 50%);
       margin-top: calc(var(--cngx-popover-panel-arrow-size, 8px) * -1);
       border-right: none;
       border-top: none;
