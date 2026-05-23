@@ -27,6 +27,19 @@ import type {
 /** Module-level registry of open popovers (insertion-ordered). */
 const openPopovers = new Set<CngxPopover>();
 
+/**
+ * Placements whose arrow tracks the trigger along the horizontal axis
+ * (panel sits above or below the anchor). The rest track vertically.
+ */
+const HORIZONTAL_ARROW_PLACEMENTS: ReadonlySet<PopoverPlacement> = new Set([
+  'top',
+  'top-start',
+  'top-end',
+  'bottom',
+  'bottom-start',
+  'bottom-end',
+]);
+
 /** Tracks which Documents already have the global Escape listener. */
 const escapeListenerDocs = new WeakSet<Document>();
 function installGlobalEscapeListener(doc: Document): void {
@@ -157,6 +170,7 @@ function warnMissingFloatingMiddleware(doc: Document): void {
     '[style.position-anchor]': 'cssAnchorRef()',
     '[style.position-try-fallbacks]': 'cssPositionTryFallbacks()',
     '[style.margin]': 'cssMargin()',
+    '[style.--cngx-popover-arrow-offset]': 'arrowOffsetSignal()',
     '(toggle)': 'handleToggle($event)',
   },
 })
@@ -225,6 +239,22 @@ export class CngxPopover {
    * Set by `CngxPopoverTrigger` or `CngxTooltip`.
    */
   readonly anchorElement = signal<HTMLElement | null>(null);
+
+  /**
+   * Inline-axis position the arrow ornament should sit at, expressed as
+   * a CSS length pinned to the trigger's centre. Computed from
+   * `anchorElement()` + the panel's own bounding box on every show /
+   * reposition / window resize.
+   *
+   * Why a JS-computed CSS variable instead of `anchor(center)` in the
+   * arrow's stylesheet: CSS Anchor Positioning's `anchor()` function does
+   * not resolve from descendants of a top-layer element back to anchors
+   * in the regular document flow. The panel itself can anchor to the
+   * trigger, but the arrow inside the panel cannot. Writing the offset
+   * from JS sidesteps that limitation and works identically in the
+   * CSS-Anchor path and the Floating-UI fallback path.
+   */
+  protected readonly arrowOffsetSignal = signal<string | null>(null);
 
   /**
    * Hint for the `CngxPopoverTrigger`'s `aria-haspopup` value. Composers
@@ -306,10 +336,15 @@ export class CngxPopover {
     this.elRef.nativeElement.showPopover();
     installGlobalEscapeListener(this.doc);
     this.applyFloatingPosition();
+    this.doc.defaultView?.addEventListener('resize', this.handleWindowResize, { passive: true });
     requestAnimationFrame(() => {
       if (this.stateSignal() === 'opening') {
         this.stateSignal.set('open');
       }
+      // After layout settles the browser's anchor / shift recovery has
+      // already placed the panel; reading its rect now reflects the
+      // final position the arrow needs to point at.
+      this.updateArrowOffset();
     });
   }
 
@@ -364,7 +399,47 @@ export class CngxPopover {
       el.style.left = `${x}px`;
       el.style.top = `${y}px`;
       el.style.margin = `${offsetVal}px`;
+      this.updateArrowOffset();
     });
+  }
+
+  private readonly handleWindowResize = (): void => {
+    if (this.stateSignal() === 'closed') {
+      return;
+    }
+    this.updateArrowOffset();
+  };
+
+  /**
+   * Recompute the arrow offset from the live trigger and panel rects.
+   * Clamps inside the panel's rounded-corner bounds so the arrow's base
+   * stays flush with the panel's straight edge even when the trigger
+   * sits outside the panel's inline extent.
+   */
+  private updateArrowOffset(): void {
+    const anchor = this.anchorElement();
+    if (!anchor) {
+      this.arrowOffsetSignal.set(null);
+      return;
+    }
+    const panel = this.elRef.nativeElement;
+    const panelRect = panel.getBoundingClientRect();
+    if (panelRect.width === 0 || panelRect.height === 0) {
+      this.arrowOffsetSignal.set(null);
+      return;
+    }
+    const triggerRect = anchor.getBoundingClientRect();
+    const horizontal = HORIZONTAL_ARROW_PLACEMENTS.has(this.placement());
+    const triggerCentre = horizontal
+      ? triggerRect.left + triggerRect.width / 2
+      : triggerRect.top + triggerRect.height / 2;
+    const panelStart = horizontal ? panelRect.left : panelRect.top;
+    const panelDim = horizontal ? panelRect.width : panelRect.height;
+    const radiusRaw = getComputedStyle(panel).getPropertyValue('--cngx-popover-panel-border-radius');
+    const radius = Number.parseFloat(radiusRaw) || 12;
+    const raw = triggerCentre - panelStart;
+    const clamped = Math.max(radius, Math.min(raw, panelDim - radius));
+    this.arrowOffsetSignal.set(`${clamped}px`);
   }
 
   private get popoverElement(): HTMLElement {
@@ -382,6 +457,8 @@ export class CngxPopover {
 
   private finalize(): void {
     openPopovers.delete(this);
+    this.doc.defaultView?.removeEventListener('resize', this.handleWindowResize);
+    this.arrowOffsetSignal.set(null);
     const el = this.popoverElement;
     try {
       el.hidePopover();
