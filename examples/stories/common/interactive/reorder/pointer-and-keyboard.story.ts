@@ -35,7 +35,7 @@ export const STORY: DemoSpec = {
     this.lastMove.set(\`\${event.fromIndex} → \${event.toIndex}\`);
   }`,
   setupChrome: `
-  protected readonly lastMove = signal<string>('—');
+  protected readonly lastMove = signal<string>('-');
 
   protected readonly itemsLabel = computed<string>(() =>
     this.items().map((i) => i.label).join(', '),
