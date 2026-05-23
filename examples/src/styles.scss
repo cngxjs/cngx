@@ -785,6 +785,32 @@ html.dark .cngx-ex-tag[data-dim='stability'][data-value='deprecated'] {
   min-width: 8ch;
 }
 
+// Compact keyboard-cheatsheet row rendered above an interactive demo
+// so the WAI-ARIA pattern is visible without making the reader open
+// the references panel. Lives in styles.scss (not per-story) so every
+// roving-tabindex demo can drop the same chrome line in via
+// templateChromeBefore.
+.demo-kbd-hint {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin-bottom: 12px;
+  font-size: 0.8125rem;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted, #6b7280));
+}
+.demo-kbd-hint kbd {
+  display: inline-block;
+  margin: 0 1px;
+  padding: 1px 6px;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #d0d5dd));
+  border-radius: 4px;
+  background: var(--cngx-color-surface-alt, var(--cngx-ex-surface-alt, #f9fafb));
+  color: var(--cngx-color-text, var(--cngx-ex-text, inherit));
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.6875rem;
+  line-height: 1.2;
+}
+
 // Ripple demo helpers. The cngxRipple directive ships the pointer logic
 // + .cngx-ripple__wave defaults; visual chrome around the host (round
 // icon button, tappable card, press-feedback transition) is consumer
@@ -1895,4 +1921,64 @@ button.chip.demo-chip--copied {
   padding: 4px 10px;
   color: var(--cngx-color-text-muted, var(--cngx-ex-muted, #6b7280));
   font-style: italic;
+}
+
+// CngxSpeak demos. The directive is headless - no DOM, no CSS - so the
+// example chrome (text passage frame, input + error row, hear-button)
+// lives entirely here so stories don't redeclare padding/border/colour
+// inline. Every colour reads from a cngx token first, then a shell
+// fallback, then a safe literal.
+.demo-speak-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+.demo-speak-input {
+  padding: 8px 12px;
+  border-radius: var(--cngx-radius-md, 6px);
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #d0d5dd));
+  background: var(--cngx-color-surface, var(--cngx-ex-surface, #fff));
+  color: var(--cngx-color-text, var(--cngx-ex-text, inherit));
+  font-size: 0.875rem;
+}
+.demo-speak-input--invalid {
+  border-color: var(--cngx-color-danger, #b00020);
+}
+.demo-speak-error-row {
+  font-size: 0.8125rem;
+  color: transparent;
+}
+.demo-speak-error-row--shown {
+  color: var(--cngx-color-danger, #b00020);
+}
+.demo-speak-hear-btn {
+  padding: 2px 8px;
+  font-size: 0.75rem;
+}
+.demo-speak-note {
+  font-size: 0.75rem;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted, #6b7280));
+}
+.demo-speak-passage {
+  padding: 16px 20px;
+  border-radius: var(--cngx-radius-md, 8px);
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #d0d5dd));
+  background: var(--cngx-color-surface-alt, var(--cngx-ex-surface-alt, #f9fafb));
+  color: var(--cngx-color-text, var(--cngx-ex-text, inherit));
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+.demo-speak-passage--accent {
+  border-left: 4px solid var(--cngx-color-primary, var(--cngx-ex-focus, #2563eb));
+}
+.demo-speak-listen-btn--active {
+  background: var(--cngx-color-primary, var(--cngx-ex-focus, #2563eb));
+  color: var(--cngx-color-surface, var(--cngx-ex-surface, #fff));
+}
+
+// CngxToggle caption strip beneath the basic two-way demo. The toggle
+// component already ships a track/thumb skin, so the story only needs a
+// muted caption colour that follows the cngx text-muted token.
+.demo-toggle-caption {
+  font-size: 0.875em;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted, #6b7280));
 }

@@ -21,6 +21,13 @@ export const STORY: DemoSpec = {
   ],
   imports: ['CngxRadioGroup', 'CngxRadio'],
   setup: `protected readonly payment = signal<'card' | 'cash' | 'invoice' | undefined>(undefined);`,
+  templateChromeBefore: `
+  <div class="demo-kbd-hint">
+    <span><kbd>Tab</kbd> enter / leave group</span>
+    <span><kbd>&uarr;</kbd><kbd>&darr;</kbd> / <kbd>&larr;</kbd><kbd>&rarr;</kbd> navigate + select</span>
+    <span><kbd>Home</kbd> / <kbd>End</kbd> first / last</span>
+    <span><kbd>Space</kbd> / <kbd>Enter</kbd> select focused</span>
+  </div>`,
   template: `
   <ng-template #starGlyph><span aria-hidden="true">★</span></ng-template>
   <ng-template #checkGlyph><span aria-hidden="true">✓</span></ng-template>
