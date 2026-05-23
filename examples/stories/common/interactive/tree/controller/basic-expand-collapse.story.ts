@@ -5,11 +5,21 @@ export const STORY: DemoSpec = {
   subtitle: 'Call <code>createTreeController({ nodes, nodeIdFn })</code> in an injection context. Bind <code>ctrl.visibleNodes()</code> to <code>@for</code> and call <code>ctrl.toggle(id)</code> from a twisty button.',
   description: 'Signal-native tree controller. Reads a <code>Signal&lt;CngxTreeNode&lt;T&gt;[]&gt;</code> source and produces flat / visible projections plus an expansion-set; every accessor is a <code>computed()</code> or pure fn, no <code>effect()</code>, no subscriptions. <code>nodeIdFn</code> is required on purpose: the controller hands its ids out to <code>isExpanded(id)</code>, selection memoization, and the AD-items adapter, so a non-stable id silently breaks every downstream cache the moment the tree is sorted or filtered. The library forces consumers to think about identity at construction so that whole class of heisenbugs disappears.',
   level: 'molecule',
-  audience: ['dev'],
+  audience: ['dev', 'a11y'],
   artifact: 'building-block',
-  focus: ['behavior', 'composition'],
+  focus: ['behavior', 'composition', 'a11y-pattern'],
   apiComponents: [
     'createTreeController',
+  ],
+  references: [
+    {
+      label: 'WAI-ARIA APG: Tree View',
+      href: 'https://www.w3.org/WAI/ARIA/apg/patterns/treeview/',
+    },
+    {
+      label: 'WCAG 4.1.2 Name, Role, Value',
+      href: 'https://www.w3.org/WAI/WCAG21/Understanding/name-role-value.html',
+    },
   ],
   moduleImports: [
     'import { createTreeController } from \'@cngx/common/interactive\';',
@@ -84,6 +94,6 @@ export const STORY: DemoSpec = {
   setupChrome: `
   protected readonly expandedIdsLabel = computed<string>(() => {
     const ids = [...this.ctrl.expandedIds()].sort();
-    return ids.length === 0 ? '—' : ids.join(', ');
+    return ids.length === 0 ? '-' : ids.join(', ');
   });`,
 };

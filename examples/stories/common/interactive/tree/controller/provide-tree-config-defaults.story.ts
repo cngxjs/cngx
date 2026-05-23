@@ -5,9 +5,19 @@ export const STORY: DemoSpec = {
   subtitle: '<code>provideTreeConfig(withDefaultNodeIdFn(...), withDefaultLabelFn(...))</code> in app or component providers; per-options always wins over the ambient default.',
   description: 'App-wide defaults for the tree controller factory. The resolution order is fixed: per-call options on <code>createTreeController({...})</code> beat <code>provideTreeConfigAt</code> in component <code>viewProviders</code>, which beats <code>provideTreeConfig</code> in root providers, which beats library hard-coded fallback. Feature flags (<code>withDefaultNodeIdFn</code>, <code>withDefaultLabelFn</code>, <code>withDefaultKeyFn</code>, <code>withTreeCacheLimit</code>, <code>withDefaultInitiallyExpanded</code>) compose by passing as varargs to either provider call. The provider returns a <code>Provider[]</code>, not <code>EnvironmentProviders</code>, so it works in route configs and component decorators without restriction. This demo is isolated from a real bootstrap, so it calls <code>createTreeController</code> with explicit options that the global config would otherwise supply; the description below the artifact shows the equivalent <code>bootstrapApplication</code> wiring.',
   level: 'molecule',
-  audience: ['dev'],
+  audience: ['dev', 'a11y'],
   artifact: 'building-block',
-  focus: ['behavior', 'composition'],
+  focus: ['behavior', 'composition', 'a11y-pattern'],
+  references: [
+    {
+      label: 'WAI-ARIA APG: Tree View',
+      href: 'https://www.w3.org/WAI/ARIA/apg/patterns/treeview/',
+    },
+    {
+      label: 'WCAG 4.1.2 Name, Role, Value',
+      href: 'https://www.w3.org/WAI/WCAG21/Understanding/name-role-value.html',
+    },
+  ],
   apiComponents: [
     'provideTreeConfig',
     'withDefaultNodeIdFn',
