@@ -40,7 +40,7 @@ export const STORY: DemoSpec = {
     }
   </cngx-skeleton>`,
   templateChrome: `<div class="button-row" style="margin-bottom:16px">
-    <button class="chip" [class.chip--active]="loading()" (click)="toggleLoading()">
+    <button type="button" class="chip" [attr.aria-pressed]="loading()" (click)="toggleLoading()">
       {{ loading() ? 'Loading...' : 'Loaded' }}
     </button>
   </div>`,

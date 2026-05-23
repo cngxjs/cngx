@@ -56,7 +56,7 @@ export const STORY: DemoSpec = {
   templateChrome: `<div class="filter-row">
     <span class="filter-label">Direction:</span>
     @for (d of swipeDirs; track d) {
-      <button type="button" class="chip" [class.chip--active]="swipeDir() === d"
+      <button type="button" class="chip" [attr.aria-pressed]="swipeDir() === d"
               (click)="swipeDir.set(d)">{{ d }}</button>
     }
   </div>
