@@ -20,6 +20,7 @@ import type {
   PopoverPlacement,
   PopoverPositionTryFallback,
   PopoverState,
+  TooltipTriggerMode,
 } from './popover.types';
 
 /** Small debounce to prevent SR announcement storms during rapid Tab navigation. */
@@ -90,6 +91,14 @@ export class CngxTooltip {
 
   /** Whether the tooltip is active. When `false`, no tooltip appears and ARIA is cleared. */
   readonly enabled = input(true);
+
+  /**
+   * Trigger mode. `'auto'` (default) opens on hover/focus with the
+   * configured delays; `'manual'` opts the host out of the hover/focus
+   * listeners so only `show()` / `hide()` open or close the tooltip.
+   * Escape still dismisses an open tooltip in either mode.
+   */
+  readonly triggers = input<TooltipTriggerMode>('auto');
 
   /**
    * CSS `<try-tactic>` fallbacks for `position-try-fallbacks`. Empty array
@@ -200,7 +209,7 @@ export class CngxTooltip {
   }
 
   protected handleMouseEnter(): void {
-    if (!this.enabled()) {
+    if (this.triggers() !== 'auto' || !this.enabled()) {
       return;
     }
     this.clearCloseTimer();
@@ -213,6 +222,9 @@ export class CngxTooltip {
   }
 
   protected handleMouseLeave(): void {
+    if (this.triggers() !== 'auto') {
+      return;
+    }
     this.clearOpenTimer();
     const delay = this.closeDelay();
     if (delay > 0) {
@@ -223,7 +235,7 @@ export class CngxTooltip {
   }
 
   protected handleFocus(): void {
-    if (!this.enabled()) {
+    if (this.triggers() !== 'auto' || !this.enabled()) {
       return;
     }
     // Debounce prevents SR announcement storm when user rapidly Tabs
@@ -233,6 +245,9 @@ export class CngxTooltip {
   }
 
   protected handleBlur(): void {
+    if (this.triggers() !== 'auto') {
+      return;
+    }
     this.clearTimers();
     this.hide();
   }

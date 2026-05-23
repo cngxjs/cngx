@@ -17,6 +17,7 @@ import { hasTransition, nextUid, onTransitionDone } from '@cngx/core/utils';
 import { ANCHOR_AREA_PROPERTY, POSITION_AREA, SUPPORTS_ANCHOR } from './anchor-positioning';
 import { CNGX_FLOATING_FALLBACK, FLOATING_PLACEMENT } from './floating-fallback';
 import type {
+  PopoverHaspopup,
   PopoverMode,
   PopoverPlacement,
   PopoverPositionTryFallback,
@@ -224,6 +225,15 @@ export class CngxPopover {
    * Set by `CngxPopoverTrigger` or `CngxTooltip`.
    */
   readonly anchorElement = signal<HTMLElement | null>(null);
+
+  /**
+   * Hint for the `CngxPopoverTrigger`'s `aria-haspopup` value. Composers
+   * such as `CngxPopoverPanel` write this signal so any trigger pointing
+   * at the popover defaults to the right role without the consumer
+   * having to set `haspopup` on every trigger element. Consumer-supplied
+   * `haspopup` on the trigger still wins.
+   */
+  readonly haspopup = signal<PopoverHaspopup | undefined>(undefined);
 
   protected readonly isOpening = computed(() => this.stateSignal() === 'opening');
   protected readonly isOpen = computed(() => this.stateSignal() === 'open');
