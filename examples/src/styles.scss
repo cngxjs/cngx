@@ -785,6 +785,36 @@ html.dark .cngx-ex-tag[data-dim='stability'][data-value='deprecated'] {
   min-width: 8ch;
 }
 
+// Ripple demo helpers. The cngxRipple directive ships the pointer logic
+// + .cngx-ripple__wave defaults; visual chrome around the host (round
+// icon button, tappable card, press-feedback transition) is consumer
+// territory and lives here so each ripple story stays focused on the
+// directive contract.
+.demo-ripple-icon-button {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  padding: 0;
+}
+.demo-ripple-card {
+  display: inline-block;
+  max-width: 280px;
+  padding: 20px;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #d0d5dd));
+  border-radius: var(--cngx-radius-md, 8px);
+  background: var(--cngx-color-surface, var(--cngx-ex-surface, #fff));
+  cursor: pointer;
+  user-select: none;
+}
+.demo-ripple-card-hint {
+  margin: 8px 0 0;
+  font-size: 0.875rem;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted, #6b7280));
+}
+.demo-press-ripple-button {
+  transition: transform 80ms ease;
+}
+
 button.chip--icon-close {
   padding: 2px 8px;
 }
