@@ -1,9 +1,9 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Orientation — horizontal',
-  subtitle: '<code>[orientation]="\'horizontal\'"</code> flips the layout AND tells the host roving directive to use ArrowLeft/ArrowRight for navigation.',
-  description: 'Single-select radio-group molecule and its CngxRadio leaves. Group provides CNGX_RADIO_GROUP for parent-child contract (never injects the concrete class) and CngxRovingTabindex as host directive for arrow-key focus movement. Auto-select-on-arrow is wired via a transient pendingArrowSelect flag — Tab-into-group does NOT auto-select; only an arrow keydown followed by focus moves the value.',
+  title: 'CngxRadioGroup: Horizontal orientation',
+  subtitle: '<code>[orientation]="\'horizontal\'"</code> flips the visual flex direction AND retunes the host CngxRovingTabindex to consume ArrowLeft/ArrowRight as the primary navigation axis.',
+  description: 'Setting orientation to horizontal forwards the value into the host CngxRovingTabindex via inputs: [\'orientation\'] on the host-directive declaration; the roving directive then swaps its primary axis from ArrowUp/Down to ArrowLeft/Right while keeping Home / End and the auto-select-on-arrow contract intact. The host also gets aria-orientation="horizontal" so AT can announce the layout.',
   level: 'molecule',
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
@@ -11,16 +11,18 @@ export const STORY: DemoSpec = {
   apiComponents: [
     'CngxRadioGroup',
     'CngxRadio',
-    'CNGX_RADIO_GROUP',
+  ],
+  references: [
+    { label: 'WAI-ARIA APG: Radio Group', href: 'https://www.w3.org/WAI/ARIA/apg/patterns/radio/' },
+    { label: 'ARIA 1.2: aria-orientation', href: 'https://www.w3.org/TR/wai-aria-1.2/#aria-orientation' },
   ],
   moduleImports: [
     'import { CngxRadioGroup, CngxRadio } from \'@cngx/common/interactive\';',
   ],
   imports: ['CngxRadioGroup', 'CngxRadio'],
-  setup: `protected readonly payment = signal<'card' | 'cash' | 'invoice' | undefined>(undefined);
-  protected readonly orientation = signal<'horizontal' | 'vertical'>('vertical');`,
+  setup: `protected readonly payment = signal<'card' | 'cash' | 'invoice' | undefined>(undefined);`,
   template: `
-  <cngx-radio-group [(value)]="payment" orientation="horizontal" name="payment-method-h">
+  <cngx-radio-group [(value)]="payment" orientation="horizontal" name="payment-method-h" label="Payment method">
     <cngx-radio value="card">Card</cngx-radio>
     <cngx-radio value="cash">Cash</cngx-radio>
     <cngx-radio value="invoice">Invoice</cngx-radio>

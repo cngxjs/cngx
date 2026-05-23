@@ -768,6 +768,23 @@ html.dark .cngx-ex-tag[data-dim='stability'][data-value='deprecated'] {
   outline-offset: 2px;
 }
 
+// Bound-value readout under a radio-group demo. Body type, muted color
+// via cngx tokens with fallbacks. Distinct from `.demo-radio-caption`
+// (theming demo's cell label - smaller, no top margin).
+.demo-radio-bound {
+  margin-top: 12px;
+  font-size: 0.875em;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted, #6b7280));
+}
+// Reserved slot for the echoed value so swapping between values of
+// different widths does not visibly shift the line. 8ch covers the
+// widest payment value in the demos (invoice / cash / card / (none))
+// with a small buffer.
+.demo-radio-bound > code {
+  display: inline-block;
+  min-width: 8ch;
+}
+
 button.chip--icon-close {
   padding: 2px 8px;
 }
