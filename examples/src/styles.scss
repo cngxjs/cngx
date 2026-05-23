@@ -936,10 +936,22 @@ button.chip {
 }
 
 // Pressed state hook for the demo chip toggle buttons. The button itself
-// owns aria-pressed; this rule just paints the active background.
-button.chip[aria-pressed='true'] {
+// owns aria-pressed; this rule just paints the active background. The
+// `.chip--active` parallel hook covers non-button chips (label wrapping a
+// radio, span used as a status indicator) where aria-pressed does not
+// apply semantically.
+button.chip[aria-pressed='true'],
+.chip.chip--active {
   background: var(--cngx-ex-surface-alt);
   border-color: currentColor;
+}
+
+// Demo-only label preceding a chip / filter row. Styled as a muted
+// caption so it does not compete with the chip text.
+.filter-label {
+  font-size: 0.8125rem;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted, #6b7280));
+  font-weight: 500;
 }
 
 // Demo-only inline form-error treatment. Hidden while empty so the
@@ -2043,4 +2055,407 @@ button.chip.demo-chip--copied {
 .demo-toggle-caption {
   font-size: 0.875em;
   color: var(--cngx-color-text-muted, var(--cngx-ex-muted, #6b7280));
+}
+
+// Layout-stories thematic surfaces. The cngx directive under test (backdrop,
+// drawer, sticky-header, scroll-spy, etc.) handles its own behaviour; these
+// classes shape the surrounding demo frame so border / radius / padding /
+// background stay in styles.scss rather than scattering through story files.
+.demo-backdrop-frame {
+  position: relative;
+  min-height: 200px;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e5e7eb));
+  border-radius: var(--cngx-radius-md, 6px);
+  overflow: hidden;
+}
+.demo-backdrop-frame__content {
+  padding: 1rem;
+}
+
+// CngxDrawer demo surfaces. The drawer system is intentionally headless -
+// directives only flip class names. These classes give the demo container
+// a bordered frame, a sliding panel that hooks into the
+// `.cngx-drawer-panel--*` host classes, and a content lane with a side /
+// push offset transition so the open/close behaviour is actually visible.
+.demo-drawer-container {
+  position: relative;
+  min-height: 180px;
+}
+.demo-drawer-container--bordered {
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e5e7eb));
+  border-radius: var(--cngx-radius-md, 6px);
+  overflow: hidden;
+}
+.demo-drawer-layout {
+  position: relative;
+  display: flex;
+  min-height: 200px;
+  overflow: hidden;
+}
+.demo-drawer-layout--relative {
+  position: relative;
+}
+.demo-drawer-layout--push .demo-drawer-panel {
+  position: relative;
+  inset: auto;
+  transform: none;
+  flex: 0 0 auto;
+}
+.demo-drawer-backdrop {
+  position: absolute;
+  inset: 0;
+  background: var(--cngx-backdrop-bg, rgba(0, 0, 0, 0.4));
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  z-index: 1;
+}
+.demo-drawer-backdrop.cngx-backdrop--visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+.demo-drawer-panel {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 220px;
+  background: var(--cngx-color-surface, var(--cngx-ex-surface, #ffffff));
+  border-right: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e5e7eb));
+  transform: translateX(-100%);
+  transition: transform 0.25s ease;
+  z-index: 2;
+}
+.demo-drawer-panel.cngx-drawer-panel--open {
+  transform: translateX(0);
+}
+.demo-drawer-panel.cngx-drawer-panel--right {
+  inset: 0 0 0 auto;
+  border-right: 0;
+  border-left: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e5e7eb));
+  transform: translateX(100%);
+}
+.demo-drawer-panel.cngx-drawer-panel--right.cngx-drawer-panel--open {
+  transform: translateX(0);
+}
+.demo-drawer-panel.cngx-drawer-panel--top {
+  inset: 0 0 auto 0;
+  width: auto;
+  height: 120px;
+  border-right: 0;
+  border-bottom: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e5e7eb));
+  transform: translateY(-100%);
+}
+.demo-drawer-panel.cngx-drawer-panel--top.cngx-drawer-panel--open {
+  transform: translateY(0);
+}
+.demo-drawer-panel.cngx-drawer-panel--bottom {
+  inset: auto 0 0 0;
+  width: auto;
+  height: 120px;
+  border-right: 0;
+  border-top: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e5e7eb));
+  transform: translateY(100%);
+}
+.demo-drawer-panel.cngx-drawer-panel--bottom.cngx-drawer-panel--open {
+  transform: translateY(0);
+}
+.demo-drawer-panel--static {
+  position: relative;
+  inset: auto;
+  transform: none;
+  flex: 0 0 auto;
+  overflow: hidden;
+  transition: width 0.25s ease, border-right-width 0.25s ease;
+}
+.demo-drawer-panel--static:not(.cngx-drawer-panel--open) {
+  width: 0;
+  border-right-width: 0;
+}
+.demo-drawer-panel-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  font-size: 0.875rem;
+}
+.demo-drawer-main {
+  flex: 1 1 auto;
+  padding: 0.75rem 1rem;
+  background: var(--cngx-color-surface-alt, var(--cngx-ex-surface-alt, #f9fafb));
+  transition: margin-left 0.25s ease, margin-right 0.25s ease;
+  font-size: 0.875rem;
+}
+.demo-drawer-main--tall {
+  min-height: 220px;
+}
+
+// CngxExpandableText custom-toggle-template story. The library default
+// toggle ships its own `.cngx-expandable-text__toggle` skin, but the
+// custom-template demo intentionally renders a different button shape;
+// thematic chrome (border, radius, padding, font-size, accent color)
+// lives here so the story template only carries layout bindings.
+.demo-expandable-toggle {
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #d0d5dd));
+  border-radius: var(--cngx-radius-sm, 4px);
+  background: none;
+  padding: 4px 10px;
+  cursor: pointer;
+  font-size: 0.8125rem;
+  color: var(--cngx-color-primary, var(--cngx-ex-focus, #2563eb));
+}
+.demo-expandable-toggle__glyph {
+  font-size: 1rem;
+}
+
+// CngxHighlight demo helpers. The directive wraps matches in <mark>, which
+// is browser-styled, so the demo only needs surrounding chrome: a labeled
+// text input and a passage with reading-friendly font-size and line-height.
+.demo-highlight-input {
+  padding: 8px 12px;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #d0d5dd));
+  border-radius: var(--cngx-radius-sm, 6px);
+  background: var(--cngx-color-surface, var(--cngx-ex-surface, #ffffff));
+  color: inherit;
+  font: inherit;
+}
+.demo-highlight-passage {
+  font-size: 0.9375rem;
+  line-height: 1.8;
+}
+.demo-highlight-passage p {
+  margin: 0 0 8px;
+}
+.demo-highlight-passage p:last-child {
+  margin-bottom: 0;
+}
+
+// CngxInfiniteScroll demo helpers. The directive only owns the sentinel
+// behaviour, so the demo provides a scroll container (max-height + overflow)
+// and per-row chrome (padding, separator). Sentinel text colour follows the
+// muted text token.
+.demo-infinite-scroll-frame {
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e0e0e0));
+  border-radius: var(--cngx-radius-md, 8px);
+}
+.demo-infinite-scroll-item {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e0e0e0));
+}
+.demo-infinite-scroll-sentinel {
+  padding: 16px;
+  text-align: center;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted, #6b7280));
+}
+
+// CngxIntersectionObserver demo helpers. Two spacer panels frame the
+// observed sentinel inside a scroll container; the sentinel flips its
+// background through cngx primary tokens when it crosses into the viewport.
+.demo-io-frame {
+  height: 200px;
+  overflow-y: auto;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #d0d5dd));
+  border-radius: var(--cngx-radius-md, 6px);
+  padding: 0 16px;
+}
+.demo-io-spacer {
+  height: 400px;
+  display: flex;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted, #6b7280));
+}
+.demo-io-spacer--top {
+  align-items: flex-end;
+  padding-bottom: 16px;
+}
+.demo-io-spacer--bottom {
+  align-items: flex-start;
+  padding-top: 16px;
+}
+.demo-io-sentinel {
+  padding: 16px;
+  text-align: center;
+  border-radius: var(--cngx-radius-md, 6px);
+  background: var(--cngx-color-surface-alt, var(--cngx-ex-surface-alt, #f8f9fa));
+  transition: background 0.3s;
+}
+.demo-io-sentinel--visible {
+  background: var(--cngx-color-primary, var(--cngx-ex-focus, #2563eb));
+  color: var(--cngx-color-on-primary, #ffffff);
+}
+
+// CngxResizeObserver demo helpers. The drag handle uses the native
+// CSS `resize: horizontal` affordance; the class only adds the surface
+// chrome and a muted read-out copy.
+.demo-resize-hint {
+  margin-bottom: 8px;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted, #6b7280));
+}
+.demo-resize-box {
+  background: var(--cngx-color-surface-alt, var(--cngx-ex-surface-alt, #f8f9fa));
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #d0d5dd));
+  border-radius: var(--cngx-radius-md, 6px);
+  font-size: 0.875rem;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted, #6b7280));
+}
+
+// CngxScrollLock demo. The lock toggle reuses the chip surface but turns
+// danger-red when the lock is engaged so the scroll-lock state is visible
+// at a glance. The scroll list shows 20 ambient rows so a meaningful scroll
+// is available to lock against.
+.demo-scroll-lock-chip[aria-pressed='true'] {
+  background: var(--cngx-color-danger, #b00020);
+  color: var(--cngx-color-on-danger, #ffffff);
+  border-color: var(--cngx-color-danger, #b00020);
+}
+.demo-scroll-lock-hint {
+  font-size: 0.875rem;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted, #6b7280));
+}
+.demo-scroll-lock-row {
+  padding: 12px 16px;
+  background: var(--cngx-color-surface-alt, var(--cngx-ex-surface-alt, #f8fafc));
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e5e7eb));
+  border-radius: var(--cngx-radius-md, 6px);
+}
+
+// CngxScrollSpy demo. Nav anchors get the chip surface; the section panel
+// reuses the muted-surface treatment with a separator between sections.
+// The active section is marked with `aria-current` which the styles below
+// hook into so the same chip element does double duty as the visual hint.
+.demo-spy-nav-link {
+  text-decoration: none;
+  font-size: 0.8125rem;
+  text-transform: capitalize;
+  padding: 6px 10px;
+}
+.demo-spy-container {
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #d0d5dd));
+  border-radius: var(--cngx-radius-md, 8px);
+}
+.demo-spy-section {
+  padding: 20px;
+  border-bottom: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #eaeaea));
+}
+.demo-spy-section:last-child {
+  border-bottom: 0;
+}
+.demo-spy-section h3 {
+  margin: 0 0 8px;
+  text-transform: capitalize;
+}
+.demo-spy-section p {
+  margin: 0;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted, #6b7280));
+  font-size: 0.875rem;
+}
+
+// CngxSkeleton demo line atoms. The directive only flips
+// `.cngx-skeleton--loading` / `.cngx-skeleton--shimmer`; these classes
+// give consumers the actual skeleton bar shape (radius + surface + shimmer
+// gradient) so the loading state is visible. Width stays inline because it
+// is layout, not theming.
+.demo-skeleton-line {
+  height: 20px;
+  border-radius: 4px;
+  background: var(--cngx-color-surface-2, var(--cngx-ex-surface-2, #e0e0e0));
+}
+.demo-skeleton-line--sm {
+  height: 12px;
+}
+.demo-skeleton-line--md {
+  height: 16px;
+}
+.demo-skeleton-line.cngx-skeleton--shimmer,
+.cngx-skeleton--shimmer .demo-skeleton-line {
+  background: linear-gradient(
+    90deg,
+    var(--cngx-color-surface-2, var(--cngx-ex-surface-2, #f0f0f0)) 25%,
+    var(--cngx-color-surface-3, var(--cngx-ex-surface-3, #e5e5e5)) 50%,
+    var(--cngx-color-surface-2, var(--cngx-ex-surface-2, #f0f0f0)) 75%
+  );
+  background-size: 200% 100%;
+  animation: demo-skeleton-shimmer 1.4s ease-in-out infinite;
+}
+.demo-skeleton-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e0e0e0));
+  border-radius: var(--cngx-radius-md, 8px);
+}
+
+// CngxStickyHeader demo. The scroll container, the sticky header, and the
+// 12 list rows all live here so the story template only carries the cngx
+// directive plus the elevation-on-stuck hook (`.cngx-sticky--active`).
+.demo-sticky-frame {
+  height: 250px;
+  overflow-y: auto;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #d0d5dd));
+  border-radius: var(--cngx-radius-md, 8px);
+}
+.demo-sticky-intro {
+  padding: 16px;
+}
+.demo-sticky-hint {
+  margin: 0 0 8px;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted, #6b7280));
+  font-size: 0.875rem;
+}
+.demo-sticky-header {
+  padding: 12px 16px;
+  background: var(--cngx-color-surface, var(--cngx-ex-surface, #ffffff));
+  border-bottom: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #eaeaea));
+  transition: box-shadow 200ms ease;
+}
+.demo-sticky-header.cngx-sticky--active {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+.demo-sticky-item {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #f0f0f0));
+}
+
+// CngxTruncate demo. The reading passage uses a reading-friendly line
+// height and font size; the toggle is a primary-coloured text button that
+// only renders when the directive reports the content as clamped.
+.demo-truncate-text {
+  margin: 0;
+  line-height: 1.6;
+  font-size: 0.875rem;
+}
+.demo-truncate-toggle {
+  margin-top: 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  font-size: 0.8125rem;
+  color: var(--cngx-color-primary, var(--cngx-ex-focus, #2563eb));
+}
+
+// Shared code-snippet surface. Used by reference / pattern stories that
+// teach by displaying HTML or TypeScript instead of rendering a live
+// artifact (drawer/pattern-consumer-wiring, filter-builder json
+// inspection, smart-data-source how-it-works, etc.). Until now the
+// class was named but undefined - the pre rendered as raw monospace
+// text on the page background.
+pre.code-block {
+  margin: 0;
+  padding: 12px 16px;
+  background: var(--cngx-color-surface-alt, var(--cngx-ex-surface-alt, #f8fafc));
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e5e7eb));
+  border-radius: var(--cngx-radius-md, 6px);
+  color: var(--cngx-color-text, var(--cngx-ex-text, inherit));
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  overflow-x: auto;
+  white-space: pre;
+}
+pre.code-block code {
+  font: inherit;
+  color: inherit;
+  background: none;
+  padding: 0;
 }

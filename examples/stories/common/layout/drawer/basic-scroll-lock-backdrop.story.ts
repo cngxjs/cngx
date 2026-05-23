@@ -1,48 +1,65 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Basic — Scroll Lock + Backdrop',
-  subtitle: '<code>[cngxScrollLock]</code> prevents body scroll when open. <code>[cngxBackdrop]</code> fades in an overlay and sets <code>inert</code> on sibling elements. Press <strong>Escape</strong>, click the backdrop, or click outside to close.',
-  description: 'Headless drawer/sidebar system: CngxDrawer (state), CngxDrawerPanel (sliding panel), CngxDrawerContent (content offset). Supports left/right/top/bottom, focus trapping, click-outside close, Escape key, and controlled+uncontrolled modes.',
+  title: 'CngxDrawer: Basic scroll lock backdrop',
+  subtitle:
+    '<code>[cngxScrollLock]</code> prevents body scroll when open. <code>[cngxBackdrop]</code> fades in an overlay and sets <code>inert</code> on sibling elements. Press <strong>Escape</strong>, click the backdrop, or click outside to close.',
+  description:
+    'Drawer wired with CngxScrollLock and CngxBackdrop. Opening locks the page scroll, fades the backdrop in, traps focus inside the panel, and links the trigger via CngxAriaExpanded.',
   level: 'organism',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
   focus: ['composition', 'a11y-pattern', 'behavior'],
-  apiComponents: [
+  references: [
+    {
+      label: 'WAI-ARIA APG: Dialog (Modal) Pattern',
+      href: 'https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/',
+    },
+    {
+      label: 'WCAG 2.4.3 Focus Order',
+      href: 'https://www.w3.org/WAI/WCAG21/Understanding/focus-order.html',
+    },
+  ],
+  apiComponents: ['CngxDrawer', 'CngxDrawerPanel', 'CngxDrawerContent'],
+  moduleImports: [
+    "import { CngxDrawer, CngxDrawerPanel, CngxDrawerContent, CngxScrollLock, CngxBackdrop } from '@cngx/common/layout';",
+    "import { CngxAriaExpanded } from '@cngx/common/a11y';",
+  ],
+  imports: [
     'CngxDrawer',
     'CngxDrawerPanel',
     'CngxDrawerContent',
+    'CngxAriaExpanded',
+    'CngxScrollLock',
+    'CngxBackdrop',
   ],
-  moduleImports: [
-    'import { CngxDrawer, CngxDrawerPanel, CngxDrawerContent, CngxScrollLock, CngxBackdrop } from \'@cngx/common\';',
-    'import { CngxAriaExpanded } from \'@cngx/common\';',
-  ],
-  imports: ['CngxDrawer', 'CngxDrawerPanel', 'CngxDrawerContent', 'CngxAriaExpanded', 'CngxScrollLock', 'CngxBackdrop'],
-  template: `  <div cngxDrawer #drawer="cngxDrawer" [cngxScrollLock]="drawer.opened()" class="drawer-container">
-    <button class="sort-btn"
-            [cngxAriaExpanded]="drawer.opened()" [controls]="'basic-panel'"
-            (click)="drawer.toggle()">
-      {{ drawer.opened() ? 'Close' : 'Open' }} Drawer
-    </button>
+  template: `  <div cngxDrawer #drawer="cngxDrawer" [cngxScrollLock]="drawer.opened()" class="demo-drawer-container demo-drawer-container--bordered">
+    <div class="button-row" style="padding: 0.5rem;">
+      <button type="button" class="sort-btn"
+              [cngxAriaExpanded]="drawer.opened()" [controls]="'basic-panel'"
+              (click)="drawer.toggle()">
+        {{ drawer.opened() ? 'Close' : 'Open' }} Drawer
+      </button>
+    </div>
 
-    <div class="drawer-layout">
+    <div class="demo-drawer-layout">
       <div [cngxBackdrop]="drawer.opened()" (backdropClick)="drawer.close()"
-           class="drawer-backdrop"></div>
+           class="demo-drawer-backdrop"></div>
 
       <nav [cngxDrawerPanel]="drawer" position="left"
            [enabled]="drawer.opened()" [autoFocus]="true"
            id="basic-panel" role="navigation"
-           class="drawer-panel">
-        <div class="drawer-panel-content">
+           class="demo-drawer-panel">
+        <div class="demo-drawer-panel-content">
           <strong>Navigation</strong>
-          <a href="javascript:void(0)">Home</a>
-          <a href="javascript:void(0)">Settings</a>
-          <a href="javascript:void(0)">Profile</a>
-          <button class="sort-btn" (click)="drawer.close()">Close</button>
+          <button type="button" class="sort-btn">Home</button>
+          <button type="button" class="sort-btn">Settings</button>
+          <button type="button" class="sort-btn">Profile</button>
+          <button type="button" class="sort-btn" (click)="drawer.close()">Close</button>
         </div>
       </nav>
 
-      <main [cngxDrawerContent]="drawer" class="drawer-main">
+      <main [cngxDrawerContent]="drawer" class="demo-drawer-main">
         <p>Main content area. The drawer slides over from the left.</p>
         <p>Press <strong>Escape</strong>, click the backdrop, or click outside to close.</p>
         <p><code>[cngxScrollLock]</code> prevents background scrolling.</p>

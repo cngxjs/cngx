@@ -1,19 +1,17 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Scrollable List',
-  subtitle: 'Scroll to the bottom to load more items. The sentinel element triggers <code>(scrolled)</code> when it enters the viewport. Loading stops at 100 items.',
-  description: 'Intersection-based infinite scroll directive that triggers a callback when a sentinel element enters the viewport.',
+  title: 'CngxInfiniteScroll: Scrollable list',
+  subtitle:
+    'Scroll to the bottom to load more items. The sentinel element emits <code>(loadMore)</code> when it enters the viewport and the debounce window has elapsed. Loading stops at 100 items.',
+  description:
+    'Sentinel-based infinite scroll inside a max-height container. CngxInfiniteScroll watches the bottom row with IntersectionObserver, gates re-fires with debounceMs and the loading input, and disconnects entirely when enabled is false.',
   level: 'atom',
   audience: ['dev'],
   artifact: 'building-block',
   focus: ['behavior', 'async-state'],
-  apiComponents: [
-    'CngxInfiniteScroll',
-  ],
-  moduleImports: [
-    'import { CngxInfiniteScroll } from \'@cngx/common/layout\';',
-  ],
+  apiComponents: ['CngxInfiniteScroll'],
+  moduleImports: ["import { CngxInfiniteScroll } from '@cngx/common/layout';"],
   imports: ['CngxInfiniteScroll'],
   setup: `protected readonly items = signal(Array.from({ length: 5 }, (_, i) => \`Item \${i + 1}\`));
   protected readonly loading = signal(false);
@@ -28,14 +26,16 @@ export const STORY: DemoSpec = {
       this.loading.set(false);
     }, 800);
   }`,
-  template: `  <div class="scroll-root" style="max-height:300px;overflow-y:auto;border:1px solid var(--cngx-color-border,#e0e0e0);border-radius:8px">
+  template: `  <div class="scroll-root demo-infinite-scroll-frame">
     @for (item of items(); track item) {
-      <div style="padding:12px 16px;border-bottom:1px solid var(--cngx-color-border,#e0e0e0)">
+      <div class="demo-infinite-scroll-item">
         {{ item }}
       </div>
     }
-    <div cngxInfiniteScroll [enabled]="hasMore()" [loading]="loading()" [root]="'.scroll-root'" (loadMore)="loadMore()"
-      style="padding:16px;text-align:center;color:var(--cngx-color-text-muted)">
+    <div cngxInfiniteScroll
+         [enabled]="hasMore()" [loading]="loading()" [root]="'.scroll-root'"
+         (loadMore)="loadMore()"
+         class="demo-infinite-scroll-sentinel">
       @if (loading()) {
         Loading more...
       } @else if (!hasMore()) {

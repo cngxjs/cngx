@@ -1,21 +1,17 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Events — openedChange & closed',
-  subtitle: '<code>(openedChange)</code> emits on every state change. <code>(closed)</code> emits only on close. Both are useful for side effects like analytics or saving state.',
-  description: 'Headless drawer/sidebar system: CngxDrawer (state), CngxDrawerPanel (sliding panel), CngxDrawerContent (content offset). Supports left/right/top/bottom, focus trapping, click-outside close, Escape key, and controlled+uncontrolled modes.',
+  title: 'CngxDrawer: Events openedChange and closed',
+  subtitle:
+    '<code>(openedChange)</code> emits on every state change. <code>(closed)</code> emits only on close. Both are useful for side effects like analytics or saving state.',
+  description:
+    'Logs (openedChange) on every open and close, and (closed) on close only, so analytics or persistence hooks can subscribe to whichever signal matches the side effect they need.',
   level: 'organism',
-  audience: ['dev', 'design', 'a11y'],
+  audience: ['dev'],
   artifact: 'standalone',
-  focus: ['composition', 'a11y-pattern', 'behavior'],
-  apiComponents: [
-    'CngxDrawer',
-    'CngxDrawerPanel',
-    'CngxDrawerContent',
-  ],
-  moduleImports: [
-    'import { CngxDrawer, CngxDrawerPanel } from \'@cngx/common\';',
-  ],
+  focus: ['behavior', 'integration'],
+  apiComponents: ['CngxDrawer', 'CngxDrawerPanel'],
+  moduleImports: ["import { CngxDrawer, CngxDrawerPanel } from '@cngx/common/layout';"],
   imports: ['CngxDrawer', 'CngxDrawerPanel'],
   setup: `protected readonly events = signal<string[]>([]);
   protected logEvent(name: string): void {
@@ -24,21 +20,23 @@ export const STORY: DemoSpec = {
   template: `  <div cngxDrawer #evDrawer="cngxDrawer"
        (openedChange)="logEvent('openedChange: ' + $event)"
        (closed)="logEvent('closed')"
-       class="drawer-container drawer-container--bordered">
-    <button class="sort-btn" (click)="evDrawer.toggle()">Toggle</button>
+       class="demo-drawer-container demo-drawer-container--bordered">
+    <div class="button-row" style="padding: 0.5rem;">
+      <button type="button" class="sort-btn" (click)="evDrawer.toggle()">Toggle</button>
+    </div>
 
-    <div class="drawer-layout">
+    <div class="demo-drawer-layout">
       <aside [cngxDrawerPanel]="evDrawer" position="right"
              [enabled]="evDrawer.opened()"
-             class="drawer-panel">
-        <div class="drawer-panel-content">
+             class="demo-drawer-panel">
+        <div class="demo-drawer-panel-content">
           <strong>Right panel</strong>
-          <button class="sort-btn" (click)="evDrawer.close()">Close</button>
+          <button type="button" class="sort-btn" (click)="evDrawer.close()">Close</button>
         </div>
       </aside>
 
-      <main class="drawer-main">
-        <p>Open/close to see events logged below.</p>
+      <main class="demo-drawer-main">
+        <p>Open or close the drawer to see the event log below.</p>
       </main>
     </div>
   </div>`,

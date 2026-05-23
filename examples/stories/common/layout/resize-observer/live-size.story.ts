@@ -1,26 +1,25 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxResizeObserver — Live Size',
-  subtitle: '<code>[cngxResizeObserver]</code> wraps the ResizeObserver API. <code>width()</code>, <code>height()</code>, and <code>isReady()</code> are readonly signals updated on every resize.',
-  description: 'Tracks the size of the host element via the ResizeObserver API and exposes width, height, and contentRect as signals.',
+  title: 'CngxResizeObserver: Live size',
+  subtitle:
+    '<code>[cngxResizeObserver]</code> wraps the ResizeObserver API. <code>width()</code>, <code>height()</code>, and <code>isReady()</code> are readonly signals updated on every resize.',
+  description:
+    'Drag-resizable box (native CSS resize handle) bound to [cngxResizeObserver]. The directive emits each ResizeObserverEntry into width()/height()/isReady() so the live readout and the in-box label stay in sync without manual measurement.',
   level: 'atom',
   audience: ['dev'],
   artifact: 'building-block',
   focus: ['behavior'],
-  apiComponents: [
-    'CngxResizeObserver',
-  ],
-  moduleImports: [
-    'import { DecimalPipe } from \'@angular/common\';',
-  ],
+  apiComponents: ['CngxResizeObserver'],
+  moduleImports: ["import { DecimalPipe } from '@angular/common';"],
   imports: ['CngxResizeObserver', 'DecimalPipe'],
-  template: `  <p style="margin-bottom: 8px; color: var(--cngx-text-secondary, #666);">
+  template: `  <p class="demo-resize-hint">
     Drag the handle to resize the box below.
   </p>
   <div
     cngxResizeObserver
     #ro="cngxResizeObserver"
+    class="demo-resize-box"
     style="
       resize: horizontal;
       overflow: auto;
@@ -28,20 +27,15 @@ export const STORY: DemoSpec = {
       max-width: 100%;
       width: 300px;
       height: 120px;
-      background: var(--cngx-surface-alt, #f8f9fa);
-      border: 1px solid var(--cngx-color-border, #ddd);
-      border-radius: 6px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 0.875rem;
-      color: var(--cngx-text-secondary, #666);
     "
   >
     @if (ro.isReady()) {
-      {{ ro.width() | number:'1.0-0' }} × {{ ro.height() | number:'1.0-0' }} px
+      {{ ro.width() | number:'1.0-0' }} x {{ ro.height() | number:'1.0-0' }} px
     } @else {
-      Waiting for first measurement…
+      Waiting for first measurement...
     }
   </div>`,
   templateChrome: `<div class="event-grid" style="margin-top: 12px">
