@@ -1701,3 +1701,101 @@ button.chip.demo-chip--copied {
   padding: 0;
   margin: -1px;
 }
+
+/* Demo-specific styles: common/interactive/nav. The nav directives ship */
+/* host classes (cngx-nav-link, cngx-nav-group, cngx-nav-badge) without */
+/* default visual styling, so the demos theme themselves through these */
+/* helpers; every color reads from a cngx token first, then a safe fallback. */
+.demo-nav__frame {
+  width: 240px;
+  padding: 0.5rem 0;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #d0d5dd));
+  border-radius: var(--cngx-radius-md, 6px);
+  background: var(--cngx-surface-alt, #f9fafb);
+}
+.demo-nav__label {
+  display: block;
+  padding: 0.5rem 1rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted, #6b7280));
+}
+.demo-nav__link {
+  display: block;
+  padding: 0.5rem 1rem;
+  text-decoration: none;
+  font-size: 0.875rem;
+  color: var(--cngx-color-text, var(--cngx-ex-text, #1f2937));
+  border-left: 3px solid transparent;
+  transition:
+    background 0.15s ease,
+    border-left-color 0.15s ease;
+}
+.demo-nav__link--row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.demo-nav__link--active {
+  border-left-color: var(--cngx-color-primary, #2563eb);
+  background: color-mix(in oklch, var(--cngx-color-primary, #2563eb) 8%, transparent);
+  font-weight: 600;
+}
+.demo-nav__link--indent-1 {
+  padding-left: calc(1rem + 12px);
+}
+.demo-nav__link--indent-2 {
+  padding-left: calc(1rem + 24px);
+}
+.demo-nav__divider {
+  margin: 0.5rem 1rem;
+  border-top: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #d0d5dd));
+}
+.demo-nav__trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 1rem;
+  border: none;
+  background: none;
+  cursor: pointer;
+  text-align: left;
+  font-size: 0.875rem;
+  color: var(--cngx-color-text, var(--cngx-ex-text, #1f2937));
+}
+.demo-nav__caret {
+  font-size: 0.75rem;
+  transition: transform 0.15s ease;
+}
+.demo-nav__badge--count {
+  padding: 0.1em 0.5em;
+  min-width: 1.2em;
+  border-radius: 10px;
+  background: var(--cngx-color-primary, #2563eb);
+  color: var(--cngx-color-surface, #fff);
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-align: center;
+}
+.demo-nav__badge--muted {
+  padding: 0.1em 0.5em;
+  border-radius: 10px;
+  background: var(--cngx-color-border, var(--cngx-ex-border, #d0d5dd));
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted, #6b7280));
+  font-size: 0.7rem;
+}
+.demo-nav__badge--dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--cngx-color-success, #16a34a);
+}
+.demo-nav__note {
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted, #6b7280));
+}
+
