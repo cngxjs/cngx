@@ -77,7 +77,15 @@ import type { PopoverPanelRole } from './popover.types';
   hostDirectives: [
     {
       directive: CngxPopover,
-      inputs: ['placement', 'offset', 'closeOnEscape', 'mode', 'exclusive', 'cngxPopoverOpen'],
+      inputs: [
+        'placement',
+        'positionTryFallbacks',
+        'offset',
+        'closeOnEscape',
+        'mode',
+        'exclusive',
+        'cngxPopoverOpen',
+      ],
     },
   ],
   host: {
