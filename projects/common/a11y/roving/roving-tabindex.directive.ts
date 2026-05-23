@@ -103,8 +103,14 @@ export class CngxRovingItem {
   },
 })
 export class CngxRovingTabindex {
-  /** Arrow key navigation axis. `'both'` enables both horizontal and vertical arrows. */
-  readonly orientation = input<'horizontal' | 'vertical' | 'both'>('horizontal');
+  /**
+   * Arrow key navigation axis. `'both'` enables both horizontal and
+   * vertical arrows. Exposed as a `model` so composite hosts (e.g.
+   * `CngxRadioGroup`, where the keyboard axis must always be `'both'`
+   * per WAI-ARIA APG regardless of the cosmetic group orientation) can
+   * override it from their own constructor.
+   */
+  readonly orientation = model<'horizontal' | 'vertical' | 'both'>('horizontal');
   /** Whether navigation wraps from last to first and vice versa. */
   readonly loop = input<boolean>(true);
   /** Index of the currently active (focusable) item. Supports two-way `[(activeIndex)]` binding. */
