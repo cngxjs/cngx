@@ -438,6 +438,39 @@ html.dark .cngx-ex-tag[data-dim='stability'][data-value='deprecated'] {
   color: var(--cngx-color-text, var(--cngx-ex-text, inherit));
 }
 
+// Disclosure atom demos. The trigger renders as the consumer styles it
+// (browser-native or .sort-btn). These classes only shape the revealed
+// content panel so stories don't redeclare padding / surface / border.
+.demo-disclosure-panel {
+  padding: 0.75rem;
+  border-left: 3px solid var(--cngx-color-primary, var(--cngx-ex-accent, currentColor));
+  background: var(--cngx-color-surface-alt, var(--cngx-ex-surface-alt, #f9fafb));
+  border-radius: var(--cngx-radius-sm, 4px);
+  font-size: 0.875rem;
+  color: var(--cngx-color-text, var(--cngx-ex-text, inherit));
+}
+
+.demo-disclosure-faq-row {
+  border-bottom: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e0e0e0));
+}
+
+.demo-disclosure-faq-trigger {
+  text-align: left;
+  padding: 0.75rem 0;
+  font-weight: 600;
+  font-size: 0.875rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--cngx-color-text, var(--cngx-ex-text, inherit));
+}
+
+.demo-disclosure-faq-answer {
+  padding: 0 0 0.75rem;
+  font-size: 0.875rem;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted));
+}
+
 // Demo-only scroll frame + row utilities. Used by the recycler and
 // paginated-list demos so border/border-radius/border-color don't
 // scatter through inline styles.
