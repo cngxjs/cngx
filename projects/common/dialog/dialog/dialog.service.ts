@@ -227,7 +227,6 @@ export class CngxDialogOpener {
     const outletVcr = outletRef.instance.contentOutlet();
     let contentRef: ComponentRef<unknown> | null = null;
 
-    // Build a child injector that provides DIALOG_REF and CNGX_DIALOG_DATA
     const childInjector = Injector.create({
       parent: this.injector,
       providers: [

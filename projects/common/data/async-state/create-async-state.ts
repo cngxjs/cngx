@@ -81,7 +81,6 @@ export function createAsyncState<T>(): MutableAsyncState<T> {
         const result$ = fn();
         const result = isObservable(result$) ? await firstValueFrom(result$) : await result$;
 
-        // Check if this execution was superseded
         if (controller.signal.aborted) {
           return;
         }

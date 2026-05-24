@@ -285,7 +285,6 @@ export class CngxTooltip {
     el.setAttribute('aria-hidden', 'true');
     el.classList.add('cngx-tooltip');
 
-    // Insert as next sibling of the trigger for DOM proximity
     const trigger = this.elRef.nativeElement;
     if (trigger.parentElement) {
       this.renderer.insertBefore(trigger.parentElement, el, trigger.nextSibling);

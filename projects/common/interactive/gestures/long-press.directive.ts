@@ -53,8 +53,7 @@ export class CngxLongPress {
     const el = inject(ElementRef<HTMLElement>).nativeElement as HTMLElement;
     const doc = inject(DOCUMENT);
 
-    // pointerdown on host, but up/move on document — captures gestures
-    // that drift outside the element boundary during the hold.
+    // up/move on document so the gesture survives drifting outside the host.
     const pointerDown$ = fromEvent<PointerEvent>(el, 'pointerdown');
     const pointerUp$ = fromEvent<PointerEvent>(doc, 'pointerup');
     const pointerMove$ = fromEvent<PointerEvent>(doc, 'pointermove');
@@ -69,9 +68,6 @@ export class CngxLongPress {
           const startY = start.clientY;
           this.longPressingState.set(true);
 
-          // Any of these events cancels the long-press gesture:
-          // pointerup (finger lifted), pointercancel (system interrupt),
-          // pointerleave (left element), or movement beyond threshold (scroll).
           const cancel$ = merge(
             pointerUp$,
             pointerCancel$,

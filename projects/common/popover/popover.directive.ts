@@ -70,7 +70,7 @@ function installGlobalEscapeListener(doc: Document): void {
     if (e.key !== 'Escape' || openPopovers.size === 0) {
       return;
     }
-    // Route to the most recently opened (last in Set iteration order)
+    // most-recently-opened wins (relies on Set's insertion-order iteration)
     const last = [...openPopovers].at(-1);
     if (last?.closeOnEscape()) {
       e.stopPropagation();

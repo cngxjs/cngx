@@ -381,12 +381,10 @@ export class CngxDialog<T = unknown> implements DialogRef<T> {
 
     const dialog = this.dialogElement;
 
-    // Reset result and submit state from previous cycle
     this.resultSignal.set(undefined);
     this.submitStatusState.set('idle');
     this.submitErrorState.set(undefined);
 
-    // Store trigger element for focus return
     this.triggerElement.set(this.doc.activeElement as HTMLElement | null);
 
     this.lifecycleSignal.set('opening');
@@ -433,7 +431,6 @@ export class CngxDialog<T = unknown> implements DialogRef<T> {
     }
 
     const action = this.submitAction();
-    // External [state] takes full precedence — submitAction is ignored
     if (action && !this.state()) {
       void this.executeSubmit(action, value);
     } else {

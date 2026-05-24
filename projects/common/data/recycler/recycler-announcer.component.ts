@@ -1,5 +1,3 @@
-// Phase 4: recycler-announcer.component.ts — CngxRecyclerAnnouncer convenience
-
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 
 import type { CngxRecycler } from './recycler';

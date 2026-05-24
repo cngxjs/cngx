@@ -1,5 +1,3 @@
-// Step 2: scroll-observer.ts — addEventListener + ResizeObserver → signals
-
 import { DOCUMENT } from '@angular/common';
 import {
   afterNextRender,
@@ -85,7 +83,7 @@ export function createScrollObserver(
   }
 
   effect((onCleanup) => {
-    retryTick(); // tracked — effect re-runs when retryTick changes
+    retryTick(); // tracked: re-runs the effect after the retry tick bumps
     const el = resolveElement(elementRef, doc);
     if (!el) {
       return;
@@ -108,7 +106,6 @@ export function createScrollObserver(
     }
   });
 
-  // Additional cleanup via DestroyRef as safety net
   destroyRef.onDestroy(() => {
     elementState.set(null);
   });

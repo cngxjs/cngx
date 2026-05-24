@@ -1,5 +1,3 @@
-// Phase 2: measure.directive.ts — CngxMeasure atom
-
 import { Directive, ElementRef, effect, inject, input } from '@angular/core';
 
 import type { CngxRecycler } from './recycler';
@@ -49,10 +47,8 @@ export class CngxMeasure {
       const index = this.cngxMeasureIndex();
       const element = this.el.nativeElement as HTMLElement;
 
-      // Initial measurement
       recycler.measure(index, element);
 
-      // Observe size changes
       const observer = new ResizeObserver(() => {
         recycler.measure(index, element);
       });

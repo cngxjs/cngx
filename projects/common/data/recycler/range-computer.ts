@@ -1,5 +1,3 @@
-// Step 1: range-computer.ts — pure function, zero dependencies
-
 /**
  * Result of a range computation for virtual scrolling.
  *
@@ -58,7 +56,7 @@ export function computeRange(
     return computeFixedRange(scrollTop, clientHeight, totalCount, estimateSize, overscan, columns);
   }
 
-  // Variable heights — grid mode not supported, columns ignored
+  // variable heights: grid mode unsupported, columns ignored
   return computeVariableRange(scrollTop, clientHeight, totalCount, estimateSize, overscan);
 }
 
@@ -108,16 +106,15 @@ function computeGridRange(
   const totalRows = Math.ceil(totalCount / columns);
   const totalSize = totalRows * rowHeight;
 
-  // Step 1+2: raw visible rows (inherently row-aligned)
+  // raw rows (inherently row-aligned)
   const rawStartRow = Math.floor(scrollTop / rowHeight);
   const rawEndRow = Math.ceil((scrollTop + clientHeight) / rowHeight);
 
-  // Step 3: apply overscan in rows (convert item overscan to row overscan)
+  // overscan applied in rows so full rows always render
   const overscanRows = Math.ceil(overscan / columns);
   const startRow = Math.max(0, rawStartRow - overscanRows);
   const endRow = Math.min(totalRows, rawEndRow + overscanRows);
 
-  // Step 4: convert to item indices, clamp end to totalCount
   const start = startRow * columns;
   const end = Math.min(endRow * columns, totalCount);
 
@@ -137,7 +134,6 @@ function computeVariableRange(
   estimateSize: (index: number) => number,
   overscan: number,
 ): RangeResult {
-  // Accumulate heights to find the first visible item (binary search)
   let totalSize = 0;
   const offsets = new Array<number>(totalCount + 1);
   offsets[0] = 0;
@@ -147,7 +143,7 @@ function computeVariableRange(
     offsets[i + 1] = totalSize;
   }
 
-  // Binary search for the first item whose bottom edge is past scrollTop
+  // binary search: first item whose bottom edge is past scrollTop
   const rawStart = binarySearch(offsets, scrollTop, totalCount);
   const rawEnd = binarySearch(offsets, scrollTop + clientHeight, totalCount);
 

@@ -132,11 +132,10 @@ function mergeConfig(
 export function provideTagConfig(
   ...features: CngxTagConfigFeature[]
 ): EnvironmentProviders {
-  // Empty-features call: don't override the token. The root factory
-  // already returns `CNGX_TAG_DEFAULTS` — re-providing a fresh
+  // Empty-features: skip the override so the root factory's
+  // `CNGX_TAG_DEFAULTS` reference flows through untouched. A fresh
   // `mergeConfig(...)` would allocate identical content under a new
-  // reference and bust downstream identity comparisons that consumers
-  // of `injectTagConfig()` may rely on.
+  // reference and bust downstream identity comparisons.
   if (features.length === 0) {
     return makeEnvironmentProviders([]);
   }

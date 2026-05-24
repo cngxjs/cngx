@@ -105,18 +105,10 @@ export type CngxTagGroupAlign = 'start' | 'center' | 'end' | 'between';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [NgTemplateOutlet],
-  // Encapsulation `None` mirrors `CngxTag` — host-class modifier rules
-  // (`.cngx-tag-group--gap-md`, `.cngx-tag-group--align-between`) need to
-  // match the host element directly. Emulated encapsulation rewrites
-  // those to `[_ngcontent-xxx]` selectors that never match the host
-  // (which carries `_nghost-xxx`), silently dropping the chrome at
-  // runtime. Same convention as `mat-*` containers.
+  // Host-class modifiers (`--gap-md`, `--align-between`) need to match
+  // the host directly; emulated encapsulation would rewrite them to
+  // `[_ngcontent-xxx]` and silently drop the chrome. Same as `mat-*`.
   encapsulation: ViewEncapsulation.None,
-  // Three-zone vertical stack: header (default empty), row (default
-  // `<ng-content />` carrying the projected `<span cngxTag>` siblings),
-  // accessory (default empty). The row class is the stable layout
-  // anchor — gap and align modifier classes target it via descendant
-  // selectors regardless of whether header / accessory render.
   template: `
     @if (headerTpl(); as t) {
       <ng-container *ngTemplateOutlet="t; context: slotContext()" />
@@ -274,20 +266,9 @@ export class CngxTagGroup implements CngxTagGroupHost {
   );
 
   constructor() {
-    // Dev-mode advisory: `<cngx-tag-group [label]="...">` without
-    // `[semanticList]="true"` lands the `aria-label` on a generic
-    // `<div>` (no `role="list"`). AT then exposes the aria-label
-    // but doesn't surface "list, N items" — likely not the
-    // consumer's intent. One-shot post-mount check; tree-shaken in
-    // prod via the `isDevMode()` guard.
-    //
-    // `afterNextRender` is the canonical hook for one-shot
-    // post-mount checks (per `reference_signal_architecture` Hook
-    // Selection Matrix); `effect()` would re-fire on every input
-    // change. Reads are wrapped in `untracked()` defensively —
-    // `afterNextRender` does not establish a reactive scope, but
-    // the explicit wrapper documents one-shot intent and matches
-    // the cngx style-guide bias toward signal-read hygiene.
+    // Dev-mode advisory: `[label]` without `[semanticList]="true"` lands
+    // `aria-label` on a bare `<div>` — AT reads the label but won't
+    // announce "list, N items". One-shot, tree-shaken in prod.
     afterNextRender(() => {
       const { label, semanticList } = untracked(() => ({
         label: this.label(),

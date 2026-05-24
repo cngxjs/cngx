@@ -67,7 +67,6 @@ export class CngxDialogClose {
    * - `'Close dialog'` for icon-only / single-char content
    */
   protected readonly ariaLabel = computed(() => {
-    // Explicit override wins
     const explicit = this.label();
     if (explicit !== undefined) {
       return explicit || null;
@@ -79,13 +78,11 @@ export class CngxDialogClose {
       return null;
     }
 
-    // Check text content — if descriptive (multi-char word), no label needed
     const text = el.textContent?.trim() ?? '';
     if (text.length > 1) {
       return null;
     }
 
-    // Icon-only or single char (e.g. "X", "x") — set default
     return 'Close dialog';
   });
 

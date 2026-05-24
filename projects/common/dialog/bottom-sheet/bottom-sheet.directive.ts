@@ -54,7 +54,6 @@ export class CngxBottomSheet {
   readonly showHandle = input(true);
 
   constructor() {
-    // Auto-wire: swipe → dismiss (when CngxSwipeDismiss is on the same element)
     if (this.swipe) {
       const sub = this.swipe.swiped.subscribe(() => this.dialogRef.dismiss());
       inject(DestroyRef).onDestroy(() => sub.unsubscribe());

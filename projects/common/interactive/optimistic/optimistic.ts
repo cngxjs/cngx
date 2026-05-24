@@ -69,21 +69,18 @@ export function optimistic<T>(
     state: asyncState,
   };
 
-  // Track the previous confirmed value (before any optimistic update) and active subscription.
-  // This ensures rollback always returns to the last server-confirmed state, even under
-  // rapid concurrent calls.
+  // Last confirmed value — rollback target under concurrent calls.
   let confirmedValue = current();
   let activeSub: Subscription | undefined;
 
   const apply = (newValue: T): void => {
-    // Cancel any in-flight subscription — prevents stale closure rollback
+    // Cancel in-flight subscription — prevents stale closure rollback
     activeSub?.unsubscribe();
 
     rolledBackState.set(false);
     errorState.set(undefined);
     statusState.set('pending');
 
-    // Set optimistically — UI updates immediately
     current.set(newValue);
 
     activeSub = action(newValue)

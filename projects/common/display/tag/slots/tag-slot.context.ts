@@ -4,19 +4,10 @@ import type {
   CngxTagVariant,
 } from '../tag.directive';
 
-// Phase 1 ships three structurally-identical context interfaces
-// (`CngxTagLabelContext` / `CngxTagPrefixContext` / `CngxTagSuffixContext`).
-// Kept as separate exported names so future per-slot fields (e.g.
-// spacing tokens on prefix, sort-direction on suffix) can land without
-// breaking sibling consumers — divergence is the design intent, not
-// the current state.
-//
-// Re-evaluation tracked in
-// `.internal/architektur/display-accepted-debt.md §3` (slot-context
-// structural-identity headroom). Collapse to a single
-// `CngxTagSlotContext` plus type aliases when the §3 trigger fires —
-// the entry pairs this trio with the Group-side header/accessory
-// pair so a single re-evaluation covers both files.
+// Label, prefix, and suffix contexts are structurally identical today.
+// Kept separate so per-slot fields (e.g. spacing on prefix, sort-direction
+// on suffix) can land without breaking sibling consumers. Collapse
+// trigger tracked in `display-accepted-debt.md §3`.
 
 /**
  * Context exposed by the `*cngxTagLabel` slot — the full reactive

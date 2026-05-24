@@ -92,7 +92,6 @@ export class CngxStep {
     const stepperHost = inject(CNGX_STEPPER_HOST, { optional: true });
     const host = groupHost ?? stepperHost;
     if (!host) {
-      // No enclosing presenter or group — atom can't register. Fail loud.
       throw new Error(
         'CngxStep: no enclosing CngxStepperPresenter or CngxStepGroup found. ' +
           'Wrap the step inside an element carrying [cngxStepper] or [cngxStepGroup].',
