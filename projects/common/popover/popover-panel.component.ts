@@ -6,6 +6,7 @@ import {
   computed,
   contentChild,
   DestroyRef,
+  ElementRef,
   effect,
   inject,
   input,
@@ -15,8 +16,11 @@ import {
 import type { CngxAsyncState } from '@cngx/core/utils';
 import { nextUid } from '@cngx/core/utils';
 
+import { CNGX_POPOVER_ARROW_BOUNDS, type CngxPopoverArrowBounds } from './popover-arrow-bounds';
 import { CNGX_POPOVER_PANEL_CONFIG } from './popover-panel.config';
 import {
+  CngxPopoverArrow,
+  type CngxPopoverArrowContext,
   CngxPopoverClose,
   CngxPopoverEmpty,
   CngxPopoverError,
@@ -74,10 +78,19 @@ import type { PopoverPanelRole } from './popover.types';
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   exportAs: 'cngxPopoverPanel',
+  providers: [{ provide: CNGX_POPOVER_ARROW_BOUNDS, useExisting: CngxPopoverPanel }],
   hostDirectives: [
     {
       directive: CngxPopover,
-      inputs: ['placement', 'offset', 'closeOnEscape', 'mode', 'exclusive', 'cngxPopoverOpen'],
+      inputs: [
+        'placement',
+        'positionTryFallbacks',
+        'offset',
+        'closeOnEscape',
+        'mode',
+        'exclusive',
+        'cngxPopoverOpen',
+      ],
     },
   ],
   host: {
@@ -89,7 +102,11 @@ import type { PopoverPanelRole } from './popover.types';
   },
   template: `
     @if (showArrow()) {
-      <div class="cngx-popover-panel__arrow"></div>
+      @if (arrowTpl(); as tpl) {
+        <ng-container *ngTemplateOutlet="tpl; context: arrowContext()" />
+      } @else {
+        <div class="cngx-popover-panel__arrow"></div>
+      }
     }
 
     @if (effectiveLoading()) {
@@ -142,11 +159,32 @@ import type { PopoverPanelRole } from './popover.types';
   `,
   styleUrls: ['./popover-panel.component.css'],
 })
-export class CngxPopoverPanel {
+export class CngxPopoverPanel implements CngxPopoverArrowBounds {
   /** The underlying popover state machine. */
   readonly popover = inject(CngxPopover, { self: true });
   private readonly config = inject(CNGX_POPOVER_PANEL_CONFIG);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly hostRef = inject<ElementRef<HTMLElement>>(ElementRef);
+
+  /**
+   * Cached panel border-radius. Read lazily from the host's computed
+   * style on first access so `CngxPopover` can consume it via
+   * `CNGX_POPOVER_ARROW_BOUNDS` without forcing a layout flush per
+   * resize tick. The custom property is declared on `:scope` so the
+   * value is valid from instantiation onward.
+   */
+  private _cachedBorderRadius: number | null = null;
+
+  /** @internal — implements `CngxPopoverArrowBounds`. */
+  get borderRadius(): number {
+    if (this._cachedBorderRadius === null) {
+      const raw = getComputedStyle(this.hostRef.nativeElement).getPropertyValue(
+        '--cngx-popover-panel-border-radius',
+      );
+      this._cachedBorderRadius = Number.parseFloat(raw) || 12;
+    }
+    return this._cachedBorderRadius;
+  }
 
   /**
    * Variant string — mapped to CSS class `cngx-popover-panel--{variant}`.
@@ -212,6 +250,36 @@ export class CngxPopoverPanel {
   protected readonly loadingTpl = contentChild(CngxPopoverLoading);
   protected readonly emptyTpl = contentChild(CngxPopoverEmpty);
   protected readonly errorTpl = contentChild(CngxPopoverError);
+  protected readonly arrowTplDirective = contentChild(CngxPopoverArrow);
+
+  /**
+   * Three-stage cascade for the arrow ornament:
+   * 1. Per-instance `*cngxPopoverArrow` template (contentChild).
+   * 2. App-wide `CNGX_POPOVER_PANEL_CONFIG.templates.arrow`
+   *    (via `providePopoverPanel(withArrowTemplate(...))`).
+   * 3. `null` -> the panel renders the default rotated-diamond markup.
+   */
+  protected readonly arrowTpl = computed(
+    () => this.arrowTplDirective()?.templateRef ?? this.config.templates?.arrow ?? null,
+  );
+
+  /**
+   * Context surface for projected `*cngxPopoverArrow` templates.
+   * `equal` keeps the reference stable across re-evaluations whose
+   * inputs round-trip to the same `{ edge, offsetPx }` — required for
+   * any object-returning computed per the Equality discipline rule.
+   */
+  protected readonly arrowContext = computed<CngxPopoverArrowContext>(
+    () => {
+      const raw = this.popover.arrowOffset();
+      const parsed = raw === null ? null : Number.parseFloat(raw);
+      return {
+        edge: this.popover.resolvedEdge(),
+        offsetPx: parsed !== null && Number.isFinite(parsed) ? parsed : null,
+      };
+    },
+    { equal: (a, b) => a.edge === b.edge && a.offsetPx === b.offsetPx },
+  );
 
   /** Auto-detected from projected `[cngxPopoverHeader]` content. */
   protected readonly hasHeader = computed(() => !!this.headerSlot());

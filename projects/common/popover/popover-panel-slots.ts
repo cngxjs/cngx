@@ -1,5 +1,27 @@
 import { Directive, inject, TemplateRef } from '@angular/core';
 
+import type { ArrowEdge } from './popover.types';
+
+/**
+ * Context object passed to a `*cngxPopoverArrow` template.
+ *
+ * The consumer's glyph receives the resolved panel edge (`top` / `bottom` /
+ * `left` / `right`) and the inline-axis offset in CSS pixels that the
+ * library would have placed the default diamond at. Either can be used to
+ * rotate, translate, or theme the custom glyph so it tracks the trigger.
+ */
+export interface CngxPopoverArrowContext {
+  /** Primary edge of the panel facing the trigger. */
+  readonly edge: ArrowEdge;
+  /**
+   * Inline-axis offset from the panel edge to the trigger's centre, in
+   * CSS pixels. `null` before the first geometry read (the consumer
+   * should treat `null` as "centre the glyph" — the default diamond
+   * falls back to `50%` in the same case).
+   */
+  readonly offsetPx: number | null;
+}
+
 /** Marks the header content inside `cngx-popover-panel`. */
 @Directive({ selector: '[cngxPopoverHeader]', standalone: true })
 export class CngxPopoverHeader {}
@@ -44,4 +66,26 @@ export class CngxPopoverEmpty {
 @Directive({ selector: 'ng-template[cngxPopoverError]', standalone: true })
 export class CngxPopoverError {
   readonly templateRef = inject(TemplateRef);
+}
+
+/**
+ * Custom arrow ornament template. Overrides the default rotated-diamond
+ * arrow when projected as a child of `<cngx-popover-panel>`. The library
+ * routes the resolved panel edge and the live inline-axis offset to the
+ * template via `CngxPopoverArrowContext`.
+ *
+ * ```html
+ * <cngx-popover-panel #pop [showArrow]="true">
+ *   <ng-template cngxPopoverArrow let-edge="edge" let-offsetPx="offsetPx">
+ *     <svg class="brand-arrow" [attr.data-edge]="edge"
+ *          [style.--offset]="offsetPx ? offsetPx + 'px' : '50%'">
+ *       <use href="#arrow-glyph" />
+ *     </svg>
+ *   </ng-template>
+ * </cngx-popover-panel>
+ * ```
+ */
+@Directive({ selector: 'ng-template[cngxPopoverArrow]', standalone: true })
+export class CngxPopoverArrow {
+  readonly templateRef = inject<TemplateRef<CngxPopoverArrowContext>>(TemplateRef);
 }

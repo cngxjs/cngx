@@ -4,6 +4,10 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { CngxPopover, __resetFloatingMiddlewareWarnings } from './popover.directive';
 import { CNGX_FLOATING_FALLBACK, provideFloatingFallback } from './floating-fallback';
+import {
+  CNGX_POPOVER_ARROW_BOUNDS,
+  type CngxPopoverArrowBounds,
+} from './popover-arrow-bounds';
 import type { PopoverPositionTryFallback } from './popover.types';
 
 // Test helpers
@@ -367,6 +371,70 @@ describe('CngxPopover', () => {
 
     it('compiles against the typed CNGX_FLOATING_FALLBACK token shape', () => {
       expect(CNGX_FLOATING_FALLBACK).toBeDefined();
+    });
+  });
+
+  describe('arrow bounds contract', () => {
+    it('runs show() without reading --cngx-popover-panel-* via getComputedStyle', async () => {
+      // The pre-inversion code read the panel's border-radius from the
+      // directive side via getComputedStyle inside the show() rAF
+      // callback. After the bounds-contract inversion the directive must
+      // not reach into the panel's CSS custom properties — the panel
+      // provides them through CNGX_POPOVER_ARROW_BOUNDS instead.
+      const propertySpy = vi.fn().mockReturnValue('');
+      vi.spyOn(globalThis, 'getComputedStyle').mockReturnValue({
+        transitionDuration: '0s',
+        getPropertyValue: propertySpy,
+      } as unknown as CSSStyleDeclaration);
+
+      const fakeBounds: CngxPopoverArrowBounds = { borderRadius: 16 };
+      TestBed.configureTestingModule({
+        imports: [BasicHost],
+        providers: [{ provide: CNGX_POPOVER_ARROW_BOUNDS, useValue: fakeBounds }],
+      });
+      const fixture = TestBed.createComponent(BasicHost);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      const popoverEl = fixture.nativeElement.querySelector('[cngxpopover]') as HTMLElement;
+      const rec = popoverEl as unknown as Record<string, unknown>;
+      rec['showPopover'] = vi.fn();
+      rec['hidePopover'] = vi.fn();
+      rec['togglePopover'] = vi.fn();
+
+      const host = fixture.componentInstance as BasicHost;
+      host.popover().show();
+      await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+
+      const panelPrefixCalls = propertySpy.mock.calls.filter((call) =>
+        String(call[0]).startsWith('--cngx-popover-panel-'),
+      );
+      expect(panelPrefixCalls).toEqual([]);
+    });
+
+    it('show() runs without throwing when CNGX_POPOVER_ARROW_BOUNDS is absent', async () => {
+      const { fixture } = setup(BasicHost);
+      const host = fixture.componentInstance as BasicHost;
+      expect(() => host.popover().show()).not.toThrow();
+      await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+      expect(host.popover().state()).toBe('open');
+    });
+  });
+
+  describe('public arrowOffset and resolvedEdge mirrors', () => {
+    it('exposes arrowOffset as a readonly Signal', () => {
+      const { fixture } = setup(BasicHost);
+      const host = fixture.componentInstance as BasicHost;
+      const popover = host.popover();
+      expect(popover.arrowOffset).toBeDefined();
+      expect(typeof popover.arrowOffset).toBe('function');
+      expect(popover.arrowOffset()).toBeNull();
+    });
+
+    it('exposes resolvedEdge defaulting to the requested placement before the first geometry read', () => {
+      const { fixture } = setup(BasicHost);
+      const host = fixture.componentInstance as BasicHost;
+      const popover = host.popover();
+      expect(popover.resolvedEdge()).toBe('bottom');
     });
   });
 });

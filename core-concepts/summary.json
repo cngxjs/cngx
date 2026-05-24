@@ -20,10 +20,6 @@
         "file": "async-state-machine.md"
     },
     {
-        "title": "Dual Rendering",
-        "file": "dual-rendering.md"
-    },
-    {
         "title": "Instrumentation Pattern",
         "file": "instrumentation-pattern.md"
     }
