@@ -65,47 +65,47 @@ export const STORY: DemoSpec = {
 
     <section>
       <p style="margin:0 0 12px">
-        <strong>Right placement</strong> — vertical-axis triggers; tall panels force block-axis shift recovery.
+        <strong>Right placement</strong> — three triggers stacked across a 280 px column; the panel's min-height is larger than the available viewport so the browser must shift it block-axis. Click each trigger in turn and watch the arrow land at the top / middle / bottom of the panel's left edge.
       </p>
-      <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-start">
+      <div style="display:flex;flex-direction:column;justify-content:space-between;align-items:flex-start;min-height:280px">
         <button [cngxPopoverTrigger]="rt.popover" (click)="rt.popover.toggle()" class="chip">top trigger</button>
         <button [cngxPopoverTrigger]="rm.popover" (click)="rm.popover.toggle()" class="chip">middle trigger</button>
         <button [cngxPopoverTrigger]="rb.popover" (click)="rb.popover.toggle()" class="chip">bottom trigger</button>
       </div>
       <cngx-popover-panel #rt [showArrow]="true" placement="right">
         <span cngxPopoverHeader>Right · top trigger</span>
-        <p cngxPopoverBody>Panel sits to the right of the trigger. Arrow on the left edge, pinned to the trigger row.</p>
+        <p cngxPopoverBody [style.min-height.px]="640">Panel taller than the viewport. Anchor-centring would overflow above the trigger so the browser shifts the panel <em>down</em> — the arrow follows up the panel's left edge to stay on the trigger.</p>
       </cngx-popover-panel>
       <cngx-popover-panel #rm [showArrow]="true" placement="right">
         <span cngxPopoverHeader>Right · middle trigger</span>
-        <p cngxPopoverBody>Centre-aligned baseline.</p>
+        <p cngxPopoverBody [style.min-height.px]="640">When the trigger sits in the vertical middle the panel may still fit centred — the arrow lands near the panel's vertical centre.</p>
       </cngx-popover-panel>
       <cngx-popover-panel #rb [showArrow]="true" placement="right">
         <span cngxPopoverHeader>Right · bottom trigger</span>
-        <p cngxPopoverBody>Block-axis shift if the panel reaches the bottom of the viewport — arrow still on the trigger.</p>
+        <p cngxPopoverBody [style.min-height.px]="640">For the bottom trigger the browser shifts the panel <em>up</em> — arrow tracks the trigger down to the panel's bottom edge.</p>
       </cngx-popover-panel>
     </section>
 
     <section>
       <p style="margin:0 0 12px">
-        <strong>Left placement</strong> — symmetric to the right column, panels open to the left.
+        <strong>Left placement</strong> — symmetric to the right column; arrow on the panel's right edge tracks the trigger as the browser shifts the panel block-axis.
       </p>
-      <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end">
+      <div style="display:flex;flex-direction:column;justify-content:space-between;align-items:flex-end;min-height:280px">
         <button [cngxPopoverTrigger]="lt.popover" (click)="lt.popover.toggle()" class="chip">top trigger</button>
         <button [cngxPopoverTrigger]="lm.popover" (click)="lm.popover.toggle()" class="chip">middle trigger</button>
         <button [cngxPopoverTrigger]="lb.popover" (click)="lb.popover.toggle()" class="chip">bottom trigger</button>
       </div>
       <cngx-popover-panel #lt [showArrow]="true" placement="left">
         <span cngxPopoverHeader>Left · top trigger</span>
-        <p cngxPopoverBody>Arrow on the right edge of the panel.</p>
+        <p cngxPopoverBody [style.min-height.px]="640">Mirror of the right column. Panel taller than the viewport forces block-axis shift; arrow on the panel's right edge tracks the trigger.</p>
       </cngx-popover-panel>
       <cngx-popover-panel #lm [showArrow]="true" placement="left">
         <span cngxPopoverHeader>Left · middle trigger</span>
-        <p cngxPopoverBody>Centre-aligned baseline.</p>
+        <p cngxPopoverBody [style.min-height.px]="640">When the trigger is in the vertical middle the panel may still anchor-centre — arrow lands near the panel centre.</p>
       </cngx-popover-panel>
       <cngx-popover-panel #lb [showArrow]="true" placement="left">
         <span cngxPopoverHeader>Left · bottom trigger</span>
-        <p cngxPopoverBody>Block-axis shift recovery — arrow stays on the trigger.</p>
+        <p cngxPopoverBody [style.min-height.px]="640">Bottom trigger forces the panel up — arrow follows the trigger to the panel's bottom edge.</p>
       </cngx-popover-panel>
     </section>
 
