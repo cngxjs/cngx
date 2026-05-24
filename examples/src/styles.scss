@@ -2470,6 +2470,37 @@ pre.code-block code {
   padding-top: 40px;
 }
 
+// Demo-only arrow glyph used by the with-arrow-slot story. Positions an
+// SVG caret on the panel edge that faces the trigger, driven by the
+// slot context's `edge` (via `[data-edge]`) and `offsetPx` (via the
+// inline custom property `--offset`).
+.demo-arrow-glyph {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  pointer-events: none;
+}
+.demo-arrow-glyph[data-edge='bottom'] {
+  top: -10px;
+  left: var(--offset, 50%);
+  transform: translateX(-50%) rotate(180deg);
+}
+.demo-arrow-glyph[data-edge='top'] {
+  bottom: -10px;
+  left: var(--offset, 50%);
+  transform: translateX(-50%);
+}
+.demo-arrow-glyph[data-edge='right'] {
+  left: -10px;
+  top: var(--offset, 50%);
+  transform: translateY(-50%) rotate(90deg);
+}
+.demo-arrow-glyph[data-edge='left'] {
+  right: -10px;
+  top: var(--offset, 50%);
+  transform: translateY(-50%) rotate(-90deg);
+}
+
 // Demo-only surface for bare `[cngxPopover]` content. The directive ships
 // no host CSS by default (only `cngx-popover-panel` does) - these classes
 // give the unstyled popover a minimum readable surface so the demo focuses
