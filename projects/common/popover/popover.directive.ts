@@ -192,7 +192,7 @@ function warnMissingFloatingMiddleware(doc: Document): void {
     '[style.position-anchor]': 'cssAnchorRef()',
     '[style.position-try-fallbacks]': 'cssPositionTryFallbacks()',
     '[style.margin]': 'cssMargin()',
-    '[style.--cngx-popover-arrow-offset]': 'arrowOffsetSignal()',
+    '[style.--cngx-popover-arrow-offset]': 'arrowOffset()',
     '(toggle)': 'handleToggle($event)',
   },
 })
@@ -290,7 +290,15 @@ export class CngxPopover {
    * from JS sidesteps that limitation and works identically in the
    * CSS-Anchor path and the Floating-UI fallback path.
    */
-  protected readonly arrowOffsetSignal = signal<string | null>(null);
+  private readonly _arrowOffset = signal<string | null>(null);
+
+  /**
+   * Public read-only view of the arrow's inline-axis offset (`<px>` or
+   * `null` before the first geometry read). Consumers projecting a
+   * `cngxPopoverArrow` template use this to render their own glyph at
+   * the same coordinate the default arrow ornament would.
+   */
+  readonly arrowOffset = this._arrowOffset.asReadonly();
 
   /**
    * Hint for the `CngxPopoverTrigger`'s `aria-haspopup` value. Composers
@@ -320,7 +328,14 @@ export class CngxPopover {
    * hook for the arrow stylesheet.
    */
   private readonly resolvedEdgeSignal = signal<ArrowEdge | null>(null);
-  protected readonly resolvedEdge = computed<ArrowEdge>(
+
+  /**
+   * Primary edge of the panel facing the trigger after browser-driven
+   * shift / flip recovery. `top` | `bottom` | `left` | `right`. Public
+   * so consumers projecting a `cngxPopoverArrow` template can rotate
+   * their own glyph to match the rendered placement.
+   */
+  readonly resolvedEdge = computed<ArrowEdge>(
     () => this.resolvedEdgeSignal() ?? (this.placement().split('-')[0] as ArrowEdge),
   );
 
@@ -478,14 +493,14 @@ export class CngxPopover {
   private updateArrowOffset(): void {
     const anchor = this.anchorElement();
     if (!anchor) {
-      this.arrowOffsetSignal.set(null);
+      this._arrowOffset.set(null);
       this.resolvedEdgeSignal.set(null);
       return;
     }
     const panel = this.elRef.nativeElement;
     const panelRect = panel.getBoundingClientRect();
     if (panelRect.width === 0 || panelRect.height === 0) {
-      this.arrowOffsetSignal.set(null);
+      this._arrowOffset.set(null);
       this.resolvedEdgeSignal.set(null);
       return;
     }
@@ -501,7 +516,7 @@ export class CngxPopover {
     const radius = this.getArrowBounds()?.borderRadius ?? 12;
     const raw = triggerCentre - panelStart;
     const clamped = Math.max(radius, Math.min(raw, panelDim - radius));
-    this.arrowOffsetSignal.set(`${clamped}px`);
+    this._arrowOffset.set(`${clamped}px`);
   }
 
   private get popoverElement(): HTMLElement {
@@ -519,7 +534,7 @@ export class CngxPopover {
 
   private finalize(): void {
     openPopovers.delete(this);
-    this.arrowOffsetSignal.set(null);
+    this._arrowOffset.set(null);
     this.resolvedEdgeSignal.set(null);
     const el = this.popoverElement;
     try {

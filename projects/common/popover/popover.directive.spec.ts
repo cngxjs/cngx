@@ -419,4 +419,22 @@ describe('CngxPopover', () => {
       expect(host.popover().state()).toBe('open');
     });
   });
+
+  describe('public arrowOffset and resolvedEdge mirrors', () => {
+    it('exposes arrowOffset as a readonly Signal', () => {
+      const { fixture } = setup(BasicHost);
+      const host = fixture.componentInstance as BasicHost;
+      const popover = host.popover();
+      expect(popover.arrowOffset).toBeDefined();
+      expect(typeof popover.arrowOffset).toBe('function');
+      expect(popover.arrowOffset()).toBeNull();
+    });
+
+    it('exposes resolvedEdge defaulting to the requested placement before the first geometry read', () => {
+      const { fixture } = setup(BasicHost);
+      const host = fixture.componentInstance as BasicHost;
+      const popover = host.popover();
+      expect(popover.resolvedEdge()).toBe('bottom');
+    });
+  });
 });
