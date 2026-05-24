@@ -1,13 +1,16 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Per-tab error badges',
-  subtitle: 'Toggle the validity flags below — the tab badge appears the moment <code>aggregator.shouldShow()</code> turns true. The descriptor span carries the announcement phrase for SR; the ID is always present in the DOM, content is reactive (cngx A11y rule).',
-  description: 'Bind <code>[errorAggregator]</code> on a tab to surface a badge + SR descriptor whenever the aggregator opts to show errors. Compose <code>CngxErrorAggregator</code> on a fieldset around the tab; the organism reads <code>shouldShow()</code> and <code>announcement()</code> reactively. NO duplicate aggregator — this is pure consumer composition over the existing primitive.',
+  title: 'CngxTabGroup: per tab error badges',
+  subtitle: 'Toggle the validity flags below - the tab badge appears the moment <code>aggregator.shouldShow()</code> turns true. The descriptor span carries the announcement phrase for SR; the ID is always present in the DOM, content is reactive (cngx A11y rule).',
+  description: 'Validation badge pattern for tabs: a wrapping fieldset hosts <code>CngxErrorAggregator</code>; the tab reads <code>shouldShow()</code> and <code>announcement()</code> reactively. No duplicate aggregator inside the organism - pure consumer composition.',
   level: 'organism',
   audience: ['dev', 'a11y'],
   artifact: 'standalone',
   focus: ['error-handling', 'composition', 'a11y-pattern'],
+  references: [
+    { label: 'WAI-ARIA APG - Tabs', href: 'https://www.w3.org/WAI/ARIA/apg/patterns/tabs/' },
+  ],
   apiComponents: [
     'CngxTabGroup',
     'CngxTab',

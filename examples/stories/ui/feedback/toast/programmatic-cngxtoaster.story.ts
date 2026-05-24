@@ -1,13 +1,16 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Programmatic (CngxToaster)',
+  title: 'CngxToaster: programmatic',
   subtitle: 'Inject <code>CngxToaster</code> and call <code>.show()</code>. Four severity levels, dedup, action buttons.',
-  description: 'Programmatic and declarative toast notifications with dedup, timer pause on hover/touch, and severity-based styling.',
+  description: 'Service-driven path: <code>inject(CngxToaster).show({...})</code> from anywhere a service can reach. Covers four severities, an Undo action, the 5x dedup behaviour, and a global dismiss.',
   level: 'organism',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
   focus: ['async-state', 'composition', 'a11y-pattern'],
+  references: [
+    { label: 'WAI-ARIA APG - Alert', href: 'https://www.w3.org/WAI/ARIA/apg/patterns/alert/' },
+  ],
   apiComponents: [
     'CngxToastOutlet',
     'CngxToastOn',
@@ -46,13 +49,13 @@ export const STORY: DemoSpec = {
     this.toaster.dismissAll();
   }`,
   template: `
-  <div style="display:flex;flex-wrap:wrap;gap:8px">
-    <button (click)="showSuccess()" class="chip">Success</button>
-    <button (click)="showError()" class="chip">Error (persistent)</button>
-    <button (click)="showInfo()" class="chip">Info</button>
-    <button (click)="showWarning()" class="chip">Warning</button>
-    <button (click)="showWithAction()" class="chip">With Undo Action</button>
-    <button (click)="showDuplicates()" class="chip">5x Dedup</button>
-    <button (click)="clearAll()" class="chip">Clear All</button>
+  <div class="button-row">
+    <button (click)="showSuccess()" class="chip" type="button">Success</button>
+    <button (click)="showError()" class="chip" type="button">Error (persistent)</button>
+    <button (click)="showInfo()" class="chip" type="button">Info</button>
+    <button (click)="showWarning()" class="chip" type="button">Warning</button>
+    <button (click)="showWithAction()" class="chip" type="button">With Undo Action</button>
+    <button (click)="showDuplicates()" class="chip" type="button">5x Dedup</button>
+    <button (click)="clearAll()" class="chip" type="button">Clear All</button>
   </div>`,
 };

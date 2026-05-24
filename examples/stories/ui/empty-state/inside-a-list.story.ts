@@ -1,9 +1,9 @@
 import type { DemoSpec } from '../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Inside a List',
-  subtitle: 'Replaces list content when empty. Works with any container — no special wiring needed.',
-  description: 'Universal empty-state atom for grids, tables, lists, and dashboards. Communicates why a view is empty and what the user can do next. Shows a default icon when none is projected.',
+  title: 'CngxEmptyState: inside a list',
+  subtitle: 'Replaces list content when empty. Works with any container - no special wiring needed.',
+  description: 'No grid, no special slot: just an <code>@if</code> guard around the rendered list. Demonstrates that the atom carries its own framing chrome and drops into any container without configuration.',
   level: 'molecule',
   audience: ['dev', 'design'],
   artifact: 'standalone',
@@ -17,7 +17,7 @@ export const STORY: DemoSpec = {
   imports: ['CngxEmptyState'],
   setup: `protected listItems = signal<string[]>([]);`,
   template: `
-  <div style="border:1px solid var(--cngx-color-border);border-radius:8px;min-height:120px;display:flex;align-items:center;justify-content:center">
+  <div class="demo-frame-list">
     @if (listItems().length === 0) {
       <cngx-empty-state
         title="All tasks completed"

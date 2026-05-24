@@ -1,9 +1,9 @@
 import type { DemoSpec } from '../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Template Context',
+  title: 'CngxSkeletonContainer: template context',
   subtitle: 'The placeholder template receives <code>$implicit</code> (index), <code>count</code>, <code>first</code>, <code>last</code>. Use them to vary the skeleton appearance.',
-  description: 'Skeleton loading container with placeholder template repetition and automatic loading/content switching.',
+  description: 'Reference for the placeholder template context: <code>$implicit</code>, <code>count</code>, <code>first</code>, <code>last</code> all read, each row varies in width by position. Use as a recipe when authoring custom skeletons.',
   level: 'molecule',
   audience: ['dev', 'design'],
   artifact: 'standalone',
@@ -18,14 +18,19 @@ export const STORY: DemoSpec = {
   imports: ['CngxSkeletonContainer', 'CngxSkeletonPlaceholder'],
   setup: `protected readonly loading = signal(true);`,
   template: `
-  <cngx-skeleton [loading]="true" [count]="5">
+  <cngx-skeleton [loading]="loading()" [count]="5">
     <ng-template cngxSkeletonPlaceholder let-i let-first="first" let-last="last" let-count="count">
-      <div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--cngx-color-border,#e0e0e0)">
-        <span style="font-size:0.75rem;color:var(--cngx-color-text-muted);width:24px">{{ i + 1 }}/{{ count }}</span>
-        <div [style.height]="'12px'" [style.width]="first ? '70%' : last ? '40%' : '55%'"
-          style="border-radius:4px;background:var(--cngx-surface-alt,#e0e0e0)"></div>
+      <div class="demo-skeleton-rule">
+        <span class="demo-skeleton-rule__index">{{ i + 1 }}/{{ count }}</span>
+        <div class="demo-skeleton-line demo-skeleton-line--body"
+          [style.width]="first ? '70%' : last ? '40%' : '55%'"></div>
       </div>
     </ng-template>
     <p>Content here after loading</p>
   </cngx-skeleton>`,
+  templateChrome: `<div class="button-row" style="margin-bottom:16px">
+    <button type="button" class="chip" [attr.aria-pressed]="loading()" (click)="loading.update((v) => !v)">
+      {{ loading() ? 'Loading...' : 'Loaded' }}
+    </button>
+  </div>`,
 };

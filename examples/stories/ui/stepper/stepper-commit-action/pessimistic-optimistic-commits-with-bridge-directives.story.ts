@@ -1,9 +1,9 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Pessimistic + optimistic commits with bridge directives',
-  subtitle: 'Toggle the mode and "simulate error" to exercise the four quadrants. The toast + banner bridges fire on commit failure without any explicit <code>[state]</code> binding — they read <code>CNGX_STATEFUL</code> from the presenter via <code>{ host: true }</code>.',
-  description: 'Bind <code>[commitAction]</code> to gate every step transition through an async write. <code>[commitMode]="pessimistic"</code> (default) keeps the user on the origin step until the action resolves and renders <code>aria-busy="true"</code> + a spinner on the target step row. <code>[commitMode]="optimistic"</code> advances immediately and rolls back on rejection. Rapid consecutive picks supersede any in-flight commit. <code>&lt;cngx-toast-on /&gt;</code> + <code>&lt;cngx-banner-on /&gt;</code> compose against the presenter\'s <code>CNGX_STATEFUL</code> producer with zero <code>[state]</code> wiring — proving the bridge fallback contract.',
+  title: 'CngxStepper: pessimistic and optimistic commits with bridge directives',
+  subtitle: 'Toggle the mode and "simulate error" to exercise the four quadrants. The toast and banner bridges fire on commit failure without any explicit <code>[state]</code> binding - they read <code>CNGX_STATEFUL</code> from the presenter via <code>{ host: true }</code>.',
+  description: 'Async commit gating across both modes. Pessimistic keeps the user on the origin step until <code>[commitAction]</code> resolves; optimistic advances eagerly and rolls back on rejection. <code>cngx-toast-on</code> and <code>cngx-banner-on</code> compose against the presenter via DI - no <code>[state]</code> binding required.',
   level: 'organism',
   audience: ['dev'],
   artifact: 'standalone',
@@ -31,7 +31,7 @@ export const STORY: DemoSpec = {
     return new Observable<boolean>((sub) => {
       const handle = setTimeout(() => {
         if (fail) {
-          sub.error(new Error('Server refused step ' + from + ' → ' + to));
+          sub.error(new Error('Server refused step ' + from + ' -> ' + to));
         } else {
           sub.next(true);
           sub.complete();
@@ -63,10 +63,10 @@ export const STORY: DemoSpec = {
   </cngx-stepper>`,
   templateChrome: `<div class="event-row" style="gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap">
     <button type="button" class="chip"
-            [style.background]="mode() === 'optimistic' ? '#c8e6c9' : ''"
+            [class.demo-chip-toggle--active]="mode() === 'optimistic'"
             (click)="mode.set('optimistic')">optimistic</button>
     <button type="button" class="chip"
-            [style.background]="mode() === 'pessimistic' ? '#c8e6c9' : ''"
+            [class.demo-chip-toggle--active]="mode() === 'pessimistic'"
             (click)="mode.set('pessimistic')">pessimistic</button>
     <label style="margin-inline-start:12px">
       <input type="checkbox"

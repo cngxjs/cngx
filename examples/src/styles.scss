@@ -3091,6 +3091,368 @@ cngx-radio-group .cngx-radio + .cngx-radio {
   margin-inline-start: 0;
 }
 
+// ---------------------------------------------------------------------------
+// UI demo helpers: keep thematic chrome (border, radius, padding, background,
+// color, font-size, box-shadow) out of inline `style="..."` and behind named
+// classes so the audit's STYLE-THEME rule stays honest.
+// ---------------------------------------------------------------------------
+
+.demo-frame-card {
+  border: 1px solid var(--cngx-color-border, #e5e7eb);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.demo-frame-list {
+  border: 1px solid var(--cngx-color-border, #e5e7eb);
+  border-radius: 8px;
+  min-height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.demo-frame-padded {
+  border: 1px solid var(--cngx-color-border, #e5e7eb);
+  border-radius: 8px;
+  padding: 24px;
+}
+
+.demo-frame-relative {
+  position: relative;
+  border: 1px solid var(--cngx-color-border, #e5e7eb);
+  border-radius: 8px;
+  padding: 24px;
+  min-height: 80px;
+}
+
+.demo-hint {
+  font-size: 0.875rem;
+  color: var(--cngx-color-text-muted, #64748b);
+  margin: 0;
+}
+
+.demo-hint--small {
+  font-size: 0.8125rem;
+}
+
+.demo-empty-state-link {
+  font-size: 0.8125rem;
+  color: var(--cngx-color-interactive, #4f46e5);
+}
+
+.demo-skeleton-bar {
+  background: var(--cngx-skeleton-bg, #e5e7eb);
+  border-radius: 4px;
+}
+
+.demo-card-tile {
+  padding: 8px 12px;
+  background: var(--cngx-card-bg, #f8fafc);
+  border-radius: 4px;
+}
+
+.demo-card-cell {
+  padding: 16px;
+  background: var(--cngx-card-bg, #f8fafc);
+  border-radius: 6px;
+  text-align: center;
+}
+
+.demo-empty-state-block {
+  text-align: center;
+  padding: 24px;
+  color: var(--cngx-color-text-muted, #64748b);
+}
+
+.demo-empty-state-block--large {
+  padding: 32px;
+}
+
+.demo-error-block {
+  text-align: center;
+  padding: 24px;
+  color: var(--cngx-alert-error-icon, #ef4444);
+}
+
+.demo-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.demo-stack--tight {
+  gap: 8px;
+}
+
+.demo-row-center {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.demo-skeleton-row {
+  display: flex;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--cngx-color-border, #e0e0e0);
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+
+.demo-skeleton-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--cngx-surface-alt, #e0e0e0);
+  flex-shrink: 0;
+}
+
+.demo-skeleton-lines {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.demo-skeleton-line {
+  border-radius: 4px;
+  background: var(--cngx-surface-alt, #e0e0e0);
+}
+
+.demo-skeleton-line--title {
+  height: 14px;
+  width: 40%;
+}
+
+.demo-skeleton-line--body {
+  height: 12px;
+}
+
+.demo-card-loaded {
+  padding: 16px;
+  border: 1px solid var(--cngx-color-border, #e0e0e0);
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+
+.demo-card-loaded p {
+  margin: 4px 0 0;
+  color: var(--cngx-color-text-muted, #64748b);
+}
+
+.demo-skeleton-rule {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--cngx-color-border, #e0e0e0);
+}
+
+.demo-skeleton-rule__index {
+  font-size: 0.75rem;
+  color: var(--cngx-color-text-muted, #64748b);
+  width: 24px;
+}
+
+.demo-speak-card {
+  padding: 16px 20px;
+  border-radius: 8px;
+  background: var(--cngx-surface-alt, #f8f9fa);
+  border: 1px solid var(--cngx-color-border, #ddd);
+  line-height: 1.6;
+  font-size: 0.875rem;
+  flex: 1;
+}
+
+.demo-speak-card--accent {
+  border: 0;
+  border-left: 4px solid var(--cngx-color-accent, #f5a623);
+  border-radius: 8px;
+}
+
+.demo-speak-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.demo-speak-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 480px;
+}
+
+.demo-speak-control-row {
+  margin-top: 16px;
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  font-size: 0.8125rem;
+}
+
+.demo-speak-control-row label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.demo-speak-control-row input[type='range'] {
+  width: 100px;
+}
+
+.demo-speak-section h4 {
+  margin: 0 0 8px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.demo-speak-section p {
+  margin: 0 0 8px;
+  font-size: 0.8125rem;
+  color: var(--cngx-color-text-muted, #666);
+}
+
+.demo-speak-row-label {
+  font-size: 0.75rem;
+  color: var(--cngx-color-text-muted, #666);
+}
+
+.demo-speak-row-text {
+  font-size: 0.875rem;
+}
+
+.demo-speak-strong {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.demo-speak-pre {
+  font-size: 0.75rem;
+  margin: 0 0 12px;
+}
+
+.demo-speak-thumb {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.demo-speak-thumbrow {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.demo-narrow-frame {
+  max-width: 320px;
+  border: 1px dashed currentColor;
+  padding: 4px;
+  resize: horizontal;
+  overflow: auto;
+}
+
+.chip.demo-chip-toggle--active {
+  background: var(--cngx-color-success-surface, #c8e6c9);
+  border-color: var(--cngx-color-success-border, #66bb6a);
+}
+
+// Compact button used by sidenav demos (Close, mode toggle). cngx.reset strips
+// the default <button> chrome, so without this rule any `class="sort-btn"`
+// reads as plain text.
+.sort-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border: 1px solid var(--cngx-color-border, #d1d5db);
+  border-radius: 4px;
+  background: var(--cngx-color-surface, #fff);
+  color: var(--cngx-color-text, inherit);
+  font: inherit;
+  font-size: 0.8125rem;
+  cursor: pointer;
+}
+
+.sort-btn:hover {
+  background: var(--cngx-ex-surface-alt, #f3f4f6);
+}
+
+.demo-slot-busy {
+  padding: 0 6px;
+  font-size: 0.7em;
+  background: var(--cngx-color-info-surface, #1d4ed8);
+  color: var(--cngx-color-on-info, #fff);
+}
+
+.demo-slot-error-pill {
+  background: var(--cngx-color-error-surface, #dc2626);
+  color: var(--cngx-color-on-error, #fff);
+  font-size: 0.7em;
+  padding: 0 6px;
+}
+
+.demo-stepper-empty {
+  padding: 24px;
+  text-align: center;
+  color: var(--mat-sys-on-surface-variant, var(--cngx-color-text-muted, #666));
+}
+
+.demo-stepper-empty p {
+  margin: 6px 0 0;
+  font-size: 0.9em;
+}
+
+.demo-sidenav-active-link {
+  border-left-color: var(--cngx-color-primary);
+  background: color-mix(in oklch, var(--cngx-color-primary) 8%, transparent);
+  font-weight: 600;
+}
+
+.demo-sidenav-sub-active {
+  color: var(--cngx-color-primary);
+  font-weight: 600;
+}
+
+.demo-async-input {
+  padding: 8px 12px;
+  border: 1px solid var(--cngx-color-border, #ddd);
+  border-radius: 6px;
+  width: 240px;
+}
+
+.demo-filter-empty {
+  padding: 16px;
+  color: var(--cngx-color-text-muted, #64748b);
+  text-align: center;
+}
+
+.demo-empty-text-small {
+  padding: 24px;
+  color: var(--cngx-color-text-muted, #64748b);
+  margin: 0;
+  text-align: center;
+}
+
+.demo-error-text-small {
+  padding: 24px;
+  color: var(--cngx-alert-error-icon, #ef4444);
+  margin: 0;
+  text-align: center;
+}
+
+.demo-loading-pad {
+  padding: var(--cngx-sidenav-padding, 16px);
+}
+
+.demo-loading-pad p {
+  font-size: 0.8rem;
+  margin: 0;
+  opacity: 0.6;
+}
+
 // Material theme — the prebuilt azure-blue palette so mat-select panels
 // render with proper Material chrome inside the demos. Imported here
 // alongside the cngx foundation so the dev server picks it up via HMR

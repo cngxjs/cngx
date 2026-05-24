@@ -1,9 +1,9 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'cngx-async-container — Full Control + Toast',
+  title: 'CngxAsyncContainer: full control with toast',
   subtitle: 'Four templates, built-in refresh bar, integrated toast on success/error. Uses <code>createManualState</code> for demo control.',
-  description: 'Coordinates skeleton, content, empty, error, refresh, and toast from a single CngxAsyncState. Three factory functions, two template APIs, composable with other feedback atoms.',
+  description: 'Full surface variant: skeleton, content, empty, and error templates all overridden, plus the integrated toast bridge fires on success/error transitions. Four buttons exercise every state path.',
   level: 'molecule',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
@@ -34,49 +34,48 @@ export const STORY: DemoSpec = {
     this.manual.set('loading');
     setTimeout(() => this.manual.setSuccess([]), 2000);
   }`,
-  template: `  <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px">
-    <button (click)="loadManual()" class="chip">Load</button>
-    <button (click)="emptyManual()" class="chip">Empty</button>
-    <button (click)="errorManual()" class="chip">Error</button>
-    <button (click)="refreshManual()" class="chip" [disabled]="manual.isFirstLoad()">Refresh</button>
-    <button (click)="manual.reset()" class="chip">Reset</button>
-  </div>
-
-  <cngx-async-container [state]="manual" ariaLabel="Items"
+  template: `  <cngx-async-container [state]="manual" ariaLabel="Items"
     toastSuccess="Loaded successfully" toastError="Failed to load">
 
     <ng-template cngxAsyncSkeleton>
-      <div style="display:flex;flex-direction:column;gap:8px">
+      <div class="demo-stack--tight" style="display:flex;flex-direction:column">
         @for (i of [1,2,3]; track i) {
-          <div style="height:24px;background:var(--cngx-skeleton-bg,#e5e7eb);border-radius:4px"></div>
+          <div class="demo-skeleton-bar" style="height:24px"></div>
         }
       </div>
     </ng-template>
 
     <ng-template cngxAsyncContent let-data>
-      <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:4px">
+      <ul class="demo-stack" style="list-style:none;padding:0;margin:0;gap:4px">
         @for (name of data; track name) {
-          <li style="padding:8px 12px;background:var(--cngx-card-bg,#f8fafc);border-radius:4px">{{ name }}</li>
+          <li class="demo-card-tile">{{ name }}</li>
         }
       </ul>
     </ng-template>
 
     <ng-template cngxAsyncEmpty>
-      <div style="text-align:center;padding:32px;color:var(--cngx-muted,#64748b)">
+      <div class="demo-empty-state-block--large demo-empty-state-block">
         <p style="margin:0 0 8px;font-size:1.125rem">No items</p>
         <p style="margin:0">Try loading with different parameters.</p>
       </div>
     </ng-template>
 
     <ng-template cngxAsyncError let-err>
-      <div style="text-align:center;padding:24px;color:var(--cngx-alert-error-icon,#ef4444)">
+      <div class="demo-error-block">
         <p style="margin:0 0 8px;font-size:1.125rem">Load failed</p>
         <p style="margin:0 0 12px;opacity:0.8">{{ err }}</p>
-        <button (click)="loadManual()" class="chip">Retry</button>
+        <button (click)="loadManual()" class="chip" type="button">Retry</button>
       </div>
     </ng-template>
   </cngx-async-container>`,
-  templateChrome: `<div class="event-grid" style="margin-bottom:12px">
+  templateChrome: `<div class="button-row" style="margin-bottom:16px">
+    <button (click)="loadManual()" class="chip" type="button">Load</button>
+    <button (click)="emptyManual()" class="chip" type="button">Empty</button>
+    <button (click)="errorManual()" class="chip" type="button">Error</button>
+    <button (click)="refreshManual()" class="chip" type="button" [disabled]="manual.isFirstLoad()">Refresh</button>
+    <button (click)="manual.reset()" class="chip" type="button">Reset</button>
+  </div>
+<div class="event-grid" style="margin-bottom:12px">
     <div class="event-row">
       <span class="event-label">Status</span>
       <span class="event-value">{{ manual.status() }}</span>

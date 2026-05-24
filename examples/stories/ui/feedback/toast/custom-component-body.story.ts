@@ -1,13 +1,16 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Custom Component Body',
+  title: 'CngxToaster: custom component body',
   subtitle: 'Pass a <code>content</code> component to <code>ToastConfig</code> for rich toast bodies. Rendered via <code>NgComponentOutlet</code>.',
-  description: 'Programmatic and declarative toast notifications with dedup, timer pause on hover/touch, and severity-based styling.',
+  description: 'Component-projection variant: a separate Angular component is passed as <code>content</code> with typed <code>contentInputs</code>. Use when the toast body is complex enough to deserve its own template/file.',
   level: 'organism',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
   focus: ['async-state', 'composition', 'a11y-pattern'],
+  references: [
+    { label: 'WAI-ARIA APG - Alert', href: 'https://www.w3.org/WAI/ARIA/apg/patterns/alert/' },
+  ],
   apiComponents: [
     'CngxToastOutlet',
     'CngxToastOn',
@@ -37,8 +40,8 @@ export const STORY: DemoSpec = {
     });
   }`,
   template: `
-  <div style="display:flex;flex-wrap:wrap;gap:8px">
-    <button (click)="showCustomComponent()" class="chip">Validation Errors (title + component)</button>
-    <button (click)="showCustomNoTitle()" class="chip">Build Report (component only)</button>
+  <div class="button-row">
+    <button (click)="showCustomComponent()" class="chip" type="button">Validation Errors (title + component)</button>
+    <button (click)="showCustomNoTitle()" class="chip" type="button">Build Report (component only)</button>
   </div>`,
 };

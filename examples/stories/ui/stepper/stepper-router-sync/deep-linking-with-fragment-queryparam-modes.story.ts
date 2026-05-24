@@ -1,9 +1,9 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Deep-linking with fragment + queryParam modes',
-  subtitle: 'Click any step — the URL updates to match. Reload the demo page with the fragment / query-param intact and the wizard lands on that step. Browser-back replays visited steps. The <code>(syncError)</code> output captures Router rejections (rare in practice, e.g. a guard refusing the navigation).',
-  description: 'Bind <code>cngxStepperRouterSync</code> to deep-link the active step into the URL. Clicking a step updates the fragment (<code>#step=&lt;id&gt;</code>) by default; reloading the page lands on that step; browser-back walks the visited history without reload. Toggle <code>[mode]</code> to swap to query-param mode (<code>?step=&lt;id&gt;</code>). The directive becomes a no-op when <code>@angular/router</code> is not provided — log surfaces a one-time dev warning.',
+  title: 'CngxStepperRouterSync: deep linking with fragment and queryparam modes',
+  subtitle: 'Click any step - the URL updates to match. Reload the demo page with the fragment / query-param intact and the wizard lands on that step. Browser-back replays visited steps. The <code>(syncError)</code> output captures Router rejections (rare in practice, e.g. a guard refusing the navigation).',
+  description: 'URL deep-linking integration: <code>cngxStepperRouterSync</code> mirrors the active step into either <code>#step=&lt;id&gt;</code> or <code>?step=&lt;id&gt;</code>. The mode toggle re-binds at runtime; the rare <code>(syncError)</code> path is rendered so guard rejections are observable.',
   level: 'organism',
   audience: ['dev'],
   artifact: 'standalone',

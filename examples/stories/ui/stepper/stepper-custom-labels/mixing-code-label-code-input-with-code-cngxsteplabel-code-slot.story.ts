@@ -1,9 +1,9 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Mixing <code>[label]</code> Input with <code>cngxStepLabel</code> slot',
-  subtitle: 'Step 1 uses the plain <code>[label]</code> Input. Steps 2–4 project a <code>&lt;ng-template cngxStepLabel&gt;</code> with custom content — icon + text + reactive counter. The slot template wins over the Input on a per-step basis.',
-  description: 'Use <code>&lt;ng-template cngxStepLabel&gt;</code> to override the per-step label rendering with arbitrary content — icons, badges, counters, multi-line text. The first step uses the simple <code>[label]="..."</code> Input (default string rendering); the remaining steps use the slot template to demonstrate icon + text + counter composition. Both paths render inside the same strip button — the slot is purely additive.',
+  title: 'CngxStepper: mixing label input with cngxStepLabel slot',
+  subtitle: 'Step 1 uses the plain <code>[label]</code> Input. Steps 2 to 4 project a <code>&lt;ng-template cngxStepLabel&gt;</code> with custom content - icon + text + reactive counter. The slot template wins over the Input on a per-step basis.',
+  description: 'Per-step decision matrix between the cheap <code>[label]</code> Input and the slot template. Step 2 layers a counter chip that updates live; step 4 uses bold text only. Both shapes coexist inside the same strip.',
   level: 'organism',
   audience: ['dev', 'design'],
   artifact: 'standalone',
@@ -24,26 +24,26 @@ export const STORY: DemoSpec = {
   template: `  <cngx-stepper [(activeStepIndex)]="active" aria-label="Custom-label wizard">
     <div cngxStep label="Profile">
       <ng-template cngxStepContent>
-        <p>This step uses the <code>[label]="Profile"</code> Input — default string rendering.</p>
+        <p>This step uses the <code>[label]="Profile"</code> Input - default string rendering.</p>
       </ng-template>
     </div>
     <div cngxStep label="Notifications">
       <ng-template cngxStepLabel>
-        <span aria-hidden="true">🔔</span>
+        <span aria-hidden="true">&#128276;</span>
         Notifications
         @if (notificationCount() > 0) {
           <span class="chip" style="padding:0 6px;font-size:0.7em">{{ notificationCount() }}</span>
         }
       </ng-template>
       <ng-template cngxStepContent>
-        <p>This step's strip-button label is composed via <code>&lt;ng-template cngxStepLabel&gt;</code> — icon glyph + text + reactive counter chip.</p>
+        <p>This step's strip-button label is composed via <code>&lt;ng-template cngxStepLabel&gt;</code> - icon glyph + text + reactive counter chip.</p>
         <button type="button" class="chip" (click)="notificationCount.update((n) => n + 1)">+1 notification</button>
         <button type="button" class="chip" (click)="notificationCount.set(0)" style="margin-inline-start:8px">clear</button>
       </ng-template>
     </div>
     <div cngxStep label="Security">
       <ng-template cngxStepLabel>
-        <span aria-hidden="true">🔒</span>
+        <span aria-hidden="true">&#128274;</span>
         Security
       </ng-template>
       <ng-template cngxStepContent>
@@ -52,11 +52,11 @@ export const STORY: DemoSpec = {
     </div>
     <div cngxStep label="Done">
       <ng-template cngxStepLabel>
-        <span aria-hidden="true">✓</span>
+        <span aria-hidden="true">&#10003;</span>
         <strong>Done</strong>
       </ng-template>
       <ng-template cngxStepContent>
-        <p>Bold-text override — slot accepts arbitrary inline markup, the strip button keeps its layout.</p>
+        <p>Bold-text override - slot accepts arbitrary inline markup, the strip button keeps its layout.</p>
       </ng-template>
     </div>
   </cngx-stepper>`,

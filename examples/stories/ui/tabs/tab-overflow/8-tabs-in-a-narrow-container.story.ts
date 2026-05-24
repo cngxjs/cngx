@@ -1,13 +1,16 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: '8 tabs in a narrow container',
-  subtitle: 'The strip wrapper is constrained to 320px. With 8 tabs only the first few fit; the rest report <code>intersectionRatio &lt; 1</code> and surface in the More dropdown. Picking a hidden tab calls <code>panelHost.selectById()</code> — same delegation a real-keyboard ArrowRight roving move uses.',
-  description: 'Opt-in <code>&lt;cngx-tab-overflow&gt;</code> molecule projected inside <code>&lt;cngx-tab-group&gt;</code> — surfaces tab buttons that have scrolled out of the strip viewport (or never fit) through a "More" <code>CngxPopover</code> dropdown. Visibility is tracked via a native <code>IntersectionObserver</code> rooted on the strip; partial-clip thresholds fall through to "hidden" so users always reach every tab. Talks to the organism only through <code>CNGX_TAB_PANEL_HOST</code> — no concrete-class injection.',
+  title: 'CngxTabOverflow: eight tabs in a narrow container',
+  subtitle: 'The strip wrapper is constrained to 320px. With 8 tabs only the first few fit; the rest report <code>intersectionRatio &lt; 1</code> and surface in the More dropdown. Picking a hidden tab calls <code>panelHost.selectById()</code> - same delegation a real-keyboard ArrowRight roving move uses.',
+  description: 'IntersectionObserver-driven overflow: eight tab buttons in a resizable 320px frame. Hidden tabs surface inside a CngxPopover anchored on the More button; selection delegates back to the panel host so keyboard and pointer paths converge.',
   level: 'organism',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
   focus: ['composition', 'behavior', 'a11y-pattern'],
+  references: [
+    { label: 'WAI-ARIA APG - Tabs', href: 'https://www.w3.org/WAI/ARIA/apg/patterns/tabs/' },
+  ],
   apiComponents: [
     'CngxTabGroup',
     'CngxTabOverflow',
@@ -20,7 +23,7 @@ export const STORY: DemoSpec = {
   ],
   imports: ['CngxTabGroup', 'CngxTabOverflow', 'CngxTab', 'CngxTabContent'],
   setup: `protected readonly active = signal(0);`,
-  template: `  <div style="max-width: 320px; border: 1px dashed currentColor; padding: 4px; resize: horizontal; overflow: auto">
+  template: `  <div class="demo-narrow-frame">
     <cngx-tab-group [(activeIndex)]="active" aria-label="Overflow demo">
       <div cngxTab [label]="'Profile'">
         <ng-template cngxTabContent><p>Profile</p></ng-template>
