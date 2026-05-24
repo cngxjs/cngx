@@ -47,7 +47,6 @@ export class CngxSearch {
   private readonly destroyRef = inject(DestroyRef);
 
   constructor() {
-    // fromEvent is the correct RxJS usage here: external DOM event stream.
     fromEvent<InputEvent>(this.el.nativeElement as HTMLInputElement, 'input')
       .pipe(
         map((e) => (e.target as HTMLInputElement).value),

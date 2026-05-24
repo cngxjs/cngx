@@ -144,7 +144,6 @@ export class CngxRovingTabindex {
   constructor() {
     afterNextRender(() => this.initialized.set(true));
 
-    // Sync tabindex on every items/activeIndex change: active = "0", others = "-1".
     effect(() => {
       if (!this.initialized()) {
         return;

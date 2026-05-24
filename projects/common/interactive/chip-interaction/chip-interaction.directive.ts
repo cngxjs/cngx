@@ -224,13 +224,9 @@ export class CngxChipInteraction<T = unknown>
     const span = renderer.createElement('span') as HTMLSpanElement;
     renderer.setAttribute(span, 'id', this.describedId);
     renderer.setAttribute(span, 'aria-hidden', 'true');
-    // SR-only inline styles via CSS-var fallback chain: the directive
-    // runs in arbitrary host markup and must not require a consumer
-    // stylesheet (hence inline), but every value goes through
-    // `var(--cngx-sr-only-*, default)` so the atomic-decompose
-    // schematic preserves the structural/thematic split — consumer
-    // CSS layers can still override sizes by setting the
-    // `--cngx-sr-only-*` properties on the host.
+    // sr-only via inline styles — directive runs in arbitrary markup, can't
+    // require a consumer stylesheet. Every value reads `--cngx-sr-only-*`
+    // first so consumers can still override (structural/thematic split).
     renderer.setStyle(span, 'position', 'var(--cngx-sr-only-position, absolute)');
     renderer.setStyle(span, 'width', 'var(--cngx-sr-only-size, 1px)');
     renderer.setStyle(span, 'height', 'var(--cngx-sr-only-size, 1px)');
@@ -239,17 +235,12 @@ export class CngxChipInteraction<T = unknown>
     renderer.setStyle(span, 'white-space', 'var(--cngx-sr-only-white-space, nowrap)');
     renderer.appendChild(hostEl, span);
 
-    // Symmetric teardown: when the directive is destroyed but the
-    // host element outlives it (e.g. structural-directive re-projection,
-    // sibling viewContainerRef.clear()), the parent removal does not
-    // collect this span. Without explicit cleanup the span leaks and
-    // the next instantiation collides on `describedId`.
+    // Host may outlive the directive (structural re-projection, sibling
+    // clear) — without explicit removal the span leaks and the next
+    // instance collides on `describedId`.
     inject(DestroyRef).onDestroy(() => {
-      // Defensive parent-node check: the destroy hook fires symmetrically
-      // with `appendChild`, but the host may have been detached by a
-      // parent structural directive at the same destroy tick. Removing
-      // a child whose parent is no longer ours would throw under a
-      // stricter renderer; this guard expresses the contract explicitly.
+      // Host may already be detached by a parent structural directive at
+      // the same destroy tick; removeChild on a stale parent throws.
       if (span.parentNode === hostEl) {
         renderer.removeChild(hostEl, span);
       }

@@ -1,10 +1,7 @@
-// connect-recycler-active-descendant.ts
-// Wires CngxRecycler to CngxActiveDescendant virtual mode.
-
 import { effect, untracked } from '@angular/core';
 
-// Type-only: the directive is passed as a runtime argument, not value-imported,
-// so the helper can live in @cngx/common/data without a hard dep on a11y.
+// type-only: passed in by the consumer at runtime, so @cngx/common/data
+// avoids a value-level dep on a11y
 import type { CngxActiveDescendant } from '@cngx/common/a11y';
 
 import type { CngxRecycler } from './recycler';
@@ -53,9 +50,8 @@ export function connectRecyclerToActiveDescendant(
   recycler: CngxRecycler,
   ad: CngxActiveDescendant,
 ): void {
-  // rAF-debounced scrollToIndex — rapid keypresses (e.g. ArrowDown held)
-  // otherwise enqueue one scroll call per keystroke. Each new pending
-  // target overwrites the previous rAF; only the latest lands.
+  // rAF-debounced: held ArrowDown otherwise enqueues one scroll per keystroke.
+  // Each new pending target overwrites the previous rAF, only the latest lands.
   let scrollRafId: number | null = null;
 
   effect((onCleanup) => {
@@ -68,8 +64,7 @@ export function connectRecyclerToActiveDescendant(
     }
     scrollRafId = requestAnimationFrame(() => {
       scrollRafId = null;
-      // Re-read pending target inside the frame — if the user continued
-      // typing / arrow-pressing during the frame, the latest target wins.
+      // re-read inside the frame so the latest target wins if the user kept typing
       const latest = untracked(() => ad.pendingHighlight());
       if (latest != null) {
         recycler.scrollToIndex(latest);

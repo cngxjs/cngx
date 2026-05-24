@@ -98,24 +98,16 @@ export type CngxTagSize = 'sm' | 'md' | 'lg' | 'xl';
   exportAs: 'cngxTag',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  // Encapsulation `None` — the visual variant matrix relies on
-  // host-class + `[data-color]` attribute selectors (.cngx-tag--filled
-  // [data-color='neutral'] etc). Emulated encapsulation rewrites those
-  // rules to `[_ngcontent-xxx]` form which never matches the host
-  // (carries `_nghost-xxx`), so the chrome silently drops at runtime.
-  // Mirrors `mat-*` convention — atoms ship globally consumable
-  // classes; thematic values cascade through `--cngx-tag-*` custom
-  // properties for consumer overrides.
+  // Host-class + `[data-color]` selectors must match the host directly;
+  // emulated encapsulation would rewrite them to `[_ngcontent-xxx]` and
+  // silently drop the chrome. Same as `mat-*`.
   encapsulation: ViewEncapsulation.None,
   imports: [NgTemplateOutlet],
-  // Three positional slots: prefix → label → suffix. The default
-  // label branch wraps `<ng-content />` in `cngx-tag__label` so the
-  // inner span can own `overflow: hidden` + `min-width: 0` independent
-  // of the host's `inline-flex` layout. Without that wrapper,
-  // `text-overflow: ellipsis` applied to the host fails — flex items
-  // don't shrink under ellipsis by default and the projected text
-  // node has no shrinkable parent. Consumers who project
-  // `*cngxTagLabel` own their own ellipsis hook.
+  // The default label wraps `<ng-content />` in `.cngx-tag__label` so the
+  // inner span owns `min-width: 0` + `overflow: hidden` — without it,
+  // host-level `text-overflow: ellipsis` won't fire (flex children don't
+  // shrink under ellipsis). Consumer-projected `*cngxTagLabel` owns its
+  // own overflow.
   template: `
     @if (prefixTpl(); as t) {
       <ng-container *ngTemplateOutlet="t; context: slotContext()" />

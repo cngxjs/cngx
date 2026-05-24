@@ -1,8 +1,5 @@
-// Phase 4: connect-recycler-roving.ts — wires CngxRecycler to CngxRovingTabindex virtual mode
-
 import { ElementRef, effect, inject, untracked } from '@angular/core';
-// Type-only: CngxRovingTabindex is passed as an argument at runtime, not imported as a value.
-// The consumer provides the instance via inject(CngxRovingTabindex, { host: true }).
+// type-only: instance is passed in by the consumer via inject(..., { host: true })
 import type { CngxRovingTabindex } from '@cngx/common/a11y';
 
 import type { CngxRecycler } from './recycler';

@@ -79,7 +79,6 @@ export class CngxRipple {
     const host = this.el.nativeElement as HTMLElement;
     const rect = host.getBoundingClientRect();
 
-    // Calculate ripple origin — centered or from pointer position
     let x: number;
     let y: number;
     if (this.centered()) {

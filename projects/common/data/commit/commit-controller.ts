@@ -108,25 +108,16 @@ export interface CngxCommitController<T> {
  * See `reference_api_prefix_convention.md`.
  */
 export function createCommitController<T>(): CngxCommitController<T> {
-  // Writable state slot — the `state` getter returns the read-only
-  // `CngxAsyncState<T | undefined>` view so consumers can't bypass
-  // the controller to flip status directly.
+  // read-only `state` view; consumers can't flip status directly
   const slot: ManualAsyncState<T | undefined> =
     createManualState<T | undefined>();
 
-  // Monotonic commit id. Incremented on every `begin(...)`. An
-  // outcome callback checks its captured id against the current
-  // counter — if a newer commit has started, the callback is
-  // ignored (supersede).
+  // monotonic supersede id; stale callbacks compare captured id against this
   let commitId = 0;
 
-  // Cancel handle for the runner currently in flight. Replaced on
-  // each `begin(...)` and cleared after the runner settles.
   let active: CngxCommitHandle | null = null;
 
-  // Public signal: what the user was trying to commit. Exposed so
-  // the template can render a pending spinner on THAT specific row
-  // and the commit-error context can surface it.
+  // drives the pending spinner on the specific row the user clicked
   const intendedState = signal<T | undefined>(undefined);
 
   return {
@@ -135,9 +126,8 @@ export function createCommitController<T>(): CngxCommitController<T> {
     intendedValue: intendedState.asReadonly(),
 
     begin(runner, intended, previous, handlers) {
-      // Supersede: tear down any previous runner. Must run BEFORE
-      // we bump `commitId` — otherwise the previous callback's
-      // supersede-check would pass and fire after all.
+      // tear down previous runner BEFORE bumping commitId, otherwise its
+      // supersede-check would pass and fire after all
       active?.cancel();
       const id = ++commitId;
       intendedState.set(intended);
@@ -145,9 +135,6 @@ export function createCommitController<T>(): CngxCommitController<T> {
 
       active = runner({
         onSuccess: (committed) => {
-          // Supersede guard. `commitId` advances on every new
-          // `begin`; if our captured id is stale, a newer commit
-          // has taken over.
           if (id !== commitId) {
             return;
           }
@@ -169,8 +156,7 @@ export function createCommitController<T>(): CngxCommitController<T> {
     cancel() {
       active?.cancel();
       active = null;
-      // Bump the id so any pending callbacks from the aborted
-      // runner are treated as superseded and do nothing.
+      // bump id so late callbacks from the aborted runner are superseded
       commitId++;
     },
   };

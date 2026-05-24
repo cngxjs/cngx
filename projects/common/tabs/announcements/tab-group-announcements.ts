@@ -1,6 +1,6 @@
 // Single-consumer factory — staged under family-uniformity
 // (tabs-accepted-debt §9, alongside `createTabGroupTemplateBindings`
-// and `CngxMatTabAggregatorContent`). Re-Eval: second consumer OR
+// and `CngxMatTabAggregatorContent`). Re-eval on second consumer or
 // sibling debt closure.
 import { computed, linkedSignal, type Signal } from '@angular/core';
 
@@ -111,9 +111,9 @@ export function createTabGroupAnnouncements(
     return ariaLabel() ?? config.ariaLabels?.tabsRegion ?? i18n.tabsLabel;
   });
 
-  // `prev?.source` gives the source value before the most recent
-  // change — prior activeIndex without an `effect`-driven slot
-  // (Pillar 1). Coalesce to current on first emission.
+  // `prev?.source` = source value before the most recent change —
+  // prior activeIndex without an `effect`-driven slot (Pillar 1).
+  // Coalesce to current on first emission.
   const priorActiveIndex = linkedSignal<number, number>({
     source: () => presenter.activeIndex(),
     computation: (curr, prev) => prev?.source ?? curr,

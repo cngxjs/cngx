@@ -83,20 +83,16 @@ export class CngxListboxTrigger<T = unknown> {
     const key = event.key;
     const ad = this.listbox().ad;
 
-    // Tag-input convention: Backspace on an empty search-input fires
-    // (backspaceOnEmpty) so the parent composite (CngxCombobox, future
-    // tag-input, …) can delete the trailing chip. Lives at the trigger
-    // because the trigger already owns keyboard on this element —
-    // having two keydown handlers on the same element is a smell we
-    // avoid by consolidating here. Non-input triggers never fire it
-    // because the co-located-search guard is false.
+    // Tag-input convention: Backspace on an empty co-located search input
+    // emits backspaceOnEmpty for the parent composite (CngxCombobox, …)
+    // to delete the trailing chip. Consolidated here so the trigger owns
+    // the only keydown handler on the element. Non-input triggers skip
+    // this path via the co-located-search guard.
     if (key === 'Backspace' && this.search) {
       const host = this.el.nativeElement;
       if (host instanceof HTMLInputElement && host.value === '') {
         this.backspaceOnEmpty.emit();
-        // Do NOT preventDefault — let the user's Backspace bubble
-        // naturally; the consumer's chip-remove path handles the DOM
-        // impact via the output.
+        // No preventDefault — the consumer's chip-remove path owns DOM impact.
       }
     }
 
@@ -151,14 +147,12 @@ export class CngxListboxTrigger<T = unknown> {
     }
 
     if (this.search) {
-      // Input-driven trigger: let the keystroke land in the <input>
-      // so CngxListboxSearch's debounced term updates.
+      // Let the keystroke reach the <input> for CngxListboxSearch debounce.
       return;
     }
     if (key.length === 1 && /\S/.exec(key) !== null) {
-      // Forward printable characters to active-descendant typeahead so the
-      // select trigger behaves like a native <select>: first letter jumps
-      // to the next matching option while focus stays on the trigger.
+      // Native <select> parity: printable chars drive AD typeahead while
+      // focus stays on the trigger.
       event.preventDefault();
       ad.typeaheadChar(key);
     }

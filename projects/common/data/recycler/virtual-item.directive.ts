@@ -1,5 +1,3 @@
-// Phase 4: virtual-item.directive.ts — CngxVirtualItem A11y atom
-
 import { Directive, computed, input } from '@angular/core';
 
 import type { CngxRecycler } from './recycler';

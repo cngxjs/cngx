@@ -143,7 +143,6 @@ export class CngxListbox<T = unknown> {
   constructor() {
     afterNextRender(() => this.initialized.set(true));
 
-    // Propagate selection back to options so they can render aria-selected.
     effect(() => {
       if (!this.initialized()) {
         return;
@@ -155,7 +154,6 @@ export class CngxListbox<T = unknown> {
       }
     });
 
-    // Bridge AD activations into selection mutations.
     this.ad.activated.subscribe((value) => this.handleActivation(value));
   }
 
@@ -311,17 +309,12 @@ export class CngxListbox<T = unknown> {
   }
 
   private handleActivation(value: unknown): void {
-    // See `externalActivation` — when the consumer opts in, we become
-    // activation-only (AD still fires `activated` on the Subject, but we
-    // don't write our own value). Consumers listen on `ad.activated`
-    // themselves and do the write after they've captured whatever they
-    // need (for example, the pre-pick value as a rollback target).
+    // externalActivation: AD still emits on `activated`, but the consumer
+    // owns the write (e.g. to capture a pre-pick rollback target).
     if (this.externalActivation()) {
       return;
     }
-    // AD emits raw `unknown` because the Subject is typed against option
-    // values as they come off the DOM; narrow to T here since the
-    // listbox owns the value domain.
+    // AD's Subject is typed `unknown`; the listbox owns the value domain.
     const narrowed = value as T;
     if (this.multiple()) {
       this.toggle(narrowed);

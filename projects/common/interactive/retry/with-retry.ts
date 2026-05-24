@@ -131,7 +131,6 @@ export function withRetry(action: AsyncAction, config?: RetryConfig): [AsyncActi
         if (generation !== thisGeneration) {
           return;
         }
-        // Success — clear retry state
         retryingState.set(false);
         succeededState.set(true);
         return;
@@ -142,13 +141,11 @@ export function withRetry(action: AsyncAction, config?: RetryConfig): [AsyncActi
         lastErrorState.set(err);
 
         if (attempt >= maxAttempts) {
-          // All attempts exhausted — propagate the error
           exhaustedState.set(true);
           retryingState.set(false);
           throw err;
         }
 
-        // Wait before next attempt
         retryingState.set(true);
         const delayMs =
           backoff === 'exponential' ? baseDelay * Math.pow(2, attempt - 1) : baseDelay * attempt;

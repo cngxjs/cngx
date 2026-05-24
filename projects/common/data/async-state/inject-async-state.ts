@@ -73,14 +73,13 @@ export function injectAsyncState<T>(
   function executeQuery(computation: () => Promise<T> | Observable<T>): void {
     cancelInFlight();
 
-    // First load → 'loading', subsequent → 'refreshing'
+    // first load -> loading, subsequent -> refreshing
     const status = untracked(state.isFirstLoad) ? 'loading' : 'refreshing';
     state.set(status);
 
     const result$ = computation();
 
     if (isObservable(result$)) {
-      // Observable path — subscribe, cancel via unsubscribe
       let hasEmitted = false;
       activeSubscription = result$.subscribe({
         next: (value) => {
@@ -90,13 +89,12 @@ export function injectAsyncState<T>(
         error: (err: unknown) => state.setError(err),
         complete: () => {
           if (!hasEmitted) {
-            // Observable completed without emitting — treat as empty success
+            // completed without emitting -> empty success
             state.setSuccess(undefined as T);
           }
         },
       });
     } else {
-      // Promise path — cancel via AbortController
       const controller = new AbortController();
       abortController = controller;
 
@@ -121,17 +119,15 @@ export function injectAsyncState<T>(
     }
   }
 
-  // The effect calls fn() exactly once per cycle.
-  // The result is captured and forwarded to executeQuery — no double invocation.
+  // fn() runs once per cycle; signals read inside it track via effect.
+  // Result is captured and run after debounce.
   effect(() => {
-    // fn() reads signals → tracked by effect. The returned Promise/Observable
-    // is captured here and executed after debounce.
     let result: Promise<T> | Observable<T>;
     try {
       result = fn();
     } catch (err: unknown) {
-      // fn() threw synchronously (e.g. required signal not yet set).
-      // Schedule error state after debounce to match async behavior.
+      // sync throw (e.g. required signal not yet set) — debounce the error
+      // to match the async path
       if (debounceTimer !== undefined) {
         clearTimeout(debounceTimer);
       }
@@ -146,7 +142,6 @@ export function injectAsyncState<T>(
       clearTimeout(debounceTimer);
     }
 
-    // Capture result in closure — executeQuery receives it directly.
     const captured = result;
     debounceTimer = setTimeout(() => {
       debounceTimer = undefined;

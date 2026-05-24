@@ -1,5 +1,3 @@
-// Phase 2: size-cache.ts — Signal-based measured height cache
-
 import { type Signal, signal } from '@angular/core';
 
 /**

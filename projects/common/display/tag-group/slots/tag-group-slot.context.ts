@@ -3,20 +3,10 @@ import type {
   CngxTagGroupGap,
 } from '../tag-group.component';
 
-// Phase 2 ships two structurally-identical context interfaces
-// (`CngxTagGroupHeaderContext` / `CngxTagGroupAccessoryContext`).
-// Kept as separate exported names so future per-slot fields (e.g.
-// `position` on accessories, dropdown-density on headers) can land
-// without breaking sibling consumers — divergence is the design
-// intent, not the current state. Mirrors the `tag-slot.context.ts`
-// convention.
-//
-// Re-evaluation tracked in
-// `.internal/architektur/display-accepted-debt.md §3` (slot-context
-// structural-identity headroom). Collapse to a single
-// `CngxTagGroupSlotContext` plus type aliases when the §3 trigger
-// fires — the entry pairs this pair with the Tag-side label/prefix/
-// suffix trio so a single re-evaluation covers both files.
+// Header and accessory contexts are structurally identical today.
+// Kept separate so per-slot fields (e.g. `position` on accessory) can
+// land without breaking sibling consumers. Mirrors `tag-slot.context.ts`.
+// Collapse trigger tracked in `display-accepted-debt.md §3`.
 
 /**
  * Context exposed by the `*cngxTagGroupHeader` slot — the full

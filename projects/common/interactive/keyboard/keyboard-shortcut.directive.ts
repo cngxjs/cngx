@@ -57,12 +57,11 @@ export class CngxKeyboardShortcut {
     const doc = inject(DOCUMENT);
     const isMac = doc.defaultView ? /mac/i.test(doc.defaultView.navigator.platform) : false;
 
-    // We set up both listeners and gate on scope() at filter time.
-    // This avoids re-subscribing when scope changes.
+    // Both streams stay subscribed; scope() gates inside the filter so
+    // toggling scope at runtime doesn't churn subscriptions.
     const globalKeydown$ = fromEvent<KeyboardEvent>(doc, 'keydown');
     const selfKeydown$ = fromEvent<KeyboardEvent>(el, 'keydown');
 
-    // Global scope: document events, excluding input elements
     globalKeydown$
       .pipe(
         filter(() => this.enabled() && this.scope() === 'global'),
@@ -75,7 +74,6 @@ export class CngxKeyboardShortcut {
         this.shortcutTriggered.emit(event);
       });
 
-    // Self scope: host element events only
     selfKeydown$
       .pipe(
         filter(() => this.enabled() && this.scope() === 'self'),
@@ -94,7 +92,6 @@ export class CngxKeyboardShortcut {
     return combo !== null && matchesKeyCombo(event, combo, isMac);
   }
 
-  // Memoised parse result — only re-parsed when the shortcut string changes.
   private parsedCombo: KeyCombo | null = null;
   private parsedComboStr = '';
 
