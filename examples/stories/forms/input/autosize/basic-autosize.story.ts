@@ -1,8 +1,8 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Basic Autosize',
-  subtitle: 'Type multiple lines — the textarea grows. Delete lines — it shrinks. The <code>height</code> signal reflects the current computed height.',
+  title: 'CngxAutosize: basic autosize',
+  subtitle: 'Type multiple lines - the textarea grows. Delete lines - it shrinks. The <code>height</code> signal reflects the current computed height.',
   description: 'Auto-resize textarea based on content. Signal-first alternative to cdkTextareaAutosize.',
   level: 'atom',
   audience: ['dev'],

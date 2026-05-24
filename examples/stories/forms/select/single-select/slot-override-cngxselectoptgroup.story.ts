@@ -1,35 +1,16 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Slot override: *cngxSelectOptgroup',
-  subtitle: 'Re-skin grouped-option labels — render badges, icons, or counts in the optgroup header without touching the option rows themselves. Class name <code>CngxSelectOptgroupTemplate</code> distinguishes this directive from the <code>&lt;cngx-optgroup&gt;</code> element component used in declarative composition.',
-  description: 'CngxSelect — native-feeling single-select dropdown with template overrides, optgroups, clearable, loading, commit-action, and signal-/reactive-forms bridges.',
+  title: 'CngxSelect: slot override cngxselectoptgroup',
+  subtitle: 'Re-skin grouped-option labels - render badges, icons, or counts in the optgroup header without touching the option rows themselves. Class name <code>CngxSelectOptgroupTemplate</code> distinguishes this directive from the <code>&lt;cngx-optgroup&gt;</code> element component used in declarative composition.',
   level: 'organism',
-  audience: ['dev', 'design', 'a11y'],
+  audience: ['dev', 'design'],
   artifact: 'standalone',
-  focus: ['visual-variants', 'a11y-pattern', 'composition'],
+  focus: ['visual-variants', 'composition'],
   framework: 'signal-forms',
   apiComponents: [
     'CngxSelect',
-    'CngxSelectOption',
-    'CngxSelectOptgroup',
-    'CngxSelectDivider',
-    'CngxSelectCheck',
-    'CngxSelectCaret',
     'CngxSelectOptgroupTemplate',
-    'CngxSelectPlaceholder',
-    'CngxSelectEmpty',
-    'CngxSelectLoading',
-    'CngxSelectLoadingGlyph',
-    'CngxSelectRefreshing',
-    'CngxSelectCommitError',
-    'CngxSelectOptionPending',
-    'CngxSelectOptionError',
-    'CngxSelectRetryButton',
-    'CngxSelectTriggerLabel',
-    'CngxSelectOptionLabel',
-    'CngxSelectClearButton',
-    'provideSelectConfig',
   ],
   moduleImports: [
     'import { CngxSelect, CngxSelectOptgroupTemplate, type CngxSelectOptionsInput } from \'@cngx/forms/select\';',
@@ -49,7 +30,7 @@ export const STORY: DemoSpec = {
   template: `  <cngx-select [label]="'Priority'" [options]="priorities" [(value)]="groupedValue" placeholder="Choose priority…">
     <ng-template cngxSelectOptgroup let-group>
       <span style="display:inline-flex;align-items:center;gap:0.5rem">
-        <span aria-hidden="true" style="font-size:0.75rem;padding:2px 6px;border-radius:999px;background:color-mix(in oklch, var(--cngx-color-text) 8%, transparent);color:var(--cngx-color-text-muted)">{{ group.children?.length ?? 0 }}</span>
+        <span aria-hidden="true" class="demo-select-optgroup-badge">{{ group.children?.length ?? 0 }}</span>
         <strong>{{ group.label }}</strong>
       </span>
     </ng-template>

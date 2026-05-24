@@ -1,9 +1,8 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Reactive Forms — adapted via adaptFormControl',
+  title: 'CngxListboxFieldBridge: reactive forms adapted via adaptformcontrol',
   subtitle: 'Same template, <code>[field]</code> receives the adapter output. Listbox and bridge are unchanged.',
-  description: 'CngxListbox integrated into <cngx-form-field> via CngxListboxFieldBridge, plus the universal CngxBindField bridge for any other control (mat-select, native inputs, custom controls).',
   level: 'molecule',
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
@@ -11,7 +10,6 @@ export const STORY: DemoSpec = {
   framework: 'signal-forms',
   apiComponents: [
     'CngxListboxFieldBridge',
-    'CngxBindField',
     'CngxListbox',
     'CngxOption',
     'CngxFormField',

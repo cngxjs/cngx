@@ -1,35 +1,16 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Slot override: *cngxSelectRetryButton',
-  subtitle: 'Swap the visual frame of every Retry / Try again button rendered by the shared panel-shell — load-error, inline refresh-error, and commit-error banner all read from this single override. Context: <code>{ retry, error, disabled, label }</code>.',
-  description: 'CngxSelect — native-feeling single-select dropdown with template overrides, optgroups, clearable, loading, commit-action, and signal-/reactive-forms bridges.',
+  title: 'CngxSelect: slot override cngxselectretrybutton',
+  subtitle: 'Swap the visual frame of every Retry / Try again button rendered by the shared panel-shell - load-error, inline refresh-error, and commit-error banner all read from this single override. Context: <code>{ retry, error, disabled, label }</code>.',
   level: 'organism',
-  audience: ['dev', 'design', 'a11y'],
+  audience: ['dev', 'design'],
   artifact: 'standalone',
-  focus: ['visual-variants', 'a11y-pattern', 'composition'],
+  focus: ['visual-variants', 'composition'],
   framework: 'signal-forms',
   apiComponents: [
     'CngxSelect',
-    'CngxSelectOption',
-    'CngxSelectOptgroup',
-    'CngxSelectDivider',
-    'CngxSelectCheck',
-    'CngxSelectCaret',
-    'CngxSelectOptgroupTemplate',
-    'CngxSelectPlaceholder',
-    'CngxSelectEmpty',
-    'CngxSelectLoading',
-    'CngxSelectLoadingGlyph',
-    'CngxSelectRefreshing',
-    'CngxSelectCommitError',
-    'CngxSelectOptionPending',
-    'CngxSelectOptionError',
     'CngxSelectRetryButton',
-    'CngxSelectTriggerLabel',
-    'CngxSelectOptionLabel',
-    'CngxSelectClearButton',
-    'provideSelectConfig',
   ],
   moduleImports: [
     'import { CngxSelect, CngxSelectRetryButton, type CngxSelectOptionDef, type CngxSelectOptionsInput } from \'@cngx/forms/select\';',
@@ -49,7 +30,7 @@ export const STORY: DemoSpec = {
   protected asyncSetError(): void { this.asyncState.setError(new Error('Network offline')); }`,
   template: `  <cngx-select [label]="'Language'" [options]="asyncOptions" [(value)]="asyncValue" [state]="asyncState" placeholder="Choose language…">
     <ng-template cngxSelectRetryButton let-retry let-label="label" let-disabled="disabled">
-      <button type="button" class="chip" [disabled]="disabled" (click)="retry()" style="background:color-mix(in oklch, var(--cngx-color-warning) 10%, transparent);border-color:color-mix(in oklch, var(--cngx-color-warning) 35%, transparent);color:var(--cngx-color-warning)">
+      <button type="button" class="chip demo-select-retry-button--warn" [disabled]="disabled" (click)="retry()">
         ↻ {{ label }}
       </button>
     </ng-template>

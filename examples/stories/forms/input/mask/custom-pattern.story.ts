@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Custom Pattern',
+  title: 'CngxInputMask: custom pattern',
   subtitle: 'Define a mask with tokens: <code>0</code> (digit), <code>A</code> (letter), <code>*</code> (alphanumeric), <code>9</code> (optional digit), <code>a</code> (optional letter). Escape with <code>\\\\</code>.',
   description: 'Pattern-based input masking with locale-aware presets, multi-pattern support, custom tokens, and Reactive Forms integration.',
   level: 'atom',

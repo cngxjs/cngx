@@ -1,19 +1,16 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Basic — sync quick-create',
+  title: 'CngxActionSelect: basic sync quick create',
   subtitle: 'Type a label and press the <strong>Create</strong> button inside the panel to materialise a new entry. The sync create returns a fresh value; the new option becomes the current selection, lands in the persistent local buffer, and the panel closes.',
-  description: 'CngxActionSelect — single-value autocomplete with inline quick-create. Seventh sibling of the select family; thin organism on top of createSelectCore + createCreateCommitHandler.',
   level: 'organism',
-  audience: ['dev', 'design', 'a11y'],
+  audience: ['dev', 'design'],
   artifact: 'standalone',
-  focus: ['composition', 'visual-variants', 'a11y-pattern'],
+  focus: ['composition', 'visual-variants'],
   framework: 'signal-forms',
   apiComponents: [
     'CngxActionSelect',
     'CngxSelectAction',
-    'provideActionSelectConfig',
-    'createCreateCommitHandler',
   ],
   moduleImports: [
     'import { CngxActionSelect, type CngxSelectCreateAction, type CngxSelectOptionDef } from \'@cngx/forms/select\';',
@@ -78,9 +75,9 @@ export const STORY: DemoSpec = {
         "
       >
         @if (pending) {
-          <span>⏳ Wird angelegt…</span>
+          <span>⏳ Creating…</span>
         } @else if (!term) {
-          <span style="opacity:.6">Tippen, um einen neuen Tag anzulegen</span>
+          <span style="opacity:.6">Type to create a new tag</span>
         } @else {
           <span>+ Create tag "<strong>{{ term }}</strong>"</span>
         }

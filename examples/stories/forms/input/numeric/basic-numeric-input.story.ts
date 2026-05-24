@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Basic Numeric Input',
+  title: 'CngxNumericInput: basic numeric input',
   subtitle: 'Type digits, use Arrow Up/Down to increment. Shift+Arrow for x10. Value is formatted with thousands separator on blur.',
   description: 'Locale-aware numeric input with Intl.NumberFormat formatting, arrow key increment/decrement, min/max clamping, and decimal control.',
   level: 'atom',

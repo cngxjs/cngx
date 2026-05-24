@@ -1,17 +1,15 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Typeahead — single-value async autocomplete',
-  subtitle: 'Inline <code>&lt;input role="combobox"&gt;</code> with <code>displayWith</code> — type to filter, pick to commit a single value. The input shows <code>displayWith(value)</code> after a pick so the selection survives blur/refocus. <code>clearOnBlur</code> (default <code>true</code>) snaps the input back to the last-committed display if the user types stray text without picking.',
-  description: 'CngxTypeahead — scalar async autocomplete. Single-value input bound to an async option source with typed-form-field, commit-action and slot-override support.',
+  title: 'CngxTypeahead: typeahead single value async autocomplete',
+  subtitle: 'Inline <code>&lt;input role="combobox"&gt;</code> with <code>displayWith</code> - type to filter, pick to commit a single value. The input shows <code>displayWith(value)</code> after a pick so the selection survives blur/refocus. <code>clearOnBlur</code> (default <code>true</code>) snaps the input back to the last-committed display if the user types stray text without picking.',
   level: 'organism',
-  audience: ['dev', 'design', 'a11y'],
+  audience: ['dev', 'design'],
   artifact: 'standalone',
-  focus: ['visual-variants', 'a11y-pattern', 'composition'],
+  focus: ['visual-variants', 'composition'],
   framework: 'signal-forms',
   apiComponents: [
     'CngxTypeahead',
-    'CngxSelectOptionLabel',
   ],
   moduleImports: [
     'import { CngxTypeahead, type CngxSelectOptionDef } from \'@cngx/forms/select\';',

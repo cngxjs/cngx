@@ -1,19 +1,16 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Pre-seeded + (created) output log',
-  subtitle: 'Component starts with <em>Development</em> already selected. The <code>(created)</code> output fires after every successful quick-create — dedicated channel for consumers that only care about creation events without branching on <code>action === \'create\'</code>.',
-  description: 'CngxActionSelect — single-value autocomplete with inline quick-create. Seventh sibling of the select family; thin organism on top of createSelectCore + createCreateCommitHandler.',
+  title: 'CngxActionSelect: pre seeded created output log',
+  subtitle: 'Component starts with <em>Development</em> already selected. The <code>(created)</code> output fires after every successful quick-create - dedicated channel for consumers that only care about creation events without branching on <code>action === \'create\'</code>.',
   level: 'organism',
-  audience: ['dev', 'design', 'a11y'],
+  audience: ['dev', 'design'],
   artifact: 'standalone',
-  focus: ['composition', 'visual-variants', 'a11y-pattern'],
+  focus: ['composition', 'visual-variants'],
   framework: 'signal-forms',
   apiComponents: [
     'CngxActionSelect',
     'CngxSelectAction',
-    'provideActionSelectConfig',
-    'createCreateCommitHandler',
   ],
   moduleImports: [
     'import { CngxActionSelect, type CngxSelectCreateAction, type CngxSelectOptionDef } from \'@cngx/forms/select\';',

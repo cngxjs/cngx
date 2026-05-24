@@ -1,18 +1,16 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Slot override: *cngxComboboxChip',
-  subtitle: 'Per-chip override for the combobox\'s tag strip — same context shape as <code>*cngxMultiSelectChip</code> (<code>{ option, remove, index }</code>), so a consumer-authored chip template can be projected into either variant unchanged.',
-  description: 'CngxCombobox — tag-input filter with live typeahead. Multi-value tag strip + free-text filtering, plus the same async/commit machinery as CngxSelect.',
+  title: 'CngxCombobox: slot override cngxcomboboxchip',
+  subtitle: 'Per-chip override for the combobox\'s tag strip - same context shape as <code>*cngxMultiSelectChip</code> (<code>{ option, remove, index }</code>), so a consumer-authored chip template can be projected into either variant unchanged.',
   level: 'organism',
-  audience: ['dev', 'design', 'a11y'],
+  audience: ['dev', 'design'],
   artifact: 'standalone',
-  focus: ['visual-variants', 'a11y-pattern', 'composition'],
+  focus: ['visual-variants', 'composition'],
   framework: 'signal-forms',
   apiComponents: [
     'CngxCombobox',
     'CngxComboboxChip',
-    'CngxComboboxTriggerLabel',
   ],
   moduleImports: [
     'import { CngxCombobox, CngxComboboxChip, type CngxSelectOptionDef } from \'@cngx/forms/select\';',
@@ -24,15 +22,15 @@ export const STORY: DemoSpec = {
     { value: 'rxjs', label: 'RxJS' },
     { value: 'a11y', label: 'Accessibility' },
     { value: 'ts', label: 'TypeScript' },
-    { value: 'old', label: 'Nicht mehr gepflegt', disabled: true },
+    { value: 'old', label: 'Unmaintained', disabled: true },
   ];
   protected readonly comboValues = signal<string[]>(['angular']);`,
   template: `  <cngx-combobox [label]="'Topics'" [options]="tagOptions" [(values)]="comboValues" placeholder="Choose tag…">
     <ng-template cngxComboboxChip let-opt let-remove="remove" let-i="index">
-      <span style="display:inline-flex;align-items:center;gap:0.25rem;padding:0.15rem 0.5rem;border-radius:999px;background:color-mix(in oklch, var(--cngx-color-info) 15%, transparent);color:var(--cngx-color-info);font-size:0.8rem">
+      <span class="demo-combobox-chip">
         <span aria-hidden="true">#{{ i + 1 }}</span>
         <strong>{{ opt.label }}</strong>
-        <button type="button" (click)="remove()" aria-label="Remove" style="background:none;border:none;color:inherit;cursor:pointer;padding:0 2px">×</button>
+        <button type="button" (click)="remove()" aria-label="Remove" class="demo-combobox-chip-remove">×</button>
       </span>
     </ng-template>
   </cngx-combobox>`,

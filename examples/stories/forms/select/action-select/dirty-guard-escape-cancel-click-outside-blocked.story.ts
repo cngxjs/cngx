@@ -1,19 +1,16 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Dirty guard — Escape cancel + click-outside blocked',
+  title: 'CngxActionSelect: dirty guard escape cancel click outside blocked',
   subtitle: 'The action slot includes a free-text description field. Typing into it calls <code>setDirty(true)</code> through the slot context; while dirty, Escape intercepts (fires <code>cancel()</code>) and click-outside is silently blocked. Press the explicit <strong>Cancel</strong> button or successful create to release the guard.',
-  description: 'CngxActionSelect — single-value autocomplete with inline quick-create. Seventh sibling of the select family; thin organism on top of createSelectCore + createCreateCommitHandler.',
   level: 'organism',
-  audience: ['dev', 'design', 'a11y'],
+  audience: ['dev', 'design'],
   artifact: 'standalone',
-  focus: ['composition', 'visual-variants', 'a11y-pattern'],
+  focus: ['composition', 'visual-variants'],
   framework: 'signal-forms',
   apiComponents: [
     'CngxActionSelect',
     'CngxSelectAction',
-    'provideActionSelectConfig',
-    'createCreateCommitHandler',
   ],
   moduleImports: [
     'import { CngxActionSelect, type CngxSelectCreateAction, type CngxSelectOptionDef } from \'@cngx/forms/select\';',
@@ -46,10 +43,12 @@ export const STORY: DemoSpec = {
     setDirty(false);
   }`,
   template: `  <div class="kbd-hint">
-    <strong>Try it:</strong>
-    <span>Open the panel + type into the description field</span>
-    <span>Press <kbd>Esc</kbd> or click outside — panel stays open</span>
-    <span>Press <kbd>Cancel</kbd> or complete create to release</span>
+    <strong>How it works:</strong>
+    <span>The trigger input drives the entry <strong>name</strong> (term). The panel-body input is an optional <strong>note</strong> that demonstrates the dirty-guard.</span>
+    <span>1. Type a name in the trigger above (e.g. "Mobile")</span>
+    <span>2. Optional: add a note in the panel body - this flips <code>dirty</code></span>
+    <span>3. Try <kbd>Esc</kbd> or click-outside while dirty - the panel stays open</span>
+    <span>4. Press <kbd>Cancel</kbd> (also clears the note) or <kbd>Create</kbd> to release</span>
   </div>
 
   <cngx-action-select
@@ -60,6 +59,7 @@ export const STORY: DemoSpec = {
     [quickCreateAction]="dirtyCreate"
     [clearable]="true"
     [(value)]="dirtyValue"
+    placeholder="Type a project name…"
   >
     <ng-template
       cngxSelectAction
@@ -77,28 +77,24 @@ export const STORY: DemoSpec = {
         border-top: 1px solid var(--cngx-color-border, #e5e7eb);
         background: var(--cngx-surface-variant, rgba(0,0,0,.02));
       ">
-        <div style="font-weight:600; font-size:.875rem">
-          + Create new entry "{{ term || '…' }}"
-          @if (dirty) { <span style="color:var(--cngx-color-primary)">· unsaved</span> }
+        <div class="demo-mini-form-heading">
+          + Create project "{{ term || '…' }}"
+          @if (dirty) { <span class="demo-mini-form-marker">· unsaved note</span> }
         </div>
+        <label class="demo-label" for="dirty-note-input">Optional note</label>
         <input
+          id="dirty-note-input"
           #dirtyInput
           type="text"
           (input)="handleDirtyInput($any($event.target).value, setDirty)"
-          placeholder="Beschreibung (optional)…"
-          style="
-            width: 100%;
-            padding: .35rem .5rem;
-            border: 1px solid var(--cngx-color-border, #cbd5e1);
-            border-radius: .25rem;
-            font: inherit;
-          "
+          placeholder="Anything you want to remember…"
+          class="demo-mini-form-input"
         />
-        <div style="display:flex; gap:.5rem; justify-content:flex-end">
+        <div class="demo-mini-form-actions">
           <button
             type="button"
             (click)="handleDirtyCancel(setDirty); dirtyInput.value = ''"
-            style="padding:.35rem .75rem; border:1px solid var(--cngx-color-border, #cbd5e1); border-radius:.25rem; background:transparent; cursor:pointer; font:inherit"
+            class="demo-mini-form-btn demo-mini-form-btn--ghost"
           >
             Cancel
           </button>
@@ -106,9 +102,9 @@ export const STORY: DemoSpec = {
             type="button"
             [disabled]="!term || pending"
             (click)="commit()"
-            style="padding:.35rem .75rem; border:0; border-radius:.25rem; background:var(--cngx-color-primary); color:#fff; cursor:pointer; font:inherit"
+            class="demo-mini-form-btn demo-mini-form-btn--primary"
           >
-            @if (pending) { Wird angelegt… } @else { Anlegen }
+            @if (pending) { Creating… } @else { Create }
           </button>
         </div>
       </div>

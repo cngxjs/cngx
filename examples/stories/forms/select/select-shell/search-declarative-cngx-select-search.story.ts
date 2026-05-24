@@ -1,9 +1,8 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Search — declarative <cngx-select-search>',
-  subtitle: 'Project <code>&lt;cngx-select-search /&gt;</code> as a child to add a filter input as the first item in the panel. The search element finds the shell via <code>CNGX_SELECT_SHELL_SEARCH_HOST</code>, two-way binds the term, and forwards <kbd>↑</kbd> <kbd>↓</kbd> <kbd>Home</kbd> <kbd>End</kbd> <kbd>Enter</kbd> <kbd>Esc</kbd> into the listbox AD. Each projected <code>&lt;cngx-option&gt;</code> reads <code>CNGX_OPTION_FILTER_HOST</code> and hides itself when the resolved label does not match — AD nav and visual filter stay in lockstep.',
-  description: 'CngxSelectShell — single-value declarative-options dropdown. Project user-authored <cngx-option> / <cngx-optgroup> children directly; the shell derives a hierarchy-aware option model and runs the same family-level intelligence (createSelectCore, createFieldSync, createScalarCommitHandler, announcer) as CngxSelect.',
+  title: 'CngxSelectShell: search declarative cngx select search',
+  subtitle: 'Project <code>&lt;cngx-select-search /&gt;</code> as a child to add a filter input as the first item in the panel. The search element finds the shell via <code>CNGX_SELECT_SHELL_SEARCH_HOST</code>, two-way binds the term, and forwards <kbd>↑</kbd> <kbd>↓</kbd> <kbd>Home</kbd> <kbd>End</kbd> <kbd>Enter</kbd> <kbd>Esc</kbd> into the listbox AD. Each projected <code>&lt;cngx-option&gt;</code> reads <code>CNGX_OPTION_FILTER_HOST</code> and hides itself when the resolved label does not match - AD nav and visual filter stay in lockstep.',
   level: 'organism',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
@@ -12,8 +11,6 @@ export const STORY: DemoSpec = {
   apiComponents: [
     'CngxSelectShell',
     'CngxSelectOption',
-    'CngxSelectOptgroup',
-    'CngxSelectDivider',
   ],
   moduleImports: [
     'import { CngxSelectShell, CngxSelectOption, CngxSelectSearch } from \'@cngx/forms/select\';',

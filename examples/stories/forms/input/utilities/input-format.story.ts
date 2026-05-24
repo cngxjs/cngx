@@ -1,16 +1,13 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Input Format',
+  title: 'CngxInputClear: input format',
   subtitle: '<code>[cngxInputFormat]</code> formats on blur (display) and parses on focus (edit). Reactive forms receive the raw value.',
-  description: 'Small headless behaviors: clear button, clipboard copy, and display formatting.',
   level: 'atom',
   audience: ['dev'],
   artifact: 'building-block',
   focus: ['behavior'],
   apiComponents: [
-    'CngxInputClear',
-    'CngxCopyValue',
     'CngxInputFormat',
   ],
   moduleImports: [

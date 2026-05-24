@@ -29,7 +29,14 @@
 @layer cngx.components {
   @scope (.cngx-required) {
     :scope {
-      display: contents;
+      /* Inline so the marker sits next to the label text. `display:
+       * contents` here pushed the inner <span> up into the
+       * label's parent — when that parent was a grid (the standard
+       * stacked-field layout), the asterisk ended up on its own
+       * row.
+       */
+      display: inline;
+      margin-inline-start: 0.125em;
     }
 
     span {

@@ -1,35 +1,15 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Async state consumer',
+  title: 'CngxSelect: async state consumer',
   subtitle: '<code>[state]</code> drives the panel via <code>CngxAsyncState</code>: loading → skeleton, success → options, empty → empty template, refreshing → top-bar + options, error → retry panel. Replaces <code>[options]</code> while the state has data.',
-  description: 'CngxSelect — native-feeling single-select dropdown with template overrides, optgroups, clearable, loading, commit-action, and signal-/reactive-forms bridges.',
   level: 'organism',
-  audience: ['dev', 'design', 'a11y'],
+  audience: ['dev', 'design'],
   artifact: 'standalone',
-  focus: ['visual-variants', 'a11y-pattern', 'composition'],
+  focus: ['visual-variants', 'composition'],
   framework: 'signal-forms',
   apiComponents: [
     'CngxSelect',
-    'CngxSelectOption',
-    'CngxSelectOptgroup',
-    'CngxSelectDivider',
-    'CngxSelectCheck',
-    'CngxSelectCaret',
-    'CngxSelectOptgroupTemplate',
-    'CngxSelectPlaceholder',
-    'CngxSelectEmpty',
-    'CngxSelectLoading',
-    'CngxSelectLoadingGlyph',
-    'CngxSelectRefreshing',
-    'CngxSelectCommitError',
-    'CngxSelectOptionPending',
-    'CngxSelectOptionError',
-    'CngxSelectRetryButton',
-    'CngxSelectTriggerLabel',
-    'CngxSelectOptionLabel',
-    'CngxSelectClearButton',
-    'provideSelectConfig',
   ],
   moduleImports: [
     'import { CngxSelect, CngxSelectError, type CngxSelectOptionDef, type CngxSelectOptionsInput } from \'@cngx/forms/select\';',
@@ -68,10 +48,10 @@ export const STORY: DemoSpec = {
     placeholder="Choose language…"
   >
     <ng-template cngxSelectError let-error let-retry="retry">
-      <div style="padding:0.5rem 0.75rem;color:var(--cngx-color-danger)">
-        Laden fehlgeschlagen: {{ error?.message ?? error }}
+      <div class="demo-async-error-strip">
+        Load failed: {{ error?.message ?? error }}
       </div>
-      <button type="button" class="chip" style="margin:0 0.75rem 0.5rem" (click)="retry()">Erneut laden</button>
+      <button type="button" class="chip" style="margin:0 0.75rem 0.5rem" (click)="retry()">Retry</button>
     </ng-template>
   </cngx-select>`,
   templateChrome: `<div class="event-grid" style="margin-top:12px">

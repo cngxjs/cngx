@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Single row with [(value)]',
+  title: 'CngxFilterRow: single row with value',
   subtitle: 'Edit field, operator, and value below. The bound signal updates on every change; clicking Remove writes <code>null</code>.',
   description: 'One standalone <cngx-filter-row> with [(value)]. No table, no builder wrapper. Shows the raw two-way binding contract so consumers can copy-paste the pattern.',
   level: 'molecule',
@@ -28,8 +28,8 @@ export const STORY: DemoSpec = {
   template: `
   <cngx-filter-row [fields]="fields" [(value)]="value" />
 
-  <div class="row-actions">
-    <button type="button" (click)="reset()">Reset to null</button>
+  <div class="row-actions button-row">
+    <button type="button" class="chip" (click)="reset()">Reset to null</button>
   </div>
 
   <pre class="code-block">{{ value() | json }}</pre>

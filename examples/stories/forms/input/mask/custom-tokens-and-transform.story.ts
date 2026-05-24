@@ -1,9 +1,8 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Custom Tokens and Transform',
+  title: 'CngxInputMask: custom tokens and transform',
   subtitle: 'Define custom token characters via <code>[customTokens]</code>. Use <code>[transform]</code> for global character transforms.',
-  description: 'Pattern-based input masking with locale-aware presets, multi-pattern support, custom tokens, and Reactive Forms integration.',
   level: 'atom',
   audience: ['dev'],
   artifact: 'building-block',

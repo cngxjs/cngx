@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxLabel: Error and disabled classes',
+  title: 'CngxLabel: error and disabled classes',
   subtitle: 'The label host flips three classes from the field presenter: <code>cngx-label--required</code>, <code>cngx-label--error</code> (touched AND invalid), and <code>cngx-label--disabled</code>. Toggle the chrome below to drive each state.',
   description: 'Three labels share the same template but bind to three signal-forms fields in different states. <code>cngx-label--required</code> reflects the validator graph, <code>cngx-label--error</code> reflects <code>showError()</code> from the presenter (touched AND invalid by default), and <code>cngx-label--disabled</code> reflects the schema-level <code>disabled()</code> rule. The classes are stable hooks for consumer CSS.',
   level: 'atom',

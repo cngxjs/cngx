@@ -1,18 +1,16 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Multi — custom *cngxMultiSelectChip template',
+  title: 'CngxMultiSelect: multi custom cngxmultiselectchip template',
   subtitle: 'Replace the default <code>&lt;cngx-chip&gt;</code> pill per instance with any content. The template context gives you the full option plus a commit-aware <code>remove</code> callback.',
-  description: 'CngxMultiSelect — multi-value selection with a chip strip trigger. Same async/commit machinery as CngxSelect; multi-specific slot overrides for chip + summary templates.',
   level: 'organism',
-  audience: ['dev', 'design', 'a11y'],
+  audience: ['dev', 'design'],
   artifact: 'standalone',
-  focus: ['visual-variants', 'a11y-pattern', 'composition'],
+  focus: ['visual-variants', 'composition'],
   framework: 'signal-forms',
   apiComponents: [
     'CngxMultiSelect',
     'CngxMultiSelectChip',
-    'CngxMultiSelectTriggerLabel',
   ],
   moduleImports: [
     'import { CngxMultiSelect, CngxMultiSelectChip, type CngxSelectOptionDef } from \'@cngx/forms/select\';',
@@ -24,7 +22,7 @@ export const STORY: DemoSpec = {
     { value: 'rxjs', label: 'RxJS' },
     { value: 'a11y', label: 'Accessibility' },
     { value: 'ts', label: 'TypeScript' },
-    { value: 'old', label: 'Nicht mehr gepflegt', disabled: true },
+    { value: 'old', label: 'Unmaintained', disabled: true },
   ];
   protected readonly multiCustomChipValues = signal<string[]>(['angular', 'signals', 'rxjs']);`,
   template: `  <cngx-multi-select
@@ -34,9 +32,9 @@ export const STORY: DemoSpec = {
     placeholder="Choose topics…"
   >
     <ng-template cngxMultiSelectChip let-opt let-remove="remove">
-      <span style="display:inline-flex;align-items:center;gap:0.25rem;padding:0.125rem 0.5rem;border-radius:0.25rem;background:color-mix(in oklch, var(--cngx-color-info) 15%, transparent);color:var(--cngx-color-info);font-weight:500;">
+      <span class="demo-multi-chip">
         <span>#{{ opt.label }}</span>
-        <button type="button" (click)="remove()" style="border:0;background:transparent;color:inherit;cursor:pointer;padding:0 0.125rem;">✕</button>
+        <button type="button" (click)="remove()" class="demo-multi-chip-remove" aria-label="Remove topic">✕</button>
       </span>
     </ng-template>
   </cngx-multi-select>`,

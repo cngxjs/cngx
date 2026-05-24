@@ -1,17 +1,15 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Combobox — text summary via *cngxComboboxTriggerLabel',
-  subtitle: 'Replace the chip strip with a plain-text summary while keeping the filter input visible. Context exposes the resolved options, raw values, and count — ideal for compact variants ("3 topics selected" + input on the same row).',
-  description: 'CngxCombobox — tag-input filter with live typeahead. Multi-value tag strip + free-text filtering, plus the same async/commit machinery as CngxSelect.',
+  title: 'CngxCombobox: combobox text summary via cngxcomboboxtriggerlabel',
+  subtitle: 'Replace the chip strip with a plain-text summary while keeping the filter input visible. Context exposes the resolved options, raw values, and count - ideal for compact variants ("3 topics selected" + input on the same row).',
   level: 'organism',
-  audience: ['dev', 'design', 'a11y'],
+  audience: ['dev', 'design'],
   artifact: 'standalone',
-  focus: ['visual-variants', 'a11y-pattern', 'composition'],
+  focus: ['visual-variants', 'composition'],
   framework: 'signal-forms',
   apiComponents: [
     'CngxCombobox',
-    'CngxComboboxChip',
     'CngxComboboxTriggerLabel',
   ],
   moduleImports: [
@@ -24,7 +22,7 @@ export const STORY: DemoSpec = {
     { value: 'rxjs', label: 'RxJS' },
     { value: 'a11y', label: 'Accessibility' },
     { value: 'ts', label: 'TypeScript' },
-    { value: 'old', label: 'Nicht mehr gepflegt', disabled: true },
+    { value: 'old', label: 'Unmaintained', disabled: true },
   ];
   protected readonly comboTextValues = signal<string[]>(['angular', 'signals']);`,
   template: `  <cngx-combobox
@@ -39,7 +37,7 @@ export const STORY: DemoSpec = {
       } @else if (count === 1) {
         <span style="padding-inline-end:0.5rem">{{ opts[0].label }}</span>
       } @else {
-        <span style="padding-inline-end:0.5rem;font-weight:500">{{ count }} topics</span>
+        <span class="demo-combobox-trigger-summary">{{ count }} topics</span>
       }
     </ng-template>
   </cngx-combobox>`,

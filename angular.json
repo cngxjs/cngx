@@ -289,7 +289,10 @@
                 "input": "examples/public"
               }
             ],
-            "styles": ["examples/src/styles.scss"]
+            "styles": [
+              "examples/src/styles.scss",
+              "node_modules/@angular/material/prebuilt-themes/azure-blue.css"
+            ]
           },
           "configurations": {
             "production": {

@@ -1,19 +1,15 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Commit action — optimistic / pessimistic with supersede',
-  subtitle: 'Each reorder hits the commit action. Optimistic applies immediately and rolls back on error; pessimistic freezes the whole strip until the write succeeds. Consecutive reorders supersede any in-flight commit — the state machine is shared with the rest of the select family.',
-  description: 'CngxReorderableMultiSelect — multi-value picker whose selected chips can be reordered via pointer drag and Alt+Arrow keyboard moves. Thin organism on top of createSelectCore + CngxReorder.',
+  title: 'CngxReorderableMultiSelect: commit action optimistic pessimistic with supersede',
+  subtitle: 'Each reorder hits the commit action. Optimistic applies immediately and rolls back on error; pessimistic freezes the whole strip until the write succeeds. Consecutive reorders supersede any in-flight commit - the state machine is shared with the rest of the select family.',
   level: 'organism',
-  audience: ['dev', 'design', 'a11y'],
+  audience: ['dev', 'design'],
   artifact: 'standalone',
-  focus: ['composition', 'behavior', 'a11y-pattern'],
+  focus: ['composition', 'behavior'],
   framework: 'signal-forms',
   apiComponents: [
     'CngxReorderableMultiSelect',
-    'CngxReorder',
-    'CngxMultiSelectChip',
-    'CngxMultiSelectTriggerLabel',
   ],
   moduleImports: [
     'import { CngxReorderableMultiSelect, type CngxSelectOptionDef } from \'@cngx/forms/select\';',
@@ -21,12 +17,12 @@ export const STORY: DemoSpec = {
   ],
   imports: ['CngxReorderableMultiSelect'],
   setup: `protected readonly songs: CngxSelectOptionDef<string>[] = [
-    { value: 's1', label: 'Intro — Mogwai' },
-    { value: 's2', label: 'Heart-Shaped Box — Nirvana' },
-    { value: 's3', label: 'Midnight City — M83' },
-    { value: 's4', label: 'Teardrop — Massive Attack' },
-    { value: 's5', label: 'Breathe — Pink Floyd' },
-    { value: 's6', label: 'Paranoid Android — Radiohead' },
+    { value: 's1', label: 'Intro - Mogwai' },
+    { value: 's2', label: 'Heart-Shaped Box - Nirvana' },
+    { value: 's3', label: 'Midnight City - M83' },
+    { value: 's4', label: 'Teardrop - Massive Attack' },
+    { value: 's5', label: 'Breathe - Pink Floyd' },
+    { value: 's6', label: 'Paranoid Android - Radiohead' },
   ];
   protected readonly commitValues = signal<string[]>(['s1', 's2', 's3', 's4', 's5']);
   protected readonly commitMode = signal<'optimistic' | 'pessimistic'>('optimistic');

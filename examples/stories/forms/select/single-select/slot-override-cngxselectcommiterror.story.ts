@@ -1,35 +1,16 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Slot override: *cngxSelectCommitError',
+  title: 'CngxSelect: slot override cngxselectcommiterror',
   subtitle: 'Replace the panel-shell\'s default commit-error banner with custom markup. Override receives <code>error</code>, the <code>option</code> the user was trying to pick, and a <code>retry()</code> callback that replays the commit.',
-  description: 'CngxSelect — native-feeling single-select dropdown with template overrides, optgroups, clearable, loading, commit-action, and signal-/reactive-forms bridges.',
   level: 'organism',
-  audience: ['dev', 'design', 'a11y'],
+  audience: ['dev', 'design'],
   artifact: 'standalone',
-  focus: ['visual-variants', 'a11y-pattern', 'composition'],
+  focus: ['visual-variants', 'composition'],
   framework: 'signal-forms',
   apiComponents: [
     'CngxSelect',
-    'CngxSelectOption',
-    'CngxSelectOptgroup',
-    'CngxSelectDivider',
-    'CngxSelectCheck',
-    'CngxSelectCaret',
-    'CngxSelectOptgroupTemplate',
-    'CngxSelectPlaceholder',
-    'CngxSelectEmpty',
-    'CngxSelectLoading',
-    'CngxSelectLoadingGlyph',
-    'CngxSelectRefreshing',
     'CngxSelectCommitError',
-    'CngxSelectOptionPending',
-    'CngxSelectOptionError',
-    'CngxSelectRetryButton',
-    'CngxSelectTriggerLabel',
-    'CngxSelectOptionLabel',
-    'CngxSelectClearButton',
-    'provideSelectConfig',
   ],
   moduleImports: [
     'import { CngxSelect, CngxSelectCommitError, type CngxSelectCommitAction, type CngxSelectOptionDef } from \'@cngx/forms/select\';',
@@ -63,7 +44,7 @@ export const STORY: DemoSpec = {
     commitErrorDisplay="banner"
   >
     <ng-template cngxSelectCommitError let-error let-option="option" let-retry="retry">
-      <div role="alert" style="display:flex;align-items:center;gap:0.5rem;padding:0.5rem;background:color-mix(in oklch, var(--cngx-color-danger) 10%, transparent);color:var(--cngx-color-danger);border-radius:6px">
+      <div role="alert" class="demo-select-error-banner">
         <span aria-hidden="true">⚠</span>
         <span style="flex:1">Could not save <strong>{{ option?.label }}</strong>: {{ error?.message }}</span>
         <button type="button" class="chip" (click)="retry()">Replay</button>

@@ -1,18 +1,15 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Multi — clearable',
+  title: 'CngxMultiSelect: multi clearable',
   subtitle: '<code>[clearable]="true"</code> exposes a single ✕ next to the caret that empties the whole selection in one click. The per-chip ✕ on every pill stays independent of this flag.',
-  description: 'CngxMultiSelect — multi-value selection with a chip strip trigger. Same async/commit machinery as CngxSelect; multi-specific slot overrides for chip + summary templates.',
   level: 'organism',
-  audience: ['dev', 'design', 'a11y'],
+  audience: ['dev', 'design'],
   artifact: 'standalone',
-  focus: ['visual-variants', 'a11y-pattern', 'composition'],
+  focus: ['visual-variants', 'composition'],
   framework: 'signal-forms',
   apiComponents: [
     'CngxMultiSelect',
-    'CngxMultiSelectChip',
-    'CngxMultiSelectTriggerLabel',
   ],
   moduleImports: [
     'import { CngxMultiSelect, type CngxSelectOptionDef } from \'@cngx/forms/select\';',
@@ -24,9 +21,9 @@ export const STORY: DemoSpec = {
     { value: 'rxjs', label: 'RxJS' },
     { value: 'a11y', label: 'Accessibility' },
     { value: 'ts', label: 'TypeScript' },
-    { value: 'old', label: 'Nicht mehr gepflegt', disabled: true },
+    { value: 'old', label: 'Unmaintained', disabled: true },
   ];
-  protected readonly multiClearableValues = signal<string[]>(['angular', 'a11y']);`,
+  protected readonly multiClearableValues = signal<string[]>(['angular']);`,
   template: `  <cngx-multi-select
     [label]="'Topics'"
     [options]="tagOptions"

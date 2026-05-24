@@ -1,18 +1,16 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Dirty guard — in-panel mini-form',
+  title: 'CngxActionMultiSelect: dirty guard in panel mini form',
   subtitle: 'Action slot hosts a free-text note + <strong>Cancel</strong> / <strong>Create</strong> buttons. Typing flips <code>setDirty(true)</code>; Escape intercepts to fire <code>cancel()</code>; click-outside is blocked until the workflow resolves.',
-  description: 'CngxActionMultiSelect — multi-value combobox with inline quick-create. Eighth sibling of the select family; reuses createCreateCommitHandler with a dedicated commit controller so toggle/create lifecycles stay independent.',
   level: 'organism',
-  audience: ['dev', 'design', 'a11y'],
+  audience: ['dev', 'design'],
   artifact: 'standalone',
-  focus: ['composition', 'visual-variants', 'a11y-pattern'],
+  focus: ['composition', 'visual-variants'],
   framework: 'signal-forms',
   apiComponents: [
     'CngxActionMultiSelect',
     'CngxSelectAction',
-    'provideActionSelectConfig',
   ],
   moduleImports: [
     'import { CngxActionMultiSelect, type CngxSelectCreateAction, type CngxSelectOptionDef } from \'@cngx/forms/select\';',
@@ -48,7 +46,7 @@ export const STORY: DemoSpec = {
     <strong>Try it:</strong>
     <span>Open + type in the note field → dirty</span>
     <span><kbd>Esc</kbd> fires cancel (resets dirty, keeps panel open)</span>
-    <span>Click outside — blocked while dirty</span>
+    <span>Click outside - blocked while dirty</span>
   </div>
 
   <cngx-action-multi-select
@@ -75,28 +73,23 @@ export const STORY: DemoSpec = {
         border-top: 1px solid var(--cngx-color-border, #e5e7eb);
         background: var(--cngx-surface-variant, rgba(0,0,0,.02));
       ">
-        <div style="font-weight:600; font-size:.875rem">
+        <div class="demo-mini-form-heading">
           + Create new tag "{{ term || '…' }}"
-          @if (dirty) { <span style="color:var(--cngx-color-primary)">· unsaved</span> }
+          @if (dirty) { <span class="demo-mini-form-marker">· unsaved</span> }
         </div>
         <input
           #dirtyNoteInput
           type="text"
           (input)="handleDirtyInput($any($event.target).value, setDirty)"
-          placeholder="Notiz (optional)…"
-          style="
-            width: 100%;
-            padding: .35rem .5rem;
-            border: 1px solid var(--cngx-color-border, #cbd5e1);
-            border-radius: .25rem;
-            font: inherit;
-          "
+          placeholder="Note (optional)…"
+          aria-label="Tag note"
+          class="demo-mini-form-input"
         />
-        <div style="display:flex; gap:.5rem; justify-content:flex-end">
+        <div class="demo-mini-form-actions">
           <button
             type="button"
             (click)="handleDirtyCancel(setDirty); dirtyNoteInput.value = ''"
-            style="padding:.35rem .75rem; border:1px solid var(--cngx-color-border, #cbd5e1); border-radius:.25rem; background:transparent; cursor:pointer; font:inherit"
+            class="demo-mini-form-btn demo-mini-form-btn--ghost"
           >
             Cancel
           </button>
@@ -104,9 +97,9 @@ export const STORY: DemoSpec = {
             type="button"
             [disabled]="!term || pending"
             (click)="commit()"
-            style="padding:.35rem .75rem; border:0; border-radius:.25rem; background:var(--cngx-color-primary); color:#fff; cursor:pointer; font:inherit"
+            class="demo-mini-form-btn demo-mini-form-btn--primary"
           >
-            @if (pending) { Wird angelegt… } @else { Anlegen }
+            @if (pending) { Creating… } @else { Create }
           </button>
         </div>
       </div>

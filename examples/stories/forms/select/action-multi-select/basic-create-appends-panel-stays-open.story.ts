@@ -1,18 +1,16 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Basic — create appends, panel stays open',
+  title: 'CngxActionMultiSelect: basic create appends panel stays open',
   subtitle: 'Each successful quick-create appends to <code>values[]</code>. The panel keeps its state so consumers can continue typing + creating + picking without re-opening.',
-  description: 'CngxActionMultiSelect — multi-value combobox with inline quick-create. Eighth sibling of the select family; reuses createCreateCommitHandler with a dedicated commit controller so toggle/create lifecycles stay independent.',
   level: 'organism',
-  audience: ['dev', 'design', 'a11y'],
+  audience: ['dev', 'design'],
   artifact: 'standalone',
-  focus: ['composition', 'visual-variants', 'a11y-pattern'],
+  focus: ['composition', 'visual-variants'],
   framework: 'signal-forms',
   apiComponents: [
     'CngxActionMultiSelect',
     'CngxSelectAction',
-    'provideActionSelectConfig',
   ],
   moduleImports: [
     'import { CngxActionMultiSelect, type CngxSelectCreateAction, type CngxSelectOptionDef } from \'@cngx/forms/select\';',
@@ -71,8 +69,8 @@ export const STORY: DemoSpec = {
           font: inherit;
         "
       >
-        @if (pending) { ⏳ „{{ term }}" wird angelegt… }
-        @else if (!term) { <span style="opacity:.6">Tippen, um einen neuen Tag anzulegen</span> }
+        @if (pending) { ⏳ Creating "{{ term }}"… }
+        @else if (!term) { <span style="opacity:.6">Type to create a new tag</span> }
         @else { + Create tag "<strong>{{ term }}</strong>" }
       </button>
     </ng-template>

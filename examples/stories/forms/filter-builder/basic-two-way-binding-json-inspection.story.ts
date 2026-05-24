@@ -1,9 +1,9 @@
 import type { DemoSpec } from '../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Basic — two-way binding + JSON inspection',
+  title: 'CngxFilterBuilder: basic two way binding json inspection',
   subtitle: 'Default editors (string/number/boolean/date). Type or click to add filters; the <code>[(value)]</code> tree is mirrored in the JSON panel below.',
-  description: 'Recursive query-builder for cngx — composable FilterGroup / FilterExpression tree, pluggable value editors, three logic operators (and/or/xor) plus orthogonal negated modifier.',
+  description: 'Recursive query-builder for cngx - composable FilterGroup / FilterExpression tree, pluggable value editors, three logic operators (and/or/xor) plus orthogonal negated modifier.',
   level: 'organism',
   audience: ['dev', 'design'],
   artifact: 'building-block',
@@ -11,9 +11,6 @@ export const STORY: DemoSpec = {
   framework: 'signal-forms',
   apiComponents: [
     'CngxFilterBuilder',
-    'CngxFilterBuilderPresenter',
-    'CngxFilterGroup',
-    'CngxFilterExpression',
   ],
   moduleImports: [
     'import { CngxFilterBuilder, createEmptyFilterRoot, type FilterGroup } from \'@cngx/forms/filter-builder\';',

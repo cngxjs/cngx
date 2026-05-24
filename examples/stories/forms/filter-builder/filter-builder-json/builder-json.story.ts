@@ -1,9 +1,9 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Builder ↔ JSON',
-  subtitle: 'Build a tree on the left; copy the JSON on the right. No table, no predicate — the FilterGroup IS the form value.',
-  description: '<cngx-filter-builder> driven as a pure form component: the consumer reads the tree as JSON, ships it to a backend, or stores it as a preset. No table, no predicate evaluation — the builder is the sole UI for assembling a serialisable FilterGroup.',
+  title: 'CngxFilterBuilder: builder json',
+  subtitle: 'Build a tree on the left; copy the JSON on the right. No table, no predicate - the FilterGroup IS the form value.',
+  description: '<cngx-filter-builder> driven as a pure form component: the consumer reads the tree as JSON, ships it to a backend, or stores it as a preset. No table, no predicate evaluation - the builder is the sole UI for assembling a serialisable FilterGroup.',
   level: 'organism',
   audience: ['dev'],
   artifact: 'building-block',
@@ -50,9 +50,9 @@ export const STORY: DemoSpec = {
   <div class="json-demo">
     <div class="json-demo__builder">
       <cngx-filter-builder [fields]="fields" [(value)]="tree" />
-      <div class="json-demo__actions">
-        <button type="button" (click)="resetTree()">Reset</button>
-        <button type="button" (click)="seedExamplePreset()">Seed preset</button>
+      <div class="json-demo__actions button-row">
+        <button type="button" class="chip" (click)="resetTree()">Reset</button>
+        <button type="button" class="chip" (click)="seedExamplePreset()">Seed preset</button>
       </div>
     </div>
     <div class="json-demo__output">

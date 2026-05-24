@@ -1,9 +1,8 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Autofocus on mount',
-  subtitle: '<code>[autofocus]="true"</code> focuses the trigger on first render — evaluated once, later bound changes have no effect (matches native <code>&lt;select autofocus&gt;</code>).',
-  description: 'CngxSelect — native-feeling single-select dropdown with template overrides, optgroups, clearable, loading, commit-action, and signal-/reactive-forms bridges.',
+  title: 'CngxSelect: autofocus on mount',
+  subtitle: '<code>[autofocus]="true"</code> focuses the trigger on first render - evaluated once, later bound changes have no effect (matches native <code>&lt;select autofocus&gt;</code>).',
   level: 'organism',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
@@ -11,25 +10,6 @@ export const STORY: DemoSpec = {
   framework: 'signal-forms',
   apiComponents: [
     'CngxSelect',
-    'CngxSelectOption',
-    'CngxSelectOptgroup',
-    'CngxSelectDivider',
-    'CngxSelectCheck',
-    'CngxSelectCaret',
-    'CngxSelectOptgroupTemplate',
-    'CngxSelectPlaceholder',
-    'CngxSelectEmpty',
-    'CngxSelectLoading',
-    'CngxSelectLoadingGlyph',
-    'CngxSelectRefreshing',
-    'CngxSelectCommitError',
-    'CngxSelectOptionPending',
-    'CngxSelectOptionError',
-    'CngxSelectRetryButton',
-    'CngxSelectTriggerLabel',
-    'CngxSelectOptionLabel',
-    'CngxSelectClearButton',
-    'provideSelectConfig',
   ],
   moduleImports: [
     'import { CngxSelect, type CngxSelectOptionDef } from \'@cngx/forms/select\';',
@@ -59,4 +39,7 @@ export const STORY: DemoSpec = {
   templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ autofocusValue() ?? '—' }}</span></div>
   </div>`,
+  references: [
+    { label: 'WAI-ARIA APG: Combobox autofocus on dialog open', href: 'https://www.w3.org/WAI/ARIA/apg/patterns/combobox/' },
+  ],
 };

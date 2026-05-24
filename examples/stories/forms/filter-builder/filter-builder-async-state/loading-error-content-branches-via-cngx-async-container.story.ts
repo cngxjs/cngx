@@ -1,25 +1,32 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Loading + error + content branches via <cngx-async-container>',
-  subtitle: 'Press <code>Load</code> to seed fields, <code>Fail</code> to surface the error template, or <code>Refresh</code> to drive the refresh-indicator overlay above the rendered builder.',
-  description: 'Wraps <cngx-filter-builder> in <cngx-async-container> for state-driven UI. Demonstrates the consumer-side loading / error / refreshing pattern after Phase C removed the in-shell async-state branches.',
+  title: 'CngxFilterBuilder: loading error content branches via cngx async container',
+  subtitle:
+    'Press <code>Load</code> to seed fields, <code>Fail</code> to surface the error template, or <code>Refresh</code> to drive the refresh-indicator overlay above the rendered builder.',
+  description:
+    'Wraps <cngx-filter-builder> in <cngx-async-container> for state-driven UI. Demonstrates the consumer-side loading / error / refreshing pattern.',
   level: 'organism',
   audience: ['dev'],
   artifact: 'building-block',
   focus: ['async-state', 'composition', 'error-handling'],
   framework: 'signal-forms',
-  apiComponents: [
+  apiComponents: ['CngxFilterBuilder', 'CngxAsyncContainer'],
+  moduleImports: [
+    "import { CngxAsyncContainer, CngxAsyncSkeletonTpl, CngxAsyncContentTpl, CngxAsyncErrorTpl, CngxAsyncEmptyTpl } from '@cngx/ui/feedback';",
+    "import { createManualState } from '@cngx/common/data';",
+    "import { CngxFilterBuilder, createEmptyFilterRoot, type FilterFieldDef, type FilterGroup } from '@cngx/forms/filter-builder';",
+    "import { FILTER_BUILDER_FIELDS } from '../../../fixtures';",
+  ],
+  imports: [
     'CngxFilterBuilder',
     'CngxAsyncContainer',
+    'CngxAsyncSkeletonTpl',
+    'CngxAsyncContentTpl',
+    'CngxAsyncEmptyTpl',
+    'CngxAsyncErrorTpl',
+    'JsonPipe',
   ],
-  moduleImports: [
-    'import { CngxAsyncContainer, CngxAsyncSkeletonTpl, CngxAsyncContentTpl, CngxAsyncErrorTpl, CngxAsyncEmptyTpl } from \'@cngx/ui/feedback\';',
-    'import { createManualState } from \'@cngx/common/data\';',
-    'import { CngxFilterBuilder, createEmptyFilterRoot, type FilterFieldDef, type FilterGroup } from \'@cngx/forms/filter-builder\';',
-    'import { FILTER_BUILDER_FIELDS } from \'../../../fixtures\';',
-  ],
-  imports: ['CngxFilterBuilder', 'CngxAsyncContainer', 'CngxAsyncSkeletonTpl', 'CngxAsyncContentTpl', 'CngxAsyncEmptyTpl', 'CngxAsyncErrorTpl', 'JsonPipe'],
   setup: `protected readonly state = createManualState<readonly FilterFieldDef[]>();
   protected readonly tree = signal<FilterGroup>(createEmptyFilterRoot());
   protected loadFields(): void {
@@ -40,11 +47,11 @@ export const STORY: DemoSpec = {
   }`,
   template: `
   <div class="demo-form">
-    <div class="demo-actions">
-      <button type="button" (click)="loadFields()">Load</button>
-      <button type="button" (click)="refreshFields()">Refresh</button>
-      <button type="button" (click)="failFields()">Fail</button>
-      <button type="button" (click)="resetState()">Reset</button>
+    <div class="button-row">
+      <button type="button" class="chip" (click)="loadFields()">Load</button>
+      <button type="button" class="chip" (click)="refreshFields()">Refresh</button>
+      <button type="button" class="chip" (click)="failFields()">Fail</button>
+      <button type="button" class="chip" (click)="resetState()">Reset</button>
     </div>
 
     <cngx-async-container [state]="state" ariaLabel="Filter schema">

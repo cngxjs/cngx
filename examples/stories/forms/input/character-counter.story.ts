@@ -1,16 +1,15 @@
 import type { DemoSpec } from '../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Character Counter',
+  title: 'CngxInput: character counter',
   subtitle: '<code>CngxCharCount</code> shows a live counter. Supports <code>[max]</code> input and custom templates.',
   description: 'Smart input directives with ARIA projection, autocomplete inference, password toggle, and character counter.',
   level: 'molecule',
-  audience: ['dev', 'design', 'a11y'],
+  audience: ['dev', 'design'],
   artifact: 'standalone',
-  focus: ['behavior', 'composition', 'a11y-pattern'],
+  focus: ['behavior', 'composition'],
   apiComponents: [
     'CngxInput',
-    'CngxPasswordToggle',
     'CngxCharCount',
   ],
   moduleImports: [
@@ -55,8 +54,7 @@ export const STORY: DemoSpec = {
           style="resize:vertical"></textarea>
         <cngx-char-count [max]="140">
           <ng-template let-current="current" let-remaining="remaining" let-over="over">
-            <span [style.color]="over ? 'var(--cngx-field-error-color, #d32f2f)' : 'var(--cngx-field-hint-color, #666)'"
-                  style="font-size:0.75rem">
+            <span class="demo-counter" [class.demo-counter--warn]="over">
               @if (over) { {{ -remaining! }} characters over limit }
               @else { {{ remaining }} characters remaining }
             </span>

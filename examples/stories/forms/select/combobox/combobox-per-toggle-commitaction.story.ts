@@ -1,18 +1,15 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Combobox — per-toggle [commitAction]',
-  subtitle: 'Every toggle (option click, chip ×, Backspace-on-empty, clear-all) routes through an async write with optimistic/pessimistic supersede semantics — same wiring as the multi-select producer.',
-  description: 'CngxCombobox — tag-input filter with live typeahead. Multi-value tag strip + free-text filtering, plus the same async/commit machinery as CngxSelect.',
+  title: 'CngxCombobox: combobox per toggle commitaction',
+  subtitle: 'Every toggle (option click, chip ×, Backspace-on-empty, clear-all) routes through an async write with optimistic/pessimistic supersede semantics - same wiring as the multi-select producer.',
   level: 'organism',
-  audience: ['dev', 'design', 'a11y'],
+  audience: ['dev', 'design'],
   artifact: 'standalone',
-  focus: ['visual-variants', 'a11y-pattern', 'composition'],
+  focus: ['visual-variants', 'composition'],
   framework: 'signal-forms',
   apiComponents: [
     'CngxCombobox',
-    'CngxComboboxChip',
-    'CngxComboboxTriggerLabel',
   ],
   moduleImports: [
     'import { CngxCombobox, type CngxSelectCommitAction, type CngxSelectOptionDef } from \'@cngx/forms/select\';',
@@ -36,7 +33,7 @@ export const STORY: DemoSpec = {
     { value: 'rxjs', label: 'RxJS' },
     { value: 'a11y', label: 'Accessibility' },
     { value: 'ts', label: 'TypeScript' },
-    { value: 'old', label: 'Nicht mehr gepflegt', disabled: true },
+    { value: 'old', label: 'Unmaintained', disabled: true },
   ];
   protected readonly comboCommitValues = signal<string[]>(['angular']);
   protected readonly comboCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');

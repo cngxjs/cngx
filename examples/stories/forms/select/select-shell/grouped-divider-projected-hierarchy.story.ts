@@ -1,9 +1,8 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Grouped + divider — projected hierarchy',
+  title: 'CngxSelectShell: grouped divider projected hierarchy',
   subtitle: 'Hierarchy preserved through the projection. <code>&lt;cngx-select-divider /&gt;</code> renders a visual separator that ATs ignore (<code>role="presentation"</code>, <code>aria-hidden</code>). Nested <code>&lt;cngx-optgroup&gt;</code> inside another group dev-warns; use <code>CngxTreeSelect</code> for arbitrary tree shapes.',
-  description: 'CngxSelectShell — single-value declarative-options dropdown. Project user-authored <cngx-option> / <cngx-optgroup> children directly; the shell derives a hierarchy-aware option model and runs the same family-level intelligence (createSelectCore, createFieldSync, createScalarCommitHandler, announcer) as CngxSelect.',
   level: 'organism',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',

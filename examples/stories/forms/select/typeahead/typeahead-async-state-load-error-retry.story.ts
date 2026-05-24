@@ -1,17 +1,16 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Typeahead — async [state] (load + error + retry)',
-  subtitle: 'Typeahead with <code>[state]</code> driving the panel view. Trigger <em>Load</em> / <em>Error</em> / <em>Reset</em> to step through the async-view machine — first-load skeleton, error banner with retry, refresh shimmer.',
-  description: 'CngxTypeahead — scalar async autocomplete. Single-value input bound to an async option source with typed-form-field, commit-action and slot-override support.',
+  title: 'CngxTypeahead: typeahead async state load error retry',
+  subtitle: 'Typeahead with <code>[state]</code> driving the panel view. Trigger <em>Load</em> / <em>Error</em> / <em>Reset</em> to step through the async-view machine - first-load skeleton, error banner with retry, refresh shimmer.',
+  description: 'CngxTypeahead - scalar async autocomplete. Single-value input bound to an async option source with typed-form-field, commit-action and slot-override support.',
   level: 'organism',
-  audience: ['dev', 'design', 'a11y'],
+  audience: ['dev', 'design'],
   artifact: 'standalone',
-  focus: ['visual-variants', 'a11y-pattern', 'composition'],
+  focus: ['visual-variants', 'composition'],
   framework: 'signal-forms',
   apiComponents: [
     'CngxTypeahead',
-    'CngxSelectOptionLabel',
   ],
   moduleImports: [
     'import { CngxTypeahead, type CngxSelectOptionDef, type CngxSelectOptionsInput } from \'@cngx/forms/select\';',

@@ -1,18 +1,16 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Multi — async options via [state]',
+  title: 'CngxMultiSelect: multi async options via state',
   subtitle: 'Same async-state protocol as the single variant. The panel renders skeleton / empty / error / refreshing states from the bound <code>CngxAsyncState</code>; the trigger chip list stays derived from the resolved data.',
-  description: 'CngxMultiSelect — multi-value selection with a chip strip trigger. Same async/commit machinery as CngxSelect; multi-specific slot overrides for chip + summary templates.',
+  description: 'CngxMultiSelect - multi-value selection with a chip strip trigger. Same async/commit machinery as CngxSelect; multi-specific slot overrides for chip + summary templates.',
   level: 'organism',
-  audience: ['dev', 'design', 'a11y'],
+  audience: ['dev', 'design'],
   artifact: 'standalone',
-  focus: ['visual-variants', 'a11y-pattern', 'composition'],
+  focus: ['visual-variants', 'composition'],
   framework: 'signal-forms',
   apiComponents: [
     'CngxMultiSelect',
-    'CngxMultiSelectChip',
-    'CngxMultiSelectTriggerLabel',
   ],
   moduleImports: [
     'import { CngxMultiSelect, type CngxSelectOptionDef, type CngxSelectOptionsInput } from \'@cngx/forms/select\';',
@@ -29,7 +27,7 @@ export const STORY: DemoSpec = {
     { value: 'rxjs', label: 'RxJS' },
     { value: 'a11y', label: 'Accessibility' },
     { value: 'ts', label: 'TypeScript' },
-    { value: 'old', label: 'Nicht mehr gepflegt', disabled: true },
+    { value: 'old', label: 'Unmaintained', disabled: true },
   ];
   protected multiAsyncSetLoading(): void { this.multiAsyncState.set('loading'); }
   protected multiAsyncSetSuccess(): void { this.multiAsyncState.setSuccess(this.tagOptions); }`,

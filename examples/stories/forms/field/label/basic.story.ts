@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxLabel: Basic',
+  title: 'CngxLabel: basic',
   subtitle: '<code>&lt;label cngxLabel&gt;</code> inside a <code>&lt;cngx-form-field&gt;</code> auto-wires <code>for</code> and <code>id</code> against the projected input. Click the label text to focus the input.',
   description: 'CngxLabel reads the field presenter, generates a stable id for the projected control, and sets <code>for</code> on the label host. No manual <code>id="..."</code> on the input, no manual <code>for="..."</code> on the label. WCAG 1.3.1 (Info and Relationships) and 3.3.2 (Labels or Instructions) are satisfied by construction.',
   level: 'atom',

@@ -1,35 +1,16 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Slot override: *cngxSelectLoading',
-  subtitle: 'Replace the panel-shell\'s default loading indicator with a consumer-authored body — useful for branded spinners, progress text, or a cancel-and-restart affordance.',
-  description: 'CngxSelect — native-feeling single-select dropdown with template overrides, optgroups, clearable, loading, commit-action, and signal-/reactive-forms bridges.',
+  title: 'CngxSelect: slot override cngxselectloading',
+  subtitle: 'Replace the panel-shell\'s default loading indicator with a consumer-authored body - useful for branded spinners, progress text, or a cancel-and-restart affordance.',
   level: 'organism',
-  audience: ['dev', 'design', 'a11y'],
+  audience: ['dev', 'design'],
   artifact: 'standalone',
-  focus: ['visual-variants', 'a11y-pattern', 'composition'],
+  focus: ['visual-variants', 'composition'],
   framework: 'signal-forms',
   apiComponents: [
     'CngxSelect',
-    'CngxSelectOption',
-    'CngxSelectOptgroup',
-    'CngxSelectDivider',
-    'CngxSelectCheck',
-    'CngxSelectCaret',
-    'CngxSelectOptgroupTemplate',
-    'CngxSelectPlaceholder',
-    'CngxSelectEmpty',
     'CngxSelectLoading',
-    'CngxSelectLoadingGlyph',
-    'CngxSelectRefreshing',
-    'CngxSelectCommitError',
-    'CngxSelectOptionPending',
-    'CngxSelectOptionError',
-    'CngxSelectRetryButton',
-    'CngxSelectTriggerLabel',
-    'CngxSelectOptionLabel',
-    'CngxSelectClearButton',
-    'provideSelectConfig',
   ],
   moduleImports: [
     'import { CngxSelect, CngxSelectLoading, type CngxSelectOptionDef } from \'@cngx/forms/select\';',
@@ -44,8 +25,8 @@ export const STORY: DemoSpec = {
   template: `
   <cngx-select [label]="'Language'" [options]="loadingOptions" [(value)]="loadingValue" [loading]="loading()" placeholder="Choose language…">
     <ng-template cngxSelectLoading let-retry="retry">
-      <div role="status" aria-live="polite" style="display:flex;flex-direction:column;align-items:center;gap:0.5rem;padding:1rem">
-        <span aria-hidden="true" style="font-size:1.5rem">⏳</span>
+      <div role="status" aria-live="polite" class="demo-select-loading-slot">
+        <span aria-hidden="true" class="demo-select-loading-glyph">⏳</span>
         <span>Loading available languages…</span>
       </div>
     </ng-template>

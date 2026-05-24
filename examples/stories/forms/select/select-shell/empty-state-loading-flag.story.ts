@@ -1,9 +1,8 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Empty state + loading flag',
-  subtitle: 'Project <code>*cngxSelectEmpty</code> for the no-options state and <code>*cngxSelectPlaceholder</code> for the empty trigger. Toggle <code>[loading]</code> to render the family-shared loading view (spinner / bar / dots / skeleton — configurable via <code>provideSelectConfig(withLoadingVariant(...))</code>).',
-  description: 'CngxSelectShell — single-value declarative-options dropdown. Project user-authored <cngx-option> / <cngx-optgroup> children directly; the shell derives a hierarchy-aware option model and runs the same family-level intelligence (createSelectCore, createFieldSync, createScalarCommitHandler, announcer) as CngxSelect.',
+  title: 'CngxSelectShell: empty state loading flag',
+  subtitle: 'Project <code>*cngxSelectEmpty</code> for the no-options state and <code>*cngxSelectPlaceholder</code> for the empty trigger. Toggle <code>[loading]</code> to render the family-shared loading view (spinner / bar / dots / skeleton - configurable via <code>provideSelectConfig(withLoadingVariant(...))</code>).',
   level: 'organism',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
@@ -12,8 +11,6 @@ export const STORY: DemoSpec = {
   apiComponents: [
     'CngxSelectShell',
     'CngxSelectOption',
-    'CngxSelectOptgroup',
-    'CngxSelectDivider',
   ],
   moduleImports: [
     'import { CngxSelectShell, CngxSelectOption, CngxSelectPlaceholder, CngxSelectEmpty } from \'@cngx/forms/select\';',
@@ -27,10 +24,10 @@ export const STORY: DemoSpec = {
     [(value)]="emptyValue"
   >
     <ng-template cngxSelectPlaceholder let-ph>
-      <em style="opacity:.6">— select an item —</em>
+      <em style="opacity:.6">- select an item -</em>
     </ng-template>
     <ng-template cngxSelectEmpty>
-      <div style="padding:.75rem; opacity:.6; text-align:center">
+      <div class="demo-select-empty-state">
         No options available
       </div>
     </ng-template>

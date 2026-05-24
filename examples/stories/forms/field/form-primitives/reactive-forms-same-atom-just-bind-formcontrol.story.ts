@@ -1,13 +1,12 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Reactive Forms — same atom, just bind [formControl]',
-  subtitle: 'A full <code>FormGroup</code> wired through <code>[formControlName]</code> on every kind of value-bearing atom: boolean (toggle, checkbox, chip), single-pick group (radio, button-toggle, chip-group), multi-pick group (checkbox-group, button-multi-toggle, multi-chip). Import <code>CngxFormBridge</code> in the component and the binding works. The three required atoms (terms, payment, channels) are wrapped in <code>&lt;cngx-form-field [field]&gt;</code> via <code>adaptFormControl</code> so error messages render per atom — exactly like the Signal Forms section above. Click <strong>Validate</strong> to mark every control touched at once; the readout shows the form-state and the live error visibility per field.',
-  description: 'Nine cngx form controls — toggle, checkbox, radio group, two flavours of checkbox/button-toggle/chip group, plus the standalone chip — bind to whatever forms paradigm your app uses. Drop them into <cngx-form-field [field]> for Signal Forms, or bind [formControl] for Reactive Forms. Same atom, same template. No CVA-per-control boilerplate, and switching paradigms later costs nothing in the atom layer.',
+  title: 'CngxFormBridge: reactive forms same atom just bind formcontrol',
+  subtitle: 'A full <code>FormGroup</code> wired through <code>[formControlName]</code> on every kind of value-bearing atom: boolean (toggle, checkbox, chip), single-pick group (radio, button-toggle, chip-group), multi-pick group (checkbox-group, button-multi-toggle, multi-chip). Import <code>CngxFormBridge</code> in the component and the binding works. The three required atoms (terms, payment, channels) are wrapped in <code>&lt;cngx-form-field [field]&gt;</code> via <code>adaptFormControl</code> so error messages render per atom - exactly like the Signal Forms section above. Click <strong>Validate</strong> to mark every control touched at once; the readout shows the form-state and the live error visibility per field.',
   level: 'organism',
-  audience: ['dev', 'a11y'],
+  audience: ['dev'],
   artifact: 'building-block',
-  focus: ['composition', 'a11y-pattern', 'integration'],
+  focus: ['composition', 'integration'],
   framework: 'signal-forms',
   apiComponents: [
     'CngxFormBridge',
@@ -28,6 +27,8 @@ export const STORY: DemoSpec = {
     'import { form, required } from \'@angular/forms/signals\';',
     'import { ReactiveFormsModule } from \'@angular/forms\';',
     'import { JsonPipe } from \'@angular/common\';',
+    'import { toSignal } from \'@angular/core/rxjs-interop\';',
+    'import { startWith } from \'rxjs/operators\';',
     'import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from \'@cngx/forms/field\';',
     'import { CngxFormBridge } from \'@cngx/forms/controls\';',
     'import { CngxToggle, CngxCheckbox, CngxChipInteraction, CngxRadioGroup, CngxRadio, CngxCheckboxGroup, CngxButtonToggleGroup, CngxButtonMultiToggleGroup, CngxButtonToggle, CngxChipGroup, CngxMultiChipGroup, CngxChipInGroup } from \'@cngx/common/interactive\';',
@@ -40,6 +41,9 @@ export const STORY: DemoSpec = {
   protected readonly rfTermsField = adaptFormControl(this.rfForm.controls.terms, 'terms', this.destroyRef);
   protected readonly rfPaymentField = adaptFormControl(this.rfForm.controls.payment, 'payment', this.destroyRef);
   protected readonly rfChannelsField = adaptFormControl(this.rfForm.controls.notificationChannels, 'notificationChannels', this.destroyRef);
+  /** Signal mirrors so the OnPush readout updates on every RF emit. */
+  protected readonly rfFormValue = toSignal(this.rfForm.valueChanges.pipe(startWith(this.rfForm.value)), { requireSync: true });
+  protected readonly rfFormStatus = toSignal(this.rfForm.statusChanges.pipe(startWith(this.rfForm.status)), { requireSync: true });
   protected readonly paymentOptions = ['card', 'cash', 'invoice'];
   protected readonly viewOptions = ['grid', 'list', 'table'];
   protected readonly sizeOptions = ['sm', 'md', 'lg'];
@@ -48,7 +52,7 @@ export const STORY: DemoSpec = {
   protected readonly tagOptions = ['ng', 'rx', 'ts', 'cdk'];`,
   setupChrome: `  protected handleRfValidate(): void {
     // Touching the raw FormControls fires TouchedChangeEvent, which
-    // adaptFormControl now subscribes to — adapted accessors update
+    // adaptFormControl now subscribes to - adapted accessors update
     // synchronously inside the subscribe callback. No accessor-side touch
     // call needed.
     Object.values(this.rfForm.controls).forEach((c) => c.markAsTouched());
@@ -59,14 +63,14 @@ export const STORY: DemoSpec = {
   template: `  <form [formGroup]="rfForm" style="display:grid;gap:16px;max-width:560px">
     <!-- Boolean atom (no validator → bare bridge) -->
     <cngx-toggle [formControlName]="'notifications'">
-      Benachrichtigungen
+      Notifications
     </cngx-toggle>
 
     <!-- Required: wrap in cngx-form-field via adaptFormControl so per-atom errors render -->
     <cngx-form-field [field]="rfTermsField">
-      <label cngxLabel>Bedingungen</label>
+      <label cngxLabel>Terms</label>
       <cngx-checkbox [formControlName]="'terms'">
-        Ich akzeptiere die Bedingungen
+        I accept the terms
       </cngx-checkbox>
       <cngx-field-errors />
     </cngx-form-field>
@@ -79,7 +83,7 @@ export const STORY: DemoSpec = {
 
     <!-- Required scalar group: wrapped for per-atom error rendering -->
     <cngx-form-field [field]="rfPaymentField">
-      <label cngxLabel>Zahlungsart</label>
+      <label cngxLabel>Payment method</label>
       <cngx-radio-group [formControlName]="'payment'" name="rf-payment">
         @for (opt of paymentOptions; track opt) {
           <cngx-radio [value]="opt">{{ opt }}</cngx-radio>
@@ -89,7 +93,7 @@ export const STORY: DemoSpec = {
     </cngx-form-field>
 
     <!-- Non-required scalar group → bare bridge -->
-    <cngx-button-toggle-group [formControlName]="'view'" label="Ansicht">
+    <cngx-button-toggle-group [formControlName]="'view'" label="View">
       @for (opt of viewOptions; track opt) {
         <button cngxButtonToggle [value]="opt">{{ opt }}</button>
       }
@@ -136,11 +140,11 @@ export const STORY: DemoSpec = {
 <div class="event-grid" style="margin-top:16px">
     <div class="event-row">
       <span class="event-label">FormGroup value</span>
-      <span class="event-value">{{ rfForm.value | json }}</span>
+      <span class="event-value">{{ rfFormValue() | json }}</span>
     </div>
     <div class="event-row">
       <span class="event-label">Valid</span>
-      <span class="event-value">{{ rfForm.valid ? 'yes' : 'no' }}</span>
+      <span class="event-value">{{ rfFormStatus() === 'VALID' ? 'yes' : 'no' }}</span>
     </div>
     <div class="event-row">
       <span class="event-label">Touched</span>

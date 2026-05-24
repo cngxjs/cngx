@@ -1,18 +1,16 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'closeOnCreate=true — confirm-to-create UX',
-  subtitle: 'Opt into <code>[closeOnCreate]="true"</code> for flows where each create is a discrete transaction — the panel closes after every successful create, matching the single-value <code>CngxActionSelect</code> default. Useful when your UX wants the consumer to pause and confirm before continuing.',
-  description: 'CngxActionMultiSelect — multi-value combobox with inline quick-create. Eighth sibling of the select family; reuses createCreateCommitHandler with a dedicated commit controller so toggle/create lifecycles stay independent.',
+  title: 'CngxActionMultiSelect: closeoncreate true confirm to create ux',
+  subtitle: 'Opt into <code>[closeOnCreate]="true"</code> for flows where each create is a discrete transaction - the panel closes after every successful create, matching the single-value <code>CngxActionSelect</code> default. Useful when your UX wants the consumer to pause and confirm before continuing.',
   level: 'organism',
-  audience: ['dev', 'design', 'a11y'],
+  audience: ['dev', 'design'],
   artifact: 'standalone',
-  focus: ['composition', 'visual-variants', 'a11y-pattern'],
+  focus: ['composition', 'visual-variants'],
   framework: 'signal-forms',
   apiComponents: [
     'CngxActionMultiSelect',
     'CngxSelectAction',
-    'provideActionSelectConfig',
   ],
   moduleImports: [
     'import { CngxActionMultiSelect, type CngxSelectCreateAction, type CngxSelectOptionDef } from \'@cngx/forms/select\';',
@@ -66,7 +64,7 @@ export const STORY: DemoSpec = {
         "
       >
         @if (pending) { ⏳ Inviting… }
-        @else { + „{{ term || '…' }}" invite (closes panel) }
+        @else { + "{{ term || '…' }}" invite (closes panel) }
       </button>
     </ng-template>
   </cngx-action-multi-select>`,

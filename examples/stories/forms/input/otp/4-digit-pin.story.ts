@@ -1,13 +1,13 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: '4-Digit PIN',
+  title: 'CngxOtpInput: 4 digit pin',
   subtitle: 'Shorter PIN input with password masking via <code>[inputType]="\'password\'"</code>.',
   description: 'One-time password / PIN input with auto-advance, paste distribution, and keyboard navigation.',
   level: 'molecule',
-  audience: ['dev', 'a11y'],
+  audience: ['dev'],
   artifact: 'building-block',
-  focus: ['behavior', 'a11y-pattern'],
+  focus: ['behavior'],
   apiComponents: [
     'CngxOtpInput',
     'CngxOtpSlot',
@@ -22,8 +22,7 @@ export const STORY: DemoSpec = {
       <div cngxOtpInput [length]="4" inputType="password" #pin="cngxOtpInput"
         style="display:flex;gap:8px">
         @for (i of pin.indices(); track i) {
-          <input [cngxOtpSlot]="i" class="demo-input"
-            style="width:48px;height:48px;text-align:center;font-size:1.5rem" />
+          <input [cngxOtpSlot]="i" class="demo-input demo-otp-slot demo-otp-slot--lg" />
         }
       </div>
       

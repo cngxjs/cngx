@@ -1,17 +1,15 @@
 import type { DemoSpec } from '../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Password Visibility Toggle',
+  title: 'CngxInput: password visibility toggle',
   subtitle: '<code>CngxPasswordToggle</code> toggles <code>type="password"</code> to <code>type="text"</code>. Expose via <code>#pwd="cngxPasswordToggle"</code> and bind <code>pwd.visible()</code> / <code>pwd.toggle()</code>.',
-  description: 'Smart input directives with ARIA projection, autocomplete inference, password toggle, and character counter.',
   level: 'molecule',
-  audience: ['dev', 'design', 'a11y'],
+  audience: ['dev', 'design'],
   artifact: 'standalone',
-  focus: ['behavior', 'composition', 'a11y-pattern'],
+  focus: ['behavior', 'composition'],
   apiComponents: [
     'CngxInput',
     'CngxPasswordToggle',
-    'CngxCharCount',
   ],
   moduleImports: [
     'import { form, schema, required, email, minLength, maxLength, FormField } from \'@angular/forms/signals\';',
@@ -39,7 +37,7 @@ export const STORY: DemoSpec = {
           />
           <button type="button" (click)="pwd.toggle()"
             [attr.aria-label]="pwd.visible() ? 'Hide password' : 'Show password'"
-            style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:0.75rem;color:var(--cngx-field-hint-color,#666)"
+            class="demo-password-toggle"
           >{{ pwd.visible() ? 'Hide' : 'Show' }}</button>
         </div>
         <span cngxHint>8-64 characters</span>
