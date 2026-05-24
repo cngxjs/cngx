@@ -87,7 +87,7 @@ readonly residents = injectAsyncState(() =>
 // - all computed(), all reactive, all consistent
 ```
 
----
+
 
 ## Five Factories
 
@@ -101,7 +101,7 @@ readonly residents = injectAsyncState(() =>
 
 All return `CngxAsyncState<T>` - the same interface every UI component accepts.
 
----
+
 
 ## 1. injectAsyncState - Reactive Query
 
@@ -203,7 +203,7 @@ Refresh:            success → refreshing → success
 </cngx-async-container>
 ```
 
----
+
 
 ## 2. createAsyncState - Mutation
 
@@ -272,7 +272,7 @@ protected handleDelete(id: string): void {
 When `saveAction` is `pending`: dialog prevents close, shows `aria-busy`.
 When `saveAction` is `error`: dialog shows `cngx-dialog--error` class.
 
----
+
 
 ## 3. createManualState - Full Control
 
@@ -340,7 +340,7 @@ constructor() {
 }
 ```
 
----
+
 
 ## RxJS Operators
 
@@ -499,7 +499,7 @@ handleSave(): void {
 }
 ```
 
----
+
 
 ## 4. fromResource - Angular resource() Bridge
 
@@ -525,7 +525,7 @@ readonly items = fromResource(this.res);
 </cngx-async-container>
 ```
 
----
+
 
 ## 5. fromHttpResource - Angular httpResource() Bridge
 
@@ -558,7 +558,7 @@ readonly report = fromHttpResource(this.res);
 </cngx-async-container>
 ```
 
----
+
 
 ## Full Example: Resident Management
 
@@ -701,7 +701,7 @@ export class ResidentList {
 Everything is derived from a single source. The state machine
 cannot become inconsistent.
 
----
+
 
 ## CngxAsyncState Interface
 
@@ -805,7 +805,6 @@ readonly residents = injectAsyncState(() =>
 // Paginator disabled while loading via [state]
 ```
 
----
 
 ## CngxPaginate - Async-Aware Pagination
 
@@ -823,7 +822,6 @@ The paginator accepts `[state]` and blocks navigation while busy:
 - `CngxMatPaginator` auto-disables via `[disabled]="ref().isBusy()"`
 - No manual disabled management needed
 
----
 
 ## CngxFileDrop - Upload State
 
@@ -862,7 +860,7 @@ handleUpload(files: File[]): void {
 - `aria-busy` applied automatically
 - `cngx-file-drop--uploading` CSS class for styling
 
----
+
 
 ## UI Components That Accept `[state]`
 

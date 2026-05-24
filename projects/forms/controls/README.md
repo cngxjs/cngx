@@ -18,7 +18,7 @@ Import both from the same entry:
 import { CngxFormBridge, CngxTypedControl } from '@cngx/forms/controls';
 ```
 
----
+
 
 ## CngxFormBridge
 
@@ -162,7 +162,7 @@ case is documented inline on the directive's selector - `<cngx-toggle
 the bridge for testing or instrumentation. Most consumers never touch
 it directly.
 
----
+
 
 ## CngxTypedControl
 
@@ -218,7 +218,7 @@ runtime errors.
 
 `exportAs: 'cngxTypedControl'`.
 
----
+
 
 ## How the two directives relate
 
@@ -235,7 +235,7 @@ FormControl<string>)`.
 
 You can use both on the same form. They are independent.
 
----
+
 
 ## Layer note
 
@@ -254,7 +254,7 @@ make it provide both `CNGX_CONTROL_VALUE` and `CNGX_FORM_FIELD_CONTROL`,
 add its selector to `CngxFormBridge`, and the rest of the integration
 falls out for free.
 
----
+
 
 ## See also
 

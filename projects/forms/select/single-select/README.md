@@ -138,8 +138,8 @@ protected readonly priorities: CngxSelectOptionsInput<string> = [
 
 Drop a `<ng-template>` with one of these directives inside `<cngx-select>` to override the default visual.
 
-| Slot                       | Replaces                                                       |
-| -------------------------- | -------------------------------------------------------------- |
+| Slot | Replaces |
+|-|-|
 | `*cngxSelectCheck`         | Selection indicator next to each option                        |
 | `*cngxSelectCaret`         | Trigger caret glyph (▾)                                        |
 | `*cngxSelectOptgroup`      | Group-header rows (use `CngxSelectOptgroupTemplate` directive) |
@@ -161,8 +161,8 @@ Full list with context shapes: [`ARCHITECTURE.md` § Template slot system](../..
 
 ## Keyboard
 
-| Key                                   | Behaviour                                                                      |
-| ------------------------------------- | ------------------------------------------------------------------------------ |
+| Key | Behaviour |
+|-|-|
 | `Space` / `Enter` (trigger)           | Toggle panel open                                                              |
 | `Arrow Up` / `Down` (trigger)         | Open + move highlight                                                          |
 | `Page Up` / `Page Down` (trigger)     | Open + jump ±10 (clamped, disabled-aware)                                      |

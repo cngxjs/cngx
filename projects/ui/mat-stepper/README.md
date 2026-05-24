@@ -14,8 +14,8 @@ The `<cngx-mat-stepper>` organism is a thin wrapper around `<mat-stepper>`:
 
 ## Exports
 
-| Export           | Selector           | Description                                                                       |
-| ---------------- | ------------------ | --------------------------------------------------------------------------------- |
+| Export | Selector | Description |
+|-|-|-|
 | `CngxMatStepper` | `cngx-mat-stepper` | The Material-twin organism. Composes `CngxStepperPresenter` via `hostDirectives`. |
 
 **Only `<cngxStep>` atoms are accepted as content.** Native `<mat-step>` siblings are NOT supported - see `.internal/architektur/stepper-accepted-debt.md §1` for the structural rationale (Angular content-projection DI ordering blocks the adoption pattern; both attempted plans archived under `.internal/architektur/plans/halted/`).

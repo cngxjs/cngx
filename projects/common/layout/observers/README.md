@@ -254,8 +254,6 @@ Implement with template directives:
 
 ## Accessibility
 
-Observer utilities are fully accessible:
-
 - **ARIA roles:** Observers do not add roles (purely behavioral). Host elements retain natural semantics.
 - **Keyboard interaction:** Observers do not intercept keyboard events. Native scroll, resize, and media query behavior is preserved.
 - **Screen reader:** `CngxMediaQuery` detects `prefers-reduced-motion` and `prefers-color-scheme` which screen readers can announce via system settings. Resize observer changes are not announced automatically (consumer should provide ARIA updates if needed).

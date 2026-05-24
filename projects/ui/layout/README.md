@@ -46,37 +46,19 @@ CSS Grid layout component with column control.
 
 Flex-based stack layout component with named gap tokens and alignment control.
 
-| Input     | Type                                             | Default     | Description                                                                                                                    |
-| --------- | ------------------------------------------------ | ----------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| Input | Type | Default | Description |
+|-|-|-|-|
 | direction | `'row' \| 'column'`                              | `'column'`  | Flex direction - stack items vertically (column) or horizontally (row).                                                        |
 | gap       | `'none' \| 'xs' \| 'sm' \| 'md' \| 'lg' \| 'xl'` | `'md'`      | Named gap token that resolves via CSS custom properties (`--cngx-gap-*`). Defaults: xs=4px, sm=8px, md=16px, lg=24px, xl=32px. |
 | align     | `'start' \| 'center' \| 'end' \| 'stretch'`      | `'stretch'` | Cross-axis alignment. Maps to `align-items`: `flex-start`, `center`, `flex-end`, or `stretch`.                                 |
 
-### Gap Defaults
 
-| Token | Value | CSS Variable    |
-| ----- | ----- | --------------- |
-| none  | 0     | N/A             |
-| xs    | 4px   | `--cngx-gap-xs` |
-| sm    | 8px   | `--cngx-gap-sm` |
-| md    | 16px  | `--cngx-gap-md` |
-| lg    | 24px  | `--cngx-gap-lg` |
-| xl    | 32px  | `--cngx-gap-xl` |
-
-Override at any scope:
-
-```scss
-:host {
-  --cngx-gap-md: 20px; // override default 16px
-  --cngx-gap-lg: 32px; // override default 24px
-}
-```
 
 ## Composition Pattern
 
 Stack and Grid are orthogonal and compose cleanly:
 
-```typescript
+```html
 <cngx-stack direction="column" gap="xl">
   <h1>Dashboard</h1>
 
@@ -100,24 +82,7 @@ Stack and Grid are orthogonal and compose cleanly:
 
 Both components use `display: flex` / `display: grid` at `:host` scope and `display: contents` for the wrapper. No additional DOM nesting.
 
-Override flex/grid properties directly or via inputs:
 
-```scss
-// Direct override
-cngx-grid {
-  grid-auto-rows: minmax(100px, auto);
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-}
-
-cngx-stack {
-  flex-wrap: wrap;
-}
-
-// Via CSS variables
-:host {
-  --cngx-gap-md: 20px;
-}
-```
 
 ## Accessibility
 

@@ -111,8 +111,6 @@ interface TreetableOptions<T> {
 
 ## Accessibility
 
-CngxTreetable is fully accessible:
-
 - **ARIA roles:** `role="treegrid"` (implicit from CDK table), rows have `role="row"`, expand buttons have `role="button"` with `aria-expanded`
 - **Keyboard interaction:**
   - `Arrow Down / Up`: Navigate rows

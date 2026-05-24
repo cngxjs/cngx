@@ -51,7 +51,6 @@ The shape (`tabsRoleDescription`, `tabPanelRoleDescription`, `resolvedAriaLabel`
 
 The bundle splits announcements into four channels so AT does not double-read:
 
-|-|-|
 | Signal | Where it binds |
 |-|-|
 | `tabsRoleDescription` | `<div role="tablist" [attr.aria-roledescription]="...">` |

@@ -10,8 +10,8 @@ The organism's body is template + reactive ARIA only. All state lives in the pre
 
 ## Exports
 
-| Export        | Selector       | Description                                                                                                                                                       |
-| ------------- | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Export | Selector | Description |
+|-|-|-|
 | `CngxStepper` | `cngx-stepper` | The organism. Composes `CngxStepperPresenter` (presenter brain), `CngxRovingTabindex` (keyboard nav), `CngxFocusRestore` (focus management) via `hostDirectives`. |
 
 ```html

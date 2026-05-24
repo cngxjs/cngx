@@ -360,8 +360,6 @@ Headless skeleton loading placeholder. Toggles between loading and content state
 
 ## Accessibility
 
-Text utilities are fully accessible:
-
 - **ARIA roles:** `<mark>` elements have native SR semantics (announced as "highlighted"). Skeleton placeholder has `aria-busy="true"` during loading.
 - **Keyboard interaction:** Truncate and expandable text buttons are fully keyboard operable. Tab/Enter to expand/collapse.
 - **Screen reader:** `<mark>` elements are read as "highlighted". Expanded state available via `aria-expanded`. Skeleton placeholder announced as busy.

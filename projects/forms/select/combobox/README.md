@@ -127,8 +127,8 @@ Both slot directives accept the same context: `{ disabled, focused, panelOpen }`
 
 All [`CngxMultiSelect` slots](../multi-select/README.md#template-slots) plus:
 
-| Slot                        | Replaces                                                                       |
-| --------------------------- | ------------------------------------------------------------------------------ |
+| Slot | Replaces |
+|-|-|
 | `*cngxComboboxChip`         | Per-chip rendering (combobox-specific; same context as `*cngxMultiSelectChip`) |
 | `*cngxComboboxTriggerLabel` | Chip strip → text summary (search input stays visible)                         |
 | `*cngxSelectInputPrefix`    | Adornment before the `<input>`                                                 |
@@ -136,8 +136,8 @@ All [`CngxMultiSelect` slots](../multi-select/README.md#template-slots) plus:
 
 ## Keyboard
 
-| Key                       | Behaviour                                                           |
-| ------------------------- | ------------------------------------------------------------------- |
+| Key | Behaviour |
+|-|-|
 | Printable key             | Filter the panel options                                            |
 | `Arrow Down` / `Up`       | Move highlight                                                      |
 | `Enter`                   | Toggle highlighted option (no panel close - `closeOnSelect: false`) |

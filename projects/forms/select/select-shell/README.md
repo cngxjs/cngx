@@ -41,7 +41,6 @@ Provides `CNGX_FORM_FIELD_CONTROL` directly. No bridge directive.
 
 Direct children of `<cngx-select-shell>` are read through `contentChildren(CNGX_OPTION_CONTAINER, { descendants: false })`. Top-level entries become the option model in DOM order:
 
-|-|-|
 | Child | Role |
 |-|-|
 | `<cngx-select-option [value]>` | Leaf option. `value` typed `T`, label is the projected content. |

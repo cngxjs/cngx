@@ -103,8 +103,8 @@ Same context shape as the multi-select equivalents - see [`ARCHITECTURE.md`](../
 
 All [`CngxMultiSelect` shared slots](../multi-select/README.md#template-slots) (placeholder / loading / error / commitError / retry / etc.) plus:
 
-| Slot                          | Replaces                                 |
-| ----------------------------- | ---------------------------------------- |
+| Slot | Replaces |
+|-|-|
 | `*cngxTreeSelectNode`         | Per-node row markup                      |
 | `*cngxTreeSelectChip`         | Per-chip in the trigger strip            |
 | `*cngxTreeSelectTriggerLabel` | Whole chip strip with text/badge summary |
@@ -114,8 +114,8 @@ All [`CngxMultiSelect` shared slots](../multi-select/README.md#template-slots) (
 W3C-APG treeview pattern. Active-descendant navigation; focus stays
 on the trigger.
 
-| Key                 | Behaviour                                                       |
-| ------------------- | --------------------------------------------------------------- |
+| Key | Behaviour |
+|-|-|
 | `Arrow Down` / `Up` | Move highlight (skips collapsed branches)                       |
 | `Arrow Right`       | Expand if collapsed; move to first child if open; no-op on leaf |
 | `Arrow Left`        | Collapse if open; move to parent if closed; no-op on root leaf  |
@@ -128,5 +128,3 @@ on the trigger.
 
 The flat panels (`CngxSelect`, `CngxMultiSelect`, `CngxCombobox`, `CngxTypeahead`, `CngxReorderableMultiSelect`) support virtualisation via `CNGX_PANEL_RENDERER_FACTORY` + `injectRecycler`.
 Tree virtualisation is **not implemented** - the recycler contract conflicts with expand-state mutations.
-Tracked as accepted debt; deferred until real-world demand emerges. See [`ARCHITECTURE.md` § Tracked architectural debt](../../../ARCHITECTURE.md#tracked-architectural-debt)
-entry #4.

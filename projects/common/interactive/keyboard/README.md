@@ -50,8 +50,6 @@ export class SearchComponent {}
 
 ## Accessibility
 
-All keyboard directives are fully accessible:
-
 - **ARIA roles:** None (behavioral directives)
 - **Keyboard interaction:**
   - CngxKeyboardShortcut: Emits on matching keyboard events

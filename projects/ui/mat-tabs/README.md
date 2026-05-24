@@ -51,8 +51,8 @@ themes (`@angular/material/prebuilt-themes/*.css`).
 Theme via `--mat-sys-*` (Material design tokens) by default; override
 per-instance or globally via `--cngx-mat-tab-error-*`:
 
-| Variable                              | Default                         | Purpose                          |
-| ------------------------------------- | ------------------------------- | -------------------------------- |
+| Variable | Default | Purpose |
+|-|-|-|
 | `--cngx-mat-tab-error-color`          | `var(--mat-sys-error, #c62828)` | Foreground / outline colour      |
 | `--cngx-mat-tab-error-outline`        | `2px solid currentColor`        | Full `outline` shorthand         |
 | `--cngx-mat-tab-error-outline-offset` | `1px`                           | Gap between outline and tab edge |

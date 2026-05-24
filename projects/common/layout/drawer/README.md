@@ -55,8 +55,6 @@ export class DrawerExampleComponent {}
 
 ## Accessibility
 
-The drawer system is fully accessible out of the box:
-
 - **ARIA roles:** Panel marked as `role="complementary"`. Backdrop is `aria-hidden`. Content has no special role, allowing natural semantic flow.
 - **Keyboard interaction:**
   - `Escape` - Closes the drawer (handled by `CngxDrawer`)

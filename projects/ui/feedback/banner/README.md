@@ -61,7 +61,7 @@ export class MyComponent {
 }
 ```
 
----
+
 
 ### CngxBannerOutlet
 
@@ -86,23 +86,6 @@ import { CngxBannerOutlet } from '@cngx/ui/feedback';
 })
 export class AppComponent {}
 ```
-
-#### CSS Custom Properties
-
-- `--cngx-banner-z-index` (default `900`) - Stacking context
-- `--cngx-banner-gap` (default `8px`) - Gap between banners
-- `--cngx-banner-padding` (default `12px 16px`) - Banner padding
-- `--cngx-banner-bg` (default severity-specific) - Background color
-- `--cngx-banner-color` (default severity-specific) - Text color
-- `--cngx-banner-border-color` (default severity-specific) - Border color
-- `--cngx-banner-{severity}-{bg,border,icon}` - Per-severity overrides
-- `--cngx-banner-enter-duration` (default `300ms`) - Entry animation
-- `--cngx-banner-pending-opacity` (default `0.8`) - During action execution
-- `--cngx-banner-action-bg` - Action button background
-- `--cngx-banner-action-radius` - Action button border radius
-- `--cngx-banner-action-padding` - Action button padding
-
----
 
 ### CngxBannerOn
 
@@ -131,7 +114,7 @@ readonly loadState = injectAsyncState(() => this.loadData$);
      [bannerErrorDetail]="true"></div>
 ```
 
----
+
 
 ### CngxBannerTrigger
 
@@ -151,17 +134,17 @@ import { CngxBannerTrigger } from '@cngx/ui/feedback';
 
 #### Example
 
-```typescript
-<cngx-banner-trigger [when]="isSessionAboutToExpire()"
-                     id="session-expiry"
-                     message="Your session expires in 5 minutes"
-                     severity="warning"
-                     actionLabel="Extend"
-                     [actionHandler]="extendSession.bind(this)">
-</cngx-banner-trigger>
+```html
+<cngx-banner-trigger 
+  [when]="isSessionAboutToExpire()"
+  id="session-expiry"
+  message="Your session expires in 5 minutes"
+  severity="warning"
+  actionLabel="Extend"
+  [actionHandler]="extendSession.bind(this)" />
 ```
 
----
+
 
 ## Setup
 
@@ -179,54 +162,52 @@ bootstrapApplication(AppComponent, {
 
 This provides `CngxBanner` at the environment level for root injection.
 
----
+
 
 ## Accessibility
-
-Banners are fully WCAG 2.1 Level AA:
 
 - **ARIA live regions**: `aria-live="assertive"` for errors, `"polite"` for others
 - **ARIA busy**: Set during action execution
 - **Focus management**: Actions are keyboard-accessible
 - **SR announcements**: Banner appears and action state changes announced
 
----
+
 
 ## Common Patterns
 
 ### Session Timeout
 
-```typescript
-<cngx-banner-trigger [when]="sessionAboutToExpire()"
-                     id="session-timeout"
-                     message="Your session expires in {{ minutesLeft() }} minutes"
-                     severity="warning"
-                     actionLabel="Stay logged in"
-                     [actionHandler]="refreshSession.bind(this)">
-</cngx-banner-trigger>
+```html
+<cngx-banner-trigger 
+  [when]="sessionAboutToExpire()"
+  id="session-timeout"
+  message="Your session expires in {{ minutesLeft() }} minutes"
+  severity="warning"
+  actionLabel="Stay logged in"
+  [actionHandler]="refreshSession.bind(this)" />
 ```
 
 ### Offline Status
 
-```typescript
-<cngx-banner-trigger [when]="!isOnline()"
-                     id="offline"
-                     message="No internet connection"
-                     severity="error">
-</cngx-banner-trigger>
+```html
+<cngx-banner-trigger 
+  [when]="!isOnline()"
+  id="offline"
+  message="No internet connection"
+  severity="error" />
 ```
 
 ### Dismissible Update Notification
 
-```typescript
-<cngx-banner-trigger [when]="updateAvailable()"
-                     id="app-update"
-                     message="A new version is available"
-                     severity="info"
-                     [dismissible]="true"
-                     actionLabel="Reload"
-                     [actionHandler]="reloadApp.bind(this)">
-</cngx-banner-trigger>
+```html
+<cngx-banner-trigger 
+  [when]="updateAvailable()"
+  id="app-update"
+  message="A new version is available"
+  severity="info"
+  [dismissible]="true"
+  actionLabel="Reload"
+  [actionHandler]="reloadApp.bind(this)" />
 ```
 
 ### Programmatic Banner Management
@@ -252,31 +233,10 @@ export class AppComponent implements OnInit {
 }
 ```
 
----
-
-## Styling
-
-```scss
-cngx-banner-outlet {
-  --cngx-banner-info-bg: #e3f2fd;
-  --cngx-banner-info-border: #bbdefb;
-  --cngx-banner-warning-bg: #fff3e0;
-  --cngx-banner-warning-border: #ffe0b2;
-  --cngx-banner-error-bg: #ffebee;
-  --cngx-banner-error-border: #ffcdd2;
-
-  // Sticky positioning
-  position: sticky;
-  top: 0;
-  z-index: var(--cngx-banner-z-index, 900);
-}
-```
-
----
 
 ## See Also
 
 - [CngxAlert](../alert/README.md) - Inline alerts (scoped)
 - [CngxToaster](../toast/README.md) - Temporary toast notifications
 - [CngxAsyncState](https://github.com/cngxjs/cngx) - Async state management
-- Compodoc API documentation: `npm run docs:serve`
+

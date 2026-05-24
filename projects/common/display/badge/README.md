@@ -37,6 +37,7 @@ import { CngxBadge, type CngxBadgeColor, type CngxBadgePosition } from '@cngx/co
 
 Attribute directive only: `[cngxBadge]`. The value is required and accepts `number | string | boolean`:
 
+| Value | Effect |
 |-|-|
 | `number` | rendered as text; values above `max` render as `"{max}+"`. `0` hides the indicator. |
 | `string` | rendered verbatim. Empty string hides the indicator. |

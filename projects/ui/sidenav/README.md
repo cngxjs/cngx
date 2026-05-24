@@ -68,8 +68,6 @@ Key features:
 
 ## Accessibility
 
-`CngxSidenav` is fully accessible:
-
 - **ARIA roles:** Sidebar carries `role="complementary"` with optional `[attr.aria-label]`. In overlay mode, `aria-hidden="true"` when closed.
 - **Keyboard interaction:**
   - `Escape` - Closes overlay mode sidenav
@@ -86,19 +84,6 @@ Key features:
 - **Scroll lock:** Coordinate with `CngxSidenavLayout` via `hasOverlay` computed
 - **Resize:** Pointer-capture drag with RAFed position updates
 
-## Styling
-
-All dimensions and colors use CSS Custom Properties with Material 3 defaults:
-
-```scss
-// Override in your component or global styles
-:host {
-  --cngx-sidenav-width: 320px;
-  --cngx-sidenav-transition-duration: 0.3s;
-  --cngx-sidenav-bg: var(--mat-sys-surface-container, #f9fafb);
-  --cngx-sidenav-color: var(--mat-sys-on-surface, #333);
-}
-```
 
 ## Material Theme
 

@@ -20,7 +20,7 @@ bootstrapApplication(AppComponent, {
 });
 ```
 
----
+
 
 ## Feature Functions
 
@@ -48,7 +48,7 @@ const toaster = inject(CngxToaster);
 toaster.show({ message: 'Hello' });
 ```
 
----
+
 
 ### withAlerts()
 
@@ -85,7 +85,7 @@ Without this provider, use `CngxAlertStack` to create a scoped alerter:
 </cngx-alert-stack>
 ```
 
----
+
 
 ### withBanners()
 
@@ -106,7 +106,7 @@ const banner = inject(CngxBanner);
 banner.show({ id: 'offline', message: 'You are offline' });
 ```
 
----
+
 
 ### withSpinnerTemplate()
 
@@ -146,7 +146,7 @@ bootstrapApplication(AppComponent, {
 });
 ```
 
----
+
 
 ### withAlertIcons()
 
@@ -198,7 +198,7 @@ Override global icons for specific alerts:
 </cngx-alert>
 ```
 
----
+
 
 ### withCloseIcon()
 
@@ -228,7 +228,7 @@ bootstrapApplication(AppComponent, {
 });
 ```
 
----
+
 
 ### withLoadingDefaults()
 
@@ -264,39 +264,8 @@ bootstrapApplication(AppComponent, {
 <cngx-loading-indicator [loading]="true" [delay]="0"></cngx-loading-indicator>
 ```
 
----
 
-## CSS Custom Properties
 
-Global animation and styling configuration via CSS:
-
-### Spinner
-
-- `--cngx-spin-duration` (default `2s`) - Rotation duration
-- `--cngx-spin-easing` (default `linear`) - Rotation easing
-
-### Progress Bar
-
-- `--cngx-progress-transition-duration` (default `300ms`) - Value change transition
-- `--cngx-progress-easing` (default `ease-out`) - Value change easing
-
-### Toast / Alert / Banner
-
-- `--cngx-toast-enter-duration` (default `200ms`) - Slide-in animation
-- `--cngx-overlay-transition-duration` (default `300ms`) - Overlay fade
-- `--cngx-overlay-transition-easing` (default `ease-out`) - Overlay easing
-
-#### Example
-
-```scss
-:root {
-  --cngx-spin-duration: 1.5s;
-  --cngx-progress-transition-duration: 500ms;
-  --cngx-toast-enter-duration: 100ms;
-}
-```
-
----
 
 ## Material 3 Theme Integration
 
@@ -316,7 +285,7 @@ import { theme } from '@cngx/ui/feedback/material';
 // $level: 0 (default), -1 (compact), -2 (dense)
 ```
 
----
+
 
 ## Component Access to Config
 
@@ -335,7 +304,7 @@ export class MyComponent {
 }
 ```
 
----
+
 
 ## Full Example
 
@@ -377,7 +346,7 @@ bootstrapApplication(AppComponent, {
 });
 ```
 
----
+
 
 ## See Also
 
@@ -385,4 +354,3 @@ bootstrapApplication(AppComponent, {
 - [CngxBanner](../banner/README.md) - System banners
 - [CngxToaster](../toast/README.md) - Toasts
 - [CngxLoadingIndicator](../loading/README.md) - Loading spinners
-- Compodoc API documentation: `npm run docs:serve`

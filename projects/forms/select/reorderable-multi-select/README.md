@@ -100,14 +100,14 @@ Context includes `index` so consumer markup can render position-aware UI.
 
 All [`CngxMultiSelect` slots](../multi-select/README.md#template-slots) plus:
 
-| Slot                         | Replaces                                                                           |
-| ---------------------------- | ---------------------------------------------------------------------------------- |
+| Slot | Replaces |
+|-|-|
 | `*cngxMultiSelectChipHandle` | Drag-handle glyph inside each chip (highest precedence in the three-stage cascade) |
 
 ## Keyboard
 
-| Key                               | Behaviour                              |
-| --------------------------------- | -------------------------------------- |
+| Key | Behaviour |
+|-|-|
 | Modifier + `Arrow Left` / `Up`    | Move focused chip backward by 1        |
 | Modifier + `Arrow Right` / `Down` | Move focused chip forward by 1         |
 | Modifier + `Home`                 | Move focused chip to position 0        |

@@ -15,38 +15,34 @@ import {
 import { CNGX_AD_ITEM, type ActiveDescendantItem, type CngxAdItemHandle } from './ad-item.token';
 
 /**
- * Implements the WAI-ARIA active-descendant keyboard pattern for composite
- * widgets where focus stays on a single host element and the currently active
- * option is communicated via `aria-activedescendant`.
+ * WAI-ARIA active-descendant pattern. Focus stays on the host; the active
+ * option is reported via `aria-activedescendant`.
  *
  * ### When to use this vs. `CngxRovingTabindex`
  *
- * - **Active-descendant** when focus should stay on one container and you need
- *   `role="listbox"`, `role="menu"`, combobox inputs, or any widget where
- *   individual options should not be tab-stops. Screen readers announce the
- *   referenced option while keeping the focus ring on the host.
- * - **Roving tabindex** when individual items should be tab-stops (toolbar,
- *   tab list, grid cells). See `CngxRovingTabindex`.
+ * - **Active-descendant** when focus stays on one container (listbox, menu,
+ *   combobox input) and items must not be tab-stops. Screen readers announce
+ *   the referenced option while the focus ring stays on the host.
+ * - **Roving tabindex** when items themselves are tab-stops (toolbar, tab
+ *   list, grid cells). See `CngxRovingTabindex`.
  *
  * ### Item registration
  *
- * Items register either by providing `CNGX_AD_ITEM` via `hostDirectives` or
+ * Items register either by providing `CNGX_AD_ITEM` via `hostDirectives` /
  * `providers`, or by passing a `Signal<ActiveDescendantItem[]>` through the
- * `items` input. The latter takes precedence and is intended for combobox-style
- * consumers driven by a dynamic data source.
+ * `items` input. The `items` input wins when both are present; use it when
+ * items come from a dynamic data source.
  *
  * ### Virtualization
  *
- * When `virtualCount` is set, navigation targets can address indices not
- * currently in the DOM. `pendingHighlight` signals the consumer to scroll the
- * missing item into view; after scroll, the consumer calls
- * `clearPendingHighlight()`.
+ * When `virtualCount` is set, navigation can address indices not currently
+ * in the DOM. `pendingHighlight` tells the consumer to scroll the missing
+ * item into view; the consumer calls `clearPendingHighlight()` afterwards.
  *
  * ### Material/CDK equivalent
  *
- * Mirrors the model used by `cdk-listbox` and `mat-select` but exposes it as a
- * standalone primitive — not coupled to any visual shell, signal-reactive end
- * to end, and unified across listbox/menu/combobox stacks.
+ * Same model as `cdk-listbox` and `mat-select`, without the visual shell and
+ * driven by signals instead of `ListKeyManager`.
  * <example-url>http://localhost:4200/#/common/a11y/active-descendant/listbox-with-items-input</example-url>
  * <example-url>http://localhost:4200/#/common/a11y/active-descendant/typeahead</example-url>
  */

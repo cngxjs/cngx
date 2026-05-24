@@ -26,7 +26,7 @@ When `[handle]` is specified:
 - Automatically made focusable (`tabindex="0"`) if not already interactive
 - Marked with `aria-roledescription="draggable"` and `aria-label="Move dialog"`
 
----
+
 
 ## Keyboard Interaction
 
@@ -41,7 +41,7 @@ Arrow keys move the dialog (mandatory for accessibility):
 
 Grid size affects arrow key stepping: when grid is active, arrows step by the grid size (or 5x with Shift).
 
----
+
 
 ## CSS Integration
 
@@ -71,11 +71,9 @@ dialog[cngxDialogDraggable] > header {
 }
 ```
 
----
+
 
 ## Accessibility
-
-Dialog dragging is fully keyboard-accessible:
 
 - **Focus management**: Handle element is focusable (`tabindex="0"`)
 - **ARIA labels**: Handle is marked with `aria-roledescription="draggable"` and `aria-label="Move dialog"`
@@ -83,7 +81,7 @@ Dialog dragging is fully keyboard-accessible:
 - **Touch support**: Pointer Events handle both mouse and touch uniformly
 - **Focus visible**: Keyboard focus shows on the drag handle with visible outline (CSS responsibility)
 
----
+
 
 ## Advanced Patterns
 
@@ -136,7 +134,7 @@ resetPosition(): void {
 }
 ```
 
----
+
 
 ## Performance
 
@@ -145,7 +143,7 @@ resetPosition(): void {
 - CSS `transform` is GPU-accelerated (preferred over position changes)
 - `user-select: none` is applied during drag to prevent text selection
 
----
+
 
 ## Styling Example
 
@@ -194,7 +192,7 @@ dialog[cngxDialog][cngxDialogDraggable] {
 }
 ```
 
----
+
 
 ## See Also
 

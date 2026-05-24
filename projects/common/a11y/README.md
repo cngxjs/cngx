@@ -16,13 +16,13 @@ Implements the [WAI-ARIA roving tabindex](https://www.w3.org/WAI/ARIA/apg/practi
 
 ### CngxRovingTabindex Keyboard
 
-| Key                        | Action                                 |
-| -------------------------- | -------------------------------------- |
-| `ArrowRight` / `ArrowDown` | Move to next item (axis-dependent)     |
-| `ArrowLeft` / `ArrowUp`    | Move to previous item (axis-dependent) |
-| `Home`                     | Jump to first enabled item             |
-| `End`                      | Jump to last enabled item              |
-| `Tab`                      | Leave the group (standard tab order)   |
+| Key | Action |
+|-|-|
+| `ArrowRight` / `ArrowDown` | Move to next item (axis-dependent) |
+| `ArrowLeft` / `ArrowUp` | Move to previous item (axis-dependent) |
+| `Home` | Jump to first enabled item |
+| `End` | Jump to last enabled item |
+| `Tab` | Leave the group (standard tab order) |
 
 ### Notes
 
@@ -30,7 +30,6 @@ Implements the [WAI-ARIA roving tabindex](https://www.w3.org/WAI/ARIA/apg/practi
 - `activeIndex` is clamped to the valid range when items are added/removed.
 - Items are discovered via `contentChildren(CngxRovingItem)`.
 
----
 
 ## CngxFocusRestore
 
@@ -52,7 +51,6 @@ Captures the previously focused element on init and restores focus when the host
 3. Nearest focusable ancestor
 4. Nothing (focus stays where it is)
 
----
 
 ## CngxAutofocus
 
@@ -60,7 +58,7 @@ Reactive autofocus for dynamically inserted elements. The native `autofocus` att
 
 ```html
 @if (showSearch()) {
-<input [cngxAutofocus]="true" placeholder="Search…" />
+  <input [cngxAutofocus]="true" placeholder="Search…" />
 }
 ```
 
@@ -70,7 +68,6 @@ Reactive autofocus for dynamically inserted elements. The native `autofocus` att
 - `delay > 0` uses `setTimeout`; `delay === 0` uses `afterNextRender`.
 - Tracks `when` transitions via `effect()` - only re-focuses on `false → true`.
 
----
 
 ## Other Exports
 
