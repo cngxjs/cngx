@@ -1,6 +1,6 @@
-# `@cngx/forms/select` — Architecture
+# `@cngx/forms/select` - Architecture
 
-> The eight-component select family — single, multi, combobox, typeahead, tree, reorderable, action-select, action-multi-select.
+> The eight-component select family - single, multi, combobox, typeahead, tree, reorderable, action-select, action-multi-select.
 > Same commit machinery, same async-state machine, same slot system, eight different value-shape × panel-surface combinations.
 
 This document is the canonical entry point for understanding how the family is composed, where to override behaviour, and which variant to reach for.
@@ -37,27 +37,27 @@ For day-to-day API reference (inputs, outputs, signals, CSS variables) see the c
 
 The select family delivers eight distinct widget shapes against three non-negotiable pillars from the cngx codebase philosophy:
 
-1. **Derive over manage** — every reactive value is a `computed()` from
+1. **Derive over manage** - every reactive value is a `computed()` from
    a single source of truth. No subscription-driven local state, no
    manual sync between fields.
-2. **Communication is architecture** — every state change emits to the
+2. **Communication is architecture** - every state change emits to the
    appropriate channel: visual (DOM), semantic (ARIA), assistive
    (live region announcer). A11y is in the `computed()` graph, not
    bolted on.
-3. **Composition over configuration** — small focused units.
+3. **Composition over configuration** - small focused units.
    Eight components rather than one monolith with `[multiple]` /
    `[searchable]` / `[hierarchical]` flags. Every internal logic
    block is a swappable DI factory; every visual element is a
    slot-overrideable template.
 
-The family is **decompose-ready** — every `@Component` is a thin declaration delegating to extracted factories so consumers can swap implementations without forking.
+The family is **decompose-ready** - every `@Component` is a thin declaration delegating to extracted factories so consumers can swap implementations without forking.
 
 ---
 
 ## The eight variants
 
-| Component                    | Value shape      | Trigger                                     | Panel                      | ARIA pattern       |
-| ---------------------------- | ---------------- | ------------------------------------------- | -------------------------- | ------------------ |
+| Component | Value shape | Trigger | Panel | ARIA pattern |
+|-|-|-|-|-|
 | `CngxSelect`                 | `T \| undefined` | `<div role="combobox">`                     | flat listbox               | combobox + listbox |
 | `CngxMultiSelect`            | `T[]`            | `<div role="combobox">` + chips             | flat listbox               | combobox + listbox |
 | `CngxCombobox`               | `T[]`            | `<input role="combobox">` + chips           | flat listbox (filtered)    | combobox + listbox |
@@ -67,7 +67,7 @@ The family is **decompose-ready** — every `@Component` is a thin declaration d
 | `CngxActionSelect`           | `T \| undefined` | `<input>` + action panel                    | flat listbox + action slot | combobox + listbox |
 | `CngxActionMultiSelect`      | `T[]`            | `<input>` + chips + action panel            | flat listbox + action slot | combobox + listbox |
 
-Each variant provides `CNGX_FORM_FIELD_CONTROL` directly — no bridge directive needed. All eight share the same slot directives, the same config surface, the same announcer, and the same commit lifecycle.
+Each variant provides `CNGX_FORM_FIELD_CONTROL` directly - no bridge directive needed. All eight share the same slot directives, the same config surface, the same announcer, and the same commit lifecycle.
 What differs is the _value-shape adapter_ on top of `createSelectCore` and the _trigger-element template_.
 
 ---
@@ -78,17 +78,17 @@ The family sits at Level 3 of the cngx dependency hierarchy (`@cngx/forms`). Eac
 
 ```mermaid
 graph TD
-  subgraph L4["Level 4 — UI organisms"]
+  subgraph L4["Level 4 - UI organisms"]
     UI["@cngx/ui<br/>(not in scope)"]
   end
 
-  subgraph L3["Level 3 — @cngx/forms/select"]
+  subgraph L3["Level 3 - @cngx/forms/select"]
     Variants["CngxSelect / Multi / Combobox / Typeahead /<br/>Tree / Reorderable / Action / ActionMulti"]
     Shared["shared/<br/>(factories, tokens, slots, config)"]
     Variants --> Shared
   end
 
-  subgraph L2["Level 2 — @cngx/common"]
+  subgraph L2["Level 2 - @cngx/common"]
     A11y["a11y<br/>(CngxActiveDescendant, FocusTrap, …)"]
     Interactive["interactive<br/>(CngxListbox, CngxListboxTrigger, CngxOption,<br/>CngxTreeController, CngxHierarchicalNav, CngxReorder)"]
     Popover["popover<br/>(CngxPopover, CngxPopoverTrigger)"]
@@ -96,12 +96,12 @@ graph TD
     Data["data<br/>(CngxAsyncState, injectRecycler)"]
   end
 
-  subgraph L1["Level 1 — @cngx/core"]
+  subgraph L1["Level 1 - @cngx/core"]
     CoreUtils["utils<br/>(SelectionController, AsyncStatus,<br/>memoize, nextUid)"]
     Tokens["tokens<br/>(CNGX_STATEFUL)"]
   end
 
-  subgraph L0["Level 0 — @cngx/utils"]
+  subgraph L0["Level 0 - @cngx/utils"]
     TreeUtils["tree<br/>(CngxTreeNode, FlatTreeNode, flattenTree)"]
   end
 
@@ -181,10 +181,10 @@ What stays in the variant body:
 
 ### DI factory tokens (18)
 
-Every shared factory has a corresponding DI token — providers can swap the default for telemetry-wrapped, retry-with-backoff, offline-queue, or audit-logging variants without forking any component.
+Every shared factory has a corresponding DI token - providers can swap the default for telemetry-wrapped, retry-with-backoff, offline-queue, or audit-logging variants without forking any component.
 
-| Token                                   | Default factory                | Concern                                                     |
-| --------------------------------------- | ------------------------------ | ----------------------------------------------------------- |
+| Token | Default factory | Concern |
+|-|-|-|
 | `CNGX_SELECT_COMMIT_CONTROLLER_FACTORY` | `createCommitController`       | Async-commit state machine + supersede semantics            |
 | `CNGX_ARRAY_COMMIT_HANDLER_FACTORY`     | `createArrayCommitHandler`     | Multi/Combobox per-toggle + clear-all flow                  |
 | `CNGX_SCALAR_COMMIT_HANDLER_FACTORY`    | `createScalarCommitHandler`    | ActionSelect commit flow                                    |
@@ -205,7 +205,7 @@ Every shared factory has a corresponding DI token — providers can swap the def
 | `CNGX_FLAT_NAV_STRATEGY`                | `createDefaultFlatNavStrategy` | PageUp/Down + typeahead-while-closed policy                 |
 
 All eighteen tokens are `providedIn: 'root'` with sensible defaults, overrideable per-component via `viewProviders`.
-The override never breaks because the factory shape is captured in a `Cngx<Name>Factory` type alias — overrides match the exact signature.
+The override never breaks because the factory shape is captured in a `Cngx<Name>Factory` type alias - overrides match the exact signature.
 
 ---
 
@@ -216,8 +216,8 @@ The slot directives live in `shared/template-slots.ts` and project a typed conte
 
 ### The 17 public slots
 
-| Slot directive                                      | Where it renders                        | Context                                                                |
-| --------------------------------------------------- | --------------------------------------- | ---------------------------------------------------------------------- |
+| Slot directive | Where it renders | Context |
+|-|-|-|
 | `*cngxSelectCheck`                                  | Selection-indicator next to each option | `{ option, selected, indeterminate, variant, position }`               |
 | `*cngxSelectCaret`                                  | Trigger caret glyph                     | `{ open }`                                                             |
 | `*cngxSelectOptgroup`                               | Group-header rows in the listbox        | `{ group }`                                                            |
@@ -240,11 +240,11 @@ Variant-specific slots that complement the shared 17:
 
 - `*cngxSelectTriggerLabel` (single only)
 - `*cngxMultiSelectChip` (multi + reorderable)
-- `*cngxMultiSelectChipHandle` (reorderable only — drag-handle override)
+- `*cngxMultiSelectChipHandle` (reorderable only - drag-handle override)
 - `*cngxMultiSelectTriggerLabel` (multi)
 - `*cngxComboboxChip` (combobox)
 - `*cngxComboboxTriggerLabel` (combobox)
-- `*cngxTreeSelectNode` (tree — node row override)
+- `*cngxTreeSelectNode` (tree - node row override)
 - `*cngxTreeSelectChip` (tree)
 - `*cngxTreeSelectTriggerLabel` (tree)
 
@@ -280,18 +280,18 @@ sequenceDiagram
 ```
 
 The cascade is `Instance contentChild → CNGX_SELECT_CONFIG.templates.<key> → null`.
-Variant components declare 13 `contentChild` queries inline (Angular's AOT compiler requires the call as a direct field initialiser — NG8110 rejects it from helper functions) and pass them as a bundle to `createTemplateRegistry {...})`. The factory wires each query through `resolveTemplate` to deliver the resolved `Signal<TemplateRef | null>` in one place.
+Variant components declare 13 `contentChild` queries inline (Angular's AOT compiler requires the call as a direct field initialiser - NG8110 rejects it from helper functions) and pass them as a bundle to `createTemplateRegistry {...})`. The factory wires each query through `resolveTemplate` to deliver the resolved `Signal<TemplateRef | null>` in one place.
 
 ### Internal `CNGX_SELECT_GLYPHS` const
 
-Default glyphs for the slots that fall back to a single character (`✕ ▾ ▸ ⋮⋮ !`) live in `shared/glyphs.ts` as a plain `as const` object. **NOT exported** — the const exists only to absorb internal duplicates.
+Default glyphs for the slots that fall back to a single character (`✕ ▾ ▸ ⋮⋮ !`) live in `shared/glyphs.ts` as a plain `as const` object. **NOT exported** - the const exists only to absorb internal duplicates.
 onsumers override via:
 
 1. `*cngxSelectClearButton` / `*cngxSelectCaret` / `*cngxMultiSelectChipHandle` directives (highest precedence).
 2. `[clearGlyph]` / `[caretGlyph]` / `[chipDragHandle]` Inputs (mid).
 3. `CNGX_SELECT_GLYPHS.<key>` falls back automatically (lowest).
 
-The library deliberately ships no `<cngx-icon>` / `<cngx-button>` component — we assume consumers bring their own design system.
+The library deliberately ships no `<cngx-icon>` / `<cngx-button>` component - we assume consumers bring their own design system.
 The const stays tree-shakeable; calls drop from the bundle when unused.
 
 ---
@@ -390,9 +390,9 @@ stateDiagram-v2
 
 The panel-shell renders:
 
-| `activeView()`                             | Behaviour                                                                                  |
-| ------------------------------------------ | ------------------------------------------------------------------------------------------ |
-| `'skeleton'`                               | Full-panel loading body — variant from `loadingVariant` config (skeleton/spinner/bar/text) |
+| `activeView()` | Behaviour |
+|-|-|
+| `'skeleton'`                               | Full-panel loading body - variant from `loadingVariant` config (skeleton/spinner/bar/text) |
 | `'empty'` / `'none'`                       | `*cngxSelectEmpty` slot or the configured fallback label                                   |
 | `'error'` (first load)                     | `*cngxSelectError` slot or the default error banner with retry                             |
 | `'content+error'` (stale + refresh failed) | Options visible + inline error above                                                       |
@@ -455,9 +455,9 @@ callback no-ops. Consecutive picks therefore never race.
 
 **Three error surfaces** controlled by `commitErrorDisplay`:
 
-- `'banner'` (default) — `*cngxSelectCommitError` slot or a default alert banner above the option list.
-- `'inline'` — a per-row `*cngxSelectOptionError` glyph on the failed option (visual-only, AT feedback via `announcer.announce(..., 'assertive')`).
-- `'none'` — no built-in UI; bridge via `<cngx-toast-on />`,
+- `'banner'` (default) - `*cngxSelectCommitError` slot or a default alert banner above the option list.
+- `'inline'` - a per-row `*cngxSelectOptionError` glyph on the failed option (visual-only, AT feedback via `announcer.announce(..., 'assertive')`).
+- `'none'` - no built-in UI; bridge via `<cngx-toast-on />`,
   `<cngx-banner-on />`, or any `CNGX_STATEFUL`-aware transition component on the host.
 
 The `commitState` signal is exposed via `CNGX_STATEFUL`, so transition bridges work with zero additional wiring.
@@ -469,8 +469,8 @@ The `commitState` signal is exposed via `CNGX_STATEFUL`, so transition bridges w
 Each variant follows the appropriate WAI-ARIA pattern.
 Common properties are derived from the same `triggerAria()` projection on `createSelectCore`, ensuring identical behaviour across variants.
 
-| Variant                                | Trigger element                                    | ARIA pattern                    |
-| -------------------------------------- | -------------------------------------------------- | ------------------------------- |
+| Variant | Trigger element | ARIA pattern |
+|-|-|-|
 | Single, Multi, TreeSelect, Reorderable | `<div role="combobox">`                            | combobox + listbox / tree popup |
 | Combobox, Typeahead, Action\*          | `<input role="combobox" aria-autocomplete="list">` | inline-input combobox           |
 
@@ -478,12 +478,12 @@ The `<div role="combobox">` choice on the chip-carrying variants is deliberate: 
 
 **Live ARIA on the trigger** (sourced from `core.triggerAria`):
 `aria-expanded`, `aria-controls`, `aria-disabled`, `aria-invalid`, `aria-required`, `aria-busy`, `aria-describedby`, `aria-errormessage`.
-All are reactive computeds — they always reflect the current state, never go stale.
+All are reactive computeds - they always reflect the current state, never go stale.
 
 **TreeSelect's tree panel** uses `CngxActiveDescendant` (vertical nav)
 
 - Home/End + typeahead) composed with `CngxHierarchicalNav`
-  (ArrowLeft/Right collapse-and-traverse) on the same element — no double-fire because the two directives own disjoint key sets.
+  (ArrowLeft/Right collapse-and-traverse) on the same element - no double-fire because the two directives own disjoint key sets.
   Per-node `role="treeitem"` carries `aria-level`, `aria-posinset`, `aria-setsize`, `aria-expanded` (only on parents), `aria-selected`, `aria-disabled`, all reactive.
 
 **Live region announcer.** `CngxSelectAnnouncer` is `providedIn: 'root'` and announces every selection change through a global polite live region.
@@ -496,7 +496,7 @@ This lives in `createPanelLifecycleEmitter` (one factory across all variants), w
 
 ## Forms integration
 
-The family is **Signal-Forms-first**. Every variant provides `CNGX_FORM_FIELD_CONTROL` directly — drop a `<cngx-XXX>` inside a `<cngx-form-field [field]="myField">` and bidirectional sync runs through `CngxFormFieldPresenter`.
+The family is **Signal-Forms-first**. Every variant provides `CNGX_FORM_FIELD_CONTROL` directly - drop a `<cngx-XXX>` inside a `<cngx-form-field [field]="myField">` and bidirectional sync runs through `CngxFormFieldPresenter`.
 
 Reactive Forms remain supported via the one-shot `adaptFormControl` adapter:
 
@@ -516,13 +516,13 @@ protected readonly rfField = adaptFormControl(
 
 Then bind the resulting `Field<T>` to `<cngx-form-field [field]="rfField">` exactly as for native Signal Forms.
 
-`createFieldSync` (in `shared/field-sync.ts`) is the shared bridge — two `effect()`s install bidirectional `componentValue ↔ field.value()` sync, both directions guarded by `valueEquals` to suppress redundant writes.
+`createFieldSync` (in `shared/field-sync.ts`) is the shared bridge - two `effect()`s install bidirectional `componentValue ↔ field.value()` sync, both directions guarded by `valueEquals` to suppress redundant writes.
 
 ---
 
 ## Panel-shell + panel split
 
-The shared frame around every variant's panel body is `CngxSelectPanelShell` — owns the `activeView()` switch, the loading variants, the empty/error states, the refresh indicator, and the commit-error banner.
+The shared frame around every variant's panel body is `CngxSelectPanelShell` - owns the `activeView()` switch, the loading variants, the empty/error states, the refresh indicator, and the commit-error banner.
 The variant projects only the variant-specific body (option loop / tree loop) via `<ng-content />`.
 
 ```mermaid
@@ -543,7 +543,7 @@ graph TD
 ```
 
 `CngxSelectPanelHost<T>` extends `CngxSelectPanelViewHost<T>`.
-The narrower view-host contract is what the shell reads — keeps the shell value-shape-agnostic so `CngxTreeSelectPanel` and any future panel variant compose uniformly.
+The narrower view-host contract is what the shell reads - keeps the shell value-shape-agnostic so `CngxTreeSelectPanel` and any future panel variant compose uniformly.
 Tree-select provides BOTH tokens with `useExisting: self`.
 
 ---
@@ -557,7 +557,7 @@ The 18 DI tokens + the slot system ARE the real decompose strategy: they elimina
 **Atomic-decompose contract.** Each variant is decompose-ready:
 
 - Thin `@Component` declaration.
-- `hostDirectives: []` minimal — most variants use only the popover trigger directives.
+- `hostDirectives: []` minimal - most variants use only the popover trigger directives.
 - DI-token contracts for every internal logic block.
 - CSS split: `select-base.css` (structural, family-shared) +`<variant>.component.css` (trigger skin). The schematic can eject the trigger skin into the consumer's project while keeping the base styles linked from the library.
 
@@ -590,7 +590,7 @@ A few representative extension paths.
 1. Add the optional field on `CngxSelectAriaLabels` in `shared/config.ts`.
 2. Add the English default to `CNGX_SELECT_DEFAULTS.ariaLabels`.
 3. Read it through `config.ariaLabels.<key> ?? '<English fallback>'` at the consumption site (variant or panel-shell).
-4. Update `feedback_en_default_locale.md` is not needed — the EN convention is universal.
+4. Update `feedback_en_default_locale.md` is not needed - the EN convention is universal.
 
 **Override an internal logic block enterprise-wide.**
 

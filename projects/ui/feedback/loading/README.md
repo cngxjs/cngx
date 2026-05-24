@@ -16,12 +16,12 @@ import { CngxLoadingIndicator } from '@cngx/ui/feedback';
 
 #### Example
 
-```typescript
-<cngx-loading-indicator [loading]="isLoading()"
-                        label="Saving…"
-                        [delay]="100"
-                        [minDuration]="300">
-</cngx-loading-indicator>
+```html
+<cngx-loading-indicator 
+  [loading]="isLoading()"
+  label="Saving…"
+  [delay]="100"
+  [minDuration]="300" />
 ```
 
 #### Accessibility
@@ -30,7 +30,7 @@ import { CngxLoadingIndicator } from '@cngx/ui/feedback';
 - `aria-busy="true"` - Communicates busy state
 - `aria-label` - Customizable label
 
----
+
 
 ### CngxLoadingOverlay
 
@@ -76,7 +76,9 @@ The overlay uses `display: grid` with shared `grid-area: 1/1` - both backdrop an
 
 ```typescript
 readonly state = injectAsyncState(() => this.saveData$);
+```
 
+```html
 <cngx-loading-overlay [state]="state()">
   <!-- Content here is wrapped and receives [attr.inert] during loading -->
   <form>
@@ -96,14 +98,6 @@ readonly state = injectAsyncState(() => this.saveData$);
 </cngx-loading-overlay>
 ```
 
-#### CSS Custom Properties
-
-- `--cngx-loading-overlay-z-index` (default `10`) - Stacking context
-- `--cngx-loading-overlay-backdrop-bg` (default `rgba(255,255,255,0.5)`) - Backdrop color
-- `--cngx-loading-overlay-backdrop-opacity` (default `1`) - Backdrop opacity
-- `--cngx-overlay-transition-duration` (default `300ms`) - Transition timing
-- `--cngx-overlay-transition-easing` (default `ease-out`) - Easing function
-
 #### Accessibility
 
 - Content receives `[attr.inert]` during loading (no interaction)
@@ -111,7 +105,7 @@ readonly state = injectAsyncState(() => this.saveData$);
 - Focus automatically moved to spinner (then restored)
 - Spinner labeled for screen readers
 
----
+
 
 ### CngxProgress
 
@@ -128,19 +122,16 @@ import { CngxProgress } from '@cngx/ui/feedback';
 ```typescript
 readonly uploadState = injectAsyncState(() => this.upload$);
 readonly progress = computed(() => this.uploadState().progress() ?? 0);
-
-<cngx-progress [value]="progress()"
-               label="Uploading…">
-</cngx-progress>
-
-<cngx-progress [indeterminate]="true" label="Processing…"></cngx-progress>
 ```
 
-#### CSS Custom Properties
+```html
+<cngx-progress 
+  [value]="progress()"
+  label="Uploading…" />
 
-- `--cngx-progress-color` (default `#1976d2`) - Bar color
-- `--cngx-progress-height` (default `4px`) - Bar height
-- `--cngx-progress-transition-duration` (default `300ms`) - Value change transition
+<cngx-progress [indeterminate]="true" label="Processing…" />
+```
+
 
 #### Accessibility
 
@@ -149,7 +140,7 @@ readonly progress = computed(() => this.uploadState().progress() ?? 0);
 - `aria-valuemin="0"` / `aria-valuemax="100"` - Progress range
 - `aria-label` - Customizable label
 
----
+
 
 ## Timing Control
 
@@ -169,7 +160,7 @@ Both `CngxLoadingIndicator` and `CngxLoadingOverlay` support smart timing:
 
 These prevent the "flash" effect when operations are very fast or very slow.
 
----
+
 
 ## Common Patterns
 
@@ -177,7 +168,8 @@ These prevent the "flash" effect when operations are very fast or very slow.
 
 ```typescript
 readonly submitState = createAsyncState<void>();
-
+```
+```html
 <cngx-loading-overlay [state]="submitState()">
   <form (ngSubmit)="submit()">
     <input [(ngModel)]="data" />
@@ -190,13 +182,15 @@ readonly submitState = createAsyncState<void>();
 
 ```typescript
 readonly uploadState = injectAsyncState(() => this.fileUpload$);
+```
+```html
+<cngx-progress 
+  [value]="uploadState().progress() ?? 0"
+  label="Uploading {{ fileName() }}…" />
 
-<cngx-progress [value]="uploadState().progress() ?? 0"
-               label="Uploading {{ fileName() }}…">
-</cngx-progress>
-
-<button [disabled]="uploadState().isBusy()"
-        (click)="selectFile()">
+<button 
+  [disabled]="uploadState().isBusy()"
+  (click)="selectFile()">
   Upload
 </button>
 ```
@@ -205,7 +199,8 @@ readonly uploadState = injectAsyncState(() => this.fileUpload$);
 
 ```typescript
 readonly state = injectAsyncState(() => this.loadData$);
-
+```
+```html
 <!-- First load shows full skeleton -->
 <cngx-loading-overlay [state]="state()" [firstLoadOnly]="true">
   <!-- Content renders, refresh shows light overlay -->
@@ -217,7 +212,8 @@ readonly state = injectAsyncState(() => this.loadData$);
 
 ```typescript
 readonly state = injectAsyncState(() => this.loadData$);
-
+```
+```html
 <cngx-async-container [state]="state()">
   <ng-template cngxAsyncContentTpl let-data>
     <!-- Refresh shows overlay -->
@@ -229,28 +225,7 @@ readonly state = injectAsyncState(() => this.loadData$);
 </cngx-async-container>
 ```
 
----
 
-## Styling
-
-```scss
-cngx-loading-indicator {
-  --cngx-spin-duration: 2s;
-  --cngx-spin-easing: linear;
-}
-
-cngx-loading-overlay {
-  --cngx-loading-overlay-backdrop-bg: rgba(0, 0, 0, 0.1);
-  --cngx-overlay-transition-duration: 200ms;
-}
-
-cngx-progress {
-  --cngx-progress-color: #4caf50;
-  --cngx-progress-height: 6px;
-}
-```
-
----
 
 ## Material Theme
 
@@ -266,11 +241,10 @@ html {
 
 Sets loading indicator colors (`--cngx-loading-indicator-color/track`), bar dimensions, overlay backdrop, and close button styling from the Material palette. Includes a `density($level)` mixin for close buttons (0/default, -1/compact, -2/dense).
 
----
+
 
 ## See Also
 
 - [CngxAsyncState](https://github.com/cngxjs/cngx) - Async state management
 - [CngxAsyncContainer](../async-container/README.md) - Integrated loading UI
 - [CngxSkeleton](../../README.md) - Placeholder content during load
-- Compodoc API documentation: `npm run docs:serve`

@@ -36,8 +36,6 @@ export class AlertComponent {
 
 ## Accessibility
 
-CngxCloseButton is fully accessible:
-
 - **ARIA roles:** Button carries native semantics via `role="button"` (implicit in `<button>`)
 - **Keyboard interaction:**
   - `Enter`: Activates the button (native button behavior)

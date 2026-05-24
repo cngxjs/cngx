@@ -185,8 +185,6 @@ fetchNextPage() {
 
 ## Accessibility
 
-The scroll system is fully accessible out of the box:
-
 - **ARIA roles:** Scroll utilities do not add roles (no semantic DOM changes). Content structure remains natural.
 - **Keyboard interaction:**
   - `Escape` - Closes any modals with `CngxScrollLock` active

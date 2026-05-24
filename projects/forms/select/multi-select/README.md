@@ -103,8 +103,8 @@ provideCngxSelect(withTypeaheadWhileClosed(true));
 
 All [`CngxSelect` slots](../single-select/README.md#template-slots) plus:
 
-| Slot                           | Replaces                                 |
-| ------------------------------ | ---------------------------------------- |
+| Slot | Replaces |
+|-|-|
 | `*cngxMultiSelectChip`         | Per-chip rendering                       |
 | `*cngxMultiSelectTriggerLabel` | Whole chip strip with text/badge summary |
 
@@ -114,6 +114,6 @@ The selected-option label inside the default `<cngx-chip>` is also overridable v
 
 Same as `CngxSelect` plus:
 
-| Key                                                        | Behaviour                                                                                 |
-| ---------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| Key | Behaviour |
+|-|-|
 | Printable key (panel closed, `typeaheadWhileClosed: true`) | Toggle first matching option (add or remove); buffer auto-clears so repeat keys re-toggle |

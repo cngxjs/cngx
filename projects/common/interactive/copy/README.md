@@ -30,8 +30,6 @@ export class ApiKeyComponent {
 
 ## Accessibility
 
-CngxCopyText and CngxCopyBlock are fully accessible:
-
 - **ARIA roles:** Button carries native semantics; no extra roles needed
 - **Keyboard interaction:**
   - `Enter`: Activates copy (native button behavior)

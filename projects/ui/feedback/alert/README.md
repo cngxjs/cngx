@@ -66,7 +66,7 @@ readonly saveState = injectAsyncState(() => this.save$);
 - **ARIA busy**: `aria-busy` set when state is loading
 - **Screen reader**: Alert content is announced automatically on visibility change
 
----
+
 
 ### CngxAlertStack
 
@@ -109,7 +109,7 @@ export class MyComponent {
 }
 ```
 
----
+
 
 ### CngxAlerter
 
@@ -165,7 +165,7 @@ export class MyComponent {
 }
 ```
 
----
+
 
 ### CngxAlertOn
 
@@ -190,7 +190,7 @@ readonly deleteState = createAsyncState<void>();
 </button>
 ```
 
----
+
 
 ## Accessibility
 
@@ -201,7 +201,7 @@ Alerts follow WCAG 2.1 Level AA:
 - **Keyboard navigation**: Dismiss button accessible via Tab
 - **Focus management**: Focus not trapped inside alert
 
----
+
 
 ## Styling
 
@@ -227,7 +227,7 @@ cngx-alert {
 }
 ```
 
----
+
 
 ## Material Theme
 
@@ -243,7 +243,7 @@ html {
 
 Sets per-severity colors (`--cngx-alert-{info/success/warning/error}-{bg,border,icon}`), close button density, and animation timing from the Material palette.
 
----
+
 
 ## See Also
 

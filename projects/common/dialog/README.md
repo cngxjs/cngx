@@ -79,6 +79,3 @@ The dialog system is built around the native `<dialog>` element, which is the on
 - Migration mapping from `MatDialog` (provider, data token, ref token, result type) in the API tab - every `Mat*` symbol has a `Cngx*` equivalent.
 - Live demos under `examples/stories/common/dialog/` cover declarative, programmatic, submit-action, bottom sheet, draggable, and nested patterns.
 
-## Peer dependencies
-
-`@angular/core`, `@angular/common`.

@@ -48,8 +48,6 @@ Trigger for closing or dismissing the dialog.
 
 ## Accessibility
 
-Dialog is fully WCAG 2.1 Level AA compliant:
-
 - **ARIA labelling**: `aria-labelledby` + `aria-describedby` always set (Title + Description)
 - **ARIA modal**: `aria-modal="true"` on modal dialogs
 - **Keyboard navigation**: Escape dismisses; `CngxFocusTrap` recommended for modals

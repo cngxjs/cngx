@@ -10,7 +10,7 @@ Counterpart to `CngxRovingTabindex` - use AD when options should not be individu
 - `mat-select` - Material's select uses the AD pattern internally for its overlay panel.
 - `mat-menu` / `cdk-menu` - Material's menu actually uses roving tabindex, not AD; our menu stack unifies the two models behind `CngxActiveDescendant`.
 
-## Why better than Material
+## Difference to Material
 
 1. **Signal-first state.** Every ARIA attribute is a `computed()`. `aria-activedescendant` never goes stale because it is derived, not pushed.
 2. **Unified model.** Listbox, menu, and combobox all consume the same directive. Material has three subtly different implementations.
@@ -30,25 +30,25 @@ Counterpart to `CngxRovingTabindex` - use AD when options should not be individu
   #ad="cngxActiveDescendant"
 >
   @for (fruit of fruits(); track fruit.id) {
-  <div role="option" [id]="fruit.id" [attr.aria-selected]="ad.activeId() === fruit.id">
-    {{ fruit.label }}
-  </div>
+    <div role="option" [id]="fruit.id" [attr.aria-selected]="ad.activeId() === fruit.id">
+      {{ fruit.label }}
+    </div>
   }
 </div>
 ```
 
 ## WAI-ARIA keyboard matrix
 
-| Key                 | Vertical orientation  | Horizontal orientation |
-| ------------------- | --------------------- | ---------------------- |
-| ArrowDown           | next item             | -                      |
-| ArrowUp             | previous item         | -                      |
-| ArrowRight          | -                     | next item              |
-| ArrowLeft           | -                     | previous item          |
-| Home                | first enabled item    | first enabled item     |
-| End                 | last enabled item     | last enabled item      |
-| Enter / Space       | activate current      | activate current       |
-| printable character | typeahead (debounced) | typeahead (debounced)  |
+| Key | Vertical orientation | Horizontal orientation |
+|-|-|-|
+| ArrowDown | next item | - |
+| ArrowUp | previous item | - |
+| ArrowRight | - | next item |
+| ArrowLeft | - | previous item |
+| Home | first enabled item | first enabled item |
+| End | last enabled item | last enabled item |
+| Enter / Space | activate current | activate current |
+| printable character | typeahead (debounced) | typeahead (debounced) |
 
 Disabled items are skipped when `skipDisabled()` is `true` (default). `loop()` controls wrap-around.
 

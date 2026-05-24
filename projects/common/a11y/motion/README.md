@@ -1,6 +1,6 @@
 # Reduced Motion
 
-Reactive signal reflecting the user's `prefers-reduced-motion` media query preference. Enables components to skip animations, disable auto-playing content, and choose instant transitions based on accessibility needs.
+Reactive signal reflecting `prefers-reduced-motion`. Surfaces `.cngx-reduced-motion` on the host for CSS-only opt-outs; consumers branch on the signal for template and animation-trigger logic.
 
 ## Directive
 
@@ -202,7 +202,8 @@ it('respects reduced motion', () => {
 </dialog>
 
 // Toast with motion control
-<cngx-toast-outlet cngxReducedMotion
-                   [animationDuration]="rm.prefersReducedMotion() ? 0 : 300">
+<cngx-toast-outlet 
+  cngxReducedMotion
+  [animationDuration]="rm.prefersReducedMotion() ? 0 : 300">
 </cngx-toast-outlet>
 ```

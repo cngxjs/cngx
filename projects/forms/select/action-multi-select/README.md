@@ -125,8 +125,8 @@ Same shape as `CngxMultiSelect` / `CngxCombobox`:
 
 All [`CngxCombobox` slots](../combobox/README.md#template-slots) plus the action slot from [`CngxActionSelect`](../action-select/README.md#template-slots):
 
-| Slot                | Replaces                                            |
-| ------------------- | --------------------------------------------------- |
+| Slot | Replaces |
+|-|-|
 | `*cngxSelectAction` | Inline action workflow inside the panel-shell stack |
 
 ## Keyboard

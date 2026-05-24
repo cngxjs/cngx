@@ -38,8 +38,6 @@ A screen-reader-only `aria-live` region announces state transitions without visu
 
 ## Accessibility
 
-`CngxActionButton` is fully accessible out of the box:
-
 - **ARIA roles:** The inner `<button>` carries all ARIA attributes from `CngxAsyncClick` - `aria-busy` when pending, no explicit role (semantic `<button>`).
 - **Keyboard interaction:**
   - `Enter` / `Space` - Activate the action

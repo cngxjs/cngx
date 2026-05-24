@@ -75,7 +75,7 @@ export class MyComponent {
 }
 ```
 
----
+
 
 ### CngxToastOutlet
 
@@ -101,13 +101,6 @@ import { CngxToastOutlet } from '@cngx/ui/feedback';
 export class AppComponent {}
 ```
 
-#### CSS Custom Properties
-
-- `--cngx-toast-outlet-padding` (default `16px`) - Distance from viewport edge
-- `--cngx-toast-gap` (default `8px`) - Gap between toasts
-- `--cngx-toast-max-width` (default `400px`) - Toast width
-
----
 
 ### CngxToastOn
 
@@ -130,16 +123,18 @@ import { CngxToastOn } from '@cngx/ui/feedback';
 
 ```typescript
 readonly deleteState = createAsyncState<void>();
-
-<button [cngxAsyncClick]="deleteAction" [cngxToastOn]="deleteState()"
-        toastSuccess="Deleted successfully"
-        toastError="Delete failed"
-        [toastErrorDetail]="true">
+```
+```html
+<button 
+  [cngxAsyncClick]="deleteAction" [cngxToastOn]="deleteState()"
+  toastSuccess="Deleted successfully"
+  toastError="Delete failed"
+  [toastErrorDetail]="true">
   Delete
 </button>
 ```
 
----
+
 
 ### CngxToast (Component)
 
@@ -158,11 +153,11 @@ import { CngxToast } from '@cngx/ui/feedback';
 
 #### Example
 
-```typescript
+```html
 <cngx-toast [when]="justSaved()" message="Changes saved" severity="success"></cngx-toast>
 ```
 
----
+
 
 ## Setup
 
@@ -183,7 +178,7 @@ bootstrapApplication(AppComponent, {
 });
 ```
 
----
+
 
 ## Deduplication
 
@@ -195,7 +190,7 @@ key = message + severity + title
 
 When an identical toast fires again within the window, the existing toast's count is incremented and the timer restarts. The message displays as "X (2)" after dedup.
 
----
+
 
 ## Behavior
 
@@ -212,18 +207,16 @@ When an identical toast fires again within the window, the existing toast's coun
 - Evicted toast's `afterDismissed()` subject still emits
 - New toasts insert at the beginning or end (controlled by `insertPosition`)
 
----
+
 
 ## Accessibility
-
-Toasts are fully WCAG 2.1 Level AA:
 
 - **ARIA live regions**: `aria-live="polite"` for success/info, `"assertive"` for error
 - **ARIA atomic**: `aria-atomic="true"` (entire toast announced)
 - **Focus management**: Action buttons are keyboard-accessible (Tab)
 - **SR announcements**: Toast content announced on appearance
 
----
+
 
 ## Common Patterns
 
@@ -278,50 +271,12 @@ this.process().subscribe(() => {
 });
 ```
 
----
 
-## Styling
 
-```scss
-cngx-toast-outlet {
-  // Position presets
-  &.cngx-toast-outlet--top-end {
-    top: 0;
-    right: 0;
-  }
 
-  &.cngx-toast-outlet--bottom-end {
-    bottom: 0;
-    right: 0;
-  }
-}
-
-cngx-toast {
-  --cngx-toast-info-bg: #e3f2fd;
-  --cngx-toast-info-border: #bbdefb;
-  --cngx-toast-success-bg: #e8f5e9;
-  --cngx-toast-success-border: #c8e6c9;
-  --cngx-toast-warning-bg: #fff3e0;
-  --cngx-toast-warning-border: #ffe0b2;
-  --cngx-toast-error-bg: #ffebee;
-  --cngx-toast-error-border: #ffcdd2;
-
-  // Animations
-  &.cngx-toast--entering {
-    animation: slideUp 0.3s ease-out;
-  }
-
-  &.cngx-toast--exiting {
-    animation: slideDown 0.2s ease-in;
-  }
-}
-```
-
----
 
 ## See Also
 
 - [CngxAlert](../alert/README.md) - Inline alerts (scoped, permanent)
 - [CngxBanner](../banner/README.md) - System banners (persistent, full-width)
 - [CngxActionButton](../../action-button/README.md) - Auto-toast on async action
-- Compodoc API documentation: `npm run docs:serve`

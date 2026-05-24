@@ -43,8 +43,6 @@ The component supports icon projection via the `[cngxEmptyStateIcon]` slot (no M
 
 ## Accessibility
 
-`CngxEmptyState` is fully accessible:
-
 - **ARIA roles:** Host is `role="status"` with `aria-live="polite"` - announces empty state changes.
 - **Labeling:** Title has `id` bound to `aria-labelledby`; description has `id` bound to `aria-describedby` (when present).
 - **Hidden state:** When bound to async state with data, uses `[attr.hidden]` to remove from the accessibility tree.
@@ -58,19 +56,6 @@ The component supports icon projection via the `[cngxEmptyStateIcon]` slot (no M
 - **Content projection** - Four named slots for icon, illustration, actions, and secondary content
 - **Auto-ID generation** - Generates unique IDs for title/description ARIA references
 
-## Styling
-
-All colors and spacing use CSS Custom Properties with sensible defaults:
-
-```scss
-// Override in your component or global styles
-:host {
-  --cngx-empty-state-padding: 60px 20px;
-  --cngx-empty-state-gap: 24px;
-  --cngx-empty-state-icon-size: 80px;
-  --cngx-empty-state-title-font-size: 20px;
-}
-```
 
 ## Material Theme
 

@@ -15,7 +15,7 @@ via a one-shot `adaptFormControl` adapter.
 | `@cngx/forms/field` | A11y coordination: form-field, label, hint, errors, bridges (`CngxBindField`, `CngxListboxFieldBridge`) | Optional (only `matInput`/`mat-select` demos) |
 | `@cngx/forms/input` | Input directives: CngxInput, password toggle, char counter | No |
 
----
+
 
 ## `@cngx/forms/field` -- A11y Coordination
 
@@ -210,7 +210,7 @@ provideFormField(
 | `CNGX_ERROR_MESSAGES` | Error message registry |
 | `CNGX_FORM_FIELD_CONFIG` | Application-wide config |
 
----
+
 
 ## `@cngx/forms/input` -- Input Directives
 
@@ -285,7 +285,7 @@ Supports custom template.
 
 **Template context:** `current`, `max`, `min`, `over`, `remaining`, `$implicit` (= current)
 
----
+
 
 ## Bridges in `@cngx/forms/field`
 

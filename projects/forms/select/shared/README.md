@@ -6,7 +6,6 @@ The eight variants (`single-select`, `multi-select`, `combobox`, `typeahead`, `t
 If you're consuming the public API, you usually don't import from here directly - pull from `@cngx/forms/select` and the right facade is re-exported.
 If you're extending the family (new variant, telemetry override, custom commit policy), this README is the navigation guide.
 
-For the architectural overview see [`../../../ARCHITECTURE.md`](../../../ARCHITECTURE.md).
 
 ## Reading guide
 
@@ -23,7 +22,7 @@ The artifacts cluster into seven concerns:
 Every public token follows the `provide` / `with` / `inject` / `create` prefix convention (see global memory `reference_api_prefix_convention.md`).
 Every factory has a corresponding DI token (`Cngx<Name>Factory` type + `CNGX_<NAME>_FACTORY` constant) for swap-without-fork extensibility.
 
----
+
 
 ## 1. Core factory
 
@@ -35,8 +34,8 @@ Every variant calls it once in a field initialiser and stores the returned `Cngx
 
 Public exports re-emitted from `@cngx/forms/select`:
 
-| Symbol                           | Purpose                                             |
-| -------------------------------- | --------------------------------------------------- |
+| Symbol | Purpose |
+|-|-|
 | `createSelectCore`               | The factory                                         |
 | `CngxSelectCore<T, TCommit>`     | Return shape                                        |
 | `CngxSelectCoreDeps<T, TCommit>` | Input shape                                         |
@@ -49,7 +48,7 @@ Public exports re-emitted from `@cngx/forms/select`:
 
 See [`ARCHITECTURE.md` § Core factory](../../../ARCHITECTURE.md#core-factory-createselectcore) for the input/output diagram.
 
----
+
 
 ## 2. Commit machinery
 
@@ -57,8 +56,8 @@ See [`ARCHITECTURE.md` § Core factory](../../../ARCHITECTURE.md#core-factory-cr
 
 Public type aliases for `[commitAction]` consumers:
 
-| Type                           | Purpose                                                                                                 |
-| ------------------------------ | ------------------------------------------------------------------------------------------------------- |
+| Type | Purpose |
+|-|-|
 | `CngxSelectCommitAction<T>`    | `(intended: T \| undefined) => Observable<T \| undefined> \| Promise<T \| undefined> \| T \| undefined` |
 | `CngxSelectCommitMode`         | `'optimistic' \| 'pessimistic'`                                                                         |
 | `CngxSelectCommitErrorDisplay` | `'banner' \| 'inline' \| 'none'`                                                                        |
@@ -74,8 +73,8 @@ Low-level state machine for the async-commit lifecycle. Owns the `ManualAsyncSta
 
 - `cancel()` API.
 
-| Symbol                                  | Purpose                                   |
-| --------------------------------------- | ----------------------------------------- |
+| Symbol | Purpose |
+|-|-|
 | `createCommitController<T>()`           | Default factory                           |
 | `CngxCommitController<T>`               | Return shape                              |
 | `CngxCommitBeginHandlers<T>`            | `{ onSuccess, onError }` outcome handlers |
@@ -89,8 +88,8 @@ Override the token to wrap the controller with retry-with-backoff, offline queue
 Multi/Combobox/Action-multi/Reorderable per-toggle + clear-all flow.
 Owns the value reconciliation (`sameArrayContents`-guarded), rollback on error in optimistic mode, `togglingOption.set(null)` on success, live-region "removed" announce on error/clear paths.
 
-| Symbol                              | Purpose                                                  |
-| ----------------------------------- | -------------------------------------------------------- |
+| Symbol | Purpose |
+|-|-|
 | `createArrayCommitHandler<T>`       | Default factory                                          |
 | `ArrayCommitHandler<T>`             | API: `beginToggle`, `beginClear`, `retryLast`            |
 | `ArrayCommitHandlerOptions<T>`      | Input shape (consumer wires `core` + finalize callbacks) |
@@ -101,8 +100,8 @@ Owns the value reconciliation (`sameArrayContents`-guarded), rollback on error i
 
 Single-value action-select commit flow. Sibling of `array-commit-handler`.
 
-| Symbol                               | Purpose         |
-| ------------------------------------ | --------------- |
+| Symbol | Purpose |
+|-|-|
 | `createScalarCommitHandler<T>`       | Default factory |
 | `ScalarCommitHandler<T>`             | API             |
 | `ScalarCommitHandlerOptions<T>`      | Input shape     |
@@ -113,8 +112,8 @@ Single-value action-select commit flow. Sibling of `array-commit-handler`.
 
 Reorderable-specific position-move commit. Bypasses the array handler's `sameArrayContents` membership-preserving guard (which would skip reorders) and talks to `commitController` directly with the new order.
 
-| Symbol                                | Purpose         |
-| ------------------------------------- | --------------- |
+| Symbol | Purpose |
+|-|-|
 | `createReorderCommitHandler<T>`       | Default factory |
 | `ReorderCommitHandler<T>`             | API             |
 | `ReorderCommitHandlerOptions<T>`      | Input shape     |
@@ -125,8 +124,8 @@ Reorderable-specific position-move commit. Bypasses the array handler's `sameArr
 
 Action-host quick-create commit flow (used by `CngxActionSelect` and `CngxActionMultiSelect`). Owns the `(created)` output dispatch, the `localItems` buffer write, and the action-slot's `retry()` / `(retry)` semantics.
 
-| Symbol                               | Purpose                                              |
-| ------------------------------------ | ---------------------------------------------------- |
+| Symbol | Purpose |
+|-|-|
 | `createCreateCommitHandler<T>`       | Default factory                                      |
 | `CreateCommitHandler<T>`             | API: `beginCreate`, `retryLast`                      |
 | `CreateCommitHandlerOptions<T>`      | Input shape                                          |
@@ -141,8 +140,8 @@ Declarative scalar commit-error announce policy. Two policies:
 - `{ kind: 'verbose'; severity: 'assertive' \| 'polite' }` - `CngxSelect` reads.
 - `{ kind: 'soft' }` - `CngxTypeahead` reads (announces "removed" politely).
 
-| Symbol                                | Purpose              |
-| ------------------------------------- | -------------------- |
+| Symbol | Purpose |
+|-|-|
 | `createCommitErrorAnnouncer`          | Default factory      |
 | `CngxCommitErrorAnnouncePolicy`       | Discriminated policy |
 | `CngxCommitErrorAnnounceDeps`         | Wiring deps          |
@@ -161,8 +160,8 @@ Per-chip ✕ click + Backspace-on-empty handler. Owns the disabled-guard
 
 `removeOverride` escape hatch lets `CngxTreeSelect` keep its tree-aware mutation path while still using the WeakMap caching + disabled-guard.
 
-| Symbol                                   | Purpose                            |
-| ---------------------------------------- | ---------------------------------- |
+| Symbol | Purpose |
+|-|-|
 | `createChipRemovalHandler<T, Item>`      | Default factory                    |
 | `CngxChipRemovalHandler<Item>`           | API: `removeByValue`, `removeFor`  |
 | `CngxChipRemovalHandlerOptions<T, Item>` | Input shape                        |
@@ -170,7 +169,7 @@ Per-chip ✕ click + Backspace-on-empty handler. Owns the disabled-guard
 | `CngxChipRemovalHandlerFactory`          | DI factory type                    |
 | `CNGX_CHIP_REMOVAL_HANDLER_FACTORY`      | DI token                           |
 
----
+
 
 ## 3. Panel infrastructure
 
@@ -178,8 +177,8 @@ Per-chip ✕ click + Backspace-on-empty handler. Owns the disabled-guard
 
 Two host-contract tokens that the panel-shell + panel components consume from the variant component.
 
-| Symbol                             | Purpose                                                                                                                                                                                        |
-| ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Symbol | Purpose |
+|-|-|
 | `CngxSelectPanelViewHost<T>`       | Narrow shell contract - `activeView`, `skeletonIndices`, error/commit-error contexts, `tpl`, `fallbackLabels`, `ariaLabels`, optional `searchTerm` / `unfilteredCount` / `previousLoadedCount` |
 | `CNGX_SELECT_PANEL_VIEW_HOST`      | Token for the narrow contract - provided by all 8 variants, injected by `CngxSelectPanelShell`                                                                                                 |
 | `CngxSelectPanelHost<T>`           | Full option-loop contract - extends the view host with `options`, `isSelected`, `isIndeterminate`, indicator resolution, listbox comparator, AD active id, commit-error value                  |
@@ -207,8 +206,8 @@ Tree-select uses its own `tree-select-panel.component.ts` (sibling of this folde
 
 Pluggable panel render strategy. Default identity renderer returns `flatOptions()` verbatim; recycler renderer slices `flatOptions` by the recycler's `start`/`end` window and exposes the virtualizer metadata (`offsetBefore`, `offsetAfter`, `setsize`, `scrollToIndex`) the panel template binds.
 
-| Symbol                                         | Purpose                          |
-| ---------------------------------------------- | -------------------------------- |
+| Symbol | Purpose |
+|-|-|
 | `createIdentityPanelRenderer<T>`               | Default factory                  |
 | `createRecyclerPanelRendererFactory(recycler)` | Recycler-backed factory builder  |
 | `PanelRenderer<T>`                             | Output shape                     |
@@ -220,7 +219,7 @@ Pluggable panel render strategy. Default identity renderer returns `flatOptions(
 
 Convenience helpers that wire the recycler renderer for variants with the `withVirtualization()` config feature enabled. `auto-virtualize` returns a `PanelRenderer<T>` wrapping the recycler with threshold-gated identity fallback for small lists; `setup-virtualization` is the field-init hook each variant calls.
 
----
+
 
 ## 4. Lifecycle helpers
 
@@ -228,8 +227,8 @@ Convenience helpers that wire the recycler renderer for variants with the `withV
 
 Single shared `effect()` that emits `openedChange` + `opened` + `closed` outputs in response to `panelOpen` flips and restores focus to the trigger after close. All 8 variants wire through this factory.
 
-| Symbol                                 | Purpose         |
-| -------------------------------------- | --------------- |
+| Symbol | Purpose |
+|-|-|
 | `createPanelLifecycleEmitter`          | Default factory |
 | `PanelLifecycleEmitterOptions`         | Input shape     |
 | `CngxPanelLifecycleEmitterFactory`     | DI factory type |
@@ -239,8 +238,8 @@ Single shared `effect()` that emits `openedChange` + `opened` + `closed` outputs
 
 Click-outside dismissal. Action-host-aware - when an action workflow is dirty, the handler's `shouldBlockDismiss` callback intercepts the dismissal so unsaved input doesn't get dumped.
 
-| Symbol                         | Purpose                   |
-| ------------------------------ | ------------------------- |
+| Symbol | Purpose |
+|-|-|
 | `createDismissHandler`         | Default factory           |
 | `DismissHandler`               | API: `handleClickOutside` |
 | `DismissHandlerOptions`        | Input shape               |
@@ -251,8 +250,8 @@ Click-outside dismissal. Action-host-aware - when an action workflow is dirty, t
 
 Debounced `searchTerm` → `(searchTermChange)` emit + auto-open on typing. Used by combobox, typeahead, action-multi-select.
 
-| Symbol                        | Purpose         |
-| ----------------------------- | --------------- |
+| Symbol | Purpose |
+|-|-|
 | `createSearchEffects`         | Default factory |
 | `SearchEffectsOptions`        | Input shape     |
 | `CngxSearchEffectsFactory`    | DI factory type |
@@ -262,8 +261,8 @@ Debounced `searchTerm` → `(searchTermChange)` emit + auto-open on typing. Used
 
 Shared `focused` signal slot. Variants own their own focus reactions (open-on-focus, clearOnBlur typeahead reset, presenter `markAsTouched` forwarding) but the underlying `WritableSignal<boolean>` lives here.
 
-| Symbol                       | Purpose                                           |
-| ---------------------------- | ------------------------------------------------- |
+| Symbol | Purpose |
+|-|-|
 | `createTriggerFocusState`    | Default factory                                   |
 | `CngxTriggerFocusState`      | `{ focused, writable, markFocused, markBlurred }` |
 | `CngxTriggerFocusFactory`    | DI factory type                                   |
@@ -274,8 +273,8 @@ Shared `focused` signal slot. Variants own their own focus reactions (open-on-fo
 Bidirectional `componentValue ↔ field.value()` sync via two `effect()`s, both directions guarded by `valueEquals` to suppress redundant writes.
 No-op without a `CngxFormFieldPresenter` in scope (standalone use case).
 
-| Symbol                | Purpose         |
-| --------------------- | --------------- |
+| Symbol | Purpose |
+|-|-|
 | `createFieldSync<V>`  | Default factory |
 | `FieldSyncOptions<V>` | Input shape     |
 
@@ -283,8 +282,8 @@ No-op without a `CngxFormFieldPresenter` in scope (standalone use case).
 
 Routes the listbox's `ActiveDescendant.activated` stream into the variant's commit / non-commit callbacks. Single `effect(onCleanup)` that resubscribes when the listbox ref resolves; opt-null guard drops activations for unknown values.
 
-| Symbol                                | Purpose         |
-| ------------------------------------- | --------------- |
+| Symbol | Purpose |
+|-|-|
 | `createADActivationDispatcher<T, V>`  | Default factory |
 | `ADActivationDispatcherOptions<T, V>` | Input shape     |
 
@@ -294,8 +293,8 @@ Bidirectional binding between a scalar `value` signal and the visible text of a 
 Used by `CngxTypeahead` (and reusable by any future scalar autocomplete).
 Two effects: value → input text on commit; user typing → consumer callback (suppresses library writes via a `writingFlag`).
 
-| Symbol                         | Purpose                                     |
-| ------------------------------ | ------------------------------------------- |
+| Symbol | Purpose |
+|-|-|
 | `createDisplayBinding<T>`      | Default factory                             |
 | `DisplayBinding<T>`            | API: `writeFromValue`, `isWritingFromValue` |
 | `DisplayBindingOptions<T>`     | Input shape                                 |
@@ -307,8 +306,8 @@ Two effects: value → input text on commit; user typing → consumer callback (
 Wires the action-select organisms' `*cngxSelectAction` slot into the panel-shell. Owns the dirty-flag tracking, the focus-trap policy, the Escape-intercept on dirty workflows, and the action-callback bundle
 exposed to the slot context.
 
-| Symbol                            | Purpose         |
-| --------------------------------- | --------------- |
+| Symbol | Purpose |
+|-|-|
 | `createActionHostBridge`          | Default factory |
 | `ActionHostBridge`                | API             |
 | `ActionHostBridgeOptions`         | Input shape     |
@@ -319,8 +318,8 @@ exposed to the slot context.
 
 Persistent buffer of just-created items merged into the option list before the consumer's filter overlay runs. Survives `[state]` refetches; items drop out silently once the server-side list contains them (deduped via `compareWith`).
 
-| Symbol                            | Purpose                      |
-| --------------------------------- | ---------------------------- |
+| Symbol | Purpose |
+|-|-|
 | `createLocalItemsBuffer<T>`       | Default factory              |
 | `LocalItemsBuffer<T>`             | API: `items`, `add`, `clear` |
 | `CngxLocalItemsBufferFactory`     | DI factory type              |
@@ -330,12 +329,12 @@ Persistent buffer of just-created items merged into the option list before the c
 
 Two thin convenience helpers for the most-injected tokens:
 
-| Symbol                    | Purpose                                                                          |
-| ------------------------- | -------------------------------------------------------------------------------- |
+| Symbol | Purpose |
+|-|-|
 | `injectSelectConfig()`    | `inject(CNGX_SELECT_CONFIG, { optional: true }) ?? CNGX_SELECT_DEFAULTS` cascade |
 | `injectSelectAnnouncer()` | `inject(CngxSelectAnnouncer)`                                                    |
 
----
+
 
 ## 5. Template slot system
 
@@ -346,8 +345,8 @@ Each slot is a structural directive whose only job is to project a `TemplateRef`
 
 Slot list (with the cascade tier each slot belongs to - every slot flows through the three-stage cascade in `template-registry.ts`):
 
-| Directive                                         | Context interface                   |
-| ------------------------------------------------- | ----------------------------------- |
+| Directive | Context interface |
+|-|-|
 | `CngxSelectCheck<T>`                              | `CngxSelectCheckContext<T>`         |
 | `CngxSelectCaret`                                 | `CngxSelectCaretContext`            |
 | `CngxSelectOptgroupTemplate<T>`                   | `CngxSelectOptgroupContext<T>`      |
@@ -368,8 +367,8 @@ Slot list (with the cascade tier each slot belongs to - every slot flows through
 
 Plus the variant-specific slots (also defined here):
 
-| Directive                                                   | Variant             |
-| ----------------------------------------------------------- | ------------------- |
+| Directive | Variant |
+|-|-|
 | `CngxSelectTriggerLabel<T>`                                 | single only         |
 | `CngxMultiSelectChip<T>` / `CngxMultiSelectTriggerLabel<T>` | multi + reorderable |
 | `CngxMultiSelectChipHandle`                                 | reorderable only    |
@@ -380,8 +379,8 @@ Plus the variant-specific slots (also defined here):
 Three-stage cascade resolver. Variants declare their `contentChild()` queries inline (Angular's NG8110 rejects the call from helper functions) and pass the bundle to `createTemplateRegistry({...})`.
 The factory wires each query through `resolveTemplate` to deliver the resolved `Signal<TemplateRef | null>` per slot.
 
-| Symbol                                 | Purpose                                  |
-| -------------------------------------- | ---------------------------------------- |
+| Symbol | Purpose |
+|-|-|
 | `createTemplateRegistry<T>`            | Default factory                          |
 | `CngxSelectTemplateRegistryQueries<T>` | Input shape (raw `contentChild` signals) |
 | `CngxSelectTemplateRegistry<T>`        | Output shape (resolved per-slot signals) |
@@ -393,8 +392,8 @@ The factory wires each query through `resolveTemplate` to deliver the resolved `
 The actual three-stage cascade primitive: `instance contentChild → CNGX_SELECT_CONFIG.templates.<key> → null`.
 Used internally by the registry + by tree-select for tree-specific slots that aren't part of the shared registry shape.
 
-| Symbol                                         | Purpose                                  |
-| ---------------------------------------------- | ---------------------------------------- |
+| Symbol | Purpose |
+|-|-|
 | `injectResolvedTemplate(directive, configKey)` | Public helper for ad-hoc slot resolution |
 | `resolveTemplate(...)`                         | Lower-level alias kept for back-compat   |
 
@@ -403,14 +402,14 @@ Used internally by the registry + by tree-select for tree-specific slots that ar
 **Internal-only**, NOT exported from `public-api.ts`. The 5 default glyph strings (`✕ ▾ ▸ ⋮⋮ !`) shared by the slot fallbacks.
 Plain `as const` object - tree-shakeable, `aria-hidden` stays at the call site.
 
-| Symbol               | Purpose                           |
-| -------------------- | --------------------------------- |
+| Symbol | Purpose |
+|-|-|
 | `CNGX_SELECT_GLYPHS` | The const                         |
 | `CngxSelectGlyphKey` | `keyof typeof CNGX_SELECT_GLYPHS` |
 
 Cascade order at every glyph site: structural directive → input override → `CNGX_SELECT_GLYPHS.<key>`.
 
----
+
 
 ## 6. Configuration cascade
 
@@ -447,8 +446,8 @@ Public exports:
 Unified aggregator across all three config surfaces.
 `provideCngxSelect(...features)` and `provideCngxSelectAt(...features)` accept a discriminated union `CngxSelectAggregatorFeature` and dispatch each feature to its target provider via the hidden `_target` field each feature carries.
 
-| Symbol                                                   | Purpose                                                                                          |
-| -------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| Symbol | Purpose |
+|-|-|
 | `provideCngxSelect(...features): EnvironmentProviders[]` | App-wide                                                                                         |
 | `provideCngxSelectAt(...features): Provider[]`           | Component-scoped (viewProviders)                                                                 |
 | `CngxSelectAggregatorFeature`                            | `CngxSelectConfigFeature \| CngxActionSelectConfigFeature \| CngxReorderableSelectConfigFeature` |
@@ -466,7 +465,7 @@ Variants call `resolveSelectConfig()` once at construction.
 `CngxSelectAnnouncer` is `providedIn: 'root'` - owns the global ARIA-live region and the `announce(message, politeness)` API.
 The `format()` function in `CngxSelectAnnouncerConfig` builds the sentence; `withAnnouncer({ format: ... })` overrides per-locale.
 
----
+
 
 ## 7. Family primitives
 
@@ -474,8 +473,8 @@ The `format()` function in `CngxSelectAnnouncerConfig` builds the sentence; `wit
 
 The option-shape contract:
 
-| Symbol                                            | Purpose                                                                                                                   |
-| ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| Symbol | Purpose |
+|-|-|
 | `CngxSelectOptionDef<T>`                          | `{ value, label, disabled?, meta? }` - the canonical option                                                               |
 | `CngxSelectOptionGroupDef<T>`                     | `{ label, children, disabled? }` - for grouped options                                                                    |
 | `CngxSelectOptionsInput<T>`                       | `(CngxSelectOptionDef<T> \| CngxSelectOptionGroupDef<T>)[]`                                                               |
@@ -487,16 +486,16 @@ The option-shape contract:
 
 ### `compare.ts`
 
-| Symbol                           | Purpose                                                         |
-| -------------------------------- | --------------------------------------------------------------- |
+| Symbol | Purpose |
+|-|-|
 | `sameArrayContents<T>(a, b, eq)` | Reference-short-circuit length-and-pairwise-`eq` array equality |
 
 ### `typeahead-controller.ts`
 
 Keyboard typeahead engine: buffer signal + debounced reset + walk semantics (round-robin, disabled-skip). Plus the `resolvePageJumpTarget` helper for PageUp/Down clamped jumps.
 
-| Symbol                               | Purpose                                        |
-| ------------------------------------ | ---------------------------------------------- |
+| Symbol | Purpose |
+|-|-|
 | `createTypeaheadController<T>(opts)` | Default factory                                |
 | `TypeaheadController<T>`             | API: `matchFromIndex`, `clearBuffer`, `buffer` |
 | `TypeaheadControllerOptions<T>`      | Input shape                                    |
@@ -507,8 +506,8 @@ Keyboard typeahead engine: buffer signal + debounced reset + walk semantics (rou
 Policy layer over `TypeaheadController` + `resolvePageJumpTarget` shared by `CngxSelect`, `CngxMultiSelect`, `CngxReorderableMultiSelect`.
 Returns a discriminated `CngxFlatNavAction` (`'select' \| 'highlight' \| 'noop'`) the variant dispatches.
 
-| Symbol                                   | Purpose                                                                            |
-| ---------------------------------------- | ---------------------------------------------------------------------------------- |
+| Symbol | Purpose |
+|-|-|
 | `createDefaultFlatNavStrategy(options?)` | Default factory                                                                    |
 | `CngxFlatNavStrategy`                    | API: `onPageJump`, `onTypeaheadWhileClosed`                                        |
 | `CngxFlatNavContext<T>`                  | Input shape (options, listbox items, current indices, compareWith)                 |
@@ -528,7 +527,7 @@ All values are `--cngx-*` CSS custom properties with sensible fallbacks.
 Variant-specific trigger skin lives next to each variant in `<variant>.component.css` and is `styleUrls`-linked alongside this file.
 The schematic can eject the trigger skin into the consumer's project while keeping `select-base.css` linked from the library.
 
----
+
 
 ## How to extend
 

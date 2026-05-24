@@ -143,15 +143,15 @@ Context: `{ disabled, focused, panelOpen }`.
 
 All [`CngxSelect` slots](../single-select/README.md#template-slots) except `*cngxSelectTriggerLabel` (no chip strip - the input IS the trigger). Plus:
 
-| Slot                     | Replaces                                          |
-| ------------------------ | ------------------------------------------------- |
+| Slot | Replaces |
+|-|-|
 | `*cngxSelectInputPrefix` | Adornment before the `<input>`                    |
 | `*cngxSelectInputSuffix` | Adornment after the `<input>`, before clear/caret |
 
 ## Keyboard
 
-| Key                 | Behaviour                                                      |
-| ------------------- | -------------------------------------------------------------- |
+| Key | Behaviour |
+|-|-|
 | Printable key       | Filter; auto-opens the panel                                   |
 | `Arrow Down` / `Up` | Move highlight                                                 |
 | `Enter`             | Pick highlighted option (closes panel - `closeOnSelect: true`) |

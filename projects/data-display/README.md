@@ -8,9 +8,9 @@ You need to display structured data - rows, columns, hierarchy, expansion - with
 
 ## Entry points
 
-| Entry                              | What it ships                                                  |
-| ---------------------------------- | -------------------------------------------------------------- |
-| `@cngx/data-display/treetable`     | CDK-only treetable - lightweight, custom-theme friendly.       |
+| Entry | What it ships |
+|-|-|
+| `@cngx/data-display/treetable` | CDK-only treetable - lightweight, custom-theme friendly. |
 | `@cngx/data-display/mat-treetable` | Material-themed twin. Same brain, Material `<mat-table>` skin. |
 
 The primary `@cngx/data-display` entry exports only the version constant. There is nothing to import from here in application code - pick a secondary entry.

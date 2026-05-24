@@ -46,8 +46,6 @@ The component is composable with `CngxSkeletonPlaceholder` directive (content pr
 
 ## Accessibility
 
-`CngxSkeletonContainer` is fully accessible:
-
 - **ARIA attributes:** `[attr.aria-busy]="isLoading()"` signals that content is being loaded.
 - **Reduced motion:** Shimmer animation is disabled when `prefers-reduced-motion: reduce` is set.
 - **Screen reader:** Skeletons are visual placeholders; their content is not announced. When loading completes, real content replaces placeholders seamlessly.
@@ -60,19 +58,7 @@ The component is composable with `CngxSkeletonPlaceholder` directive (content pr
 - **Placeholder projection:** `CngxSkeletonPlaceholder` directive for template marking
 - **Reduced motion detection:** Inline `matchMedia` listener for `prefers-reduced-motion`
 
-## Styling
 
-All animation values use CSS Custom Properties:
-
-```scss
-// Override in your component or global styles
-:host {
-  --cngx-spin-duration: 1.5s;
-  --cngx-spin-easing: cubic-bezier(0.4, 0, 0.2, 1);
-  --cngx-pulse-duration: 2s;
-  --cngx-pulse-easing: ease-in-out;
-}
-```
 
 ## Material Theme
 

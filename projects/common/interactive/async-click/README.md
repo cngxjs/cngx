@@ -37,8 +37,6 @@ export class SaveButtonComponent {
 
 ## Accessibility
 
-CngxAsyncClick is fully accessible out of the box:
-
 - **ARIA roles:** Sets `aria-busy="true"` while pending, `aria-disabled="true"` while pending (for non-button elements)
 - **Keyboard interaction:**
   - `Enter`: Activates the action if focused (native button behavior)

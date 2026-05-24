@@ -8,8 +8,8 @@ The select family - eight specialised dropdown components sharing one signal-nat
 
 You need a dropdown surface in a form. The right variant follows the value shape and the interaction you want:
 
-| Use case                                                 | Component                         |
-| -------------------------------------------------------- | --------------------------------- |
+| Use case | Component |
+|-|-|
 | One value from a short list                              | `<cngx-select>`                   |
 | Many values from a list                                  | `<cngx-multi-select>`             |
 | Many values where the user filters by typing             | `<cngx-combobox>`                 |

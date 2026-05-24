@@ -61,10 +61,11 @@ import {
 ```typescript
 readonly state = injectAsyncState(() => this.loadItems$);
 
-<cngx-async-container [state]="state()"
-                      toastSuccess="Loaded"
-                      toastError="Load failed"
-                      [toastErrorDetail]="true">
+<cngx-async-container 
+  [state]="state()"
+  toastSuccess="Loaded"
+  toastError="Load failed"
+  [toastErrorDetail]="true">
   <ng-template cngxAsyncSkeletonTpl>
     <div class="skeleton">Loading…</div>
   </ng-template>
@@ -99,7 +100,7 @@ A built-in refresh bar appears when data is visible but loading (refresh scenari
 }
 ```
 
----
+
 
 ## Toast Integration
 
@@ -109,7 +110,7 @@ When `[toastSuccess]` or `[toastError]` are set, toasts fire on state transition
 - Error toast: fires when state transitions to `error`
 - Requires `CngxToaster` in the dependency tree (must be provided)
 
----
+
 
 ## Comparison to *cngxAsync Microsyntax
 
@@ -123,7 +124,7 @@ When `[toastSuccess]` or `[toastError]` are set, toasts fire on state transition
 
 Both approaches are valid. Use microsyntax for simple cases; use `CngxAsyncContainer` for complex UIs with toasts.
 
----
+
 
 ## Advanced Patterns
 
@@ -170,7 +171,7 @@ readonly state = injectAsyncState(() => this.loadData$);
 </cngx-async-container>
 ```
 
----
+
 
 ## Accessibility
 
@@ -179,7 +180,7 @@ readonly state = injectAsyncState(() => this.loadData$);
 - **Error announcements**: Error template content announced
 - **Semantic HTML**: Uses native elements (no custom roles)
 
----
+
 
 ## See Also
 

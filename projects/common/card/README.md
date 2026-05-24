@@ -44,8 +44,6 @@ export class ExampleComponent {
 
 ## Accessibility
 
-CngxCard is fully accessible:
-
 - **ARIA roles:** `role="article"` (default), `role="button"`, or `role="link"` based on `as` input
 - **Keyboard interaction:**
   - `Enter` / `Space`: Activate interactive cards (button/link)
@@ -60,20 +58,3 @@ CngxCard composes `CngxRovingItem` as a host directive for keyboard navigation w
 
 CngxCardGrid composes `CngxRovingTabindex` as a host directive - all arrow key/Home/End navigation is built in automatically.
 
-## Material Theme
-
-CngxCard ships with Material 3 styling via CSS custom properties. To apply full Material theming (density, typography, color tokens), import the theme file in your global styles:
-
-```scss
-@import '@cngx/common/card/card-theme';
-
-@include cngx-card-theme($material-theme);
-@include cngx-card-density(-1); // compact
-```
-
-Density levels:
-
-- `-2` → extra compact
-- `-1` → compact
-- `0` → default (Material default)
-- `1` → comfortable

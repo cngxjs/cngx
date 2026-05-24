@@ -77,10 +77,16 @@ import { CngxPending, CngxSucceeded, CngxFailed } from '@cngx/common/interactive
 <button [cngxPopoverTrigger]="panel.popover" (click)="panel.popover.toggle()">
   Delete
 </button>
-<cngx-popover-panel #panel variant="danger" [showClose]="true" [showArrow]="true"
-                    [hasFooter]="true" placement="bottom">
+<cngx-popover-panel 
+  #panel variant="danger" 
+  [showClose]="true" 
+  [showArrow]="true"
+  [hasFooter]="true" 
+  placement="bottom">
+  
   <span cngxPopoverHeader>Delete Item?</span>
   <p cngxPopoverBody>This action cannot be undone.</p>
+  
   <div cngxPopoverFooter>
     <cngx-popover-action role="dismiss">Cancel</cngx-popover-action>
     <cngx-popover-action role="confirm" [action]="deleteItem" variant="danger">

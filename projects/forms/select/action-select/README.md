@@ -69,8 +69,8 @@ Identical to [`CngxTypeahead`](../typeahead/README.md#forms-integration). The bo
 
 The `*cngxSelectAction` template receives a context object with:
 
-| Field                      | Type         | Purpose                                                                     |
-| -------------------------- | ------------ | --------------------------------------------------------------------------- |
+| Field | Type | Purpose |
+|-|-|-|
 | `$implicit` / `searchTerm` | `string`     | Current input text                                                          |
 | `commit()`                 | `() => void` | Invoke the bound `quickCreateAction`                                        |
 | `close()`                  | `() => void` | Force-close the panel                                                       |
@@ -171,16 +171,16 @@ readonly localItems = inject(CNGX_LOCAL_ITEMS_BUFFER_FACTORY)<Tag>({
 
 All [`CngxTypeahead` slots](../typeahead/README.md#template-slots) plus:
 
-| Slot                | Replaces                                            |
-| ------------------- | --------------------------------------------------- |
+| Slot | Replaces |
+|-|-|
 | `*cngxSelectAction` | Inline action workflow inside the panel-shell stack |
 
 ## Keyboard
 
 Same as `CngxTypeahead` plus:
 
-| Key                                                 | Behaviour                                                                                        |
-| --------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| Key | Behaviour |
+|-|-|
 | `Enter` (in action slot when no option highlighted) | Whatever the action template wires up - typically `commit()`                                     |
 | `Escape` (action workflow dirty)                    | Intercepted per `focusTrapBehavior` - the consumer's `close()` callback owns the cancel decision |
 

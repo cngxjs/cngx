@@ -104,8 +104,6 @@ Injects resolved nav config with defaults merged in. Must be called in an inject
 
 ## Accessibility
 
-All nav directives are fully accessible:
-
 - **ARIA roles:**
   - CngxNavLink: `aria-current="page"` when active
   - CngxNavLabel: Optional `role="heading"` (opt-in)
