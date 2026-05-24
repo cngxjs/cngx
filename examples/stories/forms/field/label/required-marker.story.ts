@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxLabel: Required marker',
+  title: 'CngxLabel: required marker',
   subtitle: 'A field with a <code>required()</code> validator renders a marker inside the label. Either rely on the global <code>withRequiredMarker()</code> provider feature, or drop <code>&lt;cngx-required /&gt;</code> into the label body for one-off use.',
   description: 'The marker is decorative: <code>CngxRequired</code> sets <code>aria-hidden="true"</code>, so screen readers ignore it. Required state itself is announced through <code>aria-required</code> on the projected input, which the form-field presenter sets from the validator graph. Both labels below render the same visual marker; only the wiring differs.',
   level: 'atom',

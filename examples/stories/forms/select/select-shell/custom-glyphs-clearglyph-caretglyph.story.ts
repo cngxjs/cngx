@@ -1,9 +1,8 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Custom glyphs — clearGlyph + caretGlyph',
-  subtitle: 'Replace the built-in ✕ clear button glyph and ▾ caret with consumer-authored templates. The button frame, ARIA wiring, and click handlers stay intact — only the glyph swaps. <code>*cngxSelectClearButton</code> replaces the entire button when full control is needed.',
-  description: 'CngxSelectShell — single-value declarative-options dropdown. Project user-authored <cngx-option> / <cngx-optgroup> children directly; the shell derives a hierarchy-aware option model and runs the same family-level intelligence (createSelectCore, createFieldSync, createScalarCommitHandler, announcer) as CngxSelect.',
+  title: 'CngxSelectShell: custom glyphs clearglyph caretglyph',
+  subtitle: 'Replace the built-in ✕ clear button glyph and ▾ caret with consumer-authored templates. The button frame, ARIA wiring, and click handlers stay intact - only the glyph swaps. <code>*cngxSelectClearButton</code> replaces the entire button when full control is needed.',
   level: 'organism',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
@@ -12,8 +11,6 @@ export const STORY: DemoSpec = {
   apiComponents: [
     'CngxSelectShell',
     'CngxSelectOption',
-    'CngxSelectOptgroup',
-    'CngxSelectDivider',
   ],
   moduleImports: [
     'import { CngxSelectShell, CngxSelectOption } from \'@cngx/forms/select\';',
@@ -21,7 +18,7 @@ export const STORY: DemoSpec = {
   imports: ['CngxSelectShell', 'CngxSelectOption'],
   setup: `protected readonly customValue = signal<string | undefined>(undefined);`,
   template: `  <ng-template #customClear>
-    <span aria-hidden="true" style="font-weight:700; font-family:monospace">×</span>
+    <span aria-hidden="true" class="demo-select-custom-glyph">×</span>
   </ng-template>
   <ng-template #customCaret>
     <span aria-hidden="true" style="display:inline-block; transition: transform .15s">⌄</span>

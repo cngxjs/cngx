@@ -1,9 +1,8 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Inside <cngx-form-field> — Reactive Forms',
+  title: 'CngxSelectShell: inside cngx form field reactive forms',
   subtitle: '<code>adaptFormControl(control, name)</code> bridges a Reactive-Forms <code>FormControl</code> into the shell\'s Signal-Forms-first <code>[field]</code> contract. Bidirectional sync runs through <code>createFieldSync</code> with <code>compareWith</code>-aware equality.',
-  description: 'CngxSelectShell — single-value declarative-options dropdown. Project user-authored <cngx-option> / <cngx-optgroup> children directly; the shell derives a hierarchy-aware option model and runs the same family-level intelligence (createSelectCore, createFieldSync, createScalarCommitHandler, announcer) as CngxSelect.',
   level: 'organism',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
@@ -12,8 +11,6 @@ export const STORY: DemoSpec = {
   apiComponents: [
     'CngxSelectShell',
     'CngxSelectOption',
-    'CngxSelectOptgroup',
-    'CngxSelectDivider',
   ],
   moduleImports: [
     'import { FormControl } from \'@angular/forms\';',

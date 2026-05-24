@@ -1,9 +1,8 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Min / Max Rows',
+  title: 'CngxAutosize: min max rows',
   subtitle: '<code>[minRows]</code> sets the minimum height. <code>[maxRows]</code> caps growth and shows a scrollbar.',
-  description: 'Auto-resize textarea based on content. Signal-first alternative to cdkTextareaAutosize.',
   level: 'atom',
   audience: ['dev'],
   artifact: 'building-block',

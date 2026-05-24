@@ -1,13 +1,12 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: '6-Digit OTP',
-  subtitle: 'Type digits one at a time — cursor auto-advances. Paste a 6-digit code to fill all at once. Backspace navigates to the previous slot.',
-  description: 'One-time password / PIN input with auto-advance, paste distribution, and keyboard navigation.',
+  title: 'CngxOtpInput: 6 digit otp',
+  subtitle: 'Type digits one at a time - cursor auto-advances. Paste a 6-digit code to fill all at once. Backspace navigates to the previous slot.',
   level: 'molecule',
-  audience: ['dev', 'a11y'],
+  audience: ['dev'],
   artifact: 'building-block',
-  focus: ['behavior', 'a11y-pattern'],
+  focus: ['behavior'],
   apiComponents: [
     'CngxOtpInput',
     'CngxOtpSlot',
@@ -27,8 +26,7 @@ export const STORY: DemoSpec = {
         (completed)="handleOtpComplete($event)"
         style="display:flex;gap:8px">
         @for (i of otp.indices(); track i) {
-          <input [cngxOtpSlot]="i" class="demo-input"
-            style="width:48px;height:48px;text-align:center;font-size:1.25rem;font-family:var(--font-mono)" />
+          <input [cngxOtpSlot]="i" class="demo-input demo-otp-slot" />
         }
       </div>
       
@@ -39,7 +37,7 @@ export const STORY: DemoSpec = {
         <span class="status-badge">Value: {{ otp.value() || '—' }}</span>
         <span class="status-badge">Complete: {{ otp.isComplete() }}</span>
         @if (otpResult()) {
-          <span class="status-badge" style="color:var(--success-fg,green)">Verified: {{ otpResult() }}</span>
+          <span class="status-badge demo-success-text">Verified: {{ otpResult() }}</span>
         }
       </div>`,
 };

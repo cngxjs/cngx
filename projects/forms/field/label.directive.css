@@ -32,7 +32,14 @@
 @layer cngx.components {
   @scope (.cngx-label) {
     :scope {
-      display: contents;
+      /* Native <label> default. `display: contents` here previously
+       * made the label disappear and its children flow up as
+       * separate items in any grid/flex parent — breaking the
+       * stacked-field layout (`display:grid; gap:16px`) used by
+       * every demo and most consumer forms, because the marker
+       * would land on a new row.
+       */
+      display: inline;
     }
 
     .cngx-label__required {

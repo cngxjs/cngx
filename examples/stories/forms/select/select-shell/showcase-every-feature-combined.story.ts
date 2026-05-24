@@ -1,9 +1,8 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Showcase — every feature combined',
+  title: 'CngxSelectShell: showcase every feature combined',
   subtitle: 'Reactive ARIA, optgroups, divider, async commit (pessimistic so pending is visible), pending + error glyphs, custom caret, custom placeholder, change-event log, keyboard nav (↑↓/Home/End/PageUp/PageDown, typeahead-while-closed), click-outside dismiss, focus restoration on close.',
-  description: 'CngxSelectShell — single-value declarative-options dropdown. Project user-authored <cngx-option> / <cngx-optgroup> children directly; the shell derives a hierarchy-aware option model and runs the same family-level intelligence (createSelectCore, createFieldSync, createScalarCommitHandler, announcer) as CngxSelect.',
   level: 'organism',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
@@ -57,7 +56,7 @@ export const STORY: DemoSpec = {
     (selectionChange)="handleShowcaseChange($event)"
   >
     <ng-template cngxSelectPlaceholder>
-      <em style="opacity:.6">— pick a department —</em>
+      <em style="opacity:.6">- pick a department -</em>
     </ng-template>
     <ng-template cngxSelectCaret let-open>
       <span aria-hidden="true" style="display:inline-block; transition: transform .15s; transform: rotate({{ open ? 180 : 0 }}deg)">⌄</span>
@@ -79,7 +78,7 @@ export const STORY: DemoSpec = {
       <cngx-option [value]="'frontend'">Frontend</cngx-option>
       <cngx-option [value]="'backend'">Backend</cngx-option>
       <cngx-option [value]="'platform'">Platform</cngx-option>
-      <cngx-option [value]="'data'" [disabled]="true">Data — frozen requisitions</cngx-option>
+      <cngx-option [value]="'data'" [disabled]="true">Data - frozen requisitions</cngx-option>
     </cngx-optgroup>
     <cngx-select-divider />
     <cngx-optgroup label="Operations">

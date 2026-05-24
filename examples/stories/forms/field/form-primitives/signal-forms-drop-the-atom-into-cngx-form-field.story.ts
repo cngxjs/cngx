@@ -1,28 +1,20 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Signal Forms — drop the atom into <cngx-form-field>',
+  title: 'CngxFormBridge: signal forms drop the atom into cngx form field',
   subtitle: 'You write <code>&lt;cngx-form-field [field]="f.payment"&gt;&lt;cngx-radio-group ...&gt;</code> and that is it. The form-field finds the atom on its own, projects ARIA onto the host, and shows validator messages through <code>&lt;cngx-field-errors&gt;</code>. Three fields are required (terms, payment, channels). Either tab into and out of a field to surface its error, or click <strong>Validate</strong> below to mark every required field touched at once. Pick a value (or check the box / select a chip) to see the error clear instantly.',
-  description: 'Nine cngx form controls — toggle, checkbox, radio group, two flavours of checkbox/button-toggle/chip group, plus the standalone chip — bind to whatever forms paradigm your app uses. Drop them into <cngx-form-field [field]> for Signal Forms, or bind [formControl] for Reactive Forms. Same atom, same template. No CVA-per-control boilerplate, and switching paradigms later costs nothing in the atom layer.',
   level: 'organism',
-  audience: ['dev', 'a11y'],
+  audience: ['dev'],
   artifact: 'building-block',
-  focus: ['composition', 'a11y-pattern', 'integration'],
+  focus: ['composition', 'integration'],
   framework: 'signal-forms',
   apiComponents: [
-    'CngxFormBridge',
     'CngxFormField',
     'CngxToggle',
     'CngxCheckbox',
-    'CngxChipInteraction',
     'CngxRadioGroup',
     'CngxRadio',
     'CngxCheckboxGroup',
-    'CngxButtonToggleGroup',
-    'CngxButtonMultiToggleGroup',
-    'CngxChipGroup',
-    'CngxMultiChipGroup',
-    'CngxChipInGroup',
   ],
   moduleImports: [
     'import { form, schema, required } from \'@angular/forms/signals\';',
@@ -43,7 +35,7 @@ export const STORY: DemoSpec = {
   });
   protected readonly sfForm = form(this.sfModel, schema((root) => {
     required(root.terms, { message: 'Please agree' });
-    required(root.payment, { message: 'Wahl erforderlich' });
+    required(root.payment, { message: 'Choose a payment method' });
     required(root.notificationChannels, { message: 'Choose at least one channel' });
   }));
   protected readonly channelOptions = ['email', 'sms', 'push'];`,
@@ -58,27 +50,27 @@ export const STORY: DemoSpec = {
   }`,
   template: `  <div style="display:grid;gap:16px;max-width:480px">
     <cngx-form-field [field]="sfForm.notifications">
-      <label cngxLabel>Benachrichtigungen</label>
+      <label cngxLabel>Notifications</label>
       <cngx-toggle [(value)]="sfForm.notifications().value">
-        E-Mails empfangen
+        Receive emails
       </cngx-toggle>
       <cngx-field-errors />
     </cngx-form-field>
 
     <cngx-form-field [field]="sfForm.terms">
-      <label cngxLabel>Bedingungen</label>
+      <label cngxLabel>Terms</label>
       <cngx-checkbox [(value)]="sfForm.terms().value">
-        Ich akzeptiere die Bedingungen
+        I accept the terms
       </cngx-checkbox>
       <cngx-field-errors />
     </cngx-form-field>
 
     <cngx-form-field [field]="sfForm.payment">
-      <label cngxLabel>Zahlungsart</label>
+      <label cngxLabel>Payment method</label>
       <cngx-radio-group [(value)]="sfForm.payment().value" name="sf-payment">
-        <cngx-radio value="card">Karte</cngx-radio>
-        <cngx-radio value="cash">Bar</cngx-radio>
-        <cngx-radio value="invoice">Rechnung</cngx-radio>
+        <cngx-radio value="card">Card</cngx-radio>
+        <cngx-radio value="cash">Cash</cngx-radio>
+        <cngx-radio value="invoice">Invoice</cngx-radio>
       </cngx-radio-group>
       <cngx-field-errors />
     </cngx-form-field>

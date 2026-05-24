@@ -1,18 +1,16 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Pre-seeded + change-event log',
-  subtitle: 'Component starts with <em>Design</em> and <em>QA</em> selected. The <code>(selectionChange)</code> log shows the <code>action</code> discriminant for each event — toggle vs create vs clear. Use it to drive audit logs, analytics, or backend sync.',
-  description: 'CngxActionMultiSelect — multi-value combobox with inline quick-create. Eighth sibling of the select family; reuses createCreateCommitHandler with a dedicated commit controller so toggle/create lifecycles stay independent.',
+  title: 'CngxActionMultiSelect: pre seeded change event log',
+  subtitle: 'Component starts with <em>Design</em> and <em>QA</em> selected. The <code>(selectionChange)</code> log shows the <code>action</code> discriminant for each event - toggle vs create vs clear. Use it to drive audit logs, analytics, or backend sync.',
   level: 'organism',
-  audience: ['dev', 'design', 'a11y'],
+  audience: ['dev', 'design'],
   artifact: 'standalone',
-  focus: ['composition', 'visual-variants', 'a11y-pattern'],
+  focus: ['composition', 'visual-variants'],
   framework: 'signal-forms',
   apiComponents: [
     'CngxActionMultiSelect',
     'CngxSelectAction',
-    'provideActionSelectConfig',
   ],
   moduleImports: [
     'import { CngxActionMultiSelect, type CngxActionMultiSelectChange, type CngxSelectCreateAction, type CngxSelectOptionDef } from \'@cngx/forms/select\';',

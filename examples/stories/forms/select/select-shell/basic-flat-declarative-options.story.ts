@@ -1,9 +1,8 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Basic — flat declarative options',
+  title: 'CngxSelectShell: basic flat declarative options',
   subtitle: 'Project <code>&lt;cngx-option&gt;</code> children directly. The shell builds the option model via <code>contentChildren(CNGX_OPTION_CONTAINER)</code> and feeds the result into the inner <code>cngxListbox</code>. Click + hover delegated by the shell so projected options are interactive end-to-end.',
-  description: 'CngxSelectShell — single-value declarative-options dropdown. Project user-authored <cngx-option> / <cngx-optgroup> children directly; the shell derives a hierarchy-aware option model and runs the same family-level intelligence (createSelectCore, createFieldSync, createScalarCommitHandler, announcer) as CngxSelect.',
   level: 'organism',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
@@ -12,8 +11,6 @@ export const STORY: DemoSpec = {
   apiComponents: [
     'CngxSelectShell',
     'CngxSelectOption',
-    'CngxSelectOptgroup',
-    'CngxSelectDivider',
   ],
   moduleImports: [
     'import { CngxSelectShell, CngxSelectOption, type CngxSelectShellChange } from \'@cngx/forms/select\';',

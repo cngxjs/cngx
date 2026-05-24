@@ -1,17 +1,14 @@
 import type { DemoSpec } from '../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Smart Autocomplete and Spellcheck',
+  title: 'CngxInput: smart autocomplete and spellcheck',
   subtitle: '<code>CngxInput</code> auto-infers <code>autocomplete</code> and <code>spellcheck</code> from the field name. A field named <code>email</code> gets <code>autocomplete="email"</code> and <code>spellcheck="false"</code>. A field named <code>password</code> gets <code>autocomplete="current-password"</code>. Override via <code>provideFormField(withAutocompleteMappings({...}), withNoSpellcheck(...))</code>. The inferred values are shown below each input.',
-  description: 'Smart input directives with ARIA projection, autocomplete inference, password toggle, and character counter.',
   level: 'molecule',
-  audience: ['dev', 'design', 'a11y'],
+  audience: ['dev', 'design'],
   artifact: 'standalone',
-  focus: ['behavior', 'composition', 'a11y-pattern'],
+  focus: ['behavior', 'composition'],
   apiComponents: [
     'CngxInput',
-    'CngxPasswordToggle',
-    'CngxCharCount',
   ],
   moduleImports: [
     'import { form, schema, required, email, minLength, maxLength, FormField } from \'@angular/forms/signals\';',

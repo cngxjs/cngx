@@ -1,35 +1,17 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Slot overrides: *cngxSelectOptionPending + *cngxSelectOptionError',
+  title: 'CngxSelect: slot overrides cngxselectoptionpending cngxselectoptionerror',
   subtitle: 'Per-option-row indicators driven by <code>[commitAction]</code>. Pending shows while the commit is in flight; the error glyph appears on the row that failed (with <code>commitErrorDisplay="inline"</code>).',
-  description: 'CngxSelect — native-feeling single-select dropdown with template overrides, optgroups, clearable, loading, commit-action, and signal-/reactive-forms bridges.',
   level: 'organism',
-  audience: ['dev', 'design', 'a11y'],
+  audience: ['dev', 'design'],
   artifact: 'standalone',
-  focus: ['visual-variants', 'a11y-pattern', 'composition'],
+  focus: ['visual-variants', 'composition'],
   framework: 'signal-forms',
   apiComponents: [
     'CngxSelect',
-    'CngxSelectOption',
-    'CngxSelectOptgroup',
-    'CngxSelectDivider',
-    'CngxSelectCheck',
-    'CngxSelectCaret',
-    'CngxSelectOptgroupTemplate',
-    'CngxSelectPlaceholder',
-    'CngxSelectEmpty',
-    'CngxSelectLoading',
-    'CngxSelectLoadingGlyph',
-    'CngxSelectRefreshing',
-    'CngxSelectCommitError',
     'CngxSelectOptionPending',
     'CngxSelectOptionError',
-    'CngxSelectRetryButton',
-    'CngxSelectTriggerLabel',
-    'CngxSelectOptionLabel',
-    'CngxSelectClearButton',
-    'provideSelectConfig',
   ],
   moduleImports: [
     'import { CngxSelect, CngxSelectOptionPending, CngxSelectOptionError, type CngxSelectCommitAction, type CngxSelectOptionDef } from \'@cngx/forms/select\';',
@@ -63,10 +45,10 @@ export const STORY: DemoSpec = {
     commitErrorDisplay="inline"
   >
     <ng-template cngxSelectOptionPending let-opt>
-      <span aria-hidden="true" style="margin-inline-start:auto;font-size:0.75rem">⏳</span>
+      <span aria-hidden="true" class="demo-select-option-status demo-select-option-status--pending">⏳</span>
     </ng-template>
     <ng-template cngxSelectOptionError let-opt let-error="error">
-      <span aria-hidden="true" [title]="error?.message" style="margin-inline-start:auto;color:var(--cngx-color-danger)">✕</span>
+      <span aria-hidden="true" [title]="error?.message" class="demo-select-option-status demo-select-option-status--error">✕</span>
     </ng-template>
   </cngx-select>`,
   templateChrome: `<div class="button-row" style="margin-top:12px">

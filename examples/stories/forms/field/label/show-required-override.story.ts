@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxLabel: Show-required override',
+  title: 'CngxLabel: show required override',
   subtitle: 'Assume <code>provideFormField(withRequiredMarker())</code> is wired in <code>bootstrapApplication</code>. Every label on a required field then auto-renders the marker. Set <code>[showRequired]="false"</code> on one specific label to suppress it without changing the validator.',
   description: 'Both fields below carry a <code>required()</code> validator. In an app with the global provider feature active, the first label inherits the default and renders the marker; the second sets <code>[showRequired]="false"</code> and suppresses it locally. The field stays required (the projected input still receives <code>aria-required</code>); only the visual indicator is gone. Useful when the required state is communicated by surrounding copy (e.g. "all fields below are required") and the per-label marker adds noise. The bootstrap snippet sits in the source panel as a comment because the demo harness has no <code>providers</code> slot.',
   level: 'atom',

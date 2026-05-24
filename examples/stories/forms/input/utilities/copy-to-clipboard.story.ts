@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Copy to Clipboard',
+  title: 'CngxInputClear: copy to clipboard',
   subtitle: '<code>[cngxCopyValue]</code> copies text on click. The <code>copied()</code> signal stays <code>true</code> for 2 seconds.',
   description: 'Small headless behaviors: clear button, clipboard copy, and display formatting.',
   level: 'atom',
@@ -9,9 +9,7 @@ export const STORY: DemoSpec = {
   artifact: 'building-block',
   focus: ['behavior'],
   apiComponents: [
-    'CngxInputClear',
     'CngxCopyValue',
-    'CngxInputFormat',
   ],
   moduleImports: [
     'import { CngxCopyValue } from \'@cngx/forms/input\';',
@@ -23,7 +21,7 @@ export const STORY: DemoSpec = {
     <div class="demo-field">
       <label class="demo-label">API Token</label>
       <div style="display:flex;gap:8px;align-items:center">
-        <input #tokenInput readonly [value]="token()" class="demo-input" style="flex:1;font-family:var(--font-mono)" />
+        <input #tokenInput readonly [value]="token()" class="demo-input demo-mono" style="flex:1" />
         <button [cngxCopyValue] [source]="tokenInput" #cp="cngxCopyValue" class="chip">
           {{ cp.copied() ? 'Copied!' : 'Copy' }}
         </button>

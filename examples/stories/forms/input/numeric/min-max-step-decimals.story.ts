@@ -1,9 +1,8 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Min / Max / Step / Decimals',
+  title: 'CngxNumericInput: min max step decimals',
   subtitle: 'Constrain values with <code>[min]</code>, <code>[max]</code>. Control decimal places with <code>[decimals]</code>. Arrow keys use <code>[step]</code>.',
-  description: 'Locale-aware numeric input with Intl.NumberFormat formatting, arrow key increment/decrement, min/max clamping, and decimal control.',
   level: 'atom',
   audience: ['dev'],
   artifact: 'building-block',

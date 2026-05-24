@@ -1,13 +1,12 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Typeahead — *cngxSelectOptionLabel slot override',
-  subtitle: 'Same slot family as CngxSelect — project a custom <code>*cngxSelectOptionLabel</code> template to render avatars / badges / two-line layouts in the typeahead listbox.',
-  description: 'CngxTypeahead — scalar async autocomplete. Single-value input bound to an async option source with typed-form-field, commit-action and slot-override support.',
+  title: 'CngxTypeahead: typeahead cngxselectoptionlabel slot override',
+  subtitle: 'Same slot family as CngxSelect - project a custom <code>*cngxSelectOptionLabel</code> template to render avatars / badges / two-line layouts in the typeahead listbox.',
   level: 'organism',
-  audience: ['dev', 'design', 'a11y'],
+  audience: ['dev', 'design'],
   artifact: 'standalone',
-  focus: ['visual-variants', 'a11y-pattern', 'composition'],
+  focus: ['visual-variants', 'composition'],
   framework: 'signal-forms',
   apiComponents: [
     'CngxTypeahead',
@@ -38,12 +37,12 @@ export const STORY: DemoSpec = {
   >
     <ng-template cngxSelectOptionLabel let-opt>
       <span style="display:flex;align-items:center;gap:0.5rem">
-        <span aria-hidden="true" style="display:inline-flex;align-items:center;justify-content:center;width:1.5rem;height:1.5rem;border-radius:50%;background:color-mix(in oklch, var(--cngx-color-info) 18%, transparent);color:var(--cngx-color-info);font-size:0.7rem">
+        <span aria-hidden="true" class="demo-typeahead-option-icon">
           {{ opt.label.charAt(0) }}
         </span>
         <span>
           <strong>{{ opt.label }}</strong>
-          <small style="display:block;color:var(--cngx-color-text-muted)">id: {{ opt.value.id }}</small>
+          <small class="demo-typeahead-option-id">id: {{ opt.value.id }}</small>
         </span>
       </span>
     </ng-template>

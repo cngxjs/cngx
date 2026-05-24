@@ -1,19 +1,17 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Async + error — rollback observation',
-  subtitle: 'Quick-create routes through an Observable with 600ms delay. Toggle the <strong>Server fails</strong> checkbox to make the next create reject — the error surfaces via <code>(commitError)</code>, the commit-error banner renders above the options, and the value stays untouched (pessimistic flow).',
-  description: 'CngxActionSelect — single-value autocomplete with inline quick-create. Seventh sibling of the select family; thin organism on top of createSelectCore + createCreateCommitHandler.',
+  title: 'CngxActionSelect: async error rollback observation',
+  subtitle: 'Quick-create routes through an Observable with 600ms delay. Toggle the <strong>Server fails</strong> checkbox to make the next create reject - the error surfaces via <code>(commitError)</code>, the commit-error banner renders above the options, and the value stays untouched (pessimistic flow).',
+  description: 'CngxActionSelect - single-value autocomplete with inline quick-create. Seventh sibling of the select family; thin organism on top of createSelectCore + createCreateCommitHandler.',
   level: 'organism',
-  audience: ['dev', 'design', 'a11y'],
+  audience: ['dev', 'design'],
   artifact: 'standalone',
-  focus: ['composition', 'visual-variants', 'a11y-pattern'],
+  focus: ['composition', 'visual-variants'],
   framework: 'signal-forms',
   apiComponents: [
     'CngxActionSelect',
     'CngxSelectAction',
-    'provideActionSelectConfig',
-    'createCreateCommitHandler',
   ],
   moduleImports: [
     'import { CngxActionSelect, type CngxSelectCreateAction, type CngxSelectOptionDef } from \'@cngx/forms/select\';',
@@ -78,7 +76,7 @@ export const STORY: DemoSpec = {
           font: inherit;
         "
       >
-        @if (pending) { ⏳ „{{ term }}" wird angelegt… }
+        @if (pending) { ⏳ Creating "{{ term }}"… }
         @else { + Create "{{ term || '…' }}" }
       </button>
     </ng-template>

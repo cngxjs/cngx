@@ -26,6 +26,7 @@ import {
   standalone: true,
   exportAs: 'cngxOtpSlot',
   host: {
+    '[attr.type]': 'inputAttrType()',
     '[attr.maxlength]': '1',
     '[attr.autocomplete]': 'index() === 0 ? "one-time-code" : "off"',
     '[attr.inputmode]': 'inputMode()',
@@ -47,6 +48,20 @@ export class CngxOtpSlot {
   /** @internal */
   protected readonly inputMode = computed(() =>
     this.parent.inputType() === 'number' ? 'numeric' : 'text',
+  );
+
+  /**
+   * @internal — projected `<input type>` value.
+   *
+   * - `'password'` → `type="password"` so the browser native-masks the
+   *   digit (• or ●) without us touching the value.
+   * - `'number'`   → keep `type="text"` (we control numeric-only via
+   *   `inputmode="numeric"`); `type="number"` enables spinners and
+   *   breaks single-character paste semantics.
+   * - `'text'`     → `type="text"`.
+   */
+  protected readonly inputAttrType = computed(() =>
+    this.parent.inputType() === 'password' ? 'password' : 'text',
   );
 
   /** @internal */

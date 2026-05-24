@@ -1,18 +1,15 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Combobox — clearable + custom *cngxSelectClearButton',
+  title: 'CngxCombobox: combobox clearable custom cngxselectclearbutton',
   subtitle: 'Reuse the shared <code>*cngxSelectClearButton</code> slot to swap the default ✕ for any consumer-authored trigger. Same slot works on <code>CngxSelect</code> and <code>CngxMultiSelect</code>.',
-  description: 'CngxCombobox — tag-input filter with live typeahead. Multi-value tag strip + free-text filtering, plus the same async/commit machinery as CngxSelect.',
   level: 'organism',
-  audience: ['dev', 'design', 'a11y'],
+  audience: ['dev', 'design'],
   artifact: 'standalone',
-  focus: ['visual-variants', 'a11y-pattern', 'composition'],
+  focus: ['visual-variants', 'composition'],
   framework: 'signal-forms',
   apiComponents: [
     'CngxCombobox',
-    'CngxComboboxChip',
-    'CngxComboboxTriggerLabel',
   ],
   moduleImports: [
     'import { CngxSelectClearButton, CngxCombobox, type CngxSelectOptionDef } from \'@cngx/forms/select\';',
@@ -24,9 +21,9 @@ export const STORY: DemoSpec = {
     { value: 'rxjs', label: 'RxJS' },
     { value: 'a11y', label: 'Accessibility' },
     { value: 'ts', label: 'TypeScript' },
-    { value: 'old', label: 'Nicht mehr gepflegt', disabled: true },
+    { value: 'old', label: 'Unmaintained', disabled: true },
   ];
-  protected readonly comboClearableValues = signal<string[]>(['angular', 'a11y']);`,
+  protected readonly comboClearableValues = signal<string[]>(['angular']);`,
   template: `  <cngx-combobox
     [label]="'Topics'"
     [options]="tagOptions"

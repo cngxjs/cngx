@@ -1,17 +1,14 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Input Clear',
+  title: 'CngxInputClear: input clear',
   subtitle: '<code>[cngxInputClear]</code> takes a reference to the target input. Exposes <code>hasValue()</code> signal and <code>clear()</code> method.',
-  description: 'Small headless behaviors: clear button, clipboard copy, and display formatting.',
   level: 'atom',
   audience: ['dev'],
   artifact: 'building-block',
   focus: ['behavior'],
   apiComponents: [
     'CngxInputClear',
-    'CngxCopyValue',
-    'CngxInputFormat',
   ],
   moduleImports: [
     'import { CngxInputClear } from \'@cngx/forms/input\';',

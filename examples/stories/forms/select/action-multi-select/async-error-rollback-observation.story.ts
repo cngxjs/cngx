@@ -1,18 +1,17 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Async + error — rollback observation',
-  subtitle: 'Quick-create routes through an Observable with 500ms delay. Toggle <strong>Server fails</strong> to trigger an error — <code>(commitError)</code> fires, the values array stays untouched (pessimistic), the commit-error banner surfaces above the options.',
-  description: 'CngxActionMultiSelect — multi-value combobox with inline quick-create. Eighth sibling of the select family; reuses createCreateCommitHandler with a dedicated commit controller so toggle/create lifecycles stay independent.',
+  title: 'CngxActionMultiSelect: async error rollback observation',
+  subtitle: 'Quick-create routes through an Observable with 500ms delay. Toggle <strong>Server fails</strong> to trigger an error - <code>(commitError)</code> fires, the values array stays untouched (pessimistic), the commit-error banner surfaces above the options.',
+  description: 'CngxActionMultiSelect - multi-value combobox with inline quick-create. Eighth sibling of the select family; reuses createCreateCommitHandler with a dedicated commit controller so toggle/create lifecycles stay independent.',
   level: 'organism',
-  audience: ['dev', 'design', 'a11y'],
+  audience: ['dev', 'design'],
   artifact: 'standalone',
-  focus: ['composition', 'visual-variants', 'a11y-pattern'],
+  focus: ['composition', 'visual-variants'],
   framework: 'signal-forms',
   apiComponents: [
     'CngxActionMultiSelect',
     'CngxSelectAction',
-    'provideActionSelectConfig',
   ],
   moduleImports: [
     'import { CngxActionMultiSelect, type CngxSelectCreateAction, type CngxSelectOptionDef } from \'@cngx/forms/select\';',
@@ -76,7 +75,7 @@ export const STORY: DemoSpec = {
           font: inherit;
         "
       >
-        @if (pending) { ⏳ „{{ term }}" wird angelegt… }
+        @if (pending) { ⏳ Creating "{{ term }}"… }
         @else { + Create "{{ term || '…' }}" }
       </button>
     </ng-template>

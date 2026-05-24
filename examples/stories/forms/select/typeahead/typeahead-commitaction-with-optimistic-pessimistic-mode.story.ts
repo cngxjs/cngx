@@ -1,17 +1,15 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Typeahead — [commitAction] with optimistic/pessimistic mode',
-  subtitle: 'Same commit machinery as CngxSelect. Pick a user — the action runs for 800ms. Toggle mode to compare panel-close timing (optimistic closes immediately + rolls back on error; pessimistic keeps panel open until success). Fail-next button forces the action into the error path.',
-  description: 'CngxTypeahead — scalar async autocomplete. Single-value input bound to an async option source with typed-form-field, commit-action and slot-override support.',
+  title: 'CngxTypeahead: typeahead commitaction with optimistic pessimistic mode',
+  subtitle: 'Same commit machinery as CngxSelect. Pick a user - the action runs for 800ms. Toggle mode to compare panel-close timing (optimistic closes immediately + rolls back on error; pessimistic keeps panel open until success). Fail-next button forces the action into the error path.',
   level: 'organism',
-  audience: ['dev', 'design', 'a11y'],
+  audience: ['dev', 'design'],
   artifact: 'standalone',
-  focus: ['visual-variants', 'a11y-pattern', 'composition'],
+  focus: ['visual-variants', 'composition'],
   framework: 'signal-forms',
   apiComponents: [
     'CngxTypeahead',
-    'CngxSelectOptionLabel',
   ],
   moduleImports: [
     'import { CngxTypeahead, type CngxSelectCommitAction, type CngxSelectOptionDef } from \'@cngx/forms/select\';',

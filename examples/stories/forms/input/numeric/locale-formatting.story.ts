@@ -1,9 +1,8 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Locale Formatting',
+  title: 'CngxNumericInput: locale formatting',
   subtitle: 'Pass <code>[locale]</code> to use a specific locale. German uses <code>.</code> as thousands separator and <code>,</code> for decimals.',
-  description: 'Locale-aware numeric input with Intl.NumberFormat formatting, arrow key increment/decrement, min/max clamping, and decimal control.',
   level: 'atom',
   audience: ['dev'],
   artifact: 'building-block',

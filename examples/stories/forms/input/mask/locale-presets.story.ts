@@ -1,9 +1,8 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Locale Presets',
+  title: 'CngxInputMask: locale presets',
   subtitle: 'Pass a preset name like <code>phone</code>, <code>date</code>, or <code>creditcard</code>. Region suffix optional: <code>phone:CH</code>, <code>iban:DE</code>.',
-  description: 'Pattern-based input masking with locale-aware presets, multi-pattern support, custom tokens, and Reactive Forms integration.',
   level: 'atom',
   audience: ['dev'],
   artifact: 'building-block',

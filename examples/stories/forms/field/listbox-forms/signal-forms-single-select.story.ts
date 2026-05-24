@@ -1,9 +1,8 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Signal Forms — single select',
+  title: 'CngxListboxFieldBridge: signal forms single select',
   subtitle: 'Two-way binding via <code>[(value)]="singleForm.color().value"</code>. Required validation shown when touched.',
-  description: 'CngxListbox integrated into <cngx-form-field> via CngxListboxFieldBridge, plus the universal CngxBindField bridge for any other control (mat-select, native inputs, custom controls).',
   level: 'molecule',
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
@@ -11,7 +10,6 @@ export const STORY: DemoSpec = {
   framework: 'signal-forms',
   apiComponents: [
     'CngxListboxFieldBridge',
-    'CngxBindField',
     'CngxListbox',
     'CngxOption',
     'CngxFormField',

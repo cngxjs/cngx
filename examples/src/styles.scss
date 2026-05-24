@@ -178,12 +178,21 @@ body {
 // obvious: read the artifact first, fiddle with the chrome second.
 .cngx-ex-artifact {
   display: block;
+  // Cap demos at a comfortable reading width so full-width form atoms
+  // (select / action-select / combobox triggers default to 100%) don't
+  // stretch across a 1440px monitor and look broken. Override per demo
+  // via `--demo-artifact-max-width` on the artifact root if a story
+  // genuinely wants wider canvas (filter-builder, treetable). Same cap
+  // applies to chrome below so config controls line up with the
+  // artifact they drive.
+  max-width: var(--demo-artifact-max-width, 640px);
   margin: 0 0 24px;
   padding: 8px 0 24px;
   border-block-end: 1px solid var(--cngx-ex-border);
 }
 .cngx-ex-chrome {
   display: block;
+  max-width: var(--demo-artifact-max-width, 640px);
   margin: 0 0 24px;
 }
 
@@ -2690,3 +2699,400 @@ pre.code-block code {
 .demo-flight-doc-note strong {
   font-weight: 600;
 }
+
+// ---------------------------------------------------------------------------
+// Forms audit pass: shared helper classes for examples/stories/forms/**.
+// Hoisted from inline `style="..."` so the displayed Template panel shows
+// the artifact, not the demo's thematic styling.
+// ---------------------------------------------------------------------------
+
+// Used by OTP demos: square slots with monospace digits.
+.demo-otp-slot {
+  width: var(--cngx-demo-otp-slot-size, 48px);
+  height: var(--cngx-demo-otp-slot-size, 48px);
+  text-align: center;
+  font-size: var(--cngx-demo-otp-slot-font, 1.25rem);
+  font-family: var(--cngx-font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+}
+.demo-otp-slot--lg {
+  --cngx-demo-otp-slot-font: 1.5rem;
+}
+
+// Password-toggle button overlaid on the right edge of the input.
+.demo-password-toggle {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: 0;
+  cursor: pointer;
+  font-size: 0.75rem;
+  color: var(--cngx-field-hint-color, #666);
+}
+
+// Drop-zone helper texts. Layout (margin) stays on the element; text styling
+// lives here so the drop-zone variant is consistent across demos.
+.demo-drop-zone-title {
+  margin: 0;
+  font-weight: 500;
+}
+.demo-drop-zone-hint {
+  margin: 4px 0 0;
+  font-size: 0.75rem;
+  color: var(--cngx-color-text-muted, #6b7280);
+}
+.demo-drop-zone-error {
+  margin-top: 8px;
+  color: var(--cngx-field-error-color, #d32f2f);
+  font-size: 0.75rem;
+}
+
+// Character counter small text + warning state.
+.demo-counter {
+  font-size: 0.75rem;
+}
+.demo-counter--warn {
+  color: var(--cngx-color-danger, #d32f2f);
+}
+
+// Generic monospace span used by demos that print code/IDs/tokens.
+.demo-mono {
+  font-family: var(--cngx-font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+}
+.demo-mono--sm {
+  font-size: 0.75rem;
+}
+
+// Small "verified" success-text used by OTP demos.
+.demo-success-text {
+  color: var(--cngx-color-success, #15803d);
+}
+
+// In-panel mini-form actions (dirty-guard / quick-create stories).
+// Cancel/Save button pair under a small editable text input.
+.demo-mini-form-input {
+  width: 100%;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid var(--cngx-color-border, #cbd5e1);
+  border-radius: 0.25rem;
+  font: inherit;
+}
+.demo-mini-form-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+.demo-mini-form-btn {
+  padding: 0.35rem 0.75rem;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  font: inherit;
+}
+.demo-mini-form-btn--ghost {
+  background: transparent;
+  border: 1px solid var(--cngx-color-border, #cbd5e1);
+}
+.demo-mini-form-btn--primary {
+  background: var(--cngx-color-primary, #2563eb);
+  color: var(--cngx-color-on-primary, #fff);
+  border: 0;
+}
+.demo-mini-form-heading {
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+.demo-mini-form-marker {
+  color: var(--cngx-color-primary, #2563eb);
+}
+
+// Split-actions popover for action-select custom template.
+.demo-split-action-heading {
+  flex: 1;
+  font-weight: 600;
+}
+.demo-split-action-glyph {
+  font-size: 1.25rem;
+}
+
+// Multi-select custom chip variant.
+.demo-multi-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: 999px;
+  background: var(--cngx-color-info-surface, rgba(59, 130, 246, 0.12));
+  color: var(--cngx-color-info, #2563eb);
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+// Select-shell slot-override demos: container surfaces, glyphs, badges.
+.demo-select-loading-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+}
+.demo-select-loading-glyph {
+  font-size: 1.5rem;
+}
+.demo-select-loading-glyph--inline {
+  font-size: 1.25rem;
+}
+.demo-select-error-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  border-radius: 6px;
+  background: color-mix(in oklch, var(--cngx-color-danger, #d32f2f) 10%, transparent);
+  color: var(--cngx-color-danger, #d32f2f);
+}
+.demo-select-refresh-strip {
+  padding: 0.4rem 0.75rem;
+  font-size: 0.8rem;
+  color: var(--cngx-color-info, #2563eb);
+  background: linear-gradient(
+    90deg,
+    color-mix(in oklch, var(--cngx-color-info, #2563eb) 10%, transparent),
+    color-mix(in oklch, var(--cngx-color-info, #2563eb) 25%, transparent),
+    color-mix(in oklch, var(--cngx-color-info, #2563eb) 10%, transparent)
+  );
+  background-size: 200% 100%;
+  animation: cngx-select-refresh-shimmer 1.6s linear infinite;
+}
+.demo-select-optgroup-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.demo-select-optgroup-badge {
+  font-size: 0.75rem;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: color-mix(in oklch, var(--cngx-color-text, currentColor) 8%, transparent);
+  color: var(--cngx-color-text-muted, #6b7280);
+}
+.demo-select-retry-button {
+  padding: 0.25rem 0.625rem;
+  border-radius: 0.25rem;
+  border: 1px solid var(--cngx-color-border, #cbd5e1);
+  background: transparent;
+  color: var(--cngx-color-text, inherit);
+  font: inherit;
+  font-size: 0.8125rem;
+  cursor: pointer;
+}
+.demo-select-option-status {
+  margin-inline-start: 0.5rem;
+  font-size: 0.75rem;
+}
+.demo-select-option-status--pending {
+  color: var(--cngx-color-text-muted, #6b7280);
+}
+.demo-select-option-status--error {
+  color: var(--cngx-color-danger, #d32f2f);
+}
+
+// Typeahead option slot with circular icon + small id line.
+.demo-typeahead-option-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  background: color-mix(in oklch, var(--cngx-color-info, #2563eb) 18%, transparent);
+  color: var(--cngx-color-info, #2563eb);
+  font-size: 0.7rem;
+}
+.demo-typeahead-option-id {
+  display: block;
+  color: var(--cngx-color-text-muted, #6b7280);
+}
+
+// Custom-glyphs demo: monospace bold for ✕ / ▾.
+.demo-select-custom-glyph {
+  font-weight: 700;
+  font-family: var(--cngx-font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+}
+
+// Additional helpers for forms-audit Pass 2 cleanup.
+.demo-form-primitives-coming-soon {
+  color: var(--cngx-muted, #6b7280);
+  font-style: italic;
+}
+.demo-variant-heading {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.85rem;
+}
+.demo-event-value--mono {
+  font-family: var(--cngx-font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: 0.75rem;
+}
+.demo-async-error-strip {
+  padding: 0.5rem 0.75rem;
+  color: var(--cngx-color-danger, #d32f2f);
+}
+.demo-popover-padding-sm {
+  padding: 0.25rem;
+}
+.demo-select-retry-button--warn {
+  background: color-mix(in oklch, var(--cngx-color-warning, #b45309) 10%, transparent);
+  border-color: color-mix(in oklch, var(--cngx-color-warning, #b45309) 35%, transparent);
+  color: var(--cngx-color-warning, #b45309);
+}
+.demo-multi-chip-remove,
+.demo-combobox-chip-remove {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  padding: 0 0.125rem;
+}
+.demo-combobox-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  background: color-mix(in oklch, var(--cngx-color-info, #2563eb) 15%, transparent);
+  color: var(--cngx-color-info, #2563eb);
+  font-size: 0.8rem;
+}
+.demo-combobox-trigger-summary {
+  padding-inline-end: 0.5rem;
+  font-weight: 500;
+}
+.demo-select-shell-retry-btn {
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--cngx-color-border, #cbd5e1);
+  border-radius: 0.25rem;
+  font: inherit;
+  background: transparent;
+  cursor: pointer;
+}
+.demo-select-empty-state {
+  padding: 0.75rem;
+  opacity: 0.6;
+  text-align: center;
+}
+
+// Micro-helpers for remaining single-prop thematic spans.
+.demo-variant-caption {
+  display: block;
+  margin-top: 6px;
+  color: var(--cngx-color-text-muted, #6b7280);
+}
+.demo-success-dot,
+.demo-success-event {
+  color: var(--cngx-color-success, #15803d);
+}
+.demo-placeholder-muted {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--cngx-color-text-muted, #6b7280);
+}
+
+// ---------------------------------------------------------------------------
+// Demo-form skeleton helpers. Stories scatter `.demo-form / .demo-field /
+// .demo-label / .demo-input` everywhere as semantic markers; without
+// these rules, every field collapses with zero gap and inputs miss
+// the consistent stack the story authors expected.
+// ---------------------------------------------------------------------------
+
+.demo-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+// State-readout badge used in chrome rows. Renders as a small pill so
+// values stand out from surrounding labels. Used in mask/otp/select/
+// async-state demos; previously unstyled and rendered as plain text.
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e5e7eb));
+  border-radius: 999px;
+  background: var(--cngx-ex-surface-alt, var(--cngx-color-surface, #f9fafb));
+  color: var(--cngx-color-text, var(--cngx-ex-text, inherit));
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.4;
+}
+
+.demo-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+// Buttons inside a field shouldn't stretch to fill the column. Inputs /
+// textareas / select wrappers stay stretched (default flex-item width).
+.demo-field > button,
+.demo-form > button,
+.demo-field > .button-row,
+.demo-form > .button-row {
+  align-self: flex-start;
+}
+
+.demo-label {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--cngx-color-text, var(--cngx-ex-text, inherit));
+}
+
+.demo-input {
+  /* Inherits base.css <input> chrome; rule exists so consumers can chain
+   * `.demo-input.demo-otp-slot` without ambiguity, and as a hook for any
+   * future demo-specific input overrides. */
+  font: inherit;
+}
+
+// Stack cngx-checkbox-group / cngx-radio-group children vertically with a
+// modest gap. The library leaf checkbox/radio render fine on their own;
+// the group wrapper had no layout rule so inner checkboxes inherited the
+// browser's collapsed inline flow.
+cngx-checkbox-group,
+cngx-radio-group,
+cngx-button-toggle-group,
+cngx-button-multi-toggle-group,
+cngx-chip-group,
+cngx-multi-chip-group {
+  /* button-toggle-group + chip-group already have CSS that sets
+   * inline-flex; the per-element CSS wins. This block only kicks in
+   * for the checkbox- / radio-groups which ship no chrome of their
+   * own. The rule is harmless on the others (no children rule). */
+}
+
+cngx-checkbox-group,
+cngx-radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+// The library leaf adds `margin-inline-start: 1rem` between adjacent
+// siblings via `.cngx-checkbox + .cngx-checkbox` for inline layouts.
+// In a stacked column that becomes a phantom indent on every checkbox
+// after the first. The token is `inherits: false` so we cannot zero it
+// out via custom-property cascade; override the rule directly with the
+// group-scoped selector (specificity bumps over the leaf-only rule).
+cngx-checkbox-group .cngx-checkbox + .cngx-checkbox,
+cngx-radio-group .cngx-radio + .cngx-radio {
+  margin-inline-start: 0;
+}
+
+// Material theme — the prebuilt azure-blue palette so mat-select panels
+// render with proper Material chrome inside the demos. Imported here
+// alongside the cngx foundation so the dev server picks it up via HMR
+// (the angular.json `styles` array only reloads on full rebuild).
+@import '../../node_modules/@angular/material/prebuilt-themes/azure-blue.css';

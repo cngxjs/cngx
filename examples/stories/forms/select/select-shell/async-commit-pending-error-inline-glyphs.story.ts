@@ -1,9 +1,9 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Async commit — pending + error inline glyphs',
-  subtitle: 'Bind <code>[commitAction]</code> + <code>[commitMode]</code>. <strong>Pessimistic</strong> keeps the panel open during the commit so the projected <code>*cngxSelectOptionPending</code> glyph is visible inside the option\'s reserved internal slot; <strong>optimistic</strong> closes the panel immediately and rolls back on error. Toggle <strong>Server fails</strong> to observe the failure path: the failed option carries <code>data-status="error"</code> and the projected <code>*cngxSelectOptionError</code> glyph renders — never alongside user content.',
-  description: 'CngxSelectShell — single-value declarative-options dropdown. Project user-authored <cngx-option> / <cngx-optgroup> children directly; the shell derives a hierarchy-aware option model and runs the same family-level intelligence (createSelectCore, createFieldSync, createScalarCommitHandler, announcer) as CngxSelect.',
+  title: 'CngxSelectShell: async commit pending error inline glyphs',
+  subtitle: 'Bind <code>[commitAction]</code> + <code>[commitMode]</code>. <strong>Pessimistic</strong> keeps the panel open during the commit so the projected <code>*cngxSelectOptionPending</code> glyph is visible inside the option\'s reserved internal slot; <strong>optimistic</strong> closes the panel immediately and rolls back on error. Toggle <strong>Server fails</strong> to observe the failure path: the failed option carries <code>data-status="error"</code> and the projected <code>*cngxSelectOptionError</code> glyph renders - never alongside user content.',
+  description: 'CngxSelectShell - single-value declarative-options dropdown. Project user-authored <cngx-option> / <cngx-optgroup> children directly; the shell derives a hierarchy-aware option model and runs the same family-level intelligence (createSelectCore, createFieldSync, createScalarCommitHandler, announcer) as CngxSelect.',
   level: 'organism',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
@@ -12,8 +12,6 @@ export const STORY: DemoSpec = {
   apiComponents: [
     'CngxSelectShell',
     'CngxSelectOption',
-    'CngxSelectOptgroup',
-    'CngxSelectDivider',
   ],
   moduleImports: [
     'import { CngxSelectShell, CngxSelectOption, CngxSelectOptionError, CngxSelectOptionPending, type CngxSelectCommitAction, type CngxSelectCommitMode } from \'@cngx/forms/select\';',
@@ -57,9 +55,10 @@ export const STORY: DemoSpec = {
     <label style="display:inline-flex; gap:.5rem; align-items:center">
       <span>Mode:</span>
       <select
+        aria-label="Commit mode"
         [value]="commitMode()"
         (change)="commitMode.set($any($event.target).value)"
-        style="padding:.25rem .5rem; border:1px solid var(--cngx-color-border, #cbd5e1); border-radius:.25rem; font: inherit"
+        class="demo-select-shell-retry-btn"
       >
         <option value="pessimistic">pessimistic (recommended for visible pending)</option>
         <option value="optimistic">optimistic</option>

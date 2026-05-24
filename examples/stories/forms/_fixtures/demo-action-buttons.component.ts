@@ -29,7 +29,7 @@ export interface DemoActionContext {
  * <cngx-action-select [(value)]="value" [quickCreateAction]="create">
  *   <ng-template cngxSelectAction let-commit="commit" let-close="close" let-pending="isPending" let-dirty="dirty">
  *     <demo-action-buttons
- *       [commitLabel]="'Anlegen'"
+ *       [commitLabel]="'Create'"
  *       [context]="{ commit, close, isPending: pending, dirty }"
  *     />
  *   </ng-template>
@@ -97,8 +97,8 @@ export class DemoActionButtons {
   /** Label for the primary commit button. Default `'OK'`. */
   readonly commitLabel = input<string>('OK');
 
-  /** Label for the secondary cancel button. Default `'Abbrechen'`. */
-  readonly cancelLabel = input<string>('Abbrechen');
+  /** Label for the secondary cancel button. Default `'Cancel'`. */
+  readonly cancelLabel = input<string>('Cancel');
 
   /** Hide the cancel button when only a single action is meaningful. */
   readonly showCancel = input<boolean>(true);

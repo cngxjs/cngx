@@ -1,9 +1,8 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Signal Forms — multi select (min 2)',
-  subtitle: 'Multi-select mit <code>minLength</code> validator. Selection pushed into field array.',
-  description: 'CngxListbox integrated into <cngx-form-field> via CngxListboxFieldBridge, plus the universal CngxBindField bridge for any other control (mat-select, native inputs, custom controls).',
+  title: 'CngxListboxFieldBridge: signal forms multi select min 2',
+  subtitle: 'Multi-select with a <code>minLength</code> validator. Selection pushed into the field array.',
   level: 'molecule',
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
@@ -11,7 +10,6 @@ export const STORY: DemoSpec = {
   framework: 'signal-forms',
   apiComponents: [
     'CngxListboxFieldBridge',
-    'CngxBindField',
     'CngxListbox',
     'CngxOption',
     'CngxFormField',
@@ -36,9 +34,9 @@ export const STORY: DemoSpec = {
          tabindex="0">
       <div cngxOption value="cheese">Cheese</div>
       <div cngxOption value="pepperoni">Pepperoni</div>
-      <div cngxOption value="mushroom">Champignons</div>
-      <div cngxOption value="olive">Oliven</div>
-      <div cngxOption value="onion">Zwiebel</div>
+      <div cngxOption value="mushroom">Mushroom</div>
+      <div cngxOption value="olive">Olive</div>
+      <div cngxOption value="onion">Onion</div>
     </div>
     <cngx-field-errors />
   </cngx-form-field>`,

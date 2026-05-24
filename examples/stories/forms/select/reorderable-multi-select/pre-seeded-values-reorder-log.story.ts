@@ -1,19 +1,15 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Pre-seeded values + reorder log',
+  title: 'CngxReorderableMultiSelect: pre seeded values reorder log',
   subtitle: 'Component starts with five selected teams. The <code>(reordered)</code> output fires every time a drag or keyboard move settles on a new position, carrying <code>fromIndex</code> / <code>toIndex</code> / the moved <code>option</code>. <code>(selectionChange)</code> fires with the same payload under <code>action: \'reorder\'</code>.',
-  description: 'CngxReorderableMultiSelect — multi-value picker whose selected chips can be reordered via pointer drag and Alt+Arrow keyboard moves. Thin organism on top of createSelectCore + CngxReorder.',
   level: 'organism',
-  audience: ['dev', 'design', 'a11y'],
+  audience: ['dev', 'design'],
   artifact: 'standalone',
-  focus: ['composition', 'behavior', 'a11y-pattern'],
+  focus: ['composition', 'behavior'],
   framework: 'signal-forms',
   apiComponents: [
     'CngxReorderableMultiSelect',
-    'CngxReorder',
-    'CngxMultiSelectChip',
-    'CngxMultiSelectTriggerLabel',
   ],
   moduleImports: [
     'import { CngxReorderableMultiSelect, type CngxSelectOptionDef } from \'@cngx/forms/select\';',
