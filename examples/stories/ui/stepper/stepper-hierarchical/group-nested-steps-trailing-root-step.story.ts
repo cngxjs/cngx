@@ -1,9 +1,9 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Group + nested steps + trailing root step',
+  title: 'CngxStepper: group nested steps trailing root step',
   subtitle: 'The strip walks the tree depth-first. Panels render only for terminal steps; group headers occupy slots in the strip but do not host a panel.',
-  description: 'Compose <code>[cngxStepGroup]</code> on a container to nest <code>[cngxStep]</code> children. Group headers carry <code>role="group" aria-roledescription="step group"</code> and roll up child status. Sub-step indicators indent via <code>data-step-depth</code>.',
+  description: 'Tree composition: two <code>cngxStepGroup</code> branches (Account, Project) and a trailing flat <code>cngxStep</code> (Finish). Group headers expose <code>role="group" aria-roledescription="step group"</code> so AT can navigate the hierarchy.',
   level: 'organism',
   audience: ['dev', 'design'],
   artifact: 'standalone',

@@ -1,13 +1,16 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Declarative (<cngx-toast>)',
-  subtitle: 'Place <code>&lt;cngx-toast&gt;</code> in your template. It renders nothing — pushes into the global outlet when <code>[when]</code> becomes <code>true</code>.',
-  description: 'Programmatic and declarative toast notifications with dedup, timer pause on hover/touch, and severity-based styling.',
+  title: 'CngxToast: declarative toast',
+  subtitle: 'Place <code>&lt;cngx-toast&gt;</code> in your template. It renders nothing - pushes into the global outlet when <code>[when]</code> becomes <code>true</code>.',
+  description: 'Template-driven path: declarative <code>&lt;cngx-toast&gt;</code> instances bound to boolean signals. The element renders nothing locally; setting <code>[when]</code> truthy schedules a push into the global outlet, then the boolean resets so the toast life cycle stays declarative.',
   level: 'organism',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
   focus: ['async-state', 'composition', 'a11y-pattern'],
+  references: [
+    { label: 'WAI-ARIA APG - Alert', href: 'https://www.w3.org/WAI/ARIA/apg/patterns/alert/' },
+  ],
   apiComponents: [
     'CngxToastOutlet',
     'CngxToastOn',
@@ -29,11 +32,11 @@ export const STORY: DemoSpec = {
     setTimeout(() => this.showDeleted.set(false), 100);
   }`,
   template: `
-  <div style="display:flex;gap:8px">
-    <button (click)="triggerSave()" class="chip">Save Item</button>
-    <button (click)="triggerDelete()" class="chip">Delete Item</button>
+  <div class="button-row">
+    <button (click)="triggerSave()" class="chip" type="button">Save Item</button>
+    <button (click)="triggerDelete()" class="chip" type="button">Delete Item</button>
   </div>
 
   <cngx-toast severity="success" message="Item saved" [when]="showSaved()" />
-  <cngx-toast severity="warning" message="Item deleted — this cannot be undone" [when]="showDeleted()" [duration]="8000" />`,
+  <cngx-toast severity="warning" message="Item deleted - this cannot be undone" [when]="showDeleted()" [duration]="8000" />`,
 };

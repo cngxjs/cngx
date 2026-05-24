@@ -1,9 +1,9 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'createAsyncState — Mutation',
+  title: 'CngxAsyncContainer: createAsyncState mutation',
   subtitle: 'For POST/PUT/DELETE. Uses <code>execute(fn)</code> which sets status to <code>pending</code>. 70% chance of success, 30% error.',
-  description: 'Coordinates skeleton, content, empty, error, refresh, and toast from a single CngxAsyncState. Three factory functions, two template APIs, composable with other feedback atoms.',
+  description: 'Mutation factory variant: <code>createAsyncState()</code> exposes <code>execute(fn)</code> for write paths. The chrome readout exposes <code>status</code>, <code>isPending</code>, <code>data</code> and <code>error</code> live, so the success/error branches are observable without UI templating.',
   level: 'molecule',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
@@ -24,11 +24,11 @@ export const STORY: DemoSpec = {
       })
     );
   }`,
-  template: `  <div style="display:flex;gap:12px;align-items:center;margin-bottom:16px">
-    <button (click)="handleSave()" class="chip" [disabled]="saveAction.isPending()">
+  template: `  <div class="button-row" style="margin-bottom:16px;align-items:center">
+    <button (click)="handleSave()" class="chip" type="button" [disabled]="saveAction.isPending()">
       {{ saveAction.isPending() ? 'Saving...' : 'Save (70% success)' }}
     </button>
-    <button (click)="saveAction.reset()" class="chip">Reset</button>
+    <button (click)="saveAction.reset()" class="chip" type="button">Reset</button>
   </div>`,
   templateChrome: `<div class="event-grid">
     <div class="event-row">

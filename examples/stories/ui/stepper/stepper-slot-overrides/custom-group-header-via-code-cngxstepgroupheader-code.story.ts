@@ -1,9 +1,9 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Custom group header via <code>*cngxStepGroupHeader</code>',
-  subtitle: 'Replace the built-in group label span with richer markup — heading tag, child-count badge, status indicator. Slot context is <code>{ group, expanded, status }</code>. Group nodes are declared with <code>[cngxStepGroup]</code> wrapping nested <code>[cngxStep]</code> atoms.',
-  description: 'Override every visual region inside <code>&lt;cngx-stepper&gt;</code> via the six new slot directives — <code>*cngxStepIndicator</code>, <code>*cngxStepBadge</code>, <code>*cngxStepBusySpinner</code>, <code>*cngxStepRejection</code>, <code>*cngxStepGroupHeader</code>, <code>*cngxStepperEmpty</code>. Each slot ships a typed context object — destructure via <code>let-status="status"</code> / <code>let-failedIndex="failedIndex"</code> / <code>let-group="group"</code> / etc. The library renders sensible defaults; the slots are purely additive.',
+  title: 'CngxStepper: custom group header slot',
+  subtitle: 'Replace the built-in group label span with richer markup - heading tag, child-count badge, status indicator. Slot context is <code>{ group, expanded, status }</code>. Group nodes are declared with <code>[cngxStepGroup]</code> wrapping nested <code>[cngxStep]</code> atoms.',
+  description: 'Slot focus: <code>*cngxStepGroupHeader</code>. Two <code>cngxStepGroup</code> branches show the slot context shape (<code>let-group</code>, <code>let-status</code>) and prove the slot only fires for group nodes, not flat steps.',
   level: 'organism',
   audience: ['dev', 'design'],
   artifact: 'standalone',
@@ -13,12 +13,7 @@ export const STORY: DemoSpec = {
     'CngxStep',
     'CngxStepGroup',
     'CngxStepContent',
-    'CngxStepIndicator',
-    'CngxStepBadge',
-    'CngxStepBusySpinner',
     'CngxStepGroupHeader',
-    'CngxStepperEmpty',
-    'CngxStepRejection',
   ],
   moduleImports: [
     'import { CngxStep, CngxStepContent, CngxStepGroup, CngxStepGroupHeader } from \'@cngx/common/stepper\';',
@@ -27,7 +22,7 @@ export const STORY: DemoSpec = {
   imports: ['CngxStepper', 'CngxStep', 'CngxStepGroup', 'CngxStepContent', 'CngxStepGroupHeader'],
   setup: `protected readonly active = signal(0);`,
   template: `
-  <cngx-stepper [(activeStepIndex)]="active" aria-label="Slot-overrides — group header">
+  <cngx-stepper [(activeStepIndex)]="active" aria-label="Slot-overrides - group header">
     <ng-template cngxStepGroupHeader let-group="group" let-status="status">
       <strong style="text-transform:uppercase;letter-spacing:0.05em;font-size:0.8em">
         {{ group.label() }}

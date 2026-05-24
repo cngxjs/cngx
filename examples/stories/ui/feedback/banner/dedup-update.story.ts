@@ -1,13 +1,16 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Dedup + Update',
+  title: 'CngxBanner: dedup update',
   subtitle: '<code>id</code> is the dedup key. Calling <code>show()</code> with an existing <code>id</code> updates the message in-place. Great for countdown timers.',
-  description: 'Global system-level banners for session timeout, maintenance, offline status. Sticky top, always persistent, dedup by id, async action lifecycle.',
+  description: 'Live-updating banner: a 5-minute session countdown that calls <code>banner.update(id, {...})</code> every second. Message text and severity both mutate in-place because the dedup <code>id</code> stays stable.',
   level: 'organism',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
   focus: ['async-state', 'visual-variants', 'a11y-pattern'],
+  references: [
+    { label: 'WAI-ARIA APG - Alert', href: 'https://www.w3.org/WAI/ARIA/apg/patterns/alert/' },
+  ],
   apiComponents: [
     'CngxBannerOutlet',
     'CngxBanner',
@@ -41,8 +44,8 @@ export const STORY: DemoSpec = {
     }, 1000);
   }`,
   template: `
-  <div style="display:flex;gap:8px;margin-bottom:12px">
-    <button (click)="startCountdown()" class="chip">Start Session Countdown</button>
+  <div class="button-row" style="margin-bottom:12px">
+    <button (click)="startCountdown()" class="chip" type="button">Start Session Countdown</button>
   </div>
-  <p style="font-size:0.875rem;color:#64748b">Watch the banner update every second. Severity changes to error at 2 minutes.</p>`,
+  <p class="demo-hint">Watch the banner update every second. Severity changes to error at 2 minutes.</p>`,
 };

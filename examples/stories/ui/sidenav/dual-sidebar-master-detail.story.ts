@@ -1,13 +1,16 @@
 import type { DemoSpec } from '../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Dual Sidebar -- Master/Detail',
+  title: 'CngxSidenav: dual sidebar master detail',
   subtitle: 'Left sidebar with permanent navigation (<code>push</code> mode). Right sidebar as an overlay detail panel that opens when clicking an item in the content area. Shared backdrop managed by <code>CngxSidenavLayout</code>.',
-  description: 'Declarative sidebar organism with Material theming, nav atoms (links, groups, badges, labels), dual sidebar support, and responsive mode switching.',
+  description: 'Two <code>cngx-sidenav</code> instances scoped to one <code>cngx-sidenav-layout</code>: a left push-mode nav and a right over-mode detail drawer. Clicking an order opens the detail; closing it leaves the left nav intact.',
   level: 'organism',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
   focus: ['composition', 'a11y-pattern', 'behavior'],
+  references: [
+    { label: 'WAI-ARIA APG - Disclosure', href: 'https://www.w3.org/WAI/ARIA/apg/patterns/disclosure/' },
+  ],
   apiComponents: [
     'CngxSidenav',
     'CngxSidenavLayout',
@@ -54,7 +57,7 @@ export const STORY: DemoSpec = {
             Detail view for the selected order. Status, items, shipping info would go here.
           </p>
           <div class="demo-sidenav__detail-actions">
-            <button class="sort-btn" (click)="rightOpen.set(false)">Close</button>
+            <button class="sort-btn" type="button" (click)="rightOpen.set(false)">Close</button>
           </div>
         } @else {
           <p class="demo-sidenav__content-hint">Select an order to view details.</p>
@@ -63,10 +66,10 @@ export const STORY: DemoSpec = {
     </cngx-sidenav>
   </cngx-sidenav-layout>`,
   templateChrome: `<div class="button-row">
-    <button class="sort-btn" (click)="leftOpen.set(!leftOpen())">
+    <button class="sort-btn" type="button" (click)="leftOpen.set(!leftOpen())">
       Left: {{ leftOpen() ? 'open' : 'closed' }}
     </button>
-    <button class="sort-btn" (click)="rightOpen.set(!rightOpen())">
+    <button class="sort-btn" type="button" (click)="rightOpen.set(!rightOpen())">
       Right: {{ rightOpen() ? 'open' : 'closed' }}
     </button>
   </div>

@@ -1,13 +1,16 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Vertical sidebar layout',
+  title: 'CngxStepper: vertical sidebar layout',
   subtitle: 'Same component, only <code>[orientation]</code> changes. The presenter forwards the value to <code>CngxRovingTabindex</code> so the keyboard semantics swap with the layout.',
-  description: '<code>[orientation]="\'vertical\'"</code> swaps the layout to a 2-column grid: strip in the sidebar, panels on the right. ArrowUp/ArrowDown for keyboard nav.',
+  description: 'Layout variant: <code>[orientation]="vertical"</code> switches the strip into a left rail and uses ArrowUp/ArrowDown for keyboard navigation. Same step structure as the horizontal demo so the variant difference is the only variable.',
   level: 'organism',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
-  focus: ['composition', 'a11y-pattern', 'behavior'],
+  focus: ['composition', 'a11y-pattern', 'visual-variants'],
+  references: [
+    { label: 'WAI-ARIA APG - Roving tabindex', href: 'https://www.w3.org/WAI/ARIA/apg/practices/keyboard-interface/#kbd_roving_tabindex' },
+  ],
   apiComponents: [
     'CngxStepper',
     'CngxStep',

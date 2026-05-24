@@ -1,13 +1,16 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Three-tab navigation',
+  title: 'CngxTabGroup: three tab navigation',
   subtitle: 'Bind <code>[(activeIndex)]</code> for two-way control. ArrowLeft / ArrowRight cycle tabs; Home / End jump to ends; Tab leaves the strip and lands inside the active panel.',
-  description: '<code>&lt;cngx-tab-group&gt;</code> in horizontal orientation (default). W3C Tabs ARIA pattern — <code>role="tablist"</code> strip, <code>role="tab"</code> headers, <code>role="tabpanel"</code> bodies. Roving tabindex via composed host-directive.',
+  description: 'Baseline horizontal tabs: three tabs with text labels and panel bodies. W3C Tabs ARIA pattern fully wired - <code>role="tablist"</code>, <code>role="tab"</code>, <code>role="tabpanel"</code>, roving tabindex via composed host-directive.',
   level: 'organism',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
   focus: ['composition', 'a11y-pattern', 'behavior'],
+  references: [
+    { label: 'WAI-ARIA APG - Tabs', href: 'https://www.w3.org/WAI/ARIA/apg/patterns/tabs/' },
+  ],
   apiComponents: [
     'CngxTabGroup',
     'CngxTab',
@@ -24,19 +27,19 @@ export const STORY: DemoSpec = {
     <div cngxTab [label]="'Profile'">
       <ng-template cngxTabLabel>Profile</ng-template>
       <ng-template cngxTabContent>
-        <p>Profile content — name, avatar, bio.</p>
+        <p>Profile content - name, avatar, bio.</p>
       </ng-template>
     </div>
     <div cngxTab [label]="'Account'">
       <ng-template cngxTabLabel>Account</ng-template>
       <ng-template cngxTabContent>
-        <p>Account content — email, password, authentication method.</p>
+        <p>Account content - email, password, authentication method.</p>
       </ng-template>
     </div>
     <div cngxTab [label]="'Notifications'">
       <ng-template cngxTabLabel>Notifications</ng-template>
       <ng-template cngxTabContent>
-        <p>Notifications content — email + push channel preferences.</p>
+        <p>Notifications content - email + push channel preferences.</p>
       </ng-template>
     </div>
   </cngx-tab-group>`,

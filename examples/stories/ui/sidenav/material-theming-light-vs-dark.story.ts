@@ -1,13 +1,13 @@
 import type { DemoSpec } from '../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Material Theming -- Light vs Dark',
-  subtitle: 'Both panels use the real <code>sidenav-theme.scss</code> mixin applied via <code>styles.scss</code>. The right panel sets <code>data-theme="dark"</code> which activates the dark M3 color tokens. No inline overrides -- purely Material Design 3 system colors.',
-  description: 'Declarative sidebar organism with Material theming, nav atoms (links, groups, badges, labels), dual sidebar support, and responsive mode switching.',
+  title: 'CngxSidenav: material theming light vs dark',
+  subtitle: 'Both panels use the real <code>sidenav-theme.scss</code> mixin applied via <code>styles.scss</code>. The right panel sets <code>data-theme="dark"</code> which activates the dark M3 color tokens. No inline overrides - purely Material Design 3 system colors.',
+  description: 'Side-by-side theme variant: same markup, two color schemes. The dark panel scopes <code>data-theme="dark"</code> over its subtree so the Material M3 token cascade switches without inline overrides.',
   level: 'organism',
-  audience: ['dev', 'design', 'a11y'],
+  audience: ['dev', 'design'],
   artifact: 'standalone',
-  focus: ['composition', 'a11y-pattern', 'behavior'],
+  focus: ['visual-variants', 'composition'],
   apiComponents: [
     'CngxSidenav',
     'CngxSidenavLayout',
@@ -33,8 +33,8 @@ export const STORY: DemoSpec = {
           }
           <cngx-sidenav-footer>v2.1</cngx-sidenav-footer>
         </cngx-sidenav>
-        <cngx-sidenav-content style="padding: var(--cngx-sidenav-padding, 16px);">
-          <p style="font-size: 0.8rem; margin: 0; opacity: 0.6;">M3 light surface tokens via <code>sidenav.theme($theme)</code>.</p>
+        <cngx-sidenav-content class="demo-loading-pad">
+          <p>M3 light surface tokens via <code>sidenav.theme($theme)</code>.</p>
         </cngx-sidenav-content>
       </cngx-sidenav-layout>
     </div>
@@ -52,8 +52,8 @@ export const STORY: DemoSpec = {
           }
           <cngx-sidenav-footer>v2.1</cngx-sidenav-footer>
         </cngx-sidenav>
-        <cngx-sidenav-content style="padding: var(--cngx-sidenav-padding, 16px);">
-          <p style="font-size: 0.8rem; margin: 0; opacity: 0.6;">M3 dark surface tokens via <code>sidenav.theme($dark-theme)</code>.</p>
+        <cngx-sidenav-content class="demo-loading-pad">
+          <p>M3 dark surface tokens via <code>sidenav.theme($dark-theme)</code>.</p>
         </cngx-sidenav-content>
       </cngx-sidenav-layout>
     </div>

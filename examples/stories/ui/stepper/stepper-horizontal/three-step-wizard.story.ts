@@ -1,13 +1,16 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Three-step wizard',
+  title: 'CngxStepper: three step wizard',
   subtitle: 'Bind <code>[(activeStepIndex)]</code> for two-way control. Click any step header or use ArrowLeft/ArrowRight to navigate. Tab leaves the strip.',
-  description: '<code>&lt;cngx-stepper&gt;</code> in horizontal orientation (default). Strip + panels stacked. Reactive ARIA + roving tabindex via composed host-directives.',
+  description: 'Baseline horizontal wizard: three flat steps with Prev/Next buttons. Roving tabindex confines arrow-key nav to the strip; Tab exits to the panel content.',
   level: 'organism',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
   focus: ['composition', 'a11y-pattern', 'behavior'],
+  references: [
+    { label: 'WAI-ARIA APG - Roving tabindex', href: 'https://www.w3.org/WAI/ARIA/apg/practices/keyboard-interface/#kbd_roving_tabindex' },
+  ],
   apiComponents: [
     'CngxStepper',
     'CngxStep',
@@ -28,7 +31,7 @@ export const STORY: DemoSpec = {
   template: `  <cngx-stepper [(activeStepIndex)]="active" aria-label="Order wizard">
     <div cngxStep label="Customer">
       <ng-template cngxStepContent>
-        <p>Enter customer details — name, email, shipping address.</p>
+        <p>Enter customer details - name, email, shipping address.</p>
       </ng-template>
     </div>
     <div cngxStep label="Payment">

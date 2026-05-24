@@ -1,13 +1,16 @@
 import type { DemoSpec } from '../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Full Navigation Sidebar',
+  title: 'CngxSidenav: full navigation sidebar',
   subtitle: 'Composing all nav atoms inside <code>cngx-sidenav</code>: <code>CngxNavLabel</code> for section headers, <code>CngxNavLink</code> with active state and badges, <code>CngxNavGroup</code> for collapsible accordion sections. Material theming via <code>sidenav-theme.scss</code> provides surface colors, borders, and density.',
-  description: 'Declarative sidebar organism with Material theming, nav atoms (links, groups, badges, labels), dual sidebar support, and responsive mode switching.',
+  description: 'Full nav surface: section labels, active-state links with numeric and dot badges, two collapsible nav groups, and a footer. Mode toggle covers <code>over</code>, <code>push</code>, <code>side</code>, <code>mini</code>; <code>shortcut="mod+b"</code> wires the open toggle.',
   level: 'organism',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
   focus: ['composition', 'a11y-pattern', 'behavior'],
+  references: [
+    { label: 'WAI-ARIA APG - Disclosure', href: 'https://www.w3.org/WAI/ARIA/apg/patterns/disclosure/' },
+  ],
   apiComponents: [
     'CngxSidenav',
     'CngxSidenavLayout',
@@ -30,7 +33,7 @@ export const STORY: DemoSpec = {
       <button type="button" class="chip" [attr.aria-pressed]="navMode() === m"
               (click)="navMode.set(m)">{{ m }}</button>
     }
-    <button class="sort-btn" (click)="navOpen.set(!navOpen())">
+    <button class="sort-btn" type="button" (click)="navOpen.set(!navOpen())">
       {{ navOpen() ? 'Close' : 'Open' }}
     </button>
   </div>
@@ -43,28 +46,22 @@ export const STORY: DemoSpec = {
 
       <span cngxNavLabel class="demo-sidenav__label">Main</span>
 
-      <a cngxNavLink class="demo-sidenav__link" [active]="activeLink() === '/dashboard'"
-         (click)="activeLink.set('/dashboard'); $event.preventDefault()"
-         [style.border-left-color]="activeLink() === '/dashboard' ? 'var(--cngx-color-primary)' : 'transparent'"
-         [style.background]="activeLink() === '/dashboard' ? 'color-mix(in oklch, var(--cngx-color-primary) 8%, transparent)' : ''"
-         [style.font-weight]="activeLink() === '/dashboard' ? '600' : '400'">
+      <a cngxNavLink class="demo-sidenav__link" [class.demo-sidenav-active-link]="activeLink() === '/dashboard'"
+         [active]="activeLink() === '/dashboard'"
+         (click)="activeLink.set('/dashboard'); $event.preventDefault()">
         Dashboard
       </a>
 
-      <a cngxNavLink class="demo-sidenav__link" [active]="activeLink() === '/inbox'"
-         (click)="activeLink.set('/inbox'); $event.preventDefault()"
-         [style.border-left-color]="activeLink() === '/inbox' ? 'var(--cngx-color-primary)' : 'transparent'"
-         [style.background]="activeLink() === '/inbox' ? 'color-mix(in oklch, var(--cngx-color-primary) 8%, transparent)' : ''"
-         [style.font-weight]="activeLink() === '/inbox' ? '600' : '400'">
+      <a cngxNavLink class="demo-sidenav__link" [class.demo-sidenav-active-link]="activeLink() === '/inbox'"
+         [active]="activeLink() === '/inbox'"
+         (click)="activeLink.set('/inbox'); $event.preventDefault()">
         Inbox
         <span cngxNavBadge [value]="7" ariaLabel="7 unread" class="demo-sidenav__badge">7</span>
       </a>
 
-      <a cngxNavLink class="demo-sidenav__link" [active]="activeLink() === '/calendar'"
-         (click)="activeLink.set('/calendar'); $event.preventDefault()"
-         [style.border-left-color]="activeLink() === '/calendar' ? 'var(--cngx-color-primary)' : 'transparent'"
-         [style.background]="activeLink() === '/calendar' ? 'color-mix(in oklch, var(--cngx-color-primary) 8%, transparent)' : ''"
-         [style.font-weight]="activeLink() === '/calendar' ? '600' : '400'">
+      <a cngxNavLink class="demo-sidenav__link" [class.demo-sidenav-active-link]="activeLink() === '/calendar'"
+         [active]="activeLink() === '/calendar'"
+         (click)="activeLink.set('/calendar'); $event.preventDefault()">
         Calendar
         <span cngxNavBadge variant="dot" [value]="1" class="demo-sidenav__badge-dot"></span>
       </a>
@@ -72,7 +69,7 @@ export const STORY: DemoSpec = {
       <span cngxNavLabel class="demo-sidenav__label">Manage</span>
 
       <button cngxNavGroup #settingsGroup="cngxNavGroup" [controls]="'settings-items'" id="settings-lbl"
-              class="demo-sidenav__group">
+              class="demo-sidenav__group" type="button">
         Settings
         <span class="demo-sidenav__chevron"
               [style.transform]="settingsGroup.disclosure.opened() ? 'rotate(90deg)' : ''">&#9654;</span>
@@ -81,10 +78,9 @@ export const STORY: DemoSpec = {
         <div id="settings-items" role="group" [attr.aria-labelledby]="'settings-lbl'">
           @for (sub of ['General', 'Security', 'Notifications', 'Billing']; track sub) {
             <a cngxNavLink [depth]="1" class="demo-sidenav__link--sub"
+               [class.demo-sidenav-sub-active]="activeLink() === '/settings/' + sub.toLowerCase()"
                [active]="activeLink() === '/settings/' + sub.toLowerCase()"
-               (click)="activeLink.set('/settings/' + sub.toLowerCase()); $event.preventDefault()"
-               [style.color]="activeLink() === '/settings/' + sub.toLowerCase() ? 'var(--cngx-color-primary)' : ''"
-               [style.font-weight]="activeLink() === '/settings/' + sub.toLowerCase() ? '600' : '400'">
+               (click)="activeLink.set('/settings/' + sub.toLowerCase()); $event.preventDefault()">
               {{ sub }}
             </a>
           }
@@ -92,7 +88,7 @@ export const STORY: DemoSpec = {
       </div>
 
       <button cngxNavGroup #teamGroup="cngxNavGroup" [controls]="'team-items'" id="team-lbl"
-              class="demo-sidenav__group">
+              class="demo-sidenav__group" type="button">
         Team
         <span class="demo-sidenav__chevron"
               [style.transform]="teamGroup.disclosure.opened() ? 'rotate(90deg)' : ''">&#9654;</span>
@@ -115,7 +111,7 @@ export const STORY: DemoSpec = {
     <cngx-sidenav-content class="demo-sidenav__content">
       <h3 class="demo-sidenav__content-title">{{ activeLink().substring(1) || 'Dashboard' }}</h3>
       <p class="demo-sidenav__content-hint">
-        Mode: <strong>{{ navMode() }}</strong> &mdash;
+        Mode: <strong>{{ navMode() }}</strong> -
         Click nav items to change the active state.
         Groups expand with <code>CngxNavGroup</code> + <code>CngxDisclosure</code>.
       </p>

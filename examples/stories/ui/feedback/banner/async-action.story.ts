@@ -1,13 +1,16 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Async Action',
+  title: 'CngxBanner: async action',
   subtitle: 'When <code>action.handler</code> returns a <code>Promise</code>, the button shows <code>aria-busy</code> and disables during execution. On success: banner dismissed. On error: banner stays open with error message. 50/50 chance.',
-  description: 'Global system-level banners for session timeout, maintenance, offline status. Sticky top, always persistent, dedup by id, async action lifecycle.',
+  description: 'Async action lifecycle: a payment-expired banner whose Update button kicks off a Promise. The handler returns 50/50, so both resolved (auto-dismiss) and rejected (error reason persists in-banner) branches are reachable.',
   level: 'organism',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
   focus: ['async-state', 'visual-variants', 'a11y-pattern'],
+  references: [
+    { label: 'WAI-ARIA APG - Alert', href: 'https://www.w3.org/WAI/ARIA/apg/patterns/alert/' },
+  ],
   apiComponents: [
     'CngxBannerOutlet',
     'CngxBanner',
@@ -30,7 +33,7 @@ export const STORY: DemoSpec = {
     });
   }`,
   template: `
-  <div style="display:flex;gap:8px">
-    <button (click)="showAsyncAction()" class="chip">Show Payment Banner (50/50 success)</button>
+  <div class="button-row">
+    <button (click)="showAsyncAction()" class="chip" type="button">Show Payment Banner (50/50 success)</button>
   </div>`,
 };

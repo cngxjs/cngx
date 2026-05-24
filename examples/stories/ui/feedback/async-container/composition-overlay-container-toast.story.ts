@@ -1,9 +1,9 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Composition — Overlay + Container + Toast',
-  subtitle: 'Stack atoms freely. <code>[firstLoadOnly]</code> restricts the overlay to the initial load — refresh uses the container\'s built-in bar instead, avoiding content jumps under the backdrop.',
-  description: 'Coordinates skeleton, content, empty, error, refresh, and toast from a single CngxAsyncState. Three factory functions, two template APIs, composable with other feedback atoms.',
+  title: 'CngxAsyncContainer: composition with overlay and toast',
+  subtitle: 'Stack atoms freely. <code>[firstLoadOnly]</code> restricts the overlay to the initial load - refresh uses the container\'s built-in bar instead, avoiding content jumps under the backdrop.',
+  description: 'Three feedback atoms composed at once: <code>cngx-loading-overlay</code> wraps the container for first-load only, the container drives the skeleton + content templates, and the integrated toast bridge fires on success/error. Refresh uses the container bar instead of the overlay.',
   level: 'molecule',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
@@ -31,21 +31,14 @@ export const STORY: DemoSpec = {
     setTimeout(() => this.composed.setError('Timeout'), 2000);
   }`,
   template: `
-  <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px">
-    <button (click)="loadComposed()" class="chip">Load</button>
-    <button (click)="refreshComposed()" class="chip" [disabled]="composed.isFirstLoad()">Refresh (with overlay)</button>
-    <button (click)="errorComposed()" class="chip">Error</button>
-    <button (click)="composed.reset()" class="chip">Reset</button>
-  </div>
-
   <cngx-loading-overlay [state]="composed" [firstLoadOnly]="true" label="Loading data">
     <cngx-async-container [state]="composed" ariaLabel="Composed demo"
       toastSuccess="Data loaded" toastError="Load failed">
 
       <ng-template cngxAsyncSkeleton>
-        <div style="display:flex;flex-direction:column;gap:8px">
+        <div class="demo-stack--tight" style="display:flex;flex-direction:column">
           @for (i of [1,2,3]; track i) {
-            <div style="height:32px;background:var(--cngx-skeleton-bg,#e5e7eb);border-radius:6px"></div>
+            <div class="demo-skeleton-bar" style="height:32px"></div>
           }
         </div>
       </ng-template>
@@ -53,12 +46,16 @@ export const STORY: DemoSpec = {
       <ng-template cngxAsyncContent let-data>
         <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px">
           @for (item of data; track item) {
-            <div style="padding:16px;background:var(--cngx-card-bg,#f8fafc);border-radius:6px;text-align:center">
-              {{ item }}
-            </div>
+            <div class="demo-card-cell">{{ item }}</div>
           }
         </div>
       </ng-template>
     </cngx-async-container>
   </cngx-loading-overlay>`,
+  templateChrome: `<div class="button-row" style="margin-bottom:16px">
+    <button (click)="loadComposed()" class="chip" type="button">Load</button>
+    <button (click)="refreshComposed()" class="chip" type="button" [disabled]="composed.isFirstLoad()">Refresh (with overlay)</button>
+    <button (click)="errorComposed()" class="chip" type="button">Error</button>
+    <button (click)="composed.reset()" class="chip" type="button">Reset</button>
+  </div>`,
 };

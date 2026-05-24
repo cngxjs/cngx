@@ -1,13 +1,16 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Title + Description',
+  title: 'CngxToaster: title and description',
   subtitle: 'Use <code>title</code> and <code>description</code> on <code>ToastConfig</code> for structured two-line toasts. Description is line-clamped to 3 lines.',
-  description: 'Programmatic and declarative toast notifications with dedup, timer pause on hover/touch, and severity-based styling.',
+  description: 'Two-line layout variant: every <code>show()</code> here sets both <code>title</code> and <code>description</code>. The third button adds an action so the warning variant exercises title + description + action together.',
   level: 'organism',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
   focus: ['async-state', 'composition', 'a11y-pattern'],
+  references: [
+    { label: 'WAI-ARIA APG - Alert', href: 'https://www.w3.org/WAI/ARIA/apg/patterns/alert/' },
+  ],
   apiComponents: [
     'CngxToastOutlet',
     'CngxToastOn',
@@ -45,9 +48,9 @@ export const STORY: DemoSpec = {
     });
   }`,
   template: `
-  <div style="display:flex;flex-wrap:wrap;gap:8px">
-    <button (click)="showTitleSuccess()" class="chip">Success with Title</button>
-    <button (click)="showTitleError()" class="chip">Error with Title + Description</button>
-    <button (click)="showTitleWithAction()" class="chip">Warning + Action</button>
+  <div class="button-row">
+    <button (click)="showTitleSuccess()" class="chip" type="button">Success with Title</button>
+    <button (click)="showTitleError()" class="chip" type="button">Error with Title + Description</button>
+    <button (click)="showTitleWithAction()" class="chip" type="button">Warning + Action</button>
   </div>`,
 };

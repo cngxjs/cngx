@@ -1,13 +1,16 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Per-step error badges',
-  subtitle: 'Toggle the validity flags below — the step badge appears the moment <code>aggregator.shouldShow()</code> turns true. The descriptor span carries the announcement phrase for SR.',
-  description: 'Bind <code>[errorAggregator]</code> on a step to surface a badge + SR phrase whenever the aggregator opts to show errors. Compose <code>CngxErrorAggregator</code> on a fieldset; the step reads <code>shouldShow()</code> and <code>announcement()</code> reactively.',
+  title: 'CngxStepper: per step error badges',
+  subtitle: 'Toggle the validity flags below - the step badge appears the moment <code>aggregator.shouldShow()</code> turns true. The descriptor span carries the announcement phrase for SR.',
+  description: 'Validation badge pattern: each step opts into a <code>CngxErrorAggregator</code> wired through a wrapping fieldset. The badge appears reactively whenever <code>shouldShow()</code> turns true, and the descriptor span exposes the announcement to assistive tech.',
   level: 'organism',
   audience: ['dev', 'a11y'],
   artifact: 'standalone',
   focus: ['error-handling', 'composition', 'a11y-pattern'],
+  references: [
+    { label: 'WAI-ARIA APG - Alert', href: 'https://www.w3.org/WAI/ARIA/apg/patterns/alert/' },
+  ],
   apiComponents: [
     'CngxStepper',
     'CngxErrorAggregator',

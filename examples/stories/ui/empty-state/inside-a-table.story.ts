@@ -1,9 +1,9 @@
 import type { DemoSpec } from '../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Inside a Table',
+  title: 'CngxEmptyState: inside a table',
   subtitle: 'Replaces table body when no rows match. The table header stays visible for context.',
-  description: 'Universal empty-state atom for grids, tables, lists, and dashboards. Communicates why a view is empty and what the user can do next. Shows a default icon when none is projected.',
+  description: 'Spans a full-width <code>td colspan</code> so the header row stays anchored while the body becomes a single empty-state cell. Includes a row-add primary action so the empty state is also the recovery path.',
   level: 'molecule',
   audience: ['dev', 'design'],
   artifact: 'standalone',
@@ -39,7 +39,7 @@ export const STORY: DemoSpec = {
                   <circle cx="9" cy="7" r="4" />
                   <line x1="17" y1="11" x2="23" y2="11" />
                 </svg>
-                <button cngxEmptyStateAction class="chip">Add patient</button>
+                <button cngxEmptyStateAction class="chip" type="button">Add patient</button>
               </cngx-empty-state>
             </td>
           </tr>

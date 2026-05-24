@@ -1,9 +1,9 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Optimistic + pessimistic commits with bridge directives',
-  subtitle: 'Toggle the mode and "simulate error" to exercise the four quadrants. The toast + banner bridges fire on commit failure without any explicit <code>[state]</code> binding — they read <code>CNGX_STATEFUL</code> from the presenter via <code>{ host: true }</code>. Rapid consecutive clicks supersede in-flight commits — the second click cancels the first.',
-  description: 'Bind <code>[commitAction]</code> to gate every tab transition through an async write. <code>[commitMode]="optimistic"</code> (default — tab change is a navigation, not a save) advances immediately and rolls back on rejection. <code>[commitMode]="pessimistic"</code> keeps the user on the origin tab until the action resolves and renders <code>aria-busy="true"</code> + a spinner on the target tab. Rapid consecutive picks supersede any in-flight commit. <code>&lt;cngx-toast-on /&gt;</code> + <code>&lt;cngx-banner-on /&gt;</code> compose against the presenter\'s <code>CNGX_STATEFUL</code> producer with zero <code>[state]</code> wiring — proving the bridge fallback contract. <strong>Rejection persistence:</strong> the failed-target tab keeps a red <code>!</code> rejection icon + outline (one-shot pulse on the transition) until you successfully re-pick it, or click the "Clear last failed" button to dismiss programmatically. The polite live-region phrase is origin-aware — <code>commitRolledBackTo</code> reads "Could not save changes — reverted to <em>&lt;origin tab label&gt;</em>" so AT users hear both the failure and the destination. The consumer-side <code>&lt;cngx-toast-on /&gt;</code> reads the same <code>CNGX_STATEFUL</code> source as the in-organism live region — three communication channels (icon decoration + live region + toast) of one state. <strong>Trade-off:</strong> the polite live region and the toast both announce the rollback to AT users; the live region is the canonical in-organism channel and is non-removable, so consumers wanting a single AT announcement should omit the toast bridge (the icon decoration carries the visual signal independently). The demo shows both channels for didactic completeness — production consumers pick one announcement source.',
+  title: 'CngxTabGroup: optimistic and pessimistic commits with bridge directives',
+  subtitle: 'Toggle the mode and "simulate error" to exercise the four quadrants. The toast and banner bridges fire on commit failure without any explicit <code>[state]</code> binding - they read <code>CNGX_STATEFUL</code> from the presenter via <code>{ host: true }</code>. Rapid consecutive clicks supersede in-flight commits.',
+  description: 'Tabs treat <code>[commitAction]</code> as a navigation guard. Optimistic flips the panel immediately and rolls back on rejection; pessimistic blocks until the action resolves. Toast and banner bridges compose by DI; <code>presenter.clearLastFailed()</code> wipes the persistent rejection icon programmatically.',
   level: 'organism',
   audience: ['dev'],
   artifact: 'standalone',
@@ -33,7 +33,7 @@ export const STORY: DemoSpec = {
     return new Observable<boolean>((sub) => {
       const handle = setTimeout(() => {
         if (fail) {
-          sub.error(new Error('Server refused tab ' + from + ' → ' + to));
+          sub.error(new Error('Server refused tab ' + from + ' -> ' + to));
         } else {
           sub.next(true);
           sub.complete();
@@ -66,10 +66,10 @@ export const STORY: DemoSpec = {
   </cngx-tab-group>`,
   templateChrome: `<div class="event-row" style="gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap">
     <button type="button" class="chip"
-            [style.background]="mode() === 'optimistic' ? '#c8e6c9' : ''"
+            [class.demo-chip-toggle--active]="mode() === 'optimistic'"
             (click)="mode.set('optimistic')">optimistic</button>
     <button type="button" class="chip"
-            [style.background]="mode() === 'pessimistic' ? '#c8e6c9' : ''"
+            [class.demo-chip-toggle--active]="mode() === 'pessimistic'"
             (click)="mode.set('pessimistic')">pessimistic</button>
     <label style="margin-inline-start:12px">
       <input type="checkbox"
@@ -90,7 +90,7 @@ export const STORY: DemoSpec = {
       Clear last failed
     </button>
     <span style="opacity:0.7;font-size:12px">
-      programmatic dismissal — calls <code>presenter.clearLastFailed()</code>
+      programmatic dismissal - calls <code>presenter.clearLastFailed()</code>
     </span>
   </div>
 <div class="event-grid" style="margin-top:12px">

@@ -1,9 +1,9 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Spinner Variant',
+  title: 'CngxLoadingIndicator: spinner variant',
   subtitle: 'Default variant. Appears after 200ms delay, stays at least 500ms.',
-  description: 'Purely visual loading indicator — spinner or bar variant. Delay + minDuration prevent flash.',
+  description: 'Inline spinner variant: a button toggles a 2s loading state next to a status label. Built-in delay + min-duration thresholds prevent the spinner from flashing on sub-200ms operations.',
   level: 'atom',
   audience: ['dev', 'design'],
   artifact: 'standalone',
@@ -21,10 +21,10 @@ export const STORY: DemoSpec = {
     setTimeout(() => this.isLoading.set(false), 2000);
   }`,
   template: `
-  <button (click)="handleToggle()" class="chip">
+  <button (click)="handleToggle()" class="chip" type="button">
     {{ isLoading() ? 'Loading...' : 'Start Loading (2s)' }}
   </button>
-  <div style="margin-top:16px;display:flex;align-items:center;gap:12px">
+  <div class="demo-row-center" style="margin-top:16px">
     <cngx-loading-indicator [loading]="isLoading()" variant="spinner" label="Loading data" />
     <span>{{ isLoading() ? 'Fetching data...' : 'Idle' }}</span>
   </div>`,

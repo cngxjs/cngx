@@ -1,13 +1,16 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Overflow Collapse',
+  title: 'CngxAlertStack: overflow collapse',
   subtitle: 'When alerts exceed <code>[maxVisible]</code>, overflow is collapsed with a "+ N more" button. Click to expand. <code>aria-expanded</code> + <code>aria-controls</code> on the overflow button.',
-  description: 'Scoped inline alert stack with programmatic service, overflow collapse, and DI-scoped nesting for dialogs and forms.',
+  description: 'Density guard: push seven errors into a stack with <code>maxVisible=3</code>. The first three render inline, the rest collapse behind a counter button that exposes correct <code>aria-expanded</code> + <code>aria-controls</code> wiring.',
   level: 'organism',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
   focus: ['async-state', 'composition', 'a11y-pattern'],
+  references: [
+    { label: 'WAI-ARIA APG - Disclosure', href: 'https://www.w3.org/WAI/ARIA/apg/patterns/disclosure/' },
+  ],
   apiComponents: [
     'CngxAlertStack',
     'CngxAlerter',
@@ -32,10 +35,9 @@ export const STORY: DemoSpec = {
     this.overflowCounter = 0;
   }`,
   template: `
-  <div style="display:flex;gap:8px;margin-bottom:12px">
-    <button (click)="addMany()" class="chip">Add 7 Errors</button>
-    <button (click)="clearOverflow()" class="chip">Clear</button>
-  </div>
-
   <cngx-alert-stack #overflowStack scope="overflow" [maxVisible]="3" />`,
+  templateChrome: `<div class="button-row" style="margin-bottom:12px">
+    <button (click)="addMany()" class="chip" type="button">Add 7 Errors</button>
+    <button (click)="clearOverflow()" class="chip" type="button">Clear</button>
+  </div>`,
 };

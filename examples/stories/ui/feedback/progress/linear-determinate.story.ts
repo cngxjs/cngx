@@ -1,13 +1,16 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Linear — Determinate',
+  title: 'CngxProgress: linear determinate',
   subtitle: 'Click to simulate upload progress (0-100% in steps of 10).',
-  description: 'Determinate/indeterminate progress indicator. Linear bar or circular variant. CSS transition smoothing for jumpy updates.',
+  description: 'Determinate linear bar: a click steps the signal through 0 to 100 in 10% jumps with a 500ms interval. CSS transitions absorb jumpy updates so the bar always reads smoothly.',
   level: 'atom',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
   focus: ['visual-variants', 'async-state', 'a11y-pattern'],
+  references: [
+    { label: 'WAI-ARIA APG - progressbar', href: 'https://www.w3.org/TR/wai-aria-1.2/#progressbar' },
+  ],
   apiComponents: [
     'CngxProgress',
   ],
@@ -31,7 +34,7 @@ export const STORY: DemoSpec = {
     }, 500);
   }`,
   template: `
-  <button (click)="startDeterminate()" class="chip" style="margin-bottom:16px">
+  <button (click)="startDeterminate()" class="chip" type="button" style="margin-bottom:16px">
     {{ progress() !== undefined ? progress() + '%' : 'Start Upload' }}
   </button>
   @if (progress() !== undefined) {

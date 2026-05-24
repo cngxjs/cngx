@@ -1,13 +1,16 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Circular Variant',
-  subtitle: 'Indeterminate spinner (left) and determinate with value (right, click Start Upload above).',
-  description: 'Determinate/indeterminate progress indicator. Linear bar or circular variant. CSS transition smoothing for jumpy updates.',
+  title: 'CngxProgress: circular variant',
+  subtitle: 'Indeterminate spinner (left) and determinate with value (right). Click Start Upload below to drive the determinate circle.',
+  description: 'Circular variant matrix: indeterminate by default; turns determinate the moment <code>[progress]</code> is bound. Side-by-side comparison makes the API contract obvious.',
   level: 'atom',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
   focus: ['visual-variants', 'async-state', 'a11y-pattern'],
+  references: [
+    { label: 'WAI-ARIA APG - progressbar', href: 'https://www.w3.org/TR/wai-aria-1.2/#progressbar' },
+  ],
   apiComponents: [
     'CngxProgress',
   ],
@@ -15,14 +18,33 @@ export const STORY: DemoSpec = {
     'import { CngxProgress } from \'@cngx/ui/feedback\';',
   ],
   imports: ['CngxProgress'],
-  setup: `protected readonly progress = signal<number | undefined>(undefined);`,
+  setup: `protected readonly progress = signal<number | undefined>(undefined);
+  private interval: ReturnType<typeof setInterval> | undefined;
+  protected startDeterminate(): void {
+    this.progress.set(0);
+    clearInterval(this.interval);
+    this.interval = setInterval(() => {
+      const p = this.progress() ?? 0;
+      if (p >= 100) {
+        clearInterval(this.interval);
+        this.progress.set(undefined);
+        return;
+      }
+      this.progress.set(p + 10);
+    }, 500);
+  }`,
   template: `
-  <div style="display:flex;gap:24px;align-items:center">
+  <div class="demo-row-center" style="gap:24px">
     <cngx-progress variant="circular" label="Processing" />
     @if (progress() !== undefined) {
       <cngx-progress variant="circular" [progress]="progress()" [showLabel]="true" label="Upload" />
     } @else {
-      <span style="color:var(--cngx-muted,#64748b);font-size:0.875rem">Click "Start Upload" to see determinate circle</span>
+      <span class="demo-hint">Click "Start Upload" below to see determinate circle</span>
     }
+  </div>`,
+  templateChrome: `<div class="button-row" style="margin-bottom:12px">
+    <button (click)="startDeterminate()" class="chip" type="button">
+      {{ progress() !== undefined ? progress() + '%' : 'Start Upload' }}
+    </button>
   </div>`,
 };

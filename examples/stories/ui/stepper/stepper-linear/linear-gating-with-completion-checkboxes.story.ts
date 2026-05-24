@@ -1,13 +1,16 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Linear gating with completion checkboxes',
-  subtitle: 'Tick the per-step "complete" checkbox to unlock the next step. Linear mode enforces ordering — clicks on non-completed forward steps are rejected by the presenter; past completed steps remain editable.',
-  description: 'Bind <code>[linear]="true"</code> to enforce sequential progression: the user must complete each step in order before advancing. Steps are toggled <code>completed</code> via the per-step <code>state</code> aggregator (here exposed via per-step checkboxes for the demo). The strip\'s <code>aria-disabled</code> + <code>aria-current</code> reflect the editability rule reactively — non-completed forward steps reject clicks, but past completed steps remain navigable.',
+  title: 'CngxStepper: linear gating with completion checkboxes',
+  subtitle: 'Tick the per-step "complete" checkbox to unlock the next step. Linear mode enforces ordering - clicks on non-completed forward steps are rejected by the presenter; past completed steps remain editable.',
+  description: 'Linear mode reference: <code>[linear]="true"</code> blocks forward jumps to non-completed steps while keeping completed-past steps editable. Per-step completion is driven by a parallel signal so the demo can exercise the gating contract.',
   level: 'organism',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
   focus: ['behavior', 'a11y-pattern'],
+  references: [
+    { label: 'WAI-ARIA aria-disabled', href: 'https://www.w3.org/TR/wai-aria-1.2/#aria-disabled' },
+  ],
   apiComponents: [
     'CngxStepper',
     'CngxStep',
@@ -48,7 +51,7 @@ export const STORY: DemoSpec = {
     </div>
     <div cngxStep label="Done" [completed]="completed()[2]">
       <ng-template cngxStepContent>
-        <p>Wizard finished — uncheck a previous step to revisit.</p>
+        <p>Wizard finished - uncheck a previous step to revisit.</p>
         <label>
           <input type="checkbox"
                  [checked]="completed()[2]"

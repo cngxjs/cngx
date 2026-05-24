@@ -1,9 +1,9 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Template Slots',
+  title: 'CngxActionButton: template slots',
   subtitle: 'Project <code>cngxPending</code>, <code>cngxSucceeded</code>, <code>cngxFailed</code> templates for full control. The <code>cngxFailed</code> template receives the error as <code>let-err</code>.',
-  description: 'Action button molecule with built-in status templates. Zero boilerplate alternative to CngxAsyncClick.',
+  description: 'Slot-projection escape hatch: replace each terminal-state template with custom markup (Material spinner in the pending slot, retry prompt with the error message in the failed slot). Use when string labels are not enough.',
   level: 'molecule',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
@@ -19,20 +19,18 @@ export const STORY: DemoSpec = {
     'import { MatProgressSpinnerModule } from \'@angular/material/progress-spinner\';',
   ],
   imports: ['CngxActionButton', 'CngxPending', 'CngxSucceeded', 'CngxFailed', 'MatProgressSpinnerModule'],
-  setupChrome: `protected readonly submitAction = () => new Promise<void>((resolve, reject) =>
+  setup: `protected readonly submitAction = () => new Promise<void>((resolve, reject) =>
     setTimeout(() => Math.random() > 0.4 ? resolve() : reject(new Error('Random failure')), 1200),
   );`,
-  template: ``,
-  templateChrome: `<div class="button-row">
-    <cngx-action-button [action]="submitAction">
-      Submit Order
-      <ng-template cngxPending>
-        <span style="display:inline-flex;align-items:center;gap:6px">
-          <mat-spinner diameter="16" /> Processing...
-        </span>
-      </ng-template>
-      <ng-template cngxSucceeded>Order placed!</ng-template>
-      <ng-template cngxFailed let-err>{{ err }} -- retry?</ng-template>
-    </cngx-action-button>
-  </div>`,
+  template: `
+  <cngx-action-button [action]="submitAction">
+    Submit Order
+    <ng-template cngxPending>
+      <span style="display:inline-flex;align-items:center;gap:6px">
+        <mat-spinner diameter="16" /> Processing...
+      </span>
+    </ng-template>
+    <ng-template cngxSucceeded>Order placed!</ng-template>
+    <ng-template cngxFailed let-err>{{ err }} - retry?</ng-template>
+  </cngx-action-button>`,
 };

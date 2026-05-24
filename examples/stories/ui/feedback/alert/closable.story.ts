@@ -1,13 +1,16 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Closable',
+  title: 'CngxAlert: closable',
   subtitle: 'Dismiss button via <code>[closable]</code>. SR announces "Alert dismissed".',
-  description: 'Inline alert atom with enter/exit animations, state-driven visibility, auto-dismiss with pause-on-hover/focus, auto-collapse, and action buttons.',
+  description: 'User-dismissable variant: <code>[closable]</code> renders the close button, <code>(dismissed)</code> fires when the user clicks it, and the alert announces its removal to assistive tech.',
   level: 'molecule',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
   focus: ['visual-variants', 'composition', 'a11y-pattern'],
+  references: [
+    { label: 'WAI-ARIA APG - Alert', href: 'https://www.w3.org/WAI/ARIA/apg/patterns/alert/' },
+  ],
   apiComponents: [
     'CngxAlert',
     'CngxAlertAction',
@@ -24,6 +27,6 @@ export const STORY: DemoSpec = {
       Your changes will be lost if you leave this page.
     </cngx-alert>
   } @else {
-    <button (click)="dismissed.set(false)" class="chip">Show alert again</button>
+    <button (click)="dismissed.set(false)" class="chip" type="button">Show alert again</button>
   }`,
 };
