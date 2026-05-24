@@ -11,6 +11,8 @@ import {
   signal,
   untracked,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { fromEvent } from 'rxjs';
 
 import { hasTransition, nextUid, onTransitionDone } from '@cngx/core/utils';
 
@@ -348,6 +350,20 @@ export class CngxPopover {
         this.finalize();
       }
     });
+
+    // Recompute arrow offset on viewport resize while the popover is open.
+    // takeUntilDestroyed handles teardown so finalize() does not need an
+    // explicit removeEventListener pair.
+    const view = this.doc.defaultView;
+    if (view) {
+      fromEvent(view, 'resize')
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe(() => {
+          if (this.stateSignal() !== 'closed') {
+            this.updateArrowOffset();
+          }
+        });
+    }
   }
 
   /** Open the popover. No-op if not `closed`. */
@@ -368,7 +384,6 @@ export class CngxPopover {
     this.elRef.nativeElement.showPopover();
     installGlobalEscapeListener(this.doc);
     this.applyFloatingPosition();
-    this.doc.defaultView?.addEventListener('resize', this.handleWindowResize, { passive: true });
     requestAnimationFrame(() => {
       if (this.stateSignal() === 'opening') {
         this.stateSignal.set('open');
@@ -435,13 +450,6 @@ export class CngxPopover {
     });
   }
 
-  private readonly handleWindowResize = (): void => {
-    if (this.stateSignal() === 'closed') {
-      return;
-    }
-    this.updateArrowOffset();
-  };
-
   /**
    * Recompute the arrow's edge and inline offset from the live trigger and
    * panel rects. The resolved edge captures any browser-driven flip; the
@@ -494,7 +502,6 @@ export class CngxPopover {
 
   private finalize(): void {
     openPopovers.delete(this);
-    this.doc.defaultView?.removeEventListener('resize', this.handleWindowResize);
     this.arrowOffsetSignal.set(null);
     this.resolvedEdgeSignal.set(null);
     const el = this.popoverElement;
