@@ -1,3 +1,7 @@
+import type { TemplateRef } from '@angular/core';
+
+import type { CngxPopoverArrowContext } from './popover-panel-slots';
+
 /** Configuration for `CngxPopoverPanel` provided via `providePopoverPanel()`. */
 export interface CngxPopoverPanelConfig {
   /**
@@ -21,6 +25,21 @@ export interface CngxPopoverPanelConfig {
 
   /** Default for `showArrow`. `undefined` = per-component default (`false`). */
   showArrow?: boolean;
+
+  /**
+   * App-wide template overrides for the panel's visible regions. Each
+   * entry is the third tier of the slot cascade — per-instance
+   * `contentChild` directives still win, the library defaults still
+   * lose. Set via `withArrowTemplate(...)` and friends.
+   */
+  templates?: {
+    /**
+     * Default `*cngxPopoverArrow` template for every `<cngx-popover-panel>`
+     * in the application. Per-instance `ng-template cngxPopoverArrow`
+     * still wins.
+     */
+    arrow?: TemplateRef<CngxPopoverArrowContext>;
+  };
 }
 
 /** Feature function signature for `providePopoverPanel()`. */

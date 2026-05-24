@@ -17,6 +17,14 @@ export type PopoverHaspopup = 'dialog' | 'listbox' | 'menu' | 'tree' | 'true';
 export type PopoverPanelRole = 'dialog' | 'alertdialog' | 'tooltip' | 'menu' | 'group' | 'region';
 
 /**
+ * Primary edge of the popover panel that faces the trigger after browser-
+ * driven shift / flip recovery. Driven by `CngxPopover.resolvedEdge`;
+ * consumers projecting a `cngxPopoverArrow` template receive this value in
+ * the slot context so they can rotate or position their glyph accordingly.
+ */
+export type ArrowEdge = 'top' | 'bottom' | 'left' | 'right';
+
+/**
  * Which event sources may open `CngxTooltip`.
  *
  * - `'auto'` (default) - hover and focus open the tooltip with the

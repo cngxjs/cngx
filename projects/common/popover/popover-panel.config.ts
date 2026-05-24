@@ -1,5 +1,6 @@
-import { InjectionToken, type Provider } from '@angular/core';
+import { InjectionToken, type Provider, type TemplateRef } from '@angular/core';
 
+import type { CngxPopoverArrowContext } from './popover-panel-slots';
 import type { CngxPopoverPanelConfig, PopoverPanelFeature } from './popover-panel.types';
 
 /** Default configuration — no auto-dismiss, no close-on-success, variant='default'. */
@@ -70,4 +71,25 @@ export function withCloseButton(show = true): PopoverPanelFeature {
  */
 export function withArrow(show = true): PopoverPanelFeature {
   return (config) => ({ ...config, showArrow: show });
+}
+
+/**
+ * Register an app-wide default template for the panel's arrow ornament.
+ * The template receives a `CngxPopoverArrowContext` with `edge` and
+ * `offsetPx` so the consumer's glyph can match the resolved placement.
+ *
+ * Per-instance `*cngxPopoverArrow` still wins over this default; the
+ * library's rotated-diamond fallback only renders when neither tier is
+ * set.
+ *
+ * ```typescript
+ * providers: [
+ *   providePopoverPanel(withArrowTemplate(brandArrowTpl)),
+ * ]
+ * ```
+ */
+export function withArrowTemplate(
+  tpl: TemplateRef<CngxPopoverArrowContext>,
+): PopoverPanelFeature {
+  return (config) => ({ ...config, templates: { ...config.templates, arrow: tpl } });
 }

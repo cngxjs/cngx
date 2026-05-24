@@ -4,6 +4,7 @@
 
 // Atoms
 export type {
+  ArrowEdge,
   PopoverPlacement,
   PopoverPositionTryFallback,
   PopoverState,
@@ -34,6 +35,7 @@ export {
   withDefaultVariant,
   withCloseButton,
   withArrow,
+  withArrowTemplate,
 } from './popover-panel.config';
 export { CngxPopoverPanel } from './popover-panel.component';
 export { CngxPopoverAction, type PopoverActionVariant } from './popover-action.component';
@@ -42,6 +44,8 @@ export {
   type CngxPopoverArrowBounds,
 } from './popover-arrow-bounds';
 export {
+  CngxPopoverArrow,
+  type CngxPopoverArrowContext,
   CngxPopoverHeader,
   CngxPopoverBody,
   CngxPopoverFooter,

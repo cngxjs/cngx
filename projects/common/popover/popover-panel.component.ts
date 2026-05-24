@@ -19,6 +19,8 @@ import { nextUid } from '@cngx/core/utils';
 import { CNGX_POPOVER_ARROW_BOUNDS, type CngxPopoverArrowBounds } from './popover-arrow-bounds';
 import { CNGX_POPOVER_PANEL_CONFIG } from './popover-panel.config';
 import {
+  CngxPopoverArrow,
+  type CngxPopoverArrowContext,
   CngxPopoverClose,
   CngxPopoverEmpty,
   CngxPopoverError,
@@ -100,7 +102,11 @@ import type { PopoverPanelRole } from './popover.types';
   },
   template: `
     @if (showArrow()) {
-      <div class="cngx-popover-panel__arrow"></div>
+      @if (arrowTpl(); as tpl) {
+        <ng-container *ngTemplateOutlet="tpl; context: arrowContext()" />
+      } @else {
+        <div class="cngx-popover-panel__arrow"></div>
+      }
     }
 
     @if (effectiveLoading()) {
@@ -244,6 +250,28 @@ export class CngxPopoverPanel implements CngxPopoverArrowBounds {
   protected readonly loadingTpl = contentChild(CngxPopoverLoading);
   protected readonly emptyTpl = contentChild(CngxPopoverEmpty);
   protected readonly errorTpl = contentChild(CngxPopoverError);
+  protected readonly arrowTplDirective = contentChild(CngxPopoverArrow);
+
+  /**
+   * Three-stage cascade for the arrow ornament:
+   * 1. Per-instance `*cngxPopoverArrow` template (contentChild).
+   * 2. App-wide `CNGX_POPOVER_PANEL_CONFIG.templates.arrow`
+   *    (via `providePopoverPanel(withArrowTemplate(...))`).
+   * 3. `null` -> the panel renders the default rotated-diamond markup.
+   */
+  protected readonly arrowTpl = computed(
+    () => this.arrowTplDirective()?.templateRef ?? this.config.templates?.arrow ?? null,
+  );
+
+  /** Context surface for projected `*cngxPopoverArrow` templates. */
+  protected readonly arrowContext = computed<CngxPopoverArrowContext>(() => {
+    const raw = this.popover.arrowOffset();
+    const parsed = raw === null ? null : Number.parseFloat(raw);
+    return {
+      edge: this.popover.resolvedEdge(),
+      offsetPx: parsed !== null && Number.isFinite(parsed) ? parsed : null,
+    };
+  });
 
   /** Auto-detected from projected `[cngxPopoverHeader]` content. */
   protected readonly hasHeader = computed(() => !!this.headerSlot());

@@ -1,10 +1,17 @@
-import { Component, viewChild } from '@angular/core';
+import { Component, TemplateRef, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CngxPopoverPanel } from './popover-panel.component';
-import { providePopoverPanel, withArrow, withCloseButton } from './popover-panel.config';
 import {
+  providePopoverPanel,
+  withArrow,
+  withArrowTemplate,
+  withCloseButton,
+} from './popover-panel.config';
+import {
+  CngxPopoverArrow,
+  type CngxPopoverArrowContext,
   CngxPopoverBody,
   CngxPopoverEmpty,
   CngxPopoverError,
@@ -141,6 +148,49 @@ class ConfigHost {
   readonly panel = viewChild.required(CngxPopoverPanel);
 }
 
+@Component({
+  template: `
+    <cngx-popover-panel #panel="cngxPopoverPanel" [showArrow]="true">
+      <ng-template cngxPopoverArrow let-edge="edge" let-offsetPx="offsetPx">
+        <i
+          data-testid="slot-arrow"
+          [attr.data-edge]="edge"
+          [attr.data-offset]="offsetPx"
+        ></i>
+      </ng-template>
+      <p cngxPopoverBody>Body</p>
+    </cngx-popover-panel>
+  `,
+  imports: [CngxPopoverPanel, CngxPopoverBody, CngxPopoverArrow],
+})
+class ArrowSlotInstanceHost {
+  readonly panel = viewChild.required(CngxPopoverPanel);
+}
+
+@Component({
+  template: `
+    <cngx-popover-panel #panel="cngxPopoverPanel" [showArrow]="true">
+      <p cngxPopoverBody>Body</p>
+    </cngx-popover-panel>
+  `,
+  imports: [CngxPopoverPanel, CngxPopoverBody],
+})
+class ArrowDefaultHost {
+  readonly panel = viewChild.required(CngxPopoverPanel);
+}
+
+@Component({
+  template: `
+    <ng-template #t let-edge="edge">
+      <i data-testid="config-arrow" [attr.data-edge]="edge"></i>
+    </ng-template>
+  `,
+  standalone: true,
+})
+class ConfigArrowTplSource {
+  readonly t = viewChild.required<TemplateRef<CngxPopoverArrowContext>>('t');
+}
+
 function setup<T>(hostType: new () => T, providers: unknown[] = []) {
   TestBed.configureTestingModule({ providers: providers as never[] });
   const fixture = TestBed.createComponent(hostType);
@@ -273,5 +323,41 @@ describe('CngxPopoverPanel', () => {
     expect(closeBtn).toBeTruthy();
     expect(arrow).toBeTruthy();
     expect(panelEl.classList.contains('cngx-popover-panel--arrow')).toBe(true);
+  });
+
+  describe('arrow slot cascade', () => {
+    it('per-instance cngxPopoverArrow template wins over the default diamond', () => {
+      const { panelEl } = setup(ArrowSlotInstanceHost);
+      expect(panelEl.querySelector('.cngx-popover-panel__arrow')).toBeNull();
+      const slotArrow = panelEl.querySelector('[data-testid="slot-arrow"]');
+      expect(slotArrow).toBeTruthy();
+      expect(slotArrow!.getAttribute('data-edge')).toBe('bottom');
+    });
+
+    it('CNGX_POPOVER_PANEL_CONFIG.templates.arrow wins over the default diamond when no contentChild', () => {
+      // Step 1 — extract a real TemplateRef from a throwaway source component.
+      const sourceFixture = TestBed.createComponent(ConfigArrowTplSource);
+      sourceFixture.detectChanges();
+      const tpl = sourceFixture.componentInstance.t();
+      sourceFixture.destroy();
+
+      // Step 2 — re-configure TestBed with that template wired into the cascade.
+      TestBed.resetTestingModule();
+      const { panelEl } = setup(ArrowDefaultHost, [
+        providePopoverPanel(withArrow(), withArrowTemplate(tpl)),
+      ]);
+
+      expect(panelEl.querySelector('.cngx-popover-panel__arrow')).toBeNull();
+      const configArrow = panelEl.querySelector('[data-testid="config-arrow"]');
+      expect(configArrow).toBeTruthy();
+      expect(configArrow!.getAttribute('data-edge')).toBe('bottom');
+    });
+
+    it('default rotated-diamond renders when neither tier is set', () => {
+      const { panelEl } = setup(ArrowDefaultHost);
+      expect(panelEl.querySelector('.cngx-popover-panel__arrow')).toBeTruthy();
+      expect(panelEl.querySelector('[data-testid="slot-arrow"]')).toBeNull();
+      expect(panelEl.querySelector('[data-testid="config-arrow"]')).toBeNull();
+    });
   });
 });

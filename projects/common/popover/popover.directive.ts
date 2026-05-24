@@ -21,6 +21,7 @@ import { ANCHOR_AREA_PROPERTY, POSITION_AREA, SUPPORTS_ANCHOR } from './anchor-p
 import { CNGX_POPOVER_ARROW_BOUNDS, type CngxPopoverArrowBounds } from './popover-arrow-bounds';
 import { CNGX_FLOATING_FALLBACK, FLOATING_PLACEMENT } from './floating-fallback';
 import type {
+  ArrowEdge,
   PopoverHaspopup,
   PopoverMode,
   PopoverPlacement,
@@ -30,9 +31,6 @@ import type {
 
 /** Module-level registry of open popovers (insertion-ordered). */
 const openPopovers = new Set<CngxPopover>();
-
-/** Primary axis edges the arrow can land on. */
-type ArrowEdge = 'top' | 'bottom' | 'left' | 'right';
 
 /**
  * Derive the panel's actual placement relative to the trigger from the live
