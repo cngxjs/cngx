@@ -263,15 +263,23 @@ export class CngxPopoverPanel implements CngxPopoverArrowBounds {
     () => this.arrowTplDirective()?.templateRef ?? this.config.templates?.arrow ?? null,
   );
 
-  /** Context surface for projected `*cngxPopoverArrow` templates. */
-  protected readonly arrowContext = computed<CngxPopoverArrowContext>(() => {
-    const raw = this.popover.arrowOffset();
-    const parsed = raw === null ? null : Number.parseFloat(raw);
-    return {
-      edge: this.popover.resolvedEdge(),
-      offsetPx: parsed !== null && Number.isFinite(parsed) ? parsed : null,
-    };
-  });
+  /**
+   * Context surface for projected `*cngxPopoverArrow` templates.
+   * `equal` keeps the reference stable across re-evaluations whose
+   * inputs round-trip to the same `{ edge, offsetPx }` — required for
+   * any object-returning computed per the Equality discipline rule.
+   */
+  protected readonly arrowContext = computed<CngxPopoverArrowContext>(
+    () => {
+      const raw = this.popover.arrowOffset();
+      const parsed = raw === null ? null : Number.parseFloat(raw);
+      return {
+        edge: this.popover.resolvedEdge(),
+        offsetPx: parsed !== null && Number.isFinite(parsed) ? parsed : null,
+      };
+    },
+    { equal: (a, b) => a.edge === b.edge && a.offsetPx === b.offsetPx },
+  );
 
   /** Auto-detected from projected `[cngxPopoverHeader]` content. */
   protected readonly hasHeader = computed(() => !!this.headerSlot());

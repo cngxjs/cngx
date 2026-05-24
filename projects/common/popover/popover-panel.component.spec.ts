@@ -359,5 +359,22 @@ describe('CngxPopoverPanel', () => {
       expect(panelEl.querySelector('[data-testid="slot-arrow"]')).toBeNull();
       expect(panelEl.querySelector('[data-testid="config-arrow"]')).toBeNull();
     });
+
+    it('arrowContext returns a stable reference when edge + offsetPx round-trip to the same values', () => {
+      const { fixture } = setup(ArrowSlotInstanceHost);
+      const panel = fixture.componentInstance.panel();
+      const reader = panel as unknown as {
+        arrowContext: () => CngxPopoverArrowContext;
+      };
+
+      const first = reader.arrowContext();
+      panel.popover.anchorElement.set(null);
+      TestBed.flushEffects();
+      const second = reader.arrowContext();
+
+      expect(Object.is(first, second)).toBe(true);
+      expect(first.edge).toBe('bottom');
+      expect(first.offsetPx).toBeNull();
+    });
   });
 });
