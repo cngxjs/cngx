@@ -277,6 +277,14 @@ export class CngxPopover {
   protected readonly arrowOffsetSignal = signal<string | null>(null);
 
   /**
+   * Cached panel border-radius read once per open via getComputedStyle.
+   * Avoids a layout-flushing read on every resize tick inside
+   * updateArrowOffset. Re-read at every show() since the consumer can
+   * change --cngx-popover-panel-border-radius between opens.
+   */
+  private cachedBorderRadius = 12;
+
+  /**
    * Hint for the `CngxPopoverTrigger`'s `aria-haspopup` value. Composers
    * such as `CngxPopoverPanel` write this signal so any trigger pointing
    * at the popover defaults to the right role without the consumer
@@ -390,7 +398,13 @@ export class CngxPopover {
       }
       // After layout settles the browser's anchor / shift recovery has
       // already placed the panel; reading its rect now reflects the
-      // final position the arrow needs to point at.
+      // final position the arrow needs to point at. The border-radius
+      // read is cached here so updateArrowOffset stays layout-flush-free
+      // on subsequent resize ticks.
+      const radiusRaw = getComputedStyle(this.elRef.nativeElement).getPropertyValue(
+        '--cngx-popover-panel-border-radius',
+      );
+      this.cachedBorderRadius = Number.parseFloat(radiusRaw) || 12;
       this.updateArrowOffset();
     });
   }
@@ -480,8 +494,7 @@ export class CngxPopover {
       : triggerRect.top + triggerRect.height / 2;
     const panelStart = horizontal ? panelRect.left : panelRect.top;
     const panelDim = horizontal ? panelRect.width : panelRect.height;
-    const radiusRaw = getComputedStyle(panel).getPropertyValue('--cngx-popover-panel-border-radius');
-    const radius = Number.parseFloat(radiusRaw) || 12;
+    const radius = this.cachedBorderRadius;
     const raw = triggerCentre - panelStart;
     const clamped = Math.max(radius, Math.min(raw, panelDim - radius));
     this.arrowOffsetSignal.set(`${clamped}px`);
