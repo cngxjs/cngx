@@ -6,6 +6,7 @@ import {
   effect,
   ElementRef,
   inject,
+  Injector,
   input,
   isDevMode,
   signal,
@@ -17,6 +18,7 @@ import { fromEvent } from 'rxjs';
 import { hasTransition, nextUid, onTransitionDone } from '@cngx/core/utils';
 
 import { ANCHOR_AREA_PROPERTY, POSITION_AREA, SUPPORTS_ANCHOR } from './anchor-positioning';
+import { CNGX_POPOVER_ARROW_BOUNDS, type CngxPopoverArrowBounds } from './popover-arrow-bounds';
 import { CNGX_FLOATING_FALLBACK, FLOATING_PLACEMENT } from './floating-fallback';
 import type {
   PopoverHaspopup,
@@ -209,6 +211,20 @@ export class CngxPopover {
   private readonly destroyRef = inject(DestroyRef);
   private readonly doc = inject(DOCUMENT);
   private readonly floatingFallback = inject(CNGX_FLOATING_FALLBACK, { optional: true });
+  private readonly _injector = inject(Injector);
+  /**
+   * Arrow-bounds contract resolved lazily on first use.
+   * Eager inject() would loop: CngxPopover (host directive on the panel)
+   * is constructed BEFORE the panel itself, so `useExisting: CngxPopoverPanel`
+   * cannot resolve at directive-construction time.
+   */
+  private _arrowBounds: CngxPopoverArrowBounds | null | undefined = undefined;
+  private getArrowBounds(): CngxPopoverArrowBounds | null {
+    if (this._arrowBounds === undefined) {
+      this._arrowBounds = this._injector.get(CNGX_POPOVER_ARROW_BOUNDS, null);
+    }
+    return this._arrowBounds;
+  }
 
   /** Anchor-relative placement. */
   readonly placement = input<PopoverPlacement>('bottom');
@@ -275,14 +291,6 @@ export class CngxPopover {
    * CSS-Anchor path and the Floating-UI fallback path.
    */
   protected readonly arrowOffsetSignal = signal<string | null>(null);
-
-  /**
-   * Cached panel border-radius read once per open via getComputedStyle.
-   * Avoids a layout-flushing read on every resize tick inside
-   * updateArrowOffset. Re-read at every show() since the consumer can
-   * change --cngx-popover-panel-border-radius between opens.
-   */
-  private cachedBorderRadius = 12;
 
   /**
    * Hint for the `CngxPopoverTrigger`'s `aria-haspopup` value. Composers
@@ -398,13 +406,9 @@ export class CngxPopover {
       }
       // After layout settles the browser's anchor / shift recovery has
       // already placed the panel; reading its rect now reflects the
-      // final position the arrow needs to point at. The border-radius
-      // read is cached here so updateArrowOffset stays layout-flush-free
-      // on subsequent resize ticks.
-      const radiusRaw = getComputedStyle(this.elRef.nativeElement).getPropertyValue(
-        '--cngx-popover-panel-border-radius',
-      );
-      this.cachedBorderRadius = Number.parseFloat(radiusRaw) || 12;
+      // final position the arrow needs to point at. The panel-side
+      // border-radius arrives through CNGX_POPOVER_ARROW_BOUNDS — no
+      // getComputedStyle read on this directive's side.
       this.updateArrowOffset();
     });
   }
@@ -494,7 +498,7 @@ export class CngxPopover {
       : triggerRect.top + triggerRect.height / 2;
     const panelStart = horizontal ? panelRect.left : panelRect.top;
     const panelDim = horizontal ? panelRect.width : panelRect.height;
-    const radius = this.cachedBorderRadius;
+    const radius = this.getArrowBounds()?.borderRadius ?? 12;
     const raw = triggerCentre - panelStart;
     const clamped = Math.max(radius, Math.min(raw, panelDim - radius));
     this.arrowOffsetSignal.set(`${clamped}px`);
