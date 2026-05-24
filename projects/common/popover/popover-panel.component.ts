@@ -6,6 +6,7 @@ import {
   computed,
   contentChild,
   DestroyRef,
+  ElementRef,
   effect,
   inject,
   input,
@@ -15,6 +16,7 @@ import {
 import type { CngxAsyncState } from '@cngx/core/utils';
 import { nextUid } from '@cngx/core/utils';
 
+import { CNGX_POPOVER_ARROW_BOUNDS, type CngxPopoverArrowBounds } from './popover-arrow-bounds';
 import { CNGX_POPOVER_PANEL_CONFIG } from './popover-panel.config';
 import {
   CngxPopoverClose,
@@ -74,6 +76,7 @@ import type { PopoverPanelRole } from './popover.types';
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   exportAs: 'cngxPopoverPanel',
+  providers: [{ provide: CNGX_POPOVER_ARROW_BOUNDS, useExisting: CngxPopoverPanel }],
   hostDirectives: [
     {
       directive: CngxPopover,
@@ -150,11 +153,32 @@ import type { PopoverPanelRole } from './popover.types';
   `,
   styleUrls: ['./popover-panel.component.css'],
 })
-export class CngxPopoverPanel {
+export class CngxPopoverPanel implements CngxPopoverArrowBounds {
   /** The underlying popover state machine. */
   readonly popover = inject(CngxPopover, { self: true });
   private readonly config = inject(CNGX_POPOVER_PANEL_CONFIG);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly hostRef = inject<ElementRef<HTMLElement>>(ElementRef);
+
+  /**
+   * Cached panel border-radius. Read lazily from the host's computed
+   * style on first access so `CngxPopover` can consume it via
+   * `CNGX_POPOVER_ARROW_BOUNDS` without forcing a layout flush per
+   * resize tick. The custom property is declared on `:scope` so the
+   * value is valid from instantiation onward.
+   */
+  private _cachedBorderRadius: number | null = null;
+
+  /** @internal — implements `CngxPopoverArrowBounds`. */
+  get borderRadius(): number {
+    if (this._cachedBorderRadius === null) {
+      const raw = getComputedStyle(this.hostRef.nativeElement).getPropertyValue(
+        '--cngx-popover-panel-border-radius',
+      );
+      this._cachedBorderRadius = Number.parseFloat(raw) || 12;
+    }
+    return this._cachedBorderRadius;
+  }
 
   /**
    * Variant string — mapped to CSS class `cngx-popover-panel--{variant}`.

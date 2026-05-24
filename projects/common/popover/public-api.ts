@@ -38,6 +38,10 @@ export {
 export { CngxPopoverPanel } from './popover-panel.component';
 export { CngxPopoverAction, type PopoverActionVariant } from './popover-action.component';
 export {
+  CNGX_POPOVER_ARROW_BOUNDS,
+  type CngxPopoverArrowBounds,
+} from './popover-arrow-bounds';
+export {
   CngxPopoverHeader,
   CngxPopoverBody,
   CngxPopoverFooter,
