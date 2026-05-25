@@ -898,13 +898,11 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
     localItemsBuffer: this.localItemsBuffer,
     closeOnSuccess: this.closeOnCreate,
     onCreated: (option, previousValues) => {
-      // Append the new value. No dedup — `quickCreateAction` is
-      // intentional and the created item is by definition fresh.
+      // No dedup — quickCreateAction is intentional, the value is fresh by definition.
       const next = [...previousValues, option.value];
       this.values.set(next);
-      // Wipe the search so the user can type the next term. Tag-input
-      // UX. Single-value `CngxActionSelect` instead writes
-      // `displayWith(value)` to reflect the new selection.
+      // Tag-input UX: clear the term so the next chip can be typed. CngxActionSelect
+      // takes the opposite branch and writes displayWith(value) instead.
       this.searchInputRef()?.clear();
       this.optionToggled.emit({ option, added: true });
       this.selectionChange.emit({
@@ -1024,7 +1022,6 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
       toFieldValue: (v) => [...v],
     });
 
-    // Search-term effects: skipInitial-gated emit + auto-open on type.
     inject(CNGX_SEARCH_EFFECTS_FACTORY)({
       searchTerm: this.searchTerm,
       panelOpen: this.panelOpen,

@@ -813,9 +813,8 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
       }
     });
 
-    // AD activations → user-selection outputs + commit flow.
-    // Lifecycle and routing in `createADActivationDispatcher`;
-    // array-shape toggle stays inline.
+    // Lifecycle + routing in createADActivationDispatcher; the array-shape
+    // toggle stays inline because it needs the local compareWith snapshot.
     createADActivationDispatcher<T, T[]>({
       listboxRef: this.listboxRef,
       core: this.core,
@@ -838,10 +837,9 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
         }
       },
       onActivate: (_value, opt) => {
-        // Listbox already mutated values; invert the change to
-        // reconstruct the pre-toggle snapshot.
-        //   currentSelected=true  → opt was added    → previous = current \ {opt}
-        //   currentSelected=false → opt was removed  → previous = current ∪ {opt}
+        // Listbox already wrote through [(values)]; invert the toggle to recover
+        // the pre-mutation snapshot. selected=true → previous = current \ {opt};
+        // selected=false → previous = current ∪ {opt}.
         const currentSelected = this.isSelected(opt);
         const current = this.values();
         const eq = this.compareWith();
@@ -992,7 +990,6 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
       }
     }
 
-    // PageUp / PageDown — open + jump ±10, disabled-aware clamp.
     if (event.key === 'PageDown' || event.key === 'PageUp') {
       event.preventDefault();
       if (!pop || !lb) {

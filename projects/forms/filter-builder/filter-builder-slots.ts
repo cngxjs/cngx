@@ -21,11 +21,13 @@ import type {
  * state change via `*ngTemplateOutlet`-with-context.
  */
 
+/** Context passed to the `cngxFilterBuilderEmpty` slot when the root group is empty. */
 export interface CngxFilterBuilderEmptyContext {
   readonly addFilter: () => void;
   readonly addGroup: () => void;
 }
 
+/** Context passed to a consumer-supplied expression-row template (full row override). */
 export interface CngxFilterBuilderExpressionTemplateContext {
   readonly expression: FilterExpression;
   readonly fieldDef: FilterFieldDef | undefined;
@@ -37,6 +39,7 @@ export interface CngxFilterBuilderExpressionTemplateContext {
   readonly remove: () => void;
 }
 
+/** Context passed to a consumer-supplied group template (full group override). */
 export interface CngxFilterBuilderGroupTemplateContext {
   readonly group: FilterGroup;
   readonly logic: FilterLogic;
@@ -48,35 +51,41 @@ export interface CngxFilterBuilderGroupTemplateContext {
   readonly remove: () => void;
 }
 
+/** Context passed to the `cngxFilterBuilderAddFilterButton` slot. */
 export interface CngxFilterBuilderAddFilterButtonContext {
   readonly add: () => void;
   readonly label: string;
   readonly disabled: boolean;
 }
 
+/** Context passed to the `cngxFilterBuilderAddGroupButton` slot. */
 export interface CngxFilterBuilderAddGroupButtonContext {
   readonly add: () => void;
   readonly label: string;
   readonly disabled: boolean;
 }
 
+/** Context passed to the `cngxFilterBuilderRemoveButton` slot — shared by expression rows and group headers. */
 export interface CngxFilterBuilderRemoveButtonContext {
   readonly remove: () => void;
   readonly label: string;
 }
 
+/** Context passed to the `cngxFilterBuilderLogicToggle` slot — drives the AND/OR/XOR picker. */
 export interface CngxFilterBuilderLogicToggleContext {
   readonly logic: FilterLogic;
   readonly options: readonly FilterLogic[];
   readonly setLogic: (logic: FilterLogic) => void;
 }
 
+/** Context passed to the `cngxFilterBuilderNegationToggle` slot — only rendered when `withNegation(true)`. */
 export interface CngxFilterBuilderNegationToggleContext {
   readonly negated: boolean;
   readonly toggle: () => void;
   readonly label: string;
 }
 
+/** Marker directive for the empty-state slot template. */
 @Directive({
   selector: 'ng-template[cngxFilterBuilderEmpty]',
   exportAs: 'cngxFilterBuilderEmpty',
@@ -93,6 +102,7 @@ export class CngxFilterBuilderEmpty {
   }
 }
 
+/** Marker directive for a full expression-row override template. */
 @Directive({
   selector: 'ng-template[cngxFilterBuilderExpressionTemplate]',
   exportAs: 'cngxFilterBuilderExpressionTemplate',
@@ -109,6 +119,7 @@ export class CngxFilterBuilderExpressionTemplate {
   }
 }
 
+/** Marker directive for a full group-shell override template. */
 @Directive({
   selector: 'ng-template[cngxFilterBuilderGroupTemplate]',
   exportAs: 'cngxFilterBuilderGroupTemplate',
@@ -125,6 +136,7 @@ export class CngxFilterBuilderGroupTemplate {
   }
 }
 
+/** Marker directive for the add-filter button slot. */
 @Directive({
   selector: 'ng-template[cngxFilterBuilderAddFilterButton]',
   exportAs: 'cngxFilterBuilderAddFilterButton',
@@ -141,6 +153,7 @@ export class CngxFilterBuilderAddFilterButton {
   }
 }
 
+/** Marker directive for the add-group button slot. */
 @Directive({
   selector: 'ng-template[cngxFilterBuilderAddGroupButton]',
   exportAs: 'cngxFilterBuilderAddGroupButton',
@@ -157,6 +170,7 @@ export class CngxFilterBuilderAddGroupButton {
   }
 }
 
+/** Marker directive for the remove-button slot. */
 @Directive({
   selector: 'ng-template[cngxFilterBuilderRemoveButton]',
   exportAs: 'cngxFilterBuilderRemoveButton',
@@ -173,6 +187,7 @@ export class CngxFilterBuilderRemoveButton {
   }
 }
 
+/** Marker directive for the logic-toggle (AND/OR/XOR) slot. */
 @Directive({
   selector: 'ng-template[cngxFilterBuilderLogicToggle]',
   exportAs: 'cngxFilterBuilderLogicToggle',
@@ -189,6 +204,7 @@ export class CngxFilterBuilderLogicToggle {
   }
 }
 
+/** Marker directive for the negation-toggle slot. Only rendered when negation is enabled. */
 @Directive({
   selector: 'ng-template[cngxFilterBuilderNegationToggle]',
   exportAs: 'cngxFilterBuilderNegationToggle',

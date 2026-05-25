@@ -595,8 +595,7 @@ export class CngxSelectShell<T = unknown>
     () => this.compareWith() as unknown as (a: unknown, b: unknown) => boolean,
   );
 
-  // Local-items buffer kept for panel-host parity; unused at shell level
-  // — the projected DOM is the source of truth.
+  // Kept for panel-host parity; the shell's projected DOM is the source of truth.
   private readonly localItemsBuffer = inject(CNGX_LOCAL_ITEMS_BUFFER_FACTORY)<T>(
     this.compareWith,
   );
@@ -835,11 +834,8 @@ export class CngxSelectShell<T = unknown>
   protected readonly isCommittingOption =
     this.core.panelHostAdapter.isCommittingOption;
 
-  // Panel-host interface fields below satisfy the
-  // `CngxSelectPanelHost` contract for `CNGX_SELECT_PANEL_HOST`
-  // resolution; the panel-shell overlay is deferred (plan Phase 10),
-  // so nothing in the current template renders against them.
-
+  // Satisfies the CNGX_SELECT_PANEL_HOST contract; the panel-shell overlay
+  // is deferred (plan Phase 10) so nothing in the current template reads it.
   protected readonly unfilteredCount = computed(
     () => this.core.unfilteredFlatOptions().length,
   );
@@ -854,10 +850,6 @@ export class CngxSelectShell<T = unknown>
     this.localItemsBuffer.clear();
   }
 
-  // CngxOptionFilterHost: per-option visibility from `searchTerm`.
-  // Default is case-insensitive substring; `[searchMatchFn]` swaps in
-  // fuzzy / server-hint matching without changing the host contract.
-
   /** @internal */
   matches<TVal>(value: TVal, label: string, term: string): boolean {
     const fn = this.searchMatchFn();
@@ -866,11 +858,6 @@ export class CngxSelectShell<T = unknown>
     }
     return label.toLowerCase().includes(term.toLowerCase());
   }
-
-  // CngxOptionStatusHost: per-option commit pending/error glyphs route
-  // into each `CngxOption`'s internal status slot, never alongside
-  // user content. Option directive injects `CNGX_OPTION_STATUS_HOST`
-  // and renders the resolved `tpl` in its own `.cngx-option__status`.
 
   /**
    * Per-value cache for {@link statusFor}. The option directive
@@ -917,7 +904,6 @@ export class CngxSelectShell<T = unknown>
   }
 
   constructor() {
-    // Release per-value status-signal cache on destroy.
     inject(DestroyRef).onDestroy(() => this.statusCache.clear());
 
     afterNextRender(() => {
@@ -926,9 +912,8 @@ export class CngxSelectShell<T = unknown>
       }
     });
 
-    // AD activations → popover-close + selectionChange + commit flow.
-    // Lifecycle and routing in `createADActivationDispatcher`;
-    // value-shape work (snapshot, finalize) stays here.
+    // Lifecycle + routing in createADActivationDispatcher; value-shape
+    // work (snapshot, finalize) stays here.
     createADActivationDispatcher<T, T>({
       listboxRef: this.listboxRef,
       core: this.core,
@@ -963,8 +948,6 @@ export class CngxSelectShell<T = unknown>
       coerceFromField: (x) => x as T | undefined,
     });
 
-    // Emit `searchTermChange` on model changes; skip the seed `''`
-    // emission via the factory's `skipInitial` gate.
     inject(CNGX_SEARCH_EFFECTS_FACTORY)({
       searchTerm: this.searchTerm,
       panelOpen: this.panelOpen,
@@ -977,8 +960,6 @@ export class CngxSelectShell<T = unknown>
       },
     });
   }
-
-  // Public API (mat-select parity) 
 
   open(): void {
     this.popoverRef()?.show();

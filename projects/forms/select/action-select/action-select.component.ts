@@ -560,8 +560,6 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
    * @internal
    */
   readonly actionValue = computed<unknown>(() => this.value());
-  // `actionPosition` input signal already satisfies
-  // `CngxSelectPanelViewHost.actionPosition?: Signal<...>`.
 
   private readonly core = createSelectCore<T, T>(
     {
@@ -760,8 +758,7 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
     localItemsBuffer: this.localItemsBuffer,
     closeOnSuccess: this.closeOnCreate,
     onCreated: (option, previousValue) => {
-      // Single-value semantic: write `value`, mirror into display,
-      // emit 'create'.
+      // Single-value semantic: write value, mirror into display, emit 'create'.
       this.value.set(option.value);
       this.display.writeFromValue(option.value);
       this.selectionChange.emit({
@@ -831,9 +828,8 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
       coerceFromField: (x) => x as T | undefined,
     });
 
-    // Auto-open on typing. Same gating as CngxTypeahead — display-
-    // binding emits searchTermChange via `onUserSearchTerm`, so emit
-    // path is left undefined here.
+    // Auto-open on typing. Same gating as CngxTypeahead — display-binding
+    // owns the searchTermChange emit via onUserSearchTerm, so emit is undefined.
     inject(CNGX_SEARCH_EFFECTS_FACTORY)({
       searchTerm: this.searchTerm,
       panelOpen: this.panelOpen,

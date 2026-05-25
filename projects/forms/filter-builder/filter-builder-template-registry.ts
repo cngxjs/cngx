@@ -111,6 +111,7 @@ export function createFilterBuilderTemplateRegistry(
   };
 }
 
+/** DI token for the template-registry factory. Default resolves to `createFilterBuilderTemplateRegistry`. */
 export const CNGX_FILTER_BUILDER_TEMPLATE_REGISTRY_FACTORY = new InjectionToken<CngxFilterBuilderTemplateRegistryFactory>(
   'CngxFilterBuilderTemplateRegistryFactory',
   { providedIn: 'root', factory: () => createFilterBuilderTemplateRegistry },

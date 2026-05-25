@@ -721,12 +721,10 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
       if (this.autofocus()) {
         this.focus();
       }
-      // Seed input text from the initial value.
       this.display.writeFromValue(this.value());
     });
 
-    // AD activations → selectionChange + commit flow. closeOnSelect:
-    // picking hides the panel and seeds the input.
+    // closeOnSelect: picking hides the panel and seeds the input.
     createADActivationDispatcher<T, T>({
       listboxRef: this.listboxRef,
       core: this.core,

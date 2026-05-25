@@ -67,10 +67,8 @@ export {
 export { CngxTreeSelect, type CngxTreeSelectChange } from './tree-select/tree-select.component';
 export { CngxSelectShell, type CngxSelectShellChange } from './select-shell/select-shell.component';
 
-// Intended for consumer-assembled listbox templates (the "compose yourself"
-// path) and as direct children of `<cngx-select-shell>` (the projection
-// variant — see `select-shell/`). Still NOT usable as direct children of
-// the data-mode `<cngx-select>`
+// Consumer-assembled listbox templates + projection children of <cngx-select-shell>.
+// NOT valid as direct children of the data-mode <cngx-select>.
 export { CngxSelectOption } from './declarative/option.component';
 export { CngxSelectOptgroup } from './declarative/optgroup.component';
 export { CngxSelectDivider } from './declarative/divider.component';

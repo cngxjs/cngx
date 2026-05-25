@@ -260,7 +260,6 @@ export class CngxNumericInput implements ControlValueAccessor {
         return;
       }
 
-      // Enforce decimals limit.
       const dec = this.resolvedDecimals();
       if (dec != null && event.data !== '-') {
         const decIdx = el.value.indexOf(decimal);
