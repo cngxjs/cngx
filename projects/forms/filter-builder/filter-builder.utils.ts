@@ -11,6 +11,7 @@ import type { FilterExpression, FilterGroup, FilterNode } from './filter-builder
  * child.
  */
 
+/** Resolve the node at `path` against `root`. Returns `null` for invalid paths. */
 export function getNodeAtPath(
   root: FilterGroup,
   path: readonly number[],
@@ -33,6 +34,7 @@ export function getNodeAtPath(
   return current;
 }
 
+/** Replace the node at `path` via `updater`. Returns the original `root` when no descendant changed (identity-preserving). */
 export function updateAtPath(
   root: FilterGroup,
   path: readonly number[],
@@ -81,6 +83,7 @@ function updateGroupAtPath(
   return { ...group, filters: nextFilters };
 }
 
+/** Remove the node at `path`. Throws on empty path — the root cannot be removed. */
 export function removeAtPath(root: FilterGroup, path: readonly number[]): FilterGroup {
   if (path.length === 0) {
     throw new Error('removeAtPath: cannot remove the root');
@@ -119,6 +122,7 @@ function removeFromGroupAtPath(
   return { ...group, filters: nextFilters };
 }
 
+/** Append `child` to the group at `path`. Throws when `path` does not resolve to a group. */
 export function appendAtPath(
   root: FilterGroup,
   path: readonly number[],

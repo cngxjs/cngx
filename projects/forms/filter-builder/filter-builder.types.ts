@@ -21,6 +21,7 @@
  * the direct-child count, nest a sub-group of the desired arity.
  */
 
+/** Boolean combinator for a `FilterGroup`'s direct children. `nand`/`nor` are intentionally absent — use `negated` for inversion. */
 export type FilterLogic = 'and' | 'or' | 'xor';
 
 /**
@@ -31,6 +32,7 @@ export type FilterLogic = 'and' | 'or' | 'xor';
  */
 export type FilterEditorType = string;
 
+/** Consumer-supplied field descriptor — one entry per filterable column. */
 export interface FilterFieldDef<TValue = unknown> {
   readonly key: string;
   readonly label: string;
@@ -39,6 +41,7 @@ export interface FilterFieldDef<TValue = unknown> {
   readonly defaultValue?: TValue;
 }
 
+/** Leaf node — binds one field to one operator and one value. */
 export interface FilterExpression<TValue = unknown> {
   readonly type: 'expression';
   /**
@@ -55,6 +58,7 @@ export interface FilterExpression<TValue = unknown> {
   readonly value?: TValue;
 }
 
+/** Branch node — combines child nodes under one `logic` operator with an optional `negated` flag. */
 export interface FilterGroup {
   readonly type: 'group';
   /**
@@ -67,8 +71,10 @@ export interface FilterGroup {
   readonly filters: readonly FilterNode[];
 }
 
+/** Discriminated union — every node in the tree is either a group or an expression. */
 export type FilterNode = FilterGroup | FilterExpression;
 
+/** Default operator lists per builtin editor type. Consumers extend via `withDefaultOperators({...})`. */
 export const DEFAULT_OPERATORS = {
   string: ['contains', 'eq', 'neq', 'startsWith', 'endsWith', 'isEmpty', 'isNotEmpty'],
   number: ['eq', 'neq', 'gt', 'gte', 'lt', 'lte', 'isEmpty', 'isNotEmpty'],

@@ -38,6 +38,7 @@ import { EMPTY_ROOT } from './filter-builder.helpers';
  */
 
 
+/** Discriminator for every state-level mutation the builder emits. */
 export type FilterMutationKind =
   | 'add-filter'
   | 'remove-filter'
@@ -50,6 +51,7 @@ export type FilterMutationKind =
   | 'set-value'
   | 'clear';
 
+/** Per-kind payload — populated only for the fields a given `kind` carries. */
 export interface FilterMutationContext {
   readonly fieldKey?: string;
   readonly logic?: FilterLogic;
@@ -58,18 +60,21 @@ export interface FilterMutationContext {
   readonly value?: unknown;
 }
 
+/** Structural mutation event the announcer effect observes. */
 export interface FilterMutationEvent {
   readonly kind: FilterMutationKind;
   readonly path: readonly number[];
   readonly context?: FilterMutationContext;
 }
 
+/** Inputs accepted by `createFilterBuilderState`. Pass `source` for two-way binding, omit for an uncontrolled instance. */
 export interface CngxFilterBuilderStateOptions<TValue = unknown> {
   readonly source?: WritableSignal<FilterGroup>;
   readonly initial?: FilterGroup;
   readonly fields: Signal<readonly FilterFieldDef<TValue>[]>;
 }
 
+/** Public shape of the state machine — read-only signals plus path-keyed mutators. */
 export interface CngxFilterBuilderState<TValue = unknown> {
   readonly tree: Signal<FilterGroup>;
   readonly fieldMap: Signal<ReadonlyMap<string, FilterFieldDef<TValue>>>;
@@ -108,6 +113,7 @@ function fieldMapEqual<TValue>(
   return true;
 }
 
+/** Default state factory — see the file-header block for the full contract. */
 export function createFilterBuilderState<TValue = unknown>(
   opts: CngxFilterBuilderStateOptions<TValue>,
 ): CngxFilterBuilderState<TValue> {

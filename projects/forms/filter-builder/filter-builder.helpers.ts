@@ -31,10 +31,12 @@ export const EMPTY_ROOT: FilterGroup = Object.freeze({
   filters: Object.freeze([]),
 }) as FilterGroup;
 
+/** Optional knobs for `createFilterGroup`. */
 export interface CreateFilterGroupOptions {
   readonly negated?: boolean;
 }
 
+/** Build a fresh `FilterGroup` with a generated id. Defaults to `and` logic, no children, not negated. */
 export function createFilterGroup(
   logic: FilterLogic = 'and',
   filters: readonly FilterNode[] = [],
@@ -49,6 +51,7 @@ export function createFilterGroup(
   };
 }
 
+/** Build a fresh `FilterExpression` with a generated id. */
 export function createFilterExpression<TValue = unknown>(
   field: string,
   operator: string,
@@ -131,6 +134,7 @@ export function toFilterPredicate<TItem>(
   return (item: TItem) => evaluateGroup(tree, item, fieldMap);
 }
 
+/** Evaluate a single `FilterExpression` against `item`. Unfilled expressions short-circuit to `true` (except `isEmpty`/`isNotEmpty`). */
 export function evaluateExpression<TItem>(
   expr: FilterExpression,
   item: TItem,
