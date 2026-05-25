@@ -1,17 +1,17 @@
 # Signal-First Internals
 
-CNGX is built on Angular Signals. Not "uses Signals where convenient" — built on them. Every reactive value flowing through a directive is a `Signal<T>`. RxJS exists at the boundary; the interior is signal-only.
+CNGX is built on Angular Signals. Not "uses Signals where convenient" - built on them. Every reactive value flowing through a directive is a `Signal<T>`. RxJS exists at the boundary; the interior is signal-only.
 
 This chapter is the operational manual: which primitive to use when, which rules are non-negotiable, and which patterns recur across the library.
 
 ## The four primitives
 
 | Primitive                               | When to use                                                                                                                              | When **not** to use                                                           |
-| --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+|-|-|-|
 | `signal(initial)`                       | Owned writable state where this component is the sole writer.                                                                            | Anywhere a `computed` would express the same value.                           |
 | `computed(fn)`                          | Every derived value. ARIA attributes, disabled state, visible flags, panel views, resolved templates.                                    | Side effects (DOM writes, service calls).                                     |
-| `effect(fn)`                            | Imperative side effects that leave the reactive graph (DOM measurement, focusing, calling a service).                                    | Writing a signal to mirror another signal — use `computed` or `linkedSignal`. |
-| `linkedSignal({ source, computation })` | Tracking a transition between two states (idle → loading → success) where the latest state needs to be remembered across source changes. | A simple derivation — use `computed`. A simple write — use `signal`.          |
+| `effect(fn)`                            | Imperative side effects that leave the reactive graph (DOM measurement, focusing, calling a service).                                    | Writing a signal to mirror another signal - use `computed` or `linkedSignal`. |
+| `linkedSignal({ source, computation })` | Tracking a transition between two states (idle → loading → success) where the latest state needs to be remembered across source changes. | A simple derivation - use `computed`. A simple write - use `signal`.          |
 
 ## Inputs and outputs
 
@@ -27,8 +27,8 @@ readonly selectionChange = output<CngxSelectChange<T>>();
 ```
 
 - `input<T>()` for one-way bindings.
-- `input.required<T>()` only when the consumer **must** provide a value. Never on a directive that injects an optional fallback — a directive whose `[state]` may auto-discover from `CNGX_STATEFUL` must use optional `input<T | undefined, T | '' | undefined>(undefined, { transform: v => typeof v === 'string' ? undefined : v })` so that a bare attribute (`<div cngxToastOn>` → empty-string binding) is treated as "not bound" and triggers the DI fallback.
-- `model<T>()` for two-way bindable atoms — `[value]`, `(valueChange)`, and `[(value)]` all work identically.
+- `input.required<T>()` only when the consumer **must** provide a value. Never on a directive that injects an optional fallback - a directive whose `[state]` may auto-discover from `CNGX_STATEFUL` must use optional `input<T | undefined, T | '' | undefined>(undefined, { transform: v => typeof v === 'string' ? undefined : v })` so that a bare attribute (`<div cngxToastOn>` → empty-string binding) is treated as "not bound" and triggers the DI fallback.
+- `model<T>()` for two-way bindable atoms - `[value]`, `(valueChange)`, and `[(value)]` all work identically.
 - `output<T>()` for events. Event handlers in component code use the `handle` prefix (`handleKeydown`, `handleBlur`).
 
 ## Equality functions
@@ -54,7 +54,7 @@ If a `computed` is read by another `computed` or by a template `@if`, it needs a
 
 Effects are sharp tools. The non-negotiable rules:
 
-1. **Constructor or field init only.** Never in `ngOnInit` — Angular throws `NG0203` because `inject()` is no longer available outside the injection context.
+1. **Constructor or field init only.** Never in `ngOnInit` - Angular throws `NG0203` because `inject()` is no longer available outside the injection context.
 2. **Side effects only.** An effect that writes a signal is almost always wrong. Use `computed` to derive, or `linkedSignal` if you need transition memory.
 3. **Wrap service calls in `untracked()`.** Service methods read signals internally; without `untracked()`, those reads register as effect dependencies and re-fire the effect on every internal change, producing an infinite loop. The transition bridges (`CngxToastOn`, `CngxBannerOn`, `CngxAlertOn`) all follow this rule.
 4. **Use `onCleanup` for subscriptions.** When an effect installs a listener (subscription, `setTimeout`, DOM event), the cleanup callback removes it. Effects re-run; without cleanup, listeners stack up.
@@ -86,7 +86,7 @@ effect(() => {
 });
 ```
 
-Internally, the tracker uses `linkedSignal` with a **structural** `equal` function on the `{ current, previous }` pair. `linkedSignal` defaults to `Object.is` equality, which compares object identity — without the override, every recomputation would produce a fresh `{ current, previous }` literal and the downstream effect would re-fire on every `data`/`error` change even when the status itself was unchanged. The structural `equal` short-circuits those re-runs and is what makes the tracker safe to read from a side-effecting `effect()`.
+Internally, the tracker uses `linkedSignal` with a **structural** `equal` function on the `{ current, previous }` pair. `linkedSignal` defaults to `Object.is` equality, which compares object identity - without the override, every recomputation would produce a fresh `{ current, previous }` literal and the downstream effect would re-fire on every `data`/`error` change even when the status itself was unchanged. The structural `equal` short-circuits those re-runs and is what makes the tracker safe to read from a side-effecting `effect()`.
 
 ## linkedSignal
 
@@ -125,10 +125,10 @@ Use it for:
 CNGX components have a strict access discipline because templates and host bindings have visibility rules:
 
 | Modifier             | Used for                                                                                                               |
-| -------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| `readonly` (public)  | Public API — inputs, outputs, public signals/methods, anything a consumer reads or writes via the directive reference. |
+|-|-|
+| `readonly` (public)  | Public API - inputs, outputs, public signals/methods, anything a consumer reads or writes via the directive reference. |
 | `protected readonly` | Members accessed from the component's own template or host bindings. Templates cannot access `private`.                |
-| `private readonly`   | Implementation-only — internal signals, derived state used inside component methods.                                   |
+| `private readonly`   | Implementation-only - internal signals, derived state used inside component methods.                                   |
 
 **Never** make a template- or host-accessed member `public` unless it is intentional public API. The schematic-decompose extractor reads access modifiers and copies only the public surface; misclassified `public` members leak into the decomposed output.
 
@@ -147,8 +147,8 @@ readonly sortChange = this.matSort.sortChange;        // wrap CDK with toSignal(
 <div *ngIf="x$ | async">                              // use @if (x())
 private readonly hostClass = computed(...);           // host bindings need protected
 describedBy = computed(() => hasError ? 'a b' : 'a'); // IDs always present; toggle aria-hidden
-private readonly x = input<T>(v);                     // NG1053 — input cannot be private
+private readonly x = input<T>(v);                     // NG1053 - input cannot be private
 input<T>(v).asReadonly()                              // no such method on InputSignal
 ```
 
-If you find yourself reaching for any of the above, stop — there is a signal-native alternative for each one.
+If you find yourself reaching for any of the above, stop - there is a signal-native alternative for each one.
