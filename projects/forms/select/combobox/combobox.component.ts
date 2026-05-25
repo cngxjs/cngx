@@ -991,9 +991,8 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
       }
     });
 
-    // AD activations → user-selection outputs + commit flow.
-    // Lifecycle and routing in `createADActivationDispatcher`;
-    // array-shape toggle stays inline.
+    // Lifecycle + routing in createADActivationDispatcher; the array-shape
+    // toggle stays inline because it needs the local compareWith snapshot.
     createADActivationDispatcher<T, T[]>({
       listboxRef: this.listboxRef,
       core: this.core,
@@ -1016,8 +1015,8 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
         }
       },
       onActivate: (_value, opt) => {
-        // Listbox already mutated values; invert the change to
-        // reconstruct the pre-toggle snapshot.
+        // Listbox already wrote through [(values)]; invert the toggle to
+        // recover the pre-mutation snapshot.
         const currentSelected = this.isSelected(opt);
         const current = this.values();
         const eq = this.compareWith();
@@ -1044,7 +1043,6 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
       toFieldValue: (v) => [...v],
     });
 
-    // Search-term effects: skipInitial-gated emit + auto-open on type.
     inject(CNGX_SEARCH_EFFECTS_FACTORY)({
       searchTerm: this.searchTerm,
       panelOpen: this.panelOpen,

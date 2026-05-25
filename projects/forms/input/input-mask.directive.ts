@@ -60,7 +60,7 @@ function selectPattern(patterns: string[], rawLength: number, customTokens?: Mas
     return patterns[0];
   }
 
-  // Shortest pattern whose slot count fits rawLength; longest pattern when rawLength exceeds all.
+  // Shortest pattern that fits rawLength; longest when rawLength exceeds all.
   let best = patterns[0];
   let bestSlots = slotCount(best, customTokens);
 
@@ -283,7 +283,6 @@ function localeToRegion(locale: string): string {
   if (parts.length >= 2) {
     return parts[1].toUpperCase();
   }
-  // Map language to most common region.
   const fallback: Record<string, string> = {
     en: 'US',
     de: 'DE',
@@ -719,7 +718,7 @@ export class CngxInputMask implements ControlValueAccessor {
     const placeholder = this.resolvedPlaceholder();
     const clickPos = Math.max(0, (el.selectionStart ?? 0) - prefixLen);
 
-    // Snap to the first empty slot at or after the click; past all filled slots → snap to first empty.
+    // Snap to the first empty slot at or after the click.
     const firstEmpty = firstEmptySlot(tokens, masked, placeholder);
     const snapped = Math.min(clickPos, firstEmpty);
 

@@ -786,9 +786,8 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
       }
     });
 
-    // AD activations → popover-close + selectionChange + commit flow.
-    // Lifecycle and routing in `createADActivationDispatcher`;
-    // value-shape work stays inline.
+    // Lifecycle + routing in createADActivationDispatcher; value-shape work
+    // stays inline.
     createADActivationDispatcher<T, T>({
       listboxRef: this.listboxRef,
       core: this.core,
@@ -938,7 +937,6 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
       }
     }
 
-    // PageUp / PageDown — open + jump ±10, disabled-aware clamp.
     if (event.key === 'PageDown' || event.key === 'PageUp') {
       event.preventDefault();
       if (!pop || !lb) {

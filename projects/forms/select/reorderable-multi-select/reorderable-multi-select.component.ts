@@ -1063,7 +1063,6 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
     const lb = this.listboxRef();
     const pop = this.popoverRef();
 
-    // Typeahead-while-closed.
     if (!this.panelOpen() && this.config.typeaheadWhileClosed) {
       const key = event.key;
       if (key.length === 1 && /\S/.exec(key)) {
@@ -1088,7 +1087,6 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
       }
     }
 
-    // PageUp / PageDown — open + jump ±10, disabled-aware clamp.
     if (event.key === 'PageDown' || event.key === 'PageUp') {
       event.preventDefault();
       if (!pop || !lb) {

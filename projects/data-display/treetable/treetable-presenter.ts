@@ -276,9 +276,7 @@ export class CngxTreetablePresenter<T = unknown> {
   readonly focusedNodeId = signal<string | null>(null);
 
   constructor() {
-    // Subscribe to SelectionModel.changed whenever the model is recreated
-    // (linkedSignal recreates on selectionMode change). Syncs selectedIdsState
-    // and emits outputs.
+    // linkedSignal recreates the model on selectionMode change; re-subscribe each time.
     effect((onCleanup) => {
       const model = this.selectionModel();
       this.selectedIdsState.set(new Set());
@@ -293,10 +291,8 @@ export class CngxTreetablePresenter<T = unknown> {
       onCleanup(() => sub.unsubscribe());
     });
 
-    // Sync SelectionModel when selectedIds input changes (controlled mode).
-    // SelectionModel.changed fires synchronously during deselect/select, so the
-    // subscription above updates selectedIdsState and emits outputs within the same
-    // microtask. untracked() prevents this effect from re-tracking those writes.
+    // Controlled mode: SelectionModel.changed fires synchronously, so wrap the
+    // deselect/select calls in untracked to break the self-trigger cycle.
     effect(() => {
       const input = this.selectedIdsInput();
       if (input === undefined) {
