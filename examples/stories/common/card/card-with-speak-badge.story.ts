@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxCard: Card with speak badge',
+  title: 'CngxSpeakButton: Card with speak badge',
   subtitle:
     'A <code>&lt;cngx-speak-button&gt;</code> positioned via <code>cngxCardBadge</code> reads the card content aloud. The <code>[cngxSpeak]</code> directive on the body provides the spoken text; the button binds to it through <code>[speakRef]</code>.',
   description:
@@ -10,16 +10,7 @@ export const STORY: DemoSpec = {
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
   focus: ['composition', 'a11y-pattern'],
-  apiComponents: [
-    'CngxCard',
-    'CngxCardHeader',
-    'CngxCardTitle',
-    'CngxCardSubtitle',
-    'CngxCardBody',
-    'CngxCardBadge',
-    'CngxSpeak',
-    'CngxSpeakButton',
-  ],
+  apiComponents: ['CngxSpeakButton', 'CngxSpeak'],
   moduleImports: [
     "import { CngxCard, CngxCardHeader, CngxCardTitle, CngxCardSubtitle, CngxCardBody, CngxCardBadge } from '@cngx/common/card';",
     "import { CngxSpeak } from '@cngx/common/interactive';",

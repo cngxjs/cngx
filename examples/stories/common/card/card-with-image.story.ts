@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxCard: Card with image',
+  title: 'CngxCardMedia: Card with image',
   subtitle:
     '<code>[cngxCardMedia]</code> wraps a full-bleed image with <code>aspectRatio</code> and a <code>decorative</code> flag. Toggle the flag to switch the image between <code>role="img"</code> (alt is announced) and <code>role="presentation"</code> (alt suppressed, image is purely visual).',
   description:
@@ -10,14 +10,7 @@ export const STORY: DemoSpec = {
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
   focus: ['visual-variants', 'a11y-pattern'],
-  apiComponents: [
-    'CngxCard',
-    'CngxCardHeader',
-    'CngxCardTitle',
-    'CngxCardSubtitle',
-    'CngxCardBody',
-    'CngxCardMedia',
-  ],
+  apiComponents: ['CngxCardMedia'],
   moduleImports: [
     "import { CngxCard, CngxCardHeader, CngxCardTitle, CngxCardSubtitle, CngxCardBody, CngxCardMedia } from '@cngx/common/card';",
   ],

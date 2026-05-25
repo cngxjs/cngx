@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxCard: Severity accent',
+  title: 'CngxCardAccent: Severity accent',
   subtitle:
     '<code>cngxCardAccent</code> takes one of <code>danger</code>, <code>warning</code>, <code>success</code>, <code>info</code>, <code>neutral</code> and paints a top-border + tinted surface so the card communicates severity at a glance.',
   description:
@@ -10,13 +10,7 @@ export const STORY: DemoSpec = {
   audience: ['dev', 'design'],
   artifact: 'standalone',
   focus: ['visual-variants'],
-  apiComponents: [
-    'CngxCard',
-    'CngxCardHeader',
-    'CngxCardTitle',
-    'CngxCardBody',
-    'CngxCardAccent',
-  ],
+  apiComponents: ['CngxCardAccent'],
   moduleImports: [
     "import { CngxCard, CngxCardHeader, CngxCardTitle, CngxCardBody, CngxCardAccent } from '@cngx/common/card';",
   ],
