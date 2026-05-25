@@ -88,7 +88,6 @@ export class CngxBannerTrigger {
     });
 
     this.destroyRef.onDestroy(() => {
-      // Dismiss on component destroy if still showing
       const id = this.id();
       banner.dismiss(id);
     });

@@ -174,10 +174,6 @@ export class CngxMatTabs {
   private readonly rejectionContentSlot = contentChild(CngxMatTabRejectionContent);
   private readonly rejectionContentTemplate: Signal<TemplateRef<CngxMatTabRejectionContentContext> | null> =
     computed(() => this.rejectionContentSlot()?.templateRef ?? null);
-  // Per-tab registry lives on the `[cngxMatTabsRegistry]` host-
-  // directive — sibling per-tab directives reach the per-handle
-  // slots via `CNGX_MAT_TABS_REGISTRY_HOST`.
-
   private readonly i18n = injectTabsI18n();
 
   // Identity equal on `string | null` — collapses `tabs()` re-emits

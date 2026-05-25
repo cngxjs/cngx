@@ -155,7 +155,7 @@ export class CngxSidenav {
   /** @internal Reference to host element for layout positioning. */
   readonly elementRef = inject(ElementRef<HTMLElement>);
 
-  // Inlined matchMedia, not CngxMediaQuery directive.
+  // Inlined matchMedia — host directive would force a wrapper element.
   private readonly mediaMatches = signal(false);
 
   /** Resolved mode — responsive overrides to `'side'` when matching, falls back to `mode()`. */
@@ -197,13 +197,8 @@ export class CngxSidenav {
       onCleanup(() => mql.removeEventListener('change', handler));
     });
 
-    // Keyboard shortcut toggle.
-    // Uses document.addEventListener instead of a host listener because:
-    // 1. The shortcut is a global hotkey — it must fire regardless of focus.
-    // 2. The combo string is a signal that can change at runtime, so the
-    //    listener must be torn down and re-registered on each change.
-    // 3. Angular host listeners don't support dynamic registration/teardown
-    //    driven by signal values — effect(onCleanup) handles this cleanly.
+    // Global hotkey: document listener inside effect(onCleanup) so the combo
+    // signal can re-register at runtime. Host listeners cannot rebind.
     const isMac = this.win?.navigator?.userAgent?.includes('Mac') ?? false;
     effect((onCleanup) => {
       const shortcut = this.shortcut();
@@ -221,10 +216,8 @@ export class CngxSidenav {
       onCleanup(() => this.doc.removeEventListener('keydown', handler));
     });
 
-    // Sync opened state on mode transitions.
-    // prevMode is a plain signal updated at the end of each run so the
-    // effect can compare previous vs current mode without linkedSignal
-    // (which updates eagerly before the effect reads it).
+    // Plain signal for prev mode, linkedSignal updates eagerly before the
+    // effect reads it and the prev/current compare collapses.
     effect(() => {
       const mode = this.effectiveMode();
       const prev = this.prevMode();
@@ -321,7 +314,7 @@ export class CngxSidenav {
     const onMove = (ev: PointerEvent): void => {
       const delta = isEnd ? startX - ev.clientX : ev.clientX - startX;
       currentWidth = Math.round(Math.max(min, Math.min(max, startWidth + delta)));
-      // Set CSS var directly on DOM — no Angular change detection per frame
+      // CSS var on the DOM node directly, no CD per frame during drag.
       if (!rafId) {
         rafId = requestAnimationFrame(() => {
           el.style.setProperty('--cngx-sidenav-width', `${currentWidth}px`);
@@ -333,7 +326,7 @@ export class CngxSidenav {
     const onUp = (): void => {
       cancelAnimationFrame(rafId);
       this.resizingState.set(false);
-      // Sync final width back to the model (single CD cycle)
+      // Single CD on pointerup — model catches up with the DOM.
       this.width.set(`${currentWidth}px`);
       this.doc.removeEventListener('pointermove', onMove);
       this.doc.removeEventListener('pointerup', onUp);

@@ -66,10 +66,7 @@ export class CngxMatStepperBridge {
   private readonly injector: Injector = inject(InjectableInjector);
 
   private readonly matSteps = contentChildren(MatStep, { descendants: true });
-  // Per-step registry — strong refs are bounded by the directive's
-  // lifetime; `Map` (not `WeakMap`) so the diff loop in
-  // `syncHandles` can iterate to find removed steps without a
-  // parallel `Set<MatStep>`.
+  // Map not WeakMap — syncHandles needs to iterate to find removed steps.
   private readonly setupsByStep = new Map<MatStep, CngxMatStepHandleSetup>();
   private readonly createHandle = inject(CNGX_MAT_STEP_HANDLE_FACTORY);
 
@@ -97,8 +94,7 @@ export class CngxMatStepperBridge {
   private syncHandles(steps: readonly MatStep[]): void {
     const liveSteps = new Set<MatStep>(steps);
 
-    // Add: only fresh MatSteps get a setup + handle registration.
-    // Cached MatSteps survive untouched — no register-churn.
+    // Only fresh MatSteps get registered; cached ones survive untouched.
     for (const step of steps) {
       if (this.setupsByStep.has(step)) {
         continue;
@@ -108,8 +104,7 @@ export class CngxMatStepperBridge {
       this.presenter.register(setup.handle);
     }
 
-    // Snapshot before iterating — defends against future edits that
-    // introduce non-current-key deletes inside the body.
+    // Snapshot before iterating — guards against non-current-key deletes inside the body.
     for (const [step, setup] of Array.from(this.setupsByStep.entries())) {
       if (liveSteps.has(step)) {
         continue;

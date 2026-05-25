@@ -82,16 +82,14 @@ export class CngxToast {
 
     const toaster = this.toaster;
 
-    // Rising-edge trigger: fires when [when] transitions from false→true.
-    // The toast then lives its own lifecycle (auto-dismiss or manual dismiss).
-    // [when]=false just resets the trigger so it can fire again.
+    // Rising-edge trigger — only false→true fires a toast; the toast then
+    // owns its own lifecycle. false just re-arms the trigger.
     let previousWhen = false;
 
     effect(() => {
       const show = this.when();
 
       if (show && !previousWhen) {
-        // Rising edge — fire a new toast
         this.activeRef = toaster.show({
           message: this.message(),
           severity: this.severity(),

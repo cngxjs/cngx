@@ -57,10 +57,8 @@ export function createMatStepperBidirectionalSync(
     writeSelectedIndex: (i) => {
       opts.matStepper.selectedIndex = i;
     },
-    // `MatStepper.selectedIndexChange` already emits a plain index,
-    // so no `.pipe(map(e => e.selectedIndex))` adapter is needed —
-    // mirrors the `MatTabGroup.selectedIndexChange` shape used by
-    // `[cngxMatTabs]`.
+    // `MatStepper.selectedIndexChange` emits a plain index — no adapter needed,
+    // unlike `MatTabGroup.selectedIndexChange`.
     selectionChange$: opts.matStepper.selectedIndexChange.asObservable(),
     onMaterialSelection: (i) => opts.presenter.select(i),
     injector: opts.injector,

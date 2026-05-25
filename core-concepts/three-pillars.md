@@ -2,7 +2,7 @@
 
 CNGX rests on three non-negotiable rules. Every directive, component, and PR is auditable against them. A pillar violation is a functional defect, not a stylistic preference.
 
-## 1. Ableitung statt Verwaltung — Derivation over Management
+## 1. Ableitung statt Verwaltung - Derivation over Management
 
 State is never "synced"; it is projected. Every value is a `computed()` from a single source of truth. Manual state management (event handlers mirroring one signal into another) is the primary source of bugs and is strictly forbidden.
 
@@ -39,7 +39,7 @@ The component is now both controlled and uncontrolled by construction, with zero
 
 ### Operational rules
 
-- **`signal()`** is for **owned writable state** only — a slot that this component is the exclusive writer of.
+- **`signal()`** is for **owned writable state** only - a slot that this component is the exclusive writer of.
 - **`computed()`** is for **every derived value**, including A11y attributes, disabled states, visibility flags, and panel view discriminators.
 - **`linkedSignal()`** is the only sanctioned way to "reset" or "branch" state based on a source signal (e.g., clearing a selection when the underlying data source changes).
 - **`effect()`** is strictly for **imperative side effects** that exit the reactive graph: DOM measurement, calling a service, or manual focus management.
@@ -47,7 +47,7 @@ The component is now both controlled and uncontrolled by construction, with zero
 
 ---
 
-## 2. Kommunikation als Architektur — Communication is Architecture
+## 2. Kommunikation als Architektur - Communication is Architecture
 
 State changes are never silent. Every transition must be communicated visually, semantically, and to assistive technology (AT). In CNGX, A11y is a functional requirement of the logic layer, not a post-production audit task.
 
@@ -89,7 +89,7 @@ The semantic state and the visual state are the same `computed`. They cannot dri
 
 ---
 
-## 3. Komposition statt Konfiguration — Composition over Configuration
+## 3. Komposition statt Konfiguration - Composition over Configuration
 
 We build small, single-responsibility units. We reject "God-Components" that attempt to handle every use case via a forest of `@Input` flags. If a feature has multiple responsibilities, it is implemented as multiple directives.
 

@@ -4,7 +4,7 @@ This document defines the **Instrumentation Pattern**, the primary strategy used
 
 CNGX does not attempt to replace Angular Material; it **instruments** it.
 
-Most libraries fail by trying to wrap Material components in "Thin Shells." This breaks Material’s internal `ContentChildren` queries, interferes with DI hierarchies, and creates a "Transclusion Deadlock" where the library and the consumer fight over the same DOM space.
+Most libraries fail by trying to wrap Material components in "Thin Shells." This breaks Material's internal `ContentChildren` queries, interferes with DI hierarchies, and creates a "Transclusion Deadlock" where the library and the consumer fight over the same DOM space.
 
 CNGX solves this by separating the **Logic (Brain)** from the **Rendering (Hardware)** and connecting them via an **Attribute Directive (The Driver)**.
 
@@ -13,7 +13,7 @@ CNGX solves this by separating the **Logic (Brain)** from the **Rendering (Hardw
 The pattern relies on three distinct layers:
 
 | Piece                   | Role                                                                           | Level | Location            |
-| :---------------------- | :----------------------------------------------------------------------------- | :---- | :------------------ |
+|:-|:-|:-|:-|
 | **Brain (Presenter)**   | A headless directive owning all Signals, state machines, and A11y derivations. | 2     | `@cngx/common`      |
 | **Hardware**            | The third-party component providing the DOM and styles (e.g., `MatStepper`).   | -     | `@angular/material` |
 | **Driver (Instrument)** | An attribute directive that attaches the Brain to the Hardware.                | 4     | `@cngx/ui/mat-*`    |
@@ -74,9 +74,9 @@ The developer does not rewrite their template. They upgrade existing Material ma
 ## Why Instrumentation Wins over Wrapping
 
 | Feature           | Wrapping (`<cngx-mat-tabs>`)              | Instrumentation (`[cngxMatTabs]`)          |
-| :---------------- | :---------------------------------------- | :----------------------------------------- |
+|:-|:-|:-|
 | **Migration Tax** | High (Rename tags, move content)          | **Zero (Add one attribute)**               |
-| **Shadow DOM**    | Risk of breaking `ContentChildren`        | **None ( 앉 sit on the same node)**        |
+| **Shadow DOM**    | Risk of breaking `ContentChildren`        | **None (driver sits on the same node)**    |
 | **Logic Source**  | Divergent / Forked                        | **Unified (Same Presenter as Headless)**   |
 | **Maintenance**   | Brittle (Breaks on Material HTML changes) | **Robust (Relies on Material Public API)** |
 
@@ -97,4 +97,4 @@ The Instrumentation Pattern is the ultimate expression of the **Atomic Decompose
 
 ### Summary
 
-> "CNGX doesn't fight against the platform or the existing UI ecosystem. We use **Instrumentation** to provide a Signal-native architectural layer on top of proven UI libraries, ensuring maximum freedom and zero migration pain."
+Instrumentation adds a Signal-native control layer to existing Material markup via one attribute directive. The Brain stays headless and reusable, the Hardware keeps its template, and the consumer changes one attribute on the tag they already had.

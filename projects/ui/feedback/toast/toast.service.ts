@@ -127,8 +127,8 @@ export class CngxToaster {
       config.duration ?? (severity === 'error' ? ('persistent' as const) : this.defaultDuration());
     const dismissible = config.dismissible ?? true;
 
-    // Dedup check — title is included, description is intentionally excluded
-    // (same event with different context detail is still the same event)
+    // Dedup key includes title but excludes description — same event with
+    // different context detail is still the same event.
     const now = Date.now();
     const existing = this.toasts().find(
       (t) =>
