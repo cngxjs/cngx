@@ -96,7 +96,7 @@ export class CngxEmptyState {
     if (!s) {
       return false;
     }
-    // Hide during loading (skeleton handles that phase) and when data is present
+    // Skeleton owns the loading phase; defer until data resolves.
     return s.isLoading() || !s.isEmpty();
   });
 

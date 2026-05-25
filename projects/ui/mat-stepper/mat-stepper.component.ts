@@ -77,10 +77,8 @@ export class CngxMatStepper implements CngxStepPanelHost {
   private readonly destroyRef = inject(DestroyRef);
   private readonly injector = inject(Injector);
   protected readonly matStepper = viewChild.required(MatStepper);
-  // Host CD nudge after the `_iconOverrides` patch — Material reads
-  // the map into per-header `[iconOverrides]` bindings on the next
-  // CD pass, so the patch only takes effect once we mark the host
-  // view dirty.
+  // Host CD nudge after the `_iconOverrides` patch — Material reads the map
+  // into per-header `[iconOverrides]` bindings on the next CD pass.
   private readonly hostCdr = inject(ChangeDetectorRef);
 
   readonly flatSteps: Signal<readonly CngxStepNode[]> = this.presenter.flatSteps;
@@ -153,10 +151,9 @@ export class CngxMatStepper implements CngxStepPanelHost {
     return node.depth;
   }
 
-  // Material twin honours only `*cngxStepLabel` / `*cngxStepContent`
-  // — the six other cngx slot directives are silently dropped because
-  // Material owns the indicator/badge/busy chrome. The override path
-  // is `<ng-template matStepperIcon>`. stepper-accepted-debt §4.
+  // Material twin honours only `*cngxStepLabel` / `*cngxStepContent`; Material
+  // owns indicator/badge/busy chrome via `<ng-template matStepperIcon>`.
+  // stepper-accepted-debt §4.
   labelTemplateFor(id: string): TemplateRef<CngxStepLabelContext> | null {
     return this.stepDirectiveById().get(id)?.labelTemplate()?.templateRef ?? null;
   }
@@ -197,9 +194,8 @@ export class CngxMatStepper implements CngxStepPanelHost {
       this.stepLabelContextCache.set(node.id, fresh);
       return fresh;
     }
-    // Mutate cached fields in place. `readonly` is a TS-only annotation;
-    // the cast removes it for the assignment without affecting the
-    // public consumer surface.
+    // In-place mutation preserves the object reference so `*ngTemplateOutlet`'s
+    // `Object.is` diff short-circuits the embedded-view rebind.
     const mutable = existing as {
       -readonly [K in keyof CngxStepLabelContext]: CngxStepLabelContext[K];
     };
@@ -217,9 +213,7 @@ export class CngxMatStepper implements CngxStepPanelHost {
   }
 
   constructor() {
-    // Prune stale `stepLabelContextCache` entries when the flat-step
-    // set changes shape — without this, removed node-ids leak their
-    // entries forever.
+    // Prune stale `stepLabelContextCache` entries — removed node-ids would otherwise leak.
     effect(() => {
       const flat = this.presenter.flatSteps();
       untracked(() => {
@@ -235,8 +229,7 @@ export class CngxMatStepper implements CngxStepPanelHost {
       });
     });
 
-    // `afterNextRender` — `viewChild.required(MatStepper)` isn't
-    // resolved until the view commits.
+    // `viewChild.required(MatStepper)` isn't resolved until after the view commits.
     afterNextRender(() => {
       const stepper = this.matStepper();
       createMatStepperBidirectionalSync({
@@ -246,13 +239,10 @@ export class CngxMatStepper implements CngxStepPanelHost {
         destroyRef: this.destroyRef,
       });
 
-      // Forward consumer-projected `<ng-template matStepperIcon>` into
-      // `MatStepper._iconOverrides`. Direct `<ng-content>` projection
-      // never reaches Material's `@ContentChildren(MatStepperIcon)` —
-      // content-init resolves the inner queries before the wrapper's
-      // projection lands. Underscore reach typed via
-      // `MaterialPrivateSurfaces.IconOverrideHost`; tabs-accepted-debt §5.
-      // Dev-mode guard surfaces a Material rename/removal early.
+      // Forward projected `<ng-template matStepperIcon>` into
+      // `MatStepper._iconOverrides`; `<ng-content>` cannot reach Material's
+      // `@ContentChildren(MatStepperIcon)` because content-init resolves the
+      // inner query before the wrapper's projection lands. tabs-accepted-debt §5.
       const stepperRef =
         stepper as unknown as MaterialPrivateSurfaces.IconOverrideHost;
       const iconList = this.stepperIcons();
@@ -271,11 +261,8 @@ export class CngxMatStepper implements CngxStepPanelHost {
       for (const icon of iconList) {
         stepperRef._iconOverrides[icon.name] = icon.templateRef;
       }
-      // Material reads `_iconOverrides` into per-header bindings on
-      // the next CD pass — mark the host view dirty so Angular
-      // re-runs CD over `<mat-stepper>` and the patched map flows
-      // through. Touching `selectedIndex` would echo through
-      // `createMaterialBidirectionalSync`; `markForCheck` does not.
+      // `markForCheck` (not `selectedIndex`) — touching the index would echo
+      // through `createMaterialBidirectionalSync`.
       this.hostCdr.markForCheck();
     });
   }

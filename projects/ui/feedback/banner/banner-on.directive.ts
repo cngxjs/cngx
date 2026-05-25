@@ -78,9 +78,7 @@ export class CngxBannerOn {
     const banner = this.bannerService;
 
     if (isDevMode()) {
-      // One-shot post-binding check — runs once after inputs are bound. Uses
-      // afterNextRender instead of an effect so we don't leave a dead node in
-      // the reactive graph for the lifetime of the directive.
+      // afterNextRender, not effect — one-shot post-binding check, no dead node in the reactive graph.
       afterNextRender(() => {
         if (this.state() === undefined && !this.statefulFallback) {
           console.error(
@@ -94,8 +92,7 @@ export class CngxBannerOn {
     const tracker = createTransitionTracker(() => this.effectiveState()?.status() ?? 'idle');
 
     effect(() => {
-      // Only tracker is tracked. All other signal reads happen inside untracked()
-      // below to keep the effect's dependency graph flat.
+      // Flat graph — only the tracker is tracked, every other read sits in untracked() below.
       const status = tracker.current();
       const previous = tracker.previous();
 
@@ -129,7 +126,6 @@ export class CngxBannerOn {
           }
         }
 
-        // Auto-dismiss on success or idle (condition resolved)
         if (status === 'success' || status === 'idle') {
           banner.dismiss(this.bannerId());
         }

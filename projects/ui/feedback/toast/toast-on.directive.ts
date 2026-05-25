@@ -104,9 +104,8 @@ export class CngxToastOn {
     this.toastService = this.toast;
 
     if (isDevMode()) {
-      // One-shot post-binding check — runs once after inputs are bound. Uses
-      // afterNextRender instead of an effect so we don't leave a dead node in
-      // the reactive graph for the lifetime of the directive.
+      // afterNextRender, not effect — one-shot post-binding check, no dead
+      // node in the reactive graph for the directive's lifetime.
       afterNextRender(() => {
         if (this.state() === undefined && !this.statefulFallback) {
           console.error(
@@ -120,9 +119,8 @@ export class CngxToastOn {
     const tracker = createTransitionTracker(() => this.effectiveState()?.status() ?? 'idle');
 
     effect(() => {
-      // Only tracker is tracked. All other signal reads happen inside untracked()
-      // below to keep the effect's dependency graph flat and avoid re-firing
-      // when options (message strings, durations, error detail) change.
+      // Flat graph — only the tracker is tracked; option reads stay inside
+      // untracked() so message/duration changes don't re-fire the bridge.
       const status = tracker.current();
       const previous = tracker.previous();
 

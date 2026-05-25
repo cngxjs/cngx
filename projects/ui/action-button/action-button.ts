@@ -221,8 +221,7 @@ export class CngxActionButton {
       }
       return 'idle' as const;
     }
-    // viewChild is guaranteed resolved when the template reads this computed.
-    // Guard protects consumers reading `state` before view init.
+    // Guard against pre-view-init reads of `state` from consumers.
     const click = this.asyncClick();
     return click ? click.status() : ('idle' as const);
   });
@@ -262,7 +261,7 @@ export class CngxActionButton {
   protected readonly failedTpl = contentChild(CngxFailed);
 
   constructor() {
-    // Double-toast guard: warn once if consumer also placed [cngxToastOn] on this element
+    // Double-toast guard, consumer placed [cngxToastOn] on the same element.
     if (
       typeof ngDevMode !== 'undefined' &&
       ngDevMode &&

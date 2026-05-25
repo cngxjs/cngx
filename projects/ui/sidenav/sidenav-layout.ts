@@ -81,12 +81,11 @@ export class CngxSidenavLayout {
   constructor() {
     const doc = inject(DOCUMENT);
 
-    // Enable transitions only after first render to prevent jank on load
+    // Gate transitions until after first render — prevents open-on-load flash.
     afterNextRender(() => this.ready.set(true));
 
-    // Scroll lock when overlay is active.
-    // Uses the same dataset-based ref-counting as CngxScrollLock so
-    // multiple lock sources don't corrupt each other's restore values.
+    // Dataset ref-counting matches CngxScrollLock so concurrent lock sources
+    // do not clobber each other's restore values.
     const html = doc.documentElement;
     const locked = signal(false);
 
@@ -117,7 +116,6 @@ export class CngxSidenavLayout {
       }
     });
 
-    // Click-outside: close overlay sidenavs when clicking outside the layout
     fromEvent<MouseEvent>(doc, 'click')
       .pipe(takeUntilDestroyed())
       .subscribe((e) => {

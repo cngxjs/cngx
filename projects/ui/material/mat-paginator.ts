@@ -51,8 +51,8 @@ export class CngxMatPaginator {
   protected readonly ref = this.cngxPaginateRef;
 
   protected handlePage(event: PageEvent): void {
-    // Update page size first (without resetting page) then navigate to the
-    // page index mat-paginator already computed for us.
+    // setPageSize(..., false) suppresses the implicit page reset so the
+    // explicit setPage below lands the index mat-paginator already computed.
     this.ref().setPageSize(event.pageSize, false);
     this.ref().setPage(event.pageIndex);
   }

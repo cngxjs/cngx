@@ -11,9 +11,8 @@ import {
   CngxToastOutlet,
 } from '@cngx/ui/feedback';
 
-// Re-export triggers compodocx file-walker so app.config.ts lands in the
-// StackBlitz manifest as src/app/app.config.ts, overriding the hardcoded
-// stub — the only way to inject EnvironmentProviders into the playground.
+// Re-export forces compodocx to ship app.config.ts in the StackBlitz manifest
+// — the only seam for EnvironmentProviders in the playground.
 export { appConfig } from './app.config';
 
 /**

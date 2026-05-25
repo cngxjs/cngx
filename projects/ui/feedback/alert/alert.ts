@@ -156,13 +156,12 @@ export class CngxAlertAction {}
     '[class.cngx-alert--success]': 'severity() === "success"',
     '[class.cngx-alert--warning]': 'severity() === "warning"',
     '[class.cngx-alert--error]': 'severity() === "error"',
-    // Visibility phase classes (drive CSS animations)
     '[class.cngx-alert--hidden]': 'visibilityPhase() === "hidden"',
     '[class.cngx-alert--entering]': 'visibilityPhase() === "entering"',
     '[class.cngx-alert--visible]': 'visibilityPhase() === "visible"',
     '[class.cngx-alert--exiting]': 'visibilityPhase() === "exiting"',
     '[class.cngx-alert--collapsed]': 'collapsed()',
-    // ARIA — role present only when visible
+    // WAI-ARIA — role/aria-* present only while visible to avoid stale announcements.
     '[attr.role]': 'isVisible() ? ariaRole() : null',
     '[attr.aria-atomic]': 'isVisible() ? ariaAtomic() : null',
     '[attr.aria-label]': 'isVisible() ? (title() || null) : null',
@@ -323,7 +322,6 @@ export class CngxAlert {
       return w;
     }
 
-    // Static: always visible
     return true;
   });
 
@@ -354,12 +352,10 @@ export class CngxAlert {
       const status = s.status();
 
       if (status === 'error') {
-        // Error: persistent — reset any dismiss, clear timer
         this.manualDismissed.set(false);
         this.autoDismissed.set(false);
         this.autoDismissTimer.clear();
       } else if (status === 'success') {
-        // Success: show briefly, then auto-dismiss
         this.manualDismissed.set(false);
         this.autoDismissed.set(false);
         const delay = this.autoDismissDelay();
@@ -369,7 +365,7 @@ export class CngxAlert {
       } else if (status === 'idle') {
         this.autoDismissTimer.clear();
       }
-      // loading/pending/refreshing: keep current state, don't touch timers
+      // loading/pending/refreshing: no branch — leaves current dismiss + timers intact.
     });
 
     effect(() => {
@@ -416,9 +412,7 @@ export class CngxAlert {
 
   private scheduleAnimationFallback(): void {
     this.clearAnimationFallback();
-    // When reduced-motion is active (or no window — SSR/test), transition immediately.
-    // Otherwise use a generous timeout as safety net (animationend normally fires first
-    // and clears this via clearAnimationFallback).
+    // Safety net if animationend never fires (reduced-motion, SSR, no window).
     const reducedMotion =
       typeof window === 'undefined' ||
       !window.matchMedia?.('(prefers-reduced-motion: no-preference)').matches;
@@ -472,7 +466,6 @@ export class CngxAlert {
   protected handlePointerEnter(): void {
     this.autoDismissTimer.pause();
     this.collapseTimer.pause();
-    // Expand on hover if collapsed
     if (this.collapsedState()) {
       this.collapsedState.set(false);
     }
@@ -481,7 +474,6 @@ export class CngxAlert {
   /** @internal — resume timers on pointer leave. */
   protected handlePointerLeave(): void {
     this.autoDismissTimer.resume();
-    // Restart collapse timer from full delay on leave
     if (this.collapsible() && this.isVisible()) {
       this.collapseTimer.start(this.effectiveCollapseDelay(), () => this.collapsedState.set(true));
     }

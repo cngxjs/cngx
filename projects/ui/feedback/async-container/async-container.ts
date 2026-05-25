@@ -238,7 +238,6 @@ export class CngxAsyncContainer<T> {
         this.announcement.set('Refresh failed');
       }
 
-      // Fire toasts if configured
       this.fireToast(status);
     });
   }

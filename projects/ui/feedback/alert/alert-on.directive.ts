@@ -82,9 +82,7 @@ export class CngxAlertOn {
     const alerter = this.alerter;
 
     if (isDevMode()) {
-      // One-shot post-binding check — runs once after inputs are bound. Uses
-      // afterNextRender instead of an effect so we don't leave a dead node in
-      // the reactive graph for the lifetime of the directive.
+      // afterNextRender, not effect — dev-mode one-shot, no dead reactive node.
       afterNextRender(() => {
         if (this.state() === undefined && !this.statefulFallback) {
           console.error(
@@ -98,8 +96,7 @@ export class CngxAlertOn {
     const tracker = createTransitionTracker(() => this.effectiveState()?.status() ?? 'idle');
 
     effect(() => {
-      // Only tracker is tracked. All other signal reads happen inside untracked()
-      // below to keep the effect's dependency graph flat.
+      // Flat graph — only tracker is tracked; everything else reads under untracked.
       const status = tracker.current();
       const previous = tracker.previous();
 
