@@ -48,6 +48,7 @@ import { resolveCellTpl, resolveHeaderTpl } from './column-template.utils';
  * All inputs and outputs are declared on {@link CngxTreetablePresenter} and
  * forwarded via `hostDirectives`.
  *
+ * @playground Showcase ./examples/app/app.component.ts
  * @typeParam T - The shape of the data value carried by each tree node.
  */
 @Component({

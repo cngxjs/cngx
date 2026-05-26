@@ -16,5 +16,5 @@
     }
   },
   "include": ["*.ts", "treetable/**/*.ts"],
-  "exclude": ["**/*.spec.ts"]
+  "exclude": ["**/*.spec.ts", "**/examples/**"]
 }
