@@ -642,9 +642,9 @@ describe('CngxMatTabs instrumentation directive', () => {
       (el) => el.componentInstance instanceof MatTabGroup,
     );
     // The per-tab handle registry lives on the [cngxMatTabsRegistry]
-    // host-directive (Phase 7.1 extraction); the parent [cngxMatTabs]
-    // composes it via `hostDirectives`. Reach the registry through
-    // the host element's injector — same instance both directives see.
+    // host-directive; the parent [cngxMatTabs] composes it via
+    // `hostDirectives`. Reach the registry through the host
+    // element's injector — same instance both directives see.
     const registry = matEl.injector.get(CngxMatTabsRegistry);
     const setupsByTab = (
       registry as unknown as {
@@ -894,8 +894,7 @@ describe('CngxMatTabs instrumentation directive', () => {
 
     // resolveStripRoot: walk a host element placed inside the rendered
     // .mat-mdc-tab-header up to .mat-mdc-tab-label-container — the
-    // structural guarantee Material 19/20/21 ships under
-    // tabs-accepted-debt §5.
+    // structural guarantee Material 19/20/21 ships.
     const probe = document.createElement('div');
     header.appendChild(probe);
     expect(

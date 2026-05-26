@@ -96,7 +96,7 @@ export class CngxMatTabsPanelHostAdapter implements CngxTabPanelHost {
  * Topology inverts `<cngx-mat-stepper>`: Material is the host, cngx
  * is the instrumentation layer. `inject(MatTabGroup, { self: true })`
  * resolves on the consumer's own element — no content projection
- * blocker (`stepper-accepted-debt §1` does not apply here).
+ * blocker applies here.
  *
  * Rejection (`--error`) and aggregator (`--has-errors`) visuals
  * live in the package-private projector factories under

@@ -8,21 +8,10 @@
  * Every leading-underscore field cngx reaches into and every
  * Material-internal CSS selector cngx queries against has its
  * declaration here. A Material-version upgrade audit only needs to
- * grep this file plus the matching tracked-debt entries — that grep
- * value is the consumer-facing benefit, so this namespace is part
- * of the published surface of `@cngx/ui/mat-tabs` (re-exported from
- * the package barrel) rather than a private implementation detail.
- *
- * Tracked-debt cross-links:
- * - tabs-accepted-debt §5 — `MatTab._stateChanges` plus the three
- *   `.mat-mdc-tab*` selectors used by `[cngxMatTabs]` and the
- *   Material-twin overflow adapter. The closing paragraph of §5
- *   explicitly names this namespace as the family-shared
- *   upgrade-watch surface.
- * - stepper-accepted-debt §4 — `MatStepper._iconOverrides` reach
- *   from `<cngx-mat-stepper>`.
- * - stepper-accepted-debt §1, handle.ts JSDoc — `CdkStep._completedOverride`
- *   read from `createMatStepHandle`'s `state` computed.
+ * grep this file. The grep value is the consumer-facing benefit, so
+ * this namespace is part of the published surface of
+ * `@cngx/ui/mat-tabs` (re-exported from the package barrel) rather
+ * than a private implementation detail.
  *
  * The grouping uses a TypeScript `namespace` so a single
  * `MaterialPrivateSurfaces.<member>` access path covers both the

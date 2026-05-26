@@ -43,7 +43,7 @@ export interface CngxMatTabHandleSetup {
  *   `toSignal(matTab._stateChanges)`. Bridge lifetime is tied to
  *   the supplied `injector` (typically a per-tab child
  *   `EnvironmentInjector`). `_stateChanges` is a Material-internal
- *   surface — see `tabs-accepted-debt §5`.
+ *   surface.
  * - `errorAggregator` — writable seeded at `undefined`;
  *   `[cngxMatTabError]` writes its bound aggregator in and resets
  *   on teardown. The handle exposes `.asReadonly()` to preserve the
@@ -57,7 +57,7 @@ export function createMatTabHandle(
   // Typed local — anchors `MaterialPrivateSurfaces.StateChangeSource`
   // at the consumer site so an upgrade-watch grep lands here too.
   // Documentation-only at runtime; MatTab's public typing already
-  // exposes `_stateChanges`. tabs-accepted-debt §5.
+  // exposes `_stateChanges`.
   const stateChangeSource: MaterialPrivateSurfaces.StateChangeSource = matTab;
   // `equal: () => false` is load-bearing — `_stateChanges` is a
   // `Subject<void>`, so `Object.is(undefined, undefined)` would dedup
@@ -111,9 +111,6 @@ export type CngxMatTabHandleFactory = typeof createMatTabHandle;
  * (the supplied `idSeed` closure). Overrides may call, ignore, or
  * replace `idSeed` — server-synced ids, deterministic test ids,
  * consumer-domain ids — without touching the factory body.
- *
- * Tracked-debt: family-uniformity staging, single in-package
- * consumer today. See `tabs-accepted-debt §10`.
  *
  * ```ts
  * providers: [

@@ -302,9 +302,8 @@ describe('CngxTabGroup organism', () => {
       'cngx-tab-group',
     ) as HTMLElement;
     // Note: presenter `orientation` Input has a literal default of
-    // 'horizontal' (Phase 1 contract). The cascade-from-config path
-    // is documented as Phase 5 polish; this test pins the current
-    // behaviour so we notice when the cascade lands.
+    // 'horizontal'. This test pins the current behaviour so we
+    // notice if the cascade-from-config path ever lands.
     expect(host.getAttribute('aria-orientation')).toBe('horizontal');
   });
 
@@ -983,8 +982,7 @@ describe('CngxTabGroup organism', () => {
       // Reference-stability fence — *ngTemplateOutlet's input-diff
       // (via Object.is) short-circuits the embedded-view context-update
       // path only when the context REFERENCE is unchanged across CD
-      // ticks. Per-CD allocation triggers the rebind path and thus the
-      // perf concern documented at tabs-accepted-debt §9. The WeakMap
+      // ticks. Per-CD allocation triggers the rebind path. The WeakMap
       // cache on errorBadgeContextFor must return the SAME object on
       // every call for a given tab handle.
       TestBed.resetTestingModule();

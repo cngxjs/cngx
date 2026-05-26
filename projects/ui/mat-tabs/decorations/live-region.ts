@@ -39,12 +39,7 @@ export interface CngxMatTabLiveRegionOptions {
  * live-region never lands inside Material's component DOM. The
  * element's host bindings replicate {@link CngxLiveRegion}
  * imperatively (this attribute directive owns no template, so the
- * declarative `cngxLiveRegion` selector is unreachable). The
- * duplication of `CngxLiveRegion`'s host-binding shape is
- * acknowledged debt — `tabs-accepted-debt §12` covers the
- * single-consumer family-uniformity staging and the Re-Eval
- * Triggers that would graduate this helper to a
- * `CNGX_MAT_TAB_LIVE_ANNOUNCER_FACTORY` swap surface.
+ * declarative `cngxLiveRegion` selector is unreachable).
  * Cleaned up via the supplied `DestroyRef`.
  *
  * @internal — package-private helper for `[cngxMatTabs]`. Not

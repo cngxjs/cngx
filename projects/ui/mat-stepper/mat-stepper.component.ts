@@ -15,11 +15,7 @@ import {
   untracked,
   viewChild,
 } from '@angular/core';
-import {
-  MatStepperModule,
-  MatStepper,
-  MatStepperIcon,
-} from '@angular/material/stepper';
+import { MatStepperModule, MatStepper, MatStepperIcon } from '@angular/material/stepper';
 
 import {
   CNGX_STEP_PANEL_HOST,
@@ -54,7 +50,6 @@ import type { MaterialPrivateSurfaces } from '@cngx/ui/mat-tabs';
  * hint on the rendered label.
  *
  * @playground Bridge instrumentation ./examples/bridge/bridge-example.component.ts
- * <example-url>http://localhost:4200/mat-stepper-router-sync/deep-linking-against-material</example-url>
  */
 @Component({
   selector: 'cngx-mat-stepper',
@@ -92,8 +87,7 @@ export class CngxMatStepper implements CngxStepPanelHost {
    * `afterNextRender` patch below. `<ng-content>` projection cannot
    * reach Material's `@ContentChildren(MatStepperIcon)` — content-init
    * resolves the inner query before the wrapper's projection lands.
-   * `_iconOverrides` is a Material-internal slot;
-   * `tabs-accepted-debt §5`.
+   * `_iconOverrides` is a Material-internal slot.
    */
   private readonly stepperIcons = contentChildren(MatStepperIcon);
 
@@ -121,8 +115,8 @@ export class CngxMatStepper implements CngxStepPanelHost {
   );
 
   /** Material orientation literal — narrows our `'horizontal'|'vertical'` to its own union. */
-  protected readonly matOrientation = computed<'horizontal' | 'vertical'>(
-    () => (this.presenter.orientation() === 'vertical' ? 'vertical' : 'horizontal'),
+  protected readonly matOrientation = computed<'horizontal' | 'vertical'>(() =>
+    this.presenter.orientation() === 'vertical' ? 'vertical' : 'horizontal',
   );
 
   protected stepIndexOf(node: CngxStepNode): number {
@@ -153,7 +147,6 @@ export class CngxMatStepper implements CngxStepPanelHost {
 
   // Material twin honours only `*cngxStepLabel` / `*cngxStepContent`; Material
   // owns indicator/badge/busy chrome via `<ng-template matStepperIcon>`.
-  // stepper-accepted-debt §4.
   labelTemplateFor(id: string): TemplateRef<CngxStepLabelContext> | null {
     return this.stepDirectiveById().get(id)?.labelTemplate()?.templateRef ?? null;
   }
@@ -194,8 +187,6 @@ export class CngxMatStepper implements CngxStepPanelHost {
       this.stepLabelContextCache.set(node.id, fresh);
       return fresh;
     }
-    // In-place mutation preserves the object reference so `*ngTemplateOutlet`'s
-    // `Object.is` diff short-circuits the embedded-view rebind.
     const mutable = existing as {
       -readonly [K in keyof CngxStepLabelContext]: CngxStepLabelContext[K];
     };
@@ -239,12 +230,8 @@ export class CngxMatStepper implements CngxStepPanelHost {
         destroyRef: this.destroyRef,
       });
 
-      // Forward projected `<ng-template matStepperIcon>` into
-      // `MatStepper._iconOverrides`; `<ng-content>` cannot reach Material's
-      // `@ContentChildren(MatStepperIcon)` because content-init resolves the
-      // inner query before the wrapper's projection lands. tabs-accepted-debt §5.
-      const stepperRef =
-        stepper as unknown as MaterialPrivateSurfaces.IconOverrideHost;
+      // Forward into Material's internal `_iconOverrides` slot.
+      const stepperRef = stepper as unknown as MaterialPrivateSurfaces.IconOverrideHost;
       const iconList = this.stepperIcons();
       if (!stepperRef._iconOverrides) {
         if (typeof ngDevMode !== 'undefined' && ngDevMode && iconList.length) {

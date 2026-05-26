@@ -36,8 +36,8 @@ interface CngxMatTabsRegistryEntry {
  * Read-mostly contract for the per-tab handle-setup registry.
  * `[cngxMatTabError]` and any future `[cngxMatTab*]` decoration
  * directive injects this with `{ host: true }` to reach the
- * per-handle `errorAggregator` slot — closes the
- * `tabs-accepted-debt §7` concrete-sibling-injection coupling.
+ * per-handle `errorAggregator` slot without walking the concrete
+ * registry class.
  *
  * Return type narrows to `Pick<..., 'errorAggregator'>` so the
  * access path exposes only the per-handle aggregator slot; the
@@ -68,9 +68,9 @@ export const CNGX_MAT_TABS_REGISTRY_HOST =
 
 /**
  * Sibling host-directive that owns the per-MatTab handle registry
- * for `[cngxMatTabs]`. Extracted in Phase 7.1 so the parent stays
- * under the level-4 organism LOC guard and per-tab decoration
- * directives reach the registry through a typed token.
+ * for `[cngxMatTabs]`. Keeps the parent under the level-4 organism
+ * LOC guard and lets per-tab decoration directives reach the
+ * registry through a typed token.
  *
  * Owns: `contentChildren(MatTab)` query, the `setupsByTab` map
  * (per-tab cngx setup paired with a child `EnvironmentInjector`
@@ -80,8 +80,7 @@ export const CNGX_MAT_TABS_REGISTRY_HOST =
  *
  * Composition: `[cngxMatTabs]` declares this in `hostDirectives`;
  * both share the parent's `CngxTabGroupPresenter` and the same
- * `<mat-tab-group>` content-children scope. Standalone use is
- * exported but staged — see `tabs-accepted-debt §11`.
+ * `<mat-tab-group>` content-children scope.
  */
 @Directive({
   selector: '[cngxMatTabsRegistry]',
@@ -136,7 +135,7 @@ export class CngxMatTabsRegistry implements CngxMatTabsRegistryHost {
       }
       // Per-tab child injector scopes the `toSignal(_stateChanges)`
       // bridge inside createMatTabHandle — destroying it on tab
-      // removal fires `takeUntilDestroyed`. tabs-accepted-debt §5.
+      // removal fires `takeUntilDestroyed`.
       const childInjector = createEnvironmentInjector([], this.envInjector);
       const idSeed = () => nextUid('cngx-mat-tab-');
       const setup = this.createHandle(tab, idSeed, childInjector);

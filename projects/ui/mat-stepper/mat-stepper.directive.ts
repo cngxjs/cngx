@@ -11,10 +11,7 @@ import {
 } from '@angular/core';
 import { MatStep, MatStepper } from '@angular/material/stepper';
 
-import {
-  CNGX_STEPPER_HOST,
-  CngxStepperPresenter,
-} from '@cngx/common/stepper';
+import { CNGX_STEPPER_HOST, CngxStepperPresenter } from '@cngx/common/stepper';
 import { nextUid } from '@cngx/core/utils';
 
 import { createMatStepperBidirectionalSync } from './material-bridge/bidirectional-sync';
@@ -37,9 +34,7 @@ import {
  * with the wrapper's `cngxMatStepper`.
  *
  * Topology mirrors `[cngxMatTabs]`: Material is the host, cngx is
- * the instrumentation layer. `stepper-accepted-debt §1`'s blocker
- * applies to adoption, not this direction.
- * <example-url>http://localhost:4200/mat-stepper-instrumentation/vanilla-mat-stepper-upgraded-by-adding-cngxmatstepper</example-url>
+ * the instrumentation layer.
  */
 @Directive({
   selector: '[cngxMatStepper]',
@@ -48,13 +43,7 @@ import {
   hostDirectives: [
     {
       directive: CngxStepperPresenter,
-      inputs: [
-        'activeStepIndex',
-        'linear',
-        'orientation',
-        'commitAction',
-        'commitMode',
-      ],
+      inputs: ['activeStepIndex', 'linear', 'orientation', 'commitAction', 'commitMode'],
       outputs: ['activeStepIndexChange'],
     },
   ],
