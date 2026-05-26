@@ -33,7 +33,7 @@ export class CngxTreetableRow<T = unknown> {
   readonly highlight = input(false);
   /**
    * When `true`, applies the `cngx-treetable__row--selected` CSS class.
-   * Driven by the selection model in {@link CngxTreetablePresenter}.
+   * Driven by the selection model in {@link CngxTreetable}.
    * @defaultValue `false`
    */
   readonly selected = input(false);

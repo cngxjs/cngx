@@ -7,7 +7,6 @@ Headless tree table built on Angular CDK Table. Renders fully unstyled, accessib
 ```typescript
 import {
   CngxTreetable,
-  CngxTreetablePresenter,
   CngxTreetableRow,
   CngxCellTpl,
   CngxHeaderTpl,
@@ -124,7 +123,7 @@ interface TreetableOptions<T> {
 
 ## Composition
 
-`CngxTreetablePresenter` is composed as a `hostDirective` on `CngxTreetable`, making the full presenter API available on the component host.
+All inputs, outputs, computeds, and methods live directly on `CngxTreetable`; the API tab on the doc page covers the full surface.
 
 ### Example: With Async Data Loading
 
