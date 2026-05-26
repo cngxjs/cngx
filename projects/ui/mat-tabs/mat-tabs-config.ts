@@ -42,9 +42,7 @@ export interface CngxMatTabsConfig {
    * two caps are intentionally independent because the underlying
    * timing primitives differ; a shared "anchor max attempts" knob
    * would conflate one frame of `afterNextRender` with one rAF
-   * frame, which they are not. The asymmetry is documented in
-   * `tabs-accepted-debt §11`; consumers needing cngx-native rAF
-   * tuning should re-evaluate that entry.
+   * frame, which they are not.
    */
   readonly anchorMaxAttempts?: number;
 

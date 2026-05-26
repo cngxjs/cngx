@@ -435,6 +435,25 @@ html.dark .cngx-ex-tag[data-dim='stability'][data-value='deprecated'] {
   margin-bottom: 4px;
 }
 
+// Demo-only table-cell reset for empty-state demos. Keeps the host-cell
+// padding off the story body so the projected empty-state organism fills
+// the full <td> without inset.
+.demo-table-emptycell {
+  padding: 0;
+}
+
+// Demo-only layout cell for cngx-grid and cngx-stack demos. Renders a flat
+// tile with just enough surface chrome to make the parent's layout
+// decisions visible, without spreading padding/background/radius literals
+// across individual stories.
+.demo-layout-cell {
+  padding: 12px 16px;
+  border-radius: var(--cngx-radius-sm, 4px);
+  background: var(--cngx-color-surface-alt, var(--cngx-ex-surface-alt, #f3f4f6));
+  color: var(--cngx-color-text, var(--cngx-ex-text, inherit));
+  font-size: 0.875rem;
+}
+
 // Demo-only card surface used by inside-a-dismissible-card. Keeps thematic
 // chrome (border, surface, radius, padding) off inline styles so the close
 // button atom keeps its absolute-positioned corner without bleeding tokens

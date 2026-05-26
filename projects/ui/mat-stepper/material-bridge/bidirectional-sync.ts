@@ -37,16 +37,10 @@ export interface CngxMatStepperBidirectionalSyncOptions {
  * owns:
  * - presenter→Material `effect()` with read-equality guard.
  * - Material→presenter subscription with re-entrancy guard.
- * - Material-eager-advance reconciliation
- *   (`tabs-accepted-debt §6` closure path; same code path applies
- *   here because Material's MDC click handler advances
- *   `selectedIndex` synchronously before the bidirectional sync sees
- *   the event).
+ * - Material-eager-advance reconciliation (Material's MDC click
+ *   handler advances `selectedIndex` synchronously before the
+ *   bidirectional sync sees the event).
  * - `destroyRef` cleanup of both directions.
- *
- * Phase 7.2 of `mat-stepper-mat-tabs-hardening-plan` extracted this
- * helper to close E-C12 + E-C13 (duplicated bidirectional-sync glue
- * between the wrapper component and the instrumentation directive).
  */
 export function createMatStepperBidirectionalSync(
   opts: CngxMatStepperBidirectionalSyncOptions,

@@ -20,9 +20,7 @@ import { type CngxSpeak } from '@cngx/common';
  * @use '@cngx/themes/material/speak-button-theme' as speak;
  * @include speak.theme($theme);
  * ```
- * <example-url>http://localhost:4200/#/ui/speak/speak-button/material-integration-theme-scss-mat-icon-button</example-url>
  * <example-url>http://localhost:4200/#/ui/speak/speak-button/styled-speaker-icon</example-url>
- * <example-url>http://localhost:4200/#/ui/speak/speak-button/theming-css-custom-properties</example-url>
  */
 @Component({
   selector: 'cngx-speak-button',

@@ -29,7 +29,7 @@ import { CngxToastOn, CngxToaster } from '@cngx/ui/feedback';
 export type ActionButtonVariant = 'primary' | 'secondary' | 'ghost';
 
 /**
- * Action button molecule with built-in status communication.
+ * Action button organism with built-in status communication.
  *
  * Coordinates between the `CngxAsyncClick` atom (mechanism, ARIA, lifecycle)
  * and the consumer (intent, styling, labels). Provides template projection

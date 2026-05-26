@@ -1,10 +1,10 @@
 import type { DemoSpec } from '../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxEmptyState: inside a table',
+  title: 'CngxEmptyState: Inside a table',
   subtitle: 'Replaces table body when no rows match. The table header stays visible for context.',
   description: 'Spans a full-width <code>td colspan</code> so the header row stays anchored while the body becomes a single empty-state cell. Includes a row-add primary action so the empty state is also the recovery path.',
-  level: 'molecule',
+  level: 'organism',
   audience: ['dev', 'design'],
   artifact: 'standalone',
   focus: ['visual-variants', 'composition'],
@@ -29,7 +29,7 @@ export const STORY: DemoSpec = {
       <tbody>
         @if (tableItems().length === 0) {
           <tr>
-            <td colspan="3" style="padding:0">
+            <td colspan="3" class="demo-table-emptycell">
               <cngx-empty-state
                 title="No patients found"
                 description="Adjust filters or add a new patient.">

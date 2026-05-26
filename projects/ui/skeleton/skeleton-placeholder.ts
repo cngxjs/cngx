@@ -1,23 +1,51 @@
 import { Directive, inject, TemplateRef } from '@angular/core';
 
 /**
- * Marks a template as the skeleton placeholder inside `cngx-skeleton`.
+ * Structural slot directive that registers a `<ng-template>` as the
+ * loading-state stand-in for `<cngx-skeleton>`. The container reads
+ * it via `contentChild(CngxSkeletonPlaceholder)`; the directive
+ * holds only the `TemplateRef` and contributes no DOM of its own.
  *
- * The template is repeated `count` times while loading. Context provides the
- * current index as `$implicit`.
+ * One-per-container contract: the container uses `contentChild`
+ * (single), not `contentChildren`. Multiple sibling
+ * `<ng-template cngxSkeletonPlaceholder>` blocks resolve to the
+ * first match; the rest are dead code. Pick the variant at author
+ * time, do not stack alternatives.
+ *
+ * Repetition: while the container's `loading()` (or
+ * `state.isFirstLoad()`) is `true`, the template renders `[count]`
+ * times inside the container's internal `@for`. When loading flips
+ * to `false`, the skeleton DOM tears down and the projected sibling
+ * content renders in its place.
+ *
+ * Context fields ({@link CngxSkeletonPlaceholderContext}):
+ * - `$implicit` / `index` - 0-based iteration index. Drive per-row
+ *   width variance with it (`i === 0 ? '60%' : '100%'`).
+ * - `count` - total placeholders being rendered, mirrors the
+ *   container's `[count]` input.
+ * - `first` / `last` - row markers for end-of-block treatments
+ *   (e.g. last row without a trailing border).
+ *
+ * Bind via `let-i` for the implicit index, or `let-x="<field>"`
+ * for any other field:
  *
  * ```html
  * <cngx-skeleton [loading]="loading()" [count]="3">
  *   <ng-template cngxSkeletonPlaceholder let-i>
- *     <div class="skeleton-line" [style.width]="i === 0 ? '60%' : '100%'"></div>
+ *     <div class="skeleton-line"
+ *          [style.width]="i === 0 ? '60%' : '100%'"></div>
  *   </ng-template>
  *   <p>Real content</p>
  * </cngx-skeleton>
  * ```
- * <example-url>http://localhost:4200/#/common/layout/skeleton/basic-skeleton</example-url>
- * <example-url>http://localhost:4200/#/common/layout/skeleton/skeleton-container</example-url>
- * <example-url>http://localhost:4200/#/ui/skeleton/card-skeleton</example-url>
- * <example-url>http://localhost:4200/#/ui/skeleton/template-context</example-url>
+ *
+ * Last-row variant using `let-last`:
+ *
+ * ```html
+ * <ng-template cngxSkeletonPlaceholder let-i let-last="last">
+ *   <div class="skeleton-row" [class.is-last]="last"></div>
+ * </ng-template>
+ * ```
  */
 @Directive({
   selector: 'ng-template[cngxSkeletonPlaceholder]',

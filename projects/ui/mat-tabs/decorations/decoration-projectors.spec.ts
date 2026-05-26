@@ -457,7 +457,7 @@ describe('createMatTabRejectionDecoration — aria-describedby contract (5.2)', 
     expect(firstSpan).not.toBeNull();
 
     // Clear — decoration leaves the DOM, but cachedSpan is retained
-    // across the projector's lifetime (Phase 2.2 perf optimisation).
+    // across the projector's lifetime so AT-reader references survive.
     failedHandleId.set(null);
     failedIndex.set(undefined);
     TestBed.flushEffects();

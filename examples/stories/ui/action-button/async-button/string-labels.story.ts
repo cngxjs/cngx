@@ -1,10 +1,10 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxActionButton: string labels',
+  title: 'CngxActionButton: String labels',
   subtitle: 'The simplest usage: pass <code>pendingLabel</code>, <code>succeededLabel</code>, <code>failedLabel</code> as strings. Default content is shown when idle.',
   description: 'Two buttons exercise the success and error paths separately so each terminal state is reachable deterministically; both rely on the built-in templates with custom string labels.',
-  level: 'molecule',
+  level: 'organism',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
   focus: ['async-state', 'composition', 'visual-variants'],
@@ -20,7 +20,7 @@ export const STORY: DemoSpec = {
     setTimeout(() => reject(new Error('403 Forbidden')), 1000),
   );`,
   template: `
-  <div class="button-row">
+  <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
     <cngx-action-button [action]="saveAction" pendingLabel="Saving..." succeededLabel="Saved!">
       Save Draft
     </cngx-action-button>

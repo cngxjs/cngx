@@ -33,8 +33,6 @@ import { MaterialPrivateSurfaces } from '../material-bridge/private-surfaces';
  * projectors stack on the same target without collision; the shared
  * token-list append preserves consumer-supplied tokens.
  *
- * Index-based DOM lookup tracks `tabs-accepted-debt §5`.
- *
  * @internal package-private — consumers bind `[cngxMatTabError]` on
  * each `<mat-tab>`; the directive owns the projection mechanics.
  */

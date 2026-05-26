@@ -4,7 +4,7 @@ Slot-template family for the `[cngxMatTabs]` decoration projectors. `[cngxMatTab
 
 ## Import
 
-```ts
+``` ts
 import {
   CngxMatTabAggregatorContent,
   CngxMatTabRejectionContent,

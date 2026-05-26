@@ -2,11 +2,17 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
 
 /**
  * Composable CSS grid layout component.
- *
- * <cngx-grid columns="3" gap="16px">
- *   <div>Cell 1</div>
- *   <div>Cell 2</div>
- * </cngx-grid>
+ ``` html
+ <cngx-grid columns="3" gap="16px">
+   <div>Cell 1</div>
+   <div>Cell 2</div>
+ </cngx-grid>
+  ```
+ * `columns` accepts either a positive integer for the
+ * `repeat(N, 1fr)` shortcut or any `grid-template-columns` value
+ * (`"200px 1fr"`, `"repeat(auto-fit, minmax(120px, 1fr))"`).
+ * Bare attribute syntax works for both forms: `columns="3"` and
+ * `[columns]="3"` produce identical output.
  */
 @Component({
   selector: 'cngx-grid',
@@ -27,7 +33,9 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
 })
 export class CngxGrid {
   /** Number of equal columns, or a custom `grid-template-columns` value. */
-  readonly columns = input<number | string>(1);
+  readonly columns = input<number | string, number | string>(1, {
+    transform: coerceColumns,
+  });
   /** CSS gap between cells. */
   readonly gap = input('16px');
 
@@ -36,4 +44,14 @@ export class CngxGrid {
     const cols = this.columns();
     return typeof cols === 'number' ? `repeat(${cols}, 1fr)` : cols;
   });
+}
+
+// Bare integer attribute (`columns="3"`) coerces to a number so the
+// `repeat(N, 1fr)` branch fires; anything else is a track-list string
+// (`"200px 1fr"`) and passes through to `grid-template-columns`.
+function coerceColumns(value: number | string): number | string {
+  if (typeof value === 'number') {
+    return value;
+  }
+  return /^\d+$/.test(value) ? Number(value) : value;
 }

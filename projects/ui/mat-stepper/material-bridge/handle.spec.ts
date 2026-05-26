@@ -114,10 +114,9 @@ describe('createMatStepHandle — Phase 6.2 label fallback ladder', () => {
     // `hasError = true; completed = true` — the second line writes
     // through `_completedOverride.set(true)`, which the cngx `state`
     // computed tracks via `MatStep.completed`'s getter and re-fires.
-    // Stepper-accepted-debt §4 tracks the documented limitation that
-    // a `hasError` flip ALONE (without the paired completion write)
-    // does not re-trigger the computed — `hasError` is a plain CdkStep
-    // setter, not a Signal.
+    // A `hasError` flip ALONE (without the paired completion write)
+    // does not re-trigger the computed — `hasError` is a plain
+    // CdkStep setter, not a Signal.
     matStep.hasError = true;
     matStep.completed = true;
     expect(handle.state()).toBe('error');

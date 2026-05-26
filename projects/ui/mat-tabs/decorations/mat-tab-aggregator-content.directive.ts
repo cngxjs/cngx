@@ -44,18 +44,14 @@ export interface CngxMatTabAggregatorContentContext {
  * this template into the SR-only descriptor span instead of writing
  * the aggregator's `announcement()` string verbatim.
  *
- * Pure marker — zero logic. Holds only a typed
+ * Pure marker - zero logic. Holds only a typed
  * {@link TemplateRef} reference. Mirrors the family-standard slot
  * pattern (`CngxStepBadge`, `CngxTabErrorBadge`, `CngxTabOverflowItem`).
  *
- * Single-consumer note: tracked as `tabs-accepted-debt §9`
- * (sibling to `stepper-accepted-debt §4` for the mat-stepper
- * twin's similar Material-binding asymmetry). Material owns the
- * tab-button chrome; the cngx descriptor span is the only
- * consumer-visible decoration seam, so this slot directive lands
- * with one consumer (the package-private aggregator-decoration
- * projector). The shape is uniform with the rest of the family
- * pattern; the staging is acknowledged debt.
+ * Material owns the tab-button chrome; the cngx descriptor span is
+ * the only consumer-visible decoration seam, so this slot directive
+ * lands with one in-package consumer (the package-private
+ * aggregator-decoration projector).
  *
  * ```html
  * <mat-tab-group cngxMatTabs>
@@ -76,6 +72,5 @@ export interface CngxMatTabAggregatorContentContext {
   standalone: true,
 })
 export class CngxMatTabAggregatorContent {
-  readonly templateRef =
-    inject<TemplateRef<CngxMatTabAggregatorContentContext>>(TemplateRef);
+  readonly templateRef = inject<TemplateRef<CngxMatTabAggregatorContentContext>>(TemplateRef);
 }

@@ -96,14 +96,12 @@ function readMatStepLabelTemplateText(
  *      bails through to (4).
  *   4. `Step <id>` — deterministic, derived from the cngx handle
  *      id. Always non-empty.
- *   Phase-2 limitation: runtime label changes do not propagate. CDK's
- *   `CdkStep` does not expose a `_stateChanges` Subject analogous to
- *   `MatTab._stateChanges`, so cngx cannot re-trigger the snapshot
- *   when Material flips the input later. Tracked under
- *   `stepper-accepted-debt §4` alongside the matStepperIcon
- *   forwarding limitations — both surface the same Material-internal
- *   coupling family typed in
- *   `MaterialPrivateSurfaces.CompletedOverrideSource` (see Phase 6.1).
+ *   Documented limitation: runtime label changes do not propagate.
+ *   CDK's `CdkStep` does not expose a `_stateChanges` Subject
+ *   analogous to `MatTab._stateChanges`, so cngx cannot re-trigger
+ *   the snapshot when Material flips the input later. Surface the
+ *   same Material-internal coupling family typed in
+ *   `MaterialPrivateSurfaces.CompletedOverrideSource`.
  * - `disabled` — fixed `false`. Material owns step gating via
  *   `linear` + `editable` + `completed`; surfacing a cngx-side
  *   `disabled` would duplicate Material's own click-time enforcement
@@ -120,11 +118,7 @@ function readMatStepLabelTemplateText(
  *   two together (`step.hasError = true; step.completed = false` in
  *   error-handler patterns and inside Material's own error-state
  *   matchers) so the limitation is benign for the documented usage
- *   pattern. Tracked under `stepper-accepted-debt §4` as the
- *   `_completedOverride` re-fire contract; the Re-Eval Trigger fires
- *   when Material exposes a public `_stateChanges`-equivalent Subject
- *   on `CdkStep` OR a consumer issue confirms an unpaired-`hasError`
- *   write reaches production.
+ *   pattern.
  * - `errorAggregator` — points at the shared
  *   {@link NO_ERROR_AGGREGATOR} constant.
  */
@@ -208,9 +202,6 @@ export type CngxMatStepHandleFactory = typeof createMatStepHandle;
  * free to call it, ignore it, or replace it with a server-synced /
  * deterministic-test / consumer-domain id strategy. Both axes are
  * independently swappable from one DI seam.
- *
- * Tracked-debt: ships under family-uniformity staging (single
- * in-package consumer today). See `stepper-accepted-debt §7`.
  *
  * ```ts
  * providers: [

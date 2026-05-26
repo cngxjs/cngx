@@ -8,7 +8,7 @@ import {
 import { type CngxAsyncState, nextUid } from '@cngx/core/utils';
 
 /**
- * Empty-state display atom for grids, tables, lists, and dashboards.
+ * Empty-state display organism for grids, tables, lists, and dashboards.
  *
  * Communicates why a view is empty and what the user can do next.
  * Supports three UX contexts via the parent's `emptyReason`:

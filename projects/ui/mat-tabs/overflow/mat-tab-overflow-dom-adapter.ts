@@ -8,7 +8,7 @@ import { MaterialPrivateSurfaces } from '../material-bridge/private-surfaces';
  * `resolveStripRoot` walks from host up to `<mat-tab-header>` and
  * locates `.mat-mdc-tab-label-container` via any rendered
  * `.mat-mdc-tab` descendant — Material's IO-friendly scroll
- * container (`tabs-accepted-debt §5`).
+ * container.
  *
  * `resolveTabButton` indexes positionally; Material owns the DOM
  * and cngx handle ids never reach the button elements. Index

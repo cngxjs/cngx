@@ -1,10 +1,10 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxActionButton: random outcome',
+  title: 'CngxActionButton: Random outcome',
   subtitle: 'The action resolves or rejects randomly. Click multiple times to see both states. Feedback auto-resets after 2 seconds. Uses string labels - no templates needed.',
-  description: 'String-label fast-path: success/failure decided by a random Promise resolver, both terminal states reachable from a single button. Shows that the molecule has zero boilerplate when you only need the default templates.',
-  level: 'molecule',
+  description: 'String-label fast-path: success/failure decided by a random Promise resolver, both terminal states reachable from a single button. Shows the organism has zero boilerplate when you only need the default templates.',
+  level: 'organism',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
   focus: ['async-state', 'composition', 'visual-variants'],

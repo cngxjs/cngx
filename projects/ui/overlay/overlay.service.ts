@@ -21,13 +21,14 @@ export type CngxOverlayConfig = Partial<OverlayConfig>;
  * Thin service over CDK Overlay that returns a typed CngxOverlayRef.
  *
  * Must be provided via `provideOverlay()` in application or component providers.
- *
+ * ```ts
  * // app.config.ts
  * provideOverlay()
- *
+
  * // usage
  * const ref = overlayService.open(MyComponent, { hasBackdrop: true });
- * ref.afterClosed$.subscribe(result => console.log(result));
+ * ref.afterClosed$.subscribe(result => console.log(result)); 
+* ```
  */
 @Injectable()
 export class CngxOverlay {

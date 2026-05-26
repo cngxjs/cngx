@@ -64,17 +64,10 @@ export interface CngxMatTabRejectionContentContext {
  * pattern (`CngxMatTabAggregatorContent`, `CngxStepBadge`,
  * `CngxTabErrorBadge`).
  *
- * Cascade resolution (per
- * `architecture-summary.md` slot-cascade rule):
+ * Cascade resolution:
  *   1. Per-instance `*cngxMatTabRejectionContent` template wins
  *      via `contentChild(CngxMatTabRejectionContent)`.
- *   2. When Phase 2's `CNGX_MAT_TABS_CONFIG` infrastructure
- *      lands on main, the config-tier
- *      `CNGX_MAT_TABS_CONFIG.templates.rejection` slot fills the
- *      middle tier (planned follow-up — gated by Phase 2 merge;
- *      `tabs-accepted-debt §12` binds the staging with
- *      Re-Eval Triggers).
- *   3. Library default — imperative `Renderer2.createElement('span')`
+ *   2. Library default — imperative `Renderer2.createElement('span')`
  *      with `textContent = fallbackText` (the resolved
  *      `commitRolledBackTo(originLabel)` / `commitFailedRetry`
  *      phrase from `injectTabsI18n()`).

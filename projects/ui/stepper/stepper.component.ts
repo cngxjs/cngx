@@ -309,7 +309,7 @@ export class CngxStepper implements CngxStepPanelHost {
 
   /**
    * Render the rejection decoration when this step's flat-index matches
-   * `presenter.lastFailedIndex()`. Closes stepper-accepted-debt §2.
+   * `presenter.lastFailedIndex()`.
    */
   protected showRejection(node: CngxStepNode): boolean {
     return (
