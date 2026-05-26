@@ -23,14 +23,37 @@ import {
 import { CNGX_TREETABLE_CONFIG } from './treetable.token';
 
 /**
- * Presentation logic for `CngxTreetable`. Applied as a `hostDirective` so
- * that all inputs and outputs are bound directly on the host element.
+ * Brain directive for the treetable family. Owns every piece of state the
+ * `<cngx-treetable>` skin needs to render and never touches the DOM itself.
  *
- * The presenter owns:
- * - tree flattening and visible-node filtering
- * - expand/collapse state (uncontrolled **and** controlled via `expandedIds`)
- * - row selection via CDK `SelectionModel`
- * - keyboard navigation state (`focusedNodeId`)
+ * **Composition.** Applied as a `hostDirective` on `CngxTreetable`, with
+ * all inputs and outputs forwarded onto the wrapper's host element. The
+ * directive selector (`[cngxTreetablePresenter]`) is documentation only -
+ * consumers bind `<cngx-treetable [tree]="..." (nodeClicked)="...">` and
+ * never see this class name in their templates. Custom skins that compose
+ * this directive via `hostDirectives` inherit the same input/output
+ * surface for free.
+ *
+ * **What the presenter owns.**
+ * - Tree flattening via {@link flattenTree} and visible-node filtering
+ *   via {@link isNodeVisible}. Both run as memoised computeds against
+ *   the `tree` input plus the live `expandedIds` set.
+ * - Expand/collapse state, with controlled-vs-uncontrolled dual mode:
+ *   when `expandedIds` is bound it wins; otherwise an internal
+ *   `linkedSignal` seeded by {@link getInitialExpandedIds} drives it.
+ * - Row selection routed through CDK's `SelectionModel`, kept in sync
+ *   with an optional controlled `selectedIds` input through two `effect`s
+ *   that break the self-trigger cycle with `untracked`.
+ * - Keyboard navigation state via the `focusedNodeId` signal (the
+ *   *logical* focus row, distinct from `document.activeElement`).
+ * - Resolved column list including the synthetic `_expand` column and
+ *   the optional `_select` checkbox column.
+ *
+ * **Async-state binding.** When the optional `state` input is bound to
+ * a {@link CngxAsyncState}, the `isLoading` / `isRefreshing` / `isBusy`
+ * / `isEmpty` / `error` computeds delegate to it. When unbound, those
+ * computeds fall back to local-only defaults (`isEmpty` becomes
+ * "no visible rows", everything else is `false`/`null`).
  *
  * @typeParam T - The shape of the data value carried by each tree node.
  */
@@ -129,35 +152,69 @@ export class CngxTreetablePresenter<T = unknown> {
   readonly trackBy = input<(node: FlatNode<T>) => unknown>((node) => node.id);
 
   /**
-   * Bind an async state — drives `aria-busy`, `isLoading`, and `error` from a single source.
-   * When set, the treetable shows skeleton/error/empty states based on the async lifecycle.
+   * Bind an async state so the treetable's loading / refreshing / empty /
+   * error computeds delegate to one source of truth. The cascade:
+   *
+   * - `isLoading` mirrors `state.isFirstLoad()`
+   * - `isRefreshing` mirrors `state.isRefreshing()`
+   * - `isBusy` mirrors `state.isBusy()`
+   * - `isEmpty` mirrors `state.isEmpty()`, falling back to "no visible
+   *   rows" when the state reports unknown
+   * - `error` mirrors `state.error()`
+   *
+   * When unbound, those computeds fall back to local defaults: `isEmpty`
+   * still works against the visible-nodes count, the loading flags read
+   * `false`, `error` reads `null`. Bind this when the data flow already
+   * carries an `injectAsyncState` or `createManualState` source - skip
+   * it when the consumer is fine with the local-only fallback.
+   *
+   * ```html
+   * <cngx-treetable [tree]="data()" [state]="loadState" />
+   * ```
    */
   readonly state = input<CngxAsyncState<unknown> | undefined>(undefined);
 
-  /** Emitted when the user clicks a row or activates it via keyboard. */
+  /**
+   * Fires once per row activation, whether by mouse click or by keyboard
+   * (`Enter`/`Space` while the row holds logical focus). Carries the full
+   * {@link FlatNode} so listeners can read depth, parent chain, raw value,
+   * or hasChildren without re-resolving the id against the tree.
+   */
   readonly nodeClicked = output<FlatNode<T>>();
 
-  /** Emitted when a node transitions from collapsed to expanded. */
+  /**
+   * Fires when a node transitions from collapsed to expanded. Pairs with
+   * `expandedIdsChange`, which carries the post-transition full id set;
+   * `nodeExpanded` carries the specific node that flipped, useful when
+   * the consumer wants to react to that one row rather than diff the set.
+   */
   readonly nodeExpanded = output<FlatNode<T>>();
 
-  /** Emitted when a node transitions from expanded to collapsed. */
+  /**
+   * Fires when a node transitions from expanded to collapsed. Sibling
+   * of `nodeExpanded`; same fire-once-per-transition contract.
+   */
   readonly nodeCollapsed = output<FlatNode<T>>();
 
   /**
-   * Emitted after every expand/collapse toggle with the new full set of
-   * expanded IDs. Use this to synchronise an external `expandedIds` binding.
+   * Fires after every expand/collapse toggle with the full post-toggle
+   * id set. Use this for two-way `[(expandedIds)]` binding; use
+   * `nodeExpanded`/`nodeCollapsed` when you only need the one node that
+   * changed.
    */
   readonly expandedIdsChange = output<ReadonlySet<string>>();
 
   /**
-   * Emitted whenever the selection changes. The value is an array of the
-   * currently selected node IDs.
+   * Fires after every selection change with the array snapshot of the
+   * currently selected ids. This output is the array-shaped peer of
+   * `selectedIdsChange` (Set-shaped). Pick whichever shape your handler
+   * needs - both carry the same post-change selection.
    */
   readonly selectionChanged = output<readonly string[]>();
 
   /**
-   * Emitted after every selection change with the new full set of selected IDs.
-   * Use this to synchronise an external `selectedIds` binding:
+   * Fires after every selection change with the full post-change id set.
+   * Use this for two-way `[(selectedIds)]` binding.
    *
    * ```html
    * <cngx-treetable
@@ -169,7 +226,12 @@ export class CngxTreetablePresenter<T = unknown> {
 
   private readonly config = inject(CNGX_TREETABLE_CONFIG);
 
-  /** All nodes in the tree flattened to a single array, depth-first. */
+  /**
+   * Every node in the `tree` input flattened to a single depth-first
+   * array. Each entry carries the resolved id, depth, hasChildren flag,
+   * and parent chain. Memoised against `tree` + `nodeId` so consumers
+   * can read it as often as templates need without re-walking the tree.
+   */
   readonly flatNodes = computed(() => flattenTree(this.tree(), this.nodeId()));
 
   private readonly expandedIdsState = linkedSignal<FlatNode<T>[], ReadonlySet<string>>({
@@ -184,37 +246,68 @@ export class CngxTreetablePresenter<T = unknown> {
    */
   readonly expandedIds = computed(() => this.expandedIdsInput() ?? this.expandedIdsState());
 
-  /** The subset of `flatNodes` that should be rendered (all ancestors expanded). */
+  /**
+   * The subset of `flatNodes` whose ancestor chain is fully expanded
+   * (and is therefore renderable). Recomputes on every `expandedIds`
+   * change; the resulting array is what the template iterates over with
+   * the CDK table's `[trackBy]` hook.
+   */
   readonly visibleNodes = computed(() =>
     this.flatNodes().filter((n) => isNodeVisible(n, this.expandedIds())),
   );
 
-  /** `true` when there are no visible nodes to render (or state reports empty). */
+  /**
+   * `true` when the table has nothing to render. Mirrors `state.isEmpty()`
+   * when an async state is bound; otherwise falls back to "no visible
+   * rows". Drives the projected `*cngxEmpty` slot.
+   */
   readonly isEmpty = computed(() => this.state()?.isEmpty() ?? this.visibleNodes().length === 0);
 
-  /** `true` during initial data load (first load from async state). */
+  /** `true` during the first load of a bound async state. `false` when no state is bound. */
   readonly isLoading = computed(() => this.state()?.isFirstLoad() ?? false);
 
-  /** `true` when the table is refreshing data (not first load). */
+  /** `true` while a bound async state is refreshing (i.e. loading but not first-load). */
   readonly isRefreshing = computed(() => this.state()?.isRefreshing() ?? false);
 
-  /** `true` when loading or refreshing. */
+  /** `true` while a bound async state is loading or refreshing. Drives the host's `aria-busy` binding. */
   readonly isBusy = computed(() => this.state()?.isBusy() ?? false);
 
-  /** Error from the async state, or `null`. */
+  /** The current error from a bound async state, or `null` (also `null` when no state is bound). */
   readonly error = computed(() => this.state()?.error() ?? null);
 
-  /** Column keys derived from the first node's primitive-valued properties, or from `options.customColumnOrder`. */
+  /**
+   * Data-column keys for the current tree. Resolves to
+   * `options.customColumnOrder` when set, otherwise extracts the
+   * primitive-valued keys of the first node's value via
+   * {@link extractColumns}. Object-valued or function-valued keys are
+   * dropped so the table never tries to render `[object Object]`.
+   */
   readonly columns = computed(() => extractColumns(this.tree(), this.options()));
 
-  /** All column keys including the leading `_expand` column and optional `_select` column. */
+  /**
+   * Full column id list passed to the CDK table's `cdkHeaderRowDef` /
+   * `cdkRowDef`. Layout:
+   *
+   * `[ '_select'?, '_expand', ...data-columns ]`
+   *
+   * - `_select` only appears when `selectionMode !== 'none'` AND
+   *   `showCheckboxes` is `true`.
+   * - `_expand` always appears as the first non-utility column - it
+   *   carries the indent guide and the expand toggle.
+   */
   readonly allColumns = computed(() => [
     ...(this.showCheckboxes() && this.selectionMode() !== 'none' ? ['_select'] : []),
     '_expand',
     ...this.columns(),
   ]);
 
-  /** Merged options: application-wide config overridden by instance `options`. */
+  /**
+   * Effective per-instance options: application-wide {@link TreetableConfig}
+   * (from `provideTreetable(...)`) overlaid by the per-instance `options`
+   * input. Use this when a consumer needs to read the resolved option
+   * (instance wins over app default) instead of re-implementing the
+   * cascade.
+   */
   readonly resolvedOptions = computed<TreetableOptions<T>>(() => ({
     ...this.config,
     ...this.options(),
@@ -269,8 +362,15 @@ export class CngxTreetablePresenter<T = unknown> {
   readonly trackByFn: TrackByFunction<FlatNode<T>> = (_, node) => this.trackBy()(node);
 
   /**
-   * The ID of the currently keyboard-focused row, or `null` when no row has
-   * been focused yet. Updated by `handleRowClick` and `handleKeyDown`.
+   * Logical focus tracker - the id of the row that should be styled as
+   * focused, decoupled from `document.activeElement`. Updated by
+   * `handleRowClick` (on click activation) and `handleKeyDown` (on arrow
+   * navigation, Home/End, ArrowLeft jump-to-parent).
+   *
+   * Templates apply `:focus-visible`-style chrome based on this signal,
+   * so the focus ring renders the same way whether the user reached the
+   * row by mouse or by keyboard. `null` while no row has ever been
+   * focused.
    */
   readonly focusedNodeId = signal<string | null>(null);
 
@@ -325,16 +425,21 @@ export class CngxTreetablePresenter<T = unknown> {
   }
 
   /**
-   * Returns `true` when the node with the given `id` is currently selected.
-   * Reactive: reads from the `selectedIds` signal so templates update automatically.
+   * Predicate for "is this id in the current selection?". Reads the
+   * `selectedIds` signal so callers inside templates (e.g. `[checked]`
+   * bindings on the per-row checkbox) re-evaluate automatically when
+   * the selection changes.
    */
   isSelected(id: string): boolean {
     return this.selectedIds().has(id);
   }
 
   /**
-   * Toggles the expand/collapse state of `node`.
-   * Emits `nodeExpanded` or `nodeCollapsed` and `expandedIdsChange` accordingly.
+   * Flip the expand/collapse state of `node`. Writes the new id set into
+   * the internal `expandedIdsState`, then emits exactly one of
+   * `nodeExpanded`/`nodeCollapsed` plus `expandedIdsChange` (always).
+   * Safe to call in controlled mode - the consumer sees the change via
+   * `expandedIdsChange` and pushes it back through `[(expandedIds)]`.
    */
   toggle(node: FlatNode<T>): void {
     const current = this.expandedIds();
@@ -352,8 +457,12 @@ export class CngxTreetablePresenter<T = unknown> {
   }
 
   /**
-   * Toggles the selection state of `node` according to the current `selectionMode`.
-   * No-op when `selectionMode` is `'none'`.
+   * Flip the selection state of `node` against the current
+   * `selectionMode`. CDK's `SelectionModel` enforces the cardinality:
+   * `single` clears the prior selection before adding, `multi` adds or
+   * removes without touching siblings. No-op in `'none'` mode. The
+   * model's `changed` subscription fans the result out as
+   * `selectionChanged` (array) and `selectedIdsChange` (Set).
    */
   toggleSelection(node: FlatNode<T>): void {
     if (this.selectionMode() === 'none') {
@@ -363,8 +472,11 @@ export class CngxTreetablePresenter<T = unknown> {
   }
 
   /**
-   * Selects all visible nodes when not all are selected; deselects all otherwise.
-   * Only meaningful in `'multi'` mode.
+   * Visibility-bounded select-all toggle. If every currently *visible*
+   * row is selected, clears the selection. Otherwise selects every
+   * currently visible row - rows hidden inside a collapsed parent stay
+   * untouched. Only acts in `'multi'` mode; no-op in `'single'` or
+   * `'none'`. Drives the header checkbox's click handler.
    */
   toggleAll(): void {
     if (this.selectionMode() !== 'multi') {
@@ -378,8 +490,11 @@ export class CngxTreetablePresenter<T = unknown> {
   }
 
   /**
-   * Handles a row activation (click or keyboard Enter/Space).
-   * Sets `focusedNodeId`, emits `nodeClicked`, and calls `toggleSelection`.
+   * Single entry point for row activation, from any modality (mouse
+   * click, `Enter`, `Space`). Three-step sequence in this order:
+   * 1. Promote `node.id` to `focusedNodeId` so the focus ring follows.
+   * 2. Emit `nodeClicked` for consumer-level activation handlers.
+   * 3. Delegate to `toggleSelection`, which is a no-op in `'none'` mode.
    */
   handleRowClick(node: FlatNode<T>): void {
     this.focusedNodeId.set(node.id);
