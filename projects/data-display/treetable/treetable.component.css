@@ -1,13 +1,13 @@
 /**
  * @overview
- * Default visuals for `CngxTreetable` — the CDK-based variant.
+ * Default visuals for `CngxTreetable` - the CDK-based variant.
  * Table-grid layout for an expandable, selectable tree. Indent is
  * driven by `--cngx-row-depth` (set per row by the renderer)
  * multiplied by `--cngx-treetable-indent-size`. The narrow mobile
  * breakpoint shrinks the indent step and bumps tap-target sizing
  * on the expand toggle.
  *
- * Surface defaults stay in the cool-neutral 250-hue band — header,
+ * Surface defaults stay in the cool-neutral 250-hue band -header,
  * row borders, hover, and selected backgrounds are all near-grays
  * with a hint of cool. Focus ring tracks `--cngx-color-primary`
  * (Ember in the default theme). Pair with
@@ -321,7 +321,7 @@
   }
 
   /**
-   * Body cell block padding below the narrow breakpoint — bigger
+   * Body cell block padding below the narrow breakpoint -bigger
    * tap target.
    * @group Variant / Narrow
    */
@@ -374,7 +374,7 @@
   }
 
   /**
-   * Toggle button padding below the narrow breakpoint — bigger
+   * Toggle button padding below the narrow breakpoint -bigger
    * tap target (≥ 44 px combined).
    * @group Variant / Narrow
    */
@@ -394,7 +394,7 @@
     initial-value: 1rem;
   }
 
-  /* Delegating tokens — border / text / focus-ring track the
+  /* Delegating tokens -border / text / focus-ring track the
    * foundation palette so a dark-mode swap on `--cngx-color-*`
    * cascades through the treetable host. The @property
    * initial-values above would otherwise shadow the var() chain. */
@@ -406,7 +406,7 @@
     --cngx-treetable-focus-ring: var(--cngx-color-primary);
   }
 
-  /* Component-local cool-neutral surface tokens — flipped per color
+  /* Component-local cool-neutral surface tokens -flipped per color
    * scheme. Header / hover / selected sit slightly above
    * `--cngx-color-surface` (light: oklch 0.98–0.95, dark: 0.24–0.28)
    * so rows stay distinguishable from the table surface in both
