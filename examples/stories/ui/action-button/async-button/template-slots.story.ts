@@ -1,10 +1,10 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxActionButton: template slots',
+  title: 'CngxActionButton: Template slots',
   subtitle: 'Project <code>cngxPending</code>, <code>cngxSucceeded</code>, <code>cngxFailed</code> templates for full control. The <code>cngxFailed</code> template receives the error as <code>let-err</code>.',
   description: 'Slot-projection escape hatch: replace each terminal-state template with custom markup (Material spinner in the pending slot, retry prompt with the error message in the failed slot). Use when string labels are not enough.',
-  level: 'molecule',
+  level: 'organism',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
   focus: ['async-state', 'composition', 'visual-variants'],
