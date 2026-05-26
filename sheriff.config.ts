@@ -7,8 +7,6 @@
  *   lib:X       utils|core|common|forms|data-display|ui|testing|examples|e2e
  *   entry:Y     name of the secondary entry (or 'src' for the primary)
  *   scope:Z     lib | app | test
- *   grant:*     ad-hoc allow tokens (currently only `grant:material` on the
- *               data-display/mat-treetable secondary entry)
  *
  * The dependency direction is enforced via per-lib rules — peers at the same
  * level (forms <-> data-display) are forbidden,
@@ -77,15 +75,6 @@ export const config: SheriffConfig = {
       'level:3',
       `entry:${entry}`,
       'scope:lib',
-    ],
-    // mat-treetable carries grant:material to mark its Material exception
-    // (the actual ban on @angular/material lives in eslint.config.js).
-    'projects/data-display/mat-treetable': [
-      'lib:data-display',
-      'level:3',
-      'entry:mat-treetable',
-      'scope:lib',
-      'grant:material',
     ],
     'projects/data-display': ['lib:data-display', 'level:3', 'entry:primary', 'scope:lib'],
     'projects/data-display/<entry>': ({ entry }) => [
