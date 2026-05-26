@@ -11,15 +11,12 @@ You need to display structured data - rows, columns, hierarchy, expansion - with
 | Entry | What it ships |
 |-|-|
 | `@cngx/data-display/treetable` | CDK-only treetable - lightweight, custom-theme friendly. |
-| `@cngx/data-display/mat-treetable` | Material-themed twin. Same brain, Material `<mat-table>` skin. |
 
 The primary `@cngx/data-display` entry exports only the version constant. There is nothing to import from here in application code - pick a secondary entry.
 
 ## Mental model
 
-This is the canonical home of the **dual-rendering pattern** in cngx. A single presenter directive owns all state and derivations; two thin skin components apply the presenter via `hostDirectives` and render either the CDK or the Material template. From the consumer's side the two look identical - same inputs, same outputs, same behaviour. The choice is the import path and the bundle cost.
-
-This pattern exists for one reason: large feature components have long lifetimes, and consumers should not have to fork the library to swap one toolkit for another. The brain stays linked, the skin is replaceable.
+A single presenter directive owns all state and derivations; the thin skin component applies the presenter via `hostDirectives` and renders the CDK template. The brain-skin split is the seam: a future Material twin (or any other renderer) would compose the same presenter from its own host directive without forking the state machine.
 
 ## Companion concepts
 

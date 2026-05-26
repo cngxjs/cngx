@@ -33,7 +33,7 @@ export interface FlatNode<T> {
 }
 
 /**
- * Per-instance display options for `CngxTreetable` and `CngxMaterialTreetable`.
+ * Per-instance display options for `CngxTreetable`.
  * These override the application-wide defaults provided via {@link provideTreetable}.
  *
  * @typeParam T - The shape of the data value; used to constrain `customColumnOrder`.

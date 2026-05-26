@@ -1,5 +1,4 @@
 export { CngxTreetableRow } from './treetable-row.directive';
-export { CngxTreetablePresenter } from './treetable-presenter';
 export { CngxTreetable } from './treetable.component';
 export {
   provideTreetable,

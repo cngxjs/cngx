@@ -1,0 +1,138 @@
+<header class="cngx-tt-demo__header">
+  <h1>Treetable showcase</h1>
+  <p>
+    Search, sort, select, expand. The activity log below mirrors every output
+    the presenter emits.
+  </p>
+</header>
+
+<section class="cngx-tt-demo__toolbar" aria-label="Treetable controls">
+  <label>
+    Search
+    <input
+      type="search"
+      [value]="search()"
+      (input)="search.set(asValue($event))"
+      placeholder="Type to filter rows"
+    />
+  </label>
+
+  <label>
+    Sort by
+    <select
+      [value]="sortField()"
+      (change)="sortField.set(asSortField(asValue($event)))"
+    >
+      <option value="name">name</option>
+      <option value="hours">hours</option>
+      <option value="code">code</option>
+    </select>
+  </label>
+
+  <label>
+    Direction
+    <select
+      [value]="sortDir()"
+      (change)="sortDir.set(asSortDir(asValue($event)))"
+    >
+      <option value="asc">ascending</option>
+      <option value="desc">descending</option>
+    </select>
+  </label>
+
+  <label>
+    Selection mode
+    <select
+      [value]="selectionMode()"
+      (change)="selectionMode.set(asSelectionMode(asValue($event)))"
+    >
+      <option value="none">none</option>
+      <option value="single">single</option>
+      <option value="multi">multi</option>
+    </select>
+  </label>
+
+  <button type="button" (click)="expandedIds.set(allIds())">
+    Expand all
+  </button>
+  <button type="button" (click)="expandedIds.set(rootIds())">
+    Root only
+  </button>
+  <button type="button" (click)="clearSelection()">Clear selection</button>
+</section>
+
+<cngx-treetable
+  cngxSort
+  #sort="cngxSort"
+  [cngxSortActive]="sortField()"
+  [cngxSortDirection]="sortDir()"
+  (sortChange)="onSortChange($event)"
+  [tree]="sortedTree()"
+  [options]="options"
+  [nodeId]="nodeId"
+  [(expandedIds)]="expandedIds"
+  [(selectedIds)]="selectedIds"
+  [selectionMode]="selectionMode()"
+  [showCheckboxes]="selectionMode() !== 'none'"
+  (nodeClicked)="log('clicked', $event.id)"
+  (nodeExpanded)="log('expanded', $event.id)"
+  (nodeCollapsed)="log('collapsed', $event.id)"
+  (selectionChanged)="log('selection', $event.join(', ') || '(empty)')"
+>
+  <ng-template [cngxCell]="'status'" let-node>
+    <span class="cngx-tt-demo__badge" [attr.data-status]="node.value.status">
+      {{ node.value.status }}
+    </span>
+  </ng-template>
+
+  <ng-template [cngxHeader]="'name'">
+    <button
+      type="button"
+      class="cngx-tt-demo__sort-btn"
+      cngxSortHeader="name"
+      [cngxSortRef]="sort"
+    >
+      Name
+    </button>
+  </ng-template>
+
+  <ng-template [cngxHeader]="'hours'">
+    <button
+      type="button"
+      class="cngx-tt-demo__sort-btn"
+      cngxSortHeader="hours"
+      [cngxSortRef]="sort"
+    >
+      Hours
+    </button>
+  </ng-template>
+
+  <ng-template [cngxHeader]="'priority'">
+    Priority
+    <small>low / medium / high</small>
+  </ng-template>
+
+  <ng-template cngxEmpty>
+    <p>
+      No rows match "{{ search() }}". Clear the search to see the full tree.
+    </p>
+  </ng-template>
+</cngx-treetable>
+
+<section class="cngx-tt-demo__events" aria-label="Activity log">
+  <h2>Activity log</h2>
+  @if (events().length === 0) {
+    <p class="cngx-tt-demo__events-empty">
+      No events yet. Click a row, expand a node, or toggle a checkbox.
+    </p>
+  } @else {
+    <ol>
+      @for (entry of events(); track $index) {
+        <li>
+          <code>{{ entry.kind }}</code>
+          <span>{{ entry.detail }}</span>
+        </li>
+      }
+    </ol>
+  }
+</section>

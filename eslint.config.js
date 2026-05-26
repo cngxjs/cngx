@@ -134,11 +134,7 @@ module.exports = tseslint.config(
         },
     },
     {
-        files: [
-            'projects/common/**/*.ts',
-            'projects/data-display/treetable/**/*.ts',
-            'projects/data-display/*.ts',
-        ],
+        files: ['projects/common/**/*.ts', 'projects/data-display/**/*.ts'],
         rules: {
             'no-restricted-imports': [
                 'error',
@@ -146,7 +142,7 @@ module.exports = tseslint.config(
                     patterns: [
                         {
                             group: ['@angular/material', '@angular/material/**'],
-                            message: '@cngx/common and @cngx/data-display (excluding mat-treetable) must not depend on @angular/material.',
+                            message: '@cngx/common and @cngx/data-display must not depend on @angular/material.',
                         },
                     ],
                 },

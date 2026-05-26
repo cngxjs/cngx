@@ -78,7 +78,7 @@ Components that accept `[state]`:
 | Loading scaffolds        | `cngx-skeleton`, `cngx-loading-overlay`, `cngx-loading-indicator`, `cngx-empty-state`                                      |
 | Async content containers | `cngx-async-container`, `*cngxAsync`, `cngx-card-grid`                                                                     |
 | Overlays                 | `cngx-popover-panel`, `dialog[cngxDialog]`                                                                                 |
-| Tables                   | `cngx-treetable`, `cngx-mat-treetable`                                                                                     |
+| Tables                   | `cngx-treetable`                                                                                                           |
 | Form controls            | `cngx-select`, `cngx-multi-select`, `cngx-combobox`, `cngx-typeahead`, `cngx-tree-select`, `cngx-reorderable-multi-select` |
 | Recycler                 | `injectRecycler`                                                                                                           |
 

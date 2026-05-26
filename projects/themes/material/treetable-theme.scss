@@ -1,9 +1,7 @@
 @use '@angular/material' as mat;
 
-// Material bridge for CngxTreetable (the CDK variant). Mirrors what
-// mat-treetable-theme.scss does for the Material variant, but resolves
-// onto Material's --mat-sys-* surfaces rather than the
-// --cngx-mat-treetable-* Material-bridge namespace.
+// Material bridge for CngxTreetable. Resolves the treetable surface
+// variables onto Material's --mat-sys-* tokens.
 //
 //   @use '@cngx/themes/material/treetable-theme' as treetable;
 //   html { @include treetable.theme($theme); }

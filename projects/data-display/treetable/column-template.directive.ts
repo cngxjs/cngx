@@ -5,7 +5,7 @@ import type { CngxCellTplContext } from './models';
  * Marks an `<ng-template>` as a custom cell template for a named column.
  * The template context is typed as {@link CngxCellTplContext}.
  *
- * Apply to an `<ng-template>` inside `<cngx-treetable>` or `<cngx-mat-treetable>`:
+ * Apply to an `<ng-template>` inside `<cngx-treetable>`:
  *
  * ```html
  * <cngx-treetable [tree]="tree">
@@ -21,7 +21,12 @@ import type { CngxCellTplContext } from './models';
 export class CngxCellTpl<T = unknown> {
   /** The column key this template replaces. Bound via the `cngxCell` attribute. */
   readonly column = input.required<string>({ alias: 'cngxCell' });
-  /** @internal */
+  /**
+   * The projected `<ng-template>` reference, typed against
+   * {@link CngxCellTplContext}. Read by `CngxTreetable` via
+   * `contentChildren(CngxCellTpl)` and routed to the matching CDK
+   * column - consumers typically never touch this directly.
+   */
   readonly template = inject(TemplateRef<CngxCellTplContext<T>>);
 }
 
@@ -40,7 +45,11 @@ export class CngxCellTpl<T = unknown> {
 export class CngxHeaderTpl {
   /** The column key whose header this template replaces. */
   readonly column = input.required<string>({ alias: 'cngxHeader' });
-  /** @internal */
+  /**
+   * The projected `<ng-template>` reference. Read by `CngxTreetable`
+   * via `contentChildren(CngxHeaderTpl)` and rendered into the matching
+   * column's header cell.
+   */
   readonly template = inject(TemplateRef<void>);
 }
 
@@ -58,6 +67,10 @@ export class CngxHeaderTpl {
  */
 @Directive({ selector: 'ng-template[cngxEmpty]', standalone: true })
 export class CngxEmptyTpl {
-  /** @internal */
+  /**
+   * The projected `<ng-template>` reference. Read by `CngxTreetable`
+   * via `contentChild(CngxEmptyTpl)` and rendered in place of the
+   * default "No data" message when `isEmpty()` is true.
+   */
   readonly template = inject(TemplateRef<void>);
 }

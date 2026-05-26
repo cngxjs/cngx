@@ -4,7 +4,6 @@ import { By } from '@angular/platform-browser';
 import { beforeEach, describe, expect, it } from 'vitest';
 import type { FlatNode, Node } from './models';
 import { CngxTreetable } from './treetable.component';
-import { CngxTreetablePresenter } from './treetable-presenter';
 
 interface Item {
   name: string;
@@ -25,12 +24,10 @@ class TestHost {
   clicked: FlatNode<Item> | null = null;
 }
 
-function getPresenter<T>(
+function getTreetable<T>(
   fixture: ReturnType<typeof TestBed.createComponent<TestHost>>,
-): CngxTreetablePresenter<T> {
-  return fixture.debugElement
-    .query(By.directive(CngxTreetable))
-    .injector.get(CngxTreetablePresenter) as CngxTreetablePresenter<T>;
+): CngxTreetable<T> {
+  return fixture.debugElement.query(By.directive(CngxTreetable)).componentInstance as CngxTreetable<T>;
 }
 
 describe('CngxTreetable', () => {
@@ -54,10 +51,10 @@ describe('CngxTreetable', () => {
   it('hides children when parent node is toggled (collapsed)', () => {
     const fixture = TestBed.createComponent(TestHost);
     fixture.detectChanges();
-    const presenter = getPresenter<Item>(fixture);
+    const treetable = getTreetable<Item>(fixture);
 
-    const root = presenter.flatNodes()[0];
-    presenter.toggle(root);
+    const root = treetable.flatNodes()[0];
+    treetable.toggle(root);
     fixture.detectChanges();
 
     const rows = fixture.debugElement.queryAll(By.css('cdk-row'));
@@ -67,12 +64,12 @@ describe('CngxTreetable', () => {
   it('re-expands children after a second toggle', () => {
     const fixture = TestBed.createComponent(TestHost);
     fixture.detectChanges();
-    const presenter = getPresenter<Item>(fixture);
+    const treetable = getTreetable<Item>(fixture);
 
-    const root = presenter.flatNodes()[0];
-    presenter.toggle(root);
+    const root = treetable.flatNodes()[0];
+    treetable.toggle(root);
     fixture.detectChanges();
-    presenter.toggle(root);
+    treetable.toggle(root);
     fixture.detectChanges();
 
     const rows = fixture.debugElement.queryAll(By.css('cdk-row'));
@@ -91,8 +88,8 @@ describe('CngxTreetable', () => {
   it('extracts columns from node value by default', () => {
     const fixture = TestBed.createComponent(TestHost);
     fixture.detectChanges();
-    const presenter = getPresenter<Item>(fixture);
-    expect(presenter.columns()).toEqual(['name', 'age']);
+    const treetable = getTreetable<Item>(fixture);
+    expect(treetable.columns()).toEqual(['name', 'age']);
   });
 
   it('re-initialises expanded state when tree input changes', () => {

@@ -3,13 +3,15 @@ import { CngxHoverable } from '@cngx/common';
 import type { FlatNode } from './models';
 
 /**
- * Row directive applied to every rendered table row in both `CngxTreetable` and
- * `CngxMaterialTreetable`. Handles depth-based CSS indentation, hover highlight,
- * and selection styling.
+ * Row directive applied to every rendered table row in `CngxTreetable`.
+ * Handles depth-based CSS indentation, hover highlight, and selection
+ * styling.
  *
  * Sets the `--cngx-row-depth` CSS custom property on the host element so that
  * cell padding can drive indentation via `calc()` in component stylesheets.
- *
+ * ```html
+ * <div cngxTreetableRow [node]="node" [highlight]="highlight"></div>
+ * ```
  * @typeParam T - The data type of the tree nodes.
  */
 @Directive({
@@ -33,7 +35,7 @@ export class CngxTreetableRow<T = unknown> {
   readonly highlight = input(false);
   /**
    * When `true`, applies the `cngx-treetable__row--selected` CSS class.
-   * Driven by the selection model in {@link CngxTreetablePresenter}.
+   * Driven by the selection model in {@link CngxTreetable}.
    * @defaultValue `false`
    */
   readonly selected = input(false);

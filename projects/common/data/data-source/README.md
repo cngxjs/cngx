@@ -204,17 +204,17 @@ Use this to show skeleton rows during load, error overlay on failure, loading ba
 - `aria-label` on sort headers
 - Error announcements via screen reader region
 
-Example with `<cngx-mat-treetable>`:
+Example with `<cngx-treetable>`:
 
 ```html
-<cngx-mat-treetable
+<cngx-treetable
   [dataSource]="dataSource"
   [loading]="dataSource.isLoading()"
   [error]="dataSource.error()"
   [attr.aria-busy]="dataSource.isBusy()"
 >
   <!-- ARIA roles handled by component -->
-</cngx-mat-treetable>
+</cngx-treetable>
 ```
 
 ## Composition
