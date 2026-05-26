@@ -5,7 +5,7 @@ import type { CngxCellTplContext } from './models';
  * Marks an `<ng-template>` as a custom cell template for a named column.
  * The template context is typed as {@link CngxCellTplContext}.
  *
- * Apply to an `<ng-template>` inside `<cngx-treetable>` or `<cngx-mat-treetable>`:
+ * Apply to an `<ng-template>` inside `<cngx-treetable>`:
  *
  * ```html
  * <cngx-treetable [tree]="tree">

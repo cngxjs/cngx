@@ -9,7 +9,7 @@ CNGX is organized into five levels. Each level has a specific dependency budget,
 | 0     | `@cngx/utils`                       | Framework-agnostic utilities. No Angular dependency. Pure functions, types, tree helpers, RxJS interop helpers.                                                                                                             |
 | 1     | `@cngx/core`                        | Angular-aware primitives that do not render. DI tokens, coercion helpers, async state machine, transition tracker, selection controller, key combos.                                                                        |
 | 2     | `@cngx/common`                      | Atoms and molecules. Single-responsibility directives (a11y, interactive, popover, display, card, data, dialog, layout, chart, tabs, stepper). Never imports `@angular/material`.                                           |
-| 3     | `@cngx/forms`, `@cngx/data-display` | Organisms in a feature domain. Forms organisms (select family, field bridges, validators). Data-display organisms (treetable). CDK is allowed; Material is allowed only in `mat-*` siblings (`data-display/mat-treetable`). |
+| 3     | `@cngx/forms`, `@cngx/data-display` | Organisms in a feature domain. Forms organisms (select family, field bridges, validators). Data-display organisms (treetable). CDK is allowed; Material is forbidden at this level. |
 | 4     | `@cngx/ui`                          | Organisms that require Material. Layout (sidenav, container), overlay (popover panel), material wrappers (mat-stepper, mat-tabs), feedback shell (toasts, banners, alerts), empty-state, skeleton, speak.                   |
 
 ## Dependency direction
@@ -44,7 +44,7 @@ A library is defined by **what it hosts**, not by which framework toolkit it hap
 
 - **`@cngx/common`** - atoms, molecules, plus pure-CNGX organisms that do not fit a feature domain (e.g. `CngxMenu`, `CngxChart`). Never imports `@angular/material`.
 - **`@cngx/forms`** - Forms-related organisms (controls, validators, field bridges, the entire select family). CDK only.
-- **`@cngx/data-display`** - organisms whose job is to display tabular or hierarchical data. CDK + Material-twin (e.g. `treetable` / `mat-treetable`) is **one** strategy, not the lib's defining trait.
+- **`@cngx/data-display`** - organisms whose job is to display tabular or hierarchical data. Currently CDK-only (`treetable`); the lib is defined by *what it hosts*, not by which toolkit it picks.
 - **`@cngx/ui`** - organisms that genuinely require Material (overlay, layout, feedback shell, empty-state, material wrappers).
 
 A pure-CNGX data-display organism without a Material twin belongs in `@cngx/data-display`, not `@cngx/ui`. Conversely, a Forms-related organism that happens to wrap a Material control belongs in `@cngx/forms`, with the Material import isolated behind a bridge.

@@ -23,9 +23,8 @@ import {
 import { CNGX_TREETABLE_CONFIG } from './treetable.token';
 
 /**
- * Shared presentation logic for `CngxTreetable` (CDK) and `CngxMaterialTreetable`
- * (Angular Material). Applied as a `hostDirective` on both components so that all
- * inputs and outputs are bound directly on the host element.
+ * Presentation logic for `CngxTreetable`. Applied as a `hostDirective` so
+ * that all inputs and outputs are bound directly on the host element.
  *
  * The presenter owns:
  * - tree flattening and visible-node filtering

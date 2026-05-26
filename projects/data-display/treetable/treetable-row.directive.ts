@@ -3,9 +3,9 @@ import { CngxHoverable } from '@cngx/common';
 import type { FlatNode } from './models';
 
 /**
- * Row directive applied to every rendered table row in both `CngxTreetable` and
- * `CngxMaterialTreetable`. Handles depth-based CSS indentation, hover highlight,
- * and selection styling.
+ * Row directive applied to every rendered table row in `CngxTreetable`.
+ * Handles depth-based CSS indentation, hover highlight, and selection
+ * styling.
  *
  * Sets the `--cngx-row-depth` CSS custom property on the host element so that
  * cell padding can drive indentation via `calc()` in component stylesheets.
