@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxCard: Card with badge',
+  title: 'CngxCardBadge: Card with badge',
   subtitle:
     '<code>cngxCardBadge</code> positions any host element at a card corner. Works on <code>&lt;span&gt;</code>, <code>&lt;button&gt;</code>, <code>&lt;a&gt;</code>; a clickable badge on a button card needs <code>event.stopPropagation()</code> so the click stays on the badge instead of bubbling to the card.',
   description:
@@ -10,7 +10,7 @@ export const STORY: DemoSpec = {
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
   focus: ['visual-variants', 'a11y-pattern'],
-  apiComponents: ['CngxCard', 'CngxCardHeader', 'CngxCardTitle', 'CngxCardBody', 'CngxCardBadge'],
+  apiComponents: ['CngxCardBadge'],
   moduleImports: [
     "import { CngxCard, CngxCardHeader, CngxCardTitle, CngxCardBody, CngxCardBadge } from '@cngx/common/card';",
   ],

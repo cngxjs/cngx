@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxCardGrid: Empty state with reason',
+  title: 'CngxCardGridEmpty: Empty state with reason',
   subtitle:
     'Empty-state templates are matched by <code>[emptyReason]</code>. The grid picks the matching <code>cngxCardGridEmpty="<em>reason</em>"</code> template, so the same empty surface communicates different intents to the reader.',
   description:
@@ -10,7 +10,7 @@ export const STORY: DemoSpec = {
   audience: ['dev', 'design'],
   artifact: 'standalone',
   focus: ['visual-variants', 'composition'],
-  apiComponents: ['CngxCardGrid', 'CngxCardGridEmpty'],
+  apiComponents: ['CngxCardGridEmpty'],
   moduleImports: [
     "import { CngxCard, CngxCardGrid, CngxCardGridEmpty } from '@cngx/common/card';",
   ],

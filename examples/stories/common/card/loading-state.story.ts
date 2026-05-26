@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxCard: Loading state',
+  title: 'CngxCardSkeleton: Loading state',
   subtitle:
     '<code>[loading]="true"</code> paints <code>aria-busy</code> on the host and announces <em>Loading</em> via the card\'s SR live region. The <em>Replace with skeleton</em> toggle swaps the body for <code>&lt;cngx-card-skeleton&gt;</code>, comparing the ARIA-only path against a visual placeholder.',
   description:
@@ -10,13 +10,7 @@ export const STORY: DemoSpec = {
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
   focus: ['async-state', 'a11y-pattern'],
-  apiComponents: [
-    'CngxCard',
-    'CngxCardHeader',
-    'CngxCardTitle',
-    'CngxCardBody',
-    'CngxCardSkeleton',
-  ],
+  apiComponents: ['CngxCardSkeleton'],
   moduleImports: [
     "import { CngxCard, CngxCardHeader, CngxCardTitle, CngxCardBody, CngxCardSkeleton } from '@cngx/common/card';",
   ],

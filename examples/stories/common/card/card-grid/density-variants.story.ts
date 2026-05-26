@@ -10,7 +10,7 @@ export const STORY: DemoSpec = {
   audience: ['dev', 'design'],
   artifact: 'standalone',
   focus: ['visual-variants'],
-  apiComponents: ['CngxCard', 'CngxCardBody', 'CngxCardGrid'],
+  apiComponents: ['CngxCardGrid'],
   moduleImports: [
     "import { CngxCard, CngxCardBody, CngxCardGrid } from '@cngx/common/card';",
   ],

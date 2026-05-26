@@ -75,42 +75,6 @@ const DEFAULT_SUMMARY_ACCESSOR = <T>(d: T): number => Number(d as unknown);
  * fixed-dimension presets (inline sparkline at 80×24, etc.).
  */
 /**
- * <example-url>http://localhost:4200/primitives/async-state-machine-on-the-primitive</example-url>
- * <example-url>http://localhost:4200/primitives/combo-bars-moving-average-line</example-url>
- * <example-url>http://localhost:4200/primitives/line-area-threshold-band</example-url>
- * <example-url>http://localhost:4200/primitives/multi-series-line-axis-labels-legend</example-url>
- * <example-url>http://localhost:4200/primitives/responsive-fills-parent-width</example-url>
- * <example-url>http://localhost:4200/primitives/scatter-with-performance-zones</example-url>
- * <example-url>http://localhost:4200/primitives/time-series-with-threshold-zones</example-url>
- */
-/**
- * <example-url>http://localhost:4200/primitives/async-state-machine-on-the-primitive</example-url>
- * <example-url>http://localhost:4200/primitives/combo-bars-moving-average-line</example-url>
- * <example-url>http://localhost:4200/primitives/line-area-threshold-band</example-url>
- * <example-url>http://localhost:4200/primitives/multi-series-line-axis-labels-legend</example-url>
- * <example-url>http://localhost:4200/primitives/responsive-fills-parent-width</example-url>
- * <example-url>http://localhost:4200/primitives/scatter-with-performance-zones</example-url>
- * <example-url>http://localhost:4200/primitives/time-series-with-threshold-zones</example-url>
- */
-/**
- * <example-url>http://localhost:4200/primitives/async-state-machine-on-the-primitive</example-url>
- * <example-url>http://localhost:4200/primitives/combo-bars-moving-average-line</example-url>
- * <example-url>http://localhost:4200/primitives/line-area-threshold-band</example-url>
- * <example-url>http://localhost:4200/primitives/multi-series-line-axis-labels-legend</example-url>
- * <example-url>http://localhost:4200/primitives/responsive-fills-parent-width</example-url>
- * <example-url>http://localhost:4200/primitives/scatter-with-performance-zones</example-url>
- * <example-url>http://localhost:4200/primitives/time-series-with-threshold-zones</example-url>
- */
-/**
- * <example-url>http://localhost:4200/primitives/async-state-machine-on-the-primitive</example-url>
- * <example-url>http://localhost:4200/primitives/combo-bars-moving-average-line</example-url>
- * <example-url>http://localhost:4200/primitives/line-area-threshold-band</example-url>
- * <example-url>http://localhost:4200/primitives/multi-series-line-axis-labels-legend</example-url>
- * <example-url>http://localhost:4200/primitives/responsive-fills-parent-width</example-url>
- * <example-url>http://localhost:4200/primitives/scatter-with-performance-zones</example-url>
- * <example-url>http://localhost:4200/primitives/time-series-with-threshold-zones</example-url>
- */
-/**
  * <example-url>http://localhost:4200/#/common/chart/primitives/async-state-machine-on-the-primitive</example-url>
  * <example-url>http://localhost:4200/#/common/chart/primitives/combo-bars-moving-average-line</example-url>
  * <example-url>http://localhost:4200/#/common/chart/primitives/line-area-threshold-band</example-url>

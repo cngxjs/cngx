@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxCard: Interactive card with actions',
+  title: 'CngxCardActions: Interactive card with actions',
   subtitle:
     'Multiple independent actions live inside <code>[cngxCardActions]</code>. The card itself stays <code>role="article"</code>; the buttons own the interaction, so neither swallows the other\'s clicks.',
   description:
@@ -10,13 +10,7 @@ export const STORY: DemoSpec = {
   audience: ['dev', 'design'],
   artifact: 'standalone',
   focus: ['composition'],
-  apiComponents: [
-    'CngxCard',
-    'CngxCardHeader',
-    'CngxCardTitle',
-    'CngxCardBody',
-    'CngxCardActions',
-  ],
+  apiComponents: ['CngxCardActions'],
   moduleImports: [
     "import { CngxCard, CngxCardHeader, CngxCardTitle, CngxCardBody, CngxCardActions } from '@cngx/common/card';",
   ],

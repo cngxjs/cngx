@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxCard: Card with disclosure expand collapse',
+  title: 'CngxDisclosure: Card with disclosure expand collapse',
   subtitle:
     'The card header doubles as a disclosure trigger: click to expand or collapse the body. <code>cngxDisclosure</code> paints <code>aria-expanded</code> and <code>aria-controls</code>, the body sits behind the matching id and <code>@if</code>-mounts when opened.',
   description:
@@ -10,14 +10,7 @@ export const STORY: DemoSpec = {
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
   focus: ['composition', 'a11y-pattern'],
-  apiComponents: [
-    'CngxCard',
-    'CngxCardHeader',
-    'CngxCardTitle',
-    'CngxCardSubtitle',
-    'CngxCardBody',
-    'CngxDisclosure',
-  ],
+  apiComponents: ['CngxDisclosure'],
   moduleImports: [
     "import { CngxCard, CngxCardHeader, CngxCardTitle, CngxCardSubtitle, CngxCardBody } from '@cngx/common/card';",
     "import { CngxDisclosure } from '@cngx/common/interactive';",

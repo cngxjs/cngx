@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxCard: Card with expandable text',
+  title: 'CngxExpandableText: Card with expandable text',
   subtitle:
     'Long card body content wrapped in <code>&lt;cngx-expandable-text&gt;</code>: truncated to three lines by default with a slot-overridden <em>Read more</em> trigger that flips to <em>Show less</em>.',
   description:
@@ -10,14 +10,7 @@ export const STORY: DemoSpec = {
   audience: ['dev', 'design'],
   artifact: 'standalone',
   focus: ['composition', 'visual-variants'],
-  apiComponents: [
-    'CngxCard',
-    'CngxCardHeader',
-    'CngxCardTitle',
-    'CngxCardBody',
-    'CngxExpandableText',
-    'CngxExpandableToggle',
-  ],
+  apiComponents: ['CngxExpandableText', 'CngxExpandableToggle'],
   moduleImports: [
     "import { CngxCard, CngxCardHeader, CngxCardTitle, CngxCardBody } from '@cngx/common/card';",
     "import { CngxExpandableText, CngxExpandableToggle } from '@cngx/common/layout';",
