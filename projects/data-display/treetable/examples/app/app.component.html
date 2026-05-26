@@ -62,7 +62,12 @@
 </section>
 
 <cngx-treetable
-  [tree]="filteredAndSorted()"
+  cngxSort
+  #sort="cngxSort"
+  [cngxSortActive]="sortField()"
+  [cngxSortDirection]="sortDir()"
+  (sortChange)="onSortChange($event)"
+  [tree]="sortedTree()"
   [options]="options"
   [nodeId]="nodeId"
   [(expandedIds)]="expandedIds"
@@ -78,6 +83,28 @@
     <span class="cngx-tt-demo__badge" [attr.data-status]="node.value.status">
       {{ node.value.status }}
     </span>
+  </ng-template>
+
+  <ng-template [cngxHeader]="'name'">
+    <button
+      type="button"
+      class="cngx-tt-demo__sort-btn"
+      cngxSortHeader="name"
+      [cngxSortRef]="sort"
+    >
+      Name
+    </button>
+  </ng-template>
+
+  <ng-template [cngxHeader]="'hours'">
+    <button
+      type="button"
+      class="cngx-tt-demo__sort-btn"
+      cngxSortHeader="hours"
+      [cngxSortRef]="sort"
+    >
+      Hours
+    </button>
   </ng-template>
 
   <ng-template [cngxHeader]="'priority'">

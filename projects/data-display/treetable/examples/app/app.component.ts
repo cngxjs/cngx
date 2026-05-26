@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
 
+import { CngxSort, CngxSortHeader, type SortEntry } from '@cngx/common/data';
 import {
   CngxCellTpl,
   CngxEmptyTpl,
@@ -64,7 +65,7 @@ interface ActivityEntry {
   selector: 'app-root',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CngxTreetable, CngxCellTpl, CngxHeaderTpl, CngxEmptyTpl],
+  imports: [CngxTreetable, CngxCellTpl, CngxHeaderTpl, CngxEmptyTpl, CngxSort, CngxSortHeader],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css',
 })
@@ -88,13 +89,21 @@ export class AppComponent {
     highlightRowOnHover: true,
   };
 
-  protected readonly filteredAndSorted = computed<Node<ProjectNode>[]>(() => {
+  // Filter and sort are orthogonal atoms in cngx - the treetable renders,
+  // the consumer shapes. Each transform is its own computed; the [tree]
+  // binding consumes the final stage of the cascade.
+
+  protected readonly filteredTree = computed<Node<ProjectNode>[]>(() => {
     const term = this.search().trim();
-    const filtered = term
-      ? filterTree(PROJECT_TREE, (value) => nodeMatchesSearch(value, term))
-      : PROJECT_TREE;
-    return sortTree(filtered, this.sortField(), this.sortDir());
+    if (!term) {
+      return PROJECT_TREE;
+    }
+    return filterTree(PROJECT_TREE, (value) => nodeMatchesSearch(value, term));
   });
+
+  protected readonly sortedTree = computed<Node<ProjectNode>[]>(() =>
+    sortTree(this.filteredTree(), this.sortField(), this.sortDir()),
+  );
 
   protected readonly allIds = computed<ReadonlySet<string>>(() => {
     const ids = new Set<string>();
@@ -118,6 +127,20 @@ export class AppComponent {
 
   protected asValue(event: Event): string {
     return (event.target as HTMLInputElement | HTMLSelectElement).value;
+  }
+
+  // Sort state has one owner (the sortField/sortDir signals); the dropdown
+  // toolbar and the in-header cngxSortHeader buttons both feed into it.
+  // The CngxSort directive runs in controlled mode so the two writers stay
+  // in lockstep without an extra source of truth.
+  protected onSortChange(entry: SortEntry | undefined): void {
+    if (!entry) {
+      this.sortField.set('name');
+      this.sortDir.set('asc');
+      return;
+    }
+    this.sortField.set(entry.active as SortField);
+    this.sortDir.set(entry.direction);
   }
 
   protected asSortField(value: string): SortField {

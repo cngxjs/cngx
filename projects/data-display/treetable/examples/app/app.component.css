@@ -57,6 +57,42 @@
   background: var(--cngx-color-surface-alt, #f3f4f6);
 }
 
+.cngx-tt-demo__sort-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font: inherit;
+  font-weight: inherit;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  color: inherit;
+}
+
+.cngx-tt-demo__sort-btn:hover {
+  text-decoration: underline;
+}
+
+/* Arrow indicator driven by the state classes CngxSortHeader sets on
+   the host: cngx-sort-header--active / --asc / --desc. No template
+   glyphs needed - flip the icon entirely from CSS. */
+.cngx-tt-demo__sort-btn::after {
+  content: '⇅';
+  font-size: 0.75rem;
+  opacity: 0.45;
+}
+
+.cngx-tt-demo__sort-btn.cngx-sort-header--asc::after {
+  content: '▲';
+  opacity: 0.9;
+}
+
+.cngx-tt-demo__sort-btn.cngx-sort-header--desc::after {
+  content: '▼';
+  opacity: 0.9;
+}
+
 .cngx-tt-demo__badge {
   display: inline-block;
   padding: 0.125rem 0.5rem;
