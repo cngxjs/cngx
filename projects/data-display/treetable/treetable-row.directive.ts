@@ -9,7 +9,9 @@ import type { FlatNode } from './models';
  *
  * Sets the `--cngx-row-depth` CSS custom property on the host element so that
  * cell padding can drive indentation via `calc()` in component stylesheets.
- *
+ * ```html
+ * <div cngxTreetableRow [node]="node" [highlight]="highlight"></div>
+ * ```
  * @typeParam T - The data type of the tree nodes.
  */
 @Directive({
