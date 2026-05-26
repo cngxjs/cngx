@@ -1,10 +1,10 @@
 import type { DemoSpec } from '../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxEmptyState: default no icon projected',
+  title: 'CngxEmptyState: Default no icon projected',
   subtitle: 'When no <code>[cngxEmptyStateIcon]</code> is projected, a built-in inbox SVG is shown.',
   description: 'Bare minimum usage: title and description only. Renders the built-in inbox glyph so first-use empty states never look unfinished.',
-  level: 'molecule',
+  level: 'organism',
   audience: ['dev', 'design'],
   artifact: 'standalone',
   focus: ['visual-variants', 'composition'],

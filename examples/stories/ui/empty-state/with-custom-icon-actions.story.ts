@@ -1,10 +1,10 @@
 import type { DemoSpec } from '../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxEmptyState: with custom icon and actions',
+  title: 'CngxEmptyState: With custom icon actions',
   subtitle: 'Project any icon via <code>[cngxEmptyStateIcon]</code>. Primary and secondary action slots.',
   description: 'All three slots exercised: a custom search-no-results glyph, a primary <code>cngxEmptyStateAction</code> button to reset filters, and a secondary <code>cngxEmptyStateSecondary</code> link to the search-syntax docs.',
-  level: 'molecule',
+  level: 'organism',
   audience: ['dev', 'design'],
   artifact: 'standalone',
   focus: ['visual-variants', 'composition'],

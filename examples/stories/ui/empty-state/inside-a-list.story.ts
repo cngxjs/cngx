@@ -1,10 +1,10 @@
 import type { DemoSpec } from '../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxEmptyState: inside a list',
+  title: 'CngxEmptyState: Inside a list',
   subtitle: 'Replaces list content when empty. Works with any container - no special wiring needed.',
-  description: 'No grid, no special slot: just an <code>@if</code> guard around the rendered list. Demonstrates that the atom carries its own framing chrome and drops into any container without configuration.',
-  level: 'molecule',
+  description: 'No grid, no special slot: just an <code>@if</code> guard around the rendered list. Demonstrates that the organism carries its own framing chrome and drops into any container without configuration.',
+  level: 'organism',
   audience: ['dev', 'design'],
   artifact: 'standalone',
   focus: ['visual-variants', 'composition'],

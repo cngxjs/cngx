@@ -1,10 +1,10 @@
 import type { DemoSpec } from '../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxEmptyState: inside a card grid',
+  title: 'CngxEmptyState: Inside a card grid',
   subtitle: 'Used via <code>ng-template[cngxCardGridEmpty]</code> - the grid selects the template by reason.',
   description: 'Composed under <code>CngxCardGrid</code>: the grid resolves the empty template by <code>emptyReason</code> ("first-use" here) and CngxEmptyState fills the slot with a custom add-card glyph + primary action.',
-  level: 'molecule',
+  level: 'organism',
   audience: ['dev', 'design'],
   artifact: 'standalone',
   focus: ['visual-variants', 'composition'],
