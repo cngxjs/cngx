@@ -18,6 +18,8 @@ import type { EmptyReason } from './card.types';
  *   </ng-template>
  * </cngx-card-grid>
  * ```
+ *
+ * @category common/card
  */
 @Directive({
   selector: '[cngxCardGridEmpty]',

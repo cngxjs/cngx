@@ -47,6 +47,8 @@ export const CNGX_TAG_DEFAULTS: CngxTagConfig = {
  * `provideTagConfig(...features)` in `bootstrapApplication` providers
  * (root cascade) or `provideTagConfigAt(...features)` in a component's
  * `viewProviders` (sub-tree cascade).
+ *
+ * @category common/display
  */
 export const CNGX_TAG_CONFIG = new InjectionToken<CngxTagConfig>(
   'CNGX_TAG_CONFIG',

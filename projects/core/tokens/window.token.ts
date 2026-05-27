@@ -10,6 +10,8 @@ import { isPlatformBrowser } from '@angular/common';
  * if (!win) return; // SSR — no window available
  * win.matchMedia('(min-width: 1024px)');
  * ```
+ *
+ * @category core/tokens
  */
 export const WINDOW = new InjectionToken<Window | null>('NGX_CAE_WINDOW', {
   providedIn: 'root',
@@ -19,12 +21,20 @@ export const WINDOW = new InjectionToken<Window | null>('NGX_CAE_WINDOW', {
   },
 });
 
-/** Provides a custom `Window` reference (useful for testing or SSR). */
+/**
+ * Provides a custom `Window` reference (useful for testing or SSR).
+ *
+ * @category core/tokens
+ */
 export function provideWindow(win: Window | null): Provider {
   return { provide: WINDOW, useValue: win };
 }
 
-/** Injects the `WINDOW` token. Returns `null` in SSR contexts. */
+/**
+ * Injects the `WINDOW` token. Returns `null` in SSR contexts.
+ *
+ * @category core/tokens
+ */
 export function injectWindow(): Window | null {
   return inject(WINDOW);
 }

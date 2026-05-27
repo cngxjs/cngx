@@ -1,15 +1,25 @@
 import { buildCurvePath, type CngxCurve, type PathPoint } from './curve';
 import type { ScaleFn, XScaleInput } from '../chart/chart-context';
 
-/** Reads the Y value of a data row at index `i`. */
+/**
+ * Reads the Y value of a data row at index `i`.
+ *
+ * @category common/chart/path
+ */
 export type LineYAccessor<T> = (d: T, i: number) => number;
 /**
  * Reads the X value of a data row at index `i`. Default behaviour
  * (when omitted on a builder) is the row's positional index.
+ *
+ * @category common/chart/path
  */
 export type LineXAccessor<T> = (d: T, i: number) => XScaleInput;
 
-/** Construction options for {@link createPathBuilder}. */
+/**
+ * Construction options for {@link createPathBuilder}.
+ *
+ * @category common/chart/path
+ */
 export interface PathBuilderOptions<T> {
   readonly y: LineYAccessor<T>;
   readonly x?: LineXAccessor<T>;
@@ -20,6 +30,8 @@ export interface PathBuilderOptions<T> {
  * Single-slot LRU cache around an SVG `d`-attribute builder. Returned
  * by {@link createPathBuilder}; consumed by the `<cngx-line>` /
  * `<cngx-area>` family.
+ *
+ * @category common/chart/path
  */
 export interface PathBuilder<T> {
   /**
@@ -61,6 +73,8 @@ export interface PathBuilder<T> {
  * when the inputs to the `computed` are unchanged, two consecutive
  * cascade ticks with the same `(y, x, curve)` produce the same
  * builder instance.
+ *
+ * @category common/chart/path
  */
 export function createPathBuilder<T>(opts: PathBuilderOptions<T>): PathBuilder<T> {
   const yAcc = opts.y;

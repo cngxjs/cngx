@@ -7,7 +7,11 @@ import {
 } from '@angular/core';
 import { injectChartContext } from '../chart/chart-context';
 
-/** Reads the bar height (data-space Y) of a data row at index `i`. */
+/**
+ * Reads the bar height (data-space Y) of a data row at index `i`.
+ *
+ * @category common/chart/layers
+ */
 export type BarYAccessor<T> = (d: T, i: number) => number;
 
 interface BarRect {
@@ -31,6 +35,9 @@ const FALLBACK_BASELINE = 0;
  * interchangeably.
  *
  * Attribute-selector on `<svg:g>` — see {@link CngxLine} for why.
+ *
+ * @category common/chart/layers
+ *
  * <example-url>http://localhost:4200/#/common/chart/primitives/async-state-machine-on-the-primitive</example-url>
  * <example-url>http://localhost:4200/#/common/chart/primitives/combo-bars-moving-average-line</example-url>
  * <example-url>http://localhost:4200/#/common/chart/primitives/line-area-threshold-band</example-url>

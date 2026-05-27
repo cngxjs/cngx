@@ -42,6 +42,7 @@ import { CngxFormFieldPresenter } from './form-field-presenter';
  * </label>
  * ```
  *
+ * @category forms/field
  * <example-url>http://localhost:4200/#/forms/field/required/basic</example-url>
  * <example-url>http://localhost:4200/#/forms/field/required/custom-template</example-url>
  * <example-url>http://localhost:4200/#/forms/field/required/auto-hide-on-non-required</example-url>
@@ -86,7 +87,11 @@ export class CngxRequired {
   }));
 }
 
-/** Template context type for CngxRequired custom templates. */
+/**
+ * Template context type for CngxRequired custom templates.
+ *
+ * @category forms/field
+ */
 export interface CngxRequiredContext {
   /** Always `true` when the template is rendered (also available as implicit). */
   $implicit: boolean;

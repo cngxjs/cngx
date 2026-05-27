@@ -14,6 +14,8 @@ import { InjectionToken, makeEnvironmentProviders, type EnvironmentProviders } f
  * Register an instance of this via {@link provideTreetable}; reach it
  * by injecting {@link CNGX_TREETABLE_CONFIG} in custom code (rare -
  * `CngxTreetable` already does that internally).
+ *
+ * @category data-display/treetable
  */
 export interface TreetableConfig {
   /**
@@ -39,6 +41,8 @@ export interface TreetableConfig {
  * `provideTreetable(withA(), withB(), ...)`. The `_apply` field is
  * library-internal; consumers compose features via the public helpers
  * and never call `_apply` directly.
+ *
+ * @category data-display/treetable
  */
 export interface TreetableFeature {
   /** @internal */
@@ -59,6 +63,8 @@ export interface TreetableFeature {
  * ```ts
  * const config = inject(CNGX_TREETABLE_CONFIG);
  * ```
+ *
+ * @category data-display/treetable
  */
 export const CNGX_TREETABLE_CONFIG = new InjectionToken<TreetableConfig>('CNGX_TREETABLE_CONFIG', {
   factory: () => ({}),
@@ -97,6 +103,8 @@ export const CNGX_TREETABLE_CONFIG = new InjectionToken<TreetableConfig>('CNGX_T
  *   children: adminChildren,
  * }];
  * ```
+ *
+ * @category data-display/treetable
  */
 export function provideTreetable(...features: TreetableFeature[]): EnvironmentProviders {
   let config: TreetableConfig = {};
@@ -116,6 +124,8 @@ export function provideTreetable(...features: TreetableFeature[]): EnvironmentPr
  * nested scope).
  *
  * @param enabled - Hover-highlight on/off. Default `true`.
+ *
+ * @category data-display/treetable
  */
 export function withHighlightOnHover(enabled = true): TreetableFeature {
   return { _apply: (c) => ({ ...c, highlightRowOnHover: enabled }) };
@@ -131,6 +141,8 @@ export function withHighlightOnHover(enabled = true): TreetableFeature {
  * keep verbatim, or for fully custom `*cngxHeader` slot rendering).
  *
  * @param enabled - Capitalise on/off. Default `true`.
+ *
+ * @category data-display/treetable
  */
 export function withCapitaliseHeaders(enabled = true): TreetableFeature {
   return { _apply: (c) => ({ ...c, capitaliseHeader: enabled }) };

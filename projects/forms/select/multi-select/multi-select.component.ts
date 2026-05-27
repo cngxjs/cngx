@@ -101,6 +101,8 @@ import {
 
 /**
  * Change event emitted by {@link CngxMultiSelect.selectionChange}.
+ *
+ * @category forms/select/multi-select
  */
 export interface CngxMultiSelectChange<T = unknown> {
   readonly source: CngxMultiSelect<T>;
@@ -121,6 +123,8 @@ export interface CngxMultiSelectChange<T = unknown> {
  * Multi-select sibling of {@link CngxSelect}. Stateless graph in
  * {@link createSelectCore}; keeps the multi-specific trigger template,
  * chip strip, AD-activated dispatch, keyboard, and Field↔sync.
+ *
+ * @category forms/select/multi-select
  * <example-url>http://localhost:4200/#/forms/select/multi-select/multi-async-options-via-state</example-url>
  * <example-url>http://localhost:4200/#/forms/select/multi-select/multi-basic</example-url>
  * <example-url>http://localhost:4200/#/forms/select/multi-select/multi-clearable</example-url>

@@ -10,6 +10,8 @@ import type { FilterExpression, FilterFieldDef } from './filter-builder.types';
  * `setValue` is the row's write-through callback, and `expression`
  * exposes the full node for consumers that need the operator alongside
  * the value (e.g. range editors that toggle UI on `'between'`).
+ *
+ * @category forms/filter-builder/slots
  */
 export interface CngxFilterBuilderValueEditorContext<TValue> {
   readonly value: TValue;
@@ -24,6 +26,8 @@ export interface CngxFilterBuilderValueEditorContext<TValue> {
  * row prefers this template over the native / component-outlet branches;
  * the cascade falls back to `CONFIG.templates.valueEditor` and finally
  * to the default editor branches when neither is provided.
+ *
+ * @category forms/filter-builder/slots
  */
 @Directive({
   selector: 'ng-template[cngxFilterBuilderValueEditor]',

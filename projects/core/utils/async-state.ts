@@ -1,6 +1,10 @@
 import type { Signal } from '@angular/core';
 
-/** Discriminated status of an async operation lifecycle. */
+/**
+ * Discriminated status of an async operation lifecycle.
+ *
+ * @category core/utils/async-state
+ */
 export type AsyncStatus = 'idle' | 'loading' | 'pending' | 'refreshing' | 'success' | 'error';
 
 /**
@@ -16,6 +20,8 @@ export type AsyncStatus = 'idle' | 'loading' | 'pending' | 'refreshing' | 'succe
  *
  * All UI feedback components accept `CngxAsyncState<unknown>` as input —
  * typed on the interface, not on a concrete implementation.
+ *
+ * @category core/utils/async-state
  */
 export interface CngxAsyncState<T> {
   /** Current status of the async operation. Single source of truth. */

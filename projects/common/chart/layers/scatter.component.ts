@@ -10,9 +10,17 @@ import {
   type XScaleInput,
 } from '../chart/chart-context';
 
-/** Reads the data-space X value of a scatter row at index `i`. */
+/**
+ * Reads the data-space X value of a scatter row at index `i`.
+ *
+ * @category common/chart/layers
+ */
 export type ScatterXAccessor<T> = (d: T, i: number) => XScaleInput;
-/** Reads the data-space Y value of a scatter row at index `i`. */
+/**
+ * Reads the data-space Y value of a scatter row at index `i`.
+ *
+ * @category common/chart/layers
+ */
 export type ScatterYAccessor<T> = (d: T, i: number) => number;
 
 interface ScatterCircle {
@@ -27,6 +35,9 @@ interface ScatterCircle {
  * defining trait of a scatter chart is two genuine data dimensions.
  *
  * Attribute-selector on `<svg:g>` — see {@link CngxLine} for why.
+ *
+ * @category common/chart/layers
+ *
  * <example-url>http://localhost:4200/#/common/chart/primitives/async-state-machine-on-the-primitive</example-url>
  * <example-url>http://localhost:4200/#/common/chart/primitives/combo-bars-moving-average-line</example-url>
  * <example-url>http://localhost:4200/#/common/chart/primitives/line-area-threshold-band</example-url>

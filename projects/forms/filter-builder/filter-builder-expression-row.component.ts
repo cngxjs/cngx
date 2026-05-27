@@ -72,6 +72,8 @@ function equalStringList(a: readonly string[], b: readonly string[]): boolean {
  * Pillar 3 (Komposition statt Konfiguration): one component, one
  * responsibility — render the recursive renderer's expression row. The
  * column-header / quick-filter surface lives in `CngxFilterRow`.
+ *
+ * @category forms/filter-builder
  */
 @Component({
   selector: 'cngx-filter-expression-row',

@@ -2,7 +2,11 @@ import type { TemplateRef } from '@angular/core';
 
 import type { CngxPopoverArrowContext } from './popover-panel-slots';
 
-/** Configuration for `CngxPopoverPanel` provided via `providePopoverPanel()`. */
+/**
+ * Configuration for `CngxPopoverPanel` provided via `providePopoverPanel()`.
+ *
+ * @category common/popover
+ */
 export interface CngxPopoverPanelConfig {
   /**
    * Auto-dismiss timing per variant in ms.
@@ -42,5 +46,9 @@ export interface CngxPopoverPanelConfig {
   };
 }
 
-/** Feature function signature for `providePopoverPanel()`. */
+/**
+ * Feature function signature for `providePopoverPanel()`.
+ *
+ * @category common/popover
+ */
 export type PopoverPanelFeature = (config: CngxPopoverPanelConfig) => CngxPopoverPanelConfig;

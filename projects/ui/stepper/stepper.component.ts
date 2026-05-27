@@ -57,6 +57,8 @@ import {
  * forwards `activeStepIndex`/`linear`/`orientation`/`commitAction`/
  * `commitMode` to the presenter. Material twin lives in
  * `@cngx/ui/mat-stepper`. ARIA attrs are in the `computed()` graph.
+ *
+ * @category ui/stepper
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-commit-action/pessimistic-optimistic-commits-with-bridge-directives</example-url>
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-custom-labels/mixing-code-label-code-input-with-code-cngxsteplabel-code-slot</example-url>
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-error-aggregation/per-step-error-badges</example-url>

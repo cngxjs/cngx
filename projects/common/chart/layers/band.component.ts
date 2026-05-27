@@ -16,6 +16,9 @@ import { injectChartContext } from '../chart/chart-context';
  * band sits behind line / area / bar layers without dominating.
  *
  * Attribute-selector on `<svg:g>` — see {@link CngxLine} for why.
+ *
+ * @category common/chart/layers
+ *
  * <example-url>http://localhost:4200/#/common/chart/primitives/async-state-machine-on-the-primitive</example-url>
  * <example-url>http://localhost:4200/#/common/chart/primitives/combo-bars-moving-average-line</example-url>
  * <example-url>http://localhost:4200/#/common/chart/primitives/line-area-threshold-band</example-url>

@@ -45,6 +45,8 @@ import type { EmptyReason } from './card.types';
  *   </ng-template>
  * </cngx-card-grid>
  * ```
+ *
+ * @category common/card
  * <example-url>http://localhost:4200/#/common/card/card-grid/basic-grid</example-url>
  * <example-url>http://localhost:4200/#/common/card/card-grid/density-variants</example-url>
  * <example-url>http://localhost:4200/#/common/card/card-grid/empty-state-with-reason</example-url>

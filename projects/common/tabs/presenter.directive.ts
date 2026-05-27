@@ -35,6 +35,8 @@ import {
  * and target indices; resolves `true` to commit, `false` to refuse.
  * `Observable | Promise | sync` union mirrors the rest of the cngx
  * commit-action family.
+ *
+ * @category common/tabs
  */
 export type CngxTabsCommitAction = (
   fromIndex: number,
@@ -52,6 +54,8 @@ export type CngxTabsCommitAction = (
  * **Layer:** `@cngx/common/tabs` (Level 2). Directive-only —
  * organisms compose via `hostDirectives`, consumers attach
  * `[cngxTabGroup]` directly.
+ *
+ * @category common/tabs
  * <example-url>http://localhost:4200/#/ui/tabs/tab-commit-action/optimistic-pessimistic-commits-with-bridge-directives</example-url>
  */
 @Directive({

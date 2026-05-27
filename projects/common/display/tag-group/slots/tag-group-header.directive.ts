@@ -23,6 +23,8 @@ import type { CngxTagGroupHeaderContext } from './tag-group-slot.context';
  *   <span cngxTag>Backend</span>
  * </cngx-tag-group>
  * ```
+ *
+ * @category common/display
  * <example-url>http://localhost:4200/#/common/display/tag/app-wide-defaults-via-providetagconfig</example-url>
  * <example-url>http://localhost:4200/#/common/display/tag/color-palette</example-url>
  * <example-url>http://localhost:4200/#/common/display/tag/composition-with-cngxicon</example-url>

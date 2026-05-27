@@ -1,6 +1,10 @@
 import { computed, Directive, ElementRef, inject, input, output, signal } from '@angular/core';
 
-/** Position from which the drawer panel slides in. */
+/**
+ * Position from which the drawer panel slides in.
+ *
+ * @category common/layout
+ */
 export type DrawerPosition = 'left' | 'right' | 'top' | 'bottom';
 
 /**
@@ -29,6 +33,8 @@ export type DrawerPosition = 'left' | 'right' | 'top' | 'bottom';
  *   …
  * </div>
  * ```
+ *
+ * @category common/layout
  * <example-url>http://localhost:4200/#/common/layout/drawer/basic-scroll-lock-backdrop</example-url>
  * <example-url>http://localhost:4200/#/common/layout/drawer/controlled-mode</example-url>
  * <example-url>http://localhost:4200/#/common/layout/drawer/direction-all-four-sides</example-url>

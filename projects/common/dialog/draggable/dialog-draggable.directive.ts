@@ -34,6 +34,8 @@ import {
  *   transform: translate(var(--cngx-dialog-x, 0px), var(--cngx-dialog-y, 0px));
  * }
  * ```
+ *
+ * @category common/dialog
  * <example-url>http://localhost:4200/#/common/dialog/alert-dialog</example-url>
  * <example-url>http://localhost:4200/#/common/dialog/bottom-sheet</example-url>
  * <example-url>http://localhost:4200/#/common/dialog/cngxdialogopener-programmatic</example-url>

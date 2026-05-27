@@ -93,6 +93,8 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
  *   cngxDescribedBy="chip-locked-reason"
  * >{{ tag }}</cngx-chip>
  * ```
+ *
+ * @category common/interactive
  * <example-url>http://localhost:4200/#/common/interactive/chip/interaction/basic-toggle-on-click-space-or-enter</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/chip/interaction/disabled-state</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/chip/interaction/removable-with-removerequest-on-backspace-delete</example-url>

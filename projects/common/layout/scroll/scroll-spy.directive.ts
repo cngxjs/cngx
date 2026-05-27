@@ -21,6 +21,8 @@ import { afterNextRender, Directive, effect, inject, input, output, signal } fro
  * <section id="features">…</section>
  * <section id="pricing">…</section>
  * ```
+ *
+ * @category common/layout
  * <example-url>http://localhost:4200/#/common/layout/scroll-spy/scroll-based-navigation</example-url>
  */
 @Directive({

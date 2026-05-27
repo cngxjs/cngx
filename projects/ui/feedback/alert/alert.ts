@@ -22,13 +22,19 @@ import { CngxCloseButton } from '@cngx/common/interactive';
 import { CNGX_FEEDBACK_CONFIG } from '../config/feedback-config';
 import { CngxSeverityIcon } from '../config/severity-icon';
 
-
-/** Severity level for the alert — determines visual style, icon, and ARIA role. */
+/**
+ * Severity level for the alert — determines visual style, icon, and ARIA role.
+ *
+ * @category ui/feedback/alert
+ */
 export type AlertSeverity = 'info' | 'success' | 'warning' | 'error';
 
-/** Visibility phase for enter/exit CSS animations. */
+/**
+ * Visibility phase for enter/exit CSS animations.
+ *
+ * @category ui/feedback/alert
+ */
 export type AlertVisibilityPhase = 'hidden' | 'entering' | 'visible' | 'exiting';
-
 
 /** @internal — timer with pause/resume support for hover/focus interactions. */
 interface PausableTimer {
@@ -86,15 +92,18 @@ function createPausableTimer(): PausableTimer {
   };
 }
 
-
-/** Content slot directive for custom alert icons.
+/**
+ * Content slot directive for custom alert icons.
+ *
+ * @category ui/feedback/alert
+ *
  * <example-url>http://localhost:4200/#/ui/feedback/alert/action-buttons</example-url>
  * <example-url>http://localhost:4200/#/ui/feedback/alert/auto-collapse</example-url>
  * <example-url>http://localhost:4200/#/ui/feedback/alert/boolean-trigger-when</example-url>
  * <example-url>http://localhost:4200/#/ui/feedback/alert/closable</example-url>
  * <example-url>http://localhost:4200/#/ui/feedback/alert/severities</example-url>
  * <example-url>http://localhost:4200/#/ui/feedback/alert/state-driven-visibility</example-url>
-*/
+ */
 @Directive({ selector: '[cngxAlertIcon]', standalone: true })
 export class CngxAlertIcon {
   readonly templateRef = inject(TemplateRef, { optional: true });
@@ -112,6 +121,9 @@ export class CngxAlertIcon {
  *   <button cngxAlertAction (click)="retry()">Retry</button>
  * </cngx-alert>
  * ```
+ *
+ * @category ui/feedback/alert
+ *
  * <example-url>http://localhost:4200/#/ui/feedback/alert/action-buttons</example-url>
  * <example-url>http://localhost:4200/#/ui/feedback/alert/auto-collapse</example-url>
  * <example-url>http://localhost:4200/#/ui/feedback/alert/boolean-trigger-when</example-url>
@@ -126,7 +138,6 @@ export class CngxAlertIcon {
 })
 export class CngxAlertAction {}
 
-
 /**
  * Inline alert atom with enter/exit animations, state-driven visibility,
  * auto-dismiss with pause-on-hover/focus, and optional auto-collapse.
@@ -137,6 +148,9 @@ export class CngxAlertAction {}
  * - **Boolean-driven** (`[when]`): visible when true, hidden when false
  *
  * `[state]` takes precedence over `[when]`.
+ *
+ * @category ui/feedback/alert
+ *
  * <example-url>http://localhost:4200/#/ui/feedback/alert/action-buttons</example-url>
  * <example-url>http://localhost:4200/#/ui/feedback/alert/auto-collapse</example-url>
  * <example-url>http://localhost:4200/#/ui/feedback/alert/boolean-trigger-when</example-url>
@@ -209,7 +223,6 @@ export class CngxAlert {
   private readonly config = inject(CNGX_FEEDBACK_CONFIG, { optional: true });
   private readonly destroyRef = inject(DestroyRef);
 
-
   /** Alert severity — determines visual style, default icon, and ARIA role. */
   readonly severity = input<AlertSeverity>('info');
 
@@ -246,17 +259,14 @@ export class CngxAlert {
   /** Delay in ms before auto-collapsing. Defaults to `autoDismissDelay`. */
   readonly collapseDelay = input<number | undefined>(undefined);
 
-
   /** Emitted when the dismiss button is clicked. */
   readonly dismissed = output<void>();
-
 
   /** @internal — detects projected custom icon to hide default/global icon. */
   protected readonly customIcon = contentChild(CngxAlertIcon);
 
   /** @internal — detects projected action buttons for aria-atomic strategy. */
   protected readonly hasActions = contentChild(CngxAlertAction);
-
 
   private readonly manualDismissed = signal(false);
   private readonly autoDismissed = signal(false);
@@ -266,11 +276,9 @@ export class CngxAlert {
   /** @internal — animation phase, drives host CSS classes. */
   protected readonly visibilityPhase = signal<AlertVisibilityPhase>('hidden');
 
-
   private readonly autoDismissTimer = createPausableTimer();
   private readonly collapseTimer = createPausableTimer();
   private animationFallbackId: ReturnType<typeof setTimeout> | undefined;
-
 
   /** @internal — global icon component for the current severity (from provideFeedback config). */
   protected readonly globalIcon = computed(
@@ -337,11 +345,9 @@ export class CngxAlert {
   /** @internal — SR announcement text for state transitions. */
   protected readonly announcement = this.announcementState.asReadonly();
 
-
   private readonly effectiveCollapseDelay = computed(
     () => this.collapseDelay() ?? this.autoDismissDelay() ?? 5000,
   );
-
 
   constructor() {
     effect(() => {
@@ -385,7 +391,6 @@ export class CngxAlert {
       this.clearAnimationFallback();
     });
   }
-
 
   private beginEnter(): void {
     this.collapsedState.set(false);
@@ -438,7 +443,6 @@ export class CngxAlert {
       this.animationFallbackId = undefined;
     }
   }
-
 
   /** @internal */
   protected handleAnimationEnd(event: AnimationEvent): void {

@@ -69,6 +69,8 @@ import {
  *   }
  * </cngx-multi-chip-group>
  * ```
+ *
+ * @category common/interactive
  * <example-url>http://localhost:4200/#/common/interactive/chip/group/basic-pick-exactly-one-size</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/chip/multi-group/multi-select-chips-with-selection-count</example-url>
  * <example-url>http://localhost:4200/#/forms/field/form-primitives/coming-in-a-follow-up</example-url>

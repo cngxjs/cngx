@@ -1,6 +1,10 @@
 import { computed, Directive, input } from '@angular/core';
 
-/** Visual variant for the nav badge. */
+/**
+ * Visual variant for the nav badge.
+ *
+ * @category common/interactive
+ */
 export type NavBadgeVariant = 'count' | 'dot' | 'status';
 
 /**
@@ -33,6 +37,8 @@ export type NavBadgeVariant = 'count' | 'dot' | 'status';
  * ```html
  * <a cngxNavLink>Updates <span cngxNavBadge variant="dot" [value]="1"></span></a>
  * ```
+ *
+ * @category common/interactive
  * <example-url>http://localhost:4200/#/common/interactive/nav/nav-badge-counts-and-dots</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/nav/nav-group-accordion-sections</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/nav/nav-links-active-state-depth</example-url>

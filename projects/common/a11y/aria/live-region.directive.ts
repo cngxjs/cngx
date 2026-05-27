@@ -28,6 +28,8 @@ import { Directive, input } from '@angular/core';
  *   {{ error() }}
  * </div>
  * ```
+ *
+ * @category common/a11y
  * <example-url>http://localhost:4200/#/common/a11y/live-region/form-validation-assertive-error-announcements</example-url>
  * <example-url>http://localhost:4200/#/common/a11y/live-region/polite-vs-assertive</example-url>
  */

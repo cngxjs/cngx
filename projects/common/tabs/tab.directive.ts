@@ -23,6 +23,8 @@ import { CNGX_TAB_GROUP_HOST } from './tab-group-host.token';
  * input signals by reference, so input changes propagate without
  * re-registration. `labelTemplate` / `contentTemplate` are projected
  * by the organism — the atom carries no rendering logic.
+ *
+ * @category common/tabs
  * <example-url>http://localhost:4200/#/ui/tabs/tab-commit-action/optimistic-pessimistic-commits-with-bridge-directives</example-url>
  * <example-url>http://localhost:4200/#/ui/tabs/tab-error-aggregation/per-tab-error-badges</example-url>
  * <example-url>http://localhost:4200/#/ui/tabs/tab-group-vertical/vertical-sidebar-tabs</example-url>

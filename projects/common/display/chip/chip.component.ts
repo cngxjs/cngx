@@ -34,6 +34,7 @@ import { nextUid } from '@cngx/core/utils';
  *   decides whether to write state directly or route through a commit
  *   flow. This keeps the chip usable from any level of the stack.
  *
+ * @category common/display
  * <example-url>http://localhost:4200/#/common/display/chip/basic</example-url>
  * <example-url>http://localhost:4200/#/common/display/chip/removable</example-url>
  * <example-url>http://localhost:4200/#/common/display/chip/color-palette</example-url>

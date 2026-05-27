@@ -12,6 +12,8 @@ import type { CngxStepNode } from '../stepper-host.token';
  * `presenter.originIndexDuringCommit()`. May be `undefined` when the
  * origin index is out of range (synchronous-rejection edge case);
  * gate richer UI on its presence.
+ *
+ * @category common/stepper/slots
  */
 export interface CngxStepRejectionContext {
   /** Flat-index of the rejected step (`presenter.lastFailedIndex()`). */
@@ -41,6 +43,8 @@ export interface CngxStepRejectionContext {
  *   </ng-template>
  * </cngx-stepper>
  * ```
+ *
+ * @category common/stepper/slots
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-slot-overrides/custom-busy-spinner-via-code-cngxstepbusyspinner-code</example-url>
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-slot-overrides/custom-error-badge-via-code-cngxstepbadge-code</example-url>
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-slot-overrides/custom-group-header-via-code-cngxstepgroupheader-code</example-url>

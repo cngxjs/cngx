@@ -25,7 +25,11 @@ import {
 } from '@cngx/core/utils';
 import { CngxToastOn, CngxToaster } from '@cngx/ui/feedback';
 
-/** Visual variant for the action button — maps to a CSS class. */
+/**
+ * Visual variant for the action button — maps to a CSS class.
+ *
+ * @category ui/action-button
+ */
 export type ActionButtonVariant = 'primary' | 'secondary' | 'ghost';
 
 /**
@@ -70,6 +74,8 @@ export type ActionButtonVariant = 'primary' | 'secondary' | 'ghost';
  *   Save
  * </cngx-action-button>
  * ```
+ *
+ * @category ui/action-button
  * <example-url>http://localhost:4200/#/ui/action-button/async-button/random-outcome</example-url>
  * <example-url>http://localhost:4200/#/ui/action-button/async-button/string-labels</example-url>
  * <example-url>http://localhost:4200/#/ui/action-button/async-button/template-slots</example-url>

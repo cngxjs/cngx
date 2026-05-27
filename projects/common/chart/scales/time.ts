@@ -10,6 +10,8 @@ import { createLinearScale } from './linear';
  * @param range `[start, end]` output range (typically pixel coordinates).
  * @returns `(v: Date | number) => number` mapping time values to range
  *   values.
+ *
+ * @category common/chart/scales
  */
 export function createTimeScale(
   domain: readonly [Date | number, Date | number],

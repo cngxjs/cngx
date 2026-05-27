@@ -43,6 +43,7 @@ import type { CngxFieldAccessor } from './models';
  * </cngx-form-errors>
  * ```
  *
+ * @category forms/field
  * <example-url>http://localhost:4200/#/forms/field/form-errors/basic</example-url>
  * <example-url>http://localhost:4200/#/forms/field/form-errors/show-on-submit</example-url>
  * <example-url>http://localhost:4200/#/forms/field/form-errors/custom-summary-template</example-url>
@@ -121,7 +122,11 @@ export class CngxFormErrors {
   }));
 }
 
-/** A single error item in the form-level summary. */
+/**
+ * A single error item in the form-level summary.
+ *
+ * @category forms/field
+ */
 export interface FormErrorItem {
   /** The field name (from FieldState.name()). */
   fieldName: string;
@@ -133,7 +138,11 @@ export interface FormErrorItem {
   focus: () => void;
 }
 
-/** Template context for CngxFormErrors custom templates. */
+/**
+ * Template context for CngxFormErrors custom templates.
+ *
+ * @category forms/field
+ */
 export interface CngxFormErrorsSummaryContext {
   /** Error items (also available as implicit). */
   $implicit: FormErrorItem[];

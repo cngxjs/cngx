@@ -17,7 +17,11 @@ import { CngxTagPrefix } from './slots/tag-prefix.directive';
 import { CngxTagSuffix } from './slots/tag-suffix.directive';
 import type { CngxTagLabelContext } from './slots/tag-slot.context';
 
-/** Visual variant. `filled` is the default solid pill; `outline` swaps fill for border; `subtle` softens both. */
+/**
+ * Visual variant. `filled` is the default solid pill; `outline` swaps fill for border; `subtle` softens both.
+ *
+ * @category common/display
+ */
 export type CngxTagVariant = 'filled' | 'outline' | 'subtle';
 
 /**
@@ -31,6 +35,8 @@ export type CngxTagVariant = 'filled' | 'outline' | 'subtle';
  * styles against their own design tokens. Re-evaluation trigger
  * toward a `withTagColors()` cascade is tracked in
  * `display-accepted-debt.md §1`.
+ *
+ * @category common/display
  */
 export type CngxTagColor =
   | 'neutral'
@@ -46,6 +52,8 @@ export type CngxTagColor =
  * custom properties (see `tag.css`). Sizing of nested atoms
  * (`cngx-icon`, `cngx-avatar`) is the consumer's call — Tag does not
  * cascade a sub-token contract.
+ *
+ * @category common/display
  */
 export type CngxTagSize = 'sm' | 'md' | 'lg' | 'xl';
 
@@ -79,6 +87,8 @@ export type CngxTagSize = 'sm' | 'md' | 'lg' | 'xl';
  *   focus + Enter/Space.
  * - Configuration cascade — deferred (see
  *   `display-accepted-debt.md §1`).
+ *
+ * @category common/display
  * <example-url>http://localhost:4200/#/common/display/tag/app-wide-defaults-via-providetagconfig</example-url>
  * <example-url>http://localhost:4200/#/common/display/tag/color-palette</example-url>
  * <example-url>http://localhost:4200/#/common/display/tag/composition-with-cngxicon</example-url>

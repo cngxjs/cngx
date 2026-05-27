@@ -6,6 +6,8 @@ import { fromEvent, switchMap } from 'rxjs';
 /**
  * Emits when the user interacts outside the host element.
  *
+ * @category common/interactive/keyboard
+ *
  * Listens for a configurable DOM event on the document and checks whether
  * the event target is outside the host element's subtree. Useful for closing
  * dropdowns, popovers, modals, and any overlay that should dismiss on

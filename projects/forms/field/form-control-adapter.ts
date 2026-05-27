@@ -28,6 +28,8 @@ import type { CngxFieldAccessor, CngxFieldRef } from './models';
  * readonly emailControl = new FormControl('', [Validators.required, Validators.email]);
  * readonly emailField = adaptFormControl(this.emailControl, 'email', inject(DestroyRef));
  * ```
+ *
+ * @category forms/field
  */
 export function adaptFormControl(
   control: AbstractControl,

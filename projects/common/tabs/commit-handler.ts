@@ -12,6 +12,8 @@ import type { CngxTabsCommitAction } from './presenter.directive';
  * Adapts the shared commit-controller to the tabs action shape. The
  * presenter delegates to {@link beginTransition} when `commitAction`
  * is bound.
+ *
+ * @category common/tabs
  */
 export interface CngxTabsCommitHandler {
   /**
@@ -36,6 +38,8 @@ export interface CngxTabsCommitHandler {
 
 /**
  * Options for {@link createTabsCommitHandler}.
+ *
+ * @category common/tabs
  */
 export interface CngxTabsCommitHandlerOptions {
   readonly controller: CngxCommitController<number>;
@@ -45,6 +49,8 @@ export interface CngxTabsCommitHandlerOptions {
  * Wraps a {@link CngxCommitController} with the action-shape adapter
  * that collapses `Observable<boolean>` / `Promise<boolean>` /
  * `boolean` returns into a single `accept: boolean` outcome.
+ *
+ * @category common/tabs
  */
 export function createTabsCommitHandler(
   opts: CngxTabsCommitHandlerOptions,
@@ -145,6 +151,8 @@ function runTabsAction(
  * Factory signature for {@link CNGX_TABS_COMMIT_HANDLER_FACTORY}.
  * Override to wrap the default with retry-with-backoff, telemetry,
  * or offline queues.
+ *
+ * @category common/tabs
  */
 export type CngxTabsCommitHandlerFactory = (
   opts: CngxTabsCommitHandlerOptions,
@@ -155,6 +163,8 @@ export type CngxTabsCommitHandlerFactory = (
  * {@link createTabsCommitHandler}. Sibling to
  * `CNGX_ARRAY_COMMIT_HANDLER_FACTORY` (select) and
  * `CNGX_STEPPER_COMMIT_HANDLER_FACTORY`.
+ *
+ * @category common/tabs
  */
 export const CNGX_TABS_COMMIT_HANDLER_FACTORY =
   new InjectionToken<CngxTabsCommitHandlerFactory>(

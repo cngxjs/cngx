@@ -83,6 +83,8 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
  *   >{{ opt }}</cngx-checkbox>
  * </cngx-checkbox-group>
  * ```
+ *
+ * @category common/interactive
  * <example-url>http://localhost:4200/#/common/interactive/checkbox/group/basic-select-all-master-projected-leaves</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/checkbox/group/disabled-cascade</example-url>
  * <example-url>http://localhost:4200/#/forms/field/form-primitives/coming-in-a-follow-up</example-url>

@@ -40,6 +40,8 @@ import { computed, DestroyRef, Directive, inject, input, signal, type Signal } f
  *   }
  * </div>
  * ```
+ *
+ * @category common/layout
  * <example-url>http://localhost:4200/#/common/layout/skeleton/basic-skeleton</example-url>
  * <example-url>http://localhost:4200/#/common/layout/skeleton/skeleton-container</example-url>
  */

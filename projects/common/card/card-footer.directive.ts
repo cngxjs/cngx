@@ -11,6 +11,8 @@ import { Directive } from '@angular/core';
  *   <footer cngxCardFooter>Footer content</footer>
  * </cngx-card>
  * ```
+ *
+ * @category common/card
  * <example-url>http://localhost:4200/#/common/card/title-subtitle-footer</example-url>
  */
 @Directive({

@@ -13,7 +13,11 @@ import {
 } from '@angular/core';
 import { matchesKeyCombo, parseKeyCombo } from '@cngx/core/utils';
 
-/** Logical position — flips in RTL. */
+/**
+ * Logical position — flips in RTL.
+ *
+ * @category ui/sidenav
+ */
 export type SidenavPosition = 'start' | 'end';
 /**
  * How the sidenav interacts with the content area.
@@ -22,6 +26,8 @@ export type SidenavPosition = 'start' | 'end';
  * - `'push'` — pushes content aside when open
  * - `'side'` — always visible, content permanently offset
  * - `'mini'` — collapsed icon rail (miniWidth), expands to full width on hover
+ *
+ * @category ui/sidenav
  */
 export type SidenavMode = 'over' | 'push' | 'side' | 'mini';
 
@@ -48,6 +54,8 @@ export type SidenavMode = 'over' | 'push' | 'side' | 'mini';
  *   </cngx-sidenav-content>
  * </cngx-sidenav-layout>
  * ```
+ *
+ * @category ui/sidenav
  * <example-url>http://localhost:4200/#/ui/sidenav/dual-sidebar-master-detail</example-url>
  * <example-url>http://localhost:4200/#/ui/sidenav/full-navigation-sidebar</example-url>
  * <example-url>http://localhost:4200/#/ui/sidenav/material-theming-light-vs-dark</example-url>

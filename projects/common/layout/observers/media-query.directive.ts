@@ -24,6 +24,8 @@ import { Directive, effect, inject, input, signal } from '@angular/core';
  *   @if (dark.matches()) { <span>Dark mode active</span> }
  * </div>
  * ```
+ *
+ * @category common/layout
  * <example-url>http://localhost:4200/#/common/layout/media-query/viewport-breakpoints</example-url>
  */
 @Directive({

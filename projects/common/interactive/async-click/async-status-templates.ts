@@ -9,6 +9,8 @@ import { Directive, inject, TemplateRef } from '@angular/core';
  * ```html
  * <ng-template cngxPending>Saving...</ng-template>
  * ```
+ *
+ * @category common/interactive
  * <example-url>http://localhost:4200/#/ui/action-button/async-button/random-outcome</example-url>
  * <example-url>http://localhost:4200/#/ui/action-button/async-button/string-labels</example-url>
  * <example-url>http://localhost:4200/#/ui/action-button/async-button/template-slots</example-url>
@@ -24,6 +26,8 @@ export class CngxPending {
  * ```html
  * <ng-template cngxSucceeded>Saved!</ng-template>
  * ```
+ *
+ * @category common/interactive
  * <example-url>http://localhost:4200/#/ui/action-button/async-button/random-outcome</example-url>
  * <example-url>http://localhost:4200/#/ui/action-button/async-button/string-labels</example-url>
  * <example-url>http://localhost:4200/#/ui/action-button/async-button/template-slots</example-url>
@@ -40,6 +44,8 @@ export class CngxSucceeded {
  * ```html
  * <ng-template cngxFailed let-err>Failed: {{ err }}</ng-template>
  * ```
+ *
+ * @category common/interactive
  * <example-url>http://localhost:4200/#/ui/action-button/async-button/random-outcome</example-url>
  * <example-url>http://localhost:4200/#/ui/action-button/async-button/string-labels</example-url>
  * <example-url>http://localhost:4200/#/ui/action-button/async-button/template-slots</example-url>

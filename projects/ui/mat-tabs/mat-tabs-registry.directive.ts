@@ -42,6 +42,8 @@ interface CngxMatTabsRegistryEntry {
  * Return type narrows to `Pick<..., 'errorAggregator'>` so the
  * access path exposes only the per-handle aggregator slot; the
  * rest of the setup stays internal bookkeeping.
+ *
+ * @category ui/mat-tabs
  */
 export interface CngxMatTabsRegistryHost {
   /**
@@ -62,6 +64,8 @@ export interface CngxMatTabsRegistryHost {
  * `useExisting`. Sibling per-tab directives inject this with
  * `{ host: true }` to reach per-handle slots without walking the
  * concrete registry class.
+ *
+ * @category ui/mat-tabs
  */
 export const CNGX_MAT_TABS_REGISTRY_HOST =
   new InjectionToken<CngxMatTabsRegistryHost>('CngxMatTabsRegistryHost');
@@ -81,6 +85,8 @@ export const CNGX_MAT_TABS_REGISTRY_HOST =
  * Composition: `[cngxMatTabs]` declares this in `hostDirectives`;
  * both share the parent's `CngxTabGroupPresenter` and the same
  * `<mat-tab-group>` content-children scope.
+ *
+ * @category ui/mat-tabs
  */
 @Directive({
   selector: '[cngxMatTabsRegistry]',

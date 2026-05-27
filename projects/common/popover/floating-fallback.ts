@@ -5,6 +5,8 @@ import type { PopoverPlacement } from './popover.types';
 /**
  * Signature matching `@floating-ui/dom` `computePosition`.
  * The consumer provides the actual function — the library never imports it directly.
+ *
+ * @category common/popover
  */
 export type ComputePositionFn = (
   reference: HTMLElement,
@@ -15,7 +17,11 @@ export type ComputePositionFn = (
   },
 ) => Promise<{ x: number; y: number; placement: string }>;
 
-/** Configuration for the Floating UI positioning fallback. */
+/**
+ * Configuration for the Floating UI positioning fallback.
+ *
+ * @category common/popover
+ */
 export interface FloatingFallbackConfig {
   /** The `computePosition` function from `@floating-ui/dom`. */
   computePosition: ComputePositionFn;
@@ -26,6 +32,8 @@ export interface FloatingFallbackConfig {
 /**
  * Injection token for the Floating UI fallback.
  * `null` when not provided — CSS Anchor Positioning is used instead.
+ *
+ * @category common/popover
  */
 export const CNGX_FLOATING_FALLBACK = new InjectionToken<FloatingFallbackConfig | null>(
   'CngxFloatingFallback',
@@ -47,6 +55,8 @@ export const CNGX_FLOATING_FALLBACK = new InjectionToken<FloatingFallbackConfig 
  *   provideFloatingFallback(computePosition, [offset(8), flip(), shift()]),
  * ]
  * ```
+ *
+ * @category common/popover
  */
 export function provideFloatingFallback(
   computePosition: ComputePositionFn,

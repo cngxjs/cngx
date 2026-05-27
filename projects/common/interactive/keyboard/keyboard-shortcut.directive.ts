@@ -10,6 +10,8 @@ const INPUT_TAGS = new Set(['INPUT', 'TEXTAREA', 'SELECT']);
 /**
  * Declarative keyboard shortcut handler.
  *
+ * @category common/interactive/keyboard
+ *
  * Binds a keyboard shortcut to the host element without global event listeners
  * in a service. Supports `mod` as a platform-aware modifier (`Meta` on macOS,
  * `Ctrl` elsewhere).

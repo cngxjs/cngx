@@ -13,6 +13,8 @@ import { InjectionToken, type ModelSignal, type Signal } from '@angular/core';
  * pick. `disabled` is a read-only `Signal<boolean>` so the leaf can
  * combine it with its own per-toggle `disabled()` to compute
  * `toggleDisabled`.
+ *
+ * @category common/interactive
  */
 export interface CngxButtonToggleGroupContract<T = unknown> {
   readonly value: ModelSignal<T | undefined>;
@@ -41,6 +43,8 @@ export interface CngxButtonToggleGroupContract<T = unknown> {
  * leaf's keyboard semantics + ARIA pattern (`aria-checked` for single,
  * `aria-selected` for multi), chosen at injection time, NOT at
  * runtime — there is no `[selectionMode]` flag.
+ *
+ * @category common/interactive
  */
 export const CNGX_BUTTON_TOGGLE_GROUP =
   new InjectionToken<CngxButtonToggleGroupContract>('CngxButtonToggleGroup');

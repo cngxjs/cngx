@@ -258,6 +258,8 @@ export interface CngxComboboxChipContext<T = unknown> {
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-caret</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-check</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-rich-trigger-label</example-url>
+ *
+ * @category forms/select/templates
  */
 @Directive({
   selector: 'ng-template[cngxSelectCheck]',
@@ -298,6 +300,8 @@ export class CngxSelectCheck<T = unknown> {
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-caret</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-check</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-rich-trigger-label</example-url>
+ *
+ * @category forms/select/templates
  */
 @Directive({
   selector: 'ng-template[cngxSelectCaret]',
@@ -338,6 +342,8 @@ export class CngxSelectCaret {
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-caret</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-check</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-rich-trigger-label</example-url>
+ *
+ * @category forms/select/templates
  */
 @Directive({
   selector: 'ng-template[cngxSelectOptgroup]',
@@ -378,6 +384,8 @@ export class CngxSelectOptgroupTemplate<T = unknown> {
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-caret</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-check</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-rich-trigger-label</example-url>
+ *
+ * @category forms/select/templates
  */
 @Directive({
   selector: 'ng-template[cngxSelectPlaceholder]',
@@ -418,6 +426,8 @@ export class CngxSelectPlaceholder {
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-caret</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-check</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-rich-trigger-label</example-url>
+ *
+ * @category forms/select/templates
  */
 @Directive({
   selector: 'ng-template[cngxSelectEmpty]',
@@ -458,6 +468,8 @@ export class CngxSelectEmpty {
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-caret</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-check</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-rich-trigger-label</example-url>
+ *
+ * @category forms/select/templates
  */
 @Directive({
   selector: 'ng-template[cngxSelectLoading]',
@@ -498,6 +510,8 @@ export class CngxSelectLoading {
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-caret</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-check</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-rich-trigger-label</example-url>
+ *
+ * @category forms/select/templates
  */
 @Directive({
   selector: 'ng-template[cngxSelectTriggerLabel]',
@@ -543,6 +557,8 @@ export class CngxSelectTriggerLabel<T = unknown> {
  * <example-url>http://localhost:4200/#/forms/select/typeahead/typeahead-cngxselectoptionlabel-slot-override</example-url>
  * <example-url>http://localhost:4200/#/forms/select/typeahead/typeahead-commitaction-with-optimistic-pessimistic-mode</example-url>
  * <example-url>http://localhost:4200/#/forms/select/typeahead/typeahead-single-value-async-autocomplete</example-url>
+ *
+ * @category forms/select/templates
  */
 @Directive({
   selector: 'ng-template[cngxSelectOptionLabel]',
@@ -564,6 +580,8 @@ export class CngxSelectOptionLabel<T = unknown> {
  *   </ng-template>
  * </cngx-select>
  * ```
+ *
+ * @category forms/select/templates
  */
 @Directive({
   selector: 'ng-template[cngxSelectError]',
@@ -613,6 +631,8 @@ export class CngxSelectError {
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-caret</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-check</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-rich-trigger-label</example-url>
+ *
+ * @category forms/select/templates
  */
 @Directive({
   selector: 'ng-template[cngxSelectRetryButton]',
@@ -662,6 +682,8 @@ export class CngxSelectRetryButton {
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-caret</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-check</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-rich-trigger-label</example-url>
+ *
+ * @category forms/select/templates
  */
 @Directive({
   selector: 'ng-template[cngxSelectLoadingGlyph]',
@@ -702,6 +724,8 @@ export class CngxSelectLoadingGlyph {
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-caret</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-check</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-rich-trigger-label</example-url>
+ *
+ * @category forms/select/templates
  */
 @Directive({
   selector: 'ng-template[cngxSelectRefreshing]',
@@ -752,6 +776,8 @@ export class CngxSelectRefreshing {
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-caret</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-check</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-rich-trigger-label</example-url>
+ *
+ * @category forms/select/templates
  */
 @Directive({
   selector: 'ng-template[cngxSelectCommitError]',
@@ -783,6 +809,8 @@ export class CngxSelectCommitError<T = unknown> {
  * <example-url>http://localhost:4200/#/forms/select/reorderable-multi-select/keyboard-reorder-alt-arrow-home-end</example-url>
  * <example-url>http://localhost:4200/#/forms/select/reorderable-multi-select/optional-drag-handle-glyph</example-url>
  * <example-url>http://localhost:4200/#/forms/select/reorderable-multi-select/pre-seeded-values-reorder-log</example-url>
+ *
+ * @category forms/select/templates
  */
 @Directive({
   selector: 'ng-template[cngxMultiSelectChip]',
@@ -805,6 +833,8 @@ export class CngxMultiSelectChip<T = unknown> {
  *   </ng-template>
  * </cngx-reorderable-multi-select>
  * ```
+ *
+ * @category forms/select/templates
  */
 @Directive({
   selector: 'ng-template[cngxMultiSelectChipHandle]',
@@ -838,6 +868,8 @@ export class CngxMultiSelectChipHandle {
  * <example-url>http://localhost:4200/#/forms/select/reorderable-multi-select/keyboard-reorder-alt-arrow-home-end</example-url>
  * <example-url>http://localhost:4200/#/forms/select/reorderable-multi-select/optional-drag-handle-glyph</example-url>
  * <example-url>http://localhost:4200/#/forms/select/reorderable-multi-select/pre-seeded-values-reorder-log</example-url>
+ *
+ * @category forms/select/templates
  */
 @Directive({
   selector: 'ng-template[cngxMultiSelectTriggerLabel]',
@@ -888,6 +920,8 @@ export class CngxMultiSelectTriggerLabel<T = unknown> {
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-caret</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-check</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-rich-trigger-label</example-url>
+ *
+ * @category forms/select/templates
  */
 @Directive({
   selector: 'ng-template[cngxSelectClearButton]',
@@ -938,6 +972,8 @@ export class CngxSelectClearButton {
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-caret</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-check</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-rich-trigger-label</example-url>
+ *
+ * @category forms/select/templates
  */
 @Directive({
   selector: 'ng-template[cngxSelectOptionPending]',
@@ -988,6 +1024,8 @@ export class CngxSelectOptionPending<T = unknown> {
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-caret</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-check</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-rich-trigger-label</example-url>
+ *
+ * @category forms/select/templates
  */
 @Directive({
   selector: 'ng-template[cngxSelectOptionError]',
@@ -1016,6 +1054,8 @@ export class CngxSelectOptionError<T = unknown> {
  * <example-url>http://localhost:4200/#/forms/select/combobox/combobox-per-toggle-commitaction</example-url>
  * <example-url>http://localhost:4200/#/forms/select/combobox/combobox-text-summary-via-cngxcomboboxtriggerlabel</example-url>
  * <example-url>http://localhost:4200/#/forms/select/combobox/slot-override-cngxcomboboxchip</example-url>
+ *
+ * @category forms/select/templates
  */
 @Directive({
   selector: 'ng-template[cngxComboboxTriggerLabel]',
@@ -1044,6 +1084,8 @@ export class CngxComboboxTriggerLabel<T = unknown> {
  * <example-url>http://localhost:4200/#/forms/select/combobox/combobox-per-toggle-commitaction</example-url>
  * <example-url>http://localhost:4200/#/forms/select/combobox/combobox-text-summary-via-cngxcomboboxtriggerlabel</example-url>
  * <example-url>http://localhost:4200/#/forms/select/combobox/slot-override-cngxcomboboxchip</example-url>
+ *
+ * @category forms/select/templates
  */
 @Directive({
   selector: 'ng-template[cngxComboboxChip]',
@@ -1096,6 +1138,8 @@ export interface CngxSelectInputSlotContext {
  *   </ng-template>
  * </cngx-typeahead>
  * ```
+ *
+ * @category forms/select/templates
  */
 @Directive({
   selector: 'ng-template[cngxSelectInputPrefix]',
@@ -1110,6 +1154,8 @@ export class CngxSelectInputPrefix {
 /**
  * `*cngxSelectInputSuffix` slot — projected after the trigger `<input>`,
  * before clear/caret. Same context as {@link CngxSelectInputPrefix}.
+ *
+ * @category forms/select/templates
  */
 @Directive({
   selector: 'ng-template[cngxSelectInputSuffix]',
@@ -1147,6 +1193,8 @@ export class CngxSelectInputSuffix {
  * <example-url>http://localhost:4200/#/forms/select/action-select/custom-action-template-split-actions</example-url>
  * <example-url>http://localhost:4200/#/forms/select/action-select/dirty-guard-escape-cancel-click-outside-blocked</example-url>
  * <example-url>http://localhost:4200/#/forms/select/action-select/pre-seeded-created-output-log</example-url>
+ *
+ * @category forms/select/templates
  */
 @Directive({
   selector: 'ng-template[cngxSelectAction]',

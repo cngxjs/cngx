@@ -308,6 +308,8 @@ function localeToRegion(locale: string): string {
  * customTokens = { H: { pattern: /[0-9A-F]/i } };
  * // mask: '#HHHHHH'
  * ```
+ *
+ * @category forms/input
  */
 export interface MaskTokenDef {
   /** Regex pattern the character must match. */
@@ -318,7 +320,11 @@ export interface MaskTokenDef {
   readonly transform?: (char: string) => string;
 }
 
-/** Map of single-char token names to their definitions. */
+/**
+ * Map of single-char token names to their definitions.
+ *
+ * @category forms/input
+ */
 export type MaskTokenMap = Record<string, MaskTokenDef>;
 
 /**
@@ -379,6 +385,7 @@ export type MaskTokenMap = Record<string, MaskTokenDef>;
  * <!-- Credit card with auto-format switching -->
  * <input cngxInputMask="creditcard" />
  * ```
+ * @category forms/input
  * <example-url>http://localhost:4200/#/forms/input/mask/custom-pattern</example-url>
  * <example-url>http://localhost:4200/#/forms/input/mask/custom-tokens-and-transform</example-url>
  * <example-url>http://localhost:4200/#/forms/input/mask/locale-presets</example-url>

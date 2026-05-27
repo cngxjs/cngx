@@ -9,6 +9,8 @@ import type { ArrowEdge } from './popover.types';
  * `left` / `right`) and the inline-axis offset in CSS pixels that the
  * library would have placed the default diamond at. Either can be used to
  * rotate, translate, or theme the custom glyph so it tracks the trigger.
+ *
+ * @category common/popover
  */
 export interface CngxPopoverArrowContext {
   /** Primary edge of the panel facing the trigger. */
@@ -22,15 +24,27 @@ export interface CngxPopoverArrowContext {
   readonly offsetPx: number | null;
 }
 
-/** Marks the header content inside `cngx-popover-panel`. */
+/**
+ * Marks the header content inside `cngx-popover-panel`.
+ *
+ * @category common/popover
+ */
 @Directive({ selector: '[cngxPopoverHeader]', standalone: true })
 export class CngxPopoverHeader {}
 
-/** Marks the body content inside `cngx-popover-panel`. */
+/**
+ * Marks the body content inside `cngx-popover-panel`.
+ *
+ * @category common/popover
+ */
 @Directive({ selector: '[cngxPopoverBody]', standalone: true })
 export class CngxPopoverBody {}
 
-/** Marks the footer content inside `cngx-popover-panel`. */
+/**
+ * Marks the footer content inside `cngx-popover-panel`.
+ *
+ * @category common/popover
+ */
 @Directive({ selector: '[cngxPopoverFooter]', standalone: true })
 export class CngxPopoverFooter {}
 
@@ -44,25 +58,39 @@ export class CngxPopoverFooter {}
  *   </button>
  * </ng-template>
  * ```
+ *
+ * @category common/popover
  */
 @Directive({ selector: 'ng-template[cngxPopoverClose]', standalone: true })
 export class CngxPopoverClose {
   readonly templateRef = inject(TemplateRef);
 }
 
-/** Template shown while panel content is loading. */
+/**
+ * Template shown while panel content is loading.
+ *
+ * @category common/popover
+ */
 @Directive({ selector: 'ng-template[cngxPopoverLoading]', standalone: true })
 export class CngxPopoverLoading {
   readonly templateRef = inject(TemplateRef);
 }
 
-/** Template shown when panel content is empty. */
+/**
+ * Template shown when panel content is empty.
+ *
+ * @category common/popover
+ */
 @Directive({ selector: 'ng-template[cngxPopoverEmpty]', standalone: true })
 export class CngxPopoverEmpty {
   readonly templateRef = inject(TemplateRef);
 }
 
-/** Template shown when panel content failed to load. Context: `$implicit` = error. */
+/**
+ * Template shown when panel content failed to load. Context: `$implicit` = error.
+ *
+ * @category common/popover
+ */
 @Directive({ selector: 'ng-template[cngxPopoverError]', standalone: true })
 export class CngxPopoverError {
   readonly templateRef = inject(TemplateRef);
@@ -84,6 +112,8 @@ export class CngxPopoverError {
  *   </ng-template>
  * </cngx-popover-panel>
  * ```
+ *
+ * @category common/popover
  */
 @Directive({ selector: 'ng-template[cngxPopoverArrow]', standalone: true })
 export class CngxPopoverArrow {

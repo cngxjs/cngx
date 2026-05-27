@@ -1,4 +1,4 @@
 import { makeVersion } from '@cngx/utils';
 
-/** Build-time version of `@cngx/common`. The placeholder is replaced at publish. */
+/** @internal — replaced at publish time, not part of consumer API. */
 export const VERSION = makeVersion('0.0.0-PLACEHOLDER');

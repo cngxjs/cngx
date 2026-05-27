@@ -46,6 +46,8 @@ import { Directive, inject, TemplateRef } from '@angular/core';
  *   <div class="skeleton-row" [class.is-last]="last"></div>
  * </ng-template>
  * ```
+ *
+ * @category ui/skeleton
  */
 @Directive({
   selector: 'ng-template[cngxSkeletonPlaceholder]',
@@ -56,7 +58,11 @@ export class CngxSkeletonPlaceholder {
   readonly templateRef = inject<TemplateRef<CngxSkeletonPlaceholderContext>>(TemplateRef);
 }
 
-/** Template context for `cngxSkeletonPlaceholder`. */
+/**
+ * Template context for `cngxSkeletonPlaceholder`.
+ *
+ * @category ui/skeleton
+ */
 export interface CngxSkeletonPlaceholderContext {
   /** Current index (0-based). */
   $implicit: number;

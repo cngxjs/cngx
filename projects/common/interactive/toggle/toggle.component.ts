@@ -65,6 +65,8 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
  * <ng-template #icon><span aria-hidden="true">★</span></ng-template>
  * <cngx-toggle [(value)]="featured" [thumbGlyph]="icon">Featured</cngx-toggle>
  * ```
+ *
+ * @category common/interactive
  * <example-url>http://localhost:4200/#/common/interactive/toggle/basic-two-way-binding</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/toggle/custom-thumb-glyph</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/toggle/disabled-with-reason</example-url>

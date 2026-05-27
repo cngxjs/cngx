@@ -11,6 +11,8 @@
  *   scale to a constant function returning `range[0]`.
  * @param range `[start, end]` output range (typically pixel coordinates).
  * @returns `(v: number) => number` mapping domain values to range values.
+ *
+ * @category common/chart/scales
  */
 export function createLinearScale(
   domain: readonly [number, number],

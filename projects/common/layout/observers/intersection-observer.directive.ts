@@ -43,6 +43,8 @@ import {
  *   Observed within a scrollable parent
  * </div>
  * ```
+ *
+ * @category common/layout
  * <example-url>http://localhost:4200/#/common/layout/intersection-observer/scroll-sentinel</example-url>
  */
 @Directive({

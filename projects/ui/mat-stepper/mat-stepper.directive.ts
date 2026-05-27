@@ -35,6 +35,8 @@ import {
  *
  * Topology mirrors `[cngxMatTabs]`: Material is the host, cngx is
  * the instrumentation layer.
+ *
+ * @category ui/mat-stepper
  */
 @Directive({
   selector: '[cngxMatStepper]',

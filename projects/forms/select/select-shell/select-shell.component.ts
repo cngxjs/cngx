@@ -122,6 +122,8 @@ import { CNGX_TRIGGER_FOCUS_FACTORY } from '../shared/trigger-focus';
 /**
  * Change event emitted by {@link CngxSelectShell.selectionChange} on
  * a user pick.
+ *
+ * @category forms/select/shell
  */
 export interface CngxSelectShellChange<T = unknown> {
   readonly source: CngxSelectShell<T>;
@@ -143,6 +145,8 @@ export interface CngxSelectShellChange<T = unknown> {
  * Naming: distinct from the internal `CngxSelectPanelShell` —
  * `Shell` here is the *projection-shell* that wraps consumer option
  * markup.
+ *
+ * @category forms/select/shell
  * <example-url>http://localhost:4200/#/forms/select/select-shell/async-commit-pending-error-inline-glyphs</example-url>
  * <example-url>http://localhost:4200/#/forms/select/select-shell/basic-flat-declarative-options</example-url>
  * <example-url>http://localhost:4200/#/forms/select/select-shell/custom-glyphs-clearglyph-caretglyph</example-url>

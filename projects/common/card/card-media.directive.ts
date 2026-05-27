@@ -11,7 +11,8 @@ import { Directive, input } from '@angular/core';
  *   <img cngxCardMedia [decorative]="false" alt="Photo of patient" />
  * </cngx-card>
  * ```
-
+ *
+ * @category common/card
  * <example-url>http://localhost:4200/#/common/card/card-with-image</example-url>
 
  */

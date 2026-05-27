@@ -66,6 +66,8 @@ import { firstValueFrom, isObservable, type Observable } from 'rxjs';
  * />
  * <cngx-toast-on />
  * ```
+ *
+ * @category common/interactive
  * <example-url>http://localhost:4200/#/common/interactive/chip/input/async-validation-with-supersede-semantics</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/chip/input/synchronous-tokenization</example-url>
  */

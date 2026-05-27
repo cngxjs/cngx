@@ -5,6 +5,8 @@ import type { CngxCellTplContext } from './models';
 /**
  * Resolves a custom cell template for the given column key, or returns `null`
  * when no matching template is projected.
+ *
+ * @category data-display/treetable
  */
 export function resolveCellTpl<T>(
   col: string,
@@ -18,6 +20,8 @@ export function resolveCellTpl<T>(
 /**
  * Resolves a custom header template for the given column key, or returns `null`
  * when no matching template is projected.
+ *
+ * @category data-display/treetable
  */
 export function resolveHeaderTpl(
   col: string,

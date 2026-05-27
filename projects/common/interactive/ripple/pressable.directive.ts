@@ -25,6 +25,8 @@ import { DestroyRef, Directive, inject, input, signal } from '@angular/core';
  *   Tappable card
  * </div>
  * ```
+ *
+ * @category common/interactive
  * <example-url>http://localhost:4200/#/common/interactive/gestures/pressable/press-feedback-on-buttons</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/gestures/pressable/tappable-card</example-url>
  */

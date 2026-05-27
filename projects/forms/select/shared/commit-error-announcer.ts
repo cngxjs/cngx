@@ -11,6 +11,8 @@ import type { CngxSelectOptionDef } from './option.model';
  * - `soft` — generic "removed" via the configured announcer format,
  *   polite. `CngxTypeahead` uses this so the free-text flow isn't
  *   interrupted.
+ *
+ * @category forms/select/commit
  */
 export type CngxCommitErrorAnnouncePolicy =
   | { readonly kind: 'verbose'; readonly severity: 'assertive' | 'polite' }
@@ -19,6 +21,8 @@ export type CngxCommitErrorAnnouncePolicy =
 /**
  * Announcer surface for {@link createCommitErrorAnnouncer} — verbose path
  * through `announcer.announce`, soft path through `softAnnounce`.
+ *
+ * @category forms/select/commit
  */
 export interface CngxCommitErrorAnnounceDeps {
   readonly announcer: CngxSelectAnnouncer;
@@ -50,6 +54,8 @@ export interface CngxCommitErrorAnnounceDeps {
  *   policy: signal({ kind: 'soft' } as const),
  * });
  * ```
+ *
+ * @category forms/select/commit
  */
 export interface CngxCommitErrorAnnouncerOptions {
   readonly deps: CngxCommitErrorAnnounceDeps;
@@ -64,6 +70,8 @@ export interface CngxCommitErrorAnnouncerOptions {
  *
  * Override the {@link CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY} token to
  * swap in telemetry or locale-aware variants.
+ *
+ * @category forms/select/commit
  */
 export function createCommitErrorAnnouncer(
   opts: CngxCommitErrorAnnouncerOptions,
@@ -80,6 +88,8 @@ export function createCommitErrorAnnouncer(
 
 /**
  * Factory signature for {@link CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY}.
+ *
+ * @category forms/select/commit
  */
 export type CngxCommitErrorAnnouncerFactory = (
   options: CngxCommitErrorAnnouncerOptions,
@@ -89,6 +99,8 @@ export type CngxCommitErrorAnnouncerFactory = (
  * Factory token for the scalar-commit error-announce path. Default
  * {@link createCommitErrorAnnouncer}. Override for telemetry, locale,
  * or test doubles.
+ *
+ * @category forms/select/commit
  */
 export const CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY =
   new InjectionToken<CngxCommitErrorAnnouncerFactory>(

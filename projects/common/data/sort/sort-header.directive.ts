@@ -23,6 +23,8 @@ import { type CngxSort } from './sort.directive';
  * </div>
  * ```
  *
+ * @category common/data/sort
+ *
  * <example-url>http://localhost:4200/#/common/data/sort/basic</example-url>
  * <example-url>http://localhost:4200/#/common/data/sort/multi-sort</example-url>
  * <example-url>http://localhost:4200/#/common/data/sort/controlled</example-url>

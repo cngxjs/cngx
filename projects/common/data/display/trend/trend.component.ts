@@ -32,6 +32,9 @@ import {
  *   </header>
  * </cngx-card>
  * ```
+ *
+ * @category common/data/metric
+ *
  * <example-url>http://localhost:4200/#/common/data/trend/composed-with-metric-in-a-card</example-url>
  * <example-url>http://localhost:4200/#/common/data/trend/trend-directions</example-url>
  */

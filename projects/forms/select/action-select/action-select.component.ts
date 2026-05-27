@@ -115,6 +115,8 @@ import {
  * Change event emitted by {@link CngxActionSelect.selectionChange}.
  * `action`: `'select'` user pick, `'clear'` reset, `'create'`
  * successful inline quick-create via `*cngxSelectAction`.
+ *
+ * @category forms/select/action-select
  */
 export interface CngxActionSelectChange<T = unknown> {
   readonly source: CngxActionSelect<T>;
@@ -140,6 +142,8 @@ export interface CngxActionSelectChange<T = unknown> {
  * Dismiss-guard: Escape and click-outside are intercepted while
  * `actionDirty()` is `true` (consumer flips it via `setDirty(true)`);
  * Escape fires `cancel()` to reset.
+ *
+ * @category forms/select/action-select
  * <example-url>http://localhost:4200/#/forms/select/action-select/async-error-rollback-observation</example-url>
  * <example-url>http://localhost:4200/#/forms/select/action-select/basic-sync-quick-create</example-url>
  * <example-url>http://localhost:4200/#/forms/select/action-select/custom-action-template-split-actions</example-url>

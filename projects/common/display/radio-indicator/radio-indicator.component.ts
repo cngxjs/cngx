@@ -34,6 +34,8 @@ import { ChangeDetectionStrategy, Component, input, ViewEncapsulation, type Temp
  * - Accessibility announcements — `aria-hidden="true"` unconditionally.
  *   Selection is announced via the row's `role="radio"` /
  *   `aria-checked` ARIA, never by this decoration.
+ *
+ * @category common/display
  * <example-url>http://localhost:4200/#/common/display/radio-indicator/custom-dotglyph</example-url>
  * <example-url>http://localhost:4200/#/common/display/radio-indicator/default-unchecked-vs-checked</example-url>
  * <example-url>http://localhost:4200/#/common/display/radio-indicator/disabled</example-url>

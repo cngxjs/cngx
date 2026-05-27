@@ -8,6 +8,8 @@ import {
  * Registers a single error condition with the nearest
  * {@link CngxErrorAggregator} ancestor.
  *
+ * @category common/interactive/error
+ *
  * Pure DI propagation — no DOM output. The directive is a no-op when no
  * aggregator is present (the optional injection returns `null`).
  * Useful for surfacing errors that live outside the form-field

@@ -6,6 +6,8 @@ import type { AsyncStatus } from './async-state';
  *
  * Replaces the imperative `let previousStatus` pattern inside `effect()` calls
  * with a fully reactive, `linkedSignal`-based approach.
+ *
+ * @category core/utils/async-state
  */
 export interface StatusTransition {
   /** The current status value. */
@@ -31,6 +33,8 @@ export interface StatusTransition {
  *   if (current() === 'success') { ... }
  * });
  * ```
+ *
+ * @category core/utils/async-state
  */
 export function createTransitionTracker(source: () => AsyncStatus): StatusTransition {
   const state = linkedSignal<AsyncStatus, { current: AsyncStatus; previous: AsyncStatus }>({

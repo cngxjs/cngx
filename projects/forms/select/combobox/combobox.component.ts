@@ -108,6 +108,8 @@ import {
 
 /**
  * Change event emitted by {@link CngxCombobox.selectionChange}.
+ *
+ * @category forms/select/combobox
  */
 export interface CngxComboboxChange<T = unknown> {
   readonly source: CngxCombobox<T>;
@@ -132,6 +134,8 @@ export interface CngxComboboxChange<T = unknown> {
  * Stateless graph in {@link createSelectCore}; this component is a
  * thin adapter binding the trigger template to the core's signals plus
  * value-shape write-paths (AD dispatch, Field↔sync, search filter).
+ *
+ * @category forms/select/combobox
  * <example-url>http://localhost:4200/#/forms/select/combobox/combobox-async-via-state-skipinitial-searchtermchange</example-url>
  * <example-url>http://localhost:4200/#/forms/select/combobox/combobox-basic-tag-picker-with-typeahead-filter</example-url>
  * <example-url>http://localhost:4200/#/forms/select/combobox/combobox-clearable-custom-cngxselectclearbutton</example-url>

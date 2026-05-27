@@ -12,6 +12,8 @@ import {
 /**
  * Headless text-to-speech directive using the browser's SpeechSynthesis API.
  *
+ * @category common/interactive
+ *
  * A read-aloud feature for cognitive accessibility — dyslexia support, reading
  * assistance, or convenience. Not a screen reader replacement (use
  * `CngxLiveRegion` for ARIA live regions).

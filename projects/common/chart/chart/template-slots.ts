@@ -22,6 +22,8 @@ import { Directive, inject, TemplateRef } from '@angular/core';
  * `CHART_SMALL_BREAKPOINT_PX` constant; default 400). Container-size
  * based, not viewport-based, so it works correctly inside dashboard
  * cells of any size.
+ *
+ * @category common/chart
  */
 export interface CngxChartSlotContext {
   readonly width: number;
@@ -32,6 +34,8 @@ export interface CngxChartSlotContext {
 /**
  * Threshold (px) below which `CngxChartSlotContext.small` is true.
  * Hardcoded for v1; later releases may make this a config token.
+ *
+ * @category common/chart
  */
 export const CHART_SMALL_BREAKPOINT_PX = 400;
 
@@ -50,6 +54,8 @@ export const CHART_SMALL_BREAKPOINT_PX = 400;
  *   </ng-template>
  * </cngx-chart>
  * ```
+ *
+ * @category common/chart
  */
 @Directive({
   selector: 'ng-template[cngxChartLoading]',
@@ -65,6 +71,8 @@ export class CngxChartLoading {
  * size — typically a compact text fallback when `small` is true and
  * a richer surface (`<cngx-empty-state>`, illustration, action) at
  * regular sizes.
+ *
+ * @category common/chart
  */
 @Directive({
   selector: 'ng-template[cngxChartEmpty]',
@@ -79,6 +87,8 @@ export class CngxChartEmpty {
  * common slot context with the live error value via `$implicit` and
  * `error` keys, so consumers can render a typed message AND branch
  * on chart size.
+ *
+ * @category common/chart
  */
 export interface CngxChartErrorContext extends CngxChartSlotContext {
   readonly $implicit: unknown;
@@ -88,6 +98,8 @@ export interface CngxChartErrorContext extends CngxChartSlotContext {
 /**
  * `*cngxChartError` slot — overrides the chart-level error placeholder.
  * Receives a {@link CngxChartErrorContext}.
+ *
+ * @category common/chart
  */
 @Directive({
   selector: 'ng-template[cngxChartError]',

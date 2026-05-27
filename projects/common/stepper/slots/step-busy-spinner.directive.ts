@@ -7,6 +7,8 @@ import type { CngxStepNode } from '../stepper-host.token';
  * pending-commit overlay on the in-flight target step. Renders only
  * when the step matches `presenter.intendedStepIndex()` with
  * `commitState.status() === 'pending'`.
+ *
+ * @category common/stepper/slots
  */
 export interface CngxStepBusySpinnerContext {
   /** The step node carrying id / label / state signals. */
@@ -26,6 +28,8 @@ export interface CngxStepBusySpinnerContext {
  *   </ng-template>
  * </cngx-stepper>
  * ```
+ *
+ * @category common/stepper/slots
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-slot-overrides/custom-busy-spinner-via-code-cngxstepbusyspinner-code</example-url>
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-slot-overrides/custom-error-badge-via-code-cngxstepbadge-code</example-url>
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-slot-overrides/custom-group-header-via-code-cngxstepgroupheader-code</example-url>

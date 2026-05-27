@@ -17,6 +17,8 @@ import type { Observable } from 'rxjs';
  * `Observable<number>` / getter / setter at the directive boundary.
  * That keeps `@cngx/common/data` independent of `@angular/material`
  * (Sheriff Level-2 invariant).
+ *
+ * @category common/data/material-bridge
  */
 export interface CngxMaterialBidirectionalSyncOptions {
   /**
@@ -118,6 +120,8 @@ export interface CngxMaterialBidirectionalSyncOptions {
  * with the regular presenter→Material effect (the read-equality guard
  * at the effect site suppresses a duplicate write when the presenter
  * later changes to the same value).
+ *
+ * @category common/data/material-bridge
  */
 export function createMaterialBidirectionalSync(
   opts: CngxMaterialBidirectionalSyncOptions,

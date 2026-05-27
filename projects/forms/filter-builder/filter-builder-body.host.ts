@@ -21,6 +21,8 @@ import { CngxFilterBuilderBody } from './filter-builder-body.component';
  * input the default body declares and read the host context through
  * `CNGX_FILTER_BUILDER_HOST`. Mirrors `CNGX_SELECT_PANEL_VIEW_HOST` in
  * `@cngx/forms/select`.
+ *
+ * @category forms/filter-builder
  */
 export const CNGX_FILTER_BUILDER_BODY_HOST = new InjectionToken<Type<unknown>>(
   'CngxFilterBuilderBodyHost',

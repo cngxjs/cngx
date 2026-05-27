@@ -5,10 +5,16 @@
  * trailing close commands.
  *
  * Pure TS, no DOM dependency, no Angular dep.
+ *
+ * @category common/chart/path
  */
 export type CngxCurve = 'linear' | 'monotone';
 
-/** Pixel-space point fed into {@link buildCurvePath}. */
+/**
+ * Pixel-space point fed into {@link buildCurvePath}.
+ *
+ * @category common/chart/path
+ */
 export interface PathPoint {
   readonly x: number;
   readonly y: number;
@@ -24,6 +30,8 @@ export interface PathPoint {
  *   overshoots between data points.
  * @returns The full path data starting with `M`. Returns `''` when
  *   the input is empty; `M x y` when the input has one point.
+ *
+ * @category common/chart/path
  */
 export function buildCurvePath(points: readonly PathPoint[], curve: CngxCurve): string {
   if (points.length === 0) {

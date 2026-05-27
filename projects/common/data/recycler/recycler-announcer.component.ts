@@ -11,6 +11,9 @@ import type { CngxRecycler } from './recycler';
  * ```html
  * <cngx-recycler-announcer [cngxRecyclerAnnouncer]="recycler" />
  * ```
+ *
+ * @category common/data/recycler
+ *
  * <example-url>http://localhost:4200/#/common/data/recycler/basic-list-fixed-item-height</example-url>
  * <example-url>http://localhost:4200/#/common/data/recycler/content-visibility-css-only</example-url>
  * <example-url>http://localhost:4200/#/common/data/recycler/infinite-scroll-recycler</example-url>

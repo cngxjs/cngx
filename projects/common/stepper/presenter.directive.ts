@@ -33,6 +33,8 @@ import { flatStepsEqual, flattenStepTree, stepTreeEqual } from './step-tree.util
  * and target indices; resolves `true` to advance, `false` to refuse.
  * The `Observable | Promise | sync` union matches every cngx
  * commit-action signature.
+ *
+ * @category common/stepper
  */
 export type CngxStepperCommitAction = (
   fromIndex: number,
@@ -49,6 +51,8 @@ export type CngxStepperCommitAction = (
  *
  * Sheriff: common Level 2. Pure directive — zero template, zero CSS.
  * Level-4 organisms compose this via `hostDirectives`.
+ *
+ * @category common/stepper
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-commit-action/pessimistic-optimistic-commits-with-bridge-directives</example-url>
  */
 @Directive({

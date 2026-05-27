@@ -30,6 +30,9 @@ import { computed, Directive, input, output, signal } from '@angular/core';
  * automatically.
  *
  * @typeParam T - The item type the predicate operates on.
+ *
+ * @category common/data/filter
+ *
  * <example-url>http://localhost:4200/#/common/data/filter-chips/custom-chip-decoration-via-cngxfilterchip</example-url>
  * <example-url>http://localhost:4200/#/common/data/filter-chips/multi-role-filter-wired-to-a-list</example-url>
  * <example-url>http://localhost:4200/#/common/data/smart-data-source/auto-wired</example-url>

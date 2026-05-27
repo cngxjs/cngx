@@ -100,6 +100,8 @@ function equalFieldMap(
  * on first render and skips the picker. Embedded recursive usage lives
  * in `CngxFilterExpressionRow` and does not interop with
  * `CNGX_FILTER_BUILDER_HOST`.
+ *
+ * @category forms/filter-builder
  * <example-url>http://localhost:4200/#/forms/filter-builder/filter-row-standalone/single-row-with-value</example-url>
  */
 @Component({

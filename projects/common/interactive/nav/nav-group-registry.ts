@@ -20,6 +20,8 @@ export interface NavGroupRef {
  *   ],
  * })
  * ```
+ *
+ * @category common/interactive
  */
 @Injectable()
 export class CngxNavGroupRegistry {

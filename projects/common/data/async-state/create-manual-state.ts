@@ -6,6 +6,8 @@ import { buildAsyncStateView, type AsyncStatus, type CngxAsyncState } from '@cng
  *
  * Returned by `createManualState()` — provides imperative setters
  * while the read-side stays the standard `CngxAsyncState` interface.
+ *
+ * @category common/data/async-state
  */
 export interface ManualAsyncState<T> extends CngxAsyncState<T> {
   /** Set the status directly. */
@@ -40,6 +42,8 @@ export interface ManualAsyncState<T> extends CngxAsyncState<T> {
  *   this.processState.setSuccess(result);
  * }
  * ```
+ *
+ * @category common/data/async-state
  */
 export function createManualState<T>(): ManualAsyncState<T> {
   const statusState = signal<AsyncStatus>('idle');

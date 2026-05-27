@@ -6,6 +6,8 @@ import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from '@a
  *
  * Decorative by default (`aria-hidden="true"`); set `label` to make it
  * informative (`role="img"`, `aria-label`).
+ *
+ * @category common/display
  * <example-url>http://localhost:4200/#/common/display/icon/decorative-vs-informative</example-url>
  * <example-url>http://localhost:4200/#/common/display/icon/sizes</example-url>
  * <example-url>http://localhost:4200/#/common/display/tag/app-wide-defaults-via-providetagconfig</example-url>

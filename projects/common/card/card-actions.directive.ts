@@ -14,6 +14,8 @@ import { Directive, input } from '@angular/core';
  *   </div>
  * </cngx-card>
  * ```
+ *
+ * @category common/card
  * <example-url>http://localhost:4200/#/common/card/action-card-with-selection</example-url>
  */
 @Directive({

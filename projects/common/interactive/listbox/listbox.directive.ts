@@ -41,6 +41,8 @@ import { CngxOption } from './option.directive';
  * 3. `isAllSelected` and `selectedLabels` are derived signals, not manual
  *    callbacks.
  * 4. Forms integration is decoupled: the listbox never imports `@angular/forms`.
+ *
+ * @category common/interactive/listbox
  * <example-url>http://localhost:4200/#/common/interactive/listbox/search/command-palette</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/listbox/trigger/select-dropdown</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/listbox/base/multi-select</example-url>

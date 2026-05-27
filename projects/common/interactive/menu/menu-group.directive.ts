@@ -7,6 +7,8 @@ import { CNGX_MENU_RADIO_GROUP, type CngxMenuRadioGroup } from './menu-radio-con
  * label. For radio groups, the host owns the selected value and exposes it
  * to enclosed `CngxMenuItemRadio` children through the
  * `CNGX_MENU_RADIO_GROUP` contract.
+ *
+ * @category common/interactive/menu
  * <example-url>http://localhost:4200/#/common/interactive/menu/checkable/text-formatting-menu</example-url>
  */
 @Directive({

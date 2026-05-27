@@ -28,9 +28,10 @@ import {
  *   <button (click)="expanded.set(!expanded())"
  *           [attr.aria-expanded]="expanded()">
  *     {{ expanded() ? 'Show less' : 'Show more' }}
- *   </button>
- * }
+ *   </button> * }
  * ```
+ *
+ * @category common/layout
  * <example-url>http://localhost:4200/#/common/layout/truncate/short-text-no-toggle</example-url>
  * <example-url>http://localhost:4200/#/common/layout/truncate/truncated-text-with-toggle</example-url>
  */

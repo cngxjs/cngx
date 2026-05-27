@@ -23,6 +23,8 @@ import { InjectionToken, type ModelSignal, type Signal } from '@angular/core';
  * `toggle(value)` is the single mutation entry-point the leaf calls
  * on Space / Enter / click. The group routes it through its
  * controller and writes `selectedValues` accordingly.
+ *
+ * @category common/interactive
  */
 export interface CngxButtonMultiToggleGroupContract<T = unknown> {
   readonly selectedValues: ModelSignal<T[]>;
@@ -41,6 +43,8 @@ export interface CngxButtonMultiToggleGroupContract<T = unknown> {
  * The leaf injects this token with `{ optional: true }` alongside
  * `CNGX_BUTTON_TOGGLE_GROUP` (also optional). Exactly one parent
  * must be present; the leaf throws a dev-mode error otherwise.
+ *
+ * @category common/interactive
  */
 export const CNGX_BUTTON_MULTI_TOGGLE_GROUP =
   new InjectionToken<CngxButtonMultiToggleGroupContract>(

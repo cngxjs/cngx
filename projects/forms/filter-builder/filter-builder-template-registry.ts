@@ -32,6 +32,8 @@ interface TemplateRefHolder<Ctx> {
 /**
  * Raw `contentChild` queries passed to {@link createFilterBuilderTemplateRegistry}.
  * Each entry is the signal returned by `contentChild(CngxFilterBuilder<Slot>)`.
+ *
+ * @category forms/filter-builder/slots
  */
 export interface CngxFilterBuilderTemplateRegistryQueries {
   readonly empty: Signal<CngxFilterBuilderEmpty | undefined>;
@@ -48,6 +50,8 @@ export interface CngxFilterBuilderTemplateRegistryQueries {
 /**
  * Resolved slot registry: each entry is the result of the 3-stage cascade
  * `instance contentChild → CONFIG.templates.<key> → null`.
+ *
+ * @category forms/filter-builder/slots
  */
 export interface CngxFilterBuilderTemplateRegistry {
   readonly empty: Signal<TemplateRef<CngxFilterBuilderEmptyContext> | null>;
@@ -61,7 +65,11 @@ export interface CngxFilterBuilderTemplateRegistry {
   readonly valueEditor: Signal<TemplateRef<CngxFilterBuilderValueEditorContext<unknown>> | null>;
 }
 
-/** Factory signature carried by `CNGX_FILTER_BUILDER_TEMPLATE_REGISTRY_FACTORY`. */
+/**
+ * Factory signature carried by `CNGX_FILTER_BUILDER_TEMPLATE_REGISTRY_FACTORY`.
+ *
+ * @category forms/filter-builder/slots
+ */
 export type CngxFilterBuilderTemplateRegistryFactory = (
   queries: CngxFilterBuilderTemplateRegistryQueries,
 ) => CngxFilterBuilderTemplateRegistry;
@@ -93,6 +101,8 @@ function resolveTemplate<Ctx>(
  * `CNGX_FILTER_BUILDER_TEMPLATE_REGISTRY_FACTORY` so consumers can wrap
  * the resolution path (telemetry, dynamic theme swapping, etc.) without
  * forking the component.
+ *
+ * @category forms/filter-builder/slots
  */
 export function createFilterBuilderTemplateRegistry(
   queries: CngxFilterBuilderTemplateRegistryQueries,
@@ -111,7 +121,11 @@ export function createFilterBuilderTemplateRegistry(
   };
 }
 
-/** DI token for the template-registry factory. Default resolves to `createFilterBuilderTemplateRegistry`. */
+/**
+ * DI token for the template-registry factory. Default resolves to `createFilterBuilderTemplateRegistry`.
+ *
+ * @category forms/filter-builder/slots
+ */
 export const CNGX_FILTER_BUILDER_TEMPLATE_REGISTRY_FACTORY = new InjectionToken<CngxFilterBuilderTemplateRegistryFactory>(
   'CngxFilterBuilderTemplateRegistryFactory',
   { providedIn: 'root', factory: () => createFilterBuilderTemplateRegistry },
@@ -121,6 +135,8 @@ export const CNGX_FILTER_BUILDER_TEMPLATE_REGISTRY_FACTORY = new InjectionToken<
  * Inject-context helper that resolves the registry factory through the DI
  * token and invokes it with the caller's `contentChild` queries. The
  * `<cngx-filter-builder>` component is the canonical caller.
+ *
+ * @category forms/filter-builder/slots
  */
 export function injectFilterBuilderTemplateRegistry(
   queries: CngxFilterBuilderTemplateRegistryQueries,

@@ -3,6 +3,8 @@ import { Directive, signal } from '@angular/core';
 /**
  * Tracks whether the host element is currently hovered via mouse pointer.
  *
+ * @category common/interactive
+ *
  * Designed as a `hostDirective` composition primitive — attach it to
  * components that need hover state without implementing their own
  * mouseenter/mouseleave logic. The `hovered` signal is writable so

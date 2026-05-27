@@ -22,6 +22,8 @@ import {
  *   }
  * </cngx-card>
  * ```
+ *
+ * @category common/card
  * <example-url>http://localhost:4200/#/common/card/loading-state</example-url>
  */
 @Component({

@@ -5,7 +5,11 @@ import { fromEvent } from 'rxjs';
 import { CngxFocusTrap } from '@cngx/common/a11y';
 import type { CngxDrawer, DrawerPosition } from './drawer.directive';
 
-/** How the drawer panel interacts with the content area. */
+/**
+ * How the drawer panel interacts with the content area.
+ *
+ * @category common/layout
+ */
 export type DrawerMode = 'over' | 'push' | 'side';
 
 /**
@@ -24,6 +28,8 @@ export type DrawerMode = 'over' | 'push' | 'side';
  *   <a href="/home">Home</a>
  * </nav>
  * ```
+ *
+ * @category common/layout
  * <example-url>http://localhost:4200/#/common/layout/drawer/basic-scroll-lock-backdrop</example-url>
  * <example-url>http://localhost:4200/#/common/layout/drawer/controlled-mode</example-url>
  * <example-url>http://localhost:4200/#/common/layout/drawer/direction-all-four-sides</example-url>

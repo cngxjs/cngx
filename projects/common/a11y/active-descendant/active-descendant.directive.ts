@@ -43,6 +43,8 @@ import { CNGX_AD_ITEM, type ActiveDescendantItem, type CngxAdItemHandle } from '
  *
  * Same model as `cdk-listbox` and `mat-select`, without the visual shell and
  * driven by signals instead of `ListKeyManager`.
+ *
+ * @category common/a11y
  * <example-url>http://localhost:4200/#/common/a11y/active-descendant/listbox-with-items-input</example-url>
  * <example-url>http://localhost:4200/#/common/a11y/active-descendant/typeahead</example-url>
  */

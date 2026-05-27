@@ -21,6 +21,8 @@ import {
  * Aggregates one-or-more {@link CngxErrorSource} children into a single
  * live A11y surface.
  *
+ * @category common/interactive/error
+ *
  * Each registered source contributes a key + a live `Signal<boolean>` +
  * an optional label. Derived signals (`hasError`, `errorCount`,
  * `activeErrors`, `errorLabels`, `shouldShow`, `announcement`) are

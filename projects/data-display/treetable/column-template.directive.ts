@@ -16,6 +16,8 @@ import type { CngxCellTplContext } from './models';
  * ```
  *
  * @typeParam T - The data type of the tree nodes.
+ *
+ * @category data-display/treetable
  */
 @Directive({ selector: 'ng-template[cngxCell]', standalone: true })
 export class CngxCellTpl<T = unknown> {
@@ -40,6 +42,8 @@ export class CngxCellTpl<T = unknown> {
  *   </ng-template>
  * </cngx-treetable>
  * ```
+ *
+ * @category data-display/treetable
  */
 @Directive({ selector: 'ng-template[cngxHeader]', standalone: true })
 export class CngxHeaderTpl {
@@ -64,6 +68,8 @@ export class CngxHeaderTpl {
  *   </ng-template>
  * </cngx-treetable>
  * ```
+ *
+ * @category data-display/treetable
  */
 @Directive({ selector: 'ng-template[cngxEmpty]', standalone: true })
 export class CngxEmptyTpl {

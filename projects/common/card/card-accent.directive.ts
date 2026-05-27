@@ -14,6 +14,8 @@ import { Directive, input } from '@angular/core';
  *   </header>
  * </cngx-card>
  * ```
+ *
+ * @category common/card
  * <example-url>http://localhost:4200/#/common/card/severity-accent</example-url>
  */
 @Directive({

@@ -15,6 +15,8 @@ import { InjectionToken } from '@angular/core';
  * working when used outside a `CngxPopoverPanel` (e.g. bare `[cngxPopover]`
  * on a `<div>`). The fallback value matches the panel's default
  * border-radius initial value (12 px).
+ *
+ * @category common/popover
  */
 export interface CngxPopoverArrowBounds {
   /**
@@ -24,7 +26,11 @@ export interface CngxPopoverArrowBounds {
   readonly borderRadius: number;
 }
 
-/** Injection token for the arrow-bounds contract. */
+/**
+ * Injection token for the arrow-bounds contract.
+ *
+ * @category common/popover
+ */
 export const CNGX_POPOVER_ARROW_BOUNDS = new InjectionToken<CngxPopoverArrowBounds>(
   'CngxPopoverArrowBounds',
 );

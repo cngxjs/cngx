@@ -11,7 +11,11 @@ import {
 import { buildAsyncStateView, type AsyncStatus, type CngxAsyncState } from '@cngx/core/utils';
 import { firstValueFrom, isObservable, type Observable } from 'rxjs';
 
-/** Action function that returns a Promise or Observable. */
+/**
+ * Action function that returns a Promise or Observable.
+ *
+ * @category common/interactive
+ */
 export type AsyncAction = () => Promise<unknown> | Observable<unknown>;
 
 /**
@@ -46,6 +50,8 @@ export type AsyncAction = () => Promise<unknown> | Observable<unknown>;
  * ```html
  * <a role="button" [cngxAsyncClick]="navigate" #btn="cngxAsyncClick">Go</a>
  * ```
+ *
+ * @category common/interactive
  * <example-url>http://localhost:4200/#/common/interactive/retry/optimistic-instant-like-toggle</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/retry/withretry-cngxasyncclick</example-url>
  */

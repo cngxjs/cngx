@@ -29,6 +29,8 @@ import { Directive } from '@angular/core';
  *   <cngx-sidenav-footer>v2.4.0</cngx-sidenav-footer>
  * </cngx-sidenav>
  * ```
+ *
+ * @category ui/sidenav
  */
 @Directive({
   selector: 'cngx-sidenav-footer, [cngxSidenavFooter]',

@@ -12,7 +12,11 @@ import { type Observable, Subject } from 'rxjs';
 import type { AlertSeverity } from '../alert/alert';
 import { CNGX_FEEDBACK_CONFIG } from '../config/feedback-config';
 
-/** Configuration for a single toast. */
+/**
+ * Configuration for a single toast.
+ *
+ * @category ui/feedback/toast
+ */
 export interface ToastConfig {
   /** Toast message text. Used as sole text when `title` is not set. */
   message: string;
@@ -54,7 +58,11 @@ export interface ToastConfig {
   contentInputs?: Record<string, unknown>;
 }
 
-/** Handle to a displayed toast — allows programmatic dismiss. */
+/**
+ * Handle to a displayed toast — allows programmatic dismiss.
+ *
+ * @category ui/feedback/toast
+ */
 export interface ToastRef {
   /** Programmatically dismiss this toast. */
   dismiss(): void;
@@ -62,7 +70,11 @@ export interface ToastRef {
   afterDismissed(): Observable<void>;
 }
 
-/** Internal toast state tracked by the service. */
+/**
+ * Internal toast state tracked by the service.
+ *
+ * @category ui/feedback/toast
+ */
 export interface ToastState {
   readonly id: number;
   readonly config: Required<Pick<ToastConfig, 'message' | 'severity' | 'dismissible'>> &
@@ -89,6 +101,9 @@ export interface ToastState {
  * app-shell or route level.
  *
  * Manages the toast stack as a signal array. `CngxToastOutlet` reads it reactively.
+ *
+ * @category ui/feedback/toast
+ *
  * <example-url>http://localhost:4200/#/ui/feedback/toast/custom-component-body</example-url>
  * <example-url>http://localhost:4200/#/ui/feedback/toast/declarative-cngx-toast</example-url>
  * <example-url>http://localhost:4200/#/ui/feedback/toast/programmatic-cngxtoaster</example-url>
@@ -262,6 +277,9 @@ export class CngxToaster {
  *   providers: [provideToasts()],
  * });
  * ```
+ *
+ * @category ui/feedback/toast
+ *
  */
 export function provideToasts(): EnvironmentProviders {
   return makeEnvironmentProviders([CngxToaster]);

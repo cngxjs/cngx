@@ -37,6 +37,7 @@ import { CNGX_ERROR_MESSAGES } from './form-field.token';
  * </cngx-field-errors>
  * ```
  *
+ * @category forms/field
  * <example-url>http://localhost:4200/#/forms/field/field-errors/basic</example-url>
  * <example-url>http://localhost:4200/#/forms/field/field-errors/multiple-validators</example-url>
  * <example-url>http://localhost:4200/#/forms/field/field-errors/custom-error-template</example-url>
@@ -114,7 +115,11 @@ export class CngxFieldErrors {
   readonly visibleErrors = computed(() => this.resolvedErrors().map((e) => e.message));
 }
 
-/** Template context type for CngxFieldErrors custom templates. */
+/**
+ * Template context type for CngxFieldErrors custom templates.
+ *
+ * @category forms/field
+ */
 export interface CngxFieldErrorContext {
   /** Resolved error message (also available as implicit `let-msg`). */
   $implicit: string;

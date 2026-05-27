@@ -29,6 +29,7 @@ import { ChangeDetectionStrategy, Component, input, ViewEncapsulation, type Temp
  *   truth about "selected" is communicated by the row's own `aria-selected`
  *   / `role="option"` ARIA, not by this decoration.
  *
+ * @category common/display
  * <example-url>http://localhost:4200/#/common/display/checkbox-indicator/states</example-url>
  * <example-url>http://localhost:4200/#/common/display/checkbox-indicator/variant-matrix</example-url>
  * <example-url>http://localhost:4200/#/common/display/checkbox-indicator/sizes</example-url>

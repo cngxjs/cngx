@@ -13,7 +13,11 @@ import {
 
 import { CngxTruncate } from './truncate.directive';
 
-/** Template context for the custom toggle template. */
+/**
+ * Template context for the custom toggle template.
+ *
+ * @category common/layout
+ */
 export interface CngxExpandableToggleContext {
   /** Whether the text is currently expanded. */
   $implicit: boolean;
@@ -36,6 +40,8 @@ export interface CngxExpandableToggleContext {
  *   </ng-template>
  * </cngx-expandable-text>
  * ```
+ *
+ * @category common/layout
  */
 @Directive({
   selector: 'ng-template[cngxExpandableToggle]',
@@ -78,6 +84,8 @@ export class CngxExpandableToggle {
  *   </ng-template>
  * </cngx-expandable-text>
  * ```
+ *
+ * @category common/layout
  * <example-url>http://localhost:4200/#/common/layout/expandable-text/auto-toggle</example-url>
  * <example-url>http://localhost:4200/#/common/layout/expandable-text/custom-labels</example-url>
  * <example-url>http://localhost:4200/#/common/layout/expandable-text/custom-toggle-template</example-url>

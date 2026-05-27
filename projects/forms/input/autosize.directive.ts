@@ -20,6 +20,8 @@ import {
  * <textarea cngxAutosize [minRows]="2" [maxRows]="10" #auto="cngxAutosize"></textarea>
  * <span>Height: {{ auto.height() }}px</span>
  * ```
+ *
+ * @category forms/input
  * <example-url>http://localhost:4200/#/forms/input/autosize/basic-autosize</example-url>
  * <example-url>http://localhost:4200/#/forms/input/autosize/min-max-rows</example-url>
  */

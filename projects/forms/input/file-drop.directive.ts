@@ -13,6 +13,8 @@ import type { CngxAsyncState } from '@cngx/core/utils';
 
 /**
  * Describes a file that was rejected during drop/browse validation.
+ *
+ * @category forms/input
  */
 export interface FileRejection {
   /** The rejected file. */
@@ -38,6 +40,8 @@ export interface FileRejection {
  *   }
  * </div>
  * ```
+ *
+ * @category forms/input
  * <example-url>http://localhost:4200/#/forms/input/file-drop/image-upload</example-url>
  */
 @Directive({

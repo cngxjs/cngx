@@ -36,6 +36,8 @@ import { CngxSidenav } from './sidenav';
  *   </cngx-sidenav>
  * </cngx-sidenav-layout>
  * ```
+ *
+ * @category ui/sidenav
  */
 @Component({
   selector: 'cngx-sidenav-layout',

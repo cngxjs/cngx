@@ -31,6 +31,8 @@ import { computed, Directive, input, output, signal } from '@angular/core';
  *   <div [id]="childrenId" [hidden]="!ctrl.isExpanded(id)()">…</div>
  * </div>
  * ```
+ *
+ * @category common/interactive
  */
 @Directive({
   selector: '[cngxExpandable]',

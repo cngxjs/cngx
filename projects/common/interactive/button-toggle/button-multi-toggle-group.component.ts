@@ -65,6 +65,8 @@ import {
  *   <button cngxButtonToggle value="archived">Archived</button>
  * </cngx-button-multi-toggle-group>
  * ```
+ *
+ * @category common/interactive
  * <example-url>http://localhost:4200/#/common/interactive/button-toggle/multi-group/basic-multi-filter-toolbar</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/button-toggle/multi-group/disabled-group-cascade-vs-per-toggle</example-url>
  * <example-url>http://localhost:4200/#/forms/field/form-primitives/coming-in-a-follow-up</example-url>

@@ -16,6 +16,8 @@ import type { CngxSelectCompareFn, CngxSelectCore } from './select-core';
 
 /**
  * Configuration for {@link createScalarCommitHandler}.
+ *
+ * @category forms/select/commit
  */
 export interface ScalarCommitHandlerOptions<T> {
   /** Primary scalar value signal. */
@@ -48,6 +50,8 @@ export interface ScalarCommitHandlerOptions<T> {
 
 /**
  * API returned from {@link createScalarCommitHandler}.
+ *
+ * @category forms/select/commit
  */
 export interface ScalarCommitHandler<T> {
   /**
@@ -82,6 +86,8 @@ export interface ScalarCommitHandler<T> {
  * emission, announcer severity (`onCommitError`), input-text mirroring
  * (`onValueWrite`), and popover-close timing — handler never closes the
  * panel.
+ *
+ * @category forms/select/commit
  */
 export function createScalarCommitHandler<T>(
   opts: ScalarCommitHandlerOptions<T>,
@@ -183,6 +189,8 @@ export function createScalarCommitHandler<T>(
 
 /**
  * Factory signature for {@link CNGX_SCALAR_COMMIT_HANDLER_FACTORY}.
+ *
+ * @category forms/select/commit
  */
 export type CngxScalarCommitHandlerFactory = <T>(
   opts: ScalarCommitHandlerOptions<T>,
@@ -191,6 +199,8 @@ export type CngxScalarCommitHandlerFactory = <T>(
 /**
  * Factory token for {@link ScalarCommitHandler}. Default
  * {@link createScalarCommitHandler}.
+ *
+ * @category forms/select/commit
  */
 export const CNGX_SCALAR_COMMIT_HANDLER_FACTORY =
   new InjectionToken<CngxScalarCommitHandlerFactory>(

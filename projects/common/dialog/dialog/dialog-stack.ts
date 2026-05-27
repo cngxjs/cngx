@@ -7,6 +7,8 @@ import { computed, Injectable, signal, type Provider } from '@angular/core';
  * When multiple modal dialogs are stacked, only the topmost shows
  * its `::backdrop`. Each `CngxDialog` reads `isTopmost` from this service
  * to control `--cngx-dialog-backdrop-opacity`.
+ *
+ * @category common/dialog
  * <example-url>http://localhost:4200/#/common/dialog/alert-dialog</example-url>
  * <example-url>http://localhost:4200/#/common/dialog/bottom-sheet</example-url>
  * <example-url>http://localhost:4200/#/common/dialog/cngxdialogopener-programmatic</example-url>
@@ -52,6 +54,8 @@ export class CngxDialogStack {
  * })
  * export class NestedDialogHost { }
  * ```
+ *
+ * @category common/dialog
  */
 export function provideDialogStack(): Provider {
   return CngxDialogStack;

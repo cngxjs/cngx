@@ -25,6 +25,8 @@ export {
  * `CngxErrorScope` (via `CngxErrorScopeFieldBridge`) is the default producer;
  * router-driven, interceptor-driven, or test-harness triggers may provide
  * their own. Decouples the presenter from the scope contract.
+ *
+ * @category forms/field
  */
 export interface CngxFormFieldRevealContract {
   /** Reactive flag — `true` when errors should be visible to the user. */
@@ -36,6 +38,8 @@ export interface CngxFormFieldRevealContract {
  * `CngxFormField`. Optional — when no provider exists the presenter falls
  * back to the default `touched OR strategy(...)` gate without scope-driven
  * reveal semantics.
+ *
+ * @category forms/field
  */
 export const CNGX_FORM_FIELD_REVEAL = new InjectionToken<CngxFormFieldRevealContract>(
   'CngxFormFieldReveal',
@@ -51,6 +55,8 @@ export const CNGX_FORM_FIELD_REVEAL = new InjectionToken<CngxFormFieldRevealCont
  *   minLength: (e) => `Min ${(e as any).minLength} chars.`,
  * }))]
  * ```
+ *
+ * @category forms/field
  */
 export const CNGX_ERROR_MESSAGES = new InjectionToken<ErrorMessageMap>('CngxErrorMessages', {
   factory: () => ({}),
@@ -58,6 +64,8 @@ export const CNGX_ERROR_MESSAGES = new InjectionToken<ErrorMessageMap>('CngxErro
 
 /**
  * Application-wide configuration for cngx form fields.
+ *
+ * @category forms/field
  */
 export interface FormFieldConfig {
   /** Error message map for auto-rendering. */
@@ -95,6 +103,8 @@ export interface FormFieldConfig {
 
 /**
  * Built-in error visibility strategies used by {@link withErrorStrategy}.
+ *
+ * @category forms/field
  */
 export type ErrorStrategyName =
   | 'onTouched'
@@ -108,6 +118,8 @@ export type ErrorStrategyName =
  *
  * `submitted` reflects the ambient `CngxErrorScope.showErrors` state — `true`
  * after the scope has been revealed (typically on form submit).
+ *
+ * @category forms/field
  */
 export interface ErrorStrategyContext {
   readonly touched: boolean;
@@ -119,6 +131,8 @@ export interface ErrorStrategyContext {
 /**
  * Custom error visibility strategy. Returns `true` when errors should be
  * visible to the user.
+ *
+ * @category forms/field
  */
 export type ErrorStrategyFn = (context: ErrorStrategyContext) => boolean;
 
@@ -130,7 +144,11 @@ const NAMED_ERROR_STRATEGIES: Readonly<Record<ErrorStrategyName, ErrorStrategyFn
   always: () => true,
 };
 
-/** A feature configuration function returned by `withXxx()` helpers. */
+/**
+ * A feature configuration function returned by `withXxx()` helpers.
+ *
+ * @category forms/field
+ */
 export interface FormFieldFeature {
   /** @internal */
   readonly _apply: (config: FormFieldConfig) => FormFieldConfig;
@@ -138,6 +156,8 @@ export interface FormFieldFeature {
 
 /**
  * Injection token for the application-wide {@link FormFieldConfig}.
+ *
+ * @category forms/field
  */
 export const CNGX_FORM_FIELD_CONFIG = new InjectionToken<FormFieldConfig>('CngxFormFieldConfig', {
   factory: () => ({}),
@@ -157,6 +177,8 @@ export const CNGX_FORM_FIELD_CONFIG = new InjectionToken<FormFieldConfig>('CngxF
  *   ],
  * });
  * ```
+ *
+ * @category forms/field
  */
 export function provideFormField(...features: FormFieldFeature[]): EnvironmentProviders {
   let config: FormFieldConfig = {};
@@ -181,12 +203,18 @@ export function provideFormField(...features: FormFieldFeature[]): EnvironmentPr
  * ```ts
  * providers: [provideErrorMessages({ required: () => 'Required.' })]
  * ```
+ *
+ * @category forms/field
  */
 export function provideErrorMessages(messages: ErrorMessageMap): EnvironmentProviders {
   return makeEnvironmentProviders([{ provide: CNGX_ERROR_MESSAGES, useValue: messages }]);
 }
 
-/** Enable auto-generated constraint hints (e.g. "8–64 characters") for all form fields. */
+/**
+ * Enable auto-generated constraint hints (e.g. "8–64 characters") for all form fields.
+ *
+ * @category forms/field
+ */
 export function withErrorMessages(messages: ErrorMessageMap): FormFieldFeature {
   return { _apply: (c) => ({ ...c, errorMessages: { ...c.errorMessages, ...messages } }) };
 }
@@ -210,6 +238,8 @@ export function withErrorMessages(messages: ErrorMessageMap): FormFieldFeature {
  *   (c) => c.invalid && (c.dirty || c.submitted),
  * ))
  * ```
+ *
+ * @category forms/field
  */
 export function withErrorStrategy(
   strategy: ErrorStrategyName | ErrorStrategyFn,
@@ -239,6 +269,8 @@ export function withErrorStrategy(
  *   maxValue: (max) => `Max. ${max}`,
  * }))
  * ```
+ *
+ * @category forms/field
  */
 export function withConstraintHints(
   formatters?: Partial<ConstraintHintFormatters>,
@@ -250,6 +282,8 @@ export function withConstraintHints(
 /**
  * Complete set of formatter functions for constraint hint text.
  * Stored in config after `withConstraintHints()` merges user overrides with defaults.
+ *
+ * @category forms/field
  */
 export interface ConstraintHintFormatters {
   /** Format "8–64 characters". */
@@ -281,7 +315,11 @@ export interface ConstraintHintFormatters {
   extra: (constraints: ConstraintMetadata) => string[];
 }
 
-/** Constraint metadata passed to the `extra` hint formatter. */
+/**
+ * Constraint metadata passed to the `extra` hint formatter.
+ *
+ * @category forms/field
+ */
 export interface ConstraintMetadata {
   readonly minLength: number | undefined;
   readonly maxLength: number | undefined;
@@ -291,7 +329,11 @@ export interface ConstraintMetadata {
   readonly required: boolean;
 }
 
-/** English default formatters for constraint hints. */
+/**
+ * English default formatters for constraint hints.
+ *
+ * @category forms/field
+ */
 export const DEFAULT_HINT_FORMATTERS: ConstraintHintFormatters = {
   lengthRange: (min, max) => `${min}–${max} characters`,
   minLength: (min) => `Min. ${min} characters`,
@@ -312,6 +354,8 @@ export const DEFAULT_HINT_FORMATTERS: ConstraintHintFormatters = {
  * provideFormField(withRequiredMarker())       // shows '*'
  * provideFormField(withRequiredMarker('(required)'))
  * ```
+ *
+ * @category forms/field
  */
 export function withRequiredMarker(marker = '*'): FormFieldFeature {
   return { _apply: (c) => ({ ...c, requiredMarker: marker }) };
@@ -372,6 +416,8 @@ export const DEFAULT_NO_SPELLCHECK_FIELDS: ReadonlySet<string> = new Set([
  *   taxid: 'off',
  * }))
  * ```
+ *
+ * @category forms/field
  */
 export function withAutocompleteMappings(mappings: Record<string, string>): FormFieldFeature {
   return {
@@ -393,6 +439,8 @@ export function withAutocompleteMappings(mappings: Record<string, string>): Form
  * ```ts
  * provideFormField(withNoSpellcheck(['iban', 'accountnumber', 'serialnumber']))
  * ```
+ *
+ * @category forms/field
  */
 export function withNoSpellcheck(fields: string[]): FormFieldFeature {
   return {

@@ -26,6 +26,8 @@ import { InjectionToken, type Signal } from '@angular/core';
  * Level-3 `@cngx/forms/field` library. Mirrors `CNGX_FORM_FIELD_CONTROL`
  * (atom-side contract) on the host side; together the two tokens form a
  * Sheriff-clean parent-child interaction surface.
+ *
+ * @category core/tokens
  */
 export interface CngxFormFieldHostContract {
   /** True when errors should be visible to the user. */
@@ -48,6 +50,8 @@ export interface CngxFormFieldHostContract {
  * `cngx-form-field` should inject with `{ optional: true }` and treat
  * the absence as "no field-level visibility gate, no touched-feedback
  * channel".
+ *
+ * @category core/tokens
  */
 export const CNGX_FORM_FIELD_HOST = new InjectionToken<CngxFormFieldHostContract>(
   'CngxFormFieldHost',

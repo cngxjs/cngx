@@ -18,6 +18,8 @@ import {
  *   <input [cngxOtpSlot]="i" />
  * }
  * ```
+ *
+ * @category forms/input
  * <example-url>http://localhost:4200/#/forms/input/otp/4-digit-pin</example-url>
  * <example-url>http://localhost:4200/#/forms/input/otp/6-digit-otp</example-url>
  */
@@ -132,6 +134,8 @@ export class CngxOtpSlot {
  *   }
  * </div>
  * ```
+ *
+ * @category forms/input
  * <example-url>http://localhost:4200/#/forms/input/otp/4-digit-pin</example-url>
  * <example-url>http://localhost:4200/#/forms/input/otp/6-digit-otp</example-url>
  */

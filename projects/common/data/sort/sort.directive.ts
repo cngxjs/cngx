@@ -2,6 +2,8 @@ import { computed, Directive, input, output, signal } from '@angular/core';
 
 /**
  * A single sort entry: the active field key and its direction.
+ *
+ * @category common/data/sort
  */
 export interface SortEntry {
   active: string;
@@ -23,6 +25,8 @@ export interface SortEntry {
  *
  * Consumer connects this to a table or list via a `computed()` — nothing is
  * injected automatically.
+ *
+ * @category common/data/sort
  *
  * <example-url>http://localhost:4200/#/common/data/sort/basic</example-url>
  * <example-url>http://localhost:4200/#/common/data/sort/multi-sort</example-url>

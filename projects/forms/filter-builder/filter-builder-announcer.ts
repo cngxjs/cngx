@@ -10,19 +10,29 @@ import type { FilterFieldDef } from './filter-builder.types';
  * factory formats `lastMutation` events through `CngxFilterBuilderI18n.announcement`
  * — consumers can swap the whole formatter (locale, telemetry, test
  * doubles) by providing `CNGX_FILTER_BUILDER_ANNOUNCER_FACTORY`.
+ *
+ * @category forms/filter-builder/state
  */
 export interface CngxFilterBuilderAnnouncer {
   readonly announcement: Signal<string>;
 }
 
-/** Reactive sources the announcer factory needs to format mutation messages. */
+/**
+ * Reactive sources the announcer factory needs to format mutation messages.
+ *
+ * @category forms/filter-builder/state
+ */
 export interface CngxFilterBuilderAnnouncerSources<TValue = unknown> {
   readonly lastMutation: Signal<FilterMutationEvent | null>;
   readonly fieldMap: Signal<ReadonlyMap<string, FilterFieldDef<TValue>>>;
   readonly i18n: CngxFilterBuilderI18n;
 }
 
-/** Factory signature carried by `CNGX_FILTER_BUILDER_ANNOUNCER_FACTORY`. */
+/**
+ * Factory signature carried by `CNGX_FILTER_BUILDER_ANNOUNCER_FACTORY`.
+ *
+ * @category forms/filter-builder/state
+ */
 export type CngxFilterBuilderAnnouncerFactory = <TValue = unknown>(
   sources: CngxFilterBuilderAnnouncerSources<TValue>,
 ) => CngxFilterBuilderAnnouncer;
@@ -40,7 +50,11 @@ function renderValueForAnnouncement(value: unknown): string {
   return '';
 }
 
-/** Default announcer — derives the live-region string from `lastMutation` through the i18n formatter bundle. */
+/**
+ * Default announcer — derives the live-region string from `lastMutation` through the i18n formatter bundle.
+ *
+ * @category forms/filter-builder/state
+ */
 export function createFilterBuilderAnnouncer<TValue>(
   sources: CngxFilterBuilderAnnouncerSources<TValue>,
 ): CngxFilterBuilderAnnouncer {
@@ -88,13 +102,21 @@ export function createFilterBuilderAnnouncer<TValue>(
   return { announcement };
 }
 
-/** DI token for the announcer factory. Default resolves to `createFilterBuilderAnnouncer`. */
+/**
+ * DI token for the announcer factory. Default resolves to `createFilterBuilderAnnouncer`.
+ *
+ * @category forms/filter-builder/state
+ */
 export const CNGX_FILTER_BUILDER_ANNOUNCER_FACTORY = new InjectionToken<CngxFilterBuilderAnnouncerFactory>(
   'CngxFilterBuilderAnnouncerFactory',
   { providedIn: 'root', factory: () => createFilterBuilderAnnouncer },
 );
 
-/** Inject-context helper that resolves `CNGX_FILTER_BUILDER_ANNOUNCER_FACTORY`. */
+/**
+ * Inject-context helper that resolves `CNGX_FILTER_BUILDER_ANNOUNCER_FACTORY`.
+ *
+ * @category forms/filter-builder/state
+ */
 export function injectFilterBuilderAnnouncerFactory(): CngxFilterBuilderAnnouncerFactory {
   return inject(CNGX_FILTER_BUILDER_ANNOUNCER_FACTORY);
 }

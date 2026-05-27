@@ -40,6 +40,7 @@ import { CNGX_FORM_FIELD_CONFIG } from './form-field.token';
  * <label cngxLabel>E-Mail <cngx-required /></label>
  * ```
  *
+ * @category forms/field
  * <example-url>http://localhost:4200/#/forms/field/label/basic</example-url>
  * <example-url>http://localhost:4200/#/forms/field/label/required-marker</example-url>
  * <example-url>http://localhost:4200/#/forms/field/label/error-and-disabled-classes</example-url>

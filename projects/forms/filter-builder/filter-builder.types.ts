@@ -21,7 +21,11 @@
  * the direct-child count, nest a sub-group of the desired arity.
  */
 
-/** Boolean combinator for a `FilterGroup`'s direct children. `nand`/`nor` are intentionally absent — use `negated` for inversion. */
+/**
+ * Boolean combinator for a `FilterGroup`'s direct children. `nand`/`nor` are intentionally absent — use `negated` for inversion.
+ *
+ * @category forms/filter-builder/config
+ */
 export type FilterLogic = 'and' | 'or' | 'xor';
 
 /**
@@ -29,10 +33,16 @@ export type FilterLogic = 'and' | 'or' | 'xor';
  * (introduced in Phase 3). The library ships defaults for the four
  * builtin keys (`'string'`, `'number'`, `'date'`, `'boolean'`);
  * consumers add custom editor types freely.
+ *
+ * @category forms/filter-builder/config
  */
 export type FilterEditorType = string;
 
-/** Consumer-supplied field descriptor — one entry per filterable column. */
+/**
+ * Consumer-supplied field descriptor — one entry per filterable column.
+ *
+ * @category forms/filter-builder/config
+ */
 export interface FilterFieldDef<TValue = unknown> {
   readonly key: string;
   readonly label: string;
@@ -41,7 +51,11 @@ export interface FilterFieldDef<TValue = unknown> {
   readonly defaultValue?: TValue;
 }
 
-/** Leaf node — binds one field to one operator and one value. */
+/**
+ * Leaf node — binds one field to one operator and one value.
+ *
+ * @category forms/filter-builder/config
+ */
 export interface FilterExpression<TValue = unknown> {
   readonly type: 'expression';
   /**
@@ -58,7 +72,11 @@ export interface FilterExpression<TValue = unknown> {
   readonly value?: TValue;
 }
 
-/** Branch node — combines child nodes under one `logic` operator with an optional `negated` flag. */
+/**
+ * Branch node — combines child nodes under one `logic` operator with an optional `negated` flag.
+ *
+ * @category forms/filter-builder/config
+ */
 export interface FilterGroup {
   readonly type: 'group';
   /**
@@ -71,10 +89,18 @@ export interface FilterGroup {
   readonly filters: readonly FilterNode[];
 }
 
-/** Discriminated union — every node in the tree is either a group or an expression. */
+/**
+ * Discriminated union — every node in the tree is either a group or an expression.
+ *
+ * @category forms/filter-builder/config
+ */
 export type FilterNode = FilterGroup | FilterExpression;
 
-/** Default operator lists per builtin editor type. Consumers extend via `withDefaultOperators({...})`. */
+/**
+ * Default operator lists per builtin editor type. Consumers extend via `withDefaultOperators({...})`.
+ *
+ * @category forms/filter-builder/config
+ */
 export const DEFAULT_OPERATORS = {
   string: ['contains', 'eq', 'neq', 'startsWith', 'endsWith', 'isEmpty', 'isNotEmpty'],
   number: ['eq', 'neq', 'gt', 'gte', 'lt', 'lte', 'isEmpty', 'isNotEmpty'],

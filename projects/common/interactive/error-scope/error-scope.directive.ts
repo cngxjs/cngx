@@ -12,6 +12,8 @@ import { CNGX_ERROR_SCOPE, type CngxErrorScopeContract } from './error-scope.tok
 /**
  * Marks a DOM subtree as an error visibility scope.
  *
+ * @category common/interactive/error
+ *
  * The scope starts hidden — descendant aggregators and error states do
  * not reveal until the consumer calls {@link reveal}, typically via a
  * `(submit)` handler, a route guard, or an HTTP interceptor reveal-on-422

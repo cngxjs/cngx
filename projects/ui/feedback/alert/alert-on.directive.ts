@@ -33,6 +33,8 @@ import { CngxAlerter } from './alerter.service';
  *   Save
  * </button>
  * ```
+ *
+ * @category ui/feedback/alert
  */
 @Directive({
   selector: '[cngxAlertOn]',

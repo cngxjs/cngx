@@ -27,6 +27,8 @@ import { CNGX_MAT_TABS_REGISTRY_HOST } from './mat-tabs-registry.directive';
  * before the registry's sync runs. `destroyRef.onDestroy` clears
  * the slot so an `*ngIf`-toggled binding returns to the
  * no-aggregator default.
+ *
+ * @category ui/mat-tabs
  */
 @Directive({
   selector: '[cngxMatTabError]',

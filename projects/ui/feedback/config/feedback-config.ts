@@ -16,6 +16,8 @@ import { CngxToaster } from '../toast/toast.service';
 /**
  * Global configuration for all feedback components.
  * Provided via `provideFeedback()` with `with*` features.
+ *
+ * @category ui/feedback
  */
 export interface FeedbackConfig {
   /** Custom spinner component to replace the built-in SVG spinner. */
@@ -52,10 +54,16 @@ export interface FeedbackConfig {
 /**
  * Injection token for the global feedback configuration.
  * Components read this with `inject(CNGX_FEEDBACK_CONFIG, { optional: true })`.
+ *
+ * @category ui/feedback
  */
 export const CNGX_FEEDBACK_CONFIG = new InjectionToken<FeedbackConfig>('CngxFeedbackConfig');
 
-/** A feature configuration function returned by `withXxx()` helpers. */
+/**
+ * A feature configuration function returned by `withXxx()` helpers.
+ *
+ * @category ui/feedback
+ */
 export interface FeedbackFeature {
   /** @internal */
   readonly _apply: (config: FeedbackConfig) => FeedbackConfig;
@@ -77,6 +85,8 @@ export interface FeedbackFeature {
  *   ],
  * });
  * ```
+ *
+ * @category ui/feedback
  */
 export function provideFeedback(...features: FeedbackFeature[]): EnvironmentProviders {
   let config: FeedbackConfig = {};
@@ -104,6 +114,8 @@ export function provideFeedback(...features: FeedbackFeature[]): EnvironmentProv
  * ```ts
  * provideFeedback(withSpinnerTemplate(MatProgressSpinner))
  * ```
+ *
+ * @category ui/feedback/loading
  */
 export function withSpinnerTemplate(component: Type<unknown>): FeedbackFeature {
   return { _apply: (c) => ({ ...c, spinnerComponent: component }) };
@@ -123,6 +135,8 @@ export function withSpinnerTemplate(component: Type<unknown>): FeedbackFeature {
  *   info: MyInfoIcon,
  * }))
  * ```
+ *
+ * @category ui/feedback
  */
 export function withAlertIcons(
   icons: Partial<Record<AlertSeverity, Type<unknown>>>,
@@ -143,6 +157,8 @@ export function withAlertIcons(
  * ```ts
  * provideFeedback(withLoadingDefaults({ delay: 300, minDuration: 600 }))
  * ```
+ *
+ * @category ui/feedback
  */
 export function withLoadingDefaults(opts: {
   delay?: number;
@@ -166,6 +182,8 @@ export function withLoadingDefaults(opts: {
  * ```ts
  * provideFeedback(withCloseIcon(MyLucideXIcon))
  * ```
+ *
+ * @category ui/feedback
  */
 export function withCloseIcon(component: Type<unknown>): FeedbackFeature {
   return {
@@ -189,6 +207,8 @@ export function withCloseIcon(component: Type<unknown>): FeedbackFeature {
  *   withAlertIcons({ error: MyErrorIcon }),
  * )
  * ```
+ *
+ * @category ui/feedback
  */
 export function withToasts(opts?: {
   /** Default auto-dismiss duration in ms. */
@@ -224,6 +244,8 @@ export function withToasts(opts?: {
  *   withAlerts(),
  * )
  * ```
+ *
+ * @category ui/feedback
  */
 export function withAlerts(opts?: {
   /** Default auto-dismiss duration in ms. `undefined` = persistent. */
@@ -260,6 +282,8 @@ export function withAlerts(opts?: {
  *   withBanners(),
  * )
  * ```
+ *
+ * @category ui/feedback
  */
 export function withBanners(): FeedbackFeature {
   return {

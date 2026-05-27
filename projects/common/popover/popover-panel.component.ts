@@ -67,6 +67,8 @@ import type { PopoverPanelRole } from './popover.types';
  *   <ng-template cngxPopoverError let-err>Failed: {{ err }}</ng-template>
  * </cngx-popover-panel>
  * ```
+ *
+ * @category common/popover
  * <example-url>http://localhost:4200/#/common/popover/popover-panel/content-states</example-url>
  * <example-url>http://localhost:4200/#/common/popover/popover-panel/variants</example-url>
  * <example-url>http://localhost:4200/#/common/popover/popover-panel/with-footer-actions</example-url>

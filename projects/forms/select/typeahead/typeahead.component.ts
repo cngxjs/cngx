@@ -106,6 +106,8 @@ import {
 
 /**
  * Change event emitted by {@link CngxTypeahead.selectionChange}.
+ *
+ * @category forms/select/typeahead
  */
 export interface CngxTypeaheadChange<T = unknown> {
   readonly source: CngxTypeahead<T>;
@@ -127,6 +129,8 @@ export interface CngxTypeaheadChange<T = unknown> {
  *
  * Stateless graph in {@link createSelectCore}; this component is a
  * thin scalar-value adapter.
+ *
+ * @category forms/select/typeahead
  * <example-url>http://localhost:4200/#/forms/select/typeahead/typeahead-async-state-load-error-retry</example-url>
  * <example-url>http://localhost:4200/#/forms/select/typeahead/typeahead-bound-to-a-typed-form-field</example-url>
  * <example-url>http://localhost:4200/#/forms/select/typeahead/typeahead-cngxselectoptionlabel-slot-override</example-url>

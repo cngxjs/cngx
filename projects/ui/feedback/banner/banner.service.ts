@@ -3,7 +3,11 @@ import { type Observable, Subject } from 'rxjs';
 
 import type { AlertSeverity } from '../alert/alert';
 
-/** Configuration for a system-level banner. */
+/**
+ * Configuration for a system-level banner.
+ *
+ * @category ui/feedback/banner
+ */
 export interface BannerConfig {
   /** Banner message text (required). */
   message: string;
@@ -24,7 +28,11 @@ export interface BannerConfig {
   dismissible?: boolean;
 }
 
-/** Handle to a displayed banner. */
+/**
+ * Handle to a displayed banner.
+ *
+ * @category ui/feedback/banner
+ */
 export interface BannerRef {
   /** Programmatically dismiss this banner. */
   dismiss(): void;
@@ -32,7 +40,11 @@ export interface BannerRef {
   afterDismissed(): Observable<void>;
 }
 
-/** @internal — tracked state for a single banner. */
+/**
+ * @internal — tracked state for a single banner.
+ *
+ * @category ui/feedback/banner
+ */
 export interface BannerState {
   readonly id: string;
   readonly config: Required<Pick<BannerConfig, 'message' | 'id' | 'severity' | 'dismissible'>> &
@@ -65,6 +77,9 @@ export interface BannerState {
  *   action: { label: 'Extend', handler: () => this.extendSession() },
  * });
  * ```
+ *
+ * @category ui/feedback/banner
+ *
  * <example-url>http://localhost:4200/#/ui/feedback/banner/async-action</example-url>
  * <example-url>http://localhost:4200/#/ui/feedback/banner/dedup-update</example-url>
  * <example-url>http://localhost:4200/#/ui/feedback/banner/system-banners</example-url>

@@ -27,6 +27,8 @@ import {
  *
  * `state` is a `linkedSignal` over `[disabled]`, `[completed]`, and
  * the optional `[errorAggregator]`'s `hasError()`.
+ *
+ * @category common/stepper
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-commit-action/pessimistic-optimistic-commits-with-bridge-directives</example-url>
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-custom-labels/mixing-code-label-code-input-with-code-cngxsteplabel-code-slot</example-url>
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-error-aggregation/per-step-error-badges</example-url>

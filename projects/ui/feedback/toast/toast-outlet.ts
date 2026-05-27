@@ -12,7 +12,11 @@ import {
 import { CNGX_FEEDBACK_CONFIG } from '../config/feedback-config';
 import { CngxToaster, type ToastState } from './toast.service';
 
-/** Position for the toast stack. */
+/**
+ * Position for the toast stack.
+ *
+ * @category ui/feedback/toast
+ */
 export type ToastPosition =
   | 'top-start'
   | 'top-center'
@@ -32,6 +36,9 @@ export type ToastPosition =
  * ```
  *
  * @playground Async state bridges ./examples/bridges/bridges-example.component.ts
+ *
+ * @category ui/feedback/toast
+ *
  * <example-url>http://localhost:4200/#/ui/feedback/toast/custom-component-body</example-url>
  * <example-url>http://localhost:4200/#/ui/feedback/toast/declarative-cngx-toast</example-url>
  * <example-url>http://localhost:4200/#/ui/feedback/toast/programmatic-cngxtoaster</example-url>

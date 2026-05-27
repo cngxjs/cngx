@@ -22,6 +22,8 @@ import type { AsyncStatus, CngxAsyncState } from '@cngx/core/utils';
  * // items.status(), items.data(), items.isFirstLoad() — all work
  * // <cngx-async-container [state]="items"> — direct binding
  * ```
+ *
+ * @category common/data/async-state
  */
 export function fromResource<T>(ref: Resource<T>): CngxAsyncState<T> {
   // Track whether a successful load has ever occurred.

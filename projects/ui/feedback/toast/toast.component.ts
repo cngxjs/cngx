@@ -28,6 +28,9 @@ import { CngxToaster, type ToastRef } from './toast.service';
  * <cngx-toast severity="success" message="Item saved" [when]="saveState.status() === 'success'" />
  * <cngx-toast severity="error" message="Save failed" [when]="saveState.status() === 'error'" />
  * ```
+ *
+ * @category ui/feedback/toast
+ *
  * <example-url>http://localhost:4200/#/ui/feedback/toast/custom-component-body</example-url>
  * <example-url>http://localhost:4200/#/ui/feedback/toast/declarative-cngx-toast</example-url>
  * <example-url>http://localhost:4200/#/ui/feedback/toast/programmatic-cngxtoaster</example-url>

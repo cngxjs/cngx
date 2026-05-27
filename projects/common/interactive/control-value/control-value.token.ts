@@ -18,6 +18,8 @@ import { InjectionToken, type ModelSignal, type WritableSignal } from '@angular/
  * fieldDisabled())` and forward into the atom) — `model<boolean>()`
  * would force every implementer into a two-way binding they do not
  * need.
+ *
+ * @category common/interactive
  */
 export interface CngxControlValue<T = unknown> {
   readonly value: ModelSignal<T>;
@@ -36,6 +38,8 @@ export interface CngxControlValue<T = unknown> {
  * block — the token deliberately does not invent a default because
  * "what is the value of an unbound control?" has no library-level
  * answer.
+ *
+ * @category common/interactive
  */
 export const CNGX_CONTROL_VALUE = new InjectionToken<CngxControlValue>(
   'CngxControlValue',

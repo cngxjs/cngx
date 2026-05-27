@@ -10,6 +10,7 @@
  * `*cngxStep*` slots or `withStep*Template` features.
  *
  * @internal
+ * @category common/stepper
  */
 export const CNGX_STEPPER_GLYPHS = {
   /** Default visual for `*cngxStepBadge` when no override is bound. */

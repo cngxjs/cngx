@@ -25,6 +25,7 @@ import type { PopoverHaspopup } from './popover.types';
  * the popover opens and restore focus to it on close. Useful for menus,
  * confirm panels, and dialogs that steal focus from the trigger.
  *
+ * @category common/popover
  * <example-url>http://localhost:4200/#/common/popover/click-popover</example-url>
  * <example-url>http://localhost:4200/#/common/popover/controlled-open</example-url>
  * <example-url>http://localhost:4200/#/common/popover/escape-mode</example-url>

@@ -10,6 +10,8 @@ import {
  * specific reactions (openOn cascade, clearOnBlur, autofocus,
  * `markAsTouched` forwarding) stay in each variant's
  * `handleFocus`/`handleBlur`.
+ *
+ * @category forms/select
  */
 export interface CngxTriggerFocusState {
   /** Readonly focus flag. */
@@ -32,6 +34,8 @@ export interface CngxTriggerFocusState {
  *   if (this.config.openOn === 'focus') this.open();
  * }
  * ```
+ *
+ * @category forms/select
  */
 export function createTriggerFocusState(): CngxTriggerFocusState {
   const writable = signal<boolean>(false);
@@ -49,6 +53,8 @@ export function createTriggerFocusState(): CngxTriggerFocusState {
 
 /**
  * Factory signature for {@link CNGX_TRIGGER_FOCUS_FACTORY}.
+ *
+ * @category forms/select
  */
 export type CngxTriggerFocusFactory = () => CngxTriggerFocusState;
 
@@ -69,6 +75,8 @@ export type CngxTriggerFocusFactory = () => CngxTriggerFocusState;
  *   },
  * ],
  * ```
+ *
+ * @category forms/select
  */
 export const CNGX_TRIGGER_FOCUS_FACTORY = new InjectionToken<CngxTriggerFocusFactory>(
   'CNGX_TRIGGER_FOCUS_FACTORY',

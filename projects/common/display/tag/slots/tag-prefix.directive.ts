@@ -18,6 +18,8 @@ import type { CngxTagPrefixContext } from './tag-slot.context';
  *   Action required
  * </span>
  * ```
+ *
+ * @category common/display
  * <example-url>http://localhost:4200/#/common/display/tag/app-wide-defaults-via-providetagconfig</example-url>
  * <example-url>http://localhost:4200/#/common/display/tag/color-palette</example-url>
  * <example-url>http://localhost:4200/#/common/display/tag/composition-with-cngxicon</example-url>

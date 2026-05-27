@@ -61,6 +61,8 @@ import {
  *   pointer-events: auto;
  * }
  * ```
+ *
+ * @category common/layout
  * <example-url>http://localhost:4200/#/common/layout/backdrop/overlay-with-inert</example-url>
  */
 @Directive({

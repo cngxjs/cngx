@@ -14,6 +14,8 @@ import { fromEvent } from 'rxjs';
  *   @if (clr.hasValue()) { Clear }
  * </button>
  * ```
+ *
+ * @category forms/input
  * <example-url>http://localhost:4200/#/forms/input/utilities/copy-to-clipboard</example-url>
  * <example-url>http://localhost:4200/#/forms/input/utilities/input-clear</example-url>
  * <example-url>http://localhost:4200/#/forms/input/utilities/input-format</example-url>

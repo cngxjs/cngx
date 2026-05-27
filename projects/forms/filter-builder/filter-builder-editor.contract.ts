@@ -12,6 +12,8 @@ import type { FilterExpression, FilterFieldDef } from './filter-builder.types';
  * `ControlValueAccessor`. The optional `fieldDef`, `expression`, and
  * `disabled` inputs are projected by the filter-builder row when the
  * editor is mounted; consumers declare only the inputs they care about.
+ *
+ * @category forms/filter-builder/slots
  */
 export interface CngxFilterEditorComponent<TValue> {
   readonly value: ModelSignal<TValue | null>;

@@ -20,6 +20,8 @@ import {
  *   </footer>
  * </cngx-card>
  * ```
+ *
+ * @category common/card
  */
 @Component({
   selector: 'cngx-card-timestamp',

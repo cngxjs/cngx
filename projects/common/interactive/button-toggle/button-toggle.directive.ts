@@ -77,6 +77,8 @@ type ParentResolution<T> = SingleResolution<T> | MultiResolution<T>;
  * not own a sr-only span (it is a `@Directive` on a native
  * `<button>` — no template to inject siblings into). Native
  * `<button aria-describedby>` semantics apply.
+ *
+ * @category common/interactive
  * <example-url>http://localhost:4200/#/common/interactive/button-toggle/multi-group/basic-multi-filter-toolbar</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/button-toggle/multi-group/disabled-group-cascade-vs-per-toggle</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/button-toggle/group/basic-view-switcher</example-url>

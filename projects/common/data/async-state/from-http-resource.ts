@@ -30,6 +30,8 @@ interface HttpResourceLike<T> extends Resource<T> {
  * // items.progress() tracks upload/download progress
  * // <cngx-progress [state]="items"> — auto-wired progress bar
  * ```
+ *
+ * @category common/data/async-state
  */
 export function fromHttpResource<T>(ref: HttpResourceLike<T>): CngxAsyncState<T> {
   const hadSuccess = signal(false);

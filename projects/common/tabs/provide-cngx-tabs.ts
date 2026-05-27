@@ -19,6 +19,8 @@ import {
  * Union of feature kinds the tabs aggregator accepts. Today: config
  * + i18n; future surfaces widen the union and dispatch via the
  * hidden `_target` discriminator.
+ *
+ * @category common/tabs
  */
 export type CngxTabsFeature = CngxTabsConfigFeature | CngxTabsI18nFeature;
 
@@ -76,6 +78,8 @@ function partitionFeatures(
  *   ],
  * });
  * ```
+ *
+ * @category common/tabs
  */
 export function provideCngxTabs(
   ...features: readonly CngxTabsFeature[]
@@ -102,6 +106,8 @@ export function provideCngxTabs(
  *   ],
  * })
  * ```
+ *
+ * @category common/tabs
  */
 export function provideCngxTabsAt(
   ...features: readonly CngxTabsFeature[]

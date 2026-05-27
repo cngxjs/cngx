@@ -27,6 +27,8 @@ import { Directive } from '@angular/core';
  *   ...
  * </cngx-sidenav>
  * ```
+ *
+ * @category ui/sidenav
  */
 @Directive({
   selector: 'cngx-sidenav-header, [cngxSidenavHeader]',

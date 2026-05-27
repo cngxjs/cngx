@@ -7,7 +7,11 @@ import {
 } from '@angular/core';
 import type { CngxAsyncState } from '@cngx/core/utils';
 
-/** Visual variant for the progress indicator. */
+/**
+ * Visual variant for the progress indicator.
+ *
+ * @category ui/feedback/loading
+ */
 export type ProgressVariant = 'linear' | 'circular';
 
 const CIRCUMFERENCE = 2 * Math.PI * 20; // r=20
@@ -33,6 +37,9 @@ const CIRCLE_DASH_ARRAY = `${CIRCUMFERENCE}, ${CIRCUMFERENCE}`;
  * ```html
  * <cngx-progress [progress]="percent()" label="Processing" />
  * ```
+ *
+ * @category ui/feedback/loading
+ *
  * <example-url>http://localhost:4200/#/ui/feedback/progress/circular-variant</example-url>
  * <example-url>http://localhost:4200/#/ui/feedback/progress/linear-determinate</example-url>
  * <example-url>http://localhost:4200/#/ui/feedback/progress/linear-indeterminate</example-url>

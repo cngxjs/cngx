@@ -15,6 +15,8 @@ import { isDevMode } from '@angular/core';
  * fail-fast). The library default is a dev-mode `console.warn`; the
  * exported {@link CNGX_DEFAULT_HALF_WIRED_SLOT_SINK} value lets test
  * doubles compose against a stable reference.
+ *
+ * @category ui/mat-tabs
  */
 export type CngxMatTabHalfWiredSlotSink = (
   missing: 'contentTemplate' | 'viewContainerRef',

@@ -31,12 +31,20 @@ export const EMPTY_ROOT: FilterGroup = Object.freeze({
   filters: Object.freeze([]),
 }) as FilterGroup;
 
-/** Optional knobs for `createFilterGroup`. */
+/**
+ * Optional knobs for `createFilterGroup`.
+ *
+ * @category forms/filter-builder
+ */
 export interface CreateFilterGroupOptions {
   readonly negated?: boolean;
 }
 
-/** Build a fresh `FilterGroup` with a generated id. Defaults to `and` logic, no children, not negated. */
+/**
+ * Build a fresh `FilterGroup` with a generated id. Defaults to `and` logic, no children, not negated.
+ *
+ * @category forms/filter-builder
+ */
 export function createFilterGroup(
   logic: FilterLogic = 'and',
   filters: readonly FilterNode[] = [],
@@ -51,7 +59,11 @@ export function createFilterGroup(
   };
 }
 
-/** Build a fresh `FilterExpression` with a generated id. */
+/**
+ * Build a fresh `FilterExpression` with a generated id.
+ *
+ * @category forms/filter-builder
+ */
 export function createFilterExpression<TValue = unknown>(
   field: string,
   operator: string,
@@ -109,6 +121,8 @@ function normaliseExpressionId(expression: FilterExpression): FilterExpression {
  * Frozen empty root used as the presenter's `model<FilterGroup>` default and
  * by `CngxFilterBuilderState.clear()`. Always returns the same frozen
  * reference so consumers comparing tree identity short-circuit correctly.
+ *
+ * @category forms/filter-builder
  */
 export function createEmptyFilterRoot(): FilterGroup {
   return EMPTY_ROOT;
@@ -119,6 +133,8 @@ export function createEmptyFilterRoot(): FilterGroup {
  * the tree itself is `null` — the consumer typically interprets `null` as
  * "no filtering, accept every item". For an empty root group, the returned
  * predicate evaluates `true` for every item (vacuous truth on `and`).
+ *
+ * @category forms/filter-builder
  */
 export function toFilterPredicate<TItem>(
   tree: FilterGroup | null,
@@ -134,7 +150,11 @@ export function toFilterPredicate<TItem>(
   return (item: TItem) => evaluateGroup(tree, item, fieldMap);
 }
 
-/** Evaluate a single `FilterExpression` against `item`. Unfilled expressions short-circuit to `true` (except `isEmpty`/`isNotEmpty`). */
+/**
+ * Evaluate a single `FilterExpression` against `item`. Unfilled expressions short-circuit to `true` (except `isEmpty`/`isNotEmpty`).
+ *
+ * @category forms/filter-builder
+ */
 export function evaluateExpression<TItem>(
   expr: FilterExpression,
   item: TItem,

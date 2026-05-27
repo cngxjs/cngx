@@ -16,6 +16,8 @@ import { InjectionToken, type Signal } from '@angular/core';
  * conversion is needed — and `.asReadonly()` does NOT exist on
  * `InputSignal` (it lives on `WritableSignal` only); the type-only
  * narrowing is the canonical bridge.
+ *
+ * @category common/display
  */
 export interface CngxTagGroupHost {
   readonly semanticList: Signal<boolean>;
@@ -33,5 +35,7 @@ export interface CngxTagGroupHost {
  *
  * Defaults to no provider — the token resolves to `null` for any
  * `CngxTag` that lives outside a `CngxTagGroup`.
+ *
+ * @category common/display
  */
 export const CNGX_TAG_GROUP = new InjectionToken<CngxTagGroupHost>('CNGX_TAG_GROUP');

@@ -3,6 +3,8 @@
  *
  * Strings are truthy unless they equal `'false'`.
  * All other falsy values return `false`.
+ *
+ * @category core/utils
  */
 export function coerceBooleanProperty(value: unknown): boolean {
   if (value == null) {
@@ -20,6 +22,8 @@ export function coerceBooleanProperty(value: unknown): boolean {
  * Coerces a value to a number.
  *
  * Returns `fallback` when the value is null, undefined, NaN, or non-numeric.
+ *
+ * @category core/utils
  */
 export function coerceNumberProperty(value: unknown, fallback = 0): number {
   if (value == null) {

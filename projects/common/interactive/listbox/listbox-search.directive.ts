@@ -4,7 +4,11 @@ import { type ActiveDescendantItem } from '@cngx/common/a11y';
 
 import { CngxSearch } from '../keyboard/search.directive';
 
-/** Matcher function used by CngxListboxSearch to filter options. */
+/**
+ * Matcher function used by CngxListboxSearch to filter options.
+ *
+ * @category common/interactive/listbox
+ */
 export type ListboxMatchFn = (option: ActiveDescendantItem, term: string) => boolean;
 
 const defaultLabelMatch: ListboxMatchFn = (option, term) => {
@@ -21,6 +25,8 @@ const defaultLabelMatch: ListboxMatchFn = (option, term) => {
  * tracking, and clear semantics. Adds a `matchFn` input that listboxes read
  * to filter their options. A listbox that has a `CngxListboxSearch` injected
  * ancestor reads `term` and `matchFn` from it reactively.
+ *
+ * @category common/interactive/listbox
  * <example-url>http://localhost:4200/#/common/interactive/listbox/search/command-palette</example-url>
  */
 @Directive({

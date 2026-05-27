@@ -30,6 +30,8 @@ import { CNGX_TAG_GROUP, type CngxTagGroupHost } from './tag-group.token';
  * - `xs` → 0.25rem (tight chip strips)
  * - `sm` → 0.5rem (default)
  * - `md` → 0.75rem (roomy taxonomy clusters)
+ *
+ * @category common/display
  */
 export type CngxTagGroupGap = 'xs' | 'sm' | 'md';
 
@@ -44,6 +46,8 @@ export type CngxTagGroupGap = 'xs' | 'sm' | 'md';
  *
  * Only meaningful when the group has more horizontal room than its
  * intrinsic content; otherwise the row hugs its tags.
+ *
+ * @category common/display
  */
 export type CngxTagGroupAlign = 'start' | 'center' | 'end' | 'between';
 
@@ -85,6 +89,8 @@ export type CngxTagGroupAlign = 'start' | 'center' | 'end' | 'between';
  *   the right call until a future shared concern lands.
  * - Configuration cascade (`provideTagConfig`) — deferred (see
  *   `display-accepted-debt.md §1`).
+ *
+ * @category common/display
  * <example-url>http://localhost:4200/#/common/display/tag/app-wide-defaults-via-providetagconfig</example-url>
  * <example-url>http://localhost:4200/#/common/display/tag/color-palette</example-url>
  * <example-url>http://localhost:4200/#/common/display/tag/composition-with-cngxicon</example-url>

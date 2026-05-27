@@ -11,6 +11,8 @@ import { CngxFormFieldPresenter } from './form-field-presenter';
  * ```html
  * <span cngxHint>Business email address</span>
  * ```
+ *
+ * @category forms/field
  */
 @Directive({
   selector: '[cngxHint]',

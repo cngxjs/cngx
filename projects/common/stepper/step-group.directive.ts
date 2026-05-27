@@ -28,6 +28,8 @@ import {
  * `aggregatedStatus` rolls up child states: `error` if any errored,
  * `success` if all are success, `pending` if any is pending or busy,
  * otherwise `idle`.
+ *
+ * @category common/stepper
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-hierarchical/group-nested-steps-trailing-root-step</example-url>
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-slot-overrides/custom-busy-spinner-via-code-cngxstepbusyspinner-code</example-url>
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-slot-overrides/custom-error-badge-via-code-cngxstepbadge-code</example-url>

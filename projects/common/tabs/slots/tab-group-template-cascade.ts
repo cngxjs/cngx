@@ -20,6 +20,8 @@ import type {
  * injection context) and the resolved {@link CngxTabsConfig}; the
  * factory runs the 3-stage cascade per slot key. Sibling shape to
  * `createStepperTemplateBindings`.
+ *
+ * @category common/tabs/slots
  */
 export interface CngxTabGroupTemplateBindingsOptions {
   readonly errorBadgeSlot: Signal<CngxTabErrorBadge | undefined>;
@@ -32,6 +34,8 @@ export interface CngxTabGroupTemplateBindingsOptions {
  * Output of {@link createTabGroupTemplateBindings}. One resolved
  * `Signal<TemplateRef | null>` per slot; `null` means the organism
  * renders its built-in default.
+ *
+ * @category common/tabs/slots
  */
 export interface CngxTabGroupTemplateBindings {
   readonly errorBadge: Signal<TemplateRef<CngxTabErrorBadgeContext> | null>;
@@ -54,6 +58,8 @@ export interface CngxTabGroupTemplateBindings {
  * Single-consumer today: `[cngxMatTabs]` does not consume this —
  * Material owns the rendered tab-button chrome via its own MDC
  * template, leaving no DOM seam. See `tabs-accepted-debt §9`.
+ *
+ * @category common/tabs/slots
  */
 export function createTabGroupTemplateBindings(
   opts: CngxTabGroupTemplateBindingsOptions,

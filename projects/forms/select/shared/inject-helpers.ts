@@ -15,6 +15,8 @@ import { resolveSelectConfig } from './resolve-config';
  *   protected readonly panelWidth = this.config.panelWidth;
  * }
  * ```
+ *
+ * @category forms/select
  */
 export function injectSelectConfig(): ReturnType<typeof resolveSelectConfig> {
   return resolveSelectConfig();
@@ -28,6 +30,8 @@ export function injectSelectConfig(): ReturnType<typeof resolveSelectConfig> {
  * const announcer = injectSelectAnnouncer();
  * announcer.announce('Filter applied: Red', 'polite');
  * ```
+ *
+ * @category forms/select
  */
 export function injectSelectAnnouncer(): CngxSelectAnnouncer {
   return inject(CngxSelectAnnouncer);

@@ -46,6 +46,8 @@ const FOCUS_DEBOUNCE_MS = 50;
  *   Save
  * </button>
  * ```
+ *
+ * @category common/popover
  * <example-url>http://localhost:4200/#/common/popover/tooltip/basic-tooltip</example-url>
  * <example-url>http://localhost:4200/#/common/popover/tooltip/custom-delay</example-url>
  * <example-url>http://localhost:4200/#/common/popover/tooltip/disabled-state</example-url>

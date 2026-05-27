@@ -6,6 +6,8 @@ import { Directive } from '@angular/core';
  * to `aria-hidden="true"` — the slot is decorative, the item's accessible
  * name comes from the projected label. Consumers needing a screen-reader
  * label on the icon override the default with `[attr.aria-hidden]="null"`.
+ *
+ * @category common/interactive/menu
  * <example-url>http://localhost:4200/#/common/interactive/menu/base/action-menu-with-separator</example-url>
  */
 @Directive({
@@ -24,6 +26,8 @@ export class CngxMenuItemIcon {}
  * `[cngxMenuItem]`. Applies `cngx-menu-item__label`. No `aria-hidden`
  * default — the label is the menu item's accessible name and must reach
  * assistive technology.
+ *
+ * @category common/interactive/menu
  * <example-url>http://localhost:4200/#/common/interactive/menu/base/action-menu-with-separator</example-url>
  */
 @Directive({
@@ -42,6 +46,8 @@ export class CngxMenuItemLabel {}
  * primary name belongs to the label. Override with
  * `[attr.aria-hidden]="null"` when the suffix carries meaning AT needs
  * (status text, semantic badge).
+ *
+ * @category common/interactive/menu
  * <example-url>http://localhost:4200/#/common/interactive/menu/base/action-menu-with-separator</example-url>
  */
 @Directive({
@@ -63,6 +69,8 @@ export class CngxMenuItemSuffix {}
  * hint would just repeat the label. Typically placed on a `<kbd>`.
  * Override with `[attr.aria-hidden]="null"` if the hint is a consumer's
  * primary affordance.
+ *
+ * @category common/interactive/menu
  * <example-url>http://localhost:4200/#/common/interactive/menu/base/action-menu-with-separator</example-url>
  */
 @Directive({

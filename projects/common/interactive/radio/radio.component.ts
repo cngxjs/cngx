@@ -51,6 +51,8 @@ import {
  * the `<div role="radio">` host does not participate in HTML
  * form submission, so the attribute carries no functional
  * weight.
+ *
+ * @category common/interactive
  * <example-url>http://localhost:4200/#/common/interactive/radio/basic-vertical-group</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/radio/custom-dot-glyph</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/radio/disabled-group-cascades-per-radio-overrides</example-url>

@@ -20,6 +20,7 @@ import { CngxFormFieldPresenter } from './form-field-presenter';
  * </div>
  * ```
  *
+ * @category forms/field
  * <example-url>http://localhost:4200/#/forms/field/error/basic</example-url>
  * <example-url>http://localhost:4200/#/forms/field/error/icons-per-kind</example-url>
  * <example-url>http://localhost:4200/#/forms/field/error/server-injected-error</example-url>

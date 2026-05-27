@@ -17,7 +17,11 @@ import {
 
 import { CngxPopover } from './popover.directive';
 
-/** Visual variant for the action button. */
+/**
+ * Visual variant for the action button.
+ *
+ * @category common/popover
+ */
 export type PopoverActionVariant = 'primary' | 'secondary' | 'danger' | 'ghost';
 
 /**
@@ -56,6 +60,8 @@ export type PopoverActionVariant = 'primary' | 'secondary' | 'danger' | 'ghost';
  *   }
  * </cngx-popover-action>
  * ```
+ *
+ * @category common/popover
  * <example-url>http://localhost:4200/#/common/popover/popover-panel/content-states</example-url>
  * <example-url>http://localhost:4200/#/common/popover/popover-panel/variants</example-url>
  * <example-url>http://localhost:4200/#/common/popover/popover-panel/with-footer-actions</example-url>

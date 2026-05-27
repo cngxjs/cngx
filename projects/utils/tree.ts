@@ -9,6 +9,8 @@
 /**
  * Input shape for a hierarchical tree. Consumers supply this; library never
  * mutates it. `children` may be omitted for leaves.
+ *
+ * @category utils/tree
  */
 export interface CngxTreeNode<T> {
   readonly value: T;
@@ -24,6 +26,8 @@ export interface CngxTreeNode<T> {
  *
  * `parentIds` is the chain from root to the immediate parent (exclusive of
  * self). Empty for root-level nodes.
+ *
+ * @category utils/tree
  */
 export interface FlatTreeNode<T> {
   readonly id: string;
@@ -58,6 +62,8 @@ const defaultLabelFn: LabelFn<unknown> = (value) => String(value);
  *   `path.join('.')` — adequate for static trees; supply a key-based `idFn`
  *   for data that may be re-ordered without changing identity.
  * @param labelFn Derives visible label. Defaults to `String(value)`.
+ *
+ * @category utils/tree
  */
 export function flattenTree<T>(
   nodes: readonly CngxTreeNode<T>[],
@@ -103,6 +109,8 @@ export function flattenTree<T>(
 /**
  * A flat node is visible iff every ancestor in its `parentIds` chain is
  * present in `expandedIds`. Root nodes (empty chain) are always visible.
+ *
+ * @category utils/tree
  */
 export function isNodeVisible<T>(
   node: FlatTreeNode<T>,
@@ -118,6 +126,8 @@ export function isNodeVisible<T>(
 
 /**
  * DFS visitor. `visit` is called once per node with the current depth.
+ *
+ * @category utils/tree
  */
 export function walkTree<T>(
   nodes: readonly CngxTreeNode<T>[],
@@ -138,6 +148,8 @@ export function walkTree<T>(
  * Collect all descendant values of a node (exclusive of the node itself),
  * in DFS order. For cascade-select: toggling a parent flips all entries in
  * this list atomically.
+ *
+ * @category utils/tree
  */
 export function collectDescendantValues<T>(node: CngxTreeNode<T>): T[] {
   const out: T[] = [];
@@ -161,6 +173,8 @@ export function collectDescendantValues<T>(node: CngxTreeNode<T>): T[] {
  * dropped entirely.
  *
  * Fresh implementation — not ported from `@cngx/data-display/treetable`.
+ *
+ * @category utils/tree
  */
 export function filterTree<T>(
   nodes: readonly CngxTreeNode<T>[],
@@ -188,6 +202,8 @@ export function filterTree<T>(
  * the relative position of nodes across different parents is irrelevant.
  *
  * Fresh implementation — not ported from `@cngx/data-display/treetable`.
+ *
+ * @category utils/tree
  */
 export function sortTree<T>(
   nodes: readonly CngxTreeNode<T>[],

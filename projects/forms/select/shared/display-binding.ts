@@ -11,6 +11,8 @@ import type { CngxListboxSearch } from '@cngx/common/interactive';
 
 /**
  * Configuration for {@link createDisplayBinding}.
+ *
+ * @category forms/select/state
  */
 export interface DisplayBindingOptions<T> {
   /** Committed value, mirrored into the input as display text while unfocused. */
@@ -29,6 +31,8 @@ export interface DisplayBindingOptions<T> {
 
 /**
  * API returned from {@link createDisplayBinding}.
+ *
+ * @category forms/select/state
  */
 export interface DisplayBinding<T> {
   /**
@@ -48,6 +52,8 @@ export interface DisplayBinding<T> {
  * text of a co-located `<input>` running `CngxListboxSearch`. Two
  * `effect()`s — value→input (gated on `focused`) and search-term→callback
  * (gated on `writingFlag` + `skipInitial`).
+ *
+ * @category forms/select/state
  */
 export function createDisplayBinding<T>(
   opts: DisplayBindingOptions<T>,
@@ -105,6 +111,8 @@ export function createDisplayBinding<T>(
 
 /**
  * Factory signature for {@link CNGX_DISPLAY_BINDING_FACTORY}.
+ *
+ * @category forms/select/state
  */
 export type CngxDisplayBindingFactory = <T>(
   opts: DisplayBindingOptions<T>,
@@ -113,6 +121,8 @@ export type CngxDisplayBindingFactory = <T>(
 /**
  * Factory token for {@link DisplayBinding}. Default
  * {@link createDisplayBinding}.
+ *
+ * @category forms/select/state
  */
 export const CNGX_DISPLAY_BINDING_FACTORY =
   new InjectionToken<CngxDisplayBindingFactory>('CngxDisplayBindingFactory', {

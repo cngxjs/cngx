@@ -40,6 +40,8 @@ import { type CngxTreeSelectNodeContext } from './tree-select.model';
  *
  * Zero-logic holder — typed wrapper around `TemplateRef`, discovered
  * via `contentChild`.
+ *
+ * @category forms/select/tree-select
  * <example-url>http://localhost:4200/tree-select/10-000-nodes-perf-smoke</example-url>
  * <example-url>http://localhost:4200/tree-select/basic-single-level-toggle</example-url>
  * <example-url>http://localhost:4200/tree-select/cascade-children-parent-toggle-selects-the-whole-subtree</example-url>

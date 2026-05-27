@@ -44,6 +44,7 @@ import type { CngxFormFieldControl } from './models';
  *   <cngx-field-errors />
  * </cngx-form-field>
  * ```
+ * @category forms/field
  * <example-url>http://localhost:4200/#/forms/field/listbox-forms/material-mat-select-via-cngxbindfield</example-url>
  * <example-url>http://localhost:4200/#/forms/field/listbox-forms/reactive-forms-adapted-via-adaptformcontrol</example-url>
  * <example-url>http://localhost:4200/#/forms/field/listbox-forms/signal-forms-multi-select-min-2</example-url>

@@ -52,6 +52,8 @@ import {
  *      (loadMore)="loadMore()">
  * </div>
  * ```
+ *
+ * @category common/layout
  * <example-url>http://localhost:4200/#/common/layout/infinite-scroll/scrollable-list</example-url>
  */
 @Directive({

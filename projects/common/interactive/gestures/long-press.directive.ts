@@ -6,6 +6,8 @@ import { fromEvent, filter, switchMap, takeUntil, timer, tap, merge } from 'rxjs
 /**
  * Detects long-press gestures via Pointer Events.
  *
+ * @category common/interactive/gestures
+ *
  * Fires `longPressed` after the pointer is held down for the `threshold` duration
  * without moving more than 10px. Cancels on pointer move (prevents accidental
  * triggers during scrolling), pointer up, pointer cancel, and pointer leave.

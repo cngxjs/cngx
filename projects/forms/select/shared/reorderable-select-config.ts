@@ -13,6 +13,8 @@ import type { CngxReorderModifier } from '@cngx/common/interactive';
  * App-wide config for reorder-aware select variants. Cascade:
  * per-instance input > `provideReorderableSelectConfigAt` >
  * `provideReorderableSelectConfig` > library default.
+ *
+ * @category forms/select/reorderable-multi-select
  */
 export interface CngxReorderableSelectConfig {
   /** Forwarded to inner `CngxReorder`. Default `'ctrl'`. */
@@ -43,6 +45,8 @@ export const CNGX_REORDERABLE_SELECT_DEFAULTS: Required<
 
 /**
  * Token carrying the resolved {@link CngxReorderableSelectConfig}.
+ *
+ * @category forms/select/reorderable-multi-select
  */
 export const CNGX_REORDERABLE_SELECT_CONFIG =
   new InjectionToken<CngxReorderableSelectConfig>('CngxReorderableSelectConfig');
@@ -50,6 +54,8 @@ export const CNGX_REORDERABLE_SELECT_CONFIG =
 /**
  * Feature returned by the `with*` helpers. Merged by
  * {@link provideReorderableSelectConfig}.
+ *
+ * @category forms/select/reorderable-multi-select
  */
 export interface CngxReorderableSelectConfigFeature {
   readonly config: Partial<CngxReorderableSelectConfig>;
@@ -65,6 +71,8 @@ function feature(
 
 /**
  * Sets the keyboard modifier gating reorder moves.
+ *
+ * @category forms/select/reorderable-multi-select
  */
 export function withReorderKeyboardModifier(
   modifier: CngxReorderModifier,
@@ -74,6 +82,8 @@ export function withReorderKeyboardModifier(
 
 /**
  * Sets the chip-strip ARIA label.
+ *
+ * @category forms/select/reorderable-multi-select
  */
 export function withReorderAriaLabel(
   label: string,
@@ -83,6 +93,8 @@ export function withReorderAriaLabel(
 
 /**
  * Sets the default drag-handle glyph app-wide via `TemplateRef<void>`.
+ *
+ * @category forms/select/reorderable-multi-select
  */
 export function withDefaultDragHandle(
   template: TemplateRef<void> | null,
@@ -93,6 +105,8 @@ export function withDefaultDragHandle(
 /**
  * Sets strip-freeze-on-commit. `false` lets reorders supersede in-flight
  * commits via the commit-controller's supersede semantics.
+ *
+ * @category forms/select/reorderable-multi-select
  */
 export function withReorderStripFreeze(
   freeze: boolean,
@@ -115,6 +129,8 @@ export function withReorderStripFreeze(
  *   ],
  * });
  * ```
+ *
+ * @category forms/select/reorderable-multi-select
  */
 export function provideReorderableSelectConfig(
   ...features: CngxReorderableSelectConfigFeature[]
@@ -133,6 +149,8 @@ export function provideReorderableSelectConfig(
 /**
  * Component-scoped reorderable-select config. Returns `Provider[]`
  * because `viewProviders` rejects `EnvironmentProviders`.
+ *
+ * @category forms/select/reorderable-multi-select
  */
 export function provideReorderableSelectConfigAt(
   ...features: CngxReorderableSelectConfigFeature[]

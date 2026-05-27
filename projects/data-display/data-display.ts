@@ -8,5 +8,5 @@
 
 import { makeVersion } from '@cngx/utils';
 
-/** Package version, replaced at publish time. */
+/** @internal — replaced at publish time, not part of consumer API. */
 export const VERSION = makeVersion('0.0.0-PLACEHOLDER');

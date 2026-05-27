@@ -5,6 +5,8 @@ import type { CngxFieldAccessor, CngxFieldRef } from '@cngx/forms/field';
 /**
  * A writable mock of `CngxFieldRef` for testing.
  * Every property is a `WritableSignal` so tests can mutate state directly.
+ *
+ * @category forms/field/testing
  */
 export interface MockFieldRef<T = unknown> extends CngxFieldRef<T> {
   readonly name: WritableSignal<string>;
@@ -29,7 +31,11 @@ export interface MockFieldRef<T = unknown> extends CngxFieldRef<T> {
   readonly submitting: WritableSignal<boolean>;
 }
 
-/** Options for {@link createMockField}. */
+/**
+ * Options for {@link createMockField}.
+ *
+ * @category forms/field/testing
+ */
 export interface MockFieldOptions<T = unknown> {
   name?: string;
   value?: T;
@@ -57,6 +63,8 @@ export interface MockFieldOptions<T = unknown> {
  * // Pass `accessor` to [field] input
  * // Mutate ref.touched.set(true) to simulate interaction
  * ```
+ *
+ * @category forms/field/testing
  */
 export function createMockField<T = string>(
   opts: MockFieldOptions<T> = {},
@@ -99,6 +107,8 @@ export function createMockField<T = string>(
 
 /**
  * Creates a mock `ValidationError.WithFieldTree` for testing.
+ *
+ * @category forms/field/testing
  */
 export function mockValidationError(
   kind: string,

@@ -49,6 +49,8 @@ function releaseScrollLock(html: HTMLElement): void {
  * ```html
  * <div [cngxScrollLock]="isModalOpen()">…</div>
  * ```
+ *
+ * @category common/layout
  * <example-url>http://localhost:4200/#/common/layout/scroll-lock/toggle</example-url>
  */
 @Directive({

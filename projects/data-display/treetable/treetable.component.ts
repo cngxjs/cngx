@@ -86,6 +86,8 @@ import { CNGX_TREETABLE_CONFIG } from './treetable.token';
  *
  * @playground Showcase ./examples/app/app.component.ts
  * @typeParam T - The shape of the data value carried by each tree node.
+ *
+ * @category data-display/treetable
  */
 @Component({
   selector: 'cngx-treetable',

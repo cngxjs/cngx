@@ -106,6 +106,8 @@ function releaseScrollLock(html: HTMLElement): void {
  *   <input id="name-input" />
  * </dialog>
  * ```
+ *
+ * @category common/dialog
  * <example-url>http://localhost:4200/#/common/dialog/alert-dialog</example-url>
  * <example-url>http://localhost:4200/#/common/dialog/bottom-sheet</example-url>
  * <example-url>http://localhost:4200/#/common/dialog/cngxdialogopener-programmatic</example-url>

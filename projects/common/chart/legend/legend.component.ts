@@ -12,6 +12,8 @@ import {
  * unconstrained so consumers can carry their domain key (id, layer
  * name, accessor return type, ...) for later interactions without a
  * second lookup.
+ *
+ * @category common/chart/legend
  */
 export interface CngxChartLegendItem<T = unknown> {
   readonly label: string;
@@ -47,6 +49,8 @@ export interface CngxChartLegendItem<T = unknown> {
  * `--cngx-chart-legend-font-size`. `[orientation]` flips between row
  * and column; `[align]` aligns along the main axis (`start`, `center`,
  * `end`).
+ *
+ * @category common/chart/legend
  */
 @Component({
   selector: 'cngx-chart-legend',

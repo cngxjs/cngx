@@ -13,6 +13,8 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
  * (`"200px 1fr"`, `"repeat(auto-fit, minmax(120px, 1fr))"`).
  * Bare attribute syntax works for both forms: `columns="3"` and
  * `[columns]="3"` produce identical output.
+ *
+ * @category ui/layout
  */
 @Component({
   selector: 'cngx-grid',

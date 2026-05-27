@@ -30,6 +30,8 @@ import {
  * ```css
  * .cngx-sticky--active { box-shadow: 0 2px 4px rgba(0,0,0,.1); }
  * ```
+ *
+ * @category common/layout
  * <example-url>http://localhost:4200/#/common/layout/sticky-header/sticky-header-with-shadow</example-url>
  */
 @Directive({

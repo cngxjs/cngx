@@ -22,6 +22,8 @@ import { CngxFilterBuilderPresenter } from './filter-builder-presenter.directive
  *
  * Listeners stay on this directive (not on the presenter) so consumers
  * without the form-field bridge pay no event-listener cost.
+ *
+ * @category forms/filter-builder
  */
 @Directive({
   selector: '[cngxFilterBuilderFormFieldControl]',

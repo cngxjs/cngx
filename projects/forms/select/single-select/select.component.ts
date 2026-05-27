@@ -98,6 +98,8 @@ import {
 
 /**
  * Change event emitted by {@link CngxSelect.selectionChange} on user picks.
+ *
+ * @category forms/select/single-select
  */
 export interface CngxSelectChange<T = unknown> {
   readonly source: CngxSelect<T>;
@@ -117,6 +119,7 @@ export interface CngxSelectChange<T = unknown> {
  * view, option model, commit-controller surface) lives in
  * {@link createSelectCore}.
  *
+ * @category forms/select/single-select
  * @playground Commit action ./examples/commit-action/commit-action-example.component.ts
  * <example-url>http://localhost:4200/#/forms/select/single-select/assemble-it-yourself-atoms-element-components</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/async-state-consumer</example-url>

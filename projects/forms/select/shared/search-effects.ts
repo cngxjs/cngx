@@ -8,6 +8,8 @@ import {
 
 /**
  * Config for {@link createSearchEffects}.
+ *
+ * @category forms/select/controllers
  */
 export interface SearchEffectsOptions {
   /** Debounced search-term signal. */
@@ -37,6 +39,8 @@ export interface SearchEffectsOptions {
  * One or two `effect()`s for input-trigger variants: `skipInitial`-gated
  * `searchTermChange` forward (when `emit` is set) and auto-open-on-typing.
  * External calls wrapped in `untracked`. Injection context required.
+ *
+ * @category forms/select/controllers
  */
 export function createSearchEffects(opts: SearchEffectsOptions): void {
   if (opts.emit) {
@@ -73,11 +77,15 @@ export function createSearchEffects(opts: SearchEffectsOptions): void {
 
 /**
  * Factory signature for {@link CNGX_SEARCH_EFFECTS_FACTORY}.
+ *
+ * @category forms/select/controllers
  */
 export type CngxSearchEffectsFactory = (opts: SearchEffectsOptions) => void;
 
 /**
  * Factory token. Default {@link createSearchEffects}.
+ *
+ * @category forms/select/controllers
  */
 export const CNGX_SEARCH_EFFECTS_FACTORY =
   new InjectionToken<CngxSearchEffectsFactory>('CngxSearchEffectsFactory', {

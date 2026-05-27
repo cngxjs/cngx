@@ -42,6 +42,8 @@ import { computed, Directive, input, output, signal } from '@angular/core';
  *   <a href="/security">Security</a>
  * </div>
  * ```
+ *
+ * @category common/interactive
  * <example-url>http://localhost:4200/#/common/interactive/disclosure/basic-uncontrolled</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/disclosure/controlled-mode</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/disclosure/faq-accordion</example-url>

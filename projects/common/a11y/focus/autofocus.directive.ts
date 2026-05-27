@@ -35,6 +35,8 @@ import {
  * ```html
  * <input cngxAutofocus [autofocusDelay]="200" />
  * ```
+ *
+ * @category common/a11y
  * <example-url>http://localhost:4200/#/common/a11y/autofocus/conditional-focus</example-url>
  * <example-url>http://localhost:4200/#/common/a11y/autofocus/focus-on-insert</example-url>
  */

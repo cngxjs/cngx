@@ -16,6 +16,8 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
  *   <cngx-option [value]="'b'">B</cngx-option>
  * </div>
  * ```
+ *
+ * @category forms/select/declarative
  * <example-url>http://localhost:4200/#/forms/select/select-shell/async-commit-pending-error-inline-glyphs</example-url>
  * <example-url>http://localhost:4200/#/forms/select/select-shell/basic-flat-declarative-options</example-url>
  * <example-url>http://localhost:4200/#/forms/select/select-shell/custom-glyphs-clearglyph-caretglyph</example-url>

@@ -7,6 +7,8 @@ import type { CngxStepNode } from '../stepper-host.token';
  * badge inside a step button when `errorAggregator?.shouldShow()` is
  * truthy. Consumers swap the built-in `'!'` glyph for a counter pill
  * or branded marker; the visibility gate stays library-owned.
+ *
+ * @category common/stepper/slots
  */
 export interface CngxStepBadgeContext {
   /** Aggregated error count for this step (≥ 1 when shown). */
@@ -28,6 +30,8 @@ export interface CngxStepBadgeContext {
  *   </ng-template>
  * </cngx-stepper>
  * ```
+ *
+ * @category common/stepper/slots
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-slot-overrides/custom-busy-spinner-via-code-cngxstepbusyspinner-code</example-url>
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-slot-overrides/custom-error-badge-via-code-cngxstepbadge-code</example-url>
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-slot-overrides/custom-group-header-via-code-cngxstepgroupheader-code</example-url>

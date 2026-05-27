@@ -16,6 +16,8 @@ import { resolveAsyncView, type AsyncView } from '../async-state/resolve-view';
 /**
  * Template context for the `*cngxAsync` content template.
  * `$implicit` provides the data value, typed via `ngTemplateContextGuard`.
+ *
+ * @category common/data/async-state
  */
 export interface CngxAsyncContext<T> {
   /** The data value — bound via `let data` in microsyntax. */
@@ -60,6 +62,9 @@ export interface CngxAsyncContext<T> {
  *   <li>Error: {{ err }}</li>
  * </ng-template>
  * ```
+ *
+ * @category common/data/async-state
+ *
  * <example-url>http://localhost:4200/#/ui/feedback/async-container/cngx-async-container-full-control-toast</example-url>
  * <example-url>http://localhost:4200/#/ui/feedback/async-container/cngxasync-one-line</example-url>
  * <example-url>http://localhost:4200/#/ui/feedback/async-container/cngxasync-with-custom-templates</example-url>

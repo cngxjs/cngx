@@ -10,6 +10,8 @@ import { ChangeDetectionStrategy, Component, computed, input, signal, ViewEncaps
  *
  * Optional status indicator dot via `status`. Size and shape driven by
  * CSS custom properties.
+ *
+ * @category common/display
  * <example-url>http://localhost:4200/#/common/display/avatar/cascade-image-initials-fallback</example-url>
  * <example-url>http://localhost:4200/#/common/display/avatar/shapes-and-status</example-url>
  * <example-url>http://localhost:4200/#/common/display/avatar/sizes</example-url>

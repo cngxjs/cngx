@@ -15,6 +15,8 @@ import { fromEvent, map, switchMap, timer } from 'rxjs';
 /**
  * Debounced search term tracker for `<input>` elements.
  *
+ * @category common/interactive/keyboard
+ *
  * Converts the DOM `input` event stream into a debounced Signal. The raw
  * Observable is never exposed — signal at the API boundary.
  *

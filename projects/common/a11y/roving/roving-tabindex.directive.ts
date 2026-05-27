@@ -24,6 +24,8 @@ import {
  *   <button cngxRovingItem>Three</button>
  * </div>
  * ```
+ *
+ * @category common/a11y
  * <example-url>http://localhost:4200/#/common/a11y/roving-tabindex/horizontal-toolbar</example-url>
  * <example-url>http://localhost:4200/#/common/a11y/roving-tabindex/vertical-menu</example-url>
  */
@@ -91,6 +93,8 @@ export class CngxRovingItem {
  *   }
  * </div>
  * ```
+ *
+ * @category common/a11y
  * <example-url>http://localhost:4200/#/common/a11y/roving-tabindex/horizontal-toolbar</example-url>
  * <example-url>http://localhost:4200/#/common/a11y/roving-tabindex/vertical-menu</example-url>
  */

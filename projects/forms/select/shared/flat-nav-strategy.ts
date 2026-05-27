@@ -11,6 +11,8 @@ import {
  * Minimum disabled-shape the flat-nav strategy reads. Both
  * `ActiveDescendantItem` and `CngxOption` satisfy this via
  * {@link isOptionDisabled}.
+ *
+ * @category forms/select/controllers
  */
 export interface CngxFlatNavListboxItem {
   readonly disabled?: boolean | (() => boolean) | null;
@@ -20,6 +22,8 @@ export interface CngxFlatNavListboxItem {
  * Context passed to every {@link CngxFlatNavStrategy} method. Variant
  * builds it inside the keydown handler and dispatches the returned
  * {@link CngxFlatNavAction}.
+ *
+ * @category forms/select/controllers
  */
 export interface CngxFlatNavContext<T> {
   /** Flat option list in listbox order. Variant's `flatOptions`. */
@@ -48,6 +52,8 @@ export interface CngxFlatNavContext<T> {
 
 /**
  * Strategy result. Pure policy — variant dispatches.
+ *
+ * @category forms/select/controllers
  */
 export type CngxFlatNavAction<T> =
   /** Typeahead hit; variant runs its pick semantics. */
@@ -63,6 +69,8 @@ export type CngxFlatNavAction<T> =
  * and typeahead-while-closed via {@link TypeaheadController.matchFromIndex}.
  * Combobox / typeahead / action variants delegate to `CngxListboxSearch`
  * and don't consume this.
+ *
+ * @category forms/select/controllers
  */
 export interface CngxFlatNavStrategy {
   /** PageUp/PageDown. Returns `highlight` with target or `noop`. */
@@ -82,6 +90,8 @@ export interface CngxFlatNavStrategy {
  * Canonical W3C listbox flat-nav: PageUp/Down step 10 with disabled
  * back-probe; typeahead delegates to the variant's
  * {@link TypeaheadController}.
+ *
+ * @category forms/select/controllers
  */
 export function createDefaultFlatNavStrategy(
   options: { readonly pageStep?: number } = {},
@@ -132,6 +142,8 @@ export function createDefaultFlatNavStrategy(
  * Flat-variant keyboard-nav strategy token. Default
  * {@link createDefaultFlatNavStrategy}. Override for fuzzy typeahead,
  * custom page-step, or group-aware jumps.
+ *
+ * @category forms/select/controllers
  */
 export const CNGX_FLAT_NAV_STRATEGY = new InjectionToken<CngxFlatNavStrategy>(
   'CngxFlatNavStrategy',

@@ -8,6 +8,8 @@ import {
 
 /**
  * Configuration options for `createSelectionController`.
+ *
+ * @category core/utils/selection
  */
 export interface SelectionControllerOptions<T> {
   /**
@@ -45,6 +47,8 @@ export interface SelectionControllerOptions<T> {
  * Memoizes per-value `isSelected` / `isIndeterminate` signals by key so
  * template diff stays stable and consumers can pass the handle into child
  * components without identity churn.
+ *
+ * @category core/utils/selection
  */
 export interface SelectionController<T> {
   /** Snapshot of currently selected values (structural-equality computed). */
@@ -113,6 +117,8 @@ const POST_DESTROY_FALSE: Signal<boolean> = signal(false).asReadonly();
  * selection.isSelected(alice)();      // true
  * selection.isSelected(alice) === selection.isSelected(alice); // stable
  * ```
+ *
+ * @category core/utils/selection
  */
 export function createSelectionController<T>(
   values: WritableSignal<T[]>,
@@ -304,6 +310,8 @@ export function createSelectionController<T>(
  * consumers can swap the selection engine app-wide (telemetry wrappers,
  * audit logging, server-synced selections, …) without forking any component
  * that depends on it.
+ *
+ * @category core/utils/selection
  */
 export type CngxSelectionControllerFactory = <T>(
   values: WritableSignal<T[]>,
@@ -319,6 +327,8 @@ export type CngxSelectionControllerFactory = <T>(
  * Symmetrical to `CNGX_SELECT_COMMIT_CONTROLLER_FACTORY` in `@cngx/forms/select` —
  * same pattern, applied at the selection-primitive level so future
  * `@cngx/data-display` grid/tree components share the override surface.
+ *
+ * @category core/utils/selection
  */
 export const CNGX_SELECTION_CONTROLLER_FACTORY = new InjectionToken<CngxSelectionControllerFactory>(
   'CngxSelectionControllerFactory',

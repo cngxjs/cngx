@@ -48,6 +48,8 @@ import {
  *   <p>Loaded content here</p>
  * </cngx-skeleton>
  * ```
+ *
+ * @category ui/skeleton
  * <example-url>http://localhost:4200/#/common/layout/skeleton/basic-skeleton</example-url>
  * <example-url>http://localhost:4200/#/common/layout/skeleton/skeleton-container</example-url>
  * <example-url>http://localhost:4200/#/ui/skeleton/card-skeleton</example-url>

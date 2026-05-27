@@ -8,6 +8,8 @@ import { InjectionToken } from '@angular/core';
  * `{ kind: 'group' }`. Both providers expose `useExisting` so consumers
  * can `inject(CNGX_OPTION_CONTAINER)` and reach the directive instance
  * through the discriminator.
+ *
+ * @category common/interactive/listbox
  */
 export type CngxOptionContainer =
   | (CngxOptionContainerOption & { readonly kind: 'option' })
@@ -17,6 +19,8 @@ export type CngxOptionContainer =
  * Public surface a `CngxOption` exposes when registered under
  * `CNGX_OPTION_CONTAINER`. Kept structural so consumers can walk the
  * projection tree without importing the directive class directly.
+ *
+ * @category common/interactive/listbox
  */
 export interface CngxOptionContainerOption {
   readonly id: string;

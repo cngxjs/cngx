@@ -112,6 +112,8 @@ import {
  * Change event emitted by `CngxReorderableMultiSelect.selectionChange`
  * and `.reordered`. The `'reorder'` branch carries `fromIndex` /
  * `toIndex`; other branches leave them `undefined`.
+ *
+ * @category forms/select/reorderable-multi-select
  */
 export interface CngxReorderableMultiSelectChange<T = unknown> {
   readonly source: CngxReorderableMultiSelect<T>;
@@ -134,6 +136,8 @@ export interface CngxReorderableMultiSelectChange<T = unknown> {
  * Reorder commits bypass `ArrayCommitHandler.beginToggle` (its
  * `sameArrayContents` guard would skip same-membership reorders) and
  * drive the commit controller directly.
+ *
+ * @category forms/select/reorderable-multi-select
  * <example-url>http://localhost:4200/#/forms/select/reorderable-multi-select/basic-drag-chips-via-mouse-touch</example-url>
  * <example-url>http://localhost:4200/#/forms/select/reorderable-multi-select/commit-action-optimistic-pessimistic-with-supersede</example-url>
  * <example-url>http://localhost:4200/#/forms/select/reorderable-multi-select/keyboard-reorder-alt-arrow-home-end</example-url>

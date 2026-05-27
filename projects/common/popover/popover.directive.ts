@@ -174,6 +174,8 @@ function warnMissingFloatingMiddleware(doc: Document): void {
  * When the array is empty (default), the host does not write a
  * `position-try-fallbacks` style — the browser positions the popover at
  * the declared `placement` regardless of viewport clipping.
+ *
+ * @category common/popover
  */
 @Directive({
   selector: '[cngxPopover]',

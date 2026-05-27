@@ -18,6 +18,8 @@ import { DIALOG_REF } from './dialog-ref';
  *   <button [cngxDialogClose]="true">Confirm</button>
  * </dialog>
  * ```
+ *
+ * @category common/dialog
  * <example-url>http://localhost:4200/#/common/dialog/alert-dialog</example-url>
  * <example-url>http://localhost:4200/#/common/dialog/bottom-sheet</example-url>
  * <example-url>http://localhost:4200/#/common/dialog/cngxdialogopener-programmatic</example-url>

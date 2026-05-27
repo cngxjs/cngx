@@ -37,6 +37,7 @@ import { CngxRovingItem, CngxRovingTabindex } from '@cngx/common/a11y';
  * </cngx-card>
  * ```
  * 
+ * @category common/card
  * <example-url>http://localhost:4200/#/common/card/card-with-disclosure-expand-collapse</example-url>
  * <example-url>http://localhost:4200/#/common/card/card-with-expandable-text</example-url>
 

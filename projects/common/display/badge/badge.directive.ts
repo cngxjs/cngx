@@ -10,10 +10,18 @@ import {
   Renderer2,
 } from '@angular/core';
 
-/** Color palette options for the badge. */
+/**
+ * Color palette options for the badge.
+ *
+ * @category common/display
+ */
 export type CngxBadgeColor = 'primary' | 'error' | 'warning' | 'neutral';
 
-/** Positioning anchors relative to the host element. */
+/**
+ * Positioning anchors relative to the host element.
+ *
+ * @category common/display
+ */
 export type CngxBadgePosition =
   | 'inline'
   | 'above-start'
@@ -30,6 +38,8 @@ export type CngxBadgePosition =
  * - Numeric values (capped by `max` with "N+" fallback)
  * - String values (rendered verbatim)
  * - Boolean `true` (dot mode, no text)
+ *
+ * @category common/display
  * <example-url>http://localhost:4200/#/common/display/badge/colors-and-dot-mode</example-url>
  * <example-url>http://localhost:4200/#/common/display/badge/counts-with-overflow</example-url>
  * <example-url>http://localhost:4200/#/common/display/badge/inline-and-hidden</example-url>

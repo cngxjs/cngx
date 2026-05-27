@@ -4,7 +4,11 @@ import { type Observable, Subject } from 'rxjs';
 import type { AlertSeverity } from './alert';
 import { CNGX_FEEDBACK_CONFIG } from '../config/feedback-config';
 
-/** Configuration for a programmatic alert. */
+/**
+ * Configuration for a programmatic alert.
+ *
+ * @category ui/feedback/alert
+ */
 export interface AlertConfig {
   /** Alert message text (required). */
   message: string;
@@ -22,7 +26,11 @@ export interface AlertConfig {
   scope?: string;
 }
 
-/** Handle to a displayed alert — allows programmatic dismiss. */
+/**
+ * Handle to a displayed alert — allows programmatic dismiss.
+ *
+ * @category ui/feedback/alert
+ */
 export interface AlertRef {
   /** Programmatically dismiss this alert. */
   dismiss(): void;
@@ -30,7 +38,11 @@ export interface AlertRef {
   afterDismissed(): Observable<void>;
 }
 
-/** @internal — tracked state for a single alert in the stack. */
+/**
+ * @internal — tracked state for a single alert in the stack.
+ *
+ * @category ui/feedback/alert
+ */
 export interface AlertState {
   readonly id: number;
   readonly config: Required<
@@ -48,6 +60,9 @@ export interface AlertState {
  * via `viewProviders`, scoping alerts to that stack's subtree.
  *
  * For root-level injection, use `provideFeedback(withAlerts())`.
+ *
+ * @category ui/feedback/alert
+ *
  * <example-url>http://localhost:4200/#/ui/feedback/alert-stack/basic-stack</example-url>
  * <example-url>http://localhost:4200/#/ui/feedback/alert-stack/dialog-use-case</example-url>
  * <example-url>http://localhost:4200/#/ui/feedback/alert-stack/overflow-collapse</example-url>

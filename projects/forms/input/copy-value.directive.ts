@@ -15,6 +15,8 @@ import { DestroyRef, Directive, inject, input, output, signal, type Signal } fro
  * <!-- With explicit value -->
  * <button [cngxCopyValue]="apiKey()">Copy API Key</button>
  * ```
+ *
+ * @category forms/input
  * <example-url>http://localhost:4200/#/forms/input/utilities/copy-to-clipboard</example-url>
  * <example-url>http://localhost:4200/#/forms/input/utilities/input-clear</example-url>
  * <example-url>http://localhost:4200/#/forms/input/utilities/input-format</example-url>

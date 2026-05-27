@@ -104,6 +104,8 @@ export class CngxMatTabsPanelHostAdapter implements CngxTabPanelHost {
  * and the delegators consumer templates call.
  *
  * @playground Form error aggregation ./examples/form-errors/form-errors.component.ts
+ *
+ * @category ui/mat-tabs
  */
 @Directive({
   selector: '[cngxMatTabs]',

@@ -13,6 +13,8 @@ import { Directive } from '@angular/core';
  *   </header>
  * </cngx-card>
  * ```
+ *
+ * @category common/card
  */
 @Directive({
   selector: 'header[cngxCardHeader]',

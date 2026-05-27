@@ -31,6 +31,8 @@ import type {
 
 /**
  * Override contexts mirroring the per-instance `*cngxSelect*` slots.
+ *
+ * @category forms/select/config
  */
 export interface CngxSelectTemplateContexts {
   readonly check?: CngxSelectCheckContext;
@@ -55,6 +57,8 @@ export interface CngxSelectTemplateContexts {
 
 /**
  * Live-region announcer config: politeness + formatter.
+ *
+ * @category forms/select/config
  */
 export interface CngxSelectAnnouncerConfig {
   readonly enabled?: boolean;
@@ -78,17 +82,23 @@ export interface CngxSelectAnnouncerConfig {
 
 /**
  * First-load async view variant. Per-instance `*cngxSelectLoading` wins.
+ *
+ * @category forms/select/config
  */
 export type CngxSelectLoadingVariant = 'skeleton' | 'spinner' | 'bar' | 'text';
 
 /**
  * Subsequent-load indicator overlaying visible options. Per-instance
  * `*cngxSelectRefreshing` wins. `'none'` suppresses.
+ *
+ * @category forms/select/config
  */
 export type CngxSelectRefreshingVariant = 'bar' | 'spinner' | 'dots' | 'none';
 
 /**
  * Selection-indicator position relative to the option label.
+ *
+ * @category forms/select/config
  */
 export type CngxSelectSelectionIndicatorPosition = 'before' | 'after';
 
@@ -100,12 +110,16 @@ export type CngxSelectSelectionIndicatorPosition = 'before' | 'after';
  * - `'checkmark'` — bare checkmark.
  * - `'radio'` — dot-in-circle. Single-select intent; multi panels render
  *   it but the exclusive-selection visual is misleading there.
+ *
+ * @category forms/select/config
  */
 export type CngxSelectSelectionIndicatorVariant = 'auto' | 'checkbox' | 'checkmark' | 'radio';
 
 /**
  * ARIA-label overrides. Per-instance
  * `[clearButtonAriaLabel]`/`[chipRemoveAriaLabel]` wins.
+ *
+ * @category forms/select/config
  */
 export interface CngxSelectAriaLabels {
   /** Single → `'Clear selection'`; multi/combobox/typeahead → `'Reset selection'`. */
@@ -132,6 +146,8 @@ export interface CngxSelectAriaLabels {
  * Built-in recycler virtualiser tuning. Provide
  * `CNGX_PANEL_RENDERER_FACTORY` directly for custom scrollElement,
  * per-index `estimateSize`, or grid layout.
+ *
+ * @category forms/select/config
  */
 export interface CngxSelectVirtualizationConfig {
   /** Item height in px. Default `32`. */

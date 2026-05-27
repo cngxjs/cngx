@@ -8,6 +8,8 @@ import {
 
 /**
  * Configuration for {@link createChipStripRoving}.
+ *
+ * @category common/interactive/reorder
  */
 export interface CngxChipStripRovingOptions {
   /**
@@ -37,6 +39,8 @@ export interface CngxChipStripRovingOptions {
  * `activeIndex` signal the consumer binds into
  * `[attr.tabindex]="i === roving.activeIndex() ? 0 : -1"`, plus a
  * keyboard handler and imperative focus helpers.
+ *
+ * @category common/interactive/reorder
  */
 export interface CngxChipStripRovingController {
   /**
@@ -76,6 +80,8 @@ export interface CngxChipStripRovingController {
 
 /**
  * Signature of the factory behind {@link CNGX_CHIP_STRIP_ROVING_FACTORY}.
+ *
+ * @category common/interactive/reorder
  */
 export type CngxChipStripRovingFactory = (
   opts: CngxChipStripRovingOptions,
@@ -99,6 +105,8 @@ export type CngxChipStripRovingFactory = (
  * **Injection context.** Must be called in an injection context
  * (component constructor / field init) because it installs an
  * `effect()` for the active-index clamp on count shrink.
+ *
+ * @category common/interactive/reorder
  */
 export function createChipStripRoving(
   opts: CngxChipStripRovingOptions,
@@ -197,6 +205,8 @@ export function createChipStripRoving(
  *
  * Symmetrical to {@link CNGX_TREE_CONTROLLER_FACTORY} /
  * `CNGX_SELECTION_CONTROLLER_FACTORY`.
+ *
+ * @category common/interactive/reorder
  */
 export const CNGX_CHIP_STRIP_ROVING_FACTORY =
   new InjectionToken<CngxChipStripRovingFactory>('CngxChipStripRovingFactory', {

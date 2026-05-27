@@ -6,6 +6,8 @@ import { type AbstractControl, FormGroupDirective } from '@angular/forms';
  * parent FormGroup by control name, removing the need for explicit casts.
  *
  * Usage: `<input [formControlName]="'email'" [cngxTypedControl]="'email'" />`
+ *
+ * @category forms/controls
  */
 @Directive({
   selector: '[cngxTypedControl]',

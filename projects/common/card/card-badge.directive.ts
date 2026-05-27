@@ -17,6 +17,7 @@ import { Directive, input } from '@angular/core';
  * `card.component.css`; fallbacks chain through `--cngx-badge-*` then
  * the foundation palette.
  *
+ * @category common/card
  * <example-url>http://localhost:4200/#/common/card/card-with-badge</example-url>
  */
 @Directive({

@@ -9,6 +9,8 @@ import type { FlatNode, Node, TreetableOptions } from './models';
  *   (e.g. `"0"`, `"0-1"`, `"0-1-2"`).
  * @returns A flat array where every node contains its depth, parent ID chain, and
  *   a flag indicating whether it has children.
+ *
+ * @category data-display/treetable
  */
 export function flattenTree<T>(
   input: Node<T> | Node<T>[],
@@ -92,6 +94,8 @@ export function capitalise(str: string): string {
 /**
  * Filters a tree recursively. A parent node is kept if it matches the predicate
  * OR if at least one of its descendants matches.
+ *
+ * @category data-display/treetable
  */
 export function filterTree<T>(nodes: Node<T>[], predicate: (value: T) => boolean): Node<T>[] {
   return nodes.reduce<Node<T>[]>((acc, node) => {
@@ -107,6 +111,8 @@ export function filterTree<T>(nodes: Node<T>[], predicate: (value: T) => boolean
 /**
  * Sorts each level of the tree independently by a field key.
  * Children remain grouped under their parent; only sibling order changes.
+ *
+ * @category data-display/treetable
  */
 export function sortTree<T>(nodes: Node<T>[], field: string, direction: 'asc' | 'desc'): Node<T>[] {
   const toPrimitive = (v: unknown): string => {
@@ -130,6 +136,8 @@ export function sortTree<T>(nodes: Node<T>[], field: string, direction: 'asc' | 
 /**
  * Simple full-text search across all primitive fields of a node value.
  * Used as the default search implementation in CngxSmartDataSource.
+ *
+ * @category data-display/treetable
  */
 export function nodeMatchesSearch<T>(value: T, term: string): boolean {
   const lower = term.toLowerCase();

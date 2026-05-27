@@ -48,6 +48,8 @@ export interface CngxMatTabHandleSetup {
  *   `[cngxMatTabError]` writes its bound aggregator in and resets
  *   on teardown. The handle exposes `.asReadonly()` to preserve the
  *   `CngxTabHandle` contract.
+ *
+ * @category ui/mat-tabs
  */
 export function createMatTabHandle(
   matTab: MatTab,
@@ -98,6 +100,8 @@ export function createMatTabHandle(
  * Factory signature for {@link createMatTabHandle}. The DI token
  * {@link CNGX_MAT_TAB_HANDLE_FACTORY} resolves to a function with
  * this exact shape — overrides match it identically.
+ *
+ * @category ui/mat-tabs
  */
 export type CngxMatTabHandleFactory = typeof createMatTabHandle;
 
@@ -124,6 +128,8 @@ export type CngxMatTabHandleFactory = typeof createMatTabHandle;
  *   },
  * ]
  * ```
+ *
+ * @category ui/mat-tabs
  */
 export const CNGX_MAT_TAB_HANDLE_FACTORY =
   new InjectionToken<CngxMatTabHandleFactory>('CNGX_MAT_TAB_HANDLE_FACTORY', {

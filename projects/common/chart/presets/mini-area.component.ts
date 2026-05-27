@@ -16,6 +16,9 @@ import { injectPresetState } from './preset-state';
  * of {@link CngxSparkline}; renders only the area (no line stroke).
  * Default viewBox 80×24. Theming via `--cngx-mini-area-color`
  * (atom-local) → `--cngx-chart-primary` (chart-level) cascade.
+ *
+ * @category common/chart/presets
+ *
  * <example-url>http://localhost:4200/#/common/chart/mini-area/async-state-machine</example-url>
  * <example-url>http://localhost:4200/#/common/chart/mini-area/inline-area-trends</example-url>
  */

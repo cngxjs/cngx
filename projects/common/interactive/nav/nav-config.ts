@@ -1,7 +1,11 @@
 import { inject, InjectionToken, type Provider } from '@angular/core';
 import { CngxNavGroupRegistry } from './nav-group-registry';
 
-/** Configuration options for the cngx nav system. */
+/**
+ * Configuration options for the cngx nav system.
+ *
+ * @category common/interactive
+ */
 export interface CngxNavConfig {
   /**
    * Indentation in px per depth level.
@@ -25,7 +29,11 @@ export interface CngxNavConfig {
   animationDuration?: number;
 }
 
-/** A feature configuration function returned by `withXxx()` helpers. */
+/**
+ * A feature configuration function returned by `withXxx()` helpers.
+ *
+ * @category common/interactive
+ */
 export interface NavConfigFeature {
   /** @internal */
   readonly apply: (config: CngxNavConfig) => CngxNavConfig;
@@ -50,6 +58,8 @@ export const CNGX_NAV_DEFAULTS: Readonly<Required<CngxNavConfig>> = {
  * })
  * class SidebarComponent { }
  * ```
+ *
+ * @category common/interactive
  */
 export const CNGX_NAV_CONFIG = new InjectionToken<CngxNavConfig>('CNGX_NAV_CONFIG');
 
@@ -63,6 +73,8 @@ export const CNGX_NAV_CONFIG = new InjectionToken<CngxNavConfig>('CNGX_NAV_CONFI
  * ```typescript
  * providers: [provideNavConfig(withSingleAccordion(), withNavIndent(16))]
  * ```
+ *
+ * @category common/interactive
  */
 export function provideNavConfig(...features: NavConfigFeature[]): Provider[] {
   const config = features.reduce<CngxNavConfig>((c, f) => f.apply(c), {});
@@ -76,6 +88,8 @@ export function provideNavConfig(...features: NavConfigFeature[]): Provider[] {
 
 /**
  * Enables single-accordion mode — only one nav group can be open at a time.
+ *
+ * @category common/interactive
  */
 export function withSingleAccordion(): NavConfigFeature {
   return { apply: (c) => ({ ...c, singleAccordion: true }) };
@@ -83,6 +97,8 @@ export function withSingleAccordion(): NavConfigFeature {
 
 /**
  * Sets the indentation per depth level in px.
+ *
+ * @category common/interactive
  */
 export function withNavIndent(px: number): NavConfigFeature {
   return { apply: (c) => ({ ...c, indent: px }) };
@@ -90,6 +106,8 @@ export function withNavIndent(px: number): NavConfigFeature {
 
 /**
  * Sets the animation duration for nav group expand/collapse in ms.
+ *
+ * @category common/interactive
  */
 export function withNavAnimation(ms: number): NavConfigFeature {
   return { apply: (c) => ({ ...c, animationDuration: ms }) };
@@ -98,6 +116,8 @@ export function withNavAnimation(ms: number): NavConfigFeature {
 /**
  * Injects the resolved nav config, merging provided values with defaults.
  * Must be called in an injection context.
+ *
+ * @category common/interactive
  */
 export function injectNavConfig(): Readonly<Required<CngxNavConfig>> {
   return { ...CNGX_NAV_DEFAULTS, ...inject(CNGX_NAV_CONFIG, { optional: true }) };

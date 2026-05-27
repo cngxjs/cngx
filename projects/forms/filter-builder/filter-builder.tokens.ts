@@ -30,6 +30,8 @@ function buildDefaultEditors(): ReadonlyMap<string, CngxFilterEditor> {
  * Default factory builds a fresh map covering the four builtin entries.
  * `provideFilterBuilderConfig` does NOT participate in editor resolution;
  * the editor registry is intentionally orthogonal to the config cascade.
+ *
+ * @category forms/filter-builder/config
  */
 export const CNGX_FILTER_EDITORS = new InjectionToken<ReadonlyMap<string, CngxFilterEditor>>(
   'CngxFilterEditors',
@@ -50,6 +52,8 @@ export const CNGX_FILTER_EDITORS = new InjectionToken<ReadonlyMap<string, CngxFi
  * scopes are NOT observed by an already-injected consumer. If a
  * consumer needs reactive editor swap behaviour, re-`inject()` the
  * token at the swap-boundary's injector instead of cached references.
+ *
+ * @category forms/filter-builder/config
  */
 export function injectFilterEditors(): ReadonlyMap<string, CngxFilterEditor> {
   return inject(CNGX_FILTER_EDITORS);

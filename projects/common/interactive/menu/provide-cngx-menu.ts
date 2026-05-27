@@ -8,6 +8,8 @@ import { type CngxMenuConfigFeature, provideMenuConfig } from './menu-config';
  * (e.g. submenu-only or announcer overrides) will widen this union and
  * `provideCngxMenu` will dispatch to the matching `provide*Config` based on
  * each feature's hidden `_target` discriminator.
+ *
+ * @category common/interactive/menu
  */
 export type CngxMenuFeature = CngxMenuConfigFeature;
 
@@ -32,6 +34,8 @@ export type CngxMenuFeature = CngxMenuConfigFeature;
  *   ],
  * });
  * ```
+ *
+ * @category common/interactive/menu
  */
 export function provideCngxMenu(...features: CngxMenuFeature[]): EnvironmentProviders {
   const configFeatures = features.filter(

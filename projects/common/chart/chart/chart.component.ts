@@ -73,6 +73,8 @@ const DEFAULT_SUMMARY_ACCESSOR = <T>(d: T): number => Number(d as unknown);
  *
  * The `[width]` / `[height]` inputs override the resize observer for
  * fixed-dimension presets (inline sparkline at 80×24, etc.).
+ *
+ * @category common/chart
  */
 /**
  * <example-url>http://localhost:4200/#/common/chart/primitives/async-state-machine-on-the-primitive</example-url>

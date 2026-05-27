@@ -119,6 +119,8 @@ import {
  * `action` mirrors the flat multi family plus `'create'` — `added`
  * carries exactly the one new value and `removed` is empty, so delta-
  * aggregating consumers treat create identically to toggle-add.
+ *
+ * @category forms/select/action-multi-select
  */
 export interface CngxActionMultiSelectChange<T = unknown> {
   readonly source: CngxActionMultiSelect<T>;
@@ -144,6 +146,8 @@ export interface CngxActionMultiSelectChange<T = unknown> {
  *
  * Dismiss-guard: Escape and click-outside intercepted while
  * `actionDirty()` is `true`; Escape fires `cancel()`.
+ *
+ * @category forms/select/action-multi-select
  * <example-url>http://localhost:4200/#/forms/select/action-multi-select/async-error-rollback-observation</example-url>
  * <example-url>http://localhost:4200/#/forms/select/action-multi-select/basic-create-appends-panel-stays-open</example-url>
  * <example-url>http://localhost:4200/#/forms/select/action-multi-select/closeoncreate-true-confirm-to-create-ux</example-url>

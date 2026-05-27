@@ -14,6 +14,8 @@ import type { CngxListbox } from '@cngx/common/interactive';
  *     `End`, `Escape` while focus stays in the input.
  *   - `close()` — closes panel and returns focus to the trigger
  *     (Escape path).
+ *
+ * @category forms/select/declarative
  */
 export interface CngxSelectShellSearchHost {
   readonly searchTerm: ModelSignal<string>;
@@ -27,6 +29,8 @@ export interface CngxSelectShellSearchHost {
  * on itself. `CngxSelectSearch` injects this to stay decoupled from
  * the concrete shell class — same pattern as `CNGX_OPTION_FILTER_HOST`
  * / `CNGX_OPTION_STATUS_HOST`.
+ *
+ * @category forms/select/declarative
  */
 export const CNGX_SELECT_SHELL_SEARCH_HOST =
   new InjectionToken<CngxSelectShellSearchHost>('CNGX_SELECT_SHELL_SEARCH_HOST');

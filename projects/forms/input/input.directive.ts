@@ -18,6 +18,8 @@ import {
  * ```html
  * <input cngxInput placeholder="max@example.com" />
  * ```
+ *
+ * @category forms/input
  * <example-url>http://localhost:4200/#/forms/input/character-counter</example-url>
  * <example-url>http://localhost:4200/#/forms/input/password-visibility-toggle</example-url>
  * <example-url>http://localhost:4200/#/forms/input/smart-autocomplete-and-spellcheck</example-url>

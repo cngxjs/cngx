@@ -12,6 +12,8 @@ import { injectPresetState } from './preset-state';
  * Bullet chart range entry — a colour band stretching from one value
  * to another along the bullet's axis. Typical use: traffic-light
  * bands ("good" / "fair" / "poor") behind the actual+target bar.
+ *
+ * @category common/chart/presets
  */
 export interface CngxBulletRange {
   readonly from: number;
@@ -32,6 +34,9 @@ interface RangeRendering {
  * stacked layers: background `[ranges]` (qualitative bands), an
  * `[actual]` filled bar, and a `[target]` vertical marker. Pure DOM,
  * no SVG. Host carries `role="meter"`.
+ *
+ * @category common/chart/presets
+ *
  * <example-url>http://localhost:4200/#/common/chart/bullet/async-state-machine</example-url>
  * <example-url>http://localhost:4200/#/common/chart/bullet/performance-vs-target</example-url>
  */

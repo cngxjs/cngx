@@ -34,6 +34,8 @@ import type { CngxFieldRef, CngxFormFieldControl } from './models';
  * For Reactive Forms, wrap the `FormControl` in `adaptFormControl(...)` and
  * pass the returned accessor to `[field]` — the bridge doesn't care about the
  * source.
+ *
+ * @category forms/field
  * <example-url>http://localhost:4200/#/forms/field/listbox-forms/material-mat-select-via-cngxbindfield</example-url>
  * <example-url>http://localhost:4200/#/forms/field/listbox-forms/reactive-forms-adapted-via-adaptformcontrol</example-url>
  * <example-url>http://localhost:4200/#/forms/field/listbox-forms/signal-forms-multi-select-min-2</example-url>

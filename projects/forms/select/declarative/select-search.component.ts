@@ -30,6 +30,8 @@ import { CNGX_SELECT_SHELL_SEARCH_HOST } from './select-search-host';
  *   }
  * </cngx-select-shell>
  * ```
+ *
+ * @category forms/select/declarative
  */
 @Component({
   selector: 'cngx-select-search',

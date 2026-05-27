@@ -9,6 +9,8 @@
  *   an empty palette throws synchronously at construction time.
  * @returns Callable `(v: T) => string` returning the palette entry for
  *   `v`. Lookup of an unknown value returns the palette's first entry.
+ *
+ * @category common/chart/scales
  */
 export function createOrdinalScale<T>(
   domain: readonly T[],

@@ -121,6 +121,8 @@ function readMatStepLabelTemplateText(
  *   pattern.
  * - `errorAggregator` — points at the shared
  *   {@link NO_ERROR_AGGREGATOR} constant.
+ *
+ * @category ui/mat-stepper
  */
 export function createMatStepHandle(
   matStep: MatStep,
@@ -180,6 +182,8 @@ function resolveStepLabel(matStep: MatStep, id: string): string {
  * Factory signature for {@link createMatStepHandle}. The DI token
  * {@link CNGX_MAT_STEP_HANDLE_FACTORY} resolves to a function with
  * this exact shape — overrides match it identically.
+ *
+ * @category ui/mat-stepper
  */
 export type CngxMatStepHandleFactory = typeof createMatStepHandle;
 
@@ -215,6 +219,8 @@ export type CngxMatStepHandleFactory = typeof createMatStepHandle;
  *   },
  * ]
  * ```
+ *
+ * @category ui/mat-stepper
  */
 export const CNGX_MAT_STEP_HANDLE_FACTORY =
   new InjectionToken<CngxMatStepHandleFactory>('CNGX_MAT_STEP_HANDLE_FACTORY', {

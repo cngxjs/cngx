@@ -11,6 +11,8 @@ import type { CngxStepNode, CngxStepStatus } from '../stepper-host.token';
  * `kind === 'group'` (the slot only fires for group nodes).
  * `expanded` is reserved for future collapsible groups — passed `true`
  * today; declaring it now avoids a breaking change later.
+ *
+ * @category common/stepper/slots
  */
 export interface CngxStepGroupHeaderContext {
   /** The group node carrying id / label / state / children signals. */
@@ -34,6 +36,8 @@ export interface CngxStepGroupHeaderContext {
  *   </ng-template>
  * </cngx-stepper>
  * ```
+ *
+ * @category common/stepper/slots
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-slot-overrides/custom-busy-spinner-via-code-cngxstepbusyspinner-code</example-url>
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-slot-overrides/custom-error-badge-via-code-cngxstepbadge-code</example-url>
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-slot-overrides/custom-group-header-via-code-cngxstepgroupheader-code</example-url>

@@ -10,6 +10,8 @@ import type { CngxTabPanelHost } from '../tab-panel-host.token';
  * Material's rendered DOM). The molecule is variant-agnostic and
  * consumes whichever adapter
  * {@link CNGX_TAB_OVERFLOW_DOM_ADAPTER_FACTORY} provides.
+ *
+ * @category common/tabs/overflow
  */
 export interface CngxTabOverflowDomAdapter {
   /**
@@ -35,6 +37,8 @@ export interface CngxTabOverflowDomAdapter {
 
 /**
  * Factory signature for {@link CNGX_TAB_OVERFLOW_DOM_ADAPTER_FACTORY}.
+ *
+ * @category common/tabs/overflow
  */
 export type CngxTabOverflowDomAdapterFactory = () => CngxTabOverflowDomAdapter;
 
@@ -42,6 +46,8 @@ export type CngxTabOverflowDomAdapterFactory = () => CngxTabOverflowDomAdapter;
  * Default adapter for the cngx-native `<cngx-tab-group>` strip:
  * walks `host.closest('.cngx-tabs__strip-wrapper')` for the IO root,
  * then `[id="${handle.id}-header"]` for each button.
+ *
+ * @category common/tabs/overflow
  */
 export function createCngxTabOverflowDefaultDomAdapter(): CngxTabOverflowDomAdapter {
   return {
@@ -61,6 +67,8 @@ export function createCngxTabOverflowDefaultDomAdapter(): CngxTabOverflowDomAdap
  * swap in a Material, custom-skin, or test-double adapter without
  * forking the molecule. Defaults to
  * {@link createCngxTabOverflowDefaultDomAdapter}.
+ *
+ * @category common/tabs/overflow
  */
 export const CNGX_TAB_OVERFLOW_DOM_ADAPTER_FACTORY =
   new InjectionToken<CngxTabOverflowDomAdapterFactory>(

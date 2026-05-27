@@ -24,6 +24,8 @@ import type { CngxSelectOptionDef } from './option.model';
  * `Prev` carries the previous-snapshot shape (single: `T | undefined`;
  * multi: `readonly T[]`) so `onCreated` receives a typed payload ready
  * to splat into `previousValue(s)`.
+ *
+ * @category forms/select/commit
  */
 export interface CreateCommitHandlerOptions<T, Prev = unknown> {
   /**
@@ -81,6 +83,8 @@ export interface CreateCommitHandlerOptions<T, Prev = unknown> {
  * `CreateCommitHandler<Tag, readonly Tag[]>` instead of
  * `CreateCommitHandler<unknown, readonly Tag[]>` — constrains the
  * factory call-site even though only `Prev` appears in the public shape.
+ *
+ * @category forms/select/commit
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export interface CreateCommitHandler<T, Prev = unknown> {
@@ -128,6 +132,8 @@ export interface CreateCommitHandler<T, Prev = unknown> {
  * factories vs {@link createReorderCommitHandler} because create and
  * reorder have different value-shape contracts (materialise new `T` vs
  * reorder existing `T[]`).
+ *
+ * @category forms/select/commit
  */
 export function createCreateCommitHandler<T, Prev = unknown>(
   opts: CreateCommitHandlerOptions<T, Prev>,
@@ -204,6 +210,8 @@ export function createCreateCommitHandler<T, Prev = unknown>(
 
 /**
  * Signature of the factory behind {@link CNGX_CREATE_COMMIT_HANDLER_FACTORY}.
+ *
+ * @category forms/select/commit
  */
 export type CngxCreateCommitHandlerFactory = <T, Prev = unknown>(
   opts: CreateCommitHandlerOptions<T, Prev>,
@@ -214,6 +222,8 @@ export type CngxCreateCommitHandlerFactory = <T, Prev = unknown>(
  * {@link createCreateCommitHandler}. Override via `providers` /
  * `viewProviders` for retry-with-backoff, offline queues, audit
  * logging, or telemetry.
+ *
+ * @category forms/select/commit
  */
 export const CNGX_CREATE_COMMIT_HANDLER_FACTORY =
   new InjectionToken<CngxCreateCommitHandlerFactory>(

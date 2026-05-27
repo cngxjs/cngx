@@ -41,6 +41,8 @@ import { CngxFormFieldPresenter } from '@cngx/forms/field';
  *   </ng-template>
  * </cngx-char-count>
  * ```
+ *
+ * @category forms/input
  * <example-url>http://localhost:4200/#/forms/input/character-counter</example-url>
  * <example-url>http://localhost:4200/#/forms/input/password-visibility-toggle</example-url>
  * <example-url>http://localhost:4200/#/forms/input/smart-autocomplete-and-spellcheck</example-url>
@@ -126,7 +128,11 @@ export class CngxCharCount {
   }
 }
 
-/** Template context type for CngxCharCount custom templates. */
+/**
+ * Template context type for CngxCharCount custom templates.
+ *
+ * @category forms/input
+ */
 export interface CngxCharCountContext {
   /** Current character count (also available as implicit `let-count`). */
   $implicit: number;
