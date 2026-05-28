@@ -1,3 +1,8 @@
+<aside role="note" aria-label="Page metadata" class="cdx-ai-generated-note">
+    <span class="cdx-badge cdx-badge--ai-generated">AI-assisted</span>
+    <span>Drafted with Claude, reviewed by the maintainers.</span>
+</aside>
+
 # Layered Design
 
 CNGX is organized into five levels. Each level has a specific dependency budget, a specific scope, and a specific reason to exist. The hierarchy is enforced by Sheriff (workspace-level `sheriff.config.ts`) and by `no-restricted-imports` blocks in `eslint.config.js`. A cross-level violation fails the lint stage in CI.

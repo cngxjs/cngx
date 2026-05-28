@@ -1,3 +1,8 @@
+<aside role="note" aria-label="Page metadata" class="cdx-ai-generated-note">
+    <span class="cdx-badge cdx-badge--ai-generated">AI-assisted</span>
+    <span>Drafted with Claude, reviewed by the maintainers.</span>
+</aside>
+
 # Async State Machine
 
 `CngxAsyncState<T>` is the standard interface for any value that arrives over time - HTTP responses, WebSocket pushes, user commits, server-driven autocompletes. It is **a bundle of signals**, not a single signal of an object. Every field on the interface is a `Signal<…>`, so consumers read what they care about and the reactive graph tracks only that field.

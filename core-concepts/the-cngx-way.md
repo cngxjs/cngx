@@ -1,3 +1,8 @@
+<aside role="note" aria-label="Page metadata" class="cdx-ai-generated-note">
+    <span class="cdx-badge cdx-badge--ai-generated">AI-assisted</span>
+    <span>Drafted with Claude, reviewed by the maintainers.</span>
+</aside>
+
 # The CNGX Way
 
 CNGX is the composition layer between Angular CDK and Angular Material - declarative, Signal-native, and communicative by construction. It provides the architectural infrastructure to build complex UIs without the maintenance burden of cloned libraries or monolithic components.

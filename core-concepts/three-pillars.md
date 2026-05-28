@@ -1,3 +1,8 @@
+<aside role="note" aria-label="Page metadata" class="cdx-ai-generated-note">
+    <span class="cdx-badge cdx-badge--ai-generated">AI-assisted</span>
+    <span>Drafted with Claude, reviewed by the maintainers.</span>
+</aside>
+
 # The Three Pillars
 
 CNGX rests on three non-negotiable rules. Every directive, component, and PR is auditable against them. A pillar violation is a functional defect, not a stylistic preference.

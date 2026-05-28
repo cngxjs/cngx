@@ -1,3 +1,8 @@
+<aside role="note" aria-label="Page metadata" class="cdx-ai-generated-note">
+    <span class="cdx-badge cdx-badge--ai-generated">AI-assisted</span>
+    <span>Drafted with Claude, reviewed by the maintainers.</span>
+</aside>
+
 # Signal-First Internals
 
 CNGX is built on Angular Signals. Not "uses Signals where convenient" - built on them. Every reactive value flowing through a directive is a `Signal<T>`. RxJS exists at the boundary; the interior is signal-only.

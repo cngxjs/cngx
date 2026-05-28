@@ -13,6 +13,20 @@ const overrides = `
 ${marker}
 .cdx-playground-snippet { display: none; }
 .cdx-tab-panel#playground .cdx-playground-launch { margin-top: 0; }
+
+/* cngx:ai-generated-note */
+.cdx-ai-generated-note {
+    display: flex;
+    align-items: center;
+    gap: var(--cdx-space-3, 12px);
+    margin: 0 0 var(--cdx-space-6, 24px) 0;
+    padding: var(--cdx-space-3, 12px) var(--cdx-space-4, 16px);
+    border-left: 3px solid var(--color-cdx-border-strong, #d1d5db);
+    background: var(--color-cdx-bg-alt, #f9fafb);
+    border-radius: 0 var(--cdx-radius-md, 8px) var(--cdx-radius-md, 8px) 0;
+    font-size: 0.8125rem;
+    color: var(--color-cdx-text-muted, #6b7280);
+}
 `;
 
 const css = await readFile(target, 'utf8');

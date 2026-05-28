@@ -10,87 +10,6 @@ A Signal-native composition library for Angular. Atoms, molecules and organisms 
 
 Angular 21+, Signal-native, no NgModules. Seven packages, 41 surgical secondary entry points, `sideEffects: false`, a five-level dependency hierarchy enforced by Sheriff.
 
-## Why
-
-- **Three pillars, treated as hard constraints.** *Ableitung statt Verwaltung* (every derived value is a `computed()` from a single source). *Kommunikation als First-Class Concern* (every state change is communicated visually, semantically, to assistive tech). *Komposition statt Konfiguration* (small focused units, one directive one responsibility).
-- **Signal-first, not CDK-first.** Of 545 production source files, 7 touch `@angular/cdk`. The popover stack runs on CSS Anchor Positioning, not `cdk/overlay`. Listbox, menu, active-descendant, roving tabindex are hand-rolled on signals, not `ListKeyManager`. The select family uses a custom `createSelectionController<T>`, not `SelectionModel`. CDK is reached for only where it earns its weight: focus trap, overlay portal, CDK table, the `DataSource` contract.
-- **A11y is in the reactive graph.** `aria-busy`, `aria-disabled`, `aria-describedby`, `aria-required`, `aria-invalid` and live-region content are `computed()` outputs of the same signal tree the UI renders from. Not an audit pass.
-- **Atomic + decompose-ready.** Atoms (single-behavior directives) compose into molecules, molecules into organisms. Every organism is built to split along a brain (host directive + DI tokens, stays in the lib) and a skin (template + CSS) seam, so the ejection workflow has a substrate to land on when it ships.
-- **Signal Forms native.** `<cngx-form-field [field]="f.x">` consumes the Signal Forms `Field<T>` directly. Reactive Forms get the same surface through `adaptFormControl(...)`.
-
-## Packages
-
-Five-level hierarchy. Lower levels know nothing about higher levels. Imports flow upward only.
-
-| Package | Level | What it hosts |
-|-|-|-|
-| `@cngx/utils` | 0 | Framework-agnostic TypeScript. Array helpers, tree primitives (`CngxTreeNode`, `flattenTree`, `walkTree`, `sortTree`, `filterTree`), version compare. Optional `rxjs-interop` entry. No Angular runtime dep. |
-| `@cngx/core` | 1 | Angular-aware, non-rendering primitives. DI tokens (`CNGX_FORM_FIELD_CONTROL`, `CNGX_FORM_FIELD_HOST`, `WINDOW`, `ENVIRONMENT`), the `CngxAsyncState<T>` machine, `createSelectionController<T>`, transition tracker, keyboard-combo parser, coercion, theming foundation (cascade layers, system tokens, reset, base). Zero CDK. |
-| `@cngx/common` | 2 | Atoms and molecules across 12 entries: `a11y` (roving tabindex, focus trap, live region, ...), `interactive` (listbox, menu, ripple, nav, expandable, checkbox, radio, button-toggle, reorder, hierarchical-nav, async-click, copy, speak, ...), `popover` (CSS Anchor Positioning with Floating-UI fallback), `display` (icon, divider, avatar, badge, chip, ...), `card`, `dialog`, `layout`, `data` (sort/filter/search/paginate + DataSource), `chart`, `tabs`, `stepper`. CDK is used in exactly two spots: `a11y/focus-trap` (CDK's `FocusTrap`) and `data/data-source` (CDK's `DataSource` base class as a table-integration contract). Never imports `@angular/material`. |
-| `@cngx/forms` | 3 | Forms organisms across 7 entries. `field` (Signal Forms bridge), `controls` (CVA adapter for Reactive Forms), `validators`, `input`, `select` (eight composites: single, multi, combobox, typeahead, tree-select, reorderable-multi, action-select, action-multi), `filter-builder` (declarative compound-filter UI). 130 source files, zero CDK touchpoints. |
-| `@cngx/data-display` | 3 | Data-display organisms. `treetable` (currently CDK-table-backed). |
-| `@cngx/ui` | 4 | Mostly self-contained organisms across 14 entries: `action-button`, `empty-state`, `feedback` (toasts, banners, alerts via `provideFeedback(...)`), `layout`, `sidenav`, `skeleton`, `speak`, `stepper`, `tabs`. `overlay` is the one entry that uses `@angular/cdk/overlay` + `cdk/portal` as its engine. Three entries opt into Material: `mat-stepper`, `mat-tabs`, `material` (paginator wrapper). Peer-deps are `@angular/cdk` + `@angular/common` + `@angular/core` only. |
-| `@cngx/themes` | n/a | Plain-CSS theme bundle. `@cngx/themes/cngx.css` single-import default (cascade layers, OKLCH system tokens, `@property` declarations, `light-dark()` dark mode out of the box). `@cngx/themes/example-brand.css` brand template. `@cngx/themes/material/*` ships 36 component bridges plus `system-bridge.scss` and a `theme.scss` aggregator - one `@include` wires every cngx component into a Material theme (M2 or M3). No JS, no SCSS at runtime in the default bundle. |
-
-## Highlights
-
-- **Select family.** Eight composites share one `createSelectCore<T, TCommit>` engine, exposing 17 template slots and 18 DI override tokens. Swap the panel host, the announcer, the commit controller, the trigger focus strategy. Same engine drives async commit, optimistic update, refresh state and tree multi-select. Zero CDK.
-- **Popover system.** CSS Anchor Positioning by default, Floating-UI opt-in via `provideFloatingFallback()`. Arrow tracking, position-area fallback chain, accessible dismissal paths. No `cdk/overlay` in the path.
-- **Feedback shell.** `provideFeedback(withToasts, withBanners, withAlerts, withSpinnerTemplate, withAlertIcons, withLoadingDefaults, withCloseIcon)` in `bootstrapApplication`. Scoped services, not `providedIn: 'root'`. Transition bridges (`CngxToastOn`, `CngxAlertOn`, `CngxBannerOn`) fire announcements off `CngxAsyncState<T>` transitions.
-- **Treetable.** CDK-table-backed organism composed off the orthogonal Level-2 `CngxSort` / `CngxFilter` / `CngxSearch` / `CngxPaginate` behaviours, with `CngxAsyncState`-aware loading / empty / error states out of the box.
-- **Filter builder.** Declarative compound filters with per-row editor contracts, full keyboard navigation, ARIA-driven announcer, typed expression model. Zero CDK.
-- **Atomic a11y.** `CngxRovingTabindex`, `CngxFocusTrap`, `CngxFocusRestore`, `CngxActiveDescendant`, `CngxLiveRegion`, `CngxAutofocus`, `CngxReducedMotion`. Each one directive, each one responsibility, all driven by signals.
-
-## Plays well with Material
-
-CNGX does not compete with Material, it instruments it. The main strategy is the **Instrumentation Pattern**: a headless Presenter directive owns the Signal-native logic, an attribute directive bolts it onto the existing Material component via `inject(MatX, { self: true })` + `hostDirectives`, the consumer's Material markup stays exactly where it is.
-
-```html
-<!-- Native Material markup. Adopt CNGX with one attribute. -->
-<mat-stepper cngxMatStepper [commitAction]="saveStep">
-  <mat-step label="Customer">...</mat-step>
-  <mat-step label="Payment">...</mat-step>
-</mat-stepper>
-```
-
-That one attribute lights up the CNGX commit-action lifecycle (async gating), `CNGX_STATEFUL` composition (so `<cngx-toast-on />` / `<cngx-banner-on />` compose as children), and the full ARIA-in-the-reactive-graph surface. Nothing in the Material tree is rewritten. The Brain (`CngxStepperPresenter`) lives in `@cngx/common/stepper` and is identical to the one that powers the CNGX-native stepper. Same playbook for `[cngxMatTabs]` on `<mat-tab-group>`. Writes back to the Material API happen inside `effect()` + `untracked()` so CNGX and Material never fight over the same signals.
-
-Two more "embrace what's there" plays sit on top:
-
-- **Reactive Forms keep working.** `adaptFormControl(control, name, inject(DestroyRef))` turns any RF `FormControl` / `FormGroup` / `FormArray` into a `CngxFieldAccessor`, so `<cngx-form-field [field]="...">` consumes RF directly. Teams that have not migrated to Signal Forms light up the CNGX field + validators + error-rendering surface on top of their existing forms.
-- **Material tables consume CNGX data sources.** `injectSmartDataSource<T>(items, { sort, filter, paginate, search })` returns a `CngxSmartDataSource` that **extends `@angular/cdk/collections` `DataSource`**. It plugs into `MatTable` (or any CDK-table-backed surface) directly, combining CNGX's orthogonal `CngxSort` / `CngxFilter` / `CngxSearch` / `CngxPaginate` behaviours behind the contract Material already speaks. No fork, no shim, no "drop Material first".
-- **Your Material theme themes CNGX too.** `@cngx/themes/material/` ships 36 component bridges plus a `system-bridge.scss` that maps CNGX's foundation tokens (`--cngx-color-*`, `--cngx-space-*`, `--cngx-radius-*`, `--cngx-shadow-*`, ...) onto Material's `--mat-sys-*` design tokens. One include - `@include cngx-material.theme($theme)` next to your existing `mat.all-component-themes($theme)` - and every CNGX component picks up your Material palette, corners, outlines and typography automatically. M3 reads `--mat-sys-*` at runtime; M2 resolves palette colours at compile time via `mat.get-theme-color`. Selective wiring stays available: pull the system bridge plus only the component bridges you actually ship.
-
-The premise: if you are already on Material, adopt CNGX incrementally on top. If you want to leave Material behind, the same brains drive the CNGX-only Skins on the way out.
-
-## Through three lenses
-
-### From a UX engineer
-
-Most state stores collapse async into one `loading: boolean`. The result is a UI that flashes a skeleton when refreshing, hides itself when mutating, and shows a spinner when first-loading. Three different affordances, one boolean. This is how scroll position gets lost, why optimistic UI feels glitchy, and how users learn to dread "Save".
-
-`CngxAsyncState<T>` separates the six states a user actually distinguishes: `idle`, `loading` (first query, show skeleton), `pending` (mutation in flight, keep UI), `refreshing` (re-query with stale data visible, keep UI), `success`, `error`. Everything else (`isLoading`, `isPending`, `isRefreshing`, `isFirstLoad`, `isEmpty`, `hasData`, `isSettled`, `isBusy`, `lastUpdated`) is `computed()` off `status`. One source of truth, twelve derived signals, zero consistency drift.
-
-The pattern is familiar (TanStack Query, SWR, RTK Query) but exposed as a typed reactive interface, not a hook return. 22+ components in the library accept `CngxAsyncState<unknown>` directly: skeleton container, action button, empty state, loading overlay, async container, every select composite, every feedback bridge. The state shape is the contract. Producers can be queries, mutations, file uploads, WebSockets - the receivers do not care.
-
-### From an a11y engineer
-
-ARIA is not a sticker you apply at the end. It is a projection of UI state into a second medium (screen-reader output). If your UI state lives in signals and your ARIA lives in template strings, the two will drift. Audits will catch some of it, real users will catch the rest.
-
-In CNGX, ARIA is bindings off the same signals that drive the visible UI. `aria-busy` is literally aliased to `CngxAsyncState.isLoading`. `aria-required` and `aria-invalid` are `computed()` outputs of the same field that renders the error message. `aria-describedby` IDs are always rendered; visibility flips through `aria-hidden` so screen readers never fight with conditional templates. Live regions stay mounted; only their content is reactive. Transition bridges (`CngxToastOn`, `CngxAlertOn`, `CngxBannerOn`) fire announcements off `AsyncStatus` transitions, so a successful save is heard, not just seen.
-
-Numbers in the codebase: 70 files bind `aria-busy`, 73 bind `aria-describedby` / `aria-required` / `aria-invalid`, 44 use live regions. None of those are added in an audit pass. They sit in the `computed()` graph next to the visual props they mirror, so the only way to lie to assistive tech is to break the signal that also lies to the eye.
-
-### Developer experience
-
-- **Signal-first, no Subjects to manage.** No manual unsubscribe, no `takeUntil`, no zone juggling. `input()`, `output()`, `model()`, `computed()`, `effect()`. RxJS is only at the I/O boundary (HTTP, WebSocket, DOM streams) and never exposed on the public API.
-- **Typed end to end.** `model<T>()`, `input<T>()`, `Field<T>`, `CngxAsyncState<T>`. Zero `any` in the codebase, zero `as` casts, strict TypeScript across all libs.
-- **Surgical imports.** 41 secondary entry points means `import { CngxRovingTabindex } from '@cngx/common/a11y'` pulls in roving tabindex, not the entire common surface. `sideEffects: false` plus standalone-by-default plus no NgModules means tree-shaking actually works.
-- **Runnable docs, not snippets.** Every component's Examples tab embeds the live demo as a naked iframe, side-by-side with its API. The code panel shows the actual artifact (no chrome, no toggles, no fail-flag plumbing) so you can copy-paste what you actually need. Selected components (`@playground` tag) ship a Stackblitz launcher with pinned dependencies. Examples are part of the build pipeline, so they cannot drift from the API.
-- **Override anything, fork nothing.** `provideFeedback(withToasts, withBanners, ...)`. `provideSelectConfig(...)` plus 18 DI tokens in the select family. Swap the panel host, the announcer, the focus strategy, the commit controller - all without touching library code. Organisms are built decompose-ready (host directive + DI tokens as the brain, templates + CSS as the skin), which is the substrate the future eject workflow will sit on.
-- **Inject the state, not the implementation.** `provide*` at the app root, `inject*` from anywhere inside a component. `injectAsyncState<T>(() => fetch(...))` returns a reactive `CngxAsyncState<T>` with auto-debounced refetch. `injectSmartDataSource<T>(items, { sort, filter, paginate, search })` returns a CDK-compatible `DataSource` that already speaks `CngxAsyncState`. `injectSelectConfig()`, `injectMenuConfig()`, `injectTreeConfig()`, `injectStepperI18n()`, `injectErrorAggregator()`, `injectFilterEditors()` and 20+ more. The consumer-side DI surface mirrors the `provide*` surface one-to-one.
-- **Sheriff-enforced layers.** Imports flow upward only, enforced at lint time. Adding a new lib is a row in `sheriff.config.ts`. Cross-lib violations fail CI, not code review.
-- **One-line theming.** `@import '@cngx/themes/cngx.css';` ships cascade layers, OKLCH system tokens, `@property` declarations, `light-dark()` dark mode. Override via `@layer cngx.theme { ... }`. No SCSS at runtime.
 
 ## Installation
 
@@ -142,6 +61,109 @@ npm run build:libs       # build all libs in dependency order
 npm run test             # vitest across utils, core, common, forms, ui, data-display
 npm run lint             # eslint flat config, sheriff dependency rules
 ```
+
+
+## Why
+
+- **Three pillars, treated as hard constraints.** 
+  - *Derive, don't declare* (every derived value is a `computed()` from a single source). 
+  - *Communication as First-Class Concern* (every state change is communicated visually, semantically, to assistive tech).
+  - *Composition over configuration* (small focused units, one directive one responsibility).
+- **Signal-first, not CDK-first.** Listbox, menu, active-descendant, roving tabindex are hand-rolled on signals, not `ListKeyManager`. The select family uses a custom `createSelectionController<T>`, not `SelectionModel`. CDK is reached for only where it earns its weight: focus trap, overlay portal, CDK table, the `DataSource` contract.
+- **A11y is in the reactive graph.** `aria-busy`, `aria-disabled`, `aria-describedby`, `aria-required`, `aria-invalid` and live-region content are `computed()` outputs of the same signal tree the UI renders from. Not an audit pass.
+- **Atomic + decompose-ready.** Atoms (single-behavior directives) compose into molecules, molecules into organisms. Every organism is built to split along a brain (host directive + DI tokens, stays in the lib) and a skin (template + CSS) seam, so the ejection workflow has a substrate to land on when it ships.
+- **Signal Forms native.** `<cngx-form-field [field]="f.x">` consumes the Signal Forms `Field<T>` directly. Reactive Forms get the same surface through `adaptFormControl(...)`.
+
+## Packages
+
+Five-level hierarchy. Lower levels know nothing about higher levels. Imports flow upward only.
+
+| Package | Level | What it hosts |
+|-|-|-|
+| `@cngx/utils` | 0 | Framework-agnostic TypeScript. Array helpers, tree primitives (`CngxTreeNode`, `flattenTree`, `walkTree`, `sortTree`, `filterTree`), version compare. Optional `rxjs-interop` entry. No Angular runtime dep. |
+| `@cngx/core` | 1 | Angular-aware, non-rendering primitives. DI tokens (`CNGX_FORM_FIELD_CONTROL`, `CNGX_FORM_FIELD_HOST`, `WINDOW`, `ENVIRONMENT`), the `CngxAsyncState<T>` machine, `createSelectionController<T>`, transition tracker, keyboard-combo parser, coercion, theming foundation (cascade layers, system tokens, reset, base). Zero CDK. |
+| `@cngx/common` | 2 | Atoms and molecules across 12 entries: `a11y` (roving tabindex, focus trap, live region, ...), `interactive` (listbox, menu, ripple, nav, expandable, checkbox, radio, button-toggle, reorder, hierarchical-nav, async-click, copy, speak, ...), `popover` (CSS Anchor Positioning with Floating-UI fallback), `display` (icon, divider, avatar, badge, chip, ...), `card`, `dialog`, `layout`, `data` (sort/filter/search/paginate + DataSource), `chart`, `tabs`, `stepper`. CDK is used in exactly two spots: `a11y/focus-trap` (CDK's `FocusTrap`) and `data/data-source` (CDK's `DataSource` base class as a table-integration contract). Never imports `@angular/material`. |
+| `@cngx/forms` | 3 | Forms organisms across 7 entries. `field` (Signal Forms bridge), `controls` (CVA adapter for Reactive Forms), `validators`, `input`, `select` (eight composites: single, multi, combobox, typeahead, tree-select, reorderable-multi, action-select, action-multi), `filter-builder` (declarative compound-filter UI). 130 source files, zero CDK touchpoints. |
+| `@cngx/data-display` | 3 | Data-display organisms. `treetable` (currently CDK-table-backed). |
+| `@cngx/ui` | 4 | Mostly self-contained organisms across 14 entries: `action-button`, `empty-state`, `feedback` (toasts, banners, alerts via `provideFeedback(...)`), `layout`, `sidenav`, `skeleton`, `speak`, `stepper`, `tabs`. `overlay` is the one entry that uses `@angular/cdk/overlay` + `cdk/portal` as its engine. Three entries opt into Material: `mat-stepper`, `mat-tabs`, `material` (paginator wrapper). Peer-deps are `@angular/cdk` + `@angular/common` + `@angular/core` only. |
+| `@cngx/themes` | n/a | Plain-CSS theme bundle. `@cngx/themes/cngx.css` single-import default (cascade layers, OKLCH system tokens, `@property` declarations, `light-dark()` dark mode out of the box). `@cngx/themes/example-brand.css` brand template. `@cngx/themes/material/*` ships 36 component bridges plus `system-bridge.scss` and a `theme.scss` aggregator - one `@include` wires every cngx component into a Material theme (M2 or M3). No JS, no SCSS at runtime in the default bundle. |
+
+## Highlights
+
+- **Select family.** Eight composites share one `createSelectCore<T, TCommit>` engine, exposing 17 template slots and 18 DI override tokens. 
+Swap the panel host, the announcer, the commit controller, the trigger focus strategy. Same engine drives async commit, optimistic update, refresh state and tree multi-select. Zero CDK.
+- **Popover system.** CSS Anchor Positioning by default, Floating-UI opt-in via `provideFloatingFallback()`. 
+Arrow tracking, position-area fallback chain, accessible dismissal paths. No `cdk/overlay` in the path.
+- **Feedback shell.** `provideFeedback(withToasts, withBanners, withAlerts, withSpinnerTemplate, withAlertIcons, withLoadingDefaults, withCloseIcon)` in `bootstrapApplication`. 
+Scoped services, not `providedIn: 'root'`. Transition bridges (`CngxToastOn`, `CngxAlertOn`, `CngxBannerOn`) fire announcements off `CngxAsyncState<T>` transitions.
+- **Treetable.** CDK-table-backed organism composed off the orthogonal Level-2 `CngxSort` / `CngxFilter` / `CngxSearch` / `CngxPaginate` behaviours, with `CngxAsyncState`-aware loading / empty / error states out of the box.
+- **Filter builder.** Declarative compound filters with per-row editor contracts, full keyboard navigation, ARIA-driven announcer, typed expression model. Zero CDK.
+- **Atomic a11y.** `CngxRovingTabindex`, `CngxFocusTrap`, `CngxFocusRestore`, `CngxActiveDescendant`, `CngxLiveRegion`, `CngxAutofocus`, `CngxReducedMotion`. Each one directive, each one responsibility, all driven by signals.
+
+## Plays well with Material
+
+CNGX does not compete with Material, it instruments it. The main strategy is the **Instrumentation Pattern**: a headless Presenter directive owns the Signal-native logic, an attribute directive bolts it onto the existing Material component via `inject(MatX, { self: true })` + `hostDirectives`, the consumer's Material markup stays exactly where it is.
+
+```html
+<!-- Native Material markup. Adopt CNGX with one attribute. -->
+<mat-stepper cngxMatStepper [commitAction]="saveStep">
+  <mat-step label="Customer">...</mat-step>
+  <mat-step label="Payment">...</mat-step>
+</mat-stepper>
+```
+
+That one attribute lights up the CNGX commit-action lifecycle (async gating), `CNGX_STATEFUL` composition (so `<cngx-toast-on />` / `<cngx-banner-on />` compose as children), and the full ARIA-in-the-reactive-graph surface. Nothing in the Material tree is rewritten. The Brain (`CngxStepperPresenter`) lives in `@cngx/common/stepper` and is identical to the one that powers the CNGX-native stepper. 
+Same playbook for `[cngxMatTabs]` on `<mat-tab-group>`. Writes back to the Material API happen inside `effect()` + `untracked()` so CNGX and Material never fight over the same signals.
+
+Two more "embrace what's there" plays sit on top:
+
+- **Reactive Forms keep working.** `adaptFormControl(control, name, inject(DestroyRef))` turns any RF `FormControl` / `FormGroup` / `FormArray` into a `CngxFieldAccessor`, so `<cngx-form-field [field]="...">` consumes RF directly. 
+Teams that have not migrated to Signal Forms light up the CNGX field + validators + error-rendering surface on top of their existing forms.
+- **Material tables consume CNGX data sources.** `injectSmartDataSource<T>(items, { sort, filter, paginate, search })` returns a `CngxSmartDataSource` that **extends `@angular/cdk/collections` `DataSource`**. 
+It plugs into `MatTable` (or any CDK-table-backed surface) directly, combining CNGX's orthogonal `CngxSort` / `CngxFilter` / `CngxSearch` / `CngxPaginate` behaviours behind the contract Material already speaks. 
+No fork, no shim, no "drop Material first".
+- **Your Material theme themes CNGX too.** `@cngx/themes/material/` ships **36** component bridges plus a `system-bridge.scss` that maps CNGX's foundation tokens (`--cngx-color-*`, `--cngx-space-*`, `--cngx-radius-*`, `--cngx-shadow-*`, ...) onto Material's `--mat-sys-*` design tokens. 
+One include - `@include cngx-material.theme($theme)` next to your existing `mat.all-component-themes($theme)` - and every CNGX component picks up your Material palette, corners, outlines and typography automatically. 
+M3 reads `--mat-sys-*` at runtime; M2 resolves palette colours at compile time via `mat.get-theme-color`. Selective wiring stays available: pull the system bridge plus only the component bridges you actually ship.
+
+> The premise: if you are already on Material, adopt CNGX incrementally on top. 
+If you want to leave Material behind, the same brains drive the CNGX-only Skins on the way out.
+
+## Through three lenses
+
+### From a UX engineer
+
+Most state stores collapse async into one `loading: boolean`. The result is a UI that flashes a skeleton when refreshing, hides itself when mutating, and shows a spinner when first-loading. Three different affordances, one boolean. This is how scroll position gets lost, why optimistic UI feels glitchy, and how users learn to dread "Save".
+
+`CngxAsyncState<T>` separates the six states a user actually distinguishes: `idle`, `loading` (first query, show skeleton), `pending` (mutation in flight, keep UI), `refreshing` (re-query with stale data visible, keep UI), `success`, `error`. Everything else (`isLoading`, `isPending`, `isRefreshing`, `isFirstLoad`, `isEmpty`, `hasData`, `isSettled`, `isBusy`, `lastUpdated`) is `computed()` off `status`. One source of truth, twelve derived signals, zero consistency drift.
+
+The pattern is familiar (TanStack Query, SWR, RTK Query) but exposed as a typed reactive interface, not a hook return. 22+ components in the library accept `CngxAsyncState<unknown>` directly: skeleton container, action button, empty state, loading overlay, async container, every select composite, every feedback bridge. The state shape is the contract. Producers can be queries, mutations, file uploads, WebSockets - the receivers do not care.
+
+### From an a11y engineer
+
+ARIA is not a sticker you apply at the end. It is a projection of UI state into a second medium (screen-reader output). If your UI state lives in signals and your ARIA lives in template strings, the two will drift. Audits will catch some of it, real users will catch the rest.
+
+In CNGX, ARIA is bindings off the same signals that drive the visible UI. `aria-busy` is literally aliased to `CngxAsyncState.isLoading`. `aria-required` and `aria-invalid` are `computed()` outputs of the same field that renders the error message. `aria-describedby` IDs are always rendered; visibility flips through `aria-hidden` so screen readers never fight with conditional templates. Live regions stay mounted; only their content is reactive. Transition bridges (`CngxToastOn`, `CngxAlertOn`, `CngxBannerOn`) fire announcements off `AsyncStatus` transitions, so a successful save is heard, not just seen.
+
+Numbers in the codebase: 70 files bind `aria-busy`, 73 bind `aria-describedby` / `aria-required` / `aria-invalid`, 44 use live regions. None of those are added in an audit pass. They sit in the `computed()` graph next to the visual props they mirror, so the only way to lie to assistive tech is to break the signal that also lies to the eye.
+
+### Developer experience
+
+- **Signal-first, no Subjects to manage.** No manual unsubscribe, no `takeUntil`, no zone juggling. `input()`, `output()`, `model()`, `computed()`, `effect()`. 
+RxJS is only at the I/O boundary (HTTP, WebSocket, DOM streams) and never exposed on the public API.
+- **Typed end to end.** `model<T>()`, `input<T>()`, `Field<T>`, `CngxAsyncState<T>`. 
+**_Zero_** `any` in the codebase, zero `as` casts, strict TypeScript across all libs.
+- **Surgical imports.** 41 secondary entry points means `import { CngxRovingTabindex } from '@cngx/common/a11y'` pulls in roving tabindex, not the entire common surface. 
+`sideEffects: false` plus standalone-by-default plus no NgModules means tree-shaking actually works.
+- **Runnable docs, not snippets.** Every component's Examples tab embeds the live demo as a naked iframe, side-by-side with its API. 
+The code panel shows the actual artifact (no chrome, no toggles, no fail-flag plumbing) so you can copy-paste what you actually need. Selected components (`@playground` tag) ship a Stackblitz launcher with pinned dependencies. 
+Examples are part of the build pipeline, so they cannot drift from the API.
+- **Override anything, fork nothing.** `provideFeedback(withToasts, withBanners, ...)`. `provideSelectConfig(...)` plus 18 DI tokens in the select family. 
+Swap the panel host, the announcer, the focus strategy, the commit controller - all without touching library code. Organisms are built decompose-ready (host directive + DI tokens as the brain, templates + CSS as the skin), which is the substrate the future eject workflow will sit on.
+- **Inject the state, not the implementation.** `provide*` at the app root, `inject*` from anywhere inside a component. `injectAsyncState<T>(() => fetch(...))` returns a reactive `CngxAsyncState<T>` with auto-debounced refetch. `injectSmartDataSource<T>(items, { sort, filter, paginate, search })` returns a CDK-compatible `DataSource` that already speaks `CngxAsyncState`. `injectSelectConfig()`, `injectMenuConfig()`, `injectTreeConfig()`, `injectStepperI18n()`, `injectErrorAggregator()`, `injectFilterEditors()` and 20+ more. 
+The consumer-side DI surface mirrors the `provide*` surface one-to-one.
+- **Sheriff-enforced layers.** Imports flow upward only, enforced at lint time. Adding a new lib is a row in `sheriff.config.ts`. Cross-lib violations fail CI, not code review.
+- **One-line theming.** `@import '@cngx/themes/cngx.css';` ships cascade layers, OKLCH system tokens, `@property` declarations, `light-dark()` dark mode. Override via `@layer cngx.theme { ... }`. No SCSS at runtime.
 
 ## Contributing
 
