@@ -10,11 +10,13 @@ import {
   type CngxButtonToggleGroupContract,
 } from './button-toggle-group.token';
 
+/** @internal */
 interface SingleResolution<T> {
   readonly mode: 'single';
   readonly group: CngxButtonToggleGroupContract<T>;
 }
 
+/** @internal */
 interface MultiResolution<T> {
   readonly mode: 'multi';
   readonly group: CngxButtonMultiToggleGroupContract<T>;

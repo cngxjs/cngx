@@ -28,6 +28,7 @@ export type CngxSelectAggregatorFeature =
   | CngxActionSelectConfigFeature
   | CngxReorderableSelectConfigFeature;
 
+/** @internal */
 interface BucketedFeatures {
   readonly select: CngxSelectConfigFeature[];
   readonly action: CngxActionSelectConfigFeature[];

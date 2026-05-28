@@ -49,6 +49,7 @@ export interface CngxReorderEvent<T> {
   readonly next: readonly T[];
 }
 
+/** @internal */
 interface ActiveDrag {
   readonly pointerId: number;
   readonly fromIndex: number;

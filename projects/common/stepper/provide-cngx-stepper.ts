@@ -27,6 +27,7 @@ export type CngxStepperFeature =
   | CngxStepperConfigFeature
   | CngxStepperI18nFeature;
 
+/** @internal */
 interface PartitionedFeatures {
   readonly config: CngxStepperConfigFeature[];
   readonly i18n: CngxStepperI18nFeature[];

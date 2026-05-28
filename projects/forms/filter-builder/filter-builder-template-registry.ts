@@ -25,6 +25,7 @@ import type {
   CngxFilterBuilderValueEditorContext,
 } from './filter-builder-value-editor.slot';
 
+/** @internal */
 interface TemplateRefHolder<Ctx> {
   readonly templateRef: TemplateRef<Ctx>;
 }

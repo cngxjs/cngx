@@ -24,6 +24,7 @@ import {
  */
 export type CngxTabsFeature = CngxTabsConfigFeature | CngxTabsI18nFeature;
 
+/** @internal */
 interface PartitionedFeatures {
   readonly config: CngxTabsConfigFeature[];
   readonly i18n: CngxTabsI18nFeature[];

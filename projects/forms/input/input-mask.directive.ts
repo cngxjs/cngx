@@ -14,6 +14,7 @@ import {
 import { type ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { CNGX_INPUT_CONFIG, type InputConfig } from './input-config';
 
+/** @internal */
 interface MaskToken {
   readonly kind: 'slot' | 'literal';
   /** For 'slot': regex the char must match. For 'literal': the literal char. */

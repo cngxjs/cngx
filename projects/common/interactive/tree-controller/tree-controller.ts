@@ -221,6 +221,7 @@ function flatEq<T>(
   return true;
 }
 
+/** @internal */
 interface TreeIndexes<T> {
   readonly byId: ReadonlyMap<string, FlatTreeNode<T>>;
   /** `keyFn(value)` → flat-projected node. Source `CngxTreeNode` is reachable via `.node`. */

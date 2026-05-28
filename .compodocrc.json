@@ -15,6 +15,7 @@
     "disableInternal": true,
     "disableRoutesGraph": true,
     "menuLayout": "feature",
+    "featuresName": "Libraries",
     "collapsedAll": true,
     "showEffects": false,
     "apiTabSections": [
@@ -28,15 +29,40 @@
         "hostBindings",
         "hostListeners"
     ],
-    "themingTabSections": ["overview", "index", "tokens"],
+    "themingTabSections": [
+        "overview",
+        "index",
+        "tokens"
+    ],
     "navTabConfig": [
-        { "id": "info", "label": "Info" },
-        { "id": "readme", "label": "Readme" },
-        { "id": "api", "label": "API" },
-        { "id": "theming", "label": "Theming" },
-        { "id": "example", "label": "Example" },
-        { "id": "playground", "label": "Playground" },
-        { "id": "tree", "label": "DOM Tree" }
+        {
+            "id": "info",
+            "label": "Info"
+        },
+        {
+            "id": "readme",
+            "label": "Readme"
+        },
+        {
+            "id": "api",
+            "label": "API"
+        },
+        {
+            "id": "theming",
+            "label": "Theming"
+        },
+        {
+            "id": "example",
+            "label": "Example"
+        },
+        {
+            "id": "playground",
+            "label": "Playground"
+        },
+        {
+            "id": "tree",
+            "label": "DOM Tree"
+        }
     ],
     "playgroundDependencies": {
         "@cngx/utils": "0.0.1-rc.0",
