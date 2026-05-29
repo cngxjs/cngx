@@ -50,7 +50,7 @@ const STEPPER_I18N_DEFAULTS: CngxStepperI18n = {
   stepHasErrors: (count) => `${count} error${count === 1 ? '' : 's'}`,
   previousStep: 'Previous step',
   nextStep: 'Next step',
-  commitFailedRetry: 'Commit failed - retry?',
+  commitFailedRetry: 'Commit failed — retry?',
   commitInFlight: 'Committing step…',
   commitRolledBackTo: (originLabel) => `Reverted to step "${originLabel}".`,
   stepRolledBackSuffix: 'This step was rolled back.',
