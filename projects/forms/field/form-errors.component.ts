@@ -13,7 +13,7 @@ import { CNGX_ERROR_MESSAGES } from './form-field.token';
 import type { CngxFieldAccessor } from './models';
 
 /**
- * Form-level error summary — lists all validation errors across all fields.
+ * Form-level error summary - lists all validation errors across all fields.
  *
  * Place outside (or at the top/bottom of) the form. Each error is a focusable link
  * that jumps to the invalid field via `focusBoundControl()`.
@@ -44,6 +44,11 @@ import type { CngxFieldAccessor } from './models';
  * ```
  *
  * @category forms/field
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/form-errors.component.ts
+ * @since 0.1.0
+ * @relatedTo CngxFieldErrors, CngxError, focusFirstError, CNGX_ERROR_MESSAGES
  * <example-url>http://localhost:4200/#/forms/field/form-errors/basic</example-url>
  * <example-url>http://localhost:4200/#/forms/field/form-errors/show-on-submit</example-url>
  * <example-url>http://localhost:4200/#/forms/field/form-errors/custom-summary-template</example-url>
@@ -94,7 +99,7 @@ export class CngxFormErrors {
   protected readonly customTpl =
     contentChild<TemplateRef<CngxFormErrorsSummaryContext>>(TemplateRef);
 
-  /** @internal — resolved error items with focus capability. */
+  /** @internal - resolved error items with focus capability. */
   protected readonly errorItems = computed<FormErrorItem[]>(() => {
     if (!this.show()) {
       return [];

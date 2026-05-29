@@ -14,7 +14,10 @@ import {
 import { type ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { CNGX_INPUT_CONFIG } from './input-config';
 
-/** Detect decimal and group separators from Intl. */
+/**
+ * Detect decimal and group separators from Intl.
+ * @internal
+ */
 function detectSeparators(locale: string): { decimal: string; group: string } {
   const parts = new Intl.NumberFormat(locale).formatToParts(1234.5);
   const decimal = parts.find((p) => p.type === 'decimal')?.value ?? '.';
@@ -22,7 +25,10 @@ function detectSeparators(locale: string): { decimal: string; group: string } {
   return { decimal, group };
 }
 
-/** Parse a locale-formatted string into a number. */
+/**
+ * Parse a locale-formatted string into a number.
+ * @internal
+ */
 function parseLocaleNumber(value: string, locale: string): number | null {
   if (!value.trim()) {
     return null;
@@ -41,7 +47,10 @@ function parseLocaleNumber(value: string, locale: string): number | null {
   return Number.isNaN(num) ? null : num;
 }
 
-/** Check if a char is allowed during editing (digits, decimal sep, minus). */
+/**
+ * Check if a char is allowed during editing (digits, decimal sep, minus).
+ * @internal
+ */
 function isAllowedChar(
   ch: string,
   decimalSep: string,
@@ -84,6 +93,11 @@ function isAllowedChar(
  * ```
  *
  * @category forms/input
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/input/numeric-input.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxInput, CngxInputMask, CngxInputFormat
  * <example-url>http://localhost:4200/#/forms/input/numeric/basic-numeric-input</example-url>
  * <example-url>http://localhost:4200/#/forms/input/numeric/locale-formatting</example-url>
  * <example-url>http://localhost:4200/#/forms/input/numeric/min-max-step-decimals</example-url>

@@ -8,7 +8,7 @@ import {
 import type { ErrorMessageMap } from './models';
 
 /**
- * Re-exports — control + host contracts live in `@cngx/core/tokens` so
+ * Re-exports - control + host contracts live in `@cngx/core/tokens` so
  * Level-2 atoms in `@cngx/common/*` can provide them without violating
  * Sheriff (`lib:common` cannot import `lib:forms`). Public import path
  * `@cngx/forms/field` stays unchanged for consumers.
@@ -29,17 +29,20 @@ export {
  * @category forms/field
  */
 export interface CngxFormFieldRevealContract {
-  /** Reactive flag — `true` when errors should be visible to the user. */
+  /** Reactive flag - `true` when errors should be visible to the user. */
   readonly showErrors: Signal<boolean>;
 }
 
 /**
  * Injection token resolving to the active reveal trigger for the surrounding
- * `CngxFormField`. Optional — when no provider exists the presenter falls
+ * `CngxFormField`. Optional - when no provider exists the presenter falls
  * back to the default `touched OR strategy(...)` gate without scope-driven
  * reveal semantics.
  *
  * @category forms/field
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/form-field.token.ts
+ * @since 0.1.0
  */
 export const CNGX_FORM_FIELD_REVEAL = new InjectionToken<CngxFormFieldRevealContract>(
   'CngxFormFieldReveal',
@@ -57,6 +60,9 @@ export const CNGX_FORM_FIELD_REVEAL = new InjectionToken<CngxFormFieldRevealCont
  * ```
  *
  * @category forms/field
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/form-field.token.ts
+ * @since 0.1.0
  */
 export const CNGX_ERROR_MESSAGES = new InjectionToken<ErrorMessageMap>('CngxErrorMessages', {
   factory: () => ({}),
@@ -116,7 +122,7 @@ export type ErrorStrategyName =
 /**
  * Snapshot passed to a custom {@link ErrorStrategyFn}.
  *
- * `submitted` reflects the ambient `CngxErrorScope.showErrors` state — `true`
+ * `submitted` reflects the ambient `CngxErrorScope.showErrors` state - `true`
  * after the scope has been revealed (typically on form submit).
  *
  * @category forms/field
@@ -136,6 +142,7 @@ export interface ErrorStrategyContext {
  */
 export type ErrorStrategyFn = (context: ErrorStrategyContext) => boolean;
 
+/** @internal */
 const NAMED_ERROR_STRATEGIES: Readonly<Record<ErrorStrategyName, ErrorStrategyFn>> = {
   onTouched: (c) => c.touched,
   onDirty: (c) => c.dirty,
@@ -158,6 +165,8 @@ export interface FormFieldFeature {
  * Injection token for the application-wide {@link FormFieldConfig}.
  *
  * @category forms/field
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/form-field.token.ts
+ * @since 0.1.0
  */
 export const CNGX_FORM_FIELD_CONFIG = new InjectionToken<FormFieldConfig>('CngxFormFieldConfig', {
   factory: () => ({}),
@@ -241,9 +250,7 @@ export function withErrorMessages(messages: ErrorMessageMap): FormFieldFeature {
  *
  * @category forms/field
  */
-export function withErrorStrategy(
-  strategy: ErrorStrategyName | ErrorStrategyFn,
-): FormFieldFeature {
+export function withErrorStrategy(strategy: ErrorStrategyName | ErrorStrategyFn): FormFieldFeature {
   const fn: ErrorStrategyFn =
     typeof strategy === 'function' ? strategy : NAMED_ERROR_STRATEGIES[strategy];
   return { _apply: (c) => ({ ...c, errorStrategy: fn }) };

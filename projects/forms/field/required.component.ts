@@ -15,7 +15,7 @@ import { CngxFormFieldPresenter } from './form-field-presenter';
  * Auto-showing required indicator inside a `cngx-form-field`.
  *
  * Renders the marker only when the field's `required()` signal is `true`.
- * Sets `aria-hidden="true"` so screen readers ignore the visual marker —
+ * Sets `aria-hidden="true"` so screen readers ignore the visual marker -
  * the input already communicates required state via `aria-required`.
  *
  * Supports a custom template for rendering icons, tooltips, or styled badges.
@@ -43,6 +43,11 @@ import { CngxFormFieldPresenter } from './form-field-presenter';
  * ```
  *
  * @category forms/field
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/required.component.ts
+ * @since 0.1.0
+ * @relatedTo CngxLabel, CngxFormField
  * <example-url>http://localhost:4200/#/forms/field/required/basic</example-url>
  * <example-url>http://localhost:4200/#/forms/field/required/custom-template</example-url>
  * <example-url>http://localhost:4200/#/forms/field/required/auto-hide-on-non-required</example-url>

@@ -5,7 +5,7 @@ import { CngxFormFieldPresenter } from './form-field-presenter';
 /**
  * Invisible A11y coordination container for form fields.
  *
- * Renders as `display: contents` — zero visual footprint.
+ * Renders as `display: contents` - zero visual footprint.
  * All ARIA coordination (IDs, describedby, error gating) and CSS state classes
  * are handled by the hosted {@link CngxFormFieldPresenter}.
  *
@@ -22,6 +22,11 @@ import { CngxFormFieldPresenter } from './form-field-presenter';
  * ```
  *
  * @category forms/field
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/form-field.component.ts
+ * @since 0.1.0
+ * @relatedTo CngxFormFieldPresenter, CngxLabel, CngxHint, CngxFieldErrors, CngxBindField
  * <example-url>http://localhost:4200/#/forms/field/form-primitives/coming-in-a-follow-up</example-url>
  * <example-url>http://localhost:4200/#/forms/field/form-primitives/reactive-forms-same-atom-just-bind-formcontrol</example-url>
  * <example-url>http://localhost:4200/#/forms/field/form-primitives/signal-forms-drop-the-atom-into-cngx-form-field</example-url>

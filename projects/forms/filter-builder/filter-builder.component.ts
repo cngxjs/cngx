@@ -29,11 +29,16 @@ import { CNGX_FILTER_BUILDER_BODY_HOST } from './filter-builder-body.host';
  * thin render shell: hosts the slot contentChildren and mounts the body
  * resolved through `CNGX_FILTER_BUILDER_BODY_HOST` (default
  * `CngxFilterBuilderBody`). State-driven UI (loading / error /
- * refreshing) is the consumer's concern — wrap with
+ * refreshing) is the consumer's concern - wrap with
  * `<cngx-async-container [state]>`. The live-region announcer is bound
  * here so AT updates stay outside the body's recursive render path.
  *
  * @category forms/filter-builder
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder.component.ts
+ * @since 0.1.0
+ * @relatedTo CngxFilterBuilderPresenter, CngxFilterBuilderBody, CngxFilterRow, CngxFilterBuilderFormFieldControl
  * <example-url>http://localhost:4200/#/forms/filter-builder/basic-two-way-binding-json-inspection</example-url>
  * <example-url>http://localhost:4200/#/forms/filter-builder/filter-builder-async-state/loading-error-content-branches-via-cngx-async-container</example-url>
  * <example-url>http://localhost:4200/#/forms/filter-builder/filter-builder-json/builder-json</example-url>

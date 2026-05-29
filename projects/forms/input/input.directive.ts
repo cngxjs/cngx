@@ -13,13 +13,19 @@ import {
  * inside a `cngx-form-field`.
  *
  * Provides {@link CNGX_FORM_FIELD_CONTROL} so the parent form field can discover it.
- * Works standalone (without `cngx-form-field`) as a no-op — no crash.
+ * Works standalone (without `cngx-form-field`) as a no-op - no crash.
  *
  * ```html
  * <input cngxInput placeholder="max@example.com" />
  * ```
  *
  * @category forms/input
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/input/input.directive.ts
+ * @selector [cngxInput]
+ * @since 0.1.0
+ * @relatedTo CngxFormField, CngxCharCount, CngxPasswordToggle, CngxInputClear
  * <example-url>http://localhost:4200/#/forms/input/character-counter</example-url>
  * <example-url>http://localhost:4200/#/forms/input/password-visibility-toggle</example-url>
  * <example-url>http://localhost:4200/#/forms/input/smart-autocomplete-and-spellcheck</example-url>
@@ -62,7 +68,7 @@ export class CngxInput implements CngxFormFieldControl {
   readonly disabled = computed(() => this.presenter?.disabled() ?? false);
   readonly errorState = computed(() => this.presenter?.showError() ?? false);
 
-  // Host binding computeds — null-safe when no presenter.
+  // Host binding computeds - null-safe when no presenter.
 
   /** @internal */
   protected readonly inputId = this.id;
@@ -98,7 +104,7 @@ export class CngxInput implements CngxFormFieldControl {
    */
   readonly spellcheck = input<boolean | undefined>(undefined);
 
-  /** @internal — normalized field name for autocomplete/spellcheck lookup. */
+  /** @internal - normalized field name for autocomplete/spellcheck lookup. */
   private readonly normalizedName = computed(() =>
     this.presenter
       ?.name()

@@ -67,6 +67,9 @@ export type CngxPanelLifecycleEmitterFactory = (
  * for telemetry, analytics, or custom focus-restore strategy.
  *
  * @category forms/select/panel
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/panel-lifecycle-emitter.ts
+ * @since 0.1.0
  */
 export const CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY =
   new InjectionToken<CngxPanelLifecycleEmitterFactory>(

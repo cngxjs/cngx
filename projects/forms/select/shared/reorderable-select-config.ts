@@ -27,7 +27,7 @@ export interface CngxReorderableSelectConfig {
    */
   readonly dragHandle?: TemplateRef<void> | null;
   /**
-   * Freezes the chip strip during an in-flight commit. Default `true` —
+   * Freezes the chip strip during an in-flight commit. Default `true` -
    * reorders are sub-second, freeze is clearer than per-chip spinners.
    */
   readonly freezeStripOnCommit?: boolean;
@@ -47,9 +47,13 @@ export const CNGX_REORDERABLE_SELECT_DEFAULTS: Required<
  * Token carrying the resolved {@link CngxReorderableSelectConfig}.
  *
  * @category forms/select/reorderable-multi-select
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/reorderable-select-config.ts
+ * @since 0.1.0
  */
-export const CNGX_REORDERABLE_SELECT_CONFIG =
-  new InjectionToken<CngxReorderableSelectConfig>('CngxReorderableSelectConfig');
+export const CNGX_REORDERABLE_SELECT_CONFIG = new InjectionToken<CngxReorderableSelectConfig>(
+  'CngxReorderableSelectConfig',
+);
 
 /**
  * Feature returned by the `with*` helpers. Merged by
@@ -63,9 +67,7 @@ export interface CngxReorderableSelectConfigFeature {
   readonly _target?: 'reorderable';
 }
 
-function feature(
-  config: Partial<CngxReorderableSelectConfig>,
-): CngxReorderableSelectConfigFeature {
+function feature(config: Partial<CngxReorderableSelectConfig>): CngxReorderableSelectConfigFeature {
   return { config, _target: 'reorderable' };
 }
 
@@ -85,9 +87,7 @@ export function withReorderKeyboardModifier(
  *
  * @category forms/select/reorderable-multi-select
  */
-export function withReorderAriaLabel(
-  label: string,
-): CngxReorderableSelectConfigFeature {
+export function withReorderAriaLabel(label: string): CngxReorderableSelectConfigFeature {
   return feature({ ariaLabel: label });
 }
 
@@ -108,9 +108,7 @@ export function withDefaultDragHandle(
  *
  * @category forms/select/reorderable-multi-select
  */
-export function withReorderStripFreeze(
-  freeze: boolean,
-): CngxReorderableSelectConfigFeature {
+export function withReorderStripFreeze(freeze: boolean): CngxReorderableSelectConfigFeature {
   return feature({ freezeStripOnCommit: freeze });
 }
 
@@ -141,9 +139,7 @@ export function provideReorderableSelectConfig(
   for (const f of features) {
     Object.assign(merged, f.config);
   }
-  return makeEnvironmentProviders([
-    { provide: CNGX_REORDERABLE_SELECT_CONFIG, useValue: merged },
-  ]);
+  return makeEnvironmentProviders([{ provide: CNGX_REORDERABLE_SELECT_CONFIG, useValue: merged }]);
 }
 
 /**
@@ -174,15 +170,11 @@ export function resolveReorderableSelectConfig(): Required<
 > & { readonly dragHandle: TemplateRef<void> | null } {
   const user = inject(CNGX_REORDERABLE_SELECT_CONFIG, { optional: true }) ?? {};
   return {
-    keyboardModifier:
-      user.keyboardModifier ?? CNGX_REORDERABLE_SELECT_DEFAULTS.keyboardModifier,
+    keyboardModifier: user.keyboardModifier ?? CNGX_REORDERABLE_SELECT_DEFAULTS.keyboardModifier,
     ariaLabel: user.ariaLabel ?? CNGX_REORDERABLE_SELECT_DEFAULTS.ariaLabel,
     dragHandle:
-      user.dragHandle === undefined
-        ? CNGX_REORDERABLE_SELECT_DEFAULTS.dragHandle
-        : user.dragHandle,
+      user.dragHandle === undefined ? CNGX_REORDERABLE_SELECT_DEFAULTS.dragHandle : user.dragHandle,
     freezeStripOnCommit:
-      user.freezeStripOnCommit ??
-      CNGX_REORDERABLE_SELECT_DEFAULTS.freezeStripOnCommit,
+      user.freezeStripOnCommit ?? CNGX_REORDERABLE_SELECT_DEFAULTS.freezeStripOnCommit,
   };
 }

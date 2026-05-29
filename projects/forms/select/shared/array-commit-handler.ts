@@ -3,10 +3,7 @@ import { InjectionToken, type Signal, type WritableSignal } from '@angular/core'
 import type { AsyncStatus } from '@cngx/core/utils';
 
 import { sameArrayContents } from './compare';
-import type {
-  CngxSelectCommitAction,
-  CngxSelectCommitMode,
-} from './commit-action.types';
+import type { CngxSelectCommitAction, CngxSelectCommitMode } from './commit-action.types';
 import type { CngxSelectOptionDef } from './option.model';
 import type { CngxSelectCompareFn, CngxSelectCore } from './select-core';
 
@@ -54,7 +51,7 @@ export interface ArrayCommitHandler<T> {
     option: CngxSelectOptionDef<T>,
     action: CngxSelectCommitAction<T[]>,
   ): void;
-  /** Same split as {@link beginToggle} — consumer pre-writes `values`. */
+  /** Same split as {@link beginToggle} - consumer pre-writes `values`. */
   beginClear(previous: T[], action: CngxSelectCommitAction<T[]>): void;
   /**
    * Replay the last commit. Routes to `beginToggle`/`beginClear` based on
@@ -70,7 +67,7 @@ export interface ArrayCommitHandler<T> {
  * optimistic rollback on error, live-region "removed" announce. Consumer
  * owns change-event payloads via the finalize callbacks.
  *
- * Scalar twin rejected — see select-family-accepted-debt §6.
+ * Scalar twin rejected - see select-family-accepted-debt §6.
  *
  * @category forms/select/commit
  */
@@ -173,16 +170,17 @@ export type CngxArrayCommitHandlerFactory = <T>(
 /**
  * Factory token for {@link ArrayCommitHandler}. Default
  * {@link createArrayCommitHandler}. One layer above
- * `CNGX_SELECT_COMMIT_CONTROLLER_FACTORY` — controls value reconciliation
+ * `CNGX_SELECT_COMMIT_CONTROLLER_FACTORY` - controls value reconciliation
  * and finalize orchestration on top of the state machine.
  *
  * @category forms/select/commit
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/array-commit-handler.ts
+ * @since 0.1.0
  */
-export const CNGX_ARRAY_COMMIT_HANDLER_FACTORY =
-  new InjectionToken<CngxArrayCommitHandlerFactory>(
-    'CngxArrayCommitHandlerFactory',
-    {
-      providedIn: 'root',
-      factory: () => createArrayCommitHandler,
-    },
-  );
+export const CNGX_ARRAY_COMMIT_HANDLER_FACTORY = new InjectionToken<CngxArrayCommitHandlerFactory>(
+  'CngxArrayCommitHandlerFactory',
+  {
+    providedIn: 'root',
+    factory: () => createArrayCommitHandler,
+  },
+);

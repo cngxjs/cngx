@@ -36,15 +36,13 @@ export interface DismissHandler {
 }
 
 /**
- * Click-outside handler. Pure closure over `opts` — no Angular DI.
+ * Click-outside handler. Pure closure over `opts` - no Angular DI.
  * Override via {@link CNGX_DISMISS_HANDLER_FACTORY} for telemetry or
  * conditional-dismiss prompts.
  *
  * @category forms/select/controllers
  */
-export function createDismissHandler(
-  opts: DismissHandlerOptions,
-): DismissHandler {
+export function createDismissHandler(opts: DismissHandlerOptions): DismissHandler {
   const handleClickOutside = (): void => {
     if (opts.shouldBlockDismiss?.()) {
       return;
@@ -65,18 +63,20 @@ export function createDismissHandler(
  *
  * @category forms/select/controllers
  */
-export type CngxDismissHandlerFactory = (
-  opts: DismissHandlerOptions,
-) => DismissHandler;
+export type CngxDismissHandlerFactory = (opts: DismissHandlerOptions) => DismissHandler;
 
 /**
  * Factory token for {@link DismissHandler}. Default
  * {@link createDismissHandler}.
  *
  * @category forms/select/controllers
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/dismiss-handler.ts
+ * @since 0.1.0
  */
-export const CNGX_DISMISS_HANDLER_FACTORY =
-  new InjectionToken<CngxDismissHandlerFactory>('CngxDismissHandlerFactory', {
+export const CNGX_DISMISS_HANDLER_FACTORY = new InjectionToken<CngxDismissHandlerFactory>(
+  'CngxDismissHandlerFactory',
+  {
     providedIn: 'root',
     factory: () => createDismissHandler,
-  });
+  },
+);

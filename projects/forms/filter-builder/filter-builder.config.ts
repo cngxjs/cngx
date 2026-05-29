@@ -18,7 +18,7 @@ export type { CngxFilterBuilderTemplates };
  * Native-input sentinel union. When `CNGX_FILTER_BUILDER_CONFIG.editors`
  * maps a key to one of these strings, the filter-builder component (Phase
  * 5) renders the corresponding bare HTML input inline instead of mounting
- * a custom editor component — keeps the bundle lean for the three builtin
+ * a custom editor component - keeps the bundle lean for the three builtin
  * scalar types.
  *
  * @category forms/filter-builder/config
@@ -37,9 +37,7 @@ export type CngxFilterNativeEditor =
  *
  * @category forms/filter-builder/config
  */
-export type CngxFilterEditor =
-  | Type<CngxFilterEditorComponent<unknown>>
-  | CngxFilterNativeEditor;
+export type CngxFilterEditor = Type<CngxFilterEditorComponent<unknown>> | CngxFilterNativeEditor;
 
 /**
  * Narrowing helper for `CngxFilterEditor`.
@@ -83,7 +81,7 @@ export interface CngxFilterBuilderAnnouncementFormatters {
 }
 
 /**
- * Locale bundle — button copy, operator labels, group/expression label factories, announcer formatters. Defaults are English.
+ * Locale bundle - button copy, operator labels, group/expression label factories, announcer formatters. Defaults are English.
  *
  * @category forms/filter-builder/config
  */
@@ -105,7 +103,7 @@ export interface CngxFilterBuilderI18n {
 }
 
 /**
- * Resolved runtime config — produced by composing `withX(...)` features through `provideFilterBuilderConfig(...)`.
+ * Resolved runtime config - produced by composing `withX(...)` features through `provideFilterBuilderConfig(...)`.
  *
  * @category forms/filter-builder/config
  */
@@ -119,6 +117,7 @@ export interface CngxFilterBuilderConfig {
   readonly skeletonCount: number;
 }
 
+/** @internal */
 const DEFAULT_I18N: CngxFilterBuilderI18n = Object.freeze({
   addFilter: 'Add filter',
   addGroup: 'Add group',
@@ -192,12 +191,15 @@ export const CNGX_FILTER_BUILDER_DEFAULTS: CngxFilterBuilderConfig = Object.free
  * DI token carrying the resolved `CngxFilterBuilderConfig`. Default factory returns `CNGX_FILTER_BUILDER_DEFAULTS`.
  *
  * @category forms/filter-builder/config
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder.config.ts
+ * @since 0.1.0
  */
 export const CNGX_FILTER_BUILDER_CONFIG = new InjectionToken<CngxFilterBuilderConfig>(
   'CngxFilterBuilderConfig',
   { factory: () => CNGX_FILTER_BUILDER_DEFAULTS },
 );
 
+/** @internal */
 const FILTER_BUILDER_FEATURE_BRAND: unique symbol = Symbol('CngxFilterBuilderConfigFeature');
 
 /**
@@ -210,6 +212,7 @@ export interface CngxFilterBuilderConfigFeature {
   readonly apply: (config: CngxFilterBuilderConfig) => CngxFilterBuilderConfig;
 }
 
+/** @internal */
 function feature(
   apply: (config: CngxFilterBuilderConfig) => CngxFilterBuilderConfig,
 ): CngxFilterBuilderConfigFeature {
@@ -262,9 +265,7 @@ export function withDefaultOperators(
  *
  * @category forms/filter-builder/config
  */
-export function withLogicOptions(
-  logics: readonly FilterLogic[],
-): CngxFilterBuilderConfigFeature {
+export function withLogicOptions(logics: readonly FilterLogic[]): CngxFilterBuilderConfigFeature {
   return feature((config) => ({ ...config, logicOptions: logics }));
 }
 
@@ -287,7 +288,7 @@ export function withSkeletonCount(count: number): CngxFilterBuilderConfigFeature
 }
 
 /**
- * Register global template overrides — keyed fallback below per-instance content-child slots.
+ * Register global template overrides - keyed fallback below per-instance content-child slots.
  *
  * @category forms/filter-builder/config
  */
@@ -300,9 +301,8 @@ export function withTemplates(
   }));
 }
 
-function buildConfig(
-  features: readonly CngxFilterBuilderConfigFeature[],
-): CngxFilterBuilderConfig {
+/** @internal */
+function buildConfig(features: readonly CngxFilterBuilderConfigFeature[]): CngxFilterBuilderConfig {
   let config = CNGX_FILTER_BUILDER_DEFAULTS;
   for (const feat of features) {
     config = feat.apply(config);
@@ -327,7 +327,7 @@ export function provideFilterBuilderConfig(
 }
 
 /**
- * Component/route-level config — same shape as `provideFilterBuilderConfig` but for non-environment injectors.
+ * Component/route-level config - same shape as `provideFilterBuilderConfig` but for non-environment injectors.
  *
  * @category forms/filter-builder/config
  */

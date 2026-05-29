@@ -65,7 +65,7 @@ export interface CngxSelectTemplateRegistryQueries<T = unknown> {
 }
 
 /**
- * Resolved template-ref signals — output of the 3-stage cascade, ready
+ * Resolved template-ref signals - output of the 3-stage cascade, ready
  * for `*ngTemplateOutlet`.
  *
  * @category forms/select/templates
@@ -108,8 +108,7 @@ export interface CngxSelectTemplateRegistry<T = unknown> {
  */
 const NO_ACTION_DIRECTIVE: Signal<CngxSelectAction | undefined> = signal(undefined);
 
-const NO_LOADING_GLYPH_DIRECTIVE: Signal<CngxSelectLoadingGlyph | undefined> =
-  signal(undefined);
+const NO_LOADING_GLYPH_DIRECTIVE: Signal<CngxSelectLoadingGlyph | undefined> = signal(undefined);
 
 /**
  * Build a resolved {@link CngxSelectTemplateRegistry} from raw
@@ -163,9 +162,13 @@ export type CngxTemplateRegistryFactory = <T = unknown>(
  * {@link createTemplateRegistry}.
  *
  * @category forms/select/templates
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-registry.ts
+ * @since 0.1.0
  */
-export const CNGX_TEMPLATE_REGISTRY_FACTORY =
-  new InjectionToken<CngxTemplateRegistryFactory>('CNGX_TEMPLATE_REGISTRY_FACTORY', {
+export const CNGX_TEMPLATE_REGISTRY_FACTORY = new InjectionToken<CngxTemplateRegistryFactory>(
+  'CNGX_TEMPLATE_REGISTRY_FACTORY',
+  {
     providedIn: 'root',
     factory: () => createTemplateRegistry,
-  });
+  },
+);

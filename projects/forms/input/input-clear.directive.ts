@@ -6,7 +6,7 @@ import { fromEvent } from 'rxjs';
  * Headless clear behavior for an input or textarea.
  *
  * Place on a button or any element. Pass a reference to the target input.
- * The consumer renders the UI — this directive only provides the behavior.
+ * The consumer renders the UI - this directive only provides the behavior.
  *
  * ```html
  * <input #nameInput />
@@ -16,6 +16,11 @@ import { fromEvent } from 'rxjs';
  * ```
  *
  * @category forms/input
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/input/input-clear.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxInput, CngxCopyValue, CngxPasswordToggle
  * <example-url>http://localhost:4200/#/forms/input/utilities/copy-to-clipboard</example-url>
  * <example-url>http://localhost:4200/#/forms/input/utilities/input-clear</example-url>
  * <example-url>http://localhost:4200/#/forms/input/utilities/input-format</example-url>

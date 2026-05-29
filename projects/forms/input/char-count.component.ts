@@ -43,6 +43,11 @@ import { CngxFormFieldPresenter } from '@cngx/forms/field';
  * ```
  *
  * @category forms/input
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/input/char-count.component.ts
+ * @since 0.1.0
+ * @relatedTo CngxInput, CngxFormField
  * <example-url>http://localhost:4200/#/forms/input/character-counter</example-url>
  * <example-url>http://localhost:4200/#/forms/input/password-visibility-toggle</example-url>
  * <example-url>http://localhost:4200/#/forms/input/smart-autocomplete-and-spellcheck</example-url>
@@ -86,7 +91,7 @@ export class CngxCharCount {
   /** @internal */
   protected readonly resolvedMin = computed(() => this.min() ?? this.presenter.minLength());
 
-  /** @internal — current character count, updated via DOM input events. */
+  /** @internal - current character count, updated via DOM input events. */
   private readonly lengthState = signal(0);
   protected readonly currentLength = this.lengthState.asReadonly();
 

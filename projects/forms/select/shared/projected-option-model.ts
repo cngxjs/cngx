@@ -1,11 +1,7 @@
 import { computed, InjectionToken, type Signal } from '@angular/core';
 
 import type { ActiveDescendantItem } from '@cngx/common/a11y';
-import type {
-  CngxOption,
-  CngxOptionContainer,
-  CngxOptionGroup,
-} from '@cngx/common/interactive';
+import type { CngxOption, CngxOptionContainer, CngxOptionGroup } from '@cngx/common/interactive';
 
 import {
   isCngxSelectOptionGroupDef,
@@ -55,7 +51,7 @@ export function createProjectedOptionModel<T>(
       const items: (CngxSelectOptionDef<T> | CngxSelectOptionGroupDef<T>)[] = [];
       for (const c of input.containers()) {
         if (c.kind === 'option') {
-          // CNGX_OPTION_CONTAINER is `useExisting: CngxOption` — the
+          // CNGX_OPTION_CONTAINER is `useExisting: CngxOption` - the
           // runtime instance is the directive.
           const opt = c as CngxOption;
           items.push({
@@ -157,9 +153,7 @@ export function createProjectedOptionModel<T>(
       if (!term) {
         return all;
       }
-      return all.filter((opt) =>
-        input.matches(opt.value() as T, opt.label(), term),
-      );
+      return all.filter((opt) => input.matches(opt.value() as T, opt.label(), term));
     },
     {
       equal: (a, b) => a.length === b.length && a.every((v, i) => v === b[i]),
@@ -223,12 +217,11 @@ export type CngxProjectedOptionModelFactory = <T>(
  * group sub-types.
  *
  * @category forms/select/state
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/projected-option-model.ts
+ * @since 0.1.0
  */
 export const CNGX_PROJECTED_OPTION_MODEL_FACTORY =
-  new InjectionToken<CngxProjectedOptionModelFactory>(
-    'CngxProjectedOptionModelFactory',
-    {
-      providedIn: 'root',
-      factory: () => createProjectedOptionModel,
-    },
-  );
+  new InjectionToken<CngxProjectedOptionModelFactory>('CngxProjectedOptionModelFactory', {
+    providedIn: 'root',
+    factory: () => createProjectedOptionModel,
+  });

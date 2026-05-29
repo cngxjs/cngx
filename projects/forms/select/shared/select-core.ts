@@ -15,20 +15,14 @@ import {
 } from '@cngx/core/utils';
 import { resolveAsyncView, type AsyncView } from '@cngx/common/data';
 
-import {
-  CngxFormFieldPresenter,
-  type CngxFormFieldControl,
-} from '@cngx/forms/field';
+import { CngxFormFieldPresenter, type CngxFormFieldControl } from '@cngx/forms/field';
 
 import { CngxSelectAnnouncer } from './announcer';
 import {
   CNGX_SELECT_COMMIT_CONTROLLER_FACTORY,
   type CngxCommitController,
 } from './commit-controller.token';
-import type {
-  CngxSelectCommitAction,
-  CngxSelectCommitErrorDisplay,
-} from './commit-action.types';
+import type { CngxSelectCommitAction, CngxSelectCommitErrorDisplay } from './commit-action.types';
 import {
   type CngxSelectAnnouncerConfig,
   type CngxSelectAriaLabels,
@@ -43,10 +37,7 @@ import {
   type CngxSelectOptionsInput,
 } from './option.model';
 import { resolveSelectConfig } from './resolve-config';
-import type {
-  CngxSelectCommitErrorContext,
-  CngxSelectErrorContext,
-} from './template-slots';
+import type { CngxSelectCommitErrorContext, CngxSelectErrorContext } from './template-slots';
 
 /**
  * Value-to-option equality. Default `Object.is`; override via `[compareWith]`.
@@ -54,7 +45,9 @@ import type {
 export type CngxSelectCompareFn<T> = (a: T | undefined, b: T | undefined) => boolean;
 
 /**
- * Identity comparator — `Object.is`.
+ * Identity comparator - `Object.is`.
+ *
+ * @internal
  */
 export const cngxSelectDefaultCompare: CngxSelectCompareFn<unknown> = (a, b) => Object.is(a, b);
 
@@ -75,7 +68,7 @@ export interface CngxSelectTriggerAria {
 }
 
 /**
- * Signal inputs for {@link createSelectCore}. Core reads signals only —
+ * Signal inputs for {@link createSelectCore}. Core reads signals only -
  * never component instance fields.
  */
 export interface CngxSelectCoreDeps<T, TCommit> {
@@ -139,7 +132,7 @@ export interface CngxSelectAnnouncerInputs {
 }
 
 /**
- * Output of {@link createSelectCore} — pure-derivation signals shared by
+ * Output of {@link createSelectCore} - pure-derivation signals shared by
  * every select-family component.
  */
 export interface CngxSelectCore<T, TCommit> {
@@ -160,7 +153,7 @@ export interface CngxSelectCore<T, TCommit> {
   readonly skeletonIndices: Signal<number[]>;
   readonly panelClassList: Signal<string | readonly string[] | null>;
   readonly panelWidthCss: Signal<string | null>;
-  /** Plain object — config is resolved per-injector and immutable. */
+  /** Plain object - config is resolved per-injector and immutable. */
   readonly fallbackLabels: Required<CngxSelectFallbackLabels>;
   /** Mirrors `CNGX_SELECT_CONFIG.ariaLabels`. Forwarded onto the panel host. */
   readonly ariaLabels: CngxSelectAriaLabels;
@@ -199,7 +192,7 @@ export interface CngxSelectCore<T, TCommit> {
   isIndeterminate(value: T): boolean;
   /**
    * Shared selection controller. `null` for single-select. Membership
-   * is identity-based — consumers with custom `compareWith` should
+   * is identity-based - consumers with custom `compareWith` should
    * prefer {@link isSelected}.
    */
   readonly selection: Signal<SelectionController<T> | null>;
@@ -267,6 +260,8 @@ export interface CngxSelectPanelHostAdapter<T> {
  * Factory rather than hostDirective: hostDirective collapses generics
  * to `unknown` through the input/output decorator metadata slot, so a
  * typed factory wins. Injection context required.
+ *
+ * @internal
  */
 export function createSelectCore<T, TCommit>(
   deps: CngxSelectCoreDeps<T, TCommit>,
@@ -286,9 +281,7 @@ export function createSelectCore<T, TCommit>(
     const s = deps.state();
     const all = s?.data() ?? deps.options();
     const local = deps.localItems?.() ?? [];
-    return local.length > 0
-      ? mergeLocalItems(all, local, deps.compareWith())
-      : all;
+    return local.length > 0 ? mergeLocalItems(all, local, deps.compareWith()) : all;
   });
 
   const effectiveOptions = computed<CngxSelectOptionsInput<T>>(() => {
@@ -297,10 +290,7 @@ export function createSelectCore<T, TCommit>(
     return f ? f(merged) : merged;
   });
 
-  const flatOptionsEqual = (
-    a: CngxSelectOptionDef<T>[],
-    b: CngxSelectOptionDef<T>[],
-  ): boolean => {
+  const flatOptionsEqual = (a: CngxSelectOptionDef<T>[], b: CngxSelectOptionDef<T>[]): boolean => {
     if (a === b) {
       return true;
     }
@@ -338,7 +328,7 @@ export function createSelectCore<T, TCommit>(
       return map;
     },
     {
-      // Structural equal — same size + Object.is per (key, value).
+      // Structural equal - same size + Object.is per (key, value).
       // Keeps the map ref stable across server refetches.
       equal: (a, b) => {
         if (a === b) {
@@ -384,9 +374,7 @@ export function createSelectCore<T, TCommit>(
     return status === 'refreshing' || (status === 'loading' && !s.isFirstLoad());
   });
 
-  const showInlineError = computed<boolean>(
-    () => activeView() === 'content+error',
-  );
+  const showInlineError = computed<boolean>(() => activeView() === 'content+error');
 
   const skeletonIndices = computed<number[]>(
     () => Array.from({ length: Math.max(1, deps.skeletonRowCount()) }, (_, i) => i),
@@ -494,9 +482,7 @@ export function createSelectCore<T, TCommit>(
     return 'Options';
   });
 
-  const resolvedShowSelectionIndicator = computed<boolean>(
-    () => !deps.hideSelectionIndicator(),
-  );
+  const resolvedShowSelectionIndicator = computed<boolean>(() => !deps.hideSelectionIndicator());
 
   const resolvedShowCaret = computed<boolean>(() => !deps.hideCaret());
 
@@ -550,8 +536,9 @@ export function createSelectCore<T, TCommit>(
   }
 
   // Built early so ariaInvalid + ariaBusy below can read commit state.
-  const commitController: CngxCommitController<TCommit> =
-    inject(CNGX_SELECT_COMMIT_CONTROLLER_FACTORY)<TCommit>();
+  const commitController: CngxCommitController<TCommit> = inject(
+    CNGX_SELECT_COMMIT_CONTROLLER_FACTORY,
+  )<TCommit>();
   const commitState = commitController.state;
   const isCommitting = commitController.isCommitting;
   // Pillar 2: `aria-invalid` projects both form-field validation and a
@@ -566,9 +553,7 @@ export function createSelectCore<T, TCommit>(
   const ariaInvalid = computed<boolean | null>(() =>
     deps.errorState() || showCommitError() ? true : null,
   );
-  const ariaReadonly = computed<boolean | null>(() =>
-    presenter?.readonly() ? true : null,
-  );
+  const ariaReadonly = computed<boolean | null>(() => (presenter?.readonly() ? true : null));
   const ariaErrorMessage = computed<string | null>(() =>
     deps.errorState() ? (presenter?.errorId() ?? null) : null,
   );
@@ -587,9 +572,7 @@ export function createSelectCore<T, TCommit>(
     return null;
   });
 
-  const effectiveTabIndex = computed<number | null>(() =>
-    disabled() ? -1 : deps.tabIndex(),
-  );
+  const effectiveTabIndex = computed<number | null>(() => (disabled() ? -1 : deps.tabIndex()));
 
   const triggerAria = computed<CngxSelectTriggerAria>(
     () => ({
@@ -623,9 +606,7 @@ export function createSelectCore<T, TCommit>(
 
   const commitErrorValue = computed<unknown>(() => commitState.error());
 
-  function bindCommitRetry(
-    retry: () => void,
-  ): Signal<CngxSelectCommitErrorContext<T>> {
+  function bindCommitRetry(retry: () => void): Signal<CngxSelectCommitErrorContext<T>> {
     return computed(
       () => ({
         $implicit: commitState.error(),
@@ -678,13 +659,10 @@ export function createSelectCore<T, TCommit>(
     const label = deps.label();
     const aria = deps.ariaLabel();
     const fieldFallback = config.ariaLabels.fieldLabelFallback ?? 'Selection';
-    const failedMessage =
-      config.ariaLabels.commitFailedMessage ?? 'Save failed';
+    const failedMessage = config.ariaLabels.commitFailedMessage ?? 'Save failed';
     const labelText = label !== '' ? label : (aria ?? fieldFallback);
     const detail = err instanceof Error ? err.message : undefined;
-    return detail
-      ? `${labelText}: ${failedMessage} — ${detail}`
-      : `${labelText}: ${failedMessage}`;
+    return detail ? `${labelText}: ${failedMessage} - ${detail}` : `${labelText}: ${failedMessage}`;
   }
 
   // Stable identities for the core's lifetime. Adapter unwraps
@@ -784,10 +762,14 @@ export function createSelectCore<T, TCommit>(
 
 /**
  * Form-field integration shape exposed by every select-family component.
+ *
+ * @internal
  */
 export type CngxSelectFormFieldControl = CngxFormFieldControl;
 
 /**
  * Lifecycle status union for select-family outputs.
+ *
+ * @internal
  */
 export type CngxSelectStatus = AsyncStatus;

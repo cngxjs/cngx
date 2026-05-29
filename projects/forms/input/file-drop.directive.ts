@@ -42,6 +42,11 @@ export interface FileRejection {
  * ```
  *
  * @category forms/input
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/input/file-drop.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxInput, CngxAsyncState
  * <example-url>http://localhost:4200/#/forms/input/file-drop/image-upload</example-url>
  */
 @Directive({
@@ -75,7 +80,7 @@ export class CngxFileDrop {
   readonly multiple = input<boolean>(false);
 
   /**
-   * Bind an upload async state — shows busy/error/progress during upload.
+   * Bind an upload async state - shows busy/error/progress during upload.
    * When set, `uploading` derives from `state.isBusy()` and `uploadProgress`
    * from `state.progress()`. Drop/browse is disabled while uploading.
    */

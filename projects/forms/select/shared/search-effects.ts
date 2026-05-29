@@ -86,6 +86,8 @@ export type CngxSearchEffectsFactory = (opts: SearchEffectsOptions) => void;
  * Factory token. Default {@link createSearchEffects}.
  *
  * @category forms/select/controllers
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/search-effects.ts
+ * @since 0.1.0
  */
 export const CNGX_SEARCH_EFFECTS_FACTORY =
   new InjectionToken<CngxSearchEffectsFactory>('CngxSearchEffectsFactory', {

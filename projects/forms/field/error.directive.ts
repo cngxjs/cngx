@@ -21,6 +21,11 @@ import { CngxFormFieldPresenter } from './form-field-presenter';
  * ```
  *
  * @category forms/field
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/error.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxFieldErrors, CngxFormField, CngxFormErrors
  * <example-url>http://localhost:4200/#/forms/field/error/basic</example-url>
  * <example-url>http://localhost:4200/#/forms/field/error/icons-per-kind</example-url>
  * <example-url>http://localhost:4200/#/forms/field/error/server-injected-error</example-url>
@@ -44,6 +49,6 @@ export class CngxError {
   /** @internal */
   protected readonly ariaHidden = computed(() => !this.presenter.showError() || null);
 
-  /** @internal — role="alert" only when errors are visible */
+  /** @internal - role="alert" only when errors are visible */
   protected readonly role = computed(() => (this.presenter.showError() ? 'alert' : null));
 }

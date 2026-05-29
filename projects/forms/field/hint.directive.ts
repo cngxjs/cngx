@@ -5,7 +5,7 @@ import { CngxFormFieldPresenter } from './form-field-presenter';
  * Marks the hint element inside a `cngx-form-field`.
  *
  * Automatically sets its `id` for `aria-describedby` linkage.
- * The hint remains in the DOM at all times — screen readers read it alongside errors
+ * The hint remains in the DOM at all times - screen readers read it alongside errors
  * to provide context.
  *
  * ```html
@@ -13,6 +13,11 @@ import { CngxFormFieldPresenter } from './form-field-presenter';
  * ```
  *
  * @category forms/field
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/hint.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxFormField, CngxLabel, CngxError, CngxFieldErrors
  */
 @Directive({
   selector: '[cngxHint]',

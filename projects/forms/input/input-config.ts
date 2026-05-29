@@ -35,7 +35,10 @@ export interface InputConfig {
   readonly fileMaxSize?: number;
 }
 
-/** Empty default — every directive falls back to its own default. */
+/**
+ * Empty default - every directive falls back to its own default.
+ * @internal
+ */
 const DEFAULT_INPUT_CONFIG: InputConfig = {};
 
 /**
@@ -44,6 +47,8 @@ const DEFAULT_INPUT_CONFIG: InputConfig = {};
  * @see {@link provideInputConfig}
  *
  * @category forms/input
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/input/input-config.ts
+ * @since 0.1.0
  */
 export const CNGX_INPUT_CONFIG = new InjectionToken<InputConfig>('CNGX_INPUT_CONFIG', {
   providedIn: 'root',

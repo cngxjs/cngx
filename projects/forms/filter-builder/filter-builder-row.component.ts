@@ -23,13 +23,12 @@ import type { CngxFilterBuilderTemplateRegistry } from './filter-builder-templat
 import type { CngxFilterBuilderValueEditorContext } from './filter-builder-value-editor.slot';
 import { createFilterExpression } from './filter-builder.helpers';
 import { injectFilterEditors } from './filter-builder.tokens';
-import type {
-  FilterExpression,
-  FilterFieldDef,
-} from './filter-builder.types';
+import type { FilterExpression, FilterFieldDef } from './filter-builder.types';
 
+/** @internal */
 const EMPTY_OPERATORS: readonly string[] = Object.freeze([]) as readonly string[];
 
+/** @internal */
 function equalOptionList<T>(
   a: readonly { value: T; label: string }[],
   b: readonly { value: T; label: string }[],
@@ -50,6 +49,7 @@ function equalOptionList<T>(
   return true;
 }
 
+/** @internal */
 function equalStringList(a: readonly string[], b: readonly string[]): boolean {
   if (a === b) {
     return true;
@@ -65,6 +65,7 @@ function equalStringList(a: readonly string[], b: readonly string[]): boolean {
   return true;
 }
 
+/** @internal */
 function equalFieldMap(
   a: ReadonlyMap<string, FilterFieldDef>,
   b: ReadonlyMap<string, FilterFieldDef>,
@@ -91,7 +92,7 @@ function equalFieldMap(
  *
  * Use for ad-hoc top-of-table or side-panel filters where a full
  * `<cngx-filter-builder>` tree is overkill. Not the right primitive
- * for column-header filters with a fixed field per column — that UX
+ * for column-header filters with a fixed field per column - that UX
  * (clear-value semantics, no field picker, predicate writes directly
  * into `CngxFilter`) needs a dedicated artifact.
  *
@@ -102,6 +103,11 @@ function equalFieldMap(
  * `CNGX_FILTER_BUILDER_HOST`.
  *
  * @category forms/filter-builder
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder-row.component.ts
+ * @since 0.1.0
+ * @relatedTo CngxFilterBuilder, CngxFilterExpressionRow, CngxFilterBuilderValueEditor
  * <example-url>http://localhost:4200/#/forms/filter-builder/filter-row-standalone/single-row-with-value</example-url>
  */
 @Component({
@@ -168,7 +174,7 @@ export class CngxFilterRow {
   );
 
   constructor() {
-    // afterNextRender (not effect) — single-shot, outside the reactive graph,
+    // afterNextRender (not effect) - single-shot, outside the reactive graph,
     // so Pillar 1's "no signal writes in effect" rule stays clean. A reactive
     // re-seed would also fight the user after a Remove click.
     afterNextRender(() => {
@@ -187,25 +193,26 @@ export class CngxFilterRow {
     });
   }
 
-  protected readonly node = computed<FilterExpression | null>(
-    () => this.value(),
-    { equal: (a, b) => a === b },
-  );
+  protected readonly node = computed<FilterExpression | null>(() => this.value(), {
+    equal: (a, b) => a === b,
+  });
 
   private readonly fieldMap = computed<ReadonlyMap<string, FilterFieldDef>>(
     () => new Map(this.fields().map((field) => [field.key, field])),
     { equal: equalFieldMap },
   );
 
-  protected readonly fieldOptions = computed<readonly { readonly value: string; readonly label: string }[]>(
-    () => this.fields().map((field) => ({ value: field.key, label: field.label })),
-    { equal: equalOptionList },
-  );
+  protected readonly fieldOptions = computed<
+    readonly { readonly value: string; readonly label: string }[]
+  >(() => this.fields().map((field) => ({ value: field.key, label: field.label })), {
+    equal: equalOptionList,
+  });
 
-  protected readonly operatorOptions = computed<readonly { readonly value: string; readonly label: string }[]>(
-    () => this.operators().map((op) => ({ value: op, label: this.operatorLabel(op) })),
-    { equal: equalOptionList },
-  );
+  protected readonly operatorOptions = computed<
+    readonly { readonly value: string; readonly label: string }[]
+  >(() => this.operators().map((op) => ({ value: op, label: this.operatorLabel(op) })), {
+    equal: equalOptionList,
+  });
 
   protected readonly editor = computed<CngxFilterEditor | undefined>(
     () => {
@@ -275,9 +282,10 @@ export class CngxFilterRow {
     const newValidOperators = this.operatorsForField(next);
     const operatorIsStillValid =
       carriedOperator !== undefined && newValidOperators.includes(carriedOperator);
-    const defaultOperator = operatorIsStillValid && carriedOperator !== undefined
-      ? carriedOperator
-      : this.defaultOperatorFor(next);
+    const defaultOperator =
+      operatorIsStillValid && carriedOperator !== undefined
+        ? carriedOperator
+        : this.defaultOperatorFor(next);
 
     if (!current) {
       this.value.set(createFilterExpression(next, defaultOperator));

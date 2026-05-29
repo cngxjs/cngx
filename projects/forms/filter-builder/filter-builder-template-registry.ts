@@ -77,6 +77,7 @@ export type CngxFilterBuilderTemplateRegistryFactory = (
 
 type TemplateKey = keyof CngxFilterBuilderTemplates;
 
+/** @internal */
 function resolveTemplate<Ctx>(
   directive: Signal<TemplateRefHolder<Ctx> | undefined>,
   configKey: TemplateKey,
@@ -126,6 +127,8 @@ export function createFilterBuilderTemplateRegistry(
  * DI token for the template-registry factory. Default resolves to `createFilterBuilderTemplateRegistry`.
  *
  * @category forms/filter-builder/slots
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder-template-registry.ts
+ * @since 0.1.0
  */
 export const CNGX_FILTER_BUILDER_TEMPLATE_REGISTRY_FACTORY = new InjectionToken<CngxFilterBuilderTemplateRegistryFactory>(
   'CngxFilterBuilderTemplateRegistryFactory',

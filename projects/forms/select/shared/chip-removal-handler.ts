@@ -1,18 +1,11 @@
-import {
-  InjectionToken,
-  type Signal,
-  type WritableSignal,
-} from '@angular/core';
+import { InjectionToken, type Signal, type WritableSignal } from '@angular/core';
 
-import type {
-  CngxSelectCommitAction,
-  CngxSelectCommitMode,
-} from './commit-action.types';
+import type { CngxSelectCommitAction, CngxSelectCommitMode } from './commit-action.types';
 import type { CngxSelectOptionDef } from './option.model';
 import type { CngxSelectCompareFn } from './select-core';
 
 /**
- * Minimum shape the chip-removal factory needs — just `.value`. Concrete
+ * Minimum shape the chip-removal factory needs - just `.value`. Concrete
  * chip types layer label, disabled, etc. on top.
  *
  * @category forms/select/commit
@@ -41,7 +34,7 @@ export interface CngxChipRemovalHandlerOptions<
   /**
    * Replaces the entire post-disabled-guard body. WeakMap closure cache
    * still applied. Use for variants whose remove semantics diverge from
-   * the standard filter+commit body — e.g. `CngxTreeSelect` always
+   * the standard filter+commit body - e.g. `CngxTreeSelect` always
    * single-deselects regardless of `cascadeChildren`. When set, the
    * standard-body fields are ignored.
    */
@@ -78,9 +71,7 @@ export interface CngxChipRemovalHandlerOptions<
  *
  * @category forms/select/commit
  */
-export interface CngxChipRemovalHandler<
-  Item extends CngxChipRemovableItem<unknown>,
-> {
+export interface CngxChipRemovalHandler<Item extends CngxChipRemovableItem<unknown>> {
   /** Apply the removal body. Bind directly to `(remove)` or Backspace. */
   removeByValue(item: Item): void;
   /**
@@ -101,9 +92,7 @@ export interface CngxChipRemovalHandler<
 export function createChipRemovalHandler<
   T,
   Item extends CngxChipRemovableItem<T> = CngxSelectOptionDef<T>,
->(
-  opts: CngxChipRemovalHandlerOptions<T, Item>,
-): CngxChipRemovalHandler<Item> {
+>(opts: CngxChipRemovalHandlerOptions<T, Item>): CngxChipRemovalHandler<Item> {
   const cache = new WeakMap<object, () => void>();
 
   // Standard-body fields required without removeOverride. Throw at
@@ -203,12 +192,13 @@ export type CngxChipRemovalHandlerFactory = <
  * confirm-before-remove, or offline-queue semantics.
  *
  * @category forms/select/commit
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/chip-removal-handler.ts
+ * @since 0.1.0
  */
-export const CNGX_CHIP_REMOVAL_HANDLER_FACTORY =
-  new InjectionToken<CngxChipRemovalHandlerFactory>(
-    'CngxChipRemovalHandlerFactory',
-    {
-      providedIn: 'root',
-      factory: () => createChipRemovalHandler,
-    },
-  );
+export const CNGX_CHIP_REMOVAL_HANDLER_FACTORY = new InjectionToken<CngxChipRemovalHandlerFactory>(
+  'CngxChipRemovalHandlerFactory',
+  {
+    providedIn: 'root',
+    factory: () => createChipRemovalHandler,
+  },
+);

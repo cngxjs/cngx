@@ -5,14 +5,14 @@ import { CNGX_FORM_FIELD_CONTROL } from './form-field.token';
 import type { CngxFormFieldControl } from './models';
 
 /**
- * Universal bridge that connects any control — Material (`<mat-select>`,
+ * Universal bridge that connects any control - Material (`<mat-select>`,
  * `<mat-chip-grid>`, …), native (`<input>`, `<select>`, `<textarea>`), a
- * custom Signal-Forms `FormValueControl<T>`, or a legacy Reactive-Forms CVA —
+ * custom Signal-Forms `FormValueControl<T>`, or a legacy Reactive-Forms CVA -
  * to a surrounding `<cngx-form-field>`.
  *
  * Place on the same element as the control. The directive derives `id`,
  * `empty`, `focused`, `disabled`, and `errorState` **purely from the field
- * via the presenter** — it never injects the concrete control, so it works
+ * via the presenter** - it never injects the concrete control, so it works
  * uniformly across control types.
  *
  * Value flow is out of scope here: it runs through the host element's own
@@ -45,6 +45,11 @@ import type { CngxFormFieldControl } from './models';
  * </cngx-form-field>
  * ```
  * @category forms/field
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/bind-field.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxFormField, CngxListboxFieldBridge, CngxFormBridge, adaptFormControl
  * <example-url>http://localhost:4200/#/forms/field/listbox-forms/material-mat-select-via-cngxbindfield</example-url>
  * <example-url>http://localhost:4200/#/forms/field/listbox-forms/reactive-forms-adapted-via-adaptformcontrol</example-url>
  * <example-url>http://localhost:4200/#/forms/field/listbox-forms/signal-forms-multi-select-min-2</example-url>

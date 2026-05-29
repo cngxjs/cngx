@@ -37,7 +37,7 @@ export interface DisplayBindingOptions<T> {
 export interface DisplayBinding<T> {
   /**
    * Imperative write of `displayWith(v)` into the input + search reset.
-   * Idempotent — skips when input already matches and no term pending.
+   * Idempotent - skips when input already matches and no term pending.
    */
   writeFromValue(v: T | undefined): void;
   /**
@@ -50,14 +50,12 @@ export interface DisplayBinding<T> {
 /**
  * Bidirectional binding between a scalar value signal and the visible
  * text of a co-located `<input>` running `CngxListboxSearch`. Two
- * `effect()`s — value→input (gated on `focused`) and search-term→callback
+ * `effect()`s - value→input (gated on `focused`) and search-term→callback
  * (gated on `writingFlag` + `skipInitial`).
  *
  * @category forms/select/state
  */
-export function createDisplayBinding<T>(
-  opts: DisplayBindingOptions<T>,
-): DisplayBinding<T> {
+export function createDisplayBinding<T>(opts: DisplayBindingOptions<T>): DisplayBinding<T> {
   const writingFlag = signal(false);
   const hasEmittedInitial = signal(false);
 
@@ -114,18 +112,20 @@ export function createDisplayBinding<T>(
  *
  * @category forms/select/state
  */
-export type CngxDisplayBindingFactory = <T>(
-  opts: DisplayBindingOptions<T>,
-) => DisplayBinding<T>;
+export type CngxDisplayBindingFactory = <T>(opts: DisplayBindingOptions<T>) => DisplayBinding<T>;
 
 /**
  * Factory token for {@link DisplayBinding}. Default
  * {@link createDisplayBinding}.
  *
  * @category forms/select/state
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/display-binding.ts
+ * @since 0.1.0
  */
-export const CNGX_DISPLAY_BINDING_FACTORY =
-  new InjectionToken<CngxDisplayBindingFactory>('CngxDisplayBindingFactory', {
+export const CNGX_DISPLAY_BINDING_FACTORY = new InjectionToken<CngxDisplayBindingFactory>(
+  'CngxDisplayBindingFactory',
+  {
     providedIn: 'root',
     factory: () => createDisplayBinding,
-  });
+  },
+);

@@ -2,10 +2,7 @@ import { InjectionToken } from '@angular/core';
 
 import { isOptionDisabled, type CngxSelectOptionDef } from './option.model';
 import type { CngxSelectCompareFn } from './select-core';
-import {
-  resolvePageJumpTarget,
-  type TypeaheadController,
-} from './typeahead-controller';
+import { resolvePageJumpTarget, type TypeaheadController } from './typeahead-controller';
 
 /**
  * Minimum disabled-shape the flat-nav strategy reads. Both
@@ -30,7 +27,7 @@ export interface CngxFlatNavContext<T> {
   readonly options: readonly CngxSelectOptionDef<T>[];
 
   /**
-   * Items as seen by the AD directive — page-jump indices refer to THIS
+   * Items as seen by the AD directive - page-jump indices refer to THIS
    * array, which may omit entries `options` contains (filtered combobox).
    */
   readonly listboxItems: readonly CngxFlatNavListboxItem[];
@@ -51,7 +48,7 @@ export interface CngxFlatNavContext<T> {
 }
 
 /**
- * Strategy result. Pure policy — variant dispatches.
+ * Strategy result. Pure policy - variant dispatches.
  *
  * @category forms/select/controllers
  */
@@ -74,16 +71,10 @@ export type CngxFlatNavAction<T> =
  */
 export interface CngxFlatNavStrategy {
   /** PageUp/PageDown. Returns `highlight` with target or `noop`. */
-  onPageJump<T>(
-    ctx: CngxFlatNavContext<T>,
-    direction: 1 | -1,
-  ): CngxFlatNavAction<T>;
+  onPageJump<T>(ctx: CngxFlatNavContext<T>, direction: 1 | -1): CngxFlatNavAction<T>;
 
   /** Printable key while panel is closed. Returns `select` or `noop`. */
-  onTypeaheadWhileClosed<T>(
-    ctx: CngxFlatNavContext<T>,
-    char: string,
-  ): CngxFlatNavAction<T>;
+  onTypeaheadWhileClosed<T>(ctx: CngxFlatNavContext<T>, char: string): CngxFlatNavAction<T>;
 }
 
 /**
@@ -99,10 +90,7 @@ export function createDefaultFlatNavStrategy(
   const pageStep = options.pageStep ?? 10;
 
   return {
-    onPageJump<T>(
-      ctx: CngxFlatNavContext<T>,
-      direction: 1 | -1,
-    ): CngxFlatNavAction<T> {
+    onPageJump<T>(ctx: CngxFlatNavContext<T>, direction: 1 | -1): CngxFlatNavAction<T> {
       if (ctx.disabled) {
         return { kind: 'noop' };
       }
@@ -119,17 +107,11 @@ export function createDefaultFlatNavStrategy(
       return { kind: 'highlight', index: target };
     },
 
-    onTypeaheadWhileClosed<T>(
-      ctx: CngxFlatNavContext<T>,
-      char: string,
-    ): CngxFlatNavAction<T> {
+    onTypeaheadWhileClosed<T>(ctx: CngxFlatNavContext<T>, char: string): CngxFlatNavAction<T> {
       if (ctx.disabled) {
         return { kind: 'noop' };
       }
-      const match = ctx.typeaheadController.matchFromIndex(
-        char,
-        ctx.currentFlatIndex,
-      );
+      const match = ctx.typeaheadController.matchFromIndex(char, ctx.currentFlatIndex);
       if (!match) {
         return { kind: 'noop' };
       }
@@ -144,6 +126,9 @@ export function createDefaultFlatNavStrategy(
  * custom page-step, or group-aware jumps.
  *
  * @category forms/select/controllers
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/flat-nav-strategy.ts
+ * @since 0.1.0
  */
 export const CNGX_FLAT_NAV_STRATEGY = new InjectionToken<CngxFlatNavStrategy>(
   'CngxFlatNavStrategy',

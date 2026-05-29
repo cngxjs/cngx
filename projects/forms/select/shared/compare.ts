@@ -3,6 +3,8 @@ import type { CngxSelectCompareFn } from './select-core';
 /**
  * Element-wise array equality under a caller comparator. Short-circuits on
  * reference equality and length mismatch.
+ *
+ * @internal
  */
 export function sameArrayContents<T>(
   a: readonly T[],

@@ -67,7 +67,12 @@ export function createFieldSync<V>(options: FieldSyncOptions<V>): void {
   });
 }
 
-/** Writes through Signal Forms' `WritableSignal`-shaped `FieldState.value`. Skips readonly refs silently. */
+/**
+ * Writes through Signal Forms' `WritableSignal`-shaped `FieldState.value`.
+ * Skips readonly refs silently.
+ *
+ * @internal
+ */
 function writeFieldValue(fieldRef: CngxFieldRef, value: unknown): void {
   const signalLike = fieldRef.value as unknown;
   if (

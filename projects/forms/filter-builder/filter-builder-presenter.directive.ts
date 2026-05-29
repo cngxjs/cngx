@@ -23,10 +23,7 @@ import type {
   FilterNode,
 } from './filter-builder.types';
 import { injectFilterBuilderConfig } from './filter-builder.config';
-import {
-  CNGX_FILTER_BUILDER_HOST,
-  type CngxFilterBuilderHost,
-} from './filter-builder-host.token';
+import { CNGX_FILTER_BUILDER_HOST, type CngxFilterBuilderHost } from './filter-builder-host.token';
 import { EMPTY_ROOT, ensureFilterTreeIds, toFilterPredicate } from './filter-builder.helpers';
 import {
   CNGX_FILTER_BUILDER_STATE_FACTORY,
@@ -45,6 +42,11 @@ import { injectFilterBuilderAnnouncerFactory } from './filter-builder-announcer'
  * `CngxFilterBuilderFormFieldControl` directive is applied.
  *
  * @category forms/filter-builder
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder-presenter.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxFilterBuilder, CngxFilterBuilderFormFieldControl, CngxFilterGroup, CngxFilterExpression
  * <example-url>http://localhost:4200/#/forms/filter-builder/basic-two-way-binding-json-inspection</example-url>
  * <example-url>http://localhost:4200/#/forms/filter-builder/seeded-tree-and-or-composition</example-url>
  */
@@ -52,9 +54,7 @@ import { injectFilterBuilderAnnouncerFactory } from './filter-builder-announcer'
   selector: '[cngxFilterBuilderPresenter]',
   exportAs: 'cngxFilterBuilder',
   standalone: true,
-  providers: [
-    { provide: CNGX_FILTER_BUILDER_HOST, useExisting: CngxFilterBuilderPresenter },
-  ],
+  providers: [{ provide: CNGX_FILTER_BUILDER_HOST, useExisting: CngxFilterBuilderPresenter }],
 })
 export class CngxFilterBuilderPresenter<TValue = unknown>
   implements CngxFilterBuilderHost<TValue>, CngxFormFieldControl
@@ -79,7 +79,7 @@ export class CngxFilterBuilderPresenter<TValue = unknown>
 
   /**
    * Live-region announcement text. Built via
-   * `CNGX_FILTER_BUILDER_ANNOUNCER_FACTORY` — swap for locale, telemetry,
+   * `CNGX_FILTER_BUILDER_ANNOUNCER_FACTORY` - swap for locale, telemetry,
    * or test doubles. Default formatter resolves `fieldKey` through
    * `fieldMap` for human-readable labels.
    */
@@ -91,10 +91,10 @@ export class CngxFilterBuilderPresenter<TValue = unknown>
   });
   readonly announcement: Signal<string> = this.announcer.announcement;
 
-  /** `CngxFormFieldControl` id — stable per-instance, generated once. */
+  /** `CngxFormFieldControl` id - stable per-instance, generated once. */
   readonly id: Signal<string> = signal(nextUid('cngx-filter-builder-')).asReadonly();
 
-  /** `CngxFormFieldControl` empty — true while the tree carries no expressions. */
+  /** `CngxFormFieldControl` empty - true while the tree carries no expressions. */
   readonly empty: Signal<boolean> = this.core.isEmpty;
 
   /**
@@ -109,13 +109,11 @@ export class CngxFilterBuilderPresenter<TValue = unknown>
   private readonly elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
 
   /**
-   * `CngxFormFieldControl` disabled — mirrors the ambient form-field
+   * `CngxFormFieldControl` disabled - mirrors the ambient form-field
    * presenter when the opt-in `CngxFilterBuilderFormFieldControl` is
    * applied; `false` otherwise.
    */
-  readonly disabled: Signal<boolean> = computed(
-    () => this.formField?.disabled() ?? false,
-  );
+  readonly disabled: Signal<boolean> = computed(() => this.formField?.disabled() ?? false);
 
   /**
    * Driven by the opt-in `CngxFilterBuilderFormFieldControl` directive
@@ -127,15 +125,13 @@ export class CngxFilterBuilderPresenter<TValue = unknown>
   /**
    * @internal Write surface for the `focused` signal, called by the
    * `CngxFilterBuilderFormFieldControl` directive's host listeners. Not
-   * a consumer API — flip the input the directive owns instead.
+   * a consumer API - flip the input the directive owns instead.
    */
   setFocused(next: boolean): void {
     this.focusedState.set(next);
   }
 
-  private readonly touched: Signal<boolean> = computed(
-    () => this.formField?.touched() ?? false,
-  );
+  private readonly touched: Signal<boolean> = computed(() => this.formField?.touched() ?? false);
 
   /**
    * `touched && incompleteCount > 0`. The touched gate keeps the initial
@@ -148,7 +144,7 @@ export class CngxFilterBuilderPresenter<TValue = unknown>
   );
 
   /**
-   * Item-level predicate derived from `tree()` + `fields()`. Pillar 1 —
+   * Item-level predicate derived from `tree()` + `fields()`. Pillar 1 -
    * consumers read directly. No `equal:` needed, function identity is
    * sufficient.
    *
@@ -156,7 +152,7 @@ export class CngxFilterBuilderPresenter<TValue = unknown>
    * `CngxFilter.setPredicate(presenter.predicate())` drops to
    * `activeCount = 0` instead of latching a vacuous-true predicate.
    *
-   * `fields()` read is try/catch — a `viewChild`-driven effect can hit
+   * `fields()` read is try/catch - a `viewChild`-driven effect can hit
    * `predicate()` before the host-directive input setter propagates, and
    * `input.required` throws NG0950. Returning `null` until the binding
    * lands matches the "no filter" semantics.
@@ -175,7 +171,7 @@ export class CngxFilterBuilderPresenter<TValue = unknown>
   });
 
   constructor() {
-    // Cycle guard — ensureFilterTreeIds is identity-preserving, so the
+    // Cycle guard - ensureFilterTreeIds is identity-preserving, so the
     // write-back only fires for foreign values and the effect re-runs no-op.
     effect(() => {
       const current = this.value();
@@ -190,7 +186,9 @@ export class CngxFilterBuilderPresenter<TValue = unknown>
         return;
       }
       if (this.fields().length === 0) {
-        console.warn('[CngxFilterBuilder] no fields provided — empty-state branch will always render.');
+        console.warn(
+          '[CngxFilterBuilder] no fields provided - empty-state branch will always render.',
+        );
       }
       const fieldKeys = new Set(this.fields().map((f) => f.key));
       const unknown = new Set<string>();
@@ -265,6 +263,7 @@ export class CngxFilterBuilderPresenter<TValue = unknown>
   }
 }
 
+/** @internal */
 function findFirstIncompletePath(
   group: FilterGroup,
   path: readonly number[] = [],
@@ -286,11 +285,13 @@ function findFirstIncompletePath(
   return null;
 }
 
+/** @internal */
 function isExpressionIncomplete(expression: FilterExpression): boolean {
   const value = expression.value;
   return value === null || value === undefined || value === '';
 }
 
+/** @internal */
 function countIncompleteExpressions(group: FilterGroup): number {
   let count = 0;
   for (const child of group.filters) {
@@ -305,6 +306,7 @@ function countIncompleteExpressions(group: FilterGroup): number {
   return count;
 }
 
+/** @internal */
 function collectExpressionFieldKeys(
   group: FilterGroup,
   knownKeys: ReadonlySet<string>,

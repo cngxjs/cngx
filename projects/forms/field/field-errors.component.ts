@@ -38,6 +38,11 @@ import { CNGX_ERROR_MESSAGES } from './form-field.token';
  * ```
  *
  * @category forms/field
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/field-errors.component.ts
+ * @since 0.1.0
+ * @relatedTo CngxError, CngxFormErrors, CngxFormField, CNGX_ERROR_MESSAGES
  * <example-url>http://localhost:4200/#/forms/field/field-errors/basic</example-url>
  * <example-url>http://localhost:4200/#/forms/field/field-errors/multiple-validators</example-url>
  * <example-url>http://localhost:4200/#/forms/field/field-errors/custom-error-template</example-url>
@@ -83,7 +88,7 @@ export class CngxFieldErrors {
   /** @internal */
   protected readonly role = computed(() => (this.presenter.showError() ? 'alert' : null));
 
-  /** @internal — resolved errors with messages, used by both default and custom templates. */
+  /** @internal - resolved errors with messages, used by both default and custom templates. */
   protected readonly resolvedErrors = computed<CngxFieldErrorContext[]>(() => {
     if (!this.presenter.showError()) {
       return [];

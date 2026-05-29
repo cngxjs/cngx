@@ -20,11 +20,7 @@ import {
 import { CNGX_STATEFUL, type CngxAsyncState, type AsyncStatus } from '@cngx/core/utils';
 
 import { CngxChip } from '@cngx/common/display';
-import {
-  CngxClickOutside,
-  CngxListbox,
-  CngxListboxTrigger,
-} from '@cngx/common/interactive';
+import { CngxClickOutside, CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger, type PopoverPlacement } from '@cngx/common/popover';
 
 import { CngxSelectPanel } from '../shared/panel/panel.component';
@@ -36,10 +32,7 @@ import {
 } from '@cngx/forms/field';
 
 import { createADActivationDispatcher } from '../shared/ad-activation-dispatcher';
-import {
-  createArrayCommitHandler,
-  type ArrayCommitHandler,
-} from '../shared/array-commit-handler';
+import { createArrayCommitHandler, type ArrayCommitHandler } from '../shared/array-commit-handler';
 import {
   CNGX_CHIP_REMOVAL_HANDLER_FACTORY,
   type CngxChipRemovalHandler,
@@ -63,10 +56,7 @@ import {
   type CngxSelectRefreshingVariant,
   type CngxSelectSelectionIndicatorVariant,
 } from '../shared/config';
-import {
-  type CngxSelectOptionDef,
-  type CngxSelectOptionsInput,
-} from '../shared/option.model';
+import { type CngxSelectOptionDef, type CngxSelectOptionsInput } from '../shared/option.model';
 import { CNGX_DISMISS_HANDLER_FACTORY } from '../shared/dismiss-handler';
 import { resolveSelectConfig } from '../shared/resolve-config';
 import { setupVirtualization } from '../shared/setup-virtualization';
@@ -125,6 +115,11 @@ export interface CngxMultiSelectChange<T = unknown> {
  * chip strip, AD-activated dispatch, keyboard, and Field↔sync.
  *
  * @category forms/select/multi-select
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/multi-select/multi-select.component.ts
+ * @since 0.1.0
+ * @relatedTo CngxSelect, CngxCombobox, CngxReorderableMultiSelect, CngxTreeSelect, CngxMultiSelectChip
  * <example-url>http://localhost:4200/#/forms/select/multi-select/multi-async-options-via-state</example-url>
  * <example-url>http://localhost:4200/#/forms/select/multi-select/multi-basic</example-url>
  * <example-url>http://localhost:4200/#/forms/select/multi-select/multi-clearable</example-url>
@@ -160,7 +155,7 @@ export interface CngxMultiSelectChange<T = unknown> {
     { provide: CNGX_SELECT_PANEL_VIEW_HOST, useExisting: CngxMultiSelect },
   ],
   host: {
-    'class': 'cngx-multi-select',
+    class: 'cngx-multi-select',
     '[id]': 'resolvedId()',
     '[attr.aria-readonly]': 'ariaReadonly()',
   },
@@ -201,10 +196,7 @@ export interface CngxMultiSelectChange<T = unknown> {
         (blur)="handleBlur()"
         (keydown)="handleTriggerKeydown($event)"
       >
-        <span
-          class="cngx-select__chip-list"
-          [attr.data-overflow]="chipOverflow()"
-        >
+        <span class="cngx-select__chip-list" [attr.data-overflow]="chipOverflow()">
           @if (isEmpty()) {
             @if (tpl.placeholder(); as phTpl) {
               <ng-container
@@ -226,7 +218,7 @@ export interface CngxMultiSelectChange<T = unknown> {
                   $implicit: selectedOptions(),
                   selected: selectedOptions(),
                   values: values(),
-                  count: selectedOptions().length
+                  count: selectedOptions().length,
                 }
               "
             />
@@ -239,7 +231,7 @@ export interface CngxMultiSelectChange<T = unknown> {
                     context: {
                       $implicit: opt,
                       option: opt,
-                      remove: chipRemoveFor(opt)
+                      remove: chipRemoveFor(opt),
                     }
                   "
                 />
@@ -269,7 +261,7 @@ export interface CngxMultiSelectChange<T = unknown> {
                   context: {
                     $implicit: clearAllCallback,
                     clear: clearAllCallback,
-                    disabled: disabled()
+                    disabled: disabled(),
                   }
                 "
               />
@@ -381,9 +373,7 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
   readonly clearButtonAriaLabel = input<string>(
     this.config.ariaLabels?.clearButton ?? 'Reset selection',
   );
-  readonly chipRemoveAriaLabel = input<string>(
-    this.config.ariaLabels?.chipRemove ?? 'Remove',
-  );
+  readonly chipRemoveAriaLabel = input<string>(this.config.ariaLabels?.chipRemove ?? 'Remove');
   readonly loading = input<boolean>(false);
   readonly loadingVariant = input<CngxSelectLoadingVariant>(this.config.loadingVariant);
   readonly skeletonRowCount = input<number>(this.config.skeletonRowCount);
@@ -392,9 +382,7 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
   readonly retryFn = input<(() => void) | null>(null);
   readonly commitAction = input<CngxSelectCommitAction<T[]> | null>(null);
   readonly commitMode = input<CngxSelectCommitMode>('optimistic');
-  readonly commitErrorDisplay = input<CngxSelectCommitErrorDisplay>(
-    this.config.commitErrorDisplay,
-  );
+  readonly commitErrorDisplay = input<CngxSelectCommitErrorDisplay>(this.config.commitErrorDisplay);
   readonly announceChanges = input<boolean | null>(null);
   readonly announceTemplate = input<CngxSelectAnnouncerConfig['format'] | null>(null);
   readonly values = model<T[]>([]);
@@ -424,26 +412,21 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
   private readonly triggerLabelDirective = contentChild<CngxMultiSelectTriggerLabel<T>>(
     CngxMultiSelectTriggerLabel,
   );
-  private readonly optionLabelDirective = contentChild<CngxSelectOptionLabel<T>>(
-    CngxSelectOptionLabel,
-  );
+  private readonly optionLabelDirective =
+    contentChild<CngxSelectOptionLabel<T>>(CngxSelectOptionLabel);
   private readonly errorDirective = contentChild<CngxSelectError>(CngxSelectError);
   private readonly retryButtonDirective =
     contentChild<CngxSelectRetryButton>(CngxSelectRetryButton);
-  private readonly refreshingDirective =
-    contentChild<CngxSelectRefreshing>(CngxSelectRefreshing);
-  private readonly commitErrorDirective = contentChild<CngxSelectCommitError<T>>(
-    CngxSelectCommitError,
-  );
+  private readonly refreshingDirective = contentChild<CngxSelectRefreshing>(CngxSelectRefreshing);
+  private readonly commitErrorDirective =
+    contentChild<CngxSelectCommitError<T>>(CngxSelectCommitError);
   private readonly chipDirective = contentChild<CngxMultiSelectChip<T>>(CngxMultiSelectChip);
   private readonly clearButtonDirective =
     contentChild<CngxSelectClearButton>(CngxSelectClearButton);
-  private readonly optionPendingDirective = contentChild<CngxSelectOptionPending<T>>(
-    CngxSelectOptionPending,
-  );
-  private readonly optionErrorDirective = contentChild<CngxSelectOptionError<T>>(
-    CngxSelectOptionError,
-  );
+  private readonly optionPendingDirective =
+    contentChild<CngxSelectOptionPending<T>>(CngxSelectOptionPending);
+  private readonly optionErrorDirective =
+    contentChild<CngxSelectOptionError<T>>(CngxSelectOptionError);
 
   /** @internal */
   protected readonly tpl = inject(CNGX_TEMPLATE_REGISTRY_FACTORY)<T>({
@@ -462,10 +445,10 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
     optionPending: this.optionPendingDirective,
     optionError: this.optionErrorDirective,
   });
-  /** Multi-specific trigger-label — replaces chip strip. @internal */
-  protected readonly triggerLabelTpl = computed<
-    TemplateRef<CngxMultiSelectTriggerLabelContext<T>> | null
-  >(() => this.triggerLabelDirective()?.templateRef ?? null);
+  /** Multi-specific trigger-label - replaces chip strip. @internal */
+  protected readonly triggerLabelTpl = computed<TemplateRef<
+    CngxMultiSelectTriggerLabelContext<T>
+  > | null>(() => this.triggerLabelDirective()?.templateRef ?? null);
   /** Per-chip override. @internal */
   protected readonly chipTpl = computed<TemplateRef<CngxMultiSelectChipContext<T>> | null>(
     () => this.chipDirective()?.templateRef ?? null,
@@ -479,9 +462,7 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
   readonly panelOpen = computed<boolean>(() => this.popoverRef()?.isVisible() ?? false);
 
   /** @internal */
-  readonly activeId = computed<string | null>(
-    () => this.listboxRef()?.ad.activeId() ?? null,
-  );
+  readonly activeId = computed<string | null>(() => this.listboxRef()?.ad.activeId() ?? null);
 
   readonly errorState = computed<boolean>(() => this.presenter?.showError() ?? false);
 
@@ -496,9 +477,7 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
   );
 
   /** @internal */
-  private readonly localItemsBuffer = inject(CNGX_LOCAL_ITEMS_BUFFER_FACTORY)<T>(
-    this.compareWith,
-  );
+  private readonly localItemsBuffer = inject(CNGX_LOCAL_ITEMS_BUFFER_FACTORY)<T>(this.compareWith);
 
   /** @internal */
   private readonly actionBridge = inject(CNGX_ACTION_HOST_BRIDGE_FACTORY)({
@@ -616,15 +595,17 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
   readonly commitState = this.core.commitState;
   /** `true` while a commit is in flight. */
   readonly isCommitting = this.core.isCommitting;
-  /** @internal — latest commit error. */
+  /** @internal - latest commit error. */
   readonly commitErrorValue = this.core.commitErrorValue;
 
   /** @internal */
   protected readonly errorContext = this.core.makeErrorContext(() => this.handleRetry());
   /** @internal */
-  protected readonly commitErrorContext = this.core.bindCommitRetry(() => this.commitHandler.retryLast());
+  protected readonly commitErrorContext = this.core.bindCommitRetry(() =>
+    this.commitHandler.retryLast(),
+  );
 
-  /** @internal — full virtualisation wire-up (see setupVirtualization). */
+  /** @internal - full virtualisation wire-up (see setupVirtualization). */
   private readonly virtualSetup = setupVirtualization<T, T[]>({
     core: this.core,
     popoverRef: this.popoverRef,
@@ -638,7 +619,7 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
 
   /**
    * Currently selected options. Structural equal on `.value` under
-   * `compareWith` — fresh OptionDef references for the same values
+   * `compareWith` - fresh OptionDef references for the same values
    * don't cascade downstream re-renders.
    */
   readonly selected: Signal<readonly CngxSelectOptionDef<T>[]> = computed(
@@ -666,7 +647,7 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
    * Chip subset rendered into the trigger strip. In `'wrap'` /
    * `'scroll-x'` identical to `selectedOptions`; layout divergence is
    * pure CSS via `data-overflow`. In `'truncate'` the first
-   * `maxVisibleChips()` entries — remainder feeds
+   * `maxVisibleChips()` entries - remainder feeds
    * {@link overflowBadgeCount}.
    *
    * @internal
@@ -782,27 +763,28 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
    * Chip-removal handler. Disabled-guard + snapshot + filter +
    * commit/sync branch dispatch + WeakMap closure cache.
    */
-  private readonly chipRemovalHandler: CngxChipRemovalHandler<CngxSelectOptionDef<T>> =
-    inject(CNGX_CHIP_REMOVAL_HANDLER_FACTORY)<T>({
-      values: this.values,
-      disabled: this.disabled,
-      compareWith: this.compareWith,
-      commitAction: this.commitAction,
-      commitMode: this.commitMode,
-      beginCommit: (next, previous, item, action) =>
-        this.commitHandler.beginToggle(next, previous, item, action),
-      onBeforeCommit: (previous, item) => {
-        this.lastCommittedValues = previous;
-        this.togglingOption.set(item);
-      },
-      onSyncFinalize: (item, previous) =>
-        this.finalizeToggle(item, false, previous),
-    });
+  private readonly chipRemovalHandler: CngxChipRemovalHandler<CngxSelectOptionDef<T>> = inject(
+    CNGX_CHIP_REMOVAL_HANDLER_FACTORY,
+  )<T>({
+    values: this.values,
+    disabled: this.disabled,
+    compareWith: this.compareWith,
+    commitAction: this.commitAction,
+    commitMode: this.commitMode,
+    beginCommit: (next, previous, item, action) =>
+      this.commitHandler.beginToggle(next, previous, item, action),
+    onBeforeCommit: (previous, item) => {
+      this.lastCommittedValues = previous;
+      this.togglingOption.set(item);
+    },
+    onSyncFinalize: (item, previous) => this.finalizeToggle(item, false, previous),
+  });
 
   /** @internal */ protected readonly isGroup = this.core.panelHostAdapter.isGroup;
   /** @internal */ protected readonly isSelected = this.core.panelHostAdapter.isSelected;
   /** @internal */ protected readonly isIndeterminate = this.core.panelHostAdapter.isIndeterminate;
-  /** @internal */ protected readonly isCommittingOption = this.core.panelHostAdapter.isCommittingOption;
+  /** @internal */ protected readonly isCommittingOption =
+    this.core.panelHostAdapter.isCommittingOption;
 
   protected isEmpty(): boolean {
     return this.values().length === 0;
@@ -866,15 +848,23 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
     createFieldSync<T[]>({
       componentValue: this.values,
       valueEquals: (a, b) => sameArrayContents(a, b, this.compareWith()),
-      coerceFromField: (x) => (Array.isArray(x) ? ([...(x as T[])]) : []),
+      coerceFromField: (x) => (Array.isArray(x) ? [...(x as T[])] : []),
       toFieldValue: (v) => [...v],
     });
   }
 
-  open(): void { this.popoverRef()?.show(); }
-  close(): void { this.popoverRef()?.hide(); }
-  toggle(): void { this.popoverRef()?.toggle(); }
-  focus(options?: FocusOptions): void { this.triggerBtn()?.nativeElement.focus(options); }
+  open(): void {
+    this.popoverRef()?.show();
+  }
+  close(): void {
+    this.popoverRef()?.hide();
+  }
+  toggle(): void {
+    this.popoverRef()?.toggle();
+  }
+  focus(options?: FocusOptions): void {
+    this.triggerBtn()?.nativeElement.focus(options);
+  }
 
   /** @internal */
   protected handleTriggerClick(): void {
@@ -884,7 +874,7 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
     this.toggle();
   }
 
-  /** @internal — click-outside dismissal (action-dirty-guarded). */
+  /** @internal - click-outside dismissal (action-dirty-guarded). */
   protected readonly handleClickOutside = inject(CNGX_DISMISS_HANDLER_FACTORY)({
     popoverRef: this.popoverRef,
     dismissOn: this.config.dismissOn,
@@ -906,7 +896,7 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
     this.chipRemovalHandler.removeByValue(opt);
   }
 
-  /** @internal — stable per-option `remove()` closure for chip slots. */
+  /** @internal - stable per-option `remove()` closure for chip slots. */
   protected chipRemoveFor(opt: CngxSelectOptionDef<T>): () => void {
     return this.chipRemovalHandler.removeFor(opt);
   }
@@ -917,7 +907,7 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
     this.clearAllCallback();
   }
 
-  /** @internal — imperative clear-all used by slot + default button. */
+  /** @internal - imperative clear-all used by slot + default button. */
   protected readonly clearAllCallback: () => void = () => {
     const previous = [...this.values()];
     if (previous.length === 0) {
@@ -965,7 +955,7 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
   protected handleTriggerKeydown(event: KeyboardEvent): void {
     const lb = this.listboxRef();
     const pop = this.popoverRef();
-    // Typeahead-while-closed — toggles first matching option.
+    // Typeahead-while-closed - toggles first matching option.
     if (!this.panelOpen() && this.config.typeaheadWhileClosed) {
       const key = event.key;
       if (key.length === 1 && /\S/.exec(key)) {
@@ -1030,9 +1020,7 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
     const previous = [...this.values()];
     const eq = this.compareWith();
     const wasSelected = previous.some((v) => eq(v, opt.value));
-    const next = wasSelected
-      ? previous.filter((v) => !eq(v, opt.value))
-      : [...previous, opt.value];
+    const next = wasSelected ? previous.filter((v) => !eq(v, opt.value)) : [...previous, opt.value];
     if (action) {
       this.lastCommittedValues = previous;
       this.togglingOption.set(opt);
@@ -1064,4 +1052,3 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
     this.core.announce(opt, isNowSelected ? 'added' : 'removed', this.values().length, true);
   }
 }
-

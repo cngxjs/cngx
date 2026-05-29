@@ -10,9 +10,9 @@ import type { PopoverPlacement } from '@cngx/common/popover';
 
 /**
  * Focus-trap policy for the action-slot workflow:
- * - `'dirty'` (default) — trap on while `actionDirty()` is `true`.
- * - `'always'` — trap on whenever the panel is open.
- * - `'never'` — shell never engages the trap; consumer owns focus.
+ * - `'dirty'` (default) - trap on while `actionDirty()` is `true`.
+ * - `'always'` - trap on whenever the panel is open.
+ * - `'never'` - shell never engages the trap; consumer owns focus.
  *
  * @category forms/select/config
  */
@@ -72,6 +72,9 @@ export const CNGX_ACTION_SELECT_DEFAULTS: Required<CngxActionSelectConfig> = {
  * Token carrying the resolved {@link CngxActionSelectConfig}.
  *
  * @category forms/select/config
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/action-select-config.ts
+ * @since 0.1.0
  */
 export const CNGX_ACTION_SELECT_CONFIG = new InjectionToken<CngxActionSelectConfig>(
   'CngxActionSelectConfig',
@@ -89,9 +92,7 @@ export interface CngxActionSelectConfigFeature {
   readonly _target?: 'action';
 }
 
-function feature(
-  config: Partial<CngxActionSelectConfig>,
-): CngxActionSelectConfigFeature {
+function feature(config: Partial<CngxActionSelectConfig>): CngxActionSelectConfigFeature {
   return { config, _target: 'action' };
 }
 
@@ -121,9 +122,7 @@ export function withActionAriaLabel(label: string): CngxActionSelectConfigFeatur
  *
  * @category forms/select/config
  */
-export function withCloseOnCreate(
-  closeOnCreate: boolean | null,
-): CngxActionSelectConfigFeature {
+export function withCloseOnCreate(closeOnCreate: boolean | null): CngxActionSelectConfigFeature {
   return feature({ closeOnCreate });
 }
 
@@ -132,9 +131,7 @@ export function withCloseOnCreate(
  *
  * @category forms/select/config
  */
-export function withActionPosition(
-  position: CngxActionPosition,
-): CngxActionSelectConfigFeature {
+export function withActionPosition(position: CngxActionPosition): CngxActionSelectConfigFeature {
   return feature({ actionPosition: position });
 }
 
@@ -144,9 +141,7 @@ export function withActionPosition(
  *
  * @category forms/select/config
  */
-export function withLiveInputFallback(
-  enabled: boolean,
-): CngxActionSelectConfigFeature {
+export function withLiveInputFallback(enabled: boolean): CngxActionSelectConfigFeature {
   return feature({ liveInputFallback: enabled });
 }
 
@@ -189,9 +184,7 @@ export function provideActionSelectConfig(
   for (const f of features) {
     Object.assign(merged, f.config);
   }
-  return makeEnvironmentProviders([
-    { provide: CNGX_ACTION_SELECT_CONFIG, useValue: merged },
-  ]);
+  return makeEnvironmentProviders([{ provide: CNGX_ACTION_SELECT_CONFIG, useValue: merged }]);
 }
 
 /**
@@ -220,17 +213,14 @@ export function provideActionSelectConfigAt(
 export function resolveActionSelectConfig(): Required<CngxActionSelectConfig> {
   const user = inject(CNGX_ACTION_SELECT_CONFIG, { optional: true }) ?? {};
   return {
-    focusTrapBehavior:
-      user.focusTrapBehavior ?? CNGX_ACTION_SELECT_DEFAULTS.focusTrapBehavior,
+    focusTrapBehavior: user.focusTrapBehavior ?? CNGX_ACTION_SELECT_DEFAULTS.focusTrapBehavior,
     ariaLabel: user.ariaLabel ?? CNGX_ACTION_SELECT_DEFAULTS.ariaLabel,
     closeOnCreate:
       user.closeOnCreate === undefined
         ? CNGX_ACTION_SELECT_DEFAULTS.closeOnCreate
         : user.closeOnCreate,
     actionPosition: user.actionPosition ?? CNGX_ACTION_SELECT_DEFAULTS.actionPosition,
-    liveInputFallback:
-      user.liveInputFallback ?? CNGX_ACTION_SELECT_DEFAULTS.liveInputFallback,
-    popoverPlacement:
-      user.popoverPlacement ?? CNGX_ACTION_SELECT_DEFAULTS.popoverPlacement,
+    liveInputFallback: user.liveInputFallback ?? CNGX_ACTION_SELECT_DEFAULTS.liveInputFallback,
+    popoverPlacement: user.popoverPlacement ?? CNGX_ACTION_SELECT_DEFAULTS.popoverPlacement,
   };
 }

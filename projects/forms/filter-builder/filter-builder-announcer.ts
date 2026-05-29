@@ -8,7 +8,7 @@ import type { FilterFieldDef } from './filter-builder.types';
  * Live-region announcer contract. Wraps a single `Signal<string>` the
  * component template binds into an `aria-live` region. The default
  * factory formats `lastMutation` events through `CngxFilterBuilderI18n.announcement`
- * — consumers can swap the whole formatter (locale, telemetry, test
+ * - consumers can swap the whole formatter (locale, telemetry, test
  * doubles) by providing `CNGX_FILTER_BUILDER_ANNOUNCER_FACTORY`.
  *
  * @category forms/filter-builder/state
@@ -37,6 +37,7 @@ export type CngxFilterBuilderAnnouncerFactory = <TValue = unknown>(
   sources: CngxFilterBuilderAnnouncerSources<TValue>,
 ) => CngxFilterBuilderAnnouncer;
 
+/** @internal */
 function renderValueForAnnouncement(value: unknown): string {
   if (value === null || value === undefined) {
     return '';
@@ -51,7 +52,7 @@ function renderValueForAnnouncement(value: unknown): string {
 }
 
 /**
- * Default announcer — derives the live-region string from `lastMutation` through the i18n formatter bundle.
+ * Default announcer - derives the live-region string from `lastMutation` through the i18n formatter bundle.
  *
  * @category forms/filter-builder/state
  */
@@ -67,7 +68,7 @@ export function createFilterBuilderAnnouncer<TValue>(
     const announce = sources.i18n.announcement;
 
     const fieldLabel = ctx?.fieldKey
-      ? untracked(() => sources.fieldMap().get(ctx.fieldKey!)?.label) ?? ctx.fieldKey
+      ? (untracked(() => sources.fieldMap().get(ctx.fieldKey!)?.label) ?? ctx.fieldKey)
       : '';
 
     switch (event.kind) {
@@ -106,11 +107,15 @@ export function createFilterBuilderAnnouncer<TValue>(
  * DI token for the announcer factory. Default resolves to `createFilterBuilderAnnouncer`.
  *
  * @category forms/filter-builder/state
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder-announcer.ts
+ * @since 0.1.0
  */
-export const CNGX_FILTER_BUILDER_ANNOUNCER_FACTORY = new InjectionToken<CngxFilterBuilderAnnouncerFactory>(
-  'CngxFilterBuilderAnnouncerFactory',
-  { providedIn: 'root', factory: () => createFilterBuilderAnnouncer },
-);
+export const CNGX_FILTER_BUILDER_ANNOUNCER_FACTORY =
+  new InjectionToken<CngxFilterBuilderAnnouncerFactory>('CngxFilterBuilderAnnouncerFactory', {
+    providedIn: 'root',
+    factory: () => createFilterBuilderAnnouncer,
+  });
 
 /**
  * Inject-context helper that resolves `CNGX_FILTER_BUILDER_ANNOUNCER_FACTORY`.

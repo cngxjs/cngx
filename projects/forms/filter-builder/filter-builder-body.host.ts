@@ -23,6 +23,8 @@ import { CngxFilterBuilderBody } from './filter-builder-body.component';
  * `@cngx/forms/select`.
  *
  * @category forms/filter-builder
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder-body.host.ts
+ * @since 0.1.0
  */
 export const CNGX_FILTER_BUILDER_BODY_HOST = new InjectionToken<Type<unknown>>(
   'CngxFilterBuilderBodyHost',

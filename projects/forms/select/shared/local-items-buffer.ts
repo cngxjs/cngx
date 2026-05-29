@@ -6,7 +6,7 @@ import type { CngxSelectCompareFn } from './select-core';
 /**
  * Append-only buffer for locally-patched options. `mergeLocalItems`
  * folds it onto server options inside `createSelectCore.effectiveOptions`
- * and drops entries matching a server value — quick-create items
+ * and drops entries matching a server value - quick-create items
  * disappear once the backend catches up. Consumer clears explicitly via
  * {@link LocalItemsBuffer.clear}; no auto-clear on state refresh.
  *
@@ -17,7 +17,7 @@ export interface LocalItemsBuffer<T> {
   readonly items: Signal<readonly CngxSelectOptionDef<T>[]>;
   /** No-op when an entry matches `item.value` under current `compareWith`. */
   patch(item: CngxSelectOptionDef<T>): void;
-  /** Idempotent — no emit when already empty. */
+  /** Idempotent - no emit when already empty. */
   clear(): void;
 }
 
@@ -86,12 +86,13 @@ export type CngxLocalItemsBufferFactory = <T>(
  * ```
  *
  * @category forms/select/state
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/local-items-buffer.ts
+ * @since 0.1.0
  */
-export const CNGX_LOCAL_ITEMS_BUFFER_FACTORY =
-  new InjectionToken<CngxLocalItemsBufferFactory>(
-    'CngxLocalItemsBufferFactory',
-    {
-      providedIn: 'root',
-      factory: () => createLocalItemsBuffer,
-    },
-  );
+export const CNGX_LOCAL_ITEMS_BUFFER_FACTORY = new InjectionToken<CngxLocalItemsBufferFactory>(
+  'CngxLocalItemsBufferFactory',
+  {
+    providedIn: 'root',
+    factory: () => createLocalItemsBuffer,
+  },
+);

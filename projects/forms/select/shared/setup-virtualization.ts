@@ -5,10 +5,7 @@ import type { CngxPopover } from '@cngx/common/popover';
 
 import { createAutoPanelRenderer } from './auto-virtualize';
 import type { CngxSelectVirtualizationConfig } from './config';
-import {
-  CNGX_PANEL_RENDERER_FACTORY,
-  type PanelRenderer,
-} from './panel-renderer';
+import { CNGX_PANEL_RENDERER_FACTORY, type PanelRenderer } from './panel-renderer';
 import type { CngxSelectCompareFn, CngxSelectCore } from './select-core';
 
 /**
@@ -16,6 +13,8 @@ import type { CngxSelectCompareFn, CngxSelectCore } from './select-core';
  * Resolves the renderer cascade (consumer-supplied → config-driven →
  * identity), surfaces `virtualItemCount`, and installs the AD→recycler
  * `scrollToIndex` bridge. Injection context required.
+ *
+ * @internal
  */
 export function setupVirtualization<T, TCommit>(opts: {
   readonly core: CngxSelectCore<T, TCommit>;
@@ -46,7 +45,7 @@ export function setupVirtualization<T, TCommit>(opts: {
   });
 
   // AD ↔ recycler scroll bridge. AD auto-clears pendingHighlight once
-  // the target enters the rendered range — no explicit clear here.
+  // the target enters the rendered range - no explicit clear here.
   effect(() => {
     const v = panelRenderer.virtualizer;
     if (!v) {

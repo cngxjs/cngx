@@ -60,10 +60,7 @@ import {
   type CreateCommitHandler,
 } from '../shared/create-commit-handler';
 import type { CngxSelectCreateAction } from '../shared/create-action.types';
-import {
-  CNGX_DISPLAY_BINDING_FACTORY,
-  type DisplayBinding,
-} from '../shared/display-binding';
+import { CNGX_DISPLAY_BINDING_FACTORY, type DisplayBinding } from '../shared/display-binding';
 import { createFieldSync } from '../shared/field-sync';
 import { CNGX_LOCAL_ITEMS_BUFFER_FACTORY } from '../shared/local-items-buffer';
 import {
@@ -129,7 +126,7 @@ export interface CngxActionSelectChange<T = unknown> {
 /**
  * Single-value autocomplete with inline quick-create. Mirrors
  * {@link CngxTypeahead}'s input surface; adds the `*cngxSelectAction`
- * slot — when the consumer fires its `commit()` callback the bound
+ * slot - when the consumer fires its `commit()` callback the bound
  * {@link CngxSelectCreateAction} materialises a new `T` through the
  * commit controller. On success: patches the local buffer, writes
  * `value`, announces `'created'`, optionally closes.
@@ -137,13 +134,18 @@ export interface CngxActionSelectChange<T = unknown> {
  * Pessimistic commit only: panel stays open while pending, `isPending`
  * flips on the slot context, error surfaces in the commit-error
  * banner. True optimistic create requires a consumer-supplied
- * `tempValueFactory` — see `action-select-master-plan.md` §3 Commit 5.
+ * `tempValueFactory` - see `action-select-master-plan.md` §3 Commit 5.
  *
  * Dismiss-guard: Escape and click-outside are intercepted while
  * `actionDirty()` is `true` (consumer flips it via `setDirty(true)`);
  * Escape fires `cancel()` to reset.
  *
  * @category forms/select/action-select
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/action-select/action-select.component.ts
+ * @since 0.1.0
+ * @relatedTo CngxSelect, CngxActionMultiSelect, CngxCombobox, CngxSelectAction
  * <example-url>http://localhost:4200/#/forms/select/action-select/async-error-rollback-observation</example-url>
  * <example-url>http://localhost:4200/#/forms/select/action-select/basic-sync-quick-create</example-url>
  * <example-url>http://localhost:4200/#/forms/select/action-select/custom-action-template-split-actions</example-url>
@@ -178,7 +180,7 @@ export interface CngxActionSelectChange<T = unknown> {
     { provide: CNGX_SELECT_PANEL_VIEW_HOST, useExisting: CngxActionSelect },
   ],
   host: {
-    'class': 'cngx-action-select',
+    class: 'cngx-action-select',
     '[id]': 'resolvedId()',
     '[attr.aria-readonly]': 'ariaReadonly()',
   },
@@ -266,7 +268,9 @@ export interface CngxActionSelectChange<T = unknown> {
         }
         @if (resolvedShowCaret()) {
           @if (tpl.caret(); as caretT) {
-            <ng-container *ngTemplateOutlet="caretT; context: { $implicit: panelOpen(), open: panelOpen() }" />
+            <ng-container
+              *ngTemplateOutlet="caretT; context: { $implicit: panelOpen(), open: panelOpen() }"
+            />
           } @else if (caretGlyph(); as glyph) {
             <span aria-hidden="true" class="cngx-action-select__caret">
               <ng-container *ngTemplateOutlet="glyph" />
@@ -350,9 +354,7 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
   readonly retryFn = input<(() => void) | null>(null);
   readonly commitAction = input<CngxSelectCommitAction<T> | null>(null);
   readonly commitMode = input<CngxSelectCommitMode>('optimistic');
-  readonly commitErrorDisplay = input<CngxSelectCommitErrorDisplay>(
-    this.config.commitErrorDisplay,
-  );
+  readonly commitErrorDisplay = input<CngxSelectCommitErrorDisplay>(this.config.commitErrorDisplay);
   /**
    * Scalar-commit error-announce policy. Default `{ kind: 'soft' }`
    * for action-select (matches typeahead's free-text flow). Override
@@ -368,7 +370,7 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
   /**
    * Quick-create handler fired by the slot's `commit()` callback.
    * Receives the live `searchTerm` and `{ label }`, resolves to a new
-   * `T`. `null` disables the create path — slot still renders, but
+   * `T`. `null` disables the create path - slot still renders, but
    * `commit()` becomes a silent no-op.
    */
   readonly quickCreateAction = input<CngxSelectCreateAction<T> | null>(null);
@@ -394,15 +396,11 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
    * Popover placement relative to the trigger. Per-instance input wins
    * over `CngxActionSelectConfig.popoverPlacement`.
    */
-  readonly popoverPlacement = input<PopoverPlacement>(
-    this.actionConfig.popoverPlacement,
-  );
+  readonly popoverPlacement = input<PopoverPlacement>(this.actionConfig.popoverPlacement);
   /** Mobile `inputmode`. Defaults from `CngxSelectConfig.inputMode`. */
-  readonly inputMode = input<NonNullable<CngxSelectConfig['inputMode']>>(
-    this.config.inputMode,
-  );
+  readonly inputMode = input<NonNullable<CngxSelectConfig['inputMode']>>(this.config.inputMode);
   /**
-   * Mobile `enterkeyhint`. Default `'go'` — Enter routes to
+   * Mobile `enterkeyhint`. Default `'go'` - Enter routes to
    * quick-create when no AD item is active.
    */
   readonly enterKeyHint = input<NonNullable<CngxSelectConfig['enterKeyHint']>>(
@@ -433,20 +431,28 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
   private readonly optgroupDirective = contentChild<CngxSelectOptgroupTemplate<T>>(
     CngxSelectOptgroupTemplate,
   );
-  private readonly placeholderDirective = contentChild<CngxSelectPlaceholder>(CngxSelectPlaceholder);
+  private readonly placeholderDirective =
+    contentChild<CngxSelectPlaceholder>(CngxSelectPlaceholder);
   private readonly emptyDirective = contentChild<CngxSelectEmpty>(CngxSelectEmpty);
   private readonly loadingDirective = contentChild<CngxSelectLoading>(CngxSelectLoading);
-  private readonly optionLabelDirective = contentChild<CngxSelectOptionLabel<T>>(CngxSelectOptionLabel);
+  private readonly optionLabelDirective =
+    contentChild<CngxSelectOptionLabel<T>>(CngxSelectOptionLabel);
   private readonly errorDirective = contentChild<CngxSelectError>(CngxSelectError);
   private readonly retryButtonDirective =
     contentChild<CngxSelectRetryButton>(CngxSelectRetryButton);
   private readonly refreshingDirective = contentChild<CngxSelectRefreshing>(CngxSelectRefreshing);
-  private readonly commitErrorDirective = contentChild<CngxSelectCommitError<T>>(CngxSelectCommitError);
-  private readonly clearButtonDirective = contentChild<CngxSelectClearButton>(CngxSelectClearButton);
-  private readonly optionPendingDirective = contentChild<CngxSelectOptionPending<T>>(CngxSelectOptionPending);
-  private readonly optionErrorDirective = contentChild<CngxSelectOptionError<T>>(CngxSelectOptionError);
-  private readonly inputPrefixDirective = contentChild<CngxSelectInputPrefix>(CngxSelectInputPrefix);
-  private readonly inputSuffixDirective = contentChild<CngxSelectInputSuffix>(CngxSelectInputSuffix);
+  private readonly commitErrorDirective =
+    contentChild<CngxSelectCommitError<T>>(CngxSelectCommitError);
+  private readonly clearButtonDirective =
+    contentChild<CngxSelectClearButton>(CngxSelectClearButton);
+  private readonly optionPendingDirective =
+    contentChild<CngxSelectOptionPending<T>>(CngxSelectOptionPending);
+  private readonly optionErrorDirective =
+    contentChild<CngxSelectOptionError<T>>(CngxSelectOptionError);
+  private readonly inputPrefixDirective =
+    contentChild<CngxSelectInputPrefix>(CngxSelectInputPrefix);
+  private readonly inputSuffixDirective =
+    contentChild<CngxSelectInputSuffix>(CngxSelectInputSuffix);
   private readonly actionDirective = contentChild<CngxSelectAction>(CngxSelectAction);
 
   /** @internal */
@@ -515,9 +521,7 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
   });
 
   /** @internal */
-  private readonly localItemsBuffer = inject(CNGX_LOCAL_ITEMS_BUFFER_FACTORY)<T>(
-    this.compareWith,
-  );
+  private readonly localItemsBuffer = inject(CNGX_LOCAL_ITEMS_BUFFER_FACTORY)<T>(this.compareWith);
 
   /**
    * Action-slot bridge. `isPending` mirrors the commit controller so
@@ -525,7 +529,7 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
    * state from the same machine as the commit-error banner.
    *
    * `commit` and `retry` close over `this` and resolve `createHandler`
-   * at call time — the handler is declared lower in field-init order.
+   * at call time - the handler is declared lower in field-init order.
    *
    * @internal
    */
@@ -551,7 +555,7 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
   /**
    * Action context's `error` + `hasError` source. Single-select shares
    * one commit controller across `[commitAction]` and quick-create, so
-   * `core.commitErrorValue` covers both — the slot's `error` reflects
+   * `core.commitErrorValue` covers both - the slot's `error` reflects
    * whichever was latched last.
    *
    * @internal
@@ -642,8 +646,7 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
   /** @internal */
   protected readonly resolvedListboxLabel = this.core.resolvedListboxLabel;
   /** @internal */
-  protected readonly resolvedShowSelectionIndicator =
-    this.core.resolvedShowSelectionIndicator;
+  protected readonly resolvedShowSelectionIndicator = this.core.resolvedShowSelectionIndicator;
   /** @internal */
   protected readonly resolvedSelectionIndicatorVariant =
     this.core.resolvedSelectionIndicatorVariant;
@@ -671,9 +674,7 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
     () => ({ disabled: this.disabled(), focused: this.focused(), panelOpen: this.panelOpen() }),
     {
       equal: (a, b) =>
-        a.disabled === b.disabled &&
-        a.focused === b.focused &&
-        a.panelOpen === b.panelOpen,
+        a.disabled === b.disabled && a.focused === b.focused && a.panelOpen === b.panelOpen,
     },
   );
 
@@ -689,7 +690,7 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
     this.scalarHandler.retryLast(),
   );
 
-  /** @internal — full virtualisation wire-up (see setupVirtualization). */
+  /** @internal - full virtualisation wire-up (see setupVirtualization). */
   private readonly virtualSetup = setupVirtualization<T, T>({
     core: this.core,
     popoverRef: this.popoverRef,
@@ -832,7 +833,7 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
       coerceFromField: (x) => x as T | undefined,
     });
 
-    // Auto-open on typing. Same gating as CngxTypeahead — display-binding
+    // Auto-open on typing. Same gating as CngxTypeahead - display-binding
     // owns the searchTermChange emit via onUserSearchTerm, so emit is undefined.
     inject(CNGX_SEARCH_EFFECTS_FACTORY)({
       searchTerm: this.searchTerm,
@@ -843,10 +844,18 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
     });
   }
 
-  open(): void { this.popoverRef()?.show(); }
-  close(): void { this.popoverRef()?.hide(); }
-  toggle(): void { this.popoverRef()?.toggle(); }
-  focus(options?: FocusOptions): void { this.inputEl()?.nativeElement.focus(options); }
+  open(): void {
+    this.popoverRef()?.show();
+  }
+  close(): void {
+    this.popoverRef()?.hide();
+  }
+  toggle(): void {
+    this.popoverRef()?.toggle();
+  }
+  focus(options?: FocusOptions): void {
+    this.inputEl()?.nativeElement.focus(options);
+  }
 
   /**
    * Enter on the trigger input. With no active AD item, a bound
@@ -872,7 +881,7 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
     this.handleActionCommit();
   }
 
-  /** @internal — PageUp/PageDown shared behaviour (±10 option jump). */
+  /** @internal - PageUp/PageDown shared behaviour (±10 option jump). */
   protected handleInputKeydown(event: KeyboardEvent): void {
     handlePageJumpKey(event, {
       listbox: this.listboxRef(),
@@ -893,7 +902,7 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
   /**
    * Live search-term accessor for the create flow. With
    * `liveInputFallback` (default), reads the raw `<input>.value` when
-   * the debounced `searchTerm` hasn't caught up — prevents fast-typist
+   * the debounced `searchTerm` hasn't caught up - prevents fast-typist
    * Create-button taps from no-op'ing in the debounce window. Disable
    * for predictable consumer-debounced payloads.
    *
@@ -917,7 +926,7 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
     }
   }
 
-  /** @internal — click-outside dismissal (action-dirty-guarded). */
+  /** @internal - click-outside dismissal (action-dirty-guarded). */
   protected readonly handleClickOutside = inject(CNGX_DISMISS_HANDLER_FACTORY)({
     popoverRef: this.popoverRef,
     dismissOn: this.config.dismissOn,
@@ -926,7 +935,9 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
 
   protected handleRetry(): void {
     const fn = this.retryFn();
-    if (fn) { fn(); }
+    if (fn) {
+      fn();
+    }
     this.retry.emit();
   }
 
@@ -967,7 +978,7 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
     // Skip clear-on-blur when focus moves INSIDE the component (action-
     // slot button, clear button). Otherwise blur races the click: blur
     // fires first, writes `displayWith(value)` (or empty), and by the
-    // time the click runs the raw input is gone — `commit()` silently
+    // time the click runs the raw input is gone - `commit()` silently
     // drops because the draft label is empty.
     const related = event?.relatedTarget as HTMLElement | null;
     if (related && this.isWithinComponent(related)) {
@@ -978,7 +989,7 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
 
   /**
    * Whether `el` is a descendant of the host. Includes the popover
-   * panel + action-slot — `<div cngxPopover>` lives in the host
+   * panel + action-slot - `<div cngxPopover>` lives in the host
    * template even when rendered in the top-layer, and `contains`
    * follows the DOM tree, not the rendering tree.
    *

@@ -38,10 +38,14 @@ import { type CngxTreeSelectNodeContext } from './tree-select.model';
  * </cngx-tree-select>
  * ```
  *
- * Zero-logic holder — typed wrapper around `TemplateRef`, discovered
+ * Zero-logic holder - typed wrapper around `TemplateRef`, discovered
  * via `contentChild`.
  *
  * @category forms/select/tree-select
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/tree-select/tree-select-node.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxTreeSelect, CngxTreeSelectChip, CngxTreeSelectTriggerLabel
  * <example-url>http://localhost:4200/tree-select/10-000-nodes-perf-smoke</example-url>
  * <example-url>http://localhost:4200/tree-select/basic-single-level-toggle</example-url>
  * <example-url>http://localhost:4200/tree-select/cascade-children-parent-toggle-selects-the-whole-subtree</example-url>

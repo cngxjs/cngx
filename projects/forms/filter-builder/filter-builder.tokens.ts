@@ -4,13 +4,15 @@ import type { CngxFilterEditor } from './filter-builder.config';
 
 /**
  * Build the default editor registry. The single source of truth for the
- * four builtin entries — `string` / `number` / `date` / `boolean` →
+ * four builtin entries - `string` / `number` / `date` / `boolean` →
  * native sentinels. Boolean used to mount `CngxToggle` via `*ngComponentOutlet`
  * but that path renders disconnected from the expression value (no input
  * bindings, no output subscription); since the row component shipped, the
  * boolean branch is inlined as `<cngx-toggle>` and the registry maps to
  * the `'native:boolean'` sentinel. Internal to this file; consumers reach
  * the defaults through `CNGX_FILTER_EDITORS`'s `providedIn: 'root'` factory.
+ *
+ * @internal
  */
 function buildDefaultEditors(): ReadonlyMap<string, CngxFilterEditor> {
   const map = new Map<string, CngxFilterEditor>();
@@ -23,7 +25,7 @@ function buildDefaultEditors(): ReadonlyMap<string, CngxFilterEditor> {
 
 /**
  * Dedicated DI token for the editor registry. The single override surface
- * — consumers swap one or more editors by providing
+ * - consumers swap one or more editors by providing
  * `{ provide: CNGX_FILTER_EDITORS, useValue: <map> }` at the
  * environment, route, or component level.
  *
@@ -32,6 +34,8 @@ function buildDefaultEditors(): ReadonlyMap<string, CngxFilterEditor> {
  * the editor registry is intentionally orthogonal to the config cascade.
  *
  * @category forms/filter-builder/config
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder.tokens.ts
+ * @since 0.1.0
  */
 export const CNGX_FILTER_EDITORS = new InjectionToken<ReadonlyMap<string, CngxFilterEditor>>(
   'CngxFilterEditors',

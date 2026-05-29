@@ -161,7 +161,10 @@ function firstEmptySlot(tokens: MaskToken[], masked: string, placeholder: string
   return tokens.length;
 }
 
-/** Date format order per locale prefix. */
+/**
+ * Date format order per locale prefix.
+ * @internal
+ */
 const DATE_FORMATS: Record<string, string> = {
   // DD/MM/YYYY locales
   de: '00/00/0000',
@@ -186,7 +189,10 @@ const DATE_SHORT_FORMATS: Record<string, string> = {
   zh: '00/00/00',
 };
 
-/** Phone patterns by country/region code. */
+/**
+ * Phone patterns by country/region code.
+ * @internal
+ */
 const PHONE_PATTERNS: Record<string, string> = {
   US: '(000) 000-0000',
   DE: '+00 000 00000000',
@@ -200,7 +206,10 @@ const PHONE_PATTERNS: Record<string, string> = {
   BR: '+00 (00) 00000-0000',
 };
 
-/** IBAN lengths and groupings by country. */
+/**
+ * IBAN lengths and groupings by country.
+ * @internal
+ */
 const IBAN_PATTERNS: Record<string, string> = {
   CH: 'AA00 0000 0000 0000 0000 0',
   DE: 'AA00 0000 0000 0000 0000 00',
@@ -343,7 +352,7 @@ export type MaskTokenMap = Record<string, MaskTokenDef>;
  * | `A` | Required letter | `[a-zA-Z]` |
  * | `a` | Optional letter | `[a-zA-Z]?` |
  * | `*` | Required alphanumeric | `[a-zA-Z0-9]` |
- * | `\\` | Escape next char as literal | — |
+ * | `\\` | Escape next char as literal | - |
  *
  * ## Built-in presets
  *
@@ -365,7 +374,7 @@ export type MaskTokenMap = Record<string, MaskTokenDef>;
  *
  * ## Multiple patterns
  *
- * Separate patterns with `|` — the directive selects the best match based on input length:
+ * Separate patterns with `|` - the directive selects the best match based on input length:
  * ```html
  * <input cngxInputMask="(00) 0000-0000|(00) 00000-0000" />
  * ```
@@ -387,6 +396,11 @@ export type MaskTokenMap = Record<string, MaskTokenDef>;
  * <input cngxInputMask="creditcard" />
  * ```
  * @category forms/input
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/input/input-mask.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxInput, CngxInputFormat, CngxNumericInput
  * <example-url>http://localhost:4200/#/forms/input/mask/custom-pattern</example-url>
  * <example-url>http://localhost:4200/#/forms/input/mask/custom-tokens-and-transform</example-url>
  * <example-url>http://localhost:4200/#/forms/input/mask/locale-presets</example-url>

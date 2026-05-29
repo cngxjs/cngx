@@ -10,7 +10,7 @@ import { CngxOption } from '@cngx/common/interactive';
  * `[disabled]` / `[label]` inputs.
  *
  * **Usage:** inside a consumer-assembled listbox or as a direct child
- * of `<cngx-select-shell>` — the shell builds the option list from
+ * of `<cngx-select-shell>` - the shell builds the option list from
  * projected DOM via `CNGX_OPTION_CONTAINER`, sidestepping the
  * content-projection scoping issue that prevents direct use inside
  * data-mode `<cngx-select>` (which requires `[options]`).
@@ -27,6 +27,10 @@ import { CngxOption } from '@cngx/common/interactive';
  * ```
  *
  * @category forms/select/declarative
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/declarative/option.component.ts
+ * @since 0.1.0
+ * @relatedTo CngxSelectShell, CngxSelectOptgroup, CngxSelectDivider, CngxSelectSearch
  * <example-url>http://localhost:4200/#/forms/select/select-shell/async-commit-pending-error-inline-glyphs</example-url>
  * <example-url>http://localhost:4200/#/forms/select/select-shell/basic-flat-declarative-options</example-url>
  * <example-url>http://localhost:4200/#/forms/select/select-shell/custom-glyphs-clearglyph-caretglyph</example-url>
@@ -76,7 +80,7 @@ import { CngxOption } from '@cngx/common/interactive';
       inputs: ['value', 'disabled', 'label'],
     },
   ],
-  // hostDirective providers don't propagate — re-expose CNGX_AD_ITEM
+  // hostDirective providers don't propagate - re-expose CNGX_AD_ITEM
   // so the enclosing listbox / AD discovers it.
   providers: [{ provide: CNGX_AD_ITEM, useExisting: CngxOption }],
   imports: [NgTemplateOutlet],

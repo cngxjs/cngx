@@ -22,6 +22,11 @@ import {
  * ```
  *
  * @category forms/input
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/input/autosize.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxInput, CngxCharCount
  * <example-url>http://localhost:4200/#/forms/input/autosize/basic-autosize</example-url>
  * <example-url>http://localhost:4200/#/forms/input/autosize/min-max-rows</example-url>
  */
@@ -93,11 +98,12 @@ export class CngxAutosize {
 
   private measureMetrics(): void {
     const style = getComputedStyle(this.el.nativeElement);
-    this.lineHeight = parseFloat(style.lineHeight) || parseFloat(style.fontSize) * 1.2;
-    this.paddingTop = parseFloat(style.paddingTop) || 0;
-    this.paddingBottom = parseFloat(style.paddingBottom) || 0;
-    this.borderTop = parseFloat(style.borderTopWidth) || 0;
-    this.borderBottom = parseFloat(style.borderBottomWidth) || 0;
+    this.lineHeight =
+      Number.parseFloat(style.lineHeight) || Number.parseFloat(style.fontSize) * 1.2;
+    this.paddingTop = Number.parseFloat(style.paddingTop) || 0;
+    this.paddingBottom = Number.parseFloat(style.paddingBottom) || 0;
+    this.borderTop = Number.parseFloat(style.borderTopWidth) || 0;
+    this.borderBottom = Number.parseFloat(style.borderBottomWidth) || 0;
   }
 
   private computeMinHeight(rows: number): number {

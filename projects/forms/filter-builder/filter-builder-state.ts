@@ -22,21 +22,20 @@ import { EMPTY_ROOT } from './filter-builder.helpers';
  * read-only signals (`tree`, `fieldMap`, `isEmpty`),
  * exposes path-keyed mutators, and emits a structural `lastMutation`
  * event slot the presenter watches to drive announcements. No
- * `inject()` calls — the factory is testable without `TestBed` and
+ * `inject()` calls - the factory is testable without `TestBed` and
  * decompose-safe per `reference_atomic_decompose` rule 4 (DI
  * Abstraction).
  *
- * Two-way binding contract — pass the presenter's
+ * Two-way binding contract - pass the presenter's
  * `model<FilterGroup>()` as `source`. Mutators write through it, so
  * consumer `[(value)]` bindings emit on every user-initiated change.
  * Uncontrolled callers omit `source`; the factory creates its own
  * `WritableSignal` from `initial ?? EMPTY_ROOT`.
  *
- * Identity & equality — `tree` is wrapped with `equal: filterTreeEqual`
+ * Identity & equality - `tree` is wrapped with `equal: filterTreeEqual`
  * so consumer computeds short-circuit on structural equality. Mutators
  * are no-op when the requested write would not change the tree.
  */
-
 
 /**
  * Discriminator for every state-level mutation the builder emits.
@@ -56,7 +55,7 @@ export type FilterMutationKind =
   | 'clear';
 
 /**
- * Per-kind payload — populated only for the fields a given `kind` carries.
+ * Per-kind payload - populated only for the fields a given `kind` carries.
  *
  * @category forms/filter-builder/state
  */
@@ -91,7 +90,7 @@ export interface CngxFilterBuilderStateOptions<TValue = unknown> {
 }
 
 /**
- * Public shape of the state machine — read-only signals plus path-keyed mutators.
+ * Public shape of the state machine - read-only signals plus path-keyed mutators.
  *
  * @category forms/filter-builder/state
  */
@@ -115,6 +114,7 @@ export interface CngxFilterBuilderState<TValue = unknown> {
   readonly getFieldDef: (fieldKey: string) => FilterFieldDef<TValue> | undefined;
 }
 
+/** @internal */
 function fieldMapEqual<TValue>(
   a: ReadonlyMap<string, FilterFieldDef<TValue>>,
   b: ReadonlyMap<string, FilterFieldDef<TValue>>,
@@ -134,7 +134,7 @@ function fieldMapEqual<TValue>(
 }
 
 /**
- * Default state factory — see the file-header block for the full contract.
+ * Default state factory - see the file-header block for the full contract.
  *
  * @category forms/filter-builder/state
  */
@@ -350,6 +350,8 @@ export type CngxFilterBuilderStateFactory = <TValue = unknown>(
  * Pillar 3 parity with the select family.
  *
  * @category forms/filter-builder/state
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder-state.ts
+ * @since 0.1.0
  */
 export const CNGX_FILTER_BUILDER_STATE_FACTORY = new InjectionToken<CngxFilterBuilderStateFactory>(
   'CngxFilterBuilderStateFactory',

@@ -6,6 +6,11 @@ import { Injectable, inject } from '@angular/core';
  * document.
  *
  * @category forms/select
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/announcer.ts
+ * @since 0.1.0
+ * @relatedTo CngxSelect, CngxMultiSelect, CngxCombobox, CngxTypeahead, CngxTreeSelect
  */
 @Injectable({ providedIn: 'root' })
 export class CngxSelectAnnouncer {

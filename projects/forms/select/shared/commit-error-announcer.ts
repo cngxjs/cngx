@@ -6,9 +6,9 @@ import type { CngxSelectOptionDef } from './option.model';
 /**
  * Scalar-commit failure announce policy.
  *
- * - `verbose` — error text verbatim into the live-region at the supplied
+ * - `verbose` - error text verbatim into the live-region at the supplied
  *   severity. `CngxSelect` uses `assertive`.
- * - `soft` — generic "removed" via the configured announcer format,
+ * - `soft` - generic "removed" via the configured announcer format,
  *   polite. `CngxTypeahead` uses this so the free-text flow isn't
  *   interrupted.
  *
@@ -19,7 +19,7 @@ export type CngxCommitErrorAnnouncePolicy =
   | { readonly kind: 'soft' };
 
 /**
- * Announcer surface for {@link createCommitErrorAnnouncer} — verbose path
+ * Announcer surface for {@link createCommitErrorAnnouncer} - verbose path
  * through `announcer.announce`, soft path through `softAnnounce`.
  *
  * @category forms/select/commit
@@ -38,7 +38,7 @@ export interface CngxCommitErrorAnnounceDeps {
 /**
  * Builds the scalar-commit error-announce callback from a policy signal.
  *
- * Popover-close timing stays inline per variant — see
+ * Popover-close timing stays inline per variant - see
  * `select-family-accepted-debt §2`.
  *
  * ```ts
@@ -101,9 +101,12 @@ export type CngxCommitErrorAnnouncerFactory = (
  * or test doubles.
  *
  * @category forms/select/commit
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/commit-error-announcer.ts
+ * @since 0.1.0
  */
 export const CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY =
-  new InjectionToken<CngxCommitErrorAnnouncerFactory>(
-    'CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY',
-    { providedIn: 'root', factory: () => createCommitErrorAnnouncer },
-  );
+  new InjectionToken<CngxCommitErrorAnnouncerFactory>('CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY', {
+    providedIn: 'root',
+    factory: () => createCommitErrorAnnouncer,
+  });

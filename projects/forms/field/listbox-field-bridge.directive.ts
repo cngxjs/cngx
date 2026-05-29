@@ -14,7 +14,7 @@ import type { CngxFieldRef, CngxFormFieldControl } from './models';
  * value with `listbox.value` / `listbox.selectedValues` (single / multi
  * mode), and projects ARIA attributes from the presenter onto the host.
  *
- * The listbox atom stays completely Forms-agnostic — this directive is the
+ * The listbox atom stays completely Forms-agnostic - this directive is the
  * only place that imports from `@cngx/forms/field` / `@angular/forms`.
  *
  * ### Usage
@@ -32,10 +32,15 @@ import type { CngxFieldRef, CngxFormFieldControl } from './models';
  * ```
  *
  * For Reactive Forms, wrap the `FormControl` in `adaptFormControl(...)` and
- * pass the returned accessor to `[field]` — the bridge doesn't care about the
+ * pass the returned accessor to `[field]` - the bridge doesn't care about the
  * source.
  *
  * @category forms/field
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/listbox-field-bridge.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxBindField, CngxFormField, CngxListbox, adaptFormControl
  * <example-url>http://localhost:4200/#/forms/field/listbox-forms/material-mat-select-via-cngxbindfield</example-url>
  * <example-url>http://localhost:4200/#/forms/field/listbox-forms/reactive-forms-adapted-via-adaptformcontrol</example-url>
  * <example-url>http://localhost:4200/#/forms/field/listbox-forms/signal-forms-multi-select-min-2</example-url>
@@ -60,10 +65,10 @@ import type { CngxFieldRef, CngxFormFieldControl } from './models';
   },
 })
 export class CngxListboxFieldBridge implements CngxFormFieldControl {
-  private readonly listbox: CngxListbox<unknown> = inject<CngxListbox<unknown>>(
-    CngxListbox,
-    { self: true, host: true },
-  );
+  private readonly listbox: CngxListbox<unknown> = inject<CngxListbox<unknown>>(CngxListbox, {
+    self: true,
+    host: true,
+  });
   private readonly presenter = inject(CngxFormFieldPresenter, { optional: true });
 
   readonly id = computed<string>(() => this.presenter?.inputId() ?? '');
@@ -118,7 +123,7 @@ export class CngxListboxFieldBridge implements CngxFormFieldControl {
     });
 
     // Listbox → Field. `value` is a `WritableSignal` at runtime on both real and
-    // mock fields; `CngxFieldRef` hides writability for API stability — narrow via writeFieldValue.
+    // mock fields; `CngxFieldRef` hides writability for API stability - narrow via writeFieldValue.
     effect(() => {
       const presenter = this.presenter;
       if (!presenter) {
@@ -156,6 +161,7 @@ export class CngxListboxFieldBridge implements CngxFormFieldControl {
   }
 }
 
+/** @internal */
 function arrayEq(a: readonly unknown[], b: readonly unknown[]): boolean {
   if (a.length !== b.length) {
     return false;
@@ -171,6 +177,7 @@ function arrayEq(a: readonly unknown[], b: readonly unknown[]): boolean {
 /**
  * Writes `value` into `fieldRef.value` when it exposes a `WritableSignal`.
  * Capability-checked branch instead of widening the public type.
+ * @internal
  */
 function writeFieldValue(fieldRef: CngxFieldRef, value: unknown): void {
   const signal = fieldRef.value as unknown;

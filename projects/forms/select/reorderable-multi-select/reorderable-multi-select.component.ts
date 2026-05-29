@@ -41,10 +41,7 @@ import {
 } from '@cngx/forms/field';
 
 import { createADActivationDispatcher } from '../shared/ad-activation-dispatcher';
-import {
-  createArrayCommitHandler,
-  type ArrayCommitHandler,
-} from '../shared/array-commit-handler';
+import { createArrayCommitHandler, type ArrayCommitHandler } from '../shared/array-commit-handler';
 import {
   CNGX_CHIP_REMOVAL_HANDLER_FACTORY,
   type CngxChipRemovalHandler,
@@ -69,10 +66,7 @@ import {
   type CngxSelectRefreshingVariant,
   type CngxSelectSelectionIndicatorVariant,
 } from '../shared/config';
-import {
-  type CngxSelectOptionDef,
-  type CngxSelectOptionsInput,
-} from '../shared/option.model';
+import { type CngxSelectOptionDef, type CngxSelectOptionsInput } from '../shared/option.model';
 import { CNGX_REORDER_COMMIT_HANDLER_FACTORY } from '../shared/reorder-commit-handler';
 import { resolveReorderableSelectConfig } from '../shared/reorderable-select-config';
 import { CNGX_DISMISS_HANDLER_FACTORY } from '../shared/dismiss-handler';
@@ -138,6 +132,11 @@ export interface CngxReorderableMultiSelectChange<T = unknown> {
  * drive the commit controller directly.
  *
  * @category forms/select/reorderable-multi-select
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/reorderable-multi-select/reorderable-multi-select.component.ts
+ * @since 0.1.0
+ * @relatedTo CngxMultiSelect, CngxSelect, CngxCombobox, CngxTreeSelect
  * <example-url>http://localhost:4200/#/forms/select/reorderable-multi-select/basic-drag-chips-via-mouse-touch</example-url>
  * <example-url>http://localhost:4200/#/forms/select/reorderable-multi-select/commit-action-optimistic-pessimistic-with-supersede</example-url>
  * <example-url>http://localhost:4200/#/forms/select/reorderable-multi-select/keyboard-reorder-alt-arrow-home-end</example-url>
@@ -173,7 +172,7 @@ export interface CngxReorderableMultiSelectChange<T = unknown> {
     { provide: CNGX_SELECT_PANEL_VIEW_HOST, useExisting: CngxReorderableMultiSelect },
   ],
   host: {
-    'class': 'cngx-reorderable-multi-select',
+    class: 'cngx-reorderable-multi-select',
     '[id]': 'resolvedId()',
     '[attr.aria-readonly]': 'ariaReadonly()',
   },
@@ -253,7 +252,7 @@ export interface CngxReorderableMultiSelectChange<T = unknown> {
                   $implicit: selectedOptions(),
                   selected: selectedOptions(),
                   values: values(),
-                  count: selectedOptions().length
+                  count: selectedOptions().length,
                 }
               "
             />
@@ -263,8 +262,7 @@ export interface CngxReorderableMultiSelectChange<T = unknown> {
                 class="cngx-select__chip-wrap"
                 [class.cngx-select__chip--dragging]="reorderDir.dragFromIndex() === i"
                 [class.cngx-select__chip--drag-over]="
-                  reorderDir.dragOverIndex() === i &&
-                  reorderDir.dragFromIndex() !== i
+                  reorderDir.dragOverIndex() === i && reorderDir.dragFromIndex() !== i
                 "
                 [attr.data-reorder-index]="i"
                 [attr.tabindex]="i === activeChipIndex() ? 0 : -1"
@@ -286,7 +284,7 @@ export interface CngxReorderableMultiSelectChange<T = unknown> {
                         $implicit: opt,
                         option: opt,
                         remove: chipRemoveFor(opt),
-                        index: i
+                        index: i,
                       }
                     "
                   />
@@ -315,7 +313,7 @@ export interface CngxReorderableMultiSelectChange<T = unknown> {
                   context: {
                     $implicit: clearAllCallback,
                     clear: clearAllCallback,
-                    disabled: disabled()
+                    disabled: disabled(),
                   }
                 "
               />
@@ -374,10 +372,7 @@ export interface CngxReorderableMultiSelectChange<T = unknown> {
       </div>
     </div>
   `,
-  styleUrls: [
-    '../shared/select-base.css',
-    './reorderable-multi-select.component.css',
-  ],
+  styleUrls: ['../shared/select-base.css', './reorderable-multi-select.component.css'],
   encapsulation: ViewEncapsulation.None,
 })
 export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldControl {
@@ -426,9 +421,7 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   readonly clearButtonAriaLabel = input<string>(
     this.config.ariaLabels?.clearButton ?? 'Reset selection',
   );
-  readonly chipRemoveAriaLabel = input<string>(
-    this.config.ariaLabels?.chipRemove ?? 'Remove',
-  );
+  readonly chipRemoveAriaLabel = input<string>(this.config.ariaLabels?.chipRemove ?? 'Remove');
   readonly loading = input<boolean>(false);
   readonly loadingVariant = input<CngxSelectLoadingVariant>(this.config.loadingVariant);
   readonly skeletonRowCount = input<number>(this.config.skeletonRowCount);
@@ -437,9 +430,7 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   readonly retryFn = input<(() => void) | null>(null);
   readonly commitAction = input<CngxSelectCommitAction<T[]> | null>(null);
   readonly commitMode = input<CngxSelectCommitMode>('optimistic');
-  readonly commitErrorDisplay = input<CngxSelectCommitErrorDisplay>(
-    this.config.commitErrorDisplay,
-  );
+  readonly commitErrorDisplay = input<CngxSelectCommitErrorDisplay>(this.config.commitErrorDisplay);
   readonly announceChanges = input<boolean | null>(null);
   readonly announceTemplate = input<CngxSelectAnnouncerConfig['format'] | null>(null);
   readonly values = model<T[]>([]);
@@ -463,13 +454,11 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
 
   /**
    * Custom drag-handle glyph. Replaces the default `⋮⋮` grip before
-   * each chip body. Handle span stays `aria-hidden="true"` — the
+   * each chip body. Handle span stays `aria-hidden="true"` - the
    * semantic move belongs to the chip wrapper's keyboard handler +
    * the directive.
    */
-  readonly chipDragHandle = input<TemplateRef<void> | null>(
-    this.reorderableConfig.dragHandle,
-  );
+  readonly chipDragHandle = input<TemplateRef<void> | null>(this.reorderableConfig.dragHandle);
 
   readonly selectionChange = output<CngxReorderableMultiSelectChange<T>>();
   readonly optionToggled = output<{
@@ -502,17 +491,14 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   private readonly triggerLabelDirective = contentChild<CngxMultiSelectTriggerLabel<T>>(
     CngxMultiSelectTriggerLabel,
   );
-  private readonly optionLabelDirective = contentChild<CngxSelectOptionLabel<T>>(
-    CngxSelectOptionLabel,
-  );
+  private readonly optionLabelDirective =
+    contentChild<CngxSelectOptionLabel<T>>(CngxSelectOptionLabel);
   private readonly errorDirective = contentChild<CngxSelectError>(CngxSelectError);
   private readonly retryButtonDirective =
     contentChild<CngxSelectRetryButton>(CngxSelectRetryButton);
-  private readonly refreshingDirective =
-    contentChild<CngxSelectRefreshing>(CngxSelectRefreshing);
-  private readonly commitErrorDirective = contentChild<CngxSelectCommitError<T>>(
-    CngxSelectCommitError,
-  );
+  private readonly refreshingDirective = contentChild<CngxSelectRefreshing>(CngxSelectRefreshing);
+  private readonly commitErrorDirective =
+    contentChild<CngxSelectCommitError<T>>(CngxSelectCommitError);
   private readonly chipDirective = contentChild<CngxMultiSelectChip<T>>(CngxMultiSelectChip);
   /**
    * Highest-precedence drag-handle slot. Wins over `[chipDragHandle]`
@@ -522,12 +508,10 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
     contentChild<CngxMultiSelectChipHandle>(CngxMultiSelectChipHandle);
   private readonly clearButtonDirective =
     contentChild<CngxSelectClearButton>(CngxSelectClearButton);
-  private readonly optionPendingDirective = contentChild<CngxSelectOptionPending<T>>(
-    CngxSelectOptionPending,
-  );
-  private readonly optionErrorDirective = contentChild<CngxSelectOptionError<T>>(
-    CngxSelectOptionError,
-  );
+  private readonly optionPendingDirective =
+    contentChild<CngxSelectOptionPending<T>>(CngxSelectOptionPending);
+  private readonly optionErrorDirective =
+    contentChild<CngxSelectOptionError<T>>(CngxSelectOptionError);
 
   /** @internal */
   protected readonly tpl = inject(CNGX_TEMPLATE_REGISTRY_FACTORY)<T>({
@@ -548,9 +532,9 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   });
 
   /** @internal */
-  protected readonly triggerLabelTpl = computed<
-    TemplateRef<CngxMultiSelectTriggerLabelContext<T>> | null
-  >(() => this.triggerLabelDirective()?.templateRef ?? null);
+  protected readonly triggerLabelTpl = computed<TemplateRef<
+    CngxMultiSelectTriggerLabelContext<T>
+  > | null>(() => this.triggerLabelDirective()?.templateRef ?? null);
 
   /** @internal */
   protected readonly chipTpl = computed<TemplateRef<CngxMultiSelectChipContext<T>> | null>(
@@ -569,7 +553,7 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
     () => this.chipHandleDirective()?.templateRef ?? this.chipDragHandle(),
   );
 
-  /** @internal — default `⋮⋮` grip when no template is supplied. */
+  /** @internal - default `⋮⋮` grip when no template is supplied. */
   protected readonly defaultDragHandleGlyph = CNGX_SELECT_GLYPHS.dragHandle;
 
   private readonly triggerBtn = viewChild<ElementRef<HTMLElement>>('triggerBtn');
@@ -579,9 +563,7 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   readonly panelOpen = computed<boolean>(() => this.popoverRef()?.isVisible() ?? false);
 
   /** @internal */
-  readonly activeId = computed<string | null>(
-    () => this.listboxRef()?.ad.activeId() ?? null,
-  );
+  readonly activeId = computed<string | null>(() => this.listboxRef()?.ad.activeId() ?? null);
 
   readonly errorState = computed<boolean>(() => this.presenter?.showError() ?? false);
 
@@ -596,9 +578,7 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   );
 
   /** @internal */
-  private readonly localItemsBuffer = inject(CNGX_LOCAL_ITEMS_BUFFER_FACTORY)<T>(
-    this.compareWith,
-  );
+  private readonly localItemsBuffer = inject(CNGX_LOCAL_ITEMS_BUFFER_FACTORY)<T>(this.compareWith);
 
   /** @internal */
   private readonly actionBridge = inject(CNGX_ACTION_HOST_BRIDGE_FACTORY)({
@@ -708,11 +688,11 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   /** @internal */
   protected readonly errorContext = this.core.makeErrorContext(() => this.handleRetry());
   /** @internal */
-  protected readonly commitErrorContext = this.core.bindCommitRetry(
-    () => this.commitHandler.retryLast(),
+  protected readonly commitErrorContext = this.core.bindCommitRetry(() =>
+    this.commitHandler.retryLast(),
   );
 
-  /** @internal — full virtualisation wire-up (see setupVirtualization). */
+  /** @internal - full virtualisation wire-up (see setupVirtualization). */
   private readonly virtualSetup = setupVirtualization<T, T[]>({
     core: this.core,
     popoverRef: this.popoverRef,
@@ -822,26 +802,26 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   });
 
   /**
-   * Chip-removal handler. Reorder semantics independent — chip-remove
+   * Chip-removal handler. Reorder semantics independent - chip-remove
    * is always single-deselect (position changes own the strip-keyboard
    * handler via `CngxReorder`).
    */
-  private readonly chipRemovalHandler: CngxChipRemovalHandler<CngxSelectOptionDef<T>> =
-    inject(CNGX_CHIP_REMOVAL_HANDLER_FACTORY)<T>({
-      values: this.values,
-      disabled: this.disabled,
-      compareWith: this.compareWith,
-      commitAction: this.commitAction,
-      commitMode: this.commitMode,
-      beginCommit: (next, previous, item, action) =>
-        this.commitHandler.beginToggle(next, previous, item, action),
-      onBeforeCommit: (previous, item) => {
-        this.lastCommittedValues = previous;
-        this.togglingOption.set(item);
-      },
-      onSyncFinalize: (item, previous) =>
-        this.finalizeToggle(item, false, previous),
-    });
+  private readonly chipRemovalHandler: CngxChipRemovalHandler<CngxSelectOptionDef<T>> = inject(
+    CNGX_CHIP_REMOVAL_HANDLER_FACTORY,
+  )<T>({
+    values: this.values,
+    disabled: this.disabled,
+    compareWith: this.compareWith,
+    commitAction: this.commitAction,
+    commitMode: this.commitMode,
+    beginCommit: (next, previous, item, action) =>
+      this.commitHandler.beginToggle(next, previous, item, action),
+    onBeforeCommit: (previous, item) => {
+      this.lastCommittedValues = previous;
+      this.togglingOption.set(item);
+    },
+    onSyncFinalize: (item, previous) => this.finalizeToggle(item, false, previous),
+  });
 
   /**
    * Read-only `values()` view passed to `CngxReorder.items`. Directive
@@ -851,7 +831,7 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   protected readonly valuesSignal: Signal<readonly T[]> = this.values.asReadonly();
 
   /**
-   * Chip-strip container. Read lazily — `viewChild()` is `undefined`
+   * Chip-strip container. Read lazily - `viewChild()` is `undefined`
    * until first render, but the controller only reads it inside
    * `focusAt()` at user-event time.
    */
@@ -879,9 +859,7 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
    *
    * @internal
    */
-  protected readonly effectiveChipOverflow = computed<
-    'wrap' | 'scroll-x'
-  >(() => {
+  protected readonly effectiveChipOverflow = computed<'wrap' | 'scroll-x'>(() => {
     const mode = this.chipOverflow();
     return mode === 'truncate' ? 'scroll-x' : mode;
   });
@@ -891,7 +869,7 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
    * (pessimistic freeze, default) or when disabled. App-wide
    * `provideReorderableSelectConfig(withReorderStripFreeze(false))`
    * opts out so consecutive reorders supersede via the commit
-   * controller's race handling. Plan §2 locked freeze as default —
+   * controller's race handling. Plan §2 locked freeze as default -
    * reorders are sub-second and a freeze is clearer than mid-gesture
    * visual noise.
    */
@@ -908,7 +886,8 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   /** @internal */ protected readonly isGroup = this.core.panelHostAdapter.isGroup;
   /** @internal */ protected readonly isSelected = this.core.panelHostAdapter.isSelected;
   /** @internal */ protected readonly isIndeterminate = this.core.panelHostAdapter.isIndeterminate;
-  /** @internal */ protected readonly isCommittingOption = this.core.panelHostAdapter.isCommittingOption;
+  /** @internal */ protected readonly isCommittingOption =
+    this.core.panelHostAdapter.isCommittingOption;
 
   protected isEmpty(): boolean {
     return this.values().length === 0;
@@ -972,10 +951,18 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
     });
   }
 
-  open(): void { this.popoverRef()?.show(); }
-  close(): void { this.popoverRef()?.hide(); }
-  toggle(): void { this.popoverRef()?.toggle(); }
-  focus(options?: FocusOptions): void { this.triggerBtn()?.nativeElement.focus(options); }
+  open(): void {
+    this.popoverRef()?.show();
+  }
+  close(): void {
+    this.popoverRef()?.hide();
+  }
+  toggle(): void {
+    this.popoverRef()?.toggle();
+  }
+  focus(options?: FocusOptions): void {
+    this.triggerBtn()?.nativeElement.focus(options);
+  }
 
   /** @internal */
   protected handleTriggerClick(): void {
@@ -985,7 +972,7 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
     this.toggle();
   }
 
-  /** @internal — click-outside dismissal (action-dirty-guarded). */
+  /** @internal - click-outside dismissal (action-dirty-guarded). */
   protected readonly handleClickOutside = inject(CNGX_DISMISS_HANDLER_FACTORY)({
     popoverRef: this.popoverRef,
     dismissOn: this.config.dismissOn,
@@ -1007,7 +994,7 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
     this.chipRemovalHandler.removeByValue(opt);
   }
 
-  /** @internal — stable per-option `remove()` closure for chip slots. */
+  /** @internal - stable per-option `remove()` closure for chip slots. */
   protected chipRemoveFor(opt: CngxSelectOptionDef<T>): () => void {
     return this.chipRemovalHandler.removeFor(opt);
   }
@@ -1018,7 +1005,7 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
     this.clearAllCallback();
   }
 
-  /** @internal — imperative clear-all used by slot + default button. */
+  /** @internal - imperative clear-all used by slot + default button. */
   protected readonly clearAllCallback: () => void = () => {
     const previous = [...this.values()];
     if (previous.length === 0) {
@@ -1138,7 +1125,7 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
    *   1. `stopPropagation()` for keydowns inside a chip wrap. Without
    *      it, Enter/Space on the focused ✕ bubbles to
    *      `CngxListboxTrigger.handleKeyDown`, which opens the popover
-   *      AND swallows the native Enter→click — chip stays, popover
+   *      AND swallows the native Enter→click - chip stays, popover
    *      opens. The trigger keyboard is for the trigger element, not
    *      chip children.
    *   2. Forward plain arrow / Home / End to the roving controller.
@@ -1175,10 +1162,7 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
     // updates synchronously so tabindex='0' lands on the right chip
     // before focus moves.
     this.chipStripRoving.setActive(toIndex);
-    afterNextRender(
-      () => this.chipStripRoving.focusAt(toIndex),
-      { injector: this.injector },
-    );
+    afterNextRender(() => this.chipStripRoving.focusAt(toIndex), { injector: this.injector });
   }
 
   private toggleOptionByUser(opt: CngxSelectOptionDef<T>): void {
@@ -1186,9 +1170,7 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
     const previous = [...this.values()];
     const eq = this.compareWith();
     const wasSelected = previous.some((v) => eq(v, opt.value));
-    const next = wasSelected
-      ? previous.filter((v) => !eq(v, opt.value))
-      : [...previous, opt.value];
+    const next = wasSelected ? previous.filter((v) => !eq(v, opt.value)) : [...previous, opt.value];
     if (action) {
       this.lastCommittedValues = previous;
       this.togglingOption.set(opt);

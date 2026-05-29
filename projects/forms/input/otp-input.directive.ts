@@ -20,6 +20,11 @@ import {
  * ```
  *
  * @category forms/input
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/input/otp-input.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxOtpInput, CngxInput
  * <example-url>http://localhost:4200/#/forms/input/otp/4-digit-pin</example-url>
  * <example-url>http://localhost:4200/#/forms/input/otp/6-digit-otp</example-url>
  */
@@ -44,7 +49,7 @@ export class CngxOtpSlot {
 
   private readonly parent = inject(CngxOtpInput);
 
-  /** @internal — exposed for parent `CngxOtpInput` to read/write slot values. */
+  /** @internal - exposed for parent `CngxOtpInput` to read/write slot values. */
   readonly el = inject<ElementRef<HTMLInputElement>>(ElementRef);
 
   /** @internal */
@@ -53,7 +58,7 @@ export class CngxOtpSlot {
   );
 
   /**
-   * @internal — projected `<input type>` value.
+   * @internal - projected `<input type>` value.
    *
    * - `'password'` → `type="password"` so the browser native-masks the
    *   digit (• or ●) without us touching the value.
@@ -124,7 +129,7 @@ export class CngxOtpSlot {
 /**
  * Container directive for OTP/PIN input with auto-advance.
  *
- * Renders no inputs — the consumer provides `<input [cngxOtpSlot]="i" />` elements
+ * Renders no inputs - the consumer provides `<input [cngxOtpSlot]="i" />` elements
  * inside the container.
  *
  * ```html
@@ -136,6 +141,11 @@ export class CngxOtpSlot {
  * ```
  *
  * @category forms/input
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/input/otp-input.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxOtpSlot, CngxInput
  * <example-url>http://localhost:4200/#/forms/input/otp/4-digit-pin</example-url>
  * <example-url>http://localhost:4200/#/forms/input/otp/6-digit-otp</example-url>
  */
@@ -172,7 +182,7 @@ export class CngxOtpInput {
   /** Emitted when all positions are filled. */
   readonly completed = output<string>();
 
-  /** @internal — called by CngxOtpSlot */
+  /** @internal - called by CngxOtpSlot */
   handleSlotInput(index: number, char: string): void {
     const len = this.length();
     const prev = this.valuesState();
@@ -191,11 +201,11 @@ export class CngxOtpInput {
     }
   }
 
-  /** @internal — called by CngxOtpSlot on paste */
+  /** @internal - called by CngxOtpSlot on paste */
   pasteFrom(startIndex: number, text: string): void {
     const len = this.length();
     const prev = this.valuesState();
-    // Index map once — avoid O(n²) find inside the loop.
+    // Index map once - avoid O(n²) find inside the loop.
     const allSlots = this.slots();
     const slotByIndex = new Map(allSlots.map((s) => [s.index(), s]));
 

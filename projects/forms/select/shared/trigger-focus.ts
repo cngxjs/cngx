@@ -1,9 +1,4 @@
-import {
-  InjectionToken,
-  signal,
-  type Signal,
-  type WritableSignal,
-} from '@angular/core';
+import { InjectionToken, signal, type Signal, type WritableSignal } from '@angular/core';
 
 /**
  * Focus-state slot shared by every select-family trigger. Variant-
@@ -16,7 +11,7 @@ import {
 export interface CngxTriggerFocusState {
   /** Readonly focus flag. */
   readonly focused: Signal<boolean>;
-  /** Writable handle — only the owner touches it. */
+  /** Writable handle - only the owner touches it. */
   readonly writable: WritableSignal<boolean>;
   markFocused(): void;
   markBlurred(): void;
@@ -77,6 +72,9 @@ export type CngxTriggerFocusFactory = () => CngxTriggerFocusState;
  * ```
  *
  * @category forms/select
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/trigger-focus.ts
+ * @since 0.1.0
  */
 export const CNGX_TRIGGER_FOCUS_FACTORY = new InjectionToken<CngxTriggerFocusFactory>(
   'CNGX_TRIGGER_FOCUS_FACTORY',
