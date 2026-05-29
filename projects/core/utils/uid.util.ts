@@ -1,3 +1,4 @@
+/** @internal */
 let counter = 0;
 
 /**

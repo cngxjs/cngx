@@ -28,5 +28,7 @@ export interface CngxStateful<T = unknown> {
  * 3. Dev-mode error if neither is available
  *
  * @category core/utils
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/core/utils/stateful.ts
+ * @since 0.1.0
  */
 export const CNGX_STATEFUL = new InjectionToken<CngxStateful>('CNGX_STATEFUL');

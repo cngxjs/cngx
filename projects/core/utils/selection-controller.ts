@@ -102,6 +102,8 @@ export interface SelectionController<T> {
  * every destroyed controller and every queried value so that destruction
  * retains O(1) memory no matter how many bindings are still observing the
  * controller.
+ *
+ * @internal
  */
 const POST_DESTROY_FALSE: Signal<boolean> = signal(false).asReadonly();
 
@@ -329,6 +331,8 @@ export type CngxSelectionControllerFactory = <T>(
  * `@cngx/data-display` grid/tree components share the override surface.
  *
  * @category core/utils/selection
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/core/utils/selection-controller.ts
+ * @since 0.1.0
  */
 export const CNGX_SELECTION_CONTROLLER_FACTORY = new InjectionToken<CngxSelectionControllerFactory>(
   'CngxSelectionControllerFactory',

@@ -26,8 +26,11 @@ export interface AsyncStateViewSources<T> {
   readonly lastUpdated?: Signal<Date | undefined>;
 }
 
+/** @internal */
 const ALWAYS_FALSE: Signal<boolean> = computed(() => false);
+/** @internal */
 const ALWAYS_UNDEFINED_NUMBER: Signal<number | undefined> = computed(() => undefined);
+/** @internal */
 const ALWAYS_UNDEFINED_DATE: Signal<Date | undefined> = computed(() => undefined);
 
 /**

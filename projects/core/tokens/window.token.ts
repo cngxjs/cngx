@@ -12,6 +12,8 @@ import { isPlatformBrowser } from '@angular/common';
  * ```
  *
  * @category core/tokens
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/core/tokens/window.token.ts
+ * @since 0.1.0
  */
 export const WINDOW = new InjectionToken<Window | null>('NGX_CAE_WINDOW', {
   providedIn: 'root',

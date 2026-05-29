@@ -52,6 +52,9 @@ export interface CngxFormFieldHostContract {
  * channel".
  *
  * @category core/tokens
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/core/tokens/form-field-host.token.ts
+ * @since 0.1.0
  */
 export const CNGX_FORM_FIELD_HOST = new InjectionToken<CngxFormFieldHostContract>(
   'CngxFormFieldHost',

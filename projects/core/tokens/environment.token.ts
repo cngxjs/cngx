@@ -17,6 +17,8 @@ export interface Environment {
  * Provide via `provideEnvironment()` in `bootstrapApplication`.
  *
  * @category core/tokens
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/core/tokens/environment.token.ts
+ * @since 0.1.0
  */
 export const ENVIRONMENT = new InjectionToken<Environment>('NGX_CAE_ENVIRONMENT');
 
