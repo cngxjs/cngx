@@ -7,7 +7,7 @@
 
 <aside class="cc-tldr">
 
-Zustand wird abgeleitet, nicht verwaltet - und Kommunikation ist Architektur, kein Nachgedanke.
+State is derived, not managed. Communication is architecture, not an afterthought.
 
 </aside>
 
