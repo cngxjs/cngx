@@ -3,13 +3,13 @@ import { Directive, inject, TemplateRef } from '@angular/core';
 import type { CngxTagGroupAccessoryContext } from './tag-group-slot.context';
 
 /**
- * Override template for the accessory zone of `<cngx-tag-group>` —
+ * Override template for the accessory zone of `<cngx-tag-group>` -
  * projected BELOW the row of tags. Use for clear-all buttons,
  * sort toggles that span the group, secondary actions, or any
  * trailing decoration the consumer wants to bundle with the
  * layout.
  *
- * The slot has no default body — when not projected, no DOM is
+ * The slot has no default body - when not projected, no DOM is
  * rendered below the tag row. The reactive count of projected
  * `<span cngxTag>` siblings is exposed via the slot context so
  * consumer "Clear all (5)" patterns work without injection.
@@ -25,6 +25,9 @@ import type { CngxTagGroupAccessoryContext } from './tag-group-slot.context';
  * ```
  *
  * @category common/display
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/display/tag-group/slots/tag-group-accessory.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxTagGroup, CngxTagGroupHeader
  * <example-url>http://localhost:4200/#/common/display/tag/app-wide-defaults-via-providetagconfig</example-url>
  * <example-url>http://localhost:4200/#/common/display/tag/color-palette</example-url>
  * <example-url>http://localhost:4200/#/common/display/tag/composition-with-cngxicon</example-url>

@@ -14,6 +14,11 @@ import { Directive, signal } from '@angular/core';
  * ```
  *
  * @category common/a11y
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/a11y/focus/focus-visible.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxAutofocus, CngxFocusRestore, CngxFocusTrap
  * <example-url>http://localhost:4200/#/common/a11y/focus-visible/form-fields-custom-focus-ring</example-url>
  * <example-url>http://localhost:4200/#/common/a11y/focus-visible/keyboard-vs-pointer</example-url>
  */

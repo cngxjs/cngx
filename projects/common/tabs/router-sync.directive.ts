@@ -21,11 +21,16 @@ import { CNGX_TAB_GROUP_HOST } from './tab-group-host.token';
  * - `mode = 'fragment'` (default) → `#tab=settings`
  * - `mode = 'queryParam'` with `paramName = 'tab'` → `?tab=settings`
  *
- * `Router` is optional — without it the directive logs a dev warning
+ * `Router` is optional - without it the directive logs a dev warning
  * via `afterNextRender` and becomes a no-op. Every `router.navigate`
  * and `host.selectById` inside the effects sits in `untracked()`.
  *
  * @category common/tabs
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/router-sync.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxTabGroupPresenter, CngxTab
  */
 @Directive({
   selector: '[cngxTabsFragmentSync]',
@@ -43,7 +48,7 @@ export class CngxTabsFragmentSync {
     if (!this.router) {
       afterNextRender(() => {
         console.warn(
-          'CngxTabsFragmentSync: no Router available — directive is a no-op. ' +
+          'CngxTabsFragmentSync: no Router available - directive is a no-op. ' +
             'Provide @angular/router via provideRouter(...) to enable deep-linking.',
         );
       });
@@ -108,10 +113,7 @@ export class CngxTabsFragmentSync {
       const fragment = router.routerState.snapshot.root.fragment ?? '';
       return this.parseFragment(fragment);
     }
-    return (
-      router.routerState.snapshot.root.queryParamMap.get(this.paramName()) ??
-      null
-    );
+    return router.routerState.snapshot.root.queryParamMap.get(this.paramName()) ?? null;
   }
 
   private parseFragment(fragment: string): string | null {

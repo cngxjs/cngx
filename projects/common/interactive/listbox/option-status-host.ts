@@ -7,7 +7,7 @@ import { InjectionToken, type Signal, type TemplateRef } from '@angular/core';
  * `kind` separates pending (in-flight commit) from error (failed commit) so
  * styling can branch on the host attribute `[attr.data-status]`. `tpl`
  * carries the actual glyph; the host MAY return `tpl: null` to reserve
- * layout space without rendering anything (rare — used for force-revealing
+ * layout space without rendering anything (rare - used for force-revealing
  * the slot during animation transitions).
  *
  * @category common/interactive/listbox
@@ -43,11 +43,13 @@ export interface CngxOptionStatusHost {
  * itself when commit-driven status indicators should reach individual
  * options without invading the consumer-authored option template.
  *
- * `CngxOption` injects this token with `{ optional: true }` — standalone
+ * `CngxOption` injects this token with `{ optional: true }` - standalone
  * use (no host provides the token) results in a stable `null` status with
  * no DOM cost.
  *
  * @category common/interactive/listbox
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/listbox/option-status-host.ts
+ * @since 0.1.0
  */
 export const CNGX_OPTION_STATUS_HOST = new InjectionToken<CngxOptionStatusHost>(
   'CNGX_OPTION_STATUS_HOST',

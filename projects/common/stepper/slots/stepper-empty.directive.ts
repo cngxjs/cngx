@@ -2,7 +2,7 @@ import { Directive, inject, TemplateRef } from '@angular/core';
 
 /**
  * Slot directive for the empty-state placeholder on `<cngx-stepper>`.
- * Rendered when `flatSteps()` is empty — async-loading or
+ * Rendered when `flatSteps()` is empty - async-loading or
  * server-driven step lists get a "no steps yet" landmark rather than
  * a collapsed strip.
  *
@@ -19,6 +19,10 @@ import { Directive, inject, TemplateRef } from '@angular/core';
  * ```
  *
  * @category common/stepper/slots
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/stepper/slots/stepper-empty.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxStepIndicator, CngxStepGroupHeader
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-slot-overrides/custom-busy-spinner-via-code-cngxstepbusyspinner-code</example-url>
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-slot-overrides/custom-error-badge-via-code-cngxstepbadge-code</example-url>
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-slot-overrides/custom-group-header-via-code-cngxstepgroupheader-code</example-url>

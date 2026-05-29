@@ -8,13 +8,13 @@ import { InjectionToken, type Signal } from '@angular/core';
  *
  * The need arises with content-projected options: at construction time,
  * the option's element-injector chain anchors in the consumer's
- * authoring view — which has no surrounding `CngxActiveDescendant`. The
+ * authoring view - which has no surrounding `CngxActiveDescendant`. The
  * shell that owns the listbox + AD provides this token via `useExisting`,
  * and projected options consult it as a fallback.
  *
  * Splitting the contract into a narrow surface (`activeId` /
  * `activate` / `highlight`) keeps the option agnostic about HOW the
- * host wires its AD — the shell forwards to its inner listbox's AD,
+ * host wires its AD - the shell forwards to its inner listbox's AD,
  * a hypothetical custom host could route through telemetry / multi-AD
  * coordination / etc. without changing the option directive.
  *
@@ -49,12 +49,16 @@ export interface CngxOptionInteractionHost {
  * (`CNGX_OPTION_CONTAINER`, `CNGX_OPTION_STATUS_HOST`,
  * `CNGX_OPTION_FILTER_HOST`, `CNGX_SELECT_SHELL_SEARCH_HOST`).
  *
- * `CngxOption` injects this token with `{ optional: true }` —
+ * `CngxOption` injects this token with `{ optional: true }` -
  * standalone use (no host provides the token) leaves option behaviour
  * unchanged because the option's own AD inject takes precedence when
  * available.
  *
  * @category common/interactive/listbox
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/listbox/option-interaction-host.ts
+ * @since 0.1.0
  */
-export const CNGX_OPTION_INTERACTION_HOST =
-  new InjectionToken<CngxOptionInteractionHost>('CNGX_OPTION_INTERACTION_HOST');
+export const CNGX_OPTION_INTERACTION_HOST = new InjectionToken<CngxOptionInteractionHost>(
+  'CNGX_OPTION_INTERACTION_HOST',
+);

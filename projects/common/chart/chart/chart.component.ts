@@ -25,11 +25,7 @@ import {
   CngxChartLoading,
   type CngxChartSlotContext,
 } from './template-slots';
-import {
-  createBandScale,
-  createLinearScale,
-  createTimeScale,
-} from '../scales';
+import { createBandScale, createLinearScale, createTimeScale } from '../scales';
 import {
   CNGX_CHART_CONTEXT,
   type CngxChartContext,
@@ -39,7 +35,9 @@ import {
 import { computeChartSummary } from './summary';
 import { dimensionsEqual, sameNumberArr } from './equal-helpers';
 
+/** @internal */
 const NOOP_SCALE: ScaleFn<XScaleInput> = () => 0;
+/** @internal */
 const NOOP_Y_SCALE: ScaleFn<number> = () => 0;
 
 /**
@@ -47,6 +45,8 @@ const NOOP_Y_SCALE: ScaleFn<number> = () => 0;
  * dev-mode warning can detect "consumer omitted [summaryAccessor] on
  * non-numeric data" without false positives when the consumer happens
  * to pass an identical-looking arrow.
+ *
+ * @internal
  */
 const DEFAULT_SUMMARY_ACCESSOR = <T>(d: T): number => Number(d as unknown);
 
@@ -68,13 +68,18 @@ const DEFAULT_SUMMARY_ACCESSOR = <T>(d: T): number => Number(d as unknown);
  * the X axis (top/bottom position) drives `xScale`, the Y axis
  * (left/right) drives `yScale`. With no axis present, the
  * corresponding scale falls back to a no-op `() => 0` and content
- * children may render off-canvas — consumers must mount at least
+ * children may render off-canvas - consumers must mount at least
  * one axis per direction they actually use.
  *
  * The `[width]` / `[height]` inputs override the resize observer for
  * fixed-dimension presets (inline sparkline at 80×24, etc.).
  *
  * @category common/chart
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/chart/chart.component.ts
+ * @since 0.1.0
+ * @relatedTo CngxAxis, CngxLine, CngxArea, CngxBar, CngxChartLegend
  */
 /**
  * <example-url>http://localhost:4200/#/common/chart/primitives/async-state-machine-on-the-primitive</example-url>
@@ -131,18 +136,14 @@ const DEFAULT_SUMMARY_ACCESSOR = <T>(d: T): number => Number(d as unknown);
             <ng-container *ngTemplateOutlet="tpl; context: errorContext()" />
           </div>
         } @else {
-          <div
-            class="cngx-chart__fallback cngx-chart__fallback--error"
-            [attr.aria-hidden]="true"
-          >{{ i18n.error() }}</div>
+          <div class="cngx-chart__fallback cngx-chart__fallback--error" [attr.aria-hidden]="true">
+            {{ i18n.error() }}
+          </div>
         }
       }
       @case ('none') {}
       @default {
-        <svg
-          [attr.viewBox]="viewBox()"
-          [attr.preserveAspectRatio]="preserveAspectRatio()"
-        >
+        <svg [attr.viewBox]="viewBox()" [attr.preserveAspectRatio]="preserveAspectRatio()">
           <svg:title>{{ ariaLabelText() }}</svg:title>
           <ng-content />
         </svg>
@@ -162,7 +163,7 @@ const DEFAULT_SUMMARY_ACCESSOR = <T>(d: T): number => Number(d as unknown);
         /* Cap the host at its parent's content width so explicit
            [width] values shrink on narrower viewports (mobile portrait,
            constrained dashboard cells). The aspect-ratio derived from
-           [width]/[height] keeps the chart proportional when squeezed —
+           [width]/[height] keeps the chart proportional when squeezed -
            the SVG viewBox stays in logical coords so axes / threshold
            labels / scales reflow cleanly. */
         max-width: 100%;
@@ -231,7 +232,9 @@ const DEFAULT_SUMMARY_ACCESSOR = <T>(d: T): number => Number(d as unknown);
         opacity: 1;
       }
       @keyframes cngx-chart-spin {
-        to { transform: rotate(360deg); }
+        to {
+          transform: rotate(360deg);
+        }
       }
       @media (prefers-reduced-motion: reduce) {
         cngx-chart .cngx-chart__spinner {
@@ -245,10 +248,10 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
   /**
    * Raw data input. Aliased as `data` at the template-binding level so
    * consumer markup stays `<cngx-chart [data]="rows">`. The public,
-   * typed read surface is the `data<U>()` method below — layer atoms
+   * typed read surface is the `data<U>()` method below - layer atoms
    * call `this.ctx.data<T>()` to narrow without per-site casts.
    *
-   * @internal — alias for the public `data<U>()` method
+   * @internal - alias for the public `data<U>()` method
    */
   readonly dataInput = input.required<readonly T[]>({ alias: 'data' });
   readonly width = input<number | undefined>(undefined);
@@ -265,15 +268,13 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
    * into the auto-Summary. Default `Number(d)` works for `readonly
    * number[]` data; structured data must override.
    */
-  readonly summaryAccessor = input<(d: T, i: number) => number>(
-    DEFAULT_SUMMARY_ACCESSOR,
-  );
+  readonly summaryAccessor = input<(d: T, i: number) => number>(DEFAULT_SUMMARY_ACCESSOR);
   /**
    * Controls when the SR-only data-table view is exposed to assistive
    * technology. `'auto'` (default) shows the table whenever the data
-   * has more than one point — a single value is announced via the
+   * has more than one point - a single value is announced via the
    * `aria-label`, no table needed. `'off'` keeps the table hidden
-   * regardless. The table element is always present in the DOM —
+   * regardless. The table element is always present in the DOM -
    * visibility flips through `aria-hidden`, the linked id on
    * `aria-describedby` never disappears.
    */
@@ -289,7 +290,7 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
    * Accepts the standard `CngxAsyncState<T>` shape (any producer:
    * `createManualState`, `createAsyncState`, `injectAsyncState`,
    * `fromHttpResource`, `tap*` pipeline output). The chart provides
-   * `CNGX_STATEFUL` for downstream bridge directives — composing
+   * `CNGX_STATEFUL` for downstream bridge directives - composing
    * `<cngx-toast-on />` etc. inside the chart works automatically.
    */
   readonly state = input<CngxAsyncState<readonly T[]> | undefined>(undefined);
@@ -325,7 +326,7 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
    * ```
    *
    * Reads directly from the resize observer (host's actual painted
-   * size) — NOT from `dimensions()` which prefers the logical
+   * size) - NOT from `dimensions()` which prefers the logical
    * `[width]`/`[height]` inputs. This matters when an explicit
    * `[width]="480"` chart squeezes via `max-width: 100%` on a narrow
    * viewport: the rendered width is what the consumer cares about
@@ -342,7 +343,7 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
   });
 
   /**
-   * Error-slot context — extends {@link slotContext} with the live
+   * Error-slot context - extends {@link slotContext} with the live
    * error value under `$implicit` and `error` keys, so a consumer can
    * render a typed message AND branch on chart size in the same
    * template.
@@ -368,8 +369,8 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
         }
         console.warn(
           'CngxChart: data is non-numeric and no [summaryAccessor] is bound. ' +
-          'Auto-Summary and the SR data-table will silently fall back to NaN. ' +
-          'Bind [summaryAccessor]="(d) => d.yourField" or pass a numeric data array.',
+            'Auto-Summary and the SR data-table will silently fall back to NaN. ' +
+            'Bind [summaryAccessor]="(d) => d.yourField" or pass a numeric data array.',
         );
       });
     }
@@ -430,8 +431,11 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
       if (!yAxis) {
         return NOOP_Y_SCALE;
       }
-      // SVG Y-axis is flipped — domain[max] maps to range[0] (top), domain[min] to range[height] (bottom).
-      return this.yScaleCache.get(yAxis.type(), yAxis.domain() ?? [], [height, 0]) as ScaleFn<number>;
+      // SVG Y-axis is flipped - domain[max] maps to range[0] (top), domain[min] to range[height] (bottom).
+      return this.yScaleCache.get(yAxis.type(), yAxis.domain() ?? [], [
+        height,
+        0,
+      ]) as ScaleFn<number>;
     },
     { equal: (a, b) => a === b },
   );
@@ -439,7 +443,7 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
   /**
    * Auto-Summary derived from `data` and `<cngx-threshold>` content
    * children. Drives the host's reactive `aria-label`. Layer atoms do
-   * not contribute to the summary on Phase 3 — Phase 5/6 may extend
+   * not contribute to the summary on Phase 3 - Phase 5/6 may extend
    * with per-layer hints.
    */
   readonly summary = computed(
@@ -553,7 +557,7 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
 
   /**
    * Auto-mode predicate. Drives the data-table's `aria-hidden`
-   * binding. The id on `aria-describedby` is invariant — it stays on
+   * binding. The id on `aria-describedby` is invariant - it stays on
    * the host whether the table is active or not. Single-value charts
    * speak via the `aria-label` summary; multi-value charts add the
    * table for row-by-row exploration.
@@ -567,14 +571,17 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
   });
 }
 
+/** @internal */
 function isHorizontalPosition(p: CngxAxisPosition): boolean {
   return p === 'top' || p === 'bottom';
 }
 
+/** @internal */
 function isVerticalPosition(p: CngxAxisPosition): boolean {
   return p === 'left' || p === 'right';
 }
 
+/** @internal */
 function buildScale(
   type: CngxAxisType,
   domain: readonly unknown[],
@@ -592,10 +599,7 @@ function buildScale(
       return (v: XScaleInput) => linear(typeof v === 'number' ? v : Number(v));
     }
     case 'time': {
-      const time = createTimeScale(
-        [toMs(domain[0]), toMs(domain[domain.length - 1])],
-        range,
-      );
+      const time = createTimeScale([toMs(domain[0]), toMs(domain[domain.length - 1])], range);
       return (v: XScaleInput) => time(v instanceof Date ? v : Number(v));
     }
     case 'band': {
@@ -603,7 +607,7 @@ function buildScale(
       // createBandScale returns the leading edge; chart consumers
       // (ticks, line/area/scatter, threshold/band yScale) want the
       // centre so ticks align with their slot and lines trace through
-      // bar centres. Bar atom uses its own slot logic — unaffected.
+      // bar centres. Bar atom uses its own slot logic - unaffected.
       const half = band.bandwidth() / 2;
       return (v: XScaleInput) => band(v) + half;
     }
@@ -620,8 +624,10 @@ function buildScale(
  *
  * Time-typed `Date` endpoints are keyed via `+date` (ms) to handle the
  * common case where a parent re-creates the domain array each tick with
- * `new Date(...)` — raw `Date` references would never `Object.is`-match
+ * `new Date(...)` - raw `Date` references would never `Object.is`-match
  * across ticks.
+ *
+ * @internal
  */
 interface ScaleLru {
   get(
@@ -631,6 +637,7 @@ interface ScaleLru {
   ): ScaleFn<XScaleInput>;
 }
 
+/** @internal */
 function createScaleLru(): ScaleLru {
   let lastType: CngxAxisType | null = null;
   let lastDomainLen = -1;
@@ -673,6 +680,7 @@ function createScaleLru(): ScaleLru {
   };
 }
 
+/** @internal */
 function endpointKey(v: unknown): number | string {
   if (v instanceof Date) {
     return v.getTime();
@@ -683,6 +691,7 @@ function endpointKey(v: unknown): number | string {
   return String(v);
 }
 
+/** @internal */
 function toMs(v: unknown): number {
   if (typeof v === 'number') {
     return v;

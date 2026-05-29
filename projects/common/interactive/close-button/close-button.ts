@@ -12,6 +12,10 @@ import {
 /**
  * Injection token for a custom close icon component.
  * Set via `provideFeedback(withCloseIcon(MyIcon))` which forwards to this token.
+ *
+ * @category common/interactive
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/close-button/close-button.ts
+ * @since 0.1.0
  */
 export const CNGX_CLOSE_ICON = new InjectionToken<Type<unknown>>('CngxCloseIcon');
 
@@ -25,7 +29,7 @@ export const CNGX_CLOSE_ICON = new InjectionToken<Type<unknown>>('CngxCloseIcon'
  * Used internally by `CngxAlert`, `CngxToastOutlet`, and `CngxPopoverPanel`.
  * Can also be used standalone by consumers for dialogs, drawers, chips, etc.
  *
- * All visual properties are CSS Custom Properties — density is controlled
+ * All visual properties are CSS Custom Properties - density is controlled
  * via the `feedback.density()` SCSS mixin or direct overrides.
  *
  * ### Standalone
@@ -42,6 +46,12 @@ export const CNGX_CLOSE_ICON = new InjectionToken<Type<unknown>>('CngxCloseIcon'
  * `position: absolute` directly on `<cngx-close-button>` is silently
  * ignored. Wrap in a positioned element when corner-pinning.
  *
+ * @category common/interactive
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/close-button/close-button.ts
+ * @since 0.1.0
+ * @relatedTo CNGX_CLOSE_ICON, CngxAlert, CngxToastOutlet, CngxPopover
  * <example-url>http://localhost:4200/#/common/interactive/close-button/basic</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/close-button/projected-icon</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/close-button/contextual-labels</example-url>
@@ -90,6 +100,6 @@ export class CngxCloseButton {
    */
   readonly label = input.required<string>();
 
-  /** @internal — global icon from CNGX_CLOSE_ICON token. */
+  /** @internal - global icon from CNGX_CLOSE_ICON token. */
   protected readonly customIcon = inject(CNGX_CLOSE_ICON, { optional: true });
 }

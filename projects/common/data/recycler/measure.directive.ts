@@ -20,6 +20,10 @@ import type { CngxRecycler } from './recycler';
  * ```
  *
  * @category common/data/recycler
+ * @docsKind primary
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/data/recycler/measure.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxVirtualItem, CngxRecyclerAnnouncer, injectRecycler
  *
  * <example-url>http://localhost:4200/#/common/data/recycler/basic-list-fixed-item-height</example-url>
  * <example-url>http://localhost:4200/#/common/data/recycler/content-visibility-css-only</example-url>

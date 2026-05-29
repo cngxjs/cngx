@@ -46,6 +46,7 @@ export interface CngxButtonToggleGroupContract<T = unknown> {
  *
  * @category common/interactive
  * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/button-toggle/button-toggle-group.token.ts
  * @since 0.1.0
  */
 export const CNGX_BUTTON_TOGGLE_GROUP = new InjectionToken<CngxButtonToggleGroupContract>(

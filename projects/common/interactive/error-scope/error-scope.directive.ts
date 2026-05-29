@@ -1,11 +1,4 @@
-import {
-  afterNextRender,
-  DestroyRef,
-  Directive,
-  inject,
-  input,
-  signal,
-} from '@angular/core';
+import { afterNextRender, DestroyRef, Directive, inject, input, signal } from '@angular/core';
 import { CngxErrorRegistry } from '../error-registry/error-registry';
 import { CNGX_ERROR_SCOPE, type CngxErrorScopeContract } from './error-scope.token';
 
@@ -14,7 +7,7 @@ import { CNGX_ERROR_SCOPE, type CngxErrorScopeContract } from './error-scope.tok
  *
  * @category common/interactive/error
  *
- * The scope starts hidden — descendant aggregators and error states do
+ * The scope starts hidden - descendant aggregators and error states do
  * not reveal until the consumer calls {@link reveal}, typically via a
  * `(submit)` handler, a route guard, or an HTTP interceptor reveal-on-422
  * pattern.
@@ -30,6 +23,12 @@ import { CNGX_ERROR_SCOPE, type CngxErrorScopeContract } from './error-scope.tok
  *   <input [cngxErrorState]="email().invalid()" />
  * </form>
  * ```
+ *
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/error-scope/error-scope.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxErrorAggregator, CngxErrorState, CngxErrorSource
  * <example-url>http://localhost:4200/#/common/interactive/error/aggregator/cngx-card-host-no-scope-errors-visible-immediately</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/error/aggregator/cngx-popover-panel-host</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/error/aggregator/material-mat-tab-label-with-error-count-badge</example-url>

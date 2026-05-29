@@ -15,7 +15,7 @@ export interface CngxMenuRadioGroup<T> {
 }
 
 /**
- * Factory shape — pass into a custom DI provider to wrap selection in
+ * Factory shape - pass into a custom DI provider to wrap selection in
  * telemetry, server-sync, or audit logging without forking `CngxMenuGroup`.
  *
  * @category common/interactive/menu
@@ -47,6 +47,9 @@ export const createMenuRadioController: CngxMenuRadioGroupFactory = ({ selectedV
  * outside any group still works (it just reports `aria-checked="false"`).
  *
  * @category common/interactive/menu
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/menu/menu-radio-controller.ts
+ * @since 0.1.0
  */
 export const CNGX_MENU_RADIO_GROUP = new InjectionToken<CngxMenuRadioGroup<unknown>>(
   'CNGX_MENU_RADIO_GROUP',

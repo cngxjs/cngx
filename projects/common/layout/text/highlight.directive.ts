@@ -14,7 +14,7 @@ import {
  * Search-text highlighting via `<mark>` elements.
  *
  * Walks `TEXT_NODE` children of the host element, splits at match boundaries,
- * and wraps matched portions in `<mark>` elements. No `innerHTML` — safe by
+ * and wraps matched portions in `<mark>` elements. No `innerHTML` - safe by
  * construction. The `<mark>` element has correct native SR semantics (announced
  * as "highlighted" in most screen readers).
  *
@@ -35,6 +35,11 @@ import {
  * ```
  *
  * @category common/layout
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/layout/text/highlight.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxTruncate, CngxExpandableText
  * <example-url>http://localhost:4200/#/common/layout/highlight/live-search-highlighting</example-url>
  * <example-url>http://localhost:4200/#/common/layout/highlight/multiple-paragraphs</example-url>
  */
@@ -55,7 +60,7 @@ export class CngxHighlight {
 
   private readonly el = inject(ElementRef<HTMLElement>);
   private readonly doc = inject(DOCUMENT);
-  /** Snapshot of original child nodes — restored before each re-highlight. */
+  /** Snapshot of original child nodes - restored before each re-highlight. */
   private originalNodes: Node[] | null = null;
   private readonly initialized = signal(false);
 
@@ -66,7 +71,7 @@ export class CngxHighlight {
       this.initialized.set(true);
     });
 
-    // matchCountState is written via untracked path — re-entering the effect would loop.
+    // matchCountState is written via untracked path - re-entering the effect would loop.
     effect(() => {
       const term = this.term();
       const caseSensitive = this.caseSensitive();

@@ -26,7 +26,7 @@ import {
  * Attaches on the same element as `CngxActiveDescendant`; injects the AD
  * instance (`host: true`, optional) and leaves vertical `ArrowUp`/`Down`,
  * `Home`/`End`, and typeahead to AD's own handler. The two directives
- * coexist without conflict — in vertical orientation AD's `isNavKey`
+ * coexist without conflict - in vertical orientation AD's `isNavKey`
  * branches for `ArrowLeft`/`ArrowRight` are already no-ops.
  *
  * Outputs are informational and state-change-truthful: `expand` /
@@ -47,6 +47,11 @@ import {
  * ```
  *
  * @category common/interactive/tree
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/hierarchical-nav/hierarchical-nav.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxActiveDescendant, CngxTreeController, CngxRovingTabindex
  */
 @Directive({
   selector: '[cngxHierarchicalNav]',
@@ -59,7 +64,7 @@ import {
 })
 export class CngxHierarchicalNav<T = unknown> {
   /**
-   * The tree controller that owns expansion state. Required — without it
+   * The tree controller that owns expansion state. Required - without it
    * the directive has nothing to reason about.
    */
   readonly controller = input.required<CngxTreeController<T>>({

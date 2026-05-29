@@ -14,16 +14,21 @@ import { CngxOption } from './option.directive';
 /**
  * Groups related `CngxOption`s under a visual and semantic header.
  *
- * Renders `role="group"` and `aria-label` — children stay flat in the AD item
+ * Renders `role="group"` and `aria-label` - children stay flat in the AD item
  * list; grouping is purely presentational and for ATs that render group labels.
  *
  * Hierarchy-aware projection roots (e.g. `CngxSelectShell`) query
  * `CNGX_OPTION_CONTAINER` to walk the direct children in DOM order and read
  * each group's `options` to populate `CngxSelectOptionGroupDef.options`.
- * Nested option groups are unsupported — a dev-warning fires when one is
+ * Nested option groups are unsupported - a dev-warning fires when one is
  * detected.
  *
  * @category common/interactive/listbox
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/listbox/option-group.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxOption, CngxListbox
  * <example-url>http://localhost:4200/#/common/interactive/option/flat-options-with-ad</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/option/grouped-options</example-url>
  */

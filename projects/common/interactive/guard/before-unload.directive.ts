@@ -8,7 +8,7 @@ import { DestroyRef, Directive, inject, input } from '@angular/core';
  *
  * Sets a `beforeunload` event handler that shows the browser's native
  * confirmation dialog when `enabled` is `true`. Does NOT integrate with
- * the Angular Router — for route guard protection, use `canDeactivateWhenClean()`.
+ * the Angular Router - for route guard protection, use `canDeactivateWhenClean()`.
  *
  * ### Protect a form
  * ```html
@@ -25,6 +25,11 @@ import { DestroyRef, Directive, inject, input } from '@angular/core';
  * // In template:
  * <form [cngxBeforeUnload]="editForm.dirty()">…</form>
  * ```
+ *
+ * @docsKind primary
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/guard/before-unload.directive.ts
+ * @since 0.1.0
+ * @relatedTo canDeactivateWhenClean
  */
 @Directive({
   selector: '[cngxBeforeUnload]',

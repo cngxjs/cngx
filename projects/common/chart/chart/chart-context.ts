@@ -27,7 +27,7 @@ export type ScaleFn<TIn> = (v: TIn) => number;
  * dimensions, data length, and data array without needing a direct
  * reference to the parent class. Token is non-generic at the DI
  * boundary; layer atoms call `data<T>()` to narrow the array to their
- * own `<T>` — the single boundary cast lives inside `CngxChart`'s
+ * own `<T>` - the single boundary cast lives inside `CngxChart`'s
  * `data<U>()` method, not at every consumer site.
  *
  * @category common/chart
@@ -53,10 +53,10 @@ export interface CngxChartContext<TX = XScaleInput, TY = number> {
  * side.
  *
  * @category common/chart
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/chart/chart-context.ts
+ * @since 0.1.0
  */
-export const CNGX_CHART_CONTEXT = new InjectionToken<CngxChartContext>(
-  'CngxChartContext',
-);
+export const CNGX_CHART_CONTEXT = new InjectionToken<CngxChartContext>('CngxChartContext');
 
 /**
  * Inject the parent chart's reactive context. Throws a clear dev-mode
@@ -72,7 +72,7 @@ export function injectChartContext(consumerName: string): CngxChartContext {
   const ctx = inject(CNGX_CHART_CONTEXT, { optional: true });
   if (!ctx) {
     throw new Error(
-      `${consumerName}: missing CNGX_CHART_CONTEXT — must be a content child of <cngx-chart>`,
+      `${consumerName}: missing CNGX_CHART_CONTEXT - must be a content child of <cngx-chart>`,
     );
   }
   return ctx;

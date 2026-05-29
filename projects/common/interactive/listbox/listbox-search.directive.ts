@@ -11,6 +11,7 @@ import { CngxSearch } from '../keyboard/search.directive';
  */
 export type ListboxMatchFn = (option: ActiveDescendantItem, term: string) => boolean;
 
+/** @internal */
 const defaultLabelMatch: ListboxMatchFn = (option, term) => {
   if (term === '') {
     return true;
@@ -21,12 +22,17 @@ const defaultLabelMatch: ListboxMatchFn = (option, term) => {
 /**
  * Search input for a `CngxListbox`.
  *
- * Builds on `CngxSearch` via `hostDirectives` — inherits debounce, term
+ * Builds on `CngxSearch` via `hostDirectives` - inherits debounce, term
  * tracking, and clear semantics. Adds a `matchFn` input that listboxes read
  * to filter their options. A listbox that has a `CngxListboxSearch` injected
  * ancestor reads `term` and `matchFn` from it reactively.
  *
  * @category common/interactive/listbox
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/listbox/listbox-search.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxListbox, CngxSearch, CngxListboxTrigger
  * <example-url>http://localhost:4200/#/common/interactive/listbox/search/command-palette</example-url>
  */
 @Directive({

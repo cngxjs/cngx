@@ -30,6 +30,10 @@ export interface CngxStepBusySpinnerContext {
  * ```
  *
  * @category common/stepper/slots
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/stepper/slots/step-busy-spinner.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxStepIndicator, CngxStepBadge, CngxStepRejection
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-slot-overrides/custom-busy-spinner-via-code-cngxstepbusyspinner-code</example-url>
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-slot-overrides/custom-error-badge-via-code-cngxstepbadge-code</example-url>
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-slot-overrides/custom-group-header-via-code-cngxstepgroupheader-code</example-url>

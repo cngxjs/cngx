@@ -18,7 +18,7 @@ export interface CngxErrorAggregatorSourceEntry {
 /**
  * Contract every {@link CngxErrorAggregator} (or external override) fulfils.
  *
- * The aggregator is the live A11y surface — it computes `hasError` /
+ * The aggregator is the live A11y surface - it computes `hasError` /
  * `errorCount` / `activeErrors` / `errorLabels` / `shouldShow` /
  * `announcement` from its registered sources and exposes them to the
  * surrounding host. Sources register via {@link addSource} on init and
@@ -35,9 +35,9 @@ export interface CngxErrorAggregatorContract {
   readonly activeErrors: Signal<readonly string[]>;
   /** Labels of currently active error sources (only entries with non-null labels). */
   readonly errorLabels: Signal<readonly string[]>;
-  /** `true` when errors should be visible — `hasError` AND scope reveal-state. */
+  /** `true` when errors should be visible - `hasError` AND scope reveal-state. */
   readonly shouldShow: Signal<boolean>;
-  /** SR-friendly announcement text — joins active labels into one phrase. */
+  /** SR-friendly announcement text - joins active labels into one phrase. */
   readonly announcement: Signal<string>;
   /** Registers (or replaces) a source by `key`. */
   addSource(entry: CngxErrorAggregatorSourceEntry): void;
@@ -54,6 +54,9 @@ export interface CngxErrorAggregatorContract {
  * function as no-ops outside an aggregator.
  *
  * @category common/interactive/error
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/error-aggregator/error-aggregator.token.ts
+ * @since 0.1.0
  */
 export const CNGX_ERROR_AGGREGATOR = new InjectionToken<CngxErrorAggregatorContract>(
   'CngxErrorAggregator',

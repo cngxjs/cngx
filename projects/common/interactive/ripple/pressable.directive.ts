@@ -3,7 +3,7 @@ import { DestroyRef, Directive, inject, input, signal } from '@angular/core';
 /**
  * Provides instant press feedback via CSS class on `pointerdown`.
  *
- * Click feedback fires too late — press feedback is immediate (0ms latency).
+ * Click feedback fires too late - press feedback is immediate (0ms latency).
  * The class is removed on `pointerup` with an optional delay to prevent
  * a visual flash on quick taps.
  *
@@ -27,6 +27,10 @@ import { DestroyRef, Directive, inject, input, signal } from '@angular/core';
  * ```
  *
  * @category common/interactive
+ * @docsKind primary
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/ripple/pressable.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxRipple, CngxPressRipple, CngxHoverable
  * <example-url>http://localhost:4200/#/common/interactive/gestures/pressable/press-feedback-on-buttons</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/gestures/pressable/tappable-card</example-url>
  */
@@ -43,7 +47,7 @@ import { DestroyRef, Directive, inject, input, signal } from '@angular/core';
   },
 })
 export class CngxPressable {
-  /** Minimum time in ms the pressed class stays active — prevents flash on quick taps. */
+  /** Minimum time in ms the pressed class stays active - prevents flash on quick taps. */
   readonly releaseDelay = input<number>(80, { alias: 'pressableReleaseDelay' });
 
   private readonly pressedState = signal(false);
@@ -58,13 +62,13 @@ export class CngxPressable {
     inject(DestroyRef).onDestroy(() => this.clearTimer());
   }
 
-  /** @internal — sets pressed state immediately on pointer contact (0ms latency). */
+  /** @internal - sets pressed state immediately on pointer contact (0ms latency). */
   protected handlePointerDown(): void {
     this.clearTimer();
     this.pressedState.set(true);
   }
 
-  /** @internal — releases after `releaseDelay` ms to prevent flash on quick taps. */
+  /** @internal - releases after `releaseDelay` ms to prevent flash on quick taps. */
   protected handlePointerUp(): void {
     const delay = this.releaseDelay();
     if (delay > 0) {
@@ -74,7 +78,7 @@ export class CngxPressable {
     }
   }
 
-  /** @internal — immediate release on cancel/leave (no delay). */
+  /** @internal - immediate release on cancel/leave (no delay). */
   protected handlePointerCancel(): void {
     this.clearTimer();
     this.pressedState.set(false);

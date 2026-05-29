@@ -45,6 +45,11 @@ import { CNGX_AD_ITEM, type ActiveDescendantItem, type CngxAdItemHandle } from '
  * driven by signals instead of `ListKeyManager`.
  *
  * @category common/a11y
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/a11y/active-descendant/active-descendant.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxRovingTabindex, CngxListbox, CngxMenu
  * <example-url>http://localhost:4200/#/common/a11y/active-descendant/listbox-with-items-input</example-url>
  * <example-url>http://localhost:4200/#/common/a11y/active-descendant/typeahead</example-url>
  */
@@ -61,7 +66,7 @@ export class CngxActiveDescendant {
   /**
    * Optional explicit item list. When provided, takes precedence over items
    * registered via `CNGX_AD_ITEM`. Useful for combobox-style consumers that
-   * drive the menu from a dynamic data source — pass the unwrapped array
+   * drive the menu from a dynamic data source - pass the unwrapped array
    * (typically the result of a `computed()`), Angular's signal inputs make it
    * reactive automatically.
    */
@@ -456,15 +461,14 @@ export class CngxActiveDescendant {
     if (!id) {
       return;
     }
-    const el = (this.hostEl.nativeElement as HTMLElement).querySelector(
-      `#${cssEscape(id)}`,
-    );
+    const el = (this.hostEl.nativeElement as HTMLElement).querySelector(`#${cssEscape(id)}`);
     if (el instanceof HTMLElement && typeof el.scrollIntoView === 'function') {
       el.scrollIntoView({ block: 'nearest', inline: 'nearest' });
     }
   }
 }
 
+/** @internal */
 function handleToItem(handle: CngxAdItemHandle): ActiveDescendantItem {
   return {
     id: handle.id,
@@ -474,15 +478,18 @@ function handleToItem(handle: CngxAdItemHandle): ActiveDescendantItem {
   };
 }
 
+/** @internal */
 function isPrintableChar(key: string): boolean {
   return key.length === 1 && /\S/.exec(key) !== null;
 }
 
 /**
- * True when the element would capture text input natively — a text
+ * True when the element would capture text input natively - a text
  * `<input>`, `<textarea>`, or any `contenteditable` host. Read-only /
  * button-type inputs (submit, radio, checkbox) are NOT editable; AD's
  * keyboard navigation still applies when focus lands on them.
+ *
+ * @internal
  */
 function isEditableTarget(el: HTMLElement): boolean {
   if (el.isContentEditable) {
@@ -509,6 +516,7 @@ function isEditableTarget(el: HTMLElement): boolean {
   return false;
 }
 
+/** @internal */
 function cssEscape(id: string): string {
   const api = (globalThis as { CSS?: { escape?: (s: string) => string } }).CSS;
   if (api && typeof api.escape === 'function') {

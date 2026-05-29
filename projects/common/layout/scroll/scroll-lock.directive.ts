@@ -1,9 +1,14 @@
 import { DOCUMENT } from '@angular/common';
 import { DestroyRef, Directive, effect, inject, input } from '@angular/core';
 
-/** Shared ref-count for scroll lock instances on the same document. */
+/**
+ * Shared ref-count for scroll lock instances on the same document.
+ *
+ * @internal
+ */
 const lockCounts = new WeakMap<HTMLElement, number>();
 
+/** @internal */
 function acquireScrollLock(html: HTMLElement): void {
   const count = lockCounts.get(html) ?? 0;
   if (count === 0) {
@@ -15,6 +20,7 @@ function acquireScrollLock(html: HTMLElement): void {
   lockCounts.set(html, count + 1);
 }
 
+/** @internal */
 function releaseScrollLock(html: HTMLElement): void {
   const count = lockCounts.get(html) ?? 0;
   if (count <= 1) {
@@ -35,7 +41,7 @@ function releaseScrollLock(html: HTMLElement): void {
  * prevent layout shift when the scrollbar disappears. Restores original
  * values when all lock instances are released.
  *
- * Multiple instances are ref-counted — the original styles are only
+ * Multiple instances are ref-counted - the original styles are only
  * restored when the last lock is released.
  *
  * ### With a drawer
@@ -51,6 +57,10 @@ function releaseScrollLock(html: HTMLElement): void {
  * ```
  *
  * @category common/layout
+ * @docsKind primary
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/layout/scroll/scroll-lock.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxDrawer, CngxBackdrop
  * <example-url>http://localhost:4200/#/common/layout/scroll-lock/toggle</example-url>
  */
 @Directive({

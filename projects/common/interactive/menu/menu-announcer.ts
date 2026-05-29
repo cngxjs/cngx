@@ -36,6 +36,10 @@ export type CngxMenuAnnouncerFactory = () => CngxMenuAnnouncerLike;
  * `inject(CngxMenuAnnouncer)` directly, so a swap is enterprise-wide.
  *
  * @category common/interactive/menu
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/menu/menu-announcer.ts
+ * @since 0.1.0
+ * @relatedTo CngxMenu, CngxMenuTrigger, CngxMenuItemSubmenu
  */
 @Injectable({ providedIn: 'root' })
 export class CngxMenuAnnouncer implements CngxMenuAnnouncerLike {
@@ -120,6 +124,9 @@ export function createMenuAnnouncer(): CngxMenuAnnouncerLike {
  * ```
  *
  * @category common/interactive/menu
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/menu/menu-announcer.ts
+ * @since 0.1.0
  */
 export const CNGX_MENU_ANNOUNCER_FACTORY = new InjectionToken<CngxMenuAnnouncerFactory>(
   'CNGX_MENU_ANNOUNCER_FACTORY',

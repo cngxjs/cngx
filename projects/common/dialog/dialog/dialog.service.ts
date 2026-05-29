@@ -43,6 +43,9 @@ import { CngxDialogOutlet } from './dialog-outlet';
  * ```
  *
  * @category common/dialog
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/dialog/dialog/dialog.service.ts
+ * @since 0.1.0
+ * @relatedTo CngxDialogOpener, CngxDialog, CNGX_DIALOG_DATA
  */
 export class CngxDialogRef<T = unknown> {
   /** @internal */
@@ -144,7 +147,7 @@ export class CngxDialogRef<T = unknown> {
 /**
  * Service for opening dialogs programmatically.
  *
- * Works like `MatDialog.open()` — pass a component type and config,
+ * Works like `MatDialog.open()` - pass a component type and config,
  * get back a typed `CngxDialogRef<T>`.
  *
  * Must be provided via `provideDialog()`.
@@ -171,6 +174,10 @@ export class CngxDialogRef<T = unknown> {
  * ```
  *
  * @category common/dialog
+ * @docsKind primary
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/dialog/dialog/dialog.service.ts
+ * @since 0.1.0
+ * @relatedTo CngxDialog, CngxDialogRef, CNGX_DIALOG_DATA, CngxDialogStack
  */
 @Injectable()
 export class CngxDialogOpener {
@@ -184,8 +191,8 @@ export class CngxDialogOpener {
   /**
    * Open a dialog with the given component.
    *
-   * @param component — The component type to render inside the dialog.
-   * @param config — Optional dialog configuration.
+   * @param component - The component type to render inside the dialog.
+   * @param config - Optional dialog configuration.
    * @returns A typed `CngxDialogRef<T>` for reading the result and controlling the dialog.
    */
   open<T = unknown, D = unknown>(
@@ -196,8 +203,8 @@ export class CngxDialogOpener {
   /**
    * Open a dialog with the given template.
    *
-   * @param templateRef — The template to render inside the dialog.
-   * @param config — Optional dialog configuration.
+   * @param templateRef - The template to render inside the dialog.
+   * @param config - Optional dialog configuration.
    * @returns A typed `CngxDialogRef<T>`.
    */
   open<T = unknown, D = unknown>(
@@ -257,7 +264,7 @@ export class CngxDialogOpener {
 
     this.openDialogs.push(dialogRef as CngxDialogRef<unknown>);
 
-    // CngxDialog has open() but the DialogRef<T> interface does not — call the concrete instance.
+    // CngxDialog has open() but the DialogRef<T> interface does not - call the concrete instance.
     const dialogInstance = outletRef.instance.dialog();
     dialogInstance.open();
 

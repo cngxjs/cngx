@@ -19,7 +19,7 @@ import type { CngxTabRejectionIconContext } from './slots/tab-rejection-icon.dir
  * {@link withTabsAriaLabels}.
  *
  * Per-tab nav phrasing (`previousTab`, `nextTab`) lives in
- * {@link CngxTabsI18n}, not here — landmark naming and SR phrasing
+ * {@link CngxTabsI18n}, not here - landmark naming and SR phrasing
  * stay on separate override paths.
  *
  * @category common/tabs
@@ -43,7 +43,7 @@ export interface CngxTabsFallbackLabels {
 /**
  * App-wide template overrides for `<cngx-tab-group>` and
  * `<cngx-tab-overflow>` skin regions. Middle tier of the 3-stage
- * cascade — per-instance directive > this field > built-in markup.
+ * cascade - per-instance directive > this field > built-in markup.
  * Apply via the matching `with*Template` builders. Shape mirrors
  * `CngxStepperTemplates` so consumer templates port across
  * families.
@@ -82,7 +82,7 @@ export interface CngxTabsConfig {
   readonly overflowStabilizeMs?: number;
   /**
    * Hard ceiling (ms) on commit deferral while IO bursts keep
-   * arriving — without it, sustained churn (momentum scroll,
+   * arriving - without it, sustained churn (momentum scroll,
    * continuous resize) would clear the stabilize timer forever and
    * the More counter would freeze on a stale value, breaking
    * Pillar 2. Default 250ms.
@@ -112,7 +112,7 @@ const TABS_CONFIG_DEFAULTS: Required<
     tabsRegion: 'Tabs',
   },
   fallbackLabels: {
-    // W3C ARIA tablist convention — kept distinct from
+    // W3C ARIA tablist convention - kept distinct from
     // `i18n.tabsLabel` so AT doesn't read the same string twice
     // back-to-back across `aria-roledescription` and `aria-label`.
     tabRoleDescription: 'tab list',
@@ -129,11 +129,14 @@ const TABS_CONFIG_DEFAULTS: Required<
  * (root) or {@link provideTabsConfigAt} (component scope).
  *
  * @category common/tabs
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/tabs-config.ts
+ * @since 0.1.0
  */
-export const CNGX_TABS_CONFIG = new InjectionToken<CngxTabsConfig>(
-  'CngxTabsConfig',
-  { providedIn: 'root', factory: () => TABS_CONFIG_DEFAULTS },
-);
+export const CNGX_TABS_CONFIG = new InjectionToken<CngxTabsConfig>('CngxTabsConfig', {
+  providedIn: 'root',
+  factory: () => TABS_CONFIG_DEFAULTS,
+});
 
 /**
  * Feature signature for `with*` config builders. The hidden
@@ -143,9 +146,7 @@ export const CNGX_TABS_CONFIG = new InjectionToken<CngxTabsConfig>(
  *
  * @category common/tabs
  */
-export type CngxTabsConfigFeature = ((
-  config: CngxTabsConfig,
-) => CngxTabsConfig) & {
+export type CngxTabsConfigFeature = ((config: CngxTabsConfig) => CngxTabsConfig) & {
   readonly _target: 'config';
 };
 
@@ -205,9 +206,7 @@ export function withTabsRovingLoop(loop: boolean): CngxTabsConfigFeature {
  *
  * @category common/tabs
  */
-export function withTabsCommitMode(
-  mode: 'optimistic' | 'pessimistic',
-): CngxTabsConfigFeature {
+export function withTabsCommitMode(mode: 'optimistic' | 'pessimistic'): CngxTabsConfigFeature {
   return defineTabsConfigFeature((cfg) => ({
     ...cfg,
     defaultCommitMode: mode,
@@ -238,9 +237,7 @@ export function withTabsRouterSync(
  *
  * @category common/tabs
  */
-export function withTabsAriaLabels(
-  labels: CngxTabsAriaLabels,
-): CngxTabsConfigFeature {
+export function withTabsAriaLabels(labels: CngxTabsAriaLabels): CngxTabsConfigFeature {
   return defineTabsConfigFeature((cfg) => ({
     ...cfg,
     ariaLabels: { ...cfg.ariaLabels, ...labels },
@@ -253,9 +250,7 @@ export function withTabsAriaLabels(
  *
  * @category common/tabs
  */
-export function withTabsFallbackLabels(
-  labels: CngxTabsFallbackLabels,
-): CngxTabsConfigFeature {
+export function withTabsFallbackLabels(labels: CngxTabsFallbackLabels): CngxTabsConfigFeature {
   return defineTabsConfigFeature((cfg) => ({
     ...cfg,
     fallbackLabels: { ...cfg.fallbackLabels, ...labels },
@@ -373,13 +368,8 @@ export function withTabBusySpinnerTemplate(
   }));
 }
 
-function resolveFeatures(
-  features: readonly CngxTabsConfigFeature[],
-): CngxTabsConfig {
-  return features.reduce<CngxTabsConfig>(
-    (cfg, feat) => feat(cfg),
-    TABS_CONFIG_DEFAULTS,
-  );
+function resolveFeatures(features: readonly CngxTabsConfigFeature[]): CngxTabsConfig {
+  return features.reduce<CngxTabsConfig>((cfg, feat) => feat(cfg), TABS_CONFIG_DEFAULTS);
 }
 
 /**
@@ -411,9 +401,7 @@ export function provideTabsConfig(
  *
  * @category common/tabs
  */
-export function provideTabsConfigAt(
-  ...features: readonly CngxTabsConfigFeature[]
-): Provider[] {
+export function provideTabsConfigAt(...features: readonly CngxTabsConfigFeature[]): Provider[] {
   return [{ provide: CNGX_TABS_CONFIG, useValue: resolveFeatures(features) }];
 }
 

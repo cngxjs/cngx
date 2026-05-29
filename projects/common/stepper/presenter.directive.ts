@@ -1,17 +1,6 @@
-import {
-  computed,
-  Directive,
-  inject,
-  input,
-  model,
-  signal,
-  type Signal,
-} from '@angular/core';
+import { computed, Directive, inject, input, model, signal, type Signal } from '@angular/core';
 
-import {
-  CNGX_COMMIT_CONTROLLER_FACTORY,
-  type CngxCommitController,
-} from '@cngx/common/data';
+import { CNGX_COMMIT_CONTROLLER_FACTORY, type CngxCommitController } from '@cngx/common/data';
 import {
   CNGX_STATEFUL,
   createTransitionTracker,
@@ -25,7 +14,13 @@ import {
   type CngxStepperCommitHandler,
 } from './commit-handler';
 import { injectStepperConfig } from './stepper-config';
-import { CNGX_STEPPER_HOST, type CngxStepperHost, type CngxStepNode, type CngxStepRegistration, type CngxStepStatus } from './stepper-host.token';
+import {
+  CNGX_STEPPER_HOST,
+  type CngxStepperHost,
+  type CngxStepNode,
+  type CngxStepRegistration,
+  type CngxStepStatus,
+} from './stepper-host.token';
 import { flatStepsEqual, flattenStepTree, stepTreeEqual } from './step-tree.util';
 
 /**
@@ -35,6 +30,8 @@ import { flatStepsEqual, flattenStepTree, stepTreeEqual } from './step-tree.util
  * commit-action signature.
  *
  * @category common/stepper
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/stepper/presenter.directive.ts
+ * @since 0.1.0
  */
 export type CngxStepperCommitAction = (
   fromIndex: number,
@@ -42,17 +39,22 @@ export type CngxStepperCommitAction = (
 ) => boolean | Promise<boolean> | Observable<boolean>;
 
 /**
- * Stepper presenter — the brain of every stepper / wizard flow.
+ * Stepper presenter - the brain of every stepper / wizard flow.
  * Holds the active-step model, registry, linear policy, orientation,
  * and commit-controller lifecycle. Provides {@link CNGX_STEPPER_HOST}
  * for atom registration and {@link CNGX_STATEFUL} so transition
  * bridges (`<cngx-toast-on />`, `<cngx-banner-on />`) compose without
  * explicit `[state]` wiring.
  *
- * Sheriff: common Level 2. Pure directive — zero template, zero CSS.
+ * Sheriff: common Level 2. Pure directive - zero template, zero CSS.
  * Level-4 organisms compose this via `hostDirectives`.
  *
  * @category common/stepper
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/stepper/presenter.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxStep, CngxStepGroup, CngxStepperRouterSync, CNGX_STEPPER_HOST, CNGX_STEPPER_CONFIG
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-commit-action/pessimistic-optimistic-commits-with-bridge-directives</example-url>
  */
 @Directive({
@@ -69,7 +71,7 @@ export class CngxStepperPresenter implements CngxStepperHost {
 
   readonly activeStepIndex = model<number>(0);
   // Raw *Input slots default undefined so the cascade resolves through
-  // CNGX_STEPPER_CONFIG. Must stay public — the template type-checker
+  // CNGX_STEPPER_CONFIG. Must stay public - the template type-checker
   // rejects protected/private on hostDirective alias bindings.
   readonly linearInput = input<boolean | undefined>(undefined, {
     alias: 'linear',
@@ -78,26 +80,23 @@ export class CngxStepperPresenter implements CngxStepperHost {
     () => this.linearInput() ?? this.config.defaultLinear ?? false,
   );
 
-  readonly orientationInput = input<
-    'horizontal' | 'vertical' | undefined
-  >(undefined, { alias: 'orientation' });
+  readonly orientationInput = input<'horizontal' | 'vertical' | undefined>(undefined, {
+    alias: 'orientation',
+  });
   readonly orientation = computed<'horizontal' | 'vertical'>(
-    () =>
-      this.orientationInput() ?? this.config.defaultOrientation ?? 'horizontal',
+    () => this.orientationInput() ?? this.config.defaultOrientation ?? 'horizontal',
   );
 
   readonly commitAction = input<CngxStepperCommitAction | null>(null);
-  readonly commitModeInput = input<
-    'optimistic' | 'pessimistic' | undefined
-  >(undefined, { alias: 'commitMode' });
+  readonly commitModeInput = input<'optimistic' | 'pessimistic' | undefined>(undefined, {
+    alias: 'commitMode',
+  });
   readonly commitMode = computed<'optimistic' | 'pessimistic'>(
-    () =>
-      this.commitModeInput() ?? this.config.defaultCommitMode ?? 'pessimistic',
+    () => this.commitModeInput() ?? this.config.defaultCommitMode ?? 'pessimistic',
   );
 
   private readonly genericFactory = inject(CNGX_COMMIT_CONTROLLER_FACTORY);
-  private readonly commitController: CngxCommitController<number> =
-    this.genericFactory<number>();
+  private readonly commitController: CngxCommitController<number> = this.genericFactory<number>();
   private readonly commitHandler: CngxStepperCommitHandler = inject(
     CNGX_STEPPER_COMMIT_HANDLER_FACTORY,
   )({ controller: this.commitController });
@@ -110,28 +109,24 @@ export class CngxStepperPresenter implements CngxStepperHost {
    * `state.data()` because the AsyncState data slot only updates on
    * success. Drives per-step `aria-busy` in the organism.
    */
-  readonly intendedStepIndex: Signal<number | undefined> =
-    this.commitController.intendedValue;
+  readonly intendedStepIndex: Signal<number | undefined> = this.commitController.intendedValue;
 
   /**
    * Reactive current/previous pair for the commit-state status. Skin
    * sub-components mount a `<span cngxLiveRegion>` reading this
-   * tracker. Allocated once per presenter — the underlying
+   * tracker. Allocated once per presenter - the underlying
    * `linkedSignal` is shared across all consumers.
    */
-  readonly commitTransition: StatusTransition = createTransitionTracker(
-    () => this.commitController.state.status(),
+  readonly commitTransition: StatusTransition = createTransitionTracker(() =>
+    this.commitController.state.status(),
   );
 
-  // Persistence-of-error surface — see CngxStepperHost.lastFailedIndex
+  // Persistence-of-error surface - see CngxStepperHost.lastFailedIndex
   // / originIndexDuringCommit for the contract.
   private readonly lastFailedIndexState = signal<number | undefined>(undefined);
-  private readonly originIndexDuringCommitState = signal<number | undefined>(
-    undefined,
-  );
+  private readonly originIndexDuringCommitState = signal<number | undefined>(undefined);
   /** {@inheritDoc CngxStepperHost.lastFailedIndex} */
-  readonly lastFailedIndex: Signal<number | undefined> =
-    this.lastFailedIndexState.asReadonly();
+  readonly lastFailedIndex: Signal<number | undefined> = this.lastFailedIndexState.asReadonly();
   /** {@inheritDoc CngxStepperHost.originIndexDuringCommit} */
   readonly originIndexDuringCommit: Signal<number | undefined> =
     this.originIndexDuringCommitState.asReadonly();
@@ -147,10 +142,10 @@ export class CngxStepperPresenter implements CngxStepperHost {
   );
 
   /**
-   * Step-only flat projection — terminal nodes in DFS order.
+   * Step-only flat projection - terminal nodes in DFS order.
    * Structural-equal via `flatStepsEqual` so downstream computeds
    * don't cascade on shape-stable re-emits. Single source for every
-   * `select*` / `clamp` / `activeStepId` lookup — never re-filter
+   * `select*` / `clamp` / `activeStepId` lookup - never re-filter
    * `flatSteps()`.
    */
   private readonly stepsOnly: Signal<readonly CngxStepNode[]> = computed(
@@ -184,7 +179,7 @@ export class CngxStepperPresenter implements CngxStepperHost {
 
   register(handle: CngxStepRegistration, parentId: string | null = null): void {
     if (this.registry.has(handle.id)) {
-      // Idempotent re-register — replace the handle, keep the ordering slot.
+      // Idempotent re-register - replace the handle, keep the ordering slot.
       const entry = this.registry.get(handle.id)!;
       entry.reg = handle;
       entry.parentId = parentId;
@@ -237,9 +232,7 @@ export class CngxStepperPresenter implements CngxStepperHost {
         flatIndex: -1,
       };
     };
-    const rootIds = this.insertionOrder.filter(
-      (id) => this.registry.get(id)!.parentId === null,
-    );
+    const rootIds = this.insertionOrder.filter((id) => this.registry.get(id)!.parentId === null);
     this.treeState.set(rootIds.map((id) => buildNode(id, 0)));
   }
 
@@ -273,7 +266,7 @@ export class CngxStepperPresenter implements CngxStepperHost {
 
     const action = this.commitAction();
     if (!action) {
-      // No-action fast path — sync move, no commit window opens, so
+      // No-action fast path - sync move, no commit window opens, so
       // `originIndexDuringCommit` stays untouched. Clear the rejection
       // flag if the user re-picked a previously-failed target.
       this.activeStepIndex.set(target);
@@ -285,7 +278,7 @@ export class CngxStepperPresenter implements CngxStepperHost {
 
     // Commit-gated transition. Pessimistic holds at `previous` until
     // the action resolves; optimistic advances now and rolls back on
-    // rejection. Supersede comes from the lifted commit-controller —
+    // rejection. Supersede comes from the lifted commit-controller -
     // a rapid second select() cancels the in-flight runner.
     //
     // Capture the safe-harbour origin exactly once on commit-window
@@ -298,7 +291,7 @@ export class CngxStepperPresenter implements CngxStepperHost {
     }
     this.commitHandler.beginTransition(previous, target, action, (accept) => {
       if (accept) {
-        // Success — origin no longer needed; clear the rejection
+        // Success - origin no longer needed; clear the rejection
         // flag if the user re-picked the failed target.
         this.originIndexDuringCommitState.set(undefined);
         if (this.lastFailedIndexState() === target) {
@@ -308,7 +301,7 @@ export class CngxStepperPresenter implements CngxStepperHost {
           this.activeStepIndex.set(target);
         }
       } else {
-        // Reject — flag the target; RETAIN the origin so
+        // Reject - flag the target; RETAIN the origin so
         // `liveAnnouncement` can resolve the origin label for the
         // rich rollback phrase. Optimistic rolls back; pessimistic
         // never moved.

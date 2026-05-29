@@ -45,6 +45,9 @@ export interface CngxOptionContainerGroup {
  * { descendants: false })` and walk the result preserving DOM order.
  * The discriminated `kind` field separates leaves from groups without
  * forcing the consumer to import either directive class.
+ *
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/listbox/option-container.ts
+ * @since 0.1.0
  */
 export const CNGX_OPTION_CONTAINER = new InjectionToken<CngxOptionContainer>(
   'CNGX_OPTION_CONTAINER',

@@ -7,7 +7,7 @@ import type { CngxTagPrefixContext } from './tag-slot.context';
  * `<span cngxTag>`. Use for icon glyphs, status dots, count badges,
  * or any per-tag prefix decoration.
  *
- * The slot has no default body — when not projected, no DOM is
+ * The slot has no default body - when not projected, no DOM is
  * rendered in the prefix position.
  *
  * ```html
@@ -20,6 +20,9 @@ import type { CngxTagPrefixContext } from './tag-slot.context';
  * ```
  *
  * @category common/display
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/display/tag/slots/tag-prefix.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxTag, CngxTagLabel, CngxTagSuffix
  * <example-url>http://localhost:4200/#/common/display/tag/app-wide-defaults-via-providetagconfig</example-url>
  * <example-url>http://localhost:4200/#/common/display/tag/color-palette</example-url>
  * <example-url>http://localhost:4200/#/common/display/tag/composition-with-cngxicon</example-url>

@@ -8,11 +8,11 @@ import { Directive, input } from '@angular/core';
  * `assertive` announcements interrupt immediately. `off` disables announcements.
  *
  * Sets `role="alert"` for assertive regions and `role="status"` for polite regions
- * via a host binding — no manual attribute wiring needed.
+ * via a host binding - no manual attribute wiring needed.
  *
  * Unlike CDK's `LiveAnnouncer` service (which creates a hidden DOM element and
  * requires imperative `announce()` calls), this directive decorates your own
- * element declaratively — the content you render IS the announcement.
+ * element declaratively - the content you render IS the announcement.
  *
  * ### Status message
  * ```html
@@ -30,6 +30,11 @@ import { Directive, input } from '@angular/core';
  * ```
  *
  * @category common/a11y
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/a11y/aria/live-region.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxAriaExpanded
  * <example-url>http://localhost:4200/#/common/a11y/live-region/form-validation-assertive-error-announcements</example-url>
  * <example-url>http://localhost:4200/#/common/a11y/live-region/polite-vs-assertive</example-url>
  */
@@ -48,9 +53,9 @@ import { Directive, input } from '@angular/core';
 export class CngxLiveRegion {
   /**
    * Controls the urgency of announcements.
-   * - `'polite'` — queued after current speech (default)
-   * - `'assertive'` — interrupts immediately
-   * - `'off'` — no announcements
+   * - `'polite'` - queued after current speech (default)
+   * - `'assertive'` - interrupts immediately
+   * - `'off'` - no announcements
    */
   readonly politeness = input<'polite' | 'assertive' | 'off'>('polite');
   /** Whether the entire region should be announced as a whole. */

@@ -13,7 +13,7 @@ import {
  * sidebar or nav menu.
  *
  * Sets a `--cngx-nav-depth` CSS custom property for indentation and
- * toggles an `active` class. Does NOT depend on `@angular/router` —
+ * toggles an `active` class. Does NOT depend on `@angular/router` -
  * the consumer wires `routerLinkActive` or binds `[active]` manually.
  *
  * ### With Router
@@ -39,6 +39,12 @@ import {
  * ```
  *
  * @category common/interactive
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/nav/nav-link.directive.ts
+ * @selector [cngxNavLink]
+ * @since 0.1.0
+ * @relatedTo CngxNavGroup, CngxNavLabel, CngxNavBadge, CngxDisclosure
  * <example-url>http://localhost:4200/#/common/interactive/nav/nav-badge-counts-and-dots</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/nav/nav-group-accordion-sections</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/nav/nav-links-active-state-depth</example-url>
@@ -106,6 +112,6 @@ export class CngxNavLink {
    */
   readonly ariaCurrent = input<string>('page');
 
-  /** Nesting depth for indentation. Consumer sets manually — no ancestor injection. */
+  /** Nesting depth for indentation. Consumer sets manually - no ancestor injection. */
   readonly depth = input<number>(0);
 }

@@ -17,7 +17,7 @@ export interface CngxOrganismScrollSyncOptions {
   readonly activeId: Signal<string | null>;
   /**
    * Host element containing the per-item buttons. Items must carry
-   * `id="${itemId}-header"` — the convention used by
+   * `id="${itemId}-header"` - the convention used by
    * `<cngx-tab-group>` and `<cngx-stepper>`.
    */
   readonly hostElement: HTMLElement;
@@ -42,13 +42,11 @@ const DEFAULT_SCROLL_OPTIONS: ScrollIntoViewOptions = {
  * scrolls the matching `[id="<itemId>-header"]` into view.
  *
  * The DOM call sits in `untracked()` (only `activeId` is tracked).
- * `scrollIntoView` is missing in jsdom — guarded with optional chain.
+ * `scrollIntoView` is missing in jsdom - guarded with optional chain.
  *
  * @category common/tabs/scroll-sync
  */
-export function createOrganismScrollSync(
-  opts: CngxOrganismScrollSyncOptions,
-): void {
+export function createOrganismScrollSync(opts: CngxOrganismScrollSyncOptions): void {
   const { activeId, hostElement, scrollOptions, injector } = opts;
   const resolvedOptions = scrollOptions ?? DEFAULT_SCROLL_OPTIONS;
 
@@ -59,9 +57,7 @@ export function createOrganismScrollSync(
         return;
       }
       untracked(() => {
-        const button = hostElement.querySelector<HTMLElement>(
-          `[id="${id}-header"]`,
-        );
+        const button = hostElement.querySelector<HTMLElement>(`[id="${id}-header"]`);
         button?.scrollIntoView?.(resolvedOptions);
       });
     });
@@ -73,9 +69,7 @@ export function createOrganismScrollSync(
  *
  * @category common/tabs/scroll-sync
  */
-export type CngxOrganismScrollSyncFactory = (
-  opts: CngxOrganismScrollSyncOptions,
-) => void;
+export type CngxOrganismScrollSyncFactory = (opts: CngxOrganismScrollSyncOptions) => void;
 
 /**
  * DI token for the active-item scroll-into-view policy. Defaults to
@@ -85,12 +79,13 @@ export type CngxOrganismScrollSyncFactory = (
  * `CNGX_OVERFLOW_POPOVER_HIGHLIGHT_FACTORY`.
  *
  * @category common/tabs/scroll-sync
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/scroll-sync/organism-scroll-sync.ts
+ * @since 0.1.0
  */
-export const CNGX_ORGANISM_SCROLL_SYNC_FACTORY =
-  new InjectionToken<CngxOrganismScrollSyncFactory>(
-    'CngxOrganismScrollSyncFactory',
-    {
-      providedIn: 'root',
-      factory: () => createOrganismScrollSync,
-    },
-  );
+export const CNGX_ORGANISM_SCROLL_SYNC_FACTORY = new InjectionToken<CngxOrganismScrollSyncFactory>(
+  'CngxOrganismScrollSyncFactory',
+  {
+    providedIn: 'root',
+    factory: () => createOrganismScrollSync,
+  },
+);

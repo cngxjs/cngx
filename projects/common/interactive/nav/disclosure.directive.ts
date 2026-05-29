@@ -4,7 +4,7 @@ import { computed, Directive, input, output, signal } from '@angular/core';
  * Generic expand/collapse (disclosure) behavior.
  *
  * Applied to the **trigger** element (button, heading, etc.). Manages
- * `aria-expanded` and `aria-controls` host attributes directly — no need
+ * `aria-expanded` and `aria-controls` host attributes directly - no need
  * to compose `CngxAriaExpanded` separately.
  *
  * Supports controlled (`[cngxDisclosureOpened]`) and uncontrolled modes,
@@ -44,6 +44,11 @@ import { computed, Directive, input, output, signal } from '@angular/core';
  * ```
  *
  * @category common/interactive
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/nav/disclosure.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxNavGroup, CngxExpandable
  * <example-url>http://localhost:4200/#/common/interactive/disclosure/basic-uncontrolled</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/disclosure/controlled-mode</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/disclosure/faq-accordion</example-url>
@@ -69,7 +74,7 @@ export class CngxDisclosure {
 
   private readonly openedState = signal(false);
 
-  /** Resolved opened state — controlled input wins over internal state. */
+  /** Resolved opened state - controlled input wins over internal state. */
   readonly opened = computed(() => this.openedInput() ?? this.openedState());
 
   /** Emitted when the opened state changes. */

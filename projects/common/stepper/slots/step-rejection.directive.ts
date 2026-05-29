@@ -4,7 +4,7 @@ import type { CngxStepNode } from '../stepper-host.token';
 
 /**
  * Context passed to the `*cngxStepRejection` template. Renders on the
- * strip step the most recent commit was rolled back FROM — sibling of
+ * strip step the most recent commit was rolled back FROM - sibling of
  * the tabs `cngxTabRejectionIcon` slot. Renders only when
  * `presenter.lastFailedIndex()` matches the step's flat-index.
  *
@@ -45,6 +45,10 @@ export interface CngxStepRejectionContext {
  * ```
  *
  * @category common/stepper/slots
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/stepper/slots/step-rejection.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxStepBadge, CngxStepIndicator, CngxStepBusySpinner
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-slot-overrides/custom-busy-spinner-via-code-cngxstepbusyspinner-code</example-url>
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-slot-overrides/custom-error-badge-via-code-cngxstepbadge-code</example-url>
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-slot-overrides/custom-group-header-via-code-cngxstepgroupheader-code</example-url>
@@ -58,7 +62,5 @@ export interface CngxStepRejectionContext {
   standalone: true,
 })
 export class CngxStepRejection {
-  readonly templateRef = inject<TemplateRef<CngxStepRejectionContext>>(
-    TemplateRef,
-  );
+  readonly templateRef = inject<TemplateRef<CngxStepRejectionContext>>(TemplateRef);
 }

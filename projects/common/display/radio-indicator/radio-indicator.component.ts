@@ -1,16 +1,22 @@
 import { NgTemplateOutlet } from '@angular/common';
-import { ChangeDetectionStrategy, Component, input, ViewEncapsulation, type TemplateRef } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  input,
+  ViewEncapsulation,
+  type TemplateRef,
+} from '@angular/core';
 
 /**
- * Presentational radio indicator — circle with a centred dot when checked.
+ * Presentational radio indicator - circle with a centred dot when checked.
  *
  * **Why this exists.**
  * The library's `@cngx/forms/select` panel currently composes
  * {@link import('../checkbox-indicator/checkbox-indicator.component').CngxCheckboxIndicator}
  * for both single-select (`'checkmark'`) and multi-select (`'checkbox'`)
  * indicators. The form-primitives spec (Brain vs. Skin) introduces a
- * radio variant — `selectionIndicatorVariant: 'radio'` for single-select
- * panels — that needs the dot-in-circle visual independently of the
+ * radio variant - `selectionIndicatorVariant: 'radio'` for single-select
+ * panels - that needs the dot-in-circle visual independently of the
  * box/checkmark shapes. This atom is the radio counterpart: same
  * decorative-only contract, same `--cngx-*` theming surface, same
  * `aria-hidden="true"` discipline. Future single-value form atoms in
@@ -22,20 +28,25 @@ import { ChangeDetectionStrategy, Component, input, ViewEncapsulation, type Temp
  * - Express checked / disabled visual state via host classes the
  *   consumer (or upstream CSS) can theme.
  * - Apply size presets (`sm` / `md` / `lg`) as CSS-custom-property
- *   modifiers — same scale token as `CngxCheckboxIndicator` so the
+ *   modifiers - same scale token as `CngxCheckboxIndicator` so the
  *   two atoms render at matching sizes inside a select panel.
  *
  * **Non-responsibilities.**
- * - Selection state — controlled by the parent via `checked`.
- * - No `indeterminate` — radios are exclusive by definition; the
+ * - Selection state - controlled by the parent via `checked`.
+ * - No `indeterminate` - radios are exclusive by definition; the
  *   group enforces single-selection at the brain layer.
- * - Interaction — no `click` output, no keyboard handling. The radio
+ * - Interaction - no `click` output, no keyboard handling. The radio
  *   row (or the consuming select panel) owns the hit area.
- * - Accessibility announcements — `aria-hidden="true"` unconditionally.
+ * - Accessibility announcements - `aria-hidden="true"` unconditionally.
  *   Selection is announced via the row's `role="radio"` /
  *   `aria-checked` ARIA, never by this decoration.
  *
  * @category common/display
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/display/radio-indicator/radio-indicator.component.ts
+ * @since 0.1.0
+ * @relatedTo CngxCheckboxIndicator, CngxIcon
  * <example-url>http://localhost:4200/#/common/display/radio-indicator/custom-dotglyph</example-url>
  * <example-url>http://localhost:4200/#/common/display/radio-indicator/default-unchecked-vs-checked</example-url>
  * <example-url>http://localhost:4200/#/common/display/radio-indicator/disabled</example-url>
@@ -76,7 +87,7 @@ export class CngxRadioIndicator {
   readonly checked = input<boolean>(false);
 
   /**
-   * Disabled visual state. Purely cosmetic (opacity dim) — the indicator
+   * Disabled visual state. Purely cosmetic (opacity dim) - the indicator
    * never intercepts events, so this is a hint, not a block.
    */
   readonly disabled = input<boolean>(false);
@@ -88,7 +99,7 @@ export class CngxRadioIndicator {
    * Consumer-supplied template for the centred dot. When `null` (default),
    * the built-in `<span class="cngx-radio-indicator__dot"></span>` is
    * rendered. When set, the consumer template replaces the dot span
-   * entirely — the `__dot` class is NOT applied to the custom content
+   * entirely - the `__dot` class is NOT applied to the custom content
    * (consumers own the styling of their replacement).
    *
    * Convention-compatible with `CngxCheckboxIndicator.checkGlyph`: pass a

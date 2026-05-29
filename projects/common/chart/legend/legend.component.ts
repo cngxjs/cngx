@@ -7,7 +7,7 @@ import {
 } from '@angular/core';
 
 /**
- * Single legend entry. `color` is optional — when omitted the swatch
+ * Single legend entry. `color` is optional - when omitted the swatch
  * falls back to the chart-level primary token. `value` is intentionally
  * unconstrained so consumers can carry their domain key (id, layer
  * name, accessor return type, ...) for later interactions without a
@@ -22,7 +22,7 @@ export interface CngxChartLegendItem<T = unknown> {
 }
 
 /**
- * Presentational legend atom — a row (or column) of coloured swatches
+ * Presentational legend atom - a row (or column) of coloured swatches
  * paired with labels. Decoupled from `<cngx-chart>` and the layer
  * atoms by design: the consumer drives the items array, so the
  * legend stays a pure rendering surface with zero opinions about
@@ -51,6 +51,11 @@ export interface CngxChartLegendItem<T = unknown> {
  * `end`).
  *
  * @category common/chart/legend
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/legend/legend.component.ts
+ * @since 0.1.0
+ * @relatedTo CngxChart, CngxLine, CngxBar
  */
 @Component({
   selector: 'cngx-chart-legend',

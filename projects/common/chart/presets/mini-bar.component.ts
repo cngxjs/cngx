@@ -9,13 +9,18 @@ import type { CngxAsyncState } from '@cngx/core/utils';
 import { injectPresetState } from './preset-state';
 
 /**
- * Mini horizontal bar — a single-value bounded indicator. Renders
+ * Mini horizontal bar - a single-value bounded indicator. Renders
  * pure DOM (no SVG), positioned with CSS only. Host carries
  * `role="meter"` per the WAI-ARIA pattern for single-value bounded
  * indicators; `aria-valuenow` / `aria-valuemin` / `aria-valuemax`
  * tell AT the exact reading without a separate Summary.
  *
  * @category common/chart/presets
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/presets/mini-bar.component.ts
+ * @since 0.1.0
+ * @relatedTo CngxMiniArea, CngxSparkline, CngxDonut, CngxBullet
  *
  * <example-url>http://localhost:4200/#/common/chart/mini-bar/async-state-machine</example-url>
  * <example-url>http://localhost:4200/#/common/chart/mini-bar/basic-readings</example-url>
@@ -37,7 +42,11 @@ import { injectPresetState } from './preset-state';
   template: `
     @switch (activeView()) {
       @case ('skeleton') {
-        <span class="cngx-preset-skeleton" [attr.aria-busy]="true" [attr.aria-label]="i18n.loading()"></span>
+        <span
+          class="cngx-preset-skeleton"
+          [attr.aria-busy]="true"
+          [attr.aria-label]="i18n.loading()"
+        ></span>
       }
       @case ('empty') {
         <span class="cngx-preset-fallback">{{ i18n.empty() }}</span>

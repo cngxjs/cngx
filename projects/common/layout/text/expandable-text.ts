@@ -42,6 +42,9 @@ export interface CngxExpandableToggleContext {
  * ```
  *
  * @category common/layout
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/layout/text/expandable-text.ts
+ * @since 0.1.0
+ * @relatedTo CngxExpandableText, CngxTruncate
  */
 @Directive({
   selector: 'ng-template[cngxExpandableToggle]',
@@ -58,7 +61,7 @@ export class CngxExpandableToggle {
  * a "Show more" / "Show less" button when the content is actually clamped.
  * Handles `aria-expanded` automatically.
  *
- * Supports custom toggle templates via `ng-template[cngxExpandableToggle]` —
+ * Supports custom toggle templates via `ng-template[cngxExpandableToggle]` -
  * use for icon buttons or any custom UI instead of plain text labels.
  *
  * ### Basic usage
@@ -86,6 +89,11 @@ export class CngxExpandableToggle {
  * ```
  *
  * @category common/layout
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/layout/text/expandable-text.ts
+ * @since 0.1.0
+ * @relatedTo CngxTruncate, CngxExpandableToggle, CngxHighlight
  * <example-url>http://localhost:4200/#/common/layout/expandable-text/auto-toggle</example-url>
  * <example-url>http://localhost:4200/#/common/layout/expandable-text/custom-labels</example-url>
  * <example-url>http://localhost:4200/#/common/layout/expandable-text/custom-toggle-template</example-url>

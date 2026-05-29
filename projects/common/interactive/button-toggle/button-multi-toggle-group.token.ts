@@ -6,7 +6,7 @@ import { InjectionToken, type ModelSignal, type Signal } from '@angular/core';
  * a multi-mode parent (via `inject(CNGX_BUTTON_MULTI_TOGGLE_GROUP, {
  * optional: true })`) bind `aria-selected` (toolbar APG) instead of
  * `aria-checked` (radiogroup APG) AT INJECTION TIME. Mode is static
- * per atom instance — there is no `[selectionMode]` flag.
+ * per atom instance - there is no `[selectionMode]` flag.
  *
  * `selectedValues` is a `ModelSignal<T[]>` so the consumer can
  * two-way-bind via `[(selectedValues)]` and the leaves can mutate
@@ -17,7 +17,7 @@ import { InjectionToken, type ModelSignal, type Signal } from '@angular/core';
  * the group's internal `SelectionController` so the leaf can render
  * `aria-selected` reactively without re-querying the array on every
  * keystroke. The signal identity is stable per value (per
- * `createSelectionController` contract) — safe to read inside a
+ * `createSelectionController` contract) - safe to read inside a
  * `computed()` on the leaf.
  *
  * `toggle(value)` is the single mutation entry-point the leaf calls
@@ -37,7 +37,7 @@ export interface CngxButtonMultiToggleGroupContract<T = unknown> {
  * DI token a `CngxButtonToggle` leaf injects to find its multi-mode
  * parent group. Always provided via
  * `{ provide: CNGX_BUTTON_MULTI_TOGGLE_GROUP, useExisting:
- * CngxButtonMultiToggleGroup }` — never via concrete-class injection
+ * CngxButtonMultiToggleGroup }` - never via concrete-class injection
  * (per `reference_atomic_decompose` §4).
  *
  * The leaf injects this token with `{ optional: true }` alongside
@@ -45,8 +45,9 @@ export interface CngxButtonMultiToggleGroupContract<T = unknown> {
  * must be present; the leaf throws a dev-mode error otherwise.
  *
  * @category common/interactive
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/button-toggle/button-multi-toggle-group.token.ts
+ * @since 0.1.0
  */
 export const CNGX_BUTTON_MULTI_TOGGLE_GROUP =
-  new InjectionToken<CngxButtonMultiToggleGroupContract>(
-    'CngxButtonMultiToggleGroup',
-  );
+  new InjectionToken<CngxButtonMultiToggleGroupContract>('CngxButtonMultiToggleGroup');

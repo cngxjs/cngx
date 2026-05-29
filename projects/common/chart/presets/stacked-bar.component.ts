@@ -19,6 +19,7 @@ export interface CngxStackedSegment {
   readonly label: string;
 }
 
+/** @internal */
 interface SegmentRendering {
   readonly key: string;
   readonly left: number;
@@ -29,13 +30,18 @@ interface SegmentRendering {
 }
 
 /**
- * Single-bar stacked composition — visualises proportional shares of
+ * Single-bar stacked composition - visualises proportional shares of
  * a fixed total. Pure DOM, no SVG. Host carries `role="img"` because
  * a stacked bar communicates a multi-segment ratio, not a single
  * bounded reading; the SR description enumerates segments via the
  * auto-generated `aria-label` (or the `[ariaLabel]` override).
  *
  * @category common/chart/presets
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/presets/stacked-bar.component.ts
+ * @since 0.1.0
+ * @relatedTo CngxBar, CngxDeviationBar, CngxBullet
  *
  * <example-url>http://localhost:4200/#/common/chart/stacked-bar/async-state-machine</example-url>
  * <example-url>http://localhost:4200/#/common/chart/stacked-bar/proportional-share-strips</example-url>
@@ -54,7 +60,11 @@ interface SegmentRendering {
   template: `
     @switch (activeView()) {
       @case ('skeleton') {
-        <span class="cngx-preset-skeleton" [attr.aria-busy]="true" [attr.aria-label]="i18n.loading()"></span>
+        <span
+          class="cngx-preset-skeleton"
+          [attr.aria-busy]="true"
+          [attr.aria-label]="i18n.loading()"
+        ></span>
       }
       @case ('empty') {
         <span class="cngx-preset-fallback">{{ i18n.empty() }}</span>
@@ -98,7 +108,8 @@ interface SegmentRendering {
         top: 0;
         bottom: 0;
         background: var(--cngx-stacked-bar-segment-color, var(--cngx-chart-primary, currentColor));
-        transition: width var(--cngx-stacked-bar-transition, 240ms) ease-out,
+        transition:
+          width var(--cngx-stacked-bar-transition, 240ms) ease-out,
           left var(--cngx-stacked-bar-transition, 240ms) ease-out;
       }
       cngx-stacked-bar .cngx-preset-skeleton {

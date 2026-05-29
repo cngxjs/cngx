@@ -1,10 +1,4 @@
-import {
-  computed,
-  Directive,
-  ElementRef,
-  inject,
-  input,
-} from '@angular/core';
+import { computed, Directive, ElementRef, inject, input } from '@angular/core';
 
 import { CNGX_AD_ITEM, CngxActiveDescendant, type CngxAdItemHandle } from '@cngx/common/a11y';
 import { nextUid } from '@cngx/core/utils';
@@ -15,10 +9,15 @@ import { CNGX_MENU_RADIO_GROUP } from './menu-radio-controller';
 
 /**
  * Radio-style menu item (`role="menuitemradio"`). Mutual exclusion is scoped
- * to the enclosing `CngxMenuGroup` — only one radio per group is checked at
+ * to the enclosing `CngxMenuGroup` - only one radio per group is checked at
  * a time.
  *
  * @category common/interactive/menu
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/menu/menu-item-radio.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxMenuItem, CngxMenuItemCheckbox, CngxMenuGroup
  * <example-url>http://localhost:4200/#/common/interactive/menu/checkable/text-formatting-menu</example-url>
  */
 @Directive({

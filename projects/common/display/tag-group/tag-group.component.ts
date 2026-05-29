@@ -25,7 +25,7 @@ import { CNGX_TAG_GROUP, type CngxTagGroupHost } from './tag-group.token';
  * Spacing between projected tags. Maps to the
  * `--cngx-tag-group-gap{,-xs,-md}` CSS custom property cascade with
  * fallback defaults (see `tag-group.component.css`). `sm` is the
- * default — matches the tag's own padding rhythm.
+ * default - matches the tag's own padding rhythm.
  *
  * - `xs` → 0.25rem (tight chip strips)
  * - `sm` → 0.5rem (default)
@@ -62,8 +62,8 @@ export type CngxTagGroupAlign = 'start' | 'center' | 'end' | 'between';
  * accessory slot zones. The cascade that flips each child's
  * `role="listitem"` lives on the `CngxTag` side (`tag.directive.ts`
  * reads `CNGX_TAG_GROUP.semanticList()` through a `computed`); this
- * component just provides the implementer of that token (Pillar 1 —
- * derivation rather than imperative sync; Pillar 2 — ARIA in the
+ * component just provides the implementer of that token (Pillar 1 -
+ * derivation rather than imperative sync; Pillar 2 - ARIA in the
  * reactive graph).
  *
  * **Responsibilities (intentionally narrow).**
@@ -80,17 +80,22 @@ export type CngxTagGroupAlign = 'start' | 'center' | 'end' | 'between';
  *   `CngxTag` children via the slot context.
  *
  * **Non-responsibilities.**
- * - No `role="listitem"` cascade implementation here — that lives in
+ * - No `role="listitem"` cascade implementation here - that lives in
  *   `CngxTag` so the cascade survives any future non-component
  *   implementer of `CngxTagGroupHost` (test doubles, programmatic
  *   groups).
- * - No `hostDirectives` — decorative atoms have no shared cross-cutting
+ * - No `hostDirectives` - decorative atoms have no shared cross-cutting
  *   behaviour to compose. Per atomic-decompose rule 1 the absence is
  *   the right call until a future shared concern lands.
- * - Configuration cascade (`provideTagConfig`) — deferred (see
+ * - Configuration cascade (`provideTagConfig`) - deferred (see
  *   `display-accepted-debt.md §1`).
  *
  * @category common/display
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/display/tag-group/tag-group.component.ts
+ * @since 0.1.0
+ * @relatedTo CngxTag, CngxTagGroupHeader, CngxTagGroupAccessory, CNGX_TAG_GROUP
  * <example-url>http://localhost:4200/#/common/display/tag/app-wide-defaults-via-providetagconfig</example-url>
  * <example-url>http://localhost:4200/#/common/display/tag/color-palette</example-url>
  * <example-url>http://localhost:4200/#/common/display/tag/composition-with-cngxicon</example-url>
@@ -145,7 +150,7 @@ export class CngxTagGroup implements CngxTagGroupHost {
    * Snapshot of the resolved tag-family config at construction
    * time. Drives the per-input fallback defaults below.
    *
-   * **Field-init ordering is load-bearing** — must be declared
+   * **Field-init ordering is load-bearing** - must be declared
    * before any input field that reads `this.cfg.groupDefaults?.*`.
    * Per the `tag-family-architectural-a-plus-pass` plan
    * Architectural-Decisions table.
@@ -169,20 +174,19 @@ export class CngxTagGroup implements CngxTagGroupHost {
   /**
    * Input-binding hook for the public `[semanticList]` attribute.
    * Accessed by Angular's template type-checker on consumer
-   * markup — therefore must be class-public (Angular rejects
+   * markup - therefore must be class-public (Angular rejects
    * `private` per NG1053; `protected` blocks external template
    * bindings). The hook is intentionally **not** the contract
-   * surface — that role belongs to `semanticList` below, typed
+   * surface - that role belongs to `semanticList` below, typed
    * `Signal<boolean>` so test doubles and programmatic
    * implementers of `CngxTagGroupHost` can satisfy the interface
    * without owning an Angular `input()`.
    *
    * @internal
    */
-  readonly semanticListInput = input<boolean>(
-    this.cfg.groupDefaults?.semanticList ?? false,
-    { alias: 'semanticList' },
-  );
+  readonly semanticListInput = input<boolean>(this.cfg.groupDefaults?.semanticList ?? false, {
+    alias: 'semanticList',
+  });
 
   /**
    * Public host-contract field. `InputSignal<boolean>` already
@@ -203,14 +207,14 @@ export class CngxTagGroup implements CngxTagGroupHost {
   readonly count = computed<number>(() => this.projectedTags().length);
 
   /**
-   * Per-instance header-slot directive — projected as
+   * Per-instance header-slot directive - projected as
    * `<ng-template cngxTagGroupHeader>...</ng-template>`. Resolved
    * through {@link injectResolvedTagTemplate} so consumers can
    * project a header without wrapping the group component.
    */
   protected readonly headerSlot = contentChild(CngxTagGroupHeader);
 
-  /** Per-instance accessory-slot directive — projected below the row. */
+  /** Per-instance accessory-slot directive - projected below the row. */
   protected readonly accessorySlot = contentChild(CngxTagGroupAccessory);
 
   /**
@@ -219,21 +223,15 @@ export class CngxTagGroup implements CngxTagGroupHost {
    * commit 5 inserts `CNGX_TAG_CONFIG.templates.header` as a middle
    * tier without touching this call site.
    */
-  protected readonly headerTpl = injectResolvedTagTemplate(
-    this.headerSlot,
-    'header',
-  );
+  protected readonly headerTpl = injectResolvedTagTemplate(this.headerSlot, 'header');
 
   /** Resolved accessory template. Same 2-stage cascade as {@link headerTpl}. */
-  protected readonly accessoryTpl = injectResolvedTagTemplate(
-    this.accessorySlot,
-    'accessory',
-  );
+  protected readonly accessoryTpl = injectResolvedTagTemplate(this.accessorySlot, 'accessory');
 
   /**
    * Projected `<span cngxTag>` siblings. Default-scoped
    * (`descendants: false`) so tags inside consumer-projected header /
-   * accessory templates do NOT inflate the count — the count
+   * accessory templates do NOT inflate the count - the count
    * represents the row's own taxonomy items, not arbitrary tag
    * usage inside the slot zones.
    */
@@ -246,7 +244,7 @@ export class CngxTagGroup implements CngxTagGroupHost {
    * serves both. Consumer templates `let-count="count"` etc. read
    * the live state without injecting the directive.
    *
-   * Explicit structural `equal` fn — without it, a fresh literal
+   * Explicit structural `equal` fn - without it, a fresh literal
    * each CD cycle would force `ngTemplateOutlet` to rebind embedded
    * views even when no input changed. Per
    * `reference_signal_architecture` §1 Equality Rule: every
@@ -273,7 +271,7 @@ export class CngxTagGroup implements CngxTagGroupHost {
 
   constructor() {
     // Dev-mode advisory: `[label]` without `[semanticList]="true"` lands
-    // `aria-label` on a bare `<div>` — AT reads the label but won't
+    // `aria-label` on a bare `<div>` - AT reads the label but won't
     // announce "list, N items". One-shot, tree-shaken in prod.
     afterNextRender(() => {
       const { label, semanticList } = untracked(() => ({

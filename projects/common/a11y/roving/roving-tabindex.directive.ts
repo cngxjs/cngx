@@ -26,6 +26,11 @@ import {
  * ```
  *
  * @category common/a11y
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/a11y/roving/roving-tabindex.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxRovingTabindex, CngxButtonToggle
  * <example-url>http://localhost:4200/#/common/a11y/roving-tabindex/horizontal-toolbar</example-url>
  * <example-url>http://localhost:4200/#/common/a11y/roving-tabindex/vertical-menu</example-url>
  */
@@ -50,7 +55,7 @@ export class CngxRovingItem {
 /**
  * Implements the WAI-ARIA roving tabindex pattern for composite widgets.
  *
- * Only the active item in the group has `tabindex="0"` — all others get
+ * Only the active item in the group has `tabindex="0"` - all others get
  * `tabindex="-1"`. Arrow keys move focus within the group; Tab leaves it.
  * Home/End jump to first/last item.
  *
@@ -95,6 +100,11 @@ export class CngxRovingItem {
  * ```
  *
  * @category common/a11y
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/a11y/roving/roving-tabindex.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxRovingItem, CngxActiveDescendant
  * <example-url>http://localhost:4200/#/common/a11y/roving-tabindex/horizontal-toolbar</example-url>
  * <example-url>http://localhost:4200/#/common/a11y/roving-tabindex/vertical-menu</example-url>
  */
@@ -160,7 +170,7 @@ export class CngxRovingTabindex {
         // Virtual mode: match by data-cngx-recycle-index attribute
         items.forEach((item) => {
           const el = item.elementRef.nativeElement as HTMLElement;
-          const idx = el.getAttribute('data-cngx-recycle-index');
+          const idx = el.dataset.cngxRecycleIndex;
           el.setAttribute('tabindex', idx != null && Number(idx) === active ? '0' : '-1');
         });
       } else {
@@ -188,7 +198,7 @@ export class CngxRovingTabindex {
    * Handles arrow-key, Home, and End navigation within the group.
    * Prevents default scrolling on arrow keys.
    *
-   * Unified handler — delegates to virtual or contentChildren navigation
+   * Unified handler - delegates to virtual or contentChildren navigation
    * based on whether `virtualCount` is set.
    */
   protected handleKeyDown(event: KeyboardEvent): void {
@@ -255,7 +265,7 @@ export class CngxRovingTabindex {
   }
 
   /**
-   * Finds the next index in virtual mode. No disabled-item skipping — can't check
+   * Finds the next index in virtual mode. No disabled-item skipping - can't check
    * disabled state of items not in the DOM.
    */
   private findNextVirtual(current: number, total: number, direction: 1 | -1): number | null {
@@ -288,7 +298,7 @@ export class CngxRovingTabindex {
 
   /**
    * Searches for the next enabled item starting from `current + direction`.
-   * Respects `loop` — wraps around or stops at the boundary.
+   * Respects `loop` - wraps around or stops at the boundary.
    * Skips disabled items.
    */
   private findNext(

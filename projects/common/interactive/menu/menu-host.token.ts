@@ -27,9 +27,12 @@ export interface CngxMenuHost {
  * DI token a menu host provides for sub-component composers (e.g. an
  * inside-the-menu submenu trigger) that resolve the host via `inject()`.
  * Triggers that live on a different element pass a template-ref through
- * an input typed against `CngxMenuHost` instead — DI across element
+ * an input typed against `CngxMenuHost` instead - DI across element
  * boundaries cannot reach the menu.
  *
  * @category common/interactive/menu
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/menu/menu-host.token.ts
+ * @since 0.1.0
  */
 export const CNGX_MENU_HOST = new InjectionToken<CngxMenuHost>('CNGX_MENU_HOST');

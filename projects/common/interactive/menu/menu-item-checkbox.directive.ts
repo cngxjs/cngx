@@ -19,6 +19,11 @@ import { injectMenuConfig } from './menu-config';
  * carries its own selection state.
  *
  * @category common/interactive/menu
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/menu/menu-item-checkbox.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxMenuItem, CngxMenuItemRadio, CngxMenu
  * <example-url>http://localhost:4200/#/common/interactive/menu/checkable/text-formatting-menu</example-url>
  */
 @Directive({

@@ -14,6 +14,7 @@ import { injectChartContext } from '../chart/chart-context';
  */
 export type BarYAccessor<T> = (d: T, i: number) => number;
 
+/** @internal */
 interface BarRect {
   readonly key: number;
   readonly x: number;
@@ -22,6 +23,7 @@ interface BarRect {
   readonly height: number;
 }
 
+/** @internal */
 const FALLBACK_BASELINE = 0;
 
 /**
@@ -37,6 +39,10 @@ const FALLBACK_BASELINE = 0;
  * Attribute-selector on `<svg:g>` — see {@link CngxLine} for why.
  *
  * @category common/chart/layers
+ * @docsKind primary
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/layers/bar.component.ts
+ * @since 0.1.0
+ * @relatedTo CngxLine, CngxArea, CngxStackedBar, CngxChart
  *
  * <example-url>http://localhost:4200/#/common/chart/primitives/async-state-machine-on-the-primitive</example-url>
  * <example-url>http://localhost:4200/#/common/chart/primitives/combo-bars-moving-average-line</example-url>
@@ -133,6 +139,7 @@ export class CngxBar<T = unknown> {
   );
 }
 
+/** @internal */
 function clamp01(v: number): number {
   if (v < 0) {
     return 0;
@@ -143,6 +150,7 @@ function clamp01(v: number): number {
   return v;
 }
 
+/** @internal */
 function rectsEqual(a: readonly BarRect[], b: readonly BarRect[]): boolean {
   if (a === b) {
     return true;

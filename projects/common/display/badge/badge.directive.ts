@@ -31,7 +31,7 @@ export type CngxBadgePosition =
 
 /**
  * Generic counter / dot indicator that attaches a small floating element to
- * any host. Purely presentational (`aria-hidden="true"`) — semantic meaning
+ * any host. Purely presentational (`aria-hidden="true"`) - semantic meaning
  * must live on the host (`aria-label`).
  *
  * Supports:
@@ -40,6 +40,11 @@ export type CngxBadgePosition =
  * - Boolean `true` (dot mode, no text)
  *
  * @category common/display
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/display/badge/badge.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxAvatar, CngxIcon, CngxChip
  * <example-url>http://localhost:4200/#/common/display/badge/colors-and-dot-mode</example-url>
  * <example-url>http://localhost:4200/#/common/display/badge/counts-with-overflow</example-url>
  * <example-url>http://localhost:4200/#/common/display/badge/inline-and-hidden</example-url>
@@ -61,7 +66,7 @@ export class CngxBadge {
   readonly position = input<CngxBadgePosition>('above-end');
   /** Whether the indicator is hidden regardless of value. */
   readonly hidden = input<boolean>(false);
-  /** Cap for numeric values — anything over renders as `"{max}+"`. */
+  /** Cap for numeric values - anything over renders as `"{max}+"`. */
   readonly max = input<number>(99);
 
   private readonly hostEl = inject(ElementRef<HTMLElement>);

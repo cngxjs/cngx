@@ -35,7 +35,7 @@ export interface CngxMenuNavContext {
  * always opens, never traverses into the submenu") register their own
  * via `CNGX_MENU_NAV_STRATEGY`.
  *
- * Strategy steps are pure decisions — they do not call popover.show() or
+ * Strategy steps are pure decisions - they do not call popover.show() or
  * touch any signal directly. The directive that consults the strategy
  * acts on the returned action.
  *
@@ -46,6 +46,7 @@ export interface CngxMenuNavStrategy {
   onArrowLeft(ctx: CngxMenuNavContext): CngxMenuNavAction;
 }
 
+/** @internal */
 const NOOP: CngxMenuNavAction = { kind: 'noop' };
 
 /**
@@ -85,6 +86,9 @@ export function createW3CMenuStrategy(): CngxMenuNavStrategy {
  * `viewProviders` for alternative keyboard semantics.
  *
  * @category common/interactive/menu
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/menu/menu-nav-strategy.ts
+ * @since 0.1.0
  */
 export const CNGX_MENU_NAV_STRATEGY = new InjectionToken<CngxMenuNavStrategy>(
   'CngxMenuNavStrategy',

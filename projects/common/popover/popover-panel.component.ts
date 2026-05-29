@@ -35,7 +35,7 @@ import type { PopoverPanelRole } from './popover.types';
  * Rich popover panel molecule with header/body/footer slots, variant
  * styling, arrow, close button, and content state templates.
  *
- * Composes `CngxPopover` via `hostDirectives` — all popover inputs
+ * Composes `CngxPopover` via `hostDirectives` - all popover inputs
  * (`placement`, `offset`, `closeOnEscape`, `mode`, `exclusive`,
  * `cngxPopoverOpen`) are forwarded.
  *
@@ -69,6 +69,11 @@ import type { PopoverPanelRole } from './popover.types';
  * ```
  *
  * @category common/popover
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/popover/popover-panel.component.ts
+ * @since 0.1.0
+ * @relatedTo CngxPopover, CngxPopoverAction, CngxPopoverHeader, CngxPopoverBody, CngxPopoverFooter
  * <example-url>http://localhost:4200/#/common/popover/popover-panel/content-states</example-url>
  * <example-url>http://localhost:4200/#/common/popover/popover-panel/variants</example-url>
  * <example-url>http://localhost:4200/#/common/popover/popover-panel/with-footer-actions</example-url>
@@ -177,7 +182,7 @@ export class CngxPopoverPanel implements CngxPopoverArrowBounds {
    */
   private _cachedBorderRadius: number | null = null;
 
-  /** @internal — implements `CngxPopoverArrowBounds`. */
+  /** @internal - implements `CngxPopoverArrowBounds`. */
   get borderRadius(): number {
     if (this._cachedBorderRadius === null) {
       const raw = getComputedStyle(this.hostRef.nativeElement).getPropertyValue(
@@ -189,7 +194,7 @@ export class CngxPopoverPanel implements CngxPopoverArrowBounds {
   }
 
   /**
-   * Variant string — mapped to CSS class `cngx-popover-panel--{variant}`.
+   * Variant string - mapped to CSS class `cngx-popover-panel--{variant}`.
    * Pre-themed: `default`, `info`, `warning`, `danger`, `success`.
    * Add custom variants via CSS.
    */
@@ -198,7 +203,7 @@ export class CngxPopoverPanel implements CngxPopoverArrowBounds {
   /**
    * ARIA role applied to the panel host. Defaults to `'dialog'` because
    * the panel pairs `aria-labelledby` (header) with `aria-describedby`
-   * (body) — the standard dialog pattern. Override with `'alertdialog'`
+   * (body) - the standard dialog pattern. Override with `'alertdialog'`
    * for irrecoverable confirmations, `'tooltip'` for passive callouts,
    * or `'menu'` when the panel hosts a menu.
    *
@@ -214,14 +219,14 @@ export class CngxPopoverPanel implements CngxPopoverArrowBounds {
   /** Show an arrow. Falls back to global config from `providePopoverPanel(withArrow())`. */
   readonly showArrowInput = input<boolean | undefined>(undefined, { alias: 'showArrow' });
 
-  /** Resolved showClose — input takes precedence over config. */
+  /** Resolved showClose - input takes precedence over config. */
   readonly showClose = computed(() => this.showCloseInput() ?? this.config.showClose ?? false);
 
-  /** Resolved showArrow — input takes precedence over config. */
+  /** Resolved showArrow - input takes precedence over config. */
   readonly showArrow = computed(() => this.showArrowInput() ?? this.config.showArrow ?? false);
 
   /**
-   * Bind an async state — drives loading, error, and empty slots from a single source.
+   * Bind an async state - drives loading, error, and empty slots from a single source.
    * When set, takes precedence over individual `[loading]`, `[error]`, `[empty]` inputs.
    */
   readonly state = input<CngxAsyncState<unknown> | undefined>(undefined);
@@ -235,15 +240,15 @@ export class CngxPopoverPanel implements CngxPopoverArrowBounds {
   /** Whether the panel content is empty. Fallback when `[state]` is not set. */
   readonly empty = input(false);
 
-  /** @internal Resolved loading — state takes precedence over boolean input. */
+  /** @internal Resolved loading - state takes precedence over boolean input. */
   protected readonly effectiveLoading = computed(
     () => this.state()?.isFirstLoad() ?? this.loading(),
   );
 
-  /** @internal Resolved error — state takes precedence over direct input. */
+  /** @internal Resolved error - state takes precedence over direct input. */
   protected readonly effectiveError = computed(() => this.state()?.error() ?? this.error());
 
-  /** @internal Resolved empty — state takes precedence over boolean input. */
+  /** @internal Resolved empty - state takes precedence over boolean input. */
   protected readonly effectiveEmpty = computed(() => this.state()?.isEmpty() ?? this.empty());
 
   protected readonly headerSlot = contentChild(CngxPopoverHeader);
@@ -268,7 +273,7 @@ export class CngxPopoverPanel implements CngxPopoverArrowBounds {
   /**
    * Context surface for projected `*cngxPopoverArrow` templates.
    * `equal` keeps the reference stable across re-evaluations whose
-   * inputs round-trip to the same `{ edge, offsetPx }` — required for
+   * inputs round-trip to the same `{ edge, offsetPx }` - required for
    * any object-returning computed per the Equality discipline rule.
    */
   protected readonly arrowContext = computed<CngxPopoverArrowContext>(

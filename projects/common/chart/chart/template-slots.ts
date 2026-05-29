@@ -56,6 +56,9 @@ export const CHART_SMALL_BREAKPOINT_PX = 400;
  * ```
  *
  * @category common/chart
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/chart/template-slots.ts
+ * @since 0.1.0
+ * @relatedTo CngxChartEmpty, CngxChartError, CngxChart
  */
 @Directive({
   selector: 'ng-template[cngxChartLoading]',
@@ -68,11 +71,14 @@ export class CngxChartLoading {
 /**
  * Per-instance empty slot for `<cngx-chart>`. Receives a
  * {@link CngxChartSlotContext} so the consumer can branch on chart
- * size — typically a compact text fallback when `small` is true and
+ * size - typically a compact text fallback when `small` is true and
  * a richer surface (`<cngx-empty-state>`, illustration, action) at
  * regular sizes.
  *
  * @category common/chart
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/chart/template-slots.ts
+ * @since 0.1.0
+ * @relatedTo CngxChartLoading, CngxChartError, CngxChart
  */
 @Directive({
   selector: 'ng-template[cngxChartEmpty]',
@@ -96,10 +102,13 @@ export interface CngxChartErrorContext extends CngxChartSlotContext {
 }
 
 /**
- * `*cngxChartError` slot — overrides the chart-level error placeholder.
+ * `*cngxChartError` slot - overrides the chart-level error placeholder.
  * Receives a {@link CngxChartErrorContext}.
  *
  * @category common/chart
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/chart/template-slots.ts
+ * @since 0.1.0
+ * @relatedTo CngxChartLoading, CngxChartEmpty, CngxChart
  */
 @Directive({
   selector: 'ng-template[cngxChartError]',

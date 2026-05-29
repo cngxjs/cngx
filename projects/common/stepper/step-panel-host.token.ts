@@ -23,7 +23,7 @@ export interface CngxStepLabelContext {
 
 /**
  * Context delivered to `*cngxStepContent` templates. Mirrors
- * {@link CngxStepLabelContext} — content templates need the same
+ * {@link CngxStepLabelContext} - content templates need the same
  * derivations to gate inner controls on `disabled` / `busy`.
  *
  * @category common/stepper
@@ -39,7 +39,7 @@ export interface CngxStepContentContext {
 /**
  * Contract Level-4 organisms (and consumer-authored stepper skins)
  * consume to render the panel body. Narrower than the presenter's
- * full interface — just enough to project label / content templates
+ * full interface - just enough to project label / content templates
  * and react to active-step changes.
  *
  * @category common/stepper
@@ -59,7 +59,7 @@ export interface CngxStepPanelHost {
  * (`<cngx-stepper>`, `<cngx-mat-stepper>`) and consumer-authored skins.
  *
  * @category common/stepper
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/stepper/step-panel-host.token.ts
+ * @since 0.1.0
  */
-export const CNGX_STEP_PANEL_HOST = new InjectionToken<CngxStepPanelHost>(
-  'CngxStepPanelHost',
-);
+export const CNGX_STEP_PANEL_HOST = new InjectionToken<CngxStepPanelHost>('CngxStepPanelHost');

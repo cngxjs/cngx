@@ -11,7 +11,7 @@ import type { CngxTabHandle } from '../tab-group-host.token';
  * @category common/tabs/overflow
  */
 export interface CngxTabOverflowItemContext {
-  /** Convenience alias for `tab` — usable as `let-tab` shorthand. */
+  /** Convenience alias for `tab` - usable as `let-tab` shorthand. */
   readonly $implicit: CngxTabHandle;
   /** The hidden tab the row represents. */
   readonly tab: CngxTabHandle;
@@ -20,7 +20,7 @@ export interface CngxTabOverflowItemContext {
    * and dismisses the popover; no-op when `disabled`.
    */
   readonly pick: () => void;
-  /** Mirrors `tab.disabled()` — pre-resolved for consumer convenience. */
+  /** Mirrors `tab.disabled()` - pre-resolved for consumer convenience. */
   readonly disabled: boolean;
   /** Row index inside `hiddenTabs()`, starting at 0. */
   readonly index: number;
@@ -43,6 +43,10 @@ export interface CngxTabOverflowItemContext {
  * ```
  *
  * @category common/tabs/overflow
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/overflow/tab-overflow-item.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxTabOverflowTrigger, CngxTab
  */
 @Directive({
   selector: 'ng-template[cngxTabOverflowItem]',
@@ -50,7 +54,5 @@ export interface CngxTabOverflowItemContext {
   standalone: true,
 })
 export class CngxTabOverflowItem {
-  readonly templateRef = inject<TemplateRef<CngxTabOverflowItemContext>>(
-    TemplateRef,
-  );
+  readonly templateRef = inject<TemplateRef<CngxTabOverflowItemContext>>(TemplateRef);
 }

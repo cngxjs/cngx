@@ -3,12 +3,15 @@ import { computed, Injectable, signal, type Provider } from '@angular/core';
 /**
  * Tracks open dialog instances as a stack for backdrop management.
  *
- * Provided in root — always available, no manual provider setup needed.
+ * Provided in root - always available, no manual provider setup needed.
  * When multiple modal dialogs are stacked, only the topmost shows
  * its `::backdrop`. Each `CngxDialog` reads `isTopmost` from this service
  * to control `--cngx-dialog-backdrop-opacity`.
  *
  * @category common/dialog
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/dialog/dialog/dialog-stack.ts
+ * @since 0.1.0
+ * @relatedTo CngxDialog, CngxDialogOpener
  * <example-url>http://localhost:4200/#/common/dialog/alert-dialog</example-url>
  * <example-url>http://localhost:4200/#/common/dialog/bottom-sheet</example-url>
  * <example-url>http://localhost:4200/#/common/dialog/cngxdialogopener-programmatic</example-url>

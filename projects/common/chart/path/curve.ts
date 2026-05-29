@@ -47,6 +47,7 @@ export function buildCurvePath(points: readonly PathPoint[], curve: CngxCurve): 
   return buildMonotonePath(points);
 }
 
+/** @internal */
 function buildLinearPath(points: readonly PathPoint[]): string {
   const start = points[0];
   let out = `M ${start.x} ${start.y}`;
@@ -60,6 +61,8 @@ function buildLinearPath(points: readonly PathPoint[]): string {
  * Monotone cubic Bézier interpolation (Fritsch-Carlson tangents on the
  * X dimension). Input points must have strictly increasing `x`
  * coordinates.
+ *
+ * @internal
  */
 function buildMonotonePath(points: readonly PathPoint[]): string {
   const n = points.length;

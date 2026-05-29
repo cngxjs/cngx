@@ -13,22 +13,16 @@ import {
   type Signal,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import {
-  filter,
-  fromEvent,
-  map,
-  merge,
-  switchMap,
-  takeUntil,
-  tap,
-} from 'rxjs';
+import { filter, fromEvent, map, merge, switchMap, takeUntil, tap } from 'rxjs';
 
 /**
  * Modifier key that arms the keyboard-reorder handler. Plain arrow keys
- * keep their default meaning (focus navigation) — only the configured
+ * keep their default meaning (focus navigation) - only the configured
  * modifier + arrow produces a move.
  *
  * @category common/interactive/reorder
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/reorder/reorder.directive.ts
+ * @since 0.1.0
  */
 export type CngxReorderModifier = 'ctrl' | 'alt' | 'meta';
 
@@ -36,12 +30,14 @@ export type CngxReorderModifier = 'ctrl' | 'alt' | 'meta';
  * Payload emitted by `(reordered)` whenever a pointer drag or a modifier +
  * arrow keyboard move settles on a new position.
  *
- * `next` is a fresh array — the source signal is never mutated in place,
+ * `next` is a fresh array - the source signal is never mutated in place,
  * so downstream `computed()` graphs see a new reference and re-evaluate.
  * Consumers own the write back to the source signal (directly, or via a
  * commit controller for optimistic / pessimistic policies).
  *
  * @category common/interactive/reorder
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/reorder/reorder.directive.ts
+ * @since 0.1.0
  */
 export interface CngxReorderEvent<T> {
   readonly fromIndex: number;
@@ -65,7 +61,7 @@ interface ActiveDrag {
  * tracking when the user drifts outside the container. The drop target is
  * resolved from `document.elementFromPoint` on every `pointermove`. The
  * drag ends on `pointerup`, `pointercancel`, or a top-level `Escape`
- * press — only the first two emit `reordered`; Escape cancels the drag
+ * press - only the first two emit `reordered`; Escape cancels the drag
  * without a mutation.
  *
  * **Keyboard flow.** When the focused element is inside an item and the
@@ -92,6 +88,11 @@ interface ActiveDrag {
  * ```
  *
  * @category common/interactive/reorder
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/reorder/reorder.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxReorderableMultiSelect, CngxChipStripRovingController
  * <example-url>http://localhost:4200/#/forms/select/reorderable-multi-select/basic-drag-chips-via-mouse-touch</example-url>
  * <example-url>http://localhost:4200/#/forms/select/reorderable-multi-select/commit-action-optimistic-pessimistic-with-supersede</example-url>
  * <example-url>http://localhost:4200/#/forms/select/reorderable-multi-select/keyboard-reorder-alt-arrow-home-end</example-url>
@@ -111,7 +112,7 @@ export class CngxReorder<T = unknown> {
   /**
    * Signal describing the current, authoritative order. The directive
    * reads it lazily at drag-start and at keyboard-move time so drag
-   * sessions always resolve against the freshest value — consumers that
+   * sessions always resolve against the freshest value - consumers that
    * mutate the source signal during a drag (rare) still get consistent
    * results.
    */
@@ -125,9 +126,7 @@ export class CngxReorder<T = unknown> {
    * `[cngxReorderHandle]` so consumers can pick whichever reads better
    * in their template.
    */
-  readonly handleSelector = input<string>(
-    '[cngxReorderHandle], [data-reorder-handle]',
-  );
+  readonly handleSelector = input<string>('[cngxReorderHandle], [data-reorder-handle]');
 
   /**
    * CSS selector matched against every reorderable child (via
@@ -140,7 +139,7 @@ export class CngxReorder<T = unknown> {
   /**
    * Optional escape-hatch selector for drag targets. When set and the
    * `pointerdown` target matches `ignoreSelector` (via `closest`), the
-   * gesture is dropped — useful when the whole item is draggable but
+   * gesture is dropped - useful when the whole item is draggable but
    * interactive children (close buttons, inline edit fields, menu
    * triggers) must keep their own click semantics. Applied after
    * `handleSelector`, so the two can overlap: e.g.
@@ -148,7 +147,7 @@ export class CngxReorder<T = unknown> {
    * `ignoreSelector = 'button, a, [contenteditable]'` yields
    * whole-row drag with interactive child exemptions.
    *
-   * `null` (default) disables the filter — the `handleSelector` alone
+   * `null` (default) disables the filter - the `handleSelector` alone
    * decides whether a drag starts.
    */
   readonly ignoreSelector = input<string | null>(null);
@@ -162,10 +161,10 @@ export class CngxReorder<T = unknown> {
   /** Emitted once a drag or keyboard move settles on a new position. */
   readonly reordered = output<CngxReorderEvent<T>>();
 
-  /** Informational — index of the item picked up by pointer drag. */
+  /** Informational - index of the item picked up by pointer drag. */
   readonly dragStart = output<number>();
 
-  /** Informational — fires after `reordered` (or alone, if Escape cancelled). */
+  /** Informational - fires after `reordered` (or alone, if Escape cancelled). */
   readonly dragEnd = output<void>();
 
   private readonly activeDrag = signal<ActiveDrag | null>(null);
@@ -185,12 +184,9 @@ export class CngxReorder<T = unknown> {
    * drag, or `null` when no drag is active. Drives ghost-placeholder
    * positioning in the host template.
    */
-  readonly dragOverIndex = computed(
-    () => this.activeDrag()?.currentIndex ?? null,
-  );
+  readonly dragOverIndex = computed(() => this.activeDrag()?.currentIndex ?? null);
 
-  private readonly hostEl = inject(ElementRef<HTMLElement>)
-    .nativeElement as HTMLElement;
+  private readonly hostEl = inject(ElementRef<HTMLElement>).nativeElement as HTMLElement;
   private readonly doc = inject(DOCUMENT);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -310,7 +306,7 @@ export class CngxReorder<T = unknown> {
                   // outer listener (e.g. a combobox trigger's
                   // (click)="open()") would toggle the popover
                   // alongside the reorder, because the click's target
-                  // is the common ancestor of mousedown/mouseup — not
+                  // is the common ancestor of mousedown/mouseup - not
                   // a descendant that any child-side `stopPropagation`
                   // could filter. One-shot, capture-phase, document-
                   // wide, removed after the first event.
@@ -383,7 +379,7 @@ export class CngxReorder<T = unknown> {
     afterNextRender(() => {
       const items = this.hostEl.querySelectorAll(this.itemSelector());
       if (items.length === 0) {
-        // Not an error — an empty strip is a legitimate idle state.
+        // Not an error - an empty strip is a legitimate idle state.
         // Only warn when the consumer probably forgot to wire the attr.
         return;
       }

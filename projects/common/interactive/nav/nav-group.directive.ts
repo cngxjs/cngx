@@ -4,7 +4,7 @@ import { CNGX_NAV_CONFIG, CNGX_NAV_DEFAULTS } from './nav-config';
 import { CngxNavGroupRegistry } from './nav-group-registry';
 
 /**
- * Navigation accordion group — a collapsible section in a sidebar nav.
+ * Navigation accordion group - a collapsible section in a sidebar nav.
  *
  * Composes `CngxDisclosure` as a `hostDirective` for expand/collapse behavior.
  * Adds nav-specific semantics: depth tracking and CSS classes for styling.
@@ -42,6 +42,11 @@ import { CngxNavGroupRegistry } from './nav-group-registry';
  * ```
  *
  * @category common/interactive
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/nav/nav-group.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxNavLink, CngxDisclosure, CngxNavGroupRegistry, CngxNavLabel
  * <example-url>http://localhost:4200/#/common/interactive/nav/nav-badge-counts-and-dots</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/nav/nav-group-accordion-sections</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/nav/nav-links-active-state-depth</example-url>
@@ -64,7 +69,7 @@ import { CngxNavGroupRegistry } from './nav-group-registry';
   },
 })
 export class CngxNavGroup {
-  /** The composed disclosure instance — use `disclosure.opened()` to read state. */
+  /** The composed disclosure instance - use `disclosure.opened()` to read state. */
   readonly disclosure = inject(CngxDisclosure, { host: true });
 
   /** Nesting depth for indentation. Consumer sets manually. */

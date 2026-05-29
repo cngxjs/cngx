@@ -4,7 +4,7 @@ import { Directive, inject, TemplateRef } from '@angular/core';
  * Context for the `*cngxTabRejectionIcon` template. Renders only on
  * the tab matching `presenter.lastFailedIndex()`; the visibility
  * gate stays library-owned. `originLabel` is the safe-harbour tab,
- * derived from `presenter.originIndexDuringCommit()` — `undefined`
+ * derived from `presenter.originIndexDuringCommit()` - `undefined`
  * for the synchronous-rejection edge case. Sibling shape to
  * `CngxStepRejectionContext`.
  *
@@ -39,6 +39,10 @@ export interface CngxTabRejectionIconContext {
  * ```
  *
  * @category common/tabs/slots
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/slots/tab-rejection-icon.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxTabErrorBadge, CngxTabBusySpinner, CngxTab
  * <example-url>http://localhost:4200/#/ui/tabs/tab-slot-overrides/custom-busy-spinner-via-code-cngxtabbusyspinner-code</example-url>
  * <example-url>http://localhost:4200/#/ui/tabs/tab-slot-overrides/custom-error-badge-via-code-cngxtaberrorbadge-code</example-url>
  * <example-url>http://localhost:4200/#/ui/tabs/tab-slot-overrides/rejection-decoration-via-code-cngxtabrejectionicon-code</example-url>
@@ -49,7 +53,5 @@ export interface CngxTabRejectionIconContext {
   standalone: true,
 })
 export class CngxTabRejectionIcon {
-  readonly templateRef = inject<TemplateRef<CngxTabRejectionIconContext>>(
-    TemplateRef,
-  );
+  readonly templateRef = inject<TemplateRef<CngxTabRejectionIconContext>>(TemplateRef);
 }

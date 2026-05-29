@@ -3,7 +3,7 @@ import { InjectionToken, type Provider, type TemplateRef } from '@angular/core';
 import type { CngxPopoverArrowContext } from './popover-panel-slots';
 import type { CngxPopoverPanelConfig, PopoverPanelFeature } from './popover-panel.types';
 
-/** Default configuration — no auto-dismiss, no close-on-success, variant='default'. */
+/** @internal Default configuration - no auto-dismiss, no close-on-success, variant='default'. */
 const DEFAULT_CONFIG: CngxPopoverPanelConfig = {
   defaultVariant: 'default',
 };
@@ -12,6 +12,8 @@ const DEFAULT_CONFIG: CngxPopoverPanelConfig = {
  * Injection token for popover panel configuration.
  *
  * @category common/popover
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/popover/popover-panel.config.ts
+ * @since 0.1.0
  */
 export const CNGX_POPOVER_PANEL_CONFIG = new InjectionToken<CngxPopoverPanelConfig>(
   'CngxPopoverPanelConfig',
@@ -106,8 +108,6 @@ export function withArrow(show = true): PopoverPanelFeature {
  *
  * @category common/popover
  */
-export function withArrowTemplate(
-  tpl: TemplateRef<CngxPopoverArrowContext>,
-): PopoverPanelFeature {
+export function withArrowTemplate(tpl: TemplateRef<CngxPopoverArrowContext>): PopoverPanelFeature {
   return (config) => ({ ...config, templates: { ...config.templates, arrow: tpl } });
 }

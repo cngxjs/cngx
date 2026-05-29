@@ -12,7 +12,7 @@ import type { CngxTagLabelContext } from './tag-slot.context';
  * bidi-safe rendering, an inline link, or a richer label
  * composition with icons + counts).
  *
- * Replacing the label drops the default ellipsis hook — the
+ * Replacing the label drops the default ellipsis hook - the
  * consumer template owns the overflow strategy.
  *
  * ```html
@@ -24,6 +24,9 @@ import type { CngxTagLabelContext } from './tag-slot.context';
  * ```
  *
  * @category common/display
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/display/tag/slots/tag-label.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxTag, CngxTagPrefix, CngxTagSuffix
  * <example-url>http://localhost:4200/#/common/display/tag/app-wide-defaults-via-providetagconfig</example-url>
  * <example-url>http://localhost:4200/#/common/display/tag/color-palette</example-url>
  * <example-url>http://localhost:4200/#/common/display/tag/composition-with-cngxicon</example-url>

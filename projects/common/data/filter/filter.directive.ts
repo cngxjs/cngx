@@ -5,13 +5,13 @@ import { computed, Directive, input, output, signal } from '@angular/core';
  *
  * Supports both **uncontrolled** (internal state) and **controlled** modes.
  * In controlled mode the `cngxFilter` input takes precedence over the internal
- * `'default'` predicate — pair with `filterChange` to keep it in sync.
+ * `'default'` predicate - pair with `filterChange` to keep it in sync.
  *
- * **Multi-filter** — use `addPredicate(key, fn)` / `removePredicate(key)` to
+ * **Multi-filter** - use `addPredicate(key, fn)` / `removePredicate(key)` to
  * maintain a named stack of predicates. All active predicates are **AND-combined**
  * across keys: an item must pass every registered predicate to appear in results.
  *
- * AND vs OR — the directive enforces AND across dimensions (keys). OR logic
+ * AND vs OR - the directive enforces AND across dimensions (keys). OR logic
  * within a single dimension stays inside the predicate function itself:
  *
  * ```typescript
@@ -19,19 +19,23 @@ import { computed, Directive, input, output, signal } from '@angular/core';
  * filter.addPredicate('location', p => selectedLocations.has(p.location));
  * filter.addPredicate('role',     p => selectedRoles.has(p.role));
  *
- * // OR within a dimension: London OR Rome — just put a Set inside one predicate
+ * // OR within a dimension: London OR Rome - just put a Set inside one predicate
  * filter.addPredicate('location', p => selectedLocations.has(p.location));
  * ```
  *
  * `setPredicate` / `clear` operate on the `'default'` key and remain fully
  * backward-compatible with single-predicate usage.
  *
- * Consumer connects this to a list via a `computed()` — nothing is injected
+ * Consumer connects this to a list via a `computed()` - nothing is injected
  * automatically.
  *
  * @typeParam T - The item type the predicate operates on.
  *
  * @category common/data/filter
+ * @docsKind primary
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/data/filter/filter.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxFilterChips, CngxSort, CngxPaginate, CngxSmartDataSource
  *
  * <example-url>http://localhost:4200/#/common/data/filter-chips/custom-chip-decoration-via-cngxfilterchip</example-url>
  * <example-url>http://localhost:4200/#/common/data/filter-chips/multi-role-filter-wired-to-a-list</example-url>
@@ -60,7 +64,7 @@ export class CngxFilter<T = unknown> {
   readonly activeCount = computed(() => this.predicatesState().size);
 
   /**
-   * The combined predicate — AND of all active named predicates plus the
+   * The combined predicate - AND of all active named predicates plus the
    * controlled input (when bound). Returns `null` when nothing is active.
    */
   readonly predicate = computed((): ((value: T) => boolean) | null => {

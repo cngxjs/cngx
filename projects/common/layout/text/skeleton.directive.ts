@@ -42,6 +42,11 @@ import { computed, DestroyRef, Directive, inject, input, signal, type Signal } f
  * ```
  *
  * @category common/layout
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/layout/text/skeleton.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxTruncate, CngxExpandableText, CngxHighlight
  * <example-url>http://localhost:4200/#/common/layout/skeleton/basic-skeleton</example-url>
  * <example-url>http://localhost:4200/#/common/layout/skeleton/skeleton-container</example-url>
  */
@@ -63,7 +68,7 @@ export class CngxSkeleton {
   /** Enables the `.cngx-skeleton--shimmer` class (respects `prefers-reduced-motion`). */
   readonly shimmer = input<boolean>(true);
 
-  /** Repeat count — exposed via the `indices()` signal for `@for` rendering. */
+  /** Repeat count - exposed via the `indices()` signal for `@for` rendering. */
   readonly count = input<number>(1);
 
   private readonly prefersReducedMotion: Signal<boolean>;
@@ -89,7 +94,7 @@ export class CngxSkeleton {
   /** Array of indices for `@for` rendering of repeated skeleton elements. */
   readonly indices = computed(() => Array.from({ length: this.count() }, (_, i) => i));
 
-  /** @internal — shimmer class condition. */
+  /** @internal - shimmer class condition. */
   protected readonly showShimmer = computed(
     () => this.loading() && this.shimmer() && !this.prefersReducedMotion(),
   );

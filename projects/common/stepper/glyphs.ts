@@ -11,6 +11,8 @@
  *
  * @internal
  * @category common/stepper
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/stepper/glyphs.ts
+ * @since 0.1.0
  */
 export const CNGX_STEPPER_GLYPHS = {
   /** Default visual for `*cngxStepBadge` when no override is bound. */

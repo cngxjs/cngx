@@ -15,7 +15,7 @@ import { InjectionToken, type ModelSignal, type WritableSignal } from '@angular/
  *
  * `disabled` stays a `WritableSignal<boolean>` because consumers
  * typically derive it externally (`computed(() => parentDisabled() ||
- * fieldDisabled())` and forward into the atom) — `model<boolean>()`
+ * fieldDisabled())` and forward into the atom) - `model<boolean>()`
  * would force every implementer into a two-way binding they do not
  * need.
  *
@@ -35,12 +35,12 @@ export interface CngxControlValue<T = unknown> {
  * No `providedIn`, no factory: providing the token is the atom's
  * responsibility. A surrounding consumer that wants a sane fallback
  * (e.g. an inert read-only value) supplies one in its own `providers`
- * block — the token deliberately does not invent a default because
+ * block - the token deliberately does not invent a default because
  * "what is the value of an unbound control?" has no library-level
  * answer.
  *
  * @category common/interactive
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/control-value/control-value.token.ts
+ * @since 0.1.0
  */
-export const CNGX_CONTROL_VALUE = new InjectionToken<CngxControlValue>(
-  'CngxControlValue',
-);
+export const CNGX_CONTROL_VALUE = new InjectionToken<CngxControlValue>('CngxControlValue');

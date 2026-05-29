@@ -17,10 +17,7 @@ import {
 } from '@cngx/core/tokens';
 import { nextUid } from '@cngx/core/utils';
 
-import {
-  CNGX_CONTROL_VALUE,
-  type CngxControlValue,
-} from '../control-value/control-value.token';
+import { CNGX_CONTROL_VALUE, type CngxControlValue } from '../control-value/control-value.token';
 import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.token';
 
 /**
@@ -30,7 +27,7 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
  * the element form (`<cngx-toggle>`) renders a track + thumb skin and
  * accepts label content via `<ng-content>`.
  *
- * `value` is a `ModelSignal<boolean>` — consumers two-way-bind via
+ * `value` is a `ModelSignal<boolean>` - consumers two-way-bind via
  * `[(value)]` and the directive emits `valueChange` on every flip.
  * `disabled` is also a `ModelSignal<boolean>` so the
  * `CngxFormBridge` (Phase 7) can drive it via `setDisabledState`
@@ -38,7 +35,7 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
  * one direction.
  *
  * `disabledReason` is consumer-supplied free text (no library default
- * per `feedback_en_default_locale`) — when present it lands in a hidden
+ * per `feedback_en_default_locale`) - when present it lands in a hidden
  * `<span>` referenced by the host's `aria-describedby`. Per Pillar 2,
  * the description span is always in the DOM (visibility toggles via
  * `aria-hidden`); the host's `aria-describedby` is only emitted when a
@@ -67,6 +64,12 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
  * ```
  *
  * @category common/interactive
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/toggle/toggle.component.ts
+ * @selector cngx-toggle
+ * @since 0.1.0
+ * @relatedTo CngxCheckbox, CngxButtonToggle, CngxRadio
  * <example-url>http://localhost:4200/#/common/interactive/toggle/basic-two-way-binding</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/toggle/custom-thumb-glyph</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/toggle/disabled-with-reason</example-url>
@@ -119,20 +122,19 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
       [id]="describedId"
       class="cngx-toggle__sr-only"
       [attr.aria-hidden]="disabledReason() ? null : 'true'"
-    >{{ disabledReason() }}</span>
+      >{{ disabledReason() }}</span
+    >
   `,
   styleUrls: ['./toggle.component.css'],
   encapsulation: ViewEncapsulation.None,
 })
-export class CngxToggle
-  implements CngxControlValue<boolean>, CngxFormFieldControl
-{
+export class CngxToggle implements CngxControlValue<boolean>, CngxFormFieldControl {
   readonly value = model<boolean>(false);
   readonly disabled = model<boolean>(false);
   /**
    * Bridge-writable invalid state. `model<boolean>` mirrors `disabled`
    * so external integrations (RF/Signal-Forms bridges, custom validity
-   * adapters) can drive it without a parallel API path — consumers
+   * adapters) can drive it without a parallel API path - consumers
    * typically read only.
    */
   readonly invalid = model<boolean>(false);
@@ -141,7 +143,7 @@ export class CngxToggle
    * rendered by `<cngx-form-field>` or a consumer-owned `<span>`).
    * When set, the host emits `aria-errormessage="<id>"` so AT can
    * locate the message; consumers MUST render an element with that id
-   * — passing an id without a matching element produces a dangling
+   * - passing an id without a matching element produces a dangling
    * AT reference. Default `null` skips the attribute entirely.
    * Note: WAI-ARIA dictates that AT ignores this attribute when
    * `aria-invalid` is absent or `"false"`, so a stable always-emitted
@@ -165,7 +167,7 @@ export class CngxToggle
   /** Whether the host element currently has DOM focus. */
   readonly focused = this.focusedState.asReadonly();
 
-  /** True when the toggle is `false` (off) — boolean atom semantics. */
+  /** True when the toggle is `false` (off) - boolean atom semantics. */
   readonly empty = computed(() => this.value() === false);
 
   private readonly fieldHost = inject(CNGX_FORM_FIELD_HOST, { optional: true });
@@ -182,8 +184,7 @@ export class CngxToggle
    * paints no error skin.
    */
   readonly errorState = computed<boolean>(
-    () =>
-      this.fieldHost?.showError() ?? this.aggregator?.shouldShow() ?? false,
+    () => this.fieldHost?.showError() ?? this.aggregator?.shouldShow() ?? false,
   );
 
   protected handleClick(): void {

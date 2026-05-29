@@ -22,9 +22,14 @@ import { CNGX_TAB_GROUP_HOST } from './tab-group-host.token';
  * {@link DestroyRef} on teardown. The presenter holds the atom's
  * input signals by reference, so input changes propagate without
  * re-registration. `labelTemplate` / `contentTemplate` are projected
- * by the organism — the atom carries no rendering logic.
+ * by the organism - the atom carries no rendering logic.
  *
  * @category common/tabs
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/tab.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxTabGroupPresenter, CngxTabLabel, CngxTabContent, CngxTabErrorBadge
  * <example-url>http://localhost:4200/#/ui/tabs/tab-commit-action/optimistic-pessimistic-commits-with-bridge-directives</example-url>
  * <example-url>http://localhost:4200/#/ui/tabs/tab-error-aggregation/per-tab-error-badges</example-url>
  * <example-url>http://localhost:4200/#/ui/tabs/tab-group-vertical/vertical-sidebar-tabs</example-url>
@@ -43,9 +48,7 @@ export class CngxTab {
   readonly id = input<string>(nextUid('cngx-tab-'));
   readonly disabled = input<boolean>(false);
   readonly label = input<string | undefined>(undefined);
-  readonly errorAggregator = input<CngxErrorAggregatorContract | undefined>(
-    undefined,
-  );
+  readonly errorAggregator = input<CngxErrorAggregatorContract | undefined>(undefined);
 
   readonly labelTemplate = contentChild(CngxTabLabel);
   readonly contentTemplate = contentChild(CngxTabContent);
@@ -53,10 +56,9 @@ export class CngxTab {
   private readonly host = inject(CNGX_TAB_GROUP_HOST, { optional: true });
 
   /** `true` when the presenter's `activeId` equals this tab's id. */
-  readonly selected: Signal<boolean> = computed(
-    () => this.host?.activeId() === this.id(),
-    { equal: Object.is },
-  );
+  readonly selected: Signal<boolean> = computed(() => this.host?.activeId() === this.id(), {
+    equal: Object.is,
+  });
 
   constructor() {
     if (!this.host) {

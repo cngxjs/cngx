@@ -21,14 +21,14 @@ export interface CngxDomAnchorRetryOptions {
   readonly attempt: () => CngxDomAnchorRetryResult;
   /**
    * Cap on unsuccessful attempts before {@link onGiveUp} fires.
-   * The first synchronous call counts as attempt #1 — `5` permits
+   * The first synchronous call counts as attempt #1 - `5` permits
    * four scheduled retries after the initial.
    */
   readonly maxAttempts: number;
   /**
    * Schedules the next attempt (rAF / `afterNextRender` /
    * `setTimeout` / `queueMicrotask`). Returns a cancellation
-   * closure — return a noop when the scheduler doesn't expose one.
+   * closure - return a noop when the scheduler doesn't expose one.
    */
   readonly schedule: (cb: () => void) => () => void;
   /** Fires once after the `maxAttempts`-th unsuccessful attempt. */
@@ -48,7 +48,7 @@ export interface CngxDomAnchorRetryHandle {
 }
 
 /**
- * Bounded retry loop for DOM-anchoring patterns — shared
+ * Bounded retry loop for DOM-anchoring patterns - shared
  * attempt-counter + give-up + cancellation contract. Used by
  * `<cngx-tab-overflow>`'s rAF strip-attach loop and `[cngxMatTabs]`'s
  * `afterNextRender` header-anchor loop. Consumer-supplied scheduler
@@ -75,9 +75,7 @@ export interface CngxDomAnchorRetryHandle {
  *
  * @category common/tabs/overflow
  */
-export function createDomAnchorRetry(
-  options: CngxDomAnchorRetryOptions,
-): CngxDomAnchorRetryHandle {
+export function createDomAnchorRetry(options: CngxDomAnchorRetryOptions): CngxDomAnchorRetryHandle {
   let attempts = 0;
   let cancelLast: (() => void) | null = null;
   let stopped = false;
@@ -91,7 +89,7 @@ export function createDomAnchorRetry(
     try {
       result = options.attempt();
     } catch {
-      // Swallow + terminal stop — covers the test-runner teardown
+      // Swallow + terminal stop - covers the test-runner teardown
       // race where a global (e.g. IntersectionObserver) is reset
       // between schedule and fire, before consumer DestroyRef can
       // call cancel(). Production callback bugs still surface via
@@ -126,7 +124,7 @@ export function createDomAnchorRetry(
 }
 
 /**
- * Factory signature for {@link CNGX_DOM_ANCHOR_RETRY_FACTORY} —
+ * Factory signature for {@link CNGX_DOM_ANCHOR_RETRY_FACTORY} -
  * matches {@link createDomAnchorRetry} for drop-in overrides.
  *
  * @category common/tabs/overflow
@@ -137,7 +135,7 @@ export type CngxDomAnchorRetryFactory = (
 
 /**
  * DI token for the DOM-anchor retry policy. Default
- * {@link createDomAnchorRetry}. Two real consumers today —
+ * {@link createDomAnchorRetry}. Two real consumers today -
  * `<cngx-tab-overflow>`'s rAF strip-attach loop and
  * `[cngxMatTabs]`'s `afterNextRender` header-anchor loop. Override
  * via `providers` / `viewProviders` for retry-with-backoff,
@@ -147,12 +145,13 @@ export type CngxDomAnchorRetryFactory = (
  * `CNGX_TABS_COMMIT_HANDLER_FACTORY`.
  *
  * @category common/tabs/overflow
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/overflow/dom-anchor-retry.ts
+ * @since 0.1.0
  */
-export const CNGX_DOM_ANCHOR_RETRY_FACTORY =
-  new InjectionToken<CngxDomAnchorRetryFactory>(
-    'CngxDomAnchorRetryFactory',
-    {
-      providedIn: 'root',
-      factory: () => createDomAnchorRetry,
-    },
-  );
+export const CNGX_DOM_ANCHOR_RETRY_FACTORY = new InjectionToken<CngxDomAnchorRetryFactory>(
+  'CngxDomAnchorRetryFactory',
+  {
+    providedIn: 'root',
+    factory: () => createDomAnchorRetry,
+  },
+);

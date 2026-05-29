@@ -34,23 +34,23 @@ export interface CngxStepperI18n {
   /**
    * Persistent suffix on the per-step `aria-describedby` while
    * `presenter.lastFailedIndex()` matches the step. Distinct from
-   * {@link commitRolledBackTo} (transient live-region phrase) — this
+   * {@link commitRolledBackTo} (transient live-region phrase) - this
    * suffix is reachable when AT users navigate back to the rejected
    * step after the announcement has faded. Pillar 2.
    */
   readonly stepRolledBackSuffix: string;
 }
 
+/** @internal */
 const STEPPER_I18N_DEFAULTS: CngxStepperI18n = {
   stepperLabel: 'Stepper',
-  selectedStep: (label, position, count) =>
-    `Step ${position} of ${count}: ${label}`,
+  selectedStep: (label, position, count) => `Step ${position} of ${count}: ${label}`,
   stepCompleted: 'Completed',
   stepErrored: 'Has errors',
   stepHasErrors: (count) => `${count} error${count === 1 ? '' : 's'}`,
   previousStep: 'Previous step',
   nextStep: 'Next step',
-  commitFailedRetry: 'Commit failed — retry?',
+  commitFailedRetry: 'Commit failed - retry?',
   commitInFlight: 'Committing step…',
   commitRolledBackTo: (originLabel) => `Reverted to step "${originLabel}".`,
   stepRolledBackSuffix: 'This step was rolled back.',
@@ -61,11 +61,14 @@ const STEPPER_I18N_DEFAULTS: CngxStepperI18n = {
  * with English defaults.
  *
  * @category common/stepper/i18n
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/stepper/i18n/stepper-i18n.ts
+ * @since 0.1.0
  */
-export const CNGX_STEPPER_I18N = new InjectionToken<CngxStepperI18n>(
-  'CngxStepperI18n',
-  { providedIn: 'root', factory: () => STEPPER_I18N_DEFAULTS },
-);
+export const CNGX_STEPPER_I18N = new InjectionToken<CngxStepperI18n>('CngxStepperI18n', {
+  providedIn: 'root',
+  factory: () => STEPPER_I18N_DEFAULTS,
+});
 
 /**
  * Feature shape consumed by {@link provideStepperI18n} and {@link provideCngxStepper}.
@@ -74,9 +77,7 @@ export const CNGX_STEPPER_I18N = new InjectionToken<CngxStepperI18n>(
  *
  * @category common/stepper/i18n
  */
-export type CngxStepperI18nFeature = ((
-  bundle: CngxStepperI18n,
-) => CngxStepperI18n) & {
+export type CngxStepperI18nFeature = ((bundle: CngxStepperI18n) => CngxStepperI18n) & {
   readonly _target: 'i18n';
 };
 
@@ -93,30 +94,24 @@ function defineStepperI18nFeature(
 }
 
 /**
- * Override stepper i18n labels. Partial override — unset keys keep
+ * Override stepper i18n labels. Partial override - unset keys keep
  * the English default. Sibling of `withStepperAriaLabels` /
  * `withStepperFallbackLabels`.
  *
  * @category common/stepper/i18n
  */
-export function withStepperI18nLabels(
-  overrides: Partial<CngxStepperI18n>,
-): CngxStepperI18nFeature {
+export function withStepperI18nLabels(overrides: Partial<CngxStepperI18n>): CngxStepperI18nFeature {
   return defineStepperI18nFeature((bundle) => ({ ...bundle, ...overrides }));
 }
 
-function resolveI18nFeatures(
-  features: readonly CngxStepperI18nFeature[],
-): CngxStepperI18n {
-  return features.reduce<CngxStepperI18n>(
-    (bundle, feat) => feat(bundle),
-    STEPPER_I18N_DEFAULTS,
-  );
+/** @internal */
+function resolveI18nFeatures(features: readonly CngxStepperI18nFeature[]): CngxStepperI18n {
+  return features.reduce<CngxStepperI18n>((bundle, feat) => feat(bundle), STEPPER_I18N_DEFAULTS);
 }
 
 /**
  * Provider for the stepper i18n bundle. Compose `withStepperI18nLabels(...)`
- * (plus any future i18n `with*`) — unset keys fall back to English.
+ * (plus any future i18n `with*`) - unset keys fall back to English.
  *
  * ```ts
  * bootstrapApplication(AppComponent, {
@@ -130,9 +125,7 @@ function resolveI18nFeatures(
  *
  * @category common/stepper/i18n
  */
-export function provideStepperI18n(
-  ...features: readonly CngxStepperI18nFeature[]
-): Provider {
+export function provideStepperI18n(...features: readonly CngxStepperI18nFeature[]): Provider {
   return {
     provide: CNGX_STEPPER_I18N,
     useValue: resolveI18nFeatures(features),

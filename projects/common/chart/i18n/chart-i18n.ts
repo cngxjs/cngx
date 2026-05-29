@@ -17,7 +17,7 @@ export interface CngxChartSummary {
 
 /**
  * i18n surface for `@cngx/common/chart`. Mirrors the `CNGX_RECYCLER_I18N`
- * shape from `@cngx/common/data` — factory defaults supply English;
+ * shape from `@cngx/common/data` - factory defaults supply English;
  * consumers override per-app via {@link provideChartI18n}.
  *
  * @category common/chart/i18n
@@ -38,23 +38,32 @@ export interface CngxChartI18n {
  * `factory:`. Override at app root with {@link provideChartI18n}.
  *
  * @category common/chart/i18n
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/i18n/chart-i18n.ts
+ * @since 0.1.0
  */
 export const CNGX_CHART_I18N = new InjectionToken<CngxChartI18n>('CngxChartI18n', {
   providedIn: 'root',
   factory: (): CngxChartI18n => ({
     summary: ({ trend, min, max, current, thresholds }) => {
-      const trendText = trend === 'up' ? 'Trending up' : trend === 'down' ? 'Trending down' : 'Flat';
-      const thresholdText = thresholds.length === 0
-        ? 'No thresholds.'
-        : thresholds.length === 1
-          ? 'One threshold crossing.'
-          : `${thresholds.length} threshold crossings.`;
+      const trendText =
+        trend === 'up' ? 'Trending up' : trend === 'down' ? 'Trending down' : 'Flat';
+      const thresholdText =
+        thresholds.length === 0
+          ? 'No thresholds.'
+          : thresholds.length === 1
+            ? 'One threshold crossing.'
+            : `${thresholds.length} threshold crossings.`;
       return `${trendText}. Min ${min}, max ${max}, current ${current}. ${thresholdText}`;
     },
     dataTable: () => 'Data table',
     valueColumnLabel: () => 'Value',
     trendChanged: (trend) =>
-      trend === 'up' ? 'Trend changed to up' : trend === 'down' ? 'Trend changed to down' : 'Trend flattened',
+      trend === 'up'
+        ? 'Trend changed to up'
+        : trend === 'down'
+          ? 'Trend changed to down'
+          : 'Trend flattened',
     thresholdAlert: (threshold) => `Threshold ${threshold} crossed`,
     empty: () => 'No data',
     loading: () => 'Loading',

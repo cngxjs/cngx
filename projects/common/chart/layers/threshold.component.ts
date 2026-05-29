@@ -16,9 +16,13 @@ import { injectChartContext } from '../chart/chart-context';
  * "line at value" reference. Always reads scales from
  * {@link CNGX_CHART_CONTEXT}.
  *
- * Attribute-selector on `<svg:g>` — see {@link CngxLine} for why.
+ * Attribute-selector on `<svg:g>` - see {@link CngxLine} for why.
  *
  * @category common/chart/layers
+ * @docsKind primary
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/layers/threshold.component.ts
+ * @since 0.1.0
+ * @relatedTo CngxBand, CngxChart, CngxLine
  *
  * <example-url>http://localhost:4200/#/common/chart/primitives/async-state-machine-on-the-primitive</example-url>
  * <example-url>http://localhost:4200/#/common/chart/primitives/combo-bars-moving-average-line</example-url>
@@ -72,11 +76,18 @@ import { injectChartContext } from '../chart/chart-context';
           var(--cngx-chart-enter-easing, cubic-bezier(0.4, 0, 0.2, 1));
       }
       @keyframes cngx-threshold-enter {
-        from { opacity: 0; }
-        to { opacity: 1; }
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
       }
       @media (prefers-reduced-motion: reduce) {
-        .cngx-threshold__line, .cngx-threshold__label { animation: none; }
+        .cngx-threshold__line,
+        .cngx-threshold__label {
+          animation: none;
+        }
       }
     `,
   ],
@@ -98,9 +109,7 @@ export class CngxThreshold {
       return { width, y };
     },
     {
-      equal: (a, b) =>
-        a === b || (a !== null && b !== null && a.width === b.width && a.y === b.y),
+      equal: (a, b) => a === b || (a !== null && b !== null && a.width === b.width && a.y === b.y),
     },
   );
 }
-

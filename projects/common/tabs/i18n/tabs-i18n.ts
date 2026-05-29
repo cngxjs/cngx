@@ -17,7 +17,7 @@ export interface CngxTabsI18n {
   /**
    * @deprecated Superseded by {@link commitRolledBackTo}. Retained as
    * the defensive fallback in `liveAnnouncement` when the origin
-   * label is unresolvable — fires for unlabeled tabs or programmatic
+   * label is unresolvable - fires for unlabeled tabs or programmatic
    * `commitState` writes that bypass `select()`. See
    * `tabs-accepted-debt §4`.
    */
@@ -34,16 +34,14 @@ export interface CngxTabsI18n {
 
 const TABS_I18N_DEFAULTS: CngxTabsI18n = {
   tabsLabel: 'Tabs',
-  selectedTab: (label, position, count) =>
-    `Tab ${position} of ${count}: ${label}`,
+  selectedTab: (label, position, count) => `Tab ${position} of ${count}: ${label}`,
   tabHasErrors: (count) => `${count} error${count === 1 ? '' : 's'}`,
   moreTabsLabel: (count) => `${count} more`,
   previousTab: 'Previous tab',
   nextTab: 'Next tab',
-  commitFailedRetry: 'Tab change refused — retry?',
+  commitFailedRetry: 'Tab change refused - retry?',
   commitInFlight: 'Switching tab…',
-  commitRolledBackTo: (originLabel) =>
-    `Could not save changes — reverted to "${originLabel}".`,
+  commitRolledBackTo: (originLabel) => `Could not save changes - reverted to "${originLabel}".`,
 };
 
 /**
@@ -51,11 +49,14 @@ const TABS_I18N_DEFAULTS: CngxTabsI18n = {
  * English defaults.
  *
  * @category common/tabs/i18n
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/i18n/tabs-i18n.ts
+ * @since 0.1.0
  */
-export const CNGX_TABS_I18N = new InjectionToken<CngxTabsI18n>(
-  'CngxTabsI18n',
-  { providedIn: 'root', factory: () => TABS_I18N_DEFAULTS },
-);
+export const CNGX_TABS_I18N = new InjectionToken<CngxTabsI18n>('CngxTabsI18n', {
+  providedIn: 'root',
+  factory: () => TABS_I18N_DEFAULTS,
+});
 
 /**
  * Branded feature-fn for {@link provideTabsI18n} and
@@ -65,9 +66,7 @@ export const CNGX_TABS_I18N = new InjectionToken<CngxTabsI18n>(
  *
  * @category common/tabs/i18n
  */
-export type CngxTabsI18nFeature = ((
-  bundle: CngxTabsI18n,
-) => CngxTabsI18n) & {
+export type CngxTabsI18nFeature = ((bundle: CngxTabsI18n) => CngxTabsI18n) & {
   readonly _target: 'i18n';
 };
 
@@ -76,33 +75,24 @@ export type CngxTabsI18nFeature = ((
  *
  * @internal
  */
-function defineTabsI18nFeature(
-  fn: (bundle: CngxTabsI18n) => CngxTabsI18n,
-): CngxTabsI18nFeature {
+function defineTabsI18nFeature(fn: (bundle: CngxTabsI18n) => CngxTabsI18n): CngxTabsI18nFeature {
   return Object.assign(fn, { _target: 'i18n' as const });
 }
 
 /**
- * Override i18n labels via a partial bundle — unset keys keep the
+ * Override i18n labels via a partial bundle - unset keys keep the
  * English default. Same shape as `withTabsAriaLabels` /
  * `withTabsFallbackLabels` so `provideCngxTabs` composes both
  * surfaces uniformly.
  *
  * @category common/tabs/i18n
  */
-export function withTabsI18nLabels(
-  overrides: Partial<CngxTabsI18n>,
-): CngxTabsI18nFeature {
+export function withTabsI18nLabels(overrides: Partial<CngxTabsI18n>): CngxTabsI18nFeature {
   return defineTabsI18nFeature((bundle) => ({ ...bundle, ...overrides }));
 }
 
-function resolveI18nFeatures(
-  features: readonly CngxTabsI18nFeature[],
-): CngxTabsI18n {
-  return features.reduce<CngxTabsI18n>(
-    (bundle, feat) => feat(bundle),
-    TABS_I18N_DEFAULTS,
-  );
+function resolveI18nFeatures(features: readonly CngxTabsI18nFeature[]): CngxTabsI18n {
+  return features.reduce<CngxTabsI18n>((bundle, feat) => feat(bundle), TABS_I18N_DEFAULTS);
 }
 
 /**
@@ -122,9 +112,7 @@ function resolveI18nFeatures(
  *
  * @category common/tabs/i18n
  */
-export function provideTabsI18n(
-  ...features: readonly CngxTabsI18nFeature[]
-): Provider {
+export function provideTabsI18n(...features: readonly CngxTabsI18nFeature[]): Provider {
   return {
     provide: CNGX_TABS_I18N,
     useValue: resolveI18nFeatures(features),

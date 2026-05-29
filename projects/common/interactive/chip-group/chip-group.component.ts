@@ -16,15 +16,9 @@ import {
 } from '@cngx/core/tokens';
 import { nextUid, type CngxAsyncState } from '@cngx/core/utils';
 
-import {
-  CNGX_CONTROL_VALUE,
-  type CngxControlValue,
-} from '../control-value/control-value.token';
+import { CNGX_CONTROL_VALUE, type CngxControlValue } from '../control-value/control-value.token';
 import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.token';
-import {
-  CNGX_CHIP_GROUP_HOST,
-  type CngxChipGroupHost,
-} from './chip-group-host.token';
+import { CNGX_CHIP_GROUP_HOST, type CngxChipGroupHost } from './chip-group-host.token';
 
 /**
  * Single-select chip group. Owns a `selected = model<T | undefined>`
@@ -37,19 +31,19 @@ import {
  * Mode is **static** per `feedback_select_family_split`: this is the
  * single-select half of a deliberate split. Consumers pick
  * `<cngx-chip-group>` for single-pick semantics or
- * `<cngx-multi-chip-group>` for multi-pick semantics — never a
+ * `<cngx-multi-chip-group>` for multi-pick semantics - never a
  * runtime `[selectionMode]` flag.
  *
  * `value` is a structural alias of `selected` so the group satisfies
  * `CngxControlValue<T | undefined>` without owning two synchronised
- * models — both names point to the same `ModelSignal<T | undefined>`
+ * models - both names point to the same `ModelSignal<T | undefined>`
  * instance. Mirrors `CngxCheckboxGroup`'s `selectedValues` / `value`
  * pairing.
  *
  * `[state]` accepts `CngxAsyncState<unknown>` for async-loaded chip
  * lists; reactively drives `aria-busy` so AT announces the busy
  * moment without consumer wiring. Slot directives for
- * skeleton/empty/error are deferred — the harmonized Phase 3-4 group
+ * skeleton/empty/error are deferred - the harmonized Phase 3-4 group
  * surface ships only the `aria-busy` projection of `[state]`, and
  * chip-group follows that precedent for cross-family consistency
  * (plan deviation 2026-05-01: skeleton/empty/error slot directives
@@ -57,9 +51,9 @@ import {
  * cross-family harmonization pass).
  *
  * Per Pillar 1 (Ableitung statt Verwaltung), `aria-busy` is a
- * `computed()` from `state.status()` — never a manual write. Per
+ * `computed()` from `state.status()` - never a manual write. Per
  * Pillar 3 (Komposition statt Konfiguration), the group composes
- * `CngxRovingTabindex` and emits no implicit children — consumers
+ * `CngxRovingTabindex` and emits no implicit children - consumers
  * project chip rows themselves.
  *
  * ```html
@@ -71,6 +65,12 @@ import {
  * ```
  *
  * @category common/interactive
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/chip-group/chip-group.component.ts
+ * @selector cngx-chip-group
+ * @since 0.1.0
+ * @relatedTo CngxMultiChipGroup, CngxChipInGroup, CngxChipInteraction, CngxRadioGroup
  * <example-url>http://localhost:4200/#/common/interactive/chip/group/basic-pick-exactly-one-size</example-url>
  * <example-url>http://localhost:4200/#/forms/field/form-primitives/coming-in-a-follow-up</example-url>
  * <example-url>http://localhost:4200/#/forms/field/form-primitives/reactive-forms-same-atom-just-bind-formcontrol</example-url>
@@ -111,10 +111,7 @@ import {
   encapsulation: ViewEncapsulation.None,
 })
 export class CngxChipGroup<T = unknown>
-  implements
-    CngxControlValue<T | undefined>,
-    CngxChipGroupHost<T>,
-    CngxFormFieldControl
+  implements CngxControlValue<T | undefined>, CngxChipGroupHost<T>, CngxFormFieldControl
 {
   readonly selected = model<T | undefined>(undefined);
   readonly value = this.selected;
@@ -123,7 +120,7 @@ export class CngxChipGroup<T = unknown>
   /**
    * Bridge-writable invalid state. `model<boolean>` mirrors `disabled`
    * so external integrations (RF/Signal-Forms bridges, custom validity
-   * adapters) can drive it without a parallel API path — consumers
+   * adapters) can drive it without a parallel API path - consumers
    * typically read only.
    */
   readonly invalid = model<boolean>(false);
@@ -140,12 +137,10 @@ export class CngxChipGroup<T = unknown>
   readonly label = input<string | undefined>(undefined);
   readonly state = input<CngxAsyncState<unknown> | undefined>(undefined);
 
-  /** CngxChipGroupHost — leaf-side cascade source. */
+  /** CngxChipGroupHost - leaf-side cascade source. */
   readonly isDisabled = this.disabled;
 
-  protected readonly ariaBusy = computed(
-    () => this.state()?.status() === 'loading',
-  );
+  protected readonly ariaBusy = computed(() => this.state()?.status() === 'loading');
 
   isSelected(value: T): boolean {
     return Object.is(this.selected(), value);
@@ -186,10 +181,7 @@ export class CngxChipGroup<T = unknown>
   });
 
   readonly errorState = computed<boolean>(
-    () =>
-      this.fieldHost?.showError() ??
-      this.errorAggregator?.shouldShow() ??
-      false,
+    () => this.fieldHost?.showError() ?? this.errorAggregator?.shouldShow() ?? false,
   );
 
   protected handleFocusIn(): void {

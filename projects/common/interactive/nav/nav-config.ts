@@ -60,6 +60,8 @@ export const CNGX_NAV_DEFAULTS: Readonly<Required<CngxNavConfig>> = {
  * ```
  *
  * @category common/interactive
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/nav/nav-config.ts
+ * @since 0.1.0
  */
 export const CNGX_NAV_CONFIG = new InjectionToken<CngxNavConfig>('CNGX_NAV_CONFIG');
 
@@ -87,7 +89,7 @@ export function provideNavConfig(...features: NavConfigFeature[]): Provider[] {
 }
 
 /**
- * Enables single-accordion mode — only one nav group can be open at a time.
+ * Enables single-accordion mode - only one nav group can be open at a time.
  *
  * @category common/interactive
  */

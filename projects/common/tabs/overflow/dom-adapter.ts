@@ -15,24 +15,17 @@ import type { CngxTabPanelHost } from '../tab-panel-host.token';
  */
 export interface CngxTabOverflowDomAdapter {
   /**
-   * Resolve the IntersectionObserver root — the scroll viewport the
+   * Resolve the IntersectionObserver root - the scroll viewport the
    * molecule observes. Returning `null` short-circuits the attach;
    * the molecule's rAF retry loop polls again next frame.
    */
-  resolveStripRoot(
-    panelHost: CngxTabPanelHost,
-    host: HTMLElement,
-  ): HTMLElement | null;
+  resolveStripRoot(panelHost: CngxTabPanelHost, host: HTMLElement): HTMLElement | null;
 
   /**
    * Resolve the rendered button for `handle` inside `root`. cngx-native
    * keys by `handle.id`; Material adapters key by `idx`.
    */
-  resolveTabButton(
-    handle: CngxTabHandle,
-    root: HTMLElement,
-    idx: number,
-  ): HTMLElement | null;
+  resolveTabButton(handle: CngxTabHandle, root: HTMLElement, idx: number): HTMLElement | null;
 }
 
 /**
@@ -69,12 +62,11 @@ export function createCngxTabOverflowDefaultDomAdapter(): CngxTabOverflowDomAdap
  * {@link createCngxTabOverflowDefaultDomAdapter}.
  *
  * @category common/tabs/overflow
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/overflow/dom-adapter.ts
+ * @since 0.1.0
  */
 export const CNGX_TAB_OVERFLOW_DOM_ADAPTER_FACTORY =
-  new InjectionToken<CngxTabOverflowDomAdapterFactory>(
-    'CngxTabOverflowDomAdapterFactory',
-    {
-      providedIn: 'root',
-      factory: () => createCngxTabOverflowDefaultDomAdapter,
-    },
-  );
+  new InjectionToken<CngxTabOverflowDomAdapterFactory>('CngxTabOverflowDomAdapterFactory', {
+    providedIn: 'root',
+    factory: () => createCngxTabOverflowDefaultDomAdapter,
+  });

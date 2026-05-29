@@ -30,6 +30,11 @@ import { DestroyRef, Directive, ElementRef, inject, input, signal } from '@angul
  * ```
  *
  * @category common/a11y
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/a11y/focus/focus-restore.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxAutofocus, CngxFocusTrap, CngxFocusVisible
  * <example-url>http://localhost:4200/#/common/a11y/focus-restore/inline-details</example-url>
  * <example-url>http://localhost:4200/#/common/a11y/focus-restore/panel-with-automatic-restore</example-url>
  */
@@ -90,7 +95,7 @@ export class CngxFocusRestore {
    */
   private resolveTarget(): HTMLElement | null {
     const stored = this.storedElement();
-    // Skip body — it signals "nothing meaningful was focused", not a real restore target.
+    // Skip body - it signals "nothing meaningful was focused", not a real restore target.
     if (
       stored &&
       stored !== this.doc.body &&

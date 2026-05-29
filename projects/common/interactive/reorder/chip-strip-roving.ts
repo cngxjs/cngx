@@ -1,15 +1,11 @@
-import {
-  effect,
-  InjectionToken,
-  signal,
-  untracked,
-  type Signal,
-} from '@angular/core';
+import { effect, InjectionToken, signal, untracked, type Signal } from '@angular/core';
 
 /**
  * Configuration for {@link createChipStripRoving}.
  *
  * @category common/interactive/reorder
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/reorder/chip-strip-roving.ts
+ * @since 0.1.0
  */
 export interface CngxChipStripRovingOptions {
   /**
@@ -21,7 +17,7 @@ export interface CngxChipStripRovingOptions {
   /**
    * Element hosting the chip wrappers. Read lazily at `focusAt()` time
    * so the controller doesn't depend on view-init timing. `null` is a
-   * legitimate idle state — the controller becomes a no-op focuser.
+   * legitimate idle state - the controller becomes a no-op focuser.
    */
   readonly container: Signal<HTMLElement | null | undefined>;
   /**
@@ -41,6 +37,8 @@ export interface CngxChipStripRovingOptions {
  * keyboard handler and imperative focus helpers.
  *
  * @category common/interactive/reorder
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/reorder/chip-strip-roving.ts
+ * @since 0.1.0
  */
 export interface CngxChipStripRovingController {
   /**
@@ -49,7 +47,7 @@ export interface CngxChipStripRovingController {
    */
   readonly activeIndex: Signal<number>;
   /**
-   * Announce that a chip at `index` received focus — typically wired
+   * Announce that a chip at `index` received focus - typically wired
    * on the chip wrapper's `(focus)`. Idempotent; keeps the active
    * index in sync with whatever the user's focus sequence did (mouse
    * click, Tab into the strip, etc.).
@@ -58,7 +56,7 @@ export interface CngxChipStripRovingController {
   /**
    * Keyboard handler for the chip-strip container. Handles plain
    * `ArrowLeft` / `ArrowRight` / `ArrowUp` / `ArrowDown` / `Home` /
-   * `End` — moves `activeIndex` and focuses the chip at the new
+   * `End` - moves `activeIndex` and focuses the chip at the new
    * position. Events carrying any of `Ctrl` / `Alt` / `Meta` are
    * ignored (modifier-gated keys belong to the paired
    * {@link CngxReorder} directive).
@@ -82,6 +80,8 @@ export interface CngxChipStripRovingController {
  * Signature of the factory behind {@link CNGX_CHIP_STRIP_ROVING_FACTORY}.
  *
  * @category common/interactive/reorder
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/reorder/chip-strip-roving.ts
+ * @since 0.1.0
  */
 export type CngxChipStripRovingFactory = (
   opts: CngxChipStripRovingOptions,
@@ -98,15 +98,16 @@ export type CngxChipStripRovingFactory = (
  * `(keydown)` listener that doesn't check modifier keys. Co-located
  * with {@link CngxReorder} on the same chip-strip element it
  * double-fires on `Ctrl+Arrow` (the reorder emits, then roving also
- * moves focus — racy). This controller deliberately skips
+ * moves focus - racy). This controller deliberately skips
  * modifier-pressed events so the paired reorder directive owns that
  * gesture.
  *
  * **Injection context.** Must be called in an injection context
- * (component constructor / field init) because it installs an
- * `effect()` for the active-index clamp on count shrink.
+ * (component constructor / field init) because it installs an * `effect()` for the active-index clamp on count shrink.
  *
  * @category common/interactive/reorder
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/reorder/chip-strip-roving.ts
+ * @since 0.1.0
  */
 export function createChipStripRoving(
   opts: CngxChipStripRovingOptions,
@@ -114,7 +115,7 @@ export function createChipStripRoving(
   const attr = opts.indexAttr ?? 'data-reorder-index';
   const activeIndexState = signal<number>(0);
 
-  // Clamp on count shrink — a removed-last-chip or clear-all must not
+  // Clamp on count shrink - a removed-last-chip or clear-all must not
   // leave `activeIndex` pointing past the end. Reading the signal
   // inside `untracked()` avoids a self-dependency, so the effect's
   // only reactive dep is `count()`.
@@ -207,9 +208,14 @@ export function createChipStripRoving(
  * `CNGX_SELECTION_CONTROLLER_FACTORY`.
  *
  * @category common/interactive/reorder
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/reorder/chip-strip-roving.ts
+ * @since 0.1.0
  */
-export const CNGX_CHIP_STRIP_ROVING_FACTORY =
-  new InjectionToken<CngxChipStripRovingFactory>('CngxChipStripRovingFactory', {
+export const CNGX_CHIP_STRIP_ROVING_FACTORY = new InjectionToken<CngxChipStripRovingFactory>(
+  'CngxChipStripRovingFactory',
+  {
     providedIn: 'root',
     factory: () => createChipStripRoving,
-  });
+  },
+);

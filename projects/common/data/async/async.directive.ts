@@ -20,7 +20,7 @@ import { resolveAsyncView, type AsyncView } from '../async-state/resolve-view';
  * @category common/data/async-state
  */
 export interface CngxAsyncContext<T> {
-  /** The data value — bound via `let data` in microsyntax. */
+  /** The data value - bound via `let data` in microsyntax. */
   $implicit: T;
   /** Alias for `$implicit`. */
   cngxAsync: T;
@@ -37,7 +37,7 @@ export interface CngxAsyncContext<T> {
  * - **refreshing / loading (with data)** → content template (old data stays visible)
  * - **error (with data)** → content template (old data stays visible)
  *
- * ### Minimal — just content
+ * ### Minimal - just content
  * ```html
  * <ul *cngxAsync="residents; let data">
  *   @for (r of data; track r.id) { <li>{{ r.name }}</li> }
@@ -64,6 +64,11 @@ export interface CngxAsyncContext<T> {
  * ```
  *
  * @category common/data/async-state
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/data/async/async.directive.ts
+ * @since 0.1.0
+ * @relatedTo injectAsyncState, createAsyncState, createManualState
  *
  * <example-url>http://localhost:4200/#/ui/feedback/async-container/cngx-async-container-full-control-toast</example-url>
  * <example-url>http://localhost:4200/#/ui/feedback/async-container/cngxasync-one-line</example-url>

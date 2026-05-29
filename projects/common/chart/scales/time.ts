@@ -23,6 +23,7 @@ export function createTimeScale(
   return (v: Date | number) => linear(toMs(v));
 }
 
+/** @internal */
 function toMs(v: Date | number): number {
   return typeof v === 'number' ? v : v.getTime();
 }

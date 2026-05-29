@@ -3,7 +3,7 @@ import { Directive } from '@angular/core';
 /**
  * Structural slot directive for the card header region.
  *
- * Must be placed on a native `<header>` element — the selector enforces
+ * Must be placed on a native `<header>` element - the selector enforces
  * semantic correctness at compile time.
  *
  * ```html
@@ -15,6 +15,10 @@ import { Directive } from '@angular/core';
  * ```
  *
  * @category common/card
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/card/card-header.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxCard, CngxCardTitle, CngxCardSubtitle, CngxCardFooter
  */
 @Directive({
   selector: 'header[cngxCardHeader]',

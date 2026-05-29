@@ -22,10 +22,7 @@ import {
   type SelectionController,
 } from '@cngx/core/utils';
 
-import {
-  CNGX_CONTROL_VALUE,
-  type CngxControlValue,
-} from '../control-value/control-value.token';
+import { CNGX_CONTROL_VALUE, type CngxControlValue } from '../control-value/control-value.token';
 import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.token';
 
 /**
@@ -37,20 +34,20 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
  * checkbox to the group.
  *
  * Internals lean on `createSelectionController` from `@cngx/core/utils`
- * for membership tracking — the controller's structural-equality
+ * for membership tracking - the controller's structural-equality
  * `selected` snapshot prevents downstream computed cascades from
  * thrashing when a re-emission produces the same logical contents
  * with a different array reference.
  *
  * `value` is a structural alias of `selectedValues` so the group
  * satisfies `CngxControlValue<T[]>` without owning two synchronised
- * models — both names point to the same `ModelSignal<T[]>` instance.
+ * models - both names point to the same `ModelSignal<T[]>` instance.
  *
  * Per Pillar 1 (Ableitung statt Verwaltung), every derived flag is a
- * `computed()` — there is no manual sync between membership and the
+ * `computed()` - there is no manual sync between membership and the
  * exposed flags. Per Pillar 3 (Komposition statt Konfiguration), the
  * group composes `CngxRovingTabindex` as a host directive and emits
- * no implicit children — consumers project `<cngx-checkbox>` instances
+ * no implicit children - consumers project `<cngx-checkbox>` instances
  * (or any other CNGX_CONTROL_VALUE-bearing leaf) and bind each leaf's
  * value-tracking themselves.
  *
@@ -62,7 +59,7 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
  *
  * `[keyFn]` lets consumers with object-typed values map each value
  * to a stable membership key (typically `(v) => v.id`). Without it,
- * membership uses identity / primitive equality — which silently
+ * membership uses identity / primitive equality - which silently
  * breaks across re-emissions when the consumer refetches array
  * elements with the same id but new references.
  *
@@ -85,6 +82,12 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
  * ```
  *
  * @category common/interactive
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/checkbox-group/checkbox-group.component.ts
+ * @selector cngx-checkbox-group
+ * @since 0.1.0
+ * @relatedTo CngxCheckbox, CngxRovingTabindex, CngxRadioGroup
  * <example-url>http://localhost:4200/#/common/interactive/checkbox/group/basic-select-all-master-projected-leaves</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/checkbox/group/disabled-cascade</example-url>
  * <example-url>http://localhost:4200/#/forms/field/form-primitives/coming-in-a-follow-up</example-url>
@@ -124,9 +127,7 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
   styleUrls: ['./checkbox-group.component.css'],
   encapsulation: ViewEncapsulation.None,
 })
-export class CngxCheckboxGroup<T = unknown>
-  implements CngxControlValue<T[]>, CngxFormFieldControl
-{
+export class CngxCheckboxGroup<T = unknown> implements CngxControlValue<T[]>, CngxFormFieldControl {
   readonly selectedValues = model<T[]>([]);
   readonly value = this.selectedValues;
   readonly disabled = model<boolean>(false);
@@ -134,7 +135,7 @@ export class CngxCheckboxGroup<T = unknown>
   /**
    * Bridge-writable invalid state. `model<boolean>` mirrors `disabled`
    * so external integrations (RF/Signal-Forms bridges, custom validity
-   * adapters) can drive it without a parallel API path — consumers
+   * adapters) can drive it without a parallel API path - consumers
    * typically read only.
    */
   readonly invalid = model<boolean>(false);
@@ -183,13 +184,9 @@ export class CngxCheckboxGroup<T = unknown>
     return true;
   });
 
-  readonly someSelected = computed(
-    () => this.selectedCount() > 0 && !this.allSelected(),
-  );
+  readonly someSelected = computed(() => this.selectedCount() > 0 && !this.allSelected());
 
-  protected readonly ariaBusy = computed(
-    () => this.state()?.status() === 'loading',
-  );
+  protected readonly ariaBusy = computed(() => this.state()?.status() === 'loading');
 
   toggleAll(): void {
     if (this.disabled()) {
@@ -234,8 +231,7 @@ export class CngxCheckboxGroup<T = unknown>
   });
 
   readonly errorState = computed<boolean>(
-    () =>
-      this.fieldHost?.showError() ?? this.aggregator?.shouldShow() ?? false,
+    () => this.fieldHost?.showError() ?? this.aggregator?.shouldShow() ?? false,
   );
 
   protected handleFocusIn(): void {

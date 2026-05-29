@@ -5,7 +5,7 @@ import type { CngxTabHandle } from './tab-group-host.token';
 /**
  * Read-mostly panel-surface contract for the overflow molecule, skin
  * sub-components, and future panel-level helpers. Narrower than
- * {@link CngxTabGroupHost} — register / unregister stay on the brain.
+ * {@link CngxTabGroupHost} - register / unregister stay on the brain.
  *
  * The single write path is `selectById`; routing back through the
  * presenter preserves clamping, disabled-skip, and commit-action
@@ -34,7 +34,8 @@ export interface CngxTabPanelHost {
  * instead of the concrete component class.
  *
  * @category common/tabs
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/tab-panel-host.token.ts
+ * @since 0.1.0
  */
-export const CNGX_TAB_PANEL_HOST = new InjectionToken<CngxTabPanelHost>(
-  'CngxTabPanelHost',
-);
+export const CNGX_TAB_PANEL_HOST = new InjectionToken<CngxTabPanelHost>('CngxTabPanelHost');

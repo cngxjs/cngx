@@ -63,7 +63,7 @@ export function defineMenuConfigFeature(
 }
 
 /**
- * Library-default menu configuration. **English-only** — German (or any
+ * Library-default menu configuration. **English-only** - German (or any
  * other locale) is consumer-supplied via `withAriaLabels` per the
  * `feedback_en_default_locale` rule.
  *
@@ -89,13 +89,19 @@ export const DEFAULT_MENU_CONFIG: CngxMenuConfig = {
  * `viewProviders`).
  *
  * @category common/interactive/menu
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/menu/menu-config.ts
+ * @since 0.1.0
  */
 export const CNGX_MENU_CONFIG = new InjectionToken<CngxMenuConfig>('CngxMenuConfig', {
   providedIn: 'root',
   factory: () => DEFAULT_MENU_CONFIG,
 });
 
-function applyFeatures(base: CngxMenuConfig, features: readonly CngxMenuConfigFeature[]): CngxMenuConfig {
+/** @internal */
+function applyFeatures(
+  base: CngxMenuConfig,
+  features: readonly CngxMenuConfigFeature[],
+): CngxMenuConfig {
   return features.reduce((cfg, feature) => feature(cfg), base);
 }
 

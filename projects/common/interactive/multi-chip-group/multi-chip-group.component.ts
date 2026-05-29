@@ -22,14 +22,8 @@ import {
   type SelectionController,
 } from '@cngx/core/utils';
 
-import {
-  CNGX_CONTROL_VALUE,
-  type CngxControlValue,
-} from '../control-value/control-value.token';
-import {
-  CNGX_CHIP_GROUP_HOST,
-  type CngxChipGroupHost,
-} from '../chip-group/chip-group-host.token';
+import { CNGX_CONTROL_VALUE, type CngxControlValue } from '../control-value/control-value.token';
+import { CNGX_CHIP_GROUP_HOST, type CngxChipGroupHost } from '../chip-group/chip-group-host.token';
 import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.token';
 
 /**
@@ -45,7 +39,7 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
  * multi-select half of the chip-group split.
  *
  * Internals lean on `createSelectionController` from `@cngx/core/utils`
- * for membership tracking — the controller's structural-equality
+ * for membership tracking - the controller's structural-equality
  * `selected` snapshot prevents downstream computed cascades from
  * thrashing when a re-emission produces the same logical contents
  * with a different array reference. Mirrors `CngxCheckboxGroup`'s
@@ -53,7 +47,7 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
  *
  * `value` is a structural alias of `selectedValues` so the group
  * satisfies `CngxControlValue<T[]>` without owning two synchronised
- * models — both names point to the same `ModelSignal<T[]>` instance.
+ * models - both names point to the same `ModelSignal<T[]>` instance.
  *
  * `[keyFn]` lets consumers with object-typed values map each value
  * to a stable membership key (typically `(v) => v.id`). Without it,
@@ -61,7 +55,7 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
  *
  * `[state]` accepts `CngxAsyncState<unknown>` for async-loaded chip
  * lists; reactively drives `aria-busy`. Slot directives for
- * skeleton/empty/error are deferred — the harmonized Phase 3-4 group
+ * skeleton/empty/error are deferred - the harmonized Phase 3-4 group
  * surface ships only the `aria-busy` projection of `[state]`, and
  * chip-group follows that precedent for cross-family consistency
  * (plan deviation 2026-05-01: see `CngxChipGroup` JSDoc).
@@ -71,7 +65,7 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
  * NOT `createChipStripRoving`. The strip-roving controller would solve
  * clamp-on-removal automatically but its tabindex contract requires
  * the parent to bind `[attr.tabindex]` per chip wrapper at the
- * template level — which a content-projected `CngxChipInGroup` leaf
+ * template level - which a content-projected `CngxChipInGroup` leaf
  * model does not allow. Tracked in `form-primitives-accepted-debt §5`;
  * UX consequence is a one-shot focus reset to index 0 after
  * mid-strip removal, instead of clamping to the next valid sibling.
@@ -80,7 +74,7 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
  * `createChipRemovalHandler` from `@cngx/forms/select` would drive
  * the remove path. That import is a layer violation
  * (`@cngx/common/interactive` is Level 2; `@cngx/forms/select` is
- * Level 3). Removal here is a thin `controller.deselect(value)` —
+ * Level 3). Removal here is a thin `controller.deselect(value)` -
  * the WeakMap-closure-cache machinery in the select-family handler
  * targets `ngTemplateOutlet` chip-slot stability, which content-
  * projected chip-in-group leaves do not exhibit.
@@ -88,7 +82,7 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
  * Per Pillar 1 (Ableitung statt Verwaltung), `aria-busy` is a
  * `computed()` from `state.status()`. Per Pillar 3 (Komposition
  * statt Konfiguration), the group composes `CngxRovingTabindex` and
- * emits no implicit children — consumers project chip rows themselves.
+ * emits no implicit children - consumers project chip rows themselves.
  *
  * ```html
  * <cngx-multi-chip-group label="Tags" [(selectedValues)]="tags">
@@ -99,6 +93,12 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
  * ```
  *
  * @category common/interactive
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/multi-chip-group/multi-chip-group.component.ts
+ * @selector cngx-multi-chip-group
+ * @since 0.1.0
+ * @relatedTo CngxChipGroup, CngxChipInGroup, CngxChipInput, CngxChipInteraction
  * <example-url>http://localhost:4200/#/common/interactive/chip/multi-group/multi-select-chips-with-selection-count</example-url>
  * <example-url>http://localhost:4200/#/forms/field/form-primitives/coming-in-a-follow-up</example-url>
  * <example-url>http://localhost:4200/#/forms/field/form-primitives/reactive-forms-same-atom-just-bind-formcontrol</example-url>
@@ -126,8 +126,7 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
     '[attr.aria-invalid]': '(invalid() || errorState()) ? "true" : null',
     '[attr.aria-errormessage]': 'errorMessageId()',
     '[attr.aria-busy]': 'ariaBusy() ? "true" : null',
-    '[class.cngx-multi-chip-group--horizontal]':
-      'orientation() === "horizontal"',
+    '[class.cngx-multi-chip-group--horizontal]': 'orientation() === "horizontal"',
     '(focusin)': 'handleFocusIn()',
     '(focusout)': 'handleFocusOut()',
   },
@@ -141,10 +140,7 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
   encapsulation: ViewEncapsulation.None,
 })
 export class CngxMultiChipGroup<T = unknown>
-  implements
-    CngxControlValue<T[]>,
-    CngxChipGroupHost<T>,
-    CngxFormFieldControl
+  implements CngxControlValue<T[]>, CngxChipGroupHost<T>, CngxFormFieldControl
 {
   readonly selectedValues = model<T[]>([]);
   readonly value = this.selectedValues;
@@ -153,7 +149,7 @@ export class CngxMultiChipGroup<T = unknown>
   /**
    * Bridge-writable invalid state. `model<boolean>` mirrors `disabled`
    * so external integrations (RF/Signal-Forms bridges, custom validity
-   * adapters) can drive it without a parallel API path — consumers
+   * adapters) can drive it without a parallel API path - consumers
    * typically read only.
    */
   readonly invalid = model<boolean>(false);
@@ -171,7 +167,7 @@ export class CngxMultiChipGroup<T = unknown>
   readonly state = input<CngxAsyncState<unknown> | undefined>(undefined);
   readonly keyFn = input<(value: T) => unknown>((v) => v);
 
-  /** CngxChipGroupHost — leaf-side cascade source. */
+  /** CngxChipGroupHost - leaf-side cascade source. */
   readonly isDisabled = this.disabled;
 
   private readonly controller: SelectionController<T> = inject(
@@ -180,11 +176,9 @@ export class CngxMultiChipGroup<T = unknown>
     keyFn: (v) => this.keyFn()(v),
   });
 
-  protected readonly ariaBusy = computed(
-    () => this.state()?.status() === 'loading',
-  );
+  protected readonly ariaBusy = computed(() => this.state()?.status() === 'loading');
 
-  /** Public membership count — useful for label hints + announcements. */
+  /** Public membership count - useful for label hints + announcements. */
   readonly selectedCount = this.controller.selectedCount;
 
   constructor() {
@@ -224,10 +218,7 @@ export class CngxMultiChipGroup<T = unknown>
   });
 
   readonly errorState = computed<boolean>(
-    () =>
-      this.fieldHost?.showError() ??
-      this.errorAggregator?.shouldShow() ??
-      false,
+    () => this.fieldHost?.showError() ?? this.errorAggregator?.shouldShow() ?? false,
   );
 
   protected handleFocusIn(): void {

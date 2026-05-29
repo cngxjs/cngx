@@ -9,7 +9,7 @@ import type { CngxAsyncState } from '@cngx/core/utils';
 import { injectPresetState } from './preset-state';
 
 /**
- * Bullet chart range entry — a colour band stretching from one value
+ * Bullet chart range entry - a colour band stretching from one value
  * to another along the bullet's axis. Typical use: traffic-light
  * bands ("good" / "fair" / "poor") behind the actual+target bar.
  *
@@ -22,6 +22,7 @@ export interface CngxBulletRange {
   readonly label?: string;
 }
 
+/** @internal */
 interface RangeRendering {
   readonly key: string;
   readonly left: number;
@@ -30,12 +31,17 @@ interface RangeRendering {
 }
 
 /**
- * Bullet chart — Stephen Few's compact KPI visualisation. Three
+ * Bullet chart - Stephen Few's compact KPI visualisation. Three
  * stacked layers: background `[ranges]` (qualitative bands), an
  * `[actual]` filled bar, and a `[target]` vertical marker. Pure DOM,
  * no SVG. Host carries `role="meter"`.
  *
  * @category common/chart/presets
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/presets/bullet.component.ts
+ * @since 0.1.0
+ * @relatedTo CngxDonut, CngxMiniBar, CngxDeviationBar
  *
  * <example-url>http://localhost:4200/#/common/chart/bullet/async-state-machine</example-url>
  * <example-url>http://localhost:4200/#/common/chart/bullet/performance-vs-target</example-url>
@@ -57,7 +63,11 @@ interface RangeRendering {
   template: `
     @switch (activeView()) {
       @case ('skeleton') {
-        <span class="cngx-preset-skeleton" [attr.aria-busy]="true" [attr.aria-label]="i18n.loading()"></span>
+        <span
+          class="cngx-preset-skeleton"
+          [attr.aria-busy]="true"
+          [attr.aria-label]="i18n.loading()"
+        ></span>
       }
       @case ('empty') {
         <span class="cngx-preset-fallback">{{ i18n.empty() }}</span>
@@ -175,9 +185,7 @@ export class CngxBullet {
     return m > 0 ? m : 1;
   });
 
-  protected readonly actualPercent = computed(() =>
-    pct(this.actual(), this.maxValue()),
-  );
+  protected readonly actualPercent = computed(() => pct(this.actual(), this.maxValue()));
 
   protected readonly targetPercent = computed(() => {
     const t = this.target();
@@ -202,6 +210,7 @@ export class CngxBullet {
   });
 }
 
+/** @internal */
 function pct(v: number, max: number): number {
   if (max <= 0) {
     return 0;

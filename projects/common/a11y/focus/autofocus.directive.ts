@@ -37,6 +37,11 @@ import {
  * ```
  *
  * @category common/a11y
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/a11y/focus/autofocus.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxFocusRestore, CngxFocusTrap, CngxFocusVisible
  * <example-url>http://localhost:4200/#/common/a11y/autofocus/conditional-focus</example-url>
  * <example-url>http://localhost:4200/#/common/a11y/autofocus/focus-on-insert</example-url>
  */
@@ -48,7 +53,7 @@ import {
 export class CngxAutofocus {
   /** Whether to focus the element. Defaults to `true` (always focus on render). */
   readonly when = input<boolean>(true, { alias: 'cngxAutofocus' });
-  /** Delay in ms before focusing — useful when the element appears during a transition. */
+  /** Delay in ms before focusing - useful when the element appears during a transition. */
   readonly delay = input<number>(0, { alias: 'autofocusDelay' });
   /** `FocusOptions` passed to `element.focus()`. */
   readonly options = input<FocusOptions>({}, { alias: 'autofocusOptions' });

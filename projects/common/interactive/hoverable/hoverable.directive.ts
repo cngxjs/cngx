@@ -5,7 +5,7 @@ import { Directive, signal } from '@angular/core';
  *
  * @category common/interactive
  *
- * Designed as a `hostDirective` composition primitive — attach it to
+ * Designed as a `hostDirective` composition primitive - attach it to
  * components that need hover state without implementing their own
  * mouseenter/mouseleave logic. The `hovered` signal is writable so
  * host components can read it via `inject(CngxHoverable, { host: true })`.
@@ -29,6 +29,11 @@ import { Directive, signal } from '@angular/core';
  *   Hover me
  * </div>
  * ```
+ *
+ * @docsKind primary
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/hoverable/hoverable.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxPressable, CngxRipple
  */
 @Directive({
   selector: '[cngxHoverable]',

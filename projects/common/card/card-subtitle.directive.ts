@@ -1,7 +1,7 @@
 import { Directive } from '@angular/core';
 
 /**
- * Marks an element as the card's subtitle — secondary text below the title.
+ * Marks an element as the card's subtitle - secondary text below the title.
  *
  * ```html
  * <cngx-card>
@@ -13,6 +13,9 @@ import { Directive } from '@angular/core';
  * ```
  *
  * @category common/card
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/card/card-subtitle.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxCard, CngxCardHeader, CngxCardTitle
  */
 @Directive({
   selector: '[cngxCardSubtitle]',

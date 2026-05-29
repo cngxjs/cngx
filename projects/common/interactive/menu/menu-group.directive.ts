@@ -9,6 +9,11 @@ import { CNGX_MENU_RADIO_GROUP, type CngxMenuRadioGroup } from './menu-radio-con
  * `CNGX_MENU_RADIO_GROUP` contract.
  *
  * @category common/interactive/menu
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/menu/menu-group.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxMenu, CngxMenuItemRadio, CngxMenuItem
  * <example-url>http://localhost:4200/#/common/interactive/menu/checkable/text-formatting-menu</example-url>
  */
 @Directive({

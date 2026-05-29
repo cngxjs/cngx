@@ -52,6 +52,11 @@ export type AsyncAction = () => Promise<unknown> | Observable<unknown>;
  * ```
  *
  * @category common/interactive
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/async-click/async-click.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxPending, CngxSucceeded, CngxFailed, CngxActionButton
  * <example-url>http://localhost:4200/#/common/interactive/retry/optimistic-instant-like-toggle</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/retry/withretry-cngxasyncclick</example-url>
  */
@@ -122,7 +127,7 @@ export class CngxAsyncClick {
   /** The error value from a failed action. Cleared on reset. */
   readonly error: Signal<unknown> = this.errorState.asReadonly();
 
-  /** Current lifecycle status — use in `@switch` for template branching. */
+  /** Current lifecycle status - use in `@switch` for template branching. */
   readonly status = computed<AsyncStatus>(() => {
     if (this.pendingState()) {
       return 'pending';
@@ -136,7 +141,7 @@ export class CngxAsyncClick {
     return 'idle';
   });
 
-  /** Screen reader announcement for the current state — bind to an `aria-live` region. */
+  /** Screen reader announcement for the current state - bind to an `aria-live` region. */
   readonly announcement = computed(() => {
     if (this.succeededState()) {
       return this.succeededAnnouncement();
@@ -151,7 +156,7 @@ export class CngxAsyncClick {
    * Full `CngxAsyncState` view of this directive's lifecycle.
    *
    * Bind to any state consumer (`[state]="btn.state"`) to connect the
-   * feedback system — toasts, alerts, skeletons, async containers.
+   * feedback system - toasts, alerts, skeletons, async containers.
    */
   readonly state: CngxAsyncState<unknown> = buildAsyncStateView<unknown>({
     status: this.status,

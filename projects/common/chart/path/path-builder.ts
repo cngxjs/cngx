@@ -39,11 +39,7 @@ export interface PathBuilder<T> {
    * `(data, xScale, yScale)` triple by reference returns the cached
    * string without re-running the O(n) point projection.
    */
-  build(
-    data: readonly T[],
-    xScale: ScaleFn<XScaleInput>,
-    yScale: ScaleFn<number>,
-  ): string;
+  build(data: readonly T[], xScale: ScaleFn<XScaleInput>, yScale: ScaleFn<number>): string;
 
   /**
    * Number of times the internal point-projection + path-string
@@ -57,7 +53,7 @@ export interface PathBuilder<T> {
 /**
  * Pure-TS path builder with single-slot LRU memo on
  * `(data, xScale, yScale)` reference identity. Pure TS, no Angular
- * dep. Compute guard only — does not know about signals or `equal`
+ * dep. Compute guard only - does not know about signals or `equal`
  * functions; the `d` computed in `<cngx-line>` carries the cascade
  * guard separately.
  *
@@ -66,7 +62,7 @@ export interface PathBuilder<T> {
  * triggers a rebuild and updates the slot.
  *
  * Each call to `createPathBuilder` returns a fresh builder with its
- * own `lastData / lastX / lastY` slots — there is no cross-call /
+ * own `lastData / lastX / lastY` slots - there is no cross-call /
  * cross-consumer state. The cascade guard for layer atoms is the
  * `equal: (a, b) => a === b` on the `builder` `computed`; combined
  * with Angular signals' default behaviour of skipping re-emissions
@@ -107,6 +103,7 @@ export function createPathBuilder<T>(opts: PathBuilderOptions<T>): PathBuilder<T
   };
 }
 
+/** @internal */
 function projectPoints<T>(
   data: readonly T[],
   xAcc: LineXAccessor<T>,

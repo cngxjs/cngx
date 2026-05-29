@@ -13,6 +13,10 @@ import { Directive, input } from '@angular/core';
  * ```
  *
  * @category common/card
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/card/card-media.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxCard, CngxCardHeader, CngxCardBody
  * <example-url>http://localhost:4200/#/common/card/card-with-image</example-url>
 
  */

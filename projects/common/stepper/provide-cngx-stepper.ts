@@ -5,10 +5,7 @@ import {
   type Provider,
 } from '@angular/core';
 
-import {
-  provideStepperI18n,
-  type CngxStepperI18nFeature,
-} from './i18n/stepper-i18n';
+import { provideStepperI18n, type CngxStepperI18nFeature } from './i18n/stepper-i18n';
 import {
   provideStepperConfig,
   provideStepperConfigAt,
@@ -23,9 +20,7 @@ import {
  *
  * @category common/stepper
  */
-export type CngxStepperFeature =
-  | CngxStepperConfigFeature
-  | CngxStepperI18nFeature;
+export type CngxStepperFeature = CngxStepperConfigFeature | CngxStepperI18nFeature;
 
 /** @internal */
 interface PartitionedFeatures {
@@ -33,9 +28,8 @@ interface PartitionedFeatures {
   readonly i18n: CngxStepperI18nFeature[];
 }
 
-function partitionFeatures(
-  features: readonly CngxStepperFeature[],
-): PartitionedFeatures {
+/** @internal */
+function partitionFeatures(features: readonly CngxStepperFeature[]): PartitionedFeatures {
   const config: CngxStepperConfigFeature[] = [];
   const i18n: CngxStepperI18nFeature[] = [];
   for (const feat of features) {
@@ -47,7 +41,7 @@ function partitionFeatures(
       config.push(feat);
       continue;
     }
-    // Unbranded feature — drop + dev-warn (mirrors `provideCngxTabs`).
+    // Unbranded feature - drop + dev-warn (mirrors `provideCngxTabs`).
     if (isDevMode()) {
       console.warn(
         '[provideCngxStepper] Dropped feature without a `_target` ' +
@@ -91,7 +85,7 @@ export function provideCngxStepper(
 ): EnvironmentProviders {
   const { config, i18n } = partitionFeatures(features);
   // `provideStepperConfig` returns EnvironmentProviders, `provideStepperI18n`
-  // returns Provider — `makeEnvironmentProviders` takes both.
+  // returns Provider - `makeEnvironmentProviders` takes both.
   return makeEnvironmentProviders([
     provideStepperConfig(...config),
     ...(i18n.length > 0 ? [provideStepperI18n(...i18n)] : []),
@@ -100,7 +94,7 @@ export function provideCngxStepper(
 
 /**
  * Component-scoped twin of {@link provideCngxStepper}. Spread into
- * `viewProviders` or `providers`. Same dispatch semantics — only the
+ * `viewProviders` or `providers`. Same dispatch semantics - only the
  * provider scope differs.
  *
  * ```ts
@@ -116,9 +110,7 @@ export function provideCngxStepper(
  *
  * @category common/stepper
  */
-export function provideCngxStepperAt(
-  ...features: readonly CngxStepperFeature[]
-): Provider[] {
+export function provideCngxStepperAt(...features: readonly CngxStepperFeature[]): Provider[] {
   const { config, i18n } = partitionFeatures(features);
   return [
     ...provideStepperConfigAt(...config),

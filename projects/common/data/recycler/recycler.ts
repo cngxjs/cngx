@@ -39,6 +39,9 @@ export interface RecyclerI18n {
  * Provides English defaults via factory. Override with `provideRecyclerI18n()`.
  *
  * @category common/data/recycler
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/data/recycler/recycler.ts
+ * @since 0.1.0
  */
 export const CNGX_RECYCLER_I18N = new InjectionToken<RecyclerI18n>('CngxRecyclerI18n', {
   factory: (): RecyclerI18n => ({
@@ -77,7 +80,7 @@ export interface RecyclerConfig {
   scrollElement: ElementRef | HTMLElement | string;
 
   /**
-   * Total number of items. Reactive — changes on infinite scroll.
+   * Total number of items. Reactive - changes on infinite scroll.
    *
    * **Important:** For infinite scroll, this is the number of *loaded* items,
    * not the server-side total. Otherwise the sentinel becomes unreachable.
@@ -92,11 +95,11 @@ export interface RecyclerConfig {
 
   /**
    * Layout mode. `'list'` (default) uses padding spacers.
-   * `'grid'` is Phase 3 — passing it logs a dev-mode warning and falls back to `'list'`.
+   * `'grid'` is Phase 3 - passing it logs a dev-mode warning and falls back to `'list'`.
    */
   layout?: 'list' | 'grid';
 
-  /** Column count for grid mode. Phase 3 — ignored in Phase 1. */
+  /** Column count for grid mode. Phase 3 - ignored in Phase 1. */
   columns?: number | (() => number);
 
   /** Debounce for scroll events in ms. Default: 16 (~1 frame). */
@@ -104,14 +107,14 @@ export interface RecyclerConfig {
 
   /**
    * Delay before skeletons are shown (ms). Default: 0.
-   * E.g. 300 means `showSkeleton` only becomes `true` after 300ms —
+   * E.g. 300 means `showSkeleton` only becomes `true` after 300ms -
    * fast loads (< 300ms) never show a skeleton.
    */
   skeletonDelay?: number;
 
   /**
    * Async state source. When set, the recycler derives skeleton rendering,
-   * refresh state, and empty state from it — same convention as
+   * refresh state, and empty state from it - same convention as
    * `CngxCardGrid`, `CngxTreetable`, `CngxPopoverPanel`, and `CngxDialog`.
    */
   state?: CngxAsyncState<unknown>;
@@ -125,7 +128,7 @@ export interface RecyclerConfig {
 
 /**
  * Signal-based virtualizer returned by {@link injectRecycler}.
- * All derived values are `computed()` — the system cannot become inconsistent.
+ * All derived values are `computed()` - the system cannot become inconsistent.
  *
  * @category common/data/recycler
  */
@@ -190,7 +193,7 @@ export interface CngxRecycler {
    * Use in an effect to trigger page loads for windowed/sparse data sources.
    *
    * Unlike `firstVisible`/`lastVisible` (which exclude overscan), this includes
-   * overscan items — all indices in this range may be rendered.
+   * overscan items - all indices in this range may be rendered.
    *
    * ```typescript
    * effect(() => {
@@ -207,7 +210,7 @@ export interface CngxRecycler {
 
   /**
    * Target index that `scrollToIndex()` is waiting for.
-   * Non-null when the target index exceeds `totalCount` — consumer
+   * Non-null when the target index exceeds `totalCount` - consumer
    * can show a "Scrolling to item..." indicator or trigger page loads.
    * Clears automatically when `totalCount` grows past the target.
    */
@@ -215,7 +218,7 @@ export interface CngxRecycler {
 
   /**
    * Creates a `computed()` slicing items to the visible range.
-   * **Call once in a field initializer** — each call creates a new computed node.
+   * **Call once in a field initializer** - each call creates a new computed node.
    * Do NOT call in templates or methods.
    */
   sliced<T>(items: Signal<T[]>): Signal<T[]>;
@@ -240,10 +243,10 @@ export interface CngxRecycler {
 /**
  * Inline equivalent of `createVisibilityTimer` from `@cngx/ui/feedback` (Level 4, not importable).
  *
- * Uses `setTimeout` inside an effect — this is a timer-driven side effect, not derived state.
+ * Uses `setTimeout` inside an effect - this is a timer-driven side effect, not derived state.
  * Same pattern accepted in `createVisibilityTimer` for `CngxLoadingOverlay`.
  * Safe in zoneless: the `setTimeout` callback only writes a signal, which schedules
- * Angular's own change detection — no Zone.js dependency.
+ * Angular's own change detection - no Zone.js dependency.
  *
  * @param source Boolean signal to delay. When `true`, starts the timer.
  * @param delayMs Delay in milliseconds before the flag becomes `true`.
@@ -311,7 +314,7 @@ export function injectRecycler(config: RecyclerConfig): CngxRecycler {
     );
   }
 
-  // Reactive columns — reactive only if the function reads a Signal internally
+  // Reactive columns - reactive only if the function reads a Signal internally
   const columns = computed(() => {
     if (!isGrid || config.columns == null) {
       return 1;
@@ -418,7 +421,7 @@ export function injectRecycler(config: RecyclerConfig): CngxRecycler {
     if (ch <= 0) {
       return 0;
     }
-    // Resolve estimateSize reactively — function variant may read signals internally
+    // Resolve estimateSize reactively - function variant may read signals internally
     const itemHeight =
       typeof config.estimateSize === 'number' ? config.estimateSize : config.estimateSize(0);
     return Math.ceil(ch / itemHeight);
@@ -426,7 +429,7 @@ export function injectRecycler(config: RecyclerConfig): CngxRecycler {
 
   const showSkeleton = createDelayedFlag(isLoading, config.skeletonDelay ?? 0);
 
-  // previousTotal is a signal, not a mutable let — reactive, no stale-value risk.
+  // previousTotal is a signal, not a mutable let - reactive, no stale-value risk.
   const announcementState = signal('');
   const previousTotal = signal(config.totalCount());
 
@@ -437,11 +440,11 @@ export function injectRecycler(config: RecyclerConfig): CngxRecycler {
       const current = tracker.current();
       const previous = tracker.previous();
       const total = config.totalCount();
-      // untracked: previousTotal is bookkeeping, not a dependency —
+      // untracked: previousTotal is bookkeeping, not a dependency -
       // the effect should fire on status/totalCount changes, not on its own writes.
       const prevTotal = untracked(() => previousTotal());
 
-      // Transition-only — never announce on initial idle
+      // Transition-only - never announce on initial idle
       if (previous === current) {
         return;
       }
@@ -562,7 +565,7 @@ export function injectRecycler(config: RecyclerConfig): CngxRecycler {
   const pendingScrollTarget = signal<{ index: number; behavior: ScrollBehavior } | null>(null);
   const pendingTarget = computed(() => pendingScrollTarget()?.index ?? null);
 
-  // Watch totalCount — when it grows past the pending target, execute the scroll.
+  // Watch totalCount - when it grows past the pending target, execute the scroll.
   // Uses untracked() for pendingScrollTarget reads/writes to avoid write-inside-read loops.
   // Only totalCount is a tracked dependency.
   effect(() => {
@@ -628,7 +631,7 @@ export function injectRecycler(config: RecyclerConfig): CngxRecycler {
     },
 
     measure(index: number, element: HTMLElement): void {
-      // Grid mode assumes uniform row height — SizeCache writes would break row-based range.
+      // Grid mode assumes uniform row height - SizeCache writes would break row-based range.
       if (isGrid) {
         return;
       }
@@ -641,7 +644,7 @@ export function injectRecycler(config: RecyclerConfig): CngxRecycler {
     scrollToIndex(index: number, behavior: ScrollBehavior = 'auto'): void {
       const total = config.totalCount();
       if (index >= total) {
-        // Deep-link: target not loaded yet — store for later resolution
+        // Deep-link: target not loaded yet - store for later resolution
         pendingScrollTarget.set({ index, behavior });
         return;
       }

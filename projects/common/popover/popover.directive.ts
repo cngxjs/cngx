@@ -29,20 +29,27 @@ import type {
   PopoverState,
 } from './popover.types';
 
-/** Module-level registry of open popovers (insertion-ordered). */
+/**
+ * @internal Module-level registry of open popovers (insertion-ordered).
+ */
 const openPopovers = new Set<CngxPopover>();
 
 /**
+ * @internal
  * Derive the panel's actual placement relative to the trigger from the live
  * rects. The arrow always sits on the panel edge that *faces* the trigger,
  * so a `position-try-fallbacks` flip (e.g. requested `bottom`, browser
  * resolved to `top` because there is no room below) routes the arrow to the
  * opposite edge without the consumer touching anything.
  *
- * Returns the requested placement's primary edge when the rects overlap —
+ * Returns the requested placement's primary edge when the rects overlap -
  * the only case where no clean side is geometrically correct.
  */
-function resolveActualEdge(trigger: DOMRect, panel: DOMRect, requested: PopoverPlacement): ArrowEdge {
+function resolveActualEdge(
+  trigger: DOMRect,
+  panel: DOMRect,
+  requested: PopoverPlacement,
+): ArrowEdge {
   const tolerance = 4;
   if (panel.top >= trigger.bottom - tolerance) {
     return 'bottom';
@@ -59,8 +66,9 @@ function resolveActualEdge(trigger: DOMRect, panel: DOMRect, requested: PopoverP
   return requested.split('-')[0] as ArrowEdge;
 }
 
-/** Tracks which Documents already have the global Escape listener. */
+/** @internal Tracks which Documents already have the global Escape listener. */
 const escapeListenerDocs = new WeakSet<Document>();
+/** @internal */
 function installGlobalEscapeListener(doc: Document): void {
   if (escapeListenerDocs.has(doc)) {
     return;
@@ -79,8 +87,9 @@ function installGlobalEscapeListener(doc: Document): void {
   });
 }
 
-/** Tracks which Documents have already warned about missing Popover API. */
+/** @internal Tracks which Documents have already warned about missing Popover API. */
 const popoverApiWarnedDocs = new WeakSet<Document>();
+/** @internal */
 function warnMissingPopoverApi(el: HTMLElement): void {
   const doc = el.ownerDocument;
   if (popoverApiWarnedDocs.has(doc) || !isDevMode()) {
@@ -98,17 +107,18 @@ function warnMissingPopoverApi(el: HTMLElement): void {
   }
 }
 
-/** Tracks which Documents have already warned about missing Floating-UI middleware. */
+/** @internal Tracks which Documents have already warned about missing Floating-UI middleware. */
 const floatingMiddlewareWarnedDocs = new WeakSet<Document>();
 
 /**
- * @internal — test hook. Resets the per-Document warning suppression so
+ * @internal - test hook. Resets the per-Document warning suppression so
  * specs can exercise the warning path against a shared jsdom Document.
  * Do not call from production code.
  */
 export function __resetFloatingMiddlewareWarnings(doc: Document): void {
   floatingMiddlewareWarnedDocs.delete(doc);
 }
+/** @internal */
 function warnMissingFloatingMiddleware(doc: Document): void {
   if (floatingMiddlewareWarnedDocs.has(doc) || !isDevMode()) {
     return;
@@ -130,7 +140,7 @@ function warnMissingFloatingMiddleware(doc: Document): void {
  *
  * Wraps the browser's `popover` attribute with reactive state,
  * CSS-transition-aware lifecycle, and CSS Anchor Positioning.
- * Pure state machine — contains no trigger logic, no delays.
+ * Pure state machine - contains no trigger logic, no delays.
  *
  * State lifecycle: `closed` → `opening` → `open` → `closing` → `closed`.
  * CSS classes `cngx-popover--opening`, `cngx-popover--open`, and
@@ -172,10 +182,15 @@ function warnMissingFloatingMiddleware(doc: Document): void {
  * ```
  *
  * When the array is empty (default), the host does not write a
- * `position-try-fallbacks` style — the browser positions the popover at
+ * `position-try-fallbacks` style - the browser positions the popover at
  * the declared `placement` regardless of viewport clipping.
  *
  * @category common/popover
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/popover/popover.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxPopoverTrigger, CngxPopoverPanel, CngxTooltip
  */
 @Directive({
   selector: '[cngxPopover]',
@@ -202,7 +217,7 @@ export class CngxPopover {
    * popover's native element to APIs expecting an `ElementRef`
    * (scroll observers, intersection observers, focus managers, …).
    * Notable consumer: `injectRecycler({ scrollElement: pop.elementRef })`
-   * for `@cngx/forms/select` virtualisation — the popover IS the
+   * for `@cngx/forms/select` virtualisation - the popover IS the
    * scroll container when `select-base.css`'s `max-height + overflow-y`
    * rules apply.
    */
@@ -344,7 +359,7 @@ export class CngxPopover {
   /**
    * Comma-joined `position-try-fallbacks` value, or `null` to skip the
    * style write. Bound via host binding so empty / cleared lists drop the
-   * property cleanly. Unsupported browsers ignore the unknown property —
+   * property cleanly. Unsupported browsers ignore the unknown property -
    * gating on `SUPPORTS_ANCHOR` would only suppress a harmless write.
    */
   protected readonly cssPositionTryFallbacks = computed(() => {
@@ -422,7 +437,7 @@ export class CngxPopover {
       // After layout settles the browser's anchor / shift recovery has
       // already placed the panel; reading its rect now reflects the
       // final position the arrow needs to point at. The panel-side
-      // border-radius arrives through CNGX_POPOVER_ARROW_BOUNDS — no
+      // border-radius arrives through CNGX_POPOVER_ARROW_BOUNDS - no
       // getComputedStyle read on this directive's side.
       this.updateArrowOffset();
     });

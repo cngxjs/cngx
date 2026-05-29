@@ -27,6 +27,10 @@ import { fromEvent, switchMap } from 'rxjs';
  * ```html
  * <div cngxClickOutside [eventType]="'click'" (clickOutside)="dismiss()">…</div>
  * ```
+ * @docsKind primary
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/keyboard/click-outside.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxKeyboardShortcut, CngxPopover
  * <example-url>http://localhost:4200/#/common/interactive/gestures/click-outside/dropdown</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/gestures/click-outside/enabled-toggle</example-url>
  */

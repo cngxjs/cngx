@@ -18,7 +18,7 @@ import type { CngxStepRejectionContext } from './slots/step-rejection.directive'
  * defaults are English; locales come from consumer overrides.
  *
  * Per-step navigation labels (`previousStep`, `nextStep`) live in
- * {@link CngxStepperI18n} — SR phrasing, not landmark naming.
+ * {@link CngxStepperI18n} - SR phrasing, not landmark naming.
  * Splitting the surfaces avoids a dual-override path for the same string.
  *
  * @category common/stepper
@@ -72,6 +72,7 @@ export interface CngxStepperConfig {
   readonly templates?: CngxStepperTemplates;
 }
 
+/** @internal */
 const STEPPER_CONFIG_DEFAULTS: Required<
   Omit<CngxStepperConfig, 'ariaLabels' | 'fallbackLabels' | 'templates'>
 > & {
@@ -100,22 +101,23 @@ const STEPPER_CONFIG_DEFAULTS: Required<
  * or {@link provideStepperConfigAt} (component scope).
  *
  * @category common/stepper
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/stepper/stepper-config.ts
+ * @since 0.1.0
  */
-export const CNGX_STEPPER_CONFIG = new InjectionToken<CngxStepperConfig>(
-  'CngxStepperConfig',
-  { providedIn: 'root', factory: () => STEPPER_CONFIG_DEFAULTS },
-);
+export const CNGX_STEPPER_CONFIG = new InjectionToken<CngxStepperConfig>('CngxStepperConfig', {
+  providedIn: 'root',
+  factory: () => STEPPER_CONFIG_DEFAULTS,
+});
 
 /**
- * Feature signature — each `with*` builder reduces over the config.
+ * Feature signature - each `with*` builder reduces over the config.
  * Hidden `_target: 'config'` discriminator routes through the family
  * aggregator {@link provideCngxStepper}.
  *
  * @category common/stepper
  */
-export type CngxStepperConfigFeature = ((
-  config: CngxStepperConfig,
-) => CngxStepperConfig) & {
+export type CngxStepperConfigFeature = ((config: CngxStepperConfig) => CngxStepperConfig) & {
   readonly _target: 'config';
 };
 
@@ -197,9 +199,7 @@ export function withStepperRouterSync(
  *
  * @category common/stepper
  */
-export function withStepperAriaLabels(
-  labels: CngxStepperAriaLabels,
-): CngxStepperConfigFeature {
+export function withStepperAriaLabels(labels: CngxStepperAriaLabels): CngxStepperConfigFeature {
   return defineStepperConfigFeature((cfg) => ({
     ...cfg,
     ariaLabels: { ...cfg.ariaLabels, ...labels },
@@ -299,18 +299,15 @@ export function withStepGroupHeaderTemplate(
  *
  * @category common/stepper
  */
-export function withStepperEmptyTemplate(
-  template: TemplateRef<void>,
-): CngxStepperConfigFeature {
+export function withStepperEmptyTemplate(template: TemplateRef<void>): CngxStepperConfigFeature {
   return defineStepperConfigFeature((cfg) => ({
     ...cfg,
     templates: { ...cfg.templates, empty: template },
   }));
 }
 
-function resolveFeatures(
-  features: readonly CngxStepperConfigFeature[],
-): CngxStepperConfig {
+/** @internal */
+function resolveFeatures(features: readonly CngxStepperConfigFeature[]): CngxStepperConfig {
   return features.reduce<CngxStepperConfig>((cfg, feat) => feat(cfg), STEPPER_CONFIG_DEFAULTS);
 }
 
@@ -331,7 +328,7 @@ export function provideStepperConfig(
 
 /**
  * Component-scoped config override. Spread the returned `Provider[]`
- * into `providers` or `viewProviders` — `viewProviders` cannot accept
+ * into `providers` or `viewProviders` - `viewProviders` cannot accept
  * opaque {@link EnvironmentProviders}, so the twin returns a list.
  * Sibling of `provideTabsConfigAt`.
  *

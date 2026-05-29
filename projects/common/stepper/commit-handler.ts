@@ -1,10 +1,7 @@
 import { InjectionToken, type Signal } from '@angular/core';
 import { isObservable, type Observable, type Subscription } from 'rxjs';
 
-import {
-  type CngxCommitController,
-  type CngxCommitHandle,
-} from '@cngx/common/data';
+import { type CngxCommitController, type CngxCommitHandle } from '@cngx/common/data';
 
 import type { CngxStepperCommitAction } from './presenter.directive';
 
@@ -78,6 +75,7 @@ export function createStepperCommitHandler(
   };
 }
 
+/** @internal */
 function runStepperAction(
   action: CngxStepperCommitAction,
   fromIndex: number,
@@ -112,12 +110,16 @@ function runStepperAction(
     result = action(fromIndex, toIndex);
   } catch (err: unknown) {
     safeError(err);
-    return { cancel: () => { cancelled = true; } };
+    return {
+      cancel: () => {
+        cancelled = true;
+      },
+    };
   }
 
   if (isObservable(result)) {
     // Synchronous Observables (`of(true)`) emit inside `.subscribe`
-    // before the assignment binds — `sub` would be in TDZ. Declare
+    // before the assignment binds - `sub` would be in TDZ. Declare
     // the handle on a `let` first.
     let sub: Subscription | null = null;
     sub = result.subscribe({
@@ -158,12 +160,11 @@ export type CngxStepperCommitHandlerFactory = (
  * handler. Symmetric to the select family's `CNGX_ARRAY_COMMIT_HANDLER_FACTORY`.
  *
  * @category common/stepper
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/stepper/commit-handler.ts
+ * @since 0.1.0
  */
 export const CNGX_STEPPER_COMMIT_HANDLER_FACTORY =
-  new InjectionToken<CngxStepperCommitHandlerFactory>(
-    'CngxStepperCommitHandlerFactory',
-    {
-      providedIn: 'root',
-      factory: () => createStepperCommitHandler,
-    },
-  );
+  new InjectionToken<CngxStepperCommitHandlerFactory>('CngxStepperCommitHandlerFactory', {
+    providedIn: 'root',
+    factory: () => createStepperCommitHandler,
+  });

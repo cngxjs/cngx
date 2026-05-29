@@ -9,7 +9,7 @@ import { InjectionToken, type Signal } from '@angular/core';
  * @category common/a11y
  */
 export interface ActiveDescendantItem {
-  /** Unique DOM `id` on the element — required for `aria-activedescendant`. */
+  /** Unique DOM `id` on the element - required for `aria-activedescendant`. */
   readonly id: string;
   /** Opaque value emitted on `activated`. Compared with `Object.is` by default. */
   readonly value: unknown;
@@ -30,9 +30,12 @@ export interface ActiveDescendantItem {
  * ```
  *
  * The contained directive must expose `id`, `value`, `label`, and optionally
- * `disabled` as signals — the AD reads them reactively.
+ * `disabled` as signals - the AD reads them reactively.
  *
  * @category common/a11y
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/a11y/active-descendant/ad-item.token.ts
+ * @since 0.1.0
  */
 export const CNGX_AD_ITEM = new InjectionToken<CngxAdItemHandle>('CNGX_AD_ITEM');
 

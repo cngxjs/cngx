@@ -5,17 +5,17 @@ import type { CngxStepNode, CngxStepStatus } from '../stepper-host.token';
 /**
  * Context passed to the `*cngxStepIndicator` template. Drives the
  * numbered / checkmark / error glyph inside each step button. The
- * `<button>` shell — `aria-current`, `aria-controls`, click handler —
+ * `<button>` shell - `aria-current`, `aria-controls`, click handler -
  * stays library-owned.
  *
  * `status` mirrors `node.state()`. `busy` is the presenter-derived
- * "this step is the in-flight commit target" flag — independent of
+ * "this step is the in-flight commit target" flag - independent of
  * `status === 'pending'` (which is the aggregate landmark state).
  *
  * @category common/stepper/slots
  */
 export interface CngxStepIndicatorContext {
-  /** Convenience alias for `position` — usable as `let-position` shorthand. */
+  /** Convenience alias for `position` - usable as `let-position` shorthand. */
   readonly $implicit: number;
   /** 1-based position of this step in the flat step-only projection. */
   readonly position: number;
@@ -23,7 +23,7 @@ export interface CngxStepIndicatorContext {
   readonly node: CngxStepNode;
   /** `true` when this step is the current `activeStepId`. */
   readonly active: boolean;
-  /** Live step status — drives the visual variant (idle / success / error / busy). */
+  /** Live step status - drives the visual variant (idle / success / error / busy). */
   readonly status: CngxStepStatus;
   /** `true` when this step is the in-flight commit target. */
   readonly busy: boolean;
@@ -50,6 +50,10 @@ export interface CngxStepIndicatorContext {
  * ```
  *
  * @category common/stepper/slots
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/stepper/slots/step-indicator.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxStepBadge, CngxStepBusySpinner, CngxStepRejection, CngxStepGroupHeader
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-slot-overrides/custom-busy-spinner-via-code-cngxstepbusyspinner-code</example-url>
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-slot-overrides/custom-error-badge-via-code-cngxstepbadge-code</example-url>
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-slot-overrides/custom-group-header-via-code-cngxstepgroupheader-code</example-url>
@@ -63,7 +67,5 @@ export interface CngxStepIndicatorContext {
   standalone: true,
 })
 export class CngxStepIndicator {
-  readonly templateRef = inject<TemplateRef<CngxStepIndicatorContext>>(
-    TemplateRef,
-  );
+  readonly templateRef = inject<TemplateRef<CngxStepIndicatorContext>>(TemplateRef);
 }

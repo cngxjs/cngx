@@ -27,7 +27,7 @@ function directiveMapEqual<T>(a: Map<string, T>, b: Map<string, T>): boolean {
  * @category common/tabs/registry
  */
 export interface CngxDirectiveByIdMapOptions<T extends { id: () => string }> {
-  /** Reactive source — typically `contentChildren(...)`. */
+  /** Reactive source - typically `contentChildren(...)`. */
   readonly source: Signal<readonly T[]>;
 }
 
@@ -71,12 +71,13 @@ export type CngxDirectiveByIdMapFactory = <T extends { id: () => string }>(
  * `CNGX_ORGANISM_SCROLL_SYNC_FACTORY`.
  *
  * @category common/tabs/registry
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/registry/directive-by-id-map.ts
+ * @since 0.1.0
  */
-export const CNGX_DIRECTIVE_BY_ID_MAP_FACTORY =
-  new InjectionToken<CngxDirectiveByIdMapFactory>(
-    'CngxDirectiveByIdMapFactory',
-    {
-      providedIn: 'root',
-      factory: () => createDirectiveByIdMap,
-    },
-  );
+export const CNGX_DIRECTIVE_BY_ID_MAP_FACTORY = new InjectionToken<CngxDirectiveByIdMapFactory>(
+  'CngxDirectiveByIdMapFactory',
+  {
+    providedIn: 'root',
+    factory: () => createDirectiveByIdMap,
+  },
+);
