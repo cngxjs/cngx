@@ -23,10 +23,7 @@ import {
   type SelectionController,
 } from '@cngx/core/utils';
 
-import {
-  CNGX_CONTROL_VALUE,
-  type CngxControlValue,
-} from '../control-value/control-value.token';
+import { CNGX_CONTROL_VALUE, type CngxControlValue } from '../control-value/control-value.token';
 import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.token';
 import {
   CNGX_BUTTON_MULTI_TOGGLE_GROUP,
@@ -36,8 +33,8 @@ import {
 /**
  * Multi-select button-toggle group. Owns a `selectedValues =
  * model<T[]>([])` (the canonical multi-value source) and exposes the
- * parent contract via `CNGX_BUTTON_MULTI_TOGGLE_GROUP`. Behaves as a
- * W3C APG `toolbar` — arrow keys MOVE focus only (no auto-select);
+ * parent contract via `CNGX_BUTTON_MULTI_TOGGLE_GROUP`.
+ * Behaves as a W3C APG `toolbar` - arrow keys MOVE focus only (no auto-select);
  * Space and Enter on a focused leaf toggle that leaf's membership.
  *
  * Mode is **static**: this is the multi-select half of the
@@ -49,14 +46,14 @@ import {
  * AT INJECTION TIME, never at runtime.
  *
  * Internals lean on `createSelectionController` from
- * `@cngx/core/utils` for membership tracking — the controller's
+ * `@cngx/core/utils` for membership tracking - the controller's
  * stable per-value `isSelected` signals (memoised by key) let leaves
  * read membership inside their own `computed()` without triggering a
  * fresh array walk on every change-detection pass.
  *
  * `value` is a structural alias of `selectedValues` so the group
  * satisfies `CngxControlValue<T[]>` without owning two synchronised
- * models — both names point to the same `ModelSignal<T[]>` instance.
+ * models - both names point to the same `ModelSignal<T[]>` instance.
  *
  * ```html
  * <cngx-button-multi-toggle-group label="Filters" [(selectedValues)]="filters">
@@ -67,6 +64,12 @@ import {
  * ```
  *
  * @category common/interactive
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/button-toggle/button-multi-toggle-group.component.ts
+ * @selector cngx-button-multi-toggle-group
+ * @since 0.1.0
+ * @relatedTo CngxButtonToggle, CngxButtonToggleGroup
  * <example-url>http://localhost:4200/#/common/interactive/button-toggle/multi-group/basic-multi-filter-toolbar</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/button-toggle/multi-group/disabled-group-cascade-vs-per-toggle</example-url>
  * <example-url>http://localhost:4200/#/forms/field/form-primitives/coming-in-a-follow-up</example-url>
@@ -95,8 +98,7 @@ import {
     '[attr.aria-errormessage]': 'errorMessageId()',
     '[attr.aria-orientation]': 'orientation()',
     '[attr.aria-busy]': 'ariaBusy() ? "true" : null',
-    '[class.cngx-button-multi-toggle-group--horizontal]':
-      'orientation() === "horizontal"',
+    '[class.cngx-button-multi-toggle-group--horizontal]': 'orientation() === "horizontal"',
     '(focusin)': 'handleFocusIn()',
     '(focusout)': 'handleFocusOut()',
   },
@@ -119,10 +121,7 @@ import {
   encapsulation: ViewEncapsulation.None,
 })
 export class CngxButtonMultiToggleGroup<T = unknown>
-  implements
-    CngxButtonMultiToggleGroupContract<T>,
-    CngxControlValue<T[]>,
-    CngxFormFieldControl
+  implements CngxButtonMultiToggleGroupContract<T>, CngxControlValue<T[]>, CngxFormFieldControl
 {
   readonly selectedValues = model<T[]>([]);
   readonly value = this.selectedValues;
@@ -131,7 +130,7 @@ export class CngxButtonMultiToggleGroup<T = unknown>
   /**
    * Bridge-writable invalid state. `model<boolean>` mirrors `disabled`
    * so external integrations (RF/Signal-Forms bridges, custom validity
-   * adapters) can drive it without a parallel API path — consumers
+   * adapters) can drive it without a parallel API path - consumers
    * typically read only.
    */
   readonly invalid = model<boolean>(false);
@@ -149,9 +148,7 @@ export class CngxButtonMultiToggleGroup<T = unknown>
   readonly state = input<CngxAsyncState<unknown> | undefined>(undefined);
   readonly keyFn = input<(value: T) => unknown>((v) => v);
 
-  protected readonly ariaBusy = computed(
-    () => this.state()?.status() === 'loading',
-  );
+  protected readonly ariaBusy = computed(() => this.state()?.status() === 'loading');
 
   private readonly controller: SelectionController<T> = inject(
     CNGX_SELECTION_CONTROLLER_FACTORY,
@@ -189,8 +186,7 @@ export class CngxButtonMultiToggleGroup<T = unknown>
   });
 
   readonly errorState = computed<boolean>(
-    () =>
-      this.fieldHost?.showError() ?? this.aggregator?.shouldShow() ?? false,
+    () => this.fieldHost?.showError() ?? this.aggregator?.shouldShow() ?? false,
   );
 
   protected handleFocusIn(): void {

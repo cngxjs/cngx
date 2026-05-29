@@ -32,9 +32,10 @@ type ParentResolution<T> = SingleResolution<T> | MultiResolution<T>;
  * disabled propagation to the form-submission engine).
  *
  * Injects EITHER `CNGX_BUTTON_TOGGLE_GROUP` (single, radiogroup) OR
- * `CNGX_BUTTON_MULTI_TOGGLE_GROUP` (multi, toolbar) — never the
- * concrete group class — both with `{ optional: true }`. Exactly one
- * parent must be present; the constructor throws when both or
+ * `CNGX_BUTTON_MULTI_TOGGLE_GROUP` (multi, toolbar) - never the
+ * concrete group class - both with `{ optional: true }`.
+ *
+ * Exactly one parent must be present; the constructor throws when both or
  * neither resolve. The resolved parent is stored as a discriminated
  * union (`{ mode: 'single' | 'multi'; group }`) so every downstream
  * branch narrows without non-null assertions.
@@ -46,11 +47,11 @@ type ParentResolution<T> = SingleResolution<T> | MultiResolution<T>;
  * - the activation contract (single: `group.value.set(...)`; multi:
  *   `group.toggle(...)`),
  * - whether `(focus)` consumes the parent's pending arrow-select
- *   flag (single only — multi follows toolbar APG, which does not
+ *   flag (single only - multi follows toolbar APG, which does not
  *   auto-select on arrow nav).
  *
- * Mode is **static** per atom instance — there is no runtime
- * `[selectionMode]` flag. Per `feedback_select_family_split`,
+ * Mode is **static** per atom instance.
+ * There is no runtime `[selectionMode]` flag. Per `feedback_select_family_split`,
  * single + multi are two distinct groups reusing this leaf; the
  * decision is made by the consumer at template-authoring time.
  *
@@ -59,28 +60,33 @@ type ParentResolution<T> = SingleResolution<T> | MultiResolution<T>;
  * navigation in either parent group skips per-toggle-disabled leaves
  * automatically.
  *
- * **Group-disabled cascade vs roving (accepted debt).** The
- * group-level `[disabled]` cascade short-circuits `handleSelect` /
+ * **Group-disabled cascade vs roving.**
+ * Thev group-level `[disabled]` cascade short-circuits `handleSelect` /
  * `handleKeydown` / `handleFocus` (see `toggleDisabled` computed),
- * but does NOT propagate into `CngxRovingItem.disabled` — Angular
- * forbids re-binding a host-directive's read-only `InputSignal`
+ * but does NOT propagate into `CngxRovingItem.disabled`.
+ * Angular forbids re-binding a host-directive's read-only `InputSignal`
  * input from a wrapping host. As a result, a fully-disabled group
  * lets visual focus transit through its toggles via Arrow keys;
- * every selection pathway short-circuits silently. Behaviour mirrors
- * `CngxRadio`; tracked in `form-primitives-accepted-debt.md §4`.
+ * every selection pathway short-circuits silently.
  * Re-evaluation is gated on `CngxRovingItem.disabled` becoming a
  * writable surface in `@cngx/common/a11y`.
  *
  * **Disabled "why" via aria-describedby.** Pillar 2 requires
  * disabled state to communicate a reason. The leaf exposes
- * `[describedBy]` (alias `cngxDescribedBy`) — a reactive input that
- * binds to the host's `aria-describedby`. Consumers render the
+ * `[describedBy]` (alias `cngxDescribedBy`).
+ * A reactive input that binds to the host's `aria-describedby`. Consumers render the
  * description element themselves and pass its id; the directive does
  * not own a sr-only span (it is a `@Directive` on a native
- * `<button>` — no template to inject siblings into). Native
- * `<button aria-describedby>` semantics apply.
+ * `<button>` - no template to inject siblings into).
+ * Native `<button aria-describedby>` semantics apply.
  *
  * @category common/interactive
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/button-toggle/button-toggle.directive.ts
+ * @selector button[cngxButtonToggle]
+ * @since 0.1.0
+ * @relatedTo CngxButtonToggleGroup, CngxButtonMultiToggleGroup, CngxRadio
  * <example-url>http://localhost:4200/#/common/interactive/button-toggle/multi-group/basic-multi-filter-toolbar</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/button-toggle/multi-group/disabled-group-cascade-vs-per-toggle</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/button-toggle/group/basic-view-switcher</example-url>
@@ -134,19 +140,11 @@ export class CngxButtonToggle<T = unknown> {
   );
 
   protected readonly ariaChecked = computed(() =>
-    this.resolved.mode === 'single'
-      ? this.toggleChecked()
-        ? 'true'
-        : 'false'
-      : null,
+    this.resolved.mode === 'single' ? (this.toggleChecked() ? 'true' : 'false') : null,
   );
 
   protected readonly ariaSelected = computed(() =>
-    this.resolved.mode === 'multi'
-      ? this.toggleChecked()
-        ? 'true'
-        : 'false'
-      : null,
+    this.resolved.mode === 'multi' ? (this.toggleChecked() ? 'true' : 'false') : null,
   );
 
   protected handleFocus(): void {
@@ -183,19 +181,17 @@ export class CngxButtonToggle<T = unknown> {
 }
 
 function resolveParent<T>(): ParentResolution<T> {
-  const single = inject<CngxButtonToggleGroupContract<T>>(
-    CNGX_BUTTON_TOGGLE_GROUP,
-    { optional: true },
-  );
-  const multi = inject<CngxButtonMultiToggleGroupContract<T>>(
-    CNGX_BUTTON_MULTI_TOGGLE_GROUP,
-    { optional: true },
-  );
+  const single = inject<CngxButtonToggleGroupContract<T>>(CNGX_BUTTON_TOGGLE_GROUP, {
+    optional: true,
+  });
+  const multi = inject<CngxButtonMultiToggleGroupContract<T>>(CNGX_BUTTON_MULTI_TOGGLE_GROUP, {
+    optional: true,
+  });
   if (single && multi) {
     throw new Error(
       'CngxButtonToggle: both CngxButtonToggleGroup and ' +
         'CngxButtonMultiToggleGroup parents are present in the injector ' +
-        'tree. Exactly one is required — single + multi semantics are ' +
+        'tree. Exactly one is required - single + multi semantics are ' +
         'incompatible.',
     );
   }

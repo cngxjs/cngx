@@ -16,10 +16,7 @@ import {
 } from '@cngx/core/tokens';
 import { nextUid, type CngxAsyncState } from '@cngx/core/utils';
 
-import {
-  CNGX_CONTROL_VALUE,
-  type CngxControlValue,
-} from '../control-value/control-value.token';
+import { CNGX_CONTROL_VALUE, type CngxControlValue } from '../control-value/control-value.token';
 import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.token';
 import {
   CNGX_BUTTON_TOGGLE_GROUP,
@@ -30,14 +27,14 @@ import {
  * Single-select button-toggle group. Owns a `value = model<T |
  * undefined>` (the canonical single-value source) and exposes the
  * parent contract via `CNGX_BUTTON_TOGGLE_GROUP`. Behaves as a W3C
- * APG `radiogroup` — arrow keys move focus AND select (auto-select
+ * APG `radiogroup` - arrow keys move focus AND select (auto-select
  * variant); Tab + programmatic focus do not select on focus alone;
  * Space and Enter select the currently-focused toggle.
  *
  * Mode is **static**: this component is the single-select half of a
  * deliberate split (per `feedback_select_family_split`). Consumers
  * pick `<cngx-button-toggle-group>` for radiogroup semantics or
- * `<cngx-button-multi-toggle-group>` for toolbar semantics — never a
+ * `<cngx-button-multi-toggle-group>` for toolbar semantics - never a
  * runtime `[selectionMode]` flag, never a shape-shifter. The leaf
  * `CngxButtonToggle` injects EITHER this token OR
  * `CNGX_BUTTON_MULTI_TOGGLE_GROUP` (`{ optional: true }` on both)
@@ -48,7 +45,7 @@ import {
  * is raised on host `(keydown)` for any roving-relevant key
  * (Arrow*, Home, End); each focused leaf consumes the flag in its
  * `(focus)` handler via `consumePendingArrowSelect()`. The signal
- * write happens inside a DOM event handler — never inside an
+ * write happens inside a DOM event handler - never inside an
  * `effect()`.
  *
  * ```html
@@ -60,6 +57,12 @@ import {
  * ```
  *
  * @category common/interactive
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/button-toggle/button-toggle-group.component.ts
+ * @selector cngx-button-toggle-group
+ * @since 0.1.0
+ * @relatedTo CngxButtonToggle, CngxRadioGroup
  * <example-url>http://localhost:4200/#/common/interactive/button-toggle/group/basic-view-switcher</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/button-toggle/group/disabled-group-cascade-vs-per-toggle</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/button-toggle/group/vertical-orientation</example-url>
@@ -89,8 +92,7 @@ import {
     '[attr.aria-errormessage]': 'errorMessageId()',
     '[attr.aria-orientation]': 'orientation()',
     '[attr.aria-busy]': 'ariaBusy() ? "true" : null',
-    '[class.cngx-button-toggle-group--horizontal]':
-      'orientation() === "horizontal"',
+    '[class.cngx-button-toggle-group--horizontal]': 'orientation() === "horizontal"',
     '(keydown)': 'handleKeydown($event)',
     '(focusin)': 'handleFocusIn()',
     '(focusout)': 'handleFocusOut()',
@@ -105,10 +107,7 @@ import {
   encapsulation: ViewEncapsulation.None,
 })
 export class CngxButtonToggleGroup<T = unknown>
-  implements
-    CngxButtonToggleGroupContract<T>,
-    CngxControlValue<T | undefined>,
-    CngxFormFieldControl
+  implements CngxButtonToggleGroupContract<T>, CngxControlValue<T | undefined>, CngxFormFieldControl
 {
   readonly value = model<T | undefined>(undefined);
   readonly disabled = model<boolean>(false);
@@ -116,7 +115,7 @@ export class CngxButtonToggleGroup<T = unknown>
   /**
    * Bridge-writable invalid state. `model<boolean>` mirrors `disabled`
    * so external integrations (RF/Signal-Forms bridges, custom validity
-   * adapters) can drive it without a parallel API path — consumers
+   * adapters) can drive it without a parallel API path - consumers
    * typically read only.
    */
   readonly invalid = model<boolean>(false);
@@ -133,9 +132,7 @@ export class CngxButtonToggleGroup<T = unknown>
   readonly label = input<string | undefined>(undefined);
   readonly state = input<CngxAsyncState<unknown> | undefined>(undefined);
 
-  protected readonly ariaBusy = computed(
-    () => this.state()?.status() === 'loading',
-  );
+  protected readonly ariaBusy = computed(() => this.state()?.status() === 'loading');
 
   private pendingArrowSelect = false;
 
@@ -177,8 +174,7 @@ export class CngxButtonToggleGroup<T = unknown>
   });
 
   readonly errorState = computed<boolean>(
-    () =>
-      this.fieldHost?.showError() ?? this.aggregator?.shouldShow() ?? false,
+    () => this.fieldHost?.showError() ?? this.aggregator?.shouldShow() ?? false,
   );
 
   protected handleFocusIn(): void {
