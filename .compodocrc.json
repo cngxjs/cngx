@@ -2,7 +2,7 @@
     "$schema": "./node_modules/@cngxjs/compodocx/src/config/schema.json",
     "tsconfig": "./tsconfig.doc.json",
     "output": "./docs",
-    "theme": "./cngx-theme.css",
+    "theme": "./cngx-compodocx-theme.css",
     "shikiTheme": "github-light:github-dark",
     "multiVersion": false,
     "includes": "core-concepts",
