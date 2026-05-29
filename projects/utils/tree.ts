@@ -46,10 +46,14 @@ export interface FlatTreeNode<T> {
   readonly node: CngxTreeNode<T>;
 }
 
+/** @internal */
 type IdFn<T> = (value: T, path: readonly number[]) => string;
+/** @internal */
 type LabelFn<T> = (value: T) => string;
 
+/** @internal */
 const defaultIdFn: IdFn<unknown> = (_value, path) => path.join('.');
+/** @internal */
 const defaultLabelFn: LabelFn<unknown> = (value) => String(value);
 
 /**
