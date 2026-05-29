@@ -1,8 +1,19 @@
 /**
  * @overview
- * Default visuals for `CngxChipGroup` — a flex layout container for
- * `<cngx-chip>` children. Stacks vertically by default;
- * `.cngx-chip-group--horizontal` flips to a wrapping row.
+ * Default visuals for `CngxChipGroup`. The host carries
+ * `.cngx-chip-group` and frames a flex layout for projected
+ * `<cngx-chip>` children. Stacks vertically by default.
+ *
+ * **Variants**
+ *
+ * - `--horizontal` - flips to a row with `flex-wrap: wrap` so chips
+ *   fold to additional lines instead of overflowing
+ *
+ * **Inheritance**
+ *
+ * Gap cascades through the foundation:
+ *
+ * - `--cngx-chip-group-gap` -> `--cngx-space-sm`
  */
 
 @layer cngx.tokens {

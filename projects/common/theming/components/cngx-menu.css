@@ -1,31 +1,60 @@
 /**
  * @overview
- * Default chrome for the `CngxMenu` family. Ships enough structural
- * styling that a bare `<ul cngxMenu>…</ul>` renders as a usable
- * popover menu: list bullets stripped, items laid out in a
- * three-slot flex row (icon / label / kbd), keyboard-cursor +
- * checked-state signals painted in.
+ * Theming bridge for the `CngxMenu` family. Ships enough structural
+ * chrome that a bare `<ul cngxMenu>…</ul>` renders as a usable
+ * popover menu: bullets stripped, items laid out in a flex row with
+ * icon / label / suffix / kbd slots, keyboard-cursor and checked-state
+ * signals painted in. Container surface (background, border, radius)
+ * is owned by the popover panel that hosts the menu -
+ * `cngx-popover-panel.css` paints the chrome.
  *
- * Selectors target the directive's class hooks:
- *   - `[cngxMenu]`        — container
- *   - `[cngxMenuItem]`    — item host (also `[cngxMenuItemCheckbox]`,
- *                            `[cngxMenuItemRadio]`, `[cngxMenuItemSubmenu]`)
- *   - `.cngx-menu-item__icon | __label | __suffix | __kbd` — slots
- *   - `.cngx-menu-item--highlighted | --disabled | --checked` — state
- *   - `[cngxMenuSeparator]` — divider
+ * **Selectors**
  *
- * Container surface (background, border, radius) is OWNED by the
- * popover panel that hosts the menu — `cngx-popover-panel.css`
- * paints the chrome. This file ships only the menu's internal
- * structure + keyboard-visibility hooks.
+ * - `[cngxMenu]` - container
+ * - `[cngxMenuItem]`, `[cngxMenuItemCheckbox]`, `[cngxMenuItemRadio]`,
+ *   `[cngxMenuItemSubmenu]` - item hosts
+ * - `.cngx-menu-item__icon`, `__label`, `__suffix`, `__kbd` - slots
+ * - `.cngx-menu-item--highlighted`, `--disabled`, `--checked` - state
+ * - `[cngxMenuSeparator]` - hairline divider
  *
- * Pair with `@cngx/themes/material/interactive-controls-theme` for
- * the Material 3 surface treatment.
+ * **State modifiers**
+ *
+ * - `--highlighted` - tinted background (keyboard cursor via
+ *   `aria-activedescendant`)
+ * - `--disabled` - opacity 0.5, `cursor: not-allowed`
+ * - `--checked` - bolder font-weight plus a leading glyph drawn by
+ *   `::before` so the cue lands even without a projected icon:
+ *   `[cngxMenuItemCheckbox]` -> `&check;`, `[cngxMenuItemRadio]` ->
+ *   filled dot. `:has(.cngx-menu-item__icon)` suppresses the pseudo
+ *   when a projected icon already occupies the slot.
+ *
+ * **Inheritance**
+ *
+ * Surface tokens fall back to the foundation so brand swaps cascade:
+ *
+ * - `--cngx-menu-focus-outline-color` -> `--cngx-color-primary`
+ * - `--cngx-menu-item-highlight-bg` -> `color-mix(primary, transparent)`
+ * - `--cngx-menu-item-checked-color` -> `--cngx-color-primary`
+ * - `--cngx-menu-separator-color` -> `--cngx-color-border`
+ *
+ * The highlight tint is a `color-mix()` so Material's `--mat-sys-primary`
+ * (or any other primary override) flows through without forking.
+ *
+ * **Dark mode**
+ *
+ * Three hooks (`prefers-color-scheme: dark`, `[data-color-scheme="dark"]`,
+ * `.dark`) lift the highlight alpha (10% -> 18%) and flip the kbd
+ * muted-color from `oklch(0.45 …)` to `oklch(0.7 …)` so the shortcut
+ * hint stays readable on dark popover surfaces.
+ *
+ * **Pair with**
+ *
+ * - `@cngx/themes/material/interactive-controls-theme` - Material 3 surface
  */
 
 @layer cngx.tokens {
   /**
-   * Outline of the menu container when it takes keyboard focus —
+   * Outline of the menu container when it takes keyboard focus -
    * standard 2px ring at the foundation-primary hue. The container
    * uses `aria-activedescendant`, so it carries focus while the
    * highlighted item is signalled separately by the highlight bg.
@@ -127,7 +156,7 @@
   }
 
   /**
-   * Font-weight applied to a checked menu item — emphasises
+   * Font-weight applied to a checked menu item - emphasises
    * committed state vs the transient highlight cursor.
    * @group State / Checked
    */
@@ -151,7 +180,7 @@
   }
 
   /**
-   * Min-width reserved on the leading icon slot — keeps labels
+   * Min-width reserved on the leading icon slot - keeps labels
    * vertically aligned across rows when some items have icons and
    * others don't.
    * @group Layout
@@ -187,7 +216,7 @@
 
   /*
    * Default-theme palette. Highlight tint is a `color-mix()` of the
-   * foundation primary so the accent follows the bridge — Material's
+   * foundation primary so the accent follows the bridge - Material's
    * `--mat-sys-primary` (or any other theme that overrides
    * `--cngx-color-primary`) flows through unchanged. Alpha lifts on
    * dark surfaces so the tint stays perceptible without blowing out
@@ -282,7 +311,7 @@
    * Checkbox-flavoured items get a tick (`✓`), radio-flavoured items
    * get a filled dot (`●`) to mirror the standard form-control
    * vocabulary. The pseudo lives outside the slot grid so it doesn't
-   * conflict with `[cngxMenuItemIcon]` content — `:has()` suppresses
+   * conflict with `[cngxMenuItemIcon]` content - `:has()` suppresses
    * the pseudo when a projected icon is present.
    */
   .cngx-menu-item--checked {

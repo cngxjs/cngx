@@ -1,11 +1,31 @@
 /**
  * @overview
- * Default visuals for `CngxLoadingIndicator`. Two variants — a
- * circular spinner and an indeterminate progress bar. Under
- * `prefers-reduced-motion` both fall back to an opacity pulse.
- * Keyframes (`cngx-spin`, `cngx-bar-indeterminate`, `cngx-pulse`)
- * stay top-level outside `@layer` because they're already
- * namespaced.
+ * Default visuals for `CngxLoadingIndicator`. The host carries
+ * `.cngx-loading-indicator` and renders either `__spinner` (with
+ * nested `__spinner-track` + `__spinner-arc` SVG paths) or `__bar`
+ * (with nested `__bar-fill`). Keyframes (`cngx-spin`,
+ * `cngx-bar-indeterminate`, `cngx-pulse`) stay top-level outside
+ * `@layer` because they are already namespaced.
+ *
+ * **Variants**
+ *
+ * - default - circular SVG spinner, `cngx-spin` 360deg rotation
+ * - `--bar` - block-level indeterminate progress bar with a 40%
+ *   fill sweep via `cngx-bar-indeterminate`
+ *
+ * Under `prefers-reduced-motion` both variants swap to a slow
+ * opacity pulse (`cngx-pulse`); the bar variant additionally pins
+ * `width: 100%` so the static fill reads as a track-fill rather
+ * than a stuck partial sweep.
+ *
+ * **Slots**
+ *
+ * - `.cngx-loading-indicator__spinner-track` - background ring
+ *   stroke (`--cngx-loading-indicator-track`)
+ * - `.cngx-loading-indicator__spinner-arc` - active arc stroke
+ *   (`--cngx-loading-indicator-color`)
+ * - `.cngx-loading-indicator__bar` - bar track (same track token)
+ * - `.cngx-loading-indicator__bar-fill` - bar fill (same active token)
  */
 
 @layer cngx.tokens {

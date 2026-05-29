@@ -1,17 +1,57 @@
 /**
  * @overview
- * Default visuals for the `CngxDialog` directive. Targets
+ * Theming bridge for the `CngxDialog` directive. Targets
  * `<dialog cngxDialog>` and the sibling `[cngxDialogDraggable]`
  * variant. The directive toggles transition classes
- * (`.cngx-dialog--opening` / `-open` / `-closing`) on the host.
+ * (`cngx-dialog--opening` / `-open` / `-closing`) on the host;
+ * this stylesheet only paints. The `::backdrop` pseudo is part of
+ * the `<dialog>` element itself, so no separate overlay node ships.
  *
- * Surface tokens fall back through the foundation
- * `--cngx-color-surface` so brand overrides propagate. The
- * `::backdrop` pseudo-element is part of the dialog itself — no
- * separate overlay element required.
+ * **State modifiers**
  *
- * Pair with `@cngx/themes/material/dialog-theme` for the Material
- * surface + elevation.
+ * - `--opening` - opacity 0, translateY(8px) scale(0.98)
+ * - `--open` - opacity 1, translateY(0) scale(1)
+ * - `--closing` - opacity 0, translateY(8px) scale(0.98)
+ *
+ * Suppressed under `prefers-reduced-motion: reduce` (host + backdrop).
+ *
+ * **Draggable variant**
+ *
+ * `[cngxDialogDraggable]` applies the same opacity / scale curve plus
+ * a `translate(--cngx-dialog-x, --cngx-dialog-y)` the directive
+ * updates from pointer position. `.cngx-dialog--dragging` disables
+ * the transition so the surface tracks the pointer 1:1.
+ *
+ * **Backdrop**
+ *
+ * The `::backdrop` pseudo reads three inheriting tokens off the
+ * dialog host so `CngxDialogStack` can suppress the inner scrim
+ * inline while a parent dialog is open:
+ *
+ * - `--cngx-dialog-backdrop-bg` - default 50% black
+ * - `--cngx-dialog-backdrop-blur` - default 0px (frosted-glass opt-in)
+ * - `--cngx-dialog-backdrop-opacity` - default 1; stack toggles
+ * - `--cngx-dialog-backdrop-transition` - default `none` so stack
+ *   swaps snap (a fade would flash inner dialogs through half-scrim)
+ *
+ * **Inheritance**
+ *
+ * Surface and shadow track the foundation:
+ *
+ * - `--cngx-dialog-bg` -> `--cngx-color-surface`
+ * - `--cngx-dialog-color` -> `currentColor`
+ * - `--cngx-dialog-border` -> `none` (Material outlined opts in)
+ *
+ * **Dark mode**
+ *
+ * Three hooks (`prefers-color-scheme: dark`, `[data-color-scheme="dark"]`,
+ * `.dark`) deepen `--cngx-dialog-shadow` from 12% to 50% black so the
+ * dialog still reads as elevated against the dark page. Surface bg
+ * rides the foundation cascade unchanged.
+ *
+ * **Pair with**
+ *
+ * - `@cngx/themes/material/dialog-theme` - Material 3 surface + elevation
  */
 
 @layer cngx.tokens {
@@ -210,13 +250,13 @@
     initial-value: auto;
   }
 
-  /* Delegating tokens — :root pulls foundation surface so the dialog
+  /* Delegating tokens - :root pulls foundation surface so the dialog
    * bg follows whichever light/dark value the foundation has resolved. */
   :root {
     --cngx-dialog-bg: var(--cngx-color-surface);
   }
 
-  /* Dark-mode swap — shadow deepens so the dialog still reads as
+  /* Dark-mode swap - shadow deepens so the dialog still reads as
    * elevated over the dark page (a 12% black wash disappears on
    * dark surfaces). */
   @media (prefers-color-scheme: dark) {

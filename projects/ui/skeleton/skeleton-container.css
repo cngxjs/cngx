@@ -1,12 +1,34 @@
 /**
  * @overview
- * Default visuals for `CngxSkeleton` — shimmer placeholder bone.
- * The keyframe stays top-level (outside `@layer`) because it's
- * already namespaced with `cngx-skeleton-` and keyframes resolve
- * by name regardless of cascade layer.
+ * Default visuals for `CngxSkeleton` - shimmer placeholder bones.
+ * The host carries `.cngx-skeleton` and renders one or more
+ * `.cngx-skeleton-bone` children. The keyframe
+ * (`cngx-skeleton-shimmer`) stays top-level outside `@layer`
+ * because it is already namespaced and keyframes resolve by name
+ * regardless of cascade layer.
  *
- * Pair with `@cngx/themes/material/skeleton-theme` for the
- * Material 3 surface treatment.
+ * **State modifiers**
+ *
+ * - `--shimmer` - paints the bone with a 200% gradient sweep via
+ *   `cngx-skeleton-shimmer` at `--cngx-skeleton-shimmer-duration`
+ *   (default 1.5s). The animation no-ops under
+ *   `prefers-reduced-motion`
+ *
+ * **Dark mode**
+ *
+ * Three hooks flip both the base and shimmer-sweep tones to
+ * gray-on-near-black so the sweep reads as a subtle gradient
+ * rather than a bright streak. Component-local - bones are
+ * placeholder surfaces, not delegated:
+ *
+ * - `prefers-color-scheme: dark`
+ * - `[data-color-scheme="dark"]`
+ * - `.dark` class
+ *
+ * **Pair with**
+ *
+ * - `@cngx/themes/material/skeleton-theme` - Material 3 surface
+ *   treatment
  */
 
 @layer cngx.tokens {
@@ -53,9 +75,9 @@
 
   /*
    * Default-theme palette pass. Skeleton bones sit one step inside
-   * the page surface — dark mode flips both the base and the shimmer
+   * the page surface - dark mode flips both the base and the shimmer
    * sweep to gray-on-near-black so the shimmer reads as a subtle
-   * gradient rather than a bright streak. Component-local — bones
+   * gradient rather than a bright streak. Component-local - bones
    * are placeholder surfaces, not delegated.
    */
   :root {

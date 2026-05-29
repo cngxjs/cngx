@@ -1,9 +1,61 @@
 /**
  * @overview
- * `CngxTreeSelectPanel` body skin. Tree rendering with indented
- * rows, twisty toggles, and hover / selected states. Indent is
- * driven by the `--cngx-tree-depth` value the renderer sets per
- * node, multiplied by `--cngx-tree-select-level-indent`.
+ * Body skin for `CngxTreeSelectPanel` - the hierarchical body that
+ * renders inside the floating panel of `CngxTreeSelect`. The host scope
+ * is `cngx-tree-select-panel` (the element selector itself); rows render
+ * indented per depth, with twisty toggles for expandable nodes and a
+ * twisty-spacer for leaves so labels line up across depths. Indent is
+ * driven by the `--cngx-tree-depth` value the renderer sets per node,
+ * multiplied by `--cngx-tree-select-level-indent`.
+ *
+ * **State modifiers**
+ *
+ * - `:hover` on `.cngx-tree-select__node` - hover-tinted background
+ * - `[aria-selected='true']` on a node - selected-tint background
+ * - `[aria-disabled='true']` on a node - opacity dim + `cursor:
+ *   not-allowed`
+ * - `.cngx-tree-select__twisty--open` - 90deg rotation marking expanded
+ *   state (transition suppressed under `prefers-reduced-motion`)
+ *
+ * **Slots**
+ *
+ * - `.cngx-tree-select__tree` - the outer tree container
+ * - `.cngx-tree-select__node` - one row, depth-indented via
+ *   `--cngx-tree-depth`
+ * - `.cngx-tree-select__twisty` - expand / collapse toggle button
+ * - `.cngx-tree-select__twisty-spacer` - same-sized placeholder for
+ *   leaves so labels align across depths
+ * - `.cngx-tree-select__label` - ellipsis-truncating node label
+ *
+ * **Inheritance**
+ *
+ * Node tokens fall back to hardcoded defaults; hover and selected
+ * backgrounds carry their own light / dark pair (no foundation
+ * delegation since the alpha-on-black surfaces would dissolve on a
+ * dark page).
+ *
+ * - `--cngx-tree-select-node-color` - currentColor
+ * - `--cngx-tree-select-node-bg` - transparent
+ * - `--cngx-tree-select-node-hover-bg` - light: `oklch(0 0 0 / 0.04)`,
+ *   dark: `oklch(1 0 0 / 0.06)`
+ * - `--cngx-tree-select-node-selected-bg` - light: `oklch(0 0 0 / 0.08)`,
+ *   dark: `oklch(1 0 0 / 0.12)` (slightly deeper alpha than hover to
+ *   keep the visual rank)
+ *
+ * **Dark mode**
+ *
+ * Three hooks swap the hover and selected tints from alpha-on-black to
+ * alpha-on-white so they read on a dark panel-bg:
+ *
+ * - `prefers-color-scheme: dark`
+ * - `[data-color-scheme="dark"]`
+ * - `.dark` class
+ *
+ * **Pair with**
+ *
+ * - `tree-select.component.css` - the trigger skin sibling
+ * - `@cngx/themes/material/select-theme` - Material 3 surface treatment
+ *   shared across the entire select family
  */
 
 @layer cngx.tokens {
@@ -151,7 +203,7 @@
     initial-value: 0.75rem;
   }
 
-  /* Dark-mode component-local swap — alpha-on-black hover/selected
+  /* Dark-mode component-local swap - alpha-on-black hover/selected
    * surfaces dissolve into a dark panel-bg, so the dark blocks flip
    * them to alpha-on-white. The selected bg gets a slightly deeper
    * alpha than the hover to keep the visual rank. */

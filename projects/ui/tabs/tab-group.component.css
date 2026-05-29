@@ -1,17 +1,40 @@
 /**
  * @overview
- * Default visuals for `<cngx-tab-group>` — the thematic skin layer.
- * Structural rules (flex / grid / positioning, scroll-snap, sr-only,
- * base color / background / sizes) come from the shared
- * `tabs-base.css` in `@cngx/common/tabs` — single source of truth
- * for the structural token defaults. This file owns the skin-
- * exclusive tokens (ink-bar indicator, transition timing, hover
- * affordance, strip border).
+ * Thematic skin for `<cngx-tab-group>`. Pairs with the structural
+ * `tabs-base.css` in `@cngx/common/tabs` (which owns layout, scroll-
+ * snap, sizes, base color / background, sr-only) - this file owns
+ * the ink-bar indicator, hover affordance, strip border, and the
+ * per-tab error badge. Tokens defined in `tabs-base.css` read with
+ * bare `var(--cngx-tab-*)` (no second fallback) because the
+ * structural cascade provides the default.
  *
- * Tokens consumed but defined in `tabs-base.css` read with bare
- * `var(--cngx-tab-*)` (no second fallback) — the structural cascade
- * provides the default and a duplicate fallback would create a
- * second source of truth.
+ * **State modifiers**
+ *
+ * On `.cngx-tabs__tab`:
+ *
+ * - `:hover:not([aria-disabled="true"])` - swaps to
+ *   `--cngx-tab-hover-color`
+ * - `[aria-selected="true"]` - paints `--cngx-tab-active-color` and
+ *   draws the ink-bar via `border-bottom-color` (or
+ *   `border-inline-end-color` in vertical orientation)
+ *
+ * **Orientation variants**
+ *
+ * On the host:
+ *
+ * - default (horizontal) - strip border-bottom, indicator on the
+ *   bottom edge of each tab
+ * - `[data-orientation="vertical"]` - strip border-inline-end,
+ *   indicator on the inline-end of each tab
+ *
+ * **Slots**
+ *
+ * - `.cngx-tabs__strip` - tab strip with border on the trailing edge
+ * - `.cngx-tabs__tab` - per-tab `<button>` with transparent
+ *   indicator border and color/border-color transition
+ * - `.cngx-tabs__badge` - inline error-count disc next to a tab
+ *
+ * All transitions short-circuit under `prefers-reduced-motion`.
  */
 
 @layer cngx.tokens {

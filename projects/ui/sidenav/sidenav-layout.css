@@ -1,16 +1,86 @@
 /**
  * @overview
- * Structural styles for `CngxSidenavLayout`. Loaded via the layout
- * component's `styleUrl`. Targets multiple sibling-component tags
- * (`cngx-sidenav-layout` / `cngx-sidenav` / `cngx-sidenav-content`)
- * — under `encapsulation: None` these all match globally; the
+ * Structural and thematic styles for `CngxSidenavLayout`. Loaded via
+ * the layout component's `styleUrl` and targets three sibling-
+ * component tags (`cngx-sidenav-layout`, `cngx-sidenav`,
+ * `cngx-sidenav-content`) plus the nav-link / nav-group descendants
+ * - under `encapsulation: None` these all match globally and the
  * `cngx-sidenav-` prefix is the namespace.
  *
- * Tokens use conservative defaults (transparent, currentColor,
- * inherit) so the "no defaults without theme" behavior is preserved.
- * Pair with `@cngx/themes/material/sidenav-theme` and
- * `@cngx/themes/material/nav-link-theme` for the Material 3 navigation
- * surface.
+ * **State modifiers**
+ *
+ * On `cngx-sidenav`:
+ *
+ * - `--open` - visible (otherwise width collapses to 0 in `over`
+ *   mode, with `visibility: hidden`)
+ * - `--start` - left edge; border-right
+ * - `--end` - right edge; border-left, flex `order: 2`
+ * - `--resizing` - no transitions, `user-select: none`; bleeds onto
+ *   the sibling content via `~` so dragging stays smooth
+ *
+ * On `cngx-sidenav-layout`:
+ *
+ * - `--ready` - added after first render to enable transitions and
+ *   prevent the open-state flash on mount
+ *
+ * On `.cngx-nav-group-content`:
+ *
+ * - `--open` - grid-rows `0fr -> 1fr` expand for nav groups
+ *
+ * **Variants**
+ *
+ * Mode classes on `cngx-sidenav`:
+ *
+ * - `--push` - in flex flow, push content sideways
+ * - `--side` - in flex flow, stays visible (no width collapse)
+ * - `--over` - absolute-positioned, doesn't push content
+ * - `--mini` - icon-rail (`--cngx-sidenav-mini-width`); `--expanded`
+ *   grows to full width with negative margin so the overlay does
+ *   not shift the flex layout, plus `--cngx-sidenav-expanded-shadow`
+ *
+ * **Slots**
+ *
+ * - `.cngx-sidenav__body` - scrollable rail content
+ * - `.cngx-sidenav-header` - sticky top slot, border-bottom
+ * - `.cngx-sidenav-footer` - sticky bottom slot, border-top, 70%
+ *   opacity
+ * - `.cngx-sidenav__resize-handle` - col-resize drag bar on the
+ *   rail's edge; tinted on hover / drag via
+ *   `--cngx-sidenav-resize-handle-color`
+ * - `.cngx-sidenav-backdrop` - mobile scrim for `over` mode
+ * - `.cngx-nav-link` - nav-link rule with hover / `--active` /
+ *   `:focus-visible` states; mini mode hides labels and renders
+ *   first-letter initials via `[data-initial]::before`
+ * - `.cngx-nav-group-content` - grid-rows expand/collapse wrapper
+ *   for nested nav groups
+ *
+ * Mini-mode also hides `[cngxNavLabel]`, `[cngxNavGroup]`, and
+ * `[cngxNavBadge]`. All transitions short-circuit under
+ * `prefers-reduced-motion`.
+ *
+ * **Inheritance**
+ *
+ * - `--cngx-sidenav-bg` -> `--cngx-color-surface`
+ * - `--cngx-sidenav-border-color` -> `--cngx-color-border`
+ * - `--cngx-sidenav-footer-border-color` -> `--cngx-sidenav-border-
+ *   color` -> `--cngx-color-border`
+ * - `--cngx-sidenav-resize-handle-color` -> `--cngx-color-primary`
+ * - `--cngx-nav-link-focus-outline-color` -> `--cngx-color-primary`
+ *
+ * **Dark mode**
+ *
+ * Three hooks deepen the expanded-rail shadow and flip the nav-link
+ * hover / active overlays from alpha-on-black to alpha-on-white:
+ *
+ * - `prefers-color-scheme: dark`
+ * - `[data-color-scheme="dark"]`
+ * - `.dark` class
+ *
+ * **Pair with**
+ *
+ * - `@cngx/themes/material/sidenav-theme` - Material 3 rail surface
+ * - `@cngx/themes/material/nav-link-theme` - Material 3 nav-link
+ *   palette
  */
 
 @layer cngx.tokens {
@@ -418,7 +488,7 @@
       visibility 0s var(--cngx-sidenav-transition-duration, 0.25s);
   }
 
-  /* Closed state: collapse to 0 width (not in side/mini — those stay visible) */
+  /* Closed state: collapse to 0 width (not in side/mini - those stay visible) */
   cngx-sidenav:not(.cngx-sidenav--open):not(.cngx-sidenav--side):not(.cngx-sidenav--mini) {
     width: 0;
     visibility: hidden;
@@ -461,7 +531,7 @@
 
   /*
    * Mini mode: collapsed icon rail, stays in flex flow.
-   * No width transition — expand/collapse is instant to prevent
+   * No width transition - expand/collapse is instant to prevent
    * content shift (negative margin + animating width = layout jank).
    */
   cngx-sidenav.cngx-sidenav--mini.cngx-sidenav--open {
@@ -553,7 +623,7 @@
   }
 
   /*
-   * Nav links — structural rules with conservative defaults; visual
+   * Nav links - structural rules with conservative defaults; visual
    * theming flows through --cngx-nav-link-* tokens, intended to be
    * wired by the nav-link-theme.scss Material bridge.
    */

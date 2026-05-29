@@ -1,27 +1,48 @@
 /**
  * @overview
  * Chart-level CSS custom properties consumed by every chart atom in
- * `@cngx/common/chart`. Two-level theming cascade: atom-local var
- * (e.g. `--cngx-line-color`) → chart-level var
- * (`--cngx-chart-primary`) → consumer accent (`--accent`,
- * `--danger`, …) → hardcoded literal fallback.
+ * `@cngx/common/chart`. This file is a pure token surface - no
+ * selectors apart from `:root`, no @scope. A two-level cascade keeps
+ * multi-layer recoloring side-effect-free: atom-local var (e.g.
+ * `--cngx-line-color`) -> chart-level var (`--cngx-chart-primary`)
+ * -> consumer accent (`--accent`, `--danger`) -> foundation token.
  *
- * Atom-local vars (`--cngx-line-color`, `--cngx-area-fill`,
- * `--cngx-bar-color`, `--cngx-scatter-color`,
- * `--cngx-threshold-color`, `--cngx-band-color`) live inside their
- * respective component style blocks and always fall back to a
- * chart-level token — never to a hardcoded literal. Without atom-
- * local tokens, recoloring one line on a multi-layer chart would
- * force overriding the global `--cngx-chart-primary`, shifting every
- * other layer too (a Pillar-3 violation:
- * configuration-by-side-effect).
+ * **Atom-local pass-through**
  *
- * `@property` registers each chart-level token with the consumer-side
- * fallback chain. Because `@property` `initial-value` cannot
- * reference `var()`, the literal defaults are duplicated in `:root`
- * assignments for the runtime fallback chain — consumers overriding
- * `--accent` at `:root` continue to propagate through to
- * `--cngx-chart-primary`.
+ * Each atom owns its own `--cngx-<atom>-color` token that always
+ * falls back to the matching chart-level token, never to a literal.
+ * Recoloring one line on a multi-layer chart stays scoped to that
+ * line; overriding `--cngx-chart-primary` would otherwise shift
+ * every layer (Pillar 3: no configuration-by-side-effect).
+ *
+ * - `--cngx-line-color`
+ * - `--cngx-area-fill`
+ * - `--cngx-bar-color`
+ * - `--cngx-scatter-color`
+ * - `--cngx-threshold-color`
+ * - `--cngx-band-color`
+ *
+ * **Inheritance**
+ *
+ * Each chart-level token chains through a consumer-facing accent
+ * tier and then a foundation `--cngx-color-*` token, so brand
+ * overrides at either level cascade automatically. Because
+ * `@property` `initial-value` cannot reference `var()`, the literal
+ * defaults are mirrored in `:root` assignments:
+ *
+ * - `--cngx-chart-primary` -> `--accent` -> `--cngx-color-primary`
+ * - `--cngx-chart-secondary` -> `--accent-secondary` ->
+ *   `--cngx-color-text-muted`
+ * - `--cngx-chart-danger` -> `--danger` -> `--cngx-color-danger`
+ * - `--cngx-chart-success` -> `--success` -> `--cngx-color-success`
+ * - `--cngx-chart-axis-color` -> `--text-secondary` ->
+ *   `--cngx-color-text-muted`
+ * - `--cngx-chart-text-color` -> `--text-primary` ->
+ *   `--cngx-color-text`
+ * - `--cngx-chart-grid-color` - `color-mix(currentColor 14%)`
+ *   overlay, paints at consistent contrast on any body surface
+ * - `--cngx-skeleton-bg` - same `currentColor` overlay shared with
+ *   the chart skeleton placeholder
  */
 
 @layer cngx.tokens {

@@ -1,14 +1,61 @@
 /**
  * @overview
- * Default visuals for `CngxAlert`. Severity tokens use a tinted-
- * surface family (`--cngx-alert-{severity}-bg / border / icon`) with
- * their own defaults — visually distinct from
- * `--cngx-color-{success / danger / warning / info}` which are
- * solid brand colors unsuitable for alert surfaces. Brand-wide
- * overrides target the severity-specific tokens directly.
+ * Default visuals for `CngxAlert`. The host carries `.cngx-alert`
+ * and renders `__icon`, `__body`, `__title`, `__collapsible`,
+ * `__actions`, `__action`, and `__dismiss` children. Severity
+ * tokens use a tinted-surface family (`--cngx-alert-{severity}-bg /
+ * border / icon`) visually distinct from `--cngx-color-{success /
+ * danger / warning / info}` which are solid brand colors unsuitable
+ * for alert surfaces - brand-wide overrides target the severity
+ * tokens directly.
  *
- * Pair with `@cngx/themes/material/feedback-theme` for the
- * Material 3 surface palette.
+ * **State modifiers**
+ *
+ * - `--collapsed` - grid-row `1fr -> 0fr` collapses the body slot;
+ *   the host becomes clickable and tints on hover via
+ *   `--cngx-alert-collapsed-hover-bg`
+ * - `--hidden` - `display: none`
+ * - `--entering` - 200ms enter animation + 300ms icon pulse
+ * - `--exiting` - 150ms exit animation
+ *
+ * All animations short-circuit under `prefers-reduced-motion`.
+ *
+ * **Variants**
+ *
+ * Severity classes pin three tokens each:
+ *
+ * - `--info` - info bg / border / icon
+ * - `--success` - success bg / border / icon
+ * - `--warning` - warning bg / border / icon
+ * - `--error` - error bg / border / icon
+ *
+ * **Slots**
+ *
+ * - `.cngx-alert__icon` - severity glyph; color follows
+ *   `--cngx-alert-icon-color`
+ * - `.cngx-alert__default-icon` - SVG fallback when no custom icon
+ *   is projected
+ * - `.cngx-alert__title` - bold header
+ * - `.cngx-alert__collapsible` - grid-rows body that collapses on
+ *   `--collapsed`
+ * - `.cngx-alert__actions` - trailing action row, hidden when empty
+ * - `.cngx-alert__action` - projected `[cngxAlertAction]` button
+ *   tinted by `--cngx-alert-icon-color`
+ * - `.cngx-alert__dismiss` - dismiss control
+ *
+ * **Dark mode**
+ *
+ * Three hooks swap every severity triplet plus the collapsed-hover
+ * and action-hover overlays (alpha-on-black flips to alpha-on-white):
+ *
+ * - `prefers-color-scheme: dark`
+ * - `[data-color-scheme="dark"]`
+ * - `.dark` class
+ *
+ * **Pair with**
+ *
+ * - `@cngx/themes/material/feedback-theme` - Material 3 surface
+ *   palette
  */
 
 @layer cngx.tokens {
@@ -43,7 +90,7 @@
   }
 
   /**
-   * Border color — neutral by default; severity rules override.
+   * Border color - neutral by default; severity rules override.
    * @group Surface
    */
   @property --cngx-alert-border-color {
@@ -53,7 +100,7 @@
   }
 
   /**
-   * Background — neutral by default; severity rules override.
+   * Background - neutral by default; severity rules override.
    * @group Surface
    */
   @property --cngx-alert-bg {
@@ -63,7 +110,7 @@
   }
 
   /**
-   * Text color — defaults to `currentColor`.
+   * Text color - defaults to `currentColor`.
    * @group Surface
    */
   @property --cngx-alert-color {
@@ -193,7 +240,7 @@
   }
 
   /**
-   * Icon color override — defaults to `currentColor` and is pinned
+   * Icon color override - defaults to `currentColor` and is pinned
    * by each severity rule.
    * @group Surface
    */
@@ -375,7 +422,7 @@
     initial-value: 8px;
   }
 
-  /* Color-scheme defaults — alert ships its own tinted-surface family
+  /* Color-scheme defaults - alert ships its own tinted-surface family
    * (per the @overview) so severity tokens do NOT delegate to
    * `--cngx-color-{info,success,warning,danger}`; the brand semantic
    * colors are saturated and unsuitable as full-bleed alert
@@ -548,7 +595,7 @@
       margin-top: var(--cngx-alert-actions-gap, 8px);
     }
 
-    /* Projected `[cngxAlertAction]` button — transparent surface with
+    /* Projected `[cngxAlertAction]` button - transparent surface with
      * a severity-tinted border + text via `--cngx-alert-icon-color`
      * (which is pinned per severity above). Mirrors the banner action
      * pattern but without the banner's hit-target min-size since

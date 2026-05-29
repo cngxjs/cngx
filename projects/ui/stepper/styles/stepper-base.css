@@ -1,13 +1,46 @@
 /**
  * @overview
- * Structural CSS shared by every stepper skin. Layout-only — no
+ * Structural CSS shared by every stepper skin. Layout-only - no
  * colors / sizes / borders / fonts beyond what's controlled via
  * `--cngx-step-*` custom properties. Loaded by `<cngx-stepper>` via
- * `styleUrls`.
- *
- * Selectors are class-prefixed (`.cngx-stepper__*`) and apply
- * globally under `CngxStepper`'s `encapsulation: None`; the
+ * `styleUrls`. Selectors are class-prefixed (`.cngx-stepper__*`) and
+ * apply globally under `encapsulation: None` - the
  * `cngx-stepper-` prefix is the namespace.
+ *
+ * **State modifiers**
+ *
+ * On `.cngx-stepper__step`:
+ *
+ * - `[aria-disabled="true"]` - cursor + opacity dim
+ *   (`--cngx-step-disabled-opacity`)
+ * - `:focus-visible` - outline ring via `--cngx-step-focus-ring`
+ * - `--rejected` - persistent-rejection outline + tinted background
+ *
+ * **Orientation variants**
+ *
+ * On `cngx-stepper`:
+ *
+ * - `[data-orientation="horizontal"]` - default; depth-1 steps and
+ *   group headers indent with `margin-inline-start`
+ * - `[data-orientation="vertical"]` - grid layout
+ *   (`minmax(8rem, max-content) 1fr`); strip becomes a column flex,
+ *   depth-1 rows use `padding-inline-start` (combining step padding
+ *   + group indent)
+ *
+ * **Slots**
+ *
+ * - `.cngx-stepper__strip` - flex row of steps; column in vertical
+ * - `.cngx-stepper__step` - per-step `<button>` with reset chrome
+ * - `.cngx-stepper__indicator` - disc placeholder; painted by skin
+ * - `.cngx-stepper__label` - flexible label slot
+ * - `.cngx-stepper__panels` - panel host
+ * - `.cngx-stepper__panel` - panel; `[hidden]` collapses
+ * - `.cngx-stepper__group-header` - group label row
+ * - `.cngx-stepper__badge` - inline error-count disc
+ *   (`--cngx-step-error-badge-color` + glyph)
+ * - `.cngx-stepper__rejection-icon` - `!` disc on rejected steps
+ *
+ * All transitions short-circuit under `prefers-reduced-motion`.
  */
 
 @layer cngx.tokens {
@@ -43,7 +76,7 @@
   }
 
   /**
-   * Inline-axis padding of the step button — used by vertical
+   * Inline-axis padding of the step button - used by vertical
    * orientation to combine with the group indent.
    * @group Layout
    */
@@ -377,7 +410,7 @@
     border: 0;
   }
 
-  /* Hierarchical depth indent — horizontal layout indents the
+  /* Hierarchical depth indent - horizontal layout indents the
      indicator, vertical indents the whole row. */
   cngx-stepper[data-orientation='horizontal'] .cngx-stepper__step[data-step-depth='1'],
   cngx-stepper[data-orientation='horizontal'] .cngx-stepper__group-header[data-step-depth='1'] {

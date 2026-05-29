@@ -1,11 +1,55 @@
 /**
  * @overview
- * Default visuals for `CngxAlertStack`. Shares the `--cngx-alert-*`
- * token namespace with `CngxAlert` so a `:root`-level override of
- * (e.g.) `--cngx-alert-success-bg` propagates to both. Tokens
- * registered by `alert.css` are not redundantly re-registered here
- * — only stack-specific tokens (gap, reserve-height, message
- * typography, overflow button surface) get `@property` declarations.
+ * Default visuals for `CngxAlertStack`. The host carries
+ * `.cngx-alert-stack` and renders `__item` rows for each alert,
+ * `__icon` + `__body` + `__title` + `__message` + `__dismiss`
+ * children per item, plus an `__overflow` "show more" button.
+ * Shares the `--cngx-alert-*` token namespace with `CngxAlert` so a
+ * `:root`-level override of (e.g.) `--cngx-alert-success-bg`
+ * propagates to both - only stack-specific tokens (gap, reserve-
+ * height, message typography, overflow button surface) get their
+ * own `@property` declarations here.
+ *
+ * **State modifiers**
+ *
+ * - `--reserve-space` - pins `min-height` to `--cngx-alert-stack-
+ *   reserve-height` so layout does not shift when alerts mount /
+ *   dismount
+ *
+ * **Variants**
+ *
+ * Severity classes set the three tinted-surface tokens for each item:
+ *
+ * - `__item--info` - info bg / border / icon
+ * - `__item--success` - success bg / border / icon
+ * - `__item--warning` - warning bg / border / icon
+ * - `__item--error` - error bg / border / icon
+ *
+ * **Inheritance**
+ *
+ * Stack-local tokens stand alone; severity tokens mirror the
+ * `alert.css` 4-block (`:root`, `prefers-color-scheme: dark`,
+ * `[data-color-scheme='dark']` / `.dark`, `[data-color-scheme='light']`
+ * / `.light`) so a page that only uses `CngxAlertStack` still sees
+ * resolved values without `CngxAlert` mounting:
+ *
+ * - `--cngx-alert-stack-overflow-border` -> `--cngx-color-border`
+ * - `--cngx-alert-{info,success,warning,error}-{bg,border,icon}` -
+ *   alert family palette
+ *
+ * **Dark mode**
+ *
+ * Three hooks swap the overflow button colors and every severity
+ * triplet:
+ *
+ * - `prefers-color-scheme: dark`
+ * - `[data-color-scheme="dark"]`
+ * - `.dark` class
+ *
+ * **Pair with**
+ *
+ * - `@cngx/themes/material/feedback-theme` - Material 3 surface
+ *   palette shared with `CngxAlert` and `CngxBannerOutlet`
  */
 
 @layer cngx.tokens {
@@ -141,7 +185,7 @@
 
   /* Mirror of the alert.css severity 4-block. The `--cngx-alert-*`
    * @property declarations live in alert.css and only load when a
-   * `CngxAlert` instance mounts — but a page that only uses
+   * `CngxAlert` instance mounts - but a page that only uses
    * `CngxAlertStack` (no inline alert) would otherwise see empty
    * tokens and fall through to the var() fallback (light values).
    * Custom properties without @property registration still inherit

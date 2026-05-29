@@ -1,27 +1,53 @@
 /**
  * @overview
- * Default visuals for the `CngxTooltip` directive. The directive
- * renders a `<div class="cngx-tooltip">` on demand and adds transition
- * classes (`.cngx-popover--opening` / `-open` / `-closing`) via the
- * underlying `CngxPopover` state machine.
+ * Theming bridge for the `CngxTooltip` directive. The directive
+ * renders `<div class="cngx-tooltip">` on demand and toggles
+ * transition classes (`cngx-popover--opening` / `-open` / `-closing`)
+ * via the underlying `CngxPopover` state machine; this stylesheet
+ * paints the pill. Surface defaults to charcoal-on-near-white so it
+ * stays neutral and out of the brand-color conversation.
  *
- * Surface defaults to a charcoal-on-light-text pill — intentionally
- * neutral so it stays out of the brand-color conversation. Dark
- * mode inverts to a light pill on dark page (Material-style
+ * **State modifiers**
+ *
+ * - `cngx-popover--opening` - opacity 0, scale(0.95)
+ * - `cngx-popover--open` - opacity 1, scale(1)
+ * - `cngx-popover--closing` - opacity 0, scale(0.95)
+ *
+ * Suppressed under `prefers-reduced-motion: reduce`.
+ *
+ * **Inheritance**
+ *
+ * No foundation delegation by design - the tooltip is an inverse
+ * surface that intentionally contrasts with the page chrome rather
+ * than tracking `--cngx-color-surface`.
+ *
+ * **Touch devices**
+ *
+ * `@media (hover: none)` bumps padding, font-size, line-height, and
+ * max-width for readability without a per-instance override.
+ *
+ * **Dark mode**
+ *
+ * Three hooks (`prefers-color-scheme: dark`, `[data-color-scheme="dark"]`,
+ * `.dark`) flip to a light pill on dark text (Material-style
  * inverse-surface) so the tooltip stays as a high-contrast call-out
- * rather than blending into the surrounding chrome. Touch devices
- * get larger padding + font-size by default for readability
- * (`@media (hover: none)`).
+ * rather than blending into the dark page chrome.
  *
- * The optional `tooltip-indicator.scss` (the `::after` info-icon next
- * to triggers) is a Sass opt-in mixin and ships outside this file.
- * Pair with `@cngx/themes/material/tooltip-theme` for the Material 3
- * inverse-surface palette.
+ * **Notes**
+ *
+ * - The optional `tooltip-indicator.scss` (the `::after` info-icon
+ *   next to triggers) is a Sass opt-in mixin and ships outside this
+ *   file.
+ * - The pill uses the Popover API top-layer; no z-index needed.
+ *
+ * **Pair with**
+ *
+ * - `@cngx/themes/material/tooltip-theme` - Material 3 inverse-surface
  */
 
 @layer cngx.tokens {
   /**
-   * Tooltip surface color — defaults to a near-black charcoal.
+   * Tooltip surface color - defaults to a near-black charcoal.
    * @group Surface
    */
   @property --cngx-tooltip-bg {
@@ -31,7 +57,7 @@
   }
 
   /**
-   * Tooltip text color — defaults to near-white to pair with the
+   * Tooltip text color - defaults to near-white to pair with the
    * default charcoal surface.
    * @group Surface
    */
@@ -82,7 +108,7 @@
   }
 
   /**
-   * Letter-spacing — a touch of tracking lifts legibility at the
+   * Letter-spacing - a touch of tracking lifts legibility at the
    * small font-size.
    * @group Typography
    */
@@ -123,7 +149,7 @@
   }
 
   /**
-   * Maximum inline size — caps long tooltip content before it wraps
+   * Maximum inline size - caps long tooltip content before it wraps
    * into too narrow a column.
    * @group Layout
    */
@@ -153,7 +179,7 @@
     initial-value: cubic-bezier(0.4, 0, 0.2, 1);
   }
 
-  /* Dark-mode swap — flip to inverse-surface (light pill, dark text)
+  /* Dark-mode swap - flip to inverse-surface (light pill, dark text)
    * so the tooltip pops off the dark page rather than blending into
    * the surrounding chrome at low contrast. */
   @media (prefers-color-scheme: dark) {
@@ -198,7 +224,7 @@
       white-space: normal;
       pointer-events: none;
 
-      /* Popover API top-layer — no z-index needed. */
+      /* Popover API top-layer - no z-index needed. */
       transition:
         opacity var(--cngx-tooltip-transition-duration, 150ms)
           var(--cngx-tooltip-transition-easing, cubic-bezier(0.4, 0, 0.2, 1)),

@@ -1,15 +1,38 @@
 /**
  * @overview
- * Default visuals for `CngxCardSkeleton`. The host element
- * `<cngx-card-skeleton>` always carries the `.cngx-card-skeleton`
- * class. Three slot children render the placeholder geometry:
- * `.cngx-card-skeleton__media` (hero image area),
- * `.cngx-card-skeleton__title` (heading bar), and
- * `.cngx-card-skeleton__line` (body text line — repeated).
+ * Default visuals for `CngxCardSkeleton`. The host carries
+ * `.cngx-card-skeleton` and stacks three placeholder bars vertically.
+ * All three share the same shimmer gradient so the placeholder reads
+ * as a single moving element rather than three separate animations.
  *
- * All three share the same shimmer treatment so the placeholder
- * reads as a single moving element. `prefers-reduced-motion`
- * swaps the animated gradient for a static dim.
+ * **Slots**
+ *
+ * - `.cngx-card-skeleton__media` - hero image placeholder block
+ * - `.cngx-card-skeleton__title` - title bar (55% width)
+ * - `.cngx-card-skeleton__line` - body text-line bar (repeats)
+ *
+ * **Reduced motion**
+ *
+ * Under `prefers-reduced-motion: reduce` the animated gradient is
+ * dropped and all three bars fall back to a flat `opacity: 0.7` dim.
+ *
+ * **Inheritance**
+ *
+ * Leaf tokens with no fallback chain - geometry and shimmer colors
+ * are component-local. The dark-mode swap rewrites the two surface
+ * tokens at `:root`.
+ *
+ * **Dark mode**
+ *
+ * Three hooks lift the shimmer band one step above the dark surface
+ * so the moving stripe stays visible against a dark page:
+ *
+ * - `prefers-color-scheme: dark`
+ * - `[data-color-scheme="dark"]`
+ * - `[data-color-scheme="light"]` (explicit light pin)
+ *
+ * Both surface tokens carry `inherits: true` so the `:root` swap
+ * reaches the gradient fill on each slot.
  */
 
 @layer cngx.tokens {
@@ -73,7 +96,7 @@
     initial-value: 0.875rem;
   }
 
-  /* Dark-mode swap — placeholder bg sits one step above the dark
+  /* Dark-mode swap - placeholder bg sits one step above the dark
    * surface; shimmer one step above that. Both tokens flipped to
    * `inherits: true` so this `:root` cascade reaches the gradient
    * fill on `.cngx-card-skeleton__media` etc. */

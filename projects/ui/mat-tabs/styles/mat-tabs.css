@@ -1,21 +1,60 @@
 /**
  * @overview
  * Material-themed sticky-error skin for `[cngxMatTabs]`. The
- * directive applies `cngx-mat-tab--error` / `--has-errors` classes
- * onto the `<button>.mat-mdc-tab` elements; this stylesheet paints
- * them.
+ * directive applies modifier classes onto Material's
+ * `<button>.mat-mdc-tab` elements and the trailing-edge molecule
+ * wrapper; this stylesheet paints them. Tokens stay under the
+ * Material-bridge namespace (`--cngx-mat-tab-*` / `--cngx-mat-tabs-
+ * more-*`) - no `--cngx-color-*` fallbacks because the Material
+ * design system owns the canonical theme. Shipped as a standalone
+ * stylesheet asset (consumer imports once in their global
+ * stylesheet) because Angular only allows `styleUrl` on
+ * `@Component`, not on `@Directive`.
  *
- * Themed via `--mat-sys-error` by default with
- * `--cngx-mat-tab-error-*` consumer overrides. Tokens stay under
- * the Material-bridge namespace (`--cngx-mat-tab-*`) — no
- * system-token fallbacks because the Material design system owns
- * the canonical theme.
+ * **State modifiers**
  *
- * Shipped as a standalone stylesheet asset (consumer imports once
- * in their global stylesheet) because Angular only allows
- * `styleUrl` on `@Component`, not on `@Directive`. The
- * `.mat-mdc-tab` selectors target Material's button which is
- * rendered outside any cngx host.
+ * - `.cngx-mat-tab--error` - rejected commit; tinted color, outline
+ *   ring, font-weight bump. Specificity bump `.mat-mdc-tab.cngx-
+ *   mat-tab--error` is load-bearing - Material 21's `.mdc-tab` sets
+ *   `outline: none` at (0,1,0)
+ * - `.cngx-mat-tab--error` + `.mat-mdc-tab-disabled` - fades the
+ *   rejection signal so it does not pass for a healthy disabled tab
+ * - `.cngx-mat-tab--has-errors` - form-validation errors present;
+ *   renders a `::before` red disc with an `!` glyph at the trailing
+ *   corner. Distinct semantic from `--error` and the two coexist
+ * - `.cngx-mat-tab--error.cngx-mat-tab--has-errors` - co-occurrence;
+ *   shifts the has-errors glyph inward via
+ *   `--cngx-mat-tab-has-errors-glyph-offset-stacked` so the two
+ *   signals do not merge
+ *
+ * **Trailing-edge overflow**
+ *
+ * `.cngx-mat-tabs-more` wraps the dynamically-mounted
+ * `<cngx-tab-overflow>` molecule that `[cngxMatTabs]` appends into
+ * `.mat-mdc-tab-header`. The wrapper:
+ *
+ * - drives the molecule's component-API cascade vars
+ *   (`--cngx-tab-overflow-bg`, `--cngx-tab-overflow-button-bg`) so
+ *   the trigger fades into the page surface
+ * - collapses to zero layout space when the inner trigger button is
+ *   hidden (= no clipped tabs) via `:has()`
+ *
+ * **Inheritance**
+ *
+ * - `--cngx-mat-tab-error-color` -> `--mat-sys-error`
+ * - `--cngx-mat-tab-has-errors-color` -> `--mat-sys-error`
+ * - `--cngx-mat-tab-has-errors-glyph-color` -> `--mat-sys-on-error`
+ * - `--cngx-mat-tabs-more-bg` -> `--mat-app-background-color`
+ *
+ * **Dark mode**
+ *
+ * Three hooks deepen the trailing-edge wrapper background and its
+ * gradient-fade shadow so the molecule blends into a dark page
+ * surface rather than into a white-on-dark seam:
+ *
+ * - `prefers-color-scheme: dark`
+ * - `[data-color-scheme="dark"]`
+ * - `.dark` class
  */
 
 @layer cngx.tokens {
@@ -72,7 +111,7 @@
 
   /**
    * Larger inset when the tab is BOTH rejected and carries form
-   * errors — keeps the two signals visually distinct.
+   * errors - keeps the two signals visually distinct.
    * @group State / HasErrors
    */
   @property --cngx-mat-tab-has-errors-glyph-offset-stacked {
@@ -156,7 +195,7 @@
 
   /*
    * Default-theme palette pass. The `cngx-mat-tabs-more` molecule
-   * sits over the Material tab header — its background needs to
+   * sits over the Material tab header - its background needs to
    * match the page surface so the gradient fades into "nothing"
    * rather than into white-on-dark. Stays under the Material-bridge
    * namespace (no `--cngx-color-*` delegation) per the file-header
@@ -192,7 +231,7 @@
 @layer cngx.components {
   /*
    * Specificity bump to `.mat-mdc-tab.cngx-mat-tab--error` (0,2,0) is
-   * load-bearing — Material 21's `.mdc-tab` rule (0,1,0) sets
+   * load-bearing - Material 21's `.mdc-tab` rule (0,1,0) sets
    * `outline: none` to suppress the browser's default focus outline,
    * and ships those styles inline via the component decorator. Since
    * the component-scoped CSS is injected into `<head>` AFTER the
@@ -216,7 +255,7 @@
 
   /*
    * Per-tab form-error aggregation badge. Distinct semantic from
-   * `--error` — `--error` means "your last commit was refused";
+   * `--error` - `--error` means "your last commit was refused";
    * `--has-errors` means "this tab contains form-validation errors
    * right now". The two coexist and a tab can carry both
    * simultaneously.

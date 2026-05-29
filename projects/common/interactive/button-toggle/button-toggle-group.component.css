@@ -1,10 +1,22 @@
 /**
  * @overview
- * Default visuals for the shared button-toggle group container —
- * consumed by both `CngxButtonToggleGroup` (single-select) and
- * `CngxButtonMultiToggleGroup` (multi-select). Row by default
- * (`--horizontal` modifier); a `:not()` rule flips to column when
- * neither `--horizontal` class is present.
+ * Default visuals for the shared button-toggle group container.
+ * The host carries either `.cngx-button-toggle-group` (single-select
+ * `CngxButtonToggleGroup`) or `.cngx-button-multi-toggle-group`
+ * (multi-select `CngxButtonMultiToggleGroup`). Children sit flush so
+ * the row reads as a segmented control.
+ *
+ * **Variants**
+ *
+ * - `--horizontal` - flex-direction row (the default); a `:not()` rule
+ *   on the scope root flips to column when this class is absent
+ *
+ * **Inheritance**
+ *
+ * Layout tokens cascade through the foundation:
+ *
+ * - `--cngx-button-toggle-group-gap` - direct (defaults to `0`)
+ * - `--cngx-button-toggle-group-radius` -> `--cngx-radius-md`
  */
 
 @layer cngx.tokens {

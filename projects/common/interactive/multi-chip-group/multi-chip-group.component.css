@@ -1,10 +1,23 @@
 /**
  * @overview
- * Default visuals for `CngxMultiChipGroup` — a flex layout container
- * for `<cngx-chip>` in multi-select mode. The gap cascades through
- * `--cngx-chip-group-gap` (the single-select sibling container) and
- * then `--cngx-space-sm` — spacing stays in sync between the two
- * group types unless a consumer overrides one explicitly.
+ * Default visuals for `CngxMultiChipGroup`. The host carries
+ * `.cngx-multi-chip-group` and frames a flex layout for projected
+ * `<cngx-chip>` children in multi-select mode. Stacks vertically by
+ * default. Gap cascades through the single-select sibling container
+ * so spacing stays in sync across both group types unless a consumer
+ * overrides one explicitly.
+ *
+ * **Variants**
+ *
+ * - `--horizontal` - flips to a row with `flex-wrap: wrap` so chips
+ *   fold to additional lines instead of overflowing
+ *
+ * **Inheritance**
+ *
+ * Gap chains through the sibling group then the foundation:
+ *
+ * - `--cngx-multi-chip-group-gap` -> `--cngx-chip-group-gap` ->
+ *   `--cngx-space-sm`
  */
 
 @layer cngx.tokens {

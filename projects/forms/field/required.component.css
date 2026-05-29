@@ -1,9 +1,29 @@
 /**
  * @overview
- * Default visuals for `CngxRequired` — the required marker rendered
- * as a standalone atom. The single token `--cngx-field-required-color`
- * is shared with `CngxLabel`; redeclared here so consumers can use
- * `<cngx-required>` without also using `[cngxLabel]`.
+ * Default visuals for `CngxRequired` - the required marker rendered
+ * as a standalone atom. The host carries `.cngx-required` and stays
+ * inline so the marker sits next to the label text; the inner `<span>`
+ * carries the glyph color.
+ *
+ * **Slots**
+ *
+ * - `.cngx-required` - host element, kept `display: inline` with a
+ *   `0.125em` inline-start margin (`display: contents` would push the
+ *   inner span into the label's parent and land the asterisk on its
+ *   own row in stacked-field grids)
+ * - inner `<span>` - the glyph itself, colored from the danger chain
+ *
+ * **Inheritance**
+ *
+ * The required-marker token is shared with `CngxLabel`; redeclared
+ * here so consumers can use `<cngx-required>` without also using
+ * `[cngxLabel]`:
+ *
+ * - `--cngx-field-required-color` -> `--cngx-field-error-color` ->
+ *   `--cngx-color-danger`
+ *
+ * A `:root` delegating rule pins the token to `--cngx-color-danger`
+ * so a dark-mode swap on the foundation token cascades through.
  */
 
 @layer cngx.tokens {

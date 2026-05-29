@@ -1,14 +1,29 @@
 /**
  * @overview
- * Default visuals for `CngxFilterBuilderRow` — the row wrapper inside
- * `CngxFilterBuilder`. `display: contents` on the host delegates
- * visual appearance to the parent's `.cngx-filter-builder__expression`
- * flex layout. The duplicated `__expression` rule below keeps the
- * file self-contained when consumed standalone.
+ * Default visuals for `CngxFilterBuilderRow` - the row wrapper inside
+ * `CngxFilterBuilder`. The host `cngx-filter-row` stays
+ * `display: contents` and delegates its layout to the parent's
+ * `.cngx-filter-builder__expression` flex row, redeclared here so the
+ * file is self-contained when consumed standalone.
  *
- * `--cngx-filter-builder-gap` is owned by the parent
- * `filter-builder.component.css` and consumed here via the `var()`
- * fallback chain only.
+ * **State modifiers**
+ *
+ * - `.cngx-filter-builder__expression--empty` - opacity fade for the
+ *   empty-row variant, sourced from
+ *   `--cngx-filter-builder-empty-row-opacity` (owned here)
+ *
+ * **Slots**
+ *
+ * - `cngx-filter-row` - host, `display: contents`
+ * - `.cngx-filter-builder__expression` - inner flex row, gap + wrap,
+ *   aligned center
+ *
+ * **Inheritance**
+ *
+ * `--cngx-filter-builder-empty-row-opacity` is structural (no
+ * foundation delegate). `--cngx-filter-builder-gap` is owned by the
+ * parent `filter-builder.component.css` and consumed here through the
+ * `var()` fallback chain only.
  */
 
 @layer cngx.tokens {

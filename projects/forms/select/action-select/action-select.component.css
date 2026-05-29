@@ -1,9 +1,41 @@
 /**
  * @overview
- * `CngxActionSelect` trigger skin. "Type-to-create" single-select
- * with an inline action handler (typically a quick-create button).
- * Surface is identical to `CngxTypeahead` — they share the same
- * trigger row, input affordance, and clear / caret pair.
+ * Trigger skin for `CngxActionSelect` - a "type-to-create" scalar select
+ * that pairs an inline `<input>` with an action handler (typically a
+ * quick-create button). The host carries `.cngx-action-select`; the
+ * trigger row matches `CngxTypeahead` 1:1 so a consumer with a typeahead
+ * theme gets this variant for free. Panel frame, option rows, loading
+ * variants, and error surfaces ride on `shared/select-base.css`.
+ *
+ * **State modifiers**
+ *
+ * - `:focus-within` on `.cngx-action-select__trigger` - 2px primary
+ *   outline + 2px offset
+ * - `.cngx-action-select__input:disabled` - `cursor: not-allowed` +
+ *   opacity dim
+ * - `:focus-visible` on `.cngx-action-select__clear` - 2px primary
+ *   outline + rounded corner
+ *
+ * **Slots**
+ *
+ * - `.cngx-action-select__root` - relative-positioned flex wrapper
+ * - `.cngx-action-select__trigger` - the bordered row
+ * - `.cngx-action-select__input` - inline text input
+ * - `.cngx-action-select__clear` - reset button
+ * - `.cngx-action-select__caret` - panel-state glyph
+ *
+ * **Inheritance**
+ *
+ * Trigger surface tokens delegate to the foundation so brand swaps on
+ * border / surface propagate without per-component theming:
+ *
+ * - `--cngx-action-select-border` -> `--cngx-color-border`
+ * - `--cngx-action-select-bg` -> `--cngx-color-surface`
+ *
+ * **Pair with**
+ *
+ * - `@cngx/themes/material/select-theme` - Material 3 surface treatment
+ *   shared across the entire select family
  */
 
 @layer cngx.tokens {
@@ -88,7 +120,7 @@
     initial-value: currentColor;
   }
 
-  /* Delegating tokens — trigger border + bg track the foundation
+  /* Delegating tokens - trigger border + bg track the foundation
    * chain so a dark-mode swap on `--cngx-color-border` /
    * `--cngx-color-surface` cascades through the trigger host. */
   :root {

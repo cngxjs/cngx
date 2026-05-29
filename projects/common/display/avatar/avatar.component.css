@@ -1,20 +1,65 @@
 /**
  * @overview
- * Default visuals for `CngxAvatar`. Renders an image
- * (`.cngx-avatar__img`), an initials block (`.cngx-avatar__initials`),
- * or projected content. An optional status dot
- * (`.cngx-avatar__status`) supports the `online` / `offline` / `busy` /
- * `away` set. Size and shape are driven by modifier classes
- * (`--xs`..`--xl`, `--circle`, `--square`), each backed by a token.
+ * Default visuals for `CngxAvatar`. The host carries `.cngx-avatar` -
+ * an inline-flex plate that renders an image, an initials block, or
+ * projected content. Size and shape are driven by modifier classes,
+ * each backed by a token, so a consumer can either swap one variant
+ * globally or pin a specific instance via inline `--cngx-avatar-*`.
  *
- * Status colors fall back to the foundation system tokens
- * (`--cngx-color-success` → online, `--cngx-color-danger` → busy,
- * etc.) so brand-color overrides propagate.
+ * **Shape variants**
+ *
+ * - `--circle` - pill radius (`--cngx-radius-pill`)
+ * - `--square` - 6px rounded corner
+ *
+ * **Size variants**
+ *
+ * Each size pins both `--cngx-avatar-size` and
+ * `--cngx-avatar-font-size` to the matching scale step:
+ *
+ * - `--xs` - 1.5rem / 0.625rem
+ * - `--sm` - 2rem / 0.75rem
+ * - `--md` - 2.5rem / 1rem (default)
+ * - `--lg` - 3rem / 1.125rem
+ * - `--xl` - 4rem / 1.5rem
+ *
+ * **Slots**
+ *
+ * - `.cngx-avatar__img` - cover-fit image, inherits border-radius
+ * - `.cngx-avatar__initials` - uppercased text block
+ * - `.cngx-avatar__status` - corner-positioned status dot
+ *
+ * **Status modifiers**
+ *
+ * - `__status--online` - success-coded
+ * - `__status--offline` - neutral
+ * - `__status--busy` - danger-coded
+ * - `__status--away` - warning-coded
+ *
+ * **Inheritance**
+ *
+ * - `--cngx-avatar-bg` -> `--cngx-color-border`
+ * - `--cngx-avatar-color` -> `--cngx-color-text`
+ * - `--cngx-avatar-circle-radius` -> `--cngx-radius-pill`
+ * - `--cngx-avatar-status-border` -> `--cngx-color-surface`
+ * - `--cngx-avatar-status-online` -> `--cngx-color-success`
+ * - `--cngx-avatar-status-busy` -> `--cngx-color-danger`
+ * - `--cngx-avatar-status-away` -> `--cngx-color-warning`
+ * - `--cngx-avatar-status-offline` - leaf neutral token
+ *
+ * **Dark mode**
+ *
+ * Three hooks invert the initials plate to a mid-gray surface with
+ * light text and flip the status-dot ring to track the dark page
+ * surface so the dot still reads as cut out of the avatar:
+ *
+ * - `prefers-color-scheme: dark`
+ * - `[data-color-scheme="dark"]` / `.dark` class
+ * - `[data-color-scheme="light"]` / `.light` class (explicit pin)
  */
 
 @layer cngx.tokens {
   /**
-   * Active size of the avatar — consumed by the `:scope` rule and
+   * Active size of the avatar - consumed by the `:scope` rule and
    * pinned by the size-variant classes.
    * @group Layout
    */
@@ -189,7 +234,7 @@
   }
 
   /**
-   * Ring color around the status dot — defaults to the surface
+   * Ring color around the status dot - defaults to the surface
    * color so the dot reads as cut out of the avatar.
    * @group State / Status
    */
@@ -253,7 +298,7 @@
     initial-value: oklch(0.72 0.18 70);
   }
 
-  /* Dark-mode swap — avatar plate (initials block) inverts to a
+  /* Dark-mode swap - avatar plate (initials block) inverts to a
    * mid-gray surface with light text. The status-dot ring tracks the
    * dark page surface so the dot reads as cut out of the avatar. */
   @media (prefers-color-scheme: dark) {
@@ -329,7 +374,7 @@
       --cngx-avatar-font-size: var(--cngx-avatar-font-size-xl, 1.5rem);
     }
 
-    /* Rendering cascade — projected children */
+    /* Rendering cascade - projected children */
     .cngx-avatar__img {
       width: 100%;
       height: 100%;

@@ -1,20 +1,118 @@
 /**
  * @overview
- * Structural styles shared across the `CngxSelect` family — imported
- * via `styleUrls` from every variant (`CngxSelect`, `CngxMultiSelect`,
- * `CngxCombobox`, `CngxTypeahead`, `CngxTreeSelect`,
- * `CngxReorderableMultiSelect`, the panel components). All variants
- * run `encapsulation: None` so the rules below are global; the
- * `.cngx-select__*` BEM-style class prefix is the namespace.
+ * Structural styles shared across the entire `CngxSelect` family -
+ * imported via `styleUrls` from every variant (`CngxSelect`,
+ * `CngxMultiSelect`, `CngxCombobox`, `CngxTypeahead`, `CngxTreeSelect`,
+ * `CngxReorderableMultiSelect`, `CngxActionSelect`,
+ * `CngxActionMultiSelect`, `CngxSelectShell`, and the panel components).
+ * All variants run `encapsulation: None` so the rules below are global;
+ * the `.cngx-select__*` BEM-style class prefix is the namespace.
  *
- * Tokens are registered top-level in `@layer cngx.tokens` via
- * `@property` so any consumer (`cngx.theme` layer, `app` layer) can
- * override without learning the type. Defaults fall back to system
- * tokens (`--cngx-color-*`, `--cngx-space-*`) so a brand-theme change
- * propagates automatically.
+ * **State modifiers**
  *
- * Pair with `@cngx/themes/material/select-theme` for Material 3
- * surface treatment across the entire family.
+ * - `.cngx-option--highlighted` on an option row - primary-tinted
+ *   background marking the keyboard-focused row
+ * - `[aria-disabled='true']` on an option - opacity 0.5 + `cursor:
+ *   not-allowed`
+ * - `.cngx-select__option--pending` - `cursor: progress` while a row's
+ *   commit is in flight
+ * - `.cngx-select__chip-list--reordering` - whole-strip `cursor:
+ *   grabbing` while a drag is active
+ * - `.cngx-select__chip--dragging` on a chip - Trello-style lift
+ *   (shadow + scale + tilt + accent fill)
+ * - `.cngx-select__chip--drag-over` on a chip - vertical drop bar
+ *   painted on the leading edge via `::before`
+ *
+ * **Variants**
+ *
+ * Chip-list overflow modes via `data-overflow`:
+ *
+ * - default - flex-wrap chips across multiple rows
+ * - `data-overflow='scroll-x'` - single row + horizontal scroll
+ * - `data-overflow='truncate'` - single row + clipped overflow + the
+ *   `.cngx-select__chip-overflow-badge` count pill
+ *
+ * Error surfaces with two layouts:
+ *
+ * - `.cngx-select__error` - column-stacked block (message + retry)
+ * - `.cngx-select__error--inline` - inline banner above the option list
+ * - `.cngx-select__commit-error` - per-commit failure banner
+ *
+ * **Slots**
+ *
+ * - `.cngx-select__panel` - the floating panel surface (anchor-positioned
+ *   via `position-try-fallbacks`)
+ * - `.cngx-select__group-header` - uppercase optgroup label
+ * - `.cngx-select__option` / `.cngx-select__check` - option row + the
+ *   selected-state checkmark
+ * - `.cngx-select__loading` / `.cngx-select__empty` - inline message rows
+ * - `.cngx-select__skeleton` / `.cngx-select__skeleton-row` - first-load
+ *   shimmer placeholders (static under `prefers-reduced-motion`)
+ * - `.cngx-select__spinner-wrap` / `.cngx-select__spinner` - first-load
+ *   spinner ring
+ * - `.cngx-select__loading-bar` - first-load top-edge progress bar
+ * - `.cngx-select__refreshing` / `.cngx-select__refreshing-spinner` /
+ *   `.cngx-select__refreshing-dots` - subsequent-load indicators
+ * - `.cngx-select__option-spinner` / `.cngx-select__option-error` -
+ *   per-row commit feedback
+ * - `.cngx-select__chip-list` / `.cngx-select__chip-overflow-badge` -
+ *   chip strip + overflow count
+ * - `.cngx-select__chip-wrap` / `.cngx-select__chip-handle` -
+ *   reorderable chip surface + optional drag-handle glyph
+ * - `.cngx-select__error` / `.cngx-select__error--inline` /
+ *   `.cngx-select__error-message` / `.cngx-select__error-retry` /
+ *   `.cngx-select__commit-error` - error block, banner, and retry pieces
+ *
+ * **Inheritance**
+ *
+ * Tokens are registered top-level in `@layer cngx.tokens` via `@property`
+ * so any consumer (`cngx.theme` layer, `app` layer) can override without
+ * learning the type. Panel surface, every primary-tinted glyph, and
+ * every danger-toned error surface delegate to the foundation so a
+ * dark-mode swap cascades through the floating panel even when anchor
+ * positioning detaches it from the trigger's DOM context:
+ *
+ * - `--cngx-select-panel-border` -> `--cngx-color-border`
+ * - `--cngx-select-panel-bg` -> `--cngx-color-surface`
+ * - `--cngx-select-panel-color` -> `--cngx-color-text`
+ * - `--cngx-select-panel-shadow` -> `--cngx-shadow-md`
+ * - `--cngx-select-check-color` -> `--cngx-color-primary`
+ * - `--cngx-select-spinner-color` -> `--cngx-color-primary`
+ * - `--cngx-select-loading-bar-color` -> `--cngx-color-primary`
+ * - `--cngx-select-refreshing-color` -> `--cngx-color-primary`
+ * - `--cngx-select-option-spinner-color` -> `--cngx-color-primary`
+ * - `--cngx-select-option-error-color` -> `--cngx-color-danger`
+ * - `--cngx-select-error-color` -> `--cngx-color-danger`
+ * - `--cngx-select-chip-remove-hover-color` -> `--cngx-color-danger`
+ * - `--cngx-select-chip-drag-bg` -> `--cngx-color-primary`
+ * - `--cngx-select-chip-drop-bar-color` -> `--cngx-color-primary`
+ * - `--cngx-select-trigger-invalid-border-color` ->
+ *   `--cngx-color-danger`
+ * - `--cngx-select-trigger-invalid-outline-color` ->
+ *   `--cngx-color-danger`
+ *
+ * `--cngx-select-panel-min-width` is intentionally NOT registered via
+ * `@property` so the `anchor-size(width)` fallback survives when the
+ * consumer doesn't override it; registering it with any initial-value
+ * would shadow the var() fallback and break anchor positioning.
+ *
+ * **Dark mode**
+ *
+ * Three hooks swap alpha-on-black surfaces (panel shadow, option
+ * highlight, spinner track, chip-overflow tint, chip remove-hover tint,
+ * chip handle muted, chip drag shadow) plus the skeleton shimmer
+ * gradient and the option-spinner track:
+ *
+ * - `prefers-color-scheme: dark`
+ * - `[data-color-scheme="dark"]`
+ * - `.dark` class
+ *
+ * Foundation-delegated tokens ride the foundation cascade unchanged.
+ *
+ * **Pair with**
+ *
+ * - `@cngx/themes/material/select-theme` - Material 3 surface treatment
+ *   across the entire family
  */
 
 @layer cngx.tokens {
@@ -116,7 +214,7 @@
   }
 
   /**
-   * Minimum height of an option row — defaults to `auto` so dense
+   * Minimum height of an option row - defaults to `auto` so dense
    * rows stay compact.
    * @group Layout
    */
@@ -504,7 +602,7 @@
   }
 
   /**
-   * Scale multiplier of the dragging chip — Trello-style lift.
+   * Scale multiplier of the dragging chip - Trello-style lift.
    * @group State / Dragging
    */
   @property --cngx-select-chip-drag-scale {
@@ -514,7 +612,7 @@
   }
 
   /**
-   * Rotation tilt applied to the dragging chip — Trello-style lift.
+   * Rotation tilt applied to the dragging chip - Trello-style lift.
    * @group State / Dragging
    */
   @property --cngx-select-chip-drag-tilt {
@@ -669,7 +767,7 @@
     initial-value: 0.125rem;
   }
 
-  /* Delegating tokens — panel surface + every primary-tinted glyph
+  /* Delegating tokens - panel surface + every primary-tinted glyph
    * and danger-toned error surface track the foundation chain so a
    * dark-mode swap on `--cngx-color-surface` / `--cngx-color-text` /
    * `--cngx-color-border` / `--cngx-color-primary` / `--cngx-color-danger`
@@ -695,7 +793,7 @@
     --cngx-select-trigger-invalid-outline-color: var(--cngx-color-danger);
   }
 
-  /* Dark-mode component-local swap — alpha-on-black surfaces dissolve
+  /* Dark-mode component-local swap - alpha-on-black surfaces dissolve
    * into a dark page, so the dark blocks flip them to alpha-on-white.
    * Shadows deepen since the page surface is already dark. The
    * primary-tinted highlight uses an explicit alpha on the dark
@@ -949,8 +1047,8 @@
   /*
    * Multi-value triggers (CngxMultiSelect, upcoming CngxMultiCombobox and
    * CngxTagInput) all wrap a flex-wrap row of chip pills. The individual
-   * pill rendering is a separate molecule — `<cngx-chip>` from
-   * `@cngx/common/display` — so only the layout of the strip
+   * pill rendering is a separate molecule - `<cngx-chip>` from
+   * `@cngx/common/display` - so only the layout of the strip
    * (flex-wrap, gap, baseline alignment) lives here.
    */
 
@@ -1029,7 +1127,7 @@
   }
 
   /*
-   * Interactive children keep their own cursor — prevents the grab
+   * Interactive children keep their own cursor - prevents the grab
    * cursor bleeding into e.g. the chip's ✕ remove button.
    */
   .cngx-select__chip-wrap button,
@@ -1065,7 +1163,7 @@
   }
 
   /*
-   * Optional projected drag-handle glyph — only renders when the
+   * Optional projected drag-handle glyph - only renders when the
    * consumer passes [chipDragHandle]. `pointer-events: none` so hits
    * pass through to the wrap's own drag surface.
    */
@@ -1174,7 +1272,7 @@
   }
 
   /* Dark-mode swap for the hardcoded alpha-on-black surfaces that
-   * don't have a dedicated token — the skeleton shimmer gradient
+   * don't have a dedicated token - the skeleton shimmer gradient
    * (three alpha stops baked into the rule) and the option-spinner
    * track. Both flip to alpha-on-white so they read on a dark
    * panel-bg without dissolving. */
@@ -1216,7 +1314,7 @@
   }
 }
 
-/* Keyframes are global by design — namespaced with `cngx-select-` so they
+/* Keyframes are global by design - namespaced with `cngx-select-` so they
  * don't collide with consumer keyframes. */
 
 @keyframes cngx-select-skeleton-shimmer {

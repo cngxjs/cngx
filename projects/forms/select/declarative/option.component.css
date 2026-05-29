@@ -1,10 +1,36 @@
 /**
  * @overview
  * Default visuals for the declarative `<cngx-option>` row inside a
- * projected listbox. Mirrors the `.cngx-select__option` layout from
- * `select-base.css` so the declarative option and the data-bound
+ * projected listbox. Mirrors `.cngx-select__option` from
+ * `shared/select-base.css` so the declarative option and the data-bound
  * option look identical. Uses the `--cngx-select-option-*` tokens
- * shared with the rest of the select family.
+ * shared across the family.
+ *
+ * **State modifiers**
+ *
+ * - `[aria-disabled='true']` - opacity 0.5 + `cursor: not-allowed`
+ * - `.cngx-option--highlighted` - primary-tinted background marking the
+ *   keyboard-focused row
+ * - `[hidden]` - `display: none` so filtered-out options remove from
+ *   layout
+ *
+ * **Slots**
+ *
+ * - `:host` - the option row (flex, padded, rounded)
+ * - `.cngx-option__status` - trailing status glyph slot (checkmark,
+ *   spinner, error), pushed to the inline-end via `margin-inline-start:
+ *   auto`
+ *
+ * **Inheritance**
+ *
+ * Surface tokens fall back through the select-family base:
+ *
+ * - `--cngx-option-gap` -> hardcoded `0.5rem`
+ * - `--cngx-option-status-justify` -> hardcoded `flex-start`
+ * - `--cngx-select-option-padding` -> hardcoded `0.375rem 0.5rem`
+ * - `--cngx-select-option-radius` -> hardcoded `0.125rem`
+ * - `--cngx-select-option-highlight-bg` -> `--cngx-color-primary` at
+ *   10% alpha
  */
 
 :host {

@@ -1,13 +1,38 @@
 /**
  * @overview
- * Default visuals for the `cngxButtonToggle` directive. `cngx.reset`
- * neutralizes every native `<button>` (no border, no padding, no
- * background) so component-level chrome can layer on top; the
- * button-toggle leaf is the chrome for both single-select
- * `<cngx-button-toggle-group>` and multi-select
- * `<cngx-button-multi-toggle-group>`, so without this rule the
- * toggles render as bare text. Tokens use the `--cngx-color-*`
- * chain so dark-mode and consumer-theme swaps cascade through.
+ * Theming bridge for the `cngxButtonToggle` directive. `cngx.reset`
+ * strips native `<button>` chrome (border, padding, background) so
+ * components can layer their own; the button-toggle leaf is the
+ * chrome for both `<cngx-button-toggle-group>` (single-select) and
+ * `<cngx-button-multi-toggle-group>` (multi-select). Without this
+ * stylesheet the toggles render as bare text.
+ *
+ * **State modifiers**
+ *
+ * - `--checked` - primary fill, on-primary text, primary border
+ * - `--disabled` - opacity 0.5, `cursor: not-allowed`
+ * - `:hover:not(--disabled)` - 8% primary tint over the surface
+ *
+ * **Segmented-control geometry**
+ *
+ * The group container is a zero-gap flex row, so adjacent toggles
+ * share an edge:
+ *
+ * - `:scope + :scope` - collapses the inner border
+ * - `:first-child` - rounded start corners only
+ * - `:last-child` - rounded end corners only
+ *
+ * **Inheritance**
+ *
+ * Surface tokens chain through the foundation so dark-mode and
+ * consumer-theme swaps cascade without per-component overrides:
+ *
+ * - background -> `--cngx-color-surface`
+ * - color -> `--cngx-color-text`
+ * - border -> `--cngx-color-border`
+ * - checked fill -> `--cngx-color-primary` / `--cngx-color-on-primary`
+ * - corner radius -> `--cngx-radius-md`
+ * - font-size -> `--cngx-font-size-sm`
  */
 
 @layer cngx.tokens {

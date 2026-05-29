@@ -1,14 +1,33 @@
 /**
  * @overview
- * Low-level visual utility classes shared across the library. Lives
- * in `@layer cngx.base` so component-layer rules can override the
- * utility without specificity wars.
+ * Foundation utility layer. Hosts low-level visual helpers that any
+ * cngx component or consumer template can opt into without going
+ * through the component pipeline. Lives in `@layer cngx.base` so
+ * component-layer rules win on collision without specificity wars,
+ * and so the utility ranks above the reset / token layers it
+ * depends on.
  *
- * Today: only `.cngx-sr-only` (visually-hidden screen-reader-only
- * content). The canonical declaration here is what consumers
- * importing `@cngx/themes/cngx.css` get out of the box; several
- * per-component files keep an identical local copy so each file
- * stays self-contained under `styleUrl` bundling.
+ * **Utilities**
+ *
+ * - `.cngx-sr-only` - WCAG-canonical visually-hidden pattern
+ *   (1px box, clipped, no margin). Content stays in the
+ *   accessibility tree so screen readers reach it; layout is
+ *   unaffected.
+ *
+ * **Composition**
+ *
+ * The canonical declaration here is what consumers importing
+ * `@cngx/themes/cngx.css` get out of the box. Several per-component
+ * CSS files duplicate `.cngx-sr-only` locally with identical body so
+ * each component stays self-contained under `styleUrl` bundling -
+ * the cascade is benign whether one or both load.
+ *
+ * **Pair with**
+ *
+ * - `@cngx/core/theming/layers` - declares the `cngx.base` layer
+ *   slot this file appends into
+ * - `@cngx/core/theming/base` - the bare-element baseline that
+ *   shares the same layer
  */
 
 @layer cngx.base {

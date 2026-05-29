@@ -1,24 +1,77 @@
 /**
  * @overview
- * Default visuals for `CngxCard` and its slot directives
- * (`CngxCardMedia` / `Header` / `Title` / `Subtitle` / `Body` /
- * `Footer` / `Actions` / `Badge`). The host element `<cngx-card>`
- * always carries the `.cngx-card` class. Modifier classes drive
- * state appearance: `.cngx-card--interactive` / `--selected` /
- * `--loading` / `--disabled` plus the `--accent` / `--accent-{info /
- * success / warning / danger / neutral}` palette.
+ * Default visuals for `CngxCard` plus its slot directives. The host
+ * carries `.cngx-card`; slot directives project into the nested
+ * `__media`, `__header`, `__title`, `__subtitle`, `__body`,
+ * `__footer`, `__actions`, and `__badge` elements.
  *
- * Surface tokens fall back through the foundation
- * `--cngx-color-surface` / `--cngx-color-text` / `--cngx-color-border`
- * so brand overrides propagate. Selected + focus rings track
- * `--cngx-color-primary`. Solid semantic colors come from the
- * foundation `--cngx-color-{info / success / warning / danger}`
- * directly; tinted-surface variants for the card-accent classes
- * carry the card-specific `--cngx-card-accent-*-bg` namespace
- * (no foundation analogue for tinted surfaces).
+ * **State modifiers**
  *
- * Pair with `@cngx/themes/material/card-theme` for Material 3
- * surface + elevation.
+ * - `--interactive` - hover shadow + touch-active opacity
+ * - `--selected` - accent border, tinted background, inset bar
+ *   (non-color signal per WCAG 1.4.1)
+ * - `--disabled` - opacity dim + `pointer-events: none`
+ * - `--loading` - shimmer overlay (static fallback under
+ *   `prefers-reduced-motion`)
+ *
+ * **Accent variants**
+ *
+ * Top stripe + tinted surface, one class per semantic intent:
+ *
+ * - `--accent` - neutral stripe, no tint
+ * - `--accent-info` - info stripe, info-tinted background
+ * - `--accent-success` - success stripe, success-tinted background
+ * - `--accent-warning` - warning stripe, warning-tinted background
+ * - `--accent-danger` - danger stripe, danger-tinted background
+ * - `--accent-neutral` - neutral stripe, foundation border colour
+ *
+ * **Badge slot**
+ *
+ * `.cngx-card__badge` is absolutely positioned with three axes:
+ *
+ * - Corner: `--top-end`, `--top-start`, `--bottom-end`, `--bottom-start`
+ * - Size: `--size-sm`, `--size-md`, `--size-lg`
+ * - Intent: `--intent-primary`, `--intent-danger`, `--intent-warning`,
+ *   `--intent-success`, `--intent-neutral`
+ *
+ * Empty content collapses to the `sm` status-dot fallback regardless
+ * of the `size` input.
+ *
+ * **Inheritance**
+ *
+ * Surface tokens fall back to the foundation so brand overrides
+ * propagate without per-component theming:
+ *
+ * - `--cngx-card-bg` -> `--cngx-color-surface`
+ * - `--cngx-card-color` -> `--cngx-color-text`
+ * - `--cngx-card-border` -> `--cngx-color-border`
+ * - `--cngx-card-divider` -> `--cngx-color-border`
+ * - `--cngx-card-radius` -> `--cngx-radius-lg`
+ * - `--cngx-card-padding` -> `--cngx-space-md`
+ * - `--cngx-card-focus-color` -> `--cngx-color-primary`
+ * - `--cngx-card-selected-border` -> `--cngx-color-primary`
+ * - `--cngx-card-badge-*-bg` -> `--cngx-badge-*-bg` ->
+ *   `--cngx-color-{intent}`
+ *
+ * Tinted-surface accents and the selected background use
+ * `color-mix()` against the matching foundation semantic colour and
+ * the card surface; themes only need to pin the tokens when the
+ * runtime mix is not desired.
+ *
+ * **Dark mode**
+ *
+ * Three hooks swap the subtitle, selected background, four accent
+ * tints, and the badge ring:
+ *
+ * - `prefers-color-scheme: dark`
+ * - `[data-color-scheme="dark"]`
+ * - `.dark` class
+ *
+ * Foundation-delegated tokens ride the foundation cascade unchanged.
+ *
+ * **Pair with**
+ *
+ * - `@cngx/themes/material/card-theme` - Material 3 surface + elevation
  */
 
 @layer cngx.tokens {
@@ -161,7 +214,7 @@
   }
 
   /**
-   * Width of the inset selection bar drawn via `::before` — provides
+   * Width of the inset selection bar drawn via `::before` - provides
    * a non-color-only selection signal (WCAG 1.4.1).
    * @group State / Selected
    */
@@ -253,7 +306,7 @@
   }
 
   /**
-   * Text color of the subtitle slot — muted by default.
+   * Text color of the subtitle slot - muted by default.
    * @group Typography
    */
   @property --cngx-card-subtitle-color {
@@ -431,7 +484,7 @@
   }
 
   /**
-   * Ring around the badge — contrasts the pill against the card
+   * Ring around the badge - contrasts the pill against the card
    * surface so the corner anchor reads as a separate element. The
    * `:root` dark-mode override swaps the colour; `inherits: true` so
    * the swap reaches the host element through the cascade.
@@ -510,7 +563,7 @@
   }
 
   /**
-   * Background of the `success` intent. No `CngxBadge` analogue —
+   * Background of the `success` intent. No `CngxBadge` analogue -
    * falls straight back to `--cngx-color-success`.
    * @group Variant / Success
    * @see [[--cngx-color-success]]
@@ -552,7 +605,7 @@
     initial-value: oklch(1 0 0);
   }
 
-  /* Dark-mode swap — mirrors `core/theming/system-tokens.css`.
+  /* Dark-mode swap - mirrors `core/theming/system-tokens.css`.
    * Foundation-delegated tokens (bg / text / border / divider /
    * title) ride the foundation cascade via `var()`. Component-
    * specific tokens (subtitle, selected-bg, four accent tints)
@@ -659,7 +712,7 @@
         )
       );
     }
-    /* Visual selection indicator (not just color — WCAG 1.4.1) */
+    /* Visual selection indicator (not just color - WCAG 1.4.1) */
     :scope.cngx-card--selected::before {
       content: '';
       position: absolute;
@@ -700,7 +753,7 @@
       }
     }
 
-    /* Slot children — projected via [cngxCardMedia/Header/Title/...] directives */
+    /* Slot children - projected via [cngxCardMedia/Header/Title/...] directives */
     .cngx-card__media {
       margin: calc(-1 * var(--cngx-card-padding, var(--cngx-space-md, 16px)));
       margin-bottom: 0;
@@ -762,7 +815,7 @@
       justify-content: flex-end;
     }
 
-    /* Accent variants — top border + tinted surface. The accent
+    /* Accent variants - top border + tinted surface. The accent
      * classes sit ON the card element itself (the @scope root), so
      * each rule needs `:scope.cngx-card--accent…`; the unscoped
      * `.cngx-card--accent…` form would only target descendants. */
@@ -819,7 +872,7 @@
       --cngx-card-accent-color: var(--cngx-color-border, oklch(0.81 0.005 250));
     }
 
-    /* Badge placement — absolute, four corner variants */
+    /* Badge placement - absolute, four corner variants */
     .cngx-card__badge {
       position: absolute;
       z-index: 1;
@@ -854,7 +907,7 @@
       inset-inline-start: var(--cngx-card-badge-offset, -6px);
     }
 
-    /* Size variants — over-set the four size-dependent values from
+    /* Size variants - over-set the four size-dependent values from
      * the `md` default. */
     .cngx-card__badge--size-sm {
       min-width: var(--cngx-card-badge-size-sm, 10px);
@@ -875,7 +928,7 @@
       font-size: var(--cngx-card-badge-font-size-lg, 0.8125rem);
     }
 
-    /* Intent variants — chain through the CngxBadge palette then the
+    /* Intent variants - chain through the CngxBadge palette then the
      * foundation semantic colour tokens. */
     .cngx-card__badge--intent-primary {
       background: var(
@@ -899,10 +952,7 @@
       color: var(--cngx-card-badge-warning-color, oklch(0.2 0.01 250));
     }
     .cngx-card__badge--intent-success {
-      background: var(
-        --cngx-card-badge-success-bg,
-        var(--cngx-color-success, oklch(0.6 0.15 145))
-      );
+      background: var(--cngx-card-badge-success-bg, var(--cngx-color-success, oklch(0.6 0.15 145)));
       color: var(--cngx-card-badge-success-color, oklch(1 0 0));
     }
     .cngx-card__badge--intent-neutral {
@@ -923,7 +973,7 @@
     }
   }
 
-  /* Shimmer keyframe — declared once at the layer level so it can be
+  /* Shimmer keyframe - declared once at the layer level so it can be
    * referenced by .cngx-card and other components in the same layer. */
   @keyframes cngx-card-shimmer {
     0% {
