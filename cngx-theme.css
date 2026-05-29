@@ -47,7 +47,10 @@
   --color-cdx-bg:            var(--cngx-color-surface);
   --color-cdx-bg-subtle:     oklch(0.97 0.004 250);
   --color-cdx-bg-alt:        oklch(0.94 0.005 250);
-  --color-cdx-bg-elevated:   var(--cngx-color-surface);
+  /* bg-elevated sits a hair below pure-white so feature cards on
+   * the category landing pages read as cards at rest; the bundled
+   * hover (box-shadow + translateY) then has a body to lift. */
+  --color-cdx-bg-elevated:   oklch(0.985 0.003 250);
   --color-cdx-bg-code:       oklch(0.93 0.006 250);
   --color-cdx-bg-code-block: oklch(0.17 0.012 250);
 
