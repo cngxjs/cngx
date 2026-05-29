@@ -240,6 +240,22 @@ a.cdx-related-pill:focus-visible {
   border-radius: 4px;
 }
 
+/* Inline <code> inside headings has no business being a chip - the
+ * surrounding heading already owns the visual weight. Strip the
+ * chip background and padding so the code reads as part of the
+ * heading typography (monospace + inherit color). Otherwise a page
+ * of `### @cngx/utils - Level 0` style H3s renders as a vertical
+ * stack of chunky chip-blobs that fight the heading hierarchy. */
+.cdx-readme :is(h1,h2,h3,h4,h5,h6) :not(pre) > code,
+.cdx-prose :is(h1,h2,h3,h4,h5,h6) :not(pre) > code,
+:is(h1,h2,h3,h4,h5,h6) :not(pre) > code {
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+  color: inherit;
+  font-size: 0.92em;
+}
+
 /* Markdown tables in core-concept pages. The default bundle ships
  * basic borders + uppercased headers. Add a soft container, a
  * tinted header strip, and zebra striping so dense lookup tables
@@ -366,43 +382,57 @@ a.cdx-related-pill:focus-visible {
 /* Vertical rhythm in prose - give paragraphs, code blocks, and
  * section headings room to breathe so the page feels less dense.
  * H2 owns a much larger top margin so the section break reads
- * purely as whitespace; no horizontal-rule paint needed. */
-.cdx-readme p {
+ * purely as whitespace; no horizontal-rule paint needed.
+ *
+ * Covers BOTH `.cdx-readme` (core-concepts / additional pages) and
+ * `.cdx-prose` (index README rendering). The bundle uses different
+ * wrappers for the two surfaces; the rhythm must match. */
+.cdx-readme p,
+.cdx-prose p {
   margin-block: 0 1rem;
   line-height: 1.65;
 }
-.cdx-readme h2 {
+.cdx-readme h2,
+.cdx-prose h2 {
   margin-top: 3.5rem;
   margin-bottom: 1rem;
   padding-top: 0.5rem;
 }
-.cdx-readme h3 {
+.cdx-readme h3,
+.cdx-prose h3 {
   margin-top: 2.25rem;
   margin-bottom: 0.625rem;
 }
-.cdx-readme h4 {
+.cdx-readme h4,
+.cdx-prose h4 {
   margin-top: 1.5rem;
   margin-bottom: 0.5rem;
 }
-.cdx-readme pre {
+.cdx-readme pre,
+.cdx-prose pre {
   margin-block: 1rem 1.25rem;
 }
 .cdx-readme ul,
-.cdx-readme ol {
+.cdx-readme ol,
+.cdx-prose ul,
+.cdx-prose ol {
   margin-block: 0.5rem 1.25rem;
 }
-.cdx-readme li {
+.cdx-readme li,
+.cdx-prose li {
   margin-block: 0.25rem;
   line-height: 1.6;
 }
-.cdx-readme blockquote {
+.cdx-readme blockquote,
+.cdx-prose blockquote {
   margin-block: 1.25rem;
   padding-block: 0.5rem;
 }
 /* `---` markdown breaks render as <hr>. Strip the painted line and
  * keep only the vertical gap so a section break reads as breathing
  * room, not as a hard divider. */
-.cdx-readme hr {
+.cdx-readme hr,
+.cdx-prose hr {
   margin-block: 1.25rem;
   border: none;
   height: 0;
