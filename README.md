@@ -90,15 +90,69 @@ npm run lint             # eslint flat config, sheriff dependency rules
 
 Five-level hierarchy. Lower levels know nothing about higher levels. Imports flow upward only.
 
-| Package | Level | What it hosts |
-|-|-|-|
-| `@cngx/utils` | 0 | Framework-agnostic TypeScript. Array helpers, tree primitives (`CngxTreeNode`, `flattenTree`, `walkTree`, `sortTree`, `filterTree`), version compare. Optional `rxjs-interop` entry. No Angular runtime dep. |
-| `@cngx/core` | 1 | Angular-aware, non-rendering primitives. DI tokens (`CNGX_FORM_FIELD_CONTROL`, `CNGX_FORM_FIELD_HOST`, `WINDOW`, `ENVIRONMENT`), the `CngxAsyncState<T>` machine, `createSelectionController<T>`, transition tracker, keyboard-combo parser, coercion, theming foundation (cascade layers, system tokens, reset, base). Zero CDK. |
-| `@cngx/common` | 2 | Atoms and molecules across 12 entries: `a11y` (roving tabindex, focus trap, live region, ...), `interactive` (listbox, menu, ripple, nav, expandable, checkbox, radio, button-toggle, reorder, hierarchical-nav, async-click, copy, speak, ...), `popover` (CSS Anchor Positioning with Floating-UI fallback), `display` (icon, divider, avatar, badge, chip, ...), `card`, `dialog`, `layout`, `data` (sort/filter/search/paginate + DataSource), `chart`, `tabs`, `stepper`. CDK is used in exactly two spots: `a11y/focus-trap` (CDK's `FocusTrap`) and `data/data-source` (CDK's `DataSource` base class as a table-integration contract). Never imports `@angular/material`. |
-| `@cngx/forms` | 3 | Forms organisms across 7 entries. `field` (Signal Forms bridge), `controls` (CVA adapter for Reactive Forms), `validators`, `input`, `select` (eight composites: single, multi, combobox, typeahead, tree-select, reorderable-multi, action-select, action-multi), `filter-builder` (declarative compound-filter UI). 130 source files, zero CDK touchpoints. |
-| `@cngx/data-display` | 3 | Data-display organisms. `treetable` (currently CDK-table-backed). |
-| `@cngx/ui` | 4 | Mostly self-contained organisms across 14 entries: `action-button`, `empty-state`, `feedback` (toasts, banners, alerts via `provideFeedback(...)`), `layout`, `sidenav`, `skeleton`, `speak`, `stepper`, `tabs`. `overlay` is the one entry that uses `@angular/cdk/overlay` + `cdk/portal` as its engine. Three entries opt into Material: `mat-stepper`, `mat-tabs`, `material` (paginator wrapper). Peer-deps are `@angular/cdk` + `@angular/common` + `@angular/core` only. |
-| `@cngx/themes` | n/a | Plain-CSS theme bundle. `@cngx/themes/cngx.css` single-import default (cascade layers, OKLCH system tokens, `@property` declarations, `light-dark()` dark mode out of the box). `@cngx/themes/example-brand.css` brand template. `@cngx/themes/material/*` ships 36 component bridges plus `system-bridge.scss` and a `theme.scss` aggregator - one `@include` wires every cngx component into a Material theme (M2 or M3). No JS, no SCSS at runtime in the default bundle. |
+### `@cngx/utils` - Level 0
+
+Framework-agnostic TypeScript. No Angular runtime dependency.
+
+- Array helpers.
+- Tree primitives: `CngxTreeNode`, `flattenTree`, `walkTree`, `sortTree`, `filterTree`.
+- Version compare.
+- Optional `rxjs-interop` entry.
+
+### `@cngx/core` - Level 1
+
+Angular-aware, non-rendering primitives. Zero CDK.
+
+- DI tokens: `CNGX_FORM_FIELD_CONTROL`, `CNGX_FORM_FIELD_HOST`, `WINDOW`, `ENVIRONMENT`.
+- `CngxAsyncState<T>` machine, `createSelectionController<T>`, transition tracker.
+- Keyboard-combo parser, coercion helpers.
+- Theming foundation: cascade layers, system tokens, reset, base.
+
+### `@cngx/common` - Level 2
+
+Atoms and molecules across 12 entries.
+
+- `a11y` - roving tabindex, focus trap, live region, ...
+- `interactive` - listbox, menu, ripple, nav, expandable, checkbox, radio, button-toggle, reorder, hierarchical-nav, async-click, copy, speak, ...
+- `popover` - CSS Anchor Positioning with Floating-UI fallback.
+- `display` - icon, divider, avatar, badge, chip, ...
+- `card`, `dialog`, `layout`, `chart`, `tabs`, `stepper`.
+- `data` - sort, filter, search, paginate, plus `DataSource`.
+
+CDK appears in exactly two spots: `a11y/focus-trap` (CDK's `FocusTrap`) and `data/data-source` (CDK's `DataSource` base class as a table-integration contract). Never imports `@angular/material`.
+
+### `@cngx/forms` - Level 3
+
+Forms organisms across 7 entries. 130 source files, zero CDK touchpoints.
+
+- `field` - Signal Forms bridge.
+- `controls` - CVA adapter for Reactive Forms.
+- `validators`, `input`.
+- `select` - eight composites: single, multi, combobox, typeahead, tree-select, reorderable-multi, action-select, action-multi.
+- `filter-builder` - declarative compound-filter UI.
+
+### `@cngx/data-display` - Level 3
+
+Data-display organisms.
+
+- `treetable` - CDK-table-backed.
+
+### `@cngx/ui` - Level 4
+
+Mostly self-contained organisms across 14 entries. Peer-deps: `@angular/cdk`, `@angular/common`, `@angular/core` only.
+
+- Pure cngx: `action-button`, `empty-state`, `feedback`, `layout`, `sidenav`, `skeleton`, `speak`, `stepper`, `tabs`.
+- `feedback` ships toasts, banners, alerts via `provideFeedback(...)`.
+- `overlay` is the one entry that uses `@angular/cdk/overlay` + `cdk/portal` as its engine.
+- Three Material opt-ins: `mat-stepper`, `mat-tabs`, `material` (paginator wrapper).
+
+### `@cngx/themes`
+
+Plain-CSS theme bundle. No JS, no SCSS at runtime in the default bundle.
+
+- `@cngx/themes/cngx.css` - single-import default. Cascade layers, OKLCH system tokens, `@property` declarations, `light-dark()` dark mode out of the box.
+- `@cngx/themes/example-brand.css` - brand template.
+- `@cngx/themes/material/*` - 36 component bridges plus `system-bridge.scss` and a `theme.scss` aggregator. One `@include` wires every cngx component into a Material theme (M2 or M3).
 
 ---
 
@@ -159,9 +213,11 @@ M3 reads `--mat-sys-*` at runtime; M2 resolves palette colours at compile time v
 
 ### From a UX engineer
 
-Most state stores collapse async into one `loading: boolean`. The result is a UI that flashes a skeleton when refreshing, hides itself when mutating, and shows a spinner when first-loading.
+Most state stores collapse async into one `loading: boolean`.
 
-Three different affordances, one boolean. This is how scroll position gets lost, why optimistic UI feels glitchy, and how users learn to dread "Save".
+The result is a UI that flashes a skeleton when refreshing, hides itself when mutating, and shows a spinner when first-loading. Three different affordances, one boolean.
+
+This is how scroll position gets lost. Why optimistic UI feels glitchy. How users learn to dread "Save".
 
 `CngxAsyncState<T>` separates the six states a user actually distinguishes:
 
@@ -172,19 +228,24 @@ Three different affordances, one boolean. This is how scroll position gets lost,
 - `success`
 - `error`
 
-Everything else (`isLoading`, `isPending`, `isRefreshing`, `isFirstLoad`, `isEmpty`, `hasData`, `isSettled`, `isBusy`, `lastUpdated`) is `computed()` off `status`. One source of truth, twelve derived signals, zero consistency drift.
+Everything else is `computed()` off `status`: `isLoading`, `isPending`, `isRefreshing`, `isFirstLoad`, `isEmpty`, `hasData`, `isSettled`, `isBusy`, `lastUpdated`.
+
+One source of truth, twelve derived signals, zero consistency drift.
 
 The pattern is familiar (TanStack Query, SWR, RTK Query) but exposed as a typed reactive interface, not a hook return.
 
-22+ components in the library accept `CngxAsyncState<unknown>` directly: skeleton container, action button, empty state, loading overlay, async container, every select composite, every feedback bridge. The state shape is the contract.
+22+ components in the library accept `CngxAsyncState<unknown>` directly:
 
-Producers can be queries, mutations, file uploads, WebSockets - the receivers do not care.
+- Skeleton container, action button, empty state, loading overlay.
+- Async container, every select composite, every feedback bridge.
+
+The state shape is the contract. Producers can be queries, mutations, file uploads, WebSockets - the receivers do not care.
 
 ### From an a11y engineer
 
 ARIA is not a sticker you apply at the end. It is a projection of UI state into a second medium (screen-reader output).
 
-If your UI state lives in signals and your ARIA lives in template strings, the two will drift. Audits will catch some of it, real users will catch the rest.
+If your UI state lives in signals and your ARIA lives in template strings, the two will drift. Audits will catch some of it. Real users will catch the rest.
 
 In CNGX, ARIA is bindings off the same signals that drive the visible UI:
 
@@ -194,9 +255,15 @@ In CNGX, ARIA is bindings off the same signals that drive the visible UI:
 - Live regions stay mounted; only their content is reactive.
 - Transition bridges (`CngxToastOn`, `CngxAlertOn`, `CngxBannerOn`) fire announcements off `AsyncStatus` transitions, so a successful save is heard, not just seen.
 
-Numbers in the codebase: 70 files bind `aria-busy`, 73 bind `aria-describedby` / `aria-required` / `aria-invalid`, 44 use live regions.
+Numbers in the codebase:
 
-None of those are added in an audit pass. They sit in the `computed()` graph next to the visual props they mirror, so the only way to lie to assistive tech is to break the signal that also lies to the eye.
+- 70 files bind `aria-busy`.
+- 73 bind `aria-describedby` / `aria-required` / `aria-invalid`.
+- 44 use live regions.
+
+None of those are added in an audit pass. They sit in the `computed()` graph next to the visual props they mirror.
+
+The only way to lie to assistive tech is to break the signal that also lies to the eye.
 
 ### Developer experience
 
@@ -215,12 +282,6 @@ Swap the panel host, the announcer, the focus strategy, the commit controller - 
 The consumer-side DI surface mirrors the `provide*` surface one-to-one.
 - **Sheriff-enforced layers.** Imports flow upward only, enforced at lint time. Adding a new lib is a row in `sheriff.config.ts`. Cross-lib violations fail CI, not code review.
 - **One-line theming.** `@import '@cngx/themes/cngx.css';` ships cascade layers, OKLCH system tokens, `@property` declarations, `light-dark()` dark mode. Override via `@layer cngx.theme { ... }`. No SCSS at runtime.
-
----
-
-## Contributing
-
-See [CONTRIBUTING.md](./CONTRIBUTING.md) for setup, build pipeline, demo conventions, and release workflow. Architectural and coding conventions live in [CODING_STANDARDS.md](./CODING_STANDARDS.md).
 
 ---
 
