@@ -13,7 +13,7 @@ import {
 
 /**
  * Behaviour knobs for `[cngxMatTabs]`. Single canonical surface
- * symmetric to `provideSelectConfig` in the select family — every
+ * symmetric to `provideSelectConfig` in the select family - every
  * tunable is a `with*` feature on the same aggregator instead of
  * a standalone DI token, so consumers configure the directive
  * through one entry point and the API surface stays small.
@@ -34,13 +34,13 @@ export interface CngxMatTabsConfig {
    * gated behind a never-true `*ngIf` / `@defer`) does not re-arm
    * forever.
    *
-   * Default: `5` — well above normal Material render lag (a single
+   * Default: `5` - well above normal Material render lag (a single
    * `afterNextRender` is enough on every supported version), low
    * enough to surface a dev-mode `console.warn` promptly when the
    * consumer DOM never appears.
    *
    * Note: `<cngx-tab-overflow>`'s own attach loop uses `60` rAF
-   * frames, not `5` — different scheduler, different budget. The
+   * frames, not `5` - different scheduler, different budget. The
    * two caps are intentionally independent because the underlying
    * timing primitives differ; a shared "anchor max attempts" knob
    * would conflate one frame of `afterNextRender` with one rAF
@@ -78,17 +78,17 @@ export const CNGX_MAT_TABS_CONFIG_DEFAULTS = {
  * defaults so callers never see `undefined`.
  *
  * @category ui/mat-tabs
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/mat-tabs/mat-tabs-config.ts
+ * @since 0.1.0
  */
-export const CNGX_MAT_TABS_CONFIG = new InjectionToken<CngxMatTabsConfig>(
-  'CngxMatTabsConfig',
-);
+export const CNGX_MAT_TABS_CONFIG = new InjectionToken<CngxMatTabsConfig>('CngxMatTabsConfig');
 
 /**
  * Feature object returned by `with*` mat-tabs functions and consumed
  * by {@link provideMatTabsConfig} / {@link provideMatTabsConfigAt}.
  * The optional `_target` discriminator is reserved for a future
  * cross-family aggregator (`provideCngxMatTabs`) that dispatches
- * features to the right provider — analogous to `_target: 'select'`
+ * features to the right provider - analogous to `_target: 'select'`
  * in the select family.
  *
  * @category ui/mat-tabs
@@ -99,9 +99,7 @@ export interface CngxMatTabsConfigFeature {
   readonly _target?: 'mat-tabs';
 }
 
-function feature(
-  config: Partial<CngxMatTabsConfig>,
-): CngxMatTabsConfigFeature {
+function feature(config: Partial<CngxMatTabsConfig>): CngxMatTabsConfigFeature {
   return { config, _target: 'mat-tabs' };
 }
 
@@ -121,15 +119,11 @@ export function withAnchorRetryAttempts(n: number): CngxMatTabsConfigFeature {
  *
  * @category ui/mat-tabs
  */
-export function withHalfWiredSlotSink(
-  sink: CngxMatTabHalfWiredSlotSink,
-): CngxMatTabsConfigFeature {
+export function withHalfWiredSlotSink(sink: CngxMatTabHalfWiredSlotSink): CngxMatTabsConfigFeature {
   return feature({ halfWiredSlotSink: sink });
 }
 
-function mergeFeatures(
-  features: readonly CngxMatTabsConfigFeature[],
-): Partial<CngxMatTabsConfig> {
+function mergeFeatures(features: readonly CngxMatTabsConfigFeature[]): Partial<CngxMatTabsConfig> {
   const merged: {
     -readonly [K in keyof CngxMatTabsConfig]?: CngxMatTabsConfig[K];
   } = {};
@@ -183,9 +177,7 @@ export function provideMatTabsConfig(
  *
  * @category ui/mat-tabs
  */
-export function provideMatTabsConfigAt(
-  ...features: CngxMatTabsConfigFeature[]
-): Provider[] {
+export function provideMatTabsConfigAt(...features: CngxMatTabsConfigFeature[]): Provider[] {
   return [{ provide: CNGX_MAT_TABS_CONFIG, useValue: mergeFeatures(features) }];
 }
 
@@ -204,9 +196,7 @@ export function provideMatTabsConfigAt(
 export function injectMatTabsConfig(): Required<CngxMatTabsConfig> {
   const user = inject(CNGX_MAT_TABS_CONFIG, { optional: true }) ?? {};
   return {
-    anchorMaxAttempts:
-      user.anchorMaxAttempts ?? CNGX_MAT_TABS_CONFIG_DEFAULTS.anchorMaxAttempts,
-    halfWiredSlotSink:
-      user.halfWiredSlotSink ?? CNGX_MAT_TABS_CONFIG_DEFAULTS.halfWiredSlotSink,
+    anchorMaxAttempts: user.anchorMaxAttempts ?? CNGX_MAT_TABS_CONFIG_DEFAULTS.anchorMaxAttempts,
+    halfWiredSlotSink: user.halfWiredSlotSink ?? CNGX_MAT_TABS_CONFIG_DEFAULTS.halfWiredSlotSink,
   };
 }

@@ -22,7 +22,7 @@ import {
 
 /**
  * Attaches to an existing `<mat-stepper>` and bridges it to a
- * {@link CngxStepperPresenter} — consumers gain the commit-action
+ * {@link CngxStepperPresenter} - consumers gain the commit-action
  * lifecycle, `CNGX_STATEFUL` (so `<cngx-toast-on />` /
  * `<cngx-banner-on />` compose as children), and the step-handle
  * registry from one attribute.
@@ -37,6 +37,11 @@ import {
  * the instrumentation layer.
  *
  * @category ui/mat-stepper
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/mat-stepper/mat-stepper.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxMatStepper, CngxStepperPresenter, CngxMatTabs
  */
 @Directive({
   selector: '[cngxMatStepper]',
@@ -57,7 +62,7 @@ export class CngxMatStepperBridge {
   private readonly injector: Injector = inject(InjectableInjector);
 
   private readonly matSteps = contentChildren(MatStep, { descendants: true });
-  // Map not WeakMap — syncHandles needs to iterate to find removed steps.
+  // Map not WeakMap - syncHandles needs to iterate to find removed steps.
   private readonly setupsByStep = new Map<MatStep, CngxMatStepHandleSetup>();
   private readonly createHandle = inject(CNGX_MAT_STEP_HANDLE_FACTORY);
 
@@ -95,7 +100,7 @@ export class CngxMatStepperBridge {
       this.presenter.register(setup.handle);
     }
 
-    // Snapshot before iterating — guards against non-current-key deletes inside the body.
+    // Snapshot before iterating - guards against non-current-key deletes inside the body.
     for (const [step, setup] of Array.from(this.setupsByStep.entries())) {
       if (liveSteps.has(step)) {
         continue;

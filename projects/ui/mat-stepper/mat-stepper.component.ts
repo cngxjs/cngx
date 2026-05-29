@@ -35,7 +35,7 @@ import type { MaterialPrivateSurfaces } from '@cngx/ui/mat-tabs';
 
 /**
  * Material-twin stepper organism. Wraps `<mat-stepper>` and shares
- * the `CngxStepperPresenter` brain with `<cngx-stepper>` — Material
+ * the `CngxStepperPresenter` brain with `<cngx-stepper>` - Material
  * consumers gain the commit-action lifecycle, router sync, and error
  * aggregation.
  *
@@ -45,13 +45,18 @@ import type { MaterialPrivateSurfaces } from '@cngx/ui/mat-tabs';
  *
  * Material owns keyboard nav and focus on `MatStepperHeader`, so the
  * organism does NOT compose `CngxRovingTabindex` /
- * `CngxFocusRestore`. Group nodes flatten — `<mat-stepper>` does not
- * support nesting — with the depth preserved as a `data-step-depth`
+ * `CngxFocusRestore`. Group nodes flatten - `<mat-stepper>` does not
+ * support nesting - with the depth preserved as a `data-step-depth`
  * hint on the rendered label.
  *
  * @playground Bridge instrumentation ./examples/bridge/bridge-example.component.ts
  *
  * @category ui/mat-stepper
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/mat-stepper/mat-stepper.component.ts
+ * @since 0.1.0
+ * @relatedTo CngxMatStepperBridge, CngxStepperPresenter, CngxStep
  */
 @Component({
   selector: 'cngx-mat-stepper',
@@ -74,7 +79,7 @@ export class CngxMatStepper implements CngxStepPanelHost {
   private readonly destroyRef = inject(DestroyRef);
   private readonly injector = inject(Injector);
   protected readonly matStepper = viewChild.required(MatStepper);
-  // Host CD nudge after the `_iconOverrides` patch — Material reads the map
+  // Host CD nudge after the `_iconOverrides` patch - Material reads the map
   // into per-header `[iconOverrides]` bindings on the next CD pass.
   private readonly hostCdr = inject(ChangeDetectorRef);
 
@@ -87,7 +92,7 @@ export class CngxMatStepper implements CngxStepPanelHost {
    * Consumer-projected `<ng-template matStepperIcon>` templates,
    * forwarded into `MatStepper._iconOverrides` from the
    * `afterNextRender` patch below. `<ng-content>` projection cannot
-   * reach Material's `@ContentChildren(MatStepperIcon)` — content-init
+   * reach Material's `@ContentChildren(MatStepperIcon)` - content-init
    * resolves the inner query before the wrapper's projection lands.
    * `_iconOverrides` is a Material-internal slot.
    */
@@ -104,7 +109,7 @@ export class CngxMatStepper implements CngxStepPanelHost {
   });
 
   /**
-   * Step-only flat projection — `<mat-step>` does not nest, so
+   * Step-only flat projection - `<mat-step>` does not nest, so
    * groups collapse into the same level. Memoised via
    * `flatStepsEqual` so consumers (`stepLabel`, panel `@for`,
    * `stepLabelContextFor`) don't re-walk on shape-stable
@@ -116,7 +121,7 @@ export class CngxMatStepper implements CngxStepPanelHost {
     { equal: flatStepsEqual },
   );
 
-  /** Material orientation literal — narrows our `'horizontal'|'vertical'` to its own union. */
+  /** Material orientation literal - narrows our `'horizontal'|'vertical'` to its own union. */
   protected readonly matOrientation = computed<'horizontal' | 'vertical'>(() =>
     this.presenter.orientation() === 'vertical' ? 'vertical' : 'horizontal',
   );
@@ -125,7 +130,7 @@ export class CngxMatStepper implements CngxStepPanelHost {
     return node.flatIndex;
   }
 
-  /** Editability rule — non-linear lets every step click; linear only past completed. */
+  /** Editability rule - non-linear lets every step click; linear only past completed. */
   protected isEditable(node: CngxStepNode): boolean {
     return !this.presenter.linear() || node.state() === 'success';
   }
@@ -206,7 +211,7 @@ export class CngxMatStepper implements CngxStepPanelHost {
   }
 
   constructor() {
-    // Prune stale `stepLabelContextCache` entries — removed node-ids would otherwise leak.
+    // Prune stale `stepLabelContextCache` entries - removed node-ids would otherwise leak.
     effect(() => {
       const flat = this.presenter.flatSteps();
       untracked(() => {
@@ -238,7 +243,7 @@ export class CngxMatStepper implements CngxStepPanelHost {
       if (!stepperRef._iconOverrides) {
         if (typeof ngDevMode !== 'undefined' && ngDevMode && iconList.length) {
           console.warn(
-            '[CngxMatStepper] MatStepper._iconOverrides is missing — ' +
+            '[CngxMatStepper] MatStepper._iconOverrides is missing - ' +
               'consumer-projected <ng-template matStepperIcon> templates ' +
               'will not flow through to Material. Likely cause: a ' +
               'Material upgrade renamed or removed the internal slot. ' +
@@ -250,7 +255,7 @@ export class CngxMatStepper implements CngxStepPanelHost {
       for (const icon of iconList) {
         stepperRef._iconOverrides[icon.name] = icon.templateRef;
       }
-      // `markForCheck` (not `selectedIndex`) — touching the index would echo
+      // `markForCheck` (not `selectedIndex`) - touching the index would echo
       // through `createMaterialBidirectionalSync`.
       this.hostCdr.markForCheck();
     });

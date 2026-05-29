@@ -12,14 +12,14 @@ import { CNGX_MAT_TABS_REGISTRY_HOST } from './mat-tabs-registry.directive';
  * the matching Material tab button (badge + descriptor span) via
  * the Renderer2 effect inside {@link CngxMatTabs}.
  *
- * Material owns `<mat-tab>` declarations — `[cngxTab]` cannot host
- * here — so a sibling attribute directive carries the input.
+ * Material owns `<mat-tab>` declarations - `[cngxTab]` cannot host
+ * here - so a sibling attribute directive carries the input.
  * Empty-string transform handles the bare-attribute case per
  * `feedback_bridge_input_not_required` (a developer typing
  * `cngxMatTabError` without `[]` brackets must not poison the
  * slot).
  *
- * Locates its target via {@link CNGX_MAT_TABS_REGISTRY_HOST} —
+ * Locates its target via {@link CNGX_MAT_TABS_REGISTRY_HOST} -
  * the registry provides the token with `useExisting`, so sibling
  * directives reach per-handle slots through a typed contract
  * instead of the concrete class. Tracks `presenter.tabs()` to
@@ -29,6 +29,10 @@ import { CNGX_MAT_TABS_REGISTRY_HOST } from './mat-tabs-registry.directive';
  * no-aggregator default.
  *
  * @category ui/mat-tabs
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/mat-tabs/mat-tab-error.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxMatTabs, CngxMatTabsRegistry, CngxMatTabRejectionContent
  */
 @Directive({
   selector: '[cngxMatTabError]',
@@ -60,7 +64,7 @@ export class CngxMatTabError {
       // pre-empts a future regression where `getHandleSetup` reads a
       // signal and self-triggers the aggregator pump.
       const aggregator = this.aggregator();
-      // Race-recovery dependency — tracks `setupsByTab` population so
+      // Race-recovery dependency - tracks `setupsByTab` population so
       // the effect re-fires once our `MatTab` is registered. The bare
       // read is intentional; full rationale lives in the effect's
       // opening comment above. Do NOT tag as dead code.

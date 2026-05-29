@@ -23,7 +23,7 @@ import { CNGX_FEEDBACK_CONFIG } from '../config/feedback-config';
 import { CngxSeverityIcon } from '../config/severity-icon';
 
 /**
- * Severity level for the alert — determines visual style, icon, and ARIA role.
+ * Severity level for the alert - determines visual style, icon, and ARIA role.
  *
  * @category ui/feedback/alert
  */
@@ -36,7 +36,7 @@ export type AlertSeverity = 'info' | 'success' | 'warning' | 'error';
  */
 export type AlertVisibilityPhase = 'hidden' | 'entering' | 'visible' | 'exiting';
 
-/** @internal — timer with pause/resume support for hover/focus interactions. */
+/** @internal - timer with pause/resume support for hover/focus interactions. */
 interface PausableTimer {
   start(duration: number, onComplete: () => void): void;
   pause(): void;
@@ -44,6 +44,7 @@ interface PausableTimer {
   clear(): void;
 }
 
+/** @internal */
 function createPausableTimer(): PausableTimer {
   let id: ReturnType<typeof setTimeout> | undefined;
   let remaining = 0;
@@ -96,6 +97,9 @@ function createPausableTimer(): PausableTimer {
  * Content slot directive for custom alert icons.
  *
  * @category ui/feedback/alert
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/feedback/alert/alert.ts
+ * @since 0.1.0
+ * @relatedTo CngxAlert, CngxAlertAction
  *
  * <example-url>http://localhost:4200/#/ui/feedback/alert/action-buttons</example-url>
  * <example-url>http://localhost:4200/#/ui/feedback/alert/auto-collapse</example-url>
@@ -123,6 +127,10 @@ export class CngxAlertIcon {
  * ```
  *
  * @category ui/feedback/alert
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/feedback/alert/alert.ts
+ * @selector [cngxAlertAction]
+ * @since 0.1.0
+ * @relatedTo CngxAlert, CngxAlertIcon
  *
  * <example-url>http://localhost:4200/#/ui/feedback/alert/action-buttons</example-url>
  * <example-url>http://localhost:4200/#/ui/feedback/alert/auto-collapse</example-url>
@@ -150,6 +158,11 @@ export class CngxAlertAction {}
  * `[state]` takes precedence over `[when]`.
  *
  * @category ui/feedback/alert
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/feedback/alert/alert.ts
+ * @since 0.1.0
+ * @relatedTo CngxAlertStack, CngxAlerter, CngxAlertOn, CngxAlertIcon, CngxAlertAction
  *
  * <example-url>http://localhost:4200/#/ui/feedback/alert/action-buttons</example-url>
  * <example-url>http://localhost:4200/#/ui/feedback/alert/auto-collapse</example-url>
@@ -175,7 +188,7 @@ export class CngxAlertAction {}
     '[class.cngx-alert--visible]': 'visibilityPhase() === "visible"',
     '[class.cngx-alert--exiting]': 'visibilityPhase() === "exiting"',
     '[class.cngx-alert--collapsed]': 'collapsed()',
-    // WAI-ARIA — role/aria-* present only while visible to avoid stale announcements.
+    // WAI-ARIA - role/aria-* present only while visible to avoid stale announcements.
     '[attr.role]': 'isVisible() ? ariaRole() : null',
     '[attr.aria-atomic]': 'isVisible() ? ariaAtomic() : null',
     '[attr.aria-label]': 'isVisible() ? (title() || null) : null',
@@ -223,7 +236,7 @@ export class CngxAlert {
   private readonly config = inject(CNGX_FEEDBACK_CONFIG, { optional: true });
   private readonly destroyRef = inject(DestroyRef);
 
-  /** Alert severity — determines visual style, default icon, and ARIA role. */
+  /** Alert severity - determines visual style, default icon, and ARIA role. */
   readonly severity = input<AlertSeverity>('info');
 
   /** Optional title displayed above the content. */
@@ -238,7 +251,7 @@ export class CngxAlert {
   /** Shows a dismiss button. Preferred over deprecated `dismissible`. */
   readonly closable = input<boolean>(false);
 
-  /** Bind an async state — auto-shows on error/success/loading, auto-hides on idle. */
+  /** Bind an async state - auto-shows on error/success/loading, auto-hides on idle. */
   readonly state = input<CngxAsyncState<unknown> | undefined>(undefined);
 
   /**
@@ -253,7 +266,7 @@ export class CngxAlert {
    */
   readonly autoDismissDelay = input<number | undefined>(5000);
 
-  /** Enables auto-collapse after `collapseDelay`. Visual only — SR reads full content. */
+  /** Enables auto-collapse after `collapseDelay`. Visual only - SR reads full content. */
   readonly collapsible = input<boolean>(false);
 
   /** Delay in ms before auto-collapsing. Defaults to `autoDismissDelay`. */
@@ -262,10 +275,10 @@ export class CngxAlert {
   /** Emitted when the dismiss button is clicked. */
   readonly dismissed = output<void>();
 
-  /** @internal — detects projected custom icon to hide default/global icon. */
+  /** @internal - detects projected custom icon to hide default/global icon. */
   protected readonly customIcon = contentChild(CngxAlertIcon);
 
-  /** @internal — detects projected action buttons for aria-atomic strategy. */
+  /** @internal - detects projected action buttons for aria-atomic strategy. */
   protected readonly hasActions = contentChild(CngxAlertAction);
 
   private readonly manualDismissed = signal(false);
@@ -273,31 +286,31 @@ export class CngxAlert {
   private readonly collapsedState = signal(false);
   private readonly announcementState = signal('');
 
-  /** @internal — animation phase, drives host CSS classes. */
+  /** @internal - animation phase, drives host CSS classes. */
   protected readonly visibilityPhase = signal<AlertVisibilityPhase>('hidden');
 
   private readonly autoDismissTimer = createPausableTimer();
   private readonly collapseTimer = createPausableTimer();
   private animationFallbackId: ReturnType<typeof setTimeout> | undefined;
 
-  /** @internal — global icon component for the current severity (from provideFeedback config). */
+  /** @internal - global icon component for the current severity (from provideFeedback config). */
   protected readonly globalIcon = computed(
     () => this.config?.alertIcons?.[this.severity()] ?? null,
   );
 
-  /** @internal — merged closable from new and deprecated input. */
+  /** @internal - merged closable from new and deprecated input. */
   protected readonly effectiveClosable = computed(() => this.closable() || this.dismissible());
 
-  /** @internal — ARIA role: 'alert' for error/warning, 'status' for info/success. */
+  /** @internal - ARIA role: 'alert' for error/warning, 'status' for info/success. */
   protected readonly ariaRole = computed(() => {
     const s = this.severity();
     return s === 'error' || s === 'warning' ? 'alert' : 'status';
   });
 
-  /** @internal — false when actions are projected to prevent full re-announcement. */
+  /** @internal - false when actions are projected to prevent full re-announcement. */
   protected readonly ariaAtomic = computed(() => (this.hasActions() ? 'false' : 'true'));
 
-  /** @internal — true when bound state is in a busy status. */
+  /** @internal - true when bound state is in a busy status. */
   protected readonly isStateBusy = computed(() => {
     const s = this.state();
     if (!s) {
@@ -308,7 +321,7 @@ export class CngxAlert {
   });
 
   /**
-   * @internal — whether the alert SHOULD be visible (before animation).
+   * @internal - whether the alert SHOULD be visible (before animation).
    * Drives the animation effect which manages visibilityPhase.
    */
   protected readonly shouldBeVisible = computed(() => {
@@ -333,16 +346,16 @@ export class CngxAlert {
     return true;
   });
 
-  /** @internal — true when the alert is currently visible (post-animation). */
+  /** @internal - true when the alert is currently visible (post-animation). */
   protected readonly isVisible = computed(() => {
     const phase = this.visibilityPhase();
     return phase === 'entering' || phase === 'visible';
   });
 
-  /** @internal — collapsed state (read-only public view). */
+  /** @internal - collapsed state (read-only public view). */
   protected readonly collapsed = this.collapsedState.asReadonly();
 
-  /** @internal — SR announcement text for state transitions. */
+  /** @internal - SR announcement text for state transitions. */
   protected readonly announcement = this.announcementState.asReadonly();
 
   private readonly effectiveCollapseDelay = computed(
@@ -371,7 +384,7 @@ export class CngxAlert {
       } else if (status === 'idle') {
         this.autoDismissTimer.clear();
       }
-      // loading/pending/refreshing: no branch — leaves current dismiss + timers intact.
+      // loading/pending/refreshing: no branch - leaves current dismiss + timers intact.
     });
 
     effect(() => {
@@ -419,8 +432,8 @@ export class CngxAlert {
     this.clearAnimationFallback();
     // Safety net if animationend never fires (reduced-motion, SSR, no window).
     const reducedMotion =
-      typeof window === 'undefined' ||
-      !window.matchMedia?.('(prefers-reduced-motion: no-preference)').matches;
+      globalThis.window === undefined ||
+      !globalThis.matchMedia?.('(prefers-reduced-motion: no-preference)').matches;
     this.animationFallbackId = setTimeout(
       () => {
         this.animationFallbackId = undefined;
@@ -466,7 +479,7 @@ export class CngxAlert {
     this.dismissed.emit();
   }
 
-  /** @internal — WCAG 2.2.1: pause auto-dismiss on hover. */
+  /** @internal - WCAG 2.2.1: pause auto-dismiss on hover. */
   protected handlePointerEnter(): void {
     this.autoDismissTimer.pause();
     this.collapseTimer.pause();
@@ -475,7 +488,7 @@ export class CngxAlert {
     }
   }
 
-  /** @internal — resume timers on pointer leave. */
+  /** @internal - resume timers on pointer leave. */
   protected handlePointerLeave(): void {
     this.autoDismissTimer.resume();
     if (this.collapsible() && this.isVisible()) {
@@ -483,7 +496,7 @@ export class CngxAlert {
     }
   }
 
-  /** @internal — WCAG 2.2.1: pause auto-dismiss on focus. */
+  /** @internal - WCAG 2.2.1: pause auto-dismiss on focus. */
   protected handleFocusIn(): void {
     this.autoDismissTimer.pause();
     this.collapseTimer.pause();
@@ -492,7 +505,7 @@ export class CngxAlert {
     }
   }
 
-  /** @internal — resume timers on focus out. */
+  /** @internal - resume timers on focus out. */
   protected handleFocusOut(): void {
     this.autoDismissTimer.resume();
     if (this.collapsible() && this.isVisible()) {

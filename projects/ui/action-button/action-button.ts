@@ -26,7 +26,7 @@ import {
 import { CngxToastOn, CngxToaster } from '@cngx/ui/feedback';
 
 /**
- * Visual variant for the action button — maps to a CSS class.
+ * Visual variant for the action button - maps to a CSS class.
  *
  * @category ui/action-button
  */
@@ -40,7 +40,7 @@ export type ActionButtonVariant = 'primary' | 'secondary' | 'ghost';
  * for pending/succeeded/failed states and an `aria-live` region for screen
  * reader announcements.
  *
- * Uses `display: contents` — the host produces no DOM box. The inner `<button>`
+ * Uses `display: contents` - the host produces no DOM box. The inner `<button>`
  * carries the `[cngxAsyncClick]` directive directly.
  *
  * For full control, use `[cngxAsyncClick]` directly on any element instead.
@@ -64,7 +64,7 @@ export type ActionButtonVariant = 'primary' | 'secondary' | 'ghost';
  *   Save Draft
  *   <ng-template cngxPending><mat-spinner diameter="18" /> Saving...</ng-template>
  *   <ng-template cngxSucceeded>Saved!</ng-template>
- *   <ng-template cngxFailed let-err>{{ err }} — retry?</ng-template>
+ *   <ng-template cngxFailed let-err>{{ err }} - retry?</ng-template>
  * </cngx-action-button>
  * ```
  *
@@ -76,6 +76,11 @@ export type ActionButtonVariant = 'primary' | 'secondary' | 'ghost';
  * ```
  *
  * @category ui/action-button
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/action-button/action-button.ts
+ * @since 0.1.0
+ * @relatedTo CngxAsyncClick, CngxPending, CngxSucceeded, CngxFailed, CngxToaster
  * <example-url>http://localhost:4200/#/ui/action-button/async-button/random-outcome</example-url>
  * <example-url>http://localhost:4200/#/ui/action-button/async-button/string-labels</example-url>
  * <example-url>http://localhost:4200/#/ui/action-button/async-button/template-slots</example-url>
@@ -160,7 +165,7 @@ export class CngxActionButton {
   /** Button type attribute. Defaults to `'button'` to prevent accidental form submits. */
   readonly type = input<'button' | 'submit' | 'reset'>('button');
 
-  /** Visual variant — sets CSS class `cngx-action-button--{variant}`. */
+  /** Visual variant - sets CSS class `cngx-action-button--{variant}`. */
   readonly variant = input<ActionButtonVariant>('primary');
 
   /** SR announcement on success. Falls back to `succeededLabel`, then `'Action succeeded'`. */
@@ -202,14 +207,14 @@ export class CngxActionButton {
   /** Duration for success toasts in ms. */
   readonly toastSuccessDuration = input<number>(3000);
 
-  /** Duration for error toasts — `'persistent'` means manual dismiss only. */
+  /** Duration for error toasts - `'persistent'` means manual dismiss only. */
   readonly toastErrorDuration = input<number | 'persistent'>('persistent');
 
-  /** @internal — inner CngxAsyncClick directive instance. Non-required to allow safe pre-view-init reads. */
+  /** @internal - inner CngxAsyncClick directive instance. Non-required to allow safe pre-view-init reads. */
   private readonly asyncClick = viewChild(CngxAsyncClick);
 
   /**
-   * @internal — effective status: reads from external `[externalState]` if bound,
+   * @internal - effective status: reads from external `[externalState]` if bound,
    * otherwise from the inner `CngxAsyncClick` directive.
    */
   protected readonly effectiveStatus = computed(() => {
@@ -232,7 +237,7 @@ export class CngxActionButton {
     return click ? click.status() : ('idle' as const);
   });
 
-  /** @internal — effective error value from external state or inner directive. */
+  /** @internal - effective error value from external state or inner directive. */
   protected readonly effectiveError = computed(() => {
     const ext = this.externalState();
     if (ext) {

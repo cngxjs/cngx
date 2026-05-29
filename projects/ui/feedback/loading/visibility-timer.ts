@@ -10,6 +10,7 @@ import { DestroyRef, effect, inject, type Signal, signal } from '@angular/core';
  * Must be called in an injection context (uses `inject(DestroyRef)` for cleanup).
  *
  * @returns A readonly signal that is `true` when the indicator should be visible.
+ * @internal
  */
 export function createVisibilityTimer(
   isActive: Signal<boolean>,

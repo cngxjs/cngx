@@ -3,7 +3,7 @@ import { type CngxSpeak } from '@cngx/common';
 
 /**
  * Ready-made speaker button that connects to a {@link CngxSpeak} directive
- * via an explicit `[speakRef]` input — no ancestor injection.
+ * via an explicit `[speakRef]` input - no ancestor injection.
  *
  * Ships with a speaker/stop SVG icon and CSS custom properties for full
  * theming control. Include `speak-button-theme.scss` for automatic Material
@@ -22,6 +22,11 @@ import { type CngxSpeak } from '@cngx/common';
  * ```
  *
  * @category ui/speak
+ * @docsKind primary
+ * @wcag AAA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/speak/speak-button.ts
+ * @since 0.1.0
+ * @relatedTo CngxSpeak
  * <example-url>http://localhost:4200/#/ui/speak/speak-button/styled-speaker-icon</example-url>
  */
 @Component({

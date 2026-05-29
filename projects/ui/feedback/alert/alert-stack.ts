@@ -16,9 +16,9 @@ import { CngxSeverityIcon } from '../config/severity-icon';
 import { CngxAlerter, type AlertState } from './alerter.service';
 
 /**
- * Scoped alert stack — renders alerts from its own `CngxAlerter` instance.
+ * Scoped alert stack - renders alerts from its own `CngxAlerter` instance.
  *
- * Provides `CngxAlerter` via `viewProviders` — child components that
+ * Provides `CngxAlerter` via `viewProviders` - child components that
  * `inject(CngxAlerter)` get this stack's instance. Supports nesting
  * (each stack is independent).
  *
@@ -42,6 +42,11 @@ import { CngxAlerter, type AlertState } from './alerter.service';
  * ```
  *
  * @category ui/feedback/alert
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/feedback/alert/alert-stack.ts
+ * @since 0.1.0
+ * @relatedTo CngxAlerter, CngxAlert, CngxAlertOn
  *
  * <example-url>http://localhost:4200/#/ui/feedback/alert-stack/basic-stack</example-url>
  * <example-url>http://localhost:4200/#/ui/feedback/alert-stack/dialog-use-case</example-url>
@@ -115,11 +120,11 @@ import { CngxAlerter, type AlertState } from './alerter.service';
   styleUrls: ['./alert-stack.css'],
 })
 export class CngxAlertStack {
-  /** The scoped alerter instance — use to add/dismiss alerts programmatically. */
+  /** The scoped alerter instance - use to add/dismiss alerts programmatically. */
   readonly alerter = inject(CngxAlerter);
   private readonly config = inject(CNGX_FEEDBACK_CONFIG, { optional: true });
 
-  /** Scope filter — only shows alerts matching this scope. */
+  /** Scope filter - only shows alerts matching this scope. */
   readonly scope = input<string | undefined>(undefined);
 
   /** Maximum visible alerts before collapse overflow. */
@@ -134,20 +139,20 @@ export class CngxAlertStack {
   /** Auto-scroll stack into view when new alert appears. */
   readonly autoScroll = input<boolean>(true);
 
-  /** @internal — expanded state. Resets when alert count drops to maxVisible or below. */
+  /** @internal - expanded state. Resets when alert count drops to maxVisible or below. */
   private readonly expanded = linkedSignal({
     source: () => this.scopedAlerts().length <= this.maxVisible(),
     computation: (fitsInMax, previous) => (fitsInMax ? false : (previous?.value ?? false)),
   });
 
-  /** @internal — alerts filtered by scope. */
+  /** @internal - alerts filtered by scope. */
   private readonly scopedAlerts = computed(() => {
     const s = this.scope();
     const all = this.alerter.alerts();
     return s !== undefined ? all.filter((a) => a.config.scope === s) : all;
   });
 
-  /** @internal — alerts visible within maxVisible limit. */
+  /** @internal - alerts visible within maxVisible limit. */
   protected readonly visibleAlerts = computed(() => {
     const all = this.scopedAlerts();
     if (this.expanded()) {
@@ -157,7 +162,7 @@ export class CngxAlertStack {
     return all.length > max ? all.slice(0, max) : all;
   });
 
-  /** @internal — number of hidden overflow alerts. */
+  /** @internal - number of hidden overflow alerts. */
   protected readonly overflowCount = computed(() => {
     if (this.expanded()) {
       return 0;
@@ -165,7 +170,7 @@ export class CngxAlertStack {
     return Math.max(0, this.scopedAlerts().length - this.maxVisible());
   });
 
-  /** @internal — IDs of overflow alerts for aria-controls. */
+  /** @internal - IDs of overflow alerts for aria-controls. */
   protected readonly overflowIds = computed(() =>
     this.scopedAlerts()
       .slice(this.maxVisible())
@@ -173,7 +178,7 @@ export class CngxAlertStack {
       .join(' '),
   );
 
-  /** @internal — resolve icon component from global config. */
+  /** @internal - resolve icon component from global config. */
   protected iconFor(alert: AlertState) {
     return this.config?.alertIcons?.[alert.config.severity] ?? null;
   }

@@ -32,7 +32,7 @@ export interface FeedbackConfig {
   /** Default minimum display time in ms for loading indicators. */
   loadingMinDuration?: number;
 
-  /** Custom close/dismiss icon component — replaces default X SVG globally. */
+  /** Custom close/dismiss icon component - replaces default X SVG globally. */
   closeIconComponent?: Type<unknown>;
 
   /** Default auto-dismiss duration for toasts in ms. */
@@ -56,6 +56,9 @@ export interface FeedbackConfig {
  * Components read this with `inject(CNGX_FEEDBACK_CONFIG, { optional: true })`.
  *
  * @category ui/feedback
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/feedback/config/feedback-config.ts
+ * @since 0.1.0
  */
 export const CNGX_FEEDBACK_CONFIG = new InjectionToken<FeedbackConfig>('CngxFeedbackConfig');
 
@@ -67,7 +70,7 @@ export const CNGX_FEEDBACK_CONFIG = new InjectionToken<FeedbackConfig>('CngxFeed
 export interface FeedbackFeature {
   /** @internal */
   readonly _apply: (config: FeedbackConfig) => FeedbackConfig;
-  /** @internal — additional providers contributed by this feature. */
+  /** @internal - additional providers contributed by this feature. */
   readonly _providers?: Provider[];
 }
 
@@ -108,7 +111,7 @@ export function provideFeedback(...features: FeedbackFeature[]): EnvironmentProv
 /**
  * Replace the built-in SVG spinner in `CngxLoadingIndicator` and `CngxLoadingOverlay`.
  *
- * The component receives no inputs — it should be a self-contained spinner
+ * The component receives no inputs - it should be a self-contained spinner
  * (e.g. a Lucide `<loader-2>` with CSS animation, or a Material `<mat-spinner>`).
  *
  * ```ts
@@ -124,7 +127,7 @@ export function withSpinnerTemplate(component: Type<unknown>): FeedbackFeature {
 /**
  * Replace the built-in SVG icons in `CngxAlert` per severity.
  *
- * Each component receives no inputs — it should render a single icon.
+ * Each component receives no inputs - it should render a single icon.
  * Only specified severities are replaced; others keep the built-in SVG.
  *
  * ```ts
@@ -176,7 +179,7 @@ export function withLoadingDefaults(opts: {
 /**
  * Replace the built-in X SVG in all close/dismiss buttons globally.
  *
- * The component receives no inputs — it should render a single icon.
+ * The component receives no inputs - it should render a single icon.
  * Per-instance override via content projection on `CngxCloseButton` takes precedence.
  *
  * ```ts
@@ -233,7 +236,7 @@ export function withToasts(opts?: {
  * Without this feature, `CngxAlerter` is only available via `CngxAlertStack`'s
  * `viewProviders` (scoped injection).
  *
- * The token is opaque — always use `provideFeedback()` with feature functions,
+ * The token is opaque - always use `provideFeedback()` with feature functions,
  * never construct the config object manually.
  *
  * @param opts Optional alert defaults.
@@ -272,7 +275,7 @@ export function withAlerts(opts?: {
  * Provides `CngxBanner` at the environment level.
  * Without this feature, `CngxBannerOutlet` will throw a `NullInjectorError`.
  *
- * Banners are always persistent — no `duration`. Dismiss programmatically
+ * Banners are always persistent - no `duration`. Dismiss programmatically
  * via `banner.dismiss(id)` when the condition resolves.
  *
  * ```ts

@@ -41,6 +41,10 @@ const GAP_DEFAULTS: Record<StackGap, string> = {
  * </cngx-stack>
  *
  * @category ui/layout
+ * @docsKind primary
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/layout/stack.component.ts
+ * @since 0.1.0
+ * @relatedTo CngxGrid
  */
 @Component({
   selector: 'cngx-stack',

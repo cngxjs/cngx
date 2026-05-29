@@ -31,6 +31,10 @@ import { Directive } from '@angular/core';
  * ```
  *
  * @category ui/sidenav
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/sidenav/sidenav-footer.ts
+ * @selector cngx-sidenav-footer
+ * @since 0.1.0
+ * @relatedTo CngxSidenav, CngxSidenavHeader, CngxSidenavLayout
  */
 @Directive({
   selector: 'cngx-sidenav-footer, [cngxSidenavFooter]',

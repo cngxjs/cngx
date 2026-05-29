@@ -14,7 +14,7 @@ import {
 import { matchesKeyCombo, parseKeyCombo } from '@cngx/core/utils';
 
 /**
- * Logical position — flips in RTL.
+ * Logical position - flips in RTL.
  *
  * @category ui/sidenav
  */
@@ -22,10 +22,10 @@ export type SidenavPosition = 'start' | 'end';
 /**
  * How the sidenav interacts with the content area.
  *
- * - `'over'` — floats above content (overlay + backdrop)
- * - `'push'` — pushes content aside when open
- * - `'side'` — always visible, content permanently offset
- * - `'mini'` — collapsed icon rail (miniWidth), expands to full width on hover
+ * - `'over'` - floats above content (overlay + backdrop)
+ * - `'push'` - pushes content aside when open
+ * - `'side'` - always visible, content permanently offset
+ * - `'mini'` - collapsed icon rail (miniWidth), expands to full width on hover
  *
  * @category ui/sidenav
  */
@@ -56,6 +56,11 @@ export type SidenavMode = 'over' | 'push' | 'side' | 'mini';
  * ```
  *
  * @category ui/sidenav
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/sidenav/sidenav.ts
+ * @since 0.1.0
+ * @relatedTo CngxSidenavLayout, CngxSidenavContent, CngxSidenavHeader, CngxSidenavFooter
  * <example-url>http://localhost:4200/#/ui/sidenav/dual-sidebar-master-detail</example-url>
  * <example-url>http://localhost:4200/#/ui/sidenav/full-navigation-sidebar</example-url>
  * <example-url>http://localhost:4200/#/ui/sidenav/material-theming-light-vs-dark</example-url>
@@ -163,10 +168,10 @@ export class CngxSidenav {
   /** @internal Reference to host element for layout positioning. */
   readonly elementRef = inject(ElementRef<HTMLElement>);
 
-  // Inlined matchMedia — host directive would force a wrapper element.
+  // Inlined matchMedia - host directive would force a wrapper element.
   private readonly mediaMatches = signal(false);
 
-  /** Resolved mode — responsive overrides to `'side'` when matching, falls back to `mode()`. */
+  /** Resolved mode - responsive overrides to `'side'` when matching, falls back to `mode()`. */
   readonly effectiveMode = computed<SidenavMode>(() => {
     if (!this.responsive()) {
       return this.mode();
@@ -177,7 +182,7 @@ export class CngxSidenav {
   /** Whether this sidenav is in overlay mode (over). */
   readonly isOverlay = computed(() => this.effectiveMode() === 'over');
 
-  /** Resolved width — mini mode uses miniWidth unless expanded. */
+  /** Resolved width - mini mode uses miniWidth unless expanded. */
   readonly effectiveWidth = computed(() => {
     if (this.effectiveMode() === 'mini' && !this.expandedState()) {
       return this.miniWidth();
@@ -295,7 +300,6 @@ export class CngxSidenav {
     }
   }
 
-
   /** @internal Parse a CSS px value to a number. */
   widthPx = computed(() => Number.parseInt(this.width(), 10) || 280);
   minWidthPx = computed(() => Number.parseInt(this.minWidth(), 10) || 120);
@@ -334,7 +338,7 @@ export class CngxSidenav {
     const onUp = (): void => {
       cancelAnimationFrame(rafId);
       this.resizingState.set(false);
-      // Single CD on pointerup — model catches up with the DOM.
+      // Single CD on pointerup - model catches up with the DOM.
       this.width.set(`${currentWidth}px`);
       this.doc.removeEventListener('pointermove', onMove);
       this.doc.removeEventListener('pointerup', onUp);

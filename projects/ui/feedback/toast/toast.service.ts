@@ -22,20 +22,20 @@ export interface ToastConfig {
   message: string;
 
   /**
-   * Bold primary text — renders above `description` or `message`.
+   * Bold primary text - renders above `description` or `message`.
    * When set, the toast switches to a two-line layout (title + description).
    * When not set, `message` renders as a single line (backwards-compatible).
    */
   title?: string;
 
   /**
-   * Secondary description text — renders below `title`.
+   * Secondary description text - renders below `title`.
    * Falls back to `message` when `title` is set but `description` is not.
    * Ignored when `title` is not set.
    */
   description?: string;
 
-  /** Visual severity — determines icon, color, and ARIA role. */
+  /** Visual severity - determines icon, color, and ARIA role. */
   severity?: AlertSeverity;
   /** Auto-dismiss duration in ms, or `'persistent'` for manual dismiss only. */
   duration?: number | 'persistent';
@@ -50,7 +50,7 @@ export interface ToastConfig {
    * `title` is still rendered above the component if set.
    *
    * A11y: avoid focusable elements (`<a>`, `<button>`, `<input>`) inside
-   * the component — they are unreachable inside a `role="status"` live region.
+   * the component - they are unreachable inside a `role="status"` live region.
    */
   content?: Type<unknown>;
 
@@ -59,7 +59,7 @@ export interface ToastConfig {
 }
 
 /**
- * Handle to a displayed toast — allows programmatic dismiss.
+ * Handle to a displayed toast - allows programmatic dismiss.
  *
  * @category ui/feedback/toast
  */
@@ -84,7 +84,7 @@ export interface ToastState {
   readonly createdAt: number;
   /** Timestamp when the current timer started (created or last resumed). */
   readonly timerStartedAt: number;
-  /** Dedup counter — incremented when identical toast fires again. */
+  /** Dedup counter - incremented when identical toast fires again. */
   readonly count: number;
   /** Remaining ms when timer was paused (hover/focus). `undefined` = not paused. */
   readonly pausedRemaining: number | undefined;
@@ -95,7 +95,7 @@ export interface ToastState {
 }
 
 /**
- * Feature-scoped toast service — not `providedIn: 'root'`.
+ * Feature-scoped toast service - not `providedIn: 'root'`.
  *
  * Provide via `provideFeedback(withToasts())` or `provideToasts()` at the
  * app-shell or route level.
@@ -103,6 +103,11 @@ export interface ToastState {
  * Manages the toast stack as a signal array. `CngxToastOutlet` reads it reactively.
  *
  * @category ui/feedback/toast
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/feedback/toast/toast.service.ts
+ * @since 0.1.0
+ * @relatedTo CngxToastOutlet, CngxToastOn, CngxToast, CngxAlerter
  *
  * <example-url>http://localhost:4200/#/ui/feedback/toast/custom-component-body</example-url>
  * <example-url>http://localhost:4200/#/ui/feedback/toast/declarative-cngx-toast</example-url>
@@ -116,13 +121,13 @@ export class CngxToaster {
   private readonly config = inject(CNGX_FEEDBACK_CONFIG, { optional: true });
   private nextId = 0;
 
-  /** Reactive toast stack — read by `CngxToastOutlet`. */
+  /** Reactive toast stack - read by `CngxToastOutlet`. */
   readonly toasts = signal<readonly ToastState[]>([]);
 
   /** Default duration for non-error toasts. */
   readonly defaultDuration = signal<number>(this.config?.toastDefaultDuration ?? 5000);
 
-  /** Dedup window in ms — identical toasts within this window are merged. */
+  /** Dedup window in ms - identical toasts within this window are merged. */
   readonly dedupWindow = signal<number>(this.config?.toastDedupWindow ?? 1000);
 
   constructor() {
@@ -142,7 +147,7 @@ export class CngxToaster {
       config.duration ?? (severity === 'error' ? ('persistent' as const) : this.defaultDuration());
     const dismissible = config.dismissible ?? true;
 
-    // Dedup key includes title but excludes description — same event with
+    // Dedup key includes title but excludes description - same event with
     // different context detail is still the same event.
     const now = Date.now();
     const existing = this.toasts().find(
@@ -196,7 +201,7 @@ export class CngxToaster {
     return this.createRef(state);
   }
 
-  /** @internal — called by toast-outlet on hover/focus. */
+  /** @internal - called by toast-outlet on hover/focus. */
   pauseTimer(id: number): void {
     this.toasts.update((ts) =>
       ts.map((t) => {
@@ -214,7 +219,7 @@ export class CngxToaster {
     );
   }
 
-  /** @internal — called by toast-outlet on mouse-leave/focus-out. */
+  /** @internal - called by toast-outlet on mouse-leave/focus-out. */
   resumeTimer(id: number): void {
     this.toasts.update((ts) =>
       ts.map((t) => {
@@ -270,7 +275,7 @@ export class CngxToaster {
 }
 
 /**
- * Standalone provider for the toast system — use when not using `provideFeedback()`.
+ * Standalone provider for the toast system - use when not using `provideFeedback()`.
  *
  * ```ts
  * bootstrapApplication(AppComponent, {

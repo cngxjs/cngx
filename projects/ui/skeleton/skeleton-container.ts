@@ -27,7 +27,7 @@ import {
  *
  * - Project a `<ng-template cngxSkeletonPlaceholder>` for the loading state (repeated `count` times).
  * - Project content directly for the loaded state.
- * - Uses `display: contents` — no extra DOM wrapper.
+ * - Uses `display: contents` - no extra DOM wrapper.
  *
  * ### Basic usage
  * ```html
@@ -50,6 +50,11 @@ import {
  * ```
  *
  * @category ui/skeleton
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/skeleton/skeleton-container.ts
+ * @since 0.1.0
+ * @relatedTo CngxSkeletonPlaceholder, CngxAsyncState, CngxEmptyState
  * <example-url>http://localhost:4200/#/common/layout/skeleton/basic-skeleton</example-url>
  * <example-url>http://localhost:4200/#/common/layout/skeleton/skeleton-container</example-url>
  * <example-url>http://localhost:4200/#/ui/skeleton/card-skeleton</example-url>
@@ -86,7 +91,7 @@ export class CngxSkeletonContainer {
   /** Controls the loading state directly. */
   readonly loading = input<boolean>(false);
 
-  /** Bind an async state — shows skeleton during first load. Takes precedence over `loading`. */
+  /** Bind an async state - shows skeleton during first load. Takes precedence over `loading`. */
   readonly state = input<CngxAsyncState<unknown> | undefined>(undefined);
 
   /** Enables the `.cngx-skeleton--shimmer` class (respects `prefers-reduced-motion`). */
@@ -98,7 +103,7 @@ export class CngxSkeletonContainer {
   /** Derived loading state: `state.isFirstLoad` takes precedence over `loading` input. */
   protected readonly isLoading = computed(() => this.state()?.isFirstLoad() ?? this.loading());
 
-  /** @internal — projected placeholder template. */
+  /** @internal - projected placeholder template. */
   protected readonly placeholderTpl = contentChild(CngxSkeletonPlaceholder);
 
   /** Array of indices for internal `@for` rendering. */

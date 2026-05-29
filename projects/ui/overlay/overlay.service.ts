@@ -12,7 +12,7 @@ import { CngxOverlayRef } from './overlay-ref';
 
 /**
  * Config accepted by {@link CngxOverlay.open}. Partial alias of CDK's
- * {@link OverlayConfig} — every field is optional and falls back to
+ * {@link OverlayConfig} - every field is optional and falls back to
  * the CDK overlay default.
  *
  * @category ui/overlay
@@ -33,6 +33,11 @@ export type CngxOverlayConfig = Partial<OverlayConfig>;
 * ```
  *
  * @category ui/overlay
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/overlay/overlay.service.ts
+ * @since 0.1.0
+ * @relatedTo CngxOverlayRef, provideOverlay
  */
 @Injectable()
 export class CngxOverlay {

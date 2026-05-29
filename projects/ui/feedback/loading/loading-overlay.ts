@@ -18,13 +18,13 @@ import { CngxLoadingIndicator } from './loading-indicator';
 import { createVisibilityTimer } from './visibility-timer';
 
 /**
- * Loading overlay — content container that blocks interaction while loading.
+ * Loading overlay - content container that blocks interaction while loading.
  *
  * Projects content inside a wrapper that receives `inert` during loading.
  * Renders a centered spinner over a semi-transparent backdrop.
  * Manages focus save/restore across the inert lifecycle.
  *
- * Uses `display: grid` with a shared grid cell — backdrop and content
+ * Uses `display: grid` with a shared grid cell - backdrop and content
  * overlap naturally without `position: absolute` or `display: contents`.
  *
  * ### With async state
@@ -49,6 +49,11 @@ import { createVisibilityTimer } from './visibility-timer';
  * ```
  *
  * @category ui/feedback/loading
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/feedback/loading/loading-overlay.ts
+ * @since 0.1.0
+ * @relatedTo CngxLoadingIndicator, CngxProgress, CngxAsyncContainer
  *
  * <example-url>http://localhost:4200/#/ui/feedback/loading-overlay/overlay-with-form</example-url>
  */
@@ -90,10 +95,10 @@ export class CngxLoadingOverlay {
   private readonly doc = inject(DOCUMENT);
   private readonly config = inject(CNGX_FEEDBACK_CONFIG, { optional: true });
 
-  /** Bind an async state — shows overlay when `isBusy()`. */
+  /** Bind an async state - shows overlay when `isBusy()`. */
   readonly state = input<CngxAsyncState<unknown> | undefined>(undefined);
 
-  /** Direct boolean control — alternative to `[state]`. */
+  /** Direct boolean control - alternative to `[state]`. */
   readonly loading = input<boolean>(false);
 
   /** Screen reader label for the spinner. */
@@ -121,7 +126,7 @@ export class CngxLoadingOverlay {
     return this.loading();
   });
 
-  /** @internal — debounced visibility via shared timer factory. */
+  /** @internal - debounced visibility via shared timer factory. */
   protected readonly visible = createVisibilityTimer(this.isActive, this.delay, this.minDuration);
 
   private readonly savedFocus = signal<HTMLElement | null>(null);
@@ -131,7 +136,7 @@ export class CngxLoadingOverlay {
   private readonly spinnerEl = viewChild<ElementRef<HTMLElement>>('spinnerEl');
 
   constructor() {
-    // Capture focus on isActive, not visible — visible is debounced, by then the user may have tabbed away.
+    // Capture focus on isActive, not visible - visible is debounced, by then the user may have tabbed away.
     effect(() => {
       const active = this.isActive();
       if (active) {

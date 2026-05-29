@@ -9,6 +9,9 @@ import { Directive, inject, TemplateRef } from '@angular/core';
  *   <ng-template cngxPending><mat-spinner diameter="18" /> Saving...</ng-template>
  * </cngx-action-button>
  * ```
+ *
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/action-button/action-button-status.ts
+ * @since 0.1.0
  */
 @Directive({ selector: 'ng-template[cngxPending]', standalone: true })
 export class CngxPending {
@@ -22,6 +25,9 @@ export class CngxPending {
  * ```html
  * <ng-template cngxSucceeded>Saved!</ng-template>
  * ```
+ *
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/action-button/action-button-status.ts
+ * @since 0.1.0
  */
 @Directive({ selector: 'ng-template[cngxSucceeded]', standalone: true })
 export class CngxSucceeded {
@@ -35,6 +41,9 @@ export class CngxSucceeded {
  * ```html
  * <ng-template cngxFailed let-err>Failed: {{ err }}</ng-template>
  * ```
+ *
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/action-button/action-button-status.ts
+ * @since 0.1.0
  */
 @Directive({ selector: 'ng-template[cngxFailed]', standalone: true })
 export class CngxFailed {

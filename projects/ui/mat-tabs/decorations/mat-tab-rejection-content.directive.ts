@@ -7,7 +7,7 @@ import { Directive, inject, TemplateRef } from '@angular/core';
  * appends to a Material tab button when its bound `commitAction`
  * rejects a tab change. The surrounding span (with its
  * `cngx-sr-only` class, its stable id, and the `aria-describedby`
- * wiring on the button) stays library-owned — the slot only
+ * wiring on the button) stays library-owned - the slot only
  * customises the descriptor text or markup so consumers can swap
  * the rejection phrasing (branded prefixes, retry CTAs, localised
  * templates) without fighting the AT contract.
@@ -16,7 +16,7 @@ import { Directive, inject, TemplateRef } from '@angular/core';
  * same id the descriptor span uses as its `${id}-rejected` DOM id);
  * `originLabel` is the label the rollback returned to (when the
  * presenter exposes an `originIndexDuringCommit` and that index
- * resolves to a handle with a non-empty label) — `undefined` when
+ * resolves to a handle with a non-empty label) - `undefined` when
  * no labelled rollback origin is resolvable; `fallbackText` is the
  * built-in i18n phrase the imperative fallback path would write
  * verbatim (typically `commitRolledBackTo(originLabel)` when the
@@ -24,7 +24,7 @@ import { Directive, inject, TemplateRef } from '@angular/core';
  *
  * **Re-instantiation warning.** The decoration projector destroys
  * the embedded view and creates a fresh one on every `descriptorText`
- * re-emission — typical when the rollback origin label resolves
+ * re-emission - typical when the rollback origin label resolves
  * later than the failed-handle id (e.g. `presenter.tabs()` re-emits
  * mid-rejection and the origin label flows in on the second tick).
  * The slot template runs to the end of its lifecycle each time;
@@ -61,7 +61,7 @@ export interface CngxMatTabRejectionContentContext {
  * this template into the SR-only descriptor span instead of writing
  * the resolved fallback string verbatim.
  *
- * Pure marker — zero logic. Holds only a typed
+ * Pure marker - zero logic. Holds only a typed
  * {@link TemplateRef} reference. Mirrors the family-standard slot
  * pattern (`CngxMatTabAggregatorContent`, `CngxStepBadge`,
  * `CngxTabErrorBadge`).
@@ -69,7 +69,7 @@ export interface CngxMatTabRejectionContentContext {
  * Cascade resolution:
  *   1. Per-instance `*cngxMatTabRejectionContent` template wins
  *      via `contentChild(CngxMatTabRejectionContent)`.
- *   2. Library default — imperative `Renderer2.createElement('span')`
+ *   2. Library default - imperative `Renderer2.createElement('span')`
  *      with `textContent = fallbackText` (the resolved
  *      `commitRolledBackTo(originLabel)` / `commitFailedRetry`
  *      phrase from `injectTabsI18n()`).
@@ -93,6 +93,10 @@ export interface CngxMatTabRejectionContentContext {
  * ```
  *
  * @category ui/mat-tabs
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/mat-tabs/decorations/mat-tab-rejection-content.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxMatTabs, CngxMatTabAggregatorContent, CngxMatTabError
  */
 @Directive({
   selector: 'ng-template[cngxMatTabRejectionContent]',
@@ -100,6 +104,5 @@ export interface CngxMatTabRejectionContentContext {
   standalone: true,
 })
 export class CngxMatTabRejectionContent {
-  readonly templateRef =
-    inject<TemplateRef<CngxMatTabRejectionContentContext>>(TemplateRef);
+  readonly templateRef = inject<TemplateRef<CngxMatTabRejectionContentContext>>(TemplateRef);
 }
