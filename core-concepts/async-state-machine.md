@@ -5,11 +5,21 @@
 
 # Async State Machine
 
-`CngxAsyncState<T>` is the standard interface for any value that arrives over time - HTTP responses, WebSocket pushes, user commits, server-driven autocompletes. It is **a bundle of signals**, not a single signal of an object. Every field on the interface is a `Signal<…>`, so consumers read what they care about and the reactive graph tracks only that field.
+> **Async state in cngx is a six-state UX machine, not a data store. Components consume `CngxAsyncState`; producers and bridges keep the graph closed.**
 
-The interface lives in `@cngx/core/utils` (file: `projects/core/utils/async-state.ts`) and underpins the entire feedback layer (toasts, banners, alerts, skeletons, empty states, loading indicators, refresh bars, commit errors).
+`CngxAsyncState<T>` is the standard interface for any value that arrives over time - HTTP responses, WebSocket pushes, user commits, server-driven autocompletes.
 
-**UX state, not data state.** `CngxAsyncState<T>` answers "what should the user see right now?" - not "what is the data?". It drives skeleton, loading bar, toast, empty state, ARIA, focus. It does **not** replace SignalStore, NgRx, or any data store; it composes with them. A store still owns the canonical entity cache; `CngxAsyncState<T>` is the lifecycle view that a single UI surface reads.
+It is **a bundle of signals**, not a single signal of an object. Every field on the interface is a `Signal<…>`, so consumers read what they care about and the reactive graph tracks only that field.
+
+The interface lives in `@cngx/core/utils` (file: `projects/core/utils/async-state.ts`) and underpins the entire feedback layer: toasts, banners, alerts, skeletons, empty states, loading indicators, refresh bars, commit errors.
+
+**UX state, not data state.** `CngxAsyncState<T>` answers "what should the user see right now?" - not "what is the data?".
+
+It drives skeleton, loading bar, toast, empty state, ARIA, focus. It does **not** replace SignalStore, NgRx, or any data store; it composes with them.
+
+A store still owns the canonical entity cache; `CngxAsyncState<T>` is the lifecycle view that a single UI surface reads.
+
+---
 
 ## The status enum
 
@@ -25,11 +35,9 @@ type AsyncStatus =
 
 Six values, three concerns:
 
-|Concern|Statuses|
-|-|-|
-|**Read path**|`idle`, `loading`, `success`, `error`|
-|**Re-fetch path**|`refreshing` (with prior `success` data still in `state.data()`)|
-|**Write path**|`pending`, `success`, `error` (intentional commit, optimistic or pessimistic)|
+- **Read path** - `idle`, `loading`, `success`, `error`.
+- **Re-fetch path** - `refreshing` (with prior `success` data still in `state.data()`).
+- **Write path** - `pending`, `success`, `error` (intentional commit, optimistic or pessimistic).
 
 The shape (every field is a `Signal<…>`):
 
@@ -54,13 +62,23 @@ interface CngxAsyncState<T> {
 }
 ```
 
-`data()` is `undefined` only while `status() === 'idle' | 'loading'`. After the first successful load, `data()` stays defined even while `status() === 'refreshing' | 'error'` - this is what enables stale-data + inline-error UX patterns. The `isFirstLoad` flag separates "never loaded" from "have data, just retrying".
+`data()` is `undefined` only while `status() === 'idle' | 'loading'`. After the first successful load, `data()` stays defined even while `status() === 'refreshing' | 'error'` - this is what enables stale-data + inline-error UX patterns.
 
-Consumers never wrap `CngxAsyncState` in another `Signal`. The interface **is** the signal bundle - `inject(CNGX_STATEFUL).state.status()` works directly.
+The `isFirstLoad` flag separates "never loaded" from "have data, just retrying".
+
+<aside class="cc-note">
+
+**Note.** Consumers never wrap `CngxAsyncState` in another `Signal`. The interface **is** the signal bundle - `inject(CNGX_STATEFUL).state.status()` works directly.
+
+</aside>
+
+---
 
 ## Producers
 
-A producer is anything that returns a `CngxAsyncState<T>`. The interface and the low-level `buildAsyncStateView` kernel live in `@cngx/core/utils`; the application-level producers live in `@cngx/common/data` (re-exported from the root entry; they physically sit under `projects/common/data/async-state/`).
+A producer is anything that returns a `CngxAsyncState<T>`.
+
+The interface and the low-level `buildAsyncStateView` kernel live in `@cngx/core/utils`. The application-level producers live in `@cngx/common/data` (re-exported from the root entry; they physically sit under `projects/common/data/async-state/`).
 
 |Producer|Lives in|Use when|
 |-|-|-|
@@ -72,23 +90,32 @@ A producer is anything that returns a `CngxAsyncState<T>`. The interface and the
 |`fromHttpResource<T>(resource)`|`@cngx/common/data`|Same as `fromResource` plus the HTTP progress signal mapped to `progress` (0-100, clamped, rounded). Declared structurally against `HttpResourceLike<T>` so the entry point does not import `@angular/common/http`.|
 |`tapAsyncState`, `tapAsyncProgress`, `tapHttpAsyncState`|`@cngx/common/data`|RxJS operators that update a `ManualAsyncState` alongside an existing pipeline. `tapAsyncState` sets `loading` on subscribe (override via `{ status }`), `setSuccess` on next, `setError` on error (re-throws, does not swallow). `tapHttpAsyncState` adds progress and filters down to the response body.|
 
-Prefer `injectAsyncState` for reactive HTTP fetches, `createAsyncState` for explicit mutations, `createManualState` for choreographed pipelines, and `fromHttpResource` for anything already using Angular `httpResource`.
+Pick by intent:
+
+- `injectAsyncState` for reactive HTTP fetches.
+- `createAsyncState` for explicit mutations.
+- `createManualState` for choreographed pipelines.
+- `fromHttpResource` for anything already using Angular `httpResource`.
+
+---
 
 ## Consumers
 
-A consumer accepts `[state]` as an input. The `[state]` input **takes precedence** over equivalent boolean inputs (`[loading]`, `[hasError]`, `[empty]`) - wire state once and the consumer derives all the booleans internally.
+A consumer accepts `[state]` as an input.
 
-Components and directives that accept `[state]`:
+The `[state]` input **takes precedence** over equivalent boolean inputs (`[loading]`, `[hasError]`, `[empty]`). Wire state once and the consumer derives all the booleans internally.
 
-|Surface|Component|
-|-|-|
-|Loading scaffolds|`cngx-skeleton`, `cngx-loading-overlay`, `cngx-loading-indicator`, `cngx-progress`, `cngx-empty-state`|
-|Async content containers|`cngx-async-container`, `*cngxAsync`, `cngx-card-grid`|
-|Inline feedback|`cngx-alert`|
-|Overlays|`cngx-popover-panel`, `dialog[cngxDialog]`|
-|Tables|`cngx-treetable`|
-|Form controls|`cngx-select`, `cngx-multi-select`, `cngx-combobox`, `cngx-typeahead`, `cngx-tree-select`, `cngx-reorderable-multi-select`, `cngx-action-select`, `cngx-action-multi-select`, plus the shared `cngx-select-shell`|
-|Recycler|`injectRecycler({ state })`|
+### Surfaces that accept `[state]`
+
+- **Loading scaffolds** - `cngx-skeleton`, `cngx-loading-overlay`, `cngx-loading-indicator`, `cngx-progress`, `cngx-empty-state`.
+- **Async content containers** - `cngx-async-container`, `*cngxAsync`, `cngx-card-grid`.
+- **Inline feedback** - `cngx-alert`.
+- **Overlays** - `cngx-popover-panel`, `dialog[cngxDialog]`.
+- **Tables** - `cngx-treetable`.
+- **Form controls** - `cngx-select`, `cngx-multi-select`, `cngx-combobox`, `cngx-typeahead`, `cngx-tree-select`, `cngx-reorderable-multi-select`, `cngx-action-select`, `cngx-action-multi-select`, plus the shared `cngx-select-shell`.
+- **Recycler** - `injectRecycler({ state })`.
+
+### Per-consumer derivation
 
 Each consumer derives its own concern from the bound `state`:
 
@@ -98,9 +125,13 @@ Each consumer derives its own concern from the bound `state`:
 - The select family routes its panel through `createSelectCore<T,TCommit>` and `resolveAsyncView` for the panel content.
 - A `[cngxToastOn]` / `[cngxAlertOn]` / `[cngxBannerOn]` bridge fires a transition handler on `success` / `error` / `idle`.
 
+---
+
 ## resolveAsyncView()
 
-`resolveAsyncView` is the function for deciding which UI surface to show. It is a pure function exported from `@cngx/common/data` (source: `projects/common/data/async-state/resolve-view.ts`) and a sibling to `AsyncView`, the discriminated union it returns.
+`resolveAsyncView` is the function for deciding which UI surface to show.
+
+It is a pure function exported from `@cngx/common/data` (source: `projects/common/data/async-state/resolve-view.ts`) and a sibling to `AsyncView`, the discriminated union it returns.
 
 ```typescript
 type AsyncView = 'none' | 'skeleton' | 'content' | 'empty' | 'error' | 'content+error';
@@ -108,7 +139,7 @@ type AsyncView = 'none' | 'skeleton' | 'content' | 'empty' | 'error' | 'content+
 function resolveAsyncView(status: AsyncStatus, firstLoad: boolean, empty: boolean): AsyncView;
 ```
 
-The lookup table:
+### The lookup table
 
 |status|firstLoad|empty|view|
 |-|-|-|-|
@@ -119,21 +150,36 @@ The lookup table:
 |`error`|false|\*|`content+error`|
 |(all other)|false|\*|`content`|
 
-No separate `'idle'` view exists. Idle on first load maps to `'none'`, which the consumer renders as a blank slate or a "press the button to load" prompt. After the first successful load, `isFirstLoad` flips to `false` and the lookup falls through to `content` / `empty` / `content+error`.
+No separate `'idle'` view exists. Idle on first load maps to `'none'`, which the consumer renders as a blank slate or a "press the button to load" prompt.
 
-`'content+error'` is the stale-data-plus-inline-error case (`status === 'error'`, prior data still in `data()`). `'error'` is the no-data-failed case (first load, no prior data).
+After the first successful load, `isFirstLoad` flips to `false` and the lookup falls through to `content` / `empty` / `content+error`.
 
-Consumers call `resolveAsyncView` from a `computed` and switch on the result. `*cngxAsync` collapses `content+error` to `content` because a structural directive cannot render two views at once; pair it with `[cngxAlertOn]` or `[cngxBannerOn]` for the inline-error half. The select family wires the full six-variant switch through `createSelectCore<T,TCommit>` (source: `projects/forms/select/shared/select-core.ts`) into the shared `panel-shell.component.ts`.
+Two error variants exist:
+
+- `'content+error'` is the stale-data-plus-inline-error case (`status === 'error'`, prior data still in `data()`).
+- `'error'` is the no-data-failed case (first load, no prior data).
+
+Consumers call `resolveAsyncView` from a `computed` and switch on the result.
+
+`*cngxAsync` collapses `content+error` to `content` because a structural directive cannot render two views at once; pair it with `[cngxAlertOn]` or `[cngxBannerOn]` for the inline-error half.
+
+The select family wires the full six-variant switch through `createSelectCore<T,TCommit>` (source: `projects/forms/select/shared/select-core.ts`) into the shared `panel-shell.component.ts`.
+
+---
 
 ## Transition bridges
 
-A **transition bridge** reacts to a status transition (`idle -> success`, `loading -> error`, `refreshing -> error`) and triggers an out-of-band notification. All three are implemented on top of `createTransitionTracker(() => effectiveState()?.status() ?? 'idle')`, guard `current() === previous()` to skip non-transitions, and run their side effects inside `untracked()`. CNGX ships three, all as **attribute directives** (live in `@cngx/ui/feedback`):
+A **transition bridge** reacts to a status transition (`idle -> success`, `loading -> error`, `refreshing -> error`) and triggers an out-of-band notification.
 
-|Bridge|What it does|
-|-|-|
-|`[cngxToastOn]`|Fires a `CngxToaster.show(...)` on transition to `success` or `error`. Inputs: `toastSuccess`, `toastError`, `toastErrorDetail`, `toastSuccessDuration`, `toastErrorDuration` (default `'persistent'`).|
-|`[cngxAlertOn]`|Pushes an alert into the nearest `CngxAlertStack` (scoped via the `alertScope` input). Fires on `success` and/or `error` depending on which message inputs are set.|
-|`[cngxBannerOn]`|Calls `CngxBanner.show(...)` with a required `bannerId` dedup key on transition to `error`; dismisses the same `bannerId` on transition to `success` or `idle`.|
+All three are implemented on top of `createTransitionTracker(() => effectiveState()?.status() ?? 'idle')`, guard `current() === previous()` to skip non-transitions, and run their side effects inside `untracked()`.
+
+CNGX ships three, all as **attribute directives** (live in `@cngx/ui/feedback`):
+
+- `[cngxToastOn]` - fires a `CngxToaster.show(...)` on transition to `success` or `error`. Inputs: `toastSuccess`, `toastError`, `toastErrorDetail`, `toastSuccessDuration`, `toastErrorDuration` (default `'persistent'`).
+- `[cngxAlertOn]` - pushes an alert into the nearest `CngxAlertStack` (scoped via the `alertScope` input). Fires on `success` and/or `error` depending on which message inputs are set.
+- `[cngxBannerOn]` - calls `CngxBanner.show(...)` with a required `bannerId` dedup key on transition to `error`; dismisses the same `bannerId` on transition to `success` or `idle`.
+
+### State binding
 
 The state binding is the directive's primary input (aliased to the directive name itself):
 
@@ -141,16 +187,26 @@ The state binding is the directive's primary input (aliased to the directive nam
 <button [cngxToastOn]="saveState" toastSuccess="Saved" toastError="Save failed">Save</button>
 ```
 
-The state input is **optional**. When omitted (bare attribute `cngxToastOn`), the bridge falls back to `inject(CNGX_STATEFUL, { optional: true })?.state` from the host or any ancestor providing `CNGX_STATEFUL`. The select family (all seven controls + the shared `select-shell`), the tabs presenter, the stepper presenter, and `cngxChipInput` provide `CNGX_STATEFUL` directly, which means:
+The state input is **optional**. When omitted (bare attribute `cngxToastOn`), the bridge falls back to `inject(CNGX_STATEFUL, { optional: true })?.state` from the host or any ancestor providing `CNGX_STATEFUL`.
+
+The select family (all seven controls + the shared `select-shell`), the tabs presenter, the stepper presenter, and `cngxChipInput` provide `CNGX_STATEFUL` directly, which means:
 
 ```html
 <!-- cngx-select provides CNGX_STATEFUL - bridge auto-discovers state. -->
 <cngx-select [commitAction]="save" [options]="options" cngxToastOn />
 ```
 
-Resolution order: state input -> `CNGX_STATEFUL` from DI -> `afterNextRender` dev-mode error if neither resolves. (Note: `CngxActionButton` and `dialog[cngxDialog]` expose a public `state` property and accept `[state]` as input but do **not** provide `CNGX_STATEFUL` via DI - bind explicitly: `[cngxToastOn]="btn.state"`.)
+Resolution order: state input -> `CNGX_STATEFUL` from DI -> `afterNextRender` dev-mode error if neither resolves.
 
-A bare attribute (`cngxToastOn` with no value, or `[cngxToastOn]=""`) is treated as "no input bound" via the input's empty-string transform and triggers the fallback. The directive shape:
+<aside class="cc-note">
+
+**Note.** `CngxActionButton` and `dialog[cngxDialog]` expose a public `state` property and accept `[state]` as input but do **not** provide `CNGX_STATEFUL` via DI. Bind explicitly: `[cngxToastOn]="btn.state"`.
+
+</aside>
+
+A bare attribute (`cngxToastOn` with no value, or `[cngxToastOn]=""`) is treated as "no input bound" via the input's empty-string transform and triggers the fallback.
+
+The directive shape:
 
 ```typescript
 readonly state = input<
@@ -162,11 +218,27 @@ readonly state = input<
 });
 ```
 
-The `| ''` in WriteT is mandatory - HTML attributes without a value bind the empty string, and signal inputs are stricter about that than legacy `@Input()`. The transform maps the empty string back to `undefined`, which the `effectiveState` `computed` then resolves to the `CNGX_STATEFUL` fallback. Never use `input.required` on a directive that supports DI fallback - required inputs contradict the "works with OR without an input" contract.
+The `| ''` in WriteT is mandatory. HTML attributes without a value bind the empty string, and signal inputs are stricter about that than legacy `@Input()`.
+
+The transform maps the empty string back to `undefined`, which the `effectiveState` `computed` then resolves to the `CNGX_STATEFUL` fallback.
+
+<aside class="cc-warning">
+
+**Warning.** Never use `input.required` on a directive that supports DI fallback. Required inputs contradict the "works with OR without an input" contract.
+
+</aside>
 
 ### The untracked rule for bridges
 
-Transition bridges install an `effect()` that calls a service method (`toaster.show()`, `banner.show()`, `alerter.show()`). The service methods read signals internally. **Without `untracked()`, those reads register as effect dependencies and the bridge re-fires infinitely.** Every bridge implementation reads only the tracker pair as tracked dependencies and wraps everything else - including the message/duration inputs and the service call itself - inside `untracked()`:
+Transition bridges install an `effect()` that calls a service method (`toaster.show()`, `banner.show()`, `alerter.show()`). The service methods read signals internally.
+
+<aside class="cc-danger">
+
+**Warning.** Without `untracked()`, those reads register as effect dependencies and the bridge re-fires infinitely.
+
+</aside>
+
+Every bridge implementation reads only the tracker pair as tracked dependencies and wraps everything else - including the message/duration inputs and the service call itself - inside `untracked()`:
 
 ```typescript
 const tracker = createTransitionTracker(() => this.effectiveState()?.status() ?? 'idle');
@@ -185,11 +257,25 @@ effect(() => {
 });
 ```
 
-A second trap: don't call `.set()` on any signal from inside a bridge effect that reads a transition tracker. The four feedback bridges are safe because they call external service methods (`toaster.show()`, etc.), not signal writes. The async-container is the documented exception - it writes an `announcement` signal from its tracker effect, and only stays loop-free because the tracker's `equal` short-circuits identical-status re-runs (`linkedSignal` with `equal: (a, b) => a.current === b.current && a.previous === b.previous`). When you add `createTransitionTracker` to new code, check that the effect body does not write any Angular signal.
+A second trap: don't call `.set()` on any signal from inside a bridge effect that reads a transition tracker.
+
+The four feedback bridges are safe because they call external service methods (`toaster.show()`, etc.), not signal writes.
+
+The async-container is the documented exception. It writes an `announcement` signal from its tracker effect, and only stays loop-free because the tracker's `equal` short-circuits identical-status re-runs (`linkedSignal` with `equal: (a, b) => a.current === b.current && a.previous === b.previous`).
+
+<aside class="cc-warning">
+
+**Warning.** When you add `createTransitionTracker` to new code, check that the effect body does not write any Angular signal.
+
+</aside>
+
+---
 
 ## CNGX_STATEFUL
 
-`CNGX_STATEFUL` is the DI token that exposes a host component's state surface to descendant bridges and consumers. The token and its interface live in `projects/core/utils/stateful.ts`:
+`CNGX_STATEFUL` is the DI token that exposes a host component's state surface to descendant bridges and consumers.
+
+The token and its interface live in `projects/core/utils/stateful.ts`:
 
 ```typescript
 interface CngxStateful<T = unknown> {
@@ -199,7 +285,11 @@ interface CngxStateful<T = unknown> {
 const CNGX_STATEFUL = new InjectionToken<CngxStateful>('CNGX_STATEFUL');
 ```
 
-Note: `state` is a `CngxAsyncState<T>`, **not** a `Signal<CngxAsyncState<T>>`. The interface is the signal bundle - wrapping it is redundant.
+<aside class="cc-note">
+
+**Note.** `state` is a `CngxAsyncState<T>`, **not** a `Signal<CngxAsyncState<T>>`. The interface is the signal bundle - wrapping it is redundant.
+
+</aside>
 
 Components that own an async state surface provide the token:
 
@@ -214,7 +304,22 @@ export class CngxSelect<T> implements CngxStateful<unknown> {
 }
 ```
 
-This lets descendant bridges (`[cngxToastOn]`, `[cngxBannerOn]`, `[cngxAlertOn]`) and any custom consumer reach the state without an explicit binding. The current providers are the select family (`CngxSelect`, `CngxMultiSelect`, `CngxCombobox`, `CngxTypeahead`, `CngxTreeSelect`, `CngxReorderableMultiSelect`, `CngxActionSelect`, `CngxActionMultiSelect`, and the shared `CngxSelectShell`), the tabs presenter, the stepper presenter, and `CngxChipInput`. `CngxActionButton` and `dialog[cngxDialog]` are stateful too but do not currently provide the token - bind their `state` explicitly when wiring a bridge.
+This lets descendant bridges (`[cngxToastOn]`, `[cngxBannerOn]`, `[cngxAlertOn]`) and any custom consumer reach the state without an explicit binding.
+
+Current providers:
+
+- The select family - `CngxSelect`, `CngxMultiSelect`, `CngxCombobox`, `CngxTypeahead`, `CngxTreeSelect`, `CngxReorderableMultiSelect`, `CngxActionSelect`, `CngxActionMultiSelect`, and the shared `CngxSelectShell`.
+- The tabs presenter.
+- The stepper presenter.
+- `CngxChipInput`.
+
+<aside class="cc-note">
+
+**Note.** `CngxActionButton` and `dialog[cngxDialog]` are stateful too but do not currently provide the token. Bind their `state` explicitly when wiring a bridge.
+
+</aside>
+
+---
 
 ## Producer-consumer composition
 
@@ -234,9 +339,13 @@ readonly users = injectAsyncState(() => this.api.listUsers());
 
 The producer emits transitions, the container picks the right view via `resolveAsyncView`, the bridge fires the toast on `error` - all from one `state` reference, with no subscriptions or manual flag wiring.
 
+---
+
 ## Bootstrap: provideFeedback()
 
-The bridges depend on services (`CngxToaster`, `CngxBanner`, `CngxAlerter`) that are **not** `providedIn: 'root'`. Wire them once at the application root with `provideFeedback` from `@cngx/ui/feedback`:
+The bridges depend on services (`CngxToaster`, `CngxBanner`, `CngxAlerter`) that are **not** `providedIn: 'root'`.
+
+Wire them once at the application root with `provideFeedback` from `@cngx/ui/feedback`:
 
 ```typescript
 bootstrapApplication(AppComponent, {
@@ -255,6 +364,8 @@ bootstrapApplication(AppComponent, {
 ```
 
 Each feature is opt-in. Forgetting `withToasts()` while using `[cngxToastOn]` throws a constructor error with the fix in the message: *"CngxToaster not found. Add withToasts() to provideFeedback() or call provideToasts() in your providers."*
+
+---
 
 ## What NOT to do
 

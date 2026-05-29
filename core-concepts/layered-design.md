@@ -5,10 +5,22 @@
 
 # Layered Design
 
-CNGX is organized into five levels (0 through 4). Each level has a specific dependency budget, a specific scope, and a specific reason to exist. 
-The hierarchy is enforced by Sheriff via the workspace-root `sheriff.config.ts` (the single decision point for per-library import allow-lists) and by `no-restricted-imports` blocks in `eslint.config.js` (which carry the external-package constraints Sheriff cannot express). A cross-level violation fails the lint stage in CI.
+> **Every cngx import has a level; the levels form a dependency budget that lint enforces.**
+
+CNGX is organized into five levels (0 through 4). Each level has a specific dependency budget, a specific scope, and a specific reason to exist.
+
+The hierarchy is enforced in two places:
+
+- Sheriff, via the workspace-root `sheriff.config.ts` (the single decision point for per-library import allow-lists).
+- `no-restricted-imports` blocks in `eslint.config.js`, which carry the external-package constraints Sheriff cannot express.
+
+A cross-level violation fails the lint stage in CI.
+
+---
 
 ## The five levels
+
+### Level table
 
 |Level|Library|What lives here|
 |-|-|-|
@@ -18,10 +30,15 @@ The hierarchy is enforced by Sheriff via the workspace-root `sheriff.config.ts` 
 |3|`@cngx/forms`, `@cngx/data-display`|Organisms in a feature domain. `@cngx/forms` (controls, validators, field bridges, select family, filter-builder, input) has zero CDK touchpoints. `@cngx/data-display/treetable` uses `@angular/cdk/table` + `SelectionModel`. Neither lib may import `@angular/material`.|
 |4|`@cngx/ui`|Organisms that need overlay engineering or opt into Material. CDK is used only in `overlay` (via `cdk/overlay` + `cdk/portal`). Three of the thirteen secondary entries opt into Material (`mat-stepper`, `mat-tabs`, `material`); the other ten (`action-button`, `empty-state`, `feedback`, `layout`, `overlay`, `sidenav`, `skeleton`, `speak`, `stepper`, `tabs`) need neither CDK nor Material.|
 
+---
+
 ## Dependency direction
 
-Imports flow strictly upward. Level N may import Levels 0 through N-1; never Levels N+1 or higher.
+Imports flow strictly upward.
 
+Level N may import Levels 0 through N-1. Never Levels N+1 or higher.
+
+### Graph
 
 <div>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 640" width="100%">
@@ -96,42 +113,121 @@ Imports flow strictly upward. Level N may import Levels 0 through N-1; never Lev
 
 </div>
 
-`@cngx/utils` has no Angular runtime dependency - source files contain no `@angular/*` imports. It can be lifted into any TypeScript context (Node scripts, tests, framework-agnostic packages). The package still declares `@angular/core` as a peer dep for version-alignment hygiene with the rest of the workspace.
+### Level 0 - `@cngx/utils`
 
-`@cngx/core` adds Angular but does not render. It is the home of DI tokens (`CNGX_STATEFUL`, `CNGX_SELECTION_CONTROLLER_FACTORY`, …), the `CngxAsyncState` shape, `createTransitionTracker`, `createSelectionController`, and other plain factories.
+`@cngx/utils` has no Angular runtime dependency. Source files contain no `@angular/*` imports.
 
-`@cngx/common` is where atoms live. An atom is a single-behavior directive that derives one aspect of the design system and communicates it via ARIA and CSS custom properties. Examples: `CngxRovingTabindex`, `CngxFocusTrap`, `CngxListbox`, `CngxPopover`, `CngxIcon`, `CngxChip`, `CngxCheckboxIndicator`. Two atoms intentionally reach into CDK because there is no cheaper way to express the contract: `CngxFocusTrap` wraps CDK's `FocusTrap`, and the data-source surface uses CDK's `DataSource` base class. Material is forbidden by ESLint at this level.
+It can be lifted into any TypeScript context (Node scripts, tests, framework-agnostic packages). The package still declares `@angular/core` as a peer dep for version-alignment hygiene with the rest of the workspace.
 
-`@cngx/forms` and `@cngx/data-display` host **organisms in a feature domain**. The select family (`@cngx/forms/select`) composes `CngxListbox`, `CngxActiveDescendant`, `CngxPopover`, `CngxFormFieldPresenter`, and several factories into nine self-contained dropdown surfaces: `CngxSelect`, `CngxMultiSelect`, `CngxCombobox`, `CngxTypeahead`, `CngxTreeSelect`, `CngxReorderableMultiSelect`, `CngxActionSelect`, `CngxActionMultiSelect`, and the consumer-assembled `CngxSelectShell`. `@cngx/forms` has zero CDK touchpoints - listbox keyboard handling, active-descendant, and selection state are hand-rolled on top of `@cngx/common` primitives. `@cngx/data-display/treetable` is the one place where CDK earns its weight at Level 3 (it consumes `@angular/cdk/table` and CDK's `SelectionModel`). Neither lib may import `@angular/material`.
+### Level 1 - `@cngx/core`
 
-`@cngx/ui` is the only lib that may import `@angular/material`, and even there the opt-in is surgical: out of thirteen secondary entries only `mat-stepper`, `mat-tabs`, and `material` touch Material. The remaining ten host organisms whose primary purpose is overlay engineering (`overlay` uses `cdk/overlay` + `cdk/portal`), composed layout (`layout`, `sidenav`), or feedback/skeleton/speak shells that need no third-party UI toolkit at all. A component that can be built without `@angular/material` and without overlay infrastructure does not belong in `@cngx/ui` - it belongs in `@cngx/common`.
+`@cngx/core` adds Angular but does not render.
+
+It is the home of:
+
+- DI tokens (`CNGX_STATEFUL`, `CNGX_SELECTION_CONTROLLER_FACTORY`, ...)
+- The `CngxAsyncState` shape
+- `createTransitionTracker`, `createSelectionController`, and other plain factories
+
+### Level 2 - `@cngx/common`
+
+`@cngx/common` is where atoms live. An atom is a single-behavior directive that derives one aspect of the design system and communicates it via ARIA and CSS custom properties.
+
+Examples: `CngxRovingTabindex`, `CngxFocusTrap`, `CngxListbox`, `CngxPopover`, `CngxIcon`, `CngxChip`, `CngxCheckboxIndicator`.
+
+Two atoms intentionally reach into CDK because there is no cheaper way to express the contract:
+
+- `CngxFocusTrap` wraps CDK's `FocusTrap`.
+- The data-source surface uses CDK's `DataSource` base class.
+
+Material is forbidden by ESLint at this level.
+
+### Level 3 - `@cngx/forms` and `@cngx/data-display`
+
+`@cngx/forms` and `@cngx/data-display` host **organisms in a feature domain**.
+
+The select family (`@cngx/forms/select`) composes `CngxListbox`, `CngxActiveDescendant`, `CngxPopover`, `CngxFormFieldPresenter`, and several factories into nine self-contained dropdown surfaces:
+
+- `CngxSelect`
+- `CngxMultiSelect`
+- `CngxCombobox`
+- `CngxTypeahead`
+- `CngxTreeSelect`
+- `CngxReorderableMultiSelect`
+- `CngxActionSelect`
+- `CngxActionMultiSelect`
+- The consumer-assembled `CngxSelectShell`
+
+`@cngx/forms` has zero CDK touchpoints. Listbox keyboard handling, active-descendant, and selection state are hand-rolled on top of `@cngx/common` primitives.
+
+`@cngx/data-display/treetable` is the one place where CDK earns its weight at Level 3. It consumes `@angular/cdk/table` and CDK's `SelectionModel`.
+
+Neither lib may import `@angular/material`.
+
+### Level 4 - `@cngx/ui`
+
+`@cngx/ui` is the only lib that may import `@angular/material`, and even there the opt-in is surgical. Out of thirteen secondary entries only `mat-stepper`, `mat-tabs`, and `material` touch Material.
+
+The remaining ten host organisms whose primary purpose is one of:
+
+- Overlay engineering (`overlay` uses `cdk/overlay` + `cdk/portal`)
+- Composed layout (`layout`, `sidenav`)
+- Feedback / skeleton / speak shells that need no third-party UI toolkit at all
+
+<aside class="cc-note">
+
+**Note.** A component that can be built without `@angular/material` and without overlay infrastructure does not belong in `@cngx/ui`. It belongs in `@cngx/common`.
+
+</aside>
+
+---
 
 ## Lib identity rule
 
 A library is defined by **what it hosts**, not by which framework toolkit it happens to use:
+
+### Per-lib charter
 
 - **`@cngx/common`** - atoms, molecules, plus pure-CNGX organisms that do not fit a feature domain (e.g. `CngxMenu`, `CngxChart`). CDK in exactly two spots (`a11y/focus-trap`, `data/data-source`). Never imports `@angular/material`.
 - **`@cngx/forms`** - forms-related organisms (controls, validators, field bridges, the entire select family, filter-builder, input). Zero CDK touchpoints across the lib. Listbox/active-descendant/selection state is rolled by hand on top of `@cngx/common`.
 - **`@cngx/data-display`** - organisms whose job is to display tabular or hierarchical data. `treetable` uses `@angular/cdk/table` + `SelectionModel`. Never imports `@angular/material`.
 - **`@cngx/ui`** - organisms that need overlay engineering or opt into Material. CDK only in `overlay`. Material only in `mat-stepper`, `mat-tabs`, and `material`.
 
-A pure-CNGX data-display organism without a Material twin belongs in `@cngx/data-display`, not `@cngx/ui`. Conversely, a Forms-related organism that happens to wrap a Material control belongs in `@cngx/forms`, with the Material import isolated behind a bridge.
+### Placement test
+
+A pure-CNGX data-display organism without a Material twin belongs in `@cngx/data-display`, not `@cngx/ui`.
+
+Conversely, a Forms-related organism that happens to wrap a Material control belongs in `@cngx/forms`, with the Material import isolated behind a bridge.
+
+---
 
 ## Atomic levels inside a lib
 
 Within a single library, components are classified by composition depth:
 
-|Term|Definition|
-|-|-|
-|**Atom**|One directive, one responsibility. No CDK, no Material. Reads inputs, derives outputs, contributes to host ARIA. Example: `CngxRovingTabindex`, `CngxListbox`, `CngxCheckboxIndicator`.|
-|**Molecule**|Composes atoms (and possibly CDK utilities) to produce a small, focused behavior. Example: `CngxListboxTrigger` (combines listbox + popover anchor + ARIA wiring).|
-|**Organism**|Composes molecules and atoms into a self-contained feature unit. Has its own template, often its own panel, its own state surface. Example: `CngxSelect`, `CngxTreeSelect`, `CngxTreetable`.|
+### Classification
 
-**Only organisms are decompose-eligible.** The atomic-decompose schematic ejects the structural and thematic CSS of an organism into the consumer's project while the brain (host directive, DI tokens, factories) stays in the library. Atoms and molecules are terminal - copying them adds no value because they have no skin to eject.
+- **Atom** - one directive, one responsibility. No CDK, no Material. Reads inputs, derives outputs, contributes to host ARIA. Example: `CngxRovingTabindex`, `CngxListbox`, `CngxCheckboxIndicator`.
+- **Molecule** - composes atoms (and possibly CDK utilities) to produce a small, focused behavior. Example: `CngxListboxTrigger` (combines listbox + popover anchor + ARIA wiring).
+- **Organism** - composes molecules and atoms into a self-contained feature unit. Has its own template, often its own panel, its own state surface. Example: `CngxSelect`, `CngxTreeSelect`, `CngxTreetable`.
+
+### Decompose scope
+
+**Only organisms are decompose-eligible.**
+
+The atomic-decompose schematic ejects the structural and thematic CSS of an organism into the consumer's project. The brain (host directive, DI tokens, factories) stays in the library.
+
+Atoms and molecules are terminal. Copying them adds no value because they have no skin to eject.
+
+---
 
 ## Secondary entries
 
-Every library is shipped via `ng-packagr` with `sideEffects: false`. Each feature folder is its own ng-packagr secondary entry, with its own `ng-package.json` + `public-api.ts`. This lets consumers import surgically:
+Every library is shipped via `ng-packagr` with `sideEffects: false`.
+
+Each feature folder is its own ng-packagr secondary entry, with its own `ng-package.json` and `public-api.ts`. This lets consumers import surgically:
+
+### Import shape
 
 ```typescript
 import { CngxListbox } from '@cngx/common/interactive';
@@ -139,23 +235,47 @@ import { CngxSelect } from '@cngx/forms/select';
 import { CngxSidenav } from '@cngx/ui/sidenav';
 ```
 
-The path alias map in `tsconfig.base.json` is the **single source of truth**. Each `tsconfig.lib.json` redirects intra-lib cross-secondary imports to the built `dist/<lib>/types/*.d.ts` so that the AOT compiler does not pull in unbuilt TypeScript.
+### Path alias source of truth
+
+The path alias map in `tsconfig.base.json` is the **single source of truth**.
+
+Each `tsconfig.lib.json` redirects intra-lib cross-secondary imports to the built `dist/<lib>/types/*.d.ts` so that the AOT compiler does not pull in unbuilt TypeScript.
+
+---
 
 ## Build order
 
+### Pipeline
+
 ```
-utils → core → common → forms / data-display → ui
+utils -> core -> common -> forms / data-display -> ui
 ```
 
-`npm run build:libs` runs them in this order. The local `examples` app consumes the source via tsconfig paths; production consumers consume the built `dist/` bundles. The Sheriff `<entry>` wildcards in `sheriff.config.ts` auto-classify new secondaries - adding a new feature folder under `projects/common/<name>` does not require a Sheriff config change, only the per-lib `lib:*` rules need an update when a brand-new top-level library is introduced.
+### Sheriff classification
+
+`npm run build:libs` runs them in this order. The local `examples` app consumes the source via tsconfig paths; production consumers consume the built `dist/` bundles.
+
+The Sheriff `<entry>` wildcards in `sheriff.config.ts` auto-classify new secondaries. Adding a new feature folder under `projects/common/<name>` does not require a Sheriff config change.
+
+Only the per-lib `lib:*` rules need an update when a brand-new top-level library is introduced.
+
+---
 
 ## Why the levels exist
 
 The hierarchy is not bureaucracy. It is a **dependency budget**:
 
+### Budget per level
+
 - `@cngx/utils` can never break SSR, never depend on the DOM, never require a runtime. It can be unit-tested with Vitest against bare Node.
 - `@cngx/core` can never render. If it tried, it would need a template, which would tie it to `@angular/core`'s renderer surface and pull it out of "primitive" territory.
-- `@cngx/common` and `@cngx/data-display` can never depend on Material. The `no-restricted-imports` block in `eslint.config.js` fails the lint stage on any `@angular/material` import. The rule exists because Material is heavy, opinionated, and changes on its own schedule - CNGX atoms and data-display organisms must remain portable across Material's lifecycle.
+- `@cngx/common` and `@cngx/data-display` can never depend on Material. The `no-restricted-imports` block in `eslint.config.js` fails the lint stage on any `@angular/material` import. The rule exists because Material is heavy, opinionated, and changes on its own schedule. CNGX atoms and data-display organisms must remain portable across Material's lifecycle.
 - `@cngx/ui` is the only place where Material's API drift can land, and even there only `mat-stepper`, `mat-tabs`, and `material` opt in. The rest of the library is insulated.
 
-This insulation is what makes the instrumentation pattern inside `@cngx/ui` possible at all: the brain lives in a pure-CNGX twin (`@cngx/ui/stepper`, `@cngx/ui/tabs`) at a level where Material cannot leak in, and the Material twin (`@cngx/ui/mat-stepper`, `@cngx/ui/mat-tabs`) is a thin bridge that re-uses the brain via host directives.
+### Why insulation matters
+
+This insulation is what makes the instrumentation pattern inside `@cngx/ui` possible at all.
+
+The brain lives in a pure-CNGX twin (`@cngx/ui/stepper`, `@cngx/ui/tabs`) at a level where Material cannot leak in.
+
+The Material twin (`@cngx/ui/mat-stepper`, `@cngx/ui/mat-tabs`) is a thin bridge that re-uses the brain via host directives.

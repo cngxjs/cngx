@@ -176,7 +176,7 @@
   --color-cdx-snippet-bg:        oklch(0.96 0.005 250);
   --color-cdx-snippet-border:    transparent;
   --color-cdx-snippet-radius:    var(--radius-cdx-md);
-  --color-cdx-code-inline:       var(--cngx-color-primary);
+  --color-cdx-code-inline:       oklch(0.4 0.01 250);
   --color-cdx-code-dark-surface: oklch(0.18 0.01 250);
   --color-cdx-scrollbar:         oklch(0.5 0.01 250 / 0.4);
   --color-cdx-line-number:       oklch(0.5 0.01 250 / 0.5);
@@ -217,6 +217,163 @@
 .cdx-related-pill:hover,
 a.cdx-related-pill:focus-visible {
   background: var(--color-cdx-bg-alt);
+}
+
+/* Inline <code> in prose. The default bundle ships `.cdx-readme
+ * :not(pre)>code { background: bg-elevated; border: 1px solid
+ * border; }` which on a white page reads as a button chip rather
+ * than inline code. Drop the border, lean on bg-alt for the
+ * subtle pill effect. Matches the bundle's selector specificity
+ * (class + pseudo + type) so source-order wins. */
+.cdx-readme :not(pre) > code {
+  border: none;
+  background: var(--color-cdx-bg-alt);
+  color: var(--color-cdx-text);
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+:not(pre) > code {
+  border: none;
+  background: var(--color-cdx-bg-alt);
+  color: var(--color-cdx-text);
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+/* Markdown tables in core-concept pages. The default bundle ships
+ * basic borders + uppercased headers. Add a soft container, a
+ * tinted header strip, and zebra striping so dense lookup tables
+ * stay scannable without looking like a spreadsheet. */
+.cdx-readme table {
+  border-radius: var(--radius-cdx-md, 8px);
+  overflow: hidden;
+  border: 1px solid var(--color-cdx-border-subtle);
+  margin-block: 1.25rem;
+}
+.cdx-readme table thead th {
+  background: var(--color-cdx-bg-alt);
+  border-bottom: 1px solid var(--color-cdx-border);
+  cursor: default;
+  padding: 10px 16px;
+  font-size: 0.6875rem;
+  letter-spacing: 0.06em;
+}
+.cdx-readme table tbody td {
+  border-bottom: 1px solid var(--color-cdx-border-subtle);
+  padding: 10px 16px;
+  vertical-align: top;
+  line-height: 1.5;
+}
+.cdx-readme table tbody tr:nth-child(even) td {
+  background: color-mix(in srgb, var(--color-cdx-bg-alt) 40%, transparent);
+}
+.cdx-readme table tbody tr:last-child td {
+  border-bottom: none;
+}
+.cdx-readme table tbody tr:hover td {
+  background: var(--color-cdx-bg-alt);
+}
+.cdx-readme table th:first-child,
+.cdx-readme table td:first-child {
+  padding-left: 18px;
+}
+.cdx-readme table th:last-child,
+.cdx-readme table td:last-child {
+  padding-right: 18px;
+}
+
+/* In-prose callouts. Authored as <aside class="cc-note"> blocks in
+ * markdown so the inline-code rule does NOT clobber the start of
+ * the note. Four kinds map to the cngx semantic palette: note (info
+ * blue), tip (success green), warning (amber), danger (red). The
+ * leading <strong> renders the kind label in the accent colour. */
+.cdx-readme .cc-note,
+.cdx-readme .cc-tip,
+.cdx-readme .cc-warning,
+.cdx-readme .cc-danger {
+  margin: 1.25rem 0;
+  padding: 12px 16px;
+  border-radius: var(--radius-cdx-md, 8px);
+  border-left: 3px solid var(--cngx-color-info);
+  background: color-mix(in srgb, var(--cngx-color-info) 7%, var(--color-cdx-bg));
+  font-size: 0.9375rem;
+}
+.cdx-readme .cc-note > :first-child,
+.cdx-readme .cc-tip > :first-child,
+.cdx-readme .cc-warning > :first-child,
+.cdx-readme .cc-danger > :first-child {
+  margin-top: 0;
+}
+.cdx-readme .cc-note > :last-child,
+.cdx-readme .cc-tip > :last-child,
+.cdx-readme .cc-warning > :last-child,
+.cdx-readme .cc-danger > :last-child {
+  margin-bottom: 0;
+}
+.cdx-readme .cc-note > p:first-child > strong:first-child {
+  color: var(--cngx-color-info);
+}
+
+.cdx-readme .cc-tip {
+  border-left-color: var(--cngx-color-success);
+  background: color-mix(in srgb, var(--cngx-color-success) 7%, var(--color-cdx-bg));
+}
+.cdx-readme .cc-tip > p:first-child > strong:first-child {
+  color: var(--cngx-color-success);
+}
+
+.cdx-readme .cc-warning {
+  border-left-color: var(--cngx-color-warning);
+  background: color-mix(in srgb, var(--cngx-color-warning) 9%, var(--color-cdx-bg));
+}
+.cdx-readme .cc-warning > p:first-child > strong:first-child {
+  color: color-mix(in srgb, var(--cngx-color-warning) 70%, var(--color-cdx-text));
+}
+
+.cdx-readme .cc-danger {
+  border-left-color: var(--cngx-color-danger);
+  background: color-mix(in srgb, var(--cngx-color-danger) 7%, var(--color-cdx-bg));
+}
+.cdx-readme .cc-danger > p:first-child > strong:first-child {
+  color: var(--cngx-color-danger);
+}
+
+/* Vertical rhythm in prose - give paragraphs, code blocks, and
+ * section headings room to breathe so the page feels less dense. */
+.cdx-readme p {
+  margin-block: 0 1rem;
+  line-height: 1.65;
+}
+.cdx-readme h2 {
+  margin-top: 2.5rem;
+  margin-bottom: 0.75rem;
+}
+.cdx-readme h3 {
+  margin-top: 1.75rem;
+  margin-bottom: 0.5rem;
+}
+.cdx-readme h4 {
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+.cdx-readme pre {
+  margin-block: 1rem 1.25rem;
+}
+.cdx-readme ul,
+.cdx-readme ol {
+  margin-block: 0.5rem 1.25rem;
+}
+.cdx-readme li {
+  margin-block: 0.25rem;
+  line-height: 1.6;
+}
+.cdx-readme blockquote {
+  margin-block: 1.25rem;
+  padding-block: 0.5rem;
+}
+.cdx-readme hr {
+  margin-block: 2.5rem;
+  border-color: var(--color-cdx-border-subtle);
 }
 
 .dark {
@@ -329,7 +486,7 @@ a.cdx-related-pill:focus-visible {
   /* ── Code blocks ─────────────────────────────────────────── */
   --color-cdx-snippet-bg:        oklch(0.26 0.01 250);
   --color-cdx-snippet-border:    transparent;
-  --color-cdx-code-inline:       var(--cngx-color-primary);
+  --color-cdx-code-inline:       oklch(0.7 0.01 250);
   --color-cdx-code-dark-surface: oklch(0.14 0.01 250);
   --color-cdx-scrollbar:         oklch(0.7 0.01 250 / 0.4);
   --color-cdx-line-number:       oklch(0.6 0.01 250 / 0.6);
