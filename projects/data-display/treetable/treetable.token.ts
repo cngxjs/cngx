@@ -65,6 +65,8 @@ export interface TreetableFeature {
  * ```
  *
  * @category data-display/treetable
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/data-display/treetable/treetable.token.ts
+ * @since 0.1.0
  */
 export const CNGX_TREETABLE_CONFIG = new InjectionToken<TreetableConfig>('CNGX_TREETABLE_CONFIG', {
   factory: () => ({}),

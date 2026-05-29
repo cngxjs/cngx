@@ -50,6 +50,8 @@ export function flattenTree<T>(
  * @param input - The tree or forest to inspect.
  * @param options - If `customColumnOrder` is set it is returned as-is.
  * @returns An ordered array of column key strings.
+ *
+ * @internal
  */
 export function extractColumns<T>(
   input: Node<T> | Node<T>[],
@@ -70,6 +72,8 @@ export function extractColumns<T>(
 /**
  * Returns `true` when all of `node`'s ancestors are in the `expandedIds` set,
  * meaning the node should currently be visible in the table.
+ *
+ * @internal
  */
 export function isNodeVisible(node: FlatNode<unknown>, expandedIds: ReadonlySet<string>): boolean {
   return node.parentIds.every((id) => expandedIds.has(id));
@@ -77,7 +81,9 @@ export function isNodeVisible(node: FlatNode<unknown>, expandedIds: ReadonlySet<
 
 /**
  * Builds the initial set of expanded IDs by collecting every node that has
- * children — i.e. the tree starts fully expanded.
+ * children - i.e. the tree starts fully expanded.
+ *
+ * @internal
  */
 export function getInitialExpandedIds<T>(nodes: FlatNode<T>[]): ReadonlySet<string> {
   return new Set(nodes.filter((n) => n.hasChildren).map((n) => n.id));
@@ -86,6 +92,8 @@ export function getInitialExpandedIds<T>(nodes: FlatNode<T>[]): ReadonlySet<stri
 /**
  * Uppercases the first character of a string.
  * Used to format auto-generated column header labels.
+ *
+ * @internal
  */
 export function capitalise(str: string): string {
   return str.length === 0 ? '' : str.charAt(0).toUpperCase() + str.slice(1);
