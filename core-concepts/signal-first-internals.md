@@ -5,7 +5,11 @@
 
 # Signal-First Internals
 
-> **The cngx internals are signal-shaped from the inside out: input/output, computed graphs, hostDirectives, untracked at service boundaries.**
+<aside class="cc-tldr">
+
+Signal everywhere inside. RxJS only at the boundary.
+
+</aside>
 
 CNGX is built on Angular Signals. Not "uses Signals where convenient" - built on them.
 

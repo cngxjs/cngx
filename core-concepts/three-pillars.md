@@ -5,7 +5,11 @@
 
 # The Three Pillars
 
-> **Zustand wird abgeleitet, nicht verwaltet - und Kommunikation ist Architektur, kein Nachgedanke.**
+<aside class="cc-tldr">
+
+Zustand wird abgeleitet, nicht verwaltet - und Kommunikation ist Architektur, kein Nachgedanke.
+
+</aside>
 
 CNGX rests on three non-negotiable rules. Every directive, component, and PR is auditable against them.
 

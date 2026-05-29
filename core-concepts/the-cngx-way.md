@@ -5,7 +5,11 @@
 
 # The CNGX Way
 
-> **A Signal-native composition library for Angular, where CDK and Material are opt-in primitives and never foundations.**
+<aside class="cc-tldr">
+
+Signal-native components for Angular. CDK and Material are opt-in primitives, never the foundation.
+
+</aside>
 
 CNGX is a Signal-native composition library for Angular. Declarative, communicative by construction, built on plain signals and modern DOM.
 

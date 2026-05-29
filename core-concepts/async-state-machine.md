@@ -5,7 +5,11 @@
 
 # Async State Machine
 
-> **Async state in cngx is a six-state UX machine, not a data store. Components consume `CngxAsyncState`; producers and bridges keep the graph closed.**
+<aside class="cc-tldr">
+
+UX state, not data state. Six statuses, one signal bundle. Components consume `CngxAsyncState`; producers and bridges keep the graph closed.
+
+</aside>
 
 `CngxAsyncState<T>` is the standard interface for any value that arrives over time - HTTP responses, WebSocket pushes, user commits, server-driven autocompletes.
 

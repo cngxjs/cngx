@@ -5,7 +5,11 @@
 
 # Layered Design
 
-> **Every cngx import has a level; the levels form a dependency budget that lint enforces.**
+<aside class="cc-tldr">
+
+Five levels. Imports flow upward only. Sheriff and ESLint enforce it at lint time.
+
+</aside>
 
 CNGX is organized into five levels (0 through 4). Each level has a specific dependency budget, a specific scope, and a specific reason to exist.
 

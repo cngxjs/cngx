@@ -282,6 +282,31 @@ a.cdx-related-pill:focus-visible {
   padding-right: 18px;
 }
 
+/* Page-lead TL;DR. Authored as <aside class="cc-tldr"> at the top
+ * of every core-concept page. NO box - just a small eyebrow label
+ * over a slightly larger lead paragraph. Keeps the page header
+ * area light; the chrome stays on the content blocks below. */
+.cdx-readme .cc-tldr {
+  margin: 0 0 2.25rem 0;
+  font-size: 1.0625rem;
+  line-height: 1.55;
+  color: var(--color-cdx-text);
+}
+.cdx-readme .cc-tldr::before {
+  content: 'TL;DR';
+  display: block;
+  margin: 0 0 6px 0;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-cdx-primary);
+}
+.cdx-readme .cc-tldr > :first-child { margin-top: 0; }
+.cdx-readme .cc-tldr > :last-child { margin-bottom: 0; }
+.cdx-readme .cc-tldr p { margin: 0; }
+.cdx-readme .cc-tldr p + p { margin-top: 8px; }
+
 /* In-prose callouts. Authored as <aside class="cc-note"> blocks in
  * markdown so the inline-code rule does NOT clobber the start of
  * the note. Four kinds map to the cngx semantic palette: note (info

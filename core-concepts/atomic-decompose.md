@@ -5,7 +5,11 @@
 
 # Atomic Decompose
 
-> **An organism is a brain (behaviour shared via a contract token) plus a skin (template and structural CSS); consumers can eject the skin without rewriting their wiring.**
+<aside class="cc-tldr">
+
+An organism is a brain plus a skin. The brain stays in the library; the skin ejects to the consumer.
+
+</aside>
 
 The first question a serious team asks before adopting a component library is the exit question:
 

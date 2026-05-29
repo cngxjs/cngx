@@ -5,7 +5,11 @@
 
 # Instrumentation Pattern
 
-> **Take any Material organism, attach the matching cngx presenter via host directive, and the brain becomes cngx-shaped without rewriting the visual chrome.**
+<aside class="cc-tldr">
+
+Take a Material organism, attach a cngx presenter via host directive, and the brain becomes signal-native without rewriting the visual chrome.
+
+</aside>
 
 This document defines the **Instrumentation Pattern**, the primary strategy used by CNGX to enhance, synchronize, and "infect" third-party components (specifically Angular Material) with Signal-native logic.
 

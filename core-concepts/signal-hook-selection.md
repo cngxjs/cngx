@@ -5,7 +5,11 @@
 
 # Signal Hook Selection
 
-> **Given a situation, pick the lowest-power signal primitive that fits.**
+<aside class="cc-tldr">
+
+Given a situation, pick the lowest-power signal primitive that fits.
+
+</aside>
 
 A reference card. Six hooks, two helpers, one table.
 
@@ -13,7 +17,7 @@ For the *why* behind each pattern - equality functions, untracked rationale, tra
 
 ---
 
-## TL;DR
+## Hook lookup
 
 |Hook|Purpose|CNGX use|Forbidden in|
 |-|-|-|-|
@@ -304,4 +308,3 @@ The `CngxToastOn` / `CngxAlertOn` / `CngxBannerOn` bridges in `@cngx/ui/feedback
     The fake-timer scheduler stalls and `whenStable()` resolves before the render callback fires. Old guidance was "do not use `afterNextRender` at all" - the current guidance is "use it, just do not use fake timers in the same spec."
 - **`TestBed.flushEffects()` is the right hook after a signal mutation.** Effects do not run synchronously on `.set()` - they batch to the next microtask. Specs that read post-effect state must flush first.
 
-For the full test patterns, see `signal-first-internals.md` and the bridge specs under `projects/ui/feedback/`.
