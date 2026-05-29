@@ -5,15 +5,17 @@ import { InjectionToken, type Signal } from '@angular/core';
  *
  * The scope encapsulates the "should errors be visible right now?"
  * decision. A scope starts hidden (`showErrors === false`) and reveals
- * when {@link reveal} is called — typically on form submit, on route
+ * when {@link reveal} is called - typically on form submit, on route
  * navigation, or on programmatic error trigger.
  *
  * Descendant directives (`CngxErrorAggregator`, `CngxErrorState`) read
  * the scope's `showErrors` signal to gate their own visibility, so a
  * single `reveal()` propagates atomically through the subtree.
+ *
+ * @category common/interactive/error
  */
 export interface CngxErrorScopeContract {
-  /** Reactive flag — `true` when errors should be visible to the user. */
+  /** Reactive flag - `true` when errors should be visible to the user. */
   readonly showErrors: Signal<boolean>;
   /** Reveals errors in this scope (idempotent). */
   reveal(): void;
@@ -29,7 +31,10 @@ export interface CngxErrorScopeContract {
  * Provided by {@link CngxErrorScope} via `useExisting`; descendants inject
  * with `{ optional: true }` and fall back gracefully when no scope is
  * present (no-op).
+ *
+ * @category common/interactive/error
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/error-scope/error-scope.token.ts
+ * @since 0.1.0
  */
-export const CNGX_ERROR_SCOPE = new InjectionToken<CngxErrorScopeContract>(
-  'CngxErrorScope',
-);
+export const CNGX_ERROR_SCOPE = new InjectionToken<CngxErrorScopeContract>('CngxErrorScope');

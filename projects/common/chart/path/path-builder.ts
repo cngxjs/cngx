@@ -1,15 +1,25 @@
 import { buildCurvePath, type CngxCurve, type PathPoint } from './curve';
 import type { ScaleFn, XScaleInput } from '../chart/chart-context';
 
-/** Reads the Y value of a data row at index `i`. */
+/**
+ * Reads the Y value of a data row at index `i`.
+ *
+ * @category common/chart/path
+ */
 export type LineYAccessor<T> = (d: T, i: number) => number;
 /**
  * Reads the X value of a data row at index `i`. Default behaviour
  * (when omitted on a builder) is the row's positional index.
+ *
+ * @category common/chart/path
  */
 export type LineXAccessor<T> = (d: T, i: number) => XScaleInput;
 
-/** Construction options for {@link createPathBuilder}. */
+/**
+ * Construction options for {@link createPathBuilder}.
+ *
+ * @category common/chart/path
+ */
 export interface PathBuilderOptions<T> {
   readonly y: LineYAccessor<T>;
   readonly x?: LineXAccessor<T>;
@@ -20,6 +30,8 @@ export interface PathBuilderOptions<T> {
  * Single-slot LRU cache around an SVG `d`-attribute builder. Returned
  * by {@link createPathBuilder}; consumed by the `<cngx-line>` /
  * `<cngx-area>` family.
+ *
+ * @category common/chart/path
  */
 export interface PathBuilder<T> {
   /**
@@ -27,11 +39,7 @@ export interface PathBuilder<T> {
    * `(data, xScale, yScale)` triple by reference returns the cached
    * string without re-running the O(n) point projection.
    */
-  build(
-    data: readonly T[],
-    xScale: ScaleFn<XScaleInput>,
-    yScale: ScaleFn<number>,
-  ): string;
+  build(data: readonly T[], xScale: ScaleFn<XScaleInput>, yScale: ScaleFn<number>): string;
 
   /**
    * Number of times the internal point-projection + path-string
@@ -45,7 +53,7 @@ export interface PathBuilder<T> {
 /**
  * Pure-TS path builder with single-slot LRU memo on
  * `(data, xScale, yScale)` reference identity. Pure TS, no Angular
- * dep. Compute guard only — does not know about signals or `equal`
+ * dep. Compute guard only - does not know about signals or `equal`
  * functions; the `d` computed in `<cngx-line>` carries the cascade
  * guard separately.
  *
@@ -54,13 +62,15 @@ export interface PathBuilder<T> {
  * triggers a rebuild and updates the slot.
  *
  * Each call to `createPathBuilder` returns a fresh builder with its
- * own `lastData / lastX / lastY` slots — there is no cross-call /
+ * own `lastData / lastX / lastY` slots - there is no cross-call /
  * cross-consumer state. The cascade guard for layer atoms is the
  * `equal: (a, b) => a === b` on the `builder` `computed`; combined
  * with Angular signals' default behaviour of skipping re-emissions
  * when the inputs to the `computed` are unchanged, two consecutive
  * cascade ticks with the same `(y, x, curve)` produce the same
  * builder instance.
+ *
+ * @category common/chart/path
  */
 export function createPathBuilder<T>(opts: PathBuilderOptions<T>): PathBuilder<T> {
   const yAcc = opts.y;
@@ -93,6 +103,7 @@ export function createPathBuilder<T>(opts: PathBuilderOptions<T>): PathBuilder<T
   };
 }
 
+/** @internal */
 function projectPoints<T>(
   data: readonly T[],
   xAcc: LineXAccessor<T>,

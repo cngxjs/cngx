@@ -1,10 +1,27 @@
 /**
  * @overview
- * Default visuals for `CngxMetric`. The host element `<cngx-metric>`
- * always carries the `.cngx-metric` class. Two slot children render
- * the value and its unit: `.cngx-metric__value` (the numeric figure
- * — large, bold) and `.cngx-metric__unit` (the trailing unit / label
- * — small, muted).
+ * Default visuals for `CngxMetric`. The host carries `.cngx-metric` -
+ * an inline-flex container that pairs a large bold figure with a
+ * small muted unit on a shared baseline.
+ *
+ * **Slots**
+ *
+ * - `.cngx-metric__value` - the numeric figure (large, bold)
+ * - `.cngx-metric__unit` - the trailing unit or label (small, muted)
+ *
+ * **Inheritance**
+ *
+ * - `--cngx-metric-value-color` -> `--cngx-color-text`
+ * - `--cngx-metric-unit-color` - leaf token, swaps in dark mode
+ *
+ * **Dark mode**
+ *
+ * Three hooks lift value and unit text to the foundation's dark-mode
+ * lightness; chroma and hue identity stay constant:
+ *
+ * - `prefers-color-scheme: dark`
+ * - `[data-color-scheme="dark"]` / `.dark` class
+ * - `[data-color-scheme="light"]` / `.light` class (explicit pin)
  */
 
 @layer cngx.tokens {

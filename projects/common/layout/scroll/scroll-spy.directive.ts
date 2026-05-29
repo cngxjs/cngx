@@ -21,6 +21,13 @@ import { afterNextRender, Directive, effect, inject, input, output, signal } fro
  * <section id="features">…</section>
  * <section id="pricing">…</section>
  * ```
+ *
+ * @category common/layout
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/layout/scroll/scroll-spy.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxIntersectionObserver, CngxStickyHeader, CngxInfiniteScroll
  * <example-url>http://localhost:4200/#/common/layout/scroll-spy/scroll-based-navigation</example-url>
  */
 @Directive({

@@ -1,21 +1,29 @@
 /**
  * @overview
- * Default visuals for `CngxCardGrid`. The host element
- * `<cngx-card-grid>` always carries the `.cngx-card-grid` class.
- * Two density modifiers control the layout:
- * `.cngx-card-grid--compact` (dense, smaller gaps + child padding)
- * and `.cngx-card-grid--comfortable` (spacious).
+ * Default visuals for `CngxCardGrid`. The host carries
+ * `.cngx-card-grid` and lays its `<cngx-card>` children out via
+ * `auto-fill` + `minmax()` so the column count reflows with the
+ * viewport without a media-query ladder.
  *
- * Grid uses `auto-fill` + `minmax()` so cards reflow without a
- * media-query ladder. Density modifiers reach down into
- * `--cngx-card-padding` to keep nested `<cngx-card>` children
- * visually in sync with the grid's gap rhythm — this is an
- * intentional cross-component coupling.
+ * **Density modifiers**
+ *
+ * - `--compact` - tighter gap, pins `--cngx-card-padding` to `sm`
+ *   so nested cards stay in sync with the grid's rhythm
+ * - `--comfortable` - wider gap, pins `--cngx-card-padding` to `lg`
+ *
+ * Reaching into `--cngx-card-padding` is an intentional cross-
+ * component coupling: the density modifier owns both the gap and
+ * the matching card-inner spacing.
+ *
+ * **Inheritance**
+ *
+ * - `--cngx-card-grid-gap` -> `--cngx-space-md`
+ * - `--cngx-card-grid-min` - leaf token, no fallback chain
  */
 
 @layer cngx.tokens {
   /**
-   * Minimum inline size of a single grid cell — `auto-fill` packs as
+   * Minimum inline size of a single grid cell - `auto-fill` packs as
    * many cells as fit before reflowing.
    * @group Layout
    */

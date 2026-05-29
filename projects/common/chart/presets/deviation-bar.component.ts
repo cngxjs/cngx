@@ -9,13 +9,21 @@ import type { CngxAsyncState } from '@cngx/core/utils';
 import { injectPresetState } from './preset-state';
 
 /**
- * Mini deviation bar — a single-value indicator that diverges from a
+ * Mini deviation bar - a single-value indicator that diverges from a
  * `[baseline]` (default `0`) in either direction. Negative deviations
  * render to the left of the baseline mark, positive to the right.
  * Pure DOM, no SVG. Host carries `role="meter"`.
  *
  * Use cases: budget variance ("$+45k over"), score deltas ("−12%
  * vs target"), KPI swing visualisations.
+ *
+ * @category common/chart/presets
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/presets/deviation-bar.component.ts
+ * @since 0.1.0
+ * @relatedTo CngxMiniBar, CngxBullet, CngxStackedBar
+ *
  * <example-url>http://localhost:4200/#/common/chart/deviation-bar/async-state-machine</example-url>
  * <example-url>http://localhost:4200/#/common/chart/deviation-bar/variance-readings</example-url>
  */
@@ -36,7 +44,11 @@ import { injectPresetState } from './preset-state';
   template: `
     @switch (activeView()) {
       @case ('skeleton') {
-        <span class="cngx-preset-skeleton" [attr.aria-busy]="true" [attr.aria-label]="i18n.loading()"></span>
+        <span
+          class="cngx-preset-skeleton"
+          [attr.aria-busy]="true"
+          [attr.aria-label]="i18n.loading()"
+        ></span>
       }
       @case ('empty') {
         <span class="cngx-preset-fallback">{{ i18n.empty() }}</span>
@@ -73,7 +85,10 @@ import { injectPresetState } from './preset-state';
       cngx-deviation-bar .cngx-deviation-bar__track {
         position: relative;
         height: var(--cngx-deviation-bar-height, 6px);
-        background: var(--cngx-deviation-bar-track, var(--cngx-chart-grid-color, rgb(0 0 0 / 0.08)));
+        background: var(
+          --cngx-deviation-bar-track,
+          var(--cngx-chart-grid-color, rgb(0 0 0 / 0.08))
+        );
         border-radius: var(--cngx-deviation-bar-radius, 3px);
         overflow: hidden;
       }
@@ -83,14 +98,18 @@ import { injectPresetState } from './preset-state';
         top: 0;
         bottom: 0;
         width: 1px;
-        background: var(--cngx-deviation-bar-baseline-color, var(--cngx-chart-axis-color, currentColor));
+        background: var(
+          --cngx-deviation-bar-baseline-color,
+          var(--cngx-chart-axis-color, currentColor)
+        );
         opacity: var(--cngx-deviation-bar-baseline-opacity, 0.5);
       }
       cngx-deviation-bar .cngx-deviation-bar__fill {
         position: absolute;
         top: 0;
         bottom: 0;
-        transition: left var(--cngx-deviation-bar-transition, 240ms) ease-out,
+        transition:
+          left var(--cngx-deviation-bar-transition, 240ms) ease-out,
           width var(--cngx-deviation-bar-transition, 240ms) ease-out;
       }
       cngx-deviation-bar .cngx-deviation-bar__fill--positive {

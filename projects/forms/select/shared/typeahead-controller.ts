@@ -5,6 +5,8 @@ import type { CngxSelectCompareFn } from './select-core';
 
 /**
  * Configuration for {@link createTypeaheadController}.
+ *
+ * @category forms/select/controllers
  */
 export interface TypeaheadControllerOptions<T> {
   /** Flat candidate list in listbox order. */
@@ -19,6 +21,8 @@ export interface TypeaheadControllerOptions<T> {
 
 /**
  * Public API returned from {@link createTypeaheadController}.
+ *
+ * @category forms/select/controllers
  */
 export interface TypeaheadController<T> {
   /**
@@ -39,6 +43,8 @@ export interface TypeaheadController<T> {
  * `<select>` keyboard-typeahead: printable-key guard, lower-case match,
  * disabled skip, round-robin walk, debounced buffer reset. State-holding
  * (buffer + timer) but no DI refs; caller owns the lifetime.
+ *
+ * @category forms/select/controllers
  */
 export function createTypeaheadController<T>(
   options: TypeaheadControllerOptions<T>,
@@ -109,6 +115,8 @@ export function createTypeaheadController<T>(
 /**
  * PageUp/PageDown helper. Disabled-aware, clamped `±step` jump with
  * back-probe fallback. Returns target index or `null`.
+ *
+ * @category forms/select/controllers
  */
 export function resolvePageJumpTarget<O>(
   opts: readonly O[],

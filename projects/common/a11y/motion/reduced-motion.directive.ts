@@ -6,7 +6,7 @@ import { DestroyRef, Directive, inject, signal, type Signal } from '@angular/cor
  *
  * Adds the `cngx-reduced-motion` CSS class to the host when the user prefers
  * reduced motion. The `prefersReducedMotion()` signal updates live when the
- * OS preference changes — use it in TypeScript to skip animations, disable
+ * OS preference changes - use it in TypeScript to skip animations, disable
  * auto-playing media, or choose between animated and instant transitions.
  *
  * Unlike a CSS-only `@media (prefers-reduced-motion: reduce)` approach, this
@@ -25,6 +25,12 @@ import { DestroyRef, Directive, inject, signal, type Signal } from '@angular/cor
  * readonly rm = viewChild(CngxReducedMotion);
  * readonly duration = computed(() => this.rm()?.prefersReducedMotion() ? 0 : 300);
  * ```
+ *
+ * @category common/a11y
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/a11y/motion/reduced-motion.directive.ts
+ * @since 0.1.0
  * <example-url>http://localhost:4200/#/common/a11y/reduced-motion/animation-toggle</example-url>
  * <example-url>http://localhost:4200/#/common/a11y/reduced-motion/toast-notifications-motion-aware</example-url>
  */

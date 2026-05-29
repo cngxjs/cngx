@@ -7,10 +7,7 @@ import {
   type TemplateRef,
 } from '@angular/core';
 
-import type {
-  ActiveDescendantItem,
-  CngxActiveDescendant,
-} from '@cngx/common/a11y';
+import type { ActiveDescendantItem, CngxActiveDescendant } from '@cngx/common/a11y';
 import type { CngxPopover } from '@cngx/common/popover';
 
 import type { CngxTabHandle } from '../tab-group-host.token';
@@ -29,6 +26,8 @@ import type {
  * Stable across CD passes so `aria-activedescendant` resolves to
  * the same `<li>`. `-overflow-option` suffix avoids collision with
  * the strip-button (`-header`) and per-tab descriptor (`-desc`).
+ *
+ * @category common/tabs/overflow
  */
 export function tabOverflowOptionId(tab: CngxTabHandle): string {
   return `${tab.id}-overflow-option`;
@@ -39,6 +38,8 @@ export function tabOverflowOptionId(tab: CngxTabHandle): string {
  * runs the `contentChild()` queries (injection-context-only) and
  * supplies the reactive sources; the factory owns cascade
  * resolution and per-context builders.
+ *
+ * @category common/tabs/overflow
  */
 export interface CngxTabOverflowTemplateBindingsOptions {
   /** `contentChild(CngxTabOverflowTrigger)` from the molecule. */
@@ -51,7 +52,7 @@ export interface CngxTabOverflowTemplateBindingsOptions {
   readonly hiddenCount: Signal<number>;
   /** Live hidden-tab list (drives `triggerContext.hiddenTabs`). */
   readonly hiddenTabs: Signal<readonly CngxTabHandle[]>;
-  /** Commit-aware select callback — invoked from `itemContext.pick`. */
+  /** Commit-aware select callback - invoked from `itemContext.pick`. */
   readonly pickTab: (tab: CngxTabHandle) => void;
 }
 
@@ -59,17 +60,14 @@ export interface CngxTabOverflowTemplateBindingsOptions {
  * Output of {@link createTabOverflowTemplateBindings}. Carries the two
  * resolved templates plus a stable trigger-context signal and an
  * imperative item-context builder.
+ *
+ * @category common/tabs/overflow
  */
 export interface CngxTabOverflowTemplateBindings {
-  readonly triggerTemplate: Signal<
-    TemplateRef<CngxTabOverflowTriggerContext> | null
-  >;
+  readonly triggerTemplate: Signal<TemplateRef<CngxTabOverflowTriggerContext> | null>;
   readonly itemTemplate: Signal<TemplateRef<CngxTabOverflowItemContext> | null>;
   readonly triggerContext: Signal<CngxTabOverflowTriggerContext>;
-  readonly buildItemContext: (
-    tab: CngxTabHandle,
-    index: number,
-  ) => CngxTabOverflowItemContext;
+  readonly buildItemContext: (tab: CngxTabHandle, index: number) => CngxTabOverflowItemContext;
   /**
    * `ActiveDescendantItem[]` projection of `hiddenTabs()` for
    * `CngxActiveDescendant.items`. Each entry's `id` matches the
@@ -85,10 +83,12 @@ export interface CngxTabOverflowTemplateBindings {
 }
 
 /**
- * Structural equal — same `count` + same `hiddenTabs` reference.
+ * Structural equal - same `count` + same `hiddenTabs` reference.
  * The upstream `hiddenTabs` signal already uses `tabIdListEqual`,
  * so this guard stops `ngTemplateOutlet` rebinding on shape-stable
  * IO emissions.
+ *
+ * @internal
  */
 function triggerContextEqual(
   a: CngxTabOverflowTriggerContext,
@@ -98,15 +98,14 @@ function triggerContextEqual(
 }
 
 /**
- * Structural equal — same length + per-index `id` and `disabled`.
+ * Structural equal - same length + per-index `id` and `disabled`.
  * Without this, every IO emission yields fresh
  * `ActiveDescendantItem[]` references and AD's `resolvedItems`
  * cascade fires for an unchanged visible-tab set.
+ *
+ * @internal
  */
-function adItemsEqual(
-  a: ActiveDescendantItem[],
-  b: ActiveDescendantItem[],
-): boolean {
+function adItemsEqual(a: ActiveDescendantItem[], b: ActiveDescendantItem[]): boolean {
   if (a === b) {
     return true;
   }
@@ -127,28 +126,20 @@ function adItemsEqual(
  * `CNGX_TABS_CONFIG.templates.overflow*` > built-in markup
  * (template-outlet returns `null`).
  *
- * Pure — no DI, no side effects, no destroy hooks. Safe to call
+ * Pure - no DI, no side effects, no destroy hooks. Safe to call
  * from a component's field-init block. Mirrors the select-family
  * `createTemplateRegistry` pattern.
+ *
+ * @category common/tabs/overflow
  */
 export function createTabOverflowTemplateBindings(
   opts: CngxTabOverflowTemplateBindingsOptions,
 ): CngxTabOverflowTemplateBindings {
-  const triggerTemplate = computed<
-    TemplateRef<CngxTabOverflowTriggerContext> | null
-  >(
-    () =>
-      opts.triggerSlot()?.templateRef ??
-      opts.config.templates?.overflowTrigger ??
-      null,
+  const triggerTemplate = computed<TemplateRef<CngxTabOverflowTriggerContext> | null>(
+    () => opts.triggerSlot()?.templateRef ?? opts.config.templates?.overflowTrigger ?? null,
   );
-  const itemTemplate = computed<
-    TemplateRef<CngxTabOverflowItemContext> | null
-  >(
-    () =>
-      opts.itemSlot()?.templateRef ??
-      opts.config.templates?.overflowItem ??
-      null,
+  const itemTemplate = computed<TemplateRef<CngxTabOverflowItemContext> | null>(
+    () => opts.itemSlot()?.templateRef ?? opts.config.templates?.overflowItem ?? null,
   );
   const triggerContext = computed<CngxTabOverflowTriggerContext>(
     () => {
@@ -158,7 +149,7 @@ export function createTabOverflowTemplateBindings(
     },
     { equal: triggerContextEqual },
   );
-  // Per-row context cache — stable context + closure-captured `pick`
+  // Per-row context cache - stable context + closure-captured `pick`
   // per `tab` so `ngTemplateOutlet` doesn't re-bind the embedded view
   // unless `index` or `disabled` actually changed. WeakMap so
   // detached handles GC. Mirrors `CngxTreeSelectPanel.nodeContext`.
@@ -168,10 +159,7 @@ export function createTabOverflowTemplateBindings(
     readonly index: number;
   }
   const itemContextCache = new WeakMap<CngxTabHandle, CachedRow>();
-  const buildItemContext = (
-    tab: CngxTabHandle,
-    index: number,
-  ): CngxTabOverflowItemContext => {
+  const buildItemContext = (tab: CngxTabHandle, index: number): CngxTabOverflowItemContext => {
     const disabled = tab.disabled();
     const cached = itemContextCache.get(tab);
     if (cached?.disabled === disabled && cached?.index === index) {
@@ -209,12 +197,14 @@ export function createTabOverflowTemplateBindings(
 /**
  * Resets the AD highlight on popover close. Keyboard-open paths
  * (ArrowDown / End / typeahead on the closed trigger) set
- * `activeIndex` via AD's own keydown listener before opening —
+ * `activeIndex` via AD's own keydown listener before opening -
  * unaffected. Mouse-open leaves `activeIndex === -1` so the popover
  * renders unhighlighted. Without this reset, the next open would
  * inherit a stale index from the prior keyboard session.
  *
  * Must run in injection context.
+ *
+ * @category common/tabs/overflow
  */
 export function createOverflowPopoverHighlightSync(
   popover: Signal<CngxPopover>,
@@ -232,6 +222,8 @@ export function createOverflowPopoverHighlightSync(
 
 /**
  * Factory signature for {@link CNGX_OVERFLOW_POPOVER_HIGHLIGHT_FACTORY}.
+ *
+ * @category common/tabs/overflow
  */
 export type CngxOverflowPopoverHighlightSyncFactory = (
   popover: Signal<CngxPopover>,
@@ -245,6 +237,10 @@ export type CngxOverflowPopoverHighlightSyncFactory = (
  * telemetry on close, custom highlight rules. Symmetric to
  * `CNGX_TAB_OVERFLOW_DOM_ADAPTER_FACTORY` and
  * `CNGX_TABS_COMMIT_HANDLER_FACTORY`.
+ *
+ * @category common/tabs/overflow
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/overflow/overflow-template-cascade.ts
+ * @since 0.1.0
  */
 export const CNGX_OVERFLOW_POPOVER_HIGHLIGHT_FACTORY =
   new InjectionToken<CngxOverflowPopoverHighlightSyncFactory>(

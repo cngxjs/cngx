@@ -3,15 +3,19 @@ import { type Observable, Subject } from 'rxjs';
 
 import type { AlertSeverity } from '../alert/alert';
 
-/** Configuration for a system-level banner. */
+/**
+ * Configuration for a system-level banner.
+ *
+ * @category ui/feedback/banner
+ */
 export interface BannerConfig {
   /** Banner message text (required). */
   message: string;
 
-  /** Required dedup key — only one banner per id. `show()` with existing id calls `update()`. */
+  /** Required dedup key - only one banner per id. `show()` with existing id calls `update()`. */
   id: string;
 
-  /** Visual severity — determines icon, color, and ARIA role. */
+  /** Visual severity - determines icon, color, and ARIA role. */
   severity?: AlertSeverity;
 
   /**
@@ -24,7 +28,11 @@ export interface BannerConfig {
   dismissible?: boolean;
 }
 
-/** Handle to a displayed banner. */
+/**
+ * Handle to a displayed banner.
+ *
+ * @category ui/feedback/banner
+ */
 export interface BannerRef {
   /** Programmatically dismiss this banner. */
   dismiss(): void;
@@ -32,7 +40,11 @@ export interface BannerRef {
   afterDismissed(): Observable<void>;
 }
 
-/** @internal — tracked state for a single banner. */
+/**
+ * @internal - tracked state for a single banner.
+ *
+ * @category ui/feedback/banner
+ */
 export interface BannerState {
   readonly id: string;
   readonly config: Required<Pick<BannerConfig, 'message' | 'id' | 'severity' | 'dismissible'>> &
@@ -45,11 +57,11 @@ export interface BannerState {
 }
 
 /**
- * Global banner service — manages system-level banners as a signal array.
+ * Global banner service - manages system-level banners as a signal array.
  *
  * Not `providedIn: 'root'`. Provide via `provideFeedback(withBanners())`.
  *
- * Banners are always persistent — no auto-dismiss. Use `dismiss(id)` to remove
+ * Banners are always persistent - no auto-dismiss. Use `dismiss(id)` to remove
  * programmatically (e.g., on reconnect, on session extend).
  *
  * `id` is required and serves as the dedup key. Calling `show()` with an existing
@@ -65,6 +77,14 @@ export interface BannerState {
  *   action: { label: 'Extend', handler: () => this.extendSession() },
  * });
  * ```
+ *
+ * @category ui/feedback/banner
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/feedback/banner/banner.service.ts
+ * @since 0.1.0
+ * @relatedTo CngxBannerOutlet, CngxBannerTrigger, CngxBannerOn, CngxAlerter, CngxToaster
+ *
  * <example-url>http://localhost:4200/#/ui/feedback/banner/async-action</example-url>
  * <example-url>http://localhost:4200/#/ui/feedback/banner/dedup-update</example-url>
  * <example-url>http://localhost:4200/#/ui/feedback/banner/system-banners</example-url>
@@ -73,7 +93,7 @@ export interface BannerState {
 export class CngxBanner {
   private readonly destroyRef = inject(DestroyRef);
 
-  /** Reactive banner stack — read by `CngxBannerOutlet`. */
+  /** Reactive banner stack - read by `CngxBannerOutlet`. */
   readonly banners = signal<readonly BannerState[]>([]);
 
   constructor() {
@@ -156,7 +176,7 @@ export class CngxBanner {
   }
 
   /**
-   * @internal — execute an action handler with async lifecycle.
+   * @internal - execute an action handler with async lifecycle.
    * Sets `actionPending` during execution, `actionError` on failure.
    */
   async executeAction(id: string): Promise<void> {

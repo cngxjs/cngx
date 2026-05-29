@@ -1,17 +1,6 @@
-import {
-  computed,
-  Directive,
-  inject,
-  input,
-  model,
-  signal,
-  type Signal,
-} from '@angular/core';
+import { computed, Directive, inject, input, model, signal, type Signal } from '@angular/core';
 
-import {
-  CNGX_COMMIT_CONTROLLER_FACTORY,
-  type CngxCommitController,
-} from '@cngx/common/data';
+import { CNGX_COMMIT_CONTROLLER_FACTORY, type CngxCommitController } from '@cngx/common/data';
 import {
   CNGX_STATEFUL,
   createTransitionTracker,
@@ -20,10 +9,7 @@ import {
 } from '@cngx/core/utils';
 import type { Observable } from 'rxjs';
 
-import {
-  CNGX_TABS_COMMIT_HANDLER_FACTORY,
-  type CngxTabsCommitHandler,
-} from './commit-handler';
+import { CNGX_TABS_COMMIT_HANDLER_FACTORY, type CngxTabsCommitHandler } from './commit-handler';
 import {
   CNGX_TAB_GROUP_HOST,
   type CngxTabGroupHost,
@@ -35,6 +21,8 @@ import {
  * and target indices; resolves `true` to commit, `false` to refuse.
  * `Observable | Promise | sync` union mirrors the rest of the cngx
  * commit-action family.
+ *
+ * @category common/tabs
  */
 export type CngxTabsCommitAction = (
   fromIndex: number,
@@ -42,16 +30,23 @@ export type CngxTabsCommitAction = (
 ) => boolean | Promise<boolean> | Observable<boolean>;
 
 /**
- * Tab-group presenter — brain of every cngx tab flow. Owns the
+ * Tab-group presenter - brain of every cngx tab flow. Owns the
  * active-index model, the tab registry, orientation, loop policy,
  * and the commit-controller lifecycle. Provides
  * {@link CNGX_TAB_GROUP_HOST} for atoms and {@link CNGX_STATEFUL}
  * so `<cngx-toast-on />` / `<cngx-banner-on />` compose without
  * `[state]` wiring.
  *
- * **Layer:** `@cngx/common/tabs` (Level 2). Directive-only —
+ * **Layer:** `@cngx/common/tabs` (Level 2). Directive-only -
  * organisms compose via `hostDirectives`, consumers attach
  * `[cngxTabGroup]` directly.
+ *
+ * @category common/tabs
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/presenter.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxTab, CngxTabContent, CngxTabLabel, CngxTabsFragmentSync
  * <example-url>http://localhost:4200/#/ui/tabs/tab-commit-action/optimistic-pessimistic-commits-with-bridge-directives</example-url>
  */
 @Directive({
@@ -72,12 +67,12 @@ export class CngxTabGroupPresenter implements CngxTabGroupHost {
    * Async-commit action gating the transition. When non-null,
    * `select(...)` routes through {@link CngxTabsCommitHandler}; the
    * action's resolution decides whether the change lands. Supersede
-   * semantics come from the commit-controller — a rapid second
+   * semantics come from the commit-controller - a rapid second
    * `select(...)` cancels the in-flight runner.
    */
   readonly commitAction = input<CngxTabsCommitAction | null>(null);
   /**
-   * Default `'optimistic'` — tab change is navigation, not a save,
+   * Default `'optimistic'` - tab change is navigation, not a save,
    * so eager visual feedback matches the user's mental model.
    * Switch to `'pessimistic'` when the new tab must wait for the
    * action to confirm.
@@ -85,23 +80,20 @@ export class CngxTabGroupPresenter implements CngxTabGroupHost {
   readonly commitMode = input<'optimistic' | 'pessimistic'>('optimistic');
 
   private readonly genericFactory = inject(CNGX_COMMIT_CONTROLLER_FACTORY);
-  private readonly commitController: CngxCommitController<number> =
-    this.genericFactory<number>();
-  private readonly commitHandler: CngxTabsCommitHandler = inject(
-    CNGX_TABS_COMMIT_HANDLER_FACTORY,
-  )({ controller: this.commitController });
+  private readonly commitController: CngxCommitController<number> = this.genericFactory<number>();
+  private readonly commitHandler: CngxTabsCommitHandler = inject(CNGX_TABS_COMMIT_HANDLER_FACTORY)({
+    controller: this.commitController,
+  });
 
   /** Producer surface for the `CNGX_STATEFUL` bridge contract. */
   readonly state: CngxAsyncState<number | undefined> = this.commitController.state;
-  readonly commitState: CngxAsyncState<number | undefined> =
-    this.commitController.state;
+  readonly commitState: CngxAsyncState<number | undefined> = this.commitController.state;
   /**
    * Index the user is currently trying to commit to. Tracked
    * separately from `state.data()` (which only updates on success)
    * to drive per-tab `aria-busy`.
    */
-  readonly intendedIndex: Signal<number | undefined> =
-    this.commitController.intendedValue;
+  readonly intendedIndex: Signal<number | undefined> = this.commitController.intendedValue;
 
   /**
    * Current/previous pair for `commitState.status()`. Skin
@@ -109,19 +101,16 @@ export class CngxTabGroupPresenter implements CngxTabGroupHost {
    * for declarative SR announcements. Shared across consumers so
    * the tracker's `linkedSignal` is allocated once per presenter.
    */
-  readonly commitTransition: StatusTransition = createTransitionTracker(
-    () => this.commitController.state.status(),
+  readonly commitTransition: StatusTransition = createTransitionTracker(() =>
+    this.commitController.state.status(),
   );
 
-  // Persistence-of-error surface — see `CngxTabGroupHost.lastFailedIndex`
+  // Persistence-of-error surface - see `CngxTabGroupHost.lastFailedIndex`
   // and `originIndexDuringCommit` for the contract.
   private readonly lastFailedIndexState = signal<number | undefined>(undefined);
-  private readonly originIndexDuringCommitState = signal<number | undefined>(
-    undefined,
-  );
+  private readonly originIndexDuringCommitState = signal<number | undefined>(undefined);
   /** {@inheritDoc CngxTabGroupHost.lastFailedIndex} */
-  readonly lastFailedIndex: Signal<number | undefined> =
-    this.lastFailedIndexState.asReadonly();
+  readonly lastFailedIndex: Signal<number | undefined> = this.lastFailedIndexState.asReadonly();
   /** {@inheritDoc CngxTabGroupHost.originIndexDuringCommit} */
   readonly originIndexDuringCommit: Signal<number | undefined> =
     this.originIndexDuringCommitState.asReadonly();
@@ -185,7 +174,7 @@ export class CngxTabGroupPresenter implements CngxTabGroupHost {
 
     const action = this.commitAction();
     if (!action) {
-      // No-action fast path — `originIndexDuringCommit` stays
+      // No-action fast path - `originIndexDuringCommit` stays
       // untouched, so a stale origin can never leak into the
       // live-region announcement.
       this.activeIndex.set(target);
@@ -195,7 +184,7 @@ export class CngxTabGroupPresenter implements CngxTabGroupHost {
       return;
     }
 
-    // Open the commit window — origin is captured ONLY here so a
+    // Open the commit window - origin is captured ONLY here so a
     // stale value never lingers into a non-commit navigation.
     this.originIndexDuringCommitState.set(previous);
     const mode = this.commitMode();
@@ -204,7 +193,7 @@ export class CngxTabGroupPresenter implements CngxTabGroupHost {
     }
     this.commitHandler.beginTransition(previous, target, action, (accept) => {
       if (accept) {
-        // Window closes on success — origin label no longer needed;
+        // Window closes on success - origin label no longer needed;
         // clear the rejection flag if the user re-picked the failed
         // target successfully.
         this.originIndexDuringCommitState.set(undefined);
@@ -215,7 +204,7 @@ export class CngxTabGroupPresenter implements CngxTabGroupHost {
           this.activeIndex.set(target);
         }
       } else {
-        // Reject — flag the refused target; RETAIN the origin so
+        // Reject - flag the refused target; RETAIN the origin so
         // the organism's `liveAnnouncement` computed can resolve
         // the origin label for the rich rollback phrase. Optimistic
         // rolls back; pessimistic never moved.
@@ -293,16 +282,13 @@ export class CngxTabGroupPresenter implements CngxTabGroupHost {
  * memoisation burden onto consumers and break the structural-equal
  * contract.
  *
- * Reading `disabled()` and `label()` here doesn't subscribe — the
+ * Reading `disabled()` and `label()` here doesn't subscribe - the
  * comparator runs synchronously inside `signal.set()`, outside any
  * tracking context.
  *
  * @internal
  */
-export function tabsEqual(
-  a: readonly CngxTabHandle[],
-  b: readonly CngxTabHandle[],
-): boolean {
+export function tabsEqual(a: readonly CngxTabHandle[], b: readonly CngxTabHandle[]): boolean {
   if (a === b) {
     return true;
   }

@@ -7,21 +7,27 @@ import {
 } from '@angular/core';
 import type { CngxAsyncState } from '@cngx/core/utils';
 
-/** Visual variant for the progress indicator. */
+/**
+ * Visual variant for the progress indicator.
+ *
+ * @category ui/feedback/loading
+ */
 export type ProgressVariant = 'linear' | 'circular';
 
+/** @internal */
 const CIRCUMFERENCE = 2 * Math.PI * 20; // r=20
+/** @internal */
 const CIRCLE_DASH_ARRAY = `${CIRCUMFERENCE}, ${CIRCUMFERENCE}`;
 
 /**
- * Progress indicator atom — determinate or indeterminate.
+ * Progress indicator atom - determinate or indeterminate.
  *
  * Automatically switches between modes based on whether `progress` is defined:
- * - **Indeterminate** (`progress === undefined`) — animated line, no value
- * - **Determinate** (`progress` 0–100) — bar with percentage
+ * - **Indeterminate** (`progress === undefined`) - animated line, no value
+ * - **Determinate** (`progress` 0–100) - bar with percentage
  *
  * CSS `transition` on bar width (300ms ease-out) smooths jumpy updates.
- * `aria-valuenow` is only present in determinate mode — AT uses its
+ * `aria-valuenow` is only present in determinate mode - AT uses its
  * absence to distinguish the two modes.
  *
  * ### With async state
@@ -33,6 +39,14 @@ const CIRCLE_DASH_ARRAY = `${CIRCUMFERENCE}, ${CIRCUMFERENCE}`;
  * ```html
  * <cngx-progress [progress]="percent()" label="Processing" />
  * ```
+ *
+ * @category ui/feedback/loading
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/feedback/loading/progress.ts
+ * @since 0.1.0
+ * @relatedTo CngxLoadingIndicator, CngxLoadingOverlay, CngxAsyncContainer
+ *
  * <example-url>http://localhost:4200/#/ui/feedback/progress/circular-variant</example-url>
  * <example-url>http://localhost:4200/#/ui/feedback/progress/linear-determinate</example-url>
  * <example-url>http://localhost:4200/#/ui/feedback/progress/linear-indeterminate</example-url>
@@ -96,7 +110,7 @@ const CIRCLE_DASH_ARRAY = `${CIRCUMFERENCE}, ${CIRCUMFERENCE}`;
   styleUrls: ['./progress.css'],
 })
 export class CngxProgress {
-  /** Bind an async state — reads `progress()` for determinate mode. */
+  /** Bind an async state - reads `progress()` for determinate mode. */
   readonly state = input<CngxAsyncState<unknown> | undefined>(undefined);
 
   /** Direct progress value (0–100). `undefined` = indeterminate. */
@@ -123,7 +137,7 @@ export class CngxProgress {
   /** @internal */
   protected readonly isDeterminate = computed(() => this.effectiveProgress() !== undefined);
 
-  /** @internal — `null` removes the attribute from the DOM for indeterminate mode. */
+  /** @internal - `null` removes the attribute from the DOM for indeterminate mode. */
   protected readonly ariaValueNow = computed(() => this.effectiveProgress() ?? null);
 
   /** @internal */
@@ -135,7 +149,7 @@ export class CngxProgress {
   /** @internal */
   protected readonly circleDashArray = CIRCLE_DASH_ARRAY;
 
-  /** @internal — SVG circle dash offset for determinate circular mode. */
+  /** @internal - SVG circle dash offset for determinate circular mode. */
   protected readonly circleDashOffset = computed(() => {
     const p = this.effectiveProgress();
     if (p === undefined) {

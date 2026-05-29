@@ -1,9 +1,54 @@
 /**
  * @overview
- * `CngxTreeSelect` trigger skin. Hierarchical multi-select with
- * cascading children. Trigger is a pill-shaped row with placeholder
- * / value summary, optional clear ✕, and a caret. The panel body
- * (the tree of nodes) lives in `tree-select-panel.component.css`.
+ * Trigger skin for `CngxTreeSelect` - hierarchical multi-select with
+ * cascading children. The host carries `.cngx-tree-select`; the trigger
+ * is a pill-shaped row with placeholder / value summary, optional
+ * clear-all button, and a caret. The panel body (the tree of nodes)
+ * lives in `tree-select-panel.component.css`.
+ *
+ * **State modifiers**
+ *
+ * - `:focus-visible` on `.cngx-tree-select__trigger` - focus-ring
+ *   outline + 1px offset
+ * - `[aria-disabled='true']` on the trigger - opacity dim + `cursor:
+ *   not-allowed`
+ * - `[aria-invalid='true']` on the trigger - danger border + box-shadow
+ *   glow at focus-within time
+ *
+ * **Slots**
+ *
+ * - `.cngx-tree-select__root` - relative-positioned wrapper
+ * - `.cngx-tree-select__trigger` - the bordered row
+ * - `.cngx-tree-select__placeholder` - placeholder text shown when no
+ *   values are selected (alpha-tinted, swaps on dark)
+ * - `.cngx-tree-select__clear-all` - reset-all button
+ * - `.cngx-tree-select__caret` - panel-state glyph, pushed inline-end
+ *
+ * **Inheritance**
+ *
+ * Trigger border + focus ring delegate to the foundation so brand swaps
+ * on `--cngx-color-border` / `--cngx-color-primary` cascade through:
+ *
+ * - `--cngx-tree-select-trigger-border` -> `--cngx-color-border`
+ * - `--cngx-tree-select-focus-ring` -> `--cngx-color-primary` (mixed
+ *   to 80% via `color-mix()` for a softer halo)
+ * - invalid surfaces fall back to `--cngx-select-trigger-invalid-*` ->
+ *   `--cngx-color-danger`
+ *
+ * **Dark mode**
+ *
+ * Three hooks swap the alpha-on-black placeholder colour to
+ * alpha-on-white so it reads on a dark page:
+ *
+ * - `prefers-color-scheme: dark`
+ * - `[data-color-scheme="dark"]`
+ * - `.dark` class
+ *
+ * **Pair with**
+ *
+ * - `tree-select-panel.component.css` - the body skin sibling
+ * - `@cngx/themes/material/select-theme` - Material 3 surface treatment
+ *   shared across the entire select family
  */
 
 @layer cngx.tokens {
@@ -141,17 +186,18 @@
     initial-value: currentColor;
   }
 
-  /* Delegating tokens — trigger border + focus-ring track the
+  /* Delegating tokens - trigger border + focus-ring track the
    * foundation chain. The border shorthand pins the structural part
    * (1px solid) and inherits the color via the delegating
    * border-color chain; the focus-ring shorthand pins 2px solid
    * and inherits the primary alpha. */
   :root {
     --cngx-tree-select-trigger-border: 1px solid var(--cngx-color-border);
-    --cngx-tree-select-focus-ring: 2px solid color-mix(in oklch, var(--cngx-color-primary) 80%, transparent);
+    --cngx-tree-select-focus-ring: 2px solid
+      color-mix(in oklch, var(--cngx-color-primary) 80%, transparent);
   }
 
-  /* Dark-mode component-local swap — the alpha-on-black placeholder
+  /* Dark-mode component-local swap - the alpha-on-black placeholder
    * dissolves on dark, so the dark blocks flip it to alpha-on-white. */
   @media (prefers-color-scheme: dark) {
     :root:not([data-color-scheme='light']):not(.light) {
@@ -214,13 +260,9 @@
       border-width: var(--cngx-select-trigger-invalid-border-width, 1px);
     }
     .cngx-tree-select__trigger[aria-invalid='true']:focus-within {
-      outline: 2px solid
-        var(--cngx-select-trigger-invalid-outline-color, oklch(0.6 0.18 25));
+      outline: 2px solid var(--cngx-select-trigger-invalid-outline-color, oklch(0.6 0.18 25));
       outline-offset: 1px;
-      box-shadow: var(
-        --cngx-select-trigger-invalid-glow,
-        0 0 0 3px oklch(0.6 0.18 25 / 0.2)
-      );
+      box-shadow: var(--cngx-select-trigger-invalid-glow, 0 0 0 3px oklch(0.6 0.18 25 / 0.2));
     }
 
     .cngx-tree-select__placeholder {

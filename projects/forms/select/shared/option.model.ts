@@ -2,6 +2,8 @@
  * Data-driven option for the Select family. Pass an array to `[options]`.
  * Element-driven composition uses `<cngx-option>` (`CngxSelectOption`) —
  * pick one mode per instance.
+ *
+ * @category forms/select/state
  */
 export interface CngxSelectOptionDef<T = unknown> {
   readonly value: T;
@@ -13,6 +15,8 @@ export interface CngxSelectOptionDef<T = unknown> {
 
 /**
  * Data-driven optgroup descriptor.
+ *
+ * @category forms/select/state
  */
 export interface CngxSelectOptionGroupDef<T = unknown> {
   readonly label: string;
@@ -22,6 +26,8 @@ export interface CngxSelectOptionGroupDef<T = unknown> {
 
 /**
  * Mixed flat-or-grouped options accepted by `[options]` in data-driven mode.
+ *
+ * @category forms/select/state
  */
 export type CngxSelectOptionsInput<T = unknown> = readonly (
   | CngxSelectOptionDef<T>
@@ -30,6 +36,8 @@ export type CngxSelectOptionsInput<T = unknown> = readonly (
 
 /**
  * Group / flat-option type guard.
+ *
+ * @category forms/select/state
  */
 export function isCngxSelectOptionGroupDef<T>(
   item: CngxSelectOptionDef<T> | CngxSelectOptionGroupDef<T>,
@@ -43,6 +51,8 @@ export function isCngxSelectOptionGroupDef<T>(
 
 /**
  * Flattens grouped + flat input. Used by keyboard nav and compare lookups.
+ *
+ * @category forms/select/state
  */
 export function flattenSelectOptions<T>(
   input: CngxSelectOptionsInput<T>,
@@ -64,6 +74,8 @@ export function flattenSelectOptions<T>(
  * Filters by `term` using a listbox `match` fn. Preserves group shape;
  * empty groups dropped. The matcher payload's `id: ''` is synthetic; real
  * DOM ids come from `CngxOption`, and in-tree matchers ignore the field.
+ *
+ * @category forms/select/state
  */
 export function filterSelectOptions<T>(
   input: CngxSelectOptionsInput<T>,
@@ -109,6 +121,8 @@ export function filterSelectOptions<T>(
  * value drop silently.
  *
  * Identity-stable when `localItems` is empty (returns `provided`).
+ *
+ * @category forms/select/state
  */
 export function mergeLocalItems<T>(
   provided: CngxSelectOptionsInput<T>,

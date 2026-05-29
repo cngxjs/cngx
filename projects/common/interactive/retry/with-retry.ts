@@ -4,7 +4,11 @@ import { firstValueFrom, isObservable, timer } from 'rxjs';
 
 import type { AsyncAction } from '../async-click/async-click.directive';
 
-/** Configuration for `withRetry()`. */
+/**
+ * Configuration for `withRetry()`.
+ *
+ * @category common/interactive/retry
+ */
 export interface RetryConfig {
   /** Maximum number of attempts (including the first). Default: `3`. */
   maxAttempts?: number;
@@ -14,7 +18,11 @@ export interface RetryConfig {
   backoff?: 'linear' | 'exponential';
 }
 
-/** State exposed by the retryable action — read-only signals for UI feedback. */
+/**
+ * State exposed by the retryable action — read-only signals for UI feedback.
+ *
+ * @category common/interactive/retry
+ */
 export interface RetryState {
   /** Current attempt number (1-based). `0` before first invocation. */
   readonly attempt: Signal<number>;
@@ -58,6 +66,8 @@ export interface RetryState {
  * <ng-container [cngxToastOn]="retryState.state"
  *   toastSuccess="Saved" toastError="All retries failed" />
  * ```
+ *
+ * @category common/interactive/retry
  */
 export function withRetry(action: AsyncAction, config?: RetryConfig): [AsyncAction, RetryState] {
   const maxAttempts = config?.maxAttempts ?? 3;

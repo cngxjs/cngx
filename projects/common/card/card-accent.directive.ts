@@ -5,7 +5,7 @@ import { Directive, input } from '@angular/core';
  *
  * Renders as a colored top border + tinted background to communicate
  * status visually. Differentiates by both color and border width
- * (not just color — WCAG 1.4.1).
+ * (not just color - WCAG 1.4.1).
  *
  * ```html
  * <cngx-card cngxCardAccent="warning">
@@ -14,6 +14,12 @@ import { Directive, input } from '@angular/core';
  *   </header>
  * </cngx-card>
  * ```
+ *
+ * @category common/card
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/card/card-accent.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxCard, CngxCardBadge, CngxCardHeader
  * <example-url>http://localhost:4200/#/common/card/severity-accent</example-url>
  */
 @Directive({

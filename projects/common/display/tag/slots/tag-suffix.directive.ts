@@ -7,7 +7,7 @@ import type { CngxTagSuffixContext } from './tag-slot.context';
  * `<span cngxTag>`. Use for trailing chevrons, sort indicators, or
  * any per-tag suffix decoration.
  *
- * The slot has no default body — when not projected, no DOM is
+ * The slot has no default body - when not projected, no DOM is
  * rendered in the suffix position. Removable affordances belong on
  * `CngxChip` (which ships its own remove button + announcer
  * wiring), not as a Tag suffix slot.
@@ -20,6 +20,11 @@ import type { CngxTagSuffixContext } from './tag-slot.context';
  *   </ng-template>
  * </span>
  * ```
+ *
+ * @category common/display
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/display/tag/slots/tag-suffix.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxTag, CngxTagLabel, CngxTagPrefix
  * <example-url>http://localhost:4200/#/common/display/tag/app-wide-defaults-via-providetagconfig</example-url>
  * <example-url>http://localhost:4200/#/common/display/tag/color-palette</example-url>
  * <example-url>http://localhost:4200/#/common/display/tag/composition-with-cngxicon</example-url>

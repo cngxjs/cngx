@@ -5,6 +5,8 @@ import type { Observable } from 'rxjs';
  * Receives the intended value (`undefined` on clear). Resolves to the
  * committed value — typically the intended value, or a server-normalised
  * variant.
+ *
+ * @category forms/select/commit
  */
 export type CngxSelectCommitAction<T> = (intended: T | undefined) =>
   | Observable<T | undefined>
@@ -19,6 +21,8 @@ export type CngxSelectCommitAction<T> = (intended: T | undefined) =>
  *   rolls back on error.
  * - `'pessimistic'` — panel stays open, option-row spinner, trigger
  *   disabled. Closes on success; stays open on error with inline UI.
+ *
+ * @category forms/select/commit
  */
 export type CngxSelectCommitMode = 'optimistic' | 'pessimistic';
 
@@ -28,5 +32,7 @@ export type CngxSelectCommitMode = 'optimistic' | 'pessimistic';
  * - `'banner'` (default) — top-of-panel banner.
  * - `'inline'` — indicator next to the offending option row.
  * - `'none'` — no built-in UI; bridge via `CngxToastOn` etc.
+ *
+ * @category forms/select/commit
  */
 export type CngxSelectCommitErrorDisplay = 'inline' | 'banner' | 'none';

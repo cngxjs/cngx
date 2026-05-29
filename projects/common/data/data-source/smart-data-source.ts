@@ -10,6 +10,8 @@ import { CngxSearch } from '@cngx/common/interactive';
 
 /**
  * Optional customization for {@link CngxSmartDataSource}.
+ *
+ * @category common/data/data-source
  */
 export interface CngxSmartDataSourceOptions<T> {
   /**
@@ -32,7 +34,7 @@ function isAsyncState<T>(source: Signal<T[]> | CngxAsyncState<T[]>): source is C
 /**
  * A CDK `DataSource` that optionally integrates with `CngxSort`,
  * `CngxFilter`, `CngxSearch`, and `CngxPaginate` present in the injection
- * tree. Each directive is injected optionally — if absent, that processing
+ * tree. Each directive is injected optionally - if absent, that processing
  * step is skipped.
  *
  * Accepts either a plain `Signal<T[]>` or a `CngxAsyncState<T[]>`.
@@ -44,13 +46,19 @@ function isAsyncState<T>(source: Signal<T[]> | CngxAsyncState<T[]>): source is C
  * // Plain signal
  * readonly dataSource = injectSmartDataSource(this.items);
  *
- * // With async state — full UX lifecycle
+ * // With async state - full UX lifecycle
  * readonly residents = injectAsyncState(() => this.api.getAll(this.filter()));
  * readonly dataSource = injectSmartDataSource(this.residents);
  * // dataSource.isLoading(), dataSource.error(), dataSource.isRefreshing()
  * ```
  *
  * @typeParam T - The row item type.
+ *
+ * @category common/data/data-source
+ * @docsKind primary
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/data/data-source/smart-data-source.ts
+ * @since 0.1.0
+ * @relatedTo CngxDataSource, CngxSort, CngxFilter, CngxPaginate
  */
 export class CngxSmartDataSource<T> extends DataSource<T> {
   private readonly injector = inject(Injector);
@@ -142,7 +150,7 @@ export class CngxSmartDataSource<T> extends DataSource<T> {
     this.filteredCount = computed(() => this.filtered().length);
 
     this.isEmpty = computed(() => {
-      // During loading, not "empty" yet — show skeleton instead
+      // During loading, not "empty" yet - show skeleton instead
       if (this.isBusy()) {
         return false;
       }
@@ -184,7 +192,7 @@ export class CngxSmartDataSource<T> extends DataSource<T> {
   }
 
   override disconnect(): void {
-    // Signal cleanup is handled by Angular's DestroyRef — no manual teardown needed.
+    // Signal cleanup is handled by Angular's DestroyRef - no manual teardown needed.
   }
 }
 
@@ -199,10 +207,12 @@ export class CngxSmartDataSource<T> extends DataSource<T> {
  * // Plain signal
  * readonly dataSource = injectSmartDataSource(this.items);
  *
- * // With async state — table shows skeleton, error, loading bar
+ * // With async state - table shows skeleton, error, loading bar
  * readonly residents = injectAsyncState(() => this.api.getAll());
  * readonly dataSource = injectSmartDataSource(this.residents);
  * ```
+ *
+ * @category common/data/data-source
  */
 export function injectSmartDataSource<T>(
   source: Signal<T[]> | CngxAsyncState<T[]>,

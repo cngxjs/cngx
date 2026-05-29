@@ -17,10 +17,7 @@ import {
 } from '@cngx/core/tokens';
 import { nextUid } from '@cngx/core/utils';
 
-import {
-  CNGX_CONTROL_VALUE,
-  type CngxControlValue,
-} from '../control-value/control-value.token';
+import { CNGX_CONTROL_VALUE, type CngxControlValue } from '../control-value/control-value.token';
 import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.token';
 
 /**
@@ -28,7 +25,7 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
  * `role="checkbox"` semantics. Click, Space, and Enter all advance
  * `value`; an indeterminate checkbox advances to `value=true`,
  * `indeterminate=false` in a single step (per WAI-ARIA tristate
- * semantics — there is no path that lands the checkbox back in
+ * semantics - there is no path that lands the checkbox back in
  * `'mixed'` from a user click).
  *
  * `value` and `indeterminate` are both `ModelSignal<boolean>` so
@@ -43,7 +40,7 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
  * from `@cngx/common/display`; this interactive molecule owns role,
  * keyboard, and ARIA wiring and composes the display atom. Per
  * Pillar 3 (Komposition statt Konfiguration), the visual atom is
- * reused — never re-drawn here.
+ * reused - never re-drawn here.
  *
  * `aria-checked` is a reactive computed: `indeterminate() ? 'mixed' :
  * value() ? 'true' : 'false'`. The description span for
@@ -59,6 +56,14 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
  *   (valueChange)="toggleAll($event)"
  * >Select all</cngx-checkbox>
  * ```
+ *
+ * @category common/interactive
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/checkbox/checkbox.component.ts
+ * @selector cngx-checkbox
+ * @since 0.1.0
+ * @relatedTo CngxCheckboxGroup, CngxCheckboxIndicator, CngxToggle, CngxRadio
  * <example-url>http://localhost:4200/#/common/interactive/checkbox/group/basic-select-all-master-projected-leaves</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/checkbox/group/disabled-cascade</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/checkbox/base/basic-two-way-binding</example-url>
@@ -114,21 +119,20 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
       [id]="describedId"
       class="cngx-checkbox__sr-only"
       [attr.aria-hidden]="disabledReason() ? null : 'true'"
-    >{{ disabledReason() }}</span>
+      >{{ disabledReason() }}</span
+    >
   `,
   styleUrls: ['./checkbox.component.css'],
   encapsulation: ViewEncapsulation.None,
 })
-export class CngxCheckbox
-  implements CngxControlValue<boolean>, CngxFormFieldControl
-{
+export class CngxCheckbox implements CngxControlValue<boolean>, CngxFormFieldControl {
   readonly value = model<boolean>(false);
   readonly indeterminate = model<boolean>(false);
   readonly disabled = model<boolean>(false);
   /**
    * Bridge-writable invalid state. `model<boolean>` mirrors `disabled`
    * so external integrations (RF/Signal-Forms bridges, custom validity
-   * adapters) can drive it without a parallel API path — consumers
+   * adapters) can drive it without a parallel API path - consumers
    * typically read only.
    */
   readonly invalid = model<boolean>(false);
@@ -137,7 +141,7 @@ export class CngxCheckbox
    * rendered by `<cngx-form-field>` or a consumer-owned `<span>`).
    * When set, the host emits `aria-errormessage="<id>"` so AT can
    * locate the message; consumers MUST render an element with that id
-   * — passing an id without a matching element produces a dangling
+   * - passing an id without a matching element produces a dangling
    * AT reference. Default `null` skips the attribute entirely.
    * Note: WAI-ARIA dictates that AT ignores this attribute when
    * `aria-invalid` is absent or `"false"`, so a stable always-emitted
@@ -177,8 +181,7 @@ export class CngxCheckbox
   });
 
   readonly errorState = computed<boolean>(
-    () =>
-      this.fieldHost?.showError() ?? this.aggregator?.shouldShow() ?? false,
+    () => this.fieldHost?.showError() ?? this.aggregator?.shouldShow() ?? false,
   );
 
   protected handleClick(): void {

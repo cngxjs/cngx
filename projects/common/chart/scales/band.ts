@@ -14,6 +14,8 @@
  * @returns Callable `(v: T) => number` returning the **leading edge** of
  *   the band, with a `bandwidth()` method returning the band width.
  *   Lookup of an unknown value returns `NaN`.
+ *
+ * @category common/chart/scales
  */
 export interface BandScale<T> {
   (v: T): number;
@@ -24,6 +26,8 @@ export interface BandScale<T> {
  * Construct a {@link BandScale} from a categorical domain and a numeric
  * range. See the type-level documentation above for parameter
  * semantics.
+ *
+ * @category common/chart/scales
  */
 export function createBandScale<T>(
   domain: readonly T[],

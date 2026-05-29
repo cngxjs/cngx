@@ -17,32 +17,28 @@
 
 @mixin color($theme) {
   @if mat.get-theme-version($theme) == 1 {
-    // Idle — M3 assist-chip rest surface.
+    // Idle - M3 assist-chip rest surface.
     --cngx-chip-bg: color-mix(in srgb, var(--mat-sys-on-surface) 8%, transparent);
     --cngx-chip-color: var(--mat-sys-on-surface);
     --cngx-chip-border: 1px solid var(--mat-sys-outline-variant);
 
-    // Hover — adds the M3 hover state-layer (8% on-surface).
+    // Hover - adds the M3 hover state-layer (8% on-surface).
     --cngx-chip-hover-bg: color-mix(in srgb, var(--mat-sys-on-surface) 16%, transparent);
     --cngx-chip-hover-color: var(--mat-sys-on-surface);
 
     // Focus ring uses primary so it stays visible on any chip surface.
     --cngx-chip-focus-outline: 2px solid var(--mat-sys-primary);
 
-    // Selected — M3 filter-chip selected fill (primary-container surface).
+    // Selected - M3 filter-chip selected fill (primary-container surface).
     --cngx-chip-selected-bg: var(--mat-sys-secondary-container);
     --cngx-chip-selected-color: var(--mat-sys-on-secondary-container);
 
-    // Variant palette — Material's container tones.
+    // Variant palette - Material's container tones.
     --cngx-chip-info-bg: var(--mat-sys-primary-container);
     --cngx-chip-info-color: var(--mat-sys-on-primary-container);
     --cngx-chip-success-bg: var(--mat-sys-tertiary-container);
     --cngx-chip-success-color: var(--mat-sys-on-tertiary-container);
-    --cngx-chip-warning-bg: color-mix(
-      in srgb,
-      var(--mat-sys-tertiary) 24%,
-      var(--mat-sys-surface)
-    );
+    --cngx-chip-warning-bg: color-mix(in srgb, var(--mat-sys-tertiary) 24%, var(--mat-sys-surface));
     --cngx-chip-warning-color: var(--mat-sys-on-surface);
     --cngx-chip-danger-bg: var(--mat-sys-error-container);
     --cngx-chip-danger-color: var(--mat-sys-on-error-container);
@@ -77,9 +73,27 @@
   // M3 default chip is 32px tall with 16px inline + 6px block padding.
   // Negative scales tighten both axes proportionally; the inner gap
   // between leading icon / label / trailing remove follows the same curve.
-  $padding-block: (0: 6px, -1: 4px, -2: 3px, -3: 2px, -4: 1px);
-  $padding-inline: (0: 16px, -1: 12px, -2: 10px, -3: 8px, -4: 6px);
-  $inner-gap: (0: 8px, -1: 6px, -2: 4px, -3: 4px, -4: 2px);
+  $padding-block: (
+    0: 6px,
+    -1: 4px,
+    -2: 3px,
+    -3: 2px,
+    -4: 1px,
+  );
+  $padding-inline: (
+    0: 16px,
+    -1: 12px,
+    -2: 10px,
+    -3: 8px,
+    -4: 6px,
+  );
+  $inner-gap: (
+    0: 8px,
+    -1: 6px,
+    -2: 4px,
+    -3: 4px,
+    -4: 2px,
+  );
 
   --cngx-chip-padding-block: #{map.get($padding-block, $scale)};
   --cngx-chip-padding-inline: #{map.get($padding-inline, $scale)};
@@ -101,7 +115,7 @@
   @layer cngx.components {
     // Color tokens that are `inherits: true` (bg, color) cascade from
     // the group into projected chips, so writing them on the parent is
-    // fine — and lets a consumer set `aria-busy` / `aria-disabled` on
+    // fine - and lets a consumer set `aria-busy` / `aria-disabled` on
     // the group surface without re-aliasing.
     :where(cngx-chip, cngx-chip-group, cngx-multi-chip-group) {
       @include color($theme);

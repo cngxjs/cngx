@@ -13,10 +13,7 @@ import {
   type Signal,
 } from '@angular/core';
 import { CngxChip } from '@cngx/common/display';
-import {
-  CngxChipInGroup,
-  CngxMultiChipGroup,
-} from '@cngx/common/interactive';
+import { CngxChipInGroup, CngxMultiChipGroup } from '@cngx/common/interactive';
 import type { CngxAsyncState } from '@cngx/core/utils';
 
 import type { CngxFilter } from '../filter/filter.directive';
@@ -24,18 +21,20 @@ import type { CngxFilter } from '../filter/filter.directive';
 /**
  * Per-chip override slot context. Consumers project an
  * `<ng-template cngxFilterChip let-option let-value="value" let-label="label">`
- * to customize chip body decoration — icons, count badges, colour
+ * to customize chip body decoration - icons, count badges, colour
  * swatches, anything beyond the default text label.
  *
  * **Decoration-only semantics.** The bridge ALWAYS wraps each option
  * in `<cngx-chip cngxChipInGroup [value]>` itself; the slot only
  * customizes what renders INSIDE that wrapper. Consumers do NOT
- * redeclare selection wiring — it is handled by the bridge so the
+ * redeclare selection wiring - it is handled by the bridge so the
  * projected content survives Angular's `*ngTemplateOutlet`
  * lexical-injector semantics (the projected template injects against
  * the consumer's component, NOT the bridge's inner
  * `<cngx-multi-chip-group>`, so a consumer-supplied
  * `cngxChipInGroup` would fail to resolve `CNGX_CHIP_GROUP_HOST`).
+ *
+ * @category common/data/filter
  */
 export interface CngxFilterChipContext<TItem = unknown, TValue = unknown> {
   readonly $implicit: TItem;
@@ -50,6 +49,12 @@ export interface CngxFilterChipContext<TItem = unknown, TValue = unknown> {
  * `<ng-template cngxFilterChip>` to project decoration; the bridge
  * wraps that decoration in `cngxChipInGroup`-bound chip wrappers
  * automatically. Absence falls back to the default text-only label.
+ *
+ * @category common/data/filter
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/data/filter-chips/filter-chips.component.ts
+ * @since 0.1.0
+ * @relatedTo CngxFilterChips, CngxFilter
+ *
  * <example-url>http://localhost:4200/#/common/data/filter-chips/custom-chip-decoration-via-cngxfilterchip</example-url>
  * <example-url>http://localhost:4200/#/common/data/filter-chips/multi-role-filter-wired-to-a-list</example-url>
  */
@@ -71,7 +76,7 @@ export class CngxFilterChip<TItem = unknown, TValue = unknown> {
 
 /**
  * Bridge that connects a multi-select chip strip to a `CngxFilter`
- * predicate via Pillar-1 derivation — no `effect()` write-back, no
+ * predicate via Pillar-1 derivation - no `effect()` write-back, no
  * manual sync. The bridge composes `<cngx-multi-chip-group>` for
  * the visible chip strip and registers a single closure-style
  * predicate on the parent `[filterRef]`. Chip toggles update
@@ -84,7 +89,7 @@ export class CngxFilterChip<TItem = unknown, TValue = unknown> {
  * is intentionally out of scope. Consumers needing a single-select
  * filter wire `<cngx-chip-group>` to a custom predicate themselves.
  *
- * **Sync contract — derivation, not effect.** The bridge calls
+ * **Sync contract - derivation, not effect.** The bridge calls
  * `filterRef.addPredicate(filterKey, predicateFn)` EXACTLY ONCE
  * during mount (in `afterNextRender`, because `input.required()`
  * cannot be read from the constructor body). `predicateFn` is a
@@ -92,12 +97,12 @@ export class CngxFilterChip<TItem = unknown, TValue = unknown> {
  * `this.optionValueFn()` on every invocation. Because
  * `CngxFilter.predicate` is itself a `computed()` consumed by
  * downstream filtered lists, each item-evaluation flows through
- * `selectedValues()` in the consumer's reactive context — chip
+ * `selectedValues()` in the consumer's reactive context - chip
  * toggles propagate without any `effect()` writing back into the
  * filter.
  *
  * **Empty-selection semantics.** When `selectedValues()` is `[]`,
- * the closure returns `true` for every item — equivalent to "no
+ * the closure returns `true` for every item - equivalent to "no
  * filter applied". The bridge deliberately does NOT call
  * `removePredicate` on empty selection: leaving the predicate
  * registered with a constant-`true` short-circuit is cheaper than
@@ -105,7 +110,7 @@ export class CngxFilterChip<TItem = unknown, TValue = unknown> {
  * predicate-stack stable (no `predicatesChange` emission churn).
  *
  * **Teardown.** `DestroyRef.onDestroy` calls `removePredicate` only
- * when registration actually happened (`registered` flag) — guards
+ * when registration actually happened (`registered` flag) - guards
  * against the case where the component is destroyed before
  * `afterNextRender` fires. The destroy callback reads `filterRef`
  * and `filterKey` lazily so a consumer that re-binds these between
@@ -128,6 +133,14 @@ export class CngxFilterChip<TItem = unknown, TValue = unknown> {
  *   }
  * </ng-container>
  * ```
+ *
+ * @category common/data/filter
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/data/filter-chips/filter-chips.component.ts
+ * @since 0.1.0
+ * @relatedTo CngxFilter, CngxFilterChip, CngxMultiChipGroup
+ *
  * <example-url>http://localhost:4200/#/common/data/filter-chips/custom-chip-decoration-via-cngxfilterchip</example-url>
  * <example-url>http://localhost:4200/#/common/data/filter-chips/multi-role-filter-wired-to-a-list</example-url>
  */
@@ -152,9 +165,7 @@ export class CngxFilterChip<TItem = unknown, TValue = unknown> {
       @for (option of options(); track keyFn()(optionValue()(option))) {
         <cngx-chip cngxChipInGroup [value]="optionValue()(option)">
           @if (chipTemplate()?.template; as tpl) {
-            <ng-container
-              *ngTemplateOutlet="tpl; context: chipContext(option)"
-            />
+            <ng-container *ngTemplateOutlet="tpl; context: chipContext(option)" />
           } @else {
             {{ optionLabel()(option) }}
           }
@@ -191,7 +202,7 @@ export class CngxFilterChips<TItem = unknown, TValue = unknown> {
    * primitive id), this fn extracts a stable identity key so chip
    * membership survives re-emissions with fresh references. Forwarded
    * to the inner `<cngx-multi-chip-group>` AND used inside the
-   * predicate's `Object.is` comparison. Defaults to identity — works
+   * predicate's `Object.is` comparison. Defaults to identity - works
    * for primitive values.
    */
   readonly keyFn = input<(value: TValue) => unknown>((v) => v);
@@ -204,9 +215,9 @@ export class CngxFilterChips<TItem = unknown, TValue = unknown> {
    * `Signal<CngxFilterChip<unknown, unknown> | undefined>` and the
    * `chipContext()` helper would have to widen on every call.
    */
-  protected readonly chipTemplate: Signal<
-    CngxFilterChip<TItem, TValue> | undefined
-  > = contentChild(CngxFilterChip<TItem, TValue>);
+  protected readonly chipTemplate: Signal<CngxFilterChip<TItem, TValue> | undefined> = contentChild(
+    CngxFilterChip<TItem, TValue>,
+  );
 
   /**
    * Build the slot context for a given chip option. `optionValue` is
@@ -214,15 +225,13 @@ export class CngxFilterChips<TItem = unknown, TValue = unknown> {
    * closure invokes it again per LIST item for membership filtering.
    * Both invocations are necessary because option items (the chip
    * pool) and filtered list items (the consumer's filtered data) are
-   * separate data paths — they happen to share a shape under the
+   * separate data paths - they happen to share a shape under the
    * Phase-5 single-shape limitation, but the bridge cannot memoise
    * across the two paths without conflating them. Consumers should
    * keep `optionValue` cheap (typically a property lookup); a future
    * `[itemValue]` input will separate the two extractors.
    */
-  protected readonly chipContext = (
-    option: TItem,
-  ): CngxFilterChipContext<TItem, TValue> => {
+  protected readonly chipContext = (option: TItem): CngxFilterChipContext<TItem, TValue> => {
     const value = this.optionValue()(option);
     return {
       $implicit: option,

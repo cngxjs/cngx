@@ -23,14 +23,10 @@
 
 @mixin color($theme) {
   @if mat.get-theme-version($theme) == 1 {
-    // Hover / keyboard-highlighted state — M3 state-layer (on-surface @ 8%).
-    --cngx-option-highlight-bg: color-mix(
-      in srgb,
-      var(--mat-sys-on-surface) 8%,
-      transparent
-    );
+    // Hover / keyboard-highlighted state - M3 state-layer (on-surface @ 8%).
+    --cngx-option-highlight-bg: color-mix(in srgb, var(--mat-sys-on-surface) 8%, transparent);
 
-    // Selected state — M3 filled-selection fill (secondary-container).
+    // Selected state - M3 filled-selection fill (secondary-container).
     // Matches <mat-list-option> selected behaviour and <mat-chip-option>
     // selected fill so a listbox sitting next to a chip set reads as
     // visually consistent committed state.
@@ -64,8 +60,7 @@
     -4: 8px,
   );
 
-  --cngx-option-padding: #{map.get($padding-block, $scale)}
-    #{map.get($padding-inline, $scale)};
+  --cngx-option-padding: #{map.get($padding-block, $scale)} #{map.get($padding-inline, $scale)};
 }
 
 @mixin base($theme) {

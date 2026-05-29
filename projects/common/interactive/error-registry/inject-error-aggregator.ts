@@ -12,7 +12,7 @@ import { errorSourceMapEqual } from './equal-fns';
  * Creates a programmatic {@link CngxErrorAggregatorContract}, optionally
  * registered under `name` in the ambient {@link CngxErrorRegistry}.
  *
- * Positional arguments — NOT a config-options-bag — per Pillar 3
+ * Positional arguments - NOT a config-options-bag - per Pillar 3
  * (Komposition statt Konfiguration). When `name` is set and a registry is
  * provided, auto-registers and auto-deregisters on the surrounding
  * `DestroyRef`.
@@ -34,7 +34,7 @@ import { errorSourceMapEqual } from './equal-fns';
  * ({@link `@cngx/common/interactive`#CngxErrorAggregator}) and the
  * function form share a single source of truth.
  *
- * @internal Staged API — single-consumer.
+ * @internal Staged API - single-consumer.
  * See form-primitives-accepted-debt.md §A for the re-evaluation trigger
  * and collapse plan.
  */
@@ -67,6 +67,7 @@ export function injectErrorAggregator(
   return contract;
 }
 
+/** @internal */
 function buildInitialSources(
   sources: Record<string, Signal<boolean>> | undefined,
   labels: Record<string, string> | undefined,

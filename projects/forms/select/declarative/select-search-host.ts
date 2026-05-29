@@ -8,12 +8,14 @@ import type { CngxListbox } from '@cngx/common/interactive';
  * forwards navigation keys into the listbox AD without ancestor
  * injection of the concrete shell class.
  *
- *   - `searchTerm` — `ModelSignal<string>`. Empty disables the filter.
- *   - `listboxRef` — read-only signal to the listbox; used by the
+ *   - `searchTerm` - `ModelSignal<string>`. Empty disables the filter.
+ *   - `listboxRef` - read-only signal to the listbox; used by the
  *     search element to forward `ArrowUp/Down`, `Enter`, `Home`,
  *     `End`, `Escape` while focus stays in the input.
- *   - `close()` — closes panel and returns focus to the trigger
+ *   - `close()` - closes panel and returns focus to the trigger
  *     (Escape path).
+ *
+ * @category forms/select/declarative
  */
 export interface CngxSelectShellSearchHost {
   readonly searchTerm: ModelSignal<string>;
@@ -25,8 +27,14 @@ export interface CngxSelectShellSearchHost {
 /**
  * DI token a `CngxSelectShell` (or any pin-compatible host) provides
  * on itself. `CngxSelectSearch` injects this to stay decoupled from
- * the concrete shell class — same pattern as `CNGX_OPTION_FILTER_HOST`
+ * the concrete shell class - same pattern as `CNGX_OPTION_FILTER_HOST`
  * / `CNGX_OPTION_STATUS_HOST`.
+ *
+ * @category forms/select/declarative
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/declarative/select-search-host.ts
+ * @since 0.1.0
  */
-export const CNGX_SELECT_SHELL_SEARCH_HOST =
-  new InjectionToken<CngxSelectShellSearchHost>('CNGX_SELECT_SHELL_SEARCH_HOST');
+export const CNGX_SELECT_SHELL_SEARCH_HOST = new InjectionToken<CngxSelectShellSearchHost>(
+  'CNGX_SELECT_SHELL_SEARCH_HOST',
+);

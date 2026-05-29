@@ -57,6 +57,13 @@ import {
  * forwards `activeStepIndex`/`linear`/`orientation`/`commitAction`/
  * `commitMode` to the presenter. Material twin lives in
  * `@cngx/ui/mat-stepper`. ARIA attrs are in the `computed()` graph.
+ *
+ * @category ui/stepper
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/stepper/stepper.component.ts
+ * @since 0.1.0
+ * @relatedTo CngxStepperPresenter, CngxStep, CngxRovingTabindex, CngxFocusRestore, CngxLiveRegion
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-commit-action/pessimistic-optimistic-commits-with-bridge-directives</example-url>
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-custom-labels/mixing-code-label-code-input-with-code-cngxsteplabel-code-slot</example-url>
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-error-aggregation/per-step-error-badges</example-url>
@@ -98,8 +105,8 @@ import {
   providers: [{ provide: CNGX_STEP_PANEL_HOST, useExisting: CngxStepper }],
   templateUrl: './stepper.component.html',
   host: {
-    'class': 'cngx-stepper',
-    'role': 'group',
+    class: 'cngx-stepper',
+    role: 'group',
     '[attr.aria-roledescription]': 'stepperRoleDescription()',
     '[attr.aria-orientation]': 'presenter.orientation()',
     '[attr.data-orientation]': 'presenter.orientation()',
@@ -116,9 +123,8 @@ export class CngxStepper implements CngxStepPanelHost {
   protected readonly presenter = inject(CNGX_STEPPER_HOST);
   protected readonly i18n = injectStepperI18n();
   protected readonly config = injectStepperConfig();
-  private readonly hostElement: HTMLElement = inject<ElementRef<HTMLElement>>(
-    ElementRef,
-  ).nativeElement;
+  private readonly hostElement: HTMLElement =
+    inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
   private readonly injector = inject(Injector);
   private readonly stepDirectives = contentChildren(CngxStep, { descendants: true });
 
@@ -129,7 +135,7 @@ export class CngxStepper implements CngxStepPanelHost {
   private readonly groupHeaderSlot = contentChild(CngxStepGroupHeader);
   private readonly emptySlot = contentChild(CngxStepperEmpty);
 
-  /** Default-template glyph source — read by `#defaultBadge` / `#defaultRejection` outlets. */
+  /** Default-template glyph source - read by `#defaultBadge` / `#defaultRejection` outlets. */
   protected readonly glyphs = CNGX_STEPPER_GLYPHS;
 
   /**
@@ -160,15 +166,12 @@ export class CngxStepper implements CngxStepPanelHost {
 
   /** Stepper landmark role-description with config + i18n cascade. */
   protected readonly stepperRoleDescription = computed<string>(
-    () =>
-      this.config.fallbackLabels?.stepRoleDescription ??
-      this.i18n.stepperLabel,
+    () => this.config.fallbackLabels?.stepRoleDescription ?? this.i18n.stepperLabel,
   );
 
   /** Group landmark role-description with config + i18n cascade. */
   protected readonly groupRoleDescription = computed<string>(
-    () =>
-      this.config.fallbackLabels?.groupRoleDescription ?? 'step group',
+    () => this.config.fallbackLabels?.groupRoleDescription ?? 'step group',
   );
 
   /**
@@ -179,11 +182,7 @@ export class CngxStepper implements CngxStepPanelHost {
     if (this.ariaLabelledBy()) {
       return null; // labelledby trumps label
     }
-    return (
-      this.ariaLabel() ??
-      this.config.ariaLabels?.stepperRegion ??
-      this.i18n.stepperLabel
-    );
+    return this.ariaLabel() ?? this.config.ariaLabels?.stepperRegion ?? this.i18n.stepperLabel;
   });
 
   // O(1) labelTemplateFor/contentTemplateFor lookup. Structural equal on
@@ -198,13 +197,12 @@ export class CngxStepper implements CngxStepPanelHost {
 
   /**
    * Step-only flat projection (group nodes filtered out). Structural equal
-   * via `flatStepsEqual` — downstream consumers don't re-walk on shape-stable
+   * via `flatStepsEqual` - downstream consumers don't re-walk on shape-stable
    * `flatSteps()` re-emits.
    */
-  protected readonly stepsOnly = computed(
-    () => this.flatSteps().filter((n) => n.kind === 'step'),
-    { equal: flatStepsEqual },
-  );
+  protected readonly stepsOnly = computed(() => this.flatSteps().filter((n) => n.kind === 'step'), {
+    equal: flatStepsEqual,
+  });
 
   /**
    * Position in the step-only flat projection. Group nodes carry `-1`;
@@ -226,7 +224,7 @@ export class CngxStepper implements CngxStepPanelHost {
     );
   }
 
-  /** Commit-in-flight flag — drives the host `aria-busy` binding. Pillar 2. */
+  /** Commit-in-flight flag - drives the host `aria-busy` binding. Pillar 2. */
   protected readonly isCommitting = computed<boolean>(
     () => this.presenter.commitState.status() === 'pending',
   );
@@ -290,7 +288,7 @@ export class CngxStepper implements CngxStepPanelHost {
       : base;
   }
 
-  /** Group descriptor — rolls up children's aggregated status. */
+  /** Group descriptor - rolls up children's aggregated status. */
   protected groupStatusPhrase(node: CngxStepNode): string {
     const status = node.state();
     if (status === 'error') {
@@ -351,8 +349,7 @@ export class CngxStepper implements CngxStepPanelHost {
   protected rejectionContextFor(node: CngxStepNode): CngxStepRejectionContext {
     const failedIndex = node.flatIndex;
     const originIdx = this.presenter.originIndexDuringCommit();
-    const originLabel =
-      originIdx !== undefined ? this.stepsOnly()[originIdx]?.label() : undefined;
+    const originLabel = originIdx !== undefined ? this.stepsOnly()[originIdx]?.label() : undefined;
     return { failedIndex, originLabel, node };
   }
 
@@ -380,7 +377,7 @@ export class CngxStepper implements CngxStepPanelHost {
     this.presenter.clearLastFailed();
   }
 
-  // CngxStepPanelHost contract — O(1) via the pre-built map.
+  // CngxStepPanelHost contract - O(1) via the pre-built map.
   labelTemplateFor(id: string): TemplateRef<CngxStepLabelContext> | null {
     return this.stepDirectiveById().get(id)?.labelTemplate()?.templateRef ?? null;
   }
@@ -406,7 +403,7 @@ export class CngxStepper implements CngxStepPanelHost {
 
   /**
    * Build the {@link CngxStepContentContext} for `*cngxStepContent`.
-   * Same shape as the label context — content templates need the same
+   * Same shape as the label context - content templates need the same
    * `disabled`/`busy` derivations.
    */
   protected stepContentContextFor(node: CngxStepNode): CngxStepContentContext {

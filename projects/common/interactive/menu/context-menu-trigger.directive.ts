@@ -12,14 +12,14 @@ import {
 
 import type { CngxMenuHost } from './menu-host.token';
 
-/** See `CngxListboxTrigger` — same structural contract. */
+/** See `CngxListboxTrigger` - same structural contract. */
 interface PopoverController {
   readonly isVisible: () => boolean;
   show(): void;
   hide(): void;
   readonly anchorElement: { set(el: HTMLElement | null): void };
   /**
-   * Popover unique id signal — used to compose the `anchor-name` CSS value
+   * Popover unique id signal - used to compose the `anchor-name` CSS value
    * the browser's CSS Anchor Positioning expects on the anchor element.
    */
   readonly id: () => string;
@@ -37,13 +37,20 @@ interface PopoverController {
  *   any other popover.
  *
  * Anchoring uses a transient zero-size DOM element positioned at the
- * pointer coords, set on the popover's `anchorElement` signal — see
+ * pointer coords, set on the popover's `anchorElement` signal - see
  * `menu-accepted-debt.md` §1 for the rationale (virtual `getBoundingClientRect`
  * objects are not yet supported as anchors).
  *
  * Touch-driven opening via long-press is deliberately out of scope for the
  * initial commit; consumers can compose `CngxLongPress` against the same
  * popover anchor pattern as a follow-up.
+ *
+ * @category common/interactive/menu
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/menu/context-menu-trigger.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxMenu, CngxMenuTrigger, CngxPopover
  * <example-url>http://localhost:4200/#/common/interactive/context-menu/right-click-target-zone</example-url>
  */
 @Directive({

@@ -6,6 +6,8 @@ import { inject, InjectionToken, type Signal } from '@angular/core';
  * or arbitrary references via {@link createBandScale}'s generic. The
  * union narrows at the layer atom (`[cngxLine]`, `[cngxBar]`, ...);
  * the chart context surface stays scale-agnostic.
+ *
+ * @category common/chart
  */
 export type XScaleInput = number | Date | string;
 
@@ -13,6 +15,8 @@ export type XScaleInput = number | Date | string;
  * Generic scale function shape. Maps a domain value of type `TIn` to a
  * range value (typically a pixel coordinate). Mirrors the result type
  * of every `create*Scale` factory in `@cngx/common/chart`.
+ *
+ * @category common/chart
  */
 export type ScaleFn<TIn> = (v: TIn) => number;
 
@@ -23,8 +27,10 @@ export type ScaleFn<TIn> = (v: TIn) => number;
  * dimensions, data length, and data array without needing a direct
  * reference to the parent class. Token is non-generic at the DI
  * boundary; layer atoms call `data<T>()` to narrow the array to their
- * own `<T>` — the single boundary cast lives inside `CngxChart`'s
+ * own `<T>` - the single boundary cast lives inside `CngxChart`'s
  * `data<U>()` method, not at every consumer site.
+ *
+ * @category common/chart
  */
 export interface CngxChartContext<TX = XScaleInput, TY = number> {
   readonly xScale: Signal<ScaleFn<TX>>;
@@ -45,10 +51,12 @@ export interface CngxChartContext<TX = XScaleInput, TY = number> {
  * atoms, `<cngx-chart-data-table>`). `<cngx-chart>` provides itself
  * via `useExisting`; child queries narrow the generic on the consumer
  * side.
+ *
+ * @category common/chart
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/chart/chart-context.ts
+ * @since 0.1.0
  */
-export const CNGX_CHART_CONTEXT = new InjectionToken<CngxChartContext>(
-  'CngxChartContext',
-);
+export const CNGX_CHART_CONTEXT = new InjectionToken<CngxChartContext>('CngxChartContext');
 
 /**
  * Inject the parent chart's reactive context. Throws a clear dev-mode
@@ -64,7 +72,7 @@ export function injectChartContext(consumerName: string): CngxChartContext {
   const ctx = inject(CNGX_CHART_CONTEXT, { optional: true });
   if (!ctx) {
     throw new Error(
-      `${consumerName}: missing CNGX_CHART_CONTEXT — must be a content child of <cngx-chart>`,
+      `${consumerName}: missing CNGX_CHART_CONTEXT - must be a content child of <cngx-chart>`,
     );
   }
   return ctx;

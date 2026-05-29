@@ -5,14 +5,18 @@ import { fromEvent } from 'rxjs';
 import { CngxFocusTrap } from '@cngx/common/a11y';
 import type { CngxDrawer, DrawerPosition } from './drawer.directive';
 
-/** How the drawer panel interacts with the content area. */
+/**
+ * How the drawer panel interacts with the content area.
+ *
+ * @category common/layout
+ */
 export type DrawerMode = 'over' | 'push' | 'side';
 
 /**
  * The sliding panel of a drawer. Reads its open state from an explicit
- * `[cngxDrawerPanel]` reference — no ancestor injection.
+ * `[cngxDrawerPanel]` reference - no ancestor injection.
  *
- * Composes `CngxFocusTrap` as a `hostDirective` — the consumer controls
+ * Composes `CngxFocusTrap` as a `hostDirective` - the consumer controls
  * the `[enabled]` and `[autoFocus]` inputs from the template.
  *
  * Optionally closes the drawer when the user clicks outside the panel
@@ -24,6 +28,12 @@ export type DrawerMode = 'over' | 'push' | 'side';
  *   <a href="/home">Home</a>
  * </nav>
  * ```
+ *
+ * @category common/layout
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/layout/drawer/drawer-panel.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxDrawer, CngxDrawerContent, CngxFocusTrap
  * <example-url>http://localhost:4200/#/common/layout/drawer/basic-scroll-lock-backdrop</example-url>
  * <example-url>http://localhost:4200/#/common/layout/drawer/controlled-mode</example-url>
  * <example-url>http://localhost:4200/#/common/layout/drawer/direction-all-four-sides</example-url>
@@ -59,9 +69,9 @@ export class CngxDrawerPanel {
 
   /**
    * How the panel interacts with the content area:
-   * - `'over'` (default) — overlays content (absolute positioned)
-   * - `'push'` — pushes content aside (content gets margin)
-   * - `'side'` — always visible, no toggle behavior
+   * - `'over'` (default) - overlays content (absolute positioned)
+   * - `'push'` - pushes content aside (content gets margin)
+   * - `'side'` - always visible, no toggle behavior
    */
   readonly mode = input<DrawerMode>('over');
 
@@ -74,7 +84,7 @@ export class CngxDrawerPanel {
   constructor() {
     const doc = inject(DOCUMENT);
 
-    // Hit-test against the container, not the panel — toggle buttons and backdrops
+    // Hit-test against the container, not the panel - toggle buttons and backdrops
     // sit inside the container and must not count as outside clicks.
     fromEvent<MouseEvent>(doc, 'click')
       .pipe(takeUntilDestroyed())

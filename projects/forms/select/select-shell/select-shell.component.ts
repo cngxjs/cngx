@@ -34,11 +34,7 @@ import {
   type CngxOptionStatus,
   type CngxOptionStatusHost,
 } from '@cngx/common/interactive';
-import {
-  CngxPopover,
-  CngxPopoverTrigger,
-  type PopoverPlacement,
-} from '@cngx/common/popover';
+import { CngxPopover, CngxPopoverTrigger, type PopoverPlacement } from '@cngx/common/popover';
 
 import {
   CNGX_FORM_FIELD_CONTROL,
@@ -67,16 +63,10 @@ import {
 import { CNGX_DISMISS_HANDLER_FACTORY } from '../shared/dismiss-handler';
 import { createFieldSync } from '../shared/field-sync';
 import { CNGX_LOCAL_ITEMS_BUFFER_FACTORY } from '../shared/local-items-buffer';
-import {
-  type CngxSelectOptionDef,
-  type CngxSelectOptionsInput,
-} from '../shared/option.model';
+import { type CngxSelectOptionDef, type CngxSelectOptionsInput } from '../shared/option.model';
 import { CNGX_PROJECTED_OPTION_MODEL_FACTORY } from '../shared/projected-option-model';
 import { CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY } from '../shared/panel-lifecycle-emitter';
-import {
-  CNGX_SELECT_PANEL_HOST,
-  CNGX_SELECT_PANEL_VIEW_HOST,
-} from '../shared/panel-host';
+import { CNGX_SELECT_PANEL_HOST, CNGX_SELECT_PANEL_VIEW_HOST } from '../shared/panel-host';
 import { CngxSelectPanelShell } from '../shared/panel-shell/panel-shell.component';
 import {
   CNGX_SELECT_SHELL_SEARCH_HOST,
@@ -122,6 +112,8 @@ import { CNGX_TRIGGER_FOCUS_FACTORY } from '../shared/trigger-focus';
 /**
  * Change event emitted by {@link CngxSelectShell.selectionChange} on
  * a user pick.
+ *
+ * @category forms/select/shell
  */
 export interface CngxSelectShellChange<T = unknown> {
   readonly source: CngxSelectShell<T>;
@@ -131,7 +123,7 @@ export interface CngxSelectShellChange<T = unknown> {
 }
 
 /**
- * Native-feeling single-value dropdown with **declarative options** —
+ * Native-feeling single-value dropdown with **declarative options** -
  * consumers project `<cngx-option>` / `<cngx-optgroup>` children and
  * the shell derives a hierarchy-aware option model.
  *
@@ -140,9 +132,16 @@ export interface CngxSelectShellChange<T = unknown> {
  * (reactive trigger ARIA, panel composition, template-slot cascade)
  * applied to a content-projected option list.
  *
- * Naming: distinct from the internal `CngxSelectPanelShell` —
+ * Naming: distinct from the internal `CngxSelectPanelShell` -
  * `Shell` here is the *projection-shell* that wraps consumer option
  * markup.
+ *
+ * @category forms/select/shell
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/select-shell/select-shell.component.ts
+ * @since 0.1.0
+ * @relatedTo CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectSearch
  * <example-url>http://localhost:4200/#/forms/select/select-shell/async-commit-pending-error-inline-glyphs</example-url>
  * <example-url>http://localhost:4200/#/forms/select/select-shell/basic-flat-declarative-options</example-url>
  * <example-url>http://localhost:4200/#/forms/select/select-shell/custom-glyphs-clearglyph-caretglyph</example-url>
@@ -184,7 +183,7 @@ export interface CngxSelectShellChange<T = unknown> {
     { provide: CNGX_SELECT_SHELL_SEARCH_HOST, useExisting: CngxSelectShell },
   ],
   host: {
-    'class': 'cngx-select-shell',
+    class: 'cngx-select-shell',
     '[id]': 'resolvedId()',
     '[attr.aria-readonly]': 'ariaReadonly()',
   },
@@ -221,17 +220,13 @@ export interface CngxSelectShellChange<T = unknown> {
         (keydown)="handleTriggerKeydown($event)"
       >
         @if (triggerLabelTpl(); as labelTpl) {
-          <ng-container
-            *ngTemplateOutlet="labelTpl; context: triggerLabelContext()"
-          />
+          <ng-container *ngTemplateOutlet="labelTpl; context: triggerLabelContext()" />
         } @else {
           <span class="cngx-select-shell__label">{{ triggerText() }}</span>
         }
         @if (clearable() && !empty() && !disabled()) {
           @if (tpl.clearButton(); as clearTpl) {
-            <ng-container
-              *ngTemplateOutlet="clearTpl; context: clearButtonContext()"
-            />
+            <ng-container *ngTemplateOutlet="clearTpl; context: clearButtonContext()" />
           } @else {
             <button
               type="button"
@@ -250,9 +245,7 @@ export interface CngxSelectShellChange<T = unknown> {
         @if (resolvedShowCaret()) {
           @if (tpl.caret(); as caretTpl) {
             <span aria-hidden="true" class="cngx-select-shell__caret">
-              <ng-container
-                *ngTemplateOutlet="caretTpl; context: caretContext()"
-              />
+              <ng-container *ngTemplateOutlet="caretTpl; context: caretContext()" />
             </span>
           } @else if (caretGlyph(); as glyph) {
             <span aria-hidden="true" class="cngx-select-shell__caret">
@@ -295,11 +288,12 @@ export interface CngxSelectShellChange<T = unknown> {
 })
 export class CngxSelectShell<T = unknown>
   implements
-  CngxFormFieldControl,
-  CngxOptionStatusHost,
-  CngxOptionFilterHost,
-  CngxOptionInteractionHost,
-  CngxSelectShellSearchHost {
+    CngxFormFieldControl,
+    CngxOptionStatusHost,
+    CngxOptionFilterHost,
+    CngxOptionInteractionHost,
+    CngxSelectShellSearchHost
+{
   private readonly presenter = inject(CngxFormFieldPresenter, { optional: true });
   private readonly announcer = inject(CngxSelectAnnouncer);
   private readonly config = resolveSelectConfig();
@@ -321,9 +315,7 @@ export class CngxSelectShell<T = unknown>
   readonly popoverPlacement = input<PopoverPlacement>(this.config.popoverPlacement);
   readonly hideSelectionIndicator = input<boolean>(!this.config.showSelectionIndicator);
   readonly selectionIndicatorPosition = input<'before' | 'after' | null>(null);
-  readonly selectionIndicatorVariant = input<CngxSelectSelectionIndicatorVariant | null>(
-    null,
-  );
+  readonly selectionIndicatorVariant = input<CngxSelectSelectionIndicatorVariant | null>(null);
   readonly hideCaret = input<boolean>(!this.config.showCaret);
   readonly clearable = input<boolean>(false);
   readonly clearButtonAriaLabel = input<string>(
@@ -334,16 +326,12 @@ export class CngxSelectShell<T = unknown>
   readonly loading = input<boolean>(false);
   readonly loadingVariant = input<CngxSelectLoadingVariant>(this.config.loadingVariant);
   readonly skeletonRowCount = input<number>(this.config.skeletonRowCount);
-  readonly refreshingVariant = input<CngxSelectRefreshingVariant>(
-    this.config.refreshingVariant,
-  );
+  readonly refreshingVariant = input<CngxSelectRefreshingVariant>(this.config.refreshingVariant);
   readonly state = input<CngxAsyncState<CngxSelectOptionsInput<T>> | null>(null);
   readonly retryFn = input<(() => void) | null>(null);
   readonly commitAction = input<CngxSelectCommitAction<T> | null>(null);
   readonly commitMode = input<CngxSelectCommitMode>('optimistic');
-  readonly commitErrorDisplay = input<CngxSelectCommitErrorDisplay>(
-    this.config.commitErrorDisplay,
-  );
+  readonly commitErrorDisplay = input<CngxSelectCommitErrorDisplay>(this.config.commitErrorDisplay);
   readonly announceChanges = input<boolean | null>(null);
   readonly announceTemplate = input<CngxSelectAnnouncerConfig['format'] | null>(null);
   /**
@@ -370,12 +358,10 @@ export class CngxSelectShell<T = unknown>
    * returns `true` when the option should stay visible. Default:
    * case-insensitive substring on the label.
    */
-  readonly searchMatchFn = input<
-    ((value: T, label: string, term: string) => boolean) | null
-  >(null);
+  readonly searchMatchFn = input<((value: T, label: string, term: string) => boolean) | null>(null);
 
   /**
-   * Debounce for `searchTermChange` (ms). Forward-compatible input —
+   * Debounce for `searchTermChange` (ms). Forward-compatible input -
    * the shipped `CNGX_SEARCH_EFFECTS_FACTORY` emits immediately;
    * consumers overriding the factory read this signal to size their
    * pipeline.
@@ -412,15 +398,13 @@ export class CngxSelectShell<T = unknown>
    * `cngxListbox.[explicitOptions]`), `visibleProjectedOptions`
    * (filtered), `adItems` (AD-shape) from projected children.
    *
-   * Resolved via `CNGX_PROJECTED_OPTION_MODEL_FACTORY` — override for
+   * Resolved via `CNGX_PROJECTED_OPTION_MODEL_FACTORY` - override for
    * custom value/label/disabled extraction (data-* attrs, async
    * labels) without forking.
    *
    * @internal
    */
-  private readonly projectedOptionModel = inject(
-    CNGX_PROJECTED_OPTION_MODEL_FACTORY,
-  )<T>({
+  private readonly projectedOptionModel = inject(CNGX_PROJECTED_OPTION_MODEL_FACTORY)<T>({
     containers: this.containers,
     searchTerm: this.searchTerm,
     matches: (value, label, term) => this.matches(value, label, term),
@@ -428,8 +412,7 @@ export class CngxSelectShell<T = unknown>
 
   protected readonly derivedOptions = this.projectedOptionModel.derivedOptions;
   protected readonly projectedOptions = this.projectedOptionModel.projectedOptions;
-  protected readonly visibleProjectedOptions =
-    this.projectedOptionModel.visibleProjectedOptions;
+  protected readonly visibleProjectedOptions = this.projectedOptionModel.visibleProjectedOptions;
   protected readonly adItems = this.projectedOptionModel.adItems;
 
   private readonly checkDirective = contentChild<CngxSelectCheck<T>>(CngxSelectCheck);
@@ -443,28 +426,22 @@ export class CngxSelectShell<T = unknown>
   private readonly loadingDirective = contentChild<CngxSelectLoading>(CngxSelectLoading);
   private readonly loadingGlyphDirective =
     contentChild<CngxSelectLoadingGlyph>(CngxSelectLoadingGlyph);
-  private readonly triggerLabelDirective = contentChild<CngxSelectTriggerLabel<T>>(
-    CngxSelectTriggerLabel,
-  );
-  private readonly optionLabelDirective = contentChild<CngxSelectOptionLabel<T>>(
-    CngxSelectOptionLabel,
-  );
+  private readonly triggerLabelDirective =
+    contentChild<CngxSelectTriggerLabel<T>>(CngxSelectTriggerLabel);
+  private readonly optionLabelDirective =
+    contentChild<CngxSelectOptionLabel<T>>(CngxSelectOptionLabel);
   private readonly errorDirective = contentChild<CngxSelectError>(CngxSelectError);
   private readonly retryButtonDirective =
     contentChild<CngxSelectRetryButton>(CngxSelectRetryButton);
-  private readonly refreshingDirective =
-    contentChild<CngxSelectRefreshing>(CngxSelectRefreshing);
-  private readonly commitErrorDirective = contentChild<CngxSelectCommitError<T>>(
-    CngxSelectCommitError,
-  );
+  private readonly refreshingDirective = contentChild<CngxSelectRefreshing>(CngxSelectRefreshing);
+  private readonly commitErrorDirective =
+    contentChild<CngxSelectCommitError<T>>(CngxSelectCommitError);
   private readonly clearButtonDirective =
     contentChild<CngxSelectClearButton>(CngxSelectClearButton);
-  private readonly optionPendingDirective = contentChild<CngxSelectOptionPending<T>>(
-    CngxSelectOptionPending,
-  );
-  private readonly optionErrorDirective = contentChild<CngxSelectOptionError<T>>(
-    CngxSelectOptionError,
-  );
+  private readonly optionPendingDirective =
+    contentChild<CngxSelectOptionPending<T>>(CngxSelectOptionPending);
+  private readonly optionErrorDirective =
+    contentChild<CngxSelectOptionError<T>>(CngxSelectOptionError);
 
   protected readonly tpl = inject(CNGX_TEMPLATE_REGISTRY_FACTORY)<T>({
     check: this.checkDirective,
@@ -488,9 +465,9 @@ export class CngxSelectShell<T = unknown>
    * Variant-specific trigger-label slot. Inline because the directive's
    * typed context shape varies per variant.
    */
-  protected readonly triggerLabelTpl = computed<
-    TemplateRef<CngxSelectTriggerLabelContext<T>> | null
-  >(() => this.triggerLabelDirective()?.templateRef ?? null);
+  protected readonly triggerLabelTpl = computed<TemplateRef<
+    CngxSelectTriggerLabelContext<T>
+  > | null>(() => this.triggerLabelDirective()?.templateRef ?? null);
 
   /**
    * Trigger-label slot context. Structural equal suppresses
@@ -548,7 +525,7 @@ export class CngxSelectShell<T = unknown>
 
   /**
    * Stable clear closure for the slot context. Same path as
-   * `handleClearClick` minus the event payload — projected templates
+   * `handleClearClick` minus the event payload - projected templates
    * own their pointer-event semantics.
    *
    * @internal
@@ -569,7 +546,7 @@ export class CngxSelectShell<T = unknown>
   };
 
   private readonly triggerBtn = viewChild<ElementRef<HTMLElement>>('triggerBtn');
-  /** @internal — exposed to satisfy `CngxSelectShellSearchHost` so the
+  /** @internal - exposed to satisfy `CngxSelectShellSearchHost` so the
    *  projected `<cngx-select-search>` can forward keyboard nav into the
    *  listbox AD without ancestor injection. */
   readonly listboxRef = viewChild<CngxListbox>(CngxListbox);
@@ -577,9 +554,7 @@ export class CngxSelectShell<T = unknown>
 
   readonly panelOpen = computed<boolean>(() => this.popoverRef()?.isVisible() ?? false);
 
-  readonly activeId = computed<string | null>(
-    () => this.listboxRef()?.ad.activeId() ?? null,
-  );
+  readonly activeId = computed<string | null>(() => this.listboxRef()?.ad.activeId() ?? null);
 
   readonly errorState = computed<boolean>(() => this.presenter?.showError() ?? false);
 
@@ -596,9 +571,7 @@ export class CngxSelectShell<T = unknown>
   );
 
   // Kept for panel-host parity; the shell's projected DOM is the source of truth.
-  private readonly localItemsBuffer = inject(CNGX_LOCAL_ITEMS_BUFFER_FACTORY)<T>(
-    this.compareWith,
-  );
+  private readonly localItemsBuffer = inject(CNGX_LOCAL_ITEMS_BUFFER_FACTORY)<T>(this.compareWith);
 
   /**
    * Family-shared signal graph. `commitAction` is wired so
@@ -651,8 +624,7 @@ export class CngxSelectShell<T = unknown>
   readonly ariaLabels = this.core.ariaLabels;
   protected readonly resolvedId = this.core.resolvedId;
   protected readonly resolvedListboxLabel = this.core.resolvedListboxLabel;
-  protected readonly resolvedShowSelectionIndicator =
-    this.core.resolvedShowSelectionIndicator;
+  protected readonly resolvedShowSelectionIndicator = this.core.resolvedShowSelectionIndicator;
   protected readonly resolvedSelectionIndicatorVariant =
     this.core.resolvedSelectionIndicatorVariant;
   protected readonly resolvedSelectionIndicatorPosition =
@@ -785,20 +757,17 @@ export class CngxSelectShell<T = unknown>
   private readonly hasEmittedInitial = signal(false);
 
   /** Currently selected option resolved against the derived option model. */
-  readonly selected = computed<CngxSelectOptionDef<T> | null>(
-    () => this.selectedOption(),
-    {
-      equal: (a, b) => {
-        if (a === b) {
-          return true;
-        }
-        if (a === null || b === null) {
-          return false;
-        }
-        return (this.compareWith() as CngxSelectCompareFn<unknown>)(a.value, b.value);
-      },
+  readonly selected = computed<CngxSelectOptionDef<T> | null>(() => this.selectedOption(), {
+    equal: (a, b) => {
+      if (a === b) {
+        return true;
+      }
+      if (a === null || b === null) {
+        return false;
+      }
+      return (this.compareWith() as CngxSelectCompareFn<unknown>)(a.value, b.value);
     },
-  );
+  });
 
   /** Human-readable label displayed on the trigger. */
   readonly triggerValue = computed<string>(() => this.triggerText());
@@ -828,20 +797,14 @@ export class CngxSelectShell<T = unknown>
   /** @internal */
   protected readonly isSelected = this.core.panelHostAdapter.isSelected;
   /** @internal */
-  protected readonly isIndeterminate =
-    this.core.panelHostAdapter.isIndeterminate;
+  protected readonly isIndeterminate = this.core.panelHostAdapter.isIndeterminate;
   /** @internal */
-  protected readonly isCommittingOption =
-    this.core.panelHostAdapter.isCommittingOption;
+  protected readonly isCommittingOption = this.core.panelHostAdapter.isCommittingOption;
 
   // Satisfies the CNGX_SELECT_PANEL_HOST contract; the panel-shell overlay
   // is deferred (plan Phase 10) so nothing in the current template reads it.
-  protected readonly unfilteredCount = computed(
-    () => this.core.unfilteredFlatOptions().length,
-  );
-  protected readonly previousLoadedCount = computed(
-    () => this.flatOptions().length,
-  );
+  protected readonly unfilteredCount = computed(() => this.core.unfilteredFlatOptions().length);
+  protected readonly previousLoadedCount = computed(() => this.flatOptions().length);
 
   patchData(item: CngxSelectOptionDef<T>): void {
     this.localItemsBuffer.patch(item);
@@ -920,8 +883,7 @@ export class CngxSelectShell<T = unknown>
       popoverRef: this.popoverRef,
       closeOnSelect: true,
       commitAction: this.commitAction,
-      onCommit: (intended, opt) =>
-        this.scalarHandler.dispatchFromActivation(intended, opt),
+      onCommit: (intended, opt) => this.scalarHandler.dispatchFromActivation(intended, opt),
       onActivate: (intended, opt) => {
         // Snapshot previous before the listbox's activation subscriber
         // writes through [(value)]. RxJS Subject fires subscribers in
@@ -943,8 +905,7 @@ export class CngxSelectShell<T = unknown>
 
     createFieldSync<T | undefined>({
       componentValue: this.value,
-      valueEquals: (a, b) =>
-        (this.compareWith() as CngxSelectCompareFn<unknown>)(a, b),
+      valueEquals: (a, b) => (this.compareWith() as CngxSelectCompareFn<unknown>)(a, b),
       coerceFromField: (x) => x as T | undefined,
     });
 
@@ -982,10 +943,9 @@ export class CngxSelectShell<T = unknown>
     this.toggle();
   }
 
-
   /**
    * Trigger keyboard. Typeahead-while-closed (native `<select>` parity)
-   * and PageUp/PageDown jump-N — both delegate to
+   * and PageUp/PageDown jump-N - both delegate to
    * {@link flatNavStrategy}.
    *
    * @internal
@@ -1001,9 +961,7 @@ export class CngxSelectShell<T = unknown>
         const flat = this.flatOptions();
         const v = this.value();
         const currentFlatIndex =
-          v === undefined || v === null
-            ? -1
-            : flat.findIndex((o) => eq(o.value, v));
+          v === undefined || v === null ? -1 : flat.findIndex((o) => eq(o.value, v));
         const action = this.flatNavStrategy.onTypeaheadWhileClosed(
           {
             options: flat,
@@ -1067,7 +1025,7 @@ export class CngxSelectShell<T = unknown>
   // inject AD `{ optional: true }`; when missing they fall back to
   // this host via `CNGX_OPTION_INTERACTION_HOST` and call
   // `activate()` / `highlight()` from their click + pointerenter
-  // handlers. Pillar 1 derivation — no DOM walking, no event delegation.
+  // handlers. Pillar 1 derivation - no DOM walking, no event delegation.
 
   /** @internal */
   activate(value: unknown): void {
@@ -1090,7 +1048,7 @@ export class CngxSelectShell<T = unknown>
     this.listboxRef()?.ad.highlightByValue(value);
   }
 
-  /** @internal — click-outside dismissal. */
+  /** @internal - click-outside dismissal. */
   protected readonly handleClickOutside = inject(CNGX_DISMISS_HANDLER_FACTORY)({
     popoverRef: this.popoverRef,
     dismissOn: this.config.dismissOn,
@@ -1136,4 +1094,3 @@ export class CngxSelectShell<T = unknown>
     this.presenter?.fieldState().markAsTouched();
   }
 }
-

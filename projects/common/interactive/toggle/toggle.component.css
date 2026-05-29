@@ -1,11 +1,63 @@
 /**
  * @overview
- * Default visuals for `CngxToggle` — switch with track + thumb. The
- * checked-state track falls back to `--cngx-color-primary` so a
- * brand override in `@layer cngx.theme` propagates.
+ * Default visuals for `CngxToggle`. The host carries `.cngx-toggle`
+ * and renders a `.cngx-toggle__track` pill with a circular
+ * `.cngx-toggle__thumb` inside, plus a `.cngx-toggle__label` slot for
+ * the projected label and a `.cngx-toggle__sr-only` slot for
+ * assistive-only copy. A projected `[thumbGlyph]` child drops the
+ * default white thumb so the consumer's icon stands alone.
  *
- * Pair with `@cngx/themes/material/interactive-controls-theme` for
- * a Material 3 switch surface.
+ * **State modifiers**
+ *
+ * - `--checked` - swaps the track to `--cngx-toggle-track-bg-on` and
+ *   translates the thumb by `--cngx-toggle-thumb-travel`
+ * - `--disabled` - `cursor: not-allowed` + opacity dim via
+ *   `--cngx-toggle-disabled-opacity`
+ * - `--label-before` - `flex-direction: row-reverse` so the label
+ *   reads before the track
+ *
+ * `:focus-visible` applies the focus ring via
+ * `--cngx-toggle-focus-outline` / `--cngx-toggle-focus-offset` /
+ * `--cngx-toggle-focus-radius`. `prefers-reduced-motion: reduce`
+ * disables the track + thumb transitions.
+ *
+ * **Slots**
+ *
+ * - `.cngx-toggle__track` - the pill background
+ * - `.cngx-toggle__thumb` - the sliding indicator (custom glyph drops
+ *   the default white circle via `:has(*)`)
+ * - `.cngx-toggle__label` - projected label content
+ * - `.cngx-toggle__sr-only` - visually-hidden copy for AT
+ *
+ * **Inheritance**
+ *
+ * Layout and surface tokens cascade through the foundation; the
+ * on-state track delegates to the semantic primary token so a brand
+ * override in `@layer cngx.theme` propagates:
+ *
+ * - `--cngx-toggle-gap` -> `--cngx-space-sm`
+ * - `--cngx-toggle-focus-radius` -> `--cngx-radius-sm`
+ * - `--cngx-toggle-track-radius` -> `--cngx-radius-pill`
+ * - `--cngx-toggle-track-bg-on` -> `--cngx-color-primary`
+ * - `--cngx-toggle-color` - direct (defaults to `currentColor`)
+ *
+ * **Dark mode**
+ *
+ * Three hooks flip the off-state track from `oklch(0 0 0 / 0.25)` to
+ * `oklch(1 0 0 / 0.25)` so the unchecked track still reads as a muted
+ * pill against a dark page:
+ *
+ * - `prefers-color-scheme: dark`
+ * - `[data-color-scheme="dark"]`
+ * - `.dark` class
+ *
+ * A matching `[data-color-scheme="light"]` / `.light` block pins the
+ * light value so explicit-light overrides win over the media query.
+ *
+ * **Pair with**
+ *
+ * - `@cngx/themes/material/interactive-controls-theme` - Material 3
+ *   switch surface
  */
 
 @layer cngx.tokens {
@@ -111,7 +163,7 @@
   }
 
   /**
-   * Background of the off-state track — neutral muted by default.
+   * Background of the off-state track - neutral muted by default.
    * `inherits: true` so the :root dark-mode override reaches the
    * track inside the toggle host.
    * @group State / Off
@@ -184,7 +236,7 @@
     initial-value: 0 1px 2px oklch(0 0 0 / 0.25);
   }
 
-  /* Dark-mode swap — the off-state track is alpha-on-black, which
+  /* Dark-mode swap - the off-state track is alpha-on-black, which
    * dissolves into a dark page. Flip to alpha-on-white so the
    * unchecked track still reads as a muted pill. */
   @media (prefers-color-scheme: dark) {
@@ -260,7 +312,7 @@
       transition: transform var(--cngx-toggle-transition, 150ms ease);
     }
 
-    /* Custom glyph projected via [thumbGlyph] — drop the default dot
+    /* Custom glyph projected via [thumbGlyph] - drop the default dot
      * so the consumer's icon stands alone instead of layering over a
      * white circle. The glyph inherits currentColor and scales to the
      * thumb's box via font-size, so a plain `<span>★</span>` fits

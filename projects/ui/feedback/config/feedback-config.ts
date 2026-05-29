@@ -16,6 +16,8 @@ import { CngxToaster } from '../toast/toast.service';
 /**
  * Global configuration for all feedback components.
  * Provided via `provideFeedback()` with `with*` features.
+ *
+ * @category ui/feedback
  */
 export interface FeedbackConfig {
   /** Custom spinner component to replace the built-in SVG spinner. */
@@ -30,7 +32,7 @@ export interface FeedbackConfig {
   /** Default minimum display time in ms for loading indicators. */
   loadingMinDuration?: number;
 
-  /** Custom close/dismiss icon component — replaces default X SVG globally. */
+  /** Custom close/dismiss icon component - replaces default X SVG globally. */
   closeIconComponent?: Type<unknown>;
 
   /** Default auto-dismiss duration for toasts in ms. */
@@ -52,14 +54,23 @@ export interface FeedbackConfig {
 /**
  * Injection token for the global feedback configuration.
  * Components read this with `inject(CNGX_FEEDBACK_CONFIG, { optional: true })`.
+ *
+ * @category ui/feedback
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/feedback/config/feedback-config.ts
+ * @since 0.1.0
  */
 export const CNGX_FEEDBACK_CONFIG = new InjectionToken<FeedbackConfig>('CngxFeedbackConfig');
 
-/** A feature configuration function returned by `withXxx()` helpers. */
+/**
+ * A feature configuration function returned by `withXxx()` helpers.
+ *
+ * @category ui/feedback
+ */
 export interface FeedbackFeature {
   /** @internal */
   readonly _apply: (config: FeedbackConfig) => FeedbackConfig;
-  /** @internal — additional providers contributed by this feature. */
+  /** @internal - additional providers contributed by this feature. */
   readonly _providers?: Provider[];
 }
 
@@ -77,6 +88,8 @@ export interface FeedbackFeature {
  *   ],
  * });
  * ```
+ *
+ * @category ui/feedback
  */
 export function provideFeedback(...features: FeedbackFeature[]): EnvironmentProviders {
   let config: FeedbackConfig = {};
@@ -98,12 +111,14 @@ export function provideFeedback(...features: FeedbackFeature[]): EnvironmentProv
 /**
  * Replace the built-in SVG spinner in `CngxLoadingIndicator` and `CngxLoadingOverlay`.
  *
- * The component receives no inputs — it should be a self-contained spinner
+ * The component receives no inputs - it should be a self-contained spinner
  * (e.g. a Lucide `<loader-2>` with CSS animation, or a Material `<mat-spinner>`).
  *
  * ```ts
  * provideFeedback(withSpinnerTemplate(MatProgressSpinner))
  * ```
+ *
+ * @category ui/feedback/loading
  */
 export function withSpinnerTemplate(component: Type<unknown>): FeedbackFeature {
   return { _apply: (c) => ({ ...c, spinnerComponent: component }) };
@@ -112,7 +127,7 @@ export function withSpinnerTemplate(component: Type<unknown>): FeedbackFeature {
 /**
  * Replace the built-in SVG icons in `CngxAlert` per severity.
  *
- * Each component receives no inputs — it should render a single icon.
+ * Each component receives no inputs - it should render a single icon.
  * Only specified severities are replaced; others keep the built-in SVG.
  *
  * ```ts
@@ -123,6 +138,8 @@ export function withSpinnerTemplate(component: Type<unknown>): FeedbackFeature {
  *   info: MyInfoIcon,
  * }))
  * ```
+ *
+ * @category ui/feedback
  */
 export function withAlertIcons(
   icons: Partial<Record<AlertSeverity, Type<unknown>>>,
@@ -143,6 +160,8 @@ export function withAlertIcons(
  * ```ts
  * provideFeedback(withLoadingDefaults({ delay: 300, minDuration: 600 }))
  * ```
+ *
+ * @category ui/feedback
  */
 export function withLoadingDefaults(opts: {
   delay?: number;
@@ -160,12 +179,14 @@ export function withLoadingDefaults(opts: {
 /**
  * Replace the built-in X SVG in all close/dismiss buttons globally.
  *
- * The component receives no inputs — it should render a single icon.
+ * The component receives no inputs - it should render a single icon.
  * Per-instance override via content projection on `CngxCloseButton` takes precedence.
  *
  * ```ts
  * provideFeedback(withCloseIcon(MyLucideXIcon))
  * ```
+ *
+ * @category ui/feedback
  */
 export function withCloseIcon(component: Type<unknown>): FeedbackFeature {
   return {
@@ -189,6 +210,8 @@ export function withCloseIcon(component: Type<unknown>): FeedbackFeature {
  *   withAlertIcons({ error: MyErrorIcon }),
  * )
  * ```
+ *
+ * @category ui/feedback
  */
 export function withToasts(opts?: {
   /** Default auto-dismiss duration in ms. */
@@ -213,7 +236,7 @@ export function withToasts(opts?: {
  * Without this feature, `CngxAlerter` is only available via `CngxAlertStack`'s
  * `viewProviders` (scoped injection).
  *
- * The token is opaque — always use `provideFeedback()` with feature functions,
+ * The token is opaque - always use `provideFeedback()` with feature functions,
  * never construct the config object manually.
  *
  * @param opts Optional alert defaults.
@@ -224,6 +247,8 @@ export function withToasts(opts?: {
  *   withAlerts(),
  * )
  * ```
+ *
+ * @category ui/feedback
  */
 export function withAlerts(opts?: {
   /** Default auto-dismiss duration in ms. `undefined` = persistent. */
@@ -250,7 +275,7 @@ export function withAlerts(opts?: {
  * Provides `CngxBanner` at the environment level.
  * Without this feature, `CngxBannerOutlet` will throw a `NullInjectorError`.
  *
- * Banners are always persistent — no `duration`. Dismiss programmatically
+ * Banners are always persistent - no `duration`. Dismiss programmatically
  * via `banner.dismiss(id)` when the condition resolves.
  *
  * ```ts
@@ -260,6 +285,8 @@ export function withAlerts(opts?: {
  *   withBanners(),
  * )
  * ```
+ *
+ * @category ui/feedback
  */
 export function withBanners(): FeedbackFeature {
   return {

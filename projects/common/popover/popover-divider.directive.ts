@@ -33,6 +33,11 @@ import { CngxDivider } from '@cngx/common/display';
  *   <cngx-popover-action role="confirm" [action]="save">Save</cngx-popover-action>
  * </div>
  * ```
+ *
+ * @category common/popover
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/popover/popover-divider.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxPopoverPanel, CngxDivider
  */
 @Directive({
   selector: '[cngxPopoverDivider]',

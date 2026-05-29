@@ -5,16 +5,22 @@ import {
   input,
   ViewEncapsulation,
 } from '@angular/core';
-import {
-  injectChartContext,
-  type XScaleInput,
-} from '../chart/chart-context';
+import { injectChartContext, type XScaleInput } from '../chart/chart-context';
 
-/** Reads the data-space X value of a scatter row at index `i`. */
+/**
+ * Reads the data-space X value of a scatter row at index `i`.
+ *
+ * @category common/chart/layers
+ */
 export type ScatterXAccessor<T> = (d: T, i: number) => XScaleInput;
-/** Reads the data-space Y value of a scatter row at index `i`. */
+/**
+ * Reads the data-space Y value of a scatter row at index `i`.
+ *
+ * @category common/chart/layers
+ */
 export type ScatterYAccessor<T> = (d: T, i: number) => number;
 
+/** @internal */
 interface ScatterCircle {
   readonly key: number;
   readonly cx: number;
@@ -23,10 +29,17 @@ interface ScatterCircle {
 
 /**
  * Scatter layer atom. Renders one `<circle>` per datapoint. X and Y
- * accessors are independent — neither defaults to index, since the
+ * accessors are independent - neither defaults to index, since the
  * defining trait of a scatter chart is two genuine data dimensions.
  *
- * Attribute-selector on `<svg:g>` — see {@link CngxLine} for why.
+ * Attribute-selector on `<svg:g>` - see {@link CngxLine} for why.
+ *
+ * @category common/chart/layers
+ * @docsKind primary
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/layers/scatter.component.ts
+ * @since 0.1.0
+ * @relatedTo CngxLine, CngxBar, CngxArea, CngxChart
+ *
  * <example-url>http://localhost:4200/#/common/chart/primitives/async-state-machine-on-the-primitive</example-url>
  * <example-url>http://localhost:4200/#/common/chart/primitives/combo-bars-moving-average-line</example-url>
  * <example-url>http://localhost:4200/#/common/chart/primitives/line-area-threshold-band</example-url>
@@ -43,12 +56,7 @@ interface ScatterCircle {
   encapsulation: ViewEncapsulation.None,
   template: `
     @for (c of circles(); track c.key) {
-      <svg:circle
-        class="cngx-scatter"
-        [attr.cx]="c.cx"
-        [attr.cy]="c.cy"
-        [attr.r]="radius()"
-      />
+      <svg:circle class="cngx-scatter" [attr.cx]="c.cx" [attr.cy]="c.cy" [attr.r]="radius()" />
     }
   `,
   styles: [
@@ -61,11 +69,19 @@ interface ScatterCircle {
           var(--cngx-chart-enter-easing, cubic-bezier(0.34, 1.56, 0.64, 1)) backwards;
       }
       @keyframes cngx-scatter-enter {
-        from { transform: scale(0); opacity: 0; }
-        to { transform: scale(1); opacity: 1; }
+        from {
+          transform: scale(0);
+          opacity: 0;
+        }
+        to {
+          transform: scale(1);
+          opacity: 1;
+        }
       }
       @media (prefers-reduced-motion: reduce) {
-        .cngx-scatter { animation: none; }
+        .cngx-scatter {
+          animation: none;
+        }
       }
     `,
   ],
@@ -107,6 +123,7 @@ export class CngxScatter<T = unknown> {
   );
 }
 
+/** @internal */
 function circlesEqual(a: readonly ScatterCircle[], b: readonly ScatterCircle[]): boolean {
   if (a === b) {
     return true;
@@ -121,4 +138,3 @@ function circlesEqual(a: readonly ScatterCircle[], b: readonly ScatterCircle[]):
   }
   return true;
 }
-

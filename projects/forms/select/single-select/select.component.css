@@ -1,10 +1,51 @@
 /**
  * @overview
- * `CngxSelect`-specific skin. Holds ONLY the trigger-button visual
- * and the host layout — the parts that differ per select-type. Panel
+ * Trigger skin for `CngxSelect` - the scalar single-select. The host
+ * carries `.cngx-select`; this file owns only the trigger-button visual
+ * and the host layout - the parts that differ per select-type. Panel
  * frame, option rows, skeletons, spinners, error banners, and
- * refreshing indicators are shared via `shared/select-base.css`
- * (loaded through this component's `styleUrls`).
+ * refreshing indicators ride on `shared/select-base.css` (loaded via
+ * this component's `styleUrls`).
+ *
+ * **State modifiers**
+ *
+ * - `:focus-visible` on `.cngx-select__trigger` - focus-ring outline +
+ *   offset
+ * - `[aria-disabled='true']` on the trigger - opacity dim + `cursor:
+ *   not-allowed`
+ * - `[aria-invalid='true']` on the trigger - danger border + box-shadow
+ *   glow at focus-within time
+ * - `:hover` on `.cngx-select__clear` - opacity 1
+ * - `:focus-visible` on the clear button - 2px primary outline
+ *
+ * **Slots**
+ *
+ * - `.cngx-select__root` - `display: contents` host shim
+ * - `.cngx-select__trigger` - the bordered `role="combobox"` row
+ *   (`user-select: none` prevents drag-click text selection)
+ * - `.cngx-select__label` - ellipsis-truncating value label
+ *   (inline-flex with a small gap between an optional glyph and text)
+ * - `.cngx-select__caret` - panel-state glyph
+ * - `.cngx-select__clear` - reset button
+ *
+ * **Inheritance**
+ *
+ * Trigger surface + focus tokens delegate to the foundation so dark-mode
+ * swaps on `--cngx-color-border` / `--cngx-color-primary` cascade
+ * through the trigger host:
+ *
+ * - `--cngx-select-border` -> `--cngx-color-border`
+ * - `--cngx-select-focus-outline` -> `--cngx-color-primary`
+ * - invalid surfaces fall back to `--cngx-select-trigger-invalid-*` ->
+ *   `--cngx-color-danger`
+ *
+ * Shorthand tokens pin their structural part (1px solid / 2px solid)
+ * and inherit only the colour through the delegating chain.
+ *
+ * **Pair with**
+ *
+ * - `@cngx/themes/material/select-theme` - Material 3 surface treatment
+ *   shared across the entire select family
  */
 
 @layer cngx.tokens {
@@ -119,7 +160,7 @@
     initial-value: 0.5;
   }
 
-  /* Delegating tokens — trigger border + focus-ring track the
+  /* Delegating tokens - trigger border + focus-ring track the
    * foundation chain so a dark-mode swap on `--cngx-color-border` /
    * `--cngx-color-primary` cascades through the trigger host.
    * Shorthands pin their structural part (1px solid / 2px solid)
@@ -158,7 +199,7 @@
       cursor: pointer;
       text-align: start;
       justify-content: space-between;
-      /* <div role="combobox"> — prevent accidental text selection on drag-click. */
+      /* <div role="combobox"> - prevent accidental text selection on drag-click. */
       user-select: none;
     }
     .cngx-select__trigger:focus-visible {
@@ -178,13 +219,9 @@
       border-width: var(--cngx-select-trigger-invalid-border-width, 1px);
     }
     .cngx-select__trigger[aria-invalid='true']:focus-within {
-      outline: 2px solid
-        var(--cngx-select-trigger-invalid-outline-color, oklch(0.6 0.18 25));
+      outline: 2px solid var(--cngx-select-trigger-invalid-outline-color, oklch(0.6 0.18 25));
       outline-offset: var(--cngx-select-focus-offset, 2px);
-      box-shadow: var(
-        --cngx-select-trigger-invalid-glow,
-        0 0 0 3px oklch(0.6 0.18 25 / 0.2)
-      );
+      box-shadow: var(--cngx-select-trigger-invalid-glow, 0 0 0 3px oklch(0.6 0.18 25 / 0.2));
     }
 
     .cngx-select__label {

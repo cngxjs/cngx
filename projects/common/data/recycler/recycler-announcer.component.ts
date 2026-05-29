@@ -6,11 +6,19 @@ import type { CngxRecycler } from './recycler';
  * Convenience component that renders the `aria-live="polite"` region
  * for recycler SR announcements. Eliminates manual boilerplate.
  *
- * Uses `display: contents` — no layout impact.
+ * Uses `display: contents` - no layout impact.
  *
  * ```html
  * <cngx-recycler-announcer [cngxRecyclerAnnouncer]="recycler" />
  * ```
+ *
+ * @category common/data/recycler
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/data/recycler/recycler-announcer.component.ts
+ * @since 0.1.0
+ * @relatedTo CngxMeasure, CngxVirtualItem, injectRecycler, CNGX_RECYCLER_I18N
+ *
  * <example-url>http://localhost:4200/#/common/data/recycler/basic-list-fixed-item-height</example-url>
  * <example-url>http://localhost:4200/#/common/data/recycler/content-visibility-css-only</example-url>
  * <example-url>http://localhost:4200/#/common/data/recycler/infinite-scroll-recycler</example-url>

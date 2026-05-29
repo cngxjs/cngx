@@ -1,19 +1,56 @@
 /**
  * @overview
- * Thematic skin of `CngxTag` — color cascade, radius, font-weight.
- * Structural rules (display, flex, padding, density modifiers, label
- * ellipsis) live in `./shared/tag-base.css` and are linked first by
- * the directive's `styleUrls`.
+ * Thematic skin of `CngxTag` - color cascade, radius, font-weight.
+ * The host carries `.cngx-tag`; the structural rules (display, flex,
+ * padding, density modifiers, label ellipsis) live in
+ * `./shared/tag-base.css` and are linked first by the directive's
+ * `styleUrls`. Per-color surfaces resolve through `[data-color="..."]`
+ * attribute selectors, and predefined keys cascade through
+ * `--cngx-tag-{name}-*` custom properties - arbitrary keys ride the
+ * same selector pattern, so consumers can introduce new color names
+ * without forking.
  *
- * Per-color surfaces resolve through `[data-color="…"]` attribute
- * selectors. Predefined keys cascade through `--cngx-tag-{name}-*`
- * custom properties; arbitrary keys ride the same selector pattern,
- * so consumers can introduce new color names without forking.
+ * **Style variants**
  *
- * Semantic fallbacks: `--cngx-tag-{success|warning|error|info}-color`
- * falls back to `--cngx-color-{success|warning|danger|info}` so a
- * brand-color override propagates. Subtle/filled tinted surfaces
- * carry their own defaults (no system token for tinted variants).
+ * Each variant pairs with a `[data-color]` attribute and rewires
+ * the three tokens `--cngx-tag-bg`, `--cngx-tag-color`,
+ * `--cngx-tag-border` on the host:
+ *
+ * - `--filled` - solid tinted background, optional border
+ * - `--outline` - transparent fill, colored stroke
+ * - `--subtle` - softer tint, transparent border
+ *
+ * **Color keys**
+ *
+ * - `[data-color="neutral"]` - gray surface, no semantic claim
+ * - `[data-color="success"]` - success-coded
+ * - `[data-color="warning"]` - warning-coded
+ * - `[data-color="error"]` - danger-coded (note: key name is
+ *   `error`, foundation token is `--cngx-color-danger`)
+ * - `[data-color="info"]` - info-coded
+ *
+ * **Inheritance**
+ *
+ * - `--cngx-tag-radius` -> `--cngx-radius-sm`
+ * - `--cngx-tag-success-color` -> `--cngx-color-success`
+ * - `--cngx-tag-warning-color` -> `--cngx-color-warning`
+ * - `--cngx-tag-error-color` -> `--cngx-color-danger`
+ * - `--cngx-tag-info-color` -> `--cngx-color-info`
+ * - Filled / subtle backgrounds (`--cngx-tag-{key}-bg`,
+ *   `--cngx-tag-{key}-subtle-bg`) carry their own defaults; no
+ *   foundation token exists for tinted surfaces
+ *
+ * **Dark mode**
+ *
+ * Two hooks flip every filled / subtle background from a high-L
+ * tinted surface to a low-L tinted surface, and the matching text
+ * colors flip from a dark hue to a light hue so they remain legible
+ * against the new background. Borders stay put (mid-tone reads on
+ * either surface):
+ *
+ * - `prefers-color-scheme: dark`
+ * - `[data-color-scheme="dark"]` / `.dark` class
+ * - `[data-color-scheme="light"]` / `.light` class (explicit pin)
  */
 
 @layer cngx.tokens {
@@ -364,7 +401,7 @@
     initial-value: oklch(0.97 0.025 240);
   }
 
-  /* Dark-mode swap — every filled / subtle variant background flips
+  /* Dark-mode swap - every filled / subtle variant background flips
    * from a high-L tinted surface to a low-L tinted surface, and the
    * matching text colors flip from a dark hue to a light hue so they
    * remain legible against the new background. Borders (mid-tone)
@@ -448,7 +485,7 @@
       border: var(--cngx-tag-border, 1px solid transparent);
     }
 
-    /* Filled variant — solid tinted background per [data-color] */
+    /* Filled variant - solid tinted background per [data-color] */
     :scope.cngx-tag--filled[data-color='neutral'] {
       --cngx-tag-bg: var(--cngx-tag-neutral-bg);
       --cngx-tag-color: var(--cngx-tag-neutral-color);
@@ -475,7 +512,7 @@
       --cngx-tag-border: 1px solid var(--cngx-tag-info-border, transparent);
     }
 
-    /* Outline variant — transparent fill, colored stroke */
+    /* Outline variant - transparent fill, colored stroke */
     :scope.cngx-tag--outline[data-color='neutral'] {
       --cngx-tag-bg: transparent;
       --cngx-tag-color: var(--cngx-tag-neutral-color);
@@ -502,7 +539,7 @@
       --cngx-tag-border: 1px solid var(--cngx-tag-info-color, var(--cngx-color-info));
     }
 
-    /* Subtle variant — softer tint */
+    /* Subtle variant - softer tint */
     :scope.cngx-tag--subtle[data-color='neutral'] {
       --cngx-tag-bg: var(--cngx-tag-neutral-subtle-bg);
       --cngx-tag-color: var(--cngx-tag-neutral-color);

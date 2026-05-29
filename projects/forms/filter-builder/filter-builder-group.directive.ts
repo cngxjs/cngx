@@ -5,6 +5,7 @@ import { injectFilterBuilderConfig } from './filter-builder.config';
 import { CNGX_FILTER_BUILDER_HOST } from './filter-builder-host.token';
 import { referenceEqual } from './filter-builder-internal';
 
+/** @internal */
 const EMPTY_FILTERS: readonly FilterNode[] = Object.freeze([]) as readonly FilterNode[];
 
 /**
@@ -17,6 +18,13 @@ const EMPTY_FILTERS: readonly FilterNode[] = Object.freeze([]) as readonly Filte
  * Every object/array signal carries an explicit `equal` fn per
  * `reference_signal_architecture` §1; the empty-filters fallback uses a
  * shared frozen array so null reads do not allocate.
+ *
+ * @category forms/filter-builder
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder-group.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxFilterExpression, CngxFilterBuilderPresenter, CngxFilterBuilder
  * <example-url>http://localhost:4200/#/forms/filter-builder/basic-two-way-binding-json-inspection</example-url>
  * <example-url>http://localhost:4200/#/forms/filter-builder/seeded-tree-and-or-composition</example-url>
  */

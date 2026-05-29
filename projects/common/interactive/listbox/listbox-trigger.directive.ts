@@ -19,7 +19,7 @@ interface PopoverController {
  * Trigger atom for listbox dropdowns.
  *
  * Pairs a focusable element (button) with a `CngxListbox` and a `CngxPopover`
- * through explicit template references — no ancestor injection, consistent
+ * through explicit template references - no ancestor injection, consistent
  * with the `CngxSortHeader` / `CngxSortRef` orthogonal composition pattern.
  *
  * Implements the WAI-ARIA combobox-less listbox trigger keyboard model:
@@ -31,6 +31,13 @@ interface PopoverController {
  * | open | ArrowDown / ArrowUp / Home / End | delegate to AD primitives |
  * | open | Enter / Space | activate; close if `closeOnSelect()` |
  * | any | Escape | close and restore focus to trigger |
+ *
+ * @category common/interactive/listbox
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/listbox/listbox-trigger.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxListbox, CngxListboxSearch, CngxPopoverTrigger, CngxActiveDescendant
  * <example-url>http://localhost:4200/#/common/interactive/listbox/trigger/select-dropdown</example-url>
  */
 @Directive({
@@ -57,7 +64,7 @@ export class CngxListboxTrigger<T = unknown> {
   /**
    * Fires when the user presses Backspace on an empty input. Only
    * emitted when the host element is an `<input>` with a co-located
-   * `CngxListboxSearch` — the tag-input convention "Backspace on empty
+   * `CngxListboxSearch` - the tag-input convention "Backspace on empty
    * deletes the trailing chip" lives at the trigger, so consumers only
    * wire one subscription to own the delete path. On non-input hosts
    * (classic button triggers) the event never fires.
@@ -92,7 +99,7 @@ export class CngxListboxTrigger<T = unknown> {
       const host = this.el.nativeElement;
       if (host instanceof HTMLInputElement && host.value === '') {
         this.backspaceOnEmpty.emit();
-        // No preventDefault — the consumer's chip-remove path owns DOM impact.
+        // No preventDefault - the consumer's chip-remove path owns DOM impact.
       }
     }
 

@@ -1,11 +1,4 @@
-import {
-  computed,
-  inject,
-  InjectionToken,
-  signal,
-  type Signal,
-  untracked,
-} from '@angular/core';
+import { computed, inject, InjectionToken, signal, type Signal, untracked } from '@angular/core';
 import {
   type CngxTreeNode,
   type FlatTreeNode,
@@ -22,16 +15,20 @@ import { CNGX_TREE_CONFIG } from './tree-config';
  * `expandedIds`, to selection memoization (`keyFn` consumers), and to the
  * stable-identity `isExpanded(id)` signal cache. A non-stable id (e.g. the
  * path-based fallback from `flattenTree`) silently breaks all three the
- * moment the tree is sorted or filtered — exactly the Sort/Filter
+ * moment the tree is sorted or filtered - exactly the Sort/Filter
  * integration pattern this stack is designed to support. Forcing the
  * caller to think about identity at construction eliminates that whole
  * class of heisenbugs.
+ *
+ * @category common/interactive/tree
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/tree-controller/tree-controller.ts
+ * @since 0.1.0
  */
 export interface CngxTreeControllerOptions<T> {
-  /** Source tree — the controller re-derives on every change. */
+  /** Source tree - the controller re-derives on every change. */
   readonly nodes: Signal<readonly CngxTreeNode<T>[]>;
   /**
-   * Derives a stable id per flat node — must survive re-ordering and
+   * Derives a stable id per flat node - must survive re-ordering and
    * filtering of the source tree. Use a domain id (`(v) => v.id`)
    * rather than a positional fallback.
    *
@@ -73,8 +70,8 @@ export interface CngxTreeControllerOptions<T> {
  * - No `effect()`, no subscriptions. The only writable slot is the internal
  *   expandedIds set; every other accessor is a `computed()` or pure fn.
  * - `isExpanded(id)` returns the SAME `Signal` instance per id across the
- *   controller's lifetime — safe to pass into OnPush children without churn.
- * - Controller is a11y-agnostic — adapters like `createTreeAdItems` live
+ *   controller's lifetime - safe to pass into OnPush children without churn.
+ * - Controller is a11y-agnostic - adapters like `createTreeAdItems` live
  *   in sibling files so `@cngx/core`-level reuse stays clean.
  *
  * ## Reactivity contract
@@ -82,14 +79,14 @@ export interface CngxTreeControllerOptions<T> {
  *
  * - **Reactive** (`Signal<…>` returners): `flatNodes`, `visibleNodes`,
  *   `expandedIds`, `isExpanded(id)`. Bind these in templates and wrap in
- *   `computed()` freely — Angular tracks their dependencies automatically.
+ *   `computed()` freely - Angular tracks their dependencies automatically.
  *
  * - **Snapshot** (plain-return methods): `findById`, `parentOf`,
  *   `firstChildOf`, `childrenOfValue`, `descendantsOfValue`. These read
  *   the underlying indexes reactively when called inside a tracked
  *   context, but intentionally return raw values rather than signals.
- *   They are intended for imperative call-sites — keydown handlers,
- *   commit flows, AD-activation dispatch — where the caller wants a
+ *   They are intended for imperative call-sites - keydown handlers,
+ *   commit flows, AD-activation dispatch - where the caller wants a
  *   one-shot lookup, not a subscription. If you *do* call them from
  *   inside an `effect()` that should NOT re-fire on tree changes, wrap
  *   the call in `untracked(() => ctrl.parentOf(id))`.
@@ -98,6 +95,10 @@ export interface CngxTreeControllerOptions<T> {
  * All mutators (`expand`, `collapse`, `toggle`, `expandAll`, `collapseAll`)
  * peek at the expansion set via `untracked()` so invoking them from
  * inside an `effect()` never latches that effect onto the expansion set.
+ *
+ * @category common/interactive/tree
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/tree-controller/tree-controller.ts
+ * @since 0.1.0
  */
 export interface CngxTreeController<T> {
   /** Flat DFS projection with ARIA metadata + backref to the source node. */
@@ -113,7 +114,7 @@ export interface CngxTreeController<T> {
    *
    * Returns a fresh array per call. SelectionController's cascade
    * `isIndeterminate` walk invokes `childrenFn` once per tree node on
-   * every membership change — a cascade-toggle on a 10k-descendant root
+   * every membership change - a cascade-toggle on a 10k-descendant root
    * triggers O(n) fresh allocations per recompute. Tracked as a perf
    * follow-up: memoize by (tree-version, value-key) if the 10k demo
    * surfaces measurable jitter; spec `tree-controller.spec.ts` carries
@@ -122,7 +123,7 @@ export interface CngxTreeController<T> {
   childrenOfValue(value: T): T[];
   /**
    * All descendant values (DFS, exclusive of self), for cascade-select.
-   * Same allocation caveat as `childrenOfValue` — returns a fresh array;
+   * Same allocation caveat as `childrenOfValue` - returns a fresh array;
    * cascade-select on wide subtrees allocates O(descendants) per call.
    */
   descendantsOfValue(value: T): T[];
@@ -143,10 +144,10 @@ export interface CngxTreeController<T> {
   parentOf(id: string): FlatTreeNode<T> | undefined;
   firstChildOf(id: string): FlatTreeNode<T> | undefined;
   /**
-   * Release the `isExpanded(id)` signal-cache. **Soft contract** — matches
+   * Release the `isExpanded(id)` signal-cache. **Soft contract** - matches
    * `createSelectionController`'s destroy semantics:
    * - New `isExpanded(id)` queries return a shared `Signal<false>` constant.
-   * - Existing signal bindings created before destroy keep working — the
+   * - Existing signal bindings created before destroy keep working - the
    *   underlying `expandedIds` signal is still live, so downstream updates
    *   continue to propagate.
    * - Mutators (`expand` / `collapse` / `toggle` / `expandAll` /
@@ -160,7 +161,13 @@ export interface CngxTreeController<T> {
   destroy(): void;
 }
 
-/** Factory signature carried by the DI token. */
+/**
+ * Factory signature carried by the DI token.
+ *
+ * @category common/interactive/tree
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/tree-controller/tree-controller.ts
+ * @since 0.1.0
+ */
 export type CngxTreeControllerFactory = <T>(
   opts: CngxTreeControllerOptions<T>,
 ) => CngxTreeController<T>;
@@ -171,8 +178,12 @@ export type CngxTreeControllerFactory = <T>(
  * override via `providers`/`viewProviders` for telemetry wrappers, audit
  * logging, or server-synced expansion state.
  *
- * Symmetrical to `CNGX_SELECTION_CONTROLLER_FACTORY` in `@cngx/core/utils` —
+ * Symmetrical to `CNGX_SELECTION_CONTROLLER_FACTORY` in `@cngx/core/utils` -
  * same override surface, one concern below: tree-aware derived views.
+ *
+ * @category common/interactive/tree
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/tree-controller/tree-controller.ts
+ * @since 0.1.0
  */
 export const CNGX_TREE_CONTROLLER_FACTORY = new InjectionToken<CngxTreeControllerFactory>(
   'CngxTreeControllerFactory',
@@ -182,13 +193,15 @@ export const CNGX_TREE_CONTROLLER_FACTORY = new InjectionToken<CngxTreeControlle
   },
 );
 
-/** Shared `Signal<false>` returned post-destroy and as an always-false fallback. */
+/**
+ * Shared `Signal<false>` returned post-destroy and as an always-false fallback.
+ *
+ * @internal
+ */
 const POST_DESTROY_FALSE: Signal<boolean> = signal(false).asReadonly();
 
-function flatEq<T>(
-  a: readonly FlatTreeNode<T>[],
-  b: readonly FlatTreeNode<T>[],
-): boolean {
+/** @internal */
+function flatEq<T>(a: readonly FlatTreeNode<T>[], b: readonly FlatTreeNode<T>[]): boolean {
   if (a === b) {
     return true;
   }
@@ -211,6 +224,7 @@ function flatEq<T>(
   return true;
 }
 
+/** @internal */
 interface TreeIndexes<T> {
   readonly byId: ReadonlyMap<string, FlatTreeNode<T>>;
   /** `keyFn(value)` → flat-projected node. Source `CngxTreeNode` is reachable via `.node`. */
@@ -226,16 +240,19 @@ interface TreeIndexes<T> {
  *
  * See {@link CngxTreeController} for the returned surface and
  * {@link CngxTreeControllerOptions} for the configuration cascade.
+ *
+ * @category common/interactive/tree
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/tree-controller/tree-controller.ts
+ * @since 0.1.0
  */
-export function createTreeController<T>(
-  opts: CngxTreeControllerOptions<T>,
-): CngxTreeController<T> {
+export function createTreeController<T>(opts: CngxTreeControllerOptions<T>): CngxTreeController<T> {
   const { nodes } = opts;
   const config = inject(CNGX_TREE_CONFIG, { optional: true }) ?? {};
 
   // Resolution: per-options > provideTreeConfig default > library default.
-  const resolvedNodeIdFn = opts.nodeIdFn
-    ?? (config.defaultNodeIdFn as ((v: T, path: readonly number[]) => string) | undefined);
+  const resolvedNodeIdFn =
+    opts.nodeIdFn ??
+    (config.defaultNodeIdFn as ((v: T, path: readonly number[]) => string) | undefined);
   if (!resolvedNodeIdFn) {
     throw new Error(
       'createTreeController: `nodeIdFn` is required. Provide it via ' +
@@ -243,10 +260,11 @@ export function createTreeController<T>(
         '`provideTreeConfig(withDefaultNodeIdFn(...))`.',
     );
   }
-  const resolvedLabelFn = opts.labelFn
-    ?? (config.defaultLabelFn as ((v: T) => string) | undefined);
+  const resolvedLabelFn = opts.labelFn ?? (config.defaultLabelFn as ((v: T) => string) | undefined);
   const resolvedKeyFn: (v: T) => unknown =
-    opts.keyFn ?? (config.defaultKeyFn as ((v: T) => unknown) | undefined) ?? ((v: T) => v as unknown);
+    opts.keyFn ??
+    (config.defaultKeyFn as ((v: T) => unknown) | undefined) ??
+    ((v: T) => v as unknown);
   const resolvedInitiallyExpanded = opts.initiallyExpanded ?? config.defaultInitiallyExpanded;
   const resolvedCacheLimit = opts.cacheLimit ?? config.cacheLimit;
 
@@ -288,7 +306,7 @@ export function createTreeController<T>(
     return next;
   };
 
-  // Seed the expansion set once. `untracked` is defensive — if the factory
+  // Seed the expansion set once. `untracked` is defensive - if the factory
   // is mistakenly called from an outer reactive context, this read must not
   // leak `flatNodes` / `nodes` into that context's dependency graph.
   const initialSet = untracked(() => {
@@ -304,10 +322,9 @@ export function createTreeController<T>(
   const expandedIdsWritable = signal<ReadonlySet<string>>(initialSet);
   const expandedIds = expandedIdsWritable.asReadonly();
 
-  const visibleNodes = computed(
-    () => flatNodes().filter((n) => isNodeVisible(n, expandedIds())),
-    { equal: flatEq },
-  );
+  const visibleNodes = computed(() => flatNodes().filter((n) => isNodeVisible(n, expandedIds())), {
+    equal: flatEq,
+  });
 
   // `Map` preserves insertion order → FIFO eviction when `cacheLimit`
   // is set. Without a limit the cache grows unbounded over the
@@ -355,11 +372,9 @@ export function createTreeController<T>(
     return flat ? collectDescendantValues(flat.node) : [];
   };
 
-  const findById = (id: string): FlatTreeNode<T> | undefined =>
-    indexes().byId.get(id);
+  const findById = (id: string): FlatTreeNode<T> | undefined => indexes().byId.get(id);
 
-  const findByValue = (v: T): FlatTreeNode<T> | undefined =>
-    indexes().byValue.get(keyFn(v));
+  const findByValue = (v: T): FlatTreeNode<T> | undefined => indexes().byValue.get(keyFn(v));
 
   const parentOf = (id: string): FlatTreeNode<T> | undefined => {
     const byId = indexes().byId;
@@ -373,12 +388,11 @@ export function createTreeController<T>(
   const firstChildOf = (id: string): FlatTreeNode<T> | undefined =>
     indexes().firstChildById.get(id);
 
-  // Mutation helpers read the writable signal via `untracked()` — these
+  // Mutation helpers read the writable signal via `untracked()` - these
   // methods can be invoked from anywhere (event handlers, effects, async
   // callbacks); reading outside a tracked context keeps consumer `effect()`
   // graphs from latching onto the expansion set accidentally.
-  const peekExpanded = (): ReadonlySet<string> =>
-    untracked(() => expandedIdsWritable());
+  const peekExpanded = (): ReadonlySet<string> => untracked(() => expandedIdsWritable());
 
   const expand = (id: string): void => {
     if (peekExpanded().has(id)) {

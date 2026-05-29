@@ -4,7 +4,9 @@ import type { PopoverPlacement } from './popover.types';
 
 /**
  * Signature matching `@floating-ui/dom` `computePosition`.
- * The consumer provides the actual function — the library never imports it directly.
+ * The consumer provides the actual function - the library never imports it directly.
+ *
+ * @category common/popover
  */
 export type ComputePositionFn = (
   reference: HTMLElement,
@@ -15,7 +17,11 @@ export type ComputePositionFn = (
   },
 ) => Promise<{ x: number; y: number; placement: string }>;
 
-/** Configuration for the Floating UI positioning fallback. */
+/**
+ * Configuration for the Floating UI positioning fallback.
+ *
+ * @category common/popover
+ */
 export interface FloatingFallbackConfig {
   /** The `computePosition` function from `@floating-ui/dom`. */
   computePosition: ComputePositionFn;
@@ -25,7 +31,11 @@ export interface FloatingFallbackConfig {
 
 /**
  * Injection token for the Floating UI fallback.
- * `null` when not provided — CSS Anchor Positioning is used instead.
+ * `null` when not provided - CSS Anchor Positioning is used instead.
+ *
+ * @category common/popover
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/popover/floating-fallback.ts
+ * @since 0.1.0
  */
 export const CNGX_FLOATING_FALLBACK = new InjectionToken<FloatingFallbackConfig | null>(
   'CngxFloatingFallback',
@@ -36,7 +46,7 @@ export const CNGX_FLOATING_FALLBACK = new InjectionToken<FloatingFallbackConfig 
  * Provides the Floating UI positioning fallback for browsers without
  * CSS Anchor Positioning support.
  *
- * The consumer must install `@floating-ui/dom` themselves — this library
+ * The consumer must install `@floating-ui/dom` themselves - this library
  * never imports it directly, keeping the bundle at zero cost for modern browsers.
  *
  * ```typescript
@@ -47,6 +57,8 @@ export const CNGX_FLOATING_FALLBACK = new InjectionToken<FloatingFallbackConfig 
  *   provideFloatingFallback(computePosition, [offset(8), flip(), shift()]),
  * ]
  * ```
+ *
+ * @category common/popover
  */
 export function provideFloatingFallback(
   computePosition: ComputePositionFn,
@@ -58,7 +70,7 @@ export function provideFloatingFallback(
   };
 }
 
-/** Maps cngx placement tokens to Floating UI placement strings. */
+/** @internal Maps cngx placement tokens to Floating UI placement strings. */
 export const FLOATING_PLACEMENT: Record<PopoverPlacement, string> = {
   top: 'top',
   'top-start': 'top-start',

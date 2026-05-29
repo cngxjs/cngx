@@ -1,7 +1,11 @@
 import { computed, type Signal } from '@angular/core';
 import type { AsyncStatus, CngxAsyncState } from './async-state';
 
-/** Source signals for building a read-only async state view. */
+/**
+ * Source signals for building a read-only async state view.
+ *
+ * @category core/utils/async-state
+ */
 export interface AsyncStateViewSources<T> {
   /** Single source of truth — the current status. */
   readonly status: Signal<AsyncStatus>;
@@ -22,8 +26,11 @@ export interface AsyncStateViewSources<T> {
   readonly lastUpdated?: Signal<Date | undefined>;
 }
 
+/** @internal */
 const ALWAYS_FALSE: Signal<boolean> = computed(() => false);
+/** @internal */
 const ALWAYS_UNDEFINED_NUMBER: Signal<number | undefined> = computed(() => undefined);
+/** @internal */
 const ALWAYS_UNDEFINED_DATE: Signal<Date | undefined> = computed(() => undefined);
 
 /**
@@ -35,6 +42,8 @@ const ALWAYS_UNDEFINED_DATE: Signal<Date | undefined> = computed(() => undefined
  *
  * This is the shared kernel used by all async state factories and state producers.
  * No injection context required — uses only `computed()`.
+ *
+ * @category core/utils/async-state
  */
 export function buildAsyncStateView<T>(sources: AsyncStateViewSources<T>): CngxAsyncState<T> {
   const { status, data, error } = sources;

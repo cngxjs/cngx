@@ -16,10 +16,7 @@ import {
 } from '@cngx/core/tokens';
 import { nextUid, type CngxAsyncState } from '@cngx/core/utils';
 
-import {
-  CNGX_CONTROL_VALUE,
-  type CngxControlValue,
-} from '../control-value/control-value.token';
+import { CNGX_CONTROL_VALUE, type CngxControlValue } from '../control-value/control-value.token';
 import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.token';
 import {
   CNGX_RADIO_GROUP,
@@ -33,7 +30,7 @@ import {
  * `CNGX_RADIO_GROUP`. The group composes `CngxRovingTabindex` as a
  * host directive (with `inputs: ['orientation']` exposed) so arrow-
  * key navigation across radios is wired from day one. Leaf
- * registration is imperative — `register()` / `unregister()` keep a
+ * registration is imperative - `register()` / `unregister()` keep a
  * Map in declaration order so the group can resolve the active
  * radio by id without re-querying content children on every change
  * detection cycle.
@@ -56,7 +53,7 @@ import {
  * (plain field write) and value-set (signal write inside a DOM
  * event handler, not an effect) are both legal under the pillar
  * rules. Tab-into-group fires focus without a preceding arrow
- * keydown, so the flag stays false and no auto-select happens —
+ * keydown, so the flag stays false and no auto-select happens -
  * Tab leaves the consumer's `value` untouched.
  *
  * ```html
@@ -66,6 +63,14 @@ import {
  *   <cngx-radio value="invoice" disabled>Invoice</cngx-radio>
  * </cngx-radio-group>
  * ```
+ *
+ * @category common/interactive
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/radio/radio-group.component.ts
+ * @selector cngx-radio-group
+ * @since 0.1.0
+ * @relatedTo CngxRadio, CngxButtonToggleGroup, CngxChipGroup
  * <example-url>http://localhost:4200/#/common/interactive/radio/basic-vertical-group</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/radio/custom-dot-glyph</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/radio/disabled-group-cascades-per-radio-overrides</example-url>
@@ -106,10 +111,7 @@ import {
   encapsulation: ViewEncapsulation.None,
 })
 export class CngxRadioGroup<T = unknown>
-  implements
-    CngxRadioGroupContract<T>,
-    CngxControlValue<T | undefined>,
-    CngxFormFieldControl
+  implements CngxRadioGroupContract<T>, CngxControlValue<T | undefined>, CngxFormFieldControl
 {
   readonly value = model<T | undefined>(undefined);
   readonly disabled = model<boolean>(false);
@@ -117,7 +119,7 @@ export class CngxRadioGroup<T = unknown>
   /**
    * Bridge-writable invalid state. `model<boolean>` mirrors `disabled`
    * so external integrations (RF/Signal-Forms bridges, custom validity
-   * adapters) can drive it without a parallel API path — consumers
+   * adapters) can drive it without a parallel API path - consumers
    * typically read only.
    */
   readonly invalid = model<boolean>(false);
@@ -135,9 +137,7 @@ export class CngxRadioGroup<T = unknown>
   readonly state = input<CngxAsyncState<unknown> | undefined>(undefined);
   readonly nameInput = input<string | undefined>(undefined, { alias: 'name' });
 
-  protected readonly ariaBusy = computed(
-    () => this.state()?.status() === 'loading',
-  );
+  protected readonly ariaBusy = computed(() => this.state()?.status() === 'loading');
 
   private readonly fallbackName = nextUid('cngx-radio-group');
 
@@ -161,8 +161,7 @@ export class CngxRadioGroup<T = unknown>
   });
 
   readonly errorState = computed<boolean>(
-    () =>
-      this.fieldHost?.showError() ?? this.aggregator?.shouldShow() ?? false,
+    () => this.fieldHost?.showError() ?? this.aggregator?.shouldShow() ?? false,
   );
 
   constructor() {

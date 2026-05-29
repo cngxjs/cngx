@@ -88,14 +88,14 @@ export class CngxMatTabsPanelHostAdapter implements CngxTabPanelHost {
 
 /**
  * Attaches to an existing `<mat-tab-group>` and wires it to a
- * {@link CngxTabGroupPresenter} — consumers get the commit-action
+ * {@link CngxTabGroupPresenter} - consumers get the commit-action
  * lifecycle, `CNGX_STATEFUL` (so `<cngx-toast-on />` and
  * `<cngx-banner-on />` compose as children), and the tab-handle
  * registry from one attribute.
  *
  * Topology inverts `<cngx-mat-stepper>`: Material is the host, cngx
  * is the instrumentation layer. `inject(MatTabGroup, { self: true })`
- * resolves on the consumer's own element — no content projection
+ * resolves on the consumer's own element - no content projection
  * blocker applies here.
  *
  * Rejection (`--error`) and aggregator (`--has-errors`) visuals
@@ -104,6 +104,13 @@ export class CngxMatTabsPanelHostAdapter implements CngxTabPanelHost {
  * and the delegators consumer templates call.
  *
  * @playground Form error aggregation ./examples/form-errors/form-errors.component.ts
+ *
+ * @category ui/mat-tabs
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/mat-tabs/mat-tabs.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxMatTabsRegistry, CngxMatTabError, CngxMatStepperBridge
  */
 @Directive({
   selector: '[cngxMatTabs]',
@@ -133,7 +140,7 @@ export class CngxMatTabsPanelHostAdapter implements CngxTabPanelHost {
     // molecule. `useExisting` binding below ensures every injection
     // resolves to the single per-host instance. The cngx-native
     // `<cngx-tab-group>` path keeps its own `useExisting:
-    // CngxTabGroup` provider — sits one injector layer closer.
+    // CngxTabGroup` provider - sits one injector layer closer.
     CngxMatTabsPanelHostAdapter,
     {
       provide: CNGX_TAB_PANEL_HOST,
@@ -149,13 +156,13 @@ export class CngxMatTabs {
   private readonly renderer = inject(Renderer2);
   private readonly hostEl = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
 
-  // Field order matters — `overflowRef` reads `viewContainerRef` at
+  // Field order matters - `overflowRef` reads `viewContainerRef` at
   // class-init time. The VCR also feeds the aggregator-decoration
   // slot path further down.
   private readonly viewContainerRef = inject(ViewContainerRef);
 
   // Programmatic mount of the cngx overflow molecule.
-  // `injector: this.injector` is load-bearing — without it,
+  // `injector: this.injector` is load-bearing - without it,
   // `vcr.createComponent` walks the host-template's parent VCR for
   // DI resolution, missing this directive's `CNGX_TAB_PANEL_HOST`
   // and `CNGX_TAB_OVERFLOW_DOM_ADAPTER_FACTORY` providers, and the
@@ -176,7 +183,7 @@ export class CngxMatTabs {
     computed(() => this.rejectionContentSlot()?.templateRef ?? null);
   private readonly i18n = injectTabsI18n();
 
-  // Identity equal on `string | null` — collapses `tabs()` re-emits
+  // Identity equal on `string | null` - collapses `tabs()` re-emits
   // that don't change the failed-target id.
   private readonly failedHandleId = computed<string | null>(() => {
     const idx = this.presenter.lastFailedIndex();
@@ -187,10 +194,10 @@ export class CngxMatTabs {
   });
 
   // Bundle shares one source-walk across descriptorText / originLabel
-  // / liveAnnouncement — pillar-2 phrasing parity with cngx-native.
+  // / liveAnnouncement - pillar-2 phrasing parity with cngx-native.
   private readonly rejectionState = createRejectionState(this.presenter, this.i18n);
 
-  // Structural equal — drops re-runs whose entry list is shape-
+  // Structural equal - drops re-runs whose entry list is shape-
   // identical so the projector doesn't churn on no-op aggregator
   // re-emissions.
   private readonly aggregatedErrorTabs = computed<readonly CngxMatTabAggregatorErrorEntry[]>(
@@ -236,7 +243,7 @@ export class CngxMatTabs {
   constructor() {
     const matTabsConfig = injectMatTabsConfig();
 
-    // Polite live region — attribute directive owns no template, so
+    // Polite live region - attribute directive owns no template, so
     // the helper attaches the span at document.body (CDK
     // LiveAnnouncer convention) and mirrors `CngxLiveRegion`'s host
     // bindings imperatively.
@@ -280,7 +287,7 @@ export class CngxMatTabs {
     // `createDomAnchorRetry` covers the deferred-host case
     // (`<mat-tab-group>` gated behind `*ngIf` / `@defer`); the cap
     // dev-warns when consumer DOM never materialises. The
-    // flex-layout skin in `mat-tabs.css` handles positioning — no
+    // flex-layout skin in `mat-tabs.css` handles positioning - no
     // imperative layout work needed.
     const anchorMaxAttempts = matTabsConfig.anchorMaxAttempts;
     const anchorRetry = inject(CNGX_DOM_ANCHOR_RETRY_FACTORY)({
@@ -305,7 +312,7 @@ export class CngxMatTabs {
         if (isDevMode()) {
           console.warn(
             `[CngxMatTabs] Could not anchor <cngx-tab-overflow> after ${anchorMaxAttempts} ` +
-              'attempts — .mat-mdc-tab-header was not found inside the ' +
+              'attempts - .mat-mdc-tab-header was not found inside the ' +
               'host. The More popover will fall back to a sibling-of-' +
               '<mat-tab-group> position; verify Material rendered the ' +
               'strip (e.g. consumer is not gating <mat-tab-group> behind ' +
@@ -333,7 +340,7 @@ export class CngxMatTabs {
   /**
    * Clears `presenter.lastFailedIndex`, dismissing the rejection
    * decoration. Mirrors `CngxTabGroup.clearLastFailed()` so a
-   * template ref (`#mt="cngxMatTabs"`) is enough — no host-token
+   * template ref (`#mt="cngxMatTabs"`) is enough - no host-token
    * injection needed.
    */
   clearLastFailed(): void {

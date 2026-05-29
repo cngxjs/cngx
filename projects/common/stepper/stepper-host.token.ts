@@ -7,18 +7,16 @@ import type { CngxErrorAggregatorContract } from '@cngx/common/interactive';
 /**
  * Status enum for a single step. Driven by the presenter's commit-controller
  * lifecycle plus the optional `errorAggregator`.
+ *
+ * @category common/stepper
  */
-export type CngxStepStatus =
-  | 'idle'
-  | 'pending'
-  | 'success'
-  | 'error'
-  | 'disabled'
-  | 'busy';
+export type CngxStepStatus = 'idle' | 'pending' | 'success' | 'error' | 'disabled' | 'busy';
 
 /**
  * Step-tree node. Either a terminal `step` (has its own panel) or a
  * `group` carrying nested children. Discriminated by `kind`.
+ *
+ * @category common/stepper
  */
 export interface CngxStepNode {
   readonly id: string;
@@ -56,7 +54,9 @@ export interface CngxStepRegistration {
 
 /**
  * Contract atoms see via {@link CNGX_STEPPER_HOST}. Mirrors the
- * directive's surface 1:1 — atoms never reach the concrete class.
+ * directive's surface 1:1 - atoms never reach the concrete class.
+ *
+ * @category common/stepper
  */
 export interface CngxStepperHost {
   readonly stepTree: Signal<readonly CngxStepNode[]>;
@@ -72,7 +72,7 @@ export interface CngxStepperHost {
    * Reactive current/previous pair for the commit-state status. The
    * organism's `<span cngxLiveRegion>` reads this tracker on every
    * `pending → success / error` transition. Allocated once per
-   * presenter — consumers MUST read this rather than calling
+   * presenter - consumers MUST read this rather than calling
    * `createTransitionTracker` locally so the `linkedSignal` is shared.
    */
   readonly commitTransition: StatusTransition;
@@ -87,7 +87,7 @@ export interface CngxStepperHost {
   readonly lastFailedIndex: Signal<number | undefined>;
 
   /**
-   * Origin captured at commit-window open — the safe-harbour the user
+   * Origin captured at commit-window open - the safe-harbour the user
    * is returned to on optimistic rollback. Resolves the origin label
    * for the `commitRolledBackTo(originLabel)` phrase. Cleared on
    * success; retained on rejection through the persistence window.
@@ -114,7 +114,10 @@ export interface CngxStepperHost {
  * DI token carrying the presenter's contract to atoms + organism shells.
  * Atoms inject `optional: true` and either register here or fall through
  * {@link CNGX_STEP_GROUP_HOST} when nested in a group.
+ *
+ * @category common/stepper
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/stepper/stepper-host.token.ts
+ * @since 0.1.0
  */
-export const CNGX_STEPPER_HOST = new InjectionToken<CngxStepperHost>(
-  'CngxStepperHost',
-);
+export const CNGX_STEPPER_HOST = new InjectionToken<CngxStepperHost>('CngxStepperHost');

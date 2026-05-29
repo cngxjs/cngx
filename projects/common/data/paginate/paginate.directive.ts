@@ -6,10 +6,10 @@ import type { CngxAsyncState } from '@cngx/core/utils';
  *
  * Supports both **uncontrolled** (internal state) and **controlled** modes.
  * In controlled mode the `cngxPageIndex` / `cngxPageSize` inputs take precedence
- * over internal state — pair with `pageChange` / `pageSizeChange` to keep them
+ * over internal state - pair with `pageChange` / `pageSizeChange` to keep them
  * in sync.
  *
- * Consumer connects this to a list or table via `range()` — nothing is injected
+ * Consumer connects this to a list or table via `range()` - nothing is injected
  * automatically.
  *
  * // Headless: read range() from a template ref
@@ -19,6 +19,14 @@ import type { CngxAsyncState } from '@cngx/core/utils';
  *
  * // With CngxMatPaginator:
  * <cngx-mat-paginator [cngxPaginateRef]="pg" />
+ *
+ * @category common/data/paginate
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/data/paginate/paginate.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxSort, CngxFilter, CngxSmartDataSource
+ *
  * <example-url>http://localhost:4200/#/common/data/data-source/datasource-cngxpaginate-manual-pipeline</example-url>
  * <example-url>http://localhost:4200/#/common/data/data-source/signal-observable-bridge</example-url>
  * <example-url>http://localhost:4200/#/common/data/paginate-list/paginated-list-cngxpaginate-cngxmatpaginator</example-url>
@@ -44,7 +52,7 @@ export class CngxPaginate {
   readonly total = input<number>(0);
 
   /**
-   * Bind an async state — disables navigation while the data source is busy.
+   * Bind an async state - disables navigation while the data source is busy.
    * When set, `isBusy` derives from `state.isBusy()`. Navigation methods
    * (`setPage`, `next`, `previous`, etc.) are no-ops while busy.
    */
@@ -74,7 +82,7 @@ export class CngxPaginate {
   readonly isLast = computed(() => this.pageIndex() >= this.totalPages() - 1);
 
   /**
-   * `[start, end]` indices for `Array.slice()` — always in-bounds.
+   * `[start, end]` indices for `Array.slice()` - always in-bounds.
    * Consumer: `items.slice(range()[0], range()[1])`.
    */
   readonly range = computed<[number, number]>(() => {

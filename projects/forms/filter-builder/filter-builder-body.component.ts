@@ -28,8 +28,14 @@ import { CngxFilterGroup } from './filter-builder-group.directive';
 import { CngxFilterExpressionRow } from './filter-builder-expression-row.component';
 import { CNGX_FILTER_BUILDER_GLYPHS } from './filter-builder.glyphs';
 import { createFilterExpression, createFilterGroup } from './filter-builder.helpers';
-import type { FilterExpression, FilterGroup, FilterLogic, FilterNode } from './filter-builder.types';
+import type {
+  FilterExpression,
+  FilterGroup,
+  FilterLogic,
+  FilterNode,
+} from './filter-builder.types';
 
+/** @internal */
 const EMPTY_OPERATORS: readonly string[] = Object.freeze([]) as readonly string[];
 
 /**
@@ -38,12 +44,18 @@ const EMPTY_OPERATORS: readonly string[] = Object.freeze([]) as readonly string[
  * `addGroupButton`, `removeButton`, `logicToggle`, `negationToggle`,
  * `expressionTemplate`, `groupTemplate`) plus path-keyed context caches.
  *
- * Internal — not exported through `public-api.ts`. The host component
+ * Internal - not exported through `public-api.ts`. The host component
  * (`CngxFilterBuilder`) mounts this body directly; state-driven UI
  * (loading / error / refreshing) is the consumer's concern (wrap with
  * `<cngx-async-container [state]>`). The body lifts behind
  * `CNGX_FILTER_BUILDER_BODY_HOST` so consumers can swap the recursive
  * renderer without forking the shell.
+ *
+ * @category forms/filter-builder
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder-body.component.ts
+ * @since 0.1.0
+ * @relatedTo CngxFilterBuilder, CngxFilterBuilderPresenter, CngxFilterGroup, CngxFilterExpression
  */
 @Component({
   selector: 'cngx-filter-builder-body',
@@ -203,7 +215,8 @@ export class CngxFilterBuilderBody {
     if (!first) {
       return;
     }
-    const operator = first.operators?.[0] ?? this.config.defaultOperators[first.editorType]?.[0] ?? 'eq';
+    const operator =
+      first.operators?.[0] ?? this.config.defaultOperators[first.editorType]?.[0] ?? 'eq';
     this.host.addExpression(path, createFilterExpression(first.key, operator));
   }
 

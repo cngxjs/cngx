@@ -1,55 +1,86 @@
 /**
  * @overview
- * Reference theme demonstrating EVERY override slot. This is a
- * CONSUMER-side example, not a shipped theme. Copy it as a starting
- * point when building your own brand theme.
+ * Reference brand theme showing every override slot the cngx token
+ * system exposes. This is a CONSUMER-side example, not a shipped
+ * theme - copy it as the starting point for your own brand. Every
+ * rule lives in `@layer cngx.theme`, the layer canonically reserved
+ * for token overrides.
+ *
+ * **Variants**
+ *
+ * Override groups demonstrated, each in its own `:root` block:
+ *
+ * - **System tokens** - color, spacing, radius, motion, typography,
+ *   elevation; affect everything that consumes them
+ * - **Component tokens** - `--cngx-backdrop-*`, `--cngx-chip-*`;
+ *   affect only the named component
+ * - **Density switches** - `:root[data-density='compact']` and
+ *   `[data-density='comfortable']` re-pin spacing + chip padding
+ * - **Mode switch** - `:root[data-theme='dark']` opts into a forced
+ *   dark palette when `light-dark()` alone isn't enough
+ *
+ * **Customisation**
+ *
+ * Token-only overrides belong in `@layer cngx.theme`. Selectors
+ * that ship their OWN properties (not just custom-property
+ * assignments) belong in the consumer's `app` layer, which cascades
+ * after `cngx.theme`.
+ *
+ * **Inheritance / Composition**
  *
  * Two consumption patterns:
  *
- * 1) Layered on top of `@cngx/themes/cngx.css` (recommended):
- * ```css
- *   @import '@cngx/themes/cngx.css';
- *   @import './my-brand.css';
- * ```
- * `cngx.css` loads layers + tokens + reset + base + directive CSS.
- * Your theme file only ships overrides in `@layer cngx.theme`.
+ * - Layered on top of `@cngx/themes/cngx.css` (recommended) -
+ *   `cngx.css` loads layers + tokens + reset + base + directive
+ *   CSS; this file only ships overrides:
+ *   ```css
+ *     @import '@cngx/themes/cngx.css';
+ *     @import './my-brand.css';
+ *   ```
+ * - Built from scratch without `cngx.css` - cherry-pick the
+ *   foundation pieces and the directive CSS you need:
+ *   ```css
+ *     @import '@cngx/core/theming/layers.css';
+ *     @import '@cngx/core/theming/system-tokens.css';
+ *     @import '@cngx/core/theming/reset.css';
+ *     @import '@cngx/core/theming/base.css';
+ *     @import '@cngx/common/theming/components/cngx-backdrop.css';
+ *     @import './my-brand.css';
+ *   ```
  *
- * 2) Built from scratch without `cngx.css`:
- * ```css
- *   @import '@cngx/core/theming/layers.css';
- *   @import '@cngx/core/theming/system-tokens.css';
- *   @import '@cngx/core/theming/reset.css';
- *   @import '@cngx/core/theming/base.css';
- *   @import '@cngx/common/theming/components/cngx-backdrop.css';
- *   @import './my-brand.css';
- * ```
- * Same result, explicit control over what loads.
+ * **Dark mode**
  *
- * EVERY rule in this file goes into `@layer cngx.theme` — that
- * layer is canonically reserved for token overrides only. Adding
- * selectors with their OWN properties (not just custom-property
- * assignments) belongs in the consumer's `app` layer instead, which
- * cascades after `cngx.theme`.
+ * Foundation tokens use `light-dark()` and follow OS dark mode out
+ * of the box; this file overrides the light/dark pair on
+ * `--cngx-color-surface`, `--cngx-color-text`, and
+ * `--cngx-color-border`. `:root[data-theme='dark']` is the opt-in
+ * forced-dark escape hatch when `light-dark()` resolution is not
+ * available or not desired.
+ *
+ * **Pair with**
+ *
+ * - `@cngx/themes/cngx.css` - default theme bundle this file
+ *   layers on top of
  */
 
 @layer cngx.theme {
   /* ============================================================ */
-  /* SYSTEM TOKENS — affect everything that consumes them          */
+  /* SYSTEM TOKENS - affect everything that consumes them          */
   /* ============================================================ */
 
   :root {
-    /* Color — switch the OKLCH base for the whole library.
+    /* Color - switch the OKLCH base for the whole library.
      * Foundation already wires `light-dark()` to follow OS dark mode;
      * override those entries here too if your brand wants different
      * dark variants. */
     --cngx-color-surface: light-dark(oklch(0.99 0.005 290), oklch(0.16 0.01 290));
-    --cngx-color-text:    light-dark(oklch(0.15 0.02 290), oklch(0.95 0.005 290));
-    --cngx-color-border:  light-dark(oklch(0.88 0.015 290), oklch(0.32 0.02 290));
-    --cngx-color-primary: oklch(0.55 0.18 290);              /* brand purple */
-    --cngx-color-danger:  oklch(0.6 0.2 25);
+    --cngx-color-text: light-dark(oklch(0.15 0.02 290), oklch(0.95 0.005 290));
+    --cngx-color-border: light-dark(oklch(0.88 0.015 290), oklch(0.32 0.02 290));
+    --cngx-color-primary: oklch(0.55 0.18 290); /* brand purple */
+    --cngx-color-danger: oklch(0.6 0.2 25);
     --cngx-color-success: oklch(0.6 0.15 145);
     --cngx-color-warning: oklch(0.72 0.15 75);
-    --cngx-color-info:    oklch(0.65 0.12 240);
+    --cngx-color-info: oklch(0.65 0.12 240);
 
     /* Spacing */
     --cngx-space-xs: 4px;
@@ -58,17 +89,17 @@
     --cngx-space-lg: 24px;
     --cngx-space-xl: 32px;
 
-    /* Radius — brand-x is squared, not pill */
-    --cngx-radius-sm:   2px;
-    --cngx-radius-md:   4px;
-    --cngx-radius-lg:   8px;
+    /* Radius - brand-x is squared, not pill */
+    --cngx-radius-sm: 2px;
+    --cngx-radius-md: 4px;
+    --cngx-radius-lg: 8px;
     --cngx-radius-pill: 0;
 
     /* Motion */
     --cngx-duration-fast: 100ms;
     --cngx-duration-base: 150ms;
     --cngx-duration-slow: 240ms;
-    --cngx-easing-standard:   cubic-bezier(0.4, 0, 0.2, 1);
+    --cngx-easing-standard: cubic-bezier(0.4, 0, 0.2, 1);
     --cngx-easing-decelerate: cubic-bezier(0, 0, 0.2, 1);
     --cngx-easing-accelerate: cubic-bezier(0.4, 0, 1, 1);
 
@@ -80,12 +111,12 @@
 
     /* Elevation */
     --cngx-shadow-sm: 0 1px 2px oklch(0 0 0 / 0.08);
-    --cngx-shadow-md: 0 4px 12px oklch(0 0 0 / 0.10);
+    --cngx-shadow-md: 0 4px 12px oklch(0 0 0 / 0.1);
     --cngx-shadow-lg: 0 12px 32px oklch(0 0 0 / 0.14);
   }
 
   /* ============================================================ */
-  /* COMPONENT TOKENS — affect only the named Component             */
+  /* COMPONENT TOKENS - affect only the named Component             */
   /* ============================================================ */
 
   :root {
@@ -93,7 +124,7 @@
     --cngx-backdrop-bg: oklch(0 0 0 / 0.7);
     --cngx-backdrop-transition-duration: 150ms;
 
-    /* CngxChip — static appearance */
+    /* CngxChip - static appearance */
     --cngx-chip-inner-gap: 6px;
     --cngx-chip-padding-block: 4px;
     --cngx-chip-padding-inline: 12px;
@@ -102,7 +133,7 @@
     --cngx-chip-color: inherit;
     --cngx-chip-font-size: 0.875rem;
 
-    /* CngxChip — remove-button states */
+    /* CngxChip - remove-button states */
     --cngx-chip-remove-opacity: 0.6;
     --cngx-chip-remove-opacity-hover: 1;
     --cngx-chip-remove-radius: 2px;
@@ -112,10 +143,10 @@
   }
 
   /* ============================================================ */
-  /* DENSITY & MODE SWITCHES — opt-in via data-* attributes         */
+  /* DENSITY & MODE SWITCHES - opt-in via data-* attributes         */
   /* ============================================================ */
 
-  :root[data-density="compact"] {
+  :root[data-density='compact'] {
     --cngx-space-md: 12px;
     --cngx-space-lg: 16px;
     --cngx-chip-padding-block: 2px;
@@ -123,18 +154,18 @@
     --cngx-chip-radius: 2px;
   }
 
-  :root[data-density="comfortable"] {
+  :root[data-density='comfortable'] {
     --cngx-space-md: 20px;
     --cngx-space-lg: 32px;
     --cngx-chip-padding-inline: 16px;
   }
 
-  /* Force-dark — opt-in alternative when OS-based light-dark() isn't enough */
-  :root[data-theme="dark"] {
+  /* Force-dark - opt-in alternative when OS-based light-dark() isn't enough */
+  :root[data-theme='dark'] {
     color-scheme: dark;
     --cngx-color-surface: oklch(0.16 0.01 290);
-    --cngx-color-text:    oklch(0.95 0.005 290);
-    --cngx-color-border:  oklch(0.32 0.02 290);
+    --cngx-color-text: oklch(0.95 0.005 290);
+    --cngx-color-border: oklch(0.32 0.02 290);
     --cngx-backdrop-bg: oklch(0 0 0 / 0.8);
   }
 }

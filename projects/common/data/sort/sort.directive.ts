@@ -2,6 +2,8 @@ import { computed, Directive, input, output, signal } from '@angular/core';
 
 /**
  * A single sort entry: the active field key and its direction.
+ *
+ * @category common/data/sort
  */
 export interface SortEntry {
   active: string;
@@ -13,7 +15,7 @@ export interface SortEntry {
  *
  * Supports both **uncontrolled** (internal state) and **controlled** modes.
  * In controlled mode the `cngxSortActive` / `cngxSortDirection` inputs take
- * precedence over the internal state — pair with `sortChange` to keep them
+ * precedence over the internal state - pair with `sortChange` to keep them
  * in sync.
  *
  * When `multiSort` is `true`, holding **Shift** while clicking a sort header
@@ -21,8 +23,14 @@ export interface SortEntry {
  * primary one. Shift-clicking an active column cycles it asc → desc → removed.
  * Multi-sort state is always uncontrolled; use `sortsChange` to read it.
  *
- * Consumer connects this to a table or list via a `computed()` — nothing is
+ * Consumer connects this to a table or list via a `computed()` - nothing is
  * injected automatically.
+ *
+ * @category common/data/sort
+ * @docsKind primary
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/data/sort/sort.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxSortHeader, CngxFilter, CngxPaginate, CngxSmartDataSource
  *
  * <example-url>http://localhost:4200/#/common/data/sort/basic</example-url>
  * <example-url>http://localhost:4200/#/common/data/sort/multi-sort</example-url>

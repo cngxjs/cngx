@@ -15,7 +15,7 @@ import { CngxSeverityIcon } from '../config/severity-icon';
 import { CngxBanner, type BannerState } from './banner.service';
 
 /**
- * Banner outlet — renders the global banner stack at the top of the page.
+ * Banner outlet - renders the global banner stack at the top of the page.
  *
  * Place once in the app shell, above `<router-outlet>`.
  * Requires `provideFeedback(withBanners())`.
@@ -27,6 +27,14 @@ import { CngxBanner, type BannerState } from './banner.service';
  * <cngx-banner-outlet />
  * <router-outlet />
  * ```
+ *
+ * @category ui/feedback/banner
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/feedback/banner/banner-outlet.ts
+ * @since 0.1.0
+ * @relatedTo CngxBanner, CngxBannerTrigger, CngxBannerOn
+ *
  * <example-url>http://localhost:4200/#/ui/feedback/banner/async-action</example-url>
  * <example-url>http://localhost:4200/#/ui/feedback/banner/dedup-update</example-url>
  * <example-url>http://localhost:4200/#/ui/feedback/banner/system-banners</example-url>
@@ -102,7 +110,7 @@ export class CngxBannerOutlet {
   private readonly config = inject(CNGX_FEEDBACK_CONFIG, { optional: true });
 
   /**
-   * @internal — skip enter animation for banners present at first render.
+   * @internal - skip enter animation for banners present at first render.
    * Prevents layout jump when banners are known before first paint (e.g., offline state).
    */
   protected readonly pastFirstRender = signal(false);
@@ -111,7 +119,7 @@ export class CngxBannerOutlet {
     afterNextRender(() => this.pastFirstRender.set(true));
   }
 
-  /** @internal — resolve icon from global config. */
+  /** @internal - resolve icon from global config. */
   protected iconFor(banner: BannerState) {
     return this.config?.alertIcons?.[banner.config.severity] ?? null;
   }

@@ -17,7 +17,7 @@ import {
  * attribute, preventing focus and interaction behind the backdrop.
  * This is critical for a11y in modal/drawer overlays.
  *
- * The directive is purely behavioral — it toggles the
+ * The directive is purely behavioral - it toggles the
  * `.cngx-backdrop--visible` class and `aria-hidden` attribute. Visual
  * styling is opt-in: either consume the shipped default stylesheet or
  * provide your own.
@@ -41,7 +41,7 @@ import {
  *
  * ### Custom styling (no opt-in class)
  * If the shipped defaults don't fit, omit the `.cngx-backdrop` class and
- * style your own host class — the directive still toggles
+ * style your own host class - the directive still toggles
  * `.cngx-backdrop--visible` on the host element.
  *
  * ```html
@@ -61,6 +61,12 @@ import {
  *   pointer-events: auto;
  * }
  * ```
+ *
+ * @category common/layout
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/layout/drawer/backdrop.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxDrawer, CngxDrawerPanel, CngxScrollLock
  * <example-url>http://localhost:4200/#/common/layout/backdrop/overlay-with-inert</example-url>
  */
 @Directive({

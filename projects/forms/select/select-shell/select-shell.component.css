@@ -1,16 +1,52 @@
 /**
  * @overview
- * `CngxSelectShell`-specific skin. Mirrors
+ * Trigger skin for `CngxSelectShell` - the declarative-projection
+ * counterpart to `CngxSelect` (consumers project `<cngx-option>` /
+ * `<cngx-optgroup>` / `<cngx-select-divider>` instead of binding to a
+ * data source). The host carries `.cngx-select-shell`; surface mirrors
  * `single-select/select.component.css` but namespaces every tunable
- * through `--cngx-select-shell-*` so consumers can theme the
- * declarative-projection variant independently of the data-mode
- * `CngxSelect`.
+ * through `--cngx-select-shell-*` so the declarative variant can be
+ * themed independently of the data-mode `CngxSelect`. Structural rules
+ * (panel frame, option rows, async-state surfaces) ride on
+ * `shared/select-base.css`.
  *
- * Cascading-fallback: `var()` chains step `--cngx-select-shell-*` →
- * `--cngx-select-*` → hardcoded. Once registered via `@property` the
- * inner fallback is documentation-only (system tokens are the
- * brand-wide override path). Structural rules (panel frame, option
- * rows, async-state surfaces) live in `../shared/select-base.css`.
+ * **State modifiers**
+ *
+ * - `:focus-visible` on `.cngx-select-shell__trigger` - focus-ring
+ *   outline + offset
+ * - `[aria-disabled='true']` on the trigger - opacity dim + `cursor:
+ *   not-allowed`
+ * - `:hover` on `.cngx-select-shell__clear` - opacity 1
+ * - `:focus-visible` on the clear button - 2px primary-tinted outline
+ *
+ * **Slots**
+ *
+ * - `.cngx-select-shell__root` - `display: contents` host shim
+ * - `.cngx-select-shell__trigger` - the bordered row
+ *   (`user-select: none` prevents drag-click text selection)
+ * - `.cngx-select-shell__label` - ellipsis-truncating value summary
+ *   (inline-flex with `--label-gap` between glyph and text)
+ * - `.cngx-select-shell__caret` - panel-state glyph
+ * - `.cngx-select-shell__clear` - reset button
+ *
+ * **Inheritance**
+ *
+ * Trigger tokens delegate up the family chain so consumer themes can
+ * override at the level they want to brand:
+ *
+ * - `--cngx-select-shell-*` -> `--cngx-select-*` -> hardcoded
+ * - `--cngx-select-shell-border` -> `--cngx-color-border`
+ * - `--cngx-select-shell-focus-outline` -> `--cngx-color-primary`
+ * - `--cngx-select-shell-focus-ring` -> `--cngx-color-primary`
+ *
+ * Once registered via `@property` the inner var() steps are
+ * documentation-only; system tokens (`--cngx-color-*`) are the
+ * brand-wide override path.
+ *
+ * **Pair with**
+ *
+ * - `@cngx/themes/material/select-theme` - Material 3 surface treatment
+ *   shared across the entire select family
  */
 
 @layer cngx.tokens {
@@ -155,7 +191,7 @@
     initial-value: 0.6;
   }
 
-  /* Delegating tokens — trigger border + focus-ring color + focus
+  /* Delegating tokens - trigger border + focus-ring color + focus
    * outline all track the foundation chain. */
   :root {
     --cngx-select-shell-border: 1px solid var(--cngx-color-border);

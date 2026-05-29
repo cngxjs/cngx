@@ -22,13 +22,18 @@ import { CngxFilterBuilderPresenter } from './filter-builder-presenter.directive
  *
  * Listeners stay on this directive (not on the presenter) so consumers
  * without the form-field bridge pay no event-listener cost.
+ *
+ * @category forms/filter-builder
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder-form-field-control.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxFilterBuilder, CngxFilterBuilderPresenter
  */
 @Directive({
   selector: '[cngxFilterBuilderFormFieldControl]',
   standalone: true,
-  providers: [
-    { provide: CNGX_FORM_FIELD_CONTROL, useExisting: CngxFilterBuilderPresenter },
-  ],
+  providers: [{ provide: CNGX_FORM_FIELD_CONTROL, useExisting: CngxFilterBuilderPresenter }],
   host: {
     '(focusin)': 'handleFocusIn()',
     '(focusout)': 'handleFocusOut($event)',
@@ -45,7 +50,7 @@ export class CngxFilterBuilderFormFieldControl {
   protected handleFocusOut(event: FocusEvent): void {
     const next = event.relatedTarget;
     if (next instanceof Node && this.elementRef.nativeElement.contains(next)) {
-      // Focus moved between descendants of the form-field-control host —
+      // Focus moved between descendants of the form-field-control host -
       // the builder still owns focus, do not flip the signal.
       return;
     }

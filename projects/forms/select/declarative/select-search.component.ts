@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  inject,
-  input,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 
 import { resolveSelectConfig } from '../shared/resolve-config';
 
@@ -30,6 +24,12 @@ import { CNGX_SELECT_SHELL_SEARCH_HOST } from './select-search-host';
  *   }
  * </cngx-select-shell>
  * ```
+ *
+ * @category forms/select/declarative
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/declarative/select-search.component.ts
+ * @since 0.1.0
+ * @relatedTo CngxSelectShell, CngxSelectOption, CngxSelectOptgroup
  */
 @Component({
   selector: 'cngx-select-search',
@@ -67,7 +67,7 @@ export class CngxSelectSearch {
 
   /**
    * Resolved ARIA label per the cascade above. `null` when neither
-   * input nor config sets it — input then exposes only `placeholder`
+   * input nor config sets it - input then exposes only `placeholder`
    * to AT (native `<input>` default).
    *
    * @internal

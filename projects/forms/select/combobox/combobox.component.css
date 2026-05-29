@@ -1,17 +1,55 @@
 /**
  * @overview
- * `CngxCombobox` trigger skin. Structural parts shared with the rest
- * of the select family (panel frame, option rows, loading variants,
- * chip-list flex-wrap layout, error surfaces) come from
- * `shared/select-base.css`. This file owns only the pieces that
- * differ: the `role="group"` wrapper, the inline `<input>` that IS
- * the combobox's focusable element, the caret glyph position, and
- * the clear-all button.
+ * Trigger skin for `CngxCombobox` - tag-input variant where the inline
+ * `<input>` IS the combobox's focusable element. The host carries
+ * `.cngx-combobox`; structural parts shared with the rest of the select
+ * family (panel frame, option rows, loading variants, chip-list
+ * flex-wrap layout, error surfaces) ride on `shared/select-base.css`.
+ * This file owns the `role="group"` wrapper, the inline `<input>`, the
+ * caret glyph, and the clear-all button.
  *
- * Cascading-fallback note: `var()` chains step `--cngx-combobox-*`
- * → `--cngx-select-*` → hardcoded. Once registered via `@property`
- * the inner fallback is documentation-only (see multi-select for the
- * same caveat).
+ * **State modifiers**
+ *
+ * - `:focus-within` on `.cngx-combobox__trigger` - focus-ring outline
+ *   + offset
+ * - `[aria-disabled='true']` on the trigger - opacity dim + `cursor:
+ *   not-allowed`
+ * - `:has(> [role='combobox'][aria-invalid='true'])` on the trigger -
+ *   danger border + box-shadow glow at focus time (paints on the visible
+ *   wrapper without a TS-side rebind since `role="combobox"` lives on
+ *   the input)
+ * - `.cngx-combobox__input::placeholder` - opacity-tuned placeholder
+ * - `:hover` on `.cngx-combobox__clear-all` - opacity 1
+ * - `:focus-visible` on the clear-all button - 2px primary outline
+ *
+ * **Slots**
+ *
+ * - `.cngx-combobox__root` - `display: contents` host shim
+ * - `.cngx-combobox__trigger` - the bordered row
+ * - `.cngx-combobox__input` - the `role="combobox"` text input
+ * - `.cngx-combobox__trigger-label` - `*cngxComboboxTriggerLabel` slot
+ *   for text summary
+ * - `.cngx-combobox__clear-all` - reset-all button
+ * - `.cngx-combobox__caret` - panel-state glyph
+ *
+ * **Inheritance**
+ *
+ * Trigger tokens delegate up the family chain:
+ *
+ * - `--cngx-combobox-*` -> `--cngx-select-*` -> hardcoded
+ * - `--cngx-combobox-border` -> `--cngx-color-border`
+ * - `--cngx-combobox-focus-outline` -> `--cngx-color-primary`
+ * - invalid surfaces fall back to `--cngx-select-trigger-invalid-*` ->
+ *   `--cngx-color-danger`
+ *
+ * Once registered via `@property` the inner var() steps are
+ * documentation-only; system tokens (`--cngx-color-*`) are the
+ * brand-wide override path.
+ *
+ * **Pair with**
+ *
+ * - `@cngx/themes/material/select-theme` - Material 3 surface treatment
+ *   shared across the entire select family
  */
 
 @layer cngx.tokens {
@@ -86,7 +124,7 @@
   }
 
   /**
-   * Minimum block size of the trigger — fits a single row of chips.
+   * Minimum block size of the trigger - fits a single row of chips.
    * @group Layout
    */
   @property --cngx-combobox-min-height {
@@ -128,7 +166,7 @@
   }
 
   /**
-   * Flex basis of the inline input — sets the preferred starting
+   * Flex basis of the inline input - sets the preferred starting
    * width before the input grows or shrinks.
    * @group Layout
    */
@@ -139,7 +177,7 @@
   }
 
   /**
-   * Minimum inline size of the inline input — keeps the input
+   * Minimum inline size of the inline input - keeps the input
    * tappable even when chips dominate the trigger row.
    * @group Layout
    */
@@ -169,7 +207,7 @@
     initial-value: 0.6;
   }
 
-  /* Delegating tokens — trigger border + focus-ring track the
+  /* Delegating tokens - trigger border + focus-ring track the
    * foundation chain. Shorthands pin their structural part and
    * inherit the color via the delegating foundation token. */
   :root {
@@ -231,16 +269,9 @@
       border-width: var(--cngx-select-trigger-invalid-border-width, 1px);
     }
     .cngx-combobox__trigger:has(> [role='combobox'][aria-invalid='true']):focus-within {
-      outline: 2px solid
-        var(--cngx-select-trigger-invalid-outline-color, oklch(0.6 0.18 25));
-      outline-offset: var(
-        --cngx-combobox-focus-offset,
-        var(--cngx-select-focus-offset, 2px)
-      );
-      box-shadow: var(
-        --cngx-select-trigger-invalid-glow,
-        0 0 0 3px oklch(0.6 0.18 25 / 0.2)
-      );
+      outline: 2px solid var(--cngx-select-trigger-invalid-outline-color, oklch(0.6 0.18 25));
+      outline-offset: var(--cngx-combobox-focus-offset, var(--cngx-select-focus-offset, 2px));
+      box-shadow: var(--cngx-select-trigger-invalid-glow, 0 0 0 3px oklch(0.6 0.18 25 / 0.2));
     }
 
     .cngx-combobox__input {
@@ -267,7 +298,7 @@
       color: inherit;
     }
 
-    /* Slot wrapper for *cngxComboboxTriggerLabel — keeps text summary
+    /* Slot wrapper for *cngxComboboxTriggerLabel - keeps text summary
      * on the same baseline as the input without re-implementing chip-list
      * flex rules. */
     .cngx-combobox__trigger-label {

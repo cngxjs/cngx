@@ -8,14 +8,16 @@ import {
  * Registers a single error condition with the nearest
  * {@link CngxErrorAggregator} ancestor.
  *
- * Pure DI propagation — no DOM output. The directive is a no-op when no
+ * @category common/interactive/error
+ *
+ * Pure DI propagation - no DOM output. The directive is a no-op when no
  * aggregator is present (the optional injection returns `null`).
  * Useful for surfacing errors that live outside the form-field
  * presenter, e.g. server-side validation, async availability checks,
  * or business-rule conflicts.
  *
  * The `when` input takes a plain `boolean`. Consumers binding a signal
- * write `[when]="form.email().invalid()"` — the signal is invoked at the
+ * write `[when]="form.email().invalid()"` - the signal is invoked at the
  * binding site (canonical Angular pattern), mirroring `CngxErrorState`
  * discipline.
  *
@@ -27,6 +29,12 @@ import {
  *         label="Email already in use"></span>
  * </fieldset>
  * ```
+ *
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/error-source/error-source.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxErrorAggregator, CngxErrorScope, CngxErrorState
  * <example-url>http://localhost:4200/#/common/interactive/error/aggregator/cngx-card-host-no-scope-errors-visible-immediately</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/error/aggregator/cngx-popover-panel-host</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/error/aggregator/material-mat-tab-label-with-error-count-badge</example-url>
@@ -48,10 +56,9 @@ export class CngxErrorSource {
   /** Optional human-readable label included in aggregator announcements. */
   readonly label = input<string | null>(null);
 
-  private readonly aggregator = inject<CngxErrorAggregatorContract | null>(
-    CNGX_ERROR_AGGREGATOR,
-    { optional: true },
-  );
+  private readonly aggregator = inject<CngxErrorAggregatorContract | null>(CNGX_ERROR_AGGREGATOR, {
+    optional: true,
+  });
 
   constructor() {
     if (!this.aggregator) {

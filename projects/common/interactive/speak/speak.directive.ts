@@ -12,7 +12,9 @@ import {
 /**
  * Headless text-to-speech directive using the browser's SpeechSynthesis API.
  *
- * A read-aloud feature for cognitive accessibility — dyslexia support, reading
+ * @category common/interactive
+ *
+ * A read-aloud feature for cognitive accessibility - dyslexia support, reading
  * assistance, or convenience. Not a screen reader replacement (use
  * `CngxLiveRegion` for ARIA live regions).
  *
@@ -22,7 +24,7 @@ import {
  *
  * Pair with `CngxSpeakButton` (`@cngx/ui`) for a ready-made speaker button.
  *
- * ### Headless — consumer-owned button
+ * ### Headless - consumer-owned button
  * ```html
  * <p [cngxSpeak]="text" #tts="cngxSpeak">
  *   {{ text }}
@@ -48,6 +50,11 @@ import {
  *   <button (click)="tts.speak(liveCounter().toString())">Read current value</button>
  * </div>
  * ```
+ * @docsKind primary
+ * @wcag AAA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/speak/speak.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxSpeakButton, CngxLiveRegion
  * <example-url>http://localhost:4200/#/common/interactive/speak/form-error-read-aloud-on-demand</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/speak/headless-read-aloud</example-url>
  * <example-url>http://localhost:4200/#/ui/speak/speak-button/material-integration-theme-scss-mat-icon-button</example-url>

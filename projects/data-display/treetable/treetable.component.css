@@ -1,18 +1,79 @@
 /**
  * @overview
- * Default visuals for `CngxTreetable` - the CDK-based variant.
- * Table-grid layout for an expandable, selectable tree. Indent is
- * driven by `--cngx-row-depth` (set per row by the renderer)
- * multiplied by `--cngx-treetable-indent-size`. The narrow mobile
- * breakpoint shrinks the indent step and bumps tap-target sizing
- * on the expand toggle.
+ * Default visuals for `CngxTreetable` - the CDK-based variant. The
+ * host carries `.cngx-treetable` and wraps a `cdk-table` whose
+ * `cdk-header-row` / `cdk-row` / `cdk-header-cell` / `cdk-cell`
+ * children are styled directly. Indent is driven by `--cngx-row-depth`
+ * (set per row by the renderer) multiplied by
+ * `--cngx-treetable-indent-size`.
  *
- * Surface defaults stay in the cool-neutral 250-hue band -header,
- * row borders, hover, and selected backgrounds are all near-grays
- * with a hint of cool. Focus ring tracks `--cngx-color-primary`
- * (Ember in the default theme). Pair with
- * `@cngx/themes/material/treetable-theme` for the Material 3
- * surface treatment.
+ * **State modifiers**
+ *
+ * Applied to `cdk-row` by the renderer:
+ *
+ * - `--highlighted` - keyboard-cursor row tint
+ * - `--selected` - selection-state row tint
+ * - `--focused` - inset focus-ring outline (offset negative so the
+ *   ring stays inside the row border)
+ *
+ * **Slots**
+ *
+ * BEM element classes set per cell or per slot:
+ *
+ * - `__expand-cell` - utility column holding the expand/collapse
+ *   toggle; narrow inline padding, depth-indented start padding
+ * - `__select-cell` - utility column holding the selection control;
+ *   narrow inline padding on both sides
+ * - `__first-data-cell` - first data column; depth-indented start
+ *   padding so the tree hierarchy is visible without an explicit
+ *   toggle column
+ * - `__empty` - empty-state slot, centred and muted
+ * - `__toggle` - the expand/collapse button itself; hover swaps to
+ *   the header border + header text colours
+ *
+ * **Variants**
+ *
+ * - Narrow breakpoint (`max-width: 960px`) - shrinks indent step,
+ *   bumps tap-target padding on the toggle (>= 44px combined),
+ *   and rebalances header / cell / utility padding. Threshold is
+ *   pinned by `--cngx-treetable-narrow-breakpoint` (token only -
+ *   the actual `@media` query uses a literal `960px` since media
+ *   queries cannot resolve `var()`).
+ *
+ * **Inheritance**
+ *
+ * Border / text / focus-ring tokens delegate to the foundation so
+ * brand overrides propagate without per-component theming. The
+ * `:root` block re-points the tokens via `var()` because the
+ * `@property` initial-values would otherwise shadow the chain:
+ *
+ * - `--cngx-treetable-header-border` -> `--cngx-color-border`
+ * - `--cngx-treetable-row-border` -> `--cngx-color-border`
+ * - `--cngx-treetable-header-color` -> `--cngx-color-text`
+ * - `--cngx-treetable-cell-color` -> `--cngx-color-text`
+ * - `--cngx-treetable-focus-ring` -> `--cngx-color-primary`
+ *
+ * Component-local surface tokens (header bg, hover bg, selected bg,
+ * muted color) carry their own light/dark pairs - they sit
+ * slightly above `--cngx-color-surface` in both modes so rows stay
+ * distinguishable from the table background.
+ *
+ * **Dark mode**
+ *
+ * Three hooks swap header / hover / selected backgrounds plus the
+ * muted text color:
+ *
+ * - `prefers-color-scheme: dark`
+ * - `[data-color-scheme="dark"]`
+ * - `.dark` class
+ *
+ * Foundation-delegated tokens (border / text / focus-ring) ride the
+ * foundation cascade unchanged.
+ *
+ * **Pair with**
+ *
+ * - `@cngx/themes/material/treetable-theme` - Material 3 surface
+ *   treatment
  */
 
 @layer cngx.tokens {
@@ -363,7 +424,7 @@
   }
 
   /**
-   * Indent step per depth level below the narrow breakpoint —
+   * Indent step per depth level below the narrow breakpoint -
    * reduced so deep trees still fit on narrow screens.
    * @group Variant / Narrow
    */

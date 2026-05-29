@@ -12,7 +12,6 @@
 //     @include feedback.theme($theme);
 //   }
 
-
 @mixin loading-indicator-base() {
   --cngx-loading-indicator-color: currentColor;
   --cngx-loading-indicator-track: rgba(0, 0, 0, 0.1);
@@ -31,7 +30,6 @@
   }
 }
 
-
 @mixin loading-overlay-base() {
   --cngx-loading-overlay-backdrop-bg: rgba(255, 255, 255, 0.5);
   --cngx-loading-overlay-backdrop-opacity: 1;
@@ -45,7 +43,6 @@
     --cngx-loading-overlay-backdrop-bg: #{rgba(mat.get-theme-color($theme, background, card), 0.8)};
   }
 }
-
 
 @mixin progress-base() {
   --cngx-progress-color: currentColor;
@@ -69,7 +66,6 @@
     --cngx-progress-track-color: #{rgba(mat.get-theme-color($theme, foreground, divider), 0.12)};
   }
 }
-
 
 @mixin alert-base() {
   --cngx-alert-gap: 12px;
@@ -131,7 +127,6 @@
   }
 }
 
-
 @mixin toast-base() {
   --cngx-toast-z-index: 9999;
   --cngx-toast-gap: 8px;
@@ -187,7 +182,6 @@
   }
 }
 
-
 @mixin alert-stack-base() {
   --cngx-alert-stack-gap: 8px;
   --cngx-alert-stack-message-size: 0.875rem;
@@ -207,7 +201,6 @@
     --cngx-alert-stack-overflow-color: #{mat.get-theme-color($theme, foreground, secondary-text)};
   }
 }
-
 
 @mixin banner-base() {
   --cngx-banner-z-index: 900;
@@ -282,9 +275,9 @@
 // Shared density presets for all dismiss/close buttons across
 // alert, toast, and popover. Three levels:
 //
-//   default (0)  — 32px touch target, 16px icon
-//   compact (-1) — 28px touch target, 14px icon
-//   dense (-2)   — 24px touch target, 12px icon
+//   default (0)  - 32px touch target, 16px icon
+//   compact (-1) - 28px touch target, 14px icon
+//   dense (-2)   - 24px touch target, 12px icon
 //
 // Usage:
 //   @include feedback.density(-1);

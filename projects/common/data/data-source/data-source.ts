@@ -7,7 +7,7 @@ import type { Observable } from 'rxjs';
  * Minimal CDK `DataSource` that bridges a Signal to the CDK table's
  * Observable-based data contract.
  *
- * No sort, filter, or search logic is included — the consumer builds a
+ * No sort, filter, or search logic is included - the consumer builds a
  * `computed()` with any transformations and passes the result here.
  *
  * ```typescript
@@ -20,6 +20,12 @@ import type { Observable } from 'rxjs';
  * ```
  *
  * @typeParam T - The row item type.
+ *
+ * @category common/data/data-source
+ * @docsKind primary
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/data/data-source/data-source.ts
+ * @since 0.1.0
+ * @relatedTo CngxSmartDataSource, CngxSort, CngxFilter, CngxPaginate
  */
 export class CngxDataSource<T> extends DataSource<T> {
   private readonly injector = inject(Injector);
@@ -33,7 +39,7 @@ export class CngxDataSource<T> extends DataSource<T> {
   }
 
   override disconnect(): void {
-    // Signal cleanup is handled by Angular's DestroyRef — no manual teardown needed.
+    // Signal cleanup is handled by Angular's DestroyRef - no manual teardown needed.
   }
 }
 
@@ -45,6 +51,8 @@ export class CngxDataSource<T> extends DataSource<T> {
  * ```typescript
  * readonly dataSource = injectDataSource(this.items);
  * ```
+ *
+ * @category common/data/data-source
  */
 export function injectDataSource<T>(data: Signal<T[]>): CngxDataSource<T> {
   return new CngxDataSource(data);

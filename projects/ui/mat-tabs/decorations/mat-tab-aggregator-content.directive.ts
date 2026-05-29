@@ -7,7 +7,7 @@ import { Directive, inject, TemplateRef } from '@angular/core';
  * appends to a Material tab button when its bound aggregator wants
  * reveal. The surrounding span (with its `cngx-sr-only` class, its
  * stable id, and the `aria-describedby` wiring on the button)
- * stays library-owned — the slot only customises the descriptor
+ * stays library-owned - the slot only customises the descriptor
  * text or markup so consumers can swap the announcement phrasing
  * (counter pills, localised templates, branded prefixes) without
  * fighting the AT contract.
@@ -17,9 +17,11 @@ import { Directive, inject, TemplateRef } from '@angular/core';
  * label of the tab (the Material `MatTab.textLabel`);
  * `announcement` is the resolved AT phrase (the same string the
  * imperative `textContent` fallback would write). All three are
- * snapshotted into the decorated entry — re-emissions of the
+ * snapshotted into the decorated entry - re-emissions of the
  * underlying signals re-fire the projector's effect, which
  * re-applies the decoration with the fresh context.
+ *
+ * @category ui/mat-tabs
  */
 export interface CngxMatTabAggregatorContentContext {
   /** Aggregated error count for this tab (≥ 1 when shown). */
@@ -28,7 +30,7 @@ export interface CngxMatTabAggregatorContentContext {
   readonly label: string;
   /**
    * Resolved AT announcement phrase the imperative fallback path
-   * would write verbatim — the bound aggregator's `announcement()`
+   * would write verbatim - the bound aggregator's `announcement()`
    * value at the moment the decoration was applied. Use this when
    * the consumer template wants to render the canonical phrase
    * alongside its own decoration (counter pill, branded prefix)
@@ -65,6 +67,12 @@ export interface CngxMatTabAggregatorContentContext {
  *   <mat-tab label="Profile" cngxMatTabError="profile">…</mat-tab>
  * </mat-tab-group>
  * ```
+ *
+ * @category ui/mat-tabs
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/mat-tabs/decorations/mat-tab-aggregator-content.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxMatTabs, CngxMatTabError, CngxMatTabRejectionContent
  */
 @Directive({
   selector: 'ng-template[cngxMatTabAggregatorContent]',

@@ -6,8 +6,8 @@ import { DestroyRef, Directive, ElementRef, inject, input, signal } from '@angul
  *
  * Creates a `<span class="cngx-ripple__wave">` on pointer contact, positions it
  * via CSS custom properties (`--cngx-ripple-x`, `--cngx-ripple-y`, `--cngx-ripple-size`),
- * and removes it after the animation completes. ALL visual treatment — color, duration,
- * shape — is the consumer's CSS responsibility.
+ * and removes it after the animation completes. ALL visual treatment - color, duration,
+ * shape - is the consumer's CSS responsibility.
  *
  * Ships a companion `_ripple.scss` with sensible defaults.
  *
@@ -27,6 +27,12 @@ import { DestroyRef, Directive, ElementRef, inject, input, signal } from '@angul
  * ```html
  * <button cngxRipple [rippleDisabled]="isReducedMotion()">Click</button>
  * ```
+ *
+ * @category common/interactive
+ * @docsKind primary
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/ripple/ripple.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxPressable, CngxPressRipple, CngxHoverable
  * <example-url>http://localhost:4200/#/common/interactive/ripple/base/button-ripples</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/ripple/base/card-with-ripple</example-url>
  */
@@ -41,7 +47,7 @@ import { DestroyRef, Directive, ElementRef, inject, input, signal } from '@angul
   },
 })
 export class CngxRipple {
-  /** Ripple color — passed as `--cngx-ripple-color` on the wave element. */
+  /** Ripple color - passed as `--cngx-ripple-color` on the wave element. */
   readonly color = input<string>('currentColor', { alias: 'rippleColor' });
   /** Whether the ripple originates from the center of the host. */
   readonly centered = input<boolean>(false, { alias: 'rippleCentered' });
@@ -108,7 +114,7 @@ export class CngxRipple {
     host.appendChild(wave);
     this.activeState.set(true);
 
-    // Remove after animation completes — guard against double-invocation
+    // Remove after animation completes - guard against double-invocation
     let cleaned = false;
     const cleanup = () => {
       if (cleaned) {

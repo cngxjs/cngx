@@ -17,7 +17,7 @@ import type { EmptyReason } from './card.types';
  * Responsive card grid layout with intrinsic sizing, keyboard navigation,
  * and reason-based empty-state template selection.
  *
- * Uses CSS Grid with `auto-fill` + `minmax` for intrinsic responsiveness —
+ * Uses CSS Grid with `auto-fill` + `minmax` for intrinsic responsiveness -
  * no breakpoint management required.
  *
  * Keyboard navigation is provided by `CngxRovingTabindex` as a host directive.
@@ -45,6 +45,13 @@ import type { EmptyReason } from './card.types';
  *   </ng-template>
  * </cngx-card-grid>
  * ```
+ *
+ * @category common/card
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/card/card-grid.component.ts
+ * @since 0.1.0
+ * @relatedTo CngxCard, CngxCardGridEmpty, CngxRovingTabindex, CngxAsyncState
  * <example-url>http://localhost:4200/#/common/card/card-grid/basic-grid</example-url>
  * <example-url>http://localhost:4200/#/common/card/card-grid/density-variants</example-url>
  * <example-url>http://localhost:4200/#/common/card/card-grid/empty-state-with-reason</example-url>
@@ -86,7 +93,7 @@ export class CngxCardGrid {
   /** Gap between grid items. */
   readonly gap = input<string>('var(--cngx-gap-md, 16px)');
 
-  /** Grid density level — controls gap and card padding via CSS custom properties. */
+  /** Grid density level - controls gap and card padding via CSS custom properties. */
   readonly density = input<'compact' | 'default' | 'comfortable'>('default');
 
   /** Whether the grid should have `role="list"`. Requires `role="listitem"` on each card. */
@@ -98,11 +105,11 @@ export class CngxCardGrid {
    */
   readonly items = input<readonly unknown[] | undefined>(undefined);
 
-  /** Reason why items are empty — selects the matching `cngxCardGridEmpty` template. */
+  /** Reason why items are empty - selects the matching `cngxCardGridEmpty` template. */
   readonly emptyReason = input<EmptyReason | undefined>(undefined);
 
   /**
-   * Bind an async state — drives loading and empty from a single source.
+   * Bind an async state - drives loading and empty from a single source.
    * When set, `isLoading` derives from `state.isFirstLoad()` and
    * `empty` derives from `state.isEmpty()` (overrides `[items]`).
    */

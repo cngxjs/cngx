@@ -16,18 +16,26 @@ import type {
  * rendering when neither is present (three-stage cascade,
  * `architecture-summary.md` slot system).
  *
- * Each context interface is the snapshot value passed at render time —
+ * Each context interface is the snapshot value passed at render time -
  * not signals. The component re-stamps slot outlets on every relevant
  * state change via `*ngTemplateOutlet`-with-context.
  */
 
-/** Context passed to the `cngxFilterBuilderEmpty` slot when the root group is empty. */
+/**
+ * Context passed to the `cngxFilterBuilderEmpty` slot when the root group is empty.
+ *
+ * @category forms/filter-builder/slots
+ */
 export interface CngxFilterBuilderEmptyContext {
   readonly addFilter: () => void;
   readonly addGroup: () => void;
 }
 
-/** Context passed to a consumer-supplied expression-row template (full row override). */
+/**
+ * Context passed to a consumer-supplied expression-row template (full row override).
+ *
+ * @category forms/filter-builder/slots
+ */
 export interface CngxFilterBuilderExpressionTemplateContext {
   readonly expression: FilterExpression;
   readonly fieldDef: FilterFieldDef | undefined;
@@ -39,7 +47,11 @@ export interface CngxFilterBuilderExpressionTemplateContext {
   readonly remove: () => void;
 }
 
-/** Context passed to a consumer-supplied group template (full group override). */
+/**
+ * Context passed to a consumer-supplied group template (full group override).
+ *
+ * @category forms/filter-builder/slots
+ */
 export interface CngxFilterBuilderGroupTemplateContext {
   readonly group: FilterGroup;
   readonly logic: FilterLogic;
@@ -51,41 +63,68 @@ export interface CngxFilterBuilderGroupTemplateContext {
   readonly remove: () => void;
 }
 
-/** Context passed to the `cngxFilterBuilderAddFilterButton` slot. */
+/**
+ * Context passed to the `cngxFilterBuilderAddFilterButton` slot.
+ *
+ * @category forms/filter-builder/slots
+ */
 export interface CngxFilterBuilderAddFilterButtonContext {
   readonly add: () => void;
   readonly label: string;
   readonly disabled: boolean;
 }
 
-/** Context passed to the `cngxFilterBuilderAddGroupButton` slot. */
+/**
+ * Context passed to the `cngxFilterBuilderAddGroupButton` slot.
+ *
+ * @category forms/filter-builder/slots
+ */
 export interface CngxFilterBuilderAddGroupButtonContext {
   readonly add: () => void;
   readonly label: string;
   readonly disabled: boolean;
 }
 
-/** Context passed to the `cngxFilterBuilderRemoveButton` slot — shared by expression rows and group headers. */
+/**
+ * Context passed to the `cngxFilterBuilderRemoveButton` slot - shared by expression rows and group headers.
+ *
+ * @category forms/filter-builder/slots
+ */
 export interface CngxFilterBuilderRemoveButtonContext {
   readonly remove: () => void;
   readonly label: string;
 }
 
-/** Context passed to the `cngxFilterBuilderLogicToggle` slot — drives the AND/OR/XOR picker. */
+/**
+ * Context passed to the `cngxFilterBuilderLogicToggle` slot - drives the AND/OR/XOR picker.
+ *
+ * @category forms/filter-builder/slots
+ */
 export interface CngxFilterBuilderLogicToggleContext {
   readonly logic: FilterLogic;
   readonly options: readonly FilterLogic[];
   readonly setLogic: (logic: FilterLogic) => void;
 }
 
-/** Context passed to the `cngxFilterBuilderNegationToggle` slot — only rendered when `withNegation(true)`. */
+/**
+ * Context passed to the `cngxFilterBuilderNegationToggle` slot - only rendered when `withNegation(true)`.
+ *
+ * @category forms/filter-builder/slots
+ */
 export interface CngxFilterBuilderNegationToggleContext {
   readonly negated: boolean;
   readonly toggle: () => void;
   readonly label: string;
 }
 
-/** Marker directive for the empty-state slot template. */
+/**
+ * Marker directive for the empty-state slot template.
+ *
+ * @category forms/filter-builder/slots
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder-slots.ts
+ * @since 0.1.0
+ * @relatedTo CngxFilterBuilderAddFilterButton, CngxFilterBuilderAddGroupButton, CngxFilterBuilder
+ */
 @Directive({
   selector: 'ng-template[cngxFilterBuilderEmpty]',
   exportAs: 'cngxFilterBuilderEmpty',
@@ -102,14 +141,22 @@ export class CngxFilterBuilderEmpty {
   }
 }
 
-/** Marker directive for a full expression-row override template. */
+/**
+ * Marker directive for a full expression-row override template.
+ *
+ * @category forms/filter-builder/slots
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder-slots.ts
+ * @since 0.1.0
+ * @relatedTo CngxFilterBuilderGroupTemplate, CngxFilterBuilderValueEditor, CngxFilterBuilder
+ */
 @Directive({
   selector: 'ng-template[cngxFilterBuilderExpressionTemplate]',
   exportAs: 'cngxFilterBuilderExpressionTemplate',
   standalone: true,
 })
 export class CngxFilterBuilderExpressionTemplate {
-  readonly templateRef = inject<TemplateRef<CngxFilterBuilderExpressionTemplateContext>>(TemplateRef);
+  readonly templateRef =
+    inject<TemplateRef<CngxFilterBuilderExpressionTemplateContext>>(TemplateRef);
 
   static ngTemplateContextGuard(
     _dir: CngxFilterBuilderExpressionTemplate,
@@ -119,7 +166,14 @@ export class CngxFilterBuilderExpressionTemplate {
   }
 }
 
-/** Marker directive for a full group-shell override template. */
+/**
+ * Marker directive for a full group-shell override template.
+ *
+ * @category forms/filter-builder/slots
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder-slots.ts
+ * @since 0.1.0
+ * @relatedTo CngxFilterBuilderExpressionTemplate, CngxFilterBuilderLogicToggle, CngxFilterBuilder
+ */
 @Directive({
   selector: 'ng-template[cngxFilterBuilderGroupTemplate]',
   exportAs: 'cngxFilterBuilderGroupTemplate',
@@ -136,7 +190,14 @@ export class CngxFilterBuilderGroupTemplate {
   }
 }
 
-/** Marker directive for the add-filter button slot. */
+/**
+ * Marker directive for the add-filter button slot.
+ *
+ * @category forms/filter-builder/slots
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder-slots.ts
+ * @since 0.1.0
+ * @relatedTo CngxFilterBuilderAddGroupButton, CngxFilterBuilderRemoveButton, CngxFilterBuilderEmpty
+ */
 @Directive({
   selector: 'ng-template[cngxFilterBuilderAddFilterButton]',
   exportAs: 'cngxFilterBuilderAddFilterButton',
@@ -153,7 +214,14 @@ export class CngxFilterBuilderAddFilterButton {
   }
 }
 
-/** Marker directive for the add-group button slot. */
+/**
+ * Marker directive for the add-group button slot.
+ *
+ * @category forms/filter-builder/slots
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder-slots.ts
+ * @since 0.1.0
+ * @relatedTo CngxFilterBuilderAddFilterButton, CngxFilterBuilderRemoveButton, CngxFilterBuilderEmpty
+ */
 @Directive({
   selector: 'ng-template[cngxFilterBuilderAddGroupButton]',
   exportAs: 'cngxFilterBuilderAddGroupButton',
@@ -170,7 +238,14 @@ export class CngxFilterBuilderAddGroupButton {
   }
 }
 
-/** Marker directive for the remove-button slot. */
+/**
+ * Marker directive for the remove-button slot.
+ *
+ * @category forms/filter-builder/slots
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder-slots.ts
+ * @since 0.1.0
+ * @relatedTo CngxFilterBuilderAddFilterButton, CngxFilterBuilderAddGroupButton, CngxFilterBuilder
+ */
 @Directive({
   selector: 'ng-template[cngxFilterBuilderRemoveButton]',
   exportAs: 'cngxFilterBuilderRemoveButton',
@@ -187,7 +262,14 @@ export class CngxFilterBuilderRemoveButton {
   }
 }
 
-/** Marker directive for the logic-toggle (AND/OR/XOR) slot. */
+/**
+ * Marker directive for the logic-toggle (AND/OR/XOR) slot.
+ *
+ * @category forms/filter-builder/slots
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder-slots.ts
+ * @since 0.1.0
+ * @relatedTo CngxFilterBuilderNegationToggle, CngxFilterBuilderGroupTemplate, CngxFilterGroup
+ */
 @Directive({
   selector: 'ng-template[cngxFilterBuilderLogicToggle]',
   exportAs: 'cngxFilterBuilderLogicToggle',
@@ -204,7 +286,14 @@ export class CngxFilterBuilderLogicToggle {
   }
 }
 
-/** Marker directive for the negation-toggle slot. Only rendered when negation is enabled. */
+/**
+ * Marker directive for the negation-toggle slot. Only rendered when negation is enabled.
+ *
+ * @category forms/filter-builder/slots
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder-slots.ts
+ * @since 0.1.0
+ * @relatedTo CngxFilterBuilderLogicToggle, CngxFilterBuilderGroupTemplate, CngxFilterGroup
+ */
 @Directive({
   selector: 'ng-template[cngxFilterBuilderNegationToggle]',
   exportAs: 'cngxFilterBuilderNegationToggle',
@@ -221,7 +310,11 @@ export class CngxFilterBuilderNegationToggle {
   }
 }
 
-/** Lookup-style template registry — used by `CngxFilterBuilderConfig.templates`. */
+/**
+ * Lookup-style template registry - used by `CngxFilterBuilderConfig.templates`.
+ *
+ * @category forms/filter-builder/slots
+ */
 export interface CngxFilterBuilderTemplates {
   readonly empty?: TemplateRef<CngxFilterBuilderEmptyContext> | null;
   readonly expressionTemplate?: TemplateRef<CngxFilterBuilderExpressionTemplateContext> | null;

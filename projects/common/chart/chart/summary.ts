@@ -16,6 +16,8 @@ import type { CngxChartSummary } from '../i18n/chart-i18n';
  * from above to below or vice versa anywhere in the projected range.
  * The returned `thresholds` list is the subset of input thresholds
  * the data actually crosses, in input order.
+ *
+ * @internal
  */
 export function computeChartSummary(
   values: readonly number[],
@@ -46,6 +48,7 @@ export function computeChartSummary(
   return { trend, min, max, current, thresholds: crossed };
 }
 
+/** @internal */
 function crossesThreshold(values: readonly number[], threshold: number): boolean {
   let above = values[0] > threshold;
   for (let i = 1; i < values.length; i++) {

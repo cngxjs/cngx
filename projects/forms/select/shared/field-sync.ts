@@ -5,6 +5,8 @@ import { CngxFormFieldPresenter, type CngxFieldRef } from '@cngx/forms/field';
 /**
  * Options for {@link createFieldSync}. Generic in `V` so the same factory
  * covers scalar and array value shapes.
+ *
+ * @category forms/select/state
  */
 export interface FieldSyncOptions<V> {
   /** Source of truth for the component's bound value. */
@@ -31,6 +33,8 @@ export interface FieldSyncOptions<V> {
  * Two `effect()`s with `untracked` reads on the opposite branch and
  * `valueEquals` as the cycle guard. Injection context required; no-op
  * without a presenter.
+ *
+ * @category forms/select/state
  */
 export function createFieldSync<V>(options: FieldSyncOptions<V>): void {
   const presenter = inject(CngxFormFieldPresenter, { optional: true });
@@ -63,7 +67,12 @@ export function createFieldSync<V>(options: FieldSyncOptions<V>): void {
   });
 }
 
-/** Writes through Signal Forms' `WritableSignal`-shaped `FieldState.value`. Skips readonly refs silently. */
+/**
+ * Writes through Signal Forms' `WritableSignal`-shaped `FieldState.value`.
+ * Skips readonly refs silently.
+ *
+ * @internal
+ */
 function writeFieldValue(fieldRef: CngxFieldRef, value: unknown): void {
   const signalLike = fieldRef.value as unknown;
   if (

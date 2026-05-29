@@ -22,10 +22,18 @@ import { CngxDialogStack } from './dialog-stack';
 import { CngxDialogTitle } from './dialog-title.directive';
 import { CngxDialogDescription } from './dialog-description.directive';
 
-/** Ref-count map for scroll lock — one lock per document root, shared across stacked modals. */
+/**
+ * Ref-count map for scroll lock - one lock per document root, shared across stacked modals.
+ *
+ * @internal
+ */
 const lockCounts = new WeakMap<HTMLElement, number>();
 
-/** Acquire a scroll lock on the document root, preserving prior overflow styles. */
+/**
+ * Acquire a scroll lock on the document root, preserving prior overflow styles.
+ *
+ * @internal
+ */
 function acquireScrollLock(html: HTMLElement): void {
   const count = lockCounts.get(html) ?? 0;
   if (count === 0) {
@@ -37,7 +45,11 @@ function acquireScrollLock(html: HTMLElement): void {
   lockCounts.set(html, count + 1);
 }
 
-/** Release a scroll lock. Restores prior overflow styles when the count reaches zero. */
+/**
+ * Release a scroll lock. Restores prior overflow styles when the count reaches zero.
+ *
+ * @internal
+ */
 function releaseScrollLock(html: HTMLElement): void {
   const count = lockCounts.get(html) ?? 0;
   if (count <= 1) {
@@ -106,6 +118,13 @@ function releaseScrollLock(html: HTMLElement): void {
  *   <input id="name-input" />
  * </dialog>
  * ```
+ *
+ * @category common/dialog
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/dialog/dialog/dialog.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxBottomSheet, CngxDialogOpener, CngxDialogTitle, CngxDialogClose, CngxDialogDraggable
  * <example-url>http://localhost:4200/#/common/dialog/alert-dialog</example-url>
  * <example-url>http://localhost:4200/#/common/dialog/bottom-sheet</example-url>
  * <example-url>http://localhost:4200/#/common/dialog/cngxdialogopener-programmatic</example-url>
@@ -202,7 +221,7 @@ export class CngxDialog<T = unknown> implements DialogRef<T> {
   readonly focusFallback = input<HTMLElement | undefined>(undefined);
 
   /**
-   * Bind an async state — drives pending (aria-busy, prevents close) and
+   * Bind an async state - drives pending (aria-busy, prevents close) and
    * error from a single source. When set, takes precedence over the
    * `[error]` boolean input and `[submitAction]`.
    *
@@ -219,7 +238,7 @@ export class CngxDialog<T = unknown> implements DialogRef<T> {
    * On error, the dialog stays open with `cngx-dialog--error` and the error
    * is announced to screen readers.
    *
-   * When set, `close(value)` no longer closes immediately — it enters a
+   * When set, `close(value)` no longer closes immediately - it enters a
    * `submitting` phase (`isPending() = true`, `aria-busy`, close blocked).
    *
    * The submit lifecycle is exposed via `submitState: CngxAsyncState<unknown>`.
@@ -288,7 +307,7 @@ export class CngxDialog<T = unknown> implements DialogRef<T> {
   /**
    * `true` when any async operation is pending. Blocks close/dismiss and sets `aria-busy`.
    *
-   * External `[state]` short-circuits — when set, `submitAction` is ignored by the
+   * External `[state]` short-circuits - when set, `submitAction` is ignored by the
    * `close()` guard (`action && !this.state()`), so `submitStatusState` stays `'idle'`.
    */
   readonly isPending = computed(() => {
@@ -300,7 +319,7 @@ export class CngxDialog<T = unknown> implements DialogRef<T> {
   });
 
   /**
-   * Resolved error — external `[state]` takes precedence over submit state,
+   * Resolved error - external `[state]` takes precedence over submit state,
    * which takes precedence over the boolean `[error]` input.
    */
   protected readonly effectiveError = computed(() => {
@@ -413,7 +432,7 @@ export class CngxDialog<T = unknown> implements DialogRef<T> {
    *
    * When `[submitAction]` is set and `[state]` is not set, executes the action
    * with `value` before closing. The dialog enters a submitting phase
-   * (`isPending() = true`) — on success it auto-closes, on error it stays open.
+   * (`isPending() = true`) - on success it auto-closes, on error it stays open.
    *
    * When `[submitAction]` is not set (or `[state]` overrides), closes immediately.
    *

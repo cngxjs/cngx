@@ -5,10 +5,16 @@
  * trailing close commands.
  *
  * Pure TS, no DOM dependency, no Angular dep.
+ *
+ * @category common/chart/path
  */
 export type CngxCurve = 'linear' | 'monotone';
 
-/** Pixel-space point fed into {@link buildCurvePath}. */
+/**
+ * Pixel-space point fed into {@link buildCurvePath}.
+ *
+ * @category common/chart/path
+ */
 export interface PathPoint {
   readonly x: number;
   readonly y: number;
@@ -24,6 +30,8 @@ export interface PathPoint {
  *   overshoots between data points.
  * @returns The full path data starting with `M`. Returns `''` when
  *   the input is empty; `M x y` when the input has one point.
+ *
+ * @category common/chart/path
  */
 export function buildCurvePath(points: readonly PathPoint[], curve: CngxCurve): string {
   if (points.length === 0) {
@@ -39,6 +47,7 @@ export function buildCurvePath(points: readonly PathPoint[], curve: CngxCurve): 
   return buildMonotonePath(points);
 }
 
+/** @internal */
 function buildLinearPath(points: readonly PathPoint[]): string {
   const start = points[0];
   let out = `M ${start.x} ${start.y}`;
@@ -52,6 +61,8 @@ function buildLinearPath(points: readonly PathPoint[]): string {
  * Monotone cubic Bézier interpolation (Fritsch-Carlson tangents on the
  * X dimension). Input points must have strictly increasing `x`
  * coordinates.
+ *
+ * @internal
  */
 function buildMonotonePath(points: readonly PathPoint[]): string {
   const n = points.length;

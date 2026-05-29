@@ -40,10 +40,7 @@ import {
 
 import { CNGX_ACTION_HOST_BRIDGE_FACTORY } from '../shared/action-host-bridge';
 import { createADActivationDispatcher } from '../shared/ad-activation-dispatcher';
-import {
-  createArrayCommitHandler,
-  type ArrayCommitHandler,
-} from '../shared/array-commit-handler';
+import { createArrayCommitHandler, type ArrayCommitHandler } from '../shared/array-commit-handler';
 import {
   CNGX_CHIP_REMOVAL_HANDLER_FACTORY,
   type CngxChipRemovalHandler,
@@ -116,9 +113,11 @@ import {
 
 /**
  * Change event emitted by {@link CngxActionMultiSelect.selectionChange}.
- * `action` mirrors the flat multi family plus `'create'` — `added`
+ * `action` mirrors the flat multi family plus `'create'` - `added`
  * carries exactly the one new value and `removed` is empty, so delta-
  * aggregating consumers treat create identically to toggle-add.
+ *
+ * @category forms/select/action-multi-select
  */
 export interface CngxActionMultiSelectChange<T = unknown> {
   readonly source: CngxActionMultiSelect<T>;
@@ -138,12 +137,19 @@ export interface CngxActionMultiSelectChange<T = unknown> {
  * local buffer, appends to `values`, emits
  * `selectionChange({ action: 'create', added: [newValue] })`.
  *
- * `closeOnCreate` default `false` — multi-pick UX keeps the panel open
+ * `closeOnCreate` default `false` - multi-pick UX keeps the panel open
  * after each create. Commit-controller supersede guard tears down
  * previous subscriptions on rapid consecutive creates.
  *
  * Dismiss-guard: Escape and click-outside intercepted while
  * `actionDirty()` is `true`; Escape fires `cancel()`.
+ *
+ * @category forms/select/action-multi-select
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/action-multi-select/action-multi-select.component.ts
+ * @since 0.1.0
+ * @relatedTo CngxMultiSelect, CngxActionSelect, CngxCombobox, CngxSelectAction
  * <example-url>http://localhost:4200/#/forms/select/action-multi-select/async-error-rollback-observation</example-url>
  * <example-url>http://localhost:4200/#/forms/select/action-multi-select/basic-create-appends-panel-stays-open</example-url>
  * <example-url>http://localhost:4200/#/forms/select/action-multi-select/closeoncreate-true-confirm-to-create-ux</example-url>
@@ -179,7 +185,7 @@ export interface CngxActionMultiSelectChange<T = unknown> {
     { provide: CNGX_SELECT_PANEL_VIEW_HOST, useExisting: CngxActionMultiSelect },
   ],
   host: {
-    'class': 'cngx-action-multi-select',
+    class: 'cngx-action-multi-select',
     '[id]': 'resolvedId()',
     '[attr.aria-readonly]': 'ariaReadonly()',
   },
@@ -213,16 +219,13 @@ export interface CngxActionMultiSelectChange<T = unknown> {
                   $implicit: selectedOptions(),
                   selected: selectedOptions(),
                   values: values(),
-                  count: selectedOptions().length
+                  count: selectedOptions().length,
                 }
               "
             />
           </span>
         } @else if (!isEmpty()) {
-          <span
-            class="cngx-select__chip-list"
-            [attr.data-overflow]="chipOverflow()"
-          >
+          <span class="cngx-select__chip-list" [attr.data-overflow]="chipOverflow()">
             @for (opt of visibleSelected(); track opt.value) {
               @if (chipTpl(); as tpl) {
                 <ng-container
@@ -306,7 +309,7 @@ export interface CngxActionMultiSelectChange<T = unknown> {
                   context: {
                     $implicit: clearAllCallback,
                     clear: clearAllCallback,
-                    disabled: disabled()
+                    disabled: disabled(),
                   }
                 "
               />
@@ -402,9 +405,7 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
   readonly clearButtonAriaLabel = input<string>(
     this.config.ariaLabels?.clearButton ?? 'Reset selection',
   );
-  readonly chipRemoveAriaLabel = input<string>(
-    this.config.ariaLabels?.chipRemove ?? 'Remove',
-  );
+  readonly chipRemoveAriaLabel = input<string>(this.config.ariaLabels?.chipRemove ?? 'Remove');
   readonly loading = input<boolean>(false);
   readonly loadingVariant = input<CngxSelectLoadingVariant>(this.config.loadingVariant);
   readonly skeletonRowCount = input<number>(this.config.skeletonRowCount);
@@ -413,19 +414,17 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
   readonly retryFn = input<(() => void) | null>(null);
   readonly commitAction = input<CngxSelectCommitAction<T[]> | null>(null);
   readonly commitMode = input<CngxSelectCommitMode>('optimistic');
-  readonly commitErrorDisplay = input<CngxSelectCommitErrorDisplay>(
-    this.config.commitErrorDisplay,
-  );
+  readonly commitErrorDisplay = input<CngxSelectCommitErrorDisplay>(this.config.commitErrorDisplay);
   readonly announceChanges = input<boolean | null>(null);
   readonly announceTemplate = input<CngxSelectAnnouncerConfig['format'] | null>(null);
 
   /**
-   * Quick-create handler. `null` disables the create path — slot still
+   * Quick-create handler. `null` disables the create path - slot still
    * renders, `commit()` becomes a silent no-op.
    */
   readonly quickCreateAction = input<CngxSelectCreateAction<T> | null>(null);
   /**
-   * Whether a successful create closes the panel. Default `false` —
+   * Whether a successful create closes the panel. Default `false` -
    * multi-pick UX keeps the panel open. Set `true` for confirm-to-
    * create workflows.
    */
@@ -443,15 +442,11 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
    * Popover placement relative to the trigger. Per-instance input wins
    * over `CngxActionSelectConfig.popoverPlacement`.
    */
-  readonly popoverPlacement = input<PopoverPlacement>(
-    this.actionConfig.popoverPlacement,
-  );
+  readonly popoverPlacement = input<PopoverPlacement>(this.actionConfig.popoverPlacement);
   /** Mobile `inputmode`. Defaults from `CngxSelectConfig.inputMode`. */
-  readonly inputMode = input<NonNullable<CngxSelectConfig['inputMode']>>(
-    this.config.inputMode,
-  );
+  readonly inputMode = input<NonNullable<CngxSelectConfig['inputMode']>>(this.config.inputMode);
   /**
-   * Mobile `enterkeyhint`. Default `'enter'` — Enter appends a chip
+   * Mobile `enterkeyhint`. Default `'enter'` - Enter appends a chip
    * without closing the panel.
    */
   readonly enterKeyHint = input<NonNullable<CngxSelectConfig['enterKeyHint']>>(
@@ -488,24 +483,31 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
   private readonly optgroupDirective = contentChild<CngxSelectOptgroupTemplate<T>>(
     CngxSelectOptgroupTemplate,
   );
-  private readonly placeholderDirective = contentChild<CngxSelectPlaceholder>(CngxSelectPlaceholder);
+  private readonly placeholderDirective =
+    contentChild<CngxSelectPlaceholder>(CngxSelectPlaceholder);
   private readonly emptyDirective = contentChild<CngxSelectEmpty>(CngxSelectEmpty);
   private readonly loadingDirective = contentChild<CngxSelectLoading>(CngxSelectLoading);
-  private readonly triggerLabelDirective = contentChild<CngxComboboxTriggerLabel<T>>(
-    CngxComboboxTriggerLabel,
-  );
-  private readonly optionLabelDirective = contentChild<CngxSelectOptionLabel<T>>(CngxSelectOptionLabel);
+  private readonly triggerLabelDirective =
+    contentChild<CngxComboboxTriggerLabel<T>>(CngxComboboxTriggerLabel);
+  private readonly optionLabelDirective =
+    contentChild<CngxSelectOptionLabel<T>>(CngxSelectOptionLabel);
   private readonly errorDirective = contentChild<CngxSelectError>(CngxSelectError);
   private readonly retryButtonDirective =
     contentChild<CngxSelectRetryButton>(CngxSelectRetryButton);
   private readonly refreshingDirective = contentChild<CngxSelectRefreshing>(CngxSelectRefreshing);
-  private readonly commitErrorDirective = contentChild<CngxSelectCommitError<T>>(CngxSelectCommitError);
+  private readonly commitErrorDirective =
+    contentChild<CngxSelectCommitError<T>>(CngxSelectCommitError);
   private readonly chipDirective = contentChild<CngxMultiSelectChip<T>>(CngxMultiSelectChip);
-  private readonly clearButtonDirective = contentChild<CngxSelectClearButton>(CngxSelectClearButton);
-  private readonly optionPendingDirective = contentChild<CngxSelectOptionPending<T>>(CngxSelectOptionPending);
-  private readonly optionErrorDirective = contentChild<CngxSelectOptionError<T>>(CngxSelectOptionError);
-  private readonly inputPrefixDirective = contentChild<CngxSelectInputPrefix>(CngxSelectInputPrefix);
-  private readonly inputSuffixDirective = contentChild<CngxSelectInputSuffix>(CngxSelectInputSuffix);
+  private readonly clearButtonDirective =
+    contentChild<CngxSelectClearButton>(CngxSelectClearButton);
+  private readonly optionPendingDirective =
+    contentChild<CngxSelectOptionPending<T>>(CngxSelectOptionPending);
+  private readonly optionErrorDirective =
+    contentChild<CngxSelectOptionError<T>>(CngxSelectOptionError);
+  private readonly inputPrefixDirective =
+    contentChild<CngxSelectInputPrefix>(CngxSelectInputPrefix);
+  private readonly inputSuffixDirective =
+    contentChild<CngxSelectInputSuffix>(CngxSelectInputSuffix);
   private readonly actionDirective = contentChild<CngxSelectAction>(CngxSelectAction);
 
   /** @internal */
@@ -527,9 +529,9 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
     action: this.actionDirective,
   });
   /** @internal */
-  protected readonly triggerLabelTpl = computed<
-    TemplateRef<CngxComboboxTriggerLabelContext<T>> | null
-  >(() => this.triggerLabelDirective()?.templateRef ?? null);
+  protected readonly triggerLabelTpl = computed<TemplateRef<
+    CngxComboboxTriggerLabelContext<T>
+  > | null>(() => this.triggerLabelDirective()?.templateRef ?? null);
   /** @internal */
   protected readonly chipTpl = computed<TemplateRef<CngxMultiSelectChipContext<T>> | null>(
     () => this.chipDirective()?.templateRef ?? null,
@@ -581,9 +583,7 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
   });
 
   /** @internal */
-  private readonly localItemsBuffer = inject(CNGX_LOCAL_ITEMS_BUFFER_FACTORY)<T>(
-    this.compareWith,
-  );
+  private readonly localItemsBuffer = inject(CNGX_LOCAL_ITEMS_BUFFER_FACTORY)<T>(this.compareWith);
 
   /**
    * Dedicated commit controller for quick-create. The toggle/clear
@@ -591,7 +591,7 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
    * `ArrayCommitHandler` reconciles the full array); create
    * materialises a single `T`, so needs a `T`-typed controller.
    * Splitting them also preserves independent supersede semantics
-   * — create-in-flight doesn't cancel a pending toggle and vice versa.
+   * - create-in-flight doesn't cancel a pending toggle and vice versa.
    *
    * @internal
    */
@@ -616,14 +616,12 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
   readonly actionSearchTerm = this.searchTerm;
   /**
    * Action context's `error` + `hasError` source. Reflects create
-   * failures only — toggle errors flow through the shell's
+   * failures only - toggle errors flow through the shell's
    * commit-error banner via the array-typed `core.commitController`.
    *
    * @internal
    */
-  readonly actionError = computed<unknown>(() =>
-    this.createCommitController.state.error(),
-  );
+  readonly actionError = computed<unknown>(() => this.createCommitController.state.error());
   /**
    * Action context's `value` source. Forwards the live values array.
    *
@@ -701,8 +699,7 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
   /** @internal */
   protected readonly resolvedListboxLabel = this.core.resolvedListboxLabel;
   /** @internal */
-  protected readonly resolvedShowSelectionIndicator =
-    this.core.resolvedShowSelectionIndicator;
+  protected readonly resolvedShowSelectionIndicator = this.core.resolvedShowSelectionIndicator;
   /** @internal */
   protected readonly resolvedSelectionIndicatorVariant =
     this.core.resolvedSelectionIndicatorVariant;
@@ -730,9 +727,7 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
     () => ({ disabled: this.disabled(), focused: this.focused(), panelOpen: this.panelOpen() }),
     {
       equal: (a, b) =>
-        a.disabled === b.disabled &&
-        a.focused === b.focused &&
-        a.panelOpen === b.panelOpen,
+        a.disabled === b.disabled && a.focused === b.focused && a.panelOpen === b.panelOpen,
     },
   );
 
@@ -750,9 +745,11 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
   /** @internal */
   protected readonly errorContext = this.core.makeErrorContext(() => this.handleRetry());
   /** @internal */
-  protected readonly commitErrorContext = this.core.bindCommitRetry(() => this.commitHandler.retryLast());
+  protected readonly commitErrorContext = this.core.bindCommitRetry(() =>
+    this.commitHandler.retryLast(),
+  );
 
-  /** @internal — full virtualisation wire-up (see setupVirtualization). */
+  /** @internal - full virtualisation wire-up (see setupVirtualization). */
   private readonly virtualSetup = setupVirtualization<T, T[]>({
     core: this.core,
     popoverRef: this.popoverRef,
@@ -798,7 +795,7 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
     () => this.compareWith() as unknown as (a: unknown, b: unknown) => boolean,
   );
 
-  /** @internal — chip subset + overflow badge count (see CngxMultiSelect). */
+  /** @internal - chip subset + overflow badge count (see CngxMultiSelect). */
   protected readonly visibleSelected = computed<CngxSelectOptionDef<T>[]>(() => {
     const all = this.selectedOptions();
     if (this.chipOverflow() !== 'truncate') {
@@ -898,7 +895,7 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
     localItemsBuffer: this.localItemsBuffer,
     closeOnSuccess: this.closeOnCreate,
     onCreated: (option, previousValues) => {
-      // No dedup — quickCreateAction is intentional, the value is fresh by definition.
+      // No dedup - quickCreateAction is intentional, the value is fresh by definition.
       const next = [...previousValues, option.value];
       this.values.set(next);
       // Tag-input UX: clear the term so the next chip can be typed. CngxActionSelect
@@ -943,24 +940,24 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
    * (action dispatches happen via the panel, not the chips), so wiring
    * is identical to `CngxMultiSelect`.
    */
-  private readonly chipRemovalHandler: CngxChipRemovalHandler<CngxSelectOptionDef<T>> =
-    inject(CNGX_CHIP_REMOVAL_HANDLER_FACTORY)<T>({
-      values: this.values,
-      disabled: this.disabled,
-      compareWith: this.compareWith,
-      commitAction: this.commitAction,
-      commitMode: this.commitMode,
-      beginCommit: (next, previous, item, action) =>
-        this.commitHandler.beginToggle(next, previous, item, action),
-      onBeforeCommit: (previous, item) => {
-        this.lastCommittedValues = previous;
-        this.togglingOption.set(item);
-      },
-      onSyncFinalize: (item, previous) =>
-        this.finalizeToggle(item, false, previous),
-    });
+  private readonly chipRemovalHandler: CngxChipRemovalHandler<CngxSelectOptionDef<T>> = inject(
+    CNGX_CHIP_REMOVAL_HANDLER_FACTORY,
+  )<T>({
+    values: this.values,
+    disabled: this.disabled,
+    compareWith: this.compareWith,
+    commitAction: this.commitAction,
+    commitMode: this.commitMode,
+    beginCommit: (next, previous, item, action) =>
+      this.commitHandler.beginToggle(next, previous, item, action),
+    onBeforeCommit: (previous, item) => {
+      this.lastCommittedValues = previous;
+      this.togglingOption.set(item);
+    },
+    onSyncFinalize: (item, previous) => this.finalizeToggle(item, false, previous),
+  });
 
-  /** @internal — stable per-option `remove()` closure for chip slots. */
+  /** @internal - stable per-option `remove()` closure for chip slots. */
   protected chipRemoveFor(opt: CngxSelectOptionDef<T>): () => void {
     return this.chipRemovalHandler.removeFor(opt);
   }
@@ -1018,7 +1015,7 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
     createFieldSync<T[]>({
       componentValue: this.values,
       valueEquals: (a, b) => sameArrayContents(a, b, this.compareWith()),
-      coerceFromField: (x) => (Array.isArray(x) ? ([...(x as T[])]) : []),
+      coerceFromField: (x) => (Array.isArray(x) ? [...(x as T[])] : []),
       toFieldValue: (v) => [...v],
     });
 
@@ -1035,10 +1032,18 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
     });
   }
 
-  open(): void { this.popoverRef()?.show(); }
-  close(): void { this.popoverRef()?.hide(); }
-  toggle(): void { this.popoverRef()?.toggle(); }
-  focus(options?: FocusOptions): void { this.inputEl()?.nativeElement.focus(options); }
+  open(): void {
+    this.popoverRef()?.show();
+  }
+  close(): void {
+    this.popoverRef()?.hide();
+  }
+  toggle(): void {
+    this.popoverRef()?.toggle();
+  }
+  focus(options?: FocusOptions): void {
+    this.inputEl()?.nativeElement.focus(options);
+  }
 
   /**
    * Enter on the trigger input fires quick-create when no AD item is
@@ -1063,7 +1068,7 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
     this.handleActionCommit();
   }
 
-  /** @internal — PageUp/PageDown shared behaviour (±10 option jump). */
+  /** @internal - PageUp/PageDown shared behaviour (±10 option jump). */
   protected handleInputKeydown(event: KeyboardEvent): void {
     handlePageJumpKey(event, {
       listbox: this.listboxRef(),
@@ -1110,7 +1115,7 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
     }
   }
 
-  /** @internal — click-outside dismissal (action-dirty-guarded). */
+  /** @internal - click-outside dismissal (action-dirty-guarded). */
   protected readonly handleClickOutside = inject(CNGX_DISMISS_HANDLER_FACTORY)({
     popoverRef: this.popoverRef,
     dismissOn: this.config.dismissOn,
@@ -1119,7 +1124,9 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
 
   protected handleRetry(): void {
     const fn = this.retryFn();
-    if (fn) { fn(); }
+    if (fn) {
+      fn();
+    }
     this.retry.emit();
   }
 

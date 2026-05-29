@@ -1,21 +1,15 @@
-import {
-  InjectionToken,
-  untracked,
-  type Signal,
-  type WritableSignal,
-} from '@angular/core';
+import { InjectionToken, untracked, type Signal, type WritableSignal } from '@angular/core';
 
 import type { AsyncStatus } from '@cngx/core/utils';
 
-import type {
-  CngxSelectCommitAction,
-  CngxSelectCommitMode,
-} from './commit-action.types';
+import type { CngxSelectCommitAction, CngxSelectCommitMode } from './commit-action.types';
 import type { CngxSelectOptionDef } from './option.model';
 import type { CngxSelectCompareFn, CngxSelectCore } from './select-core';
 
 /**
  * Configuration for {@link createScalarCommitHandler}.
+ *
+ * @category forms/select/commit
  */
 export interface ScalarCommitHandlerOptions<T> {
   /** Primary scalar value signal. */
@@ -48,20 +42,18 @@ export interface ScalarCommitHandlerOptions<T> {
 
 /**
  * API returned from {@link createScalarCommitHandler}.
+ *
+ * @category forms/select/commit
  */
 export interface ScalarCommitHandler<T> {
   /**
    * Start a commit. Consumer pre-writes optimistic `value.set(intended)`
    * + `togglingOption.set(option)`; handler drives the state machine.
    */
-  beginCommit(
-    intended: T,
-    previous: T | undefined,
-    action: CngxSelectCommitAction<T>,
-  ): void;
+  beginCommit(intended: T, previous: T | undefined, action: CngxSelectCommitAction<T>): void;
   /**
    * Dispatch a commit from AD activation. No-op when `commitAction` is
-   * unbound — wire the `onActivate` path to `finalizeSelection` in that
+   * unbound - wire the `onActivate` path to `finalizeSelection` in that
    * case.
    */
   dispatchFromActivation(intended: T, option: CngxSelectOptionDef<T>): void;
@@ -80,8 +72,10 @@ export interface ScalarCommitHandler<T> {
  * commit-controller lifecycle, reconciliation, `togglingOption.set(null)`
  * on success, optimistic rollback on error. Consumer owns change-event
  * emission, announcer severity (`onCommitError`), input-text mirroring
- * (`onValueWrite`), and popover-close timing — handler never closes the
+ * (`onValueWrite`), and popover-close timing - handler never closes the
  * panel.
+ *
+ * @category forms/select/commit
  */
 export function createScalarCommitHandler<T>(
   opts: ScalarCommitHandlerOptions<T>,
@@ -129,11 +123,10 @@ export function createScalarCommitHandler<T>(
         reconcileValue(finalValue);
         togglingOption.set(null);
         mirrorWrite(finalValue);
-        // finalValue may be undefined — controller return type allows it.
+        // finalValue may be undefined - controller return type allows it.
         // Action-select treats null as skip via discriminant; scalar
         // select gets "cleared" semantics for free.
-        const opt =
-          finalValue === undefined ? null : opts.core.findOption(finalValue);
+        const opt = finalValue === undefined ? null : opts.core.findOption(finalValue);
         opts.onCommitFinalize(opt, finalValue, previous);
       },
       onError: (err, rollbackTo) => {
@@ -149,10 +142,7 @@ export function createScalarCommitHandler<T>(
     });
   };
 
-  const dispatchFromActivation = (
-    intended: T,
-    option: CngxSelectOptionDef<T>,
-  ): void => {
+  const dispatchFromActivation = (intended: T, option: CngxSelectOptionDef<T>): void => {
     const previous = opts.value();
     togglingOption.set(option);
     if (opts.commitMode() === 'optimistic') {
@@ -160,7 +150,7 @@ export function createScalarCommitHandler<T>(
     }
     const action = opts.commitAction();
     if (!action) {
-      // No action bound — AD dispatcher fires `onActivate` and the
+      // No action bound - AD dispatcher fires `onActivate` and the
       // consumer's `finalizeSelection` handles the write. Track
       // lastCommitted anyway so a later retry can replay.
       lastCommitted = previous;
@@ -183,6 +173,8 @@ export function createScalarCommitHandler<T>(
 
 /**
  * Factory signature for {@link CNGX_SCALAR_COMMIT_HANDLER_FACTORY}.
+ *
+ * @category forms/select/commit
  */
 export type CngxScalarCommitHandlerFactory = <T>(
   opts: ScalarCommitHandlerOptions<T>,
@@ -191,12 +183,13 @@ export type CngxScalarCommitHandlerFactory = <T>(
 /**
  * Factory token for {@link ScalarCommitHandler}. Default
  * {@link createScalarCommitHandler}.
+ *
+ * @category forms/select/commit
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/scalar-commit-handler.ts
+ * @since 0.1.0
  */
 export const CNGX_SCALAR_COMMIT_HANDLER_FACTORY =
-  new InjectionToken<CngxScalarCommitHandlerFactory>(
-    'CngxScalarCommitHandlerFactory',
-    {
-      providedIn: 'root',
-      factory: () => createScalarCommitHandler,
-    },
-  );
+  new InjectionToken<CngxScalarCommitHandlerFactory>('CngxScalarCommitHandlerFactory', {
+    providedIn: 'root',
+    factory: () => createScalarCommitHandler,
+  });

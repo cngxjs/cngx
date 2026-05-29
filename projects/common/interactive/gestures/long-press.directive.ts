@@ -6,6 +6,8 @@ import { fromEvent, filter, switchMap, takeUntil, timer, tap, merge } from 'rxjs
 /**
  * Detects long-press gestures via Pointer Events.
  *
+ * @category common/interactive/gestures
+ *
  * Fires `longPressed` after the pointer is held down for the `threshold` duration
  * without moving more than 10px. Cancels on pointer move (prevents accidental
  * triggers during scrolling), pointer up, pointer cancel, and pointer leave.
@@ -26,6 +28,11 @@ import { fromEvent, filter, switchMap, takeUntil, timer, tap, merge } from 'rxjs
  *   Hold for action
  * </div>
  * ```
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/gestures/long-press.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxSwipeDismiss, CngxPressable
  * <example-url>http://localhost:4200/#/common/interactive/gestures/long-press/custom-threshold</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/gestures/long-press/long-press-with-visual-feedback</example-url>
  */

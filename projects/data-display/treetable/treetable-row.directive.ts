@@ -13,6 +13,13 @@ import type { FlatNode } from './models';
  * <div cngxTreetableRow [node]="node" [highlight]="highlight"></div>
  * ```
  * @typeParam T - The data type of the tree nodes.
+ *
+ * @category data-display/treetable
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/data-display/treetable/treetable-row.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxTreetable, CngxHoverable
  */
 @Directive({
   selector: '[cngxTreetableRow]',

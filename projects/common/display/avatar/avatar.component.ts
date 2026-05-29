@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, computed, input, signal, ViewEncapsulation } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  input,
+  signal,
+  ViewEncapsulation,
+} from '@angular/core';
 
 /**
  * Display atom for user/person/entity avatars.
@@ -6,10 +13,17 @@ import { ChangeDetectionStrategy, Component, computed, input, signal, ViewEncaps
  * Rendering cascade:
  * 1. Image (`src` set and not errored).
  * 2. Initials (`initials` set).
- * 3. Projected content (`<ng-content>`) — typically a `<cngx-icon>`.
+ * 3. Projected content (`<ng-content>`) - typically a `<cngx-icon>`.
  *
  * Optional status indicator dot via `status`. Size and shape driven by
  * CSS custom properties.
+ *
+ * @category common/display
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/display/avatar/avatar.component.ts
+ * @since 0.1.0
+ * @relatedTo CngxIcon, CngxBadge, CngxChip
  * <example-url>http://localhost:4200/#/common/display/avatar/cascade-image-initials-fallback</example-url>
  * <example-url>http://localhost:4200/#/common/display/avatar/shapes-and-status</example-url>
  * <example-url>http://localhost:4200/#/common/display/avatar/sizes</example-url>

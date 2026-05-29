@@ -11,12 +11,12 @@
 
 @mixin color($theme) {
   @if mat.get-theme-version($theme) == 1 {
-    // Plate — initials block sits on a low-contrast container surface so
+    // Plate - initials block sits on a low-contrast container surface so
     // it reads like a Material avatar slot rather than a stamped badge.
     --cngx-avatar-bg: var(--mat-sys-surface-container-high);
     --cngx-avatar-color: var(--mat-sys-on-surface);
 
-    // Status palette — M3 has no first-class success/warning. Follow the
+    // Status palette - M3 has no first-class success/warning. Follow the
     // same fold cngx already uses elsewhere (chip-theme, badge-theme):
     // online -> tertiary, busy -> error, away -> tertiary-container fold,
     // offline -> outline so it reads as "muted, not absent".

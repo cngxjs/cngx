@@ -8,18 +8,14 @@ import {
   isDevMode,
   untracked,
 } from '@angular/core';
-import {
-  CNGX_STATEFUL,
-  createTransitionTracker,
-  type CngxAsyncState,
-} from '@cngx/core/utils';
+import { CNGX_STATEFUL, createTransitionTracker, type CngxAsyncState } from '@cngx/core/utils';
 
 import { CngxToaster } from './toast.service';
 
 /**
  * Declarative state-to-toast bridge.
  *
- * Place on any element — fires a toast when the bound `CngxAsyncState`
+ * Place on any element - fires a toast when the bound `CngxAsyncState`
  * transitions to `success` or `error`. Only fires on actual transitions,
  * not on initial `idle` state.
  *
@@ -42,6 +38,14 @@ import { CngxToaster } from './toast.service';
  *   ...
  * </form>
  * ```
+ *
+ * @category ui/feedback/toast
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/feedback/toast/toast-on.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxToaster, CngxToastOutlet, CngxAlertOn, CngxBannerOn
+ *
  * <example-url>http://localhost:4200/#/ui/feedback/toast/custom-component-body</example-url>
  * <example-url>http://localhost:4200/#/ui/feedback/toast/declarative-cngx-toast</example-url>
  * <example-url>http://localhost:4200/#/ui/feedback/toast/programmatic-cngxtoaster</example-url>
@@ -57,24 +61,24 @@ export class CngxToastOn {
   private readonly toast = inject(CngxToaster, { optional: true });
   private readonly statefulFallback = inject(CNGX_STATEFUL, { optional: true });
 
-  // Validated non-null ref — constructor throws if missing
+  // Validated non-null ref - constructor throws if missing
   private readonly toastService: CngxToaster;
 
   /**
-   * The async state to watch. Optional — when omitted, the bridge falls back
+   * The async state to watch. Optional - when omitted, the bridge falls back
    * to `CNGX_STATEFUL` injected from the host component (for example
    * `CngxSelect.commitState`). A bare `cngxToastOn` attribute (empty string)
    * is treated as "no input bound" so the fallback kicks in.
    */
-  readonly state = input<CngxAsyncState<unknown> | undefined, CngxAsyncState<unknown> | '' | undefined>(
-    undefined,
-    {
-      alias: 'cngxToastOn',
-      transform: (v) => (typeof v === 'string' ? undefined : v),
-    },
-  );
+  readonly state = input<
+    CngxAsyncState<unknown> | undefined,
+    CngxAsyncState<unknown> | '' | undefined
+  >(undefined, {
+    alias: 'cngxToastOn',
+    transform: (v) => (typeof v === 'string' ? undefined : v),
+  });
 
-  /** Effective state — input wins over ancestor `CNGX_STATEFUL`. */
+  /** Effective state - input wins over ancestor `CNGX_STATEFUL`. */
   private readonly effectiveState = computed<CngxAsyncState<unknown> | undefined>(
     () => this.state() ?? this.statefulFallback?.state,
   );
@@ -91,7 +95,7 @@ export class CngxToastOn {
   /** Duration for success toasts in ms. */
   readonly toastSuccessDuration = input<number>(3000);
 
-  /** Duration for error toasts — `'persistent'` means manual dismiss only. */
+  /** Duration for error toasts - `'persistent'` means manual dismiss only. */
   readonly toastErrorDuration = input<number | 'persistent'>('persistent');
 
   constructor() {
@@ -104,7 +108,7 @@ export class CngxToastOn {
     this.toastService = this.toast;
 
     if (isDevMode()) {
-      // afterNextRender, not effect — one-shot post-binding check, no dead
+      // afterNextRender, not effect - one-shot post-binding check, no dead
       // node in the reactive graph for the directive's lifetime.
       afterNextRender(() => {
         if (this.state() === undefined && !this.statefulFallback) {
@@ -119,7 +123,7 @@ export class CngxToastOn {
     const tracker = createTransitionTracker(() => this.effectiveState()?.status() ?? 'idle');
 
     effect(() => {
-      // Flat graph — only the tracker is tracked; option reads stay inside
+      // Flat graph - only the tracker is tracked; option reads stay inside
       // untracked() so message/duration changes don't re-fire the bridge.
       const status = tracker.current();
       const previous = tracker.previous();

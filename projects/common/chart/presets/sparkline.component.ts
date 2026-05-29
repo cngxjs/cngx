@@ -13,7 +13,7 @@ import { CngxArea } from '../layers/area.component';
 import { injectPresetState } from './preset-state';
 
 /**
- * Inline sparkline — a tiny line chart for KPI cards and dashboard
+ * Inline sparkline - a tiny line chart for KPI cards and dashboard
  * tiles. Composes `<cngx-chart>` + `<cngx-line>` (+ optional
  * `<cngx-area>`) with hidden axes that publish the scale domain
  * derived from the `data` array.
@@ -25,6 +25,14 @@ import { injectPresetState } from './preset-state';
  * The host carries `role="img"` and a reactive `aria-label` derived
  * from the chart's auto-Summary; consumers can override via
  * `[ariaLabel]`.
+ *
+ * @category common/chart/presets
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/presets/sparkline.component.ts
+ * @since 0.1.0
+ * @relatedTo CngxMiniArea, CngxMiniBar, CngxChart
+ *
  * <example-url>http://localhost:4200/#/common/chart/sparkline/async-state-machine</example-url>
  * <example-url>http://localhost:4200/#/common/chart/sparkline/basic-sparklines</example-url>
  * <example-url>http://localhost:4200/#/common/chart/sparkline/with-area-fill</example-url>

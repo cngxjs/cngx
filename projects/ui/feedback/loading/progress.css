@@ -1,13 +1,41 @@
 /**
  * @overview
- * Default visuals for `CngxProgress`. Two variants — a linear bar
- * and a circular SVG ring. Both support determinate (value-bound)
- * and indeterminate (animated). `prefers-reduced-motion` replaces
- * the animation with a slow opacity pulse.
+ * Default visuals for `CngxProgress`. The host carries `.cngx-progress`
+ * and renders either linear (`__track` + `__fill` + `__label`) or
+ * circular (`__circle` + `__circle-track` + `__circle-fill` +
+ * centered `__label`) markup. The `cngx-pulse` keyframe is
+ * duplicated identically in `loading-indicator.css` so each file is
+ * self-contained under `styleUrl` bundling.
  *
- * The `cngx-pulse` keyframe is duplicated identically in
- * `loading-indicator.css` so each file is self-contained under
- * `styleUrl` bundling.
+ * **State modifiers**
+ *
+ * - `--indeterminate` - replaces the determinate width / dashoffset
+ *   transition with `cngx-progress-indeterminate` (linear sweep) or
+ *   `cngx-progress-spin` (circular spin). Under
+ *   `prefers-reduced-motion` both fall back to `cngx-pulse` and the
+ *   linear fill pins to `width: 100%`
+ *
+ * **Variants**
+ *
+ * - `--linear` - flex row of bar + trailing label
+ * - `--circular` - inline-flex centered SVG ring with overlaid label
+ *
+ * **Slots**
+ *
+ * - `.cngx-progress__track` - linear bar track
+ * - `.cngx-progress__fill` - linear bar fill (width-bound)
+ * - `.cngx-progress__circle` - circular SVG, rotated `-90deg` so the
+ *   stroke starts at the top
+ * - `.cngx-progress__circle-track` - background ring stroke
+ * - `.cngx-progress__circle-fill` - active arc (`stroke-dashoffset`
+ *   bound to value)
+ * - `.cngx-progress__label` - trailing label (linear) or absolutely-
+ *   positioned center label (circular)
+ *
+ * The `cngx-progress-spin` keyframe rotates `270deg` (not `360deg`)
+ * and is renamed from the original `cngx-spin` to avoid a global-
+ * keyframe collision with `loading-indicator.css` under
+ * `encapsulation: None`.
  */
 
 @layer cngx.tokens {
@@ -251,7 +279,7 @@
 }
 
 /* Renamed from cngx-spin (original progress.ts inline used the same
- * name but with rotate(270deg) — distinct from loading-indicator.css's
+ * name but with rotate(270deg) - distinct from loading-indicator.css's
  * cngx-spin which rotates 360deg). The collision was a pre-existing
  * latent bug: whichever file loaded last under encapsulation:None
  * would win the global keyframe. Renaming to cngx-progress-spin
@@ -262,7 +290,7 @@
   }
 }
 
-/* Duplicate of cngx-pulse from loading-indicator.css — kept for
+/* Duplicate of cngx-pulse from loading-indicator.css - kept for
  * keeping the file self-contained, identical body. */
 @keyframes cngx-pulse {
   0%,

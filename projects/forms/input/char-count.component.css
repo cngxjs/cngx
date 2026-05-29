@@ -1,13 +1,43 @@
 /**
  * @overview
- * Default visuals for `CngxCharCount` — counter atom rendered under a
- * text input or textarea. The host stays `display: contents` so the
- * counter has no visual footprint of its own; the inner span inherits
- * color and font-size from its surroundings.
+ * Default visuals for `CngxCharCount` - counter atom rendered under a
+ * text input or textarea. The host carries `.cngx-char-count` and
+ * stays `display: contents` so the counter has no visual footprint of
+ * its own; font-size and color flow to descendants through the
+ * cascade.
  *
- * Falls back through `--cngx-field-hint-color` (resting) and the
- * field-error / `--cngx-color-danger` chain (over-limit), so a brand
- * change in the field-error chain propagates here.
+ * **State modifiers**
+ *
+ * - `--over` - text color switches to the danger chain once the count
+ *   exceeds the limit
+ *
+ * **Slots**
+ *
+ * - `.cngx-char-count` - host, sets resting font-size + color from
+ *   the hint / typography chain
+ *
+ * **Inheritance**
+ *
+ * Typography and surface tokens delegate to the foundation:
+ *
+ * - `--cngx-field-char-count-font-size` -> `--cngx-font-size-sm`
+ * - `--cngx-field-char-count-color` -> `--cngx-field-hint-color`
+ * - `--cngx-field-char-count-over-color` -> `--cngx-field-error-color`
+ *   -> `--cngx-color-danger`
+ *
+ * A `:root` delegating rule pins
+ * `--cngx-field-char-count-over-color` to `--cngx-color-danger` so a
+ * dark-mode swap on the foundation token cascades through.
+ *
+ * **Dark mode**
+ *
+ * Three hooks lift the muted resting color from dim dark gray to soft
+ * light gray so the counter keeps its secondary-information weight on
+ * the dark surface:
+ *
+ * - `prefers-color-scheme: dark`
+ * - `[data-color-scheme="dark"]`
+ * - `.dark` class
  */
 
 @layer cngx.tokens {

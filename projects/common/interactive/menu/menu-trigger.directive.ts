@@ -5,7 +5,7 @@ import type { CngxMenuHost } from './menu-host.token';
 import { CNGX_MENU_NAV_STRATEGY } from './menu-nav-strategy';
 import type { CngxMenuSubmenuLike } from './menu-submenu.token';
 
-/** See `CngxListboxTrigger` — same structural contract. */
+/** See `CngxListboxTrigger` - same structural contract. */
 interface PopoverController {
   readonly isVisible: () => boolean;
   show(): void;
@@ -16,7 +16,7 @@ interface PopoverController {
  * Trigger atom for dropdown menus.
  *
  * Pairs a focusable element with a `CngxMenu` and a `CngxPopover` through
- * explicit template references — identical keyboard model to
+ * explicit template references - identical keyboard model to
  * `CngxListboxTrigger` except `closeOnSelect` is hardcoded `true` (menu
  * semantics: activating an item dismisses the menu).
  *
@@ -25,6 +25,13 @@ interface PopoverController {
  * Up / Home / End / Enter target the submenu's items via its own
  * `CngxActiveDescendant`. ArrowLeft / Escape pop the stack and close the
  * top submenu.
+ *
+ * @category common/interactive/menu
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/menu/menu-trigger.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxMenu, CngxContextMenuTrigger, CngxMenuItemSubmenu, CngxPopoverTrigger
  * <example-url>http://localhost:4200/#/common/interactive/menu/submenu/two-level-submenu</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/menu/trigger/dropdown-menu</example-url>
  */
@@ -50,7 +57,7 @@ export class CngxMenuTrigger {
   private readonly nav = inject(CNGX_MENU_NAV_STRATEGY);
 
   /**
-   * Active submenu chain — empty when only the outer menu is open. Each
+   * Active submenu chain - empty when only the outer menu is open. Each
    * entry is the `inner` host of an open submenu, top entry being the
    * deepest. Keystrokes target the top entry's AD.
    */
@@ -188,7 +195,10 @@ export class CngxMenuTrigger {
     }
   }
 
-  private findSubmenu(menu: CngxMenuHost, activeId: string | null): CngxMenuSubmenuLike | undefined {
+  private findSubmenu(
+    menu: CngxMenuHost,
+    activeId: string | null,
+  ): CngxMenuSubmenuLike | undefined {
     if (!activeId) {
       return undefined;
     }

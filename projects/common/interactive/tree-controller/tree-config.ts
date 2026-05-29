@@ -18,17 +18,21 @@ import { inject, InjectionToken, type Provider } from '@angular/core';
  * Library default                (createTreeController / flattenTree)
  * ```
  *
- * All fields are optional — omit the ones you don't need. Typed with
+ * All fields are optional - omit the ones you don't need. Typed with
  * `unknown` T-parameters because config values flow through the DI
  * system where per-instance generics can't be preserved; per-
  * controller options are still properly typed via the call site's
  * `CngxTreeControllerOptions<T>`.
+ *
+ * @category common/interactive/tree
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/tree-controller/tree-config.ts
+ * @since 0.1.0
  */
 export interface CngxTreeConfig {
   /**
    * Fallback for `nodeIdFn` when a caller omits it. With a config
    * default set, `CngxTreeControllerOptions.nodeIdFn` becomes
-   * effectively optional — the factory throws in dev mode only when
+   * effectively optional - the factory throws in dev mode only when
    * neither place provides a function.
    */
   readonly defaultNodeIdFn?: (value: unknown, path: readonly number[]) => string;
@@ -37,7 +41,7 @@ export interface CngxTreeConfig {
   /** Fallback for `keyFn`. Library default is identity. */
   readonly defaultKeyFn?: (value: unknown) => unknown;
   /**
-   * Bound the `isExpanded(id)` signal cache. Default: unlimited —
+   * Bound the `isExpanded(id)` signal cache. Default: unlimited -
    * keeps the stable-identity guarantee (`isExpanded(v) === isExpanded(v)`
    * always holds for the lifetime of the controller). When set, the
    * cache FIFO-evicts its oldest entry as soon as the size exceeds
@@ -55,6 +59,10 @@ export interface CngxTreeConfig {
  * DI token carrying the merged {@link CngxTreeConfig}. Defaults to an
  * empty object so consumers who never call {@link provideTreeConfig}
  * see library-default behaviour unchanged.
+ *
+ * @category common/interactive/tree
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/tree-controller/tree-config.ts
+ * @since 0.1.0
  */
 export const CNGX_TREE_CONFIG = new InjectionToken<CngxTreeConfig>('CngxTreeConfig', {
   providedIn: 'root',
@@ -62,13 +70,18 @@ export const CNGX_TREE_CONFIG = new InjectionToken<CngxTreeConfig>('CngxTreeConf
 });
 
 /**
- * Feature returned by a `with*` function — merged by
+ * Feature returned by a `with*` function - merged by
  * {@link provideTreeConfig}.
+ *
+ * @category common/interactive/tree
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/tree-controller/tree-config.ts
+ * @since 0.1.0
  */
 export interface CngxTreeConfigFeature {
   readonly config: Partial<CngxTreeConfig>;
 }
 
+/** @internal */
 function feature(mix: Partial<CngxTreeConfig>): CngxTreeConfigFeature {
   return { config: mix };
 }
@@ -78,6 +91,10 @@ function feature(mix: Partial<CngxTreeConfig>): CngxTreeConfigFeature {
  * Use this to enforce a domain id convention across the whole app
  * (e.g. `(v) => (v as { uuid: string }).uuid`) without repeating it
  * at every call site.
+ *
+ * @category common/interactive/tree
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/tree-controller/tree-config.ts
+ * @since 0.1.0
  */
 export function withDefaultNodeIdFn<T>(
   fn: (value: T, path: readonly number[]) => string,
@@ -89,6 +106,10 @@ export function withDefaultNodeIdFn<T>(
 
 /**
  * App-wide default `labelFn`. Library default is `String(value)`.
+ *
+ * @category common/interactive/tree
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/tree-controller/tree-config.ts
+ * @since 0.1.0
  */
 export function withDefaultLabelFn<T>(fn: (value: T) => string): CngxTreeConfigFeature {
   return feature({ defaultLabelFn: fn as (value: unknown) => string });
@@ -96,6 +117,10 @@ export function withDefaultLabelFn<T>(fn: (value: T) => string): CngxTreeConfigF
 
 /**
  * App-wide default `keyFn`. Library default is identity.
+ *
+ * @category common/interactive/tree
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/tree-controller/tree-config.ts
+ * @since 0.1.0
  */
 export function withDefaultKeyFn<T>(fn: (value: T) => unknown): CngxTreeConfigFeature {
   return feature({ defaultKeyFn: fn as (value: unknown) => unknown });
@@ -104,6 +129,10 @@ export function withDefaultKeyFn<T>(fn: (value: T) => unknown): CngxTreeConfigFe
 /**
  * Bound the `isExpanded(id)` signal cache. See
  * {@link CngxTreeConfig.cacheLimit} for the trade-off.
+ *
+ * @category common/interactive/tree
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/tree-controller/tree-config.ts
+ * @since 0.1.0
  */
 export function withTreeCacheLimit(limit: number): CngxTreeConfigFeature {
   return feature({ cacheLimit: limit });
@@ -111,6 +140,10 @@ export function withTreeCacheLimit(limit: number): CngxTreeConfigFeature {
 
 /**
  * App-wide default `initiallyExpanded` seed.
+ *
+ * @category common/interactive/tree
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/tree-controller/tree-config.ts
+ * @since 0.1.0
  */
 export function withDefaultInitiallyExpanded(
   mode: 'all' | 'none' | readonly string[],
@@ -133,28 +166,35 @@ export function withDefaultInitiallyExpanded(
  *   ],
  * });
  * ```
+ *
+ * @category common/interactive/tree
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/tree-controller/tree-config.ts
+ * @since 0.1.0
  */
 export function provideTreeConfig(...features: CngxTreeConfigFeature[]): Provider[] {
-  const merged = features.reduce<CngxTreeConfig>(
-    (acc, f) => ({ ...acc, ...f.config }),
-    {},
-  );
+  const merged = features.reduce<CngxTreeConfig>((acc, f) => ({ ...acc, ...f.config }), {});
   return [{ provide: CNGX_TREE_CONFIG, useValue: merged }];
 }
 
 /**
- * Sub-tree / component-scoped variant — use in `viewProviders` so the
+ * Sub-tree / component-scoped variant - use in `viewProviders` so the
  * tree config only applies to descendants of this component.
+ *
+ * @category common/interactive/tree
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/tree-controller/tree-config.ts
+ * @since 0.1.0
  */
-export function provideTreeConfigAt(
-  ...features: CngxTreeConfigFeature[]
-): Provider[] {
+export function provideTreeConfigAt(...features: CngxTreeConfigFeature[]): Provider[] {
   return provideTreeConfig(...features);
 }
 
 /**
  * Inject the currently-resolved config. Safe to call in any injection
  * context; returns `{}` if no `provideTreeConfig` is registered.
+ *
+ * @category common/interactive/tree
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/tree-controller/tree-config.ts
+ * @since 0.1.0
  */
 export function injectTreeConfig(): CngxTreeConfig {
   return inject(CNGX_TREE_CONFIG);

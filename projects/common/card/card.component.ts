@@ -15,11 +15,11 @@ import { CngxRovingItem, CngxRovingTabindex } from '@cngx/common/a11y';
  * Semantic card component that adapts its host element role based on the `as` input.
  *
  * Three archetypes:
- * - `'article'` (default) — display card, no primary action
- * - `'button'` — the entire card is a clickable button
- * - `'link'` — the entire card is a navigation link
+ * - `'article'` (default) - display card, no primary action
+ * - `'button'` - the entire card is a clickable button
+ * - `'link'` - the entire card is a navigation link
  *
- * The host element **is** the semantic element — no inner wrapper.
+ * The host element **is** the semantic element - no inner wrapper.
  * This eliminates double focus rings and wrapper problems for screen readers.
  *
  * ### Action card with selection
@@ -37,6 +37,12 @@ import { CngxRovingItem, CngxRovingTabindex } from '@cngx/common/a11y';
  * </cngx-card>
  * ```
  * 
+ * @category common/card
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/card/card.component.ts
+ * @since 0.1.0
+ * @relatedTo CngxCardGrid, CngxCardHeader, CngxCardBody, CngxCardFooter, CngxCardSkeleton
  * <example-url>http://localhost:4200/#/common/card/card-with-disclosure-expand-collapse</example-url>
  * <example-url>http://localhost:4200/#/common/card/card-with-expandable-text</example-url>
 
@@ -146,7 +152,7 @@ export class CngxCard {
   /**
    * @internal Tabindex management.
    * When inside a CngxRovingTabindex parent (e.g. CngxCardGrid), the roving
-   * controller manages tabindex via CngxRovingItem — card does not set its own.
+   * controller manages tabindex via CngxRovingItem - card does not set its own.
    * When standalone, interactive cards get tabindex="0".
    */
   protected readonly hostTabindex = computed(() => {
@@ -161,7 +167,7 @@ export class CngxCard {
   /** @internal */
   protected readonly liveRegionId = `${this.uid}-live`;
 
-  /** @internal IDs for `aria-describedby` — always present, aria-hidden controls what SR reads. */
+  /** @internal IDs for `aria-describedby` - always present, aria-hidden controls what SR reads. */
   protected readonly describedByIds = computed(() => {
     const ids = [this.disabledReasonId];
     return ids.join(' ');

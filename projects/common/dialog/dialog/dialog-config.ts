@@ -1,10 +1,18 @@
 import { InjectionToken } from '@angular/core';
 
-/** Injection token for data passed to a programmatically opened dialog via `CngxDialogOpener.open()`. */
+/**
+ * Injection token for data passed to a programmatically opened dialog via `CngxDialogOpener.open()`.
+ *
+ * @category common/dialog
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/dialog/dialog/dialog-config.ts
+ * @since 0.1.0
+ */
 export const CNGX_DIALOG_DATA = new InjectionToken<unknown>('CngxDialogData');
 
 /**
  * Configuration for programmatically opened dialogs.
+ *
+ * @category common/dialog
  */
 export interface CngxDialogConfig<D = unknown> {
   /** Data to inject via `CNGX_DIALOG_DATA` inside the dialog component. */

@@ -1,18 +1,58 @@
 /**
  * @overview
- * Shared structural skeleton for the tag family. Two scopes
- * (`.cngx-tag`, `.cngx-tag-group`) live here because both atoms
- * share structural defaults and link this file first in their
- * `styleUrls`. Thematic skin (color cascade, radius, font-weight) is
- * in the per-atom files. All values cascade through `--cngx-*`
- * custom properties so consumers can override at `:root` or
- * component level without forking.
+ * Shared structural skeleton for the tag family. Two scopes live
+ * here because both atoms share structural defaults and link this
+ * file first in their `styleUrls`:
  *
- * Layout-only — no `@property` registrations here. The structural
- * tokens (`--cngx-tag-gap`, `--cngx-tag-padding`,
- * `--cngx-tag-font-size`, density variants, `--cngx-tag-group-*`)
- * are registered in `tag.css` / `tag-group.component.css`; this
+ * - `.cngx-tag` - inline-flex pill (gap, padding, font-size,
+ *   density modifiers, label ellipsis)
+ * - `.cngx-tag-group` - vertical three-zone stack (header / row /
+ *   accessory) with gap + alignment modifiers
+ *
+ * Thematic skin (color cascade, radius, font-weight) is in the
+ * per-atom files (`../tag.css`, `../tag-group.component.css`).
+ * Layout-only file - no `@property` registrations here; the
+ * structural tokens are registered in those neighbours and this
  * file just consumes them.
+ *
+ * **Density modifiers (CngxTag)**
+ *
+ * - `--sm` - padding + font-size compressed
+ * - (no modifier - default `md`)
+ * - `--lg` - padding + font-size lifted
+ * - `--xl` - padding + font-size lifted further
+ * - `--truncate` - single-line label with ellipsis on `__label`
+ *
+ * **Gap modifiers (CngxTagGroup)**
+ *
+ * Applied to `> .cngx-tag-group__row`:
+ *
+ * - `--gap-xs` - tight row gap
+ * - (no modifier - default `sm`)
+ * - `--gap-md` - relaxed row gap
+ *
+ * **Alignment modifiers (CngxTagGroup)**
+ *
+ * - `--align-start` - default `justify-content: flex-start`
+ * - `--align-center`
+ * - `--align-end`
+ * - `--align-between`
+ *
+ * **Slots**
+ *
+ * - `.cngx-tag__label` - shrinkable text container, truncates
+ *   under `--truncate`
+ * - `.cngx-tag-group__row` - the inline-flex row inside the stack
+ *
+ * **Inheritance**
+ *
+ * - `--cngx-tag-gap` -> `--cngx-space-xs`
+ * - `--cngx-tag-font-size` -> `--cngx-font-size-sm`
+ * - `--cngx-tag-group-stack-gap` -> `--cngx-space-sm`
+ * - `--cngx-tag-group-gap` -> `--cngx-space-sm`
+ * - `--cngx-tag-group-gap-xs` -> `--cngx-space-xs`
+ * - density / alignment tokens fall straight back to literal
+ *   defaults registered in the per-atom files
  */
 
 @layer cngx.components {

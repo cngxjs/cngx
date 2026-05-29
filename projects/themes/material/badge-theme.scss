@@ -18,7 +18,7 @@
     --cngx-badge-error-bg: var(--mat-sys-error);
     --cngx-badge-error-color: var(--mat-sys-on-error);
 
-    // Material 3 has no first-class warning surface — fold onto tertiary
+    // Material 3 has no first-class warning surface - fold onto tertiary
     // tone so badges, banners, and chips stay in sync.
     --cngx-badge-warning-bg: var(--mat-sys-tertiary);
     --cngx-badge-warning-color: var(--mat-sys-on-tertiary);

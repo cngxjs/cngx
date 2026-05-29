@@ -24,6 +24,8 @@ import type {
  * Every key is optional — partial overrides are deep-merged with
  * the library defaults so consumers only declare the keys they want
  * to override.
+ *
+ * @category common/display
  */
 export interface CngxTagConfig {
   /** Default values for `CngxTag` inputs when no per-instance binding wins. */

@@ -12,6 +12,8 @@ import { CNGX_CHART_CONTEXT } from '../chart/chart-context';
  * Axis position. Top/bottom are X-axes; left/right are Y-axes. The
  * parent `<cngx-chart>` collects content-child axes and routes their
  * inputs to its `xScale` / `yScale` signals based on this discriminator.
+ *
+ * @category common/chart/axis
  */
 export type CngxAxisPosition = 'top' | 'right' | 'bottom' | 'left';
 
@@ -19,35 +21,55 @@ export type CngxAxisPosition = 'top' | 'right' | 'bottom' | 'left';
  * Axis scale type. The chart's scale-builder picks the matching
  * `create*Scale` factory at the boundary; the axis itself stays
  * scale-implementation-agnostic.
+ *
+ * @category common/chart/axis
  */
 export type CngxAxisType = 'linear' | 'time' | 'band';
 
+/** @internal */
 const DEFAULT_TICK_COUNT = 5;
+/** @internal */
 const TICK_LENGTH = 5;
+/** @internal */
 const LABEL_OFFSET = 4;
+/** @internal */
 const AXIS_LABEL_OFFSET_INLINE = 32;
+/** @internal */
 const AXIS_LABEL_OFFSET_BLOCK = 36;
 
+/** @internal */
 interface AxisLabelGeometry {
   readonly transform: string;
   readonly anchor: 'start' | 'middle' | 'end';
   readonly baseline: 'auto' | 'middle' | 'hanging';
 }
 
+/** @internal */
 interface AxisGeometry {
   readonly transform: string;
-  readonly line: { readonly x1: number; readonly y1: number; readonly x2: number; readonly y2: number };
+  readonly line: {
+    readonly x1: number;
+    readonly y1: number;
+    readonly x2: number;
+    readonly y2: number;
+  };
 }
 
+/** @internal */
 interface TickRendering {
   readonly key: string;
   readonly transform: string;
-  readonly tickLine: { readonly x1: number; readonly y1: number; readonly x2: number; readonly y2: number };
+  readonly tickLine: {
+    readonly x1: number;
+    readonly y1: number;
+    readonly x2: number;
+    readonly y2: number;
+  };
   /**
    * Endpoint of the gridline that extends from this tick across the
    * chart's perpendicular dimension. `(x1, y1)` is always `(0, 0)`
    * (the tick's local origin); `(x2, y2)` reaches the opposite side
-   * of the chart area. Always present in the tick rendering — the
+   * of the chart area. Always present in the tick rendering - the
    * `[showGrid]` input controls whether the line is rendered, not
    * whether the geometry is computed.
    */
@@ -67,16 +89,23 @@ interface TickRendering {
  * parent's scale derivation. Renders SVG ticks and labels in the
  * coordinate system the parent publishes via {@link CNGX_CHART_CONTEXT}.
  *
- * Attribute-selector on `<svg:g>` — the host element IS the SVG group.
+ * Attribute-selector on `<svg:g>` - the host element IS the SVG group.
  * This keeps the namespace boundary clean: a `<cngx-axis>` element
  * inside `<svg>` would be in the XHTML namespace and SVG layout would
  * not flow through it. By making the directive attribute-only, the
  * host stays in the SVG namespace and the browser lays out tick lines
  * and labels exactly where the geometry says.
  *
- * Host carries `aria-hidden="true"` — axis text is decoration; the
+ * Host carries `aria-hidden="true"` - axis text is decoration; the
  * semantic data view lives on the parent chart's auto-Summary and
  * Data Table.
+ *
+ * @category common/chart/axis
+ * @docsKind primary
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/axis/axis.component.ts
+ * @since 0.1.0
+ * @relatedTo CngxChart, CngxLine, CngxBar, CngxArea
+ *
  * <example-url>http://localhost:4200/#/common/chart/primitives/async-state-machine-on-the-primitive</example-url>
  * <example-url>http://localhost:4200/#/common/chart/primitives/combo-bars-moving-average-line</example-url>
  * <example-url>http://localhost:4200/#/common/chart/primitives/line-area-threshold-band</example-url>
@@ -144,7 +173,9 @@ interface TickRendering {
             [attr.transform]="g.transform"
             [attr.text-anchor]="g.anchor"
             [attr.dominant-baseline]="g.baseline"
-          >{{ title }}</svg:text>
+          >
+            {{ title }}
+          </svg:text>
         }
       }
     }
@@ -193,7 +224,7 @@ export class CngxAxis {
    */
   readonly showGrid = input<boolean>(false, { alias: 'grid' });
   /**
-   * Optional axis title rendered alongside the tick labels —
+   * Optional axis title rendered alongside the tick labels -
    * "Months", "Revenue (k€)", etc. The title is positioned outside
    * the tick labels (further from the chart area) and rotated -90°
    * for left/right axes so it reads bottom-to-top. Theming via the
@@ -229,12 +260,12 @@ export class CngxAxis {
 
       if (t === 'time') {
         const start = toMs(dom[0]);
-        const end = toMs(dom[dom.length - 1]);
+        const end = toMs(dom.at(-1));
         return spread(start, end, count).map((ms) => new Date(ms));
       }
 
       const start = Number(dom[0]);
-      const end = Number(dom[dom.length - 1]);
+      const end = Number(dom.at(-1));
       return spread(start, end, count);
     },
     {
@@ -261,9 +292,7 @@ export class CngxAxis {
     },
   );
 
-  protected readonly hostClass = computed(
-    () => `cngx-axis cngx-axis--${this.position()}`,
-  );
+  protected readonly hostClass = computed(() => `cngx-axis cngx-axis--${this.position()}`);
 
   protected readonly axisLabelGeometry = computed<AxisLabelGeometry | null>(
     () => {
@@ -276,7 +305,11 @@ export class CngxAxis {
     {
       equal: (a, b) =>
         a === b ||
-        (a !== null && b !== null && a.transform === b.transform && a.anchor === b.anchor && a.baseline === b.baseline),
+        (a !== null &&
+          b !== null &&
+          a.transform === b.transform &&
+          a.anchor === b.anchor &&
+          a.baseline === b.baseline),
     },
   );
 
@@ -346,6 +379,7 @@ export class CngxAxis {
   );
 }
 
+/** @internal */
 function spread(start: number, end: number, count: number): number[] {
   if (count <= 1) {
     return [start];
@@ -359,6 +393,7 @@ function spread(start: number, end: number, count: number): number[] {
   return out;
 }
 
+/** @internal */
 function toMs(v: unknown): number {
   if (typeof v === 'number') {
     return v;
@@ -369,11 +404,8 @@ function toMs(v: unknown): number {
   return Number(v);
 }
 
-function buildAxisGeometry(
-  pos: CngxAxisPosition,
-  width: number,
-  height: number,
-): AxisGeometry {
+/** @internal */
+function buildAxisGeometry(pos: CngxAxisPosition, width: number, height: number): AxisGeometry {
   switch (pos) {
     case 'top':
       return {
@@ -398,6 +430,7 @@ function buildAxisGeometry(
   }
 }
 
+/** @internal */
 function buildTickRendering(
   pos: CngxAxisPosition,
   offset: number,
@@ -468,10 +501,12 @@ function buildTickRendering(
 
 /**
  * Default tick label formatter. Strips floating-point arithmetic
- * noise from non-integer numbers — `6.6000000000000005` becomes
- * `'6.6'`, `2.2` stays `'2.2'`, `25` stays `'25'` — without rounding
+ * noise from non-integer numbers - `6.6000000000000005` becomes
+ * `'6.6'`, `2.2` stays `'2.2'`, `25` stays `'25'` - without rounding
  * away meaningful precision. Dates and other types fall through to
  * `String(v)`; consumers needing a richer format bind `[format]`.
+ *
+ * @internal
  */
 function defaultTickFormat(v: unknown): string {
   if (typeof v === 'number') {
@@ -489,6 +524,7 @@ function defaultTickFormat(v: unknown): string {
   return String(v);
 }
 
+/** @internal */
 function buildAxisLabelGeometry(
   pos: CngxAxisPosition,
   width: number,

@@ -10,6 +10,8 @@ import type { CngxErrorAggregatorContract } from '@cngx/common/interactive';
  * so subsequent input changes propagate without re-registration.
  * `errorAggregator` is a `Signal<...>` slot so consumer aggregators
  * resolved via `viewChild` after first registration still bind.
+ *
+ * @category common/tabs
  */
 export interface CngxTabHandle {
   readonly id: string;
@@ -21,7 +23,9 @@ export interface CngxTabHandle {
 /**
  * Contract atoms see when they inject the presenter via
  * {@link CNGX_TAB_GROUP_HOST}. Atoms never reach into the concrete
- * class — keeps layering cycle-free and the decompose schematic clean.
+ * class - keeps layering cycle-free and the decompose schematic clean.
+ *
+ * @category common/tabs
  */
 export interface CngxTabGroupHost {
   readonly tabs: Signal<readonly CngxTabHandle[]>;
@@ -47,7 +51,7 @@ export interface CngxTabGroupHost {
    *
    * @remarks
    * The `pending → error` pulse keyframe (`cngx-tab-pulse-error`)
-   * does not retrigger on rapid supersede sequences — CSS animations
+   * does not retrigger on rapid supersede sequences - CSS animations
    * only fire on fresh class application. See `tabs-accepted-debt §3`;
    * the persistent icon plus static red outline carry the durable
    * signal in the no-pulse case.
@@ -59,7 +63,7 @@ export interface CngxTabGroupHost {
    * commit window. Written when `select()` opens a transition under
    * `commitAction`; retained on `error` so the live-region phrase
    * can resolve the origin label; cleared on `success`. Outside the
-   * commit window the slot may carry a stale value — consumers must
+   * commit window the slot may carry a stale value - consumers must
    * gate reads by joining with `lastFailedIndex`. The origin is
    * meaningful only when `lastFailedIndex !== undefined`.
    */
@@ -86,7 +90,10 @@ export interface CngxTabGroupHost {
  * DI token for the tab presenter's contract. Presenter provides via
  * `useExisting`; `CngxTab` injects to register; the organism injects
  * to forward keyboard nav from `CngxRovingTabindex`.
+ *
+ * @category common/tabs
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/tab-group-host.token.ts
+ * @since 0.1.0
  */
-export const CNGX_TAB_GROUP_HOST = new InjectionToken<CngxTabGroupHost>(
-  'CngxTabGroupHost',
-);
+export const CNGX_TAB_GROUP_HOST = new InjectionToken<CngxTabGroupHost>('CngxTabGroupHost');

@@ -5,6 +5,7 @@ import { injectFilterBuilderConfig } from './filter-builder.config';
 import { CNGX_FILTER_BUILDER_HOST } from './filter-builder-host.token';
 import { referenceEqual } from './filter-builder-internal';
 
+/** @internal */
 const EMPTY_OPERATORS: readonly string[] = Object.freeze([]) as readonly string[];
 
 /**
@@ -16,13 +17,20 @@ const EMPTY_OPERATORS: readonly string[] = Object.freeze([]) as readonly string[
  *
  * `availableOperators` resolves from the field def's own `operators`
  * list when present, else from `CNGX_FILTER_BUILDER_CONFIG.defaultOperators`
- * keyed by the field's `editorType` — consumers swap defaults at app or
+ * keyed by the field's `editorType` - consumers swap defaults at app or
  * view scope via `withDefaultOperators({...})`.
  *
  * Every object/array signal carries an explicit `equal` fn per
  * `reference_signal_architecture` §1; empty-operator and missing-node
  * fallbacks resolve to shared frozen singletons so no-op reads never
  * allocate.
+ *
+ * @category forms/filter-builder
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder-expression.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxFilterGroup, CngxFilterBuilderPresenter, CngxFilterBuilder
  * <example-url>http://localhost:4200/#/forms/filter-builder/basic-two-way-binding-json-inspection</example-url>
  * <example-url>http://localhost:4200/#/forms/filter-builder/seeded-tree-and-or-composition</example-url>
  */

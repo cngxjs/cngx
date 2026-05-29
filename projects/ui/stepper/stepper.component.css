@@ -1,13 +1,49 @@
 /**
  * @overview
- * Thematic skin for `@cngx/ui/stepper`. Owns indicator state colors,
- * connector lines, hover / active states, badge positioning, and the
- * busy spinner. Tokens consumed but defined in `stepper-base.css`
- * read with bare `var()` chains — the structural cascade provides
- * the default.
+ * Thematic skin for `@cngx/ui/stepper`. Pairs with the structural
+ * `stepper-base.css` (which provides layout, indent, focus ring,
+ * panels, error badge, rejection icon) - this file owns indicator
+ * state colors, hover affordance, the active disc fill, and the
+ * busy spinner. The host carries `.cngx-stepper` and renders the
+ * `__indicator` glyph inside each step.
  *
- * Pair with `@cngx/themes/material/stepper-theme` for the Material 3
- * step icon palette.
+ * **State modifiers**
+ *
+ * On `.cngx-stepper__indicator`:
+ *
+ * - `[data-state="success"]` - completed; success-tinted background
+ * - `[data-state="error"]` - errored; danger-tinted background
+ * - `[data-state="disabled"]` - dimmed fill via `color-mix` (5%)
+ *
+ * On `.cngx-stepper__step`:
+ *
+ * - `[aria-current="step"]` - active; fills the indicator with
+ *   `--cngx-step-active-color` (default `currentColor`)
+ * - `[aria-busy="true"]` - pending; pulses the active indicator via
+ *   `cngx-stepper-pulse`. Mounts `__busy-spinner` next to the active
+ *   step with a 360deg `cngx-stepper-spin` rotation
+ * - `:hover:not([aria-disabled="true"])` - hover state-layer tint
+ *
+ * Both spinner and pulse animations no-op under
+ * `prefers-reduced-motion`.
+ *
+ * **Slots**
+ *
+ * - `.cngx-stepper__indicator` - state disc with glyph; the disc
+ *   color flips per `data-state` and per `aria-current` / `aria-busy`
+ * - `.cngx-stepper__busy-spinner` - inline-block ring next to the
+ *   active step, sized via `--cngx-step-busy-spinner-size`
+ *
+ * **Inheritance**
+ *
+ * - `--cngx-step-completed-color` -> `--cngx-color-success`
+ * - `--cngx-step-errored-color` -> `--cngx-color-danger`
+ * - `--cngx-step-pending-color` -> `--cngx-step-active-color`
+ *
+ * **Pair with**
+ *
+ * - `@cngx/themes/material/stepper-theme` - Material 3 step icon
+ *   palette
  */
 
 @layer cngx.tokens {
@@ -32,7 +68,7 @@
   }
 
   /**
-   * Background of the indicator disc at rest — soft tint of the
+   * Background of the indicator disc at rest - soft tint of the
    * inherited text color via `color-mix`.
    * @group State / Resting
    */
@@ -118,7 +154,7 @@
   }
 
   /**
-   * Background of the active indicator disc — defaults to
+   * Background of the active indicator disc - defaults to
    * `currentColor` so consumers theme via the surrounding text color.
    * @group State / Active
    */
@@ -129,7 +165,7 @@
   }
 
   /**
-   * Background of the pending indicator disc — same as active by
+   * Background of the pending indicator disc - same as active by
    * default so the visual reads as "you're here, work in progress".
    * @group State / Pending
    */
@@ -178,10 +214,7 @@
     }
 
     .cngx-stepper__indicator {
-      background: var(
-        --cngx-step-indicator-bg,
-        color-mix(in srgb, currentColor 10%, transparent)
-      );
+      background: var(--cngx-step-indicator-bg, color-mix(in srgb, currentColor 10%, transparent));
       color: var(--cngx-step-indicator-color, currentColor);
       font-size: var(--cngx-step-indicator-font-size, 0.85em);
       font-weight: var(--cngx-step-indicator-font-weight, 600);
@@ -228,10 +261,7 @@
     }
 
     .cngx-stepper__step:hover:not([aria-disabled='true']) {
-      background: var(
-        --cngx-step-hover-bg,
-        color-mix(in srgb, currentColor 4%, transparent)
-      );
+      background: var(--cngx-step-hover-bg, color-mix(in srgb, currentColor 4%, transparent));
     }
 
     @media (prefers-reduced-motion: reduce) {

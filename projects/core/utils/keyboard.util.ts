@@ -1,5 +1,7 @@
 /**
  * Parsed keyboard combo.
+ *
+ * @category core/utils/keyboard
  */
 export interface KeyCombo {
   readonly key: string;
@@ -21,6 +23,8 @@ export interface KeyCombo {
  * const combo = parseKeyCombo('mod+b');
  * // { key: 'b', ctrl: false, meta: false, mod: true, shift: false, alt: false }
  * ```
+ *
+ * @category core/utils/keyboard
  */
 export function parseKeyCombo(combo: string): KeyCombo {
   const parts = combo
@@ -44,6 +48,8 @@ export function parseKeyCombo(combo: string): KeyCombo {
  * @param event The keyboard event to test.
  * @param combo The parsed combo to match against.
  * @param isMac Whether the current platform is macOS (affects `mod` resolution).
+ *
+ * @category core/utils/keyboard
  */
 export function matchesKeyCombo(event: KeyboardEvent, combo: KeyCombo, isMac: boolean): boolean {
   return (

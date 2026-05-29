@@ -16,6 +16,8 @@ export type { CngxFormFieldControl } from '@cngx/core/tokens';
  * Consumers pass `Field<T>` (a callable that returns `FieldState<T>`) to `CngxFormField`.
  * This interface documents the subset of `FieldState` that the form field system actually reads,
  * providing a stable contract even as Signal Forms evolves.
+ *
+ * @category forms/field
  */
 export interface CngxFieldRef<T = unknown> {
   readonly name: Signal<string>;
@@ -54,6 +56,8 @@ export interface CngxFieldRef<T = unknown> {
  * // Pass directly:
  * <cngx-form-field [field]="emailField">
  * ```
+ *
+ * @category forms/field
  */
 export type CngxFieldAccessor<T = unknown> = () => CngxFieldRef<T>;
 
@@ -62,6 +66,8 @@ export type CngxFieldAccessor<T = unknown> = () => CngxFieldRef<T>;
  *
  * @param error The validation error value (e.g. `{ kind: 'required' }` or `{ kind: 'minLength', minLength: 8 }`).
  * @returns A display-ready error message.
+ *
+ * @category forms/field
  */
 export type ErrorMessageFn = (error: ValidationError.WithFieldTree) => string;
 
@@ -74,5 +80,7 @@ export type ErrorMessageFn = (error: ValidationError.WithFieldTree) => string;
  *   minLength: (e) => `Minimum ${(e as unknown as { minLength: number }).minLength} characters.`,
  * };
  * ```
+ *
+ * @category forms/field
  */
 export type ErrorMessageMap = Record<string, ErrorMessageFn>;

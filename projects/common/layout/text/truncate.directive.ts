@@ -28,9 +28,15 @@ import {
  *   <button (click)="expanded.set(!expanded())"
  *           [attr.aria-expanded]="expanded()">
  *     {{ expanded() ? 'Show less' : 'Show more' }}
- *   </button>
- * }
+ *   </button> * }
  * ```
+ *
+ * @category common/layout
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/layout/text/truncate.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxExpandableText, CngxExpandableToggle, CngxHighlight
  * <example-url>http://localhost:4200/#/common/layout/truncate/short-text-no-toggle</example-url>
  * <example-url>http://localhost:4200/#/common/layout/truncate/truncated-text-with-toggle</example-url>
  */
@@ -59,7 +65,7 @@ export class CngxTruncate {
   private observer: ResizeObserver | null = null;
   private rafHandle: number | null = null;
 
-  // null strips the host binding — preferred over an empty string for -webkit-line-clamp.
+  // null strips the host binding - preferred over an empty string for -webkit-line-clamp.
   /** @internal */
   protected clampValue = () => (this.expanded() ? null : String(this.lines()));
   /** @internal */
@@ -101,7 +107,7 @@ export class CngxTruncate {
 
   /**
    * Compares `scrollHeight` vs `clientHeight` to detect overflow.
-   * Only meaningful when collapsed — when expanded, the last known
+   * Only meaningful when collapsed - when expanded, the last known
    * clamped state is preserved (can't measure hypothetical clamp height
    * while showing full content).
    */

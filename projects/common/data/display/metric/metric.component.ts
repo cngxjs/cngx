@@ -33,6 +33,14 @@ import {
  *   <cngx-metric cngxCardBody [value]="75" unit="bpm" />
  * </cngx-card>
  * ```
+ *
+ * @category common/data/metric
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/data/display/metric/metric.component.ts
+ * @since 0.1.0
+ * @relatedTo CngxTrend, CngxCard
+ *
  * <example-url>http://localhost:4200/#/common/data/metric/inside-a-card</example-url>
  * <example-url>http://localhost:4200/#/common/data/metric/standalone-metrics</example-url>
  */

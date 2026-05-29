@@ -6,6 +6,14 @@ import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from '@a
  *
  * Decorative by default (`aria-hidden="true"`); set `label` to make it
  * informative (`role="img"`, `aria-label`).
+ *
+ * @category common/display
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/display/icon/icon.component.ts
+ * @selector cngx-icon
+ * @since 0.1.0
+ * @relatedTo CngxAvatar, CngxBadge, CngxChip
  * <example-url>http://localhost:4200/#/common/display/icon/decorative-vs-informative</example-url>
  * <example-url>http://localhost:4200/#/common/display/icon/sizes</example-url>
  * <example-url>http://localhost:4200/#/common/display/tag/app-wide-defaults-via-providetagconfig</example-url>

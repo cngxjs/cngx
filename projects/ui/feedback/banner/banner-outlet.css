@@ -1,15 +1,64 @@
 /**
  * @overview
- * Default visuals for `CngxBannerOutlet`. Sticky-top banner stack
- * with severity-tinted surfaces matching the alert family. Uses its
- * own `--cngx-banner-*` token namespace (not shared with
- * `--cngx-alert-*`) so banners can be themed independently even
- * though the severity-tint palette is visually identical.
+ * Default visuals for `CngxBannerOutlet`. The host carries
+ * `.cngx-banner-outlet` and is sticky-top with `z-index: 900` so it
+ * sits below modal surfaces but above page content; empty outlets
+ * collapse. Each banner renders as `.cngx-banner` with `__icon`,
+ * `__body`, `__message`, `__error`, `__action`, and `__dismiss`
+ * children. Uses its own `--cngx-banner-*` namespace (not shared
+ * with `--cngx-alert-*`) so banners can be themed independently
+ * even though the severity-tint palette is visually identical.
+ *
+ * **State modifiers**
+ *
+ * - `--animate` - 200ms enter slide-down (off under
+ *   `prefers-reduced-motion`)
+ * - `--pending` - opacity dim + `pointer-events: none`
+ *
+ * **Variants**
+ *
+ * Severity classes pin four tokens each (bg / border / icon / accent):
+ *
+ * - `--info` - info palette
+ * - `--success` - success palette
+ * - `--warning` - warning palette
+ * - `--error` - error palette
+ *
+ * **Slots**
+ *
+ * - `.cngx-banner__icon` - severity glyph
+ * - `.cngx-banner__default-icon` - SVG fallback when no custom icon
+ *   is projected
+ * - `.cngx-banner__message` - body copy
+ * - `.cngx-banner__error` - inline-error sub-line; color delegates
+ *   to `--cngx-color-danger`
+ * - `.cngx-banner__action` - projected action button tinted by
+ *   `--cngx-banner-accent` (padding-based hit-target, no min-size
+ *   floor so the button does not stand taller than the banner)
+ * - `.cngx-banner__dismiss` - dismiss control
+ *
+ * **Inheritance**
+ *
+ * - `--cngx-banner-error-color` -> `--cngx-color-danger`
+ *
+ * **Dark mode**
+ *
+ * Three hooks swap every severity triplet plus the action-hover
+ * overlay (alpha-on-black flips to alpha-on-white):
+ *
+ * - `prefers-color-scheme: dark`
+ * - `[data-color-scheme="dark"]`
+ * - `.dark` class
+ *
+ * **Pair with**
+ *
+ * - `@cngx/themes/material/feedback-theme` - Material 3 surface
+ *   palette shared with `CngxAlert` and `CngxAlertStack`
  */
 
 @layer cngx.tokens {
   /**
-   * Stacking-context order — sticky-top banner sits below modal
+   * Stacking-context order - sticky-top banner sits below modal
    * surfaces but above page content.
    * @group Layout
    */
@@ -40,7 +89,7 @@
   }
 
   /**
-   * Background — neutral by default; severity rules override.
+   * Background - neutral by default; severity rules override.
    * @group Surface
    */
   @property --cngx-banner-bg {
@@ -50,7 +99,7 @@
   }
 
   /**
-   * Text color — defaults to `currentColor`.
+   * Text color - defaults to `currentColor`.
    * @group Surface
    */
   @property --cngx-banner-color {
@@ -60,7 +109,7 @@
   }
 
   /**
-   * Border color — neutral by default; severity rules override.
+   * Border color - neutral by default; severity rules override.
    * @group Surface
    */
   @property --cngx-banner-border-color {
@@ -210,7 +259,7 @@
   }
 
   /**
-   * Icon color override — defaults to `currentColor` and is pinned
+   * Icon color override - defaults to `currentColor` and is pinned
    * by each severity rule.
    * @group Surface
    */
@@ -529,7 +578,7 @@
       margin-top: 2px;
     }
 
-    /* Padding-based sizing — no min-width/min-height enforcement.
+    /* Padding-based sizing - no min-width/min-height enforcement.
      * The earlier 44px hit-target floor made buttons stand taller
      * than the banner content on desktop; padding + font-size on a
      * dense banner reaches a comfortable click-target without the

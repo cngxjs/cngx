@@ -1,19 +1,8 @@
-import {
-  computed,
-  DestroyRef,
-  Directive,
-  inject,
-  input,
-  signal,
-  type Signal,
-} from '@angular/core';
+import { computed, DestroyRef, Directive, inject, input, signal, type Signal } from '@angular/core';
 
 import { nextUid } from '@cngx/core/utils';
 
-import {
-  CNGX_STEP_GROUP_HOST,
-  type CngxStepGroupHost,
-} from './step-group-host.token';
+import { CNGX_STEP_GROUP_HOST, type CngxStepGroupHost } from './step-group-host.token';
 import {
   CNGX_STEPPER_HOST,
   type CngxStepRegistration,
@@ -28,6 +17,13 @@ import {
  * `aggregatedStatus` rolls up child states: `error` if any errored,
  * `success` if all are success, `pending` if any is pending or busy,
  * otherwise `idle`.
+ *
+ * @category common/stepper
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/stepper/step-group.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxStep, CngxStepperPresenter, CngxStepGroupHeader
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-hierarchical/group-nested-steps-trailing-root-step</example-url>
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-slot-overrides/custom-busy-spinner-via-code-cngxstepbusyspinner-code</example-url>
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-slot-overrides/custom-error-badge-via-code-cngxstepbadge-code</example-url>
@@ -47,26 +43,29 @@ export class CngxStepGroup implements CngxStepGroupHost {
   readonly disabled = input<boolean>(false);
   readonly label = input<string>('');
 
-  // Local child registry — only feeds `aggregatedStatus` below.
+  // Local child registry - only feeds `aggregatedStatus` below.
   // The presenter owns the canonical tree.
   private readonly childRegistry = signal<readonly CngxStepRegistration[]>([]);
 
-  readonly aggregatedStatus: Signal<CngxStepStatus> = computed(() => {
-    const states = this.childRegistry().map((c) => c.state());
-    if (states.length === 0) {
+  readonly aggregatedStatus: Signal<CngxStepStatus> = computed(
+    () => {
+      const states = this.childRegistry().map((c) => c.state());
+      if (states.length === 0) {
+        return 'idle';
+      }
+      if (states.some((s) => s === 'error')) {
+        return 'error';
+      }
+      if (states.some((s) => s === 'pending' || s === 'busy')) {
+        return 'pending';
+      }
+      if (states.every((s) => s === 'success')) {
+        return 'success';
+      }
       return 'idle';
-    }
-    if (states.some((s) => s === 'error')) {
-      return 'error';
-    }
-    if (states.some((s) => s === 'pending' || s === 'busy')) {
-      return 'pending';
-    }
-    if (states.every((s) => s === 'success')) {
-      return 'success';
-    }
-    return 'idle';
-  }, { equal: Object.is });
+    },
+    { equal: Object.is },
+  );
 
   private readonly stepperHost = inject(CNGX_STEPPER_HOST, { optional: true });
 
@@ -74,7 +73,7 @@ export class CngxStepGroup implements CngxStepGroupHost {
     if (!this.stepperHost) {
       throw new Error(
         'CngxStepGroup: no enclosing CngxStepperPresenter found. ' +
-        'Wrap the group inside an element carrying [cngxStepper].',
+          'Wrap the group inside an element carrying [cngxStepper].',
       );
     }
     const groupId = this.id();

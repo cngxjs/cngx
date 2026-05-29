@@ -3,11 +3,13 @@ import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from '@a
 import type { AlertSeverity } from '../alert/alert';
 
 /**
- * @internal — shared default SVG icon for alert severity.
+ * Shared default SVG icon for alert severity.
  *
  * Renders the built-in severity icons used by `CngxAlert`, `CngxAlertStack`,
  * and `CngxBannerOutlet`. Each severity has a distinct icon shape so color
  * is never the only indicator (WCAG 1.4.1).
+ *
+ * @internal
  */
 @Component({
   selector: 'cngx-severity-icon',

@@ -7,9 +7,11 @@ import { InjectionToken, type Signal } from '@angular/core';
  * `searchTerm` signal and a host-owned `matches` policy.
  *
  * Splitting policy from visibility keeps the option agnostic about HOW
- * filtering decides — substring, fuzzy, server-driven — and gives the
+ * filtering decides - substring, fuzzy, server-driven - and gives the
  * host a single point of control. Empty search term ALWAYS resolves to
  * "show everything"; the option short-circuits before calling `matches`.
+ *
+ * @category common/interactive/listbox
  */
 export interface CngxOptionFilterHost {
   /** Current search term. Empty string means "no filter active". */
@@ -26,9 +28,13 @@ export interface CngxOptionFilterHost {
  * `hidden` visibility through a reactive search term and a `matches`
  * policy.
  *
- * `CngxOption` injects this token with `{ optional: true }` — standalone
+ * `CngxOption` injects this token with `{ optional: true }` - standalone
  * use (no host provides the token) leaves every option visible at all
  * times with no DOM cost.
+ *
+ * @category common/interactive/listbox
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/listbox/option-filter-host.ts
+ * @since 0.1.0
  */
 export const CNGX_OPTION_FILTER_HOST = new InjectionToken<CngxOptionFilterHost>(
   'CNGX_OPTION_FILTER_HOST',

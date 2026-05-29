@@ -36,6 +36,13 @@ import { CngxSidenav } from './sidenav';
  *   </cngx-sidenav>
  * </cngx-sidenav-layout>
  * ```
+ *
+ * @category ui/sidenav
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/sidenav/sidenav-layout.ts
+ * @since 0.1.0
+ * @relatedTo CngxSidenav, CngxSidenavContent, CngxSidenavHeader, CngxSidenavFooter
  */
 @Component({
   selector: 'cngx-sidenav-layout',
@@ -78,7 +85,7 @@ export class CngxSidenavLayout {
   constructor() {
     const doc = inject(DOCUMENT);
 
-    // Gate transitions until after first render — prevents open-on-load flash.
+    // Gate transitions until after first render - prevents open-on-load flash.
     afterNextRender(() => this.ready.set(true));
 
     // Dataset ref-counting matches CngxScrollLock so concurrent lock sources

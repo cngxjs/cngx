@@ -1,16 +1,49 @@
 /**
  * @overview
- * `CngxActionMultiSelect` trigger skin. Structural parts (panel
- * frame, option rows, chip strip, loading variants, error surfaces)
- * come from `shared/select-base.css`. This file owns the
- * trigger-specific bits: `role="group"` wrapper, inline input as
- * focusable element, clear-all button, caret glyph.
+ * Trigger skin for `CngxActionMultiSelect` - a multi-select variant that
+ * surfaces a per-row action handler (typically a quick-create button).
+ * The host carries `.cngx-action-multi-select`; structural parts (panel
+ * frame, option rows, chip strip, loading variants, error surfaces) ride
+ * on `shared/select-base.css`. This file owns the trigger-specific bits:
+ * the `role="group"` wrapper, the inline `<input>` as the focusable
+ * element, the clear-all button, and the caret glyph.
  *
- * Cascading-fallback chain steps `--cngx-action-multi-select-*` →
- * `--cngx-combobox-*` → `--cngx-select-*` → hardcoded; once
- * registered via `@property` the inner steps are
- * documentation-only (system tokens are the brand-wide override
- * path).
+ * **State modifiers**
+ *
+ * - `:focus-within` on `.cngx-action-multi-select__trigger` - focus-ring
+ *   outline + offset
+ * - `[aria-disabled='true']` on the trigger - opacity dim + `cursor:
+ *   not-allowed`
+ * - `:hover` on `.cngx-action-multi-select__clear-all` - opacity 1
+ * - `:focus-visible` on the clear-all button - 2px primary outline
+ *
+ * **Slots**
+ *
+ * - `.cngx-action-multi-select__root` - `display: contents` host shim
+ * - `.cngx-action-multi-select__trigger` - the bordered row
+ * - `.cngx-action-multi-select__input` - inline `role="combobox"` input
+ * - `.cngx-action-multi-select__trigger-label` - text summary slot
+ * - `.cngx-action-multi-select__clear-all` - reset-all button
+ * - `.cngx-action-multi-select__caret` - panel-state glyph
+ *
+ * **Inheritance**
+ *
+ * Trigger tokens delegate up the family chain so consumer themes only
+ * need to override at the level they want to brand:
+ *
+ * - `--cngx-action-multi-select-*` -> `--cngx-combobox-*` ->
+ *   `--cngx-select-*` -> hardcoded
+ * - `--cngx-action-multi-select-border` -> `--cngx-color-border`
+ * - `--cngx-action-multi-select-focus-outline` -> `--cngx-color-primary`
+ *
+ * Once registered via `@property` the inner var() steps are
+ * documentation-only; system tokens (`--cngx-color-*`) are the
+ * brand-wide override path.
+ *
+ * **Pair with**
+ *
+ * - `@cngx/themes/material/select-theme` - Material 3 surface treatment
+ *   shared across the entire select family
  */
 
 @layer cngx.tokens {
@@ -166,7 +199,7 @@
     initial-value: 0.6;
   }
 
-  /* Delegating tokens — trigger border + focus-ring track the
+  /* Delegating tokens - trigger border + focus-ring track the
    * foundation chain. Shorthands pin their structural part and
    * inherit the color via the delegating foundation token. */
   :root {

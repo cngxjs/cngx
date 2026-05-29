@@ -14,7 +14,7 @@ import {
  * Opt-in drag behavior for `CngxDialog`.
  *
  * Uses Pointer Events for unified mouse/touch handling. Position is exposed
- * as CSS custom properties `--cngx-dialog-x` and `--cngx-dialog-y` — the
+ * as CSS custom properties `--cngx-dialog-x` and `--cngx-dialog-y` - the
  * consumer applies the transform via CSS.
  *
  * Keyboard-based moving is mandatory for accessibility:
@@ -34,6 +34,13 @@ import {
  *   transform: translate(var(--cngx-dialog-x, 0px), var(--cngx-dialog-y, 0px));
  * }
  * ```
+ *
+ * @category common/dialog
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/dialog/draggable/dialog-draggable.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxDialog, CngxBottomSheet
  * <example-url>http://localhost:4200/#/common/dialog/alert-dialog</example-url>
  * <example-url>http://localhost:4200/#/common/dialog/bottom-sheet</example-url>
  * <example-url>http://localhost:4200/#/common/dialog/cngxdialogopener-programmatic</example-url>
@@ -80,8 +87,8 @@ export class CngxDialogDraggable {
   /**
    * When to apply grid snapping.
    *
-   * - `'live'` — position snaps continuously during drag (default)
-   * - `'release'` — position is free during drag, snaps on pointer up
+   * - `'live'` - position snaps continuously during drag (default)
+   * - `'release'` - position is free during drag, snaps on pointer up
    *
    * @defaultValue `'live'`
    */
@@ -99,7 +106,7 @@ export class CngxDialogDraggable {
   protected readonly cssX = computed(() => `${this.positionState().x}px`);
   protected readonly cssY = computed(() => `${this.positionState().y}px`);
 
-  // Drag state — not reactive, perf critical (pointermove runs at framerate).
+  // Drag state - not reactive, perf critical (pointermove runs at framerate).
   private dragStartX = 0;
   private dragStartY = 0;
   private posStartX = 0;

@@ -1,17 +1,63 @@
 /**
  * @overview
- * Default visuals for `CngxChip` — a single pill. Tokens drive shape,
- * padding, surface, and state colors; override per-instance via
- * inline style, or per-theme via `:root` in `@layer cngx.theme`.
+ * Default visuals for `CngxChip` - a single pill. The host carries
+ * `.cngx-chip` and renders a prefix / label / optional remove button
+ * in an inline-flex row. The unkeyed surface carries a primary-tinted
+ * fill so a plain chip reads as accented out of the box. Layout for
+ * a CONTAINER of multiple chips (gap, flex-wrap) lives on the
+ * consumer wrapper, not here.
  *
- * The chip's default (unkeyed) surface carries a primary-flavoured
- * tint so a plain `<cngx-chip>` reads as accented out of the box.
- * Variant surfaces (`[data-color]`) carry semantic tones — `info`
- * stays in the blue band, the others align with the matching
- * foundation semantic color.
+ * **State modifiers**
  *
- * Layout of a CONTAINER rendering multiple chips (gap, flex-wrap)
- * belongs to that container, not here.
+ * Interactive treatment only activates on selectable / removable
+ * chips - a static label chip stays cursor-default:
+ *
+ * - `[role="button"]` / `[tabindex]` / `:has(.cngx-chip__remove)`
+ *   - hover wash, cursor: pointer
+ * - `:focus-visible` - brand-primary outline ring
+ * - `[aria-selected="true"]` / `[aria-pressed="true"]` - darker
+ *   primary-tinted fill
+ * - `[aria-disabled="true"]` / `:disabled` - opacity 0.38, no
+ *   pointer events
+ *
+ * **Color variants**
+ *
+ * Selected via `[data-color="..."]` so consumers can add their own
+ * keys on top of the four built-ins:
+ *
+ * - `[data-color="info"]` - blue-band tinted surface + text
+ * - `[data-color="success"]` - success-coded
+ * - `[data-color="warning"]` - warning-coded
+ * - `[data-color="danger"]` - danger-coded
+ *
+ * **Slots**
+ *
+ * - `.cngx-chip__label` - the text, ellipsis-truncates
+ * - `.cngx-chip__remove` - inline button, fades in / out via
+ *   `--cngx-chip-remove-opacity` + `:focus-visible` ring
+ *
+ * **Inheritance**
+ *
+ * - `--cngx-chip-inner-gap` -> `--cngx-space-xs`
+ * - `--cngx-chip-padding-inline` -> `--cngx-space-sm`
+ * - `--cngx-chip-radius` -> `--cngx-radius-pill`
+ * - `--cngx-chip-font-size` -> `--cngx-font-size-sm`
+ * - `--cngx-chip-focus-outline` color -> `--cngx-color-primary`
+ * - `--cngx-chip-remove-radius` -> `--cngx-radius-sm`
+ * - `--cngx-chip-remove-focus-color` -> `--cngx-color-primary`
+ * - Variant surfaces use alpha-tints that mix correctly on either
+ *   light or dark backgrounds; only the text colors swap in dark
+ *
+ * **Dark mode**
+ *
+ * Three hooks flip only the four variant text colors from dark
+ * hues to light hues so they stay legible against the dark-mixed
+ * variant background - the alpha-tinted surfaces ride straight
+ * through unchanged:
+ *
+ * - `prefers-color-scheme: dark`
+ * - `[data-color-scheme="dark"]` / `.dark` class
+ * - `[data-color-scheme="light"]` / `.light` class (explicit pin)
  */
 
 @layer cngx.tokens {
@@ -81,7 +127,7 @@
   }
 
   /**
-   * Border shorthand. Zero-width by default — pillows fill the box.
+   * Border shorthand. Zero-width by default - pillows fill the box.
    * @group Surface
    */
   @property --cngx-chip-border {
@@ -336,7 +382,7 @@
     initial-value: 1px;
   }
 
-  /* Dark-mode swap — only the variant text colors flip. The variant
+  /* Dark-mode swap - only the variant text colors flip. The variant
    * backgrounds use alpha-tints which mix correctly with either
    * light or dark surface, but the dark hue text colors disappear
    * against the dark-mixed bg, so each variant gets a light-hue
@@ -368,14 +414,14 @@
 @layer cngx.components {
   @scope (.cngx-chip) {
     :scope {
-      /* Functional — hardcoded */
+      /* Functional - hardcoded */
       display: inline-flex;
       align-items: center;
       line-height: 1.25;
       max-width: 100%;
       box-sizing: border-box;
 
-      /* Themable — token-driven with system-token fallback chains */
+      /* Themable - token-driven with system-token fallback chains */
       gap: var(--cngx-chip-inner-gap, var(--cngx-space-xs, 4px));
       padding-block: var(--cngx-chip-padding-block, 2px);
       padding-inline: var(--cngx-chip-padding-inline, var(--cngx-space-sm, 8px));
@@ -392,7 +438,7 @@
       );
     }
 
-    /* Interactive states only on selectable / removable chips —
+    /* Interactive states only on selectable / removable chips -
      * a static label-chip should not invite a click. */
     :scope[role='button'],
     :scope[tabindex],
@@ -406,7 +452,10 @@
       color: var(--cngx-chip-hover-color, inherit);
     }
     :scope:focus-visible {
-      outline: var(--cngx-chip-focus-outline, 2px solid var(--cngx-color-primary, oklch(0.66 0.19 50)));
+      outline: var(
+        --cngx-chip-focus-outline,
+        2px solid var(--cngx-color-primary, oklch(0.66 0.19 50))
+      );
       outline-offset: var(--cngx-chip-focus-outline-offset, 2px);
     }
     :scope[aria-selected='true'],

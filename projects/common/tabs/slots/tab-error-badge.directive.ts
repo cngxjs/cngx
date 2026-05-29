@@ -6,6 +6,8 @@ import type { CngxTabHandle } from '../tab-group-host.token';
  * Context for the `*cngxTabErrorBadge` template. Renders only when
  * the tab's `errorAggregator?.shouldShow()` is `true`; the visibility
  * gate stays library-owned. Sibling shape to `CngxStepBadgeContext`.
+ *
+ * @category common/tabs/slots
  */
 export interface CngxTabErrorBadgeContext {
   /** The tab handle carrying id / label / disabled / aggregator signals. */
@@ -27,6 +29,12 @@ export interface CngxTabErrorBadgeContext {
  *   </ng-template>
  * </cngx-tab-group>
  * ```
+ *
+ * @category common/tabs/slots
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/slots/tab-error-badge.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxTabRejectionIcon, CngxTabBusySpinner, CngxTab
  * <example-url>http://localhost:4200/#/ui/tabs/tab-slot-overrides/custom-busy-spinner-via-code-cngxtabbusyspinner-code</example-url>
  * <example-url>http://localhost:4200/#/ui/tabs/tab-slot-overrides/custom-error-badge-via-code-cngxtaberrorbadge-code</example-url>
  * <example-url>http://localhost:4200/#/ui/tabs/tab-slot-overrides/rejection-decoration-via-code-cngxtabrejectionicon-code</example-url>

@@ -9,6 +9,8 @@ import type { CngxSelectCore } from './select-core';
 
 /**
  * Dependencies and callbacks for {@link createADActivationDispatcher}.
+ *
+ * @category forms/select/controllers
  */
 export interface ADActivationDispatcherOptions<T, V> {
   /**
@@ -36,6 +38,8 @@ export interface ADActivationDispatcherOptions<T, V> {
  * unsubscribes on teardown. Payload runs inside `untracked`; activations
  * for unknown values are dropped. Value-shape agnostic — rollback
  * ownership stays in the consumer.
+ *
+ * @category forms/select/controllers
  */
 export function createADActivationDispatcher<T, V>(
   options: ADActivationDispatcherOptions<T, V>,

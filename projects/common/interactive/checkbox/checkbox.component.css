@@ -1,15 +1,37 @@
 /**
  * @overview
  * Default visuals for the interactive shell around
- * `<cngx-checkbox-indicator>`. The `--cngx-checkbox-color` and
+ * `<cngx-checkbox-indicator>`. The host carries `.cngx-checkbox` and
+ * renders the indicator plus a `.cngx-checkbox__label` slot for the
+ * projected label text and a `.cngx-checkbox__sr-only` slot for
+ * assistive-only copy. The `--cngx-checkbox-color` and
  * `--cngx-checkbox-disabled-opacity` tokens are owned by
- * `CngxCheckboxIndicator`, which this component always renders via
- * its template — only checkbox-shell-specific tokens are registered
- * here to avoid forking the token vocabulary.
+ * `CngxCheckboxIndicator` and read here without re-registration so
+ * the vocabulary stays unified.
  *
- * Adjacent-sibling spacing sits outside the `@scope` block because
- * `@scope`'s subtree semantics block the `+` combinator from
- * reaching a sibling scope-root.
+ * **State modifiers**
+ *
+ * - `--disabled` - `cursor: not-allowed` + opacity dim via
+ *   `--cngx-checkbox-disabled-opacity`
+ *
+ * **Slots**
+ *
+ * - `.cngx-checkbox__label` - projected label content
+ * - `.cngx-checkbox__sr-only` - visually-hidden copy for AT
+ *
+ * **Inheritance**
+ *
+ * Layout and focus tokens cascade through the foundation:
+ *
+ * - `--cngx-checkbox-gap` -> `--cngx-space-sm`
+ * - `--cngx-checkbox-focus-radius` -> `--cngx-radius-sm`
+ * - `--cngx-checkbox-sibling-gap` - direct (defaults to `1rem`)
+ *
+ * Adjacent-sibling spacing (`.cngx-checkbox + .cngx-checkbox`) sits
+ * OUTSIDE the `@scope` block because `@scope`'s subtree semantics
+ * block the `+` combinator from reaching a sibling scope-root.
+ * Override the sibling-gap token with `0` when the consumer wraps
+ * siblings in their own flex/grid container.
  */
 
 @layer cngx.tokens {
@@ -57,7 +79,7 @@
   }
 
   /**
-   * Corner radius applied while focused — keeps the ring rounded
+   * Corner radius applied while focused - keeps the ring rounded
    * around the inline shell.
    * @group State / Focus
    */
@@ -81,7 +103,7 @@
       color: var(--cngx-checkbox-color, inherit);
 
       /* Pin baseline to the middle of the box. Default vertical-align
-       * for inline-flex is 'baseline' — for two siblings with different
+       * for inline-flex is 'baseline' - for two siblings with different
        * content footprints (empty indicator vs glyph-filled indicator)
        * the synthesised baseline lands at different y positions, so the
        * elements shift up/down relative to each other when the checked
@@ -118,7 +140,7 @@
     }
   }
 
-  /* Adjacent-sibling spacing — sits OUTSIDE @scope because @scope's
+  /* Adjacent-sibling spacing - sits OUTSIDE @scope because @scope's
    * subtree semantics don't let the + combinator reach a sibling scope-
    * root. Two inline cngx-checkbox elements right next to each other
    * ended up with zero horizontal separation, so a label like "Custom

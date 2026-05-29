@@ -13,37 +13,34 @@ import { CngxRovingItem } from '@cngx/common/a11y';
 import { CngxRadioIndicator } from '@cngx/common/display';
 import { nextUid } from '@cngx/core/utils';
 
-import {
-  CNGX_RADIO_GROUP,
-  type CngxRadioGroupContract,
-} from './radio-group.token';
+import { CNGX_RADIO_GROUP, type CngxRadioGroupContract } from './radio-group.token';
 
 /**
  * Single radio leaf. Injects the parent group via `CNGX_RADIO_GROUP`
  * (token, never the concrete `CngxRadioGroup` class) and writes
  * `group.value.set(this.value())` when the user picks it. The leaf
- * does not own a value of its own — `value` is a required `input<T>`
+ * does not own a value of its own - `value` is a required `input<T>`
  * supplied by the consumer; checked-ness is derived from
  * `group.value() === this.value()`.
  *
  * Composes `CngxRovingItem` as a host directive with input
  * forwarding (`'cngxRovingItemDisabled: disabled'`) so the
  * consumer's `[disabled]` binding flows into both the radio's
- * own `disabled` model AND the roving directive's skip-test —
+ * own `disabled` model AND the roving directive's skip-test -
  * arrow-key navigation in the parent group (driven by
  * `CngxRovingTabindex`) skips per-radio-disabled leaves
  * automatically. Group-level `[disabled]` is a separate cascade
  * via `radioDisabled = computed(() => group.disabled() ||
  * disabled())`; it blocks click + Space/Enter + auto-select
  * (`consumePendingArrowSelect` returns false when the group is
- * disabled) but is NOT forwarded to roving — a fully-disabled
+ * disabled) but is NOT forwarded to roving - a fully-disabled
  * group lets focus transit visually while every selection
  * pathway short-circuits.
  *
  * Selection on click, Space, or Enter (auto-select also fires
  * on arrow nav via `consumePendingArrowSelect`); Tab and
  * programmatic focus do not select on focus alone (W3C APG
- * variant — the parent group's keyboard contract makes this
+ * variant - the parent group's keyboard contract makes this
  * explicit).
  *
  * The `[attr.name]` host binding is **cosmetic** (parity with
@@ -51,6 +48,14 @@ import {
  * the `<div role="radio">` host does not participate in HTML
  * form submission, so the attribute carries no functional
  * weight.
+ *
+ * @category common/interactive
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/radio/radio.component.ts
+ * @selector cngx-radio
+ * @since 0.1.0
+ * @relatedTo CngxRadioGroup, CngxButtonToggle, CngxChipInGroup
  * <example-url>http://localhost:4200/#/common/interactive/radio/basic-vertical-group</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/radio/custom-dot-glyph</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/radio/disabled-group-cascades-per-radio-overrides</example-url>
@@ -98,7 +103,8 @@ import {
       [id]="describedId"
       class="cngx-radio__sr-only"
       [attr.aria-hidden]="disabledReason() ? null : 'true'"
-    >{{ disabledReason() }}</span>
+      >{{ disabledReason() }}</span
+    >
   `,
   styleUrls: ['./radio.component.css'],
   encapsulation: ViewEncapsulation.None,
@@ -114,13 +120,9 @@ export class CngxRadio<T = unknown> {
   private readonly id = nextUid('cngx-radio');
   protected readonly describedId = nextUid('cngx-radio-desc');
 
-  protected readonly radioChecked = computed(
-    () => this.group.value() === this.value(),
-  );
+  protected readonly radioChecked = computed(() => this.group.value() === this.value());
 
-  protected readonly radioDisabled = computed(
-    () => this.group.disabled() || this.disabled(),
-  );
+  protected readonly radioDisabled = computed(() => this.group.disabled() || this.disabled());
 
   protected readonly describedById = computed(() =>
     this.disabledReason() ? this.describedId : null,

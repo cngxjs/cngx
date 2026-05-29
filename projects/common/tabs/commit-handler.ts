@@ -1,10 +1,7 @@
 import { InjectionToken, type Signal } from '@angular/core';
 import { isObservable, type Observable, type Subscription } from 'rxjs';
 
-import {
-  type CngxCommitController,
-  type CngxCommitHandle,
-} from '@cngx/common/data';
+import { type CngxCommitController, type CngxCommitHandle } from '@cngx/common/data';
 
 import type { CngxTabsCommitAction } from './presenter.directive';
 
@@ -12,10 +9,12 @@ import type { CngxTabsCommitAction } from './presenter.directive';
  * Adapts the shared commit-controller to the tabs action shape. The
  * presenter delegates to {@link beginTransition} when `commitAction`
  * is bound.
+ *
+ * @category common/tabs
  */
 export interface CngxTabsCommitHandler {
   /**
-   * Start a tab-transition commit. Returns synchronously — read the
+   * Start a tab-transition commit. Returns synchronously - read the
    * controller's `state` signal for in-flight status. `onResolve`
    * fires once with `accept = true` on success or `false` on
    * rejection; skipped on supersede.
@@ -36,6 +35,8 @@ export interface CngxTabsCommitHandler {
 
 /**
  * Options for {@link createTabsCommitHandler}.
+ *
+ * @category common/tabs
  */
 export interface CngxTabsCommitHandlerOptions {
   readonly controller: CngxCommitController<number>;
@@ -45,10 +46,10 @@ export interface CngxTabsCommitHandlerOptions {
  * Wraps a {@link CngxCommitController} with the action-shape adapter
  * that collapses `Observable<boolean>` / `Promise<boolean>` /
  * `boolean` returns into a single `accept: boolean` outcome.
+ *
+ * @category common/tabs
  */
-export function createTabsCommitHandler(
-  opts: CngxTabsCommitHandlerOptions,
-): CngxTabsCommitHandler {
+export function createTabsCommitHandler(opts: CngxTabsCommitHandlerOptions): CngxTabsCommitHandler {
   const { controller } = opts;
   return {
     isCommitting: controller.isCommitting,
@@ -114,7 +115,7 @@ function runTabsAction(
 
   if (isObservable(result)) {
     // Synchronous Observables (`of(true)`) emit inside `.subscribe` before
-    // the assignment binds — close over a pre-declared `let` to avoid TDZ.
+    // the assignment binds - close over a pre-declared `let` to avoid TDZ.
     let sub: Subscription | null = null;
     sub = result.subscribe({
       next: (accept) => {
@@ -124,10 +125,7 @@ function runTabsAction(
       error: (err: unknown) => safeError(err),
     });
     unsubscribe = () => sub?.unsubscribe();
-  } else if (
-    result != null &&
-    typeof (result as { then?: unknown }).then === 'function'
-  ) {
+  } else if (result != null && typeof (result as { then?: unknown }).then === 'function') {
     (result as Promise<boolean>).then(safeSuccess, safeError);
   } else {
     safeSuccess(result as boolean);
@@ -145,6 +143,8 @@ function runTabsAction(
  * Factory signature for {@link CNGX_TABS_COMMIT_HANDLER_FACTORY}.
  * Override to wrap the default with retry-with-backoff, telemetry,
  * or offline queues.
+ *
+ * @category common/tabs
  */
 export type CngxTabsCommitHandlerFactory = (
   opts: CngxTabsCommitHandlerOptions,
@@ -155,12 +155,15 @@ export type CngxTabsCommitHandlerFactory = (
  * {@link createTabsCommitHandler}. Sibling to
  * `CNGX_ARRAY_COMMIT_HANDLER_FACTORY` (select) and
  * `CNGX_STEPPER_COMMIT_HANDLER_FACTORY`.
+ *
+ * @category common/tabs
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/commit-handler.ts
+ * @since 0.1.0
  */
-export const CNGX_TABS_COMMIT_HANDLER_FACTORY =
-  new InjectionToken<CngxTabsCommitHandlerFactory>(
-    'CngxTabsCommitHandlerFactory',
-    {
-      providedIn: 'root',
-      factory: () => createTabsCommitHandler,
-    },
-  );
+export const CNGX_TABS_COMMIT_HANDLER_FACTORY = new InjectionToken<CngxTabsCommitHandlerFactory>(
+  'CngxTabsCommitHandlerFactory',
+  {
+    providedIn: 'root',
+    factory: () => createTabsCommitHandler,
+  },
+);

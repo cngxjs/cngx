@@ -14,14 +14,11 @@ import { MatTab } from '@angular/material/tabs';
 import { CNGX_TAB_GROUP_HOST, type CngxTabGroupHost } from '@cngx/common/tabs';
 import { nextUid } from '@cngx/core/utils';
 
-import {
-  CNGX_MAT_TAB_HANDLE_FACTORY,
-  type CngxMatTabHandleSetup,
-} from './material-bridge/handle';
+import { CNGX_MAT_TAB_HANDLE_FACTORY, type CngxMatTabHandleSetup } from './material-bridge/handle';
 
 /**
  * Per-MatTab registry entry. The child `EnvironmentInjector` scopes
- * the per-tab `_stateChanges` bridge — destroying it fires
+ * the per-tab `_stateChanges` bridge - destroying it fires
  * `takeUntilDestroyed` so the subscription unsubscribes
  * deterministically.
  *
@@ -42,6 +39,8 @@ interface CngxMatTabsRegistryEntry {
  * Return type narrows to `Pick<..., 'errorAggregator'>` so the
  * access path exposes only the per-handle aggregator slot; the
  * rest of the setup stays internal bookkeeping.
+ *
+ * @category ui/mat-tabs
  */
 export interface CngxMatTabsRegistryHost {
   /**
@@ -52,9 +51,7 @@ export interface CngxMatTabsRegistryHost {
    * tracking `presenter.tabs()` and re-attempting on the next sync
    * tick.
    */
-  getHandleSetup(
-    matTab: MatTab,
-  ): Pick<CngxMatTabHandleSetup, 'errorAggregator'> | undefined;
+  getHandleSetup(matTab: MatTab): Pick<CngxMatTabHandleSetup, 'errorAggregator'> | undefined;
 }
 
 /**
@@ -62,9 +59,15 @@ export interface CngxMatTabsRegistryHost {
  * `useExisting`. Sibling per-tab directives inject this with
  * `{ host: true }` to reach per-handle slots without walking the
  * concrete registry class.
+ *
+ * @category ui/mat-tabs
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/mat-tabs/mat-tabs-registry.directive.ts
+ * @since 0.1.0
  */
-export const CNGX_MAT_TABS_REGISTRY_HOST =
-  new InjectionToken<CngxMatTabsRegistryHost>('CngxMatTabsRegistryHost');
+export const CNGX_MAT_TABS_REGISTRY_HOST = new InjectionToken<CngxMatTabsRegistryHost>(
+  'CngxMatTabsRegistryHost',
+);
 
 /**
  * Sibling host-directive that owns the per-MatTab handle registry
@@ -81,6 +84,13 @@ export const CNGX_MAT_TABS_REGISTRY_HOST =
  * Composition: `[cngxMatTabs]` declares this in `hostDirectives`;
  * both share the parent's `CngxTabGroupPresenter` and the same
  * `<mat-tab-group>` content-children scope.
+ *
+ * @category ui/mat-tabs
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/mat-tabs/mat-tabs-registry.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxMatTabs, CngxMatTabError, CNGX_MAT_TABS_REGISTRY_HOST
  */
 @Directive({
   selector: '[cngxMatTabsRegistry]',
@@ -121,9 +131,7 @@ export class CngxMatTabsRegistry implements CngxMatTabsRegistryHost {
     });
   }
 
-  getHandleSetup(
-    matTab: MatTab,
-  ): Pick<CngxMatTabHandleSetup, 'errorAggregator'> | undefined {
+  getHandleSetup(matTab: MatTab): Pick<CngxMatTabHandleSetup, 'errorAggregator'> | undefined {
     return this.setupsByTab.get(matTab)?.setup;
   }
 
@@ -134,7 +142,7 @@ export class CngxMatTabsRegistry implements CngxMatTabsRegistryHost {
         continue;
       }
       // Per-tab child injector scopes the `toSignal(_stateChanges)`
-      // bridge inside createMatTabHandle — destroying it on tab
+      // bridge inside createMatTabHandle - destroying it on tab
       // removal fires `takeUntilDestroyed`.
       const childInjector = createEnvironmentInjector([], this.envInjector);
       const idSeed = () => nextUid('cngx-mat-tab-');

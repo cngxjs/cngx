@@ -10,25 +10,25 @@
 //   @use '@cngx/themes/material/tag-theme' as tag;
 //   html { @include tag.theme($theme); }
 //
-// Selector includes both `.cngx-tag` (directive host class — covers
+// Selector includes both `.cngx-tag` (directive host class - covers
 // `<span cngxTag>`, `<a cngxTag>`, `<button cngxTag>` consumers) and
 // the `cngx-tag-group` element form.
 
 @mixin color($theme) {
   @if mat.get-theme-version($theme) == 1 {
-    // Base surface — used when no [data-color] cascade fires.
+    // Base surface - used when no [data-color] cascade fires.
     --cngx-tag-bg: transparent;
     --cngx-tag-color: var(--mat-sys-on-surface);
     --cngx-tag-border: 1px solid var(--mat-sys-outline-variant);
 
-    // Neutral — surface-variant sits below tinted variants without
+    // Neutral - surface-variant sits below tinted variants without
     // competing with primary or error surfaces.
     --cngx-tag-neutral-bg: var(--mat-sys-surface-variant);
     --cngx-tag-neutral-color: var(--mat-sys-on-surface-variant);
     --cngx-tag-neutral-border: var(--mat-sys-outline-variant);
     --cngx-tag-neutral-subtle-bg: var(--mat-sys-surface-container);
 
-    // Info — M3 primary container tone.
+    // Info - M3 primary container tone.
     --cngx-tag-info-bg: var(--mat-sys-primary-container);
     --cngx-tag-info-color: var(--mat-sys-on-primary-container);
     --cngx-tag-info-border: var(--mat-sys-primary);
@@ -38,7 +38,7 @@
       var(--mat-sys-surface)
     );
 
-    // Success — M3 tertiary container tone (tertiary leans
+    // Success - M3 tertiary container tone (tertiary leans
     // green-positive in most generated palettes).
     --cngx-tag-success-bg: var(--mat-sys-tertiary-container);
     --cngx-tag-success-color: var(--mat-sys-on-tertiary-container);
@@ -49,7 +49,7 @@
       var(--mat-sys-surface)
     );
 
-    // Warning — Material 3 has no warning slot. Fold onto secondary so
+    // Warning - Material 3 has no warning slot. Fold onto secondary so
     // the hue stays distinct from success (tertiary) and info (primary).
     --cngx-tag-warning-bg: var(--mat-sys-secondary-container);
     --cngx-tag-warning-color: var(--mat-sys-on-secondary-container);
@@ -60,15 +60,11 @@
       var(--mat-sys-surface)
     );
 
-    // Error — M3 error container tone.
+    // Error - M3 error container tone.
     --cngx-tag-error-bg: var(--mat-sys-error-container);
     --cngx-tag-error-color: var(--mat-sys-on-error-container);
     --cngx-tag-error-border: var(--mat-sys-error);
-    --cngx-tag-error-subtle-bg: color-mix(
-      in srgb,
-      var(--mat-sys-error) 8%,
-      var(--mat-sys-surface)
-    );
+    --cngx-tag-error-subtle-bg: color-mix(in srgb, var(--mat-sys-error) 8%, var(--mat-sys-surface));
   } @else {
     $_primary: mat.get-theme-color($theme, primary);
     $_accent: mat.get-theme-color($theme, accent);
@@ -127,7 +123,7 @@
 
   // Only the md (default) padding is density-scaled. The sm / lg / xl
   // size variants stay at their library defaults so size and density
-  // remain orthogonal — a consumer that picks `size="lg"` at density
+  // remain orthogonal - a consumer that picks `size="lg"` at density
   // -2 still gets the size-large rhythm.
   $paddings: (
     0: 2px 8px,
@@ -141,7 +137,7 @@
 }
 
 @mixin base() {
-  // Shape — `corner-extra-small` (4px in stock M3) matches the cngx
+  // Shape - `corner-extra-small` (4px in stock M3) matches the cngx
   // default radius and stays consistent with how `system-bridge.scss`
   // routes the cngx radius scale onto Material corners.
   --cngx-tag-radius: var(--mat-sys-corner-extra-small, 4px);

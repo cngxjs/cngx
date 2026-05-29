@@ -29,6 +29,13 @@ import {
  * geometry actually changes. The `createPathBuilder` cache provides
  * the **compute guard** — same `(data, xScale, yScale)` triple by
  * reference skips the per-datapoint projection work.
+ *
+ * @category common/chart/layers
+ * @docsKind primary
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/layers/line.component.ts
+ * @since 0.1.0
+ * @relatedTo CngxArea, CngxScatter, CngxBar, CngxChart
+ *
  * <example-url>http://localhost:4200/#/common/chart/primitives/async-state-machine-on-the-primitive</example-url>
  * <example-url>http://localhost:4200/#/common/chart/primitives/combo-bars-moving-average-line</example-url>
  * <example-url>http://localhost:4200/#/common/chart/primitives/line-area-threshold-band</example-url>

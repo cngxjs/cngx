@@ -3,14 +3,18 @@ import type { CngxAsyncState } from '@cngx/core/utils';
 
 /**
  * Lifecycle states of a `CngxDialog`.
+ *
+ * @category common/dialog
  */
 export type DialogState = 'closed' | 'opening' | 'open' | 'closing';
 
 /**
  * Signal-based dialog reference.
  *
- * - **Outside** (parent template): access via `exportAs` — `#dlg="cngxDialog"`
- * - **Inside** (dialog content): access via DI — `inject(DIALOG_REF)`
+ * - **Outside** (parent template): access via `exportAs` - `#dlg="cngxDialog"`
+ * - **Inside** (dialog content): access via DI - `inject(DIALOG_REF)`
+ *
+ * @category common/dialog
  */
 export interface DialogRef<T = unknown> {
   /** Current lifecycle state of the dialog. */
@@ -31,7 +35,7 @@ export interface DialogRef<T = unknown> {
   /**
    * Async state of the submit channel.
    *
-   * Populated when `[submitAction]` is set — tracks the submit lifecycle
+   * Populated when `[submitAction]` is set - tracks the submit lifecycle
    * (`idle` -> `pending` -> `success`/`error`). When `submitAction` is not set,
    * this is a static idle state.
    *
@@ -46,5 +50,11 @@ export interface DialogRef<T = unknown> {
   dismiss(): void;
 }
 
-/** Injection token to access the nearest `DialogRef` from inside a dialog. */
+/**
+ * Injection token to access the nearest `DialogRef` from inside a dialog.
+ *
+ * @category common/dialog
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/dialog/dialog/dialog-ref.ts
+ * @since 0.1.0
+ */
 export const DIALOG_REF = new InjectionToken<DialogRef>('CngxDialogRef');

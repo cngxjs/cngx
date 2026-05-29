@@ -2,7 +2,11 @@ import { computed, signal, type WritableSignal, type Signal } from '@angular/cor
 import { buildAsyncStateView, type AsyncStatus, type CngxAsyncState } from '@cngx/core/utils';
 import { type Observable, type Subscription, take } from 'rxjs';
 
-/** State exposed by the optimistic action. */
+/**
+ * State exposed by the optimistic action.
+ *
+ * @category common/interactive/optimistic
+ */
 export interface OptimisticState {
   /** Whether a rollback occurred on the last invocation. */
   readonly rolledBack: Signal<boolean>;
@@ -48,6 +52,8 @@ export interface OptimisticState {
  * @param current - The writable signal to update optimistically.
  * @param action - Async action that confirms the value. Should return the confirmed value.
  * @returns Tuple of `[applyFn, state]`.
+ *
+ * @category common/interactive/optimistic
  */
 export function optimistic<T>(
   current: WritableSignal<T>,

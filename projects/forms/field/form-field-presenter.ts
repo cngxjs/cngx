@@ -1,8 +1,5 @@
 import { computed, Directive, inject, input, type Signal, untracked } from '@angular/core';
-import {
-  CNGX_FORM_FIELD_HOST,
-  type CngxFormFieldHostContract,
-} from '@cngx/core/tokens';
+import { CNGX_FORM_FIELD_HOST, type CngxFormFieldHostContract } from '@cngx/core/tokens';
 import type { CngxFieldAccessor, CngxFieldRef } from './models';
 import {
   CNGX_FORM_FIELD_CONFIG,
@@ -13,6 +10,7 @@ import {
 /**
  * Picks the matching formatter for a min/max pair and returns its output, or
  * `undefined` when neither bound is set.
+ * @internal
  */
 function buildHint(
   min: number | undefined,
@@ -38,14 +36,19 @@ function buildHint(
  *
  * Reads a Signal Forms `Field<T>` accessor and derives all ARIA IDs, visibility states,
  * and constraint metadata as pure `computed()` signals. Applied as a `hostDirective`
- * on `CngxFormField` — not used directly in templates.
+ * on `CngxFormField` - not used directly in templates.
+ *
+ * @category forms/field
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/form-field-presenter.ts
+ * @since 0.1.0
+ * @relatedTo CngxFormField, CngxBindField, CngxListboxFieldBridge, CngxFieldErrors
  */
 @Directive({
   selector: '[cngxFormFieldPresenter]',
   standalone: true,
-  providers: [
-    { provide: CNGX_FORM_FIELD_HOST, useExisting: CngxFormFieldPresenter },
-  ],
+  providers: [{ provide: CNGX_FORM_FIELD_HOST, useExisting: CngxFormFieldPresenter }],
   host: {
     '[class.cngx-field--error]': 'showError()',
     '[class.cngx-field--touched]': 'touched()',
@@ -63,7 +66,7 @@ export class CngxFormFieldPresenter implements CngxFormFieldHostContract {
   private readonly fieldReveal = inject(CNGX_FORM_FIELD_REVEAL, { optional: true });
 
   /**
-   * The Signal Forms field accessor — a callable that returns `FieldState`.
+   * The Signal Forms field accessor - a callable that returns `FieldState`.
    * Accepts `Field<T>` from `@angular/forms/signals` directly.
    */
   readonly field = input.required<CngxFieldAccessor>({ alias: 'field' });
@@ -122,13 +125,13 @@ export class CngxFormFieldPresenter implements CngxFormFieldHostContract {
    * `true` when errors should be visible.
    *
    * Default gate: `invalid AND (touched OR fieldReveal.showErrors)`. The
-   * reveal-trigger is supplied via {@link CNGX_FORM_FIELD_REVEAL} —
+   * reveal-trigger is supplied via {@link CNGX_FORM_FIELD_REVEAL} -
    * `CngxErrorScopeFieldBridge` defaults it to the nearest `CngxErrorScope`;
    * router-driven, interceptor-driven, or test-harness triggers can provide
    * their own without depending on the scope contract.
    *
-   * Tracked dependencies are `invalid`, and — when a strategy is configured
-   * — `touched`, `dirty`, and `fieldReveal.showErrors`. The strategy
+   * Tracked dependencies are `invalid`, and - when a strategy is configured
+   * - `touched`, `dirty`, and `fieldReveal.showErrors`. The strategy
    * callback runs inside `untracked()` so any ambient signal reads in
    * consumer code (locale flags, tenant settings, test mocks) cannot
    * widen the presenter's dependency graph beyond the declared four.
@@ -145,9 +148,7 @@ export class CngxFormFieldPresenter implements CngxFormFieldHostContract {
       const touched = this.touched();
       const dirty = this.dirty();
       const submitted = this.fieldReveal?.showErrors() === true;
-      return untracked(() =>
-        strategy({ touched, dirty, submitted, invalid: true }),
-      );
+      return untracked(() => strategy({ touched, dirty, submitted, invalid: true }));
     }
 
     return this.touched() || this.fieldReveal?.showErrors() === true;

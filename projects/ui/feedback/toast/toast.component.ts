@@ -4,7 +4,7 @@ import type { AlertSeverity } from '../alert/alert';
 import { CngxToaster, type ToastRef } from './toast.service';
 
 /**
- * Declarative toast — renders nothing at its position, pushes into the global `CngxToastOutlet`.
+ * Declarative toast - renders nothing at its position, pushes into the global `CngxToastOutlet`.
  *
  * Shows a toast when `[when]` becomes `true`. Dismisses when `[when]` becomes `false`
  * (unless already auto-dismissed). Supports projected content for custom toast bodies.
@@ -28,6 +28,14 @@ import { CngxToaster, type ToastRef } from './toast.service';
  * <cngx-toast severity="success" message="Item saved" [when]="saveState.status() === 'success'" />
  * <cngx-toast severity="error" message="Save failed" [when]="saveState.status() === 'error'" />
  * ```
+ *
+ * @category ui/feedback/toast
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/feedback/toast/toast.component.ts
+ * @since 0.1.0
+ * @relatedTo CngxToaster, CngxToastOutlet, CngxToastOn
+ *
  * <example-url>http://localhost:4200/#/ui/feedback/toast/custom-component-body</example-url>
  * <example-url>http://localhost:4200/#/ui/feedback/toast/declarative-cngx-toast</example-url>
  * <example-url>http://localhost:4200/#/ui/feedback/toast/programmatic-cngxtoaster</example-url>
@@ -82,7 +90,7 @@ export class CngxToast {
 
     const toaster = this.toaster;
 
-    // Rising-edge trigger — only false→true fires a toast; the toast then
+    // Rising-edge trigger - only false→true fires a toast; the toast then
     // owns its own lifecycle. false just re-arms the trigger.
     let previousWhen = false;
 

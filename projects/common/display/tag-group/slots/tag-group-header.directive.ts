@@ -3,13 +3,13 @@ import { Directive, inject, TemplateRef } from '@angular/core';
 import type { CngxTagGroupHeaderContext } from './tag-group-slot.context';
 
 /**
- * Override template for the header zone of `<cngx-tag-group>` —
+ * Override template for the header zone of `<cngx-tag-group>` -
  * projected ABOVE the row of tags. Use for label-prefix
  * ("Filters"), count badges, sort toggles that span the group, or
  * any header decoration the consumer wants to bundle with the
  * layout.
  *
- * The slot has no default body — when not projected, no DOM is
+ * The slot has no default body - when not projected, no DOM is
  * rendered above the tag row. The reactive count of projected
  * `<span cngxTag>` siblings is exposed via the slot context for
  * consumer "Filters ({{ count }})" patterns without injection.
@@ -23,6 +23,11 @@ import type { CngxTagGroupHeaderContext } from './tag-group-slot.context';
  *   <span cngxTag>Backend</span>
  * </cngx-tag-group>
  * ```
+ *
+ * @category common/display
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/display/tag-group/slots/tag-group-header.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxTagGroup, CngxTagGroupAccessory
  * <example-url>http://localhost:4200/#/common/display/tag/app-wide-defaults-via-providetagconfig</example-url>
  * <example-url>http://localhost:4200/#/common/display/tag/color-palette</example-url>
  * <example-url>http://localhost:4200/#/common/display/tag/composition-with-cngxicon</example-url>

@@ -7,7 +7,7 @@ import { Directive, input } from '@angular/core';
  * Use `[heading]="true"` to opt in to `role="heading"` with `aria-level`
  * when the label genuinely represents a heading in the document outline.
  *
- * ### Section label (default — no heading role)
+ * ### Section label (default - no heading role)
  * ```html
  * <span cngxNavLabel>@cngx/common</span>
  * ```
@@ -16,6 +16,12 @@ import { Directive, input } from '@angular/core';
  * ```html
  * <span cngxNavLabel [heading]="true" [level]="3">Settings</span>
  * ```
+ *
+ * @category common/interactive
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/nav/nav-label.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxNavLink, CngxNavGroup, CngxNavBadge
  * <example-url>http://localhost:4200/#/common/interactive/nav/nav-badge-counts-and-dots</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/nav/nav-group-accordion-sections</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/nav/nav-links-active-state-depth</example-url>

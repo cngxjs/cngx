@@ -8,18 +8,14 @@ import {
   isDevMode,
   untracked,
 } from '@angular/core';
-import {
-  CNGX_STATEFUL,
-  createTransitionTracker,
-  type CngxAsyncState,
-} from '@cngx/core/utils';
+import { CNGX_STATEFUL, createTransitionTracker, type CngxAsyncState } from '@cngx/core/utils';
 
 import { CngxAlerter } from './alerter.service';
 
 /**
  * Declarative state-to-alert bridge for scoped alert stacks.
  *
- * Place on any element inside a `CngxAlertStack` subtree — fires an alert
+ * Place on any element inside a `CngxAlertStack` subtree - fires an alert
  * when the bound `CngxAsyncState` transitions to `error` (or optionally `success`).
  * Only fires on actual transitions, not on initial `idle` state.
  *
@@ -33,6 +29,13 @@ import { CngxAlerter } from './alerter.service';
  *   Save
  * </button>
  * ```
+ *
+ * @category ui/feedback/alert
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/feedback/alert/alert-on.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxAlertStack, CngxAlerter, CngxToastOn, CngxBannerOn
  */
 @Directive({
   selector: '[cngxAlertOn]',
@@ -43,19 +46,19 @@ export class CngxAlertOn {
   private readonly statefulFallback = inject(CNGX_STATEFUL, { optional: true });
 
   /**
-   * The async state to watch. Optional — when omitted, falls back to
+   * The async state to watch. Optional - when omitted, falls back to
    * `CNGX_STATEFUL` from an ancestor/self component. A bare `cngxAlertOn`
    * attribute is treated as "no input bound".
    */
-  readonly state = input<CngxAsyncState<unknown> | undefined, CngxAsyncState<unknown> | '' | undefined>(
-    undefined,
-    {
-      alias: 'cngxAlertOn',
-      transform: (v) => (typeof v === 'string' ? undefined : v),
-    },
-  );
+  readonly state = input<
+    CngxAsyncState<unknown> | undefined,
+    CngxAsyncState<unknown> | '' | undefined
+  >(undefined, {
+    alias: 'cngxAlertOn',
+    transform: (v) => (typeof v === 'string' ? undefined : v),
+  });
 
-  /** Effective state — input wins over ancestor `CNGX_STATEFUL`. */
+  /** Effective state - input wins over ancestor `CNGX_STATEFUL`. */
   private readonly effectiveState = computed<CngxAsyncState<unknown> | undefined>(
     () => this.state() ?? this.statefulFallback?.state,
   );
@@ -69,7 +72,7 @@ export class CngxAlertOn {
   /** Include the error detail message in the alert body. */
   readonly alertErrorDetail = input<boolean>(false);
 
-  /** Scope for the alert — matches against `CngxAlertStack`'s `[scope]` input. */
+  /** Scope for the alert - matches against `CngxAlertStack`'s `[scope]` input. */
   readonly alertScope = input<string | undefined>(undefined);
 
   constructor() {
@@ -82,7 +85,7 @@ export class CngxAlertOn {
     const alerter = this.alerter;
 
     if (isDevMode()) {
-      // afterNextRender, not effect — dev-mode one-shot, no dead reactive node.
+      // afterNextRender, not effect - dev-mode one-shot, no dead reactive node.
       afterNextRender(() => {
         if (this.state() === undefined && !this.statefulFallback) {
           console.error(
@@ -96,7 +99,7 @@ export class CngxAlertOn {
     const tracker = createTransitionTracker(() => this.effectiveState()?.status() ?? 'idle');
 
     effect(() => {
-      // Flat graph — only tracker is tracked; everything else reads under untracked.
+      // Flat graph - only tracker is tracked; everything else reads under untracked.
       const status = tracker.current();
       const previous = tracker.previous();
 

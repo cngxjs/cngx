@@ -9,6 +9,8 @@ import type { FlatNode, Node, TreetableOptions } from './models';
  *   (e.g. `"0"`, `"0-1"`, `"0-1-2"`).
  * @returns A flat array where every node contains its depth, parent ID chain, and
  *   a flag indicating whether it has children.
+ *
+ * @category data-display/treetable
  */
 export function flattenTree<T>(
   input: Node<T> | Node<T>[],
@@ -48,6 +50,8 @@ export function flattenTree<T>(
  * @param input - The tree or forest to inspect.
  * @param options - If `customColumnOrder` is set it is returned as-is.
  * @returns An ordered array of column key strings.
+ *
+ * @internal
  */
 export function extractColumns<T>(
   input: Node<T> | Node<T>[],
@@ -68,6 +72,8 @@ export function extractColumns<T>(
 /**
  * Returns `true` when all of `node`'s ancestors are in the `expandedIds` set,
  * meaning the node should currently be visible in the table.
+ *
+ * @internal
  */
 export function isNodeVisible(node: FlatNode<unknown>, expandedIds: ReadonlySet<string>): boolean {
   return node.parentIds.every((id) => expandedIds.has(id));
@@ -75,7 +81,9 @@ export function isNodeVisible(node: FlatNode<unknown>, expandedIds: ReadonlySet<
 
 /**
  * Builds the initial set of expanded IDs by collecting every node that has
- * children — i.e. the tree starts fully expanded.
+ * children - i.e. the tree starts fully expanded.
+ *
+ * @internal
  */
 export function getInitialExpandedIds<T>(nodes: FlatNode<T>[]): ReadonlySet<string> {
   return new Set(nodes.filter((n) => n.hasChildren).map((n) => n.id));
@@ -84,6 +92,8 @@ export function getInitialExpandedIds<T>(nodes: FlatNode<T>[]): ReadonlySet<stri
 /**
  * Uppercases the first character of a string.
  * Used to format auto-generated column header labels.
+ *
+ * @internal
  */
 export function capitalise(str: string): string {
   return str.length === 0 ? '' : str.charAt(0).toUpperCase() + str.slice(1);
@@ -92,6 +102,8 @@ export function capitalise(str: string): string {
 /**
  * Filters a tree recursively. A parent node is kept if it matches the predicate
  * OR if at least one of its descendants matches.
+ *
+ * @category data-display/treetable
  */
 export function filterTree<T>(nodes: Node<T>[], predicate: (value: T) => boolean): Node<T>[] {
   return nodes.reduce<Node<T>[]>((acc, node) => {
@@ -107,6 +119,8 @@ export function filterTree<T>(nodes: Node<T>[], predicate: (value: T) => boolean
 /**
  * Sorts each level of the tree independently by a field key.
  * Children remain grouped under their parent; only sibling order changes.
+ *
+ * @category data-display/treetable
  */
 export function sortTree<T>(nodes: Node<T>[], field: string, direction: 'asc' | 'desc'): Node<T>[] {
   const toPrimitive = (v: unknown): string => {
@@ -130,6 +144,8 @@ export function sortTree<T>(nodes: Node<T>[], field: string, direction: 'asc' | 
 /**
  * Simple full-text search across all primitive fields of a node value.
  * Used as the default search implementation in CngxSmartDataSource.
+ *
+ * @category data-display/treetable
  */
 export function nodeMatchesSearch<T>(value: T, term: string): boolean {
   const lower = term.toLowerCase();

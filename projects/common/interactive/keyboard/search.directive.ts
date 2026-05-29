@@ -15,14 +15,21 @@ import { fromEvent, map, switchMap, timer } from 'rxjs';
 /**
  * Debounced search term tracker for `<input>` elements.
  *
+ * @category common/interactive/keyboard
+ *
  * Converts the DOM `input` event stream into a debounced Signal. The raw
- * Observable is never exposed — signal at the API boundary.
+ * Observable is never exposed - signal at the API boundary.
  *
  * ### Basic usage
  * ```html
  * <input cngxSearch #search="cngxSearch" placeholder="Search..." />
  * <button (click)="search.clear()">Clear</button>
  * ```
+ *
+ * @docsKind primary
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/keyboard/search.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxKeyboardShortcut, CngxListboxSearch
  */
 @Directive({
   selector: 'input[cngxSearch]',

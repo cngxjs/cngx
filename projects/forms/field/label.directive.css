@@ -1,12 +1,29 @@
 /**
  * @overview
- * Default visuals for `[cngxLabel]`. The component is attribute-based
- * — the host element is the consumer's `<label>` (or any element they
- * pick). `.cngx-label` anchors the `@scope` block;
- * `.cngx-label__required` carries the required marker.
+ * Default visuals for the `[cngxLabel]` attribute directive. The host
+ * is the consumer's `<label>` (or any element they pick) and carries
+ * `.cngx-label`; the nested `.cngx-label__required` span projects the
+ * required marker.
  *
- * The single token `--cngx-field-required-color` is shared with
- * `CngxRequired` so both atoms render the same semantic marker.
+ * **Slots**
+ *
+ * - `.cngx-label` - host element, kept `display: inline` so the marker
+ *   sits next to the label text instead of breaking out of grid / flex
+ *   parents (`display: contents` would push children up and land the
+ *   marker on its own row in stacked-field layouts)
+ * - `.cngx-label__required` - required-marker glyph, colored from the
+ *   danger chain and margin-started by `0.125em` from the label text
+ *
+ * **Inheritance**
+ *
+ * The required-marker token is shared with `CngxRequired` so both
+ * atoms render the same semantic marker:
+ *
+ * - `--cngx-field-required-color` -> `--cngx-field-error-color` ->
+ *   `--cngx-color-danger`
+ *
+ * A `:root` delegating rule pins the token to `--cngx-color-danger`
+ * so a dark-mode swap on the foundation token cascades through.
  */
 
 @layer cngx.tokens {

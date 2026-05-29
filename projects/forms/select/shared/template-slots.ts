@@ -3,7 +3,7 @@ import { Directive, TemplateRef, inject } from '@angular/core';
 import type { CngxSelectOptionDef, CngxSelectOptionGroupDef } from './option.model';
 
 /**
- * Selection-indicator slot context. Discriminated on `variant` — radio
+ * Selection-indicator slot context. Discriminated on `variant` - radio
  * has no `indeterminate`; narrow on `variant` before reading.
  */
 export type CngxSelectCheckContext<T = unknown> =
@@ -26,7 +26,7 @@ export interface CngxSelectCheckBoxContext<T = unknown> {
 }
 
 /**
- * Radio-style indicator branch. No `indeterminate` — radio is exclusive.
+ * Radio-style indicator branch. No `indeterminate` - radio is exclusive.
  */
 export interface CngxSelectCheckRadioContext<T = unknown> {
   readonly $implicit: CngxSelectOptionDef<T>;
@@ -121,7 +121,7 @@ export interface CngxSelectRetryButtonContext {
   readonly $implicit: () => void;
   readonly retry: () => void;
   readonly error: unknown;
-  /** `true` mid-retry — disable the override button. */
+  /** `true` mid-retry - disable the override button. */
   readonly disabled: boolean;
   /** Library-default label per surface. */
   readonly label: string;
@@ -221,7 +221,7 @@ export interface CngxComboboxChipContext<T = unknown> {
 }
 
 /**
- * `*cngxSelectCheck` slot — overrides the default selection indicator.
+ * `*cngxSelectCheck` slot - overrides the default selection indicator.
  *
  * ```html
  * <cngx-select [options]="...">
@@ -258,6 +258,12 @@ export interface CngxComboboxChipContext<T = unknown> {
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-caret</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-check</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-rich-trigger-label</example-url>
+ *
+ * @category forms/select/templates
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
+ * @since 0.1.0
+ * @relatedTo CngxSelect, CngxMultiSelect, CngxCombobox, CngxSelectCaret, CngxSelectOptionLabel
  */
 @Directive({
   selector: 'ng-template[cngxSelectCheck]',
@@ -269,7 +275,7 @@ export class CngxSelectCheck<T = unknown> {
 }
 
 /**
- * `*cngxSelectCaret` slot — overrides the trigger caret.
+ * `*cngxSelectCaret` slot - overrides the trigger caret.
  * <example-url>http://localhost:4200/#/forms/select/single-select/assemble-it-yourself-atoms-element-components</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/async-state-consumer</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/autofocus-on-mount</example-url>
@@ -298,6 +304,12 @@ export class CngxSelectCheck<T = unknown> {
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-caret</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-check</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-rich-trigger-label</example-url>
+ *
+ * @category forms/select/templates
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
+ * @since 0.1.0
+ * @relatedTo CngxSelect, CngxMultiSelect, CngxCombobox, CngxSelectCheck, CngxSelectTriggerLabel
  */
 @Directive({
   selector: 'ng-template[cngxSelectCaret]',
@@ -309,7 +321,7 @@ export class CngxSelectCaret {
 }
 
 /**
- * `*cngxSelectOptgroup` slot — overrides the optgroup header.
+ * `*cngxSelectOptgroup` slot - overrides the optgroup header.
  * <example-url>http://localhost:4200/#/forms/select/single-select/assemble-it-yourself-atoms-element-components</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/async-state-consumer</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/autofocus-on-mount</example-url>
@@ -338,6 +350,12 @@ export class CngxSelectCaret {
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-caret</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-check</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-rich-trigger-label</example-url>
+ *
+ * @category forms/select/templates
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
+ * @since 0.1.0
+ * @relatedTo CngxSelect, CngxMultiSelect, CngxSelectOptionLabel, CngxSelectOptgroup
  */
 @Directive({
   selector: 'ng-template[cngxSelectOptgroup]',
@@ -349,7 +367,7 @@ export class CngxSelectOptgroupTemplate<T = unknown> {
 }
 
 /**
- * `*cngxSelectPlaceholder` slot — overrides the trigger placeholder.
+ * `*cngxSelectPlaceholder` slot - overrides the trigger placeholder.
  * <example-url>http://localhost:4200/#/forms/select/single-select/assemble-it-yourself-atoms-element-components</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/async-state-consumer</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/autofocus-on-mount</example-url>
@@ -378,6 +396,12 @@ export class CngxSelectOptgroupTemplate<T = unknown> {
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-caret</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-check</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-rich-trigger-label</example-url>
+ *
+ * @category forms/select/templates
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
+ * @since 0.1.0
+ * @relatedTo CngxSelect, CngxMultiSelect, CngxCombobox, CngxSelectTriggerLabel
  */
 @Directive({
   selector: 'ng-template[cngxSelectPlaceholder]',
@@ -418,6 +442,12 @@ export class CngxSelectPlaceholder {
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-caret</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-check</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-rich-trigger-label</example-url>
+ *
+ * @category forms/select/templates
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
+ * @since 0.1.0
+ * @relatedTo CngxSelect, CngxMultiSelect, CngxCombobox, CngxSelectLoading, CngxSelectError
  */
 @Directive({
   selector: 'ng-template[cngxSelectEmpty]',
@@ -458,6 +488,12 @@ export class CngxSelectEmpty {
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-caret</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-check</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-rich-trigger-label</example-url>
+ *
+ * @category forms/select/templates
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
+ * @since 0.1.0
+ * @relatedTo CngxSelect, CngxMultiSelect, CngxSelectLoadingGlyph, CngxSelectRefreshing, CngxSelectEmpty
  */
 @Directive({
   selector: 'ng-template[cngxSelectLoading]',
@@ -498,6 +534,12 @@ export class CngxSelectLoading {
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-caret</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-check</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-rich-trigger-label</example-url>
+ *
+ * @category forms/select/templates
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
+ * @since 0.1.0
+ * @relatedTo CngxSelect, CngxMultiSelectTriggerLabel, CngxComboboxTriggerLabel, CngxTreeSelectTriggerLabel
  */
 @Directive({
   selector: 'ng-template[cngxSelectTriggerLabel]',
@@ -543,6 +585,12 @@ export class CngxSelectTriggerLabel<T = unknown> {
  * <example-url>http://localhost:4200/#/forms/select/typeahead/typeahead-cngxselectoptionlabel-slot-override</example-url>
  * <example-url>http://localhost:4200/#/forms/select/typeahead/typeahead-commitaction-with-optimistic-pessimistic-mode</example-url>
  * <example-url>http://localhost:4200/#/forms/select/typeahead/typeahead-single-value-async-autocomplete</example-url>
+ *
+ * @category forms/select/templates
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
+ * @since 0.1.0
+ * @relatedTo CngxSelect, CngxMultiSelect, CngxCombobox, CngxSelectOptgroupTemplate, CngxSelectCheck
  */
 @Directive({
   selector: 'ng-template[cngxSelectOptionLabel]',
@@ -564,6 +612,12 @@ export class CngxSelectOptionLabel<T = unknown> {
  *   </ng-template>
  * </cngx-select>
  * ```
+ *
+ * @category forms/select/templates
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
+ * @since 0.1.0
+ * @relatedTo CngxSelect, CngxMultiSelect, CngxSelectRetryButton, CngxSelectCommitError, CngxSelectEmpty
  */
 @Directive({
   selector: 'ng-template[cngxSelectError]',
@@ -613,6 +667,12 @@ export class CngxSelectError {
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-caret</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-check</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-rich-trigger-label</example-url>
+ *
+ * @category forms/select/templates
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
+ * @since 0.1.0
+ * @relatedTo CngxSelect, CngxMultiSelect, CngxSelectError, CngxSelectCommitError, CngxSelectClearButton
  */
 @Directive({
   selector: 'ng-template[cngxSelectRetryButton]',
@@ -624,7 +684,7 @@ export class CngxSelectRetryButton {
 }
 
 /**
- * `*cngxSelectLoadingGlyph` slot — replaces the spinner/bar/dots inner
+ * `*cngxSelectLoadingGlyph` slot - replaces the spinner/bar/dots inner
  * body. ARIA wiring stays on the parent span. Skeleton ignores this slot.
  *
  * ```html
@@ -662,6 +722,12 @@ export class CngxSelectRetryButton {
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-caret</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-check</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-rich-trigger-label</example-url>
+ *
+ * @category forms/select/templates
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
+ * @since 0.1.0
+ * @relatedTo CngxSelect, CngxMultiSelect, CngxSelectLoading, CngxSelectRefreshing
  */
 @Directive({
   selector: 'ng-template[cngxSelectLoadingGlyph]',
@@ -673,7 +739,7 @@ export class CngxSelectLoadingGlyph {
 }
 
 /**
- * `*cngxSelectRefreshing` slot — top-bar overlay during refresh.
+ * `*cngxSelectRefreshing` slot - top-bar overlay during refresh.
  * <example-url>http://localhost:4200/#/forms/select/single-select/assemble-it-yourself-atoms-element-components</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/async-state-consumer</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/autofocus-on-mount</example-url>
@@ -702,6 +768,12 @@ export class CngxSelectLoadingGlyph {
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-caret</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-check</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-rich-trigger-label</example-url>
+ *
+ * @category forms/select/templates
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
+ * @since 0.1.0
+ * @relatedTo CngxSelect, CngxMultiSelect, CngxSelectLoading, CngxSelectLoadingGlyph
  */
 @Directive({
   selector: 'ng-template[cngxSelectRefreshing]',
@@ -752,6 +824,12 @@ export class CngxSelectRefreshing {
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-caret</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-check</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-rich-trigger-label</example-url>
+ *
+ * @category forms/select/templates
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
+ * @since 0.1.0
+ * @relatedTo CngxSelect, CngxMultiSelect, CngxSelectError, CngxSelectRetryButton
  */
 @Directive({
   selector: 'ng-template[cngxSelectCommitError]',
@@ -783,6 +861,12 @@ export class CngxSelectCommitError<T = unknown> {
  * <example-url>http://localhost:4200/#/forms/select/reorderable-multi-select/keyboard-reorder-alt-arrow-home-end</example-url>
  * <example-url>http://localhost:4200/#/forms/select/reorderable-multi-select/optional-drag-handle-glyph</example-url>
  * <example-url>http://localhost:4200/#/forms/select/reorderable-multi-select/pre-seeded-values-reorder-log</example-url>
+ *
+ * @category forms/select/templates
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
+ * @since 0.1.0
+ * @relatedTo CngxMultiSelect, CngxComboboxChip, CngxTreeSelectChip, CngxMultiSelectChipHandle
  */
 @Directive({
   selector: 'ng-template[cngxMultiSelectChip]',
@@ -794,7 +878,7 @@ export class CngxMultiSelectChip<T = unknown> {
 }
 
 /**
- * `*cngxMultiSelectChipHandle` slot — reorderable chip drag-handle glyph.
+ * `*cngxMultiSelectChipHandle` slot - reorderable chip drag-handle glyph.
  * Cascade: this slot > `[chipDragHandle]` Input > default `⋮⋮`. Handle
  * span stays `aria-hidden="true"` (AT reads `[reorderAriaLabel]` instead).
  *
@@ -805,6 +889,12 @@ export class CngxMultiSelectChip<T = unknown> {
  *   </ng-template>
  * </cngx-reorderable-multi-select>
  * ```
+ *
+ * @category forms/select/templates
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
+ * @since 0.1.0
+ * @relatedTo CngxReorderableMultiSelect, CngxMultiSelectChip
  */
 @Directive({
   selector: 'ng-template[cngxMultiSelectChipHandle]',
@@ -816,7 +906,7 @@ export class CngxMultiSelectChipHandle {
 }
 
 /**
- * `*cngxMultiSelectTriggerLabel` slot — replaces the entire chip strip.
+ * `*cngxMultiSelectTriggerLabel` slot - replaces the entire chip strip.
  * Mutually exclusive with `*cngxMultiSelectChip`.
  *
  * ```html
@@ -838,6 +928,12 @@ export class CngxMultiSelectChipHandle {
  * <example-url>http://localhost:4200/#/forms/select/reorderable-multi-select/keyboard-reorder-alt-arrow-home-end</example-url>
  * <example-url>http://localhost:4200/#/forms/select/reorderable-multi-select/optional-drag-handle-glyph</example-url>
  * <example-url>http://localhost:4200/#/forms/select/reorderable-multi-select/pre-seeded-values-reorder-log</example-url>
+ *
+ * @category forms/select/templates
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
+ * @since 0.1.0
+ * @relatedTo CngxMultiSelect, CngxSelectTriggerLabel, CngxComboboxTriggerLabel, CngxTreeSelectTriggerLabel
  */
 @Directive({
   selector: 'ng-template[cngxMultiSelectTriggerLabel]',
@@ -845,12 +941,11 @@ export class CngxMultiSelectChipHandle {
   exportAs: 'cngxMultiSelectTriggerLabel',
 })
 export class CngxMultiSelectTriggerLabel<T = unknown> {
-  readonly templateRef =
-    inject<TemplateRef<CngxMultiSelectTriggerLabelContext<T>>>(TemplateRef);
+  readonly templateRef = inject<TemplateRef<CngxMultiSelectTriggerLabelContext<T>>>(TemplateRef);
 }
 
 /**
- * `*cngxSelectClearButton` slot — replaces the `✕` button. Consumer owns
+ * `*cngxSelectClearButton` slot - replaces the `✕` button. Consumer owns
  * the element and invokes `clear()`.
  *
  * ```html
@@ -888,6 +983,12 @@ export class CngxMultiSelectTriggerLabel<T = unknown> {
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-caret</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-check</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-rich-trigger-label</example-url>
+ *
+ * @category forms/select/templates
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
+ * @since 0.1.0
+ * @relatedTo CngxSelect, CngxMultiSelect, CngxCombobox, CngxSelectCaret, CngxSelectRetryButton
  */
 @Directive({
   selector: 'ng-template[cngxSelectClearButton]',
@@ -895,12 +996,11 @@ export class CngxMultiSelectTriggerLabel<T = unknown> {
   exportAs: 'cngxSelectClearButton',
 })
 export class CngxSelectClearButton {
-  readonly templateRef =
-    inject<TemplateRef<CngxSelectClearButtonContext>>(TemplateRef);
+  readonly templateRef = inject<TemplateRef<CngxSelectClearButtonContext>>(TemplateRef);
 }
 
 /**
- * `*cngxSelectOptionPending` slot — replaces
+ * `*cngxSelectOptionPending` slot - replaces
  * `.cngx-select__option-spinner`.
  *
  * ```html
@@ -938,6 +1038,12 @@ export class CngxSelectClearButton {
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-caret</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-check</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-rich-trigger-label</example-url>
+ *
+ * @category forms/select/templates
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
+ * @since 0.1.0
+ * @relatedTo CngxSelect, CngxMultiSelect, CngxSelectOptionError, CngxSelectOptionLabel
  */
 @Directive({
   selector: 'ng-template[cngxSelectOptionPending]',
@@ -945,12 +1051,11 @@ export class CngxSelectClearButton {
   exportAs: 'cngxSelectOptionPending',
 })
 export class CngxSelectOptionPending<T = unknown> {
-  readonly templateRef =
-    inject<TemplateRef<CngxSelectOptionPendingContext<T>>>(TemplateRef);
+  readonly templateRef = inject<TemplateRef<CngxSelectOptionPendingContext<T>>>(TemplateRef);
 }
 
 /**
- * `*cngxSelectOptionError` slot — inline `!` badge for
+ * `*cngxSelectOptionError` slot - inline `!` badge for
  * `commitErrorDisplay === 'inline'`.
  *
  * ```html
@@ -988,6 +1093,12 @@ export class CngxSelectOptionPending<T = unknown> {
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-caret</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-check</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-rich-trigger-label</example-url>
+ *
+ * @category forms/select/templates
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
+ * @since 0.1.0
+ * @relatedTo CngxSelect, CngxMultiSelect, CngxSelectOptionPending, CngxSelectOptionLabel
  */
 @Directive({
   selector: 'ng-template[cngxSelectOptionError]',
@@ -995,12 +1106,11 @@ export class CngxSelectOptionPending<T = unknown> {
   exportAs: 'cngxSelectOptionError',
 })
 export class CngxSelectOptionError<T = unknown> {
-  readonly templateRef =
-    inject<TemplateRef<CngxSelectOptionErrorContext<T>>>(TemplateRef);
+  readonly templateRef = inject<TemplateRef<CngxSelectOptionErrorContext<T>>>(TemplateRef);
 }
 
 /**
- * `*cngxComboboxTriggerLabel` slot — replaces the chip-strip loop;
+ * `*cngxComboboxTriggerLabel` slot - replaces the chip-strip loop;
  * search input stays in place.
  *
  * ```html
@@ -1016,6 +1126,12 @@ export class CngxSelectOptionError<T = unknown> {
  * <example-url>http://localhost:4200/#/forms/select/combobox/combobox-per-toggle-commitaction</example-url>
  * <example-url>http://localhost:4200/#/forms/select/combobox/combobox-text-summary-via-cngxcomboboxtriggerlabel</example-url>
  * <example-url>http://localhost:4200/#/forms/select/combobox/slot-override-cngxcomboboxchip</example-url>
+ *
+ * @category forms/select/templates
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
+ * @since 0.1.0
+ * @relatedTo CngxCombobox, CngxSelectTriggerLabel, CngxMultiSelectTriggerLabel, CngxTreeSelectTriggerLabel
  */
 @Directive({
   selector: 'ng-template[cngxComboboxTriggerLabel]',
@@ -1023,8 +1139,7 @@ export class CngxSelectOptionError<T = unknown> {
   exportAs: 'cngxComboboxTriggerLabel',
 })
 export class CngxComboboxTriggerLabel<T = unknown> {
-  readonly templateRef =
-    inject<TemplateRef<CngxComboboxTriggerLabelContext<T>>>(TemplateRef);
+  readonly templateRef = inject<TemplateRef<CngxComboboxTriggerLabelContext<T>>>(TemplateRef);
 }
 
 /**
@@ -1044,6 +1159,12 @@ export class CngxComboboxTriggerLabel<T = unknown> {
  * <example-url>http://localhost:4200/#/forms/select/combobox/combobox-per-toggle-commitaction</example-url>
  * <example-url>http://localhost:4200/#/forms/select/combobox/combobox-text-summary-via-cngxcomboboxtriggerlabel</example-url>
  * <example-url>http://localhost:4200/#/forms/select/combobox/slot-override-cngxcomboboxchip</example-url>
+ *
+ * @category forms/select/templates
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
+ * @since 0.1.0
+ * @relatedTo CngxCombobox, CngxMultiSelectChip, CngxTreeSelectChip
  */
 @Directive({
   selector: 'ng-template[cngxComboboxChip]',
@@ -1058,7 +1179,7 @@ export class CngxComboboxChip<T = unknown> {
  * Inline action-slot context for `*cngxSelectAction`. `commit()`
  * defaults `draft` to `{ label: searchTerm }`. `setDirty`+`dirty`
  * drive the dismiss-guard. `isPending`/`error`/`hasError` mirror the
- * commit controller. `value` is type-erased — single forwards
+ * commit controller. `value` is type-erased - single forwards
  * `value()`, multi forwards `values()`.
  */
 export interface CngxSelectActionContext {
@@ -1086,7 +1207,7 @@ export interface CngxSelectInputSlotContext {
 }
 
 /**
- * `*cngxSelectInputPrefix` slot — projected before the trigger `<input>`.
+ * `*cngxSelectInputPrefix` slot - projected before the trigger `<input>`.
  * `CngxTypeahead` / `CngxCombobox` only.
  *
  * ```html
@@ -1096,6 +1217,12 @@ export interface CngxSelectInputSlotContext {
  *   </ng-template>
  * </cngx-typeahead>
  * ```
+ *
+ * @category forms/select/templates
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
+ * @since 0.1.0
+ * @relatedTo CngxCombobox, CngxTypeahead, CngxSelectInputSuffix
  */
 @Directive({
   selector: 'ng-template[cngxSelectInputPrefix]',
@@ -1103,13 +1230,18 @@ export interface CngxSelectInputSlotContext {
   exportAs: 'cngxSelectInputPrefix',
 })
 export class CngxSelectInputPrefix {
-  readonly templateRef =
-    inject<TemplateRef<CngxSelectInputSlotContext>>(TemplateRef);
+  readonly templateRef = inject<TemplateRef<CngxSelectInputSlotContext>>(TemplateRef);
 }
 
 /**
- * `*cngxSelectInputSuffix` slot — projected after the trigger `<input>`,
+ * `*cngxSelectInputSuffix` slot - projected after the trigger `<input>`,
  * before clear/caret. Same context as {@link CngxSelectInputPrefix}.
+ *
+ * @category forms/select/templates
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
+ * @since 0.1.0
+ * @relatedTo CngxCombobox, CngxTypeahead, CngxSelectInputPrefix
  */
 @Directive({
   selector: 'ng-template[cngxSelectInputSuffix]',
@@ -1117,12 +1249,11 @@ export class CngxSelectInputPrefix {
   exportAs: 'cngxSelectInputSuffix',
 })
 export class CngxSelectInputSuffix {
-  readonly templateRef =
-    inject<TemplateRef<CngxSelectInputSlotContext>>(TemplateRef);
+  readonly templateRef = inject<TemplateRef<CngxSelectInputSlotContext>>(TemplateRef);
 }
 
 /**
- * `*cngxSelectAction` slot — inline workflow projected per
+ * `*cngxSelectAction` slot - inline workflow projected per
  * `actionPosition` (`top` / `bottom` / `both`). Zero visual default;
  * the consumer template renders verbatim.
  *
@@ -1147,6 +1278,12 @@ export class CngxSelectInputSuffix {
  * <example-url>http://localhost:4200/#/forms/select/action-select/custom-action-template-split-actions</example-url>
  * <example-url>http://localhost:4200/#/forms/select/action-select/dirty-guard-escape-cancel-click-outside-blocked</example-url>
  * <example-url>http://localhost:4200/#/forms/select/action-select/pre-seeded-created-output-log</example-url>
+ *
+ * @category forms/select/templates
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
+ * @since 0.1.0
+ * @relatedTo CngxActionSelect, CngxActionMultiSelect, CngxSelectCommitError
  */
 @Directive({
   selector: 'ng-template[cngxSelectAction]',

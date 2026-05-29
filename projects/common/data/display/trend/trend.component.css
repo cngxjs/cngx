@@ -1,15 +1,31 @@
 /**
  * @overview
- * Default visuals for `CngxTrend`. The host element `<cngx-trend>`
- * always carries the `.cngx-trend` class. Two directional modifiers
- * pin the color to the matching semantic: `.cngx-trend--up`
- * (positive movement, success-coded) and `.cngx-trend--down`
- * (negative movement, danger-coded).
+ * Default visuals for `CngxTrend`. The host carries `.cngx-trend` -
+ * an inline-flex pair of an arrow glyph and a short label. Two
+ * directional modifiers pin the color to the matching semantic
+ * intent; the bare host renders in muted neutral.
  *
- * The neutral default falls back through `--cngx-color-text`; up/down
- * route through the foundation `--cngx-color-success` /
- * `--cngx-color-danger` so brand-theme changes propagate
- * automatically.
+ * **Direction modifiers**
+ *
+ * - `--up` - positive movement, success-coded
+ * - `--down` - negative movement, danger-coded
+ *
+ * **Inheritance**
+ *
+ * - `--cngx-trend-up-color` -> `--cngx-color-success`
+ * - `--cngx-trend-down-color` -> `--cngx-color-danger`
+ * - `--cngx-trend-color` - leaf neutral token, swaps in dark mode
+ *
+ * **Dark mode**
+ *
+ * Three hooks lift all three color tokens to the foundation's dark
+ * variant - neutral text gains lightness, the directional colors
+ * shed chroma and gain L to track the foundation's dark success and
+ * danger tones:
+ *
+ * - `prefers-color-scheme: dark`
+ * - `[data-color-scheme="dark"]` / `.dark` class
+ * - `[data-color-scheme="light"]` / `.light` class (explicit pin)
  */
 
 @layer cngx.tokens {

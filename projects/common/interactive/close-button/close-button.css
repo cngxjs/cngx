@@ -1,8 +1,47 @@
 /**
  * @overview
- * Default visuals for `CngxCloseButton` — circular icon button with a
- * neutral idle state and a tinted hover state. The host renders with
- * `display: contents` so the inner `<button>` carries the box.
+ * Default visuals for `CngxCloseButton`. The host carries
+ * `.cngx-close-button` and renders with `display: contents` so the
+ * inner `.cngx-close-button__btn` carries the box; the glyph projects
+ * into `.cngx-close-button__icon`. Idle state is muted via opacity;
+ * hover lifts to full opacity plus a subtle neutral wash.
+ *
+ * **State modifiers**
+ *
+ * State is driven by pseudo-classes on the inner button rather than
+ * host modifier classes:
+ *
+ * - `:hover` - opacity to `--cngx-close-button-hover-opacity` plus
+ *   `--cngx-close-button-hover-bg` wash
+ * - `:focus-visible` - outline via `--cngx-close-button-focus-outline`
+ *   + offset, opacity forced to 1
+ * - `:active` - opacity to `--cngx-close-button-active-opacity`
+ *
+ * **Slots**
+ *
+ * - `.cngx-close-button__btn` - the actual focusable `<button>`
+ * - `.cngx-close-button__icon` - projected glyph (defaults to a 16px box)
+ *
+ * **Inheritance**
+ *
+ * Layout tokens cascade through the foundation:
+ *
+ * - `--cngx-close-button-padding` -> `--cngx-space-sm`
+ * - `--cngx-close-button-radius` -> `--cngx-radius-sm`
+ * - `--cngx-close-button-color` - direct (defaults to `currentColor`)
+ *
+ * **Dark mode**
+ *
+ * Three hooks flip the hover wash from `oklch(0 0 0 / 0.04)` to
+ * `oklch(1 0 0 / 0.06)` so the subtle hover surface stays visible
+ * against a dark page:
+ *
+ * - `prefers-color-scheme: dark`
+ * - `[data-color-scheme="dark"]`
+ * - `.dark` class
+ *
+ * A matching `[data-color-scheme="light"]` / `.light` block pins the
+ * light value so explicit-light overrides win over the media query.
  */
 
 @layer cngx.tokens {
@@ -97,7 +136,7 @@
   }
 
   /**
-   * Background tint applied on hover — a subtle neutral overlay.
+   * Background tint applied on hover - a subtle neutral overlay.
    * `inherits: true` so the :root dark-mode override reaches the
    * inner `<button>` on hover.
    * @group State / Hover
@@ -148,7 +187,7 @@
     initial-value: 16px;
   }
 
-  /* Dark-mode swap — hover wash inverts to white-alpha so the
+  /* Dark-mode swap - hover wash inverts to white-alpha so the
    * subtle hover surface remains visible against the dark page. */
   @media (prefers-color-scheme: dark) {
     :root:not([data-color-scheme='light']):not(.light) {

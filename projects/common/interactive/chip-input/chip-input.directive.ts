@@ -1,12 +1,4 @@
-import {
-  Directive,
-  ElementRef,
-  computed,
-  inject,
-  input,
-  output,
-  signal,
-} from '@angular/core';
+import { Directive, ElementRef, computed, inject, input, output, signal } from '@angular/core';
 import {
   buildAsyncStateView,
   CNGX_STATEFUL,
@@ -22,7 +14,7 @@ import { firstValueFrom, isObservable, type Observable } from 'rxjs';
  * and on multi-token paste. Pairs naturally with
  * `<cngx-multi-chip-group>` or any consumer-managed chip list.
  *
- * **Validation slot — async-state producer.** The directive provides
+ * **Validation slot - async-state producer.** The directive provides
  * `CNGX_STATEFUL` via `useExisting`, exposing a
  * `ManualAsyncState<string>` slot driven by `[validateToken]`
  * invocations. Bridge directives (`<cngx-toast-on />`,
@@ -31,20 +23,20 @@ import { firstValueFrom, isObservable, type Observable } from 'rxjs';
  *
  * State machine: `idle → pending → success | error` per separator-key
  * invocation. Concurrent validations supersede via a monotonic
- * `validationId` — when a second token is entered before the first
+ * `validationId` - when a second token is entered before the first
  * resolves, the first's resolution is dropped and only the latest
  * outcome touches the slot. Mirrors `createCommitController`'s
  * supersede contract.
  *
  * **Removal contract.** `(tokenRemoved)` fires on Backspace at empty
- * input — semantically "user wants to remove the last chip". The
+ * input - semantically "user wants to remove the last chip". The
  * directive does not own the chip list; the consumer drops the last
  * entry from their state in response.
  *
  * **Duplicates.** `[existingTokens]` is read on every separator-key
  * invocation; when `allowDuplicates` is `false` (default), a token
  * already present in the list is silently dropped. The directive
- * does not track a private "previously emitted" set — that would be
+ * does not track a private "previously emitted" set - that would be
  * an unbounded memory leak. Consumers pass their canonical chip
  * list as `[existingTokens]`.
  *
@@ -66,6 +58,13 @@ import { firstValueFrom, isObservable, type Observable } from 'rxjs';
  * />
  * <cngx-toast-on />
  * ```
+ *
+ * @category common/interactive
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/chip-input/chip-input.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxMultiChipGroup, CngxChipInteraction, CngxChipInGroup
  * <example-url>http://localhost:4200/#/common/interactive/chip/input/async-validation-with-supersede-semantics</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/chip/input/synchronous-tokenization</example-url>
  */
@@ -101,7 +100,7 @@ export class CngxChipInput implements CngxStateful<string> {
   private readonly hadSuccess = signal(false);
 
   /**
-   * Validation slot — `CngxStateful<string>` contract surface. The
+   * Validation slot - `CngxStateful<string>` contract surface. The
    * view is built from raw signals via `buildAsyncStateView` rather
    * than `createManualState` (which lives in `@cngx/common/data`)
    * because `@cngx/common/data → @cngx/common/interactive` already
@@ -120,16 +119,11 @@ export class CngxChipInput implements CngxStateful<string> {
     lastUpdated: signal<Date | undefined>(undefined).asReadonly(),
   });
 
-  private readonly hostEl = inject<ElementRef<HTMLInputElement>>(ElementRef)
-    .nativeElement;
+  private readonly hostEl = inject<ElementRef<HTMLInputElement>>(ElementRef).nativeElement;
   private validationId = 0;
 
-  protected readonly isPending = computed(
-    () => this.state.status() === 'pending',
-  );
-  protected readonly isInvalid = computed(
-    () => this.state.status() === 'error',
-  );
+  protected readonly isPending = computed(() => this.state.status() === 'pending');
+  protected readonly isInvalid = computed(() => this.state.status() === 'error');
 
   protected handleKeydown(event: KeyboardEvent): void {
     if (this.separators().includes(event.key)) {
@@ -194,9 +188,7 @@ export class CngxChipInput implements CngxStateful<string> {
   ): Promise<void> {
     try {
       const result = validate(value);
-      const accepted: string = isObservable(result)
-        ? await firstValueFrom(result)
-        : await result;
+      const accepted: string = isObservable(result) ? await firstValueFrom(result) : await result;
       if (id !== this.validationId) {
         return;
       }
@@ -224,6 +216,8 @@ export class CngxChipInput implements CngxStateful<string> {
  * (negation at position 0, range between siblings) and silently
  * change the splitter's behaviour for separators like `'-'` or
  * `'^'`. Always-escaping these four is safe inside `[...]`.
+ *
+ * @internal
  */
 function escapeForCharClass(value: string): string {
   return value.replace(/[\\\]\-^]/g, '\\$&');

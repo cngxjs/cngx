@@ -18,8 +18,10 @@ import type { CngxStepRejectionContext } from './slots/step-rejection.directive'
  * defaults are English; locales come from consumer overrides.
  *
  * Per-step navigation labels (`previousStep`, `nextStep`) live in
- * {@link CngxStepperI18n} — SR phrasing, not landmark naming.
+ * {@link CngxStepperI18n} - SR phrasing, not landmark naming.
  * Splitting the surfaces avoids a dual-override path for the same string.
+ *
+ * @category common/stepper
  */
 export interface CngxStepperAriaLabels {
   readonly stepperRegion?: string;
@@ -28,6 +30,8 @@ export interface CngxStepperAriaLabels {
 /**
  * Fallback labels for derived strings (group descriptors, badge SR
  * announcements). English defaults; consumer overrides per locale.
+ *
+ * @category common/stepper
  */
 export interface CngxStepperFallbackLabels {
   readonly groupRoleDescription?: string;
@@ -38,6 +42,8 @@ export interface CngxStepperFallbackLabels {
  * Per-slot template overrides for `<cngx-stepper>`. Middle tier of
  * the 3-stage cascade: per-instance directive > this field > built-in
  * markup. Apply via the `with*Template` feature builders below.
+ *
+ * @category common/stepper
  */
 export interface CngxStepperTemplates {
   readonly indicator?: TemplateRef<CngxStepIndicatorContext>;
@@ -52,6 +58,8 @@ export interface CngxStepperTemplates {
  * Stepper config surface. Resolution priority: per-instance Input
  * > `provideStepperConfigAt` (viewProviders) > `provideStepperConfig`
  * (root) > library default. Canonical cngx config shape.
+ *
+ * @category common/stepper
  */
 export interface CngxStepperConfig {
   readonly defaultOrientation?: 'horizontal' | 'vertical';
@@ -64,6 +72,7 @@ export interface CngxStepperConfig {
   readonly templates?: CngxStepperTemplates;
 }
 
+/** @internal */
 const STEPPER_CONFIG_DEFAULTS: Required<
   Omit<CngxStepperConfig, 'ariaLabels' | 'fallbackLabels' | 'templates'>
 > & {
@@ -90,20 +99,25 @@ const STEPPER_CONFIG_DEFAULTS: Required<
  * DI token for the resolved stepper config. `providedIn: 'root'` with
  * library defaults; override via {@link provideStepperConfig} (root)
  * or {@link provideStepperConfigAt} (component scope).
+ *
+ * @category common/stepper
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/stepper/stepper-config.ts
+ * @since 0.1.0
  */
-export const CNGX_STEPPER_CONFIG = new InjectionToken<CngxStepperConfig>(
-  'CngxStepperConfig',
-  { providedIn: 'root', factory: () => STEPPER_CONFIG_DEFAULTS },
-);
+export const CNGX_STEPPER_CONFIG = new InjectionToken<CngxStepperConfig>('CngxStepperConfig', {
+  providedIn: 'root',
+  factory: () => STEPPER_CONFIG_DEFAULTS,
+});
 
 /**
- * Feature signature — each `with*` builder reduces over the config.
+ * Feature signature - each `with*` builder reduces over the config.
  * Hidden `_target: 'config'` discriminator routes through the family
  * aggregator {@link provideCngxStepper}.
+ *
+ * @category common/stepper
  */
-export type CngxStepperConfigFeature = ((
-  config: CngxStepperConfig,
-) => CngxStepperConfig) & {
+export type CngxStepperConfigFeature = ((config: CngxStepperConfig) => CngxStepperConfig) & {
   readonly _target: 'config';
 };
 
@@ -122,6 +136,8 @@ function defineStepperConfigFeature(
 /**
  * Override the default orientation. Per-instance `[orientation]`
  * Input still wins; this only moves the cascade default.
+ *
+ * @category common/stepper
  */
 export function withStepperDefaultOrientation(
   orientation: 'horizontal' | 'vertical',
@@ -135,6 +151,8 @@ export function withStepperDefaultOrientation(
 /**
  * Override the default linear-progression setting. Per-instance
  * `[linear]` Input still wins.
+ *
+ * @category common/stepper
  */
 export function withStepperLinear(linear: boolean): CngxStepperConfigFeature {
   return defineStepperConfigFeature((cfg) => ({ ...cfg, defaultLinear: linear }));
@@ -145,6 +163,8 @@ export function withStepperLinear(linear: boolean): CngxStepperConfigFeature {
  * `'optimistic'` advances on action dispatch and rolls back on error;
  * `'pessimistic'` waits for success. Per-instance `[commitMode]`
  * Input still wins.
+ *
+ * @category common/stepper
  */
 export function withStepperCommitMode(
   mode: 'optimistic' | 'pessimistic',
@@ -159,6 +179,8 @@ export function withStepperCommitMode(
  * Configure router synchronisation for the active step. `mode` chooses
  * the URL surface (URL fragment or query parameter); `param` names the
  * key (default `'step'`).
+ *
+ * @category common/stepper
  */
 export function withStepperRouterSync(
   mode: 'fragment' | 'queryParam',
@@ -174,10 +196,10 @@ export function withStepperRouterSync(
 /**
  * Merge ARIA labels into the cascade. Keys not provided keep their
  * library defaults; per-instance overrides on the stepper still win.
+ *
+ * @category common/stepper
  */
-export function withStepperAriaLabels(
-  labels: CngxStepperAriaLabels,
-): CngxStepperConfigFeature {
+export function withStepperAriaLabels(labels: CngxStepperAriaLabels): CngxStepperConfigFeature {
   return defineStepperConfigFeature((cfg) => ({
     ...cfg,
     ariaLabels: { ...cfg.ariaLabels, ...labels },
@@ -187,6 +209,8 @@ export function withStepperAriaLabels(
 /**
  * Merge text fallback labels (button captions, error strings) into the
  * cascade. Used when a slot directive is not present.
+ *
+ * @category common/stepper
  */
 export function withStepperFallbackLabels(
   labels: CngxStepperFallbackLabels,
@@ -201,6 +225,8 @@ export function withStepperFallbackLabels(
  * Override the default `*cngxStepIndicator` template app-wide.
  * Per-instance directive still wins; this only moves the cascade
  * middle tier.
+ *
+ * @category common/stepper
  */
 export function withStepIndicatorTemplate(
   template: TemplateRef<CngxStepIndicatorContext>,
@@ -213,6 +239,8 @@ export function withStepIndicatorTemplate(
 
 /**
  * Override the default `*cngxStepBadge` template app-wide.
+ *
+ * @category common/stepper
  */
 export function withStepBadgeTemplate(
   template: TemplateRef<CngxStepBadgeContext>,
@@ -225,6 +253,8 @@ export function withStepBadgeTemplate(
 
 /**
  * Override the default `*cngxStepBusySpinner` template app-wide.
+ *
+ * @category common/stepper
  */
 export function withStepBusySpinnerTemplate(
   template: TemplateRef<CngxStepBusySpinnerContext>,
@@ -238,6 +268,8 @@ export function withStepBusySpinnerTemplate(
 /**
  * Override the default `*cngxStepRejection` template app-wide.
  * Symmetric with the upcoming tabs `cngxTabRejectionIcon` (Phase 4).
+ *
+ * @category common/stepper
  */
 export function withStepRejectionTemplate(
   template: TemplateRef<CngxStepRejectionContext>,
@@ -250,6 +282,8 @@ export function withStepRejectionTemplate(
 
 /**
  * Override the default `*cngxStepGroupHeader` template app-wide.
+ *
+ * @category common/stepper
  */
 export function withStepGroupHeaderTemplate(
   template: TemplateRef<CngxStepGroupHeaderContext>,
@@ -262,19 +296,18 @@ export function withStepGroupHeaderTemplate(
 
 /**
  * Override the default `*cngxStepperEmpty` template app-wide.
+ *
+ * @category common/stepper
  */
-export function withStepperEmptyTemplate(
-  template: TemplateRef<void>,
-): CngxStepperConfigFeature {
+export function withStepperEmptyTemplate(template: TemplateRef<void>): CngxStepperConfigFeature {
   return defineStepperConfigFeature((cfg) => ({
     ...cfg,
     templates: { ...cfg.templates, empty: template },
   }));
 }
 
-function resolveFeatures(
-  features: readonly CngxStepperConfigFeature[],
-): CngxStepperConfig {
+/** @internal */
+function resolveFeatures(features: readonly CngxStepperConfigFeature[]): CngxStepperConfig {
   return features.reduce<CngxStepperConfig>((cfg, feat) => feat(cfg), STEPPER_CONFIG_DEFAULTS);
 }
 
@@ -282,6 +315,8 @@ function resolveFeatures(
  * Root-level provider for the stepper config. Apply once in the
  * application providers array. Sibling of `provideTabsConfig` /
  * `provideSelectConfig`.
+ *
+ * @category common/stepper
  */
 export function provideStepperConfig(
   ...features: readonly CngxStepperConfigFeature[]
@@ -293,7 +328,7 @@ export function provideStepperConfig(
 
 /**
  * Component-scoped config override. Spread the returned `Provider[]`
- * into `providers` or `viewProviders` — `viewProviders` cannot accept
+ * into `providers` or `viewProviders` - `viewProviders` cannot accept
  * opaque {@link EnvironmentProviders}, so the twin returns a list.
  * Sibling of `provideTabsConfigAt`.
  *
@@ -305,6 +340,8 @@ export function provideStepperConfig(
  *   viewProviders: [...provideStepperConfigAt(withStepperLinear(true))],
  * })
  * ```
+ *
+ * @category common/stepper
  */
 export function provideStepperConfigAt(
   ...features: readonly CngxStepperConfigFeature[]
@@ -314,6 +351,8 @@ export function provideStepperConfigAt(
 
 /**
  * Inject the resolved stepper config in an injection context.
+ *
+ * @category common/stepper
  */
 export function injectStepperConfig(): CngxStepperConfig {
   return inject(CNGX_STEPPER_CONFIG);

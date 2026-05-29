@@ -1,15 +1,85 @@
 /**
  * @overview
- * Default visuals for `CngxFilterBuilder`. Owns the group container,
- * nested group rails, indent / border accents, action-button row, and
- * the empty-state typography. Group rows (`cngx-filter-row`,
+ * Default visuals for `CngxFilterBuilder`. The host
+ * `cngx-filter-builder` owns the outer container, group rails, indent /
+ * border accents, action-button row, and the empty-state typography.
+ * Group-row children (`cngx-filter-row`,
  * `cngx-filter-expression-row`) are `display: contents` wrappers that
- * delegate their flex layout back to the `__expression` class
- * declared here.
+ * delegate their flex layout back to the `.cngx-filter-builder__expression`
+ * class declared here. Surfaces stay neutral - borders track
+ * `--cngx-color-border`, the remove-button error tone tracks
+ * `--cngx-color-danger`, no primary-flavored defaults at this layer.
  *
- * Surfaces stay neutral — borders track `--cngx-color-border`, the
- * remove-button error tone tracks `--cngx-color-danger`. No
- * primary-flavored defaults at this layer.
+ * **State modifiers**
+ *
+ * - `.cngx-filter-builder__action-button:hover` /
+ *   `:focus-visible` - alpha-on-black hover tint (alpha-on-white in
+ *   dark mode)
+ * - `.cngx-filter-builder__action-button:focus-visible` - 2px
+ *   currentColor outline, 2px offset
+ * - `.cngx-filter-builder__action-button[disabled]` - 0.5 opacity dim,
+ *   `not-allowed` cursor
+ *
+ * **Variants**
+ *
+ * - `.cngx-filter-group-root` - root group, no indent / no left rail
+ * - `:not(.cngx-filter-group-root)` - nested groups pick up the indent
+ *   and the left rail
+ * - `.cngx-filter-group-negated` - dashed border-style on the group
+ *   container, reads as "exclusion" without changing the color
+ * - `.cngx-filter-builder__action-button--remove` - destructive
+ *   foreground sourced from the danger chain
+ *
+ * **Slots**
+ *
+ * - `cngx-filter-builder` - host, padding + background + foreground
+ * - `.cngx-filter-builder__sr` - screen-reader-only live region
+ * - `.cngx-filter-builder__group` - group container, gap + padding +
+ *   border + radius
+ * - `.cngx-filter-builder__expression` - row inner flex row, gap +
+ *   wrap, aligned center
+ * - `.cngx-filter-builder__actions` - action-button row, flex + gap +
+ *   wrap
+ * - `.cngx-filter-builder__empty` - empty-state typography, italic +
+ *   muted foreground
+ * - `.cngx-filter-builder__action-button` - inline-flex button,
+ *   border + radius + transitions on background / border
+ * - `.cngx-filter-builder__action-glyph` - inline-flex glyph slot,
+ *   sized via `--cngx-filter-builder-action-glyph-size`
+ * - `.cngx-filter-builder__logic-toggle` - logic-toggle row, gap
+ *
+ * **Inheritance**
+ *
+ * Surface tokens delegate to the foundation so a brand change
+ * propagates without per-component theming:
+ *
+ * - `--cngx-filter-builder-border-color` -> `--cngx-color-border`
+ * - `--cngx-filter-builder-action-border` -> `--cngx-color-border`
+ * - `--cngx-filter-builder-group-border` -> `1px solid
+ *   var(--cngx-color-border)`
+ * - `--cngx-filter-builder-rail` -> `2px solid
+ *   var(--cngx-color-border)`
+ * - `--cngx-filter-builder-action-remove-fg` ->
+ *   `--cngx-filter-builder-error-fg` -> `--cngx-color-danger`
+ * - `--cngx-filter-builder-error-fg` -> `--cngx-color-danger`
+ *
+ * Layout / sizing / motion tokens stay structural (no foundation
+ * delegate). `--cngx-filter-builder-action-button` borders carry the
+ * group-border color through the same delegating chain so a single
+ * `--cngx-color-border` swap retints the whole surface.
+ *
+ * **Dark mode**
+ *
+ * Three hooks lift the alpha-on-black hover tint to alpha-on-white
+ * and invert the muted empty-state foreground from dim dark gray to
+ * soft light gray so secondary information keeps its weight:
+ *
+ * - `prefers-color-scheme: dark`
+ * - `[data-color-scheme="dark"]`
+ * - `.dark` class
+ *
+ * Foundation-delegated tokens (group border, rail, remove-tone) ride
+ * the foundation cascade unchanged.
  */
 
 @layer cngx.tokens {

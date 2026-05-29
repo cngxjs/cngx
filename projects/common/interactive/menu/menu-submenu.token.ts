@@ -8,9 +8,11 @@ import type { CngxMenuHost } from './menu-host.token';
  * arrow-right / arrow-left keyboard semantics through a focus-stack
  * model. The trigger looks up a submenu by matching the active item's
  * `id` against this contract's `id`.
+ *
+ * @category common/interactive/menu
  */
 export interface CngxMenuSubmenuLike {
-  /** Host element id — matches the surrounding `CngxMenuItem` id. */
+  /** Host element id - matches the surrounding `CngxMenuItem` id. */
   readonly id: string;
   /** Reactive open state, mirrored from the wrapped popover. */
   readonly isOpen: Signal<boolean>;
@@ -24,6 +26,11 @@ export interface CngxMenuSubmenuLike {
  * DI token a submenu-companion directive provides. The surrounding menu
  * collects every provider via `contentChildren(CNGX_MENU_SUBMENU_ITEM,
  * { descendants: true })` and exposes the array on `CngxMenuHost.submenuItems`.
+ *
+ * @category common/interactive/menu
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/menu/menu-submenu.token.ts
+ * @since 0.1.0
  */
 export const CNGX_MENU_SUBMENU_ITEM = new InjectionToken<CngxMenuSubmenuLike>(
   'CNGX_MENU_SUBMENU_ITEM',

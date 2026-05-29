@@ -23,9 +23,11 @@ function directiveMapEqual<T>(a: Map<string, T>, b: Map<string, T>): boolean {
 
 /**
  * Options for {@link createDirectiveByIdMap}.
+ *
+ * @category common/tabs/registry
  */
 export interface CngxDirectiveByIdMapOptions<T extends { id: () => string }> {
-  /** Reactive source — typically `contentChildren(...)`. */
+  /** Reactive source - typically `contentChildren(...)`. */
   readonly source: Signal<readonly T[]>;
 }
 
@@ -34,6 +36,8 @@ export interface CngxDirectiveByIdMapOptions<T extends { id: () => string }> {
  * directives keyed by `id()`. Structural equal prevents cascade when
  * `contentChildren` re-emits an unchanged child set. Shared by
  * `<cngx-tab-group>`, `<cngx-stepper>`, and `<cngx-mat-stepper>`.
+ *
+ * @category common/tabs/registry
  */
 export function createDirectiveByIdMap<T extends { id: () => string }>(
   opts: CngxDirectiveByIdMapOptions<T>,
@@ -52,6 +56,8 @@ export function createDirectiveByIdMap<T extends { id: () => string }>(
 
 /**
  * Factory signature for {@link CNGX_DIRECTIVE_BY_ID_MAP_FACTORY}.
+ *
+ * @category common/tabs/registry
  */
 export type CngxDirectiveByIdMapFactory = <T extends { id: () => string }>(
   opts: CngxDirectiveByIdMapOptions<T>,
@@ -63,12 +69,15 @@ export type CngxDirectiveByIdMapFactory = <T extends { id: () => string }>(
  * telemetry, or custom equality. Sibling to
  * `CNGX_DOM_ANCHOR_RETRY_FACTORY` and
  * `CNGX_ORGANISM_SCROLL_SYNC_FACTORY`.
+ *
+ * @category common/tabs/registry
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/registry/directive-by-id-map.ts
+ * @since 0.1.0
  */
-export const CNGX_DIRECTIVE_BY_ID_MAP_FACTORY =
-  new InjectionToken<CngxDirectiveByIdMapFactory>(
-    'CngxDirectiveByIdMapFactory',
-    {
-      providedIn: 'root',
-      factory: () => createDirectiveByIdMap,
-    },
-  );
+export const CNGX_DIRECTIVE_BY_ID_MAP_FACTORY = new InjectionToken<CngxDirectiveByIdMapFactory>(
+  'CngxDirectiveByIdMapFactory',
+  {
+    providedIn: 'root',
+    factory: () => createDirectiveByIdMap,
+  },
+);

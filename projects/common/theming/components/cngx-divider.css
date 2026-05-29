@@ -1,18 +1,39 @@
 /**
  * @overview
- * Default visuals for the `CngxDivider` directive. The directive sets
- * host class `cngx-divider` plus `--vertical` and `--inset` modifier
- * classes based on its inputs; orientation is communicated via
- * `aria-orientation` for assistive tech.
+ * Theming bridge for the `CngxDivider` directive. The directive sets
+ * `cngx-divider` plus the `--vertical` and `--inset` modifier classes
+ * from its inputs and communicates orientation to AT via
+ * `aria-orientation`; this stylesheet paints the line.
  *
- * Opt-in via the host class — the directive already adds it. Import
- * this file to consume the defaults, or style `.cngx-divider` yourself.
- * Three-Tier-Override: `--cngx-divider-*` tokens cascade through
- * `@layer cngx.theme`; the divider color falls back to the foundation
- * `--cngx-color-border` token so brand changes propagate.
+ * **Variants**
  *
- * Pair with `@cngx/themes/material/divider-theme` for Material 3
- * outline-variant surfaces.
+ * - default - horizontal hairline, `margin-block` breathing room
+ * - `--vertical` - inline-block column, `margin-inline` breathing room,
+ *   `align-self: stretch` so it fills its flex parent
+ * - `--inset` - drops the line in from the start/end edge to align
+ *   with indented list content; stacks with `--vertical`
+ *
+ * **Inheritance**
+ *
+ * Stroke color tracks the foundation neutral instead of carrying its
+ * own tone:
+ *
+ * - `--cngx-divider-color` -> `--cngx-color-border`
+ * - `--cngx-divider-spacing` -> `--cngx-space-sm`
+ * - `--cngx-divider-inset-amount` -> `--cngx-space-md`
+ *
+ * **Dark mode**
+ *
+ * Three hooks (`prefers-color-scheme: dark`, `[data-color-scheme="dark"]`,
+ * `.dark`) override `--cngx-divider-color` to a brighter neutral
+ * (~3.2:1 against the dark surface). The foundation `--cngx-color-border`
+ * is tuned conservatively (~1.7:1) and would fail WCAG 1.4.11 for a
+ * graphical separator; other border consumers keep the conservative
+ * default.
+ *
+ * **Pair with**
+ *
+ * - `@cngx/themes/material/divider-theme` - Material 3 outline-variant
  */
 
 @layer cngx.tokens {
@@ -42,7 +63,7 @@
   }
 
   /**
-   * Breathing room around the divider — `margin-block` for horizontal,
+   * Breathing room around the divider - `margin-block` for horizontal,
    * `margin-inline` for vertical. Defaults to `--cngx-space-sm`.
    * @group Layout
    */
@@ -53,7 +74,7 @@
   }
 
   /**
-   * Inset distance applied by the `.cngx-divider--inset` modifier —
+   * Inset distance applied by the `.cngx-divider--inset` modifier -
    * drops the line in from the start/end edge so it visually aligns
    * with indented list content.
    * @group Variant / Inset
@@ -64,13 +85,13 @@
     initial-value: 16px;
   }
 
-  /* Delegating token — :root pulls foundation border so the divider
+  /* Delegating token - :root pulls foundation border so the divider
    * tracks whichever light/dark value the foundation has resolved. */
   :root {
     --cngx-divider-color: var(--cngx-color-border);
   }
 
-  /* Dark-mode contrast lift — the foundation `--cngx-color-border` is
+  /* Dark-mode contrast lift - the foundation `--cngx-color-border` is
    * tuned conservatively (browser-native aesthetic) and resolves to
    * roughly 1.7:1 against the dark surface, which fails WCAG 2.1 SC
    * 1.4.11 (Non-text Contrast 3:1) for a separator. Dividers are
@@ -90,7 +111,7 @@
 
 @layer cngx.components {
   @scope (.cngx-divider) {
-    /* Horizontal default — full-width thin line, vertical breathing room. */
+    /* Horizontal default - full-width thin line, vertical breathing room. */
     :scope {
       display: block;
       box-sizing: border-box;
@@ -102,7 +123,7 @@
       background: var(--cngx-divider-color, var(--cngx-color-border, oklch(0.9 0.01 250)));
     }
 
-    /* Vertical variant — thin column, horizontal breathing room. */
+    /* Vertical variant - thin column, horizontal breathing room. */
     :scope.cngx-divider--vertical {
       display: inline-block;
       width: var(--cngx-divider-thickness, 1px);
@@ -112,7 +133,7 @@
       align-self: stretch;
     }
 
-    /* Inset variant — drops the line in from the start/end edge. */
+    /* Inset variant - drops the line in from the start/end edge. */
     :scope.cngx-divider--inset {
       margin-inline: var(--cngx-divider-inset-amount, var(--cngx-space-md, 16px));
     }

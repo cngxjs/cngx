@@ -22,7 +22,7 @@ import { CNGX_CONTROL_VALUE, type CngxControlValue } from '@cngx/common/interact
  *   `fn(value)` outside the dependency graph, so any signal `fn` touches
  *   (today via RF internals, tomorrow via signal-based RF) does not feed
  *   back into the effect.
- * - `registerOnChange` skips its first run — initial value is delivered
+ * - `registerOnChange` skips its first run - initial value is delivered
  *   via `writeValue` per CVA contract.
  * - `writeValue` stamps `lastSeen`; the change-listener short-circuits on
  *   `Object.is` so the RF→atom→RF round-trip never re-emits.
@@ -35,6 +35,14 @@ import { CNGX_CONTROL_VALUE, type CngxControlValue } from '@cngx/common/interact
  *   </cngx-multi-chip-group>
  * </form>
  * ```
+ *
+ * @category forms/controls
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/controls/form-bridge.directive.ts
+ * @selector [formControl], [formControlName]
+ * @since 0.1.0
+ * @relatedTo CngxTypedControl, CngxBindField, CngxListboxFieldBridge
  */
 @Directive({
   selector:
@@ -80,7 +88,7 @@ export class CngxFormBridge<T = unknown> implements ControlValueAccessor {
 
   /**
    * Installs a tracked effect over `control.value()`. First run is the
-   * post-mount baseline (CVA contract — initial value was delivered via
+   * post-mount baseline (CVA contract - initial value was delivered via
    * `writeValue`); every subsequent change forwards through `fn(value)`
    * inside `untracked()`.
    */
@@ -92,10 +100,7 @@ export class CngxFormBridge<T = unknown> implements ControlValueAccessor {
     this.effectRef = effect(
       () => {
         const value = this.control.value();
-        if (
-          this.lastSeen !== CngxFormBridge.UNSET &&
-          Object.is(value, this.lastSeen)
-        ) {
+        if (this.lastSeen !== CngxFormBridge.UNSET && Object.is(value, this.lastSeen)) {
           return;
         }
         const wasFirstObservation = this.lastSeen === CngxFormBridge.UNSET;

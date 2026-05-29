@@ -19,12 +19,14 @@ import type { CngxSelectActionCallbacks } from './panel-host';
  * `dirty` + `callbacks` feed the panel shell, `shouldTrapFocus` drives
  * the shell's `actionFocusTrapEnabled`, `shouldBlockDismiss` gates the
  * variant's click-outside and Escape handlers.
+ *
+ * @category forms/select/state
  */
 export interface ActionHostBridge {
   /** Dirty flag flipped by the slot's `setDirty` callback. */
   readonly dirty: Signal<boolean>;
   /**
-   * Stable callback bundle for the slot template — structural `equal`
+   * Stable callback bundle for the slot template - structural `equal`
    * pinned to `isPending` only, prevents `ngTemplateOutlet` context churn.
    */
   readonly callbacks: Signal<CngxSelectActionCallbacks>;
@@ -42,9 +44,11 @@ export interface ActionHostBridge {
 
 /**
  * Options for {@link createActionHostBridge}.
+ *
+ * @category forms/select/state
  */
 export interface ActionHostBridgeOptions {
-  /** Bound `close()` from the variant — dismisses the panel. */
+  /** Bound `close()` from the variant - dismisses the panel. */
   readonly close: () => void;
   /** Quick-create commit hook. Flat variants leave undefined; bridge no-ops. */
   readonly commit?: (draft?: { label: string }) => void;
@@ -64,10 +68,10 @@ export interface ActionHostBridgeOptions {
  * the only writable slot; everything else is `computed`. Installs a
  * capture-phase Escape listener on the host element via `DestroyRef`.
  * Injection context required.
+ *
+ * @category forms/select/state
  */
-export function createActionHostBridge(
-  options: ActionHostBridgeOptions,
-): ActionHostBridge {
+export function createActionHostBridge(options: ActionHostBridgeOptions): ActionHostBridge {
   const dirty = signal(false);
   const resetFn = (): void => {
     dirty.set(false);
@@ -122,7 +126,7 @@ export function createActionHostBridge(
     return dirty();
   });
 
-  // Capture-phase Escape on the variant root — trigger input is a sibling
+  // Capture-phase Escape on the variant root - trigger input is a sibling
   // of the popover, so a panel-level listener never sees it.
   const hostEl = inject(ElementRef<HTMLElement>, { optional: true });
   const destroyRef = inject(DestroyRef, { optional: true });
@@ -156,10 +160,10 @@ export function createActionHostBridge(
 
 /**
  * Factory signature for {@link CNGX_ACTION_HOST_BRIDGE_FACTORY}.
+ *
+ * @category forms/select/state
  */
-export type CngxActionHostBridgeFactory = (
-  options: ActionHostBridgeOptions,
-) => ActionHostBridge;
+export type CngxActionHostBridgeFactory = (options: ActionHostBridgeOptions) => ActionHostBridge;
 
 /**
  * Factory token for {@link ActionHostBridge}. Default
@@ -176,12 +180,15 @@ export type CngxActionHostBridgeFactory = (
  *   ],
  * });
  * ```
+ *
+ * @category forms/select/state
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/action-host-bridge.ts
+ * @since 0.1.0
  */
-export const CNGX_ACTION_HOST_BRIDGE_FACTORY =
-  new InjectionToken<CngxActionHostBridgeFactory>(
-    'CngxActionHostBridgeFactory',
-    {
-      providedIn: 'root',
-      factory: () => createActionHostBridge,
-    },
-  );
+export const CNGX_ACTION_HOST_BRIDGE_FACTORY = new InjectionToken<CngxActionHostBridgeFactory>(
+  'CngxActionHostBridgeFactory',
+  {
+    providedIn: 'root',
+    factory: () => createActionHostBridge,
+  },
+);

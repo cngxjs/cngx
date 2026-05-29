@@ -21,6 +21,8 @@ import type { FieldTree } from '@angular/forms/signals';
  *   }
  * }
  * ```
+ *
+ * @category forms/field
  */
 export function focusFirstError(tree: FieldTree<unknown>): boolean {
   const state = tree();

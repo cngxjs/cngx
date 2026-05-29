@@ -1,16 +1,57 @@
 /**
  * @overview
  * Default visuals for `CngxPopoverAction`. The component host has
- * `display: contents` and renders a
- * `<button class="cngx-popover-action cngx-popover-action--{variant}">`.
- * Designed to live inside a `cngx-popover-panel` footer — it picks up
- * the parent panel's `--cngx-popover-panel-accent` / `-text` via CSS
- * inheritance so variant colors flow through automatically.
+ * `display: contents` and renders a `<button>` carrying
+ * `.cngx-popover-action` plus a variant modifier. Designed to live
+ * inside a `cngx-popover-panel` footer - it picks up the parent
+ * panel's `--cngx-popover-panel-accent` / `-text` via CSS inheritance
+ * so variant colors flow through automatically.
  *
- * Falls back to foundation system tokens (`--cngx-color-primary`,
- * `--cngx-color-danger`) so brand-theme overrides propagate without
- * Material. Pair with `@cngx/themes/material/popover-panel-theme`
- * for the Material 3 button-on-surface palette.
+ * **State modifiers**
+ *
+ * - `:hover` - wash applied via `--cngx-popover-action-hover-bg`
+ * - `:focus-visible` - outline ring in
+ *   `--cngx-popover-panel-accent-text`
+ * - `:disabled` / `[aria-disabled="true"]` - opacity 0.5,
+ *   cursor: not-allowed
+ *
+ * **Variants**
+ *
+ * - `--primary` - accent fill from the parent panel, white-on-accent
+ * - `--danger` - danger surface, white text
+ * - `--ghost` - transparent border, hover-only wash
+ *
+ * **Slots**
+ *
+ * - `.cngx-popover-action__sr-only` - sibling announcement span;
+ *   lives outside the @scope wrap, duplicates the canonical
+ *   `.cngx-sr-only` utility for standalone use
+ *
+ * **Inheritance**
+ *
+ * - `--cngx-popover-action-*` (padding, gap, radius, font, transition)
+ *   - leaf tokens, no fallback chain
+ * - Primary variant fill: `--cngx-popover-panel-accent` ->
+ *   `--cngx-color-primary`
+ * - Primary variant text: `--cngx-popover-panel-accent-text` (parent
+ *   panel)
+ * - Danger variant fill: `--cngx-color-danger`
+ * - Outer border: `--cngx-popover-panel-border` (parent panel)
+ *
+ * **Dark mode**
+ *
+ * Three hooks flip the hover wash from a 4% black overlay to a 6%
+ * white overlay so the wash stays visible against the dark panel
+ * surface:
+ *
+ * - `prefers-color-scheme: dark`
+ * - `[data-color-scheme="dark"]` / `.dark` class
+ * - `[data-color-scheme="light"]` / `.light` class (explicit pin)
+ *
+ * **Pair with**
+ *
+ * - `@cngx/themes/material/popover-panel-theme` - Material 3
+ *   button-on-surface palette
  */
 
 @layer cngx.tokens {
@@ -85,7 +126,7 @@
   }
 
   /**
-   * Hover-state surface — neutral default + ghost variant share this
+   * Hover-state surface - neutral default + ghost variant share this
    * token so a single dark-mode swap covers both. Light: 4% black
    * wash; dark: 6% white wash.
    * @group State / Hover
@@ -96,7 +137,7 @@
     initial-value: oklch(0 0 0 / 0.04);
   }
 
-  /* Dark-mode swap — hover wash inverts to white-alpha so it stays
+  /* Dark-mode swap - hover wash inverts to white-alpha so it stays
    * visible against the dark panel surface. */
   @media (prefers-color-scheme: dark) {
     :root:not([data-color-scheme='light']):not(.light) {
@@ -174,7 +215,7 @@
     }
   }
 
-  /* sr-only utility on the announcement span — sibling of the action
+  /* sr-only utility on the announcement span - sibling of the action
    * button, not a descendant, so it sits outside the @scope wrap.
    * Duplicates the canonical declaration in
    * @cngx/core/theming/utilities.css so consumers that don't import

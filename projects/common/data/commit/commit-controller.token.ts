@@ -1,17 +1,16 @@
 import { InjectionToken } from '@angular/core';
 
-import {
-  createCommitController,
-  type CngxCommitController,
-} from './commit-controller';
+import { createCommitController, type CngxCommitController } from './commit-controller';
 
 /**
  * Factory signature for producing {@link CngxCommitController}
  * instances. Consumers override the DI token
  * {@link CNGX_COMMIT_CONTROLLER_FACTORY} with a custom factory to
  * inject retry-with-backoff, offline queues, telemetry, or any
- * other enterprise-specific commit lifecycle — without forking the
+ * other enterprise-specific commit lifecycle - without forking the
  * features that consume it (select family, stepper, future wizards).
+ *
+ * @category common/data/commit
  */
 export type CngxCommitControllerFactory = <T>() => CngxCommitController<T>;
 
@@ -36,12 +35,15 @@ export type CngxCommitControllerFactory = <T>() => CngxCommitController<T>;
  *   ],
  * });
  * ```
+ *
+ * @category common/data/commit
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/data/commit/commit-controller.token.ts
+ * @since 0.1.0
  */
-export const CNGX_COMMIT_CONTROLLER_FACTORY =
-  new InjectionToken<CngxCommitControllerFactory>(
-    'CngxCommitControllerFactory',
-    {
-      providedIn: 'root',
-      factory: () => createCommitController,
-    },
-  );
+export const CNGX_COMMIT_CONTROLLER_FACTORY = new InjectionToken<CngxCommitControllerFactory>(
+  'CngxCommitControllerFactory',
+  {
+    providedIn: 'root',
+    factory: () => createCommitController,
+  },
+);

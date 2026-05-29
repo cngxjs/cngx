@@ -1,24 +1,48 @@
 /**
  * @overview
- * Default chrome for the `CngxListbox` family. Ships enough
- * structural styling that a bare `<ul cngxListbox>…</ul>` renders
- * as a usable option list: list bullets stripped, options laid out
- * with vertical breathing room, keyboard-cursor + selected-state
- * signals painted in.
+ * Theming bridge for the `CngxListbox` family. Ships enough
+ * structural chrome that a bare `<ul cngxListbox>…</ul>` renders
+ * as a usable option list: bullets stripped, options laid out with
+ * breathing room, keyboard-cursor and selected-state signals
+ * painted in. Container surface (background, border, radius) is
+ * owned by the surrounding panel - `select-base.css` paints panel
+ * chrome at higher specificity for the select family.
  *
- * Selectors target the directive's class hooks:
- *   - `[cngxListbox]`     — container
- *   - `[cngxOption]`      — option host
- *   - `.cngx-option--selected | --highlighted | --disabled | --hidden`
+ * **Selectors**
  *
- * Container surface (background, border, radius) is OWNED by the
- * surrounding panel — the select family's `select-base.css` paints
- * its own panel chrome at higher specificity. This file ships only
- * the listbox's internal structure + keyboard-visibility hooks for
- * bare consumers.
+ * - `[cngxListbox]` - container
+ * - `[cngxOption]` - option host
+ * - `.cngx-option--selected`, `--highlighted`, `--disabled`,
+ *   `--hidden` - state hooks
  *
- * Pair with `@cngx/themes/material/interactive-controls-theme` for
- * the Material 3 surface treatment.
+ * **State modifiers**
+ *
+ * - `--highlighted` - low-alpha primary tint (keyboard cursor via
+ *   `aria-activedescendant`)
+ * - `--selected` - higher-alpha primary tint so committed state
+ *   reads stronger than the transient cursor
+ * - `--disabled` - opacity 0.5, `cursor: not-allowed`
+ * - `--hidden` - `display: none`
+ *
+ * Container `:focus-visible` paints a 2px ring (the container
+ * carries focus while `aria-activedescendant` points at the row).
+ *
+ * **Inheritance**
+ *
+ * - `--cngx-listbox-focus-outline-color` -> `--cngx-color-primary`
+ * - `--cngx-option-highlight-bg`, `--cngx-option-selected-bg` -
+ *   low-alpha primary tints, no foundation delegation by design
+ *
+ * **Dark mode**
+ *
+ * Three hooks (`prefers-color-scheme: dark`, `[data-color-scheme="dark"]`,
+ * `.dark`) lift the highlight and selected alphas (0.1 -> 0.18,
+ * 0.18 -> 0.28) so the accent stays perceptible on dark surfaces
+ * without blowing out into a solid block.
+ *
+ * **Pair with**
+ *
+ * - `@cngx/themes/material/interactive-controls-theme` - Material 3 surface
  */
 
 @layer cngx.tokens {

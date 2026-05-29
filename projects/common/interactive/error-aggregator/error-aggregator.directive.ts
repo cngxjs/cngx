@@ -21,6 +21,8 @@ import {
  * Aggregates one-or-more {@link CngxErrorSource} children into a single
  * live A11y surface.
  *
+ * @category common/interactive/error
+ *
  * Each registered source contributes a key + a live `Signal<boolean>` +
  * an optional label. Derived signals (`hasError`, `errorCount`,
  * `activeErrors`, `errorLabels`, `shouldShow`, `announcement`) are
@@ -39,6 +41,12 @@ import {
  *   {{ agg.announcement() }}
  * </span>
  * ```
+ *
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/error-aggregator/error-aggregator.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxErrorSource, CngxErrorScope, CngxErrorState, CngxErrorRegistry
  * <example-url>http://localhost:4200/#/common/interactive/error/aggregator/cngx-card-host-no-scope-errors-visible-immediately</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/error/aggregator/cngx-popover-panel-host</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/error/aggregator/material-mat-tab-label-with-error-count-badge</example-url>
@@ -50,9 +58,7 @@ import {
   selector: '[cngxErrorAggregator]',
   standalone: true,
   exportAs: 'cngxErrorAggregator',
-  providers: [
-    { provide: CNGX_ERROR_AGGREGATOR, useExisting: CngxErrorAggregator },
-  ],
+  providers: [{ provide: CNGX_ERROR_AGGREGATOR, useExisting: CngxErrorAggregator }],
   host: {
     '[class.cngx-error]': 'shouldShow()',
     '[attr.aria-invalid]': 'shouldShow() ? "true" : "false"',
@@ -67,16 +73,16 @@ export class CngxErrorAggregator implements CngxErrorAggregatorContract {
     alias: 'cngxErrorAggregatorName',
   });
 
-  private readonly ancestorScope = inject<CngxErrorScopeContract | null>(
-    CNGX_ERROR_SCOPE,
-    { optional: true },
+  private readonly ancestorScope = inject<CngxErrorScopeContract | null>(CNGX_ERROR_SCOPE, {
+    optional: true,
+  });
+
+  private readonly sourcesState = signal<ReadonlyMap<string, CngxErrorAggregatorSourceEntry>>(
+    new Map(),
+    { equal: errorSourceMapEqual },
   );
 
-  private readonly sourcesState = signal<
-    ReadonlyMap<string, CngxErrorAggregatorSourceEntry>
-  >(new Map(), { equal: errorSourceMapEqual });
-
-  /** @internal — the resolved scope (input wins, else ancestor, else `null`). */
+  /** @internal - the resolved scope (input wins, else ancestor, else `null`). */
   protected readonly effectiveScope = computed<CngxErrorScopeContract | null>(
     () => this.scope() ?? this.ancestorScope,
   );
@@ -117,4 +123,3 @@ export class CngxErrorAggregator implements CngxErrorAggregatorContract {
     });
   }
 }
-

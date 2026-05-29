@@ -42,6 +42,8 @@ import type {
  *   }
  * }
  * ```
+ *
+ * @category forms/select/panel
  */
 export function createRecyclerPanelRendererFactory(
   recycler: CngxRecycler,

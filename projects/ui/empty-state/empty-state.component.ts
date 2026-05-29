@@ -12,11 +12,11 @@ import { type CngxAsyncState, nextUid } from '@cngx/core/utils';
  *
  * Communicates why a view is empty and what the user can do next.
  * Supports three UX contexts via the parent's `emptyReason`:
- * - **first-use** — onboarding, show what's possible
- * - **no-results** — recovery, offer filter reset or search change
- * - **cleared** — confirmation, everything is done
+ * - **first-use** - onboarding, show what's possible
+ * - **no-results** - recovery, offer filter reset or search change
+ * - **cleared** - confirmation, everything is done
  *
- * Icon is provided via the `[cngxEmptyStateIcon]` content slot — no Material
+ * Icon is provided via the `[cngxEmptyStateIcon]` content slot - no Material
  * dependency. Consumers project `<mat-icon>`, `<svg>`, or any icon system.
  *
  * ```html
@@ -25,6 +25,13 @@ import { type CngxAsyncState, nextUid } from '@cngx/core/utils';
  *   <button cngxEmptyStateAction (click)="resetSearch()">Reset</button>
  * </cngx-empty-state>
  * ```
+ *
+ * @category ui/empty-state
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/empty-state/empty-state.component.ts
+ * @since 0.1.0
+ * @relatedTo CngxAsyncState, CngxSkeletonContainer
  * <example-url>http://localhost:4200/#/ui/empty-state/default-no-icon-projected</example-url>
  * <example-url>http://localhost:4200/#/ui/empty-state/inside-a-card-grid</example-url>
  * <example-url>http://localhost:4200/#/ui/empty-state/inside-a-list</example-url>
@@ -81,16 +88,16 @@ import { type CngxAsyncState, nextUid } from '@cngx/core/utils';
 export class CngxEmptyState {
   private readonly uid = nextUid('cngx-empty');
 
-  /** Primary message — what state the user is in. */
+  /** Primary message - what state the user is in. */
   readonly title = input.required<string>();
 
-  /** Supporting detail — clarifies context and suggests next steps. */
+  /** Supporting detail - clarifies context and suggests next steps. */
   readonly description = input<string | undefined>(undefined);
 
-  /** Bind an async state — auto-hides when data is not empty. */
+  /** Bind an async state - auto-hides when data is not empty. */
   readonly state = input<CngxAsyncState<unknown> | undefined>(undefined);
 
-  /** @internal — hidden when state is bound and data is not empty or still loading. */
+  /** @internal - hidden when state is bound and data is not empty or still loading. */
   protected readonly shouldHide = computed(() => {
     const s = this.state();
     if (!s) {

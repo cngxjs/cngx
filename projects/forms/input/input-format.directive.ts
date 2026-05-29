@@ -9,10 +9,18 @@ import {
 } from '@angular/core';
 import { type ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 
-/** Function that formats a raw value for display. */
+/**
+ * Function that formats a raw value for display.
+ *
+ * @category forms/input
+ */
 export type FormatFn = (raw: string) => string;
 
-/** Function that parses a display value back to raw. */
+/**
+ * Function that parses a display value back to raw.
+ *
+ * @category forms/input
+ */
 export type ParseFn = (display: string) => string;
 
 /**
@@ -28,6 +36,13 @@ export type ParseFn = (display: string) => string;
  * <!-- Phone formatting -->
  * <input [cngxInputFormat]="formatPhone" />
  * ```
+ *
+ * @category forms/input
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/input/input-format.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxInput, CngxInputMask, CngxNumericInput
  * <example-url>http://localhost:4200/#/forms/input/utilities/copy-to-clipboard</example-url>
  * <example-url>http://localhost:4200/#/forms/input/utilities/input-clear</example-url>
  * <example-url>http://localhost:4200/#/forms/input/utilities/input-format</example-url>

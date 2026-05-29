@@ -1,18 +1,50 @@
 /**
  * @overview
- * Default visuals for the `CngxBadge` directive. The directive injects
- * a `<span class="cngx-badge-indicator …">` into the host element and
- * toggles modifier classes for color (`primary` / `error` / `warning`
- * / `neutral`), position (`inline` / `above-start` / `above-end` /
- * `below-start` / `below-end`), and dot mode.
+ * Theming bridge for the `CngxBadge` directive. The directive injects
+ * a `<span class="cngx-badge-indicator …">` into the host and toggles
+ * modifier classes for color, position, and dot mode. Importing this
+ * file paints the defaults; consumers who want their own visuals
+ * style `.cngx-badge-indicator` directly.
  *
- * Opt-in: no class on the host is required — the indicator span
- * renders automatically. Import this file to consume the defaults, or
- * style `.cngx-badge-indicator` yourself if they don't fit.
+ * **Color variants**
  *
- * Three-Tier-Override: `--cngx-badge-*` tokens cascade through
- * `@layer cngx.theme`; semantic colors fall back to the foundation
- * system tokens.
+ * - `--primary` - foundation primary, white text
+ * - `--error` - foundation danger, white text
+ * - `--warning` - foundation warning, dark text
+ * - `--neutral` - muted grey, white text
+ *
+ * **Position variants**
+ *
+ * - `--inline` - flows next to host content, borderless
+ * - `--above-start`, `--above-end` - top corner anchor, translated
+ *   half-out via `transform`
+ * - `--below-start`, `--below-end` - bottom corner anchor, same
+ *   half-out translate
+ *
+ * Corner variants get the `--cngx-badge-border` ring; `inline` is
+ * always borderless.
+ *
+ * **Dot mode**
+ *
+ * `.cngx-badge-indicator--dot` shrinks to a fixed `--cngx-badge-dot-size`
+ * pill with zero padding for textless status indicators.
+ *
+ * **Inheritance**
+ *
+ * Variant tokens fall back to the foundation semantic palette:
+ *
+ * - `--cngx-badge-primary-bg` -> `--cngx-color-primary`
+ * - `--cngx-badge-error-bg` -> `--cngx-color-danger`
+ * - `--cngx-badge-warning-bg` -> `--cngx-color-warning`
+ * - `--cngx-badge-neutral-bg` -> static neutral (no foundation token)
+ *
+ * **Dark mode**
+ *
+ * Three hooks (`prefers-color-scheme: dark`, `[data-color-scheme="dark"]`,
+ * `.dark`) repaint `--cngx-badge-border` when consumers opt in to a
+ * cut-out ring via `--cngx-badge-border-dark` / `-light`. Default
+ * border is `0` (no ring), so the dark-mode block is a no-op until
+ * a consumer sets the ring tokens.
  */
 
 @layer cngx.tokens {
@@ -94,7 +126,7 @@
    * solid pill that sits flush on its host (the dot variant in
    * particular would shrink to a single visible pixel under a 2px ring).
    * Set a non-zero border at consumer level when the badge needs to
-   * cut out from a busy host surface — e.g. `--cngx-badge-border: 2px
+   * cut out from a busy host surface - e.g. `--cngx-badge-border: 2px
    * solid var(--mat-sys-surface)`. Only applied in the corner variants
    * (`above-*` / `below-*`); the `inline` variant is borderless either
    * way. `inherits: true` so a single `:root` override reaches every
@@ -158,7 +190,7 @@
   @property --cngx-badge-warning-bg {
     syntax: '<color>';
     inherits: true;
-    initial-value: oklch(0.65 0.20 70);
+    initial-value: oklch(0.65 0.2 70);
   }
 
   /**
@@ -191,7 +223,7 @@
     initial-value: oklch(1 0 0);
   }
 
-  /* Theming hook — `--cngx-badge-border` defaults to `0` (no ring) so
+  /* Theming hook - `--cngx-badge-border` defaults to `0` (no ring) so
    * the indicator reads as a flat pill on its host. Consumers that
    * want a cut-out ring against a busy host surface can opt in at the
    * root, e.g.:
@@ -243,7 +275,7 @@
       user-select: none;
     }
 
-    /* Dot mode — no text, fixed size */
+    /* Dot mode - no text, fixed size */
     :scope.cngx-badge-indicator--dot {
       min-width: var(--cngx-badge-dot-size, 8px);
       width: var(--cngx-badge-dot-size, 8px);
@@ -261,7 +293,7 @@
       color: var(--cngx-badge-error-color, oklch(1 0 0));
     }
     :scope.cngx-badge-indicator--warning {
-      background: var(--cngx-badge-warning-bg, var(--cngx-color-warning, oklch(0.65 0.20 70)));
+      background: var(--cngx-badge-warning-bg, var(--cngx-color-warning, oklch(0.65 0.2 70)));
       color: var(--cngx-badge-warning-color, oklch(0.2 0.01 250));
     }
     :scope.cngx-badge-indicator--neutral {
@@ -269,7 +301,7 @@
       color: var(--cngx-badge-neutral-color, oklch(1 0 0));
     }
 
-    /* Position variants — corner anchors for non-inline placements,
+    /* Position variants - corner anchors for non-inline placements,
      * border ring contrasts the indicator against the host surface. */
     :scope.cngx-badge-indicator--inline {
       position: static;

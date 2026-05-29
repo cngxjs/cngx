@@ -27,6 +27,13 @@ import { CNGX_OPTION_STATUS_HOST, type CngxOptionStatus } from './option-status-
  * Selection state (`isSelected`) is driven externally by the enclosing listbox.
  * In V1 of the stack, `CngxListbox` reads `value()` via the AD item list and
  * exposes its own selection through `CngxOption.isSelected()`.
+ *
+ * @category common/interactive/listbox
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/listbox/option.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxListbox, CngxOptionGroup, CngxActiveDescendant
  * <example-url>http://localhost:4200/#/common/interactive/listbox/search/command-palette</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/listbox/trigger/select-dropdown</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/listbox/base/multi-select</example-url>
@@ -112,8 +119,7 @@ export class CngxOption implements CngxAdItemHandle {
   readonly statusSignal = computed<CngxOptionStatus | null>(
     () => this.statusHost?.statusFor(this.value())() ?? null,
     {
-      equal: (a, b) =>
-        a === b || (!!a && !!b && a.kind === b.kind && a.tpl === b.tpl),
+      equal: (a, b) => a === b || (!!a && !!b && a.kind === b.kind && a.tpl === b.tpl),
     },
   );
 
@@ -129,7 +135,7 @@ export class CngxOption implements CngxAdItemHandle {
    * provided or the term is empty; `true` only when the host's policy
    * explicitly rejects the option for the current term.
    *
-   * Boolean — default `Object.is` equality is sufficient.
+   * Boolean - default `Object.is` equality is sufficient.
    */
   readonly hidden = computed<boolean>(() => {
     const host = this.filterHost;
@@ -144,7 +150,7 @@ export class CngxOption implements CngxAdItemHandle {
   });
 
   /**
-   * Resolved label as a Signal — explicit `label` input wins, falling back to
+   * Resolved label as a Signal - explicit `label` input wins, falling back to
    * the host element's trimmed `textContent` (the W3C-defined plain-text
    * projection of the subtree). Plain text by construction; never reads
    * `innerHTML`. Consumers can text-interpolate this safely on a closed
@@ -165,7 +171,7 @@ export class CngxOption implements CngxAdItemHandle {
   });
 
   /**
-   * Back-compat callable alias — `CngxAdItemHandle.label` accepts both
+   * Back-compat callable alias - `CngxAdItemHandle.label` accepts both
    * `Signal<string>` and `() => string`, so this arrow keeps any
    * consumer that called `option.resolvedLabel()` imperatively working
    * unchanged.

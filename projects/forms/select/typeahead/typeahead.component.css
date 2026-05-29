@@ -1,10 +1,46 @@
 /**
  * @overview
- * `CngxTypeahead` trigger skin. Scalar variant of the combobox —
- * a single inline `<input>` with async autocomplete, no chips. Panel
- * frame, option rows, loading variants, and error surfaces ride on
- * `shared/select-base.css`; this file owns the trigger row, the
- * input, and the clear / caret affordances.
+ * Trigger skin for `CngxTypeahead` - scalar variant of the combobox
+ * with async autocomplete and no chips. The host carries
+ * `.cngx-typeahead`; panel frame, option rows, loading variants, and
+ * error surfaces ride on `shared/select-base.css`. This file owns the
+ * trigger row, the inline `<input>`, and the clear / caret affordances.
+ *
+ * **State modifiers**
+ *
+ * - `:focus-within` on `.cngx-typeahead__trigger` - 2px primary outline
+ *   + 2px offset
+ * - `:has(> [role='combobox'][aria-invalid='true'])` on the trigger -
+ *   danger border + box-shadow glow at focus-within time (paints on the
+ *   visible wrapper without a TS-side rebind since `role="combobox"`
+ *   lives on the input)
+ * - `.cngx-typeahead__input:disabled` - `cursor: not-allowed` + opacity
+ *   dim
+ * - `:focus-visible` on `.cngx-typeahead__clear` - 2px primary outline +
+ *   rounded corner
+ *
+ * **Slots**
+ *
+ * - `.cngx-typeahead__root` - relative-positioned flex wrapper
+ * - `.cngx-typeahead__trigger` - the bordered row
+ * - `.cngx-typeahead__input` - the `role="combobox"` text input
+ * - `.cngx-typeahead__clear` - reset button
+ * - `.cngx-typeahead__caret` - panel-state glyph
+ *
+ * **Inheritance**
+ *
+ * Trigger surface tokens delegate to the foundation so brand swaps on
+ * border / surface propagate without per-component theming:
+ *
+ * - `--cngx-typeahead-border` -> `--cngx-color-border`
+ * - `--cngx-typeahead-bg` -> `--cngx-color-surface`
+ * - invalid surfaces fall back to `--cngx-select-trigger-invalid-*` ->
+ *   `--cngx-color-danger`
+ *
+ * **Pair with**
+ *
+ * - `@cngx/themes/material/select-theme` - Material 3 surface treatment
+ *   shared across the entire select family
  */
 
 @layer cngx.tokens {
@@ -89,7 +125,7 @@
     initial-value: currentColor;
   }
 
-  /* Delegating tokens — trigger border + bg track the foundation
+  /* Delegating tokens - trigger border + bg track the foundation
    * chain so a dark-mode swap on `--cngx-color-border` /
    * `--cngx-color-surface` cascades through the trigger host. */
   :root {
@@ -140,13 +176,9 @@
       border-width: var(--cngx-select-trigger-invalid-border-width, 1px);
     }
     .cngx-typeahead__trigger:has(> [role='combobox'][aria-invalid='true']):focus-within {
-      outline: 2px solid
-        var(--cngx-select-trigger-invalid-outline-color, oklch(0.6 0.18 25));
+      outline: 2px solid var(--cngx-select-trigger-invalid-outline-color, oklch(0.6 0.18 25));
       outline-offset: 2px;
-      box-shadow: var(
-        --cngx-select-trigger-invalid-glow,
-        0 0 0 3px oklch(0.6 0.18 25 / 0.2)
-      );
+      box-shadow: var(--cngx-select-trigger-invalid-glow, 0 0 0 3px oklch(0.6 0.18 25 / 0.2));
     }
 
     .cngx-typeahead__input {

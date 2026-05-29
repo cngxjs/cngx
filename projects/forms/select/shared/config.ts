@@ -31,6 +31,8 @@ import type {
 
 /**
  * Override contexts mirroring the per-instance `*cngxSelect*` slots.
+ *
+ * @category forms/select/config
  */
 export interface CngxSelectTemplateContexts {
   readonly check?: CngxSelectCheckContext;
@@ -55,6 +57,8 @@ export interface CngxSelectTemplateContexts {
 
 /**
  * Live-region announcer config: politeness + formatter.
+ *
+ * @category forms/select/config
  */
 export interface CngxSelectAnnouncerConfig {
   readonly enabled?: boolean;
@@ -78,34 +82,44 @@ export interface CngxSelectAnnouncerConfig {
 
 /**
  * First-load async view variant. Per-instance `*cngxSelectLoading` wins.
+ *
+ * @category forms/select/config
  */
 export type CngxSelectLoadingVariant = 'skeleton' | 'spinner' | 'bar' | 'text';
 
 /**
  * Subsequent-load indicator overlaying visible options. Per-instance
  * `*cngxSelectRefreshing` wins. `'none'` suppresses.
+ *
+ * @category forms/select/config
  */
 export type CngxSelectRefreshingVariant = 'bar' | 'spinner' | 'dots' | 'none';
 
 /**
  * Selection-indicator position relative to the option label.
+ *
+ * @category forms/select/config
  */
 export type CngxSelectSelectionIndicatorPosition = 'before' | 'after';
 
 /**
  * Selection-indicator glyph.
  *
- * - `'auto'` — `'checkbox'` for multi/combobox, `'checkmark'` for single.
- * - `'checkbox'` — bordered checkbox.
- * - `'checkmark'` — bare checkmark.
- * - `'radio'` — dot-in-circle. Single-select intent; multi panels render
+ * - `'auto'` - `'checkbox'` for multi/combobox, `'checkmark'` for single.
+ * - `'checkbox'` - bordered checkbox.
+ * - `'checkmark'` - bare checkmark.
+ * - `'radio'` - dot-in-circle. Single-select intent; multi panels render
  *   it but the exclusive-selection visual is misleading there.
+ *
+ * @category forms/select/config
  */
 export type CngxSelectSelectionIndicatorVariant = 'auto' | 'checkbox' | 'checkmark' | 'radio';
 
 /**
  * ARIA-label overrides. Per-instance
  * `[clearButtonAriaLabel]`/`[chipRemoveAriaLabel]` wins.
+ *
+ * @category forms/select/config
  */
 export interface CngxSelectAriaLabels {
   /** Single → `'Clear selection'`; multi/combobox/typeahead → `'Reset selection'`. */
@@ -132,6 +146,8 @@ export interface CngxSelectAriaLabels {
  * Built-in recycler virtualiser tuning. Provide
  * `CNGX_PANEL_RENDERER_FACTORY` directly for custom scrollElement,
  * per-index `estimateSize`, or grid layout.
+ *
+ * @category forms/select/config
  */
 export interface CngxSelectVirtualizationConfig {
   /** Item height in px. Default `32`. */
@@ -173,7 +189,7 @@ export interface CngxSelectFallbackLabels {
  * Resolved select-family configuration cascade. Built by composing
  * `with*` features through `provideSelectConfig` /
  * `provideSelectConfigAt`; consumed via the `CNGX_SELECT_CONFIG`
- * injection token. Every field is optional — unset keys fall back to
+ * injection token. Every field is optional - unset keys fall back to
  * the library defaults.
  */
 export interface CngxSelectConfig {
@@ -181,7 +197,7 @@ export interface CngxSelectConfig {
    * Panel width strategy:
    * - `'trigger'` (default): panel min-width matches trigger width via `anchor-size(width)`.
    * - `number`: fixed px min-width.
-   * - `null`: natural — panel sizes to content.
+   * - `null`: natural - panel sizes to content.
    */
   readonly panelWidth?: 'trigger' | number | null;
   /** Default first-load indicator variant. */
@@ -201,39 +217,23 @@ export interface CngxSelectConfig {
    * `inputmode` for input-trigger variants. Default `'search'`.
    * Button-trigger variants don't read this.
    */
-  readonly inputMode?:
-    | 'search'
-    | 'text'
-    | 'email'
-    | 'url'
-    | 'tel'
-    | 'numeric'
-    | 'decimal'
-    | 'none';
+  readonly inputMode?: 'search' | 'text' | 'email' | 'url' | 'tel' | 'numeric' | 'decimal' | 'none';
   /**
    * `enterkeyhint` forced across input-trigger variants. `null` keeps
    * each variant's baseline (Typeahead `'done'`, Combobox `'enter'`,
    * ActionSelect `'go'`, ActionMultiSelect `'enter'`).
    */
-  readonly enterKeyHint?:
-    | 'enter'
-    | 'done'
-    | 'go'
-    | 'next'
-    | 'previous'
-    | 'search'
-    | 'send'
-    | null;
+  readonly enterKeyHint?: 'enter' | 'done' | 'go' | 'next' | 'previous' | 'search' | 'send' | null;
   /**
    * Chip-strip overflow for multi-value triggers.
-   * - `'wrap'` (default) — chips wrap, trigger grows.
-   * - `'scroll-x'` — single row, horizontal scroll.
-   * - `'truncate'` — first `maxVisibleChips` chips + `+N` badge.
+   * - `'wrap'` (default) - chips wrap, trigger grows.
+   * - `'scroll-x'` - single row, horizontal scroll.
+   * - `'truncate'` - first `maxVisibleChips` chips + `+N` badge.
    */
   readonly chipOverflow?: 'wrap' | 'scroll-x' | 'truncate';
   /**
    * Opt-in recycler virtualisation. Custom virtualisation pipelines
-   * provide `CNGX_PANEL_RENDERER_FACTORY` directly — that token wins.
+   * provide `CNGX_PANEL_RENDERER_FACTORY` directly - that token wins.
    */
   readonly virtualization?: CngxSelectVirtualizationConfig | null;
   /** Truncate threshold. Values ≤ 0 coerced to `1`. Default `3`. */
@@ -301,10 +301,7 @@ export interface CngxSelectConfig {
 
 /** Library defaults merged with `provideSelectConfig` user values. @internal */
 export const CNGX_SELECT_DEFAULTS: Required<
-  Omit<
-    CngxSelectConfig,
-    'panelClass' | 'templates' | 'announcer' | 'ariaLabels' | 'fallbackLabels'
-  >
+  Omit<CngxSelectConfig, 'panelClass' | 'templates' | 'announcer' | 'ariaLabels' | 'fallbackLabels'>
 > & {
   readonly panelClass: string | readonly string[];
   readonly templates: Required<NonNullable<CngxSelectConfig['templates']>>;
@@ -323,15 +320,7 @@ export const CNGX_SELECT_DEFAULTS: Required<
   popoverPlacement: 'bottom',
   inputMode: 'search',
   // null = each variant applies its own enterkeyhint baseline.
-  enterKeyHint: null as
-    | 'enter'
-    | 'done'
-    | 'go'
-    | 'next'
-    | 'previous'
-    | 'search'
-    | 'send'
-    | null,
+  enterKeyHint: null as 'enter' | 'done' | 'go' | 'next' | 'previous' | 'search' | 'send' | null,
   chipOverflow: 'wrap' as 'wrap' | 'scroll-x' | 'truncate',
   maxVisibleChips: 3,
   virtualization: null as CngxSelectVirtualizationConfig | null,
@@ -349,7 +338,7 @@ export const CNGX_SELECT_DEFAULTS: Required<
     enabled: true,
     politeness: 'polite',
     format: ({ selectedLabel, fieldLabel, multi, action, count, toIndex }): string => {
-      // `'created'` reads identically in single + multi — both
+      // `'created'` reads identically in single + multi - both
       // cardinalities share the sentence shape.
       if (action === 'created') {
         if (selectedLabel == null) {
@@ -424,6 +413,10 @@ export const CNGX_SELECT_DEFAULTS: Required<
 
 /**
  * Resolved {@link CngxSelectConfig} token.
+ *
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/config.ts
+ * @since 0.1.0
  */
 export const CNGX_SELECT_CONFIG = new InjectionToken<CngxSelectConfig>('CngxSelectConfig');
 
@@ -493,9 +486,7 @@ export function withCommitErrorAnnouncePolicy(
  * Default popover placement for flat variants. Default `'bottom'`.
  * Action organisms use `withActionPopoverPlacement`.
  */
-export function withPopoverPlacement(
-  placement: PopoverPlacement,
-): CngxSelectConfigFeature {
+export function withPopoverPlacement(placement: PopoverPlacement): CngxSelectConfigFeature {
   return feature({ popoverPlacement: placement });
 }
 
@@ -548,8 +539,7 @@ export function withMaxVisibleChips(count: number): CngxSelectConfigFeature {
 export function withVirtualization(
   config: CngxSelectVirtualizationConfig | boolean = true,
 ): CngxSelectConfigFeature {
-  const resolved =
-    config === false ? null : config === true ? {} : config;
+  const resolved = config === false ? null : config === true ? {} : config;
   return feature({ virtualization: resolved });
 }
 
@@ -571,18 +561,14 @@ export function withVirtualization(
  * });
  * ```
  */
-export function withFallbackLabels(
-  labels: CngxSelectFallbackLabels,
-): CngxSelectConfigFeature {
+export function withFallbackLabels(labels: CngxSelectFallbackLabels): CngxSelectConfigFeature {
   return feature({ fallbackLabels: labels });
 }
 
 /**
  * Class list applied to every select panel.
  */
-export function withPanelClass(
-  panelClass: string | readonly string[],
-): CngxSelectConfigFeature {
+export function withPanelClass(panelClass: string | readonly string[]): CngxSelectConfigFeature {
   return feature({ panelClass });
 }
 
@@ -684,9 +670,7 @@ export function withAriaLabels(labels: CngxSelectAriaLabels): CngxSelectConfigFe
  * App-wide defaults for the Select family. `provideSelectConfigAt` and
  * per-instance inputs win.
  */
-export function provideSelectConfig(
-  ...features: CngxSelectConfigFeature[]
-): EnvironmentProviders {
+export function provideSelectConfig(...features: CngxSelectConfigFeature[]): EnvironmentProviders {
   const merged: {
     -readonly [K in keyof CngxSelectConfig]?: CngxSelectConfig[K];
   } = {};
@@ -705,9 +689,7 @@ export function provideSelectConfig(
       merged.ariaLabels = { ...merged.ariaLabels, ...ariaLabels };
     }
   }
-  return makeEnvironmentProviders([
-    { provide: CNGX_SELECT_CONFIG, useValue: merged },
-  ]);
+  return makeEnvironmentProviders([{ provide: CNGX_SELECT_CONFIG, useValue: merged }]);
 }
 
 /**
@@ -720,9 +702,7 @@ export function provideSelectConfig(
  * })
  * ```
  */
-export function provideSelectConfigAt(
-  ...features: CngxSelectConfigFeature[]
-): Provider[] {
+export function provideSelectConfigAt(...features: CngxSelectConfigFeature[]): Provider[] {
   const merged: {
     -readonly [K in keyof CngxSelectConfig]?: CngxSelectConfig[K];
   } = {};

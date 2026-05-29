@@ -1,20 +1,38 @@
 /**
  * @overview
- * Default visuals for `CngxIcon`. Sized relative to text-context via
- * `em` so an icon next to running text matches the font scale
- * automatically. Color follows `currentColor` so the icon inherits
- * the surrounding text's color without per-instance overrides.
+ * Default visuals for `CngxIcon`. The host carries `.cngx-icon` and
+ * sizes itself in `em` so an icon next to running text matches the
+ * surrounding font scale automatically. Color follows `currentColor`,
+ * so the glyph inherits the container's text color without any
+ * per-instance override.
  *
- * Size-variant classes (`.cngx-icon--xs`/`--sm`/`--md`/`--lg`/`--xl`)
- * pin the active size token to the matching scale step. Consumers
- * can either swap a variant value globally (override
- * `--cngx-icon-size-xs`) or pin a specific instance via inline
- * `--cngx-icon-size`.
+ * **Size variants**
+ *
+ * Each size pins `--cngx-icon-size`. Consumers can swap a variant
+ * value globally (override `--cngx-icon-size-xs`) or pin a specific
+ * instance via inline `--cngx-icon-size`:
+ *
+ * - `--xs` - 0.75em
+ * - `--sm` - 1em
+ * - `--md` - 1.25em (default)
+ * - `--lg` - 1.5em
+ * - `--xl` - 2em
+ *
+ * **Slots**
+ *
+ * - `:scope > svg` - projected SVG fills the host box, `fill:
+ *   currentColor` so brand color flows through
+ *
+ * **Inheritance**
+ *
+ * Leaf tokens - the active size and color are component-local.
+ * `--cngx-icon-color` defaults to `currentColor` so no fallback
+ * chain is needed for the color cascade.
  */
 
 @layer cngx.tokens {
   /**
-   * Active size of the icon — consumed by the `:scope` rule. Driven
+   * Active size of the icon - consumed by the `:scope` rule. Driven
    * by the size-variant classes or set inline for one-off overrides.
    * @group Layout
    */
@@ -89,7 +107,7 @@
 @layer cngx.components {
   @scope (.cngx-icon) {
     :scope {
-      /* Functional — hardcoded */
+      /* Functional - hardcoded */
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -118,7 +136,7 @@
       --cngx-icon-size: var(--cngx-icon-size-xl, 2em);
     }
 
-    /* Projected SVG content — no encapsulation barrier now, so a plain
+    /* Projected SVG content - no encapsulation barrier now, so a plain
      * descendant selector suffices (previously needed ::ng-deep). */
     :scope > svg {
       width: 1em;

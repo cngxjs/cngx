@@ -29,6 +29,13 @@ import { computed, DestroyRef, Directive, effect, ElementRef, inject, input } fr
  *   <a href="/settings">Settings</a>
  * </nav>
  * ```
+ *
+ * @category common/a11y
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/a11y/focus/focus-trap.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxAutofocus, CngxFocusRestore, CngxDialog
  * <example-url>http://localhost:4200/#/common/a11y/focus-trap/modal-dialog</example-url>
  * <example-url>http://localhost:4200/#/common/a11y/focus-trap/slide-out-drawer</example-url>
  */

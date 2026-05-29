@@ -1,17 +1,64 @@
 /**
  * @overview
- * Token-driven appearance for native form-element atoms. Bare
- * `<button>`, `<input>`, `<textarea>`, `<select>`, `<kbd>`, `<dl>`,
- * `<hr>` in generator demos (and any consumer app that wants the
- * same defaults) render intentionally without per-instance
- * overrides. All values come from system tokens, so dark mode and
- * density switches work automatically.
+ * Foundation base layer. Renders bare HTML elements with token-
+ * driven defaults so demo pages, generator iframes, and consumer
+ * apps that want the cngx look without per-instance overrides get a
+ * sane baseline. Every value pulls from a `--cngx-*` system token,
+ * so dark mode and density switches reach these elements through
+ * the same cascade as cngx-prefixed components. Lives in
+ * `@layer cngx.base`, between `cngx.tokens` and `cngx.components`.
  *
- * Opt out per-element in `cngx.components` or the app layer. Per the
- * cngx theming rule, no per-element token families exist on bare
- * HTML — consumers escape via `@layer cngx.theme` overrides on the
- * bare selectors, or use cngx-prefixed components for full
- * token-driven theming.
+ * **Elements styled**
+ *
+ * - `:root` scrollbar - `scrollbar-color: var(--cngx-color-border)`
+ *   on a transparent track, `scrollbar-width: thin`. Trims fat
+ *   Windows-style bars to a macOS-overlay feel and matches the
+ *   foundation border tone in both light and dark mode.
+ * - `<input>`, `<textarea>`, `<select>` - transparent surface,
+ *   hairline border, foundation typography, brand caret on text
+ *   inputs (`caret-color: var(--cngx-color-primary)`). The focus
+ *   ring is owned by `cngx.reset` `:focus-visible` so layout
+ *   doesn't shift between resting and focused state.
+ * - `<kbd>` - inline block, hairline border with a 2 px bottom edge
+ *   (key-cap silhouette), monospaced.
+ * - `<dl>` - two-column grid (`max-content 1fr`), tabular figures on
+ *   `<dd>`, muted opacity on `<dt>`.
+ * - `<hr>` - hairline `border-block-start` matching `--cngx-color-
+ *   border`, rhythmic `--cngx-space-md` block margin. Strips the
+ *   1990s inset bevel.
+ *
+ * Bare `<button>` is deliberately NOT styled. The cngx browser-
+ * native default-theme rule forbids per-element token families on
+ * bare HTML - a partial contract forces every component-projected
+ * button (`cngxAlertAction`, banner action, ...) to override.
+ * Components that need a styled button ship their own `.cngx-
+ * <comp>__action` class.
+ *
+ * **Inheritance**
+ *
+ * Every property reads through `var(--cngx-*, <static-fallback>)`,
+ * so a single override on `--cngx-color-border` or `--cngx-space-md`
+ * in `@layer cngx.theme` reskins the entire base layer without
+ * touching the bare selectors. Consumers who want full token-driven
+ * theming on a per-element basis switch from bare HTML to the
+ * matching cngx-prefixed component instead.
+ *
+ * **Dark mode**
+ *
+ * No local overrides. Every value chains through `--cngx-color-*` /
+ * `--cngx-space-*` / `--cngx-radius-*`, which `system-tokens.css`
+ * already swaps across `prefers-color-scheme`, `[data-color-scheme]`,
+ * and the `.dark` / `.light` class hooks. Scrollbar, input borders,
+ * `<kbd>` chrome, and `<hr>` hairline track the surface
+ * automatically.
+ *
+ * **Pair with**
+ *
+ * - `@cngx/core/theming/system-tokens` - source of every token this
+ *   layer consumes
+ * - `@cngx/core/theming/reset` - owns the universal `:focus-visible`
+ *   ring on the form elements styled here
+ * - `@cngx/core/theming/utilities` - shares the `cngx.base` layer
  */
 
 @layer cngx.base {

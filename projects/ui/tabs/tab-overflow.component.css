@@ -1,11 +1,44 @@
 /**
  * @overview
- * Default visuals for `<cngx-tab-overflow>` — the thematic skin.
- * Structural rules (flex / grid, sr-only) come from `tabs-base.css`
- * in `@cngx/common/tabs` via the parent organism's `styleUrls` —
- * when tab-overflow renders inside tab-group, the base structural
- * rules already loaded. This file owns trigger-button shape,
- * popover panel layout, and per-row affordances.
+ * Thematic skin for `<cngx-tab-overflow>` - the trailing-edge
+ * popover surface that lists clipped tabs. Structural rules (flex /
+ * grid, sr-only) come from `tabs-base.css` in `@cngx/common/tabs`
+ * via the parent organism's `styleUrls`. This file owns trigger-
+ * button shape, popover panel layout, and per-row affordances. The
+ * host carries `.cngx-tab-overflow` and renders `__trigger` +
+ * `__panel-surface` + `__list` + `__item` children.
+ *
+ * **State modifiers**
+ *
+ * On `.cngx-tab-overflow__trigger`:
+ *
+ * - `[hidden]` - collapsed when no tabs are clipped
+ * - `:focus-visible` - shared `--cngx-tab-focus-ring` outline
+ *
+ * On `.cngx-tab-overflow__item`:
+ *
+ * - `:hover` - tints via `--cngx-tab-overflow-item-hover-bg`
+ * - `--active` - APG combobox highlighted-option signal; tints
+ *   background and draws an inset outline ring
+ * - `[aria-disabled="true"]` - cursor + opacity dim via
+ *   `--cngx-tab-disabled-opacity`
+ *
+ * **Slots**
+ *
+ * - `.cngx-tab-overflow__trigger` - chevron-style overflow button
+ *   (consumes shared `--cngx-tab-gap` / `--cngx-tab-padding` /
+ *   `--cngx-tab-color`)
+ * - `.cngx-tab-overflow__panel-surface` - scrollable popover panel
+ *   with min-width / max-height caps
+ * - `.cngx-tab-overflow__list` - unstyled `<ul>` column flex
+ * - `.cngx-tab-overflow__item` - per-row entry with hover / active
+ *   states
+ *
+ * **Inheritance**
+ *
+ * - `--cngx-tab-overflow-bg` -> `--cngx-tab-strip-bg`
+ * - `--cngx-tab-overflow-item-active-bg` -> `--cngx-tab-overflow-
+ *   item-hover-bg`
  */
 
 @layer cngx.tokens {
@@ -122,7 +155,7 @@
   }
 
   /**
-   * Background of the AD-active item — APG combobox pattern
+   * Background of the AD-active item - APG combobox pattern
    * requires visible indication of the highlighted option.
    * @group State / Active
    */
@@ -219,7 +252,7 @@
     }
 
     /*
-     * Visible feedback for the AD-active option — bound from
+     * Visible feedback for the AD-active option - bound from
      * `ad.activeId() === adItemId(tab)` in the template. APG combobox
      * pattern requires visible indication of the highlighted option.
      */

@@ -4,7 +4,7 @@ import { type CngxPaginate } from '@cngx/common/data';
 
 /**
  * Material paginator wrapper that connects to a {@link CngxPaginate} directive
- * via an explicit `[cngxPaginateRef]` input — no ancestor injection.
+ * via an explicit `[cngxPaginateRef]` input - no ancestor injection.
  *
  * ```html
  * <div cngxPaginate #pg="cngxPaginate" [total]="items.length">
@@ -21,6 +21,13 @@ import { type CngxPaginate } from '@cngx/common/data';
  * </div>
  * <cngx-mat-paginator [cngxPaginateRef]="pg" />
  * ```
+ *
+ * @category ui/material
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/material/mat-paginator.ts
+ * @since 0.1.0
+ * @relatedTo CngxPaginate, CngxDataSource
  * <example-url>http://localhost:4200/#/common/data/data-source/datasource-cngxpaginate-manual-pipeline</example-url>
  * <example-url>http://localhost:4200/#/common/data/data-source/signal-observable-bridge</example-url>
  * <example-url>http://localhost:4200/#/common/data/paginate-list/paginated-list-cngxpaginate-cngxmatpaginator</example-url>

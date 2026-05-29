@@ -1,18 +1,41 @@
 /**
  * @overview
- * Canonical cascade-layer order for the entire cngx library. Load
- * this file once, before any other cngx CSS. The declaration is
- * global and idempotent; downstream files use
- * `@layer cngx.tokens { … }` (etc) and append to the order
- * established here rather than redefining it.
+ * Foundation cascade-layer declaration for the entire cngx library.
+ * Load this file once, before any other cngx CSS. The declaration
+ * is global and idempotent: downstream files use
+ * `@layer cngx.tokens { ... }` (etc.) and append into the order
+ * established here rather than redefining it. A duplicate
+ * `@layer cngx.reset, ...` later in the document is harmless - the
+ * first declaration wins.
  *
- * Order:
- * - `cngx.reset` — universal baseline (box-sizing, button neutralize,
- *   focus-ring)
- * - `cngx.tokens` — `@property` registrations + light-dark defaults
- * - `cngx.base` — bare-element atoms (button / input / kbd / dl / hr)
- * - `cngx.components` — cngx-prefixed component styles
- * - `cngx.theme` — consumer-side token overrides
- * - `app` — consumer's own application styles (overrides everything)
+ * **Layers**
+ *
+ * Listed in cascade order, lowest priority first. A rule in a later
+ * layer always beats a rule in an earlier layer, regardless of
+ * selector specificity:
+ *
+ * - `cngx.reset` - universal baseline (`box-sizing`, bare-`<button>`
+ *   neutralization, root rendering knobs, focus-ring)
+ * - `cngx.tokens` - `@property` registrations + light / dark default
+ *   blocks for every system token
+ * - `cngx.base` - bare-element atoms (`<input>`, `<textarea>`,
+ *   `<select>`, `<kbd>`, `<dl>`, `<hr>`) styled from system tokens
+ *   plus low-level utilities (`.cngx-sr-only`)
+ * - `cngx.components` - cngx-prefixed component styles
+ *   (`.cngx-card`, `.cngx-toggle`, ...). Component CSS files use
+ *   `@layer cngx.components { ... }` so they sit here regardless of
+ *   their `styleUrl` load order.
+ * - `cngx.theme` - consumer-side token overrides. Re-skin the
+ *   library by overriding `--cngx-color-*` and friends here without
+ *   touching component selectors.
+ * - `app` - consumer application styles. Wins over everything cngx
+ *   ships so feature code never needs `!important` to escape the
+ *   library default.
+ *
+ * **Pair with**
+ *
+ * - `@cngx/core/theming/reset` - appends into `cngx.reset`
+ * - `@cngx/core/theming/system-tokens` - appends into `cngx.tokens`
+ * - `@cngx/core/theming/base` + `utilities` - append into `cngx.base`
  */
 @layer cngx.reset, cngx.tokens, cngx.base, cngx.components, cngx.theme, app;

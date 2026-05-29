@@ -5,6 +5,8 @@
  * const expensive = memoize((id: string) => computeHeavy(id));
  * expensive('a'); // computes
  * expensive('a'); // cached
+ *
+ * @category core/utils
  */
 export function memoize<K, V>(fn: (key: K) => V): (key: K) => V {
   const cache = new Map<K, V>();

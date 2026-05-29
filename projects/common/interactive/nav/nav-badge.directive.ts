@@ -1,10 +1,14 @@
 import { computed, Directive, input } from '@angular/core';
 
-/** Visual variant for the nav badge. */
+/**
+ * Visual variant for the nav badge.
+ *
+ * @category common/interactive
+ */
 export type NavBadgeVariant = 'count' | 'dot' | 'status';
 
 /**
- * Inline badge for navigation items — shows counts, dots, or status indicators.
+ * Inline badge for navigation items - shows counts, dots, or status indicators.
  *
  * For generic in-place counter/dot indicators on arbitrary hosts (buttons,
  * avatars, icons), prefer `CngxBadge` from `@cngx/common/display`. `CngxNavBadge`
@@ -14,7 +18,7 @@ export type NavBadgeVariant = 'count' | 'dot' | 'status';
  * Applies `aria-hidden="true"` by default because badges typically duplicate
  * information already conveyed by the link text. When the badge conveys
  * unique information (e.g., unread count), provide `[ariaLabel]` to make
- * it accessible — this removes `aria-hidden` and adds a visually-hidden label.
+ * it accessible - this removes `aria-hidden` and adds a visually-hidden label.
  *
  * ### Decorative badge (aria-hidden, default)
  * ```html
@@ -33,6 +37,12 @@ export type NavBadgeVariant = 'count' | 'dot' | 'status';
  * ```html
  * <a cngxNavLink>Updates <span cngxNavBadge variant="dot" [value]="1"></span></a>
  * ```
+ *
+ * @category common/interactive
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/nav/nav-badge.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxNavLink, CngxNavGroup, CngxNavLabel, CngxBadge
  * <example-url>http://localhost:4200/#/common/interactive/nav/nav-badge-counts-and-dots</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/nav/nav-group-accordion-sections</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/nav/nav-links-active-state-depth</example-url>

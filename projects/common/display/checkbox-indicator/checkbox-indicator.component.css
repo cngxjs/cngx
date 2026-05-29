@@ -1,19 +1,54 @@
 /**
  * @overview
- * Default visuals for `CngxCheckboxIndicator`. Ships two presentation
- * variants: the boxed checkmark/dash (default) and the bare
- * `checkmark` glyph (no box). Checked-state colors fall back through
- * `--cngx-color-primary` so a brand override in `@layer cngx.theme`
- * propagates automatically.
+ * Default visuals for `CngxCheckboxIndicator`. The host carries
+ * `.cngx-checkbox-indicator` and reserves a constant box even when
+ * the inner glyph is not rendered (the `checkmark` variant has empty
+ * content while unchecked), so adjacent labels stay put across state
+ * toggles. The inner `__box` is a child of the host - several tokens
+ * carry `inherits: true` so size-variant overrides on the host
+ * cascade through.
  *
- * The host reserves a constant box even when the inner glyph is not
- * rendered (the `checkmark` variant has empty content while
- * unchecked) so adjacent labels stay put across state toggles.
+ * **State modifiers**
+ *
+ * - `--checked` - box fills with the checked-bg, glyph paints in
+ *   the checked-color
+ * - `--indeterminate` - same surface as checked, dash glyph
+ * - `--disabled` - opacity dim via `--cngx-checkbox-disabled-opacity`
+ *
+ * **Variants**
+ *
+ * - `--checkmark` - bare glyph, no box; the checked color is honored
+ *   on the inner `__check` / `__dash` directly
+ *
+ * **Size variants**
+ *
+ * Each size pins `--cngx-checkbox-size`:
+ *
+ * - `--sm` - 0.875em
+ * - `--md` - 1em (default)
+ * - `--lg` - 1.25em
+ *
+ * **Slots**
+ *
+ * - `.cngx-checkbox-indicator__box` - the bordered square
+ * - `.cngx-checkbox-indicator__check` - checkmark glyph
+ * - `.cngx-checkbox-indicator__dash` - indeterminate-state glyph
+ *
+ * **Inheritance**
+ *
+ * - `--cngx-checkbox-checked-bg` -> `--cngx-color-primary` (also
+ *   pinned via `:root` delegation so dark-mode primary cascades
+ *   without the @property initial-value shadowing the chain)
+ * - `--cngx-checkbox-radius` -> `--cngx-radius-sm`
+ * - `--cngx-checkbox-color` -> `--cngx-color-primary` (checkmark
+ *   variant only)
+ * - `--cngx-checkbox-bg`, `--cngx-checkbox-border`,
+ *   `--cngx-checkbox-checked-color` - leaf tokens
  */
 
 @layer cngx.tokens {
   /**
-   * Active size of the indicator box. `inherits: true` is load-bearing —
+   * Active size of the indicator box. `inherits: true` is load-bearing -
    * the inner `__box` is a child of the host, and the size-variant
    * classes (`--sm` / `--md` / `--lg`) set this token on the host. With
    * `inherits: false` the child would only see the registered initial
@@ -135,7 +170,7 @@
     initial-value: 1.25em;
   }
 
-  /* Delegating token — checked-state bg tracks the foundation
+  /* Delegating token - checked-state bg tracks the foundation
    * primary so a dark-mode swap on `--cngx-color-primary` cascades
    * through the checkbox host. Without this :root override the
    * @property initial-value (light primary) would shadow the
@@ -214,7 +249,7 @@
       user-select: none;
     }
 
-    /* checkmark variant — bare glyph, no box. Honor the checked color directly. */
+    /* checkmark variant - bare glyph, no box. Honor the checked color directly. */
     :scope.cngx-checkbox-indicator--checkmark .cngx-checkbox-indicator__check,
     :scope.cngx-checkbox-indicator--checkmark .cngx-checkbox-indicator__dash {
       color: var(--cngx-checkbox-color, var(--cngx-color-primary, oklch(0.66 0.19 50)));

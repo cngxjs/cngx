@@ -1,8 +1,22 @@
 /**
  * @overview
- * Default visuals for `CngxRadioGroup` — a flex layout container for
- * `<cngx-radio>` children. Stacks vertically by default;
- * `.cngx-radio-group--horizontal` flips to a row.
+ * Default visuals for `CngxRadioGroup`. The host carries
+ * `.cngx-radio-group` and frames a flex layout for projected
+ * `<cngx-radio>` children. Stacks vertically by default. The scope
+ * root pins `vertical-align: top` so the host doesn't shift when the
+ * first leaf's indicator paints / unpaints its dot (the dot's
+ * appearance changes the inline-flex baseline by ~2px).
+ *
+ * **Variants**
+ *
+ * - `--horizontal` - flips to a row (no wrap, so consumers control
+ *   overflow explicitly)
+ *
+ * **Inheritance**
+ *
+ * Gap cascades through the foundation:
+ *
+ * - `--cngx-radio-group-gap` -> `--cngx-space-sm`
  */
 
 @layer cngx.tokens {

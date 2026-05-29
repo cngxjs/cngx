@@ -5,11 +5,13 @@ import type { FilterExpression, FilterFieldDef } from './filter-builder.types';
 /**
  * Context object handed to the consumer template when the
  * `cngxFilterBuilderValueEditor` slot resolves. Mirrors the data the
- * default native / component-outlet branches consume — `value` is the
+ * default native / component-outlet branches consume - `value` is the
  * current expression value, `fieldDef` carries the field metadata,
  * `setValue` is the row's write-through callback, and `expression`
  * exposes the full node for consumers that need the operator alongside
  * the value (e.g. range editors that toggle UI on `'between'`).
+ *
+ * @category forms/filter-builder/slots
  */
 export interface CngxFilterBuilderValueEditorContext<TValue> {
   readonly value: TValue;
@@ -24,6 +26,12 @@ export interface CngxFilterBuilderValueEditorContext<TValue> {
  * row prefers this template over the native / component-outlet branches;
  * the cascade falls back to `CONFIG.templates.valueEditor` and finally
  * to the default editor branches when neither is provided.
+ *
+ * @category forms/filter-builder/slots
+ * @docsKind primary
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder-value-editor.slot.ts
+ * @since 0.1.0
+ * @relatedTo CngxFilterBuilder, CngxFilterBuilderExpressionTemplate, CngxFilterBuilderRemoveButton
  */
 @Directive({
   selector: 'ng-template[cngxFilterBuilderValueEditor]',

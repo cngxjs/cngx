@@ -4,11 +4,11 @@ import type { AlertSeverity } from '../alert/alert';
 import { CngxBanner } from './banner.service';
 
 /**
- * Declarative banner trigger — renders nothing, shows/dismisses a global banner
+ * Declarative banner trigger - renders nothing, shows/dismisses a global banner
  * when `[when]` changes.
  *
  * When `[when]` becomes `true`, the banner appears. When `false`, it is dismissed.
- * The banner's lifecycle is tied to the signal — perfect for reactive system state
+ * The banner's lifecycle is tied to the signal - perfect for reactive system state
  * like `isOffline()` or `sessionExpiring()`.
  *
  * Requires `provideFeedback(withBanners())`.
@@ -28,6 +28,13 @@ import { CngxBanner } from './banner.service';
  *   actionLabel="Extend"
  *   [actionHandler]="extendSession" />
  * ```
+ *
+ * @category ui/feedback/banner
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/feedback/banner/banner-trigger.ts
+ * @since 0.1.0
+ * @relatedTo CngxBanner, CngxBannerOutlet, CngxBannerOn
  */
 @Component({
   selector: 'cngx-banner-trigger',
@@ -45,7 +52,7 @@ export class CngxBannerTrigger {
   /** Banner message text. */
   readonly message = input.required<string>();
 
-  /** Required unique id — dedup key. */
+  /** Required unique id - dedup key. */
   readonly id = input.required<string>();
 
   /** Visual severity. */

@@ -24,8 +24,15 @@ import { CNGX_STEPPER_HOST } from './stepper-host.token';
  * - `mode = 'fragment'` (default) → `#step=customer`
  * - `mode = 'queryParam'` with `paramName = 'step'` → `?step=customer`
  *
- * `Router` is optional — without `@angular/router` the directive
+ * `Router` is optional - without `@angular/router` the directive
  * dev-warns once and becomes a no-op.
+ *
+ * @category common/stepper
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/stepper/router-sync.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxStepperPresenter, CNGX_STEPPER_CONFIG
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-router-sync/deep-linking-with-fragment-queryparam-modes</example-url>
  */
 @Directive({
@@ -35,9 +42,7 @@ import { CNGX_STEPPER_HOST } from './stepper-host.token';
 })
 export class CngxStepperRouterSync {
   // Default undefined so the cascade resolves through CNGX_STEPPER_CONFIG.
-  readonly modeInput = input<
-    'fragment' | 'queryParam' | undefined
-  >(undefined, { alias: 'mode' });
+  readonly modeInput = input<'fragment' | 'queryParam' | undefined>(undefined, { alias: 'mode' });
   readonly paramNameInput = input<string | undefined>(undefined, {
     alias: 'paramName',
   });
@@ -61,8 +66,8 @@ export class CngxStepperRouterSync {
     if (!this.router) {
       afterNextRender(() => {
         console.warn(
-          'CngxStepperRouterSync: no Router available — directive is a no-op. ' +
-          'Provide @angular/router via provideRouter(...) to enable deep-linking.',
+          'CngxStepperRouterSync: no Router available - directive is a no-op. ' +
+            'Provide @angular/router via provideRouter(...) to enable deep-linking.',
         );
       });
       return;
@@ -91,15 +96,15 @@ export class CngxStepperRouterSync {
         const navigation =
           this.mode() === 'fragment'
             ? router.navigate([], {
-              fragment: `${this.paramName()}=${id}`,
-              queryParamsHandling: 'merge',
-              replaceUrl: true,
-            })
+                fragment: `${this.paramName()}=${id}`,
+                queryParamsHandling: 'merge',
+                replaceUrl: true,
+              })
             : router.navigate([], {
-              queryParams: { [this.paramName()]: id },
-              queryParamsHandling: 'merge',
-              replaceUrl: true,
-            });
+                queryParams: { [this.paramName()]: id },
+                queryParamsHandling: 'merge',
+                replaceUrl: true,
+              });
         navigation.catch?.((err: unknown) => this.syncError.emit(err));
       });
     });

@@ -9,15 +9,17 @@ import type { CngxStepNode, CngxStepStatus } from '../stepper-host.token';
  *
  * `group` carries a `CngxStepNode` with the runtime guarantee
  * `kind === 'group'` (the slot only fires for group nodes).
- * `expanded` is reserved for future collapsible groups — passed `true`
+ * `expanded` is reserved for future collapsible groups - passed `true`
  * today; declaring it now avoids a breaking change later.
+ *
+ * @category common/stepper/slots
  */
 export interface CngxStepGroupHeaderContext {
   /** The group node carrying id / label / state / children signals. */
   readonly group: CngxStepNode;
-  /** Reserved — `true` while the group's children are visible. */
+  /** Reserved - `true` while the group's children are visible. */
   readonly expanded: boolean;
-  /** Aggregated group status (rolls up children — drives heading variant). */
+  /** Aggregated group status (rolls up children - drives heading variant). */
   readonly status: CngxStepStatus;
 }
 
@@ -34,6 +36,12 @@ export interface CngxStepGroupHeaderContext {
  *   </ng-template>
  * </cngx-stepper>
  * ```
+ *
+ * @category common/stepper/slots
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/stepper/slots/step-group-header.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxStepGroup, CngxStepIndicator, CngxStepLabel
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-slot-overrides/custom-busy-spinner-via-code-cngxstepbusyspinner-code</example-url>
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-slot-overrides/custom-error-badge-via-code-cngxstepbadge-code</example-url>
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-slot-overrides/custom-group-header-via-code-cngxstepgroupheader-code</example-url>
@@ -47,7 +55,5 @@ export interface CngxStepGroupHeaderContext {
   standalone: true,
 })
 export class CngxStepGroupHeader {
-  readonly templateRef = inject<TemplateRef<CngxStepGroupHeaderContext>>(
-    TemplateRef,
-  );
+  readonly templateRef = inject<TemplateRef<CngxStepGroupHeaderContext>>(TemplateRef);
 }

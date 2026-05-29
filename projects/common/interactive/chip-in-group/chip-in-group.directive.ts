@@ -1,13 +1,10 @@
 import { Directive, computed, inject, input } from '@angular/core';
 import { CngxRovingItem } from '@cngx/common/a11y';
 
-import {
-  CNGX_CHIP_GROUP_HOST,
-  type CngxChipGroupHost,
-} from '../chip-group/chip-group-host.token';
+import { CNGX_CHIP_GROUP_HOST, type CngxChipGroupHost } from '../chip-group/chip-group-host.token';
 
 /**
- * In-group chip leaf — applies onto `<cngx-chip>` from
+ * In-group chip leaf - applies onto `<cngx-chip>` from
  * `@cngx/common/display` and wires `role="option"` semantics that
  * defer all selection mutations to the surrounding chip-group via
  * `CNGX_CHIP_GROUP_HOST`. Required parent (NOT optional): a
@@ -18,7 +15,7 @@ import {
  * **No local model.** `selected` is a `computed()` reading
  * `parent.isSelected(value())`; the chip never holds its own
  * selection state. This is the fix for the dual-source-of-truth
- * problem flagged in `cngx-plan-review` (form-primitives §1) — a
+ * problem flagged in `cngx-plan-review` (form-primitives §1) - a
  * single value-flow per directive: the parent's selection
  * controller is canonical, the leaf is a pure projection of it.
  *
@@ -37,7 +34,7 @@ import {
  * **Group-disabled cascade vs roving (accepted debt §4).** The
  * group-level `[disabled]` cascade short-circuits `handleSelect` /
  * `handleRemove` (see `chipDisabled` computed), but does NOT
- * propagate into `CngxRovingItem.disabled` — Angular forbids
+ * propagate into `CngxRovingItem.disabled` - Angular forbids
  * re-binding a host-directive's read-only `InputSignal`. As a
  * result, a fully-disabled group lets visual focus transit through
  * its chips via Arrow keys; every selection / remove pathway
@@ -46,7 +43,7 @@ import {
  * Re-evaluation is gated on `CngxRovingItem.disabled` becoming a
  * writable surface in `@cngx/common/a11y`.
  *
- * **Disabled "why".** No internal sr-only span — the directive
+ * **Disabled "why".** No internal sr-only span - the directive
  * applies onto a projected `<cngx-chip>` and has no template.
  * Consumers wanting a reason announcement render the description
  * element themselves and pass its id via `[describedBy]`. Same
@@ -69,6 +66,13 @@ import {
  *   }
  * </cngx-multi-chip-group>
  * ```
+ *
+ * @category common/interactive
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/chip-in-group/chip-in-group.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxChipGroup, CngxMultiChipGroup, CngxChipInteraction
  * <example-url>http://localhost:4200/#/common/interactive/chip/group/basic-pick-exactly-one-size</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/chip/multi-group/multi-select-chips-with-selection-count</example-url>
  * <example-url>http://localhost:4200/#/forms/field/form-primitives/coming-in-a-follow-up</example-url>
@@ -101,10 +105,7 @@ import {
   },
 })
 export class CngxChipInGroup<T = unknown> {
-  protected readonly parent = inject<CngxChipGroupHost<T>>(
-    CNGX_CHIP_GROUP_HOST,
-    { host: true },
-  );
+  protected readonly parent = inject<CngxChipGroupHost<T>>(CNGX_CHIP_GROUP_HOST, { host: true });
 
   readonly value = input.required<T>();
   readonly disabled = input<boolean>(false);
@@ -112,13 +113,9 @@ export class CngxChipInGroup<T = unknown> {
     alias: 'cngxDescribedBy',
   });
 
-  protected readonly selected = computed(() =>
-    this.parent.isSelected(this.value()),
-  );
+  protected readonly selected = computed(() => this.parent.isSelected(this.value()));
 
-  protected readonly chipDisabled = computed(
-    () => this.parent.isDisabled() || this.disabled(),
-  );
+  protected readonly chipDisabled = computed(() => this.parent.isDisabled() || this.disabled());
 
   protected handleClick(event: MouseEvent): void {
     if (this.chipDisabled() || isCloseButtonClick(event)) {
@@ -144,6 +141,7 @@ export class CngxChipInGroup<T = unknown> {
   }
 }
 
+/** @internal */
 function isCloseButtonClick(event: Event): boolean {
   const target = event.target;
   if (!(target instanceof Element)) {

@@ -22,10 +22,10 @@ import { CngxOption } from './option.directive';
  * selection state via two-way `[(value)]` / `[(selectedValues)]` bindings, and
  * drives `aria-selected` / `aria-multiselectable` reactively.
  *
- * `value` and `selectedValues` are `model()` signals — `[value]`,
+ * `value` and `selectedValues` are `model()` signals - `[value]`,
  * `(valueChange)`, and `[(value)]` bindings all work identically. Forms
  * integration (`<cngx-form-field>`) is bolted on via the sibling
- * `CngxListboxFieldBridge` directive from `@cngx/forms/field` — this atom
+ * `CngxListboxFieldBridge` directive from `@cngx/forms/field` - this atom
  * stays Forms-agnostic.
  *
  * ### Material / CDK equivalent
@@ -37,10 +37,17 @@ import { CngxOption } from './option.directive';
  *
  * 1. Single source of truth for ARIA: every attribute is a `computed()`.
  * 2. Selection shares the same `CngxActiveDescendant` used by menus and
- *    comboboxes — one mental model for all typeahead widgets.
+ *    comboboxes - one mental model for all typeahead widgets.
  * 3. `isAllSelected` and `selectedLabels` are derived signals, not manual
  *    callbacks.
  * 4. Forms integration is decoupled: the listbox never imports `@angular/forms`.
+ *
+ * @category common/interactive/listbox
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/listbox/listbox.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxListboxSearch, CngxListboxTrigger, CngxOption, CngxOptionGroup, CngxActiveDescendant
  * <example-url>http://localhost:4200/#/common/interactive/listbox/search/command-palette</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/listbox/trigger/select-dropdown</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/listbox/base/multi-select</example-url>
@@ -57,14 +64,7 @@ import { CngxOption } from './option.directive';
   hostDirectives: [
     {
       directive: CngxActiveDescendant,
-      inputs: [
-        'items',
-        'orientation',
-        'loop',
-        'typeahead',
-        'autoHighlightFirst',
-        'virtualCount',
-      ],
+      inputs: ['items', 'orientation', 'loop', 'typeahead', 'autoHighlightFirst', 'virtualCount'],
     },
   ],
   host: {
@@ -93,7 +93,7 @@ export class CngxListbox<T = unknown> {
    * Optional explicit reference to a `CngxListboxSearch` whose term drives
    * `filteredOptions`. Consumers wire this up with a template reference:
    * `[cngxSearchRef]="search"` and `#search="cngxListboxSearch"`. No ancestor
-   * injection — orthogonal composition, like `CngxSortHeader` + `CngxSortRef`.
+   * injection - orthogonal composition, like `CngxSortHeader` + `CngxSortRef`.
    */
   readonly cngxSearchRef = input<CngxListboxSearch | null>(null);
 
@@ -105,7 +105,7 @@ export class CngxListbox<T = unknown> {
    *
    * **Why this exists.**
    * The commit flow needs to snapshot the pre-pick value synchronously when
-   * the user clicks an option — to roll back to it on error. Without this
+   * the user clicks an option - to roll back to it on error. Without this
    * flag, CngxListbox writes `value` via two-way binding BEFORE the consumer's
    * own `ad.activated` subscriber runs, and the pre-pick value is already
    * gone by the time we try to snapshot it. Flipping this flag lets the
@@ -277,7 +277,7 @@ export class CngxListbox<T = unknown> {
   }
 
   /**
-   * Select every non-disabled option. Only valid in multi mode — in single
+   * Select every non-disabled option. Only valid in multi mode - in single
    * mode this is a no-op.
    */
   selectAll(): void {

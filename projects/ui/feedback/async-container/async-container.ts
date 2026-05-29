@@ -18,7 +18,13 @@ import type { AsyncStatus, CngxAsyncState } from '@cngx/core/utils';
 import { CngxLoadingIndicator } from '../loading/loading-indicator';
 import { CngxToaster } from '../toast/toast.service';
 
-/** Marks the skeleton template inside `cngx-async-container`. */
+/**
+ * Marks the skeleton template inside `cngx-async-container`.
+ *
+ * @category ui/feedback/async
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/feedback/async-container/async-container.ts
+ * @since 0.1.0
+ */
 @Directive({ selector: 'ng-template[cngxAsyncSkeleton]', standalone: true })
 export class CngxAsyncSkeletonTpl {
   readonly templateRef = inject(TemplateRef);
@@ -26,7 +32,11 @@ export class CngxAsyncSkeletonTpl {
 
 /**
  * Marks the content template inside `cngx-async-container`.
- * Context: `{ $implicit: T }` — use `let-data` to access.
+ * Context: `{ $implicit: T }` - use `let-data` to access.
+ *
+ * @category ui/feedback/async
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/feedback/async-container/async-container.ts
+ * @since 0.1.0
  */
 @Directive({ selector: 'ng-template[cngxAsyncContent]', standalone: true })
 export class CngxAsyncContentTpl<T> {
@@ -40,7 +50,13 @@ export class CngxAsyncContentTpl<T> {
   }
 }
 
-/** Marks the empty-state template inside `cngx-async-container`. */
+/**
+ * Marks the empty-state template inside `cngx-async-container`.
+ *
+ * @category ui/feedback/async
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/feedback/async-container/async-container.ts
+ * @since 0.1.0
+ */
 @Directive({ selector: 'ng-template[cngxAsyncEmpty]', standalone: true })
 export class CngxAsyncEmptyTpl {
   readonly templateRef = inject(TemplateRef);
@@ -48,7 +64,11 @@ export class CngxAsyncEmptyTpl {
 
 /**
  * Marks the error template inside `cngx-async-container`.
- * Context: `{ $implicit: unknown }` — use `let-err` to access.
+ * Context: `{ $implicit: unknown }` - use `let-err` to access.
+ *
+ * @category ui/feedback/async
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/feedback/async-container/async-container.ts
+ * @since 0.1.0
  */
 @Directive({ selector: 'ng-template[cngxAsyncError]', standalone: true })
 export class CngxAsyncErrorTpl {
@@ -56,7 +76,7 @@ export class CngxAsyncErrorTpl {
 }
 
 /**
- * Async container molecule — coordinates all feedback states for data loading.
+ * Async container molecule - coordinates all feedback states for data loading.
  *
  * Projects four named templates and switches between them based on the
  * `CngxAsyncState` lifecycle. Includes a built-in refresh indicator (bar)
@@ -83,6 +103,14 @@ export class CngxAsyncErrorTpl {
  * ```
  *
  * @playground Data flow ./examples/data-flow/data-flow-example.component.ts
+ *
+ * @category ui/feedback/async
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/feedback/async-container/async-container.ts
+ * @since 0.1.0
+ * @relatedTo CngxLoadingIndicator, CngxLoadingOverlay, CngxAlert, CngxToaster
+ *
  * <example-url>http://localhost:4200/#/forms/filter-builder/filter-builder-async-state/loading-error-content-branches-via-cngx-async-container</example-url>
  * <example-url>http://localhost:4200/#/ui/feedback/async-container/cngx-async-container-full-control-toast</example-url>
  * <example-url>http://localhost:4200/#/ui/feedback/async-container/cngxasync-one-line</example-url>

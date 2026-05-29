@@ -8,13 +8,22 @@ import {
 import type { CngxAsyncState } from '@cngx/core/utils';
 import { injectPresetState } from './preset-state';
 
+/** @internal */
 const TWO_PI = Math.PI * 2;
 
 /**
- * Circular donut gauge — a single-value bounded indicator. Renders a
+ * Circular donut gauge - a single-value bounded indicator. Renders a
  * background ring + a foreground arc whose length is proportional to
  * `value / max`. Host carries `role="meter"`; the optional `[label]`
  * input renders an SR-only label inside the ring's centre.
+ *
+ * @category common/chart/presets
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/presets/donut.component.ts
+ * @since 0.1.0
+ * @relatedTo CngxBullet, CngxMiniBar, CngxDeviationBar
+ *
  * <example-url>http://localhost:4200/#/common/chart/donut/async-state-machine</example-url>
  * <example-url>http://localhost:4200/#/common/chart/donut/score-gauges</example-url>
  */

@@ -1,20 +1,50 @@
 /**
  * @overview
- * `CngxMultiSelect`-specific trigger skin. Intentionally minimal —
- * everything structurally shareable with other multi-value triggers
- * (chip-strip flex-wrap, chip pill shape, chip remove button) lives
- * in `shared/select-base.css` under the `.cngx-select__chip-*`
- * classes. `CngxMultiCombobox`, `CngxTagInput`, and any future
- * sibling that needs a chip-bearing trigger gets the same visual
- * baseline without re-authoring flex-wrap edge cases.
+ * Trigger skin for `CngxMultiSelect` - chip-strip multi-select with a
+ * separate panel. The host carries `.cngx-multi-select`; intentionally
+ * minimal because everything structurally shareable with other
+ * multi-value triggers (chip-strip flex-wrap, chip pill shape, chip
+ * remove button) lives in `shared/select-base.css` under the
+ * `.cngx-select__chip-*` classes. Future siblings (`CngxMultiCombobox`,
+ * `CngxTagInput`) reuse the same visual baseline.
  *
- * Cascading-fallback note: `var()` chains step
- * `--cngx-multi-select-*` → `--cngx-select-*` → hardcoded. Once a
- * token is registered via `@property` it always resolves to its
- * initial-value, so the `var()` fallback chain is documentation-only
- * at the registered level. Consumers who want a uniform brand-wide
- * override should target system tokens (`--cngx-color-border`,
- * `--cngx-color-primary`).
+ * **State modifiers**
+ *
+ * - `:focus-visible` on `.cngx-multi-select__trigger` - focus-ring
+ *   outline + offset
+ * - `[aria-disabled='true']` on the trigger - opacity dim + `cursor:
+ *   not-allowed`
+ * - `[aria-invalid='true']` on the trigger - danger border + box-shadow
+ *   glow at focus-within time
+ *
+ * **Slots**
+ *
+ * - `.cngx-multi-select__root` - `display: contents` host shim
+ * - `.cngx-multi-select__trigger` - the bordered `role="combobox"` row
+ *   (`user-select: none` prevents drag-click text selection)
+ * - `.cngx-multi-select__placeholder` - placeholder text shown when no
+ *   chips are selected
+ * - `.cngx-multi-select__clear-all` - reset-all button
+ * - `.cngx-multi-select__caret` - panel-state glyph
+ *
+ * **Inheritance**
+ *
+ * Trigger tokens delegate up the family chain:
+ *
+ * - `--cngx-multi-select-*` -> `--cngx-select-*` -> hardcoded
+ * - `--cngx-multi-select-border` -> `--cngx-color-border`
+ * - `--cngx-multi-select-focus-outline` -> `--cngx-color-primary`
+ * - invalid surfaces fall back to `--cngx-select-trigger-invalid-*` ->
+ *   `--cngx-color-danger`
+ *
+ * Once registered via `@property` the inner var() steps are
+ * documentation-only; system tokens (`--cngx-color-*`) are the
+ * brand-wide override path.
+ *
+ * **Pair with**
+ *
+ * - `@cngx/themes/material/select-theme` - Material 3 surface treatment
+ *   shared across the entire select family
  */
 
 @layer cngx.tokens {
@@ -89,7 +119,7 @@
   }
 
   /**
-   * Minimum block size of the trigger — fits a single row of chips.
+   * Minimum block size of the trigger - fits a single row of chips.
    * @group Layout
    */
   @property --cngx-multi-select-min-height {
@@ -149,7 +179,7 @@
     initial-value: 0.6;
   }
 
-  /* Delegating tokens — trigger border + focus-ring track the
+  /* Delegating tokens - trigger border + focus-ring track the
    * foundation chain. Shorthands pin their structural part and
    * inherit the color via the delegating foundation token. */
   :root {
@@ -190,7 +220,7 @@
       justify-content: space-between;
       flex-wrap: nowrap;
       min-height: var(--cngx-multi-select-min-height, 2.25rem);
-      /* <div role="combobox"> — prevent accidental text selection on drag-click. */
+      /* <div role="combobox"> - prevent accidental text selection on drag-click. */
       user-select: none;
     }
     .cngx-multi-select__trigger:focus-visible {
@@ -210,16 +240,9 @@
       border-width: var(--cngx-select-trigger-invalid-border-width, 1px);
     }
     .cngx-multi-select__trigger[aria-invalid='true']:focus-within {
-      outline: 2px solid
-        var(--cngx-select-trigger-invalid-outline-color, oklch(0.6 0.18 25));
-      outline-offset: var(
-        --cngx-multi-select-focus-offset,
-        var(--cngx-select-focus-offset, 2px)
-      );
-      box-shadow: var(
-        --cngx-select-trigger-invalid-glow,
-        0 0 0 3px oklch(0.6 0.18 25 / 0.2)
-      );
+      outline: 2px solid var(--cngx-select-trigger-invalid-outline-color, oklch(0.6 0.18 25));
+      outline-offset: var(--cngx-multi-select-focus-offset, var(--cngx-select-focus-offset, 2px));
+      box-shadow: var(--cngx-select-trigger-invalid-glow, 0 0 0 3px oklch(0.6 0.18 25 / 0.2));
     }
 
     .cngx-multi-select__placeholder {

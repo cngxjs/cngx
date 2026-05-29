@@ -1,16 +1,22 @@
 /**
  * @overview
- * Domain-specific system tokens for `@cngx/forms`. Empty
- * placeholder — the file exists so each lib's `theming/` layer has a
- * canonical home that ng-packagr already ships. Populate when a need
- * arises for tokens that belong to this lib's domain (form-control
- * sizing, label / field spacing, shared input / select metrics — for
- * example a future `--cngx-control-height-md` that multiple form
- * atoms reference).
+ * Domain-specific system tokens for `@cngx/forms`. Empty placeholder -
+ * the file exists so each lib's `theming/` layer has a canonical home
+ * that ng-packagr already ships.
  *
- * System tokens shared across all libs live in
- * `@cngx/core/theming/system-tokens.css`. Per-component tokens
- * belong in `<comp>.component.css` next to the component.
+ * **Scope**
+ *
+ * Populate when a need arises for tokens that belong to this lib's
+ * domain (form-control sizing, label / field spacing, shared input /
+ * select metrics - for example a future `--cngx-control-height-md`
+ * that multiple form atoms reference).
+ *
+ * **Inheritance**
+ *
+ * - System tokens shared across all libs live in
+ *   `@cngx/core/theming/system-tokens.css`
+ * - Per-component tokens belong in `<comp>.component.css` next to the
+ *   component
  */
 
 @layer cngx.tokens {

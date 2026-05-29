@@ -13,6 +13,12 @@ import { Directive, inject, TemplateRef } from '@angular/core';
  *   </ng-template>
  * </div>
  * ```
+ *
+ * @category common/tabs
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/tab-content.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxTab, CngxTabLabel
  * <example-url>http://localhost:4200/#/ui/tabs/tab-commit-action/optimistic-pessimistic-commits-with-bridge-directives</example-url>
  * <example-url>http://localhost:4200/#/ui/tabs/tab-error-aggregation/per-tab-error-badges</example-url>
  * <example-url>http://localhost:4200/#/ui/tabs/tab-group-vertical/vertical-sidebar-tabs</example-url>

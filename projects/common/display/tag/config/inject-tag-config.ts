@@ -21,6 +21,8 @@ import { CNGX_TAG_CONFIG } from './tag.config.defaults';
  *   );
  * }
  * ```
+ *
+ * @category common/display
  */
 export function injectTagConfig(): CngxTagConfig {
   return inject(CNGX_TAG_CONFIG);

@@ -2,13 +2,13 @@ import { computed, Directive, input, output, signal } from '@angular/core';
 
 /**
  * Passive expand/collapse contract for elements whose open state is driven
- * from the outside — typically a `CngxTreeController` or any component that
+ * from the outside - typically a `CngxTreeController` or any component that
  * manages a shared expansion set. Mirrors `aria-expanded` and (optionally)
  * `aria-controls` into the host; carries no interaction of its own.
  *
  * Use `CngxDisclosure` instead for self-triggering expanders (FAQ, accordion
  * headings). The distinction is deliberate: a tree-item row is a selection
- * target, not a toggle — clicks, Enter, and Space belong to the selection
+ * target, not a toggle - clicks, Enter, and Space belong to the selection
  * flow, while expand/collapse is wired to ArrowLeft/Right via a sibling nav
  * directive or to a dedicated twisty button.
  *
@@ -31,6 +31,13 @@ import { computed, Directive, input, output, signal } from '@angular/core';
  *   <div [id]="childrenId" [hidden]="!ctrl.isExpanded(id)()">…</div>
  * </div>
  * ```
+ *
+ * @category common/interactive
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/expandable/expandable.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxHierarchicalNav, CngxTreeController, CngxRovingTabindex
  */
 @Directive({
   selector: '[cngxExpandable]',

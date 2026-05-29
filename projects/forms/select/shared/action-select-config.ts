@@ -10,14 +10,18 @@ import type { PopoverPlacement } from '@cngx/common/popover';
 
 /**
  * Focus-trap policy for the action-slot workflow:
- * - `'dirty'` (default) — trap on while `actionDirty()` is `true`.
- * - `'always'` — trap on whenever the panel is open.
- * - `'never'` — shell never engages the trap; consumer owns focus.
+ * - `'dirty'` (default) - trap on while `actionDirty()` is `true`.
+ * - `'always'` - trap on whenever the panel is open.
+ * - `'never'` - shell never engages the trap; consumer owns focus.
+ *
+ * @category forms/select/config
  */
 export type CngxActionFocusTrapBehavior = 'always' | 'dirty' | 'never';
 
 /**
  * Slot position inside the panel frame. Default `'bottom'`.
+ *
+ * @category forms/select/config
  */
 export type CngxActionPosition = 'top' | 'bottom' | 'both' | 'none';
 
@@ -25,6 +29,8 @@ export type CngxActionPosition = 'top' | 'bottom' | 'both' | 'none';
  * App-wide config for the action-select organisms. Cascade: per-instance
  * input > `provideActionSelectConfigAt` > `provideActionSelectConfig` >
  * library default.
+ *
+ * @category forms/select/config
  */
 export interface CngxActionSelectConfig {
   /** When the panel-shell's `CngxFocusTrap` activates. Default `'dirty'`. */
@@ -64,6 +70,11 @@ export const CNGX_ACTION_SELECT_DEFAULTS: Required<CngxActionSelectConfig> = {
 
 /**
  * Token carrying the resolved {@link CngxActionSelectConfig}.
+ *
+ * @category forms/select/config
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/action-select-config.ts
+ * @since 0.1.0
  */
 export const CNGX_ACTION_SELECT_CONFIG = new InjectionToken<CngxActionSelectConfig>(
   'CngxActionSelectConfig',
@@ -72,6 +83,8 @@ export const CNGX_ACTION_SELECT_CONFIG = new InjectionToken<CngxActionSelectConf
 /**
  * Feature returned by the `with*` helpers. Merged by
  * {@link provideActionSelectConfig}.
+ *
+ * @category forms/select/config
  */
 export interface CngxActionSelectConfigFeature {
   readonly config: Partial<CngxActionSelectConfig>;
@@ -79,14 +92,14 @@ export interface CngxActionSelectConfigFeature {
   readonly _target?: 'action';
 }
 
-function feature(
-  config: Partial<CngxActionSelectConfig>,
-): CngxActionSelectConfigFeature {
+function feature(config: Partial<CngxActionSelectConfig>): CngxActionSelectConfigFeature {
   return { config, _target: 'action' };
 }
 
 /**
  * Sets {@link CngxActionFocusTrapBehavior}.
+ *
+ * @category forms/select/config
  */
 export function withFocusTrapBehavior(
   behavior: CngxActionFocusTrapBehavior,
@@ -96,6 +109,8 @@ export function withFocusTrapBehavior(
 
 /**
  * Sets the action-slot ARIA label.
+ *
+ * @category forms/select/config
  */
 export function withActionAriaLabel(label: string): CngxActionSelectConfigFeature {
   return feature({ ariaLabel: label });
@@ -104,34 +119,36 @@ export function withActionAriaLabel(label: string): CngxActionSelectConfigFeatur
 /**
  * Forces `closeOnCreate` across both action organisms. Pass `null` to
  * restore the variant baselines.
+ *
+ * @category forms/select/config
  */
-export function withCloseOnCreate(
-  closeOnCreate: boolean | null,
-): CngxActionSelectConfigFeature {
+export function withCloseOnCreate(closeOnCreate: boolean | null): CngxActionSelectConfigFeature {
   return feature({ closeOnCreate });
 }
 
 /**
  * Sets the default `*cngxSelectAction` slot position.
+ *
+ * @category forms/select/config
  */
-export function withActionPosition(
-  position: CngxActionPosition,
-): CngxActionSelectConfigFeature {
+export function withActionPosition(position: CngxActionPosition): CngxActionSelectConfigFeature {
   return feature({ actionPosition: position });
 }
 
 /**
  * Sets the live-input fallback policy. Disable when consumer owns
  * debouncing.
+ *
+ * @category forms/select/config
  */
-export function withLiveInputFallback(
-  enabled: boolean,
-): CngxActionSelectConfigFeature {
+export function withLiveInputFallback(enabled: boolean): CngxActionSelectConfigFeature {
   return feature({ liveInputFallback: enabled });
 }
 
 /**
  * Sets the popover placement for the action organisms.
+ *
+ * @category forms/select/config
  */
 export function withActionPopoverPlacement(
   placement: PopoverPlacement,
@@ -155,6 +172,8 @@ export function withActionPopoverPlacement(
  *   ],
  * });
  * ```
+ *
+ * @category forms/select/config
  */
 export function provideActionSelectConfig(
   ...features: CngxActionSelectConfigFeature[]
@@ -165,14 +184,14 @@ export function provideActionSelectConfig(
   for (const f of features) {
     Object.assign(merged, f.config);
   }
-  return makeEnvironmentProviders([
-    { provide: CNGX_ACTION_SELECT_CONFIG, useValue: merged },
-  ]);
+  return makeEnvironmentProviders([{ provide: CNGX_ACTION_SELECT_CONFIG, useValue: merged }]);
 }
 
 /**
  * Component-scoped action-select config. Returns `Provider[]` because
  * `viewProviders` rejects `EnvironmentProviders`.
+ *
+ * @category forms/select/config
  */
 export function provideActionSelectConfigAt(
   ...features: CngxActionSelectConfigFeature[]
@@ -194,17 +213,14 @@ export function provideActionSelectConfigAt(
 export function resolveActionSelectConfig(): Required<CngxActionSelectConfig> {
   const user = inject(CNGX_ACTION_SELECT_CONFIG, { optional: true }) ?? {};
   return {
-    focusTrapBehavior:
-      user.focusTrapBehavior ?? CNGX_ACTION_SELECT_DEFAULTS.focusTrapBehavior,
+    focusTrapBehavior: user.focusTrapBehavior ?? CNGX_ACTION_SELECT_DEFAULTS.focusTrapBehavior,
     ariaLabel: user.ariaLabel ?? CNGX_ACTION_SELECT_DEFAULTS.ariaLabel,
     closeOnCreate:
       user.closeOnCreate === undefined
         ? CNGX_ACTION_SELECT_DEFAULTS.closeOnCreate
         : user.closeOnCreate,
     actionPosition: user.actionPosition ?? CNGX_ACTION_SELECT_DEFAULTS.actionPosition,
-    liveInputFallback:
-      user.liveInputFallback ?? CNGX_ACTION_SELECT_DEFAULTS.liveInputFallback,
-    popoverPlacement:
-      user.popoverPlacement ?? CNGX_ACTION_SELECT_DEFAULTS.popoverPlacement,
+    liveInputFallback: user.liveInputFallback ?? CNGX_ACTION_SELECT_DEFAULTS.liveInputFallback,
+    popoverPlacement: user.popoverPlacement ?? CNGX_ACTION_SELECT_DEFAULTS.popoverPlacement,
   };
 }

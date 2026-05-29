@@ -27,9 +27,7 @@ export interface CngxMatTabHandleSetup {
   readonly label: Signal<string | undefined>;
   /** Convenience mirror of `handle.disabled`. */
   readonly disabled: Signal<boolean>;
-  readonly errorAggregator: WritableSignal<
-    CngxErrorAggregatorContract | undefined
-  >;
+  readonly errorAggregator: WritableSignal<CngxErrorAggregatorContract | undefined>;
 }
 
 /**
@@ -37,29 +35,31 @@ export interface CngxMatTabHandleSetup {
  * plus a writable `errorAggregator` slot the `[cngxMatTabError]`
  * directive binds.
  *
- * - `id` — fresh `idSeed()` value; a label-keyed id would collide
+ * - `id` - fresh `idSeed()` value; a label-keyed id would collide
  *   when two tabs share a label.
- * - `label` / `disabled` — `computed` signals retriggered by
+ * - `label` / `disabled` - `computed` signals retriggered by
  *   `toSignal(matTab._stateChanges)`. Bridge lifetime is tied to
  *   the supplied `injector` (typically a per-tab child
  *   `EnvironmentInjector`). `_stateChanges` is a Material-internal
  *   surface.
- * - `errorAggregator` — writable seeded at `undefined`;
+ * - `errorAggregator` - writable seeded at `undefined`;
  *   `[cngxMatTabError]` writes its bound aggregator in and resets
  *   on teardown. The handle exposes `.asReadonly()` to preserve the
  *   `CngxTabHandle` contract.
+ *
+ * @category ui/mat-tabs
  */
 export function createMatTabHandle(
   matTab: MatTab,
   idSeed: () => string,
   injector: Injector,
 ): CngxMatTabHandleSetup {
-  // Typed local — anchors `MaterialPrivateSurfaces.StateChangeSource`
+  // Typed local - anchors `MaterialPrivateSurfaces.StateChangeSource`
   // at the consumer site so an upgrade-watch grep lands here too.
   // Documentation-only at runtime; MatTab's public typing already
   // exposes `_stateChanges`.
   const stateChangeSource: MaterialPrivateSurfaces.StateChangeSource = matTab;
-  // `equal: () => false` is load-bearing — `_stateChanges` is a
+  // `equal: () => false` is load-bearing - `_stateChanges` is a
   // `Subject<void>`, so `Object.is(undefined, undefined)` would dedup
   // every emission and the dependent computeds would never recompute.
   const stateChangeTrigger = toSignal(stateChangeSource._stateChanges, {
@@ -75,9 +75,7 @@ export function createMatTabHandle(
     stateChangeTrigger();
     return matTab.disabled;
   });
-  const errorAggregator = signal<CngxErrorAggregatorContract | undefined>(
-    undefined,
-  );
+  const errorAggregator = signal<CngxErrorAggregatorContract | undefined>(undefined);
   // `nextUid` is process-wide monotonic, so `${id}-errors` descriptor
   // ids stay unique across coexisting `[cngxMatTabs]` instances.
   const id = idSeed();
@@ -97,7 +95,9 @@ export function createMatTabHandle(
 /**
  * Factory signature for {@link createMatTabHandle}. The DI token
  * {@link CNGX_MAT_TAB_HANDLE_FACTORY} resolves to a function with
- * this exact shape — overrides match it identically.
+ * this exact shape - overrides match it identically.
+ *
+ * @category ui/mat-tabs
  */
 export type CngxMatTabHandleFactory = typeof createMatTabHandle;
 
@@ -109,8 +109,8 @@ export type CngxMatTabHandleFactory = typeof createMatTabHandle;
  *
  * The seam separates handle shape (factory body) from id keying
  * (the supplied `idSeed` closure). Overrides may call, ignore, or
- * replace `idSeed` — server-synced ids, deterministic test ids,
- * consumer-domain ids — without touching the factory body.
+ * replace `idSeed` - server-synced ids, deterministic test ids,
+ * consumer-domain ids - without touching the factory body.
  *
  * ```ts
  * providers: [
@@ -124,9 +124,16 @@ export type CngxMatTabHandleFactory = typeof createMatTabHandle;
  *   },
  * ]
  * ```
+ *
+ * @category ui/mat-tabs
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/mat-tabs/material-bridge/handle.ts
+ * @since 0.1.0
  */
-export const CNGX_MAT_TAB_HANDLE_FACTORY =
-  new InjectionToken<CngxMatTabHandleFactory>('CNGX_MAT_TAB_HANDLE_FACTORY', {
+export const CNGX_MAT_TAB_HANDLE_FACTORY = new InjectionToken<CngxMatTabHandleFactory>(
+  'CNGX_MAT_TAB_HANDLE_FACTORY',
+  {
     providedIn: 'root',
     factory: () => createMatTabHandle,
-  });
+  },
+);

@@ -24,6 +24,12 @@ import { Directive, effect, inject, input, signal } from '@angular/core';
  *   @if (dark.matches()) { <span>Dark mode active</span> }
  * </div>
  * ```
+ *
+ * @category common/layout
+ * @docsKind primary
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/layout/observers/media-query.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxResizeObserver, CngxIntersectionObserver
  * <example-url>http://localhost:4200/#/common/layout/media-query/viewport-breakpoints</example-url>
  */
 @Directive({

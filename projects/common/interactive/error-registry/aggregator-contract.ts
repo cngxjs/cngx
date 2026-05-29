@@ -6,14 +6,15 @@ import type {
 import type { CngxErrorScopeContract } from '../error-scope/error-scope.token';
 import { shallowReadonlyArrayEqual } from './equal-fns';
 
+/** @internal */
 const ERROR_LABEL_JOINER = ', ';
 
 /**
  * Inputs required to build the shared error-aggregator computed graph.
  *
  * Both consumers (`CngxErrorAggregator` directive, `injectErrorAggregator`
- * factory) own their own writable `sourcesState` signal — typically created
- * with `equal: errorSourceMapEqual` — and pass it in alongside a scope
+ * factory) own their own writable `sourcesState` signal - typically created
+ * with `equal: errorSourceMapEqual` - and pass it in alongside a scope
  * signal that resolves to either an explicit override, the nearest
  * ancestor scope, or `null` (no scope, `shouldShow` collapses to
  * `hasError`).
@@ -22,11 +23,9 @@ const ERROR_LABEL_JOINER = ', ';
  */
 export interface ErrorAggregatorContractDeps {
   /** Writable signal carrying the live source-entry map. */
-  readonly sourcesState: WritableSignal<
-    ReadonlyMap<string, CngxErrorAggregatorSourceEntry>
-  >;
+  readonly sourcesState: WritableSignal<ReadonlyMap<string, CngxErrorAggregatorSourceEntry>>;
   /**
-   * Reactive scope reference. `null` / `undefined` means no scope — in
+   * Reactive scope reference. `null` / `undefined` means no scope - in
    * that case `shouldShow` short-circuits to `hasError` directly.
    */
   readonly scope: Signal<CngxErrorScopeContract | null | undefined>;
@@ -42,7 +41,7 @@ export interface ErrorAggregatorContractDeps {
  * (programmatic form, no DOM host) both delegate to this helper so the
  * two surfaces stay field-for-field equivalent without manual sync.
  *
- * Returns a fresh `CngxErrorAggregatorContract` each call — every
+ * Returns a fresh `CngxErrorAggregatorContract` each call - every
  * `computed` is freshly bound to the supplied `sourcesState`/`scope`
  * pair, so two callers with the same source signal get independent
  * computed instances (this is intentional: the directive's host

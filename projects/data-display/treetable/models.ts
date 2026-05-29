@@ -2,6 +2,8 @@
  * A node in the input tree structure.
  *
  * @typeParam T - The shape of the data value carried by each node.
+ *
+ * @category data-display/treetable
  */
 export interface Node<T> {
   /** The data value associated with this node. */
@@ -15,6 +17,8 @@ export interface Node<T> {
  * All properties are readonly to prevent accidental mutation.
  *
  * @typeParam T - The shape of the data value carried by the node.
+ *
+ * @category data-display/treetable
  */
 export interface FlatNode<T> {
   /** Stable identifier for this node within the current tree. */
@@ -37,6 +41,8 @@ export interface FlatNode<T> {
  * These override the application-wide defaults provided via {@link provideTreetable}.
  *
  * @typeParam T - The shape of the data value; used to constrain `customColumnOrder`.
+ *
+ * @category data-display/treetable
  */
 export interface TreetableOptions<T> {
   /**
@@ -67,6 +73,8 @@ export interface TreetableOptions<T> {
  * ```
  *
  * @typeParam T - The shape of the data value carried by the node.
+ *
+ * @category data-display/treetable
  */
 export interface CngxCellTplContext<T> {
   /** The full {@link FlatNode} for the current row — available as `let-node`. */

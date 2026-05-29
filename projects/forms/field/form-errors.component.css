@@ -1,10 +1,30 @@
 /**
  * @overview
- * Default visuals for `CngxFieldErrors` — bulleted error list under a
- * form field. Falls back through `--cngx-field-error-color` and then
- * `--cngx-color-danger` so a brand change in the danger chain
- * propagates. Anchor underline removed on hover / focus so the
- * interaction state reads independently of the resting decoration.
+ * Default visuals for `CngxFieldErrors` - bulleted error list rendered
+ * under a form field. The host carries `.cngx-form-errors` and stays
+ * `display: contents`; the inner `.cngx-form-errors__list` holds the
+ * list typography and color.
+ *
+ * **Slots**
+ *
+ * - `.cngx-form-errors__list` - the `<ul>` element, font-size + danger
+ *   color
+ * - `.cngx-form-errors__list a` - inline anchors inherit color and
+ *   carry an underline that drops on `:hover` / `:focus-visible` so the
+ *   interaction state reads independently of the resting decoration
+ *
+ * **Inheritance**
+ *
+ * Tokens delegate to the foundation so a brand override propagates
+ * without per-component theming:
+ *
+ * - `--cngx-form-errors-font-size` -> `--cngx-font-size-sm`
+ * - `--cngx-form-errors-color` -> `--cngx-field-error-color` ->
+ *   `--cngx-color-danger`
+ *
+ * A `:root` delegating rule pins `--cngx-form-errors-color` to
+ * `--cngx-color-danger` so a dark-mode swap on the foundation token
+ * cascades through.
  */
 
 @layer cngx.tokens {

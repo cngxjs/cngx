@@ -21,14 +21,12 @@ import { CNGX_FILTER_BUILDER_HOST } from './filter-builder-host.token';
 import type { CngxFilterBuilderTemplateRegistry } from './filter-builder-template-registry';
 import type { CngxFilterBuilderValueEditorContext } from './filter-builder-value-editor.slot';
 import { injectFilterEditors } from './filter-builder.tokens';
-import type {
-  FilterExpression,
-  FilterFieldDef,
-  FilterNode,
-} from './filter-builder.types';
+import type { FilterExpression, FilterFieldDef, FilterNode } from './filter-builder.types';
 
+/** @internal */
 const EMPTY_OPERATORS: readonly string[] = Object.freeze([]) as readonly string[];
 
+/** @internal */
 function equalOptionList<T>(
   a: readonly { value: T; label: string }[],
   b: readonly { value: T; label: string }[],
@@ -49,6 +47,7 @@ function equalOptionList<T>(
   return true;
 }
 
+/** @internal */
 function equalStringList(a: readonly string[], b: readonly string[]): boolean {
   if (a === b) {
     return true;
@@ -70,8 +69,14 @@ function equalStringList(a: readonly string[], b: readonly string[]): boolean {
  * `CNGX_FILTER_BUILDER_HOST` via `[path]`.
  *
  * Pillar 3 (Komposition statt Konfiguration): one component, one
- * responsibility — render the recursive renderer's expression row. The
+ * responsibility - render the recursive renderer's expression row. The
  * column-header / quick-filter surface lives in `CngxFilterRow`.
+ *
+ * @category forms/filter-builder
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder-expression-row.component.ts
+ * @since 0.1.0
+ * @relatedTo CngxFilterBuilderBody, CngxFilterRow, CngxFilterBuilderPresenter
  */
 @Component({
   selector: 'cngx-filter-expression-row',
@@ -136,25 +141,26 @@ export class CngxFilterExpressionRow {
     { equal: (a, b) => a === b },
   );
 
-  protected readonly fields = computed<readonly FilterFieldDef[]>(
-    () => this.host.fields(),
-    { equal: (a, b) => a === b },
-  );
+  protected readonly fields = computed<readonly FilterFieldDef[]>(() => this.host.fields(), {
+    equal: (a, b) => a === b,
+  });
 
   private readonly fieldMap = computed<ReadonlyMap<string, FilterFieldDef>>(
     () => this.host.fieldMap(),
     { equal: (a, b) => a === b },
   );
 
-  protected readonly fieldOptions = computed<readonly { readonly value: string; readonly label: string }[]>(
-    () => this.fields().map((field) => ({ value: field.key, label: field.label })),
-    { equal: equalOptionList },
-  );
+  protected readonly fieldOptions = computed<
+    readonly { readonly value: string; readonly label: string }[]
+  >(() => this.fields().map((field) => ({ value: field.key, label: field.label })), {
+    equal: equalOptionList,
+  });
 
-  protected readonly operatorOptions = computed<readonly { readonly value: string; readonly label: string }[]>(
-    () => this.operators().map((op) => ({ value: op, label: this.operatorLabel(op) })),
-    { equal: equalOptionList },
-  );
+  protected readonly operatorOptions = computed<
+    readonly { readonly value: string; readonly label: string }[]
+  >(() => this.operators().map((op) => ({ value: op, label: this.operatorLabel(op) })), {
+    equal: equalOptionList,
+  });
 
   protected readonly editor = computed<CngxFilterEditor | undefined>(
     () => {
@@ -224,9 +230,10 @@ export class CngxFilterExpressionRow {
     const newValidOperators = this.operatorsForField(next);
     const operatorIsStillValid =
       carriedOperator !== undefined && newValidOperators.includes(carriedOperator);
-    const defaultOperator = operatorIsStillValid && carriedOperator !== undefined
-      ? carriedOperator
-      : this.defaultOperatorFor(next);
+    const defaultOperator =
+      operatorIsStillValid && carriedOperator !== undefined
+        ? carriedOperator
+        : this.defaultOperatorFor(next);
 
     this.host.setField(this.path(), next);
     if (!operatorIsStillValid) {
@@ -271,7 +278,7 @@ export class CngxFilterExpressionRow {
     const raw = target.value;
     // Native <input type="date"> fires `change` reliably on calendar-pick
     // and `input` reliably on direct keyboard editing; binding both covers
-    // the cross-browser delta. The handler is idempotent — writeValue
+    // the cross-browser delta. The handler is idempotent - writeValue
     // short-circuits when the value is unchanged at the host level.
     this.writeValue(raw === '' ? null : raw);
   }

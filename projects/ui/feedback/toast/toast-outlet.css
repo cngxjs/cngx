@@ -1,16 +1,67 @@
 /**
  * @overview
- * Default visuals for `CngxToastOutlet`. Fixed-position toast stack
- * with 6 corner / center placements. Each toast carries a severity-
- * tinted accent stripe on the leading edge (`border-left`). Toasts
- * use their own `--cngx-toast-*` token namespace, separate from
+ * Default visuals for `CngxToastOutlet`. The host carries
+ * `.cngx-toast-outlet` and is fixed-positioned with `z-index: 9999`
+ * so toasts overlay dialogs and popovers. Each toast renders as
+ * `.cngx-toast` with `__icon`, `__body`, `__message`, `__title`,
+ * `__description`, `__count`, `__action`, and `__dismiss` children.
+ * Toasts use their own `--cngx-toast-*` namespace, separate from
  * alert and banner so the three feedback channels can be themed
  * independently.
+ *
+ * **Placement modifiers**
+ *
+ * Six anchor classes on the outlet, three vertical x two horizontal
+ * (center variants use a transform):
+ *
+ * - `--top-start` / `--top-center` / `--top-end`
+ * - `--bottom-start` / `--bottom-center` / `--bottom-end`
+ *
+ * **Variants**
+ *
+ * Severity classes paint the leading-edge stripe and the icon color:
+ *
+ * - `.cngx-toast--info` - info accent
+ * - `.cngx-toast--success` - success accent
+ * - `.cngx-toast--warning` - warning accent
+ * - `.cngx-toast--error` - error accent
+ *
+ * **Slots**
+ *
+ * - `.cngx-toast__icon` - severity glyph (color tracks severity)
+ * - `.cngx-toast__default-icon` - SVG fallback when no custom icon
+ *   is projected
+ * - `.cngx-toast__message` - body copy
+ * - `.cngx-toast__title` - bold header
+ * - `.cngx-toast__description` - secondary copy, line-clamped via
+ *   `--cngx-toast-description-max-lines` (default 3)
+ * - `.cngx-toast__count` - trailing message-count badge (60% opacity)
+ * - `.cngx-toast__action` - underlined inline action button
+ * - `.cngx-toast__dismiss` - dismiss control
+ *
+ * Toasts enter via 200ms `cngx-toast-enter`; the animation no-ops
+ * under `prefers-reduced-motion`.
+ *
+ * **Inheritance**
+ *
+ * - `--cngx-toast-bg` -> `--cngx-color-surface`
+ * - `--cngx-toast-color` -> `--cngx-color-text`
+ *
+ * **Dark mode**
+ *
+ * Three hooks deepen the drop shadow, brighten every severity
+ * accent so the leading-edge stripe stays perceptible against the
+ * darker toast surface, and lift the description text to the cool
+ * muted ramp:
+ *
+ * - `prefers-color-scheme: dark`
+ * - `[data-color-scheme="dark"]`
+ * - `.dark` class
  */
 
 @layer cngx.tokens {
   /**
-   * Stacking-context order — high so toasts overlay dialogs / popovers.
+   * Stacking-context order - high so toasts overlay dialogs / popovers.
    * @group Layout
    */
   @property --cngx-toast-z-index {
@@ -40,7 +91,7 @@
   }
 
   /**
-   * Maximum inline size of each toast — caps long messages.
+   * Maximum inline size of each toast - caps long messages.
    * @group Layout
    */
   @property --cngx-toast-max-width {

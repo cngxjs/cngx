@@ -22,14 +22,11 @@ import {
 import { nextUid } from '@cngx/core/utils';
 
 import { CNGX_CHIP_GROUP_HOST } from '../chip-group/chip-group-host.token';
-import {
-  CNGX_CONTROL_VALUE,
-  type CngxControlValue,
-} from '../control-value/control-value.token';
+import { CNGX_CONTROL_VALUE, type CngxControlValue } from '../control-value/control-value.token';
 import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.token';
 
 /**
- * Standalone interactive chip — applies onto `<cngx-chip>` from
+ * Standalone interactive chip - applies onto `<cngx-chip>` from
  * `@cngx/common/display` and wires `role="option"` selection
  * semantics with a local-owned form-bound boolean. Provides
  * `CNGX_CONTROL_VALUE` so `CngxFormBridge` (Phase 7) can adapt it
@@ -39,7 +36,7 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
  * **Use this when** the chip stands alone (e.g. a removable filter
  * tag, a single suggestion chip outside any chip-group). For chips
  * inside a `<cngx-chip-group>` / `<cngx-multi-chip-group>`, use
- * `[cngxChipInGroup]` instead — that variant derives `selected`
+ * `[cngxChipInGroup]` instead - that variant derives `selected`
  * from the parent's selection controller as a `computed()`,
  * eliminating the dual-source-of-truth a local model would create.
  * A dev-mode guard (via `afterNextRender`) throws if a standalone
@@ -58,7 +55,7 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
  * **A11y.** `role="option"` + reactive `aria-selected`,
  * `aria-disabled`, and `tabindex` (-1 when disabled, 0 otherwise).
  * Click + Space + Enter toggle. Backspace + Delete fire
- * `removeRequest` — an output, NOT a state mutation. The consumer
+ * `removeRequest` - an output, NOT a state mutation. The consumer
  * decides whether removing the chip means dropping it from a list,
  * deselecting, or something else.
  *
@@ -71,7 +68,7 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
  *
  * **Disabled "why".** When `disabledReason` is set, the directive
  * appends a hidden span to the host via `Renderer2` (always-in-DOM
- * per Pillar 2 — the id stays stable across renders). When
+ * per Pillar 2 - the id stays stable across renders). When
  * `disabledReason` is empty, consumers may still pass a custom id
  * via `cngxDescribedBy` and the `aria-describedby` host binding
  * routes to that. The two paths are mutually exclusive: a non-empty
@@ -93,6 +90,13 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
  *   cngxDescribedBy="chip-locked-reason"
  * >{{ tag }}</cngx-chip>
  * ```
+ *
+ * @category common/interactive
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/chip-interaction/chip-interaction.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxChipInGroup, CngxChipGroup, CngxMultiChipGroup, CngxChipInput
  * <example-url>http://localhost:4200/#/common/interactive/chip/interaction/basic-toggle-on-click-space-or-enter</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/chip/interaction/disabled-state</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/chip/interaction/removable-with-removerequest-on-backspace-delete</example-url>
@@ -133,12 +137,12 @@ export class CngxChipInteraction<T = unknown>
   implements CngxControlValue<boolean>, CngxFormFieldControl
 {
   /**
-   * Chip payload — required identifier the consumer associates with
+   * Chip payload - required identifier the consumer associates with
    * this chip (e.g. a tag string, filter id, entity reference). The
    * directive does not inspect or compare it; it is forwarded to
    * `(removeRequest)` listeners and visible in the DOM via the
    * consumer's own bindings. Aliased so consumers write `[value]="x"`
-   * — see naming note in the class JSDoc.
+   * - see naming note in the class JSDoc.
    */
   readonly chipValue = input.required<T>({ alias: 'value' });
 
@@ -154,7 +158,7 @@ export class CngxChipInteraction<T = unknown>
   /**
    * Bridge-writable invalid state. `model<boolean>` mirrors `disabled`
    * so external integrations (RF/Signal-Forms bridges, custom validity
-   * adapters) can drive it without a parallel API path — consumers
+   * adapters) can drive it without a parallel API path - consumers
    * typically read only.
    */
   readonly invalid = model<boolean>(false);
@@ -163,7 +167,7 @@ export class CngxChipInteraction<T = unknown>
    * rendered by `<cngx-form-field>` or a consumer-owned `<span>`).
    * When set, the host emits `aria-errormessage="<id>"` so AT can
    * locate the message; consumers MUST render an element with that id
-   * — passing an id without a matching element produces a dangling
+   * - passing an id without a matching element produces a dangling
    * AT reference. Default `null` skips the attribute entirely.
    * Note: WAI-ARIA dictates that AT ignores this attribute when
    * `aria-invalid` is absent or `"false"`, so a stable always-emitted
@@ -185,7 +189,7 @@ export class CngxChipInteraction<T = unknown>
     alias: 'cngxDescribedBy',
   });
 
-  /** Fires on Backspace/Delete keydown — consumer owns the removal. */
+  /** Fires on Backspace/Delete keydown - consumer owns the removal. */
   readonly removeRequest = output<void>();
 
   private readonly describedId = nextUid('cngx-chip-desc');
@@ -202,7 +206,7 @@ export class CngxChipInteraction<T = unknown>
   private readonly focusedState = signal(false);
   readonly focused = this.focusedState.asReadonly();
 
-  /** Empty when the chip is unselected — boolean atom semantics. */
+  /** Empty when the chip is unselected - boolean atom semantics. */
   readonly empty = computed(() => this.value() === false);
 
   private readonly fieldHost = inject(CNGX_FORM_FIELD_HOST, { optional: true });
@@ -212,10 +216,7 @@ export class CngxChipInteraction<T = unknown>
   });
 
   readonly errorState = computed<boolean>(
-    () =>
-      this.fieldHost?.showError() ??
-      this.errorAggregator?.shouldShow() ??
-      false,
+    () => this.fieldHost?.showError() ?? this.errorAggregator?.shouldShow() ?? false,
   );
 
   constructor() {
@@ -224,7 +225,7 @@ export class CngxChipInteraction<T = unknown>
     const span = renderer.createElement('span') as HTMLSpanElement;
     renderer.setAttribute(span, 'id', this.describedId);
     renderer.setAttribute(span, 'aria-hidden', 'true');
-    // sr-only via inline styles — directive runs in arbitrary markup, can't
+    // sr-only via inline styles - directive runs in arbitrary markup, can't
     // require a consumer stylesheet. Every value reads `--cngx-sr-only-*`
     // first so consumers can still override (structural/thematic split).
     renderer.setStyle(span, 'position', 'var(--cngx-sr-only-position, absolute)');
@@ -236,7 +237,7 @@ export class CngxChipInteraction<T = unknown>
     renderer.appendChild(hostEl, span);
 
     // Host may outlive the directive (structural re-projection, sibling
-    // clear) — without explicit removal the span leaks and the next
+    // clear) - without explicit removal the span leaks and the next
     // instance collides on `describedId`.
     inject(DestroyRef).onDestroy(() => {
       // Host may already be detached by a parent structural directive at
@@ -308,6 +309,7 @@ export class CngxChipInteraction<T = unknown>
   }
 }
 
+/** @internal */
 function isCloseButtonClick(event: Event): boolean {
   const target = event.target;
   if (!(target instanceof Element)) {

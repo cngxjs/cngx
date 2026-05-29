@@ -3,6 +3,8 @@
  *
  * `start`/`end` are item indices. `offsetBefore`/`offsetAfter`/`totalSize` are pixels.
  * In grid mode, offsets are row-based (rows = ceil(totalCount / columns)).
+ *
+ * @internal
  */
 export interface RangeResult {
   /** Start index (inclusive) of the visible range. */
@@ -29,7 +31,7 @@ const EMPTY_RANGE: RangeResult = {
  * Computes the visible range of items given scroll position, viewport size,
  * total item count, and item size estimation.
  *
- * Pure function — no DOM access, no Angular dependency. Fully testable.
+ * Pure function - no DOM access, no Angular dependency. Fully testable.
  *
  * @param scrollTop Current scroll offset in px.
  * @param clientHeight Viewport height in px.
@@ -39,6 +41,7 @@ const EMPTY_RANGE: RangeResult = {
  * @param columns Column count for grid mode (default 1). When > 1, range is row-aligned.
  *   Variable `estimateSize` ignores columns (grid + variable heights not supported).
  * @returns The computed range with spacer offsets.
+ * @internal
  */
 export function computeRange(
   scrollTop: number,
@@ -94,6 +97,8 @@ function computeFixedRange(
  *
  * Order: raw visible rows → overscan rows → clamp → convert to item indices.
  * This ensures full rows are always rendered.
+ *
+ * @internal
  */
 function computeGridRange(
   scrollTop: number,
@@ -159,7 +164,11 @@ function computeVariableRange(
   };
 }
 
-/** Finds the index of the first item whose cumulative offset exceeds `target`. */
+/**
+ * Finds the index of the first item whose cumulative offset exceeds `target`.
+ *
+ * @internal
+ */
 function binarySearch(offsets: number[], target: number, totalCount: number): number {
   let low = 0;
   let high = totalCount - 1;

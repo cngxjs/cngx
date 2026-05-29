@@ -13,12 +13,12 @@ import type { CngxFieldAccessor, CngxFieldRef } from './models';
  * Adapts an Angular Reactive Forms `AbstractControl` (FormControl, FormGroup, FormArray)
  * to the `CngxFieldAccessor` interface expected by `cngx-form-field`.
  *
- * This enables using `cngx-form-field` without Signal Forms — for teams that haven't
+ * This enables using `cngx-form-field` without Signal Forms - for teams that haven't
  * migrated yet or for forms that use Reactive Forms by design.
  *
  * @param control The Reactive Forms control to adapt.
  * @param name A unique field name for deterministic ID generation.
- * @param destroyRef A `DestroyRef` for automatic subscription cleanup. Required —
+ * @param destroyRef A `DestroyRef` for automatic subscription cleanup. Required -
  *  without it the three RxJS subscriptions on the control would leak for the
  *  lifetime of the parent injector. Pass `inject(DestroyRef)` from a component
  *  field initialiser, or wrap the call in `runInInjectionContext`.
@@ -28,6 +28,8 @@ import type { CngxFieldAccessor, CngxFieldRef } from './models';
  * readonly emailControl = new FormControl('', [Validators.required, Validators.email]);
  * readonly emailField = adaptFormControl(this.emailControl, 'email', inject(DestroyRef));
  * ```
+ *
+ * @category forms/field
  */
 export function adaptFormControl(
   control: AbstractControl,
@@ -64,7 +66,7 @@ export function adaptFormControl(
   };
 
   // control.events carries Touched/PristineChangeEvent; statusChanges/valueChanges
-  // do not — without this branch externally-driven markAsTouched()/markAsDirty() never propagate.
+  // do not - without this branch externally-driven markAsTouched()/markAsDirty() never propagate.
   const handleEvent = (event: ControlEvent) => {
     if (event instanceof TouchedChangeEvent || event instanceof PristineChangeEvent) {
       syncState();
@@ -75,24 +77,21 @@ export function adaptFormControl(
   control.events.pipe(takeUntilDestroyed(destroyRef)).subscribe(handleEvent);
 
   // Writable value proxy. `set()` must push into both the internal signal and the
-  // `FormControl` itself — the RxJS subscription above only mirrors RF → signal.
-  const writableValue = Object.assign(
-    () => valueSignal(),
-    {
-      set(next: unknown): void {
-        if (Object.is(control.value, next)) {
-          return;
-        }
-        valueSignal.set(next);
-        control.setValue(next);
-        control.markAsDirty();
-      },
-      update(updater: (current: unknown) => unknown): void {
-        writableValue.set(updater(valueSignal()));
-      },
-      asReadonly: () => valueSignal.asReadonly(),
+  // `FormControl` itself - the RxJS subscription above only mirrors RF → signal.
+  const writableValue = Object.assign(() => valueSignal(), {
+    set(next: unknown): void {
+      if (Object.is(control.value, next)) {
+        return;
+      }
+      valueSignal.set(next);
+      control.setValue(next);
+      control.markAsDirty();
     },
-  );
+    update(updater: (current: unknown) => unknown): void {
+      writableValue.set(updater(valueSignal()));
+    },
+    asReadonly: () => valueSignal.asReadonly(),
+  });
 
   const ref: CngxFieldRef = {
     name: nameSignal.asReadonly(),
@@ -124,7 +123,7 @@ export function adaptFormControl(
       syncState();
     },
     focusBoundControl: () => {
-      /* noop — Reactive Forms has no focusBoundControl */
+      /* noop - Reactive Forms has no focusBoundControl */
     },
     reset: (value?: unknown) => {
       control.reset(value);
@@ -135,7 +134,10 @@ export function adaptFormControl(
   return () => ref;
 }
 
-/** Convert Reactive Forms ValidationErrors to our error format. */
+/**
+ * Convert Reactive Forms ValidationErrors to our error format.
+ * @internal
+ */
 function adaptErrors(
   errors: ValidationErrors | null,
 ): { kind: string; message?: string; fieldTree: unknown }[] {
@@ -154,7 +156,10 @@ function adaptErrors(
   });
 }
 
-/** Check if a control has the built-in required validator. */
+/**
+ * Check if a control has the built-in required validator.
+ * @internal
+ */
 function hasRequiredValidator(control: AbstractControl): boolean {
   if (!control.validator) {
     return false;

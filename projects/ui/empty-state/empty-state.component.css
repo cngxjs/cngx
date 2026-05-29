@@ -1,14 +1,37 @@
 /**
  * @overview
- * Default visuals for `CngxEmptyState`. Shipped via
- * `@cngx/themes/cngx.css` aggregation. The opt-in Sass partial
- * `_empty-state.scss` and the Material-bridge mixin
- * `empty-state-theme.scss` stay unchanged so consumers using either
- * `@use '@cngx/ui/empty-state/_empty-state'` directly or
- * `@include empty.theme($theme)` keep working without breakage.
+ * Default visuals for `CngxEmptyState`. The host carries
+ * `.cngx-empty-state` and projects into nested `__icon-slot`,
+ * `__default-icon`, `__title`, `__description`, and `__actions`
+ * elements. Token groups span Layout, Surface, and Typography.
  *
- * Pair with `@cngx/themes/material/empty-state-theme` for the
- * Material 3 surface palette.
+ * **Slots**
+ *
+ * - `.cngx-empty-state__icon-slot` - consumer-projected icon; the
+ *   default glyph next to it is hidden when this slot is non-empty
+ * - `.cngx-empty-state__default-icon` - fallback glyph (50% opacity)
+ *   when no custom icon is projected
+ * - `.cngx-empty-state__title` - h1-style header
+ * - `.cngx-empty-state__description` - body copy, capped at 40ch
+ * - `.cngx-empty-state__actions` - trailing action row
+ *
+ * **Inheritance**
+ *
+ * All three text colors delegate to the foundation so a brand swap
+ * cascades through one `:root` pass - no per-component dark-mode
+ * 4-block needed because the foundation already carries the
+ * light/dark distinction:
+ *
+ * - `--cngx-empty-color` -> `--cngx-color-text`
+ * - `--cngx-empty-icon-color` -> `--cngx-color-text`
+ * - `--cngx-empty-title-color` -> `--cngx-color-text`
+ *
+ * **Pair with**
+ *
+ * - `@cngx/themes/material/empty-state-theme` - Material 3 surface
+ *   palette
+ * - `@use '@cngx/ui/empty-state/_empty-state'` - opt-in Sass partial
+ *   for consumers preferring Sass-driven theming
  */
 
 @layer cngx.tokens {
@@ -76,7 +99,7 @@
   }
 
   /**
-   * Text color of the title slot — slightly darker than the
+   * Text color of the title slot - slightly darker than the
    * description for a clear hierarchy.
    * @group Typography
    */
@@ -100,7 +123,7 @@
    * Default-theme palette pass. All three text colors delegate to
    * the foundation `--cngx-color-text` so the empty-state's body /
    * title / icon all flip together with the document's color scheme.
-   * No 4-block needed — the foundation token already carries the
+   * No 4-block needed - the foundation token already carries the
    * light/dark distinction.
    */
   :root {

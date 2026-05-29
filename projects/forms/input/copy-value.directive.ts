@@ -15,6 +15,13 @@ import { DestroyRef, Directive, inject, input, output, signal, type Signal } fro
  * <!-- With explicit value -->
  * <button [cngxCopyValue]="apiKey()">Copy API Key</button>
  * ```
+ *
+ * @category forms/input
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/input/copy-value.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxInput, CngxInputClear, CngxPasswordToggle
  * <example-url>http://localhost:4200/#/forms/input/utilities/copy-to-clipboard</example-url>
  * <example-url>http://localhost:4200/#/forms/input/utilities/input-clear</example-url>
  * <example-url>http://localhost:4200/#/forms/input/utilities/input-format</example-url>
@@ -84,7 +91,7 @@ export class CngxCopyValue {
         this.resetTimer = null;
       }, this.resetDelay());
     } catch {
-      // Clipboard write failed (permission denied, etc.) — drop silently.
+      // Clipboard write failed (permission denied, etc.) - drop silently.
     }
   }
 

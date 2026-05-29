@@ -40,6 +40,8 @@ import type {
  * `triggerLabel` is excluded because each variant wires a distinct
  * directive class. NG8110 forces `contentChild()` at the call site;
  * only the cascade lives in the factory.
+ *
+ * @category forms/select/templates
  */
 export interface CngxSelectTemplateRegistryQueries<T = unknown> {
   readonly check: Signal<CngxSelectCheck<T> | undefined>;
@@ -63,8 +65,10 @@ export interface CngxSelectTemplateRegistryQueries<T = unknown> {
 }
 
 /**
- * Resolved template-ref signals — output of the 3-stage cascade, ready
+ * Resolved template-ref signals - output of the 3-stage cascade, ready
  * for `*ngTemplateOutlet`.
+ *
+ * @category forms/select/templates
  */
 export interface CngxSelectTemplateRegistry<T = unknown> {
   readonly check: Signal<TemplateRef<CngxSelectCheckContext<T>> | null>;
@@ -104,8 +108,7 @@ export interface CngxSelectTemplateRegistry<T = unknown> {
  */
 const NO_ACTION_DIRECTIVE: Signal<CngxSelectAction | undefined> = signal(undefined);
 
-const NO_LOADING_GLYPH_DIRECTIVE: Signal<CngxSelectLoadingGlyph | undefined> =
-  signal(undefined);
+const NO_LOADING_GLYPH_DIRECTIVE: Signal<CngxSelectLoadingGlyph | undefined> = signal(undefined);
 
 /**
  * Build a resolved {@link CngxSelectTemplateRegistry} from raw
@@ -116,6 +119,8 @@ const NO_LOADING_GLYPH_DIRECTIVE: Signal<CngxSelectLoadingGlyph | undefined> =
  * Used by every select-family variant to replace ~13 inline
  * `injectResolvedTemplate(...)` cascade blocks. See
  * {@link CngxSelectTemplateRegistryQueries} for the input shape.
+ *
+ * @category forms/select/templates
  */
 export function createTemplateRegistry<T = unknown>(
   queries: CngxSelectTemplateRegistryQueries<T>,
@@ -145,6 +150,8 @@ export function createTemplateRegistry<T = unknown>(
 
 /**
  * Factory signature for {@link CNGX_TEMPLATE_REGISTRY_FACTORY}.
+ *
+ * @category forms/select/templates
  */
 export type CngxTemplateRegistryFactory = <T = unknown>(
   queries: CngxSelectTemplateRegistryQueries<T>,
@@ -153,9 +160,15 @@ export type CngxTemplateRegistryFactory = <T = unknown>(
 /**
  * Factory token for the template-slot cascade. Default
  * {@link createTemplateRegistry}.
+ *
+ * @category forms/select/templates
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-registry.ts
+ * @since 0.1.0
  */
-export const CNGX_TEMPLATE_REGISTRY_FACTORY =
-  new InjectionToken<CngxTemplateRegistryFactory>('CNGX_TEMPLATE_REGISTRY_FACTORY', {
+export const CNGX_TEMPLATE_REGISTRY_FACTORY = new InjectionToken<CngxTemplateRegistryFactory>(
+  'CNGX_TEMPLATE_REGISTRY_FACTORY',
+  {
     providedIn: 'root',
     factory: () => createTemplateRegistry,
-  });
+  },
+);

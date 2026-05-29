@@ -5,6 +5,8 @@ import type { MaskTokenMap } from './input-mask.directive';
  * Global configuration for `@cngx/forms/input` directives.
  *
  * Provide via `provideInputConfig(...features)` at the application or component level.
+ *
+ * @category forms/input
  */
 export interface InputConfig {
   /** Extra phone patterns by region code (merged with built-in). */
@@ -33,20 +35,31 @@ export interface InputConfig {
   readonly fileMaxSize?: number;
 }
 
-/** Empty default — every directive falls back to its own default. */
+/**
+ * Empty default - every directive falls back to its own default.
+ * @internal
+ */
 const DEFAULT_INPUT_CONFIG: InputConfig = {};
 
 /**
  * Injection token for `@cngx/forms/input` global configuration.
  *
  * @see {@link provideInputConfig}
+ *
+ * @category forms/input
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/input/input-config.ts
+ * @since 0.1.0
  */
 export const CNGX_INPUT_CONFIG = new InjectionToken<InputConfig>('CNGX_INPUT_CONFIG', {
   providedIn: 'root',
   factory: () => DEFAULT_INPUT_CONFIG,
 });
 
-/** A feature function that contributes to the input config. */
+/**
+ * A feature function that contributes to the input config.
+ *
+ * @category forms/input
+ */
 export type InputConfigFeature = (config: InputConfig) => InputConfig;
 
 /**
@@ -65,6 +78,8 @@ export type InputConfigFeature = (config: InputConfig) => InputConfig;
  *   ],
  * };
  * ```
+ *
+ * @category forms/input
  */
 export function provideInputConfig(...features: InputConfigFeature[]): Provider {
   let config: InputConfig = {};
@@ -74,7 +89,11 @@ export function provideInputConfig(...features: InputConfigFeature[]): Provider 
   return { provide: CNGX_INPUT_CONFIG, useValue: config };
 }
 
-/** Add or override phone mask patterns by region code. */
+/**
+ * Add or override phone mask patterns by region code.
+ *
+ * @category forms/input
+ */
 export function withPhonePatterns(patterns: Record<string, string>): InputConfigFeature {
   return (config) => ({
     ...config,
@@ -82,7 +101,11 @@ export function withPhonePatterns(patterns: Record<string, string>): InputConfig
   });
 }
 
-/** Add or override IBAN mask patterns by country code. */
+/**
+ * Add or override IBAN mask patterns by country code.
+ *
+ * @category forms/input
+ */
 export function withIbanPatterns(patterns: Record<string, string>): InputConfigFeature {
   return (config) => ({
     ...config,
@@ -90,7 +113,11 @@ export function withIbanPatterns(patterns: Record<string, string>): InputConfigF
   });
 }
 
-/** Add or override ZIP mask patterns by country code. */
+/**
+ * Add or override ZIP mask patterns by country code.
+ *
+ * @category forms/input
+ */
 export function withZipPatterns(patterns: Record<string, string>): InputConfigFeature {
   return (config) => ({
     ...config,
@@ -98,7 +125,11 @@ export function withZipPatterns(patterns: Record<string, string>): InputConfigFe
   });
 }
 
-/** Add or override date format patterns by language code. */
+/**
+ * Add or override date format patterns by language code.
+ *
+ * @category forms/input
+ */
 export function withDateFormats(formats: Record<string, string>): InputConfigFeature {
   return (config) => ({
     ...config,
@@ -106,17 +137,29 @@ export function withDateFormats(formats: Record<string, string>): InputConfigFea
   });
 }
 
-/** Set the default mask placeholder character. */
+/**
+ * Set the default mask placeholder character.
+ *
+ * @category forms/input
+ */
 export function withMaskPlaceholder(char: string): InputConfigFeature {
   return (config) => ({ ...config, maskPlaceholder: char });
 }
 
-/** Set the default mask guide mode. */
+/**
+ * Set the default mask guide mode.
+ *
+ * @category forms/input
+ */
 export function withMaskGuide(guide: boolean): InputConfigFeature {
   return (config) => ({ ...config, maskGuide: guide });
 }
 
-/** Register global custom mask tokens. */
+/**
+ * Register global custom mask tokens.
+ *
+ * @category forms/input
+ */
 export function withCustomTokens(tokens: MaskTokenMap): InputConfigFeature {
   return (config) => ({
     ...config,
@@ -124,7 +167,11 @@ export function withCustomTokens(tokens: MaskTokenMap): InputConfigFeature {
   });
 }
 
-/** Set defaults for `CngxNumericInput`. */
+/**
+ * Set defaults for `CngxNumericInput`.
+ *
+ * @category forms/input
+ */
 export function withNumericDefaults(defaults: {
   locale?: string;
   decimals?: number;
@@ -138,12 +185,20 @@ export function withNumericDefaults(defaults: {
   });
 }
 
-/** Set the default `resetDelay` for `CngxCopyValue`. */
+/**
+ * Set the default `resetDelay` for `CngxCopyValue`.
+ *
+ * @category forms/input
+ */
 export function withCopyResetDelay(ms: number): InputConfigFeature {
   return (config) => ({ ...config, copyResetDelay: ms });
 }
 
-/** Set the default `maxSize` for `CngxFileDrop`. */
+/**
+ * Set the default `maxSize` for `CngxFileDrop`.
+ *
+ * @category forms/input
+ */
 export function withFileMaxSize(bytes: number): InputConfigFeature {
   return (config) => ({ ...config, fileMaxSize: bytes });
 }

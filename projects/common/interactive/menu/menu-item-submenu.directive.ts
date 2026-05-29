@@ -21,19 +21,19 @@ import type { CngxMenuHost } from './menu-host.token';
 import { CngxMenuItem } from './menu-item.directive';
 import { CNGX_MENU_SUBMENU_ITEM, type CngxMenuSubmenuLike } from './menu-submenu.token';
 
-/** See `CngxListboxTrigger` — same structural contract. */
+/** See `CngxListboxTrigger` - same structural contract. */
 interface PopoverController {
   readonly isVisible: () => boolean;
   show(): void;
   hide(): void;
   readonly anchorElement: { set(el: HTMLElement | null): void };
   /**
-   * Popover unique id signal — used to compose the `anchor-name` CSS value
+   * Popover unique id signal - used to compose the `anchor-name` CSS value
    * the browser's CSS Anchor Positioning expects on the anchor element.
    */
   readonly id: () => string;
   /**
-   * Popover host element — the submenu directive attaches hover listeners to
+   * Popover host element - the submenu directive attaches hover listeners to
    * it so the submenu stays open while the user mouses over its items.
    */
   readonly elementRef: ElementRef<HTMLElement>;
@@ -41,7 +41,7 @@ interface PopoverController {
 
 /**
  * Companion directive applied to a `[cngxMenuItem]` that opens a nested
- * submenu. The directive itself does NOT render `role="menuitem"` — that
+ * submenu. The directive itself does NOT render `role="menuitem"` - that
  * stays on `CngxMenuItem`. Adds `aria-haspopup="menu"` and reactive
  * `aria-expanded`, registers itself with the surrounding menu as a
  * submenu source so the menu trigger can drive arrow-right / arrow-left
@@ -55,6 +55,13 @@ interface PopoverController {
  * The submenu's `<div cngxPopover>` MUST set `[exclusive]="false"` so that
  * opening it does not light-dismiss the parent popover. This is the only
  * extra wiring the consumer needs beyond the two inputs.
+ *
+ * @category common/interactive/menu
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/menu/menu-item-submenu.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxMenuItem, CngxMenu, CngxMenuTrigger
  * <example-url>http://localhost:4200/#/common/interactive/menu/submenu/two-level-submenu</example-url>
  */
 @Directive({
@@ -87,7 +94,7 @@ export class CngxMenuItemSubmenu implements CngxMenuSubmenuLike {
    * activeId)`. When applied alongside `[cngxMenuItem]` the directive
    * mirrors the sibling's id so the trigger's lookup matches the AD's
    * `activeId`. When applied alone (no sibling), falls back to a fresh
-   * `nextUid` — the AD will never highlight this element so the trigger
+   * `nextUid` - the AD will never highlight this element so the trigger
    * lookup is moot, but the host element still receives a valid id.
    */
   get id(): string {
@@ -96,7 +103,7 @@ export class CngxMenuItemSubmenu implements CngxMenuSubmenuLike {
 
   readonly isOpen = computed<boolean>(() => this.popover().isVisible());
 
-  /** CSS Anchor Positioning name — matches the popover's `position-anchor`. */
+  /** CSS Anchor Positioning name - matches the popover's `position-anchor`. */
   protected readonly cssAnchorName = computed(() => `--cngx-pop-${this.popover().id()}`);
 
   get inner(): CngxMenuHost {
@@ -162,10 +169,7 @@ export class CngxMenuItemSubmenu implements CngxMenuSubmenuLike {
    * structural `equal` so the effect below only fires on a real
    * boolean transition, not on every parent re-eval.
    */
-  private readonly transition = linkedSignal<
-    boolean,
-    { current: boolean; previous: boolean }
-  >({
+  private readonly transition = linkedSignal<boolean, { current: boolean; previous: boolean }>({
     source: this.isOpen,
     computation: (current, prev) => ({
       current,
@@ -230,17 +234,21 @@ export class CngxMenuItemSubmenu implements CngxMenuSubmenuLike {
   }
 }
 
-/** Tracks which Documents have already warned about a submenu popover missing position-try-fallbacks. */
+/**
+ * @internal
+ * Tracks which Documents have already warned about a submenu popover missing position-try-fallbacks.
+ */
 const submenuFallbackWarnedDocs = new WeakSet<Document>();
 
 /**
- * @internal — test hook. Resets the per-Document warning suppression so
+ * @internal - test hook. Resets the per-Document warning suppression so
  * specs can exercise the warning path against a shared jsdom Document.
  * Do not call from production code.
  */
 export function __resetSubmenuFallbackWarnings(doc: Document): void {
   submenuFallbackWarnedDocs.delete(doc);
 }
+/** @internal */
 function warnMissingSubmenuFallbacks(popoverEl: HTMLElement): void {
   const doc = popoverEl.ownerDocument;
   if (submenuFallbackWarnedDocs.has(doc)) {

@@ -4,11 +4,13 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { fromEvent, filter } from 'rxjs';
 import { type KeyCombo, matchesKeyCombo, parseKeyCombo } from '@cngx/core/utils';
 
-/** Input element tag names where global shortcuts should not fire. */
+/** @internal Input element tag names where global shortcuts should not fire. */
 const INPUT_TAGS = new Set(['INPUT', 'TEXTAREA', 'SELECT']);
 
 /**
  * Declarative keyboard shortcut handler.
+ *
+ * @category common/interactive/keyboard
  *
  * Binds a keyboard shortcut to the host element without global event listeners
  * in a service. Supports `mod` as a platform-aware modifier (`Meta` on macOS,
@@ -33,6 +35,11 @@ const INPUT_TAGS = new Set(['INPUT', 'TEXTAREA', 'SELECT']);
  *   Press Escape to close
  * </div>
  * ```
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/keyboard/keyboard-shortcut.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxClickOutside, CngxSearch
  * <example-url>http://localhost:4200/#/common/interactive/gestures/keyboard-shortcut/global-shortcut</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/gestures/keyboard-shortcut/self-scoped-shortcut</example-url>
  */

@@ -1,18 +1,35 @@
 /**
  * @overview
- * Default visuals for `CngxActionButton`. The component host has
+ * Default visuals for `CngxActionButton`. The component host carries
  * `display: contents` and renders a `<button class="cngx-action-button
- * cngx-action-button--{variant}">` inside.
+ * cngx-action-button--{variant}">` inside. Token groups span Layout /
+ * Surface / Motion plus per-variant and per-async-state buckets.
  *
- * Three variants share the same token surface — `primary` (filled),
- * `secondary` (outlined), and `ghost` (text-only). State classes
- * `.cngx-async--{pending,succeeded,failed}` are set by the
- * `cngxAsyncClick` directive and live in
+ * **State modifiers**
+ *
+ * Async-commit state classes are set by `cngxAsyncClick` on the
+ * `<button>` element, and the actual `.cngx-async--*` rules live in
  * `@cngx/common/theming/components/cngx-async.css` so they apply
- * globally regardless of CngxActionButton.
+ * globally (`CngxPopoverAction` and standalone usages reach them too).
+ * The token surface reserved here:
  *
- * Pair with `@cngx/themes/material/action-button-theme` for Material 3
- * primary / outline / error surfaces.
+ * - `--cngx-action-btn-pending-opacity` - opacity + `cursor: wait`
+ * - `--cngx-action-btn-succeeded-bg / -color / -border` - success tint
+ * - `--cngx-action-btn-failed-bg / -color / -border` - failure tint
+ *
+ * **Variants**
+ *
+ * Three variants share the base shape (border, radius, padding,
+ * transition) and only repaint the surface:
+ *
+ * - `--primary` - filled brand surface, white text
+ * - `--secondary` - transparent fill, brand text, border accent
+ * - `--ghost` - text-only, hover state-layer for affordance
+ *
+ * **Pair with**
+ *
+ * - `@cngx/themes/material/action-button-theme` - Material 3 primary /
+ *   outline / error surfaces
  */
 
 @layer cngx.tokens {
@@ -146,7 +163,7 @@
   }
 
   /**
-   * Hover state-layer for the ghost variant — subtle tint so the button
+   * Hover state-layer for the ghost variant - subtle tint so the button
    * is felt without competing with primary actions.
    * @group Variant / Ghost
    */
@@ -220,9 +237,9 @@
 
 @layer cngx.components {
   /* .cngx-async--{pending,succeeded,failed} state-class rules moved to
-   * @cngx/common/theming/components/cngx-async.css — they're set by the
+   * @cngx/common/theming/components/cngx-async.css - they're set by the
    * cngxAsyncClick @Directive on any element (not just CngxActionButton
-   * descendants — CngxPopoverAction uses it too, and consumers can
+   * descendants - CngxPopoverAction uses it too, and consumers can
    * apply it standalone). State rules must stay globally available
    * which is what cngx.css aggregation delivers. */
 
@@ -244,13 +261,19 @@
   .cngx-action-button--primary {
     background: var(--cngx-action-btn-primary-bg, var(--cngx-color-primary, oklch(0.55 0.15 250)));
     color: var(--cngx-action-btn-primary-color, oklch(1 0 0));
-    border-color: var(--cngx-action-btn-primary-bg, var(--cngx-color-primary, oklch(0.55 0.15 250)));
+    border-color: var(
+      --cngx-action-btn-primary-bg,
+      var(--cngx-color-primary, oklch(0.55 0.15 250))
+    );
   }
 
   .cngx-action-button--secondary {
     background: var(--cngx-action-btn-secondary-bg, transparent);
     color: var(--cngx-action-btn-secondary-color, var(--cngx-color-primary, oklch(0.55 0.15 250)));
-    border-color: var(--cngx-action-btn-secondary-border, var(--cngx-color-border, oklch(0.55 0.005 290)));
+    border-color: var(
+      --cngx-action-btn-secondary-border,
+      var(--cngx-color-border, oklch(0.55 0.005 290))
+    );
   }
 
   .cngx-action-button--ghost {
@@ -263,7 +286,7 @@
     background: var(--cngx-action-btn-ghost-hover-bg, oklch(0 0 0 / 0.04));
   }
 
-  /* sr-only utility on the announcement span — duplicated locally so
+  /* sr-only utility on the announcement span - duplicated locally so
    * the file is self-contained under styleUrl bundling. */
   .cngx-action-button__sr-only {
     position: absolute;

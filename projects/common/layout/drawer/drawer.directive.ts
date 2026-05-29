@@ -1,6 +1,10 @@
 import { computed, Directive, ElementRef, inject, input, output, signal } from '@angular/core';
 
-/** Position from which the drawer panel slides in. */
+/**
+ * Position from which the drawer panel slides in.
+ *
+ * @category common/layout
+ */
 export type DrawerPosition = 'left' | 'right' | 'top' | 'bottom';
 
 /**
@@ -11,7 +15,7 @@ export type DrawerPosition = 'left' | 'right' | 'top' | 'bottom';
  * (internal state via `open()` / `close()` / `toggle()`) modes.
  *
  * Child directives (`CngxDrawerPanel`, `CngxDrawerContent`) receive a
- * reference to this directive via an explicit input — no ancestor injection.
+ * reference to this directive via an explicit input - no ancestor injection.
  *
  * ### Uncontrolled
  * ```html
@@ -29,6 +33,13 @@ export type DrawerPosition = 'left' | 'right' | 'top' | 'bottom';
  *   …
  * </div>
  * ```
+ *
+ * @category common/layout
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/layout/drawer/drawer.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxDrawerPanel, CngxDrawerContent, CngxBackdrop, CngxScrollLock
  * <example-url>http://localhost:4200/#/common/layout/drawer/basic-scroll-lock-backdrop</example-url>
  * <example-url>http://localhost:4200/#/common/layout/drawer/controlled-mode</example-url>
  * <example-url>http://localhost:4200/#/common/layout/drawer/direction-all-four-sides</example-url>
@@ -46,7 +57,7 @@ export type DrawerPosition = 'left' | 'right' | 'top' | 'bottom';
   },
 })
 export class CngxDrawer {
-  /** @internal Host element ref — used by `CngxDrawerPanel` for click-outside containment. */
+  /** @internal Host element ref - used by `CngxDrawerPanel` for click-outside containment. */
   readonly elementRef = inject(ElementRef<HTMLElement>);
 
   /** Controlled opened state. When bound, takes precedence over internal state. */
@@ -54,7 +65,7 @@ export class CngxDrawer {
 
   private readonly openedState = signal(false);
 
-  /** Resolved opened state — controlled input wins over internal state. */
+  /** Resolved opened state - controlled input wins over internal state. */
   readonly opened = computed(() => this.openedInput() ?? this.openedState());
 
   /** Emitted when the opened state changes. Wire to a signal for two-way binding. */

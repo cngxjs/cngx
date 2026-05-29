@@ -12,10 +12,18 @@ import { CngxArea } from '../layers/area.component';
 import { injectPresetState } from './preset-state';
 
 /**
- * Inline mini area — a tiny filled-area chart for KPI cards. Sibling
+ * Inline mini area - a tiny filled-area chart for KPI cards. Sibling
  * of {@link CngxSparkline}; renders only the area (no line stroke).
  * Default viewBox 80×24. Theming via `--cngx-mini-area-color`
  * (atom-local) → `--cngx-chart-primary` (chart-level) cascade.
+ *
+ * @category common/chart/presets
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/presets/mini-area.component.ts
+ * @since 0.1.0
+ * @relatedTo CngxSparkline, CngxMiniBar, CngxChart
+ *
  * <example-url>http://localhost:4200/#/common/chart/mini-area/async-state-machine</example-url>
  * <example-url>http://localhost:4200/#/common/chart/mini-area/inline-area-trends</example-url>
  */

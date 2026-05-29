@@ -1,19 +1,82 @@
 /**
  * @overview
- * Default visuals for `CngxPopoverPanel`. The host element is
- * `<cngx-popover-panel>` and always carries the `.cngx-popover-panel`
- * class via `hostClass()`; the `CngxPopover` host directive toggles
- * transition classes (`.cngx-popover--opening` / `-open` / `-closing`).
+ * Default visuals for `CngxPopoverPanel`. The host carries
+ * `.cngx-popover-panel` via `hostClass()`; the `CngxPopover` host
+ * directive toggles open / closing transition classes. The four
+ * semantic accents sit outside the foundation primary so an Ember-
+ * toned theme cannot accidentally tint a "success" panel.
  *
- * Surface tokens fall back through the foundation
- * `--cngx-color-surface` / `--cngx-color-text` so brand overrides
- * propagate. The four semantic-variant accent palettes
- * (`info` / `success` / `warning` / `danger`) carry their own
- * default surfaces — they sit outside the foundation primary so
- * an Ember-toned theme can't accidentally tint a "success" panel.
+ * **State modifiers**
  *
- * Pair with `@cngx/themes/material/popover-panel-theme` for
- * Material 3 surface + shadow.
+ * Applied by `CngxPopover` to drive the open / close transition:
+ *
+ * - `.cngx-popover--opening` - opacity 0 + translate 4px / scale 0.98
+ * - `.cngx-popover--open` - resting state
+ * - `.cngx-popover--closing` - same as opening, animated outward
+ * - `:popover-open` - native popover restore-display
+ *
+ * **Accent variants**
+ *
+ * Each pins `--cngx-popover-panel-accent` + `-accent-text` on the
+ * panel and adds a `border-left` stripe. Child slots pick up both
+ * tokens via inheritance:
+ *
+ * - `--info` - blue accent
+ * - `--success` - success-coded
+ * - `--warning` - warning-coded
+ * - `--danger` - danger-coded
+ *
+ * **Arrow placement**
+ *
+ * Selected via `[data-arrow-placement="top|bottom|left|right"]`
+ * written by `CngxPopover` from live trigger / panel geometry. The
+ * 45-degree arrow square positions itself off the matching edge;
+ * `--cngx-popover-arrow-offset` (also written by `CngxPopover`)
+ * carries the live perpendicular offset, with a 50% fallback for
+ * the first paint before the offset computation lands.
+ *
+ * **Slots**
+ *
+ * - `__header` - optional title row
+ * - `__body` - main content
+ * - `__footer` - action row, divided by top border
+ * - `__header-row` - header + optional close button
+ * - `__close` - circular dismiss button, hover wash + focus ring
+ * - `__arrow` - 45-degree square positioned by arrow-placement
+ * - `__loading` / `__error` / `__empty` - async-state surfaces;
+ *   `__error` picks up `--cngx-color-danger`, `__empty` dims to 0.6
+ *
+ * **Inheritance**
+ *
+ * - `--cngx-popover-panel-bg` -> `--cngx-color-surface` (via `:root`
+ *   delegation so dark-mode surface cascades through automatically)
+ * - `--cngx-popover-panel-color` -> `--cngx-color-text`
+ * - Layout / motion / header / footer tokens - leaf, no fallback
+ *   chain
+ * - Accent surface tokens - leaf; each variant rule pins them with
+ *   light-mode defaults, the dark cascade overrides them at higher
+ *   specificity outside the @scope wrap
+ *
+ * **Dark mode**
+ *
+ * Three hooks lift the alpha-on-black borders / shadow to alpha-on-
+ * white so they remain visible on dark surfaces, swap the close-button
+ * hover wash to white-alpha, and pin every variant accent to its
+ * dark-mode pair (lower L surface + lifted-L text):
+ *
+ * - `prefers-color-scheme: dark`
+ * - `[data-color-scheme="dark"]` / `.dark` class
+ * - `[data-color-scheme="light"]` / `.light` class (explicit pin)
+ *
+ * **Reduced motion**
+ *
+ * Under `prefers-reduced-motion: reduce` the opacity + transform
+ * transition is dropped so the panel snaps in and out.
+ *
+ * **Pair with**
+ *
+ * - `@cngx/themes/material/popover-panel-theme` - Material 3
+ *   surface + elevation
  */
 
 @layer cngx.tokens {
@@ -60,7 +123,7 @@
   }
 
   /**
-   * Maximum inline size — caps long content before the floater
+   * Maximum inline size - caps long content before the floater
    * collides with viewport edges.
    * @group Layout
    */
@@ -92,7 +155,7 @@
   }
 
   /**
-   * Side length of the arrow square (the rotated 45° diamond — final
+   * Side length of the arrow square (the rotated 45° diamond - final
    * arrow side reads as `size * sqrt(2)`).
    * @group Layout
    */
@@ -174,7 +237,7 @@
   }
 
   /**
-   * Border shorthand applied to the top of the footer — visually
+   * Border shorthand applied to the top of the footer - visually
    * separates actions from the body.
    * @group Surface
    */
@@ -195,7 +258,7 @@
   }
 
   /**
-   * Margin above the footer divider — pulls the footer down off the
+   * Margin above the footer divider - pulls the footer down off the
    * body.
    * @group Layout
    */
@@ -209,7 +272,7 @@
    * Accent surface for the semantic-variant rules
    * (`.cngx-popover-panel--info` / `--success` / `--warning` /
    * `--danger`). Each variant rule pins this token plus the matching
-   * accent-text token — child slots pick them up through
+   * accent-text token - child slots pick them up through
    * `currentColor` and `var()` fallbacks.
    * @group Variant / Accent
    */
@@ -220,7 +283,7 @@
   }
 
   /**
-   * Text / outline color paired with the accent surface — used by
+   * Text / outline color paired with the accent surface - used by
    * focus rings and the variant border-left rule.
    * @group Variant / Accent
    */
@@ -242,14 +305,14 @@
     initial-value: oklch(0 0 0 / 0.06);
   }
 
-  /* Delegating tokens — bg + text track the foundation surface so
+  /* Delegating tokens - bg + text track the foundation surface so
    * any consumer-level dark-mode signal cascades through automatically. */
   :root {
     --cngx-popover-panel-bg: var(--cngx-color-surface);
     --cngx-popover-panel-color: var(--cngx-color-text);
   }
 
-  /* Dark-mode component-local swap — alpha-on-black borders/shadows
+  /* Dark-mode component-local swap - alpha-on-black borders/shadows
    * vanish on dark surfaces, so the dark block lifts them to
    * alpha-on-white. Variant accent overrides live below the @scope
    * block (modifier classes need a non-scope-relative selector). */
@@ -299,7 +362,7 @@
           var(--cngx-popover-panel-transition-easing, cubic-bezier(0.4, 0, 0.2, 1));
     }
 
-    /* Browser hides [popover] by default — restore display when open. */
+    /* Browser hides [popover] by default - restore display when open. */
     :scope:popover-open {
       display: block;
     }
@@ -388,7 +451,7 @@
       pointer-events: none;
     }
 
-    /* Arrow placement — keyed off CngxPopover's `data-arrow-placement`
+    /* Arrow placement - keyed off CngxPopover's `data-arrow-placement`
        host attribute, which exposes the primary edge of the active
        placement (`top` / `bottom` / `left` / `right`).
        --cngx-popover-arrow-offset is written by CngxPopover from the
@@ -424,7 +487,7 @@
       border-top: none;
     }
 
-    /* Semantic variants — set --cngx-popover-panel-accent/-text on the panel; children
+    /* Semantic variants - set --cngx-popover-panel-accent/-text on the panel; children
        inherit them and pick them up via var() fallbacks. */
     :scope.cngx-popover-panel--info {
       --cngx-popover-panel-accent: oklch(0.92 0.05 250);
@@ -471,7 +534,7 @@
     }
   }
 
-  /* Dark-mode variant accent overrides — the four severity rules
+  /* Dark-mode variant accent overrides - the four severity rules
    * inside @scope pin the accent tokens with light-mode values, so
    * the dark cascade lands here as a higher-specificity override
    * sitting outside the scope (modifier classes only ever land on

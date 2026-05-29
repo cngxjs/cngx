@@ -10,12 +10,17 @@ import type { CngxCellTplContext } from './models';
  * ```html
  * <cngx-treetable [tree]="tree">
  *   <ng-template [cngxCell]="'name'" let-node let-value="value">
- *     <strong>{{ value }}</strong> — depth {{ node.depth }}
+ *     <strong>{{ value }}</strong> - depth {{ node.depth }}
  *   </ng-template>
  * </cngx-treetable>
  * ```
  *
  * @typeParam T - The data type of the tree nodes.
+ *
+ * @category data-display/treetable
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/data-display/treetable/column-template.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxTreetable, CngxHeaderTpl, CngxEmptyTpl
  */
 @Directive({ selector: 'ng-template[cngxCell]', standalone: true })
 export class CngxCellTpl<T = unknown> {
@@ -40,6 +45,11 @@ export class CngxCellTpl<T = unknown> {
  *   </ng-template>
  * </cngx-treetable>
  * ```
+ *
+ * @category data-display/treetable
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/data-display/treetable/column-template.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxTreetable, CngxCellTpl, CngxEmptyTpl
  */
 @Directive({ selector: 'ng-template[cngxHeader]', standalone: true })
 export class CngxHeaderTpl {
@@ -64,6 +74,11 @@ export class CngxHeaderTpl {
  *   </ng-template>
  * </cngx-treetable>
  * ```
+ *
+ * @category data-display/treetable
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/data-display/treetable/column-template.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxTreetable, CngxCellTpl, CngxHeaderTpl
  */
 @Directive({ selector: 'ng-template[cngxEmpty]', standalone: true })
 export class CngxEmptyTpl {

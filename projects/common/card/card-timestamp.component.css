@@ -1,11 +1,28 @@
 /**
  * @overview
- * Default visuals for `CngxCardTimestamp`. The host element
- * `<cngx-card-timestamp>` always carries the
- * `.cngx-card-timestamp` class. One slot child renders the optional
- * label before the date: `.cngx-card-timestamp__prefix`.
+ * Default visuals for `CngxCardTimestamp`. The host carries
+ * `.cngx-card-timestamp` - a lightweight inline-flex container that
+ * renders an optional label slot before a muted timestamp string.
  *
- * Lightweight inline-flex layout, muted color, small font.
+ * **Slots**
+ *
+ * - `.cngx-card-timestamp__prefix` - optional label before the date
+ *
+ * **Inheritance**
+ *
+ * Leaf tokens - the timestamp surface owns its own color, size, and
+ * gap without delegating to a foundation cascade. Inline font-size
+ * sits at `0.75rem` so the timestamp reads as secondary metadata.
+ *
+ * **Dark mode**
+ *
+ * Three hooks lift the muted text from a dark gray to a soft light
+ * gray so the timestamp retains its secondary-information weight
+ * against a dark surface:
+ *
+ * - `prefers-color-scheme: dark`
+ * - `[data-color-scheme="dark"]` / `.dark` class
+ * - `[data-color-scheme="light"]` / `.light` class (explicit pin)
  */
 
 @layer cngx.tokens {
@@ -30,7 +47,7 @@
   }
 
   /**
-   * Text color — muted by default.
+   * Text color - muted by default.
    * @group Typography
    */
   @property --cngx-card-timestamp-color {
@@ -49,7 +66,7 @@
     initial-value: 400;
   }
 
-  /* Dark-mode swap — muted text inverts to a soft light gray so
+  /* Dark-mode swap - muted text inverts to a soft light gray so
    * the timestamp keeps its secondary-information weight relative
    * to body text on either surface. */
   @media (prefers-color-scheme: dark) {

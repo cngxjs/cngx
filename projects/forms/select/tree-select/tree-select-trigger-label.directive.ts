@@ -3,7 +3,7 @@ import { type CngxTreeSelectTriggerLabelContext } from './tree-select.model';
 
 /**
  * Override the entire chip strip with a custom summary. Mutually
- * exclusive with `*cngxTreeSelectChip` — project one or the other.
+ * exclusive with `*cngxTreeSelectChip` - project one or the other.
  * Context carries resolved selected items, raw values, and count.
  *
  * Mirrors `CngxMultiSelectTriggerLabel` so the same snippet works
@@ -18,6 +18,12 @@ import { type CngxTreeSelectTriggerLabelContext } from './tree-select.model';
  *   </ng-template>
  * </cngx-tree-select>
  * ```
+ *
+ * @category forms/select/tree-select
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/tree-select/tree-select-trigger-label.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxTreeSelect, CngxMultiSelectTriggerLabel, CngxComboboxTriggerLabel, CngxSelectTriggerLabel
  */
 @Directive({
   selector: 'ng-template[cngxTreeSelectTriggerLabel]',

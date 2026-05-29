@@ -12,7 +12,11 @@ import {
 import { CNGX_FEEDBACK_CONFIG } from '../config/feedback-config';
 import { CngxToaster, type ToastState } from './toast.service';
 
-/** Position for the toast stack. */
+/**
+ * Position for the toast stack.
+ *
+ * @category ui/feedback/toast
+ */
 export type ToastPosition =
   | 'top-start'
   | 'top-center'
@@ -22,7 +26,7 @@ export type ToastPosition =
   | 'bottom-end';
 
 /**
- * Toast outlet — renders the toast stack at a fixed viewport position.
+ * Toast outlet - renders the toast stack at a fixed viewport position.
  *
  * Place once in the app shell. Reads from `CngxToaster` reactively.
  * Requires `provideToasts()` or `provideFeedback(withToasts())`.
@@ -32,6 +36,14 @@ export type ToastPosition =
  * ```
  *
  * @playground Async state bridges ./examples/bridges/bridges-example.component.ts
+ *
+ * @category ui/feedback/toast
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/feedback/toast/toast-outlet.ts
+ * @since 0.1.0
+ * @relatedTo CngxToaster, CngxToast, CngxToastOn
+ *
  * <example-url>http://localhost:4200/#/ui/feedback/toast/custom-component-body</example-url>
  * <example-url>http://localhost:4200/#/ui/feedback/toast/declarative-cngx-toast</example-url>
  * <example-url>http://localhost:4200/#/ui/feedback/toast/programmatic-cngxtoaster</example-url>
@@ -157,7 +169,7 @@ export class CngxToastOutlet {
   /** Stack position. */
   readonly position = input<ToastPosition>('bottom-end');
 
-  /** Maximum visible toasts — oldest are evicted. */
+  /** Maximum visible toasts - oldest are evicted. */
   readonly maxVisible = input<number>(3);
 
   /** Insert new toasts at start or end of the stack. */
@@ -166,7 +178,7 @@ export class CngxToastOutlet {
   /** @internal */
   protected readonly positionClass = computed(() => `cngx-toast-outlet--${this.position()}`);
 
-  /** @internal — slice to maxVisible, respecting insert position. */
+  /** @internal - slice to maxVisible, respecting insert position. */
   protected readonly visibleToasts = computed(() => {
     const all = this.service.toasts();
     const max = this.maxVisible();
@@ -174,7 +186,7 @@ export class CngxToastOutlet {
     return this.insertPosition() === 'end' ? [...sliced].reverse() : sliced;
   });
 
-  /** @internal — resolve icon component from global config or null. */
+  /** @internal - resolve icon component from global config or null. */
   protected iconFor(toast: ToastState) {
     return this.config?.alertIcons?.[toast.config.severity] ?? null;
   }

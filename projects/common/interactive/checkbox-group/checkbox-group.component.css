@@ -1,8 +1,19 @@
 /**
  * @overview
- * Default visuals for `CngxCheckboxGroup` — a flex layout container
- * for `<cngx-checkbox>` children. Stacks vertically by default;
- * `.cngx-checkbox-group--horizontal` flips to a wrapping row.
+ * Default visuals for `CngxCheckboxGroup`. The host carries
+ * `.cngx-checkbox-group` and frames a flex layout for projected
+ * `<cngx-checkbox>` children. Stacks vertically by default.
+ *
+ * **Variants**
+ *
+ * - `--horizontal` - flips to a row with `flex-wrap: wrap` so long
+ *   sets fold to additional lines
+ *
+ * **Inheritance**
+ *
+ * Gap cascades through the foundation:
+ *
+ * - `--cngx-checkbox-group-gap` -> `--cngx-space-sm`
  */
 
 @layer cngx.tokens {

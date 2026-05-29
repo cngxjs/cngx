@@ -1,17 +1,55 @@
 /**
  * @overview
- * Default visuals for `CngxRadioIndicator`. Renders the dot-in-circle
- * radio glyph, mirroring `CngxCheckboxIndicator`'s size scale so both
- * atoms read at identical visual weight when placed side by side.
+ * Default visuals for `CngxRadioIndicator`. The host carries
+ * `.cngx-radio-indicator` and renders a dot-in-circle radio glyph
+ * built from a stroked circle plus an inner dot. The size scale
+ * mirrors `CngxCheckboxIndicator` so both atoms read at identical
+ * visual weight when placed side by side.
  *
- * The checked-state color falls back to `--cngx-color-primary` so a
- * brand override in `@layer cngx.theme` propagates without needing
- * per-component token overrides.
+ * **State modifiers**
+ *
+ * - `--checked` - circle border + dot paint in the checked-color
+ * - `--disabled` - opacity dim via
+ *   `--cngx-radio-indicator-disabled-opacity`
+ *
+ * **Size variants**
+ *
+ * Each size pins `--cngx-radio-indicator-size` on the host; the
+ * token carries `inherits: true` so the inner `__circle` and `__dot`
+ * see the same active size:
+ *
+ * - `--sm` - 0.875em
+ * - `--md` - 1em (default)
+ * - `--lg` - 1.25em
+ *
+ * **Slots**
+ *
+ * - `.cngx-radio-indicator__circle` - bordered ring
+ * - `.cngx-radio-indicator__dot` - inner dot; defaults to half the
+ *   ring size via a `calc()` fallback on the unregistered
+ *   `--cngx-radio-indicator-dot-size` so it scales with each size
+ *   variant. Setting the variable to a length pins the dot and
+ *   opts out of auto-scaling.
+ *
+ * **Inheritance**
+ *
+ * - `--cngx-radio-indicator-checked-color` -> `--cngx-color-primary`
+ *   (also pinned via `:root` delegation so dark-mode primary
+ *   cascades without the @property initial-value shadowing the chain)
+ * - `--cngx-radio-indicator-color`, `--cngx-radio-indicator-bg`,
+ *   `--cngx-radio-indicator-border-width` - leaf tokens, inherit so
+ *   host-level overrides reach the `__circle` child
+ *
+ * **Reduced motion**
+ *
+ * Under `prefers-reduced-motion: reduce` the circle and dot
+ * transitions are stripped to none so checking a radio is
+ * instantaneous.
  */
 
 @layer cngx.tokens {
   /**
-   * Active size of the radio glyph. `inherits: true` is load-bearing —
+   * Active size of the radio glyph. `inherits: true` is load-bearing -
    * the inner `__circle` is a child of the host, and the size-variant
    * classes (`--sm` / `--md` / `--lg`) set this token on the host. With
    * `inherits: false` the child would only see the registered initial
@@ -97,7 +135,7 @@
    * dot scales with the ring across the `sm` / `md` / `lg` variants
    * by default. Consumers can still set
    * `--cngx-radio-indicator-dot-size: 0.6em` to fix the dot at a
-   * specific length and break the scaling — that consumer-side
+   * specific length and break the scaling - that consumer-side
    * override wins over the calc fallback because the variable is
    * then defined. Registering it with an initial-value would shadow
    * the fallback, freezing the dot at a constant size regardless of
@@ -139,7 +177,7 @@
     initial-value: 1.25em;
   }
 
-  /* Delegating token — checked-state color tracks the foundation
+  /* Delegating token - checked-state color tracks the foundation
    * primary so a dark-mode swap on `--cngx-color-primary` cascades
    * through the radio host. Without this :root override the
    * @property initial-value (light primary) would shadow the

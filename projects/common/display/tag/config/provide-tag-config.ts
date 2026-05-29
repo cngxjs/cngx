@@ -20,6 +20,8 @@ import {
  * Mirrors the `CngxSelectConfigFeature` discriminated-union shape
  * from `@cngx/forms/select` so the consumer's mental model is one
  * across feature areas.
+ *
+ * @category common/display
  */
 export type CngxTagConfigFeature =
   | {
@@ -128,6 +130,8 @@ function mergeConfig(
  *   ],
  * });
  * ```
+ *
+ * @category common/display
  */
 export function provideTagConfig(
   ...features: CngxTagConfigFeature[]
@@ -173,6 +177,8 @@ export function provideTagConfig(
  * })
  * class AdminSection {}
  * ```
+ *
+ * @category common/display
  */
 export function provideTagConfigAt(
   ...features: CngxTagConfigFeature[]

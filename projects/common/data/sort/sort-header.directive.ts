@@ -5,7 +5,7 @@ import { type CngxSort } from './sort.directive';
  * Molecule directive for sort-header elements.
  *
  * Apply to any clickable header element. Consumer provides an explicit
- * `[cngxSortRef]` binding — no ancestor injection, no hidden wiring.
+ * `[cngxSortRef]` binding - no ancestor injection, no hidden wiring.
  *
  * In multi-sort mode, Shift+click adds this column to the sort stack.
  * The `priority()` signal returns the 1-based position in the stack
@@ -22,6 +22,13 @@ import { type CngxSort } from './sort.directive';
  *   </button>
  * </div>
  * ```
+ *
+ * @category common/data/sort
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/data/sort/sort-header.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxSort, CngxFilter, CngxPaginate
  *
  * <example-url>http://localhost:4200/#/common/data/sort/basic</example-url>
  * <example-url>http://localhost:4200/#/common/data/sort/multi-sort</example-url>

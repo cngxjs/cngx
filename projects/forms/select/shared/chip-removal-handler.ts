@@ -1,19 +1,14 @@
-import {
-  InjectionToken,
-  type Signal,
-  type WritableSignal,
-} from '@angular/core';
+import { InjectionToken, type Signal, type WritableSignal } from '@angular/core';
 
-import type {
-  CngxSelectCommitAction,
-  CngxSelectCommitMode,
-} from './commit-action.types';
+import type { CngxSelectCommitAction, CngxSelectCommitMode } from './commit-action.types';
 import type { CngxSelectOptionDef } from './option.model';
 import type { CngxSelectCompareFn } from './select-core';
 
 /**
- * Minimum shape the chip-removal factory needs — just `.value`. Concrete
+ * Minimum shape the chip-removal factory needs - just `.value`. Concrete
  * chip types layer label, disabled, etc. on top.
+ *
+ * @category forms/select/commit
  */
 export interface CngxChipRemovableItem<T> {
   readonly value: T;
@@ -26,6 +21,8 @@ export interface CngxChipRemovableItem<T> {
  * commit branch (optimistic write + `beginCommit`) or sync branch
  * (`values.set(next)` + `onSyncFinalize`). Closures cached per-item via
  * `WeakMap` for stable identity.
+ *
+ * @category forms/select/commit
  */
 export interface CngxChipRemovalHandlerOptions<
   T,
@@ -37,7 +34,7 @@ export interface CngxChipRemovalHandlerOptions<
   /**
    * Replaces the entire post-disabled-guard body. WeakMap closure cache
    * still applied. Use for variants whose remove semantics diverge from
-   * the standard filter+commit body — e.g. `CngxTreeSelect` always
+   * the standard filter+commit body - e.g. `CngxTreeSelect` always
    * single-deselects regardless of `cascadeChildren`. When set, the
    * standard-body fields are ignored.
    */
@@ -71,10 +68,10 @@ export interface CngxChipRemovalHandlerOptions<
 
 /**
  * API returned from {@link createChipRemovalHandler}.
+ *
+ * @category forms/select/commit
  */
-export interface CngxChipRemovalHandler<
-  Item extends CngxChipRemovableItem<unknown>,
-> {
+export interface CngxChipRemovalHandler<Item extends CngxChipRemovableItem<unknown>> {
   /** Apply the removal body. Bind directly to `(remove)` or Backspace. */
   removeByValue(item: Item): void;
   /**
@@ -89,13 +86,13 @@ export interface CngxChipRemovalHandler<
  * filter, branch dispatch, WeakMap closure stability. Consumer owns the
  * commit dispatch (`beginCommit`), rollback snapshotting
  * (`onBeforeCommit`), and change-event emission (`onSyncFinalize`).
+ *
+ * @category forms/select/commit
  */
 export function createChipRemovalHandler<
   T,
   Item extends CngxChipRemovableItem<T> = CngxSelectOptionDef<T>,
->(
-  opts: CngxChipRemovalHandlerOptions<T, Item>,
-): CngxChipRemovalHandler<Item> {
+>(opts: CngxChipRemovalHandlerOptions<T, Item>): CngxChipRemovalHandler<Item> {
   const cache = new WeakMap<object, () => void>();
 
   // Standard-body fields required without removeOverride. Throw at
@@ -179,6 +176,8 @@ export function createChipRemovalHandler<
 
 /**
  * Factory signature for {@link CNGX_CHIP_REMOVAL_HANDLER_FACTORY}.
+ *
+ * @category forms/select/commit
  */
 export type CngxChipRemovalHandlerFactory = <
   T,
@@ -191,12 +190,15 @@ export type CngxChipRemovalHandlerFactory = <
  * Factory token for {@link CngxChipRemovalHandler}. Default
  * {@link createChipRemovalHandler}. Override to wrap with telemetry,
  * confirm-before-remove, or offline-queue semantics.
+ *
+ * @category forms/select/commit
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/chip-removal-handler.ts
+ * @since 0.1.0
  */
-export const CNGX_CHIP_REMOVAL_HANDLER_FACTORY =
-  new InjectionToken<CngxChipRemovalHandlerFactory>(
-    'CngxChipRemovalHandlerFactory',
-    {
-      providedIn: 'root',
-      factory: () => createChipRemovalHandler,
-    },
-  );
+export const CNGX_CHIP_REMOVAL_HANDLER_FACTORY = new InjectionToken<CngxChipRemovalHandlerFactory>(
+  'CngxChipRemovalHandlerFactory',
+  {
+    providedIn: 'root',
+    factory: () => createChipRemovalHandler,
+  },
+);

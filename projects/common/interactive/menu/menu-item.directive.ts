@@ -1,10 +1,4 @@
-import {
-  computed,
-  Directive,
-  ElementRef,
-  inject,
-  input,
-} from '@angular/core';
+import { computed, Directive, ElementRef, inject, input } from '@angular/core';
 
 import { CNGX_AD_ITEM, CngxActiveDescendant, type CngxAdItemHandle } from '@cngx/common/a11y';
 import { nextUid } from '@cngx/core/utils';
@@ -14,11 +8,18 @@ import { injectMenuConfig } from './menu-config';
 
 /**
  * A single action menuitem registered with a surrounding `CngxActiveDescendant`.
- * Unlike `CngxOption`, menu items carry no selection state — activation fires
+ * Unlike `CngxOption`, menu items carry no selection state - activation fires
  * the AD's `activated` output and the consumer dispatches the action.
  *
  * Click activates (honouring the disabled state). `pointerenter` highlights
  * without activating, matching native menu behaviour.
+ *
+ * @category common/interactive/menu
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/menu/menu-item.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxMenu, CngxMenuItemCheckbox, CngxMenuItemRadio, CngxMenuItemSubmenu
  * <example-url>http://localhost:4200/#/common/interactive/context-menu/right-click-target-zone</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/menu/submenu/two-level-submenu</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/menu/trigger/dropdown-menu</example-url>

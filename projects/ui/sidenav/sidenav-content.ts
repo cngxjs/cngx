@@ -15,6 +15,13 @@ import { CngxSidenavLayout } from './sidenav-layout';
  *   </cngx-sidenav-content>
  * </cngx-sidenav-layout>
  * ```
+ *
+ * @category ui/sidenav
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/sidenav/sidenav-content.ts
+ * @since 0.1.0
+ * @relatedTo CngxSidenavLayout, CngxSidenav
  */
 @Component({
   selector: 'cngx-sidenav-content',
@@ -41,15 +48,15 @@ export class CngxSidenavContent {
   /**
    * Margin offset for the start sidenav.
    *
-   * Push and side modes use `position: relative` — the sidenav sits in
+   * Push and side modes use `position: relative` - the sidenav sits in
    * the flex flow and the content shrinks naturally via `flex: 1`.
-   * No margin needed. Over mode uses `position: absolute` — no margin needed
+   * No margin needed. Over mode uses `position: absolute` - no margin needed
    * either since the sidenav floats above content.
    *
    * Kept as a public computed so tests and consumers can still read it.
    */
   readonly marginStart = '0';
 
-  /** Margin offset for the end sidenav — same rationale as start. */
+  /** Margin offset for the end sidenav - same rationale as start. */
   readonly marginEnd = '0';
 }

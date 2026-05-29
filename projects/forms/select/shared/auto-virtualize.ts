@@ -18,7 +18,9 @@ import type { CngxSelectVirtualizationConfig } from './config';
  * recycler renderer otherwise, with optional threshold-gated fallback to
  * identity for small lists.
  *
- * Injection context required — calls `injectRecycler` internally.
+ * Injection context required - calls `injectRecycler` internally.
+ *
+ * @internal
  */
 export function createAutoPanelRenderer<T>(opts: {
   readonly flatOptions: Signal<readonly CngxSelectOptionDef<T>[]>;
@@ -65,7 +67,7 @@ export function createAutoPanelRenderer<T>(opts: {
           ? opts.flatOptions()
           : recyclerRenderer.renderOptions(),
       {
-        // Structural equal — length + per-entry identity. Matches the
+        // Structural equal - length + per-entry identity. Matches the
         // recycler renderer's equal so the wrapper doesn't cascade.
         equal: (a, b) => {
           if (a === b) {

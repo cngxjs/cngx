@@ -12,15 +12,19 @@ import type { CngxAsyncState } from '@cngx/core/utils';
 import { CNGX_FEEDBACK_CONFIG } from '../config/feedback-config';
 import { createVisibilityTimer } from './visibility-timer';
 
-/** Visual variant for the loading indicator. */
+/**
+ * Visual variant for the loading indicator.
+ *
+ * @category ui/feedback/loading
+ */
 export type LoadingIndicatorVariant = 'spinner' | 'bar';
 
 /**
- * Loading indicator atom — purely visual, blocks no interaction.
+ * Loading indicator atom - purely visual, blocks no interaction.
  *
  * Two variants:
- * - `spinner` — rotating circle, inline or centered
- * - `bar` — thin line at the top of the container (YouTube-style)
+ * - `spinner` - rotating circle, inline or centered
+ * - `bar` - thin line at the top of the container (YouTube-style)
  *
  * Timing:
  * - `delay` (default 200ms): operations faster than this never show the indicator
@@ -37,6 +41,14 @@ export type LoadingIndicatorVariant = 'spinner' | 'bar';
  * ```html
  * <cngx-loading-indicator [loading]="isLoading()" label="Fetching data" />
  * ```
+ *
+ * @category ui/feedback/loading
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/feedback/loading/loading-indicator.ts
+ * @since 0.1.0
+ * @relatedTo CngxLoadingOverlay, CngxProgress, CngxAsyncContainer
+ *
  * <example-url>http://localhost:4200/#/ui/feedback/loading-indicator/bar-variant</example-url>
  * <example-url>http://localhost:4200/#/ui/feedback/loading-indicator/spinner-variant</example-url>
  */
@@ -95,10 +107,10 @@ export type LoadingIndicatorVariant = 'spinner' | 'bar';
 export class CngxLoadingIndicator {
   private readonly config = inject(CNGX_FEEDBACK_CONFIG, { optional: true });
 
-  /** Bind an async state — shows indicator when `isBusy()`. */
+  /** Bind an async state - shows indicator when `isBusy()`. */
   readonly state = input<CngxAsyncState<unknown> | undefined>(undefined);
 
-  /** Direct boolean control — alternative to `[state]`. */
+  /** Direct boolean control - alternative to `[state]`. */
   readonly loading = input<boolean>(false);
 
   /** Visual variant. */
@@ -113,12 +125,12 @@ export class CngxLoadingIndicator {
   /** Minimum display time in ms once visible. Falls back to global config, then 500ms. */
   readonly minDuration = input<number>(this.config?.loadingMinDuration ?? 500);
 
-  /** @internal — true when the underlying source says "loading". */
+  /** @internal - true when the underlying source says "loading". */
   protected readonly isActive = computed(() => this.state()?.isBusy() ?? this.loading());
 
-  /** @internal — custom spinner component from global config. */
+  /** @internal - custom spinner component from global config. */
   protected readonly customSpinner = computed(() => this.config?.spinnerComponent ?? null);
 
-  /** @internal — final visibility after delay + minDuration. */
+  /** @internal - final visibility after delay + minDuration. */
   readonly visible = createVisibilityTimer(this.isActive, this.delay, this.minDuration);
 }

@@ -6,10 +6,10 @@ import type { CngxRecycler } from './recycler';
  * A11y atom that sets `aria-setsize`, `aria-posinset`, and `data-cngx-recycle-index`
  * on each rendered virtual item. Replaces manual ARIA boilerplate.
  *
- * Also provides `data-cngx-recycle-index` for focus tracking — consumers who
+ * Also provides `data-cngx-recycle-index` for focus tracking - consumers who
  * don't use `CngxMeasure` (grid mode, uniform heights) get focus tracking for free.
  *
- * Does NOT set `role` — the consumer decides (`listitem`, `option`, `treeitem`, `tab`).
+ * Does NOT set `role` - the consumer decides (`listitem`, `option`, `treeitem`, `tab`).
  *
  * ```html
  * @for (item of visibleItems(); track item.id; let i = $index) {
@@ -20,6 +20,14 @@ import type { CngxRecycler } from './recycler';
  *   </div>
  * }
  * ```
+ *
+ * @category common/data/recycler
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/data/recycler/virtual-item.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxMeasure, CngxRecyclerAnnouncer, injectRecycler
+ *
  * <example-url>http://localhost:4200/#/common/data/recycler/basic-list-fixed-item-height</example-url>
  * <example-url>http://localhost:4200/#/common/data/recycler/content-visibility-css-only</example-url>
  * <example-url>http://localhost:4200/#/common/data/recycler/infinite-scroll-recycler</example-url>

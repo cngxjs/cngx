@@ -17,15 +17,19 @@ import {
 
 import { CngxPopover } from './popover.directive';
 
-/** Visual variant for the action button. */
+/**
+ * Visual variant for the action button.
+ *
+ * @category common/popover
+ */
 export type PopoverActionVariant = 'primary' | 'secondary' | 'danger' | 'ghost';
 
 /**
  * Action button for use inside `cngx-popover-panel` footer.
  *
  * Two roles:
- * - `'dismiss'` — closes the panel on click (no async action).
- * - `'confirm'` — executes an async action, shows status templates,
+ * - `'dismiss'` - closes the panel on click (no async action).
+ * - `'confirm'` - executes an async action, shows status templates,
  *   optionally auto-closes the panel on success.
  *
  * Supports the same `cngxPending`/`cngxSucceeded`/`cngxFailed` templates
@@ -56,6 +60,13 @@ export type PopoverActionVariant = 'primary' | 'secondary' | 'danger' | 'ghost';
  *   }
  * </cngx-popover-action>
  * ```
+ *
+ * @category common/popover
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/popover/popover-action.component.ts
+ * @since 0.1.0
+ * @relatedTo CngxPopoverPanel, CngxPopoverFooter
  * <example-url>http://localhost:4200/#/common/popover/popover-panel/content-states</example-url>
  * <example-url>http://localhost:4200/#/common/popover/popover-panel/variants</example-url>
  * <example-url>http://localhost:4200/#/common/popover/popover-panel/with-footer-actions</example-url>

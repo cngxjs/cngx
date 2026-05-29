@@ -15,18 +15,22 @@ import type { CngxErrorAggregatorContract } from '@cngx/common/interactive';
 import { CNGX_STEP_GROUP_HOST } from './step-group-host.token';
 import { CngxStepContent } from './step-content.directive';
 import { CngxStepLabel } from './step-label.directive';
-import {
-  CNGX_STEPPER_HOST,
-  type CngxStepStatus,
-} from './stepper-host.token';
+import { CNGX_STEPPER_HOST, type CngxStepStatus } from './stepper-host.token';
 
 /**
- * Single-step atom. Registers with the nearest host — either a
+ * Single-step atom. Registers with the nearest host - either a
  * `CngxStepGroup` ({@link CNGX_STEP_GROUP_HOST}) or the root
  * `CngxStepperPresenter` ({@link CNGX_STEPPER_HOST}).
  *
  * `state` is a `linkedSignal` over `[disabled]`, `[completed]`, and
  * the optional `[errorAggregator]`'s `hasError()`.
+ *
+ * @category common/stepper
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/stepper/step.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxStepGroup, CngxStepperPresenter, CngxStepLabel, CngxStepContent
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-commit-action/pessimistic-optimistic-commits-with-bridge-directives</example-url>
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-custom-labels/mixing-code-label-code-input-with-code-cngxsteplabel-code-slot</example-url>
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-error-aggregation/per-step-error-badges</example-url>
@@ -52,9 +56,7 @@ export class CngxStep {
   readonly disabled = input<boolean>(false);
   readonly completed = input<boolean>(false);
   readonly label = input<string>('');
-  readonly errorAggregator = input<CngxErrorAggregatorContract | undefined>(
-    undefined,
-  );
+  readonly errorAggregator = input<CngxErrorAggregatorContract | undefined>(undefined);
 
   protected readonly labelSlot = contentChild(CngxStepLabel);
   protected readonly contentSlot = contentChild(CngxStepContent);
@@ -64,7 +66,7 @@ export class CngxStep {
 
   /**
    * Per-step status derived from inputs + aggregator. `linkedSignal`
-   * with structural equal — never written via `effect`.
+   * with structural equal - never written via `effect`.
    */
   readonly state: Signal<CngxStepStatus> = linkedSignal({
     source: () => ({

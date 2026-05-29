@@ -7,9 +7,11 @@ import type { CngxTabHandle } from '../tab-group-host.token';
  * default `i18n.moreTabsLabel(count)` text on the More button; the
  * surrounding `<button cngxPopoverTrigger>` shell (`aria-haspopup`,
  * `aria-expanded`, click handler, hidden binding) stays library-owned.
+ *
+ * @category common/tabs/overflow
  */
 export interface CngxTabOverflowTriggerContext {
-  /** Convenience alias for `count` — usable as `let-count` shorthand. */
+  /** Convenience alias for `count` - usable as `let-count` shorthand. */
   readonly $implicit: number;
   /** Number of hidden tabs currently surfaced through the overflow popover. */
   readonly count: number;
@@ -30,6 +32,12 @@ export interface CngxTabOverflowTriggerContext {
  *   </ng-template>
  * </cngx-tab-overflow>
  * ```
+ *
+ * @category common/tabs/overflow
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/overflow/tab-overflow-trigger.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxTabOverflowItem, CngxTab
  */
 @Directive({
   selector: 'ng-template[cngxTabOverflowTrigger]',
@@ -37,7 +45,5 @@ export interface CngxTabOverflowTriggerContext {
   standalone: true,
 })
 export class CngxTabOverflowTrigger {
-  readonly templateRef = inject<TemplateRef<CngxTabOverflowTriggerContext>>(
-    TemplateRef,
-  );
+  readonly templateRef = inject<TemplateRef<CngxTabOverflowTriggerContext>>(TemplateRef);
 }

@@ -1,18 +1,35 @@
 /**
  * @overview
- * Default visuals for the `CngxRipple` directive. The directive
+ * Theming bridge for the `CngxRipple` directive. The directive
  * injects `<span class="cngx-ripple__wave">` into the host on
  * pointerdown and removes it after the animation completes; all
  * visual treatment lives here, the directive only handles geometry
  * and DOM injection.
  *
- * The geometric `--cngx-ripple-x` / `-y` / `-size` custom properties
- * are set inline by the directive per-instance (per-pointer position,
- * not theme surface) so they are intentionally not `@property`-
- * registered.
+ * **Animation**
  *
- * Pair with `@cngx/themes/material/ripple-theme` for the Material
- * state-layer surface.
+ * The `cngx-ripple-expand` keyframe scales the wave from 0 -> 1 over
+ * `--cngx-ripple-duration` and fades opacity from
+ * `--cngx-ripple-opacity` to 0.
+ *
+ * Under `prefers-reduced-motion: reduce` the keyframe is suppressed
+ * and the wave appears as a static tint that fades on opacity
+ * transition only.
+ *
+ * **Per-instance geometry**
+ *
+ * `--cngx-ripple-x`, `--cngx-ripple-y`, `--cngx-ripple-size` are set
+ * inline by the directive per pointer event (not theme surface), so
+ * they are intentionally not `@property`-registered.
+ *
+ * **Inheritance**
+ *
+ * - `--cngx-ripple-color` defaults to `currentColor` so the wave
+ *   tracks the host's text color without a per-component override
+ *
+ * **Pair with**
+ *
+ * - `@cngx/themes/material/ripple-theme` - Material state-layer surface
  */
 
 @layer cngx.tokens {

@@ -1,16 +1,40 @@
 /**
  * @overview
- * Default visuals for the `CngxBottomSheet` directive. Targets
+ * Theming bridge for the `CngxBottomSheet` directive. Targets
  * `<dialog class="cngx-bottom-sheet">` (used together with
- * `cngxDialog`). Overrides the UA top-layer centering for bottom-
- * anchored positioning and renders a drag handle via `::before`.
+ * `cngxDialog`), overrides the UA top-layer centering for a
+ * bottom-anchored sheet, and paints a drag-handle pill via
+ * `::before`.
  *
- * Re-pins the parent `--cngx-dialog-*` tokens so any cngx-dialog
- * styling that inherits from the open dialog picks up bottom-sheet
- * geometry instead of the centered surface defaults.
+ * **State modifiers**
  *
- * Pair with `@cngx/themes/material/bottom-sheet-theme` for the
- * Material 3 surface treatment.
+ * The `CngxDialog` state classes drive the slide-in transition:
+ *
+ * - `cngx-dialog--opening` - translateY(100%), opacity 0
+ * - `cngx-dialog--open` - translateY(0), opacity 1
+ * - `cngx-dialog--closing` - translateY(100%), opacity 0
+ *
+ * Suppressed under `prefers-reduced-motion: reduce`.
+ *
+ * **Inheritance**
+ *
+ * The scope re-pins the parent dialog tokens so the cngx-dialog
+ * shadow / transition rules reach the sheet without forking:
+ *
+ * - `--cngx-dialog-border-radius` <- `--cngx-bottom-sheet-radius`
+ * - `--cngx-dialog-padding` <- `--cngx-bottom-sheet-padding`
+ * - `--cngx-dialog-max-width` <- `--cngx-bottom-sheet-max-width`
+ * - `--cngx-dialog-max-height` <- `--cngx-bottom-sheet-max-height`
+ *
+ * **Dark mode**
+ *
+ * Three hooks (`prefers-color-scheme: dark`, `[data-color-scheme="dark"]`,
+ * `.dark`) flip `--cngx-bottom-sheet-handle-color` to a mid-tone grey
+ * so the drag affordance stays visible against the dark surface.
+ *
+ * **Pair with**
+ *
+ * - `@cngx/themes/material/bottom-sheet-theme` - Material 3 surface
  */
 
 @layer cngx.tokens {
@@ -36,7 +60,7 @@
   }
 
   /**
-   * Maximum inline size — full viewport by default.
+   * Maximum inline size - full viewport by default.
    * @group Layout
    */
   @property --cngx-bottom-sheet-max-width {
@@ -46,7 +70,7 @@
   }
 
   /**
-   * Maximum block size — 80vh by default so the dismiss gesture has
+   * Maximum block size - 80vh by default so the dismiss gesture has
    * room above the sheet.
    * @group Layout
    */
@@ -98,7 +122,7 @@
   }
 
   /**
-   * Margin shorthand around the drag handle — centres it horizontally
+   * Margin shorthand around the drag handle - centres it horizontally
    * and pushes the sheet content down.
    * @group Layout
    */
@@ -108,7 +132,7 @@
     initial-value: 0 auto 16px;
   }
 
-  /* Dark-mode swap — handle inverts to a mid-tone gray so the drag
+  /* Dark-mode swap - handle inverts to a mid-tone gray so the drag
    * affordance stays visible against the dark sheet surface. */
   @media (prefers-color-scheme: dark) {
     :root:not([data-color-scheme='light']):not(.light) {

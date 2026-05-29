@@ -1,19 +1,69 @@
 /**
  * @overview
- * Structural CSS shared by every tab-group skin. Layout-only — no
- * colors / sizes / borders / fonts beyond what's controlled via
+ * Structural CSS shared by every tab-group skin. Layout-only - no
+ * colors, sizes, borders, or fonts beyond what is controlled via
  * `--cngx-tab-*` custom properties. `CngxTabGroup` (in `@cngx/ui/tabs`)
  * references this file via `styleUrls`; ng-packagr inlines it at
- * publish time so consumers of `@cngx/ui/tabs` don't need
- * `@cngx/common/tabs` at runtime.
+ * publish time so consumers of `@cngx/ui/tabs` do not need
+ * `@cngx/common/tabs` at runtime. Headless directive use
+ * (`[cngxTabGroup]` on consumer-authored DOM) deliberately gets no
+ * styling here - consumers bring their own visual opinion. Selectors
+ * are class-prefixed (`.cngx-tabs__*`) and apply globally under the
+ * component's `encapsulation: None`.
  *
- * Headless directive use (`[cngxTabGroup]` on consumer-authored DOM)
- * deliberately gets no styling from this file — consumers bring their
- * own visual opinion.
+ * **State modifiers**
  *
- * Selectors are class-prefixed (`.cngx-tabs__*`) and apply globally
- * under `CngxTabGroup`'s `encapsulation: None`; the `cngx-tabs-`
- * prefix is the namespace.
+ * Driven by ARIA attributes set by the organism:
+ *
+ * - `[aria-selected="true"]` - active tab, paints the underline
+ *   indicator via an inset box-shadow so layout does not shift
+ *   between resting and active
+ * - `[aria-disabled="true"]` - cursor: not-allowed, opacity dim via
+ *   `--cngx-tab-disabled-opacity`
+ * - `[aria-busy="true"]` - cursor: progress while a commit is pending
+ * - `:focus-visible` - outline ring via `--cngx-tab-focus-ring`
+ * - `.cngx-tab--rejected` - persistent failed-target signal: outline
+ *   ring + one-shot background pulse (Pillar 2)
+ *
+ * **Orientation**
+ *
+ * - `[data-orientation="vertical"]` on the host - flips the strip
+ *   into a left-column grid and changes scroll-snap to the Y axis
+ *
+ * **Slots**
+ *
+ * - `.cngx-tabs__strip-wrapper` - outer row container
+ * - `.cngx-tabs__strip` - the clip box (programmatic scroll only;
+ *   the `<cngx-tab-overflow>` molecule is the user access path to
+ *   tabs that do not fit)
+ * - `.cngx-tabs__tab` - one tab button
+ * - `.cngx-tabs__label` - shrinkable label inside the button
+ * - `.cngx-tabs__badge` - inline error badge; ships its own
+ *   real-error-tone background so it does not collapse to
+ *   `currentColor` (mirrors the stepper precedent)
+ * - `.cngx-tabs__busy-spinner` - pending-commit spinner
+ * - `.cngx-tabs__rejection-icon` - persistent `!` glyph in a circle
+ * - `.cngx-tabs__panels` / `__panel` - panel container + body
+ * - `.cngx-sr-only` - locally-duplicated screen-reader utility
+ *
+ * **Inheritance**
+ *
+ * - `--cngx-tab-active-indicator-color` -> `--cngx-color-primary`
+ *   (also pinned via `:root` delegation so the brand accent paints
+ *   the underline in both light and dark modes without a 4-block)
+ * - Strip / tab geometry tokens (`--cngx-tab-gap`,
+ *   `--cngx-tab-padding`, `--cngx-tab-strip-padding`) - leaf
+ * - State-tone tokens (`--cngx-tab-error-badge-color`,
+ *   `--cngx-tab-rejection-icon-color`, `--cngx-tab-rejected-outline`,
+ *   `--cngx-tab-rejected-pulse-bg`) - leaf, all pinned at the
+ *   foundation's danger tone so they read against either surface
+ *
+ * **Reduced motion**
+ *
+ * Two hooks: under `prefers-reduced-motion: reduce` the busy spinner
+ * animation is force-stopped; the rejection pulse is gated behind
+ * `prefers-reduced-motion: no-preference` so it never runs when the
+ * user has opted out.
  */
 
 @layer cngx.tokens {
@@ -89,7 +139,7 @@
   }
 
   /**
-   * Underline color of the active tab — a 2px box-shadow inset
+   * Underline color of the active tab - a 2px box-shadow inset
    * stripe along the inline-end edge of the tab button. Falls back
    * to `--cngx-color-primary` so the brand accent paints the
    * selection indicator without competing with text contrast.
@@ -256,7 +306,7 @@
   /*
    * Default-theme palette. The active-indicator delegates to
    * `--cngx-color-primary` so the underline tracks the brand accent
-   * automatically in both modes. No 4-block needed — the foundation
+   * automatically in both modes. No 4-block needed - the foundation
    * primary already carries its own light/dark distinction.
    */
   :root {
@@ -349,7 +399,7 @@
     justify-content: center;
     flex: 0 0 auto;
     /*
-     * Real error-tone fallback — must NOT inherit `currentColor`. The
+     * Real error-tone fallback - must NOT inherit `currentColor`. The
      * thematic skin (tab-group.component.css) sets `color: white` on
      * the same element so the `!` glyph stays legible; if this fallback
      * resolved to `currentColor`, both background and text would

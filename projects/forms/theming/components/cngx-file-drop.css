@@ -1,15 +1,47 @@
 /**
  * @overview
- * Default visuals for the `[cngxFileDrop]` directive. State classes
- * (`--dragging`, `--has-files`, `--uploading`) toggle the surface
- * treatment; reduced-motion handling lives inside the `@scope` block.
+ * Default visuals for the `[cngxFileDrop]` directive. The host
+ * carries `.cngx-file-drop` and renders as a dashed dropzone with
+ * padding, radius, and transition shorthand applied to border /
+ * background changes between states.
+ *
+ * **State modifiers**
+ *
+ * - `--dragging` - solid border + alpha tint while a drag is hovering;
+ *   border color picks up `currentColor` by default
+ * - `--has-files` - solid border in the success chain once files have
+ *   been dropped
+ * - `--uploading` - 0.6 opacity dim, `pointer-events: none`, `wait`
+ *   cursor while an upload is in flight
+ *
+ * **Slots**
+ *
+ * - `.cngx-file-drop` - host element, block-level, dashed border +
+ *   radius + padding, center-aligned, pointer cursor, transition
+ *   shorthand on `border-color` and `background`
+ *
+ * Reduced-motion handling lives inside the `@scope` block: when
+ * `prefers-reduced-motion: reduce` is honoured the transition is
+ * dropped.
+ *
+ * **Inheritance**
+ *
+ * Layout tokens delegate to the foundation:
+ *
+ * - `--cngx-file-drop-radius` -> `--cngx-radius-md`
+ * - `--cngx-file-drop-padding` -> `--cngx-space-xl`
+ * - `--cngx-file-drop-success-border` -> `--cngx-color-success`
  *
  * `--cngx-file-drop-transition` keeps its mixed `<time> <easing>`
- * shape — `@property` `syntax: '*'` lets the transition shorthand fit
- * a single token without splitting into two.
+ * shape via `@property` `syntax: '*'`, so the transition shorthand
+ * fits a single token without splitting into two. Border-width,
+ * resting border-color, active border, active background, and
+ * uploading opacity stay structural (no foundation delegate).
  *
- * Pair with `@cngx/themes/material/file-drop-theme` for the Material
- * surface treatment.
+ * **Pair with**
+ *
+ * - `@cngx/themes/material/file-drop-theme` - Material surface
+ *   treatment
  */
 
 @layer cngx.tokens {

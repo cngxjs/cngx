@@ -1,19 +1,56 @@
 /**
  * @overview
- * Trigger skin for `CngxReorderableMultiSelect`. Chip-strip layout,
- * drag ghost, drop indicator, and handle cursor live in
- * `shared/select-base.css` under `.cngx-select__chip-*` so they stay
- * reusable by future reorder-aware trigger variants (tag-input with
- * user ordering, chip toolbars). This file owns the reorderable-
- * specific trigger frame and placeholder — matched 1:1 with
- * `CngxMultiSelect`'s surface so a consumer with a `CngxMultiSelect`
- * theme gets the reorderable variant for free.
+ * Trigger skin for `CngxReorderableMultiSelect` - chip-strip multi-select
+ * with user-driven chip reordering via drag. The host carries
+ * `.cngx-reorderable-multi-select`; chip-strip layout, drag ghost, drop
+ * indicator, and handle cursor live in `shared/select-base.css` under
+ * the `.cngx-select__chip-*` classes so they stay reusable by future
+ * reorder-aware trigger variants (tag-input with user ordering, chip
+ * toolbars). This file owns the trigger frame and placeholder - matched
+ * 1:1 with `CngxMultiSelect`'s surface so a consumer with a multi-select
+ * theme gets this variant for free.
  *
- * Cascading fallback: `var()` chains step
- * `--cngx-reorderable-multi-select-*` → `--cngx-multi-select-*` →
- * `--cngx-select-*` → hardcoded. Registered `@property` values
- * shadow the inner steps; consumers seeking brand-wide overrides
- * should target `--cngx-color-*`.
+ * **State modifiers**
+ *
+ * - `:focus-visible` on `.cngx-reorderable-multi-select__trigger` -
+ *   focus-ring outline + offset
+ * - `[aria-disabled='true']` on the trigger - opacity dim + `cursor:
+ *   not-allowed`
+ * - `[aria-invalid='true']` on the trigger - danger border + box-shadow
+ *   glow at focus-within time
+ *
+ * **Slots**
+ *
+ * - `.cngx-reorderable-multi-select__root` - `display: contents` host
+ *   shim
+ * - `.cngx-reorderable-multi-select__trigger` - the bordered
+ *   `role="combobox"` row (`user-select: none` prevents drag-click text
+ *   selection)
+ * - `.cngx-reorderable-multi-select__placeholder` - placeholder text
+ *   when no chips selected
+ * - `.cngx-reorderable-multi-select__clear-all` - reset-all button
+ * - `.cngx-reorderable-multi-select__caret` - panel-state glyph
+ *
+ * **Inheritance**
+ *
+ * Trigger tokens delegate up the family chain so consumer themes can
+ * override at the level they want to brand:
+ *
+ * - `--cngx-reorderable-multi-select-*` -> `--cngx-multi-select-*` ->
+ *   `--cngx-select-*` -> hardcoded
+ * - `--cngx-reorderable-multi-select-border` -> `--cngx-color-border`
+ * - `--cngx-reorderable-multi-select-focus-outline` ->
+ *   `--cngx-color-primary`
+ * - invalid surfaces fall back to `--cngx-select-trigger-invalid-*` ->
+ *   `--cngx-color-danger`
+ *
+ * Registered `@property` values shadow the inner var() steps; system
+ * tokens (`--cngx-color-*`) are the brand-wide override path.
+ *
+ * **Pair with**
+ *
+ * - `@cngx/themes/material/select-theme` - Material 3 surface treatment
+ *   shared across the entire select family
  */
 
 @layer cngx.tokens {
@@ -148,7 +185,7 @@
     initial-value: 0.6;
   }
 
-  /* Delegating tokens — trigger border + focus-ring track the
+  /* Delegating tokens - trigger border + focus-ring track the
    * foundation chain. Shorthands pin their structural part and
    * inherit the color via the delegating foundation token. */
   :root {
@@ -240,16 +277,12 @@
       border-width: var(--cngx-select-trigger-invalid-border-width, 1px);
     }
     .cngx-reorderable-multi-select__trigger[aria-invalid='true']:focus-within {
-      outline: 2px solid
-        var(--cngx-select-trigger-invalid-outline-color, oklch(0.6 0.18 25));
+      outline: 2px solid var(--cngx-select-trigger-invalid-outline-color, oklch(0.6 0.18 25));
       outline-offset: var(
         --cngx-reorderable-multi-select-focus-offset,
         var(--cngx-multi-select-focus-offset, var(--cngx-select-focus-offset, 2px))
       );
-      box-shadow: var(
-        --cngx-select-trigger-invalid-glow,
-        0 0 0 3px oklch(0.6 0.18 25 / 0.2)
-      );
+      box-shadow: var(--cngx-select-trigger-invalid-glow, 0 0 0 3px oklch(0.6 0.18 25 / 0.2));
     }
 
     .cngx-reorderable-multi-select__placeholder {

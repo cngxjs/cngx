@@ -19,6 +19,12 @@ import { type CngxTreeSelectChipContext } from './tree-select.model';
  *   </ng-template>
  * </cngx-tree-select>
  * ```
+ *
+ * @category forms/select/tree-select
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/tree-select/tree-select-chip.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxTreeSelect, CngxTreeSelectNode, CngxMultiSelectChip, CngxComboboxChip
  */
 @Directive({
   selector: 'ng-template[cngxTreeSelectChip]',

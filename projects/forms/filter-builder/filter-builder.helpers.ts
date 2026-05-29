@@ -9,14 +9,14 @@ import type {
 } from './filter-builder.types';
 
 /**
- * Pure helpers — zero Angular dependency, zero `inject()`. Importing this
+ * Pure helpers - zero Angular dependency, zero `inject()`. Importing this
  * module from a test or a non-Angular consumer (e.g. a backend predicate
  * translator) is safe.
  */
 
 /**
  * @internal Shared frozen zero-state. The state factory and presenter both
- * import this back from here so a single canonical instance is reused —
+ * import this back from here so a single canonical instance is reused -
  * keeps `filter-builder.helpers.ts` Angular-free (no transitive import of
  * `@angular/core` through `filter-builder-state.ts`).
  *
@@ -31,12 +31,20 @@ export const EMPTY_ROOT: FilterGroup = Object.freeze({
   filters: Object.freeze([]),
 }) as FilterGroup;
 
-/** Optional knobs for `createFilterGroup`. */
+/**
+ * Optional knobs for `createFilterGroup`.
+ *
+ * @category forms/filter-builder
+ */
 export interface CreateFilterGroupOptions {
   readonly negated?: boolean;
 }
 
-/** Build a fresh `FilterGroup` with a generated id. Defaults to `and` logic, no children, not negated. */
+/**
+ * Build a fresh `FilterGroup` with a generated id. Defaults to `and` logic, no children, not negated.
+ *
+ * @category forms/filter-builder
+ */
 export function createFilterGroup(
   logic: FilterLogic = 'and',
   filters: readonly FilterNode[] = [],
@@ -51,7 +59,11 @@ export function createFilterGroup(
   };
 }
 
-/** Build a fresh `FilterExpression` with a generated id. */
+/**
+ * Build a fresh `FilterExpression` with a generated id.
+ *
+ * @category forms/filter-builder
+ */
 export function createFilterExpression<TValue = unknown>(
   field: string,
   operator: string,
@@ -68,7 +80,7 @@ export function createFilterExpression<TValue = unknown>(
 
 /**
  * Normalises a tree by assigning a stable id to every node missing one.
- * Identity-preserving short-circuit — when every node already carries an id,
+ * Identity-preserving short-circuit - when every node already carries an id,
  * the same `tree` reference is returned. Consumers who hand-construct trees
  * (deserialised JSON, presets, persisted snapshots) run this once at the
  * boundary; the presenter already invokes it on initial read and on every
@@ -78,11 +90,13 @@ export function ensureFilterTreeIds(tree: FilterGroup): FilterGroup {
   return normaliseGroupIds(tree);
 }
 
+/** @internal */
 function normaliseGroupIds(group: FilterGroup): FilterGroup {
   const nextFilters: FilterNode[] = [];
   let childrenChanged = false;
   for (const child of group.filters) {
-    const nextChild = child.type === 'group' ? normaliseGroupIds(child) : normaliseExpressionId(child);
+    const nextChild =
+      child.type === 'group' ? normaliseGroupIds(child) : normaliseExpressionId(child);
     if (nextChild !== child) {
       childrenChanged = true;
     }
@@ -98,6 +112,7 @@ function normaliseGroupIds(group: FilterGroup): FilterGroup {
   };
 }
 
+/** @internal */
 function normaliseExpressionId(expression: FilterExpression): FilterExpression {
   if (expression.id) {
     return expression;
@@ -109,6 +124,8 @@ function normaliseExpressionId(expression: FilterExpression): FilterExpression {
  * Frozen empty root used as the presenter's `model<FilterGroup>` default and
  * by `CngxFilterBuilderState.clear()`. Always returns the same frozen
  * reference so consumers comparing tree identity short-circuit correctly.
+ *
+ * @category forms/filter-builder
  */
 export function createEmptyFilterRoot(): FilterGroup {
   return EMPTY_ROOT;
@@ -116,9 +133,11 @@ export function createEmptyFilterRoot(): FilterGroup {
 
 /**
  * Build an item-level predicate from a `FilterGroup`. Returns `null` when
- * the tree itself is `null` — the consumer typically interprets `null` as
+ * the tree itself is `null` - the consumer typically interprets `null` as
  * "no filtering, accept every item". For an empty root group, the returned
  * predicate evaluates `true` for every item (vacuous truth on `and`).
+ *
+ * @category forms/filter-builder
  */
 export function toFilterPredicate<TItem>(
   tree: FilterGroup | null,
@@ -134,7 +153,11 @@ export function toFilterPredicate<TItem>(
   return (item: TItem) => evaluateGroup(tree, item, fieldMap);
 }
 
-/** Evaluate a single `FilterExpression` against `item`. Unfilled expressions short-circuit to `true` (except `isEmpty`/`isNotEmpty`). */
+/**
+ * Evaluate a single `FilterExpression` against `item`. Unfilled expressions short-circuit to `true` (except `isEmpty`/`isNotEmpty`).
+ *
+ * @category forms/filter-builder
+ */
 export function evaluateExpression<TItem>(
   expr: FilterExpression,
   item: TItem,
@@ -146,13 +169,9 @@ export function evaluateExpression<TItem>(
   // Expressions that have not been filled in yet (value === undefined) are
   // treated as no-ops: the user picked a field and an operator but did not
   // type a value yet, so the row should not exclude every item. The
-  // `isEmpty` / `isNotEmpty` family is exempt — they target the item value,
+  // `isEmpty` / `isNotEmpty` family is exempt - they target the item value,
   // not the expression target, so undefined is still a valid query.
-  if (
-    expr.value === undefined &&
-    expr.operator !== 'isEmpty' &&
-    expr.operator !== 'isNotEmpty'
-  ) {
+  if (expr.value === undefined && expr.operator !== 'isEmpty' && expr.operator !== 'isNotEmpty') {
     return true;
   }
   const record = item as Record<string, unknown>;
@@ -199,13 +218,14 @@ export function evaluateExpression<TItem>(
   }
 }
 
+/** @internal */
 function evaluateGroup<TItem>(
   group: FilterGroup,
   item: TItem,
   fieldMap: ReadonlyMap<string, FilterFieldDef>,
 ): boolean {
   // Empty group = no constraint. Pure boolean logic would return
-  // `OR(∅) = false`, `XOR(∅) = false`, `AND(∅) = true` — but in a
+  // `OR(∅) = false`, `XOR(∅) = false`, `AND(∅) = true` - but in a
   // filter-UX context an empty group means "the user defined no filter
   // here", which should accept every item regardless of the dormant
   // `logic` flag. Bypasses the switch so the group's `negated` flag also
@@ -245,6 +265,7 @@ function evaluateGroup<TItem>(
   return group.negated ? !combined : combined;
 }
 
+/** @internal */
 function compare(a: unknown, b: unknown): number {
   if (a == null || b == null) {
     return Number.NaN;

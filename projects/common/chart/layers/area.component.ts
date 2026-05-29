@@ -23,6 +23,13 @@ import {
  *
  * The `d` string is cascade-guarded with string equality on its
  * `computed` so a no-op data refresh does not force a fill repaint.
+ *
+ * @category common/chart/layers
+ * @docsKind primary
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/layers/area.component.ts
+ * @since 0.1.0
+ * @relatedTo CngxLine, CngxBand, CngxThreshold, CngxChart
+ *
  * <example-url>http://localhost:4200/#/common/chart/primitives/async-state-machine-on-the-primitive</example-url>
  * <example-url>http://localhost:4200/#/common/chart/primitives/combo-bars-moving-average-line</example-url>
  * <example-url>http://localhost:4200/#/common/chart/primitives/line-area-threshold-band</example-url>

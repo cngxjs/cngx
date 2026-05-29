@@ -17,7 +17,11 @@ import { CngxTagPrefix } from './slots/tag-prefix.directive';
 import { CngxTagSuffix } from './slots/tag-suffix.directive';
 import type { CngxTagLabelContext } from './slots/tag-slot.context';
 
-/** Visual variant. `filled` is the default solid pill; `outline` swaps fill for border; `subtle` softens both. */
+/**
+ * Visual variant. `filled` is the default solid pill; `outline` swaps fill for border; `subtle` softens both.
+ *
+ * @category common/display
+ */
 export type CngxTagVariant = 'filled' | 'outline' | 'subtle';
 
 /**
@@ -31,21 +35,19 @@ export type CngxTagVariant = 'filled' | 'outline' | 'subtle';
  * styles against their own design tokens. Re-evaluation trigger
  * toward a `withTagColors()` cascade is tracked in
  * `display-accepted-debt.md §1`.
+ *
+ * @category common/display
  */
-export type CngxTagColor =
-  | 'neutral'
-  | 'success'
-  | 'warning'
-  | 'error'
-  | 'info'
-  | (string & {});
+export type CngxTagColor = 'neutral' | 'success' | 'warning' | 'error' | 'info' | (string & {});
 
 /**
  * Density. `md` is the default. Each step scales padding + font-size
  * via the `--cngx-tag-{sm|lg|xl}-padding` and matching font-size
  * custom properties (see `tag.css`). Sizing of nested atoms
- * (`cngx-icon`, `cngx-avatar`) is the consumer's call — Tag does not
+ * (`cngx-icon`, `cngx-avatar`) is the consumer's call - Tag does not
  * cascade a sub-token contract.
+ *
+ * @category common/display
  */
 export type CngxTagSize = 'sm' | 'md' | 'lg' | 'xl';
 
@@ -59,7 +61,7 @@ export type CngxTagSize = 'sm' | 'md' | 'lg' | 'xl';
  * on a card, role markers in an admin table, pre-filter chips in a
  * dashboard sidebar. Two narrow atoms with non-overlapping
  * concerns beat one chip-tag hybrid with mode flags
- * (Pillar 3 — Komposition statt Konfiguration).
+ * (Pillar 3 - Komposition statt Konfiguration).
  *
  * **Responsibilities (intentionally narrow).**
  * - Apply variant / color / size / truncate / maxWidth host
@@ -69,16 +71,24 @@ export type CngxTagSize = 'sm' | 'md' | 'lg' | 'xl';
  *   reactively expose `role="listitem"` so the parent's
  *   `role="list"` semantics propagate without consumer wiring.
  *   The cascade reads `CNGX_TAG_GROUP.semanticList()` through a
- *   single `computed<'listitem' | null>()` (Pillar 1 —
- *   derivation; Pillar 2 — ARIA in the reactive graph).
+ *   single `computed<'listitem' | null>()` (Pillar 1 -
+ *   derivation; Pillar 2 - ARIA in the reactive graph).
  *
  * **Non-responsibilities.**
- * - Removable affordance — use `CngxChip` instead.
- * - Clickable / interactive semantics — wrap with native
+ * - Removable affordance - use `CngxChip` instead.
+ * - Clickable / interactive semantics - wrap with native
  *   `<button cngxTag>` or `<a cngxTag>` for keyboard +
  *   focus + Enter/Space.
- * - Configuration cascade — deferred (see
+ * - Configuration cascade - deferred (see
  *   `display-accepted-debt.md §1`).
+ *
+ * @category common/display
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/display/tag/tag.directive.ts
+ * @selector cngx-tag
+ * @since 0.1.0
+ * @relatedTo CngxTagGroup, CngxChip, CngxBadge, CngxTagLabel
  * <example-url>http://localhost:4200/#/common/display/tag/app-wide-defaults-via-providetagconfig</example-url>
  * <example-url>http://localhost:4200/#/common/display/tag/color-palette</example-url>
  * <example-url>http://localhost:4200/#/common/display/tag/composition-with-cngxicon</example-url>
@@ -104,7 +114,7 @@ export type CngxTagSize = 'sm' | 'md' | 'lg' | 'xl';
   encapsulation: ViewEncapsulation.None,
   imports: [NgTemplateOutlet],
   // The default label wraps `<ng-content />` in `.cngx-tag__label` so the
-  // inner span owns `min-width: 0` + `overflow: hidden` — without it,
+  // inner span owns `min-width: 0` + `overflow: hidden` - without it,
   // host-level `text-overflow: ellipsis` won't fire (flex children don't
   // shrink under ellipsis). Consumer-projected `*cngxTagLabel` owns its
   // own overflow.
@@ -140,7 +150,7 @@ export type CngxTagSize = 'sm' | 'md' | 'lg' | 'xl';
 export class CngxTag {
   /**
    * Snapshot of the resolved tag-family config at construction
-   * time. Drives the per-input fallback defaults below — Angular's
+   * time. Drives the per-input fallback defaults below - Angular's
    * input-default rule means per-instance `[variant]="..."`
    * bindings still win.
    *
@@ -151,7 +161,7 @@ export class CngxTag {
    * `undefined` at the input's init call site (runtime crash on
    * first construction). Per the
    * `tag-family-architectural-a-plus-pass` plan Architectural-
-   * Decisions table — flagged in cngx-plan-review 2026-04-29.
+   * Decisions table - flagged in cngx-plan-review 2026-04-29.
    */
   private readonly cfg = injectTagConfig();
 
@@ -171,10 +181,10 @@ export class CngxTag {
   /**
    * When `true`, applies `text-overflow: ellipsis` + `white-space: nowrap`
    * to the inner `.cngx-tag__label` span. Pair with `[maxWidth]` for a
-   * hard upper bound. Visual-only — the full text remains in the DOM
+   * hard upper bound. Visual-only - the full text remains in the DOM
    * for AT.
    *
-   * Deliberately CSS-only — `CngxTruncate` (`@cngx/common/layout`) is the
+   * Deliberately CSS-only - `CngxTruncate` (`@cngx/common/layout`) is the
    * right tool for multi-line clamp + expand/collapse state on long-form
    * text, but its reactive machinery (effect + ResizeObserver + isClamped
    * signal) is overkill for a chip-style single-line overflow.
@@ -193,13 +203,13 @@ export class CngxTag {
    * default implementer). When present and `semanticList()` is
    * `true`, the host carries `role="listitem"` so the parent's
    * `role="list"` propagates. When absent, no synthetic role is
-   * set — `<a cngxTag>` keeps its native `role="link"`,
+   * set - `<a cngxTag>` keeps its native `role="link"`,
    * `<button cngxTag>` keeps its `role="button"`, etc.
    */
   private readonly group = inject(CNGX_TAG_GROUP, { optional: true });
 
   /**
-   * Per-instance label-slot directive — projected as
+   * Per-instance label-slot directive - projected as
    * `<ng-template cngxTagLabel>...</ng-template>`. Resolved through
    * {@link injectResolvedTagTemplate} so consumers can override the
    * default `<span class="cngx-tag__label">` wrapper without forking
@@ -207,10 +217,10 @@ export class CngxTag {
    */
   protected readonly labelSlot = contentChild(CngxTagLabel);
 
-  /** Per-instance prefix-slot directive — projected before the label. */
+  /** Per-instance prefix-slot directive - projected before the label. */
   protected readonly prefixSlot = contentChild(CngxTagPrefix);
 
-  /** Per-instance suffix-slot directive — projected after the label. */
+  /** Per-instance suffix-slot directive - projected after the label. */
   protected readonly suffixSlot = contentChild(CngxTagSuffix);
 
   /**
@@ -219,22 +229,13 @@ export class CngxTag {
    * Phase 4 commit 5 inserts `CNGX_TAG_CONFIG.templates.label` as a
    * middle tier without touching this call site.
    */
-  protected readonly labelTpl = injectResolvedTagTemplate(
-    this.labelSlot,
-    'label',
-  );
+  protected readonly labelTpl = injectResolvedTagTemplate(this.labelSlot, 'label');
 
   /** Resolved prefix template. Same 2-stage cascade as {@link labelTpl}. */
-  protected readonly prefixTpl = injectResolvedTagTemplate(
-    this.prefixSlot,
-    'prefix',
-  );
+  protected readonly prefixTpl = injectResolvedTagTemplate(this.prefixSlot, 'prefix');
 
   /** Resolved suffix template. Same 2-stage cascade as {@link labelTpl}. */
-  protected readonly suffixTpl = injectResolvedTagTemplate(
-    this.suffixSlot,
-    'suffix',
-  );
+  protected readonly suffixTpl = injectResolvedTagTemplate(this.suffixSlot, 'suffix');
 
   /**
    * Reactive bundle exposed to every slot's `*ngTemplateOutletContext`.
@@ -243,7 +244,7 @@ export class CngxTag {
    * templates `let-variant="variant"` etc. read the live state without
    * injecting the directive.
    *
-   * Explicit structural `equal` fn — without it, a fresh literal each
+   * Explicit structural `equal` fn - without it, a fresh literal each
    * CD cycle would force `ngTemplateOutlet` to rebind embedded views
    * even when no input changed. Per `reference_signal_architecture` §1
    * Equality Rule: every `computed` returning an object MUST pass an
@@ -269,7 +270,7 @@ export class CngxTag {
   /**
    * Reactive `role` attribute. Returns `'listitem'` when projected
    * inside a `<cngx-tag-group [semanticList]="true">`; `null`
-   * otherwise. No explicit `equal` fn passed — primitive string
+   * otherwise. No explicit `equal` fn passed - primitive string
    * output, default `Object.is` is correct (per
    * `reference_signal_architecture` §1: equality discipline applies
    * to object/array results, not primitives).

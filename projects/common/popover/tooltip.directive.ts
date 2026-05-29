@@ -23,7 +23,7 @@ import type {
   TooltipTriggerMode,
 } from './popover.types';
 
-/** Small debounce to prevent SR announcement storms during rapid Tab navigation. */
+/** @internal Small debounce to prevent SR announcement storms during rapid Tab navigation. */
 const FOCUS_DEBOUNCE_MS = 50;
 
 /**
@@ -33,7 +33,7 @@ const FOCUS_DEBOUNCE_MS = 50;
  * the full lifecycle: hover/focus triggers, open/close delays, Escape dismiss,
  * CSS Anchor Positioning, and ARIA wiring (`aria-describedby` + `role="tooltip"`).
  *
- * The consumer sees only the attribute — no extra elements in the template.
+ * The consumer sees only the attribute - no extra elements in the template.
  *
  * ### Basic
  * ```html
@@ -46,6 +46,13 @@ const FOCUS_DEBOUNCE_MS = 50;
  *   Save
  * </button>
  * ```
+ *
+ * @category common/popover
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/popover/tooltip.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxPopover, CngxPopoverTrigger
  * <example-url>http://localhost:4200/#/common/popover/tooltip/basic-tooltip</example-url>
  * <example-url>http://localhost:4200/#/common/popover/tooltip/custom-delay</example-url>
  * <example-url>http://localhost:4200/#/common/popover/tooltip/disabled-state</example-url>
@@ -104,7 +111,7 @@ export class CngxTooltip {
    * CSS `<try-tactic>` fallbacks for `position-try-fallbacks`. Empty array
    * (default) means no fallback CSS is written; the tooltip stays at the
    * declared `tooltipPlacement` regardless of viewport clipping. Tooltips
-   * are decorative — collision recovery is opt-in per-tooltip.
+   * are decorative - collision recovery is opt-in per-tooltip.
    */
   readonly positionTryFallbacks = input<readonly PopoverPositionTryFallback[]>([], {
     alias: 'tooltipPositionTryFallbacks',
@@ -152,7 +159,7 @@ export class CngxTooltip {
       }
     });
 
-    // position-try-fallbacks is written unconditionally — unsupported
+    // position-try-fallbacks is written unconditionally - unsupported
     // browsers ignore the unknown property, and the write keeps a uniform
     // test surface across jsdom + real browsers.
     effect(() => {

@@ -4,11 +4,15 @@ import { type Observable, Subject } from 'rxjs';
 import type { AlertSeverity } from './alert';
 import { CNGX_FEEDBACK_CONFIG } from '../config/feedback-config';
 
-/** Configuration for a programmatic alert. */
+/**
+ * Configuration for a programmatic alert.
+ *
+ * @category ui/feedback/alert
+ */
 export interface AlertConfig {
   /** Alert message text (required). */
   message: string;
-  /** Visual severity — determines icon, color, and ARIA role. */
+  /** Visual severity - determines icon, color, and ARIA role. */
   severity?: AlertSeverity;
   /** Optional bold title above the message. */
   title?: string;
@@ -18,11 +22,15 @@ export interface AlertConfig {
   duration?: number;
   /** Show a dismiss button. Default `true`. */
   dismissible?: boolean;
-  /** Scope key — only shown in stacks with matching scope. */
+  /** Scope key - only shown in stacks with matching scope. */
   scope?: string;
 }
 
-/** Handle to a displayed alert — allows programmatic dismiss. */
+/**
+ * Handle to a displayed alert - allows programmatic dismiss.
+ *
+ * @category ui/feedback/alert
+ */
 export interface AlertRef {
   /** Programmatically dismiss this alert. */
   dismiss(): void;
@@ -30,7 +38,11 @@ export interface AlertRef {
   afterDismissed(): Observable<void>;
 }
 
-/** @internal — tracked state for a single alert in the stack. */
+/**
+ * @internal - tracked state for a single alert in the stack.
+ *
+ * @category ui/feedback/alert
+ */
 export interface AlertState {
   readonly id: number;
   readonly config: Required<
@@ -42,12 +54,20 @@ export interface AlertState {
 }
 
 /**
- * Scoped alert service — manages an alert stack as a signal array.
+ * Scoped alert service - manages an alert stack as a signal array.
  *
  * Not `providedIn: 'root'`. Each `CngxAlertStack` provides its own instance
  * via `viewProviders`, scoping alerts to that stack's subtree.
  *
  * For root-level injection, use `provideFeedback(withAlerts())`.
+ *
+ * @category ui/feedback/alert
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/feedback/alert/alerter.service.ts
+ * @since 0.1.0
+ * @relatedTo CngxAlertStack, CngxAlertOn, CngxToaster, CngxBanner
+ *
  * <example-url>http://localhost:4200/#/ui/feedback/alert-stack/basic-stack</example-url>
  * <example-url>http://localhost:4200/#/ui/feedback/alert-stack/dialog-use-case</example-url>
  * <example-url>http://localhost:4200/#/ui/feedback/alert-stack/overflow-collapse</example-url>
@@ -58,7 +78,7 @@ export class CngxAlerter {
   private readonly config = inject(CNGX_FEEDBACK_CONFIG, { optional: true });
   private nextId = 0;
 
-  /** Reactive alert stack — read by `CngxAlertStack`. */
+  /** Reactive alert stack - read by `CngxAlertStack`. */
   readonly alerts = signal<readonly AlertState[]>([]);
 
   private readonly dedupWindow = this.config?.alertDedupWindow ?? 1000;

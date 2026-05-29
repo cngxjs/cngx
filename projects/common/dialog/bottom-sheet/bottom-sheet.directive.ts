@@ -4,13 +4,13 @@ import { CngxSwipeDismiss } from '@cngx/common/interactive';
 import { DIALOG_REF } from '../dialog/dialog-ref';
 
 /**
- * Bottom sheet molecule — a `CngxDialog` positioned at the viewport bottom
+ * Bottom sheet molecule - a `CngxDialog` positioned at the viewport bottom
  * with swipe-to-dismiss support.
  *
  * Place on the same `<dialog>` element alongside `cngxDialog`. Adds the
  * `cngx-bottom-sheet` CSS class (styled by `bottom-sheet-theme.scss`).
  * When `CngxSwipeDismiss` is also present, auto-wires the swipe output
- * to `dialogRef.dismiss()` — no manual `(swiped)` binding needed.
+ * to `dialogRef.dismiss()` - no manual `(swiped)` binding needed.
  *
  * ### Basic bottom sheet
  * ```html
@@ -30,6 +30,13 @@ import { DIALOG_REF } from '../dialog/dialog-ref';
  *   <p>Content positioned at the bottom.</p>
  * </dialog>
  * ```
+ *
+ * @category common/dialog
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/dialog/bottom-sheet/bottom-sheet.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxDialog, CngxSwipeDismiss, CngxDialogClose
  */
 @Directive({
   selector: 'dialog[cngxBottomSheet]',

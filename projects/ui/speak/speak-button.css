@@ -1,14 +1,41 @@
 /**
  * @overview
- * Default visuals for `CngxSpeakButton`. The speaking state
- * deliberately uses warm orange (`oklch(0.72 0.18 70)`) rather than
- * `--cngx-color-primary` so it visually distinguishes itself from
- * primary actions — speak is communicative ambient feedback, not a
- * primary call-to-action. Brand-wide overrides target
- * `--cngx-speak-btn-active-color` directly.
+ * Default visuals for `CngxSpeakButton`. The host carries
+ * `.cngx-speak-button` and renders a single `__btn` child with an
+ * inner `__icon`. The active / speaking accent deliberately uses
+ * warm orange rather than `--cngx-color-primary` so the speak
+ * surface reads as ambient feedback, not a primary call-to-action -
+ * brand-wide overrides target `--cngx-speak-btn-active-color`
+ * directly.
  *
- * Pair with `@cngx/themes/material/speak-button-theme` for the
- * Material 3 icon-button surface.
+ * **State modifiers**
+ *
+ * - `--speaking` - fills the button with `--cngx-speak-btn-speaking-
+ *   bg` (orange) and paints the icon white
+ *
+ * On `.cngx-speak-button__btn`:
+ *
+ * - `:hover` - swaps to `--cngx-speak-btn-active-color` for icon and
+ *   border, and to `--cngx-speak-btn-hover-bg` for the surface
+ *
+ * **Slots**
+ *
+ * - `.cngx-speak-button__btn` - the actual `<button>`; carries
+ *   shape, border, transition, and hover/active state painting
+ * - `.cngx-speak-button__icon` - inner glyph, nudged +1px on the
+ *   inline axis to optically center against the rounded surface
+ *
+ * **Inheritance**
+ *
+ * - `--cngx-speak-btn-bg` -> `--cngx-color-surface`
+ * - `--cngx-speak-btn-hover-bg` -> `--cngx-speak-btn-bg` ->
+ *   `--cngx-color-surface`
+ * - `--cngx-speak-btn-speaking-bg` -> `--cngx-speak-btn-active-color`
+ *
+ * **Pair with**
+ *
+ * - `@cngx/themes/material/speak-button-theme` - Material 3
+ *   icon-button surface
  */
 
 @layer cngx.tokens {
@@ -63,7 +90,7 @@
   }
 
   /**
-   * Resting icon color — muted.
+   * Resting icon color - muted.
    * @group Surface
    */
   @property --cngx-speak-btn-color {
@@ -84,7 +111,7 @@
 
   /**
    * Accent color of the speaking / hover state. Warm orange by
-   * design — independent of `--cngx-color-primary`.
+   * design - independent of `--cngx-color-primary`.
    * @group State / Active
    */
   @property --cngx-speak-btn-active-color {
@@ -114,7 +141,7 @@
   }
 
   /**
-   * Background while actively speaking — filled with the orange
+   * Background while actively speaking - filled with the orange
    * accent for unmistakable feedback.
    * @group State / Speaking
    */

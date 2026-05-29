@@ -1,10 +1,19 @@
 /**
  * @overview
- * Default visuals for `CngxAsyncContainer`. Tiny by design — the
- * container is a `display: contents` wrapper that delegates
- * rendering to projected skeleton / content / empty / error
- * templates. Only owns the absolutely-positioned refresh-indicator
- * and the sr-only announcement region.
+ * Default visuals for `CngxAsyncContainer`. The host carries
+ * `.cngx-async-container` but stays `display: contents` - the
+ * container delegates rendering to projected skeleton / content /
+ * empty / error templates. This stylesheet owns just two children:
+ * the absolutely-positioned refresh indicator and the sr-only
+ * announcement region.
+ *
+ * **Slots**
+ *
+ * - `.cngx-async-container__refresh` - absolutely-positioned overlay
+ *   anchored to the top edge, z-ordered above content (default `5`)
+ *   but below dialog / popover surfaces
+ * - `.cngx-async-container__sr-only` - visually-hidden live-region
+ *   announcement target
  */
 
 @layer cngx.tokens {

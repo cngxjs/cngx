@@ -11,6 +11,12 @@ import { Directive, inject, TemplateRef } from '@angular/core';
  *   <ng-template cngxTabContent>...</ng-template>
  * </div>
  * ```
+ *
+ * @category common/tabs
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/tab-label.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxTab, CngxTabContent
  * <example-url>http://localhost:4200/#/ui/tabs/tab-group-vertical/vertical-sidebar-tabs</example-url>
  * <example-url>http://localhost:4200/#/ui/tabs/tab-group/three-tab-navigation</example-url>
  */

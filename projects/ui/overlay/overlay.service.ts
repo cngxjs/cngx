@@ -12,8 +12,10 @@ import { CngxOverlayRef } from './overlay-ref';
 
 /**
  * Config accepted by {@link CngxOverlay.open}. Partial alias of CDK's
- * {@link OverlayConfig} — every field is optional and falls back to
+ * {@link OverlayConfig} - every field is optional and falls back to
  * the CDK overlay default.
+ *
+ * @category ui/overlay
  */
 export type CngxOverlayConfig = Partial<OverlayConfig>;
 
@@ -27,8 +29,15 @@ export type CngxOverlayConfig = Partial<OverlayConfig>;
 
  * // usage
  * const ref = overlayService.open(MyComponent, { hasBackdrop: true });
- * ref.afterClosed$.subscribe(result => console.log(result)); 
+ * ref.afterClosed$.subscribe(result => console.log(result));
 * ```
+ *
+ * @category ui/overlay
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/overlay/overlay.service.ts
+ * @since 0.1.0
+ * @relatedTo CngxOverlayRef, provideOverlay
  */
 @Injectable()
 export class CngxOverlay {
@@ -65,7 +74,11 @@ export class CngxOverlay {
   }
 }
 
-/** Provides `CngxOverlay` as an environment-scoped service. */
+/**
+ * Provides `CngxOverlay` as an environment-scoped service.
+ *
+ * @category ui/overlay
+ */
 export function provideOverlay(): EnvironmentProviders {
   return makeEnvironmentProviders([CngxOverlay]);
 }

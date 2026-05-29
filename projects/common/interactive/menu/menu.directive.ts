@@ -1,5 +1,9 @@
 import { contentChildren, Directive, inject, input, untracked } from '@angular/core';
-import { outputFromObservable, outputToObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import {
+  outputFromObservable,
+  outputToObservable,
+  takeUntilDestroyed,
+} from '@angular/core/rxjs-interop';
 
 import { CngxActiveDescendant } from '@cngx/common/a11y';
 
@@ -13,7 +17,14 @@ import { CNGX_MENU_SUBMENU_ITEM, type CngxMenuSubmenuLike } from './menu-submenu
  *
  * Uses `CngxActiveDescendant` as a `hostDirective` so items rendered with
  * `CngxMenuItem` (or its sub-roles) are tracked automatically. No selection
- * state — menus fire actions through the `itemActivated` output.
+ * state - menus fire actions through the `itemActivated` output.
+ *
+ * @category common/interactive/menu
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/menu/menu.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxMenuTrigger, CngxMenuItem, CngxMenuGroup, CngxContextMenuTrigger, CngxActiveDescendant
  * <example-url>http://localhost:4200/#/common/interactive/context-menu/right-click-target-zone</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/menu/submenu/two-level-submenu</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/menu/trigger/dropdown-menu</example-url>
@@ -39,7 +50,7 @@ export class CngxMenu implements CngxMenuHost {
   /** Accessible label. */
   readonly label = input.required<string>();
 
-  /** Underlying `CngxActiveDescendant` — exposed for trigger composition. */
+  /** Underlying `CngxActiveDescendant` - exposed for trigger composition. */
   readonly ad = inject(CngxActiveDescendant, { self: true, host: true });
 
   private readonly announcer = inject(CNGX_MENU_ANNOUNCER_FACTORY)();

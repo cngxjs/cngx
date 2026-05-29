@@ -10,7 +10,7 @@ import {
 import { nextUid } from '@cngx/core/utils';
 
 /**
- * Chip / tag molecule — a small, self-contained pill rendering projected
+ * Chip / tag molecule - a small, self-contained pill rendering projected
  * content plus an optional close affordance.
  *
  * **Why this exists.**
@@ -29,11 +29,17 @@ import { nextUid } from '@cngx/core/utils';
  *   consumer-supplied).
  *
  * **Non-responsibilities.**
- * - Selection state — parent tracks which value(s) are picked.
- * - Commit/async behaviour — remove simply fires an event; the parent
+ * - Selection state - parent tracks which value(s) are picked.
+ * - Commit/async behaviour - remove simply fires an event; the parent
  *   decides whether to write state directly or route through a commit
  *   flow. This keeps the chip usable from any level of the stack.
  *
+ * @category common/display
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/display/chip/chip.component.ts
+ * @since 0.1.0
+ * @relatedTo CngxTag, CngxTagGroup, CngxBadge
  * <example-url>http://localhost:4200/#/common/display/chip/basic</example-url>
  * <example-url>http://localhost:4200/#/common/display/chip/removable</example-url>
  * <example-url>http://localhost:4200/#/common/display/chip/color-palette</example-url>
@@ -68,7 +74,7 @@ import { nextUid } from '@cngx/core/utils';
       >
         <!--
           Named content slot for the close glyph. Default renders the
-          library's × — consumers project any icon component by tagging
+          library's × - consumers project any icon component by tagging
           it with the attribute:
 
             <cngx-chip [removable]="true">
@@ -89,7 +95,7 @@ import { nextUid } from '@cngx/core/utils';
 })
 export class CngxChip {
   /**
-   * Whether the close button is rendered. Typed as `boolean` — bind a
+   * Whether the close button is rendered. Typed as `boolean` - bind a
    * signal getter (`[removable]="!select.disabled()"`) if the flag
    * needs to react to upstream state.
    */
@@ -115,10 +121,10 @@ export class CngxChip {
 
   private readonly autoId = nextUid('cngx-chip');
 
-  /** @internal — resolved DOM id for host binding. */
+  /** @internal - resolved DOM id for host binding. */
   protected readonly resolvedId = computed<string>(() => this.id() ?? this.autoId);
 
-  /** @internal — delegates to the output; kept as a method so the click handler stays in the template. */
+  /** @internal - delegates to the output; kept as a method so the click handler stays in the template. */
   protected handleRemoveClick(event: MouseEvent): void {
     this.remove.emit(event);
   }

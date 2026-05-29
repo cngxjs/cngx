@@ -1,15 +1,41 @@
 /**
  * @overview
- * Expression-row variant of `CngxFilterBuilderRow`. Same
- * `display: contents` shape and the same
- * `.cngx-filter-builder__expression` flex layout (rule duplicated so
- * the file is self-contained when consumed standalone), plus the
- * `.cngx-filter-expression-incomplete` state for an unfinished
- * expression — dashed warning outline.
+ * Expression-row variant of `CngxFilterBuilderRow`. The host element
+ * `cngx-filter-expression-row` stays `display: contents` and delegates
+ * its layout to the parent's `.cngx-filter-builder__expression` flex
+ * row, redeclared here so the file is self-contained when consumed
+ * standalone.
  *
- * `--cngx-filter-builder-gap` is owned by the parent
- * `filter-builder.component.css` and consumed here via the `var()`
- * fallback chain only.
+ * **State modifiers**
+ *
+ * - `.cngx-filter-builder__expression--empty` - opacity fade for an
+ *   empty row, sourced from `--cngx-filter-builder-empty-row-opacity`
+ *   (owned by `filter-builder-row.component.css`)
+ * - `.cngx-filter-expression-incomplete` - dashed warning outline for
+ *   an unfinished expression, draws attention without committing to an
+ *   error tone
+ *
+ * **Slots**
+ *
+ * - `cngx-filter-expression-row` - host, `display: contents`
+ * - `.cngx-filter-builder__expression` - inner flex row, gap +
+ *   wrap, aligned center
+ *
+ * **Inheritance**
+ *
+ * Local-token chains:
+ *
+ * - `--cngx-filter-builder-incomplete-outline` -> `1px dashed
+ *   var(--cngx-color-warning)`
+ * - `--cngx-filter-builder-incomplete-outline-offset` - structural,
+ *   no foundation delegate
+ *
+ * `--cngx-filter-builder-gap` and
+ * `--cngx-filter-builder-empty-row-opacity` are owned by the parent
+ * filter-builder files and consumed here through the `var()` fallback
+ * chain only. A `:root` delegating rule pins the incomplete-outline
+ * structural part and inherits the warning hue via the foundation
+ * chain so a dark-mode swap on `--cngx-color-warning` cascades.
  */
 
 @layer cngx.tokens {

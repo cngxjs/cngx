@@ -2,10 +2,8 @@ import { computed, type Signal } from '@angular/core';
 import { type ActiveDescendantItem } from '@cngx/common/a11y';
 import { type CngxTreeController } from './tree-controller';
 
-function adEq(
-  a: ActiveDescendantItem[],
-  b: ActiveDescendantItem[],
-): boolean {
+/** @internal */
+function adEq(a: ActiveDescendantItem[], b: ActiveDescendantItem[]): boolean {
   if (a === b) {
     return true;
   }
@@ -34,13 +32,15 @@ function adEq(
  * `CngxTreeController` stays free of the `@cngx/common/a11y` import and
  * can be reused from contexts that do not render through AD.
  *
- * Returns a structurally-equal memoized computed — consumers can pass the
+ * Returns a structurally-equal memoized computed - consumers can pass the
  * signal straight into `[items]="adItems()"` without worrying about cascade
  * re-renders on irrelevant tree re-emissions.
+ *
+ * @category common/interactive/tree
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/tree-controller/tree-ad-items.ts
+ * @since 0.1.0
  */
-export function createTreeAdItems<T>(
-  ctrl: CngxTreeController<T>,
-): Signal<ActiveDescendantItem[]> {
+export function createTreeAdItems<T>(ctrl: CngxTreeController<T>): Signal<ActiveDescendantItem[]> {
   return computed(
     () =>
       ctrl.visibleNodes().map<ActiveDescendantItem>((n) => ({

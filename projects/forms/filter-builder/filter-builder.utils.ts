@@ -3,7 +3,7 @@ import type { FilterExpression, FilterGroup, FilterNode } from './filter-builder
 /**
  * Pure tree utilities for the filter-builder data model. Every mutator
  * returns a new tree; the originals are never modified. Identity is
- * preserved when no descendant changed — feeds the `filterTreeEqual`
+ * preserved when no descendant changed - feeds the `filterTreeEqual`
  * short-circuit on `computed` / `linkedSignal` consumers (Pillar 1).
  *
  * Paths are arrays of child indices. The empty path `[]` addresses the
@@ -12,10 +12,7 @@ import type { FilterExpression, FilterGroup, FilterNode } from './filter-builder
  */
 
 /** Resolve the node at `path` against `root`. Returns `null` for invalid paths. */
-export function getNodeAtPath(
-  root: FilterGroup,
-  path: readonly number[],
-): FilterNode | null {
+export function getNodeAtPath(root: FilterGroup, path: readonly number[]): FilterNode | null {
   if (path.length === 0) {
     return root;
   }
@@ -50,6 +47,7 @@ export function updateAtPath(
   return updateGroupAtPath(root, path, 0, updater);
 }
 
+/** @internal */
 function updateGroupAtPath(
   group: FilterGroup,
   path: readonly number[],
@@ -83,7 +81,7 @@ function updateGroupAtPath(
   return { ...group, filters: nextFilters };
 }
 
-/** Remove the node at `path`. Throws on empty path — the root cannot be removed. */
+/** Remove the node at `path`. Throws on empty path - the root cannot be removed. */
 export function removeAtPath(root: FilterGroup, path: readonly number[]): FilterGroup {
   if (path.length === 0) {
     throw new Error('removeAtPath: cannot remove the root');
@@ -91,6 +89,7 @@ export function removeAtPath(root: FilterGroup, path: readonly number[]): Filter
   return removeFromGroupAtPath(root, path, 0);
 }
 
+/** @internal */
 function removeFromGroupAtPath(
   group: FilterGroup,
   path: readonly number[],
@@ -134,9 +133,7 @@ export function appendAtPath(
 
   return updateAtPath(root, path, (node) => {
     if (node.type !== 'group') {
-      throw new Error(
-        `appendAtPath: cannot append to non-group at ${JSON.stringify(path)}`,
-      );
+      throw new Error(`appendAtPath: cannot append to non-group at ${JSON.stringify(path)}`);
     }
     return { ...node, filters: [...node.filters, child] };
   });
@@ -155,6 +152,7 @@ export function filterTreeEqual(a: FilterGroup, b: FilterGroup): boolean {
   return groupsEqual(a, b);
 }
 
+/** @internal */
 function groupsEqual(a: FilterGroup, b: FilterGroup): boolean {
   if (a === b) {
     return true;
@@ -178,6 +176,7 @@ function groupsEqual(a: FilterGroup, b: FilterGroup): boolean {
   return true;
 }
 
+/** @internal */
 function expressionsEqual(a: FilterExpression, b: FilterExpression): boolean {
   if (a === b) {
     return true;
@@ -185,6 +184,7 @@ function expressionsEqual(a: FilterExpression, b: FilterExpression): boolean {
   return a.field === b.field && a.operator === b.operator && Object.is(a.value, b.value);
 }
 
+/** @internal */
 function nodesEqual(a: FilterNode, b: FilterNode): boolean {
   if (a === b) {
     return true;

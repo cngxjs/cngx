@@ -1,14 +1,36 @@
 /**
  * @overview
  * Default visuals for the interactive shell around
- * `<cngx-radio-indicator>`. Visual state (filled circle vs ring)
- * lives on the inner indicator; the `.cngx-radio--checked` /
- * `.cngx-radio--disabled` host classes are unstyled here and exposed
- * as consumer-theming hooks.
+ * `<cngx-radio-indicator>`. The host carries `.cngx-radio` and
+ * renders the indicator plus a `.cngx-radio__label` slot for the
+ * projected label text and a `.cngx-radio__sr-only` slot for
+ * assistive-only copy. Visual state (filled circle vs ring) lives on
+ * the inner indicator; the `--cngx-radio-indicator-*` namespace is
+ * owned by `CngxRadioIndicator` and shell-specific `--cngx-radio-*`
+ * tokens are registered here without overlap.
  *
- * `CngxRadioIndicator` owns the `--cngx-radio-indicator-*` namespace;
- * this file registers shell-specific `--cngx-radio-*` tokens without
- * overlap.
+ * **State modifiers**
+ *
+ * - `--checked` - unstyled here; exposed as a consumer-theming hook
+ *   (the indicator paints the filled circle)
+ * - `--disabled` - `cursor: not-allowed` + opacity dim via
+ *   `--cngx-radio-disabled-opacity`
+ *
+ * **Slots**
+ *
+ * - `.cngx-radio__label` - projected label content
+ * - `.cngx-radio__sr-only` - visually-hidden copy for AT
+ *
+ * **Inheritance**
+ *
+ * Layout and focus tokens cascade through the foundation; the
+ * focus-outline default colour matches `--cngx-color-primary` so the
+ * ring stays in step with the foundation reset:
+ *
+ * - `--cngx-radio-gap` -> `--cngx-space-sm`
+ * - `--cngx-radio-focus-outline` -> `--cngx-color-primary`
+ * - `--cngx-radio-focus-radius` -> `--cngx-radius-sm`
+ * - `--cngx-radio-color` - direct (defaults to `currentColor`)
  */
 
 @layer cngx.tokens {

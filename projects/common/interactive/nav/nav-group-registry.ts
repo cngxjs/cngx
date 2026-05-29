@@ -9,7 +9,7 @@ export interface NavGroupRef {
 /**
  * Scoped registry for single-accordion coordination.
  *
- * Provided at the sidebar/nav container level — only groups within the
+ * Provided at the sidebar/nav container level - only groups within the
  * same provider scope coordinate. Not `providedIn: 'root'` on purpose.
  *
  * ```typescript
@@ -20,6 +20,12 @@ export interface NavGroupRef {
  *   ],
  * })
  * ```
+ *
+ * @category common/interactive
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/nav/nav-group-registry.ts
+ * @since 0.1.0
+ * @relatedTo CngxNavGroup, CngxDisclosure
  */
 @Injectable()
 export class CngxNavGroupRegistry {
