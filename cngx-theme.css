@@ -364,21 +364,24 @@ a.cdx-related-pill:focus-visible {
 }
 
 /* Vertical rhythm in prose - give paragraphs, code blocks, and
- * section headings room to breathe so the page feels less dense. */
+ * section headings room to breathe so the page feels less dense.
+ * H2 owns a much larger top margin so the section break reads
+ * purely as whitespace; no horizontal-rule paint needed. */
 .cdx-readme p {
   margin-block: 0 1rem;
   line-height: 1.65;
 }
 .cdx-readme h2 {
-  margin-top: 2.5rem;
-  margin-bottom: 0.75rem;
+  margin-top: 3.5rem;
+  margin-bottom: 1rem;
+  padding-top: 0.5rem;
 }
 .cdx-readme h3 {
-  margin-top: 1.75rem;
-  margin-bottom: 0.5rem;
+  margin-top: 2.25rem;
+  margin-bottom: 0.625rem;
 }
 .cdx-readme h4 {
-  margin-top: 1.25rem;
+  margin-top: 1.5rem;
   margin-bottom: 0.5rem;
 }
 .cdx-readme pre {
@@ -396,9 +399,13 @@ a.cdx-related-pill:focus-visible {
   margin-block: 1.25rem;
   padding-block: 0.5rem;
 }
+/* `---` markdown breaks render as <hr>. Strip the painted line and
+ * keep only the vertical gap so a section break reads as breathing
+ * room, not as a hard divider. */
 .cdx-readme hr {
-  margin-block: 2.5rem;
-  border-color: var(--color-cdx-border-subtle);
+  margin-block: 1.25rem;
+  border: none;
+  height: 0;
 }
 
 .dark {
