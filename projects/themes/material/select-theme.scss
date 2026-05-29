@@ -2,7 +2,7 @@
 @use 'sass:math';
 @use '@angular/material' as mat;
 
-// Material bridge for the entire Select family — single, multi, combobox,
+// Material bridge for the entire Select family - single, multi, combobox,
 // typeahead, tree-select, reorderable-multi, action-select, action-multi,
 // select-shell. All resolve through the shared --cngx-select-* token
 // surface defined in projects/forms/select/shared/select-base.css.
@@ -13,7 +13,7 @@
 @mixin color($theme) {
   @if mat.get-theme-version($theme) == 1 {
     // Panel surface (one shared surface across the whole select family).
-    // Material 3 Menu surface is shadow-only — no border, vertical inset
+    // Material 3 Menu surface is shadow-only - no border, vertical inset
     // 8px to give the option list breathing room from the panel edge.
     --cngx-select-panel-bg: var(--mat-sys-surface-container);
     --cngx-select-panel-color: var(--mat-sys-on-surface);
@@ -21,7 +21,7 @@
     --cngx-select-panel-radius: 4px;
     --cngx-select-panel-shadow: var(--mat-sys-level2, 0 4px 12px oklch(0 0 0 / 0.12));
 
-    // Trigger surfaces — every variant defines its own --cngx-<name>-bg /
+    // Trigger surfaces - every variant defines its own --cngx-<name>-bg /
     // -color / -border with hard-coded light defaults that shadow any
     // system-bridge cascade. Map each variant onto Material's outlined-
     // input surface so the trigger sits transparently on the Material
@@ -63,11 +63,7 @@
     --cngx-tree-select-clear-color: var(--mat-sys-on-surface-variant);
     --cngx-tree-select-node-color: var(--mat-sys-on-surface);
 
-    --cngx-select-option-highlight-bg: color-mix(
-      in srgb,
-      var(--mat-sys-primary) 12%,
-      transparent
-    );
+    --cngx-select-option-highlight-bg: color-mix(in srgb, var(--mat-sys-primary) 12%, transparent);
     --cngx-select-check-color: var(--mat-sys-primary);
     --cngx-select-error-color: var(--mat-sys-error);
     --cngx-select-option-error-color: var(--mat-sys-error);
@@ -100,11 +96,7 @@
     --cngx-select-shell-focus-ring: var(--mat-sys-primary);
 
     // Tree-select node states
-    --cngx-tree-select-node-hover-bg: color-mix(
-      in srgb,
-      var(--mat-sys-on-surface) 6%,
-      transparent
-    );
+    --cngx-tree-select-node-hover-bg: color-mix(in srgb, var(--mat-sys-on-surface) 6%, transparent);
     --cngx-tree-select-node-selected-bg: color-mix(
       in srgb,
       var(--mat-sys-primary) 12%,
@@ -137,9 +129,21 @@
   $scale: mat.get-theme-density($theme);
   $scale: math.max(-4, math.min(0, $scale));
 
-  // Option metrics — Material 3 menu/select options.
-  $opt-paddings:   (0: 12px 16px, -1: 10px 14px, -2: 8px 12px, -3: 6px 10px, -4: 4px 8px);
-  $opt-min-heights:(0: 48px,      -1: 44px,      -2: 40px,     -3: 36px,    -4: 32px);
+  // Option metrics - Material 3 menu/select options.
+  $opt-paddings: (
+    0: 12px 16px,
+    -1: 10px 14px,
+    -2: 8px 12px,
+    -3: 6px 10px,
+    -4: 4px 8px,
+  );
+  $opt-min-heights: (
+    0: 48px,
+    -1: 44px,
+    -2: 40px,
+    -3: 36px,
+    -4: 32px,
+  );
 
   --cngx-select-option-padding: #{map.get($opt-paddings, $scale)};
   --cngx-select-option-min-height: #{map.get($opt-min-heights, $scale)};
@@ -148,12 +152,24 @@
   // inset so options sit edge-to-edge.
   --cngx-select-panel-padding: 8px 0;
 
-  // Trigger metrics — Material 3 outlined-input scale (56 / 52 / 48 / 44 / 40).
+  // Trigger metrics - Material 3 outlined-input scale (56 / 52 / 48 / 44 / 40).
   // Every Select-family variant exposes its own min-height / padding /
   // radius tokens; this map drives them all in lock-step so the trigger
   // surface reads like an <mat-form-field appearance='outline'> input.
-  $trig-min-heights: (0: 56px, -1: 52px, -2: 48px, -3: 44px, -4: 40px);
-  $trig-paddings:    (0: 0 16px, -1: 0 14px, -2: 0 12px, -3: 0 10px, -4: 0 8px);
+  $trig-min-heights: (
+    0: 56px,
+    -1: 52px,
+    -2: 48px,
+    -3: 44px,
+    -4: 40px,
+  );
+  $trig-paddings: (
+    0: 0 16px,
+    -1: 0 14px,
+    -2: 0 12px,
+    -3: 0 10px,
+    -4: 0 8px,
+  );
   $trig-radius: 4px; // var(--mat-sys-corner-extra-small)
 
   --cngx-select-min-height: #{map.get($trig-min-heights, $scale)};
@@ -199,15 +215,24 @@
     :where(
       .cngx-select__panel,
       cngx-tree-select-panel,
-      cngx-select, cngx-select *,
-      cngx-multi-select, cngx-multi-select *,
-      cngx-combobox, cngx-combobox *,
-      cngx-typeahead, cngx-typeahead *,
-      cngx-tree-select, cngx-tree-select *,
-      cngx-reorderable-multi-select, cngx-reorderable-multi-select *,
-      cngx-action-select, cngx-action-select *,
-      cngx-action-multi-select, cngx-action-multi-select *,
-      cngx-select-shell, cngx-select-shell *
+      cngx-select,
+      cngx-select *,
+      cngx-multi-select,
+      cngx-multi-select *,
+      cngx-combobox,
+      cngx-combobox *,
+      cngx-typeahead,
+      cngx-typeahead *,
+      cngx-tree-select,
+      cngx-tree-select *,
+      cngx-reorderable-multi-select,
+      cngx-reorderable-multi-select *,
+      cngx-action-select,
+      cngx-action-select *,
+      cngx-action-multi-select,
+      cngx-action-multi-select *,
+      cngx-select-shell,
+      cngx-select-shell *
     ) {
       @include color($theme);
       @include density($theme);

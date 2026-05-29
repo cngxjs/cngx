@@ -3,7 +3,7 @@
 @use '@angular/material' as mat;
 
 // Provides M3/M2 colors for `[cngxNavLink]` when used inside a sidenav.
-// Included automatically by `sidenav.theme()` — no separate import needed.
+// Included automatically by `sidenav.theme()` - no separate import needed.
 
 @mixin color($theme) {
   @if mat.get-theme-version($theme) == 1 {

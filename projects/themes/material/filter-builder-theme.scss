@@ -1,7 +1,7 @@
 @use '@angular/material' as mat;
 
 // Material theme integration for <cngx-filter-builder>. The component has
-// no direct Material refs — every visual value goes through a
+// no direct Material refs - every visual value goes through a
 // `--cngx-filter-builder-*` custom property; this mixin maps Material tokens
 // to those properties for consumers using @angular/material.
 //

@@ -2,7 +2,7 @@
 
 // Bridge entry point. Wires Material's $theme into the cngx system layer
 // and every component bridge in a single call. Mirrors Material's own
-// mat.all-component-themes($theme) — one include, every cngx component
+// mat.all-component-themes($theme) - one include, every cngx component
 // follows the Material theme.
 //
 //   @use '@angular/material' as mat;
@@ -15,7 +15,7 @@
 //     @include cngx-material.theme($theme);
 //   }
 //
-// Selective wiring stays available — consumers who only ship a subset of
+// Selective wiring stays available - consumers who only ship a subset of
 // cngx can include the system bridge plus the relevant component bridges
 // individually:
 //

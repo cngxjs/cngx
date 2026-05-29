@@ -1,7 +1,7 @@
 @use '@angular/material' as mat;
 
 // Material bridge for CngxIcon. Icon colour follows currentColor by
-// default (so it inherits whatever the surrounding text reads) — this
+// default (so it inherits whatever the surrounding text reads) - this
 // bridge only re-points the size scale to Material 3's icon-size
 // conventions where they differ from the cngx defaults.
 //
@@ -10,7 +10,7 @@
 
 @mixin sizes() {
   // Material 3 icon sizing: small 18px, medium 20px (default), large 24px,
-  // extra-large 40px. Cngx default is em-based — keep that flexibility
+  // extra-large 40px. Cngx default is em-based - keep that flexibility
   // but anchor the medium variant to Material's canonical 24px so an
   // icon next to a Material control reads the same size.
   --cngx-icon-size: 1.5em;

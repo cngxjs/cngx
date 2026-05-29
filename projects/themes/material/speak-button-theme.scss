@@ -14,7 +14,6 @@
 //     @include speak.theme($theme);
 //   }
 
-
 @mixin base() {
   --cngx-speak-btn-size: 36px;
   --cngx-speak-btn-icon-size: 18px;
@@ -25,7 +24,7 @@
 
 @mixin color($theme) {
   @if mat.get-theme-version($theme) == 1 {
-    // M3 — use Material sys tokens
+    // M3 - use Material sys tokens
     --cngx-speak-btn-bg: var(--mat-sys-surface-container-low);
     --cngx-speak-btn-hover-bg: var(--mat-sys-surface-container);
     --cngx-speak-btn-color: var(--mat-sys-on-surface-variant);
@@ -34,7 +33,7 @@
     --cngx-speak-btn-speaking-color: var(--mat-sys-on-primary);
     --cngx-border: var(--mat-sys-outline-variant);
   } @else {
-    // M2 — derive from palette
+    // M2 - derive from palette
     --cngx-speak-btn-bg: #{mat.get-theme-color($theme, background, card)};
     --cngx-speak-btn-hover-bg: #{rgba(mat.get-theme-color($theme, primary), 0.04)};
     --cngx-speak-btn-color: rgba(0, 0, 0, 0.54);
@@ -67,7 +66,6 @@
   --cngx-speak-btn-size: #{map.get($sizes, $scale)};
   --cngx-speak-btn-icon-size: #{map.get($icon-sizes, $scale)};
 }
-
 
 @mixin theme($theme) {
   @layer cngx.components {
