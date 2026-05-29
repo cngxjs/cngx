@@ -62,7 +62,9 @@ interface CngxAsyncState<T> {
 }
 ```
 
-`data()` is `undefined` only while `status() === 'idle' | 'loading'`. After the first successful load, `data()` stays defined even while `status() === 'refreshing' | 'error'` - this is what enables stale-data + inline-error UX patterns.
+`data()` is `undefined` only while `status() === 'idle' | 'loading'`.
+
+After the first successful load, `data()` stays defined even while `status() === 'refreshing' | 'error'` - this is what enables stale-data + inline-error UX patterns.
 
 The `isFirstLoad` flag separates "never loaded" from "have data, just retrying".
 
@@ -261,7 +263,9 @@ A second trap: don't call `.set()` on any signal from inside a bridge effect tha
 
 The four feedback bridges are safe because they call external service methods (`toaster.show()`, etc.), not signal writes.
 
-The async-container is the documented exception. It writes an `announcement` signal from its tracker effect, and only stays loop-free because the tracker's `equal` short-circuits identical-status re-runs (`linkedSignal` with `equal: (a, b) => a.current === b.current && a.previous === b.previous`).
+The async-container is the documented exception. It writes an `announcement` signal from its tracker effect.
+
+This only stays loop-free because the tracker's `equal` short-circuits identical-status re-runs (`linkedSignal` with `equal: (a, b) => a.current === b.current && a.previous === b.previous`).
 
 <aside class="cc-warning">
 
@@ -363,13 +367,17 @@ bootstrapApplication(AppComponent, {
 });
 ```
 
-Each feature is opt-in. Forgetting `withToasts()` while using `[cngxToastOn]` throws a constructor error with the fix in the message: *"CngxToaster not found. Add withToasts() to provideFeedback() or call provideToasts() in your providers."*
+Each feature is opt-in.
+
+Forgetting `withToasts()` while using `[cngxToastOn]` throws a constructor error with the fix in the message: *"CngxToaster not found. Add withToasts() to provideFeedback() or call provideToasts() in your providers."*
 
 ---
 
 ## What NOT to do
 
-- Do not roll your own ad-hoc state shape (`isLoading$`, `errorMsg`, `data`) when `CngxAsyncState<T>` already covers it. The bundled `isLoading` / `isPending` / `isRefreshing` / `isFirstLoad` / `isSettled` signals are part of the interface.
+- Do not roll your own ad-hoc state shape (`isLoading$`, `errorMsg`, `data`) when `CngxAsyncState<T>` already covers it.
+
+    The bundled `isLoading` / `isPending` / `isRefreshing` / `isFirstLoad` / `isSettled` signals are part of the interface.
 - Do not bind `[loading]="state.isLoading()"` when `[state]="state"` works. The consumer derives loading/empty/error from `state` internally and selects the right view.
 - Do not wrap a `CngxAsyncState` in another `Signal`. The interface IS the signal bundle - `Signal<CngxAsyncState<T>>` is one indirection too many.
 - Do not forget `untracked()` inside a bridge effect or any effect that calls a service. The service reads signals internally and the missing `untracked` produces an infinite loop.

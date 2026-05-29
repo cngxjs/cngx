@@ -47,7 +47,9 @@ The CNGX atoms use the plain `input<boolean>(false)` form for boolean flags - no
 
 Never on a directive that injects an optional fallback.
 
-A directive whose `[state]` may auto-discover from `CNGX_STATEFUL` must use optional `input<T | undefined, T | '' | undefined>(undefined, { transform: v => typeof v === 'string' ? undefined : v })` so that a bare attribute (`<div cngxToastOn>` - empty-string binding) is treated as "not bound" and triggers the DI fallback.
+A directive whose `[state]` may auto-discover from `CNGX_STATEFUL` must use optional `input<T | undefined, T | '' | undefined>(undefined, { transform: v => typeof v === 'string' ? undefined : v })`.
+
+This shape ensures that a bare attribute (`<div cngxToastOn>` - empty-string binding) is treated as "not bound" and triggers the DI fallback.
 
 See `CngxToastOn.state`, `CngxAlertOn.state`, `CngxBannerOn.state`.
 
@@ -55,7 +57,9 @@ See `CngxToastOn.state`, `CngxAlertOn.state`, `CngxBannerOn.state`.
 
 `[value]`, `(valueChange)`, and `[(value)]` all work identically.
 
-CNGX uses `model()` not only for the primary value but also for **bridge-writable** mirrors like `CngxButtonToggleGroup.disabled` / `.required` / `.invalid`, so the Signal-Forms / RF adapters can drive those flags from outside without a parallel API.
+CNGX uses `model()` not only for the primary value but also for **bridge-writable** mirrors like `CngxButtonToggleGroup.disabled` / `.required` / `.invalid`.
+
+This lets the Signal-Forms / RF adapters drive those flags from outside without a parallel API.
 
 ### `output<T>()` for events
 
@@ -84,10 +88,21 @@ const selected = computed<readonly T[]>(() => values().slice(), {
 
 ### Common shapes
 
-- **Identity per entry** for read-only arrays: length + `Object.is` per index. Prevents cascades when the array is re-emitted with the same element references. Used by `createSelectionController.selected`.
-- **Structural per entry** with `compareWith` for option arrays: length + pairwise `compareWith(a[i].value, b[i].value)`. Prevents cascades when a server refetch produces fresh option objects with unchanged values. Used by `CngxMultiSelect.selected`.
-- **Pair equality** for transition pairs: `a.current === b.current && a.previous === b.previous`. Used by `createTransitionTracker` so a `linkedSignal` storing `{ current, previous }` only emits on actual status transitions.
-- **Flat-tree equality** (`flatEq`) for visible-node arrays: length + per-index `id`/`level`/`expandable` comparison. Used by `createTreeController` so re-flattening on every membership change does not re-render every row.
+- **Identity per entry** for read-only arrays: length + `Object.is` per index.
+
+    Prevents cascades when the array is re-emitted with the same element references. Used by `createSelectionController.selected`.
+
+- **Structural per entry** with `compareWith` for option arrays: length + pairwise `compareWith(a[i].value, b[i].value)`.
+
+    Prevents cascades when a server refetch produces fresh option objects with unchanged values. Used by `CngxMultiSelect.selected`.
+
+- **Pair equality** for transition pairs: `a.current === b.current && a.previous === b.previous`.
+
+    Used by `createTransitionTracker` so a `linkedSignal` storing `{ current, previous }` only emits on actual status transitions.
+
+- **Flat-tree equality** (`flatEq`) for visible-node arrays: length + per-index `id`/`level`/`expandable` comparison.
+
+    Used by `createTreeController` so re-flattening on every membership change does not re-render every row.
 
 <aside class="cc-note">
 
@@ -103,9 +118,17 @@ Effects are sharp tools. The non-negotiable rules:
 
 1. **Constructor or field init only.** Never in `ngOnInit` - Angular throws `NG0203` because the injection context is no longer active and `effect()` cannot resolve its `Injector`.
 2. **Side effects only.** An effect that writes a signal is almost always wrong. Use `computed` to derive, or `linkedSignal` if you need transition memory.
-3. **Wrap service calls in `untracked()`.** Service methods read signals internally; without `untracked()`, those reads register as effect dependencies and re-fire the effect on every internal change, producing an infinite loop. The transition bridges (`CngxToastOn`, `CngxBannerOn`, `CngxAlertOn`) all follow this rule.
-4. **Use `onCleanup` for subscriptions.** When an effect installs a listener (RxJS subscription, `setTimeout`, DOM event, `ResizeObserver`, `IntersectionObserver`), the cleanup callback removes it. Effects re-run; without cleanup, listeners stack up. See `CngxInfiniteScroll`, `CngxIntersectionObserverDirective`, `CngxScrollSpy`, `CngxSidenav` (media-query + global-hotkey).
-5. **Use `afterNextRender` for one-shot dev-mode checks**, never `effect()`. An `effect()` lives for the directive's full lifetime and re-runs on every dependency read; a config-validation check ("did the consumer bind a state?") fires exactly once after the first render. See `CngxToastOn`, `CngxAlertOn`, `CngxBannerOn`. Do not pair it with fake timers and `whenStable`.
+3. **Wrap service calls in `untracked()`.** Service methods read signals internally; without `untracked()`, those reads register as effect dependencies and re-fire the effect on every internal change, producing an infinite loop.
+
+    The transition bridges (`CngxToastOn`, `CngxBannerOn`, `CngxAlertOn`) all follow this rule.
+
+4. **Use `onCleanup` for subscriptions.** When an effect installs a listener (RxJS subscription, `setTimeout`, DOM event, `ResizeObserver`, `IntersectionObserver`), the cleanup callback removes it.
+
+    Effects re-run; without cleanup, listeners stack up. See `CngxInfiniteScroll`, `CngxIntersectionObserverDirective`, `CngxScrollSpy`, `CngxSidenav` (media-query + global-hotkey).
+
+5. **Use `afterNextRender` for one-shot dev-mode checks**, never `effect()`. An `effect()` lives for the directive's full lifetime and re-runs on every dependency read; a config-validation check ("did the consumer bind a state?") fires exactly once after the first render.
+
+    See `CngxToastOn`, `CngxAlertOn`, `CngxBannerOn`. Do not pair it with fake timers and `whenStable`.
 
 ### Cleanup pattern
 
@@ -175,9 +198,17 @@ The structural `equal` short-circuits those re-runs and is what makes the tracke
 Real CNGX examples:
 
 - **`createTransitionTracker`** (above): the prior `AsyncStatus` is read from `prev?.value.current` to produce the next `{ current, previous }` pair.
-- **`CngxTabOverflow.visibilityState`** (`projects/ui/tabs/tab-overflow.component.ts`): a `ReadonlyMap<tabId, visible>` whose `source` is the live tabs array. When tabs come and go, the `computation` prunes stale ids out of the map without losing observed-but-still-live entries.
-- **`CngxAlertStack.expanded`** (`projects/ui/feedback/alert/alert-stack.ts`): a `boolean` that auto-resets to `false` when the alert count drops back below `maxVisible`, but is otherwise writable from user "show more" / "show less" actions.
-- **`CngxStepper.stepsRollup`** / **`CngxTabGroupAnnouncements`**: snapshot the previously-active index across `source` updates so the announcement layer can describe "moved from step 2 to step 3" reactively, without storing a `let previousIndex` outside the reactive graph.
+- **`CngxTabOverflow.visibilityState`** (`projects/ui/tabs/tab-overflow.component.ts`): a `ReadonlyMap<tabId, visible>` whose `source` is the live tabs array.
+
+    When tabs come and go, the `computation` prunes stale ids out of the map without losing observed-but-still-live entries.
+
+- **`CngxAlertStack.expanded`** (`projects/ui/feedback/alert/alert-stack.ts`): a `boolean` that auto-resets to `false` when the alert count drops back below `maxVisible`.
+
+    Otherwise writable from user "show more" / "show less" actions.
+
+- **`CngxStepper.stepsRollup`** / **`CngxTabGroupAnnouncements`**: snapshot the previously-active index across `source` updates.
+
+    This lets the announcement layer describe "moved from step 2 to step 3" reactively, without storing a `let previousIndex` outside the reactive graph.
 
 ### The rule
 
@@ -191,7 +222,7 @@ Writing it does not change `source`. Reading it gives you "the latest computed v
 
 **Warning.** A `linkedSignal` MUST NOT be written from inside an `effect()` that also reads it. The write retriggers the effect, the effect rewrites, and the graph never settles.
 
-This is `feedback_linkedsignal_in_effects` from the project memory. If you find yourself reaching for `linkedSignal` to bridge an effect's write back into a derived value, the correct fix is almost always `computed` with the right `equal` (so reads short-circuit) or a separate `signal` driven from a DOM event handler.
+If you find yourself reaching for `linkedSignal` to bridge an effect's write back into a derived value, the correct fix is almost always `computed` with the right `equal` (so reads short-circuit) or a separate `signal` driven from a DOM event handler.
 
 </aside>
 
@@ -278,7 +309,10 @@ The interior is signal-only.
 
 Take the `Observable` in, hand a `Signal` out. Two real shapes from CNGX:
 
-- **`toSignal()` at the boundary.** `projects/ui/mat-tabs/material-bridge/handle.ts` reads `MatTab._stateChanges` (a Material-internal `Subject`) through `toSignal(...)` and exposes a signal-shaped handle to the CNGX side; the consumer never sees the Subject. The reverse direction uses `outputToObservable()` from `@angular/core/rxjs-interop` - `CngxMenu` pipes `ad.activated` through it because the menu's wiring is RxJS-shaped (`pipe(takeUntilDestroyed())`).
+- **`toSignal()` at the boundary.** `projects/ui/mat-tabs/material-bridge/handle.ts` reads `MatTab._stateChanges` (a Material-internal `Subject`) through `toSignal(...)` and exposes a signal-shaped handle to the CNGX side; the consumer never sees the Subject.
+
+    The reverse direction uses `outputToObservable()` from `@angular/core/rxjs-interop` - `CngxMenu` pipes `ad.activated` through it because the menu's wiring is RxJS-shaped (`pipe(takeUntilDestroyed())`).
+
 - **`takeUntilDestroyed()` for one-off DOM/RxJS subscriptions.** Used in `CngxMenu`, `CngxSidenavLayout`, and the `mat-tabs` registry where a single subscription wants the DestroyRef-bound teardown rather than the `effect(onCleanup)` shape.
 
 ### What you must not do
@@ -287,7 +321,9 @@ Take the `Observable` in, hand a `Signal` out. Two real shapes from CNGX:
 - Build local component state on `BehaviorSubject`.
 - Read `Observable | async` in a template.
 
-The library's outputs are all `OutputEmitterRef` (the new `output()` shape), not `EventEmitter`. Consumers who want RxJS pipe-ergonomics convert with `outputToObservable()` themselves.
+The library's outputs are all `OutputEmitterRef` (the new `output()` shape), not `EventEmitter`.
+
+Consumers who want RxJS pipe-ergonomics convert with `outputToObservable()` themselves.
 
 ---
 
@@ -295,9 +331,17 @@ The library's outputs are all `OutputEmitterRef` (the new `output()` shape), not
 
 CNGX components have a strict access discipline because templates and host bindings have visibility rules:
 
-- **`readonly` (public)** - public API: `input()`, `output()`, `model()`, public computed/signals/methods, anything a consumer reads or writes via the directive reference. All `input()`s in CNGX are public; templates and the compiler both require it.
-- **`protected readonly`** - members accessed from the component's own template or host bindings. Templates and host-binding expressions cannot access `private`. Example: `CngxButtonToggleGroup.ariaBusy`, `CngxButtonToggleGroup.handleKeydown`.
-- **`private readonly`** - implementation-only: internal signals (`signal()` backing state), derived state used inside component methods, view-child queries, injected helpers. Example: `CngxSort.sortsState`, `CngxButtonToggleGroup.focusedState`.
+- **`readonly` (public)** - public API: `input()`, `output()`, `model()`, public computed/signals/methods, anything a consumer reads or writes via the directive reference.
+
+    All `input()`s in CNGX are public; templates and the compiler both require it.
+
+- **`protected readonly`** - members accessed from the component's own template or host bindings.
+
+    Templates and host-binding expressions cannot access `private`. Example: `CngxButtonToggleGroup.ariaBusy`, `CngxButtonToggleGroup.handleKeydown`.
+
+- **`private readonly`** - implementation-only: internal signals (`signal()` backing state), derived state used inside component methods, view-child queries, injected helpers.
+
+    Example: `CngxSort.sortsState`, `CngxButtonToggleGroup.focusedState`.
 
 <aside class="cc-warning">
 
@@ -308,7 +352,9 @@ CNGX components have a strict access discipline because templates and host bindi
 The split matters because:
 
 - The Angular compiler enforces it for host bindings and templates.
-- `protected` and `private` members are not part of the directive's typed surface. A consumer reading `myDir.somePrivate` is a type error, which keeps the boundary honest and keeps the future decompose step (atoms eject the structural/thematic skin into the consumer; the brain stays via `hostDirectives`) reading off a stable contract.
+- `protected` and `private` members are not part of the directive's typed surface.
+
+    A consumer reading `myDir.somePrivate` is a type error, which keeps the boundary honest and keeps the future decompose step (atoms eject the structural/thematic skin into the consumer; the brain stays via `hostDirectives`) reading off a stable contract.
 
 ---
 

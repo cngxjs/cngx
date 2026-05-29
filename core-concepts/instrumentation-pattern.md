@@ -7,11 +7,15 @@
 
 > **Take any Material organism, attach the matching cngx presenter via host directive, and the brain becomes cngx-shaped without rewriting the visual chrome.**
 
-This document defines the **Instrumentation Pattern**, the primary strategy used by CNGX to enhance, synchronize, and "infect" third-party components (specifically Angular Material) with Signal-native logic without breaking their internal templates or incurring heavy migration costs.
+This document defines the **Instrumentation Pattern**, the primary strategy used by CNGX to enhance, synchronize, and "infect" third-party components (specifically Angular Material) with Signal-native logic.
+
+The goal is to do this without breaking their internal templates or incurring heavy migration costs.
 
 CNGX does not attempt to replace Angular Material; it **instruments** it.
 
-Most libraries fail by trying to wrap Material components in "Thin Shells." This breaks Material's internal `ContentChildren` queries, interferes with DI hierarchies, and creates a "Transclusion Deadlock" where the library and the consumer fight over the same DOM space.
+Most libraries fail by trying to wrap Material components in "Thin Shells."
+
+This breaks Material's internal `ContentChildren` queries, interferes with DI hierarchies, and creates a "Transclusion Deadlock" where the library and the consumer fight over the same DOM space.
 
 CNGX solves this by separating the **Logic (Presenter)** from the **Rendering (Host)** and connecting them via an **Attribute Directive (the Bridge)**.
 
@@ -33,8 +37,13 @@ The pattern relies on three distinct layers:
 
 The Bridge wires presenter and host together through two distinct kinds of DI tokens. Conflating them is a common source of confusion.
 
-- **Contract tokens** describe a shape a component *provides* for its children to consume. They are non-optional handshakes inside a single composition tree. Examples: `CNGX_STEPPER_HOST` (the presenter exposes itself), `CNGX_TAB_GROUP_HOST`, `CNGX_FORM_FIELD_CONTROL`, `CNGX_STATEFUL`. The Bridge does not override these - it injects them.
-- **Instrumentation tokens** are factories the consumer *overrides* application-wide to swap a default strategy. They are how the Bridge (and every other organism) stays open for extension without inheritance. Examples: `CNGX_SELECTION_CONTROLLER_FACTORY`, `CNGX_TREE_CONTROLLER_FACTORY`, `CNGX_SELECT_COMMIT_CONTROLLER_FACTORY`, `CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY`, `CNGX_HIERARCHICAL_NAV_STRATEGY`, `CNGX_MAT_STEP_HANDLE_FACTORY`. Override at `bootstrapApplication` via `{ provide: <TOKEN>, useValue: <impl> }`.
+- **Contract tokens** describe a shape a component *provides* for its children to consume.
+
+    They are non-optional handshakes inside a single composition tree. Examples: `CNGX_STEPPER_HOST` (the presenter exposes itself), `CNGX_TAB_GROUP_HOST`, `CNGX_FORM_FIELD_CONTROL`, `CNGX_STATEFUL`. The Bridge does not override these - it injects them.
+
+- **Instrumentation tokens** are factories the consumer *overrides* application-wide to swap a default strategy.
+
+    They are how the Bridge (and every other organism) stays open for extension without inheritance. Examples: `CNGX_SELECTION_CONTROLLER_FACTORY`, `CNGX_TREE_CONTROLLER_FACTORY`, `CNGX_SELECT_COMMIT_CONTROLLER_FACTORY`, `CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY`, `CNGX_HIERARCHICAL_NAV_STRATEGY`, `CNGX_MAT_STEP_HANDLE_FACTORY`. Override at `bootstrapApplication` via `{ provide: <TOKEN>, useValue: <impl> }`.
 
 The Bridge itself reads contract tokens (`CNGX_STEPPER_HOST`) and depends on instrumentation tokens (`CNGX_MAT_STEP_HANDLE_FACTORY`).
 
@@ -124,7 +133,9 @@ The bidirectional sync lives in `@cngx/common/data` (`createMaterialBidirectiona
 
 1. A presenter -> Material `effect()` that tracks `presenterIndex` and writes `selectedIndex` under `untracked()`, with a read-equality guard that suppresses redundant writes.
 2. A Material -> presenter `selectionChange$` subscription (via `takeUntilDestroyed`) that forwards into `presenter.select(idx)`, equality-guarded against `presenterIndex()` so a re-entrant emission drops.
-3. A Material-eager-advance reconciliation: Material's MDC click handler advances `selectedIndex` *synchronously* before the subscription fires. When the presenter holds its index (pessimistic-commit reject, or any future contract that refuses a select), the post-callback divergence is detected and Material is force-written back to the presenter's authoritative index.
+3. A Material-eager-advance reconciliation: Material's MDC click handler advances `selectedIndex` *synchronously* before the subscription fires.
+
+    When the presenter holds its index (pessimistic-commit reject, or any future contract that refuses a select), the post-callback divergence is detected and Material is force-written back to the presenter's authoritative index.
 
 ### 3. The Consumer Story: "The Trojan Horse"
 
@@ -179,10 +190,16 @@ The Instrumentation Pattern is the ultimate expression of the **Atomic Decompose
 
 1.  **Strict self-injection:** Bridge directives inject the Material host with `inject(Target, { self: true })`. The presenter is reached via its contract token (`inject(CNGX_STEPPER_HOST)`), not the concrete class - this keeps the Bridge swappable.
 2.  **No Material in the presenter:** Level-2 presenters must never import from `@angular/material`. All Signal -> Material property mapping happens inside the Level-4 Bridge.
-3.  **The `untracked()` rule:** Every write to a Material component property inside an `effect()` must be wrapped in `untracked()`. Material components read signals internally (especially in v21+); a bare write creates an infinite presenter <-> Material loop. The same rule applies to transition bridges that call services (`untracked(() => toaster.open(...))`).
+3.  **The `untracked()` rule:** Every write to a Material component property inside an `effect()` must be wrapped in `untracked()`.
+
+    Material components read signals internally (especially in v21+); a bare write creates an infinite presenter <-> Material loop. The same rule applies to transition bridges that call services (`untracked(() => toaster.open(...))`).
 4.  **Read-equality guards:** Bidirectional sync wraps both the presenter -> Material write and the Material -> presenter forward in an equality guard against the *other* side. Without them, every emission re-enters and the loop never settles.
-5.  **Hardware-agnostic API:** The Bridge re-exposes presenter inputs/outputs via `hostDirectives` `inputs` / `outputs` forwarding. The list is identical between `<cngx-stepper>`, `<cngx-mat-stepper>`, and `[cngxMatStepper]` - one API across native, native-Material, and Material-adoption shapes.
-6.  **Pessimistic gating belongs to the presenter:** The Bridge does not gate Material writes by commit status. The presenter holds `activeStepIndex` at the origin during a pessimistic-pending commit, so the equality guard alone suppresses Material's eager advance. The reconciliation step (rule 4) snaps Material back to the held index.
+5.  **Hardware-agnostic API:** The Bridge re-exposes presenter inputs/outputs via `hostDirectives` `inputs` / `outputs` forwarding.
+
+    The list is identical between `<cngx-stepper>`, `<cngx-mat-stepper>`, and `[cngxMatStepper]` - one API across native, native-Material, and Material-adoption shapes.
+6.  **Pessimistic gating belongs to the presenter:** The Bridge does not gate Material writes by commit status.
+
+    The presenter holds `activeStepIndex` at the origin during a pessimistic-pending commit, so the equality guard alone suppresses Material's eager advance. The reconciliation step (rule 4) snaps Material back to the held index.
 
 <aside class="cc-note">
 
@@ -198,7 +215,9 @@ The Bridge pattern is the visible tip. The same factory-override style surfaces 
 
 - `CNGX_SELECTION_CONTROLLER_FACTORY` (`@cngx/core/utils`) - swap the default selection controller across the entire select family.
 - `CNGX_TREE_CONTROLLER_FACTORY`, `CNGX_TREE_CONFIG` (`@cngx/common/interactive`) - tree controller and tree behaviour configuration.
-- `CNGX_SELECT_COMMIT_CONTROLLER_FACTORY`, `CNGX_ARRAY_COMMIT_HANDLER_FACTORY`, `CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY`, `CNGX_DISPLAY_BINDING_FACTORY`, `CNGX_TRIGGER_FOCUS_FACTORY`, `CNGX_TEMPLATE_REGISTRY_FACTORY`, `CNGX_DISMISS_HANDLER_FACTORY`, `CNGX_PANEL_RENDERER_FACTORY`, `CNGX_ACTION_HOST_BRIDGE_FACTORY`, `CNGX_CHIP_REMOVAL_HANDLER_FACTORY`, `CNGX_LOCAL_ITEMS_BUFFER_FACTORY`, `CNGX_FLAT_NAV_STRATEGY` (`@cngx/forms/select/shared`) - the 13 override slots that make the six select organisms decompose-ready.
+- `CNGX_SELECT_COMMIT_CONTROLLER_FACTORY`, `CNGX_ARRAY_COMMIT_HANDLER_FACTORY`, `CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY`, `CNGX_DISPLAY_BINDING_FACTORY`, `CNGX_TRIGGER_FOCUS_FACTORY`, `CNGX_TEMPLATE_REGISTRY_FACTORY`, `CNGX_DISMISS_HANDLER_FACTORY`, `CNGX_PANEL_RENDERER_FACTORY`, `CNGX_ACTION_HOST_BRIDGE_FACTORY`, `CNGX_CHIP_REMOVAL_HANDLER_FACTORY`, `CNGX_LOCAL_ITEMS_BUFFER_FACTORY`, `CNGX_FLAT_NAV_STRATEGY` (`@cngx/forms/select/shared`).
+
+    These are the 13 override slots that make the six select organisms decompose-ready.
 - `CNGX_HIERARCHICAL_NAV_STRATEGY`, `CNGX_CHIP_STRIP_ROVING_FACTORY`, `CNGX_MENU_ANNOUNCER_FACTORY` (`@cngx/common/interactive`).
 - `CNGX_MAT_STEP_HANDLE_FACTORY`, `CNGX_MAT_TAB_HANDLE_FACTORY`, `CNGX_TABS_COMMIT_HANDLER_FACTORY`, `CNGX_ORGANISM_SCROLL_SYNC_FACTORY`, `CNGX_DOM_ANCHOR_RETRY_FACTORY`, `CNGX_DIRECTIVE_BY_ID_MAP_FACTORY` (tabs / stepper).
 - `CNGX_FILTER_BUILDER_STATE_FACTORY`, `CNGX_FILTER_BUILDER_TEMPLATE_REGISTRY_FACTORY` (`@cngx/forms/filter-builder`).

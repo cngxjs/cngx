@@ -65,9 +65,18 @@ The same shape powers `directionInput` / `direction`, and is repeated throughout
 
 - **`signal()`** is for **owned writable state** only - a slot that this component is the exclusive writer of.
 - **`computed()`** is for **every derived value**, including ARIA attributes (`aria-busy`, `aria-disabled`, `aria-invalid`), disabled states, visibility flags, and panel view discriminators.
-- **`linkedSignal()`** is the only sanctioned way to "reset" or "branch" writable state based on a source signal. Real example: `CngxAlertStack` collapses `expanded` back to `false` when the alert count drops to `maxVisible` (`projects/ui/feedback/alert/alert-stack.ts`). Return objects/arrays from `linkedSignal` only with an explicit `equal` function, otherwise every recomputation looks dirty and downstream effects loop.
-- **`effect()`** is strictly for **imperative side effects** that exit the reactive graph: DOM measurement, calling a service, manual focus management. Never put `effect()` in `ngOnInit` (NG0203) - declare in field init or constructor.
-- **`untracked()`** is mandatory around every external service call inside an effect. Services like `CngxToaster`, `CngxAlerter`, and `CngxBanner` read their own internal dedup signals. Without `untracked()` your effect silently subscribes to them and any `.update()` they trigger loops back. See `mat-stepper.directive.ts` for a real bidirectional-sync example.
+- **`linkedSignal()`** is the only sanctioned way to "reset" or "branch" writable state based on a source signal.
+
+    Real example: `CngxAlertStack` collapses `expanded` back to `false` when the alert count drops to `maxVisible` (`projects/ui/feedback/alert/alert-stack.ts`). Return objects/arrays from `linkedSignal` only with an explicit `equal` function, otherwise every recomputation looks dirty and downstream effects loop.
+
+- **`effect()`** is strictly for **imperative side effects** that exit the reactive graph: DOM measurement, calling a service, manual focus management.
+
+    Never put `effect()` in `ngOnInit` (NG0203) - declare in field init or constructor.
+
+- **`untracked()`** is mandatory around every external service call inside an effect.
+
+    Services like `CngxToaster`, `CngxAlerter`, and `CngxBanner` read their own internal dedup signals. Without `untracked()` your effect silently subscribes to them and any `.update()` they trigger loops back. See `mat-stepper.directive.ts` for a real bidirectional-sync example.
+
 - **No `effect()` that writes a signal.** The single documented exception (`CngxAsyncContainer`) is itself wrapped in a transition guard. Everything else uses `computed()` or `linkedSignal()`.
 
 ---
@@ -139,8 +148,13 @@ Real-world references:
 - **Persistent IDs.** `aria-describedby` and `aria-labelledby` IDs are always present in the DOM. Toggle visibility via `aria-hidden` or CSS on the target node, never by removing the ID reference. Screen readers cache lookups and a missing ID is announced as "blank".
 - **Reactive Live Regions.** SR live regions (`CngxLiveRegion` in `@cngx/common/a11y`) are permanent DOM fixtures. Their content is reactive; never recreate or "re-inject" a region to fire a message.
 - **Contextual Disabled.** The `disabled` state communicates *why* it is disabled via `aria-describedby` pointing to a hint/status element.
-- **Total ARIA Coverage.** `aria-required`, `aria-invalid`, `aria-busy`, `aria-expanded`, `aria-selected`, and `aria-controls` are always part of the `computed()` graph. See `projects/forms/select/select-shell/` for the canonical combobox wiring (trigger carries `role="combobox"` with all six attributes reactive).
-- **Focus Memory.** Popovers, Dialogs, and Menus store the trigger element as a signal on open and restore focus reactively on close. The shared atom is `CngxFocusRestore` (`projects/common/a11y/focus/focus-restore.directive.ts`), which captures `document.activeElement` on init and restores it on destroy with a fallback chain.
+- **Total ARIA Coverage.** `aria-required`, `aria-invalid`, `aria-busy`, `aria-expanded`, `aria-selected`, and `aria-controls` are always part of the `computed()` graph.
+
+    See `projects/forms/select/select-shell/` for the canonical combobox wiring (trigger carries `role="combobox"` with all six attributes reactive).
+
+- **Focus Memory.** Popovers, Dialogs, and Menus store the trigger element as a signal on open and restore focus reactively on close.
+
+    The shared atom is `CngxFocusRestore` (`projects/common/a11y/focus/focus-restore.directive.ts`), which captures `document.activeElement` on init and restores it on destroy with a fallback chain.
 
 ---
 
@@ -187,19 +201,34 @@ The select family is the canonical example. `@cngx/forms/select` ships six dedic
 Shared logic is never shared by inheritance. It is shared via three mechanisms:
 
 - **Factories** that return controllers: `createSelectionController<T>` (`projects/core/utils/selection-controller.ts`), `createCommitController<T>`, `createArrayCommitHandler<T>`, `createTransitionTracker`.
-- **DI tokens** for swap-points. The select family alone declares 18 override tokens, including `CNGX_SELECT_COMMIT_CONTROLLER_FACTORY`, `CNGX_ARRAY_COMMIT_HANDLER_FACTORY`, `CNGX_SELECTION_CONTROLLER_FACTORY`, `CNGX_SELECT_PANEL_HOST`, and `CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY`. See `projects/forms/select/ARCHITECTURE.md` for the full table.
-- **`hostDirectives`** for behaviour atoms. `CngxStepper` and `CngxTabGroup` compose `CngxRovingTabindex` and `CngxFocusRestore` via `hostDirectives`; `CngxMatStepper` composes `CngxStepperPresenter` the same way. Never inject a concrete parent component class. Use a token with `useExisting`.
+- **DI tokens** for swap-points. The select family alone declares 18 override tokens, including `CNGX_SELECT_COMMIT_CONTROLLER_FACTORY`, `CNGX_ARRAY_COMMIT_HANDLER_FACTORY`, `CNGX_SELECTION_CONTROLLER_FACTORY`, `CNGX_SELECT_PANEL_HOST`, and `CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY`.
+
+    See `projects/forms/select/ARCHITECTURE.md` for the full table.
+
+- **`hostDirectives`** for behaviour atoms. `CngxStepper` and `CngxTabGroup` compose `CngxRovingTabindex` and `CngxFocusRestore` via `hostDirectives`; `CngxMatStepper` composes `CngxStepperPresenter` the same way.
+
+    Never inject a concrete parent component class. Use a token with `useExisting`.
 
 ### Operational rules
 
 - **No Class Inheritance.** CNGX components never `extend` a shared base. Behaviour is composed through `hostDirectives` and shared via factory functions. Inheritance is rejected at review.
 - **No Options Objects.** Every configuration concern is a discrete, typed `input()`. Options objects hide dependencies, defeat template type-checking, and break the controlled/uncontrolled pattern.
 - **No Decorators on Members.** `@Input()`, `@Output()`, `@HostBinding()`, `@ViewChild()`, `@Inject()` are forbidden. Use `input()`, `output()`, the `host` metadata, `viewChild()`, and `inject()`.
-- **No `ControlValueAccessor`.** Level-3 controls provide `CNGX_FORM_FIELD_CONTROL` directly. CVA-based form controls are wrapped with `[cngxBindField]`. Signal Forms is the default integration (`[field]="f.x"`); Reactive Forms goes through `adaptFormControl(control, name, destroyRef)`.
-- **Swap-points via DI.** Every logic controller (Selection, Commit, Tree, Navigation, Hierarchical Strategy) is provided via a factory token. Consumers swap implementations (telemetry, offline-sync, custom selection semantics) without forking the component. Tokens use the `CNGX_*_FACTORY` naming convention.
-- **Atom-First Development.** New behaviour starts as an atom: a headless directive in `@cngx/common` with a single responsibility (e.g. `CngxFocusTrap`, `CngxRovingTabindex`, `CngxActiveDescendant`, `CngxAriaExpanded`, `CngxLiveRegion`). Molecules compose atoms; organisms compose molecules and atoms. Only organisms are decompose-eligible; atoms and molecules are terminal units.
+- **No `ControlValueAccessor`.** Level-3 controls provide `CNGX_FORM_FIELD_CONTROL` directly. CVA-based form controls are wrapped with `[cngxBindField]`.
+
+    Signal Forms is the default integration (`[field]="f.x"`); Reactive Forms goes through `adaptFormControl(control, name, destroyRef)`.
+
+- **Swap-points via DI.** Every logic controller (Selection, Commit, Tree, Navigation, Hierarchical Strategy) is provided via a factory token.
+
+    Consumers swap implementations (telemetry, offline-sync, custom selection semantics) without forking the component. Tokens use the `CNGX_*_FACTORY` naming convention.
+
+- **Atom-First Development.** New behaviour starts as an atom: a headless directive in `@cngx/common` with a single responsibility (e.g. `CngxFocusTrap`, `CngxRovingTabindex`, `CngxActiveDescendant`, `CngxAriaExpanded`, `CngxLiveRegion`).
+
+    Molecules compose atoms; organisms compose molecules and atoms. Only organisms are decompose-eligible; atoms and molecules are terminal units.
 - **Two-way bindings use `model()`.** Bindable state on atoms is `model<T>()`, never `input()` + `output()` pairs.
-- **Bridge inputs are optional, not required.** Directives that inject `CNGX_STATEFUL` (or equivalent) as an optional fallback **must not** use `input.required()`. Use the optional-string-transform shape documented in CLAUDE.md.
+- **Bridge inputs are optional, not required.** Directives that inject `CNGX_STATEFUL` (or equivalent) as an optional fallback **must not** use `input.required()`.
+
+    The empty-string attribute case (`<div cngxToastOn>`) needs to read as "not bound" so the DI fallback fires. Use `input<T | undefined, T | '' | undefined>(undefined, { transform: v => typeof v === 'string' ? undefined : v })`.
 
 ---
 

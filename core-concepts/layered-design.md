@@ -188,8 +188,12 @@ A library is defined by **what it hosts**, not by which framework toolkit it hap
 
 ### Per-lib charter
 
-- **`@cngx/common`** - atoms, molecules, plus pure-CNGX organisms that do not fit a feature domain (e.g. `CngxMenu`, `CngxChart`). CDK in exactly two spots (`a11y/focus-trap`, `data/data-source`). Never imports `@angular/material`.
-- **`@cngx/forms`** - forms-related organisms (controls, validators, field bridges, the entire select family, filter-builder, input). Zero CDK touchpoints across the lib. Listbox/active-descendant/selection state is rolled by hand on top of `@cngx/common`.
+- **`@cngx/common`** - atoms, molecules, plus pure-CNGX organisms that do not fit a feature domain (e.g. `CngxMenu`, `CngxChart`).
+
+    CDK in exactly two spots (`a11y/focus-trap`, `data/data-source`). Never imports `@angular/material`.
+- **`@cngx/forms`** - forms-related organisms (controls, validators, field bridges, the entire select family, filter-builder, input).
+
+    Zero CDK touchpoints across the lib. Listbox/active-descendant/selection state is rolled by hand on top of `@cngx/common`.
 - **`@cngx/data-display`** - organisms whose job is to display tabular or hierarchical data. `treetable` uses `@angular/cdk/table` + `SelectionModel`. Never imports `@angular/material`.
 - **`@cngx/ui`** - organisms that need overlay engineering or opt into Material. CDK only in `overlay`. Material only in `mat-stepper`, `mat-tabs`, and `material`.
 
@@ -269,7 +273,11 @@ The hierarchy is not bureaucracy. It is a **dependency budget**:
 
 - `@cngx/utils` can never break SSR, never depend on the DOM, never require a runtime. It can be unit-tested with Vitest against bare Node.
 - `@cngx/core` can never render. If it tried, it would need a template, which would tie it to `@angular/core`'s renderer surface and pull it out of "primitive" territory.
-- `@cngx/common` and `@cngx/data-display` can never depend on Material. The `no-restricted-imports` block in `eslint.config.js` fails the lint stage on any `@angular/material` import. The rule exists because Material is heavy, opinionated, and changes on its own schedule. CNGX atoms and data-display organisms must remain portable across Material's lifecycle.
+- `@cngx/common` and `@cngx/data-display` can never depend on Material.
+
+    The `no-restricted-imports` block in `eslint.config.js` fails the lint stage on any `@angular/material` import.
+
+    The rule exists because Material is heavy, opinionated, and changes on its own schedule. CNGX atoms and data-display organisms must remain portable across Material's lifecycle.
 - `@cngx/ui` is the only place where Material's API drift can land, and even there only `mat-stepper`, `mat-tabs`, and `material` opt in. The rest of the library is insulated.
 
 ### Why insulation matters

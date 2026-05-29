@@ -20,7 +20,9 @@ Every organism is authored as two seams the consumer can separate:
 
 The exit is mechanical, not a rewrite.
 
-This page is about the contract that makes that split work. The [Instrumentation Pattern](instrumentation-pattern.md) doc covers the same idea applied to Angular Material; here we describe the CNGX-internal authoring rules every organism follows so the decompose split lands cleanly.
+This page is about the contract that makes that split work.
+
+The [Instrumentation Pattern](instrumentation-pattern.md) doc covers the same idea applied to Angular Material; here we describe the CNGX-internal authoring rules every organism follows so the decompose split lands cleanly.
 
 ---
 
@@ -72,9 +74,7 @@ Level-2 atoms in `@cngx/common/*` can provide the token and integrate with form-
 
 ## Three decompose levels
 
-Decompose targets are scoped by atomic level.
-
-CLAUDE.md spells out the rule, and the [The CNGX Way](the-cngx-way.md) page documents the taxonomy in detail. The operational consequence is short.
+Decompose targets are scoped by atomic level. The operational consequence is short: only organisms can be ejected. See [The CNGX Way](the-cngx-way.md) for the full atomic taxonomy.
 
 ### The taxonomy
 
@@ -261,9 +261,17 @@ Three knobs, in increasing order of disruption:
 
 ### The three knobs
 
-1. **Theme tokens.** Need different colours, spacings, font sizes? Override the `--cngx-*` CSS custom properties on a parent selector. The library publishes fallback defaults; consumer values win. No code changes.
-2. **Slot template.** Need a different caret glyph, empty state, or option row layout? Project a `*cngxSelect...` slot template. The structural shell and the brain are untouched.
-3. **Decompose.** Need a fundamentally different visual identity - different DOM structure, a different shell component, a layout the slot registry cannot express? Eject the skin. The brain stays linked from the library.
+1. **Theme tokens.** Need different colours, spacings, font sizes?
+
+    Override the `--cngx-*` CSS custom properties on a parent selector. The library publishes fallback defaults; consumer values win. No code changes.
+
+2. **Slot template.** Need a different caret glyph, empty state, or option row layout?
+
+    Project a `*cngxSelect...` slot template. The structural shell and the brain are untouched.
+
+3. **Decompose.** Need a fundamentally different visual identity - different DOM structure, a different shell component, a layout the slot registry cannot express?
+
+    Eject the skin. The brain stays linked from the library.
 
 ### The escalation signal
 

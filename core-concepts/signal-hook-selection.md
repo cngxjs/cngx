@@ -88,7 +88,9 @@ Every derived value. ARIA attributes, view models, resolved templates, controlle
 
 For object or array values, pass an explicit `equal`. The default `Object.is` is rarely correct - a `computed` that returns `[...x]` allocates a fresh array every read and cascades through every downstream consumer.
 
-See `projects/core/utils/build-async-state-view.ts` for the canonical async-state derivation, and `signal-first-internals.md` for the four equality shapes (identity-per-entry, structural-per-entry with `compareWith`, pair equality, flat-tree equality).
+See `projects/core/utils/build-async-state-view.ts` for the canonical async-state derivation.
+
+See `signal-first-internals.md` for the four equality shapes (identity-per-entry, structural-per-entry with `compareWith`, pair equality, flat-tree equality).
 
 ### Failure mode
 
@@ -118,7 +120,9 @@ const state = linkedSignal<AsyncStatus, { current: AsyncStatus; previous: AsyncS
 });
 ```
 
-Without the structural `equal`, every recomputation allocates a fresh `{ current, previous }` literal and downstream effects re-fire on every status read. This hung the `CngxToastOn` / `CngxAlertOn` / `CngxBannerOn` specs for 15 minutes before the fix.
+Without the structural `equal`, every recomputation allocates a fresh `{ current, previous }` literal and downstream effects re-fire on every status read.
+
+This hung the `CngxToastOn` / `CngxAlertOn` / `CngxBannerOn` specs for 15 minutes before the fix.
 
 ### Other real uses
 
@@ -131,7 +135,7 @@ Without the structural `equal`, every recomputation allocates a fresh `{ current
 
 **Warning.** A `linkedSignal` MUST NOT be written from inside an `effect()` that also reads it. The write retriggers the effect; the effect rewrites; the graph never settles.
 
-See `feedback_linkedsignal_in_effects` and the `CngxAsyncContainer` exception note - the only place in CNGX that gets away with it is the announcement layer, and only because it does not use `createTransitionTracker`.
+The only place in CNGX that gets away with it is the `CngxAsyncContainer` announcement layer, and only because it does not use `createTransitionTracker`.
 
 </aside>
 
@@ -176,7 +180,9 @@ One-shot callback that runs after the next render. Outside the reactive graph - 
 
 Used for two things in CNGX:
 
-- **Dev-mode binding checks.** `projects/ui/feedback/toast/toast-on.directive.ts:110-121` checks "did the consumer bind a state, or is there a DI fallback?" exactly once after the first render. `effect(() => untracked(...))` works but leaves a dead node in the graph for the directive's lifetime - `afterNextRender` is cleaner.
+- **Dev-mode binding checks.** `projects/ui/feedback/toast/toast-on.directive.ts:110-121` checks "did the consumer bind a state, or is there a DI fallback?" exactly once after the first render.
+
+    `effect(() => untracked(...))` works but leaves a dead node in the graph for the directive's lifetime - `afterNextRender` is cleaner.
 - **Post-mount gates.** `projects/common/interactive/listbox/listbox.directive.ts:144` flips an `initialized` signal once content children resolve, so the option-marking effect can early-return until then.
 
 ### Failure mode
@@ -282,7 +288,9 @@ input.required<T>({ alias: 'cngxFooOn' })              // required on a DI-fallb
 
 **Warning.** The `linkedSignal`-in-effect-that-writes case is the most expensive failure in the library's history - 15-minute vitest hangs, 100% CPU.
 
-Two independent fixes are needed when it bites: an `equal` on the `linkedSignal` and `untracked` around the service call. Either one alone leaks. See the `CngxToastOn` / `CngxAlertOn` / `CngxBannerOn` history in `reference_signal_architecture` for the post-mortem.
+Two independent fixes are needed when it bites: an `equal` on the `linkedSignal` and `untracked` around the service call. Either one alone leaks.
+
+The `CngxToastOn` / `CngxAlertOn` / `CngxBannerOn` bridges in `@cngx/ui/feedback` carry the post-mortem in their inline comments.
 
 </aside>
 
@@ -291,7 +299,9 @@ Two independent fixes are needed when it bites: an `equal` on the `linkedSignal`
 ## Test-mode caveats
 
 - **Drain after-render queues with `TestBed.tick()` or `TestBed.flushEffects()`.** Both flush `afterNextRender` callbacks synchronously in zoneless tests.
-- **Do not combine `vi.useFakeTimers()` with `fixture.whenStable()`** in specs that use `afterNextRender`. The fake-timer scheduler stalls and `whenStable()` resolves before the render callback fires. Old guidance was "do not use `afterNextRender` at all" - the current guidance is "use it, just do not use fake timers in the same spec."
+- **Do not combine `vi.useFakeTimers()` with `fixture.whenStable()`** in specs that use `afterNextRender`.
+
+    The fake-timer scheduler stalls and `whenStable()` resolves before the render callback fires. Old guidance was "do not use `afterNextRender` at all" - the current guidance is "use it, just do not use fake timers in the same spec."
 - **`TestBed.flushEffects()` is the right hook after a signal mutation.** Effects do not run synchronously on `.set()` - they batch to the next microtask. Specs that read post-effect state must flush first.
 
 For the full test patterns, see `signal-first-internals.md` and the bridge specs under `projects/ui/feedback/`.

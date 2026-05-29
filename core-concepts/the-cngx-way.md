@@ -9,7 +9,9 @@
 
 CNGX is a Signal-native composition library for Angular. Declarative, communicative by construction, built on plain signals and modern DOM.
 
-CDK and Material are opt-in primitives, not foundations. Only a handful of source files touch `@angular/cdk`: focus-trap, the `DataSource` contract, CDK-table for `@cngx/data-display/treetable`, and the overlay engine in `@cngx/ui/overlay`.
+CDK and Material are opt-in primitives, not foundations.
+
+Only a handful of source files touch `@angular/cdk`: focus-trap, the `DataSource` contract, CDK-table for `@cngx/data-display/treetable`, and the overlay engine in `@cngx/ui/overlay`.
 
 Where Angular's first-party utilities aren't the right fit, cngx ships its own:
 
@@ -73,15 +75,21 @@ Atoms and molecules are terminal: they have no skin to eject.
 
 - **Not a style kit.** Structural CSS plus CSS custom properties (with sensible fallback defaults). No "look" to fight against. The Material bridge under `@cngx/themes/material/` is opt-in.
 - **Not a state store.** No global data layer. CNGX gives you the primitives to keep local component state predictable and derived.
-- **Not a Material replacement.** Where Material is the right answer, CNGX instruments it (`@cngx/ui/mat-stepper`, `@cngx/ui/mat-tabs`) via attribute directives that attach a Signal-native brain to the existing Material markup. See [Instrumentation Pattern](instrumentation-pattern.md).
+- **Not a Material replacement.** Where Material is the right answer, CNGX instruments it (`@cngx/ui/mat-stepper`, `@cngx/ui/mat-tabs`) via attribute directives that attach a Signal-native brain to the existing Material markup.
+
+    See [Instrumentation Pattern](instrumentation-pattern.md).
 
 ---
 
 ## What CNGX is
 
 - **An atom-up architecture.** Everything starts with single-responsibility directives. Composition over inheritance, no God-Components.
-- **A reactive A11y layer.** ARIA (`aria-busy`, `aria-disabled`, `aria-describedby`, `aria-live`, `aria-required`, `aria-invalid`) is part of the `computed()` graph from day one. Live regions are always in the DOM; describedby IDs are always present, visibility toggles via `aria-hidden`.
-- **A DI-first toolkit.** Logic units (controllers, factories, panel hosts, announcers) are injected via tokens. The select family alone exposes 18 DI override tokens and 17 template slots. Every part is replaceable via the standard Angular DI tree.
+- **A reactive A11y layer.** ARIA (`aria-busy`, `aria-disabled`, `aria-describedby`, `aria-live`, `aria-required`, `aria-invalid`) is part of the `computed()` graph from day one.
+
+    Live regions are always in the DOM; describedby IDs are always present, visibility toggles via `aria-hidden`.
+- **A DI-first toolkit.** Logic units (controllers, factories, panel hosts, announcers) are injected via tokens.
+
+    The select family alone exposes 18 DI override tokens and 17 template slots. Every part is replaceable via the standard Angular DI tree.
 
 ---
 
