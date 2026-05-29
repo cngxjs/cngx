@@ -38,7 +38,7 @@ export function computeChartSummary(
     }
   }
   const first = values[0];
-  const current = values.at(-1);
+  const current = values[values.length - 1];
   const range = max - min;
   const deadband = range * 0.05;
   const delta = current - first;

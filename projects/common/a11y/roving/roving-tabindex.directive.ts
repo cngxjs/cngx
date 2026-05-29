@@ -170,7 +170,7 @@ export class CngxRovingTabindex {
         // Virtual mode: match by data-cngx-recycle-index attribute
         items.forEach((item) => {
           const el = item.elementRef.nativeElement as HTMLElement;
-          const idx = el.dataset.cngxRecycleIndex;
+          const idx = el.dataset['cngxRecycleIndex'];
           el.setAttribute('tabindex', idx != null && Number(idx) === active ? '0' : '-1');
         });
       } else {
