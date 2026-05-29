@@ -207,6 +207,18 @@
   border-right-color: var(--color-cdx-border-subtle);
 }
 
+/* Related-entity pills read as light chips on the page surface.
+ * Default state matches the page bg + the sidebar override above.
+ * Hover lifts into bg-alt so the interactive feedback is still
+ * legible against the now-merged page+sidebar surface. */
+.cdx-related-pill {
+  background: var(--color-cdx-bg);
+}
+.cdx-related-pill:hover,
+a.cdx-related-pill:focus-visible {
+  background: var(--color-cdx-bg-alt);
+}
+
 .dark {
   /* Mirror cngx dark mode lift: +0.06-0.08 L on semantics, slight
    * chroma reduction. Surface stays in the same hue family. */
