@@ -12,8 +12,16 @@
         "file": "layered-design.md"
     },
     {
+        "title": "Atomic Decompose",
+        "file": "atomic-decompose.md"
+    },
+    {
         "title": "Signal-First Internals",
         "file": "signal-first-internals.md"
+    },
+    {
+        "title": "Signal Hook Selection",
+        "file": "signal-hook-selection.md"
     },
     {
         "title": "Async State Machine",
