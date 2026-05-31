@@ -220,12 +220,19 @@ describe('CngxSmartDataSource — with CngxAsyncState source', () => {
     });
   });
 
-  it('asyncState property exposes the original state', () => {
+  it('derived projections track the async-state source after asyncState was demoted to private', () => {
     TestBed.runInInjectionContext(() => {
       const state = createManualState<Item[]>();
+      state.set('loading');
       const ds = injectSmartDataSource(state);
 
-      expect(ds.asyncState).toBe(state);
+      expect(ds.isLoading()).toBe(true);
+      expect(ds.isFirstLoad()).toBe(true);
+      expect(ds.isBusy()).toBe(true);
+
+      state.setSuccess(ITEMS);
+      expect(ds.isLoading()).toBe(false);
+      expect(ds.isFirstLoad()).toBe(false);
     });
   });
 

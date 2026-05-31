@@ -105,8 +105,13 @@ export class CngxSmartDataSource<T> extends DataSource<T> {
 
   private readonly processed: Signal<T[]>;
 
-  /** The async state source, or `undefined` if constructed from a plain signal. */
-  readonly asyncState: CngxAsyncState<T[]> | undefined;
+  /**
+   * The async state source, or `undefined` if constructed from a plain
+   * signal. Internal-only - consumers read the derived projections
+   * (`isLoading`, `isRefreshing`, `isBusy`, `isFirstLoad`, `error`,
+   * `isEmpty`, `filteredCount`) instead of the raw source identity.
+   */
+  private readonly asyncState: CngxAsyncState<T[]> | undefined;
 
   /** `true` during initial data load (skeleton phase). */
   readonly isLoading: Signal<boolean>;
