@@ -166,7 +166,7 @@ describe('CngxCheckboxGroup', () => {
     expect(groupEl.getAttribute('aria-disabled')).toBe('true');
   });
 
-  it('aria-required / aria-invalid / aria-errormessage are reactive', () => {
+  it('aria-required / aria-invalid / aria-errormessage are reactive and gated symmetrically', () => {
     const { fixture, group, host, groupEl } = setup();
     expect(groupEl.getAttribute('aria-required')).toBeNull();
     expect(groupEl.getAttribute('aria-invalid')).toBeNull();
@@ -184,7 +184,8 @@ describe('CngxCheckboxGroup', () => {
 
     group.invalid.set(false);
     fixture.detectChanges();
-    expect(groupEl.getAttribute('aria-errormessage')).toBe('err-1');
+    expect(groupEl.getAttribute('aria-invalid')).toBeNull();
+    expect(groupEl.getAttribute('aria-errormessage')).toBeNull();
   });
 
   it('aria-busy reflects state.status() === "loading" reactively', () => {
@@ -288,7 +289,24 @@ describe('CngxCheckboxGroup', () => {
       expect(groupEl.getAttribute('aria-invalid')).toBe('true');
     });
 
-    it('aria-errormessage tracks errorMessageId regardless of invalid state when bound', () => {
+    it('aria-errormessage emits errorMessageId when invalid()', () => {
+      @Component({
+        template: `<cngx-checkbox-group [allValues]="vs" [errorMessageId]="msgId()" [(invalid)]="bad"><cngx-checkbox [value]="false">A</cngx-checkbox></cngx-checkbox-group>`,
+        imports: [CngxCheckboxGroup, CngxCheckbox],
+      })
+      class MsgHost {
+        vs = ['a'];
+        msgId = signal<string | null>('cbg-err');
+        bad = signal(true);
+      }
+      const fixture = TestBed.createComponent(MsgHost);
+      fixture.detectChanges();
+      const groupEl = fixture.debugElement.query(By.directive(CngxCheckboxGroup))
+        .nativeElement as HTMLElement;
+      expect(groupEl.getAttribute('aria-errormessage')).toBe('cbg-err');
+    });
+
+    it('aria-errormessage is null when neither invalid() nor errorState() is set', () => {
       @Component({
         template: `<cngx-checkbox-group [allValues]="vs" [errorMessageId]="msgId()" [(invalid)]="bad"><cngx-checkbox [value]="false">A</cngx-checkbox></cngx-checkbox-group>`,
         imports: [CngxCheckboxGroup, CngxCheckbox],
@@ -302,7 +320,8 @@ describe('CngxCheckboxGroup', () => {
       fixture.detectChanges();
       const groupEl = fixture.debugElement.query(By.directive(CngxCheckboxGroup))
         .nativeElement as HTMLElement;
-      expect(groupEl.getAttribute('aria-errormessage')).toBe('cbg-err');
+      expect(groupEl.getAttribute('aria-errormessage')).toBeNull();
+
       fixture.componentInstance.bad.set(true);
       fixture.detectChanges();
       expect(groupEl.getAttribute('aria-errormessage')).toBe('cbg-err');
