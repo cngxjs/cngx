@@ -355,7 +355,7 @@ export class CngxTreetable<T = unknown> {
   );
 
   /** @internal Exposed so templates can call it without importing the utility. */
-  readonly capitalise = capitalise;
+  protected readonly capitalise = capitalise;
 
   /**
    * `true` when every visible node is selected.
@@ -441,7 +441,7 @@ export class CngxTreetable<T = unknown> {
    * Casts a node value to `Record<string, unknown>` for template property access.
    * @internal
    */
-  asRecord(value: T): Record<string, unknown> {
+  protected asRecord(value: T): Record<string, unknown> {
     return value as Record<string, unknown>;
   }
 
