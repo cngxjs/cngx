@@ -6,6 +6,7 @@ import {
   provideEnvironmentInitializer,
   type Provider,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationStart, Router } from '@angular/router';
 import { filter } from 'rxjs';
 import { CngxErrorRegistry } from './error-registry';
@@ -88,11 +89,12 @@ export function provideErrorRegistry(
           return;
         }
         const registry = inject(CngxErrorRegistry);
-        const destroyRef = inject(DestroyRef);
-        const subscription = router.events
-          .pipe(filter((event): event is NavigationStart => event instanceof NavigationStart))
+        router.events
+          .pipe(
+            filter((event): event is NavigationStart => event instanceof NavigationStart),
+            takeUntilDestroyed(),
+          )
           .subscribe(() => registry.revealAll());
-        destroyRef.onDestroy(() => subscription.unsubscribe());
       }),
     );
   }

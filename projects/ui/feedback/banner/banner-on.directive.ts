@@ -1,15 +1,7 @@
-import {
-  afterNextRender,
-  Directive,
-  computed,
-  effect,
-  inject,
-  input,
-  isDevMode,
-  untracked,
-} from '@angular/core';
-import { CNGX_STATEFUL, createTransitionTracker, type CngxAsyncState } from '@cngx/core/utils';
+import { afterNextRender, Directive, computed, inject, input, isDevMode } from '@angular/core';
+import { CNGX_STATEFUL, type CngxAsyncState } from '@cngx/core/utils';
 
+import { createStateBridge } from '../internal/state-bridge';
 import { CngxBanner } from './banner.service';
 
 /**
@@ -93,18 +85,9 @@ export class CngxBannerOn {
       });
     }
 
-    const tracker = createTransitionTracker(() => this.effectiveState()?.status() ?? 'idle');
-
-    effect(() => {
-      // Flat graph - only the tracker is tracked, every other read sits in untracked() below.
-      const status = tracker.current();
-      const previous = tracker.previous();
-
-      if (status === previous) {
-        return;
-      }
-
-      untracked(() => {
+    createStateBridge(
+      () => this.effectiveState()?.status() ?? 'idle',
+      (status) => {
         const s = this.effectiveState();
         if (!s) {
           return;
@@ -133,7 +116,7 @@ export class CngxBannerOn {
         if (status === 'success' || status === 'idle') {
           banner.dismiss(this.bannerId());
         }
-      });
-    });
+      },
+    );
   }
 }
