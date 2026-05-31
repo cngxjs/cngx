@@ -9,6 +9,7 @@ import {
   signal,
   type TemplateRef,
 } from '@angular/core';
+import { CngxRovingItem, CngxRovingTabindex } from '@cngx/common/a11y';
 import { CngxCheckboxIndicator } from '@cngx/common/display';
 import {
   CNGX_FORM_FIELD_CONTROL,
@@ -79,6 +80,12 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
   exportAs: 'cngxCheckbox',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  hostDirectives: [
+    {
+      directive: CngxRovingItem,
+      inputs: ['cngxRovingItemDisabled: disabled'],
+    },
+  ],
   imports: [CngxCheckboxIndicator],
   host: {
     class: 'cngx-checkbox',
@@ -89,7 +96,7 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
     '[attr.aria-invalid]': '(invalid() || errorState()) ? "true" : null',
     '[attr.aria-errormessage]': 'errorMessageId()',
     '[attr.aria-describedby]': 'describedById()',
-    '[attr.tabindex]': 'disabled() ? -1 : 0',
+    '[attr.tabindex]': 'hostTabindex()',
     '[class.cngx-checkbox--checked]': 'value()',
     '[class.cngx-checkbox--indeterminate]': 'indeterminate()',
     '[class.cngx-checkbox--disabled]': 'disabled()',
@@ -156,6 +163,21 @@ export class CngxCheckbox implements CngxControlValue<boolean>, CngxFormFieldCon
 
   protected readonly describedById = computed(() =>
     this.disabledReason() ? this.describedId : null,
+  );
+
+  private readonly rovingParent = inject(CngxRovingTabindex, {
+    optional: true,
+    skipSelf: true,
+  });
+
+  /**
+   * When inside a `CngxRovingTabindex` parent (typically `CngxCheckboxGroup`),
+   * yields `null` so the roving controller owns the `tabindex` attribute
+   * uncontested. Standalone, falls back to the WAI-ARIA default of
+   * `0` (or `-1` when disabled). Mirrors `CngxCard.hostTabindex`.
+   */
+  protected readonly hostTabindex = computed<number | null>(() =>
+    this.rovingParent ? null : this.disabled() ? -1 : 0,
   );
 
   protected readonly ariaChecked = computed<'true' | 'false' | 'mixed'>(() =>
