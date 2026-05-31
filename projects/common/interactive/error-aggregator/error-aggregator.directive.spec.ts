@@ -40,6 +40,25 @@ class ScopedHost {
   aOn = signal(false);
 }
 
+@Component({
+  template: `
+    <div
+      cngxErrorAggregator
+      #agg="cngxErrorAggregator"
+      [autoAnnounce]="auto()"
+      [announcePoliteness]="politeness()"
+    >
+      <span [cngxErrorSource]="'a'" [when]="aOn()" [label]="'A failed'"></span>
+    </div>
+  `,
+  imports: [CngxErrorAggregator, CngxErrorSource],
+})
+class AutoAnnounceHost {
+  aOn = signal(false);
+  auto = signal(true);
+  politeness = signal<'polite' | 'assertive' | 'off'>('polite');
+}
+
 function aggregatorOf(fixture: ReturnType<typeof TestBed.createComponent>): CngxErrorAggregator {
   const de = fixture.debugElement.query(By.directive(CngxErrorAggregator));
   return de.injector.get(CngxErrorAggregator);
@@ -183,6 +202,90 @@ describe('CngxErrorAggregator', () => {
     agg.removeSource('nonexistent');
     TestBed.flushEffects();
     expect(witness.mock.calls.length).toBe(baseline + 3);
+  });
+
+  describe('auto-announce', () => {
+    function hostOf(fixture: ReturnType<typeof TestBed.createComponent>): HTMLElement {
+      return fixture.debugElement.query(By.directive(CngxErrorAggregator))
+        .nativeElement as HTMLElement;
+    }
+
+    function spanOf(fixture: ReturnType<typeof TestBed.createComponent>): HTMLSpanElement | null {
+      return hostOf(fixture).querySelector('span[aria-live]');
+    }
+
+    it('appends a visually-hidden live-region span on init with the correct ARIA + inline sr-only styles', () => {
+      const fixture = TestBed.createComponent(AutoAnnounceHost);
+      fixture.detectChanges();
+
+      const span = spanOf(fixture);
+      expect(span).not.toBeNull();
+      expect(span!.getAttribute('role')).toBe('status');
+      expect(span!.getAttribute('aria-live')).toBe('polite');
+      expect(span!.getAttribute('aria-atomic')).toBe('true');
+      expect(span!.getAttribute('aria-relevant')).toBe('additions text');
+
+      // Visually hidden via inline `--cngx-sr-only-*` custom properties, NOT
+      // the global `.cngx-sr-only` utility class (a library directive cannot
+      // require the consumer to ship `core/theming/utilities.css`).
+      const cssText = span!.style.cssText;
+      expect(cssText).toContain('var(--cngx-sr-only-position');
+      expect(cssText).toContain('var(--cngx-sr-only-overflow');
+      expect(span!.classList.contains('cngx-sr-only')).toBe(false);
+    });
+
+    it('updates span textContent reactively to announcement()', () => {
+      const fixture = TestBed.createComponent(AutoAnnounceHost);
+      fixture.detectChanges();
+      const span = spanOf(fixture)!;
+      expect(span.textContent).toBe('');
+
+      fixture.componentInstance.aOn.set(true);
+      fixture.detectChanges();
+      expect(span.textContent).toBe('A failed');
+    });
+
+    // Loop-freedom guards the `untracked` wrap around the textContent write.
+    // Without it the imperative DOM side effect would silently subscribe to
+    // any signal it touches and re-enter on the next flush.
+    it('is loop-free: repeated flushEffects with no source change does not re-enter', () => {
+      const fixture = TestBed.createComponent(AutoAnnounceHost);
+      fixture.detectChanges();
+
+      expect(() => {
+        TestBed.flushEffects();
+        TestBed.flushEffects();
+        TestBed.flushEffects();
+      }).not.toThrow();
+    });
+
+    it('skips span creation entirely when [autoAnnounce]="false"', () => {
+      const fixture = TestBed.createComponent(AutoAnnounceHost);
+      fixture.componentInstance.auto.set(false);
+      fixture.detectChanges();
+
+      expect(spanOf(fixture)).toBeNull();
+    });
+
+    it('flips role="alert" and aria-live="assertive" when [announcePoliteness]="assertive"', () => {
+      const fixture = TestBed.createComponent(AutoAnnounceHost);
+      fixture.componentInstance.politeness.set('assertive');
+      fixture.detectChanges();
+
+      const span = spanOf(fixture)!;
+      expect(span.getAttribute('role')).toBe('alert');
+      expect(span.getAttribute('aria-live')).toBe('assertive');
+    });
+
+    it('removes the span from the host element on destroy', () => {
+      const fixture = TestBed.createComponent(AutoAnnounceHost);
+      fixture.detectChanges();
+      const host = hostOf(fixture);
+      expect(host.querySelector('span[aria-live]')).not.toBeNull();
+
+      fixture.destroy();
+      expect(host.querySelector('span[aria-live]')).toBeNull();
+    });
   });
 
   // Regression: the source-map equal fn must compare entry.label too, otherwise
