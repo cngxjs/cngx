@@ -33,10 +33,9 @@ export const STORY: DemoSpec = {
         style="position:relative; display:flex; flex-direction:column; gap:4px">
         <strong>Saved successfully</strong>
         <span>Your changes are now live. This card can be dismissed.</span>
-        <span style="position:absolute; top:4px; right:4px">
-          <cngx-close-button label="Dismiss saved-successfully card"
-            (click)="handleDismiss()" />
-        </span>
+        <cngx-close-button label="Dismiss saved-successfully card"
+          style="position:absolute; top:4px; right:4px"
+          (click)="handleDismiss()" />
       </div>
     } @else {
       <span>Card dismissed.</span>
