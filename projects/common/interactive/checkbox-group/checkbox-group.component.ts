@@ -112,8 +112,8 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
     '[attr.aria-label]': 'label()',
     '[attr.aria-disabled]': 'disabled() ? "true" : null',
     '[attr.aria-required]': 'required() ? "true" : null',
-    '[attr.aria-invalid]': '(invalid() || errorState()) ? "true" : null',
-    '[attr.aria-errormessage]': '(invalid() || errorState()) ? errorMessageId() : null',
+    '[attr.aria-invalid]': 'ariaInvalid() ? "true" : null',
+    '[attr.aria-errormessage]': 'ariaInvalid() ? errorMessageId() : null',
     '[attr.aria-busy]': 'ariaBusy() ? "true" : null',
     '[class.cngx-checkbox-group--horizontal]': 'orientation() === "horizontal"',
     '(focusin)': 'handleFocusIn()',
@@ -232,6 +232,8 @@ export class CngxCheckboxGroup<T = unknown> implements CngxControlValue<T[]>, Cn
   readonly errorState = computed<boolean>(
     () => this.fieldHost?.showError() ?? this.aggregator?.shouldShow() ?? false,
   );
+
+  protected readonly ariaInvalid = computed(() => this.invalid() || this.errorState());
 
   protected handleFocusIn(): void {
     this.focusedState.set(true);

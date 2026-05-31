@@ -93,8 +93,8 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
     '[attr.id]': 'id()',
     '[attr.aria-checked]': 'ariaChecked()',
     '[attr.aria-disabled]': 'disabled() ? "true" : null',
-    '[attr.aria-invalid]': '(invalid() || errorState()) ? "true" : null',
-    '[attr.aria-errormessage]': '(invalid() || errorState()) ? errorMessageId() : null',
+    '[attr.aria-invalid]': 'ariaInvalid() ? "true" : null',
+    '[attr.aria-errormessage]': 'ariaInvalid() ? errorMessageId() : null',
     '[attr.aria-describedby]': 'describedId',
     '[attr.tabindex]': 'hostTabindex()',
     '[class.cngx-checkbox--checked]': 'value()',
@@ -200,6 +200,8 @@ export class CngxCheckbox implements CngxControlValue<boolean>, CngxFormFieldCon
   readonly errorState = computed<boolean>(
     () => this.fieldHost?.showError() ?? this.aggregator?.shouldShow() ?? false,
   );
+
+  protected readonly ariaInvalid = computed(() => this.invalid() || this.errorState());
 
   protected handleClick(): void {
     this.advance();
