@@ -14,9 +14,8 @@ export const STORY: DemoSpec = {
   moduleImports: [
     "import { CngxErrorAggregator, CngxErrorSource } from '@cngx/common/interactive';",
     "import { CngxCard, CngxCardHeader, CngxCardBody } from '@cngx/common/card';",
-    "import { CngxLiveRegion } from '@cngx/common/a11y';",
   ],
-  imports: ['CngxCard', 'CngxCardHeader', 'CngxCardBody', 'CngxErrorAggregator', 'CngxErrorSource', 'CngxLiveRegion'],
+  imports: ['CngxCard', 'CngxCardHeader', 'CngxCardBody', 'CngxErrorAggregator', 'CngxErrorSource'],
   references: [
     {
       label: 'WAI-ARIA 1.2: aria-invalid',
@@ -44,8 +43,7 @@ export const STORY: DemoSpec = {
         </ul>
       }
     </div>
-  </cngx-card>
-  <span class="cngx-sr-only" cngxLiveRegion>{{ profile.announcement() }}</span>`,
+  </cngx-card>`,
   templateChrome: `
   <div class="event-grid">
     <div class="event-row"><span class="event-label">hasError()</span><span class="event-value">{{ profile.hasError() }}</span></div>
