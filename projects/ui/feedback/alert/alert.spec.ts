@@ -516,4 +516,15 @@ describe('CngxAlert', () => {
     const srRegion = alert.querySelector('[aria-live]');
     expect(srRegion?.textContent).toContain('Alert dismissed');
   });
+
+  it('pins the dismiss close-button with flex-shrink: 0 to survive narrow widths', () => {
+    const { host } = setup();
+    host.closable.set(true);
+    TestBed.flushEffects();
+
+    const styleText = Array.from(document.querySelectorAll('style'))
+      .map((node) => node.textContent ?? '')
+      .join('\n');
+    expect(styleText).toMatch(/\.cngx-alert__dismiss\s*\{[^}]*flex-shrink:\s*0/);
+  });
 });
