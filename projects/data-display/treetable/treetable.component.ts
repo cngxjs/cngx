@@ -29,6 +29,7 @@ import {
 } from '@angular/cdk/table';
 import { NgTemplateOutlet } from '@angular/common';
 import type { CngxAsyncState } from '@cngx/core/utils';
+import { arrayEqual, setEqual } from '@cngx/utils';
 import { CngxTreetableRow } from './treetable-row.directive';
 import { CngxCellTpl, CngxEmptyTpl, CngxHeaderTpl } from './column-template.directive';
 import { resolveCellTpl, resolveHeaderTpl } from './column-template.utils';
@@ -295,11 +296,14 @@ export class CngxTreetable<T = unknown> {
    * and parent chain. Memoised against `tree` + `nodeId` so consumers
    * can read it as often as templates need without re-walking the tree.
    */
-  readonly flatNodes = computed(() => flattenTree(this.tree(), this.nodeId()));
+  readonly flatNodes = computed(() => flattenTree(this.tree(), this.nodeId()), {
+    equal: arrayEqual,
+  });
 
   private readonly expandedIdsState = linkedSignal<FlatNode<T>[], ReadonlySet<string>>({
     source: this.flatNodes,
     computation: (nodes) => getInitialExpandedIds(nodes),
+    equal: setEqual,
   });
 
   /**
@@ -307,7 +311,9 @@ export class CngxTreetable<T = unknown> {
    * In uncontrolled mode this reflects the internal state; in controlled mode
    * it mirrors the `expandedIds` input.
    */
-  readonly expandedIds = computed(() => this.expandedIdsInput() ?? this.expandedIdsState());
+  readonly expandedIds = computed(() => this.expandedIdsInput() ?? this.expandedIdsState(), {
+    equal: setEqual,
+  });
 
   /**
    * The subset of `flatNodes` whose ancestor chain is fully expanded
@@ -315,8 +321,9 @@ export class CngxTreetable<T = unknown> {
    * change; the resulting array is what the template iterates over with
    * the CDK table's `[trackBy]` hook.
    */
-  readonly visibleNodes = computed(() =>
-    this.flatNodes().filter((n) => isNodeVisible(n, this.expandedIds())),
+  readonly visibleNodes = computed(
+    () => this.flatNodes().filter((n) => isNodeVisible(n, this.expandedIds())),
+    { equal: arrayEqual },
   );
 
   /**
@@ -358,11 +365,14 @@ export class CngxTreetable<T = unknown> {
    * - `_expand` always appears as the first non-utility column - it
    *   carries the indent guide and the expand toggle.
    */
-  readonly allColumns = computed(() => [
-    ...(this.showCheckboxes() && this.selectionMode() !== 'none' ? ['_select'] : []),
-    '_expand',
-    ...this.columns(),
-  ]);
+  readonly allColumns = computed(
+    () => [
+      ...(this.showCheckboxes() && this.selectionMode() !== 'none' ? ['_select'] : []),
+      '_expand',
+      ...this.columns(),
+    ],
+    { equal: arrayEqual },
+  );
 
   /**
    * Effective per-instance options: application-wide {@link TreetableConfig}
@@ -371,10 +381,34 @@ export class CngxTreetable<T = unknown> {
    * (instance wins over app default) instead of re-implementing the
    * cascade.
    */
-  readonly resolvedOptions = computed<TreetableOptions<T>>(() => ({
-    ...this.config,
-    ...this.options(),
-  }));
+  readonly resolvedOptions = computed<TreetableOptions<T>>(
+    () => ({
+      ...this.config,
+      ...this.options(),
+    }),
+    {
+      equal: (a, b) => {
+        if (a === b) {
+          return true;
+        }
+        if (a.highlightRowOnHover !== b.highlightRowOnHover) {
+          return false;
+        }
+        if (a.capitaliseHeader !== b.capitaliseHeader) {
+          return false;
+        }
+        const ac = a.customColumnOrder;
+        const bc = b.customColumnOrder;
+        if (ac === bc) {
+          return true;
+        }
+        if (!ac || !bc) {
+          return false;
+        }
+        return arrayEqual(ac, bc);
+      },
+    },
+  );
 
   /** @internal Exposed so templates can call it without importing the utility. */
   readonly capitalise = capitalise;
@@ -389,7 +423,9 @@ export class CngxTreetable<T = unknown> {
    * In uncontrolled mode this reflects internal state; in controlled mode
    * it mirrors the `selectedIds` input.
    */
-  readonly selectedIds = computed(() => this.selectedIdsInput() ?? this.selectedIdsState());
+  readonly selectedIds = computed(() => this.selectedIdsInput() ?? this.selectedIdsState(), {
+    equal: setEqual,
+  });
 
   /**
    * `true` when every visible node is selected.

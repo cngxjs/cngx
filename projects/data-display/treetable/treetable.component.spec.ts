@@ -108,4 +108,45 @@ describe('CngxTreetable', () => {
     const rows = fixture.debugElement.queryAll(By.css('cdk-row'));
     expect(rows.length).toBe(2);
   });
+
+  describe('reactivity equality (equal-fn discipline)', () => {
+    it('flatNodes preserves reference across structurally-equal re-runs', () => {
+      const fixture = TestBed.createComponent(CngxTreetable<Item>);
+      fixture.componentRef.setInput('tree', tree);
+      fixture.detectChanges();
+      const before = fixture.componentInstance.flatNodes();
+      fixture.componentRef.setInput('tree', tree);
+      fixture.detectChanges();
+      const after = fixture.componentInstance.flatNodes();
+      expect(after).toBe(before);
+    });
+
+    it('selectedIds preserves reference when toggled to the same set', () => {
+      const fixture = TestBed.createComponent(CngxTreetable<Item>);
+      fixture.componentRef.setInput('tree', tree);
+      fixture.componentRef.setInput('selectionMode', 'multi');
+      fixture.detectChanges();
+      const t = fixture.componentInstance;
+      const root = t.flatNodes()[0];
+      t.toggleSelection(root);
+      fixture.detectChanges();
+      const before = t.selectedIds();
+      fixture.componentRef.setInput('expandedIds', new Set<string>(t.expandedIds()));
+      fixture.detectChanges();
+      const after = t.selectedIds();
+      expect(after).toBe(before);
+    });
+
+    it('resolvedOptions preserves reference when options input mutates to a structurally-equal object', () => {
+      const fixture = TestBed.createComponent(CngxTreetable<Item>);
+      fixture.componentRef.setInput('tree', tree);
+      fixture.componentRef.setInput('options', { highlightRowOnHover: true });
+      fixture.detectChanges();
+      const before = fixture.componentInstance.resolvedOptions();
+      fixture.componentRef.setInput('options', { highlightRowOnHover: true });
+      fixture.detectChanges();
+      const after = fixture.componentInstance.resolvedOptions();
+      expect(after).toBe(before);
+    });
+  });
 });
