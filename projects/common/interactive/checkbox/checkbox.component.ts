@@ -40,7 +40,7 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
  * Visual indicator state is delegated to `<cngx-checkbox-indicator>`
  * from `@cngx/common/display`; this interactive molecule owns role,
  * keyboard, and ARIA wiring and composes the display atom. Per
- * Pillar 3 (Komposition statt Konfiguration), the visual atom is
+ * Pillar 3, the visual atom is
  * reused - never re-drawn here.
  *
  * `aria-checked` is a reactive computed: `indeterminate() ? 'mixed' :
@@ -95,7 +95,7 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
     '[attr.aria-disabled]': 'disabled() ? "true" : null',
     '[attr.aria-invalid]': '(invalid() || errorState()) ? "true" : null',
     '[attr.aria-errormessage]': 'errorMessageId()',
-    '[attr.aria-describedby]': 'describedById()',
+    '[attr.aria-describedby]': 'describedId',
     '[attr.tabindex]': 'hostTabindex()',
     '[class.cngx-checkbox--checked]': 'value()',
     '[class.cngx-checkbox--indeterminate]': 'indeterminate()',
@@ -160,10 +160,6 @@ export class CngxCheckbox implements CngxControlValue<boolean>, CngxFormFieldCon
   readonly dashGlyph = input<TemplateRef<void> | null>(null);
 
   protected readonly describedId = nextUid('cngx-checkbox-desc');
-
-  protected readonly describedById = computed(() =>
-    this.disabledReason() ? this.describedId : null,
-  );
 
   private readonly rovingParent = inject(CngxRovingTabindex, {
     optional: true,
