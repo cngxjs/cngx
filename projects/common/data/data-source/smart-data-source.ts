@@ -2,11 +2,34 @@ import { DataSource } from '@angular/cdk/collections';
 import { computed, inject, Injector, type Signal } from '@angular/core';
 import { toObservable } from '@angular/core/rxjs-interop';
 import type { CngxAsyncState } from '@cngx/core/utils';
+import { arrayEqual } from '@cngx/utils';
 import type { Observable } from 'rxjs';
 import { CngxPaginate } from '../paginate/paginate.directive';
 import { CngxFilter } from '../filter/filter.directive';
 import { CngxSort } from '../sort/sort.directive';
 import { CngxSearch } from '@cngx/common/interactive';
+
+function defaultSearchFn<T>(item: T, term: string): boolean {
+  const lower = term.toLowerCase();
+  return Object.values(item as Record<string, unknown>).some((v) =>
+    v === null || v === undefined || typeof v === 'object'
+      ? false
+      : String(v as string | number | boolean | bigint)
+          .toLowerCase()
+          .includes(lower),
+  );
+}
+
+function defaultSortFn<T>(a: T, b: T, field: string, dir: 'asc' | 'desc'): number {
+  const toStr = (v: unknown): string =>
+    v === null || v === undefined || typeof v === 'object'
+      ? ''
+      : String(v as string | number | boolean | bigint);
+  const av = toStr((a as Record<string, unknown>)[field]);
+  const bv = toStr((b as Record<string, unknown>)[field]);
+  const cmp = av.localeCompare(bv, undefined, { numeric: true, sensitivity: 'base' });
+  return dir === 'asc' ? cmp : -cmp;
+}
 
 /**
  * Optional customization for {@link CngxSmartDataSource}.
@@ -125,27 +148,19 @@ export class CngxSmartDataSource<T> extends DataSource<T> {
     this.isFirstLoad = computed(() => s?.isFirstLoad() ?? false);
     this.error = computed(() => s?.error());
 
-    this.filtered = computed(() => {
-      const predicate = this.filter?.predicate();
-      const term = this.search?.term();
-      const searchFn =
-        this.options?.searchFn ??
-        ((item: T, t: string) => {
-          const lower = t.toLowerCase();
-          return Object.values(item as Record<string, unknown>).some((v) =>
-            v === null || v === undefined || typeof v === 'object'
-              ? false
-              : String(v as string | number | boolean | bigint)
-                  .toLowerCase()
-                  .includes(lower),
-          );
-        });
+    this.filtered = computed(
+      () => {
+        const predicate = this.filter?.predicate();
+        const term = this.search?.term();
+        const searchFn = this.options?.searchFn ?? defaultSearchFn<T>;
 
-      // Pipeline: raw → filter → search. Cast required: CngxFilter injected as unknown.
-      return data()
-        .filter((v) => !predicate || (predicate as (v: T) => boolean)(v))
-        .filter((item) => !term || searchFn(item, term));
-    });
+        // Pipeline: raw → filter → search. Cast required: CngxFilter injected as unknown.
+        return data()
+          .filter((v) => !predicate || (predicate as (v: T) => boolean)(v))
+          .filter((item) => !term || searchFn(item, term));
+      },
+      { equal: arrayEqual },
+    );
 
     this.filteredCount = computed(() => this.filtered().length);
 
@@ -157,34 +172,26 @@ export class CngxSmartDataSource<T> extends DataSource<T> {
       return this.filteredCount() === 0;
     });
 
-    this.processed = computed(() => {
-      const sorts = this.sort?.sorts() ?? [];
-      const sortFn =
-        this.options?.sortFn ??
-        ((a: T, b: T, field: string, dir: 'asc' | 'desc') => {
-          const toStr = (v: unknown): string =>
-            v === null || v === undefined || typeof v === 'object'
-              ? ''
-              : String(v as string | number | boolean | bigint);
-          const av = toStr((a as Record<string, unknown>)[field]);
-          const bv = toStr((b as Record<string, unknown>)[field]);
-          const cmp = av.localeCompare(bv, undefined, { numeric: true, sensitivity: 'base' });
-          return dir === 'asc' ? cmp : -cmp;
-        });
+    this.processed = computed(
+      () => {
+        const sorts = this.sort?.sorts() ?? [];
+        const sortFn = this.options?.sortFn ?? defaultSortFn<T>;
 
-      const sorted =
-        sorts.length > 0
-          ? [...this.filtered()].sort((a, b) =>
-              sorts.reduce(
-                (cmp, { active, direction }) => cmp || sortFn(a, b, active, direction),
-                0,
-              ),
-            )
-          : this.filtered();
+        const sorted =
+          sorts.length > 0
+            ? [...this.filtered()].sort((a, b) =>
+                sorts.reduce(
+                  (cmp, { active, direction }) => cmp || sortFn(a, b, active, direction),
+                  0,
+                ),
+              )
+            : this.filtered();
 
-      const range = this.paginate?.range();
-      return range ? sorted.slice(range[0], range[1]) : sorted;
-    });
+        const range = this.paginate?.range();
+        return range ? sorted.slice(range[0], range[1]) : sorted;
+      },
+      { equal: arrayEqual },
+    );
   }
 
   override connect(): Observable<T[]> {

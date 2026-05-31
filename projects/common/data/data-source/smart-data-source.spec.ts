@@ -239,3 +239,23 @@ describe('CngxSmartDataSource — with CngxAsyncState source', () => {
     });
   });
 });
+
+describe('CngxSmartDataSource — reactivity equality', () => {
+  it('connect() does not re-emit when source resets to a positionally-identical array', () => {
+    TestBed.runInInjectionContext(() => {
+      const data = signal(ITEMS);
+      const ds = injectSmartDataSource(data);
+
+      const values: Item[][] = [];
+      const sub = ds.connect().subscribe((v: Item[]) => values.push(v));
+      TestBed.flushEffects();
+
+      data.set([...ITEMS]);
+      TestBed.flushEffects();
+
+      // arrayEqual on filtered + processed collapses the duplicate emission.
+      expect(values.length).toBe(1);
+      sub.unsubscribe();
+    });
+  });
+});
