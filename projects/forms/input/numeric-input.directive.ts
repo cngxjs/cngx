@@ -120,6 +120,11 @@ function isAllowedChar(
     '[attr.aria-valuemin]': 'min() ?? null',
     '[attr.aria-valuemax]': 'max() ?? null',
     '[attr.aria-valuenow]': 'numericValue()',
+    // Tabular-nums by default so digits align column-wise on cngx-numeric-input
+    // fields (forms, dashboards, summary rows). Override on a parent via
+    // `--cngx-numeric-input-numeric-variant: normal` when the body font's
+    // proportional digits are wanted.
+    '[style.font-variant-numeric]': '"var(--cngx-numeric-input-numeric-variant, tabular-nums)"',
     '(beforeinput)': 'handleBeforeInput($event)',
     '(keydown)': 'handleKeyDown($event)',
     '(focus)': 'handleFocus()',
