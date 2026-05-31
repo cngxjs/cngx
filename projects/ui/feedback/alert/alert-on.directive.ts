@@ -1,15 +1,7 @@
-import {
-  afterNextRender,
-  Directive,
-  computed,
-  effect,
-  inject,
-  input,
-  isDevMode,
-  untracked,
-} from '@angular/core';
-import { CNGX_STATEFUL, createTransitionTracker, type CngxAsyncState } from '@cngx/core/utils';
+import { afterNextRender, Directive, computed, inject, input, isDevMode } from '@angular/core';
+import { CNGX_STATEFUL, type CngxAsyncState } from '@cngx/core/utils';
 
+import { createStateBridge } from '../internal/state-bridge';
 import { CngxAlerter } from './alerter.service';
 
 /**
@@ -96,18 +88,9 @@ export class CngxAlertOn {
       });
     }
 
-    const tracker = createTransitionTracker(() => this.effectiveState()?.status() ?? 'idle');
-
-    effect(() => {
-      // Flat graph - only tracker is tracked; everything else reads under untracked.
-      const status = tracker.current();
-      const previous = tracker.previous();
-
-      if (status === previous) {
-        return;
-      }
-
-      untracked(() => {
+    createStateBridge(
+      () => this.effectiveState()?.status() ?? 'idle',
+      (status) => {
         const s = this.effectiveState();
         if (!s) {
           return;
@@ -144,7 +127,7 @@ export class CngxAlertOn {
             });
           }
         }
-      });
-    });
+      },
+    );
   }
 }
