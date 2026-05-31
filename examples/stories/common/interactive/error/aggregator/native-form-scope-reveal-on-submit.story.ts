@@ -13,9 +13,8 @@ export const STORY: DemoSpec = {
   apiComponents: ['CngxErrorAggregator', 'CngxErrorScope', 'CngxErrorSource'],
   moduleImports: [
     "import { CngxErrorAggregator, CngxErrorScope, CngxErrorSource } from '@cngx/common/interactive';",
-    "import { CngxLiveRegion } from '@cngx/common/a11y';",
   ],
-  imports: ['CngxErrorScope', 'CngxErrorAggregator', 'CngxErrorSource', 'CngxLiveRegion'],
+  imports: ['CngxErrorScope', 'CngxErrorAggregator', 'CngxErrorSource'],
   references: [
     {
       label: 'WAI-ARIA 1.2: aria-invalid',
@@ -70,8 +69,7 @@ export const STORY: DemoSpec = {
         <button type="button" (click)="scope.reset()">Reset</button>
       </div>
     </fieldset>
-  </form>
-  <span class="cngx-sr-only" cngxLiveRegion>{{ signup.announcement() }}</span>`,
+  </form>`,
   templateChrome: `
   <div class="event-grid">
     <div class="event-row"><span class="event-label">hasError()</span><span class="event-value">{{ signup.hasError() }}</span></div>

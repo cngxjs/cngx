@@ -14,9 +14,8 @@ export const STORY: DemoSpec = {
   ],
   moduleImports: [
     'import { CngxErrorSource, CngxErrorAggregator } from \'@cngx/common/interactive\';',
-    "import { CngxLiveRegion } from '@cngx/common/a11y';",
   ],
-  imports: ['CngxErrorSource', 'CngxErrorAggregator', 'CngxLiveRegion'],
+  imports: ['CngxErrorSource', 'CngxErrorAggregator'],
   references: [
     { label: 'WAI-ARIA 1.2: `aria-live`', href: 'https://www.w3.org/TR/wai-aria-1.2/#aria-live' },
     { label: 'WCAG 2.1 SC 3.3.1 Error Identification', href: 'https://www.w3.org/WAI/WCAG21/Understanding/error-identification.html' },
@@ -40,8 +39,7 @@ export const STORY: DemoSpec = {
         }
       </ul>
     }
-  </fieldset>
-  <span class="cngx-sr-only" cngxLiveRegion>{{ agg.announcement() }}</span>`,
+  </fieldset>`,
   templateChrome: `
   <div class="button-row" style="margin-top:12px">
     <label>

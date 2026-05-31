@@ -14,7 +14,6 @@ export const STORY: DemoSpec = {
   moduleImports: [
     "import { CngxErrorAggregator, CngxErrorSource } from '@cngx/common/interactive';",
     "import { CngxPopoverPanel, CngxPopoverTrigger, CngxPopoverHeader, CngxPopoverBody } from '@cngx/common/popover';",
-    "import { CngxLiveRegion } from '@cngx/common/a11y';",
   ],
   imports: [
     'CngxPopoverPanel',
@@ -23,7 +22,6 @@ export const STORY: DemoSpec = {
     'CngxPopoverBody',
     'CngxErrorAggregator',
     'CngxErrorSource',
-    'CngxLiveRegion',
   ],
   references: [
     {
@@ -57,8 +55,7 @@ export const STORY: DemoSpec = {
         </ul>
       }
     </div>
-  </cngx-popover-panel>
-  <span class="cngx-sr-only" cngxLiveRegion>{{ billing.announcement() }}</span>`,
+  </cngx-popover-panel>`,
   templateChrome: `
   <div class="event-grid">
     <div class="event-row"><span class="event-label">hasError()</span><span class="event-value">{{ billing.hasError() }}</span></div>
