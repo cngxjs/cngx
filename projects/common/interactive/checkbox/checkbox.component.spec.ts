@@ -356,5 +356,42 @@ describe('CngxCheckbox', () => {
       expect(rovingItems[1].disabled()).toBe(false);
       expect(rovingItems[2].disabled()).toBe(true);
     });
+
+    it('ArrowDown on the roving parent skips a disabled cngx-checkbox leaf', () => {
+      @Component({
+        template: `
+          <div cngxRovingTabindex orientation="vertical">
+            <cngx-checkbox>A</cngx-checkbox>
+            <cngx-checkbox [disabled]="bOff()">B</cngx-checkbox>
+            <cngx-checkbox>C</cngx-checkbox>
+          </div>
+        `,
+        imports: [CngxCheckbox, CngxRovingTabindex],
+      })
+      class SkipHost {
+        bOff = signal(true);
+      }
+
+      const fixture = TestBed.createComponent(SkipHost);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      const wrapper = fixture.debugElement.query(By.directive(CngxRovingTabindex))
+        .nativeElement as HTMLElement;
+      const checkboxes = fixture.debugElement
+        .queryAll(By.directive(CngxCheckbox))
+        .map((de) => de.nativeElement as HTMLElement);
+
+      expect(checkboxes[0].getAttribute('tabindex')).toBe('0');
+
+      wrapper.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true }),
+      );
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      expect(checkboxes[0].getAttribute('tabindex')).toBe('-1');
+      expect(checkboxes[1].getAttribute('tabindex')).toBe('-1');
+      expect(checkboxes[2].getAttribute('tabindex')).toBe('0');
+    });
   });
 });
