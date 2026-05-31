@@ -35,17 +35,36 @@ import {
  * `computed()` with structural `equal` fns so unrelated re-emissions
  * upstream do not cascade through descendants.
  *
- * Consumers render the SR live region themselves to keep the directive
- * template-free:
+ * ### Live region
+ *
+ * By default the directive appends a visually-hidden `<span>` to the
+ * host element and writes {@link announcement} into its `textContent`
+ * reactively, so an `aria-live` announcement fires the moment a source
+ * toggles. The span carries `role="status"` (or `role="alert"` when
+ * politeness is `'assertive'`), `aria-live`, `aria-atomic="true"`, and
+ * `aria-relevant="additions text"`. Visually-hidden styling is applied
+ * inline via `--cngx-sr-only-*` CSS custom properties — no global
+ * stylesheet required.
+ *
+ * Set `[autoAnnounce]="false"` to take ownership of the live region in
+ * consumer markup (for example, when routing announcements through
+ * CDK's `LiveAnnouncer` service). Use `[announcePoliteness]` to switch
+ * to `'assertive'` for safety-critical errors or `'off'` to suppress
+ * announcements entirely while keeping the visual error surface.
  *
  * ```html
  * <fieldset cngxErrorAggregator #agg="cngxErrorAggregator">
  *   <span cngxErrorSource="format" [when]="email().invalid()" label="Format"></span>
  *   <span cngxErrorSource="taken"  [when]="taken()"          label="Already used"></span>
+ *
+ *   @if (agg.shouldShow()) {
+ *     <ul role="alert">
+ *       @for (label of agg.errorLabels(); track label) {
+ *         <li>{{ label }}</li>
+ *       }
+ *     </ul>
+ *   }
  * </fieldset>
- * <span class="cngx-sr-only" aria-live="polite" aria-atomic="true">
- *   {{ agg.announcement() }}
- * </span>
  * ```
  *
  * @docsKind primary
