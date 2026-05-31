@@ -242,7 +242,7 @@ selectedIds = signal<Set<string>>(new Set());
   [tree]="tree()"
   selectionMode="multi"
   [showCheckboxes]="true"
-  (selectionChanged)="selected = $event"
+  [(selectedIds)]="selected"
 >
   <ng-template [cngxCell]="'name'" let-node let-value="value">
     <strong>{{ value }}</strong>

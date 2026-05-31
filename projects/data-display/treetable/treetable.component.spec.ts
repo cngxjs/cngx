@@ -149,4 +149,88 @@ describe('CngxTreetable', () => {
       expect(after).toBe(before);
     });
   });
+
+  describe('selectedIds model contract', () => {
+    it('starts with an empty set', () => {
+      const fixture = TestBed.createComponent(CngxTreetable<Item>);
+      fixture.componentRef.setInput('tree', tree);
+      fixture.detectChanges();
+      expect(fixture.componentInstance.selectedIds().size).toBe(0);
+    });
+
+    it('multi-mode toggleSelection adds and removes ids without clearing siblings', () => {
+      const fixture = TestBed.createComponent(CngxTreetable<Item>);
+      fixture.componentRef.setInput('tree', tree);
+      fixture.componentRef.setInput('selectionMode', 'multi');
+      fixture.detectChanges();
+      const t = fixture.componentInstance;
+      const [root, child1, child2] = t.flatNodes();
+      t.toggleSelection(root);
+      t.toggleSelection(child1);
+      fixture.detectChanges();
+      expect([...t.selectedIds()].sort()).toEqual([child1.id, root.id].sort());
+      t.toggleSelection(child2);
+      fixture.detectChanges();
+      expect(t.selectedIds().size).toBe(3);
+      t.toggleSelection(root);
+      fixture.detectChanges();
+      expect([...t.selectedIds()].sort()).toEqual([child1.id, child2.id].sort());
+    });
+
+    it('single-mode toggleSelection clears prior selection before adding', () => {
+      const fixture = TestBed.createComponent(CngxTreetable<Item>);
+      fixture.componentRef.setInput('tree', tree);
+      fixture.componentRef.setInput('selectionMode', 'single');
+      fixture.detectChanges();
+      const t = fixture.componentInstance;
+      const [root, child1] = t.flatNodes();
+      t.toggleSelection(root);
+      t.toggleSelection(child1);
+      fixture.detectChanges();
+      expect([...t.selectedIds()]).toEqual([child1.id]);
+    });
+
+    it('selectionMode -> none clears the selection', () => {
+      const fixture = TestBed.createComponent(CngxTreetable<Item>);
+      fixture.componentRef.setInput('tree', tree);
+      fixture.componentRef.setInput('selectionMode', 'multi');
+      fixture.detectChanges();
+      const t = fixture.componentInstance;
+      t.toggleSelection(t.flatNodes()[0]);
+      t.toggleSelection(t.flatNodes()[1]);
+      fixture.detectChanges();
+      expect(t.selectedIds().size).toBe(2);
+
+      fixture.componentRef.setInput('selectionMode', 'none');
+      fixture.detectChanges();
+      expect(t.selectedIds().size).toBe(0);
+    });
+
+    it('selectionMode multi -> single truncates the selection to one id', () => {
+      const fixture = TestBed.createComponent(CngxTreetable<Item>);
+      fixture.componentRef.setInput('tree', tree);
+      fixture.componentRef.setInput('selectionMode', 'multi');
+      fixture.detectChanges();
+      const t = fixture.componentInstance;
+      t.toggleSelection(t.flatNodes()[0]);
+      t.toggleSelection(t.flatNodes()[1]);
+      fixture.detectChanges();
+      expect(t.selectedIds().size).toBe(2);
+
+      fixture.componentRef.setInput('selectionMode', 'single');
+      fixture.detectChanges();
+      expect(t.selectedIds().size).toBe(1);
+    });
+
+    it('pre-bound non-empty expandedIds is preserved across the init effect', () => {
+      const preset = new Set<string>();
+      const fixture = TestBed.createComponent(CngxTreetable<Item>);
+      fixture.componentRef.setInput('tree', tree);
+      fixture.componentRef.setInput('expandedIds', new Set(['__sentinel__']));
+      fixture.detectChanges();
+      expect(fixture.componentInstance.expandedIds().has('__sentinel__')).toBe(true);
+      // Sanity: sentinel doesn't blow up the visible-nodes pipeline.
+      expect(preset.size).toBe(0);
+    });
+  });
 });

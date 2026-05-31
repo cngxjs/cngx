@@ -77,7 +77,7 @@
   (nodeClicked)="log('clicked', $event.id)"
   (nodeExpanded)="log('expanded', $event.id)"
   (nodeCollapsed)="log('collapsed', $event.id)"
-  (selectionChanged)="log('selection', $event.join(', ') || '(empty)')"
+  (selectedIdsChange)="log('selection', [...$event].join(', ') || '(empty)')"
 >
   <ng-template [cngxCell]="'status'" let-node>
     <span class="cngx-tt-demo__badge" [attr.data-status]="node.value.status">
