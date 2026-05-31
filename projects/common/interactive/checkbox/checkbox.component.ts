@@ -9,6 +9,7 @@ import {
   signal,
   type TemplateRef,
 } from '@angular/core';
+import { CngxRovingItem, CngxRovingTabindex } from '@cngx/common/a11y';
 import { CngxCheckboxIndicator } from '@cngx/common/display';
 import {
   CNGX_FORM_FIELD_CONTROL,
@@ -39,7 +40,7 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
  * Visual indicator state is delegated to `<cngx-checkbox-indicator>`
  * from `@cngx/common/display`; this interactive molecule owns role,
  * keyboard, and ARIA wiring and composes the display atom. Per
- * Pillar 3 (Komposition statt Konfiguration), the visual atom is
+ * Pillar 3, the visual atom is
  * reused - never re-drawn here.
  *
  * `aria-checked` is a reactive computed: `indeterminate() ? 'mixed' :
@@ -79,6 +80,12 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
   exportAs: 'cngxCheckbox',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  hostDirectives: [
+    {
+      directive: CngxRovingItem,
+      inputs: ['cngxRovingItemDisabled: disabled'],
+    },
+  ],
   imports: [CngxCheckboxIndicator],
   host: {
     class: 'cngx-checkbox',
@@ -86,10 +93,10 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
     '[attr.id]': 'id()',
     '[attr.aria-checked]': 'ariaChecked()',
     '[attr.aria-disabled]': 'disabled() ? "true" : null',
-    '[attr.aria-invalid]': '(invalid() || errorState()) ? "true" : null',
-    '[attr.aria-errormessage]': 'errorMessageId()',
-    '[attr.aria-describedby]': 'describedById()',
-    '[attr.tabindex]': 'disabled() ? -1 : 0',
+    '[attr.aria-invalid]': 'ariaInvalid() ? "true" : null',
+    '[attr.aria-errormessage]': 'ariaInvalid() ? errorMessageId() : null',
+    '[attr.aria-describedby]': 'describedId',
+    '[attr.tabindex]': 'hostTabindex()',
     '[class.cngx-checkbox--checked]': 'value()',
     '[class.cngx-checkbox--indeterminate]': 'indeterminate()',
     '[class.cngx-checkbox--disabled]': 'disabled()',
@@ -139,13 +146,12 @@ export class CngxCheckbox implements CngxControlValue<boolean>, CngxFormFieldCon
   /**
    * Optional id of an external error message element (e.g. a sibling
    * rendered by `<cngx-form-field>` or a consumer-owned `<span>`).
-   * When set, the host emits `aria-errormessage="<id>"` so AT can
-   * locate the message; consumers MUST render an element with that id
-   * - passing an id without a matching element produces a dangling
-   * AT reference. Default `null` skips the attribute entirely.
-   * Note: WAI-ARIA dictates that AT ignores this attribute when
-   * `aria-invalid` is absent or `"false"`, so a stable always-emitted
-   * id is harmless when the field is valid.
+   * The host emits `aria-errormessage="<id>"` only when
+   * `aria-invalid="true"` — symmetric with the sibling `aria-invalid`
+   * host binding (both gate on `invalid() || errorState()`). Consumers
+   * MUST render an element with the supplied id; passing an id without
+   * a matching element produces a dangling AT reference. Default
+   * `null` skips the attribute entirely.
    */
   readonly errorMessageId = input<string | null>(null);
   readonly disabledReason = input<string>('');
@@ -154,8 +160,19 @@ export class CngxCheckbox implements CngxControlValue<boolean>, CngxFormFieldCon
 
   protected readonly describedId = nextUid('cngx-checkbox-desc');
 
-  protected readonly describedById = computed(() =>
-    this.disabledReason() ? this.describedId : null,
+  private readonly rovingParent = inject(CngxRovingTabindex, {
+    optional: true,
+    skipSelf: true,
+  });
+
+  /**
+   * When inside a `CngxRovingTabindex` parent (typically `CngxCheckboxGroup`),
+   * yields `null` so the roving controller owns the `tabindex` attribute
+   * uncontested. Standalone, falls back to the WAI-ARIA default of
+   * `0` (or `-1` when disabled). Mirrors `CngxCard.hostTabindex`.
+   */
+  protected readonly hostTabindex = computed<number | null>(() =>
+    this.rovingParent ? null : this.disabled() ? -1 : 0,
   );
 
   protected readonly ariaChecked = computed<'true' | 'false' | 'mixed'>(() =>
@@ -183,6 +200,8 @@ export class CngxCheckbox implements CngxControlValue<boolean>, CngxFormFieldCon
   readonly errorState = computed<boolean>(
     () => this.fieldHost?.showError() ?? this.aggregator?.shouldShow() ?? false,
   );
+
+  protected readonly ariaInvalid = computed(() => this.invalid() || this.errorState());
 
   protected handleClick(): void {
     this.advance();

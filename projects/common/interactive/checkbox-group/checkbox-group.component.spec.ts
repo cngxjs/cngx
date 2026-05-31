@@ -166,7 +166,7 @@ describe('CngxCheckboxGroup', () => {
     expect(groupEl.getAttribute('aria-disabled')).toBe('true');
   });
 
-  it('aria-required / aria-invalid / aria-errormessage are reactive', () => {
+  it('aria-required / aria-invalid / aria-errormessage are reactive and gated symmetrically', () => {
     const { fixture, group, host, groupEl } = setup();
     expect(groupEl.getAttribute('aria-required')).toBeNull();
     expect(groupEl.getAttribute('aria-invalid')).toBeNull();
@@ -184,7 +184,8 @@ describe('CngxCheckboxGroup', () => {
 
     group.invalid.set(false);
     fixture.detectChanges();
-    expect(groupEl.getAttribute('aria-errormessage')).toBe('err-1');
+    expect(groupEl.getAttribute('aria-invalid')).toBeNull();
+    expect(groupEl.getAttribute('aria-errormessage')).toBeNull();
   });
 
   it('aria-busy reflects state.status() === "loading" reactively', () => {
@@ -288,7 +289,24 @@ describe('CngxCheckboxGroup', () => {
       expect(groupEl.getAttribute('aria-invalid')).toBe('true');
     });
 
-    it('aria-errormessage tracks errorMessageId regardless of invalid state when bound', () => {
+    it('aria-errormessage emits errorMessageId when invalid()', () => {
+      @Component({
+        template: `<cngx-checkbox-group [allValues]="vs" [errorMessageId]="msgId()" [(invalid)]="bad"><cngx-checkbox [value]="false">A</cngx-checkbox></cngx-checkbox-group>`,
+        imports: [CngxCheckboxGroup, CngxCheckbox],
+      })
+      class MsgHost {
+        vs = ['a'];
+        msgId = signal<string | null>('cbg-err');
+        bad = signal(true);
+      }
+      const fixture = TestBed.createComponent(MsgHost);
+      fixture.detectChanges();
+      const groupEl = fixture.debugElement.query(By.directive(CngxCheckboxGroup))
+        .nativeElement as HTMLElement;
+      expect(groupEl.getAttribute('aria-errormessage')).toBe('cbg-err');
+    });
+
+    it('aria-errormessage is null when neither invalid() nor errorState() is set', () => {
       @Component({
         template: `<cngx-checkbox-group [allValues]="vs" [errorMessageId]="msgId()" [(invalid)]="bad"><cngx-checkbox [value]="false">A</cngx-checkbox></cngx-checkbox-group>`,
         imports: [CngxCheckboxGroup, CngxCheckbox],
@@ -302,10 +320,122 @@ describe('CngxCheckboxGroup', () => {
       fixture.detectChanges();
       const groupEl = fixture.debugElement.query(By.directive(CngxCheckboxGroup))
         .nativeElement as HTMLElement;
-      expect(groupEl.getAttribute('aria-errormessage')).toBe('cbg-err');
+      expect(groupEl.getAttribute('aria-errormessage')).toBeNull();
+
       fixture.componentInstance.bad.set(true);
       fixture.detectChanges();
       expect(groupEl.getAttribute('aria-errormessage')).toBe('cbg-err');
+    });
+  });
+
+  describe('roving keyboard navigation', () => {
+    @Component({
+      template: `
+        <cngx-checkbox-group label="Picks" [orientation]="orientation()">
+          <cngx-checkbox>A</cngx-checkbox>
+          <cngx-checkbox [disabled]="bOff()">B</cngx-checkbox>
+          <cngx-checkbox>C</cngx-checkbox>
+        </cngx-checkbox-group>
+      `,
+      imports: [CngxCheckboxGroup, CngxCheckbox],
+    })
+    class NavHost {
+      bOff = signal(false);
+      orientation = signal<'horizontal' | 'vertical'>('vertical');
+    }
+
+    function navSetup() {
+      const fixture = TestBed.createComponent(NavHost);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      const groupEl = fixture.debugElement.query(By.directive(CngxCheckboxGroup))
+        .nativeElement as HTMLElement;
+      const checkboxes = fixture.debugElement
+        .queryAll(By.directive(CngxCheckbox))
+        .map((de) => de.nativeElement as HTMLElement);
+      return { fixture, host: fixture.componentInstance, groupEl, checkboxes };
+    }
+
+    function keydown(el: HTMLElement, key: string): void {
+      el.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }));
+    }
+
+    it('ArrowDown advances tabindex ownership to the next leaf (vertical orientation)', () => {
+      const { fixture, groupEl, checkboxes } = navSetup();
+      expect(checkboxes[0].getAttribute('tabindex')).toBe('0');
+
+      keydown(groupEl, 'ArrowDown');
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      expect(checkboxes[0].getAttribute('tabindex')).toBe('-1');
+      expect(checkboxes[1].getAttribute('tabindex')).toBe('0');
+    });
+
+    it('ArrowUp moves tabindex ownership to the previous leaf', () => {
+      const { fixture, groupEl, checkboxes } = navSetup();
+      keydown(groupEl, 'ArrowDown');
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(checkboxes[1].getAttribute('tabindex')).toBe('0');
+
+      keydown(groupEl, 'ArrowUp');
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      expect(checkboxes[0].getAttribute('tabindex')).toBe('0');
+      expect(checkboxes[1].getAttribute('tabindex')).toBe('-1');
+    });
+
+    it('Home / End jump to first / last leaf', () => {
+      const { fixture, groupEl, checkboxes } = navSetup();
+      keydown(groupEl, 'End');
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(checkboxes[2].getAttribute('tabindex')).toBe('0');
+
+      keydown(groupEl, 'Home');
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(checkboxes[0].getAttribute('tabindex')).toBe('0');
+    });
+
+    it('disabled leaf is skipped by arrow nav (parallel to radio-group precedent)', () => {
+      const { fixture, host, groupEl, checkboxes } = navSetup();
+      host.bOff.set(true);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      keydown(groupEl, 'ArrowDown');
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      expect(checkboxes[0].getAttribute('tabindex')).toBe('-1');
+      expect(checkboxes[1].getAttribute('tabindex')).toBe('-1');
+      expect(checkboxes[2].getAttribute('tabindex')).toBe('0');
+    });
+
+    it('horizontal orientation activates ArrowRight / ArrowLeft and ignores ArrowDown / ArrowUp', () => {
+      const { fixture, host, groupEl, checkboxes } = navSetup();
+      host.orientation.set('horizontal');
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      keydown(groupEl, 'ArrowDown');
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(checkboxes[0].getAttribute('tabindex')).toBe('0');
+      expect(checkboxes[1].getAttribute('tabindex')).toBe('-1');
+
+      keydown(groupEl, 'ArrowRight');
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(checkboxes[1].getAttribute('tabindex')).toBe('0');
+
+      keydown(groupEl, 'ArrowLeft');
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(checkboxes[0].getAttribute('tabindex')).toBe('0');
     });
   });
 });

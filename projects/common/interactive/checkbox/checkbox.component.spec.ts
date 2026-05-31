@@ -1,6 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
+import { CngxRovingItem, CngxRovingTabindex } from '@cngx/common/a11y';
 import { CngxCheckboxIndicator } from '@cngx/common/display';
 import { describe, expect, it } from 'vitest';
 import { CNGX_FORM_FIELD_HOST } from '@cngx/core/tokens';
@@ -163,7 +164,23 @@ describe('CngxCheckbox', () => {
       expect(el.getAttribute('aria-invalid')).toBeNull();
     });
 
-    it('aria-errormessage always reflects errorMessageId (independent of invalid)', () => {
+    it('aria-errormessage emits errorMessageId when invalid()', () => {
+      @Component({
+        template: `<cngx-checkbox [errorMessageId]="msgId()" [(invalid)]="bad">L</cngx-checkbox>`,
+        imports: [CngxCheckbox],
+      })
+      class MsgHost {
+        msgId = signal<string | null>('cb-err');
+        bad = signal(true);
+      }
+      const fixture = TestBed.createComponent(MsgHost);
+      fixture.detectChanges();
+      const el = fixture.debugElement.query(By.directive(CngxCheckbox))
+        .nativeElement as HTMLElement;
+      expect(el.getAttribute('aria-errormessage')).toBe('cb-err');
+    });
+
+    it('aria-errormessage is null when neither invalid() nor errorState() is set', () => {
       @Component({
         template: `<cngx-checkbox [errorMessageId]="msgId()" [(invalid)]="bad">L</cngx-checkbox>`,
         imports: [CngxCheckbox],
@@ -176,10 +193,205 @@ describe('CngxCheckbox', () => {
       fixture.detectChanges();
       const el = fixture.debugElement.query(By.directive(CngxCheckbox))
         .nativeElement as HTMLElement;
-      expect(el.getAttribute('aria-errormessage')).toBe('cb-err');
+      expect(el.getAttribute('aria-errormessage')).toBeNull();
+
       fixture.componentInstance.bad.set(true);
       fixture.detectChanges();
       expect(el.getAttribute('aria-errormessage')).toBe('cb-err');
+    });
+  });
+
+  describe('aria-describedby stability', () => {
+    it('the SR-only span carries the stable describedId even when disabledReason is empty', () => {
+      const { fixture } = setup();
+      const srSpan = fixture.debugElement.query(By.css('.cngx-checkbox__sr-only'))
+        .nativeElement as HTMLElement;
+      expect(srSpan.id).toMatch(/^cngx-checkbox-desc/);
+      expect(srSpan.getAttribute('aria-hidden')).toBe('true');
+      expect(srSpan.textContent?.trim()).toBe('');
+    });
+
+    it('host aria-describedby always carries describedId across (disabled, invalid) state combinations', () => {
+      @Component({
+        template: `<cngx-checkbox [(invalid)]="bad" [disabled]="off()">L</cngx-checkbox>`,
+        imports: [CngxCheckbox],
+      })
+      class MatrixHost {
+        bad = signal(false);
+        off = signal(false);
+      }
+      const fixture = TestBed.createComponent(MatrixHost);
+      fixture.detectChanges();
+      const el = fixture.debugElement.query(By.directive(CngxCheckbox))
+        .nativeElement as HTMLElement;
+      const srSpan = fixture.debugElement.query(By.css('.cngx-checkbox__sr-only'))
+        .nativeElement as HTMLElement;
+      const expectedId = srSpan.id;
+
+      // disabled=false, invalid=false
+      expect(el.getAttribute('aria-describedby')).toBe(expectedId);
+
+      // disabled=false, invalid=true
+      fixture.componentInstance.bad.set(true);
+      fixture.detectChanges();
+      expect(el.getAttribute('aria-describedby')).toBe(expectedId);
+
+      // disabled=true, invalid=true
+      fixture.componentInstance.off.set(true);
+      fixture.detectChanges();
+      expect(el.getAttribute('aria-describedby')).toBe(expectedId);
+
+      // disabled=true, invalid=false
+      fixture.componentInstance.bad.set(false);
+      fixture.detectChanges();
+      expect(el.getAttribute('aria-describedby')).toBe(expectedId);
+    });
+  });
+
+  describe('roving composition', () => {
+    it('standalone <cngx-checkbox> exposes tabindex="0" when enabled', () => {
+      const { el } = setup();
+      expect(el.getAttribute('tabindex')).toBe('0');
+    });
+
+    it('standalone <cngx-checkbox> exposes tabindex="-1" when disabled', () => {
+      const { fixture, el, host } = setup();
+      host.off.set(true);
+      fixture.detectChanges();
+      expect(el.getAttribute('tabindex')).toBe('-1');
+    });
+
+    it('projected into a CngxRovingTabindex parent, the host yields tabindex ownership', () => {
+      @Component({
+        template: `
+          <div cngxRovingTabindex>
+            <cngx-checkbox>A</cngx-checkbox>
+            <cngx-checkbox>B</cngx-checkbox>
+            <cngx-checkbox>C</cngx-checkbox>
+          </div>
+        `,
+        imports: [CngxCheckbox, CngxRovingTabindex],
+      })
+      class RovingHost {}
+
+      const fixture = TestBed.createComponent(RovingHost);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      const checkboxes = fixture.debugElement
+        .queryAll(By.directive(CngxCheckbox))
+        .map((de) => de.nativeElement as HTMLElement);
+
+      // The roving controller's setAttribute writes the active leaf to "0"
+      // and others to "-1". The host's [attr.tabindex]="hostTabindex()"
+      // returns null under a roving parent, so it does not compete.
+      expect(checkboxes[0].getAttribute('tabindex')).toBe('0');
+      expect(checkboxes[1].getAttribute('tabindex')).toBe('-1');
+      expect(checkboxes[2].getAttribute('tabindex')).toBe('-1');
+    });
+
+    it('hostTabindex() returning null does not clobber the controller setAttribute across CD cycles', () => {
+      // Post-CD write-conflict regression: the pre-fix code shipped
+      // [attr.tabindex]="disabled() ? -1 : 0" which raced the controller's
+      // imperative writes on every CD. With hostTabindex()===null under a
+      // roving parent, the binding must be a no-op even after detectChanges
+      // and flushEffects rerun.
+      @Component({
+        template: `
+          <div cngxRovingTabindex>
+            <cngx-checkbox>A</cngx-checkbox>
+            <cngx-checkbox>B</cngx-checkbox>
+          </div>
+        `,
+        imports: [CngxCheckbox, CngxRovingTabindex],
+      })
+      class StabilityHost {}
+
+      const fixture = TestBed.createComponent(StabilityHost);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      const checkboxes = fixture.debugElement
+        .queryAll(By.directive(CngxCheckbox))
+        .map((de) => de.nativeElement as HTMLElement);
+
+      expect(checkboxes[0].getAttribute('tabindex')).toBe('0');
+      expect(checkboxes[1].getAttribute('tabindex')).toBe('-1');
+
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      expect(checkboxes[0].getAttribute('tabindex')).toBe('0');
+      expect(checkboxes[1].getAttribute('tabindex')).toBe('-1');
+
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      expect(checkboxes[0].getAttribute('tabindex')).toBe('0');
+      expect(checkboxes[1].getAttribute('tabindex')).toBe('-1');
+    });
+
+    it('forwards per-leaf [disabled] to the injected CngxRovingItem via the alias', () => {
+      @Component({
+        template: `
+          <div cngxRovingTabindex>
+            <cngx-checkbox>A</cngx-checkbox>
+            <cngx-checkbox>B</cngx-checkbox>
+            <cngx-checkbox [disabled]="cOff()">C</cngx-checkbox>
+          </div>
+        `,
+        imports: [CngxCheckbox, CngxRovingTabindex],
+      })
+      class DisabledLeafHost {
+        cOff = signal(true);
+      }
+
+      const fixture = TestBed.createComponent(DisabledLeafHost);
+      fixture.detectChanges();
+
+      const rovingItems = fixture.debugElement
+        .queryAll(By.directive(CngxRovingItem))
+        .map((de) => de.injector.get(CngxRovingItem));
+      expect(rovingItems[0].disabled()).toBe(false);
+      expect(rovingItems[1].disabled()).toBe(false);
+      expect(rovingItems[2].disabled()).toBe(true);
+    });
+
+    it('ArrowDown on the roving parent skips a disabled cngx-checkbox leaf', () => {
+      @Component({
+        template: `
+          <div cngxRovingTabindex orientation="vertical">
+            <cngx-checkbox>A</cngx-checkbox>
+            <cngx-checkbox [disabled]="bOff()">B</cngx-checkbox>
+            <cngx-checkbox>C</cngx-checkbox>
+          </div>
+        `,
+        imports: [CngxCheckbox, CngxRovingTabindex],
+      })
+      class SkipHost {
+        bOff = signal(true);
+      }
+
+      const fixture = TestBed.createComponent(SkipHost);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      const wrapper = fixture.debugElement.query(By.directive(CngxRovingTabindex))
+        .nativeElement as HTMLElement;
+      const checkboxes = fixture.debugElement
+        .queryAll(By.directive(CngxCheckbox))
+        .map((de) => de.nativeElement as HTMLElement);
+
+      expect(checkboxes[0].getAttribute('tabindex')).toBe('0');
+
+      wrapper.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true }),
+      );
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      expect(checkboxes[0].getAttribute('tabindex')).toBe('-1');
+      expect(checkboxes[1].getAttribute('tabindex')).toBe('-1');
+      expect(checkboxes[2].getAttribute('tabindex')).toBe('0');
     });
   });
 });

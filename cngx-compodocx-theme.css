@@ -26,15 +26,15 @@
 
 :root {
   /* cngx foundation values, re-declared so the theme is self-contained */
-  --cngx-color-surface:    oklch(1 0 0);
-  --cngx-color-text:       oklch(0.2 0.01 250);
+  --cngx-color-surface: oklch(1 0 0);
+  --cngx-color-text: oklch(0.2 0.01 250);
   --cngx-color-text-muted: oklch(0.5 0.01 250);
-  --cngx-color-border:     oklch(0.88 0.005 250);
-  --cngx-color-primary:    oklch(0.66 0.19 50);
-  --cngx-color-danger:     oklch(0.6 0.18 25);
-  --cngx-color-success:    oklch(0.6 0.15 145);
-  --cngx-color-warning:    oklch(0.72 0.15 75);
-  --cngx-color-info:       oklch(0.65 0.12 240);
+  --cngx-color-border: oklch(0.88 0.005 250);
+  --cngx-color-primary: oklch(0.66 0.19 50);
+  --cngx-color-danger: oklch(0.6 0.18 25);
+  --cngx-color-success: oklch(0.6 0.15 145);
+  --cngx-color-warning: oklch(0.72 0.15 75);
+  --cngx-color-info: oklch(0.65 0.12 240);
 
   /* ── Surface hierarchy ──────────────────────────────────── *
    * bg            = page surface (pure white, matches cngx-ex-bg)
@@ -44,99 +44,99 @@
    * bg-code       = inline-code chips
    * bg-code-block = fenced shiki block (dark on both modes)
    */
-  --color-cdx-bg:            var(--cngx-color-surface);
-  --color-cdx-bg-subtle:     oklch(0.97 0.004 250);
-  --color-cdx-bg-alt:        oklch(0.94 0.005 250);
+  --color-cdx-bg: var(--cngx-color-surface);
+  --color-cdx-bg-subtle: oklch(0.97 0.004 250);
+  --color-cdx-bg-alt: oklch(0.94 0.005 250);
   /* bg-elevated sits a hair below pure-white so feature cards on
    * the category landing pages read as cards at rest; the bundled
    * hover (box-shadow + translateY) then has a body to lift. */
-  --color-cdx-bg-elevated:   oklch(0.985 0.003 250);
-  --color-cdx-bg-code:       oklch(0.93 0.006 250);
+  --color-cdx-bg-elevated: oklch(0.985 0.003 250);
+  --color-cdx-bg-code: oklch(0.93 0.006 250);
   --color-cdx-bg-code-block: oklch(0.17 0.012 250);
 
   /* ── Text hierarchy ─────────────────────────────────────── */
-  --color-cdx-text:           var(--cngx-color-text);
+  --color-cdx-text: var(--cngx-color-text);
   --color-cdx-text-secondary: oklch(0.4 0.01 250);
-  --color-cdx-text-muted:     var(--cngx-color-text-muted);
-  --color-cdx-text-inverse:   oklch(0.96 0.005 250);
+  --color-cdx-text-muted: var(--cngx-color-text-muted);
+  --color-cdx-text-inverse: oklch(0.96 0.005 250);
 
   /* ── Primary accent — Ember ─────────────────────────────── */
-  --color-cdx-primary:        var(--cngx-color-primary);
-  --color-cdx-primary-hover:  oklch(0.58 0.19 50);
+  --color-cdx-primary: var(--cngx-color-primary);
+  --color-cdx-primary-hover: oklch(0.58 0.19 50);
   --color-cdx-primary-subtle: oklch(0.97 0.04 50);
 
   /* ── Entity type accents ────────────────────────────────── *
    * Map cngx semantic colours to the 14 compodocx entity kinds.
    * Component leads with Ember; data utilities take success-green;
    * configuration / DI tokens stay in the neutral text family. */
-  --color-cdx-entity-component:   var(--cngx-color-primary);
-  --color-cdx-entity-directive:   oklch(0.6 0.16 280);
-  --color-cdx-entity-service:     oklch(0.62 0.16 35);
-  --color-cdx-entity-pipe:        oklch(0.6 0.18 330);
-  --color-cdx-entity-module:      var(--cngx-color-info);
-  --color-cdx-entity-class:       var(--cngx-color-success);
-  --color-cdx-entity-interface:   oklch(0.5 0.04 250);
-  --color-cdx-entity-token:       oklch(0.42 0.03 250);
-  --color-cdx-entity-guard:       var(--cngx-color-danger);
+  --color-cdx-entity-component: var(--cngx-color-primary);
+  --color-cdx-entity-directive: oklch(0.6 0.16 280);
+  --color-cdx-entity-service: oklch(0.62 0.16 35);
+  --color-cdx-entity-pipe: oklch(0.6 0.18 330);
+  --color-cdx-entity-module: var(--cngx-color-info);
+  --color-cdx-entity-class: var(--cngx-color-success);
+  --color-cdx-entity-interface: oklch(0.5 0.04 250);
+  --color-cdx-entity-token: oklch(0.42 0.03 250);
+  --color-cdx-entity-guard: var(--cngx-color-danger);
   --color-cdx-entity-interceptor: oklch(0.58 0.18 310);
-  --color-cdx-entity-function:    oklch(0.6 0.14 145);
-  --color-cdx-entity-variable:    oklch(0.5 0.03 250);
-  --color-cdx-entity-typealias:   oklch(0.6 0.16 270);
-  --color-cdx-entity-enum:        var(--cngx-color-warning);
-  --color-cdx-entity-entity:      var(--cngx-color-text);
+  --color-cdx-entity-function: oklch(0.6 0.14 145);
+  --color-cdx-entity-variable: oklch(0.5 0.03 250);
+  --color-cdx-entity-typealias: oklch(0.6 0.16 270);
+  --color-cdx-entity-enum: var(--cngx-color-warning);
+  --color-cdx-entity-entity: var(--cngx-color-text);
 
   /* ── Badge base colors (auto-derive bg / border via color-mix) ── */
-  --color-cdx-badge-standalone:           oklch(0.55 0.13 175);
-  --color-cdx-badge-token:                oklch(0.55 0.16 280);
-  --color-cdx-badge-beta:                 var(--cngx-color-warning);
-  --color-cdx-badge-factory:              var(--cngx-color-info);
-  --color-cdx-badge-zoneless:             oklch(0.55 0.15 295);
-  --color-cdx-badge-breaking:             var(--cngx-color-danger);
-  --color-cdx-badge-signal:               var(--cngx-color-primary);
-  --color-cdx-badge-computed:             oklch(0.58 0.15 290);
-  --color-cdx-badge-effect:               oklch(0.62 0.16 50);
-  --color-cdx-badge-resource:             oklch(0.58 0.14 200);
-  --color-cdx-badge-model:                oklch(0.55 0.14 250);
-  --color-cdx-badge-after-render:         oklch(0.6 0.15 30);
-  --color-cdx-badge-after-next-render:    oklch(0.6 0.16 20);
-  --color-cdx-badge-after-every-render:   oklch(0.6 0.17 12);
-  --color-cdx-badge-after-render-effect:  oklch(0.58 0.15 350);
-  --color-cdx-badge-input:                var(--cngx-color-success);
-  --color-cdx-badge-output:               oklch(0.58 0.16 350);
-  --color-cdx-badge-view-child:           oklch(0.55 0.13 175);
-  --color-cdx-badge-content-child:        oklch(0.55 0.13 95);
-  --color-cdx-badge-inject:               oklch(0.56 0.14 320);
-  --color-cdx-badge-host:                 oklch(0.55 0.12 195);
-  --color-cdx-badge-ai-generated:         oklch(0.6 0.16 295);
-  --color-cdx-badge-wcag-a:               oklch(0.5 0.01 250);
-  --color-cdx-badge-wcag-aa:              var(--cngx-color-success);
-  --color-cdx-badge-wcag-aaa:             var(--cngx-color-info);
+  --color-cdx-badge-standalone: oklch(0.55 0.13 175);
+  --color-cdx-badge-token: oklch(0.55 0.16 280);
+  --color-cdx-badge-beta: var(--cngx-color-warning);
+  --color-cdx-badge-factory: var(--cngx-color-info);
+  --color-cdx-badge-zoneless: oklch(0.55 0.15 295);
+  --color-cdx-badge-breaking: var(--cngx-color-danger);
+  --color-cdx-badge-signal: var(--cngx-color-primary);
+  --color-cdx-badge-computed: oklch(0.58 0.15 290);
+  --color-cdx-badge-effect: oklch(0.62 0.16 50);
+  --color-cdx-badge-resource: oklch(0.58 0.14 200);
+  --color-cdx-badge-model: oklch(0.55 0.14 250);
+  --color-cdx-badge-after-render: oklch(0.6 0.15 30);
+  --color-cdx-badge-after-next-render: oklch(0.6 0.16 20);
+  --color-cdx-badge-after-every-render: oklch(0.6 0.17 12);
+  --color-cdx-badge-after-render-effect: oklch(0.58 0.15 350);
+  --color-cdx-badge-input: var(--cngx-color-success);
+  --color-cdx-badge-output: oklch(0.58 0.16 350);
+  --color-cdx-badge-view-child: oklch(0.55 0.13 175);
+  --color-cdx-badge-content-child: oklch(0.55 0.13 95);
+  --color-cdx-badge-inject: oklch(0.56 0.14 320);
+  --color-cdx-badge-host: oklch(0.55 0.12 195);
+  --color-cdx-badge-ai-generated: oklch(0.6 0.16 295);
+  --color-cdx-badge-wcag-a: oklch(0.5 0.01 250);
+  --color-cdx-badge-wcag-aa: var(--cngx-color-success);
+  --color-cdx-badge-wcag-aaa: var(--cngx-color-info);
 
   /* ── Modifier base colors ─────────────────────────────────── */
-  --color-cdx-mod-private:   var(--cngx-color-danger);
+  --color-cdx-mod-private: var(--cngx-color-danger);
   --color-cdx-mod-protected: oklch(0.5 0.12 60);
-  --color-cdx-mod-readonly:  oklch(0.55 0.12 230);
-  --color-cdx-mod-static:    oklch(0.55 0.13 280);
-  --color-cdx-mod-async:     oklch(0.5 0.12 180);
+  --color-cdx-mod-readonly: oklch(0.55 0.12 230);
+  --color-cdx-mod-static: oklch(0.55 0.13 280);
+  --color-cdx-mod-async: oklch(0.5 0.12 180);
 
   /* ── Status colours ──────────────────────────────────────── */
-  --color-cdx-status-pass:    var(--cngx-color-success);
-  --color-cdx-status-fail:    var(--cngx-color-danger);
+  --color-cdx-status-pass: var(--cngx-color-success);
+  --color-cdx-status-fail: var(--cngx-color-danger);
   --color-cdx-status-warning: var(--cngx-color-warning);
 
   /* ── Feedback ────────────────────────────────────────────── */
   --color-cdx-deprecated: var(--cngx-color-warning);
-  --color-cdx-danger:     var(--cngx-color-danger);
+  --color-cdx-danger: var(--cngx-color-danger);
 
   /* ── Overlay ─────────────────────────────────────────────── */
   --color-cdx-overlay: oklch(0.2 0.01 250 / 0.4);
 
   /* ── Borders ─────────────────────────────────────────────── */
-  --color-cdx-border:        var(--cngx-color-border);
+  --color-cdx-border: var(--cngx-color-border);
   --color-cdx-border-subtle: oklch(0.93 0.004 250);
   --color-cdx-border-strong: oklch(0.7 0.005 250);
-  --color-cdx-border-focus:  var(--cngx-color-primary);
-  --color-cdx-focus-ring:    var(--cngx-color-primary);
+  --color-cdx-border-focus: var(--cngx-color-primary);
+  --color-cdx-focus-ring: var(--cngx-color-primary);
 
   /* ── Shadows (mirror --cngx-shadow-*) ────────────────────── */
   --shadow-cdx-sm: 0 1px 2px oklch(0 0 0 / 0.05);
@@ -147,19 +147,19 @@
    * cngx itself defers to system-ui; mirror that here so the
    * docs match the default cngx baseline (--cngx-font-size-md = 0.9375rem).
    */
-  --font-heading: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --font-body:    system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --font-code:    ui-monospace, "SF Mono", Menlo, Consolas, "Cascadia Code", monospace;
-  --font-sans:    system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; /* [TW] */
-  --font-mono:    ui-monospace, "SF Mono", Menlo, Consolas, monospace;       /* [TW] */
+  --font-heading: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-body: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-code: ui-monospace, 'SF Mono', Menlo, Consolas, 'Cascadia Code', monospace;
+  --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; /* [TW] */
+  --font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace; /* [TW] */
 
   /* ── Radii (mirror --cngx-radius-{sm|md|lg}) ─────────────── */
   --radius-cdx-sm: 4px;
   --radius-cdx-md: 8px;
   --radius-cdx-lg: 12px;
-  --radius-sm:  4px;  /* [TW] */
-  --radius-md:  8px;  /* [TW] */
-  --radius-lg:  12px; /* [TW] */
+  --radius-sm: 4px; /* [TW] */
+  --radius-md: 8px; /* [TW] */
+  --radius-lg: 12px; /* [TW] */
   --radius-2xl: 12px; /* [TW] */
 
   /* ── Spacing ─────────────────────────────────────────────── *
@@ -168,33 +168,33 @@
    * the cdx scale intact for docs-chrome density but anchor xs/sm
    * to the cngx values.
    */
-  --spacing-cdx-xs:  4px;
-  --spacing-cdx-sm:  8px;
-  --spacing-cdx-md:  12px;
-  --spacing-cdx-lg:  16px;
-  --spacing-cdx-xl:  20px;
+  --spacing-cdx-xs: 4px;
+  --spacing-cdx-sm: 8px;
+  --spacing-cdx-md: 12px;
+  --spacing-cdx-lg: 16px;
+  --spacing-cdx-xl: 20px;
   --spacing-cdx-2xl: 24px;
 
   /* ── Code blocks ─────────────────────────────────────────── */
-  --color-cdx-snippet-bg:        oklch(0.96 0.005 250);
-  --color-cdx-snippet-border:    transparent;
-  --color-cdx-snippet-radius:    var(--radius-cdx-md);
-  --color-cdx-code-inline:       oklch(0.4 0.01 250);
+  --color-cdx-snippet-bg: oklch(0.96 0.005 250);
+  --color-cdx-snippet-border: transparent;
+  --color-cdx-snippet-radius: var(--radius-cdx-md);
+  --color-cdx-code-inline: oklch(0.4 0.01 250);
   --color-cdx-code-dark-surface: oklch(0.18 0.01 250);
-  --color-cdx-scrollbar:         oklch(0.5 0.01 250 / 0.4);
-  --color-cdx-line-number:       oklch(0.5 0.01 250 / 0.5);
-  --color-cdx-line-hover:        oklch(0.2 0.01 250 / 0.06);
-  --color-cdx-line-highlight:    oklch(0.82 0.16 50 / 0.25);
+  --color-cdx-scrollbar: oklch(0.5 0.01 250 / 0.4);
+  --color-cdx-line-number: oklch(0.5 0.01 250 / 0.5);
+  --color-cdx-line-hover: oklch(0.2 0.01 250 / 0.06);
+  --color-cdx-line-highlight: oklch(0.82 0.16 50 / 0.25);
   --color-cdx-line-highlight-flash: oklch(0.82 0.16 50 / 0.4);
-  --color-cdx-copy-success:      var(--cngx-color-success);
-  --color-cdx-lang-chip:         oklch(0.5 0.01 250);
-  --color-cdx-lang-chip-bg:      oklch(0.5 0.01 250 / 0.1);
+  --color-cdx-copy-success: var(--cngx-color-success);
+  --color-cdx-lang-chip: oklch(0.5 0.01 250);
+  --color-cdx-lang-chip-bg: oklch(0.5 0.01 250 / 0.1);
 
   /* ── Graphs (dependency, DOM tree) ───────────────────────── */
-  --color-cdx-graph-bg:           oklch(0.97 0.005 250);
-  --color-cdx-graph-border:       transparent;
+  --color-cdx-graph-bg: oklch(0.97 0.005 250);
+  --color-cdx-graph-border: transparent;
   --color-cdx-graph-border-width: 0;
-  --color-cdx-graph-radius:       var(--radius-cdx-md);
+  --color-cdx-graph-radius: var(--radius-cdx-md);
 
   /* ── Transitions (mirror --cngx-duration-*) ──────────────── */
   --cdx-transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
@@ -249,9 +249,9 @@ a.cdx-related-pill:focus-visible {
  * heading typography (monospace + inherit color). Otherwise a page
  * of `### @cngx/utils - Level 0` style H3s renders as a vertical
  * stack of chunky chip-blobs that fight the heading hierarchy. */
-.cdx-readme :is(h1,h2,h3,h4,h5,h6) :not(pre) > code,
-.cdx-prose :is(h1,h2,h3,h4,h5,h6) :not(pre) > code,
-:is(h1,h2,h3,h4,h5,h6) :not(pre) > code {
+.cdx-readme :is(h1, h2, h3, h4, h5, h6) :not(pre) > code,
+.cdx-prose :is(h1, h2, h3, h4, h5, h6) :not(pre) > code,
+:is(h1, h2, h3, h4, h5, h6) :not(pre) > code {
   background: transparent;
   padding: 0;
   border-radius: 0;
@@ -321,10 +321,18 @@ a.cdx-related-pill:focus-visible {
   text-transform: uppercase;
   color: var(--color-cdx-primary);
 }
-.cdx-readme .cc-tldr > :first-child { margin-top: 0; }
-.cdx-readme .cc-tldr > :last-child { margin-bottom: 0; }
-.cdx-readme .cc-tldr p { margin: 0; }
-.cdx-readme .cc-tldr p + p { margin-top: 8px; }
+.cdx-readme .cc-tldr > :first-child {
+  margin-top: 0;
+}
+.cdx-readme .cc-tldr > :last-child {
+  margin-bottom: 0;
+}
+.cdx-readme .cc-tldr p {
+  margin: 0;
+}
+.cdx-readme .cc-tldr p + p {
+  margin-top: 8px;
+}
 
 /* In-prose callouts. Authored as <aside class="cc-note"> blocks in
  * markdown so the inline-code rule does NOT clobber the start of
@@ -440,108 +448,117 @@ a.cdx-related-pill:focus-visible {
   border: none;
   height: 0;
 }
+.cdx-example-container {
+  border: 0;
+}
+.cdx-example-container body {
+  padding: 0;
+}
+#cngx-ex-color-scheme-toggle {
+  display: none;
+}
 
 .dark {
   /* Mirror cngx dark mode lift: +0.06-0.08 L on semantics, slight
    * chroma reduction. Surface stays in the same hue family. */
-  --cngx-color-surface:    oklch(0.2 0.01 250);
-  --cngx-color-text:       oklch(0.95 0.01 250);
+  --cngx-color-surface: oklch(0.2 0.01 250);
+  --cngx-color-text: oklch(0.95 0.01 250);
   --cngx-color-text-muted: oklch(0.7 0.01 250);
-  --cngx-color-border:     oklch(0.32 0.005 250);
-  --cngx-color-primary:    oklch(0.72 0.18 50);
-  --cngx-color-danger:     oklch(0.68 0.17 25);
-  --cngx-color-success:    oklch(0.68 0.14 145);
-  --cngx-color-warning:    oklch(0.78 0.14 75);
-  --cngx-color-info:       oklch(0.72 0.11 240);
+  --cngx-color-border: oklch(0.32 0.005 250);
+  --cngx-color-primary: oklch(0.72 0.18 50);
+  --cngx-color-danger: oklch(0.68 0.17 25);
+  --cngx-color-success: oklch(0.68 0.14 145);
+  --cngx-color-warning: oklch(0.78 0.14 75);
+  --cngx-color-info: oklch(0.72 0.11 240);
 
   /* ── Surface hierarchy (dark mirror) ────────────────────── *
    * Same five-step ladder as light mode, lifted across L:
    *   bg < bg-subtle < bg-alt < bg-elevated
    *   bg-code-block sits darker than bg for shiki contrast.
    */
-  --color-cdx-bg:            var(--cngx-color-surface);
-  --color-cdx-bg-subtle:     oklch(0.22 0.01 250);
-  --color-cdx-bg-alt:        oklch(0.26 0.01 250);
-  --color-cdx-bg-elevated:   oklch(0.29 0.012 250);
-  --color-cdx-bg-code:       oklch(0.28 0.01 250);
+  --color-cdx-bg: var(--cngx-color-surface);
+  --color-cdx-bg-subtle: oklch(0.22 0.01 250);
+  --color-cdx-bg-alt: oklch(0.26 0.01 250);
+  --color-cdx-bg-elevated: oklch(0.29 0.012 250);
+  --color-cdx-bg-code: oklch(0.28 0.01 250);
   --color-cdx-bg-code-block: oklch(0.12 0.01 250);
 
   /* ── Text hierarchy ─────────────────────────────────────── */
-  --color-cdx-text:           var(--cngx-color-text);
+  --color-cdx-text: var(--cngx-color-text);
   --color-cdx-text-secondary: oklch(0.8 0.01 250);
-  --color-cdx-text-muted:     var(--cngx-color-text-muted);
-  --color-cdx-text-inverse:   oklch(0.2 0.01 250);
+  --color-cdx-text-muted: var(--cngx-color-text-muted);
+  --color-cdx-text-inverse: oklch(0.2 0.01 250);
 
   /* ── Primary accent ─────────────────────────────────────── */
-  --color-cdx-primary:        var(--cngx-color-primary);
-  --color-cdx-primary-hover:  oklch(0.78 0.16 50);
+  --color-cdx-primary: var(--cngx-color-primary);
+  --color-cdx-primary-hover: oklch(0.78 0.16 50);
   --color-cdx-primary-subtle: oklch(0.32 0.1 50);
 
   /* ── Entity type accents (lifted + softened chroma) ─────── */
-  --color-cdx-entity-component:   var(--cngx-color-primary);
-  --color-cdx-entity-directive:   oklch(0.7 0.14 280);
-  --color-cdx-entity-service:     oklch(0.7 0.14 35);
-  --color-cdx-entity-pipe:        oklch(0.7 0.16 330);
-  --color-cdx-entity-module:      var(--cngx-color-info);
-  --color-cdx-entity-class:       var(--cngx-color-success);
-  --color-cdx-entity-interface:   oklch(0.7 0.03 250);
-  --color-cdx-entity-token:       oklch(0.6 0.02 250);
-  --color-cdx-entity-guard:       var(--cngx-color-danger);
+  --color-cdx-entity-component: var(--cngx-color-primary);
+  --color-cdx-entity-directive: oklch(0.7 0.14 280);
+  --color-cdx-entity-service: oklch(0.7 0.14 35);
+  --color-cdx-entity-pipe: oklch(0.7 0.16 330);
+  --color-cdx-entity-module: var(--cngx-color-info);
+  --color-cdx-entity-class: var(--cngx-color-success);
+  --color-cdx-entity-interface: oklch(0.7 0.03 250);
+  --color-cdx-entity-token: oklch(0.6 0.02 250);
+  --color-cdx-entity-guard: var(--cngx-color-danger);
   --color-cdx-entity-interceptor: oklch(0.68 0.15 310);
-  --color-cdx-entity-function:    oklch(0.7 0.13 145);
-  --color-cdx-entity-variable:    oklch(0.7 0.02 250);
-  --color-cdx-entity-typealias:   oklch(0.7 0.14 270);
-  --color-cdx-entity-enum:        var(--cngx-color-warning);
-  --color-cdx-entity-entity:      var(--cngx-color-text);
+  --color-cdx-entity-function: oklch(0.7 0.13 145);
+  --color-cdx-entity-variable: oklch(0.7 0.02 250);
+  --color-cdx-entity-typealias: oklch(0.7 0.14 270);
+  --color-cdx-entity-enum: var(--cngx-color-warning);
+  --color-cdx-entity-entity: var(--cngx-color-text);
 
   /* ── Badge base colors (parallel re-derive) ─────────────── */
-  --color-cdx-badge-standalone:           oklch(0.65 0.11 175);
-  --color-cdx-badge-token:                oklch(0.65 0.14 280);
-  --color-cdx-badge-beta:                 var(--cngx-color-warning);
-  --color-cdx-badge-factory:              var(--cngx-color-info);
-  --color-cdx-badge-zoneless:             oklch(0.65 0.14 295);
-  --color-cdx-badge-breaking:             var(--cngx-color-danger);
-  --color-cdx-badge-signal:               var(--cngx-color-primary);
-  --color-cdx-badge-computed:             oklch(0.68 0.14 290);
-  --color-cdx-badge-effect:               oklch(0.72 0.14 50);
-  --color-cdx-badge-resource:             oklch(0.68 0.13 200);
-  --color-cdx-badge-model:                oklch(0.65 0.13 250);
-  --color-cdx-badge-after-render:         oklch(0.7 0.14 30);
-  --color-cdx-badge-after-next-render:    oklch(0.7 0.15 20);
-  --color-cdx-badge-after-every-render:   oklch(0.7 0.16 12);
-  --color-cdx-badge-after-render-effect:  oklch(0.68 0.14 350);
-  --color-cdx-badge-input:                var(--cngx-color-success);
-  --color-cdx-badge-output:               oklch(0.68 0.15 350);
-  --color-cdx-badge-view-child:           oklch(0.65 0.11 175);
-  --color-cdx-badge-content-child:        oklch(0.65 0.12 95);
-  --color-cdx-badge-inject:               oklch(0.66 0.13 320);
-  --color-cdx-badge-host:                 oklch(0.65 0.11 195);
-  --color-cdx-badge-ai-generated:         oklch(0.7 0.15 295);
-  --color-cdx-badge-wcag-a:               oklch(0.7 0.01 250);
-  --color-cdx-badge-wcag-aa:              var(--cngx-color-success);
-  --color-cdx-badge-wcag-aaa:             var(--cngx-color-info);
+  --color-cdx-badge-standalone: oklch(0.65 0.11 175);
+  --color-cdx-badge-token: oklch(0.65 0.14 280);
+  --color-cdx-badge-beta: var(--cngx-color-warning);
+  --color-cdx-badge-factory: var(--cngx-color-info);
+  --color-cdx-badge-zoneless: oklch(0.65 0.14 295);
+  --color-cdx-badge-breaking: var(--cngx-color-danger);
+  --color-cdx-badge-signal: var(--cngx-color-primary);
+  --color-cdx-badge-computed: oklch(0.68 0.14 290);
+  --color-cdx-badge-effect: oklch(0.72 0.14 50);
+  --color-cdx-badge-resource: oklch(0.68 0.13 200);
+  --color-cdx-badge-model: oklch(0.65 0.13 250);
+  --color-cdx-badge-after-render: oklch(0.7 0.14 30);
+  --color-cdx-badge-after-next-render: oklch(0.7 0.15 20);
+  --color-cdx-badge-after-every-render: oklch(0.7 0.16 12);
+  --color-cdx-badge-after-render-effect: oklch(0.68 0.14 350);
+  --color-cdx-badge-input: var(--cngx-color-success);
+  --color-cdx-badge-output: oklch(0.68 0.15 350);
+  --color-cdx-badge-view-child: oklch(0.65 0.11 175);
+  --color-cdx-badge-content-child: oklch(0.65 0.12 95);
+  --color-cdx-badge-inject: oklch(0.66 0.13 320);
+  --color-cdx-badge-host: oklch(0.65 0.11 195);
+  --color-cdx-badge-ai-generated: oklch(0.7 0.15 295);
+  --color-cdx-badge-wcag-a: oklch(0.7 0.01 250);
+  --color-cdx-badge-wcag-aa: var(--cngx-color-success);
+  --color-cdx-badge-wcag-aaa: var(--cngx-color-info);
 
   /* ── Modifier base colors ────────────────────────────────── */
-  --color-cdx-mod-private:   var(--cngx-color-danger);
+  --color-cdx-mod-private: var(--cngx-color-danger);
   --color-cdx-mod-protected: oklch(0.6 0.11 60);
-  --color-cdx-mod-readonly:  oklch(0.65 0.11 230);
-  --color-cdx-mod-static:    oklch(0.65 0.12 280);
-  --color-cdx-mod-async:     oklch(0.6 0.11 180);
+  --color-cdx-mod-readonly: oklch(0.65 0.11 230);
+  --color-cdx-mod-static: oklch(0.65 0.12 280);
+  --color-cdx-mod-async: oklch(0.6 0.11 180);
 
   /* ── Status, feedback, overlay ──────────────────────────── */
-  --color-cdx-status-pass:    var(--cngx-color-success);
-  --color-cdx-status-fail:    var(--cngx-color-danger);
+  --color-cdx-status-pass: var(--cngx-color-success);
+  --color-cdx-status-fail: var(--cngx-color-danger);
   --color-cdx-status-warning: var(--cngx-color-warning);
-  --color-cdx-deprecated:     var(--cngx-color-warning);
-  --color-cdx-danger:         var(--cngx-color-danger);
-  --color-cdx-overlay:        oklch(0.1 0.01 250 / 0.6);
+  --color-cdx-deprecated: var(--cngx-color-warning);
+  --color-cdx-danger: var(--cngx-color-danger);
+  --color-cdx-overlay: oklch(0.1 0.01 250 / 0.6);
 
   /* ── Borders ─────────────────────────────────────────────── */
-  --color-cdx-border:        var(--cngx-color-border);
+  --color-cdx-border: var(--cngx-color-border);
   --color-cdx-border-subtle: oklch(0.28 0.005 250);
   --color-cdx-border-strong: oklch(0.45 0.005 250);
-  --color-cdx-border-focus:  var(--cngx-color-primary);
-  --color-cdx-focus-ring:    var(--cngx-color-primary);
+  --color-cdx-border-focus: var(--cngx-color-primary);
+  --color-cdx-focus-ring: var(--cngx-color-primary);
 
   /* ── Shadows (lift transparency in dark) ─────────────────── */
   --shadow-cdx-sm: 0 1px 2px oklch(0 0 0 / 0.4);
@@ -549,18 +566,18 @@ a.cdx-related-pill:focus-visible {
   --shadow-cdx-lg: 0 16px 40px oklch(0 0 0 / 0.6);
 
   /* ── Code blocks ─────────────────────────────────────────── */
-  --color-cdx-snippet-bg:        oklch(0.26 0.01 250);
-  --color-cdx-snippet-border:    transparent;
-  --color-cdx-code-inline:       oklch(0.7 0.01 250);
+  --color-cdx-snippet-bg: oklch(0.26 0.01 250);
+  --color-cdx-snippet-border: transparent;
+  --color-cdx-code-inline: oklch(0.7 0.01 250);
   --color-cdx-code-dark-surface: oklch(0.14 0.01 250);
-  --color-cdx-scrollbar:         oklch(0.7 0.01 250 / 0.4);
-  --color-cdx-line-number:       oklch(0.6 0.01 250 / 0.6);
-  --color-cdx-line-hover:        oklch(0.95 0.01 250 / 0.06);
-  --color-cdx-line-highlight:    oklch(0.82 0.16 50 / 0.18);
+  --color-cdx-scrollbar: oklch(0.7 0.01 250 / 0.4);
+  --color-cdx-line-number: oklch(0.6 0.01 250 / 0.6);
+  --color-cdx-line-hover: oklch(0.95 0.01 250 / 0.06);
+  --color-cdx-line-highlight: oklch(0.82 0.16 50 / 0.18);
   --color-cdx-line-highlight-flash: oklch(0.82 0.16 50 / 0.3);
-  --color-cdx-copy-success:      var(--cngx-color-success);
-  --color-cdx-lang-chip:         oklch(0.7 0.01 250);
-  --color-cdx-lang-chip-bg:      oklch(0.7 0.01 250 / 0.1);
+  --color-cdx-copy-success: var(--cngx-color-success);
+  --color-cdx-lang-chip: oklch(0.7 0.01 250);
+  --color-cdx-lang-chip-bg: oklch(0.7 0.01 250 / 0.1);
 
   /* ── Graphs ──────────────────────────────────────────────── */
   --color-cdx-graph-bg: oklch(0.24 0.01 250);

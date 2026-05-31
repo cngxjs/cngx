@@ -1,12 +1,8 @@
-import type {
-  CngxTagGroupAlign,
-  CngxTagGroupGap,
-} from '../tag-group.component';
+import type { CngxTagGroupAlign, CngxTagGroupGap } from '../tag-group.component';
 
 // Header and accessory contexts are structurally identical today.
 // Kept separate so per-slot fields (e.g. `position` on accessory) can
 // land without breaking sibling consumers. Mirrors `tag-slot.context.ts`.
-// Collapse trigger tracked in `display-accepted-debt.md §3`.
 
 /**
  * Context exposed by the `*cngxTagGroupHeader` slot — the full
