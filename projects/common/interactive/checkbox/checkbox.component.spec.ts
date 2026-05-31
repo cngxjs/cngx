@@ -164,7 +164,23 @@ describe('CngxCheckbox', () => {
       expect(el.getAttribute('aria-invalid')).toBeNull();
     });
 
-    it('aria-errormessage always reflects errorMessageId (independent of invalid)', () => {
+    it('aria-errormessage emits errorMessageId when invalid()', () => {
+      @Component({
+        template: `<cngx-checkbox [errorMessageId]="msgId()" [(invalid)]="bad">L</cngx-checkbox>`,
+        imports: [CngxCheckbox],
+      })
+      class MsgHost {
+        msgId = signal<string | null>('cb-err');
+        bad = signal(true);
+      }
+      const fixture = TestBed.createComponent(MsgHost);
+      fixture.detectChanges();
+      const el = fixture.debugElement.query(By.directive(CngxCheckbox))
+        .nativeElement as HTMLElement;
+      expect(el.getAttribute('aria-errormessage')).toBe('cb-err');
+    });
+
+    it('aria-errormessage is null when neither invalid() nor errorState() is set', () => {
       @Component({
         template: `<cngx-checkbox [errorMessageId]="msgId()" [(invalid)]="bad">L</cngx-checkbox>`,
         imports: [CngxCheckbox],
@@ -177,10 +193,58 @@ describe('CngxCheckbox', () => {
       fixture.detectChanges();
       const el = fixture.debugElement.query(By.directive(CngxCheckbox))
         .nativeElement as HTMLElement;
-      expect(el.getAttribute('aria-errormessage')).toBe('cb-err');
+      expect(el.getAttribute('aria-errormessage')).toBeNull();
+
       fixture.componentInstance.bad.set(true);
       fixture.detectChanges();
       expect(el.getAttribute('aria-errormessage')).toBe('cb-err');
+    });
+  });
+
+  describe('aria-describedby stability', () => {
+    it('the SR-only span carries the stable describedId even when disabledReason is empty', () => {
+      const { fixture } = setup();
+      const srSpan = fixture.debugElement.query(By.css('.cngx-checkbox__sr-only'))
+        .nativeElement as HTMLElement;
+      expect(srSpan.id).toMatch(/^cngx-checkbox-desc/);
+      expect(srSpan.getAttribute('aria-hidden')).toBe('true');
+      expect(srSpan.textContent?.trim()).toBe('');
+    });
+
+    it('host aria-describedby always carries describedId across (disabled, invalid) state combinations', () => {
+      @Component({
+        template: `<cngx-checkbox [(invalid)]="bad" [disabled]="off()">L</cngx-checkbox>`,
+        imports: [CngxCheckbox],
+      })
+      class MatrixHost {
+        bad = signal(false);
+        off = signal(false);
+      }
+      const fixture = TestBed.createComponent(MatrixHost);
+      fixture.detectChanges();
+      const el = fixture.debugElement.query(By.directive(CngxCheckbox))
+        .nativeElement as HTMLElement;
+      const srSpan = fixture.debugElement.query(By.css('.cngx-checkbox__sr-only'))
+        .nativeElement as HTMLElement;
+      const expectedId = srSpan.id;
+
+      // disabled=false, invalid=false
+      expect(el.getAttribute('aria-describedby')).toBe(expectedId);
+
+      // disabled=false, invalid=true
+      fixture.componentInstance.bad.set(true);
+      fixture.detectChanges();
+      expect(el.getAttribute('aria-describedby')).toBe(expectedId);
+
+      // disabled=true, invalid=true
+      fixture.componentInstance.off.set(true);
+      fixture.detectChanges();
+      expect(el.getAttribute('aria-describedby')).toBe(expectedId);
+
+      // disabled=true, invalid=false
+      fixture.componentInstance.bad.set(false);
+      fixture.detectChanges();
+      expect(el.getAttribute('aria-describedby')).toBe(expectedId);
     });
   });
 
