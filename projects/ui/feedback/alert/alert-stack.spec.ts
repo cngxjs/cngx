@@ -136,4 +136,13 @@ describe('CngxAlertStack', () => {
     const items = stackEl.querySelectorAll('.cngx-alert-stack__item');
     expect(items.length).toBe(1);
   });
+
+  it('pins the dismiss close-button with flex-shrink: 0 to survive narrow widths', () => {
+    setup();
+
+    const styleText = Array.from(document.querySelectorAll('style'))
+      .map((node) => node.textContent ?? '')
+      .join('\n');
+    expect(styleText).toMatch(/\.cngx-alert-stack__dismiss\s*\{[^}]*flex-shrink:\s*0/);
+  });
 });

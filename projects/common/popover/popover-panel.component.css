@@ -415,30 +415,11 @@
 
     .cngx-popover-panel__close {
       flex-shrink: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: var(--cngx-popover-panel-close-size);
-      height: var(--cngx-popover-panel-close-size);
-      padding: 0;
-      border: none;
-      border-radius: 50%;
-      background: transparent;
-      color: inherit;
-      opacity: 0.5;
-      cursor: pointer;
-      transition:
-        opacity 150ms,
-        background 150ms;
-    }
-    .cngx-popover-panel__close:hover {
-      opacity: 1;
-      background: var(--cngx-popover-panel-close-hover-bg, oklch(0 0 0 / 0.06));
-    }
-    .cngx-popover-panel__close:focus-visible {
-      outline: 2px solid var(--cngx-popover-panel-accent-text, currentColor);
-      outline-offset: 2px;
-      opacity: 1;
+      --cngx-close-button-size: var(--cngx-popover-panel-close-size, 28px);
+      --cngx-close-button-radius: 50%;
+      --cngx-close-button-padding: 0;
+      --cngx-close-button-hover-bg: var(--cngx-popover-panel-close-hover-bg, oklch(0 0 0 / 0.06));
+      --cngx-close-button-focus-outline: 2px solid var(--cngx-popover-panel-accent-text, currentColor);
     }
 
     .cngx-popover-panel__arrow {

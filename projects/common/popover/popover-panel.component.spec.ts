@@ -377,4 +377,38 @@ describe('CngxPopoverPanel', () => {
       expect(first.offsetPx).toBeNull();
     });
   });
+
+  describe('Close-button skin', () => {
+    it('expresses the popover-panel close variant via --cngx-close-button-* overrides, not a duplicate skin', () => {
+      TestBed.configureTestingModule({ imports: [CloseButtonHost] });
+      TestBed.createComponent(CloseButtonHost).detectChanges();
+
+      const styleText = Array.from(document.querySelectorAll('style'))
+        .map((node) => node.textContent ?? '')
+        .join('\n');
+
+      expect(styleText).toMatch(
+        /\.cngx-popover-panel__close\s*\{[\s\S]*?--cngx-close-button-radius:\s*50%/,
+      );
+      expect(styleText).toMatch(
+        /\.cngx-popover-panel__close\s*\{[\s\S]*?--cngx-close-button-size:\s*var\(--cngx-popover-panel-close-size/,
+      );
+      expect(styleText).toMatch(
+        /\.cngx-popover-panel__close\s*\{[\s\S]*?--cngx-close-button-hover-bg:\s*var\(--cngx-popover-panel-close-hover-bg/,
+      );
+      expect(styleText).not.toMatch(/\.cngx-popover-panel__close:hover\s*\{/);
+      expect(styleText).not.toMatch(/\.cngx-popover-panel__close:focus-visible\s*\{/);
+    });
+
+    it('keeps flex-shrink: 0 on the popover close-button host so it survives narrow header rows', () => {
+      TestBed.configureTestingModule({ imports: [CloseButtonHost] });
+      TestBed.createComponent(CloseButtonHost).detectChanges();
+
+      const styleText = Array.from(document.querySelectorAll('style'))
+        .map((node) => node.textContent ?? '')
+        .join('\n');
+
+      expect(styleText).toMatch(/\.cngx-popover-panel__close\s*\{[\s\S]*?flex-shrink:\s*0/);
+    });
+  });
 });
