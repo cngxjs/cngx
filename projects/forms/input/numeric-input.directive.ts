@@ -10,6 +10,7 @@ import {
   output,
   signal,
   type Signal,
+  untracked,
 } from '@angular/core';
 import { type ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { CNGX_INPUT_CONFIG } from './input-config';
@@ -119,6 +120,11 @@ function isAllowedChar(
     '[attr.aria-valuemin]': 'min() ?? null',
     '[attr.aria-valuemax]': 'max() ?? null',
     '[attr.aria-valuenow]': 'numericValue()',
+    // Tabular-nums by default so digits align column-wise on cngx-numeric-input
+    // fields (forms, dashboards, summary rows). Override on a parent via
+    // `--cngx-numeric-input-numeric-variant: normal` when the body font's
+    // proportional digits are wanted.
+    '[style.font-variant-numeric]': '"var(--cngx-numeric-input-numeric-variant, tabular-nums)"',
     '(beforeinput)': 'handleBeforeInput($event)',
     '(keydown)': 'handleKeyDown($event)',
     '(focus)': 'handleFocus()',
@@ -195,31 +201,34 @@ export class CngxNumericInput implements ControlValueAccessor {
     effect(() => {
       const focused = this.focusedState();
       const value = this.valueState();
-      const el = this.el.nativeElement;
-      const prevValue = el.value;
+      const { decimal } = this.separators();
+      const formatOnBlur = this.formatOnBlur();
 
-      if (focused) {
-        if (value != null) {
-          const { decimal } = this.separators();
-          const raw = decimal === '.' ? String(value) : String(value).replace('.', decimal);
-          if (el.value !== raw) {
-            el.value = raw;
+      untracked(() => {
+        const el = this.el.nativeElement;
+        const prevValue = el.value;
+
+        if (focused) {
+          if (value != null) {
+            const raw = decimal === '.' ? String(value) : String(value).replace('.', decimal);
+            if (el.value !== raw) {
+              el.value = raw;
+            }
+          }
+        } else {
+          if (value != null && formatOnBlur) {
+            el.value = this.format(value);
+          } else if (value != null) {
+            el.value = decimal === '.' ? String(value) : String(value).replace('.', decimal);
+          } else {
+            el.value = '';
           }
         }
-      } else {
-        if (value != null && this.formatOnBlur()) {
-          el.value = this.format(value);
-        } else if (value != null) {
-          const { decimal } = this.separators();
-          el.value = decimal === '.' ? String(value) : String(value).replace('.', decimal);
-        } else {
-          el.value = '';
-        }
-      }
 
-      if (el.value !== prevValue) {
-        el.dispatchEvent(new Event('input', { bubbles: true }));
-      }
+        if (el.value !== prevValue) {
+          el.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+      });
     });
   }
 

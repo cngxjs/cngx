@@ -31,6 +31,7 @@ export class CngxCellTpl<T = unknown> {
    * {@link CngxCellTplContext}. Read by `CngxTreetable` via
    * `contentChildren(CngxCellTpl)` and routed to the matching CDK
    * column - consumers typically never touch this directly.
+   * @internal
    */
   readonly template = inject(TemplateRef<CngxCellTplContext<T>>);
 }
@@ -59,6 +60,7 @@ export class CngxHeaderTpl {
    * The projected `<ng-template>` reference. Read by `CngxTreetable`
    * via `contentChildren(CngxHeaderTpl)` and rendered into the matching
    * column's header cell.
+   * @internal
    */
   readonly template = inject(TemplateRef<void>);
 }
@@ -86,6 +88,7 @@ export class CngxEmptyTpl {
    * The projected `<ng-template>` reference. Read by `CngxTreetable`
    * via `contentChild(CngxEmptyTpl)` and rendered in place of the
    * default "No data" message when `isEmpty()` is true.
+   * @internal
    */
   readonly template = inject(TemplateRef<void>);
 }

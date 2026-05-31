@@ -373,4 +373,29 @@ describe('CngxNumericInput', () => {
       expect(input.getAttribute('aria-valuemax')).toBe('100');
     });
   });
+
+  describe('tabular-nums default', () => {
+    it('sets font-variant-numeric on the host so digits align column-wise', () => {
+      const { input } = setup();
+      expect(input.style.fontVariantNumeric).toBe(
+        'var(--cngx-numeric-input-numeric-variant, tabular-nums)',
+      );
+    });
+  });
+
+  describe('untracked DOM write discipline', () => {
+    it('dispatches the synthetic input event once per setValue, not on every effect re-run', () => {
+      const { directive, input, fixture } = setup();
+      let inputEvents = 0;
+      input.addEventListener('input', () => inputEvents++);
+
+      directive.setValue(42);
+      flush(fixture);
+      expect(inputEvents).toBe(1);
+
+      directive.setValue(42);
+      flush(fixture);
+      expect(inputEvents).toBe(1);
+    });
+  });
 });

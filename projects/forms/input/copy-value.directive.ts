@@ -86,10 +86,16 @@ export class CngxCopyValue {
       if (this.resetTimer != null) {
         clearTimeout(this.resetTimer);
       }
-      this.resetTimer = setTimeout(() => {
-        this.copiedState.set(false);
-        this.resetTimer = null;
+      const handle: ReturnType<typeof setTimeout> = setTimeout(() => {
+        // Race-guard: only flip back if this callback still owns the current handle.
+        // A newer copy() between schedule and fire reassigns resetTimer to a different
+        // handle, and we must not stomp on it.
+        if (this.resetTimer === handle) {
+          this.copiedState.set(false);
+          this.resetTimer = null;
+        }
       }, this.resetDelay());
+      this.resetTimer = handle;
     } catch {
       // Clipboard write failed (permission denied, etc.) - drop silently.
     }
@@ -104,6 +110,9 @@ export class CngxCopyValue {
   }
 
   private fallbackCopy(text: string): void {
+    if (typeof document === 'undefined' || typeof document.execCommand !== 'function') {
+      return;
+    }
     const textarea = document.createElement('textarea');
     textarea.value = text;
     textarea.style.position = 'fixed';

@@ -8,13 +8,12 @@ import {
   effect,
   inject,
   input,
-  linkedSignal,
+  model,
   output,
   signal,
   type TrackByFunction,
   untracked,
 } from '@angular/core';
-import { SelectionModel } from '@angular/cdk/collections';
 import {
   CdkCell,
   CdkCellDef,
@@ -29,6 +28,7 @@ import {
 } from '@angular/cdk/table';
 import { NgTemplateOutlet } from '@angular/common';
 import type { CngxAsyncState } from '@cngx/core/utils';
+import { arrayEqual } from '@cngx/utils';
 import { CngxTreetableRow } from './treetable-row.directive';
 import { CngxCellTpl, CngxEmptyTpl, CngxHeaderTpl } from './column-template.directive';
 import { resolveCellTpl, resolveHeaderTpl } from './column-template.utils';
@@ -53,12 +53,11 @@ import { CNGX_TREETABLE_CONFIG } from './treetable.token';
  * - Tree flattening via {@link flattenTree} and visible-node filtering
  *   via {@link isNodeVisible}. Both run as memoised computeds against
  *   the `tree` input plus the live `expandedIds` set.
- * - Expand/collapse state, with controlled-vs-uncontrolled dual mode:
- *   when `expandedIds` is bound it wins; otherwise an internal
- *   `linkedSignal` seeded by {@link getInitialExpandedIds} drives it.
- * - Row selection routed through CDK's `SelectionModel`, kept in sync
- *   with an optional controlled `selectedIds` input through two
- *   `effect`s that break the self-trigger cycle with `untracked`.
+ * - Expand/collapse state via the `expandedIds` model. Bound consumers
+ *   own the value; unbound consumers see a default fully-expanded set
+ *   on first render via an init effect that seeds from `flatNodes`.
+ * - Selection state via the `selectedIds` model, reconciled against
+ *   `selectionMode` changes (`'none'` clears; `'single'` truncates).
  * - Keyboard navigation state via the `focusedNodeId` signal (the
  *   *logical* focus row, distinct from `document.activeElement`).
  * - Resolved column list including the synthetic `_expand` column and
@@ -145,22 +144,17 @@ export class CngxTreetable<T = unknown> {
   readonly nodeId = input<(node: T, path: readonly number[]) => string>();
 
   /**
-   * Controlled expand state. When bound, the component operates in
-   * **controlled mode** and the external value takes precedence over the
-   * internal state. Pair with `expandedIdsChange` for full two-way binding:
+   * Expanded-id set. Two-way bindable via `[(expandedIds)]` or read-only via
+   * `[expandedIds]`; the model's implicit `expandedIdsChange` output fires
+   * after every toggle. When left unbound the component seeds itself with
+   * the default fully-expanded set on first render and continues to manage
+   * its own state.
    *
    * ```html
-   * <cngx-treetable
-   *   [expandedIds]="myIds"
-   *   (expandedIdsChange)="myIds = $event" />
+   * <cngx-treetable [(expandedIds)]="myIds" />
    * ```
-   *
-   * When not bound (the default), the component manages its own expand state
-   * and starts fully expanded.
    */
-  readonly expandedIdsInput = input<ReadonlySet<string> | undefined>(undefined, {
-    alias: 'expandedIds',
-  });
+  readonly expandedIds = model<ReadonlySet<string>>(new Set());
 
   /**
    * Row selection behaviour.
@@ -168,7 +162,6 @@ export class CngxTreetable<T = unknown> {
    * - `'single'` - at most one row can be selected at a time.
    * - `'multi'` - multiple rows can be selected simultaneously.
    *
-   * Uses Angular CDK's `SelectionModel` internally.
    * @defaultValue `'none'`
    */
   readonly selectionMode = input<'none' | 'single' | 'multi'>('none');
@@ -182,21 +175,16 @@ export class CngxTreetable<T = unknown> {
   readonly showCheckboxes = input<boolean>(false);
 
   /**
-   * Controlled selection state. When bound, the component operates in
-   * **controlled mode** and the external value takes precedence.
-   * Pair with `selectedIdsChange` for full two-way binding:
+   * Selected-id set. Two-way bindable via `[(selectedIds)]` or read-only via
+   * `[selectedIds]`; the model's implicit `selectedIdsChange` output fires
+   * after every selection toggle. Switching `selectionMode` to `'none'` or
+   * `'single'` reconciles the set down to a legal shape.
    *
    * ```html
-   * <cngx-treetable
-   *   [selectedIds]="myIds"
-   *   (selectedIdsChange)="myIds = $event" />
+   * <cngx-treetable [(selectedIds)]="myIds" />
    * ```
-   *
-   * When not bound, the component manages its own selection state internally.
    */
-  readonly selectedIdsInput = input<ReadonlySet<string> | undefined>(undefined, {
-    alias: 'selectedIds',
-  });
+  readonly selectedIds = model<ReadonlySet<string>>(new Set());
 
   /**
    * Custom identity function for CDK / Material table's `trackBy`.
@@ -252,34 +240,6 @@ export class CngxTreetable<T = unknown> {
    */
   readonly nodeCollapsed = output<FlatNode<T>>();
 
-  /**
-   * Fires after every expand/collapse toggle with the full post-toggle
-   * id set. Use this for two-way `[(expandedIds)]` binding; use
-   * `nodeExpanded`/`nodeCollapsed` when you only need the one node that
-   * changed.
-   */
-  readonly expandedIdsChange = output<ReadonlySet<string>>();
-
-  /**
-   * Fires after every selection change with the array snapshot of the
-   * currently selected ids. This output is the array-shaped peer of
-   * `selectedIdsChange` (Set-shaped). Pick whichever shape your handler
-   * needs - both carry the same post-change selection.
-   */
-  readonly selectionChanged = output<readonly string[]>();
-
-  /**
-   * Fires after every selection change with the full post-change id set.
-   * Use this for two-way `[(selectedIds)]` binding.
-   *
-   * ```html
-   * <cngx-treetable
-   *   [selectedIds]="myIds"
-   *   (selectedIdsChange)="myIds = $event" />
-   * ```
-   */
-  readonly selectedIdsChange = output<ReadonlySet<string>>();
-
   private readonly config = inject(CNGX_TREETABLE_CONFIG);
 
   /** @internal */
@@ -295,19 +255,9 @@ export class CngxTreetable<T = unknown> {
    * and parent chain. Memoised against `tree` + `nodeId` so consumers
    * can read it as often as templates need without re-walking the tree.
    */
-  readonly flatNodes = computed(() => flattenTree(this.tree(), this.nodeId()));
-
-  private readonly expandedIdsState = linkedSignal<FlatNode<T>[], ReadonlySet<string>>({
-    source: this.flatNodes,
-    computation: (nodes) => getInitialExpandedIds(nodes),
+  readonly flatNodes = computed(() => flattenTree(this.tree(), this.nodeId()), {
+    equal: arrayEqual,
   });
-
-  /**
-   * The current set of expanded node IDs.
-   * In uncontrolled mode this reflects the internal state; in controlled mode
-   * it mirrors the `expandedIds` input.
-   */
-  readonly expandedIds = computed(() => this.expandedIdsInput() ?? this.expandedIdsState());
 
   /**
    * The subset of `flatNodes` whose ancestor chain is fully expanded
@@ -315,8 +265,9 @@ export class CngxTreetable<T = unknown> {
    * change; the resulting array is what the template iterates over with
    * the CDK table's `[trackBy]` hook.
    */
-  readonly visibleNodes = computed(() =>
-    this.flatNodes().filter((n) => isNodeVisible(n, this.expandedIds())),
+  readonly visibleNodes = computed(
+    () => this.flatNodes().filter((n) => isNodeVisible(n, this.expandedIds())),
+    { equal: arrayEqual },
   );
 
   /**
@@ -358,11 +309,14 @@ export class CngxTreetable<T = unknown> {
    * - `_expand` always appears as the first non-utility column - it
    *   carries the indent guide and the expand toggle.
    */
-  readonly allColumns = computed(() => [
-    ...(this.showCheckboxes() && this.selectionMode() !== 'none' ? ['_select'] : []),
-    '_expand',
-    ...this.columns(),
-  ]);
+  readonly allColumns = computed(
+    () => [
+      ...(this.showCheckboxes() && this.selectionMode() !== 'none' ? ['_select'] : []),
+      '_expand',
+      ...this.columns(),
+    ],
+    { equal: arrayEqual },
+  );
 
   /**
    * Effective per-instance options: application-wide {@link TreetableConfig}
@@ -371,25 +325,37 @@ export class CngxTreetable<T = unknown> {
    * (instance wins over app default) instead of re-implementing the
    * cascade.
    */
-  readonly resolvedOptions = computed<TreetableOptions<T>>(() => ({
-    ...this.config,
-    ...this.options(),
-  }));
+  readonly resolvedOptions = computed<TreetableOptions<T>>(
+    () => ({
+      ...this.config,
+      ...this.options(),
+    }),
+    {
+      equal: (a, b) => {
+        if (a === b) {
+          return true;
+        }
+        if (a.highlightRowOnHover !== b.highlightRowOnHover) {
+          return false;
+        }
+        if (a.capitaliseHeader !== b.capitaliseHeader) {
+          return false;
+        }
+        const ac = a.customColumnOrder;
+        const bc = b.customColumnOrder;
+        if (ac === bc) {
+          return true;
+        }
+        if (!ac || !bc) {
+          return false;
+        }
+        return arrayEqual(ac, bc);
+      },
+    },
+  );
 
   /** @internal Exposed so templates can call it without importing the utility. */
-  readonly capitalise = capitalise;
-
-  private readonly selectionModel = linkedSignal(
-    () => new SelectionModel<string>(this.selectionMode() === 'multi', []),
-  );
-  private readonly selectedIdsState = signal<ReadonlySet<string>>(new Set());
-
-  /**
-   * The current set of selected node IDs.
-   * In uncontrolled mode this reflects internal state; in controlled mode
-   * it mirrors the `selectedIds` input.
-   */
-  readonly selectedIds = computed(() => this.selectedIdsInput() ?? this.selectedIdsState());
+  protected readonly capitalise = capitalise;
 
   /**
    * `true` when every visible node is selected.
@@ -438,42 +404,34 @@ export class CngxTreetable<T = unknown> {
   readonly focusedNodeId = signal<string | null>(null);
 
   constructor() {
-    // linkedSignal recreates the model on selectionMode change; re-subscribe each time.
-    effect((onCleanup) => {
-      const model = this.selectionModel();
-      this.selectedIdsState.set(new Set());
-
-      const sub = model.changed.subscribe(() => {
-        const next = new Set(model.selected);
-        this.selectedIdsState.set(next);
-        this.selectionChanged.emit([...next]);
-        this.selectedIdsChange.emit(next);
+    // Seed expandedIds with the default fully-expanded set on first non-empty
+    // flatNodes, but only when the consumer has not pre-bound a non-empty value.
+    // Re-seed when the underlying tree structure changes.
+    let seededFor: readonly FlatNode<T>[] | null = null;
+    effect(() => {
+      const nodes = this.flatNodes();
+      if (nodes === seededFor) {
+        return;
+      }
+      seededFor = nodes;
+      untracked(() => {
+        if (this.expandedIds().size === 0 && nodes.length > 0) {
+          this.expandedIds.set(getInitialExpandedIds(nodes));
+        }
       });
-
-      onCleanup(() => sub.unsubscribe());
     });
 
-    // Controlled mode: SelectionModel.changed fires synchronously, so wrap the
-    // deselect/select calls in untracked to break the self-trigger cycle.
+    // Reconcile selectedIds against selectionMode changes: 'none' clears the
+    // set; 'single' truncates to the first id when more than one is held.
     effect(() => {
-      const input = this.selectedIdsInput();
-      if (input === undefined) {
-        return;
-      }
-      const model = this.selectionModel();
-      const inputSet = new Set(input);
-      const current = new Set(model.selected);
-      const toDeselect = [...current].filter((id) => !inputSet.has(id));
-      const toSelect = [...inputSet].filter((id) => !current.has(id));
-      if (toDeselect.length === 0 && toSelect.length === 0) {
-        return;
-      }
+      const mode = this.selectionMode();
       untracked(() => {
-        if (toDeselect.length) {
-          model.deselect(...toDeselect);
-        }
-        if (toSelect.length) {
-          model.select(...toSelect);
+        const current = this.selectedIds();
+        if (mode === 'none' && current.size > 0) {
+          this.selectedIds.set(new Set());
+        } else if (mode === 'single' && current.size > 1) {
+          const first = current.values().next().value;
+          this.selectedIds.set(first !== undefined ? new Set([first]) : new Set());
         }
       });
     });
@@ -483,7 +441,7 @@ export class CngxTreetable<T = unknown> {
    * Casts a node value to `Record<string, unknown>` for template property access.
    * @internal
    */
-  asRecord(value: T): Record<string, unknown> {
+  protected asRecord(value: T): Record<string, unknown> {
     return value as Record<string, unknown>;
   }
 
@@ -498,40 +456,51 @@ export class CngxTreetable<T = unknown> {
   }
 
   /**
-   * Flip the expand/collapse state of `node`. Writes the new id set into
-   * the internal `expandedIdsState`, then emits exactly one of
-   * `nodeExpanded`/`nodeCollapsed` plus `expandedIdsChange` (always).
-   * Safe to call in controlled mode - the consumer sees the change via
-   * `expandedIdsChange` and pushes it back through `[(expandedIds)]`.
+   * Flip the expand/collapse state of `node`. Writes the next id set into
+   * `expandedIds` (the model's implicit `expandedIdsChange` output fires
+   * automatically) and emits exactly one of `nodeExpanded` / `nodeCollapsed`.
    */
   toggle(node: FlatNode<T>): void {
-    const current = this.expandedIds();
-    const next = new Set(current);
-    if (next.has(node.id)) {
-      next.delete(node.id);
-      this.expandedIdsState.set(next);
-      this.nodeCollapsed.emit(node);
-    } else {
-      next.add(node.id);
-      this.expandedIdsState.set(next);
+    let opened = false;
+    this.expandedIds.update((current) => {
+      const next = new Set(current);
+      if (next.has(node.id)) {
+        next.delete(node.id);
+      } else {
+        next.add(node.id);
+        opened = true;
+      }
+      return next;
+    });
+    if (opened) {
       this.nodeExpanded.emit(node);
+    } else {
+      this.nodeCollapsed.emit(node);
     }
-    this.expandedIdsChange.emit(next);
   }
 
   /**
-   * Flip the selection state of `node` against the current
-   * `selectionMode`. CDK's `SelectionModel` enforces the cardinality:
-   * `single` clears the prior selection before adding, `multi` adds or
-   * removes without touching siblings. No-op in `'none'` mode. The
-   * model's `changed` subscription fans the result out as
-   * `selectionChanged` (array) and `selectedIdsChange` (Set).
+   * Flip the selection state of `node` against the current `selectionMode`.
+   * In `'single'` mode the prior selection clears before the new id is added;
+   * in `'multi'` mode the toggle is per-id. No-op in `'none'` mode.
    */
   toggleSelection(node: FlatNode<T>): void {
-    if (this.selectionMode() === 'none') {
+    const mode = this.selectionMode();
+    if (mode === 'none') {
       return;
     }
-    this.selectionModel().toggle(node.id);
+    this.selectedIds.update((current) => {
+      const next = new Set(current);
+      if (next.has(node.id)) {
+        next.delete(node.id);
+      } else {
+        if (mode === 'single') {
+          next.clear();
+        }
+        next.add(node.id);
+      }
+      return next;
+    });
   }
 
   /**
@@ -546,10 +515,17 @@ export class CngxTreetable<T = unknown> {
       return;
     }
     if (this.isAllSelected()) {
-      this.selectionModel().clear();
-    } else {
-      this.selectionModel().select(...this.visibleNodes().map((n) => n.id));
+      this.selectedIds.set(new Set());
+      return;
     }
+    const visibleIds = this.visibleNodes().map((n) => n.id);
+    this.selectedIds.update((current) => {
+      const next = new Set(current);
+      for (const id of visibleIds) {
+        next.add(id);
+      }
+      return next;
+    });
   }
 
   /**
