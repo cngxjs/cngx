@@ -1,11 +1,17 @@
+import { isPlatformBrowser } from '@angular/common';
 import {
   afterNextRender,
   computed,
   DestroyRef,
   Directive,
+  ElementRef,
+  effect,
   inject,
   input,
+  PLATFORM_ID,
+  Renderer2,
   signal,
+  untracked,
 } from '@angular/core';
 import { createErrorAggregatorContract } from '../error-registry/aggregator-contract';
 import { errorSourceMapEqual } from '../error-registry/equal-fns';
@@ -73,6 +79,23 @@ export class CngxErrorAggregator implements CngxErrorAggregatorContract {
     alias: 'cngxErrorAggregatorName',
   });
 
+  /**
+   * When `true` (default), the directive appends its own visually-hidden
+   * `<span>` to the host element and writes {@link announcement} into its
+   * `textContent`. Set to `false` to take ownership of the live region in
+   * consumer markup (e.g. when routing announcements through CDK's
+   * `LiveAnnouncer`).
+   */
+  readonly autoAnnounce = input<boolean>(true);
+
+  /**
+   * Politeness of the auto-rendered live region. Mirrors the WAI-ARIA
+   * `aria-live` value. `'polite'` queues after the current utterance,
+   * `'assertive'` interrupts, `'off'` disables announcement (the span is
+   * still rendered but is not announced).
+   */
+  readonly announcePoliteness = input<'polite' | 'assertive' | 'off'>('polite');
+
   private readonly ancestorScope = inject<CngxErrorScopeContract | null>(CNGX_ERROR_SCOPE, {
     optional: true,
   });
@@ -108,11 +131,65 @@ export class CngxErrorAggregator implements CngxErrorAggregatorContract {
   }
 
   constructor() {
+    const destroyRef = inject(DestroyRef);
+    const platformId = inject(PLATFORM_ID);
+
+    if (isPlatformBrowser(platformId)) {
+      const hostEl = (inject(ElementRef) as ElementRef<HTMLElement>).nativeElement;
+      const renderer = inject(Renderer2);
+
+      let span: HTMLSpanElement | null = null;
+
+      effect(() => {
+        const enabled = this.autoAnnounce();
+        const politeness = this.announcePoliteness();
+        const text = this.announcement();
+
+        untracked(() => {
+          if (!enabled) {
+            if (span?.parentNode === hostEl) {
+              renderer.removeChild(hostEl, span);
+            }
+            span = null;
+            return;
+          }
+
+          if (!span) {
+            const el = renderer.createElement('span') as HTMLSpanElement;
+            renderer.setStyle(el, 'position', 'var(--cngx-sr-only-position, absolute)');
+            renderer.setStyle(el, 'width', 'var(--cngx-sr-only-size, 1px)');
+            renderer.setStyle(el, 'height', 'var(--cngx-sr-only-size, 1px)');
+            renderer.setStyle(el, 'overflow', 'var(--cngx-sr-only-overflow, hidden)');
+            renderer.setStyle(el, 'clip', 'var(--cngx-sr-only-clip, rect(0, 0, 0, 0))');
+            renderer.setStyle(el, 'white-space', 'var(--cngx-sr-only-white-space, nowrap)');
+            renderer.setAttribute(el, 'aria-atomic', 'true');
+            renderer.setAttribute(el, 'aria-relevant', 'additions text');
+            renderer.appendChild(hostEl, el);
+            span = el;
+          }
+
+          if (politeness === 'off') {
+            renderer.removeAttribute(span, 'role');
+          } else {
+            renderer.setAttribute(span, 'role', politeness === 'assertive' ? 'alert' : 'status');
+          }
+          renderer.setAttribute(span, 'aria-live', politeness);
+          span.textContent = text;
+        });
+      });
+
+      destroyRef.onDestroy(() => {
+        if (span?.parentNode === hostEl) {
+          renderer.removeChild(hostEl, span);
+        }
+        span = null;
+      });
+    }
+
     const registry = inject(CngxErrorRegistry, { optional: true });
     if (!registry) {
       return;
     }
-    const destroyRef = inject(DestroyRef);
     afterNextRender(() => {
       const name = this.aggregatorName();
       if (!name) {
