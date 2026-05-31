@@ -42,10 +42,6 @@ export const CNGX_CLOSE_ICON = new InjectionToken<Type<unknown>>('CngxCloseIcon'
  * <cngx-close-button label="Close" />
  * ```
  *
- * Note: the host uses `display: contents`, so applying
- * `position: absolute` directly on `<cngx-close-button>` is silently
- * ignored. Wrap in a positioned element when corner-pinning.
- *
  * @category common/interactive
  * @docsKind primary
  * @wcag AA

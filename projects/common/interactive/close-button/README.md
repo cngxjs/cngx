@@ -79,22 +79,9 @@ CngxCloseButton is used internally by cngx feedback components:
 
 ## Styling
 
-CngxCloseButton uses `display: contents` so the host element produces no DOM box - only the inner `<button>` renders.
-
-Consequence: layout properties applied directly to
-`<cngx-close-button>` (notably `position: absolute`) are silently
-ignored, because elements with `display: contents` do not generate a
-principal box. To corner-pin the close button, wrap it in a
-positioned element:
-
-```html
-<div style="position: relative">
-  <!-- card content -->
-  <span style="position: absolute; top: 4px; right: 4px">
-    <cngx-close-button label="Dismiss card" (click)="dismiss()" />
-  </span>
-</div>
-```
+The host renders as `inline-flex`, so layout properties (`position`,
+`margin`, `transform`) applied directly to `<cngx-close-button>` take
+effect. No wrapper element is required to corner-pin the close button.
 
 ### Default Styling
 
@@ -189,11 +176,9 @@ export class AlertComponent {
     <div class="card">
       <h3>{{ title }}</h3>
       <p>{{ content }}</p>
-      <span class="card-close">
-        <cngx-close-button
-          label="Dismiss saved-successfully card"
-          (click)="isDismissed.set(true)" />
-      </span>
+      <cngx-close-button
+        label="Dismiss saved-successfully card"
+        (click)="isDismissed.set(true)" />
     </div>
   `,
   imports: [CngxCloseButton],
@@ -205,7 +190,7 @@ export class AlertComponent {
       border-radius: 8px;
     }
 
-    .card-close {
+    cngx-close-button {
       position: absolute;
       top: 8px;
       right: 8px;

@@ -207,7 +207,10 @@
 @layer cngx.components {
   @scope (.cngx-close-button) {
     :scope {
-      display: contents;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      vertical-align: middle;
     }
 
     .cngx-close-button__btn {
