@@ -684,16 +684,6 @@
       color: var(--cngx-step-chevron-tile-color, oklch(1 0 0));
     }
 
-    /* clip-path swallows native outlines - use an inset box-shadow
-       so the focus ring renders INSIDE the chevron silhouette and
-       stays visible. Color matches the cngx focus convention
-       (`--cngx-color-primary`). Outline is suppressed to avoid the
-       clipped fragment showing as a partial ring. */
-    .cngx-stepper__step:focus-visible {
-      outline: 0;
-      box-shadow: inset 0 0 0 2px var(--cngx-color-primary, oklch(0.66 0.19 50));
-    }
-
     /* The chevron tile is the state indicator; the default numbered
        glyph and the completed-check pseudo-element add noise on this
        skin. Consumer slot templates (`*cngxStepIndicator`) still
@@ -712,6 +702,16 @@
     .cngx-stepper__indicator[data-state='success']::before {
       content: none;
     }
+  }
+
+  /* clip-path swallows native outlines and renders them as a
+     rectangular halo around the chevron. Use a stronger selector
+     outside @scope to guarantee the base outline rule loses, and
+     paint the focus ring as an inset box-shadow inside the chevron
+     silhouette. Color matches the cngx focus convention. */
+  .cngx-stepper[data-skin='path-chevron'] .cngx-stepper__step:focus-visible {
+    outline: 0;
+    box-shadow: inset 0 0 0 2px var(--cngx-color-primary, oklch(0.66 0.19 50));
   }
 
   /* Vertical orientation: rotate the chevron notch onto the bottom
