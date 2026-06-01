@@ -737,10 +737,15 @@
     .cngx-stepper__step {
       flex: 1 1 0;
       justify-content: center;
+      text-align: center;
       background: transparent;
       border-radius: 9999px;
       color: color-mix(in srgb, currentColor 70%, transparent);
       transition: background-color 120ms ease, color 120ms ease, box-shadow 120ms ease;
+    }
+
+    .cngx-stepper__step .cngx-stepper__label {
+      flex: 0 0 auto;
     }
 
     .cngx-stepper__step[aria-current='step'] {
