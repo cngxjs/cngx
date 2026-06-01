@@ -9,6 +9,7 @@ import {
   LOCALE_ID,
   model,
   type Signal,
+  untracked,
 } from '@angular/core';
 import { CNGX_FORM_FIELD_HOST } from '@cngx/core/tokens';
 import { CNGX_VALUE_TRANSFORMER, type CngxValueTransformer } from '@cngx/forms/field';
@@ -471,14 +472,32 @@ export class CngxInputMask {
 
   private readonly resolvedGuide = computed(() => this.guide() ?? this.config.maskGuide ?? true);
 
-  private readonly resolvedCustomTokens = computed(() => {
-    const fromInput = this.customTokens();
-    const fromConfig = this.config.customTokens;
-    if (fromInput && fromConfig) {
-      return { ...fromConfig, ...fromInput };
-    }
-    return fromInput ?? fromConfig;
-  });
+  private readonly resolvedCustomTokens = computed(
+    () => {
+      const fromInput = this.customTokens();
+      const fromConfig = this.config.customTokens;
+      if (fromInput && fromConfig) {
+        return { ...fromConfig, ...fromInput };
+      }
+      return fromInput ?? fromConfig;
+    },
+    {
+      equal: (a, b) => {
+        if (a === b) {
+          return true;
+        }
+        if (!a || !b) {
+          return false;
+        }
+        const ka = Object.keys(a);
+        const kb = Object.keys(b);
+        if (ka.length !== kb.length) {
+          return false;
+        }
+        return ka.every((k) => a[k] === b[k]);
+      },
+    },
+  );
 
   /** Resolved patterns (handles presets, config overrides, and `|` splitting). */
   private readonly resolvedPatterns = computed(() => {
@@ -553,21 +572,41 @@ export class CngxInputMask {
 
   constructor() {
     // Sync masked value to DOM; the input event notifies co-located CngxInput / matInput.
+    //
+    // No re-entry guard here (unlike CngxInputFormat's lastEffectWrite): the
+    // host bindings of this directive (beforeinput / keydown / mousedown /
+    // focus / mouseup / blur / paste) do not include `input`, so the
+    // synthetic input event the effect dispatches cannot re-enter the
+    // directive's own value channel. The write-guard `el.value !== masked`
+    // plus Object.is dedup on `maskedValue` (a pure computed) bound the
+    // mirror; nothing more is needed.
     effect(() => {
       const masked = this.maskedValue();
       const el = this.el.nativeElement;
-      if (el.value !== masked) {
-        el.value = masked;
-        el.dispatchEvent(new Event('input', { bubbles: true }));
+      if (el.value === masked) {
+        return;
       }
+      el.value = masked;
+      el.dispatchEvent(new Event('input', { bubbles: true }));
     });
 
+    // Documented Pillar-1 exception: writes a signal inside an effect.
+    // Cannot be expressed as linkedSignal because `value` must remain a
+    // model<string>() so Signal Forms' [control] directive can bind against
+    // it (FormValueControl<T> requires a writable signal output). The
+    // mask-change auto-clear is part of the published contract
+    // (input-mask.directive.spec.ts: "should reset rawValue when mask
+    // changes"). prevMask skips the initial run so external initial values
+    // survive, and untracked() keeps `value` out of the dep graph so the
+    // effect cannot subscribe to its own write.
     effect(() => {
       const currentMask = this.mask();
-      if (this.prevMask != null && currentMask !== this.prevMask) {
-        this.value.set('');
-      }
-      this.prevMask = currentMask;
+      untracked(() => {
+        if (this.prevMask != null && currentMask !== this.prevMask) {
+          this.value.set('');
+        }
+        this.prevMask = currentMask;
+      });
     });
   }
 
