@@ -40,8 +40,8 @@ import {
   type CngxStepRejectionContext,
   CNGX_STEPPER_GLYPHS,
   CNGX_STEPPER_HOST,
-  createStepperStatusPillCssTexts,
   createStepperTemplateBindings,
+  resolveStepperStatusLabel,
   flatStepsEqual,
   injectStepperConfig,
   injectStepperI18n,
@@ -116,10 +116,6 @@ import {
     '[attr.aria-label]': 'resolvedAriaLabel()',
     '[attr.aria-labelledby]': 'ariaLabelledBy()',
     '[attr.aria-busy]': 'isCommitting() ? "true" : null',
-    '[style.--cngx-step-status-pill-text-upcoming]': 'pillTexts.upcoming',
-    '[style.--cngx-step-status-pill-text-in-progress]': 'pillTexts.inProgress',
-    '[style.--cngx-step-status-pill-text-done]': 'pillTexts.done',
-    '[style.--cngx-step-status-pill-text-errored]': 'pillTexts.errored',
     '[class.cngx-stepper]': 'true',
   },
 })
@@ -186,8 +182,9 @@ export class CngxStepper implements CngxStepPanelHost {
 
   /** Resolved skin keyed onto the `[data-skin]` host attribute. */
   protected readonly resolvedSkin = computed<CngxStepperSkin>(() => this.skin() ?? this.config.skin ?? 'classic');
-  /** Pre-quoted i18n strings for the `stripe-status-rich` skin's pill cascade. */
-  protected readonly pillTexts = createStepperStatusPillCssTexts(this.i18n);
+
+  /** Status-pill label for the `stripe-status-rich` skin's per-step pill. */
+  protected statusLabelFor = (node: CngxStepNode): string => resolveStepperStatusLabel(node, this.i18n, this.isActive(node));
 
   /** Group landmark role-description with config + i18n cascade. */
   protected readonly groupRoleDescription = computed<string>(

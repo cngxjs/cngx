@@ -10,7 +10,7 @@ exports[`CngxStepper classic-skin CSS baseline > dark mode: no @media (prefers-c
 exports[`CngxStepper classic-skin CSS baseline > light mode: declared initial-values for hot-state custom properties 1`] = `
 {
   "--cngx-step-active-color": "<absent>",
-  "--cngx-step-active-fill": "oklch(0.55 0.18 250)",
+  "--cngx-step-active-fill": "oklch(0.66 0.19 50)",
   "--cngx-step-completed-color": "oklch(0.5 0.15 145)",
   "--cngx-step-errored-color": "oklch(0.45 0.15 25)",
   "--cngx-step-focus-offset": "3px",

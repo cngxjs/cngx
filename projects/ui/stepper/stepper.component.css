@@ -166,22 +166,19 @@
    */
 
   /**
-   * Resolved fill of the active indicator disc. The default is a
-   * baked-in primary blue; consumers override via
-   * `--cngx-step-active-fill`, `--cngx-step-active-color`, or
-   * `--cngx-color-primary` (the consuming rule's `var()` chain
-   * threads through all three). The `@property` carries only the
-   * baked-in default - var() chains inside `initial-value` are
-   * not portable across browsers and previously dead-ended at
-   * `currentColor` via `--cngx-step-active-color`'s now-removed
-   * `@property` registration.
+   * Resolved fill of the active indicator disc. Defaults to the
+   * cngx ember primary (matching `--cngx-color-primary`). Consumers
+   * override via `--cngx-step-active-fill` directly, or upstream
+   * via `--cngx-step-active-color` (the consuming rule's `var()`
+   * chain threads through both). Baked-in fallback matches the
+   * cngx primary so the un-themed disc fits the foundation palette.
    * @group State / Active
    * @see [[--cngx-step-active-color]]
    */
   @property --cngx-step-active-fill {
     syntax: '<color>';
     inherits: true;
-    initial-value: oklch(0.55 0.18 250);
+    initial-value: oklch(0.66 0.19 50);
   }
 
   /**
@@ -328,7 +325,7 @@
   @property --cngx-step-linear-dot-fill {
     syntax: '*';
     inherits: true;
-    initial-value: var(--cngx-step-active-fill, var(--cngx-color-primary, oklch(0.55 0.18 250)));
+    initial-value: var(--cngx-step-active-fill, var(--cngx-color-primary, oklch(0.66 0.19 50)));
   }
 
   /**
@@ -350,7 +347,7 @@
   @property --cngx-step-status-pill-bg-in-progress {
     syntax: '*';
     inherits: false;
-    initial-value: var(--cngx-step-active-fill, var(--cngx-color-primary, oklch(0.55 0.18 250)));
+    initial-value: var(--cngx-step-active-fill, var(--cngx-color-primary, oklch(0.66 0.19 50)));
   }
 
   /**
@@ -392,7 +389,7 @@
   @property --cngx-step-chevron-tile-active {
     syntax: '*';
     inherits: false;
-    initial-value: var(--cngx-step-active-fill, var(--cngx-color-primary, oklch(0.55 0.18 250)));
+    initial-value: var(--cngx-step-active-fill, var(--cngx-color-primary, oklch(0.66 0.19 50)));
   }
 
   /**
@@ -455,7 +452,7 @@
   @property --cngx-step-pill-segment-fill-active {
     syntax: '*';
     inherits: false;
-    initial-value: var(--cngx-step-active-fill, var(--cngx-color-primary, oklch(0.55 0.18 250)));
+    initial-value: var(--cngx-step-active-fill, var(--cngx-color-primary, oklch(0.66 0.19 50)));
   }
 
   /**
@@ -588,8 +585,7 @@
       gap: 0.375rem;
     }
 
-    .cngx-stepper__step::after {
-      content: var(--cngx-step-status-pill-text-upcoming, 'Up next');
+    .cngx-stepper__status-pill {
       display: inline-flex;
       align-items: center;
       padding: 0.125rem 0.5rem;
@@ -602,20 +598,17 @@
       text-transform: none;
     }
 
-    .cngx-stepper__step[aria-current='step']::after {
-      content: var(--cngx-step-status-pill-text-in-progress, 'In progress');
+    .cngx-stepper__step[aria-current='step'] .cngx-stepper__status-pill {
       background: var(--cngx-step-status-pill-bg-in-progress);
       color: var(--cngx-step-status-pill-color, oklch(1 0 0));
     }
 
-    .cngx-stepper__step:has(.cngx-stepper__indicator[data-state='success'])::after {
-      content: var(--cngx-step-status-pill-text-done, 'Done');
+    .cngx-stepper__step:has(.cngx-stepper__indicator[data-state='success']) .cngx-stepper__status-pill {
       background: var(--cngx-step-status-pill-bg-done);
       color: var(--cngx-step-status-pill-color, oklch(1 0 0));
     }
 
-    .cngx-stepper__step:has(.cngx-stepper__indicator[data-state='error'])::after {
-      content: var(--cngx-step-status-pill-text-errored, 'Errored');
+    .cngx-stepper__step:has(.cngx-stepper__indicator[data-state='error']) .cngx-stepper__status-pill {
       background: var(--cngx-step-status-pill-bg-errored);
       color: var(--cngx-step-status-pill-color, oklch(1 0 0));
     }

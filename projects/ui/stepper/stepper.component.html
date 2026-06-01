@@ -73,6 +73,7 @@
               {{ node.label() }}
             }
           </span>
+          <span class="cngx-stepper__status-pill" aria-hidden="true">{{ statusLabelFor(node) }}</span>
           @if (showRejection(node)) {
             <span class="cngx-stepper__rejection-icon" aria-hidden="true">
               <ng-container

@@ -386,6 +386,13 @@
     background: var(--cngx-step-rejection-bg, transparent);
   }
 
+  /* Status pill - hidden by default; opted in by the
+     `stripe-status-rich` skin via `.cngx-stepper[data-skin] .cngx-
+     stepper__status-pill { display: inline-flex; ... }`. */
+  .cngx-stepper__status-pill {
+    display: none;
+  }
+
   .cngx-stepper__rejection-icon {
     display: inline-flex;
     align-items: center;
