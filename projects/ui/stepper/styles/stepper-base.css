@@ -97,13 +97,14 @@
   }
 
   /**
-   * Focus-ring outline shorthand.
+   * Focus-ring outline shorthand. Matches the cngx focus convention
+   * from `@cngx/core/theming/reset.css` - 2px solid primary ember.
    * @group State / Focus
    */
   @property --cngx-step-focus-ring {
     syntax: '*';
     inherits: false;
-    initial-value: 2px solid currentColor;
+    initial-value: 2px solid oklch(0.66 0.19 50);
   }
 
   /**
