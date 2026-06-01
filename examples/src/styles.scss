@@ -414,6 +414,15 @@ html.dark .cngx-ex-tag[data-dim='stability'][data-value='deprecated'] {
   white-space: pre;
 }
 
+// Mobile: code disclosures break the layout (long monospace lines force
+// horizontal scroll on the whole demo). Hide the panels below 640px; the
+// docs site and a wider viewport still surface them.
+@media (max-width: 640px) {
+  .cngx-ex-code {
+    display: none;
+  }
+}
+
 // Demo-layout helpers used by story templates. Restored after a premature
 // cleanup last sprint that removed these alongside the bare-element atoms —
 // turns out the stories rely on them.
