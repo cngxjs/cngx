@@ -5,7 +5,7 @@ export const STORY: DemoSpec = {
   subtitle:
     'ArrowDown / Enter / Space opens the menu, Escape closes it. Arrow keys move the active descendant, typeahead jumps to the next matching label, activation always closes the menu.',
   description:
-    'Button that pairs with a <code>CngxMenu</code> inside a <code>CngxPopover</code>. The trigger holds keyboard focus while the menu is open; the menu drives <code>aria-activedescendant</code> through its <code>CngxActiveDescendant</code> host directive. Activation always closes (menu semantics); focus is restored to the trigger after close.',
+    'Button that pairs with a <code>CngxMenu</code> inside a <code>CngxPopover</code>. The trigger holds keyboard focus while the menu is open; the menu drives <code>aria-activedescendant</code> through its <code>CngxActiveDescendant</code> host directive. Activation always closes (menu semantics); focus is restored to the trigger after close. <code>pointerdown</code> outside the popover and window <code>blur</code> dismiss by default; <code>Escape</code> is owned by <code>CngxPopover</code>.',
   level: 'molecule',
   audience: ['dev', 'a11y'],
   artifact: 'building-block',

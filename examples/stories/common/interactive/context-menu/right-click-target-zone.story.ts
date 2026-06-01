@@ -3,9 +3,9 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxContextMenuTrigger: right-click target zone',
   subtitle:
-    'Right-click anywhere inside the dashed zone, or focus it and press Shift+F10. Escape closes the menu, focus returns to the zone.',
+    'Right-click inside the dashed zone, or focus it and press Shift+F10. Click outside, press Escape, or switch tabs to dismiss. The chrome row shows which path fired.',
   description:
-    'Right-click or Shift+F10 opens a <code>CngxMenu</code> inside a <code>CngxPopover</code> anchored at the pointer (mouse) or zone centre (keyboard). The trigger zone holds focus; <code>aria-activedescendant</code> drives the highlight. Escape closes and restores focus.',
+    'Right-click or Shift+F10 opens a <code>CngxMenu</code> inside a <code>CngxPopover</code> anchored at the pointer (mouse) or zone centre (keyboard). After open, the menu container holds focus so ArrowDown/ArrowUp/Home/End/Enter/Space/typeahead drive the highlight via <code>CngxActiveDescendant</code>. Four dismissal sources close the menu by default: <code>Escape</code>, <code>pointerdown</code> outside both the popover and the zone, window <code>blur</code>, and document <code>pointercancel</code>. The source that fired most recently is exposed as <code>lastDismissSource</code> on the trigger.',
   level: 'molecule',
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
@@ -36,6 +36,7 @@ export const STORY: DemoSpec = {
     tabindex="0"
     [cngxContextMenuTrigger]="ctx"
     [popover]="pop"
+    #trigger="cngxContextMenuTrigger"
   >
     Right-click here (or focus + Shift+F10)
   </div>
@@ -58,6 +59,10 @@ export const STORY: DemoSpec = {
     <div class="event-row">
       <span class="event-label">Last action</span>
       <span class="event-value">{{ lastAction() ?? '-' }}</span>
+    </div>
+    <div class="event-row">
+      <span class="event-label">Last dismissal source</span>
+      <span class="event-value">{{ trigger.lastDismissSource() ?? '-' }}</span>
     </div>
   </div>`,
   css: `.demo-context-menu-zone {
