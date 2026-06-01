@@ -7,11 +7,11 @@ import {
   inject,
   input,
   LOCALE_ID,
-  output,
-  signal,
+  model,
   type Signal,
 } from '@angular/core';
-import { type ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { CNGX_FORM_FIELD_HOST } from '@cngx/core/tokens';
+import { CNGX_VALUE_TRANSFORMER, type CngxValueTransformer } from '@cngx/forms/field';
 import { CNGX_INPUT_CONFIG, type InputConfig } from './input-config';
 
 /** @internal */
@@ -411,9 +411,12 @@ export type MaskTokenMap = Record<string, MaskTokenDef>;
   exportAs: 'cngxInputMask',
   providers: [
     {
-      provide: NG_VALUE_ACCESSOR,
-      useExisting: forwardRef(() => CngxInputMask),
-      multi: true,
+      provide: CNGX_VALUE_TRANSFORMER,
+      useFactory: (dir: CngxInputMask): CngxValueTransformer<string> => ({
+        format: (raw: string) => dir.toMaskedDisplay(raw),
+        parse: (display: string) => dir.fromMaskedDisplay(display),
+      }),
+      deps: [forwardRef(() => CngxInputMask)],
     },
   ],
   host: {
@@ -427,10 +430,11 @@ export type MaskTokenMap = Record<string, MaskTokenDef>;
     '[attr.aria-placeholder]': 'ariaPlaceholder()',
   },
 })
-export class CngxInputMask implements ControlValueAccessor {
+export class CngxInputMask {
   private readonly el = inject<ElementRef<HTMLInputElement>>(ElementRef);
   private readonly locale = inject(LOCALE_ID);
   private readonly config = inject(CNGX_INPUT_CONFIG);
+  private readonly host = inject(CNGX_FORM_FIELD_HOST, { optional: true });
 
   /** Mask pattern, preset name, or `|`-separated patterns. */
   readonly mask = input.required<string>({ alias: 'cngxInputMask' });
@@ -488,22 +492,25 @@ export class CngxInputMask implements ControlValueAccessor {
 
   /** Active pattern selected based on current raw length. */
   private readonly activePattern = computed(() =>
-    selectPattern(this.resolvedPatterns(), this.rawState().length, this.resolvedCustomTokens()),
+    selectPattern(this.resolvedPatterns(), this.value().length, this.resolvedCustomTokens()),
   );
 
   private readonly tokens = computed(() =>
     parseMask(this.activePattern(), this.resolvedCustomTokens()),
   );
 
-  private readonly rawState = signal('');
+  /** Primary value channel — raw unmasked value (digits/letters only, no literals unless `includeLiterals`). */
+  readonly value = model<string>('', { alias: 'value' });
 
-  /** Raw unmasked value (digits/letters only, no literals unless `includeLiterals`). */
-  readonly rawValue: Signal<string> = this.rawState.asReadonly();
+  /**
+   * @deprecated Read `value` directly. Kept one release for migration.
+   */
+  readonly rawValue: Signal<string> = this.value;
 
   /** Formatted value with mask applied (including prefix/suffix). */
   readonly maskedValue = computed(() => {
     const { masked } = applyMask(
-      this.rawState(),
+      this.value(),
       this.tokens(),
       this.resolvedPlaceholder(),
       this.resolvedGuide(),
@@ -514,7 +521,7 @@ export class CngxInputMask implements ControlValueAccessor {
   /** Formatted value without prefix/suffix (mask portion only). */
   readonly maskedValueCore = computed(() => {
     const { masked } = applyMask(
-      this.rawState(),
+      this.value(),
       this.tokens(),
       this.resolvedPlaceholder(),
       this.resolvedGuide(),
@@ -525,7 +532,7 @@ export class CngxInputMask implements ControlValueAccessor {
   /** `true` when all required mask positions are filled. */
   readonly isComplete = computed(() => {
     const { complete } = applyMask(
-      this.rawState(),
+      this.value(),
       this.tokens(),
       this.resolvedPlaceholder(),
       this.resolvedGuide(),
@@ -535,9 +542,6 @@ export class CngxInputMask implements ControlValueAccessor {
 
   /** The currently active pattern (useful when using multi-pattern or presets). */
   readonly currentPattern = this.activePattern;
-
-  /** Emitted when `rawValue` changes. */
-  readonly valueChange = output<string>();
 
   /** @internal */
   protected readonly ariaPlaceholder = computed(() => {
@@ -561,35 +565,56 @@ export class CngxInputMask implements ControlValueAccessor {
     effect(() => {
       const currentMask = this.mask();
       if (this.prevMask != null && currentMask !== this.prevMask) {
-        this.rawState.set('');
-        this.valueChange.emit('');
+        this.value.set('');
       }
       this.prevMask = currentMask;
     });
   }
 
-  private onChange = (_value: string): void => {
-    /* noop until registerOnChange */
-  };
-  private onTouched = (): void => {
-    /* noop until registerOnTouched */
-  };
-
-  writeValue(value: string | null): void {
-    this.rawState.set(value ?? '');
+  /**
+   * @internal — surface for the `CNGX_VALUE_TRANSFORMER` factory.
+   * Mirrors what the mask effect would render for a given raw string.
+   */
+  toMaskedDisplay(raw: string): string {
+    const { masked } = applyMask(
+      raw,
+      this.tokens(),
+      this.resolvedPlaceholder(),
+      this.resolvedGuide(),
+    );
+    return this.prefix() + masked + this.suffix();
   }
 
-  registerOnChange(fn: (value: string) => void): void {
-    this.onChange = fn;
-  }
-
-  registerOnTouched(fn: () => void): void {
-    this.onTouched = fn;
+  /**
+   * @internal — surface for the `CNGX_VALUE_TRANSFORMER` factory.
+   * Strips prefix/suffix and extracts slot characters from a masked display.
+   */
+  fromMaskedDisplay(display: string): string {
+    let stripped = display;
+    const prefix = this.prefix();
+    const suffix = this.suffix();
+    if (prefix && stripped.startsWith(prefix)) {
+      stripped = stripped.slice(prefix.length);
+    }
+    if (suffix && stripped.endsWith(suffix)) {
+      stripped = stripped.slice(0, -suffix.length);
+    }
+    const tokens = this.tokens();
+    const placeholder = this.resolvedPlaceholder();
+    let raw = '';
+    for (let i = 0; i < tokens.length && i < stripped.length; i++) {
+      const token = tokens[i];
+      const ch = stripped[i];
+      if (token.kind === 'slot' && ch !== placeholder && token.test!.test(ch)) {
+        raw += ch;
+      }
+    }
+    return raw;
   }
 
   /** @internal */
   protected handleBlurCva(): void {
-    this.onTouched();
+    this.host?.markAsTouched();
     if (this.clearOnBlur() && !this.isComplete()) {
       this.clear();
     }
@@ -602,8 +627,7 @@ export class CngxInputMask implements ControlValueAccessor {
 
   /** Clear the mask value. */
   clear(): void {
-    this.rawState.set('');
-    this.valueChange.emit('');
+    this.value.set('');
   }
 
   /** @internal */
@@ -759,7 +783,7 @@ export class CngxInputMask implements ControlValueAccessor {
   private insertChars(chars: string, selStart: number, selEnd: number, tokens: MaskToken[]): void {
     const el = this.el.nativeElement;
     const prefixLen = this.prefix().length;
-    const currentRaw = this.rawState();
+    const currentRaw = this.value();
     const rawBefore = this.rawIndexFromCursor(selStart, tokens);
     const transformFn = this.transform();
     const customDefs = this.resolvedCustomTokens();
@@ -859,7 +883,7 @@ export class CngxInputMask implements ControlValueAccessor {
     }
 
     const rawIdx = this.rawIndexFromCursor(target, tokens);
-    const raw = this.rawState();
+    const raw = this.value();
     this.updateRaw(raw.slice(0, rawIdx) + raw.slice(rawIdx + 1));
     this.syncDom(el);
 
@@ -888,7 +912,7 @@ export class CngxInputMask implements ControlValueAccessor {
     }
 
     const rawIdx = this.rawIndexFromCursor(target, tokens);
-    const raw = this.rawState();
+    const raw = this.value();
     this.updateRaw(raw.slice(0, rawIdx) + raw.slice(rawIdx + 1));
     this.syncDom(el);
 
@@ -898,7 +922,7 @@ export class CngxInputMask implements ControlValueAccessor {
   private deleteRange(start: number, end: number, tokens: MaskToken[]): void {
     const rawStart = this.rawIndexFromCursor(start, tokens);
     const rawEnd = this.rawIndexFromCursor(end, tokens);
-    const raw = this.rawState();
+    const raw = this.value();
     this.updateRaw(raw.slice(0, rawStart) + raw.slice(rawEnd));
   }
 
@@ -939,7 +963,6 @@ export class CngxInputMask implements ControlValueAccessor {
   }
 
   private updateRaw(newRaw: string): void {
-    const prev = this.rawState();
     // Resolve tokens for the target raw length so multi-pattern switching is honoured.
     const targetPattern = selectPattern(
       this.resolvedPatterns(),
@@ -963,11 +986,6 @@ export class CngxInputMask implements ControlValueAccessor {
       }
     }
 
-    this.rawState.set(validated);
-    if (validated !== prev) {
-      const emitValue = this.includeLiterals() ? this.maskedValueCore() : validated;
-      this.valueChange.emit(emitValue);
-      this.onChange(emitValue);
-    }
+    this.value.set(validated);
   }
 }

@@ -1,6 +1,9 @@
 import { Component, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { LOCALE_ID } from '@angular/core';
+import { CNGX_FORM_FIELD_HOST, type CngxFormFieldHostContract } from '@cngx/core/tokens';
+import { CNGX_VALUE_TRANSFORMER, type CngxValueTransformer } from '@cngx/forms/field';
+import { describe, expect, it, vi } from 'vitest';
 import { CngxInputMask, type MaskTokenMap } from './input-mask.directive';
 
 // ── Test host ───────────────────────────────────────────────────────
@@ -41,9 +44,16 @@ function setup(
     transform?: (ch: string) => string;
     customTokens?: MaskTokenMap;
     locale?: string;
+    host?: CngxFormFieldHostContract;
   } = {},
 ) {
-  const providers = overrides.locale ? [{ provide: LOCALE_ID, useValue: overrides.locale }] : [];
+  const providers: { provide: unknown; useValue: unknown }[] = [];
+  if (overrides.locale) {
+    providers.push({ provide: LOCALE_ID, useValue: overrides.locale });
+  }
+  if (overrides.host) {
+    providers.push({ provide: CNGX_FORM_FIELD_HOST, useValue: overrides.host });
+  }
 
   TestBed.configureTestingModule({ providers });
   const fixture = TestBed.createComponent(Host);
@@ -270,15 +280,72 @@ describe('CngxInputMask', () => {
     });
   });
 
-  // ── valueChange output ──────────────────────────────────────────────
+  // ── value model output ──────────────────────────────────────────────
 
-  describe('valueChange output', () => {
-    it('should emit rawValue on each change', () => {
+  describe('value model output', () => {
+    it('should emit raw value on each change', () => {
       const { input, directive, fixture } = setup();
       const emitted: string[] = [];
-      directive.valueChange.subscribe((v: string) => emitted.push(v));
+      directive.value.subscribe((v: string) => emitted.push(v));
       typeSequence(input, '12', directive, fixture);
       expect(emitted).toEqual(['1', '12']);
+    });
+
+    it('keeps rawValue as a deprecated alias of value', () => {
+      const { directive } = setup();
+      directive.value.set('555');
+      expect(directive.rawValue()).toBe('555');
+    });
+  });
+
+  // ── CNGX_VALUE_TRANSFORMER + CNGX_FORM_FIELD_HOST integration ──
+
+  describe('CNGX_VALUE_TRANSFORMER provider', () => {
+    it('provides a string-typed transformer via useFactory', () => {
+      const fixture = TestBed.createComponent(Host);
+      fixture.detectChanges();
+      const transformer = fixture.debugElement
+        .query((d) => d.nativeElement.tagName === 'INPUT')
+        .injector.get(CNGX_VALUE_TRANSFORMER) as CngxValueTransformer<string>;
+      expect(transformer).toBeTruthy();
+      const masked = transformer.format('5551234567');
+      expect(masked).toBe('(555) 123-4567');
+      expect(transformer.parse('(555) 123-4567')).toBe('5551234567');
+    });
+  });
+
+  describe('CNGX_FORM_FIELD_HOST integration', () => {
+    it('calls host.markAsTouched() on blur', () => {
+      const hostMock: CngxFormFieldHostContract = {
+        showError: signal(false),
+        markAsTouched: vi.fn(),
+      };
+      const { input } = setup({ host: hostMock });
+      input.dispatchEvent(new FocusEvent('blur'));
+      expect(hostMock.markAsTouched).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  // ── No-loop / single-emit assertion on the masked-effect ─────────
+
+  describe('mask-effect single-emit (no re-entry, no double-format)', () => {
+    it('writes el.value once per external value.set and emits one input event', () => {
+      const { input, directive, fixture } = setup();
+      let inputEvents = 0;
+      input.addEventListener('input', () => inputEvents++);
+
+      directive.value.set('5551234567');
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      expect(input.value).toBe('(555) 123-4567');
+      expect(inputEvents).toBe(1);
+
+      // Second set with the same value: Object.is dedupes → no re-emit.
+      directive.value.set('5551234567');
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(inputEvents).toBe(1);
     });
   });
 
