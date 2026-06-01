@@ -268,8 +268,10 @@
     }
 
     .cngx-stepper__indicator[data-state='error'] {
-      background: var(--cngx-step-errored-color, var(--cngx-color-danger, oklch(0.45 0.15 25)));
-      color: var(--cngx-step-indicator-active-color, oklch(1 0 0));
+      background: transparent;
+      color: var(--cngx-step-errored-color, var(--cngx-color-danger, oklch(0.45 0.15 25)));
+      box-shadow: inset 0 0 0 1px
+        var(--cngx-step-errored-color, var(--cngx-color-danger, oklch(0.45 0.15 25)));
     }
 
     .cngx-stepper__indicator[data-state='disabled'] {
@@ -320,7 +322,7 @@
    * Fill of the active dot in the linear-minimal skin. Falls back to
    * the canonical active-fill so Material consumers inherit primary
    * tones without per-skin overrides.
-   * @group State / Active
+   * @group Skin / linear-minimal
    */
   @property --cngx-step-linear-dot-fill {
     syntax: '*';
@@ -331,7 +333,7 @@
   /**
    * Background of the status pill on the `stripe-status-rich` skin
    * when the step is upcoming. Soft-neutral surface tone.
-   * @group State / Resting
+   * @group Skin / stripe-status-rich
    */
   @property --cngx-step-status-pill-bg-upcoming {
     syntax: '*';
@@ -342,7 +344,7 @@
   /**
    * Background of the status pill while the step is active /
    * in-progress.
-   * @group State / Active
+   * @group Skin / stripe-status-rich
    */
   @property --cngx-step-status-pill-bg-in-progress {
     syntax: '*';
@@ -352,7 +354,7 @@
 
   /**
    * Background of the status pill once the step is completed.
-   * @group State / Completed
+   * @group Skin / stripe-status-rich
    */
   @property --cngx-step-status-pill-bg-done {
     syntax: '*';
@@ -362,7 +364,7 @@
 
   /**
    * Background of the status pill when the step is errored.
-   * @group State / Error
+   * @group Skin / stripe-status-rich
    */
   @property --cngx-step-status-pill-bg-errored {
     syntax: '*';
@@ -373,7 +375,7 @@
   /**
    * Text color of the status pill on the active / completed / errored
    * states. Hits the filled pill background.
-   * @group State / Active
+   * @group Skin / stripe-status-rich
    */
   @property --cngx-step-status-pill-color {
     syntax: '<color>';
@@ -384,7 +386,7 @@
   /**
    * Fill of the chevron tile while the step is active on the
    * `path-chevron` skin.
-   * @group State / Active
+   * @group Skin / path-chevron
    */
   @property --cngx-step-chevron-tile-active {
     syntax: '*';
@@ -394,7 +396,7 @@
 
   /**
    * Fill of the chevron tile once the step is completed.
-   * @group State / Completed
+   * @group Skin / path-chevron
    */
   @property --cngx-step-chevron-tile-completed {
     syntax: '*';
@@ -404,7 +406,7 @@
 
   /**
    * Fill of the chevron tile when the step is errored.
-   * @group State / Error
+   * @group Skin / path-chevron
    */
   @property --cngx-step-chevron-tile-errored {
     syntax: '*';
@@ -415,7 +417,7 @@
   /**
    * Border color of the upcoming chevron tile (transparent fill,
    * outlined border).
-   * @group State / Resting
+   * @group Skin / path-chevron
    */
   @property --cngx-step-chevron-tile-upcoming-border {
     syntax: '<color>';
@@ -426,7 +428,7 @@
   /**
    * Text color of the chevron tile in the filled (active / completed
    * / errored) states.
-   * @group State / Active
+   * @group Skin / path-chevron
    */
   @property --cngx-step-chevron-tile-color {
     syntax: '<color>';
@@ -437,7 +439,7 @@
   /**
    * Border-radius of the `pill-segment` skin container - rounds the
    * entire rail rather than per-step.
-   * @group Layout
+   * @group Skin / pill-segment
    */
   @property --cngx-step-pill-radius {
     syntax: '<length-percentage>';
@@ -447,7 +449,7 @@
 
   /**
    * Fill of the active segment in the `pill-segment` skin.
-   * @group State / Active
+   * @group Skin / pill-segment
    */
   @property --cngx-step-pill-segment-fill-active {
     syntax: '*';
@@ -457,7 +459,7 @@
 
   /**
    * Fill of the completed segment in the `pill-segment` skin.
-   * @group State / Completed
+   * @group Skin / pill-segment
    */
   @property --cngx-step-pill-segment-fill-completed {
     syntax: '*';
@@ -468,7 +470,7 @@
   /**
    * Divider colour between adjacent segments on the `pill-segment`
    * skin.
-   * @group Surface
+   * @group Skin / pill-segment
    */
   @property --cngx-step-pill-segment-divider {
     syntax: '<color>';
