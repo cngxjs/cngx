@@ -433,6 +433,48 @@
     inherits: true;
     initial-value: oklch(1 0 0);
   }
+
+  /**
+   * Border-radius of the `pill-segment` skin container - rounds the
+   * entire rail rather than per-step.
+   * @group Layout
+   */
+  @property --cngx-step-pill-radius {
+    syntax: '<length-percentage>';
+    inherits: false;
+    initial-value: 999px;
+  }
+
+  /**
+   * Fill of the active segment in the `pill-segment` skin.
+   * @group State / Active
+   */
+  @property --cngx-step-pill-segment-fill-active {
+    syntax: '*';
+    inherits: false;
+    initial-value: var(--cngx-step-active-fill, var(--cngx-color-primary, oklch(0.55 0.18 250)));
+  }
+
+  /**
+   * Fill of the completed segment in the `pill-segment` skin.
+   * @group State / Completed
+   */
+  @property --cngx-step-pill-segment-fill-completed {
+    syntax: '*';
+    inherits: false;
+    initial-value: color-mix(in srgb, var(--cngx-step-completed-color, oklch(0.5 0.15 145)) 60%, transparent);
+  }
+
+  /**
+   * Divider colour between adjacent segments on the `pill-segment`
+   * skin.
+   * @group Surface
+   */
+  @property --cngx-step-pill-segment-divider {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: color-mix(in srgb, currentColor 12%, transparent);
+  }
 }
 
 @layer cngx.skins {
@@ -651,6 +693,64 @@
     }
     .cngx-stepper__step:last-child {
       clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+    }
+  }
+
+  /**
+   * Pill-segment: a single rounded rail with each step as a flex
+   * segment. 1px divider between segments via `::after`. Active
+   * segment fills primary, completed with success-tint, errored
+   * inherits the classic errored fill.
+   */
+  @scope (.cngx-stepper[data-skin='pill-segment']) {
+    .cngx-stepper__strip {
+      gap: 0;
+      padding: 0;
+      border-radius: var(--cngx-step-pill-radius, 999px);
+      overflow: hidden;
+      border: 1px solid var(--cngx-step-pill-segment-divider, color-mix(in srgb, currentColor 12%, transparent));
+    }
+
+    .cngx-stepper__step {
+      position: relative;
+      flex: 1 1 0;
+      justify-content: center;
+      background: transparent;
+      transition: background-color 120ms ease, color 120ms ease;
+    }
+
+    .cngx-stepper__step:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      top: 25%;
+      bottom: 25%;
+      right: 0;
+      width: 1px;
+      background: var(--cngx-step-pill-segment-divider, color-mix(in srgb, currentColor 12%, transparent));
+    }
+
+    .cngx-stepper__step[aria-current='step'] {
+      background: var(--cngx-step-pill-segment-fill-active);
+      color: var(--cngx-step-indicator-active-color, oklch(1 0 0));
+    }
+
+    .cngx-stepper__step:has(.cngx-stepper__indicator[data-state='success']) {
+      background: var(--cngx-step-pill-segment-fill-completed);
+      color: var(--cngx-step-indicator-active-color, oklch(1 0 0));
+    }
+
+    .cngx-stepper__step:has(.cngx-stepper__indicator[data-state='error']) {
+      background: var(--cngx-step-errored-color, var(--cngx-color-danger, oklch(0.45 0.15 25)));
+      color: var(--cngx-step-indicator-active-color, oklch(1 0 0));
+    }
+
+    /* The pill rail already encodes state via segment fill; collapse
+       the indicator disc to its glyph slot. */
+    .cngx-stepper__indicator {
+      background: transparent;
+      width: auto;
+      height: auto;
+      border: 0;
     }
   }
 }
