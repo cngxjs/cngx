@@ -83,6 +83,7 @@ export {
   type CngxStepperConfig,
   type CngxStepperConfigFeature,
   type CngxStepperFallbackLabels,
+  type CngxStepperSkin,
   type CngxStepperTemplates,
   injectStepperConfig,
   provideStepperConfig,
@@ -93,6 +94,7 @@ export {
   withStepperFallbackLabels,
   withStepperLinear,
   withStepperRouterSync,
+  withStepperSkin,
   withStepIndicatorTemplate,
   withStepBadgeTemplate,
   withStepBusySpinnerTemplate,
@@ -105,10 +107,17 @@ export {
   CNGX_STEPPER_I18N,
   type CngxStepperI18n,
   type CngxStepperI18nFeature,
+  type CngxStepperI18nOverrides,
+  type CngxStepperStatusLabels,
   injectStepperI18n,
   provideStepperI18n,
   withStepperI18nLabels,
 } from './i18n/stepper-i18n';
+
+export {
+  type CngxStepperStatusPillCssTexts,
+  createStepperStatusPillCssTexts,
+} from './status-pill-style';
 
 export {
   CNGX_STEPPER_COMMIT_HANDLER_FACTORY,

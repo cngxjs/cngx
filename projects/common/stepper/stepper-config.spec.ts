@@ -14,6 +14,7 @@ import {
   withStepperFallbackLabels,
   withStepperLinear,
   withStepperRouterSync,
+  withStepperSkin,
   withStepIndicatorTemplate,
   withStepBadgeTemplate,
   withStepBusySpinnerTemplate,
@@ -75,6 +76,7 @@ describe('CngxStepperConfig', () => {
     expect(
       withStepperFallbackLabels({ stepRoleDescription: 'Schritt' })._target,
     ).toBe('config');
+    expect(withStepperSkin('linear-minimal')._target).toBe('config');
   });
 
   it('provideStepperConfigAt scopes via viewProviders, overriding root', () => {
@@ -98,6 +100,71 @@ describe('CngxStepperConfig', () => {
     fixture.detectChanges();
     const scopedCfg = fixture.debugElement.injector.get(CNGX_STEPPER_CONFIG);
     expect(scopedCfg.defaultOrientation).toBe('vertical');
+  });
+
+  describe('withStepperSkin', () => {
+    it('library default resolves to the classic skin', () => {
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      const cfg = TestBed.inject(CNGX_STEPPER_CONFIG);
+      expect(cfg.skin).toBe('classic');
+    });
+
+    it('provideStepperConfig(withStepperSkin) overrides the root default', () => {
+      TestBed.configureTestingModule({
+        providers: [
+          provideZonelessChangeDetection(),
+          provideStepperConfig(withStepperSkin('linear-minimal')),
+        ],
+      });
+      const cfg = TestBed.inject(CNGX_STEPPER_CONFIG);
+      expect(cfg.skin).toBe('linear-minimal');
+    });
+
+    it('provideStepperConfigAt(withStepperSkin) scopes via viewProviders', () => {
+      @Component({
+        standalone: true,
+        selector: 'skin-scope',
+        template: '',
+        viewProviders: [...provideStepperConfigAt(withStepperSkin('path-chevron'))],
+      })
+      class SkinScope {}
+
+      TestBed.configureTestingModule({
+        providers: [
+          provideZonelessChangeDetection(),
+          provideStepperConfig(withStepperSkin('stripe-status-rich')),
+        ],
+      });
+      const fixture = TestBed.createComponent(SkinScope);
+      fixture.detectChanges();
+      const scopedCfg = fixture.debugElement.injector.get(CNGX_STEPPER_CONFIG);
+      expect(scopedCfg.skin).toBe('path-chevron');
+      const rootCfg = TestBed.inject(CNGX_STEPPER_CONFIG);
+      expect(rootCfg.skin).toBe('stripe-status-rich');
+    });
+
+    it('every skin value is accepted by the cascade', () => {
+      const skins = [
+        'classic',
+        'linear-minimal',
+        'stripe-status-rich',
+        'path-chevron',
+        'pill-segment',
+      ] as const;
+      for (const skin of skins) {
+        TestBed.resetTestingModule();
+        TestBed.configureTestingModule({
+          providers: [
+            provideZonelessChangeDetection(),
+            provideStepperConfig(withStepperSkin(skin)),
+          ],
+        });
+        const cfg = TestBed.inject(CNGX_STEPPER_CONFIG);
+        expect(cfg.skin).toBe(skin);
+      }
+    });
   });
 
   describe('CngxStepperTemplates cascade middle tier', () => {

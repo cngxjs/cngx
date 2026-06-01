@@ -99,16 +99,84 @@ function compileAndExtract(opts: CompileOptions): Record<string, string> {
   return parseCustomPropertyDeclarations(result.css);
 }
 
+const SKIN_PROPERTY_PREFIXES = {
+  'linear-minimal': ['--cngx-step-linear-dot-'],
+  'stripe-status-rich': ['--cngx-step-status-pill-'],
+  'path-chevron': ['--cngx-step-chevron-tile-'],
+  'pill-segment': ['--cngx-step-pill-segment-'],
+} as const;
+
+const ALL_SKIN_PREFIXES = Object.values(SKIN_PROPERTY_PREFIXES).flat();
+
+function pickByPrefix(
+  declarations: Record<string, string>,
+  prefixes: readonly string[],
+): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const [key, value] of Object.entries(declarations)) {
+    if (prefixes.some((prefix) => key.startsWith(prefix))) {
+      out[key] = value;
+    }
+  }
+  return out;
+}
+
+/**
+ * Strip the Phase B skin-specific keys so the Phase 0 baseline blocks
+ * stay BYTE-IDENTICAL when new properties land. Each new property is
+ * captured separately under the `skin-specific Material overrides`
+ * describe block below.
+ */
+function pickPhase0Baseline(declarations: Record<string, string>): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const [key, value] of Object.entries(declarations)) {
+    if (ALL_SKIN_PREFIXES.some((prefix) => key.startsWith(prefix))) {
+      continue;
+    }
+    out[key] = value;
+  }
+  return out;
+}
+
 describe('Material stepper-theme mixin baseline', () => {
   it('v1 light: resolved --cngx-step-* declarations match the baseline', () => {
-    expect(compileAndExtract({ themeVersion: 'v1', variant: 'light' })).toMatchSnapshot();
+    expect(
+      pickPhase0Baseline(compileAndExtract({ themeVersion: 'v1', variant: 'light' })),
+    ).toMatchSnapshot();
   });
 
   it('v1 dark: resolved --cngx-step-* declarations match the baseline', () => {
-    expect(compileAndExtract({ themeVersion: 'v1', variant: 'dark' })).toMatchSnapshot();
+    expect(
+      pickPhase0Baseline(compileAndExtract({ themeVersion: 'v1', variant: 'dark' })),
+    ).toMatchSnapshot();
   });
 
   it('v0 light: resolved --cngx-step-* declarations match the baseline', () => {
-    expect(compileAndExtract({ themeVersion: 'v0', variant: 'light' })).toMatchSnapshot();
+    expect(
+      pickPhase0Baseline(compileAndExtract({ themeVersion: 'v0', variant: 'light' })),
+    ).toMatchSnapshot();
+  });
+
+  describe('skin-specific Material overrides (Phase B Commit 6)', () => {
+    // Phase B extension: new --cngx-step-* properties bound to the
+    // four new skins. Existing baseline lines (above) stay
+    // BYTE-IDENTICAL across the extension; the per-skin snapshots
+    // below are the only NEW blocks Phase B's mixin growth adds.
+    for (const [skin, prefixes] of Object.entries(SKIN_PROPERTY_PREFIXES)) {
+      it(`${skin}: v1 light overrides`, () => {
+        const all = compileAndExtract({ themeVersion: 'v1', variant: 'light' });
+        expect(pickByPrefix(all, prefixes)).toMatchSnapshot();
+      });
+
+      it(`${skin}: v1 dark overrides`, () => {
+        const all = compileAndExtract({ themeVersion: 'v1', variant: 'dark' });
+        expect(pickByPrefix(all, prefixes)).toMatchSnapshot();
+      });
+
+      it(`${skin}: v0 light overrides`, () => {
+        const all = compileAndExtract({ themeVersion: 'v0', variant: 'light' });
+        expect(pickByPrefix(all, prefixes)).toMatchSnapshot();
+      });
+    }
   });
 });

@@ -55,6 +55,22 @@ export interface CngxStepperTemplates {
 }
 
 /**
+ * Selectable visual skin for the cngx-standard stepper. The skin is a
+ * pure thematic concern - every value renders the same structure, same
+ * slots, same ARIA, same keyboard behaviour, and only redirects CSS via
+ * the `[data-skin]` host attribute. The Material twin
+ * (`<cngx-mat-stepper>`) ignores this setting.
+ *
+ * @category common/stepper
+ */
+export type CngxStepperSkin =
+  | 'classic'
+  | 'linear-minimal'
+  | 'stripe-status-rich'
+  | 'path-chevron'
+  | 'pill-segment';
+
+/**
  * Stepper config surface. Resolution priority: per-instance Input
  * > `provideStepperConfigAt` (viewProviders) > `provideStepperConfig`
  * (root) > library default. Canonical cngx config shape.
@@ -67,6 +83,7 @@ export interface CngxStepperConfig {
   readonly defaultCommitMode?: 'optimistic' | 'pessimistic';
   readonly routerSyncMode?: 'fragment' | 'queryParam';
   readonly routerSyncParam?: string;
+  readonly skin?: CngxStepperSkin;
   readonly ariaLabels?: CngxStepperAriaLabels;
   readonly fallbackLabels?: CngxStepperFallbackLabels;
   readonly templates?: CngxStepperTemplates;
@@ -85,6 +102,7 @@ const STEPPER_CONFIG_DEFAULTS: Required<
   defaultCommitMode: 'pessimistic',
   routerSyncMode: 'fragment',
   routerSyncParam: 'step',
+  skin: 'classic',
   ariaLabels: {
     stepperRegion: 'Stepper',
   },
@@ -191,6 +209,19 @@ export function withStepperRouterSync(
     routerSyncMode: mode,
     routerSyncParam: param,
   }));
+}
+
+/**
+ * Select the visual skin for the cngx-standard `<cngx-stepper>`. The
+ * default is `'classic'`. Per-instance `[skin]` Input still wins; this
+ * moves the cascade default. Structure, slots, ARIA, and keyboard
+ * behaviour are identical across skins - only the `[data-skin]` host
+ * attribute changes the CSS layer that paints the strip.
+ *
+ * @category common/stepper
+ */
+export function withStepperSkin(skin: CngxStepperSkin): CngxStepperConfigFeature {
+  return defineStepperConfigFeature((cfg) => ({ ...cfg, skin }));
 }
 
 /**

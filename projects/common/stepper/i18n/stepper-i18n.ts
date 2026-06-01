@@ -1,6 +1,22 @@
 import { inject, InjectionToken, type Provider } from '@angular/core';
 
 /**
+ * Status-pill labels used by the `stripe-status-rich` skin (and any
+ * future skin / variant that surfaces a per-step status pill). Sub-
+ * bundle of {@link CngxStepperI18n}; consumers override partial keys
+ * via {@link withStepperI18nLabels} - un-overridden keys keep their
+ * English defaults.
+ *
+ * @category common/stepper/i18n
+ */
+export interface CngxStepperStatusLabels {
+  readonly done: string;
+  readonly inProgress: string;
+  readonly upNext: string;
+  readonly errored: string;
+}
+
+/**
  * Stepper i18n surface. Library defaults are English; locales come from
  * consumer overrides via {@link provideStepperI18n}. Sibling of
  * `CNGX_TABS_I18N` / `CNGX_CHART_I18N`.
@@ -39,7 +55,26 @@ export interface CngxStepperI18n {
    * step after the announcement has faded. Pillar 2.
    */
   readonly stepRolledBackSuffix: string;
+  /**
+   * Per-state pill labels surfaced by the `stripe-status-rich` skin
+   * (and any future skin / variant that paints a state pill). English
+   * defaults; consumer partial overrides via
+   * {@link withStepperI18nLabels} keep un-overridden keys intact.
+   */
+  readonly statusLabels: CngxStepperStatusLabels;
 }
+
+/**
+ * Partial-override shape for {@link withStepperI18nLabels}. Behaves as
+ * `Partial<CngxStepperI18n>` for top-level keys, plus a nested partial
+ * for {@link CngxStepperStatusLabels} so consumers can override one
+ * pill label without restating the full status-label bundle.
+ *
+ * @category common/stepper/i18n
+ */
+export type CngxStepperI18nOverrides = Omit<Partial<CngxStepperI18n>, 'statusLabels'> & {
+  readonly statusLabels?: Partial<CngxStepperStatusLabels>;
+};
 
 /** @internal */
 const STEPPER_I18N_DEFAULTS: CngxStepperI18n = {
@@ -54,6 +89,12 @@ const STEPPER_I18N_DEFAULTS: CngxStepperI18n = {
   commitInFlight: 'Committing step…',
   commitRolledBackTo: (originLabel) => `Reverted to step "${originLabel}".`,
   stepRolledBackSuffix: 'This step was rolled back.',
+  statusLabels: {
+    done: 'Done',
+    inProgress: 'In progress',
+    upNext: 'Up next',
+    errored: 'Errored',
+  },
 };
 
 /**
@@ -95,13 +136,23 @@ function defineStepperI18nFeature(
 
 /**
  * Override stepper i18n labels. Partial override - unset keys keep
- * the English default. Sibling of `withStepperAriaLabels` /
+ * the English default. {@link CngxStepperStatusLabels} is merged
+ * key-by-key so consumers can override one pill label without
+ * restating the rest. Sibling of `withStepperAriaLabels` /
  * `withStepperFallbackLabels`.
  *
  * @category common/stepper/i18n
  */
-export function withStepperI18nLabels(overrides: Partial<CngxStepperI18n>): CngxStepperI18nFeature {
-  return defineStepperI18nFeature((bundle) => ({ ...bundle, ...overrides }));
+export function withStepperI18nLabels(
+  overrides: CngxStepperI18nOverrides,
+): CngxStepperI18nFeature {
+  return defineStepperI18nFeature((bundle) => ({
+    ...bundle,
+    ...overrides,
+    statusLabels: overrides.statusLabels
+      ? { ...bundle.statusLabels, ...overrides.statusLabels }
+      : bundle.statusLabels,
+  }));
 }
 
 /** @internal */

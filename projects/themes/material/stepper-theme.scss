@@ -5,7 +5,7 @@
 // Material bridge for CngxStepper. Default visuals ship with the
 // component (projects/ui/stepper/stepper.component.css + the shared
 // projects/ui/stepper/styles/stepper-base.css); this file aligns the
-// colour, density, and typography tokens with Material so cngx
+// color, density, and typography tokens with Material so cngx
 // steppers feel native alongside <mat-stepper>.
 //
 //   @use '@angular/material' as mat;
@@ -38,6 +38,43 @@
     --cngx-step-rejection-outline-color: var(--mat-sys-tertiary);
     --cngx-step-rejection-icon-bg: var(--mat-sys-tertiary);
     --cngx-step-rejection-icon-color: var(--mat-sys-on-tertiary);
+
+    // Skin: linear-minimal
+    --cngx-step-linear-dot-fill: var(--mat-sys-primary);
+
+    // Skin: stripe-status-rich
+    --cngx-step-status-pill-bg-upcoming: color-mix(
+      in srgb,
+      var(--mat-sys-on-surface) 8%,
+      transparent
+    );
+    --cngx-step-status-pill-bg-in-progress: var(--mat-sys-primary);
+    --cngx-step-status-pill-bg-done: var(--mat-sys-tertiary);
+    --cngx-step-status-pill-bg-errored: var(--mat-sys-error);
+    --cngx-step-status-pill-color: var(--mat-sys-on-primary);
+
+    // Skin: path-chevron
+    --cngx-step-chevron-tile-active: var(--mat-sys-primary);
+    --cngx-step-chevron-tile-completed: color-mix(
+      in srgb,
+      var(--mat-sys-tertiary) 80%,
+      transparent
+    );
+    --cngx-step-chevron-tile-errored: var(--mat-sys-error);
+    --cngx-step-chevron-tile-upcoming-border: color-mix(
+      in srgb,
+      var(--mat-sys-on-surface) 25%,
+      transparent
+    );
+    --cngx-step-chevron-tile-color: var(--mat-sys-on-primary);
+
+    // Skin: pill-segment
+    --cngx-step-pill-segment-fill-active: var(--mat-sys-primary);
+    --cngx-step-pill-segment-fill-completed: color-mix(
+      in srgb,
+      var(--mat-sys-primary) 60%,
+      transparent
+    );
   } @else {
     --cngx-step-active-color: #{mat.get-theme-color($theme, primary)};
     --cngx-step-completed-color: #{mat.get-theme-color($theme, primary)};
@@ -48,6 +85,35 @@
     --cngx-step-error-badge-color: #{mat.get-theme-color($theme, warn)};
     --cngx-step-rejection-outline-color: #{mat.get-theme-color($theme, accent)};
     --cngx-step-rejection-icon-bg: #{mat.get-theme-color($theme, accent)};
+
+    // Skin: linear-minimal
+    --cngx-step-linear-dot-fill: #{mat.get-theme-color($theme, primary)};
+
+    // Skin: stripe-status-rich
+    --cngx-step-status-pill-bg-upcoming: color-mix(in srgb, currentColor 8%, transparent);
+    --cngx-step-status-pill-bg-in-progress: #{mat.get-theme-color($theme, primary)};
+    --cngx-step-status-pill-bg-done: #{mat.get-theme-color($theme, accent)};
+    --cngx-step-status-pill-bg-errored: #{mat.get-theme-color($theme, warn)};
+    --cngx-step-status-pill-color: oklch(1 0 0);
+
+    // Skin: path-chevron
+    --cngx-step-chevron-tile-active: #{mat.get-theme-color($theme, primary)};
+    --cngx-step-chevron-tile-completed: color-mix(
+      in srgb,
+      #{mat.get-theme-color($theme, accent)} 80%,
+      transparent
+    );
+    --cngx-step-chevron-tile-errored: #{mat.get-theme-color($theme, warn)};
+    --cngx-step-chevron-tile-upcoming-border: color-mix(in srgb, currentColor 25%, transparent);
+    --cngx-step-chevron-tile-color: oklch(1 0 0);
+
+    // Skin: pill-segment
+    --cngx-step-pill-segment-fill-active: #{mat.get-theme-color($theme, primary)};
+    --cngx-step-pill-segment-fill-completed: color-mix(
+      in srgb,
+      #{mat.get-theme-color($theme, primary)} 60%,
+      transparent
+    );
   }
 }
 
@@ -68,9 +134,27 @@
   $scale: mat.get-theme-density($theme);
   $scale: math.max(-4, math.min(0, $scale));
 
-  $indicator-sizes: (0: 1.75rem, -1: 1.5rem, -2: 1.375rem, -3: 1.25rem, -4: 1.125rem);
-  $paddings:        (0: 0.5rem 0.75rem, -1: 0.4rem 0.6rem, -2: 0.3rem 0.5rem, -3: 0.25rem 0.4rem, -4: 0.2rem 0.35rem);
-  $gaps:            (0: 0.5rem, -1: 0.4rem, -2: 0.3rem, -3: 0.25rem, -4: 0.2rem);
+  $indicator-sizes: (
+    0: 1.75rem,
+    -1: 1.5rem,
+    -2: 1.375rem,
+    -3: 1.25rem,
+    -4: 1.125rem,
+  );
+  $paddings: (
+    0: 0.5rem 0.75rem,
+    -1: 0.4rem 0.6rem,
+    -2: 0.3rem 0.5rem,
+    -3: 0.25rem 0.4rem,
+    -4: 0.2rem 0.35rem,
+  );
+  $gaps: (
+    0: 0.5rem,
+    -1: 0.4rem,
+    -2: 0.3rem,
+    -3: 0.25rem,
+    -4: 0.2rem,
+  );
 
   --cngx-step-indicator-size: #{map.get($indicator-sizes, $scale)};
   --cngx-step-padding: #{map.get($paddings, $scale)};
