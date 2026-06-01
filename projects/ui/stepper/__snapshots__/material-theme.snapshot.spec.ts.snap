@@ -1,0 +1,55 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Material stepper-theme mixin baseline > v0 light: resolved --cngx-step-* declarations match the baseline 1`] = `
+{
+  "--cngx-step-active-color": "#3f51b5",
+  "--cngx-step-busy-spinner-color": "#3f51b5",
+  "--cngx-step-completed-color": "#3f51b5",
+  "--cngx-step-error-badge-color": "#f44336",
+  "--cngx-step-errored-color": "#f44336",
+  "--cngx-step-indicator-active-color": "oklch(1 0 0)",
+  "--cngx-step-pending-color": "#3f51b5",
+  "--cngx-step-rejection-icon-bg": "#e91e63",
+  "--cngx-step-rejection-outline-color": "#e91e63",
+}
+`;
+
+exports[`Material stepper-theme mixin baseline > v1 dark: resolved --cngx-step-* declarations match the baseline 1`] = `
+{
+  "--cngx-step-active-color": "var(--mat-sys-primary)",
+  "--cngx-step-busy-spinner-color": "var(--mat-sys-primary)",
+  "--cngx-step-completed-color": "var(--mat-sys-primary)",
+  "--cngx-step-error-badge-color": "var(--mat-sys-error)",
+  "--cngx-step-error-badge-text-color": "var(--mat-sys-on-error)",
+  "--cngx-step-errored-color": "var(--mat-sys-error)",
+  "--cngx-step-hover-bg": "color-mix(in srgb, var(--mat-sys-on-surface) 8%, transparent)",
+  "--cngx-step-indicator-active-color": "var(--mat-sys-on-primary)",
+  "--cngx-step-indicator-bg": "var(--mat-sys-surface-container)",
+  "--cngx-step-indicator-color": "var(--mat-sys-on-surface)",
+  "--cngx-step-indicator-disabled-bg": "color-mix( in srgb, var(--mat-sys-on-surface) 12%, transparent )",
+  "--cngx-step-pending-color": "var(--mat-sys-primary)",
+  "--cngx-step-rejection-icon-bg": "var(--mat-sys-tertiary)",
+  "--cngx-step-rejection-icon-color": "var(--mat-sys-on-tertiary)",
+  "--cngx-step-rejection-outline-color": "var(--mat-sys-tertiary)",
+}
+`;
+
+exports[`Material stepper-theme mixin baseline > v1 light: resolved --cngx-step-* declarations match the baseline 1`] = `
+{
+  "--cngx-step-active-color": "var(--mat-sys-primary)",
+  "--cngx-step-busy-spinner-color": "var(--mat-sys-primary)",
+  "--cngx-step-completed-color": "var(--mat-sys-primary)",
+  "--cngx-step-error-badge-color": "var(--mat-sys-error)",
+  "--cngx-step-error-badge-text-color": "var(--mat-sys-on-error)",
+  "--cngx-step-errored-color": "var(--mat-sys-error)",
+  "--cngx-step-hover-bg": "color-mix(in srgb, var(--mat-sys-on-surface) 8%, transparent)",
+  "--cngx-step-indicator-active-color": "var(--mat-sys-on-primary)",
+  "--cngx-step-indicator-bg": "var(--mat-sys-surface-container)",
+  "--cngx-step-indicator-color": "var(--mat-sys-on-surface)",
+  "--cngx-step-indicator-disabled-bg": "color-mix( in srgb, var(--mat-sys-on-surface) 12%, transparent )",
+  "--cngx-step-pending-color": "var(--mat-sys-primary)",
+  "--cngx-step-rejection-icon-bg": "var(--mat-sys-tertiary)",
+  "--cngx-step-rejection-icon-color": "var(--mat-sys-on-tertiary)",
+  "--cngx-step-rejection-outline-color": "var(--mat-sys-tertiary)",
+}
+`;
