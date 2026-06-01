@@ -34,6 +34,10 @@ export {
   type CngxFormFieldHostContract,
 } from './form-field.token';
 export { CngxErrorScopeFieldBridge } from './error-scope-field-bridge.directive';
+export {
+  CNGX_VALUE_TRANSFORMER,
+  type CngxValueTransformer,
+} from './value-transformer.token';
 export type {
   CngxFieldRef,
   CngxFieldAccessor,

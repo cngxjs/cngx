@@ -7,12 +7,13 @@ import {
   inject,
   input,
   LOCALE_ID,
-  output,
+  model,
   signal,
   type Signal,
   untracked,
 } from '@angular/core';
-import { type ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { CNGX_FORM_FIELD_HOST } from '@cngx/core/tokens';
+import { CNGX_VALUE_TRANSFORMER, type CngxValueTransformer } from '@cngx/forms/field';
 import { CNGX_INPUT_CONFIG } from './input-config';
 
 /**
@@ -109,9 +110,12 @@ function isAllowedChar(
   exportAs: 'cngxNumericInput',
   providers: [
     {
-      provide: NG_VALUE_ACCESSOR,
-      useExisting: forwardRef(() => CngxNumericInput),
-      multi: true,
+      provide: CNGX_VALUE_TRANSFORMER,
+      useFactory: (dir: CngxNumericInput): CngxValueTransformer<number | null> => ({
+        format: (raw: number | null) => dir.toDisplay(raw),
+        parse: (display: string) => dir.fromDisplay(display),
+      }),
+      deps: [forwardRef(() => CngxNumericInput)],
     },
   ],
   host: {
@@ -132,10 +136,11 @@ function isAllowedChar(
     '(paste)': 'handlePaste($event)',
   },
 })
-export class CngxNumericInput implements ControlValueAccessor {
+export class CngxNumericInput {
   private readonly el = inject<ElementRef<HTMLInputElement>>(ElementRef);
   private readonly localeId = inject(LOCALE_ID);
   private readonly config = inject(CNGX_INPUT_CONFIG);
+  private readonly host = inject(CNGX_FORM_FIELD_HOST, { optional: true });
 
   /** Locale for number formatting. Falls back to global config, then `LOCALE_ID`. */
   readonly locale = input<string | undefined>(undefined);
@@ -168,17 +173,21 @@ export class CngxNumericInput implements ControlValueAccessor {
   );
   private readonly resolvedStep = computed(() => this.step() ?? this.config.numericStep ?? 1);
 
-  private readonly valueState = signal<number | null>(null);
+  /** Primary value channel. `null` when empty or invalid. */
+  readonly value = model<number | null>(null, { alias: 'value' });
+
   private readonly focusedState = signal(false);
 
   private readonly separators = computed(() => detectSeparators(this.resolvedLocale()));
 
-  /** The numeric value. `null` when empty or invalid. */
-  readonly numericValue: Signal<number | null> = this.valueState.asReadonly();
+  /**
+   * @deprecated Read `value` directly. Kept one release for migration.
+   */
+  readonly numericValue: Signal<number | null> = this.value;
 
   /** Whether the current value is a valid number within min/max bounds. */
   readonly isValid = computed(() => {
-    const v = this.valueState();
+    const v = this.value();
     if (v == null) {
       return true; // empty is valid; required handled by validators
     }
@@ -193,14 +202,11 @@ export class CngxNumericInput implements ControlValueAccessor {
     return true;
   });
 
-  /** Emitted when `numericValue` changes. */
-  readonly valueChange = output<number | null>();
-
   constructor() {
     // Sync formatted value to DOM; the input event notifies co-located CngxInput / matInput.
     effect(() => {
       const focused = this.focusedState();
-      const value = this.valueState();
+      const value = this.value();
       const { decimal } = this.separators();
       const formatOnBlur = this.formatOnBlur();
 
@@ -232,23 +238,31 @@ export class CngxNumericInput implements ControlValueAccessor {
     });
   }
 
-  private onChange = (_value: number | null): void => {
-    /* noop until registerOnChange */
-  };
-  private onTouched = (): void => {
-    /* noop until registerOnTouched */
-  };
-
-  writeValue(value: number | null): void {
-    this.setValue(value);
+  /**
+   * @internal — surface for the `CNGX_VALUE_TRANSFORMER` factory.
+   * Mirrors what the format effect would write to el.value for a given raw.
+   */
+  toDisplay(raw: number | null): string {
+    if (raw == null) {
+      return '';
+    }
+    if (this.formatOnBlur()) {
+      return this.format(raw);
+    }
+    const { decimal } = this.separators();
+    return decimal === '.' ? String(raw) : String(raw).replace('.', decimal);
   }
 
-  registerOnChange(fn: (value: number | null) => void): void {
-    this.onChange = fn;
-  }
-
-  registerOnTouched(fn: () => void): void {
-    this.onTouched = fn;
+  /** @internal — surface for the `CNGX_VALUE_TRANSFORMER` factory. */
+  fromDisplay(display: string): number | null {
+    if (!display.trim()) {
+      return null;
+    }
+    const parsed = parseLocaleNumber(display, this.resolvedLocale());
+    if (parsed == null) {
+      return null;
+    }
+    return this.clamp(this.roundToDecimals(parsed));
   }
 
   /** Programmatically set the numeric value. */
@@ -331,7 +345,7 @@ export class CngxNumericInput implements ControlValueAccessor {
   /** @internal */
   protected handleBlur(): void {
     this.focusedState.set(false);
-    this.onTouched();
+    this.host?.markAsTouched();
     const raw = this.el.nativeElement.value;
     const parsed = parseLocaleNumber(raw, this.resolvedLocale());
 
@@ -365,7 +379,7 @@ export class CngxNumericInput implements ControlValueAccessor {
   }
 
   private adjustValue(direction: 1 | -1, multiplier: number): void {
-    const current = this.valueState() ?? 0;
+    const current = this.value() ?? 0;
     const stepped = current + direction * this.resolvedStep() * multiplier;
     const clamped = this.clamp(this.roundToDecimals(stepped));
     this.updateValue(clamped);
@@ -411,11 +425,9 @@ export class CngxNumericInput implements ControlValueAccessor {
   }
 
   private updateValue(value: number | null): void {
-    const prev = this.valueState();
+    const prev = this.value();
     if (value !== prev) {
-      this.valueState.set(value);
-      this.valueChange.emit(value);
-      this.onChange(value);
+      this.value.set(value);
     }
   }
 }

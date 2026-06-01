@@ -1,6 +1,9 @@
 import { Component, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { LOCALE_ID } from '@angular/core';
+import { CNGX_FORM_FIELD_HOST, type CngxFormFieldHostContract } from '@cngx/core/tokens';
+import { CNGX_VALUE_TRANSFORMER, type CngxValueTransformer } from '@cngx/forms/field';
+import { describe, expect, it, vi } from 'vitest';
 import { CngxNumericInput } from './numeric-input.directive';
 
 @Component({
@@ -36,9 +39,15 @@ function setup(
     formatOnBlur?: boolean;
     allowNegative?: boolean;
     locale?: string;
+    host?: CngxFormFieldHostContract;
   } = {},
 ) {
-  const providers = [{ provide: LOCALE_ID, useValue: 'en-US' }];
+  const providers: { provide: unknown; useValue: unknown }[] = [
+    { provide: LOCALE_ID, useValue: 'en-US' },
+  ];
+  if (overrides.host) {
+    providers.push({ provide: CNGX_FORM_FIELD_HOST, useValue: overrides.host });
+  }
   TestBed.configureTestingModule({ providers });
   const fixture = TestBed.createComponent(Host);
   const host = fixture.componentInstance;
@@ -349,16 +358,50 @@ describe('CngxNumericInput', () => {
     });
   });
 
-  describe('valueChange output', () => {
+  describe('value model output', () => {
     it('should emit on value change', () => {
       const { directive, fixture } = setup();
       const emitted: (number | null)[] = [];
-      directive.valueChange.subscribe((v) => emitted.push(v));
+      directive.value.subscribe((v) => emitted.push(v));
       directive.setValue(42);
       flush(fixture);
       directive.setValue(100);
       flush(fixture);
       expect(emitted).toEqual([42, 100]);
+    });
+
+    it('keeps numericValue as a deprecated alias of value', () => {
+      const { directive, fixture } = setup();
+      directive.value.set(7);
+      flush(fixture);
+      expect(directive.numericValue()).toBe(7);
+    });
+  });
+
+  describe('CNGX_VALUE_TRANSFORMER provider', () => {
+    it('provides a number-typed transformer via useFactory', () => {
+      const fixture = TestBed.createComponent(Host);
+      fixture.detectChanges();
+      const transformer = fixture.debugElement
+        .query((d) => d.nativeElement.tagName === 'INPUT')
+        .injector.get(CNGX_VALUE_TRANSFORMER) as CngxValueTransformer<number | null>;
+      expect(transformer).toBeTruthy();
+      expect(transformer.format(1234.5)).toContain('1,234');
+      expect(transformer.format(null)).toBe('');
+      expect(transformer.parse('1234.5')).toBe(1234.5);
+      expect(transformer.parse('')).toBeNull();
+    });
+  });
+
+  describe('CNGX_FORM_FIELD_HOST integration', () => {
+    it('calls host.markAsTouched() on blur', () => {
+      const hostMock: CngxFormFieldHostContract = {
+        showError: signal(false),
+        markAsTouched: vi.fn(),
+      };
+      const { input } = setup({ host: hostMock });
+      blur(input);
+      expect(hostMock.markAsTouched).toHaveBeenCalledTimes(1);
     });
   });
 

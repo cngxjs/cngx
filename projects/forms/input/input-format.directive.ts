@@ -1,13 +1,17 @@
 import {
   Directive,
   ElementRef,
+  computed,
+  effect,
   forwardRef,
   inject,
   input,
-  signal,
+  model,
+  untracked,
   type Signal,
 } from '@angular/core';
-import { type ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { CNGX_FORM_FIELD_HOST } from '@cngx/core/tokens';
+import { CNGX_VALUE_TRANSFORMER, type CngxValueTransformer } from '@cngx/forms/field';
 
 /**
  * Function that formats a raw value for display.
@@ -27,14 +31,18 @@ export type ParseFn = (display: string) => string;
  * Display formatting on blur, raw value on focus.
  *
  * Applies a `format` function when the input loses focus and a `parse` function
- * when it gains focus. Reactive forms always see the raw (unformatted) value.
+ * when it gains focus. The directive's `value` model carries the raw
+ * (unformatted) value; bind it via `[(value)]` or wrap the input in
+ * `<cngx-form-field [field]="f.x">` for Signal Forms.
  *
  * ```html
  * <!-- Currency formatting -->
- * <input [cngxInputFormat]="formatCurrency" [parse]="parseCurrency" />
+ * <input [cngxInputFormat]="formatCurrency" [parse]="parseCurrency" [(value)]="amount" />
  *
- * <!-- Phone formatting -->
- * <input [cngxInputFormat]="formatPhone" />
+ * <!-- Phone formatting inside a Signal-Forms field -->
+ * <cngx-form-field [field]="f.phone">
+ *   <input cngxInputFormat="formatPhone" cngxBindField [control]="f.phone" />
+ * </cngx-form-field>
  * ```
  *
  * @category forms/input
@@ -53,9 +61,12 @@ export type ParseFn = (display: string) => string;
   exportAs: 'cngxInputFormat',
   providers: [
     {
-      provide: NG_VALUE_ACCESSOR,
-      useExisting: forwardRef(() => CngxInputFormat),
-      multi: true,
+      provide: CNGX_VALUE_TRANSFORMER,
+      useFactory: (dir: CngxInputFormat): CngxValueTransformer<string> => ({
+        format: (raw: string) => dir.format()(raw),
+        parse: (display: string) => dir.parse()(display),
+      }),
+      deps: [forwardRef(() => CngxInputFormat)],
     },
   ],
   host: {
@@ -64,8 +75,9 @@ export type ParseFn = (display: string) => string;
     '(input)': 'handleInput()',
   },
 })
-export class CngxInputFormat implements ControlValueAccessor {
+export class CngxInputFormat {
   private readonly el = inject<ElementRef<HTMLInputElement>>(ElementRef);
+  private readonly host = inject(CNGX_FORM_FIELD_HOST, { optional: true });
 
   /** Format function applied on blur. */
   readonly format = input.required<FormatFn>({ alias: 'cngxInputFormat' });
@@ -73,38 +85,40 @@ export class CngxInputFormat implements ControlValueAccessor {
   /** Parse function applied on focus (inverse of format). Default: identity. */
   readonly parse = input<ParseFn>((v: string) => v);
 
-  private readonly rawState = signal('');
-  private readonly displayState = signal('');
+  /** Primary value channel — raw (unformatted) string. */
+  readonly value = model<string>('', { alias: 'value' });
 
-  /** The raw (unformatted) value. */
-  readonly rawValue: Signal<string> = this.rawState.asReadonly();
+  /**
+   * @deprecated Read `value` directly. Kept one release for migration.
+   */
+  readonly rawValue: Signal<string> = this.value;
 
   /** The display (formatted) value. */
-  readonly displayValue: Signal<string> = this.displayState.asReadonly();
+  readonly displayValue: Signal<string> = computed(() => this.format()(this.value()));
 
-  private onChange = (_value: string): void => {
-    /* noop until registerOnChange */
-  };
-  private onTouched = (): void => {
-    /* noop until registerOnTouched */
-  };
+  // Records the formatted string this directive last wrote to el.value, so the
+  // synthetic input event we dispatch after a DOM write never re-enters
+  // value.set with the formatted string and corrupts the raw channel.
+  private lastEffectWrite = '';
 
-  writeValue(value: string | null): void {
-    const raw = value ?? '';
-    this.rawState.set(raw);
-    const el = this.el.nativeElement;
-    // External writes typically arrive while unfocused; render formatted.
-    const formatted = this.format()(raw);
-    this.displayState.set(formatted);
-    el.value = formatted;
-  }
-
-  registerOnChange(fn: (value: string) => void): void {
-    this.onChange = fn;
-  }
-
-  registerOnTouched(fn: () => void): void {
-    this.onTouched = fn;
+  constructor() {
+    effect(() => {
+      const raw = this.value();
+      const formatFn = this.format();
+      untracked(() => {
+        const el = this.el.nativeElement;
+        if (document.activeElement === el) {
+          return;
+        }
+        const formatted = formatFn(raw);
+        if (formatted === el.value) {
+          return;
+        }
+        el.value = formatted;
+        this.lastEffectWrite = formatted;
+        el.dispatchEvent(new Event('input', { bubbles: true }));
+      });
+    });
   }
 
   /** @internal */
@@ -112,9 +126,12 @@ export class CngxInputFormat implements ControlValueAccessor {
     const el = this.el.nativeElement;
     const parseFn = this.parse();
     const raw = parseFn(el.value);
-    this.rawState.set(raw);
-    el.value = raw;
-    el.dispatchEvent(new Event('input', { bubbles: true }));
+    this.value.set(raw);
+    if (raw !== el.value) {
+      el.value = raw;
+      this.lastEffectWrite = raw;
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+    }
     queueMicrotask(() => {
       const len = el.value.length;
       el.setSelectionRange(len, len);
@@ -123,21 +140,24 @@ export class CngxInputFormat implements ControlValueAccessor {
 
   /** @internal */
   protected handleBlur(): void {
-    this.onTouched();
+    this.host?.markAsTouched();
     const el = this.el.nativeElement;
     const raw = el.value;
-    this.rawState.set(raw);
-    this.onChange(raw);
+    this.value.set(raw);
     const formatted = this.format()(raw);
-    this.displayState.set(formatted);
-    el.value = formatted;
-    el.dispatchEvent(new Event('input', { bubbles: true }));
+    if (formatted !== el.value) {
+      el.value = formatted;
+      this.lastEffectWrite = formatted;
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+    }
   }
 
   /** @internal */
   protected handleInput(): void {
-    const raw = this.el.nativeElement.value;
-    this.rawState.set(raw);
-    this.onChange(raw);
+    const el = this.el.nativeElement;
+    if (el.value === this.lastEffectWrite) {
+      return;
+    }
+    this.value.set(el.value);
   }
 }
