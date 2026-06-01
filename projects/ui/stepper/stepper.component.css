@@ -704,16 +704,6 @@
     }
   }
 
-  /* clip-path renders native outlines as a rectangular halo around
-     the chevron silhouette - suppress with `!important` so neither
-     the base outline rule nor any consumer override breaks back
-     through. Focus ring lives as an inset box-shadow inside the
-     chevron silhouette. Color matches the cngx focus convention. */
-  .cngx-stepper[data-skin='path-chevron'] .cngx-stepper__step:focus-visible {
-    outline: 0 !important;
-    box-shadow: inset 0 0 0 2px var(--cngx-color-primary, oklch(0.66 0.19 50));
-  }
-
   /* Vertical orientation: rotate the chevron notch onto the bottom
      edge of each tile so the visual still reads as a flow. */
   @scope (.cngx-stepper[data-skin='path-chevron'][data-orientation='vertical']) {
@@ -827,4 +817,17 @@
   50% {
     opacity: 0.6;
   }
+}
+
+/* Unlayered focus override for clip-path skins. The base outline
+   rule lives in `@layer cngx.components` and renders as a rectangular
+   halo around the chevron silhouette (clip-path doesn't affect the
+   outline render box). Unlayered rules beat all layered ones; with
+   `!important` the consumer override path is also closed. The visible
+   focus indicator is an inset box-shadow that follows the chevron
+   silhouette inside the clip. */
+.cngx-stepper[data-skin='path-chevron'] .cngx-stepper__step:focus-visible {
+  outline: 0 !important;
+  outline-offset: 0 !important;
+  box-shadow: inset 0 0 0 2px var(--cngx-color-primary, oklch(0.66 0.19 50));
 }
