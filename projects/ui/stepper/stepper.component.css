@@ -327,6 +327,59 @@
     inherits: true;
     initial-value: var(--cngx-step-active-fill, var(--cngx-color-primary, oklch(0.55 0.18 250)));
   }
+
+  /**
+   * Background of the status pill on the `stripe-status-rich` skin
+   * when the step is upcoming. Soft-neutral surface tone.
+   * @group State / Resting
+   */
+  @property --cngx-step-status-pill-bg-upcoming {
+    syntax: '*';
+    inherits: false;
+    initial-value: color-mix(in srgb, currentColor 6%, transparent);
+  }
+
+  /**
+   * Background of the status pill while the step is active /
+   * in-progress.
+   * @group State / Active
+   */
+  @property --cngx-step-status-pill-bg-in-progress {
+    syntax: '*';
+    inherits: false;
+    initial-value: var(--cngx-step-active-fill, var(--cngx-color-primary, oklch(0.55 0.18 250)));
+  }
+
+  /**
+   * Background of the status pill once the step is completed.
+   * @group State / Completed
+   */
+  @property --cngx-step-status-pill-bg-done {
+    syntax: '*';
+    inherits: false;
+    initial-value: var(--cngx-step-completed-color, var(--cngx-color-success, oklch(0.5 0.15 145)));
+  }
+
+  /**
+   * Background of the status pill when the step is errored.
+   * @group State / Error
+   */
+  @property --cngx-step-status-pill-bg-errored {
+    syntax: '*';
+    inherits: false;
+    initial-value: var(--cngx-step-errored-color, var(--cngx-color-danger, oklch(0.45 0.15 25)));
+  }
+
+  /**
+   * Text color of the status pill on the active / completed / errored
+   * states. Hits the filled pill background.
+   * @group State / Active
+   */
+  @property --cngx-step-status-pill-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(1 0 0);
+  }
 }
 
 @layer cngx.skins {
@@ -418,6 +471,55 @@
       border-top: 0;
       border-left: 2px solid color-mix(in srgb, currentColor 35%, transparent);
       transform: none;
+    }
+  }
+
+  /**
+   * Stripe-status-rich: numbered disc with a status pill underneath
+   * each step. Pill text flows from the i18n cascade via the host's
+   * `--cngx-step-status-pill-text-*` custom properties (set on the
+   * `<cngx-stepper>` host); state-driven background tokens cascade
+   * through `--cngx-step-status-pill-bg-*`. Pillar 2 - aria-current /
+   * data-state already broadcast the state to assistive tech; the
+   * pill is decorative reinforcement, `aria-hidden` via `::after`.
+   */
+  @scope (.cngx-stepper[data-skin='stripe-status-rich']) {
+    .cngx-stepper__step {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.375rem;
+    }
+
+    .cngx-stepper__step::after {
+      content: var(--cngx-step-status-pill-text-upcoming, 'Up next');
+      display: inline-flex;
+      align-items: center;
+      padding: 0.125rem 0.5rem;
+      border-radius: 999px;
+      font-size: 0.7em;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      background: var(--cngx-step-status-pill-bg-upcoming);
+      color: color-mix(in srgb, currentColor 80%, transparent);
+      text-transform: none;
+    }
+
+    .cngx-stepper__step[aria-current='step']::after {
+      content: var(--cngx-step-status-pill-text-in-progress, 'In progress');
+      background: var(--cngx-step-status-pill-bg-in-progress);
+      color: var(--cngx-step-status-pill-color, oklch(1 0 0));
+    }
+
+    .cngx-stepper__step:has(.cngx-stepper__indicator[data-state='success'])::after {
+      content: var(--cngx-step-status-pill-text-done, 'Done');
+      background: var(--cngx-step-status-pill-bg-done);
+      color: var(--cngx-step-status-pill-color, oklch(1 0 0));
+    }
+
+    .cngx-stepper__step:has(.cngx-stepper__indicator[data-state='error'])::after {
+      content: var(--cngx-step-status-pill-text-errored, 'Errored');
+      background: var(--cngx-step-status-pill-bg-errored);
+      color: var(--cngx-step-status-pill-color, oklch(1 0 0));
     }
   }
 }

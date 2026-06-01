@@ -100,4 +100,57 @@ describe('CngxStepperI18n', () => {
       expect(i18n.stepperLabel).toBe('Stepper');
     });
   });
+
+  describe('statusLabels (stripe-status-rich skin)', () => {
+    it('library default ships English status labels', () => {
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      const i18n = TestBed.inject(CNGX_STEPPER_I18N);
+      expect(i18n.statusLabels.done).toBe('Done');
+      expect(i18n.statusLabels.inProgress).toBe('In progress');
+      expect(i18n.statusLabels.upNext).toBe('Up next');
+      expect(i18n.statusLabels.errored).toBe('Errored');
+    });
+
+    it('partial override merges per key - unset pills keep their English default', () => {
+      TestBed.configureTestingModule({
+        providers: [
+          provideZonelessChangeDetection(),
+          provideStepperI18n(
+            withStepperI18nLabels({
+              statusLabels: { done: 'Erledigt', errored: 'Fehler' },
+            }),
+          ),
+        ],
+      });
+      const i18n = TestBed.inject(CNGX_STEPPER_I18N);
+      expect(i18n.statusLabels.done).toBe('Erledigt');
+      expect(i18n.statusLabels.errored).toBe('Fehler');
+      // Unset keys keep their English default.
+      expect(i18n.statusLabels.inProgress).toBe('In progress');
+      expect(i18n.statusLabels.upNext).toBe('Up next');
+    });
+
+    it('multiple withStepperI18nLabels features merge statusLabels left-to-right', () => {
+      TestBed.configureTestingModule({
+        providers: [
+          provideZonelessChangeDetection(),
+          provideStepperI18n(
+            withStepperI18nLabels({ statusLabels: { done: 'A', errored: 'X' } }),
+            withStepperI18nLabels({ statusLabels: { done: 'B', upNext: 'C' } }),
+          ),
+        ],
+      });
+      const i18n = TestBed.inject(CNGX_STEPPER_I18N);
+      // Second feature wins on overlapping keys.
+      expect(i18n.statusLabels.done).toBe('B');
+      // Earlier features survive when later features don't touch the key.
+      expect(i18n.statusLabels.errored).toBe('X');
+      // Later feature's new keys land on top.
+      expect(i18n.statusLabels.upNext).toBe('C');
+      // Un-overridden keys keep the English default.
+      expect(i18n.statusLabels.inProgress).toBe('In progress');
+    });
+  });
 });

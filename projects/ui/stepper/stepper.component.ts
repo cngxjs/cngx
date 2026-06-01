@@ -40,6 +40,7 @@ import {
   type CngxStepRejectionContext,
   CNGX_STEPPER_GLYPHS,
   CNGX_STEPPER_HOST,
+  createStepperStatusPillCssTexts,
   createStepperTemplateBindings,
   flatStepsEqual,
   injectStepperConfig,
@@ -115,6 +116,10 @@ import {
     '[attr.aria-label]': 'resolvedAriaLabel()',
     '[attr.aria-labelledby]': 'ariaLabelledBy()',
     '[attr.aria-busy]': 'isCommitting() ? "true" : null',
+    '[style.--cngx-step-status-pill-text-upcoming]': 'pillTexts.upcoming',
+    '[style.--cngx-step-status-pill-text-in-progress]': 'pillTexts.inProgress',
+    '[style.--cngx-step-status-pill-text-done]': 'pillTexts.done',
+    '[style.--cngx-step-status-pill-text-errored]': 'pillTexts.errored',
     '[class.cngx-stepper]': 'true',
   },
 })
@@ -124,11 +129,9 @@ export class CngxStepper implements CngxStepPanelHost {
 
   /**
    * Per-instance skin override. Resolution order: this Input >
-   * `provideStepperConfigAt(withStepperSkin(...))` (viewProviders) >
-   * `provideStepperConfig(withStepperSkin(...))` (root) > library
-   * default `'classic'`. The skin is a thematic concern only - it
-   * redirects CSS via the `[data-skin]` host attribute without touching
-   * structure, slots, ARIA, or keyboard behaviour.
+   * `provideStepperConfigAt(withStepperSkin(...))` > root provider >
+   * library default `'classic'`. Thematic only - flips the
+   * `[data-skin]` host attribute, leaves structure/ARIA/keyboard intact.
    */
   readonly skin = input<CngxStepperSkin | undefined>(undefined);
 
@@ -181,14 +184,10 @@ export class CngxStepper implements CngxStepPanelHost {
     () => this.config.fallbackLabels?.stepRoleDescription ?? this.i18n.stepperLabel,
   );
 
-  /**
-   * Resolved skin keyed onto the `[data-skin]` host attribute. Skin
-   * variation lives entirely in the `@layer cngx.skins` block - no
-   * template branch, no template change.
-   */
-  protected readonly resolvedSkin = computed<CngxStepperSkin>(
-    () => this.skin() ?? this.config.skin ?? 'classic',
-  );
+  /** Resolved skin keyed onto the `[data-skin]` host attribute. */
+  protected readonly resolvedSkin = computed<CngxStepperSkin>(() => this.skin() ?? this.config.skin ?? 'classic');
+  /** Pre-quoted i18n strings for the `stripe-status-rich` skin's pill cascade. */
+  protected readonly pillTexts = createStepperStatusPillCssTexts(this.i18n);
 
   /** Group landmark role-description with config + i18n cascade. */
   protected readonly groupRoleDescription = computed<string>(
