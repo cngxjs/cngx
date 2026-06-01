@@ -459,6 +459,19 @@ html.dark .cngx-ex-tag[data-dim='stability'][data-value='deprecated'] {
   font-variant-numeric: tabular-nums;
 }
 
+// Narrow viewports: 12rem label + value overflows. Stack vertically and
+// drop the label min-width so each row fits its container.
+@media (max-width: 480px) {
+  .event-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.125rem;
+  }
+  .event-label {
+    min-width: 0;
+  }
+}
+
 // Status row / chips / badges - purely structural; visual treatment is
 // up to inline styles on the template itself.
 .status-row,
