@@ -243,8 +243,8 @@
        corner-overlay inside the indicator wrapper. */
     .cngx-stepper__indicator .cngx-stepper__badge {
       position: absolute;
-      top: -4px;
-      right: -4px;
+      top: -8px;
+      right: -8px;
       margin-inline-start: 0;
     }
 
