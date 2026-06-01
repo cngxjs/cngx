@@ -448,34 +448,47 @@
   }
 
   /**
-   * Fill of the active segment in the `pill-segment` skin.
+   * Rail background of the `pill-segment` skin - soft surface tint
+   * the active card floats on top of.
+   * @group Skin / pill-segment
+   */
+  @property --cngx-step-pill-segment-rail-bg {
+    syntax: '*';
+    inherits: false;
+    initial-value: color-mix(in srgb, currentColor 6%, transparent);
+  }
+
+  /**
+   * Active card surface on the `pill-segment` skin - rendered as a
+   * raised tile inside the rail (iOS-style segmented control).
    * @group Skin / pill-segment
    */
   @property --cngx-step-pill-segment-fill-active {
     syntax: '*';
     inherits: false;
-    initial-value: oklch(0.66 0.19 50);
+    initial-value: oklch(1 0 0);
   }
 
   /**
-   * Fill of the completed segment in the `pill-segment` skin.
+   * Completed-segment tint - subtle ember wash so completed reads as
+   * "done" without dominating the rail.
    * @group Skin / pill-segment
    */
   @property --cngx-step-pill-segment-fill-completed {
     syntax: '*';
     inherits: false;
-    initial-value: color-mix(in srgb, oklch(0.66 0.19 50) 60%, transparent);
+    initial-value: color-mix(in srgb, oklch(0.66 0.19 50) 14%, transparent);
   }
 
   /**
-   * Divider colour between adjacent segments on the `pill-segment`
-   * skin.
+   * Shadow on the active card in the `pill-segment` skin.
    * @group Skin / pill-segment
    */
-  @property --cngx-step-pill-segment-divider {
-    syntax: '<color>';
+  @property --cngx-step-pill-segment-card-shadow {
+    syntax: '*';
     inherits: false;
-    initial-value: color-mix(in srgb, currentColor 12%, transparent);
+    initial-value: 0 1px 2px color-mix(in srgb, currentColor 12%, transparent),
+      0 1px 1px color-mix(in srgb, currentColor 8%, transparent);
   }
 }
 
@@ -704,54 +717,51 @@
   }
 
   /**
-   * Pill-segment: a single rounded rail with each step as a flex
-   * segment. 1px divider between segments via `::after`. Active
-   * segment fills primary, completed with success-tint, errored
-   * inherits the classic errored fill.
+   * Pill-segment: iOS-style segmented control. A soft-tinted rail
+   * carries each step as a flex segment; the active step renders as
+   * a raised card with a subtle shadow, completed segments carry a
+   * faint ember wash, upcoming segments are plain text. No dividers
+   * between segments - the card-vs-rail contrast is the only state
+   * separator.
    */
   @scope (.cngx-stepper[data-skin='pill-segment']) {
     .cngx-stepper__strip {
-      gap: 0;
-      padding: 0;
+      gap: 0.25rem;
+      padding: 0.25rem;
       border-radius: var(--cngx-step-pill-radius, 999px);
+      background: var(--cngx-step-pill-segment-rail-bg);
+      border: 0;
       overflow: hidden;
-      border: 1px solid var(--cngx-step-pill-segment-divider, color-mix(in srgb, currentColor 12%, transparent));
     }
 
     .cngx-stepper__step {
-      position: relative;
       flex: 1 1 0;
       justify-content: center;
       background: transparent;
-      transition: background-color 120ms ease, color 120ms ease;
-    }
-
-    .cngx-stepper__step:not(:last-child)::after {
-      content: '';
-      position: absolute;
-      top: 25%;
-      bottom: 25%;
-      right: 0;
-      width: 1px;
-      background: var(--cngx-step-pill-segment-divider, color-mix(in srgb, currentColor 12%, transparent));
+      border-radius: 9999px;
+      color: color-mix(in srgb, currentColor 70%, transparent);
+      transition: background-color 120ms ease, color 120ms ease, box-shadow 120ms ease;
     }
 
     .cngx-stepper__step[aria-current='step'] {
       background: var(--cngx-step-pill-segment-fill-active);
-      color: var(--cngx-step-indicator-active-color, oklch(1 0 0));
+      color: currentColor;
+      box-shadow: var(--cngx-step-pill-segment-card-shadow);
     }
 
     .cngx-stepper__step:has(.cngx-stepper__indicator[data-state='success']) {
       background: var(--cngx-step-pill-segment-fill-completed);
-      color: var(--cngx-step-indicator-active-color, oklch(1 0 0));
+      color: var(--cngx-step-completed-color, oklch(0.5 0.15 145));
     }
 
     .cngx-stepper__step:has(.cngx-stepper__indicator[data-state='error']) {
-      background: var(--cngx-step-errored-color, var(--cngx-color-danger, oklch(0.45 0.15 25)));
-      color: var(--cngx-step-indicator-active-color, oklch(1 0 0));
+      background: transparent;
+      color: var(--cngx-step-errored-color, var(--cngx-color-danger, oklch(0.45 0.15 25)));
+      box-shadow: inset 0 0 0 1px
+        var(--cngx-step-errored-color, var(--cngx-color-danger, oklch(0.45 0.15 25)));
     }
 
-    /* The pill rail's segment fill is the state indicator; hide the
+    /* The pill rail conveys state via the active card; hide the
        default numbered glyph and the completed-check pseudo. Consumer
        slot templates remain available via `*cngxStepIndicator`. */
     .cngx-stepper__indicator {
