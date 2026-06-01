@@ -581,7 +581,7 @@
   @scope (.cngx-stepper[data-skin='stripe-status-rich']) {
     .cngx-stepper__step {
       flex-direction: column;
-      align-items: flex-start;
+      align-items: center;
       gap: 0.375rem;
     }
 
@@ -651,29 +651,38 @@
     .cngx-stepper__step[aria-current='step'] {
       background: var(--cngx-step-chevron-tile-active);
       color: var(--cngx-step-chevron-tile-color, oklch(1 0 0));
-      border-color: transparent;
+      border-color: var(--cngx-step-chevron-tile-active);
     }
 
     .cngx-stepper__step:has(.cngx-stepper__indicator[data-state='success']) {
       background: var(--cngx-step-chevron-tile-completed);
       color: var(--cngx-step-chevron-tile-color, oklch(1 0 0));
-      border-color: transparent;
+      border-color: var(--cngx-step-chevron-tile-completed);
     }
 
     .cngx-stepper__step:has(.cngx-stepper__indicator[data-state='error']) {
       background: var(--cngx-step-chevron-tile-errored);
       color: var(--cngx-step-chevron-tile-color, oklch(1 0 0));
-      border-color: transparent;
+      border-color: var(--cngx-step-chevron-tile-errored);
     }
 
-    /* The clipped tile already encodes state; the indicator disc only
-       adds noise on this skin, so collapse it to the glyph. */
+    /* The chevron tile is the state indicator; the default numbered
+       glyph and the completed-check pseudo-element add noise on this
+       skin. Consumer slot templates (`*cngxStepIndicator`) still
+       render because they don't carry the `.cngx-stepper__indicator-
+       glyph` class. */
     .cngx-stepper__indicator {
       background: transparent;
       width: auto;
       height: auto;
       padding: 0;
       border: 0;
+    }
+    .cngx-stepper__indicator-glyph {
+      display: none;
+    }
+    .cngx-stepper__indicator[data-state='success']::before {
+      content: none;
     }
   }
 
@@ -740,13 +749,20 @@
       color: var(--cngx-step-indicator-active-color, oklch(1 0 0));
     }
 
-    /* The pill rail already encodes state via segment fill; collapse
-       the indicator disc to its glyph slot. */
+    /* The pill rail's segment fill is the state indicator; hide the
+       default numbered glyph and the completed-check pseudo. Consumer
+       slot templates remain available via `*cngxStepIndicator`. */
     .cngx-stepper__indicator {
       background: transparent;
       width: auto;
       height: auto;
       border: 0;
+    }
+    .cngx-stepper__indicator-glyph {
+      display: none;
+    }
+    .cngx-stepper__indicator[data-state='success']::before {
+      content: none;
     }
   }
 }
