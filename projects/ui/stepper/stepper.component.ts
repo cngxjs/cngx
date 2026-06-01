@@ -80,6 +80,12 @@ import {
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-slot-overrides/empty-state-placeholder-via-code-cngxstepperempty-code</example-url>
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-slot-overrides/rejection-decoration-via-code-cngxsteprejection-code</example-url>
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-vertical/vertical-sidebar-layout</example-url>
+ * <example-url>http://localhost:4200/#/ui/stepper/stepper-skins/linear-minimal</example-url>
+ * <example-url>http://localhost:4200/#/ui/stepper/stepper-skins/stripe-status-rich</example-url>
+ * <example-url>http://localhost:4200/#/ui/stepper/stepper-skins/path-chevron</example-url>
+ * <example-url>http://localhost:4200/#/ui/stepper/stepper-skins/pill-segment</example-url>
+ * <example-url>http://localhost:4200/#/ui/stepper/stepper-skins/all-skins-side-by-side</example-url>
+ * <example-url>http://localhost:4200/#/ui/stepper/stepper-skins/material-theme-coverage</example-url>
  */
 @Component({
   selector: 'cngx-stepper',
