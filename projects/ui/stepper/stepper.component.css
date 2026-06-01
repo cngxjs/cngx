@@ -315,6 +315,113 @@
   }
 }
 
+@layer cngx.tokens {
+  /**
+   * Fill of the active dot in the linear-minimal skin. Falls back to
+   * the canonical active-fill so Material consumers inherit primary
+   * tones without per-skin overrides.
+   * @group State / Active
+   */
+  @property --cngx-step-linear-dot-fill {
+    syntax: '*';
+    inherits: true;
+    initial-value: var(--cngx-step-active-fill, var(--cngx-color-primary, oklch(0.55 0.18 250)));
+  }
+}
+
+@layer cngx.skins {
+  /**
+   * Linear-minimal: label-only horizontal layout with a 6px dot
+   * indicator. Active = filled-primary dot, completed = small
+   * success-tinted check, upcoming = hollow ring, connector =
+   * dashed segment in horizontal / vertical filled bar in vertical.
+   */
+  @scope (.cngx-stepper[data-skin='linear-minimal']) {
+    .cngx-stepper__indicator {
+      width: 0.5rem;
+      height: 0.5rem;
+      border-radius: 50%;
+      background: transparent;
+      border: 1px solid color-mix(in srgb, currentColor 35%, transparent);
+      transition: background-color 120ms ease, border-color 120ms ease;
+    }
+
+    .cngx-stepper__indicator .cngx-stepper__indicator-glyph {
+      display: none;
+    }
+
+    .cngx-stepper__step[aria-current='step'] .cngx-stepper__indicator {
+      background: var(
+        --cngx-step-linear-dot-fill,
+        var(--cngx-step-active-fill, currentColor)
+      );
+      border-color: var(
+        --cngx-step-linear-dot-fill,
+        var(--cngx-step-active-fill, currentColor)
+      );
+    }
+
+    .cngx-stepper__indicator[data-state='success'] {
+      background: transparent;
+      border-color: var(
+        --cngx-step-completed-color,
+        var(--cngx-color-success, oklch(0.5 0.15 145))
+      );
+    }
+
+    .cngx-stepper__indicator[data-state='success']::before {
+      content: '\2713';
+      color: var(
+        --cngx-step-completed-color,
+        var(--cngx-color-success, oklch(0.5 0.15 145))
+      );
+      font-size: 0.55rem;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .cngx-stepper__indicator[data-state='error'] {
+      background: var(
+        --cngx-step-errored-color,
+        var(--cngx-color-danger, oklch(0.45 0.15 25))
+      );
+      border-color: var(
+        --cngx-step-errored-color,
+        var(--cngx-color-danger, oklch(0.45 0.15 25))
+      );
+    }
+
+    .cngx-stepper__step {
+      position: relative;
+    }
+
+    /* Dashed horizontal connector between adjacent steps. */
+    .cngx-stepper__step + .cngx-stepper__step::before {
+      content: '';
+      position: absolute;
+      left: calc(-1 * var(--cngx-step-gap, 0.5rem));
+      top: 50%;
+      width: var(--cngx-step-gap, 0.5rem);
+      height: 0;
+      border-top: 1px dashed color-mix(in srgb, currentColor 35%, transparent);
+      transform: translateY(-50%);
+    }
+  }
+
+  /* Vertical orientation: solid bar connector running between dots. */
+  @scope (.cngx-stepper[data-skin='linear-minimal'][data-orientation='vertical']) {
+    .cngx-stepper__step + .cngx-stepper__step::before {
+      left: calc(var(--cngx-step-indicator-size, 1.75rem) / 2);
+      top: calc(-1 * var(--cngx-step-gap, 0.5rem));
+      width: 1px;
+      height: var(--cngx-step-gap, 0.5rem);
+      border-top: 0;
+      border-left: 2px solid color-mix(in srgb, currentColor 35%, transparent);
+      transform: none;
+    }
+  }
+}
+
 @keyframes cngx-stepper-spin {
   to {
     transform: rotate(360deg);
