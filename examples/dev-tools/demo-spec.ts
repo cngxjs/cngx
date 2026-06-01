@@ -103,6 +103,13 @@ export interface DemoSpec {
    * the generated component. Classes must be imported via `moduleImports`.
    */
   hostDirectives?: string[];
+  /**
+   * Provider expressions appended verbatim to the generated `@Component`'s
+   * `viewProviders` array. Use for component-scoped DI overrides like
+   * `provideMenuConfigAt(withDismissOnScroll(true))`. Imports of any
+   * referenced symbols must be declared via `moduleImports`.
+   */
+  viewProviders?: readonly string[];
   /** Compodoc class names whose API should appear in the API tab. */
   apiComponents?: string[];
   /**
