@@ -24,7 +24,7 @@ exports[`Material stepper-theme mixin baseline > skin-specific Material override
   "--cngx-step-chevron-tile-color": "oklch(1 0 0)",
   "--cngx-step-chevron-tile-completed": "color-mix( in srgb, #e91e63 80%, transparent )",
   "--cngx-step-chevron-tile-errored": "#f44336",
-  "--cngx-step-chevron-tile-upcoming-border": "color-mix(in srgb, currentColor 25%, transparent)",
+  "--cngx-step-chevron-tile-upcoming-bg": "color-mix(in srgb, currentColor 25%, transparent)",
 }
 `;
 
@@ -34,7 +34,7 @@ exports[`Material stepper-theme mixin baseline > skin-specific Material override
   "--cngx-step-chevron-tile-color": "var(--mat-sys-on-primary)",
   "--cngx-step-chevron-tile-completed": "color-mix( in srgb, var(--mat-sys-tertiary) 80%, transparent )",
   "--cngx-step-chevron-tile-errored": "var(--mat-sys-error)",
-  "--cngx-step-chevron-tile-upcoming-border": "color-mix( in srgb, var(--mat-sys-on-surface) 25%, transparent )",
+  "--cngx-step-chevron-tile-upcoming-bg": "color-mix( in srgb, var(--mat-sys-on-surface) 25%, transparent )",
 }
 `;
 
@@ -44,7 +44,7 @@ exports[`Material stepper-theme mixin baseline > skin-specific Material override
   "--cngx-step-chevron-tile-color": "var(--mat-sys-on-primary)",
   "--cngx-step-chevron-tile-completed": "color-mix( in srgb, var(--mat-sys-tertiary) 80%, transparent )",
   "--cngx-step-chevron-tile-errored": "var(--mat-sys-error)",
-  "--cngx-step-chevron-tile-upcoming-border": "color-mix( in srgb, var(--mat-sys-on-surface) 25%, transparent )",
+  "--cngx-step-chevron-tile-upcoming-bg": "color-mix( in srgb, var(--mat-sys-on-surface) 25%, transparent )",
 }
 `;
 

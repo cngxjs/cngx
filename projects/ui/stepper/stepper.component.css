@@ -415,14 +415,15 @@
   }
 
   /**
-   * Border color of the upcoming chevron tile (transparent fill,
-   * outlined border).
+   * Fill of the upcoming chevron tile - soft surface tint so the
+   * chevron silhouette stays visible without competing with the
+   * active state.
    * @group Skin / path-chevron
    */
-  @property --cngx-step-chevron-tile-upcoming-border {
-    syntax: '<color>';
+  @property --cngx-step-chevron-tile-upcoming-bg {
+    syntax: '*';
     inherits: false;
-    initial-value: color-mix(in srgb, currentColor 25%, transparent);
+    initial-value: color-mix(in srgb, currentColor 8%, transparent);
   }
 
   /**
@@ -637,26 +638,31 @@
    */
   @scope (.cngx-stepper[data-skin='path-chevron']) {
     .cngx-stepper__strip {
-      gap: 0;
+      gap: 0.125rem;
     }
 
     .cngx-stepper__step {
+      flex: 1 1 0;
       clip-path: polygon(0 0, calc(100% - 0.75rem) 0, 100% 50%, calc(100% - 0.75rem) 100%, 0 100%, 0.75rem 50%);
       padding-inline: calc(var(--cngx-step-padding-inline, 0.75rem) + 0.75rem);
-      background: transparent;
+      justify-content: center;
+      text-align: center;
+      background: var(--cngx-step-chevron-tile-upcoming-bg, color-mix(in srgb, currentColor 8%, transparent));
       color: color-mix(in srgb, currentColor 80%, transparent);
-      border: 1px solid var(--cngx-step-chevron-tile-upcoming-border, color-mix(in srgb, currentColor 25%, transparent));
+      border: 0;
       transition: background-color 120ms ease, color 120ms ease;
+    }
+
+    .cngx-stepper__step .cngx-stepper__label {
+      flex: 0 0 auto;
     }
 
     .cngx-stepper__step:first-child {
       clip-path: polygon(0 0, calc(100% - 0.75rem) 0, 100% 50%, calc(100% - 0.75rem) 100%, 0 100%);
-      padding-inline-start: var(--cngx-step-padding-inline, 0.75rem);
     }
 
     .cngx-stepper__step:last-child {
       clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 0.75rem 50%);
-      padding-inline-end: var(--cngx-step-padding-inline, 0.75rem);
     }
 
     .cngx-stepper__step:only-child {
@@ -666,19 +672,25 @@
     .cngx-stepper__step[aria-current='step'] {
       background: var(--cngx-step-chevron-tile-active);
       color: var(--cngx-step-chevron-tile-color, oklch(1 0 0));
-      border-color: var(--cngx-step-chevron-tile-active);
     }
 
     .cngx-stepper__step:has(.cngx-stepper__indicator[data-state='success']) {
       background: var(--cngx-step-chevron-tile-completed);
       color: var(--cngx-step-chevron-tile-color, oklch(1 0 0));
-      border-color: var(--cngx-step-chevron-tile-completed);
     }
 
     .cngx-stepper__step:has(.cngx-stepper__indicator[data-state='error']) {
       background: var(--cngx-step-chevron-tile-errored);
       color: var(--cngx-step-chevron-tile-color, oklch(1 0 0));
-      border-color: var(--cngx-step-chevron-tile-errored);
+    }
+
+    /* clip-path swallows native outlines - use an inset box-shadow
+       so the focus ring renders INSIDE the chevron silhouette and
+       stays visible. Outline is suppressed to avoid the clipped
+       fragment showing as a partial ring. */
+    .cngx-stepper__step:focus-visible {
+      outline: 0;
+      box-shadow: inset 0 0 0 2px currentColor;
     }
 
     /* The chevron tile is the state indicator; the default numbered
@@ -764,6 +776,13 @@
       color: var(--cngx-step-errored-color, var(--cngx-color-danger, oklch(0.45 0.15 25)));
       box-shadow: inset 0 0 0 1px
         var(--cngx-step-errored-color, var(--cngx-color-danger, oklch(0.45 0.15 25)));
+    }
+
+    /* Inset focus-ring stays inside the segment pill instead of
+       spilling into the surrounding rail. */
+    .cngx-stepper__step:focus-visible {
+      outline: 0;
+      box-shadow: inset 0 0 0 2px currentColor;
     }
 
     /* The pill rail conveys state via the active card; hide the

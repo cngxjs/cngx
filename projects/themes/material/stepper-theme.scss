@@ -61,7 +61,7 @@
       transparent
     );
     --cngx-step-chevron-tile-errored: var(--mat-sys-error);
-    --cngx-step-chevron-tile-upcoming-border: color-mix(
+    --cngx-step-chevron-tile-upcoming-bg: color-mix(
       in srgb,
       var(--mat-sys-on-surface) 25%,
       transparent
@@ -104,7 +104,7 @@
       transparent
     );
     --cngx-step-chevron-tile-errored: #{mat.get-theme-color($theme, warn)};
-    --cngx-step-chevron-tile-upcoming-border: color-mix(in srgb, currentColor 25%, transparent);
+    --cngx-step-chevron-tile-upcoming-bg: color-mix(in srgb, currentColor 25%, transparent);
     --cngx-step-chevron-tile-color: oklch(1 0 0);
 
     // Skin: pill-segment
