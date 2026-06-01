@@ -280,8 +280,6 @@ describe('CngxInputMask', () => {
     });
   });
 
-  // ── value model output ──────────────────────────────────────────────
-
   describe('value model output', () => {
     it('should emit raw value on each change', () => {
       const { input, directive, fixture } = setup();
@@ -297,8 +295,6 @@ describe('CngxInputMask', () => {
       expect(directive.rawValue()).toBe('555');
     });
   });
-
-  // ── CNGX_VALUE_TRANSFORMER + CNGX_FORM_FIELD_HOST integration ──
 
   describe('CNGX_VALUE_TRANSFORMER provider', () => {
     it('provides a string-typed transformer via useFactory', () => {
@@ -325,8 +321,6 @@ describe('CngxInputMask', () => {
       expect(hostMock.markAsTouched).toHaveBeenCalledTimes(1);
     });
   });
-
-  // ── No-loop / single-emit assertion on the masked-effect ─────────
 
   describe('mask-effect single-emit (no re-entry, no double-format)', () => {
     it('writes el.value once per external value.set and emits one input event', () => {

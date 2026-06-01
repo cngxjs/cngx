@@ -11,7 +11,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { adaptFormControl } from './form-control-adapter';
 import { CngxFormField } from './form-field.component';
 import { CngxFormFieldPresenter } from './form-field-presenter';
-import { CngxInput } from '@cngx/forms/input';
+import { CngxInput, CngxNumericInput } from '@cngx/forms/input';
 import { CngxFieldErrors } from './field-errors.component';
 import { CNGX_ERROR_MESSAGES } from './form-field.token';
 import type { CngxFieldAccessor } from './models';
@@ -115,5 +115,49 @@ describe('adaptFormControl', () => {
     expect(presenter.name()).toBe('email');
     expect(presenter.required()).toBe(true);
     expect(presenter.invalid()).toBe(true);
+  });
+
+  it('adapts an RF FormControl<number | null> and reflects value updates', () => {
+    const control = new FormControl<number | null>(null);
+    const ref = adapt(control, 'amount')();
+
+    expect(ref.value()).toBeNull();
+
+    control.setValue(1234.5);
+    TestBed.flushEffects();
+    expect(ref.value()).toBe(1234.5);
+
+    control.setValue(null);
+    TestBed.flushEffects();
+    expect(ref.value()).toBeNull();
+  });
+
+  it('exposes the adapted field to cngx-form-field for number-valued controls', () => {
+    @Component({
+      template: `
+        <cngx-form-field [field]="field()">
+          <input cngxNumericInput cngxBindField />
+        </cngx-form-field>
+      `,
+      imports: [CngxFormField, CngxNumericInput, ReactiveFormsModule],
+    })
+    class NumericRfHost {
+      private readonly destroyRef = inject(DestroyRef);
+      readonly control = new FormControl<number | null>(null);
+      readonly field = signal<CngxFieldAccessor>(
+        adaptFormControl(this.control, 'amount', this.destroyRef),
+      );
+    }
+
+    TestBed.configureTestingModule({ imports: [NumericRfHost] });
+    const fixture = TestBed.createComponent(NumericRfHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    const presenter = fixture.debugElement
+      .query(By.directive(CngxFormField))
+      .injector.get(CngxFormFieldPresenter);
+
+    expect(presenter.name()).toBe('amount');
   });
 });
