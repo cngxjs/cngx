@@ -20,7 +20,7 @@ export const STORY: DemoSpec = {
   template: `  <div class="cngx-stepper-side-by-side">
     <section>
       <h3>classic</h3>
-      <cngx-stepper [(activeStepIndex)]="active" aria-label="Classic skin">
+      <cngx-stepper [(activeStepIndex)]="active" [linear]="true" aria-label="Classic skin">
         <div cngxStep label="Step 1"></div>
         <div cngxStep label="Step 2"></div>
         <div cngxStep label="Step 3"></div>
@@ -28,7 +28,7 @@ export const STORY: DemoSpec = {
     </section>
     <section>
       <h3>linear-minimal</h3>
-      <cngx-stepper [(activeStepIndex)]="active" skin="linear-minimal" aria-label="Linear minimal">
+      <cngx-stepper [(activeStepIndex)]="active" [linear]="true" skin="linear-minimal" aria-label="Linear minimal">
         <div cngxStep label="Step 1"></div>
         <div cngxStep label="Step 2"></div>
         <div cngxStep label="Step 3"></div>
@@ -36,7 +36,7 @@ export const STORY: DemoSpec = {
     </section>
     <section>
       <h3>stripe-status-rich</h3>
-      <cngx-stepper [(activeStepIndex)]="active" skin="stripe-status-rich" aria-label="Stripe status rich">
+      <cngx-stepper [(activeStepIndex)]="active" [linear]="true" skin="stripe-status-rich" aria-label="Stripe status rich">
         <div cngxStep label="Step 1"></div>
         <div cngxStep label="Step 2"></div>
         <div cngxStep label="Step 3"></div>
@@ -44,7 +44,7 @@ export const STORY: DemoSpec = {
     </section>
     <section>
       <h3>path-chevron</h3>
-      <cngx-stepper [(activeStepIndex)]="active" skin="path-chevron" aria-label="Path chevron">
+      <cngx-stepper [(activeStepIndex)]="active" [linear]="true" skin="path-chevron" aria-label="Path chevron">
         <div cngxStep label="Step 1"></div>
         <div cngxStep label="Step 2"></div>
         <div cngxStep label="Step 3"></div>
@@ -52,7 +52,7 @@ export const STORY: DemoSpec = {
     </section>
     <section>
       <h3>pill-segment</h3>
-      <cngx-stepper [(activeStepIndex)]="active" skin="pill-segment" aria-label="Pill segment">
+      <cngx-stepper [(activeStepIndex)]="active" [linear]="true" skin="pill-segment" aria-label="Pill segment">
         <div cngxStep label="Step 1"></div>
         <div cngxStep label="Step 2"></div>
         <div cngxStep label="Step 3"></div>
