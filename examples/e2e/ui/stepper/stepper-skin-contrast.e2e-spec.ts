@@ -2,31 +2,25 @@ import { expect, test } from '@playwright/test';
 import { gotoDemo } from '../../_helpers';
 
 /**
- * Phase 0 baseline. Pins the WCAG glyph-on-disc contrast of the
- * classic stepper skin's four hot states (resting / active /
- * completed / errored) against a real Chromium DOM. Happy-dom cannot
- * evaluate `color-mix()` or `@property` cascades, so this is the
- * only layer where Phase A's contrast claim is verifiable.
+ * Phase 0 baseline, tightened post-Phase-B. Measures disc visibility
+ * against the surrounding page surface (disc background vs first
+ * opaque ancestor background) - a meaningful Pillar-2 regression
+ * net. The original Phase 0 harness compared disc fg vs disc bg,
+ * which silently passed white-on-white because both sides shared
+ * the same `var(--cngx-step-indicator-active-color)` initial value.
+ * The active-fill cascade fix lifts the active disc to primary blue
+ * against the white compodocx surface; this harness verifies the
+ * disc is visible as a shape, not just that the glyph is readable
+ * against its own background.
  *
- * The harness is parameterised over a `data-skin` attribute so
- * Phase B can re-run it for `linear-minimal`, `stripe-status-rich`,
- * `path-chevron`, and `pill-segment` by passing the skin name to
- * `runContrastAxis(...)`. Today only the classic skin ships — no
- * `data-skin` attribute is set on `<cngx-stepper>` yet, so Phase 0
- * runs the axis without the attribute.
- *
- * `CLASSIC_LOWER_BOUNDS` encodes the CURRENT classic-skin contrast
- * numbers measured against the real Chromium DOM at Phase 0 time.
- * Phase A's re-tune MUST MATCH or IMPROVE each value; a regression
- * in any one fails the spec. `MIN_WCAG_AA` is the long-term goal —
- * Phase A's re-tune drives the active / completed / errored pairs
- * above 4.5; the resting indicator is by design a 10% currentColor
- * tint of the inherited text color and is not expected to clear
- * WCAG AA glyph-on-disc on its own (it relies on the hover bump and
- * the active-fill cascade for the visual delta).
+ * WCAG 2.1 SC 1.4.11 (Non-text Contrast) requires >=3:1 against the
+ * surrounding surface for UI components. The active / completed /
+ * errored discs target that floor. Resting is by design a 10%-
+ * currentColor tint - effectively invisible against the page on
+ * purpose; resting is exempt.
  */
 
-const MIN_WCAG_AA = 4.5;
+const MIN_NON_TEXT_CONTRAST = 3;
 
 type HotState = 'resting' | 'active' | 'completed' | 'errored';
 
@@ -35,36 +29,17 @@ const HOT_STATES: readonly HotState[] = ['resting', 'active', 'completed', 'erro
 // Measured against /ui/stepper/stepper-horizontal/three-step-wizard
 // in default Chromium at viewport 1280x720, classic skin (no
 // `data-skin` attribute), no overrides applied beyond the @property
-// initial-values. Phase A's re-tune MUST keep each pair at or above
-// the recorded floor; a regression below the floor fails this spec.
-//
-// Phase A re-baselined floors stay at 1.0 across the board. The
-// bare-default classic skin still collapses white-on-white at the
-// disc level: every disc rule sets `color` to white via
-// `var(--cngx-step-indicator-active-color, oklch(1 0 0))`, and the
-// background's var() chain bottoms out at `currentColor` at the
-// same element (now white) for every state where the @property
-// cascade routes through `--cngx-step-active-color` /
-// `--cngx-step-completed-color` / `--cngx-step-errored-color`
-// initial values that aren't materialised by the parent surface.
-//
-// Phase A's user-visible deltas are elsewhere - the new completed
-// check glyph (`::before content: '\2713'`), the default-on error
-// badge for non-current errored steps (`showErrorBadge` predicate),
-// the hover cursor + 8% tint bump, the focus-ring outline-offset
-// shift from 2px to 3px, and the new `--cngx-step-active-fill`
-// cascade that Material consumers see via their existing override
-// on `--cngx-step-active-color`. None of those move the disc-level
-// WCAG contrast for the bare-default skin.
-//
-// Phase B's skin-swap surface delivers the opaque-fill defaults
-// that lift these pairs above 4.5 in the bare-default cascade. The
-// per-skin floors land alongside that work.
+// initial-values. The polish-PR active-fill cascade fix lifts the
+// active disc to primary blue (~oklch(0.55 0.18 250)) against the
+// white page surface - approximately 4.7:1 by WCAG. Completed and
+// errored sit at success-green and danger-red respectively; both
+// clear 3:1 against white. Resting is exempt - by design a 10%
+// currentColor tint that vanishes into the surface.
 const CLASSIC_LOWER_BOUNDS: Record<HotState, number> = {
   resting: 1,
-  active: 1,
-  completed: 1,
-  errored: 1,
+  active: MIN_NON_TEXT_CONTRAST,
+  completed: MIN_NON_TEXT_CONTRAST,
+  errored: MIN_NON_TEXT_CONTRAST,
 };
 
 function parseRgb(value: string): [number, number, number] {
@@ -192,7 +167,26 @@ test.describe('ui/stepper/stepper-skin-contrast', () => {
         throw new Error(`unresolvable color: ${cssColor} (round-tripped to ${resolved})`);
       };
 
-      const out: Record<string, { bg: string; fg: string }> = {};
+      const resolveOpaqueAncestorBg = (el: HTMLElement): string => {
+        let node: HTMLElement | null = el.parentElement;
+        while (node) {
+          const cs = getComputedStyle(node);
+          const bg = cs.backgroundColor;
+          // rgba(...,0) or transparent both pass through; keep walking.
+          if (bg && bg !== 'rgba(0, 0, 0, 0)' && bg !== 'transparent') {
+            const parsed = parseToSrgb(bg);
+            if (parsed) {
+              return `rgb(${parsed[0]}, ${parsed[1]}, ${parsed[2]})`;
+            }
+          }
+          node = node.parentElement;
+        }
+        // Default to white when nothing opaque sits between the disc
+        // and the document root - matches typical compodocx surfaces.
+        return 'rgb(255, 255, 255)';
+      };
+
+      const out: Record<string, { bg: string; fg: string; surface: string }> = {};
       for (const state of states) {
         step.removeAttribute('aria-current');
         indicator.removeAttribute('data-state');
@@ -207,7 +201,11 @@ test.describe('ui/stepper/stepper-skin-contrast', () => {
         // attribute-driven cascade.
         void indicator.offsetWidth;
         const cs = getComputedStyle(indicator);
-        out[state] = { bg: toSrgb(cs.backgroundColor), fg: toSrgb(cs.color) };
+        out[state] = {
+          bg: toSrgb(cs.backgroundColor),
+          fg: toSrgb(cs.color),
+          surface: resolveOpaqueAncestorBg(indicator),
+        };
       }
 
       probeBg.remove();
@@ -229,21 +227,19 @@ test.describe('ui/stepper/stepper-skin-contrast', () => {
     for (const state of HOT_STATES) {
       const sample = samples[state];
       expect(sample, `no sample captured for ${state}`).toBeDefined();
-      measured[state] = wcagContrast(sample.fg, sample.bg);
+      // Disc vs surrounding surface - the Pillar-2 visibility check.
+      // The disc glyph's own foreground colour is a downstream concern
+      // captured at the unit-test level via the classic-skin snapshot.
+      measured[state] = wcagContrast(sample.bg, sample.surface);
       console.log(
-        `[contrast:classic] ${state}: fg=${sample.fg} bg=${sample.bg} contrast=${measured[state].toFixed(2)}`,
+        `[contrast:classic] ${state}: disc=${sample.bg} surface=${sample.surface} glyph=${sample.fg} contrast=${measured[state].toFixed(2)}`,
       );
     }
     for (const state of HOT_STATES) {
       expect(
         measured[state],
-        `${state}: contrast ${measured[state].toFixed(2)} regressed below classic baseline ${CLASSIC_LOWER_BOUNDS[state]}`,
+        `${state}: disc-vs-surface contrast ${measured[state].toFixed(2)} regressed below baseline ${CLASSIC_LOWER_BOUNDS[state]}`,
       ).toBeGreaterThanOrEqual(CLASSIC_LOWER_BOUNDS[state]);
     }
-    // Phase A re-tune targets MIN_WCAG_AA for the active / completed /
-    // errored pairs. Resting stays a soft tint by design; the hover
-    // affordance and the new --cngx-step-active-fill cascade drive
-    // the visible delta, not the glyph-on-disc number.
-    void MIN_WCAG_AA;
   });
 });
