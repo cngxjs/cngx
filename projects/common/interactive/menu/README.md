@@ -230,6 +230,42 @@ Open menu:
 
 Focus is captured at open time and restored to that element after the menu closes (via `queueMicrotask` so the DOM has settled).
 
+### Dismissal paths
+
+`CngxMenuTrigger` and `CngxContextMenuTrigger` close the menu on four sources by default. `Escape` is owned by `CngxPopover` (global document listener). The other three install through `CNGX_MENU_DISMISS_HANDLER_FACTORY` (default factory: `createMenuDismissHandler`) and only attach while the menu is open.
+
+| Source | Default | Override |
+|-|-|-|
+| `Escape` | always on | `[closeOnEscape]="false"` on the popover |
+| `pointerdown` outside popover and host | on | `withDismissOnOutsideClick(false)` |
+| `scroll` (window) | off | `withDismissOnScroll(true)` |
+| `blur` + `pointercancel` (bundled) | on | `withDismissOnBlur(false)` |
+
+Toggle at app root:
+
+```ts
+bootstrapApplication(AppComponent, {
+  providers: [
+    provideCngxMenu(
+      withDismissOnOutsideClick(false),
+      withDismissOnScroll(true),
+    ),
+  ],
+});
+```
+
+Or component-scope, when only one menu surface needs different policy:
+
+```ts
+@Component({
+  viewProviders: [provideMenuConfigAt(withDismissOnScroll(true))],
+})
+```
+
+Touch users get backdrop dismissal through the same `pointerdown` listener - no `Escape` key required. The dismissal source that fired most recently is exposed as `lastDismissSource` on both trigger directives (`exportAs: 'cngxMenuTrigger'` and `exportAs: 'cngxContextMenuTrigger'`). Swap the whole handler via `CNGX_MENU_DISMISS_HANDLER_FACTORY` when telemetry or test doubles are needed.
+
+`'escape'` is the one dismissal source that records intent, not effect: the factory writes it synchronously on the keystroke without calling `popover.hide()`. Whether the menu actually closes is owned by `CngxPopover.closeOnEscape`. Consumers reading `lastDismissSource()` for telemetry should treat `'escape'` as "user pressed Escape" and read the popover's `state()` if they need to know whether the close actually fired.
+
 Roles and ARIA:
 
 - `CngxMenu` -> `role="menu"`, `aria-label="<label>"`.
