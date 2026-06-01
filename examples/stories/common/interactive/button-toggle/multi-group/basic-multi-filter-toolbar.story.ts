@@ -36,9 +36,9 @@ export const STORY: DemoSpec = {
   setup: `protected readonly filters = signal<string[]>(['open']);`,
   template: `
   <cngx-button-multi-toggle-group class="demo-button-toggle-group" label="Status filters" [(selectedValues)]="filters">
-    <button cngxButtonToggle value="open">Open</button>
-    <button cngxButtonToggle value="closed">Closed</button>
-    <button cngxButtonToggle value="archived">Archived</button>
+    <button type="button" cngxButtonToggle value="open">Open</button>
+    <button type="button" cngxButtonToggle value="closed">Closed</button>
+    <button type="button" cngxButtonToggle value="archived">Archived</button>
   </cngx-button-multi-toggle-group>
   <p class="demo-button-toggle-caption">
     Filters: <code>{{ filters().join(', ') || '(none)' }}</code>

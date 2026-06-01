@@ -29,7 +29,7 @@ export const STORY: DemoSpec = {
   setupChrome: `
   protected readonly shouldFail = signal<boolean>(false);`,
   template: `
-  <button
+  <button type="button"
     [cngxAsyncClick]="saveAction"
     succeededAnnouncement="Note saved to server"
     failedAnnouncement="Could not save the note"

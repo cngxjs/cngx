@@ -45,8 +45,8 @@ export const STORY: DemoSpec = {
     [(selectedValues)]="filters"
     [disabled]="groupDisabled()"
   >
-    <button cngxButtonToggle value="open">Open</button>
-    <button cngxButtonToggle value="closed">Closed</button>
-    <button cngxButtonToggle value="archived" [disabled]="true">Archived (locked)</button>
+    <button type="button" cngxButtonToggle value="open">Open</button>
+    <button type="button" cngxButtonToggle value="closed">Closed</button>
+    <button type="button" cngxButtonToggle value="archived" [disabled]="true">Archived (locked)</button>
   </cngx-button-multi-toggle-group>`,
 };

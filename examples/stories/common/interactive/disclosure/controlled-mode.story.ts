@@ -20,7 +20,7 @@ export const STORY: DemoSpec = {
   ],
   imports: ['CngxDisclosure'],
   setup: `protected readonly controlledOpen = signal(false);`,
-  template: `  <button cngxDisclosure #cd="cngxDisclosure"
+  template: `  <button type="button" cngxDisclosure #cd="cngxDisclosure"
           [cngxDisclosureOpened]="controlledOpen()"
           (openedChange)="controlledOpen.set($event)"
           [controls]="'ctrl-content'"

@@ -32,14 +32,14 @@ export const STORY: DemoSpec = {
   protected handleDiscardProgrammatic(): void {
     this.progDialog()?.close('discarded');
   }`,
-  template: `  <button class="chip" (click)="handleOpenProgrammatic()">Open from Code</button>
+  template: `  <button type="button" class="chip" (click)="handleOpenProgrammatic()">Open from Code</button>
 
   <dialog cngxDialog #progDialog="cngxDialog">
     <h2 cngxDialogTitle>Unsaved Changes</h2>
     <p style="margin:12px 0">You have unsaved changes. What would you like to do?</p>
     <div class="button-row" style="justify-content:flex-end">
-      <button class="chip" (click)="handleDiscardProgrammatic()">Discard</button>
-      <button class="chip chip--active" (click)="handleSaveProgrammatic()">Save</button>
+      <button type="button" class="chip" (click)="handleDiscardProgrammatic()">Discard</button>
+      <button type="button" class="chip chip--active" (click)="handleSaveProgrammatic()">Save</button>
     </div>
   </dialog>
 

@@ -21,14 +21,14 @@ export const STORY: DemoSpec = {
     'import { CngxDialog, CngxDialogTitle, CngxDialogDescription, CngxDialogClose } from \'@cngx/common/dialog\';',
   ],
   imports: ['CngxDialog', 'CngxDialogTitle', 'CngxDialogDescription', 'CngxDialogClose'],
-  template: `  <button class="chip" (click)="declDlg.open()">Delete Item</button>
+  template: `  <button type="button" class="chip" (click)="declDlg.open()">Delete Item</button>
 
   <dialog cngxDialog #declDlg="cngxDialog">
     <h2 cngxDialogTitle>Delete item?</h2>
     <p cngxDialogDescription>This action cannot be undone. The item will be permanently removed.</p>
     <div class="button-row" style="margin-top:16px;justify-content:flex-end">
-      <button class="chip" [cngxDialogClose]="false">Cancel</button>
-      <button class="chip chip--active" [cngxDialogClose]="true">Delete</button>
+      <button type="button" class="chip" [cngxDialogClose]="false">Cancel</button>
+      <button type="button" class="chip chip--active" [cngxDialogClose]="true">Delete</button>
     </div>
   </dialog>`,
   templateChrome: `<div class="status-row" style="margin-top:12px">

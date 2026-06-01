@@ -22,14 +22,14 @@ export const STORY: DemoSpec = {
       <label class="demo-label">API Token</label>
       <div style="display:flex;gap:8px;align-items:center">
         <input #tokenInput readonly [value]="token()" class="demo-input demo-mono" style="flex:1" />
-        <button [cngxCopyValue] [source]="tokenInput" #cp="cngxCopyValue" class="chip">
+        <button type="button" [cngxCopyValue] [source]="tokenInput" #cp="cngxCopyValue" class="chip">
           {{ cp.copied() ? 'Copied!' : 'Copy' }}
         </button>
       </div>
     </div>
     <div class="demo-field">
       <label class="demo-label">Copy explicit value</label>
-      <button [cngxCopyValue]="'hello@example.com'" #cp2="cngxCopyValue" class="chip">
+      <button type="button" [cngxCopyValue]="'hello@example.com'" #cp2="cngxCopyValue" class="chip">
         {{ cp2.copied() ? 'Copied!' : 'Copy email' }}
       </button>
     </div>

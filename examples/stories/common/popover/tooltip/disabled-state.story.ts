@@ -21,8 +21,8 @@ export const STORY: DemoSpec = {
   imports: ['CngxTooltip'],
   template: `
   <div class="demo-popover-stage--tall" style="display:flex;gap:16px;align-items:center">
-    <button cngxTooltip="This tooltip is active" class="chip">Enabled</button>
-    <button cngxTooltip="This tooltip is suppressed" [enabled]="false"
+    <button type="button" cngxTooltip="This tooltip is active" class="chip">Enabled</button>
+    <button type="button" cngxTooltip="This tooltip is suppressed" [enabled]="false"
             class="chip demo-tooltip-disabled-chip">Disabled</button>
   </div>`,
 };

@@ -22,9 +22,9 @@ export const STORY: DemoSpec = {
         <strong>Bottom placement</strong> — left / centre / right triggers force horizontal shift recovery.
       </p>
       <div style="display:flex;justify-content:space-between;gap:8px">
-        <button [cngxPopoverTrigger]="bl.popover" (click)="bl.popover.toggle()" class="chip">left edge</button>
-        <button [cngxPopoverTrigger]="bc.popover" (click)="bc.popover.toggle()" class="chip">centre</button>
-        <button [cngxPopoverTrigger]="br.popover" (click)="br.popover.toggle()" class="chip">right edge</button>
+        <button type="button" [cngxPopoverTrigger]="bl.popover" (click)="bl.popover.toggle()" class="chip">left edge</button>
+        <button type="button" [cngxPopoverTrigger]="bc.popover" (click)="bc.popover.toggle()" class="chip">centre</button>
+        <button type="button" [cngxPopoverTrigger]="br.popover" (click)="br.popover.toggle()" class="chip">right edge</button>
       </div>
       <cngx-popover-panel #bl [showArrow]="true" placement="bottom">
         <span cngxPopoverHeader>Bottom · left edge</span>
@@ -45,9 +45,9 @@ export const STORY: DemoSpec = {
         <strong>Top placement</strong> — same trigger row, panels open upward (give the demo card room above).
       </p>
       <div style="display:flex;justify-content:space-between;gap:8px">
-        <button [cngxPopoverTrigger]="tl.popover" (click)="tl.popover.toggle()" class="chip">left edge</button>
-        <button [cngxPopoverTrigger]="tc.popover" (click)="tc.popover.toggle()" class="chip">centre</button>
-        <button [cngxPopoverTrigger]="tr.popover" (click)="tr.popover.toggle()" class="chip">right edge</button>
+        <button type="button" [cngxPopoverTrigger]="tl.popover" (click)="tl.popover.toggle()" class="chip">left edge</button>
+        <button type="button" [cngxPopoverTrigger]="tc.popover" (click)="tc.popover.toggle()" class="chip">centre</button>
+        <button type="button" [cngxPopoverTrigger]="tr.popover" (click)="tr.popover.toggle()" class="chip">right edge</button>
       </div>
       <cngx-popover-panel #tl [showArrow]="true" placement="top">
         <span cngxPopoverHeader>Top · left edge</span>
@@ -68,9 +68,9 @@ export const STORY: DemoSpec = {
         <strong>Right placement</strong> — vertical-axis triggers; the arrow on the panel's left edge tracks each trigger.
       </p>
       <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-start">
-        <button [cngxPopoverTrigger]="rt.popover" (click)="rt.popover.toggle()" class="chip">top trigger</button>
-        <button [cngxPopoverTrigger]="rm.popover" (click)="rm.popover.toggle()" class="chip">middle trigger</button>
-        <button [cngxPopoverTrigger]="rb.popover" (click)="rb.popover.toggle()" class="chip">bottom trigger</button>
+        <button type="button" [cngxPopoverTrigger]="rt.popover" (click)="rt.popover.toggle()" class="chip">top trigger</button>
+        <button type="button" [cngxPopoverTrigger]="rm.popover" (click)="rm.popover.toggle()" class="chip">middle trigger</button>
+        <button type="button" [cngxPopoverTrigger]="rb.popover" (click)="rb.popover.toggle()" class="chip">bottom trigger</button>
       </div>
       <cngx-popover-panel #rt [showArrow]="true" placement="right">
         <span cngxPopoverHeader>Right · top trigger</span>
@@ -91,9 +91,9 @@ export const STORY: DemoSpec = {
         <strong>Left placement</strong> — symmetric to the right column; arrow on the panel's right edge.
       </p>
       <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end">
-        <button [cngxPopoverTrigger]="lt.popover" (click)="lt.popover.toggle()" class="chip">top trigger</button>
-        <button [cngxPopoverTrigger]="lm.popover" (click)="lm.popover.toggle()" class="chip">middle trigger</button>
-        <button [cngxPopoverTrigger]="lb.popover" (click)="lb.popover.toggle()" class="chip">bottom trigger</button>
+        <button type="button" [cngxPopoverTrigger]="lt.popover" (click)="lt.popover.toggle()" class="chip">top trigger</button>
+        <button type="button" [cngxPopoverTrigger]="lm.popover" (click)="lm.popover.toggle()" class="chip">middle trigger</button>
+        <button type="button" [cngxPopoverTrigger]="lb.popover" (click)="lb.popover.toggle()" class="chip">bottom trigger</button>
       </div>
       <cngx-popover-panel #lt [showArrow]="true" placement="left">
         <span cngxPopoverHeader>Left · top trigger</span>
@@ -114,7 +114,7 @@ export const STORY: DemoSpec = {
         <strong>Flip recovery</strong> — requested <code>placement="bottom"</code> with <code>[positionTryFallbacks]="['flip-block']"</code>; if no space below, the browser flips to <code>top</code> and the arrow follows to the panel's opposite edge.
       </p>
       <div style="display:flex;justify-content:flex-start;gap:8px">
-        <button [cngxPopoverTrigger]="flip.popover" (click)="flip.popover.toggle()" class="chip">flip if no room below</button>
+        <button type="button" [cngxPopoverTrigger]="flip.popover" (click)="flip.popover.toggle()" class="chip">flip if no room below</button>
       </div>
       <cngx-popover-panel #flip [showArrow]="true" placement="bottom"
                           [positionTryFallbacks]="['flip-block']">

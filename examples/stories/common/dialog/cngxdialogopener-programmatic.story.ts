@@ -47,7 +47,7 @@ export const STORY: DemoSpec = {
       <li>The declarative &lt;dialog cngxDialog&gt; approach (shown in the other stories) covers most use cases</li>
     </ul>
   </div>`,
-  template: `  <button class="chip chip--active" (click)="handleOpenProgrammatic()">
+  template: `  <button type="button" class="chip chip--active" (click)="handleOpenProgrammatic()">
     Open programmatic dialog
   </button>`,
   templateChrome: `<div class="status-row" style="margin-top:12px">

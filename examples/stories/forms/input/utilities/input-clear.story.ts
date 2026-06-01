@@ -20,7 +20,7 @@ export const STORY: DemoSpec = {
       <label class="demo-label">Name</label>
       <div style="display:flex;gap:8px;align-items:center">
         <input #nameInput placeholder="Type something..." class="demo-input" style="flex:1" />
-        <button [cngxInputClear]="nameInput" #clr="cngxInputClear"
+        <button type="button" [cngxInputClear]="nameInput" #clr="cngxInputClear"
           class="chip" [style.opacity]="clr.hasValue() ? 1 : 0.3">
           Clear
         </button>

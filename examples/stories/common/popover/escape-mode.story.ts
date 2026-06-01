@@ -16,7 +16,7 @@ export const STORY: DemoSpec = {
   template: `
   <div class="demo-popover-stage" style="display:flex;gap:16px;flex-wrap:wrap">
     <div>
-      <button [cngxPopoverTrigger]="noEsc" (click)="noEsc.toggle()" class="chip">
+      <button type="button" [cngxPopoverTrigger]="noEsc" (click)="noEsc.toggle()" class="chip">
         No Escape
       </button>
       <div cngxPopover #noEsc="cngxPopover" [closeOnEscape]="false" placement="bottom"
@@ -25,7 +25,7 @@ export const STORY: DemoSpec = {
       </div>
     </div>
     <div>
-      <button [cngxPopoverTrigger]="autoPop" (click)="autoPop.toggle()" class="chip">
+      <button type="button" [cngxPopoverTrigger]="autoPop" (click)="autoPop.toggle()" class="chip">
         Auto mode
       </button>
       <div cngxPopover #autoPop="cngxPopover" mode="auto" placement="bottom"

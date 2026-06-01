@@ -40,8 +40,8 @@ export const STORY: DemoSpec = {
     {{ groupDisabled() ? 'Enable group' : 'Disable group' }}
   </button>
   <cngx-button-toggle-group class="demo-button-toggle-group" label="Layout (disabled-cascade demo)" [(value)]="view" [disabled]="groupDisabled()">
-    <button cngxButtonToggle value="grid">Grid</button>
-    <button cngxButtonToggle value="list">List</button>
-    <button cngxButtonToggle value="table" [disabled]="true">Table (locked)</button>
+    <button type="button" cngxButtonToggle value="grid">Grid</button>
+    <button type="button" cngxButtonToggle value="list">List</button>
+    <button type="button" cngxButtonToggle value="table" [disabled]="true">Table (locked)</button>
   </cngx-button-toggle-group>`,
 };

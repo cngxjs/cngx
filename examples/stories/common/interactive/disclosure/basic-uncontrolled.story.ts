@@ -19,7 +19,7 @@ export const STORY: DemoSpec = {
     'import { CngxDisclosure } from \'@cngx/common\';',
   ],
   imports: ['CngxDisclosure'],
-  template: `  <button cngxDisclosure #d="cngxDisclosure" [controls]="'faq-1'" class="sort-btn">
+  template: `  <button type="button" cngxDisclosure #d="cngxDisclosure" [controls]="'faq-1'" class="sort-btn">
     {{ d.opened() ? 'Collapse' : 'Expand' }} answer
   </button>
   @if (d.opened()) {

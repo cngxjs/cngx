@@ -20,13 +20,13 @@ export const STORY: DemoSpec = {
     'import { CngxDialog, CngxDialogTitle, CngxDialogClose, CngxDialogDraggable } from \'@cngx/common/dialog\';',
   ],
   imports: ['CngxDialog', 'CngxDialogTitle', 'CngxDialogClose', 'CngxDialogDraggable'],
-  template: `  <button class="chip" (click)="dragDlg.open()">Open Draggable</button>
+  template: `  <button type="button" class="chip" (click)="dragDlg.open()">Open Draggable</button>
 
   <dialog cngxDialog cngxDialogDraggable #dragDlg="cngxDialog" #drag="cngxDialogDraggable"
     style="transform:translate(var(--cngx-dialog-x, 0px), var(--cngx-dialog-y, 0px))">
     <div class="demo-dialog-handle">
       <h2 cngxDialogTitle style="margin:0">Drag Me</h2>
-      <button class="chip chip--icon-close" cngxDialogClose aria-label="Close dialog">X</button>
+      <button type="button" class="chip chip--icon-close" cngxDialogClose aria-label="Close dialog">X</button>
     </div>
     <p>Drag the header bar to reposition this dialog.</p>
   </dialog>`,

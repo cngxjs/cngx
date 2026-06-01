@@ -19,7 +19,7 @@ export const STORY: DemoSpec = {
     'import { CngxDialog, CngxDialogTitle, CngxDialogDescription, CngxDialogClose } from \'@cngx/common/dialog\';',
   ],
   imports: ['CngxDialog', 'CngxDialogTitle', 'CngxDialogDescription', 'CngxDialogClose'],
-  template: `  <button class="chip" (click)="outerDlg.open()">Open Settings</button>
+  template: `  <button type="button" class="chip" (click)="outerDlg.open()">Open Settings</button>
 
   <!-- Outer dialog -->
   <dialog cngxDialog #outerDlg="cngxDialog">
@@ -27,12 +27,12 @@ export const STORY: DemoSpec = {
     <p cngxDialogDescription>Manage your preferences.</p>
     <div class="demo-dialog-section">
       <p style="margin:0 0 8px">Danger zone: reset all settings to defaults.</p>
-      <button class="chip chip--danger" (click)="confirmReset.open()">
+      <button type="button" class="chip chip--danger" (click)="confirmReset.open()">
         Reset All
       </button>
     </div>
     <div class="button-row" style="justify-content:flex-end">
-      <button class="chip" cngxDialogClose>Close Settings</button>
+      <button type="button" class="chip" cngxDialogClose>Close Settings</button>
     </div>
 
     <!-- Inner (nested) confirmation dialog -->
@@ -40,8 +40,8 @@ export const STORY: DemoSpec = {
       <h2 cngxDialogTitle>Reset all settings?</h2>
       <p cngxDialogDescription>This will restore all settings to their factory defaults. You cannot undo this.</p>
       <div class="button-row" style="margin-top:16px;justify-content:flex-end">
-        <button class="chip" [cngxDialogClose]="false">Keep Settings</button>
-        <button class="chip chip--danger" [cngxDialogClose]="true">Reset</button>
+        <button type="button" class="chip" [cngxDialogClose]="false">Keep Settings</button>
+        <button type="button" class="chip chip--danger" [cngxDialogClose]="true">Reset</button>
       </div>
     </dialog>
   </dialog>`,

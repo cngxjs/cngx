@@ -5,7 +5,7 @@ export const STORY: DemoSpec = {
   subtitle:
     'The drawer is headless. The consumer wires <code>CngxAriaExpanded</code> on the trigger and binds <code>[enabled]</code> / <code>[autoFocus]</code> on the panel - both come from <code>CngxDrawerPanel</code> as <code>hostDirectives</code> pass-through inputs to <code>CngxFocusTrap</code>.',
   description:
-    'Live drawer wired through the three consumer-owned a11y seams: CngxAriaExpanded on the <button> trigger, the panel forwarding [enabled] + [autoFocus] to its hostDirective CngxFocusTrap, and a single drawer.opened() signal everything reads from. The readout below shows the live aria-expanded attribute, the opened model, and the currently focused element id so the keyboard semantics are observable.',
+    'Live drawer wired through the three consumer-owned a11y seams: CngxAriaExpanded on the <button type="button"> trigger, the panel forwarding [enabled] + [autoFocus] to its hostDirective CngxFocusTrap, and a single drawer.opened() signal everything reads from. The readout below shows the live aria-expanded attribute, the opened model, and the currently focused element id so the keyboard semantics are observable.',
   level: 'organism',
   audience: ['dev', 'a11y'],
   artifact: 'standalone',

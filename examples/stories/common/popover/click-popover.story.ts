@@ -25,7 +25,7 @@ export const STORY: DemoSpec = {
   imports: ['CngxPopover', 'CngxPopoverTrigger'],
   setup: `protected readonly menuItems = signal(['Edit', 'Duplicate', 'Archive', 'Delete']);`,
   template: `  <div class="demo-popover-stage">
-    <button [cngxPopoverTrigger]="pop" [restoreFocus]="true" (click)="pop.toggle()" class="chip"
+    <button type="button" [cngxPopoverTrigger]="pop" [restoreFocus]="true" (click)="pop.toggle()" class="chip"
             haspopup="menu">
       Actions
     </button>

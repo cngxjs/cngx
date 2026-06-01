@@ -21,13 +21,13 @@ export const STORY: DemoSpec = {
     'import { CngxDialog, CngxDialogTitle, CngxDialogClose } from \'@cngx/common/dialog\';',
   ],
   imports: ['CngxDialog', 'CngxDialogTitle', 'CngxDialogClose'],
-  template: `  <button class="chip demo-dialog-anchor" (click)="panelDlg.open()">Show Help Panel</button>
+  template: `  <button type="button" class="chip demo-dialog-anchor" (click)="panelDlg.open()">Show Help Panel</button>
 
   <dialog cngxDialog [modal]="false" #panelDlg="cngxDialog"
           class="demo-dialog-floating demo-dialog-anchored">
     <h3 cngxDialogTitle>Quick Help</h3>
     <p>This is a non-modal panel. You can still interact with the page behind it.</p>
-    <button class="chip" cngxDialogClose>Close</button>
+    <button type="button" class="chip" cngxDialogClose>Close</button>
   </dialog>`,
   templateChrome: `<div class="status-row" style="margin-top: 12px">
     <span class="status-badge">state: {{ panelDlg.lifecycle() }}</span>

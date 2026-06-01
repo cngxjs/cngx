@@ -31,7 +31,7 @@ export const STORY: DemoSpec = {
   template: `
   <div class="demo-popover-stage" style="display:flex;gap:16px;flex-wrap:wrap">
     <div>
-      <button [cngxPopoverTrigger]="savePop.popover" (click)="savePop.popover.toggle()" class="chip">
+      <button type="button" [cngxPopoverTrigger]="savePop.popover" (click)="savePop.popover.toggle()" class="chip">
         Save Confirm
       </button>
       <cngx-popover-panel #savePop variant="info" [showClose]="true" [showArrow]="true" placement="bottom">
@@ -49,7 +49,7 @@ export const STORY: DemoSpec = {
     </div>
 
     <div>
-      <button [cngxPopoverTrigger]="delPop.popover" (click)="delPop.popover.toggle()" class="chip">
+      <button type="button" [cngxPopoverTrigger]="delPop.popover" (click)="delPop.popover.toggle()" class="chip">
         Delete Confirm
       </button>
       <cngx-popover-panel #delPop variant="danger" [showClose]="true" [showArrow]="true" placement="bottom">

@@ -25,8 +25,8 @@ export const STORY: DemoSpec = {
   imports: ['CngxTooltip'],
   template: `
   <div class="demo-popover-stage--tall" style="display:flex;gap:16px;align-items:center;flex-wrap:wrap">
-    <button cngxTooltip="Save your changes (Ctrl+S)" class="chip">Save</button>
-    <button cngxTooltip="Undo last action (Ctrl+Z)" class="chip">Undo</button>
-    <button cngxTooltip="Redo last action (Ctrl+Y)" class="chip">Redo</button>
+    <button type="button" cngxTooltip="Save your changes (Ctrl+S)" class="chip">Save</button>
+    <button type="button" cngxTooltip="Undo last action (Ctrl+Z)" class="chip">Undo</button>
+    <button type="button" cngxTooltip="Redo last action (Ctrl+Y)" class="chip">Redo</button>
   </div>`,
 };
