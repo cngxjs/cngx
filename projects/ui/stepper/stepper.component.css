@@ -325,7 +325,7 @@
   @property --cngx-step-linear-dot-fill {
     syntax: '*';
     inherits: true;
-    initial-value: var(--cngx-step-active-fill, var(--cngx-color-primary, oklch(0.66 0.19 50)));
+    initial-value: oklch(0.66 0.19 50);
   }
 
   /**
@@ -347,7 +347,7 @@
   @property --cngx-step-status-pill-bg-in-progress {
     syntax: '*';
     inherits: false;
-    initial-value: var(--cngx-step-active-fill, var(--cngx-color-primary, oklch(0.66 0.19 50)));
+    initial-value: oklch(0.66 0.19 50);
   }
 
   /**
@@ -357,7 +357,7 @@
   @property --cngx-step-status-pill-bg-done {
     syntax: '*';
     inherits: false;
-    initial-value: var(--cngx-step-completed-color, var(--cngx-color-success, oklch(0.5 0.15 145)));
+    initial-value: oklch(0.5 0.15 145);
   }
 
   /**
@@ -367,7 +367,7 @@
   @property --cngx-step-status-pill-bg-errored {
     syntax: '*';
     inherits: false;
-    initial-value: var(--cngx-step-errored-color, var(--cngx-color-danger, oklch(0.45 0.15 25)));
+    initial-value: oklch(0.45 0.15 25);
   }
 
   /**
@@ -389,7 +389,7 @@
   @property --cngx-step-chevron-tile-active {
     syntax: '*';
     inherits: false;
-    initial-value: var(--cngx-step-active-fill, var(--cngx-color-primary, oklch(0.66 0.19 50)));
+    initial-value: oklch(0.66 0.19 50);
   }
 
   /**
@@ -399,7 +399,7 @@
   @property --cngx-step-chevron-tile-completed {
     syntax: '*';
     inherits: false;
-    initial-value: color-mix(in srgb, var(--cngx-step-completed-color, oklch(0.5 0.15 145)) 80%, transparent);
+    initial-value: color-mix(in srgb, oklch(0.5 0.15 145) 80%, transparent);
   }
 
   /**
@@ -409,7 +409,7 @@
   @property --cngx-step-chevron-tile-errored {
     syntax: '*';
     inherits: false;
-    initial-value: var(--cngx-step-errored-color, var(--cngx-color-danger, oklch(0.45 0.15 25)));
+    initial-value: oklch(0.45 0.15 25);
   }
 
   /**
@@ -452,7 +452,7 @@
   @property --cngx-step-pill-segment-fill-active {
     syntax: '*';
     inherits: false;
-    initial-value: var(--cngx-step-active-fill, var(--cngx-color-primary, oklch(0.66 0.19 50)));
+    initial-value: oklch(0.66 0.19 50);
   }
 
   /**
@@ -462,7 +462,7 @@
   @property --cngx-step-pill-segment-fill-completed {
     syntax: '*';
     inherits: false;
-    initial-value: color-mix(in srgb, var(--cngx-step-completed-color, oklch(0.5 0.15 145)) 60%, transparent);
+    initial-value: color-mix(in srgb, oklch(0.66 0.19 50) 60%, transparent);
   }
 
   /**
