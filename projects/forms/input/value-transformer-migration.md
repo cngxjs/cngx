@@ -12,9 +12,13 @@ Each directive now:
 - Calls `inject(CNGX_FORM_FIELD_HOST, { optional: true })?.markAsTouched()` on
   blur, in place of the dropped CVA `onTouched` callback.
 
-The selector, the inputs, and the read-side public signals (`numericValue`,
-`rawValue`, `displayValue`) stay where they were. Standalone usage with a
-template-variable reference (`#num="cngxNumericInput"`) is unchanged.
+The selector, the inputs, and each directive's read-side public signals stay
+where they were. Each directive keeps its own accessor: `CngxNumericInput`
+exposes `numericValue`, `CngxInputFormat` exposes `rawValue` and
+`displayValue`, `CngxInputMask` exposes `rawValue`. These accessors now mirror
+the new `value` model and stay one release as deprecated aliases. Standalone
+usage with a template-variable reference (`#num="cngxNumericInput"`) is
+unchanged.
 
 What did change is the form-binding pattern. `[(ngModel)]` and `[formControl]`
 no longer wire the input - the framework can't find a value accessor on
