@@ -31,6 +31,6 @@ export const STORY: DemoSpec = {
     <pre class="code-block"><code>{{ formatTree(tree()) }}</code></pre>
   </div>`,
   templateChrome: `<div class="status-row">
-      <button class="chip" (click)="resetTree()">Reset to empty</button>
+      <button type="button" class="chip" (click)="resetTree()">Reset to empty</button>
     </div>`,
 };

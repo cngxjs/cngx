@@ -15,7 +15,7 @@ export const STORY: DemoSpec = {
   imports: ['CngxTooltip'],
   template: `  <div class="demo-popover-stage--tall"
        style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
-    <button cngxTooltip="Programmatically controlled" [triggers]="'manual'" #tip="cngxTooltip"
+    <button type="button" cngxTooltip="Programmatically controlled" [triggers]="'manual'" #tip="cngxTooltip"
             class="chip">
       Target
     </button>

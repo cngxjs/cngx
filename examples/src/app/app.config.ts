@@ -1,5 +1,5 @@
 import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
-import { provideRouter, withHashLocation } from '@angular/router';
+import { provideRouter, TitleStrategy, withHashLocation } from '@angular/router';
 import { provideDialog } from '@cngx/common/dialog';
 import {
   provideFeedback,
@@ -9,6 +9,7 @@ import {
 } from '@cngx/ui/feedback';
 
 import { routes } from './app.routes';
+import { CngxExamplesTitleStrategy } from './cngx-examples-title-strategy';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -24,5 +25,8 @@ export const appConfig: ApplicationConfig = {
     // Demo-only: stories that teach the programmatic path inject the opener
     // from this root provider so they do not need their own ApplicationConfig.
     provideDialog(),
+    // Read the deepest matched route's `data.title` and set the document
+    // title so direct-loaded story URLs surface the right page name.
+    { provide: TitleStrategy, useClass: CngxExamplesTitleStrategy },
   ],
 };

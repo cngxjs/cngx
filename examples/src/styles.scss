@@ -337,36 +337,74 @@ html.dark .cngx-ex-tag[data-dim='stability'][data-value='deprecated'] {
   }
 }
 
-// Source-code disclosure blocks — collapsed by default so the demo body
+// Source-code disclosure blocks - collapsed by default so the demo body
 // remains the focus; expand to inspect the underlying template / setup.
 .cngx-ex-code {
-  margin-top: 12px;
+  margin-top: 0.75rem;
   border: 1px solid var(--cngx-ex-border);
-  border-radius: 6px;
+  border-radius: 0.5rem;
   background: var(--cngx-ex-surface);
+  overflow: hidden;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+.cngx-ex-code[open] {
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.04);
 }
 .cngx-ex-code > summary {
-  padding: 6px 10px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.875rem;
   cursor: pointer;
   font-size: 0.8125rem;
-  font-weight: 500;
+  font-weight: 600;
+  letter-spacing: 0.01em;
   color: var(--cngx-ex-text);
   user-select: none;
+  list-style: none;
+}
+.cngx-ex-code > summary::-webkit-details-marker {
+  display: none;
+}
+// Custom chevron - points right when collapsed, rotates down when open.
+.cngx-ex-code > summary::before {
+  content: '';
+  display: inline-block;
+  width: 0;
+  height: 0;
+  margin-right: 0.125rem;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 5px solid currentColor;
+  opacity: 0.75;
+  transition: transform 0.15s ease;
+  transform: rotate(-90deg);
+}
+.cngx-ex-code[open] > summary::before {
+  transform: rotate(0deg);
 }
 .cngx-ex-code > summary:hover {
   background: var(--cngx-ex-surface-alt);
 }
+.cngx-ex-code > summary:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: -2px;
+  border-radius: 0.5rem 0.5rem 0 0;
+}
 .cngx-ex-code[open] > summary {
   border-bottom: 1px solid var(--cngx-ex-border);
+  background: var(--cngx-ex-surface-alt);
 }
 .cngx-ex-code > pre {
   margin: 0;
-  padding: 10px 14px;
+  padding: 0.875rem 1rem;
   overflow-x: auto;
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 0.8125rem;
-  line-height: 1.55;
-  background: var(--cngx-ex-surface-alt);
+  line-height: 1.6;
+  background: var(--cngx-ex-surface);
   color: var(--cngx-ex-text);
 }
 .cngx-ex-code > pre > code {
@@ -374,6 +412,15 @@ html.dark .cngx-ex-tag[data-dim='stability'][data-value='deprecated'] {
   background: none;
   padding: 0;
   white-space: pre;
+}
+
+// Mobile: code disclosures break the layout (long monospace lines force
+// horizontal scroll on the whole demo). Hide the panels below 640px; the
+// docs site and a wider viewport still surface them.
+@media (max-width: 640px) {
+  .cngx-ex-code {
+    display: none;
+  }
 }
 
 // Demo-layout helpers used by story templates. Restored after a premature
@@ -410,6 +457,19 @@ html.dark .cngx-ex-tag[data-dim='stability'][data-value='deprecated'] {
 .event-value {
   font-size: 0.8125rem;
   font-variant-numeric: tabular-nums;
+}
+
+// Narrow viewports: 12rem label + value overflows. Stack vertically and
+// drop the label min-width so each row fits its container.
+@media (max-width: 480px) {
+  .event-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.125rem;
+  }
+  .event-label {
+    min-width: 0;
+  }
 }
 
 // Status row / chips / badges - purely structural; visual treatment is

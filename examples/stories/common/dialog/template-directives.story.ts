@@ -24,7 +24,7 @@ export const STORY: DemoSpec = {
   ],
   imports: ['CngxDialog', 'CngxDialogTitle', 'CngxDialogDescription', 'CngxDialogClose', 'FormsModule', 'JsonPipe'],
   setup: `protected readonly formData = { name: '', email: '' };`,
-  template: `  <button class="chip" (click)="tmplDlg.open()">Edit Profile</button>
+  template: `  <button type="button" class="chip" (click)="tmplDlg.open()">Edit Profile</button>
 
   <dialog cngxDialog #tmplDlg="cngxDialog">
     <!-- cngxDialogTitle: sets aria-labelledby on the dialog -->

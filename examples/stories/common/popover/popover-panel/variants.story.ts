@@ -19,7 +19,7 @@ export const STORY: DemoSpec = {
   <div class="demo-popover-stage" style="display:flex;gap:12px;flex-wrap:wrap">
     @for (v of ['default', 'info', 'success', 'warning', 'danger']; track v) {
       <div>
-        <button [cngxPopoverTrigger]="vp.popover" (click)="vp.popover.toggle()" class="chip">{{ v }}</button>
+        <button type="button" [cngxPopoverTrigger]="vp.popover" (click)="vp.popover.toggle()" class="chip">{{ v }}</button>
         <cngx-popover-panel #vp [variant]="v" [showClose]="true" [showArrow]="true" placement="bottom">
           <span cngxPopoverHeader>{{ v }} panel</span>
           <p cngxPopoverBody>This is a {{ v }} popover panel with arrow and close button.</p>

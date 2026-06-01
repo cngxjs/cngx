@@ -36,9 +36,9 @@ export const STORY: DemoSpec = {
   setup: `protected readonly view = signal<'grid' | 'list' | 'table' | undefined>('grid');`,
   template: `
   <cngx-button-toggle-group class="demo-button-toggle-group" label="Layout" [(value)]="view">
-    <button cngxButtonToggle value="grid">Grid</button>
-    <button cngxButtonToggle value="list">List</button>
-    <button cngxButtonToggle value="table">Table</button>
+    <button type="button" cngxButtonToggle value="grid">Grid</button>
+    <button type="button" cngxButtonToggle value="list">List</button>
+    <button type="button" cngxButtonToggle value="table">Table</button>
   </cngx-button-toggle-group>
   <p class="demo-button-toggle-caption">View: <code>{{ view() ?? '(none)' }}</code></p>`,
 };

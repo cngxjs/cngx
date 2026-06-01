@@ -30,7 +30,7 @@ export const STORY: DemoSpec = {
         }
       </div>
       
-      <button class="chip" (click)="otp.clear()">Clear</button>
+      <button type="button" class="chip" (click)="otp.clear()">Clear</button>
     </div>
   </div>`,
   templateChrome: `<div class="status-row">

@@ -25,7 +25,7 @@ export const STORY: DemoSpec = {
   <div class="demo-popover-stage" style="display:flex;gap:48px;flex-wrap:wrap">
     @for (p of ['bottom', 'top', 'left', 'right']; track p) {
       <div>
-        <button [cngxPopoverTrigger]="pop.popover" (click)="pop.popover.toggle()" class="chip">{{ p }}</button>
+        <button type="button" [cngxPopoverTrigger]="pop.popover" (click)="pop.popover.toggle()" class="chip">{{ p }}</button>
         <cngx-popover-panel #pop [placement]="p" [showArrow]="true">
           <span cngxPopoverHeader>Brand caret · {{ p }}</span>
           <p cngxPopoverBody>The default rotated-diamond is replaced by a slot-rendered SVG caret. The slot context exposes the resolved edge so the glyph rotates to match.</p>

@@ -30,7 +30,7 @@ export const STORY: DemoSpec = {
     return String(err);
   }`,
   template: `
-  <button [cngxAsyncClick]="submitAction" #btn="cngxAsyncClick">
+  <button type="button" [cngxAsyncClick]="submitAction" #btn="cngxAsyncClick">
     @switch (btn.status()) {
       @case ('pending') { Submitting... }
       @case ('success') { Submitted! }

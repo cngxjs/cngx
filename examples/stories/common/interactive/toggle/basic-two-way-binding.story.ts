@@ -5,7 +5,7 @@ export const STORY: DemoSpec = {
   subtitle:
     'Click anywhere on the row, or focus and press <strong>Space</strong>/<strong>Enter</strong>. The host signal updates via <code>[(value)]</code> and the host element carries <code>role="switch"</code> with reactive <code>aria-checked</code>.',
   description:
-    'Smallest CngxToggle wiring: a model signal bound through [(value)], rendered by the element form (<cngx-toggle>) which ships a default track + thumb skin. Pointer click, Space, and Enter all flip the value because the host listens on click/keydown.space/keydown.enter. The element form is preferred over a native <button> with role="switch" since the browser would otherwise synthesize a Space-click and double-toggle the state.',
+    'Smallest CngxToggle wiring: a model signal bound through [(value)], rendered by the element form (<cngx-toggle>) which ships a default track + thumb skin. Pointer click, Space, and Enter all flip the value because the host listens on click/keydown.space/keydown.enter. The element form is preferred over a native <button type="button"> with role="switch" since the browser would otherwise synthesize a Space-click and double-toggle the state.',
   level: 'atom',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',

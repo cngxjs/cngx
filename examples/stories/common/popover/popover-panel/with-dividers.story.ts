@@ -29,7 +29,7 @@ export const STORY: DemoSpec = {
   setup: `protected readonly checkIn = () => new Promise<void>((resolve) => setTimeout(resolve, 1200));`,
   template: `
   <div class="demo-popover-stage">
-    <button [cngxPopoverTrigger]="pass.popover" (click)="pass.popover.toggle()" class="chip">
+    <button type="button" [cngxPopoverTrigger]="pass.popover" (click)="pass.popover.toggle()" class="chip">
       BA 247 to NRT
     </button>
     <cngx-popover-panel #pass variant="info" [showClose]="true" [showArrow]="true"

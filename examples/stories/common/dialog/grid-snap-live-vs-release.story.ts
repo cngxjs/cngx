@@ -27,7 +27,7 @@ export const STORY: DemoSpec = {
     style="transform:translate(var(--cngx-dialog-x, 0px), var(--cngx-dialog-y, 0px))">
     <div class="demo-dialog-handle">
       <h2 cngxDialogTitle style="margin:0">Live Snap (20px)</h2>
-      <button class="chip chip--icon-close" cngxDialogClose aria-label="Close dialog">X</button>
+      <button type="button" class="chip chip--icon-close" cngxDialogClose aria-label="Close dialog">X</button>
     </div>
     <p>Drag the header. Position snaps to grid every frame.</p>
   </dialog>
@@ -38,13 +38,13 @@ export const STORY: DemoSpec = {
     style="transform:translate(var(--cngx-dialog-x, 0px), var(--cngx-dialog-y, 0px))">
     <div class="demo-dialog-handle">
       <h2 cngxDialogTitle style="margin:0">Release Snap (20px)</h2>
-      <button class="chip chip--icon-close" cngxDialogClose aria-label="Close dialog">X</button>
+      <button type="button" class="chip chip--icon-close" cngxDialogClose aria-label="Close dialog">X</button>
     </div>
     <p>Drag freely, position snaps to grid only when you release.</p>
   </dialog>`,
   templateChrome: `<div class="button-row">
-    <button class="chip" (click)="snapLiveDlg.open()">Live Snap (20px)</button>
-    <button class="chip" (click)="snapReleaseDlg.open()">Release Snap (20px)</button>
+    <button type="button" class="chip" (click)="snapLiveDlg.open()">Live Snap (20px)</button>
+    <button type="button" class="chip" (click)="snapReleaseDlg.open()">Release Snap (20px)</button>
   </div>
 <div class="status-row" style="margin-top: 8px">
       <span class="status-badge">mode: live</span>

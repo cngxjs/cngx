@@ -22,16 +22,16 @@ export const STORY: DemoSpec = {
     'import { CngxSwipeDismiss } from \'@cngx/common/interactive\';',
   ],
   imports: ['CngxDialog', 'CngxDialogTitle', 'CngxDialogClose', 'CngxBottomSheet', 'CngxSwipeDismiss'],
-  template: `  <button class="chip" (click)="sheetDlg.open()">Open Bottom Sheet</button>
+  template: `  <button type="button" class="chip" (click)="sheetDlg.open()">Open Bottom Sheet</button>
 
   <dialog cngxDialog cngxBottomSheet [cngxSwipeDismiss]="'down'" #sheetDlg="cngxDialog">
     <h2 cngxDialogTitle>Share Options</h2>
     <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 12px;">
-      <button class="chip" [cngxDialogClose]="'copy'" style="text-align: left;">Copy Link</button>
-      <button class="chip" [cngxDialogClose]="'email'" style="text-align: left;">Send via Email</button>
-      <button class="chip" [cngxDialogClose]="'message'" style="text-align: left;">Send Message</button>
+      <button type="button" class="chip" [cngxDialogClose]="'copy'" style="text-align: left;">Copy Link</button>
+      <button type="button" class="chip" [cngxDialogClose]="'email'" style="text-align: left;">Send via Email</button>
+      <button type="button" class="chip" [cngxDialogClose]="'message'" style="text-align: left;">Send Message</button>
     </div>
-    <button class="chip" cngxDialogClose style="margin-top: 16px; width: 100%;">Cancel</button>
+    <button type="button" class="chip" cngxDialogClose style="margin-top: 16px; width: 100%;">Cancel</button>
   </dialog>`,
   templateChrome: `<div class="status-row" style="margin-top: 12px">
     <span class="status-badge">state: {{ sheetDlg.lifecycle() }}</span>

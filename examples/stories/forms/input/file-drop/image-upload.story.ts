@@ -25,7 +25,7 @@ export const STORY: DemoSpec = {
         <p style="margin:0">{{ drop.files().length }} file(s) selected</p>
       } @else {
         <p style="margin:0">Drag images here or
-          <button class="chip" (click)="drop.browse()">Browse</button>
+          <button type="button" class="chip" (click)="drop.browse()">Browse</button>
         </p>
         <p class="demo-drop-zone-hint">Max 5 MB per file</p>
       }
@@ -33,7 +33,7 @@ export const STORY: DemoSpec = {
 
     @if (drop.files().length) {
 
-      <button class="chip" (click)="drop.clear()" style="margin-top:4px">Clear</button>
+      <button type="button" class="chip" (click)="drop.clear()" style="margin-top:4px">Clear</button>
     }
 
     @if (drop.rejected().length) {

@@ -15,8 +15,8 @@ export const STORY: DemoSpec = {
   imports: ['CngxTooltip'],
   template: `
   <div class="demo-popover-stage--tall" style="display:flex;gap:16px;align-items:center;flex-wrap:wrap">
-    <button cngxTooltip="Instant tooltip" [tooltipDelay]="0" class="chip">No delay</button>
-    <button cngxTooltip="Slow tooltip (1s)" [tooltipDelay]="1000" class="chip">1s delay</button>
-    <button cngxTooltip="Sticky tooltip" [closeDelay]="500" class="chip">500ms close delay</button>
+    <button type="button" cngxTooltip="Instant tooltip" [tooltipDelay]="0" class="chip">No delay</button>
+    <button type="button" cngxTooltip="Slow tooltip (1s)" [tooltipDelay]="1000" class="chip">1s delay</button>
+    <button type="button" cngxTooltip="Sticky tooltip" [closeDelay]="500" class="chip">500ms close delay</button>
   </div>`,
 };

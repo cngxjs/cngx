@@ -28,11 +28,11 @@ export const STORY: DemoSpec = {
     Use Tab / Shift+Tab to navigate. Each button reveals its tooltip on focus.
   </p>
   <div class="demo-popover-stage" style="display:flex;gap:12px;flex-wrap:wrap">
-    <button cngxTooltip="Bold text" class="chip">B</button>
-    <button cngxTooltip="Italic text" class="chip">I</button>
-    <button cngxTooltip="Underline text" class="chip">U</button>
-    <button cngxTooltip="Strikethrough" class="chip">S</button>
-    <button cngxTooltip="Insert link" class="chip">Link</button>
-    <button cngxTooltip="Insert image" class="chip">Img</button>
+    <button type="button" cngxTooltip="Bold text" class="chip">B</button>
+    <button type="button" cngxTooltip="Italic text" class="chip">I</button>
+    <button type="button" cngxTooltip="Underline text" class="chip">U</button>
+    <button type="button" cngxTooltip="Strikethrough" class="chip">S</button>
+    <button type="button" cngxTooltip="Insert link" class="chip">Link</button>
+    <button type="button" cngxTooltip="Insert image" class="chip">Img</button>
   </div>`,
 };

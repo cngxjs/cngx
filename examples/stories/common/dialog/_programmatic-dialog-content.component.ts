@@ -34,8 +34,8 @@ export interface ProgrammaticDialogData {
     <h2 cngxDialogTitle>{{ data.heading }}</h2>
     <p cngxDialogDescription>{{ data.body }}</p>
     <div class="button-row" style="margin-top:16px;justify-content:flex-end">
-      <button class="chip" [cngxDialogClose]="'cancel'">Cancel</button>
-      <button class="chip chip--active" [cngxDialogClose]="'confirm'">
+      <button type="button" class="chip" [cngxDialogClose]="'cancel'">Cancel</button>
+      <button type="button" class="chip chip--active" [cngxDialogClose]="'confirm'">
         Confirm
       </button>
     </div>

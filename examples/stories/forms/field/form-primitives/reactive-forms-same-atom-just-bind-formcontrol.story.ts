@@ -95,7 +95,7 @@ export const STORY: DemoSpec = {
     <!-- Non-required scalar group → bare bridge -->
     <cngx-button-toggle-group [formControlName]="'view'" label="View">
       @for (opt of viewOptions; track opt) {
-        <button cngxButtonToggle [value]="opt">{{ opt }}</button>
+        <button type="button" cngxButtonToggle [value]="opt">{{ opt }}</button>
       }
     </cngx-button-toggle-group>
 
@@ -122,7 +122,7 @@ export const STORY: DemoSpec = {
     <!-- Non-required multi-groups → bare bridge -->
     <cngx-button-multi-toggle-group [formControlName]="'filters'" label="Filter">
       @for (opt of filterOptions; track opt) {
-        <button cngxButtonToggle [value]="opt">{{ opt }}</button>
+        <button type="button" cngxButtonToggle [value]="opt">{{ opt }}</button>
       }
     </cngx-button-multi-toggle-group>
 

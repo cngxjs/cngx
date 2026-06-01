@@ -17,13 +17,13 @@ export const STORY: DemoSpec = {
   <div style="display:grid;grid-template-columns:repeat(3,auto);gap:16px;justify-content:center;
               padding:60px 20px">
     <span></span>
-    <button cngxTooltip="Top tooltip" tooltipPlacement="top" class="chip">Top</button>
+    <button type="button" cngxTooltip="Top tooltip" tooltipPlacement="top" class="chip">Top</button>
     <span></span>
-    <button cngxTooltip="Left tooltip" tooltipPlacement="left" class="chip">Left</button>
+    <button type="button" cngxTooltip="Left tooltip" tooltipPlacement="left" class="chip">Left</button>
     <span></span>
-    <button cngxTooltip="Right tooltip" tooltipPlacement="right" class="chip">Right</button>
+    <button type="button" cngxTooltip="Right tooltip" tooltipPlacement="right" class="chip">Right</button>
     <span></span>
-    <button cngxTooltip="Bottom tooltip" tooltipPlacement="bottom" class="chip">Bottom</button>
+    <button type="button" cngxTooltip="Bottom tooltip" tooltipPlacement="bottom" class="chip">Bottom</button>
     <span></span>
   </div>`,
 };

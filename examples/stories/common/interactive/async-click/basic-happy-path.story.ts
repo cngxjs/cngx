@@ -20,7 +20,7 @@ export const STORY: DemoSpec = {
   setup: `
   protected readonly saveAction = () => of(undefined).pipe(delay(800));`,
   template: `
-  <button [cngxAsyncClick]="saveAction" #btn="cngxAsyncClick">
+  <button type="button" [cngxAsyncClick]="saveAction" #btn="cngxAsyncClick">
     @switch (btn.status()) {
       @case ('pending') { Saving... }
       @case ('success') { Saved! }

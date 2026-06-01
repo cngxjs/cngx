@@ -126,6 +126,22 @@ function installColorSchemeToggle(): void {
   render();
 }
 
+// Only install the floating toggle when the examples app runs standalone.
+// Inside the compodocx iframe the parent already exposes its own dark-mode
+// toggle, and the floating button would overlap demo content.
+function isEmbeddedInIframe(): boolean {
+  try {
+    return globalThis.self !== globalThis.top;
+  } catch {
+    // Cross-origin access throws; cross-origin embedding implies an iframe.
+    return true;
+  }
+}
+
 bootstrapApplication(App, appConfig)
-  .then(() => installColorSchemeToggle())
+  .then(() => {
+    if (!isEmbeddedInIframe()) {
+      installColorSchemeToggle();
+    }
+  })
   .catch((err) => console.error(err));

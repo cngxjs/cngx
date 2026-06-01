@@ -42,7 +42,7 @@ export const STORY: DemoSpec = {
   template: `
   <div class="demo-popover-stage" style="display:flex;gap:12px;flex-wrap:wrap">
     <div>
-      <button [cngxPopoverTrigger]="loadPop.popover" (click)="loadPop.popover.toggle(); startLoading()" class="chip">
+      <button type="button" [cngxPopoverTrigger]="loadPop.popover" (click)="loadPop.popover.toggle(); startLoading()" class="chip">
         Load Data
       </button>
       <cngx-popover-panel #loadPop [loading]="simulateLoad()" [showArrow]="true" placement="bottom">
@@ -57,7 +57,7 @@ export const STORY: DemoSpec = {
     </div>
 
     <div>
-      <button [cngxPopoverTrigger]="errPop.popover" (click)="errPop.popover.toggle(); startLoadingWithError()" class="chip">
+      <button type="button" [cngxPopoverTrigger]="errPop.popover" (click)="errPop.popover.toggle(); startLoadingWithError()" class="chip">
         Load with Error
       </button>
       <cngx-popover-panel #errPop variant="danger" [loading]="simulateLoad()" [error]="loadError()"
