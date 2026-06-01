@@ -458,7 +458,7 @@ a.cdx-related-pill:focus-visible {
   display: none;
 }
 .cdx-entity-hero {
-  background: var(--color-surface);
+  background: var(--color-cdx-bg);
 }
 .dark {
   /* Mirror cngx dark mode lift: +0.06-0.08 L on semantics, slight

@@ -154,40 +154,43 @@
   }
 
   /**
-   * Background of the active indicator disc - defaults to
-   * `currentColor` so consumers theme via the surrounding text color.
+   * Background of the active indicator disc. Material consumers
+   * override this upstream; un-themed consumers leave it unset so the
+   * downstream `--cngx-step-active-fill` cascade lands on
+   * `--cngx-color-primary` (or the baked-in primary blue). Not
+   * registered as `@property` on purpose - the previous
+   * `initial-value: currentColor` defeated the fallback chain by
+   * always returning `currentColor` from `var(--cngx-step-active-color,
+   * fallback)`.
    * @group State / Active
    */
-  @property --cngx-step-active-color {
-    syntax: '*';
-    inherits: true;
-    initial-value: currentColor;
-  }
 
   /**
-   * Resolved fill of the active indicator disc. Cascades through
-   * `--cngx-step-active-color`, then the cngx primary palette token,
-   * then a baked-in primary blue. Material consumers override
-   * `--cngx-step-active-color` upstream and inherit transparently.
+   * Resolved fill of the active indicator disc. The default is a
+   * baked-in primary blue; consumers override via
+   * `--cngx-step-active-fill`, `--cngx-step-active-color`, or
+   * `--cngx-color-primary` (the consuming rule's `var()` chain
+   * threads through all three). The `@property` carries only the
+   * baked-in default - var() chains inside `initial-value` are
+   * not portable across browsers and previously dead-ended at
+   * `currentColor` via `--cngx-step-active-color`'s now-removed
+   * `@property` registration.
    * @group State / Active
    * @see [[--cngx-step-active-color]]
    */
   @property --cngx-step-active-fill {
-    syntax: '*';
+    syntax: '<color>';
     inherits: true;
-    initial-value: var(--cngx-step-active-color, var(--cngx-color-primary, oklch(0.55 0.18 250)));
+    initial-value: oklch(0.55 0.18 250);
   }
 
   /**
-   * Background of the pending indicator disc - same as active by
-   * default so the visual reads as "you're here, work in progress".
+   * Background of the pending indicator disc - same cascade as
+   * `--cngx-step-active-fill`. Not registered as `@property` for the
+   * same fallback-cascade reason; consumer overrides still work via
+   * the standard custom-property cascade.
    * @group State / Pending
    */
-  @property --cngx-step-pending-color {
-    syntax: '*';
-    inherits: true;
-    initial-value: currentColor;
-  }
 
   /**
    * Background tint applied on hover of an enabled step.
@@ -280,12 +283,12 @@
     }
 
     .cngx-stepper__step[aria-current='step'] .cngx-stepper__indicator {
-      background: var(--cngx-step-active-fill, var(--cngx-step-active-color, currentColor));
+      background: var(--cngx-step-active-color, var(--cngx-step-active-fill));
       color: var(--cngx-step-indicator-active-color, oklch(1 0 0));
     }
 
     .cngx-stepper__step[aria-busy='true'] .cngx-stepper__indicator {
-      background: var(--cngx-step-pending-color, var(--cngx-step-active-color, currentColor));
+      background: var(--cngx-step-pending-color, var(--cngx-step-active-color, var(--cngx-step-active-fill)));
       animation: cngx-stepper-pulse 1.2s ease-in-out infinite;
     }
 

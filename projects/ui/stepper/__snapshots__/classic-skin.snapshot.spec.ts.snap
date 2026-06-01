@@ -9,8 +9,8 @@ exports[`CngxStepper classic-skin CSS baseline > dark mode: no @media (prefers-c
 
 exports[`CngxStepper classic-skin CSS baseline > light mode: declared initial-values for hot-state custom properties 1`] = `
 {
-  "--cngx-step-active-color": "currentColor",
-  "--cngx-step-active-fill": "var(--cngx-step-active-color, var(--cngx-color-primary, oklch(0.55 0.18 250)))",
+  "--cngx-step-active-color": "<absent>",
+  "--cngx-step-active-fill": "oklch(0.55 0.18 250)",
   "--cngx-step-completed-color": "oklch(0.5 0.15 145)",
   "--cngx-step-errored-color": "oklch(0.45 0.15 25)",
   "--cngx-step-focus-offset": "3px",
@@ -19,13 +19,13 @@ exports[`CngxStepper classic-skin CSS baseline > light mode: declared initial-va
   "--cngx-step-indicator-active-color": "oklch(1 0 0)",
   "--cngx-step-indicator-bg": "color-mix(in srgb, currentColor 10%, transparent)",
   "--cngx-step-indicator-color": "currentColor",
-  "--cngx-step-pending-color": "currentColor",
+  "--cngx-step-pending-color": "<absent>",
 }
 `;
 
 exports[`CngxStepper classic-skin CSS baseline > light mode: rule bodies for the four hot states 1`] = `
 {
-  "active": ".cngx-stepper__step[aria-current='step'] .cngx-stepper__indicator { background: var(--cngx-step-active-fill, var(--cngx-step-active-color, currentColor)); color: var(--cngx-step-indicator-active-color, oklch(1 0 0)); }",
+  "active": ".cngx-stepper__step[aria-current='step'] .cngx-stepper__indicator { background: var(--cngx-step-active-color, var(--cngx-step-active-fill)); color: var(--cngx-step-indicator-active-color, oklch(1 0 0)); }",
   "completed": ".cngx-stepper__indicator[data-state='success'] { background: var(--cngx-step-completed-color, var(--cngx-color-success, oklch(0.5 0.15 145))); color: var(--cngx-step-indicator-active-color, oklch(1 0 0)); }",
   "errored": ".cngx-stepper__indicator[data-state='error'] { background: var(--cngx-step-errored-color, var(--cngx-color-danger, oklch(0.45 0.15 25))); color: var(--cngx-step-indicator-active-color, oklch(1 0 0)); }",
   "focusVisible": ".cngx-stepper__step:focus-visible { outline: var(--cngx-step-focus-ring, 2px solid currentColor); outline-offset: var(--cngx-step-focus-offset, 3px); }",
