@@ -13,6 +13,7 @@ import {
   withStepperAriaLabels,
   withStepperFallbackLabels,
   withStepperI18nLabels,
+  withStepperSkin,
 } from '@cngx/common/stepper';
 
 import { CngxStepper } from './stepper.component';
@@ -57,6 +58,54 @@ describe('CngxStepper organism', () => {
     expect(host.getAttribute('aria-roledescription')).toBe('stepper');
     expect(host.getAttribute('data-orientation')).toBe('horizontal');
     expect(host.getAttribute('aria-label')).toBe('Wizard');
+  });
+
+  it('host carries data-skin="classic" by default', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(HostCmp);
+    fixture.detectChanges();
+    const host = fixture.nativeElement.querySelector('cngx-stepper') as HTMLElement;
+    expect(host.getAttribute('data-skin')).toBe('classic');
+  });
+
+  it('provideStepperConfig(withStepperSkin) moves the default skin', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideStepperConfig(withStepperSkin('linear-minimal')),
+      ],
+    });
+    const fixture = TestBed.createComponent(HostCmp);
+    fixture.detectChanges();
+    const host = fixture.nativeElement.querySelector('cngx-stepper') as HTMLElement;
+    expect(host.getAttribute('data-skin')).toBe('linear-minimal');
+  });
+
+  it('per-instance [skin] input wins over the root config', () => {
+    @Component({
+      standalone: true,
+      imports: [CngxStepper, CngxStep],
+      template: `
+        <cngx-stepper aria-label="Wizard" skin="path-chevron">
+          <div cngxStep label="A"></div>
+          <div cngxStep label="B"></div>
+        </cngx-stepper>
+      `,
+    })
+    class SkinInputHost {}
+
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideStepperConfig(withStepperSkin('linear-minimal')),
+      ],
+    });
+    const fixture = TestBed.createComponent(SkinInputHost);
+    fixture.detectChanges();
+    const host = fixture.nativeElement.querySelector('cngx-stepper') as HTMLElement;
+    expect(host.getAttribute('data-skin')).toBe('path-chevron');
   });
 
   it('renders one strip button per registered step', () => {

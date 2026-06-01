@@ -35,6 +35,7 @@ import {
   type CngxStepLabelContext,
   CngxStepperEmpty,
   CngxStepperPresenter,
+  type CngxStepperSkin,
   CngxStepRejection,
   type CngxStepRejectionContext,
   CNGX_STEPPER_GLYPHS,
@@ -110,6 +111,7 @@ import {
     '[attr.aria-roledescription]': 'stepperRoleDescription()',
     '[attr.aria-orientation]': 'presenter.orientation()',
     '[attr.data-orientation]': 'presenter.orientation()',
+    '[attr.data-skin]': 'resolvedSkin()',
     '[attr.aria-label]': 'resolvedAriaLabel()',
     '[attr.aria-labelledby]': 'ariaLabelledBy()',
     '[attr.aria-busy]': 'isCommitting() ? "true" : null',
@@ -119,6 +121,16 @@ import {
 export class CngxStepper implements CngxStepPanelHost {
   readonly ariaLabel = input<string | undefined>(undefined, { alias: 'aria-label' });
   readonly ariaLabelledBy = input<string | undefined>(undefined, { alias: 'aria-labelledby' });
+
+  /**
+   * Per-instance skin override. Resolution order: this Input >
+   * `provideStepperConfigAt(withStepperSkin(...))` (viewProviders) >
+   * `provideStepperConfig(withStepperSkin(...))` (root) > library
+   * default `'classic'`. The skin is a thematic concern only - it
+   * redirects CSS via the `[data-skin]` host attribute without touching
+   * structure, slots, ARIA, or keyboard behaviour.
+   */
+  readonly skin = input<CngxStepperSkin | undefined>(undefined);
 
   protected readonly presenter = inject(CNGX_STEPPER_HOST);
   protected readonly i18n = injectStepperI18n();
@@ -167,6 +179,15 @@ export class CngxStepper implements CngxStepPanelHost {
   /** Stepper landmark role-description with config + i18n cascade. */
   protected readonly stepperRoleDescription = computed<string>(
     () => this.config.fallbackLabels?.stepRoleDescription ?? this.i18n.stepperLabel,
+  );
+
+  /**
+   * Resolved skin keyed onto the `[data-skin]` host attribute. Skin
+   * variation lives entirely in the `@layer cngx.skins` block - no
+   * template branch, no template change.
+   */
+  protected readonly resolvedSkin = computed<CngxStepperSkin>(
+    () => this.skin() ?? this.config.skin ?? 'classic',
   );
 
   /** Group landmark role-description with config + i18n cascade. */
