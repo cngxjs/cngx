@@ -107,13 +107,16 @@
   }
 
   /**
-   * Outline offset of the focus ring.
+   * Outline offset of the focus ring. Set to 3px so the ring sits
+   * outside the indicator disc rather than on its edge - keeps the
+   * ring readable against the filled active / completed / errored
+   * disc backgrounds.
    * @group State / Focus
    */
   @property --cngx-step-focus-offset {
     syntax: '<length>';
     inherits: false;
-    initial-value: 2px;
+    initial-value: 3px;
   }
 
   /**
@@ -323,7 +326,7 @@
 
   .cngx-stepper__step:focus-visible {
     outline: var(--cngx-step-focus-ring, 2px solid currentColor);
-    outline-offset: var(--cngx-step-focus-offset, 2px);
+    outline-offset: var(--cngx-step-focus-offset, 3px);
   }
 
   .cngx-stepper__indicator {
