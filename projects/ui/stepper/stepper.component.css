@@ -380,6 +380,59 @@
     inherits: true;
     initial-value: oklch(1 0 0);
   }
+
+  /**
+   * Fill of the chevron tile while the step is active on the
+   * `path-chevron` skin.
+   * @group State / Active
+   */
+  @property --cngx-step-chevron-tile-active {
+    syntax: '*';
+    inherits: false;
+    initial-value: var(--cngx-step-active-fill, var(--cngx-color-primary, oklch(0.55 0.18 250)));
+  }
+
+  /**
+   * Fill of the chevron tile once the step is completed.
+   * @group State / Completed
+   */
+  @property --cngx-step-chevron-tile-completed {
+    syntax: '*';
+    inherits: false;
+    initial-value: color-mix(in srgb, var(--cngx-step-completed-color, oklch(0.5 0.15 145)) 80%, transparent);
+  }
+
+  /**
+   * Fill of the chevron tile when the step is errored.
+   * @group State / Error
+   */
+  @property --cngx-step-chevron-tile-errored {
+    syntax: '*';
+    inherits: false;
+    initial-value: var(--cngx-step-errored-color, var(--cngx-color-danger, oklch(0.45 0.15 25)));
+  }
+
+  /**
+   * Border color of the upcoming chevron tile (transparent fill,
+   * outlined border).
+   * @group State / Resting
+   */
+  @property --cngx-step-chevron-tile-upcoming-border {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: color-mix(in srgb, currentColor 25%, transparent);
+  }
+
+  /**
+   * Text color of the chevron tile in the filled (active / completed
+   * / errored) states.
+   * @group State / Active
+   */
+  @property --cngx-step-chevron-tile-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(1 0 0);
+  }
 }
 
 @layer cngx.skins {
@@ -520,6 +573,84 @@
       content: var(--cngx-step-status-pill-text-errored, 'Errored');
       background: var(--cngx-step-status-pill-bg-errored);
       color: var(--cngx-step-status-pill-color, oklch(1 0 0));
+    }
+  }
+
+  /**
+   * Path-chevron: each step is a clipped chevron tile with a notched
+   * right edge in horizontal orientation (rotated to a notched bottom
+   * edge in vertical). Boarding-pass aesthetic; structural cost lives
+   * in clip-path, all colour via existing tokens.
+   */
+  @scope (.cngx-stepper[data-skin='path-chevron']) {
+    .cngx-stepper__strip {
+      gap: 0;
+    }
+
+    .cngx-stepper__step {
+      clip-path: polygon(0 0, calc(100% - 0.75rem) 0, 100% 50%, calc(100% - 0.75rem) 100%, 0 100%, 0.75rem 50%);
+      padding-inline: calc(var(--cngx-step-padding-inline, 0.75rem) + 0.75rem);
+      background: transparent;
+      color: color-mix(in srgb, currentColor 80%, transparent);
+      border: 1px solid var(--cngx-step-chevron-tile-upcoming-border, color-mix(in srgb, currentColor 25%, transparent));
+      transition: background-color 120ms ease, color 120ms ease;
+    }
+
+    .cngx-stepper__step:first-child {
+      clip-path: polygon(0 0, calc(100% - 0.75rem) 0, 100% 50%, calc(100% - 0.75rem) 100%, 0 100%);
+      padding-inline-start: var(--cngx-step-padding-inline, 0.75rem);
+    }
+
+    .cngx-stepper__step:last-child {
+      clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 0.75rem 50%);
+      padding-inline-end: var(--cngx-step-padding-inline, 0.75rem);
+    }
+
+    .cngx-stepper__step:only-child {
+      clip-path: none;
+    }
+
+    .cngx-stepper__step[aria-current='step'] {
+      background: var(--cngx-step-chevron-tile-active);
+      color: var(--cngx-step-chevron-tile-color, oklch(1 0 0));
+      border-color: transparent;
+    }
+
+    .cngx-stepper__step:has(.cngx-stepper__indicator[data-state='success']) {
+      background: var(--cngx-step-chevron-tile-completed);
+      color: var(--cngx-step-chevron-tile-color, oklch(1 0 0));
+      border-color: transparent;
+    }
+
+    .cngx-stepper__step:has(.cngx-stepper__indicator[data-state='error']) {
+      background: var(--cngx-step-chevron-tile-errored);
+      color: var(--cngx-step-chevron-tile-color, oklch(1 0 0));
+      border-color: transparent;
+    }
+
+    /* The clipped tile already encodes state; the indicator disc only
+       adds noise on this skin, so collapse it to the glyph. */
+    .cngx-stepper__indicator {
+      background: transparent;
+      width: auto;
+      height: auto;
+      padding: 0;
+      border: 0;
+    }
+  }
+
+  /* Vertical orientation: rotate the chevron notch onto the bottom
+     edge of each tile so the visual still reads as a flow. */
+  @scope (.cngx-stepper[data-skin='path-chevron'][data-orientation='vertical']) {
+    .cngx-stepper__step {
+      clip-path: polygon(0 0, 100% 0, 100% calc(100% - 0.5rem), 50% 100%, 0 calc(100% - 0.5rem));
+      padding-block-end: calc(var(--cngx-step-padding, 0.5rem 0.75rem) + 0.5rem);
+    }
+    .cngx-stepper__step:first-child {
+      clip-path: polygon(0 0, 100% 0, 100% calc(100% - 0.5rem), 50% 100%, 0 calc(100% - 0.5rem));
+    }
+    .cngx-stepper__step:last-child {
+      clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
     }
   }
 }
