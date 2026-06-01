@@ -1,15 +1,30 @@
 import { DOCUMENT } from '@angular/common';
-import { computed, Directive, effect, inject, input, signal, untracked } from '@angular/core';
+import {
+  computed,
+  DestroyRef,
+  Directive,
+  effect,
+  ElementRef,
+  inject,
+  input,
+  signal,
+  untracked,
+} from '@angular/core';
 
+import {
+  CNGX_MENU_DISMISS_HANDLER_FACTORY,
+  createMenuTriggerDismissBinding,
+  type CngxMenuDismissPopoverRef,
+} from './dismiss-handler';
+import { CNGX_MENU_ANNOUNCER_FACTORY } from './menu-announcer';
+import { injectMenuConfig } from './menu-config';
 import type { CngxMenuHost } from './menu-host.token';
 import { CNGX_MENU_NAV_STRATEGY } from './menu-nav-strategy';
 import type { CngxMenuSubmenuLike } from './menu-submenu.token';
 
 /** See `CngxListboxTrigger` - same structural contract. */
-interface PopoverController {
-  readonly isVisible: () => boolean;
+interface PopoverController extends CngxMenuDismissPopoverRef {
   show(): void;
-  hide(): void;
 }
 
 /**
@@ -25,6 +40,29 @@ interface PopoverController {
  * Up / Home / End / Enter target the submenu's items via its own
  * `CngxActiveDescendant`. ArrowLeft / Escape pop the stack and close the
  * top submenu.
+ *
+ * ### Focus model
+ *
+ * The dropdown trigger deliberately keeps DOM focus on the trigger
+ * button while the menu is open - WAI-ARIA APG Menu Button Pattern -
+ * and drives the menu's `CngxActiveDescendant` from there via host
+ * keydown. It does NOT call {@link CngxMenuHost.focus} after open;
+ * that path is reserved for {@link CngxContextMenuTrigger}, where the
+ * trigger zone is non-focusable consumer content and the menu
+ * container itself must take focus to receive keyboard input.
+ *
+ * ### Dismissal
+ *
+ * Four dismissal sources close the menu by default: `Escape`, `pointerdown`
+ * outside both the popover and the trigger host, window `blur`, and
+ * document `pointercancel`. Window `scroll` is opt-in via
+ * {@link withDismissOnScroll}. The source that fired most recently is
+ * readable through {@link lastDismissSource}.
+ *
+ * Override individual sources at app root with `withDismissOnOutsideClick`,
+ * `withDismissOnScroll`, `withDismissOnBlur`, or swap the whole handler via
+ * {@link CNGX_MENU_DISMISS_HANDLER_FACTORY} for telemetry-wrapped or
+ * test-doubled dismissal.
  *
  * @category common/interactive/menu
  * @docsKind primary
@@ -73,16 +111,40 @@ export class CngxMenuTrigger {
   private savedFocus: HTMLElement | null = null;
 
   private readonly doc = inject(DOCUMENT);
+  private readonly hostElRef = inject<ElementRef<HTMLElement>>(ElementRef);
+  private readonly menuConfig = injectMenuConfig();
+  private readonly announcer = inject(CNGX_MENU_ANNOUNCER_FACTORY)();
+  private readonly dismissBinding = createMenuTriggerDismissBinding({
+    popover: () => this.popover(),
+    hostElement: this.hostElRef.nativeElement,
+    menuConfig: this.menuConfig,
+    factory: inject(CNGX_MENU_DISMISS_HANDLER_FACTORY),
+    onDismiss: () => this.announcer.announce(this.menuConfig.ariaLabels.menuDismissed),
+  });
+
+  /**
+   * The dismissal source that closed the menu most recently. `null`
+   * before the first close. Surface for demos, telemetry, and audit
+   * sinks - reads which path fired without re-installing listeners.
+   */
+  readonly lastDismissSource = this.dismissBinding.lastSource;
 
   constructor() {
+    inject(DestroyRef).onDestroy(() => this.dismissBinding.detach());
     effect(() => {
       const open = this.isOpen();
       untracked(() => {
-        if (open && this.savedFocus === null) {
-          const active = this.doc.activeElement;
-          this.savedFocus = active instanceof HTMLElement ? active : null;
-        } else if (!open && this.savedFocus !== null) {
-          this.restoreFocus();
+        if (open) {
+          if (this.savedFocus === null) {
+            const active = this.doc.activeElement;
+            this.savedFocus = active instanceof HTMLElement ? active : null;
+          }
+          this.dismissBinding.attach();
+        } else {
+          this.dismissBinding.detach();
+          if (this.savedFocus !== null) {
+            this.restoreFocus();
+          }
         }
       });
     });

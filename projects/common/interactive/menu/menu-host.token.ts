@@ -21,6 +21,13 @@ export interface CngxMenuHost {
    * `submenuItems`.
    */
   readonly submenuItems: Signal<readonly CngxMenuSubmenuLike[]>;
+  /**
+   * Move DOM focus to the menu container element. Triggers that need to
+   * transfer focus into the menu after open call this. Consumers must
+   * ensure the host element carries a non-negative tabindex; see
+   * `CngxMenu.focus()`.
+   */
+  focus(): void;
 }
 
 /**

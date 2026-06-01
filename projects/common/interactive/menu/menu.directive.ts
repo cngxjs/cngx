@@ -1,4 +1,12 @@
-import { contentChildren, Directive, inject, input, untracked } from '@angular/core';
+import {
+  contentChildren,
+  Directive,
+  ElementRef,
+  inject,
+  input,
+  isDevMode,
+  untracked,
+} from '@angular/core';
 import {
   outputFromObservable,
   outputToObservable,
@@ -11,6 +19,8 @@ import { CNGX_MENU_ANNOUNCER_FACTORY } from './menu-announcer';
 import { injectMenuConfig } from './menu-config';
 import { CNGX_MENU_HOST, type CngxMenuHost } from './menu-host.token';
 import { CNGX_MENU_SUBMENU_ITEM, type CngxMenuSubmenuLike } from './menu-submenu.token';
+
+const warnedFocusHosts = new WeakSet<HTMLElement>();
 
 /**
  * Navigable menu container with WAI-ARIA `role="menu"` semantics.
@@ -43,6 +53,7 @@ import { CNGX_MENU_SUBMENU_ITEM, type CngxMenuSubmenuLike } from './menu-submenu
   providers: [{ provide: CNGX_MENU_HOST, useExisting: CngxMenu }],
   host: {
     role: 'menu',
+    tabindex: '0',
     '[attr.aria-label]': 'label()',
   },
 })
@@ -53,6 +64,7 @@ export class CngxMenu implements CngxMenuHost {
   /** Underlying `CngxActiveDescendant` - exposed for trigger composition. */
   readonly ad = inject(CngxActiveDescendant, { self: true, host: true });
 
+  private readonly elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly announcer = inject(CNGX_MENU_ANNOUNCER_FACTORY)();
   private readonly menuConfig = injectMenuConfig();
 
@@ -78,5 +90,28 @@ export class CngxMenu implements CngxMenuHost {
           this.announcer.announce(this.menuConfig.ariaLabels.itemActivated);
         });
       });
+  }
+
+  /**
+   * Move DOM focus to the menu container so its host
+   * `CngxActiveDescendant` receives keyboard input. Consumers (notably
+   * `CngxContextMenuTrigger`) call this after open to transfer focus
+   * from the trigger zone into the menu. The host element MUST carry a
+   * non-negative `tabindex` for focus to land - the menu's stories use
+   * `tabindex="0"` and consumers should mirror that.
+   *
+   * `preventScroll: true` keeps the popover anchored when focusing into
+   * a menu that lives outside the visual viewport edge.
+   */
+  focus(): void {
+    const el = this.elementRef.nativeElement;
+    if (isDevMode() && el.tabIndex < 0 && !warnedFocusHosts.has(el)) {
+      warnedFocusHosts.add(el);
+      console.warn(
+        'CngxMenu.focus(): host element has tabindex < 0; focus() will silently no-op. ' +
+          'Add tabindex="0" to the cngxMenu host so the menu container receives keyboard focus.',
+      );
+    }
+    el.focus({ preventScroll: true });
   }
 }

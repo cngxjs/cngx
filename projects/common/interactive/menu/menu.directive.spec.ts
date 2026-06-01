@@ -132,6 +132,37 @@ describe('CngxMenu', () => {
     }
   });
 
+  it('focus() moves DOM focus to the menu host when tabindex is non-negative', () => {
+    const { menu, hostEl } = setup();
+    const probe = document.createElement('button');
+    probe.type = 'button';
+    document.body.appendChild(probe);
+    try {
+      probe.focus();
+      expect(document.activeElement).toBe(probe);
+      menu.focus();
+      expect(document.activeElement).toBe(hostEl);
+    } finally {
+      probe.remove();
+    }
+  });
+
+  it('focus() warns in dev mode when host has tabindex < 0', () => {
+    const { menu, hostEl } = setup();
+    hostEl.setAttribute('tabindex', '-1');
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    try {
+      menu.focus();
+      expect(warn).toHaveBeenCalledTimes(1);
+      expect(warn.mock.calls[0][0]).toContain('tabindex');
+      // Warning is deduplicated per host element.
+      menu.focus();
+      expect(warn).toHaveBeenCalledTimes(1);
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
   it('tears down the AD bridge on directive destroy (no subscribe leak)', () => {
     const { fixture, menu } = setup();
     const spy = vi.fn<(v: unknown) => void>();

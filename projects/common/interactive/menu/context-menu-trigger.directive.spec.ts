@@ -1,11 +1,21 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CngxPopover } from '@cngx/common/popover';
 
 import { CngxContextMenuTrigger } from './context-menu-trigger.directive';
+import {
+  CNGX_MENU_DISMISS_HANDLER_FACTORY,
+  type CngxMenuDismissHandler,
+} from './dismiss-handler';
+import { provideMenuConfig } from './menu-config';
+import {
+  withDismissOnBlur,
+  withDismissOnOutsideClick,
+  withDismissOnScroll,
+} from './menu-config-features';
 import { CngxMenuItem } from './menu-item.directive';
 import { CngxMenu } from './menu.directive';
 
@@ -183,5 +193,210 @@ describe('CngxContextMenuTrigger', () => {
     } finally {
       probe.remove();
     }
+  });
+
+  describe('dismiss handler wiring', () => {
+    function setupWithFactory(features: Parameters<typeof provideMenuConfig>): {
+      attach: ReturnType<typeof vi.fn>;
+      teardown: ReturnType<typeof vi.fn>;
+      lastOpts: unknown;
+      fixture: ReturnType<typeof TestBed.createComponent<ContextHost>>;
+      triggerEl: HTMLElement;
+      popover: CngxPopover;
+    } {
+      const teardown = vi.fn();
+      const attach = vi.fn(() => teardown);
+      let lastOpts: unknown = null;
+      const handler: CngxMenuDismissHandler = { attach };
+      const factory = vi.fn((opts: unknown) => {
+        lastOpts = opts;
+        return handler;
+      });
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        imports: [ContextHost],
+        providers: [
+          provideMenuConfig(...features),
+          { provide: CNGX_MENU_DISMISS_HANDLER_FACTORY, useValue: factory },
+        ],
+      });
+      const fixture = TestBed.createComponent(ContextHost);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      const triggerEl = fixture.debugElement.query(By.directive(CngxContextMenuTrigger))
+        .nativeElement as HTMLElement;
+      const popover = fixture.debugElement.query(By.directive(CngxPopover)).injector.get(CngxPopover);
+      return {
+        attach,
+        teardown,
+        get lastOpts() {
+          return lastOpts;
+        },
+        fixture,
+        triggerEl,
+        popover,
+      };
+    }
+
+    it('factory called once per open with the resolved config', () => {
+      const ctx = setupWithFactory([
+        withDismissOnOutsideClick(true),
+        withDismissOnScroll(true),
+        withDismissOnBlur(false),
+      ]);
+      ctx.triggerEl.dispatchEvent(
+        new MouseEvent('contextmenu', { bubbles: true, clientX: 12, clientY: 12 }),
+      );
+      TestBed.flushEffects();
+      expect(ctx.attach).toHaveBeenCalledTimes(1);
+      expect(ctx.lastOpts).toMatchObject({
+        dismissOnOutsideClick: true,
+        dismissOnScroll: true,
+        dismissOnBlur: false,
+      });
+    });
+
+    it('teardown invoked on close', () => {
+      const ctx = setupWithFactory([withDismissOnOutsideClick(true)]);
+      ctx.triggerEl.dispatchEvent(
+        new MouseEvent('contextmenu', { bubbles: true, clientX: 1, clientY: 1 }),
+      );
+      TestBed.flushEffects();
+      ctx.popover.hide();
+      TestBed.flushEffects();
+      expect(ctx.teardown).toHaveBeenCalledTimes(1);
+    });
+
+    it('teardown invoked on directive destroy mid-open', () => {
+      const ctx = setupWithFactory([withDismissOnOutsideClick(true)]);
+      ctx.triggerEl.dispatchEvent(
+        new MouseEvent('contextmenu', { bubbles: true, clientX: 5, clientY: 5 }),
+      );
+      TestBed.flushEffects();
+      ctx.fixture.destroy();
+      expect(ctx.teardown).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('keyboard navigation after open (Phase D)', () => {
+    async function setupAndOpen() {
+      const ctx = setup();
+      ctx.triggerEl.dispatchEvent(
+        new MouseEvent('contextmenu', { bubbles: true, clientX: 50, clientY: 50 }),
+      );
+      TestBed.flushEffects();
+      await Promise.resolve();
+      const menuEl = ctx.fixture.debugElement.query(By.directive(CngxMenu))
+        .nativeElement as HTMLElement;
+      return { ...ctx, menuEl };
+    }
+
+    it('after right-click open, ArrowDown advances the active descendant', async () => {
+      const { menu, menuEl } = await setupAndOpen();
+      expect(menu.ad.activeValue()).toBe('copy');
+      menuEl.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+      TestBed.flushEffects();
+      expect(menu.ad.activeValue()).toBe('paste');
+    });
+
+    it('Home returns to the first item', async () => {
+      const { menu, menuEl } = await setupAndOpen();
+      menu.ad.highlightByValue('paste');
+      TestBed.flushEffects();
+      menuEl.dispatchEvent(new KeyboardEvent('keydown', { key: 'Home', bubbles: true }));
+      TestBed.flushEffects();
+      expect(menu.ad.activeValue()).toBe('copy');
+    });
+
+    it('Enter activates current item', async () => {
+      const { fixture, menu, menuEl } = await setupAndOpen();
+      menu.ad.highlightByValue('paste');
+      TestBed.flushEffects();
+      menuEl.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+      TestBed.flushEffects();
+      expect(fixture.componentInstance.last()).toBe('paste');
+    });
+
+    it('Escape closes and restores focus to the trigger zone', async () => {
+      const { triggerEl, popover, menuEl } = await setupAndOpen();
+      menuEl.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+      TestBed.flushEffects();
+      await Promise.resolve();
+      expect(popover.isVisible()).toBe(false);
+      expect(triggerEl).toBeDefined();
+    });
+  });
+
+  describe('default dismissal behaviour (Phase B defaults)', () => {
+    it('pointerdown outside dismisses the open context menu', () => {
+      const { triggerEl, popover } = setup();
+      const probe = document.createElement('div');
+      document.body.appendChild(probe);
+      try {
+        triggerEl.dispatchEvent(
+          new MouseEvent('contextmenu', { bubbles: true, clientX: 10, clientY: 10 }),
+        );
+        TestBed.flushEffects();
+        expect(popover.isVisible()).toBe(true);
+
+        probe.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+        TestBed.flushEffects();
+        expect(popover.isVisible()).toBe(false);
+      } finally {
+        probe.remove();
+      }
+    });
+
+    it('window blur dismisses the open context menu', () => {
+      const { triggerEl, popover } = setup();
+      triggerEl.dispatchEvent(
+        new MouseEvent('contextmenu', { bubbles: true, clientX: 4, clientY: 4 }),
+      );
+      TestBed.flushEffects();
+      expect(popover.isVisible()).toBe(true);
+
+      window.dispatchEvent(new Event('blur'));
+      TestBed.flushEffects();
+      expect(popover.isVisible()).toBe(false);
+    });
+  });
+
+  describe('lastDismissSource', () => {
+    function getTrigger(
+      fixture: ReturnType<typeof TestBed.createComponent<ContextHost>>,
+    ): CngxContextMenuTrigger {
+      return fixture.debugElement
+        .query(By.directive(CngxContextMenuTrigger))
+        .injector.get(CngxContextMenuTrigger);
+    }
+
+    it('records pointerdown outside as outside-click', () => {
+      const { fixture, triggerEl, popover } = setup();
+      const probe = document.createElement('div');
+      document.body.appendChild(probe);
+      try {
+        triggerEl.dispatchEvent(
+          new MouseEvent('contextmenu', { bubbles: true, clientX: 10, clientY: 10 }),
+        );
+        TestBed.flushEffects();
+        probe.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+        TestBed.flushEffects();
+        expect(popover.isVisible()).toBe(false);
+        expect(getTrigger(fixture).lastDismissSource()).toBe('outside-click');
+      } finally {
+        probe.remove();
+      }
+    });
+
+    it('records keyboard Escape as escape', () => {
+      const { fixture, triggerEl } = setup();
+      triggerEl.dispatchEvent(
+        new MouseEvent('contextmenu', { bubbles: true, clientX: 6, clientY: 6 }),
+      );
+      TestBed.flushEffects();
+      triggerEl.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+      TestBed.flushEffects();
+      expect(getTrigger(fixture).lastDismissSource()).toBe('escape');
+    });
   });
 });
