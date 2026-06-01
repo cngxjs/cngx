@@ -256,6 +256,75 @@ describe('CngxStepper organism', () => {
     expect(badges[0].getAttribute('aria-hidden')).toBe('true');
   });
 
+  it('errored badge surfaces when not current step', () => {
+    // data-state="error" on a non-current step now renders the badge
+    // by default, closing the "step 1 errors while user is on step 3,
+    // no visible cue" gap. The aggregator's `hasError()` flips
+    // node.state() to 'error'; `shouldShow()` stays false to prove
+    // the new fallback path (state=error alone) drives the badge.
+    @Component({
+      standalone: true,
+      imports: [CngxStepper, CngxStep],
+      template: `
+        <cngx-stepper [(activeStepIndex)]="active" aria-label="Errored non-current">
+          <div cngxStep label="A" [errorAggregator]="agg"></div>
+          <div cngxStep label="B"></div>
+          <div cngxStep label="C"></div>
+        </cngx-stepper>
+      `,
+    })
+    class ErroredNonCurrentHost {
+      readonly active = signal(2);
+      readonly agg = {
+        hasError: signal(true),
+        shouldShow: signal(false),
+        announcement: signal('Two validation errors'),
+        errorCount: signal(2),
+        errorLabels: signal([] as readonly string[]),
+        activeErrors: signal([] as readonly string[]),
+        addSource: () => {},
+        removeSource: () => {},
+      };
+    }
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(ErroredNonCurrentHost);
+    fixture.detectChanges();
+    const buttons = fixture.nativeElement.querySelectorAll(
+      'button.cngx-stepper__step',
+    ) as NodeListOf<HTMLButtonElement>;
+    expect(buttons[0].getAttribute('aria-current')).toBeNull();
+    expect(buttons[2].getAttribute('aria-current')).toBe('step');
+    const indicator = buttons[0].querySelector(
+      '.cngx-stepper__indicator',
+    ) as HTMLElement;
+    expect(indicator.getAttribute('data-state')).toBe('error');
+    const badge = buttons[0].querySelector(
+      '.cngx-stepper__badge',
+    ) as HTMLElement | null;
+    expect(badge).not.toBeNull();
+    expect(badge?.getAttribute('aria-hidden')).toBe('true');
+    // The default badge template renders CNGX_STEPPER_GLYPHS.errorBadge.
+    expect(badge?.textContent?.trim()).toBe(CNGX_STEPPER_GLYPHS.errorBadge);
+  });
+
+  it('hover affordance on non-linear mode', async () => {
+    // Hover state rule body declares `cursor: pointer` so non-linear
+    // mode reads as clickable. happy-dom does not resolve @layer
+    // scoping reliably; assert against the source CSS instead -
+    // mirrors the classic-skin.snapshot.spec.ts approach.
+    const cssPath = (await import('node:path')).resolve(
+      __dirname,
+      'stepper.component.css',
+    );
+    const css = (await import('node:fs')).readFileSync(cssPath, 'utf-8');
+    const hoverRule = css.match(/\.cngx-stepper__step:hover[^{]+{[^}]+}/);
+    expect(hoverRule).not.toBeNull();
+    expect(hoverRule![0]).toContain('cursor: pointer');
+    expect(hoverRule![0]).toMatch(/:not\(\[aria-disabled='true'\]\)/);
+  });
+
   it('host aria-label falls back to CNGX_STEPPER_CONFIG.ariaLabels.stepperRegion when no input bound', () => {
     @Component({
       standalone: true,

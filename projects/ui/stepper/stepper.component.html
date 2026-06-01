@@ -52,6 +52,16 @@
                 context: indicatorContextFor(node)
               "
             ></ng-container>
+            @if (showErrorBadge(node)) {
+              <span class="cngx-stepper__badge" aria-hidden="true">
+                <ng-container
+                  *ngTemplateOutlet="
+                    templates.badge() ?? defaultBadge;
+                    context: badgeContextFor(node)
+                  "
+                ></ng-container>
+              </span>
+            }
           </span>
           <span class="cngx-stepper__label">
             @let labelTpl = labelTemplateFor(node.id);
@@ -63,16 +73,6 @@
               {{ node.label() }}
             }
           </span>
-          @if (showErrorBadge(node)) {
-            <span class="cngx-stepper__badge" aria-hidden="true">
-              <ng-container
-                *ngTemplateOutlet="
-                  templates.badge() ?? defaultBadge;
-                  context: badgeContextFor(node)
-                "
-              ></ng-container>
-            </span>
-          }
           @if (showRejection(node)) {
             <span class="cngx-stepper__rejection-icon" aria-hidden="true">
               <ng-container

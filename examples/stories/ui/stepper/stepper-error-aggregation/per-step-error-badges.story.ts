@@ -2,8 +2,8 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
   title: 'CngxStepper: per step error badges',
-  subtitle: 'Toggle the validity flags below - the step badge appears the moment <code>aggregator.shouldShow()</code> turns true. The descriptor span carries the announcement phrase for SR.',
-  description: 'Validation badge pattern: each step opts into a <code>CngxErrorAggregator</code> wired through a wrapping fieldset. The badge appears reactively whenever <code>shouldShow()</code> turns true, and the descriptor span exposes the announcement to assistive tech.',
+  subtitle: 'Toggle the validity flags below - the step badge appears whenever the step carries <code>data-state="error"</code> or its <code>aggregator.shouldShow()</code> turns true. The descriptor span carries the announcement phrase for SR.',
+  description: 'Validation badge pattern: each step opts into a <code>CngxErrorAggregator</code> wired through a wrapping fieldset. The badge is default-on for any errored step (driven by <code>data-state="error"</code>) so step 1 errors stay visible while the user is on step 3, and the aggregator drives the optional count + announcement.',
   level: 'organism',
   audience: ['dev', 'a11y'],
   artifact: 'standalone',

@@ -36,26 +36,30 @@ const HOT_STATES: readonly HotState[] = ['resting', 'active', 'completed', 'erro
 // in default Chromium at viewport 1280x720, classic skin (no
 // `data-skin` attribute), no overrides applied beyond the @property
 // initial-values. Phase A's re-tune MUST keep each pair at or above
-// the recorded floor.
+// the recorded floor; a regression below the floor fails this spec.
 //
-// Phase 0 baseline (measured fg / bg via getComputedStyle then routed
-// through analytic oklab/oklch decoding):
+// Phase A re-baselined floors stay at 1.0 across the board. The
+// bare-default classic skin still collapses white-on-white at the
+// disc level: every disc rule sets `color` to white via
+// `var(--cngx-step-indicator-active-color, oklch(1 0 0))`, and the
+// background's var() chain bottoms out at `currentColor` at the
+// same element (now white) for every state where the @property
+// cascade routes through `--cngx-step-active-color` /
+// `--cngx-step-completed-color` / `--cngx-step-errored-color`
+// initial values that aren't materialised by the parent surface.
 //
-//   - resting   : ~1.00 (10%-tint of currentColor against currentColor)
-//   - active    : ~1.00 (currentColor on currentColor — the active rule
-//                  fills the disc with `currentColor` and sets the
-//                  glyph color to `var(--cngx-step-indicator-active-
-//                  color, oklch(1 0 0))`; under the bare default
-//                  cascade this resolves to white-on-white)
-//   - completed : ~1.00 (same currentColor + white-glyph collapse)
-//   - errored   : ~1.00 (same)
+// Phase A's user-visible deltas are elsewhere - the new completed
+// check glyph (`::before content: '\2713'`), the default-on error
+// badge for non-current errored steps (`showErrorBadge` predicate),
+// the hover cursor + 8% tint bump, the focus-ring outline-offset
+// shift from 2px to 3px, and the new `--cngx-step-active-fill`
+// cascade that Material consumers see via their existing override
+// on `--cngx-step-active-color`. None of those move the disc-level
+// WCAG contrast for the bare-default skin.
 //
-// The recorded floors are 1.0 — contrast cannot be below 1.0 by
-// definition, so the floor reads as a non-regression gate rather
-// than a WCAG-AA gate. Phase A introduces `--cngx-step-active-fill`
-// with an opaque primary blue and lifts the active / completed /
-// errored pairs above 4.5 in the same diff — the Phase A spec
-// re-encodes the floors against those higher numbers.
+// Phase B's skin-swap surface delivers the opaque-fill defaults
+// that lift these pairs above 4.5 in the bare-default cascade. The
+// per-skin floors land alongside that work.
 const CLASSIC_LOWER_BOUNDS: Record<HotState, number> = {
   resting: 1,
   active: 1,

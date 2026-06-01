@@ -165,6 +165,20 @@
   }
 
   /**
+   * Resolved fill of the active indicator disc. Cascades through
+   * `--cngx-step-active-color`, then the cngx primary palette token,
+   * then a baked-in primary blue. Material consumers override
+   * `--cngx-step-active-color` upstream and inherit transparently.
+   * @group State / Active
+   * @see [[--cngx-step-active-color]]
+   */
+  @property --cngx-step-active-fill {
+    syntax: '*';
+    inherits: true;
+    initial-value: var(--cngx-step-active-color, var(--cngx-color-primary, oklch(0.55 0.18 250)));
+  }
+
+  /**
    * Background of the pending indicator disc - same as active by
    * default so the visual reads as "you're here, work in progress".
    * @group State / Pending
@@ -182,7 +196,7 @@
   @property --cngx-step-hover-bg {
     syntax: '*';
     inherits: false;
-    initial-value: color-mix(in srgb, currentColor 4%, transparent);
+    initial-value: color-mix(in srgb, currentColor 8%, transparent);
   }
 
   /**
@@ -214,6 +228,7 @@
     }
 
     .cngx-stepper__indicator {
+      position: relative;
       background: var(--cngx-step-indicator-bg, color-mix(in srgb, currentColor 10%, transparent));
       color: var(--cngx-step-indicator-color, currentColor);
       font-size: var(--cngx-step-indicator-font-size, 0.85em);
@@ -221,9 +236,35 @@
       transition: background-color 120ms ease;
     }
 
+    /* Error badge sits in the disc corner so the cue is visible
+       regardless of which step is current. The base badge styling
+       (bg/color/size/font) lives in `stepper-base.css`; this rule
+       only re-anchors the badge from inline-flex sibling to absolute
+       corner-overlay inside the indicator wrapper. */
+    .cngx-stepper__indicator .cngx-stepper__badge {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      margin-inline-start: 0;
+    }
+
     .cngx-stepper__indicator[data-state='success'] {
       background: var(--cngx-step-completed-color, var(--cngx-color-success, oklch(0.5 0.15 145)));
       color: var(--cngx-step-indicator-active-color, oklch(1 0 0));
+    }
+
+    /* Replace the default number glyph with a check on completed steps so
+       active and completed stay distinct even when both states happen to
+       share a hue under a custom theme. Consumer-supplied indicator
+       templates render unchanged - only the built-in `.cngx-stepper__
+       indicator-glyph` span is suppressed here. */
+    .cngx-stepper__indicator[data-state='success']::before {
+      content: '\2713';
+      font-weight: 700;
+    }
+
+    .cngx-stepper__indicator[data-state='success'] .cngx-stepper__indicator-glyph {
+      display: none;
     }
 
     .cngx-stepper__indicator[data-state='error'] {
@@ -239,7 +280,7 @@
     }
 
     .cngx-stepper__step[aria-current='step'] .cngx-stepper__indicator {
-      background: var(--cngx-step-active-color, currentColor);
+      background: var(--cngx-step-active-fill, var(--cngx-step-active-color, currentColor));
       color: var(--cngx-step-indicator-active-color, oklch(1 0 0));
     }
 
@@ -261,7 +302,8 @@
     }
 
     .cngx-stepper__step:hover:not([aria-disabled='true']) {
-      background: var(--cngx-step-hover-bg, color-mix(in srgb, currentColor 4%, transparent));
+      background: var(--cngx-step-hover-bg, color-mix(in srgb, currentColor 8%, transparent));
+      cursor: pointer;
     }
 
     @media (prefers-reduced-motion: reduce) {

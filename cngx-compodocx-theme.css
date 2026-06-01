@@ -457,7 +457,9 @@ a.cdx-related-pill:focus-visible {
 #cngx-ex-color-scheme-toggle {
   display: none;
 }
-
+.cdx-entity-hero {
+  background: var(--color-surface);
+}
 .dark {
   /* Mirror cngx dark mode lift: +0.06-0.08 L on semantics, slight
    * chroma reduction. Surface stays in the same hue family. */

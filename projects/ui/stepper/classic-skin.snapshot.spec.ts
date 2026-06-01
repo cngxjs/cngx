@@ -32,6 +32,7 @@ const BASE_PATH = resolve(__dirname, 'styles/stepper-base.css');
 
 const TARGET_PROPERTIES = [
   '--cngx-step-active-color',
+  '--cngx-step-active-fill',
   '--cngx-step-indicator-bg',
   '--cngx-step-indicator-color',
   '--cngx-step-indicator-active-color',
