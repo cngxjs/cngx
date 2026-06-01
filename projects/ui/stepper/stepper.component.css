@@ -228,11 +228,24 @@
     }
 
     .cngx-stepper__indicator {
+      position: relative;
       background: var(--cngx-step-indicator-bg, color-mix(in srgb, currentColor 10%, transparent));
       color: var(--cngx-step-indicator-color, currentColor);
       font-size: var(--cngx-step-indicator-font-size, 0.85em);
       font-weight: var(--cngx-step-indicator-font-weight, 600);
       transition: background-color 120ms ease;
+    }
+
+    /* Error badge sits in the disc corner so the cue is visible
+       regardless of which step is current. The base badge styling
+       (bg/color/size/font) lives in `stepper-base.css`; this rule
+       only re-anchors the badge from inline-flex sibling to absolute
+       corner-overlay inside the indicator wrapper. */
+    .cngx-stepper__indicator .cngx-stepper__badge {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      margin-inline-start: 0;
     }
 
     .cngx-stepper__indicator[data-state='success'] {

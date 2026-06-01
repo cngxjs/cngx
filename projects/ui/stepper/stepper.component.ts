@@ -300,8 +300,21 @@ export class CngxStepper implements CngxStepPanelHost {
     return '';
   }
 
-  /** Whether to render the error badge for a step node. */
+  /**
+   * Whether to render the error badge for a step node. Surfaces the
+   * badge whenever the step carries `data-state="error"` (via
+   * `node.state()`), not only when the optional `errorAggregator`
+   * gates it. Closes the "step 1 errors, user is on step 3, no
+   * visible cue" gap - the badge becomes the universal default cue
+   * for non-current errored steps.
+   */
   protected showErrorBadge(node: CngxStepNode): boolean {
+    if (node.kind !== 'step') {
+      return false;
+    }
+    if (node.state() === 'error') {
+      return true;
+    }
     return !!node.errorAggregator?.()?.shouldShow?.();
   }
 
