@@ -19,6 +19,7 @@ export interface CngxMenuAriaLabels {
   readonly submenuClosed: string;
   readonly itemActivated: string;
   readonly itemDisabled: string;
+  readonly menuDismissed: string;
 }
 
 /**
@@ -35,6 +36,31 @@ export interface CngxMenuConfig {
   readonly submenuOpenDelay: number;
   readonly submenuCloseDelay: number;
   readonly closeOnSelect: boolean;
+  /**
+   * Whether `pointerdown` outside both the menu's popover and the
+   * trigger host dismisses the menu. Native context menus, browser
+   * right-click menus, and major web apps all close on outside click.
+   * Default `true`.
+   */
+  readonly dismissOnOutsideClick: boolean;
+  /**
+   * Whether window `scroll` while the menu is open dismisses it. Default
+   * `false` - consumers with scrollable menu panels (long lists,
+   * treeselect-style) often want the menu to remain anchored during
+   * scroll. Opt in via {@link withDismissOnScroll}.
+   */
+  readonly dismissOnScroll: boolean;
+  /**
+   * Whether the "context lost" bundle dismisses the menu. The bundle
+   * covers BOTH window `blur` (system notification, OS-native menu
+   * overlaying, tab switch) AND document `pointercancel` outside the
+   * popover and trigger host (palm rejection on touch devices,
+   * gesture cancelled by the browser). The two sources share one
+   * toggle by design; consumers needing one without the other replace
+   * the entire handler via {@link CNGX_MENU_DISMISS_HANDLER_FACTORY}.
+   * Default `true`.
+   */
+  readonly dismissOnBlur: boolean;
 }
 
 /**
@@ -75,11 +101,15 @@ export const DEFAULT_MENU_CONFIG: CngxMenuConfig = {
     submenuClosed: 'Submenu closed',
     itemActivated: 'Item activated',
     itemDisabled: 'Item disabled',
+    menuDismissed: 'Menu dismissed',
   },
   typeaheadDebounce: 300,
   submenuOpenDelay: 0,
   submenuCloseDelay: 150,
   closeOnSelect: true,
+  dismissOnOutsideClick: true,
+  dismissOnScroll: false,
+  dismissOnBlur: true,
 };
 
 /**

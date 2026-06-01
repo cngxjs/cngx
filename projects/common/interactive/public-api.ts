@@ -179,10 +179,25 @@ export {
 export {
   withAriaLabels,
   withCloseOnSelect,
+  withDismissOnBlur,
+  withDismissOnOutsideClick,
+  withDismissOnScroll,
   withSubmenuCloseDelay,
   withSubmenuOpenDelay,
   withTypeaheadDebounce,
 } from './menu/menu-config-features';
+export {
+  CNGX_MENU_DISMISS_HANDLER_FACTORY,
+  createMenuDismissHandler,
+  createMenuTriggerDismissBinding,
+  type CngxMenuDismissHandler,
+  type CngxMenuDismissHandlerFactory,
+  type CngxMenuDismissHandlerOptions,
+  type CngxMenuDismissPopoverRef,
+  type CngxMenuDismissSource,
+  type CngxMenuTriggerDismissBinding,
+  type CngxMenuTriggerDismissBindingOptions,
+} from './menu/dismiss-handler';
 export {
   CNGX_MENU_ANNOUNCER_FACTORY,
   CngxMenuAnnouncer,

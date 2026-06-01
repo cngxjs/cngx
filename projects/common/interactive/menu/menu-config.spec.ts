@@ -11,6 +11,9 @@ import {
 import {
   withAriaLabels,
   withCloseOnSelect,
+  withDismissOnBlur,
+  withDismissOnOutsideClick,
+  withDismissOnScroll,
   withSubmenuCloseDelay,
   withSubmenuOpenDelay,
   withTypeaheadDebounce,
@@ -24,11 +27,31 @@ describe('CNGX_MENU_CONFIG', () => {
     expect(config.ariaLabels.submenuClosed).toBe('Submenu closed');
     expect(config.ariaLabels.itemActivated).toBe('Item activated');
     expect(config.ariaLabels.itemDisabled).toBe('Item disabled');
+    expect(config.ariaLabels.menuDismissed).toBe('Menu dismissed');
     expect(config.typeaheadDebounce).toBe(300);
     expect(config.submenuOpenDelay).toBe(0);
     expect(config.submenuCloseDelay).toBe(150);
     expect(config.closeOnSelect).toBe(true);
+    expect(config.dismissOnOutsideClick).toBe(true);
+    expect(config.dismissOnScroll).toBe(false);
+    expect(config.dismissOnBlur).toBe(true);
     expect(config).toEqual(DEFAULT_MENU_CONFIG);
+  });
+
+  it('withDismissOn* features override their individual booleans', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideMenuConfig(
+          withDismissOnOutsideClick(false),
+          withDismissOnScroll(true),
+          withDismissOnBlur(false),
+        ),
+      ],
+    });
+    const config = TestBed.inject(CNGX_MENU_CONFIG);
+    expect(config.dismissOnOutsideClick).toBe(false);
+    expect(config.dismissOnScroll).toBe(true);
+    expect(config.dismissOnBlur).toBe(false);
   });
 
   it('provideMenuConfig + withAriaLabels overrides only the keys passed in', () => {
@@ -91,6 +114,9 @@ describe('CNGX_MENU_CONFIG', () => {
       withSubmenuCloseDelay(1),
       withSubmenuOpenDelay(1),
       withCloseOnSelect(false),
+      withDismissOnOutsideClick(false),
+      withDismissOnScroll(true),
+      withDismissOnBlur(false),
     ];
     for (const f of features) {
       expect((f as { _target?: string })._target).toBe('config');

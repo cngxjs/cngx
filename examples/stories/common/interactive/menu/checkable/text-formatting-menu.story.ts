@@ -1,11 +1,11 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxMenuItemCheckbox + CngxMenuItemRadio: text formatting menu',
+  title: 'CngxMenuItemCheckbox: text formatting menu',
   subtitle:
     'Checkboxes for independent toggles, radios inside a <code>cngxMenuGroup</code> for exclusive selection.',
   description:
-    'Two menuitem roles that carry their own state. <code>cngxMenuItemCheckbox</code> renders <code>role="menuitemcheckbox"</code> with <code>aria-checked</code> bound to a two-way <code>[(checked)]</code>. <code>cngxMenuItemRadio</code> renders <code>role="menuitemradio"</code> and resolves its mutual-exclusion scope through the enclosing <code>cngxMenuGroup</code> (which provides <code>CNGX_MENU_RADIO_GROUP</code>).',
+    'Two menuitem roles that carry their own state. <code>cngxMenuItemCheckbox</code> renders <code>role="menuitemcheckbox"</code> with <code>aria-checked</code> bound to a two-way <code>[(checked)]</code>. <code>cngxMenuItemRadio</code> renders <code>role="menuitemradio"</code> and resolves its mutual-exclusion scope through the enclosing <code>cngxMenuGroup</code> (which provides <code>CNGX_MENU_RADIO_GROUP</code>). When wrapped in a <code>CngxMenuTrigger</code> the menu inherits the dismissal-paths defaults (outside-click and blur close the menu).',
   level: 'molecule',
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
@@ -24,7 +24,13 @@ export const STORY: DemoSpec = {
       href: 'https://www.w3.org/TR/wai-aria-1.2/#menuitemradio',
     },
   ],
-  apiComponents: ['CngxMenuItemCheckbox', 'CngxMenuItemRadio', 'CngxMenuGroup'],
+  apiComponents: [
+    'CngxMenuItemCheckbox',
+    'CngxMenuItemRadio',
+    'CngxMenuGroup',
+    'CngxMenu',
+    'CngxMenuSeparator',
+  ],
   moduleImports: [
     "import { CngxMenu, CngxMenuGroup, CngxMenuItemCheckbox, CngxMenuItemRadio, CngxMenuSeparator } from '@cngx/common/interactive';",
   ],

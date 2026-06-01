@@ -5,8 +5,8 @@ export const STORY: DemoSpec = {
   subtitle:
     'Arrow keys, typeahead (type the first letters), Home/End, Enter/Space. Disabled items and separators are skipped by navigation.',
   description:
-    'Static <code>role="menu"</code> with <code>cngxMenuItem</code> children. Activation fires <code>itemActivated</code> with the item value; the menu carries no selection state. <code>cngxMenuSeparator</code> renders <code>role="separator"</code> and is skipped by arrow-key navigation and typeahead.',
-  level: 'organism',
+    'Static <code>role="menu"</code> with <code>cngxMenuItem</code> children. Activation fires <code>itemActivated</code> with the item value; the menu carries no selection state. <code>cngxMenuSeparator</code> renders <code>role="separator"</code> and is skipped by arrow-key navigation and typeahead. This bare menu has no <code>CngxMenuTrigger</code>, so the dismissal-paths defaults (outside-click, blur) apply only when the menu is wrapped in a trigger.',
+  level: 'molecule',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'building-block',
   focus: ['composition', 'a11y-pattern', 'visual-variants'],

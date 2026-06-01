@@ -5,7 +5,7 @@ export const STORY: DemoSpec = {
   subtitle:
     'Open the outer menu (ArrowDown / Enter / Space). Highlight "Open Recent" and press ArrowRight to open the submenu - focus transfers to its first item. ArrowLeft / Escape close. Activating a leaf closes everything.',
   description:
-    'Nested menu via <code>cngxMenuItemSubmenu</code> as a companion on a <code>cngxMenuItem</code>. <code>aria-haspopup="menu"</code> and <code>aria-expanded</code> live on the parent item; <code>CngxMenuTrigger</code> drives ArrowRight to push the inner <code>CngxMenu</code> onto its focus stack and ArrowLeft / Escape to pop it. The submenu popover is <code>[exclusive]="false"</code> so opening it does not light-dismiss the outer popover. The Recent submenu wires <code>CNGX_SUBMENU_TRY_FALLBACKS</code> so the popover flips to the opposite edge when the right side clips; the resolved placement appears in the event grid.',
+    'Nested menu via <code>cngxMenuItemSubmenu</code> as a companion on a <code>cngxMenuItem</code>. <code>aria-haspopup="menu"</code> and <code>aria-expanded</code> live on the parent item; <code>CngxMenuTrigger</code> drives ArrowRight to push the inner <code>CngxMenu</code> onto its focus stack and ArrowLeft / Escape to pop it. The submenu popover is <code>[exclusive]="false"</code> so opening it does not light-dismiss the outer popover. Outside-click on the outer popover light-dismisses the inner submenu via the same exclusive-popover chain. The Recent submenu wires <code>CNGX_SUBMENU_TRY_FALLBACKS</code> so the popover flips to the opposite edge when the right side clips; the resolved placement appears in the event grid.',
   level: 'organism',
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
@@ -24,7 +24,7 @@ export const STORY: DemoSpec = {
       href: 'https://www.w3.org/WAI/WCAG21/Understanding/keyboard.html',
     },
   ],
-  apiComponents: ['CngxMenuTrigger', 'CngxMenuItemSubmenu', 'CngxMenu', 'CngxMenuItem'],
+  apiComponents: ['CngxMenuItemSubmenu', 'CngxMenuTrigger', 'CngxMenu', 'CngxMenuItem'],
   moduleImports: [
     "import { CngxMenu, CngxMenuItem, CngxMenuItemSubmenu, CngxMenuSeparator, CngxMenuTrigger, CngxMenuItemIcon, CngxMenuItemLabel, CngxMenuItemKbd, CNGX_SUBMENU_TRY_FALLBACKS } from '@cngx/common/interactive';",
     "import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';",

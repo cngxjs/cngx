@@ -376,8 +376,12 @@ function buildImports(story, importMap, featureDepth) {
 
   const coreLine = `import { ${coreSymbols.join(', ')} } from '@angular/core';`;
 
-  const scanText = setup + '\n' + tpl;
-  const explicitRefs = new Set([...(story.imports ?? []), ...(story.hostDirectives ?? [])]);
+  const viewProvidersText = (story.viewProviders ?? []).join('\n');
+  const scanText = setup + '\n' + tpl + '\n' + viewProvidersText;
+  const explicitRefs = new Set([
+    ...(story.imports ?? []),
+    ...(story.hostDirectives ?? []),
+  ]);
 
   function isReferenced(id) {
     if (explicitRefs.has(id)) return true;
@@ -514,6 +518,12 @@ function emitComponentSource(meta, story, importMap) {
       ? `\n  hostDirectives: [${storyHostDirectives.join(', ')}],`
       : '';
 
+  const storyViewProviders = (story.viewProviders ?? []).filter(Boolean);
+  const decoratorViewProviders =
+    storyViewProviders.length > 0
+      ? `\n  viewProviders: [${storyViewProviders.join(', ')}],`
+      : '';
+
   // Live class body — setup (artifact code) + setupChrome (instrumentation).
   // The displayed _exTs panel below shows setup only.
   const liveSetup = [story.setup ?? '', story.setupChrome ?? '']
@@ -640,7 +650,7 @@ ${lines.join('\n')}
 
 @Component({
   selector: '${meta.selector}',
-  changeDetection: ChangeDetectionStrategy.OnPush,${decoratorImports}${decoratorHostDirectives}
+  changeDetection: ChangeDetectionStrategy.OnPush,${decoratorImports}${decoratorHostDirectives}${decoratorViewProviders}
   template: \`
 ${intro}
     <main>
