@@ -17,24 +17,38 @@ export const STORY: DemoSpec = {
     'import { CngxDotStepper } from \'@cngx/ui/stepper\';',
   ],
   imports: ['CngxDotStepper', 'CngxStep'],
-  setup: `protected readonly active = signal(0);`,
+  setup: `protected readonly active = signal(0);
+  protected readonly slides = [
+    { title: 'Welcome', body: 'Swipe to learn what is new.' },
+    { title: 'Customise', body: 'Tune the dashboard layout to your routine.' },
+    { title: 'Invite', body: 'Bring teammates into the workspace.' },
+    { title: 'Connect', body: 'Plug in the integrations you already use.' },
+    { title: 'Ready', body: 'You are all set.' },
+  ];`,
   setupChrome: `  protected handleNext(): void {
     this.active.update(i => Math.min(i + 1, 4));
   }
   protected handlePrev(): void {
     this.active.update(i => Math.max(i - 1, 0));
   }`,
-  template: `  <cngx-dot-stepper
-    [(activeStepIndex)]="active"
-    aria-label="Carousel slides"
-    tabindex="0"
-  >
-    <div cngxStep label="Slide 1"></div>
-    <div cngxStep label="Slide 2"></div>
-    <div cngxStep label="Slide 3"></div>
-    <div cngxStep label="Slide 4"></div>
-    <div cngxStep label="Slide 5"></div>
-  </cngx-dot-stepper>`,
+  template: `  <article style="display:grid;gap:12px">
+    <cngx-dot-stepper
+      [(activeStepIndex)]="active"
+      aria-label="Carousel slides"
+      tabindex="0"
+    >
+      <div cngxStep label="Slide 1"></div>
+      <div cngxStep label="Slide 2"></div>
+      <div cngxStep label="Slide 3"></div>
+      <div cngxStep label="Slide 4"></div>
+      <div cngxStep label="Slide 5"></div>
+    </cngx-dot-stepper>
+    @let slide = slides[active()];
+    <section aria-live="polite" style="display:grid;gap:4px;min-height:64px">
+      <h4 style="margin:0">{{ slide.title }}</h4>
+      <p style="margin:0">{{ slide.body }}</p>
+    </section>
+  </article>`,
   templateChrome: `<div class="event-grid" style="margin-top:12px;gap:8px">
     <div class="event-row">
       <button type="button" class="chip" (click)="handlePrev()">Previous</button>
