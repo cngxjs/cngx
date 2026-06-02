@@ -26,7 +26,6 @@ export const STORY: DemoSpec = {
   template: `  <cngx-dot-stepper
     [(activeStepIndex)]="active"
     aria-label="Icon dots"
-    tabindex="0"
   >
     <ng-template cngxDotStepperDot let-active="active" let-completed="completed">
       @if (active) {

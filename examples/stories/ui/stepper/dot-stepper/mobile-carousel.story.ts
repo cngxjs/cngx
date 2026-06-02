@@ -35,7 +35,6 @@ export const STORY: DemoSpec = {
     <cngx-dot-stepper
       [(activeStepIndex)]="active"
       aria-label="Carousel slides"
-      tabindex="0"
     >
       <div cngxStep label="Slide 1"></div>
       <div cngxStep label="Slide 2"></div>
