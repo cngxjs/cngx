@@ -5,7 +5,7 @@ export const STORY: DemoSpec = {
   subtitle:
     'Numbered disc + status pill anchored to the trailing edge of each row. <code>[orientation]="\'vertical\'"</code> rebases the layout from column-stack-per-step to a row-per-step sidebar list. Pill labels remain decorative; AT semantics come from <code>aria-current</code> + <code>data-state</code>.',
   description:
-    'Vertical companion to the horizontal stripe-status-rich demo. Each row stacks indicator + label + status pill horizontally; the pill auto-pushes to the trailing edge via flex margin so the row reads as a checkbox-style status list. The German pill labels stay overridden via <code>provideStepperI18nAt(withStepperI18nLabels(...))</code> in <code>viewProviders</code>; the i18n cascade verification carries over from the horizontal twin.',
+    'Vertical companion to the horizontal stripe-status-rich demo. Each row stacks indicator + label + status pill horizontally; the pill auto-pushes to the trailing edge via flex margin so the row reads as a checkbox-style status list. The German pill labels stay overridden via <code>provideStepperI18n(withStepperI18nLabels(...))</code> in <code>viewProviders</code>; the i18n cascade verification carries over from the horizontal twin.',
   level: 'organism',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
