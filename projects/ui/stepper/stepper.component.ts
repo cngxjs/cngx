@@ -92,6 +92,7 @@ import {
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-skins/stripe-status-rich-vertical</example-url>
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-skins/path-chevron-vertical</example-url>
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-skins/pill-segment-vertical</example-url>
+ * <example-url>http://localhost:4200/#/ui/stepper/stepper-mobile-collapse/dots-collapse</example-url>
  */
 @Component({
   selector: 'cngx-stepper',
