@@ -25,6 +25,14 @@ export interface CngxStepperStatusLabels {
  */
 export interface CngxStepperI18n {
   readonly stepperLabel: string;
+  /**
+   * Landmark `aria-roledescription` for compact step-indicator
+   * surfaces such as the dot stepper and the mobile-dot collapse
+   * fallback. Mirrors the W3C APG step-indicator pattern.
+   *
+   * @category common/stepper/i18n
+   */
+  readonly stepIndicatorRoleDescription: string;
   readonly selectedStep: (label: string, position: number, count: number) => string;
   readonly stepCompleted: string;
   readonly stepErrored: string;
@@ -88,6 +96,7 @@ export type CngxStepperI18nOverrides = Omit<Partial<CngxStepperI18n>, 'statusLab
 /** @internal */
 const STEPPER_I18N_DEFAULTS: CngxStepperI18n = {
   stepperLabel: 'Stepper',
+  stepIndicatorRoleDescription: 'Step indicator',
   selectedStep: (label, position, count) => `Step ${position} of ${count}: ${label}`,
   stepCompleted: 'Completed',
   stepErrored: 'Has errors',

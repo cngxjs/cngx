@@ -55,9 +55,6 @@ import {
   CNGX_ORGANISM_SCROLL_SYNC_FACTORY,
 } from '@cngx/common/tabs';
 
-import { CngxDotStepper } from './dot-stepper.component';
-import { CngxTextStepper } from './text-stepper.component';
-
 /**
  * Stepper organism. Composes `CngxStepperPresenter` with
  * `CngxRovingTabindex` and `CngxFocusRestore` via `hostDirectives`;
@@ -97,7 +94,7 @@ import { CngxTextStepper } from './text-stepper.component';
   exportAs: 'cngxStepper',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgTemplateOutlet, CngxLiveRegion, CngxRovingItem, CngxTextStepper, CngxDotStepper],
+  imports: [NgTemplateOutlet, CngxLiveRegion, CngxRovingItem],
   styleUrls: ['./styles/stepper-base.css', './stepper.component.css'],
   encapsulation: ViewEncapsulation.None,
   hostDirectives: [
@@ -171,6 +168,7 @@ export class CngxStepper implements CngxStepPanelHost {
   });
 
   protected readonly displayMode = createStepperDisplayMode('(max-width: 480px)', () => this.config.mobileCollapse, inject(DestroyRef));
+  protected readonly mobileTextLabel = computed<string>(() => this.i18n.textStepperFormat(this.activeStepIndex() + 1, this.stepsOnly().length));
 
   constructor() {
     // Scroll active step into view via the swappable scroll-sync factory.
@@ -189,13 +187,8 @@ export class CngxStepper implements CngxStepPanelHost {
   /** Resolved skin keyed onto the `[data-skin]` host attribute. */
   protected readonly resolvedSkin = computed<CngxStepperSkin>(() => this.skin() ?? this.config.skin ?? 'classic');
 
-  /** Status-pill label for the `stripe-status-rich` skin's per-step pill. */
   protected statusLabelFor = (node: CngxStepNode): string => resolveStepperStatusLabel(node, this.i18n, this.isActive(node));
-
-  /** Group landmark role-description with config + i18n cascade. */
-  protected readonly groupRoleDescription = computed<string>(
-    () => this.config.fallbackLabels?.groupRoleDescription ?? 'step group',
-  );
+  protected readonly groupRoleDescription = computed<string>(() => this.config.fallbackLabels?.groupRoleDescription ?? 'step group');
 
   /**
    * `aria-label` cascade: input → `ariaLabels.stepperRegion` → `i18n.stepperLabel`.
