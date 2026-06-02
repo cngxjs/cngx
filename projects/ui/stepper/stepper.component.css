@@ -815,8 +815,9 @@
   /* Vertical orientation: stack the segments as a column rail with
      reduced radius (the iOS pill is horizontal; a tall column reads
      as a stack of cards rather than a single pill). Each row gets
-     comfortable block padding so the labels breathe; the horizontal
-     pill's 7-px-tall hit area would feel cramped stacked. */
+     comfortable block padding so labels breathe and wrap to two
+     lines without colliding with neighbours when the consumer ships
+     long step names. */
   @scope (.cngx-stepper[data-skin='pill-segment'][data-orientation='vertical']) {
     .cngx-stepper__strip {
       flex-direction: column;
@@ -826,10 +827,17 @@
 
     .cngx-stepper__step {
       justify-content: flex-start;
+      align-items: center;
       text-align: start;
       border-radius: 12px;
-      padding-block: var(--cngx-step-pill-vertical-padding-block, 0.625rem);
-      min-height: var(--cngx-step-pill-vertical-min-height, 2.5rem);
+      padding-block: var(--cngx-step-pill-vertical-padding-block, 1.125rem);
+      min-height: var(--cngx-step-pill-vertical-min-height, 3.75rem);
+    }
+
+    .cngx-stepper__step .cngx-stepper__label {
+      min-width: 0;
+      overflow-wrap: anywhere;
+      line-height: 1.3;
     }
   }
 }
