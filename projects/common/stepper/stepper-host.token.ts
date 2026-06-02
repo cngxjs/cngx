@@ -64,8 +64,15 @@ export interface CngxStepperHost {
   /**
    * Step-only flat projection (group nodes filtered out).
    * Structural-equal via `flatStepsEqual`; the single source for any
-   * step-count / step-position lookup. Variants and skin organisms
-   * read this rather than re-filtering `flatSteps()` per CD tick.
+   * step-count / step-position lookup.
+   *
+   * **Contract:** variant and skin organisms MUST read this signal
+   * directly. Local re-derivation (e.g. `flatSteps().filter(...)`
+   * inside a variant's `computed`) is rejected at review time -
+   * the projection's equality contract is the load-bearing
+   * invariant, and a local re-filter breaks the shape-stable
+   * short-circuit that downstream consumers rely on. Add lookup
+   * helpers as methods on this contract rather than re-deriving.
    *
    * @category common/stepper
    */
