@@ -6,6 +6,7 @@ import {
   computed,
   contentChild,
   contentChildren,
+  DestroyRef,
   ElementRef,
   inject,
   Injector,
@@ -22,6 +23,7 @@ import {
 } from '@cngx/common/a11y';
 import {
   CNGX_STEP_PANEL_HOST,
+  createStepperDisplayMode,
   CngxStep,
   CngxStepBadge,
   type CngxStepBadgeContext,
@@ -52,6 +54,9 @@ import {
   CNGX_DIRECTIVE_BY_ID_MAP_FACTORY,
   CNGX_ORGANISM_SCROLL_SYNC_FACTORY,
 } from '@cngx/common/tabs';
+
+import { CngxDotStepper } from './dot-stepper.component';
+import { CngxTextStepper } from './text-stepper.component';
 
 /**
  * Stepper organism. Composes `CngxStepperPresenter` with
@@ -92,7 +97,7 @@ import {
   exportAs: 'cngxStepper',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgTemplateOutlet, CngxLiveRegion, CngxRovingItem],
+  imports: [NgTemplateOutlet, CngxLiveRegion, CngxRovingItem, CngxTextStepper, CngxDotStepper],
   styleUrls: ['./styles/stepper-base.css', './stepper.component.css'],
   encapsulation: ViewEncapsulation.None,
   hostDirectives: [
@@ -129,12 +134,7 @@ export class CngxStepper implements CngxStepPanelHost {
   readonly ariaLabel = input<string | undefined>(undefined, { alias: 'aria-label' });
   readonly ariaLabelledBy = input<string | undefined>(undefined, { alias: 'aria-labelledby' });
 
-  /**
-   * Per-instance skin override. Resolution order: this Input >
-   * `provideStepperConfigAt(withStepperSkin(...))` > root provider >
-   * library default `'classic'`. Thematic only - flips the
-   * `[data-skin]` host attribute, leaves structure/ARIA/keyboard intact.
-   */
+  /** Per-instance skin override; flips `[data-skin]`, structure/ARIA unchanged. */
   readonly skin = input<CngxStepperSkin | undefined>(undefined);
 
   protected readonly presenter = inject(CNGX_STEPPER_HOST);
@@ -170,10 +170,10 @@ export class CngxStepper implements CngxStepPanelHost {
     config: this.config,
   });
 
+  protected readonly displayMode = createStepperDisplayMode('(max-width: 480px)', () => this.config.mobileCollapse, inject(DestroyRef));
+
   constructor() {
-    // Scroll active step into view on activeStepId change. Routed through
-    // CNGX_ORGANISM_SCROLL_SYNC_FACTORY so consumers can swap policy
-    // (instant, reduced-motion opt-out) without forking.
+    // Scroll active step into view via the swappable scroll-sync factory.
     inject(CNGX_ORGANISM_SCROLL_SYNC_FACTORY)({
       activeId: this.presenter.activeStepId,
       hostElement: this.hostElement,

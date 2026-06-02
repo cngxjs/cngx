@@ -13,6 +13,7 @@ import {
   withStepperCommitMode,
   withStepperFallbackLabels,
   withStepperLinear,
+  withStepperMobileCollapse,
   withStepperRouterSync,
   withStepperSkin,
   withStepIndicatorTemplate,
@@ -164,6 +165,42 @@ describe('CngxStepperConfig', () => {
         const cfg = TestBed.inject(CNGX_STEPPER_CONFIG);
         expect(cfg.skin).toBe(skin);
       }
+    });
+  });
+
+  describe('withStepperMobileCollapse', () => {
+    it('library default resolves to "text"', () => {
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      const cfg = TestBed.inject(CNGX_STEPPER_CONFIG);
+      expect(cfg.mobileCollapse).toBe('text');
+    });
+
+    it('provideStepperConfig(withStepperMobileCollapse) overrides the default', () => {
+      TestBed.configureTestingModule({
+        providers: [
+          provideZonelessChangeDetection(),
+          provideStepperConfig(withStepperMobileCollapse('dots')),
+        ],
+      });
+      const cfg = TestBed.inject(CNGX_STEPPER_CONFIG);
+      expect(cfg.mobileCollapse).toBe('dots');
+    });
+
+    it('accepts "off" to disable the collapse', () => {
+      TestBed.configureTestingModule({
+        providers: [
+          provideZonelessChangeDetection(),
+          provideStepperConfig(withStepperMobileCollapse('off')),
+        ],
+      });
+      const cfg = TestBed.inject(CNGX_STEPPER_CONFIG);
+      expect(cfg.mobileCollapse).toBe('off');
+    });
+
+    it('carries the _target=config discriminator', () => {
+      expect(withStepperMobileCollapse('text')._target).toBe('config');
     });
   });
 

@@ -71,6 +71,16 @@ export type CngxStepperSkin =
   | 'pill-segment';
 
 /**
+ * Mobile auto-collapse target. Under a narrow viewport
+ * (`max-width: 480px`), `<cngx-stepper>` falls back to one of the
+ * compact variants instead of rendering the full strip. Set to
+ * `'off'` to retain the classic strip on every viewport.
+ *
+ * @category common/stepper
+ */
+export type CngxStepperMobileCollapse = 'text' | 'dots' | 'off';
+
+/**
  * Stepper config surface. Resolution priority: per-instance Input
  * > `provideStepperConfigAt` (viewProviders) > `provideStepperConfig`
  * (root) > library default. Canonical cngx config shape.
@@ -84,6 +94,7 @@ export interface CngxStepperConfig {
   readonly routerSyncMode?: 'fragment' | 'queryParam';
   readonly routerSyncParam?: string;
   readonly skin?: CngxStepperSkin;
+  readonly mobileCollapse?: CngxStepperMobileCollapse;
   readonly ariaLabels?: CngxStepperAriaLabels;
   readonly fallbackLabels?: CngxStepperFallbackLabels;
   readonly templates?: CngxStepperTemplates;
@@ -103,6 +114,7 @@ const STEPPER_CONFIG_DEFAULTS: Required<
   routerSyncMode: 'fragment',
   routerSyncParam: 'step',
   skin: 'classic',
+  mobileCollapse: 'text',
   ariaLabels: {
     stepperRegion: 'Stepper',
   },
@@ -222,6 +234,21 @@ export function withStepperRouterSync(
  */
 export function withStepperSkin(skin: CngxStepperSkin): CngxStepperConfigFeature {
   return defineStepperConfigFeature((cfg) => ({ ...cfg, skin }));
+}
+
+/**
+ * Configure the mobile auto-collapse target for `<cngx-stepper>`. Under
+ * a narrow viewport (`max-width: 480px`), the classic strip swaps to
+ * the chosen variant - `'text'` (default) renders `<cngx-text-stepper>`,
+ * `'dots'` renders `<cngx-dot-stepper>`, `'off'` keeps the classic
+ * strip. The Material twin `<cngx-mat-stepper>` ignores this setting.
+ *
+ * @category common/stepper
+ */
+export function withStepperMobileCollapse(
+  mode: CngxStepperMobileCollapse,
+): CngxStepperConfigFeature {
+  return defineStepperConfigFeature((cfg) => ({ ...cfg, mobileCollapse: mode }));
 }
 
 /**

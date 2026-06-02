@@ -63,6 +63,14 @@ export class CngxDotStepper {
   readonly ariaLabel = input<string | undefined>(undefined, { alias: 'aria-label' });
   readonly ariaLabelledBy = input<string | undefined>(undefined, { alias: 'aria-labelledby' });
 
+  /**
+   * Optional total-step count override. Used by `<cngx-stepper>`'s
+   * mobile-collapse branch to drive the variant without projecting
+   * `<cngx-step>` children. When unset, the dots come from the
+   * variant's own presenter's projected steps.
+   */
+  readonly stepCountInput = input<number | undefined>(undefined, { alias: 'stepCount' });
+
   protected readonly presenter = inject(CNGX_STEPPER_HOST);
   protected readonly i18n = injectStepperI18n();
 
@@ -73,6 +81,13 @@ export class CngxDotStepper {
     { equal: (a, b) => a.length === b.length && a.every((n, i) => n.id === b[i].id) },
   );
 
+  /** Indices the template iterates - real step nodes if any, else synthetic count. */
+  protected readonly dotIndices = computed<readonly number[]>(() => {
+    const override = this.stepCountInput();
+    const count = override ?? this.stepNodes().length;
+    return Array.from({ length: count }, (_, i) => i);
+  }, { equal: (a, b) => a.length === b.length });
+
   protected readonly activeIndex = computed<number>(() => this.presenter.activeStepIndex());
 
   protected readonly roleDescription = computed<string>(() => 'Step indicator');
@@ -81,8 +96,19 @@ export class CngxDotStepper {
     return index === this.activeIndex();
   }
 
-  protected dotAriaLabel(node: CngxStepNode, index: number): string {
-    return this.i18n.selectedStep(node.label(), index + 1, this.stepNodes().length);
+  protected stateFor(index: number): string {
+    const nodes = this.stepNodes();
+    return nodes[index]?.state() ?? 'idle';
+  }
+
+  protected ariaLabelFor(index: number): string {
+    const total = this.dotIndices().length;
+    const nodes = this.stepNodes();
+    const label = nodes[index]?.label();
+    if (label) {
+      return this.i18n.selectedStep(label, index + 1, total);
+    }
+    return this.i18n.textStepperFormat(index + 1, total);
   }
 
   protected handleKeyDown(event: KeyboardEvent): void {
@@ -100,7 +126,7 @@ export class CngxDotStepper {
       this.presenter.select(0);
     } else if (event.key === 'End') {
       event.preventDefault();
-      this.presenter.select(this.stepNodes().length - 1);
+      this.presenter.select(this.dotIndices().length - 1);
     }
   }
 }

@@ -55,6 +55,14 @@ export class CngxTextStepper {
   /** Append the active step's label to the count text. Off by default. */
   readonly showCurrentLabel = input<boolean>(false);
 
+  /**
+   * Optional total-step count override. Used by `<cngx-stepper>`'s
+   * mobile-collapse branch to drive the variant without projecting
+   * `<cngx-step>` children. When unset, the count comes from the
+   * variant's own presenter's projected steps.
+   */
+  readonly stepCountInput = input<number | undefined>(undefined, { alias: 'stepCount' });
+
   protected readonly presenter = inject(CNGX_STEPPER_HOST);
   protected readonly i18n = injectStepperI18n();
 
@@ -63,9 +71,13 @@ export class CngxTextStepper {
     { equal: (a, b) => a.length === b.length && a.every((n, i) => n.id === b[i].id) },
   );
 
-  protected readonly totalSteps = computed<number>(() => this.stepNodes().length, {
-    equal: Object.is,
-  });
+  protected readonly totalSteps = computed<number>(() => {
+    const override = this.stepCountInput();
+    if (override !== undefined) {
+      return override;
+    }
+    return this.stepNodes().length;
+  }, { equal: Object.is });
 
   protected readonly currentStep = computed<number>(() => {
     const total = this.totalSteps();

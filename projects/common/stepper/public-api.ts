@@ -83,6 +83,7 @@ export {
   type CngxStepperConfig,
   type CngxStepperConfigFeature,
   type CngxStepperFallbackLabels,
+  type CngxStepperMobileCollapse,
   type CngxStepperSkin,
   type CngxStepperTemplates,
   injectStepperConfig,
@@ -93,6 +94,7 @@ export {
   withStepperCommitMode,
   withStepperFallbackLabels,
   withStepperLinear,
+  withStepperMobileCollapse,
   withStepperRouterSync,
   withStepperSkin,
   withStepIndicatorTemplate,
@@ -115,6 +117,11 @@ export {
 } from './i18n/stepper-i18n';
 
 export { resolveStepperStatusLabel } from './status-label';
+
+export {
+  createMobileViewportSignal,
+  createStepperDisplayMode,
+} from './mobile-viewport';
 
 
 export {
