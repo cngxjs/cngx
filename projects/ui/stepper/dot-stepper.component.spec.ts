@@ -1,9 +1,15 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, TemplateRef, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { describe, expect, it } from 'vitest';
 
-import { CngxStep } from '@cngx/common/stepper';
+import {
+  CngxDotStepperDot,
+  type CngxDotStepperDotContext,
+  CngxStep,
+  provideStepperConfig,
+  withDotStepperDotTemplate,
+} from '@cngx/common/stepper';
 
 import { CngxDotStepper } from './dot-stepper.component';
 
@@ -125,5 +131,91 @@ describe('CngxDotStepper', () => {
     ) as HTMLElement[];
     expect(dots[0].getAttribute('aria-label')).toBe('Step 1 of 4: One');
     expect(dots[3].getAttribute('aria-label')).toBe('Step 4 of 4: Four');
+  });
+
+  it('renders the per-instance *cngxDotStepperDot slot inside every dot when provided', () => {
+    @Component({
+      standalone: true,
+      imports: [CngxDotStepper, CngxStep, CngxDotStepperDot],
+      template: `
+        <cngx-dot-stepper [(activeStepIndex)]="active" aria-label="Slot host">
+          <ng-template cngxDotStepperDot let-index let-isActive="active">
+            <span class="slot-marker" [attr.data-active]="isActive">{{ index }}</span>
+          </ng-template>
+          <div cngxStep label="One"></div>
+          <div cngxStep label="Two"></div>
+          <div cngxStep label="Three"></div>
+        </cngx-dot-stepper>
+      `,
+    })
+    class SlotHost {
+      active = signal(1);
+    }
+
+    TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+    const fixture = TestBed.createComponent(SlotHost);
+    fixture.detectChanges();
+    const markers = Array.from(
+      fixture.nativeElement.querySelectorAll('.slot-marker'),
+    ) as HTMLElement[];
+    expect(markers.length).toBe(3);
+    expect(markers.map((m) => m.textContent?.trim())).toEqual(['0', '1', '2']);
+    expect(markers[1].getAttribute('data-active')).toBe('true');
+    expect(markers[0].getAttribute('data-active')).toBe('false');
+  });
+
+  it('falls back to the CNGX_STEPPER_CONFIG.templates.dotStepperDot when no per-instance slot is bound', () => {
+    @Component({
+      standalone: true,
+      imports: [CngxDotStepper, CngxStep],
+      template: `
+        <ng-template #fallbackTpl let-index>
+          <span class="config-marker">{{ index }}</span>
+        </ng-template>
+        <cngx-dot-stepper [(activeStepIndex)]="active" aria-label="Config host">
+          <div cngxStep label="One"></div>
+          <div cngxStep label="Two"></div>
+        </cngx-dot-stepper>
+      `,
+    })
+    class ConfigHost {
+      active = signal(0);
+      readonly fallbackTpl = viewChild.required<TemplateRef<CngxDotStepperDotContext>>('fallbackTpl');
+    }
+
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const proxyFixture = TestBed.createComponent(ConfigHost);
+    proxyFixture.detectChanges();
+    const tpl = proxyFixture.componentInstance.fallbackTpl();
+
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideStepperConfig(withDotStepperDotTemplate(tpl)),
+      ],
+    });
+    const fixture = TestBed.createComponent(ConfigHost);
+    fixture.detectChanges();
+    const markers = Array.from(
+      fixture.nativeElement.querySelectorAll('.config-marker'),
+    ) as HTMLElement[];
+    expect(markers.length).toBe(2);
+    expect(markers.map((m) => m.textContent?.trim())).toEqual(['0', '1']);
+  });
+
+  it('renders an empty dot body when neither slot nor config template is bound', () => {
+    TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+    const fixture = TestBed.createComponent(Host);
+    fixture.detectChanges();
+    const dots = Array.from(
+      fixture.nativeElement.querySelectorAll('.cngx-dot-stepper__dot'),
+    ) as HTMLElement[];
+    dots.forEach((d) => {
+      expect(d.children.length).toBe(0);
+      expect(d.textContent?.trim()).toBe('');
+    });
   });
 });

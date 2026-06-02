@@ -1,16 +1,22 @@
+import { NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
   ViewEncapsulation,
   computed,
+  contentChild,
   inject,
   input,
   type Signal,
+  type TemplateRef,
 } from '@angular/core';
 
 import {
+  CngxDotStepperDot,
+  type CngxDotStepperDotContext,
   CngxStepperPresenter,
   CNGX_STEPPER_HOST,
+  injectStepperConfig,
   injectStepperI18n,
   type CngxStepNode,
 } from '@cngx/common/stepper';
@@ -41,6 +47,7 @@ import {
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
+  imports: [NgTemplateOutlet],
   hostDirectives: [
     {
       directive: CngxStepperPresenter,
@@ -66,16 +73,44 @@ export class CngxDotStepper {
 
   protected readonly presenter = inject(CNGX_STEPPER_HOST);
   protected readonly i18n = injectStepperI18n();
+  protected readonly config = injectStepperConfig();
 
   protected readonly stepNodes: Signal<readonly CngxStepNode[]> = this.presenter.stepsOnly;
   protected readonly activeIndex = computed<number>(() => this.presenter.activeStepIndex());
+
+  private readonly dotSlot = contentChild(CngxDotStepperDot);
+
+  /**
+   * Resolved dot-body template cascade: per-instance `*cngxDotStepperDot`
+   * directive > `CNGX_STEPPER_CONFIG.templates.dotStepperDot` > `null`
+   * (built-in empty body). Pillar 1 — resolution is a `computed`, not
+   * manual sync.
+   */
+  protected readonly resolvedDotTemplate = computed<TemplateRef<CngxDotStepperDotContext> | null>(
+    () => this.dotSlot()?.templateRef ?? this.config.templates?.dotStepperDot ?? null,
+  );
 
   protected isActive(node: CngxStepNode, index: number): boolean {
     return index === this.activeIndex() && node.kind === 'step';
   }
 
+  protected isCompleted(index: number): boolean {
+    return index < this.activeIndex();
+  }
+
   protected ariaLabelFor(node: CngxStepNode, index: number): string {
     return this.i18n.selectedStep(node.label(), index + 1, this.stepNodes().length);
+  }
+
+  /** Build the slot context for `*cngxDotStepperDot`. */
+  protected dotContextFor(node: CngxStepNode, index: number): CngxDotStepperDotContext {
+    return {
+      $implicit: index,
+      index,
+      node,
+      active: this.isActive(node, index),
+      completed: this.isCompleted(index),
+    };
   }
 
   protected handleKeyDown(event: KeyboardEvent): void {
