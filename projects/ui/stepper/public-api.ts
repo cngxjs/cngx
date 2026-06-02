@@ -9,3 +9,4 @@
  */
 
 export { CngxStepper } from './stepper.component';
+export { CngxProgressBarStepper } from './progress-bar-stepper.component';

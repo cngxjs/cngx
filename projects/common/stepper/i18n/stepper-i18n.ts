@@ -62,6 +62,15 @@ export interface CngxStepperI18n {
    * {@link withStepperI18nLabels} keep un-overridden keys intact.
    */
   readonly statusLabels: CngxStepperStatusLabels;
+  /**
+   * Short progress format used by `CngxProgressBarStepper`'s optional
+   * step-count subtext and by `CngxTextStepper`. Receives the
+   * 1-based current position and total step count; default
+   * `(current, total) => 'Step ${current} of ${total}'`.
+   *
+   * @category common/stepper/i18n
+   */
+  readonly textStepperFormat: (current: number, total: number) => string;
 }
 
 /**
@@ -95,6 +104,7 @@ const STEPPER_I18N_DEFAULTS: CngxStepperI18n = {
     upNext: 'Up next',
     errored: 'Errored',
   },
+  textStepperFormat: (current, total) => `Step ${current} of ${total}`,
 };
 
 /**
