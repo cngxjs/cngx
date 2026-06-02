@@ -53,6 +53,7 @@ import {
   host: {
     class: 'cngx-dot-stepper',
     role: 'group',
+    tabindex: '0',
     '[attr.aria-roledescription]': 'i18n.stepIndicatorRoleDescription',
     '[attr.aria-label]': 'ariaLabel()',
     '[attr.aria-labelledby]': 'ariaLabelledBy()',

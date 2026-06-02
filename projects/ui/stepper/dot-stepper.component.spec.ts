@@ -50,6 +50,16 @@ describe('CngxDotStepper', () => {
     expect(host.getAttribute('role')).not.toBe('tablist');
   });
 
+  it('host is keyboard-focusable so the arrow-key handler is reachable', () => {
+    TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+    const fixture = TestBed.createComponent(Host);
+    fixture.detectChanges();
+    const host = fixture.nativeElement.querySelector('cngx-dot-stepper') as HTMLElement;
+    expect(host.getAttribute('tabindex')).toBe('0');
+    host.focus();
+    expect(document.activeElement).toBe(host);
+  });
+
   it('renders one dot per step (no group nodes)', () => {
     TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
     const fixture = TestBed.createComponent(Host);
