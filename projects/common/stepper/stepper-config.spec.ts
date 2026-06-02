@@ -13,6 +13,7 @@ import {
   withStepperCommitMode,
   withStepperFallbackLabels,
   withStepperLinear,
+  withStepperMobileBreakpoint,
   withStepperMobileCollapse,
   withStepperRouterSync,
   withStepperSkin,
@@ -201,6 +202,31 @@ describe('CngxStepperConfig', () => {
 
     it('carries the _target=config discriminator', () => {
       expect(withStepperMobileCollapse('text')._target).toBe('config');
+    });
+  });
+
+  describe('withStepperMobileBreakpoint', () => {
+    it('library default resolves to "(max-width: 480px)"', () => {
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      const cfg = TestBed.inject(CNGX_STEPPER_CONFIG);
+      expect(cfg.mobileBreakpoint).toBe('(max-width: 480px)');
+    });
+
+    it('provideStepperConfig(withStepperMobileBreakpoint) overrides the default', () => {
+      TestBed.configureTestingModule({
+        providers: [
+          provideZonelessChangeDetection(),
+          provideStepperConfig(withStepperMobileBreakpoint('(max-width: 768px)')),
+        ],
+      });
+      const cfg = TestBed.inject(CNGX_STEPPER_CONFIG);
+      expect(cfg.mobileBreakpoint).toBe('(max-width: 768px)');
+    });
+
+    it('carries the _target=config discriminator', () => {
+      expect(withStepperMobileBreakpoint('(max-width: 768px)')._target).toBe('config');
     });
   });
 

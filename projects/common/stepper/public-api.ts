@@ -94,6 +94,7 @@ export {
   withStepperCommitMode,
   withStepperFallbackLabels,
   withStepperLinear,
+  withStepperMobileBreakpoint,
   withStepperMobileCollapse,
   withStepperRouterSync,
   withStepperSkin,

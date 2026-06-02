@@ -95,6 +95,12 @@ export interface CngxStepperConfig {
   readonly routerSyncParam?: string;
   readonly skin?: CngxStepperSkin;
   readonly mobileCollapse?: CngxStepperMobileCollapse;
+  /**
+   * Media query the mobile auto-collapse policy reacts to. Default
+   * `'(max-width: 480px)'`. Tablet consumers can re-aim the trigger
+   * via {@link withStepperMobileBreakpoint}.
+   */
+  readonly mobileBreakpoint?: string;
   readonly ariaLabels?: CngxStepperAriaLabels;
   readonly fallbackLabels?: CngxStepperFallbackLabels;
   readonly templates?: CngxStepperTemplates;
@@ -115,6 +121,7 @@ const STEPPER_CONFIG_DEFAULTS: Required<
   routerSyncParam: 'step',
   skin: 'classic',
   mobileCollapse: 'text',
+  mobileBreakpoint: '(max-width: 480px)',
   ariaLabels: {
     stepperRegion: 'Stepper',
   },
@@ -249,6 +256,18 @@ export function withStepperMobileCollapse(
   mode: CngxStepperMobileCollapse,
 ): CngxStepperConfigFeature {
   return defineStepperConfigFeature((cfg) => ({ ...cfg, mobileCollapse: mode }));
+}
+
+/**
+ * Override the media query the mobile auto-collapse policy reacts to.
+ * Default `'(max-width: 480px)'`. Useful for tablet-tier consumers
+ * who want the collapse to engage at 768px or for design systems
+ * aligned with `--mat-sys-breakpoint-*` tokens.
+ *
+ * @category common/stepper
+ */
+export function withStepperMobileBreakpoint(query: string): CngxStepperConfigFeature {
+  return defineStepperConfigFeature((cfg) => ({ ...cfg, mobileBreakpoint: query }));
 }
 
 /**
