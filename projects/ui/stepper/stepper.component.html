@@ -26,11 +26,7 @@
     }
   </div>
 } @else if (displayMode() === 'dots') {
-  <div
-    class="cngx-stepper__mobile-dots"
-    role="group"
-    [attr.aria-roledescription]="i18n.stepIndicatorRoleDescription"
-  >
+  <div class="cngx-stepper__mobile-dots">
     @for (node of stepsOnly(); track node.id; let i = $index) {
       <button
         type="button"
