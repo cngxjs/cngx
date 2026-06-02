@@ -11,3 +11,4 @@
 export { CngxStepper } from './stepper.component';
 export { CngxProgressBarStepper } from './progress-bar-stepper.component';
 export { CngxDotStepper } from './dot-stepper.component';
+export { CngxTextStepper } from './text-stepper.component';
