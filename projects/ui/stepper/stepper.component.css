@@ -684,20 +684,16 @@
       color: var(--cngx-step-chevron-tile-color, oklch(1 0 0));
     }
 
-    /* The chevron tile is the state indicator; the default numbered
-       glyph and the completed-check pseudo-element add noise on this
-       skin. Consumer slot templates (`*cngxStepIndicator`) still
-       render because they don't carry the `.cngx-stepper__indicator-
-       glyph` class. */
+    /* The chevron tile carries the state via fill; the indicator disc
+       collapses to a transparent wrapper so the default numbered glyph
+       (rendered by `#defaultIndicator` in stepper.component.html) reads
+       as a clean "1, 2, 3" sequence cue inside each tile. */
     .cngx-stepper__indicator {
       background: transparent;
       width: auto;
       height: auto;
       padding: 0;
       border: 0;
-    }
-    .cngx-stepper__indicator-glyph {
-      display: none;
     }
     .cngx-stepper__indicator[data-state='success']::before {
       content: none;
@@ -785,17 +781,14 @@
         inset 0 0 0 2px var(--cngx-color-primary, oklch(0.66 0.19 50));
     }
 
-    /* The pill rail conveys state via the active card; hide the
-       default numbered glyph and the completed-check pseudo. Consumer
-       slot templates remain available via `*cngxStepIndicator`. */
+    /* The pill rail carries state via the active card fill; the
+       indicator collapses to a transparent wrapper so the default
+       numbered glyph reads as a sequence cue inside each segment. */
     .cngx-stepper__indicator {
       background: transparent;
       width: auto;
       height: auto;
       border: 0;
-    }
-    .cngx-stepper__indicator-glyph {
-      display: none;
     }
     .cngx-stepper__indicator[data-state='success']::before {
       content: none;
