@@ -61,6 +61,22 @@ export interface CngxStepRegistration {
 export interface CngxStepperHost {
   readonly stepTree: Signal<readonly CngxStepNode[]>;
   readonly flatSteps: Signal<readonly CngxStepNode[]>;
+  /**
+   * Step-only flat projection (group nodes filtered out).
+   * Structural-equal via `flatStepsEqual`; the single source for any
+   * step-count / step-position lookup.
+   *
+   * **Contract:** variant and skin organisms MUST read this signal
+   * directly. Local re-derivation (e.g. `flatSteps().filter(...)`
+   * inside a variant's `computed`) is rejected at review time -
+   * the projection's equality contract is the load-bearing
+   * invariant, and a local re-filter breaks the shape-stable
+   * short-circuit that downstream consumers rely on. Add lookup
+   * helpers as methods on this contract rather than re-deriving.
+   *
+   * @category common/stepper
+   */
+  readonly stepsOnly: Signal<readonly CngxStepNode[]>;
   readonly activeStepIndex: Signal<number>;
   readonly activeStepId: Signal<string | null>;
   readonly linear: Signal<boolean>;

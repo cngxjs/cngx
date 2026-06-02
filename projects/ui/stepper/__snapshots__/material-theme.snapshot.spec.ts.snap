@@ -152,3 +152,27 @@ exports[`Material stepper-theme mixin baseline > v1 light: resolved --cngx-step-
   "--cngx-step-rejection-outline-color": "var(--mat-sys-tertiary)",
 }
 `;
+
+exports[`Material stepper-theme mixin baseline > variant-specific Material overrides (Phase C Commit 6) > dot-stepper: v0 light overrides 1`] = `
+{
+  "--cngx-dot-step-active-fill": "#3f51b5",
+  "--cngx-dot-step-completed-fill": "color-mix( in srgb, #3f51b5 60%, transparent )",
+  "--cngx-dot-step-upcoming-bg": "color-mix(in srgb, currentColor 25%, transparent)",
+}
+`;
+
+exports[`Material stepper-theme mixin baseline > variant-specific Material overrides (Phase C Commit 6) > dot-stepper: v1 dark overrides 1`] = `
+{
+  "--cngx-dot-step-active-fill": "var(--mat-sys-primary)",
+  "--cngx-dot-step-completed-fill": "color-mix( in srgb, var(--mat-sys-primary) 60%, transparent )",
+  "--cngx-dot-step-upcoming-bg": "var(--mat-sys-surface-variant)",
+}
+`;
+
+exports[`Material stepper-theme mixin baseline > variant-specific Material overrides (Phase C Commit 6) > dot-stepper: v1 light overrides 1`] = `
+{
+  "--cngx-dot-step-active-fill": "var(--mat-sys-primary)",
+  "--cngx-dot-step-completed-fill": "color-mix( in srgb, var(--mat-sys-primary) 60%, transparent )",
+  "--cngx-dot-step-upcoming-bg": "var(--mat-sys-surface-variant)",
+}
+`;

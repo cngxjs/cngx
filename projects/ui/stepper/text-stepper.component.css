@@ -1,0 +1,15 @@
+/**
+ * @overview
+ * Structural skin for `<cngx-text-stepper>`. Typography inherits from
+ * the consumer's surrounding text - no theme bridge required.
+ */
+
+.cngx-text-stepper {
+  display: inline-flex;
+  align-items: baseline;
+}
+
+.cngx-text-stepper__text {
+  font: inherit;
+  color: inherit;
+}

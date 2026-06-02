@@ -1,4 +1,14 @@
-import { computed, Directive, inject, input, model, signal, type Signal } from '@angular/core';
+import {
+  afterNextRender,
+  computed,
+  Directive,
+  inject,
+  input,
+  isDevMode,
+  model,
+  signal,
+  type Signal,
+} from '@angular/core';
 
 import { CNGX_COMMIT_CONTROLLER_FACTORY, type CngxCommitController } from '@cngx/common/data';
 import {
@@ -148,7 +158,7 @@ export class CngxStepperPresenter implements CngxStepperHost {
    * `select*` / `clamp` / `activeStepId` lookup - never re-filter
    * `flatSteps()`.
    */
-  private readonly stepsOnly: Signal<readonly CngxStepNode[]> = computed(
+  readonly stepsOnly: Signal<readonly CngxStepNode[]> = computed(
     () => this.flatSteps().filter((n) => n.kind === 'step'),
     { equal: flatStepsEqual },
   );
@@ -168,6 +178,19 @@ export class CngxStepperPresenter implements CngxStepperHost {
   });
 
   readonly commitState = this.commitController.state;
+
+  constructor() {
+    if (isDevMode()) {
+      afterNextRender(() => {
+        const stepNodes = this.flatSteps().filter((n) => n.kind === 'step');
+        if (stepNodes.length > 6 && stepNodes.every((n) => n.parentId === null)) {
+          console.warn(
+            '[cngx-stepper] more than 6 steps at the same depth; consider wrapping logical groups in <cngx-step-group> for better UX',
+          );
+        }
+      });
+    }
+  }
 
   // Flat id lookup; rebuilt into the hierarchical tree on each
   // register/unregister.

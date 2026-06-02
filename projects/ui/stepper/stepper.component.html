@@ -3,6 +3,66 @@
   @if (emptyTpl) {
     <ng-container *ngTemplateOutlet="emptyTpl"></ng-container>
   }
+} @else if (displayMode() === 'text') {
+  <span class="cngx-stepper__mobile-text" aria-live="polite">{{ mobileTextLabel() }}</span>
+
+  <div class="cngx-stepper__panels">
+    @for (node of stepsOnly(); track node.id) {
+      <div
+        class="cngx-stepper__panel"
+        role="region"
+        [id]="stepPanelId(node)"
+        [attr.aria-labelledby]="stepHeaderId(node)"
+        [attr.aria-describedby]="stepDescriptorId(node)"
+        [hidden]="!isActive(node)"
+      >
+        @let contentTpl = contentTemplateFor(node.id);
+        @if (contentTpl) {
+          <ng-container
+            *ngTemplateOutlet="contentTpl; context: stepContentContextFor(node)"
+          ></ng-container>
+        }
+      </div>
+    }
+  </div>
+} @else if (displayMode() === 'dots') {
+  <div class="cngx-stepper__mobile-dots">
+    @for (node of stepsOnly(); track node.id; let i = $index) {
+      <button
+        type="button"
+        cngxRovingItem
+        class="cngx-stepper__mobile-dot"
+        [class.cngx-stepper__mobile-dot--active]="isActive(node)"
+        [class.cngx-stepper__mobile-dot--completed]="i < activeStepIndex()"
+        [attr.aria-current]="isActive(node) ? 'step' : null"
+        [attr.aria-label]="i18n.selectedStep(node.label(), i + 1, stepsOnly().length)"
+        [attr.data-state]="node.state()"
+        [attr.aria-disabled]="node.disabled() ? 'true' : null"
+        [cngxRovingItemDisabled]="node.disabled()"
+        (click)="handleHeaderClick(node)"
+      ></button>
+    }
+  </div>
+
+  <div class="cngx-stepper__panels">
+    @for (node of stepsOnly(); track node.id) {
+      <div
+        class="cngx-stepper__panel"
+        role="region"
+        [id]="stepPanelId(node)"
+        [attr.aria-labelledby]="stepHeaderId(node)"
+        [attr.aria-describedby]="stepDescriptorId(node)"
+        [hidden]="!isActive(node)"
+      >
+        @let contentTpl = contentTemplateFor(node.id);
+        @if (contentTpl) {
+          <ng-container
+            *ngTemplateOutlet="contentTpl; context: stepContentContextFor(node)"
+          ></ng-container>
+        }
+      </div>
+    }
+  </div>
 } @else {
   <div class="cngx-stepper__strip" role="presentation">
     @for (node of flatSteps(); track node.id) {

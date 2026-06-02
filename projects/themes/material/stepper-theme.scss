@@ -75,6 +75,15 @@
       var(--mat-sys-primary) 60%,
       transparent
     );
+
+    // Variant: CngxDotStepper
+    --cngx-dot-step-active-fill: var(--mat-sys-primary);
+    --cngx-dot-step-completed-fill: color-mix(
+      in srgb,
+      var(--mat-sys-primary) 60%,
+      transparent
+    );
+    --cngx-dot-step-upcoming-bg: var(--mat-sys-surface-variant);
   } @else {
     --cngx-step-active-color: #{mat.get-theme-color($theme, primary)};
     --cngx-step-completed-color: #{mat.get-theme-color($theme, primary)};
@@ -114,6 +123,15 @@
       #{mat.get-theme-color($theme, primary)} 60%,
       transparent
     );
+
+    // Variant: CngxDotStepper
+    --cngx-dot-step-active-fill: #{mat.get-theme-color($theme, primary)};
+    --cngx-dot-step-completed-fill: color-mix(
+      in srgb,
+      #{mat.get-theme-color($theme, primary)} 60%,
+      transparent
+    );
+    --cngx-dot-step-upcoming-bg: color-mix(in srgb, currentColor 25%, transparent);
   }
 }
 

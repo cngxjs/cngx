@@ -1,0 +1,84 @@
+/**
+ * @overview
+ * Structural + thematic skin for `<cngx-dot-stepper>`. Theme tokens
+ * cascade through `var(--cngx-step-active-fill, ...)` so the Phase A
+ * active-fill chain flows in without duplication.
+ *
+ * Active dot uses `--cngx-dot-step-active-fill`; completed dots use
+ * `--cngx-dot-step-completed-fill`; upcoming dots use
+ * `--cngx-dot-step-upcoming-bg`. Material consumers see
+ * `--mat-sys-primary` via the Phase C stepper-theme extension.
+ *
+ * @group Surface
+ */
+
+@layer cngx.tokens {
+  @property --cngx-dot-step-size {
+    syntax: '*';
+    inherits: true;
+    initial-value: 0.625rem;
+  }
+
+  @property --cngx-dot-step-gap {
+    syntax: '*';
+    inherits: true;
+    initial-value: 0.5rem;
+  }
+
+  @property --cngx-dot-step-active-fill {
+    syntax: '*';
+    inherits: true;
+    initial-value: var(--cngx-step-active-fill, currentColor);
+  }
+
+  @property --cngx-dot-step-completed-fill {
+    syntax: '*';
+    inherits: true;
+    initial-value: var(--cngx-step-completed-color, currentColor);
+  }
+
+  @property --cngx-dot-step-upcoming-bg {
+    syntax: '*';
+    inherits: true;
+    initial-value: var(--cngx-step-indicator-bg, color-mix(in srgb, currentColor 18%, transparent));
+  }
+}
+
+.cngx-dot-stepper {
+  display: inline-flex;
+  align-items: center;
+}
+
+.cngx-dot-stepper__row {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--cngx-dot-step-gap, 0.5rem);
+}
+
+.cngx-dot-stepper__dot {
+  display: inline-block;
+  width: var(--cngx-dot-step-size, 0.625rem);
+  height: var(--cngx-dot-step-size, 0.625rem);
+  border-radius: 50%;
+  background: var(--cngx-dot-step-upcoming-bg, color-mix(in srgb, currentColor 18%, transparent));
+  transition: background 150ms ease-out, transform 150ms ease-out;
+}
+
+.cngx-dot-stepper__dot--completed {
+  background: var(--cngx-dot-step-completed-fill, currentColor);
+}
+
+.cngx-dot-stepper__dot--active {
+  background: var(--cngx-dot-step-active-fill, currentColor);
+  transform: scale(1.25);
+}
+
+.cngx-dot-stepper__dot[data-state='error'] {
+  background: var(--cngx-step-errored-color, currentColor);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cngx-dot-stepper__dot {
+    transition: none;
+  }
+}

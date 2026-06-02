@@ -83,16 +83,20 @@ export {
   type CngxStepperConfig,
   type CngxStepperConfigFeature,
   type CngxStepperFallbackLabels,
+  type CngxStepperMobileCollapse,
   type CngxStepperSkin,
   type CngxStepperTemplates,
   injectStepperConfig,
   provideStepperConfig,
   provideStepperConfigAt,
+  STEPPER_DEFAULT_MOBILE_BREAKPOINT,
   withStepperDefaultOrientation,
   withStepperAriaLabels,
   withStepperCommitMode,
   withStepperFallbackLabels,
   withStepperLinear,
+  withStepperMobileBreakpoint,
+  withStepperMobileCollapse,
   withStepperRouterSync,
   withStepperSkin,
   withStepIndicatorTemplate,
@@ -115,6 +119,11 @@ export {
 } from './i18n/stepper-i18n';
 
 export { resolveStepperStatusLabel } from './status-label';
+
+export {
+  createMobileViewportSignal,
+  createStepperDisplayMode,
+} from './mobile-viewport';
 
 
 export {

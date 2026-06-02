@@ -82,7 +82,9 @@ $theme: mat.m2-define-light-theme((
 
 function parseCustomPropertyDeclarations(css: string): Record<string, string> {
   const out: Record<string, string> = {};
-  const re = /(--cngx-step-[a-z0-9-]+)\s*:\s*([^;]+);/g;
+  // Matches both the canonical `--cngx-step-*` baseline keys and the
+  // Phase C `--cngx-dot-step-*` variant extension keys.
+  const re = /(--cngx-(?:dot-)?step-[a-z0-9-]+)\s*:\s*([^;]+);/g;
   let match: RegExpExecArray | null;
   while ((match = re.exec(css)) !== null) {
     out[match[1]] = match[2].trim().replace(/\s+/g, ' ');
@@ -106,7 +108,13 @@ const SKIN_PROPERTY_PREFIXES = {
   'pill-segment': ['--cngx-step-pill-segment-'],
 } as const;
 
+const VARIANT_PROPERTY_PREFIXES = {
+  'dot-stepper': ['--cngx-dot-step-'],
+} as const;
+
 const ALL_SKIN_PREFIXES = Object.values(SKIN_PROPERTY_PREFIXES).flat();
+const ALL_VARIANT_PREFIXES = Object.values(VARIANT_PROPERTY_PREFIXES).flat();
+const ALL_EXTENSION_PREFIXES = [...ALL_SKIN_PREFIXES, ...ALL_VARIANT_PREFIXES];
 
 function pickByPrefix(
   declarations: Record<string, string>,
@@ -122,15 +130,16 @@ function pickByPrefix(
 }
 
 /**
- * Strip the Phase B skin-specific keys so the Phase 0 baseline blocks
- * stay BYTE-IDENTICAL when new properties land. Each new property is
- * captured separately under the `skin-specific Material overrides`
- * describe block below.
+ * Strip the Phase B skin-specific AND Phase C variant-specific keys so
+ * the Phase 0 baseline blocks stay BYTE-IDENTICAL when new properties
+ * land. Each new property is captured separately under the
+ * `skin-specific` / `variant-specific Material overrides` describe
+ * blocks below.
  */
 function pickPhase0Baseline(declarations: Record<string, string>): Record<string, string> {
   const out: Record<string, string> = {};
   for (const [key, value] of Object.entries(declarations)) {
-    if (ALL_SKIN_PREFIXES.some((prefix) => key.startsWith(prefix))) {
+    if (ALL_EXTENSION_PREFIXES.some((prefix) => key.startsWith(prefix))) {
       continue;
     }
     out[key] = value;
@@ -174,6 +183,31 @@ describe('Material stepper-theme mixin baseline', () => {
       });
 
       it(`${skin}: v0 light overrides`, () => {
+        const all = compileAndExtract({ themeVersion: 'v0', variant: 'light' });
+        expect(pickByPrefix(all, prefixes)).toMatchSnapshot();
+      });
+    }
+  });
+
+  describe('variant-specific Material overrides (Phase C Commit 6)', () => {
+    // Phase C extension: new --cngx-dot-step-* properties for the
+    // CngxDotStepper variant. Existing baseline + Phase B skin lines
+    // stay BYTE-IDENTICAL across this extension; CngxProgressBarStepper
+    // inherits palette through the already-bridged CngxProgress
+    // primitive (no separate override block), and CngxTextStepper
+    // inherits surrounding text color via CSS inheritance.
+    for (const [variant, prefixes] of Object.entries(VARIANT_PROPERTY_PREFIXES)) {
+      it(`${variant}: v1 light overrides`, () => {
+        const all = compileAndExtract({ themeVersion: 'v1', variant: 'light' });
+        expect(pickByPrefix(all, prefixes)).toMatchSnapshot();
+      });
+
+      it(`${variant}: v1 dark overrides`, () => {
+        const all = compileAndExtract({ themeVersion: 'v1', variant: 'dark' });
+        expect(pickByPrefix(all, prefixes)).toMatchSnapshot();
+      });
+
+      it(`${variant}: v0 light overrides`, () => {
         const all = compileAndExtract({ themeVersion: 'v0', variant: 'light' });
         expect(pickByPrefix(all, prefixes)).toMatchSnapshot();
       });

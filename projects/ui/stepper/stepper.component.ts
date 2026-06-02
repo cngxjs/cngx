@@ -6,6 +6,7 @@ import {
   computed,
   contentChild,
   contentChildren,
+  DestroyRef,
   ElementRef,
   inject,
   Injector,
@@ -22,7 +23,9 @@ import {
 } from '@cngx/common/a11y';
 import {
   CNGX_STEP_PANEL_HOST,
+  createStepperDisplayMode,
   CngxStep,
+  STEPPER_DEFAULT_MOBILE_BREAKPOINT,
   CngxStepBadge,
   type CngxStepBadgeContext,
   CngxStepBusySpinner,
@@ -42,7 +45,6 @@ import {
   CNGX_STEPPER_HOST,
   createStepperTemplateBindings,
   resolveStepperStatusLabel,
-  flatStepsEqual,
   injectStepperConfig,
   injectStepperI18n,
   type CngxStepNode,
@@ -129,12 +131,7 @@ export class CngxStepper implements CngxStepPanelHost {
   readonly ariaLabel = input<string | undefined>(undefined, { alias: 'aria-label' });
   readonly ariaLabelledBy = input<string | undefined>(undefined, { alias: 'aria-labelledby' });
 
-  /**
-   * Per-instance skin override. Resolution order: this Input >
-   * `provideStepperConfigAt(withStepperSkin(...))` > root provider >
-   * library default `'classic'`. Thematic only - flips the
-   * `[data-skin]` host attribute, leaves structure/ARIA/keyboard intact.
-   */
+  /** Per-instance skin override; flips `[data-skin]`, structure/ARIA unchanged. */
   readonly skin = input<CngxStepperSkin | undefined>(undefined);
 
   protected readonly presenter = inject(CNGX_STEPPER_HOST);
@@ -170,10 +167,11 @@ export class CngxStepper implements CngxStepPanelHost {
     config: this.config,
   });
 
+  protected readonly displayMode = createStepperDisplayMode(this.config.mobileBreakpoint ?? STEPPER_DEFAULT_MOBILE_BREAKPOINT, () => this.config.mobileCollapse, inject(DestroyRef));
+  protected readonly mobileTextLabel = computed<string>(() => this.i18n.textStepperFormat(this.activeStepIndex() + 1, this.stepsOnly().length));
+
   constructor() {
-    // Scroll active step into view on activeStepId change. Routed through
-    // CNGX_ORGANISM_SCROLL_SYNC_FACTORY so consumers can swap policy
-    // (instant, reduced-motion opt-out) without forking.
+    // Scroll active step into view via the swappable scroll-sync factory.
     inject(CNGX_ORGANISM_SCROLL_SYNC_FACTORY)({
       activeId: this.presenter.activeStepId,
       hostElement: this.hostElement,
@@ -189,13 +187,8 @@ export class CngxStepper implements CngxStepPanelHost {
   /** Resolved skin keyed onto the `[data-skin]` host attribute. */
   protected readonly resolvedSkin = computed<CngxStepperSkin>(() => this.skin() ?? this.config.skin ?? 'classic');
 
-  /** Status-pill label for the `stripe-status-rich` skin's per-step pill. */
   protected statusLabelFor = (node: CngxStepNode): string => resolveStepperStatusLabel(node, this.i18n, this.isActive(node));
-
-  /** Group landmark role-description with config + i18n cascade. */
-  protected readonly groupRoleDescription = computed<string>(
-    () => this.config.fallbackLabels?.groupRoleDescription ?? 'step group',
-  );
+  protected readonly groupRoleDescription = computed<string>(() => this.config.fallbackLabels?.groupRoleDescription ?? 'step group');
 
   /**
    * `aria-label` cascade: input → `ariaLabels.stepperRegion` → `i18n.stepperLabel`.
@@ -217,15 +210,7 @@ export class CngxStepper implements CngxStepPanelHost {
   readonly flatSteps: Signal<readonly CngxStepNode[]> = this.presenter.flatSteps;
   readonly activeStepIndex: Signal<number> = this.presenter.activeStepIndex;
   readonly activeStepId: Signal<string | null> = this.presenter.activeStepId;
-
-  /**
-   * Step-only flat projection (group nodes filtered out). Structural equal
-   * via `flatStepsEqual` - downstream consumers don't re-walk on shape-stable
-   * `flatSteps()` re-emits.
-   */
-  protected readonly stepsOnly = computed(() => this.flatSteps().filter((n) => n.kind === 'step'), {
-    equal: flatStepsEqual,
-  });
+  protected readonly stepsOnly: Signal<readonly CngxStepNode[]> = this.presenter.stepsOnly;
 
   /**
    * Position in the step-only flat projection. Group nodes carry `-1`;

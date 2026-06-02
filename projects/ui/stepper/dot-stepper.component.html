@@ -1,0 +1,13 @@
+<div class="cngx-dot-stepper__row">
+  @for (node of stepNodes(); track node.id; let i = $index) {
+    <span
+      class="cngx-dot-stepper__dot"
+      role="presentation"
+      [class.cngx-dot-stepper__dot--active]="isActive(node, i)"
+      [class.cngx-dot-stepper__dot--completed]="i < activeIndex()"
+      [attr.aria-current]="isActive(node, i) ? 'step' : null"
+      [attr.aria-label]="ariaLabelFor(node, i)"
+      [attr.data-state]="node.state()"
+    ></span>
+  }
+</div>
