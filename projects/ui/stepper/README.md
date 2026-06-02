@@ -13,6 +13,9 @@ The organism's body is template + reactive ARIA only. All state lives in the pre
 | Export | Selector | Description |
 |-|-|-|
 | `CngxStepper` | `cngx-stepper` | The organism. Composes `CngxStepperPresenter` (presenter brain), `CngxRovingTabindex` (keyboard nav), `CngxFocusRestore` (focus management) via `hostDirectives`. |
+| `CngxProgressBarStepper` | `cngx-progress-bar-stepper` | Variant. Bar-style progress rendered via the embedded `<cngx-progress>` primitive. See [Progress-Bar Stepper](#progress-bar-stepper). |
+| `CngxDotStepper` | `cngx-dot-stepper` | Variant. Mobile-first dot indicator. See [Dot Stepper](#dot-stepper). |
+| `CngxTextStepper` | `cngx-text-stepper` | Variant. Inline `Step N of M` text. See [Text Stepper](#text-stepper). |
 
 ```html
 <cngx-stepper [(activeStepIndex)]="active" aria-label="Wizard">
@@ -38,3 +41,100 @@ The organism is W3C step-pattern compliant:
 - Step panel: `role="region"` + `aria-labelledby="<step-id>-header"` + `[hidden]="!isActive"`.
 - Group header: `role="group"` + `aria-roledescription="step group"` + `data-step-depth` + `data-state` + `aria-describedby` (rolls up children's aggregated status).
 - Live region: planned for Phase 3 commit-lifecycle SR announcements; deliberately NOT composed via `hostDirectives` because `CngxLiveRegion` would clobber the host's `role="group"` landmark.
+
+## Skins
+
+`<cngx-stepper>` ships five thematic skins selectable via the `[skin]` Input or the `withStepperSkin(...)` config feature. Structure, ARIA, slots, and keyboard behaviour are identical across all five; only the CSS layer driven by `[data-skin]` changes.
+
+| Skin | Visual | Use case |
+|-|-|-|
+| `classic` | Numbered circles with connectors. The Phase A re-tuned default. | Default wizards, A11y-first flows. |
+| `linear-minimal` | Label + 6px dot + dashed connector. | Long wizards on dense pages. |
+| `stripe-status-rich` | Label + state pill (Done / In progress / Up next / Errored). | Sales / checkout flows where status legibility wins. |
+| `path-chevron` | Boarding-pass chevron tiles. | High-identity branded flows. |
+| `pill-segment` | iOS-style segmented control. | Compact toolbars. |
+
+```ts
+import { provideStepperConfig, withStepperSkin } from '@cngx/common/stepper';
+
+bootstrapApplication(AppComponent, {
+  providers: [provideStepperConfig(withStepperSkin('path-chevron'))],
+});
+```
+
+Per-instance override:
+
+```html
+<cngx-stepper skin="linear-minimal" aria-label="Wizard">...</cngx-stepper>
+```
+
+Under 480px viewports the classic strip auto-collapses to `<cngx-text-stepper>` (default) or `<cngx-dot-stepper>`. Configure via `withStepperMobileCollapse('text' | 'dots' | 'off')`.
+
+## Progress-Bar Stepper
+
+`CngxProgressBarStepper` renders the active step ratio as a determinate `<cngx-progress>` bar. Thin Level-4 organism composing `CngxStepperPresenter` via `hostDirectives` plus the embedded `CngxProgress` primitive - no reinvented `<div role="progressbar">`. Material consumers inherit Material progress palette automatically via `@cngx/themes/material/feedback-theme`.
+
+```ts
+import { CngxStep } from '@cngx/common/stepper';
+import { CngxProgressBarStepper } from '@cngx/ui/stepper';
+```
+
+```html
+<cngx-progress-bar-stepper
+  [(activeStepIndex)]="active"
+  [showStepCount]="true"
+  aria-label="Onboarding"
+>
+  <div cngxStep label="Account"></div>
+  <div cngxStep label="Profile"></div>
+  <div cngxStep label="Preferences"></div>
+  <div cngxStep label="Finish"></div>
+</cngx-progress-bar-stepper>
+```
+
+`[showStepCount]` appends a `Step N of M` caption sourced from `CngxStepperI18n.textStepperFormat`.
+
+## Dot Stepper
+
+`CngxDotStepper` renders one dot per step inside a `<div role="group" aria-roledescription="Step indicator">` per the W3C APG step-indicator pattern. The active dot carries `aria-current="step"`; arrow keys route through the presenter when `[linear]="false"`. Dots are decorative (`role="presentation"`) - this is sequential flow, not a tablist.
+
+```ts
+import { CngxStep } from '@cngx/common/stepper';
+import { CngxDotStepper } from '@cngx/ui/stepper';
+```
+
+```html
+<cngx-dot-stepper
+  [(activeStepIndex)]="active"
+  aria-label="Carousel slides"
+  tabindex="0"
+>
+  <div cngxStep label="Slide 1"></div>
+  <div cngxStep label="Slide 2"></div>
+  <div cngxStep label="Slide 3"></div>
+</cngx-dot-stepper>
+```
+
+Theming via `--cngx-dot-step-active-fill` / `--cngx-dot-step-completed-fill` / `--cngx-dot-step-upcoming-bg`. The Material bridge mixin maps each to the matching `--mat-sys-*` token.
+
+## Text Stepper
+
+`CngxTextStepper` is the smallest stepper - a single `<span aria-live="polite">` reading `Step N of M`. Pure typography inheritance from the consumer's context, no theme bridge required. `[showCurrentLabel]` appends the active step's label after the count.
+
+```ts
+import { CngxStep } from '@cngx/common/stepper';
+import { CngxTextStepper } from '@cngx/ui/stepper';
+```
+
+```html
+<header>
+  <h3>Checkout</h3>
+  <cngx-text-stepper [(activeStepIndex)]="active" [showCurrentLabel]="true">
+    <div cngxStep label="Customer"></div>
+    <div cngxStep label="Payment"></div>
+    <div cngxStep label="Review"></div>
+  </cngx-text-stepper>
+</header>
+```
+
+Override the format via `withStepperI18nLabels({ textStepperFormat: (cur, total) => 'Schritt ' + cur + '/' + total })`.

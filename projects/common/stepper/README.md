@@ -88,6 +88,47 @@ class WizardCmp {
 }
 ```
 
+## Config features (`with*`)
+
+| Feature | Purpose |
+|-|-|
+| `withStepperSkin(name)` | Select the visual skin for `<cngx-stepper>`: `'classic'` (default) / `'linear-minimal'` / `'stripe-status-rich'` / `'path-chevron'` / `'pill-segment'`. Thematic only - structure, slots, ARIA, and keyboard behaviour are identical across skins. The Material twin `<cngx-mat-stepper>` ignores this setting. |
+| `withStepperMobileCollapse(mode)` | Choose the auto-collapse target for narrow viewports (`max-width: 480px`): `'text'` (default, renders `<cngx-text-stepper>`) / `'dots'` (renders `<cngx-dot-stepper>`) / `'off'` (keep the classic strip on every viewport). The Material twin ignores this setting. |
+| `withStepperI18nLabels({ statusLabels })` | Override the per-state pill labels surfaced by the `stripe-status-rich` skin: `{ done, inProgress, upNext, errored }`. Partial overrides keep unset keys at the English default. |
+| `withStepperI18nLabels({ textStepperFormat })` | Override the short format used by `CngxProgressBarStepper`'s caption and by `CngxTextStepper`. Signature: `(current: number, total: number) => string`; default `(c, t) => 'Step ' + c + ' of ' + t`. |
+
+```ts
+import { bootstrapApplication } from '@angular/platform-browser';
+import {
+  provideStepperConfig,
+  provideStepperI18n,
+  withStepperSkin,
+  withStepperMobileCollapse,
+  withStepperI18nLabels,
+} from '@cngx/common/stepper';
+
+bootstrapApplication(AppComponent, {
+  providers: [
+    provideStepperConfig(
+      withStepperSkin('path-chevron'),
+      withStepperMobileCollapse('dots'),
+    ),
+    provideStepperI18n(
+      withStepperI18nLabels({
+        statusLabels: {
+          done: 'Erledigt',
+          inProgress: 'Laufend',
+          upNext: 'Anstehend',
+          errored: 'Fehler',
+        },
+      }),
+    ),
+  ],
+});
+```
+
+`CngxStepperPresenter` also emits a dev-mode warning when a stepper has more than 6 leaf steps at the same depth with no `<cngx-step-group>` wrapper, guiding consumers toward logical grouping for better UX. The warning is one-shot per presenter instance (via `afterNextRender`) and no-ops in production builds.
+
 ## Architecture notes
 
 - **Pillar 1** (`Ableitung statt Verwaltung`): every derived value is a `computed()`; the only writable slot is the active-step model + a registry `WritableSignal<readonly CngxStepRegistration[]>` mutated only by `register`/`unregister`.
