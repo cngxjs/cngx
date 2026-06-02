@@ -107,7 +107,7 @@ describe('CngxStepper classic-skin CSS baseline', () => {
     expect(bodies).toMatchSnapshot();
   });
 
-  it('dark mode: no @media (prefers-color-scheme: dark) rules ship today', () => {
+  it('dark mode: which @media (prefers-color-scheme: dark) rules ship', () => {
     const darkRulesSkin = readDarkModeRules(skinCss);
     const darkRulesBase = readDarkModeRules(baseCss);
     expect({

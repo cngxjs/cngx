@@ -780,6 +780,22 @@
    * separator.
    */
   @scope (.cngx-stepper[data-skin='pill-segment']) {
+    /* Soften the active card from pure white to a subtly primary-tinted
+       surface so it reads as elevated without harsh contrast against
+       the rail. The components-layer rule on the active indicator
+       inverts to `oklch(1 0 0)` (white) by default for the filled-disc
+       pattern; in the pill skin the card surface carries the state cue
+       and the glyph stays in the row text color, so override the
+       indicator-active-color token through the cascade. */
+    :scope {
+      --cngx-step-pill-segment-fill-active: color-mix(
+        in srgb,
+        oklch(1 0 0) 94%,
+        var(--cngx-color-primary, oklch(0.66 0.19 50)) 6%
+      );
+      --cngx-step-indicator-active-color: currentColor;
+    }
+
     .cngx-stepper__strip {
       gap: 0.25rem;
       padding: 0.25rem;
@@ -965,5 +981,19 @@
 @media (prefers-reduced-motion: reduce) {
   .cngx-stepper__mobile-dot {
     transition: none;
+  }
+}
+
+/* Dark-mode tone-mapping for the pill-segment skin. The light-mode
+   defaults bias toward a soft warm-tinted white surface; against a
+   dark page that white would clip, so lift the rail and active card
+   toward currentColor instead. The shadow stays neutral but deepens
+   so the card still reads as elevated on a dark surface. */
+@media (prefers-color-scheme: dark) {
+  .cngx-stepper[data-skin='pill-segment'] {
+    --cngx-step-pill-segment-rail-bg: color-mix(in srgb, currentColor 12%, transparent);
+    --cngx-step-pill-segment-fill-active: color-mix(in srgb, currentColor 22%, transparent);
+    --cngx-step-pill-segment-card-shadow: 0 1px 2px color-mix(in srgb, oklch(0 0 0) 45%, transparent),
+      0 1px 1px color-mix(in srgb, oklch(0 0 0) 35%, transparent);
   }
 }
