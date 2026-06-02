@@ -60,6 +60,7 @@ export interface CngxStepIndicatorContext {
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-slot-overrides/custom-indicator-glyph-via-code-cngxstepindicator-code</example-url>
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-slot-overrides/empty-state-placeholder-via-code-cngxstepperempty-code</example-url>
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-slot-overrides/rejection-decoration-via-code-cngxsteprejection-code</example-url>
+ * <example-url>http://localhost:4200/#/ui/stepper/stepper-slot-overrides/cross-skin-indicator-override</example-url>
  */
 @Directive({
   selector: 'ng-template[cngxStepIndicator]',
