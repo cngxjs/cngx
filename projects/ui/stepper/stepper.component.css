@@ -630,6 +630,23 @@
     }
   }
 
+  /* Vertical orientation: each row stacks indicator + label + pill
+     horizontally so the rail reads as a sidebar list with the status
+     pill anchored to the trailing edge instead of sitting under the
+     label. */
+  @scope (.cngx-stepper[data-skin='stripe-status-rich'][data-orientation='vertical']) {
+    .cngx-stepper__step {
+      flex-direction: row;
+      align-items: center;
+      gap: var(--cngx-step-gap, 0.5rem);
+      justify-content: flex-start;
+    }
+
+    .cngx-stepper__status-pill {
+      margin-inline-start: auto;
+    }
+  }
+
   /**
    * Path-chevron: each step is a clipped chevron tile with a notched
    * right edge in horizontal orientation (rotated to a notched bottom
@@ -792,6 +809,23 @@
     }
     .cngx-stepper__indicator[data-state='success']::before {
       content: none;
+    }
+  }
+
+  /* Vertical orientation: stack the segments as a column rail with
+     reduced radius (the iOS pill is horizontal; a tall column reads
+     as a stack of cards rather than a single pill). */
+  @scope (.cngx-stepper[data-skin='pill-segment'][data-orientation='vertical']) {
+    .cngx-stepper__strip {
+      flex-direction: column;
+      align-items: stretch;
+      border-radius: 16px;
+    }
+
+    .cngx-stepper__step {
+      justify-content: flex-start;
+      text-align: start;
+      border-radius: 12px;
     }
   }
 }
