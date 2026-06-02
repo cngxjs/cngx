@@ -984,29 +984,49 @@
   }
 }
 
-/* Dark-mode tone-mapping for the pill-segment skin. Kept unlayered and
-   outside the @scope block so it deterministically beats the layered
-   :scope override in @layer cngx.skins; nested @media inside @scope
-   produced inconsistent cascade ordering across engines. Opaque
-   surface colors instead of currentColor mixes - translucent mixes
-   over the page produced washed-out greys with poor contrast. The
-   active card uses a clearly elevated mid-dark grey with near-white
-   text and glyph so the active row reads cleanly without depending
-   on the consumer's --cngx-color-primary cascade landing on a dark
-   enough shade. */
+/* Dark-mode tone-mapping for the pill-segment skin. Two entry points
+   mirror the cngx color-scheme cascade in
+   projects/core/theming/system-tokens.css:436-465 - explicit opt-in
+   via :root[data-color-scheme='dark'] or :root.dark (consumer toggle,
+   always wins) and OS auto-follow via @media (prefers-color-scheme:
+   dark) suppressed when :root is explicitly light. Both blocks are
+   unlayered and outside the @scope block so they deterministically
+   beat the layered :scope override in @layer cngx.skins; nested
+   @media inside @scope produced inconsistent cascade ordering across
+   engines. Opaque surface colors instead of currentColor mixes -
+   translucent mixes over the page produced washed-out greys with poor
+   contrast. The active card uses a clearly elevated mid-dark grey
+   with near-white text and glyph so the active row reads cleanly
+   without depending on the consumer's --cngx-color-primary cascade
+   landing on a dark enough shade. */
+:where(:root[data-color-scheme='dark'], :root.dark) .cngx-stepper[data-skin='pill-segment'] {
+  --cngx-step-pill-segment-rail-bg: oklch(0.24 0.005 240);
+  --cngx-step-pill-segment-fill-active: oklch(0.4 0.008 240);
+  --cngx-step-indicator-active-color: oklch(0.98 0 0);
+  --cngx-step-pill-segment-card-shadow: 0 1px 2px color-mix(in srgb, oklch(0 0 0) 55%, transparent);
+}
+
+:where(:root[data-color-scheme='dark'], :root.dark) .cngx-stepper[data-skin='pill-segment'] .cngx-stepper__step {
+  color: color-mix(in srgb, oklch(1 0 0) 60%, transparent);
+}
+
+:where(:root[data-color-scheme='dark'], :root.dark) .cngx-stepper[data-skin='pill-segment'] .cngx-stepper__step[aria-current='step'] {
+  color: oklch(0.98 0 0);
+}
+
 @media (prefers-color-scheme: dark) {
-  .cngx-stepper[data-skin='pill-segment'] {
+  :where(:root:not([data-color-scheme='light']):not(.light)) .cngx-stepper[data-skin='pill-segment'] {
     --cngx-step-pill-segment-rail-bg: oklch(0.24 0.005 240);
     --cngx-step-pill-segment-fill-active: oklch(0.4 0.008 240);
     --cngx-step-indicator-active-color: oklch(0.98 0 0);
     --cngx-step-pill-segment-card-shadow: 0 1px 2px color-mix(in srgb, oklch(0 0 0) 55%, transparent);
   }
 
-  .cngx-stepper[data-skin='pill-segment'] .cngx-stepper__step {
+  :where(:root:not([data-color-scheme='light']):not(.light)) .cngx-stepper[data-skin='pill-segment'] .cngx-stepper__step {
     color: color-mix(in srgb, oklch(1 0 0) 60%, transparent);
   }
 
-  .cngx-stepper[data-skin='pill-segment'] .cngx-stepper__step[aria-current='step'] {
+  :where(:root:not([data-color-scheme='light']):not(.light)) .cngx-stepper[data-skin='pill-segment'] .cngx-stepper__step[aria-current='step'] {
     color: oklch(0.98 0 0);
   }
 }
