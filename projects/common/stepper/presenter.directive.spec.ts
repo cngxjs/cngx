@@ -1,13 +1,21 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { Subject, of, throwError } from 'rxjs';
+
+import { CngxStep, CngxStepGroup } from '@cngx/common/stepper';
 
 import { CngxStepperPresenter } from './presenter.directive';
 import { provideStepperConfig, withStepperDefaultOrientation, withStepperLinear } from './stepper-config';
 import type { CngxStepRegistration, CngxStepStatus } from './stepper-host.token';
+
+async function flushMicrotasks(rounds = 5): Promise<void> {
+  for (let i = 0; i < rounds; i++) {
+    await Promise.resolve();
+  }
+}
 
 function reg(id: string, kind: 'step' | 'group' = 'step', stateValue: CngxStepStatus = 'idle', disabled = false): CngxStepRegistration {
   return {
@@ -376,6 +384,95 @@ describe('CngxStepperPresenter', () => {
       fixture.detectChanges();
       presenter.select(2);
       expect(presenter.lastFailedIndex()).toBeUndefined();
+    });
+  });
+
+  describe('dev-mode step-count guardrail', () => {
+    let warnSpy: ReturnType<typeof vi.spyOn>;
+
+    beforeEach(() => {
+      warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    });
+
+    afterEach(() => {
+      warnSpy.mockRestore();
+    });
+
+    it('warns when 7+ leaf steps render without a CngxStepGroup wrapper', async () => {
+      @Component({
+        standalone: true,
+        imports: [CngxStep],
+        hostDirectives: [{ directive: CngxStepperPresenter }],
+        template: `
+          <div cngxStep label="1"></div>
+          <div cngxStep label="2"></div>
+          <div cngxStep label="3"></div>
+          <div cngxStep label="4"></div>
+          <div cngxStep label="5"></div>
+          <div cngxStep label="6"></div>
+          <div cngxStep label="7"></div>
+        `,
+      })
+      class FlatSeven {}
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      const fixture = TestBed.createComponent(FlatSeven);
+      fixture.detectChanges();
+      await flushMicrotasks();
+      expect(warnSpy).toHaveBeenCalledTimes(1);
+      expect(warnSpy.mock.calls[0][0]).toContain('more than 6 steps');
+    });
+
+    it('does not warn when 7+ steps are wrapped in at least one CngxStepGroup', async () => {
+      @Component({
+        standalone: true,
+        imports: [CngxStep, CngxStepGroup],
+        hostDirectives: [{ directive: CngxStepperPresenter }],
+        template: `
+          <div cngxStepGroup label="Group">
+            <div cngxStep label="1"></div>
+            <div cngxStep label="2"></div>
+            <div cngxStep label="3"></div>
+            <div cngxStep label="4"></div>
+          </div>
+          <div cngxStep label="5"></div>
+          <div cngxStep label="6"></div>
+          <div cngxStep label="7"></div>
+        `,
+      })
+      class GroupedSeven {}
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      const fixture = TestBed.createComponent(GroupedSeven);
+      fixture.detectChanges();
+      await flushMicrotasks();
+      expect(warnSpy).not.toHaveBeenCalled();
+    });
+
+    it('does not warn at exactly 6 flat steps', async () => {
+      @Component({
+        standalone: true,
+        imports: [CngxStep],
+        hostDirectives: [{ directive: CngxStepperPresenter }],
+        template: `
+          <div cngxStep label="1"></div>
+          <div cngxStep label="2"></div>
+          <div cngxStep label="3"></div>
+          <div cngxStep label="4"></div>
+          <div cngxStep label="5"></div>
+          <div cngxStep label="6"></div>
+        `,
+      })
+      class FlatSix {}
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      const fixture = TestBed.createComponent(FlatSix);
+      fixture.detectChanges();
+      await flushMicrotasks();
+      expect(warnSpy).not.toHaveBeenCalled();
     });
   });
 
