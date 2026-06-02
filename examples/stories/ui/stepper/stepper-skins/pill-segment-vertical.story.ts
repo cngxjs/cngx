@@ -3,9 +3,9 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxStepper: pill-segment skin (vertical)',
   subtitle:
-    'Column-stacked card list - the iOS-segmented control rebases to a stacked card stack for vertical layouts. Active card raises with its own shadow; completed cards carry a faint ember wash. Border radius softens (16px rail, 12px card) so the stack reads as a list, not a single pill.',
+    'Column-stacked card list - the iOS-segmented control rebases to a stacked card stack for vertical layouts. Active card raises with its own shadow; completed cards stay flat with a green check disc. Border radius softens (16px rail, 12px card) so the stack reads as a list, not a single pill.',
   description:
-    'Vertical companion to the horizontal pill-segment demo. Each step renders as a stacked card with start-aligned labels; the rail rounds to 16px and each card to 12px so the visual reads as a card list rather than a horizontal pill. State cues (active / completed / errored) come through the card fill; ARIA semantics stay identical to the horizontal skin.',
+    'Vertical companion to the horizontal pill-segment demo. Each step renders as a stacked card with start-aligned labels; the rail rounds to 16px and each card to 12px so the visual reads as a card list rather than a horizontal pill. State cues (active / completed / errored) come through the indicator disc and the raised active card; ARIA semantics stay identical to the horizontal skin.',
   level: 'organism',
   audience: ['dev', 'design'],
   artifact: 'standalone',
@@ -24,7 +24,7 @@ export const STORY: DemoSpec = {
     this.active.update(i => Math.max(i - 1, 0));
   }`,
   template: `  <cngx-stepper [(activeStepIndex)]="active" skin="pill-segment" [orientation]="'vertical'" aria-label="Survey">
-    <div cngxStep label="Intro">
+    <div cngxStep label="Intro" [completed]="true">
       <ng-template cngxStepContent>
         <p>Welcome screen.</p>
       </ng-template>

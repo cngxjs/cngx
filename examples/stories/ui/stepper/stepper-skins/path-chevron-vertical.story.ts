@@ -5,7 +5,7 @@ export const STORY: DemoSpec = {
   subtitle:
     'Vertical chevron tiles - the clip-path notch rotates onto the bottom edge so the flow reads top-to-bottom. Same skin, only <code>[orientation]="\'vertical\'"</code> changes; the tile shape adapts via the vertical-orientation scope rule.',
   description:
-    'Vertical companion to the horizontal path-chevron demo. The chevron clip-path is reshaped to a downward-pointing notch so the visual still reads as a directional flow. Active fills with the primary tone, completed with a 80% success tint, errored with the danger tone; the numbered glyph remains visible inside each tile as a sequence cue (Phase D restored the glyph on this skin).',
+    'Vertical companion to the horizontal path-chevron demo. The chevron clip-path is reshaped to a deeper downward-pointing notch so the tiles interlock and the flow reads top-to-bottom. Active fills with the primary tone, completed with a 80% success tint, errored with the danger tone. Tiles are label-only - the arrow silhouette carries the sequence, completed steps surface a check.',
   level: 'organism',
   audience: ['dev', 'design'],
   artifact: 'standalone',
@@ -24,12 +24,12 @@ export const STORY: DemoSpec = {
     this.active.update(i => Math.max(i - 1, 0));
   }`,
   template: `  <cngx-stepper [(activeStepIndex)]="active" skin="path-chevron" [orientation]="'vertical'" aria-label="Checkout">
-    <div cngxStep label="Cart">
+    <div cngxStep label="Cart" [completed]="true">
       <ng-template cngxStepContent>
         <p>Review the items in the cart.</p>
       </ng-template>
     </div>
-    <div cngxStep label="Address">
+    <div cngxStep label="Address" [completed]="true">
       <ng-template cngxStepContent>
         <p>Enter the shipping address.</p>
       </ng-template>

@@ -21,7 +21,7 @@ export const STORY: DemoSpec = {
     <section>
       <h3>classic</h3>
       <cngx-stepper [(activeStepIndex)]="active" [linear]="true" aria-label="Classic skin">
-        <div cngxStep label="Step 1"></div>
+        <div cngxStep label="Step 1" [completed]="true"></div>
         <div cngxStep label="Step 2"></div>
         <div cngxStep label="Step 3"></div>
       </cngx-stepper>
@@ -29,7 +29,7 @@ export const STORY: DemoSpec = {
     <section>
       <h3>linear-minimal</h3>
       <cngx-stepper [(activeStepIndex)]="active" [linear]="true" skin="linear-minimal" aria-label="Linear minimal">
-        <div cngxStep label="Step 1"></div>
+        <div cngxStep label="Step 1" [completed]="true"></div>
         <div cngxStep label="Step 2"></div>
         <div cngxStep label="Step 3"></div>
       </cngx-stepper>
@@ -37,7 +37,7 @@ export const STORY: DemoSpec = {
     <section>
       <h3>stripe-status-rich</h3>
       <cngx-stepper [(activeStepIndex)]="active" [linear]="true" skin="stripe-status-rich" aria-label="Stripe status rich">
-        <div cngxStep label="Step 1"></div>
+        <div cngxStep label="Step 1" [completed]="true"></div>
         <div cngxStep label="Step 2"></div>
         <div cngxStep label="Step 3"></div>
       </cngx-stepper>
@@ -45,7 +45,7 @@ export const STORY: DemoSpec = {
     <section>
       <h3>path-chevron</h3>
       <cngx-stepper [(activeStepIndex)]="active" [linear]="true" skin="path-chevron" aria-label="Path chevron">
-        <div cngxStep label="Step 1"></div>
+        <div cngxStep label="Step 1" [completed]="true"></div>
         <div cngxStep label="Step 2"></div>
         <div cngxStep label="Step 3"></div>
       </cngx-stepper>
@@ -53,7 +53,7 @@ export const STORY: DemoSpec = {
     <section>
       <h3>pill-segment</h3>
       <cngx-stepper [(activeStepIndex)]="active" [linear]="true" skin="pill-segment" aria-label="Pill segment">
-        <div cngxStep label="Step 1"></div>
+        <div cngxStep label="Step 1" [completed]="true"></div>
         <div cngxStep label="Step 2"></div>
         <div cngxStep label="Step 3"></div>
       </cngx-stepper>

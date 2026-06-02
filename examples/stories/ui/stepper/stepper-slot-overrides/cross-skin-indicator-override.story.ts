@@ -37,7 +37,7 @@ export const STORY: DemoSpec = {
               </svg>
             }
           </ng-template>
-          <div cngxStep label="Step 1"></div>
+          <div cngxStep label="Step 1" [completed]="true"></div>
           <div cngxStep label="Step 2"></div>
           <div cngxStep label="Step 3"></div>
         </cngx-stepper>

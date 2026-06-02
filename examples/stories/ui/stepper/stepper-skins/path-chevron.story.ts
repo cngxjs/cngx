@@ -24,12 +24,12 @@ export const STORY: DemoSpec = {
     this.active.update(i => Math.max(i - 1, 0));
   }`,
   template: `  <cngx-stepper [(activeStepIndex)]="active" skin="path-chevron" aria-label="Checkout">
-    <div cngxStep label="Cart">
+    <div cngxStep label="Cart" [completed]="true">
       <ng-template cngxStepContent>
         <p>Review the items in the cart.</p>
       </ng-template>
     </div>
-    <div cngxStep label="Address">
+    <div cngxStep label="Address" [completed]="true">
       <ng-template cngxStepContent>
         <p>Enter the shipping address.</p>
       </ng-template>

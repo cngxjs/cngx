@@ -24,7 +24,7 @@ export const STORY: DemoSpec = {
     this.active.update(i => Math.max(i - 1, 0));
   }`,
   template: `  <cngx-stepper [(activeStepIndex)]="active" skin="pill-segment" aria-label="Survey">
-    <div cngxStep label="Intro">
+    <div cngxStep label="Intro" [completed]="true">
       <ng-template cngxStepContent>
         <p>Welcome screen.</p>
       </ng-template>

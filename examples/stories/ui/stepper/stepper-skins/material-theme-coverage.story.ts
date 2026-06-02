@@ -21,7 +21,7 @@ export const STORY: DemoSpec = {
     <section>
       <h3>classic</h3>
       <cngx-stepper [(activeStepIndex)]="active" aria-label="Classic skin">
-        <div cngxStep label="Customer"></div>
+        <div cngxStep label="Customer" [completed]="true"></div>
         <div cngxStep label="Payment"></div>
         <div cngxStep label="Review"></div>
       </cngx-stepper>
@@ -29,7 +29,7 @@ export const STORY: DemoSpec = {
     <section>
       <h3>linear-minimal</h3>
       <cngx-stepper [(activeStepIndex)]="active" skin="linear-minimal" aria-label="Linear minimal">
-        <div cngxStep label="Customer"></div>
+        <div cngxStep label="Customer" [completed]="true"></div>
         <div cngxStep label="Payment"></div>
         <div cngxStep label="Review"></div>
       </cngx-stepper>
@@ -37,7 +37,7 @@ export const STORY: DemoSpec = {
     <section>
       <h3>stripe-status-rich</h3>
       <cngx-stepper [(activeStepIndex)]="active" skin="stripe-status-rich" aria-label="Stripe status rich">
-        <div cngxStep label="Customer"></div>
+        <div cngxStep label="Customer" [completed]="true"></div>
         <div cngxStep label="Payment"></div>
         <div cngxStep label="Review"></div>
       </cngx-stepper>
@@ -45,7 +45,7 @@ export const STORY: DemoSpec = {
     <section>
       <h3>path-chevron</h3>
       <cngx-stepper [(activeStepIndex)]="active" skin="path-chevron" aria-label="Path chevron">
-        <div cngxStep label="Customer"></div>
+        <div cngxStep label="Customer" [completed]="true"></div>
         <div cngxStep label="Payment"></div>
         <div cngxStep label="Review"></div>
       </cngx-stepper>
@@ -53,7 +53,7 @@ export const STORY: DemoSpec = {
     <section>
       <h3>pill-segment</h3>
       <cngx-stepper [(activeStepIndex)]="active" skin="pill-segment" aria-label="Pill segment">
-        <div cngxStep label="Customer"></div>
+        <div cngxStep label="Customer" [completed]="true"></div>
         <div cngxStep label="Payment"></div>
         <div cngxStep label="Review"></div>
       </cngx-stepper>
