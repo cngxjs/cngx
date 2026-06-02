@@ -630,6 +630,23 @@
     }
   }
 
+  /* Vertical orientation: each row stacks indicator + label + pill
+     horizontally so the rail reads as a sidebar list with the status
+     pill anchored to the trailing edge instead of sitting under the
+     label. */
+  @scope (.cngx-stepper[data-skin='stripe-status-rich'][data-orientation='vertical']) {
+    .cngx-stepper__step {
+      flex-direction: row;
+      align-items: center;
+      gap: var(--cngx-step-gap, 0.5rem);
+      justify-content: flex-start;
+    }
+
+    .cngx-stepper__status-pill {
+      margin-inline-start: auto;
+    }
+  }
+
   /**
    * Path-chevron: each step is a clipped chevron tile with a notched
    * right edge in horizontal orientation (rotated to a notched bottom
@@ -684,11 +701,10 @@
       color: var(--cngx-step-chevron-tile-color, oklch(1 0 0));
     }
 
-    /* The chevron tile is the state indicator; the default numbered
-       glyph and the completed-check pseudo-element add noise on this
-       skin. Consumer slot templates (`*cngxStepIndicator`) still
-       render because they don't carry the `.cngx-stepper__indicator-
-       glyph` class. */
+    /* The chevron tile carries the state via fill; the indicator disc
+       collapses to a transparent wrapper so the default numbered glyph
+       (rendered by `#defaultIndicator` in stepper.component.html) reads
+       as a clean "1, 2, 3" sequence cue inside each tile. */
     .cngx-stepper__indicator {
       background: transparent;
       width: auto;
@@ -696,26 +712,62 @@
       padding: 0;
       border: 0;
     }
-    .cngx-stepper__indicator-glyph {
-      display: none;
-    }
     .cngx-stepper__indicator[data-state='success']::before {
       content: none;
     }
   }
 
-  /* Vertical orientation: rotate the chevron notch onto the bottom
-     edge of each tile so the visual still reads as a flow. */
+  /* Vertical orientation: each tile gets a downward point at the
+     bottom AND an inverted notch at the top so consecutive tiles
+     interlock - the previous step's point dips into the next step's
+     notch, mirroring the horizontal chevron flow rotated 90 degrees.
+     First step skips the top notch (nothing above to receive); last
+     step skips the bottom point (nothing below to send to). The
+     visible content area shrinks by 2x notch depth, so block padding
+     and min-height double versus the horizontal default to keep the
+     label legible. */
   @scope (.cngx-stepper[data-skin='path-chevron'][data-orientation='vertical']) {
+    .cngx-stepper__strip {
+      gap: 0;
+    }
+
     .cngx-stepper__step {
-      clip-path: polygon(0 0, 100% 0, 100% calc(100% - 0.5rem), 50% 100%, 0 calc(100% - 0.5rem));
-      padding-block-end: calc(var(--cngx-step-padding, 0.5rem 0.75rem) + 0.5rem);
+      clip-path: polygon(
+        0 0,
+        50% var(--cngx-step-chevron-vertical-notch, 0.5rem),
+        100% 0,
+        100% calc(100% - var(--cngx-step-chevron-vertical-notch, 0.5rem)),
+        50% 100%,
+        0 calc(100% - var(--cngx-step-chevron-vertical-notch, 0.5rem))
+      );
+      padding-block: calc(var(--cngx-step-chevron-vertical-notch, 0.5rem) + 0.875rem);
+      min-height: var(--cngx-step-chevron-vertical-min-height, 4rem);
     }
+
+    .cngx-stepper__step .cngx-stepper__label {
+      min-width: 0;
+      overflow-wrap: anywhere;
+      line-height: 1.3;
+    }
+
     .cngx-stepper__step:first-child {
-      clip-path: polygon(0 0, 100% 0, 100% calc(100% - 0.5rem), 50% 100%, 0 calc(100% - 0.5rem));
+      clip-path: polygon(
+        0 0,
+        100% 0,
+        100% calc(100% - var(--cngx-step-chevron-vertical-notch, 0.5rem)),
+        50% 100%,
+        0 calc(100% - var(--cngx-step-chevron-vertical-notch, 0.5rem))
+      );
     }
+
     .cngx-stepper__step:last-child {
-      clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+      clip-path: polygon(
+        0 0,
+        50% var(--cngx-step-chevron-vertical-notch, 0.5rem),
+        100% 0,
+        100% 100%,
+        0 100%
+      );
     }
   }
 
@@ -728,6 +780,22 @@
    * separator.
    */
   @scope (.cngx-stepper[data-skin='pill-segment']) {
+    /* Soften the active card from pure white to a subtly primary-tinted
+       surface so it reads as elevated without harsh contrast against
+       the rail. The components-layer rule on the active indicator
+       inverts to `oklch(1 0 0)` (white) by default for the filled-disc
+       pattern; in the pill skin the card surface carries the state cue
+       and the glyph stays in the row text color, so override the
+       indicator-active-color token through the cascade. */
+    :scope {
+      --cngx-step-pill-segment-fill-active: color-mix(
+        in srgb,
+        oklch(1 0 0) 94%,
+        var(--cngx-color-primary, oklch(0.66 0.19 50)) 6%
+      );
+      --cngx-step-indicator-active-color: currentColor;
+    }
+
     .cngx-stepper__strip {
       gap: 0.25rem;
       padding: 0.25rem;
@@ -785,20 +853,46 @@
         inset 0 0 0 2px var(--cngx-color-primary, oklch(0.66 0.19 50));
     }
 
-    /* The pill rail conveys state via the active card; hide the
-       default numbered glyph and the completed-check pseudo. Consumer
-       slot templates remain available via `*cngxStepIndicator`. */
+    /* The pill rail carries state via the active card fill; the
+       indicator collapses to a transparent wrapper so the default
+       numbered glyph reads as a sequence cue inside each segment. */
     .cngx-stepper__indicator {
       background: transparent;
       width: auto;
       height: auto;
       border: 0;
     }
-    .cngx-stepper__indicator-glyph {
-      display: none;
-    }
     .cngx-stepper__indicator[data-state='success']::before {
       content: none;
+    }
+  }
+
+  /* Vertical orientation: stack the segments as a column rail with
+     reduced radius (the iOS pill is horizontal; a tall column reads
+     as a stack of cards rather than a single pill). Each row gets
+     comfortable block padding so labels breathe and wrap to two
+     lines without colliding with neighbours when the consumer ships
+     long step names. */
+  @scope (.cngx-stepper[data-skin='pill-segment'][data-orientation='vertical']) {
+    .cngx-stepper__strip {
+      flex-direction: column;
+      align-items: stretch;
+      border-radius: 16px;
+    }
+
+    .cngx-stepper__step {
+      justify-content: flex-start;
+      align-items: center;
+      text-align: start;
+      border-radius: 12px;
+      padding-block: var(--cngx-step-pill-vertical-padding-block, 1.125rem);
+      min-height: var(--cngx-step-pill-vertical-min-height, 3.75rem);
+    }
+
+    .cngx-stepper__step .cngx-stepper__label {
+      min-width: 0;
+      overflow-wrap: anywhere;
+      line-height: 1.3;
     }
   }
 }
@@ -887,5 +981,32 @@
 @media (prefers-reduced-motion: reduce) {
   .cngx-stepper__mobile-dot {
     transition: none;
+  }
+}
+
+/* Dark-mode tone-mapping for the pill-segment skin. Kept unlayered and
+   outside the @scope block so it deterministically beats the layered
+   :scope override in @layer cngx.skins; nested @media inside @scope
+   produced inconsistent cascade ordering across engines. Opaque
+   surface colors instead of currentColor mixes - translucent mixes
+   over the page produced washed-out greys with poor contrast. The
+   active card uses a clearly elevated mid-dark grey with near-white
+   text and glyph so the active row reads cleanly without depending
+   on the consumer's --cngx-color-primary cascade landing on a dark
+   enough shade. */
+@media (prefers-color-scheme: dark) {
+  .cngx-stepper[data-skin='pill-segment'] {
+    --cngx-step-pill-segment-rail-bg: oklch(0.24 0.005 240);
+    --cngx-step-pill-segment-fill-active: oklch(0.4 0.008 240);
+    --cngx-step-indicator-active-color: oklch(0.98 0 0);
+    --cngx-step-pill-segment-card-shadow: 0 1px 2px color-mix(in srgb, oklch(0 0 0) 55%, transparent);
+  }
+
+  .cngx-stepper[data-skin='pill-segment'] .cngx-stepper__step {
+    color: color-mix(in srgb, oklch(1 0 0) 60%, transparent);
+  }
+
+  .cngx-stepper[data-skin='pill-segment'] .cngx-stepper__step[aria-current='step'] {
+    color: oklch(0.98 0 0);
   }
 }

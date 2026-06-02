@@ -25,3 +25,29 @@ test.describe('ui/stepper/stepper-mobile-collapse', () => {
     await expect(page.locator('button.cngx-stepper__step')).toHaveCount(3);
   });
 });
+
+// Story: CngxStepper mobile auto-collapse with dots mode. The demo opts
+// into `withStepperMobileCollapse('dots')` via viewProviders, so the
+// narrow-viewport fallback renders an inline row of dot buttons instead
+// of the default text span.
+
+test.describe('ui/stepper/stepper-mobile-collapse-dots', () => {
+  test('dots-collapse: 375px viewport renders the inline dot buttons instead of the strip', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 375, height: 720 });
+    await gotoDemo(page, 'ui/stepper/stepper-mobile-collapse/dots-collapse');
+
+    await expect(page.locator('button.cngx-stepper__mobile-dot')).toHaveCount(3);
+    await expect(page.locator('.cngx-stepper__mobile-text')).toHaveCount(0);
+    await expect(page.locator('button.cngx-stepper__step')).toHaveCount(0);
+  });
+
+  test('dots-collapse: desktop viewport keeps the classic strip rendered', async ({ page }) => {
+    await page.setViewportSize({ width: 1024, height: 720 });
+    await gotoDemo(page, 'ui/stepper/stepper-mobile-collapse/dots-collapse');
+
+    await expect(page.locator('button.cngx-stepper__mobile-dot')).toHaveCount(0);
+    await expect(page.locator('button.cngx-stepper__step')).toHaveCount(3);
+  });
+});

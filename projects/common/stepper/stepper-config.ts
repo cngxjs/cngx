@@ -7,6 +7,7 @@ import {
   type TemplateRef,
 } from '@angular/core';
 
+import type { CngxDotStepperDotContext } from './slots/dot-stepper-dot.directive';
 import type { CngxStepBadgeContext } from './slots/step-badge.directive';
 import type { CngxStepBusySpinnerContext } from './slots/step-busy-spinner.directive';
 import type { CngxStepGroupHeaderContext } from './slots/step-group-header.directive';
@@ -52,6 +53,7 @@ export interface CngxStepperTemplates {
   readonly rejection?: TemplateRef<CngxStepRejectionContext>;
   readonly groupHeader?: TemplateRef<CngxStepGroupHeaderContext>;
   readonly empty?: TemplateRef<void>;
+  readonly dotStepperDot?: TemplateRef<CngxDotStepperDotContext>;
 }
 
 /**
@@ -390,6 +392,23 @@ export function withStepperEmptyTemplate(template: TemplateRef<void>): CngxStepp
   return defineStepperConfigFeature((cfg) => ({
     ...cfg,
     templates: { ...cfg.templates, empty: template },
+  }));
+}
+
+/**
+ * Override the default `*cngxDotStepperDot` template app-wide. The
+ * `<cngx-dot-stepper>` variant resolves the cascade per dot:
+ * per-instance directive > this feature > built-in empty body
+ * (the dot fill is painted by `.cngx-dot-stepper__dot` regardless).
+ *
+ * @category common/stepper
+ */
+export function withDotStepperDotTemplate(
+  template: TemplateRef<CngxDotStepperDotContext>,
+): CngxStepperConfigFeature {
+  return defineStepperConfigFeature((cfg) => ({
+    ...cfg,
+    templates: { ...cfg.templates, dotStepperDot: template },
   }));
 }
 

@@ -68,6 +68,11 @@ export {
 export { CngxStepperEmpty } from './slots/stepper-empty.directive';
 
 export {
+  CngxDotStepperDot,
+  type CngxDotStepperDotContext,
+} from './slots/dot-stepper-dot.directive';
+
+export {
   createStepperTemplateBindings,
   type CngxStepperTemplateBindings,
   type CngxStepperTemplateBindingsOptions,
@@ -105,6 +110,7 @@ export {
   withStepRejectionTemplate,
   withStepGroupHeaderTemplate,
   withStepperEmptyTemplate,
+  withDotStepperDotTemplate,
 } from './stepper-config';
 
 export {

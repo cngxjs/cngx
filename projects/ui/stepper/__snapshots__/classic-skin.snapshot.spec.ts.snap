@@ -1,9 +1,11 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`CngxStepper classic-skin CSS baseline > dark mode: no @media (prefers-color-scheme: dark) rules ship today 1`] = `
+exports[`CngxStepper classic-skin CSS baseline > dark mode: which @media (prefers-color-scheme: dark) rules ship 1`] = `
 {
   "stepper-base.css": [],
-  "stepper.component.css": [],
+  "stepper.component.css": [
+    "@media (prefers-color-scheme: dark) { .cngx-stepper[data-skin='pill-segment'] { --cngx-step-pill-segment-rail-bg: oklch(0.24 0.005 240); --cngx-step-pill-segment-fill-active: oklch(0.4 0.008 240); --cngx-step-indicator-active-color: oklch(0.98 0 0); --cngx-step-pill-segment-card-shadow: 0 1px 2px color-mix(in srgb, oklch(0 0 0) 55%, transparent); }",
+  ],
 }
 `;
 
