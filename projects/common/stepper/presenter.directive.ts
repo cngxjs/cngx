@@ -158,7 +158,7 @@ export class CngxStepperPresenter implements CngxStepperHost {
    * `select*` / `clamp` / `activeStepId` lookup - never re-filter
    * `flatSteps()`.
    */
-  private readonly stepsOnly: Signal<readonly CngxStepNode[]> = computed(
+  readonly stepsOnly: Signal<readonly CngxStepNode[]> = computed(
     () => this.flatSteps().filter((n) => n.kind === 'step'),
     { equal: flatStepsEqual },
   );

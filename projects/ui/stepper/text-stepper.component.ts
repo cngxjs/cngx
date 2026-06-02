@@ -58,10 +58,7 @@ export class CngxTextStepper {
   protected readonly presenter = inject(CNGX_STEPPER_HOST);
   protected readonly i18n = injectStepperI18n();
 
-  protected readonly stepNodes: Signal<readonly CngxStepNode[]> = computed(
-    () => this.presenter.flatSteps().filter((n) => n.kind === 'step'),
-    { equal: (a, b) => a.length === b.length && a.every((n, i) => n.id === b[i].id) },
-  );
+  protected readonly stepNodes: Signal<readonly CngxStepNode[]> = this.presenter.stepsOnly;
 
   protected readonly totalSteps = computed<number>(() => this.stepNodes().length);
 

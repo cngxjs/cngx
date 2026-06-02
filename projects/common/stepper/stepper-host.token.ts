@@ -61,6 +61,15 @@ export interface CngxStepRegistration {
 export interface CngxStepperHost {
   readonly stepTree: Signal<readonly CngxStepNode[]>;
   readonly flatSteps: Signal<readonly CngxStepNode[]>;
+  /**
+   * Step-only flat projection (group nodes filtered out).
+   * Structural-equal via `flatStepsEqual`; the single source for any
+   * step-count / step-position lookup. Variants and skin organisms
+   * read this rather than re-filtering `flatSteps()` per CD tick.
+   *
+   * @category common/stepper
+   */
+  readonly stepsOnly: Signal<readonly CngxStepNode[]>;
   readonly activeStepIndex: Signal<number>;
   readonly activeStepId: Signal<string | null>;
   readonly linear: Signal<boolean>;

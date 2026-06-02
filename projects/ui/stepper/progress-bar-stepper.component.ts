@@ -5,14 +5,12 @@ import {
   computed,
   inject,
   input,
-  type Signal,
 } from '@angular/core';
 
 import {
   CngxStepperPresenter,
   CNGX_STEPPER_HOST,
   injectStepperI18n,
-  type CngxStepNode,
 } from '@cngx/common/stepper';
 import { CngxProgress } from '@cngx/ui/feedback';
 
@@ -70,13 +68,8 @@ export class CngxProgressBarStepper {
   protected readonly presenter = inject(CNGX_STEPPER_HOST);
   protected readonly i18n = injectStepperI18n();
 
-  protected readonly flatSteps: Signal<readonly CngxStepNode[]> = this.presenter.flatSteps;
-
   /** Total step count (group nodes excluded). */
-  protected readonly totalSteps = computed<number>(
-    () => this.flatSteps().filter((n) => n.kind === 'step').length,
-    { equal: Object.is },
-  );
+  protected readonly totalSteps = computed<number>(() => this.presenter.stepsOnly().length);
 
   /** 1-based active position used in the caption format. */
   protected readonly currentStep = computed<number>(() => {

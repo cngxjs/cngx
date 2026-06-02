@@ -66,13 +66,7 @@ export class CngxDotStepper {
   protected readonly presenter = inject(CNGX_STEPPER_HOST);
   protected readonly i18n = injectStepperI18n();
 
-  protected readonly flatSteps: Signal<readonly CngxStepNode[]> = this.presenter.flatSteps;
-
-  protected readonly stepNodes = computed<readonly CngxStepNode[]>(
-    () => this.flatSteps().filter((n) => n.kind === 'step'),
-    { equal: (a, b) => a.length === b.length && a.every((n, i) => n.id === b[i].id) },
-  );
-
+  protected readonly stepNodes: Signal<readonly CngxStepNode[]> = this.presenter.stepsOnly;
   protected readonly activeIndex = computed<number>(() => this.presenter.activeStepIndex());
 
   protected isActive(node: CngxStepNode, index: number): boolean {

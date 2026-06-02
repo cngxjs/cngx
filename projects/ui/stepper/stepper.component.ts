@@ -44,7 +44,6 @@ import {
   CNGX_STEPPER_HOST,
   createStepperTemplateBindings,
   resolveStepperStatusLabel,
-  flatStepsEqual,
   injectStepperConfig,
   injectStepperI18n,
   type CngxStepNode,
@@ -210,15 +209,7 @@ export class CngxStepper implements CngxStepPanelHost {
   readonly flatSteps: Signal<readonly CngxStepNode[]> = this.presenter.flatSteps;
   readonly activeStepIndex: Signal<number> = this.presenter.activeStepIndex;
   readonly activeStepId: Signal<string | null> = this.presenter.activeStepId;
-
-  /**
-   * Step-only flat projection (group nodes filtered out). Structural equal
-   * via `flatStepsEqual` - downstream consumers don't re-walk on shape-stable
-   * `flatSteps()` re-emits.
-   */
-  protected readonly stepsOnly = computed(() => this.flatSteps().filter((n) => n.kind === 'step'), {
-    equal: flatStepsEqual,
-  });
+  protected readonly stepsOnly: Signal<readonly CngxStepNode[]> = this.presenter.stepsOnly;
 
   /**
    * Position in the step-only flat projection. Group nodes carry `-1`;
