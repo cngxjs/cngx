@@ -796,6 +796,31 @@
       --cngx-step-indicator-active-color: currentColor;
     }
 
+    /* Dark-mode tone-mapping. Light-mode bias is a soft warm-tinted
+       white; against a dark page the active card flips to a muted
+       primary surface with explicit white text and indicator glyph
+       so the active row stays clearly distinguished from the rail
+       instead of producing the translucent grey-on-grey collision a
+       plain currentColor mix had. Rail stays a low-opacity light tint
+       so the segmented-control silhouette survives on dark pages. */
+    @media (prefers-color-scheme: dark) {
+      :scope {
+        --cngx-step-pill-segment-rail-bg: color-mix(in srgb, currentColor 10%, transparent);
+        --cngx-step-pill-segment-fill-active: color-mix(
+          in srgb,
+          var(--cngx-color-primary, oklch(0.66 0.19 50)) 90%,
+          oklch(0 0 0) 10%
+        );
+        --cngx-step-indicator-active-color: oklch(1 0 0);
+        --cngx-step-pill-segment-card-shadow: 0 1px 2px color-mix(in srgb, oklch(0 0 0) 50%, transparent),
+          0 1px 1px color-mix(in srgb, oklch(0 0 0) 35%, transparent);
+      }
+
+      .cngx-stepper__step[aria-current='step'] {
+        color: oklch(1 0 0);
+      }
+    }
+
     .cngx-stepper__strip {
       gap: 0.25rem;
       padding: 0.25rem;
@@ -981,19 +1006,5 @@
 @media (prefers-reduced-motion: reduce) {
   .cngx-stepper__mobile-dot {
     transition: none;
-  }
-}
-
-/* Dark-mode tone-mapping for the pill-segment skin. The light-mode
-   defaults bias toward a soft warm-tinted white surface; against a
-   dark page that white would clip, so lift the rail and active card
-   toward currentColor instead. The shadow stays neutral but deepens
-   so the card still reads as elevated on a dark surface. */
-@media (prefers-color-scheme: dark) {
-  .cngx-stepper[data-skin='pill-segment'] {
-    --cngx-step-pill-segment-rail-bg: color-mix(in srgb, currentColor 12%, transparent);
-    --cngx-step-pill-segment-fill-active: color-mix(in srgb, currentColor 22%, transparent);
-    --cngx-step-pill-segment-card-shadow: 0 1px 2px color-mix(in srgb, oklch(0 0 0) 45%, transparent),
-      0 1px 1px color-mix(in srgb, oklch(0 0 0) 35%, transparent);
   }
 }
