@@ -97,13 +97,14 @@
   }
 
   /**
-   * Focus-ring outline shorthand.
+   * Focus-ring outline shorthand. Matches the cngx focus convention
+   * from `@cngx/core/theming/reset.css` - 2px solid primary ember.
    * @group State / Focus
    */
   @property --cngx-step-focus-ring {
     syntax: '*';
     inherits: false;
-    initial-value: 2px solid currentColor;
+    initial-value: 2px solid oklch(0.66 0.19 50);
   }
 
   /**
@@ -384,6 +385,13 @@
       var(--cngx-step-rejection-outline-color, oklch(0.62 0.15 60));
     outline-offset: var(--cngx-step-rejection-outline-offset, 2px);
     background: var(--cngx-step-rejection-bg, transparent);
+  }
+
+  /* Status pill - hidden by default; opted in by the
+     `stripe-status-rich` skin via `.cngx-stepper[data-skin] .cngx-
+     stepper__status-pill { display: inline-flex; ... }`. */
+  .cngx-stepper__status-pill {
+    display: none;
   }
 
   .cngx-stepper__rejection-icon {

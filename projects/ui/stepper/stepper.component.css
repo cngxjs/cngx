@@ -154,40 +154,40 @@
   }
 
   /**
-   * Background of the active indicator disc - defaults to
-   * `currentColor` so consumers theme via the surrounding text color.
+   * Background of the active indicator disc. Material consumers
+   * override this upstream; un-themed consumers leave it unset so the
+   * downstream `--cngx-step-active-fill` cascade lands on
+   * `--cngx-color-primary` (or the baked-in primary blue). Not
+   * registered as `@property` on purpose - the previous
+   * `initial-value: currentColor` defeated the fallback chain by
+   * always returning `currentColor` from `var(--cngx-step-active-color,
+   * fallback)`.
    * @group State / Active
    */
-  @property --cngx-step-active-color {
-    syntax: '*';
-    inherits: true;
-    initial-value: currentColor;
-  }
 
   /**
-   * Resolved fill of the active indicator disc. Cascades through
-   * `--cngx-step-active-color`, then the cngx primary palette token,
-   * then a baked-in primary blue. Material consumers override
-   * `--cngx-step-active-color` upstream and inherit transparently.
+   * Resolved fill of the active indicator disc. Defaults to the
+   * cngx ember primary (matching `--cngx-color-primary`). Consumers
+   * override via `--cngx-step-active-fill` directly, or upstream
+   * via `--cngx-step-active-color` (the consuming rule's `var()`
+   * chain threads through both). Baked-in fallback matches the
+   * cngx primary so the un-themed disc fits the foundation palette.
    * @group State / Active
    * @see [[--cngx-step-active-color]]
    */
   @property --cngx-step-active-fill {
-    syntax: '*';
+    syntax: '<color>';
     inherits: true;
-    initial-value: var(--cngx-step-active-color, var(--cngx-color-primary, oklch(0.55 0.18 250)));
+    initial-value: oklch(0.66 0.19 50);
   }
 
   /**
-   * Background of the pending indicator disc - same as active by
-   * default so the visual reads as "you're here, work in progress".
+   * Background of the pending indicator disc - same cascade as
+   * `--cngx-step-active-fill`. Not registered as `@property` for the
+   * same fallback-cascade reason; consumer overrides still work via
+   * the standard custom-property cascade.
    * @group State / Pending
    */
-  @property --cngx-step-pending-color {
-    syntax: '*';
-    inherits: true;
-    initial-value: currentColor;
-  }
 
   /**
    * Background tint applied on hover of an enabled step.
@@ -243,8 +243,8 @@
        corner-overlay inside the indicator wrapper. */
     .cngx-stepper__indicator .cngx-stepper__badge {
       position: absolute;
-      top: -4px;
-      right: -4px;
+      top: -8px;
+      right: -8px;
       margin-inline-start: 0;
     }
 
@@ -268,8 +268,10 @@
     }
 
     .cngx-stepper__indicator[data-state='error'] {
-      background: var(--cngx-step-errored-color, var(--cngx-color-danger, oklch(0.45 0.15 25)));
-      color: var(--cngx-step-indicator-active-color, oklch(1 0 0));
+      background: transparent;
+      color: var(--cngx-step-errored-color, var(--cngx-color-danger, oklch(0.45 0.15 25)));
+      box-shadow: inset 0 0 0 1px
+        var(--cngx-step-errored-color, var(--cngx-color-danger, oklch(0.45 0.15 25)));
     }
 
     .cngx-stepper__indicator[data-state='disabled'] {
@@ -280,12 +282,12 @@
     }
 
     .cngx-stepper__step[aria-current='step'] .cngx-stepper__indicator {
-      background: var(--cngx-step-active-fill, var(--cngx-step-active-color, currentColor));
+      background: var(--cngx-step-active-color, var(--cngx-step-active-fill));
       color: var(--cngx-step-indicator-active-color, oklch(1 0 0));
     }
 
     .cngx-stepper__step[aria-busy='true'] .cngx-stepper__indicator {
-      background: var(--cngx-step-pending-color, var(--cngx-step-active-color, currentColor));
+      background: var(--cngx-step-pending-color, var(--cngx-step-active-color, var(--cngx-step-active-fill)));
       animation: cngx-stepper-pulse 1.2s ease-in-out infinite;
     }
 
@@ -320,18 +322,18 @@
    * Fill of the active dot in the linear-minimal skin. Falls back to
    * the canonical active-fill so Material consumers inherit primary
    * tones without per-skin overrides.
-   * @group State / Active
+   * @group Skin / linear-minimal
    */
   @property --cngx-step-linear-dot-fill {
     syntax: '*';
     inherits: true;
-    initial-value: var(--cngx-step-active-fill, var(--cngx-color-primary, oklch(0.55 0.18 250)));
+    initial-value: oklch(0.66 0.19 50);
   }
 
   /**
    * Background of the status pill on the `stripe-status-rich` skin
    * when the step is upcoming. Soft-neutral surface tone.
-   * @group State / Resting
+   * @group Skin / stripe-status-rich
    */
   @property --cngx-step-status-pill-bg-upcoming {
     syntax: '*';
@@ -342,38 +344,38 @@
   /**
    * Background of the status pill while the step is active /
    * in-progress.
-   * @group State / Active
+   * @group Skin / stripe-status-rich
    */
   @property --cngx-step-status-pill-bg-in-progress {
     syntax: '*';
     inherits: false;
-    initial-value: var(--cngx-step-active-fill, var(--cngx-color-primary, oklch(0.55 0.18 250)));
+    initial-value: oklch(0.66 0.19 50);
   }
 
   /**
    * Background of the status pill once the step is completed.
-   * @group State / Completed
+   * @group Skin / stripe-status-rich
    */
   @property --cngx-step-status-pill-bg-done {
     syntax: '*';
     inherits: false;
-    initial-value: var(--cngx-step-completed-color, var(--cngx-color-success, oklch(0.5 0.15 145)));
+    initial-value: oklch(0.5 0.15 145);
   }
 
   /**
    * Background of the status pill when the step is errored.
-   * @group State / Error
+   * @group Skin / stripe-status-rich
    */
   @property --cngx-step-status-pill-bg-errored {
     syntax: '*';
     inherits: false;
-    initial-value: var(--cngx-step-errored-color, var(--cngx-color-danger, oklch(0.45 0.15 25)));
+    initial-value: oklch(0.45 0.15 25);
   }
 
   /**
    * Text color of the status pill on the active / completed / errored
    * states. Hits the filled pill background.
-   * @group State / Active
+   * @group Skin / stripe-status-rich
    */
   @property --cngx-step-status-pill-color {
     syntax: '<color>';
@@ -384,49 +386,50 @@
   /**
    * Fill of the chevron tile while the step is active on the
    * `path-chevron` skin.
-   * @group State / Active
+   * @group Skin / path-chevron
    */
   @property --cngx-step-chevron-tile-active {
     syntax: '*';
     inherits: false;
-    initial-value: var(--cngx-step-active-fill, var(--cngx-color-primary, oklch(0.55 0.18 250)));
+    initial-value: oklch(0.66 0.19 50);
   }
 
   /**
    * Fill of the chevron tile once the step is completed.
-   * @group State / Completed
+   * @group Skin / path-chevron
    */
   @property --cngx-step-chevron-tile-completed {
     syntax: '*';
     inherits: false;
-    initial-value: color-mix(in srgb, var(--cngx-step-completed-color, oklch(0.5 0.15 145)) 80%, transparent);
+    initial-value: color-mix(in srgb, oklch(0.5 0.15 145) 80%, transparent);
   }
 
   /**
    * Fill of the chevron tile when the step is errored.
-   * @group State / Error
+   * @group Skin / path-chevron
    */
   @property --cngx-step-chevron-tile-errored {
     syntax: '*';
     inherits: false;
-    initial-value: var(--cngx-step-errored-color, var(--cngx-color-danger, oklch(0.45 0.15 25)));
+    initial-value: oklch(0.45 0.15 25);
   }
 
   /**
-   * Border color of the upcoming chevron tile (transparent fill,
-   * outlined border).
-   * @group State / Resting
+   * Fill of the upcoming chevron tile - soft surface tint so the
+   * chevron silhouette stays visible without competing with the
+   * active state.
+   * @group Skin / path-chevron
    */
-  @property --cngx-step-chevron-tile-upcoming-border {
-    syntax: '<color>';
+  @property --cngx-step-chevron-tile-upcoming-bg {
+    syntax: '*';
     inherits: false;
-    initial-value: color-mix(in srgb, currentColor 25%, transparent);
+    initial-value: color-mix(in srgb, currentColor 8%, transparent);
   }
 
   /**
    * Text color of the chevron tile in the filled (active / completed
    * / errored) states.
-   * @group State / Active
+   * @group Skin / path-chevron
    */
   @property --cngx-step-chevron-tile-color {
     syntax: '<color>';
@@ -437,7 +440,7 @@
   /**
    * Border-radius of the `pill-segment` skin container - rounds the
    * entire rail rather than per-step.
-   * @group Layout
+   * @group Skin / pill-segment
    */
   @property --cngx-step-pill-radius {
     syntax: '<length-percentage>';
@@ -446,34 +449,47 @@
   }
 
   /**
-   * Fill of the active segment in the `pill-segment` skin.
-   * @group State / Active
+   * Rail background of the `pill-segment` skin - soft surface tint
+   * the active card floats on top of.
+   * @group Skin / pill-segment
+   */
+  @property --cngx-step-pill-segment-rail-bg {
+    syntax: '*';
+    inherits: false;
+    initial-value: color-mix(in srgb, currentColor 6%, transparent);
+  }
+
+  /**
+   * Active card surface on the `pill-segment` skin - rendered as a
+   * raised tile inside the rail (iOS-style segmented control).
+   * @group Skin / pill-segment
    */
   @property --cngx-step-pill-segment-fill-active {
     syntax: '*';
     inherits: false;
-    initial-value: var(--cngx-step-active-fill, var(--cngx-color-primary, oklch(0.55 0.18 250)));
+    initial-value: oklch(1 0 0);
   }
 
   /**
-   * Fill of the completed segment in the `pill-segment` skin.
-   * @group State / Completed
+   * Completed-segment tint - subtle ember wash so completed reads as
+   * "done" without dominating the rail.
+   * @group Skin / pill-segment
    */
   @property --cngx-step-pill-segment-fill-completed {
     syntax: '*';
     inherits: false;
-    initial-value: color-mix(in srgb, var(--cngx-step-completed-color, oklch(0.5 0.15 145)) 60%, transparent);
+    initial-value: color-mix(in srgb, oklch(0.66 0.19 50) 14%, transparent);
   }
 
   /**
-   * Divider colour between adjacent segments on the `pill-segment`
-   * skin.
-   * @group Surface
+   * Shadow on the active card in the `pill-segment` skin.
+   * @group Skin / pill-segment
    */
-  @property --cngx-step-pill-segment-divider {
-    syntax: '<color>';
+  @property --cngx-step-pill-segment-card-shadow {
+    syntax: '*';
     inherits: false;
-    initial-value: color-mix(in srgb, currentColor 12%, transparent);
+    initial-value: 0 1px 2px color-mix(in srgb, currentColor 12%, transparent),
+      0 1px 1px color-mix(in srgb, currentColor 8%, transparent);
   }
 }
 
@@ -581,12 +597,11 @@
   @scope (.cngx-stepper[data-skin='stripe-status-rich']) {
     .cngx-stepper__step {
       flex-direction: column;
-      align-items: flex-start;
+      align-items: center;
       gap: 0.375rem;
     }
 
-    .cngx-stepper__step::after {
-      content: var(--cngx-step-status-pill-text-upcoming, 'Up next');
+    .cngx-stepper__status-pill {
       display: inline-flex;
       align-items: center;
       padding: 0.125rem 0.5rem;
@@ -599,20 +614,17 @@
       text-transform: none;
     }
 
-    .cngx-stepper__step[aria-current='step']::after {
-      content: var(--cngx-step-status-pill-text-in-progress, 'In progress');
+    .cngx-stepper__step[aria-current='step'] .cngx-stepper__status-pill {
       background: var(--cngx-step-status-pill-bg-in-progress);
       color: var(--cngx-step-status-pill-color, oklch(1 0 0));
     }
 
-    .cngx-stepper__step:has(.cngx-stepper__indicator[data-state='success'])::after {
-      content: var(--cngx-step-status-pill-text-done, 'Done');
+    .cngx-stepper__step:has(.cngx-stepper__indicator[data-state='success']) .cngx-stepper__status-pill {
       background: var(--cngx-step-status-pill-bg-done);
       color: var(--cngx-step-status-pill-color, oklch(1 0 0));
     }
 
-    .cngx-stepper__step:has(.cngx-stepper__indicator[data-state='error'])::after {
-      content: var(--cngx-step-status-pill-text-errored, 'Errored');
+    .cngx-stepper__step:has(.cngx-stepper__indicator[data-state='error']) .cngx-stepper__status-pill {
       background: var(--cngx-step-status-pill-bg-errored);
       color: var(--cngx-step-status-pill-color, oklch(1 0 0));
     }
@@ -626,26 +638,31 @@
    */
   @scope (.cngx-stepper[data-skin='path-chevron']) {
     .cngx-stepper__strip {
-      gap: 0;
+      gap: 0.125rem;
     }
 
     .cngx-stepper__step {
+      flex: 1 1 0;
       clip-path: polygon(0 0, calc(100% - 0.75rem) 0, 100% 50%, calc(100% - 0.75rem) 100%, 0 100%, 0.75rem 50%);
       padding-inline: calc(var(--cngx-step-padding-inline, 0.75rem) + 0.75rem);
-      background: transparent;
+      justify-content: center;
+      text-align: center;
+      background: var(--cngx-step-chevron-tile-upcoming-bg, color-mix(in srgb, currentColor 8%, transparent));
       color: color-mix(in srgb, currentColor 80%, transparent);
-      border: 1px solid var(--cngx-step-chevron-tile-upcoming-border, color-mix(in srgb, currentColor 25%, transparent));
+      border: 0;
       transition: background-color 120ms ease, color 120ms ease;
+    }
+
+    .cngx-stepper__step .cngx-stepper__label {
+      flex: 0 0 auto;
     }
 
     .cngx-stepper__step:first-child {
       clip-path: polygon(0 0, calc(100% - 0.75rem) 0, 100% 50%, calc(100% - 0.75rem) 100%, 0 100%);
-      padding-inline-start: var(--cngx-step-padding-inline, 0.75rem);
     }
 
     .cngx-stepper__step:last-child {
       clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 0.75rem 50%);
-      padding-inline-end: var(--cngx-step-padding-inline, 0.75rem);
     }
 
     .cngx-stepper__step:only-child {
@@ -655,29 +672,35 @@
     .cngx-stepper__step[aria-current='step'] {
       background: var(--cngx-step-chevron-tile-active);
       color: var(--cngx-step-chevron-tile-color, oklch(1 0 0));
-      border-color: transparent;
     }
 
     .cngx-stepper__step:has(.cngx-stepper__indicator[data-state='success']) {
       background: var(--cngx-step-chevron-tile-completed);
       color: var(--cngx-step-chevron-tile-color, oklch(1 0 0));
-      border-color: transparent;
     }
 
     .cngx-stepper__step:has(.cngx-stepper__indicator[data-state='error']) {
       background: var(--cngx-step-chevron-tile-errored);
       color: var(--cngx-step-chevron-tile-color, oklch(1 0 0));
-      border-color: transparent;
     }
 
-    /* The clipped tile already encodes state; the indicator disc only
-       adds noise on this skin, so collapse it to the glyph. */
+    /* The chevron tile is the state indicator; the default numbered
+       glyph and the completed-check pseudo-element add noise on this
+       skin. Consumer slot templates (`*cngxStepIndicator`) still
+       render because they don't carry the `.cngx-stepper__indicator-
+       glyph` class. */
     .cngx-stepper__indicator {
       background: transparent;
       width: auto;
       height: auto;
       padding: 0;
       border: 0;
+    }
+    .cngx-stepper__indicator-glyph {
+      display: none;
+    }
+    .cngx-stepper__indicator[data-state='success']::before {
+      content: none;
     }
   }
 
@@ -697,60 +720,85 @@
   }
 
   /**
-   * Pill-segment: a single rounded rail with each step as a flex
-   * segment. 1px divider between segments via `::after`. Active
-   * segment fills primary, completed with success-tint, errored
-   * inherits the classic errored fill.
+   * Pill-segment: iOS-style segmented control. A soft-tinted rail
+   * carries each step as a flex segment; the active step renders as
+   * a raised card with a subtle shadow, completed segments carry a
+   * faint ember wash, upcoming segments are plain text. No dividers
+   * between segments - the card-vs-rail contrast is the only state
+   * separator.
    */
   @scope (.cngx-stepper[data-skin='pill-segment']) {
     .cngx-stepper__strip {
-      gap: 0;
-      padding: 0;
+      gap: 0.25rem;
+      padding: 0.25rem;
       border-radius: var(--cngx-step-pill-radius, 999px);
+      background: var(--cngx-step-pill-segment-rail-bg);
+      border: 0;
       overflow: hidden;
-      border: 1px solid var(--cngx-step-pill-segment-divider, color-mix(in srgb, currentColor 12%, transparent));
     }
 
     .cngx-stepper__step {
-      position: relative;
       flex: 1 1 0;
       justify-content: center;
+      text-align: center;
       background: transparent;
-      transition: background-color 120ms ease, color 120ms ease;
+      border-radius: 9999px;
+      color: color-mix(in srgb, currentColor 70%, transparent);
+      transition: background-color 120ms ease, color 120ms ease, box-shadow 120ms ease;
     }
 
-    .cngx-stepper__step:not(:last-child)::after {
-      content: '';
-      position: absolute;
-      top: 25%;
-      bottom: 25%;
-      right: 0;
-      width: 1px;
-      background: var(--cngx-step-pill-segment-divider, color-mix(in srgb, currentColor 12%, transparent));
+    .cngx-stepper__step .cngx-stepper__label {
+      flex: 0 0 auto;
     }
 
     .cngx-stepper__step[aria-current='step'] {
       background: var(--cngx-step-pill-segment-fill-active);
-      color: var(--cngx-step-indicator-active-color, oklch(1 0 0));
+      color: currentColor;
+      box-shadow: var(--cngx-step-pill-segment-card-shadow);
     }
 
     .cngx-stepper__step:has(.cngx-stepper__indicator[data-state='success']) {
       background: var(--cngx-step-pill-segment-fill-completed);
-      color: var(--cngx-step-indicator-active-color, oklch(1 0 0));
+      color: var(--cngx-step-completed-color, oklch(0.5 0.15 145));
     }
 
     .cngx-stepper__step:has(.cngx-stepper__indicator[data-state='error']) {
-      background: var(--cngx-step-errored-color, var(--cngx-color-danger, oklch(0.45 0.15 25)));
-      color: var(--cngx-step-indicator-active-color, oklch(1 0 0));
+      background: transparent;
+      color: var(--cngx-step-errored-color, var(--cngx-color-danger, oklch(0.45 0.15 25)));
+      box-shadow: inset 0 0 0 1px
+        var(--cngx-step-errored-color, var(--cngx-color-danger, oklch(0.45 0.15 25)));
     }
 
-    /* The pill rail already encodes state via segment fill; collapse
-       the indicator disc to its glyph slot. */
+    /* Inset focus-ring stays inside the segment pill instead of
+       spilling into the surrounding rail. Color matches the cngx
+       focus convention. */
+    .cngx-stepper__step:focus-visible {
+      outline: 0;
+      box-shadow: inset 0 0 0 2px var(--cngx-color-primary, oklch(0.66 0.19 50));
+    }
+
+    /* Active card already carries its own shadow; layer the focus
+       ring on top so both render. */
+    .cngx-stepper__step[aria-current='step']:focus-visible {
+      box-shadow:
+        var(--cngx-step-pill-segment-card-shadow),
+        inset 0 0 0 2px var(--cngx-color-primary, oklch(0.66 0.19 50));
+    }
+
+    /* The pill rail conveys state via the active card; hide the
+       default numbered glyph and the completed-check pseudo. Consumer
+       slot templates remain available via `*cngxStepIndicator`. */
     .cngx-stepper__indicator {
       background: transparent;
       width: auto;
       height: auto;
       border: 0;
+    }
+    .cngx-stepper__indicator-glyph {
+      display: none;
+    }
+    .cngx-stepper__indicator[data-state='success']::before {
+      content: none;
     }
   }
 }
@@ -769,4 +817,17 @@
   50% {
     opacity: 0.6;
   }
+}
+
+/* Unlayered focus override for clip-path skins. The base outline
+   rule lives in `@layer cngx.components` and renders as a rectangular
+   halo around the chevron silhouette (clip-path doesn't affect the
+   outline render box). Unlayered rules beat all layered ones; with
+   `!important` the consumer override path is also closed. The visible
+   focus indicator is an inset box-shadow that follows the chevron
+   silhouette inside the clip. */
+.cngx-stepper[data-skin='path-chevron'] .cngx-stepper__step:focus-visible {
+  outline: 0 !important;
+  outline-offset: 0 !important;
+  box-shadow: inset 0 0 0 2px var(--cngx-color-primary, oklch(0.66 0.19 50));
 }

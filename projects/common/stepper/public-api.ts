@@ -114,10 +114,8 @@ export {
   withStepperI18nLabels,
 } from './i18n/stepper-i18n';
 
-export {
-  type CngxStepperStatusPillCssTexts,
-  createStepperStatusPillCssTexts,
-} from './status-pill-style';
+export { resolveStepperStatusLabel } from './status-label';
+
 
 export {
   CNGX_STEPPER_COMMIT_HANDLER_FACTORY,
