@@ -89,6 +89,7 @@ export {
   injectStepperConfig,
   provideStepperConfig,
   provideStepperConfigAt,
+  STEPPER_DEFAULT_MOBILE_BREAKPOINT,
   withStepperDefaultOrientation,
   withStepperAriaLabels,
   withStepperCommitMode,

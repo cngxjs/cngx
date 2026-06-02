@@ -1,6 +1,7 @@
 <cngx-progress
   class="cngx-progress-bar-stepper__bar"
   [progress]="completedPercent()"
+  [label]="captionText()"
 ></cngx-progress>
 @if (showStepCount()) {
   <span class="cngx-progress-bar-stepper__caption">{{ captionText() }}</span>

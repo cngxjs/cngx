@@ -81,6 +81,16 @@ export type CngxStepperSkin =
 export type CngxStepperMobileCollapse = 'text' | 'dots' | 'off';
 
 /**
+ * Default media query the mobile auto-collapse policy reacts to. The
+ * literal lives on a single exported const so the runtime, the config
+ * default, and any JSDoc cross-references stay in lockstep. Consumers
+ * override the query via {@link withStepperMobileBreakpoint}.
+ *
+ * @category common/stepper
+ */
+export const STEPPER_DEFAULT_MOBILE_BREAKPOINT = '(max-width: 480px)';
+
+/**
  * Stepper config surface. Resolution priority: per-instance Input
  * > `provideStepperConfigAt` (viewProviders) > `provideStepperConfig`
  * (root) > library default. Canonical cngx config shape.
@@ -97,8 +107,8 @@ export interface CngxStepperConfig {
   readonly mobileCollapse?: CngxStepperMobileCollapse;
   /**
    * Media query the mobile auto-collapse policy reacts to. Default
-   * `'(max-width: 480px)'`. Tablet consumers can re-aim the trigger
-   * via {@link withStepperMobileBreakpoint}.
+   * {@link STEPPER_DEFAULT_MOBILE_BREAKPOINT}. Tablet consumers can
+   * re-aim the trigger via {@link withStepperMobileBreakpoint}.
    */
   readonly mobileBreakpoint?: string;
   readonly ariaLabels?: CngxStepperAriaLabels;
@@ -121,7 +131,7 @@ const STEPPER_CONFIG_DEFAULTS: Required<
   routerSyncParam: 'step',
   skin: 'classic',
   mobileCollapse: 'text',
-  mobileBreakpoint: '(max-width: 480px)',
+  mobileBreakpoint: STEPPER_DEFAULT_MOBILE_BREAKPOINT,
   ariaLabels: {
     stepperRegion: 'Stepper',
   },

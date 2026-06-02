@@ -25,6 +25,7 @@ import {
   CNGX_STEP_PANEL_HOST,
   createStepperDisplayMode,
   CngxStep,
+  STEPPER_DEFAULT_MOBILE_BREAKPOINT,
   CngxStepBadge,
   type CngxStepBadgeContext,
   CngxStepBusySpinner,
@@ -166,7 +167,7 @@ export class CngxStepper implements CngxStepPanelHost {
     config: this.config,
   });
 
-  protected readonly displayMode = createStepperDisplayMode(this.config.mobileBreakpoint!, () => this.config.mobileCollapse, inject(DestroyRef));
+  protected readonly displayMode = createStepperDisplayMode(this.config.mobileBreakpoint ?? STEPPER_DEFAULT_MOBILE_BREAKPOINT, () => this.config.mobileCollapse, inject(DestroyRef));
   protected readonly mobileTextLabel = computed<string>(() => this.i18n.textStepperFormat(this.activeStepIndex() + 1, this.stepsOnly().length));
 
   constructor() {
