@@ -450,44 +450,48 @@
 
   /**
    * Rail background of the `pill-segment` skin - soft surface tint
-   * the active card floats on top of.
+   * the active card floats on top of. Inherits so the host-set value
+   * reaches the strip descendant that paints it.
    * @group Skin / pill-segment
    */
   @property --cngx-step-pill-segment-rail-bg {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: color-mix(in srgb, currentColor 6%, transparent);
   }
 
   /**
    * Active card surface on the `pill-segment` skin - rendered as a
-   * raised tile inside the rail (iOS-style segmented control).
+   * raised tile inside the rail (iOS-style segmented control). Inherits
+   * so the host-set value reaches the step descendant that paints it.
    * @group Skin / pill-segment
    */
   @property --cngx-step-pill-segment-fill-active {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: oklch(1 0 0);
   }
 
   /**
    * Completed-segment tint - subtle ember wash so completed reads as
-   * "done" without dominating the rail.
+   * "done" without dominating the rail. Inherits so the host-set value
+   * reaches the step descendant that paints it.
    * @group Skin / pill-segment
    */
   @property --cngx-step-pill-segment-fill-completed {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: color-mix(in srgb, oklch(0.66 0.19 50) 14%, transparent);
   }
 
   /**
-   * Shadow on the active card in the `pill-segment` skin.
+   * Shadow on the active card in the `pill-segment` skin. Inherits so
+   * the host-set value reaches the step descendant that paints it.
    * @group Skin / pill-segment
    */
   @property --cngx-step-pill-segment-card-shadow {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0 1px 2px color-mix(in srgb, currentColor 12%, transparent),
       0 1px 1px color-mix(in srgb, currentColor 8%, transparent);
   }
