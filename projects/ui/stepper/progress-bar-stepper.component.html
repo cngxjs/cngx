@@ -1,7 +1,7 @@
 <cngx-progress
   class="cngx-progress-bar-stepper__bar"
   [progress]="completedPercent()"
-  [attr.aria-label]="captionText()"
+  [label]="captionText()"
 ></cngx-progress>
 @if (showStepCount()) {
   <span class="cngx-progress-bar-stepper__caption">{{ captionText() }}</span>

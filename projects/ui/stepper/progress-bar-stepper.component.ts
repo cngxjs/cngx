@@ -44,7 +44,7 @@ import { CngxProgress } from '@cngx/ui/feedback';
   hostDirectives: [
     {
       directive: CngxStepperPresenter,
-      inputs: ['activeStepIndex', 'linear', 'orientation'],
+      inputs: ['activeStepIndex', 'linear'],
       outputs: ['activeStepIndexChange'],
     },
   ],
@@ -81,9 +81,8 @@ export class CngxProgressBarStepper {
   });
 
   /**
-   * Completion percentage 0-100. Reads `(active / max(total - 1, 1)) * 100`
-   * so the final step renders the bar full. Equality is `Object.is` per
-   * the cngx primitive-number computed rule.
+   * Completion percentage 0-100. `(active / max(total - 1, 1)) * 100`
+   * so the final step renders the bar full.
    */
   protected readonly completedPercent = computed<number>(() => {
     const total = this.totalSteps();
@@ -92,7 +91,7 @@ export class CngxProgressBarStepper {
     }
     const denominator = Math.max(total - 1, 1);
     return Math.max(0, Math.min(100, (this.presenter.activeStepIndex() / denominator) * 100));
-  }, { equal: Object.is });
+  });
 
   protected readonly captionText = computed<string>(() =>
     this.i18n.textStepperFormat(this.currentStep(), this.totalSteps()),

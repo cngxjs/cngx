@@ -17,7 +17,7 @@ export function createMobileViewportSignal(
   destroyRef: DestroyRef,
 ): Signal<boolean> {
   const matches = signal<boolean>(false);
-  if (globalThis.window === undefined || typeof globalThis.matchMedia !== 'function') {
+  if (typeof globalThis.matchMedia !== 'function') {
     return matches.asReadonly();
   }
   const mql = globalThis.matchMedia(mediaQuery);
