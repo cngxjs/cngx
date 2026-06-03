@@ -4,11 +4,25 @@ import {
   computed,
   inject,
   input,
+  type Signal,
   ViewEncapsulation,
 } from '@angular/core';
 
-import { CNGX_STEPPER_HOST, type CngxStepperHost } from './stepper-host.token';
+import { CNGX_STEPPER_HOST, type CngxStepNode } from './stepper-host.token';
 import { injectStepperI18n } from './i18n/stepper-i18n';
+
+/**
+ * Minimal contract `CngxStepperCount` reads off the host. A full
+ * {@link CngxStepperHost} satisfies it, but consumers can also supply
+ * a narrower stub (useful in tests, custom layouts, or non-standard
+ * step containers that surface just these two signals).
+ *
+ * @category common/stepper
+ */
+export interface CngxStepperCountHost {
+  readonly activeStepIndex: Signal<number>;
+  readonly stepsOnly: Signal<readonly CngxStepNode[]>;
+}
 
 /**
  * Reusable progress-hint atom for any stepper organism. Renders the
@@ -72,13 +86,14 @@ export class CngxStepperCount {
    * by exporting the stepper as a template ref:
    * `<cngx-stepper #s="cngxStepper">` then `[host]="s.presenter"`.
    * When unset, the atom injects the ambient `CNGX_STEPPER_HOST` from
-   * its DI tree.
+   * its DI tree. Accepts {@link CngxStepperCountHost} so a narrow stub
+   * (active index + steps signal) also fits.
    */
-  readonly host = input<CngxStepperHost | null>(null);
+  readonly host = input<CngxStepperCountHost | null>(null);
 
   private readonly injectedHost = inject(CNGX_STEPPER_HOST, { optional: true });
   private readonly i18n = injectStepperI18n();
-  private readonly resolvedHost = computed<CngxStepperHost | null>(
+  private readonly resolvedHost = computed<CngxStepperCountHost | null>(
     () => this.host() ?? this.injectedHost,
   );
 

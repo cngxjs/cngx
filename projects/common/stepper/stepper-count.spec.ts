@@ -3,15 +3,18 @@ import { TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { describe, expect, it } from 'vitest';
 
-import { CngxStepperCount } from './stepper-count';
-import { type CngxStepperHost } from './stepper-host.token';
+import { CngxStepperCount, type CngxStepperCountHost } from './stepper-count';
+import { type CngxStepNode } from './stepper-host.token';
 
-function stubHost(active: number, total: number): CngxStepperHost {
-  const steps = Array.from({ length: total }, (_, i) => ({ id: `s${i}` })) as unknown as CngxStepperHost['stepsOnly'] extends () => readonly (infer T)[] ? T[] : never;
+function stubHost(active: number, total: number): CngxStepperCountHost {
+  const steps = Array.from(
+    { length: total },
+    (_, i) => ({ id: `s${i}` }) as unknown as CngxStepNode,
+  );
   return {
     activeStepIndex: signal(active),
     stepsOnly: signal(steps),
-  } as unknown as CngxStepperHost;
+  };
 }
 
 @Component({
@@ -21,7 +24,7 @@ function stubHost(active: number, total: number): CngxStepperHost {
 })
 class CountHost {
   live = true;
-  host: CngxStepperHost | null = stubHost(0, 3);
+  host: CngxStepperCountHost | null = stubHost(0, 3);
 }
 
 describe('CngxStepperCount aria-live', () => {

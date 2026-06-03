@@ -148,7 +148,7 @@ export {
 
 export { CngxStepperSwipeNav } from './swipe-nav.directive';
 
-export { CngxStepperCount } from './stepper-count';
+export { CngxStepperCount, type CngxStepperCountHost } from './stepper-count';
 
 
 export {
