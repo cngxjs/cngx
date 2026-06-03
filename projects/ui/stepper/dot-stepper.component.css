@@ -28,13 +28,13 @@
   @property --cngx-dot-step-active-fill {
     syntax: '*';
     inherits: true;
-    initial-value: var(--cngx-step-active-fill, currentColor);
+    initial-value: var(--cngx-step-active-fill, oklch(0.66 0.19 50));
   }
 
   @property --cngx-dot-step-completed-fill {
     syntax: '*';
     inherits: true;
-    initial-value: var(--cngx-step-completed-color, currentColor);
+    initial-value: var(--cngx-step-completed-color, var(--cngx-color-success, oklch(0.5 0.15 145)));
   }
 
   @property --cngx-dot-step-upcoming-bg {
@@ -65,16 +65,16 @@
 }
 
 .cngx-dot-stepper__dot--completed {
-  background: var(--cngx-dot-step-completed-fill, currentColor);
+  background: var(--cngx-dot-step-completed-fill, var(--cngx-color-success, oklch(0.5 0.15 145)));
 }
 
 .cngx-dot-stepper__dot--active {
-  background: var(--cngx-dot-step-active-fill, currentColor);
+  background: var(--cngx-dot-step-active-fill, oklch(0.66 0.19 50));
   transform: scale(1.25);
 }
 
 .cngx-dot-stepper__dot[data-state='error'] {
-  background: var(--cngx-step-errored-color, currentColor);
+  background: var(--cngx-step-errored-color, var(--cngx-color-danger, oklch(0.45 0.15 25)));
 }
 
 /* Consumer-owned dot body via `*cngxDotStepperDot` slot - the span shell
