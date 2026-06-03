@@ -677,6 +677,11 @@
       display: flex;
       flex-wrap: nowrap;
       align-items: flex-start;
+      /* Zero gap: equal-flex slots stay flush so the rail's `-50%` anchor
+         points exactly at the previous slot's center. The inherited
+         `gap: 7px` from stepper-base would otherwise shift the prev disc
+         center left by half the gap, breaking rail symmetry. */
+      gap: 0;
     }
 
     .cngx-stepper__step {
