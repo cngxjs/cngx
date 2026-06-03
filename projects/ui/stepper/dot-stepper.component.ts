@@ -32,6 +32,16 @@ import { CngxSwipe } from '@cngx/common/interactive';
  * pattern (NOT `role="tablist"` / `role="tab"` - those are reserved
  * for parallel content panels, not sequential flow).
  *
+ * Tap-to-select is intentionally NOT wired on individual dots: under
+ * the APG pattern each dot is a label, not a button, and attaching
+ * `(click)` to `role="img"` conflates two ARIA contracts. Navigation
+ * is offered uniformly via three modalities owned by the host element:
+ * arrow / Home / End keys, the composed `CngxStepperSwipeNav` dot-row
+ * gesture, and the two-way `[(activeStepIndex)]` binding for
+ * external buttons. Consumers wanting per-dot tap-to-jump compose the
+ * parent `<cngx-stepper>` (whose mobile-collapse `dots` branch
+ * renders each dot as a `<button>`).
+ *
  * Theming flows through new `--cngx-dot-step-*` custom properties whose
  * defaults cascade through `var(--cngx-step-active-fill, ...)`, so the
  * Phase A active-fill chain reaches the dot variant without duplication.

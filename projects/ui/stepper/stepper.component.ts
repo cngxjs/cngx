@@ -28,25 +28,21 @@ import {
   CngxStep,
   STEPPER_DEFAULT_MOBILE_BREAKPOINT,
   CngxStepBadge,
-  type CngxStepBadgeContext,
   CngxStepBusySpinner,
-  type CngxStepBusySpinnerContext,
   type CngxStepContentContext,
   CngxStepGroupHeader,
-  type CngxStepGroupHeaderContext,
   CngxStepIndicator,
-  type CngxStepIndicatorContext,
   type CngxStepLabelContext,
   CngxStepperEmpty,
   CngxStepperPresenter,
   type CngxStepperMobileIndicatorPosition,
   type CngxStepperSkin,
   CngxStepRejection,
-  type CngxStepRejectionContext,
   CNGX_STEPPER_GLYPHS,
   CNGX_STEPPER_HOST,
   CngxStepperCount,
   createStepperHostAttrs,
+  createStepperSlotContextBuilders,
   createStepperStripKeyboardNav,
   createStepperTemplateBindings,
   CngxStepperSwipeNav,
@@ -223,7 +219,7 @@ export class CngxStepper implements CngxStepPanelHost {
   /** Mobile-swipe navigation host directive (Level-2 composition). */
   protected readonly swipeNav = inject(CngxStepperSwipeNav, { host: true });
 
-  protected statusLabelFor = (node: CngxStepNode): string => resolveStepperStatusLabel(node, this.i18n, this.isActive(node));
+  protected statusLabelFor = (node: CngxStepNode): string => resolveStepperStatusLabel(node, this.i18n, this.slotContext.isActive(node));
   protected readonly groupRoleDescription = computed<string>(() => this.config.fallbackLabels?.groupRoleDescription ?? 'step group');
 
   /**
@@ -256,17 +252,8 @@ export class CngxStepper implements CngxStepPanelHost {
     return node.flatIndex;
   }
 
-  protected isActive(node: CngxStepNode): boolean {
-    return node.kind === 'step' && node.id === this.activeStepId();
-  }
-
-  protected isStepBusy(node: CngxStepNode): boolean {
-    return (
-      node.kind === 'step' &&
-      this.presenter.commitState.status() === 'pending' &&
-      this.presenter.intendedStepIndex() === node.flatIndex
-    );
-  }
+  /** Per-step predicates + slot-context builders (Level-2 factory). */
+  protected readonly slotContext = createStepperSlotContextBuilders({ presenter: this.presenter, stepsOnly: this.stepsOnly });
 
   /** Commit-in-flight flag - drives the host `aria-busy` binding. Pillar 2. */
   protected readonly isCommitting = computed<boolean>(
@@ -344,77 +331,6 @@ export class CngxStepper implements CngxStepPanelHost {
     return '';
   }
 
-  /**
-   * Whether to render the error badge for a step node. Surfaces the
-   * badge whenever the step carries `data-state="error"` (via
-   * `node.state()`), not only when the optional `errorAggregator`
-   * gates it. Closes the "step 1 errors, user is on step 3, no
-   * visible cue" gap - the badge becomes the universal default cue
-   * for non-current errored steps.
-   */
-  protected showErrorBadge(node: CngxStepNode): boolean {
-    if (node.kind !== 'step') {
-      return false;
-    }
-    if (node.state() === 'error') {
-      return true;
-    }
-    return !!node.errorAggregator?.()?.shouldShow?.();
-  }
-
-  /**
-   * Render the rejection decoration when this step's flat-index matches
-   * `presenter.lastFailedIndex()`.
-   */
-  protected showRejection(node: CngxStepNode): boolean {
-    return (
-      node.kind === 'step' &&
-      node.flatIndex >= 0 &&
-      node.flatIndex === this.presenter.lastFailedIndex()
-    );
-  }
-
-  /** Build the slot context for `*cngxStepIndicator`. */
-  protected indicatorContextFor(node: CngxStepNode): CngxStepIndicatorContext {
-    const position = node.flatIndex + 1;
-    return {
-      $implicit: position,
-      position,
-      node,
-      active: this.isActive(node),
-      status: node.state(),
-      busy: this.isStepBusy(node),
-    };
-  }
-
-  /** Build the slot context for `*cngxStepBadge`. */
-  protected badgeContextFor(node: CngxStepNode): CngxStepBadgeContext {
-    const aggregator = node.errorAggregator?.();
-    const count = aggregator?.errorCount() ?? 0;
-    return { count, node };
-  }
-
-  /** Build the slot context for `*cngxStepBusySpinner`. */
-  protected busySpinnerContextFor(node: CngxStepNode): CngxStepBusySpinnerContext {
-    return { node };
-  }
-
-  /**
-   * Build the slot context for `*cngxStepRejection`. Resolves origin label
-   * from `presenter.originIndexDuringCommit()` via `stepsOnly()`.
-   */
-  protected rejectionContextFor(node: CngxStepNode): CngxStepRejectionContext {
-    const failedIndex = node.flatIndex;
-    const originIdx = this.presenter.originIndexDuringCommit();
-    const originLabel = originIdx !== undefined ? this.stepsOnly()[originIdx]?.label() : undefined;
-    return { failedIndex, originLabel, node };
-  }
-
-  /** Build the slot context for `*cngxStepGroupHeader`. */
-  protected groupHeaderContextFor(node: CngxStepNode): CngxStepGroupHeaderContext {
-    return { group: node, expanded: true, status: node.state() };
-  }
-
   protected handleHeaderClick(node: CngxStepNode): void {
     if (node.kind !== 'step' || node.disabled()) {
       return;
@@ -444,27 +360,4 @@ export class CngxStepper implements CngxStepPanelHost {
     return this.stepDirectiveById().get(id)?.contentTemplate()?.templateRef ?? null;
   }
 
-  /**
-   * Build the {@link CngxStepLabelContext} for `*cngxStepLabel`.
-   * `index` is 1-based (mirrors indicator position); group nodes
-   * (`flatIndex === -1`) yield `0` and are never iterated here.
-   */
-  protected stepLabelContextFor(node: CngxStepNode): CngxStepLabelContext {
-    return {
-      node,
-      index: node.flatIndex + 1,
-      active: this.isActive(node),
-      busy: this.isStepBusy(node),
-      disabled: node.disabled(),
-    };
-  }
-
-  /**
-   * Build the {@link CngxStepContentContext} for `*cngxStepContent`.
-   * Same shape as the label context - content templates need the same
-   * `disabled`/`busy` derivations.
-   */
-  protected stepContentContextFor(node: CngxStepNode): CngxStepContentContext {
-    return this.stepLabelContextFor(node);
-  }
 }

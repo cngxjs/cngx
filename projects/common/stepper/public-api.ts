@@ -146,6 +146,12 @@ export {
   type CngxStepperStripKeyboardNavOptions,
 } from './strip-keyboard-nav';
 
+export {
+  createStepperSlotContextBuilders,
+  type CngxStepperSlotContextBuilders,
+  type CngxStepperSlotContextBuildersInputs,
+} from './slot-context-builders';
+
 export { CngxStepperSwipeNav } from './swipe-nav.directive';
 
 export { CngxStepperCount, type CngxStepperCountHost } from './stepper-count';

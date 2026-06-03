@@ -21,12 +21,12 @@
         [id]="stepPanelId(node)"
         [attr.aria-labelledby]="stepHeaderId(node)"
         [attr.aria-describedby]="stepDescriptorId(node)"
-        [hidden]="!isActive(node)"
+        [hidden]="!slotContext.isActive(node)"
       >
         @let contentTpl = contentTemplateFor(node.id);
         @if (contentTpl) {
           <ng-container
-            *ngTemplateOutlet="contentTpl; context: stepContentContextFor(node)"
+            *ngTemplateOutlet="contentTpl; context: slotContext.stepContentContextFor(node)"
           ></ng-container>
         }
       </div>
@@ -39,9 +39,9 @@
         type="button"
         cngxRovingItem
         class="cngx-stepper__mobile-dot"
-        [class.cngx-stepper__mobile-dot--active]="isActive(node)"
+        [class.cngx-stepper__mobile-dot--active]="slotContext.isActive(node)"
         [class.cngx-stepper__mobile-dot--completed]="i < activeStepIndex()"
-        [attr.aria-current]="isActive(node) ? 'step' : null"
+        [attr.aria-current]="slotContext.isActive(node) ? 'step' : null"
         [attr.aria-label]="i18n.selectedStep(node.label(), i + 1, stepsOnly().length)"
         [attr.data-state]="node.state()"
         [attr.aria-disabled]="node.disabled() ? 'true' : null"
@@ -69,12 +69,12 @@
         [id]="stepPanelId(node)"
         [attr.aria-labelledby]="stepHeaderId(node)"
         [attr.aria-describedby]="stepDescriptorId(node)"
-        [hidden]="!isActive(node)"
+        [hidden]="!slotContext.isActive(node)"
       >
         @let contentTpl = contentTemplateFor(node.id);
         @if (contentTpl) {
           <ng-container
-            *ngTemplateOutlet="contentTpl; context: stepContentContextFor(node)"
+            *ngTemplateOutlet="contentTpl; context: slotContext.stepContentContextFor(node)"
           ></ng-container>
         }
       </div>
@@ -96,7 +96,7 @@
           <ng-container
             *ngTemplateOutlet="
               templates.groupHeader() ?? defaultGroupHeader;
-              context: groupHeaderContextFor(node)
+              context: slotContext.groupHeaderContextFor(node)
             "
           ></ng-container>
           <span class="cngx-sr-only" [id]="stepDescriptorId(node)">{{ groupStatusPhrase(node) }}</span>
@@ -106,15 +106,15 @@
           type="button"
           cngxRovingItem
           class="cngx-stepper__step"
-          [class.cngx-stepper__step--rejected]="showRejection(node)"
+          [class.cngx-stepper__step--rejected]="slotContext.showRejection(node)"
           [id]="stepHeaderId(node)"
-          [attr.tabindex]="isActive(node) ? '0' : '-1'"
+          [attr.tabindex]="slotContext.isActive(node) ? '0' : '-1'"
           [attr.data-step-depth]="node.depth"
           [attr.data-state]="node.state()"
-          [attr.aria-current]="isActive(node) ? 'step' : null"
+          [attr.aria-current]="slotContext.isActive(node) ? 'step' : null"
           [attr.aria-controls]="stepPanelId(node)"
           [attr.aria-disabled]="node.disabled() ? 'true' : null"
-          [attr.aria-busy]="isStepBusy(node) ? 'true' : null"
+          [attr.aria-busy]="slotContext.isStepBusy(node) ? 'true' : null"
           [attr.aria-describedby]="stepDescriptorId(node)"
           [cngxRovingItemDisabled]="node.disabled()"
           (click)="handleHeaderClick(node)"
@@ -127,15 +127,15 @@
             <ng-container
               *ngTemplateOutlet="
                 templates.indicator() ?? defaultIndicator;
-                context: indicatorContextFor(node)
+                context: slotContext.indicatorContextFor(node)
               "
             ></ng-container>
-            @if (showErrorBadge(node)) {
+            @if (slotContext.showErrorBadge(node)) {
               <span class="cngx-stepper__badge" aria-hidden="true">
                 <ng-container
                   *ngTemplateOutlet="
                     templates.badge() ?? defaultBadge;
-                    context: badgeContextFor(node)
+                    context: slotContext.badgeContextFor(node)
                   "
                 ></ng-container>
               </span>
@@ -145,29 +145,29 @@
             @let labelTpl = labelTemplateFor(node.id);
             @if (labelTpl) {
               <ng-container
-                *ngTemplateOutlet="labelTpl; context: stepLabelContextFor(node)"
+                *ngTemplateOutlet="labelTpl; context: slotContext.stepLabelContextFor(node)"
               ></ng-container>
             } @else {
               {{ node.label() }}
             }
           </span>
           <span class="cngx-stepper__status-pill" aria-hidden="true">{{ statusLabelFor(node) }}</span>
-          @if (showRejection(node)) {
+          @if (slotContext.showRejection(node)) {
             <span class="cngx-stepper__rejection-icon" aria-hidden="true">
               <ng-container
                 *ngTemplateOutlet="
                   templates.rejection() ?? defaultRejection;
-                  context: rejectionContextFor(node)
+                  context: slotContext.rejectionContextFor(node)
                 "
               ></ng-container>
             </span>
           }
-          @if (isStepBusy(node)) {
+          @if (slotContext.isStepBusy(node)) {
             <span class="cngx-stepper__busy-spinner" aria-hidden="true">
               <ng-container
                 *ngTemplateOutlet="
                   templates.busySpinner() ?? defaultBusySpinner;
-                  context: busySpinnerContextFor(node)
+                  context: slotContext.busySpinnerContextFor(node)
                 "
               ></ng-container>
             </span>
@@ -186,12 +186,12 @@
         [id]="stepPanelId(node)"
         [attr.aria-labelledby]="stepHeaderId(node)"
         [attr.aria-describedby]="stepDescriptorId(node)"
-        [hidden]="!isActive(node)"
+        [hidden]="!slotContext.isActive(node)"
       >
         @let contentTpl = contentTemplateFor(node.id);
         @if (contentTpl) {
           <ng-container
-            *ngTemplateOutlet="contentTpl; context: stepContentContextFor(node)"
+            *ngTemplateOutlet="contentTpl; context: slotContext.stepContentContextFor(node)"
           ></ng-container>
         }
       </div>
