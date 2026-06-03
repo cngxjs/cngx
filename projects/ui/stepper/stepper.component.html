@@ -94,6 +94,7 @@
           class="cngx-stepper__step"
           [class.cngx-stepper__step--rejected]="showRejection(node)"
           [id]="stepHeaderId(node)"
+          [attr.tabindex]="isActive(node) ? '0' : '-1'"
           [attr.data-step-depth]="node.depth"
           [attr.data-state]="node.state()"
           [attr.aria-current]="isActive(node) ? 'step' : null"
