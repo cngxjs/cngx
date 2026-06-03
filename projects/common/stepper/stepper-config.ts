@@ -140,6 +140,14 @@ export interface CngxStepperConfig {
    * {@link withStepperMobileIndicatorPosition}.
    */
   readonly mobileIndicatorPosition?: CngxStepperMobileIndicatorPosition;
+  /**
+   * Whether horizontal swipe gestures advance/retreat the active step
+   * while the stepper is in mobile-collapse mode (`'dots'` / `'text'`).
+   * Default `true`. Override per-instance via the `[mobileSwipe]` input
+   * or app-wide via {@link withStepperMobileSwipe}. Ignored on the
+   * classic strip and on the Material twin (`<cngx-mat-stepper>`).
+   */
+  readonly mobileSwipe?: boolean;
   readonly ariaLabels?: CngxStepperAriaLabels;
   readonly fallbackLabels?: CngxStepperFallbackLabels;
   readonly templates?: CngxStepperTemplates;
@@ -163,6 +171,7 @@ const STEPPER_CONFIG_DEFAULTS: Required<
   mobileCollapse: 'text',
   mobileBreakpoint: STEPPER_DEFAULT_MOBILE_BREAKPOINT,
   mobileIndicatorPosition: 'top',
+  mobileSwipe: true,
   ariaLabels: {
     stepperRegion: 'Stepper',
   },
@@ -340,6 +349,18 @@ export function withStepperMobileIndicatorPosition(
   position: CngxStepperMobileIndicatorPosition,
 ): CngxStepperConfigFeature {
   return defineStepperConfigFeature((cfg) => ({ ...cfg, mobileIndicatorPosition: position }));
+}
+
+/**
+ * Toggle the built-in horizontal-swipe navigation on `<cngx-stepper>`
+ * in mobile-collapse mode. Default `true` - the `'dots'` and `'text'`
+ * variants read as carousels, so users expect to swipe. Per-instance
+ * `[mobileSwipe]` Input still wins; the classic strip is unaffected.
+ *
+ * @category common/stepper
+ */
+export function withStepperMobileSwipe(enabled: boolean): CngxStepperConfigFeature {
+  return defineStepperConfigFeature((cfg) => ({ ...cfg, mobileSwipe: enabled }));
 }
 
 /**

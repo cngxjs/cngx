@@ -15,6 +15,7 @@ import {
   withStepperLinear,
   withStepperMobileBreakpoint,
   withStepperMobileCollapse,
+  withStepperMobileSwipe,
   withStepperRouterSync,
   withStepperSkin,
   withStepIndicatorTemplate,
@@ -227,6 +228,31 @@ describe('CngxStepperConfig', () => {
 
     it('carries the _target=config discriminator', () => {
       expect(withStepperMobileBreakpoint('(max-width: 768px)')._target).toBe('config');
+    });
+  });
+
+  describe('withStepperMobileSwipe', () => {
+    it('library default resolves to true', () => {
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      const cfg = TestBed.inject(CNGX_STEPPER_CONFIG);
+      expect(cfg.mobileSwipe).toBe(true);
+    });
+
+    it('provideStepperConfig(withStepperMobileSwipe(false)) overrides the default', () => {
+      TestBed.configureTestingModule({
+        providers: [
+          provideZonelessChangeDetection(),
+          provideStepperConfig(withStepperMobileSwipe(false)),
+        ],
+      });
+      const cfg = TestBed.inject(CNGX_STEPPER_CONFIG);
+      expect(cfg.mobileSwipe).toBe(false);
+    });
+
+    it('carries the _target=config discriminator', () => {
+      expect(withStepperMobileSwipe(false)._target).toBe('config');
     });
   });
 

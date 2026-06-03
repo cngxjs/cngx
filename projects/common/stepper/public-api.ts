@@ -105,6 +105,7 @@ export {
   withStepperMobileBreakpoint,
   withStepperMobileCollapse,
   withStepperMobileIndicatorPosition,
+  withStepperMobileSwipe,
   withStepperRouterSync,
   withStepperSkin,
   withStepIndicatorTemplate,
