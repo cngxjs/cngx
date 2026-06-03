@@ -5,15 +5,6 @@ import { fromEvent, switchMap, takeUntil, tap, filter, map } from 'rxjs';
 
 import type { SwipeAxis, SwipeDirection } from './swipe-direction';
 
-/**
- * Quiet-window in ms after which the wheel-accumulator resets. A new
- * inertial scroll segment from a trackpad rarely pauses longer than
- * this; momentum scrolling stays inside the window so a single
- * gesture aggregates correctly.
- */
-const WHEEL_RESET_MS = 250;
-const WHEEL_COOLDOWN_MS = 400;
-
 interface SwipeReading {
   readonly direction: SwipeDirection;
   readonly distance: number;
@@ -139,60 +130,6 @@ export class CngxSwipe {
         takeUntilDestroyed(),
       )
       .subscribe();
-
-    // Trackpad / wheel-mouse path. macOS trackpads and Magic Mouse emit
-    // `wheel` events with `deltaX` on horizontal two-finger gestures;
-    // pointer events never fire for those, so the pointer pipeline above
-    // never sees them. Accumulate `deltaX` / `deltaY` inside a quiet
-    // window and emit `swiped` once the dominant-axis sum crosses the
-    // threshold. A cooldown blocks the next emit until the user pauses,
-    // so one inertial gesture never fires twice.
-    let accX = 0;
-    let accY = 0;
-    let lastWheelAt = 0;
-    let cooldownUntil = 0;
-    const wheel$ = fromEvent<WheelEvent>(nativeEl, 'wheel', { passive: false });
-    wheel$
-      .pipe(
-        filter(() => this.enabled()),
-        takeUntilDestroyed(),
-      )
-      .subscribe((event) => {
-        const now = performance.now();
-        if (now - lastWheelAt > WHEEL_RESET_MS) {
-          accX = 0;
-          accY = 0;
-        }
-        lastWheelAt = now;
-        accX += event.deltaX;
-        accY += event.deltaY;
-        if (now < cooldownUntil) {
-          return;
-        }
-        const reading = this.read(0, 0, accX, accY);
-        if (!reading) {
-          return;
-        }
-        // Reflect mid-gesture progress so consumers see the wheel
-        // accumulation through the same signals as the pointer path.
-        this.swipingState.set(true);
-        this.swipeDirectionState.set(reading.direction);
-        this.swipeProgressState.set(Math.min(1, reading.distance / this.threshold()));
-        if (this.axis() !== 'both') {
-          // Pin to the configured axis - swallow the browser's default
-          // scroll on a matched gesture so the carousel feels locked.
-          event.preventDefault();
-        }
-        if (reading.distance >= this.threshold()) {
-          this.swiped.emit(reading.direction);
-          accX = 0;
-          accY = 0;
-          cooldownUntil = now + WHEEL_COOLDOWN_MS;
-          this.swipingState.set(false);
-          this.swipeProgressState.set(0);
-          this.swipeDirectionState.set(null);
-        }
-      });
   }
 
   /**
