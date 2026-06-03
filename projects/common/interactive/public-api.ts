@@ -92,7 +92,9 @@ export {
 export { withRetry, type RetryConfig, type RetryState } from './retry/with-retry';
 export { optimistic, type OptimisticState } from './optimistic/optimistic';
 export { CngxLongPress } from './gestures/long-press.directive';
-export { CngxSwipeDismiss, type SwipeDirection } from './gestures/swipe-dismiss.directive';
+export { CngxSwipe } from './gestures/swipe.directive';
+export { CngxSwipeDismiss } from './gestures/swipe-dismiss.directive';
+export type { SwipeAxis, SwipeDirection } from './gestures/swipe-direction';
 export {
   CngxReorder,
   type CngxReorderEvent,

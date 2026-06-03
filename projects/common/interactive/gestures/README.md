@@ -2,10 +2,16 @@
 
 Pointer-based gesture detection directives.
 
+- `CngxLongPress` - press-and-hold detection.
+- `CngxSwipe` - directional swipe for **navigation**. Emits the resolved direction, so a single host drives bidirectional flows (carousels, paged views, prev/next steppers). Pin it to one axis via `axis`.
+- `CngxSwipeDismiss` - single-direction swipe for **dismiss** actions (drawers, bottom sheets, dismissible cards). Emits a bare `swiped` when its one fixed direction passes the threshold.
+
+Pick by intent: navigate between siblings -> `CngxSwipe`; remove/close the element -> `CngxSwipeDismiss`.
+
 ## Import
 
 ```typescript
-import { CngxLongPress, CngxSwipeDismiss, type SwipeDirection } from '@cngx/common/interactive';
+import { CngxLongPress, CngxSwipe, CngxSwipeDismiss, type SwipeDirection } from '@cngx/common/interactive';
 ```
 
 ## Quick Start
@@ -127,6 +133,23 @@ Use the `swipeProgress()` signal for real-time visual feedback during the swipe:
 </style>
 ```
 
+### CngxSwipe
+
+`swipeProgress()` and `swipeDirection()` drive mid-gesture feedback - nudge
+the panel toward the incoming slide while the finger is down:
+
+```html
+<section cngxSwipe axis="x" #s="cngxSwipe"
+     (swiped)="onSwipe($event)"
+     [style.transform]="'translateX(' + (s.swipeDirection() === 'left' ? -1 : 1) * s.swipeProgress() * 12 + 'px)'">
+  Swipe left or right
+</section>
+
+<style>
+  section { transition: transform 0.2s ease-out; }
+</style>
+```
+
 ## Examples
 
 ### Long Press Context Menu
@@ -206,27 +229,23 @@ openMenu(event: PointerEvent) {
 
 ### Carousel with Swipe Navigation
 
+Use `CngxSwipe`, not `CngxSwipeDismiss`: navigation is not a dismiss. One
+host reports the direction in the event, so it covers both ways. Pin it to
+the x-axis so a vertical scroll never registers as a slide change.
+
 ```typescript
-readonly currentIndex = signal(0);
+readonly index = signal(0);
+readonly slides = ['Slide 1', 'Slide 2', 'Slide 3'];
 
-<div class="carousel">
-  <div cngxSwipeDismiss="left" (swiped)="nextSlide()"
-       [hidden]="currentIndex() !== 0">
-    Slide 1
-  </div>
-  <div cngxSwipeDismiss="left" (swiped)="nextSlide()"
-       [hidden]="currentIndex() !== 1">
-    Slide 2
-  </div>
-  <div cngxSwipeDismiss="left" (swiped)="nextSlide()"
-       [hidden]="currentIndex() !== 2">
-    Slide 3
-  </div>
-</div>
+<section cngxSwipe axis="x" (swiped)="onSwipe($event)">
+  {{ slides[index()] }}
+</section>
 
-nextSlide() {
-  if (this.currentIndex() < 2) {
-    this.currentIndex.update(i => i + 1);
+onSwipe(direction: SwipeDirection) {
+  if (direction === 'left') {
+    this.index.update(i => Math.min(i + 1, this.slides.length - 1));
+  } else if (direction === 'right') {
+    this.index.update(i => Math.max(i - 1, 0));
   }
 }
 ```
