@@ -401,7 +401,7 @@ export class CngxStepper implements CngxStepPanelHost {
   }
 
   /** Strip-scoped arrow-key handler. See {@link createStepperStripKeyboardNav}. */
-  protected readonly handleStripKeyDown = createStepperStripKeyboardNav({ presenter: this.presenter, hostElement: this.hostElement, flatStepCount: () => this.flatSteps().length });
+  protected readonly handleStripKeyDown = createStepperStripKeyboardNav({ presenter: this.presenter, hostElement: this.hostElement, flatStepCount: () => this.flatSteps().length, stepButtonIdFor: (id) => `${id}-header` });
 
   /**
    * Clear the presenter's `lastFailedIndex`. Lets template-ref consumers

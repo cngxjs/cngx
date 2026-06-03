@@ -15,6 +15,14 @@ export interface CngxStepperStripKeyboardNavOptions {
   /** Returns the current flat-step count so `End` lands on the last step. */
   readonly flatStepCount: () => number;
   /**
+   * Maps a CngxStepNode id to its DOM button id (e.g. `${id}-header`).
+   * The strip selects by stable DOM id rather than waiting for the
+   * `aria-current` attribute to flip - the id binding does not depend
+   * on the active-step signal, so the lookup is correct the same tick
+   * the presenter's `activeStepId` updates.
+   */
+  readonly stepButtonIdFor: (stepId: string) => string;
+  /**
    * Optional class name guard - the handler only runs when
    * `event.target.classList.contains(stepClassName)`. Defaults to the
    * canonical strip button class so panel-content key presses pass
@@ -44,8 +52,13 @@ export function createStepperStripKeyboardNav(
 ): (event: KeyboardEvent) => void {
   const stepClass = options.stepClassName ?? 'cngx-stepper__step';
   const focusActive = (): void => {
+    const activeId = options.presenter.activeStepId();
+    if (!activeId) {
+      return;
+    }
+    const buttonId = options.stepButtonIdFor(activeId);
     queueMicrotask(() => {
-      const el = options.hostElement.querySelector(`.${stepClass}[aria-current="step"]`);
+      const el = options.hostElement.querySelector(`[id="${buttonId}"]`);
       if (el instanceof HTMLElement) {
         el.focus();
       }
