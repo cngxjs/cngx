@@ -1,0 +1,45 @@
+/**
+ * @overview
+ * Structural + thematic CSS for `<cngx-stepper-footer>`. Track A
+ * (`styleUrl`); every spacing / colour value is a `--cngx-stepper-footer-*`
+ * custom property, colours chaining to `--mat-sys-*` so the Material
+ * theme picks them up. Three flex regions (start / center / end); the
+ * row wraps on narrow viewports so the controls never overflow.
+ */
+.cngx-stepper-footer {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--cngx-stepper-footer-gap, 0.75rem);
+  margin-block-start: var(--cngx-stepper-footer-margin-block-start, 1rem);
+  padding-block: var(--cngx-stepper-footer-padding-block, 0.75rem);
+  padding-inline: var(--cngx-stepper-footer-padding-inline, 0);
+  border-block-start: var(--cngx-stepper-footer-border-width, 1px)
+    var(--cngx-stepper-footer-border-style, solid)
+    var(--cngx-stepper-footer-border-color, var(--mat-sys-outline-variant, #e0e0e0));
+}
+
+.cngx-stepper-footer__start,
+.cngx-stepper-footer__center,
+.cngx-stepper-footer__end {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--cngx-stepper-footer-region-gap, 0.5rem);
+}
+
+.cngx-stepper-footer__start {
+  justify-content: flex-start;
+}
+
+.cngx-stepper-footer__center {
+  flex: 1 1 var(--cngx-stepper-footer-center-basis, auto);
+  justify-content: center;
+  text-align: center;
+  color: var(--cngx-stepper-footer-center-color, var(--mat-sys-on-surface-variant, inherit));
+}
+
+.cngx-stepper-footer__end {
+  margin-inline-start: auto;
+  justify-content: flex-end;
+}
