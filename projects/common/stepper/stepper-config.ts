@@ -118,6 +118,14 @@ export interface CngxStepperConfig {
   readonly routerSyncMode?: 'fragment' | 'queryParam';
   readonly routerSyncParam?: string;
   readonly skin?: CngxStepperSkin;
+  /**
+   * Opt-in connector rail between adjacent step indicators on the
+   * classic skin. Off by default. The rule is double-scoped on
+   * `[data-skin='classic']`, so the four other skins are mechanically
+   * untouched (each ships its own inter-step decoration). Per-instance
+   * `[connectors]` Input still wins.
+   */
+  readonly connectors?: boolean;
   readonly mobileCollapse?: CngxStepperMobileCollapse;
   /**
    * Media query the mobile auto-collapse policy reacts to. Default
@@ -151,6 +159,7 @@ const STEPPER_CONFIG_DEFAULTS: Required<
   routerSyncMode: 'fragment',
   routerSyncParam: 'step',
   skin: 'classic',
+  connectors: false,
   mobileCollapse: 'text',
   mobileBreakpoint: STEPPER_DEFAULT_MOBILE_BREAKPOINT,
   mobileIndicatorPosition: 'top',
@@ -273,6 +282,21 @@ export function withStepperRouterSync(
  */
 export function withStepperSkin(skin: CngxStepperSkin): CngxStepperConfigFeature {
   return defineStepperConfigFeature((cfg) => ({ ...cfg, skin }));
+}
+
+/**
+ * Opt the classic `<cngx-stepper>` skin into the connector-rail
+ * presentation: a solid completed/upcoming rail between adjacent step
+ * indicators, horizontal and vertical, with per-segment coloring driven
+ * by the preceding step's `[data-state]`. The rule is double-scoped on
+ * `[data-skin='classic']`; the four other skins each ship their own
+ * inter-step decoration and ignore this flag. Per-instance
+ * `[connectors]` Input still wins.
+ *
+ * @category common/stepper
+ */
+export function withStepperConnectors(on: boolean): CngxStepperConfigFeature {
+  return defineStepperConfigFeature((cfg) => ({ ...cfg, connectors: on }));
 }
 
 /**

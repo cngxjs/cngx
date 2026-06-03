@@ -99,6 +99,7 @@ export {
   withStepperDefaultOrientation,
   withStepperAriaLabels,
   withStepperCommitMode,
+  withStepperConnectors,
   withStepperFallbackLabels,
   withStepperLinear,
   withStepperMobileBreakpoint,
