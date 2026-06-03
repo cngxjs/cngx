@@ -99,7 +99,7 @@
               context: slotContext.groupHeaderContextFor(node)
             "
           ></ng-container>
-          <span class="cngx-sr-only" [id]="stepDescriptorId(node)">{{ groupStatusPhrase(node) }}</span>
+          <span class="cngx-sr-only" [id]="stepDescriptorId(node)">{{ announcement.groupStatusPhrase(node) }}</span>
         </div>
       } @else {
         <button
@@ -172,7 +172,7 @@
               ></ng-container>
             </span>
           }
-          <span class="cngx-sr-only" [id]="stepDescriptorId(node)">{{ statusPhrase(node) }}</span>
+          <span class="cngx-sr-only" [id]="stepDescriptorId(node)">{{ announcement.statusPhrase(node) }}</span>
         </button>
       }
     }
@@ -200,7 +200,7 @@
 }
 
 <span class="cngx-stepper__live-region cngx-sr-only" cngxLiveRegion>{{
-  liveAnnouncement()
+  announcement.liveAnnouncement()
 }}</span>
 
 <ng-template #defaultIndicator let-position>

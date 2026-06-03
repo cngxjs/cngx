@@ -41,6 +41,7 @@ import {
   CNGX_STEPPER_GLYPHS,
   CNGX_STEPPER_HOST,
   CngxStepperCount,
+  createStepperAnnouncementBuilders,
   createStepperHostAttrs,
   createStepperSlotContextBuilders,
   createStepperStripKeyboardNav,
@@ -272,64 +273,8 @@ export class CngxStepper implements CngxStepPanelHost {
     return `${node.id}-desc`;
   }
 
-  /**
-   * Live-region content. Empty string between transitions keeps the region
-   * quiet on no-op CD ticks. Error-arm priority:
-   * 1. `commitRolledBackTo(originLabel)` when both `lastFailedIndex` and a
-   *    resolvable origin label exist.
-   * 2. `commitFailedRetry` otherwise.
-   */
-  protected readonly liveAnnouncement = computed<string>(() => {
-    const current = this.presenter.commitTransition.current();
-    if (current === 'pending') {
-      return this.i18n.commitInFlight;
-    }
-    if (current === 'error') {
-      // Sync commit-handler errors collapse pending → error in one signal
-      // flush; tracker sees `previous === 'idle'`. Guard stays loose so
-      // sync-rejection (`commitAction = () => false`) still announces.
-      const failedIdx = this.presenter.lastFailedIndex();
-      const originIdx = this.presenter.originIndexDuringCommit();
-      if (failedIdx !== undefined && originIdx !== undefined) {
-        const originLabel = this.stepsOnly()[originIdx]?.label();
-        if (originLabel) {
-          return this.i18n.commitRolledBackTo(originLabel);
-        }
-      }
-      return this.i18n.commitFailedRetry;
-    }
-    return '';
-  });
-
-  /** SR descriptor phrase. Aggregator-announced or "Step N of M: <label>"; appends stepRolledBackSuffix on the rejected row. */
-  protected statusPhrase(node: CngxStepNode): string {
-    const aggregator = node.errorAggregator?.();
-    let base = aggregator?.shouldShow?.() ? (aggregator.announcement?.() ?? '') : '';
-    if (!base && node.kind === 'step') {
-      const idx = this.stepIndexOf(node);
-      if (idx >= 0) {
-        base = this.i18n.selectedStep(node.label(), idx + 1, this.stepsOnly().length);
-      }
-    }
-    if (!base) {
-      return '';
-    }
-    return node.kind === 'step' && node.flatIndex === this.presenter.lastFailedIndex()
-      ? `${base} ${this.i18n.stepRolledBackSuffix}`
-      : base;
-  }
-
-  /** Group descriptor - rolls up children's aggregated status. */
-  protected groupStatusPhrase(node: CngxStepNode): string {
-    const status = node.state();
-    if (status === 'error') {
-      return this.i18n.stepErrored;
-    }
-    if (status === 'success') {
-      return this.i18n.stepCompleted;
-    }
-    return '';
-  }
+  /** Live-region + per-step + group SR phrase builders (Level-2 factory). */
+  protected readonly announcement = createStepperAnnouncementBuilders({ presenter: this.presenter, stepsOnly: this.stepsOnly, i18n: this.i18n });
 
   protected handleHeaderClick(node: CngxStepNode): void {
     if (node.kind !== 'step' || node.disabled()) {

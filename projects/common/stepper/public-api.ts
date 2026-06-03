@@ -158,6 +158,12 @@ export {
   type CngxStepperSlotContextBuildersInputs,
 } from './slot-context-builders';
 
+export {
+  createStepperAnnouncementBuilders,
+  type CngxStepperAnnouncementBuilders,
+  type CngxStepperAnnouncementBuildersInputs,
+} from './announcement-builders';
+
 export { CngxStepperSwipeNav } from './swipe-nav.directive';
 
 export { CngxStepperCount, type CngxStepperCountHost } from './stepper-count';
