@@ -255,10 +255,14 @@
 
     /* Replace the default number glyph with a check on completed steps so
        active and completed stay distinct even when both states happen to
-       share a hue under a custom theme. Consumer-supplied indicator
-       templates render unchanged - only the built-in `.cngx-stepper__
-       indicator-glyph` span is suppressed here. */
-    .cngx-stepper__indicator[data-state='success']::before {
+       share a hue under a custom theme. The :has(.indicator-glyph) guard
+       scopes the ::before checkmark to the *default* indicator template
+       only - a consumer-provided `*cngxStepIndicator` slot renders its
+       own glyph (no `.indicator-glyph` span), so :has() returns false
+       and the library checkmark stays suppressed. Otherwise the consumer
+       SVG and the library checkmark stack on top of each other on
+       completed steps. */
+    .cngx-stepper__indicator[data-state='success']:has(.cngx-stepper__indicator-glyph)::before {
       content: '\2713';
       font-weight: 700;
     }
