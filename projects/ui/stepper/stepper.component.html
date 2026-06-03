@@ -199,6 +199,14 @@
   </div>
 }
 
+<!--
+  Footer slot - placed OUTSIDE the display-mode @if/@else so it projects
+  at view-creation time (content children register after the empty branch
+  is active, so an in-branch <ng-content> would be discarded and never
+  re-project). Renders after the panels in every mode.
+-->
+<ng-content select="cngx-stepper-footer, [cngxStepperFooter]"></ng-content>
+
 <span class="cngx-stepper__live-region cngx-sr-only" cngxLiveRegion>{{
   announcement.liveAnnouncement()
 }}</span>

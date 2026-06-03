@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import {
+  CngxStep,
   CngxStepperNext,
   CngxStepperPresenter,
   CngxStepperPrevious,
@@ -10,6 +11,7 @@ import {
   type CngxStepRegistration,
 } from '@cngx/common/stepper';
 
+import { CngxStepper } from '../stepper.component';
 import { CngxStepperFooter } from './stepper-footer.component';
 import {
   CngxStepperFooterCenter,
@@ -85,6 +87,30 @@ class ExplicitHostFooterHost {
   } as unknown as CngxStepperHost;
 }
 
+@Component({
+  standalone: true,
+  imports: [
+    CngxStepper,
+    CngxStep,
+    CngxStepperFooter,
+    CngxStepperFooterStart,
+    CngxStepperFooterEnd,
+    CngxStepperPrevious,
+    CngxStepperNext,
+  ],
+  template: `
+    <cngx-stepper>
+      <div cngxStep label="a"></div>
+      <div cngxStep label="b"></div>
+      <cngx-stepper-footer>
+        <button cngxStepperFooterStart cngxStepperPrevious>Back</button>
+        <button cngxStepperFooterEnd cngxStepperNext>Next</button>
+      </cngx-stepper-footer>
+    </cngx-stepper>
+  `,
+})
+class NestedInStepperHost {}
+
 describe('CngxStepperFooter', () => {
   beforeEach(() => {
     TestBed.resetTestingModule();
@@ -156,6 +182,21 @@ describe('CngxStepperFooter', () => {
       const fixture = TestBed.createComponent(ExplicitHostFooterHost);
       fixture.detectChanges();
       const next = fixture.nativeElement.querySelector('[cngxStepperNext]') as HTMLButtonElement;
+      expect(next.hasAttribute('disabled')).toBe(false);
+    });
+
+    it('renders projected into <cngx-stepper> and wires its nav atoms to the host', () => {
+      const fixture = TestBed.createComponent(NestedInStepperHost);
+      fixture.detectChanges();
+      const footer = fixture.nativeElement.querySelector(
+        'cngx-stepper cngx-stepper-footer',
+      ) as HTMLElement | null;
+      // The ng-content slot renders the footer below the panels.
+      expect(footer).not.toBeNull();
+      const back = footer!.querySelector('[cngxStepperPrevious]') as HTMLButtonElement;
+      const next = footer!.querySelector('[cngxStepperNext]') as HTMLButtonElement;
+      // Ambient host resolved through the slot: first step disables Back, live Next.
+      expect(back.hasAttribute('disabled')).toBe(true);
       expect(next.hasAttribute('disabled')).toBe(false);
     });
   });
