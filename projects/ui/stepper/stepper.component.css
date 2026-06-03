@@ -542,6 +542,18 @@
   }
 
   /**
+   * Symmetric breathing room between each disc edge and the connector
+   * rail end on the classic skin with `[connectors]` opted-in. Inherits
+   * so host-set overrides cascade.
+   * @group Skin / classic
+   */
+  @property --cngx-step-connector-inset {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 6px;
+  }
+
+  /**
    * Thickness of the connector segment on the classic skin with
    * `[connectors]` opted-in. Inherits so host-set overrides cascade.
    * @group Skin / classic
@@ -699,8 +711,15 @@
     .cngx-stepper__step + .cngx-stepper__step::before {
       content: '';
       position: absolute;
-      left: calc(-50% + var(--cngx-step-indicator-size, 1.75rem) / 2);
-      width: calc(100% - var(--cngx-step-indicator-size, 1.75rem));
+      /* Symmetric inset of var(--cngx-step-connector-inset) from each disc edge. */
+      left: calc(
+        -50% + var(--cngx-step-indicator-size, 1.75rem) / 2 +
+          var(--cngx-step-connector-inset, 6px)
+      );
+      width: calc(
+        100% - var(--cngx-step-indicator-size, 1.75rem) - 2 *
+          var(--cngx-step-connector-inset, 6px)
+      );
       top: calc(0.5rem + var(--cngx-step-indicator-size, 1.75rem) / 2);
       height: var(--cngx-step-connector-width, 2px);
       background-color: var(--cngx-step-connector-color);
