@@ -35,33 +35,33 @@ export const STORY: DemoSpec = {
   protected handlePrev(): void {
     this.active.update(i => Math.max(i - 1, 0));
   }`,
-  template: `  <cngx-stepper [(activeStepIndex)]="active" skin="stripe-status-rich" aria-label="Auftrag">
-    <div cngxStep label="Kunde" [completed]="true">
+  template: `  <cngx-stepper [(activeStepIndex)]="active" skin="stripe-status-rich" aria-label="Order">
+    <div cngxStep label="Customer" [completed]="active() > 0">
       <ng-template cngxStepContent>
-        <p>Kundendaten erfassen - Name, E-Mail, Lieferadresse.</p>
+        <p>Enter customer details - name, email, shipping address.</p>
       </ng-template>
     </div>
-    <div cngxStep label="Zahlung">
+    <div cngxStep label="Payment" [completed]="active() > 1">
       <ng-template cngxStepContent>
-        <p>Zahlungsart wählen und Rechnungsadresse bestätigen.</p>
+        <p>Choose a payment method and confirm the billing address.</p>
       </ng-template>
     </div>
-    <div cngxStep label="Versand">
+    <div cngxStep label="Shipping" [completed]="active() > 2">
       <ng-template cngxStepContent>
-        <p>Versandoption wählen.</p>
+        <p>Pick a shipping option.</p>
       </ng-template>
     </div>
-    <div cngxStep label="Bestätigen">
+    <div cngxStep label="Confirm">
       <ng-template cngxStepContent>
-        <p>Bestellung prüfen und abschicken.</p>
+        <p>Review the order before placing it.</p>
       </ng-template>
     </div>
   </cngx-stepper>`,
   templateChrome: `<div class="event-grid" style="margin-top:12px;gap:8px">
     <div class="event-row">
-      <button type="button" class="chip" (click)="handlePrev()">Zurück</button>
-      <button type="button" class="chip" (click)="handleNext()">Weiter</button>
+      <button type="button" class="chip" (click)="handlePrev()">Previous</button>
+      <button type="button" class="chip" (click)="handleNext()">Next</button>
     </div>
-    <div class="event-row"><span class="event-label">Aktiver Schritt</span><span class="event-value">{{ active() }}</span></div>
+    <div class="event-row"><span class="event-label">Active step</span><span class="event-value">{{ active() }}</span></div>
   </div>`,
 };

@@ -17,11 +17,17 @@ export const STORY: DemoSpec = {
   ],
   imports: ['CngxStepper', 'CngxStep', 'CngxStepIndicator'],
   setup: `protected readonly active = signal(1);`,
+  setupChrome: `  protected handleNext(): void {
+    this.active.update(i => Math.min(i + 1, 2));
+  }
+  protected handlePrev(): void {
+    this.active.update(i => Math.max(i - 1, 0));
+  }`,
   template: `  <div style="display:grid;gap:16px">
     @for (skin of ['classic', 'linear-minimal', 'stripe-status-rich', 'path-chevron', 'pill-segment']; track skin) {
       <section style="display:grid;gap:6px">
         <h4 style="margin:0;font-size:0.85rem;text-transform:uppercase;letter-spacing:0.04em;opacity:0.7">{{ skin }}</h4>
-        <cngx-stepper [(activeStepIndex)]="active" [linear]="true" [skin]="skin" [attr.aria-label]="'Indicator override - ' + skin">
+        <cngx-stepper [(activeStepIndex)]="active" [skin]="skin" [attr.aria-label]="'Indicator override - ' + skin">
           <ng-template cngxStepIndicator let-position let-status="status">
             @if (status === 'success') {
               <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true">
@@ -37,12 +43,18 @@ export const STORY: DemoSpec = {
               </svg>
             }
           </ng-template>
-          <div cngxStep label="Step 1" [completed]="true"></div>
-          <div cngxStep label="Step 2"></div>
+          <div cngxStep label="Step 1" [completed]="active() > 0"></div>
+          <div cngxStep label="Step 2" [completed]="active() > 1"></div>
           <div cngxStep label="Step 3"></div>
         </cngx-stepper>
       </section>
     }
   </div>`,
-  templateChrome: `<div class="event-grid" style="margin-top:12px"><div class="event-row"><span class="event-label">Active step</span><span class="event-value">{{ active() }}</span></div></div>`,
+  templateChrome: `<div class="event-grid" style="margin-top:12px;gap:8px">
+    <div class="event-row">
+      <button type="button" class="chip" (click)="handlePrev()">Previous</button>
+      <button type="button" class="chip" (click)="handleNext()">Next</button>
+    </div>
+    <div class="event-row"><span class="event-label">Active step</span><span class="event-value">{{ active() }}</span></div>
+  </div>`,
 };
