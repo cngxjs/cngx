@@ -85,7 +85,7 @@ describe('CngxDotStepper', () => {
     expect(currents).toEqual([null, 'step', null, null]);
   });
 
-  it('dots carry role="presentation" (sequential pattern, NOT a tab)', () => {
+  it('dots carry role="img" (name-permitting, sequential pattern, NOT a tab)', () => {
     TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
     const fixture = TestBed.createComponent(Host);
     fixture.detectChanges();
@@ -93,7 +93,7 @@ describe('CngxDotStepper', () => {
       fixture.nativeElement.querySelectorAll('.cngx-dot-stepper__dot'),
     ) as HTMLElement[];
     dots.forEach((d) => {
-      expect(d.getAttribute('role')).toBe('presentation');
+      expect(d.getAttribute('role')).toBe('img');
     });
   });
 

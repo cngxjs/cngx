@@ -23,7 +23,8 @@ import {
 
 /**
  * Dot stepper variant. Mobile-first sequential-flow indicator. Renders
- * one `<span role="presentation">` per step inside a
+ * one labelled `<span role="img">` per step (a name-permitting role, so
+ * each dot announces "Step N of M: label") inside a
  * `<div role="group" aria-roledescription="Step indicator">`. The active
  * dot carries `aria-current="step"` per the W3C APG step-indicator
  * pattern (NOT `role="tablist"` / `role="tab"` - those are reserved

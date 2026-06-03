@@ -49,6 +49,16 @@
   align-items: center;
 }
 
+/* The host is the sole keyboard target (tabindex=0, arrow keys route
+   through the presenter), so it owns the focus ring. Reuses the same
+   `--cngx-step-focus-ring` convention the classic skin defines, so the
+   dot variant stays visually consistent with the rest of the family. */
+.cngx-dot-stepper:focus-visible {
+  outline: var(--cngx-step-focus-ring, 2px solid currentColor);
+  outline-offset: var(--cngx-step-focus-offset, 3px);
+  border-radius: var(--cngx-dot-step-focus-radius, 0.375rem);
+}
+
 .cngx-dot-stepper__row {
   display: inline-flex;
   align-items: center;

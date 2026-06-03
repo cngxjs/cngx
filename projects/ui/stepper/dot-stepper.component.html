@@ -3,7 +3,7 @@
     @let dotTpl = resolvedDotTemplate();
     <span
       class="cngx-dot-stepper__dot"
-      role="presentation"
+      role="img"
       [class.cngx-dot-stepper__dot--active]="isActive(node, i)"
       [class.cngx-dot-stepper__dot--completed]="i < activeIndex()"
       [attr.aria-current]="isActive(node, i) ? 'step' : null"
