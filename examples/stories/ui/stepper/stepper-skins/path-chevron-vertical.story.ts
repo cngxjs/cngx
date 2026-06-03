@@ -5,7 +5,7 @@ export const STORY: DemoSpec = {
   subtitle:
     'Vertical chevron tiles - the clip-path notch rotates onto the bottom edge so the flow reads top-to-bottom. Same skin, only <code>[orientation]="\'vertical\'"</code> changes; the tile shape adapts via the vertical-orientation scope rule.',
   description:
-    'Vertical companion to the horizontal path-chevron demo. The chevron clip-path is reshaped to a deeper downward-pointing notch so the tiles interlock and the flow reads top-to-bottom. Active fills with the primary tone, completed with a 80% success tint, errored with the danger tone. Tiles are label-only - the arrow silhouette carries the sequence, completed steps surface a check.',
+    'Vertical companion to the horizontal path-chevron demo. Each step is a downward-pointing chevron tile, and a thin diagonal gap separates the segments so the flow reads top-to-bottom. Active fills with the primary tone, completed with the success tone, errored with the danger tone. The tile fill alone carries state, so every tile stays label-only with the label centred - no indicator glyph or check, which keeps each segment the same width as the rest.',
   level: 'organism',
   audience: ['dev', 'design'],
   artifact: 'standalone',
