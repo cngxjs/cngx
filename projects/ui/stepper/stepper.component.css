@@ -729,12 +729,26 @@
       white-space: normal;
     }
 
-    /* Wizard signals pending via the orange rail + orange disc color
-       transition; an animated spinner would compete with both. Drop it
+    /* Wizard signals pending via the orange rail + pulsing indicator;
+       the dedicated spinner element would compete with both. Drop it
        in this scope - `aria-busy='true'` on the host still carries the
        AT announcement. */
     .cngx-stepper__busy-spinner {
       display: none;
+    }
+
+    /* Pending target step: white glyph on the orange disc + subtle pulse
+       so the in-flight target reads at a glance without an explicit
+       spinner. `aria-busy='true'` is the truth source. */
+    .cngx-stepper__step[aria-busy='true'] .cngx-stepper__indicator {
+      color: var(--cngx-step-indicator-active-color, oklch(1 0 0));
+      animation: cngx-step-connectors-pending-pulse 1.2s ease-in-out infinite;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .cngx-stepper__step[aria-busy='true'] .cngx-stepper__indicator {
+        animation: none;
+      }
     }
 
     /* Rejection icon overlays the disc center, replacing the numeric glyph
@@ -1208,6 +1222,16 @@
   }
   50% {
     opacity: 0.6;
+  }
+}
+
+@keyframes cngx-step-connectors-pending-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.12);
   }
 }
 
