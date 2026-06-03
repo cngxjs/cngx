@@ -11,7 +11,7 @@ import type {
  * synchronously at construction). Each cascade collapses through
  * `input ?? config ?? library-default`.
  *
- * @category common/stepper
+ * @internal
  */
 export interface CngxStepperHostAttrsInputs {
   readonly skin: Signal<CngxStepperSkin | undefined>;
@@ -24,7 +24,7 @@ export interface CngxStepperHostAttrsInputs {
  * Three host-attribute signals for `<cngx-stepper>`. Each is read by a
  * `[attr.data-*]` host binding on the organism.
  *
- * @category common/stepper
+ * @internal
  */
 export interface CngxStepperHostAttrs {
   readonly resolvedSkin: Signal<CngxStepperSkin>;
@@ -41,7 +41,7 @@ export interface CngxStepperHostAttrs {
  * Each computed honors Pillar 1 (Ableitung statt Verwaltung): per-instance
  * input wins over root config wins over library default. No manual sync.
  *
- * @category common/stepper
+ * @internal
  */
 export function createStepperHostAttrs(
   inputs: CngxStepperHostAttrsInputs,

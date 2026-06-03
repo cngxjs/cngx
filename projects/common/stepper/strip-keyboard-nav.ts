@@ -3,9 +3,7 @@ import type { CngxStepperHost } from './stepper-host.token';
 /**
  * Options for {@link createStepperStripKeyboardNav}.
  *
- * @category common/stepper
- * @docsKind internal
- * @since 0.1.0
+ * @internal
  */
 export interface CngxStepperStripKeyboardNavOptions {
   /** Host contract that owns the active-step state and selection methods. */
@@ -43,9 +41,7 @@ export interface CngxStepperStripKeyboardNavOptions {
  * regardless of orientation. The presenter's `select*` methods enforce
  * linear-mode gating so callers do not duplicate that check here.
  *
- * @category common/stepper
- * @docsKind internal
- * @since 0.1.0
+ * @internal
  */
 export function createStepperStripKeyboardNav(
   options: CngxStepperStripKeyboardNavOptions,
