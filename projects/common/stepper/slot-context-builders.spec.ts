@@ -59,4 +59,24 @@ describe('createStepperSlotContextBuilders memoization', () => {
     expect(content).not.toBe(label);
     expect(builders.stepLabelContextFor).not.toBe(builders.stepContentContextFor);
   });
+
+  it('keys the cache by node reference, not node id (rebuildTree-safe)', () => {
+    // A future `presenter.rebuildTree()` refactor could either reuse
+    // node references (cache hits stay valid because shallowEqual
+    // re-checks source signals) or produce fresh ones (the WeakMap
+    // entry for the old reference becomes unreachable and is GC'd).
+    // This test pins the second case: two distinct node objects
+    // carrying the same id must NOT share a cache slot.
+    const stepsOnly = signal<readonly CngxStepNode[]>([]);
+    const builders = createStepperSlotContextBuilders({ presenter: stubHost(), stepsOnly });
+    const before = stubNode({ id: 'a', flatIndex: 0 });
+    const after = stubNode({ id: 'a', flatIndex: 0 });
+    stepsOnly.set([before]);
+    const ctxBefore = builders.indicatorContextFor(before);
+    stepsOnly.set([after]);
+    const ctxAfter = builders.indicatorContextFor(after);
+    expect(ctxAfter).not.toBe(ctxBefore);
+    expect(ctxAfter.node).toBe(after);
+    expect(ctxBefore.node).toBe(before);
+  });
 });

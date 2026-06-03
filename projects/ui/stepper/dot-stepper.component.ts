@@ -134,9 +134,14 @@ export class CngxDotStepper {
   }
 
   protected handleKeyDown(event: KeyboardEvent): void {
-    if (this.presenter.linear()) {
-      return;
-    }
+    // Linear mode is enforced by the presenter, not by silencing the
+    // keyboard. `selectNext` routes through `presenter.select()` which
+    // refuses jumps over incomplete steps; `selectPrevious` is the
+    // ungated direct back-move. `Home` is always a back-move; `End`
+    // routes through `select()` and is gated when intermediate steps
+    // are incomplete. Disabling the whole handler in linear mode
+    // killed back-nav too, which is the inverse of the W3C APG
+    // step-indicator pattern (read-back should always be reachable).
     if (event.key === 'ArrowRight' || event.key === 'ArrowDown') {
       event.preventDefault();
       this.presenter.selectNext();
