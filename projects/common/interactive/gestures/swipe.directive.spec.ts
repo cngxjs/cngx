@@ -97,4 +97,29 @@ describe('CngxSwipe', () => {
     expect(dir.swipeProgress()).toBe(0);
     expect(dir.swipeDirection()).toBeNull();
   });
+
+  it('resets gesture state on pointercancel (no stuck swiping)', () => {
+    const { el, dir, host } = setup();
+    el.dispatchEvent(new PointerEvent('pointerdown', { clientX: 200, clientY: 100, bubbles: true }));
+    document.dispatchEvent(new PointerEvent('pointermove', { clientX: 120, clientY: 100, bubbles: true }));
+    expect(dir.swiping()).toBe(true);
+    document.dispatchEvent(new PointerEvent('pointercancel', { clientX: 120, clientY: 100, bubbles: true }));
+    expect(dir.swiping()).toBe(false);
+    expect(dir.swipeProgress()).toBe(0);
+    expect(dir.swipeDirection()).toBeNull();
+    expect(host.swiped).not.toHaveBeenCalled();
+  });
+
+  it('does not strand user-select on the host after pointercancel', () => {
+    const { el } = setup();
+    el.dispatchEvent(new PointerEvent('pointerdown', { clientX: 200, clientY: 100, bubbles: true }));
+    document.dispatchEvent(new PointerEvent('pointermove', { clientX: 120, clientY: 100, bubbles: true }));
+    document.dispatchEvent(new PointerEvent('pointercancel', { clientX: 120, clientY: 100, bubbles: true }));
+    expect(el.style.userSelect).toBe('');
+  });
+
+  it('host user-select is unset while idle', () => {
+    const { el } = setup();
+    expect(el.style.userSelect).toBe('');
+  });
 });

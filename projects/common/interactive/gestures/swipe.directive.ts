@@ -1,7 +1,7 @@
 import { DOCUMENT } from '@angular/common';
 import { Directive, ElementRef, inject, input, output, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { fromEvent, switchMap, takeUntil, tap, filter, map } from 'rxjs';
+import { fromEvent, merge, switchMap, takeUntil, tap, filter, map } from 'rxjs';
 
 import type { SwipeAxis, SwipeDirection } from './swipe-direction';
 
@@ -49,11 +49,13 @@ interface SwipeReading {
   exportAs: 'cngxSwipe',
   standalone: true,
   host: {
-    // Mouse drags over the panel content would otherwise begin a text
-    // selection - that competes with the swipe gesture and visually
-    // makes the drag feel broken even though pointermove still fires.
-    // Disable user-select on the swipe target so the gesture wins.
-    style: 'user-select: none; -webkit-user-select: none;',
+    // Scope user-select suppression to the in-flight gesture. A
+    // bare `user-select: none` on the host kills text selection
+    // permanently inside the swipe surface even when the user is
+    // just reading; gating on `swiping()` keeps the gesture-vs-
+    // selection arbitration tight to the drag.
+    '[style.user-select]': "swiping() ? 'none' : null",
+    '[style.-webkit-user-select]': "swiping() ? 'none' : null",
   },
 })
 export class CngxSwipe {
@@ -84,6 +86,26 @@ export class CngxSwipe {
     const pointerDown$ = fromEvent<PointerEvent>(nativeEl, 'pointerdown');
     const pointerMove$ = fromEvent<PointerEvent>(doc, 'pointermove');
     const pointerUp$ = fromEvent<PointerEvent>(doc, 'pointerup');
+    // pointercancel fires when the browser takes the pointer back
+    // (system gesture, popup, JS-triggered focus loss). Without an
+    // explicit arm the in-flight state would stay stuck at
+    // `swiping = true` because pointerup never arrives.
+    const pointerCancel$ = fromEvent<PointerEvent>(doc, 'pointercancel');
+
+    const resetState = (pointerId: number | undefined): void => {
+      if (pointerId !== undefined) {
+        try {
+          nativeEl.releasePointerCapture(pointerId);
+        } catch {
+          // releasePointerCapture throws when the pointer is no
+          // longer captured (e.g. the browser already released it
+          // before firing pointercancel) - safe to ignore.
+        }
+      }
+      this.swipingState.set(false);
+      this.swipeProgressState.set(0);
+      this.swipeDirectionState.set(null);
+    };
 
     pointerDown$
       .pipe(
@@ -91,17 +113,27 @@ export class CngxSwipe {
         switchMap((start) => {
           const startX = start.clientX;
           const startY = start.clientY;
+          const pointerId = start.pointerId;
           // Capture the pointer on the swipe host so subsequent
           // move / up events route here even when the cursor leaves
           // the original element (real mouse drags drift off the
           // panel into the strip / page chrome and would otherwise
           // skip the directive).
           try {
-            nativeEl.setPointerCapture(start.pointerId);
+            nativeEl.setPointerCapture(pointerId);
           } catch {
             // setPointerCapture throws if pointerId is invalid (e.g.
             // synthetic event in some test envs) - safe to ignore.
           }
+
+          const settle$ = merge(
+            pointerUp$.pipe(
+              map((end) => ({
+                reading: this.read(startX, startY, end.clientX, end.clientY),
+              })),
+            ),
+            pointerCancel$.pipe(map(() => ({ reading: null }))),
+          );
 
           return pointerMove$.pipe(
             tap((move) => {
@@ -113,15 +145,12 @@ export class CngxSwipe {
               }
             }),
             takeUntil(
-              pointerUp$.pipe(
-                map((end) => this.read(startX, startY, end.clientX, end.clientY)),
-                tap((reading) => {
+              settle$.pipe(
+                tap(({ reading }) => {
                   if (reading && reading.distance >= this.threshold()) {
                     this.swiped.emit(reading.direction);
                   }
-                  this.swipingState.set(false);
-                  this.swipeProgressState.set(0);
-                  this.swipeDirectionState.set(null);
+                  resetState(pointerId);
                 }),
               ),
             ),
