@@ -79,6 +79,52 @@ export interface CngxStepperHost {
   readonly stepsOnly: Signal<readonly CngxStepNode[]>;
   readonly activeStepIndex: Signal<number>;
   readonly activeStepId: Signal<string | null>;
+
+  /** Step-only count - the length of {@link stepsOnly}. */
+  readonly stepCount: Signal<number>;
+
+  /** `true` when the active step is the first one (no earlier step). */
+  readonly isFirstStep: Signal<boolean>;
+
+  /** `true` when the active step is the last one (no later step). */
+  readonly isLastStep: Signal<boolean>;
+
+  /**
+   * `true` when {@link selectPrevious} would move - i.e. an enabled
+   * step precedes the active one. The single gate a Back affordance
+   * reads; never re-derive it from {@link stepsOnly} at the call site.
+   */
+  readonly canGoPrevious: Signal<boolean>;
+
+  /**
+   * `true` when {@link selectNext} would move - i.e. an enabled,
+   * linear-unblocked step follows the active one. Derived from the same
+   * predicates `select()` enforces, so a Next affordance can never
+   * drift from the navigation it gates.
+   */
+  readonly canGoNext: Signal<boolean>;
+
+  /**
+   * `true` while a commit is in flight (`commitState.status() ===
+   * 'pending'`). Drives the busy-disable on nav affordances. Keyed on
+   * the strict `'pending'` status, consistent with the per-step busy
+   * gate.
+   */
+  readonly busy: Signal<boolean>;
+
+  /**
+   * Label of the step {@link selectNext} would land on, or `undefined`
+   * when none follows. Resolved through the enabled-step traversal so a
+   * "Continue to {{ label }}" affordance announces the real target.
+   */
+  readonly nextStepLabel: Signal<string | undefined>;
+
+  /**
+   * Label of the step {@link selectPrevious} would land on, or
+   * `undefined` when none precedes.
+   */
+  readonly previousStepLabel: Signal<string | undefined>;
+
   readonly linear: Signal<boolean>;
   readonly orientation: Signal<'horizontal' | 'vertical'>;
   readonly commitState: CngxAsyncState<number | undefined>;
