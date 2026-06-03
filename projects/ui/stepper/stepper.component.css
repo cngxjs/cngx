@@ -538,7 +538,7 @@
   @property --cngx-step-connector-completed-color {
     syntax: '*';
     inherits: true;
-    initial-value: var(--cngx-step-completed-color);
+    initial-value: oklch(0.5 0.15 145);
   }
 
   /**
@@ -652,45 +652,65 @@
    * Double-scoped on `[data-skin='classic']` so the four other skins
    * are mechanically untouched.
    */
+  /*
+   * Classic + [connectors] = the canonical wizard look: disc on top, label
+   * stacked below, full-width rail between adjacent disc centers. Equal-flex
+   * slots make disc-to-disc distance predictable; the rail recolors completed
+   * segments via the preceding step's [data-state='success']. Pillar 1.
+   * Double-scoped on [data-skin='classic'] so the four other skins are
+   * mechanically untouched.
+   */
   @scope (.cngx-stepper[data-skin='classic'][data-connectors='true']) {
-    .cngx-stepper__step {
-      position: relative;
+    .cngx-stepper__strip {
+      display: flex;
+      flex-wrap: nowrap;
+      align-items: flex-start;
     }
 
+    .cngx-stepper__step {
+      position: relative;
+      flex: 1 1 0;
+      min-width: 0;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      text-align: center;
+      gap: 0.5rem;
+    }
+
+    /* Disc + label sit above the rail. */
+    .cngx-stepper__indicator,
+    .cngx-stepper__label {
+      position: relative;
+      z-index: 1;
+    }
+
+    .cngx-stepper__label {
+      white-space: normal;
+    }
+
+    /*
+     * Rail spans previous-disc-center to current-disc-center, offset by
+     * disc-radius on both ends so it doesn't paint through the discs.
+     * Flex slot width = 100%; disc center sits at slot center (50%).
+     *   left  = -50% + disc-size/2   (prev disc right edge)
+     *   width = 100% - disc-size     (gap to current disc left edge)
+     */
     .cngx-stepper__step + .cngx-stepper__step::before {
       content: '';
       position: absolute;
-      left: calc(-1 * var(--cngx-step-gap, 0.5rem));
-      top: calc(var(--cngx-step-indicator-size, 1.75rem) / 2);
-      width: var(--cngx-step-gap, 0.5rem);
-      height: 0;
-      border-top: var(--cngx-step-connector-width, 2px) solid
-        var(--cngx-step-connector-color);
+      left: calc(-50% + var(--cngx-step-indicator-size, 1.75rem) / 2);
+      width: calc(100% - var(--cngx-step-indicator-size, 1.75rem));
+      top: calc(0.5rem + var(--cngx-step-indicator-size, 1.75rem) / 2);
+      height: var(--cngx-step-connector-width, 2px);
+      background-color: var(--cngx-step-connector-color);
       transform: translateY(-50%);
+      z-index: 0;
     }
 
     .cngx-stepper__step[data-state='success']
       + .cngx-stepper__step::before {
-      border-top-color: var(--cngx-step-connector-completed-color);
-    }
-  }
-
-  /* Classic + [connectors] vertical: bar runs between disc centers. */
-  @scope (.cngx-stepper[data-skin='classic'][data-connectors='true'][data-orientation='vertical']) {
-    .cngx-stepper__step + .cngx-stepper__step::before {
-      left: calc(var(--cngx-step-indicator-size, 1.75rem) / 2);
-      top: calc(-1 * var(--cngx-step-gap, 0.5rem));
-      width: 0;
-      height: var(--cngx-step-gap, 0.5rem);
-      border-top: 0;
-      border-left: var(--cngx-step-connector-width, 2px) solid
-        var(--cngx-step-connector-color);
-      transform: translateX(-50%);
-    }
-
-    .cngx-stepper__step[data-state='success']
-      + .cngx-stepper__step::before {
-      border-left-color: var(--cngx-step-connector-completed-color);
+      background-color: var(--cngx-step-connector-completed-color);
     }
   }
 
