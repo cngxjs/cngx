@@ -135,6 +135,12 @@ export {
 } from './mobile-viewport';
 
 export {
+  createStepperHostAttrs,
+  type CngxStepperHostAttrs,
+  type CngxStepperHostAttrsInputs,
+} from './stepper-host-attrs';
+
+export {
   createStepperStripKeyboardNav,
   type CngxStepperStripKeyboardNavOptions,
 } from './strip-keyboard-nav';
