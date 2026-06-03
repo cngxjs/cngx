@@ -1,5 +1,6 @@
 <div class="cngx-dot-stepper__row">
   @for (node of stepNodes(); track node.id; let i = $index) {
+    @let dotTpl = resolvedDotTemplate();
     <span
       class="cngx-dot-stepper__dot"
       role="presentation"
@@ -8,13 +9,6 @@
       [attr.aria-current]="isActive(node, i) ? 'step' : null"
       [attr.aria-label]="ariaLabelFor(node, i)"
       [attr.data-state]="node.state()"
-    >
-      @let dotTpl = resolvedDotTemplate();
-      @if (dotTpl) {
-        <ng-container
-          *ngTemplateOutlet="dotTpl; context: dotContextFor(node, i)"
-        ></ng-container>
-      }
-    </span>
+    >@if (dotTpl) {<ng-container *ngTemplateOutlet="dotTpl; context: dotContextFor(node, i)"></ng-container>}</span>
   }
 </div>

@@ -77,6 +77,25 @@
   background: var(--cngx-step-errored-color, currentColor);
 }
 
+/* Consumer-owned dot body via `*cngxDotStepperDot` slot - the span shell
+   stays for ARIA + state class hooks, but the default circle chrome
+   (fixed size, pill background, border-radius) drops out so only the
+   consumer SVG / icon renders. The :not(:empty) guard checks per-dot
+   whether the slot actually produced child nodes: upcoming dots whose
+   consumer template renders nothing keep the default circle, while
+   active / completed dots whose template emits an SVG (or any other
+   element) lose the chrome. Specificity (0,2,0) ties the
+   `[data-state='error']` rule and wins by source order; beats
+   `--active` / `--completed` (0,1,0) outright. The `transform:
+   scale(1.25)` from `--active` persists so the active dot keeps its
+   scale cue on the consumer art. */
+.cngx-dot-stepper__dot:not(:empty) {
+  width: auto;
+  height: auto;
+  background: transparent;
+  border-radius: 0;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .cngx-dot-stepper__dot {
     transition: none;
