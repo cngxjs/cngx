@@ -47,14 +47,22 @@
 .cngx-dot-stepper {
   display: inline-flex;
   align-items: center;
+  /* Grid / flex parents override inline-flex to stretch unless the item
+     opts out explicitly. justify-self / align-self keep the host shrunk
+     to its dot row width regardless of parent layout. */
+  justify-self: start;
+  align-self: start;
+  width: max-content;
 }
 
 /* The host is the sole keyboard target (tabindex=0, arrow keys route
-   through the presenter), so it owns the focus ring. Reuses the same
-   `--cngx-step-focus-ring` convention the classic skin defines, so the
-   dot variant stays visually consistent with the rest of the family. */
+   through the presenter), so it owns the focus ring. Uses the cngx
+   primary directly so standalone use (no surrounding `<cngx-stepper>`
+   ancestor to register `--cngx-step-focus-ring`) still paints the
+   correct accent. Consumers override via `--cngx-color-primary` like
+   the rest of the family. */
 .cngx-dot-stepper:focus-visible {
-  outline: var(--cngx-step-focus-ring, 2px solid currentColor);
+  outline: 2px solid var(--cngx-color-primary, oklch(0.66 0.19 50));
   outline-offset: var(--cngx-step-focus-offset, 3px);
   border-radius: var(--cngx-dot-step-focus-radius, 0.375rem);
 }
