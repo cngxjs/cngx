@@ -146,7 +146,8 @@ export class CngxStepper implements CngxStepPanelHost {
   /** Opt-in `Step N of M` caption under the mobile `'dots'` row. */
   readonly showStepCount = input<boolean>(false);
 
-  protected readonly presenter = inject(CNGX_STEPPER_HOST);
+  /** Stepper-host contract; exposed so external `<cngx-stepper-count>` / bridge consumers can `[host]="s.presenter"` via `#s="cngxStepper"`. */
+  readonly presenter = inject(CNGX_STEPPER_HOST);
   protected readonly i18n = injectStepperI18n();
   protected readonly config = injectStepperConfig();
   private readonly hostElement: HTMLElement =

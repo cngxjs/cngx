@@ -7,7 +7,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 
-import { CNGX_STEPPER_HOST } from './stepper-host.token';
+import { CNGX_STEPPER_HOST, type CngxStepperHost } from './stepper-host.token';
 import { injectStepperI18n } from './i18n/stepper-i18n';
 
 /**
@@ -66,13 +66,30 @@ export class CngxStepperCount {
    */
   readonly format = input<((current: number, total: number) => string) | undefined>(undefined);
 
-  private readonly host = inject(CNGX_STEPPER_HOST);
+  /**
+   * Explicit stepper-host reference. Set this when the atom sits
+   * *outside* a `<cngx-stepper>` (e.g. in a sibling layout header)
+   * by exporting the stepper as a template ref:
+   * `<cngx-stepper #s="cngxStepper">` then `[host]="s.presenter"`.
+   * When unset, the atom injects the ambient `CNGX_STEPPER_HOST` from
+   * its DI tree.
+   */
+  readonly host = input<CngxStepperHost | null>(null);
+
+  private readonly injectedHost = inject(CNGX_STEPPER_HOST, { optional: true });
   private readonly i18n = injectStepperI18n();
+  private readonly resolvedHost = computed<CngxStepperHost | null>(
+    () => this.host() ?? this.injectedHost,
+  );
 
   /** Resolved caption - reactive on activeStepIndex / stepsOnly / format / i18n. */
   protected readonly label = computed<string>(() => {
-    const current = this.host.activeStepIndex() + 1;
-    const total = this.host.stepsOnly().length;
+    const host = this.resolvedHost();
+    if (!host) {
+      return '';
+    }
+    const current = host.activeStepIndex() + 1;
+    const total = host.stepsOnly().length;
     const fmt = this.format() ?? this.i18n.textStepperFormat;
     return fmt(current, total);
   });
