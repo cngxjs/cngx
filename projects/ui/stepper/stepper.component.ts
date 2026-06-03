@@ -157,7 +157,12 @@ export class CngxStepper implements CngxStepPanelHost {
   /** Opt the classic skin into the connector-rail presentation. Off by default, classic-scoped. */
   readonly connectors = input<boolean | undefined, unknown>(undefined, { transform: (v) => (v === undefined ? undefined : coerceBooleanProperty(v)) });
 
-  /** Opt-in `Step N of M` caption under the mobile `'dots'` row. */
+  /**
+   * Opt-in `Step N of M` caption under the mobile `'dots'` row. In
+   * the `'text'` collapse branch the count IS the indicator and is
+   * always rendered; this input only gates the supplemental caption
+   * that sits next to the dot row.
+   */
   readonly showStepCount = input<boolean>(false);
 
   readonly mobileIndicatorPosition = input<CngxStepperMobileIndicatorPosition | undefined>(undefined);

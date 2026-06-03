@@ -4,7 +4,7 @@
     <ng-container *ngTemplateOutlet="emptyTpl"></ng-container>
   }
 } @else if (displayMode() === 'text') {
-  <cngx-stepper-count class="cngx-stepper__mobile-text" />
+  <cngx-stepper-count class="cngx-stepper__mobile-text" [live]="false" />
 
   <div
     class="cngx-stepper__panels"
@@ -51,7 +51,7 @@
     }
   </div>
   @if (showStepCount()) {
-    <cngx-stepper-count class="cngx-stepper__mobile-text cngx-stepper__mobile-text--caption" />
+    <cngx-stepper-count class="cngx-stepper__mobile-text cngx-stepper__mobile-text--caption" [live]="false" />
   }
 
   <div
