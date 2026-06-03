@@ -38,6 +38,7 @@ import {
   type CngxStepLabelContext,
   CngxStepperEmpty,
   CngxStepperPresenter,
+  type CngxStepperMobileIndicatorPosition,
   type CngxStepperSkin,
   CngxStepRejection,
   type CngxStepRejectionContext,
@@ -129,6 +130,7 @@ import {
     '[attr.aria-orientation]': 'presenter.orientation()',
     '[attr.data-orientation]': 'presenter.orientation()',
     '[attr.data-skin]': 'resolvedSkin()',
+    '[attr.data-mobile-indicator-position]': 'resolvedMobileIndicatorPosition()',
     '[attr.aria-label]': 'resolvedAriaLabel()',
     '[attr.aria-labelledby]': 'ariaLabelledBy()',
     '[attr.aria-busy]': 'isCommitting() ? "true" : null',
@@ -145,6 +147,8 @@ export class CngxStepper implements CngxStepPanelHost {
 
   /** Opt-in `Step N of M` caption under the mobile `'dots'` row. */
   readonly showStepCount = input<boolean>(false);
+
+  readonly mobileIndicatorPosition = input<CngxStepperMobileIndicatorPosition | undefined>(undefined);
 
   /** Stepper-host contract; exposed so external `<cngx-stepper-count>` / bridge consumers can `[host]="s.presenter"` via `#s="cngxStepper"`. */
   readonly presenter = inject(CNGX_STEPPER_HOST);
@@ -198,6 +202,7 @@ export class CngxStepper implements CngxStepPanelHost {
 
   /** Resolved skin keyed onto the `[data-skin]` host attribute. */
   protected readonly resolvedSkin = computed<CngxStepperSkin>(() => this.skin() ?? this.config.skin ?? 'classic');
+  protected readonly resolvedMobileIndicatorPosition = computed<CngxStepperMobileIndicatorPosition>(() => this.mobileIndicatorPosition() ?? this.config.mobileIndicatorPosition ?? 'top');
 
   protected statusLabelFor = (node: CngxStepNode): string => resolveStepperStatusLabel(node, this.i18n, this.isActive(node));
   protected readonly groupRoleDescription = computed<string>(() => this.config.fallbackLabels?.groupRoleDescription ?? 'step group');

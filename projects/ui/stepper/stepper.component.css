@@ -759,36 +759,59 @@
     .cngx-stepper__step {
       clip-path: polygon(
         0 0,
-        50% var(--cngx-step-chevron-vertical-notch, 0.85rem),
+        50% var(--cngx-step-chevron-vertical-notch, 0.55rem),
         100% 0,
-        100% calc(100% - var(--cngx-step-chevron-vertical-notch, 0.85rem)),
+        100% calc(100% - var(--cngx-step-chevron-vertical-notch, 0.55rem)),
         50% 100%,
-        0 calc(100% - var(--cngx-step-chevron-vertical-notch, 0.85rem))
+        0 calc(100% - var(--cngx-step-chevron-vertical-notch, 0.55rem))
       );
-      padding-block: calc(var(--cngx-step-chevron-vertical-notch, 0.85rem) + 1.125rem);
-      min-height: var(--cngx-step-chevron-vertical-min-height, 5rem);
+      padding-block: calc(var(--cngx-step-chevron-vertical-notch, 0.55rem) + 0.5rem);
+      min-height: var(--cngx-step-chevron-vertical-min-height, 3.25rem);
+    }
+
+    /* Pull each tile up so its top notch slides over the previous tile's
+       bottom point, stopping short by the divider amount so a thin
+       diagonal gap stays between segments - the vertical analogue of the
+       horizontal strip gap. */
+    .cngx-stepper__step + .cngx-stepper__step {
+      margin-block-start: calc(
+        -1 * var(--cngx-step-chevron-vertical-notch, 0.55rem) +
+          var(--cngx-step-chevron-vertical-divider, 0.25rem)
+      );
     }
 
     .cngx-stepper__step .cngx-stepper__label {
       min-width: 0;
       overflow-wrap: anywhere;
       line-height: 1.3;
+      text-align: center;
+    }
+
+    /* Drop the indicator entirely in the vertical ribbon. The tile fill
+       carries state (green = done, primary = active), so the check adds
+       nothing but noise - and an inline check pushes the label off the
+       horizontal centre and changes the tile's intrinsic width on every
+       done-toggle. With no indicator the label is the only flow child,
+       so it centres cleanly and the column width stays constant (the
+       longest label never changes with state). */
+    .cngx-stepper__step .cngx-stepper__indicator {
+      display: none;
     }
 
     .cngx-stepper__step:first-child {
       clip-path: polygon(
         0 0,
         100% 0,
-        100% calc(100% - var(--cngx-step-chevron-vertical-notch, 0.85rem)),
+        100% calc(100% - var(--cngx-step-chevron-vertical-notch, 0.55rem)),
         50% 100%,
-        0 calc(100% - var(--cngx-step-chevron-vertical-notch, 0.85rem))
+        0 calc(100% - var(--cngx-step-chevron-vertical-notch, 0.55rem))
       );
     }
 
     .cngx-stepper__step:last-child {
       clip-path: polygon(
         0 0,
-        50% var(--cngx-step-chevron-vertical-notch, 0.85rem),
+        50% var(--cngx-step-chevron-vertical-notch, 0.55rem),
         100% 0,
         100% 100%,
         0 100%
@@ -953,6 +976,26 @@
   display: inline-block;
   font: inherit;
   color: inherit;
+}
+
+/* Mobile-collapse indicator-position cascade. When the consumer flips
+   the indicator to the thumb zone (`'bottom'`), the host becomes a
+   flex column with explicit `order:` values that move the indicator
+   block below the panels. Default `'top'` paints nothing (source
+   order already matches). The selector only matches when the host
+   carries the data-attr, so the classic strip branch (no mobile
+   indicator) is untouched. */
+.cngx-stepper[data-mobile-indicator-position='bottom'] {
+  display: flex;
+  flex-direction: column;
+}
+.cngx-stepper[data-mobile-indicator-position='bottom'] .cngx-stepper__mobile-text,
+.cngx-stepper[data-mobile-indicator-position='bottom'] .cngx-stepper__mobile-dots,
+.cngx-stepper[data-mobile-indicator-position='bottom'] .cngx-stepper__mobile-text--caption {
+  order: 2;
+}
+.cngx-stepper[data-mobile-indicator-position='bottom'] .cngx-stepper__panels {
+  order: 1;
 }
 
 .cngx-stepper__mobile-dots {
