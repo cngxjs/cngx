@@ -542,6 +542,29 @@
   }
 
   /**
+   * Errored color of a connector segment whose preceding step is in
+   * `data-state='error'`. Mirrors `--cngx-step-errored-color`.
+   * @group Skin / classic
+   */
+  @property --cngx-step-connector-errored-color {
+    syntax: '*';
+    inherits: true;
+    initial-value: oklch(0.55 0.18 25);
+  }
+
+  /**
+   * In-flight color of a connector segment whose preceding step is in
+   * `data-state='pending'`. Mirrors the active-state color so the rail
+   * reads as "progressing".
+   * @group Skin / classic
+   */
+  @property --cngx-step-connector-pending-color {
+    syntax: '*';
+    inherits: true;
+    initial-value: oklch(0.66 0.19 50);
+  }
+
+  /**
    * Symmetric breathing room between each disc edge and the connector
    * rail end on the classic skin with `[connectors]` opted-in. Inherits
    * so host-set overrides cascade.
@@ -732,9 +755,72 @@
       z-index: 0;
     }
 
+    /* Source step success (passed through) -> trailing rail green. */
     .cngx-stepper__step[data-state='success']
       + .cngx-stepper__step::before {
       background-color: var(--cngx-step-connector-completed-color);
+    }
+
+    /* Target step pending (commit in flight) -> leading rail orange. cngx
+       surfaces commit-in-flight via `aria-busy='true'` on the target step;
+       `data-state` stays at its terminal value (idle/success/error). */
+    .cngx-stepper__step
+      + .cngx-stepper__step[aria-busy='true']::before {
+      background-color: var(--cngx-step-connector-pending-color);
+    }
+
+    /* Target step rejected (commit failed) -> leading rail red. cngx
+       sets `cngx-stepper__step--rejected` on the step that was the
+       failed-commit target. */
+    .cngx-stepper__step
+      + .cngx-stepper__step.cngx-stepper__step--rejected::before {
+      background-color: var(--cngx-step-connector-errored-color);
+    }
+  }
+
+  /*
+   * Classic + [connectors] vertical: discs stack with labels to the right
+   * (default classic inline shape). Rail is a thin vertical column between
+   * adjacent disc centers, symmetric inset. min-height per button ensures
+   * the rail has visible length even when the label is short.
+   */
+  @scope (.cngx-stepper[data-skin='classic'][data-connectors='true'][data-orientation='vertical']) {
+    .cngx-stepper__strip {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .cngx-stepper__step {
+      flex: 0 0 auto;
+      flex-direction: row;
+      align-items: center;
+      justify-content: flex-start;
+      text-align: start;
+      min-height: calc(
+        var(--cngx-step-indicator-size, 1.75rem) + 2 *
+          var(--cngx-step-connector-inset, 6px) + 2rem
+      );
+    }
+
+    .cngx-stepper__label {
+      white-space: nowrap;
+    }
+
+    .cngx-stepper__step + .cngx-stepper__step::before {
+      left: calc(
+        0.75rem + var(--cngx-step-indicator-size, 1.75rem) / 2 -
+          var(--cngx-step-connector-width, 2px) / 2
+      );
+      width: var(--cngx-step-connector-width, 2px);
+      top: calc(
+        -50% + var(--cngx-step-indicator-size, 1.75rem) / 2 +
+          var(--cngx-step-connector-inset, 6px)
+      );
+      height: calc(
+        100% - var(--cngx-step-indicator-size, 1.75rem) - 2 *
+          var(--cngx-step-connector-inset, 6px)
+      );
+      transform: none;
     }
   }
 
