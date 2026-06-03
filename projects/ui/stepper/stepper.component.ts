@@ -21,6 +21,7 @@ import {
   CngxRovingItem,
   CngxRovingTabindex,
 } from '@cngx/common/a11y';
+import { CngxSwipe } from '@cngx/common/interactive';
 import {
   CNGX_STEP_PANEL_HOST,
   createStepperDisplayMode,
@@ -48,6 +49,7 @@ import {
   createStepperHostAttrs,
   createStepperStripKeyboardNav,
   createStepperTemplateBindings,
+  CngxStepperSwipeNav,
   resolveStepperStatusLabel,
   injectStepperConfig,
   injectStepperI18n,
@@ -105,7 +107,7 @@ import { coerceBooleanProperty } from '@cngx/core/utils';
   exportAs: 'cngxStepper',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgTemplateOutlet, CngxLiveRegion, CngxRovingItem, CngxStepperCount],
+  imports: [NgTemplateOutlet, CngxLiveRegion, CngxRovingItem, CngxStepperCount, CngxSwipe],
   styleUrls: ['./styles/stepper-base.css', './stepper.component.css'],
   encapsulation: ViewEncapsulation.None,
   hostDirectives: [
@@ -117,6 +119,10 @@ import { coerceBooleanProperty } from '@cngx/core/utils';
     {
       directive: CngxRovingTabindex,
       inputs: ['orientation'],
+    },
+    {
+      directive: CngxStepperSwipeNav,
+      inputs: ['mobileSwipe'],
     },
     { directive: CngxFocusRestore },
     // CngxLiveRegion not composed: its role="status" would clobber the
@@ -208,6 +214,9 @@ export class CngxStepper implements CngxStepPanelHost {
 
   /** Resolved skin / connectors / mobile-indicator host attrs (Level-2 cascade helper). */
   protected readonly hostAttrs = createStepperHostAttrs({ skin: this.skin, connectors: this.connectors, mobileIndicatorPosition: this.mobileIndicatorPosition, config: this.config });
+
+  /** Mobile-swipe navigation host directive (Level-2 composition). */
+  protected readonly swipeNav = inject(CngxStepperSwipeNav, { host: true });
 
   protected statusLabelFor = (node: CngxStepNode): string => resolveStepperStatusLabel(node, this.i18n, this.isActive(node));
   protected readonly groupRoleDescription = computed<string>(() => this.config.fallbackLabels?.groupRoleDescription ?? 'step group');
@@ -419,9 +428,7 @@ export class CngxStepper implements CngxStepPanelHost {
    * (`#s="cngxStepper"`) dismiss the rejection decoration without injecting
    * {@link CNGX_STEPPER_HOST}.
    */
-  clearLastFailed(): void {
-    this.presenter.clearLastFailed();
-  }
+  clearLastFailed = (): void => this.presenter.clearLastFailed();
 
   // CngxStepPanelHost contract - O(1) via the pre-built map.
   labelTemplateFor(id: string): TemplateRef<CngxStepLabelContext> | null {

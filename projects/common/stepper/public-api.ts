@@ -146,6 +146,8 @@ export {
   type CngxStepperStripKeyboardNavOptions,
 } from './strip-keyboard-nav';
 
+export { CngxStepperSwipeNav } from './swipe-nav.directive';
+
 export { CngxStepperCount } from './stepper-count';
 
 

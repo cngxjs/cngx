@@ -13,6 +13,7 @@ import {
   withStepperAriaLabels,
   withStepperFallbackLabels,
   withStepperI18nLabels,
+  withStepperMobileSwipe,
   withStepperSkin,
 } from '@cngx/common/stepper';
 
@@ -825,6 +826,149 @@ describe('CngxStepper organism', () => {
       buttons[1].click();
       fixture.detectChanges();
       expect(region.textContent?.trim()).toBe('');
+    });
+  });
+
+  describe('mobile-swipe navigation', () => {
+    type SwipeDirection = 'left' | 'right' | 'up' | 'down';
+    interface SwipeShape {
+      readonly swipeNav: {
+        readonly swipeEnabled: () => boolean;
+        readonly handleSwipe: (direction: SwipeDirection) => void;
+      };
+      readonly presenter: { activeStepIndex: () => number };
+    }
+
+    @Component({
+      standalone: true,
+      imports: [CngxStepper, CngxStep],
+      template: `
+        <cngx-stepper
+          aria-label="Wizard"
+          [(activeStepIndex)]="active"
+          [linear]="linear"
+          [mobileSwipe]="mobileSwipe"
+        >
+          <div cngxStep label="A" [completed]="stepACompleted"></div>
+          <div cngxStep label="B"></div>
+          <div cngxStep label="C"></div>
+        </cngx-stepper>
+      `,
+    })
+    class SwipeHost {
+      readonly active = signal(0);
+      linear = false;
+      mobileSwipe: boolean | undefined = undefined;
+      stepACompleted = false;
+    }
+
+    function stepperOf(fixture: ReturnType<typeof TestBed.createComponent<SwipeHost>>): SwipeShape {
+      return fixture.debugElement.children[0].componentInstance as unknown as SwipeShape;
+    }
+
+    it('handleSwipe("left") routes through presenter.selectNext (advances the active step)', () => {
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      const fixture = TestBed.createComponent(SwipeHost);
+      fixture.detectChanges();
+      const stepper = stepperOf(fixture);
+      expect(stepper.presenter.activeStepIndex()).toBe(0);
+      stepper.swipeNav.handleSwipe('left');
+      fixture.detectChanges();
+      expect(stepper.presenter.activeStepIndex()).toBe(1);
+    });
+
+    it('handleSwipe("right") routes through presenter.selectPrevious (retreats the active step)', () => {
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      const fixture = TestBed.createComponent(SwipeHost);
+      fixture.componentInstance.active.set(2);
+      fixture.detectChanges();
+      const stepper = stepperOf(fixture);
+      expect(stepper.presenter.activeStepIndex()).toBe(2);
+      stepper.swipeNav.handleSwipe('right');
+      fixture.detectChanges();
+      expect(stepper.presenter.activeStepIndex()).toBe(1);
+    });
+
+    it('vertical directions are ignored (no movement on "up" or "down")', () => {
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      const fixture = TestBed.createComponent(SwipeHost);
+      fixture.componentInstance.active.set(1);
+      fixture.detectChanges();
+      const stepper = stepperOf(fixture);
+      stepper.swipeNav.handleSwipe('up');
+      stepper.swipeNav.handleSwipe('down');
+      fixture.detectChanges();
+      expect(stepper.presenter.activeStepIndex()).toBe(1);
+    });
+
+    it('linear mode blocks left-swipe while the next step is incomplete (shared with click gate)', () => {
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      const fixture = TestBed.createComponent(SwipeHost);
+      fixture.componentInstance.linear = true;
+      fixture.detectChanges();
+      const stepper = stepperOf(fixture);
+      expect(stepper.presenter.activeStepIndex()).toBe(0);
+      stepper.swipeNav.handleSwipe('left');
+      fixture.detectChanges();
+      // Linear policy refuses the jump because step A is not yet 'success'.
+      expect(stepper.presenter.activeStepIndex()).toBe(0);
+    });
+
+    it('linear mode lets right-swipe retreat without gating (back-move is ungated)', () => {
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      const fixture = TestBed.createComponent(SwipeHost);
+      fixture.componentInstance.linear = true;
+      fixture.componentInstance.stepACompleted = true;
+      fixture.componentInstance.active.set(1);
+      fixture.detectChanges();
+      const stepper = stepperOf(fixture);
+      stepper.swipeNav.handleSwipe('right');
+      fixture.detectChanges();
+      expect(stepper.presenter.activeStepIndex()).toBe(0);
+    });
+
+    it('swipeEnabled defaults to true when neither Input nor config overrides', () => {
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      const fixture = TestBed.createComponent(SwipeHost);
+      fixture.detectChanges();
+      expect(stepperOf(fixture).swipeNav.swipeEnabled()).toBe(true);
+    });
+
+    it('swipeEnabled honours the config override when no Input is bound', () => {
+      TestBed.configureTestingModule({
+        providers: [
+          provideZonelessChangeDetection(),
+          provideStepperConfig(withStepperMobileSwipe(false)),
+        ],
+      });
+      const fixture = TestBed.createComponent(SwipeHost);
+      fixture.detectChanges();
+      expect(stepperOf(fixture).swipeNav.swipeEnabled()).toBe(false);
+    });
+
+    it('per-instance [mobileSwipe] wins over a config override (Input -> config -> default)', () => {
+      TestBed.configureTestingModule({
+        providers: [
+          provideZonelessChangeDetection(),
+          provideStepperConfig(withStepperMobileSwipe(false)),
+        ],
+      });
+      const fixture = TestBed.createComponent(SwipeHost);
+      fixture.componentInstance.mobileSwipe = true;
+      fixture.detectChanges();
+      expect(stepperOf(fixture).swipeNav.swipeEnabled()).toBe(true);
     });
   });
 });

@@ -6,7 +6,14 @@
 } @else if (displayMode() === 'text') {
   <cngx-stepper-count class="cngx-stepper__mobile-text" />
 
-  <div class="cngx-stepper__panels">
+  <div
+    class="cngx-stepper__panels"
+    [class.cngx-stepper__panels--swipeable]="swipeNav.swipeEnabled()"
+    cngxSwipe
+    axis="x"
+    [enabled]="swipeNav.swipeEnabled()"
+    (swiped)="swipeNav.handleSwipe($event)"
+  >
     @for (node of stepsOnly(); track node.id) {
       <div
         class="cngx-stepper__panel"
@@ -47,7 +54,14 @@
     <cngx-stepper-count class="cngx-stepper__mobile-text cngx-stepper__mobile-text--caption" />
   }
 
-  <div class="cngx-stepper__panels">
+  <div
+    class="cngx-stepper__panels"
+    [class.cngx-stepper__panels--swipeable]="swipeNav.swipeEnabled()"
+    cngxSwipe
+    axis="x"
+    [enabled]="swipeNav.swipeEnabled()"
+    (swiped)="swipeNav.handleSwipe($event)"
+  >
     @for (node of stepsOnly(); track node.id) {
       <div
         class="cngx-stepper__panel"
