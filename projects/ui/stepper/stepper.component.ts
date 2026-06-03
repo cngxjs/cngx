@@ -57,6 +57,7 @@ import {
   CNGX_DIRECTIVE_BY_ID_MAP_FACTORY,
   CNGX_ORGANISM_SCROLL_SYNC_FACTORY,
 } from '@cngx/common/tabs';
+import { coerceBooleanProperty } from '@cngx/core/utils';
 
 /**
  * Stepper organism. Composes `CngxStepperPresenter` with
@@ -130,6 +131,7 @@ import {
     '[attr.aria-orientation]': 'presenter.orientation()',
     '[attr.data-orientation]': 'presenter.orientation()',
     '[attr.data-skin]': 'resolvedSkin()',
+    '[attr.data-connectors]': "resolvedConnectors() ? 'true' : null",
     '[attr.data-mobile-indicator-position]': 'resolvedMobileIndicatorPosition()',
     '[attr.aria-label]': 'resolvedAriaLabel()',
     '[attr.aria-labelledby]': 'ariaLabelledBy()',
@@ -144,6 +146,18 @@ export class CngxStepper implements CngxStepPanelHost {
 
   /** Per-instance skin override; flips `[data-skin]`, structure/ARIA unchanged. */
   readonly skin = input<CngxStepperSkin | undefined>(undefined);
+
+  /**
+   * Opt-in connector rail between adjacent step indicators on the
+   * classic skin. Off by default. The CSS rule is double-scoped on
+   * `[data-skin='classic']`, so the four other skins are mechanically
+   * untouched. Default `undefined` so the `??`-cascade in
+   * `resolvedConnectors` actually falls through to
+   * `CngxStepperConfig.connectors`.
+   */
+  readonly connectors = input<boolean | undefined, unknown>(undefined, {
+    transform: (value) => (value === undefined ? undefined : coerceBooleanProperty(value)),
+  });
 
   /** Opt-in `Step N of M` caption under the mobile `'dots'` row. */
   readonly showStepCount = input<boolean>(false);
@@ -202,6 +216,8 @@ export class CngxStepper implements CngxStepPanelHost {
 
   /** Resolved skin keyed onto the `[data-skin]` host attribute. */
   protected readonly resolvedSkin = computed<CngxStepperSkin>(() => this.skin() ?? this.config.skin ?? 'classic');
+  /** Resolved connector flag keyed onto the `[data-connectors]` host attribute (classic skin only). */
+  protected readonly resolvedConnectors = computed<boolean>(() => this.connectors() ?? this.config.connectors ?? false);
   protected readonly resolvedMobileIndicatorPosition = computed<CngxStepperMobileIndicatorPosition>(() => this.mobileIndicatorPosition() ?? this.config.mobileIndicatorPosition ?? 'top');
 
   protected statusLabelFor = (node: CngxStepNode): string => resolveStepperStatusLabel(node, this.i18n, this.isActive(node));

@@ -515,6 +515,42 @@
     initial-value: 0 1px 2px color-mix(in srgb, currentColor 12%, transparent),
       0 1px 1px color-mix(in srgb, currentColor 8%, transparent);
   }
+
+  /**
+   * Muted color of an upcoming connector segment on the classic skin
+   * with `[connectors]` opted-in. Inherits so host-set overrides cascade
+   * to the `::before` segment painter.
+   * @group Skin / classic
+   */
+  @property --cngx-step-connector-color {
+    syntax: '*';
+    inherits: true;
+    initial-value: color-mix(in srgb, currentColor 35%, transparent);
+  }
+
+  /**
+   * Accent color of a completed connector segment on the classic skin
+   * with `[connectors]` opted-in. Falls back to the canonical completed
+   * color so Material consumers inherit success tones without per-skin
+   * overrides.
+   * @group Skin / classic
+   */
+  @property --cngx-step-connector-completed-color {
+    syntax: '*';
+    inherits: true;
+    initial-value: var(--cngx-step-completed-color);
+  }
+
+  /**
+   * Thickness of the connector segment on the classic skin with
+   * `[connectors]` opted-in. Inherits so host-set overrides cascade.
+   * @group Skin / classic
+   */
+  @property --cngx-step-connector-width {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 2px;
+  }
 }
 
 @layer cngx.skins {
@@ -605,6 +641,56 @@
       border-top: 0;
       border-left: 2px solid color-mix(in srgb, currentColor 35%, transparent);
       transform: none;
+    }
+  }
+
+  /*
+   * Classic + [connectors]: solid completed/upcoming rail between
+   * adjacent step indicators. Per-segment color cascades from the
+   * PRECEDING step's `[data-state]` via the adjacent-sibling combinator,
+   * so completed/upcoming distinction stays 100% CSS (Pillar 1).
+   * Double-scoped on `[data-skin='classic']` so the four other skins
+   * are mechanically untouched.
+   */
+  @scope (.cngx-stepper[data-skin='classic'][data-connectors='true']) {
+    .cngx-stepper__step {
+      position: relative;
+    }
+
+    .cngx-stepper__step + .cngx-stepper__step::before {
+      content: '';
+      position: absolute;
+      left: calc(-1 * var(--cngx-step-gap, 0.5rem));
+      top: calc(var(--cngx-step-indicator-size, 1.75rem) / 2);
+      width: var(--cngx-step-gap, 0.5rem);
+      height: 0;
+      border-top: var(--cngx-step-connector-width, 2px) solid
+        var(--cngx-step-connector-color);
+      transform: translateY(-50%);
+    }
+
+    .cngx-stepper__step[data-state='success']
+      + .cngx-stepper__step::before {
+      border-top-color: var(--cngx-step-connector-completed-color);
+    }
+  }
+
+  /* Classic + [connectors] vertical: bar runs between disc centers. */
+  @scope (.cngx-stepper[data-skin='classic'][data-connectors='true'][data-orientation='vertical']) {
+    .cngx-stepper__step + .cngx-stepper__step::before {
+      left: calc(var(--cngx-step-indicator-size, 1.75rem) / 2);
+      top: calc(-1 * var(--cngx-step-gap, 0.5rem));
+      width: 0;
+      height: var(--cngx-step-gap, 0.5rem);
+      border-top: 0;
+      border-left: var(--cngx-step-connector-width, 2px) solid
+        var(--cngx-step-connector-color);
+      transform: translateX(-50%);
+    }
+
+    .cngx-stepper__step[data-state='success']
+      + .cngx-stepper__step::before {
+      border-left-color: var(--cngx-step-connector-completed-color);
     }
   }
 
