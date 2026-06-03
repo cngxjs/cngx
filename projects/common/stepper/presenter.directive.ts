@@ -179,6 +179,35 @@ export class CngxStepperPresenter implements CngxStepperHost {
 
   readonly commitState = this.commitController.state;
 
+  /**
+   * Next enabled step-only index after the active one, skipping
+   * disabled steps. Returns `stepsOnly().length` when no enabled step
+   * follows. Single source for `selectNext()` and the `canGoNext`
+   * bound - the traversal lives here, never re-walked at the call site.
+   */
+  private readonly nextEnabledIndex = computed(() => {
+    const stepsOnly = this.stepsOnly();
+    let next = this.activeStepIndex() + 1;
+    while (next < stepsOnly.length && stepsOnly[next].disabled()) {
+      next++;
+    }
+    return next;
+  });
+
+  /**
+   * Previous enabled step-only index before the active one, skipping
+   * disabled steps. Returns `-1` when no enabled step precedes. Single
+   * source for `selectPrevious()` and the `canGoPrevious` bound.
+   */
+  private readonly previousEnabledIndex = computed(() => {
+    const stepsOnly = this.stepsOnly();
+    let prev = this.activeStepIndex() - 1;
+    while (prev >= 0 && stepsOnly[prev].disabled()) {
+      prev--;
+    }
+    return prev;
+  });
+
   constructor() {
     if (isDevMode()) {
       afterNextRender(() => {
@@ -264,20 +293,31 @@ export class CngxStepperPresenter implements CngxStepperHost {
     this.lastFailedIndexState.set(undefined);
   }
 
+  /**
+   * Linear-gate predicate: `true` when linear mode forbids advancing to
+   * `target` because an incomplete (non-`success`, non-disabled) step
+   * sits between the active index and `target`. The single home for the
+   * linear slice check - `select()` and the `canGoNext` bound both
+   * consume it so the gate can never drift between navigation and its
+   * affordance.
+   */
+  private isLinearBlocked(target: number): boolean {
+    if (!this.linear() || target <= this.activeStepIndex()) {
+      return false;
+    }
+    return this.stepsOnly()
+      .slice(this.activeStepIndex(), target)
+      .some((n) => n.state() !== 'success' && !n.disabled());
+  }
+
   select(index: number): void {
     const stepsOnly = this.stepsOnly();
     if (stepsOnly.length === 0) {
       return;
     }
     const target = Math.max(0, Math.min(index, stepsOnly.length - 1));
-    if (this.linear() && target > this.activeStepIndex()) {
-      // Linear: refuse jumps that skip an incomplete step.
-      const blocking = stepsOnly
-        .slice(this.activeStepIndex(), target)
-        .find((n) => n.state() !== 'success' && !n.disabled());
-      if (blocking) {
-        return;
-      }
+    if (this.isLinearBlocked(target)) {
+      return;
     }
     if (stepsOnly[target].disabled()) {
       return;
@@ -337,22 +377,14 @@ export class CngxStepperPresenter implements CngxStepperHost {
   }
 
   selectNext(): void {
-    const stepsOnly = this.stepsOnly();
-    let next = this.activeStepIndex() + 1;
-    while (next < stepsOnly.length && stepsOnly[next].disabled()) {
-      next++;
-    }
-    if (next < stepsOnly.length) {
+    const next = this.nextEnabledIndex();
+    if (next < this.stepsOnly().length) {
       this.select(next);
     }
   }
 
   selectPrevious(): void {
-    const stepsOnly = this.stepsOnly();
-    let prev = this.activeStepIndex() - 1;
-    while (prev >= 0 && stepsOnly[prev].disabled()) {
-      prev--;
-    }
+    const prev = this.previousEnabledIndex();
     if (prev >= 0) {
       this.activeStepIndex.set(prev);
     }
