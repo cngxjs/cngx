@@ -729,6 +729,28 @@
       white-space: normal;
     }
 
+    /* Overlay busy spinner + rejection icon on the disc so the wizard
+       silhouette stays clean (instead of stacking below the label in
+       column flow). Both reuse the disc center coordinates. */
+    .cngx-stepper__busy-spinner,
+    .cngx-stepper__rejection-icon {
+      position: absolute;
+      top: calc(0.5rem + var(--cngx-step-indicator-size, 1.75rem) / 2);
+      left: 50%;
+      transform: translate(-50%, -50%);
+      margin: 0;
+      z-index: 2;
+    }
+
+    /* Align rejection / busy color language with the rail: red, not amber. */
+    .cngx-stepper__step--rejected {
+      outline-color: var(--cngx-step-connector-errored-color);
+    }
+
+    .cngx-stepper__rejection-icon {
+      background: var(--cngx-step-connector-errored-color);
+    }
+
     /*
      * Rail spans previous-disc-center to current-disc-center, offset by
      * disc-radius on both ends so it doesn't paint through the discs.
