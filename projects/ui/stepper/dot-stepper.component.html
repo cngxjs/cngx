@@ -1,4 +1,11 @@
-<div class="cngx-dot-stepper__row">
+<div
+  class="cngx-dot-stepper__row"
+  [class.cngx-dot-stepper__row--swipeable]="swipeNav.swipeEnabled()"
+  cngxSwipe
+  axis="x"
+  [enabled]="swipeNav.swipeEnabled()"
+  (swiped)="swipeNav.handleSwipe($event)"
+>
   @for (node of stepNodes(); track node.id; let i = $index) {
     @let dotTpl = resolvedDotTemplate();
     <span

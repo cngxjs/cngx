@@ -218,4 +218,54 @@ describe('CngxDotStepper', () => {
       expect(d.textContent?.trim()).toBe('');
     });
   });
+
+  describe('mobile-swipe routing on the dot row', () => {
+    type SwipeDirection = 'left' | 'right' | 'up' | 'down';
+    interface SwipeShape {
+      readonly swipeNav: {
+        readonly swipeEnabled: () => boolean;
+        readonly handleSwipe: (direction: SwipeDirection) => void;
+      };
+      readonly presenter: { activeStepIndex: () => number };
+    }
+    function dotStepperOf(fixture: ReturnType<typeof TestBed.createComponent<Host>>): SwipeShape {
+      return fixture.debugElement.children[0].componentInstance as unknown as SwipeShape;
+    }
+
+    it('handleSwipe("left") routes through presenter.selectNext on the standalone variant', () => {
+      TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+      const fixture = TestBed.createComponent(Host);
+      fixture.detectChanges();
+      const stepper = dotStepperOf(fixture);
+      expect(stepper.presenter.activeStepIndex()).toBe(1);
+      stepper.swipeNav.handleSwipe('left');
+      fixture.detectChanges();
+      expect(stepper.presenter.activeStepIndex()).toBe(2);
+    });
+
+    it('handleSwipe("right") routes through presenter.selectPrevious on the standalone variant', () => {
+      TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+      const fixture = TestBed.createComponent(Host);
+      fixture.detectChanges();
+      const stepper = dotStepperOf(fixture);
+      stepper.swipeNav.handleSwipe('right');
+      fixture.detectChanges();
+      expect(stepper.presenter.activeStepIndex()).toBe(0);
+    });
+
+    it('swipeEnabled defaults to true (peer-parity with <cngx-stepper> mobile-collapse)', () => {
+      TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+      const fixture = TestBed.createComponent(Host);
+      fixture.detectChanges();
+      expect(dotStepperOf(fixture).swipeNav.swipeEnabled()).toBe(true);
+    });
+
+    it('the dot row carries the --swipeable modifier when swipe is enabled', () => {
+      TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+      const fixture = TestBed.createComponent(Host);
+      fixture.detectChanges();
+      const row = fixture.nativeElement.querySelector('.cngx-dot-stepper__row') as HTMLElement;
+      expect(row.classList.contains('cngx-dot-stepper__row--swipeable')).toBe(true);
+    });
+  });
 });

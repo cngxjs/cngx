@@ -15,11 +15,13 @@ import {
   CngxDotStepperDot,
   type CngxDotStepperDotContext,
   CngxStepperPresenter,
+  CngxStepperSwipeNav,
   CNGX_STEPPER_HOST,
   injectStepperConfig,
   injectStepperI18n,
   type CngxStepNode,
 } from '@cngx/common/stepper';
+import { CngxSwipe } from '@cngx/common/interactive';
 
 /**
  * Dot stepper variant. Mobile-first sequential-flow indicator. Renders
@@ -49,12 +51,16 @@ import {
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  imports: [NgTemplateOutlet],
+  imports: [NgTemplateOutlet, CngxSwipe],
   hostDirectives: [
     {
       directive: CngxStepperPresenter,
       inputs: ['activeStepIndex', 'linear'],
       outputs: ['activeStepIndexChange'],
+    },
+    {
+      directive: CngxStepperSwipeNav,
+      inputs: ['mobileSwipe'],
     },
   ],
   templateUrl: './dot-stepper.component.html',
@@ -76,6 +82,8 @@ export class CngxDotStepper {
   protected readonly presenter = inject(CNGX_STEPPER_HOST);
   protected readonly i18n = injectStepperI18n();
   protected readonly config = injectStepperConfig();
+  /** Mobile-swipe routing surface composed via hostDirectives. */
+  protected readonly swipeNav = inject(CngxStepperSwipeNav, { host: true });
 
   protected readonly stepNodes: Signal<readonly CngxStepNode[]> = this.presenter.stepsOnly;
   protected readonly activeIndex = computed<number>(() => this.presenter.activeStepIndex());
