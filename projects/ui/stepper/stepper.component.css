@@ -748,9 +748,16 @@
       z-index: 2;
     }
 
-    /* Align rejection / busy color language with the rail: red, not amber. */
+    /* Wizard signals rejection via the red disc badge + red label text
+       (rail color cascades on its own). Drop the outline that the base
+       skin draws around a rejected step - the badge + label color carry
+       the signal cleanly without box chrome. */
     .cngx-stepper__step--rejected {
-      outline-color: var(--cngx-step-connector-errored-color);
+      outline: none;
+    }
+
+    .cngx-stepper__step--rejected .cngx-stepper__label {
+      color: var(--cngx-step-connector-errored-color);
     }
 
     .cngx-stepper__rejection-icon {
