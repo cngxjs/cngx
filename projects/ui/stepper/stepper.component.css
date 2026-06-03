@@ -729,10 +729,16 @@
       white-space: normal;
     }
 
-    /* Overlay busy spinner + rejection icon on the disc so the wizard
-       silhouette stays clean (instead of stacking below the label in
-       column flow). Both reuse the disc center coordinates. */
-    .cngx-stepper__busy-spinner,
+    /* Wizard signals pending via the orange rail + orange disc; an
+       animated spinner inside the disc would compete with both. Drop it
+       in this scope - `aria-busy='true'` on the host still carries the
+       AT announcement. */
+    .cngx-stepper__busy-spinner {
+      display: none;
+    }
+
+    /* Rejection icon overlays the disc center, replacing the numeric glyph
+       on the failed step. */
     .cngx-stepper__rejection-icon {
       position: absolute;
       top: calc(0.5rem + var(--cngx-step-indicator-size, 1.75rem) / 2);
@@ -749,6 +755,18 @@
 
     .cngx-stepper__rejection-icon {
       background: var(--cngx-step-connector-errored-color);
+    }
+
+    /* Success supersedes rejection: once a previously-failed step is
+       completed, drop the rejection icon + outline so the wizard row
+       reads cleanly. The rail color cascade naturally reverts via the
+       preceding step's `[data-state='success']` rule. */
+    .cngx-stepper__step[data-state='success'] .cngx-stepper__rejection-icon {
+      display: none;
+    }
+
+    .cngx-stepper__step[data-state='success'].cngx-stepper__step--rejected {
+      outline: none;
     }
 
     /*
