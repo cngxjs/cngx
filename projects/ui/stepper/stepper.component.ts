@@ -43,6 +43,7 @@ import {
   type CngxStepRejectionContext,
   CNGX_STEPPER_GLYPHS,
   CNGX_STEPPER_HOST,
+  createStepperStripKeyboardNav,
   createStepperTemplateBindings,
   resolveStepperStatusLabel,
   injectStepperConfig,
@@ -131,6 +132,7 @@ import {
     '[attr.aria-labelledby]': 'ariaLabelledBy()',
     '[attr.aria-busy]': 'isCommitting() ? "true" : null',
     '[class.cngx-stepper]': 'true',
+    '(keydown)': 'handleStripKeyDown($event)',
   },
 })
 export class CngxStepper implements CngxStepPanelHost {
@@ -140,13 +142,7 @@ export class CngxStepper implements CngxStepPanelHost {
   /** Per-instance skin override; flips `[data-skin]`, structure/ARIA unchanged. */
   readonly skin = input<CngxStepperSkin | undefined>(undefined);
 
-  /**
-   * When the stepper has auto-collapsed to the `'dots'` mobile mode, opt
-   * in to render a `Step N of M` caption below the dot row. Mirrors the
-   * `CngxProgressBarStepper.showStepCount` pattern - sources the format
-   * from `CngxStepperI18n.textStepperFormat`. No-op for the default
-   * `'text'` mode (the caption is the only visible content there).
-   */
+  /** Opt-in `Step N of M` caption under the mobile `'dots'` row. */
   readonly showStepCount = input<boolean>(false);
 
   protected readonly presenter = inject(CNGX_STEPPER_HOST);
@@ -403,6 +399,9 @@ export class CngxStepper implements CngxStepPanelHost {
       this.presenter.select(idx);
     }
   }
+
+  /** Strip-scoped arrow-key handler. See {@link createStepperStripKeyboardNav}. */
+  protected readonly handleStripKeyDown = createStepperStripKeyboardNav({ presenter: this.presenter, hostElement: this.hostElement, flatStepCount: () => this.flatSteps().length });
 
   /**
    * Clear the presenter's `lastFailedIndex`. Lets template-ref consumers

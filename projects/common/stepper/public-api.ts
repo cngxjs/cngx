@@ -131,6 +131,11 @@ export {
   createStepperDisplayMode,
 } from './mobile-viewport';
 
+export {
+  createStepperStripKeyboardNav,
+  type CngxStepperStripKeyboardNavOptions,
+} from './strip-keyboard-nav';
+
 
 export {
   CNGX_STEPPER_COMMIT_HANDLER_FACTORY,
