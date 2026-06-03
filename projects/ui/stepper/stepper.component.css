@@ -307,6 +307,21 @@
       margin-inline-start: var(--cngx-step-gap, 0.5rem);
     }
 
+    /* Consumer-owned busy spinner body via `*cngxStepBusySpinner` slot -
+       drop the default ring chrome (fixed size, circular border, spin
+       animation) when the slot rendered content of its own, otherwise
+       the consumer's SVG / banner / text gets sucked into the library's
+       360deg rotation and rendered inside the empty ring. Layout-side
+       inline-block + flex sizing stays so the consumer node sits after
+       the label without overlapping. */
+    .cngx-stepper__busy-spinner:not(:empty) {
+      width: auto;
+      height: auto;
+      border: 0;
+      border-radius: 0;
+      animation: none;
+    }
+
     .cngx-stepper__step:hover:not([aria-disabled='true']) {
       background: var(--cngx-step-hover-bg, color-mix(in srgb, currentColor 8%, transparent));
       cursor: pointer;
