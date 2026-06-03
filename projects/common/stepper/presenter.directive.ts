@@ -208,6 +208,45 @@ export class CngxStepperPresenter implements CngxStepperHost {
     return prev;
   });
 
+  /** {@inheritDoc CngxStepperHost.stepCount} */
+  readonly stepCount: Signal<number> = computed(() => this.stepsOnly().length);
+
+  /** {@inheritDoc CngxStepperHost.isFirstStep} */
+  readonly isFirstStep: Signal<boolean> = computed(() => this.clampedIndex() <= 0);
+
+  /** {@inheritDoc CngxStepperHost.isLastStep} */
+  readonly isLastStep: Signal<boolean> = computed(
+    () => this.clampedIndex() >= this.stepCount() - 1,
+  );
+
+  /**
+   * {@inheritDoc CngxStepperHost.canGoNext}
+   *
+   * Derives from the same `nextEnabledIndex` + `isLinearBlocked`
+   * predicates `select()`/`selectNext()` enforce, so the affordance can
+   * never drift from the navigation it gates.
+   */
+  readonly canGoNext: Signal<boolean> = computed(() => {
+    const next = this.nextEnabledIndex();
+    return next < this.stepCount() && !this.isLinearBlocked(next);
+  });
+
+  /** {@inheritDoc CngxStepperHost.canGoPrevious} */
+  readonly canGoPrevious: Signal<boolean> = computed(() => this.previousEnabledIndex() >= 0);
+
+  /** {@inheritDoc CngxStepperHost.busy} */
+  readonly busy: Signal<boolean> = computed(() => this.commitState.status() === 'pending');
+
+  /** {@inheritDoc CngxStepperHost.nextStepLabel} */
+  readonly nextStepLabel: Signal<string | undefined> = computed(() =>
+    this.stepsOnly()[this.nextEnabledIndex()]?.label(),
+  );
+
+  /** {@inheritDoc CngxStepperHost.previousStepLabel} */
+  readonly previousStepLabel: Signal<string | undefined> = computed(() =>
+    this.stepsOnly()[this.previousEnabledIndex()]?.label(),
+  );
+
   constructor() {
     if (isDevMode()) {
       afterNextRender(() => {
