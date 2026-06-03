@@ -729,8 +729,8 @@
       white-space: normal;
     }
 
-    /* Wizard signals pending via the orange rail + orange disc; an
-       animated spinner inside the disc would compete with both. Drop it
+    /* Wizard signals pending via the orange rail + orange disc color
+       transition; an animated spinner would compete with both. Drop it
        in this scope - `aria-busy='true'` on the host still carries the
        AT announcement. */
     .cngx-stepper__busy-spinner {
