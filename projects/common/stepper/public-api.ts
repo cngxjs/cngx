@@ -135,6 +135,12 @@ export {
   createStepperDisplayMode,
 } from './mobile-viewport';
 
+// The following three blocks ship `@internal` factory helpers. They are
+// exported through `public-api.ts` so the sibling `@cngx/ui/stepper`
+// organism can consume them across the secondary-entry boundary
+// (ng-packagr has no cross-entry private surface). `disableInternal: true`
+// in `.compodocrc.json` hides them from generated docs; the LLM-md export
+// honours the same tag. Precedent: `CNGX_STEPPER_GLYPHS`, `flatStepsEqual`.
 export {
   createStepperHostAttrs,
   type CngxStepperHostAttrs,
