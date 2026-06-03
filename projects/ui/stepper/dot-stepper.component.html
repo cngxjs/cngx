@@ -1,19 +1,24 @@
-<div class="cngx-dot-stepper__row">
+<div
+  class="cngx-dot-stepper__row"
+  [class.cngx-dot-stepper__row--swipeable]="swipeNav.swipeEnabled()"
+  cngxSwipe
+  axis="x"
+  [enabled]="swipeNav.swipeEnabled()"
+  (swiped)="swipeNav.handleSwipe($event)"
+>
   @for (node of stepNodes(); track node.id; let i = $index) {
+    @let dotTpl = resolvedDotTemplate();
     <span
       class="cngx-dot-stepper__dot"
-      role="presentation"
+      role="img"
       [class.cngx-dot-stepper__dot--active]="isActive(node, i)"
       [class.cngx-dot-stepper__dot--completed]="i < activeIndex()"
       [attr.aria-current]="isActive(node, i) ? 'step' : null"
       [attr.aria-label]="ariaLabelFor(node, i)"
       [attr.data-state]="node.state()"
     >
-      @let dotTpl = resolvedDotTemplate();
       @if (dotTpl) {
-        <ng-container
-          *ngTemplateOutlet="dotTpl; context: dotContextFor(node, i)"
-        ></ng-container>
+        <ng-container *ngTemplateOutlet="dotTpl; context: dotContextFor(node, i)" />
       }
     </span>
   }

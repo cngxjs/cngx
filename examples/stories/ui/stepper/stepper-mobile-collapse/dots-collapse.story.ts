@@ -24,7 +24,7 @@ export const STORY: DemoSpec = {
   protected handlePrev(): void {
     this.active.update(i => Math.max(i - 1, 0));
   }`,
-  template: `  <cngx-stepper [(activeStepIndex)]="active" aria-label="Checkout">
+  template: `  <cngx-stepper [(activeStepIndex)]="active" [showStepCount]="true" aria-label="Checkout">
     <div cngxStep label="Customer">
       <ng-template cngxStepContent>
         <p>Customer details panel.</p>

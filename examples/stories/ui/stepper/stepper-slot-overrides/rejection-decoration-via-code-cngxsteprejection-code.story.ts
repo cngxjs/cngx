@@ -2,7 +2,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
   title: 'CngxStepper: custom step rejection slot',
-  subtitle: 'Surface a commit rollback visually - when <code>commitAction</code> rejects, the presenter sets <code>lastFailedIndex</code> and the slot fires for the rejected step. Context is <code>{ failedIndex, originLabel?, node }</code>. Click "Next" to advance to "Security"; the first attempt rejects, the rejection-icon appears, and a retry succeeds.',
+  subtitle: 'Surface a commit rollback visually - when <code>commitAction</code> rejects, the presenter sets <code>lastFailedIndex</code> and the slot fires for the rejected step. Context is <code>{ failedIndex, originLabel?, node }</code>. Click the "Security" step header to advance; the first attempt rejects, the rejection-icon appears, and a retry succeeds.',
   description: 'Slot focus: <code>*cngxStepRejection</code>. The first commit to step 3 reliably rejects; the slot fires with <code>let-originLabel</code> so the SR phrase ("Rolled back to ...") is wired without consumer state.',
   level: 'organism',
   audience: ['dev', 'design'],
@@ -47,7 +47,7 @@ export const STORY: DemoSpec = {
     </div>
     <div cngxStep label="Notifications">
       <ng-template cngxStepContent>
-        <p>Step 2 - origin step for the upcoming rejection. Press Next to attempt the commit; the first attempt fails.</p>
+        <p>Step 2 - origin step for the upcoming rejection. Click the "Security" step header to attempt the commit; the first attempt fails.</p>
       </ng-template>
     </div>
     <div cngxStep label="Security">

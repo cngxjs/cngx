@@ -96,7 +96,7 @@ import { CngxProgressBarStepper } from '@cngx/ui/stepper';
 
 ## Dot Stepper
 
-`CngxDotStepper` renders one dot per step inside a `<div role="group" aria-roledescription="Step indicator">` per the W3C APG step-indicator pattern. The active dot carries `aria-current="step"`; arrow keys route through the presenter when `[linear]="false"`. Dots are decorative (`role="presentation"`) - this is sequential flow, not a tablist.
+`CngxDotStepper` renders one dot per step inside a `<div role="group" aria-roledescription="Step indicator">` per the W3C APG step-indicator pattern. The active dot carries `aria-current="step"`; arrow keys route through the presenter when `[linear]="false"`. Each dot uses `role="img"` with a `Step N of M` label - a name-permitting role, since this is sequential flow, not a tablist.
 
 ```ts
 import { CngxStep } from '@cngx/common/stepper';
@@ -138,3 +138,37 @@ import { CngxTextStepper } from '@cngx/ui/stepper';
 ```
 
 Override the format via `withStepperI18nLabels({ textStepperFormat: (cur, total) => 'Schritt ' + cur + '/' + total })`.
+
+## Swipe navigation (mobile)
+
+Steppers are **indicators**, not carousels: they reflect `activeStepIndex`, they do not own the slide content. So swipe is not built in - you compose it. Wire `CngxSwipe` (from `@cngx/common/interactive`) onto the **content panel** and route the direction into the same two-way `activeStepIndex` signal. Because the gesture lives on the content, it works identically with any indicator variant (dot, text, progress-bar).
+
+```ts
+import { CngxSwipe, type SwipeDirection } from '@cngx/common/interactive';
+import { CngxDotStepper } from '@cngx/ui/stepper';
+
+readonly active = signal(0);
+
+onSwipe(direction: SwipeDirection): void {
+  if (direction === 'left') {
+    this.active.update(i => Math.min(i + 1, this.lastIndex));
+  } else if (direction === 'right') {
+    this.active.update(i => Math.max(i - 1, 0));
+  }
+}
+```
+
+```html
+<cngx-dot-stepper [(activeStepIndex)]="active" aria-label="Slides">
+  <div cngxStep label="Slide 1"></div>
+  <div cngxStep label="Slide 2"></div>
+  <div cngxStep label="Slide 3"></div>
+</cngx-dot-stepper>
+
+<!-- Swipe sits on the content, axis-pinned so a vertical scroll never fires it. -->
+<section cngxSwipe axis="x" (swiped)="onSwipe($event)">…</section>
+```
+
+Keyboard navigation (arrow keys, Home / End) is built into the indicator and needs no wiring; swipe is the touch counterpart you add yourself.
+
+**Caveat:** only wire swipe onto panels that are genuinely paged content (onboarding, galleries). Do not make a panel that holds real form fields swipe-navigable - a horizontal drag while editing inputs is ambiguous and fights native gestures. For form wizards, keep explicit Back / Next controls.

@@ -255,10 +255,14 @@
 
     /* Replace the default number glyph with a check on completed steps so
        active and completed stay distinct even when both states happen to
-       share a hue under a custom theme. Consumer-supplied indicator
-       templates render unchanged - only the built-in `.cngx-stepper__
-       indicator-glyph` span is suppressed here. */
-    .cngx-stepper__indicator[data-state='success']::before {
+       share a hue under a custom theme. The :has(.indicator-glyph) guard
+       scopes the ::before checkmark to the *default* indicator template
+       only - a consumer-provided `*cngxStepIndicator` slot renders its
+       own glyph (no `.indicator-glyph` span), so :has() returns false
+       and the library checkmark stays suppressed. Otherwise the consumer
+       SVG and the library checkmark stack on top of each other on
+       completed steps. */
+    .cngx-stepper__indicator[data-state='success']:has(.cngx-stepper__indicator-glyph)::before {
       content: '\2713';
       font-weight: 700;
     }
@@ -301,6 +305,21 @@
       animation: cngx-stepper-spin 0.8s linear infinite;
       flex: 0 0 auto;
       margin-inline-start: var(--cngx-step-gap, 0.5rem);
+    }
+
+    /* Consumer-owned busy spinner body via `*cngxStepBusySpinner` slot -
+       drop the default ring chrome (fixed size, circular border, spin
+       animation) when the slot rendered content of its own, otherwise
+       the consumer's SVG / banner / text gets sucked into the library's
+       360deg rotation and rendered inside the empty ring. Layout-side
+       inline-block + flex sizing stays so the consumer node sits after
+       the label without overlapping. */
+    .cngx-stepper__busy-spinner:not(:empty) {
+      width: auto;
+      height: auto;
+      border: 0;
+      border-radius: 0;
+      animation: none;
     }
 
     .cngx-stepper__step:hover:not([aria-disabled='true']) {
@@ -423,7 +442,7 @@
   @property --cngx-step-chevron-tile-upcoming-bg {
     syntax: '*';
     inherits: false;
-    initial-value: color-mix(in srgb, currentColor 8%, transparent);
+    initial-value: color-mix(in srgb, currentColor 12%, transparent);
   }
 
   /**
@@ -450,55 +469,131 @@
 
   /**
    * Rail background of the `pill-segment` skin - soft surface tint
-   * the active card floats on top of.
+   * the active card floats on top of. Inherits so the host-set value
+   * reaches the strip descendant that paints it.
    * @group Skin / pill-segment
    */
   @property --cngx-step-pill-segment-rail-bg {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: color-mix(in srgb, currentColor 6%, transparent);
   }
 
   /**
    * Active card surface on the `pill-segment` skin - rendered as a
-   * raised tile inside the rail (iOS-style segmented control).
+   * raised tile inside the rail (iOS-style segmented control). Inherits
+   * so the host-set value reaches the step descendant that paints it.
    * @group Skin / pill-segment
    */
   @property --cngx-step-pill-segment-fill-active {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: oklch(1 0 0);
   }
 
   /**
-   * Completed-segment tint - subtle ember wash so completed reads as
-   * "done" without dominating the rail.
+   * Optional completed-segment tint. Unset by default - the green check
+   * disc carries the "done" cue, so the segment stays flat. Set this to
+   * wash completed segments with a tint. Inherits so the host-set value
+   * reaches the step descendant that paints it.
    * @group Skin / pill-segment
    */
   @property --cngx-step-pill-segment-fill-completed {
     syntax: '*';
-    inherits: false;
-    initial-value: color-mix(in srgb, oklch(0.66 0.19 50) 14%, transparent);
+    inherits: true;
+    initial-value: transparent;
   }
 
   /**
-   * Shadow on the active card in the `pill-segment` skin.
+   * Shadow on the active card in the `pill-segment` skin. Inherits so
+   * the host-set value reaches the step descendant that paints it.
    * @group Skin / pill-segment
    */
   @property --cngx-step-pill-segment-card-shadow {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0 1px 2px color-mix(in srgb, currentColor 12%, transparent),
       0 1px 1px color-mix(in srgb, currentColor 8%, transparent);
+  }
+
+  /**
+   * Muted color of an upcoming connector segment on the classic skin
+   * with `[connectors]` opted-in. Inherits so host-set overrides cascade
+   * to the `::before` segment painter.
+   * @group Skin / classic
+   */
+  @property --cngx-step-connector-color {
+    syntax: '*';
+    inherits: true;
+    initial-value: color-mix(in srgb, currentColor 35%, transparent);
+  }
+
+  /**
+   * Accent color of a completed connector segment on the classic skin
+   * with `[connectors]` opted-in. Falls back to the canonical completed
+   * color so Material consumers inherit success tones without per-skin
+   * overrides.
+   * @group Skin / classic
+   */
+  @property --cngx-step-connector-completed-color {
+    syntax: '*';
+    inherits: true;
+    initial-value: oklch(0.5 0.15 145);
+  }
+
+  /**
+   * Errored color of a connector segment whose preceding step is in
+   * `data-state='error'`. Mirrors `--cngx-step-errored-color`.
+   * @group Skin / classic
+   */
+  @property --cngx-step-connector-errored-color {
+    syntax: '*';
+    inherits: true;
+    initial-value: oklch(0.55 0.18 25);
+  }
+
+  /**
+   * In-flight color of a connector segment whose preceding step is in
+   * `data-state='pending'`. Mirrors the active-state color so the rail
+   * reads as "progressing".
+   * @group Skin / classic
+   */
+  @property --cngx-step-connector-pending-color {
+    syntax: '*';
+    inherits: true;
+    initial-value: oklch(0.66 0.19 50);
+  }
+
+  /**
+   * Symmetric breathing room between each disc edge and the connector
+   * rail end on the classic skin with `[connectors]` opted-in. Inherits
+   * so host-set overrides cascade.
+   * @group Skin / classic
+   */
+  @property --cngx-step-connector-inset {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 6px;
+  }
+
+  /**
+   * Thickness of the connector segment on the classic skin with
+   * `[connectors]` opted-in. Inherits so host-set overrides cascade.
+   * @group Skin / classic
+   */
+  @property --cngx-step-connector-width {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 2px;
   }
 }
 
 @layer cngx.skins {
   /**
    * Linear-minimal: label-only horizontal layout with a 6px dot
-   * indicator. Active = filled-primary dot, completed = small
-   * success-tinted check, upcoming = hollow ring, connector =
-   * dashed segment in horizontal / vertical filled bar in vertical.
+   * indicator. Active = filled-primary dot, completed = filled
+   * success dot, upcoming = hollow ring, connector = dashed segment
+   * in horizontal / vertical filled bar in vertical.
    */
   @scope (.cngx-stepper[data-skin='linear-minimal']) {
     .cngx-stepper__indicator {
@@ -525,8 +620,14 @@
       );
     }
 
+    /* Completed = filled success dot. A check glyph at this dot size is
+       illegible, so the green fill carries "done" - mirroring the
+       filled-primary active dot and filled-danger error dot. */
     .cngx-stepper__indicator[data-state='success'] {
-      background: transparent;
+      background: var(
+        --cngx-step-completed-color,
+        var(--cngx-color-success, oklch(0.5 0.15 145))
+      );
       border-color: var(
         --cngx-step-completed-color,
         var(--cngx-color-success, oklch(0.5 0.15 145))
@@ -534,14 +635,7 @@
     }
 
     .cngx-stepper__indicator[data-state='success']::before {
-      content: '\2713';
-      color: var(
-        --cngx-step-completed-color,
-        var(--cngx-color-success, oklch(0.5 0.15 145))
-      );
-      font-size: 0.55rem;
-      font-weight: 700;
-      line-height: 1;
+      content: none;
     }
 
     .cngx-stepper__indicator[data-state='error'] {
@@ -581,6 +675,212 @@
       height: var(--cngx-step-gap, 0.5rem);
       border-top: 0;
       border-left: 2px solid color-mix(in srgb, currentColor 35%, transparent);
+      transform: none;
+    }
+  }
+
+  /*
+   * Classic + [connectors]: solid completed/upcoming rail between
+   * adjacent step indicators. Per-segment color cascades from the
+   * PRECEDING step's `[data-state]` via the adjacent-sibling combinator,
+   * so completed/upcoming distinction stays 100% CSS (Pillar 1).
+   * Double-scoped on `[data-skin='classic']` so the four other skins
+   * are mechanically untouched.
+   */
+  /*
+   * Classic + [connectors] = the canonical wizard look: disc on top, label
+   * stacked below, full-width rail between adjacent disc centers. Equal-flex
+   * slots make disc-to-disc distance predictable; the rail recolors completed
+   * segments via the preceding step's [data-state='success']. Pillar 1.
+   * Double-scoped on [data-skin='classic'] so the four other skins are
+   * mechanically untouched.
+   */
+  @scope (.cngx-stepper[data-skin='classic'][data-connectors='true']) {
+    .cngx-stepper__strip {
+      display: flex;
+      flex-wrap: nowrap;
+      align-items: flex-start;
+      /* Zero gap: equal-flex slots stay flush so the rail's `-50%` anchor
+         points exactly at the previous slot's center. The inherited
+         `gap: 7px` from stepper-base would otherwise shift the prev disc
+         center left by half the gap, breaking rail symmetry. */
+      gap: 0;
+    }
+
+    .cngx-stepper__step {
+      position: relative;
+      flex: 1 1 0;
+      min-width: 0;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      text-align: center;
+      gap: 0.5rem;
+    }
+
+    /* Disc + label sit above the rail. */
+    .cngx-stepper__indicator,
+    .cngx-stepper__label {
+      position: relative;
+      z-index: 1;
+    }
+
+    .cngx-stepper__label {
+      white-space: normal;
+    }
+
+    /* Wizard signals pending via the orange rail + pulsing indicator;
+       the dedicated spinner element would compete with both. Drop it
+       in this scope - `aria-busy='true'` on the host still carries the
+       AT announcement. */
+    .cngx-stepper__busy-spinner {
+      display: none;
+    }
+
+    /* Pending target step: white glyph on the orange disc + subtle pulse
+       so the in-flight target reads at a glance without an explicit
+       spinner. `aria-busy='true'` is the truth source. */
+    .cngx-stepper__step[aria-busy='true'] .cngx-stepper__indicator {
+      color: var(--cngx-step-indicator-active-color, oklch(1 0 0));
+      animation: cngx-step-connectors-pending-pulse 1.2s ease-in-out infinite;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .cngx-stepper__step[aria-busy='true'] .cngx-stepper__indicator {
+        animation: none;
+      }
+    }
+
+    /* Rejection icon overlays the disc center, replacing the numeric glyph
+       on the failed step. */
+    .cngx-stepper__rejection-icon {
+      position: absolute;
+      top: calc(0.5rem + var(--cngx-step-indicator-size, 1.75rem) / 2);
+      left: 50%;
+      transform: translate(-50%, -50%);
+      margin: 0;
+      z-index: 2;
+    }
+
+    /* Wizard signals rejection via the red disc badge + red label text
+       (rail color cascades on its own). Drop the outline that the base
+       skin draws around a rejected step - the badge + label color carry
+       the signal cleanly without box chrome. */
+    .cngx-stepper__step--rejected {
+      outline: none;
+    }
+
+    .cngx-stepper__step--rejected .cngx-stepper__label {
+      color: var(--cngx-step-connector-errored-color);
+    }
+
+    .cngx-stepper__rejection-icon {
+      background: var(--cngx-step-connector-errored-color);
+    }
+
+    /* Success supersedes rejection: once a previously-failed step is
+       completed, drop the rejection icon + outline so the wizard row
+       reads cleanly. The rail color cascade naturally reverts via the
+       preceding step's `[data-state='success']` rule. */
+    .cngx-stepper__step[data-state='success'] .cngx-stepper__rejection-icon {
+      display: none;
+    }
+
+    .cngx-stepper__step[data-state='success'].cngx-stepper__step--rejected {
+      outline: none;
+    }
+
+    /*
+     * Rail spans previous-disc-center to current-disc-center, offset by
+     * disc-radius on both ends so it doesn't paint through the discs.
+     * Flex slot width = 100%; disc center sits at slot center (50%).
+     *   left  = -50% + disc-size/2   (prev disc right edge)
+     *   width = 100% - disc-size     (gap to current disc left edge)
+     */
+    .cngx-stepper__step + .cngx-stepper__step::before {
+      content: '';
+      position: absolute;
+      /* Symmetric inset of var(--cngx-step-connector-inset) from each disc edge. */
+      left: calc(
+        -50% + var(--cngx-step-indicator-size, 1.75rem) / 2 +
+          var(--cngx-step-connector-inset, 6px)
+      );
+      width: calc(
+        100% - var(--cngx-step-indicator-size, 1.75rem) - 2 *
+          var(--cngx-step-connector-inset, 6px)
+      );
+      top: calc(0.5rem + var(--cngx-step-indicator-size, 1.75rem) / 2);
+      height: var(--cngx-step-connector-width, 2px);
+      background-color: var(--cngx-step-connector-color);
+      transform: translateY(-50%);
+      z-index: 0;
+    }
+
+    /* Source step success (passed through) -> trailing rail green. */
+    .cngx-stepper__step[data-state='success']
+      + .cngx-stepper__step::before {
+      background-color: var(--cngx-step-connector-completed-color);
+    }
+
+    /* Target step pending (commit in flight) -> leading rail orange. cngx
+       surfaces commit-in-flight via `aria-busy='true'` on the target step;
+       `data-state` stays at its terminal value (idle/success/error). */
+    .cngx-stepper__step
+      + .cngx-stepper__step[aria-busy='true']::before {
+      background-color: var(--cngx-step-connector-pending-color);
+    }
+
+    /* Target step rejected (commit failed) -> leading rail red. cngx
+       sets `cngx-stepper__step--rejected` on the step that was the
+       failed-commit target. */
+    .cngx-stepper__step
+      + .cngx-stepper__step.cngx-stepper__step--rejected::before {
+      background-color: var(--cngx-step-connector-errored-color);
+    }
+  }
+
+  /*
+   * Classic + [connectors] vertical: discs stack with labels to the right
+   * (default classic inline shape). Rail is a thin vertical column between
+   * adjacent disc centers, symmetric inset. min-height per button ensures
+   * the rail has visible length even when the label is short.
+   */
+  @scope (.cngx-stepper[data-skin='classic'][data-connectors='true'][data-orientation='vertical']) {
+    .cngx-stepper__strip {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .cngx-stepper__step {
+      flex: 0 0 auto;
+      flex-direction: row;
+      align-items: center;
+      justify-content: flex-start;
+      text-align: start;
+      min-height: calc(
+        var(--cngx-step-indicator-size, 1.75rem) + 2 *
+          var(--cngx-step-connector-inset, 6px) + 2rem
+      );
+    }
+
+    .cngx-stepper__label {
+      white-space: nowrap;
+    }
+
+    .cngx-stepper__step + .cngx-stepper__step::before {
+      left: calc(
+        0.75rem + var(--cngx-step-indicator-size, 1.75rem) / 2 -
+          var(--cngx-step-connector-width, 2px) / 2
+      );
+      width: var(--cngx-step-connector-width, 2px);
+      top: calc(
+        -50% + var(--cngx-step-indicator-size, 1.75rem) / 2 +
+          var(--cngx-step-connector-inset, 6px)
+      );
+      height: calc(
+        100% - var(--cngx-step-indicator-size, 1.75rem) - 2 *
+          var(--cngx-step-connector-inset, 6px)
+      );
       transform: none;
     }
   }
@@ -664,7 +964,7 @@
       padding-inline: calc(var(--cngx-step-padding-inline, 0.75rem) + 0.75rem);
       justify-content: center;
       text-align: center;
-      background: var(--cngx-step-chevron-tile-upcoming-bg, color-mix(in srgb, currentColor 8%, transparent));
+      background: var(--cngx-step-chevron-tile-upcoming-bg, color-mix(in srgb, currentColor 12%, transparent));
       color: color-mix(in srgb, currentColor 80%, transparent);
       border: 0;
       transition: background-color 120ms ease, color 120ms ease;
@@ -701,19 +1001,21 @@
       color: var(--cngx-step-chevron-tile-color, oklch(1 0 0));
     }
 
-    /* The chevron tile carries the state via fill; the indicator disc
-       collapses to a transparent wrapper so the default numbered glyph
-       (rendered by `#defaultIndicator` in stepper.component.html) reads
-       as a clean "1, 2, 3" sequence cue inside each tile. */
+    /* The arrow silhouette carries sequence and the tile fill carries
+       state, so the numbered glyph is dropped entirely - only completed
+       steps surface the inherited check (rendered by `#defaultIndicator`
+       in stepper.component.html) so "done" stays explicit against the
+       green tile. Active and upcoming steps render label-only. */
     .cngx-stepper__indicator {
+      display: none;
+    }
+    .cngx-stepper__indicator[data-state='success'] {
+      display: inline-flex;
       background: transparent;
       width: auto;
       height: auto;
       padding: 0;
       border: 0;
-    }
-    .cngx-stepper__indicator[data-state='success']::before {
-      content: none;
     }
   }
 
@@ -734,36 +1036,59 @@
     .cngx-stepper__step {
       clip-path: polygon(
         0 0,
-        50% var(--cngx-step-chevron-vertical-notch, 0.5rem),
+        50% var(--cngx-step-chevron-vertical-notch, 0.55rem),
         100% 0,
-        100% calc(100% - var(--cngx-step-chevron-vertical-notch, 0.5rem)),
+        100% calc(100% - var(--cngx-step-chevron-vertical-notch, 0.55rem)),
         50% 100%,
-        0 calc(100% - var(--cngx-step-chevron-vertical-notch, 0.5rem))
+        0 calc(100% - var(--cngx-step-chevron-vertical-notch, 0.55rem))
       );
-      padding-block: calc(var(--cngx-step-chevron-vertical-notch, 0.5rem) + 0.875rem);
-      min-height: var(--cngx-step-chevron-vertical-min-height, 4rem);
+      padding-block: calc(var(--cngx-step-chevron-vertical-notch, 0.55rem) + 0.5rem);
+      min-height: var(--cngx-step-chevron-vertical-min-height, 3.25rem);
+    }
+
+    /* Pull each tile up so its top notch slides over the previous tile's
+       bottom point, stopping short by the divider amount so a thin
+       diagonal gap stays between segments - the vertical analogue of the
+       horizontal strip gap. */
+    .cngx-stepper__step + .cngx-stepper__step {
+      margin-block-start: calc(
+        -1 * var(--cngx-step-chevron-vertical-notch, 0.55rem) +
+          var(--cngx-step-chevron-vertical-divider, 0.25rem)
+      );
     }
 
     .cngx-stepper__step .cngx-stepper__label {
       min-width: 0;
       overflow-wrap: anywhere;
       line-height: 1.3;
+      text-align: center;
+    }
+
+    /* Drop the indicator entirely in the vertical ribbon. The tile fill
+       carries state (green = done, primary = active), so the check adds
+       nothing but noise - and an inline check pushes the label off the
+       horizontal centre and changes the tile's intrinsic width on every
+       done-toggle. With no indicator the label is the only flow child,
+       so it centres cleanly and the column width stays constant (the
+       longest label never changes with state). */
+    .cngx-stepper__step .cngx-stepper__indicator {
+      display: none;
     }
 
     .cngx-stepper__step:first-child {
       clip-path: polygon(
         0 0,
         100% 0,
-        100% calc(100% - var(--cngx-step-chevron-vertical-notch, 0.5rem)),
+        100% calc(100% - var(--cngx-step-chevron-vertical-notch, 0.55rem)),
         50% 100%,
-        0 calc(100% - var(--cngx-step-chevron-vertical-notch, 0.5rem))
+        0 calc(100% - var(--cngx-step-chevron-vertical-notch, 0.55rem))
       );
     }
 
     .cngx-stepper__step:last-child {
       clip-path: polygon(
         0 0,
-        50% var(--cngx-step-chevron-vertical-notch, 0.5rem),
+        50% var(--cngx-step-chevron-vertical-notch, 0.55rem),
         100% 0,
         100% 100%,
         0 100%
@@ -780,38 +1105,21 @@
    * separator.
    */
   @scope (.cngx-stepper[data-skin='pill-segment']) {
-    /* Soften the active card from pure white to a subtly primary-tinted
-       surface so it reads as elevated without harsh contrast against
-       the rail. The components-layer rule on the active indicator
-       inverts to `oklch(1 0 0)` (white) by default for the filled-disc
-       pattern; in the pill skin the card surface carries the state cue
-       and the glyph stays in the row text color, so override the
-       indicator-active-color token through the cascade. */
-    :scope {
-      --cngx-step-pill-segment-fill-active: color-mix(
-        in srgb,
-        oklch(1 0 0) 94%,
-        var(--cngx-color-primary, oklch(0.66 0.19 50)) 6%
-      );
-      --cngx-step-indicator-active-color: currentColor;
-    }
-
     .cngx-stepper__strip {
       gap: 0.25rem;
       padding: 0.25rem;
       border-radius: var(--cngx-step-pill-radius, 999px);
       background: var(--cngx-step-pill-segment-rail-bg);
       border: 0;
-      overflow: hidden;
     }
 
     .cngx-stepper__step {
       flex: 1 1 0;
       justify-content: center;
-      text-align: center;
+      gap: 0.5rem;
       background: transparent;
       border-radius: 9999px;
-      color: color-mix(in srgb, currentColor 70%, transparent);
+      color: color-mix(in srgb, currentColor 60%, transparent);
       transition: background-color 120ms ease, color 120ms ease, box-shadow 120ms ease;
     }
 
@@ -819,22 +1127,39 @@
       flex: 0 0 auto;
     }
 
+    /* Active segment is a solid raised card floating on the flat rail,
+       so "you are here" is unmistakable. The accent-filled indicator
+       disc rides on top of the white surface. */
     .cngx-stepper__step[aria-current='step'] {
       background: var(--cngx-step-pill-segment-fill-active);
       color: currentColor;
       box-shadow: var(--cngx-step-pill-segment-card-shadow);
     }
 
-    .cngx-stepper__step:has(.cngx-stepper__indicator[data-state='success']) {
-      background: var(--cngx-step-pill-segment-fill-completed);
-      color: var(--cngx-step-completed-color, oklch(0.5 0.15 145));
+    /* Completed segment stays flat - the green check disc carries the
+       "done" cue, no segment tint by default. Text lifts toward full
+       strength so done reads as more present than upcoming. The
+       optional `--cngx-step-pill-segment-fill-completed` token can wash
+       the segment for consumers who want it. The :not(aria-current)
+       guard keeps the active-card fill winning when a previously
+       completed step is navigated back to and becomes current again. */
+    .cngx-stepper__step:not([aria-current='step']):has(.cngx-stepper__indicator[data-state='success']) {
+      background: var(--cngx-step-pill-segment-fill-completed, transparent);
+      color: color-mix(in srgb, currentColor 85%, transparent);
     }
 
     .cngx-stepper__step:has(.cngx-stepper__indicator[data-state='error']) {
-      background: transparent;
       color: var(--cngx-step-errored-color, var(--cngx-color-danger, oklch(0.45 0.15 25)));
-      box-shadow: inset 0 0 0 1px
-        var(--cngx-step-errored-color, var(--cngx-color-danger, oklch(0.45 0.15 25)));
+    }
+
+    /* Compact state disc - keeps the classic green-check / accent-number
+       / muted-number indicator instead of collapsing to inline text, so
+       progress is legible segment-by-segment. */
+    .cngx-stepper__indicator {
+      width: var(--cngx-step-pill-indicator-size, 1.375rem);
+      height: var(--cngx-step-pill-indicator-size, 1.375rem);
+      font-size: 0.72rem;
+      flex: 0 0 auto;
     }
 
     /* Inset focus-ring stays inside the segment pill instead of
@@ -851,19 +1176,6 @@
       box-shadow:
         var(--cngx-step-pill-segment-card-shadow),
         inset 0 0 0 2px var(--cngx-color-primary, oklch(0.66 0.19 50));
-    }
-
-    /* The pill rail carries state via the active card fill; the
-       indicator collapses to a transparent wrapper so the default
-       numbered glyph reads as a sequence cue inside each segment. */
-    .cngx-stepper__indicator {
-      background: transparent;
-      width: auto;
-      height: auto;
-      border: 0;
-    }
-    .cngx-stepper__indicator[data-state='success']::before {
-      content: none;
     }
   }
 
@@ -913,6 +1225,16 @@
   }
 }
 
+@keyframes cngx-step-connectors-pending-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.12);
+  }
+}
+
 /* Unlayered focus override for clip-path skins. The base outline
    rule lives in `@layer cngx.components` and renders as a rectangular
    halo around the chevron silhouette (clip-path doesn't affect the
@@ -943,10 +1265,43 @@
   color: inherit;
 }
 
+/* Mobile-collapse indicator-position cascade. When the consumer flips
+   the indicator to the thumb zone (`'bottom'`), the host becomes a
+   flex column with explicit `order:` values that move the indicator
+   block below the panels. Default `'top'` paints nothing (source
+   order already matches). The selector only matches when the host
+   carries the data-attr, so the classic strip branch (no mobile
+   indicator) is untouched. */
+.cngx-stepper[data-mobile-indicator-position='bottom'] {
+  display: flex;
+  flex-direction: column;
+}
+.cngx-stepper[data-mobile-indicator-position='bottom'] .cngx-stepper__mobile-text,
+.cngx-stepper[data-mobile-indicator-position='bottom'] .cngx-stepper__mobile-dots,
+.cngx-stepper[data-mobile-indicator-position='bottom'] .cngx-stepper__mobile-text--caption {
+  order: 2;
+}
+.cngx-stepper[data-mobile-indicator-position='bottom'] .cngx-stepper__panels {
+  order: 1;
+}
+
 .cngx-stepper__mobile-dots {
-  display: inline-flex;
+  display: flex;
+  justify-content: center;
   align-items: center;
   gap: var(--cngx-dot-step-gap, 0.5rem);
+}
+
+/* Optional `Step N of M` caption rendered below the dot row when the
+   consumer opts in via `[showStepCount]`. Centered to match the dot
+   row above; aria-live="polite" so screen-reader announces step
+   changes as the user navigates. */
+.cngx-stepper__mobile-text--caption {
+  display: block;
+  text-align: center;
+  font-size: 0.8125rem;
+  color: color-mix(in srgb, currentColor 70%, transparent);
+  margin-block-start: 0.5rem;
 }
 
 .cngx-stepper__mobile-dot {
@@ -984,29 +1339,49 @@
   }
 }
 
-/* Dark-mode tone-mapping for the pill-segment skin. Kept unlayered and
-   outside the @scope block so it deterministically beats the layered
-   :scope override in @layer cngx.skins; nested @media inside @scope
-   produced inconsistent cascade ordering across engines. Opaque
-   surface colors instead of currentColor mixes - translucent mixes
-   over the page produced washed-out greys with poor contrast. The
-   active card uses a clearly elevated mid-dark grey with near-white
-   text and glyph so the active row reads cleanly without depending
-   on the consumer's --cngx-color-primary cascade landing on a dark
-   enough shade. */
+/* Dark-mode tone-mapping for the pill-segment skin. Two entry points
+   mirror the cngx color-scheme cascade in
+   projects/core/theming/system-tokens.css:436-465 - explicit opt-in
+   via :root[data-color-scheme='dark'] or :root.dark (consumer toggle,
+   always wins) and OS auto-follow via @media (prefers-color-scheme:
+   dark) suppressed when :root is explicitly light. Both blocks are
+   unlayered and outside the @scope block so they deterministically
+   beat the layered :scope override in @layer cngx.skins; nested
+   @media inside @scope produced inconsistent cascade ordering across
+   engines. Opaque surface colors instead of currentColor mixes -
+   translucent mixes over the page produced washed-out greys with poor
+   contrast. The active card uses a clearly elevated mid-dark grey
+   with near-white text and glyph so the active row reads cleanly
+   without depending on the consumer's --cngx-color-primary cascade
+   landing on a dark enough shade. */
+:where(:root[data-color-scheme='dark'], :root.dark) .cngx-stepper[data-skin='pill-segment'] {
+  --cngx-step-pill-segment-rail-bg: oklch(0.24 0.005 240);
+  --cngx-step-pill-segment-fill-active: oklch(0.4 0.008 240);
+  --cngx-step-indicator-active-color: oklch(0.98 0 0);
+  --cngx-step-pill-segment-card-shadow: 0 1px 2px color-mix(in srgb, oklch(0 0 0) 55%, transparent);
+}
+
+:where(:root[data-color-scheme='dark'], :root.dark) .cngx-stepper[data-skin='pill-segment'] .cngx-stepper__step {
+  color: color-mix(in srgb, oklch(1 0 0) 60%, transparent);
+}
+
+:where(:root[data-color-scheme='dark'], :root.dark) .cngx-stepper[data-skin='pill-segment'] .cngx-stepper__step[aria-current='step'] {
+  color: oklch(0.98 0 0);
+}
+
 @media (prefers-color-scheme: dark) {
-  .cngx-stepper[data-skin='pill-segment'] {
+  :where(:root:not([data-color-scheme='light']):not(.light)) .cngx-stepper[data-skin='pill-segment'] {
     --cngx-step-pill-segment-rail-bg: oklch(0.24 0.005 240);
     --cngx-step-pill-segment-fill-active: oklch(0.4 0.008 240);
     --cngx-step-indicator-active-color: oklch(0.98 0 0);
     --cngx-step-pill-segment-card-shadow: 0 1px 2px color-mix(in srgb, oklch(0 0 0) 55%, transparent);
   }
 
-  .cngx-stepper[data-skin='pill-segment'] .cngx-stepper__step {
+  :where(:root:not([data-color-scheme='light']):not(.light)) .cngx-stepper[data-skin='pill-segment'] .cngx-stepper__step {
     color: color-mix(in srgb, oklch(1 0 0) 60%, transparent);
   }
 
-  .cngx-stepper[data-skin='pill-segment'] .cngx-stepper__step[aria-current='step'] {
+  :where(:root:not([data-color-scheme='light']):not(.light)) .cngx-stepper[data-skin='pill-segment'] .cngx-stepper__step[aria-current='step'] {
     color: oklch(0.98 0 0);
   }
 }

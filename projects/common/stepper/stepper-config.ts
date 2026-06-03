@@ -83,6 +83,18 @@ export type CngxStepperSkin =
 export type CngxStepperMobileCollapse = 'text' | 'dots' | 'off';
 
 /**
+ * Where the mobile auto-collapse indicator (text caption or dot row)
+ * sits relative to the active step's panel content under narrow
+ * viewports. `'top'` (default) keeps the indicator above the panel;
+ * `'bottom'` flips it below so the user reads content first and the
+ * navigation cue sits at the thumb zone. Ignored when the classic
+ * strip is on screen (`displayMode === 'classic'`).
+ *
+ * @category common/stepper
+ */
+export type CngxStepperMobileIndicatorPosition = 'top' | 'bottom';
+
+/**
  * Default media query the mobile auto-collapse policy reacts to. The
  * literal lives on a single exported const so the runtime, the config
  * default, and any JSDoc cross-references stay in lockstep. Consumers
@@ -106,6 +118,14 @@ export interface CngxStepperConfig {
   readonly routerSyncMode?: 'fragment' | 'queryParam';
   readonly routerSyncParam?: string;
   readonly skin?: CngxStepperSkin;
+  /**
+   * Opt-in connector rail between adjacent step indicators on the
+   * classic skin. Off by default. The rule is double-scoped on
+   * `[data-skin='classic']`, so the four other skins are mechanically
+   * untouched (each ships its own inter-step decoration). Per-instance
+   * `[connectors]` Input still wins.
+   */
+  readonly connectors?: boolean;
   readonly mobileCollapse?: CngxStepperMobileCollapse;
   /**
    * Media query the mobile auto-collapse policy reacts to. Default
@@ -113,6 +133,21 @@ export interface CngxStepperConfig {
    * re-aim the trigger via {@link withStepperMobileBreakpoint}.
    */
   readonly mobileBreakpoint?: string;
+  /**
+   * Where the mobile auto-collapse indicator sits relative to the
+   * panel content. Default `'top'`. Override per-instance via the
+   * `[mobileIndicatorPosition]` input or app-wide via
+   * {@link withStepperMobileIndicatorPosition}.
+   */
+  readonly mobileIndicatorPosition?: CngxStepperMobileIndicatorPosition;
+  /**
+   * Whether horizontal swipe gestures advance/retreat the active step
+   * while the stepper is in mobile-collapse mode (`'dots'` / `'text'`).
+   * Default `true`. Override per-instance via the `[mobileSwipe]` input
+   * or app-wide via {@link withStepperMobileSwipe}. Ignored on the
+   * classic strip and on the Material twin (`<cngx-mat-stepper>`).
+   */
+  readonly mobileSwipe?: boolean;
   readonly ariaLabels?: CngxStepperAriaLabels;
   readonly fallbackLabels?: CngxStepperFallbackLabels;
   readonly templates?: CngxStepperTemplates;
@@ -132,8 +167,11 @@ const STEPPER_CONFIG_DEFAULTS: Required<
   routerSyncMode: 'fragment',
   routerSyncParam: 'step',
   skin: 'classic',
+  connectors: false,
   mobileCollapse: 'text',
   mobileBreakpoint: STEPPER_DEFAULT_MOBILE_BREAKPOINT,
+  mobileIndicatorPosition: 'top',
+  mobileSwipe: true,
   ariaLabels: {
     stepperRegion: 'Stepper',
   },
@@ -256,6 +294,21 @@ export function withStepperSkin(skin: CngxStepperSkin): CngxStepperConfigFeature
 }
 
 /**
+ * Opt the classic `<cngx-stepper>` skin into the connector-rail
+ * presentation: a solid completed/upcoming rail between adjacent step
+ * indicators, horizontal and vertical, with per-segment coloring driven
+ * by the preceding step's `[data-state]`. The rule is double-scoped on
+ * `[data-skin='classic']`; the four other skins each ship their own
+ * inter-step decoration and ignore this flag. Per-instance
+ * `[connectors]` Input still wins.
+ *
+ * @category common/stepper
+ */
+export function withStepperConnectors(on: boolean): CngxStepperConfigFeature {
+  return defineStepperConfigFeature((cfg) => ({ ...cfg, connectors: on }));
+}
+
+/**
  * Configure the mobile auto-collapse target for `<cngx-stepper>`. Under
  * a narrow viewport (`max-width: 480px`), the classic strip swaps to
  * the chosen variant - `'text'` (default) renders `<cngx-text-stepper>`,
@@ -280,6 +333,34 @@ export function withStepperMobileCollapse(
  */
 export function withStepperMobileBreakpoint(query: string): CngxStepperConfigFeature {
   return defineStepperConfigFeature((cfg) => ({ ...cfg, mobileBreakpoint: query }));
+}
+
+/**
+ * Set the app-wide default position of the mobile auto-collapse
+ * indicator relative to panel content. `'top'` keeps the indicator
+ * above (library default); `'bottom'` flips it below so panel content
+ * reads first and the navigation cue sits at thumb height. Per-
+ * instance `[mobileIndicatorPosition]` on `<cngx-stepper>` still
+ * wins.
+ *
+ * @category common/stepper
+ */
+export function withStepperMobileIndicatorPosition(
+  position: CngxStepperMobileIndicatorPosition,
+): CngxStepperConfigFeature {
+  return defineStepperConfigFeature((cfg) => ({ ...cfg, mobileIndicatorPosition: position }));
+}
+
+/**
+ * Toggle the built-in horizontal-swipe navigation on `<cngx-stepper>`
+ * in mobile-collapse mode. Default `true` - the `'dots'` and `'text'`
+ * variants read as carousels, so users expect to swipe. Per-instance
+ * `[mobileSwipe]` Input still wins; the classic strip is unaffected.
+ *
+ * @category common/stepper
+ */
+export function withStepperMobileSwipe(enabled: boolean): CngxStepperConfigFeature {
+  return defineStepperConfigFeature((cfg) => ({ ...cfg, mobileSwipe: enabled }));
 }
 
 /**

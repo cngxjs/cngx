@@ -23,17 +23,17 @@ export const STORY: DemoSpec = {
   imports: ['CngxStepper', 'CngxStep', 'CngxStepContent'],
   setup: `protected readonly active = signal(0);`,
   template: `  <cngx-stepper [(activeStepIndex)]="active" [orientation]="'vertical'" aria-label="Account setup">
-    <div cngxStep label="Profile">
+    <div cngxStep label="Profile" [completed]="active() > 0">
       <ng-template cngxStepContent>
         <p>Set your display name and avatar.</p>
       </ng-template>
     </div>
-    <div cngxStep label="Notifications">
+    <div cngxStep label="Notifications" [completed]="active() > 1">
       <ng-template cngxStepContent>
         <p>Choose which events should email you.</p>
       </ng-template>
     </div>
-    <div cngxStep label="Security">
+    <div cngxStep label="Security" [completed]="active() > 2">
       <ng-template cngxStepContent>
         <p>Enable two-factor authentication.</p>
       </ng-template>

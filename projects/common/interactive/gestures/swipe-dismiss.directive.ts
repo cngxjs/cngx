@@ -3,12 +3,7 @@ import { Directive, ElementRef, inject, input, output, signal } from '@angular/c
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { fromEvent, switchMap, takeUntil, tap, filter, map } from 'rxjs';
 
-/**
- * Swipe direction - matches drawer positions for natural composition.
- *
- * @category common/interactive/gestures
- */
-export type SwipeDirection = 'left' | 'right' | 'up' | 'down';
+import type { SwipeDirection } from './swipe-direction';
 
 /**
  * Detects directional swipe gestures via Pointer Events.

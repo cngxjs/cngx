@@ -21,29 +21,32 @@ import {
   CngxRovingItem,
   CngxRovingTabindex,
 } from '@cngx/common/a11y';
+import { CngxSwipe } from '@cngx/common/interactive';
 import {
   CNGX_STEP_PANEL_HOST,
   createStepperDisplayMode,
   CngxStep,
   STEPPER_DEFAULT_MOBILE_BREAKPOINT,
   CngxStepBadge,
-  type CngxStepBadgeContext,
   CngxStepBusySpinner,
-  type CngxStepBusySpinnerContext,
   type CngxStepContentContext,
   CngxStepGroupHeader,
-  type CngxStepGroupHeaderContext,
   CngxStepIndicator,
-  type CngxStepIndicatorContext,
   type CngxStepLabelContext,
   CngxStepperEmpty,
   CngxStepperPresenter,
+  type CngxStepperMobileIndicatorPosition,
   type CngxStepperSkin,
   CngxStepRejection,
-  type CngxStepRejectionContext,
   CNGX_STEPPER_GLYPHS,
   CNGX_STEPPER_HOST,
+  CngxStepperCount,
+  createStepperAnnouncementBuilders,
+  createStepperHostAttrs,
+  createStepperSlotContextBuilders,
+  createStepperStripKeyboardNav,
   createStepperTemplateBindings,
+  CngxStepperSwipeNav,
   resolveStepperStatusLabel,
   injectStepperConfig,
   injectStepperI18n,
@@ -54,6 +57,7 @@ import {
   CNGX_DIRECTIVE_BY_ID_MAP_FACTORY,
   CNGX_ORGANISM_SCROLL_SYNC_FACTORY,
 } from '@cngx/common/tabs';
+import { coerceBooleanProperty } from '@cngx/core/utils';
 
 /**
  * Stepper organism. Composes `CngxStepperPresenter` with
@@ -100,7 +104,7 @@ import {
   exportAs: 'cngxStepper',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgTemplateOutlet, CngxLiveRegion, CngxRovingItem],
+  imports: [NgTemplateOutlet, CngxLiveRegion, CngxRovingItem, CngxStepperCount, CngxSwipe],
   styleUrls: ['./styles/stepper-base.css', './stepper.component.css'],
   encapsulation: ViewEncapsulation.None,
   hostDirectives: [
@@ -112,6 +116,10 @@ import {
     {
       directive: CngxRovingTabindex,
       inputs: ['orientation'],
+    },
+    {
+      directive: CngxStepperSwipeNav,
+      inputs: ['mobileSwipe'],
     },
     { directive: CngxFocusRestore },
     // CngxLiveRegion not composed: its role="status" would clobber the
@@ -126,11 +134,14 @@ import {
     '[attr.aria-roledescription]': 'stepperRoleDescription()',
     '[attr.aria-orientation]': 'presenter.orientation()',
     '[attr.data-orientation]': 'presenter.orientation()',
-    '[attr.data-skin]': 'resolvedSkin()',
+    '[attr.data-skin]': 'hostAttrs.resolvedSkin()',
+    '[attr.data-connectors]': "hostAttrs.resolvedConnectors() ? 'true' : null",
+    '[attr.data-mobile-indicator-position]': 'hostAttrs.resolvedMobileIndicatorPosition()',
     '[attr.aria-label]': 'resolvedAriaLabel()',
     '[attr.aria-labelledby]': 'ariaLabelledBy()',
     '[attr.aria-busy]': 'isCommitting() ? "true" : null',
     '[class.cngx-stepper]': 'true',
+    '(keydown)': 'handleStripKeyDown($event)',
   },
 })
 export class CngxStepper implements CngxStepPanelHost {
@@ -140,7 +151,21 @@ export class CngxStepper implements CngxStepPanelHost {
   /** Per-instance skin override; flips `[data-skin]`, structure/ARIA unchanged. */
   readonly skin = input<CngxStepperSkin | undefined>(undefined);
 
-  protected readonly presenter = inject(CNGX_STEPPER_HOST);
+  /** Opt the classic skin into the connector-rail presentation. Off by default, classic-scoped. */
+  readonly connectors = input<boolean | undefined, unknown>(undefined, { transform: (v) => (v === undefined ? undefined : coerceBooleanProperty(v)) });
+
+  /**
+   * Opt-in `Step N of M` caption under the mobile `'dots'` row. In
+   * the `'text'` collapse branch the count IS the indicator and is
+   * always rendered; this input only gates the supplemental caption
+   * that sits next to the dot row.
+   */
+  readonly showStepCount = input<boolean>(false);
+
+  readonly mobileIndicatorPosition = input<CngxStepperMobileIndicatorPosition | undefined>(undefined);
+
+  /** Stepper-host contract; exposed so external `<cngx-stepper-count>` / bridge consumers can `[host]="s.presenter"` via `#s="cngxStepper"`. */
+  readonly presenter = inject(CNGX_STEPPER_HOST);
   protected readonly i18n = injectStepperI18n();
   protected readonly config = injectStepperConfig();
   private readonly hostElement: HTMLElement =
@@ -174,7 +199,6 @@ export class CngxStepper implements CngxStepPanelHost {
   });
 
   protected readonly displayMode = createStepperDisplayMode(this.config.mobileBreakpoint ?? STEPPER_DEFAULT_MOBILE_BREAKPOINT, () => this.config.mobileCollapse, inject(DestroyRef));
-  protected readonly mobileTextLabel = computed<string>(() => this.i18n.textStepperFormat(this.activeStepIndex() + 1, this.stepsOnly().length));
 
   constructor() {
     // Scroll active step into view via the swappable scroll-sync factory.
@@ -190,10 +214,13 @@ export class CngxStepper implements CngxStepPanelHost {
     () => this.config.fallbackLabels?.stepRoleDescription ?? this.i18n.stepperLabel,
   );
 
-  /** Resolved skin keyed onto the `[data-skin]` host attribute. */
-  protected readonly resolvedSkin = computed<CngxStepperSkin>(() => this.skin() ?? this.config.skin ?? 'classic');
+  /** Resolved skin / connectors / mobile-indicator host attrs (Level-2 cascade helper). */
+  protected readonly hostAttrs = createStepperHostAttrs({ skin: this.skin, connectors: this.connectors, mobileIndicatorPosition: this.mobileIndicatorPosition, config: this.config });
 
-  protected statusLabelFor = (node: CngxStepNode): string => resolveStepperStatusLabel(node, this.i18n, this.isActive(node));
+  /** Mobile-swipe navigation host directive (Level-2 composition). */
+  protected readonly swipeNav = inject(CngxStepperSwipeNav, { host: true });
+
+  protected statusLabelFor = (node: CngxStepNode): string => resolveStepperStatusLabel(node, this.i18n, this.slotContext.isActive(node));
   protected readonly groupRoleDescription = computed<string>(() => this.config.fallbackLabels?.groupRoleDescription ?? 'step group');
 
   /**
@@ -226,17 +253,8 @@ export class CngxStepper implements CngxStepPanelHost {
     return node.flatIndex;
   }
 
-  protected isActive(node: CngxStepNode): boolean {
-    return node.kind === 'step' && node.id === this.activeStepId();
-  }
-
-  protected isStepBusy(node: CngxStepNode): boolean {
-    return (
-      node.kind === 'step' &&
-      this.presenter.commitState.status() === 'pending' &&
-      this.presenter.intendedStepIndex() === node.flatIndex
-    );
-  }
+  /** Per-step predicates + slot-context builders (Level-2 factory). */
+  protected readonly slotContext = createStepperSlotContextBuilders({ presenter: this.presenter, stepsOnly: this.stepsOnly });
 
   /** Commit-in-flight flag - drives the host `aria-busy` binding. Pillar 2. */
   protected readonly isCommitting = computed<boolean>(
@@ -255,135 +273,8 @@ export class CngxStepper implements CngxStepPanelHost {
     return `${node.id}-desc`;
   }
 
-  /**
-   * Live-region content. Empty string between transitions keeps the region
-   * quiet on no-op CD ticks. Error-arm priority:
-   * 1. `commitRolledBackTo(originLabel)` when both `lastFailedIndex` and a
-   *    resolvable origin label exist.
-   * 2. `commitFailedRetry` otherwise.
-   */
-  protected readonly liveAnnouncement = computed<string>(() => {
-    const current = this.presenter.commitTransition.current();
-    if (current === 'pending') {
-      return this.i18n.commitInFlight;
-    }
-    if (current === 'error') {
-      // Sync commit-handler errors collapse pending → error in one signal
-      // flush; tracker sees `previous === 'idle'`. Guard stays loose so
-      // sync-rejection (`commitAction = () => false`) still announces.
-      const failedIdx = this.presenter.lastFailedIndex();
-      const originIdx = this.presenter.originIndexDuringCommit();
-      if (failedIdx !== undefined && originIdx !== undefined) {
-        const originLabel = this.stepsOnly()[originIdx]?.label();
-        if (originLabel) {
-          return this.i18n.commitRolledBackTo(originLabel);
-        }
-      }
-      return this.i18n.commitFailedRetry;
-    }
-    return '';
-  });
-
-  /** SR descriptor phrase. Aggregator-announced or "Step N of M: <label>"; appends stepRolledBackSuffix on the rejected row. */
-  protected statusPhrase(node: CngxStepNode): string {
-    const aggregator = node.errorAggregator?.();
-    let base = aggregator?.shouldShow?.() ? (aggregator.announcement?.() ?? '') : '';
-    if (!base && node.kind === 'step') {
-      const idx = this.stepIndexOf(node);
-      if (idx >= 0) {
-        base = this.i18n.selectedStep(node.label(), idx + 1, this.stepsOnly().length);
-      }
-    }
-    if (!base) {
-      return '';
-    }
-    return node.kind === 'step' && node.flatIndex === this.presenter.lastFailedIndex()
-      ? `${base} ${this.i18n.stepRolledBackSuffix}`
-      : base;
-  }
-
-  /** Group descriptor - rolls up children's aggregated status. */
-  protected groupStatusPhrase(node: CngxStepNode): string {
-    const status = node.state();
-    if (status === 'error') {
-      return this.i18n.stepErrored;
-    }
-    if (status === 'success') {
-      return this.i18n.stepCompleted;
-    }
-    return '';
-  }
-
-  /**
-   * Whether to render the error badge for a step node. Surfaces the
-   * badge whenever the step carries `data-state="error"` (via
-   * `node.state()`), not only when the optional `errorAggregator`
-   * gates it. Closes the "step 1 errors, user is on step 3, no
-   * visible cue" gap - the badge becomes the universal default cue
-   * for non-current errored steps.
-   */
-  protected showErrorBadge(node: CngxStepNode): boolean {
-    if (node.kind !== 'step') {
-      return false;
-    }
-    if (node.state() === 'error') {
-      return true;
-    }
-    return !!node.errorAggregator?.()?.shouldShow?.();
-  }
-
-  /**
-   * Render the rejection decoration when this step's flat-index matches
-   * `presenter.lastFailedIndex()`.
-   */
-  protected showRejection(node: CngxStepNode): boolean {
-    return (
-      node.kind === 'step' &&
-      node.flatIndex >= 0 &&
-      node.flatIndex === this.presenter.lastFailedIndex()
-    );
-  }
-
-  /** Build the slot context for `*cngxStepIndicator`. */
-  protected indicatorContextFor(node: CngxStepNode): CngxStepIndicatorContext {
-    const position = node.flatIndex + 1;
-    return {
-      $implicit: position,
-      position,
-      node,
-      active: this.isActive(node),
-      status: node.state(),
-      busy: this.isStepBusy(node),
-    };
-  }
-
-  /** Build the slot context for `*cngxStepBadge`. */
-  protected badgeContextFor(node: CngxStepNode): CngxStepBadgeContext {
-    const aggregator = node.errorAggregator?.();
-    const count = aggregator?.errorCount() ?? 0;
-    return { count, node };
-  }
-
-  /** Build the slot context for `*cngxStepBusySpinner`. */
-  protected busySpinnerContextFor(node: CngxStepNode): CngxStepBusySpinnerContext {
-    return { node };
-  }
-
-  /**
-   * Build the slot context for `*cngxStepRejection`. Resolves origin label
-   * from `presenter.originIndexDuringCommit()` via `stepsOnly()`.
-   */
-  protected rejectionContextFor(node: CngxStepNode): CngxStepRejectionContext {
-    const failedIndex = node.flatIndex;
-    const originIdx = this.presenter.originIndexDuringCommit();
-    const originLabel = originIdx !== undefined ? this.stepsOnly()[originIdx]?.label() : undefined;
-    return { failedIndex, originLabel, node };
-  }
-
-  /** Build the slot context for `*cngxStepGroupHeader`. */
-  protected groupHeaderContextFor(node: CngxStepNode): CngxStepGroupHeaderContext {
-    return { group: node, expanded: true, status: node.state() };
-  }
+  /** Live-region + per-step + group SR phrase builders (Level-2 factory). */
+  protected readonly announcement = createStepperAnnouncementBuilders({ presenter: this.presenter, stepsOnly: this.stepsOnly, i18n: this.i18n });
 
   protected handleHeaderClick(node: CngxStepNode): void {
     if (node.kind !== 'step' || node.disabled()) {
@@ -394,6 +285,9 @@ export class CngxStepper implements CngxStepPanelHost {
       this.presenter.select(idx);
     }
   }
+
+  /** Strip-scoped arrow-key handler. See {@link createStepperStripKeyboardNav}. */
+  protected readonly handleStripKeyDown = createStepperStripKeyboardNav({ presenter: this.presenter, hostElement: this.hostElement, flatStepCount: () => this.flatSteps().length, stepButtonIdFor: (id) => `${id}-header` });
 
   /**
    * Clear the presenter's `lastFailedIndex`. Lets template-ref consumers
@@ -413,27 +307,4 @@ export class CngxStepper implements CngxStepPanelHost {
     return this.stepDirectiveById().get(id)?.contentTemplate()?.templateRef ?? null;
   }
 
-  /**
-   * Build the {@link CngxStepLabelContext} for `*cngxStepLabel`.
-   * `index` is 1-based (mirrors indicator position); group nodes
-   * (`flatIndex === -1`) yield `0` and are never iterated here.
-   */
-  protected stepLabelContextFor(node: CngxStepNode): CngxStepLabelContext {
-    return {
-      node,
-      index: node.flatIndex + 1,
-      active: this.isActive(node),
-      busy: this.isStepBusy(node),
-      disabled: node.disabled(),
-    };
-  }
-
-  /**
-   * Build the {@link CngxStepContentContext} for `*cngxStepContent`.
-   * Same shape as the label context - content templates need the same
-   * `disabled`/`busy` derivations.
-   */
-  protected stepContentContextFor(node: CngxStepNode): CngxStepContentContext {
-    return this.stepLabelContextFor(node);
-  }
 }

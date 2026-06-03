@@ -15,6 +15,14 @@
   flex-direction: column;
   gap: var(--cngx-progress-bar-stepper-gap, 0.375rem);
   width: 100%;
+  /* Re-aim the embedded `<cngx-progress>` fill onto the cngx primary
+     so the variant matches the rest of the stepper family by default;
+     the primitive's own initial value is `currentColor`, which lands
+     on the page text colour and reads as a dark slab instead of an
+     accent. Material consumers override this token upstream via
+     `@cngx/themes/material/feedback-theme` so the Material-bridged
+     palette still wins. */
+  --cngx-progress-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
 }
 
 .cngx-progress-bar-stepper__bar {

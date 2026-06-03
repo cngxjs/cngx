@@ -24,17 +24,17 @@ export const STORY: DemoSpec = {
     this.active.update(i => Math.max(i - 1, 0));
   }`,
   template: `  <cngx-stepper [(activeStepIndex)]="active" skin="linear-minimal" [orientation]="'vertical'" aria-label="Onboarding">
-    <div cngxStep label="Account">
+    <div cngxStep label="Account" [completed]="active() > 0">
       <ng-template cngxStepContent>
         <p>Create the account and verify the email address.</p>
       </ng-template>
     </div>
-    <div cngxStep label="Profile">
+    <div cngxStep label="Profile" [completed]="active() > 1">
       <ng-template cngxStepContent>
         <p>Add display name, avatar, and locale preferences.</p>
       </ng-template>
     </div>
-    <div cngxStep label="Workspace">
+    <div cngxStep label="Workspace" [completed]="active() > 2">
       <ng-template cngxStepContent>
         <p>Pick a workspace template and invite teammates.</p>
       </ng-template>

@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Stepper variants: Material theme coverage',
+  title: 'CngxProgressBarStepper: material theme coverage across variants',
   subtitle:
     'The 3 Phase-C variants (<code>CngxProgressBarStepper</code>, <code>CngxDotStepper</code>, <code>CngxTextStepper</code>) rendered under the Material color mixin. The mixin extends the dot variant with <code>--cngx-dot-step-*</code> overrides; the progress-bar inherits palette through <code>CngxProgress</code>; the text variant inherits typography from the surrounding context.',
   description:

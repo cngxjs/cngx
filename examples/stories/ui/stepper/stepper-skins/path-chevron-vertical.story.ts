@@ -5,7 +5,7 @@ export const STORY: DemoSpec = {
   subtitle:
     'Vertical chevron tiles - the clip-path notch rotates onto the bottom edge so the flow reads top-to-bottom. Same skin, only <code>[orientation]="\'vertical\'"</code> changes; the tile shape adapts via the vertical-orientation scope rule.',
   description:
-    'Vertical companion to the horizontal path-chevron demo. The chevron clip-path is reshaped to a downward-pointing notch so the visual still reads as a directional flow. Active fills with the primary tone, completed with a 80% success tint, errored with the danger tone; the numbered glyph remains visible inside each tile as a sequence cue (Phase D restored the glyph on this skin).',
+    'Vertical companion to the horizontal path-chevron demo. Each step is a downward-pointing chevron tile, and a thin diagonal gap separates the segments so the flow reads top-to-bottom. Active fills with the primary tone, completed with the success tone, errored with the danger tone. The tile fill alone carries state, so every tile stays label-only with the label centred - no indicator glyph or check, which keeps each segment the same width as the rest.',
   level: 'organism',
   audience: ['dev', 'design'],
   artifact: 'standalone',
@@ -24,22 +24,22 @@ export const STORY: DemoSpec = {
     this.active.update(i => Math.max(i - 1, 0));
   }`,
   template: `  <cngx-stepper [(activeStepIndex)]="active" skin="path-chevron" [orientation]="'vertical'" aria-label="Checkout">
-    <div cngxStep label="Cart">
+    <div cngxStep label="Cart" [completed]="active() > 0">
       <ng-template cngxStepContent>
         <p>Review the items in the cart.</p>
       </ng-template>
     </div>
-    <div cngxStep label="Address">
+    <div cngxStep label="Address" [completed]="active() > 1">
       <ng-template cngxStepContent>
         <p>Enter the shipping address.</p>
       </ng-template>
     </div>
-    <div cngxStep label="Shipping">
+    <div cngxStep label="Shipping" [completed]="active() > 2">
       <ng-template cngxStepContent>
         <p>Pick a shipping option.</p>
       </ng-template>
     </div>
-    <div cngxStep label="Payment">
+    <div cngxStep label="Payment" [completed]="active() > 3">
       <ng-template cngxStepContent>
         <p>Provide payment details.</p>
       </ng-template>

@@ -28,13 +28,13 @@
   @property --cngx-dot-step-active-fill {
     syntax: '*';
     inherits: true;
-    initial-value: var(--cngx-step-active-fill, currentColor);
+    initial-value: var(--cngx-step-active-fill, oklch(0.66 0.19 50));
   }
 
   @property --cngx-dot-step-completed-fill {
     syntax: '*';
     inherits: true;
-    initial-value: var(--cngx-step-completed-color, currentColor);
+    initial-value: var(--cngx-step-completed-color, var(--cngx-color-success, oklch(0.5 0.15 145)));
   }
 
   @property --cngx-dot-step-upcoming-bg {
@@ -47,12 +47,37 @@
 .cngx-dot-stepper {
   display: inline-flex;
   align-items: center;
+  /* Grid / flex parents override inline-flex to stretch unless the item
+     opts out explicitly. justify-self / align-self keep the host shrunk
+     to its dot row width regardless of parent layout. */
+  justify-self: start;
+  align-self: start;
+  width: max-content;
+}
+
+/* The host is the sole keyboard target (tabindex=0, arrow keys route
+   through the presenter), so it owns the focus ring. Uses the cngx
+   primary directly so standalone use (no surrounding `<cngx-stepper>`
+   ancestor to register `--cngx-step-focus-ring`) still paints the
+   correct accent. Consumers override via `--cngx-color-primary` like
+   the rest of the family. */
+.cngx-dot-stepper:focus-visible {
+  outline: 2px solid var(--cngx-color-primary, oklch(0.66 0.19 50));
+  outline-offset: var(--cngx-step-focus-offset, 3px);
+  border-radius: var(--cngx-dot-step-focus-radius, 0.375rem);
 }
 
 .cngx-dot-stepper__row {
   display: inline-flex;
   align-items: center;
   gap: var(--cngx-dot-step-gap, 0.5rem);
+}
+
+/* When the row owns the horizontal swipe gesture, lock its
+   touch-action to vertical pan only so the surrounding page still
+   scrolls while the user drags across the dots to navigate steps. */
+.cngx-dot-stepper__row--swipeable {
+  touch-action: pan-y;
 }
 
 .cngx-dot-stepper__dot {
@@ -65,16 +90,35 @@
 }
 
 .cngx-dot-stepper__dot--completed {
-  background: var(--cngx-dot-step-completed-fill, currentColor);
+  background: var(--cngx-dot-step-completed-fill, var(--cngx-color-success, oklch(0.5 0.15 145)));
 }
 
 .cngx-dot-stepper__dot--active {
-  background: var(--cngx-dot-step-active-fill, currentColor);
+  background: var(--cngx-dot-step-active-fill, oklch(0.66 0.19 50));
   transform: scale(1.25);
 }
 
 .cngx-dot-stepper__dot[data-state='error'] {
-  background: var(--cngx-step-errored-color, currentColor);
+  background: var(--cngx-step-errored-color, var(--cngx-color-danger, oklch(0.45 0.15 25)));
+}
+
+/* Consumer-owned dot body via `*cngxDotStepperDot` slot - the span shell
+   stays for ARIA + state class hooks, but the default circle chrome
+   (fixed size, pill background, border-radius) drops out so only the
+   consumer SVG / icon renders. The :not(:empty) guard checks per-dot
+   whether the slot actually produced child nodes: upcoming dots whose
+   consumer template renders nothing keep the default circle, while
+   active / completed dots whose template emits an SVG (or any other
+   element) lose the chrome. Specificity (0,2,0) ties the
+   `[data-state='error']` rule and wins by source order; beats
+   `--active` / `--completed` (0,1,0) outright. The `transform:
+   scale(1.25)` from `--active` persists so the active dot keeps its
+   scale cue on the consumer art. */
+.cngx-dot-stepper__dot:not(:empty) {
+  width: auto;
+  height: auto;
+  background: transparent;
+  border-radius: 0;
 }
 
 @media (prefers-reduced-motion: reduce) {

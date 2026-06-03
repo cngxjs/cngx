@@ -89,6 +89,7 @@ export {
   type CngxStepperConfigFeature,
   type CngxStepperFallbackLabels,
   type CngxStepperMobileCollapse,
+  type CngxStepperMobileIndicatorPosition,
   type CngxStepperSkin,
   type CngxStepperTemplates,
   injectStepperConfig,
@@ -98,10 +99,13 @@ export {
   withStepperDefaultOrientation,
   withStepperAriaLabels,
   withStepperCommitMode,
+  withStepperConnectors,
   withStepperFallbackLabels,
   withStepperLinear,
   withStepperMobileBreakpoint,
   withStepperMobileCollapse,
+  withStepperMobileIndicatorPosition,
+  withStepperMobileSwipe,
   withStepperRouterSync,
   withStepperSkin,
   withStepIndicatorTemplate,
@@ -130,6 +134,39 @@ export {
   createMobileViewportSignal,
   createStepperDisplayMode,
 } from './mobile-viewport';
+
+// The following three blocks ship `@internal` factory helpers. They are
+// exported through `public-api.ts` so the sibling `@cngx/ui/stepper`
+// organism can consume them across the secondary-entry boundary
+// (ng-packagr has no cross-entry private surface). `disableInternal: true`
+// in `.compodocrc.json` hides them from generated docs; the LLM-md export
+// honours the same tag. Precedent: `CNGX_STEPPER_GLYPHS`, `flatStepsEqual`.
+export {
+  createStepperHostAttrs,
+  type CngxStepperHostAttrs,
+  type CngxStepperHostAttrsInputs,
+} from './stepper-host-attrs';
+
+export {
+  createStepperStripKeyboardNav,
+  type CngxStepperStripKeyboardNavOptions,
+} from './strip-keyboard-nav';
+
+export {
+  createStepperSlotContextBuilders,
+  type CngxStepperSlotContextBuilders,
+  type CngxStepperSlotContextBuildersInputs,
+} from './slot-context-builders';
+
+export {
+  createStepperAnnouncementBuilders,
+  type CngxStepperAnnouncementBuilders,
+  type CngxStepperAnnouncementBuildersInputs,
+} from './announcement-builders';
+
+export { CngxStepperSwipeNav } from './swipe-nav.directive';
+
+export { CngxStepperCount, type CngxStepperCountHost } from './stepper-count';
 
 
 export {
