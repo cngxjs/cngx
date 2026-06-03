@@ -5,7 +5,7 @@ import type { CngxStepNode } from '../stepper-host.token';
 /**
  * Context passed to the `*cngxDotStepperDot` template. Drives the dot
  * body inside `<cngx-dot-stepper>`. The `<span class="cngx-dot-stepper__dot">`
- * shell - `role="presentation"`, `aria-current`, `aria-label`, class
+ * shell - `role="img"`, `aria-current`, `aria-label`, class
  * modifiers - stays library-owned; only the dot body content becomes
  * overrideable so consumers can swap the default empty body for an
  * icon, glyph, or branded indicator.
