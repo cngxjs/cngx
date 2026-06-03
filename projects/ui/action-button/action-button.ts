@@ -16,6 +16,7 @@ import {
   CngxFailed,
   CngxPending,
   CngxSucceeded,
+  reflectAsyncDisplayStatus,
   type AsyncAction,
 } from '@cngx/common/interactive';
 import {
@@ -214,23 +215,15 @@ export class CngxActionButton {
   private readonly asyncClick = viewChild(CngxAsyncClick);
 
   /**
-   * @internal - effective status: reads from external `[externalState]` if bound,
-   * otherwise from the inner `CngxAsyncClick` directive.
+   * @internal - effective status: reflects external `[externalState]` if
+   * bound (through the shared `CngxAsyncStatus` reflection - one home for
+   * the state→display-bucket mapping), otherwise reads the inner
+   * `CngxAsyncClick` directive.
    */
   protected readonly effectiveStatus = computed(() => {
     const ext = this.externalState();
     if (ext) {
-      const status = ext.status();
-      if (status === 'pending') {
-        return 'pending' as const;
-      }
-      if (status === 'success') {
-        return 'success' as const;
-      }
-      if (status === 'error') {
-        return 'error' as const;
-      }
-      return 'idle' as const;
+      return reflectAsyncDisplayStatus(ext);
     }
     // Guard against pre-view-init reads of `state` from consumers.
     const click = this.asyncClick();
