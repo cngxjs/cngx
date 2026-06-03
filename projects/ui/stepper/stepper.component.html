@@ -4,7 +4,7 @@
     <ng-container *ngTemplateOutlet="emptyTpl"></ng-container>
   }
 } @else if (displayMode() === 'text') {
-  <span class="cngx-stepper__mobile-text" aria-live="polite">{{ mobileTextLabel() }}</span>
+  <cngx-stepper-count class="cngx-stepper__mobile-text" />
 
   <div class="cngx-stepper__panels">
     @for (node of stepsOnly(); track node.id) {
@@ -44,7 +44,7 @@
     }
   </div>
   @if (showStepCount()) {
-    <span class="cngx-stepper__mobile-text cngx-stepper__mobile-text--caption" aria-live="polite">{{ mobileTextLabel() }}</span>
+    <cngx-stepper-count class="cngx-stepper__mobile-text cngx-stepper__mobile-text--caption" />
   }
 
   <div class="cngx-stepper__panels">

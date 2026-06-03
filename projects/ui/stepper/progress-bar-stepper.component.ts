@@ -8,6 +8,7 @@ import {
 } from '@angular/core';
 
 import {
+  CngxStepperCount,
   CngxStepperPresenter,
   CNGX_STEPPER_HOST,
   injectStepperI18n,
@@ -40,7 +41,7 @@ import { CngxProgress } from '@cngx/ui/feedback';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  imports: [CngxProgress],
+  imports: [CngxProgress, CngxStepperCount],
   hostDirectives: [
     {
       directive: CngxStepperPresenter,

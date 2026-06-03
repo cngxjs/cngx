@@ -136,6 +136,8 @@ export {
   type CngxStepperStripKeyboardNavOptions,
 } from './strip-keyboard-nav';
 
+export { CngxStepperCount } from './stepper-count';
+
 
 export {
   CNGX_STEPPER_COMMIT_HANDLER_FACTORY,

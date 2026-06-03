@@ -43,6 +43,7 @@ import {
   type CngxStepRejectionContext,
   CNGX_STEPPER_GLYPHS,
   CNGX_STEPPER_HOST,
+  CngxStepperCount,
   createStepperStripKeyboardNav,
   createStepperTemplateBindings,
   resolveStepperStatusLabel,
@@ -101,7 +102,7 @@ import {
   exportAs: 'cngxStepper',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgTemplateOutlet, CngxLiveRegion, CngxRovingItem],
+  imports: [NgTemplateOutlet, CngxLiveRegion, CngxRovingItem, CngxStepperCount],
   styleUrls: ['./styles/stepper-base.css', './stepper.component.css'],
   encapsulation: ViewEncapsulation.None,
   hostDirectives: [
@@ -179,7 +180,6 @@ export class CngxStepper implements CngxStepPanelHost {
   });
 
   protected readonly displayMode = createStepperDisplayMode(this.config.mobileBreakpoint ?? STEPPER_DEFAULT_MOBILE_BREAKPOINT, () => this.config.mobileCollapse, inject(DestroyRef));
-  protected readonly mobileTextLabel = computed<string>(() => this.i18n.textStepperFormat(this.activeStepIndex() + 1, this.stepsOnly().length));
 
   constructor() {
     // Scroll active step into view via the swappable scroll-sync factory.
