@@ -43,6 +43,9 @@
       ></button>
     }
   </div>
+  @if (showStepCount()) {
+    <span class="cngx-stepper__mobile-text cngx-stepper__mobile-text--caption" aria-live="polite">{{ mobileTextLabel() }}</span>
+  }
 
   <div class="cngx-stepper__panels">
     @for (node of stepsOnly(); track node.id) {

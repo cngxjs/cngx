@@ -140,6 +140,15 @@ export class CngxStepper implements CngxStepPanelHost {
   /** Per-instance skin override; flips `[data-skin]`, structure/ARIA unchanged. */
   readonly skin = input<CngxStepperSkin | undefined>(undefined);
 
+  /**
+   * When the stepper has auto-collapsed to the `'dots'` mobile mode, opt
+   * in to render a `Step N of M` caption below the dot row. Mirrors the
+   * `CngxProgressBarStepper.showStepCount` pattern - sources the format
+   * from `CngxStepperI18n.textStepperFormat`. No-op for the default
+   * `'text'` mode (the caption is the only visible content there).
+   */
+  readonly showStepCount = input<boolean>(false);
+
   protected readonly presenter = inject(CNGX_STEPPER_HOST);
   protected readonly i18n = injectStepperI18n();
   protected readonly config = injectStepperConfig();

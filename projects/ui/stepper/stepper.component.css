@@ -956,9 +956,22 @@
 }
 
 .cngx-stepper__mobile-dots {
-  display: inline-flex;
+  display: flex;
+  justify-content: center;
   align-items: center;
   gap: var(--cngx-dot-step-gap, 0.5rem);
+}
+
+/* Optional `Step N of M` caption rendered below the dot row when the
+   consumer opts in via `[showStepCount]`. Centered to match the dot
+   row above; aria-live="polite" so screen-reader announces step
+   changes as the user navigates. */
+.cngx-stepper__mobile-text--caption {
+  display: block;
+  text-align: center;
+  font-size: 0.8125rem;
+  color: color-mix(in srgb, currentColor 70%, transparent);
+  margin-block-start: 0.5rem;
 }
 
 .cngx-stepper__mobile-dot {

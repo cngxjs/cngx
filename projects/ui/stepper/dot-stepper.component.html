@@ -9,6 +9,10 @@
       [attr.aria-current]="isActive(node, i) ? 'step' : null"
       [attr.aria-label]="ariaLabelFor(node, i)"
       [attr.data-state]="node.state()"
-    >@if (dotTpl) {<ng-container *ngTemplateOutlet="dotTpl; context: dotContextFor(node, i)"></ng-container>}</span>
+    >
+      @if (dotTpl) {
+        <ng-container *ngTemplateOutlet="dotTpl; context: dotContextFor(node, i)" />
+      }
+    </span>
   }
 </div>
