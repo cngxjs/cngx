@@ -821,8 +821,10 @@
        "done" cue, no segment tint by default. Text lifts toward full
        strength so done reads as more present than upcoming. The
        optional `--cngx-step-pill-segment-fill-completed` token can wash
-       the segment for consumers who want it. */
-    .cngx-stepper__step:has(.cngx-stepper__indicator[data-state='success']) {
+       the segment for consumers who want it. The :not(aria-current)
+       guard keeps the active-card fill winning when a previously
+       completed step is navigated back to and becomes current again. */
+    .cngx-stepper__step:not([aria-current='step']):has(.cngx-stepper__indicator[data-state='success']) {
       background: var(--cngx-step-pill-segment-fill-completed, transparent);
       color: color-mix(in srgb, currentColor 85%, transparent);
     }
