@@ -28,8 +28,9 @@ export const STORY: DemoSpec = {
     'CngxStepperNext',
   ],
   setup: `protected readonly active = signal(0);
+  // current is 1-based; map step 1 -> 0% and the final step -> 100%.
   protected readonly percentFmt = (current: number, total: number): string =>
-    Math.round((current / total) * 100) + '% complete';`,
+    Math.round(total <= 1 ? 0 : ((current - 1) / (total - 1)) * 100) + '% complete';`,
   template: `  <cngx-stepper [(activeStepIndex)]="active" aria-label="Onboarding">
     <div cngxStep label="Welcome">
       <ng-template cngxStepContent><p>Welcome aboard - let us set things up.</p></ng-template>
