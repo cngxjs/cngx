@@ -8,6 +8,7 @@ import { CngxAsyncClick } from '@cngx/common/interactive';
 
 import { CngxStepperPresenter } from '../presenter.directive';
 import type { CngxStepRegistration, CngxStepStatus } from '../stepper-host.token';
+import { CngxStepperComplete } from './stepper-complete.directive';
 import { CngxStepperNext } from './stepper-next.directive';
 import { CngxStepperPrevious } from './stepper-previous.directive';
 
@@ -35,6 +36,28 @@ function reg(
   `,
 })
 class NavHost {}
+
+@Component({
+  standalone: true,
+  imports: [CngxStepperComplete],
+  hostDirectives: [CngxStepperPresenter],
+  template: `
+    <button [cngxStepperComplete]="action" (completed)="onCompleted()" #cmp="cngxStepperComplete">
+      Finish
+    </button>
+  `,
+})
+class CompleteHost {
+  ran = 0;
+  completedCount = 0;
+  readonly action = (): Promise<void> => {
+    this.ran++;
+    return Promise.resolve();
+  };
+  onCompleted(): void {
+    this.completedCount++;
+  }
+}
 
 function navSetup(): {
   fixture: ReturnType<typeof TestBed.createComponent<NavHost>>;
@@ -141,6 +164,48 @@ describe('stepper nav controls', () => {
 
       subj.next(true);
       subj.complete();
+    });
+  });
+
+  describe('CngxStepperComplete', () => {
+    function completeSetup(stepCount: number): {
+      fixture: ReturnType<typeof TestBed.createComponent<CompleteHost>>;
+      presenter: CngxStepperPresenter;
+      dir: CngxStepperComplete;
+      btn: HTMLButtonElement;
+    } {
+      TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+      const fixture = TestBed.createComponent(CompleteHost);
+      fixture.detectChanges();
+      const presenter = fixture.debugElement.injector.get(CngxStepperPresenter);
+      for (let i = 0; i < stepCount; i++) {
+        presenter.register(reg(String.fromCharCode(97 + i)));
+      }
+      fixture.detectChanges();
+      const dir = fixture.debugElement.children[0].references['cmp'] as CngxStepperComplete;
+      const btn = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+      return { fixture, presenter, dir, btn };
+    }
+
+    it('isActive reflects the last-step state', () => {
+      const { fixture, presenter, dir } = completeSetup(3);
+      expect(dir.isActive()).toBe(false);
+      presenter.select(2);
+      fixture.detectChanges();
+      expect(dir.isActive()).toBe(true);
+    });
+
+    it('runs the finish action and emits (completed) on success', async () => {
+      const { fixture, presenter, btn } = completeSetup(2);
+      presenter.select(1);
+      fixture.detectChanges();
+      btn.click();
+      await vi.waitFor(() => {
+        fixture.detectChanges();
+        TestBed.flushEffects();
+        expect(fixture.componentInstance.ran).toBe(1);
+        expect(fixture.componentInstance.completedCount).toBe(1);
+      });
     });
   });
 
