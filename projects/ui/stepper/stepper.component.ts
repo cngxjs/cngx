@@ -294,7 +294,7 @@ export class CngxStepper implements CngxStepPanelHost {
    * (`#s="cngxStepper"`) dismiss the rejection decoration without injecting
    * {@link CNGX_STEPPER_HOST}.
    */
-  clearLastFailed = (): void => this.presenter.clearLastFailed();
+  public readonly clearLastFailed = (): void => this.presenter.clearLastFailed();
 
   // CngxStepPanelHost contract - O(1) via the pre-built map.
   labelTemplateFor(id: string): TemplateRef<CngxStepLabelContext> | null {

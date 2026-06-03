@@ -42,6 +42,48 @@ export interface CngxStepperSlotContextBuilders {
 }
 
 /**
+ * Wrap a `(node) => TContext` builder so identical results return the
+ * same reference. Keyed by the node object via `WeakMap`, so step-list
+ * re-emits drop stale entries automatically. The structural comparison
+ * is shallow because every context shape is a flat object.
+ *
+ * @internal
+ */
+function memoizeByNode<TContext extends object>(
+  build: (node: CngxStepNode) => TContext,
+): (node: CngxStepNode) => TContext {
+  const cache = new WeakMap<CngxStepNode, TContext>();
+  return (node) => {
+    const next = build(node);
+    const prev = cache.get(node);
+    if (prev !== undefined && shallowEqual(prev, next)) {
+      return prev;
+    }
+    cache.set(node, next);
+    return next;
+  };
+}
+
+/** @internal */
+function shallowEqual<T extends object>(a: T, b: T): boolean {
+  if (a === b) {
+    return true;
+  }
+  const keysA = Object.keys(a);
+  if (keysA.length !== Object.keys(b).length) {
+    return false;
+  }
+  const ra = a as Record<string, unknown>;
+  const rb = b as Record<string, unknown>;
+  for (const k of keysA) {
+    if (ra[k] !== rb[k]) {
+      return false;
+    }
+  }
+  return true;
+}
+
+/**
  * Bundle the six `*ContextFor` slot-context builders plus the small
  * `isActive` / `isStepBusy` / `showRejection` / `showErrorBadge` predicates
  * the organism's template reads. Lives at Level 2 so the `<cngx-stepper>`
@@ -77,7 +119,14 @@ export function createStepperSlotContextBuilders(
     return !!node.errorAggregator?.()?.shouldShow?.();
   };
 
-  const indicatorContextFor = (node: CngxStepNode): CngxStepIndicatorContext => {
+  // Memoize per-node so identical contexts return the same reference.
+  // *ngTemplateOutlet pays an ngOnChanges shallow comparison on its
+  // `context:` binding every CD pass; without this cache the outlet
+  // sees a fresh literal each tick and re-pushes context to the
+  // embedded view even when no source signal changed. Cache keys are
+  // the node objects themselves so the WeakMap evicts naturally with
+  // step-list re-emits.
+  const indicatorContextFor = memoizeByNode<CngxStepIndicatorContext>((node) => {
     const position = node.flatIndex + 1;
     return {
       $implicit: position,
@@ -87,40 +136,49 @@ export function createStepperSlotContextBuilders(
       status: node.state(),
       busy: isStepBusy(node),
     };
-  };
+  });
 
-  const badgeContextFor = (node: CngxStepNode): CngxStepBadgeContext => {
+  const badgeContextFor = memoizeByNode<CngxStepBadgeContext>((node) => {
     const aggregator = node.errorAggregator?.();
     const count = aggregator?.errorCount() ?? 0;
     return { count, node };
-  };
+  });
 
-  const busySpinnerContextFor = (node: CngxStepNode): CngxStepBusySpinnerContext => ({ node });
+  const busySpinnerContextFor = memoizeByNode<CngxStepBusySpinnerContext>((node) => ({ node }));
 
-  const rejectionContextFor = (node: CngxStepNode): CngxStepRejectionContext => {
+  const rejectionContextFor = memoizeByNode<CngxStepRejectionContext>((node) => {
     const failedIndex = node.flatIndex;
     const originIdx = presenter.originIndexDuringCommit();
     const originLabel = originIdx !== undefined ? stepsOnly()[originIdx]?.label() : undefined;
     return { failedIndex, originLabel, node };
-  };
+  });
 
-  const groupHeaderContextFor = (node: CngxStepNode): CngxStepGroupHeaderContext => ({
+  const groupHeaderContextFor = memoizeByNode<CngxStepGroupHeaderContext>((node) => ({
     group: node,
     expanded: true,
     status: node.state(),
-  });
+  }));
 
-  const stepLabelContextFor = (node: CngxStepNode): CngxStepLabelContext => ({
+  const stepLabelContextFor = memoizeByNode<CngxStepLabelContext>((node) => ({
     node,
     index: node.flatIndex + 1,
     active: isActive(node),
     busy: isStepBusy(node),
     disabled: node.disabled(),
-  });
+  }));
 
-  // step-content context shape matches step-label by design - content
-  // templates need the same disabled/busy derivations.
-  const stepContentContextFor = stepLabelContextFor;
+  // Independent builder + independent cache: content + label contexts
+  // share a shape today but the slot directives are separate contracts
+  // (CngxStepContentContext vs CngxStepLabelContext) and will diverge
+  // when one side gains a field. Aliasing the function would couple
+  // both call sites to that future divergence.
+  const stepContentContextFor = memoizeByNode<CngxStepContentContext>((node) => ({
+    node,
+    index: node.flatIndex + 1,
+    active: isActive(node),
+    busy: isStepBusy(node),
+    disabled: node.disabled(),
+  }));
 
   return {
     isActive,
