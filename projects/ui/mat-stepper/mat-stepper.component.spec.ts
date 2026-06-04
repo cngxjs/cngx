@@ -11,11 +11,42 @@ import { describe, expect, it } from 'vitest';
 import {
   type CngxStepNode,
   CngxStep,
+  CngxStepperNext,
   CngxStepperPresenter,
+  CngxStepperPrevious,
   type CngxStepperCommitAction,
 } from '@cngx/common/stepper';
+import {
+  CngxStepperFooter,
+  CngxStepperFooterEnd,
+  CngxStepperFooterStart,
+} from '@cngx/ui/stepper';
 
 import { CngxMatStepper } from './mat-stepper.component';
+
+@Component({
+  standalone: true,
+  imports: [
+    CngxMatStepper,
+    CngxStep,
+    CngxStepperFooter,
+    CngxStepperFooterStart,
+    CngxStepperFooterEnd,
+    CngxStepperPrevious,
+    CngxStepperNext,
+  ],
+  template: `
+    <cngx-mat-stepper aria-label="Wizard">
+      <div cngxStep label="One"></div>
+      <div cngxStep label="Two"></div>
+      <cngx-stepper-footer>
+        <button cngxStepperFooterStart cngxStepperPrevious>Back</button>
+        <button cngxStepperFooterEnd cngxStepperNext>Next</button>
+      </cngx-stepper-footer>
+    </cngx-mat-stepper>
+  `,
+})
+class FooterHost {}
 
 @Component({
   standalone: true,
@@ -70,6 +101,24 @@ describe('CngxMatStepper organism', () => {
     expect(stepper).toBeTruthy();
     const matSteps = (stepper.componentInstance as MatStepper).steps;
     expect(matSteps.length).toBe(3);
+  });
+
+  it('projects a <cngx-stepper-footer> slot and wires its nav atoms to the host', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(FooterHost);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const footer = fixture.nativeElement.querySelector(
+      'cngx-mat-stepper cngx-stepper-footer',
+    ) as HTMLElement | null;
+    expect(footer).not.toBeNull();
+    const back = footer!.querySelector('[cngxStepperPrevious]') as HTMLButtonElement;
+    const next = footer!.querySelector('[cngxStepperNext]') as HTMLButtonElement;
+    // Host resolved through CNGX_STEPPER_HOST: first step disables Back, live Next.
+    expect(back.getAttribute('aria-disabled')).toBe('true');
+    expect(next.getAttribute('aria-disabled')).toBeNull();
   });
 
   it('presenter -> Material: writing presenter.activeStepIndex updates MatStepper.selectedIndex', async () => {

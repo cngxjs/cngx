@@ -7,6 +7,10 @@
  * nav badges) see `@cngx/common/interactive`.
  */
 export { CngxIcon } from './icon/icon.component';
+export {
+  CngxSegmentedProgress,
+  type SegmentState,
+} from './segmented-progress/segmented-progress.component';
 export { CngxDivider } from './divider/divider.directive';
 export { CngxAvatar } from './avatar/avatar.component';
 export {

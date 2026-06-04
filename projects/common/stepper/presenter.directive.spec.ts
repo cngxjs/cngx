@@ -191,6 +191,161 @@ describe('CngxStepperPresenter', () => {
     expect(presenter.orientation()).toBe('vertical');
   });
 
+  describe('bounds + nav-label computeds', () => {
+    function linearSetup(): { presenter: CngxStepperPresenter } {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      @Component({
+        standalone: true,
+        hostDirectives: [{ directive: CngxStepperPresenter, inputs: ['linear'] }],
+        template: '',
+      })
+      class LinearHost {}
+      const fixture = TestBed.createComponent(LinearHost);
+      fixture.componentRef.setInput('linear', true);
+      fixture.detectChanges();
+      const presenter = fixture.debugElement.injector.get(CngxStepperPresenter);
+      return { presenter };
+    }
+
+    it('stepCount tracks the step-only count', () => {
+      const { presenter } = setup();
+      expect(presenter.stepCount()).toBe(0);
+      presenter.register(reg('a'));
+      presenter.register(reg('b'));
+      expect(presenter.stepCount()).toBe(2);
+    });
+
+    it('isFirstStep / isLastStep flip at the bounds', () => {
+      const { presenter } = setup();
+      presenter.register(reg('a'));
+      presenter.register(reg('b'));
+      presenter.register(reg('c'));
+      expect(presenter.isFirstStep()).toBe(true);
+      expect(presenter.isLastStep()).toBe(false);
+      presenter.select(1);
+      expect(presenter.isFirstStep()).toBe(false);
+      expect(presenter.isLastStep()).toBe(false);
+      presenter.select(2);
+      expect(presenter.isFirstStep()).toBe(false);
+      expect(presenter.isLastStep()).toBe(true);
+    });
+
+    it('nextStepLabel resolves the next enabled label, undefined at last', () => {
+      const { presenter } = setup();
+      presenter.register(reg('a'));
+      presenter.register(reg('b'));
+      presenter.register(reg('c'));
+      expect(presenter.nextStepLabel()).toBe('b');
+      presenter.select(2);
+      expect(presenter.nextStepLabel()).toBeUndefined();
+    });
+
+    it('nextStepLabel skips a disabled step', () => {
+      const { presenter } = setup();
+      presenter.register(reg('a'));
+      presenter.register(reg('b', 'step', 'idle', true));
+      presenter.register(reg('c'));
+      expect(presenter.nextStepLabel()).toBe('c');
+    });
+
+    it('previousStepLabel resolves the previous enabled label, undefined at first', () => {
+      const { presenter } = setup();
+      presenter.register(reg('a'));
+      presenter.register(reg('b'));
+      presenter.register(reg('c'));
+      expect(presenter.previousStepLabel()).toBeUndefined();
+      presenter.select(2);
+      expect(presenter.previousStepLabel()).toBe('b');
+    });
+
+    it('busy is true exactly while the commit is pending', () => {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      @Component({
+        standalone: true,
+        hostDirectives: [
+          { directive: CngxStepperPresenter, inputs: ['commitAction', 'commitMode'] },
+        ],
+        template: '',
+      })
+      class BusyHost {}
+      const subj = new Subject<boolean>();
+      const fixture = TestBed.createComponent(BusyHost);
+      fixture.componentRef.setInput('commitAction', () => subj);
+      fixture.componentRef.setInput('commitMode', 'pessimistic');
+      fixture.detectChanges();
+      const presenter = fixture.debugElement.injector.get(CngxStepperPresenter);
+      presenter.register(reg('a'));
+      presenter.register(reg('b'));
+      expect(presenter.busy()).toBe(false);
+      presenter.select(1);
+      expect(presenter.busy()).toBe(true);
+      subj.next(true);
+      subj.complete();
+      expect(presenter.busy()).toBe(false);
+    });
+
+    it('single-source: canGoNext() false ⟺ selectNext() no-op at a linear-blocked boundary', () => {
+      const { presenter } = linearSetup();
+      presenter.register(reg('a', 'step', 'idle')); // active, not success → linear blocks
+      presenter.register(reg('b'));
+      presenter.register(reg('c'));
+      // Incomplete active step: gate refuses, affordance agrees.
+      expect(presenter.canGoNext()).toBe(false);
+      presenter.selectNext();
+      expect(presenter.activeStepIndex()).toBe(0); // no-op
+    });
+
+    it('single-source: canGoNext() true ⟺ selectNext() advances once the gate opens', () => {
+      const { presenter } = linearSetup();
+      const a = reg('a', 'step', 'success');
+      presenter.register(a);
+      presenter.register(reg('b'));
+      presenter.register(reg('c'));
+      expect(presenter.canGoNext()).toBe(true);
+      presenter.selectNext();
+      expect(presenter.activeStepIndex()).toBe(1);
+    });
+
+    it('single-source: canGoNext() false ⟺ selectNext() no-op at a trailing-all-disabled boundary', () => {
+      const { presenter } = setup();
+      presenter.register(reg('a'));
+      presenter.register(reg('b'));
+      presenter.register(reg('c', 'step', 'idle', true)); // trailing disabled
+      presenter.select(1);
+      expect(presenter.canGoNext()).toBe(false);
+      presenter.selectNext();
+      expect(presenter.activeStepIndex()).toBe(1); // no-op
+    });
+
+    it('single-source: canGoPrevious() false ⟺ selectPrevious() no-op at a leading-all-disabled boundary', () => {
+      const { presenter } = setup();
+      presenter.register(reg('a', 'step', 'idle', true)); // leading disabled
+      presenter.register(reg('b'));
+      presenter.register(reg('c'));
+      presenter.select(1);
+      expect(presenter.canGoPrevious()).toBe(false);
+      presenter.selectPrevious();
+      expect(presenter.activeStepIndex()).toBe(1); // no-op
+    });
+
+    it('single-source: canGoPrevious() true ⟺ selectPrevious() retreats to the enabled step', () => {
+      const { presenter } = setup();
+      presenter.register(reg('a'));
+      presenter.register(reg('b'));
+      presenter.register(reg('c'));
+      presenter.select(2);
+      expect(presenter.canGoPrevious()).toBe(true);
+      presenter.selectPrevious();
+      expect(presenter.activeStepIndex()).toBe(1);
+    });
+  });
+
   describe('commit-action lifecycle', () => {
     function commitFixture(
       mode: 'optimistic' | 'pessimistic',

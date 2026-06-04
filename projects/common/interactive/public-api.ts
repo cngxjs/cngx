@@ -3,6 +3,11 @@
  */
 export { CngxAsyncClick, type AsyncAction } from './async-click/async-click.directive';
 export { CngxPending, CngxSucceeded, CngxFailed } from './async-click/async-status-templates';
+export {
+  CngxAsyncStatus,
+  reflectAsyncDisplayStatus,
+  type CngxAsyncDisplayStatus,
+} from './async-status/async-status.directive';
 export { type AsyncStatus, type CngxAsyncState } from '@cngx/core/utils';
 export { CngxCopyText } from './copy/copy-text.directive';
 export { CngxCopyBlock } from './copy/copy-block';

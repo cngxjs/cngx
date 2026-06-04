@@ -168,6 +168,11 @@ export { CngxStepperSwipeNav } from './swipe-nav.directive';
 
 export { CngxStepperCount, type CngxStepperCountHost } from './stepper-count';
 
+export { CngxStepperPrevious } from './controls/stepper-previous.directive';
+export { CngxStepperNext } from './controls/stepper-next.directive';
+export { CngxStepperComplete } from './controls/stepper-complete.directive';
+export { createStepperHostProxy } from './create-stepper-host-proxy';
+
 
 export {
   CNGX_STEPPER_COMMIT_HANDLER_FACTORY,

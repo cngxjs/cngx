@@ -119,6 +119,23 @@ class ExternalStateHost {
   readonly action = () => Promise.resolve();
 }
 
+// ── External state + failed template host ───────────────────────────────
+
+@Component({
+  template: `
+    <cngx-action-button [action]="action" [externalState]="mockState">
+      Idle
+      <ng-template cngxFailed let-err>Err: {{ err }}</ng-template>
+    </cngx-action-button>
+  `,
+  imports: [CngxActionButton, CngxFailed],
+})
+class ExternalFailedTemplateHost {
+  readonly mock = buildMockState();
+  readonly mockState = this.mock.state;
+  readonly action = () => Promise.resolve();
+}
+
 // ── Toast host ──────────────────────────────────────────────────────────
 
 @Component({
@@ -378,6 +395,18 @@ describe('CngxActionButton', () => {
       flush(fixture);
       const btn = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
       expect(btn.textContent?.trim()).toBe('Idle');
+    });
+
+    it('should render the failed template with the EXTERNAL error context', () => {
+      // Closes the effectiveError-external gap: the inner-state failed
+      // axis only exercises CngxAsyncClick's own error. Here the error
+      // is owned by [externalState] and must reach the template $implicit.
+      const fixture = TestBed.createComponent(ExternalFailedTemplateHost);
+      fixture.componentInstance.mock.error.set('ext-boom');
+      fixture.componentInstance.mock.status.set('error');
+      flush(fixture);
+      const btn = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+      expect(btn.textContent).toContain('Err: ext-boom');
     });
   });
 
