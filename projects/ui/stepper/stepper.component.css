@@ -586,6 +586,102 @@
     inherits: true;
     initial-value: 2px;
   }
+
+  /**
+   * Gap between the standalone pills of the `chips` skin.
+   * @group Skin / chips
+   */
+  @property --cngx-step-chips-gap {
+    syntax: '<length-percentage>';
+    inherits: false;
+    initial-value: 0.5rem;
+  }
+
+  /**
+   * Corner radius of each pill in the `chips` skin (default fully round).
+   * @group Skin / chips
+   */
+  @property --cngx-step-chips-radius {
+    syntax: '<length-percentage>';
+    inherits: false;
+    initial-value: 999px;
+  }
+
+  /**
+   * Inline padding inside each pill in the `chips` skin.
+   * @group Skin / chips
+   */
+  @property --cngx-step-chips-padding-inline {
+    syntax: '<length-percentage>';
+    inherits: false;
+    initial-value: 0.875rem;
+  }
+
+  /**
+   * Block padding inside each pill in the `chips` skin.
+   * @group Skin / chips
+   */
+  @property --cngx-step-chips-padding-block {
+    syntax: '<length-percentage>';
+    inherits: false;
+    initial-value: 0.4rem;
+  }
+
+  /**
+   * Inactive pill surface in the `chips` skin - a soft neutral tint.
+   * Inherits so the host-set value reaches the step descendant.
+   * @group Skin / chips
+   */
+  @property --cngx-step-chips-bg {
+    syntax: '*';
+    inherits: true;
+    initial-value: color-mix(in srgb, currentColor 8%, transparent);
+  }
+
+  /**
+   * Inactive pill label colour in the `chips` skin - muted vs the active
+   * fill. Inherits so the host-set value reaches the step descendant.
+   * @group Skin / chips
+   */
+  @property --cngx-step-chips-color {
+    syntax: '*';
+    inherits: true;
+    initial-value: color-mix(in srgb, currentColor 65%, transparent);
+  }
+
+  /**
+   * Active pill label colour in the `chips` skin - the contrast tone on
+   * the filled accent. Inherits so the host-set value reaches the step
+   * descendant. The fill itself follows `--cngx-color-primary`.
+   * @group Skin / chips
+   */
+  @property --cngx-step-chips-color-active {
+    syntax: '*';
+    inherits: true;
+    initial-value: oklch(1 0 0);
+  }
+
+  /**
+   * Completed chip surface in the `chips` skin - a soft success tint.
+   * Inherits so the host-set value reaches the step descendant.
+   * @group Skin / chips
+   */
+  @property --cngx-step-chips-bg-completed {
+    syntax: '*';
+    inherits: true;
+    initial-value: color-mix(in srgb, oklch(0.5 0.15 145) 12%, transparent);
+  }
+
+  /**
+   * Completed chip label + check colour in the `chips` skin. Inherits so
+   * the host-set value reaches the step descendant.
+   * @group Skin / chips
+   */
+  @property --cngx-step-chips-color-completed {
+    syntax: '*';
+    inherits: true;
+    initial-value: oklch(0.5 0.15 145);
+  }
 }
 
 @layer cngx.skins {
@@ -1205,6 +1301,95 @@
       min-width: 0;
       overflow-wrap: anywhere;
       line-height: 1.3;
+    }
+  }
+
+  /**
+   * Chips: each step is a standalone label pill. The current step is the
+   * filled accent chip; completed steps lift to a green check + green
+   * label; upcoming steps read as neutral chips. No disc indicator -
+   * label-only. ARIA, keyboard nav, and slots stay identical to classic.
+   */
+  @scope (.cngx-stepper[data-skin='chips']) {
+    .cngx-stepper__strip {
+      gap: var(--cngx-step-chips-gap, 0.5rem);
+      padding: 0;
+      background: transparent;
+      border: 0;
+      flex-wrap: wrap;
+    }
+
+    .cngx-stepper__step {
+      gap: 0.375rem;
+      padding-inline: var(--cngx-step-chips-padding-inline, 0.875rem);
+      padding-block: var(--cngx-step-chips-padding-block, 0.4rem);
+      border-radius: var(--cngx-step-chips-radius, 999px);
+      background: var(--cngx-step-chips-bg, color-mix(in srgb, currentColor 8%, transparent));
+      color: var(--cngx-step-chips-color, color-mix(in srgb, currentColor 65%, transparent));
+      border: 0;
+      transition:
+        background-color 120ms ease,
+        color 120ms ease;
+    }
+
+    /* The current step is the single filled pill - the only "you are
+       here" cue. Fill follows the consumer accent. */
+    .cngx-stepper__step[aria-current='step'] {
+      background: var(--cngx-step-chips-fill-active, var(--cngx-color-primary, oklch(0.66 0.19 50)));
+      color: var(--cngx-step-chips-color-active, oklch(1 0 0));
+    }
+
+    /* Completed steps lift to a green label on a soft green tint, with a
+       leading check glyph. The :not(aria-current) guard keeps the active
+       fill winning when a completed step is navigated back to. */
+    .cngx-stepper__step:not([aria-current='step']):has(
+        .cngx-stepper__indicator[data-state='success']
+      ) {
+      background: var(
+        --cngx-step-chips-bg-completed,
+        color-mix(in srgb, var(--cngx-color-success, oklch(0.5 0.15 145)) 12%, transparent)
+      );
+      color: var(--cngx-step-chips-color-completed, var(--cngx-color-success, oklch(0.5 0.15 145)));
+    }
+
+    .cngx-stepper__step:not([aria-current='step']):has(
+        .cngx-stepper__indicator[data-state='success']
+      )
+      .cngx-stepper__label::before {
+      content: '\2713';
+      margin-inline-end: 0.3rem;
+      font-weight: 600;
+    }
+
+    /* Label-only chips: the disc indicator and the status pill are
+       hidden so each step reads as a clean pill (the completed check is
+       a label glyph above, not the disc). */
+    .cngx-stepper__indicator,
+    .cngx-stepper__status-pill {
+      display: none;
+    }
+
+    .cngx-stepper__label {
+      flex: 0 0 auto;
+    }
+
+    /* Inset focus-ring stays inside the pill. */
+    .cngx-stepper__step:focus-visible {
+      outline: 0;
+      box-shadow: inset 0 0 0 2px var(--cngx-color-primary, oklch(0.66 0.19 50));
+    }
+  }
+
+  /* Vertical: stack the pills as a left-aligned column. */
+  @scope (.cngx-stepper[data-skin='chips'][data-orientation='vertical']) {
+    .cngx-stepper__strip {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .cngx-stepper__step {
+      width: 100%;
+      justify-content: flex-start;
     }
   }
 }
