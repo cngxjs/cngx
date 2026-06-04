@@ -15,6 +15,10 @@ import { CNGX_STEPPER_HOST, type CngxStepperHost } from '../stepper-host.token';
  * in-flight forward commit prevents a navigate-mid-commit race. The gate
  * is the host's `canGoPrevious` bound - never re-derived from `stepsOnly`.
  *
+ * Reflects the disabled state via `aria-disabled` only - never native
+ * `disabled` - so the control stays focusable and AT-reachable; the
+ * `handleClick` guard blocks the action while disabled.
+ *
  * ```html
  * <button cngxStepperPrevious>Back</button>
  * ```
@@ -32,7 +36,6 @@ import { CNGX_STEPPER_HOST, type CngxStepperHost } from '../stepper-host.token';
   exportAs: 'cngxStepperPrevious',
   host: {
     '(click)': 'handleClick($event)',
-    '[attr.disabled]': 'disabledAttr()',
     '[attr.aria-disabled]': 'disabled() || null',
   },
 })
@@ -54,9 +57,6 @@ export class CngxStepperPrevious {
     const host = this.resolvedHost();
     return !host || !host.canGoPrevious() || host.busy();
   });
-
-  /** @internal - `''` (attribute present) when disabled, else `null`. */
-  protected readonly disabledAttr = computed<'' | null>(() => (this.disabled() ? '' : null));
 
   /** @internal */
   protected handleClick(event: Event): void {

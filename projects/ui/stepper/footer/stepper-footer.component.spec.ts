@@ -138,9 +138,7 @@ describe('CngxStepperFooter', () => {
         '[cngxStepperPrevious]',
       ) as HTMLButtonElement;
       const next = fixture.nativeElement.querySelector('[cngxStepperNext]') as HTMLButtonElement;
-      expect(prev.hasAttribute('disabled')).toBe(true);
       expect(prev.getAttribute('aria-disabled')).toBe('true');
-      expect(next.hasAttribute('disabled')).toBe(true);
       expect(next.getAttribute('aria-disabled')).toBe('true');
     });
 
@@ -167,22 +165,22 @@ describe('CngxStepperFooter', () => {
       const next = fixture.nativeElement.querySelector('[cngxStepperNext]') as HTMLButtonElement;
 
       // First step: Back disabled, Next live.
-      expect(prev.hasAttribute('disabled')).toBe(true);
-      expect(next.hasAttribute('disabled')).toBe(false);
+      expect(prev.getAttribute('aria-disabled')).toBe('true');
+      expect(next.getAttribute('aria-disabled')).toBeNull();
 
       next.click();
       fixture.detectChanges();
       expect(presenter.activeStepIndex()).toBe(1);
       // Last step: Next disabled, Back live.
-      expect(next.hasAttribute('disabled')).toBe(true);
-      expect(prev.hasAttribute('disabled')).toBe(false);
+      expect(next.getAttribute('aria-disabled')).toBe('true');
+      expect(prev.getAttribute('aria-disabled')).toBeNull();
     });
 
     it('resolves an explicit [host] for a footer placed outside any stepper', () => {
       const fixture = TestBed.createComponent(ExplicitHostFooterHost);
       fixture.detectChanges();
       const next = fixture.nativeElement.querySelector('[cngxStepperNext]') as HTMLButtonElement;
-      expect(next.hasAttribute('disabled')).toBe(false);
+      expect(next.getAttribute('aria-disabled')).toBeNull();
     });
 
     it('renders projected into <cngx-stepper> and wires its nav atoms to the host', () => {
@@ -196,8 +194,8 @@ describe('CngxStepperFooter', () => {
       const back = footer!.querySelector('[cngxStepperPrevious]') as HTMLButtonElement;
       const next = footer!.querySelector('[cngxStepperNext]') as HTMLButtonElement;
       // Ambient host resolved through the slot: first step disables Back, live Next.
-      expect(back.hasAttribute('disabled')).toBe(true);
-      expect(next.hasAttribute('disabled')).toBe(false);
+      expect(back.getAttribute('aria-disabled')).toBe('true');
+      expect(next.getAttribute('aria-disabled')).toBeNull();
     });
   });
 });

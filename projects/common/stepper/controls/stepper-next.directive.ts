@@ -17,10 +17,13 @@ import { CNGX_STEPPER_HOST, type CngxStepperHost } from '../stepper-host.token';
  * `select()` predicates, so the affordance can never drift from the
  * navigation it triggers.
  *
- * Writes `[disabled]` / `aria-disabled` only - NEVER `aria-busy`. The
- * busy reflection is `CngxAsyncStatus`'s sole responsibility; co-placing
- * `[cngxAsyncClick]` here (which also writes `[disabled]`) warns in dev
- * mode.
+ * Reflects the disabled state via `aria-disabled` only - never native
+ * `disabled` (which would steal focus, so AT could not reach the control
+ * to learn it is at-a-bound / busy) and never `aria-busy` (that is
+ * `CngxAsyncStatus`'s sole responsibility). The `handleClick` guard
+ * blocks the action while disabled. Co-placing `[cngxAsyncClick]` here
+ * (which also gates `aria-disabled` and adds native `disabled`) warns in
+ * dev mode.
  *
  * ```html
  * <button cngxStepperNext>Continue</button>
@@ -39,7 +42,6 @@ import { CNGX_STEPPER_HOST, type CngxStepperHost } from '../stepper-host.token';
   exportAs: 'cngxStepperNext',
   host: {
     '(click)': 'handleClick($event)',
-    '[attr.disabled]': 'disabledAttr()',
     '[attr.aria-disabled]': 'disabled() || null',
   },
 })
@@ -64,14 +66,11 @@ export class CngxStepperNext {
     return !host || !host.canGoNext() || host.busy();
   });
 
-  /** @internal - `''` (attribute present) when disabled, else `null`. */
-  protected readonly disabledAttr = computed<'' | null>(() => (this.disabled() ? '' : null));
-
   constructor() {
     if (isDevMode() && this.coPlacedAsyncClick) {
       console.warn(
         'CngxStepperNext: [cngxStepperNext] and [cngxAsyncClick] on the same element ' +
-          'both write [disabled]. Use one or the other.',
+          'both gate aria-disabled (and cngxAsyncClick adds native [disabled]). Use one or the other.',
       );
     }
   }

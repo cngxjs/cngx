@@ -96,8 +96,19 @@ describe('stepper nav controls', () => {
       const { fixture, presenter, next } = navSetup();
       presenter.select(2);
       fixture.detectChanges();
-      expect(next.hasAttribute('disabled')).toBe(true);
       expect(next.getAttribute('aria-disabled')).toBe('true');
+    });
+
+    it('reflects disabled via aria-disabled only: focusable + click no-op, never native disabled', () => {
+      const { fixture, presenter, next } = navSetup();
+      presenter.select(2);
+      fixture.detectChanges();
+      // Native `disabled` would steal focus; the control must stay reachable.
+      expect(next.hasAttribute('disabled')).toBe(false);
+      expect(next.tabIndex).not.toBe(-1);
+      next.click();
+      fixture.detectChanges();
+      expect(presenter.activeStepIndex()).toBe(2); // handleClick guard blocks advance
     });
 
     it('never writes aria-busy', () => {
@@ -121,8 +132,8 @@ describe('stepper nav controls', () => {
 
     it('is disabled at the first step', () => {
       const { prev } = navSetup();
-      expect(prev.hasAttribute('disabled')).toBe(true);
       expect(prev.getAttribute('aria-disabled')).toBe('true');
+      expect(prev.hasAttribute('disabled')).toBe(false); // aria-disabled only, stays focusable
     });
   });
 
@@ -158,8 +169,8 @@ describe('stepper nav controls', () => {
       presenter.select(1);
       fixture.detectChanges();
       expect(presenter.busy()).toBe(true);
-      expect(next.hasAttribute('disabled')).toBe(true);
-      expect(prev.hasAttribute('disabled')).toBe(true);
+      expect(next.getAttribute('aria-disabled')).toBe('true');
+      expect(prev.getAttribute('aria-disabled')).toBe('true');
       expect(next.getAttribute('aria-busy')).toBeNull();
 
       subj.next(true);
@@ -234,7 +245,7 @@ describe('stepper nav controls', () => {
       const fixture = TestBed.createComponent(CoPlacedHost);
       fixture.detectChanges();
       expect(warnSpy).toHaveBeenCalledTimes(1);
-      expect(warnSpy.mock.calls[0][0]).toContain('both write [disabled]');
+      expect(warnSpy.mock.calls[0][0]).toContain('both gate aria-disabled');
     });
   });
 });

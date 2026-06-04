@@ -117,8 +117,8 @@ describe('CngxMatStepper organism', () => {
     const back = footer!.querySelector('[cngxStepperPrevious]') as HTMLButtonElement;
     const next = footer!.querySelector('[cngxStepperNext]') as HTMLButtonElement;
     // Host resolved through CNGX_STEPPER_HOST: first step disables Back, live Next.
-    expect(back.hasAttribute('disabled')).toBe(true);
-    expect(next.hasAttribute('disabled')).toBe(false);
+    expect(back.getAttribute('aria-disabled')).toBe('true');
+    expect(next.getAttribute('aria-disabled')).toBeNull();
   });
 
   it('presenter -> Material: writing presenter.activeStepIndex updates MatStepper.selectedIndex', async () => {
