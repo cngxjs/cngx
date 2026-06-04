@@ -97,6 +97,15 @@ function createAndPushGitTag(version) {
   console.log(`  Pushed git tag ${tagName}`);
 }
 
+// Regenerate CHANGELOG.md with the about-to-be-cut tag attributed to the
+// currently-unreleased commits. git-cliff's --tag labels the unreleased
+// section as this version even though the tag does not exist yet, so the tag
+// and its changelog section agree once committed.
+function regenerateChangelog(tagName) {
+  run(`npx git-cliff --tag ${tagName} -o CHANGELOG.md`);
+  console.log(`  Regenerated CHANGELOG.md for ${tagName}`);
+}
+
 function parseArgs() {
   const args = process.argv.slice(2);
   const result = {
@@ -216,8 +225,11 @@ function main() {
       console.log('Note: root package.json was bumped — remember to commit it.');
     } else {
       console.log('\nCreating git tag...');
-      // Commit the root version bump so the tag points at it
-      run(`git add package.json`);
+      // Refresh the changelog for this version, then commit it together with
+      // the root version bump so the tag points at a commit that already
+      // carries its own changelog section.
+      regenerateChangelog(gitTagName);
+      run(`git add package.json CHANGELOG.md`);
       run(`git commit -m "chore(release): ${nextVersion}"`);
       createAndPushGitTag(nextVersion);
       run(`git push origin HEAD`);
