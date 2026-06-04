@@ -247,5 +247,22 @@ describe('stepper nav controls', () => {
       expect(warnSpy).toHaveBeenCalledTimes(1);
       expect(warnSpy.mock.calls[0][0]).toContain('both gate aria-disabled');
     });
+
+    it('warns when [cngxStepperPrevious] and [cngxAsyncClick] share an element', () => {
+      @Component({
+        standalone: true,
+        imports: [CngxStepperPrevious, CngxAsyncClick],
+        hostDirectives: [CngxStepperPresenter],
+        template: `<button cngxStepperPrevious [cngxAsyncClick]="action">Back</button>`,
+      })
+      class CoPlacedPrevHost {
+        readonly action = () => Promise.resolve();
+      }
+      TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+      const fixture = TestBed.createComponent(CoPlacedPrevHost);
+      fixture.detectChanges();
+      expect(warnSpy).toHaveBeenCalledTimes(1);
+      expect(warnSpy.mock.calls[0][0]).toContain('both gate aria-disabled');
+    });
   });
 });

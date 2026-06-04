@@ -1,4 +1,6 @@
-import { computed, Directive, inject, input, type Signal } from '@angular/core';
+import { computed, Directive, inject, input, isDevMode, type Signal } from '@angular/core';
+
+import { CngxAsyncClick } from '@cngx/common/interactive';
 
 import { CNGX_STEPPER_HOST, type CngxStepperHost } from '../stepper-host.token';
 
@@ -51,6 +53,17 @@ export class CngxStepperPrevious {
   private readonly resolvedHost = computed<CngxStepperHost | null>(
     () => this.host() ?? this.injectedHost,
   );
+
+  private readonly coPlacedAsyncClick = inject(CngxAsyncClick, { self: true, optional: true });
+
+  constructor() {
+    if (isDevMode() && this.coPlacedAsyncClick) {
+      console.warn(
+        'CngxStepperPrevious: [cngxStepperPrevious] and [cngxAsyncClick] on the same element ' +
+          'both gate aria-disabled. Use one or the other.',
+      );
+    }
+  }
 
   /** `true` when retreat is unavailable: no earlier step or commit busy. */
   protected readonly disabled: Signal<boolean> = computed(() => {
