@@ -31,20 +31,7 @@ import { CNGX_STEPPER_HOST, type CngxStepStatus } from './stepper-host.token';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/stepper/step.directive.ts
  * @since 0.1.0
  * @relatedTo CngxStepGroup, CngxStepperPresenter, CngxStepLabel, CngxStepContent
- * <example-url>http://localhost:4200/#/ui/stepper/stepper-commit-action/pessimistic-optimistic-commits-with-bridge-directives</example-url>
- * <example-url>http://localhost:4200/#/ui/stepper/stepper-custom-labels/mixing-code-label-code-input-with-code-cngxsteplabel-code-slot</example-url>
- * <example-url>http://localhost:4200/#/ui/stepper/stepper-error-aggregation/per-step-error-badges</example-url>
- * <example-url>http://localhost:4200/#/ui/stepper/stepper-hierarchical/group-nested-steps-trailing-root-step</example-url>
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-horizontal/three-step-wizard</example-url>
- * <example-url>http://localhost:4200/#/ui/stepper/stepper-linear/linear-gating-with-completion-checkboxes</example-url>
- * <example-url>http://localhost:4200/#/ui/stepper/stepper-router-sync/deep-linking-with-fragment-queryparam-modes</example-url>
- * <example-url>http://localhost:4200/#/ui/stepper/stepper-slot-overrides/custom-busy-spinner-via-code-cngxstepbusyspinner-code</example-url>
- * <example-url>http://localhost:4200/#/ui/stepper/stepper-slot-overrides/custom-error-badge-via-code-cngxstepbadge-code</example-url>
- * <example-url>http://localhost:4200/#/ui/stepper/stepper-slot-overrides/custom-group-header-via-code-cngxstepgroupheader-code</example-url>
- * <example-url>http://localhost:4200/#/ui/stepper/stepper-slot-overrides/custom-indicator-glyph-via-code-cngxstepindicator-code</example-url>
- * <example-url>http://localhost:4200/#/ui/stepper/stepper-slot-overrides/empty-state-placeholder-via-code-cngxstepperempty-code</example-url>
- * <example-url>http://localhost:4200/#/ui/stepper/stepper-slot-overrides/rejection-decoration-via-code-cngxsteprejection-code</example-url>
- * <example-url>http://localhost:4200/#/ui/stepper/stepper-vertical/vertical-sidebar-layout</example-url>
  */
 @Directive({
   selector: '[cngxStep]',
