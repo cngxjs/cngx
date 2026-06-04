@@ -1,0 +1,15 @@
+/// Applies `content-visibility: auto` to skip rendering of off-screen items.
+/// Zero-JS optimization complementary to `injectRecycler` — the browser skips
+/// layout/paint for items outside the viewport. Works with or without the recycler.
+///
+/// @param {length} $height - Estimated intrinsic height per item (e.g. 48px).
+///   Used by `contain-intrinsic-size` so the scrollbar reflects the correct total height.
+///
+/// @example scss
+///   .item { @include cngx-content-visibility(48px); }
+///
+/// @link https://developer.mozilla.org/en-US/docs/Web/CSS/content-visibility
+@mixin cngx-content-visibility($height) {
+  content-visibility: auto;
+  contain-intrinsic-size: auto $height;
+}

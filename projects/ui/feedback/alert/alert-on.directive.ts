@@ -1,0 +1,133 @@
+import { afterNextRender, Directive, computed, inject, input, isDevMode } from '@angular/core';
+import { CNGX_STATEFUL, type CngxAsyncState } from '@cngx/core/utils';
+
+import { createStateBridge } from '../internal/state-bridge';
+import { CngxAlerter } from './alerter.service';
+
+/**
+ * Declarative state-to-alert bridge for scoped alert stacks.
+ *
+ * Place on any element inside a `CngxAlertStack` subtree - fires an alert
+ * when the bound `CngxAsyncState` transitions to `error` (or optionally `success`).
+ * Only fires on actual transitions, not on initial `idle` state.
+ *
+ * ```html
+ * <cngx-alert-stack scope="form" />
+ *
+ * <button [cngxAsyncClick]="save"
+ *   [cngxAlertOn]="saveState"
+ *   alertError="Save failed"
+ *   [alertErrorDetail]="true">
+ *   Save
+ * </button>
+ * ```
+ *
+ * @category ui/feedback/alert
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/feedback/alert/alert-on.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxAlertStack, CngxAlerter, CngxToastOn, CngxBannerOn
+ */
+@Directive({
+  selector: '[cngxAlertOn]',
+  standalone: true,
+})
+export class CngxAlertOn {
+  private readonly alerter = inject(CngxAlerter, { optional: true });
+  private readonly statefulFallback = inject(CNGX_STATEFUL, { optional: true });
+
+  /**
+   * The async state to watch. Optional - when omitted, falls back to
+   * `CNGX_STATEFUL` from an ancestor/self component. A bare `cngxAlertOn`
+   * attribute is treated as "no input bound".
+   */
+  readonly state = input<
+    CngxAsyncState<unknown> | undefined,
+    CngxAsyncState<unknown> | '' | undefined
+  >(undefined, {
+    alias: 'cngxAlertOn',
+    transform: (v) => (typeof v === 'string' ? undefined : v),
+  });
+
+  /** Effective state - input wins over ancestor `CNGX_STATEFUL`. */
+  private readonly effectiveState = computed<CngxAsyncState<unknown> | undefined>(
+    () => this.state() ?? this.statefulFallback?.state,
+  );
+
+  /** Alert message on success. If not set, no success alert fires. */
+  readonly alertSuccess = input<string | undefined>(undefined);
+
+  /** Alert message on error. If not set, no error alert fires. */
+  readonly alertError = input<string | undefined>(undefined);
+
+  /** Include the error detail message in the alert body. */
+  readonly alertErrorDetail = input<boolean>(false);
+
+  /** Scope for the alert - matches against `CngxAlertStack`'s `[scope]` input. */
+  readonly alertScope = input<string | undefined>(undefined);
+
+  constructor() {
+    if (!this.alerter) {
+      throw new Error(
+        '[cngxAlertOn] CngxAlerter not found. ' +
+          'Place inside a CngxAlertStack subtree or add withAlerts() to provideFeedback().',
+      );
+    }
+    const alerter = this.alerter;
+
+    if (isDevMode()) {
+      // afterNextRender, not effect - dev-mode one-shot, no dead reactive node.
+      afterNextRender(() => {
+        if (this.state() === undefined && !this.statefulFallback) {
+          console.error(
+            '[cngxAlertOn] No state source. Bind [cngxAlertOn]="state" explicitly or ' +
+              'place inside a component that provides CNGX_STATEFUL.',
+          );
+        }
+      });
+    }
+
+    createStateBridge(
+      () => this.effectiveState()?.status() ?? 'idle',
+      (status) => {
+        const s = this.effectiveState();
+        if (!s) {
+          return;
+        }
+
+        if (status === 'success') {
+          const msg = this.alertSuccess();
+          if (msg) {
+            alerter.show({
+              message: msg,
+              severity: 'success',
+              persistent: false,
+              scope: this.alertScope(),
+            });
+          }
+        }
+
+        if (status === 'error') {
+          const msg = this.alertError();
+          if (msg) {
+            const err = s.error();
+            const detail =
+              this.alertErrorDetail() && err != null
+                ? err instanceof Error
+                  ? err.message
+                  : typeof err === 'string'
+                    ? err
+                    : undefined
+                : undefined;
+            alerter.show({
+              message: detail ? `${msg}: ${detail}` : msg,
+              severity: 'error',
+              scope: this.alertScope(),
+            });
+          }
+        }
+      },
+    );
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "name": "@cngx/core",
+  "version": "0.0.0-PLACEHOLDER",
+  "description": "Core tokens, async state primitives, selection controller, and DI utilities for the cngx Angular component library.",
+  "keywords": [
+    "cngx",
+    "angular",
+    "signals",
+    "async-state",
+    "selection",
+    "tokens"
+  ],
+  "author": "Christian Weiss <c.weiss@sobit.at>",
+  "license": "MIT",
+  "homepage": "https://github.com/cngxjs/cngx#readme",
+  "bugs": {
+    "url": "https://github.com/cngxjs/cngx/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cngxjs/cngx.git",
+    "directory": "projects/core"
+  },
+  "peerDependencies": {
+    "@angular/common": "^21.2.0",
+    "@angular/core": "^21.2.0"
+  },
+  "dependencies": {
+    "tslib": "^2.3.0"
+  },
+  "sideEffects": false,
+  "exports": {
+    "./theming/*.css": "./theming/*.css"
+  }
+}

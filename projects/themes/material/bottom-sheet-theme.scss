@@ -1,0 +1,28 @@
+@use '@angular/material' as mat;
+
+// Material bridge for CngxBottomSheet. Default visuals ship with the
+// directive (projects/common/theming/components/cngx-bottom-sheet.css);
+// this file only overrides the tokens Material has a stronger opinion
+// about.
+//
+//   @use '@cngx/themes/material/bottom-sheet-theme' as bottom-sheet;
+//   @include bottom-sheet.theme($theme);
+
+@mixin color($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-bottom-sheet-handle-color: var(--mat-sys-outline-variant);
+  } @else {
+    --cngx-bottom-sheet-handle-color: #{rgba(
+        mat.get-theme-color($theme, foreground, divider),
+        0.4
+      )};
+  }
+}
+
+@mixin theme($theme) {
+  @layer cngx.components {
+    :where(dialog.cngx-bottom-sheet) {
+      @include color($theme);
+    }
+  }
+}

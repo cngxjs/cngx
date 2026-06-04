@@ -1,0 +1,76 @@
+/**
+ * @overview
+ * Foundation reset layer. Strips browser defaults that fight the
+ * cngx token model so component atoms render on a clean canvas, then
+ * pins a token-driven focus ring as the universal baseline. Lives in
+ * `@layer cngx.reset` - the lowest cngx layer, so every component-
+ * and theme-layer rule overrides it without specificity wars.
+ *
+ * **Reset jobs**
+ *
+ * - `box-sizing: border-box` on every element + pseudo
+ * - Bare `<button>` neutralized to inherit font / colour, no border,
+ *   no padding, pointer cursor - component atoms layer appearance
+ *   on top
+ * - `<html>` rendering knobs: `text-rendering: optimizeLegibility`
+ *   (kerning + ligatures), `text-size-adjust: 100%` (kills iOS
+ *   landscape inflation), `font-synthesis: none` (no synthetic
+ *   bold / italic when a webfont lacks the weight)
+ *
+ * **Focus ring baseline**
+ *
+ * - `:focus-visible` -> `outline: 2px solid var(--cngx-color-primary)`
+ *   with 3px offset
+ * - Falls back to `oklch(0.66 0.19 50)` (Ember) when the token is
+ *   absent
+ * - Components that need a different focus treatment override the
+ *   outline in `cngx.components` (e.g. `.cngx-card` adds its own
+ *   ring tuned to the surface)
+ *
+ * **Pair with**
+ *
+ * - `@cngx/core/theming/layers` - declares the `cngx.reset` -> ... ->
+ *   `app` cascade order this file appends into
+ * - `@cngx/core/theming/system-tokens` - source of
+ *   `--cngx-color-primary` for the focus ring
+ */
+
+@layer cngx.reset {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  /* Root rendering defaults:
+   *  - text-rendering: optimizeLegibility enables kerning + ligatures.
+   *  - -webkit-text-size-adjust + text-size-adjust stop iOS Safari from
+   *    auto-inflating body text in landscape orientation.
+   *  - font-synthesis: none disables the browser's synthetic bold/italic
+   *    for weights that don't ship in the font. Matters once a webfont
+   *    enters the final theme — synthetic faces drift from the designed
+   *    glyphs and break the type ramp. */
+  html {
+    text-rendering: optimizeLegibility;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    font-synthesis: none;
+  }
+
+  button {
+    font: inherit;
+    color: inherit;
+    background: transparent;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+  }
+
+  /* Focus ring offset bumped 2px -> 3px so the ring breathes against
+   * the new tighter borders from the foundation pass. Same accent
+   * color as the primary token — Ember in the default. */
+  :focus-visible {
+    outline: 2px solid var(--cngx-color-primary, oklch(0.66 0.19 50));
+    outline-offset: 3px;
+  }
+}

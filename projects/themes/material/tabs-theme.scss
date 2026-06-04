@@ -1,0 +1,89 @@
+@use 'sass:map';
+@use 'sass:math';
+@use '@angular/material' as mat;
+
+// Material bridge for CngxTabGroup + CngxTabOverflow. Default visuals
+// ship with the components (projects/common/tabs/styles/tabs-base.css
+// and projects/ui/tabs/tab-group.component.css + tab-overflow.component.css);
+// this file aligns the colour, density, and typography tokens with
+// Material so cngx tabs feel native alongside <mat-tab-group>.
+//
+//   @use '@angular/material' as mat;
+//   @use '@cngx/themes/material/tabs-theme' as tabs;
+//   html { @include tabs.theme($theme); }
+
+@mixin color($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-tab-active-color: var(--mat-sys-primary);
+    --cngx-tab-active-indicator-color: var(--mat-sys-primary);
+    --cngx-tab-hover-color: var(--mat-sys-on-surface);
+    --cngx-tab-color: var(--mat-sys-on-surface-variant);
+    --cngx-tab-strip-border: var(--mat-sys-outline-variant);
+    --cngx-tab-busy-spinner-color: var(--mat-sys-primary);
+
+    --cngx-tab-error-badge-color: var(--mat-sys-error);
+    --cngx-tab-error-badge-text-color: var(--mat-sys-on-error);
+    --cngx-tab-rejection-icon-color: var(--mat-sys-on-error);
+    --cngx-tab-rejection-icon-bg: var(--mat-sys-error);
+    --cngx-tab-rejection-icon-text: var(--mat-sys-on-error);
+  } @else {
+    --cngx-tab-active-color: #{mat.get-theme-color($theme, primary)};
+    --cngx-tab-active-indicator-color: #{mat.get-theme-color($theme, primary)};
+    --cngx-tab-error-badge-color: #{mat.get-theme-color($theme, warn)};
+    --cngx-tab-rejection-icon-bg: #{mat.get-theme-color($theme, warn)};
+  }
+}
+
+@mixin typography($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-tab-error-badge-font-size: var(--mat-sys-label-small-size);
+    --cngx-tab-error-badge-font-weight: var(--mat-sys-label-small-weight);
+    --cngx-tab-rejection-icon-font-size: var(--mat-sys-label-small-size);
+  }
+}
+
+@mixin density($theme) {
+  $scale: mat.get-theme-density($theme);
+  $scale: math.max(-4, math.min(0, $scale));
+
+  $paddings:        (0: 0.5rem 0.75rem, -1: 0.4rem 0.6rem, -2: 0.3rem 0.5rem, -3: 0.25rem 0.4rem, -4: 0.2rem 0.35rem);
+  $strip-paddings:  (0: 0.5rem 0, -1: 0.4rem 0, -2: 0.3rem 0, -3: 0.25rem 0, -4: 0.2rem 0);
+  $gaps:            (0: 0.5rem, -1: 0.4rem, -2: 0.3rem, -3: 0.25rem, -4: 0.2rem);
+
+  --cngx-tab-padding: #{map.get($paddings, $scale)};
+  --cngx-tab-strip-padding: #{map.get($strip-paddings, $scale)};
+  --cngx-tab-gap: #{map.get($gaps, $scale)};
+}
+
+@mixin _overflow-color($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-tab-overflow-bg: var(--mat-sys-surface);
+    --cngx-tab-overflow-button-bg: var(--mat-sys-surface);
+    --cngx-tab-overflow-popover-bg: var(--mat-sys-surface-container);
+    --cngx-tab-overflow-popover-border: 1px solid var(--mat-sys-outline-variant);
+    --cngx-tab-overflow-item-hover-bg: color-mix(
+      in srgb,
+      var(--mat-sys-on-surface) 8%,
+      transparent
+    );
+    --cngx-tab-overflow-item-active-bg: color-mix(
+      in srgb,
+      var(--mat-sys-primary) 12%,
+      transparent
+    );
+    --cngx-tab-overflow-item-active-outline: 2px solid var(--mat-sys-primary);
+  }
+}
+
+@mixin theme($theme) {
+  @layer cngx.components {
+    :where(cngx-tab-group) {
+      @include color($theme);
+      @include typography($theme);
+      @include density($theme);
+    }
+    :where(cngx-tab-overflow) {
+      @include _overflow-color($theme);
+    }
+  }
+}

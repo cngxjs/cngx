@@ -1,0 +1,84 @@
+@let expression = node();
+@if (!expression && showEmptyFieldPicker()) {
+  <div class="cngx-filter-builder__expression cngx-filter-builder__expression--empty">
+    <cngx-select
+      class="cngx-filter-builder__field-select"
+      [options]="fieldOptions()"
+      [placeholder]="config.i18n.addFilter"
+      [value]="undefined"
+      (valueChange)="handleFieldChange($event)"
+    ></cngx-select>
+  </div>
+}
+@if (expression) {
+  <div
+    class="cngx-filter-builder__expression"
+    role="group"
+    [attr.aria-label]="ariaLabel()"
+    [class.cngx-filter-expression-incomplete]="isIncomplete()"
+  >
+    @if (fields().length > 1) {
+      <cngx-select
+        class="cngx-filter-builder__field-select"
+        [options]="fieldOptions()"
+        [value]="expression.field"
+        (valueChange)="handleFieldChange($event)"
+      ></cngx-select>
+    }
+
+    <cngx-select
+      class="cngx-filter-builder__operator-select"
+      [options]="operatorOptions()"
+      [value]="expression.operator"
+      (valueChange)="handleOperatorChange($event)"
+    ></cngx-select>
+
+    @let resolvedEditor = editor();
+    @let valueEditorTpl = valueEditorTemplate();
+    @if (valueEditorTpl && valueEditorContext(); as ctx) {
+      <ng-container *ngTemplateOutlet="valueEditorTpl; context: ctx"></ng-container>
+    } @else if (resolvedEditor === 'native:string') {
+      <input
+        cngxInput
+        type="text"
+        [value]="expression.value ?? ''"
+        (input)="handleStringValueInput($event)"
+      />
+    } @else if (resolvedEditor === 'native:number') {
+      <input
+        cngxInput
+        type="number"
+        [value]="expression.value ?? ''"
+        (input)="handleNumberValueInput($event)"
+      />
+    } @else if (resolvedEditor === 'native:date') {
+      <input
+        cngxInput
+        type="date"
+        [value]="expression.value ?? ''"
+        (input)="handleDateValueInput($event)"
+        (change)="handleDateValueInput($event)"
+      />
+    } @else if (resolvedEditor === 'native:boolean') {
+      <cngx-toggle
+        [value]="expression.value === true"
+        (valueChange)="handleBooleanValueChange($event)"
+      ></cngx-toggle>
+    } @else if (resolvedEditor && !isNativeEditor(resolvedEditor)) {
+      <ng-container *ngComponentOutlet="resolvedEditor"></ng-container>
+    }
+
+    @if (removeButtonTemplate(); as removeTpl) {
+      <ng-container *ngTemplateOutlet="removeTpl; context: removeButtonContext()"></ng-container>
+    } @else {
+      <button
+        type="button"
+        class="cngx-filter-builder__action-button cngx-filter-builder__action-button--remove"
+        (click)="handleRemove()"
+      >
+        <span aria-hidden="true" class="cngx-filter-builder__action-glyph">{{ glyphs.remove }}</span>
+        {{ config.i18n.removeFilter }}
+      </button>
+    }
+  </div>
+}

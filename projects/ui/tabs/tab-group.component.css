@@ -1,0 +1,194 @@
+/**
+ * @overview
+ * Thematic skin for `<cngx-tab-group>`. Pairs with the structural
+ * `tabs-base.css` in `@cngx/common/tabs` (which owns layout, scroll-
+ * snap, sizes, base color / background, sr-only) - this file owns
+ * the ink-bar indicator, hover affordance, strip border, and the
+ * per-tab error badge. Tokens defined in `tabs-base.css` read with
+ * bare `var(--cngx-tab-*)` (no second fallback) because the
+ * structural cascade provides the default.
+ *
+ * **State modifiers**
+ *
+ * On `.cngx-tabs__tab`:
+ *
+ * - `:hover:not([aria-disabled="true"])` - swaps to
+ *   `--cngx-tab-hover-color`
+ * - `[aria-selected="true"]` - paints `--cngx-tab-active-color` and
+ *   draws the ink-bar via `border-bottom-color` (or
+ *   `border-inline-end-color` in vertical orientation)
+ *
+ * **Orientation variants**
+ *
+ * On the host:
+ *
+ * - default (horizontal) - strip border-bottom, indicator on the
+ *   bottom edge of each tab
+ * - `[data-orientation="vertical"]` - strip border-inline-end,
+ *   indicator on the inline-end of each tab
+ *
+ * **Slots**
+ *
+ * - `.cngx-tabs__strip` - tab strip with border on the trailing edge
+ * - `.cngx-tabs__tab` - per-tab `<button>` with transparent
+ *   indicator border and color/border-color transition
+ * - `.cngx-tabs__badge` - inline error-count disc next to a tab
+ *
+ * All transitions short-circuit under `prefers-reduced-motion`.
+ */
+
+@layer cngx.tokens {
+  /**
+   * Border shorthand of the tab strip's bottom (or inline-end for
+   * vertical orientation) edge.
+   * @group Surface
+   */
+  @property --cngx-tab-strip-border {
+    syntax: '*';
+    inherits: false;
+    initial-value: 1px solid currentColor;
+  }
+
+  /**
+   * Thickness of the active-tab ink-bar indicator.
+   * @group Surface
+   */
+  @property --cngx-tab-indicator-thickness {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 2px;
+  }
+
+  /**
+   * Transition duration for color + border-color crossfade on hover
+   * / active changes.
+   * @group Motion
+   */
+  @property --cngx-tab-transition-duration {
+    syntax: '<time>';
+    inherits: false;
+    initial-value: 0.15s;
+  }
+
+  /**
+   * Text color of the hover state.
+   * @group State / Hover
+   */
+  @property --cngx-tab-hover-color {
+    syntax: '*';
+    inherits: true;
+    initial-value: currentColor;
+  }
+
+  /**
+   * Color of the ink-bar indicator under the active tab.
+   * @group State / Active
+   */
+  @property --cngx-tab-active-indicator-color {
+    syntax: '*';
+    inherits: true;
+    initial-value: currentColor;
+  }
+
+  /**
+   * Hit-target diameter of the per-tab error badge.
+   * @group State / Error
+   */
+  @property --cngx-tab-badge-size {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 1.25rem;
+  }
+
+  /**
+   * Text color of the error-badge glyph.
+   * @group State / Error
+   */
+  @property --cngx-tab-error-badge-text-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(1 0 0);
+  }
+
+  /**
+   * Font-size of the error-badge glyph.
+   * @group State / Error
+   */
+  @property --cngx-tab-badge-font-size {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.75em;
+  }
+
+  /**
+   * Font-weight of the error-badge glyph.
+   * @group State / Error
+   */
+  @property --cngx-tab-badge-font-weight {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 700;
+  }
+}
+
+@layer cngx.components {
+  @scope (.cngx-tab-group) {
+    :scope {
+      font: inherit;
+    }
+
+    .cngx-tabs__strip {
+      border-bottom: var(--cngx-tab-strip-border, 1px solid currentColor);
+    }
+
+    .cngx-tabs__tab {
+      position: relative;
+      border-bottom: var(--cngx-tab-indicator-thickness, 2px) solid transparent;
+      margin-bottom: calc(var(--cngx-tab-indicator-thickness, 2px) * -1);
+      transition:
+        color var(--cngx-tab-transition-duration, 0.15s) ease,
+        border-color var(--cngx-tab-transition-duration, 0.15s) ease;
+    }
+
+    .cngx-tabs__tab:hover:not([aria-disabled='true']) {
+      color: var(--cngx-tab-hover-color, var(--cngx-tab-active-color));
+    }
+
+    .cngx-tabs__tab[aria-selected='true'] {
+      color: var(--cngx-tab-active-color);
+      border-bottom-color: var(--cngx-tab-active-indicator-color, currentColor);
+    }
+
+    :scope[data-orientation='vertical'] .cngx-tabs__strip {
+      border-bottom: 0;
+      border-inline-end: var(--cngx-tab-strip-border, 1px solid currentColor);
+    }
+
+    :scope[data-orientation='vertical'] .cngx-tabs__tab {
+      border-bottom: 0;
+      margin-bottom: 0;
+      border-inline-end: var(--cngx-tab-indicator-thickness, 2px) solid transparent;
+      margin-inline-end: calc(var(--cngx-tab-indicator-thickness, 2px) * -1);
+    }
+
+    :scope[data-orientation='vertical'] .cngx-tabs__tab[aria-selected='true'] {
+      border-inline-end-color: var(--cngx-tab-active-indicator-color, currentColor);
+    }
+
+    .cngx-tabs__badge {
+      width: var(--cngx-tab-badge-size, 1.25rem);
+      height: var(--cngx-tab-badge-size, 1.25rem);
+      border-radius: 50%;
+      color: var(--cngx-tab-error-badge-text-color, oklch(1 0 0));
+      font-size: var(--cngx-tab-badge-font-size, 0.75em);
+      font-weight: var(--cngx-tab-badge-font-weight, 700);
+      line-height: 1;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .cngx-tabs__tab {
+        transition: none !important;
+      }
+    }
+  }
+}

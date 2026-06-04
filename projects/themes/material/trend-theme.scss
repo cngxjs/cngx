@@ -1,0 +1,45 @@
+@use '@angular/material' as mat;
+
+// Material bridge for CngxTrend. Neutral text routes through
+// on-surface-variant so the flat-direction variant reads as a Material
+// caption. The up / down semantics fold onto tertiary / error because
+// Material 3 has no first-class success surface - same convention as
+// the badge bridge so success-flavoured cngx atoms stay aligned.
+// Typography pulls from the label-medium scale.
+//
+//   @use '@cngx/themes/material/trend-theme' as trend;
+//   html { @include trend.theme($theme); }
+
+@mixin color($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-trend-color: var(--mat-sys-on-surface-variant);
+    --cngx-trend-up-color: var(--mat-sys-tertiary);
+    --cngx-trend-down-color: var(--mat-sys-error);
+  } @else {
+    --cngx-trend-color: #{mat.get-theme-color(
+        $theme,
+        foreground,
+        secondary-text
+      )};
+    --cngx-trend-up-color: #{mat.get-theme-color($theme, accent)};
+    --cngx-trend-down-color: #{mat.get-theme-color($theme, warn)};
+  }
+}
+
+@mixin typography($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-trend-size: var(--mat-sys-label-medium-size);
+    --cngx-trend-weight: var(--mat-sys-label-medium-weight);
+  }
+  // M2 lacks first-class label-scale tokens; the component initial
+  // values stand in for M2 consumers.
+}
+
+@mixin theme($theme) {
+  @layer cngx.components {
+    :where(cngx-trend, .cngx-trend) {
+      @include color($theme);
+      @include typography($theme);
+    }
+  }
+}

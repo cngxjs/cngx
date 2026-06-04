@@ -1,0 +1,172 @@
+/**
+ * @overview
+ * Default visuals for `CngxCardSkeleton`. The host carries
+ * `.cngx-card-skeleton` and stacks three placeholder bars vertically.
+ * All three share the same shimmer gradient so the placeholder reads
+ * as a single moving element rather than three separate animations.
+ *
+ * **Slots**
+ *
+ * - `.cngx-card-skeleton__media` - hero image placeholder block
+ * - `.cngx-card-skeleton__title` - title bar (55% width)
+ * - `.cngx-card-skeleton__line` - body text-line bar (repeats)
+ *
+ * **Reduced motion**
+ *
+ * Under `prefers-reduced-motion: reduce` the animated gradient is
+ * dropped and all three bars fall back to a flat `opacity: 0.7` dim.
+ *
+ * **Inheritance**
+ *
+ * Leaf tokens with no fallback chain - geometry and shimmer colors
+ * are component-local. The dark-mode swap rewrites the two surface
+ * tokens at `:root`.
+ *
+ * **Dark mode**
+ *
+ * Three hooks lift the shimmer band one step above the dark surface
+ * so the moving stripe stays visible against a dark page:
+ *
+ * - `prefers-color-scheme: dark`
+ * - `[data-color-scheme="dark"]`
+ * - `[data-color-scheme="light"]` (explicit light pin)
+ *
+ * Both surface tokens carry `inherits: true` so the `:root` swap
+ * reaches the gradient fill on each slot.
+ */
+
+@layer cngx.tokens {
+  /**
+   * Vertical gap between the skeleton's child blocks.
+   * @group Layout
+   */
+  @property --cngx-skeleton-gap {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 10px;
+  }
+
+  /**
+   * Base color of the shimmer gradient.
+   * @group Surface
+   */
+  @property --cngx-skeleton-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.88 0.005 250);
+  }
+
+  /**
+   * Highlight color of the shimmer gradient.
+   * @group Surface
+   */
+  @property --cngx-skeleton-shimmer {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.96 0.005 250);
+  }
+
+  /**
+   * Height of the media placeholder block.
+   * @group Layout
+   */
+  @property --cngx-skeleton-media-height {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 120px;
+  }
+
+  /**
+   * Height of the title placeholder bar.
+   * @group Layout
+   */
+  @property --cngx-skeleton-title-height {
+    syntax: '*';
+    inherits: false;
+    initial-value: 1.25rem;
+  }
+
+  /**
+   * Height of each text-line placeholder bar.
+   * @group Layout
+   */
+  @property --cngx-skeleton-line-height {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.875rem;
+  }
+
+  /* Dark-mode swap - placeholder bg sits one step above the dark
+   * surface; shimmer one step above that. Both tokens flipped to
+   * `inherits: true` so this `:root` cascade reaches the gradient
+   * fill on `.cngx-card-skeleton__media` etc. */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-color-scheme='light']) {
+      --cngx-skeleton-bg: oklch(0.32 0.005 250);
+      --cngx-skeleton-shimmer: oklch(0.42 0.005 250);
+    }
+  }
+
+  [data-color-scheme='dark'] {
+    --cngx-skeleton-bg: oklch(0.32 0.005 250);
+    --cngx-skeleton-shimmer: oklch(0.42 0.005 250);
+  }
+
+  [data-color-scheme='light'] {
+    --cngx-skeleton-bg: oklch(0.88 0.005 250);
+    --cngx-skeleton-shimmer: oklch(0.96 0.005 250);
+  }
+}
+
+@layer cngx.components {
+  @scope (.cngx-card-skeleton) {
+    :scope {
+      display: flex;
+      flex-direction: column;
+      gap: var(--cngx-skeleton-gap, 10px);
+    }
+
+    .cngx-card-skeleton__media,
+    .cngx-card-skeleton__title,
+    .cngx-card-skeleton__line {
+      background: linear-gradient(
+        90deg,
+        var(--cngx-skeleton-bg, oklch(0.88 0.005 250)) 25%,
+        var(--cngx-skeleton-shimmer, oklch(0.96 0.005 250)) 50%,
+        var(--cngx-skeleton-bg, oklch(0.88 0.005 250)) 75%
+      );
+      background-size: 200% 100%;
+      animation: cngx-skeleton-shimmer 1.5s ease-in-out infinite;
+      border-radius: var(--cngx-radius-sm, 4px);
+    }
+
+    .cngx-card-skeleton__media {
+      height: var(--cngx-skeleton-media-height, 120px);
+    }
+    .cngx-card-skeleton__title {
+      height: var(--cngx-skeleton-title-height, 1.25rem);
+      width: 55%;
+    }
+    .cngx-card-skeleton__line {
+      height: var(--cngx-skeleton-line-height, 0.875rem);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .cngx-card-skeleton__media,
+      .cngx-card-skeleton__title,
+      .cngx-card-skeleton__line {
+        animation: none;
+        opacity: 0.7;
+      }
+    }
+  }
+
+  @keyframes cngx-skeleton-shimmer {
+    0% {
+      background-position: 200% 0;
+    }
+    100% {
+      background-position: -200% 0;
+    }
+  }
+}

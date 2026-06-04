@@ -1,0 +1,38 @@
+{
+  "name": "@cngx/forms",
+  "version": "0.0.0-PLACEHOLDER",
+  "description": "Forms-related organisms (controls, validators, field bridge, select family) for the cngx Angular component library. Signal-Forms first.",
+  "keywords": [
+    "cngx",
+    "angular",
+    "signals",
+    "forms",
+    "signal-forms",
+    "select",
+    "combobox",
+    "typeahead"
+  ],
+  "author": "Christian Weiss <c.weiss@sobit.at>",
+  "license": "MIT",
+  "homepage": "https://github.com/cngxjs/cngx#readme",
+  "bugs": {
+    "url": "https://github.com/cngxjs/cngx/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cngxjs/cngx.git",
+    "directory": "projects/forms"
+  },
+  "peerDependencies": {
+    "@angular/common": "^21.2.0",
+    "@angular/core": "^21.2.0",
+    "@angular/forms": "^21.2.0"
+  },
+  "dependencies": {
+    "tslib": "^2.3.0"
+  },
+  "sideEffects": false,
+  "exports": {
+    "./theming/*.css": "./theming/*.css"
+  }
+}

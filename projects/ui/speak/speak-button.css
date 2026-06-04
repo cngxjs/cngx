@@ -1,0 +1,208 @@
+/**
+ * @overview
+ * Default visuals for `CngxSpeakButton`. The host carries
+ * `.cngx-speak-button` and renders a single `__btn` child with an
+ * inner `__icon`. The active / speaking accent deliberately uses
+ * warm orange rather than `--cngx-color-primary` so the speak
+ * surface reads as ambient feedback, not a primary call-to-action -
+ * brand-wide overrides target `--cngx-speak-btn-active-color`
+ * directly.
+ *
+ * **State modifiers**
+ *
+ * - `--speaking` - fills the button with `--cngx-speak-btn-speaking-
+ *   bg` (orange) and paints the icon white
+ *
+ * On `.cngx-speak-button__btn`:
+ *
+ * - `:hover` - swaps to `--cngx-speak-btn-active-color` for icon and
+ *   border, and to `--cngx-speak-btn-hover-bg` for the surface
+ *
+ * **Slots**
+ *
+ * - `.cngx-speak-button__btn` - the actual `<button>`; carries
+ *   shape, border, transition, and hover/active state painting
+ * - `.cngx-speak-button__icon` - inner glyph, nudged +1px on the
+ *   inline axis to optically center against the rounded surface
+ *
+ * **Inheritance**
+ *
+ * - `--cngx-speak-btn-bg` -> `--cngx-color-surface`
+ * - `--cngx-speak-btn-hover-bg` -> `--cngx-speak-btn-bg` ->
+ *   `--cngx-color-surface`
+ * - `--cngx-speak-btn-speaking-bg` -> `--cngx-speak-btn-active-color`
+ *
+ * **Pair with**
+ *
+ * - `@cngx/themes/material/speak-button-theme` - Material 3
+ *   icon-button surface
+ */
+
+@layer cngx.tokens {
+  /**
+   * Hit-target diameter of the button.
+   * @group Layout
+   */
+  @property --cngx-speak-btn-size {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 36px;
+  }
+
+  /**
+   * Inner icon size.
+   * @group Layout
+   */
+  @property --cngx-speak-btn-icon-size {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 18px;
+  }
+
+  /**
+   * Corner radius.
+   * @group Layout
+   */
+  @property --cngx-speak-btn-radius {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 8px;
+  }
+
+  /**
+   * Border width.
+   * @group Surface
+   */
+  @property --cngx-speak-btn-border-width {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 1px;
+  }
+
+  /**
+   * Resting background. Falls back through `--cngx-color-surface`.
+   * @group Surface
+   */
+  @property --cngx-speak-btn-bg {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: oklch(1 0 0);
+  }
+
+  /**
+   * Resting icon color - muted.
+   * @group Surface
+   */
+  @property --cngx-speak-btn-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.45 0 0);
+  }
+
+  /**
+   * Transition duration for the state-color crossfade.
+   * @group Motion
+   */
+  @property --cngx-speak-btn-transition {
+    syntax: '<time>';
+    inherits: false;
+    initial-value: 0.15s;
+  }
+
+  /**
+   * Accent color of the speaking / hover state. Warm orange by
+   * design - independent of `--cngx-color-primary`.
+   * @group State / Active
+   */
+  @property --cngx-speak-btn-active-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.72 0.18 70);
+  }
+
+  /**
+   * Background on hover.
+   * @group State / Hover
+   */
+  @property --cngx-speak-btn-hover-bg {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: oklch(1 0 0);
+  }
+
+  /**
+   * Icon color while actively speaking.
+   * @group State / Speaking
+   */
+  @property --cngx-speak-btn-speaking-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(1 0 0);
+  }
+
+  /**
+   * Background while actively speaking - filled with the orange
+   * accent for unmistakable feedback.
+   * @group State / Speaking
+   */
+  @property --cngx-speak-btn-speaking-bg {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: oklch(0.72 0.18 70);
+  }
+}
+
+@layer cngx.components {
+  @scope (.cngx-speak-button) {
+    :scope {
+      display: inline-flex;
+    }
+
+    .cngx-speak-button__btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: var(--cngx-speak-btn-size, 36px);
+      height: var(--cngx-speak-btn-size, 36px);
+      padding: 0;
+      border: var(--cngx-speak-btn-border-width, 1px) solid
+        var(--cngx-color-border, oklch(0.87 0 0));
+      border-radius: var(--cngx-speak-btn-radius, 8px);
+      background: var(--cngx-speak-btn-bg, var(--cngx-color-surface, oklch(1 0 0)));
+      color: var(--cngx-speak-btn-color, oklch(0.45 0 0));
+      cursor: pointer;
+      transition:
+        color var(--cngx-speak-btn-transition, 0.15s),
+        background var(--cngx-speak-btn-transition, 0.15s),
+        border-color var(--cngx-speak-btn-transition, 0.15s);
+      flex-shrink: 0;
+    }
+
+    .cngx-speak-button__btn:hover {
+      color: var(--cngx-speak-btn-active-color, oklch(0.72 0.18 70));
+      border-color: var(--cngx-speak-btn-active-color, oklch(0.72 0.18 70));
+      background: var(
+        --cngx-speak-btn-hover-bg,
+        var(--cngx-speak-btn-bg, var(--cngx-color-surface, oklch(1 0 0)))
+      );
+    }
+
+    :scope.cngx-speak-button--speaking .cngx-speak-button__btn {
+      color: var(--cngx-speak-btn-speaking-color, oklch(1 0 0));
+      background: var(
+        --cngx-speak-btn-speaking-bg,
+        var(--cngx-speak-btn-active-color, oklch(0.72 0.18 70))
+      );
+      border-color: var(
+        --cngx-speak-btn-speaking-bg,
+        var(--cngx-speak-btn-active-color, oklch(0.72 0.18 70))
+      );
+    }
+
+    .cngx-speak-button__icon {
+      width: var(--cngx-speak-btn-icon-size, 18px);
+      height: var(--cngx-speak-btn-icon-size, 18px);
+      transform: translateX(1px);
+    }
+  }
+}

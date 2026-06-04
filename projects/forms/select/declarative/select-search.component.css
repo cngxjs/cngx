@@ -1,0 +1,62 @@
+/**
+ * @overview
+ * Default visuals for the declarative `<cngx-select-search>` -
+ * a search input rendered above a projected listbox. The host carries
+ * its own padding + bottom divider; the inner `.cngx-select-search__input`
+ * is a bordered text field with primary-tinted focus ring.
+ *
+ * **State modifiers**
+ *
+ * - `:focus-visible` on `.cngx-select-search__input` - 2px primary
+ *   outline + 1px offset
+ *
+ * **Slots**
+ *
+ * - `:host` - block-level wrapper with bottom divider separating the
+ *   search field from the option list
+ * - `.cngx-select-search__input` - the bordered text input
+ *
+ * **Inheritance**
+ *
+ * Surface and focus tokens fall back to the foundation so brand swaps
+ * propagate without per-component theming:
+ *
+ * - `--cngx-select-search-padding` - hardcoded `0.5rem`
+ * - `--cngx-select-search-divider` -> `--cngx-color-border`
+ * - `--cngx-select-search-input-padding` - hardcoded `0.375rem 0.5rem`
+ * - `--cngx-select-search-input-border` -> `--cngx-color-border`
+ * - `--cngx-select-search-input-radius` - hardcoded `0.25rem`
+ * - `--cngx-select-search-input-bg` - hardcoded `transparent`
+ * - `--cngx-select-search-focus-outline` -> `--cngx-color-primary`
+ * - `--cngx-select-search-focus-offset` - hardcoded `1px`
+ */
+
+:host {
+  display: block;
+  padding: var(--cngx-select-search-padding, 0.5rem);
+  border-bottom: var(
+    --cngx-select-search-divider,
+    1px solid var(--cngx-color-border, oklch(0.92 0.005 250))
+  );
+}
+
+.cngx-select-search__input {
+  width: 100%;
+  padding: var(--cngx-select-search-input-padding, 0.375rem 0.5rem);
+  border: var(
+    --cngx-select-search-input-border,
+    1px solid var(--cngx-color-border, oklch(0.85 0.01 250))
+  );
+  border-radius: var(--cngx-select-search-input-radius, 0.25rem);
+  background: var(--cngx-select-search-input-bg, transparent);
+  color: inherit;
+  font: inherit;
+}
+
+.cngx-select-search__input:focus-visible {
+  outline: var(
+    --cngx-select-search-focus-outline,
+    2px solid var(--cngx-color-primary, oklch(0.66 0.19 50))
+  );
+  outline-offset: var(--cngx-select-search-focus-offset, 1px);
+}

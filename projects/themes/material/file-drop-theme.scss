@@ -1,0 +1,44 @@
+@use 'sass:map';
+@use 'sass:math';
+@use '@angular/material' as mat;
+
+// Material bridge for CngxFileDrop. Default visuals ship with the
+// directive (projects/forms/theming/components/cngx-file-drop.css);
+// this file aligns colour and density tokens with Material.
+//
+//   @use '@cngx/themes/material/file-drop-theme' as file-drop;
+//   html { @include file-drop.theme($theme); }
+
+@mixin color($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-file-drop-border-color: var(--mat-sys-outline);
+    --cngx-file-drop-active-border: var(--mat-sys-primary);
+    --cngx-file-drop-active-bg: color-mix(in srgb, var(--mat-sys-primary) 5%, transparent);
+    --cngx-file-drop-success-border: var(--mat-sys-tertiary);
+  } @else {
+    --cngx-file-drop-border-color: #{mat.get-theme-color($theme, foreground, divider)};
+    --cngx-file-drop-active-border: #{mat.get-theme-color($theme, primary)};
+    --cngx-file-drop-active-bg: #{rgba(mat.get-theme-color($theme, primary), 0.05)};
+    --cngx-file-drop-success-border: #{mat.get-theme-color($theme, accent)};
+  }
+}
+
+@mixin density($theme) {
+  $scale: mat.get-theme-density($theme);
+  $scale: math.max(-4, math.min(0, $scale));
+
+  $paddings: (0: 32px, -1: 24px, -2: 16px, -3: 12px, -4: 10px);
+  $radii:    (0: 8px,  -1: 7px,  -2: 6px,  -3: 5px,  -4: 4px);
+
+  --cngx-file-drop-padding: #{map.get($paddings, $scale)};
+  --cngx-file-drop-radius: #{map.get($radii, $scale)};
+}
+
+@mixin theme($theme) {
+  @layer cngx.components {
+    :where(.cngx-file-drop) {
+      @include color($theme);
+      @include density($theme);
+    }
+  }
+}

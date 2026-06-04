@@ -1,0 +1,305 @@
+import { NgComponentOutlet, NgTemplateOutlet } from '@angular/common';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  input,
+  ViewEncapsulation,
+} from '@angular/core';
+import { CngxToggle } from '@cngx/common/interactive';
+import { CngxInput } from '@cngx/forms/input';
+import { CngxSelect } from '@cngx/forms/select';
+
+import { CNGX_FILTER_BUILDER_GLYPHS } from './filter-builder.glyphs';
+import {
+  injectFilterBuilderConfig,
+  isNativeEditor,
+  type CngxFilterEditor,
+} from './filter-builder.config';
+import { CNGX_FILTER_BUILDER_HOST } from './filter-builder-host.token';
+import type { CngxFilterBuilderTemplateRegistry } from './filter-builder-template-registry';
+import type { CngxFilterBuilderValueEditorContext } from './filter-builder-value-editor.slot';
+import { injectFilterEditors } from './filter-builder.tokens';
+import type { FilterExpression, FilterFieldDef, FilterNode } from './filter-builder.types';
+
+/** @internal */
+const EMPTY_OPERATORS: readonly string[] = Object.freeze([]) as readonly string[];
+
+/** @internal */
+function equalOptionList<T>(
+  a: readonly { value: T; label: string }[],
+  b: readonly { value: T; label: string }[],
+): boolean {
+  if (a === b) {
+    return true;
+  }
+  if (a.length !== b.length) {
+    return false;
+  }
+  for (let i = 0; i < a.length; i++) {
+    const aa = a[i];
+    const bb = b[i];
+    if (aa.value !== bb.value || aa.label !== bb.label) {
+      return false;
+    }
+  }
+  return true;
+}
+
+/** @internal */
+function equalStringList(a: readonly string[], b: readonly string[]): boolean {
+  if (a === b) {
+    return true;
+  }
+  if (a.length !== b.length) {
+    return false;
+  }
+  for (let i = 0; i < a.length; i++) {
+    if (a[i] !== b[i]) {
+      return false;
+    }
+  }
+  return true;
+}
+
+/**
+ * Embedded expression-row sub-component. Mounted by the builder body for
+ * every expression node in the recursive tree; resolves its value from
+ * `CNGX_FILTER_BUILDER_HOST` via `[path]`.
+ *
+ * Pillar 3 (Komposition statt Konfiguration): one component, one
+ * responsibility - render the recursive renderer's expression row. The
+ * column-header / quick-filter surface lives in `CngxFilterRow`.
+ *
+ * @category forms/filter-builder
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder-expression-row.component.ts
+ * @since 0.1.0
+ * @relatedTo CngxFilterBuilderBody, CngxFilterRow, CngxFilterBuilderPresenter
+ */
+@Component({
+  selector: 'cngx-filter-expression-row',
+  standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [NgComponentOutlet, NgTemplateOutlet, CngxInput, CngxSelect, CngxToggle],
+  templateUrl: './filter-builder-expression-row.component.html',
+  styleUrls: ['./filter-builder-expression-row.component.css'],
+  encapsulation: ViewEncapsulation.None,
+})
+export class CngxFilterExpressionRow {
+  private readonly host = inject(CNGX_FILTER_BUILDER_HOST);
+  protected readonly config = injectFilterBuilderConfig();
+  protected readonly editors = injectFilterEditors();
+  protected readonly glyphs = CNGX_FILTER_BUILDER_GLYPHS;
+  protected readonly isNativeEditor = isNativeEditor;
+
+  readonly path = input.required<readonly number[]>();
+
+  /**
+   * Slot registry passed down from the parent `CngxFilterBuilder`. When the
+   * registry's `removeButton` resolves to a `TemplateRef`, the row renders
+   * the consumer-supplied button; otherwise it falls back to the default
+   * `<button>` element.
+   */
+  readonly templates = input<CngxFilterBuilderTemplateRegistry | null>(null);
+
+  protected readonly pathAttr = computed(() => this.path().join('.'));
+
+  protected readonly removeButtonTemplate = computed(
+    () => this.templates()?.removeButton() ?? this.config.templates.removeButton ?? null,
+    { equal: (a, b) => a === b },
+  );
+
+  protected readonly valueEditorTemplate = computed(
+    () => this.templates()?.valueEditor() ?? this.config.templates.valueEditor ?? null,
+    { equal: (a, b) => a === b },
+  );
+
+  protected valueEditorContext(): CngxFilterBuilderValueEditorContext<unknown> | null {
+    const expression = this.node();
+    if (!expression) {
+      return null;
+    }
+    const fieldDef = this.fieldMap().get(expression.field);
+    if (!fieldDef) {
+      return null;
+    }
+    return {
+      value: expression.value,
+      fieldDef,
+      setValue: (v: unknown) => this.writeValue(v),
+      expression,
+    };
+  }
+
+  protected readonly node = computed<FilterExpression | null>(
+    () => {
+      const resolved: FilterNode | null = this.host.getNodeAtPath(this.path());
+      return resolved?.type === 'expression' ? resolved : null;
+    },
+    { equal: (a, b) => a === b },
+  );
+
+  protected readonly fields = computed<readonly FilterFieldDef[]>(() => this.host.fields(), {
+    equal: (a, b) => a === b,
+  });
+
+  private readonly fieldMap = computed<ReadonlyMap<string, FilterFieldDef>>(
+    () => this.host.fieldMap(),
+    { equal: (a, b) => a === b },
+  );
+
+  protected readonly fieldOptions = computed<
+    readonly { readonly value: string; readonly label: string }[]
+  >(() => this.fields().map((field) => ({ value: field.key, label: field.label })), {
+    equal: equalOptionList,
+  });
+
+  protected readonly operatorOptions = computed<
+    readonly { readonly value: string; readonly label: string }[]
+  >(() => this.operators().map((op) => ({ value: op, label: this.operatorLabel(op) })), {
+    equal: equalOptionList,
+  });
+
+  protected readonly editor = computed<CngxFilterEditor | undefined>(
+    () => {
+      const expression = this.node();
+      if (!expression) {
+        return undefined;
+      }
+      const fieldDef = this.fieldMap().get(expression.field);
+      if (!fieldDef) {
+        return undefined;
+      }
+      return this.editors.get(fieldDef.editorType);
+    },
+    { equal: (a, b) => a === b },
+  );
+
+  protected readonly operators = computed<readonly string[]>(
+    () => {
+      const expression = this.node();
+      return expression ? this.operatorsForField(expression.field) : EMPTY_OPERATORS;
+    },
+    { equal: equalStringList },
+  );
+
+  private operatorsForField(fieldKey: string): readonly string[] {
+    const def = this.fieldMap().get(fieldKey);
+    if (!def) {
+      return EMPTY_OPERATORS;
+    }
+    if (def.operators && def.operators.length > 0) {
+      return def.operators;
+    }
+    return this.config.defaultOperators[def.editorType] ?? EMPTY_OPERATORS;
+  }
+
+  protected operatorLabel(op: string): string {
+    return this.config.i18n.operators[op] ?? op;
+  }
+
+  protected readonly isIncomplete = computed<boolean>(() => {
+    const expression = this.node();
+    if (!expression) {
+      return true;
+    }
+    return !expression.field || !expression.operator;
+  });
+
+  protected readonly ariaLabel = computed<string>(() => {
+    const expression = this.node();
+    if (!expression) {
+      return this.config.i18n.unboundFilterLabel;
+    }
+    const fieldDef = this.fieldMap().get(expression.field);
+    const fieldLabel = fieldDef?.label ?? expression.field;
+    return this.config.i18n.expressionLabel({
+      fieldLabel,
+      operator: expression.operator,
+    });
+  });
+
+  protected handleFieldChange(next: string | undefined): void {
+    if (next === undefined) {
+      return;
+    }
+    const current = this.node();
+    const carriedOperator = current?.operator;
+    const newValidOperators = this.operatorsForField(next);
+    const operatorIsStillValid =
+      carriedOperator !== undefined && newValidOperators.includes(carriedOperator);
+    const defaultOperator =
+      operatorIsStillValid && carriedOperator !== undefined
+        ? carriedOperator
+        : this.defaultOperatorFor(next);
+
+    this.host.setField(this.path(), next);
+    if (!operatorIsStillValid) {
+      // Carry-over operator is invalid for the new field's editor type
+      // (e.g. switching `Birthday` → `Role` leaves `lt` orphaned in a string
+      // operator list). Reset to the new field's default and clear the
+      // value so the editor branch swaps to the matching native input.
+      this.host.setOperator(this.path(), defaultOperator);
+      this.host.setValue(this.path(), undefined);
+    }
+  }
+
+  private defaultOperatorFor(fieldKey: string): string {
+    const def = this.fieldMap().get(fieldKey);
+    if (!def) {
+      return 'eq';
+    }
+    const first = def.operators?.[0] ?? this.config.defaultOperators[def.editorType]?.[0];
+    return first ?? 'eq';
+  }
+
+  protected handleOperatorChange(next: string | undefined): void {
+    if (next === undefined) {
+      return;
+    }
+    this.host.setOperator(this.path(), next);
+  }
+
+  protected handleStringValueInput(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    this.writeValue(target.value);
+  }
+
+  protected handleNumberValueInput(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    const raw = target.value;
+    this.writeValue(raw === '' ? null : Number(raw));
+  }
+
+  protected handleDateValueInput(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    const raw = target.value;
+    // Native <input type="date"> fires `change` reliably on calendar-pick
+    // and `input` reliably on direct keyboard editing; binding both covers
+    // the cross-browser delta. The handler is idempotent - writeValue
+    // short-circuits when the value is unchanged at the host level.
+    this.writeValue(raw === '' ? null : raw);
+  }
+
+  protected handleBooleanValueChange(next: boolean): void {
+    this.writeValue(next);
+  }
+
+  private writeValue(next: unknown): void {
+    this.host.setValue(this.path(), next);
+  }
+
+  protected handleRemove(): void {
+    this.host.removeNode(this.path());
+  }
+
+  protected removeButtonContext(): { path: readonly number[]; label: string; remove: () => void } {
+    return {
+      path: this.path(),
+      label: this.config.i18n.removeFilter,
+      remove: () => this.handleRemove(),
+    };
+  }
+}

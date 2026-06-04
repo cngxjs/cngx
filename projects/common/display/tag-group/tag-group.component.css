@@ -1,0 +1,70 @@
+/**
+ * @overview
+ * Token surface for `CngxTagGroup`. The host carries
+ * `.cngx-tag-group` and stacks a header / row / accessory column;
+ * the structural rules (column stack, row flex-wrap, gap and
+ * alignment modifiers) live in `../tag/shared/tag-base.css` and are
+ * linked first by the component's `styleUrls` array. This file
+ * registers only the layout-related `@property` tokens so a future
+ * thematic skin (a backplate color for a Material wrapper, say) can
+ * land here without changing the style-link surface.
+ *
+ * **Density modifiers**
+ *
+ * Consumed by the gap rules in `tag-base.css`:
+ *
+ * - `--cngx-tag-group-gap-xs` - tight row spacing
+ * - `--cngx-tag-group-gap-md` - relaxed row spacing
+ * - (no modifier - default `--cngx-tag-group-gap`)
+ *
+ * **Inheritance**
+ *
+ * - `--cngx-tag-group-stack-gap` - leaf token, outer column gap
+ * - `--cngx-tag-group-gap` - leaf token, row gap (`tag-base.css`
+ *   falls it back to `--cngx-space-sm` at the consumption site)
+ * - `--cngx-tag-group-gap-xs` / `-md` - leaf density tokens
+ */
+
+@layer cngx.tokens {
+  /**
+   * Vertical gap between the three group zones (header / row /
+   * accessory). Drives the outer column stack.
+   * @group Layout
+   */
+  @property --cngx-tag-group-stack-gap {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 8px;
+  }
+
+  /**
+   * Horizontal gap between tags in the row when no density modifier
+   * is applied. Falls back to `--cngx-space-sm`.
+   * @group Layout
+   */
+  @property --cngx-tag-group-gap {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 8px;
+  }
+
+  /**
+   * Horizontal gap for the `.cngx-tag-group--gap-xs` density modifier.
+   * @group Variant / Density
+   */
+  @property --cngx-tag-group-gap-xs {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 4px;
+  }
+
+  /**
+   * Horizontal gap for the `.cngx-tag-group--gap-md` density modifier.
+   * @group Variant / Density
+   */
+  @property --cngx-tag-group-gap-md {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 12px;
+  }
+}

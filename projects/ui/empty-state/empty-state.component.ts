@@ -1,0 +1,114 @@
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  input,
+  ViewEncapsulation,
+} from '@angular/core';
+import { type CngxAsyncState, nextUid } from '@cngx/core/utils';
+
+/**
+ * Empty-state display organism for grids, tables, lists, and dashboards.
+ *
+ * Communicates why a view is empty and what the user can do next.
+ * Supports three UX contexts via the parent's `emptyReason`:
+ * - **first-use** - onboarding, show what's possible
+ * - **no-results** - recovery, offer filter reset or search change
+ * - **cleared** - confirmation, everything is done
+ *
+ * Icon is provided via the `[cngxEmptyStateIcon]` content slot - no Material
+ * dependency. Consumers project `<mat-icon>`, `<svg>`, or any icon system.
+ *
+ * ```html
+ * <cngx-empty-state title="No results" description="Try a different search term">
+ *   <mat-icon cngxEmptyStateIcon>search_off</mat-icon>
+ *   <button cngxEmptyStateAction (click)="resetSearch()">Reset</button>
+ * </cngx-empty-state>
+ * ```
+ *
+ * @category ui/empty-state
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/empty-state/empty-state.component.ts
+ * @since 0.1.0
+ * @relatedTo CngxAsyncState, CngxSkeletonContainer
+ * <example-url>http://localhost:4200/#/ui/empty-state/default-no-icon-projected</example-url>
+ * <example-url>http://localhost:4200/#/ui/empty-state/inside-a-card-grid</example-url>
+ * <example-url>http://localhost:4200/#/ui/empty-state/inside-a-list</example-url>
+ * <example-url>http://localhost:4200/#/ui/empty-state/inside-a-table</example-url>
+ * <example-url>http://localhost:4200/#/ui/empty-state/with-custom-icon-actions</example-url>
+ */
+@Component({
+  selector: 'cngx-empty-state',
+  standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
+  host: {
+    class: 'cngx-empty-state',
+    role: 'status',
+    'aria-live': 'polite',
+    '[attr.aria-labelledby]': 'titleId',
+    '[attr.aria-describedby]': 'description() ? descriptionId : null',
+    '[attr.hidden]': 'shouldHide() || null',
+  },
+  template: `
+    <div class="cngx-empty-state__icon-slot">
+      <ng-content select="[cngxEmptyStateIcon]" />
+    </div>
+    <svg
+      class="cngx-empty-state__default-icon"
+      aria-hidden="true"
+      width="48"
+      height="48"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.5"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
+      <path d="M21 8V21H3V8" />
+      <path d="M1 3h22v5H1z" />
+      <path d="M10 12h4" />
+    </svg>
+    <ng-content select="[cngxEmptyStateIllustration]" />
+    <h3 [id]="titleId" class="cngx-empty-state__title">{{ title() }}</h3>
+    @if (description()) {
+      <p [id]="descriptionId" class="cngx-empty-state__description">
+        {{ description() }}
+      </p>
+    }
+    <div class="cngx-empty-state__actions">
+      <ng-content select="[cngxEmptyStateAction]" />
+    </div>
+    <ng-content select="[cngxEmptyStateSecondary]" />
+  `,
+  styleUrls: ['./empty-state.component.css'],
+})
+export class CngxEmptyState {
+  private readonly uid = nextUid('cngx-empty');
+
+  /** Primary message - what state the user is in. */
+  readonly title = input.required<string>();
+
+  /** Supporting detail - clarifies context and suggests next steps. */
+  readonly description = input<string | undefined>(undefined);
+
+  /** Bind an async state - auto-hides when data is not empty. */
+  readonly state = input<CngxAsyncState<unknown> | undefined>(undefined);
+
+  /** @internal - hidden when state is bound and data is not empty or still loading. */
+  protected readonly shouldHide = computed(() => {
+    const s = this.state();
+    if (!s) {
+      return false;
+    }
+    // Skeleton owns the loading phase; defer until data resolves.
+    return s.isLoading() || !s.isEmpty();
+  });
+
+  /** @internal */
+  protected readonly titleId = `${this.uid}-title`;
+  /** @internal */
+  protected readonly descriptionId = `${this.uid}-desc`;
+}

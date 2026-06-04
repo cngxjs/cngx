@@ -1,0 +1,234 @@
+/**
+ * @overview
+ * Default visuals for `CngxPopoverAction`. The component host has
+ * `display: contents` and renders a `<button>` carrying
+ * `.cngx-popover-action` plus a variant modifier. Designed to live
+ * inside a `cngx-popover-panel` footer - it picks up the parent
+ * panel's `--cngx-popover-panel-accent` / `-text` via CSS inheritance
+ * so variant colors flow through automatically.
+ *
+ * **State modifiers**
+ *
+ * - `:hover` - wash applied via `--cngx-popover-action-hover-bg`
+ * - `:focus-visible` - outline ring in
+ *   `--cngx-popover-panel-accent-text`
+ * - `:disabled` / `[aria-disabled="true"]` - opacity 0.5,
+ *   cursor: not-allowed
+ *
+ * **Variants**
+ *
+ * - `--primary` - accent fill from the parent panel, white-on-accent
+ * - `--danger` - danger surface, white text
+ * - `--ghost` - transparent border, hover-only wash
+ *
+ * **Slots**
+ *
+ * - `.cngx-popover-action__sr-only` - sibling announcement span;
+ *   lives outside the @scope wrap, duplicates the canonical
+ *   `.cngx-sr-only` utility for standalone use
+ *
+ * **Inheritance**
+ *
+ * - `--cngx-popover-action-*` (padding, gap, radius, font, transition)
+ *   - leaf tokens, no fallback chain
+ * - Primary variant fill: `--cngx-popover-panel-accent` ->
+ *   `--cngx-color-primary`
+ * - Primary variant text: `--cngx-popover-panel-accent-text` (parent
+ *   panel)
+ * - Danger variant fill: `--cngx-color-danger`
+ * - Outer border: `--cngx-popover-panel-border` (parent panel)
+ *
+ * **Dark mode**
+ *
+ * Three hooks flip the hover wash from a 4% black overlay to a 6%
+ * white overlay so the wash stays visible against the dark panel
+ * surface:
+ *
+ * - `prefers-color-scheme: dark`
+ * - `[data-color-scheme="dark"]` / `.dark` class
+ * - `[data-color-scheme="light"]` / `.light` class (explicit pin)
+ *
+ * **Pair with**
+ *
+ * - `@cngx/themes/material/popover-panel-theme` - Material 3
+ *   button-on-surface palette
+ */
+
+@layer cngx.tokens {
+  /**
+   * Block-axis padding of the action button.
+   * @group Layout
+   */
+  @property --cngx-popover-action-padding-block {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 6px;
+  }
+
+  /**
+   * Inline-axis padding of the action button.
+   * @group Layout
+   */
+  @property --cngx-popover-action-padding-inline {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 14px;
+  }
+
+  /**
+   * Gap between the action's icon and label slots.
+   * @group Layout
+   */
+  @property --cngx-popover-action-gap {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 6px;
+  }
+
+  /**
+   * Corner radius of the action button.
+   * @group Layout
+   */
+  @property --cngx-popover-action-radius {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 6px;
+  }
+
+  /**
+   * Font-size of the action label.
+   * @group Typography
+   */
+  @property --cngx-popover-action-font-size {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.8125rem;
+  }
+
+  /**
+   * Font-weight of the action label.
+   * @group Typography
+   */
+  @property --cngx-popover-action-font-weight {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 500;
+  }
+
+  /**
+   * Transition duration for the hover / focus state changes.
+   * @group Motion
+   */
+  @property --cngx-popover-action-transition {
+    syntax: '<time>';
+    inherits: false;
+    initial-value: 150ms;
+  }
+
+  /**
+   * Hover-state surface - neutral default + ghost variant share this
+   * token so a single dark-mode swap covers both. Light: 4% black
+   * wash; dark: 6% white wash.
+   * @group State / Hover
+   */
+  @property --cngx-popover-action-hover-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0 0 0 / 0.04);
+  }
+
+  /* Dark-mode swap - hover wash inverts to white-alpha so it stays
+   * visible against the dark panel surface. */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-color-scheme='light']):not(.light) {
+      --cngx-popover-action-hover-bg: oklch(1 0 0 / 0.06);
+    }
+  }
+  [data-color-scheme='dark'],
+  .dark {
+    --cngx-popover-action-hover-bg: oklch(1 0 0 / 0.06);
+  }
+  [data-color-scheme='light'],
+  .light {
+    --cngx-popover-action-hover-bg: oklch(0 0 0 / 0.04);
+  }
+}
+
+@layer cngx.components {
+  @scope (.cngx-popover-action) {
+    :scope {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--cngx-popover-action-gap, 6px);
+      padding: var(--cngx-popover-action-padding-block, 6px)
+        var(--cngx-popover-action-padding-inline, 14px);
+      border: 1px solid var(--cngx-popover-panel-border, 1px solid oklch(0 0 0 / 0.08));
+      border-radius: var(--cngx-popover-action-radius, 6px);
+      background: transparent;
+      color: inherit;
+      font: inherit;
+      font-size: var(--cngx-popover-action-font-size, 0.8125rem);
+      font-weight: var(--cngx-popover-action-font-weight, 500);
+      cursor: pointer;
+      transition:
+        background var(--cngx-popover-action-transition, 150ms),
+        border-color var(--cngx-popover-action-transition, 150ms),
+        color var(--cngx-popover-action-transition, 150ms);
+    }
+    :scope:hover {
+      background: var(--cngx-popover-action-hover-bg, oklch(0 0 0 / 0.04));
+    }
+    :scope:focus-visible {
+      outline: 2px solid var(--cngx-popover-panel-accent-text, currentColor);
+      outline-offset: 2px;
+    }
+    :scope:disabled,
+    :scope[aria-disabled='true'] {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    :scope.cngx-popover-action--primary {
+      background: var(--cngx-popover-panel-accent, var(--cngx-color-primary, oklch(0.66 0.19 50)));
+      color: var(--cngx-popover-panel-accent-text, oklch(1 0 0));
+      border-color: transparent;
+    }
+    :scope.cngx-popover-action--primary:hover {
+      filter: brightness(0.95);
+      background: var(--cngx-popover-panel-accent, var(--cngx-color-primary, oklch(0.66 0.19 50)));
+    }
+
+    :scope.cngx-popover-action--danger {
+      background: var(--cngx-color-danger, oklch(0.6 0.22 25));
+      color: oklch(1 0 0);
+      border-color: transparent;
+    }
+    :scope.cngx-popover-action--danger:hover {
+      filter: brightness(0.95);
+    }
+
+    :scope.cngx-popover-action--ghost {
+      border-color: transparent;
+    }
+    :scope.cngx-popover-action--ghost:hover {
+      background: var(--cngx-popover-action-hover-bg, oklch(0 0 0 / 0.04));
+    }
+  }
+
+  /* sr-only utility on the announcement span - sibling of the action
+   * button, not a descendant, so it sits outside the @scope wrap.
+   * Duplicates the canonical declaration in
+   * @cngx/core/theming/utilities.css so consumers that don't import
+   * cngx.css still get visually-hidden behavior. */
+  .cngx-popover-action__sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+}

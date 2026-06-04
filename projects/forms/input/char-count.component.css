@@ -1,0 +1,117 @@
+/**
+ * @overview
+ * Default visuals for `CngxCharCount` - counter atom rendered under a
+ * text input or textarea. The host carries `.cngx-char-count` and
+ * stays `display: contents` so the counter has no visual footprint of
+ * its own; font-size and color flow to descendants through the
+ * cascade.
+ *
+ * **State modifiers**
+ *
+ * - `--over` - text color switches to the danger chain once the count
+ *   exceeds the limit
+ *
+ * **Slots**
+ *
+ * - `.cngx-char-count` - host, sets resting font-size + color from
+ *   the hint / typography chain
+ *
+ * **Inheritance**
+ *
+ * Typography and surface tokens delegate to the foundation:
+ *
+ * - `--cngx-field-char-count-font-size` -> `--cngx-font-size-sm`
+ * - `--cngx-field-char-count-color` -> `--cngx-field-hint-color`
+ * - `--cngx-field-char-count-over-color` -> `--cngx-field-error-color`
+ *   -> `--cngx-color-danger`
+ *
+ * A `:root` delegating rule pins
+ * `--cngx-field-char-count-over-color` to `--cngx-color-danger` so a
+ * dark-mode swap on the foundation token cascades through.
+ *
+ * **Dark mode**
+ *
+ * Three hooks lift the muted resting color from dim dark gray to soft
+ * light gray so the counter keeps its secondary-information weight on
+ * the dark surface:
+ *
+ * - `prefers-color-scheme: dark`
+ * - `[data-color-scheme="dark"]`
+ * - `.dark` class
+ */
+
+@layer cngx.tokens {
+  /**
+   * Font-size of the counter text. Falls back through
+   * `--cngx-font-size-sm`. `syntax: '*'` because `@property`'s
+   * `<length>` initial-value forbids `rem`.
+   * @group Typography
+   */
+  @property --cngx-field-char-count-font-size {
+    syntax: '*';
+    inherits: true;
+    initial-value: 0.75rem;
+  }
+
+  /**
+   * Text color while under the limit. Falls back through
+   * `--cngx-field-hint-color`.
+   * @group Surface
+   */
+  @property --cngx-field-char-count-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.45 0 0);
+  }
+
+  /**
+   * Text color once the count exceeds the limit. Falls back through
+   * `--cngx-field-error-color` and then `--cngx-color-danger`.
+   * @group State / Over
+   * @see [[--cngx-color-danger]]
+   */
+  @property --cngx-field-char-count-over-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.55 0.21 27);
+  }
+
+  /* Delegating token — over-color tracks the danger chain so a
+   * dark-mode swap on `--cngx-color-danger` cascades through. */
+  :root {
+    --cngx-field-char-count-over-color: var(--cngx-color-danger);
+  }
+
+  /* Dark-mode swap — neutral muted gray lifts so the counter keeps
+   * its secondary-information weight on the dark surface. */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-color-scheme='light']):not(.light) {
+      --cngx-field-char-count-color: oklch(0.7 0 0);
+    }
+  }
+  [data-color-scheme='dark'],
+  .dark {
+    --cngx-field-char-count-color: oklch(0.7 0 0);
+  }
+  [data-color-scheme='light'],
+  .light {
+    --cngx-field-char-count-color: oklch(0.45 0 0);
+  }
+}
+
+@layer cngx.components {
+  @scope (.cngx-char-count) {
+    :scope {
+      display: contents;
+      font-size: var(--cngx-field-char-count-font-size, var(--cngx-font-size-sm, 0.75rem));
+      color: var(--cngx-field-char-count-color, var(--cngx-field-hint-color, oklch(0.45 0 0)));
+    }
+
+    :scope.cngx-char-count--over {
+      color: var(
+        --cngx-field-char-count-over-color,
+        var(--cngx-field-error-color, var(--cngx-color-danger, oklch(0.55 0.21 27)))
+      );
+    }
+  }
+}

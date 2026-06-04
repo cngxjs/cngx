@@ -1,0 +1,55 @@
+/**
+ * @overview
+ * Default visuals for `CngxAsyncContainer`. The host carries
+ * `.cngx-async-container` but stays `display: contents` - the
+ * container delegates rendering to projected skeleton / content /
+ * empty / error templates. This stylesheet owns just two children:
+ * the absolutely-positioned refresh indicator and the sr-only
+ * announcement region.
+ *
+ * **Slots**
+ *
+ * - `.cngx-async-container__refresh` - absolutely-positioned overlay
+ *   anchored to the top edge, z-ordered above content (default `5`)
+ *   but below dialog / popover surfaces
+ * - `.cngx-async-container__sr-only` - visually-hidden live-region
+ *   announcement target
+ */
+
+@layer cngx.tokens {
+  /**
+   * Stacking-context order of the refresh indicator overlay.
+   * Defaults to 5 so it sits above the content stream but below
+   * dialog / popover surfaces.
+   * @group Layout
+   */
+  @property --cngx-async-container-refresh-z {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 5;
+  }
+}
+
+@layer cngx.components {
+  @scope (.cngx-async-container) {
+    .cngx-async-container__refresh {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: var(--cngx-async-container-refresh-z, 5);
+    }
+
+    .cngx-async-container__sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+  }
+}

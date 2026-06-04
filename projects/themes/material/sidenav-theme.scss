@@ -1,0 +1,65 @@
+@use 'sass:map';
+@use 'sass:math';
+@use '@angular/material' as mat;
+@use './nav-link-theme' as nav-link;
+
+// Material bridge for CngxSidenavLayout (+ nav-link via the sibling
+// bridge). Default visuals ship with the component (sidenav-layout.css);
+// this file aligns colour, typography, and density tokens with Material.
+//
+//   @use '@angular/material' as mat;
+//   @use '@cngx/themes/material/sidenav-theme' as sidenav;
+//   html { @include sidenav.theme($theme); }
+
+@mixin color($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    $_surface: mat.get-theme-color($theme, surface-container);
+    $_on-surface: mat.get-theme-color($theme, on-surface);
+    $_outline: mat.get-theme-color($theme, outline-variant);
+    $_scrim: mat.get-theme-color($theme, scrim);
+    $_surface-low: mat.get-theme-color($theme, surface-container-low);
+
+    --cngx-sidenav-bg: var(--mat-sys-surface-container, #{$_surface});
+    --cngx-sidenav-color: var(--mat-sys-on-surface, #{$_on-surface});
+    --cngx-sidenav-border-color: var(--mat-sys-outline-variant, #{$_outline});
+    --cngx-sidenav-backdrop-bg: var(--mat-sys-scrim, #{$_scrim});
+    --cngx-sidenav-header-bg: var(--mat-sys-surface-container-low, #{$_surface-low});
+    --cngx-sidenav-footer-bg: var(--mat-sys-surface-container-low, #{$_surface-low});
+    --cngx-sidenav-footer-border-color: var(--mat-sys-outline-variant, #{$_outline});
+  } @else {
+    --cngx-sidenav-bg: #{mat.get-theme-color($theme, background, card)};
+    --cngx-sidenav-color: rgba(0, 0, 0, 0.87);
+    --cngx-sidenav-border-color: rgba(0, 0, 0, 0.12);
+    --cngx-sidenav-backdrop-bg: rgba(0, 0, 0, 1);
+    --cngx-sidenav-header-bg: #{rgba(mat.get-theme-color($theme, primary), 0.04)};
+    --cngx-sidenav-footer-bg: #{rgba(mat.get-theme-color($theme, primary), 0.04)};
+    --cngx-sidenav-footer-border-color: rgba(0, 0, 0, 0.12);
+  }
+}
+
+@mixin typography($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-sidenav-header-font-size: var(--mat-sys-title-small-size, 0.875rem);
+    --cngx-sidenav-footer-font-size: var(--mat-sys-body-small-size, 0.75rem);
+  }
+}
+
+@mixin density($theme) {
+  $scale: mat.get-theme-density($theme);
+  $scale: math.max(-4, math.min(0, $scale));
+
+  $paddings: (0: 16px, -1: 12px, -2: 8px, -3: 6px, -4: 4px);
+
+  --cngx-sidenav-padding: #{map.get($paddings, $scale)};
+}
+
+@mixin theme($theme) {
+  @layer cngx.components {
+    :where(cngx-sidenav-layout) {
+      @include color($theme);
+      @include typography($theme);
+      @include density($theme);
+      @include nav-link.theme($theme);
+    }
+  }
+}

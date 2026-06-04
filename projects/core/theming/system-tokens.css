@@ -1,0 +1,490 @@
+/**
+ * @overview
+ * Foundation token registry for the entire cngx library. Every
+ * component-level token (`--cngx-card-padding`, `--cngx-toggle-
+ * track-bg-on`, ...) ultimately falls back to a system token
+ * declared here. Consumers re-skin the library globally by
+ * overriding these in `@layer cngx.theme`; per-component tokens
+ * stay untouched but inherit the new system value through their
+ * `var()` fallback chain.
+ *
+ * Each token uses `@property` so animations interpolate cleanly and
+ * the value is type-checked. `@property` is a top-level at-rule
+ * (cannot nest inside a selector) but lives inside `@layer cngx.tokens`
+ * to keep cascade order intact.
+ *
+ * **Token families**
+ *
+ * - **Spacing** - `--cngx-space-{xs|sm|md|lg|xl}` (4 / 8 / 16 / 24 /
+ *   32 px). T-shirt scale, swapped wholesale by `[data-density]`
+ *   overrides in `cngx.theme`.
+ * - **Radius** - `--cngx-radius-{sm|md|lg|pill}` (4 / 8 / 12 / 999 px).
+ * - **Motion** - `--cngx-duration-{fast|base|slow}` (150 / 200 / 320 ms)
+ *   plus `--cngx-easing-{standard|decelerate|accelerate}` cubic-
+ *   beziers. `syntax: '*'` on easings because cubic-bezier isn't an
+ *   animatable type.
+ * - **Surface** - `--cngx-color-{surface|text|text-muted|border|
+ *   primary|danger|success|warning|info}`. Primary is Ember
+ *   `oklch(0.66 0.19 50)`; semantic colours stay in the same hue
+ *   family across modes.
+ * - **Typography** - `--cngx-font-size-{sm|md|lg}` plus `--cngx-
+ *   line-height-base`. Font sizes use `syntax: '*'` because
+ *   `@property` `<length>` forbids `rem`.
+ * - **Shadow** - `--cngx-shadow-{sm|md|lg}`. Composite values,
+ *   `syntax: '*'`.
+ *
+ * **Inheritance**
+ *
+ * Component tokens chain into this layer via `var()` fallbacks -
+ * for example `--cngx-card-bg` -> `--cngx-color-surface`. A theme
+ * pin on `--cngx-color-surface` propagates to every component that
+ * delegates the same family without touching per-component tokens.
+ * `accent-color: var(--cngx-color-primary)` on `:root` cascades the
+ * accent to every native form control so checkbox / radio / range /
+ * progress atoms match the cngx accent out of the box.
+ *
+ * **Dark mode**
+ *
+ * Four override blocks switch the colour ramp across every trigger
+ * mechanism the library supports:
+ *
+ * - `:root` - light defaults (Block 1, single source of truth)
+ * - `@media (prefers-color-scheme: dark)` scoped to
+ *   `:root:not([data-color-scheme='light']):not(.light)` - OS auto-
+ *   follow that loses to a pinned light island (Block 2)
+ * - `[data-color-scheme='dark']` OR `.dark` - explicit dark on
+ *   `<html>`, a section wrapper, or a single component. Class form
+ *   matches Tailwind `darkMode: 'class'` / shadcn conventions
+ *   (Block 3)
+ * - `[data-color-scheme='light']` OR `.light` - explicit light
+ *   island inside a dark ancestor (Block 4)
+ *
+ * Semantic colours lift +0.06 to +0.08 L and shed ~0.01 C in dark
+ * mode - keeps hue identity while staying readable against the dark
+ * surface. Pattern uses only Custom Properties + `@media` +
+ * attribute selectors so it ships everywhere `@property` ships;
+ * `light-dark()` is intentionally avoided for iOS 16 reach.
+ *
+ * **Pair with**
+ *
+ * - `@cngx/core/theming/layers` - declares the cascade order
+ * - `@cngx/core/theming/reset` - consumes `--cngx-color-primary` for
+ *   the universal focus ring
+ * - `@cngx/core/theming/base` - consumes spacing / radius / colour
+ *   tokens for the bare-element baseline
+ */
+
+@layer cngx.tokens {
+  /**
+   * Spacing T-shirt scale — extra-small (4px). Swapped wholesale by
+   * `[data-density]` in `cngx.theme`.
+   * @group Layout
+   */
+  @property --cngx-space-xs {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 4px;
+  }
+
+  /**
+   * Spacing T-shirt scale — small (8px).
+   * @group Layout
+   */
+  @property --cngx-space-sm {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 8px;
+  }
+
+  /**
+   * Spacing T-shirt scale — medium (16px).
+   * @group Layout
+   */
+  @property --cngx-space-md {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 16px;
+  }
+
+  /**
+   * Spacing T-shirt scale — large (24px).
+   * @group Layout
+   */
+  @property --cngx-space-lg {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 24px;
+  }
+
+  /**
+   * Spacing T-shirt scale — extra-large (32px).
+   * @group Layout
+   */
+  @property --cngx-space-xl {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 32px;
+  }
+
+  /**
+   * Corner radius — small (4px).
+   * @group Layout
+   */
+  @property --cngx-radius-sm {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 4px;
+  }
+
+  /**
+   * Corner radius — medium (8px).
+   * @group Layout
+   */
+  @property --cngx-radius-md {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 8px;
+  }
+
+  /**
+   * Corner radius — large (12px).
+   * @group Layout
+   */
+  @property --cngx-radius-lg {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 12px;
+  }
+
+  /**
+   * Corner radius — pill (999px). Used by chips, badges, toggle
+   * tracks, and other fully-rounded surfaces.
+   * @group Layout
+   */
+  @property --cngx-radius-pill {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 999px;
+  }
+
+  /**
+   * Motion duration — fast (150ms). Hover state-layers, focus
+   * crossfades, micro-interactions.
+   * @group Motion
+   */
+  @property --cngx-duration-fast {
+    syntax: '<time>';
+    inherits: false;
+    initial-value: 150ms;
+  }
+
+  /**
+   * Motion duration — base (200ms). Default for most component
+   * transitions (overlays, dropdowns, dialogs).
+   * @group Motion
+   */
+  @property --cngx-duration-base {
+    syntax: '<time>';
+    inherits: false;
+    initial-value: 200ms;
+  }
+
+  /**
+   * Motion duration — slow (320ms). Major surface transitions
+   * (dialog open / close, page-level fades).
+   * @group Motion
+   */
+  @property --cngx-duration-slow {
+    syntax: '<time>';
+    inherits: false;
+    initial-value: 320ms;
+  }
+
+  /**
+   * Standard easing curve — material-style accelerate-decelerate.
+   * `syntax: '*'` because cubic-bezier() isn't an animatable type
+   * and interpolation across transition timing-functions isn't a
+   * thing browsers do.
+   * @group Motion
+   */
+  @property --cngx-easing-standard {
+    syntax: '*';
+    inherits: false;
+    initial-value: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /**
+   * Decelerate easing — for enter / show transitions.
+   * @group Motion
+   */
+  @property --cngx-easing-decelerate {
+    syntax: '*';
+    inherits: false;
+    initial-value: cubic-bezier(0, 0, 0.2, 1);
+  }
+
+  /**
+   * Accelerate easing — for exit / hide transitions.
+   * @group Motion
+   */
+  @property --cngx-easing-accelerate {
+    syntax: '*';
+    inherits: false;
+    initial-value: cubic-bezier(0.4, 0, 1, 1);
+  }
+
+  /**
+   * Surface color — page / panel background. Static initial-value
+   * here is the light default; the four blocks at the bottom of
+   * this file swap it under OS auto, explicit `data-color-scheme`,
+   * and light/dark islands.
+   * @group Surface
+   */
+  @property --cngx-color-surface {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(1 0 0);
+  }
+
+  /**
+   * Text color — primary foreground against surface.
+   * @group Surface
+   */
+  @property --cngx-color-text {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.2 0.01 250);
+  }
+
+  /**
+   * Muted text color — secondary labels, helper copy, timestamps,
+   * disabled-looking captions. Same hue + chroma as `--cngx-color-text`
+   * with a single-step lightness delta so the muted variant tracks
+   * theme inversions automatically.
+   * @group Surface
+   */
+  @property --cngx-color-text-muted {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.5 0.01 250);
+  }
+
+  /**
+   * Neutral border color — hairlines, dividers, input strokes.
+   * @group Surface
+   */
+  @property --cngx-color-border {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.88 0.005 250);
+  }
+
+  /**
+   * Brand primary color — Ember. Drives focus rings, selected
+   * surfaces, accent stripes across every cngx-prefixed component.
+   * @group Surface
+   */
+  @property --cngx-color-primary {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.66 0.19 50);
+  }
+
+  /**
+   * Semantic danger color — red. Drives error states, destructive
+   * actions, validation errors.
+   * @group Surface
+   */
+  @property --cngx-color-danger {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.6 0.18 25);
+  }
+
+  /**
+   * Semantic success color — green. Drives confirmations,
+   * completed states, validation passes.
+   * @group Surface
+   */
+  @property --cngx-color-success {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.6 0.15 145);
+  }
+
+  /**
+   * Semantic warning color — amber. Drives caution states,
+   * incomplete data, soft errors.
+   * @group Surface
+   */
+  @property --cngx-color-warning {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.72 0.15 75);
+  }
+
+  /**
+   * Semantic info color — blue. Drives informational banners,
+   * neutral notifications.
+   * @group Surface
+   */
+  @property --cngx-color-info {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.65 0.12 240);
+  }
+
+  /**
+   * Font-size — small (0.8125rem). `syntax: '*'` because CSS
+   * `@property` forbids `rem` in `<length>` initial-value (must be
+   * "computationally independent"). The tradeoff is no animation
+   * interpolation, which font-size rarely needs.
+   * @group Typography
+   */
+  @property --cngx-font-size-sm {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.8125rem;
+  }
+
+  /**
+   * Font-size — medium (0.9375rem). Default body / control font.
+   * @group Typography
+   */
+  @property --cngx-font-size-md {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.9375rem;
+  }
+
+  /**
+   * Font-size — large (1.0625rem). Emphasized headings, dialog
+   * titles.
+   * @group Typography
+   */
+  @property --cngx-font-size-lg {
+    syntax: '*';
+    inherits: false;
+    initial-value: 1.0625rem;
+  }
+
+  /**
+   * Default line-height multiplier for body text.
+   * @group Typography
+   */
+  @property --cngx-line-height-base {
+    syntax: '<number>';
+    inherits: true;
+    initial-value: 1.5;
+  }
+
+  /**
+   * Elevation — small (subtle 1px shadow). `syntax: '*'` because
+   * box-shadow is a composite value that doesn't smoothly
+   * interpolate component-by-component.
+   * @group Surface
+   */
+  @property --cngx-shadow-sm {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0 1px 2px oklch(0 0 0 / 0.05);
+  }
+
+  /**
+   * Elevation — medium. Dropdowns, popovers, sticky headers.
+   * @group Surface
+   */
+  @property --cngx-shadow-md {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0 4px 16px oklch(0 0 0 / 0.12);
+  }
+
+  /**
+   * Elevation — large. Dialogs, full-screen modals.
+   * @group Surface
+   */
+  @property --cngx-shadow-lg {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0 16px 40px oklch(0 0 0 / 0.18);
+  }
+
+  /* Block 1 — light defaults. Single source of truth for every
+   * semantic color. `accent-color` cascades to every native form
+   * control (checkbox, radio, range, progress) so the browser-
+   * rendered atoms match the cngx accent out of the box. */
+  :root {
+    color-scheme: light;
+    --cngx-color-surface: oklch(1 0 0);
+    --cngx-color-text: oklch(0.2 0.01 250);
+    --cngx-color-text-muted: oklch(0.5 0.01 250);
+    --cngx-color-border: oklch(0.88 0.005 250);
+    --cngx-color-primary: oklch(0.66 0.19 50);
+    --cngx-color-danger: oklch(0.6 0.18 25);
+    --cngx-color-success: oklch(0.6 0.15 145);
+    --cngx-color-warning: oklch(0.72 0.15 75);
+    --cngx-color-info: oklch(0.65 0.12 240);
+    accent-color: var(--cngx-color-primary);
+  }
+
+  /* Block 2 — OS auto-follow. Both opt-out signals are excluded
+   * here so a user-pinned light island wins over OS dark.
+   * Semantic colors lift +0.06-0.08 L and shed ~0.01 C in dark
+   * mode — keeps the hue identity while staying readable against
+   * the dark surface without crossing into neon territory. */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-color-scheme='light']):not(.light) {
+      color-scheme: dark;
+      --cngx-color-surface: oklch(0.2 0.01 250);
+      --cngx-color-text: oklch(0.95 0.01 250);
+      --cngx-color-text-muted: oklch(0.7 0.01 250);
+      --cngx-color-border: oklch(0.32 0.005 250);
+      --cngx-color-primary: oklch(0.72 0.18 50);
+      --cngx-color-danger: oklch(0.68 0.17 25);
+      --cngx-color-success: oklch(0.68 0.14 145);
+      --cngx-color-warning: oklch(0.78 0.14 75);
+      --cngx-color-info: oklch(0.72 0.11 240);
+    }
+  }
+
+  /* Block 3 — explicit dark. Either signal — the typed attribute
+   * `data-color-scheme="dark"` or the bare `.dark` class — can be
+   * set on `<html>` (user toggle), on a section wrapper (dark
+   * island in a light page), or on a single component. The class
+   * form is for direct compatibility with Tailwind/shadcn-style
+   * conventions. Same values as Block 2; declared once more so the
+   * swap works without depending on the media query. */
+  [data-color-scheme='dark'],
+  .dark {
+    color-scheme: dark;
+    --cngx-color-surface: oklch(0.2 0.01 250);
+    --cngx-color-text: oklch(0.95 0.01 250);
+    --cngx-color-text-muted: oklch(0.7 0.01 250);
+    --cngx-color-border: oklch(0.32 0.005 250);
+    --cngx-color-primary: oklch(0.72 0.18 50);
+    --cngx-color-danger: oklch(0.68 0.17 25);
+    --cngx-color-success: oklch(0.68 0.14 145);
+    --cngx-color-warning: oklch(0.78 0.14 75);
+    --cngx-color-info: oklch(0.72 0.11 240);
+  }
+
+  /* Block 4 — explicit light. Mirror of Block 3 so a light island
+   * inside a dark ancestor (`<aside data-color-scheme="light">` or
+   * `<aside class="light">`) resets cleanly. Same values as Block
+   * 1; declared once more so the override works without `:root`
+   * specificity. */
+  [data-color-scheme='light'],
+  .light {
+    color-scheme: light;
+    --cngx-color-surface: oklch(1 0 0);
+    --cngx-color-text: oklch(0.2 0.01 250);
+    --cngx-color-text-muted: oklch(0.5 0.01 250);
+    --cngx-color-border: oklch(0.88 0.005 250);
+    --cngx-color-primary: oklch(0.66 0.19 50);
+    --cngx-color-danger: oklch(0.6 0.18 25);
+    --cngx-color-success: oklch(0.6 0.15 145);
+    --cngx-color-warning: oklch(0.72 0.15 75);
+    --cngx-color-info: oklch(0.65 0.12 240);
+  }
+}

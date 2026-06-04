@@ -1,0 +1,148 @@
+/**
+ * @overview
+ * Default visuals for `CngxIcon`. The host carries `.cngx-icon` and
+ * sizes itself in `em` so an icon next to running text matches the
+ * surrounding font scale automatically. Color follows `currentColor`,
+ * so the glyph inherits the container's text color without any
+ * per-instance override.
+ *
+ * **Size variants**
+ *
+ * Each size pins `--cngx-icon-size`. Consumers can swap a variant
+ * value globally (override `--cngx-icon-size-xs`) or pin a specific
+ * instance via inline `--cngx-icon-size`:
+ *
+ * - `--xs` - 0.75em
+ * - `--sm` - 1em
+ * - `--md` - 1.25em (default)
+ * - `--lg` - 1.5em
+ * - `--xl` - 2em
+ *
+ * **Slots**
+ *
+ * - `:scope > svg` - projected SVG fills the host box, `fill:
+ *   currentColor` so brand color flows through
+ *
+ * **Inheritance**
+ *
+ * Leaf tokens - the active size and color are component-local.
+ * `--cngx-icon-color` defaults to `currentColor` so no fallback
+ * chain is needed for the color cascade.
+ */
+
+@layer cngx.tokens {
+  /**
+   * Active size of the icon - consumed by the `:scope` rule. Driven
+   * by the size-variant classes or set inline for one-off overrides.
+   * @group Layout
+   */
+  @property --cngx-icon-size {
+    syntax: '*';
+    inherits: false;
+    initial-value: 1.25em;
+  }
+
+  /**
+   * Text color of the icon glyph. Defaults to `currentColor` so the
+   * icon inherits its container's text color.
+   * @group Surface
+   */
+  @property --cngx-icon-color {
+    syntax: '*';
+    inherits: true;
+    initial-value: currentColor;
+  }
+
+  /**
+   * Size token for the `.cngx-icon--xs` variant.
+   * @group Variant / Size
+   */
+  @property --cngx-icon-size-xs {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.75em;
+  }
+
+  /**
+   * Size token for the `.cngx-icon--sm` variant.
+   * @group Variant / Size
+   */
+  @property --cngx-icon-size-sm {
+    syntax: '*';
+    inherits: false;
+    initial-value: 1em;
+  }
+
+  /**
+   * Size token for the `.cngx-icon--md` variant (default).
+   * @group Variant / Size
+   */
+  @property --cngx-icon-size-md {
+    syntax: '*';
+    inherits: false;
+    initial-value: 1.25em;
+  }
+
+  /**
+   * Size token for the `.cngx-icon--lg` variant.
+   * @group Variant / Size
+   */
+  @property --cngx-icon-size-lg {
+    syntax: '*';
+    inherits: false;
+    initial-value: 1.5em;
+  }
+
+  /**
+   * Size token for the `.cngx-icon--xl` variant.
+   * @group Variant / Size
+   */
+  @property --cngx-icon-size-xl {
+    syntax: '*';
+    inherits: false;
+    initial-value: 2em;
+  }
+}
+
+@layer cngx.components {
+  @scope (.cngx-icon) {
+    :scope {
+      /* Functional - hardcoded */
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      vertical-align: middle;
+      line-height: 1;
+      flex: 0 0 auto;
+
+      /* Themable */
+      font-size: var(--cngx-icon-size, var(--cngx-icon-size-md, 1.25em));
+      color: var(--cngx-icon-color, currentColor);
+    }
+
+    :scope.cngx-icon--xs {
+      --cngx-icon-size: var(--cngx-icon-size-xs, 0.75em);
+    }
+    :scope.cngx-icon--sm {
+      --cngx-icon-size: var(--cngx-icon-size-sm, 1em);
+    }
+    :scope.cngx-icon--md {
+      --cngx-icon-size: var(--cngx-icon-size-md, 1.25em);
+    }
+    :scope.cngx-icon--lg {
+      --cngx-icon-size: var(--cngx-icon-size-lg, 1.5em);
+    }
+    :scope.cngx-icon--xl {
+      --cngx-icon-size: var(--cngx-icon-size-xl, 2em);
+    }
+
+    /* Projected SVG content - no encapsulation barrier now, so a plain
+     * descendant selector suffices (previously needed ::ng-deep). */
+    :scope > svg {
+      width: 1em;
+      height: 1em;
+      fill: currentColor;
+      display: block;
+    }
+  }
+}

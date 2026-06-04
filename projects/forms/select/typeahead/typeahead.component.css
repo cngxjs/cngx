@@ -1,0 +1,217 @@
+/**
+ * @overview
+ * Trigger skin for `CngxTypeahead` - scalar variant of the combobox
+ * with async autocomplete and no chips. The host carries
+ * `.cngx-typeahead`; panel frame, option rows, loading variants, and
+ * error surfaces ride on `shared/select-base.css`. This file owns the
+ * trigger row, the inline `<input>`, and the clear / caret affordances.
+ *
+ * **State modifiers**
+ *
+ * - `:focus-within` on `.cngx-typeahead__trigger` - 2px primary outline
+ *   + 2px offset
+ * - `:has(> [role='combobox'][aria-invalid='true'])` on the trigger -
+ *   danger border + box-shadow glow at focus-within time (paints on the
+ *   visible wrapper without a TS-side rebind since `role="combobox"`
+ *   lives on the input)
+ * - `.cngx-typeahead__input:disabled` - `cursor: not-allowed` + opacity
+ *   dim
+ * - `:focus-visible` on `.cngx-typeahead__clear` - 2px primary outline +
+ *   rounded corner
+ *
+ * **Slots**
+ *
+ * - `.cngx-typeahead__root` - relative-positioned flex wrapper
+ * - `.cngx-typeahead__trigger` - the bordered row
+ * - `.cngx-typeahead__input` - the `role="combobox"` text input
+ * - `.cngx-typeahead__clear` - reset button
+ * - `.cngx-typeahead__caret` - panel-state glyph
+ *
+ * **Inheritance**
+ *
+ * Trigger surface tokens delegate to the foundation so brand swaps on
+ * border / surface propagate without per-component theming:
+ *
+ * - `--cngx-typeahead-border` -> `--cngx-color-border`
+ * - `--cngx-typeahead-bg` -> `--cngx-color-surface`
+ * - invalid surfaces fall back to `--cngx-select-trigger-invalid-*` ->
+ *   `--cngx-color-danger`
+ *
+ * **Pair with**
+ *
+ * - `@cngx/themes/material/select-theme` - Material 3 surface treatment
+ *   shared across the entire select family
+ */
+
+@layer cngx.tokens {
+  /**
+   * Gap between the input, clear button, and caret.
+   * @group Layout
+   */
+  @property --cngx-typeahead-gap {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.5rem;
+  }
+
+  /**
+   * Minimum block size of the trigger.
+   * @group Layout
+   */
+  @property --cngx-typeahead-min-height {
+    syntax: '*';
+    inherits: false;
+    initial-value: 2.5rem;
+  }
+
+  /**
+   * Padding shorthand of the trigger.
+   * @group Layout
+   */
+  @property --cngx-typeahead-padding {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0 0.75rem;
+  }
+
+  /**
+   * Border shorthand of the trigger.
+   * @group Surface
+   */
+  @property --cngx-typeahead-border {
+    syntax: '*';
+    inherits: true;
+    initial-value: 1px solid oklch(0.85 0.01 250);
+  }
+
+  /**
+   * Corner radius of the trigger.
+   * @group Layout
+   */
+  @property --cngx-typeahead-radius {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.375rem;
+  }
+
+  /**
+   * Background of the trigger. Falls back through `--cngx-color-surface`.
+   * @group Surface
+   * @see [[--cngx-color-surface]]
+   */
+  @property --cngx-typeahead-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(1 0 0);
+  }
+
+  /**
+   * Opacity multiplier applied when the input is disabled.
+   * @group State / Disabled
+   */
+  @property --cngx-typeahead-disabled-opacity {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 0.6;
+  }
+
+  /**
+   * Color of the clear button and caret glyphs.
+   * @group Surface
+   */
+  @property --cngx-typeahead-action-color {
+    syntax: '*';
+    inherits: true;
+    initial-value: currentColor;
+  }
+
+  /* Delegating tokens - trigger border + bg track the foundation
+   * chain so a dark-mode swap on `--cngx-color-border` /
+   * `--cngx-color-surface` cascades through the trigger host. */
+  :root {
+    --cngx-typeahead-border: 1px solid var(--cngx-color-border);
+    --cngx-typeahead-bg: var(--cngx-color-surface);
+  }
+}
+
+@layer cngx.components {
+  @scope (.cngx-typeahead) {
+    :scope {
+      display: block;
+      width: 100%;
+    }
+
+    .cngx-typeahead__root {
+      position: relative;
+      display: flex;
+      width: 100%;
+    }
+
+    .cngx-typeahead__trigger {
+      display: flex;
+      align-items: center;
+      gap: var(--cngx-typeahead-gap, 0.5rem);
+      width: 100%;
+      min-height: var(--cngx-typeahead-min-height, 2.5rem);
+      padding: var(--cngx-typeahead-padding, 0 0.75rem);
+      border: var(
+        --cngx-typeahead-border,
+        1px solid var(--cngx-color-border, oklch(0.85 0.01 250))
+      );
+      border-radius: var(--cngx-typeahead-radius, 0.375rem);
+      background: var(--cngx-typeahead-bg, var(--cngx-color-surface, oklch(1 0 0)));
+      cursor: text;
+    }
+
+    .cngx-typeahead__trigger:focus-within {
+      outline: 2px solid var(--cngx-color-primary, oklch(0.66 0.19 50));
+      outline-offset: 2px;
+    }
+
+    /* `role="combobox"` lives on `.cngx-typeahead__input` (a direct child of
+     * the wrapper); `:has()` traverses to the bordered wrapper so the danger
+     * border paints on the visible surface without a TS-side rebind. */
+    .cngx-typeahead__trigger:has(> [role='combobox'][aria-invalid='true']) {
+      border-color: var(--cngx-select-trigger-invalid-border-color, oklch(0.6 0.18 25));
+      border-width: var(--cngx-select-trigger-invalid-border-width, 1px);
+    }
+    .cngx-typeahead__trigger:has(> [role='combobox'][aria-invalid='true']):focus-within {
+      outline: 2px solid var(--cngx-select-trigger-invalid-outline-color, oklch(0.6 0.18 25));
+      outline-offset: 2px;
+      box-shadow: var(--cngx-select-trigger-invalid-glow, 0 0 0 3px oklch(0.6 0.18 25 / 0.2));
+    }
+
+    .cngx-typeahead__input {
+      flex: 1 1 auto;
+      min-width: 0;
+      border: 0;
+      background: transparent;
+      outline: none;
+      font: inherit;
+      color: inherit;
+      padding: 0;
+    }
+
+    .cngx-typeahead__input:disabled {
+      cursor: not-allowed;
+      opacity: var(--cngx-typeahead-disabled-opacity, 0.6);
+    }
+
+    .cngx-typeahead__clear,
+    .cngx-typeahead__caret {
+      flex: 0 0 auto;
+      background: transparent;
+      border: 0;
+      cursor: pointer;
+      color: var(--cngx-typeahead-action-color, currentColor);
+      padding: 0 0.25rem;
+      font-size: 0.9em;
+    }
+
+    .cngx-typeahead__clear:focus-visible {
+      outline: 2px solid var(--cngx-color-primary, oklch(0.66 0.19 50));
+      outline-offset: 1px;
+      border-radius: 0.25rem;
+    }
+  }
+}

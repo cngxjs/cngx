@@ -1,0 +1,86 @@
+import type { Signal } from '@angular/core';
+import type { ValidationError } from '@angular/forms/signals';
+
+/**
+ * Re-export — the canonical contract now lives at `@cngx/core/tokens` so
+ * Level-2 atoms can implement and provide it without crossing the
+ * Sheriff-enforced layer boundary. Public-API consumers keep their
+ * existing `import { CngxFormFieldControl } from '@cngx/forms/field'`
+ * path unchanged.
+ */
+export type { CngxFormFieldControl } from '@cngx/core/tokens';
+
+/**
+ * Abstraction over Angular Signal Forms' `FieldState`.
+ *
+ * Consumers pass `Field<T>` (a callable that returns `FieldState<T>`) to `CngxFormField`.
+ * This interface documents the subset of `FieldState` that the form field system actually reads,
+ * providing a stable contract even as Signal Forms evolves.
+ *
+ * @category forms/field
+ */
+export interface CngxFieldRef<T = unknown> {
+  readonly name: Signal<string>;
+  readonly value: Signal<T>;
+  readonly errors: Signal<ValidationError.WithFieldTree[]>;
+  readonly touched: Signal<boolean>;
+  readonly dirty: Signal<boolean>;
+  readonly invalid: Signal<boolean>;
+  readonly valid: Signal<boolean>;
+  readonly required: Signal<boolean>;
+  readonly disabled: Signal<boolean>;
+  readonly pending: Signal<boolean>;
+  readonly hidden: Signal<boolean>;
+  readonly readonly: Signal<boolean>;
+  readonly disabledReasons: Signal<readonly { readonly message?: string }[]>;
+  readonly minLength?: Signal<number | undefined>;
+  readonly maxLength?: Signal<number | undefined>;
+  readonly min?: Signal<number | undefined>;
+  readonly max?: Signal<number | undefined>;
+  readonly pattern: Signal<readonly RegExp[]>;
+  readonly errorSummary: Signal<ValidationError.WithFieldTree[]>;
+  readonly submitting: Signal<boolean>;
+
+  markAsTouched(): void;
+  markAsDirty(): void;
+  focusBoundControl(options?: FocusOptions): void;
+  reset(value?: T): void;
+}
+
+/**
+ * A callable that returns a `CngxFieldRef` — matches the shape of Angular Signal Forms' `Field<T>`.
+ *
+ * ```ts
+ * // Signal Forms field is already a callable:
+ * const emailField: Field<string> = schema(...);
+ * // Pass directly:
+ * <cngx-form-field [field]="emailField">
+ * ```
+ *
+ * @category forms/field
+ */
+export type CngxFieldAccessor<T = unknown> = () => CngxFieldRef<T>;
+
+/**
+ * A function that maps a validation error to a human-readable message string.
+ *
+ * @param error The validation error value (e.g. `{ kind: 'required' }` or `{ kind: 'minLength', minLength: 8 }`).
+ * @returns A display-ready error message.
+ *
+ * @category forms/field
+ */
+export type ErrorMessageFn = (error: ValidationError.WithFieldTree) => string;
+
+/**
+ * A map of validation error `kind` strings to their message rendering functions.
+ *
+ * ```ts
+ * const messages: ErrorMessageMap = {
+ *   required: () => 'This field is required.',
+ *   minLength: (e) => `Minimum ${(e as unknown as { minLength: number }).minLength} characters.`,
+ * };
+ * ```
+ *
+ * @category forms/field
+ */
+export type ErrorMessageMap = Record<string, ErrorMessageFn>;

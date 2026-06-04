@@ -1,0 +1,292 @@
+/**
+ * @overview
+ * Trigger skin for `CngxTreeSelect` - hierarchical multi-select with
+ * cascading children. The host carries `.cngx-tree-select`; the trigger
+ * is a pill-shaped row with placeholder / value summary, optional
+ * clear-all button, and a caret. The panel body (the tree of nodes)
+ * lives in `tree-select-panel.component.css`.
+ *
+ * **State modifiers**
+ *
+ * - `:focus-visible` on `.cngx-tree-select__trigger` - focus-ring
+ *   outline + 1px offset
+ * - `[aria-disabled='true']` on the trigger - opacity dim + `cursor:
+ *   not-allowed`
+ * - `[aria-invalid='true']` on the trigger - danger border + box-shadow
+ *   glow at focus-within time
+ *
+ * **Slots**
+ *
+ * - `.cngx-tree-select__root` - relative-positioned wrapper
+ * - `.cngx-tree-select__trigger` - the bordered row
+ * - `.cngx-tree-select__placeholder` - placeholder text shown when no
+ *   values are selected (alpha-tinted, swaps on dark)
+ * - `.cngx-tree-select__clear-all` - reset-all button
+ * - `.cngx-tree-select__caret` - panel-state glyph, pushed inline-end
+ *
+ * **Inheritance**
+ *
+ * Trigger border + focus ring delegate to the foundation so brand swaps
+ * on `--cngx-color-border` / `--cngx-color-primary` cascade through:
+ *
+ * - `--cngx-tree-select-trigger-border` -> `--cngx-color-border`
+ * - `--cngx-tree-select-focus-ring` -> `--cngx-color-primary` (mixed
+ *   to 80% via `color-mix()` for a softer halo)
+ * - invalid surfaces fall back to `--cngx-select-trigger-invalid-*` ->
+ *   `--cngx-color-danger`
+ *
+ * **Dark mode**
+ *
+ * Three hooks swap the alpha-on-black placeholder colour to
+ * alpha-on-white so it reads on a dark page:
+ *
+ * - `prefers-color-scheme: dark`
+ * - `[data-color-scheme="dark"]`
+ * - `.dark` class
+ *
+ * **Pair with**
+ *
+ * - `tree-select-panel.component.css` - the body skin sibling
+ * - `@cngx/themes/material/select-theme` - Material 3 surface treatment
+ *   shared across the entire select family
+ */
+
+@layer cngx.tokens {
+  /**
+   * Minimum inline size of the trigger.
+   * @group Layout
+   */
+  @property --cngx-tree-select-min-width {
+    syntax: '*';
+    inherits: false;
+    initial-value: 10rem;
+  }
+
+  /**
+   * Gap between the value summary, clear button, and caret.
+   * @group Layout
+   */
+  @property --cngx-tree-select-trigger-gap {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.5rem;
+  }
+
+  /**
+   * Minimum block size of the trigger.
+   * @group Layout
+   */
+  @property --cngx-tree-select-trigger-height {
+    syntax: '*';
+    inherits: false;
+    initial-value: 2.5rem;
+  }
+
+  /**
+   * Padding shorthand of the trigger.
+   * @group Layout
+   */
+  @property --cngx-tree-select-trigger-padding {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.25rem 0.5rem;
+  }
+
+  /**
+   * Border shorthand of the trigger. `inherits: true` so the :root
+   * delegating value reaches the trigger host.
+   * @group Surface
+   */
+  @property --cngx-tree-select-trigger-border {
+    syntax: '*';
+    inherits: true;
+    initial-value: 1px solid oklch(0.85 0.01 250);
+  }
+
+  /**
+   * Corner radius of the trigger.
+   * @group Layout
+   */
+  @property --cngx-tree-select-trigger-radius {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.375rem;
+  }
+
+  /**
+   * Background of the trigger.
+   * @group Surface
+   */
+  @property --cngx-tree-select-trigger-bg {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: transparent;
+  }
+
+  /**
+   * Focus-ring outline shorthand. Falls back to `--cngx-color-primary`.
+   * `inherits: true` so the :root delegating value reaches the
+   * trigger host.
+   * @group State / Focus
+   * @see [[--cngx-color-primary]]
+   */
+  @property --cngx-tree-select-focus-ring {
+    syntax: '*';
+    inherits: true;
+    initial-value: 2px solid oklch(0.66 0.19 50 / 0.8);
+  }
+
+  /**
+   * Opacity multiplier applied when the trigger is disabled.
+   * @group State / Disabled
+   */
+  @property --cngx-tree-select-disabled-opacity {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 0.5;
+  }
+
+  /**
+   * Color of the placeholder text shown when no values are selected.
+   * @group State / Placeholder
+   */
+  @property --cngx-tree-select-placeholder-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0 0 0 / 0.5);
+  }
+
+  /**
+   * Hit-target diameter of the clear-all button.
+   * @group State / Clear
+   */
+  @property --cngx-tree-select-clear-size {
+    syntax: '*';
+    inherits: false;
+    initial-value: 1.25rem;
+  }
+
+  /**
+   * Color of the clear-all button glyph.
+   * @group State / Clear
+   */
+  @property --cngx-tree-select-clear-color {
+    syntax: '*';
+    inherits: true;
+    initial-value: currentColor;
+  }
+
+  /**
+   * Color of the caret glyph.
+   * @group Surface
+   */
+  @property --cngx-tree-select-caret-color {
+    syntax: '*';
+    inherits: true;
+    initial-value: currentColor;
+  }
+
+  /* Delegating tokens - trigger border + focus-ring track the
+   * foundation chain. The border shorthand pins the structural part
+   * (1px solid) and inherits the color via the delegating
+   * border-color chain; the focus-ring shorthand pins 2px solid
+   * and inherits the primary alpha. */
+  :root {
+    --cngx-tree-select-trigger-border: 1px solid var(--cngx-color-border);
+    --cngx-tree-select-focus-ring: 2px solid
+      color-mix(in oklch, var(--cngx-color-primary) 80%, transparent);
+  }
+
+  /* Dark-mode component-local swap - the alpha-on-black placeholder
+   * dissolves on dark, so the dark blocks flip it to alpha-on-white. */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-color-scheme='light']):not(.light) {
+      --cngx-tree-select-placeholder-color: oklch(1 0 0 / 0.5);
+    }
+  }
+  [data-color-scheme='dark'],
+  .dark {
+    --cngx-tree-select-placeholder-color: oklch(1 0 0 / 0.5);
+  }
+  [data-color-scheme='light'],
+  .light {
+    --cngx-tree-select-placeholder-color: oklch(0 0 0 / 0.5);
+  }
+}
+
+@layer cngx.components {
+  @scope (.cngx-tree-select) {
+    :scope {
+      display: inline-block;
+      min-width: var(--cngx-tree-select-min-width, 10rem);
+    }
+
+    .cngx-tree-select__root {
+      position: relative;
+      width: 100%;
+    }
+
+    .cngx-tree-select__trigger {
+      display: flex;
+      align-items: center;
+      gap: var(--cngx-tree-select-trigger-gap, 0.5rem);
+      min-height: var(--cngx-tree-select-trigger-height, 2.5rem);
+      padding: var(--cngx-tree-select-trigger-padding, 0.25rem 0.5rem);
+      border: var(
+        --cngx-tree-select-trigger-border,
+        1px solid var(--cngx-color-border, oklch(0.85 0.01 250))
+      );
+      border-radius: var(--cngx-tree-select-trigger-radius, 0.375rem);
+      background: var(--cngx-tree-select-trigger-bg, transparent);
+      cursor: pointer;
+      outline: none;
+    }
+
+    .cngx-tree-select__trigger:focus-visible {
+      outline: var(
+        --cngx-tree-select-focus-ring,
+        2px solid var(--cngx-color-primary, oklch(0.66 0.19 50 / 0.8))
+      );
+      outline-offset: 1px;
+    }
+
+    .cngx-tree-select__trigger[aria-disabled='true'] {
+      cursor: not-allowed;
+      opacity: var(--cngx-tree-select-disabled-opacity, 0.5);
+    }
+
+    .cngx-tree-select__trigger[aria-invalid='true'] {
+      border-color: var(--cngx-select-trigger-invalid-border-color, oklch(0.6 0.18 25));
+      border-width: var(--cngx-select-trigger-invalid-border-width, 1px);
+    }
+    .cngx-tree-select__trigger[aria-invalid='true']:focus-within {
+      outline: 2px solid var(--cngx-select-trigger-invalid-outline-color, oklch(0.6 0.18 25));
+      outline-offset: 1px;
+      box-shadow: var(--cngx-select-trigger-invalid-glow, 0 0 0 3px oklch(0.6 0.18 25 / 0.2));
+    }
+
+    .cngx-tree-select__placeholder {
+      color: var(--cngx-tree-select-placeholder-color, oklch(0 0 0 / 0.5));
+    }
+
+    .cngx-tree-select__clear-all {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      inline-size: var(--cngx-tree-select-clear-size, 1.25rem);
+      block-size: var(--cngx-tree-select-clear-size, 1.25rem);
+      padding: 0;
+      border: none;
+      background: transparent;
+      color: var(--cngx-tree-select-clear-color, inherit);
+      cursor: pointer;
+    }
+
+    .cngx-tree-select__caret {
+      display: inline-flex;
+      align-items: center;
+      color: var(--cngx-tree-select-caret-color, inherit);
+      margin-inline-start: auto;
+    }
+  }
+}

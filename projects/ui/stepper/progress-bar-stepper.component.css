@@ -1,0 +1,37 @@
+/**
+ * @overview
+ * Structural skin for `<cngx-progress-bar-stepper>`. Theming flows
+ * through the embedded `<cngx-progress>` primitive's
+ * `--cngx-progress-*` custom properties, so this file only owns the
+ * layout (stacked bar + optional caption).
+ *
+ * Material consumers using `@cngx/themes/material/feedback-theme`
+ * inherit Material progress palette automatically; no per-variant
+ * Material theme bridge is needed.
+ */
+
+.cngx-progress-bar-stepper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cngx-progress-bar-stepper-gap, 0.375rem);
+  width: 100%;
+  /* Re-aim the embedded `<cngx-progress>` fill onto the cngx primary
+     so the variant matches the rest of the stepper family by default;
+     the primitive's own initial value is `currentColor`, which lands
+     on the page text colour and reads as a dark slab instead of an
+     accent. Material consumers override this token upstream via
+     `@cngx/themes/material/feedback-theme` so the Material-bridged
+     palette still wins. */
+  --cngx-progress-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
+}
+
+.cngx-progress-bar-stepper__bar {
+  display: block;
+  width: 100%;
+}
+
+.cngx-progress-bar-stepper__caption {
+  font-size: var(--cngx-progress-bar-stepper-caption-font-size, 0.8125rem);
+  color: var(--cngx-progress-bar-stepper-caption-color, currentColor);
+  opacity: var(--cngx-progress-bar-stepper-caption-opacity, 0.75);
+}

@@ -1,0 +1,34 @@
+/**
+ * @overview
+ * Default visuals for the declarative `<cngx-optgroup>` - a wrapper
+ * that renders a group header above projected options. The header
+ * class mirrors `.cngx-select__group-header` from `shared/select-base.css`
+ * 1:1 so a declarative group reads identically to a data-mode group.
+ *
+ * **Slots**
+ *
+ * - `:host` - block-level wrapper, no chrome of its own
+ * - `.cngx-select__group-header` - uppercase, condensed-tracking label
+ *   (padding `0.25rem 0.5rem`, `font-size: 0.75rem`, `font-weight: 600`,
+ *   `opacity: 0.7`, `letter-spacing: 0.04em`)
+ *
+ * **Inheritance**
+ *
+ * No tunable tokens - the header is intentionally pinned to the same
+ * static values as `.cngx-select__group-header` in `select-base.css`
+ * so declarative and data-mode groups stay visually locked. Override
+ * the base rule to restyle both together.
+ */
+
+:host {
+  display: block;
+}
+
+.cngx-select__group-header {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  opacity: 0.7;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}

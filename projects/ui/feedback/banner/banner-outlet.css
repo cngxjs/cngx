@@ -1,0 +1,636 @@
+/**
+ * @overview
+ * Default visuals for `CngxBannerOutlet`. The host carries
+ * `.cngx-banner-outlet` and is sticky-top with `z-index: 900` so it
+ * sits below modal surfaces but above page content; empty outlets
+ * collapse. Each banner renders as `.cngx-banner` with `__icon`,
+ * `__body`, `__message`, `__error`, `__action`, and `__dismiss`
+ * children. Uses its own `--cngx-banner-*` namespace (not shared
+ * with `--cngx-alert-*`) so banners can be themed independently
+ * even though the severity-tint palette is visually identical.
+ *
+ * **State modifiers**
+ *
+ * - `--animate` - 200ms enter slide-down (off under
+ *   `prefers-reduced-motion`)
+ * - `--pending` - opacity dim + `pointer-events: none`
+ *
+ * **Variants**
+ *
+ * Severity classes pin four tokens each (bg / border / icon / accent):
+ *
+ * - `--info` - info palette
+ * - `--success` - success palette
+ * - `--warning` - warning palette
+ * - `--error` - error palette
+ *
+ * **Slots**
+ *
+ * - `.cngx-banner__icon` - severity glyph
+ * - `.cngx-banner__default-icon` - SVG fallback when no custom icon
+ *   is projected
+ * - `.cngx-banner__message` - body copy
+ * - `.cngx-banner__error` - inline-error sub-line; color delegates
+ *   to `--cngx-color-danger`
+ * - `.cngx-banner__action` - projected action button tinted by
+ *   `--cngx-banner-accent` (padding-based hit-target, no min-size
+ *   floor so the button does not stand taller than the banner)
+ * - `.cngx-banner__dismiss` - dismiss control
+ *
+ * **Inheritance**
+ *
+ * - `--cngx-banner-error-color` -> `--cngx-color-danger`
+ *
+ * **Dark mode**
+ *
+ * Three hooks swap every severity triplet plus the action-hover
+ * overlay (alpha-on-black flips to alpha-on-white):
+ *
+ * - `prefers-color-scheme: dark`
+ * - `[data-color-scheme="dark"]`
+ * - `.dark` class
+ *
+ * **Pair with**
+ *
+ * - `@cngx/themes/material/feedback-theme` - Material 3 surface
+ *   palette shared with `CngxAlert` and `CngxAlertStack`
+ */
+
+@layer cngx.tokens {
+  /**
+   * Stacking-context order - sticky-top banner sits below modal
+   * surfaces but above page content.
+   * @group Layout
+   */
+  @property --cngx-banner-z-index {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 900;
+  }
+
+  /**
+   * Gap between icon, body, action, and dismiss slots.
+   * @group Layout
+   */
+  @property --cngx-banner-gap {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 12px;
+  }
+
+  /**
+   * Padding shorthand inside each banner.
+   * @group Layout
+   */
+  @property --cngx-banner-padding {
+    syntax: '*';
+    inherits: false;
+    initial-value: 10px 16px;
+  }
+
+  /**
+   * Background - neutral by default; severity rules override.
+   * @group Surface
+   */
+  @property --cngx-banner-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.98 0.005 250);
+  }
+
+  /**
+   * Text color - defaults to `currentColor`.
+   * @group Surface
+   */
+  @property --cngx-banner-color {
+    syntax: '*';
+    inherits: true;
+    initial-value: currentColor;
+  }
+
+  /**
+   * Border color - neutral by default; severity rules override.
+   * @group Surface
+   */
+  @property --cngx-banner-border-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: transparent;
+  }
+
+  /**
+   * Duration of the slide-down enter animation.
+   * @group Motion
+   */
+  @property --cngx-banner-enter-duration {
+    syntax: '<time>';
+    inherits: false;
+    initial-value: 200ms;
+  }
+
+  /**
+   * Vertical offset the banner translates from while entering.
+   * @group Motion
+   */
+  @property --cngx-banner-enter-offset {
+    syntax: '*';
+    inherits: false;
+    initial-value: 100%;
+  }
+
+  /**
+   * Background tint of the info severity.
+   * @group Variant / Info
+   */
+  @property --cngx-banner-info-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.96 0.025 250);
+  }
+
+  /**
+   * Border color of the info severity.
+   * @group Variant / Info
+   */
+  @property --cngx-banner-info-border {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.85 0.07 250);
+  }
+
+  /**
+   * Icon color of the info severity.
+   * @group Variant / Info
+   */
+  @property --cngx-banner-info-icon {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.62 0.2 250);
+  }
+
+  /**
+   * Background tint of the success severity.
+   * @group Variant / Success
+   */
+  @property --cngx-banner-success-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.96 0.04 145);
+  }
+
+  /**
+   * Border color of the success severity.
+   * @group Variant / Success
+   */
+  @property --cngx-banner-success-border {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.85 0.1 145);
+  }
+
+  /**
+   * Icon color of the success severity.
+   * @group Variant / Success
+   */
+  @property --cngx-banner-success-icon {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.65 0.15 145);
+  }
+
+  /**
+   * Background tint of the warning severity.
+   * @group Variant / Warning
+   */
+  @property --cngx-banner-warning-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.97 0.04 80);
+  }
+
+  /**
+   * Border color of the warning severity.
+   * @group Variant / Warning
+   */
+  @property --cngx-banner-warning-border {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.86 0.1 80);
+  }
+
+  /**
+   * Icon color of the warning severity.
+   * @group Variant / Warning
+   */
+  @property --cngx-banner-warning-icon {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.72 0.18 70);
+  }
+
+  /**
+   * Background tint of the error severity.
+   * @group Variant / Error
+   */
+  @property --cngx-banner-error-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.96 0.025 25);
+  }
+
+  /**
+   * Border color of the error severity.
+   * @group Variant / Error
+   */
+  @property --cngx-banner-error-border {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.85 0.08 25);
+  }
+
+  /**
+   * Icon color of the error severity.
+   * @group Variant / Error
+   */
+  @property --cngx-banner-error-icon {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.62 0.22 25);
+  }
+
+  /**
+   * Icon color override - defaults to `currentColor` and is pinned
+   * by each severity rule.
+   * @group Surface
+   */
+  @property --cngx-banner-icon-color {
+    syntax: '*';
+    inherits: true;
+    initial-value: currentColor;
+  }
+
+  /**
+   * Accent color used by the action button border / foreground.
+   * Pinned by each severity rule.
+   * @group Surface
+   */
+  @property --cngx-banner-accent {
+    syntax: '*';
+    inherits: true;
+    initial-value: currentColor;
+  }
+
+  /**
+   * Default icon size when no custom icon is projected.
+   * @group Layout
+   */
+  @property --cngx-banner-icon-size {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 20px;
+  }
+
+  /**
+   * Font-size of the body message.
+   * @group Typography
+   */
+  @property --cngx-banner-font-size {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.9375rem;
+  }
+
+  /**
+   * Line-height of the body message.
+   * @group Typography
+   */
+  @property --cngx-banner-line-height {
+    syntax: '*';
+    inherits: false;
+    initial-value: 1.5;
+  }
+
+  /**
+   * Font-size of the inline-error sub-line.
+   * @group State / Error
+   */
+  @property --cngx-banner-error-font-size {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.875rem;
+  }
+
+  /**
+   * Text color of the inline-error sub-line. Falls back to
+   * `--cngx-color-danger`.
+   * @group State / Error
+   */
+  @property --cngx-banner-error-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.62 0.22 25);
+  }
+
+  /**
+   * Background of the action button.
+   * @group State / Action
+   */
+  @property --cngx-banner-action-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: transparent;
+  }
+
+  /**
+   * Corner radius of the action button.
+   * @group State / Action
+   */
+  @property --cngx-banner-action-radius {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 4px;
+  }
+
+  /**
+   * Padding shorthand of the action button.
+   * @group State / Action
+   */
+  @property --cngx-banner-action-padding {
+    syntax: '*';
+    inherits: false;
+    initial-value: 4px 10px;
+  }
+
+  /**
+   * Minimum hit-target size of the action button (≥ 44 px).
+   * @group State / Action
+   */
+  @property --cngx-banner-action-min-size {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 44px;
+  }
+
+  /**
+   * Font-size of the action button label.
+   * @group State / Action
+   */
+  @property --cngx-banner-action-font-size {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.875rem;
+  }
+
+  /**
+   * Font-weight of the action button label.
+   * @group State / Action
+   */
+  @property --cngx-banner-action-font-weight {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 600;
+  }
+
+  /**
+   * Background tint applied on hover of the action button.
+   * @group State / Action
+   */
+  @property --cngx-banner-action-hover-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0 0 0 / 0.04);
+  }
+
+  /**
+   * Opacity multiplier applied while the banner is pending.
+   * @group State / Pending
+   */
+  @property --cngx-banner-pending-opacity {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 0.85;
+  }
+
+  /* Banner shares the alert family's tinted-surface palette but
+   * ships its own token namespace so banners can be themed
+   * independently. The inline-error sub-line delegates to
+   * `--cngx-color-danger` (it's literally the danger semantic). The
+   * action-hover overlay flips alpha-on-black to alpha-on-white. */
+  :root {
+    --cngx-banner-error-color: var(--cngx-color-danger);
+    --cngx-banner-bg: oklch(0.98 0.005 250);
+    --cngx-banner-info-bg: oklch(0.96 0.025 250);
+    --cngx-banner-info-border: oklch(0.85 0.07 250);
+    --cngx-banner-info-icon: oklch(0.62 0.2 250);
+    --cngx-banner-success-bg: oklch(0.96 0.04 145);
+    --cngx-banner-success-border: oklch(0.85 0.1 145);
+    --cngx-banner-success-icon: oklch(0.65 0.15 145);
+    --cngx-banner-warning-bg: oklch(0.97 0.04 80);
+    --cngx-banner-warning-border: oklch(0.86 0.1 80);
+    --cngx-banner-warning-icon: oklch(0.72 0.18 70);
+    --cngx-banner-error-bg: oklch(0.96 0.025 25);
+    --cngx-banner-error-border: oklch(0.85 0.08 25);
+    --cngx-banner-error-icon: oklch(0.62 0.22 25);
+    --cngx-banner-action-hover-bg: oklch(0 0 0 / 0.04);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-color-scheme='light']):not(.light) {
+      --cngx-banner-bg: oklch(0.22 0.01 250);
+      --cngx-banner-info-bg: oklch(0.3 0.05 250);
+      --cngx-banner-info-border: oklch(0.5 0.08 250);
+      --cngx-banner-info-icon: oklch(0.78 0.14 250);
+      --cngx-banner-success-bg: oklch(0.3 0.06 145);
+      --cngx-banner-success-border: oklch(0.5 0.1 145);
+      --cngx-banner-success-icon: oklch(0.78 0.14 145);
+      --cngx-banner-warning-bg: oklch(0.32 0.06 80);
+      --cngx-banner-warning-border: oklch(0.55 0.1 80);
+      --cngx-banner-warning-icon: oklch(0.82 0.15 70);
+      --cngx-banner-error-bg: oklch(0.3 0.05 25);
+      --cngx-banner-error-border: oklch(0.5 0.1 25);
+      --cngx-banner-error-icon: oklch(0.78 0.16 25);
+      --cngx-banner-action-hover-bg: oklch(1 0 0 / 0.04);
+    }
+  }
+
+  [data-color-scheme='dark'],
+  .dark {
+    --cngx-banner-bg: oklch(0.22 0.01 250);
+    --cngx-banner-info-bg: oklch(0.3 0.05 250);
+    --cngx-banner-info-border: oklch(0.5 0.08 250);
+    --cngx-banner-info-icon: oklch(0.78 0.14 250);
+    --cngx-banner-success-bg: oklch(0.3 0.06 145);
+    --cngx-banner-success-border: oklch(0.5 0.1 145);
+    --cngx-banner-success-icon: oklch(0.78 0.14 145);
+    --cngx-banner-warning-bg: oklch(0.32 0.06 80);
+    --cngx-banner-warning-border: oklch(0.55 0.1 80);
+    --cngx-banner-warning-icon: oklch(0.82 0.15 70);
+    --cngx-banner-error-bg: oklch(0.3 0.05 25);
+    --cngx-banner-error-border: oklch(0.5 0.1 25);
+    --cngx-banner-error-icon: oklch(0.78 0.16 25);
+    --cngx-banner-action-hover-bg: oklch(1 0 0 / 0.04);
+  }
+
+  [data-color-scheme='light'],
+  .light {
+    --cngx-banner-bg: oklch(0.98 0.005 250);
+    --cngx-banner-info-bg: oklch(0.96 0.025 250);
+    --cngx-banner-info-border: oklch(0.85 0.07 250);
+    --cngx-banner-info-icon: oklch(0.62 0.2 250);
+    --cngx-banner-success-bg: oklch(0.96 0.04 145);
+    --cngx-banner-success-border: oklch(0.85 0.1 145);
+    --cngx-banner-success-icon: oklch(0.65 0.15 145);
+    --cngx-banner-warning-bg: oklch(0.97 0.04 80);
+    --cngx-banner-warning-border: oklch(0.86 0.1 80);
+    --cngx-banner-warning-icon: oklch(0.72 0.18 70);
+    --cngx-banner-error-bg: oklch(0.96 0.025 25);
+    --cngx-banner-error-border: oklch(0.85 0.08 25);
+    --cngx-banner-error-icon: oklch(0.62 0.22 25);
+    --cngx-banner-action-hover-bg: oklch(0 0 0 / 0.04);
+  }
+}
+
+@layer cngx.components {
+  @scope (.cngx-banner-outlet) {
+    :scope {
+      display: block;
+      position: sticky;
+      top: 0;
+      z-index: var(--cngx-banner-z-index, 900);
+      width: 100%;
+    }
+
+    :scope:empty {
+      display: none;
+    }
+
+    .cngx-banner {
+      display: flex;
+      align-items: center;
+      gap: var(--cngx-banner-gap, 12px);
+      padding: var(--cngx-banner-padding, 10px 16px);
+      background: var(--cngx-banner-bg, oklch(0.98 0.005 250));
+      color: var(--cngx-banner-color, inherit);
+      border-bottom: 1px solid var(--cngx-banner-border-color, transparent);
+    }
+
+    .cngx-banner--animate {
+      animation: cngx-banner-enter var(--cngx-banner-enter-duration, 200ms) ease-out both;
+    }
+
+    .cngx-banner--info {
+      --cngx-banner-bg: var(--cngx-banner-info-bg, oklch(0.96 0.025 250));
+      --cngx-banner-border-color: var(--cngx-banner-info-border, oklch(0.85 0.07 250));
+      --cngx-banner-icon-color: var(--cngx-banner-info-icon, oklch(0.62 0.2 250));
+      --cngx-banner-accent: var(--cngx-banner-info-icon, oklch(0.62 0.2 250));
+    }
+
+    .cngx-banner--success {
+      --cngx-banner-bg: var(--cngx-banner-success-bg, oklch(0.96 0.04 145));
+      --cngx-banner-border-color: var(--cngx-banner-success-border, oklch(0.85 0.1 145));
+      --cngx-banner-icon-color: var(--cngx-banner-success-icon, oklch(0.65 0.15 145));
+      --cngx-banner-accent: var(--cngx-banner-success-icon, oklch(0.65 0.15 145));
+    }
+
+    .cngx-banner--warning {
+      --cngx-banner-bg: var(--cngx-banner-warning-bg, oklch(0.97 0.04 80));
+      --cngx-banner-border-color: var(--cngx-banner-warning-border, oklch(0.86 0.1 80));
+      --cngx-banner-icon-color: var(--cngx-banner-warning-icon, oklch(0.72 0.18 70));
+      --cngx-banner-accent: var(--cngx-banner-warning-icon, oklch(0.72 0.18 70));
+    }
+
+    .cngx-banner--error {
+      --cngx-banner-bg: var(--cngx-banner-error-bg, oklch(0.96 0.025 25));
+      --cngx-banner-border-color: var(--cngx-banner-error-border, oklch(0.85 0.08 25));
+      --cngx-banner-icon-color: var(--cngx-banner-error-icon, oklch(0.62 0.22 25));
+      --cngx-banner-accent: var(--cngx-banner-error-icon, oklch(0.62 0.22 25));
+    }
+
+    .cngx-banner--pending {
+      opacity: var(--cngx-banner-pending-opacity, 0.85);
+      pointer-events: none;
+    }
+
+    .cngx-banner__icon {
+      flex-shrink: 0;
+      color: var(--cngx-banner-icon-color, currentColor);
+    }
+
+    .cngx-banner__default-icon {
+      width: var(--cngx-banner-icon-size, 20px);
+      height: var(--cngx-banner-icon-size, 20px);
+    }
+
+    .cngx-banner__body {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .cngx-banner__message {
+      font-size: var(--cngx-banner-font-size, 0.9375rem);
+      line-height: var(--cngx-banner-line-height, 1.5);
+    }
+
+    .cngx-banner__error {
+      display: block;
+      font-size: var(--cngx-banner-error-font-size, 0.875rem);
+      color: var(--cngx-banner-error-color, var(--cngx-color-danger, oklch(0.62 0.22 25)));
+      margin-top: 2px;
+    }
+
+    /* Padding-based sizing - no min-width/min-height enforcement.
+     * The earlier 44px hit-target floor made buttons stand taller
+     * than the banner content on desktop; padding + font-size on a
+     * dense banner reaches a comfortable click-target without the
+     * visual bulk. Touch-only consumers can re-pin the hit-target
+     * via padding overrides. */
+    .cngx-banner__action {
+      appearance: none;
+      background: var(--cngx-banner-action-bg, transparent);
+      border: 1px solid var(--cngx-banner-accent, currentColor);
+      border-radius: var(--cngx-banner-action-radius, 4px);
+      padding: var(--cngx-banner-action-padding, 4px 10px);
+      cursor: pointer;
+      font-size: var(--cngx-banner-action-font-size, 0.875rem);
+      font-weight: var(--cngx-banner-action-font-weight, 600);
+      color: var(--cngx-banner-accent, currentColor);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .cngx-banner__action:hover:not(:disabled) {
+      background: var(--cngx-banner-action-hover-bg, oklch(0 0 0 / 0.04));
+    }
+
+    .cngx-banner__action:focus-visible {
+      outline: 2px solid currentColor;
+      outline-offset: 2px;
+    }
+
+    .cngx-banner__action:disabled {
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+
+    .cngx-banner__dismiss {
+      flex-shrink: 0;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .cngx-banner--animate {
+        animation: none;
+      }
+    }
+  }
+}
+
+@keyframes cngx-banner-enter {
+  from {
+    opacity: 0;
+    transform: translateY(calc(-1 * var(--cngx-banner-enter-offset, 100%)));
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

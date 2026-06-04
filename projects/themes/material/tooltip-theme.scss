@@ -1,0 +1,40 @@
+@use '@angular/material' as mat;
+
+// Material bridge for CngxTooltip. Default visuals + transitions ship
+// with the directive (projects/common/theming/components/cngx-tooltip.css);
+// this file aligns the colour and typography tokens with Material's
+// tooltip surface (inverse-surface / inverse-on-surface) and body-small
+// type scale.
+//
+//   @use '@angular/material' as mat;
+//   @use '@cngx/themes/material/tooltip-theme' as tooltip;
+//   html { @include tooltip.theme($theme); }
+
+@mixin color($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-tooltip-bg: var(--mat-sys-inverse-surface);
+    --cngx-tooltip-color: var(--mat-sys-inverse-on-surface);
+  } @else {
+    --cngx-tooltip-bg: #{mat.get-theme-color($theme, background, tooltip)};
+    --cngx-tooltip-color: oklch(1 0 0);
+  }
+}
+
+@mixin typography($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-tooltip-font-family: var(--mat-sys-body-small-font, inherit);
+    --cngx-tooltip-font-size: var(--mat-sys-body-small-size, 0.75rem);
+    --cngx-tooltip-line-height: var(--mat-sys-body-small-line-height, 1rem);
+    --cngx-tooltip-font-weight: var(--mat-sys-body-small-weight, 400);
+    --cngx-tooltip-letter-spacing: var(--mat-sys-body-small-tracking, 0.033em);
+  }
+}
+
+@mixin theme($theme) {
+  @layer cngx.components {
+    :where(.cngx-tooltip) {
+      @include color($theme);
+      @include typography($theme);
+    }
+  }
+}

@@ -1,0 +1,139 @@
+/**
+ * @overview
+ * Default visuals for `CngxMetric`. The host carries `.cngx-metric` -
+ * an inline-flex container that pairs a large bold figure with a
+ * small muted unit on a shared baseline.
+ *
+ * **Slots**
+ *
+ * - `.cngx-metric__value` - the numeric figure (large, bold)
+ * - `.cngx-metric__unit` - the trailing unit or label (small, muted)
+ *
+ * **Inheritance**
+ *
+ * - `--cngx-metric-value-color` -> `--cngx-color-text`
+ * - `--cngx-metric-unit-color` - leaf token, swaps in dark mode
+ *
+ * **Dark mode**
+ *
+ * Three hooks lift value and unit text to the foundation's dark-mode
+ * lightness; chroma and hue identity stay constant:
+ *
+ * - `prefers-color-scheme: dark`
+ * - `[data-color-scheme="dark"]` / `.dark` class
+ * - `[data-color-scheme="light"]` / `.light` class (explicit pin)
+ */
+
+@layer cngx.tokens {
+  /**
+   * Gap between the value and the unit slot.
+   * @group Layout
+   */
+  @property --cngx-metric-gap {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 2px;
+  }
+
+  /**
+   * Font-size of the value slot.
+   * @group Typography
+   */
+  @property --cngx-metric-value-size {
+    syntax: '*';
+    inherits: true;
+    initial-value: 1.75rem;
+  }
+
+  /**
+   * Font-weight of the value slot.
+   * @group Typography
+   */
+  @property --cngx-metric-value-weight {
+    syntax: '<number>';
+    inherits: true;
+    initial-value: 600;
+  }
+
+  /**
+   * Text color of the value slot.
+   * @group Typography
+   */
+  @property --cngx-metric-value-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.2 0.01 290);
+  }
+
+  /**
+   * Font-size of the unit slot.
+   * @group Typography
+   */
+  @property --cngx-metric-unit-size {
+    syntax: '*';
+    inherits: true;
+    initial-value: 0.875rem;
+  }
+
+  /**
+   * Font-weight of the unit slot.
+   * @group Typography
+   */
+  @property --cngx-metric-unit-weight {
+    syntax: '<number>';
+    inherits: true;
+    initial-value: 400;
+  }
+
+  /**
+   * Text color of the unit slot - muted by default.
+   * @group Typography
+   */
+  @property --cngx-metric-unit-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.36 0.02 290);
+  }
+
+  /* Dark-mode swap. Value and unit text both flip to the foundation's
+   * dark-mode-readable lightness; same chroma/hue identity. */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-color-scheme='light']):not(.light) {
+      --cngx-metric-value-color: oklch(0.95 0.01 290);
+      --cngx-metric-unit-color: oklch(0.7 0.01 290);
+    }
+  }
+  [data-color-scheme='dark'],
+  .dark {
+    --cngx-metric-value-color: oklch(0.95 0.01 290);
+    --cngx-metric-unit-color: oklch(0.7 0.01 290);
+  }
+  [data-color-scheme='light'],
+  .light {
+    --cngx-metric-value-color: oklch(0.2 0.01 290);
+    --cngx-metric-unit-color: oklch(0.36 0.02 290);
+  }
+}
+
+@layer cngx.components {
+  @scope (.cngx-metric) {
+    :scope {
+      display: inline-flex;
+      align-items: baseline;
+      gap: var(--cngx-metric-gap, 2px);
+    }
+
+    .cngx-metric__value {
+      font-size: var(--cngx-metric-value-size, 1.75rem);
+      font-weight: var(--cngx-metric-value-weight, 600);
+      color: var(--cngx-metric-value-color, var(--cngx-color-text, oklch(0.2 0.01 290)));
+      line-height: 1.2;
+    }
+
+    .cngx-metric__unit {
+      font-size: var(--cngx-metric-unit-size, 0.875rem);
+      font-weight: var(--cngx-metric-unit-weight, 400);
+      color: var(--cngx-metric-unit-color, oklch(0.36 0.02 290));
+    }
+  }
+}

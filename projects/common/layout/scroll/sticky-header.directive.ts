@@ -1,0 +1,99 @@
+import { DOCUMENT } from '@angular/common';
+import {
+  afterNextRender,
+  DestroyRef,
+  Directive,
+  ElementRef,
+  inject,
+  input,
+  output,
+  signal,
+} from '@angular/core';
+
+/**
+ * Communicates when a sticky-positioned element becomes stuck.
+ *
+ * Applies `position: sticky; top: 0` on the host automatically.
+ * The directive adds a sentinel element before the host and uses
+ * `IntersectionObserver` to detect when the sentinel scrolls out,
+ * meaning the header is now stuck. Toggles a CSS class for shadow,
+ * elevation, or background changes.
+ *
+ * ### Sticky header with shadow
+ * ```html
+ * <header cngxStickyHeader #sh="cngxStickyHeader"
+ *         style="position: sticky; top: 0;">
+ *   Page header
+ * </header>
+ * ```
+ *
+ * ```css
+ * .cngx-sticky--active { box-shadow: 0 2px 4px rgba(0,0,0,.1); }
+ * ```
+ *
+ * @category common/layout
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/layout/scroll/sticky-header.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxScrollSpy, CngxIntersectionObserver
+ * <example-url>http://localhost:4200/#/common/layout/sticky-header/sticky-header-with-shadow</example-url>
+ */
+@Directive({
+  selector: '[cngxStickyHeader]',
+  exportAs: 'cngxStickyHeader',
+  standalone: true,
+  host: {
+    style: 'position: sticky; top: 0; z-index: var(--cngx-sticky-z-index, 1)',
+    '[class.cngx-sticky--active]': 'isSticky()',
+  },
+})
+export class CngxStickyHeader {
+  /** Intersection threshold - `0` triggers as soon as the sentinel leaves. */
+  readonly threshold = input<number>(0);
+
+  /** Emitted when the sticky state changes. */
+  readonly stickyChange = output<boolean>();
+
+  private readonly isStickyState = signal(false);
+  /** Whether the header is currently in its stuck position. */
+  readonly isSticky = this.isStickyState.asReadonly();
+
+  private readonly el = inject(ElementRef<HTMLElement>);
+  private readonly doc = inject(DOCUMENT);
+
+  constructor() {
+    const destroyRef = inject(DestroyRef);
+
+    // IntersectionObserver sentinel pattern - host is stuck once the 1px sentinel leaves the viewport.
+    afterNextRender(() => {
+      const host = this.el.nativeElement as HTMLElement;
+      const sentinel = this.doc.createElement('div');
+      sentinel.style.height = '1px';
+      sentinel.style.width = '1px';
+      sentinel.style.marginBottom = '-1px';
+      sentinel.style.visibility = 'hidden';
+      sentinel.style.pointerEvents = 'none';
+      sentinel.setAttribute('aria-hidden', 'true');
+      host.parentElement?.insertBefore(sentinel, host);
+
+      const observer = new IntersectionObserver(
+        (entries) => {
+          const isSticky = !entries[0].isIntersecting;
+          if (isSticky !== this.isStickyState()) {
+            this.isStickyState.set(isSticky);
+            this.stickyChange.emit(isSticky);
+          }
+        },
+        { threshold: this.threshold() },
+      );
+
+      observer.observe(sentinel);
+
+      destroyRef.onDestroy(() => {
+        observer.disconnect();
+        sentinel.remove();
+      });
+    });
+  }
+}

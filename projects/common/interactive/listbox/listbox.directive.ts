@@ -1,0 +1,325 @@
+import {
+  afterNextRender,
+  computed,
+  contentChildren,
+  Directive,
+  effect,
+  inject,
+  input,
+  model,
+  signal,
+} from '@angular/core';
+
+import { CngxActiveDescendant } from '@cngx/common/a11y';
+
+import type { CngxListboxSearch } from './listbox-search.directive';
+import { CngxOption } from './option.directive';
+
+/**
+ * Composite listbox primitive built on top of `CngxActiveDescendant`.
+ *
+ * Reads options from content children, exposes single- or multi-value
+ * selection state via two-way `[(value)]` / `[(selectedValues)]` bindings, and
+ * drives `aria-selected` / `aria-multiselectable` reactively.
+ *
+ * `value` and `selectedValues` are `model()` signals - `[value]`,
+ * `(valueChange)`, and `[(value)]` bindings all work identically. Forms
+ * integration (`<cngx-form-field>`) is bolted on via the sibling
+ * `CngxListboxFieldBridge` directive from `@cngx/forms/field` - this atom
+ * stays Forms-agnostic.
+ *
+ * ### Material / CDK equivalent
+ *
+ * - `cdk-listbox` (single/multi select via `cdkListbox` directive)
+ * - `mat-selection-list` (multi select list from `@angular/material/list`)
+ *
+ * ### Why better than Material
+ *
+ * 1. Single source of truth for ARIA: every attribute is a `computed()`.
+ * 2. Selection shares the same `CngxActiveDescendant` used by menus and
+ *    comboboxes - one mental model for all typeahead widgets.
+ * 3. `isAllSelected` and `selectedLabels` are derived signals, not manual
+ *    callbacks.
+ * 4. Forms integration is decoupled: the listbox never imports `@angular/forms`.
+ *
+ * @category common/interactive/listbox
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/listbox/listbox.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxListboxSearch, CngxListboxTrigger, CngxOption, CngxOptionGroup, CngxActiveDescendant
+ * <example-url>http://localhost:4200/#/common/interactive/listbox/search/command-palette</example-url>
+ * <example-url>http://localhost:4200/#/common/interactive/listbox/trigger/select-dropdown</example-url>
+ * <example-url>http://localhost:4200/#/common/interactive/listbox/base/multi-select</example-url>
+ * <example-url>http://localhost:4200/#/common/interactive/listbox/base/single-select</example-url>
+ * <example-url>http://localhost:4200/#/forms/field/listbox-forms/material-mat-select-via-cngxbindfield</example-url>
+ * <example-url>http://localhost:4200/#/forms/field/listbox-forms/reactive-forms-adapted-via-adaptformcontrol</example-url>
+ * <example-url>http://localhost:4200/#/forms/field/listbox-forms/signal-forms-multi-select-min-2</example-url>
+ * <example-url>http://localhost:4200/#/forms/field/listbox-forms/signal-forms-single-select</example-url>
+ */
+@Directive({
+  selector: '[cngxListbox]',
+  exportAs: 'cngxListbox',
+  standalone: true,
+  hostDirectives: [
+    {
+      directive: CngxActiveDescendant,
+      inputs: ['items', 'orientation', 'loop', 'typeahead', 'autoHighlightFirst', 'virtualCount'],
+    },
+  ],
+  host: {
+    role: 'listbox',
+    '[attr.aria-label]': 'label()',
+    '[attr.aria-multiselectable]': 'multiple() ? "true" : null',
+  },
+})
+export class CngxListbox<T = unknown> {
+  /** Accessible label for the listbox region. */
+  readonly label = input.required<string>();
+
+  /** Two-way single-value binding. */
+  readonly value = model<T | undefined>(undefined);
+
+  /** Two-way multi-value binding. */
+  readonly selectedValues = model<T[]>([]);
+
+  /** Whether multiple options can be selected. */
+  readonly multiple = input<boolean>(false);
+
+  /** Equality function for matching values. Defaults to `Object.is`. */
+  readonly compareWith = input<(a: T, b: T) => boolean>(Object.is as (a: T, b: T) => boolean);
+
+  /**
+   * Optional explicit reference to a `CngxListboxSearch` whose term drives
+   * `filteredOptions`. Consumers wire this up with a template reference:
+   * `[cngxSearchRef]="search"` and `#search="cngxListboxSearch"`. No ancestor
+   * injection - orthogonal composition, like `CngxSortHeader` + `CngxSortRef`.
+   */
+  readonly cngxSearchRef = input<CngxListboxSearch | null>(null);
+
+  /**
+   * When `true`, the listbox stops auto-writing its own `value` / `selectedValues`
+   * on AD-activation. The consumer (typically a Level-3 composite like
+   * `CngxSelect` running an async `[commitAction]`) fully owns the value
+   * mutation flow and can intercept activations BEFORE any write happens.
+   *
+   * **Why this exists.**
+   * The commit flow needs to snapshot the pre-pick value synchronously when
+   * the user clicks an option - to roll back to it on error. Without this
+   * flag, CngxListbox writes `value` via two-way binding BEFORE the consumer's
+   * own `ad.activated` subscriber runs, and the pre-pick value is already
+   * gone by the time we try to snapshot it. Flipping this flag lets the
+   * consumer be the single writer.
+   *
+   * Default `false` preserves the self-contained listbox behaviour used
+   * everywhere outside the select family.
+   */
+  readonly externalActivation = input<boolean>(false);
+
+  /**
+   * Underlying `CngxActiveDescendant` host directive. Exposed so triggers
+   * (e.g. `CngxListboxTrigger`) can drive navigation without ancestor injection.
+   */
+  readonly ad = inject(CngxActiveDescendant, { self: true, host: true });
+
+  /**
+   * Optional explicit option list. When set, takes precedence over content
+   * projection. Useful for composites that project options via `<ng-content>`
+   * and query them one layer up (e.g. `CngxSelect`'s declarative mode).
+   */
+  readonly explicitOptions = input<readonly CngxOption[] | undefined>(undefined);
+
+  /** Options collected via content projection. */
+  private readonly contentOptions = contentChildren(CngxOption, { descendants: true });
+
+  /** Effective option list: explicit input wins, otherwise content-projection. */
+  readonly options = computed<readonly CngxOption[]>(
+    () => this.explicitOptions() ?? this.contentOptions(),
+  );
+
+  /** Whether content-children have been initialised (guards effects from running early). */
+  private readonly initialized = signal(false);
+
+  constructor() {
+    afterNextRender(() => this.initialized.set(true));
+
+    effect(() => {
+      if (!this.initialized()) {
+        return;
+      }
+      const selected = this.selected();
+      const eq = this.compareWith();
+      for (const opt of this.options()) {
+        opt.markSelected(selected.some((s) => eq(s, opt.value() as T)));
+      }
+    });
+
+    this.ad.activated.subscribe((value) => this.handleActivation(value));
+  }
+
+  /** Current selection as an array (single-mode → `[value]` or `[]`, multi-mode → `selectedValues`). */
+  readonly selected = computed<T[]>(() => {
+    if (this.multiple()) {
+      return [...this.selectedValues()];
+    }
+    const v = this.value();
+    return v === undefined || v === null ? [] : [v as T];
+  });
+
+  /** Labels of currently selected options, in selection order. */
+  readonly selectedLabels = computed<string[]>(() => {
+    const selected = this.selected();
+    const eq = this.compareWith();
+    const opts = this.options();
+    const labels: string[] = [];
+    for (const value of selected) {
+      const opt = opts.find((o) => eq(o.value() as T, value));
+      if (opt) {
+        labels.push(opt.resolvedLabel());
+      }
+    }
+    return labels;
+  });
+
+  /** Convenience: first selected label (for trigger-style displays). */
+  readonly selectedLabel = computed<string | null>(() => this.selectedLabels()[0] ?? null);
+
+  /** Whether every non-disabled option is selected. */
+  readonly isAllSelected = computed<boolean>(() => {
+    const opts = this.options();
+    const selectable = opts.filter((o) => !o.disabled());
+    if (selectable.length === 0) {
+      return false;
+    }
+    const selected = this.selected();
+    const eq = this.compareWith();
+    return selectable.every((o) => selected.some((s) => eq(s, o.value() as T)));
+  });
+
+  /** Whether the listbox has no options at all. */
+  readonly isEmpty = computed<boolean>(() => this.options().length === 0);
+
+  /** Current search term (empty when no `cngxSearchRef` is bound). */
+  readonly searchTerm = computed<string>(() => this.cngxSearchRef()?.term() ?? '');
+
+  /** Options filtered by `searchTerm` through the search matcher. */
+  readonly filteredOptions = computed(() => {
+    const term = this.searchTerm();
+    const search = this.cngxSearchRef();
+    if (term === '' || !search) {
+      return this.options();
+    }
+    const matchFn = search.matchFn();
+    return this.options().filter((opt) =>
+      matchFn(
+        {
+          id: opt.id,
+          value: opt.value() as T,
+          label: opt.resolvedLabel(),
+          disabled: opt.disabled(),
+        },
+        term,
+      ),
+    );
+  });
+
+  /** Whether the current search term matches at least one option. */
+  readonly hasSearchResults = computed<boolean>(() => this.filteredOptions().length > 0);
+
+  /**
+   * Select the given value. In single mode, replaces the current selection.
+   * In multi mode, adds to the selection if not already present. Values that
+   * do not correspond to any option are ignored.
+   */
+  select(value: T): void {
+    if (!this.hasOption(value)) {
+      return;
+    }
+    if (this.multiple()) {
+      if (this.isSelected(value)) {
+        return;
+      }
+      this.selectedValues.set([...this.selectedValues(), value]);
+    } else {
+      this.value.set(value);
+    }
+  }
+
+  /** Remove `value` from the selection. No-op if not selected. */
+  deselect(value: T): void {
+    const eq = this.compareWith();
+    if (this.multiple()) {
+      this.selectedValues.set(this.selectedValues().filter((v) => !eq(v, value)));
+    } else {
+      const current = this.value();
+      if (current !== undefined && eq(current, value)) {
+        this.value.set(undefined);
+      }
+    }
+  }
+
+  /** Flip selection state for `value`. */
+  toggle(value: T): void {
+    if (this.isSelected(value)) {
+      this.deselect(value);
+    } else {
+      this.select(value);
+    }
+  }
+
+  /** Clear all selections. */
+  clear(): void {
+    if (this.multiple()) {
+      this.selectedValues.set([]);
+    } else {
+      this.value.set(undefined);
+    }
+  }
+
+  /**
+   * Select every non-disabled option. Only valid in multi mode - in single
+   * mode this is a no-op.
+   */
+  selectAll(): void {
+    if (!this.multiple()) {
+      return;
+    }
+    const values = this.options()
+      .filter((o) => !o.disabled())
+      .map((o) => o.value() as T);
+    this.selectedValues.set(values);
+  }
+
+  /** Returns the resolved label for a value, or `null` if no such option. */
+  getLabel(value: T): string | null {
+    const eq = this.compareWith();
+    const opt = this.options().find((o) => eq(o.value() as T, value));
+    return opt ? opt.resolvedLabel() : null;
+  }
+
+  /** Whether `value` is currently part of the selection. */
+  isSelected(value: T): boolean {
+    const eq = this.compareWith();
+    return this.selected().some((v) => eq(v, value));
+  }
+
+  private hasOption(value: T): boolean {
+    const eq = this.compareWith();
+    return this.options().some((o) => eq(o.value() as T, value));
+  }
+
+  private handleActivation(value: unknown): void {
+    // externalActivation: AD still emits on `activated`, but the consumer
+    // owns the write (e.g. to capture a pre-pick rollback target).
+    if (this.externalActivation()) {
+      return;
+    }
+    // AD's Subject is typed `unknown`; the listbox owns the value domain.
+    const narrowed = value as T;
+    if (this.multiple()) {
+      this.toggle(narrowed);
+    } else {
+      this.select(narrowed);
+    }
+  }
+}

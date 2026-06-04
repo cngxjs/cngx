@@ -1,0 +1,43 @@
+@use '@angular/material' as mat;
+
+// Material bridge for CngxMetric. Routes the value + unit text colors
+// onto Material 3 surface roles, and the value + unit typography onto
+// the headline / body type scale so a metric reads with the same
+// hierarchy as <mat-card> labels.
+//
+//   @use '@cngx/themes/material/metric-theme' as metric;
+//   html { @include metric.theme($theme); }
+
+@mixin color($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-metric-value-color: var(--mat-sys-on-surface);
+    --cngx-metric-unit-color: var(--mat-sys-on-surface-variant);
+  } @else {
+    --cngx-metric-value-color: #{mat.get-theme-color($theme, foreground, text)};
+    --cngx-metric-unit-color: #{mat.get-theme-color(
+        $theme,
+        foreground,
+        secondary-text
+      )};
+  }
+}
+
+@mixin typography($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-metric-value-size: var(--mat-sys-headline-medium-size);
+    --cngx-metric-value-weight: var(--mat-sys-headline-medium-weight);
+    --cngx-metric-unit-size: var(--mat-sys-body-medium-size);
+    --cngx-metric-unit-weight: var(--mat-sys-body-medium-weight);
+  }
+  // M2 has no first-class type-scale sys vars worth bridging; the
+  // component initial values cover the M2 case.
+}
+
+@mixin theme($theme) {
+  @layer cngx.components {
+    :where(cngx-metric, .cngx-metric) {
+      @include color($theme);
+      @include typography($theme);
+    }
+  }
+}

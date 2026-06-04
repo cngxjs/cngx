@@ -1,0 +1,25 @@
+/**
+ * @overview
+ * Host wrapper for `CngxSelectPanel`. All visual rules for the panel
+ * body (options, skeletons, spinners, error banners, refreshing
+ * indicators, chip-strip layout) live in `shared/select-base.css` and
+ * are loaded via this component's `styleUrls` - this file only
+ * neutralises the host element so it doesn't contribute layout
+ * (`display: contents` lets the panel content participate in the
+ * floating-popover frame directly).
+ *
+ * **Pair with**
+ *
+ * - `shared/select-base.css` - the actual panel visuals (panel frame,
+ *   option rows, async states, chip strip)
+ * - `@cngx/themes/material/select-theme` - Material 3 surface treatment
+ *   shared across the entire select family
+ */
+
+@layer cngx.components {
+  @scope (cngx-select-panel) {
+    :scope {
+      display: contents;
+    }
+  }
+}

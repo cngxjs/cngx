@@ -1,0 +1,279 @@
+/**
+ * @overview
+ * Trigger skin for `CngxMultiSelect` - chip-strip multi-select with a
+ * separate panel. The host carries `.cngx-multi-select`; intentionally
+ * minimal because everything structurally shareable with other
+ * multi-value triggers (chip-strip flex-wrap, chip pill shape, chip
+ * remove button) lives in `shared/select-base.css` under the
+ * `.cngx-select__chip-*` classes. Future siblings (`CngxMultiCombobox`,
+ * `CngxTagInput`) reuse the same visual baseline.
+ *
+ * **State modifiers**
+ *
+ * - `:focus-visible` on `.cngx-multi-select__trigger` - focus-ring
+ *   outline + offset
+ * - `[aria-disabled='true']` on the trigger - opacity dim + `cursor:
+ *   not-allowed`
+ * - `[aria-invalid='true']` on the trigger - danger border + box-shadow
+ *   glow at focus-within time
+ *
+ * **Slots**
+ *
+ * - `.cngx-multi-select__root` - `display: contents` host shim
+ * - `.cngx-multi-select__trigger` - the bordered `role="combobox"` row
+ *   (`user-select: none` prevents drag-click text selection)
+ * - `.cngx-multi-select__placeholder` - placeholder text shown when no
+ *   chips are selected
+ * - `.cngx-multi-select__clear-all` - reset-all button
+ * - `.cngx-multi-select__caret` - panel-state glyph
+ *
+ * **Inheritance**
+ *
+ * Trigger tokens delegate up the family chain:
+ *
+ * - `--cngx-multi-select-*` -> `--cngx-select-*` -> hardcoded
+ * - `--cngx-multi-select-border` -> `--cngx-color-border`
+ * - `--cngx-multi-select-focus-outline` -> `--cngx-color-primary`
+ * - invalid surfaces fall back to `--cngx-select-trigger-invalid-*` ->
+ *   `--cngx-color-danger`
+ *
+ * Once registered via `@property` the inner var() steps are
+ * documentation-only; system tokens (`--cngx-color-*`) are the
+ * brand-wide override path.
+ *
+ * **Pair with**
+ *
+ * - `@cngx/themes/material/select-theme` - Material 3 surface treatment
+ *   shared across the entire select family
+ */
+
+@layer cngx.tokens {
+  /**
+   * Minimum inline size of the trigger.
+   * @group Layout
+   */
+  @property --cngx-multi-select-min-width {
+    syntax: '*';
+    inherits: false;
+    initial-value: 10rem;
+  }
+
+  /**
+   * Gap between the chip list, placeholder, caret, and clear button.
+   * @group Layout
+   */
+  @property --cngx-multi-select-gap {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.5rem;
+  }
+
+  /**
+   * Padding shorthand of the trigger.
+   * @group Layout
+   */
+  @property --cngx-multi-select-padding {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.375rem 0.5rem;
+  }
+
+  /**
+   * Border shorthand of the trigger.
+   * @group Surface
+   */
+  @property --cngx-multi-select-border {
+    syntax: '*';
+    inherits: true;
+    initial-value: 1px solid oklch(0.85 0.01 250);
+  }
+
+  /**
+   * Corner radius of the trigger.
+   * @group Layout
+   */
+  @property --cngx-multi-select-radius {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.25rem;
+  }
+
+  /**
+   * Background of the trigger.
+   * @group Surface
+   */
+  @property --cngx-multi-select-bg {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: transparent;
+  }
+
+  /**
+   * Text color of the trigger.
+   * @group Surface
+   */
+  @property --cngx-multi-select-color {
+    syntax: '*';
+    inherits: true;
+    initial-value: currentColor;
+  }
+
+  /**
+   * Minimum block size of the trigger - fits a single row of chips.
+   * @group Layout
+   */
+  @property --cngx-multi-select-min-height {
+    syntax: '*';
+    inherits: false;
+    initial-value: 2.25rem;
+  }
+
+  /**
+   * Focus-ring outline shorthand. Falls back to `--cngx-color-primary`.
+   * @group State / Focus
+   * @see [[--cngx-color-primary]]
+   */
+  @property --cngx-multi-select-focus-outline {
+    syntax: '*';
+    inherits: true;
+    initial-value: 2px solid oklch(0.66 0.19 50);
+  }
+
+  /**
+   * Outline offset of the focus ring.
+   * @group State / Focus
+   */
+  @property --cngx-multi-select-focus-offset {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 2px;
+  }
+
+  /**
+   * Opacity multiplier applied when the trigger is disabled.
+   * @group State / Disabled
+   */
+  @property --cngx-multi-select-disabled-opacity {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 0.5;
+  }
+
+  /**
+   * Opacity of the placeholder text shown when no chips are selected.
+   * @group State / Placeholder
+   */
+  @property --cngx-multi-select-placeholder-opacity {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 0.7;
+  }
+
+  /**
+   * Resting opacity of the clear-all button.
+   * @group State / Clear
+   */
+  @property --cngx-multi-select-clear-opacity {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 0.6;
+  }
+
+  /* Delegating tokens - trigger border + focus-ring track the
+   * foundation chain. Shorthands pin their structural part and
+   * inherit the color via the delegating foundation token. */
+  :root {
+    --cngx-multi-select-border: 1px solid var(--cngx-color-border);
+    --cngx-multi-select-focus-outline: 2px solid var(--cngx-color-primary);
+  }
+}
+
+@layer cngx.components {
+  @scope (.cngx-multi-select) {
+    :scope {
+      display: inline-block;
+      position: relative;
+      font: inherit;
+      min-width: var(--cngx-multi-select-min-width, var(--cngx-select-min-width, 10rem));
+    }
+
+    .cngx-multi-select__root {
+      display: contents;
+    }
+
+    .cngx-multi-select__trigger {
+      display: flex;
+      align-items: center;
+      gap: var(--cngx-multi-select-gap, var(--cngx-select-gap, 0.5rem));
+      width: 100%;
+      padding: var(--cngx-multi-select-padding, var(--cngx-select-padding, 0.375rem 0.5rem));
+      border: var(
+        --cngx-multi-select-border,
+        var(--cngx-select-border, 1px solid var(--cngx-color-border, oklch(0.85 0.01 250)))
+      );
+      border-radius: var(--cngx-multi-select-radius, var(--cngx-select-radius, 0.25rem));
+      background: var(--cngx-multi-select-bg, var(--cngx-select-bg, transparent));
+      color: var(--cngx-multi-select-color, var(--cngx-select-color, inherit));
+      font: inherit;
+      cursor: pointer;
+      text-align: start;
+      justify-content: space-between;
+      flex-wrap: nowrap;
+      min-height: var(--cngx-multi-select-min-height, 2.25rem);
+      /* <div role="combobox"> - prevent accidental text selection on drag-click. */
+      user-select: none;
+    }
+    .cngx-multi-select__trigger:focus-visible {
+      outline: var(
+        --cngx-multi-select-focus-outline,
+        var(--cngx-select-focus-outline, 2px solid var(--cngx-color-primary, oklch(0.66 0.19 50)))
+      );
+      outline-offset: var(--cngx-multi-select-focus-offset, var(--cngx-select-focus-offset, 2px));
+    }
+    .cngx-multi-select__trigger[aria-disabled='true'] {
+      opacity: var(--cngx-multi-select-disabled-opacity, var(--cngx-select-disabled-opacity, 0.5));
+      cursor: not-allowed;
+    }
+
+    .cngx-multi-select__trigger[aria-invalid='true'] {
+      border-color: var(--cngx-select-trigger-invalid-border-color, oklch(0.6 0.18 25));
+      border-width: var(--cngx-select-trigger-invalid-border-width, 1px);
+    }
+    .cngx-multi-select__trigger[aria-invalid='true']:focus-within {
+      outline: 2px solid var(--cngx-select-trigger-invalid-outline-color, oklch(0.6 0.18 25));
+      outline-offset: var(--cngx-multi-select-focus-offset, var(--cngx-select-focus-offset, 2px));
+      box-shadow: var(--cngx-select-trigger-invalid-glow, 0 0 0 3px oklch(0.6 0.18 25 / 0.2));
+    }
+
+    .cngx-multi-select__placeholder {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      opacity: var(--cngx-multi-select-placeholder-opacity, 0.7);
+    }
+
+    .cngx-multi-select__clear-all {
+      flex: 0 0 auto;
+      appearance: none;
+      border: 0;
+      background: transparent;
+      color: inherit;
+      cursor: pointer;
+      padding: 0 0.25rem;
+      font: inherit;
+      opacity: var(--cngx-multi-select-clear-opacity, 0.6);
+    }
+    .cngx-multi-select__clear-all:hover {
+      opacity: 1;
+    }
+    .cngx-multi-select__clear-all:focus-visible {
+      outline: 2px solid var(--cngx-color-primary, oklch(0.66 0.19 50));
+      border-radius: 0.125rem;
+    }
+
+    .cngx-multi-select__caret {
+      flex: 0 0 auto;
+      opacity: 0.7;
+    }
+  }
+}

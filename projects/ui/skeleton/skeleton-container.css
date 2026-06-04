@@ -1,0 +1,139 @@
+/**
+ * @overview
+ * Default visuals for `CngxSkeleton` - shimmer placeholder bones.
+ * The host carries `.cngx-skeleton` and renders one or more
+ * `.cngx-skeleton-bone` children. The keyframe
+ * (`cngx-skeleton-shimmer`) stays top-level outside `@layer`
+ * because it is already namespaced and keyframes resolve by name
+ * regardless of cascade layer.
+ *
+ * **State modifiers**
+ *
+ * - `--shimmer` - paints the bone with a 200% gradient sweep via
+ *   `cngx-skeleton-shimmer` at `--cngx-skeleton-shimmer-duration`
+ *   (default 1.5s). The animation no-ops under
+ *   `prefers-reduced-motion`
+ *
+ * **Dark mode**
+ *
+ * Three hooks flip both the base and shimmer-sweep tones to
+ * gray-on-near-black so the sweep reads as a subtle gradient
+ * rather than a bright streak. Component-local - bones are
+ * placeholder surfaces, not delegated:
+ *
+ * - `prefers-color-scheme: dark`
+ * - `[data-color-scheme="dark"]`
+ * - `.dark` class
+ *
+ * **Pair with**
+ *
+ * - `@cngx/themes/material/skeleton-theme` - Material 3 surface
+ *   treatment
+ */
+
+@layer cngx.tokens {
+  /**
+   * Base color of the shimmer gradient.
+   * @group Surface
+   */
+  @property --cngx-skeleton-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.88 0 0);
+  }
+
+  /**
+   * Highlight color that sweeps across the bone during the
+   * shimmer animation.
+   * @group Surface
+   */
+  @property --cngx-skeleton-shimmer-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.96 0 0);
+  }
+
+  /**
+   * Corner radius of the bone.
+   * @group Layout
+   */
+  @property --cngx-skeleton-radius {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 4px;
+  }
+
+  /**
+   * Duration of one shimmer sweep.
+   * @group Motion
+   */
+  @property --cngx-skeleton-shimmer-duration {
+    syntax: '<time>';
+    inherits: false;
+    initial-value: 1.5s;
+  }
+
+  /*
+   * Default-theme palette pass. Skeleton bones sit one step inside
+   * the page surface - dark mode flips both the base and the shimmer
+   * sweep to gray-on-near-black so the shimmer reads as a subtle
+   * gradient rather than a bright streak. Component-local - bones
+   * are placeholder surfaces, not delegated.
+   */
+  :root {
+    --cngx-skeleton-bg: oklch(0.88 0 0);
+    --cngx-skeleton-shimmer-color: oklch(0.96 0 0);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-color-scheme='light']):not(.light) {
+      --cngx-skeleton-bg: oklch(0.25 0 0);
+      --cngx-skeleton-shimmer-color: oklch(0.35 0 0);
+    }
+  }
+
+  :root[data-color-scheme='dark'],
+  :root.dark {
+    --cngx-skeleton-bg: oklch(0.25 0 0);
+    --cngx-skeleton-shimmer-color: oklch(0.35 0 0);
+  }
+
+  :root[data-color-scheme='light'],
+  :root.light {
+    --cngx-skeleton-bg: oklch(0.88 0 0);
+    --cngx-skeleton-shimmer-color: oklch(0.96 0 0);
+  }
+}
+
+@layer cngx.components {
+  @scope (.cngx-skeleton) {
+    :scope.cngx-skeleton--shimmer .cngx-skeleton-bone {
+      background-color: var(--cngx-skeleton-bg, oklch(0.88 0 0));
+      background-image: linear-gradient(
+        90deg,
+        var(--cngx-skeleton-bg, oklch(0.88 0 0)) 0%,
+        var(--cngx-skeleton-shimmer-color, oklch(0.96 0 0)) 50%,
+        var(--cngx-skeleton-bg, oklch(0.88 0 0)) 100%
+      );
+      background-size: 200% 100%;
+      animation: cngx-skeleton-shimmer var(--cngx-skeleton-shimmer-duration, 1.5s) ease-in-out
+        infinite;
+      border-radius: var(--cngx-skeleton-radius, 4px);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      :scope.cngx-skeleton--shimmer .cngx-skeleton-bone {
+        animation: none;
+      }
+    }
+  }
+}
+
+@keyframes cngx-skeleton-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}

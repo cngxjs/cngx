@@ -1,0 +1,82 @@
+import { inject } from '@angular/core';
+
+import {
+  CNGX_SELECT_CONFIG,
+  CNGX_SELECT_DEFAULTS,
+  type CngxSelectConfig,
+} from './config';
+
+/**
+ * Effective {@link CngxSelectConfig} for the current injector, merged
+ * with library defaults. Always fully populated.
+ *
+ * @internal
+ */
+export function resolveSelectConfig(): Required<
+  Omit<
+    CngxSelectConfig,
+    'panelClass' | 'templates' | 'announcer' | 'ariaLabels' | 'fallbackLabels'
+  >
+> &
+  Pick<
+    typeof CNGX_SELECT_DEFAULTS,
+    'panelClass' | 'templates' | 'announcer' | 'ariaLabels' | 'fallbackLabels'
+  > {
+  const user = inject(CNGX_SELECT_CONFIG, { optional: true }) ?? {};
+  return {
+    panelWidth: user.panelWidth ?? CNGX_SELECT_DEFAULTS.panelWidth,
+    loadingVariant: user.loadingVariant ?? CNGX_SELECT_DEFAULTS.loadingVariant,
+    skeletonRowCount: user.skeletonRowCount ?? CNGX_SELECT_DEFAULTS.skeletonRowCount,
+    refreshingVariant: user.refreshingVariant ?? CNGX_SELECT_DEFAULTS.refreshingVariant,
+    commitErrorDisplay: user.commitErrorDisplay ?? CNGX_SELECT_DEFAULTS.commitErrorDisplay,
+    commitErrorAnnouncePolicy:
+      user.commitErrorAnnouncePolicy ?? CNGX_SELECT_DEFAULTS.commitErrorAnnouncePolicy,
+    popoverPlacement: user.popoverPlacement ?? CNGX_SELECT_DEFAULTS.popoverPlacement,
+    inputMode: user.inputMode ?? CNGX_SELECT_DEFAULTS.inputMode,
+    enterKeyHint:
+      user.enterKeyHint === undefined
+        ? CNGX_SELECT_DEFAULTS.enterKeyHint
+        : user.enterKeyHint,
+    chipOverflow: user.chipOverflow ?? CNGX_SELECT_DEFAULTS.chipOverflow,
+    maxVisibleChips:
+      user.maxVisibleChips !== undefined && user.maxVisibleChips > 0
+        ? user.maxVisibleChips
+        : CNGX_SELECT_DEFAULTS.maxVisibleChips,
+    virtualization:
+      user.virtualization === undefined
+        ? CNGX_SELECT_DEFAULTS.virtualization
+        : user.virtualization,
+    panelClass: user.panelClass ?? CNGX_SELECT_DEFAULTS.panelClass,
+    typeaheadDebounceInterval:
+      user.typeaheadDebounceInterval ?? CNGX_SELECT_DEFAULTS.typeaheadDebounceInterval,
+    typeaheadWhileClosed:
+      user.typeaheadWhileClosed ?? CNGX_SELECT_DEFAULTS.typeaheadWhileClosed,
+    showSelectionIndicator:
+      user.showSelectionIndicator ?? CNGX_SELECT_DEFAULTS.showSelectionIndicator,
+    selectionIndicatorPosition:
+      user.selectionIndicatorPosition ?? CNGX_SELECT_DEFAULTS.selectionIndicatorPosition,
+    selectionIndicatorVariant:
+      user.selectionIndicatorVariant ?? CNGX_SELECT_DEFAULTS.selectionIndicatorVariant,
+    showCaret: user.showCaret ?? CNGX_SELECT_DEFAULTS.showCaret,
+    restoreFocus: user.restoreFocus ?? CNGX_SELECT_DEFAULTS.restoreFocus,
+    dismissOn: user.dismissOn ?? CNGX_SELECT_DEFAULTS.dismissOn,
+    openOn: user.openOn ?? CNGX_SELECT_DEFAULTS.openOn,
+    announcer: {
+      ...CNGX_SELECT_DEFAULTS.announcer,
+      ...user.announcer,
+      format: user.announcer?.format ?? CNGX_SELECT_DEFAULTS.announcer.format,
+    },
+    templates: {
+      ...CNGX_SELECT_DEFAULTS.templates,
+      ...user.templates,
+    },
+    ariaLabels: {
+      ...CNGX_SELECT_DEFAULTS.ariaLabels,
+      ...user.ariaLabels,
+    },
+    fallbackLabels: {
+      ...CNGX_SELECT_DEFAULTS.fallbackLabels,
+      ...user.fallbackLabels,
+    },
+  };
+}

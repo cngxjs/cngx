@@ -1,0 +1,31 @@
+/* To learn more about Typescript configuration file: https://www.typescriptlang.org/docs/handbook/tsconfig-json.html. */
+/* To learn more about Angular compiler options: https://angular.dev/reference/configs/angular-compiler-options. */
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "../../out-tsc/lib",
+    "declaration": true,
+    "declarationMap": true,
+    "inlineSources": true,
+    "sourceMap": true,
+    "types": [],
+    "paths": {
+      "@cngx/utils": ["dist/utils/types/cngx-utils.d.ts"],
+      "@cngx/core/utils": ["dist/core/types/cngx-core-utils.d.ts"],
+      "@cngx/core/tokens": ["dist/core/types/cngx-core-tokens.d.ts"],
+      "@cngx/common/a11y": ["projects/common/a11y/public-api.ts"],
+      "@cngx/common/interactive": ["projects/common/interactive/public-api.ts"],
+      "@cngx/common/layout": ["projects/common/layout/public-api.ts"],
+      "@cngx/common/data": ["projects/common/data/public-api.ts"],
+      "@cngx/common/dialog": ["projects/common/dialog/public-api.ts"],
+      "@cngx/common/popover": ["projects/common/popover/public-api.ts"],
+      "@cngx/common/card": ["projects/common/card/public-api.ts"],
+      "@cngx/common/chart": ["projects/common/chart/public-api.ts"],
+      "@cngx/common/display": ["projects/common/display/public-api.ts"],
+      "@cngx/common/stepper": ["projects/common/stepper/public-api.ts"],
+      "@cngx/common/tabs": ["projects/common/tabs/public-api.ts"]
+    }
+  },
+  "include": ["*.ts", "a11y/**/*.ts", "interactive/**/*.ts", "layout/**/*.ts", "data/**/*.ts", "dialog/**/*.ts", "popover/**/*.ts", "card/**/*.ts", "chart/**/*.ts", "display/**/*.ts", "stepper/**/*.ts", "tabs/**/*.ts"],
+  "exclude": ["**/*.spec.ts"]
+}

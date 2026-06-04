@@ -1,0 +1,153 @@
+/**
+ * @overview
+ * Default visuals for the interactive shell around
+ * `<cngx-checkbox-indicator>`. The host carries `.cngx-checkbox` and
+ * renders the indicator plus a `.cngx-checkbox__label` slot for the
+ * projected label text and a `.cngx-checkbox__sr-only` slot for
+ * assistive-only copy. The `--cngx-checkbox-color` and
+ * `--cngx-checkbox-disabled-opacity` tokens are owned by
+ * `CngxCheckboxIndicator` and read here without re-registration so
+ * the vocabulary stays unified.
+ *
+ * **State modifiers**
+ *
+ * - `--disabled` - `cursor: not-allowed` + opacity dim via
+ *   `--cngx-checkbox-disabled-opacity`
+ *
+ * **Slots**
+ *
+ * - `.cngx-checkbox__label` - projected label content
+ * - `.cngx-checkbox__sr-only` - visually-hidden copy for AT
+ *
+ * **Inheritance**
+ *
+ * Layout and focus tokens cascade through the foundation:
+ *
+ * - `--cngx-checkbox-gap` -> `--cngx-space-sm`
+ * - `--cngx-checkbox-focus-radius` -> `--cngx-radius-sm`
+ * - `--cngx-checkbox-sibling-gap` - direct (defaults to `1rem`)
+ *
+ * Adjacent-sibling spacing (`.cngx-checkbox + .cngx-checkbox`) sits
+ * OUTSIDE the `@scope` block because `@scope`'s subtree semantics
+ * block the `+` combinator from reaching a sibling scope-root.
+ * Override the sibling-gap token with `0` when the consumer wraps
+ * siblings in their own flex/grid container.
+ */
+
+@layer cngx.tokens {
+  /**
+   * Gap between the indicator and the label slot. Falls back to
+   * `--cngx-space-sm`.
+   * @group Layout
+   */
+  @property --cngx-checkbox-gap {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.5rem;
+  }
+
+  /**
+   * Horizontal spacing between adjacent inline `<cngx-checkbox>`
+   * siblings. Override with `0` if the consumer wraps siblings in
+   * its own flex/grid container.
+   * @group Layout
+   */
+  @property --cngx-checkbox-sibling-gap {
+    syntax: '*';
+    inherits: false;
+    initial-value: 1rem;
+  }
+
+  /**
+   * Focus-ring outline shorthand applied via `outline` on the host.
+   * @group State / Focus
+   */
+  @property --cngx-checkbox-focus-outline {
+    syntax: '*';
+    inherits: false;
+    initial-value: 2px solid currentColor;
+  }
+
+  /**
+   * Outline offset of the focus ring.
+   * @group State / Focus
+   */
+  @property --cngx-checkbox-focus-offset {
+    syntax: '*';
+    inherits: false;
+    initial-value: 2px;
+  }
+
+  /**
+   * Corner radius applied while focused - keeps the ring rounded
+   * around the inline shell.
+   * @group State / Focus
+   */
+  @property --cngx-checkbox-focus-radius {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.25rem;
+  }
+}
+
+@layer cngx.components {
+  @scope (.cngx-checkbox) {
+    :scope {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--cngx-checkbox-gap, var(--cngx-space-sm, 0.5rem));
+      cursor: pointer;
+      user-select: none;
+      outline: none;
+      font: inherit;
+      color: var(--cngx-checkbox-color, inherit);
+
+      /* Pin baseline to the middle of the box. Default vertical-align
+       * for inline-flex is 'baseline' - for two siblings with different
+       * content footprints (empty indicator vs glyph-filled indicator)
+       * the synthesised baseline lands at different y positions, so the
+       * elements shift up/down relative to each other when the checked
+       * state changes which template branch the indicator renders. */
+      vertical-align: middle;
+    }
+
+    :scope.cngx-checkbox--disabled {
+      cursor: not-allowed;
+      opacity: var(--cngx-checkbox-disabled-opacity, 0.5);
+    }
+
+    :scope:focus-visible {
+      outline: var(--cngx-checkbox-focus-outline, 2px solid currentColor);
+      outline-offset: var(--cngx-checkbox-focus-offset, 2px);
+      border-radius: var(--cngx-checkbox-focus-radius, var(--cngx-radius-sm, 0.25rem));
+    }
+
+    .cngx-checkbox__label {
+      flex: 0 1 auto;
+      min-inline-size: 0;
+    }
+
+    .cngx-checkbox__sr-only {
+      position: absolute;
+      inline-size: 1px;
+      block-size: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+  }
+
+  /* Adjacent-sibling spacing - sits OUTSIDE @scope because @scope's
+   * subtree semantics don't let the + combinator reach a sibling scope-
+   * root. Two inline cngx-checkbox elements right next to each other
+   * ended up with zero horizontal separation, so a label like "Custom
+   * check" butted directly against the next indicator. Override the
+   * token with 0 if the consumer wraps siblings in their own flex/grid
+   * container. */
+  .cngx-checkbox + .cngx-checkbox {
+    margin-inline-start: var(--cngx-checkbox-sibling-gap, 1rem);
+  }
+}

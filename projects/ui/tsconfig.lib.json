@@ -1,0 +1,34 @@
+/* To learn more about Typescript configuration file: https://www.typescriptlang.org/docs/handbook/tsconfig-json.html. */
+/* To learn more about Angular compiler options: https://angular.dev/reference/configs/angular-compiler-options. */
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "../../out-tsc/lib",
+    "declaration": true,
+    "declarationMap": true,
+    "inlineSources": true,
+    "sourceMap": true,
+    "types": [],
+    "paths": {
+      "@cngx/utils": ["dist/utils/types/cngx-utils.d.ts"],
+      "@cngx/core/utils": ["dist/core/types/cngx-core-utils.d.ts"],
+      "@cngx/common": ["dist/common/types/cngx-common.d.ts"],
+      "@cngx/common/interactive": ["dist/common/types/cngx-common-interactive.d.ts"],
+      "@cngx/common/data": ["dist/common/types/cngx-common-data.d.ts"],
+      "@cngx/common/card": ["dist/common/types/cngx-common-card.d.ts"],
+      "@cngx/common/a11y": ["dist/common/types/cngx-common-a11y.d.ts"],
+      "@cngx/common/popover": ["dist/common/types/cngx-common-popover.d.ts"],
+      "@cngx/common/stepper": ["dist/common/types/cngx-common-stepper.d.ts"],
+      "@cngx/common/tabs": ["dist/common/types/cngx-common-tabs.d.ts"],
+      "@cngx/ui/feedback": ["dist/ui/types/cngx-ui-feedback.d.ts"],
+      "@cngx/ui/tabs": ["dist/ui/types/cngx-ui-tabs.d.ts"],
+      "@cngx/ui/mat-tabs": ["dist/ui/types/cngx-ui-mat-tabs.d.ts"],
+      "@cngx/ui/action-button": ["dist/ui/types/cngx-ui-action-button.d.ts"],
+      "@cngx/ui/sidenav": ["dist/ui/types/cngx-ui-sidenav.d.ts"],
+      "@cngx/ui/skeleton": ["dist/ui/types/cngx-ui-skeleton.d.ts"],
+      "@cngx/ui/speak": ["dist/ui/types/cngx-ui-speak.d.ts"]
+    }
+  },
+  "include": ["*.ts", "action-button/**/*.ts", "sidenav/**/*.ts", "skeleton/**/*.ts", "speak/**/*.ts", "layout/**/*.ts", "overlay/**/*.ts", "material/**/*.ts", "empty-state/**/*.ts", "feedback/**/*.ts", "stepper/**/*.ts", "mat-stepper/**/*.ts", "mat-tabs/**/*.ts", "tabs/**/*.ts"],
+  "exclude": ["**/*.spec.ts", "**/examples/**"]
+}

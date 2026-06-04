@@ -1,0 +1,146 @@
+/**
+ * @overview
+ * Default visuals for the interactive shell around
+ * `<cngx-radio-indicator>`. The host carries `.cngx-radio` and
+ * renders the indicator plus a `.cngx-radio__label` slot for the
+ * projected label text and a `.cngx-radio__sr-only` slot for
+ * assistive-only copy. Visual state (filled circle vs ring) lives on
+ * the inner indicator; the `--cngx-radio-indicator-*` namespace is
+ * owned by `CngxRadioIndicator` and shell-specific `--cngx-radio-*`
+ * tokens are registered here without overlap.
+ *
+ * **State modifiers**
+ *
+ * - `--checked` - unstyled here; exposed as a consumer-theming hook
+ *   (the indicator paints the filled circle)
+ * - `--disabled` - `cursor: not-allowed` + opacity dim via
+ *   `--cngx-radio-disabled-opacity`
+ *
+ * **Slots**
+ *
+ * - `.cngx-radio__label` - projected label content
+ * - `.cngx-radio__sr-only` - visually-hidden copy for AT
+ *
+ * **Inheritance**
+ *
+ * Layout and focus tokens cascade through the foundation; the
+ * focus-outline default colour matches `--cngx-color-primary` so the
+ * ring stays in step with the foundation reset:
+ *
+ * - `--cngx-radio-gap` -> `--cngx-space-sm`
+ * - `--cngx-radio-focus-outline` -> `--cngx-color-primary`
+ * - `--cngx-radio-focus-radius` -> `--cngx-radius-sm`
+ * - `--cngx-radio-color` - direct (defaults to `currentColor`)
+ */
+
+@layer cngx.tokens {
+  /**
+   * Gap between the indicator and the label slot.
+   * @group Layout
+   */
+  @property --cngx-radio-gap {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.5rem;
+  }
+
+  /**
+   * Text color of the host shell. Defaults to `currentColor`.
+   * @group Surface
+   */
+  @property --cngx-radio-color {
+    syntax: '*';
+    inherits: true;
+    initial-value: currentColor;
+  }
+
+  /**
+   * Opacity multiplier applied by `.cngx-radio--disabled`.
+   * @group State / Disabled
+   */
+  @property --cngx-radio-disabled-opacity {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 0.5;
+  }
+
+  /**
+   * Focus-ring outline shorthand. Matches the foundation reset's
+   * `:focus-visible` accent so the radio reads consistently with
+   * every other focusable atom in the library.
+   * @group State / Focus
+   */
+  @property --cngx-radio-focus-outline {
+    syntax: '*';
+    inherits: false;
+    initial-value: 2px solid oklch(0.66 0.19 50);
+  }
+
+  /**
+   * Outline offset of the focus ring. Matches the foundation reset's
+   * `:focus-visible` offset so the ring breathes the same against the
+   * indicator + label as it does against any other atom.
+   * @group State / Focus
+   */
+  @property --cngx-radio-focus-offset {
+    syntax: '*';
+    inherits: false;
+    initial-value: 3px;
+  }
+
+  /**
+   * Corner radius applied while focused.
+   * @group State / Focus
+   */
+  @property --cngx-radio-focus-radius {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.25rem;
+  }
+}
+
+@layer cngx.components {
+  @scope (.cngx-radio) {
+    :scope {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--cngx-radio-gap, var(--cngx-space-sm, 0.5rem));
+      cursor: pointer;
+      user-select: none;
+      outline: none;
+      font: inherit;
+      color: var(--cngx-radio-color, inherit);
+    }
+
+    :scope.cngx-radio--disabled {
+      cursor: not-allowed;
+      opacity: var(--cngx-radio-disabled-opacity, 0.5);
+    }
+
+    :scope:focus-visible {
+      outline: var(
+        --cngx-radio-focus-outline,
+        2px solid var(--cngx-color-primary, oklch(0.66 0.19 50))
+      );
+      outline-offset: var(--cngx-radio-focus-offset, 3px);
+      border-radius: var(--cngx-radio-focus-radius, var(--cngx-radius-sm, 0.25rem));
+    }
+
+    .cngx-radio__label {
+      flex: 0 1 auto;
+      min-inline-size: 0;
+    }
+
+    .cngx-radio__sr-only {
+      position: absolute;
+      inline-size: 1px;
+      block-size: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+  }
+}

@@ -1,0 +1,521 @@
+/**
+ * @overview
+ * Default visuals for `CngxChip` - a single pill. The host carries
+ * `.cngx-chip` and renders a prefix / label / optional remove button
+ * in an inline-flex row. The unkeyed surface carries a primary-tinted
+ * fill so a plain chip reads as accented out of the box. Layout for
+ * a CONTAINER of multiple chips (gap, flex-wrap) lives on the
+ * consumer wrapper, not here.
+ *
+ * **State modifiers**
+ *
+ * Interactive treatment only activates on selectable / removable
+ * chips - a static label chip stays cursor-default:
+ *
+ * - `[role="button"]` / `[tabindex]` / `:has(.cngx-chip__remove)`
+ *   - hover wash, cursor: pointer
+ * - `:focus-visible` - brand-primary outline ring
+ * - `[aria-selected="true"]` / `[aria-pressed="true"]` - darker
+ *   primary-tinted fill
+ * - `[aria-disabled="true"]` / `:disabled` - opacity 0.38, no
+ *   pointer events
+ *
+ * **Color variants**
+ *
+ * Selected via `[data-color="..."]` so consumers can add their own
+ * keys on top of the four built-ins:
+ *
+ * - `[data-color="info"]` - blue-band tinted surface + text
+ * - `[data-color="success"]` - success-coded
+ * - `[data-color="warning"]` - warning-coded
+ * - `[data-color="danger"]` - danger-coded
+ *
+ * **Slots**
+ *
+ * - `.cngx-chip__label` - the text, ellipsis-truncates
+ * - `.cngx-chip__remove` - inline button, fades in / out via
+ *   `--cngx-chip-remove-opacity` + `:focus-visible` ring
+ *
+ * **Inheritance**
+ *
+ * - `--cngx-chip-inner-gap` -> `--cngx-space-xs`
+ * - `--cngx-chip-padding-inline` -> `--cngx-space-sm`
+ * - `--cngx-chip-radius` -> `--cngx-radius-pill`
+ * - `--cngx-chip-font-size` -> `--cngx-font-size-sm`
+ * - `--cngx-chip-focus-outline` color -> `--cngx-color-primary`
+ * - `--cngx-chip-remove-radius` -> `--cngx-radius-sm`
+ * - `--cngx-chip-remove-focus-color` -> `--cngx-color-primary`
+ * - Variant surfaces use alpha-tints that mix correctly on either
+ *   light or dark backgrounds; only the text colors swap in dark
+ *
+ * **Dark mode**
+ *
+ * Three hooks flip only the four variant text colors from dark
+ * hues to light hues so they stay legible against the dark-mixed
+ * variant background - the alpha-tinted surfaces ride straight
+ * through unchanged:
+ *
+ * - `prefers-color-scheme: dark`
+ * - `[data-color-scheme="dark"]` / `.dark` class
+ * - `[data-color-scheme="light"]` / `.light` class (explicit pin)
+ */
+
+@layer cngx.tokens {
+  /**
+   * Gap between the chip's internal slots (prefix / label / remove).
+   * Falls back to `--cngx-space-xs`.
+   * @group Layout
+   */
+  @property --cngx-chip-inner-gap {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 4px;
+  }
+
+  /**
+   * Block-axis padding of the pill.
+   * @group Layout
+   */
+  @property --cngx-chip-padding-block {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 2px;
+  }
+
+  /**
+   * Inline-axis padding of the pill.
+   * @group Layout
+   */
+  @property --cngx-chip-padding-inline {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 8px;
+  }
+
+  /**
+   * Corner radius. Defaults to a full pill via `--cngx-radius-pill`.
+   * @group Layout
+   */
+  @property --cngx-chip-radius {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 999px;
+  }
+
+  /**
+   * Background of the default (unkeyed) chip. Primary-tinted at low
+   * alpha so the chip reads as accented without competing with
+   * stronger surfaces.
+   * @group Surface
+   * @see [[--cngx-color-primary]]
+   */
+  @property --cngx-chip-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.66 0.19 50 / 0.12);
+  }
+
+  /**
+   * Text color. Defaults to `currentColor` so the chip inherits the
+   * container's text color.
+   * @group Surface
+   */
+  @property --cngx-chip-color {
+    syntax: '*';
+    inherits: true;
+    initial-value: currentColor;
+  }
+
+  /**
+   * Border shorthand. Zero-width by default - pillows fill the box.
+   * @group Surface
+   */
+  @property --cngx-chip-border {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0 solid transparent;
+  }
+
+  /**
+   * Font-size of the chip label.
+   * @group Typography
+   */
+  @property --cngx-chip-font-size {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.875em;
+  }
+
+  /**
+   * Transition shorthand for background / color / border-color
+   * changes on hover, selected, and disabled states.
+   * @group Motion
+   */
+  @property --cngx-chip-transition {
+    syntax: '*';
+    inherits: false;
+    initial-value:
+      background-color 150ms ease,
+      color 150ms ease,
+      border-color 150ms ease;
+  }
+
+  /**
+   * Background of the hover state for interactive chips
+   * (`[role=button]`, `[tabindex]`, or a chip with a remove button).
+   * @group State / Hover
+   */
+  @property --cngx-chip-hover-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.66 0.19 50 / 0.2);
+  }
+
+  /**
+   * Text color of the hover state.
+   * @group State / Hover
+   */
+  @property --cngx-chip-hover-color {
+    syntax: '*';
+    inherits: true;
+    initial-value: currentColor;
+  }
+
+  /**
+   * Focus-ring shorthand applied via `outline` on `:focus-visible`.
+   * Defaults to the brand primary so the ring contrasts with the chip's
+   * own tinted fill (selected or unkeyed) instead of inheriting
+   * `currentColor`, which would render the ring in the text color and
+   * read as a generic dark border on top of the orange fill.
+   * @group State / Focus
+   * @see [[--cngx-color-primary]]
+   */
+  @property --cngx-chip-focus-outline {
+    syntax: '*';
+    inherits: false;
+    initial-value: 2px solid oklch(0.66 0.19 50);
+  }
+
+  /**
+   * Outline offset of the focus ring.
+   * @group State / Focus
+   */
+  @property --cngx-chip-focus-outline-offset {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 2px;
+  }
+
+  /**
+   * Opacity multiplier applied by `[aria-disabled=true]` and `:disabled`.
+   * @group State / Disabled
+   */
+  @property --cngx-chip-disabled-opacity {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 0.38;
+  }
+
+  /**
+   * Background of the selected state (`[aria-selected=true]` /
+   * `[aria-pressed=true]`).
+   * @group State / Selected
+   */
+  @property --cngx-chip-selected-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.66 0.19 50 / 0.32);
+  }
+
+  /**
+   * Text color of the selected state.
+   * @group State / Selected
+   */
+  @property --cngx-chip-selected-color {
+    syntax: '*';
+    inherits: true;
+    initial-value: currentColor;
+  }
+
+  /**
+   * Background of the `[data-color=info]` variant.
+   * @group Variant / Info
+   * @see [[--cngx-color-info]]
+   */
+  @property --cngx-chip-info-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.65 0.12 240 / 0.16);
+  }
+
+  /**
+   * Text color of the `[data-color=info]` variant.
+   * @group Variant / Info
+   */
+  @property --cngx-chip-info-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.45 0.12 240);
+  }
+
+  /**
+   * Background of the `[data-color=success]` variant.
+   * @group Variant / Success
+   * @see [[--cngx-color-success]]
+   */
+  @property --cngx-chip-success-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.65 0.15 145 / 0.16);
+  }
+
+  /**
+   * Text color of the `[data-color=success]` variant.
+   * @group Variant / Success
+   */
+  @property --cngx-chip-success-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.45 0.15 145);
+  }
+
+  /**
+   * Background of the `[data-color=warning]` variant.
+   * @group Variant / Warning
+   * @see [[--cngx-color-warning]]
+   */
+  @property --cngx-chip-warning-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.72 0.15 75 / 0.18);
+  }
+
+  /**
+   * Text color of the `[data-color=warning]` variant.
+   * @group Variant / Warning
+   */
+  @property --cngx-chip-warning-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.5 0.15 75);
+  }
+
+  /**
+   * Background of the `[data-color=danger]` variant.
+   * @group Variant / Danger
+   * @see [[--cngx-color-danger]]
+   */
+  @property --cngx-chip-danger-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.65 0.22 25 / 0.18);
+  }
+
+  /**
+   * Text color of the `[data-color=danger]` variant.
+   * @group Variant / Danger
+   */
+  @property --cngx-chip-danger-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.5 0.2 25);
+  }
+
+  /**
+   * Resting opacity of the inline remove button.
+   * @group State / Remove
+   */
+  @property --cngx-chip-remove-opacity {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 0.7;
+  }
+
+  /**
+   * Hover opacity of the inline remove button.
+   * @group State / Remove
+   */
+  @property --cngx-chip-remove-opacity-hover {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 1;
+  }
+
+  /**
+   * Corner radius of the inline remove button.
+   * @group State / Remove
+   */
+  @property --cngx-chip-remove-radius {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 2px;
+  }
+
+  /**
+   * Focus-ring width of the inline remove button.
+   * @group State / Remove
+   */
+  @property --cngx-chip-remove-focus-width {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 2px;
+  }
+
+  /**
+   * Focus-ring color of the inline remove button. Falls back to
+   * `--cngx-color-primary`.
+   * @group State / Remove
+   */
+  @property --cngx-chip-remove-focus-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.66 0.19 50);
+  }
+
+  /**
+   * Focus-ring offset of the inline remove button.
+   * @group State / Remove
+   */
+  @property --cngx-chip-remove-focus-offset {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 1px;
+  }
+
+  /* Dark-mode swap - only the variant text colors flip. The variant
+   * backgrounds use alpha-tints which mix correctly with either
+   * light or dark surface, but the dark hue text colors disappear
+   * against the dark-mixed bg, so each variant gets a light-hue
+   * counterpart. */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-color-scheme='light']):not(.light) {
+      --cngx-chip-info-color: oklch(0.85 0.13 250);
+      --cngx-chip-success-color: oklch(0.85 0.13 145);
+      --cngx-chip-warning-color: oklch(0.88 0.14 75);
+      --cngx-chip-danger-color: oklch(0.82 0.15 25);
+    }
+  }
+  [data-color-scheme='dark'],
+  .dark {
+    --cngx-chip-info-color: oklch(0.85 0.13 250);
+    --cngx-chip-success-color: oklch(0.85 0.13 145);
+    --cngx-chip-warning-color: oklch(0.88 0.14 75);
+    --cngx-chip-danger-color: oklch(0.82 0.15 25);
+  }
+  [data-color-scheme='light'],
+  .light {
+    --cngx-chip-info-color: oklch(0.45 0.12 240);
+    --cngx-chip-success-color: oklch(0.45 0.15 145);
+    --cngx-chip-warning-color: oklch(0.5 0.15 75);
+    --cngx-chip-danger-color: oklch(0.5 0.2 25);
+  }
+}
+
+@layer cngx.components {
+  @scope (.cngx-chip) {
+    :scope {
+      /* Functional - hardcoded */
+      display: inline-flex;
+      align-items: center;
+      line-height: 1.25;
+      max-width: 100%;
+      box-sizing: border-box;
+
+      /* Themable - token-driven with system-token fallback chains */
+      gap: var(--cngx-chip-inner-gap, var(--cngx-space-xs, 4px));
+      padding-block: var(--cngx-chip-padding-block, 2px);
+      padding-inline: var(--cngx-chip-padding-inline, var(--cngx-space-sm, 8px));
+      border-radius: var(--cngx-chip-radius, var(--cngx-radius-pill, 999px));
+      background: var(--cngx-chip-bg, oklch(0.66 0.19 50 / 0.12));
+      color: var(--cngx-chip-color, inherit);
+      border: var(--cngx-chip-border, 0 solid transparent);
+      font-size: var(--cngx-chip-font-size, var(--cngx-font-size-sm, 0.8125rem));
+      transition: var(
+        --cngx-chip-transition,
+        background-color 150ms ease,
+        color 150ms ease,
+        border-color 150ms ease
+      );
+    }
+
+    /* Interactive states only on selectable / removable chips -
+     * a static label-chip should not invite a click. */
+    :scope[role='button'],
+    :scope[tabindex],
+    :scope:has(.cngx-chip__remove) {
+      cursor: pointer;
+    }
+    :scope[role='button']:hover,
+    :scope[tabindex]:hover,
+    :scope:has(.cngx-chip__remove):hover {
+      background: var(--cngx-chip-hover-bg, oklch(0.66 0.19 50 / 0.2));
+      color: var(--cngx-chip-hover-color, inherit);
+    }
+    :scope:focus-visible {
+      outline: var(
+        --cngx-chip-focus-outline,
+        2px solid var(--cngx-color-primary, oklch(0.66 0.19 50))
+      );
+      outline-offset: var(--cngx-chip-focus-outline-offset, 2px);
+    }
+    :scope[aria-selected='true'],
+    :scope[aria-pressed='true'] {
+      background: var(--cngx-chip-selected-bg, oklch(0.66 0.19 50 / 0.32));
+      color: var(--cngx-chip-selected-color, inherit);
+    }
+    :scope[aria-disabled='true'],
+    :scope:disabled {
+      opacity: var(--cngx-chip-disabled-opacity, 0.38);
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    /* Variant palette via [data-color] attribute (open-string so consumers
+     * can add their own families on top of the four built-in ones). */
+    :scope[data-color='info'] {
+      background: var(--cngx-chip-info-bg);
+      color: var(--cngx-chip-info-color);
+    }
+    :scope[data-color='success'] {
+      background: var(--cngx-chip-success-bg);
+      color: var(--cngx-chip-success-color);
+    }
+    :scope[data-color='warning'] {
+      background: var(--cngx-chip-warning-bg);
+      color: var(--cngx-chip-warning-color);
+    }
+    :scope[data-color='danger'] {
+      background: var(--cngx-chip-danger-bg);
+      color: var(--cngx-chip-danger-color);
+    }
+
+    .cngx-chip__label {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      min-width: 0;
+    }
+
+    .cngx-chip__remove {
+      appearance: none;
+      border: 0;
+      background: transparent;
+      color: inherit;
+      cursor: pointer;
+      padding: 0 2px;
+      font: inherit;
+      line-height: 1;
+      flex: 0 0 auto;
+      opacity: var(--cngx-chip-remove-opacity, 0.7);
+      border-radius: var(--cngx-chip-remove-radius, var(--cngx-radius-sm, 2px));
+    }
+    .cngx-chip__remove:hover {
+      opacity: var(--cngx-chip-remove-opacity-hover, 1);
+    }
+    .cngx-chip__remove:focus-visible {
+      outline: var(--cngx-chip-remove-focus-width, 2px) solid
+        var(--cngx-chip-remove-focus-color, var(--cngx-color-primary, oklch(0.66 0.19 50)));
+      outline-offset: var(--cngx-chip-remove-focus-offset, 1px);
+    }
+  }
+}

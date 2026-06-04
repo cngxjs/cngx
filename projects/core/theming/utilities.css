@@ -1,0 +1,45 @@
+/**
+ * @overview
+ * Foundation utility layer. Hosts low-level visual helpers that any
+ * cngx component or consumer template can opt into without going
+ * through the component pipeline. Lives in `@layer cngx.base` so
+ * component-layer rules win on collision without specificity wars,
+ * and so the utility ranks above the reset / token layers it
+ * depends on.
+ *
+ * **Utilities**
+ *
+ * - `.cngx-sr-only` - WCAG-canonical visually-hidden pattern
+ *   (1px box, clipped, no margin). Content stays in the
+ *   accessibility tree so screen readers reach it; layout is
+ *   unaffected.
+ *
+ * **Composition**
+ *
+ * The canonical declaration here is what consumers importing
+ * `@cngx/themes/cngx.css` get out of the box. Several per-component
+ * CSS files duplicate `.cngx-sr-only` locally with identical body so
+ * each component stays self-contained under `styleUrl` bundling -
+ * the cascade is benign whether one or both load.
+ *
+ * **Pair with**
+ *
+ * - `@cngx/core/theming/layers` - declares the `cngx.base` layer
+ *   slot this file appends into
+ * - `@cngx/core/theming/base` - the bare-element baseline that
+ *   shares the same layer
+ */
+
+@layer cngx.base {
+  .cngx-sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+}

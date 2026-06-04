@@ -1,0 +1,140 @@
+/**
+ * @overview
+ * Default visuals for `CngxTrend`. The host carries `.cngx-trend` -
+ * an inline-flex pair of an arrow glyph and a short label. Two
+ * directional modifiers pin the color to the matching semantic
+ * intent; the bare host renders in muted neutral.
+ *
+ * **Direction modifiers**
+ *
+ * - `--up` - positive movement, success-coded
+ * - `--down` - negative movement, danger-coded
+ *
+ * **Inheritance**
+ *
+ * - `--cngx-trend-up-color` -> `--cngx-color-success`
+ * - `--cngx-trend-down-color` -> `--cngx-color-danger`
+ * - `--cngx-trend-color` - leaf neutral token, swaps in dark mode
+ *
+ * **Dark mode**
+ *
+ * Three hooks lift all three color tokens to the foundation's dark
+ * variant - neutral text gains lightness, the directional colors
+ * shed chroma and gain L to track the foundation's dark success and
+ * danger tones:
+ *
+ * - `prefers-color-scheme: dark`
+ * - `[data-color-scheme="dark"]` / `.dark` class
+ * - `[data-color-scheme="light"]` / `.light` class (explicit pin)
+ */
+
+@layer cngx.tokens {
+  /**
+   * Gap between the arrow glyph and the trend label.
+   * @group Layout
+   */
+  @property --cngx-trend-gap {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 2px;
+  }
+
+  /**
+   * Font-size of the trend label.
+   * @group Typography
+   */
+  @property --cngx-trend-size {
+    syntax: '*';
+    inherits: true;
+    initial-value: 0.8125rem;
+  }
+
+  /**
+   * Font-weight of the trend label.
+   * @group Typography
+   */
+  @property --cngx-trend-weight {
+    syntax: '<number>';
+    inherits: true;
+    initial-value: 500;
+  }
+
+  /**
+   * Neutral text color applied when no direction modifier is set.
+   * @group Surface
+   */
+  @property --cngx-trend-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.36 0.02 290);
+  }
+
+  /**
+   * Color of the `.cngx-trend--up` modifier. Falls back to
+   * `--cngx-color-success`.
+   * @group Variant / Up
+   * @see [[--cngx-color-success]]
+   */
+  @property --cngx-trend-up-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.65 0.18 145);
+  }
+
+  /**
+   * Color of the `.cngx-trend--down` modifier. Falls back to
+   * `--cngx-color-danger`.
+   * @group Variant / Down
+   * @see [[--cngx-color-danger]]
+   */
+  @property --cngx-trend-down-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.65 0.22 25);
+  }
+
+  /* Dark-mode swap. Neutral text lifts to the foundation's muted-text
+   * lightness so the flat variant reads against a dark surface; the
+   * directional colors lift L slightly and shed C to match the
+   * foundation's dark-mode success/danger tones. */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-color-scheme='light']):not(.light) {
+      --cngx-trend-color: oklch(0.7 0.01 290);
+      --cngx-trend-up-color: oklch(0.78 0.16 145);
+      --cngx-trend-down-color: oklch(0.75 0.18 25);
+    }
+  }
+  [data-color-scheme='dark'],
+  .dark {
+    --cngx-trend-color: oklch(0.7 0.01 290);
+    --cngx-trend-up-color: oklch(0.78 0.16 145);
+    --cngx-trend-down-color: oklch(0.75 0.18 25);
+  }
+  [data-color-scheme='light'],
+  .light {
+    --cngx-trend-color: oklch(0.36 0.02 290);
+    --cngx-trend-up-color: oklch(0.65 0.18 145);
+    --cngx-trend-down-color: oklch(0.65 0.22 25);
+  }
+}
+
+@layer cngx.components {
+  @scope (.cngx-trend) {
+    :scope {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--cngx-trend-gap, 2px);
+      font-size: var(--cngx-trend-size, 0.8125rem);
+      font-weight: var(--cngx-trend-weight, 500);
+      color: var(--cngx-trend-color, oklch(0.36 0.02 290));
+    }
+
+    :scope.cngx-trend--up {
+      color: var(--cngx-trend-up-color, var(--cngx-color-success, oklch(0.65 0.18 145)));
+    }
+
+    :scope.cngx-trend--down {
+      color: var(--cngx-trend-down-color, var(--cngx-color-danger, oklch(0.65 0.22 25)));
+    }
+  }
+}

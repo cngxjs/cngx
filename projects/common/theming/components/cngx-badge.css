@@ -1,0 +1,340 @@
+/**
+ * @overview
+ * Theming bridge for the `CngxBadge` directive. The directive injects
+ * a `<span class="cngx-badge-indicator …">` into the host and toggles
+ * modifier classes for color, position, and dot mode. Importing this
+ * file paints the defaults; consumers who want their own visuals
+ * style `.cngx-badge-indicator` directly.
+ *
+ * **Color variants**
+ *
+ * - `--primary` - foundation primary, white text
+ * - `--error` - foundation danger, white text
+ * - `--warning` - foundation warning, dark text
+ * - `--neutral` - muted grey, white text
+ *
+ * **Position variants**
+ *
+ * - `--inline` - flows next to host content, borderless
+ * - `--above-start`, `--above-end` - top corner anchor, translated
+ *   half-out via `transform`
+ * - `--below-start`, `--below-end` - bottom corner anchor, same
+ *   half-out translate
+ *
+ * Corner variants get the `--cngx-badge-border` ring; `inline` is
+ * always borderless.
+ *
+ * **Dot mode**
+ *
+ * `.cngx-badge-indicator--dot` shrinks to a fixed `--cngx-badge-dot-size`
+ * pill with zero padding for textless status indicators.
+ *
+ * **Inheritance**
+ *
+ * Variant tokens fall back to the foundation semantic palette:
+ *
+ * - `--cngx-badge-primary-bg` -> `--cngx-color-primary`
+ * - `--cngx-badge-error-bg` -> `--cngx-color-danger`
+ * - `--cngx-badge-warning-bg` -> `--cngx-color-warning`
+ * - `--cngx-badge-neutral-bg` -> static neutral (no foundation token)
+ *
+ * **Dark mode**
+ *
+ * Three hooks (`prefers-color-scheme: dark`, `[data-color-scheme="dark"]`,
+ * `.dark`) repaint `--cngx-badge-border` when consumers opt in to a
+ * cut-out ring via `--cngx-badge-border-dark` / `-light`. Default
+ * border is `0` (no ring), so the dark-mode block is a no-op until
+ * a consumer sets the ring tokens.
+ */
+
+@layer cngx.tokens {
+  /**
+   * Diameter (and minimum width) of the indicator pill in text mode.
+   * @group Layout
+   */
+  @property --cngx-badge-size {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 16px;
+  }
+
+  /**
+   * Diameter of the indicator in `--dot` mode (no text).
+   * @group Variant / Dot
+   */
+  @property --cngx-badge-dot-size {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 8px;
+  }
+
+  /**
+   * Inline padding around the badge text. Capped at 3px so a single-digit
+   * count fits within the 16px min-width and renders as a true circle;
+   * multi-character content widens the pill naturally.
+   * @group Layout
+   */
+  @property --cngx-badge-padding-inline {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 3px;
+  }
+
+  /**
+   * Corner radius. Defaults to the pill radius via `--cngx-radius-pill`.
+   * @group Layout
+   */
+  @property --cngx-badge-radius {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 999px;
+  }
+
+  /**
+   * Gap between the host content and the indicator in the `inline`
+   * position variant. Has no effect on corner anchors.
+   * @group Layout / Inline
+   */
+  @property --cngx-badge-inline-gap {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 0.375rem;
+  }
+
+  /**
+   * Font-size of the badge text.
+   * @group Typography
+   */
+  @property --cngx-badge-font-size {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.6875rem;
+  }
+
+  /**
+   * Font-weight of the badge text.
+   * @group Typography
+   */
+  @property --cngx-badge-font-weight {
+    syntax: '*';
+    inherits: false;
+    initial-value: 600;
+  }
+
+  /**
+   * Ring around the badge. Defaults to `0` so the indicator reads as a
+   * solid pill that sits flush on its host (the dot variant in
+   * particular would shrink to a single visible pixel under a 2px ring).
+   * Set a non-zero border at consumer level when the badge needs to
+   * cut out from a busy host surface - e.g. `--cngx-badge-border: 2px
+   * solid var(--mat-sys-surface)`. Only applied in the corner variants
+   * (`above-*` / `below-*`); the `inline` variant is borderless either
+   * way. `inherits: true` so a single `:root` override reaches every
+   * indicator span at once.
+   * @group Surface
+   */
+  @property --cngx-badge-border {
+    syntax: '*';
+    inherits: true;
+    initial-value: 0;
+  }
+
+  /**
+   * Background of the primary variant. Falls back to
+   * `--cngx-color-primary`.
+   * @group Variant / Primary
+   * @see [[--cngx-color-primary]]
+   */
+  @property --cngx-badge-primary-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.66 0.19 50);
+  }
+
+  /**
+   * Text color of the primary variant.
+   * @group Variant / Primary
+   */
+  @property --cngx-badge-primary-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(1 0 0);
+  }
+
+  /**
+   * Background of the error variant. Falls back to `--cngx-color-danger`.
+   * @group Variant / Error
+   * @see [[--cngx-color-danger]]
+   */
+  @property --cngx-badge-error-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.62 0.22 25);
+  }
+
+  /**
+   * Text color of the error variant.
+   * @group Variant / Error
+   */
+  @property --cngx-badge-error-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(1 0 0);
+  }
+
+  /**
+   * Background of the warning variant. Falls back to `--cngx-color-warning`.
+   * @group Variant / Warning
+   * @see [[--cngx-color-warning]]
+   */
+  @property --cngx-badge-warning-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.65 0.2 70);
+  }
+
+  /**
+   * Text color of the warning variant.
+   * @group Variant / Warning
+   */
+  @property --cngx-badge-warning-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.2 0.01 250);
+  }
+
+  /**
+   * Background of the neutral variant.
+   * @group Variant / Neutral
+   */
+  @property --cngx-badge-neutral-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.68 0.01 240);
+  }
+
+  /**
+   * Text color of the neutral variant.
+   * @group Variant / Neutral
+   */
+  @property --cngx-badge-neutral-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(1 0 0);
+  }
+
+  /* Theming hook - `--cngx-badge-border` defaults to `0` (no ring) so
+   * the indicator reads as a flat pill on its host. Consumers that
+   * want a cut-out ring against a busy host surface can opt in at the
+   * root, e.g.:
+   *
+   *   :root { --cngx-badge-border: 2px solid var(--mat-sys-surface); }
+   *
+   * Once opted in, the dark / light selectors below repaint the ring
+   * for the active color-scheme so it stays in contrast with the
+   * background. They are no-ops at the library default. */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-color-scheme='light']):not(.light) {
+      --cngx-badge-border: var(--cngx-badge-border-dark, var(--cngx-badge-border, 0));
+    }
+  }
+  [data-color-scheme='dark'],
+  .dark {
+    --cngx-badge-border: var(--cngx-badge-border-dark, var(--cngx-badge-border, 0));
+  }
+  [data-color-scheme='light'],
+  .light {
+    --cngx-badge-border: var(--cngx-badge-border-light, var(--cngx-badge-border, 0));
+  }
+}
+
+@layer cngx.components {
+  @scope (.cngx-badge-host) {
+    :scope {
+      position: relative;
+    }
+  }
+
+  /* The indicator lives outside the host class scope (it's a child of
+   * the host element, marked by the cngx-badge-host class) but ARIA
+   * conventions allow the indicator span to be scoped on its own. */
+  @scope (.cngx-badge-indicator) {
+    :scope {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
+      min-width: var(--cngx-badge-size, 16px);
+      height: var(--cngx-badge-size, 16px);
+      padding: 0 var(--cngx-badge-padding-inline, 3px);
+      border-radius: var(--cngx-badge-radius, var(--cngx-radius-pill, 999px));
+      font-size: var(--cngx-badge-font-size, 0.6875rem);
+      font-weight: var(--cngx-badge-font-weight, 600);
+      line-height: 1;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    /* Dot mode - no text, fixed size */
+    :scope.cngx-badge-indicator--dot {
+      min-width: var(--cngx-badge-dot-size, 8px);
+      width: var(--cngx-badge-dot-size, 8px);
+      height: var(--cngx-badge-dot-size, 8px);
+      padding: 0;
+    }
+
+    /* Color variants */
+    :scope.cngx-badge-indicator--primary {
+      background: var(--cngx-badge-primary-bg, var(--cngx-color-primary, oklch(0.66 0.19 50)));
+      color: var(--cngx-badge-primary-color, oklch(1 0 0));
+    }
+    :scope.cngx-badge-indicator--error {
+      background: var(--cngx-badge-error-bg, var(--cngx-color-danger, oklch(0.62 0.22 25)));
+      color: var(--cngx-badge-error-color, oklch(1 0 0));
+    }
+    :scope.cngx-badge-indicator--warning {
+      background: var(--cngx-badge-warning-bg, var(--cngx-color-warning, oklch(0.65 0.2 70)));
+      color: var(--cngx-badge-warning-color, oklch(0.2 0.01 250));
+    }
+    :scope.cngx-badge-indicator--neutral {
+      background: var(--cngx-badge-neutral-bg, oklch(0.68 0.01 240));
+      color: var(--cngx-badge-neutral-color, oklch(1 0 0));
+    }
+
+    /* Position variants - corner anchors for non-inline placements,
+     * border ring contrasts the indicator against the host surface. */
+    :scope.cngx-badge-indicator--inline {
+      position: static;
+      border: 0;
+      margin-inline-start: var(--cngx-badge-inline-gap, 0.375rem);
+    }
+    :scope.cngx-badge-indicator--above-start {
+      position: absolute;
+      top: 0;
+      inset-inline-start: 0;
+      transform: translate(-50%, -50%);
+      border: var(--cngx-badge-border, 0);
+    }
+    :scope.cngx-badge-indicator--above-end {
+      position: absolute;
+      top: 0;
+      inset-inline-end: 0;
+      transform: translate(50%, -50%);
+      border: var(--cngx-badge-border, 0);
+    }
+    :scope.cngx-badge-indicator--below-start {
+      position: absolute;
+      bottom: 0;
+      inset-inline-start: 0;
+      transform: translate(-50%, 50%);
+      border: var(--cngx-badge-border, 0);
+    }
+    :scope.cngx-badge-indicator--below-end {
+      position: absolute;
+      bottom: 0;
+      inset-inline-end: 0;
+      transform: translate(50%, 50%);
+      border: var(--cngx-badge-border, 0);
+    }
+  }
+}

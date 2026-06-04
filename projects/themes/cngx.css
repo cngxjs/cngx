@@ -1,0 +1,90 @@
+/**
+ * @overview
+ * Single-import entry point for the cngx default theme. One
+ * `@import '@cngx/themes/cngx.css';` pulls in the cascade-layer
+ * order, the full foundation token set, the reset, the bare-element
+ * base layer, the `.cngx-sr-only` utility, and the externalised CSS
+ * of every `@Directive` that paints DOM. Components carry their own
+ * CSS via `styleUrl` and are bundled by Angular.
+ *
+ * **Variants**
+ *
+ * Bundled cascade layers (in declared order):
+ *
+ * - `cngx.reset` - box-sizing, button neutralize, focus-ring base
+ * - `cngx.tokens` - `@property` registration + `light-dark()`
+ *   defaults for every system token
+ * - `cngx.base` - bare-element atoms: button, input, kbd, dl, hr
+ * - `cngx.utilities` - `.cngx-sr-only`
+ * - `cngx.components` - externalised directive CSS (`CngxAsync`,
+ *   `CngxBackdrop`, `CngxBadge`, `CngxBottomSheet`,
+ *   `CngxButtonToggle`, `CngxDialog`, `CngxDivider`, `CngxListbox`,
+ *   `CngxMenu`, `CngxRipple`, `CngxTooltip`, `CngxFileDrop`)
+ * - `cngx.theme` - reserved for consumer overrides
+ * - `app` - reserved for consumer selectors
+ *
+ * Component CSS for `@Component` artifacts (`CngxChip`, `CngxIcon`,
+ * `CngxAvatar`, `CngxCard`, ...) is not imported here - Angular
+ * loads it through each component's `styleUrl`.
+ *
+ * **Customisation**
+ *
+ * Override foundation or component tokens in `@layer cngx.theme`:
+ *
+ * ```css
+ *   @import '@cngx/themes/cngx.css';
+ *   @layer cngx.theme {
+ *     :root[data-theme="brand"] { --cngx-color-primary: oklch(...); }
+ *   }
+ * ```
+ *
+ * Selectors that ship their own properties (not just token
+ * assignments) belong in the consumer's `app` layer, which cascades
+ * after `cngx.theme`.
+ *
+ * **Inheritance / Composition**
+ *
+ * Skip this bundle and assemble the foundation pieces by hand when
+ * you need finer control over what loads:
+ *
+ * ```css
+ *   @import '@cngx/core/theming/layers.css';
+ *   @import '@cngx/core/theming/system-tokens.css';
+ *   @import '@cngx/core/theming/reset.css';
+ *   @import '@cngx/core/theming/base.css';
+ *   @import '@cngx/core/theming/utilities.css';
+ *   @import '@cngx/common/theming/components/cngx-backdrop.css';
+ *   ...
+ * ```
+ *
+ * **Dark mode**
+ *
+ * Foundation tokens use `light-dark()` and follow OS dark mode out
+ * of the box. Force a mode by setting `color-scheme` on `:root` or
+ * by pinning the foundation tokens in your own theme layer.
+ *
+ * **Pair with**
+ *
+ * - `@cngx/themes/example-brand.css` - reference consumer theme
+ *   showing every override slot
+ * - `@cngx/themes/material/theme.css` - opt-in Material bridge for
+ *   the `mat-*` entries
+ */
+
+@import '../core/theming/layers.css';
+@import '../core/theming/system-tokens.css';
+@import '../core/theming/reset.css';
+@import '../core/theming/base.css';
+@import '../core/theming/utilities.css';
+@import '../common/theming/components/cngx-async.css';
+@import '../common/theming/components/cngx-backdrop.css';
+@import '../common/theming/components/cngx-badge.css';
+@import '../common/theming/components/cngx-bottom-sheet.css';
+@import '../common/theming/components/cngx-button-toggle.css';
+@import '../common/theming/components/cngx-dialog.css';
+@import '../common/theming/components/cngx-divider.css';
+@import '../common/theming/components/cngx-listbox.css';
+@import '../common/theming/components/cngx-menu.css';
+@import '../common/theming/components/cngx-ripple.css';
+@import '../common/theming/components/cngx-tooltip.css';
+@import '../forms/theming/components/cngx-file-drop.css';

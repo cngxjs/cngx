@@ -1,0 +1,26 @@
+/* To learn more about Typescript configuration file: https://www.typescriptlang.org/docs/handbook/tsconfig-json.html. */
+/* To learn more about Angular compiler options: https://angular.dev/reference/configs/angular-compiler-options. */
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "../../out-tsc/spec",
+    "types": ["vitest/globals", "node"]
+  },
+  "include": [
+    "*.d.ts",
+    "*.spec.ts",
+    "action-button/**/*.spec.ts",
+    "sidenav/**/*.spec.ts",
+    "skeleton/**/*.spec.ts",
+    "speak/**/*.spec.ts",
+    "layout/**/*.spec.ts",
+    "overlay/**/*.spec.ts",
+    "empty-state/**/*.spec.ts",
+    "feedback/**/*.spec.ts",
+    "material/**/*.spec.ts",
+    "stepper/**/*.spec.ts",
+    "mat-stepper/**/*.spec.ts",
+    "mat-tabs/**/*.spec.ts",
+    "tabs/**/*.spec.ts"
+  ]
+}

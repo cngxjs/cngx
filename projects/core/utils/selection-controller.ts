@@ -1,0 +1,343 @@
+import {
+  computed,
+  InjectionToken,
+  signal,
+  type Signal,
+  type WritableSignal,
+} from '@angular/core';
+
+/**
+ * Configuration options for `createSelectionController`.
+ *
+ * @category core/utils/selection
+ */
+export interface SelectionControllerOptions<T> {
+  /**
+   * Key extractor for membership Map. Defaults to the value itself
+   * (reference / primitive equality). Supply when T is a structural object
+   * that should be matched by a stable id.
+   */
+  readonly keyFn?: (value: T) => unknown;
+  /**
+   * Optional children lookup. When supplied, `isIndeterminate(value)`
+   * returns true iff SOME but not ALL descendants are selected. Flat
+   * lists omit this; `isIndeterminate` then always returns a shared
+   * `Signal<false>` constant (no per-value allocation).
+   */
+  readonly childrenFn?: (value: T) => readonly T[];
+  /**
+   * Optional cap on the per-value `isSelected` / `isIndeterminate` signal
+   * cache. Default: unlimited — preserves the signal-identity guarantee
+   * (`isSelected(v) === isSelected(v)` always holds for the lifetime of the
+   * controller).
+   *
+   * When set, the caches FIFO-evict their oldest entries as soon as the
+   * size exceeds `cacheLimit`. After eviction, a re-queried value receives
+   * a NEW signal instance (values are equivalent; references differ).
+   * Set this only at grid / tree scale (10k+ rows) where memory retention
+   * matters more than reference stability.
+   */
+  readonly cacheLimit?: number;
+}
+
+/**
+ * Signal-based selection engine. Reads + writes an external
+ * `WritableSignal<T[]>` — does not own the values.
+ *
+ * Memoizes per-value `isSelected` / `isIndeterminate` signals by key so
+ * template diff stays stable and consumers can pass the handle into child
+ * components without identity churn.
+ *
+ * @category core/utils/selection
+ */
+export interface SelectionController<T> {
+  /** Snapshot of currently selected values (structural-equality computed). */
+  readonly selected: Signal<readonly T[]>;
+  /** Current selection size. */
+  readonly selectedCount: Signal<number>;
+  /** `true` when nothing is selected. */
+  readonly isEmpty: Signal<boolean>;
+  /** `true` when at least one value is selected. */
+  readonly hasSelection: Signal<boolean>;
+  /**
+   * Reactive membership for a single value. Same value (by `keyFn`) always
+   * returns the SAME `Signal` instance — safe to pass into OnPush children
+   * or compare with `===`.
+   */
+  isSelected(value: T): Signal<boolean>;
+  /**
+   * Reactive indeterminate state. With `childrenFn`: true iff SOME but not
+   * ALL descendants are selected. Without: always returns a shared constant
+   * `Signal<false>`.
+   */
+  isIndeterminate(value: T): Signal<boolean>;
+  /** Idempotent add. No-op if already selected. */
+  select(value: T): void;
+  /** Remove from selection. No-op if not selected. */
+  deselect(value: T): void;
+  /** Toggle a single value. */
+  toggle(value: T): void;
+  /**
+   * Toggle-all semantics over a group: if every value in `values` is already
+   * selected, remove them all; otherwise add the missing ones.
+   */
+  toggleAll(values: readonly T[]): void;
+  /** Clear selection. */
+  clear(): void;
+  /** Replace selection with the given values (copied). */
+  set(values: readonly T[]): void;
+  /**
+   * Release retained per-value signal caches. Post-destroy
+   * `isSelected(v)` / `isIndeterminate(v)` return a shared
+   * `Signal<false>` no-op (identity-stable across all calls) so existing
+   * bindings keep working without further memory retention. Writes
+   * (`select`, `deselect`, `toggle`, `toggleAll`, `clear`, `set`) still
+   * mutate `values` but do not repopulate the caches. Idempotent.
+   */
+  destroy(): void;
+}
+
+/**
+ * Shared post-destroy fallback signal. A single allocation reused across
+ * every destroyed controller and every queried value so that destruction
+ * retains O(1) memory no matter how many bindings are still observing the
+ * controller.
+ *
+ * @internal
+ */
+const POST_DESTROY_FALSE: Signal<boolean> = signal(false).asReadonly();
+
+/**
+ * Create a signal-based selection engine that reads and writes an external
+ * `WritableSignal<T[]>`.
+ *
+ * ```ts
+ * const values = signal<User[]>([]);
+ * const selection = createSelectionController(values, { keyFn: (u) => u.id });
+ *
+ * selection.select(alice);
+ * selection.isSelected(alice)();      // true
+ * selection.isSelected(alice) === selection.isSelected(alice); // stable
+ * ```
+ *
+ * @category core/utils/selection
+ */
+export function createSelectionController<T>(
+  values: WritableSignal<T[]>,
+  options?: SelectionControllerOptions<T>,
+): SelectionController<T> {
+  const keyFn = options?.keyFn ?? ((v: T) => v as unknown);
+  const childrenFn = options?.childrenFn;
+  const cacheLimit = options?.cacheLimit;
+  let destroyed = false;
+
+  // Membership Map — rebuilds only when values() identity changes.
+  const membership = computed<Map<unknown, true>>(() => {
+    const m = new Map<unknown, true>();
+    for (const v of values()) {
+      m.set(keyFn(v), true);
+    }
+    return m;
+  });
+
+  const selected = computed<readonly T[]>(() => values().slice(), {
+    equal: (a, b) => {
+      if (a === b) {
+        return true;
+      }
+      if (a.length !== b.length) {
+        return false;
+      }
+      for (let i = 0; i < a.length; i++) {
+        if (!Object.is(a[i], b[i])) {
+          return false;
+        }
+      }
+      return true;
+    },
+  });
+  const selectedCount = computed(() => values().length);
+  const isEmpty = computed(() => selectedCount() === 0);
+  const hasSelection = computed(() => selectedCount() > 0);
+
+  // Per-value isSelected cache — stable signal identity per key.
+  const selectedCache = new Map<unknown, Signal<boolean>>();
+  const evictOldest = (map: Map<unknown, Signal<boolean>>): void => {
+    if (cacheLimit === undefined || map.size <= cacheLimit) {
+      return;
+    }
+    // Map preserves insertion order — first key is the oldest entry.
+    const oldest = map.keys().next();
+    if (!oldest.done) {
+      map.delete(oldest.value);
+    }
+  };
+  const isSelected = (value: T): Signal<boolean> => {
+    if (destroyed) {
+      return POST_DESTROY_FALSE;
+    }
+    const key = keyFn(value);
+    let sig = selectedCache.get(key);
+    if (!sig) {
+      sig = computed(() => membership().has(key));
+      selectedCache.set(key, sig);
+      evictOldest(selectedCache);
+    }
+    return sig;
+  };
+
+  // Shared always-false signal for flat-list indeterminate.
+  const FALSE = signal(false).asReadonly();
+  const indeterminateCache = new Map<unknown, Signal<boolean>>();
+  const isIndeterminate = (value: T): Signal<boolean> => {
+    if (destroyed) {
+      return POST_DESTROY_FALSE;
+    }
+    if (!childrenFn) {
+      return FALSE;
+    }
+    const key = keyFn(value);
+    let sig = indeterminateCache.get(key);
+    if (!sig) {
+      sig = computed(() => {
+        const map = membership();
+        const visited = new Set<unknown>();
+        const descendants: T[] = [];
+        const walk = (v: T): void => {
+          const k = keyFn(v);
+          if (visited.has(k)) {
+            return;
+          }
+          visited.add(k);
+          for (const c of childrenFn(v)) {
+            descendants.push(c);
+            walk(c);
+          }
+        };
+        walk(value);
+        if (descendants.length === 0) {
+          return false;
+        }
+        let sel = 0;
+        for (const d of descendants) {
+          if (map.has(keyFn(d))) {
+            sel++;
+          }
+        }
+        return sel > 0 && sel < descendants.length;
+      });
+      indeterminateCache.set(key, sig);
+      evictOldest(indeterminateCache);
+    }
+    return sig;
+  };
+
+  const select = (v: T): void => {
+    const key = keyFn(v);
+    if (membership().has(key)) {
+      return;
+    }
+    values.update((arr) => [...arr, v]);
+  };
+  const deselect = (v: T): void => {
+    const key = keyFn(v);
+    if (!membership().has(key)) {
+      return;
+    }
+    values.update((arr) => arr.filter((x) => keyFn(x) !== key));
+  };
+  const toggle = (v: T): void => {
+    if (membership().has(keyFn(v))) {
+      deselect(v);
+    } else {
+      select(v);
+    }
+  };
+  const toggleAll = (vs: readonly T[]): void => {
+    if (vs.length === 0) {
+      return;
+    }
+    const m = membership();
+    const allSelected = vs.every((v) => m.has(keyFn(v)));
+    if (allSelected) {
+      const keys = new Set(vs.map(keyFn));
+      values.update((arr) => arr.filter((x) => !keys.has(keyFn(x))));
+    } else {
+      const present = new Set(m.keys());
+      const add = vs.filter((v) => !present.has(keyFn(v)));
+      if (add.length === 0) {
+        return;
+      }
+      values.update((arr) => [...arr, ...add]);
+    }
+  };
+  const clear = (): void => {
+    if (!hasSelection()) {
+      return;
+    }
+    values.set([]);
+  };
+  const setFn = (vs: readonly T[]): void => {
+    values.set([...vs]);
+  };
+  const destroy = (): void => {
+    if (destroyed) {
+      return;
+    }
+    destroyed = true;
+    selectedCache.clear();
+    indeterminateCache.clear();
+  };
+
+  return {
+    selected,
+    selectedCount,
+    isEmpty,
+    hasSelection,
+    isSelected,
+    isIndeterminate,
+    select,
+    deselect,
+    toggle,
+    toggleAll,
+    clear,
+    set: setFn,
+    destroy,
+  };
+}
+
+/**
+ * Factory signature for {@link SelectionController} — the exact shape of
+ * {@link createSelectionController}, carried as a DI-overridable symbol so
+ * consumers can swap the selection engine app-wide (telemetry wrappers,
+ * audit logging, server-synced selections, …) without forking any component
+ * that depends on it.
+ *
+ * @category core/utils/selection
+ */
+export type CngxSelectionControllerFactory = <T>(
+  values: WritableSignal<T[]>,
+  options?: SelectionControllerOptions<T>,
+) => SelectionController<T>;
+
+/**
+ * Injection token that resolves the factory used to instantiate a
+ * {@link SelectionController}. Defaults to {@link createSelectionController};
+ * override app-wide via `providers: [{ provide: CNGX_SELECTION_CONTROLLER_FACTORY, useValue: customFactory }]`
+ * or per-component via `viewProviders` to inject cross-cutting concerns.
+ *
+ * Symmetrical to `CNGX_SELECT_COMMIT_CONTROLLER_FACTORY` in `@cngx/forms/select` —
+ * same pattern, applied at the selection-primitive level so future
+ * `@cngx/data-display` grid/tree components share the override surface.
+ *
+ * @category core/utils/selection
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/core/utils/selection-controller.ts
+ * @since 0.1.0
+ */
+export const CNGX_SELECTION_CONTROLLER_FACTORY = new InjectionToken<CngxSelectionControllerFactory>(
+  'CngxSelectionControllerFactory',
+  {
+    providedIn: 'root',
+    factory: () => createSelectionController,
+  },
+);

@@ -1,0 +1,290 @@
+import { NgTemplateOutlet } from '@angular/common';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  contentChild,
+  Directive,
+  effect,
+  inject,
+  input,
+  signal,
+  TemplateRef,
+  ViewEncapsulation,
+} from '@angular/core';
+import { type AsyncView, resolveAsyncView } from '@cngx/common/data';
+import type { AsyncStatus, CngxAsyncState } from '@cngx/core/utils';
+
+import { CngxLoadingIndicator } from '../loading/loading-indicator';
+import { CngxToaster } from '../toast/toast.service';
+
+/**
+ * Marks the skeleton template inside `cngx-async-container`.
+ *
+ * @category ui/feedback/async
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/feedback/async-container/async-container.ts
+ * @since 0.1.0
+ */
+@Directive({ selector: 'ng-template[cngxAsyncSkeleton]', standalone: true })
+export class CngxAsyncSkeletonTpl {
+  readonly templateRef = inject(TemplateRef);
+}
+
+/**
+ * Marks the content template inside `cngx-async-container`.
+ * Context: `{ $implicit: T }` - use `let-data` to access.
+ *
+ * @category ui/feedback/async
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/feedback/async-container/async-container.ts
+ * @since 0.1.0
+ */
+@Directive({ selector: 'ng-template[cngxAsyncContent]', standalone: true })
+export class CngxAsyncContentTpl<T> {
+  readonly templateRef = inject<TemplateRef<{ $implicit: T }>>(TemplateRef);
+
+  static ngTemplateContextGuard<T>(
+    _dir: CngxAsyncContentTpl<T>,
+    _ctx: unknown,
+  ): _ctx is { $implicit: T } {
+    return true;
+  }
+}
+
+/**
+ * Marks the empty-state template inside `cngx-async-container`.
+ *
+ * @category ui/feedback/async
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/feedback/async-container/async-container.ts
+ * @since 0.1.0
+ */
+@Directive({ selector: 'ng-template[cngxAsyncEmpty]', standalone: true })
+export class CngxAsyncEmptyTpl {
+  readonly templateRef = inject(TemplateRef);
+}
+
+/**
+ * Marks the error template inside `cngx-async-container`.
+ * Context: `{ $implicit: unknown }` - use `let-err` to access.
+ *
+ * @category ui/feedback/async
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/feedback/async-container/async-container.ts
+ * @since 0.1.0
+ */
+@Directive({ selector: 'ng-template[cngxAsyncError]', standalone: true })
+export class CngxAsyncErrorTpl {
+  readonly templateRef = inject<TemplateRef<{ $implicit: unknown }>>(TemplateRef);
+}
+
+/**
+ * Async container molecule - coordinates all feedback states for data loading.
+ *
+ * Projects four named templates and switches between them based on the
+ * `CngxAsyncState` lifecycle. Includes a built-in refresh indicator (bar)
+ * and ARIA state announcements.
+ *
+ * ```html
+ * <cngx-async-container [state]="residents">
+ *   <ng-template cngxAsyncSkeleton>
+ *     @for (i of [1,2,3]; track i) { <div class="skeleton-card"></div> }
+ *   </ng-template>
+ *
+ *   <ng-template cngxAsyncContent let-data>
+ *     @for (r of data; track r.id) { <app-card [resident]="r" /> }
+ *   </ng-template>
+ *
+ *   <ng-template cngxAsyncEmpty>
+ *     <cngx-empty-state title="No residents" />
+ *   </ng-template>
+ *
+ *   <ng-template cngxAsyncError let-err>
+ *     <cngx-alert severity="error">{{ err }}</cngx-alert>
+ *   </ng-template>
+ * </cngx-async-container>
+ * ```
+ *
+ * @playground Data flow ./examples/data-flow/data-flow-example.component.ts
+ *
+ * @category ui/feedback/async
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/feedback/async-container/async-container.ts
+ * @since 0.1.0
+ * @relatedTo CngxLoadingIndicator, CngxLoadingOverlay, CngxAlert, CngxToaster
+ *
+ * <example-url>http://localhost:4200/#/forms/filter-builder/filter-builder-async-state/loading-error-content-branches-via-cngx-async-container</example-url>
+ * <example-url>http://localhost:4200/#/ui/feedback/async-container/cngx-async-container-full-control-toast</example-url>
+ * <example-url>http://localhost:4200/#/ui/feedback/async-container/cngxasync-one-line</example-url>
+ * <example-url>http://localhost:4200/#/ui/feedback/async-container/cngxasync-with-custom-templates</example-url>
+ * <example-url>http://localhost:4200/#/ui/feedback/async-container/composition-overlay-container-toast</example-url>
+ * <example-url>http://localhost:4200/#/ui/feedback/async-container/createasyncstate-mutation</example-url>
+ * <example-url>http://localhost:4200/#/ui/feedback/async-container/injectasyncstate-reactive-query</example-url>
+ */
+@Component({
+  selector: 'cngx-async-container',
+  standalone: true,
+  imports: [NgTemplateOutlet, CngxLoadingIndicator],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
+  host: {
+    style: 'display: contents',
+    class: 'cngx-async-container',
+    role: 'region',
+    '[attr.aria-busy]': 'state().isBusy() || null',
+    '[attr.aria-label]': 'ariaLabel() || null',
+  },
+  template: `
+    @if (showRefreshIndicator()) {
+      <cngx-loading-indicator
+        [loading]="true"
+        variant="bar"
+        label="Refreshing content"
+        class="cngx-async-container__refresh"
+      />
+    }
+
+    @switch (activeView()) {
+      @case ('skeleton') {
+        @if (skeletonTpl(); as tpl) {
+          <ng-container *ngTemplateOutlet="tpl.templateRef" />
+        }
+      }
+      @case ('content') {
+        @if (contentTpl(); as tpl) {
+          <ng-container *ngTemplateOutlet="tpl.templateRef; context: contentContext()" />
+        }
+      }
+      @case ('empty') {
+        @if (emptyTpl(); as tpl) {
+          <ng-container *ngTemplateOutlet="tpl.templateRef" />
+        }
+      }
+      @case ('error') {
+        @if (errorTpl(); as tpl) {
+          <ng-container *ngTemplateOutlet="tpl.templateRef; context: errorContext()" />
+        }
+      }
+      @case ('content+error') {
+        @if (contentTpl(); as tpl) {
+          <ng-container *ngTemplateOutlet="tpl.templateRef; context: contentContext()" />
+        }
+        @if (errorTpl(); as tpl) {
+          <ng-container *ngTemplateOutlet="tpl.templateRef; context: errorContext()" />
+        }
+      }
+    }
+
+    <span aria-live="polite" aria-atomic="true" class="cngx-async-container__sr-only">
+      {{ announcement() }}
+    </span>
+  `,
+  styleUrls: ['./async-container.css'],
+})
+export class CngxAsyncContainer<T> {
+  private readonly toaster = inject(CngxToaster, { optional: true });
+
+  /** The async state to render. */
+  readonly state = input.required<CngxAsyncState<T>>();
+
+  /** Show refresh indicator bar during refresh/re-query. */
+  readonly refreshIndicator = input<boolean>(true);
+
+  /** ARIA label for the region. */
+  readonly ariaLabel = input<string | undefined>(undefined);
+
+  /** Toast message on success. If set, fires a toast via CngxToaster. */
+  readonly toastSuccess = input<string | undefined>(undefined);
+
+  /** Toast message on error. If set, fires a toast via CngxToaster. */
+  readonly toastError = input<string | undefined>(undefined);
+
+  /** @internal */
+  protected readonly skeletonTpl = contentChild(CngxAsyncSkeletonTpl);
+  /** @internal */
+  protected readonly contentTpl = contentChild(CngxAsyncContentTpl);
+  /** @internal */
+  protected readonly emptyTpl = contentChild(CngxAsyncEmptyTpl);
+  /** @internal */
+  protected readonly errorTpl = contentChild(CngxAsyncErrorTpl);
+
+  /** @internal */
+  protected readonly activeView = computed<AsyncView>(() => {
+    const s = this.state();
+    return resolveAsyncView(s.status(), s.isFirstLoad(), s.isEmpty());
+  });
+
+  /** @internal */
+  protected readonly showRefreshIndicator = computed(() => {
+    if (!this.refreshIndicator()) {
+      return false;
+    }
+    const s = this.state();
+    const status = s.status();
+    return status === 'refreshing' || (status === 'loading' && !s.isFirstLoad());
+  });
+
+  /** @internal */
+  protected readonly contentContext = computed(() => ({
+    $implicit: this.state().data() as T,
+  }));
+
+  /** @internal */
+  protected readonly errorContext = computed(() => ({
+    $implicit: this.state().error(),
+  }));
+
+  /** @internal */
+  protected readonly announcement = signal<string>('');
+
+  constructor() {
+    let previousStatus: AsyncStatus = 'idle';
+
+    effect(() => {
+      const s = this.state();
+      const status = s.status();
+
+      if (status === previousStatus) {
+        return;
+      }
+      const prev = previousStatus;
+      previousStatus = status;
+
+      if (status === 'pending' || prev === 'pending') {
+        return;
+      }
+
+      if (prev === 'idle' && status === 'loading') {
+        this.announcement.set('Loading content');
+      } else if (prev === 'loading' && status === 'success') {
+        this.announcement.set('Content loaded');
+      } else if (prev === 'loading' && status === 'error') {
+        this.announcement.set('Error loading content');
+      } else if (status === 'refreshing') {
+        this.announcement.set('Refreshing content');
+      } else if (prev === 'refreshing' && status === 'success') {
+        this.announcement.set('Content refreshed');
+      } else if (prev === 'refreshing' && status === 'error') {
+        this.announcement.set('Refresh failed');
+      }
+
+      this.fireToast(status);
+    });
+  }
+
+  private fireToast(status: AsyncStatus): void {
+    if (!this.toaster) {
+      return;
+    }
+    if (status === 'success') {
+      const msg = this.toastSuccess();
+      if (msg) {
+        this.toaster.show({ message: msg, severity: 'success', duration: 3000 });
+      }
+    }
+    if (status === 'error') {
+      const msg = this.toastError();
+      if (msg) {
+        this.toaster.show({ message: msg, severity: 'error' });
+      }
+    }
+  }
+}

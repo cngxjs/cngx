@@ -1,0 +1,222 @@
+@if (flatSteps().length === 0) {
+  @let emptyTpl = templates.empty();
+  @if (emptyTpl) {
+    <ng-container *ngTemplateOutlet="emptyTpl"></ng-container>
+  }
+} @else if (displayMode() === 'text') {
+  <cngx-stepper-count class="cngx-stepper__mobile-text" [live]="false" />
+
+  <div
+    class="cngx-stepper__panels"
+    [class.cngx-stepper__panels--swipeable]="swipeNav.swipeEnabled()"
+    cngxSwipe
+    axis="x"
+    [enabled]="swipeNav.swipeEnabled()"
+    (swiped)="swipeNav.handleSwipe($event)"
+  >
+    @for (node of stepsOnly(); track node.id) {
+      <div
+        class="cngx-stepper__panel"
+        role="region"
+        [id]="stepPanelId(node)"
+        [attr.aria-labelledby]="stepHeaderId(node)"
+        [attr.aria-describedby]="stepDescriptorId(node)"
+        [hidden]="!slotContext.isActive(node)"
+      >
+        @let contentTpl = contentTemplateFor(node.id);
+        @if (contentTpl) {
+          <ng-container
+            *ngTemplateOutlet="contentTpl; context: slotContext.stepContentContextFor(node)"
+          ></ng-container>
+        }
+      </div>
+    }
+  </div>
+} @else if (displayMode() === 'dots') {
+  <div class="cngx-stepper__mobile-dots">
+    @for (node of stepsOnly(); track node.id; let i = $index) {
+      <button
+        type="button"
+        cngxRovingItem
+        class="cngx-stepper__mobile-dot"
+        [class.cngx-stepper__mobile-dot--active]="slotContext.isActive(node)"
+        [class.cngx-stepper__mobile-dot--completed]="i < activeStepIndex()"
+        [attr.aria-current]="slotContext.isActive(node) ? 'step' : null"
+        [attr.aria-label]="i18n.selectedStep(node.label(), i + 1, stepsOnly().length)"
+        [attr.data-state]="node.state()"
+        [attr.aria-disabled]="node.disabled() ? 'true' : null"
+        [cngxRovingItemDisabled]="node.disabled()"
+        (click)="handleHeaderClick(node)"
+      ></button>
+    }
+  </div>
+  @if (showStepCount()) {
+    <cngx-stepper-count class="cngx-stepper__mobile-text cngx-stepper__mobile-text--caption" [live]="false" />
+  }
+
+  <div
+    class="cngx-stepper__panels"
+    [class.cngx-stepper__panels--swipeable]="swipeNav.swipeEnabled()"
+    cngxSwipe
+    axis="x"
+    [enabled]="swipeNav.swipeEnabled()"
+    (swiped)="swipeNav.handleSwipe($event)"
+  >
+    @for (node of stepsOnly(); track node.id) {
+      <div
+        class="cngx-stepper__panel"
+        role="region"
+        [id]="stepPanelId(node)"
+        [attr.aria-labelledby]="stepHeaderId(node)"
+        [attr.aria-describedby]="stepDescriptorId(node)"
+        [hidden]="!slotContext.isActive(node)"
+      >
+        @let contentTpl = contentTemplateFor(node.id);
+        @if (contentTpl) {
+          <ng-container
+            *ngTemplateOutlet="contentTpl; context: slotContext.stepContentContextFor(node)"
+          ></ng-container>
+        }
+      </div>
+    }
+  </div>
+} @else {
+  <div class="cngx-stepper__strip" role="presentation">
+    @for (node of flatSteps(); track node.id) {
+      @if (node.kind === 'group') {
+        <div
+          class="cngx-stepper__group-header"
+          role="group"
+          [attr.aria-roledescription]="groupRoleDescription()"
+          [attr.data-step-depth]="node.depth"
+          [attr.data-state]="node.state()"
+          [attr.aria-disabled]="node.disabled() ? 'true' : null"
+          [attr.aria-describedby]="stepDescriptorId(node)"
+        >
+          <ng-container
+            *ngTemplateOutlet="
+              templates.groupHeader() ?? defaultGroupHeader;
+              context: slotContext.groupHeaderContextFor(node)
+            "
+          ></ng-container>
+          <span class="cngx-sr-only" [id]="stepDescriptorId(node)">{{ announcement.groupStatusPhrase(node) }}</span>
+        </div>
+      } @else {
+        <button
+          type="button"
+          cngxRovingItem
+          class="cngx-stepper__step"
+          [class.cngx-stepper__step--rejected]="slotContext.showRejection(node)"
+          [id]="stepHeaderId(node)"
+          [attr.tabindex]="slotContext.isActive(node) ? '0' : '-1'"
+          [attr.data-step-depth]="node.depth"
+          [attr.data-state]="node.state()"
+          [attr.aria-current]="slotContext.isActive(node) ? 'step' : null"
+          [attr.aria-controls]="stepPanelId(node)"
+          [attr.aria-disabled]="node.disabled() ? 'true' : null"
+          [attr.aria-busy]="slotContext.isStepBusy(node) ? 'true' : null"
+          [attr.aria-describedby]="stepDescriptorId(node)"
+          [cngxRovingItemDisabled]="node.disabled()"
+          (click)="handleHeaderClick(node)"
+        >
+          <span
+            class="cngx-stepper__indicator"
+            aria-hidden="true"
+            [attr.data-state]="node.state()"
+          >
+            <ng-container
+              *ngTemplateOutlet="
+                templates.indicator() ?? defaultIndicator;
+                context: slotContext.indicatorContextFor(node)
+              "
+            ></ng-container>
+            @if (slotContext.showErrorBadge(node)) {
+              <span class="cngx-stepper__badge" aria-hidden="true">
+                <ng-container
+                  *ngTemplateOutlet="
+                    templates.badge() ?? defaultBadge;
+                    context: slotContext.badgeContextFor(node)
+                  "
+                ></ng-container>
+              </span>
+            }
+          </span>
+          <span class="cngx-stepper__label">
+            @let labelTpl = labelTemplateFor(node.id);
+            @if (labelTpl) {
+              <ng-container
+                *ngTemplateOutlet="labelTpl; context: slotContext.stepLabelContextFor(node)"
+              ></ng-container>
+            } @else {
+              {{ node.label() }}
+            }
+          </span>
+          <span class="cngx-stepper__status-pill" aria-hidden="true">{{ statusLabelFor(node) }}</span>
+          @if (slotContext.showRejection(node)) {
+            <span class="cngx-stepper__rejection-icon" aria-hidden="true">
+              <ng-container
+                *ngTemplateOutlet="
+                  templates.rejection() ?? defaultRejection;
+                  context: slotContext.rejectionContextFor(node)
+                "
+              ></ng-container>
+            </span>
+          }
+          @if (slotContext.isStepBusy(node)) {
+            <span class="cngx-stepper__busy-spinner" aria-hidden="true">
+              <ng-container
+                *ngTemplateOutlet="
+                  templates.busySpinner() ?? defaultBusySpinner;
+                  context: slotContext.busySpinnerContextFor(node)
+                "
+              ></ng-container>
+            </span>
+          }
+          <span class="cngx-sr-only" [id]="stepDescriptorId(node)">{{ announcement.statusPhrase(node) }}</span>
+        </button>
+      }
+    }
+  </div>
+
+  <div class="cngx-stepper__panels">
+    @for (node of stepsOnly(); track node.id) {
+      <div
+        class="cngx-stepper__panel"
+        role="region"
+        [id]="stepPanelId(node)"
+        [attr.aria-labelledby]="stepHeaderId(node)"
+        [attr.aria-describedby]="stepDescriptorId(node)"
+        [hidden]="!slotContext.isActive(node)"
+      >
+        @let contentTpl = contentTemplateFor(node.id);
+        @if (contentTpl) {
+          <ng-container
+            *ngTemplateOutlet="contentTpl; context: slotContext.stepContentContextFor(node)"
+          ></ng-container>
+        }
+      </div>
+    }
+  </div>
+}
+
+<!--
+  Footer slot - placed OUTSIDE the display-mode @if/@else so it projects
+  at view-creation time (content children register after the empty branch
+  is active, so an in-branch <ng-content> would be discarded and never
+  re-project). Renders after the panels in every mode.
+-->
+<ng-content select="cngx-stepper-footer, [cngxStepperFooter]"></ng-content>
+
+<span class="cngx-stepper__live-region cngx-sr-only" cngxLiveRegion>{{
+  announcement.liveAnnouncement()
+}}</span>
+
+<ng-template #defaultIndicator let-position>
+  <span class="cngx-stepper__indicator-glyph">{{ position }}</span>
+</ng-template>
+<ng-template #defaultBadge>{{ glyphs.errorBadge }}</ng-template>
+<ng-template #defaultBusySpinner></ng-template>
+<ng-template #defaultRejection>{{ glyphs.rejectionIcon }}</ng-template>
+<ng-template #defaultGroupHeader let-group="group">
+  <span class="cngx-stepper__group-label">{{ group.label() }}</span>
+</ng-template>

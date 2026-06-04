@@ -1,0 +1,1001 @@
+/**
+ * @overview
+ * Default visuals for `CngxCard` plus its slot directives. The host
+ * carries `.cngx-card`; slot directives project into the nested
+ * `__media`, `__header`, `__title`, `__subtitle`, `__body`,
+ * `__footer`, `__actions`, and `__badge` elements.
+ *
+ * **State modifiers**
+ *
+ * - `--interactive` - hover shadow + touch-active opacity
+ * - `--selected` - accent border, tinted background, inset bar
+ *   (non-color signal per WCAG 1.4.1)
+ * - `--disabled` - opacity dim + `pointer-events: none`
+ * - `--loading` - shimmer overlay (static fallback under
+ *   `prefers-reduced-motion`)
+ *
+ * **Accent variants**
+ *
+ * Top stripe + tinted surface, one class per semantic intent:
+ *
+ * - `--accent` - neutral stripe, no tint
+ * - `--accent-info` - info stripe, info-tinted background
+ * - `--accent-success` - success stripe, success-tinted background
+ * - `--accent-warning` - warning stripe, warning-tinted background
+ * - `--accent-danger` - danger stripe, danger-tinted background
+ * - `--accent-neutral` - neutral stripe, foundation border colour
+ *
+ * **Badge slot**
+ *
+ * `.cngx-card__badge` is absolutely positioned with three axes:
+ *
+ * - Corner: `--top-end`, `--top-start`, `--bottom-end`, `--bottom-start`
+ * - Size: `--size-sm`, `--size-md`, `--size-lg`
+ * - Intent: `--intent-primary`, `--intent-danger`, `--intent-warning`,
+ *   `--intent-success`, `--intent-neutral`
+ *
+ * Empty content collapses to the `sm` status-dot fallback regardless
+ * of the `size` input.
+ *
+ * **Inheritance**
+ *
+ * Surface tokens fall back to the foundation so brand overrides
+ * propagate without per-component theming:
+ *
+ * - `--cngx-card-bg` -> `--cngx-color-surface`
+ * - `--cngx-card-color` -> `--cngx-color-text`
+ * - `--cngx-card-border` -> `--cngx-color-border`
+ * - `--cngx-card-divider` -> `--cngx-color-border`
+ * - `--cngx-card-radius` -> `--cngx-radius-lg`
+ * - `--cngx-card-padding` -> `--cngx-space-md`
+ * - `--cngx-card-focus-color` -> `--cngx-color-primary`
+ * - `--cngx-card-selected-border` -> `--cngx-color-primary`
+ * - `--cngx-card-badge-*-bg` -> `--cngx-badge-*-bg` ->
+ *   `--cngx-color-{intent}`
+ *
+ * Tinted-surface accents and the selected background use
+ * `color-mix()` against the matching foundation semantic colour and
+ * the card surface; themes only need to pin the tokens when the
+ * runtime mix is not desired.
+ *
+ * **Dark mode**
+ *
+ * Three hooks swap the subtitle, selected background, four accent
+ * tints, and the badge ring:
+ *
+ * - `prefers-color-scheme: dark`
+ * - `[data-color-scheme="dark"]`
+ * - `.dark` class
+ *
+ * Foundation-delegated tokens ride the foundation cascade unchanged.
+ *
+ * **Pair with**
+ *
+ * - `@cngx/themes/material/card-theme` - Material 3 surface + elevation
+ */
+
+@layer cngx.tokens {
+  /**
+   * Padding shorthand inside the card.
+   * @group Layout
+   */
+  @property --cngx-card-padding {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 16px;
+  }
+
+  /**
+   * Corner radius. Defaults to `--cngx-radius-lg`.
+   * @group Layout
+   */
+  @property --cngx-card-radius {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 12px;
+  }
+
+  /**
+   * Card surface color. Falls back through `--cngx-color-surface`.
+   * @group Surface
+   * @see [[--cngx-color-surface]]
+   */
+  @property --cngx-card-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(1 0 0);
+  }
+
+  /**
+   * Card text color. Falls back through `--cngx-color-text`.
+   * @group Surface
+   */
+  @property --cngx-card-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.2 0.01 290);
+  }
+
+  /**
+   * Border shorthand. Falls back through `--cngx-color-border`.
+   * @group Surface
+   */
+  @property --cngx-card-border {
+    syntax: '*';
+    inherits: true;
+    initial-value: 1px solid oklch(0.81 0.005 250);
+  }
+
+  /**
+   * Minimum inline size of the card so empty cards still read as a
+   * surface.
+   * @group Layout
+   */
+  @property --cngx-card-min-width {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 120px;
+  }
+
+  /**
+   * Drop-shadow applied on hover for `.cngx-card--interactive`.
+   * @group State / Hover
+   */
+  @property --cngx-card-hover-shadow {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0 2px 8px 0 oklch(0 0 0 / 0.12);
+  }
+
+  /**
+   * Opacity multiplier applied on touch-active. Only fires under
+   * `(hover: none)` so it doesn't compete with the hover shadow.
+   * @group State / Active
+   */
+  @property --cngx-card-active-opacity {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 0.88;
+  }
+
+  /**
+   * Focus-ring width.
+   * @group State / Focus
+   */
+  @property --cngx-card-focus-width {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 2px;
+  }
+
+  /**
+   * Outline offset of the focus ring.
+   * @group State / Focus
+   */
+  @property --cngx-card-focus-offset {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 2px;
+  }
+
+  /**
+   * Focus-ring color. Falls back to `--cngx-color-primary`.
+   * @group State / Focus
+   * @see [[--cngx-color-primary]]
+   */
+  @property --cngx-card-focus-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.66 0.19 50);
+  }
+
+  /**
+   * Border color of the selected state and the inset selection bar.
+   * Falls back to `--cngx-color-primary`.
+   * @group State / Selected
+   * @see [[--cngx-color-primary]]
+   */
+  @property --cngx-card-selected-border {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.66 0.19 50);
+  }
+
+  /**
+   * Background of the selected state. The runtime fallback uses
+   * `color-mix()` against `--cngx-color-primary`, so this static
+   * default only matters when a theme pins the token explicitly.
+   * @group State / Selected
+   */
+  @property --cngx-card-selected-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.96 0.04 50);
+  }
+
+  /**
+   * Width of the inset selection bar drawn via `::before` - provides
+   * a non-color-only selection signal (WCAG 1.4.1).
+   * @group State / Selected
+   */
+  @property --cngx-card-selected-bar-width {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 3px;
+  }
+
+  /**
+   * Opacity multiplier applied by `.cngx-card--disabled`.
+   * @group State / Disabled
+   */
+  @property --cngx-card-disabled-opacity {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 0.5;
+  }
+
+  /**
+   * Shimmer band color for the loading overlay gradient.
+   * @group State / Loading
+   */
+  @property --cngx-card-loading-shimmer {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: oklch(1 0 0 / 0.4);
+  }
+
+  /**
+   * Static overlay shown when `prefers-reduced-motion` suppresses
+   * the shimmer animation.
+   * @group State / Loading
+   */
+  @property --cngx-card-loading-overlay {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: oklch(1 0 0 / 0.3);
+  }
+
+  /**
+   * Font-size of the title slot.
+   * @group Typography
+   */
+  @property --cngx-card-title-size {
+    syntax: '*';
+    inherits: true;
+    initial-value: 1rem;
+  }
+
+  /**
+   * Font-weight of the title slot.
+   * @group Typography
+   */
+  @property --cngx-card-title-weight {
+    syntax: '<number>';
+    inherits: true;
+    initial-value: 600;
+  }
+
+  /**
+   * Text color of the title slot.
+   * @group Typography
+   */
+  @property --cngx-card-title-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.2 0.01 290);
+  }
+
+  /**
+   * Font-size of the subtitle slot.
+   * @group Typography
+   */
+  @property --cngx-card-subtitle-size {
+    syntax: '*';
+    inherits: true;
+    initial-value: 0.8125rem;
+  }
+
+  /**
+   * Font-weight of the subtitle slot.
+   * @group Typography
+   */
+  @property --cngx-card-subtitle-weight {
+    syntax: '<number>';
+    inherits: true;
+    initial-value: 400;
+  }
+
+  /**
+   * Text color of the subtitle slot - muted by default.
+   * @group Typography
+   */
+  @property --cngx-card-subtitle-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.36 0.02 290);
+  }
+
+  /**
+   * Border color of the actions divider.
+   * @group Surface
+   */
+  @property --cngx-card-divider {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.81 0.005 250);
+  }
+
+  /**
+   * Width of the top accent stripe applied by `.cngx-card--accent`.
+   * @group Variant / Accent
+   */
+  @property --cngx-card-accent-width {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 3px;
+  }
+
+  /**
+   * Color of the top accent stripe. Per-variant rules set it to the
+   * matching foundation semantic color.
+   * @group Variant / Accent
+   */
+  @property --cngx-card-accent-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: transparent;
+  }
+
+  /**
+   * Tinted background for `.cngx-card--accent-info`. The runtime
+   * fallback uses `color-mix()` against `--cngx-color-info`; this
+   * static default only matters when a theme pins the token directly.
+   * @group Variant / Accent
+   */
+  @property --cngx-card-accent-info-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.97 0.03 250);
+  }
+
+  /**
+   * Tinted background for `.cngx-card--accent-success`.
+   * @group Variant / Accent
+   */
+  @property --cngx-card-accent-success-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.97 0.04 145);
+  }
+
+  /**
+   * Tinted background for `.cngx-card--accent-warning`.
+   * @group Variant / Accent
+   */
+  @property --cngx-card-accent-warning-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.97 0.04 75);
+  }
+
+  /**
+   * Tinted background for `.cngx-card--accent-danger`.
+   * @group Variant / Accent
+   */
+  @property --cngx-card-accent-danger-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.97 0.03 25);
+  }
+
+  /**
+   * Offset of the badge slot from the card corners (negative pulls
+   * the badge half-out so it overlaps the edge).
+   * @group Layout
+   */
+  @property --cngx-card-badge-offset {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: -6px;
+  }
+
+  /**
+   * Diameter (and minimum width) of the badge pill at the `sm` size.
+   * Also drives the `:empty` status-dot fallback regardless of the
+   * `size` input.
+   * @group Sizing
+   */
+  @property --cngx-card-badge-size-sm {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 10px;
+  }
+
+  /**
+   * Diameter (and minimum width) of the badge pill at the `md` size.
+   * @group Sizing
+   */
+  @property --cngx-card-badge-size-md {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 22px;
+  }
+
+  /**
+   * Diameter (and minimum width) of the badge pill at the `lg` size.
+   * @group Sizing
+   */
+  @property --cngx-card-badge-size-lg {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 28px;
+  }
+
+  /**
+   * Inline padding around content-bearing badges. Zeroed by the
+   * `:empty` dot fallback.
+   * @group Sizing
+   */
+  @property --cngx-card-badge-padding-inline {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 5px;
+  }
+
+  /**
+   * Font-size at the `sm` size.
+   * @group Sizing
+   */
+  @property --cngx-card-badge-font-size-sm {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.625rem;
+  }
+
+  /**
+   * Font-size at the `md` size.
+   * @group Sizing
+   */
+  @property --cngx-card-badge-font-size-md {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.7rem;
+  }
+
+  /**
+   * Font-size at the `lg` size.
+   * @group Sizing
+   */
+  @property --cngx-card-badge-font-size-lg {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.8125rem;
+  }
+
+  /**
+   * Corner radius. Defaults to the pill radius via `--cngx-radius-pill`
+   * so the surface reads as a round indicator across all three sizes.
+   * @group Sizing
+   */
+  @property --cngx-card-badge-radius {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 999px;
+  }
+
+  /**
+   * Ring around the badge - contrasts the pill against the card
+   * surface so the corner anchor reads as a separate element. The
+   * `:root` dark-mode override swaps the colour; `inherits: true` so
+   * the swap reaches the host element through the cascade.
+   * @group Surface
+   */
+  @property --cngx-card-badge-border {
+    syntax: '*';
+    inherits: true;
+    initial-value: 2px solid oklch(1 0 0);
+  }
+
+  /**
+   * Background of the `primary` intent. Falls back through
+   * `--cngx-badge-primary-bg` then `--cngx-color-primary`.
+   * @group Variant / Primary
+   * @see [[--cngx-color-primary]]
+   */
+  @property --cngx-card-badge-primary-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.66 0.19 50);
+  }
+
+  /**
+   * Text colour of the `primary` intent.
+   * @group Variant / Primary
+   */
+  @property --cngx-card-badge-primary-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(1 0 0);
+  }
+
+  /**
+   * Background of the `danger` intent. Falls back through
+   * `--cngx-badge-error-bg` then `--cngx-color-danger`.
+   * @group Variant / Danger
+   * @see [[--cngx-color-danger]]
+   */
+  @property --cngx-card-badge-danger-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.62 0.22 25);
+  }
+
+  /**
+   * Text colour of the `danger` intent.
+   * @group Variant / Danger
+   */
+  @property --cngx-card-badge-danger-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(1 0 0);
+  }
+
+  /**
+   * Background of the `warning` intent. Falls back through
+   * `--cngx-badge-warning-bg` then `--cngx-color-warning`.
+   * @group Variant / Warning
+   * @see [[--cngx-color-warning]]
+   */
+  @property --cngx-card-badge-warning-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.72 0.18 70);
+  }
+
+  /**
+   * Text colour of the `warning` intent.
+   * @group Variant / Warning
+   */
+  @property --cngx-card-badge-warning-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.2 0.01 250);
+  }
+
+  /**
+   * Background of the `success` intent. No `CngxBadge` analogue -
+   * falls straight back to `--cngx-color-success`.
+   * @group Variant / Success
+   * @see [[--cngx-color-success]]
+   */
+  @property --cngx-card-badge-success-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.6 0.15 145);
+  }
+
+  /**
+   * Text colour of the `success` intent.
+   * @group Variant / Success
+   */
+  @property --cngx-card-badge-success-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(1 0 0);
+  }
+
+  /**
+   * Background of the `neutral` intent. Falls back through
+   * `--cngx-badge-neutral-bg` then `--cngx-color-text-muted`.
+   * @group Variant / Neutral
+   */
+  @property --cngx-card-badge-neutral-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.68 0.01 240);
+  }
+
+  /**
+   * Text colour of the `neutral` intent.
+   * @group Variant / Neutral
+   */
+  @property --cngx-card-badge-neutral-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(1 0 0);
+  }
+
+  /* Dark-mode swap - mirrors `core/theming/system-tokens.css`.
+   * Foundation-delegated tokens (bg / text / border / divider /
+   * title) ride the foundation cascade via `var()`. Component-
+   * specific tokens (subtitle, selected-bg, four accent tints)
+   * carry their own light/dark pair across three blocks. */
+  :root {
+    --cngx-card-bg: var(--cngx-color-surface);
+    --cngx-card-color: var(--cngx-color-text);
+    --cngx-card-border: 1px solid var(--cngx-color-border);
+    --cngx-card-divider: var(--cngx-color-border);
+    --cngx-card-title-color: var(--cngx-color-text);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-color-scheme='light']):not(.light) {
+      --cngx-card-subtitle-color: oklch(0.72 0.02 290);
+      --cngx-card-selected-bg: oklch(0.36 0.06 50);
+      --cngx-card-accent-info-bg: oklch(0.32 0.05 250);
+      --cngx-card-accent-success-bg: oklch(0.32 0.06 145);
+      --cngx-card-accent-warning-bg: oklch(0.32 0.06 75);
+      --cngx-card-accent-danger-bg: oklch(0.32 0.05 25);
+      --cngx-card-badge-border: 2px solid oklch(0.2 0.01 250);
+    }
+  }
+
+  [data-color-scheme='dark'],
+  .dark {
+    --cngx-card-subtitle-color: oklch(0.72 0.02 290);
+    --cngx-card-selected-bg: oklch(0.36 0.06 50);
+    --cngx-card-accent-info-bg: oklch(0.32 0.05 250);
+    --cngx-card-accent-success-bg: oklch(0.32 0.06 145);
+    --cngx-card-accent-warning-bg: oklch(0.32 0.06 75);
+    --cngx-card-accent-danger-bg: oklch(0.32 0.05 25);
+    --cngx-card-badge-border: 2px solid oklch(0.2 0.01 250);
+  }
+
+  [data-color-scheme='light'],
+  .light {
+    --cngx-card-subtitle-color: oklch(0.36 0.02 290);
+    --cngx-card-selected-bg: oklch(0.96 0.04 50);
+    --cngx-card-accent-info-bg: oklch(0.97 0.03 250);
+    --cngx-card-accent-success-bg: oklch(0.97 0.04 145);
+    --cngx-card-accent-warning-bg: oklch(0.97 0.04 75);
+    --cngx-card-accent-danger-bg: oklch(0.97 0.03 25);
+    --cngx-card-badge-border: 2px solid oklch(1 0 0);
+  }
+}
+
+@layer cngx.components {
+  @scope (.cngx-card) {
+    :scope {
+      display: block;
+      position: relative;
+      padding: var(--cngx-card-padding, var(--cngx-space-md, 16px));
+      border-radius: var(--cngx-card-radius, var(--cngx-radius-lg, 12px));
+      background: var(--cngx-card-bg, var(--cngx-color-surface, oklch(1 0 0)));
+      border: var(--cngx-card-border, 1px solid var(--cngx-color-border, oklch(0.81 0.005 250)));
+      color: var(--cngx-card-color, var(--cngx-color-text, oklch(0.2 0.01 290)));
+      transition:
+        box-shadow var(--cngx-duration-fast, 150ms) ease,
+        border-color var(--cngx-duration-fast, 150ms) ease,
+        background var(--cngx-duration-fast, 150ms) ease;
+      min-height: 44px;
+      min-width: var(--cngx-card-min-width, 120px);
+      touch-action: manipulation;
+    }
+
+    :scope.cngx-card--interactive {
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    :scope.cngx-card--interactive:hover {
+      box-shadow: var(--cngx-card-hover-shadow, 0 2px 8px 0 oklch(0 0 0 / 0.12));
+    }
+    @media (hover: none) {
+      :scope.cngx-card--interactive:active {
+        opacity: var(--cngx-card-active-opacity, 0.88);
+      }
+    }
+
+    :scope:focus-visible {
+      outline: var(--cngx-card-focus-width, 2px) solid
+        var(--cngx-card-focus-color, var(--cngx-color-primary, oklch(0.66 0.19 50)));
+      outline-offset: var(--cngx-card-focus-offset, 2px);
+    }
+
+    /* Interactive cards: focus-within for inner buttons without double focus ring */
+    :scope:has(:focus-visible):not(:focus-visible) {
+      outline: var(--cngx-card-focus-width, 2px) solid
+        var(--cngx-card-focus-color, var(--cngx-color-primary, oklch(0.66 0.19 50)));
+      outline-offset: var(--cngx-card-focus-offset, 2px);
+    }
+
+    :scope.cngx-card--selected {
+      border-color: var(
+        --cngx-card-selected-border,
+        var(--cngx-color-primary, oklch(0.66 0.19 50))
+      );
+      background: var(
+        --cngx-card-selected-bg,
+        color-mix(
+          in oklch,
+          var(--cngx-color-primary, oklch(0.66 0.19 50)) 8%,
+          var(--cngx-card-bg, oklch(1 0 0))
+        )
+      );
+    }
+    /* Visual selection indicator (not just color - WCAG 1.4.1) */
+    :scope.cngx-card--selected::before {
+      content: '';
+      position: absolute;
+      inset-inline-start: 0;
+      inset-block: var(--cngx-card-radius, 12px);
+      width: var(--cngx-card-selected-bar-width, 3px);
+      background: var(--cngx-card-selected-border, var(--cngx-color-primary, oklch(0.66 0.19 50)));
+      border-radius: 999px;
+    }
+
+    :scope.cngx-card--disabled {
+      opacity: var(--cngx-card-disabled-opacity, 0.5);
+      pointer-events: none;
+    }
+
+    :scope.cngx-card--loading {
+      pointer-events: none;
+      cursor: wait;
+    }
+    :scope.cngx-card--loading::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: linear-gradient(
+        90deg,
+        transparent 25%,
+        var(--cngx-card-loading-shimmer, oklch(1 0 0 / 0.4)) 50%,
+        transparent 75%
+      );
+      background-size: 200% 100%;
+      animation: cngx-card-shimmer 1.5s ease-in-out infinite;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      :scope.cngx-card--loading::after {
+        animation: none;
+        background: var(--cngx-card-loading-overlay, oklch(1 0 0 / 0.3));
+      }
+    }
+
+    /* Slot children - projected via [cngxCardMedia/Header/Title/...] directives */
+    .cngx-card__media {
+      margin: calc(-1 * var(--cngx-card-padding, var(--cngx-space-md, 16px)));
+      margin-bottom: 0;
+      overflow: hidden;
+      border-radius: var(--cngx-card-radius, var(--cngx-radius-lg, 12px))
+        var(--cngx-card-radius, var(--cngx-radius-lg, 12px)) 0 0;
+    }
+    .cngx-card__media img,
+    .cngx-card__media video {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .cngx-card__header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      gap: var(--cngx-space-sm, 8px);
+      padding-block: var(--cngx-space-xs, 4px);
+    }
+
+    .cngx-card__title {
+      margin: 0;
+      font-size: var(--cngx-card-title-size, 1rem);
+      font-weight: var(--cngx-card-title-weight, 600);
+      color: var(--cngx-card-title-color, var(--cngx-color-text, oklch(0.2 0.01 290)));
+      line-height: 1.3;
+    }
+
+    .cngx-card__subtitle {
+      width: 100%;
+      margin: 0;
+      font-size: var(--cngx-card-subtitle-size, 0.8125rem);
+      font-weight: var(--cngx-card-subtitle-weight, 400);
+      color: var(--cngx-card-subtitle-color, oklch(0.36 0.02 290));
+      line-height: 1.4;
+    }
+
+    .cngx-card__body {
+      padding-block: var(--cngx-space-xs, 4px);
+    }
+
+    .cngx-card__footer {
+      margin-top: auto;
+      padding-block-start: var(--cngx-space-sm, 8px);
+    }
+
+    .cngx-card__actions {
+      display: flex;
+      align-items: center;
+      gap: var(--cngx-space-sm, 8px);
+      padding-block-start: var(--cngx-space-sm, 8px);
+      border-top: 1px solid
+        var(--cngx-card-divider, var(--cngx-color-border, oklch(0.81 0.005 250)));
+    }
+    .cngx-card__actions--end {
+      justify-content: flex-end;
+    }
+
+    /* Accent variants - top border + tinted surface. The accent
+     * classes sit ON the card element itself (the @scope root), so
+     * each rule needs `:scope.cngx-card--accent…`; the unscoped
+     * `.cngx-card--accent…` form would only target descendants. */
+    :scope.cngx-card--accent {
+      border-top: var(--cngx-card-accent-width, 3px) solid
+        var(--cngx-card-accent-color, transparent);
+    }
+
+    :scope.cngx-card--accent-info {
+      --cngx-card-accent-color: var(--cngx-color-info, oklch(0.65 0.12 240));
+      background: var(
+        --cngx-card-accent-info-bg,
+        color-mix(
+          in oklch,
+          var(--cngx-color-info, oklch(0.65 0.12 240)) 6%,
+          var(--cngx-card-bg, oklch(1 0 0))
+        )
+      );
+    }
+    :scope.cngx-card--accent-success {
+      --cngx-card-accent-color: var(--cngx-color-success, oklch(0.6 0.15 145));
+      background: var(
+        --cngx-card-accent-success-bg,
+        color-mix(
+          in oklch,
+          var(--cngx-color-success, oklch(0.6 0.15 145)) 6%,
+          var(--cngx-card-bg, oklch(1 0 0))
+        )
+      );
+    }
+    :scope.cngx-card--accent-warning {
+      --cngx-card-accent-color: var(--cngx-color-warning, oklch(0.72 0.15 75));
+      background: var(
+        --cngx-card-accent-warning-bg,
+        color-mix(
+          in oklch,
+          var(--cngx-color-warning, oklch(0.72 0.15 75)) 8%,
+          var(--cngx-card-bg, oklch(1 0 0))
+        )
+      );
+    }
+    :scope.cngx-card--accent-danger {
+      --cngx-card-accent-color: var(--cngx-color-danger, oklch(0.6 0.18 25));
+      background: var(
+        --cngx-card-accent-danger-bg,
+        color-mix(
+          in oklch,
+          var(--cngx-color-danger, oklch(0.6 0.18 25)) 8%,
+          var(--cngx-card-bg, oklch(1 0 0))
+        )
+      );
+    }
+    :scope.cngx-card--accent-neutral {
+      --cngx-card-accent-color: var(--cngx-color-border, oklch(0.81 0.005 250));
+    }
+
+    /* Badge placement - absolute, four corner variants */
+    .cngx-card__badge {
+      position: absolute;
+      z-index: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
+      min-width: var(--cngx-card-badge-size-md, 22px);
+      height: var(--cngx-card-badge-size-md, 22px);
+      padding: 0 var(--cngx-card-badge-padding-inline, 5px);
+      border-radius: var(--cngx-card-badge-radius, var(--cngx-radius-pill, 999px));
+      border: var(--cngx-card-badge-border, 2px solid oklch(1 0 0));
+      font-size: var(--cngx-card-badge-font-size-md, 0.7rem);
+      font-weight: 700;
+      line-height: 1;
+      user-select: none;
+    }
+    .cngx-card__badge--top-end {
+      inset-block-start: var(--cngx-card-badge-offset, -6px);
+      inset-inline-end: var(--cngx-card-badge-offset, -6px);
+    }
+    .cngx-card__badge--top-start {
+      inset-block-start: var(--cngx-card-badge-offset, -6px);
+      inset-inline-start: var(--cngx-card-badge-offset, -6px);
+    }
+    .cngx-card__badge--bottom-end {
+      inset-block-end: var(--cngx-card-badge-offset, -6px);
+      inset-inline-end: var(--cngx-card-badge-offset, -6px);
+    }
+    .cngx-card__badge--bottom-start {
+      inset-block-end: var(--cngx-card-badge-offset, -6px);
+      inset-inline-start: var(--cngx-card-badge-offset, -6px);
+    }
+
+    /* Size variants - over-set the four size-dependent values from
+     * the `md` default. */
+    .cngx-card__badge--size-sm {
+      min-width: var(--cngx-card-badge-size-sm, 10px);
+      height: var(--cngx-card-badge-size-sm, 10px);
+      padding: 0 var(--cngx-card-badge-padding-inline, 5px);
+      font-size: var(--cngx-card-badge-font-size-sm, 0.625rem);
+    }
+    .cngx-card__badge--size-md {
+      min-width: var(--cngx-card-badge-size-md, 22px);
+      height: var(--cngx-card-badge-size-md, 22px);
+      padding: 0 var(--cngx-card-badge-padding-inline, 5px);
+      font-size: var(--cngx-card-badge-font-size-md, 0.7rem);
+    }
+    .cngx-card__badge--size-lg {
+      min-width: var(--cngx-card-badge-size-lg, 28px);
+      height: var(--cngx-card-badge-size-lg, 28px);
+      padding: 0 var(--cngx-card-badge-padding-inline, 5px);
+      font-size: var(--cngx-card-badge-font-size-lg, 0.8125rem);
+    }
+
+    /* Intent variants - chain through the CngxBadge palette then the
+     * foundation semantic colour tokens. */
+    .cngx-card__badge--intent-primary {
+      background: var(
+        --cngx-card-badge-primary-bg,
+        var(--cngx-badge-primary-bg, var(--cngx-color-primary, oklch(0.66 0.19 50)))
+      );
+      color: var(--cngx-card-badge-primary-color, oklch(1 0 0));
+    }
+    .cngx-card__badge--intent-danger {
+      background: var(
+        --cngx-card-badge-danger-bg,
+        var(--cngx-badge-error-bg, var(--cngx-color-danger, oklch(0.62 0.22 25)))
+      );
+      color: var(--cngx-card-badge-danger-color, oklch(1 0 0));
+    }
+    .cngx-card__badge--intent-warning {
+      background: var(
+        --cngx-card-badge-warning-bg,
+        var(--cngx-badge-warning-bg, var(--cngx-color-warning, oklch(0.72 0.18 70)))
+      );
+      color: var(--cngx-card-badge-warning-color, oklch(0.2 0.01 250));
+    }
+    .cngx-card__badge--intent-success {
+      background: var(--cngx-card-badge-success-bg, var(--cngx-color-success, oklch(0.6 0.15 145)));
+      color: var(--cngx-card-badge-success-color, oklch(1 0 0));
+    }
+    .cngx-card__badge--intent-neutral {
+      background: var(
+        --cngx-card-badge-neutral-bg,
+        var(--cngx-badge-neutral-bg, var(--cngx-color-text-muted, oklch(0.68 0.01 240)))
+      );
+      color: var(--cngx-card-badge-neutral-color, oklch(1 0 0));
+    }
+
+    /* Empty content → status-dot fallback: zero out padding and lock
+     * to the `sm` size token regardless of the `size` input. */
+    .cngx-card__badge:empty {
+      min-width: var(--cngx-card-badge-size-sm, 10px);
+      width: var(--cngx-card-badge-size-sm, 10px);
+      height: var(--cngx-card-badge-size-sm, 10px);
+      padding: 0;
+    }
+  }
+
+  /* Shimmer keyframe - declared once at the layer level so it can be
+   * referenced by .cngx-card and other components in the same layer. */
+  @keyframes cngx-card-shimmer {
+    0% {
+      background-position: 200% 0;
+    }
+    100% {
+      background-position: -200% 0;
+    }
+  }
+
+  /* .cngx-sr-only duplicated locally so the file is self-contained when used standalone.
+   * Canonical declaration lives in @cngx/core/theming/utilities.css;
+   * identical body so the cascade is benign whether one or both load. */
+  .cngx-sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+}

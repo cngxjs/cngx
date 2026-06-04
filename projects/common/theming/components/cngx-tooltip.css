@@ -1,0 +1,265 @@
+/**
+ * @overview
+ * Theming bridge for the `CngxTooltip` directive. The directive
+ * renders `<div class="cngx-tooltip">` on demand and toggles
+ * transition classes (`cngx-popover--opening` / `-open` / `-closing`)
+ * via the underlying `CngxPopover` state machine; this stylesheet
+ * paints the pill. Surface defaults to charcoal-on-near-white so it
+ * stays neutral and out of the brand-color conversation.
+ *
+ * **State modifiers**
+ *
+ * - `cngx-popover--opening` - opacity 0, scale(0.95)
+ * - `cngx-popover--open` - opacity 1, scale(1)
+ * - `cngx-popover--closing` - opacity 0, scale(0.95)
+ *
+ * Suppressed under `prefers-reduced-motion: reduce`.
+ *
+ * **Inheritance**
+ *
+ * No foundation delegation by design - the tooltip is an inverse
+ * surface that intentionally contrasts with the page chrome rather
+ * than tracking `--cngx-color-surface`.
+ *
+ * **Touch devices**
+ *
+ * `@media (hover: none)` bumps padding, font-size, line-height, and
+ * max-width for readability without a per-instance override.
+ *
+ * **Dark mode**
+ *
+ * Three hooks (`prefers-color-scheme: dark`, `[data-color-scheme="dark"]`,
+ * `.dark`) flip to a light pill on dark text (Material-style
+ * inverse-surface) so the tooltip stays as a high-contrast call-out
+ * rather than blending into the dark page chrome.
+ *
+ * **Notes**
+ *
+ * - The optional `tooltip-indicator.scss` (the `::after` info-icon
+ *   next to triggers) is a Sass opt-in mixin and ships outside this
+ *   file.
+ * - The pill uses the Popover API top-layer; no z-index needed.
+ *
+ * **Pair with**
+ *
+ * - `@cngx/themes/material/tooltip-theme` - Material 3 inverse-surface
+ */
+
+@layer cngx.tokens {
+  /**
+   * Tooltip surface color - defaults to a near-black charcoal.
+   * @group Surface
+   */
+  @property --cngx-tooltip-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.2 0.005 290);
+  }
+
+  /**
+   * Tooltip text color - defaults to near-white to pair with the
+   * default charcoal surface.
+   * @group Surface
+   */
+  @property --cngx-tooltip-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.96 0.005 290);
+  }
+
+  /**
+   * Font-family stack. Inherits `system-ui` from the foundation.
+   * @group Typography
+   */
+  @property --cngx-tooltip-font-family {
+    syntax: '*';
+    inherits: true;
+    initial-value: system-ui;
+  }
+
+  /**
+   * Font-size of the tooltip text.
+   * @group Typography
+   */
+  @property --cngx-tooltip-font-size {
+    syntax: '*';
+    inherits: true;
+    initial-value: 0.75rem;
+  }
+
+  /**
+   * Line-height of the tooltip text.
+   * @group Typography
+   */
+  @property --cngx-tooltip-line-height {
+    syntax: '*';
+    inherits: true;
+    initial-value: 1rem;
+  }
+
+  /**
+   * Font-weight of the tooltip text.
+   * @group Typography
+   */
+  @property --cngx-tooltip-font-weight {
+    syntax: '<number>';
+    inherits: true;
+    initial-value: 400;
+  }
+
+  /**
+   * Letter-spacing - a touch of tracking lifts legibility at the
+   * small font-size.
+   * @group Typography
+   */
+  @property --cngx-tooltip-letter-spacing {
+    syntax: '*';
+    inherits: true;
+    initial-value: 0.033em;
+  }
+
+  /**
+   * Block-axis padding.
+   * @group Layout
+   */
+  @property --cngx-tooltip-padding-block {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 4px;
+  }
+
+  /**
+   * Inline-axis padding.
+   * @group Layout
+   */
+  @property --cngx-tooltip-padding-inline {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 8px;
+  }
+
+  /**
+   * Corner radius.
+   * @group Layout
+   */
+  @property --cngx-tooltip-border-radius {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 4px;
+  }
+
+  /**
+   * Maximum inline size - caps long tooltip content before it wraps
+   * into too narrow a column.
+   * @group Layout
+   */
+  @property --cngx-tooltip-max-width {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 200px;
+  }
+
+  /**
+   * Duration of the open / close transition.
+   * @group Motion
+   */
+  @property --cngx-tooltip-transition-duration {
+    syntax: '<time>';
+    inherits: false;
+    initial-value: 150ms;
+  }
+
+  /**
+   * Easing curve of the open / close transition.
+   * @group Motion
+   */
+  @property --cngx-tooltip-transition-easing {
+    syntax: '*';
+    inherits: false;
+    initial-value: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Dark-mode swap - flip to inverse-surface (light pill, dark text)
+   * so the tooltip pops off the dark page rather than blending into
+   * the surrounding chrome at low contrast. */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-color-scheme='light']):not(.light) {
+      --cngx-tooltip-bg: oklch(0.95 0.005 290);
+      --cngx-tooltip-color: oklch(0.2 0.005 290);
+    }
+  }
+  [data-color-scheme='dark'],
+  .dark {
+    --cngx-tooltip-bg: oklch(0.95 0.005 290);
+    --cngx-tooltip-color: oklch(0.2 0.005 290);
+  }
+  [data-color-scheme='light'],
+  .light {
+    --cngx-tooltip-bg: oklch(0.2 0.005 290);
+    --cngx-tooltip-color: oklch(0.96 0.005 290);
+  }
+}
+
+@layer cngx.components {
+  @scope (.cngx-tooltip) {
+    :scope {
+      position: fixed;
+      inset: unset;
+      border: none;
+      margin: 0;
+      box-sizing: border-box;
+
+      background: var(--cngx-tooltip-bg, oklch(0.2 0.005 290));
+      color: var(--cngx-tooltip-color, oklch(0.96 0.005 290));
+      font-family: var(--cngx-tooltip-font-family, inherit);
+      font-size: var(--cngx-tooltip-font-size, 0.75rem);
+      line-height: var(--cngx-tooltip-line-height, 1rem);
+      font-weight: var(--cngx-tooltip-font-weight, 400);
+      letter-spacing: var(--cngx-tooltip-letter-spacing, 0.033em);
+      padding: var(--cngx-tooltip-padding-block, 4px) var(--cngx-tooltip-padding-inline, 8px);
+      border-radius: var(--cngx-tooltip-border-radius, 4px);
+      max-width: var(--cngx-tooltip-max-width, 200px);
+      width: max-content;
+      word-wrap: break-word;
+      white-space: normal;
+      pointer-events: none;
+
+      /* Popover API top-layer - no z-index needed. */
+      transition:
+        opacity var(--cngx-tooltip-transition-duration, 150ms)
+          var(--cngx-tooltip-transition-easing, cubic-bezier(0.4, 0, 0.2, 1)),
+        transform var(--cngx-tooltip-transition-duration, 150ms)
+          var(--cngx-tooltip-transition-easing, cubic-bezier(0.4, 0, 0.2, 1));
+    }
+
+    :scope.cngx-popover--opening {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    :scope.cngx-popover--open {
+      opacity: 1;
+      transform: scale(1);
+    }
+    :scope.cngx-popover--closing {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+
+    /* Touch devices: larger padding + font-size for readability. */
+    @media (hover: none) {
+      :scope {
+        --cngx-tooltip-padding-block: 8px;
+        --cngx-tooltip-padding-inline: 16px;
+        --cngx-tooltip-font-size: 0.875rem;
+        --cngx-tooltip-line-height: 1.25rem;
+        --cngx-tooltip-max-width: 280px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      :scope {
+        transition: none;
+      }
+    }
+  }
+}

@@ -1,0 +1,182 @@
+/**
+ * @overview
+ * Default visuals for `CngxEmptyState`. The host carries
+ * `.cngx-empty-state` and projects into nested `__icon-slot`,
+ * `__default-icon`, `__title`, `__description`, and `__actions`
+ * elements. Token groups span Layout, Surface, and Typography.
+ *
+ * **Slots**
+ *
+ * - `.cngx-empty-state__icon-slot` - consumer-projected icon; the
+ *   default glyph next to it is hidden when this slot is non-empty
+ * - `.cngx-empty-state__default-icon` - fallback glyph (50% opacity)
+ *   when no custom icon is projected
+ * - `.cngx-empty-state__title` - h1-style header
+ * - `.cngx-empty-state__description` - body copy, capped at 40ch
+ * - `.cngx-empty-state__actions` - trailing action row
+ *
+ * **Inheritance**
+ *
+ * All three text colors delegate to the foundation so a brand swap
+ * cascades through one `:root` pass - no per-component dark-mode
+ * 4-block needed because the foundation already carries the
+ * light/dark distinction:
+ *
+ * - `--cngx-empty-color` -> `--cngx-color-text`
+ * - `--cngx-empty-icon-color` -> `--cngx-color-text`
+ * - `--cngx-empty-title-color` -> `--cngx-color-text`
+ *
+ * **Pair with**
+ *
+ * - `@cngx/themes/material/empty-state-theme` - Material 3 surface
+ *   palette
+ * - `@use '@cngx/ui/empty-state/_empty-state'` - opt-in Sass partial
+ *   for consumers preferring Sass-driven theming
+ */
+
+@layer cngx.tokens {
+  /**
+   * Vertical gap between the icon, title, description, and actions.
+   * Falls back to `--cngx-space-md`.
+   * @group Layout
+   */
+  @property --cngx-empty-gap {
+    syntax: '*';
+    inherits: false;
+    initial-value: 16px;
+  }
+
+  /**
+   * Block padding around the entire empty state. Falls back to
+   * `--cngx-space-xl`.
+   * @group Layout
+   */
+  @property --cngx-empty-padding {
+    syntax: '*';
+    inherits: false;
+    initial-value: 48px;
+  }
+
+  /**
+   * Default text color for the description slot.
+   * @group Surface
+   */
+  @property --cngx-empty-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.34 0.005 290);
+  }
+
+  /**
+   * Color of the default icon glyph (when no custom icon is
+   * projected).
+   * @group Surface
+   */
+  @property --cngx-empty-icon-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.34 0.005 290);
+  }
+
+  /**
+   * Font-size of the title slot.
+   * @group Typography
+   */
+  @property --cngx-empty-title-size {
+    syntax: '*';
+    inherits: false;
+    initial-value: 1.125rem;
+  }
+
+  /**
+   * Font-weight of the title slot.
+   * @group Typography
+   */
+  @property --cngx-empty-title-weight {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 500;
+  }
+
+  /**
+   * Text color of the title slot - slightly darker than the
+   * description for a clear hierarchy.
+   * @group Typography
+   */
+  @property --cngx-empty-title-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.18 0.005 290);
+  }
+
+  /**
+   * Font-size of the description slot.
+   * @group Typography
+   */
+  @property --cngx-empty-desc-size {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.875rem;
+  }
+
+  /*
+   * Default-theme palette pass. All three text colors delegate to
+   * the foundation `--cngx-color-text` so the empty-state's body /
+   * title / icon all flip together with the document's color scheme.
+   * No 4-block needed - the foundation token already carries the
+   * light/dark distinction.
+   */
+  :root {
+    --cngx-empty-color: var(--cngx-color-text, oklch(0.34 0.005 290));
+    --cngx-empty-icon-color: var(--cngx-color-text, oklch(0.34 0.005 290));
+    --cngx-empty-title-color: var(--cngx-color-text, oklch(0.18 0.005 290));
+  }
+}
+
+@layer cngx.components {
+  @scope (.cngx-empty-state) {
+    :scope {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--cngx-empty-gap, var(--cngx-space-md, 16px));
+      padding: var(--cngx-empty-padding, var(--cngx-space-xl, 48px)) var(--cngx-space-md, 16px);
+      text-align: center;
+      color: var(--cngx-empty-color, var(--cngx-color-text, oklch(0.34 0.005 290)));
+    }
+
+    /* Default icon: hidden when consumer projects a custom icon */
+    .cngx-empty-state__icon-slot:not(:empty) + .cngx-empty-state__default-icon {
+      display: none;
+    }
+
+    .cngx-empty-state__default-icon {
+      color: var(--cngx-empty-icon-color, var(--cngx-color-text, oklch(0.34 0.005 290)));
+      opacity: 0.5;
+    }
+
+    .cngx-empty-state__icon-slot:empty {
+      display: none;
+    }
+
+    .cngx-empty-state__title {
+      margin: 0;
+      font-size: var(--cngx-empty-title-size, 1.125rem);
+      font-weight: var(--cngx-empty-title-weight, 500);
+      color: var(--cngx-empty-title-color, var(--cngx-color-text, oklch(0.18 0.005 290)));
+    }
+
+    .cngx-empty-state__description {
+      margin: 0;
+      font-size: var(--cngx-empty-desc-size, 0.875rem);
+      line-height: 1.5;
+      max-width: 40ch;
+    }
+
+    .cngx-empty-state__actions {
+      display: flex;
+      gap: var(--cngx-space-sm, 8px);
+      margin-top: var(--cngx-space-sm, 8px);
+    }
+  }
+}

@@ -1,0 +1,69 @@
+/**
+ * @overview
+ * Default visuals for `CngxRequired` - the required marker rendered
+ * as a standalone atom. The host carries `.cngx-required` and stays
+ * inline so the marker sits next to the label text; the inner `<span>`
+ * carries the glyph color.
+ *
+ * **Slots**
+ *
+ * - `.cngx-required` - host element, kept `display: inline` with a
+ *   `0.125em` inline-start margin (`display: contents` would push the
+ *   inner span into the label's parent and land the asterisk on its
+ *   own row in stacked-field grids)
+ * - inner `<span>` - the glyph itself, colored from the danger chain
+ *
+ * **Inheritance**
+ *
+ * The required-marker token is shared with `CngxLabel`; redeclared
+ * here so consumers can use `<cngx-required>` without also using
+ * `[cngxLabel]`:
+ *
+ * - `--cngx-field-required-color` -> `--cngx-field-error-color` ->
+ *   `--cngx-color-danger`
+ *
+ * A `:root` delegating rule pins the token to `--cngx-color-danger`
+ * so a dark-mode swap on the foundation token cascades through.
+ */
+
+@layer cngx.tokens {
+  /**
+   * Color of the required-marker glyph. Falls back through
+   * `--cngx-field-error-color` and then `--cngx-color-danger`.
+   * @group State / Required
+   * @see [[--cngx-color-danger]]
+   */
+  @property --cngx-field-required-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.55 0.21 27);
+  }
+
+  /* Delegating token — required-marker tracks the danger chain so a
+   * dark-mode swap on `--cngx-color-danger` cascades through. */
+  :root {
+    --cngx-field-required-color: var(--cngx-color-danger);
+  }
+}
+
+@layer cngx.components {
+  @scope (.cngx-required) {
+    :scope {
+      /* Inline so the marker sits next to the label text. `display:
+       * contents` here pushed the inner <span> up into the
+       * label's parent — when that parent was a grid (the standard
+       * stacked-field layout), the asterisk ended up on its own
+       * row.
+       */
+      display: inline;
+      margin-inline-start: 0.125em;
+    }
+
+    span {
+      color: var(
+        --cngx-field-required-color,
+        var(--cngx-field-error-color, var(--cngx-color-danger, oklch(0.55 0.21 27)))
+      );
+    }
+  }
+}

@@ -1,0 +1,254 @@
+/**
+ * @overview
+ * Default visuals for `CngxCloseButton`. The host carries
+ * `.cngx-close-button` and renders with `display: contents` so the
+ * inner `.cngx-close-button__btn` carries the box; the glyph projects
+ * into `.cngx-close-button__icon`. Idle state is muted via opacity;
+ * hover lifts to full opacity plus a subtle neutral wash.
+ *
+ * **State modifiers**
+ *
+ * State is driven by pseudo-classes on the inner button rather than
+ * host modifier classes:
+ *
+ * - `:hover` - opacity to `--cngx-close-button-hover-opacity` plus
+ *   `--cngx-close-button-hover-bg` wash
+ * - `:focus-visible` - outline via `--cngx-close-button-focus-outline`
+ *   + offset, opacity forced to 1
+ * - `:active` - opacity to `--cngx-close-button-active-opacity`
+ *
+ * **Slots**
+ *
+ * - `.cngx-close-button__btn` - the actual focusable `<button>`
+ * - `.cngx-close-button__icon` - projected glyph (defaults to a 16px box)
+ *
+ * **Inheritance**
+ *
+ * Layout tokens cascade through the foundation:
+ *
+ * - `--cngx-close-button-padding` -> `--cngx-space-sm`
+ * - `--cngx-close-button-radius` -> `--cngx-radius-sm`
+ * - `--cngx-close-button-color` - direct (defaults to `currentColor`)
+ *
+ * **Dark mode**
+ *
+ * Three hooks flip the hover wash from `oklch(0 0 0 / 0.04)` to
+ * `oklch(1 0 0 / 0.06)` so the subtle hover surface stays visible
+ * against a dark page:
+ *
+ * - `prefers-color-scheme: dark`
+ * - `[data-color-scheme="dark"]`
+ * - `.dark` class
+ *
+ * A matching `[data-color-scheme="light"]` / `.light` block pins the
+ * light value so explicit-light overrides win over the media query.
+ */
+
+@layer cngx.tokens {
+  /**
+   * Background of the resting button.
+   * @group Surface
+   */
+  @property --cngx-close-button-bg {
+    syntax: '*';
+    inherits: false;
+    initial-value: none;
+  }
+
+  /**
+   * Border shorthand of the resting button.
+   * @group Surface
+   */
+  @property --cngx-close-button-border {
+    syntax: '*';
+    inherits: false;
+    initial-value: none;
+  }
+
+  /**
+   * Minimum hit-target size of the button (both axes).
+   * @group Layout
+   */
+  @property --cngx-close-button-size {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 32px;
+  }
+
+  /**
+   * Padding shorthand. Falls back to `--cngx-space-sm`.
+   * @group Layout
+   */
+  @property --cngx-close-button-padding {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 8px;
+  }
+
+  /**
+   * Glyph color. Defaults to `currentColor`.
+   * @group Surface
+   */
+  @property --cngx-close-button-color {
+    syntax: '*';
+    inherits: true;
+    initial-value: currentColor;
+  }
+
+  /**
+   * Resting opacity. The hover state lifts to full opacity.
+   * @group State / Idle
+   */
+  @property --cngx-close-button-opacity {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 0.5;
+  }
+
+  /**
+   * Corner radius. Defaults to `--cngx-radius-sm`.
+   * @group Layout
+   */
+  @property --cngx-close-button-radius {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 4px;
+  }
+
+  /**
+   * Transition duration for opacity / background changes.
+   * @group Motion
+   */
+  @property --cngx-close-button-transition {
+    syntax: '<time>';
+    inherits: false;
+    initial-value: 150ms;
+  }
+
+  /**
+   * Opacity multiplier applied on hover.
+   * @group State / Hover
+   */
+  @property --cngx-close-button-hover-opacity {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 1;
+  }
+
+  /**
+   * Background tint applied on hover - a subtle neutral overlay.
+   * `inherits: true` so the :root dark-mode override reaches the
+   * inner `<button>` on hover.
+   * @group State / Hover
+   */
+  @property --cngx-close-button-hover-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0 0 0 / 0.04);
+  }
+
+  /**
+   * Focus-ring outline shorthand.
+   * @group State / Focus
+   */
+  @property --cngx-close-button-focus-outline {
+    syntax: '*';
+    inherits: false;
+    initial-value: 2px solid currentColor;
+  }
+
+  /**
+   * Outline offset of the focus ring.
+   * @group State / Focus
+   */
+  @property --cngx-close-button-focus-offset {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 2px;
+  }
+
+  /**
+   * Opacity applied during the active (pressed) state.
+   * @group State / Active
+   */
+  @property --cngx-close-button-active-opacity {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 0.8;
+  }
+
+  /**
+   * Width + height of the inner icon slot.
+   * @group Layout
+   */
+  @property --cngx-close-button-icon-size {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 16px;
+  }
+
+  /* Dark-mode swap - hover wash inverts to white-alpha so the
+   * subtle hover surface remains visible against the dark page. */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-color-scheme='light']):not(.light) {
+      --cngx-close-button-hover-bg: oklch(1 0 0 / 0.06);
+    }
+  }
+  [data-color-scheme='dark'],
+  .dark {
+    --cngx-close-button-hover-bg: oklch(1 0 0 / 0.06);
+  }
+  [data-color-scheme='light'],
+  .light {
+    --cngx-close-button-hover-bg: oklch(0 0 0 / 0.04);
+  }
+}
+
+@layer cngx.components {
+  @scope (.cngx-close-button) {
+    :scope {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      vertical-align: middle;
+    }
+
+    .cngx-close-button__btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      appearance: none;
+      background: var(--cngx-close-button-bg, none);
+      border: var(--cngx-close-button-border, none);
+      min-width: var(--cngx-close-button-size, 32px);
+      min-height: var(--cngx-close-button-size, 32px);
+      padding: var(--cngx-close-button-padding, var(--cngx-space-sm, 8px));
+      cursor: pointer;
+      color: var(--cngx-close-button-color, inherit);
+      opacity: var(--cngx-close-button-opacity, 0.5);
+      border-radius: var(--cngx-close-button-radius, var(--cngx-radius-sm, 4px));
+      transition: opacity var(--cngx-close-button-transition, 150ms) ease;
+    }
+
+    .cngx-close-button__btn:hover {
+      opacity: var(--cngx-close-button-hover-opacity, 1);
+      background: var(--cngx-close-button-hover-bg, oklch(0 0 0 / 0.04));
+    }
+
+    .cngx-close-button__btn:focus-visible {
+      outline: var(--cngx-close-button-focus-outline, 2px solid currentColor);
+      outline-offset: var(--cngx-close-button-focus-offset, 2px);
+      opacity: 1;
+    }
+
+    .cngx-close-button__btn:active {
+      opacity: var(--cngx-close-button-active-opacity, 0.8);
+    }
+
+    .cngx-close-button__icon {
+      width: var(--cngx-close-button-icon-size, 16px);
+      height: var(--cngx-close-button-icon-size, 16px);
+      flex-shrink: 0;
+    }
+  }
+}

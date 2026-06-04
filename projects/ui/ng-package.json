@@ -1,0 +1,11 @@
+{
+  "$schema": "../../node_modules/ng-packagr/ng-package.schema.json",
+  "dest": "../../dist/ui",
+  "lib": {
+    "entryFile": "public-api.ts"
+  },
+  "assets": [
+    "mat-tabs/styles/mat-tabs.css",
+    { "input": "theming", "glob": "**/*.css", "output": "theming" }
+  ]
+}

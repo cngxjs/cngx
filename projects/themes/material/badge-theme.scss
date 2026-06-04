@@ -1,0 +1,73 @@
+@use '@angular/material' as mat;
+
+// Material bridge for CngxBadge. Maps the badge's four-colour palette
+// (primary / error / warning / neutral), the indicator's corner radius,
+// the cut-out ring, and the typography scale onto Material 3 surface,
+// semantic, and label tokens so a cngx badge reads native next to
+// <mat-badge>, <mat-chip>, and <mat-card> headers.
+//
+//   @use '@angular/material' as mat;
+//   @use '@cngx/themes/material/badge-theme' as badge;
+//   html { @include badge.theme($theme); }
+
+@mixin color($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-badge-primary-bg: var(--mat-sys-primary);
+    --cngx-badge-primary-color: var(--mat-sys-on-primary);
+
+    --cngx-badge-error-bg: var(--mat-sys-error);
+    --cngx-badge-error-color: var(--mat-sys-on-error);
+
+    // Material 3 has no first-class warning surface - fold onto tertiary
+    // tone so badges, banners, and chips stay in sync.
+    --cngx-badge-warning-bg: var(--mat-sys-tertiary);
+    --cngx-badge-warning-color: var(--mat-sys-on-tertiary);
+
+    // Neutral badge sits on the surface-variant tone so it tints rather
+    // than competing with primary alerts.
+    --cngx-badge-neutral-bg: var(--mat-sys-surface-variant);
+    --cngx-badge-neutral-color: var(--mat-sys-on-surface-variant);
+  } @else {
+    --cngx-badge-primary-bg: #{mat.get-theme-color($theme, primary)};
+    --cngx-badge-error-bg: #{mat.get-theme-color($theme, warn)};
+    --cngx-badge-warning-bg: #{mat.get-theme-color($theme, accent)};
+    --cngx-badge-neutral-bg: #{rgba(mat.get-theme-color($theme, foreground, text), 0.12)};
+    --cngx-badge-neutral-color: #{mat.get-theme-color($theme, foreground, text)};
+  }
+}
+
+@mixin typography($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    // Badge text follows Material's label-small scale so a count next to
+    // a <mat-chip> shares the same character class. Weight stays at the
+    // library default (600) for legibility on the smallest surface.
+    --cngx-badge-font-size: var(--mat-sys-label-small-size, 0.6875rem);
+  }
+}
+
+@mixin base($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    // Pill radius adopts Material's full-corner token so the indicator
+    // matches <mat-badge>, which uses the same radius.
+    --cngx-badge-radius: var(--mat-sys-corner-full, 999px);
+  } @else {
+    --cngx-badge-radius: 999px;
+  }
+}
+
+@mixin theme($theme) {
+  @layer cngx.components {
+    // Color tokens inherit, so setting them on the host cascades into
+    // the indicator span. Typography and radius tokens are declared
+    // `inherits: false` (see projects/common/theming/components/
+    // cngx-badge.css), so they must land on the indicator element
+    // itself to take effect.
+    :where([cngxBadge], .cngx-badge-host) {
+      @include color($theme);
+    }
+    :where(.cngx-badge-indicator) {
+      @include typography($theme);
+      @include base($theme);
+    }
+  }
+}

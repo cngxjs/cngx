@@ -1,0 +1,100 @@
+<cdk-table
+  [dataSource]="visibleNodes()"
+  [trackBy]="trackByFn"
+  role="treegrid"
+  (keydown)="handleKeyDown($event)"
+>
+  <!-- expand/collapse toggle column -->
+  <ng-container cdkColumnDef="_expand">
+    <cdk-header-cell *cdkHeaderCellDef class="cngx-treetable__expand-cell"></cdk-header-cell>
+    <cdk-cell *cdkCellDef="let node" class="cngx-treetable__expand-cell">
+      @if (node.hasChildren) {
+        <button
+          type="button"
+          class="cngx-treetable__toggle"
+          (click)="toggle(node); $event.stopPropagation()"
+          [attr.aria-expanded]="expandedIds().has(node.id)"
+          [attr.aria-label]="expandedIds().has(node.id) ? 'Collapse' : 'Expand'"
+        >
+          {{ expandedIds().has(node.id) ? '▾' : '▸' }}
+        </button>
+      }
+    </cdk-cell>
+  </ng-container>
+
+  <!-- checkbox selection column -->
+  <ng-container cdkColumnDef="_select">
+    <cdk-header-cell *cdkHeaderCellDef class="cngx-treetable__select-cell">
+      @if (selectionMode() === 'multi') {
+        <input
+          type="checkbox"
+          class="cngx-treetable__checkbox"
+          [checked]="isAllSelected()"
+          [indeterminate]="isIndeterminate()"
+          [attr.aria-label]="'Select all rows'"
+          (change)="toggleAll()"
+        />
+      }
+    </cdk-header-cell>
+    <cdk-cell *cdkCellDef="let node" class="cngx-treetable__select-cell">
+      <input
+        type="checkbox"
+        class="cngx-treetable__checkbox"
+        [checked]="isSelected(node.id)"
+        [attr.aria-label]="'Select row'"
+        (click)="$event.stopPropagation()"
+        (change)="toggleSelection(node)"
+      />
+    </cdk-cell>
+  </ng-container>
+
+  <!-- dynamic data columns -->
+  @for (col of columns(); track col) {
+    <ng-container [cdkColumnDef]="col">
+      <cdk-header-cell *cdkHeaderCellDef>
+        @if (headerTplFor(col); as tpl) {
+          <ng-container *ngTemplateOutlet="tpl"></ng-container>
+        } @else {
+          {{ resolvedOptions().capitaliseHeader !== false ? capitalise(col) : col }}
+        }
+      </cdk-header-cell>
+      <cdk-cell
+        *cdkCellDef="let node"
+        [class.cngx-treetable__first-data-cell]="col === columns()[0]"
+      >
+        @if (cellTplFor(col); as tpl) {
+          <ng-container
+            *ngTemplateOutlet="
+              tpl;
+              context: { $implicit: node, value: asRecord(node.value)[col] }
+            "
+          ></ng-container>
+        } @else {
+          {{ asRecord(node.value)[col] }}
+        }
+      </cdk-cell>
+    </ng-container>
+  }
+
+  <cdk-header-row *cdkHeaderRowDef="allColumns()"></cdk-header-row>
+  <cdk-row
+    *cdkRowDef="let node; columns: allColumns()"
+    cngxTreetableRow
+    [node]="node"
+    [highlight]="resolvedOptions().highlightRowOnHover ?? false"
+    [selected]="isSelected(node.id)"
+    [tabindex]="focusedNodeId() === node.id ? 0 : -1"
+    [class.cngx-treetable__row--focused]="focusedNodeId() === node.id"
+    role="row"
+    (click)="handleRowClick(node)"
+  >
+  </cdk-row>
+</cdk-table>
+
+@if (isEmpty()) {
+  @if (emptyTpl(); as tpl) {
+    <ng-container *ngTemplateOutlet="tpl.template"></ng-container>
+  } @else {
+    <div class="cngx-treetable__empty">No data</div>
+  }
+}

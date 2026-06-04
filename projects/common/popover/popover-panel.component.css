@@ -1,0 +1,561 @@
+/**
+ * @overview
+ * Default visuals for `CngxPopoverPanel`. The host carries
+ * `.cngx-popover-panel` via `hostClass()`; the `CngxPopover` host
+ * directive toggles open / closing transition classes. The four
+ * semantic accents sit outside the foundation primary so an Ember-
+ * toned theme cannot accidentally tint a "success" panel.
+ *
+ * **State modifiers**
+ *
+ * Applied by `CngxPopover` to drive the open / close transition:
+ *
+ * - `.cngx-popover--opening` - opacity 0 + translate 4px / scale 0.98
+ * - `.cngx-popover--open` - resting state
+ * - `.cngx-popover--closing` - same as opening, animated outward
+ * - `:popover-open` - native popover restore-display
+ *
+ * **Accent variants**
+ *
+ * Each pins `--cngx-popover-panel-accent` + `-accent-text` on the
+ * panel and adds a `border-left` stripe. Child slots pick up both
+ * tokens via inheritance:
+ *
+ * - `--info` - blue accent
+ * - `--success` - success-coded
+ * - `--warning` - warning-coded
+ * - `--danger` - danger-coded
+ *
+ * **Arrow placement**
+ *
+ * Selected via `[data-arrow-placement="top|bottom|left|right"]`
+ * written by `CngxPopover` from live trigger / panel geometry. The
+ * 45-degree arrow square positions itself off the matching edge;
+ * `--cngx-popover-arrow-offset` (also written by `CngxPopover`)
+ * carries the live perpendicular offset, with a 50% fallback for
+ * the first paint before the offset computation lands.
+ *
+ * **Slots**
+ *
+ * - `__header` - optional title row
+ * - `__body` - main content
+ * - `__footer` - action row, divided by top border
+ * - `__header-row` - header + optional close button
+ * - `__close` - circular dismiss button, hover wash + focus ring
+ * - `__arrow` - 45-degree square positioned by arrow-placement
+ * - `__loading` / `__error` / `__empty` - async-state surfaces;
+ *   `__error` picks up `--cngx-color-danger`, `__empty` dims to 0.6
+ *
+ * **Inheritance**
+ *
+ * - `--cngx-popover-panel-bg` -> `--cngx-color-surface` (via `:root`
+ *   delegation so dark-mode surface cascades through automatically)
+ * - `--cngx-popover-panel-color` -> `--cngx-color-text`
+ * - Layout / motion / header / footer tokens - leaf, no fallback
+ *   chain
+ * - Accent surface tokens - leaf; each variant rule pins them with
+ *   light-mode defaults, the dark cascade overrides them at higher
+ *   specificity outside the @scope wrap
+ *
+ * **Dark mode**
+ *
+ * Three hooks lift the alpha-on-black borders / shadow to alpha-on-
+ * white so they remain visible on dark surfaces, swap the close-button
+ * hover wash to white-alpha, and pin every variant accent to its
+ * dark-mode pair (lower L surface + lifted-L text):
+ *
+ * - `prefers-color-scheme: dark`
+ * - `[data-color-scheme="dark"]` / `.dark` class
+ * - `[data-color-scheme="light"]` / `.light` class (explicit pin)
+ *
+ * **Reduced motion**
+ *
+ * Under `prefers-reduced-motion: reduce` the opacity + transform
+ * transition is dropped so the panel snaps in and out.
+ *
+ * **Pair with**
+ *
+ * - `@cngx/themes/material/popover-panel-theme` - Material 3
+ *   surface + elevation
+ */
+
+@layer cngx.tokens {
+  /**
+   * Panel background. Falls back through `--cngx-color-surface`.
+   * @group Surface
+   * @see [[--cngx-color-surface]]
+   */
+  @property --cngx-popover-panel-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(1 0 0);
+  }
+
+  /**
+   * Panel text color. Falls back through `--cngx-color-text`.
+   * @group Surface
+   * @see [[--cngx-color-text]]
+   */
+  @property --cngx-popover-panel-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.27 0.04 250);
+  }
+
+  /**
+   * Corner radius of the panel.
+   * @group Layout
+   */
+  @property --cngx-popover-panel-border-radius {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 12px;
+  }
+
+  /**
+   * Padding shorthand applied inside the panel.
+   * @group Layout
+   */
+  @property --cngx-popover-panel-padding {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 16px;
+  }
+
+  /**
+   * Maximum inline size - caps long content before the floater
+   * collides with viewport edges.
+   * @group Layout
+   */
+  @property --cngx-popover-panel-max-width {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 360px;
+  }
+
+  /**
+   * Drop-shadow shorthand for the panel. `inherits: true` so the
+   * :root dark-mode override reaches the open panel element.
+   * @group Surface
+   */
+  @property --cngx-popover-panel-shadow {
+    syntax: '*';
+    inherits: true;
+    initial-value: 0 8px 24px oklch(0 0 0 / 0.12);
+  }
+
+  /**
+   * Border shorthand for the panel.
+   * @group Surface
+   */
+  @property --cngx-popover-panel-border {
+    syntax: '*';
+    inherits: true;
+    initial-value: 1px solid oklch(0 0 0 / 0.08);
+  }
+
+  /**
+   * Side length of the arrow square (the rotated 45° diamond - final
+   * arrow side reads as `size * sqrt(2)`).
+   * @group Layout
+   */
+  @property --cngx-popover-panel-arrow-size {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 8px;
+  }
+
+  /**
+   * Diameter of the optional close button in the header row.
+   * @group Layout
+   */
+  @property --cngx-popover-panel-close-size {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 28px;
+  }
+
+  /**
+   * Duration of the opacity + transform transition between the open
+   * states.
+   * @group Motion
+   */
+  @property --cngx-popover-panel-transition-duration {
+    syntax: '<time>';
+    inherits: true;
+    initial-value: 200ms;
+  }
+
+  /**
+   * Easing curve of the open / close transition.
+   * @group Motion
+   */
+  @property --cngx-popover-panel-transition-easing {
+    syntax: '*';
+    inherits: true;
+    initial-value: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /**
+   * Font-size of the optional header slot.
+   * @group Typography
+   */
+  @property --cngx-popover-panel-header-font-size {
+    syntax: '*';
+    inherits: true;
+    initial-value: 0.875rem;
+  }
+
+  /**
+   * Font-weight of the optional header slot.
+   * @group Typography
+   */
+  @property --cngx-popover-panel-header-font-weight {
+    syntax: '<number>';
+    inherits: true;
+    initial-value: 600;
+  }
+
+  /**
+   * Vertical gap between the header and the body slot.
+   * @group Layout
+   */
+  @property --cngx-popover-panel-header-gap {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 8px;
+  }
+
+  /**
+   * Horizontal gap between footer actions.
+   * @group Layout
+   */
+  @property --cngx-popover-panel-footer-gap {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 8px;
+  }
+
+  /**
+   * Border shorthand applied to the top of the footer - visually
+   * separates actions from the body.
+   * @group Surface
+   */
+  @property --cngx-popover-panel-footer-border-top {
+    syntax: '*';
+    inherits: true;
+    initial-value: 1px solid oklch(0 0 0 / 0.06);
+  }
+
+  /**
+   * Padding above the footer divider.
+   * @group Layout
+   */
+  @property --cngx-popover-panel-footer-padding-top {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 12px;
+  }
+
+  /**
+   * Margin above the footer divider - pulls the footer down off the
+   * body.
+   * @group Layout
+   */
+  @property --cngx-popover-panel-footer-margin-top {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 12px;
+  }
+
+  /**
+   * Accent surface for the semantic-variant rules
+   * (`.cngx-popover-panel--info` / `--success` / `--warning` /
+   * `--danger`). Each variant rule pins this token plus the matching
+   * accent-text token - child slots pick them up through
+   * `currentColor` and `var()` fallbacks.
+   * @group Variant / Accent
+   */
+  @property --cngx-popover-panel-accent {
+    syntax: '*';
+    inherits: true;
+    initial-value: transparent;
+  }
+
+  /**
+   * Text / outline color paired with the accent surface - used by
+   * focus rings and the variant border-left rule.
+   * @group Variant / Accent
+   */
+  @property --cngx-popover-panel-accent-text {
+    syntax: '*';
+    inherits: true;
+    initial-value: currentColor;
+  }
+
+  /**
+   * Hover wash on the optional close button. Light: 6% black wash;
+   * dark: 8% white wash. Both sit subtly on top of the panel surface
+   * without competing for attention.
+   * @group State / Hover
+   */
+  @property --cngx-popover-panel-close-hover-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0 0 0 / 0.06);
+  }
+
+  /* Delegating tokens - bg + text track the foundation surface so
+   * any consumer-level dark-mode signal cascades through automatically. */
+  :root {
+    --cngx-popover-panel-bg: var(--cngx-color-surface);
+    --cngx-popover-panel-color: var(--cngx-color-text);
+  }
+
+  /* Dark-mode component-local swap - alpha-on-black borders/shadows
+   * vanish on dark surfaces, so the dark block lifts them to
+   * alpha-on-white. Variant accent overrides live below the @scope
+   * block (modifier classes need a non-scope-relative selector). */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-color-scheme='light']):not(.light) {
+      --cngx-popover-panel-border: 1px solid oklch(1 0 0 / 0.12);
+      --cngx-popover-panel-footer-border-top: 1px solid oklch(1 0 0 / 0.08);
+      --cngx-popover-panel-shadow: 0 8px 24px oklch(0 0 0 / 0.5);
+      --cngx-popover-panel-close-hover-bg: oklch(1 0 0 / 0.08);
+    }
+  }
+  [data-color-scheme='dark'],
+  .dark {
+    --cngx-popover-panel-border: 1px solid oklch(1 0 0 / 0.12);
+    --cngx-popover-panel-footer-border-top: 1px solid oklch(1 0 0 / 0.08);
+    --cngx-popover-panel-shadow: 0 8px 24px oklch(0 0 0 / 0.5);
+    --cngx-popover-panel-close-hover-bg: oklch(1 0 0 / 0.08);
+  }
+  [data-color-scheme='light'],
+  .light {
+    --cngx-popover-panel-border: 1px solid oklch(0 0 0 / 0.08);
+    --cngx-popover-panel-footer-border-top: 1px solid oklch(0 0 0 / 0.06);
+    --cngx-popover-panel-shadow: 0 8px 24px oklch(0 0 0 / 0.12);
+    --cngx-popover-panel-close-hover-bg: oklch(0 0 0 / 0.06);
+  }
+}
+
+@layer cngx.components {
+  @scope (.cngx-popover-panel) {
+    :scope {
+      position: fixed;
+      inset: unset;
+      box-sizing: border-box;
+      background: var(--cngx-popover-panel-bg, var(--cngx-color-surface, oklch(1 0 0)));
+      color: var(--cngx-popover-panel-color, var(--cngx-color-text, oklch(0.27 0.04 250)));
+      border-radius: var(--cngx-popover-panel-border-radius, 12px);
+      border: var(--cngx-popover-panel-border, 1px solid oklch(0 0 0 / 0.08));
+      box-shadow: var(--cngx-popover-panel-shadow, 0 8px 24px oklch(0 0 0 / 0.12));
+      padding: var(--cngx-popover-panel-padding, 16px);
+      max-width: var(--cngx-popover-panel-max-width, 360px);
+      width: max-content;
+      overflow: visible;
+      transition:
+        opacity var(--cngx-popover-panel-transition-duration, 200ms)
+          var(--cngx-popover-panel-transition-easing, cubic-bezier(0.4, 0, 0.2, 1)),
+        transform var(--cngx-popover-panel-transition-duration, 200ms)
+          var(--cngx-popover-panel-transition-easing, cubic-bezier(0.4, 0, 0.2, 1));
+    }
+
+    /* Browser hides [popover] by default - restore display when open. */
+    :scope:popover-open {
+      display: block;
+    }
+
+    :scope.cngx-popover--opening {
+      opacity: 0;
+      transform: translateY(4px) scale(0.98);
+    }
+    :scope.cngx-popover--open {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+    :scope.cngx-popover--closing {
+      opacity: 0;
+      transform: translateY(4px) scale(0.98);
+    }
+
+    .cngx-popover-panel__header {
+      font-size: var(--cngx-popover-panel-header-font-size, 0.875rem);
+      font-weight: var(--cngx-popover-panel-header-font-weight, 600);
+      margin-bottom: var(--cngx-popover-panel-header-gap, 8px);
+      color: var(--cngx-popover-panel-accent-text, inherit);
+    }
+
+    .cngx-popover-panel__body {
+      font-size: 0.8125rem;
+      line-height: 1.5;
+    }
+
+    .cngx-popover-panel__footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: var(--cngx-popover-panel-footer-gap, 8px);
+      border-top: var(--cngx-popover-panel-footer-border-top, 1px solid oklch(0 0 0 / 0.06));
+      padding-top: var(--cngx-popover-panel-footer-padding-top, 12px);
+      margin-top: var(--cngx-popover-panel-footer-margin-top, 12px);
+    }
+
+    .cngx-popover-panel__header-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: var(--cngx-popover-panel-header-gap, 8px);
+    }
+
+    .cngx-popover-panel__header-row > .cngx-popover-panel__header {
+      flex: 1;
+      margin-bottom: 0;
+    }
+
+    .cngx-popover-panel__close {
+      flex-shrink: 0;
+      --cngx-close-button-size: var(--cngx-popover-panel-close-size, 28px);
+      --cngx-close-button-radius: 50%;
+      --cngx-close-button-padding: 0;
+      --cngx-close-button-hover-bg: var(--cngx-popover-panel-close-hover-bg, oklch(0 0 0 / 0.06));
+      --cngx-close-button-focus-outline: 2px solid var(--cngx-popover-panel-accent-text, currentColor);
+    }
+
+    .cngx-popover-panel__arrow {
+      position: absolute;
+      width: calc(var(--cngx-popover-panel-arrow-size, 8px) * 2);
+      height: calc(var(--cngx-popover-panel-arrow-size, 8px) * 2);
+      background: var(--cngx-popover-panel-bg, oklch(1 0 0));
+      border: var(--cngx-popover-panel-border, 1px solid oklch(0 0 0 / 0.08));
+      transform: rotate(45deg);
+      pointer-events: none;
+    }
+
+    /* Arrow placement - keyed off CngxPopover's `data-arrow-placement`
+       host attribute, which exposes the primary edge of the active
+       placement (`top` / `bottom` / `left` / `right`).
+       --cngx-popover-arrow-offset is written by CngxPopover from the
+       live trigger / panel geometry; the 50% fallback keeps the arrow
+       visually centred when the popover renders before the first
+       offset computation. */
+    :scope[data-arrow-placement='bottom'] > .cngx-popover-panel__arrow {
+      top: calc(var(--cngx-popover-panel-arrow-size, 8px) * -1);
+      left: var(--cngx-popover-arrow-offset, 50%);
+      margin-left: calc(var(--cngx-popover-panel-arrow-size, 8px) * -1);
+      border-right: none;
+      border-bottom: none;
+    }
+    :scope[data-arrow-placement='top'] > .cngx-popover-panel__arrow {
+      bottom: calc(var(--cngx-popover-panel-arrow-size, 8px) * -1);
+      left: var(--cngx-popover-arrow-offset, 50%);
+      margin-left: calc(var(--cngx-popover-panel-arrow-size, 8px) * -1);
+      border-left: none;
+      border-top: none;
+    }
+    :scope[data-arrow-placement='left'] > .cngx-popover-panel__arrow {
+      right: calc(var(--cngx-popover-panel-arrow-size, 8px) * -1);
+      top: var(--cngx-popover-arrow-offset, 50%);
+      margin-top: calc(var(--cngx-popover-panel-arrow-size, 8px) * -1);
+      border-left: none;
+      border-bottom: none;
+    }
+    :scope[data-arrow-placement='right'] > .cngx-popover-panel__arrow {
+      left: calc(var(--cngx-popover-panel-arrow-size, 8px) * -1);
+      top: var(--cngx-popover-arrow-offset, 50%);
+      margin-top: calc(var(--cngx-popover-panel-arrow-size, 8px) * -1);
+      border-right: none;
+      border-top: none;
+    }
+
+    /* Semantic variants - set --cngx-popover-panel-accent/-text on the panel; children
+       inherit them and pick them up via var() fallbacks. */
+    :scope.cngx-popover-panel--info {
+      --cngx-popover-panel-accent: oklch(0.92 0.05 250);
+      --cngx-popover-panel-accent-text: oklch(0.38 0.16 260);
+      border-left: 3px solid var(--cngx-popover-panel-accent-text);
+    }
+    :scope.cngx-popover-panel--success {
+      --cngx-popover-panel-accent: oklch(0.94 0.07 155);
+      --cngx-popover-panel-accent-text: oklch(0.42 0.1 155);
+      border-left: 3px solid var(--cngx-popover-panel-accent-text);
+    }
+    :scope.cngx-popover-panel--warning {
+      --cngx-popover-panel-accent: oklch(0.95 0.06 75);
+      --cngx-popover-panel-accent-text: oklch(0.46 0.12 60);
+      border-left: 3px solid var(--cngx-popover-panel-accent-text);
+    }
+    :scope.cngx-popover-panel--danger {
+      --cngx-popover-panel-accent: oklch(0.93 0.04 25);
+      --cngx-popover-panel-accent-text: oklch(0.42 0.18 25);
+      border-left: 3px solid var(--cngx-popover-panel-accent-text);
+    }
+
+    .cngx-popover-panel__loading,
+    .cngx-popover-panel__error,
+    .cngx-popover-panel__empty {
+      font-size: 0.8125rem;
+      line-height: 1.5;
+      text-align: center;
+      padding: 8px 0;
+    }
+
+    .cngx-popover-panel__error {
+      color: var(--cngx-color-danger, oklch(0.6 0.22 25));
+    }
+
+    .cngx-popover-panel__empty {
+      opacity: 0.6;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      :scope {
+        transition: none;
+      }
+    }
+  }
+
+  /* Dark-mode variant accent overrides - the four severity rules
+   * inside @scope pin the accent tokens with light-mode values, so
+   * the dark cascade lands here as a higher-specificity override
+   * sitting outside the scope (modifier classes only ever land on
+   * the panel host, so the bare-class selector is safe). */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-color-scheme='light']):not(.light) .cngx-popover-panel--info {
+      --cngx-popover-panel-accent: oklch(0.32 0.05 250);
+      --cngx-popover-panel-accent-text: oklch(0.78 0.13 250);
+    }
+    :root:not([data-color-scheme='light']):not(.light) .cngx-popover-panel--success {
+      --cngx-popover-panel-accent: oklch(0.32 0.06 145);
+      --cngx-popover-panel-accent-text: oklch(0.78 0.13 145);
+    }
+    :root:not([data-color-scheme='light']):not(.light) .cngx-popover-panel--warning {
+      --cngx-popover-panel-accent: oklch(0.32 0.06 75);
+      --cngx-popover-panel-accent-text: oklch(0.85 0.14 75);
+    }
+    :root:not([data-color-scheme='light']):not(.light) .cngx-popover-panel--danger {
+      --cngx-popover-panel-accent: oklch(0.32 0.05 25);
+      --cngx-popover-panel-accent-text: oklch(0.75 0.15 25);
+    }
+  }
+  [data-color-scheme='dark'] .cngx-popover-panel--info,
+  .dark .cngx-popover-panel--info {
+    --cngx-popover-panel-accent: oklch(0.32 0.05 250);
+    --cngx-popover-panel-accent-text: oklch(0.78 0.13 250);
+  }
+  [data-color-scheme='dark'] .cngx-popover-panel--success,
+  .dark .cngx-popover-panel--success {
+    --cngx-popover-panel-accent: oklch(0.32 0.06 145);
+    --cngx-popover-panel-accent-text: oklch(0.78 0.13 145);
+  }
+  [data-color-scheme='dark'] .cngx-popover-panel--warning,
+  .dark .cngx-popover-panel--warning {
+    --cngx-popover-panel-accent: oklch(0.32 0.06 75);
+    --cngx-popover-panel-accent-text: oklch(0.85 0.14 75);
+  }
+  [data-color-scheme='dark'] .cngx-popover-panel--danger,
+  .dark .cngx-popover-panel--danger {
+    --cngx-popover-panel-accent: oklch(0.32 0.05 25);
+    --cngx-popover-panel-accent-text: oklch(0.75 0.15 25);
+  }
+}

@@ -1,0 +1,74 @@
+/**
+ * @overview
+ * Theming bridge for the `cngxAsyncClick` directive
+ * (`@cngx/common/interactive`). The directive toggles
+ * `cngx-async--pending`, `cngx-async--success`, `cngx-async--error`
+ * on its host as the async action progresses; this stylesheet
+ * paints the three phases.
+ *
+ * **State modifiers**
+ *
+ * - `--pending` - dimmed opacity + `cursor: wait`
+ * - `--succeeded` - success-tinted surface, border, text
+ * - `--failed` - danger-tinted surface, border, text
+ *
+ * **Inheritance**
+ *
+ * Tokens reuse the action-button namespace so the standalone
+ * `cngxAsyncClick` variant inherits the same visual contract as
+ * `CngxActionButton`:
+ *
+ * - `--cngx-action-btn-succeeded-bg` -> `--cngx-color-success`
+ * - `--cngx-action-btn-succeeded-color` -> `--cngx-color-success`
+ * - `--cngx-action-btn-failed-bg` -> `--cngx-color-danger`
+ * - `--cngx-action-btn-failed-color` -> `--cngx-color-danger`
+ *
+ * **Notes**
+ *
+ * - Lives under `theming/components` because `styleUrl` is
+ *   `@Component`-only; the directive's state classes must remain
+ *   globally available.
+ * - Known class-name mismatch: the directive emits `--success` /
+ *   `--error` but the rules below target `--succeeded` / `--failed`.
+ *   Tracked as a separate fix.
+ */
+
+@layer cngx.components {
+  .cngx-async--pending {
+    opacity: var(--cngx-action-btn-pending-opacity, 0.7);
+    cursor: wait;
+    transition: opacity var(--cngx-action-btn-transition, 0.2s ease);
+  }
+
+  .cngx-async--succeeded {
+    background-color: var(
+      --cngx-action-btn-succeeded-bg,
+      var(--cngx-color-success, oklch(0.95 0.04 145))
+    );
+    color: var(--cngx-action-btn-succeeded-color, var(--cngx-color-success, oklch(0.5 0.15 145)));
+    border-color: var(
+      --cngx-action-btn-succeeded-border,
+      var(--cngx-color-success, oklch(0.5 0.15 145))
+    );
+    transition:
+      background-color var(--cngx-action-btn-transition, 0.2s ease),
+      color var(--cngx-action-btn-transition, 0.2s ease),
+      border-color var(--cngx-action-btn-transition, 0.2s ease);
+  }
+
+  .cngx-async--failed {
+    background-color: var(
+      --cngx-action-btn-failed-bg,
+      var(--cngx-color-danger, oklch(0.95 0.025 25))
+    );
+    color: var(--cngx-action-btn-failed-color, var(--cngx-color-danger, oklch(0.45 0.15 25)));
+    border-color: var(
+      --cngx-action-btn-failed-border,
+      var(--cngx-color-danger, oklch(0.45 0.15 25))
+    );
+    transition:
+      background-color var(--cngx-action-btn-transition, 0.2s ease),
+      color var(--cngx-action-btn-transition, 0.2s ease),
+      border-color var(--cngx-action-btn-transition, 0.2s ease);
+  }
+}

@@ -1,0 +1,319 @@
+import {
+  DestroyRef,
+  Directive,
+  ElementRef,
+  Renderer2,
+  afterNextRender,
+  computed,
+  effect,
+  inject,
+  input,
+  isDevMode,
+  model,
+  output,
+  signal,
+  untracked,
+} from '@angular/core';
+import {
+  CNGX_FORM_FIELD_CONTROL,
+  CNGX_FORM_FIELD_HOST,
+  type CngxFormFieldControl,
+} from '@cngx/core/tokens';
+import { nextUid } from '@cngx/core/utils';
+
+import { CNGX_CHIP_GROUP_HOST } from '../chip-group/chip-group-host.token';
+import { CNGX_CONTROL_VALUE, type CngxControlValue } from '../control-value/control-value.token';
+import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.token';
+
+/**
+ * Standalone interactive chip - applies onto `<cngx-chip>` from
+ * `@cngx/common/display` and wires `role="option"` selection
+ * semantics with a local-owned form-bound boolean. Provides
+ * `CNGX_CONTROL_VALUE` so `CngxFormBridge` (Phase 7) can adapt it
+ * to Reactive Forms and `<cngx-form-field [field]>` paths can drive
+ * it through Signal Forms.
+ *
+ * **Use this when** the chip stands alone (e.g. a removable filter
+ * tag, a single suggestion chip outside any chip-group). For chips
+ * inside a `<cngx-chip-group>` / `<cngx-multi-chip-group>`, use
+ * `[cngxChipInGroup]` instead - that variant derives `selected`
+ * from the parent's selection controller as a `computed()`,
+ * eliminating the dual-source-of-truth a local model would create.
+ * A dev-mode guard (via `afterNextRender`) throws if a standalone
+ * chip is mistakenly nested inside a group.
+ *
+ * **Naming note.** The `CngxControlValue<boolean>` contract requires
+ * a `value: ModelSignal<boolean>` field; the plan's API surface
+ * uses `[(selected)]` for the form state and `[value]` for the
+ * chip's payload. Double aliasing reconciles both: the form-bound
+ * `value` field is aliased to template binding `[(selected)]`, and
+ * the payload `chipValue` field is aliased to template binding
+ * `[value]`. Consumers write
+ * `<cngx-chip cngxChipInteraction [value]="x" [(selected)]="b">`
+ * unchanged.
+ *
+ * **A11y.** `role="option"` + reactive `aria-selected`,
+ * `aria-disabled`, and `tabindex` (-1 when disabled, 0 otherwise).
+ * Click + Space + Enter toggle. Backspace + Delete fire
+ * `removeRequest` - an output, NOT a state mutation. The consumer
+ * decides whether removing the chip means dropping it from a list,
+ * deselecting, or something else.
+ *
+ * **Close-button click guard.** The display chip's own
+ * `<button class="cngx-chip__remove">` is a child of the host; its
+ * click event bubbles. `handleClick` short-circuits when the click
+ * originates from inside that button so the chip's own `(click)`
+ * toggle does not double-fire alongside the chip's `(remove)`
+ * output.
+ *
+ * **Disabled "why".** When `disabledReason` is set, the directive
+ * appends a hidden span to the host via `Renderer2` (always-in-DOM
+ * per Pillar 2 - the id stays stable across renders). When
+ * `disabledReason` is empty, consumers may still pass a custom id
+ * via `cngxDescribedBy` and the `aria-describedby` host binding
+ * routes to that. The two paths are mutually exclusive: a non-empty
+ * `disabledReason` wins.
+ *
+ * ```html
+ * <cngx-chip cngxChipInteraction [value]="'red'" [(selected)]="redOn">
+ *   Red
+ * </cngx-chip>
+ *
+ * <span id="chip-locked-reason" hidden>Tag is locked by your role</span>
+ * <cngx-chip
+ *   cngxChipInteraction
+ *   [value]="tag"
+ *   [(selected)]="picked"
+ *   [removable]="true"
+ *   (removeRequest)="onRemoveTag(tag)"
+ *   [disabled]="locked()"
+ *   cngxDescribedBy="chip-locked-reason"
+ * >{{ tag }}</cngx-chip>
+ * ```
+ *
+ * @category common/interactive
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/chip-interaction/chip-interaction.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxChipInGroup, CngxChipGroup, CngxMultiChipGroup, CngxChipInput
+ * <example-url>http://localhost:4200/#/common/interactive/chip/interaction/basic-toggle-on-click-space-or-enter</example-url>
+ * <example-url>http://localhost:4200/#/common/interactive/chip/interaction/disabled-state</example-url>
+ * <example-url>http://localhost:4200/#/common/interactive/chip/interaction/removable-with-removerequest-on-backspace-delete</example-url>
+ * <example-url>http://localhost:4200/#/forms/field/form-primitives/coming-in-a-follow-up</example-url>
+ * <example-url>http://localhost:4200/#/forms/field/form-primitives/reactive-forms-same-atom-just-bind-formcontrol</example-url>
+ * <example-url>http://localhost:4200/#/forms/field/form-primitives/signal-forms-drop-the-atom-into-cngx-form-field</example-url>
+ */
+@Directive({
+  selector: '[cngxChipInteraction]',
+  exportAs: 'cngxChipInteraction',
+  standalone: true,
+  host: {
+    class: 'cngx-chip-interaction',
+    role: 'option',
+    '[attr.id]': 'id()',
+    '[attr.aria-selected]': 'value() ? "true" : "false"',
+    '[attr.aria-disabled]': 'disabled() ? "true" : null',
+    '[attr.aria-invalid]': '(invalid() || errorState()) ? "true" : null',
+    '[attr.aria-errormessage]': 'errorMessageId()',
+    '[attr.aria-describedby]': 'resolvedDescribedBy()',
+    '[attr.tabindex]': 'disabled() ? -1 : 0',
+    '[class.cngx-chip-interaction--selected]': 'value()',
+    '[class.cngx-chip-interaction--disabled]': 'disabled()',
+    '(click)': 'handleClick($event)',
+    '(keydown.space)': 'handleKeydown($event)',
+    '(keydown.enter)': 'handleKeydown($event)',
+    '(keydown.delete)': 'handleRemoveKeydown($event)',
+    '(keydown.backspace)': 'handleRemoveKeydown($event)',
+    '(focusin)': 'handleFocusIn()',
+    '(focusout)': 'handleFocusOut()',
+  },
+  providers: [
+    { provide: CNGX_CONTROL_VALUE, useExisting: CngxChipInteraction },
+    { provide: CNGX_FORM_FIELD_CONTROL, useExisting: CngxChipInteraction },
+  ],
+})
+export class CngxChipInteraction<T = unknown>
+  implements CngxControlValue<boolean>, CngxFormFieldControl
+{
+  /**
+   * Chip payload - required identifier the consumer associates with
+   * this chip (e.g. a tag string, filter id, entity reference). The
+   * directive does not inspect or compare it; it is forwarded to
+   * `(removeRequest)` listeners and visible in the DOM via the
+   * consumer's own bindings. Aliased so consumers write `[value]="x"`
+   * - see naming note in the class JSDoc.
+   */
+  readonly chipValue = input.required<T>({ alias: 'value' });
+
+  /**
+   * Form-bound selection state. Aliased so consumers write
+   * `[(selected)]="b"`; the field name is `value` to satisfy the
+   * `CngxControlValue<boolean>` contract used by `CngxFormBridge`
+   * (Phase 7). See class JSDoc.
+   */
+  readonly value = model<boolean>(false, { alias: 'selected' });
+
+  readonly disabled = model<boolean>(false);
+  /**
+   * Bridge-writable invalid state. `model<boolean>` mirrors `disabled`
+   * so external integrations (RF/Signal-Forms bridges, custom validity
+   * adapters) can drive it without a parallel API path - consumers
+   * typically read only.
+   */
+  readonly invalid = model<boolean>(false);
+  /**
+   * Optional id of an external error message element (e.g. a sibling
+   * rendered by `<cngx-form-field>` or a consumer-owned `<span>`).
+   * When set, the host emits `aria-errormessage="<id>"` so AT can
+   * locate the message; consumers MUST render an element with that id
+   * - passing an id without a matching element produces a dangling
+   * AT reference. Default `null` skips the attribute entirely.
+   * Note: WAI-ARIA dictates that AT ignores this attribute when
+   * `aria-invalid` is absent or `"false"`, so a stable always-emitted
+   * id is harmless when the field is valid.
+   */
+  readonly errorMessageId = input<string | null>(null);
+  readonly disabledReason = input<string>('');
+
+  /**
+   * Optional consumer-supplied id of an external description element
+   * (e.g. a sibling sr-only `<span>`). Consumers bind via
+   * `[cngxDescribedBy]="someId"`. Field name `describedBy` matches
+   * sibling atoms (`CngxChipInGroup`, `CngxButtonToggle`); the alias
+   * preserves the consumer-facing template attribute. Resolved into
+   * `aria-describedby` via `resolvedDescribedBy`, which prefers the
+   * internal disabled-reason id when `disabledReason` is set.
+   */
+  readonly describedBy = input<string | null>(null, {
+    alias: 'cngxDescribedBy',
+  });
+
+  /** Fires on Backspace/Delete keydown - consumer owns the removal. */
+  readonly removeRequest = output<void>();
+
+  private readonly describedId = nextUid('cngx-chip-desc');
+
+  protected readonly resolvedDescribedBy = computed<string | null>(() => {
+    if (this.disabledReason()) {
+      return this.describedId;
+    }
+    return this.describedBy();
+  });
+
+  readonly id = signal(nextUid('cngx-chip-')).asReadonly();
+
+  private readonly focusedState = signal(false);
+  readonly focused = this.focusedState.asReadonly();
+
+  /** Empty when the chip is unselected - boolean atom semantics. */
+  readonly empty = computed(() => this.value() === false);
+
+  private readonly fieldHost = inject(CNGX_FORM_FIELD_HOST, { optional: true });
+  private readonly errorAggregator = inject(CNGX_ERROR_AGGREGATOR, {
+    optional: true,
+    skipSelf: true,
+  });
+
+  readonly errorState = computed<boolean>(
+    () => this.fieldHost?.showError() ?? this.errorAggregator?.shouldShow() ?? false,
+  );
+
+  constructor() {
+    const hostEl = (inject(ElementRef) as ElementRef<HTMLElement>).nativeElement;
+    const renderer = inject(Renderer2);
+    const span = renderer.createElement('span') as HTMLSpanElement;
+    renderer.setAttribute(span, 'id', this.describedId);
+    renderer.setAttribute(span, 'aria-hidden', 'true');
+    // sr-only via inline styles - directive runs in arbitrary markup, can't
+    // require a consumer stylesheet. Every value reads `--cngx-sr-only-*`
+    // first so consumers can still override (structural/thematic split).
+    renderer.setStyle(span, 'position', 'var(--cngx-sr-only-position, absolute)');
+    renderer.setStyle(span, 'width', 'var(--cngx-sr-only-size, 1px)');
+    renderer.setStyle(span, 'height', 'var(--cngx-sr-only-size, 1px)');
+    renderer.setStyle(span, 'overflow', 'var(--cngx-sr-only-overflow, hidden)');
+    renderer.setStyle(span, 'clip', 'var(--cngx-sr-only-clip, rect(0, 0, 0, 0))');
+    renderer.setStyle(span, 'white-space', 'var(--cngx-sr-only-white-space, nowrap)');
+    renderer.appendChild(hostEl, span);
+
+    // Host may outlive the directive (structural re-projection, sibling
+    // clear) - without explicit removal the span leaks and the next
+    // instance collides on `describedId`.
+    inject(DestroyRef).onDestroy(() => {
+      // Host may already be detached by a parent structural directive at
+      // the same destroy tick; removeChild on a stale parent throws.
+      if (span.parentNode === hostEl) {
+        renderer.removeChild(hostEl, span);
+      }
+    });
+
+    effect(() => {
+      const reason = this.disabledReason();
+      untracked(() => {
+        if (reason) {
+          renderer.removeAttribute(span, 'aria-hidden');
+          span.textContent = reason;
+        } else {
+          renderer.setAttribute(span, 'aria-hidden', 'true');
+          span.textContent = '';
+        }
+      });
+    });
+
+    if (!isDevMode()) {
+      return;
+    }
+    const ancestor = inject(CNGX_CHIP_GROUP_HOST, {
+      optional: true,
+      skipSelf: true,
+    });
+    afterNextRender(() => {
+      if (ancestor !== null) {
+        throw new Error(
+          'CngxChipInteraction must NOT be used inside <cngx-chip-group> / <cngx-multi-chip-group>; use [cngxChipInGroup] instead.',
+        );
+      }
+    });
+  }
+
+  protected handleClick(event: MouseEvent): void {
+    if (this.disabled() || isCloseButtonClick(event)) {
+      return;
+    }
+    this.value.update((v) => !v);
+  }
+
+  protected handleKeydown(event: Event): void {
+    if (this.disabled()) {
+      return;
+    }
+    event.preventDefault();
+    this.value.update((v) => !v);
+  }
+
+  protected handleRemoveKeydown(event: Event): void {
+    if (this.disabled()) {
+      return;
+    }
+    event.preventDefault();
+    this.removeRequest.emit();
+  }
+
+  protected handleFocusIn(): void {
+    this.focusedState.set(true);
+  }
+
+  protected handleFocusOut(): void {
+    this.focusedState.set(false);
+    this.fieldHost?.markAsTouched();
+  }
+}
+
+/** @internal */
+function isCloseButtonClick(event: Event): boolean {
+  const target = event.target;
+  if (!(target instanceof Element)) {
+    return false;
+  }
+  return target.closest('.cngx-chip__remove') !== null;
+}

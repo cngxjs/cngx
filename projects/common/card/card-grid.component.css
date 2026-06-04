@@ -1,0 +1,66 @@
+/**
+ * @overview
+ * Default visuals for `CngxCardGrid`. The host carries
+ * `.cngx-card-grid` and lays its `<cngx-card>` children out via
+ * `auto-fill` + `minmax()` so the column count reflows with the
+ * viewport without a media-query ladder.
+ *
+ * **Density modifiers**
+ *
+ * - `--compact` - tighter gap, pins `--cngx-card-padding` to `sm`
+ *   so nested cards stay in sync with the grid's rhythm
+ * - `--comfortable` - wider gap, pins `--cngx-card-padding` to `lg`
+ *
+ * Reaching into `--cngx-card-padding` is an intentional cross-
+ * component coupling: the density modifier owns both the gap and
+ * the matching card-inner spacing.
+ *
+ * **Inheritance**
+ *
+ * - `--cngx-card-grid-gap` -> `--cngx-space-md`
+ * - `--cngx-card-grid-min` - leaf token, no fallback chain
+ */
+
+@layer cngx.tokens {
+  /**
+   * Minimum inline size of a single grid cell - `auto-fill` packs as
+   * many cells as fit before reflowing.
+   * @group Layout
+   */
+  @property --cngx-card-grid-min {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 280px;
+  }
+
+  /**
+   * Gap between grid cells. Density modifiers re-pin this and the
+   * nested `--cngx-card-padding`.
+   * @group Layout
+   */
+  @property --cngx-card-grid-gap {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 16px;
+  }
+}
+
+@layer cngx.components {
+  @scope (.cngx-card-grid) {
+    :scope {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(var(--cngx-card-grid-min, 280px), 1fr));
+      gap: var(--cngx-card-grid-gap, var(--cngx-space-md, 16px));
+    }
+
+    :scope.cngx-card-grid--compact {
+      --cngx-card-grid-gap: var(--cngx-space-sm, 8px);
+      --cngx-card-padding: var(--cngx-space-sm, 8px);
+    }
+
+    :scope.cngx-card-grid--comfortable {
+      --cngx-card-grid-gap: var(--cngx-space-lg, 24px);
+      --cngx-card-padding: var(--cngx-space-lg, 24px);
+    }
+  }
+}

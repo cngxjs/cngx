@@ -1,0 +1,216 @@
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ViewEncapsulation,
+  computed,
+  inject,
+  input,
+  model,
+  signal,
+} from '@angular/core';
+import { CngxRovingTabindex } from '@cngx/common/a11y';
+import {
+  CNGX_FORM_FIELD_CONTROL,
+  CNGX_FORM_FIELD_HOST,
+  type CngxFormFieldControl,
+} from '@cngx/core/tokens';
+import { nextUid, type CngxAsyncState } from '@cngx/core/utils';
+
+import { CNGX_CONTROL_VALUE, type CngxControlValue } from '../control-value/control-value.token';
+import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.token';
+import {
+  CNGX_RADIO_GROUP,
+  type CngxRadioGroupContract,
+  type CngxRadioRegistration,
+} from './radio-group.token';
+
+/**
+ * Radio-group molecule that owns the canonical `value` for a set of
+ * `CngxRadio` leaves and provides the parent contract via
+ * `CNGX_RADIO_GROUP`. The group composes `CngxRovingTabindex` as a
+ * host directive (with `inputs: ['orientation']` exposed) so arrow-
+ * key navigation across radios is wired from day one. Leaf
+ * registration is imperative - `register()` / `unregister()` keep a
+ * Map in declaration order so the group can resolve the active
+ * radio by id without re-querying content children on every change
+ * detection cycle.
+ *
+ * Per W3C ARIA radio-group authoring practice, `Tab` enters the
+ * group; arrow keys move focus AND select (auto-select variant);
+ * Space/Enter also select the currently-focused radio. The group's
+ * `value` is the source of truth; each leaf computes
+ * `radioChecked = computed(() => group.value() === radio.value())`
+ * against its own `value` input.
+ *
+ * **Auto-select wiring (no signal-write-in-effect).** Per the
+ * pillar §6 hard rule, the group does NOT subscribe to
+ * `CngxRovingTabindex.activeIndex` via an effect that writes
+ * `value`. Instead, the group listens to its own host `keydown` and
+ * raises a transient `pendingArrowSelect` flag when an arrow / Home
+ * / End is pressed. The roving directive moves focus on the same
+ * keydown; the newly-focused leaf's `(focus)` handler calls
+ * `group.consumePendingArrowSelect(this.value())`. The flag-set
+ * (plain field write) and value-set (signal write inside a DOM
+ * event handler, not an effect) are both legal under the pillar
+ * rules. Tab-into-group fires focus without a preceding arrow
+ * keydown, so the flag stays false and no auto-select happens -
+ * Tab leaves the consumer's `value` untouched.
+ *
+ * ```html
+ * <cngx-radio-group [(value)]="payment" name="payment-method">
+ *   <cngx-radio value="card">Card</cngx-radio>
+ *   <cngx-radio value="cash">Cash</cngx-radio>
+ *   <cngx-radio value="invoice" disabled>Invoice</cngx-radio>
+ * </cngx-radio-group>
+ * ```
+ *
+ * @category common/interactive
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/radio/radio-group.component.ts
+ * @selector cngx-radio-group
+ * @since 0.1.0
+ * @relatedTo CngxRadio, CngxButtonToggleGroup, CngxChipGroup
+ * <example-url>http://localhost:4200/#/common/interactive/radio/basic-vertical-group</example-url>
+ * <example-url>http://localhost:4200/#/common/interactive/radio/custom-dot-glyph</example-url>
+ * <example-url>http://localhost:4200/#/common/interactive/radio/disabled-group-cascades-per-radio-overrides</example-url>
+ * <example-url>http://localhost:4200/#/common/interactive/radio/orientation-horizontal</example-url>
+ * <example-url>http://localhost:4200/#/forms/field/form-primitives/coming-in-a-follow-up</example-url>
+ * <example-url>http://localhost:4200/#/forms/field/form-primitives/reactive-forms-same-atom-just-bind-formcontrol</example-url>
+ * <example-url>http://localhost:4200/#/forms/field/form-primitives/signal-forms-drop-the-atom-into-cngx-form-field</example-url>
+ */
+@Component({
+  selector: 'cngx-radio-group, [cngxRadioGroup]',
+  exportAs: 'cngxRadioGroup',
+  standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  hostDirectives: [CngxRovingTabindex],
+  host: {
+    class: 'cngx-radio-group',
+    role: 'radiogroup',
+    '[attr.id]': 'id()',
+    '[attr.aria-label]': 'label()',
+    '[attr.aria-disabled]': 'disabled() ? "true" : null',
+    '[attr.aria-required]': 'required() ? "true" : null',
+    '[attr.aria-invalid]': '(invalid() || errorState()) ? "true" : null',
+    '[attr.aria-errormessage]': 'errorMessageId()',
+    '[attr.aria-orientation]': 'orientation()',
+    '[attr.aria-busy]': 'ariaBusy() ? "true" : null',
+    '[class.cngx-radio-group--horizontal]': 'orientation() === "horizontal"',
+    '(keydown)': 'handleKeydown($event)',
+    '(focusin)': 'handleFocusIn()',
+    '(focusout)': 'handleFocusOut()',
+  },
+  providers: [
+    { provide: CNGX_RADIO_GROUP, useExisting: CngxRadioGroup },
+    { provide: CNGX_CONTROL_VALUE, useExisting: CngxRadioGroup },
+    { provide: CNGX_FORM_FIELD_CONTROL, useExisting: CngxRadioGroup },
+  ],
+  template: `<ng-content />`,
+  styleUrls: ['./radio-group.component.css'],
+  encapsulation: ViewEncapsulation.None,
+})
+export class CngxRadioGroup<T = unknown>
+  implements CngxRadioGroupContract<T>, CngxControlValue<T | undefined>, CngxFormFieldControl
+{
+  readonly value = model<T | undefined>(undefined);
+  readonly disabled = model<boolean>(false);
+  readonly required = model<boolean>(false);
+  /**
+   * Bridge-writable invalid state. `model<boolean>` mirrors `disabled`
+   * so external integrations (RF/Signal-Forms bridges, custom validity
+   * adapters) can drive it without a parallel API path - consumers
+   * typically read only.
+   */
+  readonly invalid = model<boolean>(false);
+  /**
+   * Optional id of an external error message element. When set, the
+   * host emits `aria-errormessage="<id>"`; consumers MUST render an
+   * element with that id. Default `null` skips the attribute.
+   * Note: WAI-ARIA dictates that AT ignores this attribute when
+   * `aria-invalid` is absent or `"false"`, so a stable always-emitted
+   * id is harmless when the field is valid.
+   */
+  readonly errorMessageId = input<string | null>(null);
+  readonly orientation = input<'horizontal' | 'vertical'>('vertical');
+  readonly label = input<string | undefined>(undefined);
+  readonly state = input<CngxAsyncState<unknown> | undefined>(undefined);
+  readonly nameInput = input<string | undefined>(undefined, { alias: 'name' });
+
+  protected readonly ariaBusy = computed(() => this.state()?.status() === 'loading');
+
+  private readonly fallbackName = nextUid('cngx-radio-group');
+
+  readonly name = computed(() => this.nameInput() ?? this.fallbackName);
+
+  private readonly registry = new Map<string, CngxRadioRegistration<T>>();
+  private pendingArrowSelect = false;
+
+  readonly id = signal(nextUid('cngx-radio-group-')).asReadonly();
+
+  private readonly focusedState = signal(false);
+  readonly focused = this.focusedState.asReadonly();
+
+  /** Empty when no radio is selected. */
+  readonly empty = computed(() => this.value() === undefined);
+
+  private readonly fieldHost = inject(CNGX_FORM_FIELD_HOST, { optional: true });
+  private readonly aggregator = inject(CNGX_ERROR_AGGREGATOR, {
+    optional: true,
+    skipSelf: true,
+  });
+
+  readonly errorState = computed<boolean>(
+    () => this.fieldHost?.showError() ?? this.aggregator?.shouldShow() ?? false,
+  );
+
+  constructor() {
+    /* Per WAI-ARIA APG Radio Group, all four arrow keys navigate
+       regardless of the cosmetic group layout - the consumer-set
+       `orientation` controls aria-orientation + the visual flex
+       direction only, never the keyboard axis. Force the host
+       roving directive to `'both'` so a vertical group still
+       responds to ArrowLeft / ArrowRight and vice versa. */
+    inject(CngxRovingTabindex).orientation.set('both');
+  }
+
+  register(radio: CngxRadioRegistration<T>): void {
+    this.registry.set(radio.id, radio);
+  }
+
+  unregister(id: string): void {
+    this.registry.delete(id);
+  }
+
+  consumePendingArrowSelect(value: T): boolean {
+    if (!this.pendingArrowSelect) {
+      return false;
+    }
+    this.pendingArrowSelect = false;
+    if (this.disabled()) {
+      return false;
+    }
+    this.value.set(value);
+    return true;
+  }
+
+  protected handleKeydown(event: Event): void {
+    const key = (event as KeyboardEvent).key;
+    this.pendingArrowSelect =
+      key === 'ArrowUp' ||
+      key === 'ArrowDown' ||
+      key === 'ArrowLeft' ||
+      key === 'ArrowRight' ||
+      key === 'Home' ||
+      key === 'End';
+  }
+
+  protected handleFocusIn(): void {
+    this.focusedState.set(true);
+  }
+
+  protected handleFocusOut(): void {
+    this.focusedState.set(false);
+    this.fieldHost?.markAsTouched();
+  }
+}

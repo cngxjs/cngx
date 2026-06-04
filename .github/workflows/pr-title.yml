@@ -1,0 +1,88 @@
+name: PR Title
+
+# The hard gate. Because PRs are squash-merged, the PR title becomes the single
+# commit on main and the changelog line, so it must be a valid Conventional
+# Commit. Make this a required check in branch protection for `main`.
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  pull-requests: read
+
+jobs:
+  validate:
+    name: Validate PR title
+    runs-on: ubuntu-latest
+    steps:
+      - uses: amannn/action-semantic-pull-request@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          # Keep in sync with commitlint.config.mjs type-enum.
+          types: |
+            feat
+            fix
+            perf
+            refactor
+            docs
+            test
+            build
+            ci
+            chore
+            revert
+          # Keep in sync with scripts/changelog-scopes.mjs.
+          scopes: |
+            utils
+            core
+            common
+            common/a11y
+            common/interactive
+            common/display
+            common/popover
+            common/chart
+            common/stepper
+            common/tabs
+            common/card
+            common/dialog
+            common/data
+            common/layout
+            forms
+            forms/controls
+            forms/validators
+            forms/field
+            forms/input
+            forms/select
+            data-display
+            data-display/treetable
+            ui
+            ui/layout
+            ui/overlay
+            ui/material
+            ui/empty-state
+            ui/feedback
+            ui/stepper
+            ui/mat-stepper
+            ui/tabs
+            ui/mat-tabs
+            ui/sidenav
+            ui/skeleton
+            ui/speak
+            ui/action-button
+            themes/material
+            examples
+            examples-gen
+            docs
+            ci
+            build
+            chore
+            changelog
+            deps
+            release
+          requireScope: true
+          # Subject must not start with an uppercase letter (imperative, lower case).
+          subjectPattern: ^(?![A-Z]).+$
+          subjectPatternError: |
+            The PR title subject "{subject}" must start with a lower-case letter
+            (imperative mood, no leading capital, no trailing period).

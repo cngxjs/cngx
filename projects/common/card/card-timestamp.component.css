@@ -1,0 +1,103 @@
+/**
+ * @overview
+ * Default visuals for `CngxCardTimestamp`. The host carries
+ * `.cngx-card-timestamp` - a lightweight inline-flex container that
+ * renders an optional label slot before a muted timestamp string.
+ *
+ * **Slots**
+ *
+ * - `.cngx-card-timestamp__prefix` - optional label before the date
+ *
+ * **Inheritance**
+ *
+ * Leaf tokens - the timestamp surface owns its own color, size, and
+ * gap without delegating to a foundation cascade. Inline font-size
+ * sits at `0.75rem` so the timestamp reads as secondary metadata.
+ *
+ * **Dark mode**
+ *
+ * Three hooks lift the muted text from a dark gray to a soft light
+ * gray so the timestamp retains its secondary-information weight
+ * against a dark surface:
+ *
+ * - `prefers-color-scheme: dark`
+ * - `[data-color-scheme="dark"]` / `.dark` class
+ * - `[data-color-scheme="light"]` / `.light` class (explicit pin)
+ */
+
+@layer cngx.tokens {
+  /**
+   * Gap between the prefix slot and the date.
+   * @group Layout
+   */
+  @property --cngx-card-timestamp-gap {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 4px;
+  }
+
+  /**
+   * Font-size of the timestamp text.
+   * @group Typography
+   */
+  @property --cngx-card-timestamp-size {
+    syntax: '*';
+    inherits: true;
+    initial-value: 0.75rem;
+  }
+
+  /**
+   * Text color - muted by default.
+   * @group Typography
+   */
+  @property --cngx-card-timestamp-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.36 0.02 290);
+  }
+
+  /**
+   * Font-weight of the prefix slot.
+   * @group Typography
+   */
+  @property --cngx-card-timestamp-prefix-weight {
+    syntax: '<number>';
+    inherits: true;
+    initial-value: 400;
+  }
+
+  /* Dark-mode swap - muted text inverts to a soft light gray so
+   * the timestamp keeps its secondary-information weight relative
+   * to body text on either surface. */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-color-scheme='light']):not(.light) {
+      --cngx-card-timestamp-color: oklch(0.72 0.02 290);
+    }
+  }
+
+  [data-color-scheme='dark'],
+  .dark {
+    --cngx-card-timestamp-color: oklch(0.72 0.02 290);
+  }
+
+  [data-color-scheme='light'],
+  .light {
+    --cngx-card-timestamp-color: oklch(0.36 0.02 290);
+  }
+}
+
+@layer cngx.components {
+  @scope (.cngx-card-timestamp) {
+    :scope {
+      display: inline-flex;
+      gap: var(--cngx-card-timestamp-gap, var(--cngx-space-xs, 4px));
+      font-size: var(--cngx-card-timestamp-size, 0.75rem);
+      color: var(--cngx-card-timestamp-color, oklch(0.36 0.02 290));
+      line-height: 1.4;
+    }
+
+    .cngx-card-timestamp__prefix {
+      font-weight: var(--cngx-card-timestamp-prefix-weight, 400);
+    }
+  }
+}

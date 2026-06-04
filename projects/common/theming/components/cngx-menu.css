@@ -1,0 +1,371 @@
+/**
+ * @overview
+ * Theming bridge for the `CngxMenu` family. Ships enough structural
+ * chrome that a bare `<ul cngxMenu>…</ul>` renders as a usable
+ * popover menu: bullets stripped, items laid out in a flex row with
+ * icon / label / suffix / kbd slots, keyboard-cursor and checked-state
+ * signals painted in. Container surface (background, border, radius)
+ * is owned by the popover panel that hosts the menu -
+ * `cngx-popover-panel.css` paints the chrome.
+ *
+ * **Selectors**
+ *
+ * - `[cngxMenu]` - container
+ * - `[cngxMenuItem]`, `[cngxMenuItemCheckbox]`, `[cngxMenuItemRadio]`,
+ *   `[cngxMenuItemSubmenu]` - item hosts
+ * - `.cngx-menu-item__icon`, `__label`, `__suffix`, `__kbd` - slots
+ * - `.cngx-menu-item--highlighted`, `--disabled`, `--checked` - state
+ * - `[cngxMenuSeparator]` - hairline divider
+ *
+ * **State modifiers**
+ *
+ * - `--highlighted` - tinted background (keyboard cursor via
+ *   `aria-activedescendant`)
+ * - `--disabled` - opacity 0.5, `cursor: not-allowed`
+ * - `--checked` - bolder font-weight plus a leading glyph drawn by
+ *   `::before` so the cue lands even without a projected icon:
+ *   `[cngxMenuItemCheckbox]` -> `&check;`, `[cngxMenuItemRadio]` ->
+ *   filled dot. `:has(.cngx-menu-item__icon)` suppresses the pseudo
+ *   when a projected icon already occupies the slot.
+ *
+ * **Inheritance**
+ *
+ * Surface tokens fall back to the foundation so brand swaps cascade:
+ *
+ * - `--cngx-menu-focus-outline-color` -> `--cngx-color-primary`
+ * - `--cngx-menu-item-highlight-bg` -> `color-mix(primary, transparent)`
+ * - `--cngx-menu-item-checked-color` -> `--cngx-color-primary`
+ * - `--cngx-menu-separator-color` -> `--cngx-color-border`
+ *
+ * The highlight tint is a `color-mix()` so Material's `--mat-sys-primary`
+ * (or any other primary override) flows through without forking.
+ *
+ * **Dark mode**
+ *
+ * Three hooks (`prefers-color-scheme: dark`, `[data-color-scheme="dark"]`,
+ * `.dark`) lift the highlight alpha (10% -> 18%) and flip the kbd
+ * muted-color from `oklch(0.45 …)` to `oklch(0.7 …)` so the shortcut
+ * hint stays readable on dark popover surfaces.
+ *
+ * **Pair with**
+ *
+ * - `@cngx/themes/material/interactive-controls-theme` - Material 3 surface
+ */
+
+@layer cngx.tokens {
+  /**
+   * Outline of the menu container when it takes keyboard focus -
+   * standard 2px ring at the foundation-primary hue. The container
+   * uses `aria-activedescendant`, so it carries focus while the
+   * highlighted item is signalled separately by the highlight bg.
+   * @group State / Focus
+   * @see [[--cngx-color-primary]]
+   */
+  @property --cngx-menu-focus-outline-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.66 0.19 50);
+  }
+
+  /**
+   * Stroke width of the container focus ring.
+   * @group State / Focus
+   */
+  @property --cngx-menu-focus-outline-width {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 2px;
+  }
+
+  /**
+   * Distance from the container edge to the focus ring.
+   * @group State / Focus
+   */
+  @property --cngx-menu-focus-outline-offset {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 2px;
+  }
+
+  /**
+   * Background tint of the keyboard-highlighted item. Resolved at
+   * `:root` as `color-mix(in oklch, var(--cngx-color-primary) 10%,
+   * transparent)` so the tint tracks whichever primary the theme
+   * (cngx default, Material bridge, brand override) feeds. The
+   * `@property` initial-value below is the literal fallback used
+   * when neither the foundation token nor the `:root` declaration
+   * resolves.
+   * @group State / Highlighted
+   * @see [[--cngx-color-primary]]
+   */
+  @property --cngx-menu-item-highlight-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.66 0.19 50 / 0.1);
+  }
+
+  /**
+   * Opacity multiplier applied to disabled menu items.
+   * @group State / Disabled
+   */
+  @property --cngx-menu-item-disabled-opacity {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 0.5;
+  }
+
+  /**
+   * Padding shorthand inside the menu container.
+   * @group Layout
+   */
+  @property --cngx-menu-padding {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 4px;
+  }
+
+  /**
+   * Padding shorthand on each menu item.
+   * @group Layout
+   */
+  @property --cngx-menu-item-padding {
+    syntax: '*';
+    inherits: false;
+    initial-value: 6px 10px;
+  }
+
+  /**
+   * Inline gap between an item's slots (icon / label / suffix /
+   * kbd).
+   * @group Layout
+   */
+  @property --cngx-menu-item-gap {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 8px;
+  }
+
+  /**
+   * Corner radius of each menu item.
+   * @group Layout
+   */
+  @property --cngx-menu-item-radius {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 4px;
+  }
+
+  /**
+   * Font-weight applied to a checked menu item - emphasises
+   * committed state vs the transient highlight cursor.
+   * @group State / Checked
+   */
+  @property --cngx-menu-item-checked-font-weight {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 600;
+  }
+
+  /**
+   * Color of the leading checkmark glyph painted on a checked item.
+   * Tracks the foundation primary so the cue matches the highlight
+   * accent.
+   * @group State / Checked
+   * @see [[--cngx-color-primary]]
+   */
+  @property --cngx-menu-item-checked-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.66 0.19 50);
+  }
+
+  /**
+   * Min-width reserved on the leading icon slot - keeps labels
+   * vertically aligned across rows when some items have icons and
+   * others don't.
+   * @group Layout
+   */
+  @property --cngx-menu-item-icon-min-width {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 1.25rem;
+  }
+
+  /**
+   * Color of the trailing keyboard-shortcut hint. Defaults to a
+   * muted neutral that reads as secondary info next to the label.
+   * @group Surface
+   */
+  @property --cngx-menu-item-kbd-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.45 0 0);
+  }
+
+  /**
+   * Color of the menu separator hairline. Tracks
+   * `--cngx-color-border`.
+   * @group Surface
+   * @see [[--cngx-color-border]]
+   */
+  @property --cngx-menu-separator-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.89 0 0);
+  }
+
+  /*
+   * Default-theme palette. Highlight tint is a `color-mix()` of the
+   * foundation primary so the accent follows the bridge - Material's
+   * `--mat-sys-primary` (or any other theme that overrides
+   * `--cngx-color-primary`) flows through unchanged. Alpha lifts on
+   * dark surfaces so the tint stays perceptible without blowing out
+   * into a solid block. The kbd muted-color flips on the same axis
+   * so the shortcut hint stays readable on dark popover surfaces.
+   */
+  :root {
+    --cngx-menu-focus-outline-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
+    --cngx-menu-item-checked-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
+    --cngx-menu-separator-color: var(--cngx-color-border, oklch(0.89 0 0));
+    --cngx-menu-item-highlight-bg: color-mix(
+      in oklch,
+      var(--cngx-color-primary, oklch(0.66 0.19 50)) 10%,
+      transparent
+    );
+    --cngx-menu-item-kbd-color: oklch(0.45 0 0);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-color-scheme='light']):not(.light) {
+      --cngx-menu-item-highlight-bg: color-mix(
+        in oklch,
+        var(--cngx-color-primary, oklch(0.72 0.18 50)) 18%,
+        transparent
+      );
+      --cngx-menu-item-kbd-color: oklch(0.7 0 0);
+    }
+  }
+
+  :root[data-color-scheme='dark'],
+  :root.dark {
+    --cngx-menu-item-highlight-bg: color-mix(
+      in oklch,
+      var(--cngx-color-primary, oklch(0.72 0.18 50)) 18%,
+      transparent
+    );
+    --cngx-menu-item-kbd-color: oklch(0.7 0 0);
+  }
+
+  :root[data-color-scheme='light'],
+  :root.light {
+    --cngx-menu-item-highlight-bg: color-mix(
+      in oklch,
+      var(--cngx-color-primary, oklch(0.66 0.19 50)) 10%,
+      transparent
+    );
+    --cngx-menu-item-kbd-color: oklch(0.45 0 0);
+  }
+}
+
+@layer cngx.components {
+  [cngxMenu] {
+    list-style: none;
+    margin: 0;
+    padding: var(--cngx-menu-padding, 4px);
+    outline: none;
+  }
+
+  [cngxMenu]:focus-visible {
+    outline: var(--cngx-menu-focus-outline-width, 2px) solid
+      var(--cngx-menu-focus-outline-color, oklch(0.66 0.19 50));
+    outline-offset: var(--cngx-menu-focus-outline-offset, 2px);
+  }
+
+  [cngxMenuItem],
+  [cngxMenuItemCheckbox],
+  [cngxMenuItemRadio],
+  [cngxMenuItemSubmenu] {
+    display: flex;
+    align-items: center;
+    gap: var(--cngx-menu-item-gap, 8px);
+    padding: var(--cngx-menu-item-padding, 6px 10px);
+    border-radius: var(--cngx-menu-item-radius, 4px);
+    cursor: pointer;
+    user-select: none;
+    color: inherit;
+  }
+
+  .cngx-menu-item--highlighted {
+    background: var(--cngx-menu-item-highlight-bg, oklch(0.66 0.19 50 / 0.1));
+  }
+
+  .cngx-menu-item--disabled {
+    opacity: var(--cngx-menu-item-disabled-opacity, 0.5);
+    cursor: not-allowed;
+  }
+
+  /*
+   * Checked menu item gets a bolder label PLUS a leading indicator
+   * glyph drawn via `::before` so the committed-state signal lands
+   * even when the consumer hasn't projected an explicit icon.
+   * Checkbox-flavoured items get a tick (`✓`), radio-flavoured items
+   * get a filled dot (`●`) to mirror the standard form-control
+   * vocabulary. The pseudo lives outside the slot grid so it doesn't
+   * conflict with `[cngxMenuItemIcon]` content - `:has()` suppresses
+   * the pseudo when a projected icon is present.
+   */
+  .cngx-menu-item--checked {
+    font-weight: var(--cngx-menu-item-checked-font-weight, 600);
+  }
+  [cngxMenuItemCheckbox].cngx-menu-item--checked:not(:has(.cngx-menu-item__icon))::before {
+    content: '✓';
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: var(--cngx-menu-item-icon-min-width, 1.25rem);
+    color: var(--cngx-menu-item-checked-color, oklch(0.66 0.19 50));
+    font-weight: 700;
+  }
+  [cngxMenuItemRadio].cngx-menu-item--checked:not(:has(.cngx-menu-item__icon))::before {
+    content: '●';
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: var(--cngx-menu-item-icon-min-width, 1.25rem);
+    color: var(--cngx-menu-item-checked-color, oklch(0.66 0.19 50));
+    font-size: 0.875em;
+  }
+
+  .cngx-menu-item__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: var(--cngx-menu-item-icon-min-width, 1.25rem);
+    flex-shrink: 0;
+  }
+
+  .cngx-menu-item__label {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .cngx-menu-item__suffix {
+    flex-shrink: 0;
+  }
+
+  .cngx-menu-item__kbd {
+    margin-inline-start: auto;
+    color: var(--cngx-menu-item-kbd-color, oklch(0.45 0 0));
+    font-size: 0.75rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    flex-shrink: 0;
+  }
+
+  [cngxMenuSeparator] {
+    display: block;
+    height: 1px;
+    margin: 4px 6px;
+    background: var(--cngx-menu-separator-color, oklch(0.89 0 0));
+    list-style: none;
+  }
+}

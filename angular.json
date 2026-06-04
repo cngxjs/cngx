@@ -1,0 +1,339 @@
+{
+  "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
+  "version": 1,
+  "cli": {
+    "packageManager": "npm",
+    "analytics": false,
+    "schematicCollections": ["@schematics/angular", "playwright-ng-schematics"]
+  },
+  "newProjectRoot": "projects",
+  "projects": {
+    "common": {
+      "projectType": "library",
+      "root": "projects/common",
+      "sourceRoot": "projects/common",
+      "prefix": "cngx",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:ng-packagr",
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/common/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "projects/common/tsconfig.lib.json"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "test": {
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "tsConfig": "projects/common/tsconfig.spec.json"
+          }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": ["projects/common/**/*.ts"]
+          }
+        },
+        "e2e": {
+          "builder": "playwright-ng-schematics:playwright",
+          "options": {
+            "devServerTarget": "common:serve"
+          },
+          "configurations": {
+            "production": {
+              "devServerTarget": "common:serve:production"
+            }
+          }
+        }
+      }
+    },
+    "utils": {
+      "projectType": "library",
+      "root": "projects/utils",
+      "sourceRoot": "projects/utils",
+      "prefix": "cngx",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:ng-packagr",
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/utils/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "projects/utils/tsconfig.lib.json"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "test": {
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "tsConfig": "projects/utils/tsconfig.spec.json"
+          }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": ["projects/utils/**/*.ts"]
+          }
+        },
+        "e2e": {
+          "builder": "playwright-ng-schematics:playwright",
+          "options": {
+            "devServerTarget": "utils:serve"
+          },
+          "configurations": {
+            "production": {
+              "devServerTarget": "utils:serve:production"
+            }
+          }
+        }
+      }
+    },
+    "core": {
+      "projectType": "library",
+      "root": "projects/core",
+      "sourceRoot": "projects/core",
+      "prefix": "cngx",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:ng-packagr",
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/core/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "projects/core/tsconfig.lib.json"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "test": {
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "tsConfig": "projects/core/tsconfig.spec.json"
+          }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": ["projects/core/**/*.ts"]
+          }
+        },
+        "e2e": {
+          "builder": "playwright-ng-schematics:playwright",
+          "options": {
+            "devServerTarget": "core:serve"
+          },
+          "configurations": {
+            "production": {
+              "devServerTarget": "core:serve:production"
+            }
+          }
+        }
+      }
+    },
+    "forms": {
+      "projectType": "library",
+      "root": "projects/forms",
+      "sourceRoot": "projects/forms",
+      "prefix": "cngx",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:ng-packagr",
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/forms/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "projects/forms/tsconfig.lib.json"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "test": {
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "tsConfig": "projects/forms/tsconfig.spec.json"
+          }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": ["projects/forms/**/*.ts"]
+          }
+        },
+        "e2e": {
+          "builder": "playwright-ng-schematics:playwright",
+          "options": {
+            "devServerTarget": "forms:serve"
+          },
+          "configurations": {
+            "production": {
+              "devServerTarget": "forms:serve:production"
+            }
+          }
+        }
+      }
+    },
+    "ui": {
+      "projectType": "library",
+      "root": "projects/ui",
+      "sourceRoot": "projects/ui",
+      "prefix": "cngx",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:ng-packagr",
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/ui/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "projects/ui/tsconfig.lib.json"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "test": {
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "tsConfig": "projects/ui/tsconfig.spec.json"
+          }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": ["projects/ui/**/*.ts", "projects/ui/**/*.html"]
+          }
+        },
+        "e2e": {
+          "builder": "playwright-ng-schematics:playwright",
+          "options": {
+            "devServerTarget": "ui:serve"
+          },
+          "configurations": {
+            "production": {
+              "devServerTarget": "ui:serve:production"
+            }
+          }
+        }
+      }
+    },
+    "data-display": {
+      "projectType": "library",
+      "root": "projects/data-display",
+      "sourceRoot": "projects/data-display",
+      "prefix": "cngx",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:ng-packagr",
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/data-display/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "projects/data-display/tsconfig.lib.json"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "test": {
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "tsConfig": "projects/data-display/tsconfig.spec.json"
+          }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": ["projects/data-display/**/*.ts", "projects/data-display/**/*.html"]
+          }
+        },
+        "e2e": {
+          "builder": "playwright-ng-schematics:playwright",
+          "options": {
+            "devServerTarget": "data-display:serve"
+          },
+          "configurations": {
+            "production": {
+              "devServerTarget": "data-display:serve:production"
+            }
+          }
+        }
+      }
+    },
+    "examples": {
+      "projectType": "application",
+      "schematics": {
+        "@schematics/angular:component": {
+          "style": "scss"
+        }
+      },
+      "root": "examples",
+      "sourceRoot": "examples/src",
+      "prefix": "app",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:application",
+          "options": {
+            "browser": "examples/src/main.ts",
+            "tsConfig": "examples/tsconfig.app.json",
+            "inlineStyleLanguage": "scss",
+            "assets": [
+              {
+                "glob": "**/*",
+                "input": "examples/public"
+              }
+            ],
+            "styles": [
+              "examples/src/styles.scss",
+              "node_modules/@angular/material/prebuilt-themes/azure-blue.css"
+            ]
+          },
+          "configurations": {
+            "production": {
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "1500kB",
+                  "maximumError": "3MB"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "24kB",
+                  "maximumError": "28kB"
+                }
+              ],
+              "outputHashing": "all"
+            },
+            "development": {
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "serve": {
+          "builder": "@angular/build:dev-server",
+          "configurations": {
+            "production": {
+              "buildTarget": "examples:build:production"
+            },
+            "development": {
+              "buildTarget": "examples:build:development"
+            }
+          },
+          "defaultConfiguration": "development"
+        },
+        "test": {
+          "builder": "@angular/build:unit-test"
+        }
+      }
+    }
+  }
+}

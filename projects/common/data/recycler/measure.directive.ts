@@ -1,0 +1,69 @@
+import { Directive, ElementRef, effect, inject, input } from '@angular/core';
+
+import type { CngxRecycler } from './recycler';
+
+/**
+ * Atom directive that measures the host element's height and reports it
+ * to the recycler via `recycler.measure(index, element)`.
+ *
+ * Uses `ResizeObserver` to detect height changes (e.g. content expansion,
+ * font loading). Cleanup is automatic via `DestroyRef`.
+ *
+ * Also sets `data-cngx-recycle-index` on the host element for focus tracking.
+ *
+ * ```html
+ * @for (item of visibleItems(); track item.id; let i = $index) {
+ *   <div [cngxMeasure]="recycler" [cngxMeasureIndex]="recycler.start() + i">
+ *     {{ item.content }}
+ *   </div>
+ * }
+ * ```
+ *
+ * @category common/data/recycler
+ * @docsKind primary
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/data/recycler/measure.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxVirtualItem, CngxRecyclerAnnouncer, injectRecycler
+ *
+ * <example-url>http://localhost:4200/#/common/data/recycler/basic-list-fixed-item-height</example-url>
+ * <example-url>http://localhost:4200/#/common/data/recycler/content-visibility-css-only</example-url>
+ * <example-url>http://localhost:4200/#/common/data/recycler/infinite-scroll-recycler</example-url>
+ * <example-url>http://localhost:4200/#/common/data/recycler/scrolltoindex-deep-link</example-url>
+ * <example-url>http://localhost:4200/#/common/data/recycler/variable-heights-cngxmeasure</example-url>
+ * <example-url>http://localhost:4200/#/common/data/recycler/with-cngxasyncstate-skeleton-first-load</example-url>
+ */
+@Directive({
+  selector: '[cngxMeasure]',
+  standalone: true,
+  host: {
+    '[attr.data-cngx-recycle-index]': 'cngxMeasureIndex()',
+  },
+})
+export class CngxMeasure {
+  /** The recycler instance to report measurements to. */
+  readonly cngxMeasure = input.required<CngxRecycler>();
+
+  /** The absolute index of this item in the full dataset. */
+  readonly cngxMeasureIndex = input.required<number>();
+
+  private readonly el = inject(ElementRef<HTMLElement>);
+
+  constructor() {
+    effect((onCleanup) => {
+      const recycler = this.cngxMeasure();
+      const index = this.cngxMeasureIndex();
+      const element = this.el.nativeElement as HTMLElement;
+
+      recycler.measure(index, element);
+
+      const observer = new ResizeObserver(() => {
+        recycler.measure(index, element);
+      });
+      observer.observe(element);
+
+      onCleanup(() => {
+        observer.disconnect();
+      });
+    });
+  }
+}

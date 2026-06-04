@@ -1,0 +1,49 @@
+@use '@angular/material' as mat;
+
+// Material bridge for the form-control atoms: CngxCheckbox, CngxRadio,
+// CngxToggle, CngxCheckboxIndicator, CngxRadioIndicator. All share the
+// pattern "neutral border in idle state, primary fill when checked".
+//
+//   @use '@cngx/themes/material/interactive-controls-theme' as controls;
+//   html { @include controls.theme($theme); }
+
+@mixin color($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    // Checkbox + indicator
+    --cngx-checkbox-border-color: var(--mat-sys-outline);
+    --cngx-checkbox-checked-bg: var(--mat-sys-primary);
+    --cngx-checkbox-checked-color: var(--mat-sys-on-primary);
+    --cngx-checkbox-indicator-border-color: var(--mat-sys-outline);
+    --cngx-checkbox-indicator-checked-bg: var(--mat-sys-primary);
+    --cngx-checkbox-indicator-checked-color: var(--mat-sys-on-primary);
+
+    // Radio + indicator
+    --cngx-radio-border-color: var(--mat-sys-outline);
+    --cngx-radio-checked-color: var(--mat-sys-primary);
+    --cngx-radio-indicator-border-color: var(--mat-sys-outline);
+    --cngx-radio-indicator-checked-color: var(--mat-sys-primary);
+
+    // Toggle (switch)
+    --cngx-toggle-track-bg: var(--mat-sys-surface-variant);
+    --cngx-toggle-track-border: var(--mat-sys-outline);
+    --cngx-toggle-thumb-bg: var(--mat-sys-outline);
+    --cngx-toggle-checked-track-bg: var(--mat-sys-primary);
+    --cngx-toggle-checked-thumb-bg: var(--mat-sys-on-primary);
+  } @else {
+    --cngx-checkbox-border-color: #{mat.get-theme-color($theme, foreground, divider)};
+    --cngx-checkbox-checked-bg: #{mat.get-theme-color($theme, primary)};
+    --cngx-radio-checked-color: #{mat.get-theme-color($theme, primary)};
+    --cngx-toggle-checked-track-bg: #{mat.get-theme-color($theme, primary)};
+  }
+}
+
+@mixin theme($theme) {
+  @layer cngx.components {
+    :where(cngx-checkbox, cngx-checkbox-group, cngx-radio, cngx-radio-group, cngx-toggle) {
+      @include color($theme);
+    }
+    :where(.cngx-checkbox-indicator, .cngx-radio-indicator) {
+      @include color($theme);
+    }
+  }
+}

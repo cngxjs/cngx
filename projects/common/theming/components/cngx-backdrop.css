@@ -1,0 +1,73 @@
+/**
+ * @overview
+ * Theming bridge for the `CngxBackdrop` directive. Opt-in: add the
+ * `.cngx-backdrop` class alongside `[cngxBackdrop]` to consume the
+ * default fixed-overlay scrim. The directive toggles
+ * `.cngx-backdrop--visible` and `aria-hidden` from its `cngxBackdrop`
+ * input; this stylesheet only paints.
+ *
+ * **State modifiers**
+ *
+ * - `--visible` - opacity 1, pointer-events enabled (default is
+ *   transparent and click-through)
+ *
+ * **Inheritance**
+ *
+ * - `--cngx-backdrop-bg` defaults to a 50% black wash; no foundation
+ *   delegation by design (the scrim is the same on light and dark)
+ * - `--cngx-backdrop-transition-duration` -> `--cngx-duration-base`
+ *
+ * **Pair with**
+ *
+ * - `@cngx/themes/material/backdrop-theme` - Material 3 scrim surface
+ */
+
+@layer cngx.tokens {
+  /**
+   * Background of the overlay scrim. Defaults to a 50% black wash
+   * so content beneath stays legible but visually muted.
+   * @group Surface
+   */
+  @property --cngx-backdrop-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0 0 0 / 0.5);
+  }
+
+  /**
+   * Duration of the opacity fade between hidden and visible states.
+   * Falls back to `--cngx-duration-base`.
+   * @group Motion
+   */
+  @property --cngx-backdrop-transition-duration {
+    syntax: '<time>';
+    inherits: false;
+    initial-value: 200ms;
+  }
+}
+
+@layer cngx.components {
+  @scope (.cngx-backdrop) {
+    :scope {
+      /* Functional - hardcoded, not part of theming surface */
+      position: fixed;
+      inset: 0;
+      box-sizing: border-box;
+      opacity: 0;
+      pointer-events: none;
+
+      /* Themable - token-driven, three-tier overridable */
+      background: var(--cngx-backdrop-bg, oklch(0 0 0 / 0.5));
+      transition: opacity var(--cngx-backdrop-transition-duration, var(--cngx-duration-base, 200ms));
+    }
+
+    /* Visible state - class is toggled by the directive. `:scope` form
+     * instead of `&` so the build's CSS optimiser doesn't choke on the
+     * `&`-to-class chain inside `@scope` (NG8000 / esbuild "empty
+     * sub-selector" warning otherwise). */
+    :scope.cngx-backdrop--visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+  }
+}

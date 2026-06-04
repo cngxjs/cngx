@@ -1,0 +1,27 @@
+@use '@angular/material' as mat;
+
+// Material bridge for CngxSkeleton. Default visuals + keyframes ship with
+// the component (skeleton-container.css); this file only overrides the
+// tokens Material has a stronger opinion about.
+//
+//   @use '@angular/material' as mat;
+//   @use '@cngx/themes/material/skeleton-theme' as skeleton;
+//   html { @include skeleton.theme($theme); }
+
+@mixin color($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-skeleton-bg: var(--mat-sys-surface-container);
+    --cngx-skeleton-shimmer-color: var(--mat-sys-surface-container-high);
+  } @else {
+    --cngx-skeleton-bg: #{rgba(mat.get-theme-color($theme, foreground, divider), 0.12)};
+    --cngx-skeleton-shimmer-color: #{rgba(mat.get-theme-color($theme, background, card), 0.8)};
+  }
+}
+
+@mixin theme($theme) {
+  @layer cngx.components {
+    :where(.cngx-skeleton) {
+      @include color($theme);
+    }
+  }
+}

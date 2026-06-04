@@ -1,0 +1,161 @@
+/**
+ * @overview
+ * Chart-level CSS custom properties consumed by every chart atom in
+ * `@cngx/common/chart`. This file is a pure token surface - no
+ * selectors apart from `:root`, no @scope. A two-level cascade keeps
+ * multi-layer recoloring side-effect-free: atom-local var (e.g.
+ * `--cngx-line-color`) -> chart-level var (`--cngx-chart-primary`)
+ * -> consumer accent (`--accent`, `--danger`) -> foundation token.
+ *
+ * **Atom-local pass-through**
+ *
+ * Each atom owns its own `--cngx-<atom>-color` token that always
+ * falls back to the matching chart-level token, never to a literal.
+ * Recoloring one line on a multi-layer chart stays scoped to that
+ * line; overriding `--cngx-chart-primary` would otherwise shift
+ * every layer (Pillar 3: no configuration-by-side-effect).
+ *
+ * - `--cngx-line-color`
+ * - `--cngx-area-fill`
+ * - `--cngx-bar-color`
+ * - `--cngx-scatter-color`
+ * - `--cngx-threshold-color`
+ * - `--cngx-band-color`
+ *
+ * **Inheritance**
+ *
+ * Each chart-level token chains through a consumer-facing accent
+ * tier and then a foundation `--cngx-color-*` token, so brand
+ * overrides at either level cascade automatically. Because
+ * `@property` `initial-value` cannot reference `var()`, the literal
+ * defaults are mirrored in `:root` assignments:
+ *
+ * - `--cngx-chart-primary` -> `--accent` -> `--cngx-color-primary`
+ * - `--cngx-chart-secondary` -> `--accent-secondary` ->
+ *   `--cngx-color-text-muted`
+ * - `--cngx-chart-danger` -> `--danger` -> `--cngx-color-danger`
+ * - `--cngx-chart-success` -> `--success` -> `--cngx-color-success`
+ * - `--cngx-chart-axis-color` -> `--text-secondary` ->
+ *   `--cngx-color-text-muted`
+ * - `--cngx-chart-text-color` -> `--text-primary` ->
+ *   `--cngx-color-text`
+ * - `--cngx-chart-grid-color` - `color-mix(currentColor 14%)`
+ *   overlay, paints at consistent contrast on any body surface
+ * - `--cngx-skeleton-bg` - same `currentColor` overlay shared with
+ *   the chart skeleton placeholder
+ */
+
+@layer cngx.tokens {
+  /**
+   * Primary line / fill color shared by chart atoms. Falls back
+   * through the consumer-facing `--accent` and then to the foundation
+   * `--cngx-color-primary` (Ember).
+   * @group Surface
+   * @see [[--cngx-color-primary]]
+   */
+  @property --cngx-chart-primary {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.66 0.19 50);
+  }
+
+  /**
+   * Secondary fill color for multi-series layers.
+   * @group Surface
+   */
+  @property --cngx-chart-secondary {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.65 0.02 250);
+  }
+
+  /**
+   * Danger-coded series color.
+   * @group Variant / Danger
+   * @see [[--cngx-color-danger]]
+   */
+  @property --cngx-chart-danger {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.55 0.18 25);
+  }
+
+  /**
+   * Success-coded series color.
+   * @group Variant / Success
+   * @see [[--cngx-color-success]]
+   */
+  @property --cngx-chart-success {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.55 0.15 145);
+  }
+
+  /**
+   * Gridline color.
+   * @group Surface
+   */
+  @property --cngx-chart-grid-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.92 0.005 250);
+  }
+
+  /**
+   * Axis stroke color.
+   * @group Surface
+   */
+  @property --cngx-chart-axis-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.5 0.015 250);
+  }
+
+  /**
+   * Axis / legend / annotation text color.
+   * @group Typography
+   */
+  @property --cngx-chart-text-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.25 0.015 250);
+  }
+
+  /**
+   * Default aspect ratio of the chart frame.
+   * @group Layout
+   */
+  @property --cngx-chart-aspect-ratio {
+    syntax: '*';
+    inherits: false;
+    initial-value: 5 / 2;
+  }
+}
+
+/* Consumer-facing var() chains. Each chart token chains through the
+ * cngx-color-* foundation tokens (which carry light + dark variants)
+ * so charts inherit the active color scheme automatically. The
+ * `--accent` / `--danger` / `--border` / `--text-*` consumer tier
+ * remains a higher-priority override; the @property `initial-value`
+ * is the leaf default if nothing higher in the chain is set.
+ *
+ * Grid + skeleton surfaces use a `color-mix(currentColor)` overlay
+ * so they paint at consistent contrast against any body background:
+ * a dark overlay on light surfaces, a light overlay on dark surfaces.
+ */
+:root {
+  --cngx-chart-primary: var(--accent, var(--cngx-color-primary, oklch(0.66 0.19 50)));
+  --cngx-chart-secondary: var(
+    --accent-secondary,
+    var(--cngx-color-text-muted, oklch(0.65 0.02 250))
+  );
+  --cngx-chart-danger: var(--danger, var(--cngx-color-danger, oklch(0.55 0.18 25)));
+  --cngx-chart-success: var(--success, var(--cngx-color-success, oklch(0.55 0.15 145)));
+  --cngx-chart-grid-color: color-mix(in oklch, currentColor 14%, transparent);
+  --cngx-chart-axis-color: var(
+    --text-secondary,
+    var(--cngx-color-text-muted, oklch(0.5 0.015 250))
+  );
+  --cngx-chart-text-color: var(--text-primary, var(--cngx-color-text, oklch(0.25 0.015 250)));
+  --cngx-skeleton-bg: color-mix(in oklch, currentColor 14%, transparent);
+}

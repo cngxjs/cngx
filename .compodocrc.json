@@ -1,0 +1,78 @@
+{
+    "$schema": "./node_modules/@cngxjs/compodocx/src/config/schema.json",
+    "tsconfig": "./tsconfig.doc.json",
+    "output": "./docs",
+    "theme": "./cngx-compodocx-theme.css",
+    "shikiTheme": "github-light:github-dark",
+    "multiVersion": false,
+    "includes": "core-concepts",
+    "includesName": "Core Concepts",
+    "groupBy": "folder",
+    "groupDepth": 2,
+    "disableSourceCode": true,
+    "disableTemplateTab": true,
+    "disableStyleTab": true,
+    "disablePrivate": true,
+    "disableInternal": true,
+    "disableRoutesGraph": true,
+    "disableDependencies": true,
+    "disableProperties": true,
+    "menuLayout": "feature",
+    "featuresName": "Libraries",
+    "collapsedAll": true,
+    "showEffects": false,
+    "apiTabSections": [
+        "index",
+        "inputs",
+        "outputs",
+        "properties",
+        "methods",
+        "accessors",
+        "indexSignatures",
+        "hostBindings",
+        "hostListeners"
+    ],
+    "themingTabSections": [
+        "overview",
+        "index",
+        "tokens"
+    ],
+    "navTabConfig": [
+        {
+            "id": "info",
+            "label": "Info"
+        },
+        {
+            "id": "readme",
+            "label": "Readme"
+        },
+        {
+            "id": "api",
+            "label": "API"
+        },
+        {
+            "id": "theming",
+            "label": "Theming"
+        },
+        {
+            "id": "example",
+            "label": "Example"
+        },
+        {
+            "id": "playground",
+            "label": "Playground"
+        },
+        {
+            "id": "tree",
+            "label": "DOM Tree"
+        }
+    ],
+    "playgroundDependencies": {
+        "@cngx/utils": "0.1.0-rc.0",
+        "@cngx/core": "0.1.0-rc.0",
+        "@cngx/common": "0.1.0-rc.0",
+        "@cngx/forms": "0.1.0-rc.0",
+        "@cngx/ui": "0.1.0-rc.0",
+        "@cngx/data-display": "0.1.0-rc.0"
+    }
+}

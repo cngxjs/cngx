@@ -1,0 +1,184 @@
+/**
+ * @overview
+ * Default visuals for the `[cngxFileDrop]` directive. The host
+ * carries `.cngx-file-drop` and renders as a dashed dropzone with
+ * padding, radius, and transition shorthand applied to border /
+ * background changes between states.
+ *
+ * **State modifiers**
+ *
+ * - `--dragging` - solid border + alpha tint while a drag is hovering;
+ *   border color picks up `currentColor` by default
+ * - `--has-files` - solid border in the success chain once files have
+ *   been dropped
+ * - `--uploading` - 0.6 opacity dim, `pointer-events: none`, `wait`
+ *   cursor while an upload is in flight
+ *
+ * **Slots**
+ *
+ * - `.cngx-file-drop` - host element, block-level, dashed border +
+ *   radius + padding, center-aligned, pointer cursor, transition
+ *   shorthand on `border-color` and `background`
+ *
+ * Reduced-motion handling lives inside the `@scope` block: when
+ * `prefers-reduced-motion: reduce` is honoured the transition is
+ * dropped.
+ *
+ * **Inheritance**
+ *
+ * Layout tokens delegate to the foundation:
+ *
+ * - `--cngx-file-drop-radius` -> `--cngx-radius-md`
+ * - `--cngx-file-drop-padding` -> `--cngx-space-xl`
+ * - `--cngx-file-drop-success-border` -> `--cngx-color-success`
+ *
+ * `--cngx-file-drop-transition` keeps its mixed `<time> <easing>`
+ * shape via `@property` `syntax: '*'`, so the transition shorthand
+ * fits a single token without splitting into two. Border-width,
+ * resting border-color, active border, active background, and
+ * uploading opacity stay structural (no foundation delegate).
+ *
+ * **Pair with**
+ *
+ * - `@cngx/themes/material/file-drop-theme` - Material surface
+ *   treatment
+ */
+
+@layer cngx.tokens {
+  /**
+   * Border width of the resting dropzone.
+   * @group Surface
+   */
+  @property --cngx-file-drop-border-width {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 2px;
+  }
+
+  /**
+   * Border color of the resting dropzone.
+   * @group Surface
+   */
+  @property --cngx-file-drop-border-color {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: oklch(0.8 0 0);
+  }
+
+  /**
+   * Corner radius. Defaults to `--cngx-radius-md`.
+   * @group Layout
+   */
+  @property --cngx-file-drop-radius {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 8px;
+  }
+
+  /**
+   * Padding shorthand. Defaults to `--cngx-space-xl`.
+   * @group Layout
+   */
+  @property --cngx-file-drop-padding {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 32px;
+  }
+
+  /**
+   * Transition shorthand (`<time> <easing>`) applied to border and
+   * background changes between states.
+   * @group Motion
+   */
+  @property --cngx-file-drop-transition {
+    syntax: '*';
+    inherits: false;
+    initial-value: 200ms ease;
+  }
+
+  /**
+   * Border color applied while a drag is hovering. Defaults to
+   * `currentColor` so the dropzone picks up the inherited text color.
+   * @group State / Dragging
+   */
+  @property --cngx-file-drop-active-border {
+    syntax: '*';
+    inherits: false;
+    initial-value: currentColor;
+  }
+
+  /**
+   * Background tint applied while a drag is hovering.
+   * @group State / Dragging
+   */
+  @property --cngx-file-drop-active-bg {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: oklch(0 0 0 / 0.03);
+  }
+
+  /**
+   * Border color applied once files have been dropped. Falls back
+   * through `--cngx-color-success`.
+   * @group State / HasFiles
+   * @see [[--cngx-color-success]]
+   */
+  @property --cngx-file-drop-success-border {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: oklch(0.65 0.15 155);
+  }
+
+  /**
+   * Opacity multiplier applied while an upload is in flight.
+   * @group State / Uploading
+   */
+  @property --cngx-file-drop-uploading-opacity {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 0.6;
+  }
+}
+
+@layer cngx.components {
+  @scope (.cngx-file-drop) {
+    :scope {
+      display: block;
+      border: var(--cngx-file-drop-border-width, 2px) dashed
+        var(--cngx-file-drop-border-color, oklch(0.8 0 0));
+      border-radius: var(--cngx-file-drop-radius, var(--cngx-radius-md, 8px));
+      padding: var(--cngx-file-drop-padding, var(--cngx-space-xl, 32px));
+      text-align: center;
+      cursor: pointer;
+      transition:
+        border-color var(--cngx-file-drop-transition, 200ms ease),
+        background var(--cngx-file-drop-transition, 200ms ease);
+    }
+
+    :scope.cngx-file-drop--dragging {
+      border-color: var(--cngx-file-drop-active-border, currentColor);
+      border-style: solid;
+      background: var(--cngx-file-drop-active-bg, oklch(0 0 0 / 0.03));
+    }
+
+    :scope.cngx-file-drop--has-files {
+      border-color: var(
+        --cngx-file-drop-success-border,
+        var(--cngx-color-success, oklch(0.65 0.15 155))
+      );
+      border-style: solid;
+    }
+
+    :scope.cngx-file-drop--uploading {
+      opacity: var(--cngx-file-drop-uploading-opacity, 0.6);
+      pointer-events: none;
+      cursor: wait;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      :scope {
+        transition: none;
+      }
+    }
+  }
+}

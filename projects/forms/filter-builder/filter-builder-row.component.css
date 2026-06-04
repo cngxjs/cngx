@@ -1,0 +1,59 @@
+/**
+ * @overview
+ * Default visuals for `CngxFilterBuilderRow` - the row wrapper inside
+ * `CngxFilterBuilder`. The host `cngx-filter-row` stays
+ * `display: contents` and delegates its layout to the parent's
+ * `.cngx-filter-builder__expression` flex row, redeclared here so the
+ * file is self-contained when consumed standalone.
+ *
+ * **State modifiers**
+ *
+ * - `.cngx-filter-builder__expression--empty` - opacity fade for the
+ *   empty-row variant, sourced from
+ *   `--cngx-filter-builder-empty-row-opacity` (owned here)
+ *
+ * **Slots**
+ *
+ * - `cngx-filter-row` - host, `display: contents`
+ * - `.cngx-filter-builder__expression` - inner flex row, gap + wrap,
+ *   aligned center
+ *
+ * **Inheritance**
+ *
+ * `--cngx-filter-builder-empty-row-opacity` is structural (no
+ * foundation delegate). `--cngx-filter-builder-gap` is owned by the
+ * parent `filter-builder.component.css` and consumed here through the
+ * `var()` fallback chain only.
+ */
+
+@layer cngx.tokens {
+  /**
+   * Opacity multiplier applied to the empty row variant — fades the
+   * placeholder slot without removing it from the layout.
+   * @group State / Empty
+   */
+  @property --cngx-filter-builder-empty-row-opacity {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 0.85;
+  }
+}
+
+@layer cngx.components {
+  @scope (cngx-filter-row) {
+    :scope {
+      display: contents;
+    }
+
+    .cngx-filter-builder__expression {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--cngx-filter-builder-gap, 0.5rem);
+      align-items: center;
+    }
+
+    .cngx-filter-builder__expression--empty {
+      opacity: var(--cngx-filter-builder-empty-row-opacity, 0.85);
+    }
+  }
+}

@@ -1,0 +1,384 @@
+/**
+ * @overview
+ * Default visuals for `CngxAlertStack`. The host carries
+ * `.cngx-alert-stack` and renders `__item` rows for each alert,
+ * `__icon` + `__body` + `__title` + `__message` + `__dismiss`
+ * children per item, plus an `__overflow` "show more" button.
+ * Shares the `--cngx-alert-*` token namespace with `CngxAlert` so a
+ * `:root`-level override of (e.g.) `--cngx-alert-success-bg`
+ * propagates to both - only stack-specific tokens (gap, reserve-
+ * height, message typography, overflow button surface) get their
+ * own `@property` declarations here.
+ *
+ * **State modifiers**
+ *
+ * - `--reserve-space` - pins `min-height` to `--cngx-alert-stack-
+ *   reserve-height` so layout does not shift when alerts mount /
+ *   dismount
+ *
+ * **Variants**
+ *
+ * Severity classes set the three tinted-surface tokens for each item:
+ *
+ * - `__item--info` - info bg / border / icon
+ * - `__item--success` - success bg / border / icon
+ * - `__item--warning` - warning bg / border / icon
+ * - `__item--error` - error bg / border / icon
+ *
+ * **Inheritance**
+ *
+ * Stack-local tokens stand alone; severity tokens mirror the
+ * `alert.css` 4-block (`:root`, `prefers-color-scheme: dark`,
+ * `[data-color-scheme='dark']` / `.dark`, `[data-color-scheme='light']`
+ * / `.light`) so a page that only uses `CngxAlertStack` still sees
+ * resolved values without `CngxAlert` mounting:
+ *
+ * - `--cngx-alert-stack-overflow-border` -> `--cngx-color-border`
+ * - `--cngx-alert-{info,success,warning,error}-{bg,border,icon}` -
+ *   alert family palette
+ *
+ * **Dark mode**
+ *
+ * Three hooks swap the overflow button colors and every severity
+ * triplet:
+ *
+ * - `prefers-color-scheme: dark`
+ * - `[data-color-scheme="dark"]`
+ * - `.dark` class
+ *
+ * **Pair with**
+ *
+ * - `@cngx/themes/material/feedback-theme` - Material 3 surface
+ *   palette shared with `CngxAlert` and `CngxBannerOutlet`
+ */
+
+@layer cngx.tokens {
+  /**
+   * Vertical gap between stacked alert items.
+   * @group Layout
+   */
+  @property --cngx-alert-stack-gap {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 8px;
+  }
+
+  /**
+   * Minimum block-size reserved for the stack so layout doesn't
+   * shift when alerts mount / dismount.
+   * @group Layout
+   */
+  @property --cngx-alert-stack-reserve-height {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 56px;
+  }
+
+  /**
+   * Font-size of the per-item message text.
+   * @group Typography
+   */
+  @property --cngx-alert-stack-message-size {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.875rem;
+  }
+
+  /**
+   * Line-height of the per-item message text.
+   * @group Typography
+   */
+  @property --cngx-alert-stack-message-line-height {
+    syntax: '*';
+    inherits: false;
+    initial-value: 1.5;
+  }
+
+  /**
+   * Background of the "show more" overflow button.
+   * @group State / Overflow
+   */
+  @property --cngx-alert-stack-overflow-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: transparent;
+  }
+
+  /**
+   * Border color of the "show more" overflow button.
+   * @group State / Overflow
+   */
+  @property --cngx-alert-stack-overflow-border {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.85 0.005 250);
+  }
+
+  /**
+   * Padding shorthand of the "show more" overflow button.
+   * @group State / Overflow
+   */
+  @property --cngx-alert-stack-overflow-padding {
+    syntax: '*';
+    inherits: false;
+    initial-value: 8px 16px;
+  }
+
+  /**
+   * Font-size of the "show more" overflow button.
+   * @group State / Overflow
+   */
+  @property --cngx-alert-stack-overflow-size {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.8125rem;
+  }
+
+  /**
+   * Text color of the "show more" overflow button.
+   * @group State / Overflow
+   */
+  @property --cngx-alert-stack-overflow-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.5 0.01 250);
+  }
+
+  /**
+   * Background tint on hover of the "show more" overflow button.
+   * @group State / Overflow
+   */
+  @property --cngx-alert-stack-overflow-hover-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.96 0.005 250);
+  }
+
+  /* Color-scheme defaults for the "show more" overflow button. The
+   * dashed border tracks the foundation `--cngx-color-border`; the
+   * muted text + hover-bg are component-local with explicit dark
+   * counterparts (no foundation muted token in cngx). */
+  :root {
+    --cngx-alert-stack-overflow-border: var(--cngx-color-border);
+    --cngx-alert-stack-overflow-color: oklch(0.5 0.01 250);
+    --cngx-alert-stack-overflow-hover-bg: oklch(0.96 0.005 250);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-color-scheme='light']):not(.light) {
+      --cngx-alert-stack-overflow-color: oklch(0.75 0.01 250);
+      --cngx-alert-stack-overflow-hover-bg: oklch(0.26 0.01 250);
+    }
+  }
+
+  [data-color-scheme='dark'],
+  .dark {
+    --cngx-alert-stack-overflow-color: oklch(0.75 0.01 250);
+    --cngx-alert-stack-overflow-hover-bg: oklch(0.26 0.01 250);
+  }
+
+  [data-color-scheme='light'],
+  .light {
+    --cngx-alert-stack-overflow-color: oklch(0.5 0.01 250);
+    --cngx-alert-stack-overflow-hover-bg: oklch(0.96 0.005 250);
+  }
+
+  /* Mirror of the alert.css severity 4-block. The `--cngx-alert-*`
+   * @property declarations live in alert.css and only load when a
+   * `CngxAlert` instance mounts - but a page that only uses
+   * `CngxAlertStack` (no inline alert) would otherwise see empty
+   * tokens and fall through to the var() fallback (light values).
+   * Custom properties without @property registration still inherit
+   * by default, so duplicating the :root override here keeps the
+   * stack self-sufficient. Values are kept in lockstep with alert.css. */
+  :root {
+    --cngx-alert-bg: oklch(0.98 0.005 250);
+    --cngx-alert-info-bg: oklch(0.96 0.025 250);
+    --cngx-alert-info-border: oklch(0.85 0.07 250);
+    --cngx-alert-info-icon: oklch(0.62 0.2 250);
+    --cngx-alert-success-bg: oklch(0.96 0.04 145);
+    --cngx-alert-success-border: oklch(0.85 0.1 145);
+    --cngx-alert-success-icon: oklch(0.65 0.15 145);
+    --cngx-alert-warning-bg: oklch(0.97 0.04 80);
+    --cngx-alert-warning-border: oklch(0.86 0.1 80);
+    --cngx-alert-warning-icon: oklch(0.72 0.18 70);
+    --cngx-alert-error-bg: oklch(0.96 0.025 25);
+    --cngx-alert-error-border: oklch(0.85 0.08 25);
+    --cngx-alert-error-icon: oklch(0.62 0.22 25);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-color-scheme='light']):not(.light) {
+      --cngx-alert-bg: oklch(0.22 0.01 250);
+      --cngx-alert-info-bg: oklch(0.3 0.05 250);
+      --cngx-alert-info-border: oklch(0.5 0.08 250);
+      --cngx-alert-info-icon: oklch(0.78 0.14 250);
+      --cngx-alert-success-bg: oklch(0.3 0.06 145);
+      --cngx-alert-success-border: oklch(0.5 0.1 145);
+      --cngx-alert-success-icon: oklch(0.78 0.14 145);
+      --cngx-alert-warning-bg: oklch(0.32 0.06 80);
+      --cngx-alert-warning-border: oklch(0.55 0.1 80);
+      --cngx-alert-warning-icon: oklch(0.82 0.15 70);
+      --cngx-alert-error-bg: oklch(0.3 0.05 25);
+      --cngx-alert-error-border: oklch(0.5 0.1 25);
+      --cngx-alert-error-icon: oklch(0.78 0.16 25);
+    }
+  }
+
+  [data-color-scheme='dark'],
+  .dark {
+    --cngx-alert-bg: oklch(0.22 0.01 250);
+    --cngx-alert-info-bg: oklch(0.3 0.05 250);
+    --cngx-alert-info-border: oklch(0.5 0.08 250);
+    --cngx-alert-info-icon: oklch(0.78 0.14 250);
+    --cngx-alert-success-bg: oklch(0.3 0.06 145);
+    --cngx-alert-success-border: oklch(0.5 0.1 145);
+    --cngx-alert-success-icon: oklch(0.78 0.14 145);
+    --cngx-alert-warning-bg: oklch(0.32 0.06 80);
+    --cngx-alert-warning-border: oklch(0.55 0.1 80);
+    --cngx-alert-warning-icon: oklch(0.82 0.15 70);
+    --cngx-alert-error-bg: oklch(0.3 0.05 25);
+    --cngx-alert-error-border: oklch(0.5 0.1 25);
+    --cngx-alert-error-icon: oklch(0.78 0.16 25);
+  }
+
+  [data-color-scheme='light'],
+  .light {
+    --cngx-alert-bg: oklch(0.98 0.005 250);
+    --cngx-alert-info-bg: oklch(0.96 0.025 250);
+    --cngx-alert-info-border: oklch(0.85 0.07 250);
+    --cngx-alert-info-icon: oklch(0.62 0.2 250);
+    --cngx-alert-success-bg: oklch(0.96 0.04 145);
+    --cngx-alert-success-border: oklch(0.85 0.1 145);
+    --cngx-alert-success-icon: oklch(0.65 0.15 145);
+    --cngx-alert-warning-bg: oklch(0.97 0.04 80);
+    --cngx-alert-warning-border: oklch(0.86 0.1 80);
+    --cngx-alert-warning-icon: oklch(0.72 0.18 70);
+    --cngx-alert-error-bg: oklch(0.96 0.025 25);
+    --cngx-alert-error-border: oklch(0.85 0.08 25);
+    --cngx-alert-error-icon: oklch(0.62 0.22 25);
+  }
+}
+
+@layer cngx.components {
+  @scope (.cngx-alert-stack) {
+    :scope {
+      display: flex;
+      flex-direction: column;
+      gap: var(--cngx-alert-stack-gap, 8px);
+    }
+
+    :scope.cngx-alert-stack--reserve-space {
+      min-height: var(--cngx-alert-stack-reserve-height, 56px);
+    }
+
+    .cngx-alert-stack__item {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--cngx-alert-gap, 12px);
+      padding: var(--cngx-alert-padding, 12px 16px);
+      border-radius: var(--cngx-alert-border-radius, 8px);
+      border: 1px solid var(--cngx-alert-border-color, transparent);
+      background: var(--cngx-alert-bg, oklch(0.98 0.005 250));
+      color: var(--cngx-alert-color, inherit);
+      animation: cngx-alert-enter var(--cngx-alert-enter-duration, 200ms) ease-out both;
+    }
+
+    .cngx-alert-stack__item--info {
+      --cngx-alert-bg: var(--cngx-alert-info-bg, oklch(0.96 0.025 250));
+      --cngx-alert-border-color: var(--cngx-alert-info-border, oklch(0.85 0.07 250));
+      --cngx-alert-icon-color: var(--cngx-alert-info-icon, oklch(0.62 0.2 250));
+    }
+
+    .cngx-alert-stack__item--success {
+      --cngx-alert-bg: var(--cngx-alert-success-bg, oklch(0.96 0.04 145));
+      --cngx-alert-border-color: var(--cngx-alert-success-border, oklch(0.85 0.1 145));
+      --cngx-alert-icon-color: var(--cngx-alert-success-icon, oklch(0.65 0.15 145));
+    }
+
+    .cngx-alert-stack__item--warning {
+      --cngx-alert-bg: var(--cngx-alert-warning-bg, oklch(0.97 0.04 80));
+      --cngx-alert-border-color: var(--cngx-alert-warning-border, oklch(0.86 0.1 80));
+      --cngx-alert-icon-color: var(--cngx-alert-warning-icon, oklch(0.72 0.18 70));
+    }
+
+    .cngx-alert-stack__item--error {
+      --cngx-alert-bg: var(--cngx-alert-error-bg, oklch(0.96 0.025 25));
+      --cngx-alert-border-color: var(--cngx-alert-error-border, oklch(0.85 0.08 25));
+      --cngx-alert-icon-color: var(--cngx-alert-error-icon, oklch(0.62 0.22 25));
+    }
+
+    .cngx-alert-stack__icon {
+      flex-shrink: 0;
+      color: var(--cngx-alert-icon-color, currentColor);
+    }
+
+    .cngx-alert-stack__default-icon {
+      width: var(--cngx-alert-icon-size, 20px);
+      height: var(--cngx-alert-icon-size, 20px);
+    }
+
+    .cngx-alert-stack__body {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .cngx-alert-stack__title {
+      display: block;
+      font-weight: var(--cngx-alert-title-weight, 600);
+      margin-bottom: var(--cngx-alert-title-gap, 4px);
+    }
+
+    .cngx-alert-stack__message {
+      font-size: var(--cngx-alert-stack-message-size, 0.875rem);
+      line-height: var(--cngx-alert-stack-message-line-height, 1.5);
+    }
+
+    .cngx-alert-stack__dismiss {
+      flex-shrink: 0;
+    }
+
+    .cngx-alert-stack__overflow {
+      appearance: none;
+      background: var(--cngx-alert-stack-overflow-bg, transparent);
+      border: 1px dashed var(--cngx-alert-stack-overflow-border, oklch(0.85 0.005 250));
+      border-radius: var(--cngx-alert-border-radius, 8px);
+      padding: var(--cngx-alert-stack-overflow-padding, 8px 16px);
+      cursor: pointer;
+      font-size: var(--cngx-alert-stack-overflow-size, 0.8125rem);
+      color: var(--cngx-alert-stack-overflow-color, oklch(0.5 0.01 250));
+      text-align: center;
+      width: 100%;
+    }
+
+    .cngx-alert-stack__overflow:hover {
+      background: var(--cngx-alert-stack-overflow-hover-bg, oklch(0.96 0.005 250));
+    }
+
+    .cngx-alert-stack__overflow:focus-visible {
+      outline: 2px solid currentColor;
+      outline-offset: 2px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .cngx-alert-stack__item {
+        animation: none;
+      }
+    }
+  }
+}
+
+/* cngx-alert-enter keyframe is also declared in alert.css; the
+ * duplicate is benign because the rule body is identical. Stack
+ * file is self-contained when ejected on its own. */
+
+@keyframes cngx-alert-enter {
+  from {
+    opacity: 0;
+    transform: translateY(calc(-1 * var(--cngx-alert-enter-offset, 8px)));
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

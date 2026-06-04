@@ -1,0 +1,273 @@
+/**
+ * @overview
+ * Thematic skin for `<cngx-tab-overflow>` - the trailing-edge
+ * popover surface that lists clipped tabs. Structural rules (flex /
+ * grid, sr-only) come from `tabs-base.css` in `@cngx/common/tabs`
+ * via the parent organism's `styleUrls`. This file owns trigger-
+ * button shape, popover panel layout, and per-row affordances. The
+ * host carries `.cngx-tab-overflow` and renders `__trigger` +
+ * `__panel-surface` + `__list` + `__item` children.
+ *
+ * **State modifiers**
+ *
+ * On `.cngx-tab-overflow__trigger`:
+ *
+ * - `[hidden]` - collapsed when no tabs are clipped
+ * - `:focus-visible` - shared `--cngx-tab-focus-ring` outline
+ *
+ * On `.cngx-tab-overflow__item`:
+ *
+ * - `:hover` - tints via `--cngx-tab-overflow-item-hover-bg`
+ * - `--active` - APG combobox highlighted-option signal; tints
+ *   background and draws an inset outline ring
+ * - `[aria-disabled="true"]` - cursor + opacity dim via
+ *   `--cngx-tab-disabled-opacity`
+ *
+ * **Slots**
+ *
+ * - `.cngx-tab-overflow__trigger` - chevron-style overflow button
+ *   (consumes shared `--cngx-tab-gap` / `--cngx-tab-padding` /
+ *   `--cngx-tab-color`)
+ * - `.cngx-tab-overflow__panel-surface` - scrollable popover panel
+ *   with min-width / max-height caps
+ * - `.cngx-tab-overflow__list` - unstyled `<ul>` column flex
+ * - `.cngx-tab-overflow__item` - per-row entry with hover / active
+ *   states
+ *
+ * **Inheritance**
+ *
+ * - `--cngx-tab-overflow-bg` -> `--cngx-tab-strip-bg`
+ * - `--cngx-tab-overflow-item-active-bg` -> `--cngx-tab-overflow-
+ *   item-hover-bg`
+ */
+
+@layer cngx.tokens {
+  /**
+   * Background of the overflow wrapper. Falls back through
+   * `--cngx-tab-strip-bg`.
+   * @group Surface
+   */
+  @property --cngx-tab-overflow-bg {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: transparent;
+  }
+
+  /**
+   * Background of the trigger button.
+   * @group Surface
+   */
+  @property --cngx-tab-overflow-button-bg {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: transparent;
+  }
+
+  /**
+   * Corner radius of the trigger button.
+   * @group Layout
+   */
+  @property --cngx-tab-overflow-button-radius {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 0.25rem;
+  }
+
+  /**
+   * Minimum inline size of the popover panel.
+   * @group Layout
+   */
+  @property --cngx-tab-overflow-popover-min-width {
+    syntax: '*';
+    inherits: false;
+    initial-value: 12rem;
+  }
+
+  /**
+   * Maximum block size of the popover panel before vertical
+   * scrolling.
+   * @group Layout
+   */
+  @property --cngx-tab-overflow-popover-max-height {
+    syntax: '*';
+    inherits: false;
+    initial-value: 16rem;
+  }
+
+  /**
+   * Background of the popover panel.
+   * @group Surface
+   */
+  @property --cngx-tab-overflow-popover-bg {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: oklch(1 0 0);
+  }
+
+  /**
+   * Border shorthand of the popover panel.
+   * @group Surface
+   */
+  @property --cngx-tab-overflow-popover-border {
+    syntax: '*';
+    inherits: false;
+    initial-value: 1px solid currentColor;
+  }
+
+  /**
+   * Corner radius of the popover panel.
+   * @group Layout
+   */
+  @property --cngx-tab-overflow-popover-radius {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 0.25rem;
+  }
+
+  /**
+   * Padding shorthand of the popover panel.
+   * @group Layout
+   */
+  @property --cngx-tab-overflow-popover-padding {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.25rem 0;
+  }
+
+  /**
+   * Padding shorthand of each list item.
+   * @group Layout
+   */
+  @property --cngx-tab-overflow-item-padding {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.5rem 0.75rem;
+  }
+
+  /**
+   * Background of the item hover state.
+   * @group State / Hover
+   */
+  @property --cngx-tab-overflow-item-hover-bg {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: oklch(0 0 0 / 0.05);
+  }
+
+  /**
+   * Background of the AD-active item - APG combobox pattern
+   * requires visible indication of the highlighted option.
+   * @group State / Active
+   */
+  @property --cngx-tab-overflow-item-active-bg {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: oklch(0 0 0 / 0.08);
+  }
+
+  /**
+   * Outline shorthand applied to the AD-active item.
+   * @group State / Active
+   */
+  @property --cngx-tab-overflow-item-active-outline {
+    syntax: '*';
+    inherits: false;
+    initial-value: 2px solid currentColor;
+  }
+
+  /**
+   * Outline offset of the AD-active item.
+   * @group State / Active
+   */
+  @property --cngx-tab-overflow-item-active-outline-offset {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: -2px;
+  }
+}
+
+@layer cngx.components {
+  @scope (.cngx-tab-overflow) {
+    :scope {
+      /*
+       * The molecule lives inside `.cngx-tabs__strip-wrapper` as a
+       * sibling of the actual `<div role="tablist">`. Static flow
+       * positions it at the right edge of the wrapper.
+       */
+      display: inline-flex;
+      align-items: center;
+      flex: 0 0 auto;
+      background: var(--cngx-tab-overflow-bg, var(--cngx-tab-strip-bg, transparent));
+    }
+
+    .cngx-tab-overflow__trigger {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--cngx-tab-gap, 0.5rem);
+      padding: var(--cngx-tab-padding, 0.5rem 0.75rem);
+      border: 0;
+      background: var(--cngx-tab-overflow-button-bg, transparent);
+      color: var(--cngx-tab-color);
+      cursor: pointer;
+      font: inherit;
+      border-radius: var(--cngx-tab-overflow-button-radius, 0.25rem);
+    }
+
+    .cngx-tab-overflow__trigger[hidden] {
+      display: none;
+    }
+
+    .cngx-tab-overflow__trigger:focus-visible {
+      outline: var(--cngx-tab-focus-ring, 2px solid currentColor);
+      outline-offset: var(--cngx-tab-focus-offset, 2px);
+    }
+
+    .cngx-tab-overflow__panel-surface {
+      min-width: var(--cngx-tab-overflow-popover-min-width, 12rem);
+      max-height: var(--cngx-tab-overflow-popover-max-height, 16rem);
+      background: var(--cngx-tab-overflow-popover-bg, oklch(1 0 0));
+      border: var(--cngx-tab-overflow-popover-border, 1px solid currentColor);
+      border-radius: var(--cngx-tab-overflow-popover-radius, 0.25rem);
+      overflow: auto;
+      padding: var(--cngx-tab-overflow-popover-padding, 0.25rem 0);
+    }
+
+    .cngx-tab-overflow__list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .cngx-tab-overflow__item {
+      padding: var(--cngx-tab-overflow-item-padding, 0.5rem 0.75rem);
+      cursor: pointer;
+      user-select: none;
+      white-space: nowrap;
+    }
+
+    .cngx-tab-overflow__item:hover {
+      background: var(--cngx-tab-overflow-item-hover-bg, oklch(0 0 0 / 0.05));
+    }
+
+    /*
+     * Visible feedback for the AD-active option - bound from
+     * `ad.activeId() === adItemId(tab)` in the template. APG combobox
+     * pattern requires visible indication of the highlighted option.
+     */
+    .cngx-tab-overflow__item--active {
+      background: var(
+        --cngx-tab-overflow-item-active-bg,
+        var(--cngx-tab-overflow-item-hover-bg, oklch(0 0 0 / 0.08))
+      );
+      outline: var(--cngx-tab-overflow-item-active-outline, 2px solid currentColor);
+      outline-offset: var(--cngx-tab-overflow-item-active-outline-offset, -2px);
+    }
+
+    .cngx-tab-overflow__item[aria-disabled='true'] {
+      cursor: not-allowed;
+      opacity: var(--cngx-tab-disabled-opacity, 0.55);
+    }
+  }
+}

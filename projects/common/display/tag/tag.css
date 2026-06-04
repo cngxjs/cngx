@@ -1,0 +1,569 @@
+/**
+ * @overview
+ * Thematic skin of `CngxTag` - color cascade, radius, font-weight.
+ * The host carries `.cngx-tag`; the structural rules (display, flex,
+ * padding, density modifiers, label ellipsis) live in
+ * `./shared/tag-base.css` and are linked first by the directive's
+ * `styleUrls`. Per-color surfaces resolve through `[data-color="..."]`
+ * attribute selectors, and predefined keys cascade through
+ * `--cngx-tag-{name}-*` custom properties - arbitrary keys ride the
+ * same selector pattern, so consumers can introduce new color names
+ * without forking.
+ *
+ * **Style variants**
+ *
+ * Each variant pairs with a `[data-color]` attribute and rewires
+ * the three tokens `--cngx-tag-bg`, `--cngx-tag-color`,
+ * `--cngx-tag-border` on the host:
+ *
+ * - `--filled` - solid tinted background, optional border
+ * - `--outline` - transparent fill, colored stroke
+ * - `--subtle` - softer tint, transparent border
+ *
+ * **Color keys**
+ *
+ * - `[data-color="neutral"]` - gray surface, no semantic claim
+ * - `[data-color="success"]` - success-coded
+ * - `[data-color="warning"]` - warning-coded
+ * - `[data-color="error"]` - danger-coded (note: key name is
+ *   `error`, foundation token is `--cngx-color-danger`)
+ * - `[data-color="info"]` - info-coded
+ *
+ * **Inheritance**
+ *
+ * - `--cngx-tag-radius` -> `--cngx-radius-sm`
+ * - `--cngx-tag-success-color` -> `--cngx-color-success`
+ * - `--cngx-tag-warning-color` -> `--cngx-color-warning`
+ * - `--cngx-tag-error-color` -> `--cngx-color-danger`
+ * - `--cngx-tag-info-color` -> `--cngx-color-info`
+ * - Filled / subtle backgrounds (`--cngx-tag-{key}-bg`,
+ *   `--cngx-tag-{key}-subtle-bg`) carry their own defaults; no
+ *   foundation token exists for tinted surfaces
+ *
+ * **Dark mode**
+ *
+ * Two hooks flip every filled / subtle background from a high-L
+ * tinted surface to a low-L tinted surface, and the matching text
+ * colors flip from a dark hue to a light hue so they remain legible
+ * against the new background. Borders stay put (mid-tone reads on
+ * either surface):
+ *
+ * - `prefers-color-scheme: dark`
+ * - `[data-color-scheme="dark"]` / `.dark` class
+ * - `[data-color-scheme="light"]` / `.light` class (explicit pin)
+ */
+
+@layer cngx.tokens {
+  /**
+   * Corner radius. Defaults to `--cngx-radius-sm` so tags read as
+   * gentle rectangles rather than pills.
+   * @group Layout
+   */
+  @property --cngx-tag-radius {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 4px;
+  }
+
+  /**
+   * Font-weight of the tag label.
+   * @group Typography
+   */
+  @property --cngx-tag-font-weight {
+    syntax: '*';
+    inherits: false;
+    initial-value: 500;
+  }
+
+  /**
+   * Background. Defaults to transparent; variant + color combinations
+   * pin a concrete value through the `[data-color]` cascade.
+   * @group Surface
+   */
+  @property --cngx-tag-bg {
+    syntax: '*';
+    inherits: false;
+    initial-value: transparent;
+  }
+
+  /**
+   * Text color. Defaults to `currentColor`.
+   * @group Surface
+   */
+  @property --cngx-tag-color {
+    syntax: '*';
+    inherits: true;
+    initial-value: currentColor;
+  }
+
+  /**
+   * Border shorthand. Variant + color combinations override per
+   * `[data-color]`.
+   * @group Surface
+   */
+  @property --cngx-tag-border {
+    syntax: '*';
+    inherits: false;
+    initial-value: 1px solid transparent;
+  }
+
+  /**
+   * Gap between the tag's internal slots (prefix / label / suffix).
+   * @group Layout
+   */
+  @property --cngx-tag-gap {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 4px;
+  }
+
+  /**
+   * Padding shorthand of the default density.
+   * @group Layout
+   */
+  @property --cngx-tag-padding {
+    syntax: '*';
+    inherits: false;
+    initial-value: 2px 8px;
+  }
+
+  /**
+   * Font-size of the default density.
+   * @group Typography
+   */
+  @property --cngx-tag-font-size {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.75rem;
+  }
+
+  /**
+   * Padding shorthand for the `.cngx-tag--sm` density.
+   * @group Variant / Density
+   */
+  @property --cngx-tag-sm-padding {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0 6px;
+  }
+
+  /**
+   * Font-size for the `.cngx-tag--sm` density.
+   * @group Variant / Density
+   */
+  @property --cngx-tag-sm-font-size {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.6875rem;
+  }
+
+  /**
+   * Padding shorthand for the `.cngx-tag--lg` density.
+   * @group Variant / Density
+   */
+  @property --cngx-tag-lg-padding {
+    syntax: '*';
+    inherits: false;
+    initial-value: 4px 10px;
+  }
+
+  /**
+   * Font-size for the `.cngx-tag--lg` density.
+   * @group Variant / Density
+   */
+  @property --cngx-tag-lg-font-size {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.875rem;
+  }
+
+  /**
+   * Padding shorthand for the `.cngx-tag--xl` density.
+   * @group Variant / Density
+   */
+  @property --cngx-tag-xl-padding {
+    syntax: '*';
+    inherits: false;
+    initial-value: 6px 12px;
+  }
+
+  /**
+   * Font-size for the `.cngx-tag--xl` density.
+   * @group Variant / Density
+   */
+  @property --cngx-tag-xl-font-size {
+    syntax: '*';
+    inherits: false;
+    initial-value: 1rem;
+  }
+
+  /**
+   * Filled background of the `[data-color=neutral]` variant.
+   * @group Variant / Neutral
+   */
+  @property --cngx-tag-neutral-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.92 0.005 250);
+  }
+
+  /**
+   * Text color of the `[data-color=neutral]` variant.
+   * @group Variant / Neutral
+   */
+  @property --cngx-tag-neutral-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.34 0.015 250);
+  }
+
+  /**
+   * Border color of the `[data-color=neutral]` variant.
+   * @group Variant / Neutral
+   */
+  @property --cngx-tag-neutral-border {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.68 0.01 250);
+  }
+
+  /**
+   * Subtle background of the `[data-color=neutral]` variant.
+   * @group Variant / Neutral
+   */
+  @property --cngx-tag-neutral-subtle-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.96 0.005 250);
+  }
+
+  /**
+   * Filled background of the `[data-color=success]` variant.
+   * @group Variant / Success
+   * @see [[--cngx-color-success]]
+   */
+  @property --cngx-tag-success-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.95 0.05 145);
+  }
+
+  /**
+   * Text color of the `[data-color=success]` variant.
+   * @group Variant / Success
+   */
+  @property --cngx-tag-success-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.4 0.1 160);
+  }
+
+  /**
+   * Border color of the `[data-color=success]` variant.
+   * @group Variant / Success
+   */
+  @property --cngx-tag-success-border {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.65 0.15 155);
+  }
+
+  /**
+   * Subtle background of the `[data-color=success]` variant.
+   * @group Variant / Success
+   */
+  @property --cngx-tag-success-subtle-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.97 0.025 145);
+  }
+
+  /**
+   * Filled background of the `[data-color=warning]` variant.
+   * @group Variant / Warning
+   * @see [[--cngx-color-warning]]
+   */
+  @property --cngx-tag-warning-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.95 0.05 90);
+  }
+
+  /**
+   * Text color of the `[data-color=warning]` variant.
+   * @group Variant / Warning
+   */
+  @property --cngx-tag-warning-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.45 0.12 60);
+  }
+
+  /**
+   * Border color of the `[data-color=warning]` variant.
+   * @group Variant / Warning
+   */
+  @property --cngx-tag-warning-border {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.72 0.18 70);
+  }
+
+  /**
+   * Subtle background of the `[data-color=warning]` variant.
+   * @group Variant / Warning
+   */
+  @property --cngx-tag-warning-subtle-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.98 0.02 90);
+  }
+
+  /**
+   * Filled background of the `[data-color=error]` variant.
+   * @group Variant / Error
+   * @see [[--cngx-color-danger]]
+   */
+  @property --cngx-tag-error-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.94 0.04 25);
+  }
+
+  /**
+   * Text color of the `[data-color=error]` variant.
+   * @group Variant / Error
+   */
+  @property --cngx-tag-error-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.4 0.15 25);
+  }
+
+  /**
+   * Border color of the `[data-color=error]` variant.
+   * @group Variant / Error
+   */
+  @property --cngx-tag-error-border {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.65 0.22 25);
+  }
+
+  /**
+   * Subtle background of the `[data-color=error]` variant.
+   * @group Variant / Error
+   */
+  @property --cngx-tag-error-subtle-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.98 0.015 25);
+  }
+
+  /**
+   * Filled background of the `[data-color=info]` variant.
+   * @group Variant / Info
+   * @see [[--cngx-color-info]]
+   */
+  @property --cngx-tag-info-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.93 0.04 240);
+  }
+
+  /**
+   * Text color of the `[data-color=info]` variant.
+   * @group Variant / Info
+   */
+  @property --cngx-tag-info-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.4 0.15 250);
+  }
+
+  /**
+   * Border color of the `[data-color=info]` variant.
+   * @group Variant / Info
+   */
+  @property --cngx-tag-info-border {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.62 0.2 250);
+  }
+
+  /**
+   * Subtle background of the `[data-color=info]` variant.
+   * @group Variant / Info
+   */
+  @property --cngx-tag-info-subtle-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.97 0.025 240);
+  }
+
+  /* Dark-mode swap - every filled / subtle variant background flips
+   * from a high-L tinted surface to a low-L tinted surface, and the
+   * matching text colors flip from a dark hue to a light hue so they
+   * remain legible against the new background. Borders (mid-tone)
+   * stay put since they read on either surface. */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-color-scheme='light']):not(.light) {
+      --cngx-tag-neutral-bg: oklch(0.32 0.005 250);
+      --cngx-tag-neutral-color: oklch(0.85 0.005 250);
+      --cngx-tag-neutral-subtle-bg: oklch(0.28 0.005 250);
+
+      --cngx-tag-success-bg: oklch(0.32 0.06 145);
+      --cngx-tag-success-color: oklch(0.85 0.13 145);
+      --cngx-tag-success-subtle-bg: oklch(0.28 0.04 145);
+
+      --cngx-tag-warning-bg: oklch(0.32 0.06 75);
+      --cngx-tag-warning-color: oklch(0.88 0.14 75);
+      --cngx-tag-warning-subtle-bg: oklch(0.28 0.04 75);
+
+      --cngx-tag-error-bg: oklch(0.32 0.05 25);
+      --cngx-tag-error-color: oklch(0.82 0.15 25);
+      --cngx-tag-error-subtle-bg: oklch(0.28 0.04 25);
+
+      --cngx-tag-info-bg: oklch(0.32 0.05 250);
+      --cngx-tag-info-color: oklch(0.85 0.13 250);
+      --cngx-tag-info-subtle-bg: oklch(0.28 0.04 250);
+    }
+  }
+  [data-color-scheme='dark'],
+  .dark {
+    --cngx-tag-neutral-bg: oklch(0.32 0.005 250);
+    --cngx-tag-neutral-color: oklch(0.85 0.005 250);
+    --cngx-tag-neutral-subtle-bg: oklch(0.28 0.005 250);
+
+    --cngx-tag-success-bg: oklch(0.32 0.06 145);
+    --cngx-tag-success-color: oklch(0.85 0.13 145);
+    --cngx-tag-success-subtle-bg: oklch(0.28 0.04 145);
+
+    --cngx-tag-warning-bg: oklch(0.32 0.06 75);
+    --cngx-tag-warning-color: oklch(0.88 0.14 75);
+    --cngx-tag-warning-subtle-bg: oklch(0.28 0.04 75);
+
+    --cngx-tag-error-bg: oklch(0.32 0.05 25);
+    --cngx-tag-error-color: oklch(0.82 0.15 25);
+    --cngx-tag-error-subtle-bg: oklch(0.28 0.04 25);
+
+    --cngx-tag-info-bg: oklch(0.32 0.05 250);
+    --cngx-tag-info-color: oklch(0.85 0.13 250);
+    --cngx-tag-info-subtle-bg: oklch(0.28 0.04 250);
+  }
+  [data-color-scheme='light'],
+  .light {
+    --cngx-tag-neutral-bg: oklch(0.92 0.005 250);
+    --cngx-tag-neutral-color: oklch(0.34 0.015 250);
+    --cngx-tag-neutral-subtle-bg: oklch(0.96 0.005 250);
+
+    --cngx-tag-success-bg: oklch(0.95 0.05 145);
+    --cngx-tag-success-color: oklch(0.4 0.1 160);
+    --cngx-tag-success-subtle-bg: oklch(0.97 0.025 145);
+
+    --cngx-tag-warning-bg: oklch(0.95 0.05 90);
+    --cngx-tag-warning-color: oklch(0.45 0.12 60);
+    --cngx-tag-warning-subtle-bg: oklch(0.98 0.02 90);
+
+    --cngx-tag-error-bg: oklch(0.94 0.04 25);
+    --cngx-tag-error-color: oklch(0.4 0.15 25);
+    --cngx-tag-error-subtle-bg: oklch(0.98 0.015 25);
+
+    --cngx-tag-info-bg: oklch(0.93 0.04 240);
+    --cngx-tag-info-color: oklch(0.4 0.15 250);
+    --cngx-tag-info-subtle-bg: oklch(0.97 0.025 240);
+  }
+}
+
+@layer cngx.components {
+  @scope (.cngx-tag) {
+    :scope {
+      border-radius: var(--cngx-tag-radius, var(--cngx-radius-sm, 4px));
+      font-weight: var(--cngx-tag-font-weight, 500);
+      background: var(--cngx-tag-bg, transparent);
+      color: var(--cngx-tag-color, inherit);
+      border: var(--cngx-tag-border, 1px solid transparent);
+    }
+
+    /* Filled variant - solid tinted background per [data-color] */
+    :scope.cngx-tag--filled[data-color='neutral'] {
+      --cngx-tag-bg: var(--cngx-tag-neutral-bg);
+      --cngx-tag-color: var(--cngx-tag-neutral-color);
+      --cngx-tag-border: 1px solid var(--cngx-tag-neutral-border, transparent);
+    }
+    :scope.cngx-tag--filled[data-color='success'] {
+      --cngx-tag-bg: var(--cngx-tag-success-bg);
+      --cngx-tag-color: var(--cngx-tag-success-color, var(--cngx-color-success));
+      --cngx-tag-border: 1px solid var(--cngx-tag-success-border, transparent);
+    }
+    :scope.cngx-tag--filled[data-color='warning'] {
+      --cngx-tag-bg: var(--cngx-tag-warning-bg);
+      --cngx-tag-color: var(--cngx-tag-warning-color, var(--cngx-color-warning));
+      --cngx-tag-border: 1px solid var(--cngx-tag-warning-border, transparent);
+    }
+    :scope.cngx-tag--filled[data-color='error'] {
+      --cngx-tag-bg: var(--cngx-tag-error-bg);
+      --cngx-tag-color: var(--cngx-tag-error-color, var(--cngx-color-danger));
+      --cngx-tag-border: 1px solid var(--cngx-tag-error-border, transparent);
+    }
+    :scope.cngx-tag--filled[data-color='info'] {
+      --cngx-tag-bg: var(--cngx-tag-info-bg);
+      --cngx-tag-color: var(--cngx-tag-info-color, var(--cngx-color-info));
+      --cngx-tag-border: 1px solid var(--cngx-tag-info-border, transparent);
+    }
+
+    /* Outline variant - transparent fill, colored stroke */
+    :scope.cngx-tag--outline[data-color='neutral'] {
+      --cngx-tag-bg: transparent;
+      --cngx-tag-color: var(--cngx-tag-neutral-color);
+      --cngx-tag-border: 1px solid var(--cngx-tag-neutral-color);
+    }
+    :scope.cngx-tag--outline[data-color='success'] {
+      --cngx-tag-bg: transparent;
+      --cngx-tag-color: var(--cngx-tag-success-color, var(--cngx-color-success));
+      --cngx-tag-border: 1px solid var(--cngx-tag-success-color, var(--cngx-color-success));
+    }
+    :scope.cngx-tag--outline[data-color='warning'] {
+      --cngx-tag-bg: transparent;
+      --cngx-tag-color: var(--cngx-tag-warning-color, var(--cngx-color-warning));
+      --cngx-tag-border: 1px solid var(--cngx-tag-warning-color, var(--cngx-color-warning));
+    }
+    :scope.cngx-tag--outline[data-color='error'] {
+      --cngx-tag-bg: transparent;
+      --cngx-tag-color: var(--cngx-tag-error-color, var(--cngx-color-danger));
+      --cngx-tag-border: 1px solid var(--cngx-tag-error-color, var(--cngx-color-danger));
+    }
+    :scope.cngx-tag--outline[data-color='info'] {
+      --cngx-tag-bg: transparent;
+      --cngx-tag-color: var(--cngx-tag-info-color, var(--cngx-color-info));
+      --cngx-tag-border: 1px solid var(--cngx-tag-info-color, var(--cngx-color-info));
+    }
+
+    /* Subtle variant - softer tint */
+    :scope.cngx-tag--subtle[data-color='neutral'] {
+      --cngx-tag-bg: var(--cngx-tag-neutral-subtle-bg);
+      --cngx-tag-color: var(--cngx-tag-neutral-color);
+      --cngx-tag-border: 1px solid transparent;
+    }
+    :scope.cngx-tag--subtle[data-color='success'] {
+      --cngx-tag-bg: var(--cngx-tag-success-subtle-bg);
+      --cngx-tag-color: var(--cngx-tag-success-color, var(--cngx-color-success));
+      --cngx-tag-border: 1px solid transparent;
+    }
+    :scope.cngx-tag--subtle[data-color='warning'] {
+      --cngx-tag-bg: var(--cngx-tag-warning-subtle-bg);
+      --cngx-tag-color: var(--cngx-tag-warning-color, var(--cngx-color-warning));
+      --cngx-tag-border: 1px solid transparent;
+    }
+    :scope.cngx-tag--subtle[data-color='error'] {
+      --cngx-tag-bg: var(--cngx-tag-error-subtle-bg);
+      --cngx-tag-color: var(--cngx-tag-error-color, var(--cngx-color-danger));
+      --cngx-tag-border: 1px solid transparent;
+    }
+    :scope.cngx-tag--subtle[data-color='info'] {
+      --cngx-tag-bg: var(--cngx-tag-info-subtle-bg);
+      --cngx-tag-color: var(--cngx-tag-info-color, var(--cngx-color-info));
+      --cngx-tag-border: 1px solid transparent;
+    }
+  }
+}

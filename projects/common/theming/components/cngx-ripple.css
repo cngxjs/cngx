@@ -1,0 +1,116 @@
+/**
+ * @overview
+ * Theming bridge for the `CngxRipple` directive. The directive
+ * injects `<span class="cngx-ripple__wave">` into the host on
+ * pointerdown and removes it after the animation completes; all
+ * visual treatment lives here, the directive only handles geometry
+ * and DOM injection.
+ *
+ * **Animation**
+ *
+ * The `cngx-ripple-expand` keyframe scales the wave from 0 -> 1 over
+ * `--cngx-ripple-duration` and fades opacity from
+ * `--cngx-ripple-opacity` to 0.
+ *
+ * Under `prefers-reduced-motion: reduce` the keyframe is suppressed
+ * and the wave appears as a static tint that fades on opacity
+ * transition only.
+ *
+ * **Per-instance geometry**
+ *
+ * `--cngx-ripple-x`, `--cngx-ripple-y`, `--cngx-ripple-size` are set
+ * inline by the directive per pointer event (not theme surface), so
+ * they are intentionally not `@property`-registered.
+ *
+ * **Inheritance**
+ *
+ * - `--cngx-ripple-color` defaults to `currentColor` so the wave
+ *   tracks the host's text color without a per-component override
+ *
+ * **Pair with**
+ *
+ * - `@cngx/themes/material/ripple-theme` - Material state-layer surface
+ */
+
+@layer cngx.tokens {
+  /**
+   * Wave color. Defaults to `currentColor` so the ripple inherits
+   * the host's text color.
+   * @group Surface
+   */
+  @property --cngx-ripple-color {
+    syntax: '*';
+    inherits: true;
+    initial-value: currentColor;
+  }
+
+  /**
+   * Peak opacity of the wave at the start of the animation. Drops
+   * to zero by the end.
+   * @group Surface
+   */
+  @property --cngx-ripple-opacity {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 0.12;
+  }
+
+  /**
+   * Animation duration of the wave expansion.
+   * @group Motion
+   */
+  @property --cngx-ripple-duration {
+    syntax: '<time>';
+    inherits: false;
+    initial-value: 0.5s;
+  }
+}
+
+@layer cngx.components {
+  @scope (.cngx-ripple__wave) {
+    :scope {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: var(--cngx-ripple-size, 100px);
+      height: var(--cngx-ripple-size, 100px);
+      border-radius: 50%;
+      background: var(--cngx-ripple-color, currentColor);
+      opacity: 0;
+      pointer-events: none;
+      transform: translate(
+        calc(var(--cngx-ripple-x, 50%) - var(--cngx-ripple-size, 100px) / 2),
+        calc(var(--cngx-ripple-y, 50%) - var(--cngx-ripple-size, 100px) / 2)
+      );
+      animation: cngx-ripple-expand var(--cngx-ripple-duration, 0.5s) ease-out forwards;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      :scope {
+        animation: none;
+        opacity: var(--cngx-ripple-opacity, 0.12);
+        transition: opacity 0.15s ease;
+      }
+    }
+  }
+
+  @keyframes cngx-ripple-expand {
+    0% {
+      transform: translate(
+          calc(var(--cngx-ripple-x) - var(--cngx-ripple-size) / 2),
+          calc(var(--cngx-ripple-y) - var(--cngx-ripple-size) / 2)
+        )
+        scale(0);
+      opacity: var(--cngx-ripple-opacity, 0.12);
+    }
+
+    100% {
+      transform: translate(
+          calc(var(--cngx-ripple-x) - var(--cngx-ripple-size) / 2),
+          calc(var(--cngx-ripple-y) - var(--cngx-ripple-size) / 2)
+        )
+        scale(1);
+      opacity: 0;
+    }
+  }
+}

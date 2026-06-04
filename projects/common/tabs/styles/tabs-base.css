@@ -1,0 +1,533 @@
+/**
+ * @overview
+ * Structural CSS shared by every tab-group skin. Layout-only - no
+ * colors, sizes, borders, or fonts beyond what is controlled via
+ * `--cngx-tab-*` custom properties. `CngxTabGroup` (in `@cngx/ui/tabs`)
+ * references this file via `styleUrls`; ng-packagr inlines it at
+ * publish time so consumers of `@cngx/ui/tabs` do not need
+ * `@cngx/common/tabs` at runtime. Headless directive use
+ * (`[cngxTabGroup]` on consumer-authored DOM) deliberately gets no
+ * styling here - consumers bring their own visual opinion. Selectors
+ * are class-prefixed (`.cngx-tabs__*`) and apply globally under the
+ * component's `encapsulation: None`.
+ *
+ * **State modifiers**
+ *
+ * Driven by ARIA attributes set by the organism:
+ *
+ * - `[aria-selected="true"]` - active tab, paints the underline
+ *   indicator via an inset box-shadow so layout does not shift
+ *   between resting and active
+ * - `[aria-disabled="true"]` - cursor: not-allowed, opacity dim via
+ *   `--cngx-tab-disabled-opacity`
+ * - `[aria-busy="true"]` - cursor: progress while a commit is pending
+ * - `:focus-visible` - outline ring via `--cngx-tab-focus-ring`
+ * - `.cngx-tab--rejected` - persistent failed-target signal: outline
+ *   ring + one-shot background pulse (Pillar 2)
+ *
+ * **Orientation**
+ *
+ * - `[data-orientation="vertical"]` on the host - flips the strip
+ *   into a left-column grid and changes scroll-snap to the Y axis
+ *
+ * **Slots**
+ *
+ * - `.cngx-tabs__strip-wrapper` - outer row container
+ * - `.cngx-tabs__strip` - the clip box (programmatic scroll only;
+ *   the `<cngx-tab-overflow>` molecule is the user access path to
+ *   tabs that do not fit)
+ * - `.cngx-tabs__tab` - one tab button
+ * - `.cngx-tabs__label` - shrinkable label inside the button
+ * - `.cngx-tabs__badge` - inline error badge; ships its own
+ *   real-error-tone background so it does not collapse to
+ *   `currentColor` (mirrors the stepper precedent)
+ * - `.cngx-tabs__busy-spinner` - pending-commit spinner
+ * - `.cngx-tabs__rejection-icon` - persistent `!` glyph in a circle
+ * - `.cngx-tabs__panels` / `__panel` - panel container + body
+ * - `.cngx-sr-only` - locally-duplicated screen-reader utility
+ *
+ * **Inheritance**
+ *
+ * - `--cngx-tab-active-indicator-color` -> `--cngx-color-primary`
+ *   (also pinned via `:root` delegation so the brand accent paints
+ *   the underline in both light and dark modes without a 4-block)
+ * - Strip / tab geometry tokens (`--cngx-tab-gap`,
+ *   `--cngx-tab-padding`, `--cngx-tab-strip-padding`) - leaf
+ * - State-tone tokens (`--cngx-tab-error-badge-color`,
+ *   `--cngx-tab-rejection-icon-color`, `--cngx-tab-rejected-outline`,
+ *   `--cngx-tab-rejected-pulse-bg`) - leaf, all pinned at the
+ *   foundation's danger tone so they read against either surface
+ *
+ * **Reduced motion**
+ *
+ * Two hooks: under `prefers-reduced-motion: reduce` the busy spinner
+ * animation is force-stopped; the rejection pulse is gated behind
+ * `prefers-reduced-motion: no-preference` so it never runs when the
+ * user has opted out.
+ */
+
+@layer cngx.tokens {
+  /**
+   * Gap between adjacent tab buttons and between a tab's icon / label
+   * / badge slots.
+   * @group Layout
+   */
+  @property --cngx-tab-gap {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.5rem;
+  }
+
+  /**
+   * Padding shorthand of the tab strip (outer container).
+   * @group Layout
+   */
+  @property --cngx-tab-strip-padding {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.5rem 0;
+  }
+
+  /**
+   * Background of the tab strip.
+   * @group Surface
+   */
+  @property --cngx-tab-strip-bg {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: transparent;
+  }
+
+  /**
+   * Padding shorthand of an individual tab button.
+   * @group Layout
+   */
+  @property --cngx-tab-padding {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.5rem 0.75rem;
+  }
+
+  /**
+   * Background of an individual tab button.
+   * @group Surface
+   */
+  @property --cngx-tab-bg {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: transparent;
+  }
+
+  /**
+   * Text color of a resting tab button.
+   * @group Surface
+   */
+  @property --cngx-tab-color {
+    syntax: '*';
+    inherits: true;
+    initial-value: currentColor;
+  }
+
+  /**
+   * Text color of the active (selected) tab.
+   * @group State / Active
+   */
+  @property --cngx-tab-active-color {
+    syntax: '*';
+    inherits: true;
+    initial-value: currentColor;
+  }
+
+  /**
+   * Underline color of the active tab - a 2px box-shadow inset
+   * stripe along the inline-end edge of the tab button. Falls back
+   * to `--cngx-color-primary` so the brand accent paints the
+   * selection indicator without competing with text contrast.
+   * @group State / Active
+   * @see [[--cngx-color-primary]]
+   */
+  @property --cngx-tab-active-indicator-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.66 0.19 50);
+  }
+
+  /**
+   * Thickness of the active-tab underline indicator.
+   * @group State / Active
+   */
+  @property --cngx-tab-active-indicator-width {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 2px;
+  }
+
+  /**
+   * Opacity multiplier applied to disabled tabs.
+   * @group State / Disabled
+   */
+  @property --cngx-tab-disabled-opacity {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 0.55;
+  }
+
+  /**
+   * Focus-ring outline shorthand.
+   * @group State / Focus
+   */
+  @property --cngx-tab-focus-ring {
+    syntax: '*';
+    inherits: false;
+    initial-value: 2px solid currentColor;
+  }
+
+  /**
+   * Outline offset of the focus ring.
+   * @group State / Focus
+   */
+  @property --cngx-tab-focus-offset {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 2px;
+  }
+
+  /**
+   * Background color of the inline error badge.
+   * @group State / Error
+   */
+  @property --cngx-tab-error-badge-color {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: oklch(0.45 0.15 25);
+  }
+
+  /**
+   * Diameter of the busy spinner shown while a tab's commit is
+   * pending.
+   * @group State / Busy
+   */
+  @property --cngx-tab-busy-spinner-size {
+    syntax: '*';
+    inherits: false;
+    initial-value: 1rem;
+  }
+
+  /**
+   * Stroke color of the busy spinner.
+   * @group State / Busy
+   */
+  @property --cngx-tab-busy-spinner-color {
+    syntax: '*';
+    inherits: true;
+    initial-value: currentColor;
+  }
+
+  /**
+   * Diameter of the persistent rejection icon (`!` glyph in a circle).
+   * @group State / Rejected
+   */
+  @property --cngx-tab-rejection-icon-size {
+    syntax: '*';
+    inherits: false;
+    initial-value: 1.25rem;
+  }
+
+  /**
+   * Background color of the rejection icon disc.
+   * @group State / Rejected
+   */
+  @property --cngx-tab-rejection-icon-color {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: oklch(0.45 0.15 25);
+  }
+
+  /**
+   * Text color of the rejection icon glyph.
+   * @group State / Rejected
+   */
+  @property --cngx-tab-rejection-icon-text {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(1 0 0);
+  }
+
+  /**
+   * Font-size of the rejection icon glyph.
+   * @group State / Rejected
+   */
+  @property --cngx-tab-rejection-icon-font-size {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.875rem;
+  }
+
+  /**
+   * Outline shorthand of the rejected tab.
+   * @group State / Rejected
+   */
+  @property --cngx-tab-rejected-outline {
+    syntax: '*';
+    inherits: false;
+    initial-value: 2px solid oklch(0.45 0.15 25);
+  }
+
+  /**
+   * Outline offset of the rejected-tab outline.
+   * @group State / Rejected
+   */
+  @property --cngx-tab-rejected-outline-offset {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 1px;
+  }
+
+  /**
+   * Duration of the rejected-tab pulse animation.
+   * @group State / Rejected
+   */
+  @property --cngx-tab-rejected-pulse-duration {
+    syntax: '<time>';
+    inherits: false;
+    initial-value: 600ms;
+  }
+
+  /**
+   * Background tint used at the peak of the pulse animation.
+   * @group State / Rejected
+   */
+  @property --cngx-tab-rejected-pulse-bg {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: oklch(0.45 0.15 25 / 0.18);
+  }
+
+  /*
+   * Default-theme palette. The active-indicator delegates to
+   * `--cngx-color-primary` so the underline tracks the brand accent
+   * automatically in both modes. No 4-block needed - the foundation
+   * primary already carries its own light/dark distinction.
+   */
+  :root {
+    --cngx-tab-active-indicator-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
+  }
+}
+
+@layer cngx.components {
+  cngx-tab-group {
+    display: block;
+  }
+
+  .cngx-tabs__strip-wrapper {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    position: relative;
+  }
+
+  .cngx-tabs__strip {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    flex: 1 1 auto;
+    min-width: 0;
+    gap: var(--cngx-tab-gap, 0.5rem);
+    padding: var(--cngx-tab-strip-padding, 0.5rem 0);
+    background: var(--cngx-tab-strip-bg, transparent);
+    /*
+     * Strip is the clip box, NOT a user-scrollable container. The
+     * `<cngx-tab-overflow>` molecule is the canonical access path to
+     * tabs that don't fit; programmatic `scrollIntoView` on the active
+     * tab keeps it in view without a visible scrollbar.
+     */
+    overflow-x: hidden;
+    overflow-y: hidden;
+    scroll-snap-type: x proximity;
+  }
+
+  .cngx-tabs__tab {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--cngx-tab-gap, 0.5rem);
+    padding: var(--cngx-tab-padding, 0.5rem 0.75rem);
+    border: 0;
+    background: var(--cngx-tab-bg, transparent);
+    color: var(--cngx-tab-color, currentColor);
+    cursor: pointer;
+    font: inherit;
+    text-align: start;
+    white-space: nowrap;
+    scroll-snap-align: start;
+  }
+
+  .cngx-tabs__tab[aria-selected='true'] {
+    color: var(--cngx-tab-active-color, currentColor);
+    /*
+     * Bottom-edge underline drawn via inset box-shadow so the active
+     * tab doesn't shift layout vs. its resting neighbours. Color +
+     * thickness are both tokenised; the brand accent paints the
+     * indicator in both modes via the :root primary delegation.
+     */
+    box-shadow: inset 0 calc(var(--cngx-tab-active-indicator-width, 2px) * -1) 0
+      var(--cngx-tab-active-indicator-color, oklch(0.66 0.19 50));
+  }
+
+  .cngx-tabs__tab[aria-disabled='true'] {
+    cursor: not-allowed;
+    opacity: var(--cngx-tab-disabled-opacity, 0.55);
+  }
+
+  .cngx-tabs__tab:focus-visible {
+    outline: var(--cngx-tab-focus-ring, 2px solid currentColor);
+    outline-offset: var(--cngx-tab-focus-offset, 2px);
+  }
+
+  .cngx-tabs__tab[aria-busy='true'] {
+    cursor: progress;
+  }
+
+  .cngx-tabs__label {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .cngx-tabs__badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    /*
+     * Real error-tone fallback - must NOT inherit `currentColor`. The
+     * thematic skin (tab-group.component.css) sets `color: white` on
+     * the same element so the `!` glyph stays legible; if this fallback
+     * resolved to `currentColor`, both background and text would
+     * collapse to white and the badge would render invisible. Mirrors
+     * the stepper precedent at stepper-base.css.
+     */
+    background: var(--cngx-tab-error-badge-color, oklch(0.45 0.15 25));
+    margin-inline-start: var(--cngx-tab-gap, 0.5rem);
+  }
+
+  .cngx-tabs__busy-spinner {
+    display: inline-block;
+    width: var(--cngx-tab-busy-spinner-size, 1rem);
+    height: var(--cngx-tab-busy-spinner-size, 1rem);
+    border: 2px solid transparent;
+    border-top-color: var(--cngx-tab-busy-spinner-color, currentColor);
+    border-right-color: var(--cngx-tab-busy-spinner-color, currentColor);
+    border-radius: 50%;
+    flex: 0 0 auto;
+    margin-inline-start: var(--cngx-tab-gap, 0.5rem);
+    animation: cngx-tabs-spin 0.75s linear infinite;
+  }
+
+  .cngx-tabs__panels {
+    display: block;
+  }
+
+  .cngx-tabs__panel {
+    display: block;
+    padding: var(--cngx-tab-padding, 0.5rem 0.75rem);
+  }
+
+  .cngx-tabs__panel[hidden] {
+    display: none;
+  }
+
+  .cngx-sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  cngx-tab-group[data-orientation='vertical'] {
+    display: grid;
+    grid-template-columns: minmax(8rem, max-content) 1fr;
+    gap: var(--cngx-tab-gap, 0.5rem);
+    align-items: start;
+  }
+
+  cngx-tab-group[data-orientation='vertical'] .cngx-tabs__strip {
+    flex-direction: column;
+    flex-wrap: nowrap;
+    overflow-x: hidden;
+    overflow-y: auto;
+    scroll-snap-type: y proximity;
+  }
+
+  cngx-tab-group[data-orientation='vertical'] .cngx-tabs__tab {
+    scroll-snap-align: start;
+    white-space: normal;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cngx-tabs__busy-spinner {
+      animation: none !important;
+    }
+  }
+
+  /*
+   * Persistent rejection decoration (Pillar 2). Bound by the organism
+   * to `presenter.lastFailedIndex() === $index`; persists until the
+   * user re-picks the failed target successfully or dismisses
+   * programmatically.
+   */
+  .cngx-tabs__rejection-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    width: var(--cngx-tab-rejection-icon-size, 1.25rem);
+    height: var(--cngx-tab-rejection-icon-size, 1.25rem);
+    border-radius: 50%;
+    background: var(--cngx-tab-rejection-icon-color, oklch(0.45 0.15 25));
+    color: var(--cngx-tab-rejection-icon-text, oklch(1 0 0));
+    font-size: var(--cngx-tab-rejection-icon-font-size, 0.875rem);
+    font-weight: 700;
+    line-height: 1;
+    margin-inline-start: var(--cngx-tab-gap, 0.5rem);
+  }
+
+  .cngx-tabs__tab.cngx-tab--rejected {
+    outline: var(
+      --cngx-tab-rejected-outline,
+      2px solid var(--cngx-tab-rejection-icon-color, oklch(0.45 0.15 25))
+    );
+    outline-offset: var(--cngx-tab-rejected-outline-offset, 1px);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .cngx-tabs__tab.cngx-tab--rejected {
+      animation: cngx-tab-pulse-error var(--cngx-tab-rejected-pulse-duration, 600ms) ease-out;
+    }
+  }
+}
+
+@keyframes cngx-tabs-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes cngx-tab-pulse-error {
+  0% {
+    background: var(--cngx-tab-bg, transparent);
+  }
+  50% {
+    background: var(--cngx-tab-rejected-pulse-bg, oklch(0.45 0.15 25 / 0.18));
+  }
+  100% {
+    background: var(--cngx-tab-bg, transparent);
+  }
+}

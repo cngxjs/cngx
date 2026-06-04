@@ -1,0 +1,70 @@
+/**
+ * @overview
+ * Default visuals for the `[cngxLabel]` attribute directive. The host
+ * is the consumer's `<label>` (or any element they pick) and carries
+ * `.cngx-label`; the nested `.cngx-label__required` span projects the
+ * required marker.
+ *
+ * **Slots**
+ *
+ * - `.cngx-label` - host element, kept `display: inline` so the marker
+ *   sits next to the label text instead of breaking out of grid / flex
+ *   parents (`display: contents` would push children up and land the
+ *   marker on its own row in stacked-field layouts)
+ * - `.cngx-label__required` - required-marker glyph, colored from the
+ *   danger chain and margin-started by `0.125em` from the label text
+ *
+ * **Inheritance**
+ *
+ * The required-marker token is shared with `CngxRequired` so both
+ * atoms render the same semantic marker:
+ *
+ * - `--cngx-field-required-color` -> `--cngx-field-error-color` ->
+ *   `--cngx-color-danger`
+ *
+ * A `:root` delegating rule pins the token to `--cngx-color-danger`
+ * so a dark-mode swap on the foundation token cascades through.
+ */
+
+@layer cngx.tokens {
+  /**
+   * Color of the required-marker glyph next to the label. Falls back
+   * through `--cngx-field-error-color` and then `--cngx-color-danger`.
+   * @group State / Required
+   * @see [[--cngx-color-danger]]
+   */
+  @property --cngx-field-required-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.55 0.21 27);
+  }
+
+  /* Delegating token — required-marker tracks the danger chain so a
+   * dark-mode swap on `--cngx-color-danger` cascades through. */
+  :root {
+    --cngx-field-required-color: var(--cngx-color-danger);
+  }
+}
+
+@layer cngx.components {
+  @scope (.cngx-label) {
+    :scope {
+      /* Native <label> default. `display: contents` here previously
+       * made the label disappear and its children flow up as
+       * separate items in any grid/flex parent — breaking the
+       * stacked-field layout (`display:grid; gap:16px`) used by
+       * every demo and most consumer forms, because the marker
+       * would land on a new row.
+       */
+      display: inline;
+    }
+
+    .cngx-label__required {
+      color: var(
+        --cngx-field-required-color,
+        var(--cngx-field-error-color, var(--cngx-color-danger, oklch(0.55 0.21 27)))
+      );
+      margin-inline-start: 0.125em;
+    }
+  }
+}

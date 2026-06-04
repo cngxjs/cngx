@@ -1,0 +1,358 @@
+/**
+ * @overview
+ * Theming bridge for the `CngxDialog` directive. Targets
+ * `<dialog cngxDialog>` and the sibling `[cngxDialogDraggable]`
+ * variant. The directive toggles transition classes
+ * (`cngx-dialog--opening` / `-open` / `-closing`) on the host;
+ * this stylesheet only paints. The `::backdrop` pseudo is part of
+ * the `<dialog>` element itself, so no separate overlay node ships.
+ *
+ * **State modifiers**
+ *
+ * - `--opening` - opacity 0, translateY(8px) scale(0.98)
+ * - `--open` - opacity 1, translateY(0) scale(1)
+ * - `--closing` - opacity 0, translateY(8px) scale(0.98)
+ *
+ * Suppressed under `prefers-reduced-motion: reduce` (host + backdrop).
+ *
+ * **Draggable variant**
+ *
+ * `[cngxDialogDraggable]` applies the same opacity / scale curve plus
+ * a `translate(--cngx-dialog-x, --cngx-dialog-y)` the directive
+ * updates from pointer position. `.cngx-dialog--dragging` disables
+ * the transition so the surface tracks the pointer 1:1.
+ *
+ * **Backdrop**
+ *
+ * The `::backdrop` pseudo reads three inheriting tokens off the
+ * dialog host so `CngxDialogStack` can suppress the inner scrim
+ * inline while a parent dialog is open:
+ *
+ * - `--cngx-dialog-backdrop-bg` - default 50% black
+ * - `--cngx-dialog-backdrop-blur` - default 0px (frosted-glass opt-in)
+ * - `--cngx-dialog-backdrop-opacity` - default 1; stack toggles
+ * - `--cngx-dialog-backdrop-transition` - default `none` so stack
+ *   swaps snap (a fade would flash inner dialogs through half-scrim)
+ *
+ * **Inheritance**
+ *
+ * Surface and shadow track the foundation:
+ *
+ * - `--cngx-dialog-bg` -> `--cngx-color-surface`
+ * - `--cngx-dialog-color` -> `currentColor`
+ * - `--cngx-dialog-border` -> `none` (Material outlined opts in)
+ *
+ * **Dark mode**
+ *
+ * Three hooks (`prefers-color-scheme: dark`, `[data-color-scheme="dark"]`,
+ * `.dark`) deepen `--cngx-dialog-shadow` from 12% to 50% black so the
+ * dialog still reads as elevated against the dark page. Surface bg
+ * rides the foundation cascade unchanged.
+ *
+ * **Pair with**
+ *
+ * - `@cngx/themes/material/dialog-theme` - Material 3 surface + elevation
+ */
+
+@layer cngx.tokens {
+  /**
+   * Dialog surface color. Falls back through `--cngx-color-surface`.
+   * @group Surface
+   * @see [[--cngx-color-surface]]
+   */
+  @property --cngx-dialog-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(1 0 0);
+  }
+
+  /**
+   * Dialog text color. Defaults to `currentColor`.
+   * @group Surface
+   */
+  @property --cngx-dialog-color {
+    syntax: '*';
+    inherits: true;
+    initial-value: currentColor;
+  }
+
+  /**
+   * Drop-shadow shorthand for the dialog. `inherits: true` so the
+   * :root dark-mode override reaches the open dialog element.
+   * @group Surface
+   */
+  @property --cngx-dialog-shadow {
+    syntax: '*';
+    inherits: true;
+    initial-value: 0 8px 32px oklch(0 0 0 / 0.12);
+  }
+
+  /**
+   * Border shorthand of the dialog. `none` by default; brand themes or
+   * Material outlined variants set this to a 1px ring without forking
+   * the component CSS.
+   * @group Surface
+   */
+  @property --cngx-dialog-border {
+    syntax: '*';
+    inherits: false;
+    initial-value: none;
+  }
+
+  /**
+   * Corner radius of the dialog.
+   * @group Layout
+   */
+  @property --cngx-dialog-border-radius {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 8px;
+  }
+
+  /**
+   * Padding shorthand inside the dialog.
+   * @group Layout
+   */
+  @property --cngx-dialog-padding {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 24px;
+  }
+
+  /**
+   * Maximum inline size of the dialog. `<length-percentage>` so
+   * consumers (e.g. CngxBottomSheet) can override with `100%`
+   * without falling back to the initial-value via syntax rejection.
+   * @group Layout
+   */
+  @property --cngx-dialog-max-width {
+    syntax: '<length-percentage>';
+    inherits: false;
+    initial-value: 560px;
+  }
+
+  /**
+   * Maximum block size of the dialog.
+   * @group Layout
+   */
+  @property --cngx-dialog-max-height {
+    syntax: '*';
+    inherits: false;
+    initial-value: 80vh;
+  }
+
+  /**
+   * Background of the `::backdrop` pseudo-element. `inherits: true`
+   * so a consumer override on `dialog[cngxDialog]` reaches the
+   * `::backdrop` pseudo (pseudo-elements inherit from the originating
+   * element, but only when the registered property allows it).
+   * @group Surface
+   */
+  @property --cngx-dialog-backdrop-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0 0 0 / 0.5);
+  }
+
+  /**
+   * Blur radius applied to the `::backdrop`. Zero by default; bump to
+   * apply a frosted-glass effect. `inherits: true` so the override
+   * cascades to the `::backdrop` pseudo.
+   * @group Surface
+   */
+  @property --cngx-dialog-backdrop-blur {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 0px;
+  }
+
+  /**
+   * Opacity of the `::backdrop`. `CngxDialogStack` uses this to
+   * suppress the inner backdrop while a parent dialog is also open
+   * (avoids stacked scrim). `inherits: true` is load-bearing - the
+   * directive sets this token inline on the dialog element, and the
+   * `::backdrop` pseudo only reads it if the registered property
+   * inherits from the originating element.
+   * @group Surface
+   */
+  @property --cngx-dialog-backdrop-opacity {
+    syntax: '<number>';
+    inherits: true;
+    initial-value: 1;
+  }
+
+  /**
+   * Transition shorthand applied to the `::backdrop`. Default `none`
+   * keeps the snap-in behaviour `CngxDialogStack` depends on (toggling
+   * backdrop-opacity between nested dialogs must not animate, or the
+   * inner dialog open flashes through a half-opacity scrim). Single
+   * non-stacked dialogs can opt in to a fade by setting this to e.g.
+   * `opacity 150ms ease`. `inherits: true` so the override cascades
+   * to the `::backdrop` pseudo from the dialog host.
+   * @group Motion
+   */
+  @property --cngx-dialog-backdrop-transition {
+    syntax: '*';
+    inherits: true;
+    initial-value: none;
+  }
+
+  /**
+   * Duration of the open / close transition.
+   * @group Motion
+   */
+  @property --cngx-dialog-transition-duration {
+    syntax: '<time>';
+    inherits: false;
+    initial-value: 200ms;
+  }
+
+  /**
+   * Easing curve of the open / close transition.
+   * @group Motion
+   */
+  @property --cngx-dialog-transition-easing {
+    syntax: '*';
+    inherits: false;
+    initial-value: ease;
+  }
+
+  /**
+   * Cursor shown over the draggable variant while resting.
+   * @group State / Draggable
+   */
+  @property --cngx-dialog-drag-cursor {
+    syntax: '*';
+    inherits: false;
+    initial-value: grab;
+  }
+
+  /**
+   * Cursor shown over the draggable variant while dragging.
+   * @group State / Draggable
+   */
+  @property --cngx-dialog-dragging-cursor {
+    syntax: '*';
+    inherits: false;
+    initial-value: grabbing;
+  }
+
+  /**
+   * Focus-ring shorthand applied via `outline` on `:focus-visible` of
+   * the dialog host itself. Relevant when no autofocus target exists
+   * inside the dialog and AT focuses the `<dialog>` element directly.
+   * Default `auto` keeps the browser-native focus indicator.
+   * @group State / Focus
+   */
+  @property --cngx-dialog-focus-outline {
+    syntax: '*';
+    inherits: false;
+    initial-value: auto;
+  }
+
+  /* Delegating tokens - :root pulls foundation surface so the dialog
+   * bg follows whichever light/dark value the foundation has resolved. */
+  :root {
+    --cngx-dialog-bg: var(--cngx-color-surface);
+  }
+
+  /* Dark-mode swap - shadow deepens so the dialog still reads as
+   * elevated over the dark page (a 12% black wash disappears on
+   * dark surfaces). */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-color-scheme='light']):not(.light) {
+      --cngx-dialog-shadow: 0 8px 32px oklch(0 0 0 / 0.5);
+    }
+  }
+  [data-color-scheme='dark'],
+  .dark {
+    --cngx-dialog-shadow: 0 8px 32px oklch(0 0 0 / 0.5);
+  }
+  [data-color-scheme='light'],
+  .light {
+    --cngx-dialog-shadow: 0 8px 32px oklch(0 0 0 / 0.12);
+  }
+}
+
+@layer cngx.components {
+  @scope (dialog[cngxDialog]) {
+    :scope {
+      border: var(--cngx-dialog-border, none);
+      border-radius: var(--cngx-dialog-border-radius, 8px);
+      padding: var(--cngx-dialog-padding, 24px);
+      max-width: var(--cngx-dialog-max-width, 560px);
+      max-height: var(--cngx-dialog-max-height, 80vh);
+      width: 100%;
+      background: var(--cngx-dialog-bg, var(--cngx-color-surface, oklch(1 0 0)));
+      color: var(--cngx-dialog-color, inherit);
+      box-shadow: var(--cngx-dialog-shadow, 0 8px 32px oklch(0 0 0 / 0.12));
+      overflow: auto;
+      scrollbar-gutter: stable both-edges;
+      transition:
+        opacity var(--cngx-dialog-transition-duration, 200ms)
+          var(--cngx-dialog-transition-easing, ease),
+        transform var(--cngx-dialog-transition-duration, 200ms)
+          var(--cngx-dialog-transition-easing, ease);
+    }
+
+    :scope:focus-visible {
+      outline: var(--cngx-dialog-focus-outline, auto);
+    }
+
+    /* Backdrop is part of the dialog element itself (::backdrop pseudo).
+       The opacity token controls visibility (CngxDialogStack uses this for
+       nesting). Default transition is `none` so toggling backdrop-opacity
+       between stacked dialogs snaps - a fade here would flash the inner
+       dialog through a half-opacity scrim. Single dialogs can opt in via
+       --cngx-dialog-backdrop-transition. */
+    :scope::backdrop {
+      background: var(--cngx-dialog-backdrop-bg, oklch(0 0 0 / 0.5));
+      opacity: var(--cngx-dialog-backdrop-opacity, 1);
+      backdrop-filter: blur(var(--cngx-dialog-backdrop-blur, 0px));
+      transition: var(--cngx-dialog-backdrop-transition, none);
+    }
+
+    :scope.cngx-dialog--opening {
+      opacity: 0;
+      transform: translateY(8px) scale(0.98);
+    }
+    :scope.cngx-dialog--open {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+    :scope.cngx-dialog--closing {
+      opacity: 0;
+      transform: translateY(8px) scale(0.98);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      :scope {
+        transition: none;
+      }
+      :scope::backdrop {
+        transition: none;
+      }
+    }
+  }
+
+  @scope (dialog[cngxDialogDraggable]) {
+    :scope {
+      transform: translate(var(--cngx-dialog-x, 0px), var(--cngx-dialog-y, 0px));
+    }
+    :scope.cngx-dialog--opening {
+      transform: translate(var(--cngx-dialog-x, 0px), var(--cngx-dialog-y, 0px)) scale(0.98);
+      opacity: 0;
+    }
+    :scope.cngx-dialog--open {
+      transform: translate(var(--cngx-dialog-x, 0px), var(--cngx-dialog-y, 0px)) scale(1);
+      opacity: 1;
+    }
+    :scope.cngx-dialog--closing {
+      transform: translate(var(--cngx-dialog-x, 0px), var(--cngx-dialog-y, 0px)) scale(0.98);
+      opacity: 0;
+    }
+    :scope.cngx-dialog--dragging {
+      transition: none;
+    }
+  }
+}

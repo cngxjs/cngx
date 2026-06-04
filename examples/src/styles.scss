@@ -1,0 +1,3548 @@
+// Examples app boilerplate styles. Three concerns only:
+//   - shell tokens (--cngx-ex-*) — chrome colors for compodocx/examples
+//   - app body                   — bg + base text color
+//   - generator chrome (.cngx-ex-*) — intro header + source-code disclosure
+// Bare-element atoms, demo-layout helpers, ARIA-role rules, component
+// fallbacks all ship from the cngx theming layers (reset/base/components),
+// imported below.
+
+// Foundation: layer-order + system tokens + reset + base + aggregated
+// directive default CSS (bottom-sheet, backdrop, badge, divider, ripple,
+// async). @Directives cannot ship styleUrl so this single import is the
+// only path that delivers their defaults — leaving it out renders
+// bottom-sheet as a centred plain <dialog>, ripples invisible, etc.
+@import '../../projects/themes/cngx.css';
+
+:root {
+  // `color-scheme` is owned by the foundation (`projects/core/theming/
+  // system-tokens.css`). It flips based on `data-color-scheme` and the
+  // OS media query — examples-app no longer pins it here.
+  font-family:
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  --cngx-ex-bg: #ffffff;
+  --cngx-ex-text: #1f2937;
+  --cngx-ex-muted: #6b7280;
+  --cngx-ex-faint: #9ca3af;
+  --cngx-ex-border: #e5e7eb;
+  --cngx-ex-surface: #ffffff;
+  --cngx-ex-surface-alt: #f9fafb;
+  --cngx-ex-highlight-bg: rgba(37, 99, 235, 0.12);
+  --cngx-ex-focus: #2563eb;
+  color: var(--cngx-ex-text);
+}
+// main.ts mirrors the compodocx dark-mode preference onto
+// <html data-color-scheme="dark|light"> so the cngx foundation and the
+// examples-app chrome both read the same signal. The `.dark` / `.light`
+// class form is accepted in parallel (Tailwind/shadcn convention) so
+// consumers picking either path still get their shell colours.
+// Absence of every signal means no explicit preference — the
+// `@media (prefers-color-scheme: dark)` block then drives OS auto-follow.
+html[data-color-scheme='dark'],
+html.dark {
+  --cngx-ex-bg: #111111;
+  --cngx-ex-text: #e6e6e6;
+  --cngx-ex-muted: #aaaaaa;
+  --cngx-ex-faint: #777777;
+  --cngx-ex-border: #555555;
+  --cngx-ex-surface: #1a1a1a;
+  --cngx-ex-surface-alt: #1f1f1f;
+  --cngx-ex-highlight-bg: rgba(121, 192, 255, 0.18);
+  --cngx-ex-focus: #79c0ff;
+}
+
+@media (prefers-color-scheme: dark) {
+  html:not([data-color-scheme='light']):not(.light) {
+    --cngx-ex-bg: #111111;
+    --cngx-ex-text: #e6e6e6;
+    --cngx-ex-muted: #aaaaaa;
+    --cngx-ex-faint: #777777;
+    --cngx-ex-border: #555555;
+    --cngx-ex-surface: #1a1a1a;
+    --cngx-ex-surface-alt: #1f1f1f;
+    --cngx-ex-highlight-bg: rgba(121, 192, 255, 0.18);
+    --cngx-ex-focus: #79c0ff;
+  }
+}
+
+body {
+  margin: 0;
+  padding: 16px;
+  background: var(--cngx-ex-bg);
+  color: var(--cngx-ex-text);
+}
+
+// Floating dark-mode debug toggle (mounted by main.ts after
+// bootstrapApplication). Bottom-right, monospace + sharp corners to
+// match the Apache mod_autoindex aesthetic of the home directory
+// listing. Cycles auto → dark → light → auto.
+#cngx-ex-color-scheme-toggle {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 99999;
+  display: inline-block;
+  padding: 2px 6px;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #d0d5dd));
+  border-radius: 0;
+  background: var(--cngx-color-surface, var(--cngx-ex-surface, #ffffff));
+  color: var(--cngx-color-text, var(--cngx-ex-text, #1f2937));
+  cursor: pointer;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.8125rem;
+  line-height: 1.2;
+}
+#cngx-ex-color-scheme-toggle:hover {
+  background: color-mix(in oklch, var(--cngx-color-surface, #fff), currentColor 6%);
+}
+#cngx-ex-color-scheme-toggle:focus-visible {
+  outline: 1px solid var(--cngx-color-primary, #4a8cff);
+  outline-offset: 1px;
+}
+
+// Intro header rendered by the generator (story description + section subtitle)
+.cngx-ex-intro {
+  margin: 0 0 16px;
+  padding: 0 0 12px;
+  border-bottom: 1px solid var(--cngx-ex-border);
+}
+.cngx-ex-intro h1 {
+  margin: 0 0 2px;
+  font-size: 1.125rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+.cngx-ex-intro h2 {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--cngx-ex-text);
+  line-height: 1.4;
+}
+.cngx-ex-intro p {
+  margin: 8px 0 0;
+  color: var(--cngx-ex-muted);
+  font-size: 0.875rem;
+  line-height: 1.55;
+}
+.cngx-ex-intro code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.9em;
+  padding: 1px 5px;
+  background: var(--cngx-ex-surface-alt);
+  border-radius: 3px;
+}
+.cngx-ex-intro em,
+.cngx-ex-intro i {
+  font-style: italic;
+  font-weight: 600;
+  color: var(--cngx-ex-text, var(--cngx-color-text, inherit));
+}
+.cngx-ex-intro strong,
+.cngx-ex-intro b {
+  font-weight: 700;
+  color: var(--cngx-ex-text, var(--cngx-color-text, inherit));
+}
+.cngx-ex-intro kbd {
+  display: inline-block;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.78em;
+  line-height: 1;
+  padding: 2px 6px;
+  margin: 0 1px;
+  border: 1px solid var(--cngx-ex-border);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  background: var(--cngx-ex-surface-alt);
+  color: var(--cngx-ex-text, var(--cngx-color-text, inherit));
+  vertical-align: baseline;
+}
+.cngx-ex-intro mark {
+  background: color-mix(in oklch, transparent, currentColor 14%);
+  color: inherit;
+  padding: 0 3px;
+  border-radius: 2px;
+}
+.cngx-ex-intro .cngx-ex-hint {
+  font-style: italic;
+  color: var(--cngx-ex-muted);
+}
+
+// Artifact = what the example documents. Chrome = config controls + state
+// readouts that drive the demo interactively. The artifact gets visual
+// breathing room and a separator so the rendered docs make the hierarchy
+// obvious: read the artifact first, fiddle with the chrome second.
+.cngx-ex-artifact {
+  display: block;
+  // Cap demos at a comfortable reading width so full-width form atoms
+  // (select / action-select / combobox triggers default to 100%) don't
+  // stretch across a 1440px monitor and look broken. Override per demo
+  // via `--demo-artifact-max-width` on the artifact root if a story
+  // genuinely wants wider canvas (filter-builder, treetable). Same cap
+  // applies to chrome below so config controls line up with the
+  // artifact they drive.
+  max-width: var(--demo-artifact-max-width, 640px);
+  margin: 0 0 24px;
+  padding: 8px 0 24px;
+  border-block-end: 1px solid var(--cngx-ex-border);
+}
+.cngx-ex-chrome {
+  display: block;
+  max-width: var(--demo-artifact-max-width, 640px);
+  margin: 0 0 24px;
+}
+
+// Tag chip row rendered by the generator from DemoSpec.{level,audience,
+// artifact,focus,stability,framework}. Sharp corners + monospace match
+// the mod_autoindex aesthetic of the home directory listing. Per-dimension
+// accent is a subtle left-border tint — no garish backgrounds.
+.cngx-ex-tags {
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 6px;
+}
+.cngx-ex-tag {
+  display: inline-block;
+  padding: 0 5px;
+  border: 1px solid var(--cngx-ex-border);
+  border-left-width: 3px;
+  border-radius: 0;
+  background: transparent;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.7rem;
+  line-height: 1.6;
+  color: var(--cngx-ex-text);
+  white-space: nowrap;
+}
+.cngx-ex-tag[data-dim='atomic-level'] {
+  border-left-color: #2563eb;
+}
+.cngx-ex-tag[data-dim='audience'] {
+  border-left-color: #16a34a;
+}
+.cngx-ex-tag[data-dim='artifact'] {
+  border-left-color: #9333ea;
+}
+.cngx-ex-tag[data-dim='focus'] {
+  border-left-color: #6b7280;
+}
+.cngx-ex-tag[data-dim='framework'] {
+  border-left-color: #0891b2;
+}
+.cngx-ex-tag[data-dim='stability'][data-value='experimental'] {
+  border-left-color: #d97706;
+  border-color: #d97706;
+  color: #d97706;
+}
+.cngx-ex-tag[data-dim='stability'][data-value='deprecated'] {
+  border-left-color: #dc2626;
+  border-color: #dc2626;
+  color: #dc2626;
+  text-decoration: line-through;
+}
+
+.cngx-ex-refs {
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  font-size: 0.75rem;
+}
+.cngx-ex-refs::before {
+  content: 'Implements:';
+  color: var(--cngx-ex-muted);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.cngx-ex-ref a {
+  color: var(--cngx-ex-link, var(--cngx-color-link, #2563eb));
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.cngx-ex-ref a:hover {
+  text-decoration: none;
+}
+
+html[data-color-scheme='dark'] .cngx-ex-tag[data-dim='atomic-level'],
+html.dark .cngx-ex-tag[data-dim='atomic-level'] {
+  border-left-color: #79c0ff;
+}
+html[data-color-scheme='dark'] .cngx-ex-tag[data-dim='audience'],
+html.dark .cngx-ex-tag[data-dim='audience'] {
+  border-left-color: #56d364;
+}
+html[data-color-scheme='dark'] .cngx-ex-tag[data-dim='artifact'],
+html.dark .cngx-ex-tag[data-dim='artifact'] {
+  border-left-color: #c39df0;
+}
+html[data-color-scheme='dark'] .cngx-ex-tag[data-dim='focus'],
+html.dark .cngx-ex-tag[data-dim='focus'] {
+  border-left-color: #aaaaaa;
+}
+html[data-color-scheme='dark'] .cngx-ex-tag[data-dim='framework'],
+html.dark .cngx-ex-tag[data-dim='framework'] {
+  border-left-color: #5eead4;
+}
+html[data-color-scheme='dark'] .cngx-ex-tag[data-dim='stability'][data-value='experimental'],
+html.dark .cngx-ex-tag[data-dim='stability'][data-value='experimental'] {
+  border-left-color: #fbbf24;
+  border-color: #fbbf24;
+  color: #fbbf24;
+}
+html[data-color-scheme='dark'] .cngx-ex-tag[data-dim='stability'][data-value='deprecated'],
+html.dark .cngx-ex-tag[data-dim='stability'][data-value='deprecated'] {
+  border-left-color: #f87171;
+  border-color: #f87171;
+  color: #f87171;
+}
+
+@media (prefers-color-scheme: dark) {
+  html:not([data-color-scheme='light']):not(.light) .cngx-ex-tag[data-dim='atomic-level'] {
+    border-left-color: #79c0ff;
+  }
+  html:not([data-color-scheme='light']):not(.light) .cngx-ex-tag[data-dim='audience'] {
+    border-left-color: #56d364;
+  }
+  html:not([data-color-scheme='light']):not(.light) .cngx-ex-tag[data-dim='artifact'] {
+    border-left-color: #c39df0;
+  }
+  html:not([data-color-scheme='light']):not(.light) .cngx-ex-tag[data-dim='focus'] {
+    border-left-color: #aaaaaa;
+  }
+  html:not([data-color-scheme='light']):not(.light) .cngx-ex-tag[data-dim='framework'] {
+    border-left-color: #5eead4;
+  }
+  html:not([data-color-scheme='light']):not(.light)
+    .cngx-ex-tag[data-dim='stability'][data-value='experimental'] {
+    border-left-color: #fbbf24;
+    border-color: #fbbf24;
+    color: #fbbf24;
+  }
+  html:not([data-color-scheme='light']):not(.light)
+    .cngx-ex-tag[data-dim='stability'][data-value='deprecated'] {
+    border-left-color: #f87171;
+    border-color: #f87171;
+    color: #f87171;
+  }
+}
+
+// Source-code disclosure blocks - collapsed by default so the demo body
+// remains the focus; expand to inspect the underlying template / setup.
+.cngx-ex-code {
+  margin-top: 0.75rem;
+  border: 1px solid var(--cngx-ex-border);
+  border-radius: 0.5rem;
+  background: var(--cngx-ex-surface);
+  overflow: hidden;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+.cngx-ex-code[open] {
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.04);
+}
+.cngx-ex-code > summary {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.875rem;
+  cursor: pointer;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--cngx-ex-text);
+  user-select: none;
+  list-style: none;
+}
+.cngx-ex-code > summary::-webkit-details-marker {
+  display: none;
+}
+// Custom chevron - points right when collapsed, rotates down when open.
+.cngx-ex-code > summary::before {
+  content: '';
+  display: inline-block;
+  width: 0;
+  height: 0;
+  margin-right: 0.125rem;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 5px solid currentColor;
+  opacity: 0.75;
+  transition: transform 0.15s ease;
+  transform: rotate(-90deg);
+}
+.cngx-ex-code[open] > summary::before {
+  transform: rotate(0deg);
+}
+.cngx-ex-code > summary:hover {
+  background: var(--cngx-ex-surface-alt);
+}
+.cngx-ex-code > summary:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: -2px;
+  border-radius: 0.5rem 0.5rem 0 0;
+}
+.cngx-ex-code[open] > summary {
+  border-bottom: 1px solid var(--cngx-ex-border);
+  background: var(--cngx-ex-surface-alt);
+}
+.cngx-ex-code > pre {
+  margin: 0;
+  padding: 0.875rem 1rem;
+  overflow-x: auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  background: var(--cngx-ex-surface);
+  color: var(--cngx-ex-text);
+}
+.cngx-ex-code > pre > code {
+  font: inherit;
+  background: none;
+  padding: 0;
+  white-space: pre;
+}
+
+// Mobile: code disclosures break the layout (long monospace lines force
+// horizontal scroll on the whole demo). Hide the panels below 640px; the
+// docs site and a wider viewport still surface them.
+@media (max-width: 640px) {
+  .cngx-ex-code {
+    display: none;
+  }
+}
+
+// Demo-layout helpers used by story templates. Restored after a premature
+// cleanup last sprint that removed these alongside the bare-element atoms —
+// turns out the stories rely on them.
+
+// Event grid — technical layout to show ARIA/Signal state in a story panel.
+// No colours/borders here; only layout + alignment so values line up.
+.chip-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.event-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 12px;
+}
+.event-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.875rem;
+}
+.event-label {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.8125rem;
+  color: var(--cngx-ex-muted);
+  min-width: 12rem;
+}
+.event-value {
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
+}
+
+// Narrow viewports: drop the 12rem label min-width so the label can
+// shrink to its text content and stay beside the value whenever both
+// fit. flex-wrap on the row above kicks in only when they don't, so
+// each row stays horizontal until the container truly runs out of
+// space instead of always stacking below 480px.
+@media (max-width: 480px) {
+  .event-row {
+    gap: 0.5rem;
+  }
+  .event-label {
+    min-width: 0;
+  }
+}
+
+// Status row / chips / badges - purely structural; visual treatment is
+// up to inline styles on the template itself.
+.status-row,
+.button-row,
+.filter-row,
+.search-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+// Demo-only label utilities. Shared by metric, trend, card-composition
+// demos so individual stories don't redeclare thematic colors inline.
+.demo-card-label,
+.demo-metric-label {
+  font-size: 0.8125rem;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted));
+}
+.demo-metric-label {
+  margin-bottom: 4px;
+}
+
+// Demo-only table-cell reset for empty-state demos. Keeps the host-cell
+// padding off the story body so the projected empty-state organism fills
+// the full <td> without inset.
+.demo-table-emptycell {
+  padding: 0;
+}
+
+// Demo-only layout cell for cngx-grid and cngx-stack demos. Renders a flat
+// tile with just enough surface chrome to make the parent's layout
+// decisions visible, without spreading padding/background/radius literals
+// across individual stories.
+.demo-layout-cell {
+  padding: 12px 16px;
+  border-radius: var(--cngx-radius-sm, 4px);
+  background: var(--cngx-color-surface-alt, var(--cngx-ex-surface-alt, #f3f4f6));
+  color: var(--cngx-color-text, var(--cngx-ex-text, inherit));
+  font-size: 0.875rem;
+}
+
+// Demo-only card surface used by inside-a-dismissible-card. Keeps thematic
+// chrome (border, surface, radius, padding) off inline styles so the close
+// button atom keeps its absolute-positioned corner without bleeding tokens
+// into the story body.
+.demo-dismissible-card {
+  padding: 16px 40px 16px 16px;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e0e0e0));
+  border-radius: var(--cngx-radius-md, 8px);
+  background: var(--cngx-color-surface, var(--cngx-ex-surface, #ffffff));
+  color: var(--cngx-color-text, var(--cngx-ex-text, inherit));
+}
+
+// Disclosure atom demos. The trigger renders as the consumer styles it
+// (browser-native or .sort-btn). These classes only shape the revealed
+// content panel so stories don't redeclare padding / surface / border.
+.demo-disclosure-panel {
+  padding: 0.75rem;
+  border-left: 3px solid var(--cngx-color-primary, var(--cngx-ex-accent, currentColor));
+  background: var(--cngx-color-surface-alt, var(--cngx-ex-surface-alt, #f9fafb));
+  border-radius: var(--cngx-radius-sm, 4px);
+  font-size: 0.875rem;
+  color: var(--cngx-color-text, var(--cngx-ex-text, inherit));
+}
+
+.demo-disclosure-faq-row {
+  border-bottom: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e0e0e0));
+}
+
+.demo-disclosure-faq-trigger {
+  text-align: left;
+  padding: 0.75rem 0;
+  font-weight: 600;
+  font-size: 0.875rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--cngx-color-text, var(--cngx-ex-text, inherit));
+}
+
+.demo-disclosure-faq-answer {
+  padding: 0 0 0.75rem;
+  font-size: 0.875rem;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted));
+}
+
+// Demo-only scroll frame + row utilities. Used by the recycler and
+// paginated-list demos so border/border-radius/border-color don't
+// scatter through inline styles.
+.demo-scroll-frame {
+  overflow-y: auto;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e0e0e0));
+  border-radius: 8px;
+}
+.demo-scroll-row {
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e0e0e0));
+}
+.demo-scroll-row-stack {
+  display: block;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e0e0e0));
+}
+.demo-scroll-sentinel {
+  padding: 8px;
+  text-align: center;
+}
+// Mirror of @cngx/common/data/recycler/content-visibility mixin output,
+// inlined so the content-visibility story can demonstrate it without a
+// load-path resolver in the examples app.
+.demo-cv-item {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 48px;
+}
+// Demo-only "screen-reader transcript" layout. Pairs a card/variant name
+// (left, with auto/overridden badge) with the literal spoken text (right,
+// monospace + quoted). Used by trend demos to make the [label] override
+// vs. auto-generated aria-label contrast scannable.
+.demo-sr-transcript {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  align-items: baseline;
+  column-gap: 16px;
+  row-gap: 6px;
+  margin: 0;
+}
+.demo-sr-transcript dt {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-weight: 500;
+}
+.demo-sr-transcript dd {
+  margin: 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.8125rem;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted));
+}
+.demo-sr-tag {
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 1px 6px;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e0e0e0));
+  border-radius: 999px;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted));
+}
+.demo-sr-tag--accent {
+  border-color: var(--cngx-color-accent-positive, currentColor);
+  color: var(--cngx-color-accent-positive, currentColor);
+}
+// Demo-only skeleton placeholder row. The cngx skeleton atom is the real
+// abstraction; this mirrors its surface treatment so a recycler demo can
+// show the showSkeleton branch without pulling the atom into the artifact.
+.demo-skeleton-row {
+  background: linear-gradient(
+    90deg,
+    var(--cngx-color-surface-2, var(--cngx-ex-surface-2, #f0f0f0)) 25%,
+    var(--cngx-color-surface-3, var(--cngx-ex-surface-3, #e5e5e5)) 50%,
+    var(--cngx-color-surface-2, var(--cngx-ex-surface-2, #f0f0f0)) 75%
+  );
+  background-size: 200% 100%;
+  animation: demo-skeleton-shimmer 1.4s ease-in-out infinite;
+}
+
+// Demo-only error-presentation helpers. Used by the
+// `examples/stories/common/interactive/error/**` stories so the visible
+// error styling (input border, message colour, summary list, count badge,
+// surface tint) reads from `--cngx-color-danger` rather than scattering
+// hex literals through inline styles. `--cngx-color-danger` is the system
+// token bridged from Material's `--mat-sys-error`; the fallback covers
+// theme-less consumers.
+.demo-error-list {
+  margin: 8px 0;
+  padding-inline-start: 24px;
+  color: var(--cngx-color-danger, #b00020);
+}
+.demo-error-message {
+  margin: 4px 0 12px;
+  color: var(--cngx-color-danger, #b00020);
+  font-size: 0.875em;
+}
+.demo-error-input {
+  padding: 6px 8px;
+  min-width: 240px;
+  border-radius: 4px;
+  border: 1px solid var(--cngx-color-border, #d1d5db);
+  display: block;
+  margin-top: 4px;
+}
+.demo-error-input.cngx-error,
+.demo-error-input[aria-invalid='true'] {
+  border-color: var(--cngx-color-danger, #b00020);
+  outline-color: var(--cngx-color-danger, #b00020);
+}
+.demo-error-surface {
+  padding: 12px 16px;
+  margin-bottom: 1rem;
+  border-radius: 6px;
+  border: 1px solid var(--cngx-color-border, #d1d5db);
+}
+.demo-error-surface.cngx-error,
+.demo-error-surface[aria-invalid='true'] {
+  border-color: var(--cngx-color-danger, #b00020);
+  background: color-mix(
+    in srgb,
+    var(--cngx-color-danger, #b00020) 4%,
+    transparent
+  );
+}
+.demo-error-count-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  margin-inline-start: 6px;
+  border-radius: 9px;
+  background: var(--cngx-color-danger, #b00020);
+  color: var(--cngx-color-on-danger, #ffffff);
+  font-size: 0.75em;
+  line-height: 1;
+}
+@keyframes demo-skeleton-shimmer {
+  0% { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
+}
+.demo-list-row {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e0e0e0));
+}
+.demo-list-flush {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.demo-numeric-input,
+.demo-icon-button {
+  padding: 4px 8px;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #ccc));
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+}
+.demo-numeric-input {
+  width: 80px;
+}
+.demo-icon-button {
+  padding: 6px 16px;
+  cursor: pointer;
+}
+
+// Dialog demo helpers - keep dialog surface CSS out of stories so the
+// directive composition stays the lesson, not the per-story border /
+// padding / box-shadow scatter.
+.demo-dialog-handle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: grab;
+  margin: 0 0 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e0e0e0));
+}
+.demo-dialog-section {
+  margin: 16px 0;
+  padding: 12px;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e0e0e0));
+  border-radius: 4px;
+}
+.demo-dialog-input {
+  display: block;
+  width: 100%;
+  margin-top: 4px;
+  padding: 6px 8px;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e0e0e0));
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+}
+.demo-dialog-floating {
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e0e0e0));
+  border-radius: 8px;
+  padding: 16px;
+  background: var(--cngx-color-surface, var(--cngx-ex-surface, #fff));
+  box-shadow: 0 4px 12px var(--cngx-color-shadow, oklch(0 0 0 / 0.18));
+}
+// CSS Anchor Positioning helpers for the non-modal-panel story. The
+// trigger names an anchor; the dialog binds to that name and places
+// itself in the bottom + inline-end region of the trigger - no JS-side
+// positioning, no inline-style scaffolding in the story.
+.demo-dialog-anchor {
+  anchor-name: --demo-help-anchor;
+}
+.demo-dialog-anchored {
+  position-anchor: --demo-help-anchor;
+  inset: auto;
+  position-area: bottom span-inline-end;
+  margin-block-start: 8px;
+  max-width: 280px;
+}
+
+// Listbox demo helpers. The cngx default theme styles option states
+// (.cngx-option--highlighted / --selected / --disabled / --hidden) and
+// the listbox container's keyboard focus ring; the container's surface
+// (border, radius, max-width, scroll) is consumer-owned and lives here
+// so each listbox story stays focused on the directive contract, not
+// per-story chrome.
+.demo-listbox-surface {
+  display: flex;
+  flex-direction: column;
+  max-width: 260px;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #d0d5dd));
+  border-radius: var(--cngx-radius-md, 8px);
+  background: var(--cngx-color-surface, var(--cngx-ex-surface, #fff));
+}
+.demo-listbox-surface--scroll {
+  max-height: 260px;
+  overflow: auto;
+}
+.demo-listbox-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 200px;
+  padding: 8px 12px;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #d0d5dd));
+  border-radius: var(--cngx-radius-md, 6px);
+  background: var(--cngx-color-surface, var(--cngx-ex-surface, #fff));
+  color: var(--cngx-color-text, var(--cngx-ex-text, inherit));
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.demo-listbox-trigger:focus-visible {
+  outline: 2px solid var(--cngx-color-primary, var(--cngx-ex-accent, #4a8cff));
+  outline-offset: 2px;
+}
+.demo-listbox-search {
+  width: 260px;
+  padding: 6px 10px;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #d0d5dd));
+  border-radius: var(--cngx-radius-md, 8px);
+  background: var(--cngx-color-surface, var(--cngx-ex-surface, #fff));
+  color: var(--cngx-color-text, var(--cngx-ex-text, inherit));
+  font: inherit;
+}
+.demo-listbox-empty {
+  margin: 6px 0 0;
+  padding: 6px 10px;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted));
+  font-size: 0.875rem;
+}
+
+// Container framing for the cngxActiveDescendant option demos. The cngx
+// library ships option state classes (.cngx-option--highlighted etc.) via
+// cngx-listbox.css, but those rules attach to the option itself; an
+// AD-only container (no [cngxListbox]) still needs its own surface +
+// focus ring. Demos under common/interactive/option share this class so
+// the flat + grouped stories render the same shell.
+.demo-ad-listbox {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-width: 260px;
+  padding: 4px;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #d0d5dd));
+  border-radius: var(--cngx-radius-md, 8px);
+  outline: none;
+  background: var(--cngx-color-surface, var(--cngx-ex-surface, #fff));
+}
+.demo-ad-listbox:focus-visible {
+  outline: 2px solid var(--cngx-color-primary, var(--cngx-ex-accent, #4a8cff));
+  outline-offset: 2px;
+}
+
+// Bound-value readout under a radio-group demo. Body type, muted color
+// via cngx tokens with fallbacks. Distinct from `.demo-radio-caption`
+// (theming demo's cell label - smaller, no top margin).
+.demo-radio-bound {
+  margin-top: 12px;
+  font-size: 0.875em;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted, #6b7280));
+}
+// Reserved slot for the echoed value so swapping between values of
+// different widths does not visibly shift the line. 8ch covers the
+// widest payment value in the demos (invoice / cash / card / (none))
+// with a small buffer.
+.demo-radio-bound > code {
+  display: inline-block;
+  min-width: 8ch;
+}
+
+// Compact keyboard-cheatsheet row rendered above an interactive demo
+// so the WAI-ARIA pattern is visible without making the reader open
+// the references panel. Lives in styles.scss (not per-story) so every
+// roving-tabindex demo can drop the same chrome line in via
+// templateChromeBefore.
+.demo-kbd-hint {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin-bottom: 12px;
+  font-size: 0.8125rem;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted, #6b7280));
+}
+.demo-kbd-hint kbd {
+  display: inline-block;
+  margin: 0 1px;
+  padding: 1px 6px;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #d0d5dd));
+  border-radius: 4px;
+  background: var(--cngx-color-surface-alt, var(--cngx-ex-surface-alt, #f9fafb));
+  color: var(--cngx-color-text, var(--cngx-ex-text, inherit));
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.6875rem;
+  line-height: 1.2;
+}
+
+// Ripple demo helpers. The cngxRipple directive ships the pointer logic
+// + .cngx-ripple__wave defaults; visual chrome around the host (round
+// icon button, tappable card, press-feedback transition) is consumer
+// territory and lives here so each ripple story stays focused on the
+// directive contract.
+.demo-ripple-icon-button {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  padding: 0;
+}
+.demo-ripple-card {
+  display: inline-block;
+  max-width: 280px;
+  padding: 20px;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #d0d5dd));
+  border-radius: var(--cngx-radius-md, 8px);
+  background: var(--cngx-color-surface, var(--cngx-ex-surface, #fff));
+  cursor: pointer;
+  user-select: none;
+}
+.demo-ripple-card-hint {
+  margin: 8px 0 0;
+  font-size: 0.875rem;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted, #6b7280));
+}
+.demo-press-ripple-button {
+  transition: transform 80ms ease;
+}
+
+button.chip--icon-close {
+  padding: 2px 8px;
+}
+button.chip--danger {
+  color: var(--cngx-color-danger, currentColor);
+  border-color: var(--cngx-color-danger, currentColor);
+}
+
+// Demo-only "chip" trigger styling. The cngx library deliberately ships
+// no bare-`<button>` defaults (browser-native rule), so the demo
+// templates that scatter trigger buttons need a local visual treatment.
+// Token-driven so it follows the examples-app's color scheme.
+button.chip {
+  appearance: none;
+  padding: 6px 12px;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e5e7eb));
+  border-radius: 6px;
+  background: transparent;
+  color: var(--cngx-color-text, var(--cngx-ex-text, inherit));
+  font-size: 0.8125rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 150ms ease;
+}
+
+// Demo-only overlay chrome for focus-trap stories. Real consumer code
+// would source its own design system surfaces; these classes exist so
+// the trap behaviour is the lesson, not the surface CSS.
+.cngx-ex-overlay-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+.cngx-ex-overlay-backdrop--right {
+  align-items: stretch;
+  justify-content: flex-end;
+}
+.cngx-ex-overlay-backdrop--left {
+  align-items: stretch;
+  justify-content: flex-start;
+}
+.cngx-ex-overlay-panel {
+  background: var(--cngx-color-surface, var(--cngx-ex-surface, #fff));
+  color: var(--cngx-color-text, var(--cngx-ex-text, inherit));
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 380px;
+}
+.cngx-ex-overlay-panel--drawer {
+  width: 300px;
+  max-width: none;
+  height: 100%;
+  border-radius: 0;
+  box-shadow: 0 0 24px rgba(0, 0, 0, 0.15);
+}
+
+// Demo-only focus-ring chrome for the focus-visible stories. Hooks into
+// the .cngx-focus-visible class the directive auto-toggles on keyboard
+// focus, so the story only has to wire the directive itself.
+.cngx-ex-keyboard-ring {
+  outline: none;
+  transition: box-shadow 150ms ease;
+}
+.cngx-ex-keyboard-ring.cngx-focus-visible {
+  box-shadow: 0 0 0 2px var(--cngx-color-accent, var(--cngx-color-primary, #f5a623));
+}
+
+// Demo-only surface for live-region stories. The flash variant exists so
+// sighted readers can confirm the announcement fired alongside the
+// screen-reader event.
+.cngx-ex-live-region {
+  margin-top: 12px;
+  padding: 10px 14px;
+  border: 1px solid var(--cngx-ex-border);
+  border-radius: 6px;
+  min-height: 40px;
+  transition:
+    background 300ms ease,
+    border-color 300ms ease;
+}
+.cngx-ex-live-region--flash {
+  background: var(--cngx-color-accent, var(--cngx-color-primary, #f5a623));
+  border-color: var(--cngx-color-accent, var(--cngx-color-primary, #f5a623));
+  color: var(--cngx-color-on-accent, #000);
+}
+
+// Pressed state hook for the demo chip toggle buttons. The button itself
+// owns aria-pressed; this rule just paints the active background. The
+// `.chip--active` parallel hook covers non-button chips (label wrapping a
+// radio, span used as a status indicator) where aria-pressed does not
+// apply semantically.
+button.chip[aria-pressed='true'],
+.chip.chip--active {
+  background: var(--cngx-ex-surface-alt);
+  border-color: currentColor;
+}
+
+// Demo-only label preceding a chip / filter row. Styled as a muted
+// caption so it does not compete with the chip text.
+.filter-label {
+  font-size: 0.8125rem;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted, #6b7280));
+  font-weight: 500;
+}
+
+// Demo-only inline form-error treatment. Hidden while empty so the
+// surrounding flex layout doesn't reserve space for an absent message.
+.cngx-ex-form-error {
+  min-height: 1.25rem;
+  font-size: 0.8125rem;
+  color: var(--cngx-color-danger, #e53e3e);
+}
+.cngx-ex-form-error:empty {
+  visibility: hidden;
+}
+
+// Demo-only motion chrome for reduced-motion stories. Keyframes are
+// global so both demos can share them; the .cngx-reduced-motion descendant
+// override is the canonical CSS-hook pattern the directive supports.
+@keyframes cngx-ex-demo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes cngx-ex-demo-progress {
+  0%,
+  100% {
+    transform: translateX(-100%);
+  }
+  50% {
+    transform: translateX(200%);
+  }
+}
+@keyframes cngx-ex-demo-slide-in {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+.cngx-ex-demo-spinner {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: 6px solid var(--cngx-ex-surface-alt);
+  border-top-color: var(--cngx-color-accent, var(--cngx-color-primary, #f5a623));
+  flex-shrink: 0;
+  box-sizing: border-box;
+  animation: cngx-ex-demo-spin 2s linear infinite;
+}
+.cngx-ex-demo-progress {
+  width: 120px;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--cngx-ex-surface-alt);
+  overflow: hidden;
+}
+.cngx-ex-demo-progress-bar {
+  width: 40%;
+  height: 100%;
+  border-radius: 4px;
+  background: var(--cngx-color-accent, var(--cngx-color-primary, #f5a623));
+  animation: cngx-ex-demo-progress 1.5s ease-in-out infinite;
+}
+.cngx-reduced-motion .cngx-ex-demo-spinner,
+.cngx-reduced-motion .cngx-ex-demo-progress-bar {
+  animation: none;
+}
+.cngx-ex-toast {
+  padding: 10px 14px;
+  border-radius: 6px;
+  background: var(--cngx-ex-surface-alt);
+  border: 1px solid var(--cngx-ex-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.8125rem;
+}
+.cngx-ex-toast--animate {
+  animation: cngx-ex-demo-slide-in 0.3s ease-out;
+}
+.cngx-ex-toast-list {
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 60px;
+}
+.cngx-ex-toast-list__empty {
+  padding: 16px;
+  text-align: center;
+  font-size: 0.8125rem;
+  color: var(--cngx-ex-muted);
+}
+
+// Demo-only help disclosure. Native <details> with a question-mark
+// summary that the reader clicks to reveal extra guidance. Keeps the
+// intro / artifact area uncluttered while preserving the option to
+// surface long-form OS-specific or platform-specific instructions.
+.cngx-ex-help-disclosure {
+  margin: 8px 0 0;
+}
+.cngx-ex-help-disclosure > summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font-size: 0.8125rem;
+  color: var(--cngx-ex-muted);
+  user-select: none;
+  list-style: none;
+}
+.cngx-ex-help-disclosure > summary::-webkit-details-marker {
+  display: none;
+}
+.cngx-ex-help-disclosure > summary::before {
+  content: '?';
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1px solid currentColor;
+  font-size: 0.72rem;
+  font-weight: 700;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  line-height: 1;
+}
+.cngx-ex-help-disclosure[open] > summary {
+  color: var(--cngx-ex-text);
+}
+.cngx-ex-help-disclosure-panel {
+  margin: 8px 0 0;
+  padding: 10px 12px;
+  border-radius: 6px;
+  background: var(--cngx-ex-surface-alt);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+.cngx-ex-help-disclosure-panel ul {
+  margin: 0;
+  padding-inline-start: 1.25rem;
+}
+.cngx-ex-help-disclosure-panel li + li {
+  margin-top: 4px;
+}
+
+// Demo-only typography for inline status readouts above charts and other
+// async-state demos. Muted, small, monospace number-aligned.
+.cngx-ex-status-readout {
+  font-size: 0.75rem;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted));
+  font-variant-numeric: tabular-nums;
+}
+
+
+// Demo-only chart frame used by the chart-primitives stories. Wraps the
+// composed <cngx-chart> in a bordered, padded surface so the SVG sits on a
+// visible canvas without each story re-stating the same inline border /
+// border-radius / padding triple.
+.cngx-ex-chart-frame {
+  display: inline-block;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 8px;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e5e7eb));
+  border-radius: 4px;
+}
+.cngx-ex-chart-frame--bottom-axis-room {
+  padding-bottom: 32px;
+}
+.cngx-ex-chart-frame--left-axis-room {
+  padding-left: 40px;
+}
+.cngx-ex-chart-frame--responsive {
+  resize: horizontal;
+  overflow: auto;
+  max-width: 600px;
+  min-width: 0;
+  width: 100%;
+}
+
+
+// Demo-only KPI strip layout used by the deviation-bar variance-readings
+// story. Three rows of [label | chart | readout] share spacing, so the
+// per-row markup stays a one-liner.
+.cngx-ex-kpi-strip {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 360px;
+}
+.cngx-ex-kpi-strip > li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.cngx-ex-kpi-strip > li > :first-child {
+  flex: 1;
+}
+.cngx-ex-kpi-strip > li > :last-child {
+  width: 60px;
+  text-align: right;
+}
+
+// Demo-only menu chrome for the roving-tabindex vertical-menu story.
+// chip styling is button-scoped; non-button items need their own surface.
+.cngx-ex-menu-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  max-width: 220px;
+}
+.cngx-ex-menu-item {
+  padding: 6px 12px;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e5e7eb));
+  border-radius: 6px;
+  background: transparent;
+  color: var(--cngx-color-text, var(--cngx-ex-text, inherit));
+  font-size: 0.8125rem;
+  font-family: inherit;
+  cursor: pointer;
+  user-select: none;
+  transition: background 150ms ease;
+}
+.cngx-ex-menu-item:hover,
+.cngx-ex-menu-item:focus-visible {
+  background: color-mix(in oklch, transparent, currentColor 6%);
+}
+.cngx-ex-menu-item[aria-disabled='true'] {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+// cngxCardBadge paints its intent background on the host. When the host is
+// an interactive component that already owns its own surface
+// (cngx-speak-button: an inline-flex wrapper around a 36x36 button), the
+// badge's background + inline padding bleed out as "ears" on either side
+// of the inner button. Strip the badge surface so the inner component
+// remains the only visible chrome; positioning + classes from
+// cngxCardBadge are kept.
+cngx-speak-button[cngxCardBadge] {
+  background: transparent;
+  padding: 0;
+  min-width: 0;
+}
+button.chip:hover:not(:disabled) {
+  background: color-mix(in oklch, transparent, currentColor 6%);
+}
+button.chip:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+.filter-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}
+
+// Keyboard hint strip used by tree/listbox demos.
+.kbd-hint {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.5rem 0.75rem;
+  margin-bottom: 0.75rem;
+  font-size: 0.8rem;
+}
+.kbd-hint > strong {
+  font-weight: 600;
+}
+.kbd-hint > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+// ARIA-driven structural styling — keeps composite widgets legible without
+// dictating brand. Selectors fire only when the directive actually applied
+// the role/state, so they don't bleed into the inline-styled demos.
+// [role='listbox'],
+// [role='menu'],
+// [role='tree'] {
+//   display: flex;
+//   flex-direction: column;
+//   border: 1px solid var(--cngx-ex-border);
+//   border-radius: 6px;
+//   padding: 4px;
+//   outline: none;
+// }
+// [role='listbox']:focus-visible,
+// [role='menu']:focus-visible,
+// [role='tree']:focus-visible {
+//   outline: 2px solid var(--cngx-ex-focus);
+//   outline-offset: 2px;
+// }
+
+// Demo-specific styles: sidenav-demo. The sidenav demos render their own
+// active-state indicator (brand-coloured left border + tinted background)
+// instead of relying on cngx-sidenav's default neutral active tint. The
+// CSS-var overrides on `.demo-sidenav__container` opt the cngx atom out
+// of its default active styling so the demo's inline `[style.border-
+// left-color]` / `[style.background]` interpolations drive the look.
+.demo-sidenav__container {
+  height: 420px;
+  margin-top: 0.75rem;
+  border: 1px solid var(--cngx-color-border);
+  border-radius: 6px;
+  --cngx-nav-link-radius: 0;
+  --cngx-nav-link-active-bg: transparent;
+  --cngx-nav-link-active-color: inherit;
+  --cngx-nav-link-active-font-weight: inherit;
+}
+.demo-sidenav__container--short {
+  height: 320px;
+}
+.demo-sidenav__header {
+  padding: 1rem;
+  font-size: 1rem;
+  font-weight: 700;
+}
+.demo-sidenav__label {
+  display: block;
+  padding: 0.75rem 1rem 0.25rem;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--cngx-color-text-muted);
+}
+.demo-sidenav__link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 1rem;
+  text-decoration: none;
+  font-size: 0.85rem;
+  color: inherit;
+  border-left: 3px solid transparent;
+}
+.demo-sidenav__link--plain {
+  display: block;
+  border-left: 0;
+  justify-content: initial;
+}
+.demo-sidenav__link--sub {
+  display: block;
+  padding: 0.4rem 1rem 0.4rem calc(1rem + 14px);
+  text-decoration: none;
+  font-size: 0.8rem;
+  color: inherit;
+}
+.demo-sidenav__badge {
+  background: var(--cngx-color-danger);
+  color: var(--cngx-color-surface);
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.1em 0.45em;
+  border-radius: 10px;
+  min-width: 1.1em;
+  text-align: center;
+}
+.demo-sidenav__badge-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--cngx-color-success);
+  flex-shrink: 0;
+}
+.demo-sidenav__group {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 1rem;
+  border: none;
+  background: none;
+  cursor: pointer;
+  text-align: left;
+  font-size: 0.85rem;
+  color: inherit;
+}
+.demo-sidenav__chevron {
+  font-size: 0.6rem;
+  transition: transform 0.15s;
+}
+.demo-sidenav__footer {
+  padding: 0.75rem 1rem;
+  font-size: 0.7rem;
+  color: var(--cngx-color-text-muted);
+}
+.demo-sidenav__content {
+  padding: 1.25rem;
+}
+.demo-sidenav__content--compact {
+  padding: 1rem;
+}
+.demo-sidenav__content-title {
+  margin: 0 0 0.5rem;
+  font-size: 1.1rem;
+}
+.demo-sidenav__content-title--small {
+  font-size: 1rem;
+}
+.demo-sidenav__content-hint {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--cngx-color-text-muted);
+}
+.demo-sidenav__order-item {
+  padding: 0.5rem 0.75rem;
+  margin-bottom: 0.5rem;
+  border: 1px solid var(--cngx-color-border);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: background 0.15s;
+}
+.demo-sidenav__order-item.is-selected {
+  background: color-mix(in oklch, var(--cngx-color-primary) 8%, transparent);
+  border-color: var(--cngx-color-primary);
+}
+.demo-sidenav__detail-pad {
+  padding: 1.25rem;
+}
+.demo-sidenav__detail-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+.demo-sidenav__themes-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+.demo-sidenav__theme-label {
+  margin-bottom: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--cngx-color-text-muted);
+}
+.demo-sidenav__theme-label--inset {
+  padding: 0.5rem 0.5rem 0;
+}
+.demo-sidenav__theme-panel {
+  height: 300px;
+  border-radius: 6px;
+  overflow: hidden;
+}
+.demo-sidenav__theme-panel--dark {
+  background: var(--cngx-color-surface);
+  color: var(--cngx-color-text);
+  border-radius: 6px;
+}
+
+// Tag-family demo helpers. Stories under common/display/tag share these
+// so individual templates don't scatter thematic CSS inline.
+.demo-tag-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.demo-tag-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.demo-tag-group-frame {
+  border: 1px dashed var(--cngx-color-border, var(--cngx-ex-border, #d1d5db));
+  padding: 8px;
+}
+.demo-tag-link {
+  text-decoration: none;
+}
+.demo-tag-link:hover {
+  filter: brightness(0.92);
+}
+.demo-tag-label-strong {
+  font-weight: 700;
+}
+.demo-tag-label-meta {
+  opacity: 0.7;
+}
+// Consumer-defined `[data-color="my-brand"]` extension demonstrated by
+// the color-palette + provideTagConfig stories. Maps the open-string
+// key onto the cngx primary token so dark/light flips track the rest
+// of the page chrome.
+.cngx-tag[data-color='my-brand'] {
+  --cngx-tag-bg: var(--cngx-color-primary, oklch(0.55 0.21 280));
+  --cngx-tag-color: var(--cngx-color-on-primary, oklch(0.99 0 0));
+  --cngx-tag-border: 1px solid transparent;
+}
+
+// Radio-indicator demo helpers. Stories under
+// common/display/radio-indicator share these so individual templates
+// don't repeat layout / caption styling inline (caption font-size and
+// muted color are thematic and would trip the STYLE-THEME audit rule
+// if inlined).
+.demo-radio-row {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  font-size: 1.5em;
+  color: var(--cngx-color-primary, var(--cngx-ex-accent, oklch(0.66 0.19 50)));
+}
+.demo-radio-row--baseline {
+  align-items: baseline;
+}
+.demo-radio-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.demo-radio-caption {
+  font-size: 0.625em;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-text-muted, oklch(0.5 0.01 250)));
+}
+// Brand-override examples for the theming story. OKLCH equivalents of
+// the original magenta / emerald hex literals — wrapped in foundation
+// tokens so a downstream theme can re-point them without forking the
+// demo.
+.demo-radio-brand-magenta {
+  --cngx-radio-indicator-checked-color: var(--cngx-color-magenta, oklch(0.55 0.25 350));
+  --cngx-radio-indicator-border-width: 2px;
+}
+.demo-radio-brand-emerald {
+  --cngx-radio-indicator-checked-color: var(--cngx-color-success, oklch(0.55 0.13 165));
+  --cngx-radio-indicator-dot-size: 0.6em;
+}
+
+// Button-toggle demo caption. Shared by stories under
+// common/interactive/button-toggle/** so the value-readout line under
+// the group reads from the muted-text token instead of repeating a hex
+// literal inline in every story.
+.demo-button-toggle-caption {
+  font-size: 0.875em;
+  margin-top: 12px;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-text-muted, oklch(0.5 0.01 250)));
+}
+
+// Checkbox demo caption. Shared by stories under
+// common/interactive/checkbox/** so the bound-value readout under each
+// demo reads from the muted-text token instead of repeating a hex
+// literal inline in every story.
+.demo-checkbox-caption {
+  font-size: 0.875em;
+  margin-top: 12px;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted));
+}
+
+// Button-toggle demo skin. The cngx-button-toggle directive currently
+// ships no default visual treatment - only the group container has CSS
+// (display: inline-flex, gap, border-radius). Until the library grows a
+// leaf default, this wrapper class gives the demos a presentable
+// segmented-control look so radiogroup / toolbar semantics read as such
+// instead of as plain inline text. Scoped to the demo wrapper class so
+// it never leaks into consumer apps that import @cngx/common.
+.demo-button-toggle-group .cngx-button-toggle {
+  padding: 0.5rem 1rem;
+  // The examples-app's --cngx-ex-border is intentionally faint for app
+  // chrome, so the border fallback here skips it and lands on a
+  // darker neutral - segmented controls need a visible boundary.
+  border: 1px solid var(--cngx-color-outline, oklch(0.72 0.01 250));
+  background: var(--cngx-color-surface, var(--cngx-ex-surface, #ffffff));
+  color: var(--cngx-color-on-surface, var(--cngx-ex-text, currentColor));
+  font: inherit;
+  cursor: pointer;
+  transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+.demo-button-toggle-group .cngx-button-toggle + .cngx-button-toggle {
+  margin-left: -1px;
+}
+.demo-button-toggle-group .cngx-button-toggle:first-child {
+  border-top-left-radius: var(--cngx-radius-md, 0.375rem);
+  border-bottom-left-radius: var(--cngx-radius-md, 0.375rem);
+}
+.demo-button-toggle-group .cngx-button-toggle:last-child {
+  border-top-right-radius: var(--cngx-radius-md, 0.375rem);
+  border-bottom-right-radius: var(--cngx-radius-md, 0.375rem);
+}
+.demo-button-toggle-group[aria-orientation='vertical'] .cngx-button-toggle + .cngx-button-toggle {
+  margin-left: 0;
+  margin-top: -1px;
+}
+.demo-button-toggle-group[aria-orientation='vertical'] .cngx-button-toggle:first-child {
+  border-radius: var(--cngx-radius-md, 0.375rem) var(--cngx-radius-md, 0.375rem) 0 0;
+}
+.demo-button-toggle-group[aria-orientation='vertical'] .cngx-button-toggle:last-child {
+  border-radius: 0 0 var(--cngx-radius-md, 0.375rem) var(--cngx-radius-md, 0.375rem);
+}
+// Unchecked + hover: tint the surface toward the text color so the hint is
+// visible in both light and dark mode. The checked branch below overrides
+// this so the orange-on-white selection state stays orange on hover.
+.demo-button-toggle-group .cngx-button-toggle:not(.cngx-button-toggle--checked):hover:not([disabled]) {
+  background: color-mix(
+    in oklch,
+    var(--cngx-color-surface, #ffffff),
+    var(--cngx-color-on-surface, oklch(0.25 0 0)) 8%
+  );
+}
+// Checked + hover: shift the primary background toward black so the selected
+// state still gets a hover hint instead of being painted over by a
+// currentColor mix (currentColor on checked == on-primary == white in light
+// mode, which made the previous universal rule render white-on-white).
+.demo-button-toggle-group .cngx-button-toggle--checked:hover:not([disabled]) {
+  background: color-mix(
+    in oklch,
+    var(--cngx-color-primary, var(--cngx-ex-accent, oklch(0.6 0.15 250))) 88%,
+    #000
+  );
+  border-color: color-mix(
+    in oklch,
+    var(--cngx-color-primary, var(--cngx-ex-accent, oklch(0.6 0.15 250))) 88%,
+    #000
+  );
+}
+.demo-button-toggle-group .cngx-button-toggle:focus-visible {
+  outline: 2px solid var(--cngx-color-primary, var(--cngx-ex-accent, oklch(0.6 0.15 250)));
+  outline-offset: 2px;
+  position: relative;
+  z-index: 1;
+}
+.demo-button-toggle-group .cngx-button-toggle--checked {
+  background: var(--cngx-color-primary, var(--cngx-ex-accent, oklch(0.6 0.15 250)));
+  color: var(--cngx-color-on-primary, #ffffff);
+  border-color: var(--cngx-color-primary, var(--cngx-ex-accent, oklch(0.6 0.15 250)));
+  z-index: 1;
+}
+.demo-button-toggle-group .cngx-button-toggle--disabled,
+.demo-button-toggle-group .cngx-button-toggle[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+// Required-marker custom-template variants (cngx-required story).
+.required-badge {
+  display: inline-block;
+  margin-left: 0.25em;
+  padding: 0 0.4em;
+  border-radius: 999px;
+  font-size: 0.6875em;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--cngx-color-danger-on, #fff);
+  background: var(--cngx-color-danger, #c0392b);
+}
+
+// Hoverable atom-demo target. Used by
+// stories/common/interactive/hoverable/basic.story.ts so the reader can
+// see the bounding box the hover signal observes; otherwise the demo
+// would only surface state via the chrome readout.
+.demo-hoverable-target {
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, oklch(0.88 0.005 250)));
+  border-radius: var(--cngx-radius-md, 6px);
+  background: var(--cngx-color-surface, var(--cngx-ex-surface, oklch(1 0 0)));
+  color: var(--cngx-color-text, var(--cngx-ex-text, oklch(0.2 0.01 250)));
+  transition: transform 120ms ease, background 120ms ease;
+}
+.demo-hoverable-target--active {
+  background: color-mix(in oklch, var(--cngx-color-surface, oklch(1 0 0)), var(--cngx-color-primary, oklch(0.66 0.19 50)) 8%);
+}
+
+// Hoverable composition-demo card. Used by
+// stories/common/interactive/hoverable/as-host-directive.story.ts and
+// its co-located _hover-card.component.ts fixture. The fixture sets
+// .demo-hover-card--active when the hostDirective signal flips, the
+// styles below provide the visual cue.
+.demo-hover-card {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 1.25rem;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, oklch(0.88 0.005 250)));
+  background: var(--cngx-color-surface, var(--cngx-ex-surface, oklch(1 0 0)));
+  color: var(--cngx-color-text, var(--cngx-ex-text, oklch(0.2 0.01 250)));
+  transition: transform 120ms ease, background 120ms ease;
+}
+.demo-hover-card--active {
+  background: color-mix(in oklch, var(--cngx-color-surface, oklch(1 0 0)), var(--cngx-color-primary, oklch(0.66 0.19 50)) 8%);
+  transform: scale(1.02);
+}
+.demo-hover-card__state {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.75em;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted, oklch(0.5 0.01 250)));
+}
+
+// Gesture-folder helpers — keep thematic decisions (border, surface, accent)
+// in classes so each story carries only layout-level inline styles.
+.demo-gesture-panel {
+  display: inline-block;
+  padding: 12px 16px;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, oklch(0.88 0.005 250)));
+  border-radius: var(--cngx-radius-md, 6px);
+  background: var(--cngx-color-surface-variant, var(--cngx-color-surface, oklch(0.98 0.005 250)));
+}
+.demo-gesture-target {
+  padding: 16px;
+  border: 2px dashed var(--cngx-color-border, var(--cngx-ex-border, oklch(0.88 0.005 250)));
+  border-radius: var(--cngx-radius-md, 6px);
+  text-align: center;
+  outline: none;
+}
+.demo-gesture-target--accent {
+  border-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
+  background: color-mix(in oklch, var(--cngx-color-surface, oklch(1 0 0)), var(--cngx-color-primary, oklch(0.66 0.19 50)) 6%);
+}
+.demo-gesture-target--danger {
+  border-color: var(--cngx-color-error, oklch(0.6 0.2 25));
+  background: color-mix(in oklch, var(--cngx-color-surface, oklch(1 0 0)), var(--cngx-color-error, oklch(0.6 0.2 25)) 8%);
+}
+.demo-gesture-card {
+  padding: 20px;
+  max-width: 280px;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, oklch(0.88 0.005 250)));
+  border-radius: var(--cngx-radius-md, 8px);
+  background: var(--cngx-color-surface, oklch(1 0 0));
+  text-align: left;
+  user-select: none;
+  transition: transform 100ms ease, box-shadow 100ms ease;
+}
+.demo-gesture-card[aria-pressed='true'],
+.demo-gesture-card.is-pressed {
+  box-shadow: none;
+}
+.demo-gesture-flash,
+button.chip.demo-gesture-flash {
+  background: color-mix(in oklch, var(--cngx-color-surface, oklch(1 0 0)), var(--cngx-color-primary, oklch(0.66 0.19 50)) 18%);
+  border-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
+}
+.demo-gesture-hint {
+  margin: 0 0 8px;
+  font-size: 0.875rem;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted, oklch(0.5 0.01 250)));
+}
+.demo-swipe-target {
+  padding: 2rem;
+  border: 2px dashed var(--cngx-color-border, var(--cngx-ex-border, oklch(0.88 0.005 250)));
+  border-radius: var(--cngx-radius-md, 8px);
+  background: var(--cngx-color-surface-variant, var(--cngx-color-surface, oklch(0.98 0.005 250)));
+  text-align: center;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  transition: transform 0.1s ease, border-color 0.1s ease;
+}
+.demo-swipe-target--active {
+  border-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
+}
+@media (prefers-reduced-motion: reduce) {
+  .demo-gesture-target,
+  .demo-swipe-target,
+  .demo-gesture-card {
+    transition: none;
+  }
+}
+.demo-context-menu-zone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 160px;
+  padding: 16px;
+  border: 2px dashed var(--cngx-color-border, oklch(0.88 0.005 250));
+  border-radius: var(--cngx-radius-md, 8px);
+  background: var(--cngx-color-surface-variant, var(--cngx-color-surface, oklch(0.98 0.005 250)));
+  color: var(--cngx-color-text-muted, oklch(0.5 0.01 250));
+  cursor: context-menu;
+  user-select: none;
+}
+.demo-context-menu-zone:focus-visible {
+  outline: 2px solid var(--cngx-color-primary, oklch(0.66 0.19 50));
+  outline-offset: 2px;
+}
+
+// Inline code chip for copy-text stories. Token-driven so it tracks the
+// examples-app color scheme; no literal hex fallbacks. The container
+// owns layout (display/gap/max-width) via inline style; this class owns
+// only the thematic surface.
+.demo-copy-token__code {
+  padding: 6px 10px;
+  border: 1px solid var(--cngx-color-border, oklch(0.88 0.005 250));
+  border-radius: var(--cngx-radius-sm, 4px);
+  background: var(--cngx-color-surface-variant, var(--cngx-color-surface, oklch(0.98 0.005 250)));
+  color: var(--cngx-color-text, currentColor);
+  font-family: var(--cngx-font-family-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: var(--cngx-font-size-sm, 0.8125rem);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// Copied-state surface for any chip-styled copy trigger. Mirrors the
+// CngxCopyBlock library default exactly: same green-hue Copied tint
+// (light: oklch(0.96 0.025 145), dark: oklch(0.32 0.06 145)), same
+// success-token border and label. A color-mix on `--cngx-color-surface`
+// drowned in the surface's blue-grey hue and didn't read as green,
+// hence the explicit hue tints.
+button.chip.demo-chip--copied {
+  background: oklch(0.96 0.025 145);
+  border-color: var(--cngx-color-success, oklch(0.5 0.12 145));
+  color: var(--cngx-color-success, oklch(0.5 0.12 145));
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-color-scheme='light']):not(.light) button.chip.demo-chip--copied {
+    background: oklch(0.32 0.06 145);
+  }
+}
+[data-color-scheme='dark'] button.chip.demo-chip--copied,
+.dark button.chip.demo-chip--copied {
+  background: oklch(0.32 0.06 145);
+}
+[data-color-scheme='light'] button.chip.demo-chip--copied,
+.light button.chip.demo-chip--copied {
+  background: oklch(0.96 0.025 145);
+}
+
+// Muted URL label for the copy-url-with-sr-announcement story. The
+// real token is `--cngx-color-text-muted` (system-tokens.css), not the
+// invented `--cngx-text-secondary` previously used inline.
+.demo-copy-url__label {
+  font-size: var(--cngx-font-size-sm, 0.875rem);
+  color: var(--cngx-color-text-muted, oklch(0.5 0.01 250));
+}
+
+// Screen-reader-only utility for demo templates that wire their own
+// aria-live region. Mirrors the WAI-ARIA practice "visually hidden"
+// pattern; identical visual rules to the library's internal
+// `.cngx-sr-only` (scoped to `.cngx-copy-block`).
+.demo-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+  padding: 0;
+  margin: -1px;
+}
+
+/* Demo-specific styles: common/interactive/nav. The nav directives ship */
+/* host classes (cngx-nav-link, cngx-nav-group, cngx-nav-badge) without */
+/* default visual styling, so the demos theme themselves through these */
+/* helpers; every color reads from a cngx token first, then a safe fallback. */
+.demo-nav__frame {
+  width: 240px;
+  padding: 0.5rem 0;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #d0d5dd));
+  border-radius: var(--cngx-radius-md, 6px);
+  background: var(--cngx-surface-alt, #f9fafb);
+}
+.demo-nav__label {
+  display: block;
+  padding: 0.5rem 1rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted, #6b7280));
+}
+.demo-nav__link {
+  display: block;
+  padding: 0.5rem 1rem;
+  text-decoration: none;
+  font-size: 0.875rem;
+  color: var(--cngx-color-text, var(--cngx-ex-text, #1f2937));
+  border-left: 3px solid transparent;
+  transition:
+    background 0.15s ease,
+    border-left-color 0.15s ease;
+}
+.demo-nav__link--row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.demo-nav__link--active {
+  border-left-color: var(--cngx-color-primary, #2563eb);
+  background: color-mix(in oklch, var(--cngx-color-primary, #2563eb) 8%, transparent);
+  font-weight: 600;
+}
+.demo-nav__link--indent-1 {
+  padding-left: calc(1rem + 12px);
+}
+.demo-nav__link--indent-2 {
+  padding-left: calc(1rem + 24px);
+}
+.demo-nav__divider {
+  margin: 0.5rem 1rem;
+  border-top: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #d0d5dd));
+}
+.demo-nav__trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 1rem;
+  border: none;
+  background: none;
+  cursor: pointer;
+  text-align: left;
+  font-size: 0.875rem;
+  color: var(--cngx-color-text, var(--cngx-ex-text, #1f2937));
+}
+.demo-nav__caret {
+  font-size: 0.75rem;
+  transition: transform 0.15s ease;
+}
+.demo-nav__badge--count {
+  padding: 0.1em 0.5em;
+  min-width: 1.2em;
+  border-radius: 10px;
+  background: var(--cngx-color-primary, #2563eb);
+  color: var(--cngx-color-surface, #fff);
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-align: center;
+}
+.demo-nav__badge--muted {
+  padding: 0.1em 0.5em;
+  border-radius: 10px;
+  background: var(--cngx-color-border, var(--cngx-ex-border, #d0d5dd));
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted, #6b7280));
+  font-size: 0.7rem;
+}
+.demo-nav__badge--dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--cngx-color-success, #16a34a);
+}
+.demo-nav__note {
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted, #6b7280));
+}
+
+// Combobox-typeahead demo. Built from raw <li role="option"> nodes (not
+// the cngx-option directive), so the highlight chrome lives here. Every
+// color reads from a cngx token first, with a safe ASCII-only fallback.
+.demo-typeahead-listbox {
+  display: flex;
+  flex-direction: column;
+  list-style: none;
+  margin: 0;
+  padding: 4px 0;
+  max-height: 12rem;
+  overflow: auto;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #d0d5dd));
+  border-radius: var(--cngx-radius-md, 6px);
+  background: var(--cngx-color-surface, var(--cngx-ex-surface, #fff));
+}
+.demo-typeahead-option {
+  padding: 4px 10px;
+  cursor: pointer;
+  color: var(--cngx-color-text, var(--cngx-ex-text, inherit));
+}
+.demo-typeahead-option[aria-selected='true'] {
+  background: var(--cngx-color-surface-alt, var(--cngx-ex-surface-alt, #f3f4f6));
+}
+.demo-typeahead-empty {
+  padding: 4px 10px;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted, #6b7280));
+  font-style: italic;
+}
+
+// CngxSpeak demos. The directive is headless - no DOM, no CSS - so the
+// example chrome (text passage frame, input + error row, hear-button)
+// lives entirely here so stories don't redeclare padding/border/colour
+// inline. Every colour reads from a cngx token first, then a shell
+// fallback, then a safe literal.
+.demo-speak-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+.demo-speak-input {
+  padding: 8px 12px;
+  border-radius: var(--cngx-radius-md, 6px);
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #d0d5dd));
+  background: var(--cngx-color-surface, var(--cngx-ex-surface, #fff));
+  color: var(--cngx-color-text, var(--cngx-ex-text, inherit));
+  font-size: 0.875rem;
+}
+.demo-speak-input--invalid {
+  border-color: var(--cngx-color-danger, #b00020);
+}
+.demo-speak-error-row {
+  font-size: 0.8125rem;
+  color: transparent;
+}
+.demo-speak-error-row--shown {
+  color: var(--cngx-color-danger, #b00020);
+}
+.demo-speak-hear-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 2px 10px;
+  border-radius: var(--cngx-radius-sm, 4px);
+  border: 1px solid var(--cngx-color-danger, #b00020);
+  background: color-mix(in srgb, var(--cngx-color-danger, #b00020) 8%, transparent);
+  color: var(--cngx-color-danger, #b00020);
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+.demo-speak-hear-btn:focus-visible {
+  outline: 2px solid var(--cngx-color-danger, #b00020);
+  outline-offset: 2px;
+}
+.demo-speak-hear-btn::before {
+  content: '\1F50A';
+  font-size: 0.9rem;
+  line-height: 1;
+}
+.demo-speak-listen-btn--active {
+  background: var(--cngx-color-primary, var(--cngx-ex-focus, #2563eb));
+  color: var(--cngx-color-surface, var(--cngx-ex-surface, #fff));
+}
+.demo-speak-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  font-size: 0.875rem;
+  line-height: 1;
+}
+.demo-speak-icon-btn--active {
+  background: var(--cngx-color-primary, var(--cngx-ex-focus, #2563eb));
+  color: var(--cngx-color-surface, var(--cngx-ex-surface, #fff));
+}
+.demo-speak-note {
+  font-size: 0.75rem;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted, #6b7280));
+}
+.demo-speak-passage {
+  padding: 16px 20px;
+  border-radius: var(--cngx-radius-md, 8px);
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #d0d5dd));
+  background: var(--cngx-color-surface-alt, var(--cngx-ex-surface-alt, #f9fafb));
+  color: var(--cngx-color-text, var(--cngx-ex-text, inherit));
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+.demo-speak-passage--accent {
+  border-left: 4px solid var(--cngx-color-primary, var(--cngx-ex-focus, #2563eb));
+}
+.demo-speak-passage--speaking {
+  outline: 2px solid var(--cngx-color-primary, var(--cngx-ex-focus, #2563eb));
+  outline-offset: 2px;
+}
+.demo-speak-reading-badge {
+  position: absolute;
+  top: -0.7rem;
+  right: 0.5rem;
+  padding: 0.05rem 0.5rem;
+  border-radius: 999px;
+  background: var(--cngx-color-primary, var(--cngx-ex-focus, #2563eb));
+  color: var(--cngx-color-surface, var(--cngx-ex-surface, #fff));
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.demo-speak-reading-pulse {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 0.4rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--cngx-color-primary, #2563eb) 12%, transparent);
+  color: var(--cngx-color-primary, var(--cngx-ex-focus, #2563eb));
+  font-size: 0.6875rem;
+  font-weight: 600;
+}
+.demo-speak-hear-btn--active {
+  background: var(--cngx-color-danger, #b00020);
+  color: var(--cngx-color-surface, var(--cngx-ex-surface, #fff));
+}
+
+// CngxToggle caption strip beneath the basic two-way demo. The toggle
+// component already ships a track/thumb skin, so the story only needs a
+// muted caption colour that follows the cngx text-muted token.
+.demo-toggle-caption {
+  font-size: 0.875em;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted, #6b7280));
+}
+
+// Layout-stories thematic surfaces. The cngx directive under test (backdrop,
+// drawer, sticky-header, scroll-spy, etc.) handles its own behaviour; these
+// classes shape the surrounding demo frame so border / radius / padding /
+// background stay in styles.scss rather than scattering through story files.
+.demo-backdrop-frame {
+  position: relative;
+  min-height: 200px;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e5e7eb));
+  border-radius: var(--cngx-radius-md, 6px);
+  overflow: hidden;
+}
+.demo-backdrop-frame__content {
+  padding: 1rem;
+}
+
+// CngxDrawer demo surfaces. The drawer system is intentionally headless -
+// directives only flip class names. These classes give the demo container
+// a bordered frame, a sliding panel that hooks into the
+// `.cngx-drawer-panel--*` host classes, and a content lane with a side /
+// push offset transition so the open/close behaviour is actually visible.
+.demo-drawer-container {
+  position: relative;
+  min-height: 180px;
+}
+.demo-drawer-container--bordered {
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e5e7eb));
+  border-radius: var(--cngx-radius-md, 6px);
+  overflow: hidden;
+}
+.demo-drawer-layout {
+  position: relative;
+  display: flex;
+  min-height: 200px;
+  overflow: hidden;
+}
+.demo-drawer-layout--relative {
+  position: relative;
+}
+.demo-drawer-layout--push .demo-drawer-panel {
+  position: relative;
+  inset: auto;
+  transform: none;
+  flex: 0 0 auto;
+}
+.demo-drawer-backdrop {
+  position: absolute;
+  inset: 0;
+  background: var(--cngx-backdrop-bg, rgba(0, 0, 0, 0.4));
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  z-index: 1;
+}
+.demo-drawer-backdrop.cngx-backdrop--visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+.demo-drawer-panel {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 220px;
+  background: var(--cngx-color-surface, var(--cngx-ex-surface, #ffffff));
+  border-right: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e5e7eb));
+  transform: translateX(-100%);
+  transition: transform 0.25s ease;
+  z-index: 2;
+}
+.demo-drawer-panel.cngx-drawer-panel--open {
+  transform: translateX(0);
+}
+.demo-drawer-panel.cngx-drawer-panel--right {
+  inset: 0 0 0 auto;
+  border-right: 0;
+  border-left: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e5e7eb));
+  transform: translateX(100%);
+}
+.demo-drawer-panel.cngx-drawer-panel--right.cngx-drawer-panel--open {
+  transform: translateX(0);
+}
+.demo-drawer-panel.cngx-drawer-panel--top {
+  inset: 0 0 auto 0;
+  width: auto;
+  height: 120px;
+  border-right: 0;
+  border-bottom: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e5e7eb));
+  transform: translateY(-100%);
+}
+.demo-drawer-panel.cngx-drawer-panel--top.cngx-drawer-panel--open {
+  transform: translateY(0);
+}
+.demo-drawer-panel.cngx-drawer-panel--bottom {
+  inset: auto 0 0 0;
+  width: auto;
+  height: 120px;
+  border-right: 0;
+  border-top: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e5e7eb));
+  transform: translateY(100%);
+}
+.demo-drawer-panel.cngx-drawer-panel--bottom.cngx-drawer-panel--open {
+  transform: translateY(0);
+}
+.demo-drawer-panel--static {
+  position: relative;
+  inset: auto;
+  transform: none;
+  flex: 0 0 auto;
+  overflow: hidden;
+  transition: width 0.25s ease, border-right-width 0.25s ease;
+}
+.demo-drawer-panel--static:not(.cngx-drawer-panel--open) {
+  width: 0;
+  border-right-width: 0;
+}
+.demo-drawer-panel-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  font-size: 0.875rem;
+}
+.demo-drawer-main {
+  flex: 1 1 auto;
+  padding: 0.75rem 1rem;
+  background: var(--cngx-color-surface-alt, var(--cngx-ex-surface-alt, #f9fafb));
+  transition: margin-left 0.25s ease, margin-right 0.25s ease;
+  font-size: 0.875rem;
+}
+.demo-drawer-main--tall {
+  min-height: 220px;
+}
+
+// CngxExpandableText custom-toggle-template story. The library default
+// toggle ships its own `.cngx-expandable-text__toggle` skin, but the
+// custom-template demo intentionally renders a different button shape;
+// thematic chrome (border, radius, padding, font-size, accent color)
+// lives here so the story template only carries layout bindings.
+.demo-expandable-toggle {
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #d0d5dd));
+  border-radius: var(--cngx-radius-sm, 4px);
+  background: none;
+  padding: 4px 10px;
+  cursor: pointer;
+  font-size: 0.8125rem;
+  color: var(--cngx-color-primary, var(--cngx-ex-focus, #2563eb));
+}
+.demo-expandable-toggle__glyph {
+  font-size: 1rem;
+}
+
+// CngxHighlight demo helpers. The directive wraps matches in <mark>, which
+// is browser-styled, so the demo only needs surrounding chrome: a labeled
+// text input and a passage with reading-friendly font-size and line-height.
+.demo-highlight-input {
+  padding: 8px 12px;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #d0d5dd));
+  border-radius: var(--cngx-radius-sm, 6px);
+  background: var(--cngx-color-surface, var(--cngx-ex-surface, #ffffff));
+  color: inherit;
+  font: inherit;
+}
+.demo-highlight-passage {
+  font-size: 0.9375rem;
+  line-height: 1.8;
+}
+.demo-highlight-passage p {
+  margin: 0 0 8px;
+}
+.demo-highlight-passage p:last-child {
+  margin-bottom: 0;
+}
+
+// CngxInfiniteScroll demo helpers. The directive only owns the sentinel
+// behaviour, so the demo provides a scroll container (max-height + overflow)
+// and per-row chrome (padding, separator). Sentinel text colour follows the
+// muted text token.
+.demo-infinite-scroll-frame {
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e0e0e0));
+  border-radius: var(--cngx-radius-md, 8px);
+}
+.demo-infinite-scroll-item {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e0e0e0));
+}
+.demo-infinite-scroll-sentinel {
+  padding: 16px;
+  text-align: center;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted, #6b7280));
+}
+
+// CngxIntersectionObserver demo helpers. Two spacer panels frame the
+// observed sentinel inside a scroll container; the sentinel flips its
+// background through cngx primary tokens when it crosses into the viewport.
+.demo-io-frame {
+  height: 200px;
+  overflow-y: auto;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #d0d5dd));
+  border-radius: var(--cngx-radius-md, 6px);
+  padding: 0 16px;
+}
+.demo-io-spacer {
+  height: 400px;
+  display: flex;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted, #6b7280));
+}
+.demo-io-spacer--top {
+  align-items: flex-end;
+  padding-bottom: 16px;
+}
+.demo-io-spacer--bottom {
+  align-items: flex-start;
+  padding-top: 16px;
+}
+.demo-io-sentinel {
+  padding: 16px;
+  text-align: center;
+  border-radius: var(--cngx-radius-md, 6px);
+  background: var(--cngx-color-surface-alt, var(--cngx-ex-surface-alt, #f8f9fa));
+  transition: background 0.3s;
+}
+.demo-io-sentinel--visible {
+  background: var(--cngx-color-primary, var(--cngx-ex-focus, #2563eb));
+  color: var(--cngx-color-on-primary, #ffffff);
+}
+
+// CngxResizeObserver demo helpers. The drag handle uses the native
+// CSS `resize: horizontal` affordance; the class only adds the surface
+// chrome and a muted read-out copy.
+.demo-resize-hint {
+  margin-bottom: 8px;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted, #6b7280));
+}
+.demo-resize-box {
+  background: var(--cngx-color-surface-alt, var(--cngx-ex-surface-alt, #f8f9fa));
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #d0d5dd));
+  border-radius: var(--cngx-radius-md, 6px);
+  font-size: 0.875rem;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted, #6b7280));
+}
+
+// CngxScrollLock demo. The lock toggle reuses the chip surface but turns
+// danger-red when the lock is engaged so the scroll-lock state is visible
+// at a glance. The scroll list shows 20 ambient rows so a meaningful scroll
+// is available to lock against.
+.demo-scroll-lock-chip[aria-pressed='true'] {
+  background: var(--cngx-color-danger, #b00020);
+  color: var(--cngx-color-on-danger, #ffffff);
+  border-color: var(--cngx-color-danger, #b00020);
+}
+.demo-scroll-lock-hint {
+  font-size: 0.875rem;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted, #6b7280));
+}
+.demo-scroll-lock-row {
+  padding: 12px 16px;
+  background: var(--cngx-color-surface-alt, var(--cngx-ex-surface-alt, #f8fafc));
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e5e7eb));
+  border-radius: var(--cngx-radius-md, 6px);
+}
+
+// CngxScrollSpy demo. Nav anchors get the chip surface; the section panel
+// reuses the muted-surface treatment with a separator between sections.
+// The active section is marked with `aria-current` which the styles below
+// hook into so the same chip element does double duty as the visual hint.
+.demo-spy-nav-link {
+  text-decoration: none;
+  font-size: 0.8125rem;
+  text-transform: capitalize;
+  padding: 6px 10px;
+}
+.demo-spy-container {
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #d0d5dd));
+  border-radius: var(--cngx-radius-md, 8px);
+}
+.demo-spy-section {
+  padding: 20px;
+  border-bottom: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #eaeaea));
+}
+.demo-spy-section:last-child {
+  border-bottom: 0;
+}
+.demo-spy-section h3 {
+  margin: 0 0 8px;
+  text-transform: capitalize;
+}
+.demo-spy-section p {
+  margin: 0;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted, #6b7280));
+  font-size: 0.875rem;
+}
+
+// CngxSkeleton demo line atoms. The directive only flips
+// `.cngx-skeleton--loading` / `.cngx-skeleton--shimmer`; these classes
+// give consumers the actual skeleton bar shape (radius + surface + shimmer
+// gradient) so the loading state is visible. Width stays inline because it
+// is layout, not theming.
+.demo-skeleton-line {
+  height: 20px;
+  border-radius: 4px;
+  background: var(--cngx-color-surface-2, var(--cngx-ex-surface-2, #e0e0e0));
+}
+.demo-skeleton-line--sm {
+  height: 12px;
+}
+.demo-skeleton-line--md {
+  height: 16px;
+}
+.demo-skeleton-line.cngx-skeleton--shimmer,
+.cngx-skeleton--shimmer .demo-skeleton-line {
+  background: linear-gradient(
+    90deg,
+    var(--cngx-color-surface-2, var(--cngx-ex-surface-2, #f0f0f0)) 25%,
+    var(--cngx-color-surface-3, var(--cngx-ex-surface-3, #e5e5e5)) 50%,
+    var(--cngx-color-surface-2, var(--cngx-ex-surface-2, #f0f0f0)) 75%
+  );
+  background-size: 200% 100%;
+  animation: demo-skeleton-shimmer 1.4s ease-in-out infinite;
+}
+.demo-skeleton-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e0e0e0));
+  border-radius: var(--cngx-radius-md, 8px);
+}
+
+// CngxStickyHeader demo. The scroll container, the sticky header, and the
+// 12 list rows all live here so the story template only carries the cngx
+// directive plus the elevation-on-stuck hook (`.cngx-sticky--active`).
+.demo-sticky-frame {
+  height: 250px;
+  overflow-y: auto;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #d0d5dd));
+  border-radius: var(--cngx-radius-md, 8px);
+}
+.demo-sticky-intro {
+  padding: 16px;
+}
+.demo-sticky-hint {
+  margin: 0 0 8px;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted, #6b7280));
+  font-size: 0.875rem;
+}
+.demo-sticky-header {
+  padding: 12px 16px;
+  background: var(--cngx-color-surface, var(--cngx-ex-surface, #ffffff));
+  border-bottom: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #eaeaea));
+  transition: box-shadow 200ms ease;
+}
+.demo-sticky-header.cngx-sticky--active {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+.demo-sticky-item {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #f0f0f0));
+}
+
+// CngxTruncate demo. The reading passage uses a reading-friendly line
+// height and font size; the toggle is a primary-coloured text button that
+// only renders when the directive reports the content as clamped.
+.demo-truncate-text {
+  margin: 0;
+  line-height: 1.6;
+  font-size: 0.875rem;
+}
+.demo-truncate-toggle {
+  margin-top: 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  font-size: 0.8125rem;
+  color: var(--cngx-color-primary, var(--cngx-ex-focus, #2563eb));
+}
+
+// Shared code-snippet surface. Used by reference / pattern stories that
+// teach by displaying HTML or TypeScript instead of rendering a live
+// artifact (drawer/pattern-consumer-wiring, filter-builder json
+// inspection, smart-data-source how-it-works, etc.). Until now the
+// class was named but undefined - the pre rendered as raw monospace
+// text on the page background.
+pre.code-block {
+  margin: 0;
+  padding: 12px 16px;
+  background: var(--cngx-color-surface-alt, var(--cngx-ex-surface-alt, #f8fafc));
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e5e7eb));
+  border-radius: var(--cngx-radius-md, 6px);
+  color: var(--cngx-color-text, var(--cngx-ex-text, inherit));
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  overflow-x: auto;
+  white-space: pre;
+}
+pre.code-block code {
+  font: inherit;
+  color: inherit;
+  background: none;
+  padding: 0;
+}
+
+// Demo-only stage padding so popover/tooltip stories have room above the
+// trigger row for the popover/tooltip to render without clipping the
+// example card. Layout-only — no thematic CSS in here.
+.demo-popover-stage {
+  padding-top: 20px;
+}
+.demo-popover-stage--tall {
+  padding-top: 40px;
+}
+
+// Demo-only arrow glyph used by the with-arrow-slot story. Positions an
+// SVG caret on the panel edge that faces the trigger, driven by the
+// slot context's `edge` (via `[data-edge]`) and `offsetPx` (via the
+// inline custom property `--offset`).
+.demo-arrow-glyph {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  pointer-events: none;
+}
+.demo-arrow-glyph[data-edge='bottom'] {
+  top: -10px;
+  left: var(--offset, 50%);
+  transform: translateX(-50%) rotate(180deg);
+}
+.demo-arrow-glyph[data-edge='top'] {
+  bottom: -10px;
+  left: var(--offset, 50%);
+  transform: translateX(-50%);
+}
+.demo-arrow-glyph[data-edge='right'] {
+  left: -10px;
+  top: var(--offset, 50%);
+  transform: translateY(-50%) rotate(90deg);
+}
+.demo-arrow-glyph[data-edge='left'] {
+  right: -10px;
+  top: var(--offset, 50%);
+  transform: translateY(-50%) rotate(-90deg);
+}
+
+// Demo-only surface for bare `[cngxPopover]` content. The directive ships
+// no host CSS by default (only `cngx-popover-panel` does) - these classes
+// give the unstyled popover a minimum readable surface so the demo focuses
+// on behaviour, not on raw browser popover defaults.
+.demo-popover-surface {
+  padding: 8px 12px;
+  font-size: 0.8125rem;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e5e7eb));
+  border-radius: 6px;
+  background: var(--cngx-color-surface, var(--cngx-ex-surface, Canvas));
+  color: var(--cngx-color-text, var(--cngx-ex-text, inherit));
+}
+
+// Menu list inside a bare `[cngxPopover]` - resets the UA list defaults
+// and sets a minimum width so the menu does not collapse to its widest
+// item only when the popover surrounds short labels.
+.demo-popover-menu {
+  list-style: none;
+  margin: 0;
+  padding: 4px 0;
+  min-width: 140px;
+}
+
+// Button row inside `.demo-popover-menu`. Hover state intentionally
+// muted; the focus ring is the browser default.
+.demo-popover-menu-item {
+  display: block;
+  width: 100%;
+  padding: 8px 16px;
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+}
+.demo-popover-menu-item:hover {
+  background: var(--cngx-ex-surface-alt, transparent);
+}
+
+// Placement-matrix preview tile - one per `PopoverPlacement` value.
+// Renders a small labelled chip so the auto-open matrix proves the
+// `position-area` mapping table without leaking colours from the host
+// page. The fixed `width` is deliberately wider than the trigger chip
+// so the start/end alignment edge is visually unambiguous.
+.demo-popover-tile {
+  width: 140px;
+  padding: 6px 10px;
+  font-size: 0.75rem;
+  text-align: center;
+  border: 1px solid currentColor;
+  border-radius: 4px;
+  background: var(--cngx-color-surface, var(--cngx-ex-surface, Canvas));
+  color: var(--cngx-color-text, var(--cngx-ex-text, inherit));
+}
+
+// Placement-matrix grid - presentation layout for the 12 trigger+popover
+// pairs. Pure demo chrome; a real consumer would render one popover at a
+// time. The wide gap and cell padding exist so each popover has room to
+// render without overlapping its neighbours.
+.demo-popover-placement-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 72px;
+  padding: 48px 16px;
+  justify-items: center;
+  align-items: center;
+}
+.demo-popover-placement-cell {
+  position: relative;
+  padding: 24px;
+}
+
+// Disabled-tooltip trigger gets a muted opacity so the disabled state is
+// visible alongside the enabled sibling. Visual-only - the `[enabled]`
+// input is what actually suppresses the tooltip.
+.demo-tooltip-disabled-chip {
+  opacity: 0.5;
+}
+
+// Caption above the keyboard-tooltip toolbar - muted so it reads as
+// instruction text rather than competing with the chip row.
+.demo-tooltip-caption {
+  font-size: 0.875rem;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted, #6b7280));
+  margin-bottom: 12px;
+}
+
+// Inline label wrapping the `cngxPopoverOpen` checkbox in the controlled
+// popover demo. Sits in the trigger row alongside the chip.
+.demo-popover-control-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+// Boarding-pass layout for the popover-panel divider demo. The body
+// section stacks label/value pairs with a muted label tone. The footer
+// pairs a dismiss action and a primary action with a vertical divider
+// between them.
+.demo-flight-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 4px 0;
+}
+.demo-flight-section h4 {
+  margin: 0;
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted, #6b7280));
+}
+.demo-flight-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 0.875rem;
+}
+.demo-flight-row dt {
+  margin: 0;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted, #6b7280));
+}
+.demo-flight-row dd {
+  margin: 0;
+  font-weight: 500;
+  color: var(--cngx-color-text, var(--cngx-ex-text, inherit));
+  font-variant-numeric: tabular-nums;
+}
+.demo-flight-footer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+.demo-flight-footer-spacer {
+  flex: 1;
+}
+
+// Small status pill used in the flight-info popover header row to
+// surface delay / gate-change semantics. Three tones (ok / warn / hot)
+// map to neutral green / amber / red foundation tokens with sensible
+// dark-mode fallbacks.
+.demo-flight-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+}
+.demo-flight-pill--ok {
+  color: var(--cngx-color-success, #15803d);
+  background: var(--cngx-color-success-surface, rgba(21, 128, 61, 0.08));
+}
+.demo-flight-pill--warn {
+  color: var(--cngx-color-warning, #b45309);
+  background: var(--cngx-color-warning-surface, rgba(180, 83, 9, 0.08));
+}
+
+// Inline header strip for body sections: section title + optional pill
+// on the right, no horizontal divider needed.
+.demo-flight-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+// Travel-docs callout - mild surface highlight so the passport reminder
+// reads as a notice without competing with the dialog's danger variant.
+.demo-flight-doc-note {
+  display: flex;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: var(--cngx-color-info-surface, rgba(59, 130, 246, 0.08));
+  font-size: 0.8125rem;
+  line-height: 1.45;
+}
+.demo-flight-doc-note strong {
+  font-weight: 600;
+}
+
+// ---------------------------------------------------------------------------
+// Forms audit pass: shared helper classes for examples/stories/forms/**.
+// Hoisted from inline `style="..."` so the displayed Template panel shows
+// the artifact, not the demo's thematic styling.
+// ---------------------------------------------------------------------------
+
+// Used by OTP demos: square slots with monospace digits.
+.demo-otp-slot {
+  width: var(--cngx-demo-otp-slot-size, 48px);
+  height: var(--cngx-demo-otp-slot-size, 48px);
+  text-align: center;
+  font-size: var(--cngx-demo-otp-slot-font, 1.25rem);
+  font-family: var(--cngx-font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+}
+.demo-otp-slot--lg {
+  --cngx-demo-otp-slot-font: 1.5rem;
+}
+
+// Password-toggle button overlaid on the right edge of the input.
+.demo-password-toggle {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: 0;
+  cursor: pointer;
+  font-size: 0.75rem;
+  color: var(--cngx-field-hint-color, #666);
+}
+
+// Drop-zone helper texts. Layout (margin) stays on the element; text styling
+// lives here so the drop-zone variant is consistent across demos.
+.demo-drop-zone-title {
+  margin: 0;
+  font-weight: 500;
+}
+.demo-drop-zone-hint {
+  margin: 4px 0 0;
+  font-size: 0.75rem;
+  color: var(--cngx-color-text-muted, #6b7280);
+}
+.demo-drop-zone-error {
+  margin-top: 8px;
+  color: var(--cngx-field-error-color, #d32f2f);
+  font-size: 0.75rem;
+}
+
+// Character counter small text + warning state.
+.demo-counter {
+  font-size: 0.75rem;
+}
+.demo-counter--warn {
+  color: var(--cngx-color-danger, #d32f2f);
+}
+
+// Generic monospace span used by demos that print code/IDs/tokens.
+.demo-mono {
+  font-family: var(--cngx-font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+}
+.demo-mono--sm {
+  font-size: 0.75rem;
+}
+
+// Small "verified" success-text used by OTP demos.
+.demo-success-text {
+  color: var(--cngx-color-success, #15803d);
+}
+
+// In-panel mini-form actions (dirty-guard / quick-create stories).
+// Cancel/Save button pair under a small editable text input.
+.demo-mini-form-input {
+  width: 100%;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid var(--cngx-color-border, #cbd5e1);
+  border-radius: 0.25rem;
+  font: inherit;
+}
+.demo-mini-form-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+.demo-mini-form-btn {
+  padding: 0.35rem 0.75rem;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  font: inherit;
+}
+.demo-mini-form-btn--ghost {
+  background: transparent;
+  border: 1px solid var(--cngx-color-border, #cbd5e1);
+}
+.demo-mini-form-btn--primary {
+  background: var(--cngx-color-primary, #2563eb);
+  color: var(--cngx-color-on-primary, #fff);
+  border: 0;
+}
+.demo-mini-form-heading {
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+.demo-mini-form-marker {
+  color: var(--cngx-color-primary, #2563eb);
+}
+
+// Split-actions popover for action-select custom template.
+.demo-split-action-heading {
+  flex: 1;
+  font-weight: 600;
+}
+.demo-split-action-glyph {
+  font-size: 1.25rem;
+}
+
+// Multi-select custom chip variant.
+.demo-multi-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: 999px;
+  background: var(--cngx-color-info-surface, rgba(59, 130, 246, 0.12));
+  color: var(--cngx-color-info, #2563eb);
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+// Select-shell slot-override demos: container surfaces, glyphs, badges.
+.demo-select-loading-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+}
+.demo-select-loading-glyph {
+  font-size: 1.5rem;
+}
+.demo-select-loading-glyph--inline {
+  font-size: 1.25rem;
+}
+.demo-select-error-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  border-radius: 6px;
+  background: color-mix(in oklch, var(--cngx-color-danger, #d32f2f) 10%, transparent);
+  color: var(--cngx-color-danger, #d32f2f);
+}
+.demo-select-refresh-strip {
+  padding: 0.4rem 0.75rem;
+  font-size: 0.8rem;
+  color: var(--cngx-color-info, #2563eb);
+  background: linear-gradient(
+    90deg,
+    color-mix(in oklch, var(--cngx-color-info, #2563eb) 10%, transparent),
+    color-mix(in oklch, var(--cngx-color-info, #2563eb) 25%, transparent),
+    color-mix(in oklch, var(--cngx-color-info, #2563eb) 10%, transparent)
+  );
+  background-size: 200% 100%;
+  animation: cngx-select-refresh-shimmer 1.6s linear infinite;
+}
+.demo-select-optgroup-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.demo-select-optgroup-badge {
+  font-size: 0.75rem;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: color-mix(in oklch, var(--cngx-color-text, currentColor) 8%, transparent);
+  color: var(--cngx-color-text-muted, #6b7280);
+}
+.demo-select-retry-button {
+  padding: 0.25rem 0.625rem;
+  border-radius: 0.25rem;
+  border: 1px solid var(--cngx-color-border, #cbd5e1);
+  background: transparent;
+  color: var(--cngx-color-text, inherit);
+  font: inherit;
+  font-size: 0.8125rem;
+  cursor: pointer;
+}
+.demo-select-option-status {
+  margin-inline-start: 0.5rem;
+  font-size: 0.75rem;
+}
+.demo-select-option-status--pending {
+  color: var(--cngx-color-text-muted, #6b7280);
+}
+.demo-select-option-status--error {
+  color: var(--cngx-color-danger, #d32f2f);
+}
+
+// Typeahead option slot with circular icon + small id line.
+.demo-typeahead-option-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  background: color-mix(in oklch, var(--cngx-color-info, #2563eb) 18%, transparent);
+  color: var(--cngx-color-info, #2563eb);
+  font-size: 0.7rem;
+}
+.demo-typeahead-option-id {
+  display: block;
+  color: var(--cngx-color-text-muted, #6b7280);
+}
+
+// Custom-glyphs demo: monospace bold for ✕ / ▾.
+.demo-select-custom-glyph {
+  font-weight: 700;
+  font-family: var(--cngx-font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+}
+
+// Additional helpers for forms-audit Pass 2 cleanup.
+.demo-form-primitives-coming-soon {
+  color: var(--cngx-muted, #6b7280);
+  font-style: italic;
+}
+.demo-variant-heading {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.85rem;
+}
+.demo-event-value--mono {
+  font-family: var(--cngx-font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: 0.75rem;
+}
+.demo-async-error-strip {
+  padding: 0.5rem 0.75rem;
+  color: var(--cngx-color-danger, #d32f2f);
+}
+.demo-popover-padding-sm {
+  padding: 0.25rem;
+}
+.demo-select-retry-button--warn {
+  background: color-mix(in oklch, var(--cngx-color-warning, #b45309) 10%, transparent);
+  border-color: color-mix(in oklch, var(--cngx-color-warning, #b45309) 35%, transparent);
+  color: var(--cngx-color-warning, #b45309);
+}
+.demo-multi-chip-remove,
+.demo-combobox-chip-remove {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  padding: 0 0.125rem;
+}
+.demo-combobox-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  background: color-mix(in oklch, var(--cngx-color-info, #2563eb) 15%, transparent);
+  color: var(--cngx-color-info, #2563eb);
+  font-size: 0.8rem;
+}
+.demo-combobox-trigger-summary {
+  padding-inline-end: 0.5rem;
+  font-weight: 500;
+}
+.demo-select-shell-retry-btn {
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--cngx-color-border, #cbd5e1);
+  border-radius: 0.25rem;
+  font: inherit;
+  background: transparent;
+  cursor: pointer;
+}
+.demo-select-empty-state {
+  padding: 0.75rem;
+  opacity: 0.6;
+  text-align: center;
+}
+
+// Micro-helpers for remaining single-prop thematic spans.
+.demo-variant-caption {
+  display: block;
+  margin-top: 6px;
+  color: var(--cngx-color-text-muted, #6b7280);
+}
+.demo-success-dot,
+.demo-success-event {
+  color: var(--cngx-color-success, #15803d);
+}
+.demo-placeholder-muted {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--cngx-color-text-muted, #6b7280);
+}
+
+// ---------------------------------------------------------------------------
+// Demo-form skeleton helpers. Stories scatter `.demo-form / .demo-field /
+// .demo-label / .demo-input` everywhere as semantic markers; without
+// these rules, every field collapses with zero gap and inputs miss
+// the consistent stack the story authors expected.
+// ---------------------------------------------------------------------------
+
+.demo-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+// State-readout badge used in chrome rows. Renders as a small pill so
+// values stand out from surrounding labels. Used in mask/otp/select/
+// async-state demos; previously unstyled and rendered as plain text.
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e5e7eb));
+  border-radius: 999px;
+  background: var(--cngx-ex-surface-alt, var(--cngx-color-surface, #f9fafb));
+  color: var(--cngx-color-text, var(--cngx-ex-text, inherit));
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.4;
+}
+
+.demo-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+// Buttons inside a field shouldn't stretch to fill the column. Inputs /
+// textareas / select wrappers stay stretched (default flex-item width).
+.demo-field > button,
+.demo-form > button,
+.demo-field > .button-row,
+.demo-form > .button-row {
+  align-self: flex-start;
+}
+
+.demo-label {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--cngx-color-text, var(--cngx-ex-text, inherit));
+}
+
+.demo-input {
+  /* Inherits base.css <input> chrome; rule exists so consumers can chain
+   * `.demo-input.demo-otp-slot` without ambiguity, and as a hook for any
+   * future demo-specific input overrides. */
+  font: inherit;
+}
+
+// Stack cngx-checkbox-group / cngx-radio-group children vertically with a
+// modest gap. The library leaf checkbox/radio render fine on their own;
+// the group wrapper had no layout rule so inner checkboxes inherited the
+// browser's collapsed inline flow.
+cngx-checkbox-group,
+cngx-radio-group,
+cngx-button-toggle-group,
+cngx-button-multi-toggle-group,
+cngx-chip-group,
+cngx-multi-chip-group {
+  /* button-toggle-group + chip-group already have CSS that sets
+   * inline-flex; the per-element CSS wins. This block only kicks in
+   * for the checkbox- / radio-groups which ship no chrome of their
+   * own. The rule is harmless on the others (no children rule). */
+}
+
+cngx-checkbox-group,
+cngx-radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+// The library leaf adds `margin-inline-start: 1rem` between adjacent
+// siblings via `.cngx-checkbox + .cngx-checkbox` for inline layouts.
+// In a stacked column that becomes a phantom indent on every checkbox
+// after the first. The token is `inherits: false` so we cannot zero it
+// out via custom-property cascade; override the rule directly with the
+// group-scoped selector (specificity bumps over the leaf-only rule).
+cngx-checkbox-group .cngx-checkbox + .cngx-checkbox,
+cngx-radio-group .cngx-radio + .cngx-radio {
+  margin-inline-start: 0;
+}
+
+// ---------------------------------------------------------------------------
+// UI demo helpers: keep thematic chrome (border, radius, padding, background,
+// color, font-size, box-shadow) out of inline `style="..."` and behind named
+// classes so the audit's STYLE-THEME rule stays honest.
+// ---------------------------------------------------------------------------
+
+.demo-frame-card {
+  border: 1px solid var(--cngx-color-border, #e5e7eb);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.demo-frame-list {
+  border: 1px solid var(--cngx-color-border, #e5e7eb);
+  border-radius: 8px;
+  min-height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.demo-frame-padded {
+  border: 1px solid var(--cngx-color-border, #e5e7eb);
+  border-radius: 8px;
+  padding: 24px;
+}
+
+.demo-frame-relative {
+  position: relative;
+  border: 1px solid var(--cngx-color-border, #e5e7eb);
+  border-radius: 8px;
+  padding: 24px;
+  min-height: 80px;
+}
+
+.demo-hint {
+  font-size: 0.875rem;
+  color: var(--cngx-color-text-muted, #64748b);
+  margin: 0;
+}
+
+.demo-hint--small {
+  font-size: 0.8125rem;
+}
+
+.demo-empty-state-link {
+  font-size: 0.8125rem;
+  color: var(--cngx-color-interactive, #4f46e5);
+}
+
+.demo-skeleton-bar {
+  background: var(--cngx-skeleton-bg, #e5e7eb);
+  border-radius: 4px;
+}
+
+.demo-card-tile {
+  padding: 8px 12px;
+  background: var(--cngx-card-bg, #f8fafc);
+  border-radius: 4px;
+}
+
+.demo-card-cell {
+  padding: 16px;
+  background: var(--cngx-card-bg, #f8fafc);
+  border-radius: 6px;
+  text-align: center;
+}
+
+.demo-empty-state-block {
+  text-align: center;
+  padding: 24px;
+  color: var(--cngx-color-text-muted, #64748b);
+}
+
+.demo-empty-state-block--large {
+  padding: 32px;
+}
+
+.demo-error-block {
+  text-align: center;
+  padding: 24px;
+  color: var(--cngx-alert-error-icon, #ef4444);
+}
+
+.demo-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.demo-stack--tight {
+  gap: 8px;
+}
+
+.demo-row-center {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.demo-skeleton-row {
+  display: flex;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--cngx-color-border, #e0e0e0);
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+
+.demo-skeleton-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--cngx-surface-alt, #e0e0e0);
+  flex-shrink: 0;
+}
+
+.demo-skeleton-lines {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.demo-skeleton-line {
+  border-radius: 4px;
+  background: var(--cngx-surface-alt, #e0e0e0);
+}
+
+.demo-skeleton-line--title {
+  height: 14px;
+  width: 40%;
+}
+
+.demo-skeleton-line--body {
+  height: 12px;
+}
+
+.demo-card-loaded {
+  padding: 16px;
+  border: 1px solid var(--cngx-color-border, #e0e0e0);
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+
+.demo-card-loaded p {
+  margin: 4px 0 0;
+  color: var(--cngx-color-text-muted, #64748b);
+}
+
+.demo-skeleton-rule {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--cngx-color-border, #e0e0e0);
+}
+
+.demo-skeleton-rule__index {
+  font-size: 0.75rem;
+  color: var(--cngx-color-text-muted, #64748b);
+  width: 24px;
+}
+
+.demo-speak-card {
+  padding: 16px 20px;
+  border-radius: 8px;
+  background: var(--cngx-surface-alt, #f8f9fa);
+  border: 1px solid var(--cngx-color-border, #ddd);
+  line-height: 1.6;
+  font-size: 0.875rem;
+  flex: 1;
+}
+
+.demo-speak-card--accent {
+  border: 0;
+  border-left: 4px solid var(--cngx-color-accent, #f5a623);
+  border-radius: 8px;
+}
+
+.demo-speak-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.demo-speak-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 480px;
+}
+
+.demo-speak-control-row {
+  margin-top: 16px;
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  font-size: 0.8125rem;
+}
+
+.demo-speak-control-row label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.demo-speak-control-row input[type='range'] {
+  width: 100px;
+}
+
+.demo-speak-section h4 {
+  margin: 0 0 8px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.demo-speak-section p {
+  margin: 0 0 8px;
+  font-size: 0.8125rem;
+  color: var(--cngx-color-text-muted, #666);
+}
+
+.demo-speak-row-label {
+  font-size: 0.75rem;
+  color: var(--cngx-color-text-muted, #666);
+}
+
+.demo-speak-row-text {
+  font-size: 0.875rem;
+}
+
+.demo-speak-strong {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.demo-speak-pre {
+  font-size: 0.75rem;
+  margin: 0 0 12px;
+}
+
+.demo-speak-thumb {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.demo-speak-thumbrow {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.demo-narrow-frame {
+  max-width: 320px;
+  border: 1px dashed currentColor;
+  padding: 4px;
+  resize: horizontal;
+  overflow: auto;
+}
+
+.chip.demo-chip-toggle--active {
+  background: var(--cngx-color-success-surface, #c8e6c9);
+  border-color: var(--cngx-color-success-border, #66bb6a);
+}
+
+// Compact button used by sidenav demos (Close, mode toggle). cngx.reset strips
+// the default <button> chrome, so without this rule any `class="sort-btn"`
+// reads as plain text.
+.sort-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border: 1px solid var(--cngx-color-border, #d1d5db);
+  border-radius: 4px;
+  background: var(--cngx-color-surface, #fff);
+  color: var(--cngx-color-text, inherit);
+  font: inherit;
+  font-size: 0.8125rem;
+  cursor: pointer;
+}
+
+.sort-btn:hover {
+  background: var(--cngx-ex-surface-alt, #f3f4f6);
+}
+
+.demo-slot-busy {
+  padding: 0 6px;
+  font-size: 0.7em;
+  background: var(--cngx-color-info-surface, #1d4ed8);
+  color: var(--cngx-color-on-info, #fff);
+}
+
+.demo-slot-error-pill {
+  background: var(--cngx-color-error-surface, #dc2626);
+  color: var(--cngx-color-on-error, #fff);
+  font-size: 0.7em;
+  padding: 0 6px;
+}
+
+.demo-stepper-empty {
+  padding: 24px;
+  text-align: center;
+  color: var(--mat-sys-on-surface-variant, var(--cngx-color-text-muted, #666));
+}
+
+.demo-stepper-empty p {
+  margin: 6px 0 0;
+  font-size: 0.9em;
+}
+
+.demo-sidenav-active-link {
+  border-left-color: var(--cngx-color-primary);
+  background: color-mix(in oklch, var(--cngx-color-primary) 8%, transparent);
+  font-weight: 600;
+}
+
+.demo-sidenav-sub-active {
+  color: var(--cngx-color-primary);
+  font-weight: 600;
+}
+
+.demo-async-input {
+  padding: 8px 12px;
+  border: 1px solid var(--cngx-color-border, #ddd);
+  border-radius: 6px;
+  width: 240px;
+}
+
+.demo-filter-empty {
+  padding: 16px;
+  color: var(--cngx-color-text-muted, #64748b);
+  text-align: center;
+}
+
+.demo-empty-text-small {
+  padding: 24px;
+  color: var(--cngx-color-text-muted, #64748b);
+  margin: 0;
+  text-align: center;
+}
+
+.demo-error-text-small {
+  padding: 24px;
+  color: var(--cngx-alert-error-icon, #ef4444);
+  margin: 0;
+  text-align: center;
+}
+
+.demo-loading-pad {
+  padding: var(--cngx-sidenav-padding, 16px);
+}
+
+.demo-loading-pad p {
+  font-size: 0.8rem;
+  margin: 0;
+  opacity: 0.6;
+}
+
+// Material theme — the prebuilt azure-blue palette so mat-select panels
+// render with proper Material chrome inside the demos. Imported here
+// alongside the cngx foundation so the dev server picks it up via HMR
+// (the angular.json `styles` array only reloads on full rebuild).
+@import '../../node_modules/@angular/material/prebuilt-themes/azure-blue.css';
+
+// Demo-only accent for the stepper `chips` skin stories (matches the
+// reference screenshot). Static demo styling, not a library default;
+// the chips skin's own default active fill follows --cngx-color-primary.
+.demo-stepper-chips-accent {
+  --cngx-step-chips-fill-active: #2563eb;
+}

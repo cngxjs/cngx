@@ -1,0 +1,8 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "../../out-tsc/spec",
+    "types": ["vitest/globals"]
+  },
+  "include": ["*.d.ts", "*.spec.ts", "a11y/**/*.spec.ts", "interactive/**/*.spec.ts", "layout/**/*.spec.ts", "data/**/*.spec.ts", "dialog/**/*.spec.ts", "popover/**/*.spec.ts", "card/**/*.spec.ts", "chart/**/*.spec.ts", "display/**/*.spec.ts", "stepper/**/*.spec.ts", "tabs/**/*.spec.ts"]
+}

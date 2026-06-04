@@ -1,0 +1,130 @@
+/**
+ * @overview
+ * Shared structural skeleton for the tag family. Two scopes live
+ * here because both atoms share structural defaults and link this
+ * file first in their `styleUrls`:
+ *
+ * - `.cngx-tag` - inline-flex pill (gap, padding, font-size,
+ *   density modifiers, label ellipsis)
+ * - `.cngx-tag-group` - vertical three-zone stack (header / row /
+ *   accessory) with gap + alignment modifiers
+ *
+ * Thematic skin (color cascade, radius, font-weight) is in the
+ * per-atom files (`../tag.css`, `../tag-group.component.css`).
+ * Layout-only file - no `@property` registrations here; the
+ * structural tokens are registered in those neighbours and this
+ * file just consumes them.
+ *
+ * **Density modifiers (CngxTag)**
+ *
+ * - `--sm` - padding + font-size compressed
+ * - (no modifier - default `md`)
+ * - `--lg` - padding + font-size lifted
+ * - `--xl` - padding + font-size lifted further
+ * - `--truncate` - single-line label with ellipsis on `__label`
+ *
+ * **Gap modifiers (CngxTagGroup)**
+ *
+ * Applied to `> .cngx-tag-group__row`:
+ *
+ * - `--gap-xs` - tight row gap
+ * - (no modifier - default `sm`)
+ * - `--gap-md` - relaxed row gap
+ *
+ * **Alignment modifiers (CngxTagGroup)**
+ *
+ * - `--align-start` - default `justify-content: flex-start`
+ * - `--align-center`
+ * - `--align-end`
+ * - `--align-between`
+ *
+ * **Slots**
+ *
+ * - `.cngx-tag__label` - shrinkable text container, truncates
+ *   under `--truncate`
+ * - `.cngx-tag-group__row` - the inline-flex row inside the stack
+ *
+ * **Inheritance**
+ *
+ * - `--cngx-tag-gap` -> `--cngx-space-xs`
+ * - `--cngx-tag-font-size` -> `--cngx-font-size-sm`
+ * - `--cngx-tag-group-stack-gap` -> `--cngx-space-sm`
+ * - `--cngx-tag-group-gap` -> `--cngx-space-sm`
+ * - `--cngx-tag-group-gap-xs` -> `--cngx-space-xs`
+ * - density / alignment tokens fall straight back to literal
+ *   defaults registered in the per-atom files
+ */
+
+@layer cngx.components {
+
+  /* CngxTag — single decorative tag, inline-flex container */
+  @scope (.cngx-tag) {
+    :scope {
+      display: inline-flex;
+      align-items: center;
+      line-height: 1.25;
+      max-width: 100%;
+      gap: var(--cngx-tag-gap, var(--cngx-space-xs, 4px));
+      padding: var(--cngx-tag-padding, 2px 8px);
+      font-size: var(--cngx-tag-font-size, var(--cngx-font-size-sm, 0.75rem));
+    }
+
+    /* Density modifiers — sm/lg/xl override the tail of the cascade.
+     * `md` is the default and resolves through the base :scope rule. */
+    :scope.cngx-tag--sm {
+      padding: var(--cngx-tag-sm-padding, 0 6px);
+      font-size: var(--cngx-tag-sm-font-size, 0.6875rem);
+    }
+    :scope.cngx-tag--lg {
+      padding: var(--cngx-tag-lg-padding, 4px 10px);
+      font-size: var(--cngx-tag-lg-font-size, 0.875rem);
+    }
+    :scope.cngx-tag--xl {
+      padding: var(--cngx-tag-xl-padding, 6px 12px);
+      font-size: var(--cngx-tag-xl-font-size, 1rem);
+    }
+
+    /* Label slot — shrinkable so ellipsis can engage */
+    .cngx-tag__label {
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    /* Truncate modifier — single line + ellipsis */
+    :scope.cngx-tag--truncate .cngx-tag__label {
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+
+  /* CngxTagGroup — vertical three-zone stack (header / row / accessory) */
+  @scope (.cngx-tag-group) {
+    :scope {
+      display: flex;
+      flex-direction: column;
+      gap: var(--cngx-tag-group-stack-gap, var(--cngx-space-sm, 8px));
+    }
+
+    .cngx-tag-group__row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: flex-start;
+      gap: var(--cngx-tag-group-gap, var(--cngx-space-sm, 8px));
+    }
+
+    /* Gap modifiers — sm is default, xs/md modifiers override */
+    :scope.cngx-tag-group--gap-xs > .cngx-tag-group__row {
+      gap: var(--cngx-tag-group-gap-xs, var(--cngx-space-xs, 4px));
+    }
+    :scope.cngx-tag-group--gap-md > .cngx-tag-group__row {
+      gap: var(--cngx-tag-group-gap-md, 12px);
+    }
+
+    /* Alignment modifiers — start is default */
+    :scope.cngx-tag-group--align-start > .cngx-tag-group__row   { justify-content: flex-start; }
+    :scope.cngx-tag-group--align-center > .cngx-tag-group__row  { justify-content: center; }
+    :scope.cngx-tag-group--align-end > .cngx-tag-group__row     { justify-content: flex-end; }
+    :scope.cngx-tag-group--align-between > .cngx-tag-group__row { justify-content: space-between; }
+  }
+}

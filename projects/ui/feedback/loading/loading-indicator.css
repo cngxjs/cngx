@@ -1,0 +1,230 @@
+/**
+ * @overview
+ * Default visuals for `CngxLoadingIndicator`. The host carries
+ * `.cngx-loading-indicator` and renders either `__spinner` (with
+ * nested `__spinner-track` + `__spinner-arc` SVG paths) or `__bar`
+ * (with nested `__bar-fill`). Keyframes (`cngx-spin`,
+ * `cngx-bar-indeterminate`, `cngx-pulse`) stay top-level outside
+ * `@layer` because they are already namespaced.
+ *
+ * **Variants**
+ *
+ * - default - circular SVG spinner, `cngx-spin` 360deg rotation
+ * - `--bar` - block-level indeterminate progress bar with a 40%
+ *   fill sweep via `cngx-bar-indeterminate`
+ *
+ * Under `prefers-reduced-motion` both variants swap to a slow
+ * opacity pulse (`cngx-pulse`); the bar variant additionally pins
+ * `width: 100%` so the static fill reads as a track-fill rather
+ * than a stuck partial sweep.
+ *
+ * **Slots**
+ *
+ * - `.cngx-loading-indicator__spinner-track` - background ring
+ *   stroke (`--cngx-loading-indicator-track`)
+ * - `.cngx-loading-indicator__spinner-arc` - active arc stroke
+ *   (`--cngx-loading-indicator-color`)
+ * - `.cngx-loading-indicator__bar` - bar track (same track token)
+ * - `.cngx-loading-indicator__bar-fill` - bar fill (same active token)
+ */
+
+@layer cngx.tokens {
+  /**
+   * Track height of the bar variant.
+   * @group Layout
+   */
+  @property --cngx-loading-bar-height {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 3px;
+  }
+
+  /**
+   * Corner radius of the bar variant.
+   * @group Layout
+   */
+  @property --cngx-loading-bar-radius {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 0;
+  }
+
+  /**
+   * Diameter of the spinner ring.
+   * @group Layout
+   */
+  @property --cngx-loading-indicator-size {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 24px;
+  }
+
+  /**
+   * Track color of the spinner ring and the indeterminate bar.
+   * @group Surface
+   */
+  @property --cngx-loading-indicator-track {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: oklch(0 0 0 / 0.1);
+  }
+
+  /**
+   * Stroke / fill color of the active indicator.
+   * @group Surface
+   */
+  @property --cngx-loading-indicator-color {
+    syntax: '*';
+    inherits: true;
+    initial-value: currentColor;
+  }
+
+  /**
+   * Spinner rotation duration.
+   * @group Motion
+   */
+  @property --cngx-spin-duration {
+    syntax: '<time>';
+    inherits: false;
+    initial-value: 0.8s;
+  }
+
+  /**
+   * Spinner easing curve.
+   * @group Motion
+   */
+  @property --cngx-spin-easing {
+    syntax: '*';
+    inherits: false;
+    initial-value: linear;
+  }
+
+  /**
+   * Bar sweep duration.
+   * @group Motion
+   */
+  @property --cngx-bar-duration {
+    syntax: '<time>';
+    inherits: false;
+    initial-value: 1.5s;
+  }
+
+  /**
+   * Bar sweep easing curve.
+   * @group Motion
+   */
+  @property --cngx-bar-easing {
+    syntax: '*';
+    inherits: false;
+    initial-value: ease-in-out;
+  }
+
+  /**
+   * Opacity-pulse duration used as the reduced-motion fallback.
+   * @group Motion
+   */
+  @property --cngx-pulse-duration {
+    syntax: '<time>';
+    inherits: false;
+    initial-value: 2s;
+  }
+
+  /**
+   * Opacity-pulse easing curve.
+   * @group Motion
+   */
+  @property --cngx-pulse-easing {
+    syntax: '*';
+    inherits: false;
+    initial-value: ease-in-out;
+  }
+}
+
+@layer cngx.components {
+  @scope (.cngx-loading-indicator) {
+    :scope {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    :scope.cngx-loading-indicator--bar {
+      display: block;
+      width: 100%;
+      height: var(--cngx-loading-bar-height, 3px);
+    }
+
+    .cngx-loading-indicator__spinner {
+      width: var(--cngx-loading-indicator-size, 24px);
+      height: var(--cngx-loading-indicator-size, 24px);
+      animation: cngx-spin var(--cngx-spin-duration, 0.8s) var(--cngx-spin-easing, linear) infinite;
+    }
+
+    .cngx-loading-indicator__spinner-track {
+      stroke: var(--cngx-loading-indicator-track, oklch(0 0 0 / 0.1));
+    }
+
+    .cngx-loading-indicator__spinner-arc {
+      stroke: var(--cngx-loading-indicator-color, currentColor);
+    }
+
+    .cngx-loading-indicator__bar {
+      width: 100%;
+      height: 100%;
+      background: var(--cngx-loading-indicator-track, oklch(0 0 0 / 0.1));
+      overflow: hidden;
+      border-radius: var(--cngx-loading-bar-radius, 0);
+    }
+
+    .cngx-loading-indicator__bar-fill {
+      width: 40%;
+      height: 100%;
+      background: var(--cngx-loading-indicator-color, currentColor);
+      border-radius: inherit;
+      animation: cngx-bar-indeterminate var(--cngx-bar-duration, 1.5s)
+        var(--cngx-bar-easing, ease-in-out) infinite;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .cngx-loading-indicator__spinner {
+        animation: cngx-pulse var(--cngx-pulse-duration, 2s) var(--cngx-pulse-easing, ease-in-out)
+          infinite;
+      }
+
+      .cngx-loading-indicator__bar-fill {
+        animation: cngx-pulse var(--cngx-pulse-duration, 2s) var(--cngx-pulse-easing, ease-in-out)
+          infinite;
+        width: 100%;
+        transform: none;
+      }
+    }
+  }
+}
+
+@keyframes cngx-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes cngx-bar-indeterminate {
+  0% {
+    transform: translateX(-100%);
+  }
+  50% {
+    transform: translateX(150%);
+  }
+  100% {
+    transform: translateX(400%);
+  }
+}
+
+@keyframes cngx-pulse {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 1;
+  }
+}

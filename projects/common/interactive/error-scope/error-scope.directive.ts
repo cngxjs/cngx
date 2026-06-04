@@ -1,0 +1,79 @@
+import { afterNextRender, DestroyRef, Directive, inject, input, signal } from '@angular/core';
+import { CngxErrorRegistry } from '../error-registry/error-registry';
+import { CNGX_ERROR_SCOPE, type CngxErrorScopeContract } from './error-scope.token';
+
+/**
+ * Marks a DOM subtree as an error visibility scope.
+ *
+ * @category common/interactive/error
+ *
+ * The scope starts hidden - descendant aggregators and error states do
+ * not reveal until the consumer calls {@link reveal}, typically via a
+ * `(submit)` handler, a route guard, or an HTTP interceptor reveal-on-422
+ * pattern.
+ *
+ * Provides {@link CNGX_ERROR_SCOPE} so any descendant
+ * (`CngxErrorAggregator`, `CngxErrorState`, the form-field presenter in
+ * Phase 6b) can read `showErrors` reactively without injecting a
+ * concrete class.
+ *
+ * ```html
+ * <form [cngxErrorScope] cngxErrorScopeName="checkout"
+ *       (submit)="scope.reveal(); save()" #scope="cngxErrorScope">
+ *   <input [cngxErrorState]="email().invalid()" />
+ * </form>
+ * ```
+ *
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/error-scope/error-scope.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxErrorAggregator, CngxErrorState, CngxErrorSource
+ * <example-url>http://localhost:4200/#/common/interactive/error/aggregator/cngx-card-host-no-scope-errors-visible-immediately</example-url>
+ * <example-url>http://localhost:4200/#/common/interactive/error/aggregator/cngx-popover-panel-host</example-url>
+ * <example-url>http://localhost:4200/#/common/interactive/error/aggregator/material-mat-tab-label-with-error-count-badge</example-url>
+ * <example-url>http://localhost:4200/#/common/interactive/error/aggregator/native-form-scope-reveal-on-submit</example-url>
+ */
+@Directive({
+  selector: '[cngxErrorScope]',
+  standalone: true,
+  exportAs: 'cngxErrorScope',
+  providers: [{ provide: CNGX_ERROR_SCOPE, useExisting: CngxErrorScope }],
+})
+export class CngxErrorScope implements CngxErrorScopeContract {
+  /** Optional name; enables programmatic lookup via {@link CngxErrorRegistry}. */
+  readonly scopeName = input<string | undefined>(undefined, {
+    alias: 'cngxErrorScopeName',
+  });
+
+  private readonly showErrorsState = signal(false);
+
+  /** Reactive flag consumed by descendants. */
+  readonly showErrors = this.showErrorsState.asReadonly();
+
+  /** Reveals errors in this scope (idempotent). */
+  reveal(): void {
+    this.showErrorsState.set(true);
+  }
+
+  /** Resets the scope to hidden (idempotent). */
+  reset(): void {
+    this.showErrorsState.set(false);
+  }
+
+  constructor() {
+    const registry = inject(CngxErrorRegistry, { optional: true });
+    if (!registry) {
+      return;
+    }
+    const destroyRef = inject(DestroyRef);
+    afterNextRender(() => {
+      const name = this.scopeName();
+      if (!name) {
+        return;
+      }
+      registry.registerScope(name, this);
+      destroyRef.onDestroy(() => registry.unregisterScope(name));
+    });
+  }
+}

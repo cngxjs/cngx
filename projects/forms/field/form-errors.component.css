@@ -1,0 +1,88 @@
+/**
+ * @overview
+ * Default visuals for `CngxFieldErrors` - bulleted error list rendered
+ * under a form field. The host carries `.cngx-form-errors` and stays
+ * `display: contents`; the inner `.cngx-form-errors__list` holds the
+ * list typography and color.
+ *
+ * **Slots**
+ *
+ * - `.cngx-form-errors__list` - the `<ul>` element, font-size + danger
+ *   color
+ * - `.cngx-form-errors__list a` - inline anchors inherit color and
+ *   carry an underline that drops on `:hover` / `:focus-visible` so the
+ *   interaction state reads independently of the resting decoration
+ *
+ * **Inheritance**
+ *
+ * Tokens delegate to the foundation so a brand override propagates
+ * without per-component theming:
+ *
+ * - `--cngx-form-errors-font-size` -> `--cngx-font-size-sm`
+ * - `--cngx-form-errors-color` -> `--cngx-field-error-color` ->
+ *   `--cngx-color-danger`
+ *
+ * A `:root` delegating rule pins `--cngx-form-errors-color` to
+ * `--cngx-color-danger` so a dark-mode swap on the foundation token
+ * cascades through.
+ */
+
+@layer cngx.tokens {
+  /**
+   * Font-size of the error list. Falls back through
+   * `--cngx-font-size-sm`. `syntax: '*'` allows `rem`.
+   * @group Typography
+   */
+  @property --cngx-form-errors-font-size {
+    syntax: '*';
+    inherits: true;
+    initial-value: 0.875rem;
+  }
+
+  /**
+   * Text color of the error list. Falls back through
+   * `--cngx-field-error-color` and then `--cngx-color-danger`.
+   * @group Surface
+   * @see [[--cngx-color-danger]]
+   */
+  @property --cngx-form-errors-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.55 0.21 27);
+  }
+
+  /* Delegating token — error text tracks the danger chain so a
+   * dark-mode swap on `--cngx-color-danger` cascades through. */
+  :root {
+    --cngx-form-errors-color: var(--cngx-color-danger);
+  }
+}
+
+@layer cngx.components {
+  @scope (.cngx-form-errors) {
+    :scope {
+      display: contents;
+    }
+
+    .cngx-form-errors__list {
+      margin: 0;
+      padding: 0 0 0 1.25em;
+      font-size: var(--cngx-form-errors-font-size, var(--cngx-font-size-sm, 0.875rem));
+      color: var(
+        --cngx-form-errors-color,
+        var(--cngx-field-error-color, var(--cngx-color-danger, oklch(0.55 0.21 27)))
+      );
+    }
+
+    .cngx-form-errors__list a {
+      color: inherit;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+
+    .cngx-form-errors__list a:hover,
+    .cngx-form-errors__list a:focus-visible {
+      text-decoration: none;
+    }
+  }
+}

@@ -1,0 +1,259 @@
+/**
+ * @overview
+ * Default visuals for `CngxCheckboxIndicator`. The host carries
+ * `.cngx-checkbox-indicator` and reserves a constant box even when
+ * the inner glyph is not rendered (the `checkmark` variant has empty
+ * content while unchecked), so adjacent labels stay put across state
+ * toggles. The inner `__box` is a child of the host - several tokens
+ * carry `inherits: true` so size-variant overrides on the host
+ * cascade through.
+ *
+ * **State modifiers**
+ *
+ * - `--checked` - box fills with the checked-bg, glyph paints in
+ *   the checked-color
+ * - `--indeterminate` - same surface as checked, dash glyph
+ * - `--disabled` - opacity dim via `--cngx-checkbox-disabled-opacity`
+ *
+ * **Variants**
+ *
+ * - `--checkmark` - bare glyph, no box; the checked color is honored
+ *   on the inner `__check` / `__dash` directly
+ *
+ * **Size variants**
+ *
+ * Each size pins `--cngx-checkbox-size`:
+ *
+ * - `--sm` - 0.875em
+ * - `--md` - 1em (default)
+ * - `--lg` - 1.25em
+ *
+ * **Slots**
+ *
+ * - `.cngx-checkbox-indicator__box` - the bordered square
+ * - `.cngx-checkbox-indicator__check` - checkmark glyph
+ * - `.cngx-checkbox-indicator__dash` - indeterminate-state glyph
+ *
+ * **Inheritance**
+ *
+ * - `--cngx-checkbox-checked-bg` -> `--cngx-color-primary` (also
+ *   pinned via `:root` delegation so dark-mode primary cascades
+ *   without the @property initial-value shadowing the chain)
+ * - `--cngx-checkbox-radius` -> `--cngx-radius-sm`
+ * - `--cngx-checkbox-color` -> `--cngx-color-primary` (checkmark
+ *   variant only)
+ * - `--cngx-checkbox-bg`, `--cngx-checkbox-border`,
+ *   `--cngx-checkbox-checked-color` - leaf tokens
+ */
+
+@layer cngx.tokens {
+  /**
+   * Active size of the indicator box. `inherits: true` is load-bearing -
+   * the inner `__box` is a child of the host, and the size-variant
+   * classes (`--sm` / `--md` / `--lg`) set this token on the host. With
+   * `inherits: false` the child would only see the registered initial
+   * value and the size variants would render with a constant-sized box
+   * inside a variable-sized host frame.
+   * @group Layout
+   */
+  @property --cngx-checkbox-size {
+    syntax: '*';
+    inherits: true;
+    initial-value: 1em;
+  }
+
+  /**
+   * Text color of the inner glyph in the bare `checkmark` variant.
+   * Defaults to `currentColor`.
+   * @group Surface
+   */
+  @property --cngx-checkbox-color {
+    syntax: '*';
+    inherits: true;
+    initial-value: currentColor;
+  }
+
+  /**
+   * Background of the unchecked box. Inherited so a host-level
+   * override reaches the `__box` child that consumes it.
+   * @group Surface
+   */
+  @property --cngx-checkbox-bg {
+    syntax: '*';
+    inherits: true;
+    initial-value: transparent;
+  }
+
+  /**
+   * Border shorthand of the unchecked box. Width + style + color in
+   * one declaration so a consumer can re-skin the stroke with a
+   * single override. Inherited so a host-level override reaches the
+   * `__box` child that consumes it.
+   * @group Surface
+   */
+  @property --cngx-checkbox-border {
+    syntax: '*';
+    inherits: true;
+    initial-value: 1.5px solid currentColor;
+  }
+
+  /**
+   * Corner radius of the box. Defaults to `--cngx-radius-sm`. Inherited
+   * so a host-level override reaches the `__box` child that consumes it.
+   * @group Layout
+   */
+  @property --cngx-checkbox-radius {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 2px;
+  }
+
+  /**
+   * Background of the box when checked or indeterminate. Falls back
+   * to `--cngx-color-primary`.
+   * @group State / Checked
+   * @see [[--cngx-color-primary]]
+   */
+  @property --cngx-checkbox-checked-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.66 0.19 50);
+  }
+
+  /**
+   * Glyph color inside the checked/indeterminate box.
+   * @group State / Checked
+   */
+  @property --cngx-checkbox-checked-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(1 0 0);
+  }
+
+  /**
+   * Opacity multiplier applied by `.cngx-checkbox-indicator--disabled`.
+   * @group State / Disabled
+   */
+  @property --cngx-checkbox-disabled-opacity {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 0.5;
+  }
+
+  /**
+   * Size token for the `.cngx-checkbox-indicator--sm` variant.
+   * @group Variant / Size
+   */
+  @property --cngx-checkbox-size-sm {
+    syntax: '*';
+    inherits: true;
+    initial-value: 0.875em;
+  }
+
+  /**
+   * Size token for the `.cngx-checkbox-indicator--md` variant (default).
+   * @group Variant / Size
+   */
+  @property --cngx-checkbox-size-md {
+    syntax: '*';
+    inherits: true;
+    initial-value: 1em;
+  }
+
+  /**
+   * Size token for the `.cngx-checkbox-indicator--lg` variant.
+   * @group Variant / Size
+   */
+  @property --cngx-checkbox-size-lg {
+    syntax: '*';
+    inherits: true;
+    initial-value: 1.25em;
+  }
+
+  /* Delegating token - checked-state bg tracks the foundation
+   * primary so a dark-mode swap on `--cngx-color-primary` cascades
+   * through the checkbox host. Without this :root override the
+   * @property initial-value (light primary) would shadow the
+   * var() fallback chain, freezing the checked bg at light primary
+   * regardless of color scheme. */
+  :root {
+    --cngx-checkbox-checked-bg: var(--cngx-color-primary);
+  }
+}
+
+@layer cngx.components {
+  @scope (.cngx-checkbox-indicator) {
+    :scope {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      vertical-align: middle;
+      line-height: 1;
+      flex: 0 0 auto;
+      color: var(--cngx-checkbox-color, currentColor);
+
+      /* Reserve a constant box even when the inner glyph isn't rendered
+       * (the 'checkmark' variant has empty content while unchecked) and
+       * regardless of glyph intrinsic width (some checkmark fonts overrun
+       * the em box). Without this the host collapses or expands as the
+       * checked state toggles and adjacent labels jump horizontally. */
+      width: var(--cngx-checkbox-size, 1em);
+      height: var(--cngx-checkbox-size, 1em);
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+
+    :scope.cngx-checkbox-indicator--sm {
+      --cngx-checkbox-size: var(--cngx-checkbox-size-sm, 0.875em);
+    }
+    :scope.cngx-checkbox-indicator--md {
+      --cngx-checkbox-size: var(--cngx-checkbox-size-md, 1em);
+    }
+    :scope.cngx-checkbox-indicator--lg {
+      --cngx-checkbox-size: var(--cngx-checkbox-size-lg, 1.25em);
+    }
+
+    .cngx-checkbox-indicator__box {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: inherit;
+      line-height: 1;
+      /* border-box so the 1.5px border counts INSIDE the 1em width
+       * declared on the host. Without this the box overruns the host
+       * by 3px on each axis and gets clipped by overflow: hidden. */
+      box-sizing: border-box;
+      width: var(--cngx-checkbox-size, 1em);
+      height: var(--cngx-checkbox-size, 1em);
+      border: var(--cngx-checkbox-border, 1.5px solid currentColor);
+      border-radius: var(--cngx-checkbox-radius, var(--cngx-radius-sm, 2px));
+      background: var(--cngx-checkbox-bg, transparent);
+    }
+
+    :scope.cngx-checkbox-indicator--checked .cngx-checkbox-indicator__box,
+    :scope.cngx-checkbox-indicator--indeterminate .cngx-checkbox-indicator__box {
+      background: var(--cngx-checkbox-checked-bg, var(--cngx-color-primary, oklch(0.66 0.19 50)));
+      border-color: var(--cngx-checkbox-checked-bg, var(--cngx-color-primary, oklch(0.66 0.19 50)));
+      color: var(--cngx-checkbox-checked-color, oklch(1 0 0));
+    }
+
+    :scope.cngx-checkbox-indicator--disabled {
+      opacity: var(--cngx-checkbox-disabled-opacity, 0.5);
+    }
+
+    .cngx-checkbox-indicator__check,
+    .cngx-checkbox-indicator__dash {
+      font-size: calc(var(--cngx-checkbox-size, 1em) * 0.75);
+      line-height: 1;
+      font-weight: 700;
+      user-select: none;
+    }
+
+    /* checkmark variant - bare glyph, no box. Honor the checked color directly. */
+    :scope.cngx-checkbox-indicator--checkmark .cngx-checkbox-indicator__check,
+    :scope.cngx-checkbox-indicator--checkmark .cngx-checkbox-indicator__dash {
+      color: var(--cngx-checkbox-color, var(--cngx-color-primary, oklch(0.66 0.19 50)));
+      font-size: var(--cngx-checkbox-size, 1em);
+    }
+  }
+}

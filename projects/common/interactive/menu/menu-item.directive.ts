@@ -1,0 +1,86 @@
+import { computed, Directive, ElementRef, inject, input } from '@angular/core';
+
+import { CNGX_AD_ITEM, CngxActiveDescendant, type CngxAdItemHandle } from '@cngx/common/a11y';
+import { nextUid } from '@cngx/core/utils';
+
+import { CNGX_MENU_ANNOUNCER_FACTORY } from './menu-announcer';
+import { injectMenuConfig } from './menu-config';
+
+/**
+ * A single action menuitem registered with a surrounding `CngxActiveDescendant`.
+ * Unlike `CngxOption`, menu items carry no selection state - activation fires
+ * the AD's `activated` output and the consumer dispatches the action.
+ *
+ * Click activates (honouring the disabled state). `pointerenter` highlights
+ * without activating, matching native menu behaviour.
+ *
+ * @category common/interactive/menu
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/menu/menu-item.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxMenu, CngxMenuItemCheckbox, CngxMenuItemRadio, CngxMenuItemSubmenu
+ * <example-url>http://localhost:4200/#/common/interactive/context-menu/right-click-target-zone</example-url>
+ * <example-url>http://localhost:4200/#/common/interactive/menu/submenu/two-level-submenu</example-url>
+ * <example-url>http://localhost:4200/#/common/interactive/menu/trigger/dropdown-menu</example-url>
+ * <example-url>http://localhost:4200/#/common/interactive/menu/base/action-menu-with-separator</example-url>
+ */
+@Directive({
+  selector: '[cngxMenuItem]',
+  exportAs: 'cngxMenuItem',
+  standalone: true,
+  providers: [{ provide: CNGX_AD_ITEM, useExisting: CngxMenuItem }],
+  host: {
+    role: 'menuitem',
+    '[id]': 'id',
+    '[class.cngx-menu-item--highlighted]': 'isHighlighted()',
+    '[class.cngx-menu-item--disabled]': 'disabled()',
+    '[attr.aria-disabled]': 'disabled() || null',
+    '[attr.tabindex]': '-1',
+    '(click)': 'handleClick()',
+    '(pointerenter)': 'handlePointerEnter()',
+  },
+})
+export class CngxMenuItem<T = unknown> implements CngxAdItemHandle {
+  readonly value = input<T | undefined>(undefined);
+  readonly disabled = input<boolean>(false);
+  readonly labelInput = input<string | undefined>(undefined, { alias: 'label' });
+
+  readonly id = nextUid('cngx-menu-item');
+
+  private readonly elementRef = inject(ElementRef<HTMLElement>);
+  private readonly ad = inject(CngxActiveDescendant, { optional: true });
+  private readonly announcer = inject(CNGX_MENU_ANNOUNCER_FACTORY)();
+  private readonly menuConfig = injectMenuConfig();
+
+  readonly isHighlighted = computed<boolean>(() => this.ad?.activeId() === this.id);
+
+  readonly label = (): string => {
+    const explicit = this.labelInput();
+    if (explicit) {
+      return explicit;
+    }
+    const el = this.elementRef.nativeElement as HTMLElement;
+    return (el.textContent ?? '').trim();
+  };
+
+  protected handleClick(): void {
+    if (this.disabled()) {
+      this.announcer.announce(this.menuConfig.ariaLabels.itemDisabled);
+      return;
+    }
+    const ad = this.ad;
+    if (!ad) {
+      return;
+    }
+    ad.highlightByValue(this.value());
+    ad.activateCurrent();
+  }
+
+  protected handlePointerEnter(): void {
+    if (this.disabled()) {
+      return;
+    }
+    this.ad?.highlightByValue(this.value());
+  }
+}

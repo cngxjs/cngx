@@ -1,0 +1,199 @@
+/**
+ * @overview
+ * Trigger skin for `CngxActionSelect` - a "type-to-create" scalar select
+ * that pairs an inline `<input>` with an action handler (typically a
+ * quick-create button). The host carries `.cngx-action-select`; the
+ * trigger row matches `CngxTypeahead` 1:1 so a consumer with a typeahead
+ * theme gets this variant for free. Panel frame, option rows, loading
+ * variants, and error surfaces ride on `shared/select-base.css`.
+ *
+ * **State modifiers**
+ *
+ * - `:focus-within` on `.cngx-action-select__trigger` - 2px primary
+ *   outline + 2px offset
+ * - `.cngx-action-select__input:disabled` - `cursor: not-allowed` +
+ *   opacity dim
+ * - `:focus-visible` on `.cngx-action-select__clear` - 2px primary
+ *   outline + rounded corner
+ *
+ * **Slots**
+ *
+ * - `.cngx-action-select__root` - relative-positioned flex wrapper
+ * - `.cngx-action-select__trigger` - the bordered row
+ * - `.cngx-action-select__input` - inline text input
+ * - `.cngx-action-select__clear` - reset button
+ * - `.cngx-action-select__caret` - panel-state glyph
+ *
+ * **Inheritance**
+ *
+ * Trigger surface tokens delegate to the foundation so brand swaps on
+ * border / surface propagate without per-component theming:
+ *
+ * - `--cngx-action-select-border` -> `--cngx-color-border`
+ * - `--cngx-action-select-bg` -> `--cngx-color-surface`
+ *
+ * **Pair with**
+ *
+ * - `@cngx/themes/material/select-theme` - Material 3 surface treatment
+ *   shared across the entire select family
+ */
+
+@layer cngx.tokens {
+  /**
+   * Gap between the input, clear button, and caret.
+   * @group Layout
+   */
+  @property --cngx-action-select-gap {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.5rem;
+  }
+
+  /**
+   * Minimum block size of the trigger.
+   * @group Layout
+   */
+  @property --cngx-action-select-min-height {
+    syntax: '*';
+    inherits: false;
+    initial-value: 2.5rem;
+  }
+
+  /**
+   * Padding shorthand of the trigger.
+   * @group Layout
+   */
+  @property --cngx-action-select-padding {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0 0.75rem;
+  }
+
+  /**
+   * Border shorthand of the trigger.
+   * @group Surface
+   */
+  @property --cngx-action-select-border {
+    syntax: '*';
+    inherits: true;
+    initial-value: 1px solid oklch(0.85 0.01 250);
+  }
+
+  /**
+   * Corner radius of the trigger.
+   * @group Layout
+   */
+  @property --cngx-action-select-radius {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.375rem;
+  }
+
+  /**
+   * Background of the trigger. Falls back through `--cngx-color-surface`.
+   * @group Surface
+   * @see [[--cngx-color-surface]]
+   */
+  @property --cngx-action-select-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(1 0 0);
+  }
+
+  /**
+   * Opacity multiplier applied when the input is disabled.
+   * @group State / Disabled
+   */
+  @property --cngx-action-select-disabled-opacity {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 0.6;
+  }
+
+  /**
+   * Color of the clear button and caret glyphs.
+   * @group Surface
+   */
+  @property --cngx-action-select-action-color {
+    syntax: '*';
+    inherits: true;
+    initial-value: currentColor;
+  }
+
+  /* Delegating tokens - trigger border + bg track the foundation
+   * chain so a dark-mode swap on `--cngx-color-border` /
+   * `--cngx-color-surface` cascades through the trigger host. */
+  :root {
+    --cngx-action-select-border: 1px solid var(--cngx-color-border);
+    --cngx-action-select-bg: var(--cngx-color-surface);
+  }
+}
+
+@layer cngx.components {
+  @scope (.cngx-action-select) {
+    :scope {
+      display: block;
+      width: 100%;
+    }
+
+    .cngx-action-select__root {
+      position: relative;
+      display: flex;
+      width: 100%;
+    }
+
+    .cngx-action-select__trigger {
+      display: flex;
+      align-items: center;
+      gap: var(--cngx-action-select-gap, 0.5rem);
+      width: 100%;
+      min-height: var(--cngx-action-select-min-height, 2.5rem);
+      padding: var(--cngx-action-select-padding, 0 0.75rem);
+      border: var(
+        --cngx-action-select-border,
+        1px solid var(--cngx-color-border, oklch(0.85 0.01 250))
+      );
+      border-radius: var(--cngx-action-select-radius, 0.375rem);
+      background: var(--cngx-action-select-bg, var(--cngx-color-surface, oklch(1 0 0)));
+      cursor: text;
+    }
+
+    .cngx-action-select__trigger:focus-within {
+      outline: 2px solid var(--cngx-color-primary, oklch(0.66 0.19 50));
+      outline-offset: 2px;
+    }
+
+    .cngx-action-select__input {
+      flex: 1 1 auto;
+      min-width: 0;
+      border: 0;
+      background: transparent;
+      outline: none;
+      font: inherit;
+      color: inherit;
+      padding: 0;
+    }
+
+    .cngx-action-select__input:disabled {
+      cursor: not-allowed;
+      opacity: var(--cngx-action-select-disabled-opacity, 0.6);
+    }
+
+    .cngx-action-select__clear,
+    .cngx-action-select__caret {
+      flex: 0 0 auto;
+      background: transparent;
+      border: 0;
+      cursor: pointer;
+      color: var(--cngx-action-select-action-color, currentColor);
+      padding: 0 0.25rem;
+      font-size: 0.9em;
+    }
+
+    .cngx-action-select__clear:focus-visible {
+      outline: 2px solid var(--cngx-color-primary, oklch(0.66 0.19 50));
+      outline-offset: 1px;
+      border-radius: 0.25rem;
+    }
+  }
+}

@@ -1,0 +1,21 @@
+/**
+ * @overview
+ * Default visuals for the declarative `<cngx-select-divider>` -
+ * a thin horizontal rule rendered between projected options inside a
+ * declarative listbox. Host-only; no slots, no modifiers.
+ *
+ * **Inheritance**
+ *
+ * Surface tokens fall back to the foundation so brand overrides
+ * propagate without per-component theming:
+ *
+ * - `--cngx-select-divider-color` -> `--cngx-color-border`
+ * - `--cngx-select-divider-margin` - hardcoded `0.25rem 0`
+ */
+
+:host {
+  display: block;
+  block-size: 1px;
+  margin: var(--cngx-select-divider-margin, 0.25rem 0);
+  background: var(--cngx-select-divider-color, var(--cngx-color-border, oklch(0.89 0 0)));
+}

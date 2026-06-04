@@ -1,0 +1,143 @@
+/**
+ * @overview
+ * Foundation base layer. Renders bare HTML elements with token-
+ * driven defaults so demo pages, generator iframes, and consumer
+ * apps that want the cngx look without per-instance overrides get a
+ * sane baseline. Every value pulls from a `--cngx-*` system token,
+ * so dark mode and density switches reach these elements through
+ * the same cascade as cngx-prefixed components. Lives in
+ * `@layer cngx.base`, between `cngx.tokens` and `cngx.components`.
+ *
+ * **Elements styled**
+ *
+ * - `:root` scrollbar - `scrollbar-color: var(--cngx-color-border)`
+ *   on a transparent track, `scrollbar-width: thin`. Trims fat
+ *   Windows-style bars to a macOS-overlay feel and matches the
+ *   foundation border tone in both light and dark mode.
+ * - `<input>`, `<textarea>`, `<select>` - transparent surface,
+ *   hairline border, foundation typography, brand caret on text
+ *   inputs (`caret-color: var(--cngx-color-primary)`). The focus
+ *   ring is owned by `cngx.reset` `:focus-visible` so layout
+ *   doesn't shift between resting and focused state.
+ * - `<kbd>` - inline block, hairline border with a 2 px bottom edge
+ *   (key-cap silhouette), monospaced.
+ * - `<dl>` - two-column grid (`max-content 1fr`), tabular figures on
+ *   `<dd>`, muted opacity on `<dt>`.
+ * - `<hr>` - hairline `border-block-start` matching `--cngx-color-
+ *   border`, rhythmic `--cngx-space-md` block margin. Strips the
+ *   1990s inset bevel.
+ *
+ * Bare `<button>` is deliberately NOT styled. The cngx browser-
+ * native default-theme rule forbids per-element token families on
+ * bare HTML - a partial contract forces every component-projected
+ * button (`cngxAlertAction`, banner action, ...) to override.
+ * Components that need a styled button ship their own `.cngx-
+ * <comp>__action` class.
+ *
+ * **Inheritance**
+ *
+ * Every property reads through `var(--cngx-*, <static-fallback>)`,
+ * so a single override on `--cngx-color-border` or `--cngx-space-md`
+ * in `@layer cngx.theme` reskins the entire base layer without
+ * touching the bare selectors. Consumers who want full token-driven
+ * theming on a per-element basis switch from bare HTML to the
+ * matching cngx-prefixed component instead.
+ *
+ * **Dark mode**
+ *
+ * No local overrides. Every value chains through `--cngx-color-*` /
+ * `--cngx-space-*` / `--cngx-radius-*`, which `system-tokens.css`
+ * already swaps across `prefers-color-scheme`, `[data-color-scheme]`,
+ * and the `.dark` / `.light` class hooks. Scrollbar, input borders,
+ * `<kbd>` chrome, and `<hr>` hairline track the surface
+ * automatically.
+ *
+ * **Pair with**
+ *
+ * - `@cngx/core/theming/system-tokens` - source of every token this
+ *   layer consumes
+ * - `@cngx/core/theming/reset` - owns the universal `:focus-visible`
+ *   ring on the form elements styled here
+ * - `@cngx/core/theming/utilities` - shares the `cngx.base` layer
+ */
+
+@layer cngx.base {
+  /* Page-level native chrome:
+   *  - scrollbar-color sets a hairline thumb on a transparent track so
+   *    page scrollbars match the border tone in both modes. scrollbar-width
+   *    thin trims them in Firefox + Chromium so they read like macOS
+   *    overlay bars rather than fat Windows defaults.
+   *  - caret-color tints the text-input caret with the brand. accent-color
+   *    on :root from cngx.tokens already covers checkbox / radio / range /
+   *    progress — caret-color is the one knob that doesn't piggyback on it. */
+  :root {
+    scrollbar-color: var(--cngx-color-border, oklch(0.88 0.005 250)) transparent;
+    scrollbar-width: thin;
+  }
+
+  /* Bare <button>: render as the user agent draws it. Per cngx's
+   * browser-native default-theme rule, bare HTML should NOT carry
+   * cngx token styling — that's a half-contract that forces every
+   * component-projected button (`cngxAlertAction`, banner action,
+   * etc.) to override. Components that need a styled button MUST ship
+   * their own `.cngx-<comp>__action` rule. */
+
+  /* Bare <input> / <textarea> / <select>: transparent + hairline, same
+   * footprint cngx inputs use. Focus ring comes from cngx.reset
+   * :focus-visible — using outline (not border) so the layout doesn't
+   * shift between resting and focused state. */
+  input,
+  textarea,
+  select {
+    padding: var(--cngx-space-sm, 8px) var(--cngx-space-md, 16px);
+    border: 1px solid var(--cngx-color-border, oklch(0.88 0.005 250));
+    border-radius: var(--cngx-radius-md, 8px);
+    background: transparent;
+    color: var(--cngx-color-text, oklch(0.2 0.01 250));
+    font: inherit;
+    font-size: var(--cngx-font-size-md, 0.9375rem);
+  }
+  input,
+  textarea {
+    caret-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
+  }
+
+  kbd {
+    display: inline-block;
+    margin: 0 2px;
+    padding: 1px var(--cngx-space-sm, 8px);
+    border: 1px solid var(--cngx-color-border, oklch(0.88 0.005 250));
+    border-bottom-width: 2px;
+    border-radius: var(--cngx-radius-sm, 4px);
+    background: var(--cngx-color-surface, oklch(1 0 0));
+    color: var(--cngx-color-text, oklch(0.2 0.01 250));
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.85em;
+  }
+
+  dl {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: var(--cngx-space-xs, 4px) var(--cngx-space-md, 16px);
+    margin: var(--cngx-space-sm, 8px) 0;
+    font-size: var(--cngx-font-size-sm, 0.8125rem);
+  }
+  dl > dt {
+    color: var(--cngx-color-text, oklch(0.2 0.01 250));
+    opacity: 0.65;
+  }
+  dl > dd {
+    margin: 0;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Bare <hr>: native default is inset 1px with auto block margins —
+   * the inset bevel looks 1990s. Render as a hairline matching the
+   * cngx border token, with rhythmic vertical spacing from --cngx-space-md. */
+  hr {
+    block-size: 0;
+    margin: var(--cngx-space-md, 16px) 0;
+    border: 0;
+    border-block-start: 1px solid var(--cngx-color-border, oklch(0.88 0.005 250));
+  }
+}

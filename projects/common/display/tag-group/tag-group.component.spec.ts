@@ -1,0 +1,409 @@
+import { Component, signal } from '@angular/core';
+import { TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
+import { describe, expect, it, vi } from 'vitest';
+
+import { CngxTag } from '../tag/tag.directive';
+import { CngxTagGroupAccessory } from './slots/tag-group-accessory.directive';
+import { CngxTagGroupHeader } from './slots/tag-group-header.directive';
+import {
+  CngxTagGroup,
+  type CngxTagGroupAlign,
+  type CngxTagGroupGap,
+} from './tag-group.component';
+
+@Component({
+  imports: [CngxTagGroup],
+  template: `
+    <cngx-tag-group
+      [gap]="gap()"
+      [align]="align()"
+      [semanticList]="semanticList()"
+      [label]="label()"
+      data-testid="group"
+    ></cngx-tag-group>
+  `,
+})
+class GroupHost {
+  readonly gap = signal<CngxTagGroupGap>('sm');
+  readonly align = signal<CngxTagGroupAlign>('start');
+  readonly semanticList = signal<boolean>(false);
+  readonly label = signal<string | undefined>(undefined);
+}
+
+@Component({
+  imports: [CngxTagGroup, CngxTag],
+  template: `
+    <cngx-tag-group [semanticList]="semanticList()" data-testid="group">
+      <span cngxTag data-testid="tag">Label</span>
+    </cngx-tag-group>
+  `,
+})
+class CascadeHost {
+  readonly semanticList = signal<boolean>(true);
+}
+
+@Component({
+  imports: [CngxTag],
+  template: `<span cngxTag data-testid="orphan-tag">Outside</span>`,
+})
+class OrphanTagHost {}
+
+@Component({
+  imports: [CngxTagGroup, CngxTag],
+  template: `
+    <cngx-tag-group [semanticList]="true" label="Tags" data-testid="group">
+      <span cngxTag>One</span>
+      <span cngxTag>Two</span>
+      <span cngxTag>Three</span>
+      <span cngxTag>Four</span>
+      <span cngxTag>Five</span>
+    </cngx-tag-group>
+  `,
+})
+class FullContractHost {}
+
+@Component({
+  imports: [CngxTagGroup, CngxTag, CngxTagGroupHeader],
+  template: `
+    <cngx-tag-group data-testid="group">
+      <ng-template cngxTagGroupHeader>
+        <strong data-testid="header">Header</strong>
+      </ng-template>
+      <span cngxTag>One</span>
+    </cngx-tag-group>
+  `,
+})
+class HeaderSlotHost {}
+
+@Component({
+  imports: [CngxTagGroup, CngxTag, CngxTagGroupAccessory],
+  template: `
+    <cngx-tag-group data-testid="group">
+      <span cngxTag>One</span>
+      <ng-template cngxTagGroupAccessory>
+        <button data-testid="accessory">Clear</button>
+      </ng-template>
+    </cngx-tag-group>
+  `,
+})
+class AccessorySlotHost {}
+
+@Component({
+  imports: [CngxTagGroup, CngxTag, CngxTagGroupHeader, CngxTagGroupAccessory],
+  template: `
+    <cngx-tag-group data-testid="group">
+      <ng-template cngxTagGroupHeader let-count="count">
+        <strong data-testid="header" [attr.data-count]="count">{{ count }}</strong>
+      </ng-template>
+      @if (showFirst()) {
+        <span cngxTag>One</span>
+      }
+      <span cngxTag>Two</span>
+      @if (showThird()) {
+        <span cngxTag>Three</span>
+      }
+      <ng-template cngxTagGroupAccessory>
+        <button data-testid="accessory">Clear</button>
+      </ng-template>
+    </cngx-tag-group>
+  `,
+})
+class DynamicCountHost {
+  readonly showFirst = signal<boolean>(true);
+  readonly showThird = signal<boolean>(false);
+}
+
+@Component({
+  imports: [CngxTagGroup, CngxTag, CngxTagGroupHeader],
+  template: `
+    <cngx-tag-group
+      [gap]="gap()"
+      [align]="align()"
+      [semanticList]="semanticList()"
+      [label]="label()"
+      data-testid="group"
+    >
+      <ng-template
+        cngxTagGroupHeader
+        let-gap="gap"
+        let-align="align"
+        let-semanticList="semanticList"
+        let-label="label"
+        let-count="count"
+      >
+        <span
+          data-testid="probe"
+          [attr.data-gap]="gap"
+          [attr.data-align]="align"
+          [attr.data-semantic]="semanticList"
+          [attr.data-label]="label"
+          [attr.data-count]="count"
+        >ctx</span>
+      </ng-template>
+      <span cngxTag>One</span>
+      <span cngxTag>Two</span>
+    </cngx-tag-group>
+  `,
+})
+class GroupContextProbeHost {
+  readonly gap = signal<CngxTagGroupGap>('sm');
+  readonly align = signal<CngxTagGroupAlign>('start');
+  readonly semanticList = signal<boolean>(false);
+  readonly label = signal<string | undefined>(undefined);
+}
+
+@Component({
+  imports: [CngxTagGroup, CngxTag, CngxTagGroupHeader, CngxTagGroupAccessory],
+  template: `
+    <cngx-tag-group data-testid="group">
+      <ng-template cngxTagGroupHeader>
+        <strong data-testid="header">Title</strong>
+      </ng-template>
+      <span cngxTag>One</span>
+      <ng-template cngxTagGroupAccessory>
+        <button data-testid="accessory">Clear</button>
+      </ng-template>
+    </cngx-tag-group>
+  `,
+})
+class BothSlotsLayoutOnlyHost {}
+
+@Component({
+  imports: [CngxTagGroup],
+  template: `<cngx-tag-group label="Filters" data-testid="group"></cngx-tag-group>`,
+})
+class LabelOnlyHost {}
+
+@Component({
+  imports: [CngxTagGroup],
+  template: `
+    <cngx-tag-group [semanticList]="true" label="Filters" data-testid="group"></cngx-tag-group>
+  `,
+})
+class LabelAndSemanticHost {}
+
+@Component({
+  imports: [CngxTagGroup],
+  template: `<cngx-tag-group [semanticList]="true" data-testid="group"></cngx-tag-group>`,
+})
+class SemanticOnlyHost {}
+
+function flush(fixture: { detectChanges: () => void }): void {
+  TestBed.flushEffects();
+  fixture.detectChanges();
+}
+
+describe('CngxTagGroup', () => {
+  it('(a) default group host carries no role attribute', () => {
+    const fixture = TestBed.createComponent(GroupHost);
+    flush(fixture);
+    const host: HTMLElement = fixture.nativeElement.querySelector('[data-testid="group"]');
+    expect(host.getAttribute('role')).toBeNull();
+    expect(host.classList.contains('cngx-tag-group')).toBe(true);
+  });
+
+  it('(b) [semanticList]="true" adds role="list"', () => {
+    const fixture = TestBed.createComponent(GroupHost);
+    flush(fixture);
+    fixture.componentInstance.semanticList.set(true);
+    flush(fixture);
+    const host: HTMLElement = fixture.nativeElement.querySelector('[data-testid="group"]');
+    expect(host.getAttribute('role')).toBe('list');
+  });
+
+  it('(c) [label]="Tags" emits aria-label="Tags"', () => {
+    const fixture = TestBed.createComponent(GroupHost);
+    flush(fixture);
+    fixture.componentInstance.label.set('Tags');
+    flush(fixture);
+    const host: HTMLElement = fixture.nativeElement.querySelector('[data-testid="group"]');
+    expect(host.getAttribute('aria-label')).toBe('Tags');
+  });
+
+  it('(d) [gap]="md" toggles --gap-md modifier; sm carries no gap class', () => {
+    const fixture = TestBed.createComponent(GroupHost);
+    flush(fixture);
+    const host: HTMLElement = fixture.nativeElement.querySelector('[data-testid="group"]');
+    expect(host.classList.contains('cngx-tag-group--gap-md')).toBe(false);
+    expect(host.classList.contains('cngx-tag-group--gap-xs')).toBe(false);
+
+    fixture.componentInstance.gap.set('md');
+    flush(fixture);
+    expect(host.classList.contains('cngx-tag-group--gap-md')).toBe(true);
+
+    fixture.componentInstance.gap.set('xs');
+    flush(fixture);
+    expect(host.classList.contains('cngx-tag-group--gap-md')).toBe(false);
+    expect(host.classList.contains('cngx-tag-group--gap-xs')).toBe(true);
+
+    fixture.componentInstance.gap.set('sm');
+    flush(fixture);
+    expect(host.classList.contains('cngx-tag-group--gap-md')).toBe(false);
+    expect(host.classList.contains('cngx-tag-group--gap-xs')).toBe(false);
+  });
+
+  it('(e) all four align values resolve to the matching modifier class', () => {
+    const fixture = TestBed.createComponent(GroupHost);
+    flush(fixture);
+    const host: HTMLElement = fixture.nativeElement.querySelector('[data-testid="group"]');
+
+    const cases: ReadonlyArray<{ value: CngxTagGroupAlign; cls: string }> = [
+      { value: 'start', cls: 'cngx-tag-group--align-start' },
+      { value: 'center', cls: 'cngx-tag-group--align-center' },
+      { value: 'end', cls: 'cngx-tag-group--align-end' },
+      { value: 'between', cls: 'cngx-tag-group--align-between' },
+    ];
+    for (const { value, cls } of cases) {
+      fixture.componentInstance.align.set(value);
+      flush(fixture);
+      expect(host.classList.contains(cls)).toBe(true);
+      for (const other of cases) {
+        if (other.value !== value) {
+          expect(host.classList.contains(other.cls)).toBe(false);
+        }
+      }
+    }
+  });
+
+  it('(f) child cngxTag inside [semanticList]="true" group carries role="listitem"', () => {
+    const fixture = TestBed.createComponent(CascadeHost);
+    flush(fixture);
+    const tag: HTMLElement = fixture.nativeElement.querySelector('[data-testid="tag"]');
+    expect(tag.getAttribute('role')).toBe('listitem');
+  });
+
+  it('(g) flipping semanticList true→false removes role="listitem" within one flushEffects tick', () => {
+    const fixture = TestBed.createComponent(CascadeHost);
+    flush(fixture);
+    const tag: HTMLElement = fixture.nativeElement.querySelector('[data-testid="tag"]');
+    expect(tag.getAttribute('role')).toBe('listitem');
+
+    fixture.componentInstance.semanticList.set(false);
+    flush(fixture);
+    expect(tag.getAttribute('role')).toBeNull();
+
+    fixture.componentInstance.semanticList.set(true);
+    flush(fixture);
+    expect(tag.getAttribute('role')).toBe('listitem');
+  });
+
+  it('(h) cngxTag outside any TagGroup carries no role="listitem"', () => {
+    const fixture = TestBed.createComponent(OrphanTagHost);
+    flush(fixture);
+    const tag: HTMLElement = fixture.nativeElement.querySelector('[data-testid="orphan-tag"]');
+    expect(tag.getAttribute('role')).toBeNull();
+  });
+
+  it('(i) AT-string contract: role="list" + aria-label + exactly N role="listitem" descendants', () => {
+    const fixture = TestBed.createComponent(FullContractHost);
+    flush(fixture);
+    const host: HTMLElement = fixture.nativeElement.querySelector('[data-testid="group"]');
+    expect(host.getAttribute('role')).toBe('list');
+    expect(host.getAttribute('aria-label')).toBe('Tags');
+    const items = host.querySelectorAll('[role="listitem"]');
+    expect(items.length).toBe(5);
+  });
+
+  it('(j) *cngxTagGroupHeader template renders above the tag row', () => {
+    const fixture = TestBed.createComponent(HeaderSlotHost);
+    flush(fixture);
+    const host: HTMLElement = fixture.nativeElement.querySelector('[data-testid="group"]');
+    const header = host.querySelector('[data-testid="header"]');
+    const row = host.querySelector('.cngx-tag-group__row');
+    expect(header).not.toBeNull();
+    expect(row).not.toBeNull();
+    expect(header!.compareDocumentPosition(row!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it('(k) *cngxTagGroupAccessory template renders below the tag row', () => {
+    const fixture = TestBed.createComponent(AccessorySlotHost);
+    flush(fixture);
+    const host: HTMLElement = fixture.nativeElement.querySelector('[data-testid="group"]');
+    const accessory = host.querySelector('[data-testid="accessory"]');
+    const row = host.querySelector('.cngx-tag-group__row');
+    expect(accessory).not.toBeNull();
+    expect(row).not.toBeNull();
+    expect(row!.compareDocumentPosition(accessory!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it('(l) header context exposes live count derived from projected cngxTag siblings', () => {
+    const fixture = TestBed.createComponent(DynamicCountHost);
+    flush(fixture);
+    const probe: HTMLElement = fixture.nativeElement.querySelector('[data-testid="header"]');
+    expect(probe.getAttribute('data-count')).toBe('2');
+
+    fixture.componentInstance.showThird.set(true);
+    flush(fixture);
+    expect(probe.getAttribute('data-count')).toBe('3');
+
+    fixture.componentInstance.showFirst.set(false);
+    flush(fixture);
+    expect(probe.getAttribute('data-count')).toBe('2');
+  });
+
+  it('(m) slotContext returns the same reference when inputs are stable; new reference on real change', () => {
+    const fixture = TestBed.createComponent(GroupContextProbeHost);
+    flush(fixture);
+    const groupInstance = fixture.debugElement
+      .query(By.directive(CngxTagGroup))
+      .injector.get(CngxTagGroup) as unknown as { slotContext(): unknown };
+
+    const ctx1 = groupInstance.slotContext();
+    flush(fixture);
+    expect(groupInstance.slotContext()).toBe(ctx1);
+
+    fixture.componentInstance.gap.set('sm');
+    flush(fixture);
+    expect(groupInstance.slotContext()).toBe(ctx1);
+
+    fixture.componentInstance.gap.set('md');
+    flush(fixture);
+    expect(groupInstance.slotContext()).not.toBe(ctx1);
+  });
+
+  it('(n) layout-only group renders header + accessory without injecting role="list"', () => {
+    const fixture = TestBed.createComponent(BothSlotsLayoutOnlyHost);
+    flush(fixture);
+    const host: HTMLElement = fixture.nativeElement.querySelector('[data-testid="group"]');
+    expect(host.getAttribute('role')).toBeNull();
+    expect(host.querySelector('[data-testid="header"]')).not.toBeNull();
+    expect(host.querySelector('[data-testid="accessory"]')).not.toBeNull();
+    expect(host.querySelector('[role="list"]')).toBeNull();
+  });
+
+  it('(o) dev-mode warn fires when [label] is bound without [semanticList]', () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const fixture = TestBed.createComponent(LabelOnlyHost);
+    flush(fixture);
+    expect(warnSpy).toHaveBeenCalledTimes(1);
+    const message = String(warnSpy.mock.calls[0]?.[0] ?? '');
+    expect(message).toContain('[cngx-tag-group]');
+    expect(message).toContain('[semanticList]');
+    warnSpy.mockRestore();
+  });
+
+  it('(p) no warn when [label] and [semanticList] are both bound', () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const fixture = TestBed.createComponent(LabelAndSemanticHost);
+    flush(fixture);
+    expect(warnSpy).not.toHaveBeenCalled();
+    warnSpy.mockRestore();
+  });
+
+  it('(q) no warn when only [semanticList] is bound (no [label])', () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const fixture = TestBed.createComponent(SemanticOnlyHost);
+    flush(fixture);
+    expect(warnSpy).not.toHaveBeenCalled();
+    warnSpy.mockRestore();
+  });
+
+  // Case (r) — production-mode suppression — would require module-level
+  // mocking of `@angular/core`'s `isDevMode()` via `vi.mock`, which
+  // contaminates the worker for all later specs. `enableProdMode()` is
+  // irreversible per process. The dev-mode gating is Angular's
+  // well-tested guard; cases (o)/(p)/(q) above prove our condition wiring
+  // (`label && !semanticList`); we trust the framework's `isDevMode()`
+  // for the env-flag short-circuit rather than re-verify it here.
+});

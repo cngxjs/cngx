@@ -1,0 +1,99 @@
+/**
+ * @overview
+ * Expression-row variant of `CngxFilterBuilderRow`. The host element
+ * `cngx-filter-expression-row` stays `display: contents` and delegates
+ * its layout to the parent's `.cngx-filter-builder__expression` flex
+ * row, redeclared here so the file is self-contained when consumed
+ * standalone.
+ *
+ * **State modifiers**
+ *
+ * - `.cngx-filter-builder__expression--empty` - opacity fade for an
+ *   empty row, sourced from `--cngx-filter-builder-empty-row-opacity`
+ *   (owned by `filter-builder-row.component.css`)
+ * - `.cngx-filter-expression-incomplete` - dashed warning outline for
+ *   an unfinished expression, draws attention without committing to an
+ *   error tone
+ *
+ * **Slots**
+ *
+ * - `cngx-filter-expression-row` - host, `display: contents`
+ * - `.cngx-filter-builder__expression` - inner flex row, gap +
+ *   wrap, aligned center
+ *
+ * **Inheritance**
+ *
+ * Local-token chains:
+ *
+ * - `--cngx-filter-builder-incomplete-outline` -> `1px dashed
+ *   var(--cngx-color-warning)`
+ * - `--cngx-filter-builder-incomplete-outline-offset` - structural,
+ *   no foundation delegate
+ *
+ * `--cngx-filter-builder-gap` and
+ * `--cngx-filter-builder-empty-row-opacity` are owned by the parent
+ * filter-builder files and consumed here through the `var()` fallback
+ * chain only. A `:root` delegating rule pins the incomplete-outline
+ * structural part and inherits the warning hue via the foundation
+ * chain so a dark-mode swap on `--cngx-color-warning` cascades.
+ */
+
+@layer cngx.tokens {
+  /**
+   * Outline shorthand for the incomplete-expression state — dashed
+   * warning hue draws attention without committing to an error tone.
+   * Falls back through `--cngx-color-warning`. `inherits: true` so
+   * the :root delegating value reaches the expression-row host.
+   * @group State / Incomplete
+   * @see [[--cngx-color-warning]]
+   */
+  @property --cngx-filter-builder-incomplete-outline {
+    syntax: '*';
+    inherits: true;
+    initial-value: 1px dashed oklch(0.55 0.15 65);
+  }
+
+  /**
+   * Outline offset of the incomplete-expression outline.
+   * @group State / Incomplete
+   */
+  @property --cngx-filter-builder-incomplete-outline-offset {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 2px;
+  }
+
+  /* Delegating token — incomplete-outline pins its structural part
+   * (1px dashed) and inherits the warning hue via the foundation
+   * chain so a dark-mode swap on `--cngx-color-warning` cascades. */
+  :root {
+    --cngx-filter-builder-incomplete-outline: 1px dashed var(--cngx-color-warning);
+  }
+}
+
+@layer cngx.components {
+  @scope (cngx-filter-expression-row) {
+    :scope {
+      display: contents;
+    }
+
+    .cngx-filter-builder__expression {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--cngx-filter-builder-gap, 0.5rem);
+      align-items: center;
+    }
+
+    .cngx-filter-builder__expression--empty {
+      opacity: var(--cngx-filter-builder-empty-row-opacity, 0.85);
+    }
+
+    .cngx-filter-expression-incomplete {
+      outline: var(
+        --cngx-filter-builder-incomplete-outline,
+        1px dashed var(--cngx-color-warning, oklch(0.55 0.15 65))
+      );
+      outline-offset: var(--cngx-filter-builder-incomplete-outline-offset, 2px);
+    }
+  }
+}

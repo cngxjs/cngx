@@ -1,0 +1,1054 @@
+import { NgTemplateOutlet } from '@angular/common';
+import {
+  afterNextRender,
+  ChangeDetectionStrategy,
+  Component,
+  ViewEncapsulation,
+  computed,
+  contentChild,
+  inject,
+  input,
+  model,
+  output,
+  untracked,
+  viewChild,
+  type ElementRef,
+  type Signal,
+  type TemplateRef,
+} from '@angular/core';
+
+import { CNGX_STATEFUL, type CngxAsyncState, type AsyncStatus } from '@cngx/core/utils';
+
+import { CngxChip } from '@cngx/common/display';
+import { CngxClickOutside, CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
+import { CngxPopover, CngxPopoverTrigger, type PopoverPlacement } from '@cngx/common/popover';
+
+import { CngxSelectPanel } from '../shared/panel/panel.component';
+
+import {
+  CNGX_FORM_FIELD_CONTROL,
+  CngxFormFieldPresenter,
+  type CngxFormFieldControl,
+} from '@cngx/forms/field';
+
+import { createADActivationDispatcher } from '../shared/ad-activation-dispatcher';
+import { createArrayCommitHandler, type ArrayCommitHandler } from '../shared/array-commit-handler';
+import {
+  CNGX_CHIP_REMOVAL_HANDLER_FACTORY,
+  type CngxChipRemovalHandler,
+} from '../shared/chip-removal-handler';
+import { sameArrayContents } from '../shared/compare';
+import { CNGX_ACTION_HOST_BRIDGE_FACTORY } from '../shared/action-host-bridge';
+import { createFieldSync } from '../shared/field-sync';
+import { CNGX_LOCAL_ITEMS_BUFFER_FACTORY } from '../shared/local-items-buffer';
+import { createTypeaheadController } from '../shared/typeahead-controller';
+import { CNGX_FLAT_NAV_STRATEGY } from '../shared/flat-nav-strategy';
+import { CNGX_SELECT_PANEL_HOST, CNGX_SELECT_PANEL_VIEW_HOST } from '../shared/panel-host';
+import type {
+  CngxSelectCommitAction,
+  CngxSelectCommitErrorDisplay,
+  CngxSelectCommitMode,
+} from '../shared/commit-action.types';
+import {
+  type CngxSelectAnnouncerConfig,
+  type CngxSelectConfig,
+  type CngxSelectLoadingVariant,
+  type CngxSelectRefreshingVariant,
+  type CngxSelectSelectionIndicatorVariant,
+} from '../shared/config';
+import { type CngxSelectOptionDef, type CngxSelectOptionsInput } from '../shared/option.model';
+import { CNGX_DISMISS_HANDLER_FACTORY } from '../shared/dismiss-handler';
+import { resolveSelectConfig } from '../shared/resolve-config';
+import { setupVirtualization } from '../shared/setup-virtualization';
+import { CNGX_TEMPLATE_REGISTRY_FACTORY } from '../shared/template-registry';
+import { CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY } from '../shared/panel-lifecycle-emitter';
+import { CNGX_TRIGGER_FOCUS_FACTORY } from '../shared/trigger-focus';
+import {
+  cngxSelectDefaultCompare,
+  createSelectCore,
+  type CngxSelectCompareFn,
+} from '../shared/select-core';
+import {
+  CngxMultiSelectChip,
+  type CngxMultiSelectChipContext,
+  CngxMultiSelectTriggerLabel,
+  type CngxMultiSelectTriggerLabelContext,
+  CngxSelectCaret,
+  CngxSelectCheck,
+  CngxSelectClearButton,
+  CngxSelectCommitError,
+  CngxSelectEmpty,
+  CngxSelectError,
+  CngxSelectRetryButton,
+  CngxSelectLoading,
+  CngxSelectOptgroupTemplate,
+  CngxSelectOptionError,
+  CngxSelectOptionLabel,
+  CngxSelectOptionPending,
+  CngxSelectPlaceholder,
+  CngxSelectRefreshing,
+} from '../shared/template-slots';
+
+/**
+ * Change event emitted by {@link CngxMultiSelect.selectionChange}.
+ *
+ * @category forms/select/multi-select
+ */
+export interface CngxMultiSelectChange<T = unknown> {
+  readonly source: CngxMultiSelect<T>;
+  readonly values: readonly T[];
+  /**
+   * Values before the change committed. Populated from the pre-toggle
+   * snapshot, the commit-controller rollback target on success, and the
+   * pre-clear array. Plural disambiguates from scalar `previousValue`.
+   */
+  readonly previousValues?: readonly T[];
+  readonly added: readonly T[];
+  readonly removed: readonly T[];
+  readonly option: CngxSelectOptionDef<T> | null;
+  readonly action: 'toggle' | 'clear' | 'select-all';
+}
+
+/**
+ * Multi-select sibling of {@link CngxSelect}. Stateless graph in
+ * {@link createSelectCore}; keeps the multi-specific trigger template,
+ * chip strip, AD-activated dispatch, keyboard, and Field↔sync.
+ *
+ * @category forms/select/multi-select
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/multi-select/multi-select.component.ts
+ * @since 0.1.0
+ * @relatedTo CngxSelect, CngxCombobox, CngxReorderableMultiSelect, CngxTreeSelect, CngxMultiSelectChip
+ * <example-url>http://localhost:4200/#/forms/select/multi-select/multi-async-options-via-state</example-url>
+ * <example-url>http://localhost:4200/#/forms/select/multi-select/multi-basic</example-url>
+ * <example-url>http://localhost:4200/#/forms/select/multi-select/multi-clearable</example-url>
+ * <example-url>http://localhost:4200/#/forms/select/multi-select/multi-custom-cngxmultiselectchip-template</example-url>
+ * <example-url>http://localhost:4200/#/forms/select/multi-select/multi-per-toggle-commitaction</example-url>
+ * <example-url>http://localhost:4200/#/forms/select/multi-select/multi-text-summary-via-cngxmultiselecttriggerlabel</example-url>
+ */
+@Component({
+  selector: 'cngx-multi-select',
+  exportAs: 'cngxMultiSelect',
+  standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [
+    CngxChip,
+    CngxClickOutside,
+    CngxListbox,
+    CngxListboxTrigger,
+    CngxPopover,
+    CngxPopoverTrigger,
+    CngxSelectPanel,
+    NgTemplateOutlet,
+  ],
+  providers: [
+    { provide: CNGX_FORM_FIELD_CONTROL, useExisting: CngxMultiSelect },
+    {
+      provide: CNGX_STATEFUL,
+      useFactory: (): { readonly state: CngxAsyncState<unknown> } => {
+        const self = inject(CngxMultiSelect);
+        return { state: self.commitState };
+      },
+    },
+    { provide: CNGX_SELECT_PANEL_HOST, useExisting: CngxMultiSelect },
+    { provide: CNGX_SELECT_PANEL_VIEW_HOST, useExisting: CngxMultiSelect },
+  ],
+  host: {
+    class: 'cngx-multi-select',
+    '[id]': 'resolvedId()',
+    '[attr.aria-readonly]': 'ariaReadonly()',
+  },
+  template: `
+    <div
+      class="cngx-multi-select__root"
+      cngxClickOutside
+      [enabled]="panelOpen()"
+      (clickOutside)="handleClickOutside()"
+    >
+      <!--
+        role="combobox" on a <div>, not <button>: chip × buttons,
+        clear-all, and chip-close slots would be invalid nested buttons.
+        WAI-ARIA 1.2 multi-value combobox pattern.
+      -->
+      @let aria = triggerAria();
+      <div
+        #triggerBtn
+        class="cngx-multi-select__trigger"
+        role="combobox"
+        [cngxPopoverTrigger]="pop"
+        [haspopup]="'listbox'"
+        [cngxListboxTrigger]="lb"
+        [popover]="pop"
+        [closeOnSelect]="false"
+        [attr.tabindex]="effectiveTabIndex()"
+        [attr.aria-label]="aria.label"
+        [attr.aria-labelledby]="aria.labelledBy"
+        [attr.aria-describedby]="aria.describedBy"
+        [attr.aria-errormessage]="aria.errorMessage"
+        [attr.aria-expanded]="aria.expanded"
+        [attr.aria-disabled]="aria.disabled"
+        [attr.aria-invalid]="aria.invalid"
+        [attr.aria-required]="aria.required"
+        [attr.aria-busy]="aria.busy"
+        (click)="handleTriggerClick()"
+        (focus)="handleFocus()"
+        (blur)="handleBlur()"
+        (keydown)="handleTriggerKeydown($event)"
+      >
+        <span class="cngx-select__chip-list" [attr.data-overflow]="chipOverflow()">
+          @if (isEmpty()) {
+            @if (tpl.placeholder(); as phTpl) {
+              <ng-container
+                *ngTemplateOutlet="
+                  phTpl;
+                  context: { $implicit: placeholder(), placeholder: placeholder() }
+                "
+              />
+            } @else {
+              <span class="cngx-multi-select__placeholder">
+                {{ placeholder() || label() }}
+              </span>
+            }
+          } @else if (triggerLabelTpl(); as triggerTpl) {
+            <ng-container
+              *ngTemplateOutlet="
+                triggerTpl;
+                context: {
+                  $implicit: selectedOptions(),
+                  selected: selectedOptions(),
+                  values: values(),
+                  count: selectedOptions().length,
+                }
+              "
+            />
+          } @else {
+            @for (opt of visibleSelected(); track opt.value) {
+              @if (chipTpl(); as chipT) {
+                <ng-container
+                  *ngTemplateOutlet="
+                    chipT;
+                    context: {
+                      $implicit: opt,
+                      option: opt,
+                      remove: chipRemoveFor(opt),
+                    }
+                  "
+                />
+              } @else {
+                <cngx-chip
+                  [removable]="!disabled()"
+                  [removeAriaLabel]="chipRemoveAriaLabel() + ': ' + opt.label"
+                  (remove)="handleChipRemoveClick($event, opt)"
+                >
+                  {{ opt.label }}
+                </cngx-chip>
+              }
+            }
+            @if (overflowBadgeCount() > 0) {
+              <span class="cngx-select__chip-overflow-badge" aria-hidden="true">
+                +{{ overflowBadgeCount() }}
+              </span>
+            }
+          }
+        </span>
+        @if (clearable() && !isEmpty() && !disabled()) {
+          @if (tpl.clearButton(); as clearBtnTpl) {
+            <span class="cngx-multi-select__clear-slot" (click)="$event.stopPropagation()">
+              <ng-container
+                *ngTemplateOutlet="
+                  clearBtnTpl;
+                  context: {
+                    $implicit: clearAllCallback,
+                    clear: clearAllCallback,
+                    disabled: disabled(),
+                  }
+                "
+              />
+            </span>
+          } @else {
+            <button
+              type="button"
+              class="cngx-multi-select__clear-all"
+              [attr.aria-label]="clearButtonAriaLabel()"
+              (click)="handleClearAllClick($event)"
+            >
+              @if (clearGlyph(); as glyph) {
+                <ng-container *ngTemplateOutlet="glyph" />
+              } @else {
+                <span aria-hidden="true">✕</span>
+              }
+            </button>
+          }
+        }
+        @if (resolvedShowCaret()) {
+          @if (tpl.caret(); as caretT) {
+            <ng-container
+              *ngTemplateOutlet="caretT; context: { $implicit: panelOpen(), open: panelOpen() }"
+            />
+          } @else if (caretGlyph(); as glyph) {
+            <span aria-hidden="true" class="cngx-multi-select__caret">
+              <ng-container *ngTemplateOutlet="glyph" />
+            </span>
+          } @else {
+            <span aria-hidden="true" class="cngx-multi-select__caret">&#9662;</span>
+          }
+        }
+      </div>
+      <div
+        cngxPopover
+        #pop="cngxPopover"
+        [placement]="popoverPlacement()"
+        class="cngx-select__panel"
+        [class]="panelClassList()"
+        [style.--cngx-select-panel-min-width]="panelWidthCss()"
+      >
+        <div
+          cngxListbox
+          #lb="cngxListbox"
+          [label]="resolvedListboxLabel()"
+          [multiple]="true"
+          [compareWith]="listboxCompareWith()"
+          [externalActivation]="externalActivation()"
+          [explicitOptions]="panelRef.options()"
+          [items]="panelRef.items()"
+          [virtualCount]="virtualItemCount()"
+          [(selectedValues)]="values"
+        >
+          <cngx-select-panel #panelRef="cngxSelectPanel" />
+        </div>
+      </div>
+    </div>
+  `,
+  styleUrls: ['../shared/select-base.css', './multi-select.component.css'],
+  encapsulation: ViewEncapsulation.None,
+})
+export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
+  private readonly presenter = inject(CngxFormFieldPresenter, { optional: true });
+  private readonly config = resolveSelectConfig();
+
+  readonly label = input<string>('');
+  readonly options = input<CngxSelectOptionsInput<T>>([] as CngxSelectOptionsInput<T>);
+  readonly placeholder = input<string>('');
+  readonly disabledInput = input<boolean>(false, { alias: 'disabled' });
+  readonly requiredInput = input<boolean>(false, { alias: 'required' });
+  readonly compareWith = input<CngxSelectCompareFn<T>>(
+    cngxSelectDefaultCompare as CngxSelectCompareFn<T>,
+  );
+  readonly idInput = input<string | null>(null, { alias: 'id' });
+  readonly ariaLabel = input<string | null>(null, { alias: 'aria-label' });
+  readonly ariaLabelledBy = input<string | null>(null, { alias: 'aria-labelledby' });
+  readonly tabIndex = input<number>(0);
+  readonly autofocus = input<boolean>(false);
+  readonly panelClass = input<string | readonly string[] | null>(null);
+  readonly panelWidth = input<'trigger' | number | null>(this.config.panelWidth);
+  /**
+   * Popover placement relative to the trigger. Per-instance input wins
+   * over `CngxSelectConfig.popoverPlacement`.
+   */
+  readonly popoverPlacement = input<PopoverPlacement>(this.config.popoverPlacement);
+  /** Chip-strip overflow strategy. See `CngxSelectConfig.chipOverflow`. */
+  readonly chipOverflow = input<NonNullable<CngxSelectConfig['chipOverflow']>>(
+    this.config.chipOverflow,
+  );
+  /** Max chips in `'truncate'` mode before the `+N` badge. */
+  readonly maxVisibleChips = input<number>(this.config.maxVisibleChips);
+  readonly typeaheadDebounceInterval = input<number>(this.config.typeaheadDebounceInterval);
+  readonly hideSelectionIndicator = input<boolean>(!this.config.showSelectionIndicator);
+  readonly selectionIndicatorPosition = input<'before' | 'after' | null>(null);
+  readonly selectionIndicatorVariant = input<CngxSelectSelectionIndicatorVariant | null>(null);
+  readonly hideCaret = input<boolean>(!this.config.showCaret);
+
+  /**
+   * Replaces the built-in `✕` glyph inside the default clear-all button.
+   * Ignored when `*cngxSelectClearButton` is projected.
+   */
+  readonly clearGlyph = input<TemplateRef<void> | null>(null);
+  /**
+   * Replaces the built-in `▾` caret glyph. Ignored when
+   * `*cngxSelectCaret` is projected.
+   */
+  readonly caretGlyph = input<TemplateRef<void> | null>(null);
+  readonly clearable = input<boolean>(false);
+  readonly clearButtonAriaLabel = input<string>(
+    this.config.ariaLabels?.clearButton ?? 'Reset selection',
+  );
+  readonly chipRemoveAriaLabel = input<string>(this.config.ariaLabels?.chipRemove ?? 'Remove');
+  readonly loading = input<boolean>(false);
+  readonly loadingVariant = input<CngxSelectLoadingVariant>(this.config.loadingVariant);
+  readonly skeletonRowCount = input<number>(this.config.skeletonRowCount);
+  readonly refreshingVariant = input<CngxSelectRefreshingVariant>(this.config.refreshingVariant);
+  readonly state = input<CngxAsyncState<CngxSelectOptionsInput<T>> | null>(null);
+  readonly retryFn = input<(() => void) | null>(null);
+  readonly commitAction = input<CngxSelectCommitAction<T[]> | null>(null);
+  readonly commitMode = input<CngxSelectCommitMode>('optimistic');
+  readonly commitErrorDisplay = input<CngxSelectCommitErrorDisplay>(this.config.commitErrorDisplay);
+  readonly announceChanges = input<boolean | null>(null);
+  readonly announceTemplate = input<CngxSelectAnnouncerConfig['format'] | null>(null);
+  readonly values = model<T[]>([]);
+
+  readonly selectionChange = output<CngxMultiSelectChange<T>>();
+  readonly optionToggled = output<{
+    readonly option: CngxSelectOptionDef<T>;
+    readonly added: boolean;
+  }>();
+  readonly openedChange = output<boolean>();
+  readonly opened = output<void>();
+  readonly closed = output<void>();
+  readonly cleared = output<void>();
+  readonly retry = output<void>();
+  readonly commitError = output<unknown>();
+  readonly stateChange = output<AsyncStatus>();
+
+  private readonly checkDirective = contentChild<CngxSelectCheck<T>>(CngxSelectCheck);
+  private readonly caretDirective = contentChild<CngxSelectCaret>(CngxSelectCaret);
+  private readonly optgroupDirective = contentChild<CngxSelectOptgroupTemplate<T>>(
+    CngxSelectOptgroupTemplate,
+  );
+  private readonly placeholderDirective =
+    contentChild<CngxSelectPlaceholder>(CngxSelectPlaceholder);
+  private readonly emptyDirective = contentChild<CngxSelectEmpty>(CngxSelectEmpty);
+  private readonly loadingDirective = contentChild<CngxSelectLoading>(CngxSelectLoading);
+  private readonly triggerLabelDirective = contentChild<CngxMultiSelectTriggerLabel<T>>(
+    CngxMultiSelectTriggerLabel,
+  );
+  private readonly optionLabelDirective =
+    contentChild<CngxSelectOptionLabel<T>>(CngxSelectOptionLabel);
+  private readonly errorDirective = contentChild<CngxSelectError>(CngxSelectError);
+  private readonly retryButtonDirective =
+    contentChild<CngxSelectRetryButton>(CngxSelectRetryButton);
+  private readonly refreshingDirective = contentChild<CngxSelectRefreshing>(CngxSelectRefreshing);
+  private readonly commitErrorDirective =
+    contentChild<CngxSelectCommitError<T>>(CngxSelectCommitError);
+  private readonly chipDirective = contentChild<CngxMultiSelectChip<T>>(CngxMultiSelectChip);
+  private readonly clearButtonDirective =
+    contentChild<CngxSelectClearButton>(CngxSelectClearButton);
+  private readonly optionPendingDirective =
+    contentChild<CngxSelectOptionPending<T>>(CngxSelectOptionPending);
+  private readonly optionErrorDirective =
+    contentChild<CngxSelectOptionError<T>>(CngxSelectOptionError);
+
+  /** @internal */
+  protected readonly tpl = inject(CNGX_TEMPLATE_REGISTRY_FACTORY)<T>({
+    check: this.checkDirective,
+    caret: this.caretDirective,
+    optgroup: this.optgroupDirective,
+    placeholder: this.placeholderDirective,
+    empty: this.emptyDirective,
+    loading: this.loadingDirective,
+    optionLabel: this.optionLabelDirective,
+    error: this.errorDirective,
+    retryButton: this.retryButtonDirective,
+    refreshing: this.refreshingDirective,
+    commitError: this.commitErrorDirective,
+    clearButton: this.clearButtonDirective,
+    optionPending: this.optionPendingDirective,
+    optionError: this.optionErrorDirective,
+  });
+  /** Multi-specific trigger-label - replaces chip strip. @internal */
+  protected readonly triggerLabelTpl = computed<TemplateRef<
+    CngxMultiSelectTriggerLabelContext<T>
+  > | null>(() => this.triggerLabelDirective()?.templateRef ?? null);
+  /** Per-chip override. @internal */
+  protected readonly chipTpl = computed<TemplateRef<CngxMultiSelectChipContext<T>> | null>(
+    () => this.chipDirective()?.templateRef ?? null,
+  );
+
+  private readonly triggerBtn = viewChild<ElementRef<HTMLElement>>('triggerBtn');
+  private readonly listboxRef = viewChild<CngxListbox>(CngxListbox);
+  private readonly popoverRef = viewChild<CngxPopover>(CngxPopover);
+
+  /** Whether the panel is currently open. */
+  readonly panelOpen = computed<boolean>(() => this.popoverRef()?.isVisible() ?? false);
+
+  /** @internal */
+  readonly activeId = computed<string | null>(() => this.listboxRef()?.ad.activeId() ?? null);
+
+  readonly errorState = computed<boolean>(() => this.presenter?.showError() ?? false);
+
+  private readonly focusState = inject(CNGX_TRIGGER_FOCUS_FACTORY)();
+  /** @internal */ readonly focused = this.focusState.focused;
+
+  readonly empty = computed<boolean>(() => this.isEmpty());
+
+  /** @internal */
+  protected readonly listboxCompareWith = computed<(a: unknown, b: unknown) => boolean>(
+    () => this.compareWith() as unknown as (a: unknown, b: unknown) => boolean,
+  );
+
+  /** @internal */
+  private readonly localItemsBuffer = inject(CNGX_LOCAL_ITEMS_BUFFER_FACTORY)<T>(this.compareWith);
+
+  /** @internal */
+  private readonly actionBridge = inject(CNGX_ACTION_HOST_BRIDGE_FACTORY)({
+    close: () => this.close(),
+  });
+  /** @internal */ readonly actionDirty = this.actionBridge.dirty;
+  /** @internal */ readonly actionCallbacks = this.actionBridge.callbacks;
+  /** @internal */ readonly actionFocusTrapEnabled = this.actionBridge.shouldTrapFocus;
+
+  /**
+   * Family-shared signal graph. Owns every derivation identical across
+   * `CngxSelect` / `CngxCombobox`.
+   *
+   * @internal
+   */
+  private readonly core = createSelectCore<T, T[]>(
+    {
+      label: this.label,
+      ariaLabel: this.ariaLabel,
+      ariaLabelledBy: this.ariaLabelledBy,
+      placeholder: this.placeholder,
+      idInput: this.idInput,
+      disabledInput: this.disabledInput,
+      requiredInput: this.requiredInput,
+      tabIndex: this.tabIndex,
+      options: this.options,
+      state: this.state,
+      loading: this.loading,
+      compareWith: this.compareWith,
+      skeletonRowCount: this.skeletonRowCount,
+      panelClass: this.panelClass,
+      panelWidth: this.panelWidth,
+      hideSelectionIndicator: this.hideSelectionIndicator,
+      hideCaret: this.hideCaret,
+      commitErrorDisplay: this.commitErrorDisplay,
+      commitAction: this.commitAction,
+      panelOpen: this.panelOpen,
+      errorState: this.errorState,
+      multi: computed(() => true),
+      currentSelection: this.values,
+      multiValues: this.values,
+      selectionIndicatorPosition: this.selectionIndicatorPosition,
+      selectionIndicatorVariant: this.selectionIndicatorVariant,
+      localItems: this.localItemsBuffer.items,
+    },
+    {
+      announceChanges: this.announceChanges,
+      announceTemplate: this.announceTemplate,
+    },
+  );
+
+  /**
+   * Append a pre-built option to the local buffer. Renders in the next
+   * panel emission and silently drops once the server includes a
+   * matching value. Idempotent under `compareWith`.
+   */
+  patchData(item: CngxSelectOptionDef<T>): void {
+    this.localItemsBuffer.patch(item);
+  }
+
+  /**
+   * Reset the local buffer. Idempotent.
+   */
+  clearLocalItems(): void {
+    this.localItemsBuffer.clear();
+  }
+
+  /** @internal */ protected readonly effectiveOptions = this.core.effectiveOptions;
+  /** @internal */ protected readonly flatOptions = this.core.flatOptions;
+  /** @internal */ protected readonly activeView = this.core.activeView;
+  /** @internal */ protected readonly showRefreshIndicator = this.core.showRefreshIndicator;
+  /** @internal */ protected readonly showInlineError = this.core.showInlineError;
+  /** @internal */ protected readonly skeletonIndices = this.core.skeletonIndices;
+  /** @internal */ protected readonly panelClassList = this.core.panelClassList;
+  /** @internal */ protected readonly panelWidthCss = this.core.panelWidthCss;
+  /** @internal */ readonly fallbackLabels = this.core.fallbackLabels;
+  /** @internal */ readonly ariaLabels = this.core.ariaLabels;
+  /** @internal */ protected readonly resolvedId = this.core.resolvedId;
+  /** @internal */ protected readonly resolvedListboxLabel = this.core.resolvedListboxLabel;
+  /** @internal */ protected readonly resolvedShowSelectionIndicator =
+    this.core.resolvedShowSelectionIndicator;
+  /** @internal */ protected readonly resolvedSelectionIndicatorVariant =
+    this.core.resolvedSelectionIndicatorVariant;
+  /** @internal */ protected readonly resolvedSelectionIndicatorPosition =
+    this.core.resolvedSelectionIndicatorPosition;
+  /** @internal */ protected readonly resolvedShowCaret = this.core.resolvedShowCaret;
+  /** @internal */ protected readonly triggerAria = this.core.triggerAria;
+  /** @internal */ protected readonly ariaReadonly = this.core.ariaReadonly;
+  /** @internal */ protected readonly effectiveTabIndex = this.core.effectiveTabIndex;
+  /** @internal */ protected readonly externalActivation = this.core.externalActivation;
+  /** @internal */ protected readonly showCommitError = this.core.showCommitError;
+
+  readonly disabled = this.core.disabled;
+  readonly id = computed<string>(() => this.core.resolvedId() ?? '');
+
+  /**
+   * Keyboard typeahead engine, family-shared via
+   * `shared/typeahead-controller`. Match-to-action wiring below is
+   * multi-specific (toggle).
+   */
+  private readonly typeaheadController = createTypeaheadController<T>({
+    options: this.flatOptions,
+    compareWith: this.compareWith,
+    debounceMs: this.typeaheadDebounceInterval,
+    disabled: this.disabled,
+  });
+
+  /**
+   * Flat-nav policy via `CNGX_FLAT_NAV_STRATEGY`. Drives PageUp/Down
+   * and typeahead-while-closed; variant only dispatches the action.
+   */
+  private readonly flatNavStrategy = inject(CNGX_FLAT_NAV_STRATEGY);
+
+  /** Read-only view of the commit lifecycle. */
+  readonly commitState = this.core.commitState;
+  /** `true` while a commit is in flight. */
+  readonly isCommitting = this.core.isCommitting;
+  /** @internal - latest commit error. */
+  readonly commitErrorValue = this.core.commitErrorValue;
+
+  /** @internal */
+  protected readonly errorContext = this.core.makeErrorContext(() => this.handleRetry());
+  /** @internal */
+  protected readonly commitErrorContext = this.core.bindCommitRetry(() =>
+    this.commitHandler.retryLast(),
+  );
+
+  /** @internal - full virtualisation wire-up (see setupVirtualization). */
+  private readonly virtualSetup = setupVirtualization<T, T[]>({
+    core: this.core,
+    popoverRef: this.popoverRef,
+    listboxRef: this.listboxRef,
+    virtualization: this.config.virtualization,
+  });
+  /** @internal */
+  readonly panelRenderer = this.virtualSetup.panelRenderer;
+  /** @internal */
+  protected readonly virtualItemCount = this.virtualSetup.virtualItemCount;
+
+  /**
+   * Currently selected options. Structural equal on `.value` under
+   * `compareWith` - fresh OptionDef references for the same values
+   * don't cascade downstream re-renders.
+   */
+  readonly selected: Signal<readonly CngxSelectOptionDef<T>[]> = computed(
+    () => this.selectedOptions(),
+    {
+      equal: (a, b) => {
+        if (a === b) {
+          return true;
+        }
+        if (a.length !== b.length) {
+          return false;
+        }
+        const eq = this.compareWith() as CngxSelectCompareFn<unknown>;
+        for (let i = 0; i < a.length; i++) {
+          if (!eq(a[i].value, b[i].value)) {
+            return false;
+          }
+        }
+        return true;
+      },
+    },
+  );
+
+  /**
+   * Chip subset rendered into the trigger strip. In `'wrap'` /
+   * `'scroll-x'` identical to `selectedOptions`; layout divergence is
+   * pure CSS via `data-overflow`. In `'truncate'` the first
+   * `maxVisibleChips()` entries - remainder feeds
+   * {@link overflowBadgeCount}.
+   *
+   * @internal
+   */
+  protected readonly visibleSelected = computed<CngxSelectOptionDef<T>[]>(() => {
+    const all = this.selectedOptions();
+    if (this.chipOverflow() !== 'truncate') {
+      return all;
+    }
+    const cap = Math.max(1, this.maxVisibleChips());
+    return all.length <= cap ? all : all.slice(0, cap);
+  });
+
+  /**
+   * Count of selected options hidden by `'truncate'`. Zero in
+   * `'wrap'` / `'scroll-x'` so the badge binding stays a single
+   * numeric expression.
+   *
+   * @internal
+   */
+  protected readonly overflowBadgeCount = computed<number>(() => {
+    if (this.chipOverflow() !== 'truncate') {
+      return 0;
+    }
+    const total = this.selectedOptions().length;
+    const cap = Math.max(1, this.maxVisibleChips());
+    return total > cap ? total - cap : 0;
+  });
+
+  protected readonly selectedOptions = computed<CngxSelectOptionDef<T>[]>(
+    () => {
+      const vals = this.values();
+      if (vals.length === 0) {
+        return [];
+      }
+      const map = this.core.valueToOptionMap();
+      if (map) {
+        const out: CngxSelectOptionDef<T>[] = [];
+        for (const v of vals) {
+          const match = map.get(v as unknown);
+          if (match) {
+            out.push(match);
+          }
+        }
+        return out;
+      }
+      const eq = this.compareWith();
+      const out: CngxSelectOptionDef<T>[] = [];
+      const flat = this.flatOptions();
+      for (const v of vals) {
+        const match = flat.find((o) => eq(o.value, v));
+        if (match) {
+          out.push(match);
+        }
+      }
+      return out;
+    },
+    {
+      equal: (a, b) => {
+        if (a === b) {
+          return true;
+        }
+        if (a.length !== b.length) {
+          return false;
+        }
+        for (let i = 0; i < a.length; i++) {
+          if (!Object.is(a[i], b[i])) {
+            return false;
+          }
+        }
+        return true;
+      },
+    },
+  );
+
+  private readonly togglingOption = this.core.togglingOption;
+
+  /** Rollback target for a commit in flight. */
+  private lastCommittedValues: T[] = [];
+
+  /**
+   * Commit-flow handler. Owns commit-controller lifecycle, value
+   * reconciliation, rollback-on-error, live-region announce. Shared
+   * with `CngxCombobox`. Consumer emits change payloads via the
+   * finalize callbacks.
+   */
+  private readonly commitHandler: ArrayCommitHandler<T> = createArrayCommitHandler<T>({
+    values: this.values,
+    compareWith: this.compareWith,
+    commitMode: this.commitMode,
+    core: this.core,
+    commitAction: this.commitAction,
+    getLastCommitted: () => this.lastCommittedValues,
+    onToggleFinalize: (option, isNowSelected) =>
+      this.finalizeToggle(option, isNowSelected, this.lastCommittedValues),
+    onClearFinalize: (previous, finalValues) => {
+      this.cleared.emit();
+      this.selectionChange.emit({
+        source: this,
+        values: finalValues,
+        previousValues: previous,
+        added: [],
+        removed: previous,
+        option: null,
+        action: 'clear',
+      });
+    },
+    onStateChange: (status) => this.stateChange.emit(status),
+    onError: (err) => this.commitError.emit(err),
+  });
+
+  /**
+   * Chip-removal handler. Disabled-guard + snapshot + filter +
+   * commit/sync branch dispatch + WeakMap closure cache.
+   */
+  private readonly chipRemovalHandler: CngxChipRemovalHandler<CngxSelectOptionDef<T>> = inject(
+    CNGX_CHIP_REMOVAL_HANDLER_FACTORY,
+  )<T>({
+    values: this.values,
+    disabled: this.disabled,
+    compareWith: this.compareWith,
+    commitAction: this.commitAction,
+    commitMode: this.commitMode,
+    beginCommit: (next, previous, item, action) =>
+      this.commitHandler.beginToggle(next, previous, item, action),
+    onBeforeCommit: (previous, item) => {
+      this.lastCommittedValues = previous;
+      this.togglingOption.set(item);
+    },
+    onSyncFinalize: (item, previous) => this.finalizeToggle(item, false, previous),
+  });
+
+  /** @internal */ protected readonly isGroup = this.core.panelHostAdapter.isGroup;
+  /** @internal */ protected readonly isSelected = this.core.panelHostAdapter.isSelected;
+  /** @internal */ protected readonly isIndeterminate = this.core.panelHostAdapter.isIndeterminate;
+  /** @internal */ protected readonly isCommittingOption =
+    this.core.panelHostAdapter.isCommittingOption;
+
+  protected isEmpty(): boolean {
+    return this.values().length === 0;
+  }
+
+  constructor() {
+    this.lastCommittedValues = untracked(() => [...this.values()]);
+
+    afterNextRender(() => {
+      if (this.autofocus()) {
+        this.focus();
+      }
+    });
+
+    // Lifecycle + routing in createADActivationDispatcher; the array-shape
+    // toggle stays inline because it needs the local compareWith snapshot.
+    createADActivationDispatcher<T, T[]>({
+      listboxRef: this.listboxRef,
+      core: this.core,
+      closeOnSelect: false,
+      commitAction: this.commitAction,
+      onCommit: (toggledValue, opt) => {
+        const previous = [...this.values()];
+        const wasSelected = previous.some((v) => this.compareWith()(v, toggledValue));
+        const next = wasSelected
+          ? previous.filter((v) => !this.compareWith()(v, toggledValue))
+          : [...previous, toggledValue];
+        this.lastCommittedValues = previous;
+        this.togglingOption.set(opt);
+        if (this.commitMode() === 'optimistic') {
+          this.values.set(next);
+        }
+        const action = this.commitAction();
+        if (action) {
+          this.commitHandler.beginToggle(next, previous, opt, action);
+        }
+      },
+      onActivate: (_value, opt) => {
+        // Listbox already wrote through [(values)]; invert the toggle to recover
+        // the pre-mutation snapshot. selected=true → previous = current \ {opt};
+        // selected=false → previous = current ∪ {opt}.
+        const currentSelected = this.isSelected(opt);
+        const current = this.values();
+        const eq = this.compareWith();
+        const previousValues = currentSelected
+          ? current.filter((v) => !eq(v, opt.value))
+          : [...current, opt.value];
+        this.finalizeToggle(opt, currentSelected, previousValues);
+      },
+    });
+
+    inject(CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY)({
+      panelOpen: this.panelOpen,
+      restoreFocusTarget: this.triggerBtn,
+      restoreFocus: this.config.restoreFocus,
+      openedChange: this.openedChange,
+      opened: this.opened,
+      closed: this.closed,
+    });
+
+    createFieldSync<T[]>({
+      componentValue: this.values,
+      valueEquals: (a, b) => sameArrayContents(a, b, this.compareWith()),
+      coerceFromField: (x) => (Array.isArray(x) ? [...(x as T[])] : []),
+      toFieldValue: (v) => [...v],
+    });
+  }
+
+  open(): void {
+    this.popoverRef()?.show();
+  }
+  close(): void {
+    this.popoverRef()?.hide();
+  }
+  toggle(): void {
+    this.popoverRef()?.toggle();
+  }
+  focus(options?: FocusOptions): void {
+    this.triggerBtn()?.nativeElement.focus(options);
+  }
+
+  /** @internal */
+  protected handleTriggerClick(): void {
+    if (this.disabled()) {
+      return;
+    }
+    this.toggle();
+  }
+
+  /** @internal - click-outside dismissal (action-dirty-guarded). */
+  protected readonly handleClickOutside = inject(CNGX_DISMISS_HANDLER_FACTORY)({
+    popoverRef: this.popoverRef,
+    dismissOn: this.config.dismissOn,
+    shouldBlockDismiss: this.actionBridge.shouldBlockDismiss,
+  }).handleClickOutside;
+
+  /** @internal */
+  protected handleRetry(): void {
+    const fn = this.retryFn();
+    if (fn) {
+      fn();
+    }
+    this.retry.emit();
+  }
+
+  /** @internal */
+  protected handleChipRemoveClick(event: Event, opt: CngxSelectOptionDef<T>): void {
+    event.stopPropagation();
+    this.chipRemovalHandler.removeByValue(opt);
+  }
+
+  /** @internal - stable per-option `remove()` closure for chip slots. */
+  protected chipRemoveFor(opt: CngxSelectOptionDef<T>): () => void {
+    return this.chipRemovalHandler.removeFor(opt);
+  }
+
+  /** @internal */
+  protected handleClearAllClick(event: Event): void {
+    event.stopPropagation();
+    this.clearAllCallback();
+  }
+
+  /** @internal - imperative clear-all used by slot + default button. */
+  protected readonly clearAllCallback: () => void = () => {
+    const previous = [...this.values()];
+    if (previous.length === 0) {
+      return;
+    }
+    const action = this.commitAction();
+    if (action) {
+      this.lastCommittedValues = previous;
+      this.togglingOption.set(null);
+      if (this.commitMode() === 'optimistic') {
+        this.values.set([]);
+      }
+      this.commitHandler.beginClear(previous, action);
+      return;
+    }
+    this.values.set([]);
+    this.cleared.emit();
+    this.selectionChange.emit({
+      source: this,
+      values: [],
+      previousValues: previous,
+      added: [],
+      removed: previous,
+      option: null,
+      action: 'clear',
+    });
+    this.core.announce(null, 'removed', 0, true);
+  };
+
+  /** @internal */
+  protected handleFocus(): void {
+    this.focusState.markFocused();
+    if (this.config.openOn === 'focus' || this.config.openOn === 'click+focus') {
+      this.open();
+    }
+  }
+
+  /** @internal */
+  protected handleBlur(): void {
+    this.focusState.markBlurred();
+    this.presenter?.fieldState().markAsTouched();
+  }
+
+  /** @internal */
+  protected handleTriggerKeydown(event: KeyboardEvent): void {
+    const lb = this.listboxRef();
+    const pop = this.popoverRef();
+    // Typeahead-while-closed - toggles first matching option.
+    if (!this.panelOpen() && this.config.typeaheadWhileClosed) {
+      const key = event.key;
+      if (key.length === 1 && /\S/.exec(key)) {
+        const action = this.flatNavStrategy.onTypeaheadWhileClosed(
+          {
+            options: this.flatOptions(),
+            listboxItems: lb?.options() ?? [],
+            currentFlatIndex: -1,
+            currentListboxIndex: -1,
+            compareWith: this.compareWith(),
+            disabled: this.disabled(),
+            typeaheadController: this.typeaheadController,
+          },
+          key,
+        );
+        if (action.kind === 'select') {
+          event.preventDefault();
+          this.toggleOptionByUser(action.option);
+          // Multi-toggle semantics: each keystroke is an independent
+          // toggle. Reset the buffer so a repeat-key toggles the same
+          // option off instead of accumulating ('rr' would match
+          // nothing). Single-select keeps buffering for advance-on-repeat.
+          this.typeaheadController.clearBuffer();
+          return;
+        }
+      }
+    }
+
+    if (event.key === 'PageDown' || event.key === 'PageUp') {
+      event.preventDefault();
+      if (!pop || !lb) {
+        return;
+      }
+      if (!pop.isVisible()) {
+        pop.show();
+      }
+      const items = lb.options();
+      const ad = lb.ad;
+      const currentId = ad.activeId();
+      const currentListboxIndex = items.findIndex((o) => o.id === currentId);
+      const direction: 1 | -1 = event.key === 'PageDown' ? 1 : -1;
+      const action = this.flatNavStrategy.onPageJump(
+        {
+          options: this.flatOptions(),
+          listboxItems: items,
+          currentFlatIndex: -1,
+          currentListboxIndex,
+          compareWith: this.compareWith(),
+          disabled: this.disabled(),
+          typeaheadController: this.typeaheadController,
+        },
+        direction,
+      );
+      if (action.kind === 'highlight') {
+        ad.highlightByIndex(action.index);
+      }
+    }
+  }
+
+  private toggleOptionByUser(opt: CngxSelectOptionDef<T>): void {
+    const action = this.commitAction();
+    const previous = [...this.values()];
+    const eq = this.compareWith();
+    const wasSelected = previous.some((v) => eq(v, opt.value));
+    const next = wasSelected ? previous.filter((v) => !eq(v, opt.value)) : [...previous, opt.value];
+    if (action) {
+      this.lastCommittedValues = previous;
+      this.togglingOption.set(opt);
+      if (this.commitMode() === 'optimistic') {
+        this.values.set(next);
+      }
+      this.commitHandler.beginToggle(next, previous, opt, action);
+      return;
+    }
+    this.values.set(next);
+    this.finalizeToggle(opt, !wasSelected, previous);
+  }
+
+  private finalizeToggle(
+    opt: CngxSelectOptionDef<T>,
+    isNowSelected: boolean,
+    previousValues: readonly T[] = [],
+  ): void {
+    this.optionToggled.emit({ option: opt, added: isNowSelected });
+    this.selectionChange.emit({
+      source: this,
+      values: this.values(),
+      previousValues,
+      added: isNowSelected ? [opt.value] : [],
+      removed: isNowSelected ? [] : [opt.value],
+      option: opt,
+      action: 'toggle',
+    });
+    this.core.announce(opt, isNowSelected ? 'added' : 'removed', this.values().length, true);
+  }
+}

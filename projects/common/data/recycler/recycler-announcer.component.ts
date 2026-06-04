@@ -1,0 +1,41 @@
+import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+
+import type { CngxRecycler } from './recycler';
+
+/**
+ * Convenience component that renders the `aria-live="polite"` region
+ * for recycler SR announcements. Eliminates manual boilerplate.
+ *
+ * Uses `display: contents` - no layout impact.
+ *
+ * ```html
+ * <cngx-recycler-announcer [cngxRecyclerAnnouncer]="recycler" />
+ * ```
+ *
+ * @category common/data/recycler
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/data/recycler/recycler-announcer.component.ts
+ * @since 0.1.0
+ * @relatedTo CngxMeasure, CngxVirtualItem, injectRecycler, CNGX_RECYCLER_I18N
+ *
+ * <example-url>http://localhost:4200/#/common/data/recycler/basic-list-fixed-item-height</example-url>
+ * <example-url>http://localhost:4200/#/common/data/recycler/content-visibility-css-only</example-url>
+ * <example-url>http://localhost:4200/#/common/data/recycler/infinite-scroll-recycler</example-url>
+ * <example-url>http://localhost:4200/#/common/data/recycler/scrolltoindex-deep-link</example-url>
+ * <example-url>http://localhost:4200/#/common/data/recycler/variable-heights-cngxmeasure</example-url>
+ * <example-url>http://localhost:4200/#/common/data/recycler/with-cngxasyncstate-skeleton-first-load</example-url>
+ */
+@Component({
+  selector: 'cngx-recycler-announcer',
+  standalone: true,
+  template: `<span aria-live="polite" aria-atomic="true" class="cngx-sr-only">{{
+    recycler().announcement()
+  }}</span>`,
+  host: { style: 'display: contents' },
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class CngxRecyclerAnnouncer {
+  /** The recycler instance providing `announcement()`. */
+  readonly recycler = input.required<CngxRecycler>({ alias: 'cngxRecyclerAnnouncer' });
+}
