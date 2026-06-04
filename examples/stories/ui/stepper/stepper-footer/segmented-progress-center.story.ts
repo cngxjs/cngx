@@ -27,7 +27,11 @@ export const STORY: DemoSpec = {
     'CngxStepperNext',
   ],
   setup: `protected readonly active = signal(0);
-  protected readonly stepCount = 4;`,
+  protected readonly stepCount = 4;
+  // [valueTextFormat] owns the single accessible position string (aria-valuetext);
+  // no competing aria-label. now is the 0-based done-count, so +1 for the 1-based step.
+  protected readonly stepLabel = (now: number, max: number): string =>
+    \`Step \${now + 1} of \${max}\`;`,
   template: `  <cngx-stepper [(activeStepIndex)]="active" aria-label="Setup wizard">
     <div cngxStep label="Plan">
       <ng-template cngxStepContent><p>Pick a subscription plan.</p></ng-template>
@@ -48,7 +52,7 @@ export const STORY: DemoSpec = {
         cngxStepperFooterCenter
         [value]="active()"
         [total]="stepCount"
-        [attr.aria-label]="'Step ' + (active() + 1) + ' of ' + stepCount"
+        [valueTextFormat]="stepLabel"
         style="min-inline-size:8rem"
       />
       <button type="button" class="chip" cngxStepperFooterEnd cngxStepperNext>Continue</button>
