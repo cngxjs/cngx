@@ -71,7 +71,8 @@ export type CngxStepperSkin =
   | 'stripe-status-rich'
   | 'path-chevron'
   | 'pill-segment'
-  | 'chips';
+  | 'chips'
+  | 'breadcrumb';
 
 /**
  * Mobile auto-collapse target. Under a narrow viewport

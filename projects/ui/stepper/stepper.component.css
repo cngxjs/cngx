@@ -682,6 +682,84 @@
     inherits: true;
     initial-value: oklch(0.5 0.15 145);
   }
+
+  /**
+   * Gap between breadcrumb items (and the chevron separator inset) in
+   * the `breadcrumb` skin.
+   * @group Skin / breadcrumb
+   */
+  @property --cngx-step-breadcrumb-gap {
+    syntax: '<length-percentage>';
+    inherits: false;
+    initial-value: 0.5rem;
+  }
+
+  /**
+   * Corner radius of the active-item pill in the `breadcrumb` skin.
+   * @group Skin / breadcrumb
+   */
+  @property --cngx-step-breadcrumb-radius {
+    syntax: '<length-percentage>';
+    inherits: false;
+    initial-value: 6px;
+  }
+
+  /**
+   * Upcoming-item label colour in the `breadcrumb` skin - muted vs the
+   * active / completed items. Inherits so the host value reaches the
+   * step descendant.
+   * @group Skin / breadcrumb
+   */
+  @property --cngx-step-breadcrumb-color {
+    syntax: '*';
+    inherits: true;
+    initial-value: color-mix(in srgb, currentColor 48%, transparent);
+  }
+
+  /**
+   * Active-item label colour in the `breadcrumb` skin - full strength.
+   * Inherits so the host value reaches the step descendant.
+   * @group Skin / breadcrumb
+   */
+  @property --cngx-step-breadcrumb-color-active {
+    syntax: '*';
+    inherits: true;
+    initial-value: color-mix(in srgb, currentColor 92%, transparent);
+  }
+
+  /**
+   * Completed-item label colour in the `breadcrumb` skin. Inherits so
+   * the host value reaches the step descendant.
+   * @group Skin / breadcrumb
+   */
+  @property --cngx-step-breadcrumb-color-completed {
+    syntax: '*';
+    inherits: true;
+    initial-value: color-mix(in srgb, currentColor 82%, transparent);
+  }
+
+  /**
+   * Active-item pill surface in the `breadcrumb` skin - the soft tint
+   * behind the current breadcrumb label. Inherits so the host value
+   * reaches the step descendant.
+   * @group Skin / breadcrumb
+   */
+  @property --cngx-step-breadcrumb-fill-active {
+    syntax: '*';
+    inherits: true;
+    initial-value: color-mix(in srgb, currentColor 9%, transparent);
+  }
+
+  /**
+   * Completed-item check colour in the `breadcrumb` skin. Inherits so
+   * the host value reaches the step descendant.
+   * @group Skin / breadcrumb
+   */
+  @property --cngx-step-breadcrumb-check-color {
+    syntax: '*';
+    inherits: true;
+    initial-value: oklch(0.5 0.15 145);
+  }
 }
 
 @layer cngx.skins {
@@ -1390,6 +1468,90 @@
     .cngx-stepper__step {
       width: 100%;
       justify-content: flex-start;
+    }
+  }
+
+  /**
+   * Breadcrumb: an inline trail of text items separated by chevrons.
+   * Completed items show a green check suffix and stay clickable to
+   * navigate back; the active item is emphasised with a soft pill +
+   * bold; upcoming items are muted. Label-only (no disc indicator),
+   * horizontal by design. ARIA / keyboard nav stay identical to classic.
+   */
+  @scope (.cngx-stepper[data-skin='breadcrumb']) {
+    .cngx-stepper__strip {
+      gap: var(--cngx-step-breadcrumb-gap, 0.5rem);
+      padding: 0;
+      background: transparent;
+      border: 0;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    /* Each item is bare inline text - the active pill rides on the label
+       so chevrons stay outside it. Upcoming items read muted. */
+    .cngx-stepper__step {
+      gap: 0.25rem;
+      padding: 0;
+      background: transparent;
+      border: 0;
+      color: var(--cngx-step-breadcrumb-color, color-mix(in srgb, currentColor 48%, transparent));
+      transition: color 120ms ease;
+    }
+
+    /* Chevron separator after every item except the last. Sits in the
+       inter-item gap, decorative and muted. */
+    .cngx-stepper__step:not(:last-child)::after {
+      content: var(--cngx-step-breadcrumb-separator, '\203A');
+      margin-inline-start: var(--cngx-step-breadcrumb-gap, 0.5rem);
+      color: color-mix(in srgb, currentColor 30%, transparent);
+      font-weight: 400;
+    }
+
+    /* Completed items: full-strength label + a green check suffix, and
+       a pointer cursor (click to navigate back). The :not(aria-current)
+       guard keeps the active emphasis winning on a revisited step. */
+    .cngx-stepper__step:not([aria-current='step']):has(
+        .cngx-stepper__indicator[data-state='success']
+      ) {
+      color: var(--cngx-step-breadcrumb-color-completed, color-mix(in srgb, currentColor 82%, transparent));
+      cursor: pointer;
+    }
+
+    .cngx-stepper__step:not([aria-current='step']):has(
+        .cngx-stepper__indicator[data-state='success']
+      )
+      .cngx-stepper__label::after {
+      content: '\2713';
+      margin-inline-start: 0.3rem;
+      color: var(--cngx-step-breadcrumb-check-color, var(--cngx-color-success, oklch(0.5 0.15 145)));
+      font-weight: 600;
+    }
+
+    /* Active item: a soft pill behind the label (tight, not the whole
+       button) plus bold full-strength text. */
+    .cngx-stepper__step[aria-current='step'] {
+      color: var(--cngx-step-breadcrumb-color-active, color-mix(in srgb, currentColor 92%, transparent));
+      font-weight: 600;
+    }
+
+    .cngx-stepper__step[aria-current='step'] .cngx-stepper__label {
+      background: var(--cngx-step-breadcrumb-fill-active, color-mix(in srgb, currentColor 9%, transparent));
+      padding-inline: 0.5rem;
+      padding-block: 0.2rem;
+      border-radius: var(--cngx-step-breadcrumb-radius, 6px);
+    }
+
+    /* Label-only trail: hide the disc indicator and the status pill. */
+    .cngx-stepper__indicator,
+    .cngx-stepper__status-pill {
+      display: none;
+    }
+
+    .cngx-stepper__step:focus-visible {
+      outline: 0;
+      border-radius: var(--cngx-step-breadcrumb-radius, 6px);
+      box-shadow: inset 0 0 0 2px var(--cngx-color-primary, oklch(0.66 0.19 50));
     }
   }
 }
