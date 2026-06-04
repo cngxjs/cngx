@@ -78,6 +78,15 @@ export class CngxSegmentedProgress {
    */
   readonly segments = input<readonly SegmentState[] | undefined>(undefined);
 
+  /**
+   * Override the `aria-valuetext` string. Receives `(now, max)` - the
+   * completed-segment count and the total segment count. Mirrors
+   * `CngxStepperCount.format`; the default is `(now, max) => \`${now} of
+   * ${max}\``. Supply a localised closure for non-English position text
+   * (e.g. `(n, m) => \`Schritt ${n} von ${m}\``).
+   */
+  readonly valueTextFormat = input<((now: number, max: number) => string) | undefined>(undefined);
+
   /** Segments actually rendered: explicit when supplied, else derived. */
   readonly resolvedSegments: Signal<readonly SegmentState[]> = computed(
     () => {
@@ -97,7 +106,7 @@ export class CngxSegmentedProgress {
   /** `aria-valuemax` - segment count. */
   protected readonly max: Signal<number> = computed(() => this.resolvedSegments().length);
 
-  /** `aria-valuenow` - completed segments (`done`, plus the `active` one). */
+  /** `aria-valuenow` - count of completed (`done`) segments; the active in-progress segment is not counted. */
   protected readonly now: Signal<number> = computed(() => {
     const explicit = this.segments();
     if (explicit) {
@@ -106,6 +115,9 @@ export class CngxSegmentedProgress {
     return Math.max(0, Math.min(Math.trunc(this.value()), this.max()));
   });
 
-  /** `aria-valuetext` - human-readable position. */
-  protected readonly valueText: Signal<string> = computed(() => `${this.now()} of ${this.max()}`);
+  /** `aria-valuetext` - human-readable position via the resolved format closure. */
+  protected readonly valueText: Signal<string> = computed(() => {
+    const fmt = this.valueTextFormat() ?? ((now: number, max: number) => `${now} of ${max}`);
+    return fmt(this.now(), this.max());
+  });
 }

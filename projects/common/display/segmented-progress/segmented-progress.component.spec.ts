@@ -7,12 +7,18 @@ import { CngxSegmentedProgress, type SegmentState } from './segmented-progress.c
 @Component({
   standalone: true,
   imports: [CngxSegmentedProgress],
-  template: `<cngx-segmented-progress [value]="value()" [total]="total()" [segments]="segments()" />`,
+  template: `<cngx-segmented-progress
+    [value]="value()"
+    [total]="total()"
+    [segments]="segments()"
+    [valueTextFormat]="valueTextFormat()"
+  />`,
 })
 class Host {
   readonly value = signal(0);
   readonly total = signal(0);
   readonly segments = signal<readonly SegmentState[] | undefined>(undefined);
+  readonly valueTextFormat = signal<((now: number, max: number) => string) | undefined>(undefined);
 }
 
 function setup(): {
@@ -94,5 +100,34 @@ describe('CngxSegmentedProgress', () => {
     fixture.detectChanges();
     expect(bar.getAttribute('aria-valuenow')).toBe('3');
     expect(states(bar)).toEqual(['done', 'done', 'done']);
+  });
+
+  it('aria-valuenow counts done only - the active segment is not counted', () => {
+    const { fixture, host, bar } = setup();
+    host.total.set(4);
+    host.value.set(2);
+    fixture.detectChanges();
+    // segments: done, done, active, todo -> 2 done, active excluded.
+    expect(states(bar)).toEqual(['done', 'done', 'active', 'todo']);
+    expect(bar.getAttribute('aria-valuenow')).toBe('2');
+  });
+
+  describe('valueTextFormat override', () => {
+    it('defaults aria-valuetext to "N of M"', () => {
+      const { fixture, host, bar } = setup();
+      host.total.set(8);
+      host.value.set(3);
+      fixture.detectChanges();
+      expect(bar.getAttribute('aria-valuetext')).toBe('3 of 8');
+    });
+
+    it('drives aria-valuetext through a custom closure', () => {
+      const { fixture, host, bar } = setup();
+      host.total.set(8);
+      host.value.set(3);
+      host.valueTextFormat.set((now, max) => `Schritt ${now} von ${max}`);
+      fixture.detectChanges();
+      expect(bar.getAttribute('aria-valuetext')).toBe('Schritt 3 von 8');
+    });
   });
 });
