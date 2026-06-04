@@ -76,6 +76,15 @@
       transparent
     );
 
+    // Skin: chips
+    --cngx-step-chips-fill-active: var(--mat-sys-primary);
+    --cngx-step-chips-color-active: var(--mat-sys-on-primary);
+    --cngx-step-chips-bg-completed: color-mix(in srgb, var(--mat-sys-tertiary) 12%, transparent);
+    --cngx-step-chips-color-completed: var(--mat-sys-tertiary);
+
+    // Skin: breadcrumb
+    --cngx-step-breadcrumb-check-color: var(--mat-sys-tertiary);
+
     // Variant: CngxDotStepper
     --cngx-dot-step-active-fill: var(--mat-sys-primary);
     --cngx-dot-step-completed-fill: color-mix(
@@ -123,6 +132,19 @@
       #{mat.get-theme-color($theme, primary)} 60%,
       transparent
     );
+
+    // Skin: chips
+    --cngx-step-chips-fill-active: #{mat.get-theme-color($theme, primary)};
+    --cngx-step-chips-color-active: oklch(1 0 0);
+    --cngx-step-chips-bg-completed: color-mix(
+      in srgb,
+      #{mat.get-theme-color($theme, accent)} 12%,
+      transparent
+    );
+    --cngx-step-chips-color-completed: #{mat.get-theme-color($theme, accent)};
+
+    // Skin: breadcrumb
+    --cngx-step-breadcrumb-check-color: #{mat.get-theme-color($theme, accent)};
 
     // Variant: CngxDotStepper
     --cngx-dot-step-active-fill: #{mat.get-theme-color($theme, primary)};

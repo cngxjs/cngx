@@ -1,5 +1,50 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`Material stepper-theme mixin baseline > skin-specific Material overrides (Phase B Commit 6) > breadcrumb: v0 light overrides 1`] = `
+{
+  "--cngx-step-breadcrumb-check-color": "#e91e63",
+}
+`;
+
+exports[`Material stepper-theme mixin baseline > skin-specific Material overrides (Phase B Commit 6) > breadcrumb: v1 dark overrides 1`] = `
+{
+  "--cngx-step-breadcrumb-check-color": "var(--mat-sys-tertiary)",
+}
+`;
+
+exports[`Material stepper-theme mixin baseline > skin-specific Material overrides (Phase B Commit 6) > breadcrumb: v1 light overrides 1`] = `
+{
+  "--cngx-step-breadcrumb-check-color": "var(--mat-sys-tertiary)",
+}
+`;
+
+exports[`Material stepper-theme mixin baseline > skin-specific Material overrides (Phase B Commit 6) > chips: v0 light overrides 1`] = `
+{
+  "--cngx-step-chips-bg-completed": "color-mix( in srgb, #e91e63 12%, transparent )",
+  "--cngx-step-chips-color-active": "oklch(1 0 0)",
+  "--cngx-step-chips-color-completed": "#e91e63",
+  "--cngx-step-chips-fill-active": "#3f51b5",
+}
+`;
+
+exports[`Material stepper-theme mixin baseline > skin-specific Material overrides (Phase B Commit 6) > chips: v1 dark overrides 1`] = `
+{
+  "--cngx-step-chips-bg-completed": "color-mix(in srgb, var(--mat-sys-tertiary) 12%, transparent)",
+  "--cngx-step-chips-color-active": "var(--mat-sys-on-primary)",
+  "--cngx-step-chips-color-completed": "var(--mat-sys-tertiary)",
+  "--cngx-step-chips-fill-active": "var(--mat-sys-primary)",
+}
+`;
+
+exports[`Material stepper-theme mixin baseline > skin-specific Material overrides (Phase B Commit 6) > chips: v1 light overrides 1`] = `
+{
+  "--cngx-step-chips-bg-completed": "color-mix(in srgb, var(--mat-sys-tertiary) 12%, transparent)",
+  "--cngx-step-chips-color-active": "var(--mat-sys-on-primary)",
+  "--cngx-step-chips-color-completed": "var(--mat-sys-tertiary)",
+  "--cngx-step-chips-fill-active": "var(--mat-sys-primary)",
+}
+`;
+
 exports[`Material stepper-theme mixin baseline > skin-specific Material overrides (Phase B Commit 6) > linear-minimal: v0 light overrides 1`] = `
 {
   "--cngx-step-linear-dot-fill": "#3f51b5",
