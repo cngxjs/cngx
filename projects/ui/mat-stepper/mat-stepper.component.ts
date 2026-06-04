@@ -57,6 +57,7 @@ import type { MaterialPrivateSurfaces } from '@cngx/ui/mat-tabs';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/mat-stepper/mat-stepper.component.ts
  * @since 0.1.0
  * @relatedTo CngxMatStepperBridge, CngxStepperPresenter, CngxStep
+ * <example-url>http://localhost:4200/#/ui/stepper/stepper-footer/mat-stepper-footer</example-url>
  */
 @Component({
   selector: 'cngx-mat-stepper',

@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxStepperFooter on the Material twin',
+  title: 'CngxMatStepper: footer via the shared CNGX_STEPPER_HOST contract',
   subtitle:
     'The footer is wired through <code>CNGX_STEPPER_HOST</code>, the same contract both steppers share - so the identical <code>&lt;cngx-stepper-footer&gt;</code> markup instruments <code>&lt;cngx-mat-stepper&gt;</code> with no Material-specific code.',
   level: 'molecule',

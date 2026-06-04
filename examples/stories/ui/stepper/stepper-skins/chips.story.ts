@@ -27,7 +27,7 @@ export const STORY: DemoSpec = {
     [(activeStepIndex)]="active"
     skin="chips"
     aria-label="Data pipeline"
-    style="--cngx-step-chips-fill-active: #2563eb"
+    class="demo-stepper-chips-accent"
   >
     <div cngxStep label="Source" [completed]="active() > 0">
       <ng-template cngxStepContent>

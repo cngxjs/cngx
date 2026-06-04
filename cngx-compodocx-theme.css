@@ -259,17 +259,26 @@ a.cdx-related-pill:focus-visible {
   font-size: 0.92em;
 }
 
-/* Markdown tables in core-concept pages. The default bundle ships
- * basic borders + uppercased headers. Add a soft container, a
- * tinted header strip, and zebra striping so dense lookup tables
- * stay scannable without looking like a spreadsheet. */
-.cdx-readme table {
+/* Markdown / lookup tables. The default bundle ships basic borders +
+ * uppercased headers. Add a soft container, a tinted header strip, and
+ * zebra striping so dense lookup tables stay scannable without looking
+ * like a spreadsheet. Covers three surfaces that share the same
+ * markdown-table markup:
+ *   .cdx-readme    - core-concepts / additional pages
+ *   .cdx-prose     - getting-started pages (contributing, project README)
+ *   .cdx-tab-panel - the per-symbol Libraries tabs (overview, host
+ *                    bindings/listeners, examples) */
+.cdx-readme table,
+.cdx-prose table,
+.cdx-tab-panel table {
   border-radius: var(--radius-cdx-md, 8px);
   overflow: hidden;
   border: 1px solid var(--color-cdx-border-subtle);
   margin-block: 1.25rem;
 }
-.cdx-readme table thead th {
+.cdx-readme table thead th,
+.cdx-prose table thead th,
+.cdx-tab-panel table thead th {
   background: var(--color-cdx-bg-alt);
   border-bottom: 1px solid var(--color-cdx-border);
   cursor: default;
@@ -277,27 +286,43 @@ a.cdx-related-pill:focus-visible {
   font-size: 0.6875rem;
   letter-spacing: 0.06em;
 }
-.cdx-readme table tbody td {
+.cdx-readme table tbody td,
+.cdx-prose table tbody td,
+.cdx-tab-panel table tbody td {
   border-bottom: 1px solid var(--color-cdx-border-subtle);
   padding: 10px 16px;
   vertical-align: top;
   line-height: 1.5;
 }
-.cdx-readme table tbody tr:nth-child(even) td {
+.cdx-readme table tbody tr:nth-child(even) td,
+.cdx-prose table tbody tr:nth-child(even) td,
+.cdx-tab-panel table tbody tr:nth-child(even) td {
   background: color-mix(in srgb, var(--color-cdx-bg-alt) 40%, transparent);
 }
-.cdx-readme table tbody tr:last-child td {
+.cdx-readme table tbody tr:last-child td,
+.cdx-prose table tbody tr:last-child td,
+.cdx-tab-panel table tbody tr:last-child td {
   border-bottom: none;
 }
-.cdx-readme table tbody tr:hover td {
+.cdx-readme table tbody tr:hover td,
+.cdx-prose table tbody tr:hover td,
+.cdx-tab-panel table tbody tr:hover td {
   background: var(--color-cdx-bg-alt);
 }
 .cdx-readme table th:first-child,
-.cdx-readme table td:first-child {
+.cdx-readme table td:first-child,
+.cdx-prose table th:first-child,
+.cdx-prose table td:first-child,
+.cdx-tab-panel table th:first-child,
+.cdx-tab-panel table td:first-child {
   padding-left: 18px;
 }
 .cdx-readme table th:last-child,
-.cdx-readme table td:last-child {
+.cdx-readme table td:last-child,
+.cdx-prose table th:last-child,
+.cdx-prose table td:last-child,
+.cdx-tab-panel table th:last-child,
+.cdx-tab-panel table td:last-child {
   padding-right: 18px;
 }
 
@@ -460,6 +485,9 @@ a.cdx-related-pill:focus-visible {
 .cdx-entity-hero {
   background: var(--color-cdx-bg);
 }
+code.cdx-shiki-inline {
+  padding: 1px 6px !important;
+}
 .dark {
   /* Mirror cngx dark mode lift: +0.06-0.08 L on semantics, slight
    * chroma reduction. Surface stays in the same hue family. */
@@ -583,4 +611,7 @@ a.cdx-related-pill:focus-visible {
 
   /* ── Graphs ──────────────────────────────────────────────── */
   --color-cdx-graph-bg: oklch(0.24 0.01 250);
+  .cdx-entity-hero {
+    background: var(--color-cdx-bg);
+  }
 }

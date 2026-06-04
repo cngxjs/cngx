@@ -1,9 +1,9 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxStepper: all 5 skins side-by-side',
+  title: 'CngxStepper: all 7 skins side-by-side',
   subtitle:
-    'Every skin (classic + 4 new) shares one <code>active</code> index so the same step state renders across all five at once. Use Prev/Next or click a header - every row moves together, completed/active/upcoming stay in sync.',
+    'Every skin (classic + 6 variants) shares one <code>active</code> index so the same step state renders across all seven at once. Use Prev/Next or click a header - every row moves together, completed/active/upcoming stay in sync.',
   description:
     'Canonical reference for design review. Each row uses identical structure (3 steps, same labels) and only the <code>skin</code> input differs, so reviewers can spot layout shifts, alignment drift, or contrast regressions across skins by eye. The shared index keeps every skin on the same step, and <code>[completed]</code> is derived from <code>active</code> so the state is honest as you navigate.',
   level: 'organism',
@@ -59,6 +59,22 @@ export const STORY: DemoSpec = {
     <section>
       <h3>pill-segment</h3>
       <cngx-stepper [(activeStepIndex)]="active" skin="pill-segment" aria-label="Pill segment">
+        <div cngxStep label="Step 1" [completed]="active() > 0"></div>
+        <div cngxStep label="Step 2" [completed]="active() > 1"></div>
+        <div cngxStep label="Step 3"></div>
+      </cngx-stepper>
+    </section>
+    <section>
+      <h3>chips</h3>
+      <cngx-stepper [(activeStepIndex)]="active" skin="chips" aria-label="Chips">
+        <div cngxStep label="Step 1" [completed]="active() > 0"></div>
+        <div cngxStep label="Step 2" [completed]="active() > 1"></div>
+        <div cngxStep label="Step 3"></div>
+      </cngx-stepper>
+    </section>
+    <section>
+      <h3>breadcrumb</h3>
+      <cngx-stepper [(activeStepIndex)]="active" skin="breadcrumb" aria-label="Breadcrumb">
         <div cngxStep label="Step 1" [completed]="active() > 0"></div>
         <div cngxStep label="Step 2" [completed]="active() > 1"></div>
         <div cngxStep label="Step 3"></div>
