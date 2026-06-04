@@ -57,7 +57,11 @@ export class CngxStepperComplete {
    */
   readonly host = input<CngxStepperHost | null>(null);
 
-  /** Emits once after the finish action resolves successfully. */
+  /**
+   * Emits once per `pending → success` transition of the finish action.
+   * Does NOT re-emit when the `feedbackDuration` window resets the runner
+   * back to idle - the transition tracker guards on the success edge only.
+   */
   readonly completed = output<void>();
 
   private readonly injectedHost = inject(CNGX_STEPPER_HOST, { optional: true });

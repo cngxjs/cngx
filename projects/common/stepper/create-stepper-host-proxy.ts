@@ -31,7 +31,10 @@ const EMPTY_NODES: readonly CngxStepNode[] = Object.freeze([]);
  */
 export function createStepperHostProxy(supplier: () => CngxStepperHost | null): CngxStepperHost {
   return {
-    // Core projection / state - empty / out-of-range when null.
+    // Core projection / state - empty / out-of-range when null. The array
+    // fallbacks return the shared frozen EMPTY_NODES reference, so no `equal`
+    // fn is needed: the output is reference-stable across reads (either the
+    // supplier's own structural-equal signal value, or this one constant).
     stepTree: computed(() => supplier()?.stepTree() ?? EMPTY_NODES),
     flatSteps: computed(() => supplier()?.flatSteps() ?? EMPTY_NODES),
     stepsOnly: computed(() => supplier()?.stepsOnly() ?? EMPTY_NODES),

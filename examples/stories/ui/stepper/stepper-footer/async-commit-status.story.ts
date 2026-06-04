@@ -52,6 +52,11 @@ export const STORY: DemoSpec = {
 
     <cngx-stepper-footer>
       <button type="button" class="chip" cngxStepperFooterStart cngxStepperPrevious>Back</button>
+      <!--
+        Sanctioned pairing: cngxStepperNext (gates + advances, owns aria-disabled)
+        + cngxAsyncStatus (reflects commitState, owns aria-busy + the status switch).
+        Distinct from the dev-warned cngxStepperNext + cngxAsyncClick collision.
+      -->
       <button
         type="button"
         class="chip"
