@@ -289,6 +289,9 @@ export class CngxActionButton {
       }
 
       if (status === 'success') {
+        // Producer write for the buildAsyncStateView `lastUpdated` slot (no other
+        // source feeds it) - state production, not derived-state sync. This is the
+        // sanctioned signal-write-in-effect class, same as the async-state-view pattern.
         this.lastUpdatedState.set(new Date());
         const msg = this.toastSuccess();
         if (msg && this.toaster) {
