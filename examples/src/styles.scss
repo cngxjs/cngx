@@ -3539,3 +3539,10 @@ cngx-radio-group .cngx-radio + .cngx-radio {
 // alongside the cngx foundation so the dev server picks it up via HMR
 // (the angular.json `styles` array only reloads on full rebuild).
 @import '../../node_modules/@angular/material/prebuilt-themes/azure-blue.css';
+
+// Demo-only accent for the stepper `chips` skin stories (matches the
+// reference screenshot). Static demo styling, not a library default;
+// the chips skin's own default active fill follows --cngx-color-primary.
+.demo-stepper-chips-accent {
+  --cngx-step-chips-fill-active: #2563eb;
+}
