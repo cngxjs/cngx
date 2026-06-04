@@ -1,7 +1,17 @@
-import { computed, Directive, contentChild, input, type Signal, type TemplateRef } from '@angular/core';
+import {
+  computed,
+  Directive,
+  contentChild,
+  inject,
+  input,
+  isDevMode,
+  type Signal,
+  type TemplateRef,
+} from '@angular/core';
 
 import type { CngxAsyncState } from '@cngx/core/utils';
 
+import { CngxAsyncClick } from '../async-click/async-click.directive';
 import { CngxFailed, CngxPending, CngxSucceeded } from '../async-click/async-status-templates';
 
 /**
@@ -49,7 +59,7 @@ export function reflectAsyncDisplayStatus(
  * One responsibility - reflection - kept distinct from running an action
  * (Pillar 3). `aria-busy` lives in the `computed()` graph (Pillar 2) and
  * is owned here exclusively: never co-place this with `CngxAsyncClick` on
- * the same element, since both bind `aria-busy`.
+ * the same element, since both bind `aria-busy` (dev mode warns).
  *
  * ```html
  * <button [cngxAsyncStatus]="presenter.commitState" disableWhilePending>
@@ -76,6 +86,17 @@ export function reflectAsyncDisplayStatus(
   },
 })
 export class CngxAsyncStatus {
+  private readonly coPlacedAsyncClick = inject(CngxAsyncClick, { self: true, optional: true });
+
+  constructor() {
+    if (isDevMode() && this.coPlacedAsyncClick) {
+      console.warn(
+        'CngxAsyncStatus: [cngxAsyncStatus] and [cngxAsyncClick] on the same element ' +
+          'both bind aria-busy. Use one or the other.',
+      );
+    }
+  }
+
   /** The externally-owned state to reflect. `null` reflects as idle. */
   readonly state = input<CngxAsyncState<unknown> | null>(null, { alias: 'cngxAsyncStatus' });
 

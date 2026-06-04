@@ -1,10 +1,11 @@
 import { Component, signal } from '@angular/core';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { buildAsyncStateView, type AsyncStatus, type CngxAsyncState } from '@cngx/core/utils';
 
+import { CngxAsyncClick } from '../async-click/async-click.directive';
 import { CngxFailed, CngxPending, CngxSucceeded } from '../async-click/async-status-templates';
 import { CngxAsyncStatus, reflectAsyncDisplayStatus } from './async-status.directive';
 
@@ -133,6 +134,34 @@ describe('CngxAsyncStatus', () => {
     host.mock.status.set('error');
     fixture.detectChanges();
     expect(dir.error()).toBe('boom');
+  });
+
+  describe('dev-mode co-placement guard', () => {
+    let warnSpy: ReturnType<typeof vi.spyOn>;
+
+    beforeEach(() => {
+      warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    });
+
+    afterEach(() => {
+      warnSpy.mockRestore();
+    });
+
+    it('warns when [cngxAsyncStatus] and [cngxAsyncClick] share an element', () => {
+      @Component({
+        standalone: true,
+        imports: [CngxAsyncStatus, CngxAsyncClick],
+        template: `<button [cngxAsyncStatus]="null" [cngxAsyncClick]="action">Go</button>`,
+      })
+      class CoPlacedHost {
+        readonly action = () => Promise.resolve();
+      }
+      TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+      const fixture = TestBed.createComponent(CoPlacedHost);
+      fixture.detectChanges();
+      expect(warnSpy).toHaveBeenCalledTimes(1);
+      expect(warnSpy.mock.calls[0][0]).toContain('both bind aria-busy');
+    });
   });
 });
 
