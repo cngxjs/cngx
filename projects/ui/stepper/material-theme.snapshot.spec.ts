@@ -106,6 +106,8 @@ const SKIN_PROPERTY_PREFIXES = {
   'stripe-status-rich': ['--cngx-step-status-pill-'],
   'path-chevron': ['--cngx-step-chevron-tile-'],
   'pill-segment': ['--cngx-step-pill-segment-'],
+  chips: ['--cngx-step-chips-'],
+  breadcrumb: ['--cngx-step-breadcrumb-'],
 } as const;
 
 const VARIANT_PROPERTY_PREFIXES = {
