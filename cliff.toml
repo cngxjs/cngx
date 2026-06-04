@@ -1,0 +1,70 @@
+# git-cliff configuration - Angular-style changelog for cngx.
+# Each entry is a squash-merged pull request title (a Conventional Commit).
+# Non-library scopes and non-feature/-fix types are filtered out.
+# See CONTRIBUTING.md "Branching and Commit Workflow".
+
+[changelog]
+header = """
+# Changelog
+
+All notable changes to the cngx libraries. Each entry corresponds to one
+squash-merged pull request. Non-library scopes (examples, examples-gen, docs,
+ci, build, chore) and non-consumer-facing types are omitted by design.
+See CONTRIBUTING.md for the workflow.
+"""
+
+# Angular-style body: per release, group by type, sort by scope within a group,
+# breaking changes in their own trailing section.
+body = """
+{% if version %}
+## {{ version | trim_start_matches(pat="v") }} ({{ timestamp | date(format="%Y-%m-%d") }})
+{% else %}
+## Unreleased
+{% endif %}
+{% for group, commits in commits | group_by(attribute="group") %}
+{%- if group is starting_with("<!--") %}
+### {{ group | striptags | trim }}
+{% for commit in commits | sort(attribute="scope") %}
+- {% if commit.scope %}**{{ commit.scope }}:** {% endif %}{{ commit.message }} ([{{ commit.id | truncate(length=7, end="") }}](https://github.com/cngxjs/cngx/commit/{{ commit.id }}))
+{%- endfor %}
+{% endif -%}
+{% endfor %}
+{%- set breaking = commits | filter(attribute="breaking", value=true) -%}
+{%- if breaking | length > 0 %}
+### BREAKING CHANGES
+{% for commit in breaking %}
+- {% if commit.scope %}**{{ commit.scope }}:** {{ commit.breaking_description }}{% else %}{{ commit.breaking_description }}{% endif %}
+{%- endfor %}
+{% endif %}
+"""
+
+trim = true
+
+# Postprocessors run on the rendered text.
+# 1. Replace any em-dash (U+2014) with a hyphen - it must never reach the file.
+# 2. Turn (#123) PR references into links.
+postprocessors = [
+  { pattern = "\\x{2014}", replace = "-" },
+  { pattern = "#(\\d+)", replace = "[#${1}](https://github.com/cngxjs/cngx/issues/${1})" },
+]
+
+[git]
+conventional_commits = true
+filter_unconventional = true
+filter_commits = true
+protect_breaking_commits = true
+tag_pattern = "v[0-9]*"
+sort_commits = "oldest"
+
+# First match wins. Scope-skip runs first so a feat(examples) is dropped
+# regardless of its type; the trailing catch-all drops every type that is not
+# feat/fix/perf/revert (chore, test, docs, ci, build, refactor) - breaking ones
+# survive via protect_breaking_commits for the BREAKING CHANGES section.
+commit_parsers = [
+  { field = "scope", pattern = "^(examples|examples-gen|docs|ci|build|chore|changelog)(/|$)", skip = true },
+  { message = "^feat", group = "<!-- 1 -->Features" },
+  { message = "^fix", group = "<!-- 2 -->Bug Fixes" },
+  { message = "^perf", group = "<!-- 3 -->Performance Improvements" },
+  { message = "^revert", group = "<!-- 4 -->Reverts" },
+  { message = ".*", skip = true },
+]
