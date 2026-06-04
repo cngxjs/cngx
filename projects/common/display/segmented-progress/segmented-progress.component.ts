@@ -40,6 +40,9 @@ const segmentsEqual = (a: readonly SegmentState[], b: readonly SegmentState[]): 
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/display/segmented-progress/segmented-progress.component.ts
  * @since 0.1.0
  * @relatedTo CngxStepper, CngxBadge
+ * <example-url>http://localhost:4200/#/common/display/segmented-progress/value-total</example-url>
+ * <example-url>http://localhost:4200/#/common/display/segmented-progress/lightbox-position</example-url>
+ * <example-url>http://localhost:4200/#/common/display/segmented-progress/error-segment</example-url>
  */
 @Component({
   selector: 'cngx-segmented-progress',

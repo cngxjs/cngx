@@ -46,6 +46,13 @@ import {
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/stepper/footer/stepper-footer.component.ts
  * @since 0.1.0
  * @relatedTo CngxStepper, CngxStepperPrevious, CngxStepperNext, CngxStepperComplete, CngxStepperCount
+ * <example-url>http://localhost:4200/#/ui/stepper/stepper-footer/back-continue</example-url>
+ * <example-url>http://localhost:4200/#/ui/stepper/stepper-footer/save-draft-extra-button</example-url>
+ * <example-url>http://localhost:4200/#/ui/stepper/stepper-footer/footer-with-progress-center</example-url>
+ * <example-url>http://localhost:4200/#/ui/stepper/stepper-footer/percent-complete-center</example-url>
+ * <example-url>http://localhost:4200/#/ui/stepper/stepper-footer/segmented-progress-center</example-url>
+ * <example-url>http://localhost:4200/#/ui/stepper/stepper-footer/complete-finish-button</example-url>
+ * <example-url>http://localhost:4200/#/ui/stepper/stepper-footer/async-commit-status</example-url>
  */
 @Component({
   selector: 'cngx-stepper-footer',
