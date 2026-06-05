@@ -4,8 +4,8 @@ export const STORY: DemoSpec = {
   title: 'CngxStepper: footer-only navigation',
   subtitle:
     'Set <code>headerNavigation="none"</code> and the step headers render as inert labels - no buttons, no roving focus, no click. The <code>&lt;cngx-stepper-footer&gt;</code> Back / Continue pair is the only way through, which is the dominant wizard pattern.',
-  description:
-    'A linear checkout wizard where the header strip is a read-only progress indicator. Tab order skips the headers and lands on the footer controls; the active step still carries aria-current="step" and the per-step status. Compare with the default headerNavigation="visited", where the headers are focusable buttons.',
+    description:
+    'A checkout wizard where the header strip is a read-only progress indicator. Tab order skips the headers and lands on the footer controls; the active step still carries aria-current="step" and the per-step status. The footer Back / Continue pair drives navigation. Compare with the default headerNavigation="visited", where the headers are focusable buttons.',
   level: 'organism',
   audience: ['dev', 'a11y'],
   artifact: 'standalone',
@@ -29,7 +29,6 @@ export const STORY: DemoSpec = {
   template: `  <cngx-stepper
     [(activeStepIndex)]="active"
     headerNavigation="none"
-    [linear]="true"
     aria-label="Checkout"
   >
     <div cngxStep label="Cart" [completed]="active() > 0">
