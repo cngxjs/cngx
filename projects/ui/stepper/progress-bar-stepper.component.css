@@ -1,6 +1,6 @@
 /**
  * @overview
- * Structural skin for `<cngx-progress-bar-stepper>`. Theming flows
+ * Structural skin for `<cngx-progress-bar-stepper>`.\ Theming flows
  * through the embedded `<cngx-progress>` primitive's
  * `--cngx-progress-*` custom properties, so this file only owns the
  * layout (stacked bar + optional caption).
@@ -34,4 +34,36 @@
   font-size: var(--cngx-progress-bar-stepper-caption-font-size, 0.8125rem);
   color: var(--cngx-progress-bar-stepper-caption-color, currentColor);
   opacity: var(--cngx-progress-bar-stepper-caption-opacity, 0.75);
+}
+
+/* Error state re-aims the embedded bar fill onto the danger token - the
+   primitive stays untouched, it just reads whatever `--cngx-progress-color`
+   resolves to. */
+.cngx-progress-bar-stepper[data-state='error'] {
+  --cngx-progress-color: var(
+    --cngx-step-errored-color,
+    var(--cngx-color-danger, oklch(0.45 0.15 25))
+  );
+}
+
+.cngx-progress-bar-stepper__error {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--cngx-progress-bar-stepper-error-gap, 0.375rem);
+  font-size: var(--cngx-progress-bar-stepper-error-font-size, 0.8125rem);
+  color: var(--cngx-step-errored-color, var(--cngx-color-danger, oklch(0.45 0.15 25)));
+}
+
+.cngx-progress-bar-stepper__error-glyph {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: var(--cngx-progress-bar-stepper-error-glyph-size, 1.1em);
+  height: var(--cngx-progress-bar-stepper-error-glyph-size, 1.1em);
+  border-radius: 50%;
+  background: var(--cngx-step-errored-color, var(--cngx-color-danger, oklch(0.45 0.15 25)));
+  color: var(--cngx-progress-bar-stepper-error-glyph-color, var(--cngx-color-on-danger, white));
+  font-size: 0.75em;
+  font-weight: 700;
+  line-height: 1;
 }
