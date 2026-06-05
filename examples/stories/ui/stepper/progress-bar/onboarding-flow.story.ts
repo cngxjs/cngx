@@ -12,9 +12,8 @@ export const STORY: DemoSpec = {
   moduleImports: [
     'import { CngxStep } from \'@cngx/common/stepper\';',
     'import { CngxProgressBarStepper } from \'@cngx/ui/stepper\';',
-    'import { CngxErrorAggregator, CngxErrorSource } from \'@cngx/common/interactive\';',
   ],
-  imports: ['CngxProgressBarStepper', 'CngxStep', 'CngxErrorAggregator', 'CngxErrorSource'],
+  imports: ['CngxProgressBarStepper', 'CngxStep'],
   setup: `protected readonly active = signal(0);
   protected readonly prefsInvalid = signal(false);
   protected readonly steps = [
@@ -38,10 +37,7 @@ export const STORY: DemoSpec = {
     >
       <div cngxStep label="Account"></div>
       <div cngxStep label="Profile"></div>
-      <fieldset cngxErrorAggregator #prefsAgg="cngxErrorAggregator" style="display:contents">
-        <input cngxErrorSource="prefs" [when]="prefsInvalid()" hidden />
-        <div cngxStep label="Preferences" [errorAggregator]="prefsAgg"></div>
-      </fieldset>
+      <div cngxStep label="Preferences" [error]="prefsInvalid()"></div>
       <div cngxStep label="Connections"></div>
       <div cngxStep label="Finish"></div>
     </cngx-progress-bar-stepper>

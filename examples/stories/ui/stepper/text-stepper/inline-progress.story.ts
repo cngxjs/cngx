@@ -11,10 +11,10 @@ export const STORY: DemoSpec = {
   apiComponents: ['CngxTextStepper', 'CngxStep', 'CngxSwipe'],
   moduleImports: [
     'import { CngxStep } from \'@cngx/common/stepper\';',
-    'import { CngxSwipe, type SwipeDirection, CngxErrorAggregator, CngxErrorSource } from \'@cngx/common/interactive\';',
+    'import { CngxSwipe, type SwipeDirection } from \'@cngx/common/interactive\';',
     'import { CngxTextStepper } from \'@cngx/ui/stepper\';',
   ],
-  imports: ['CngxTextStepper', 'CngxStep', 'CngxSwipe', 'CngxErrorAggregator', 'CngxErrorSource'],
+  imports: ['CngxTextStepper', 'CngxStep', 'CngxSwipe'],
   setup: `protected readonly active = signal(0);
   protected readonly showLabel = signal(false);
   protected readonly paymentInvalid = signal(false);
@@ -48,10 +48,7 @@ export const STORY: DemoSpec = {
         [showCurrentLabel]="showLabel()"
       >
         <div cngxStep label="Customer"></div>
-        <fieldset cngxErrorAggregator #paymentAgg="cngxErrorAggregator" style="display:contents">
-          <input cngxErrorSource="payment-card" [when]="paymentInvalid()" hidden />
-          <div cngxStep label="Payment" [errorAggregator]="paymentAgg"></div>
-        </fieldset>
+        <div cngxStep label="Payment" [error]="paymentInvalid()"></div>
         <div cngxStep label="Review"></div>
       </cngx-text-stepper>
     </header>
