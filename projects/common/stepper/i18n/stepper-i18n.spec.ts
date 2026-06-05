@@ -34,7 +34,7 @@ describe('CngxStepperI18n', () => {
           withStepperI18nLabels({
             commitInFlight: 'Speichere Schritt…',
             commitRolledBackTo: (label) =>
-              `Konnte nicht speichern — zurück zu „${label}".`,
+              `Konnte nicht speichern - zurück zu „${label}".`,
           }),
         ),
       ],
@@ -42,10 +42,10 @@ describe('CngxStepperI18n', () => {
     const i18n = TestBed.inject(CNGX_STEPPER_I18N);
     expect(i18n.commitInFlight).toBe('Speichere Schritt…');
     expect(i18n.commitRolledBackTo('Kunde')).toBe(
-      'Konnte nicht speichern — zurück zu „Kunde".',
+      'Konnte nicht speichern - zurück zu „Kunde".',
     );
-    // Defensive fallback unset — keeps its English default.
-    expect(i18n.commitFailedRetry).toBe('Commit failed — retry?');
+    // Defensive fallback unset - keeps its English default.
+    expect(i18n.commitFailedRetry).toBe('Commit failed - retry?');
   });
 
   it('withStepperI18nLabels composes partial overrides on top of defaults', () => {
@@ -85,7 +85,7 @@ describe('CngxStepperI18n', () => {
   });
 
   it('withStepperI18nLabels carries the _target=i18n discriminator', () => {
-    // Branding axis — guards against accidental loss of the
+    // Branding axis - guards against accidental loss of the
     // `_target` brand, which would let provideCngxStepper silently
     // drop the feature in dev-mode.
     expect(withStepperI18nLabels({ stepperLabel: 'X' })._target).toBe('i18n');

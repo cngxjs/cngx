@@ -485,7 +485,7 @@ describe('CngxStepperPresenter', () => {
       const originBefore = presenter.originIndexDuringCommit();
       presenter.clearLastFailed();
       expect(presenter.lastFailedIndex()).toBeUndefined();
-      // Origin slot is independent — clearLastFailed does not touch it.
+      // Origin slot is independent - clearLastFailed does not touch it.
       expect(presenter.originIndexDuringCommit()).toBe(originBefore);
     });
 
@@ -506,7 +506,7 @@ describe('CngxStepperPresenter', () => {
 
     it('no-action fast path clears lastFailedIndex when re-picking the failed target', () => {
       // Reject first via commit-action, then unbind the action and
-      // re-pick — the no-action fast path must still close the
+      // re-pick - the no-action fast path must still close the
       // rejection state per Pillar 2 (every state change communicates).
       let action: (() => boolean) | null = () => false;
       TestBed.resetTestingModule();

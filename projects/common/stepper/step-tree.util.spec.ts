@@ -145,7 +145,7 @@ describe('stepNodesEqual', () => {
 
   it('catches re-parenting that flatStepsEqual misses (synthetic depth=-1 case)', () => {
     // Group children synthesise depth=-1 + flatIndex=-1, so
-    // flatStepsEqual reduces to (id, kind) — silently ignoring
+    // flatStepsEqual reduces to (id, kind) - silently ignoring
     // a parent change. stepNodesEqual adds parentId to the
     // comparison so a child re-parented from group A to group B
     // is detected.

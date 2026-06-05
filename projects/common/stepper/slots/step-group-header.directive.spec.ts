@@ -10,7 +10,7 @@ import type { CngxStepNode } from '../stepper-host.token';
   imports: [CngxStepGroupHeader],
   template: `
     <ng-template cngxStepGroupHeader #tpl="cngxStepGroupHeader" let-group="group" let-status="status">
-      <h4>{{ group.label() }} — {{ status }}</h4>
+      <h4>{{ group.label() }} - {{ status }}</h4>
     </ng-template>
   `,
 })
