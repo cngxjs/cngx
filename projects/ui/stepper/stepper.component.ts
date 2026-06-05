@@ -30,6 +30,7 @@ import {
   CngxStepBadge,
   CngxStepBusySpinner,
   type CngxStepContentContext,
+  CngxStepError,
   CngxStepGroupHeader,
   CngxStepIndicator,
   type CngxStepLabelContext,
@@ -179,6 +180,7 @@ export class CngxStepper implements CngxStepPanelHost {
   private readonly badgeSlot = contentChild(CngxStepBadge);
   private readonly busySpinnerSlot = contentChild(CngxStepBusySpinner);
   private readonly rejectionSlot = contentChild(CngxStepRejection);
+  private readonly errorSlot = contentChild(CngxStepError);
   private readonly groupHeaderSlot = contentChild(CngxStepGroupHeader);
   private readonly emptySlot = contentChild(CngxStepperEmpty);
 
@@ -186,7 +188,7 @@ export class CngxStepper implements CngxStepPanelHost {
   protected readonly glyphs = CNGX_STEPPER_GLYPHS;
 
   /**
-   * 6-slot template cascade (indicator/badge/busySpinner/rejection/
+   * Template cascade (indicator/badge/busySpinner/rejection/stepError/
    * groupHeader/empty). Resolution: per-instance slot directive →
    * `CNGX_STEPPER_CONFIG.templates.<key>` → `null` (built-in default).
    */
@@ -195,6 +197,7 @@ export class CngxStepper implements CngxStepPanelHost {
     badgeSlot: this.badgeSlot,
     busySpinnerSlot: this.busySpinnerSlot,
     rejectionSlot: this.rejectionSlot,
+    errorSlot: this.errorSlot,
     groupHeaderSlot: this.groupHeaderSlot,
     emptySlot: this.emptySlot,
     config: this.config,
@@ -226,6 +229,17 @@ export class CngxStepper implements CngxStepPanelHost {
   protected readonly resolvedHeaderNavigation = computed<CngxStepperHeaderNavigation>(
     () => this.headerNavigation() ?? this.config.headerNavigation ?? 'visited',
   );
+
+  /**
+   * Whether the per-step error message renders in the strip label area.
+   * Only the skins with room (`classic`, `stripe-status-rich`) carry the
+   * text; the mini / label-only skins surface the error via the badge /
+   * tile and fold the message into the mobile aggregate line instead.
+   */
+  protected readonly rendersStepErrorText = computed<boolean>(() => {
+    const skin = this.hostAttrs.resolvedSkin();
+    return skin === 'classic' || skin === 'stripe-status-rich';
+  });
 
   /** Mobile-swipe navigation host directive (Level-2 composition). */
   protected readonly swipeNav = inject(CngxStepperSwipeNav, { host: true });

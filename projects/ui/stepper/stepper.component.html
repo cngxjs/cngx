@@ -249,6 +249,16 @@
     }
   </span>
   <span class="cngx-stepper__status-pill" aria-hidden="true">{{ statusLabelFor(node) }}</span>
+  @if (rendersStepErrorText() && slotContext.showStepError(node)) {
+    <span class="cngx-stepper__error">
+      <ng-container
+        *ngTemplateOutlet="
+          templates.stepError() ?? defaultStepError;
+          context: slotContext.stepErrorContextFor(node)
+        "
+      ></ng-container>
+    </span>
+  }
   @if (slotContext.showRejection(node)) {
     <span class="cngx-stepper__rejection-icon" aria-hidden="true">
       <ng-container
@@ -276,6 +286,7 @@
   <span class="cngx-stepper__indicator-glyph">{{ position }}</span>
 </ng-template>
 <ng-template #defaultBadge>{{ glyphs.errorBadge }}</ng-template>
+<ng-template #defaultStepError let-message="message">{{ message }}</ng-template>
 <ng-template #defaultBusySpinner></ng-template>
 <ng-template #defaultRejection>{{ glyphs.rejectionIcon }}</ng-template>
 <ng-template #defaultGroupHeader let-group="group">

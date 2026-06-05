@@ -311,6 +311,24 @@
       margin-inline-start: var(--cngx-step-gap, 0.5rem);
     }
 
+    /* The error message wraps below the label/status row, so the step
+       allows its flex children to wrap. Inert unless the full-basis
+       error span is present (classic + stripe-status-rich only). */
+    .cngx-stepper__step {
+      flex-wrap: wrap;
+    }
+
+    /* Per-step validation reason (*cngxStepError). Full-basis so it
+       drops to its own line under the label; thematic colour tracks the
+       errored token. Rendered only where the skin has label-area room. */
+    .cngx-stepper__error {
+      flex-basis: 100%;
+      margin-top: var(--cngx-step-error-gap, 0.25rem);
+      font-size: var(--cngx-step-error-font-size, 0.75rem);
+      line-height: var(--cngx-step-error-line-height, 1.3);
+      color: var(--cngx-step-errored-color, var(--cngx-color-danger, oklch(0.45 0.15 25)));
+    }
+
     /* Consumer-owned busy spinner body via `*cngxStepBusySpinner` slot -
        drop the default ring chrome (fixed size, circular border, spin
        animation) when the slot rendered content of its own, otherwise
