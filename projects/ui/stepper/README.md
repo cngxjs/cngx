@@ -172,3 +172,38 @@ onSwipe(direction: SwipeDirection): void {
 Keyboard navigation (arrow keys, Home / End) is built into the indicator and needs no wiring; swipe is the touch counterpart you add yourself.
 
 **Caveat:** only wire swipe onto panels that are genuinely paged content (onboarding, galleries). Do not make a panel that holds real form fields swipe-navigable - a horizontal drag while editing inputs is ambiguous and fights native gestures. For form wizards, keep explicit Back / Next controls.
+
+## Header navigation
+
+`headerNavigation` decides whether the step headers are controls or pure indicators. It is a two-value policy - `'none'` or `'visited'` - that folds into the existing `linear` axis instead of adding a third mode.
+
+|Value|Headers|Reachability|
+|-|-|-|
+|`'none'`|Inert labels (no button, no roving, no click). The footer is the only navigation.|n/a - headers never navigate|
+|`'visited'` (default)|Focusable buttons|Gated by `linear`|
+
+With `'visited'`, the `linear` flag does the rest:
+
+- `linear="false"` (the default): every enabled header is clickable - free navigation, the old behaviour.
+- `linear="true"`: only already-visited (completed) steps are reachable; forward-incomplete headers carry `aria-disabled="true"` and stay focusable so the gate is announced, not a silent no-op.
+
+There is no separate `'free'` value - "free" is just `headerNavigation="visited"` with `linear="false"`.
+
+```html
+<!-- Footer-only wizard: headers are read-only indicators. -->
+<cngx-stepper headerNavigation="none" [linear]="true" aria-label="Checkout">
+  <div cngxStep label="Cart"></div>
+  <div cngxStep label="Address"></div>
+  <div cngxStep label="Payment"></div>
+  <cngx-stepper-footer>
+    <button cngxStepperFooterStart cngxStepperPrevious>Back</button>
+    <button cngxStepperFooterEnd cngxStepperNext>Continue</button>
+  </cngx-stepper-footer>
+</cngx-stepper>
+```
+
+Set the app-wide default with `provideStepperConfig(withStepperHeaderNavigation('none'))`; the per-instance `[headerNavigation]` input wins over it. The Material twin `<cngx-mat-stepper>` honours `'none'` by suppressing header click / key activation (Material owns the header chrome, so this is a suppression, not a re-render).
+
+### Migration
+
+The default is `'visited'`. For non-linear steppers (`linear="false"`, the default) this is identical to previous behaviour - every header stays clickable. **Linear steppers change:** headers that used to be clickable-but-blocked are now marked `aria-disabled` and only visited steps are reachable. If you relied on always-clickable headers under `linear="true"`, set `[linear]="false"` (or keep `headerNavigation="visited"` and gate completion yourself).
