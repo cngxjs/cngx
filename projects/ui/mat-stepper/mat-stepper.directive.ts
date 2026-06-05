@@ -21,27 +21,28 @@ import {
 } from './material-bridge/handle';
 
 /**
- * Attaches to an existing `<mat-stepper>` and bridges it to a
+ * The Material twin of the cngx stepper: attach `cngxMatStepper` to a
+ * vanilla `<mat-stepper>` and it is bridged to a
  * {@link CngxStepperPresenter} - consumers gain the commit-action
  * lifecycle, `CNGX_STATEFUL` (so `<cngx-toast-on />` /
- * `<cngx-banner-on />` compose as children), and the step-handle
- * registry from one attribute.
+ * `<cngx-banner-on />` compose as children), the shared
+ * `CNGX_STEPPER_HOST` contract (so a `<cngx-stepper-footer>` can drive
+ * Back / Next instead of Material's own buttons via
+ * `[host]="ref.presenter"`), and the step-handle registry - all from
+ * one attribute.
  *
- * Sibling-additive to `<cngx-mat-stepper>` (the thin-wrapper
- * organism in `@cngx/ui/mat-stepper`): the wrapper authors fresh
- * markup, this directive upgrades existing Material markup.
- * `exportAs` differs (`cngxMatStepperDirective`) to avoid colliding
- * with the wrapper's `cngxMatStepper`.
+ * This is the instrumentation pattern: Material owns the rendering and
+ * the consumer authors native `<mat-step>` markup; cngx is the
+ * behaviour layer. Topology mirrors `[cngxMatTabs]`.
  *
- * Topology mirrors `[cngxMatTabs]`: Material is the host, cngx is
- * the instrumentation layer.
+ * @playground Bridge instrumentation ./examples/bridge/bridge-example.component.ts
  *
  * @category ui/mat-stepper
  * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/mat-stepper/mat-stepper.directive.ts
  * @since 0.1.0
- * @relatedTo CngxMatStepper, CngxStepperPresenter, CngxMatTabs
+ * @relatedTo CngxStepper, CngxStepperPresenter, CngxMatTabs, CngxStepperFooter
  */
 @Directive({
   selector: '[cngxMatStepper]',
@@ -57,7 +58,12 @@ import {
 })
 export class CngxMatStepperBridge {
   private readonly matStepper = inject(MatStepper, { self: true });
-  private readonly presenter = inject(CNGX_STEPPER_HOST);
+  /**
+   * Shared host contract. Public so a `<cngx-stepper-footer>` placed
+   * outside the `<mat-stepper>` can bind `[host]="ref.presenter"` (via
+   * `#ref="cngxMatStepperDirective"`) and drive navigation.
+   */
+  readonly presenter = inject(CNGX_STEPPER_HOST);
   private readonly destroyRef: DestroyRef = inject(InjectableDestroyRef);
   private readonly injector: Injector = inject(InjectableInjector);
 
