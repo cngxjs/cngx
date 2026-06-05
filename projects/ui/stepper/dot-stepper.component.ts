@@ -16,10 +16,12 @@ import {
   type CngxDotStepperDotContext,
   CngxStepperPresenter,
   CngxStepperSwipeNav,
+  CNGX_STEPPER_GLYPHS,
   CNGX_STEPPER_HOST,
   createStepperStateView,
   injectStepperConfig,
   injectStepperI18n,
+  resolveStepperErrorSummary,
   type CngxStepNode,
 } from '@cngx/common/stepper';
 import { CngxSwipe } from '@cngx/common/interactive';
@@ -105,6 +107,24 @@ export class CngxDotStepper {
     presenter: this.presenter,
     stepsOnly: this.stepNodes,
   });
+
+  /** Default error glyph for the aggregate error line. */
+  protected readonly errorGlyph = CNGX_STEPPER_GLYPHS.errorBadge;
+
+  /**
+   * Aggregate error line. The dot row only colours the errored dot, so
+   * the real reason (the `[error]` string / aggregator label) needs a
+   * text surface; this is it. Falls back to the count phrase for
+   * multiple errors. Pillar 2.
+   */
+  protected readonly errorText = computed<string>(() =>
+    resolveStepperErrorSummary(
+      this.stateView,
+      this.stepNodes,
+      this.i18n,
+      (node) => node.errorMessage?.() ?? node.errorAggregator?.()?.errorLabels?.()?.[0],
+    ),
+  );
 
   private readonly dotSlot = contentChild(CngxDotStepperDot);
 

@@ -268,4 +268,41 @@ describe('CngxDotStepper', () => {
       expect(row.style.touchAction).toBe('pan-y');
     });
   });
+
+  describe('aggregate error line', () => {
+    @Component({
+      standalone: true,
+      imports: [CngxDotStepper, CngxStep],
+      template: `
+        <cngx-dot-stepper [(activeStepIndex)]="active" aria-label="Carousel">
+          <div cngxStep label="One"></div>
+          <div cngxStep label="Two" [error]="err()"></div>
+          <div cngxStep label="Three"></div>
+        </cngx-dot-stepper>
+      `,
+    })
+    class ErrHost {
+      active = signal(0);
+      err = signal<string | boolean>('Card declined');
+    }
+
+    it('surfaces the real [error] message below the dot row', () => {
+      TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+      const fixture = TestBed.createComponent(ErrHost);
+      fixture.detectChanges();
+      const line = fixture.nativeElement.querySelector(
+        '.cngx-dot-stepper__error-text',
+      ) as HTMLElement;
+      expect(line).not.toBeNull();
+      expect(line.textContent?.trim()).toBe('Card declined');
+    });
+
+    it('hides the error line when no step errors', () => {
+      TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+      const fixture = TestBed.createComponent(ErrHost);
+      fixture.componentInstance.err.set(false);
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('.cngx-dot-stepper__error')).toBeNull();
+    });
+  });
 });
