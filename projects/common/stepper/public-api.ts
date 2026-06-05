@@ -153,6 +153,12 @@ export {
 } from './strip-keyboard-nav';
 
 export {
+  createStepperStateView,
+  resolveStepperErrorSummary,
+  type CngxStepperStateView,
+} from './stepper-state-view';
+
+export {
   createStepperSlotContextBuilders,
   type CngxStepperSlotContextBuilders,
   type CngxStepperSlotContextBuildersInputs,
