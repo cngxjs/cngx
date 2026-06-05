@@ -85,6 +85,19 @@ export type CngxStepperSkin =
 export type CngxStepperMobileCollapse = 'text' | 'dots' | 'off';
 
 /**
+ * Header-navigation policy for `<cngx-stepper>`. `'none'` renders the
+ * step headers as inert labels - the footer is the sole navigation
+ * control. `'visited'` (default) keeps the headers as focusable
+ * buttons; reachability folds into the `linear` axis (`linear=false`
+ * is free click-through, `linear=true` is backward-to-visited only,
+ * with linear-unreachable headers marked `aria-disabled`). There is no
+ * discrete `'free'` value - `'free'` is `'visited'` + `linear=false`.
+ *
+ * @category common/stepper
+ */
+export type CngxStepperHeaderNavigation = 'none' | 'visited';
+
+/**
  * Where the mobile auto-collapse indicator (text caption or dot row)
  * sits relative to the active step's panel content under narrow
  * viewports. `'top'` (default) keeps the indicator above the panel;
@@ -120,6 +133,13 @@ export interface CngxStepperConfig {
   readonly routerSyncMode?: 'fragment' | 'queryParam';
   readonly routerSyncParam?: string;
   readonly skin?: CngxStepperSkin;
+  /**
+   * Header-navigation policy. `'none'` makes the step headers inert
+   * labels (footer-only navigation); `'visited'` (default) keeps them
+   * focusable buttons whose reachability folds into the `linear` axis.
+   * Per-instance `[headerNavigation]` Input still wins.
+   */
+  readonly headerNavigation?: CngxStepperHeaderNavigation;
   /**
    * Opt-in connector rail between adjacent step indicators on the
    * classic skin. Off by default. The rule is double-scoped on
@@ -169,6 +189,7 @@ const STEPPER_CONFIG_DEFAULTS: Required<
   routerSyncMode: 'fragment',
   routerSyncParam: 'step',
   skin: 'classic',
+  headerNavigation: 'visited',
   connectors: false,
   mobileCollapse: 'text',
   mobileBreakpoint: STEPPER_DEFAULT_MOBILE_BREAKPOINT,
@@ -363,6 +384,21 @@ export function withStepperMobileIndicatorPosition(
  */
 export function withStepperMobileSwipe(enabled: boolean): CngxStepperConfigFeature {
   return defineStepperConfigFeature((cfg) => ({ ...cfg, mobileSwipe: enabled }));
+}
+
+/**
+ * Set the app-wide default header-navigation policy for
+ * `<cngx-stepper>`. `'none'` renders inert label headers (footer-only
+ * navigation); `'visited'` (library default) keeps the headers as
+ * focusable buttons whose reachability folds into the `linear` axis.
+ * Per-instance `[headerNavigation]` Input still wins.
+ *
+ * @category common/stepper
+ */
+export function withStepperHeaderNavigation(
+  mode: CngxStepperHeaderNavigation,
+): CngxStepperConfigFeature {
+  return defineStepperConfigFeature((cfg) => ({ ...cfg, headerNavigation: mode }));
 }
 
 /**
