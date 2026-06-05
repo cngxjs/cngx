@@ -10,6 +10,7 @@ import {
 import type { CngxDotStepperDotContext } from './slots/dot-stepper-dot.directive';
 import type { CngxStepBadgeContext } from './slots/step-badge.directive';
 import type { CngxStepBusySpinnerContext } from './slots/step-busy-spinner.directive';
+import type { CngxStepErrorContext } from './slots/step-error.directive';
 import type { CngxStepGroupHeaderContext } from './slots/step-group-header.directive';
 import type { CngxStepIndicatorContext } from './slots/step-indicator.directive';
 import type { CngxStepRejectionContext } from './slots/step-rejection.directive';
@@ -51,6 +52,7 @@ export interface CngxStepperTemplates {
   readonly badge?: TemplateRef<CngxStepBadgeContext>;
   readonly busySpinner?: TemplateRef<CngxStepBusySpinnerContext>;
   readonly rejection?: TemplateRef<CngxStepRejectionContext>;
+  readonly stepError?: TemplateRef<CngxStepErrorContext>;
   readonly groupHeader?: TemplateRef<CngxStepGroupHeaderContext>;
   readonly empty?: TemplateRef<void>;
   readonly dotStepperDot?: TemplateRef<CngxDotStepperDotContext>;
@@ -485,6 +487,23 @@ export function withStepRejectionTemplate(
   return defineStepperConfigFeature((cfg) => ({
     ...cfg,
     templates: { ...cfg.templates, rejection: template },
+  }));
+}
+
+/**
+ * Override the default `*cngxStepError` template app-wide. The slot
+ * renders the per-step validation reason on the skins with a label area
+ * (classic / stripe-status-rich). Per-instance directive still wins;
+ * this moves the cascade middle tier.
+ *
+ * @category common/stepper
+ */
+export function withStepErrorTemplate(
+  template: TemplateRef<CngxStepErrorContext>,
+): CngxStepperConfigFeature {
+  return defineStepperConfigFeature((cfg) => ({
+    ...cfg,
+    templates: { ...cfg.templates, stepError: template },
   }));
 }
 

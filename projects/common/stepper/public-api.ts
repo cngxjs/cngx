@@ -119,6 +119,7 @@ export {
   withStepBadgeTemplate,
   withStepBusySpinnerTemplate,
   withStepRejectionTemplate,
+  withStepErrorTemplate,
   withStepGroupHeaderTemplate,
   withStepperEmptyTemplate,
   withDotStepperDotTemplate,
