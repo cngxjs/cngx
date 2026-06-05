@@ -12,9 +12,10 @@
       role="img"
       [class.cngx-dot-stepper__dot--active]="isActive(node, i)"
       [class.cngx-dot-stepper__dot--completed]="i < activeIndex()"
+      [class.cngx-dot-stepper__dot--error]="stateView.hasError(node)"
       [attr.aria-current]="isActive(node, i) ? 'step' : null"
       [attr.aria-label]="ariaLabelFor(node, i)"
-      [attr.data-state]="node.state()"
+      [attr.data-state]="dotState(node)"
     >
       @if (dotTpl) {
         <ng-container *ngTemplateOutlet="dotTpl; context: dotContextFor(node, i)" />
