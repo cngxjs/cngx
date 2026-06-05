@@ -1,0 +1,50 @@
+@use '@angular/material' as mat;
+
+// The playground scaffold only injects a Material theme + the icon/type
+// fonts when compodocx's Material auto-detect fires, and `<mat-stepper>`
+// is not on that selector list - so this example styles itself. The
+// host component uses `ViewEncapsulation.None`, so these `html` / `body`
+// rules are global. CSS `@import`s must follow `@use` and lead the
+// emitted output, so they sit here at the top.
+@import url('https://fonts.googleapis.com/icon?family=Material+Icons');
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap');
+
+html {
+  color-scheme: light;
+
+  // A real M3 theme via SCSS, not a prebuilt `.css`. Components read the
+  // `--mat-sys-*` tokens this emits.
+  @include mat.theme(
+    (
+      color: (
+        theme-type: light,
+        primary: mat.$azure-palette,
+        tertiary: mat.$blue-palette,
+      ),
+      typography: Roboto,
+      density: 0,
+    )
+  );
+
+  background: var(--mat-sys-background);
+  color: var(--mat-sys-on-background);
+  font: var(--mat-sys-body-medium);
+}
+
+body {
+  margin: 16px;
+}
+
+.bridge-demo__chrome {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.bridge-demo__readout {
+  margin-top: 12px;
+  font: var(--mat-sys-label-large);
+  color: var(--mat-sys-on-surface-variant);
+}
