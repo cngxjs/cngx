@@ -12,6 +12,7 @@ import {
   provideStepperI18n,
   withStepperAriaLabels,
   withStepperFallbackLabels,
+  withStepperHeaderNavigation,
   withStepperI18nLabels,
   withStepperMobileSwipe,
   withStepperSkin,
@@ -969,6 +970,134 @@ describe('CngxStepper organism', () => {
       fixture.componentInstance.mobileSwipe = true;
       fixture.detectChanges();
       expect(stepperOf(fixture).swipeNav.swipeEnabled()).toBe(true);
+    });
+  });
+
+  describe('headerNavigation policy', () => {
+    @Component({
+      standalone: true,
+      imports: [CngxStepper, CngxStep],
+      template: `
+        <cngx-stepper
+          aria-label="Wizard"
+          [linear]="linear"
+          [headerNavigation]="headerNavigation"
+          [(activeStepIndex)]="active"
+        >
+          <div cngxStep label="A"></div>
+          <div cngxStep label="B"></div>
+          <div cngxStep label="C"></div>
+        </cngx-stepper>
+      `,
+    })
+    class NavHost {
+      linear = false;
+      headerNavigation: 'none' | 'visited' | undefined = undefined;
+      readonly active = signal(0);
+    }
+
+    it("'none' renders inert label headers - no <button>, no roving item, strip is a list", () => {
+      TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+      const fixture = TestBed.createComponent(NavHost);
+      fixture.componentInstance.headerNavigation = 'none';
+      fixture.detectChanges();
+      const root = fixture.nativeElement as HTMLElement;
+      expect(root.querySelectorAll('button.cngx-stepper__step').length).toBe(0);
+      const items = root.querySelectorAll('span.cngx-stepper__step--static');
+      expect(items.length).toBe(3);
+      expect(items[0].getAttribute('role')).toBe('listitem');
+      expect(items[0].getAttribute('aria-current')).toBe('step');
+      // No roving-tabindex / tabindex on the inert header.
+      expect(items[0].hasAttribute('tabindex')).toBe(false);
+      const strip = root.querySelector('.cngx-stepper__strip') as HTMLElement;
+      expect(strip.getAttribute('role')).toBe('list');
+    });
+
+    it("'none' host keydown is a no-op (active step unchanged)", () => {
+      TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+      const fixture = TestBed.createComponent(NavHost);
+      fixture.componentInstance.headerNavigation = 'none';
+      fixture.detectChanges();
+      const stepper = fixture.debugElement.children[0].componentInstance as {
+        handleStripKeyDown(e: KeyboardEvent): void;
+        readonly presenter: { activeStepIndex(): number };
+      };
+      const strip = fixture.nativeElement.querySelector(
+        '.cngx-stepper__step--static',
+      ) as HTMLElement;
+      const event = new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true });
+      Object.defineProperty(event, 'target', { value: strip });
+      stepper.handleStripKeyDown(event);
+      fixture.detectChanges();
+      expect(stepper.presenter.activeStepIndex()).toBe(0);
+    });
+
+    it("'visited' + linear=true marks forward-incomplete headers aria-disabled but keeps them focusable", () => {
+      TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+      const fixture = TestBed.createComponent(NavHost);
+      fixture.componentInstance.linear = true;
+      fixture.componentInstance.headerNavigation = 'visited';
+      fixture.detectChanges();
+      const buttons = fixture.nativeElement.querySelectorAll(
+        'button.cngx-stepper__step',
+      ) as NodeListOf<HTMLButtonElement>;
+      // Active step A is incomplete (idle) → forward jump to B/C blocked.
+      expect(buttons[0].getAttribute('aria-disabled')).toBeNull();
+      expect(buttons[1].getAttribute('aria-disabled')).toBe('true');
+      expect(buttons[2].getAttribute('aria-disabled')).toBe('true');
+      // Focusable: no native disabled attribute, still a <button>.
+      expect(buttons[1].hasAttribute('disabled')).toBe(false);
+    });
+
+    it("'visited' + linear=false is byte-identical to today (no aria-disabled on enabled headers)", () => {
+      TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+      const fixture = TestBed.createComponent(NavHost);
+      fixture.componentInstance.headerNavigation = 'visited';
+      fixture.detectChanges();
+      const buttons = fixture.nativeElement.querySelectorAll(
+        'button.cngx-stepper__step',
+      ) as NodeListOf<HTMLButtonElement>;
+      expect(buttons.length).toBe(3);
+      expect(buttons[0].getAttribute('aria-disabled')).toBeNull();
+      expect(buttons[1].getAttribute('aria-disabled')).toBeNull();
+      expect(buttons[2].getAttribute('aria-disabled')).toBeNull();
+    });
+
+    it('default (no input, no config) is visited - headers are buttons', () => {
+      TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+      const fixture = TestBed.createComponent(NavHost);
+      fixture.detectChanges();
+      expect(
+        fixture.nativeElement.querySelectorAll('button.cngx-stepper__step').length,
+      ).toBe(3);
+    });
+
+    it("config withStepperHeaderNavigation('none') applies when no input is bound", () => {
+      TestBed.configureTestingModule({
+        providers: [
+          provideZonelessChangeDetection(),
+          provideStepperConfig(withStepperHeaderNavigation('none')),
+        ],
+      });
+      const fixture = TestBed.createComponent(NavHost);
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelectorAll('button.cngx-stepper__step').length).toBe(0);
+      expect(
+        fixture.nativeElement.querySelectorAll('span.cngx-stepper__step--static').length,
+      ).toBe(3);
+    });
+
+    it("per-instance [headerNavigation] wins over the config (Input -> config -> 'visited')", () => {
+      TestBed.configureTestingModule({
+        providers: [
+          provideZonelessChangeDetection(),
+          provideStepperConfig(withStepperHeaderNavigation('none')),
+        ],
+      });
+      const fixture = TestBed.createComponent(NavHost);
+      fixture.componentInstance.headerNavigation = 'visited';
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelectorAll('button.cngx-stepper__step').length).toBe(3);
     });
   });
 });

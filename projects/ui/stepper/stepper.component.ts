@@ -35,6 +35,7 @@ import {
   type CngxStepLabelContext,
   CngxStepperEmpty,
   CngxStepperPresenter,
+  type CngxStepperHeaderNavigation,
   type CngxStepperMobileIndicatorPosition,
   type CngxStepperSkin,
   CngxStepRejection,
@@ -148,6 +149,14 @@ export class CngxStepper implements CngxStepPanelHost {
   readonly connectors = input<boolean | undefined, unknown>(undefined, { transform: (v) => (v === undefined ? undefined : coerceBooleanProperty(v)) });
 
   /**
+   * Per-instance header-navigation policy. `'none'` renders inert label
+   * headers (footer-only navigation); `'visited'` keeps them as
+   * focusable buttons gated by `linear`. Cascade: Input ?? config ??
+   * `'visited'`.
+   */
+  readonly headerNavigation = input<CngxStepperHeaderNavigation | undefined>(undefined);
+
+  /**
    * Opt-in `Step N of M` caption under the mobile `'dots'` row. In
    * the `'text'` collapse branch the count IS the indicator and is
    * always rendered; this input only gates the supplemental caption
@@ -209,6 +218,14 @@ export class CngxStepper implements CngxStepPanelHost {
 
   /** Resolved skin / connectors / mobile-indicator host attrs (Level-2 cascade helper). */
   protected readonly hostAttrs = createStepperHostAttrs({ skin: this.skin, connectors: this.connectors, mobileIndicatorPosition: this.mobileIndicatorPosition, config: this.config });
+
+  /**
+   * Resolved header-navigation policy. Cascade mirrors `skin` /
+   * `connectors`: per-instance Input ?? config ?? `'visited'`.
+   */
+  protected readonly resolvedHeaderNavigation = computed<CngxStepperHeaderNavigation>(
+    () => this.headerNavigation() ?? this.config.headerNavigation ?? 'visited',
+  );
 
   /** Mobile-swipe navigation host directive (Level-2 composition). */
   protected readonly swipeNav = inject(CngxStepperSwipeNav, { host: true });
@@ -293,6 +310,10 @@ export class CngxStepper implements CngxStepPanelHost {
   protected readonly announcement = createStepperAnnouncementBuilders({ presenter: this.presenter, stepsOnly: this.stepsOnly, i18n: this.i18n });
 
   protected handleHeaderClick(node: CngxStepNode): void {
+    // Inert headers in 'none' mode: the footer is the sole control.
+    if (this.resolvedHeaderNavigation() === 'none') {
+      return;
+    }
     if (node.kind !== 'step' || node.disabled()) {
       return;
     }
@@ -302,8 +323,31 @@ export class CngxStepper implements CngxStepPanelHost {
     }
   }
 
+  /**
+   * `true` when the step header at `node` may be navigated to under the
+   * `linear` gate. Reads the host contract's `canNavigateTo` - never the
+   * presenter's private linear-block check.
+   */
+  protected isHeaderReachable(node: CngxStepNode): boolean {
+    return this.presenter.canNavigateTo(node.flatIndex);
+  }
+
+  /**
+   * `'true'` on a header that cannot be navigated to, `null` otherwise.
+   * Folds two channels into one binding: a `disabled` step and a
+   * linear-unreachable step both read as `aria-disabled` (Pillar 2 - the
+   * activation gate is communicated, not a silent no-op). The header
+   * stays focusable per the ARIA composite-widget disabled-focusable
+   * rule. In `'visited'` + `linear=false` this is byte-identical to the
+   * prior `node.disabled()`-only binding, since `canNavigateTo` returns
+   * `true` for every enabled step when linear is off.
+   */
+  protected headerAriaDisabled(node: CngxStepNode): 'true' | null {
+    return this.isHeaderReachable(node) ? null : 'true';
+  }
+
   /** Strip-scoped arrow-key handler. See {@link createStepperStripKeyboardNav}. */
-  protected readonly handleStripKeyDown = createStepperStripKeyboardNav({ presenter: this.presenter, hostElement: this.hostElement, flatStepCount: () => this.flatSteps().length, stepButtonIdFor: (id) => `${id}-header` });
+  protected readonly handleStripKeyDown = createStepperStripKeyboardNav({ presenter: this.presenter, hostElement: this.hostElement, flatStepCount: () => this.flatSteps().length, stepButtonIdFor: (id) => `${id}-header`, enabled: () => this.resolvedHeaderNavigation() !== 'none' });
 
   /**
    * Clear the presenter's `lastFailedIndex`. Lets template-ref consumers

@@ -27,6 +27,13 @@ export interface CngxStepperStripKeyboardNavOptions {
    * through untouched.
    */
   readonly stepClassName?: string;
+  /**
+   * Optional gate - when supplied and returning `false`, the handler is
+   * a complete no-op. Used to switch arrow-key navigation off in the
+   * `headerNavigation: 'none'` mode, where the step headers are inert
+   * labels rather than focusable buttons. Omitted defaults to enabled.
+   */
+  readonly enabled?: () => boolean;
 }
 
 /**
@@ -61,6 +68,9 @@ export function createStepperStripKeyboardNav(
     });
   };
   return (event: KeyboardEvent): void => {
+    if (options.enabled && !options.enabled()) {
+      return;
+    }
     const target = event.target as HTMLElement | null;
     if (!target?.classList.contains(stepClass)) {
       return;
