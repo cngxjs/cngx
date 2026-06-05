@@ -270,7 +270,7 @@ export class CngxStepper implements CngxStepPanelHost {
         .map((node) => ({
           id: node.id,
           label: node.label(),
-          message: this.stepErrorMessageOf(node) as string,
+          message: this.stepErrorMessageOf(node)!,
           context: this.slotContext.stepErrorContextFor(node),
         })),
     {
