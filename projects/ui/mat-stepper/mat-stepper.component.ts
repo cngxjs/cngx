@@ -24,6 +24,7 @@ import {
   type CngxStepLabelContext,
   CngxStepperPresenter,
   CNGX_STEPPER_HOST,
+  createStepperStateView,
   flatStepsEqual,
   type CngxStepNode,
   type CngxStepPanelHost,
@@ -136,8 +137,19 @@ export class CngxMatStepper implements CngxStepPanelHost {
     return !this.presenter.linear() || node.state() === 'success';
   }
 
+  /**
+   * Unified error view - the single source shared with `<cngx-stepper>`.
+   * Material renders the error icon off `<mat-step [hasError]>`, but the
+   * predicate must match the cngx skins: a commit rejection or an error
+   * aggregator counts as errored, not only a literal `state === 'error'`.
+   */
+  protected readonly stateView = createStepperStateView({
+    presenter: this.presenter,
+    stepsOnly: this.stepsOnly,
+  });
+
   protected hasError(node: CngxStepNode): boolean {
-    return node.state() === 'error';
+    return this.stateView.hasError(node);
   }
 
   protected isCompleted(node: CngxStepNode): boolean {
