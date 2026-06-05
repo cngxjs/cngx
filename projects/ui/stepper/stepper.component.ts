@@ -275,7 +275,7 @@ export class CngxStepper implements CngxStepPanelHost {
   }
 
   /** Per-step predicates + slot-context builders (Level-2 factory). */
-  protected readonly slotContext = createStepperSlotContextBuilders({ presenter: this.presenter, stepsOnly: this.stepsOnly });
+  protected readonly slotContext = createStepperSlotContextBuilders({ presenter: this.presenter, stepsOnly: this.stepsOnly, i18n: this.i18n });
 
   /**
    * Shared state view - feeds the mobile-collapse `text` / `dots` branches,

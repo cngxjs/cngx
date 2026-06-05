@@ -1,7 +1,9 @@
 import type { Signal } from '@angular/core';
 
+import type { CngxStepperI18n } from './i18n/stepper-i18n';
 import type { CngxStepBadgeContext } from './slots/step-badge.directive';
 import type { CngxStepBusySpinnerContext } from './slots/step-busy-spinner.directive';
+import type { CngxStepErrorContext } from './slots/step-error.directive';
 import type { CngxStepGroupHeaderContext } from './slots/step-group-header.directive';
 import type { CngxStepIndicatorContext } from './slots/step-indicator.directive';
 import type { CngxStepRejectionContext } from './slots/step-rejection.directive';
@@ -19,6 +21,8 @@ import type { CngxStepNode, CngxStepperHost } from './stepper-host.token';
 export interface CngxStepperSlotContextBuildersInputs {
   readonly presenter: CngxStepperHost;
   readonly stepsOnly: Signal<readonly CngxStepNode[]>;
+  /** i18n bundle - supplies the `errored` status label as the message fallback. */
+  readonly i18n: CngxStepperI18n;
 }
 
 /**
@@ -33,10 +37,13 @@ export interface CngxStepperSlotContextBuilders {
   readonly isStepBusy: (node: CngxStepNode) => boolean;
   readonly showRejection: (node: CngxStepNode) => boolean;
   readonly showErrorBadge: (node: CngxStepNode) => boolean;
+  /** Validation-channel error gate - mirrors the error badge, independent of commit rejection. */
+  readonly showStepError: (node: CngxStepNode) => boolean;
   readonly indicatorContextFor: (node: CngxStepNode) => CngxStepIndicatorContext;
   readonly badgeContextFor: (node: CngxStepNode) => CngxStepBadgeContext;
   readonly busySpinnerContextFor: (node: CngxStepNode) => CngxStepBusySpinnerContext;
   readonly rejectionContextFor: (node: CngxStepNode) => CngxStepRejectionContext;
+  readonly stepErrorContextFor: (node: CngxStepNode) => CngxStepErrorContext;
   readonly groupHeaderContextFor: (node: CngxStepNode) => CngxStepGroupHeaderContext;
   readonly stepLabelContextFor: (node: CngxStepNode) => CngxStepLabelContext;
   readonly stepContentContextFor: (node: CngxStepNode) => CngxStepContentContext;
@@ -85,17 +92,17 @@ function shallowEqual<T extends object>(a: T, b: T): boolean {
 }
 
 /**
- * Bundle the six `*ContextFor` slot-context builders plus the small
- * `isActive` / `isStepBusy` / `showRejection` / `showErrorBadge` predicates
- * the organism's template reads. Lives at Level 2 so the `<cngx-stepper>`
- * organism stays a thin shell per `reference_atomic_decompose`.
+ * Bundle the `*ContextFor` slot-context builders plus the small
+ * `isActive` / `isStepBusy` / `showRejection` / `showErrorBadge` /
+ * `showStepError` predicates the organism's template reads. Lives at
+ * Level 2 so the `<cngx-stepper>` organism stays a thin shell.
  *
  * @internal
  */
 export function createStepperSlotContextBuilders(
   inputs: CngxStepperSlotContextBuildersInputs,
 ): CngxStepperSlotContextBuilders {
-  const { presenter, stepsOnly } = inputs;
+  const { presenter, stepsOnly, i18n } = inputs;
 
   // Single source for every per-step status / error / busy / rejection
   // derivation. The dot / text / progress-bar skins read the same view,
@@ -110,6 +117,12 @@ export function createStepperSlotContextBuilders(
   const showRejection = stateView.isRejected;
 
   const showErrorBadge = stateView.hasErrorBadge;
+
+  // Validation-channel gate for the per-step error message. Mirrors the
+  // error badge (state === 'error' via [error] / aggregator); the commit
+  // rejection keeps its own `showRejection` slot, so the two channels
+  // stay distinct.
+  const showStepError = stateView.hasErrorBadge;
 
   // Memoize per-node so identical contexts return the same reference.
   // *ngTemplateOutlet pays an ngOnChanges shallow comparison on its
@@ -145,6 +158,17 @@ export function createStepperSlotContextBuilders(
     return { failedIndex, originLabel, node };
   });
 
+  const stepErrorContextFor = memoizeByNode<CngxStepErrorContext>((node) => {
+    const aggregator = node.errorAggregator?.();
+    const errorLabels = aggregator?.errorLabels?.() ?? [];
+    const announcement = aggregator?.announcement?.() ?? '';
+    // Resolution order: direct [error] string > first aggregator label >
+    // i18n errored status phrase. Always non-empty so a bare
+    // `{{ message }}` template renders a reason.
+    const message = node.errorMessage?.() ?? errorLabels[0] ?? i18n.statusLabels.errored;
+    return { node, message, errorLabels, announcement };
+  });
+
   const groupHeaderContextFor = memoizeByNode<CngxStepGroupHeaderContext>((node) => ({
     group: node,
     expanded: true,
@@ -177,10 +201,12 @@ export function createStepperSlotContextBuilders(
     isStepBusy,
     showRejection,
     showErrorBadge,
+    showStepError,
     indicatorContextFor,
     badgeContextFor,
     busySpinnerContextFor,
     rejectionContextFor,
+    stepErrorContextFor,
     groupHeaderContextFor,
     stepLabelContextFor,
     stepContentContextFor,
