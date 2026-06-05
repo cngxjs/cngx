@@ -179,6 +179,29 @@
     }
   </div>
 
+  <!--
+    Error messages live on their own row BELOW the strip, not inline in a
+    step. A free-text message inside a horizontal/column strip item widens
+    the shrink-to-fit step and tears the row; below the strip it has full
+    width and wraps. Only steps with a real reason ([error] string or an
+    aggregator label) appear - the bare 'errored' state is already carried
+    by the indicator + badge, so it adds no text-only noise here.
+  -->
+  @if (stepErrorEntries().length) {
+    <div class="cngx-stepper__error-summary">
+      @for (entry of stepErrorEntries(); track entry.id) {
+        <p class="cngx-stepper__error-summary-item" data-state="error">
+          @if (templates.stepError(); as tpl) {
+            <ng-container *ngTemplateOutlet="tpl; context: entry.context"></ng-container>
+          } @else {
+            <span class="cngx-stepper__error-summary-step">{{ entry.label }}</span>
+            <span class="cngx-stepper__error-summary-text">{{ entry.message }}</span>
+          }
+        </p>
+      }
+    </div>
+  }
+
   <div class="cngx-stepper__panels">
     @for (node of stepsOnly(); track node.id) {
       <div
@@ -249,16 +272,6 @@
     }
   </span>
   <span class="cngx-stepper__status-pill" aria-hidden="true">{{ statusLabelFor(node) }}</span>
-  @if (rendersStepErrorText() && slotContext.showStepError(node)) {
-    <span class="cngx-stepper__error">
-      <ng-container
-        *ngTemplateOutlet="
-          templates.stepError() ?? defaultStepError;
-          context: slotContext.stepErrorContextFor(node)
-        "
-      ></ng-container>
-    </span>
-  }
   @if (slotContext.showRejection(node)) {
     <span class="cngx-stepper__rejection-icon" aria-hidden="true">
       <ng-container
@@ -286,7 +299,6 @@
   <span class="cngx-stepper__indicator-glyph">{{ position }}</span>
 </ng-template>
 <ng-template #defaultBadge>{{ glyphs.errorBadge }}</ng-template>
-<ng-template #defaultStepError let-message="message">{{ message }}</ng-template>
 <ng-template #defaultBusySpinner></ng-template>
 <ng-template #defaultRejection>{{ glyphs.rejectionIcon }}</ng-template>
 <ng-template #defaultGroupHeader let-group="group">

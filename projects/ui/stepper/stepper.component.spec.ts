@@ -1132,35 +1132,57 @@ describe('CngxStepper organism', () => {
     })
     class SlotErrorHost {}
 
-    it('#defaultStepError renders the resolved message on the classic skin', () => {
+    it('renders the resolved message in a row below the strip (classic)', () => {
       TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
       const fixture = TestBed.createComponent(DefaultErrorHost);
       fixture.detectChanges();
-      const err = fixture.nativeElement.querySelector('.cngx-stepper__error') as HTMLElement;
+      const err = fixture.nativeElement.querySelector(
+        '.cngx-stepper__error-summary',
+      ) as HTMLElement;
       expect(err).not.toBeNull();
-      expect(err.textContent?.trim()).toBe('Card declined');
+      expect(err.textContent).toContain('Card declined');
     });
 
-    it('clears the error message when [error] goes false', () => {
+    it('omits the row for a boolean [error] (no real message - state cue suffices)', () => {
+      @Component({
+        standalone: true,
+        imports: [CngxStepper, CngxStep],
+        template: `
+          <cngx-stepper aria-label="Err">
+            <div cngxStep label="A" [error]="true"></div>
+            <div cngxStep label="B"></div>
+          </cngx-stepper>
+        `,
+      })
+      class BoolErrorHost {}
+      TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+      const fixture = TestBed.createComponent(BoolErrorHost);
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('.cngx-stepper__error-summary')).toBeNull();
+    });
+
+    it('clears the error row when [error] goes false', () => {
       TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
       const fixture = TestBed.createComponent(DefaultErrorHost);
       fixture.detectChanges();
-      expect(fixture.nativeElement.querySelector('.cngx-stepper__error')).not.toBeNull();
+      expect(fixture.nativeElement.querySelector('.cngx-stepper__error-summary')).not.toBeNull();
       fixture.componentInstance.msg.set(false);
       fixture.detectChanges();
-      expect(fixture.nativeElement.querySelector('.cngx-stepper__error')).toBeNull();
+      expect(fixture.nativeElement.querySelector('.cngx-stepper__error-summary')).toBeNull();
     });
 
-    it('a per-instance *cngxStepError template overrides the default', () => {
+    it('a per-instance *cngxStepError template overrides the default in the row', () => {
       TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
       const fixture = TestBed.createComponent(SlotErrorHost);
       fixture.detectChanges();
-      const custom = fixture.nativeElement.querySelector('.cngx-stepper__error .custom-err') as HTMLElement;
+      const custom = fixture.nativeElement.querySelector(
+        '.cngx-stepper__error-summary .custom-err',
+      ) as HTMLElement;
       expect(custom).not.toBeNull();
       expect(custom.textContent?.trim()).toBe('Card declined!');
     });
 
-    it('does not render the error text on a label-only skin (path-chevron)', () => {
+    it('does not render the error row on a label-only skin (path-chevron)', () => {
       @Component({
         standalone: true,
         imports: [CngxStepper, CngxStep],
@@ -1175,7 +1197,7 @@ describe('CngxStepper organism', () => {
       TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
       const fixture = TestBed.createComponent(MiniSkinHost);
       fixture.detectChanges();
-      expect(fixture.nativeElement.querySelector('.cngx-stepper__error')).toBeNull();
+      expect(fixture.nativeElement.querySelector('.cngx-stepper__error-summary')).toBeNull();
     });
   });
 });

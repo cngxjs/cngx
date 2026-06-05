@@ -31,6 +31,7 @@ import {
   CngxStepBusySpinner,
   type CngxStepContentContext,
   CngxStepError,
+  type CngxStepErrorContext,
   CngxStepGroupHeader,
   CngxStepIndicator,
   type CngxStepLabelContext,
@@ -147,7 +148,9 @@ export class CngxStepper implements CngxStepPanelHost {
   readonly skin = input<CngxStepperSkin | undefined>(undefined);
 
   /** Opt the classic skin into the connector-rail presentation. Off by default, classic-scoped. */
-  readonly connectors = input<boolean | undefined, unknown>(undefined, { transform: (v) => (v === undefined ? undefined : coerceBooleanProperty(v)) });
+  readonly connectors = input<boolean | undefined, unknown>(undefined, {
+    transform: (v) => (v === undefined ? undefined : coerceBooleanProperty(v)),
+  });
 
   /**
    * Per-instance header-navigation policy. `'none'` renders inert label
@@ -165,7 +168,9 @@ export class CngxStepper implements CngxStepPanelHost {
    */
   readonly showStepCount = input<boolean>(false);
 
-  readonly mobileIndicatorPosition = input<CngxStepperMobileIndicatorPosition | undefined>(undefined);
+  readonly mobileIndicatorPosition = input<CngxStepperMobileIndicatorPosition | undefined>(
+    undefined,
+  );
 
   /** Stepper-host contract; exposed so external `<cngx-stepper-count>` / bridge consumers can `[host]="s.presenter"` via `#s="cngxStepper"`. */
   readonly presenter = inject(CNGX_STEPPER_HOST);
@@ -203,7 +208,11 @@ export class CngxStepper implements CngxStepPanelHost {
     config: this.config,
   });
 
-  protected readonly displayMode = createStepperDisplayMode(this.config.mobileBreakpoint ?? STEPPER_DEFAULT_MOBILE_BREAKPOINT, () => this.config.mobileCollapse, inject(DestroyRef));
+  protected readonly displayMode = createStepperDisplayMode(
+    this.config.mobileBreakpoint ?? STEPPER_DEFAULT_MOBILE_BREAKPOINT,
+    () => this.config.mobileCollapse,
+    inject(DestroyRef),
+  );
 
   constructor() {
     // Scroll active step into view via the swappable scroll-sync factory.
@@ -220,7 +229,12 @@ export class CngxStepper implements CngxStepPanelHost {
   );
 
   /** Resolved skin / connectors / mobile-indicator host attrs (Level-2 cascade helper). */
-  protected readonly hostAttrs = createStepperHostAttrs({ skin: this.skin, connectors: this.connectors, mobileIndicatorPosition: this.mobileIndicatorPosition, config: this.config });
+  protected readonly hostAttrs = createStepperHostAttrs({
+    skin: this.skin,
+    connectors: this.connectors,
+    mobileIndicatorPosition: this.mobileIndicatorPosition,
+    config: this.config,
+  });
 
   /**
    * Resolved header-navigation policy. Cascade mirrors `skin` /
@@ -231,20 +245,50 @@ export class CngxStepper implements CngxStepPanelHost {
   );
 
   /**
-   * Whether the per-step error message renders in the strip label area.
-   * Only the skins with room (`classic`, `stripe-status-rich`) carry the
-   * text; the mini / label-only skins surface the error via the badge /
-   * tile and fold the message into the mobile aggregate line instead.
+   * Real error reason for a step, or `null`. A reason is the direct
+   * `[error]` string or the first `errorAggregator` label.
    */
-  protected readonly rendersStepErrorText = computed<boolean>(() => {
-    const skin = this.hostAttrs.resolvedSkin();
-    return skin === 'classic' || skin === 'stripe-status-rich';
-  });
+  private stepErrorMessageOf(node: CngxStepNode): string | null {
+    return node.errorMessage?.() ?? node.errorAggregator?.()?.errorLabels?.()?.[0] ?? null;
+  }
+
+  /**
+   * Errored steps that carry a real message, rendered as a row BELOW the
+   * strip (full width, wraps) rather than inline in a step - a free-text
+   * message inside a strip item widens the shrink-to-fit step and tears
+   * the row. Empty when no step has a real reason.
+   */
+  protected readonly stepErrorEntries = computed<
+    readonly { id: string; label: string; message: string; context: CngxStepErrorContext }[]
+  >(
+    () => {
+      // The message row ships on the skins the plan assigns it to
+      // (classic + stripe-status-rich); the label-only / mini skins
+      // communicate the error through their badge / tile only.
+      const skin = this.hostAttrs.resolvedSkin();
+      if (skin !== 'classic' && skin !== 'stripe-status-rich') {
+        return [];
+      }
+      return this.stepsOnly()
+        .filter((node) => node.kind === 'step' && this.stepErrorMessageOf(node) !== null)
+        .map((node) => ({
+          id: node.id,
+          label: node.label(),
+          message: this.stepErrorMessageOf(node) as string,
+          context: this.slotContext.stepErrorContextFor(node),
+        }));
+    },
+    {
+      equal: (a, b) =>
+        a.length === b.length && a.every((e, i) => e.id === b[i].id && e.message === b[i].message),
+    },
+  );
 
   /** Mobile-swipe navigation host directive (Level-2 composition). */
   protected readonly swipeNav = inject(CngxStepperSwipeNav, { host: true });
 
-  protected statusLabelFor = (node: CngxStepNode): string => resolveStepperStatusLabel(node, this.i18n, this.slotContext.isActive(node));
+  protected statusLabelFor = (node: CngxStepNode): string =>
+    resolveStepperStatusLabel(node, this.i18n, this.slotContext.isActive(node));
 
   /** Mobile-dot `data-state`: unified error (rejection + aggregator) over the raw status. */
   protected mobileDotState(node: CngxStepNode): string {
@@ -256,7 +300,9 @@ export class CngxStepper implements CngxStepPanelHost {
     const base = this.i18n.selectedStep(node.label(), index + 1, this.stepsOnly().length);
     return this.stateView.hasError(node) ? `${base}: ${this.i18n.statusLabels.errored}` : base;
   }
-  protected readonly groupRoleDescription = computed<string>(() => this.config.fallbackLabels?.groupRoleDescription ?? 'step group');
+  protected readonly groupRoleDescription = computed<string>(
+    () => this.config.fallbackLabels?.groupRoleDescription ?? 'step group',
+  );
 
   /**
    * `aria-label` cascade: input → `ariaLabels.stepperRegion` → `i18n.stepperLabel`.
@@ -289,14 +335,21 @@ export class CngxStepper implements CngxStepPanelHost {
   }
 
   /** Per-step predicates + slot-context builders (Level-2 factory). */
-  protected readonly slotContext = createStepperSlotContextBuilders({ presenter: this.presenter, stepsOnly: this.stepsOnly, i18n: this.i18n });
+  protected readonly slotContext = createStepperSlotContextBuilders({
+    presenter: this.presenter,
+    stepsOnly: this.stepsOnly,
+    i18n: this.i18n,
+  });
 
   /**
    * Shared state view - feeds the mobile-collapse `text` / `dots` branches,
    * which otherwise rendered only `Step N of M` (text) or `node.state()`
    * (dots) and dropped the per-step error the desktop branch shows.
    */
-  protected readonly stateView = createStepperStateView({ presenter: this.presenter, stepsOnly: this.stepsOnly });
+  protected readonly stateView = createStepperStateView({
+    presenter: this.presenter,
+    stepsOnly: this.stepsOnly,
+  });
 
   /** Aggregate error phrase for the mobile-collapse text branch. */
   protected readonly mobileErrorSummary = computed<string>(() =>
@@ -321,7 +374,11 @@ export class CngxStepper implements CngxStepPanelHost {
   }
 
   /** Live-region + per-step + group SR phrase builders (Level-2 factory). */
-  protected readonly announcement = createStepperAnnouncementBuilders({ presenter: this.presenter, stepsOnly: this.stepsOnly, i18n: this.i18n });
+  protected readonly announcement = createStepperAnnouncementBuilders({
+    presenter: this.presenter,
+    stepsOnly: this.stepsOnly,
+    i18n: this.i18n,
+  });
 
   protected handleHeaderClick(node: CngxStepNode): void {
     // Inert headers in 'none' mode: the footer is the sole control.
@@ -361,7 +418,13 @@ export class CngxStepper implements CngxStepPanelHost {
   }
 
   /** Strip-scoped arrow-key handler. See {@link createStepperStripKeyboardNav}. */
-  protected readonly handleStripKeyDown = createStepperStripKeyboardNav({ presenter: this.presenter, hostElement: this.hostElement, flatStepCount: () => this.flatSteps().length, stepButtonIdFor: (id) => `${id}-header`, enabled: () => this.resolvedHeaderNavigation() !== 'none' });
+  protected readonly handleStripKeyDown = createStepperStripKeyboardNav({
+    presenter: this.presenter,
+    hostElement: this.hostElement,
+    flatStepCount: () => this.flatSteps().length,
+    stepButtonIdFor: (id) => `${id}-header`,
+    enabled: () => this.resolvedHeaderNavigation() !== 'none',
+  });
 
   /**
    * Clear the presenter's `lastFailedIndex`. Lets template-ref consumers
@@ -380,5 +443,4 @@ export class CngxStepper implements CngxStepPanelHost {
   contentTemplateFor(id: string): TemplateRef<CngxStepContentContext> | null {
     return this.stepDirectiveById().get(id)?.contentTemplate()?.templateRef ?? null;
   }
-
 }
