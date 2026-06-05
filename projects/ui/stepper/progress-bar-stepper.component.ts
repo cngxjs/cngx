@@ -10,8 +10,11 @@ import {
 import {
   CngxStepperCount,
   CngxStepperPresenter,
+  CNGX_STEPPER_GLYPHS,
   CNGX_STEPPER_HOST,
+  createStepperStateView,
   injectStepperI18n,
+  resolveStepperErrorSummary,
 } from '@cngx/common/stepper';
 import { CngxProgress } from '@cngx/ui/feedback';
 
@@ -57,6 +60,8 @@ import { CngxProgress } from '@cngx/ui/feedback';
     '[attr.aria-roledescription]': '"stepper"',
     '[attr.aria-label]': 'ariaLabel()',
     '[attr.aria-labelledby]': 'ariaLabelledBy()',
+    '[attr.data-state]': 'stateView.hasAnyError() ? "error" : null',
+    '[attr.aria-invalid]': 'stateView.hasAnyError() ? "true" : null',
   },
 })
 export class CngxProgressBarStepper {
@@ -68,6 +73,15 @@ export class CngxProgressBarStepper {
 
   protected readonly presenter = inject(CNGX_STEPPER_HOST);
   protected readonly i18n = injectStepperI18n();
+
+  /** Shared per-step/aggregate state derivations - the single error source. */
+  protected readonly stateView = createStepperStateView({
+    presenter: this.presenter,
+    stepsOnly: this.presenter.stepsOnly,
+  });
+
+  /** Default error glyph for the error caption. */
+  protected readonly errorGlyph = CNGX_STEPPER_GLYPHS.errorBadge;
 
   /** Total step count (group nodes excluded). */
   protected readonly totalSteps = computed<number>(() => this.presenter.stepsOnly().length);
@@ -96,5 +110,14 @@ export class CngxProgressBarStepper {
 
   protected readonly captionText = computed<string>(() =>
     this.i18n.textStepperFormat(this.currentStep(), this.totalSteps()),
+  );
+
+  /**
+   * Aggregate error caption. A single errored step names itself
+   * (`"Payment: Errored"`), several collapse to the i18n count phrase.
+   * Read only when `stateView.hasAnyError()` gates the template.
+   */
+  protected readonly errorText = computed<string>(() =>
+    resolveStepperErrorSummary(this.stateView, this.presenter.stepsOnly, this.i18n),
   );
 }

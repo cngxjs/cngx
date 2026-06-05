@@ -17,6 +17,7 @@ import {
   CngxStepperPresenter,
   CngxStepperSwipeNav,
   CNGX_STEPPER_HOST,
+  createStepperStateView,
   injectStepperConfig,
   injectStepperI18n,
   type CngxStepNode,
@@ -82,6 +83,7 @@ import { CngxSwipe } from '@cngx/common/interactive';
     '[attr.aria-roledescription]': 'i18n.stepIndicatorRoleDescription',
     '[attr.aria-label]': 'ariaLabel()',
     '[attr.aria-labelledby]': 'ariaLabelledBy()',
+    '[attr.aria-invalid]': 'stateView.hasAnyError() ? "true" : null',
     '(keydown)': 'handleKeyDown($event)',
   },
 })
@@ -97,6 +99,12 @@ export class CngxDotStepper {
 
   protected readonly stepNodes: Signal<readonly CngxStepNode[]> = this.presenter.stepsOnly;
   protected readonly activeIndex = computed<number>(() => this.presenter.activeStepIndex());
+
+  /** Shared per-step/aggregate state derivations - the single error source. */
+  protected readonly stateView = createStepperStateView({
+    presenter: this.presenter,
+    stepsOnly: this.stepNodes,
+  });
 
   private readonly dotSlot = contentChild(CngxDotStepperDot);
 
@@ -118,8 +126,18 @@ export class CngxDotStepper {
     return index < this.activeIndex();
   }
 
+  /**
+   * Resolved `data-state` for the dot: `'error'` whenever the unified error
+   * view fires (covers commit rejection and the error aggregator, not just a
+   * literal `state === 'error'`), otherwise the raw step status.
+   */
+  protected dotState(node: CngxStepNode): string {
+    return this.stateView.hasError(node) ? 'error' : node.state();
+  }
+
   protected ariaLabelFor(node: CngxStepNode, index: number): string {
-    return this.i18n.selectedStep(node.label(), index + 1, this.stepNodes().length);
+    const base = this.i18n.selectedStep(node.label(), index + 1, this.stepNodes().length);
+    return this.stateView.hasError(node) ? `${base}: ${this.i18n.statusLabels.errored}` : base;
   }
 
   /** Build the slot context for `*cngxDotStepperDot`. */

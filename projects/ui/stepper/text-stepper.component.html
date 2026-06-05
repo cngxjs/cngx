@@ -1,1 +1,7 @@
 <span class="cngx-text-stepper__text" aria-live="polite">{{ stepText() }}</span>
+@if (stateView.hasAnyError()) {
+  <span class="cngx-text-stepper__error" role="status" data-state="error">
+    <span class="cngx-text-stepper__error-glyph" aria-hidden="true">{{ errorGlyph }}</span>
+    <span class="cngx-text-stepper__error-text">{{ errorText() }}</span>
+  </span>
+}

@@ -1,13 +1,12 @@
 /**
  * @overview
- * Structural + thematic skin for `<cngx-dot-stepper>`. Theme tokens
- * cascade through `var(--cngx-step-active-fill, ...)` so the Phase A
- * active-fill chain flows in without duplication.
+ * Structural and thematic skin for `<cngx-dot-stepper>`. \
+ * Theme tokens cascade through `var(--cngx-step-active-fill, ...)` so the  active-fill chain flows in without duplication.
  *
- * Active dot uses `--cngx-dot-step-active-fill`; completed dots use
- * `--cngx-dot-step-completed-fill`; upcoming dots use
- * `--cngx-dot-step-upcoming-bg`. Material consumers see
- * `--mat-sys-primary` via the Phase C stepper-theme extension.
+ * Active dot uses `--cngx-dot-step-active-fill`; completed dots use:
+ * - `--cngx-dot-step-completed-fill`; upcoming dots use
+ * - `--cngx-dot-step-upcoming-bg`. Material consumers see
+ * - `--mat-sys-primary` via the stepper-theme extension.
  *
  * @group Surface
  */
@@ -74,12 +73,15 @@
 }
 
 .cngx-dot-stepper__dot {
+  position: relative;
   display: inline-block;
   width: var(--cngx-dot-step-size, 0.625rem);
   height: var(--cngx-dot-step-size, 0.625rem);
   border-radius: 50%;
   background: var(--cngx-dot-step-upcoming-bg, color-mix(in srgb, currentColor 18%, transparent));
-  transition: background 150ms ease-out, transform 150ms ease-out;
+  transition:
+    background 150ms ease-out,
+    transform 150ms ease-out;
 }
 
 .cngx-dot-stepper__dot--completed {
@@ -93,6 +95,22 @@
 
 .cngx-dot-stepper__dot[data-state='error'] {
   background: var(--cngx-step-errored-color, var(--cngx-color-danger, oklch(0.45 0.15 25)));
+}
+
+/* Non-color error cue (WCAG 1.4.1): a glyph centred over the errored dot,
+   so the error never relies on the red fill alone. A pseudo-element keeps
+   the dot `:empty`, so the consumer-slot chrome-strip rule below and the
+   default circle are both untouched. Sits above consumer slot art too. */
+.cngx-dot-stepper__dot--error::after {
+  content: var(--cngx-dot-step-error-glyph, '!');
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: var(--cngx-dot-step-error-glyph-size, 0.5rem);
+  font-weight: 700;
+  line-height: 1;
+  color: var(--cngx-dot-step-error-glyph-color, var(--cngx-color-on-danger, white));
 }
 
 /* Consumer-owned dot body via `*cngxDotStepperDot` slot - the span shell

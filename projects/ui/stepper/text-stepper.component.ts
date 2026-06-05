@@ -10,8 +10,11 @@ import {
 
 import {
   CngxStepperPresenter,
+  CNGX_STEPPER_GLYPHS,
   CNGX_STEPPER_HOST,
+  createStepperStateView,
   injectStepperI18n,
+  resolveStepperErrorSummary,
   type CngxStepNode,
 } from '@cngx/common/stepper';
 
@@ -49,6 +52,7 @@ import {
   styleUrl: './text-stepper.component.css',
   host: {
     class: 'cngx-text-stepper',
+    '[attr.aria-invalid]': 'stateView.hasAnyError() ? "true" : null',
   },
 })
 export class CngxTextStepper {
@@ -59,6 +63,15 @@ export class CngxTextStepper {
   protected readonly i18n = injectStepperI18n();
 
   protected readonly stepNodes: Signal<readonly CngxStepNode[]> = this.presenter.stepsOnly;
+
+  /** Shared per-step/aggregate state derivations - the single error source. */
+  protected readonly stateView = createStepperStateView({
+    presenter: this.presenter,
+    stepsOnly: this.stepNodes,
+  });
+
+  /** Default error glyph for the error sub-line. */
+  protected readonly errorGlyph = CNGX_STEPPER_GLYPHS.errorBadge;
 
   protected readonly totalSteps = computed<number>(() => this.stepNodes().length);
 
@@ -82,4 +95,14 @@ export class CngxTextStepper {
     }
     return `${base}: ${node.label()}`;
   });
+
+  /**
+   * Aggregate error sub-line text. A single errored step names itself
+   * (`"Payment: Errored"`), several collapse to the i18n count phrase
+   * (`"2 errors"`). Empty when no step errored - the template gates on
+   * `stateView.hasAnyError()`, so this is only read when non-empty.
+   */
+  protected readonly errorText = computed<string>(() =>
+    resolveStepperErrorSummary(this.stateView, this.stepNodes, this.i18n),
+  );
 }

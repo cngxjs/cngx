@@ -5,6 +5,7 @@ import type { CngxStepBusySpinnerContext } from './slots/step-busy-spinner.direc
 import type { CngxStepGroupHeaderContext } from './slots/step-group-header.directive';
 import type { CngxStepIndicatorContext } from './slots/step-indicator.directive';
 import type { CngxStepRejectionContext } from './slots/step-rejection.directive';
+import { createStepperStateView } from './stepper-state-view';
 import type { CngxStepContentContext, CngxStepLabelContext } from './step-panel-host.token';
 import type { CngxStepNode, CngxStepperHost } from './stepper-host.token';
 
@@ -96,28 +97,19 @@ export function createStepperSlotContextBuilders(
 ): CngxStepperSlotContextBuilders {
   const { presenter, stepsOnly } = inputs;
 
+  // Single source for every per-step status / error / busy / rejection
+  // derivation. The dot / text / progress-bar skins read the same view,
+  // so the error contract stays identical across all four.
+  const stateView = createStepperStateView({ presenter, stepsOnly });
+
   const isActive = (node: CngxStepNode): boolean =>
     node.kind === 'step' && node.id === presenter.activeStepId();
 
-  const isStepBusy = (node: CngxStepNode): boolean =>
-    node.kind === 'step' &&
-    presenter.commitState.status() === 'pending' &&
-    presenter.intendedStepIndex() === node.flatIndex;
+  const isStepBusy = stateView.isBusy;
 
-  const showRejection = (node: CngxStepNode): boolean =>
-    node.kind === 'step' &&
-    node.flatIndex >= 0 &&
-    node.flatIndex === presenter.lastFailedIndex();
+  const showRejection = stateView.isRejected;
 
-  const showErrorBadge = (node: CngxStepNode): boolean => {
-    if (node.kind !== 'step') {
-      return false;
-    }
-    if (node.state() === 'error') {
-      return true;
-    }
-    return !!node.errorAggregator?.()?.shouldShow?.();
-  };
+  const showErrorBadge = stateView.hasErrorBadge;
 
   // Memoize per-node so identical contexts return the same reference.
   // *ngTemplateOutlet pays an ngOnChanges shallow comparison on its

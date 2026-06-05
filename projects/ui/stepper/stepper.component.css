@@ -1,10 +1,11 @@
 /**
  * @overview
- * Thematic skin for `@cngx/ui/stepper`. Pairs with the structural
- * `stepper-base.css` (which provides layout, indent, focus ring,
+ * **Thematic CSS** skin for `@cngx/ui/stepper`. \
+ * Pairs with the structural `stepper-base.css` (which provides layout, indent, focus ring,
  * panels, error badge, rejection icon) - this file owns indicator
  * state colors, hover affordance, the active disc fill, and the
- * busy spinner. The host carries `.cngx-stepper` and renders the
+ * busy spinner. \
+ * The host carries `.cngx-stepper` and renders the
  * `__indicator` glyph inside each step.
  *
  * **State modifiers**
@@ -274,7 +275,7 @@
     .cngx-stepper__indicator[data-state='error'] {
       background: transparent;
       color: var(--cngx-step-errored-color, var(--cngx-color-danger, oklch(0.45 0.15 25)));
-      box-shadow: inset 0 0 0 1px
+      box-shadow: inset 0 0 0 2px
         var(--cngx-step-errored-color, var(--cngx-color-danger, oklch(0.45 0.15 25)));
     }
 
@@ -291,7 +292,10 @@
     }
 
     .cngx-stepper__step[aria-busy='true'] .cngx-stepper__indicator {
-      background: var(--cngx-step-pending-color, var(--cngx-step-active-color, var(--cngx-step-active-fill)));
+      background: var(
+        --cngx-step-pending-color,
+        var(--cngx-step-active-color, var(--cngx-step-active-fill))
+      );
       animation: cngx-stepper-pulse 1.2s ease-in-out infinite;
     }
 
@@ -311,8 +315,8 @@
        drop the default ring chrome (fixed size, circular border, spin
        animation) when the slot rendered content of its own, otherwise
        the consumer's SVG / banner / text gets sucked into the library's
-       360deg rotation and rendered inside the empty ring. Layout-side
-       inline-block + flex sizing stays so the consumer node sits after
+       360deg rotation and rendered inside the empty ring. 
+       Layout-side inline-block + flex sizing stays so the consumer node sits after
        the label without overlapping. */
     .cngx-stepper__busy-spinner:not(:empty) {
       width: auto;
@@ -512,7 +516,8 @@
   @property --cngx-step-pill-segment-card-shadow {
     syntax: '*';
     inherits: true;
-    initial-value: 0 1px 2px color-mix(in srgb, currentColor 12%, transparent),
+    initial-value:
+      0 1px 2px color-mix(in srgb, currentColor 12%, transparent),
       0 1px 1px color-mix(in srgb, currentColor 8%, transparent);
   }
 
@@ -776,7 +781,9 @@
       border-radius: 50%;
       background: transparent;
       border: 1px solid color-mix(in srgb, currentColor 35%, transparent);
-      transition: background-color 120ms ease, border-color 120ms ease;
+      transition:
+        background-color 120ms ease,
+        border-color 120ms ease;
     }
 
     .cngx-stepper__indicator .cngx-stepper__indicator-glyph {
@@ -784,24 +791,15 @@
     }
 
     .cngx-stepper__step[aria-current='step'] .cngx-stepper__indicator {
-      background: var(
-        --cngx-step-linear-dot-fill,
-        var(--cngx-step-active-fill, currentColor)
-      );
-      border-color: var(
-        --cngx-step-linear-dot-fill,
-        var(--cngx-step-active-fill, currentColor)
-      );
+      background: var(--cngx-step-linear-dot-fill, var(--cngx-step-active-fill, currentColor));
+      border-color: var(--cngx-step-linear-dot-fill, var(--cngx-step-active-fill, currentColor));
     }
 
     /* Completed = filled success dot. A check glyph at this dot size is
        illegible, so the green fill carries "done" - mirroring the
        filled-primary active dot and filled-danger error dot. */
     .cngx-stepper__indicator[data-state='success'] {
-      background: var(
-        --cngx-step-completed-color,
-        var(--cngx-color-success, oklch(0.5 0.15 145))
-      );
+      background: var(--cngx-step-completed-color, var(--cngx-color-success, oklch(0.5 0.15 145)));
       border-color: var(
         --cngx-step-completed-color,
         var(--cngx-color-success, oklch(0.5 0.15 145))
@@ -812,15 +810,24 @@
       content: none;
     }
 
+    /* Errored step: the 0.5rem dot is too small to hold the "!" glyph, so
+       the error badge becomes the indicator. Drop the dot chrome and let
+       the indicator size to the badge, so the step's own gap spaces it
+       from the label instead of the badge overflowing onto the text. */
     .cngx-stepper__indicator[data-state='error'] {
-      background: var(
-        --cngx-step-errored-color,
-        var(--cngx-color-danger, oklch(0.45 0.15 25))
-      );
-      border-color: var(
-        --cngx-step-errored-color,
-        var(--cngx-color-danger, oklch(0.45 0.15 25))
-      );
+      width: auto;
+      height: auto;
+      background: transparent;
+      border: 0;
+    }
+
+    .cngx-stepper__indicator[data-state='error'] .cngx-stepper__badge {
+      /* Opt out of the corner-overlay absolute position (set on every
+         skin): on a 0.5rem dot it would float off the edge and collide
+         with the label. In-flow, the indicator sizes to it and the step
+         gap separates it from the text. */
+      position: static;
+      margin-inline-start: 0;
     }
 
     .cngx-stepper__step {
@@ -976,12 +983,10 @@
       position: absolute;
       /* Symmetric inset of var(--cngx-step-connector-inset) from each disc edge. */
       left: calc(
-        -50% + var(--cngx-step-indicator-size, 1.75rem) / 2 +
-          var(--cngx-step-connector-inset, 6px)
+        -50% + var(--cngx-step-indicator-size, 1.75rem) / 2 + var(--cngx-step-connector-inset, 6px)
       );
       width: calc(
-        100% - var(--cngx-step-indicator-size, 1.75rem) - 2 *
-          var(--cngx-step-connector-inset, 6px)
+        100% - var(--cngx-step-indicator-size, 1.75rem) - 2 * var(--cngx-step-connector-inset, 6px)
       );
       top: calc(0.5rem + var(--cngx-step-indicator-size, 1.75rem) / 2);
       height: var(--cngx-step-connector-width, 2px);
@@ -991,24 +996,21 @@
     }
 
     /* Source step success (passed through) -> trailing rail green. */
-    .cngx-stepper__step[data-state='success']
-      + .cngx-stepper__step::before {
+    .cngx-stepper__step[data-state='success'] + .cngx-stepper__step::before {
       background-color: var(--cngx-step-connector-completed-color);
     }
 
     /* Target step pending (commit in flight) -> leading rail orange. cngx
        surfaces commit-in-flight via `aria-busy='true'` on the target step;
        `data-state` stays at its terminal value (idle/success/error). */
-    .cngx-stepper__step
-      + .cngx-stepper__step[aria-busy='true']::before {
+    .cngx-stepper__step + .cngx-stepper__step[aria-busy='true']::before {
       background-color: var(--cngx-step-connector-pending-color);
     }
 
     /* Target step rejected (commit failed) -> leading rail red. cngx
        sets `cngx-stepper__step--rejected` on the step that was the
        failed-commit target. */
-    .cngx-stepper__step
-      + .cngx-stepper__step.cngx-stepper__step--rejected::before {
+    .cngx-stepper__step + .cngx-stepper__step.cngx-stepper__step--rejected::before {
       background-color: var(--cngx-step-connector-errored-color);
     }
   }
@@ -1032,8 +1034,7 @@
       justify-content: flex-start;
       text-align: start;
       min-height: calc(
-        var(--cngx-step-indicator-size, 1.75rem) + 2 *
-          var(--cngx-step-connector-inset, 6px) + 2rem
+        var(--cngx-step-indicator-size, 1.75rem) + 2 * var(--cngx-step-connector-inset, 6px) + 2rem
       );
     }
 
@@ -1048,12 +1049,10 @@
       );
       width: var(--cngx-step-connector-width, 2px);
       top: calc(
-        -50% + var(--cngx-step-indicator-size, 1.75rem) / 2 +
-          var(--cngx-step-connector-inset, 6px)
+        -50% + var(--cngx-step-indicator-size, 1.75rem) / 2 + var(--cngx-step-connector-inset, 6px)
       );
       height: calc(
-        100% - var(--cngx-step-indicator-size, 1.75rem) - 2 *
-          var(--cngx-step-connector-inset, 6px)
+        100% - var(--cngx-step-indicator-size, 1.75rem) - 2 * var(--cngx-step-connector-inset, 6px)
       );
       transform: none;
     }
@@ -1093,12 +1092,14 @@
       color: var(--cngx-step-status-pill-color, oklch(1 0 0));
     }
 
-    .cngx-stepper__step:has(.cngx-stepper__indicator[data-state='success']) .cngx-stepper__status-pill {
+    .cngx-stepper__step:has(.cngx-stepper__indicator[data-state='success'])
+      .cngx-stepper__status-pill {
       background: var(--cngx-step-status-pill-bg-done);
       color: var(--cngx-step-status-pill-color, oklch(1 0 0));
     }
 
-    .cngx-stepper__step:has(.cngx-stepper__indicator[data-state='error']) .cngx-stepper__status-pill {
+    .cngx-stepper__step:has(.cngx-stepper__indicator[data-state='error'])
+      .cngx-stepper__status-pill {
       background: var(--cngx-step-status-pill-bg-errored);
       color: var(--cngx-step-status-pill-color, oklch(1 0 0));
     }
@@ -1134,14 +1135,26 @@
 
     .cngx-stepper__step {
       flex: 1 1 0;
-      clip-path: polygon(0 0, calc(100% - 0.75rem) 0, 100% 50%, calc(100% - 0.75rem) 100%, 0 100%, 0.75rem 50%);
+      clip-path: polygon(
+        0 0,
+        calc(100% - 0.75rem) 0,
+        100% 50%,
+        calc(100% - 0.75rem) 100%,
+        0 100%,
+        0.75rem 50%
+      );
       padding-inline: calc(var(--cngx-step-padding-inline, 0.75rem) + 0.75rem);
       justify-content: center;
       text-align: center;
-      background: var(--cngx-step-chevron-tile-upcoming-bg, color-mix(in srgb, currentColor 12%, transparent));
+      background: var(
+        --cngx-step-chevron-tile-upcoming-bg,
+        color-mix(in srgb, currentColor 12%, transparent)
+      );
       color: color-mix(in srgb, currentColor 80%, transparent);
       border: 0;
-      transition: background-color 120ms ease, color 120ms ease;
+      transition:
+        background-color 120ms ease,
+        color 120ms ease;
     }
 
     .cngx-stepper__step .cngx-stepper__label {
@@ -1173,6 +1186,17 @@
     .cngx-stepper__step:has(.cngx-stepper__indicator[data-state='error']) {
       background: var(--cngx-step-chevron-tile-errored);
       color: var(--cngx-step-chevron-tile-color, oklch(1 0 0));
+    }
+
+    /* The errored tile already flips to the danger fill, but the disc
+       (and its badge) is display:none here, so add a leading "!" glyph on
+       the label - the red tile must not be the only error cue (WCAG
+       1.4.1). Inherits the white tile text colour. */
+    .cngx-stepper__step:has(.cngx-stepper__indicator[data-state='error'])
+      .cngx-stepper__label::before {
+      content: var(--cngx-step-chevron-error-glyph, '!');
+      margin-inline-end: 0.4rem;
+      font-weight: 700;
     }
 
     /* The arrow silhouette carries sequence and the tile fill carries
@@ -1294,7 +1318,10 @@
       background: transparent;
       border-radius: 9999px;
       color: color-mix(in srgb, currentColor 60%, transparent);
-      transition: background-color 120ms ease, color 120ms ease, box-shadow 120ms ease;
+      transition:
+        background-color 120ms ease,
+        color 120ms ease,
+        box-shadow 120ms ease;
     }
 
     .cngx-stepper__step .cngx-stepper__label {
@@ -1317,7 +1344,9 @@
        the segment for consumers who want it. The :not(aria-current)
        guard keeps the active-card fill winning when a previously
        completed step is navigated back to and becomes current again. */
-    .cngx-stepper__step:not([aria-current='step']):has(.cngx-stepper__indicator[data-state='success']) {
+    .cngx-stepper__step:not([aria-current='step']):has(
+        .cngx-stepper__indicator[data-state='success']
+      ) {
       background: var(--cngx-step-pill-segment-fill-completed, transparent);
       color: color-mix(in srgb, currentColor 85%, transparent);
     }
@@ -1413,7 +1442,10 @@
     /* The current step is the single filled pill - the only "you are
        here" cue. Fill follows the consumer accent. */
     .cngx-stepper__step[aria-current='step'] {
-      background: var(--cngx-step-chips-fill-active, var(--cngx-color-primary, oklch(0.66 0.19 50)));
+      background: var(
+        --cngx-step-chips-fill-active,
+        var(--cngx-color-primary, oklch(0.66 0.19 50))
+      );
       color: var(--cngx-step-chips-color-active, oklch(1 0 0));
     }
 
@@ -1437,6 +1469,28 @@
       content: '\2713';
       margin-inline-end: 0.3rem;
       font-weight: 600;
+    }
+
+    /* Errored step: solid danger fill + a leading "!" glyph. The disc
+       indicator (and its corner badge) is display:none in this skin, so
+       a chip with only the active fill would be indistinguishable from a
+       normal active step - the error has to ride the chip itself. Color
+       alone is not enough (WCAG 1.4.1), so the glyph rides along.
+       Specificity (0,3,0) beats the active-fill rule, so an errored
+       active step still reads as an error. */
+    .cngx-stepper__step:has(.cngx-stepper__indicator[data-state='error']) {
+      background: var(
+        --cngx-step-chips-bg-errored,
+        var(--cngx-step-errored-color, var(--cngx-color-danger, oklch(0.45 0.15 25)))
+      );
+      color: var(--cngx-step-chips-color-errored, var(--cngx-color-on-danger, oklch(1 0 0)));
+    }
+
+    .cngx-stepper__step:has(.cngx-stepper__indicator[data-state='error'])
+      .cngx-stepper__label::before {
+      content: var(--cngx-step-chips-error-glyph, '!');
+      margin-inline-end: 0.3rem;
+      font-weight: 700;
     }
 
     /* Label-only chips: the disc indicator and the status pill are
@@ -1514,7 +1568,10 @@
     .cngx-stepper__step:not([aria-current='step']):has(
         .cngx-stepper__indicator[data-state='success']
       ) {
-      color: var(--cngx-step-breadcrumb-color-completed, color-mix(in srgb, currentColor 82%, transparent));
+      color: var(
+        --cngx-step-breadcrumb-color-completed,
+        color-mix(in srgb, currentColor 82%, transparent)
+      );
       cursor: pointer;
     }
 
@@ -1524,22 +1581,55 @@
       .cngx-stepper__label::after {
       content: '\2713';
       margin-inline-start: 0.3rem;
-      color: var(--cngx-step-breadcrumb-check-color, var(--cngx-color-success, oklch(0.5 0.15 145)));
+      color: var(
+        --cngx-step-breadcrumb-check-color,
+        var(--cngx-color-success, oklch(0.5 0.15 145))
+      );
       font-weight: 600;
     }
 
     /* Active item: a soft pill behind the label (tight, not the whole
        button) plus bold full-strength text. */
     .cngx-stepper__step[aria-current='step'] {
-      color: var(--cngx-step-breadcrumb-color-active, color-mix(in srgb, currentColor 92%, transparent));
+      color: var(
+        --cngx-step-breadcrumb-color-active,
+        color-mix(in srgb, currentColor 92%, transparent)
+      );
       font-weight: 600;
     }
 
     .cngx-stepper__step[aria-current='step'] .cngx-stepper__label {
-      background: var(--cngx-step-breadcrumb-fill-active, color-mix(in srgb, currentColor 9%, transparent));
+      background: var(
+        --cngx-step-breadcrumb-fill-active,
+        color-mix(in srgb, currentColor 9%, transparent)
+      );
       padding-inline: 0.5rem;
       padding-block: 0.2rem;
       border-radius: var(--cngx-step-breadcrumb-radius, 6px);
+    }
+
+    /* Errored item: danger-tinted label + a trailing "!" glyph. The disc
+       indicator (and its corner badge) is display:none in this skin, so
+       the crumb must carry the error itself; the glyph keeps it off
+       colour-only (WCAG 1.4.1). Specificity (0,3,0) beats the active rule
+       so an errored active crumb still reads red. */
+    .cngx-stepper__step:has(.cngx-stepper__indicator[data-state='error']) {
+      color: var(
+        --cngx-step-breadcrumb-color-errored,
+        var(--cngx-step-errored-color, var(--cngx-color-danger, oklch(0.45 0.15 25)))
+      );
+      font-weight: 600;
+    }
+
+    .cngx-stepper__step:has(.cngx-stepper__indicator[data-state='error'])
+      .cngx-stepper__label::after {
+      content: var(--cngx-step-breadcrumb-error-glyph, '!');
+      margin-inline-start: 0.3rem;
+      font-weight: 700;
+      color: var(
+        --cngx-step-breadcrumb-error-glyph-color,
+        var(--cngx-step-errored-color, var(--cngx-color-danger, oklch(0.45 0.15 25)))
+      );
     }
 
     /* Label-only trail: hide the disc indicator and the status pill. */
@@ -1652,6 +1742,7 @@
 }
 
 .cngx-stepper__mobile-dot {
+  position: relative;
   display: inline-block;
   width: var(--cngx-dot-step-size, 0.625rem);
   height: var(--cngx-dot-step-size, 0.625rem);
@@ -1660,7 +1751,9 @@
   border-radius: 50%;
   background: var(--cngx-dot-step-upcoming-bg, color-mix(in srgb, currentColor 18%, transparent));
   cursor: pointer;
-  transition: background 150ms ease-out, transform 150ms ease-out;
+  transition:
+    background 150ms ease-out,
+    transform 150ms ease-out;
 }
 
 .cngx-stepper__mobile-dot[aria-disabled='true'] {
@@ -1678,6 +1771,47 @@
 
 .cngx-stepper__mobile-dot[data-state='error'] {
   background: var(--cngx-step-errored-color, currentColor);
+}
+
+/* Non-color error cue (WCAG 1.4.1) for the mobile dot - a glyph centred
+   over the red fill so error never relies on colour alone. Mirrors the
+   standalone `<cngx-dot-stepper>` treatment. */
+.cngx-stepper__mobile-dot--error::after {
+  content: var(--cngx-dot-step-error-glyph, '!');
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: var(--cngx-dot-step-error-glyph-size, 0.5rem);
+  font-weight: 700;
+  line-height: 1;
+  color: var(--cngx-dot-step-error-glyph-color, var(--cngx-color-on-danger, white));
+}
+
+/* Error sub-line for the mobile-collapse `text` branch - the count alone
+   could not surface a step error, so the aggregate phrase reads beneath it. */
+.cngx-stepper__mobile-error {
+  display: flex;
+  width: fit-content;
+  align-items: center;
+  gap: var(--cngx-step-mobile-error-gap, 0.375rem);
+  margin-block-start: var(--cngx-step-mobile-error-margin-top, 0.25rem);
+  font-size: var(--cngx-step-mobile-error-font-size, 0.8125rem);
+  color: var(--cngx-step-errored-color, var(--cngx-color-danger, oklch(0.45 0.15 25)));
+}
+
+.cngx-stepper__mobile-error-glyph {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: var(--cngx-step-mobile-error-glyph-size, 1.1em);
+  height: var(--cngx-step-mobile-error-glyph-size, 1.1em);
+  border-radius: 50%;
+  background: var(--cngx-step-errored-color, var(--cngx-color-danger, oklch(0.45 0.15 25)));
+  color: var(--cngx-step-mobile-error-glyph-color, var(--cngx-color-on-danger, white));
+  font-size: 0.75em;
+  font-weight: 700;
+  line-height: 1;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1708,27 +1842,37 @@
   --cngx-step-pill-segment-card-shadow: 0 1px 2px color-mix(in srgb, oklch(0 0 0) 55%, transparent);
 }
 
-:where(:root[data-color-scheme='dark'], :root.dark) .cngx-stepper[data-skin='pill-segment'] .cngx-stepper__step {
+:where(:root[data-color-scheme='dark'], :root.dark)
+  .cngx-stepper[data-skin='pill-segment']
+  .cngx-stepper__step {
   color: color-mix(in srgb, oklch(1 0 0) 60%, transparent);
 }
 
-:where(:root[data-color-scheme='dark'], :root.dark) .cngx-stepper[data-skin='pill-segment'] .cngx-stepper__step[aria-current='step'] {
+:where(:root[data-color-scheme='dark'], :root.dark)
+  .cngx-stepper[data-skin='pill-segment']
+  .cngx-stepper__step[aria-current='step'] {
   color: oklch(0.98 0 0);
 }
 
 @media (prefers-color-scheme: dark) {
-  :where(:root:not([data-color-scheme='light']):not(.light)) .cngx-stepper[data-skin='pill-segment'] {
+  :where(:root:not([data-color-scheme='light']):not(.light))
+    .cngx-stepper[data-skin='pill-segment'] {
     --cngx-step-pill-segment-rail-bg: oklch(0.24 0.005 240);
     --cngx-step-pill-segment-fill-active: oklch(0.4 0.008 240);
     --cngx-step-indicator-active-color: oklch(0.98 0 0);
-    --cngx-step-pill-segment-card-shadow: 0 1px 2px color-mix(in srgb, oklch(0 0 0) 55%, transparent);
+    --cngx-step-pill-segment-card-shadow: 0 1px 2px
+      color-mix(in srgb, oklch(0 0 0) 55%, transparent);
   }
 
-  :where(:root:not([data-color-scheme='light']):not(.light)) .cngx-stepper[data-skin='pill-segment'] .cngx-stepper__step {
+  :where(:root:not([data-color-scheme='light']):not(.light))
+    .cngx-stepper[data-skin='pill-segment']
+    .cngx-stepper__step {
     color: color-mix(in srgb, oklch(1 0 0) 60%, transparent);
   }
 
-  :where(:root:not([data-color-scheme='light']):not(.light)) .cngx-stepper[data-skin='pill-segment'] .cngx-stepper__step[aria-current='step'] {
+  :where(:root:not([data-color-scheme='light']):not(.light))
+    .cngx-stepper[data-skin='pill-segment']
+    .cngx-stepper__step[aria-current='step'] {
     color: oklch(0.98 0 0);
   }
 }
