@@ -15,6 +15,9 @@
     "disablePrivate": true,
     "disableInternal": true,
     "disableRoutesGraph": true,
+    "disableDomTree": true,
+    "disableGraph": true,
+    "disableDependenciesTab": true,
     "disableDependencies": true,
     "disableProperties": true,
     "menuLayout": "feature",
@@ -39,12 +42,12 @@
     ],
     "navTabConfig": [
         {
-            "id": "info",
-            "label": "Info"
+            "id": "readme",
+            "label": "UX / A11Y Principles"
         },
         {
-            "id": "readme",
-            "label": "Readme"
+            "id": "info",
+            "label": "Info"
         },
         {
             "id": "api",
@@ -61,10 +64,6 @@
         {
             "id": "playground",
             "label": "Playground"
-        },
-        {
-            "id": "tree",
-            "label": "DOM Tree"
         }
     ],
     "playgroundDependencies": {
