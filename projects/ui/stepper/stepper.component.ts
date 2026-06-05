@@ -346,9 +346,20 @@ export class CngxStepper implements CngxStepPanelHost {
     stepsOnly: this.stepsOnly,
   });
 
-  /** Aggregate error phrase for the mobile-collapse text branch. */
+  /**
+   * Aggregate error phrase for the mobile-collapse text branch. Feeds the
+   * real reason (the `[error]` string / aggregator label) through the
+   * resolver so the collapsed view shows "Card declined", not the generic
+   * "errored" status word - the strip's per-step row is not on screen in
+   * collapsed mode, so this line is the only error surface.
+   */
   protected readonly mobileErrorSummary = computed<string>(() =>
-    resolveStepperErrorSummary(this.stateView, this.stepsOnly, this.i18n),
+    resolveStepperErrorSummary(
+      this.stateView,
+      this.stepsOnly,
+      this.i18n,
+      (node) => this.stepErrorMessageOf(node) ?? undefined,
+    ),
   );
 
   /** Commit-in-flight flag - drives the host `aria-busy` binding. Pillar 2. */

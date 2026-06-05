@@ -76,6 +76,12 @@
       }
     }
   </div>
+  @if (stateView.hasAnyError()) {
+    <span class="cngx-stepper__mobile-error" role="status" data-state="error">
+      <span class="cngx-stepper__mobile-error-glyph" aria-hidden="true">{{ glyphs.errorBadge }}</span>
+      <span class="cngx-stepper__mobile-error-text">{{ mobileErrorSummary() }}</span>
+    </span>
+  }
   @if (showStepCount()) {
     <cngx-stepper-count class="cngx-stepper__mobile-text cngx-stepper__mobile-text--caption" [live]="false" />
   }
