@@ -317,6 +317,7 @@ export class CngxStepperPresenter implements CngxStepperHost {
         disabled: entry.reg.disabled,
         state: entry.reg.state,
         errorAggregator: entry.reg.errorAggregator,
+        errorMessage: entry.reg.errorMessage,
         children,
         depth,
         parentId: entry.parentId,

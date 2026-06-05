@@ -27,6 +27,13 @@ export interface CngxStepNode {
   readonly state: Signal<CngxStepStatus>;
   /** Optional error aggregator signal for badge / SR phrasing. */
   readonly errorAggregator?: Signal<CngxErrorAggregatorContract | undefined>;
+  /**
+   * Message carried by a direct `[error]` string input on the step, or
+   * `undefined` when `[error]` is boolean / absent. Pure data carrier
+   * read by the `*cngxStepError` slot + the mini-skin aggregate line -
+   * not a swap surface.
+   */
+  readonly errorMessage?: Signal<string | undefined>;
   /** Direct children for group nodes; empty for step nodes. */
   readonly children: readonly CngxStepNode[];
   /** DFS depth (root = 0). */
@@ -50,6 +57,12 @@ export interface CngxStepRegistration {
   readonly disabled: Signal<boolean>;
   readonly state: Signal<CngxStepStatus>;
   readonly errorAggregator?: Signal<CngxErrorAggregatorContract | undefined>;
+  /**
+   * Resolved message from a direct `[error]` string input, or
+   * `undefined` for boolean / absent. Pure data carrier (not a swap
+   * token); surfaced on {@link CngxStepNode.errorMessage}.
+   */
+  readonly errorMessage?: Signal<string | undefined>;
 }
 
 /**
