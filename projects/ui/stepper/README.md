@@ -202,7 +202,9 @@ There is no separate `'free'` value - "free" is just `headerNavigation="visited"
 </cngx-stepper>
 ```
 
-Set the app-wide default with `provideStepperConfig(withStepperHeaderNavigation('none'))`; the per-instance `[headerNavigation]` input wins over it. The Material twin `<cngx-mat-stepper>` honours `'none'` by suppressing header click / key activation (Material owns the header chrome, so this is a suppression, not a re-render).
+Set the app-wide default with `provideStepperConfig(withStepperHeaderNavigation('none'))`; the per-instance `[headerNavigation]` input wins over it.
+
+While a commit is in flight (`commitAction` pending), the `'visited'` headers lock - they go `aria-disabled`, click and arrow-key navigation no-op - so the strip cannot supersede the pending transition. This matches the footer nav atoms (`cngxStepperPrevious` / `cngxStepperNext`), which disable on `busy()` too; the strip and the footer lock together during an async step.
 
 ### Migration
 
