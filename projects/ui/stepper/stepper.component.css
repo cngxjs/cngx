@@ -338,6 +338,15 @@
       text-align: start;
     }
 
+    /* Top-align the steps so an errored step (which carries the extra
+       message line) grows downward instead of vertically centring -
+       otherwise the taller step centres in the stretched strip and lifts
+       its indicator out of line with the others. With no error every
+       step is the same height, so this is visually inert. */
+    :scope[data-skin='classic'] .cngx-stepper__strip {
+      align-items: flex-start;
+    }
+
     /* Consumer-owned busy spinner body via `*cngxStepBusySpinner` slot -
        drop the default ring chrome (fixed size, circular border, spin
        animation) when the slot rendered content of its own, otherwise
