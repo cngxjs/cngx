@@ -207,3 +207,44 @@ Set the app-wide default with `provideStepperConfig(withStepperHeaderNavigation(
 ### Migration
 
 The default is `'visited'`. For non-linear steppers (`linear="false"`, the default) this is identical to previous behaviour - every header stays clickable. **Linear steppers change:** headers that used to be clickable-but-blocked are now marked `aria-disabled` and only visited steps are reachable. If you relied on always-clickable headers under `linear="true"`, set `[linear]="false"` (or keep `headerNavigation="visited"` and gate completion yourself).
+
+## Error channels
+
+A step can be flagged as in error through two independent channels. Both render the same error **state** on every skin and variant; the error **text** surfaces differently.
+
+|Channel|How you flag it|Where the text appears|
+|-|-|-|
+|Validation|`[error]="true \| 'message'"` on `cngxStep`, or `[errorAggregator]` for multi-source forms|`*cngxStepError` slot in the classic / stripe-status-rich label area; folded into the aggregate error line on text / dot / progress|
+|Commit / async|a `commitAction` that rejects (sets `lastFailedIndex`)|`*cngxStepRejection` decoration; `CngxToastOn` / `CngxBannerOn` transition bridges|
+
+Per skin, the validation text appears as:
+
+|Skin|Validation text surface|
+|-|-|
+|classic, stripe-status-rich|`*cngxStepError` in the header label area (falls back to the resolved message)|
+|text, dot, progress-bar|the aggregate error line (`"Card declined"` for a single error, the count phrase for several)|
+|path-chevron, pill-segment, chips, breadcrumb|state badge / tile only (no inline text - label-only skins have no room)|
+
+The validation channel is the common case and needs no async machine. The simplest form is a single input:
+
+```html
+<cngx-stepper aria-label="Payment">
+  <div cngxStep label="Card" [error]="cardInvalid()"></div>
+  <div cngxStep label="Review"></div>
+</cngx-stepper>
+```
+
+`[error]="true"` puts the step in the error state; `[error]="'Card declined'"` does the same and supplies the inline message. A string wins over an aggregator label, which wins over the i18n `errored` status word. No `<fieldset cngxErrorAggregator>` / `<input cngxErrorSource>` scaffolding is required to flag "this step is invalid" - the `errorAggregator` stays the path for genuine multi-source aggregation (per-source keys, labels, SR announcement).
+
+Override the message presentation per instance with `*cngxStepError`, app-wide with `withStepErrorTemplate(...)`:
+
+```html
+<cngx-stepper aria-label="Payment">
+  <div cngxStep label="Card" [error]="cardError()"></div>
+  <ng-template cngxStepError let-message="message">
+    <strong>{{ message }}</strong>
+  </ng-template>
+</cngx-stepper>
+```
+
+The commit / async channel is separate: a rejected `commitAction` decorates the rolled-back step (`*cngxStepRejection`) and flows its message through the `CngxToastOn` / `CngxBannerOn` transition bridges. The two channels never collide - validation owns `*cngxStepError`, commit owns `*cngxStepRejection`.

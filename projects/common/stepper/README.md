@@ -95,6 +95,7 @@ class WizardCmp {
 | `withStepperSkin(name)` | Select the visual skin for `<cngx-stepper>`: `'classic'` (default) / `'linear-minimal'` / `'stripe-status-rich'` / `'path-chevron'` / `'pill-segment'`. Thematic only - structure, slots, ARIA, and keyboard behaviour are identical across skins. The Material twin `<cngx-mat-stepper>` ignores this setting. |
 | `withStepperMobileCollapse(mode)` | Choose the auto-collapse target for narrow viewports (`max-width: 480px`): `'text'` (default, renders `<cngx-text-stepper>`) / `'dots'` (renders `<cngx-dot-stepper>`) / `'off'` (keep the classic strip on every viewport). The Material twin ignores this setting. |
 | `withStepperHeaderNavigation(mode)` | Set the header-navigation policy: `'none'` (inert label headers, footer-only navigation) / `'visited'` (default - focusable header buttons gated by `linear`). Per-instance `[headerNavigation]` wins. |
+| `withStepErrorTemplate(tpl)` | App-wide default for the `*cngxStepError` slot - the per-step validation message rendered in the classic / stripe label area. Per-instance `*cngxStepError` directive wins. |
 | `withStepperI18nLabels({ statusLabels })` | Override the per-state pill labels surfaced by the `stripe-status-rich` skin: `{ done, inProgress, upNext, errored }`. Partial overrides keep unset keys at the English default. |
 | `withStepperI18nLabels({ textStepperFormat })` | Override the short format used by `CngxProgressBarStepper`'s caption and by `CngxTextStepper`. Signature: `(current: number, total: number) => string`; default `(c, t) => 'Step ' + c + ' of ' + t`. |
 
@@ -138,6 +139,15 @@ bootstrapApplication(AppComponent, {
 - `'visited'` (default): headers are focusable buttons. `linear="false"` allows free click-through; `linear="true"` reaches only visited steps and marks forward-incomplete headers `aria-disabled` (focusable, so the gate is announced).
 
 "Free navigation" is `'visited'` + `linear="false"` - there is no discrete `'free'` value. Resolve via the cascade: per-instance `[headerNavigation]` input ?? `withStepperHeaderNavigation(...)` config ?? `'visited'`. See `@cngx/ui/stepper` for the full table and migration note.
+
+## Error channels
+
+A step carries an error through two independent channels:
+
+- **Validation** - a direct `[error]` input on `cngxStep` (`true` or a message string), or an `[errorAggregator]` for genuine multi-source forms. Both fold into the step's `state` (`'error'`) with no async machine. The reason text surfaces via the `*cngxStepError` slot (classic / stripe) or the aggregate line (text / dot / progress). `[error]="'message'"` wins over the first aggregator label, which wins over the i18n `errored` word.
+- **Commit / async** - a `commitAction` that rejects sets `lastFailedIndex`; the rolled-back step decorates via `*cngxStepRejection` and announces through the `CngxToastOn` / `CngxBannerOn` bridges.
+
+The two never collide: validation owns `*cngxStepError`, commit owns `*cngxStepRejection`. The `[error]` input replaces the old `<fieldset cngxErrorAggregator><input cngxErrorSource>` boilerplate for the common "this step is invalid" case; the aggregator stays the power path. See `@cngx/ui/stepper` for the per-skin text-surface table.
 
 ## Architecture notes
 
