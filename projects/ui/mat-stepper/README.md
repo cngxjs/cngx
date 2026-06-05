@@ -1,31 +1,54 @@
 # @cngx/ui/mat-stepper
 
-Material-twin `<cngx-mat-stepper>` organism. Wraps Angular Material's `<mat-stepper>` while sharing the same `CngxStepperPresenter` brain (from `@cngx/common/stepper`) as `<cngx-stepper>`. Material consumers gain commit-action lifecycle, router sync, and error aggregation **for free** - same brain, different skin.
+The Material twin of the cngx stepper family, shipped as the instrumentation directive `[cngxMatStepper]`. Attach it to a vanilla `<mat-stepper>` and it shares the same `CngxStepperPresenter` brain (from `@cngx/common/stepper`) as `<cngx-stepper>`. Material consumers gain the commit-action lifecycle, router sync, error aggregation, and the shared `CNGX_STEPPER_HOST` contract **for free** - same brain, Material's own chrome. Mirrors `[cngxMatTabs]`.
 
 ## What it does
 
-The `<cngx-mat-stepper>` organism is a thin wrapper around `<mat-stepper>`:
+`[cngxMatStepper]` is the instrumentation pattern: Material owns the rendering, the consumer authors native `<mat-step>` markup, cngx is the behaviour layer.
 
-- Composes `CngxStepperPresenter` via `hostDirectives` (presenter contract identical to `<cngx-stepper>`).
-- Renders Material's `<mat-stepper>` in its template; iterates `presenter.flatSteps()` to synthesize one `<mat-step>` per registered `<cngxStep>` atom.
-- Bidirectional sync between `presenter.activeStepIndex` and `MatStepper.selectedIndex` via a single `effect()` whose Material writes are wrapped in `untracked()` (no reactivity loops, per `reference_signal_architecture` rule 2).
-- Material owns its own keyboard nav (`MatStepperHeader` ARIA) and focus management - this organism deliberately does NOT compose `CngxRovingTabindex` / `CngxFocusRestore` (which would conflict with Material's internals).
-- Group nodes flatten - Material's `<mat-step>` doesn't support nesting; depth is preserved as a `data-step-depth` attribute on the rendered label for CSS hooks.
+- Composes `CngxStepperPresenter` via `hostDirectives`; forwards `[activeStepIndex]`, `[linear]`, `[orientation]`, `[commitAction]`, `[commitMode]` and the `(activeStepIndexChange)` output.
+- Registers one step handle per `<mat-step>` it finds (`contentChildren(MatStep)`), so the presenter tracks Material's own steps.
+- Bidirectional sync between `presenter.activeStepIndex` and `MatStepper.selectedIndex`, Material writes wrapped in `untracked()` (no reactivity loops).
+- Provides `CNGX_STATEFUL`, so `<cngx-toast-on />` / `<cngx-banner-on />` self-wire as children; exposes `presenter` so a `<cngx-stepper-footer>` can drive Back / Next.
+- Material owns keyboard nav (`MatStepperHeader` ARIA), focus, and per-step error chrome (`[hasError]`, `errorMessage`, `<ng-template matStepperIcon>`) - the directive re-renders none of it.
 
 ## Exports
 
-| Export | Selector | Description |
+| Export | Selector / exportAs | Description |
 |-|-|-|
-| `CngxMatStepper` | `cngx-mat-stepper` | The Material-twin organism. Composes `CngxStepperPresenter` via `hostDirectives`. |
+| `CngxMatStepperBridge` | `[cngxMatStepper]` / `cngxMatStepperDirective` | Instrumentation directive for `<mat-stepper>`. |
+| `CNGX_MAT_STEP_HANDLE_FACTORY` / `createMatStepHandle` | - | Swappable factory building the per-`<mat-step>` registration handle. |
 
-**Only `<cngxStep>` atoms are accepted as content.** Native `<mat-step>` siblings are NOT supported - see `.internal/architektur/stepper-accepted-debt.md §1` for the structural rationale (Angular content-projection DI ordering blocks the adoption pattern; both attempted plans archived under `.internal/architektur/plans/halted/`).
+Because the directive upgrades the consumer's own `<mat-stepper>`, native `<mat-step>` markup, `<ng-template matStepperIcon>`, `[hasError]`, and `errorMessage` are authored directly in Material - there is no projection constraint and no icon-forwarding shim.
+
+## Usage
+
+A cngx footer drives navigation instead of Material's `matStepperPrevious` / `matStepperNext` buttons. The footer sits outside the stepper and is handed the host through the directive ref.
+
+```html
+<mat-stepper cngxMatStepper #s="cngxMatStepperDirective"
+  [(activeStepIndex)]="active" [commitMode]="'pessimistic'" [commitAction]="submit"
+  cngxToastOn cngxBannerOn>
+  <mat-step label="Method">...</mat-step>
+  <mat-step label="Details">...</mat-step>
+  <mat-step label="Verify">...</mat-step>
+</mat-stepper>
+
+<cngx-stepper-footer [host]="s.presenter">
+  <button cngxStepperFooterStart cngxStepperPrevious>Back</button>
+  <button cngxStepperFooterEnd cngxStepperNext>Continue</button>
+</cngx-stepper-footer>
+```
 
 ## Bidirectional sync
 
-The organism's constructor wires two effects (after `afterNextRender` ensures `viewChild.required(MatStepper)` resolves):
+`createMatStepperBidirectionalSync` wires both directions once the directive is constructed:
 
-1. **presenter → Material**: an `effect()` reads `presenter.activeStepIndex()` and writes `matStepper.selectedIndex` inside `untracked()`. Equality guard suppresses redundant writes.
-2. **Material → presenter**: subscribes to `matStepper.selectionChange` via `takeUntilDestroyed`, calls `presenter.select(event.selectedIndex)` when the values diverge.
+1. **presenter → Material**: `presenter.activeStepIndex()` writes `matStepper.selectedIndex` inside `untracked()`, equality-guarded against redundant writes.
+2. **Material → presenter**: `matStepper.selectionChange` calls `presenter.select(...)` when the values diverge.
 
-Material's commit-action gate works because `presenter.select()` routes through the commit handler - pessimistic mode keeps Material's `selectedIndex` on origin until success.
+The commit-action gate works because `presenter.select()` routes through the commit handler - pessimistic mode keeps Material's `selectedIndex` on origin until the action resolves.
 
+## Errors
+
+Error **state** flows through Material's own `<mat-step [hasError]>`; the message through Material's `errorMessage`, or for the async channel through the `cngxToastOn` / `cngxBannerOn` bridges. The cngx per-step error slots (`*cngxStepError`) are CNGX-skin-only by design - Material owns its label chrome.
