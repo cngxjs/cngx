@@ -66,7 +66,7 @@ describe('CngxStepperConfig', () => {
   });
 
   it('every with* config feature carries the _target=config discriminator', () => {
-    // Branding axis — guards against accidental loss of the
+    // Branding axis - guards against accidental loss of the
     // `_target` brand on any config feature, which would let
     // provideCngxStepper silently drop the feature in dev-mode.
     expect(withStepperDefaultOrientation('vertical')._target).toBe('config');

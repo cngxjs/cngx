@@ -52,7 +52,7 @@ async function renderLabels(): Promise<MatStep[]> {
   return matStepper.steps.toArray();
 }
 
-describe('createMatStepHandle — Phase 6.2 label fallback ladder', () => {
+describe('createMatStepHandle - Phase 6.2 label fallback ladder', () => {
   test('axis L1: MatStep.label string wins (tier 1)', async () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],
@@ -94,7 +94,7 @@ describe('createMatStepHandle — Phase 6.2 label fallback ladder', () => {
     expect(handle.label().length).toBeGreaterThan('Step '.length);
   });
 
-  test('axis L5: paired hasError + completed write — `_completedOverride` re-fire surfaces the error', async () => {
+  test('axis L5: paired hasError + completed write - `_completedOverride` re-fire surfaces the error', async () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],
     });
@@ -111,11 +111,11 @@ describe('createMatStepHandle — Phase 6.2 label fallback ladder', () => {
     const handle = createMatStepHandle(matStep, seedId).handle;
     expect(handle.state()).toBe('idle');
     // Drive Material's typical error-state-matcher write pattern:
-    // `hasError = true; completed = true` — the second line writes
+    // `hasError = true; completed = true` - the second line writes
     // through `_completedOverride.set(true)`, which the cngx `state`
     // computed tracks via `MatStep.completed`'s getter and re-fires.
     // A `hasError` flip ALONE (without the paired completion write)
-    // does not re-trigger the computed — `hasError` is a plain
+    // does not re-trigger the computed - `hasError` is a plain
     // CdkStep setter, not a Signal.
     matStep.hasError = true;
     matStep.completed = true;

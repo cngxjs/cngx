@@ -111,7 +111,7 @@ async function setupPlumbing(): Promise<Plumbing> {
 }
 
 describe('CngxMatStepper instrumentation directive', () => {
-  test('axis 1: presenter→Material write — presenter.select(2) updates matStepper.selectedIndex', async () => {
+  test('axis 1: presenter→Material write - presenter.select(2) updates matStepper.selectedIndex', async () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],
     });
@@ -124,7 +124,7 @@ describe('CngxMatStepper instrumentation directive', () => {
     expect(matStepper.selectedIndex).toBe(2);
   });
 
-  test('axis 2: Material→presenter routing — selectedIndexChange writes presenter.activeStepIndex', async () => {
+  test('axis 2: Material→presenter routing - selectedIndexChange writes presenter.activeStepIndex', async () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],
     });
@@ -136,7 +136,7 @@ describe('CngxMatStepper instrumentation directive', () => {
     expect(presenter.activeStepIndex()).toBe(1);
   });
 
-  test('axis 3: MatStep add/remove — toggling a step reflects in presenter.flatSteps()', async () => {
+  test('axis 3: MatStep add/remove - toggling a step reflects in presenter.flatSteps()', async () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],
     });
@@ -162,7 +162,7 @@ describe('CngxMatStepper instrumentation directive', () => {
     expect(presenter.flatSteps().length).toBe(3);
   });
 
-  test('axis 4: pessimistic pending — Material stays at origin while commit pending', async () => {
+  test('axis 4: pessimistic pending - Material stays at origin while commit pending', async () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],
     });
@@ -183,7 +183,7 @@ describe('CngxMatStepper instrumentation directive', () => {
     expect(matStepper.selectedIndex).toBe(0);
   });
 
-  test('axis 5: pessimistic resolve — Material flips to target after commit success', async () => {
+  test('axis 5: pessimistic resolve - Material flips to target after commit success', async () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],
     });
@@ -213,7 +213,7 @@ describe('CngxMatStepper instrumentation directive', () => {
     expect(matStepper.selectedIndex).toBe(1);
   });
 
-  test('axis 6: optimistic rollback — sync rejection reverts Material', async () => {
+  test('axis 6: optimistic rollback - sync rejection reverts Material', async () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],
     });
@@ -235,7 +235,7 @@ describe('CngxMatStepper instrumentation directive', () => {
     expect(matStepper.selectedIndex).toBe(2);
 
     // Drain the rejection-rollback cycle deterministically. The
-    // commitAction returned `Promise.reject(...)` — the rejection
+    // commitAction returned `Promise.reject(...)` - the rejection
     // settles on the next microtask, the rollback effect fires
     // synchronously off that, and the bidirectional-sync effect
     // writes back to Material. Earlier versions of this test used
@@ -244,7 +244,7 @@ describe('CngxMatStepper instrumentation directive', () => {
     // is pending). The pattern below mirrors the cngx-native
     // stepper's "does not loop on initial sync" test (commit
     // 91ea5a9): yield once for the rejection, flush effects, yield
-    // once more, flush again — the rollback + write are guaranteed
+    // once more, flush again - the rollback + write are guaranteed
     // to have landed by the second flush.
     await Promise.resolve();
     TestBed.flushEffects();
@@ -255,7 +255,7 @@ describe('CngxMatStepper instrumentation directive', () => {
     expect(matStepper.selectedIndex).toBe(0);
   });
 
-  test('axis 7: untracked() discipline — coalesce synchronous double-set on final value', async () => {
+  test('axis 7: untracked() discipline - coalesce synchronous double-set on final value', async () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],
     });
@@ -269,7 +269,7 @@ describe('CngxMatStepper instrumentation directive', () => {
     expect(presenter.activeStepIndex()).toBe(2);
   });
 
-  test('axis 8: DestroyRef teardown — destroy stops further sync', async () => {
+  test('axis 8: DestroyRef teardown - destroy stops further sync', async () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],
     });
@@ -303,7 +303,7 @@ describe('CngxMatStepper instrumentation directive', () => {
     expect(new Set(ids).size).toBe(3);
   });
 
-  test('axis 11: CNGX_MAT_STEP_HANDLE_FACTORY swap — viewProviders override is honoured', async () => {
+  test('axis 11: CNGX_MAT_STEP_HANDLE_FACTORY swap - viewProviders override is honoured', async () => {
     const calls: string[] = [];
     const wrappedFactory: CngxMatStepHandleFactory = (step, idSeed) => {
       const setup = createMatStepHandle(step, idSeed);
@@ -322,7 +322,7 @@ describe('CngxMatStepper instrumentation directive', () => {
     expect(new Set(calls).size).toBe(3);
   });
 
-  test('axis 12: CNGX_MAT_STEP_HANDLE_FACTORY default — token resolves to createMatStepHandle without override', async () => {
+  test('axis 12: CNGX_MAT_STEP_HANDLE_FACTORY default - token resolves to createMatStepHandle without override', async () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],
     });
@@ -330,7 +330,7 @@ describe('CngxMatStepper instrumentation directive', () => {
     expect(resolved).toBe(createMatStepHandle);
   });
 
-  test('axis 10: live MatStep.completed — toggling Material completion flips presenter state to "success"', async () => {
+  test('axis 10: live MatStep.completed - toggling Material completion flips presenter state to "success"', async () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],
     });

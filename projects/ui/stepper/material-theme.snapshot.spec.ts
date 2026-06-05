@@ -17,7 +17,7 @@ import { describe, expect, it } from 'vitest';
  * Phase B Commit 6 and Phase C Commit 6 will EXTEND the mixin with
  * additional `--cngx-step-*` overrides for new skin / variant
  * properties. The Phase 0 baseline lines documented here MUST stay
- * unchanged across those phases — the snapshot diff Phase B and C
+ * unchanged across those phases - the snapshot diff Phase B and C
  * produce is purely additive. Any change to a Phase 0 line is a
  * regression.
  *

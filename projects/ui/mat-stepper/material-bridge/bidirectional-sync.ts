@@ -10,7 +10,7 @@ import type { CngxStepperHost } from '@cngx/common/stepper';
 export interface CngxMatStepperBidirectionalSyncOptions {
   /** Material stepper the helper bridges against. */
   readonly matStepper: MatStepper;
-  /** cngx stepper presenter — write target for Material→presenter. */
+  /** cngx stepper presenter - write target for Material→presenter. */
   readonly presenter: CngxStepperHost;
   /** Injection context for the underlying `effect()` in `@cngx/common/data`. */
   readonly injector: Injector;
@@ -26,13 +26,13 @@ export interface CngxMatStepperBidirectionalSyncOptions {
  * (`@cngx/common/data`). Both `<cngx-mat-stepper>` (Component) and
  * `[cngxMatStepper]` (Directive) need to install the same
  * presenter↔Material `selectedIndex` sync; the option-mapping body
- * was identical at both call sites — same `presenterIndex`, same
+ * was identical at both call sites - same `presenterIndex`, same
  * `readSelectedIndex` / `writeSelectedIndex` shape, same
  * `selectedIndexChange.asObservable()` source, same
  * `onMaterialSelection` write-back. This helper is the single entry
  * point: each call site reduces to one line.
  *
- * Behaviour stays identical to the prior inline blocks — the helper
+ * Behaviour stays identical to the prior inline blocks - the helper
  * is a pure shape-adapter, no policy. The underlying generic factory
  * owns:
  * - presenter→Material `effect()` with read-equality guard.
@@ -51,7 +51,7 @@ export function createMatStepperBidirectionalSync(
     writeSelectedIndex: (i) => {
       opts.matStepper.selectedIndex = i;
     },
-    // `MatStepper.selectedIndexChange` emits a plain index — no adapter needed,
+    // `MatStepper.selectedIndexChange` emits a plain index - no adapter needed,
     // unlike `MatTabGroup.selectedIndexChange`.
     selectionChange$: opts.matStepper.selectedIndexChange.asObservable(),
     onMaterialSelection: (i) => opts.presenter.select(i),

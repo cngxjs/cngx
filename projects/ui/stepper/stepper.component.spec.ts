@@ -204,7 +204,7 @@ describe('CngxStepper organism', () => {
     const descId = panel.getAttribute('aria-describedby');
     expect(descId).toBeTruthy();
     // Descriptor span lives in the step button (single source of truth)
-    // and is always rendered — Pillar 2 + cngx A11y rule "IDs always
+    // and is always rendered - Pillar 2 + cngx A11y rule "IDs always
     // present".
     const desc = fixture.nativeElement.querySelector(
       `#${descId}`,
@@ -485,7 +485,7 @@ describe('CngxStepper organism', () => {
     fixture.componentInstance.active.set(1);
     fixture.detectChanges();
     const after = stepper.stepsOnly();
-    // No registry change — flatStepsEqual short-circuits the computed
+    // No registry change - flatStepsEqual short-circuits the computed
     // and downstream consumers see the same reference.
     expect(after).toBe(before);
   });
@@ -650,7 +650,7 @@ describe('CngxStepper organism', () => {
       ) as HTMLElement;
       // Rich phrase first.
       expect(region.textContent?.trim()).toBe('Reverted to step "A".');
-      // Dismiss the rejection — clearing lastFailedIndex collapses the
+      // Dismiss the rejection - clearing lastFailedIndex collapses the
       // priority chain to the generic fallback. The organism exposes
       // `clearLastFailed()` as a public delegator so consumers using
       // `#s="cngxStepper"` don't need to inject CNGX_STEPPER_HOST.
@@ -661,8 +661,8 @@ describe('CngxStepper organism', () => {
       stepper.clearLastFailed();
       fixture.detectChanges();
       // After clearLastFailed the priority chain falls through to the
-      // generic message — origin slot still set but failedIdx undefined.
-      expect(region.textContent?.trim()).toBe('Commit failed — retry?');
+      // generic message - origin slot still set but failedIdx undefined.
+      expect(region.textContent?.trim()).toBe('Commit failed - retry?');
     });
 
     it('host carries aria-busy="true" while a commit is pending and clears on resolve', () => {

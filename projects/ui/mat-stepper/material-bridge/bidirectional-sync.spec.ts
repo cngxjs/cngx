@@ -40,8 +40,8 @@ async function setupPlumbing(): Promise<Plumbing> {
   return { fixture, matStepper, presenter };
 }
 
-describe('createMatStepperBidirectionalSync (Phase 7.2 — shared glue helper)', () => {
-  test('axis 1: presenter→Material — presenter.select(2) writes through to matStepper.selectedIndex', async () => {
+describe('createMatStepperBidirectionalSync (Phase 7.2 - shared glue helper)', () => {
+  test('axis 1: presenter→Material - presenter.select(2) writes through to matStepper.selectedIndex', async () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],
     });
@@ -55,7 +55,7 @@ describe('createMatStepperBidirectionalSync (Phase 7.2 — shared glue helper)',
     expect(matStepper.selectedIndex).toBe(2);
   });
 
-  test('axis 2: Material→presenter — selectedIndexChange emission writes presenter.activeStepIndex', async () => {
+  test('axis 2: Material→presenter - selectedIndexChange emission writes presenter.activeStepIndex', async () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],
     });
@@ -68,7 +68,7 @@ describe('createMatStepperBidirectionalSync (Phase 7.2 — shared glue helper)',
     expect(presenter.activeStepIndex()).toBe(1);
   });
 
-  test('axis 3: destroyRef cleanup — fixture.destroy() halts the presenter→Material sync', async () => {
+  test('axis 3: destroyRef cleanup - fixture.destroy() halts the presenter→Material sync', async () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],
     });

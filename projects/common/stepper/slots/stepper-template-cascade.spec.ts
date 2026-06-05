@@ -33,7 +33,7 @@ function makeHost(): TplHost {
   return fixture.componentInstance;
 }
 
-describe('createStepperTemplateBindings — 3-stage cascade', () => {
+describe('createStepperTemplateBindings - 3-stage cascade', () => {
   it('returns null on every key when no instance + no config template is supplied', () => {
     const cfg: CngxStepperConfig = {};
     const bindings = createStepperTemplateBindings({

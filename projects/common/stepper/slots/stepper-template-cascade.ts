@@ -25,7 +25,7 @@ import type { CngxStepperEmpty } from './stepper-empty.directive';
 
 /**
  * Inputs to {@link createStepperTemplateBindings}. The organism owns
- * the `contentChild()` queries (NG8110 — must run in component
+ * the `contentChild()` queries (NG8110 - must run in component
  * injection context) and the resolved {@link CngxStepperConfig}; this
  * factory absorbs the 3-stage cascade per slot key.
  *
@@ -43,7 +43,7 @@ export interface CngxStepperTemplateBindingsOptions {
 
 /**
  * Output of {@link createStepperTemplateBindings}. One resolved
- * `Signal<TemplateRef | null>` per slot — `null` falls through to the
+ * `Signal<TemplateRef | null>` per slot - `null` falls through to the
  * organism's built-in default markup.
  *
  * @category common/stepper/slots
@@ -62,11 +62,11 @@ export interface CngxStepperTemplateBindings {
  * skin slots: per-instance directive > `CNGX_STEPPER_CONFIG.templates.<key>`
  * > `null` (built-in default).
  *
- * Pure — no DI, no side effects. Safe to call from a field-init
+ * Pure - no DI, no side effects. Safe to call from a field-init
  * block. Sibling of `createTabOverflowTemplateBindings` and the
  * family-wide `createTemplateRegistry`.
  *
- * Tabs has no parallel slot surface yet — see
+ * Tabs has no parallel slot surface yet - see
  * `stepper-accepted-debt §3` for the planned Phase-4 closure.
  *
  * @category common/stepper/slots
