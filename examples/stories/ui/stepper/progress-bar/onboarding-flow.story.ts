@@ -37,7 +37,7 @@ export const STORY: DemoSpec = {
     >
       <div cngxStep label="Account"></div>
       <div cngxStep label="Profile"></div>
-      <div cngxStep label="Preferences" [error]="prefsInvalid()"></div>
+      <div cngxStep label="Preferences" [error]="prefsInvalid() ? 'Choose at least one notification' : false"></div>
       <div cngxStep label="Connections"></div>
       <div cngxStep label="Finish"></div>
     </cngx-progress-bar-stepper>

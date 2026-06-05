@@ -48,7 +48,7 @@ export const STORY: DemoSpec = {
         [showCurrentLabel]="showLabel()"
       >
         <div cngxStep label="Customer"></div>
-        <div cngxStep label="Payment" [error]="paymentInvalid()"></div>
+        <div cngxStep label="Payment" [error]="paymentInvalid() ? 'Card declined' : false"></div>
         <div cngxStep label="Review"></div>
       </cngx-text-stepper>
     </header>

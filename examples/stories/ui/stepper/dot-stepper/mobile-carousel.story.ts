@@ -48,7 +48,7 @@ export const STORY: DemoSpec = {
     >
       <div cngxStep label="Slide 1"></div>
       <div cngxStep label="Slide 2"></div>
-      <div cngxStep label="Slide 3" [error]="slide3Invalid()"></div>
+      <div cngxStep label="Slide 3" [error]="slide3Invalid() ? 'This slide is unavailable' : false"></div>
       <div cngxStep label="Slide 4"></div>
       <div cngxStep label="Slide 5"></div>
     </cngx-dot-stepper>
