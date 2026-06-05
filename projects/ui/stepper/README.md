@@ -210,31 +210,27 @@ The default is `'visited'`. For non-linear steppers (`linear="false"`, the defau
 
 ## Error channels
 
-A step can be flagged as in error through two independent channels. Both render the same error **state** on every skin and variant; the error **text** surfaces differently.
+A step can be flagged as in error through two independent channels. Both render the same error **state** on every skin (the indicator / badge / tile turns errored); the error **message** surfaces separately.
 
-|Channel|How you flag it|Where the text appears|
+|Channel|How you flag it|Where the message appears|
 |-|-|-|
-|Validation|`[error]="true \| 'message'"` on `cngxStep`, or `[errorAggregator]` for multi-source forms|`*cngxStepError` slot in the classic / stripe-status-rich label area; folded into the aggregate error line on text / dot / progress|
+|Validation|`[error]="true \| 'message'"` on `cngxStep`, or `[errorAggregator]` for multi-source forms|a row **below the strip** (every classic-style skin) via `*cngxStepError`; folded into the aggregate line on the `text` / `dot` / `progress-bar` mini variants|
 |Commit / async|a `commitAction` that rejects (sets `lastFailedIndex`)|`*cngxStepRejection` decoration; `CngxToastOn` / `CngxBannerOn` transition bridges|
 
-Per skin, the validation text appears as:
+The message lives on its own row **below** the step strip, not inside a step. That is deliberate: a free-text message inside a horizontal (or column) strip item widens the shrink-to-fit step and tears the row; below the strip it has full width and wraps. The strip itself only ever carries the short state cue.
 
-|Skin|Validation text surface|
-|-|-|
-|classic, stripe-status-rich|`*cngxStepError` in the header label area (falls back to the resolved message)|
-|text, dot, progress-bar|the aggregate error line (`"Card declined"` for a single error, the count phrase for several)|
-|path-chevron, pill-segment, chips, breadcrumb|state badge / tile only (no inline text - label-only skins have no room)|
+Only steps with a **real reason** show a message row - the bare `errored` state is already communicated by the indicator / badge, so a boolean `[error]="true"` adds no text-only noise. A reason is the direct `[error]` string or the first `errorAggregator` label.
 
 The validation channel is the common case and needs no async machine. The simplest form is a single input:
 
 ```html
 <cngx-stepper aria-label="Payment">
-  <div cngxStep label="Card" [error]="cardInvalid()"></div>
+  <div cngxStep label="Card" [error]="cardInvalid() ? 'Card declined' : false"></div>
   <div cngxStep label="Review"></div>
 </cngx-stepper>
 ```
 
-`[error]="true"` puts the step in the error state; `[error]="'Card declined'"` does the same and supplies the inline message. A string wins over an aggregator label, which wins over the i18n `errored` status word. No `<fieldset cngxErrorAggregator>` / `<input cngxErrorSource>` scaffolding is required to flag "this step is invalid" - the `errorAggregator` stays the path for genuine multi-source aggregation (per-source keys, labels, SR announcement).
+`[error]="true"` puts the step in the error state (red indicator, no message); `[error]="'Card declined'"` does the same and supplies the message rendered below the strip. A string wins over an aggregator label, which wins over the i18n `errored` status word. No `<fieldset cngxErrorAggregator>` / `<input cngxErrorSource>` scaffolding is required to flag "this step is invalid" - the `errorAggregator` stays the path for genuine multi-source aggregation (per-source keys, labels, SR announcement).
 
 Override the message presentation per instance with `*cngxStepError`, app-wide with `withStepErrorTemplate(...)`:
 
