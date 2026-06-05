@@ -38,22 +38,42 @@
     }
   </div>
 } @else if (displayMode() === 'dots') {
-  <div class="cngx-stepper__mobile-dots">
+  <!--
+    In 'none' mode the dots are inert list-item indicators (footer-only
+    navigation); otherwise they are roving-tabindex buttons.
+  -->
+  <div
+    class="cngx-stepper__mobile-dots"
+    [attr.role]="resolvedHeaderNavigation() === 'none' ? 'list' : null"
+  >
     @for (node of stepsOnly(); track node.id; let i = $index) {
-      <button
-        type="button"
-        cngxRovingItem
-        class="cngx-stepper__mobile-dot"
-        [class.cngx-stepper__mobile-dot--active]="slotContext.isActive(node)"
-        [class.cngx-stepper__mobile-dot--completed]="i < activeStepIndex()"
-        [class.cngx-stepper__mobile-dot--error]="stateView.hasError(node)"
-        [attr.aria-current]="slotContext.isActive(node) ? 'step' : null"
-        [attr.aria-label]="mobileDotAriaLabel(node, i)"
-        [attr.data-state]="mobileDotState(node)"
-        [attr.aria-disabled]="node.disabled() ? 'true' : null"
-        [cngxRovingItemDisabled]="node.disabled()"
-        (click)="handleHeaderClick(node)"
-      ></button>
+      @if (resolvedHeaderNavigation() === 'none') {
+        <span
+          role="listitem"
+          class="cngx-stepper__mobile-dot cngx-stepper__mobile-dot--static"
+          [class.cngx-stepper__mobile-dot--active]="slotContext.isActive(node)"
+          [class.cngx-stepper__mobile-dot--completed]="i < activeStepIndex()"
+          [class.cngx-stepper__mobile-dot--error]="stateView.hasError(node)"
+          [attr.aria-current]="slotContext.isActive(node) ? 'step' : null"
+          [attr.aria-label]="mobileDotAriaLabel(node, i)"
+          [attr.data-state]="mobileDotState(node)"
+        ></span>
+      } @else {
+        <button
+          type="button"
+          cngxRovingItem
+          class="cngx-stepper__mobile-dot"
+          [class.cngx-stepper__mobile-dot--active]="slotContext.isActive(node)"
+          [class.cngx-stepper__mobile-dot--completed]="i < activeStepIndex()"
+          [class.cngx-stepper__mobile-dot--error]="stateView.hasError(node)"
+          [attr.aria-current]="slotContext.isActive(node) ? 'step' : null"
+          [attr.aria-label]="mobileDotAriaLabel(node, i)"
+          [attr.data-state]="mobileDotState(node)"
+          [attr.aria-disabled]="headerAriaDisabled(node)"
+          [cngxRovingItemDisabled]="node.disabled()"
+          (click)="handleHeaderClick(node)"
+        ></button>
+      }
     }
   </div>
   @if (showStepCount()) {

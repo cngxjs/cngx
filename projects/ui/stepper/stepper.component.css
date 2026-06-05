@@ -1760,6 +1760,12 @@
   cursor: not-allowed;
 }
 
+/* Inert dot (headerNavigation 'none'): pure indicator, not a control. */
+.cngx-stepper__mobile-dot--static {
+  cursor: default;
+  pointer-events: none;
+}
+
 .cngx-stepper__mobile-dot--completed {
   background: var(--cngx-dot-step-completed-fill, var(--cngx-step-completed-color, currentColor));
 }
