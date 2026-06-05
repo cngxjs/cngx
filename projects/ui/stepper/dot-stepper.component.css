@@ -73,13 +73,6 @@
   gap: var(--cngx-dot-step-gap, 0.5rem);
 }
 
-/* When the row owns the horizontal swipe gesture, lock its
-   touch-action to vertical pan only so the surrounding page still
-   scrolls while the user drags across the dots to navigate steps. */
-.cngx-dot-stepper__row--swipeable {
-  touch-action: pan-y;
-}
-
 .cngx-dot-stepper__dot {
   display: inline-block;
   width: var(--cngx-dot-step-size, 0.625rem);

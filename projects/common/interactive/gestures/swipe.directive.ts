@@ -1,5 +1,5 @@
 import { DOCUMENT } from '@angular/common';
-import { Directive, ElementRef, inject, input, output, signal } from '@angular/core';
+import { computed, Directive, ElementRef, inject, input, output, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { fromEvent, merge, switchMap, takeUntil, tap, filter, map } from 'rxjs';
 
@@ -49,6 +49,11 @@ interface SwipeReading {
   exportAs: 'cngxSwipe',
   standalone: true,
   host: {
+    // Communicate the gesture's axis intent to the browser so it
+    // never claims the swipe as a scroll. Derived from `axis`, not
+    // hand-set in consumer CSS: every host of this directive gets the
+    // correct touch-action for free instead of re-discovering the bug.
+    '[style.touch-action]': 'touchAction()',
     // Scope user-select suppression to the in-flight gesture. A
     // bare `user-select: none` on the host kills text selection
     // permanently inside the swipe surface even when the user is
@@ -78,6 +83,27 @@ export class CngxSwipe {
   readonly swipeProgress = this.swipeProgressState.asReadonly();
   /** Dominant direction of the in-flight gesture, or `null` when idle. */
   readonly swipeDirection = this.swipeDirectionState.asReadonly();
+
+  /**
+   * The `touch-action` the host should advertise, derived from `axis`.
+   * A pinned axis hands the orthogonal direction back to native
+   * scrolling (`x` -> `pan-y`, `y` -> `pan-x`); `both` claims the
+   * whole surface (`none`). When disabled, no value is written so the
+   * element keeps its native scroll behaviour untouched.
+   */
+  protected readonly touchAction = computed<string | null>(() => {
+    if (!this.enabled()) {
+      return null;
+    }
+    switch (this.axis()) {
+      case 'x':
+        return 'pan-y';
+      case 'y':
+        return 'pan-x';
+      default:
+        return 'none';
+    }
+  });
 
   constructor() {
     const nativeEl = inject(ElementRef<HTMLElement>).nativeElement as HTMLElement;
@@ -162,25 +188,34 @@ export class CngxSwipe {
   }
 
   /**
-   * Resolve the dominant-axis direction + distance for a pointer delta,
-   * or `null` when the gesture runs against the configured `axis`.
+   * Resolve the swipe direction + distance for a pointer delta.
+   *
+   * When `axis` is pinned, only that axis's delta decides direction
+   * and distance - the orthogonal component is irrelevant, not an
+   * abort reason. The previous endpoint-dominance check (`|dx| >= |dy|`)
+   * discarded a clearly horizontal drag the moment a natural thumb arc
+   * left `|dy|` slightly larger at release, which made a pinned swipe
+   * register only on a near-perfect straight line. `touch-action`
+   * (advertised from the same `axis`) is the real guard against an
+   * orthogonal scroll firing the gesture: the browser cancels the
+   * pointer before pointerup, so a clean cycle reaching here is already
+   * the intended direction. `both` keeps the dominant-axis heuristic.
    */
   private read(startX: number, startY: number, endX: number, endY: number): SwipeReading | null {
     const dx = endX - startX;
     const dy = endY - startY;
-    const horizontal = Math.abs(dx) >= Math.abs(dy);
     const axis = this.axis();
 
-    if (horizontal) {
-      if (axis === 'y') {
-        return null;
-      }
+    if (axis === 'x') {
       return { direction: dx < 0 ? 'left' : 'right', distance: Math.abs(dx) };
     }
-
-    if (axis === 'x') {
-      return null;
+    if (axis === 'y') {
+      return { direction: dy < 0 ? 'up' : 'down', distance: Math.abs(dy) };
     }
-    return { direction: dy < 0 ? 'up' : 'down', distance: Math.abs(dy) };
+
+    const horizontal = Math.abs(dx) >= Math.abs(dy);
+    return horizontal
+      ? { direction: dx < 0 ? 'left' : 'right', distance: Math.abs(dx) }
+      : { direction: dy < 0 ? 'up' : 'down', distance: Math.abs(dy) };
   }
 }
