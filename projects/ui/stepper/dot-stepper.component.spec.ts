@@ -260,12 +260,12 @@ describe('CngxDotStepper', () => {
       expect(dotStepperOf(fixture).swipeNav.swipeEnabled()).toBe(true);
     });
 
-    it('the dot row carries the --swipeable modifier when swipe is enabled', () => {
+    it('the dot row advertises touch-action: pan-y when swipe is enabled', () => {
       TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
       const fixture = TestBed.createComponent(Host);
       fixture.detectChanges();
       const row = fixture.nativeElement.querySelector('.cngx-dot-stepper__row') as HTMLElement;
-      expect(row.classList.contains('cngx-dot-stepper__row--swipeable')).toBe(true);
+      expect(row.style.touchAction).toBe('pan-y');
     });
   });
 });

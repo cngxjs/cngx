@@ -1,7 +1,7 @@
 {
   "name": "@cngx/utils",
   "version": "0.0.0-PLACEHOLDER",
-  "description": "Framework-agnostic TypeScript utilities (array, tree, version primitives) for the cngx Angular component library.",
+  "description": "Framework-agnostic TypeScript utilities (array, tree, version primitives) for the CNGX Angular component library.",
   "keywords": [
     "cngx",
     "angular",
@@ -9,7 +9,7 @@
     "tree",
     "utilities"
   ],
-  "author": "Christian Weiss <c.weiss@sobit.at>",
+  "author": "Christian Weiss <info@cngx.dev>",
   "license": "MIT",
   "homepage": "https://github.com/cngxjs/cngx#readme",
   "bugs": {

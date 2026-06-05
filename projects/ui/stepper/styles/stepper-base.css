@@ -363,13 +363,6 @@
     display: block;
   }
 
-  /* When the panel host owns the horizontal swipe gesture, lock its
-     touch-action to vertical pan only so the page can still scroll
-     while the user drags left/right to navigate steps. */
-  .cngx-stepper__panels--swipeable {
-    touch-action: pan-y;
-  }
-
   .cngx-stepper__panel {
     display: block;
     padding: var(--cngx-step-padding, 0.5rem 0.75rem);

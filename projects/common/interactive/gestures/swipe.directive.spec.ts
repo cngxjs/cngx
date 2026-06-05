@@ -90,6 +90,41 @@ describe('CngxSwipe', () => {
     expect(host.swiped).not.toHaveBeenCalled();
   });
 
+  it('emits a pinned-axis swipe even when the orthogonal delta dominates at release', () => {
+    // Regression: a natural thumb arc leaves |dy| slightly larger than
+    // |dx| at pointerup. The old endpoint-dominance check discarded
+    // this as "not horizontal"; with axis pinned, only |dx| matters.
+    const { fixture, el, host } = setup();
+    host.axis.set('x');
+    fixture.detectChanges();
+    swipe(el, { x: 200, y: 100 }, { x: 80, y: 225 }); // dx=-120, dy=+125
+    expect(host.swiped).toHaveBeenCalledExactlyOnceWith('left');
+  });
+
+  it('advertises touch-action derived from the axis', () => {
+    const { fixture, el, host } = setup();
+    expect(el.style.touchAction).toBe('none'); // axis 'both' (default)
+
+    host.axis.set('x');
+    fixture.detectChanges();
+    expect(el.style.touchAction).toBe('pan-y');
+
+    host.axis.set('y');
+    fixture.detectChanges();
+    expect(el.style.touchAction).toBe('pan-x');
+  });
+
+  it('clears touch-action when disabled so native scroll is untouched', () => {
+    const { fixture, el, host } = setup();
+    host.axis.set('x');
+    fixture.detectChanges();
+    expect(el.style.touchAction).toBe('pan-y');
+
+    host.enabled.set(false);
+    fixture.detectChanges();
+    expect(el.style.touchAction).toBe('');
+  });
+
   it('resets gesture state after completion', () => {
     const { el, dir } = setup();
     swipe(el, { x: 200, y: 100 }, { x: 80, y: 100 });

@@ -1,7 +1,7 @@
 {
   "name": "@cngx/ui",
   "version": "0.0.0-PLACEHOLDER",
-  "description": "Material-backed organisms (overlay, layout, feedback shell, empty-state) for the cngx Angular component library.",
+  "description": "Organism layer (layout, overlay, feedback, stepper, tabs) for the CNGX Angular component library. Material opt-in (mat-stepper, mat-tabs, material).",
   "keywords": [
     "cngx",
     "angular",
@@ -12,7 +12,7 @@
     "feedback",
     "components"
   ],
-  "author": "Christian Weiss <c.weiss@sobit.at>",
+  "author": "Christian Weiss <info@cngx.dev>",
   "license": "MIT",
   "homepage": "https://github.com/cngxjs/cngx#readme",
   "bugs": {
