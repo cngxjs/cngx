@@ -1,15 +1,44 @@
 /**
  * @overview
  * Structural skin for `<cngx-text-stepper>`. Typography inherits from
- * the consumer's surrounding text - no theme bridge required.
+ * the consumer's surrounding text - no theme bridge required. The error
+ * sub-line wraps to its own row beneath the count via `flex-basis: 100%`,
+ * so the count stays inline with adjacent text while the error reads below.
  */
 
 .cngx-text-stepper {
   display: inline-flex;
+  flex-wrap: wrap;
   align-items: baseline;
+  column-gap: var(--cngx-text-step-gap, 0.5rem);
 }
 
 .cngx-text-stepper__text {
   font: inherit;
   color: inherit;
+}
+
+.cngx-text-stepper__error {
+  flex-basis: 100%;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--cngx-text-step-error-gap, 0.375rem);
+  margin-top: var(--cngx-text-step-error-margin-top, 0.25rem);
+  font: inherit;
+  font-size: var(--cngx-text-step-error-font-size, 0.875em);
+  color: var(--cngx-step-errored-color, var(--cngx-color-danger, oklch(0.45 0.15 25)));
+}
+
+.cngx-text-stepper__error-glyph {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: var(--cngx-text-step-error-glyph-size, 1.1em);
+  height: var(--cngx-text-step-error-glyph-size, 1.1em);
+  border-radius: 50%;
+  background: var(--cngx-step-errored-color, var(--cngx-color-danger, oklch(0.45 0.15 25)));
+  color: var(--cngx-text-step-error-glyph-color, var(--cngx-color-on-danger, white));
+  font-size: 0.75em;
+  font-weight: 700;
+  line-height: 1;
 }
