@@ -1204,4 +1204,46 @@ describe('CngxStepper organism', () => {
       expect(err.textContent).toContain('Card declined');
     });
   });
+
+  describe('header busy gate (locks with the footer during a commit)', () => {
+    @Component({
+      standalone: true,
+      imports: [CngxStepper, CngxStep],
+      template: `
+        <cngx-stepper aria-label="Wizard" [commitAction]="action" commitMode="pessimistic">
+          <div cngxStep label="A"></div>
+          <div cngxStep label="B"></div>
+          <div cngxStep label="C"></div>
+        </cngx-stepper>
+      `,
+    })
+    class BusyHost {
+      action: CngxStepperCommitAction = () => new Promise<boolean>(() => undefined);
+    }
+
+    it('marks every header aria-disabled while a commit is pending and ignores clicks (no supersede)', () => {
+      TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+      const fixture = TestBed.createComponent(BusyHost);
+      fixture.detectChanges();
+      const buttons = fixture.nativeElement.querySelectorAll(
+        'button.cngx-stepper__step',
+      ) as NodeListOf<HTMLButtonElement>;
+      // Start a pessimistic commit that never resolves -> busy.
+      buttons[1].click();
+      fixture.detectChanges();
+      const stepper = fixture.debugElement.children[0].componentInstance as {
+        readonly presenter: { busy(): boolean; activeStepIndex(): number };
+      };
+      expect(stepper.presenter.busy()).toBe(true);
+      // Headers lock (aria-disabled) but stay focusable - no native disabled.
+      buttons.forEach((b) => {
+        expect(b.getAttribute('aria-disabled')).toBe('true');
+        expect(b.hasAttribute('disabled')).toBe(false);
+      });
+      // A header click while busy is a no-op: the pending commit is not superseded.
+      buttons[2].click();
+      fixture.detectChanges();
+      expect(stepper.presenter.activeStepIndex()).toBe(0);
+    });
+  });
 });

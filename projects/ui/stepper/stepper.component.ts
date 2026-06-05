@@ -391,22 +391,28 @@ export class CngxStepper implements CngxStepPanelHost {
     if (this.resolvedHeaderNavigation() === 'none') {
       return;
     }
-    if (node.kind !== 'step' || node.disabled()) {
+    // No-op when the header is not reachable - disabled, linear-blocked,
+    // or a commit is in flight. The reachability gate (which now includes
+    // `busy()`) is the single source, so a mid-commit click cannot
+    // supersede the pending transition.
+    if (node.kind !== 'step' || !this.isHeaderReachable(node)) {
       return;
     }
-    const idx = this.stepIndexOf(node);
-    if (idx >= 0) {
-      this.presenter.select(idx);
-    }
+    this.presenter.select(this.stepIndexOf(node));
   }
 
   /**
-   * `true` when the step header at `node` may be navigated to under the
-   * `linear` gate. Reads the host contract's `canNavigateTo` - never the
+   * `true` when the step header at `node` may be navigated to right now:
+   * structurally reachable (`canNavigateTo` - not disabled, not
+   * linear-blocked) AND not while a commit is in flight (`busy()`). The
+   * busy gate mirrors the footer nav atoms, which disable on
+   * `!canGo* || busy()` - so the strip and the footer lock together
+   * during an async transition instead of letting a header click
+   * supersede the pending commit. Reads the host contract, never the
    * presenter's private linear-block check.
    */
   protected isHeaderReachable(node: CngxStepNode): boolean {
-    return this.presenter.canNavigateTo(node.flatIndex);
+    return this.presenter.canNavigateTo(node.flatIndex) && !this.presenter.busy();
   }
 
   /**
@@ -429,7 +435,10 @@ export class CngxStepper implements CngxStepPanelHost {
     hostElement: this.hostElement,
     flatStepCount: () => this.flatSteps().length,
     stepButtonIdFor: (id) => `${id}-header`,
-    enabled: () => this.resolvedHeaderNavigation() !== 'none',
+    // Off in 'none' mode (inert labels) and while a commit is in flight,
+    // so arrow-key navigation locks with the headers + footer during an
+    // async transition.
+    enabled: () => this.resolvedHeaderNavigation() !== 'none' && !this.presenter.busy(),
   });
 
   /**
