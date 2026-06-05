@@ -190,13 +190,13 @@ describe('CngxMatStepper organism', () => {
     }
     // Drain effects + microtasks twice deterministically. Earlier
     // versions of this test used `await fixture.whenStable()` here,
-    // but that path proved CI-flaky in zoneless mode — `whenStable`
+    // but that path proved CI-flaky in zoneless mode - `whenStable`
     // can occasionally hang when no Angular task is pending and the
     // resolver awaits an idle signal that never arrives. The pattern
     // below is the cngx-testing convention (per `feedback_test_command`
     // + `feedback_afternextrender_in_zoneless_tests`): synchronously
     // flush effects, then yield once to drain microtasks. Two cycles
-    // — if a loop existed, writeCount would diverge well past 3.
+    // - if a loop existed, writeCount would diverge well past 3.
     TestBed.flushEffects();
     await Promise.resolve();
     TestBed.flushEffects();
@@ -217,7 +217,7 @@ describe('CngxMatStepper organism', () => {
     expect(matStepper.linear).toBe(true);
   });
 
-  it('stepsOnly memoises via flatStepsEqual — shape-stable re-emits preserve the signal reference', async () => {
+  it('stepsOnly memoises via flatStepsEqual - shape-stable re-emits preserve the signal reference', async () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],
     });
@@ -272,12 +272,12 @@ describe('CngxMatStepper organism', () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    // Forwarding contract — the consumer's `<ng-template matStepperIcon>`
+    // Forwarding contract - the consumer's `<ng-template matStepperIcon>`
     // flows from cngx-mat-stepper's content children into
     // `MatStepper._iconOverrides`. The `afterNextRender` patch in
     // CngxMatStepper picks the directives up via its own
     // `contentChildren(MatStepperIcon)` query and writes them to
-    // Material's underscore-prefixed slot — Angular's
+    // Material's underscore-prefixed slot - Angular's
     // `@ContentChildren` on MatStepper does not traverse content
     // projected through a wrapper component's `<ng-content>`, so
     // direct projection cannot reach it. The forward is the
@@ -293,7 +293,7 @@ describe('CngxMatStepper organism', () => {
     };
     expect(stepperRef._iconOverrides['number']).toBeDefined();
     // The forwarded template ref matches the consumer's directive's
-    // own templateRef — proves the captured directive's template
+    // own templateRef - proves the captured directive's template
     // identity is preserved across the forward.
     const wrapper = fixture.debugElement.query(
       (el) => el.componentInstance instanceof CngxMatStepper,
@@ -316,13 +316,13 @@ describe('CngxMatStepper organism', () => {
     // emitting a `selectedIndexChange` echo through
     // `createMaterialBidirectionalSync` back into `presenter.select(0)`.
     // The fix uses `ChangeDetectorRef.markForCheck()` on the MatStepper
-    // view — public API, no setter touch, no echo path possible.
+    // view - public API, no setter touch, no echo path possible.
     //
     // This axis pins both contracts:
     //   1. presenter.select is NOT called as a spurious echo during
     //      the icon-forwarding patch (no-echo guarantee).
     //   2. MatStepper.selectedIndex setter is NOT touched by the
-    //      wrapper at all — the only writes the spy observes come
+    //      wrapper at all - the only writes the spy observes come
     //      from `createMaterialBidirectionalSync`'s presenter→Material
     //      mirror, which is equality-guarded against the read side
     //      and does not write when initial values already match.
@@ -353,7 +353,7 @@ describe('CngxMatStepper organism', () => {
     // Wrap MatStepper.selectedIndex setter to count wrapper-driven
     // writes. Wrapped after the initial mount completes so we observe
     // only the icon-forwarding patch's behaviour on the next render
-    // boundary — pre-fix the patch self-wrote `idx`, post-fix it does
+    // boundary - pre-fix the patch self-wrote `idx`, post-fix it does
     // not touch the setter at all.
     const proto = Object.getPrototypeOf(matStepper);
     const original = Object.getOwnPropertyDescriptor(proto, 'selectedIndex');
@@ -395,7 +395,7 @@ describe('CngxMatStepper organism', () => {
     // The wrapper now uses `markForCheck` instead of a setter
     // self-write. With the bidirectional-sync mirror equality-guarded
     // against the read side and the presenter sitting at its initial
-    // value (0), there is no legitimate write path either — so the
+    // value (0), there is no legitimate write path either - so the
     // setter must not be touched at all by the wrapper across the
     // mount cycle.
     expect(setterWrites).toBe(0);
@@ -420,7 +420,7 @@ describe('CngxMatStepper organism', () => {
 
     // Two calls for the same node MUST return identity-equal context
     // objects. *ngTemplateOutlet's Object.is input-diff short-circuits
-    // the embedded-view rebind on stable refs — the cache is what
+    // the embedded-view rebind on stable refs - the cache is what
     // restores that identity-stability guarantee.
     const ctx1 = wrapper.stepLabelContextFor(first);
     const ctx2 = wrapper.stepLabelContextFor(first);
@@ -453,7 +453,7 @@ describe('CngxMatStepper organism', () => {
     const ctx = wrapper.stepLabelContextFor(first);
     expect(ctx.active).toBe(true);
 
-    // Move to step 1; reread the SAME cached context object — its
+    // Move to step 1; reread the SAME cached context object - its
     // `active` field must reflect the new state via in-place mutation.
     presenter.select(1);
     fixture.detectChanges();
@@ -518,7 +518,7 @@ describe('CngxMatStepper organism', () => {
     TestBed.flushEffects();
     expect(wrapper.stepLabelContextCache.has(idA)).toBe(true);
     expect(wrapper.stepLabelContextCache.has(idB)).toBe(false);
-    // Surviving id keeps its entry — same object reference.
+    // Surviving id keeps its entry - same object reference.
     expect(wrapper.stepLabelContextCache.get(idA)).toBe(cachedA);
 
     // Re-add step B; the new step's id may collide with the prior

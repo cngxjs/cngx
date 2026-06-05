@@ -12,7 +12,7 @@ import {
 } from '@cngx/ui/feedback';
 
 // Re-export forces compodocx to ship app.config.ts in the StackBlitz manifest
-// — the only seam for EnvironmentProviders in the playground.
+// - the only seam for EnvironmentProviders in the playground.
 export { appConfig } from './app.config';
 
 /**
@@ -29,7 +29,7 @@ export { appConfig } from './app.config';
  *   rejection; `pessimistic` keeps Material on the origin step until the
  *   action resolves.
  * - `<cngx-toast-on />` and `<cngx-banner-on />` self-wire via
- *   `CNGX_STATEFUL` — zero `inject()` calls in the consumer's TS.
+ *   `CNGX_STATEFUL` - zero `inject()` calls in the consumer's TS.
  *
  * Toggle the mode buttons and "simulate error" to exercise all four
  * quadrants of the commit lifecycle.
