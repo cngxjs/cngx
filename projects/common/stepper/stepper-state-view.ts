@@ -126,6 +126,13 @@ export function createStepperStateView(inputs: {
  * (`"2 errors"`). Returns `''` when no step errored - callers gate on
  * `view.hasAnyError()` so the empty string never reaches the DOM.
  *
+ * The optional `messageOf` resolver lets callers surface a per-step
+ * reason (a direct `[error]` string or the first aggregator label) in the
+ * single-error case instead of the generic `errored` status word. When
+ * omitted - or when it returns `undefined`/`''` - the helper produces
+ * byte-identical output to the no-resolver form, so existing callers
+ * (the classic mobile-collapse summary) are a guaranteed no-op.
+ *
  * Pure helper - reads signals at call time, intended to be wrapped in the
  * caller's `computed()`.
  *
@@ -136,6 +143,7 @@ export function resolveStepperErrorSummary(
   view: Pick<CngxStepperStateView, 'errorCount' | 'firstErrorIndex'>,
   stepsOnly: Signal<readonly CngxStepNode[]>,
   i18n: CngxStepperI18n,
+  messageOf?: (node: CngxStepNode) => string | undefined,
 ): string {
   const count = view.errorCount();
   if (count === 0) {
@@ -143,6 +151,10 @@ export function resolveStepperErrorSummary(
   }
   if (count === 1) {
     const node = stepsOnly()[view.firstErrorIndex()];
+    const custom = node ? messageOf?.(node) : undefined;
+    if (custom !== undefined && custom !== '') {
+      return custom;
+    }
     const label = node?.label();
     return label ? `${label}: ${i18n.statusLabels.errored}` : i18n.statusLabels.errored;
   }

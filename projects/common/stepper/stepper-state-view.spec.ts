@@ -146,4 +146,39 @@ describe('resolveStepperErrorSummary', () => {
     const view = { errorCount: signal(3), firstErrorIndex: signal(0) };
     expect(resolveStepperErrorSummary(view, stepsOnly, i18n)).toBe('3 errors');
   });
+
+  describe('optional messageOf resolver', () => {
+    it('surfaces a resolved per-step message in the single-error case', () => {
+      const stepsOnly = signal<readonly CngxStepNode[]>([
+        stubNode({ id: 'Payment', flatIndex: 0, label: () => 'Payment' }),
+      ]);
+      const view = { errorCount: signal(1), firstErrorIndex: signal(0) };
+      const summary = resolveStepperErrorSummary(view, stepsOnly, i18n, () => 'Card declined');
+      expect(summary).toBe('Card declined');
+    });
+
+    it('falls back to the status phrasing when the resolver returns undefined', () => {
+      const stepsOnly = signal<readonly CngxStepNode[]>([
+        stubNode({ id: 'Payment', flatIndex: 0, label: () => 'Payment' }),
+      ]);
+      const view = { errorCount: signal(1), firstErrorIndex: signal(0) };
+      const summary = resolveStepperErrorSummary(view, stepsOnly, i18n, () => undefined);
+      expect(summary).toBe('Payment: Errored');
+    });
+
+    it('called WITHOUT the 4th arg is byte-identical to the no-resolver form', () => {
+      // Closes the backward-compat requirement: the classic mobile-collapse
+      // caller passes no resolver and must be a guaranteed no-op.
+      const stepsOnly = signal<readonly CngxStepNode[]>([
+        stubNode({ id: 'a', flatIndex: 0 }),
+        stubNode({ id: 'Payment', flatIndex: 1, label: () => 'Payment' }),
+      ]);
+      const single = { errorCount: signal(1), firstErrorIndex: signal(1) };
+      const multi = { errorCount: signal(2), firstErrorIndex: signal(1) };
+      const none = { errorCount: signal(0), firstErrorIndex: signal(-1) };
+      expect(resolveStepperErrorSummary(single, stepsOnly, i18n)).toBe('Payment: Errored');
+      expect(resolveStepperErrorSummary(multi, stepsOnly, i18n)).toBe('2 errors');
+      expect(resolveStepperErrorSummary(none, stepsOnly, i18n)).toBe('');
+    });
+  });
 });
