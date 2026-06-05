@@ -61,6 +61,11 @@ export {
 } from './slots/step-rejection.directive';
 
 export {
+  CngxStepError,
+  type CngxStepErrorContext,
+} from './slots/step-error.directive';
+
+export {
   CngxStepGroupHeader,
   type CngxStepGroupHeaderContext,
 } from './slots/step-group-header.directive';
