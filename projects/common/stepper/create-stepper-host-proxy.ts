@@ -71,6 +71,10 @@ export function createStepperHostProxy(supplier: () => CngxStepperHost | null): 
       previous: computed(() => supplier()?.commitTransition.previous() ?? 'idle'),
     } satisfies StatusTransition,
 
+    // Reachability predicate - neutral `false` when null so a header
+    // over a missing host is never falsely navigable.
+    canNavigateTo: (index: number) => supplier()?.canNavigateTo(index) ?? false,
+
     // Methods forward; no-op when null.
     select: (index: number) => supplier()?.select(index),
     selectNext: () => supplier()?.selectNext(),

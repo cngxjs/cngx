@@ -344,6 +344,40 @@ describe('CngxStepperPresenter', () => {
       presenter.selectPrevious();
       expect(presenter.activeStepIndex()).toBe(1);
     });
+
+    describe('canNavigateTo (header reachability)', () => {
+      it('non-linear: true for every enabled index, false for disabled + out-of-range', () => {
+        const { presenter } = setup();
+        presenter.register(reg('a'));
+        presenter.register(reg('b', 'step', 'idle', true)); // disabled
+        presenter.register(reg('c'));
+        expect(presenter.canNavigateTo(0)).toBe(true);
+        expect(presenter.canNavigateTo(1)).toBe(false); // disabled
+        expect(presenter.canNavigateTo(2)).toBe(true);
+        expect(presenter.canNavigateTo(-1)).toBe(false);
+        expect(presenter.canNavigateTo(3)).toBe(false);
+      });
+
+      it('linear: false for a forward index blocked by an incomplete active step', () => {
+        const { presenter } = linearSetup();
+        presenter.register(reg('a', 'step', 'idle')); // active, not success → blocks forward
+        presenter.register(reg('b'));
+        presenter.register(reg('c'));
+        expect(presenter.canNavigateTo(0)).toBe(true); // current step
+        expect(presenter.canNavigateTo(1)).toBe(false); // linear-blocked forward
+        expect(presenter.canNavigateTo(2)).toBe(false);
+      });
+
+      it('linear: true for a visited (backward) index', () => {
+        const { presenter } = linearSetup();
+        presenter.register(reg('a', 'step', 'success'));
+        presenter.register(reg('b', 'step', 'success'));
+        presenter.register(reg('c'));
+        presenter.select(2);
+        expect(presenter.canNavigateTo(0)).toBe(true); // backward to visited
+        expect(presenter.canNavigateTo(1)).toBe(true);
+      });
+    });
   });
 
   describe('commit-action lifecycle', () => {

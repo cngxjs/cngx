@@ -156,6 +156,15 @@ export interface CngxStepperHost {
    */
   readonly originIndexDuringCommit: Signal<number | undefined>;
 
+  /**
+   * `true` when the header at the given step-only index may be
+   * navigated to: the step is enabled and not blocked by the `linear`
+   * gate. The single reachability predicate a header affordance reads -
+   * the organism MUST call this rather than reaching the presenter's
+   * private linear-block check. Out-of-range indices return `false`.
+   */
+  canNavigateTo(index: number): boolean;
+
   select(index: number): void;
   selectNext(): void;
   selectPrevious(): void;
