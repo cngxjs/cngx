@@ -103,7 +103,7 @@ export class CngxDotStepper {
   /**
    * Resolved dot-body template cascade: per-instance `*cngxDotStepperDot`
    * directive > `CNGX_STEPPER_CONFIG.templates.dotStepperDot` > `null`
-   * (built-in empty body). Pillar 1 — resolution is a `computed`, not
+   * (built-in empty body). Pillar 1 - resolution is a `computed`, not
    * manual sync.
    */
   protected readonly resolvedDotTemplate = computed<TemplateRef<CngxDotStepperDotContext> | null>(
