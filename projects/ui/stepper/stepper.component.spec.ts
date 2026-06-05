@@ -1182,13 +1182,13 @@ describe('CngxStepper organism', () => {
       expect(custom.textContent?.trim()).toBe('Card declined!');
     });
 
-    it('does not render the error row on a label-only skin (path-chevron)', () => {
+    it('renders the error row below the strip on every strip skin (e.g. path-chevron)', () => {
       @Component({
         standalone: true,
         imports: [CngxStepper, CngxStep],
         template: `
           <cngx-stepper aria-label="Err" skin="path-chevron">
-            <div cngxStep [error]="'Card declined'"></div>
+            <div cngxStep label="A" [error]="'Card declined'"></div>
             <div cngxStep label="B"></div>
           </cngx-stepper>
         `,
@@ -1197,7 +1197,11 @@ describe('CngxStepper organism', () => {
       TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
       const fixture = TestBed.createComponent(MiniSkinHost);
       fixture.detectChanges();
-      expect(fixture.nativeElement.querySelector('.cngx-stepper__error-summary')).toBeNull();
+      const err = fixture.nativeElement.querySelector(
+        '.cngx-stepper__error-summary',
+      ) as HTMLElement;
+      expect(err).not.toBeNull();
+      expect(err.textContent).toContain('Card declined');
     });
   });
 });

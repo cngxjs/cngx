@@ -261,23 +261,18 @@ export class CngxStepper implements CngxStepPanelHost {
   protected readonly stepErrorEntries = computed<
     readonly { id: string; label: string; message: string; context: CngxStepErrorContext }[]
   >(
-    () => {
-      // The message row ships on the skins the plan assigns it to
-      // (classic + stripe-status-rich); the label-only / mini skins
-      // communicate the error through their badge / tile only.
-      const skin = this.hostAttrs.resolvedSkin();
-      if (skin !== 'classic' && skin !== 'stripe-status-rich') {
-        return [];
-      }
-      return this.stepsOnly()
+    () =>
+      // The message row sits below the strip, so it has room on every
+      // skin - the bare 'errored' state still rides each skin's own
+      // indicator / badge / tile.
+      this.stepsOnly()
         .filter((node) => node.kind === 'step' && this.stepErrorMessageOf(node) !== null)
         .map((node) => ({
           id: node.id,
           label: node.label(),
           message: this.stepErrorMessageOf(node) as string,
           context: this.slotContext.stepErrorContextFor(node),
-        }));
-    },
+        })),
     {
       equal: (a, b) =>
         a.length === b.length && a.every((e, i) => e.id === b[i].id && e.message === b[i].message),
