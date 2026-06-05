@@ -3,22 +3,23 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxDotStepper: mobile carousel',
   subtitle: 'Five dots, one per step. Swipe the panel left/right, or arrow-key when <code>[linear]</code> is off. The active dot carries <code>aria-current="step"</code> per the W3C APG step-indicator pattern (not <code>role="tab"</code>).',
-  description: 'Mobile-first sequential indicator. The active dot scales up, completed dots fill with the success cue, upcoming dots use the surface tint. Swipe is wired with CngxSwipeDismiss on the content panel; the stepper stays a pure indicator and navigation flows through the two-way activeStepIndex binding.',
+  description: 'Mobile-first sequential indicator. The active dot scales up, completed dots fill with the success cue, upcoming dots use the surface tint. Swipe is wired with CngxSwipe on the content panel; the stepper stays a pure indicator and navigation flows through the two-way activeStepIndex binding. Toggle "simulate error" to flag slide 3 - the dot turns red and carries the error glyph + an aria-label suffix, even when another dot is active.',
   level: 'organism',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
-  focus: ['composition', 'a11y-pattern', 'behavior'],
+  focus: ['composition', 'a11y-pattern', 'behavior', 'error-handling'],
   references: [
     { label: 'WAI-ARIA APG - Step indicator pattern', href: 'https://www.w3.org/WAI/ARIA/apg/patterns/' },
   ],
   apiComponents: ['CngxDotStepper', 'CngxStep', 'CngxSwipe'],
   moduleImports: [
     'import { CngxStep } from \'@cngx/common/stepper\';',
-    'import { CngxSwipe, type SwipeDirection } from \'@cngx/common/interactive\';',
+    'import { CngxSwipe, type SwipeDirection, CngxErrorAggregator, CngxErrorSource } from \'@cngx/common/interactive\';',
     'import { CngxDotStepper } from \'@cngx/ui/stepper\';',
   ],
-  imports: ['CngxDotStepper', 'CngxStep', 'CngxSwipe'],
+  imports: ['CngxDotStepper', 'CngxStep', 'CngxSwipe', 'CngxErrorAggregator', 'CngxErrorSource'],
   setup: `protected readonly active = signal(0);
+  protected readonly slide3Invalid = signal(false);
   protected readonly slides = [
     { title: 'Welcome', body: 'Swipe to learn what is new.' },
     { title: 'Customise', body: 'Tune the dashboard layout to your routine.' },
@@ -47,7 +48,10 @@ export const STORY: DemoSpec = {
     >
       <div cngxStep label="Slide 1"></div>
       <div cngxStep label="Slide 2"></div>
-      <div cngxStep label="Slide 3"></div>
+      <fieldset cngxErrorAggregator #slide3Agg="cngxErrorAggregator" style="display:contents">
+        <input cngxErrorSource="slide3" [when]="slide3Invalid()" hidden />
+        <div cngxStep label="Slide 3" [errorAggregator]="slide3Agg"></div>
+      </fieldset>
       <div cngxStep label="Slide 4"></div>
       <div cngxStep label="Slide 5"></div>
     </cngx-dot-stepper>
@@ -70,6 +74,7 @@ export const STORY: DemoSpec = {
     <div class="event-row">
       <button type="button" class="chip" (click)="handlePrev()">Previous</button>
       <button type="button" class="chip" (click)="handleNext()">Next</button>
+      <label style="margin-inline-start:12px"><input type="checkbox" [checked]="slide3Invalid()" (change)="slide3Invalid.set($any($event.target).checked)" /> simulate error</label>
     </div>
     <div class="event-row"><span class="event-label">Active dot</span><span class="event-value">{{ active() }}</span></div>
   </div>`,
