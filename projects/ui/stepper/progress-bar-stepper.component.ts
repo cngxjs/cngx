@@ -15,6 +15,7 @@ import {
   createStepperStateView,
   injectStepperI18n,
   resolveStepperErrorSummary,
+  type CngxStepNode,
 } from '@cngx/common/stepper';
 import { CngxProgress } from '@cngx/ui/feedback';
 
@@ -118,6 +119,8 @@ export class CngxProgressBarStepper {
    * Read only when `stateView.hasAnyError()` gates the template.
    */
   protected readonly errorText = computed<string>(() =>
-    resolveStepperErrorSummary(this.stateView, this.presenter.stepsOnly, this.i18n),
+    resolveStepperErrorSummary(this.stateView, this.presenter.stepsOnly, this.i18n, (node: CngxStepNode) =>
+      node.errorMessage?.() ?? node.errorAggregator?.()?.errorLabels?.()?.[0],
+    ),
   );
 }
