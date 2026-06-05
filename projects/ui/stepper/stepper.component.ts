@@ -44,8 +44,10 @@ import {
   createStepperAnnouncementBuilders,
   createStepperHostAttrs,
   createStepperSlotContextBuilders,
+  createStepperStateView,
   createStepperStripKeyboardNav,
   createStepperTemplateBindings,
+  resolveStepperErrorSummary,
   CngxStepperSwipeNav,
   resolveStepperStatusLabel,
   injectStepperConfig,
@@ -212,6 +214,17 @@ export class CngxStepper implements CngxStepPanelHost {
   protected readonly swipeNav = inject(CngxStepperSwipeNav, { host: true });
 
   protected statusLabelFor = (node: CngxStepNode): string => resolveStepperStatusLabel(node, this.i18n, this.slotContext.isActive(node));
+
+  /** Mobile-dot `data-state`: unified error (rejection + aggregator) over the raw status. */
+  protected mobileDotState(node: CngxStepNode): string {
+    return this.stateView.hasError(node) ? 'error' : node.state();
+  }
+
+  /** Mobile-dot `aria-label`, appending the errored status when the dot has an error. */
+  protected mobileDotAriaLabel(node: CngxStepNode, index: number): string {
+    const base = this.i18n.selectedStep(node.label(), index + 1, this.stepsOnly().length);
+    return this.stateView.hasError(node) ? `${base}: ${this.i18n.statusLabels.errored}` : base;
+  }
   protected readonly groupRoleDescription = computed<string>(() => this.config.fallbackLabels?.groupRoleDescription ?? 'step group');
 
   /**
@@ -246,6 +259,18 @@ export class CngxStepper implements CngxStepPanelHost {
 
   /** Per-step predicates + slot-context builders (Level-2 factory). */
   protected readonly slotContext = createStepperSlotContextBuilders({ presenter: this.presenter, stepsOnly: this.stepsOnly });
+
+  /**
+   * Shared state view - feeds the mobile-collapse `text` / `dots` branches,
+   * which otherwise rendered only `Step N of M` (text) or `node.state()`
+   * (dots) and dropped the per-step error the desktop branch shows.
+   */
+  protected readonly stateView = createStepperStateView({ presenter: this.presenter, stepsOnly: this.stepsOnly });
+
+  /** Aggregate error phrase for the mobile-collapse text branch. */
+  protected readonly mobileErrorSummary = computed<string>(() =>
+    resolveStepperErrorSummary(this.stateView, this.stepsOnly, this.i18n),
+  );
 
   /** Commit-in-flight flag - drives the host `aria-busy` binding. Pillar 2. */
   protected readonly isCommitting = computed<boolean>(

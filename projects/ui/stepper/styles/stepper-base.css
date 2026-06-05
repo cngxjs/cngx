@@ -1,7 +1,7 @@
 /**
  * @overview
- * Structural CSS shared by every stepper skin. Layout-only - no
- * colors / sizes / borders / fonts beyond what's controlled via
+ * **Structural CSS** shared by every stepper skin. \
+ * Layout-only - no colors / sizes / borders / fonts beyond what's controlled via
  * `--cngx-step-*` custom properties. Loaded by `<cngx-stepper>` via
  * `styleUrls`. Selectors are class-prefixed (`.cngx-stepper__*`) and
  * apply globally under `encapsulation: None` - the
@@ -24,8 +24,7 @@
  *   group headers indent with `margin-inline-start`
  * - `[data-orientation="vertical"]` - grid layout
  *   (`minmax(8rem, max-content) 1fr`); strip becomes a column flex,
- *   depth-1 rows use `padding-inline-start` (combining step padding
- *   + group indent)
+ *   depth-1 rows use `padding-inline-start` (combining step padding and group indent)
  *
  * **Slots**
  *
@@ -41,6 +40,7 @@
  * - `.cngx-stepper__rejection-icon` - `!` disc on rejected steps
  *
  * All transitions short-circuit under `prefers-reduced-motion`.
+ * <hr>
  */
 
 @layer cngx.tokens {
