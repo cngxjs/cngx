@@ -1,6 +1,12 @@
+<!--
+  `cngx-mat-stepper--header-static` marks the 'none' policy so consumers
+  can style the inert headers (e.g. `cursor: default`); the actual
+  click / key suppression runs as a capture-phase listener on the host.
+-->
 <mat-stepper
   [orientation]="matOrientation()"
   [linear]="presenter.linear()"
+  [class.cngx-mat-stepper--header-static]="resolvedHeaderNavigation() === 'none'"
 >
   @for (node of stepsOnly(); track node.id) {
     <mat-step

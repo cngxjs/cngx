@@ -557,4 +557,57 @@ describe('CngxMatStepper organism', () => {
     expect(matStepper.selectedIndex).toBe(0);
     expect(presenter.activeStepIndex()).toBe(0);
   });
+
+  describe('headerNavigation policy', () => {
+    @Component({
+      standalone: true,
+      imports: [CngxMatStepper, CngxStep],
+      template: `
+        <cngx-mat-stepper aria-label="Wizard" [headerNavigation]="headerNavigation">
+          <div cngxStep label="One"></div>
+          <div cngxStep label="Two"></div>
+          <div cngxStep label="Three"></div>
+        </cngx-mat-stepper>
+      `,
+    })
+    class NavHost {
+      headerNavigation: 'none' | 'visited' | undefined = undefined;
+    }
+
+    it("'none' suppresses a header click (selectedIndex unchanged)", async () => {
+      TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+      const fixture = TestBed.createComponent(NavHost);
+      fixture.componentInstance.headerNavigation = 'none';
+      fixture.detectChanges();
+      await fixture.whenStable();
+      const matStepper = fixture.debugElement.query(
+        (el) => el.componentInstance instanceof MatStepper,
+      ).componentInstance as MatStepper;
+      const headers = fixture.nativeElement.querySelectorAll(
+        '.mat-step-header',
+      ) as NodeListOf<HTMLElement>;
+      expect(headers.length).toBeGreaterThan(1);
+      headers[2].click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+      expect(matStepper.selectedIndex).toBe(0);
+    });
+
+    it("'visited' (default) keeps Material header clicks live", async () => {
+      TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+      const fixture = TestBed.createComponent(NavHost);
+      fixture.detectChanges();
+      await fixture.whenStable();
+      const matStepper = fixture.debugElement.query(
+        (el) => el.componentInstance instanceof MatStepper,
+      ).componentInstance as MatStepper;
+      const headers = fixture.nativeElement.querySelectorAll(
+        '.mat-step-header',
+      ) as NodeListOf<HTMLElement>;
+      headers[2].click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+      expect(matStepper.selectedIndex).toBe(2);
+    });
+  });
 });

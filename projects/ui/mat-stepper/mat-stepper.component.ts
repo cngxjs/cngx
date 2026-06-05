@@ -8,8 +8,10 @@ import {
   contentChildren,
   DestroyRef,
   effect,
+  ElementRef,
   inject,
   Injector,
+  input,
   type Signal,
   type TemplateRef,
   untracked,
@@ -22,10 +24,12 @@ import {
   CngxStep,
   type CngxStepContentContext,
   type CngxStepLabelContext,
+  type CngxStepperHeaderNavigation,
   CngxStepperPresenter,
   CNGX_STEPPER_HOST,
   createStepperStateView,
   flatStepsEqual,
+  injectStepperConfig,
   type CngxStepNode,
   type CngxStepPanelHost,
 } from '@cngx/common/stepper';
@@ -80,7 +84,23 @@ export class CngxMatStepper implements CngxStepPanelHost {
   protected readonly presenter = inject(CNGX_STEPPER_HOST);
   private readonly destroyRef = inject(DestroyRef);
   private readonly injector = inject(Injector);
+  private readonly config = injectStepperConfig();
+  private readonly hostElement: HTMLElement =
+    inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
   protected readonly matStepper = viewChild.required(MatStepper);
+
+  /**
+   * Header-navigation policy for the Material twin. `'none'` suppresses
+   * header-click / Enter / Space activation so the footer is the sole
+   * control; `'visited'` keeps Material's native header interactivity.
+   * Material owns the header chrome, so this is a click/key suppression,
+   * not a re-render (stepper-accepted-debt §4). Cascade: Input ?? config
+   * ?? `'visited'`.
+   */
+  readonly headerNavigation = input<CngxStepperHeaderNavigation | undefined>(undefined);
+  protected readonly resolvedHeaderNavigation = computed<CngxStepperHeaderNavigation>(
+    () => this.headerNavigation() ?? this.config.headerNavigation ?? 'visited',
+  );
   // Host CD nudge after the `_iconOverrides` patch - Material reads the map
   // into per-header `[iconOverrides]` bindings on the next CD pass.
   private readonly hostCdr = inject(ChangeDetectorRef);
@@ -238,6 +258,35 @@ export class CngxMatStepper implements CngxStepPanelHost {
           }
         }
       });
+    });
+
+    // Header-navigation 'none': capture-phase suppression of header
+    // activation. Material binds selection on the `.mat-step-header`
+    // element itself, so a bubble listener fires too late; a capture
+    // listener on the host stops the event before it reaches the header
+    // (click) / keydown handler. Arrow keys are left alone so Material's
+    // roving focus still works - only the activation keys are blocked.
+    const suppressIfStatic = (event: Event): void => {
+      if (this.resolvedHeaderNavigation() !== 'none') {
+        return;
+      }
+      const target = event.target as HTMLElement | null;
+      if (target?.closest('.mat-step-header')) {
+        event.preventDefault();
+        event.stopPropagation();
+        event.stopImmediatePropagation();
+      }
+    };
+    const suppressKeyIfStatic = (event: KeyboardEvent): void => {
+      if (event.key === 'Enter' || event.key === ' ' || event.key === 'Spacebar') {
+        suppressIfStatic(event);
+      }
+    };
+    this.hostElement.addEventListener('click', suppressIfStatic, { capture: true });
+    this.hostElement.addEventListener('keydown', suppressKeyIfStatic, { capture: true });
+    this.destroyRef.onDestroy(() => {
+      this.hostElement.removeEventListener('click', suppressIfStatic, { capture: true });
+      this.hostElement.removeEventListener('keydown', suppressKeyIfStatic, { capture: true });
     });
 
     // `viewChild.required(MatStepper)` isn't resolved until after the view commits.
