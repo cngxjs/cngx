@@ -103,6 +103,75 @@ the field that caused them, and announce them (see below) rather than relying on
 border alone. In an editable stepper, also reflect that a previously completed step has
 become invalid, so the user is not surprised at submit time.
 
+## Two error channels
+
+A stepper fails in two distinct ways, and the cue should match the cause. CNGX keeps them
+on separate channels so they never fight for the same surface. Pick by *what* failed, not
+by which API is closer to hand.
+
+|Channel|What went wrong|Sync?|Surface|
+|-|-|-|-|
+|Validation|The step's own input is wrong (empty required field, malformed value)|Yes, local to the step|Indicator/badge state on every skin + a message row below the strip (`*cngxStepError`)|
+|Commit / async|The *transition* was rejected (the server said no on Next)|No, an action resolved to a failure|Rolled-back step decorated via `*cngxStepRejection` + a toast/banner announcement|
+
+### Validation error: the input is wrong
+
+Synchronous, local, nothing has been sent anywhere. Flag the step with the `[error]`
+input:
+
+```html
+<!-- string: marks the step errored AND supplies the reason -->
+<div cngxStep label="Payment" [error]="cardInvalid() ? 'Card number is invalid' : false"></div>
+
+<!-- boolean: state only, when the step's own fields already show their errors -->
+<div cngxStep label="Payment" [error]="cardInvalid()"></div>
+```
+
+A string both marks the step (red indicator/badge on every skin) and renders the reason in
+a row below the strip; on the `text` / `dot` / `progress-bar` variants it folds into the
+aggregate line instead. A bare `[error]="true"` shows state only, with no text - the
+indicator already carries "this step is broken", so there is no point repeating "errored"
+as prose. For multi-source forms bind `[errorAggregator]` instead; the same surfaces light
+up. Theme the message with the `*cngxStepError` slot:
+
+```html
+<cngx-stepper>
+  ...
+  <ng-template cngxStepError let-message="message">
+    <strong>{{ message }}</strong>
+  </ng-template>
+</cngx-stepper>
+```
+
+Use this channel for required-field checks, format validation, and any "fix this before you
+continue" gating. It needs no async machinery.
+
+### Commit / async error: the transition failed
+
+The step was valid; the operation behind Next was rejected (server-side validation, a save
+that failed). Wire it through `[commitAction]`. On rejection the stepper rolls back, marks
+the offending step with `*cngxStepRejection`, and you announce the reason through the
+`cngxToastOn` / `cngxBannerOn` bridges - applied straight on the stepper, they read its
+commit state through DI, so no `[state]` binding is needed:
+
+```html
+<cngx-stepper [commitAction]="submitStep" [commitMode]="'pessimistic'" cngxToastOn cngxBannerOn>
+  ...
+  <ng-template cngxStepRejection>Could not save - please retry.</ng-template>
+</cngx-stepper>
+```
+
+Use this channel for save-on-Next, server-only validation, and optimistic moves that must
+roll back. `commitMode` decides whether the user waits on the origin step (`pessimistic`)
+or advances eagerly and snaps back on failure (`optimistic`).
+
+### They compose, they never collide
+
+Validation owns `*cngxStepError`; commit owns `*cngxStepRejection`. A step can hold a local
+validation error now and still survive a failed submit later, and each renders on its own
+surface without overwriting the other. Whichever channel fires, the Accessibility rules
+below still hold: the message is announced, sits near its step, and is never colour-only.
+
 ## Accessibility
 
 A11y is not a later audit pass; it is part of the design from the first implementation.
