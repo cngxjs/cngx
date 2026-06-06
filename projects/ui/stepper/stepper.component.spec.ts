@@ -12,6 +12,8 @@ import {
   provideStepperI18n,
   withStepperAriaLabels,
   withStepperFallbackLabels,
+  CngxStepError,
+  withStepperHeaderNavigation,
   withStepperI18nLabels,
   withStepperMobileSwipe,
   withStepperSkin,
@@ -969,6 +971,279 @@ describe('CngxStepper organism', () => {
       fixture.componentInstance.mobileSwipe = true;
       fixture.detectChanges();
       expect(stepperOf(fixture).swipeNav.swipeEnabled()).toBe(true);
+    });
+  });
+
+  describe('headerNavigation policy', () => {
+    @Component({
+      standalone: true,
+      imports: [CngxStepper, CngxStep],
+      template: `
+        <cngx-stepper
+          aria-label="Wizard"
+          [linear]="linear"
+          [headerNavigation]="headerNavigation"
+          [(activeStepIndex)]="active"
+        >
+          <div cngxStep label="A"></div>
+          <div cngxStep label="B"></div>
+          <div cngxStep label="C"></div>
+        </cngx-stepper>
+      `,
+    })
+    class NavHost {
+      linear = false;
+      headerNavigation: 'none' | 'visited' | undefined = undefined;
+      readonly active = signal(0);
+    }
+
+    it("'none' renders inert label headers - no <button>, no roving item, strip is a list", () => {
+      TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+      const fixture = TestBed.createComponent(NavHost);
+      fixture.componentInstance.headerNavigation = 'none';
+      fixture.detectChanges();
+      const root = fixture.nativeElement as HTMLElement;
+      expect(root.querySelectorAll('button.cngx-stepper__step').length).toBe(0);
+      const items = root.querySelectorAll('span.cngx-stepper__step--static');
+      expect(items.length).toBe(3);
+      expect(items[0].getAttribute('role')).toBe('listitem');
+      expect(items[0].getAttribute('aria-current')).toBe('step');
+      // No roving-tabindex / tabindex on the inert header.
+      expect(items[0].hasAttribute('tabindex')).toBe(false);
+      const strip = root.querySelector('.cngx-stepper__strip') as HTMLElement;
+      expect(strip.getAttribute('role')).toBe('list');
+    });
+
+    it("'none' host keydown is a no-op (active step unchanged)", () => {
+      TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+      const fixture = TestBed.createComponent(NavHost);
+      fixture.componentInstance.headerNavigation = 'none';
+      fixture.detectChanges();
+      const stepper = fixture.debugElement.children[0].componentInstance as {
+        handleStripKeyDown(e: KeyboardEvent): void;
+        readonly presenter: { activeStepIndex(): number };
+      };
+      const strip = fixture.nativeElement.querySelector(
+        '.cngx-stepper__step--static',
+      ) as HTMLElement;
+      const event = new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true });
+      Object.defineProperty(event, 'target', { value: strip });
+      stepper.handleStripKeyDown(event);
+      fixture.detectChanges();
+      expect(stepper.presenter.activeStepIndex()).toBe(0);
+    });
+
+    it("'visited' + linear=true marks forward-incomplete headers aria-disabled but keeps them focusable", () => {
+      TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+      const fixture = TestBed.createComponent(NavHost);
+      fixture.componentInstance.linear = true;
+      fixture.componentInstance.headerNavigation = 'visited';
+      fixture.detectChanges();
+      const buttons = fixture.nativeElement.querySelectorAll(
+        'button.cngx-stepper__step',
+      ) as NodeListOf<HTMLButtonElement>;
+      // Active step A is incomplete (idle) → forward jump to B/C blocked.
+      expect(buttons[0].getAttribute('aria-disabled')).toBeNull();
+      expect(buttons[1].getAttribute('aria-disabled')).toBe('true');
+      expect(buttons[2].getAttribute('aria-disabled')).toBe('true');
+      // Focusable: no native disabled attribute, still a <button>.
+      expect(buttons[1].hasAttribute('disabled')).toBe(false);
+    });
+
+    it("'visited' + linear=false is byte-identical to today (no aria-disabled on enabled headers)", () => {
+      TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+      const fixture = TestBed.createComponent(NavHost);
+      fixture.componentInstance.headerNavigation = 'visited';
+      fixture.detectChanges();
+      const buttons = fixture.nativeElement.querySelectorAll(
+        'button.cngx-stepper__step',
+      ) as NodeListOf<HTMLButtonElement>;
+      expect(buttons.length).toBe(3);
+      expect(buttons[0].getAttribute('aria-disabled')).toBeNull();
+      expect(buttons[1].getAttribute('aria-disabled')).toBeNull();
+      expect(buttons[2].getAttribute('aria-disabled')).toBeNull();
+    });
+
+    it('default (no input, no config) is visited - headers are buttons', () => {
+      TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+      const fixture = TestBed.createComponent(NavHost);
+      fixture.detectChanges();
+      expect(
+        fixture.nativeElement.querySelectorAll('button.cngx-stepper__step').length,
+      ).toBe(3);
+    });
+
+    it("config withStepperHeaderNavigation('none') applies when no input is bound", () => {
+      TestBed.configureTestingModule({
+        providers: [
+          provideZonelessChangeDetection(),
+          provideStepperConfig(withStepperHeaderNavigation('none')),
+        ],
+      });
+      const fixture = TestBed.createComponent(NavHost);
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelectorAll('button.cngx-stepper__step').length).toBe(0);
+      expect(
+        fixture.nativeElement.querySelectorAll('span.cngx-stepper__step--static').length,
+      ).toBe(3);
+    });
+
+    it("per-instance [headerNavigation] wins over the config (Input -> config -> 'visited')", () => {
+      TestBed.configureTestingModule({
+        providers: [
+          provideZonelessChangeDetection(),
+          provideStepperConfig(withStepperHeaderNavigation('none')),
+        ],
+      });
+      const fixture = TestBed.createComponent(NavHost);
+      fixture.componentInstance.headerNavigation = 'visited';
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelectorAll('button.cngx-stepper__step').length).toBe(3);
+    });
+  });
+
+  describe('*cngxStepError slot', () => {
+    @Component({
+      standalone: true,
+      imports: [CngxStepper, CngxStep],
+      template: `
+        <cngx-stepper aria-label="Err">
+          <div cngxStep [error]="msg()"></div>
+          <div cngxStep label="B"></div>
+        </cngx-stepper>
+      `,
+    })
+    class DefaultErrorHost {
+      readonly msg = signal<string | boolean>('Card declined');
+    }
+
+    @Component({
+      standalone: true,
+      imports: [CngxStepper, CngxStep, CngxStepError],
+      template: `
+        <cngx-stepper aria-label="Err">
+          <div cngxStep [error]="'Card declined'"></div>
+          <div cngxStep label="B"></div>
+          <ng-template cngxStepError let-message="message">
+            <em class="custom-err">{{ message }}!</em>
+          </ng-template>
+        </cngx-stepper>
+      `,
+    })
+    class SlotErrorHost {}
+
+    it('renders the resolved message in a row below the strip (classic)', () => {
+      TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+      const fixture = TestBed.createComponent(DefaultErrorHost);
+      fixture.detectChanges();
+      const err = fixture.nativeElement.querySelector(
+        '.cngx-stepper__error-summary',
+      ) as HTMLElement;
+      expect(err).not.toBeNull();
+      expect(err.textContent).toContain('Card declined');
+    });
+
+    it('omits the row for a boolean [error] (no real message - state cue suffices)', () => {
+      @Component({
+        standalone: true,
+        imports: [CngxStepper, CngxStep],
+        template: `
+          <cngx-stepper aria-label="Err">
+            <div cngxStep label="A" [error]="true"></div>
+            <div cngxStep label="B"></div>
+          </cngx-stepper>
+        `,
+      })
+      class BoolErrorHost {}
+      TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+      const fixture = TestBed.createComponent(BoolErrorHost);
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('.cngx-stepper__error-summary')).toBeNull();
+    });
+
+    it('clears the error row when [error] goes false', () => {
+      TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+      const fixture = TestBed.createComponent(DefaultErrorHost);
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('.cngx-stepper__error-summary')).not.toBeNull();
+      fixture.componentInstance.msg.set(false);
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('.cngx-stepper__error-summary')).toBeNull();
+    });
+
+    it('a per-instance *cngxStepError template overrides the default in the row', () => {
+      TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+      const fixture = TestBed.createComponent(SlotErrorHost);
+      fixture.detectChanges();
+      const custom = fixture.nativeElement.querySelector(
+        '.cngx-stepper__error-summary .custom-err',
+      ) as HTMLElement;
+      expect(custom).not.toBeNull();
+      expect(custom.textContent?.trim()).toBe('Card declined!');
+    });
+
+    it('renders the error row below the strip on every strip skin (e.g. path-chevron)', () => {
+      @Component({
+        standalone: true,
+        imports: [CngxStepper, CngxStep],
+        template: `
+          <cngx-stepper aria-label="Err" skin="path-chevron">
+            <div cngxStep label="A" [error]="'Card declined'"></div>
+            <div cngxStep label="B"></div>
+          </cngx-stepper>
+        `,
+      })
+      class MiniSkinHost {}
+      TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+      const fixture = TestBed.createComponent(MiniSkinHost);
+      fixture.detectChanges();
+      const err = fixture.nativeElement.querySelector(
+        '.cngx-stepper__error-summary',
+      ) as HTMLElement;
+      expect(err).not.toBeNull();
+      expect(err.textContent).toContain('Card declined');
+    });
+  });
+
+  describe('header busy gate (locks with the footer during a commit)', () => {
+    @Component({
+      standalone: true,
+      imports: [CngxStepper, CngxStep],
+      template: `
+        <cngx-stepper aria-label="Wizard" [commitAction]="action" commitMode="pessimistic">
+          <div cngxStep label="A"></div>
+          <div cngxStep label="B"></div>
+          <div cngxStep label="C"></div>
+        </cngx-stepper>
+      `,
+    })
+    class BusyHost {
+      action: CngxStepperCommitAction = () => new Promise<boolean>(() => undefined);
+    }
+
+    it('marks every header aria-disabled while a commit is pending and ignores clicks (no supersede)', () => {
+      TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+      const fixture = TestBed.createComponent(BusyHost);
+      fixture.detectChanges();
+      const buttons = fixture.nativeElement.querySelectorAll(
+        'button.cngx-stepper__step',
+      ) as NodeListOf<HTMLButtonElement>;
+      // Start a pessimistic commit that never resolves -> busy.
+      buttons[1].click();
+      fixture.detectChanges();
+      const stepper = fixture.debugElement.children[0].componentInstance as {
+        readonly presenter: { busy(): boolean; activeStepIndex(): number };
+      };
+      expect(stepper.presenter.busy()).toBe(true);
+      // Headers lock (aria-disabled) but stay focusable - no native disabled.
+      buttons.forEach((b) => {
+        expect(b.getAttribute('aria-disabled')).toBe('true');
+        expect(b.hasAttribute('disabled')).toBe(false);
+      });
+      // A header click while busy is a no-op: the pending commit is not superseded.
+      buttons[2].click();
+      fixture.detectChanges();
+      expect(stepper.presenter.activeStepIndex()).toBe(0);
     });
   });
 });

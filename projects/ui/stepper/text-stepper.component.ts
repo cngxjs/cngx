@@ -103,6 +103,8 @@ export class CngxTextStepper {
    * `stateView.hasAnyError()`, so this is only read when non-empty.
    */
   protected readonly errorText = computed<string>(() =>
-    resolveStepperErrorSummary(this.stateView, this.stepNodes, this.i18n),
+    resolveStepperErrorSummary(this.stateView, this.stepNodes, this.i18n, (node: CngxStepNode) =>
+      node.errorMessage?.() ?? node.errorAggregator?.()?.errorLabels?.()?.[0],
+    ),
   );
 }

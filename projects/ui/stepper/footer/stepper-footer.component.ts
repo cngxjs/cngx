@@ -14,20 +14,21 @@ import {
 } from '@cngx/common/stepper';
 
 /**
- * Navigation action-bar molecule for the stepper family. Lays out three
- * regions - start (Back), center (progress hint), end (Continue / Finish)
- * - and wires the {@link CNGX_STEPPER_HOST} for any nav atoms a consumer
- * drops inside.
+ * Navigation action-bar molecule for the stepper family. \
+ * Lays out three regions - **start** (Back), **center** (progress hint), **end** (Continue / Finish). \
+ * Wires the {@link CNGX_STEPPER_HOST} for any nav atoms a consumer drops inside.
  *
- * Resolves its host like `CngxStepperCount`: an explicit `[host]` input
- * for placement outside the stepper tree, falling back to the ambient
+ * **Resolves its host like `CngxStepperCount`:** \
+ * An explicit `[host]` input for placement outside the stepper tree, falling back to the ambient
  * host injected from an ancestor `<cngx-stepper>` / `<cngx-mat-stepper>`
  * (`skipSelf`, so the footer reads the real presenter rather than its own
- * re-provided proxy). It then re-provides `CNGX_STEPPER_HOST` as a live
+ * re-provided proxy). \
+ * It then re-provides `CNGX_STEPPER_HOST` as a live
  * {@link createStepperHostProxy} over the resolved host, so child
  * `[cngxStepperPrevious]` / `[cngxStepperNext]` atoms resolve it
  * ambiently whether the footer is nested or used standalone with
- * `[host]`. `providers` (not `viewProviders`) carries the proxy to the
+ * `[host]`. \
+ * `providers` (not `viewProviders`) carries the proxy to the
  * consumer-projected button content. With no host at all, the proxy's
  * neutral set renders the nav buttons disabled.
  *
@@ -95,7 +96,5 @@ export class CngxStepperFooter {
   private readonly injectedHost = inject(CNGX_STEPPER_HOST, { optional: true, skipSelf: true });
 
   /** Resolved host: explicit input wins, else the ambient ancestor host. */
-  readonly resolvedHost = computed<CngxStepperHost | null>(
-    () => this.host() ?? this.injectedHost,
-  );
+  readonly resolvedHost = computed<CngxStepperHost | null>(() => this.host() ?? this.injectedHost);
 }

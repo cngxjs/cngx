@@ -317,6 +317,7 @@ export class CngxStepperPresenter implements CngxStepperHost {
         disabled: entry.reg.disabled,
         state: entry.reg.state,
         errorAggregator: entry.reg.errorAggregator,
+        errorMessage: entry.reg.errorMessage,
         children,
         depth,
         parentId: entry.parentId,
@@ -347,6 +348,25 @@ export class CngxStepperPresenter implements CngxStepperHost {
     return this.stepsOnly()
       .slice(this.activeStepIndex(), target)
       .some((n) => n.state() !== 'success' && !n.disabled());
+  }
+
+  /**
+   * {@inheritDoc CngxStepperHost.canNavigateTo}
+   *
+   * Wraps the private {@link isLinearBlocked} predicate plus the
+   * per-step `disabled` check. The header-reachability contract surface;
+   * `isLinearBlocked` stays private so the organism reads this method,
+   * never the internal gate.
+   */
+  canNavigateTo(index: number): boolean {
+    const stepsOnly = this.stepsOnly();
+    if (index < 0 || index >= stepsOnly.length) {
+      return false;
+    }
+    if (stepsOnly[index].disabled()) {
+      return false;
+    }
+    return !this.isLinearBlocked(index);
   }
 
   select(index: number): void {

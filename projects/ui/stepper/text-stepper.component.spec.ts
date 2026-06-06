@@ -106,4 +106,26 @@ describe('CngxTextStepper', () => {
     const text = fixture.nativeElement.querySelector('.cngx-text-stepper__text') as HTMLElement;
     expect(text.textContent?.trim()).toBe('Step 0 of 0');
   });
+
+  it('folds a direct [error] string into the aggregate error line', () => {
+    @Component({
+      standalone: true,
+      imports: [CngxTextStepper, CngxStep],
+      template: `
+        <cngx-text-stepper>
+          <div cngxStep label="Customer"></div>
+          <div cngxStep label="Payment" [error]="'Card declined'"></div>
+          <div cngxStep label="Review"></div>
+        </cngx-text-stepper>
+      `,
+    })
+    class ErrHost {}
+    TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+    const fixture = TestBed.createComponent(ErrHost);
+    fixture.detectChanges();
+    const text = fixture.nativeElement.querySelector(
+      '.cngx-text-stepper__error-text',
+    ) as HTMLElement;
+    expect(text.textContent?.trim()).toBe('Card declined');
+  });
 });

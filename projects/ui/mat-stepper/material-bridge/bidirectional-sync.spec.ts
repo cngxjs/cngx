@@ -5,11 +5,11 @@ import { describe, expect, test } from 'vitest';
 
 import { CngxStepperPresenter } from '@cngx/common/stepper';
 
-import { CngxMatStepperBridge } from '../mat-stepper.directive';
+import { CngxMatStepper } from '../mat-stepper.directive';
 
 @Component({
   standalone: true,
-  imports: [MatStepperModule, CngxMatStepperBridge],
+  imports: [MatStepperModule, CngxMatStepper],
   template: `
     <mat-stepper cngxMatStepper>
       <mat-step label="One"><p>One</p></mat-step>

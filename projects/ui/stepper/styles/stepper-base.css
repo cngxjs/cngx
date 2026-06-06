@@ -339,6 +339,16 @@
     opacity: var(--cngx-step-disabled-opacity, 0.55);
   }
 
+  /*
+   * Inert label header (headerNavigation 'none'): not a control, so it
+   * takes no hover state-layer and no pointer affordance. pointer-events
+   * off stops the `:hover` tint without forking the hover selector.
+   */
+  .cngx-stepper__step--static {
+    cursor: default;
+    pointer-events: none;
+  }
+
   .cngx-stepper__step:focus-visible {
     outline: var(--cngx-step-focus-ring, 2px solid currentColor);
     outline-offset: var(--cngx-step-focus-offset, 3px);

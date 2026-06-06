@@ -61,6 +61,11 @@ export {
 } from './slots/step-rejection.directive';
 
 export {
+  CngxStepError,
+  type CngxStepErrorContext,
+} from './slots/step-error.directive';
+
+export {
   CngxStepGroupHeader,
   type CngxStepGroupHeaderContext,
 } from './slots/step-group-header.directive';
@@ -88,6 +93,7 @@ export {
   type CngxStepperConfig,
   type CngxStepperConfigFeature,
   type CngxStepperFallbackLabels,
+  type CngxStepperHeaderNavigation,
   type CngxStepperMobileCollapse,
   type CngxStepperMobileIndicatorPosition,
   type CngxStepperSkin,
@@ -101,6 +107,7 @@ export {
   withStepperCommitMode,
   withStepperConnectors,
   withStepperFallbackLabels,
+  withStepperHeaderNavigation,
   withStepperLinear,
   withStepperMobileBreakpoint,
   withStepperMobileCollapse,
@@ -112,6 +119,7 @@ export {
   withStepBadgeTemplate,
   withStepBusySpinnerTemplate,
   withStepRejectionTemplate,
+  withStepErrorTemplate,
   withStepGroupHeaderTemplate,
   withStepperEmptyTemplate,
   withDotStepperDotTemplate,

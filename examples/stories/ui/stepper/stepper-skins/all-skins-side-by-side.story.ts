@@ -14,11 +14,10 @@ export const STORY: DemoSpec = {
   moduleImports: [
     "import { CngxStep } from '@cngx/common/stepper';",
     "import { CngxStepper } from '@cngx/ui/stepper';",
-    "import { CngxErrorAggregator, CngxErrorSource } from '@cngx/common/interactive';",
   ],
-  imports: ['CngxStepper', 'CngxStep', 'CngxErrorAggregator', 'CngxErrorSource'],
+  imports: ['CngxStepper', 'CngxStep'],
   setup: `protected readonly active = signal(1);
-  protected readonly step2Invalid = signal(true);`,
+  protected readonly step2Error = signal<string | boolean>('Card declined');`,
   setupChrome: `  protected handleNext(): void {
     this.active.update(i => Math.min(i + 1, 2));
   }
@@ -30,10 +29,7 @@ export const STORY: DemoSpec = {
       <h3>classic</h3>
       <cngx-stepper [(activeStepIndex)]="active" aria-label="Classic skin">
         <div cngxStep label="Step 1" [completed]="active() > 0"></div>
-        <fieldset cngxErrorAggregator #agg1="cngxErrorAggregator" style="display:contents">
-          <input cngxErrorSource="s2" [when]="step2Invalid()" hidden />
-          <div cngxStep label="Step 2" [completed]="active() > 1" [errorAggregator]="agg1"></div>
-        </fieldset>
+        <div cngxStep label="Step 2" [completed]="active() > 1" [error]="step2Error()"></div>
         <div cngxStep label="Step 3"></div>
       </cngx-stepper>
     </section>
@@ -41,10 +37,7 @@ export const STORY: DemoSpec = {
       <h3>linear-minimal</h3>
       <cngx-stepper [(activeStepIndex)]="active" skin="linear-minimal" aria-label="Linear minimal">
         <div cngxStep label="Step 1" [completed]="active() > 0"></div>
-        <fieldset cngxErrorAggregator #agg2="cngxErrorAggregator" style="display:contents">
-          <input cngxErrorSource="s2" [when]="step2Invalid()" hidden />
-          <div cngxStep label="Step 2" [completed]="active() > 1" [errorAggregator]="agg2"></div>
-        </fieldset>
+        <div cngxStep label="Step 2" [completed]="active() > 1" [error]="step2Error()"></div>
         <div cngxStep label="Step 3"></div>
       </cngx-stepper>
     </section>
@@ -52,10 +45,7 @@ export const STORY: DemoSpec = {
       <h3>stripe-status-rich</h3>
       <cngx-stepper [(activeStepIndex)]="active" skin="stripe-status-rich" aria-label="Stripe status rich">
         <div cngxStep label="Step 1" [completed]="active() > 0"></div>
-        <fieldset cngxErrorAggregator #agg3="cngxErrorAggregator" style="display:contents">
-          <input cngxErrorSource="s2" [when]="step2Invalid()" hidden />
-          <div cngxStep label="Step 2" [completed]="active() > 1" [errorAggregator]="agg3"></div>
-        </fieldset>
+        <div cngxStep label="Step 2" [completed]="active() > 1" [error]="step2Error()"></div>
         <div cngxStep label="Step 3"></div>
       </cngx-stepper>
     </section>
@@ -63,10 +53,7 @@ export const STORY: DemoSpec = {
       <h3>path-chevron</h3>
       <cngx-stepper [(activeStepIndex)]="active" skin="path-chevron" aria-label="Path chevron">
         <div cngxStep label="Step 1" [completed]="active() > 0"></div>
-        <fieldset cngxErrorAggregator #agg4="cngxErrorAggregator" style="display:contents">
-          <input cngxErrorSource="s2" [when]="step2Invalid()" hidden />
-          <div cngxStep label="Step 2" [completed]="active() > 1" [errorAggregator]="agg4"></div>
-        </fieldset>
+        <div cngxStep label="Step 2" [completed]="active() > 1" [error]="step2Error()"></div>
         <div cngxStep label="Step 3"></div>
       </cngx-stepper>
     </section>
@@ -74,10 +61,7 @@ export const STORY: DemoSpec = {
       <h3>pill-segment</h3>
       <cngx-stepper [(activeStepIndex)]="active" skin="pill-segment" aria-label="Pill segment">
         <div cngxStep label="Step 1" [completed]="active() > 0"></div>
-        <fieldset cngxErrorAggregator #agg5="cngxErrorAggregator" style="display:contents">
-          <input cngxErrorSource="s2" [when]="step2Invalid()" hidden />
-          <div cngxStep label="Step 2" [completed]="active() > 1" [errorAggregator]="agg5"></div>
-        </fieldset>
+        <div cngxStep label="Step 2" [completed]="active() > 1" [error]="step2Error()"></div>
         <div cngxStep label="Step 3"></div>
       </cngx-stepper>
     </section>
@@ -85,10 +69,7 @@ export const STORY: DemoSpec = {
       <h3>chips</h3>
       <cngx-stepper [(activeStepIndex)]="active" skin="chips" aria-label="Chips">
         <div cngxStep label="Step 1" [completed]="active() > 0"></div>
-        <fieldset cngxErrorAggregator #agg6="cngxErrorAggregator" style="display:contents">
-          <input cngxErrorSource="s2" [when]="step2Invalid()" hidden />
-          <div cngxStep label="Step 2" [completed]="active() > 1" [errorAggregator]="agg6"></div>
-        </fieldset>
+        <div cngxStep label="Step 2" [completed]="active() > 1" [error]="step2Error()"></div>
         <div cngxStep label="Step 3"></div>
       </cngx-stepper>
     </section>
@@ -96,10 +77,7 @@ export const STORY: DemoSpec = {
       <h3>breadcrumb</h3>
       <cngx-stepper [(activeStepIndex)]="active" skin="breadcrumb" aria-label="Breadcrumb">
         <div cngxStep label="Step 1" [completed]="active() > 0"></div>
-        <fieldset cngxErrorAggregator #agg7="cngxErrorAggregator" style="display:contents">
-          <input cngxErrorSource="s2" [when]="step2Invalid()" hidden />
-          <div cngxStep label="Step 2" [completed]="active() > 1" [errorAggregator]="agg7"></div>
-        </fieldset>
+        <div cngxStep label="Step 2" [completed]="active() > 1" [error]="step2Error()"></div>
         <div cngxStep label="Step 3"></div>
       </cngx-stepper>
     </section>
@@ -108,7 +86,7 @@ export const STORY: DemoSpec = {
     <div class="event-row">
       <button type="button" class="chip" (click)="handlePrev()">Previous</button>
       <button type="button" class="chip" (click)="handleNext()">Next</button>
-      <label style="margin-inline-start:12px"><input type="checkbox" [checked]="step2Invalid()" (change)="step2Invalid.set($any($event.target).checked)" /> simulate error</label>
+      <label style="margin-inline-start:12px"><input type="checkbox" [checked]="step2Error() !== false" (change)="step2Error.set($any($event.target).checked ? 'Card declined' : false)" /> simulate error</label>
     </div>
     <div class="event-row"><span class="event-label">Active step</span><span class="event-value">{{ active() }}</span></div>
   </div>`,

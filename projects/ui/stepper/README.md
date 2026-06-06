@@ -172,3 +172,77 @@ onSwipe(direction: SwipeDirection): void {
 Keyboard navigation (arrow keys, Home / End) is built into the indicator and needs no wiring; swipe is the touch counterpart you add yourself.
 
 **Caveat:** only wire swipe onto panels that are genuinely paged content (onboarding, galleries). Do not make a panel that holds real form fields swipe-navigable - a horizontal drag while editing inputs is ambiguous and fights native gestures. For form wizards, keep explicit Back / Next controls.
+
+## Header navigation
+
+`headerNavigation` decides whether the step headers are controls or pure indicators. It is a two-value policy - `'none'` or `'visited'` - that folds into the existing `linear` axis instead of adding a third mode.
+
+|Value|Headers|Reachability|
+|-|-|-|
+|`'none'`|Inert labels (no button, no roving, no click). The footer is the only navigation.|n/a - headers never navigate|
+|`'visited'` (default)|Focusable buttons|Gated by `linear`|
+
+With `'visited'`, the `linear` flag does the rest:
+
+- `linear="false"` (the default): every enabled header is clickable - free navigation, the old behaviour.
+- `linear="true"`: only already-visited (completed) steps are reachable; forward-incomplete headers carry `aria-disabled="true"` and stay focusable so the gate is announced, not a silent no-op.
+
+There is no separate `'free'` value - "free" is just `headerNavigation="visited"` with `linear="false"`.
+
+```html
+<!-- Footer-only wizard: headers are read-only indicators. -->
+<cngx-stepper headerNavigation="none" [linear]="true" aria-label="Checkout">
+  <div cngxStep label="Cart"></div>
+  <div cngxStep label="Address"></div>
+  <div cngxStep label="Payment"></div>
+  <cngx-stepper-footer>
+    <button cngxStepperFooterStart cngxStepperPrevious>Back</button>
+    <button cngxStepperFooterEnd cngxStepperNext>Continue</button>
+  </cngx-stepper-footer>
+</cngx-stepper>
+```
+
+Set the app-wide default with `provideStepperConfig(withStepperHeaderNavigation('none'))`; the per-instance `[headerNavigation]` input wins over it.
+
+While a commit is in flight (`commitAction` pending), the `'visited'` headers lock - they go `aria-disabled`, click and arrow-key navigation no-op - so the strip cannot supersede the pending transition. This matches the footer nav atoms (`cngxStepperPrevious` / `cngxStepperNext`), which disable on `busy()` too; the strip and the footer lock together during an async step.
+
+### Migration
+
+The default is `'visited'`. For non-linear steppers (`linear="false"`, the default) this is identical to previous behaviour - every header stays clickable. **Linear steppers change:** headers that used to be clickable-but-blocked are now marked `aria-disabled` and only visited steps are reachable. If you relied on always-clickable headers under `linear="true"`, set `[linear]="false"` (or keep `headerNavigation="visited"` and gate completion yourself).
+
+## Error channels
+
+A step can be flagged as in error through two independent channels. Both render the same error **state** on every skin (the indicator / badge / tile turns errored); the error **message** surfaces separately.
+
+|Channel|How you flag it|Where the message appears|
+|-|-|-|
+|Validation|`[error]="true \| 'message'"` on `cngxStep`, or `[errorAggregator]` for multi-source forms|a row **below the strip** (every classic-style skin) via `*cngxStepError`; folded into the aggregate line on the `text` / `dot` / `progress-bar` mini variants|
+|Commit / async|a `commitAction` that rejects (sets `lastFailedIndex`)|`*cngxStepRejection` decoration; `CngxToastOn` / `CngxBannerOn` transition bridges|
+
+The message lives on its own row **below** the step strip, not inside a step. That is deliberate: a free-text message inside a horizontal (or column) strip item widens the shrink-to-fit step and tears the row; below the strip it has full width and wraps. The strip itself only ever carries the short state cue.
+
+Only steps with a **real reason** show a message row - the bare `errored` state is already communicated by the indicator / badge, so a boolean `[error]="true"` adds no text-only noise. A reason is the direct `[error]` string or the first `errorAggregator` label.
+
+The validation channel is the common case and needs no async machine. The simplest form is a single input:
+
+```html
+<cngx-stepper aria-label="Payment">
+  <div cngxStep label="Card" [error]="cardInvalid() ? 'Card declined' : false"></div>
+  <div cngxStep label="Review"></div>
+</cngx-stepper>
+```
+
+`[error]="true"` puts the step in the error state (red indicator, no message); `[error]="'Card declined'"` does the same and supplies the message rendered below the strip. A string wins over an aggregator label, which wins over the i18n `errored` status word. No `<fieldset cngxErrorAggregator>` / `<input cngxErrorSource>` scaffolding is required to flag "this step is invalid" - the `errorAggregator` stays the path for genuine multi-source aggregation (per-source keys, labels, SR announcement).
+
+Override the message presentation per instance with `*cngxStepError`, app-wide with `withStepErrorTemplate(...)`:
+
+```html
+<cngx-stepper aria-label="Payment">
+  <div cngxStep label="Card" [error]="cardError()"></div>
+  <ng-template cngxStepError let-message="message">
+    <strong>{{ message }}</strong>
+  </ng-template>
+</cngx-stepper>
+```
+
+The commit / async channel is separate: a rejected `commitAction` decorates the rolled-back step (`*cngxStepRejection`) and flows its message through the `CngxToastOn` / `CngxBannerOn` transition bridges. The two channels never collide - validation owns `*cngxStepError`, commit owns `*cngxStepRejection`.

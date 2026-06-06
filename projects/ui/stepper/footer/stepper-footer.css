@@ -1,11 +1,122 @@
 /**
  * @overview
- * Structural + thematic CSS for `<cngx-stepper-footer>`. Track A
- * (`styleUrl`); every spacing / colour value is a `--cngx-stepper-footer-*`
- * custom property, colours chaining to `--mat-sys-*` so the Material
- * theme picks them up. Three flex regions (start / center / end); the
- * row wraps on narrow viewports so the controls never overflow.
+ * Structural and thematic CSS for `<cngx-stepper-footer>`. \
+ * Track A (`styleUrl`): every spacing and color value is a registered
+ * `--cngx-stepper-footer-*` custom property with a concrete default, so
+ * the footer renders standalone without a theme. 
+ *
+ * The Material bridge
+ * (`@cngx/themes/material/stepper-theme`) remaps the color tokens onto
+ * `--mat-sys-*`. \
+ * Three flex regions - **start**, **center**, **end** - laid out in a row
+ * that wraps on narrow viewports so the controls never overflow.
  */
+
+@layer cngx.tokens {
+  /**
+   * Gap between the three footer regions.
+   * @group Layout
+   */
+  @property --cngx-stepper-footer-gap {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 0.75rem;
+  }
+
+  /**
+   * Gap between controls within a single region.
+   * @group Layout
+   */
+  @property --cngx-stepper-footer-region-gap {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 0.5rem;
+  }
+
+  /**
+   * Space above the footer, separating it from the panel.
+   * @group Layout
+   */
+  @property --cngx-stepper-footer-margin-block-start {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 1rem;
+  }
+
+  /**
+   * Block-axis padding inside the footer row.
+   * @group Layout
+   */
+  @property --cngx-stepper-footer-padding-block {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 0.75rem;
+  }
+
+  /**
+   * Inline-axis padding inside the footer row.
+   * @group Layout
+   */
+  @property --cngx-stepper-footer-padding-inline {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 0;
+  }
+
+  /**
+   * Width of the top divider rule.
+   * @group Border
+   */
+  @property --cngx-stepper-footer-border-width {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 1px;
+  }
+
+  /**
+   * Style of the top divider rule.
+   * @group Border
+   */
+  @property --cngx-stepper-footer-border-style {
+    syntax: '*';
+    inherits: false;
+    initial-value: solid;
+  }
+
+  /**
+   * Color of the top divider rule. The Material bridge maps this to
+   * `--mat-sys-outline-variant`.
+   * @group Border
+   */
+  @property --cngx-stepper-footer-border-color {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: #e0e0e0;
+  }
+
+  /**
+   * Flex-basis of the center region.
+   * @group Layout
+   */
+  @property --cngx-stepper-footer-center-basis {
+    syntax: '*';
+    inherits: true;
+    initial-value: auto;
+  }
+
+  /**
+   * Text color of the center region. Unset it inherits the surrounding
+   * text color; the Material bridge maps it to `--mat-sys-on-surface-variant`.
+   * @type <color>
+   * @default inherit
+   * @group Color
+   */
+  @property --cngx-stepper-footer-center-color {
+    syntax: '*';
+    inherits: true;
+  }
+}
+
 .cngx-stepper-footer {
   display: flex;
   align-items: center;
@@ -15,8 +126,7 @@
   padding-block: var(--cngx-stepper-footer-padding-block, 0.75rem);
   padding-inline: var(--cngx-stepper-footer-padding-inline, 0);
   border-block-start: var(--cngx-stepper-footer-border-width, 1px)
-    var(--cngx-stepper-footer-border-style, solid)
-    var(--cngx-stepper-footer-border-color, var(--mat-sys-outline-variant, #e0e0e0));
+    var(--cngx-stepper-footer-border-style, solid) var(--cngx-stepper-footer-border-color, #e0e0e0);
 }
 
 .cngx-stepper-footer__start,
@@ -36,10 +146,27 @@
   flex: 1 1 var(--cngx-stepper-footer-center-basis, auto);
   justify-content: center;
   text-align: center;
-  color: var(--cngx-stepper-footer-center-color, var(--mat-sys-on-surface-variant, inherit));
+  color: var(--cngx-stepper-footer-center-color, inherit);
 }
 
 .cngx-stepper-footer__end {
   margin-inline-start: auto;
   justify-content: flex-end;
+}
+
+/* Dark-mode divider tone. Mirrors the cngx color-scheme cascade: an
+   explicit consumer toggle (`[data-color-scheme='dark']` / `.dark`)
+   always wins; OS auto-follow via `@media` is suppressed when the
+   consumer pins light. Only the divider is remapped - the center text
+   inherits the page foreground, and the Material bridge already drives
+   both colors from `--mat-sys-*`. Both blocks are unlayered so they beat
+   the layered token defaults. */
+:where(:root[data-color-scheme='dark'], :root.dark) .cngx-stepper-footer {
+  --cngx-stepper-footer-border-color: color-mix(in srgb, oklch(1 0 0) 16%, transparent);
+}
+
+@media (prefers-color-scheme: dark) {
+  :where(:root:not([data-color-scheme='light']):not(.light)) .cngx-stepper-footer {
+    --cngx-stepper-footer-border-color: color-mix(in srgb, oklch(1 0 0) 16%, transparent);
+  }
 }

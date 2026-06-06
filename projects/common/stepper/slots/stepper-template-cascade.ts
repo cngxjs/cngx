@@ -18,6 +18,10 @@ import type {
   CngxStepIndicatorContext,
 } from './step-indicator.directive';
 import type {
+  CngxStepError,
+  CngxStepErrorContext,
+} from './step-error.directive';
+import type {
   CngxStepRejection,
   CngxStepRejectionContext,
 } from './step-rejection.directive';
@@ -36,6 +40,8 @@ export interface CngxStepperTemplateBindingsOptions {
   readonly badgeSlot: Signal<CngxStepBadge | undefined>;
   readonly busySpinnerSlot: Signal<CngxStepBusySpinner | undefined>;
   readonly rejectionSlot: Signal<CngxStepRejection | undefined>;
+  /** Optional - the error slot is desktop-label-area only; absent on variants that have no label region. */
+  readonly errorSlot?: Signal<CngxStepError | undefined>;
   readonly groupHeaderSlot: Signal<CngxStepGroupHeader | undefined>;
   readonly emptySlot: Signal<CngxStepperEmpty | undefined>;
   readonly config: CngxStepperConfig;
@@ -53,13 +59,14 @@ export interface CngxStepperTemplateBindings {
   readonly badge: Signal<TemplateRef<CngxStepBadgeContext> | null>;
   readonly busySpinner: Signal<TemplateRef<CngxStepBusySpinnerContext> | null>;
   readonly rejection: Signal<TemplateRef<CngxStepRejectionContext> | null>;
+  readonly stepError: Signal<TemplateRef<CngxStepErrorContext> | null>;
   readonly groupHeader: Signal<TemplateRef<CngxStepGroupHeaderContext> | null>;
   readonly empty: Signal<TemplateRef<void> | null>;
 }
 
 /**
- * Wires the 3-stage template cascade for the six `<cngx-stepper>`
- * skin slots: per-instance directive > `CNGX_STEPPER_CONFIG.templates.<key>`
+ * Wires the 3-stage template cascade for the `<cngx-stepper>` skin
+ * slots: per-instance directive > `CNGX_STEPPER_CONFIG.templates.<key>`
  * > `null` (built-in default).
  *
  * Pure - no DI, no side effects. Safe to call from a field-init
@@ -97,6 +104,12 @@ export function createStepperTemplateBindings(
       () =>
         opts.rejectionSlot()?.templateRef ??
         opts.config.templates?.rejection ??
+        null,
+    ),
+    stepError: computed<TemplateRef<CngxStepErrorContext> | null>(
+      () =>
+        opts.errorSlot?.()?.templateRef ??
+        opts.config.templates?.stepError ??
         null,
     ),
     groupHeader: computed<TemplateRef<CngxStepGroupHeaderContext> | null>(

@@ -10,6 +10,7 @@ import {
 import type { CngxDotStepperDotContext } from './slots/dot-stepper-dot.directive';
 import type { CngxStepBadgeContext } from './slots/step-badge.directive';
 import type { CngxStepBusySpinnerContext } from './slots/step-busy-spinner.directive';
+import type { CngxStepErrorContext } from './slots/step-error.directive';
 import type { CngxStepGroupHeaderContext } from './slots/step-group-header.directive';
 import type { CngxStepIndicatorContext } from './slots/step-indicator.directive';
 import type { CngxStepRejectionContext } from './slots/step-rejection.directive';
@@ -51,6 +52,7 @@ export interface CngxStepperTemplates {
   readonly badge?: TemplateRef<CngxStepBadgeContext>;
   readonly busySpinner?: TemplateRef<CngxStepBusySpinnerContext>;
   readonly rejection?: TemplateRef<CngxStepRejectionContext>;
+  readonly stepError?: TemplateRef<CngxStepErrorContext>;
   readonly groupHeader?: TemplateRef<CngxStepGroupHeaderContext>;
   readonly empty?: TemplateRef<void>;
   readonly dotStepperDot?: TemplateRef<CngxDotStepperDotContext>;
@@ -83,6 +85,19 @@ export type CngxStepperSkin =
  * @category common/stepper
  */
 export type CngxStepperMobileCollapse = 'text' | 'dots' | 'off';
+
+/**
+ * Header-navigation policy for `<cngx-stepper>`. `'none'` renders the
+ * step headers as inert labels - the footer is the sole navigation
+ * control. `'visited'` (default) keeps the headers as focusable
+ * buttons; reachability folds into the `linear` axis (`linear=false`
+ * is free click-through, `linear=true` is backward-to-visited only,
+ * with linear-unreachable headers marked `aria-disabled`). There is no
+ * discrete `'free'` value - `'free'` is `'visited'` + `linear=false`.
+ *
+ * @category common/stepper
+ */
+export type CngxStepperHeaderNavigation = 'none' | 'visited';
 
 /**
  * Where the mobile auto-collapse indicator (text caption or dot row)
@@ -120,6 +135,13 @@ export interface CngxStepperConfig {
   readonly routerSyncMode?: 'fragment' | 'queryParam';
   readonly routerSyncParam?: string;
   readonly skin?: CngxStepperSkin;
+  /**
+   * Header-navigation policy. `'none'` makes the step headers inert
+   * labels (footer-only navigation); `'visited'` (default) keeps them
+   * focusable buttons whose reachability folds into the `linear` axis.
+   * Per-instance `[headerNavigation]` Input still wins.
+   */
+  readonly headerNavigation?: CngxStepperHeaderNavigation;
   /**
    * Opt-in connector rail between adjacent step indicators on the
    * classic skin. Off by default. The rule is double-scoped on
@@ -169,6 +191,7 @@ const STEPPER_CONFIG_DEFAULTS: Required<
   routerSyncMode: 'fragment',
   routerSyncParam: 'step',
   skin: 'classic',
+  headerNavigation: 'visited',
   connectors: false,
   mobileCollapse: 'text',
   mobileBreakpoint: STEPPER_DEFAULT_MOBILE_BREAKPOINT,
@@ -366,6 +389,21 @@ export function withStepperMobileSwipe(enabled: boolean): CngxStepperConfigFeatu
 }
 
 /**
+ * Set the app-wide default header-navigation policy for
+ * `<cngx-stepper>`. `'none'` renders inert label headers (footer-only
+ * navigation); `'visited'` (library default) keeps the headers as
+ * focusable buttons whose reachability folds into the `linear` axis.
+ * Per-instance `[headerNavigation]` Input still wins.
+ *
+ * @category common/stepper
+ */
+export function withStepperHeaderNavigation(
+  mode: CngxStepperHeaderNavigation,
+): CngxStepperConfigFeature {
+  return defineStepperConfigFeature((cfg) => ({ ...cfg, headerNavigation: mode }));
+}
+
+/**
  * Merge ARIA labels into the cascade. Keys not provided keep their
  * library defaults; per-instance overrides on the stepper still win.
  *
@@ -449,6 +487,23 @@ export function withStepRejectionTemplate(
   return defineStepperConfigFeature((cfg) => ({
     ...cfg,
     templates: { ...cfg.templates, rejection: template },
+  }));
+}
+
+/**
+ * Override the default `*cngxStepError` template app-wide. The slot
+ * renders the per-step validation reason on the skins with a label area
+ * (classic / stripe-status-rich). Per-instance directive still wins;
+ * this moves the cascade middle tier.
+ *
+ * @category common/stepper
+ */
+export function withStepErrorTemplate(
+  template: TemplateRef<CngxStepErrorContext>,
+): CngxStepperConfigFeature {
+  return defineStepperConfigFeature((cfg) => ({
+    ...cfg,
+    templates: { ...cfg.templates, stepError: template },
   }));
 }
 

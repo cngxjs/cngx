@@ -46,6 +46,9 @@
 .cngx-dot-stepper {
   display: inline-flex;
   align-items: center;
+  /* Wrap so the aggregate error line drops to its own row below the
+     dots (flex-basis:100% on the error). Inert without an error. */
+  flex-wrap: wrap;
   /* Grid / flex parents override inline-flex to stretch unless the item
      opts out explicitly. justify-self / align-self keep the host shrunk
      to its dot row width regardless of parent layout. */
@@ -130,6 +133,31 @@
   height: auto;
   background: transparent;
   border-radius: 0;
+}
+
+/* Aggregate error line below the dot row (flex-basis:100% drops it to
+   its own line). The dots only carry colour; this is the text surface. */
+.cngx-dot-stepper__error {
+  flex-basis: 100%;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--cngx-dot-stepper-error-gap, 0.375rem);
+  margin-block-start: var(--cngx-dot-stepper-error-margin, 0.5rem);
+  font-size: var(--cngx-dot-stepper-error-font-size, 0.8125rem);
+  color: var(--cngx-step-errored-color, var(--cngx-color-danger, oklch(0.45 0.15 25)));
+}
+
+.cngx-dot-stepper__error-glyph {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: var(--cngx-dot-stepper-error-glyph-size, 1.1em);
+  height: var(--cngx-dot-stepper-error-glyph-size, 1.1em);
+  border-radius: 50%;
+  background: var(--cngx-step-errored-color, var(--cngx-color-danger, oklch(0.45 0.15 25)));
+  color: var(--cngx-dot-stepper-error-glyph-color, var(--cngx-color-on-danger, white));
+  font-size: 0.75em;
+  font-weight: 700;
 }
 
 @media (prefers-reduced-motion: reduce) {

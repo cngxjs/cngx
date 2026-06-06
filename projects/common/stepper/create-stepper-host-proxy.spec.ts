@@ -47,11 +47,17 @@ describe('createStepperHostProxy', () => {
         proxy.unregister('x');
       }).not.toThrow();
     });
+
+    it('canNavigateTo returns false (no host to reach)', () => {
+      expect(proxy.canNavigateTo(0)).toBe(false);
+      expect(proxy.canNavigateTo(2)).toBe(false);
+    });
   });
 
   describe('delegation to a live supplier', () => {
     it('tracks the supplier signals and forwards methods', () => {
       const selectNext = vi.fn();
+      const canNavigateTo = vi.fn((index: number) => index === 1);
       const real = {
         canGoNext: signal(true),
         canGoPrevious: signal(false),
@@ -59,6 +65,7 @@ describe('createStepperHostProxy', () => {
         nextStepLabel: signal<string | undefined>('Two'),
         stepCount: signal(3),
         selectNext,
+        canNavigateTo,
       } as unknown as CngxStepperHost;
 
       const supplier = signal<CngxStepperHost | null>(null);
@@ -67,12 +74,15 @@ describe('createStepperHostProxy', () => {
       // Null first: inert.
       expect(proxy.canGoNext()).toBe(false);
       expect(proxy.nextStepLabel()).toBeUndefined();
+      expect(proxy.canNavigateTo(1)).toBe(false);
 
       // Swap in the live host: proxy reflects it without re-provisioning.
       supplier.set(real);
       expect(proxy.canGoNext()).toBe(true);
       expect(proxy.nextStepLabel()).toBe('Two');
       expect(proxy.stepCount()).toBe(3);
+      expect(proxy.canNavigateTo(1)).toBe(true);
+      expect(proxy.canNavigateTo(0)).toBe(false);
 
       proxy.selectNext();
       expect(selectNext).toHaveBeenCalledTimes(1);

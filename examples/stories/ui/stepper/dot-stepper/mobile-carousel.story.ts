@@ -14,10 +14,10 @@ export const STORY: DemoSpec = {
   apiComponents: ['CngxDotStepper', 'CngxStep', 'CngxSwipe'],
   moduleImports: [
     'import { CngxStep } from \'@cngx/common/stepper\';',
-    'import { CngxSwipe, type SwipeDirection, CngxErrorAggregator, CngxErrorSource } from \'@cngx/common/interactive\';',
+    'import { CngxSwipe, type SwipeDirection } from \'@cngx/common/interactive\';',
     'import { CngxDotStepper } from \'@cngx/ui/stepper\';',
   ],
-  imports: ['CngxDotStepper', 'CngxStep', 'CngxSwipe', 'CngxErrorAggregator', 'CngxErrorSource'],
+  imports: ['CngxDotStepper', 'CngxStep', 'CngxSwipe'],
   setup: `protected readonly active = signal(0);
   protected readonly slide3Invalid = signal(false);
   protected readonly slides = [
@@ -48,10 +48,7 @@ export const STORY: DemoSpec = {
     >
       <div cngxStep label="Slide 1"></div>
       <div cngxStep label="Slide 2"></div>
-      <fieldset cngxErrorAggregator #slide3Agg="cngxErrorAggregator" style="display:contents">
-        <input cngxErrorSource="slide3" [when]="slide3Invalid()" hidden />
-        <div cngxStep label="Slide 3" [errorAggregator]="slide3Agg"></div>
-      </fieldset>
+      <div cngxStep label="Slide 3" [error]="slide3Invalid() ? 'This slide is unavailable' : false"></div>
       <div cngxStep label="Slide 4"></div>
       <div cngxStep label="Slide 5"></div>
     </cngx-dot-stepper>

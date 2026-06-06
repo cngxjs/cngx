@@ -311,12 +311,37 @@
       margin-inline-start: var(--cngx-step-gap, 0.5rem);
     }
 
+    /* Per-step validation reason(s) (*cngxStepError), rendered as a row
+       BELOW the strip - full width, free to wrap. Keeping the message out
+       of the strip items is deliberate: a free-text message inside a
+       shrink-to-fit step widens it and tears the row (classic) or column
+       (stripe). Only steps with a real reason appear here. */
+    .cngx-stepper__error-summary {
+      display: flex;
+      flex-direction: column;
+      gap: var(--cngx-step-error-gap, 0.25rem);
+      padding: var(--cngx-step-error-summary-padding, 0.25rem 0 0);
+    }
+
+    .cngx-stepper__error-summary-item {
+      margin: 0;
+      font-size: var(--cngx-step-error-font-size, 0.85rem);
+      line-height: var(--cngx-step-error-line-height, 1.4);
+      color: var(--cngx-step-errored-color, var(--cngx-color-danger, oklch(0.45 0.15 25)));
+      overflow-wrap: anywhere;
+    }
+
+    .cngx-stepper__error-summary-step {
+      font-weight: var(--cngx-step-error-summary-step-weight, 600);
+      margin-inline-end: var(--cngx-step-error-summary-step-gap, 0.375rem);
+    }
+
     /* Consumer-owned busy spinner body via `*cngxStepBusySpinner` slot -
        drop the default ring chrome (fixed size, circular border, spin
        animation) when the slot rendered content of its own, otherwise
        the consumer's SVG / banner / text gets sucked into the library's
        360deg rotation and rendered inside the empty ring. 
-       Layout-side inline-block + flex sizing stays so the consumer node sits after
+       Layout-side inline-block and flex sizing stays so the consumer node sits after
        the label without overlapping. */
     .cngx-stepper__busy-spinner:not(:empty) {
       width: auto;
@@ -1758,6 +1783,12 @@
 
 .cngx-stepper__mobile-dot[aria-disabled='true'] {
   cursor: not-allowed;
+}
+
+/* Inert dot (headerNavigation 'none'): pure indicator, not a control. */
+.cngx-stepper__mobile-dot--static {
+  cursor: default;
+  pointer-events: none;
 }
 
 .cngx-stepper__mobile-dot--completed {

@@ -6,6 +6,8 @@ import type { CngxStepperHost } from '@cngx/common/stepper';
 
 /**
  * Options for {@link createMatStepperBidirectionalSync}.
+ *
+ * @internal
  */
 export interface CngxMatStepperBidirectionalSyncOptions {
   /** Material stepper the helper bridges against. */
@@ -41,6 +43,8 @@ export interface CngxMatStepperBidirectionalSyncOptions {
  *   handler advances `selectedIndex` synchronously before the
  *   bidirectional sync sees the event).
  * - `destroyRef` cleanup of both directions.
+ *
+ * @internal
  */
 export function createMatStepperBidirectionalSync(
   opts: CngxMatStepperBidirectionalSyncOptions,

@@ -54,8 +54,4 @@ The supplied `idSeed` defaults to `() => nextUid('cngx-mat-step-')`. An override
 | `handle.errorAggregator` | shared `signal(undefined)` | Material's own error surface stays authoritative; cngx-side aggregation is intentionally off. |
 | `selectedIndex` sync | `createMatStepperBidirectionalSync` | Presenter -> Material via `effect()` + equality guard; Material -> presenter via `selectedIndexChange` with re-entrancy guard. Eager-advance reconciled the same way as `[cngxMatTabs]`. |
 
-## See also
 
-- [API on compodocx](https://cngxjs.github.io/cngx/) for token signatures and option shapes.
-- `@cngx/common/stepper` for the presenter brain and the `CngxStepRegistration` contract.
-- `@cngx/ui/mat-stepper` for the consumer-facing `<cngx-mat-stepper>` organism and `[cngxMatStepper]` instrumentation directive.

@@ -201,12 +201,28 @@
   --cngx-step-gap: #{map.get($gaps, $scale)};
 }
 
+// Color bridge for the standalone CngxStepperFooter. Targets its own
+// element so the mapping holds whether the footer is nested in a stepper
+// or used on its own. Spacing tokens keep the component defaults; only
+// the two color tokens chain to Material.
+@mixin footer-color($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-stepper-footer-border-color: var(--mat-sys-outline-variant);
+    --cngx-stepper-footer-center-color: var(--mat-sys-on-surface-variant);
+  } @else {
+    --cngx-stepper-footer-border-color: color-mix(in srgb, currentColor 20%, transparent);
+  }
+}
+
 @mixin theme($theme) {
   @layer cngx.components {
     :where(cngx-stepper) {
       @include color($theme);
       @include typography($theme);
       @include density($theme);
+    }
+    :where(cngx-stepper-footer) {
+      @include footer-color($theme);
     }
   }
 }

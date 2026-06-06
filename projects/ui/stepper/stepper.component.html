@@ -38,24 +38,50 @@
     }
   </div>
 } @else if (displayMode() === 'dots') {
-  <div class="cngx-stepper__mobile-dots">
+  <!--
+    In 'none' mode the dots are inert list-item indicators (footer-only
+    navigation); otherwise they are roving-tabindex buttons.
+  -->
+  <div
+    class="cngx-stepper__mobile-dots"
+    [attr.role]="resolvedHeaderNavigation() === 'none' ? 'list' : null"
+  >
     @for (node of stepsOnly(); track node.id; let i = $index) {
-      <button
-        type="button"
-        cngxRovingItem
-        class="cngx-stepper__mobile-dot"
-        [class.cngx-stepper__mobile-dot--active]="slotContext.isActive(node)"
-        [class.cngx-stepper__mobile-dot--completed]="i < activeStepIndex()"
-        [class.cngx-stepper__mobile-dot--error]="stateView.hasError(node)"
-        [attr.aria-current]="slotContext.isActive(node) ? 'step' : null"
-        [attr.aria-label]="mobileDotAriaLabel(node, i)"
-        [attr.data-state]="mobileDotState(node)"
-        [attr.aria-disabled]="node.disabled() ? 'true' : null"
-        [cngxRovingItemDisabled]="node.disabled()"
-        (click)="handleHeaderClick(node)"
-      ></button>
+      @if (resolvedHeaderNavigation() === 'none') {
+        <span
+          role="listitem"
+          class="cngx-stepper__mobile-dot cngx-stepper__mobile-dot--static"
+          [class.cngx-stepper__mobile-dot--active]="slotContext.isActive(node)"
+          [class.cngx-stepper__mobile-dot--completed]="i < activeStepIndex()"
+          [class.cngx-stepper__mobile-dot--error]="stateView.hasError(node)"
+          [attr.aria-current]="slotContext.isActive(node) ? 'step' : null"
+          [attr.aria-label]="mobileDotAriaLabel(node, i)"
+          [attr.data-state]="mobileDotState(node)"
+        ></span>
+      } @else {
+        <button
+          type="button"
+          cngxRovingItem
+          class="cngx-stepper__mobile-dot"
+          [class.cngx-stepper__mobile-dot--active]="slotContext.isActive(node)"
+          [class.cngx-stepper__mobile-dot--completed]="i < activeStepIndex()"
+          [class.cngx-stepper__mobile-dot--error]="stateView.hasError(node)"
+          [attr.aria-current]="slotContext.isActive(node) ? 'step' : null"
+          [attr.aria-label]="mobileDotAriaLabel(node, i)"
+          [attr.data-state]="mobileDotState(node)"
+          [attr.aria-disabled]="headerAriaDisabled(node)"
+          [cngxRovingItemDisabled]="node.disabled()"
+          (click)="handleHeaderClick(node)"
+        ></button>
+      }
     }
   </div>
+  @if (stateView.hasAnyError()) {
+    <span class="cngx-stepper__mobile-error" role="status" data-state="error">
+      <span class="cngx-stepper__mobile-error-glyph" aria-hidden="true">{{ glyphs.errorBadge }}</span>
+      <span class="cngx-stepper__mobile-error-text">{{ mobileErrorSummary() }}</span>
+    </span>
+  }
   @if (showStepCount()) {
     <cngx-stepper-count class="cngx-stepper__mobile-text cngx-stepper__mobile-text--caption" [live]="false" />
   }
@@ -86,7 +112,15 @@
     }
   </div>
 } @else {
-  <div class="cngx-stepper__strip" role="presentation">
+  <!--
+    In 'none' mode the inert headers are list items, so the strip is a
+    semantic list; otherwise it is a presentational container of
+    roving-tabindex buttons.
+  -->
+  <div
+    class="cngx-stepper__strip"
+    [attr.role]="resolvedHeaderNavigation() === 'none' ? 'list' : 'presentation'"
+  >
     @for (node of flatSteps(); track node.id) {
       @if (node.kind === 'group') {
         <div
@@ -106,6 +140,27 @@
           ></ng-container>
           <span class="cngx-sr-only" [id]="stepDescriptorId(node)">{{ announcement.groupStatusPhrase(node) }}</span>
         </div>
+      } @else if (resolvedHeaderNavigation() === 'none') {
+        <!--
+          Inert label header (headerNavigation 'none'): pure step
+          indicator, no <button>, no cngxRovingItem, no (click), no
+          tabindex. Footer is the sole navigation control. aria-current
+          + status retained (Pillar 2).
+        -->
+        <span
+          class="cngx-stepper__step cngx-stepper__step--static"
+          role="listitem"
+          [class.cngx-stepper__step--rejected]="slotContext.showRejection(node)"
+          [id]="stepHeaderId(node)"
+          [attr.data-step-depth]="node.depth"
+          [attr.data-state]="node.state()"
+          [attr.aria-current]="slotContext.isActive(node) ? 'step' : null"
+          [attr.aria-disabled]="node.disabled() ? 'true' : null"
+          [attr.aria-busy]="slotContext.isStepBusy(node) ? 'true' : null"
+          [attr.aria-describedby]="stepDescriptorId(node)"
+        >
+          <ng-container *ngTemplateOutlet="stepHeaderInner; context: { $implicit: node }"></ng-container>
+        </span>
       } @else {
         <button
           type="button"
@@ -118,70 +173,40 @@
           [attr.data-state]="node.state()"
           [attr.aria-current]="slotContext.isActive(node) ? 'step' : null"
           [attr.aria-controls]="stepPanelId(node)"
-          [attr.aria-disabled]="node.disabled() ? 'true' : null"
+          [attr.aria-disabled]="headerAriaDisabled(node)"
           [attr.aria-busy]="slotContext.isStepBusy(node) ? 'true' : null"
           [attr.aria-describedby]="stepDescriptorId(node)"
           [cngxRovingItemDisabled]="node.disabled()"
           (click)="handleHeaderClick(node)"
         >
-          <span
-            class="cngx-stepper__indicator"
-            aria-hidden="true"
-            [attr.data-state]="node.state()"
-          >
-            <ng-container
-              *ngTemplateOutlet="
-                templates.indicator() ?? defaultIndicator;
-                context: slotContext.indicatorContextFor(node)
-              "
-            ></ng-container>
-            @if (slotContext.showErrorBadge(node)) {
-              <span class="cngx-stepper__badge" aria-hidden="true">
-                <ng-container
-                  *ngTemplateOutlet="
-                    templates.badge() ?? defaultBadge;
-                    context: slotContext.badgeContextFor(node)
-                  "
-                ></ng-container>
-              </span>
-            }
-          </span>
-          <span class="cngx-stepper__label">
-            @let labelTpl = labelTemplateFor(node.id);
-            @if (labelTpl) {
-              <ng-container
-                *ngTemplateOutlet="labelTpl; context: slotContext.stepLabelContextFor(node)"
-              ></ng-container>
-            } @else {
-              {{ node.label() }}
-            }
-          </span>
-          <span class="cngx-stepper__status-pill" aria-hidden="true">{{ statusLabelFor(node) }}</span>
-          @if (slotContext.showRejection(node)) {
-            <span class="cngx-stepper__rejection-icon" aria-hidden="true">
-              <ng-container
-                *ngTemplateOutlet="
-                  templates.rejection() ?? defaultRejection;
-                  context: slotContext.rejectionContextFor(node)
-                "
-              ></ng-container>
-            </span>
-          }
-          @if (slotContext.isStepBusy(node)) {
-            <span class="cngx-stepper__busy-spinner" aria-hidden="true">
-              <ng-container
-                *ngTemplateOutlet="
-                  templates.busySpinner() ?? defaultBusySpinner;
-                  context: slotContext.busySpinnerContextFor(node)
-                "
-              ></ng-container>
-            </span>
-          }
-          <span class="cngx-sr-only" [id]="stepDescriptorId(node)">{{ announcement.statusPhrase(node) }}</span>
+          <ng-container *ngTemplateOutlet="stepHeaderInner; context: { $implicit: node }"></ng-container>
         </button>
       }
     }
   </div>
+
+  <!--
+    Error messages live on their own row BELOW the strip, not inline in a
+    step. A free-text message inside a horizontal/column strip item widens
+    the shrink-to-fit step and tears the row; below the strip it has full
+    width and wraps. Only steps with a real reason ([error] string or an
+    aggregator label) appear - the bare 'errored' state is already carried
+    by the indicator + badge, so it adds no text-only noise here.
+  -->
+  @if (stepErrorEntries().length) {
+    <div class="cngx-stepper__error-summary">
+      @for (entry of stepErrorEntries(); track entry.id) {
+        <p class="cngx-stepper__error-summary-item" data-state="error">
+          @if (templates.stepError(); as tpl) {
+            <ng-container *ngTemplateOutlet="tpl; context: entry.context"></ng-container>
+          } @else {
+            <span class="cngx-stepper__error-summary-step">{{ entry.label }}</span>
+            <span class="cngx-stepper__error-summary-text">{{ entry.message }}</span>
+          }
+        </p>
+      }
+    </div>
+  }
 
   <div class="cngx-stepper__panels">
     @for (node of stepsOnly(); track node.id) {
@@ -215,6 +240,66 @@
 <span class="cngx-stepper__live-region cngx-sr-only" cngxLiveRegion>{{
   announcement.liveAnnouncement()
 }}</span>
+
+<!--
+  Shared strip-header body. Rendered identically by the focusable
+  <button> ('visited') and the inert <span> ('none') branches so the
+  indicator / badge / label / status / rejection / busy markup has a
+  single source (Pillar 3). ngTemplateOutlet projects inline - no
+  wrapper element is added, so the 'visited' DOM is unchanged.
+-->
+<ng-template #stepHeaderInner let-node>
+  <span class="cngx-stepper__indicator" aria-hidden="true" [attr.data-state]="node.state()">
+    <ng-container
+      *ngTemplateOutlet="
+        templates.indicator() ?? defaultIndicator;
+        context: slotContext.indicatorContextFor(node)
+      "
+    ></ng-container>
+    @if (slotContext.showErrorBadge(node)) {
+      <span class="cngx-stepper__badge" aria-hidden="true">
+        <ng-container
+          *ngTemplateOutlet="
+            templates.badge() ?? defaultBadge;
+            context: slotContext.badgeContextFor(node)
+          "
+        ></ng-container>
+      </span>
+    }
+  </span>
+  <span class="cngx-stepper__label">
+    @let labelTpl = labelTemplateFor(node.id);
+    @if (labelTpl) {
+      <ng-container
+        *ngTemplateOutlet="labelTpl; context: slotContext.stepLabelContextFor(node)"
+      ></ng-container>
+    } @else {
+      {{ node.label() }}
+    }
+  </span>
+  <span class="cngx-stepper__status-pill" aria-hidden="true">{{ statusLabelFor(node) }}</span>
+  @if (slotContext.showRejection(node)) {
+    <span class="cngx-stepper__rejection-icon" aria-hidden="true">
+      <ng-container
+        *ngTemplateOutlet="
+          templates.rejection() ?? defaultRejection;
+          context: slotContext.rejectionContextFor(node)
+        "
+      ></ng-container>
+    </span>
+  }
+  @if (slotContext.isStepBusy(node)) {
+    <span class="cngx-stepper__busy-spinner" aria-hidden="true">
+      <ng-container
+        *ngTemplateOutlet="
+          templates.busySpinner() ?? defaultBusySpinner;
+          context: slotContext.busySpinnerContextFor(node)
+        "
+      ></ng-container>
+    </span>
+  }
+  <span class="cngx-sr-only" [id]="stepDescriptorId(node)">{{ announcement.statusPhrase(node) }}</span>
+</ng-template>
 
 <ng-template #defaultIndicator let-position>
   <span class="cngx-stepper__indicator-glyph">{{ position }}</span>

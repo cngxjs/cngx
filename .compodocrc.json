@@ -15,6 +15,9 @@
     "disablePrivate": true,
     "disableInternal": true,
     "disableRoutesGraph": true,
+    "disableDomTree": true,
+    "disableGraph": true,
+    "disableDependenciesTab": true,
     "disableDependencies": true,
     "disableProperties": true,
     "menuLayout": "feature",
@@ -39,12 +42,12 @@
     ],
     "navTabConfig": [
         {
-            "id": "info",
-            "label": "Info"
+            "id": "readme",
+            "label": "UX / A11Y Principles"
         },
         {
-            "id": "readme",
-            "label": "Readme"
+            "id": "info",
+            "label": "Info"
         },
         {
             "id": "api",
@@ -61,18 +64,14 @@
         {
             "id": "playground",
             "label": "Playground"
-        },
-        {
-            "id": "tree",
-            "label": "DOM Tree"
         }
     ],
     "playgroundDependencies": {
-        "@cngx/utils": "0.1.0-rc.0",
-        "@cngx/core": "0.1.0-rc.0",
-        "@cngx/common": "0.1.0-rc.0",
-        "@cngx/forms": "0.1.0-rc.0",
-        "@cngx/ui": "0.1.0-rc.0",
-        "@cngx/data-display": "0.1.0-rc.0"
+        "@cngx/utils": "0.1.0-rc.1",
+        "@cngx/core": "0.1.0-rc.1",
+        "@cngx/common": "0.1.0-rc.1",
+        "@cngx/forms": "0.1.0-rc.1",
+        "@cngx/ui": "0.1.0-rc.1",
+        "@cngx/data-display": "0.1.0-rc.1"
     }
 }

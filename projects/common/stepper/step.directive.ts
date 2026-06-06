@@ -1,4 +1,5 @@
 import {
+  computed,
   contentChild,
   DestroyRef,
   Directive,
@@ -45,6 +46,27 @@ export class CngxStep {
   readonly label = input<string>('');
   readonly errorAggregator = input<CngxErrorAggregatorContract | undefined>(undefined);
 
+  /**
+   * Direct error flag for the common "this step is invalid" case - no
+   * `errorAggregator` boilerplate required. `true` or a non-empty string
+   * drives the error state; a string doubles as the inline message
+   * (surfaced via the `*cngxStepError` slot and the mini-skin aggregate
+   * line). `false` / `''` clear it. The aggregator stays the rich
+   * multi-source forms path; the two channels compose (either errors).
+   */
+  readonly error = input<string | boolean>(false);
+
+  /**
+   * Resolved direct-error message: the `[error]` string when non-empty,
+   * else `undefined`. Carried onto the registration / node so the error
+   * slot + aggregate line can render it. `computed` over the input -
+   * never written.
+   */
+  readonly errorMessage: Signal<string | undefined> = computed(() => {
+    const value = this.error();
+    return typeof value === 'string' && value !== '' ? value : undefined;
+  });
+
   protected readonly labelSlot = contentChild(CngxStepLabel);
   protected readonly contentSlot = contentChild(CngxStepContent);
 
@@ -56,11 +78,16 @@ export class CngxStep {
    * with structural equal - never written via `effect`.
    */
   readonly state: Signal<CngxStepStatus> = linkedSignal({
-    source: () => ({
-      disabled: this.disabled(),
-      completed: this.completed(),
-      errored: this.errorAggregator()?.hasError?.() ?? false,
-    }),
+    source: () => {
+      const directError = this.error();
+      return {
+        disabled: this.disabled(),
+        completed: this.completed(),
+        errored:
+          (directError !== false && directError !== '') ||
+          (this.errorAggregator()?.hasError?.() ?? false),
+      };
+    },
     computation: ({ disabled, completed, errored }) => {
       if (disabled) {
         return 'disabled';
@@ -94,6 +121,7 @@ export class CngxStep {
       disabled: this.disabled,
       state: this.state,
       errorAggregator: this.errorAggregator,
+      errorMessage: this.errorMessage,
     });
     inject(DestroyRef).onDestroy(() => host.unregister(stepId));
   }

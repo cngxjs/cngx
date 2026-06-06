@@ -74,4 +74,85 @@ describe('CngxStep', () => {
     fixture.detectChanges();
     expect(node.state()).toBe('disabled');
   });
+
+  describe('direct [error] input', () => {
+    @Component({
+      standalone: true,
+      imports: [CngxStep],
+      hostDirectives: [CngxStepperPresenter],
+      template: `<div cngxStep [error]="error()" id="s"></div>`,
+    })
+    class ErrorHost {
+      readonly error = signal<string | boolean>(false);
+    }
+
+    function setup(): { fixture: ReturnType<typeof TestBed.createComponent<ErrorHost>>; node: () => ReturnType<CngxStepperPresenter['flatSteps']>[number] } {
+      TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+      const fixture = TestBed.createComponent(ErrorHost);
+      fixture.detectChanges();
+      const presenter = fixture.debugElement.injector.get(CngxStepperPresenter);
+      return { fixture, node: () => presenter.flatSteps()[0] };
+    }
+
+    it('[error]="true" drives the error state with no message', () => {
+      const { fixture, node } = setup();
+      fixture.componentInstance.error.set(true);
+      fixture.detectChanges();
+      expect(node().state()).toBe('error');
+      expect(node().errorMessage?.()).toBeUndefined();
+    });
+
+    it("[error]=\"'msg'\" drives the error state and exposes the message", () => {
+      const { fixture, node } = setup();
+      fixture.componentInstance.error.set('Card declined');
+      fixture.detectChanges();
+      expect(node().state()).toBe('error');
+      expect(node().errorMessage?.()).toBe('Card declined');
+    });
+
+    it('[error]="false" / "" clears the error state', () => {
+      const { fixture, node } = setup();
+      fixture.componentInstance.error.set('Card declined');
+      fixture.detectChanges();
+      expect(node().state()).toBe('error');
+      fixture.componentInstance.error.set('');
+      fixture.detectChanges();
+      expect(node().state()).toBe('idle');
+      expect(node().errorMessage?.()).toBeUndefined();
+      fixture.componentInstance.error.set(false);
+      fixture.detectChanges();
+      expect(node().state()).toBe('idle');
+    });
+
+    it('errorAggregator still drives the error state independently', () => {
+      @Component({
+        standalone: true,
+        imports: [CngxStep],
+        hostDirectives: [CngxStepperPresenter],
+        template: `<div cngxStep [errorAggregator]="agg" id="s"></div>`,
+      })
+      class AggHost {
+        readonly hasError = signal(false);
+        readonly agg = {
+          hasError: this.hasError,
+          shouldShow: this.hasError,
+          announcement: signal(''),
+          errorCount: signal(0),
+          errorLabels: signal([] as readonly string[]),
+          activeErrors: signal([] as readonly string[]),
+          addSource: () => {},
+          removeSource: () => {},
+        };
+      }
+      TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+      const fixture = TestBed.createComponent(AggHost);
+      fixture.detectChanges();
+      const presenter = fixture.debugElement.injector.get(CngxStepperPresenter);
+      const node = presenter.flatSteps()[0];
+      expect(node.state()).toBe('idle');
+      fixture.componentInstance.hasError.set(true);
+      fixture.detectChanges();
+      expect(node.state()).toBe('error');
+    });
+  });
 });
