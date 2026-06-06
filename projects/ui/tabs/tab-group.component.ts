@@ -32,6 +32,7 @@ import {
   CngxTabRejectionIcon,
   createTabGroupAnnouncements,
   createTabGroupTemplateBindings,
+  createTabsHostAttrs,
   injectTabsConfig,
   injectTabsI18n,
   type CngxTabBusySpinnerContext,
@@ -39,8 +40,11 @@ import {
   type CngxTabGroupAnnouncements,
   type CngxTabGroupTemplateBindings,
   type CngxTabHandle,
+  type CngxTabIconLayout,
   type CngxTabPanelHost,
   type CngxTabRejectionIconContext,
+  type CngxTabsHostAttrs,
+  type CngxTabsSkin,
 } from '@cngx/common/tabs';
 
 /**
@@ -99,6 +103,8 @@ import {
     '[attr.aria-roledescription]': 'announcements.tabsRoleDescription()',
     '[attr.aria-orientation]': 'presenter.orientation()',
     '[attr.data-orientation]': 'presenter.orientation()',
+    '[attr.data-skin]': 'hostAttrs.resolvedSkin()',
+    '[attr.data-icon-layout]': 'hostAttrs.resolvedIconLayout()',
     '[attr.aria-label]': 'announcements.resolvedAriaLabel()',
     '[attr.aria-labelledby]': 'ariaLabelledBy()',
     '[class.cngx-tabs]': 'true',
@@ -112,10 +118,25 @@ export class CngxTabGroup implements CngxTabPanelHost {
     alias: 'aria-labelledby',
   });
 
+  /**
+   * Visual skin. Cascade `input ?? config ?? 'line'`, resolved by
+   * {@link hostAttrs} and reflected onto `[data-skin]`. The skin is a
+   * pure CSS concern - structure, slots, ARIA, and keyboard behaviour
+   * are identical across all values. Public (consumer-facing input,
+   * like `ariaLabel`); the resolved value, not the raw input, is what
+   * the host binding reads.
+   */
+  readonly skin = input<CngxTabsSkin | undefined>(undefined);
+  /**
+   * Icon layout. Cascade `input ?? config ?? 'start'`, reflected onto
+   * `[data-icon-layout]`. Orthogonal to skin and orientation.
+   */
+  readonly iconLayout = input<CngxTabIconLayout | undefined>(undefined);
+
   protected readonly presenter = inject(CNGX_TAB_GROUP_HOST);
   protected readonly i18n = injectTabsI18n();
   protected readonly config = injectTabsConfig();
-  /** Default-glyph table for the template's fallback spans. Pillar 1. */
+  /** Default-glyph table for the template's fallback spans. */
   protected readonly glyphs = CNGX_TABS_GLYPHS;
   private readonly hostElement: HTMLElement =
     inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
@@ -146,6 +167,17 @@ export class CngxTabGroup implements CngxTabPanelHost {
     config: this.config,
     ariaLabel: this.ariaLabel,
     ariaLabelledBy: this.ariaLabelledBy,
+  });
+
+  /**
+   * Resolved skin / icon-layout cascade (`input ?? config ?? default`),
+   * read by the `[data-skin]` / `[data-icon-layout]` host bindings. The
+   * Level-2 helper keeps the cascade off the organism class (LOC guard).
+   */
+  protected readonly hostAttrs: CngxTabsHostAttrs = createTabsHostAttrs({
+    skin: this.skin,
+    iconLayout: this.iconLayout,
+    config: this.config,
   });
 
   constructor() {

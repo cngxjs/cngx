@@ -27,6 +27,8 @@ import {
   withTabsDefaultOrientation,
   withTabsFallbackLabels,
   withTabsI18nLabels,
+  withTabsIconLayout,
+  withTabsSkin,
   type CngxTabErrorBadgeContext,
   type CngxTabsCommitAction,
 } from '@cngx/common/tabs';
@@ -1268,5 +1270,89 @@ describe('CngxTabGroup organism', () => {
       // Default spinner span suppressed.
       expect(tabs[2].querySelector('.cngx-tabs__busy-spinner')).toBeNull();
     });
+  });
+});
+
+@Component({
+  standalone: true,
+  imports: [CngxTabGroup, CngxTab],
+  template: `
+    <cngx-tab-group [skin]="skin()" [iconLayout]="iconLayout()" aria-label="Skinned">
+      <div cngxTab [label]="'A'"></div>
+      <div cngxTab [label]="'B'"></div>
+    </cngx-tab-group>
+  `,
+})
+class SkinHost {
+  readonly skin = signal<'line' | 'contained' | 'pill' | undefined>(undefined);
+  readonly iconLayout = signal<'start' | 'top' | 'only' | undefined>(undefined);
+}
+
+describe('CngxTabGroup skin / icon-layout host attributes', () => {
+  function hostEl(fixture: { nativeElement: HTMLElement }): HTMLElement {
+    return fixture.nativeElement.querySelector('cngx-tab-group') as HTMLElement;
+  }
+
+  it('defaults to data-skin="line" and data-icon-layout="start"', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(SkinHost);
+    fixture.detectChanges();
+    const host = hostEl(fixture);
+    expect(host.getAttribute('data-skin')).toBe('line');
+    expect(host.getAttribute('data-icon-layout')).toBe('start');
+  });
+
+  it('per-instance input reflects onto data-skin / data-icon-layout', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(SkinHost);
+    fixture.componentInstance.skin.set('pill');
+    fixture.componentInstance.iconLayout.set('top');
+    fixture.detectChanges();
+    const host = hostEl(fixture);
+    expect(host.getAttribute('data-skin')).toBe('pill');
+    expect(host.getAttribute('data-icon-layout')).toBe('top');
+  });
+
+  it('reacts when the input changes after first render', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(SkinHost);
+    fixture.detectChanges();
+    expect(hostEl(fixture).getAttribute('data-skin')).toBe('line');
+    fixture.componentInstance.skin.set('contained');
+    fixture.detectChanges();
+    expect(hostEl(fixture).getAttribute('data-skin')).toBe('contained');
+  });
+
+  it('config default fills in when no per-instance input is bound', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideCngxTabs(withTabsSkin('contained'), withTabsIconLayout('only')),
+      ],
+    });
+    const fixture = TestBed.createComponent(SkinHost);
+    fixture.detectChanges();
+    const host = hostEl(fixture);
+    expect(host.getAttribute('data-skin')).toBe('contained');
+    expect(host.getAttribute('data-icon-layout')).toBe('only');
+  });
+
+  it('per-instance input overrides the config default', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideCngxTabs(withTabsSkin('contained')),
+      ],
+    });
+    const fixture = TestBed.createComponent(SkinHost);
+    fixture.componentInstance.skin.set('pill');
+    fixture.detectChanges();
+    expect(hostEl(fixture).getAttribute('data-skin')).toBe('pill');
   });
 });

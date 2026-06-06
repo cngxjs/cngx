@@ -48,7 +48,11 @@ export {
   type CngxTabsSkin,
   type CngxTabsTemplates,
 } from './tabs-config';
-export { createTabsHostAttrs } from './tabs-host-attrs';
+export {
+  createTabsHostAttrs,
+  type CngxTabsHostAttrs,
+  type CngxTabsHostAttrsInputs,
+} from './tabs-host-attrs';
 export {
   provideCngxTabs,
   provideCngxTabsAt,
