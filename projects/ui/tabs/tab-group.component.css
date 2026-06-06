@@ -176,6 +176,19 @@
   }
 
   /**
+   * Border width of the contained skin's tab + panel box. Drives both
+   * the border and the negative overlap that fuses adjacent tabs and the
+   * active tab with the panel (via `calc(... * -1)`), so a thicker border
+   * keeps the seams aligned.
+   * @group Skin
+   */
+  @property --cngx-tab-surface-border-width {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 1px;
+  }
+
+  /**
    * Text color of the active pill (paints against `--cngx-tab-active-bg`).
    * @group Skin
    */
@@ -319,13 +332,15 @@
     }
 
     .cngx-tabs__strip {
-      border-bottom: 1px solid var(--cngx-tab-surface-border-color, oklch(0.87 0 0));
+      border-bottom: var(--cngx-tab-surface-border-width, 1px) solid
+        var(--cngx-tab-surface-border-color, oklch(0.87 0 0));
       gap: 0;
     }
 
     .cngx-tabs__tab {
       background: var(--cngx-tab-inactive-bg, oklch(0.97 0 0));
-      border: 1px solid var(--cngx-tab-surface-border-color, oklch(0.87 0 0));
+      border: var(--cngx-tab-surface-border-width, 1px) solid
+        var(--cngx-tab-surface-border-color, oklch(0.87 0 0));
       border-bottom: 0;
       border-start-start-radius: var(--cngx-tab-radius, 0.5rem);
       border-start-end-radius: var(--cngx-tab-radius, 0.5rem);
@@ -334,23 +349,25 @@
     }
 
     .cngx-tabs__tab + .cngx-tabs__tab {
-      margin-inline-start: -1px;
+      margin-inline-start: calc(var(--cngx-tab-surface-border-width, 1px) * -1);
     }
 
     .cngx-tabs__tab[aria-selected='true'] {
-      /* Fuse with the panel: same surface, drop the ink-bar, and pull
-         the tab down 1px so its surface covers the strip's bottom seam. */
+      /* Fuse with the panel: same surface, drop the ink-bar, and pull the
+         tab down one border-width so its surface covers the strip seam.
+         The tab already has no bottom border, so suppressing the base
+         box-shadow ink-bar is all that's needed. */
       background: var(--cngx-tab-active-bg, oklch(1 0 0));
       color: var(--cngx-tab-active-color, currentColor);
       box-shadow: none;
-      border-bottom-color: transparent;
-      margin-bottom: -1px;
+      margin-bottom: calc(var(--cngx-tab-surface-border-width, 1px) * -1);
       position: relative;
       z-index: 1;
     }
 
     .cngx-tabs__panels {
-      border: 1px solid var(--cngx-tab-surface-border-color, oklch(0.87 0 0));
+      border: var(--cngx-tab-surface-border-width, 1px) solid
+        var(--cngx-tab-surface-border-color, oklch(0.87 0 0));
       border-end-start-radius: var(--cngx-tab-radius, 0.5rem);
       border-end-end-radius: var(--cngx-tab-radius, 0.5rem);
       background: var(--cngx-tab-active-bg, oklch(1 0 0));
@@ -363,11 +380,13 @@
   @scope (.cngx-tab-group[data-skin='contained'][data-orientation='vertical']) {
     .cngx-tabs__strip {
       border-bottom: 0;
-      border-inline-end: 1px solid var(--cngx-tab-surface-border-color, oklch(0.87 0 0));
+      border-inline-end: var(--cngx-tab-surface-border-width, 1px) solid
+        var(--cngx-tab-surface-border-color, oklch(0.87 0 0));
     }
 
     .cngx-tabs__tab {
-      border: 1px solid var(--cngx-tab-surface-border-color, oklch(0.87 0 0));
+      border: var(--cngx-tab-surface-border-width, 1px) solid
+        var(--cngx-tab-surface-border-color, oklch(0.87 0 0));
       border-inline-end: 0;
       border-start-end-radius: 0;
       border-start-start-radius: var(--cngx-tab-radius, 0.5rem);
@@ -376,13 +395,12 @@
 
     .cngx-tabs__tab + .cngx-tabs__tab {
       margin-inline-start: 0;
-      margin-top: -1px;
+      margin-top: calc(var(--cngx-tab-surface-border-width, 1px) * -1);
     }
 
     .cngx-tabs__tab[aria-selected='true'] {
-      border-inline-end-color: transparent;
       margin-bottom: 0;
-      margin-inline-end: -1px;
+      margin-inline-end: calc(var(--cngx-tab-surface-border-width, 1px) * -1);
     }
   }
 
@@ -418,9 +436,9 @@
     .cngx-tabs__tab[aria-selected='true'] {
       background: var(--cngx-tab-active-bg, oklch(0.66 0.19 50));
       color: var(--cngx-tab-pill-active-color, oklch(1 0 0));
-      /* Pill carries the active state as a fill, not an ink-bar. */
+      /* Pill carries the active state as a fill; the tab has no border, so
+         suppressing the base box-shadow ink-bar is all that's needed. */
       box-shadow: none;
-      border-bottom-color: transparent;
     }
   }
 }
