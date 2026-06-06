@@ -7,8 +7,18 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
 import { Observable } from 'rxjs';
 
-import { type CngxStepperCommitAction } from '@cngx/common/stepper';
+import {
+  type CngxStepperCommitAction,
+  CngxStepperComplete,
+  CngxStepperNext,
+  CngxStepperPrevious,
+} from '@cngx/common/stepper';
 import { CngxMatStepperBridge } from '@cngx/ui/mat-stepper';
+import {
+  CngxStepperFooter,
+  CngxStepperFooterEnd,
+  CngxStepperFooterStart,
+} from '@cngx/ui/stepper';
 import { CngxBannerOn, CngxBannerOutlet, CngxToastOn, CngxToastOutlet } from '@cngx/ui/feedback';
 
 // Re-export forces compodocx to ship app.config.ts in the StackBlitz manifest
@@ -19,16 +29,19 @@ export { appConfig } from './app.config';
  * Mat-stepper bridge - everything the instrumentation directive offers.
  *
  * A vanilla `<mat-stepper>` upgraded with one attribute, `cngxMatStepper`,
- * pulling the cngx stepper brain in without touching Material's rendering:
+ * pulling in the whole cngx stepper brain without touching Material's
+ * rendering:
  *
  * - **Async commit lifecycle.** `[commitAction]` runs an `Observable`
  *   between transitions; `[commitMode]` picks `optimistic` (advance now,
  *   roll back on rejection) or `pessimistic` (hold until it resolves).
- *   Native `matStepperNext` / `matStepperPrevious` route through the
- *   bridge, so the commit gate still applies.
  * - **Feedback bridges.** `cngxToastOn` / `cngxBannerOn` self-wire off
  *   `CNGX_STATEFUL` - the rejection surfaces as a toast and a banner with
  *   zero `inject()` in the consumer.
+ * - **cngx footer drives navigation.** `<cngx-stepper-footer>` binds the
+ *   shared `CNGX_STEPPER_HOST` via `[host]="s.presenter"`, so Back /
+ *   Continue / Finish replace `matStepperPrevious` / `matStepperNext`.
+ *   `cngxStepperComplete` runs an async finish action on the last step.
  * - **Native Material chrome.** Per-step validation rides Material's own
  *   `[hasError]` + `errorMessage`; the indicator icons are overridden the
  *   native way through `<ng-template matStepperIcon>`.
@@ -36,11 +49,6 @@ export { appConfig } from './app.config';
  * Toggle the mode and the two checkboxes to exercise the validation
  * channel (accept-terms) and the async-rejection channel (simulate
  * error) independently.
- *
- * Footer-driven navigation - a `<cngx-stepper-footer [host]>` replacing
- * the Material buttons - is shown in the `mat-stepper-footer` example and
- * ships in the next release; this playground is pinned to the published
- * package, so it uses Material's native step buttons.
  */
 @Component({
   selector: 'app-root',
@@ -56,6 +64,12 @@ export { appConfig } from './app.config';
     MatIconModule,
     MatCardModule,
     CngxMatStepperBridge,
+    CngxStepperFooter,
+    CngxStepperFooterStart,
+    CngxStepperFooterEnd,
+    CngxStepperPrevious,
+    CngxStepperNext,
+    CngxStepperComplete,
     CngxToastOn,
     CngxBannerOn,
     CngxToastOutlet,
@@ -91,6 +105,7 @@ export { appConfig } from './app.config';
 
         <mat-stepper
           cngxMatStepper
+          #s="cngxMatStepperDirective"
           [(activeStepIndex)]="active"
           [commitAction]="commitAction"
           [commitMode]="mode()"
@@ -108,9 +123,6 @@ export { appConfig } from './app.config';
 
           <mat-step label="Personal info">
             <p>Tell us who you are.</p>
-            <div class="bridge-demo__nav">
-              <button mat-raised-button matStepperNext>Continue</button>
-            </div>
           </mat-step>
 
           <!-- Validation channel: Material's own hasError + errorMessage. -->
@@ -123,18 +135,10 @@ export { appConfig } from './app.config';
             <mat-checkbox [checked]="accepted()" (change)="accepted.set($event.checked)">
               I accept the terms
             </mat-checkbox>
-            <div class="bridge-demo__nav">
-              <button mat-button matStepperPrevious>Back</button>
-              <button mat-raised-button matStepperNext>Continue</button>
-            </div>
           </mat-step>
 
           <mat-step label="Confirm">
             <p>Review everything, then finish.</p>
-            <div class="bridge-demo__nav">
-              <button mat-button matStepperPrevious>Back</button>
-              <button mat-raised-button (click)="onFinish()" [disabled]="done()">Finish</button>
-            </div>
           </mat-step>
         </mat-stepper>
 
@@ -142,6 +146,26 @@ export { appConfig } from './app.config';
           Active step: {{ active() }} @if (done()) { &middot; submitted }
         </p>
       </mat-card-content>
+
+      <mat-card-actions>
+        <!-- The footer lives outside the stepper and is handed the host
+             explicitly; its atoms drive Material via CNGX_STEPPER_HOST. -->
+        <cngx-stepper-footer [host]="s.presenter" style="display: flex; gap: 8px; width: 100%">
+          <button mat-button cngxStepperFooterStart cngxStepperPrevious>Back</button>
+          @if (s.presenter.isLastStep()) {
+            <button
+              mat-raised-button
+              cngxStepperFooterEnd
+              [cngxStepperComplete]="finish"
+              (completed)="done.set(true)"
+            >
+              Finish
+            </button>
+          } @else {
+            <button mat-raised-button cngxStepperFooterEnd cngxStepperNext>Continue</button>
+          }
+        </cngx-stepper-footer>
+      </mat-card-actions>
     </mat-card>
 
     <cngx-toast-outlet />
@@ -168,8 +192,7 @@ export class StepperBridgeExample {
       return () => clearTimeout(handle);
     });
 
-  /** Async finish on the last step. */
-  protected onFinish(): void {
-    setTimeout(() => this.done.set(true), 600);
-  }
+  /** Async finish action for `cngxStepperComplete` on the last step. */
+  protected readonly finish = (): Promise<void> =>
+    new Promise((resolve) => setTimeout(resolve, 600));
 }
