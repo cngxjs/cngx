@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxTabGroup pill vs CngxButtonToggleGroup',
+  title: 'CngxTabGroup: pill vs CngxButtonToggleGroup',
   subtitle:
     'Two rounded-segment controls that look alike but answer different questions. <strong>Pill tabs</strong> (left) own content panels - picking one reveals a <code>tabpanel</code>. A <strong>button-toggle group</strong> (right) is a value-only segmented control - it emits a value and renders no panel. Reach for tabs when each choice has its own region; reach for the toggle group when you only need the selected value.',
   description:
