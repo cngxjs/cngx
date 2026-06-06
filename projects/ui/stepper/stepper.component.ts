@@ -70,35 +70,6 @@ import { coerceBooleanProperty } from '@cngx/core/utils';
  * forwards `activeStepIndex`/`linear`/`orientation`/`commitAction`/
  * `commitMode` to the presenter. Material twin lives in
  * `@cngx/ui/mat-stepper`. ARIA attrs are in the `computed()` graph.
- * ```html
- *   <mat-stepper
- *     cngxMatStepper
- *     #s="cngxMatStepper"
- *     [(activeStepIndex)]="active"
- *     [commitAction]="commitAction"
- *     [commitMode]="mode()"
- *     cngxToastOn
- *     [toastError]="'Step transition failed'"
- *     cngxBannerOn
- *     bannerId="stepper:commit-error"
- *     [bannerError]="'The server rejected the step change.'"
- *     aria-label="Account setup"
- *   >
- *     <mat-step label="Personal info">
- *       <p>Tell us who you are.</p>
- *     </mat-step>
- *     <mat-step
- *       label="Account"
- *       [hasError]="!accepted()"
- *       errorMessage="Accept the terms to continue"
- *     >
- *       <p>Choose your sign-in method.</p>
- *     </mat-step>
- *     <mat-step label="Confirm">
- *       <p>Review everything, then finish.</p>
- *     </mat-step>
- *   </mat-stepper>
- * ```
  *
  * @category ui/stepper
  * @docsKind primary
@@ -447,10 +418,10 @@ export class CngxStepper implements CngxStepPanelHost {
   /**
    * `'true'` on a header that cannot be navigated to, `null` otherwise.
    * Folds two channels into one binding: a `disabled` step and a
-   * linear-unreachable step both read as `aria-disabled` (Pillar 2 - the
-   * activation gate is communicated, not a silent no-op). The header
-   * stays focusable per the ARIA composite-widget disabled-focusable
-   * rule. In `'visited'` + `linear=false` this is byte-identical to the
+   * linear-unreachable step both read as `aria-disabled`, so the gate is
+   * announced rather than silently ignored. The header stays focusable
+   * per the ARIA composite-widget disabled-focusable rule. In
+   * `'visited'` + `linear=false` this is byte-identical to the
    * prior `node.disabled()`-only binding, since `canNavigateTo` returns
    * `true` for every enabled step when linear is off.
    */

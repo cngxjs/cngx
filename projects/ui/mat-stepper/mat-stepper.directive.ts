@@ -37,10 +37,41 @@ import {
  * behaviour layer. Topology mirrors `[cngxMatTabs]`.
  *
  * Inputs/outputs are forwarded from {@link CngxStepperPresenter}:
- * `activeStepIndex` (two-way, with `activeStepIndexChange`), `linear`,
- * `orientation`, `commitAction`, `commitMode`. See the presenter for
- * their semantics.
- *
+ * - `activeStepIndex` (two-way, with `activeStepIndexChange`),
+ * - `linear`,
+ * - `orientation`,
+ * - `commitAction`,
+ * - `commitMode`.  \
+ * See the presenter for their semantics.
+ * ```html
+ *   <mat-stepper
+ *     cngxMatStepper
+ *     #s="cngxMatStepper"
+ *     [(activeStepIndex)]="active"
+ *     [commitAction]="commitAction"
+ *     [commitMode]="mode()"
+ *     cngxToastOn
+ *     [toastError]="'Step transition failed'"
+ *     cngxBannerOn
+ *     bannerId="stepper:commit-error"
+ *     [bannerError]="'The server rejected the step change.'"
+ *     aria-label="Account setup"
+ *   >
+ *     <mat-step label="Personal info">
+ *       <p>Tell us who you are.</p>
+ *     </mat-step>
+ *     <mat-step
+ *       label="Account"
+ *       [hasError]="!accepted()"
+ *       errorMessage="Accept the terms to continue"
+ *     >
+ *       <p>Choose your sign-in method.</p>
+ *     </mat-step>
+ *     <mat-step label="Confirm">
+ *       <p>Review everything, then finish.</p>
+ *     </mat-step>
+ *   </mat-stepper>
+ * ```
  * @playground Bridge instrumentation ./examples/bridge/bridge-example.component.ts
  *
  * @category ui/mat-stepper

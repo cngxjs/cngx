@@ -115,7 +115,7 @@ export class CngxDotStepper {
    * Aggregate error line. The dot row only colours the errored dot, so
    * the real reason (the `[error]` string / aggregator label) needs a
    * text surface; this is it. Falls back to the count phrase for
-   * multiple errors. Pillar 2.
+   * multiple errors.
    */
   protected readonly errorText = computed<string>(() =>
     resolveStepperErrorSummary(
