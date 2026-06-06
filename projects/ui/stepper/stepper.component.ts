@@ -70,6 +70,35 @@ import { coerceBooleanProperty } from '@cngx/core/utils';
  * forwards `activeStepIndex`/`linear`/`orientation`/`commitAction`/
  * `commitMode` to the presenter. Material twin lives in
  * `@cngx/ui/mat-stepper`. ARIA attrs are in the `computed()` graph.
+ * ```html
+ *   <mat-stepper
+ *     cngxMatStepper
+ *     #s="cngxMatStepper"
+ *     [(activeStepIndex)]="active"
+ *     [commitAction]="commitAction"
+ *     [commitMode]="mode()"
+ *     cngxToastOn
+ *     [toastError]="'Step transition failed'"
+ *     cngxBannerOn
+ *     bannerId="stepper:commit-error"
+ *     [bannerError]="'The server rejected the step change.'"
+ *     aria-label="Account setup"
+ *   >
+ *     <mat-step label="Personal info">
+ *       <p>Tell us who you are.</p>
+ *     </mat-step>
+ *     <mat-step
+ *       label="Account"
+ *       [hasError]="!accepted()"
+ *       errorMessage="Accept the terms to continue"
+ *     >
+ *       <p>Choose your sign-in method.</p>
+ *     </mat-step>
+ *     <mat-step label="Confirm">
+ *       <p>Review everything, then finish.</p>
+ *     </mat-step>
+ *   </mat-stepper>
+ * ```
  *
  * @category ui/stepper
  * @docsKind primary
