@@ -250,6 +250,46 @@
       line-height: 1;
     }
 
+    /*
+     * Icon-layout axis - orthogonal to skin and orientation; lives in
+     * the default scope so it composes with every `[data-skin]`. The
+     * `*cngxTabIcon` slot renders into `.cngx-tabs__icon` ahead of the
+     * label (see template).
+     */
+    .cngx-tabs__icon {
+      display: inline-flex;
+      align-items: center;
+      flex: 0 0 auto;
+    }
+
+    :scope[data-icon-layout='start'] .cngx-tabs__tab {
+      flex-direction: row;
+    }
+
+    :scope[data-icon-layout='top'] .cngx-tabs__tab {
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    /*
+     * `only` hides the label visually but keeps it in the DOM and the
+     * accessibility tree (clip, not display:none) - it stays the
+     * accessible-name source alongside the button's aria-label. The
+     * `*cngxTabIcon` template carries the visible affordance.
+     */
+    :scope[data-icon-layout='only'] .cngx-tabs__label {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
     @media (prefers-reduced-motion: reduce) {
       .cngx-tabs__tab {
         transition: none !important;
