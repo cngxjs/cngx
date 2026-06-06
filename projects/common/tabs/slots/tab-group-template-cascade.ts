@@ -9,6 +9,7 @@ import type {
   CngxTabErrorBadge,
   CngxTabErrorBadgeContext,
 } from './tab-error-badge.directive';
+import type { CngxTabIcon, CngxTabIconContext } from './tab-icon.directive';
 import type {
   CngxTabRejectionIcon,
   CngxTabRejectionIconContext,
@@ -27,6 +28,13 @@ export interface CngxTabGroupTemplateBindingsOptions {
   readonly errorBadgeSlot: Signal<CngxTabErrorBadge | undefined>;
   readonly rejectionIconSlot: Signal<CngxTabRejectionIcon | undefined>;
   readonly busySpinnerSlot: Signal<CngxTabBusySpinner | undefined>;
+  /**
+   * Per-instance `*cngxTabIcon` slot. Optional so callers wired before
+   * the icon-slot render (the organism gains it in the icon-render
+   * commit) still type-check; absent means the cascade falls through to
+   * `config.templates.icon` then `null`.
+   */
+  readonly iconSlot?: Signal<CngxTabIcon | undefined>;
   readonly config: CngxTabsConfig;
 }
 
@@ -43,6 +51,7 @@ export interface CngxTabGroupTemplateBindings {
     TemplateRef<CngxTabRejectionIconContext> | null
   >;
   readonly busySpinner: Signal<TemplateRef<CngxTabBusySpinnerContext> | null>;
+  readonly icon: Signal<TemplateRef<CngxTabIconContext> | null>;
 }
 
 /**
@@ -82,6 +91,10 @@ export function createTabGroupTemplateBindings(
         opts.busySpinnerSlot()?.templateRef ??
         opts.config.templates?.busySpinner ??
         null,
+    ),
+    icon: computed<TemplateRef<CngxTabIconContext> | null>(
+      () =>
+        opts.iconSlot?.()?.templateRef ?? opts.config.templates?.icon ?? null,
     ),
   };
 }

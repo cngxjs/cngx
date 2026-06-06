@@ -11,6 +11,7 @@ import type { CngxTabOverflowItemContext } from './overflow/tab-overflow-item.di
 import type { CngxTabOverflowTriggerContext } from './overflow/tab-overflow-trigger.directive';
 import type { CngxTabBusySpinnerContext } from './slots/tab-busy-spinner.directive';
 import type { CngxTabErrorBadgeContext } from './slots/tab-error-badge.directive';
+import type { CngxTabIconContext } from './slots/tab-icon.directive';
 import type { CngxTabRejectionIconContext } from './slots/tab-rejection-icon.directive';
 
 /**
@@ -56,7 +57,34 @@ export interface CngxTabsTemplates {
   readonly errorBadge?: TemplateRef<CngxTabErrorBadgeContext>;
   readonly rejectionIcon?: TemplateRef<CngxTabRejectionIconContext>;
   readonly busySpinner?: TemplateRef<CngxTabBusySpinnerContext>;
+  readonly icon?: TemplateRef<CngxTabIconContext>;
 }
+
+/**
+ * Selectable visual skin for `<cngx-tab-group>`. The skin is a pure
+ * thematic concern - every value renders the same `tablist` / `tab` /
+ * `tabpanel` structure, slots, ARIA, and keyboard behaviour, and only
+ * redirects CSS via the `[data-skin]` host attribute. `'line'`
+ * (default) is the underline indicator; `'contained'` fuses the active
+ * tab with the panel surface; `'pill'` renders rounded fills. Sized to
+ * the tab use cases - not a 1:1 copy of the stepper's seven skins. The
+ * Material twin (`[cngxMatTabs]`) ignores this setting.
+ *
+ * @category common/tabs
+ */
+export type CngxTabsSkin = 'line' | 'contained' | 'pill';
+
+/**
+ * Icon-layout axis for `<cngx-tab-group>`, orthogonal to both skin and
+ * orientation. Positions the `*cngxTabIcon` slot relative to the tab
+ * label: `'start'` (default) places the icon before the label in a row;
+ * `'top'` stacks the icon above the label in a column; `'only'` hides
+ * the label visually while keeping it in the DOM as the accessible name.
+ * Redirected purely via the `[data-icon-layout]` host attribute.
+ *
+ * @category common/tabs
+ */
+export type CngxTabIconLayout = 'start' | 'top' | 'only';
 
 /**
  * Tab-group config surface. Resolution priority: per-instance Input
@@ -71,6 +99,19 @@ export interface CngxTabsConfig {
   readonly defaultCommitMode?: 'optimistic' | 'pessimistic';
   readonly routerSyncMode?: 'fragment' | 'queryParam';
   readonly routerSyncParam?: string;
+  /**
+   * App-wide default visual skin. Default `'line'`. Per-instance
+   * `[skin]` Input still wins; the cascade default itself lives in
+   * `createTabsHostAttrs`, not here (mirrors the stepper). Override via
+   * {@link withTabsSkin}.
+   */
+  readonly skin?: CngxTabsSkin;
+  /**
+   * App-wide default icon layout. Default `'start'`. Per-instance
+   * `[iconLayout]` Input still wins; the cascade default lives in
+   * `createTabsHostAttrs`. Override via {@link withTabsIconLayout}.
+   */
+  readonly iconLayout?: CngxTabIconLayout;
   readonly ariaLabels?: CngxTabsAriaLabels;
   readonly fallbackLabels?: CngxTabsFallbackLabels;
   /**
@@ -97,7 +138,10 @@ export interface CngxTabsConfig {
 }
 
 const TABS_CONFIG_DEFAULTS: Required<
-  Omit<CngxTabsConfig, 'ariaLabels' | 'fallbackLabels' | 'templates'>
+  Omit<
+    CngxTabsConfig,
+    'ariaLabels' | 'fallbackLabels' | 'templates' | 'skin' | 'iconLayout'
+  >
 > & {
   ariaLabels: CngxTabsAriaLabels;
   fallbackLabels: CngxTabsFallbackLabels;
@@ -229,6 +273,31 @@ export function withTabsRouterSync(
     routerSyncMode: mode,
     routerSyncParam: param,
   }));
+}
+
+/**
+ * Select the app-wide default visual skin for `<cngx-tab-group>`.
+ * Default `'line'`. Per-instance `[skin]` Input still wins; this moves
+ * the cascade default. Structure, slots, ARIA, and keyboard behaviour
+ * are identical across skins - only the `[data-skin]` host attribute
+ * changes the CSS layer. The Material twin (`[cngxMatTabs]`) ignores it.
+ *
+ * @category common/tabs
+ */
+export function withTabsSkin(skin: CngxTabsSkin): CngxTabsConfigFeature {
+  return defineTabsConfigFeature((cfg) => ({ ...cfg, skin }));
+}
+
+/**
+ * Set the app-wide default icon layout for `<cngx-tab-group>`. Default
+ * `'start'`. Per-instance `[iconLayout]` Input still wins. Orthogonal to
+ * skin and orientation - only the `[data-icon-layout]` host attribute
+ * changes.
+ *
+ * @category common/tabs
+ */
+export function withTabsIconLayout(layout: CngxTabIconLayout): CngxTabsConfigFeature {
+  return defineTabsConfigFeature((cfg) => ({ ...cfg, iconLayout: layout }));
 }
 
 /**
@@ -365,6 +434,22 @@ export function withTabBusySpinnerTemplate(
   return defineTabsConfigFeature((cfg) => ({
     ...cfg,
     templates: { ...cfg.templates, busySpinner: template },
+  }));
+}
+
+/**
+ * App-wide override for the tab-icon slot. Middle tier of the 3-stage
+ * cascade; per-instance `*cngxTabIcon` still wins. Sibling of
+ * {@link withStepIndicatorTemplate}.
+ *
+ * @category common/tabs
+ */
+export function withTabIconTemplate(
+  template: TemplateRef<CngxTabIconContext>,
+): CngxTabsConfigFeature {
+  return defineTabsConfigFeature((cfg) => ({
+    ...cfg,
+    templates: { ...cfg.templates, icon: template },
   }));
 }
 
