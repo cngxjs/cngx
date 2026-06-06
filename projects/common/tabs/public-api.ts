@@ -37,6 +37,7 @@ export {
   withTabsDefaultOrientation,
   withTabsFallbackLabels,
   withTabsIconLayout,
+  withTabsPanelMode,
   withTabsRouterSync,
   withTabsRovingLoop,
   withTabsSkin,
@@ -45,6 +46,7 @@ export {
   type CngxTabsConfig,
   type CngxTabsConfigFeature,
   type CngxTabsFallbackLabels,
+  type CngxTabsPanelMode,
   type CngxTabsSkin,
   type CngxTabsTemplates,
 } from './tabs-config';

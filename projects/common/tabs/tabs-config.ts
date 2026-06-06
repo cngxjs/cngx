@@ -87,6 +87,19 @@ export type CngxTabsSkin = 'line' | 'contained' | 'pill';
 export type CngxTabIconLayout = 'start' | 'top' | 'only';
 
 /**
+ * Panel render strategy for `<cngx-tab-group>`. The panel `<div>` (the
+ * `aria-controls` target) always stays in the DOM; only its content is
+ * rendered per mode. `'eager'` (default) renders every panel's content
+ * up front and toggles visibility via `[hidden]` - today's behaviour,
+ * byte-identical. `'lazy'` renders a panel's content the first time it
+ * is activated and keeps it (keep-alive). `'lazy-destroy'` renders only
+ * the active panel's content and destroys it on leave.
+ *
+ * @category common/tabs
+ */
+export type CngxTabsPanelMode = 'eager' | 'lazy' | 'lazy-destroy';
+
+/**
  * Tab-group config surface. Resolution priority: per-instance Input
  * → `provideTabsConfigAt` (viewProviders) → `provideTabsConfig`
  * (root) → library default.
@@ -112,6 +125,13 @@ export interface CngxTabsConfig {
    * `createTabsHostAttrs`. Override via {@link withTabsIconLayout}.
    */
   readonly iconLayout?: CngxTabIconLayout;
+  /**
+   * App-wide default panel render strategy. Default `'eager'`.
+   * Per-instance `[panelMode]` Input still wins; the cascade default
+   * lives in `createTabsHostAttrs`. Override via
+   * {@link withTabsPanelMode}.
+   */
+  readonly panelMode?: CngxTabsPanelMode;
   readonly ariaLabels?: CngxTabsAriaLabels;
   readonly fallbackLabels?: CngxTabsFallbackLabels;
   /**
@@ -140,7 +160,12 @@ export interface CngxTabsConfig {
 const TABS_CONFIG_DEFAULTS: Required<
   Omit<
     CngxTabsConfig,
-    'ariaLabels' | 'fallbackLabels' | 'templates' | 'skin' | 'iconLayout'
+    | 'ariaLabels'
+    | 'fallbackLabels'
+    | 'templates'
+    | 'skin'
+    | 'iconLayout'
+    | 'panelMode'
   >
 > & {
   ariaLabels: CngxTabsAriaLabels;
@@ -298,6 +323,20 @@ export function withTabsSkin(skin: CngxTabsSkin): CngxTabsConfigFeature {
  */
 export function withTabsIconLayout(layout: CngxTabIconLayout): CngxTabsConfigFeature {
   return defineTabsConfigFeature((cfg) => ({ ...cfg, iconLayout: layout }));
+}
+
+/**
+ * Set the app-wide default panel render strategy for `<cngx-tab-group>`.
+ * Default `'eager'` (every panel's content rendered up front, toggled
+ * via `[hidden]`). `'lazy'` keep-alives content after first activation;
+ * `'lazy-destroy'` renders only the active panel's content. Per-instance
+ * `[panelMode]` Input still wins. The panel `<div>` always stays in the
+ * DOM regardless of mode (the `aria-controls` target).
+ *
+ * @category common/tabs
+ */
+export function withTabsPanelMode(mode: CngxTabsPanelMode): CngxTabsConfigFeature {
+  return defineTabsConfigFeature((cfg) => ({ ...cfg, panelMode: mode }));
 }
 
 /**

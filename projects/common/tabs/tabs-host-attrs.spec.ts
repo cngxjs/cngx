@@ -5,6 +5,7 @@ import { createTabsHostAttrs } from './tabs-host-attrs';
 import type {
   CngxTabIconLayout,
   CngxTabsConfig,
+  CngxTabsPanelMode,
   CngxTabsSkin,
 } from './tabs-config';
 
@@ -87,5 +88,35 @@ describe('createTabsHostAttrs', () => {
     });
     expect(attrs.resolvedSkin()).toBe('pill');
     expect(attrs.resolvedIconLayout()).toBe('top');
+  });
+
+  describe('panelMode cascade (input > config > default)', () => {
+    it('defaults to eager when input and config are unset', () => {
+      const attrs = createTabsHostAttrs({
+        skin: signal<CngxTabsSkin | undefined>(undefined),
+        iconLayout: signal<CngxTabIconLayout | undefined>(undefined),
+        config: {},
+      });
+      expect(attrs.resolvedPanelMode()).toBe('eager');
+    });
+
+    it('defaults to eager when no panelMode input is supplied at all (optional input)', () => {
+      const attrs = createTabsHostAttrs({
+        skin: signal<CngxTabsSkin | undefined>(undefined),
+        iconLayout: signal<CngxTabIconLayout | undefined>(undefined),
+        config: { panelMode: 'lazy' },
+      });
+      expect(attrs.resolvedPanelMode()).toBe('lazy');
+    });
+
+    it('per-instance input wins over config', () => {
+      const attrs = createTabsHostAttrs({
+        skin: signal<CngxTabsSkin | undefined>(undefined),
+        iconLayout: signal<CngxTabIconLayout | undefined>(undefined),
+        panelMode: signal<CngxTabsPanelMode | undefined>('lazy-destroy'),
+        config: { panelMode: 'lazy' },
+      });
+      expect(attrs.resolvedPanelMode()).toBe('lazy-destroy');
+    });
   });
 });

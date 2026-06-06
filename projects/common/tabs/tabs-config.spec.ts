@@ -25,6 +25,7 @@ import {
   withTabsDefaultOrientation,
   withTabsFallbackLabels,
   withTabsIconLayout,
+  withTabsPanelMode,
   withTabsRouterSync,
   withTabsRovingLoop,
   withTabsSkin,
@@ -263,6 +264,23 @@ describe('CngxTabsConfig', () => {
       const cfg = TestBed.inject(CNGX_TABS_CONFIG);
       expect(cfg.skin).toBe('contained');
       expect(cfg.iconLayout).toBe('only');
+    });
+
+    it('library default leaves panelMode unset (cascade default lives in createTabsHostAttrs)', () => {
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      expect(TestBed.inject(CNGX_TABS_CONFIG).panelMode).toBeUndefined();
+    });
+
+    it('withTabsPanelMode overrides the panel-mode default', () => {
+      TestBed.configureTestingModule({
+        providers: [
+          provideZonelessChangeDetection(),
+          provideTabsConfig(withTabsPanelMode('lazy')),
+        ],
+      });
+      expect(TestBed.inject(CNGX_TABS_CONFIG).panelMode).toBe('lazy');
     });
   });
 

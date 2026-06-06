@@ -3,12 +3,13 @@ import { computed, type Signal } from '@angular/core';
 import type {
   CngxTabIconLayout,
   CngxTabsConfig,
+  CngxTabsPanelMode,
   CngxTabsSkin,
 } from './tabs-config';
 
 /**
- * Input bundle for {@link createTabsHostAttrs}: the two per-instance
- * inputs (each `Signal<T | undefined>`) and the resolved config (read
+ * Input bundle for {@link createTabsHostAttrs}: the per-instance inputs
+ * (each `Signal<T | undefined>`) and the resolved config (read
  * synchronously at construction). Each cascade collapses through
  * `input ?? config ?? library-default`.
  *
@@ -17,6 +18,13 @@ import type {
 export interface CngxTabsHostAttrsInputs {
   readonly skin: Signal<CngxTabsSkin | undefined>;
   readonly iconLayout: Signal<CngxTabIconLayout | undefined>;
+  /**
+   * Per-instance panel-mode input. Optional so the organism (which
+   * gains the `[panelMode]` input + render gating in the panel-render
+   * commit) still type-checks before it is wired; absent means the
+   * cascade falls through to `config.panelMode` then `'eager'`.
+   */
+  readonly panelMode?: Signal<CngxTabsPanelMode | undefined>;
   readonly config: CngxTabsConfig;
 }
 
@@ -29,6 +37,7 @@ export interface CngxTabsHostAttrsInputs {
 export interface CngxTabsHostAttrs {
   readonly resolvedSkin: Signal<CngxTabsSkin>;
   readonly resolvedIconLayout: Signal<CngxTabIconLayout>;
+  readonly resolvedPanelMode: Signal<CngxTabsPanelMode>;
 }
 
 /**
@@ -54,6 +63,9 @@ export function createTabsHostAttrs(
     ),
     resolvedIconLayout: computed<CngxTabIconLayout>(
       () => inputs.iconLayout() ?? inputs.config.iconLayout ?? 'start',
+    ),
+    resolvedPanelMode: computed<CngxTabsPanelMode>(
+      () => inputs.panelMode?.() ?? inputs.config.panelMode ?? 'eager',
     ),
   };
 }
