@@ -129,6 +129,71 @@
     inherits: false;
     initial-value: 700;
   }
+
+  /**
+   * Corner radius of the contained / pill skin surfaces. Ignored by the
+   * `line` skin. `inherits: true` so a host-level override cascades onto
+   * the tab buttons and panel.
+   * @group Skin
+   */
+  @property --cngx-tab-radius {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 0.5rem;
+  }
+
+  /**
+   * Surface that the active tab fuses with under the `contained` skin
+   * (the panel surface) and the active-pill fill under the `pill` skin.
+   * Chained to `--mat-sys-surface` via the per-skin `:scope` assignment.
+   * @group Skin
+   */
+  @property --cngx-tab-active-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(1 0 0);
+  }
+
+  /**
+   * Resting-tab surface under the `contained` skin - kept visibly set
+   * back from the active tab so tabs read as controls, not headings.
+   * @group Skin
+   */
+  @property --cngx-tab-inactive-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.97 0 0);
+  }
+
+  /**
+   * Border color of the contained skin's tab + panel box.
+   * @group Skin
+   */
+  @property --cngx-tab-surface-border-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.87 0 0);
+  }
+
+  /**
+   * Text color of the active pill (paints against `--cngx-tab-active-bg`).
+   * @group Skin
+   */
+  @property --cngx-tab-pill-active-color {
+    syntax: '*';
+    inherits: true;
+    initial-value: currentColor;
+  }
+
+  /**
+   * Resting-pill hover fill under the `pill` skin.
+   * @group Skin
+   */
+  @property --cngx-tab-pill-hover-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.95 0 0);
+  }
 }
 
 @layer cngx.components {
@@ -189,6 +254,133 @@
       .cngx-tabs__tab {
         transition: none !important;
       }
+    }
+  }
+
+  /*
+   * Contained skin - the defining trait is fusion: the active tab and
+   * the panel read as one enclosed box. This is the only skin whose
+   * scope spans the strip AND the panel (line / pill stay strip-only).
+   * The mode-aware surface chain is wired on `:scope` so the registered
+   * `@property` tokens still pick up `--mat-sys-*` (a var() fallback on a
+   * registered property is dead - the initial-value always wins).
+   */
+  @scope (.cngx-tab-group[data-skin='contained']) {
+    :scope {
+      --cngx-tab-active-bg: var(--mat-sys-surface, var(--cngx-surface, oklch(1 0 0)));
+      --cngx-tab-inactive-bg: var(
+        --mat-sys-surface-container,
+        var(--cngx-surface-2, oklch(0.97 0 0))
+      );
+      --cngx-tab-surface-border-color: var(
+        --mat-sys-outline-variant,
+        var(--cngx-border, oklch(0.87 0 0))
+      );
+    }
+
+    .cngx-tabs__strip {
+      border-bottom: 1px solid var(--cngx-tab-surface-border-color, oklch(0.87 0 0));
+      gap: 0;
+    }
+
+    .cngx-tabs__tab {
+      background: var(--cngx-tab-inactive-bg, oklch(0.97 0 0));
+      border: 1px solid var(--cngx-tab-surface-border-color, oklch(0.87 0 0));
+      border-bottom: 0;
+      border-start-start-radius: var(--cngx-tab-radius, 0.5rem);
+      border-start-end-radius: var(--cngx-tab-radius, 0.5rem);
+      /* No ink-bar in this skin - the resting border carries separation. */
+      margin-bottom: 0;
+    }
+
+    .cngx-tabs__tab + .cngx-tabs__tab {
+      margin-inline-start: -1px;
+    }
+
+    .cngx-tabs__tab[aria-selected='true'] {
+      /* Fuse with the panel: same surface, drop the ink-bar, and pull
+         the tab down 1px so its surface covers the strip's bottom seam. */
+      background: var(--cngx-tab-active-bg, oklch(1 0 0));
+      color: var(--cngx-tab-active-color, currentColor);
+      box-shadow: none;
+      border-bottom-color: transparent;
+      margin-bottom: -1px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .cngx-tabs__panels {
+      border: 1px solid var(--cngx-tab-surface-border-color, oklch(0.87 0 0));
+      border-end-start-radius: var(--cngx-tab-radius, 0.5rem);
+      border-end-end-radius: var(--cngx-tab-radius, 0.5rem);
+      background: var(--cngx-tab-active-bg, oklch(1 0 0));
+    }
+  }
+
+  /*
+   * Contained + vertical: the seam moves to the inline-end edge.
+   */
+  @scope (.cngx-tab-group[data-skin='contained'][data-orientation='vertical']) {
+    .cngx-tabs__strip {
+      border-bottom: 0;
+      border-inline-end: 1px solid var(--cngx-tab-surface-border-color, oklch(0.87 0 0));
+    }
+
+    .cngx-tabs__tab {
+      border: 1px solid var(--cngx-tab-surface-border-color, oklch(0.87 0 0));
+      border-inline-end: 0;
+      border-start-end-radius: 0;
+      border-start-start-radius: var(--cngx-tab-radius, 0.5rem);
+      border-end-start-radius: var(--cngx-tab-radius, 0.5rem);
+    }
+
+    .cngx-tabs__tab + .cngx-tabs__tab {
+      margin-inline-start: 0;
+      margin-top: -1px;
+    }
+
+    .cngx-tabs__tab[aria-selected='true'] {
+      border-inline-end-color: transparent;
+      margin-bottom: 0;
+      margin-inline-end: -1px;
+    }
+  }
+
+  /*
+   * Pill skin - rounded fills with gaps; strip-only. The active pill is a
+   * solid fill, not an underline. Inactive pills stay transparent so the
+   * row reads as a segmented set of controls.
+   */
+  @scope (.cngx-tab-group[data-skin='pill']) {
+    :scope {
+      --cngx-tab-active-bg: var(--mat-sys-primary, var(--cngx-color-primary, oklch(0.66 0.19 50)));
+      --cngx-tab-pill-active-color: var(
+        --mat-sys-on-primary,
+        var(--cngx-color-on-primary, oklch(1 0 0))
+      );
+      --cngx-tab-pill-hover-bg: var(
+        --mat-sys-surface-container,
+        var(--cngx-surface-2, oklch(0.95 0 0))
+      );
+    }
+
+    .cngx-tabs__tab {
+      background: transparent;
+      border: 0;
+      border-radius: var(--cngx-tab-radius, 0.5rem);
+      margin-bottom: 0;
+    }
+
+    .cngx-tabs__tab:hover:not([aria-disabled='true']):not([aria-selected='true']) {
+      background: var(--cngx-tab-pill-hover-bg, oklch(0.95 0 0));
+    }
+
+    .cngx-tabs__tab[aria-selected='true'] {
+      background: var(--cngx-tab-active-bg, oklch(0.66 0.19 50));
+      color: var(--cngx-tab-pill-active-color, oklch(1 0 0));
+      /* Pill carries the active state as a fill, not an ink-bar. */
+      box-shadow: none;
+      border-bottom-color: transparent;
     }
   }
 }
