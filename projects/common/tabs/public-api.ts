@@ -48,6 +48,12 @@ export {
   type CngxTabsSkin,
   type CngxTabsTemplates,
 } from './tabs-config';
+// This block ships `@internal` factory helpers. They are exported
+// through `public-api.ts` so the sibling `@cngx/ui/tabs` organism can
+// consume them across the secondary-entry boundary (ng-packagr has no
+// cross-entry private surface). `disableInternal: true` hides them from
+// generated docs; the LLM-md export honours the same tag. Precedent:
+// `CNGX_TABS_GLYPHS`, `tabsEqual`.
 export {
   createTabsHostAttrs,
   type CngxTabsHostAttrs,
