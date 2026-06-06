@@ -26,6 +26,7 @@ export {
   withDefaultOrientation,
   withTabBusySpinnerTemplate,
   withTabErrorBadgeTemplate,
+  withTabIconTemplate,
   withTabOverflowItemTemplate,
   withTabOverflowMaxDeferMs,
   withTabOverflowStabilizeMs,
@@ -35,14 +36,19 @@ export {
   withTabsCommitMode,
   withTabsDefaultOrientation,
   withTabsFallbackLabels,
+  withTabsIconLayout,
   withTabsRouterSync,
   withTabsRovingLoop,
+  withTabsSkin,
+  type CngxTabIconLayout,
   type CngxTabsAriaLabels,
   type CngxTabsConfig,
   type CngxTabsConfigFeature,
   type CngxTabsFallbackLabels,
+  type CngxTabsSkin,
   type CngxTabsTemplates,
 } from './tabs-config';
+export { createTabsHostAttrs } from './tabs-host-attrs';
 export {
   provideCngxTabs,
   provideCngxTabsAt,
@@ -97,6 +103,10 @@ export {
   CngxTabBusySpinner,
   type CngxTabBusySpinnerContext,
 } from './slots/tab-busy-spinner.directive';
+export {
+  CngxTabIcon,
+  type CngxTabIconContext,
+} from './slots/tab-icon.directive';
 export {
   createTabGroupTemplateBindings,
   type CngxTabGroupTemplateBindings,
