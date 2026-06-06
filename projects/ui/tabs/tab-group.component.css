@@ -424,3 +424,33 @@
     }
   }
 }
+
+/*
+ * Dark-mode surface refinement for the contained / pill skins. Kept
+ * UNLAYERED and OUTSIDE every `@scope` on purpose: nesting an `@media`
+ * inside `@scope` silently breaks the cascade, and an unlayered block
+ * reliably wins over the in-layer `:scope` light assignments above. This
+ * only matters for consumers without Material - when `--mat-sys-*` is
+ * present those tokens already carry their own light/dark distinction,
+ * so the literal dark fallbacks here never surface.
+ */
+@media (prefers-color-scheme: dark) {
+  .cngx-tab-group[data-skin='contained'] {
+    --cngx-tab-active-bg: var(--mat-sys-surface, var(--cngx-surface, oklch(0.21 0 0)));
+    --cngx-tab-inactive-bg: var(
+      --mat-sys-surface-container,
+      var(--cngx-surface-2, oklch(0.27 0 0))
+    );
+    --cngx-tab-surface-border-color: var(
+      --mat-sys-outline-variant,
+      var(--cngx-border, oklch(0.4 0 0))
+    );
+  }
+
+  .cngx-tab-group[data-skin='pill'] {
+    --cngx-tab-pill-hover-bg: var(
+      --mat-sys-surface-container,
+      var(--cngx-surface-2, oklch(0.27 0 0))
+    );
+  }
+}
