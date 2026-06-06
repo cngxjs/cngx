@@ -1,5 +1,6 @@
 import { NgTemplateOutlet } from '@angular/common';
 import {
+  afterNextRender,
   ChangeDetectionStrategy,
   Component,
   ViewEncapsulation,
@@ -9,6 +10,7 @@ import {
   inject,
   Injector,
   input,
+  isDevMode,
   type Signal,
   type TemplateRef,
 } from '@angular/core';
@@ -29,6 +31,7 @@ import {
   CngxTabBusySpinner,
   CngxTabErrorBadge,
   CngxTabGroupPresenter,
+  CngxTabIcon,
   CngxTabRejectionIcon,
   createTabGroupAnnouncements,
   createTabGroupTemplateBindings,
@@ -40,6 +43,7 @@ import {
   type CngxTabGroupAnnouncements,
   type CngxTabGroupTemplateBindings,
   type CngxTabHandle,
+  type CngxTabIconContext,
   type CngxTabIconLayout,
   type CngxTabPanelHost,
   type CngxTabRejectionIconContext,
@@ -154,6 +158,7 @@ export class CngxTabGroup implements CngxTabPanelHost {
   private readonly errorBadgeSlot = contentChild(CngxTabErrorBadge);
   private readonly rejectionIconSlot = contentChild(CngxTabRejectionIcon);
   private readonly busySpinnerSlot = contentChild(CngxTabBusySpinner);
+  private readonly iconSlot = contentChild(CngxTabIcon);
 
   /**
    * AT-announcement bundle from `@cngx/common/tabs/announcements/`.
@@ -189,6 +194,21 @@ export class CngxTabGroup implements CngxTabPanelHost {
       hostElement: this.hostElement,
       injector: this.injector,
     });
+
+    if (isDevMode()) {
+      // One-shot post-mount check: icon-only hides the label, so a
+      // missing *cngxTabIcon template leaves the tab visually empty.
+      // afterNextRender runs once, off the reactive graph.
+      afterNextRender(() => {
+        if (this.hostAttrs.resolvedIconLayout() === 'only' && !this.iconSlot()) {
+          console.warn(
+            "[cngx-tab-group] iconLayout='only' but no *cngxTabIcon template " +
+              'is provided - tabs render no icon and the label is visually ' +
+              "hidden. Provide an <ng-template cngxTabIcon> or use 'start' / 'top'.",
+          );
+        }
+      });
+    }
   }
 
   // Map<id, CngxTab> for O(1) labelTemplateFor / contentTemplateFor.
@@ -199,13 +219,15 @@ export class CngxTabGroup implements CngxTabPanelHost {
   });
 
   /**
-   * Resolved 3-stage cascade for `errorBadge`, `rejectionIcon`, `busySpinner`.
-   * `null` -> render built-in default span.
+   * Resolved 3-stage cascade for `errorBadge`, `rejectionIcon`,
+   * `busySpinner`, `icon`. `null` -> render built-in default (or, for
+   * `icon`, render nothing).
    */
   protected readonly templates: CngxTabGroupTemplateBindings = createTabGroupTemplateBindings({
     errorBadgeSlot: this.errorBadgeSlot,
     rejectionIconSlot: this.rejectionIconSlot,
     busySpinnerSlot: this.busySpinnerSlot,
+    iconSlot: this.iconSlot,
     config: this.config,
   });
 
@@ -244,6 +266,18 @@ export class CngxTabGroup implements CngxTabPanelHost {
   /** `true` when a bound error-aggregator opted in to revealing errors. */
   protected showErrorBadge(tab: CngxTabHandle): boolean {
     return !!tab.errorAggregator()?.shouldShow();
+  }
+
+  /**
+   * Context for `*cngxTabIcon`. Allocates fresh per CD - `active` is
+   * reactive (selection), and `*ngTemplateOutlet` only re-evaluates
+   * `let-*` bindings when the context reference changes (`Object.is`
+   * input-diff); a `WeakMap`-cached object with a mutated `active`
+   * would leave consumer bindings stale. Same pattern as
+   * {@link busySpinnerContextFor}.
+   */
+  protected iconContextFor(tab: CngxTabHandle, index: number): CngxTabIconContext {
+    return { tab, active: this.isSelected(tab), index };
   }
 
   /**

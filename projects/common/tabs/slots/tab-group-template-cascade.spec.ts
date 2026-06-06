@@ -12,6 +12,7 @@ import { createTabGroupTemplateBindings } from './tab-group-template-cascade';
 import type { CngxTabsConfig } from '../tabs-config';
 import type { CngxTabBusySpinner } from './tab-busy-spinner.directive';
 import type { CngxTabErrorBadge } from './tab-error-badge.directive';
+import type { CngxTabIcon } from './tab-icon.directive';
 import type { CngxTabRejectionIcon } from './tab-rejection-icon.directive';
 
 @Component({
@@ -43,11 +44,13 @@ describe('createTabGroupTemplateBindings — 3-stage cascade', () => {
       errorBadgeSlot: signal<CngxTabErrorBadge | undefined>(undefined),
       rejectionIconSlot: signal<CngxTabRejectionIcon | undefined>(undefined),
       busySpinnerSlot: signal<CngxTabBusySpinner | undefined>(undefined),
+      iconSlot: signal<CngxTabIcon | undefined>(undefined),
       config: cfg,
     });
     expect(bindings.errorBadge()).toBeNull();
     expect(bindings.rejectionIcon()).toBeNull();
     expect(bindings.busySpinner()).toBeNull();
+    expect(bindings.icon()).toBeNull();
   });
 
   it('config template fills in when instance slot is undefined', () => {
@@ -57,17 +60,20 @@ describe('createTabGroupTemplateBindings — 3-stage cascade', () => {
         errorBadge: host.configTpl as TemplateRef<never>,
         rejectionIcon: host.configTpl as TemplateRef<never>,
         busySpinner: host.configTpl as TemplateRef<never>,
+        icon: host.configTpl as TemplateRef<never>,
       },
     };
     const bindings = createTabGroupTemplateBindings({
       errorBadgeSlot: signal<CngxTabErrorBadge | undefined>(undefined),
       rejectionIconSlot: signal<CngxTabRejectionIcon | undefined>(undefined),
       busySpinnerSlot: signal<CngxTabBusySpinner | undefined>(undefined),
+      iconSlot: signal<CngxTabIcon | undefined>(undefined),
       config: cfg,
     });
     expect(bindings.errorBadge()).toBe(host.configTpl);
     expect(bindings.rejectionIcon()).toBe(host.configTpl);
     expect(bindings.busySpinner()).toBe(host.configTpl);
+    expect(bindings.icon()).toBe(host.configTpl);
   });
 
   it('instance slot wins over config templates', () => {
@@ -82,9 +88,26 @@ describe('createTabGroupTemplateBindings — 3-stage cascade', () => {
       errorBadgeSlot: signal<CngxTabErrorBadge | undefined>(errorBadgeDir),
       rejectionIconSlot: signal<CngxTabRejectionIcon | undefined>(undefined),
       busySpinnerSlot: signal<CngxTabBusySpinner | undefined>(undefined),
+      iconSlot: signal<CngxTabIcon | undefined>(undefined),
       config: cfg,
     });
     expect(bindings.errorBadge()).toBe(host.instanceTpl);
+  });
+
+  it('icon slot wins over config templates.icon', () => {
+    const host = makeHost();
+    const iconDir = { templateRef: host.instanceTpl } as CngxTabIcon;
+    const cfg: CngxTabsConfig = {
+      templates: { icon: host.configTpl as TemplateRef<never> },
+    };
+    const bindings = createTabGroupTemplateBindings({
+      errorBadgeSlot: signal<CngxTabErrorBadge | undefined>(undefined),
+      rejectionIconSlot: signal<CngxTabRejectionIcon | undefined>(undefined),
+      busySpinnerSlot: signal<CngxTabBusySpinner | undefined>(undefined),
+      iconSlot: signal<CngxTabIcon | undefined>(iconDir),
+      config: cfg,
+    });
+    expect(bindings.icon()).toBe(host.instanceTpl);
   });
 
   it('all three keys resolve symmetrically when every instance slot is bound', () => {
@@ -94,10 +117,12 @@ describe('createTabGroupTemplateBindings — 3-stage cascade', () => {
       errorBadgeSlot: signal({ templateRef: tpl } as CngxTabErrorBadge),
       rejectionIconSlot: signal({ templateRef: tpl } as CngxTabRejectionIcon),
       busySpinnerSlot: signal({ templateRef: tpl } as CngxTabBusySpinner),
+      iconSlot: signal({ templateRef: tpl } as CngxTabIcon),
       config: {} as CngxTabsConfig,
     });
     expect(bindings.errorBadge()).toBe(tpl);
     expect(bindings.rejectionIcon()).toBe(tpl);
     expect(bindings.busySpinner()).toBe(tpl);
+    expect(bindings.icon()).toBe(tpl);
   });
 });

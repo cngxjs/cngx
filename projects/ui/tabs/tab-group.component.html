@@ -22,6 +22,14 @@
       [cngxRovingItemDisabled]="tab.disabled()"
       (click)="handleHeaderClick(tab)"
     >
+      @let iconTpl = templates.icon();
+      @if (iconTpl) {
+        <span class="cngx-tabs__icon" aria-hidden="true">
+          <ng-container
+            *ngTemplateOutlet="iconTpl; context: iconContextFor(tab, i)"
+          ></ng-container>
+        </span>
+      }
       <span class="cngx-tabs__label">
         @let labelTpl = labelTemplateFor(tab.id);
         @if (labelTpl) {

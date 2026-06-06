@@ -28,13 +28,7 @@ export interface CngxTabGroupTemplateBindingsOptions {
   readonly errorBadgeSlot: Signal<CngxTabErrorBadge | undefined>;
   readonly rejectionIconSlot: Signal<CngxTabRejectionIcon | undefined>;
   readonly busySpinnerSlot: Signal<CngxTabBusySpinner | undefined>;
-  /**
-   * Per-instance `*cngxTabIcon` slot. Optional so callers wired before
-   * the icon-slot render (the organism gains it in the icon-render
-   * commit) still type-check; absent means the cascade falls through to
-   * `config.templates.icon` then `null`.
-   */
-  readonly iconSlot?: Signal<CngxTabIcon | undefined>;
+  readonly iconSlot: Signal<CngxTabIcon | undefined>;
   readonly config: CngxTabsConfig;
 }
 
@@ -93,8 +87,7 @@ export function createTabGroupTemplateBindings(
         null,
     ),
     icon: computed<TemplateRef<CngxTabIconContext> | null>(
-      () =>
-        opts.iconSlot?.()?.templateRef ?? opts.config.templates?.icon ?? null,
+      () => opts.iconSlot()?.templateRef ?? opts.config.templates?.icon ?? null,
     ),
   };
 }

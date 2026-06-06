@@ -6,7 +6,7 @@ import {
   signal,
 } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import type { CngxErrorAggregatorContract } from '@cngx/common/interactive';
 
@@ -17,6 +17,7 @@ import {
   CngxTabBusySpinner,
   CngxTabContent,
   CngxTabErrorBadge,
+  CngxTabIcon,
   CngxTabLabel,
   CngxTabRejectionIcon,
   provideCngxTabs,
@@ -1354,5 +1355,154 @@ describe('CngxTabGroup skin / icon-layout host attributes', () => {
     fixture.componentInstance.skin.set('pill');
     fixture.detectChanges();
     expect(hostEl(fixture).getAttribute('data-skin')).toBe('pill');
+  });
+});
+
+@Component({
+  standalone: true,
+  imports: [CngxTabGroup, CngxTab, CngxTabIcon],
+  template: `
+    <cngx-tab-group [iconLayout]="iconLayout()" aria-label="Iconned">
+      <ng-template cngxTabIcon let-tab="tab" let-active="active" let-index="index">
+        <i
+          class="demo-icon"
+          [attr.data-active]="active"
+          [attr.data-index]="index"
+          [attr.data-tab]="tab.id"
+          >icon</i
+        >
+      </ng-template>
+      <div cngxTab [label]="'A'"></div>
+      <div cngxTab [label]="'B'"></div>
+    </cngx-tab-group>
+  `,
+})
+class IconHost {
+  readonly iconLayout = signal<'start' | 'top' | 'only' | undefined>(undefined);
+}
+
+@Component({
+  standalone: true,
+  imports: [CngxTabGroup, CngxTab],
+  template: `
+    <cngx-tab-group iconLayout="only" aria-label="No icon template">
+      <div cngxTab [label]="'A'"></div>
+    </cngx-tab-group>
+  `,
+})
+class IconOnlyWithoutTemplateHost {}
+
+describe('CngxTabGroup cngxTabIcon slot', () => {
+  it('renders the icon template once per tab, aria-hidden, before the label', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(IconHost);
+    fixture.detectChanges();
+    const firstTab = fixture.nativeElement.querySelector(
+      'button[role="tab"]',
+    ) as HTMLElement;
+    const iconWrap = firstTab.querySelector('.cngx-tabs__icon') as HTMLElement;
+    expect(iconWrap).not.toBeNull();
+    expect(iconWrap.getAttribute('aria-hidden')).toBe('true');
+    expect(iconWrap.querySelector('.demo-icon')).not.toBeNull();
+    // Icon precedes the label in DOM order.
+    const label = firstTab.querySelector('.cngx-tabs__label') as HTMLElement;
+    expect(
+      iconWrap.compareDocumentPosition(label) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
+
+  it('feeds {tab, active, index} context with active reflecting selection', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(IconHost);
+    fixture.detectChanges();
+    const tabs = fixture.nativeElement.querySelectorAll(
+      'button[role="tab"]',
+    ) as NodeListOf<HTMLElement>;
+    const firstIcon = tabs[0].querySelector('.demo-icon') as HTMLElement;
+    const secondIcon = tabs[1].querySelector('.demo-icon') as HTMLElement;
+    expect(firstIcon.getAttribute('data-active')).toBe('true');
+    expect(firstIcon.getAttribute('data-index')).toBe('0');
+    expect(secondIcon.getAttribute('data-active')).toBe('false');
+    expect(secondIcon.getAttribute('data-index')).toBe('1');
+
+    tabs[1].click();
+    fixture.detectChanges();
+    expect(
+      (tabs[0].querySelector('.demo-icon') as HTMLElement).getAttribute(
+        'data-active',
+      ),
+    ).toBe('false');
+    expect(
+      (tabs[1].querySelector('.demo-icon') as HTMLElement).getAttribute(
+        'data-active',
+      ),
+    ).toBe('true');
+  });
+
+  it('keeps the label span in the DOM under iconLayout="only" (accessible name source)', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(IconHost);
+    fixture.componentInstance.iconLayout.set('only');
+    fixture.detectChanges();
+    const firstTab = fixture.nativeElement.querySelector(
+      'button[role="tab"]',
+    ) as HTMLElement;
+    const label = firstTab.querySelector('.cngx-tabs__label') as HTMLElement;
+    expect(label).not.toBeNull();
+    expect(label.textContent).toContain('A');
+  });
+
+  it('renders no icon span when no slot and no config template is bound', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(HostCmp);
+    fixture.detectChanges();
+    const firstTab = fixture.nativeElement.querySelector(
+      'button[role="tab"]',
+    ) as HTMLElement;
+    expect(firstTab.querySelector('.cngx-tabs__icon')).toBeNull();
+  });
+
+  it('dev-warns when iconLayout="only" without an *cngxTabIcon template', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    try {
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      const fixture = TestBed.createComponent(IconOnlyWithoutTemplateHost);
+      fixture.detectChanges();
+      await fixture.whenStable();
+      expect(
+        warn.mock.calls.some((c) => String(c[0]).includes("iconLayout='only'")),
+      ).toBe(true);
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
+  it('does not dev-warn when iconLayout="only" with an *cngxTabIcon template', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    try {
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      const fixture = TestBed.createComponent(IconHost);
+      fixture.componentInstance.iconLayout.set('only');
+      fixture.detectChanges();
+      await fixture.whenStable();
+      expect(
+        warn.mock.calls.some((c) => String(c[0]).includes("iconLayout='only'")),
+      ).toBe(false);
+    } finally {
+      warn.mockRestore();
+    }
   });
 });
