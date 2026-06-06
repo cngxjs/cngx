@@ -215,6 +215,19 @@
       font: inherit;
     }
 
+    /*
+     * Per-panel container-query context. Applies to every skin and both
+     * orientations - it is on the panel itself, NOT the host (a host
+     * container would measure the strip width too under vertical
+     * orientation). Consumers write `@container cngx-tab-panel (...)`
+     * against the panel's own content width. The panel is both the
+     * `role="tabpanel"` and the query context - no extra wrapper div.
+     */
+    .cngx-tabs__panel {
+      container-type: inline-size;
+      container-name: var(--cngx-tab-panel-container-name, cngx-tab-panel);
+    }
+
     .cngx-tabs__strip {
       border-bottom: var(--cngx-tab-strip-border, 1px solid currentColor);
     }

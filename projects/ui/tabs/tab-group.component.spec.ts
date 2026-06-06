@@ -6,6 +6,7 @@ import {
   signal,
 } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { readFileSync } from 'node:fs';
 import { describe, expect, it, vi } from 'vitest';
 
 import type { CngxErrorAggregatorContract } from '@cngx/common/interactive';
@@ -1507,5 +1508,23 @@ describe('CngxTabGroup cngxTabIcon slot', () => {
     } finally {
       warn.mockRestore();
     }
+  });
+});
+
+describe('CngxTabGroup tab panel container-query context', () => {
+  it('the tab panel declares a container-query context (source-CSS assert; happy-dom cannot compute container-type)', () => {
+    // Resolve from the runner cwd (repo root) - `import.meta.url` is a
+    // vite-served URL here, not a file: URL.
+    const css = readFileSync(
+      `${process.cwd()}/projects/ui/tabs/tab-group.component.css`,
+      'utf8',
+    );
+    // The rule is on `.cngx-tabs__panel` (the individual tabpanel), not
+    // the host - so `@container cngx-tab-panel` measures the panel's own
+    // width, correct under vertical orientation too.
+    expect(css).toMatch(
+      /\.cngx-tabs__panel\s*\{[^}]*container-type:\s*inline-size/,
+    );
+    expect(css).toMatch(/container-name:\s*var\(--cngx-tab-panel-container-name/);
   });
 });
