@@ -1471,7 +1471,7 @@ describe('CngxTabGroup cngxTabIcon slot', () => {
     expect(firstTab.querySelector('.cngx-tabs__icon')).toBeNull();
   });
 
-  it('dev-warns when iconLayout="only" without an *cngxTabIcon template', async () => {
+  it('dev-warns when iconLayout="only" without an *cngxTabIcon template', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     try {
       TestBed.configureTestingModule({
@@ -1479,7 +1479,10 @@ describe('CngxTabGroup cngxTabIcon slot', () => {
       });
       const fixture = TestBed.createComponent(IconOnlyWithoutTemplateHost);
       fixture.detectChanges();
-      await fixture.whenStable();
+      // Drain the afterNextRender queue (the dev check is single-shot,
+      // off the reactive graph). TestBed.tick flushes render hooks
+      // synchronously - no fake-timer / whenStable hang vector.
+      TestBed.tick();
       expect(
         warn.mock.calls.some((c) => String(c[0]).includes("iconLayout='only'")),
       ).toBe(true);
@@ -1488,7 +1491,7 @@ describe('CngxTabGroup cngxTabIcon slot', () => {
     }
   });
 
-  it('does not dev-warn when iconLayout="only" with an *cngxTabIcon template', async () => {
+  it('does not dev-warn when iconLayout="only" with an *cngxTabIcon template', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     try {
       TestBed.configureTestingModule({
@@ -1497,7 +1500,7 @@ describe('CngxTabGroup cngxTabIcon slot', () => {
       const fixture = TestBed.createComponent(IconHost);
       fixture.componentInstance.iconLayout.set('only');
       fixture.detectChanges();
-      await fixture.whenStable();
+      TestBed.tick();
       expect(
         warn.mock.calls.some((c) => String(c[0]).includes("iconLayout='only'")),
       ).toBe(false);
