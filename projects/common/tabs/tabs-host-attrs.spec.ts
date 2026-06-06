@@ -1,0 +1,91 @@
+import { signal } from '@angular/core';
+import { describe, expect, it } from 'vitest';
+
+import { createTabsHostAttrs } from './tabs-host-attrs';
+import type {
+  CngxTabIconLayout,
+  CngxTabsConfig,
+  CngxTabsSkin,
+} from './tabs-config';
+
+describe('createTabsHostAttrs', () => {
+  describe('skin cascade (input > config > default)', () => {
+    it('falls back to the library default when input and config are unset', () => {
+      const attrs = createTabsHostAttrs({
+        skin: signal<CngxTabsSkin | undefined>(undefined),
+        iconLayout: signal<CngxTabIconLayout | undefined>(undefined),
+        config: {},
+      });
+      expect(attrs.resolvedSkin()).toBe('line');
+    });
+
+    it('config wins over the library default', () => {
+      const attrs = createTabsHostAttrs({
+        skin: signal<CngxTabsSkin | undefined>(undefined),
+        iconLayout: signal<CngxTabIconLayout | undefined>(undefined),
+        config: { skin: 'contained' } satisfies CngxTabsConfig,
+      });
+      expect(attrs.resolvedSkin()).toBe('contained');
+    });
+
+    it('per-instance input wins over config', () => {
+      const attrs = createTabsHostAttrs({
+        skin: signal<CngxTabsSkin | undefined>('pill'),
+        iconLayout: signal<CngxTabIconLayout | undefined>(undefined),
+        config: { skin: 'contained' },
+      });
+      expect(attrs.resolvedSkin()).toBe('pill');
+    });
+
+    it('reacts when the input changes', () => {
+      const skin = signal<CngxTabsSkin | undefined>(undefined);
+      const attrs = createTabsHostAttrs({
+        skin,
+        iconLayout: signal<CngxTabIconLayout | undefined>(undefined),
+        config: { skin: 'contained' },
+      });
+      expect(attrs.resolvedSkin()).toBe('contained');
+      skin.set('pill');
+      expect(attrs.resolvedSkin()).toBe('pill');
+    });
+  });
+
+  describe('iconLayout cascade (input > config > default)', () => {
+    it('falls back to the library default when input and config are unset', () => {
+      const attrs = createTabsHostAttrs({
+        skin: signal<CngxTabsSkin | undefined>(undefined),
+        iconLayout: signal<CngxTabIconLayout | undefined>(undefined),
+        config: {},
+      });
+      expect(attrs.resolvedIconLayout()).toBe('start');
+    });
+
+    it('config wins over the library default', () => {
+      const attrs = createTabsHostAttrs({
+        skin: signal<CngxTabsSkin | undefined>(undefined),
+        iconLayout: signal<CngxTabIconLayout | undefined>(undefined),
+        config: { iconLayout: 'top' },
+      });
+      expect(attrs.resolvedIconLayout()).toBe('top');
+    });
+
+    it('per-instance input wins over config', () => {
+      const attrs = createTabsHostAttrs({
+        skin: signal<CngxTabsSkin | undefined>(undefined),
+        iconLayout: signal<CngxTabIconLayout | undefined>('only'),
+        config: { iconLayout: 'top' },
+      });
+      expect(attrs.resolvedIconLayout()).toBe('only');
+    });
+  });
+
+  it('resolves both axes independently from one config', () => {
+    const attrs = createTabsHostAttrs({
+      skin: signal<CngxTabsSkin | undefined>('pill'),
+      iconLayout: signal<CngxTabIconLayout | undefined>(undefined),
+      config: { iconLayout: 'top' },
+    });
+    expect(attrs.resolvedSkin()).toBe('pill');
+    expect(attrs.resolvedIconLayout()).toBe('top');
+  });
+});
