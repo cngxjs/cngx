@@ -21,9 +21,10 @@ import {
 } from './material-bridge/handle';
 
 /**
- * The Material twin of the cngx stepper: attach `cngxMatStepper` to a
+ * The Material twin of the CNGX stepper: attach `cngxMatStepper` to a
  * vanilla `<mat-stepper>` and it is bridged to a
- * {@link CngxStepperPresenter} - consumers gain the commit-action
+ * {@link CngxStepperPresenter}. \
+ * Consumers gain the commit-action
  * lifecycle, `CNGX_STATEFUL` (so `<cngx-toast-on />` /
  * `<cngx-banner-on />` compose as children), the shared
  * `CNGX_STEPPER_HOST` contract (so a `<cngx-stepper-footer>` can drive
@@ -32,7 +33,7 @@ import {
  * one attribute.
  *
  * This is the instrumentation pattern: Material owns the rendering and
- * the consumer authors native `<mat-step>` markup; cngx is the
+ * the consumer authors native `<mat-step>` markup; CNGX is the
  * behaviour layer. Topology mirrors `[cngxMatTabs]`.
  *
  * Inputs/outputs are forwarded from {@link CngxStepperPresenter}:
