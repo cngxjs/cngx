@@ -67,11 +67,11 @@
         }
     ],
     "playgroundDependencies": {
-        "@cngx/utils": "0.1.0-rc.0",
-        "@cngx/core": "0.1.0-rc.0",
-        "@cngx/common": "0.1.0-rc.0",
-        "@cngx/forms": "0.1.0-rc.0",
-        "@cngx/ui": "0.1.0-rc.0",
-        "@cngx/data-display": "0.1.0-rc.0"
+        "@cngx/utils": "0.1.0-rc.1",
+        "@cngx/core": "0.1.0-rc.1",
+        "@cngx/common": "0.1.0-rc.1",
+        "@cngx/forms": "0.1.0-rc.1",
+        "@cngx/ui": "0.1.0-rc.1",
+        "@cngx/data-display": "0.1.0-rc.1"
     }
 }
