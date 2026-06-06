@@ -1528,3 +1528,56 @@ describe('CngxTabGroup tab panel container-query context', () => {
     expect(css).toMatch(/container-name:\s*var\(--cngx-tab-panel-container-name/);
   });
 });
+
+@Component({
+  standalone: true,
+  imports: [CngxTabGroup, CngxTab, CngxTabContent],
+  template: `
+    <cngx-tab-group aria-label="Focusable panel content">
+      <div cngxTab [label]="'A'">
+        <ng-template cngxTabContent>
+          <button type="button">Action in panel</button>
+        </ng-template>
+      </div>
+      <div cngxTab [label]="'B'">
+        <ng-template cngxTabContent><p>No focusable content.</p></ng-template>
+      </div>
+    </cngx-tab-group>
+  `,
+})
+class FocusablePanelHost {}
+
+describe('CngxTabGroup APG panel focus (panelTabindex)', () => {
+  function activePanel(fixture: { nativeElement: HTMLElement }): HTMLElement {
+    return fixture.nativeElement.querySelector(
+      '.cngx-tabs__panel:not([hidden])',
+    ) as HTMLElement;
+  }
+
+  function settle(fixture: { detectChanges(): void }): void {
+    // afterRender probes the DOM and writes the focusable-descendant
+    // signal; the follow-up CD applies it to the [attr.tabindex] binding.
+    fixture.detectChanges();
+    TestBed.tick();
+    fixture.detectChanges();
+    TestBed.tick();
+  }
+
+  it('gives the active panel tabindex="0" when it has no focusable descendant', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(HostCmp);
+    settle(fixture);
+    expect(activePanel(fixture).getAttribute('tabindex')).toBe('0');
+  });
+
+  it('leaves the active panel tabindex unset when it has a focusable descendant', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(FocusablePanelHost);
+    settle(fixture);
+    expect(activePanel(fixture).getAttribute('tabindex')).toBeNull();
+  });
+});

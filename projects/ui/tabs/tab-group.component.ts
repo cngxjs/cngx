@@ -1,6 +1,7 @@
 import { NgTemplateOutlet } from '@angular/common';
 import {
   afterNextRender,
+  afterRenderEffect,
   ChangeDetectionStrategy,
   Component,
   ViewEncapsulation,
@@ -11,11 +12,13 @@ import {
   Injector,
   input,
   isDevMode,
+  signal,
   type Signal,
   type TemplateRef,
 } from '@angular/core';
 
 import {
+  CNGX_FOCUSABLE_SELECTOR,
   CngxFocusRestore,
   CngxLiveRegion,
   CngxRovingItem,
@@ -185,6 +188,17 @@ export class CngxTabGroup implements CngxTabPanelHost {
     config: this.config,
   });
 
+  /**
+   * Whether the active panel contains a natively-focusable descendant.
+   * Resolved by a post-render DOM probe (the only way to know - the
+   * panel content is consumer-projected). Drives {@link panelTabindex}:
+   * a panel with no focusable child earns one tab stop so keyboard users
+   * can still reach its content (APG tabpanel pattern); a panel that
+   * already has reachable content does not (no redundant stop). Boolean
+   * with default `Object.is`, so a stable probe never re-triggers CD.
+   */
+  private readonly activePanelHasFocusable = signal(false);
+
   constructor() {
     // Self-healing scroll loop: activeId change -> scrollIntoView ->
     // overflow IO sees new visibility -> More dropdown self-trims.
@@ -193,6 +207,23 @@ export class CngxTabGroup implements CngxTabPanelHost {
       activeId: this.presenter.activeId,
       hostElement: this.hostElement,
       injector: this.injector,
+    });
+
+    // APG tabpanel focus probe. afterRenderEffect re-runs after render
+    // whenever its tracked dep (the active panel id) changes - i.e. on
+    // every tab switch. Reading the DOM is the only way to know whether
+    // the consumer-projected panel content is focusable. The boolean set
+    // is not read inside the effect, so it never re-triggers itself, and
+    // its default Object.is equality makes a stable probe a no-op.
+    afterRenderEffect(() => {
+      // Tracked: re-probe when the active panel changes.
+      this.presenter.activeId();
+      const panel = this.hostElement.querySelector<HTMLElement>(
+        '.cngx-tabs__panel:not([hidden])',
+      );
+      this.activePanelHasFocusable.set(
+        panel != null && panel.querySelector(CNGX_FOCUSABLE_SELECTOR) != null,
+      );
     });
 
     if (isDevMode()) {
@@ -257,6 +288,16 @@ export class CngxTabGroup implements CngxTabPanelHost {
 
   protected tabPanelId(tab: CngxTabHandle): string {
     return `${tab.id}-panel`;
+  }
+
+  /**
+   * APG tabpanel `tabindex`: `0` only when the selected panel has no
+   * focusable descendant (so its content is keyboard-reachable from the
+   * tablist), else `null` - never a redundant tab stop. Inactive panels
+   * are `null` (they are `[hidden]`).
+   */
+  protected panelTabindex(tab: CngxTabHandle): 0 | null {
+    return this.isSelected(tab) && !this.activePanelHasFocusable() ? 0 : null;
   }
 
   protected tabDescriptorId(tab: CngxTabHandle): string {

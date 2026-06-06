@@ -98,6 +98,7 @@
       [id]="tabPanelId(tab)"
       [attr.aria-labelledby]="tabHeaderId(tab)"
       [attr.aria-roledescription]="announcements.tabPanelRoleDescription()"
+      [attr.tabindex]="panelTabindex(tab)"
       [hidden]="!isSelected(tab)"
     >
       @let contentTpl = contentTemplateFor(tab.id);
