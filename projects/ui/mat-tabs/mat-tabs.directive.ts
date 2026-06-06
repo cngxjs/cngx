@@ -110,7 +110,7 @@ export class CngxMatTabsPanelHostAdapter implements CngxTabPanelHost {
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/mat-tabs/mat-tabs.directive.ts
  * @since 0.1.0
- * @relatedTo CngxMatTabsRegistry, CngxMatTabError, CngxMatStepperBridge
+ * @relatedTo CngxMatTabsRegistry, CngxMatTabError, CngxMatStepper
  */
 @Directive({
   selector: '[cngxMatTabs]',

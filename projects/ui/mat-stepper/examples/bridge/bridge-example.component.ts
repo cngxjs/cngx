@@ -13,7 +13,7 @@ import {
   CngxStepperNext,
   CngxStepperPrevious,
 } from '@cngx/common/stepper';
-import { CngxMatStepperBridge } from '@cngx/ui/mat-stepper';
+import { CngxMatStepper } from '@cngx/ui/mat-stepper';
 import {
   CngxStepperFooter,
   CngxStepperFooterEnd,
@@ -63,7 +63,7 @@ export { appConfig } from './app.config';
     MatCheckboxModule,
     MatIconModule,
     MatCardModule,
-    CngxMatStepperBridge,
+    CngxMatStepper,
     CngxStepperFooter,
     CngxStepperFooterStart,
     CngxStepperFooterEnd,
@@ -105,7 +105,7 @@ export { appConfig } from './app.config';
 
         <mat-stepper
           cngxMatStepper
-          #s="cngxMatStepperDirective"
+          #s="cngxMatStepper"
           [(activeStepIndex)]="active"
           [commitAction]="commitAction"
           [commitMode]="mode()"

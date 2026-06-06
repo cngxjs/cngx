@@ -16,7 +16,7 @@ The Material twin of the cngx stepper family, shipped as the instrumentation dir
 
 | Export | Selector / exportAs | Description |
 |-|-|-|
-| `CngxMatStepperBridge` | `[cngxMatStepper]` / `cngxMatStepperDirective` | Instrumentation directive for `<mat-stepper>`. |
+| `CngxMatStepper` | `[cngxMatStepper]` / `cngxMatStepper` | Instrumentation directive for `<mat-stepper>`. |
 | `CNGX_MAT_STEP_HANDLE_FACTORY` / `createMatStepHandle` | - | Swappable factory building the per-`<mat-step>` registration handle. |
 
 Because the directive upgrades the consumer's own `<mat-stepper>`, native `<mat-step>` markup, `<ng-template matStepperIcon>`, `[hasError]`, and `errorMessage` are authored directly in Material - there is no projection constraint and no icon-forwarding shim.
@@ -26,7 +26,7 @@ Because the directive upgrades the consumer's own `<mat-stepper>`, native `<mat-
 A cngx footer drives navigation instead of Material's `matStepperPrevious` / `matStepperNext` buttons. The footer sits outside the stepper and is handed the host through the directive ref.
 
 ```html
-<mat-stepper cngxMatStepper #s="cngxMatStepperDirective"
+<mat-stepper cngxMatStepper #s="cngxMatStepper"
   [(activeStepIndex)]="active" [commitMode]="'pessimistic'" [commitAction]="submit"
   cngxToastOn cngxBannerOn>
   <mat-step label="Method">...</mat-step>

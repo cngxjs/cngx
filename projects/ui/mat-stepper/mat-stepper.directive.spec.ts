@@ -8,7 +8,7 @@ import {
   type CngxStepperCommitAction,
 } from '@cngx/common/stepper';
 
-import { CngxMatStepperBridge } from './mat-stepper.directive';
+import { CngxMatStepper } from './mat-stepper.directive';
 import {
   CNGX_MAT_STEP_HANDLE_FACTORY,
   createMatStepHandle,
@@ -23,7 +23,7 @@ interface Plumbing {
 
 @Component({
   standalone: true,
-  imports: [MatStepperModule, CngxMatStepperBridge],
+  imports: [MatStepperModule, CngxMatStepper],
   template: `
     <mat-stepper cngxMatStepper [(activeStepIndex)]="active">
       <mat-step label="One"><p>One content</p></mat-step>
@@ -38,7 +38,7 @@ class HostCmp {
 
 @Component({
   standalone: true,
-  imports: [MatStepperModule, CngxMatStepperBridge],
+  imports: [MatStepperModule, CngxMatStepper],
   template: `
     <mat-stepper cngxMatStepper [(activeStepIndex)]="active">
       <mat-step label="Same"><p>First</p></mat-step>
@@ -53,7 +53,7 @@ class DuplicateLabelHostCmp {
 
 @Component({
   standalone: true,
-  imports: [MatStepperModule, CngxMatStepperBridge],
+  imports: [MatStepperModule, CngxMatStepper],
   template: `
     <mat-stepper cngxMatStepper [(activeStepIndex)]="active">
       <mat-step label="One"><p>One</p></mat-step>
@@ -75,7 +75,7 @@ class DynamicHostCmp {
 
 @Component({
   standalone: true,
-  imports: [MatStepperModule, CngxMatStepperBridge],
+  imports: [MatStepperModule, CngxMatStepper],
   template: `
     <mat-stepper
       cngxMatStepper

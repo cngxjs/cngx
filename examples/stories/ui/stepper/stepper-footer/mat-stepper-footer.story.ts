@@ -8,16 +8,16 @@ export const STORY: DemoSpec = {
   audience: ['dev'],
   artifact: 'standalone',
   focus: ['composition', 'integration'],
-  apiComponents: ['CngxMatStepperBridge', 'CngxStepperFooter'],
+  apiComponents: ['CngxMatStepper', 'CngxStepperFooter'],
   moduleImports: [
     "import { MatStepperModule } from '@angular/material/stepper';",
     "import { CngxStepperPrevious, CngxStepperNext } from '@cngx/common/stepper';",
-    "import { CngxMatStepperBridge } from '@cngx/ui/mat-stepper';",
+    "import { CngxMatStepper } from '@cngx/ui/mat-stepper';",
     "import { CngxStepperFooter, CngxStepperFooterStart, CngxStepperFooterEnd } from '@cngx/ui/stepper';",
   ],
   imports: [
     'MatStepperModule',
-    'CngxMatStepperBridge',
+    'CngxMatStepper',
     'CngxStepperFooter',
     'CngxStepperFooterStart',
     'CngxStepperFooterEnd',
@@ -27,7 +27,7 @@ export const STORY: DemoSpec = {
   setup: `protected readonly active = signal(0);`,
   template: `  <mat-stepper
     cngxMatStepper
-    #s="cngxMatStepperDirective"
+    #s="cngxMatStepper"
     [(activeStepIndex)]="active"
     aria-label="Account setup"
   >

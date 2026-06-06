@@ -8,7 +8,7 @@
  * commit-action lifecycle, router sync, and error aggregation all work
  * against Material's own markup. Mirrors `[cngxMatTabs]`.
  */
-export { CngxMatStepperBridge } from './mat-stepper.directive';
+export { CngxMatStepper } from './mat-stepper.directive';
 export {
   CNGX_MAT_STEP_HANDLE_FACTORY,
   createMatStepHandle,

@@ -35,6 +35,11 @@ import {
  * the consumer authors native `<mat-step>` markup; cngx is the
  * behaviour layer. Topology mirrors `[cngxMatTabs]`.
  *
+ * Inputs/outputs are forwarded from {@link CngxStepperPresenter}:
+ * `activeStepIndex` (two-way, with `activeStepIndexChange`), `linear`,
+ * `orientation`, `commitAction`, `commitMode`. See the presenter for
+ * their semantics.
+ *
  * @playground Bridge instrumentation ./examples/bridge/bridge-example.component.ts
  *
  * @category ui/mat-stepper
@@ -46,7 +51,7 @@ import {
  */
 @Directive({
   selector: '[cngxMatStepper]',
-  exportAs: 'cngxMatStepperDirective',
+  exportAs: 'cngxMatStepper',
   standalone: true,
   hostDirectives: [
     {
@@ -56,12 +61,12 @@ import {
     },
   ],
 })
-export class CngxMatStepperBridge {
+export class CngxMatStepper {
   private readonly matStepper = inject(MatStepper, { self: true });
   /**
    * Shared host contract. Public so a `<cngx-stepper-footer>` placed
    * outside the `<mat-stepper>` can bind `[host]="ref.presenter"` (via
-   * `#ref="cngxMatStepperDirective"`) and drive navigation.
+   * `#ref="cngxMatStepper"`) and drive navigation.
    */
   readonly presenter = inject(CNGX_STEPPER_HOST);
   private readonly destroyRef: DestroyRef = inject(InjectableDestroyRef);
