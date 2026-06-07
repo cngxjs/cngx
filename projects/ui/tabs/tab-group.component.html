@@ -12,6 +12,7 @@
       cngxRovingItem
       class="cngx-tabs__tab"
       [class.cngx-tab--rejected]="failedIdx === i"
+      [class.cngx-tabs__tab--closable]="dismiss.isTabClosable(tab)"
       role="tab"
       [id]="tabHeaderId(tab)"
       [attr.aria-label]="announcements.tabAriaLabel(tab, i + 1)"

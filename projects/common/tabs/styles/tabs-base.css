@@ -428,15 +428,24 @@
   /*
    * Dismissable / addable affordances. The wrapper holds the tab button
    * and its close button as one visual unit (role="presentation", so the
-   * tablist still sees the tab buttons). The close button is a sibling of
+   * tablist still sees the tab buttons). The close button is a SIBLING of
    * the tab button - it cannot nest inside it (button-in-button is
-   * invalid) - and carries `tabindex="-1"`: keyboard close is the Delete
-   * shortcut on the focused tab; the visible button is the pointer / AT
-   * affordance.
+   * invalid) - but it is absolutely positioned over the tab's trailing
+   * padding so the "x" reads as part of the tab, browser-tab style. It
+   * carries `tabindex="-1"`: keyboard close is the Delete shortcut on the
+   * focused tab; the visible button is the pointer / AT affordance.
    */
   .cngx-tabs__tab-wrapper {
+    position: relative;
     display: inline-flex;
-    align-items: center;
+    align-items: stretch;
+  }
+
+  /* Reserve trailing room inside the tab for the absolutely-placed "x". */
+  .cngx-tabs__tab--closable {
+    padding-inline-end: calc(
+      var(--cngx-tab-affordance-size, 1.25rem) + var(--cngx-tab-gap, 0.5rem) * 2
+    );
   }
 
   .cngx-tabs__close,
@@ -458,8 +467,13 @@
     cursor: pointer;
   }
 
+  /* Inside the tab, pinned to its trailing edge and vertically centred. */
   .cngx-tabs__close {
-    margin-inline-start: var(--cngx-tab-gap, 0.5rem);
+    position: absolute;
+    inset-inline-end: var(--cngx-tab-gap, 0.5rem);
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 1;
   }
 
   .cngx-tabs__add {
