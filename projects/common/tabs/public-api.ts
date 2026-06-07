@@ -135,6 +135,11 @@ export {
   type CngxTabDismissalsOptions,
 } from './dismissals/tab-dismissals';
 export {
+  createTabKeyboardNav,
+  type CngxTabKeyboardNav,
+  type CngxTabKeyboardNavOptions,
+} from './keyboard/tab-keyboard-nav';
+export {
   createTabGroupTemplateBindings,
   type CngxTabGroupTemplateBindings,
   type CngxTabGroupTemplateBindingsOptions,

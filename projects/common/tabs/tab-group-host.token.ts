@@ -125,7 +125,9 @@ export interface CngxTabGroupHost {
 /**
  * DI token for the tab presenter's contract. Presenter provides via
  * `useExisting`; `CngxTab` injects to register; the organism injects
- * to forward keyboard nav from `CngxRovingTabindex`.
+ * to drive the APG tablist keyboard model (automatic activation via
+ * `select()`, roving stop derived from `activeId`) through
+ * `createTabKeyboardNav`.
  *
  * @category common/tabs
  * @wcag AA
