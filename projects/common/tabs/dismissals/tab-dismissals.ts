@@ -86,14 +86,22 @@ export function createTabDismissals(
     }
     opts.host.requestClose(tab.id);
     // Restore focus once the consumer's removal has rendered: the new
-    // active tab, or the add button when the strip empties.
+    // active tab, then the add button, and finally the group element
+    // itself (made programmatically focusable) so focus never falls to
+    // `<body>` when the strip empties with no add button (APG).
     afterNextRender(
       () => {
         const active = opts.hostElement.querySelector<HTMLElement>(
           '.cngx-tabs__tab[aria-selected="true"]',
         );
-        const fallback = opts.hostElement.querySelector<HTMLElement>('.cngx-tabs__add');
-        (active ?? fallback)?.focus();
+        const add = opts.hostElement.querySelector<HTMLElement>('.cngx-tabs__add');
+        const target = active ?? add;
+        if (target) {
+          target.focus();
+          return;
+        }
+        opts.hostElement.tabIndex = -1;
+        opts.hostElement.focus();
       },
       { injector: opts.injector },
     );

@@ -1890,3 +1890,48 @@ describe('CngxTabGroup dismissable + addable', () => {
     expect(fixture.nativeElement.querySelector('.cngx-tabs__add')).toBeNull();
   });
 });
+
+@Component({
+  standalone: true,
+  imports: [CngxTabGroup, CngxTab],
+  template: `
+    <cngx-tab-group
+      [closable]="true"
+      aria-label="Closes to empty"
+      (tabClose)="onClose($event.id)"
+    >
+      @for (t of items(); track t) {
+        <div cngxTab [id]="t" [label]="t"></div>
+      }
+    </cngx-tab-group>
+  `,
+})
+class CloseToEmptyHost {
+  readonly items = signal(['only']);
+  onClose(id: string): void {
+    this.items.update((list) => list.filter((x) => x !== id));
+  }
+}
+
+describe('CngxTabGroup dismissable focus restoration', () => {
+  it('keeps focus inside the group when the last tab closes with no add button', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(CloseToEmptyHost);
+    fixture.detectChanges();
+    const host = fixture.nativeElement.querySelector(
+      'cngx-tab-group',
+    ) as HTMLElement;
+    const close = fixture.nativeElement.querySelector(
+      '.cngx-tabs__close',
+    ) as HTMLButtonElement;
+    close.click();
+    fixture.detectChanges();
+    TestBed.tick();
+    TestBed.tick();
+    expect(fixture.nativeElement.querySelectorAll('button[role="tab"]').length).toBe(0);
+    // Focus did not fall to <body>; the group holds it.
+    expect(document.activeElement).toBe(host);
+  });
+});
