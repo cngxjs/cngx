@@ -49,6 +49,13 @@ export class CngxTab {
   readonly disabled = input<boolean>(false);
   readonly label = input<string | undefined>(undefined);
   readonly errorAggregator = input<CngxErrorAggregatorContract | undefined>(undefined);
+  /**
+   * Per-tab close-affordance override. `undefined` (default) inherits
+   * the group-level `[closable]` resolution; set `false` to pin this
+   * tab open inside a dismissable group, or `true` to make a single tab
+   * closable while the group default is off.
+   */
+  readonly closable = input<boolean | undefined>(undefined);
 
   readonly labelTemplate = contentChild(CngxTabLabel);
   readonly contentTemplate = contentChild(CngxTabContent);
@@ -72,6 +79,7 @@ export class CngxTab {
       label: this.label,
       disabled: this.disabled,
       errorAggregator: this.errorAggregator,
+      closable: this.closable,
     });
     const host = this.host;
     inject(DestroyRef).onDestroy(() => host.unregister(tabId));

@@ -15,6 +15,14 @@ export interface CngxTabsI18n {
   readonly previousTab: string;
   readonly nextTab: string;
   /**
+   * Accessible name for a tab's close button. Receives the tab label
+   * (or a generic fallback when unlabeled) and yields the button's
+   * `aria-label`, e.g. `Close "Profile"`.
+   */
+  readonly closeTab: (label: string) => string;
+  /** Accessible name for the add-tab button. */
+  readonly addTab: string;
+  /**
    * @deprecated Superseded by {@link commitRolledBackTo}. Retained as
    * the defensive fallback in `liveAnnouncement` when the origin
    * label is unresolvable - fires for unlabeled tabs or programmatic
@@ -39,6 +47,8 @@ const TABS_I18N_DEFAULTS: CngxTabsI18n = {
   moreTabsLabel: (count) => `${count} more`,
   previousTab: 'Previous tab',
   nextTab: 'Next tab',
+  closeTab: (label) => `Close "${label}"`,
+  addTab: 'Add tab',
   commitFailedRetry: 'Tab change refused — retry?',
   commitInFlight: 'Switching tab…',
   commitRolledBackTo: (originLabel) => `Could not save changes — reverted to "${originLabel}".`,

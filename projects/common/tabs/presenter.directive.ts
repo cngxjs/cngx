@@ -1,4 +1,13 @@
-import { computed, Directive, inject, input, model, signal, type Signal } from '@angular/core';
+import {
+  computed,
+  Directive,
+  inject,
+  input,
+  model,
+  output,
+  signal,
+  type Signal,
+} from '@angular/core';
 
 import { CNGX_COMMIT_CONTROLLER_FACTORY, type CngxCommitController } from '@cngx/common/data';
 import {
@@ -12,6 +21,7 @@ import type { Observable } from 'rxjs';
 import { CNGX_TABS_COMMIT_HANDLER_FACTORY, type CngxTabsCommitHandler } from './commit-handler';
 import {
   CNGX_TAB_GROUP_HOST,
+  type CngxTabCloseEvent,
   type CngxTabGroupHost,
   type CngxTabHandle,
 } from './tab-group-host.token';
@@ -78,6 +88,19 @@ export class CngxTabGroupPresenter implements CngxTabGroupHost {
    * action to confirm.
    */
   readonly commitMode = input<'optimistic' | 'pessimistic'>('optimistic');
+
+  /**
+   * Emitted when a tab's close affordance is activated (the close
+   * button or Delete/Backspace on the focused tab). The presenter has
+   * already moved the active index onto the surviving neighbour; the
+   * consumer removes the tab from its own data in the handler.
+   */
+  readonly tabClose = output<CngxTabCloseEvent>();
+  /**
+   * Emitted when the add-tab affordance is activated. The consumer
+   * appends a tab to its own data; the presenter owns no creation logic.
+   */
+  readonly tabAdd = output<void>();
 
   private readonly genericFactory = inject(CNGX_COMMIT_CONTROLLER_FACTORY);
   private readonly commitController: CngxCommitController<number> = this.genericFactory<number>();
@@ -271,6 +294,29 @@ export class CngxTabGroupPresenter implements CngxTabGroupHost {
       this.select(idx);
     }
   }
+
+  requestClose(id: string): void {
+    const tabs = this.tabs();
+    const index = tabs.findIndex((h) => h.id === id);
+    if (index < 0) {
+      return;
+    }
+    const active = this.clampedIndex();
+    // Only closing a tab BEFORE the active one needs a pre-emptive
+    // index shift: the active tab moves down one slot once the consumer
+    // removes the closed tab, so decrement to keep the same tab active.
+    // Closing the active tab (or one after it) needs no write -
+    // `clampedIndex` re-derives against the shorter array and lands on
+    // the next tab (or the new last when the closed tab was last).
+    if (index < active) {
+      this.activeIndex.set(active - 1);
+    }
+    this.tabClose.emit({ id, index });
+  }
+
+  requestAdd(): void {
+    this.tabAdd.emit();
+  }
 }
 
 /**
@@ -299,7 +345,8 @@ export function tabsEqual(a: readonly CngxTabHandle[], b: readonly CngxTabHandle
     if (
       a[i].id !== b[i].id ||
       a[i].disabled() !== b[i].disabled() ||
-      a[i].label() !== b[i].label()
+      a[i].label() !== b[i].label() ||
+      a[i].closable() !== b[i].closable()
     ) {
       return false;
     }

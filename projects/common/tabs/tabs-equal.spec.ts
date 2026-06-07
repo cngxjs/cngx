@@ -8,13 +8,14 @@ import type { CngxTabHandle } from './tab-group-host.token';
 
 function handle(
   id: string,
-  opts: { label?: string; disabled?: boolean } = {},
+  opts: { label?: string; disabled?: boolean; closable?: boolean } = {},
 ): CngxTabHandle {
   return {
     id,
     label: signal(opts.label ?? id),
     disabled: signal(opts.disabled ?? false),
     errorAggregator: signal(undefined),
+    closable: signal(opts.closable),
   };
 }
 
@@ -54,6 +55,12 @@ describe('tabsEqual', () => {
     expect(tabsEqual(a, b)).toBe(false);
   });
 
+  it('returns false when one entry closable flag differs', () => {
+    const a = [handle('a', { closable: false })];
+    const b = [handle('a', { closable: true })];
+    expect(tabsEqual(a, b)).toBe(false);
+  });
+
   it('does NOT compare errorAggregator references — equal returns true even when aggregators differ', () => {
     const stubAggregator = (hasErrorValue: boolean): CngxErrorAggregatorContract => ({
       hasError: signal(hasErrorValue),
@@ -71,6 +78,7 @@ describe('tabsEqual', () => {
         label: signal('A'),
         disabled: signal(false),
         errorAggregator: signal(stubAggregator(false)),
+        closable: signal(undefined),
       },
     ];
     const b: CngxTabHandle[] = [
@@ -79,6 +87,7 @@ describe('tabsEqual', () => {
         label: signal('A'),
         disabled: signal(false),
         errorAggregator: signal(stubAggregator(true)),
+        closable: signal(undefined),
       },
     ];
     expect(tabsEqual(a, b)).toBe(true);

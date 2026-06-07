@@ -16,6 +16,7 @@ function handle(
     label: signal(opts.label ?? id),
     disabled: signal(opts.disabled ?? false),
     errorAggregator: signal(undefined),
+    closable: signal(undefined),
   };
 }
 
@@ -448,4 +449,88 @@ describe('CngxTabGroupPresenter', () => {
     presenter.register(handle('b'));
     expect(presenter.tabs().map((t) => t.id)).toEqual(['a', 'b']);
   });
+
+  describe('requestClose — dismissable tabs', () => {
+    function withTabs(ids: string[]): {
+      presenter: CngxTabGroupPresenter;
+      remove: (id: string) => void;
+    } {
+      const { presenter } = setup();
+      ids.forEach((id) => presenter.register(handle(id)));
+      // Simulate the consumer removing the tab from its data in response
+      // to tabClose: the atom unregisters on teardown.
+      const remove = (id: string) => presenter.unregister(id);
+      return { presenter, remove };
+    }
+
+    it('closing the active middle tab activates the next tab', () => {
+      const { presenter, remove } = withTabs(['a', 'b', 'c']);
+      presenter.activeIndex.set(1);
+      presenter.requestClose('b');
+      remove('b');
+      expect(presenter.activeId()).toBe('c');
+    });
+
+    it('closing the active last tab activates the previous tab', () => {
+      const { presenter, remove } = withTabs(['a', 'b', 'c']);
+      presenter.activeIndex.set(2);
+      presenter.requestClose('c');
+      remove('c');
+      expect(presenter.activeId()).toBe('b');
+    });
+
+    it('closing a tab before the active one keeps the same tab active', () => {
+      const { presenter, remove } = withTabs(['a', 'b', 'c']);
+      presenter.activeIndex.set(2);
+      presenter.requestClose('a');
+      remove('a');
+      expect(presenter.activeId()).toBe('c');
+    });
+
+    it('closing a tab after the active one leaves the active tab unchanged', () => {
+      const { presenter, remove } = withTabs(['a', 'b', 'c']);
+      presenter.activeIndex.set(0);
+      presenter.requestClose('c');
+      remove('c');
+      expect(presenter.activeId()).toBe('a');
+    });
+
+    it('closing the only tab leaves no active tab', () => {
+      const { presenter, remove } = withTabs(['a']);
+      presenter.requestClose('a');
+      remove('a');
+      expect(presenter.tabs().length).toBe(0);
+      expect(presenter.activeId()).toBeNull();
+    });
+
+    it('emits tabClose with the closed id and its index', () => {
+      const { presenter } = withTabs(['a', 'b', 'c']);
+      const seen: { id: string; index: number }[] = [];
+      presenter.tabClose.subscribe((e) => seen.push(e));
+      presenter.requestClose('b');
+      expect(seen).toEqual([{ id: 'b', index: 1 }]);
+    });
+
+    it('does nothing for an unknown id', () => {
+      const { presenter } = withTabs(['a', 'b']);
+      const seen: unknown[] = [];
+      presenter.tabClose.subscribe((e) => seen.push(e));
+      presenter.activeIndex.set(1);
+      presenter.requestClose('zzz');
+      expect(seen).toEqual([]);
+      expect(presenter.activeIndex()).toBe(1);
+    });
+  });
+
+  describe('requestAdd — addable tabs', () => {
+    it('emits tabAdd', () => {
+      const { presenter } = setup();
+      let count = 0;
+      presenter.tabAdd.subscribe(() => count++);
+      presenter.requestAdd();
+      presenter.requestAdd();
+      expect(count).toBe(2);
+    });
+  });
+
 });

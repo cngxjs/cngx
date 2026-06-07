@@ -76,6 +76,10 @@ export function createMatTabHandle(
     return matTab.disabled;
   });
   const errorAggregator = signal<CngxErrorAggregatorContract | undefined>(undefined);
+  // Material owns its own tab lifecycle - the cngx dismissable/addable
+  // affordances are native-only by design, so the Material handle pins
+  // `closable` to `undefined` (group-default, never a close button).
+  const closable = signal<boolean | undefined>(undefined);
   // `nextUid` is process-wide monotonic, so `${id}-errors` descriptor
   // ids stay unique across coexisting `[cngxMatTabs]` instances.
   const id = idSeed();
@@ -85,6 +89,7 @@ export function createMatTabHandle(
       label,
       disabled,
       errorAggregator: errorAggregator.asReadonly(),
+      closable: closable.asReadonly(),
     },
     label,
     disabled,

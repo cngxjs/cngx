@@ -46,6 +46,7 @@ describe('CngxTabErrorBadge', () => {
       label: signal('A'),
       disabled: signal(false),
       errorAggregator: signal(undefined),
+      closable: signal(undefined),
     };
     const ctx: CngxTabErrorBadgeContext = { tab };
     expect(ctx.tab.id).toBe('a');

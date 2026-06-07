@@ -49,6 +49,7 @@ describe('CngxTabIcon', () => {
       label: signal('A'),
       disabled: signal(false),
       errorAggregator: signal(undefined),
+      closable: signal(undefined),
     };
     const ctx: CngxTabIconContext = { tab, active: true, index: 0 };
     expect(ctx.tab.id).toBe('a');

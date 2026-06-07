@@ -15,4 +15,8 @@ export const CNGX_TABS_GLYPHS = {
   errorBadge: '!',
   /** Default visual for `*cngxTabRejectionIcon` when no override is bound. */
   rejectionIcon: '!',
+  /** Default visual for a tab's close button when no override is bound. */
+  closeIcon: '×',
+  /** Default visual for the add-tab button when no override is bound. */
+  addIcon: '+',
 } as const;

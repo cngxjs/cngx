@@ -46,6 +46,7 @@ describe('CngxTabBusySpinner', () => {
       label: signal('A'),
       disabled: signal(false),
       errorAggregator: signal(undefined),
+      closable: signal(undefined),
     };
     const ctx: CngxTabBusySpinnerContext = { tab, intendedIndex: 0 };
     expect(ctx.tab.id).toBe('a');
