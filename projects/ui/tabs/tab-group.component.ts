@@ -222,7 +222,7 @@ export class CngxTabGroup implements CngxTabPanelHost {
         '.cngx-tabs__panel:not([hidden])',
       );
       this.activePanelHasFocusable.set(
-        panel != null && panel.querySelector(CNGX_FOCUSABLE_SELECTOR) != null,
+        panel?.querySelector(CNGX_FOCUSABLE_SELECTOR) != null,
       );
     });
 
