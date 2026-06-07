@@ -62,11 +62,16 @@ export interface CngxTabGroupTemplateBindings {
 }
 
 /**
- * Wires the 3-stage template cascade for the three `<cngx-tab-group>`
- * skin slots:
+ * Wires the 3-stage template cascade for the `<cngx-tab-group>` skin
+ * slots (errorBadge / rejectionIcon / busySpinner / icon / closeIcon /
+ * addIcon):
  *   per-instance directive >
  *   `CNGX_TABS_CONFIG.templates.<key>` >
- *   `null` (built-in default).
+ *   `null`.
+ *
+ * `null` means the organism renders its built-in default - a default
+ * span for the state decorations, the `CNGX_TABS_GLYPHS` glyph for
+ * `closeIcon` / `addIcon`, and nothing for `icon`.
  *
  * Pure — no DI, no side effects. Safe in field-init. Sibling to
  * `createStepperTemplateBindings` and `createTabOverflowTemplateBindings`.
