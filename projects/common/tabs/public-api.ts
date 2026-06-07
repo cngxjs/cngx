@@ -130,6 +130,11 @@ export {
 } from './slots/tab-close-icon.directive';
 export { CngxTabAddIcon } from './slots/tab-add-icon.directive';
 export {
+  createTabDismissals,
+  type CngxTabDismissals,
+  type CngxTabDismissalsOptions,
+} from './dismissals/tab-dismissals';
+export {
   createTabGroupTemplateBindings,
   type CngxTabGroupTemplateBindings,
   type CngxTabGroupTemplateBindingsOptions,
