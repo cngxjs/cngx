@@ -9,12 +9,19 @@ import type {
   CngxTabsSkin,
 } from './tabs-config';
 
+const none = {
+  skin: () => signal<CngxTabsSkin | undefined>(undefined),
+  iconLayout: () => signal<CngxTabIconLayout | undefined>(undefined),
+  panelMode: () => signal<CngxTabsPanelMode | undefined>(undefined),
+};
+
 describe('createTabsHostAttrs', () => {
   describe('skin cascade (input > config > default)', () => {
     it('falls back to the library default when input and config are unset', () => {
       const attrs = createTabsHostAttrs({
-        skin: signal<CngxTabsSkin | undefined>(undefined),
-        iconLayout: signal<CngxTabIconLayout | undefined>(undefined),
+        skin: none.skin(),
+        iconLayout: none.iconLayout(),
+        panelMode: none.panelMode(),
         config: {},
       });
       expect(attrs.resolvedSkin()).toBe('line');
@@ -22,8 +29,9 @@ describe('createTabsHostAttrs', () => {
 
     it('config wins over the library default', () => {
       const attrs = createTabsHostAttrs({
-        skin: signal<CngxTabsSkin | undefined>(undefined),
-        iconLayout: signal<CngxTabIconLayout | undefined>(undefined),
+        skin: none.skin(),
+        iconLayout: none.iconLayout(),
+        panelMode: none.panelMode(),
         config: { skin: 'contained' } satisfies CngxTabsConfig,
       });
       expect(attrs.resolvedSkin()).toBe('contained');
@@ -32,7 +40,8 @@ describe('createTabsHostAttrs', () => {
     it('per-instance input wins over config', () => {
       const attrs = createTabsHostAttrs({
         skin: signal<CngxTabsSkin | undefined>('pill'),
-        iconLayout: signal<CngxTabIconLayout | undefined>(undefined),
+        iconLayout: none.iconLayout(),
+        panelMode: none.panelMode(),
         config: { skin: 'contained' },
       });
       expect(attrs.resolvedSkin()).toBe('pill');
@@ -42,7 +51,8 @@ describe('createTabsHostAttrs', () => {
       const skin = signal<CngxTabsSkin | undefined>(undefined);
       const attrs = createTabsHostAttrs({
         skin,
-        iconLayout: signal<CngxTabIconLayout | undefined>(undefined),
+        iconLayout: none.iconLayout(),
+        panelMode: none.panelMode(),
         config: { skin: 'contained' },
       });
       expect(attrs.resolvedSkin()).toBe('contained');
@@ -54,8 +64,9 @@ describe('createTabsHostAttrs', () => {
   describe('iconLayout cascade (input > config > default)', () => {
     it('falls back to the library default when input and config are unset', () => {
       const attrs = createTabsHostAttrs({
-        skin: signal<CngxTabsSkin | undefined>(undefined),
-        iconLayout: signal<CngxTabIconLayout | undefined>(undefined),
+        skin: none.skin(),
+        iconLayout: none.iconLayout(),
+        panelMode: none.panelMode(),
         config: {},
       });
       expect(attrs.resolvedIconLayout()).toBe('start');
@@ -63,8 +74,9 @@ describe('createTabsHostAttrs', () => {
 
     it('config wins over the library default', () => {
       const attrs = createTabsHostAttrs({
-        skin: signal<CngxTabsSkin | undefined>(undefined),
-        iconLayout: signal<CngxTabIconLayout | undefined>(undefined),
+        skin: none.skin(),
+        iconLayout: none.iconLayout(),
+        panelMode: none.panelMode(),
         config: { iconLayout: 'top' },
       });
       expect(attrs.resolvedIconLayout()).toBe('top');
@@ -72,38 +84,31 @@ describe('createTabsHostAttrs', () => {
 
     it('per-instance input wins over config', () => {
       const attrs = createTabsHostAttrs({
-        skin: signal<CngxTabsSkin | undefined>(undefined),
+        skin: none.skin(),
         iconLayout: signal<CngxTabIconLayout | undefined>('only'),
+        panelMode: none.panelMode(),
         config: { iconLayout: 'top' },
       });
       expect(attrs.resolvedIconLayout()).toBe('only');
     });
   });
 
-  it('resolves both axes independently from one config', () => {
-    const attrs = createTabsHostAttrs({
-      skin: signal<CngxTabsSkin | undefined>('pill'),
-      iconLayout: signal<CngxTabIconLayout | undefined>(undefined),
-      config: { iconLayout: 'top' },
-    });
-    expect(attrs.resolvedSkin()).toBe('pill');
-    expect(attrs.resolvedIconLayout()).toBe('top');
-  });
-
   describe('panelMode cascade (input > config > default)', () => {
-    it('defaults to eager when input and config are unset', () => {
+    it('falls back to eager when input and config are unset', () => {
       const attrs = createTabsHostAttrs({
-        skin: signal<CngxTabsSkin | undefined>(undefined),
-        iconLayout: signal<CngxTabIconLayout | undefined>(undefined),
+        skin: none.skin(),
+        iconLayout: none.iconLayout(),
+        panelMode: none.panelMode(),
         config: {},
       });
       expect(attrs.resolvedPanelMode()).toBe('eager');
     });
 
-    it('defaults to eager when no panelMode input is supplied at all (optional input)', () => {
+    it('config wins over the default', () => {
       const attrs = createTabsHostAttrs({
-        skin: signal<CngxTabsSkin | undefined>(undefined),
-        iconLayout: signal<CngxTabIconLayout | undefined>(undefined),
+        skin: none.skin(),
+        iconLayout: none.iconLayout(),
+        panelMode: none.panelMode(),
         config: { panelMode: 'lazy' },
       });
       expect(attrs.resolvedPanelMode()).toBe('lazy');
@@ -111,12 +116,24 @@ describe('createTabsHostAttrs', () => {
 
     it('per-instance input wins over config', () => {
       const attrs = createTabsHostAttrs({
-        skin: signal<CngxTabsSkin | undefined>(undefined),
-        iconLayout: signal<CngxTabIconLayout | undefined>(undefined),
+        skin: none.skin(),
+        iconLayout: none.iconLayout(),
         panelMode: signal<CngxTabsPanelMode | undefined>('lazy-destroy'),
         config: { panelMode: 'lazy' },
       });
       expect(attrs.resolvedPanelMode()).toBe('lazy-destroy');
     });
+  });
+
+  it('resolves all three axes independently from one config', () => {
+    const attrs = createTabsHostAttrs({
+      skin: signal<CngxTabsSkin | undefined>('pill'),
+      iconLayout: none.iconLayout(),
+      panelMode: signal<CngxTabsPanelMode | undefined>('lazy'),
+      config: { iconLayout: 'top' },
+    });
+    expect(attrs.resolvedSkin()).toBe('pill');
+    expect(attrs.resolvedIconLayout()).toBe('top');
+    expect(attrs.resolvedPanelMode()).toBe('lazy');
   });
 });

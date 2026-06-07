@@ -12,6 +12,7 @@ import {
   Injector,
   input,
   isDevMode,
+  linkedSignal,
   signal,
   type Signal,
   type TemplateRef,
@@ -51,6 +52,7 @@ import {
   type CngxTabPanelHost,
   type CngxTabRejectionIconContext,
   type CngxTabsHostAttrs,
+  type CngxTabsPanelMode,
   type CngxTabsSkin,
 } from '@cngx/common/tabs';
 
@@ -112,6 +114,7 @@ import {
     '[attr.data-orientation]': 'presenter.orientation()',
     '[attr.data-skin]': 'hostAttrs.resolvedSkin()',
     '[attr.data-icon-layout]': 'hostAttrs.resolvedIconLayout()',
+    '[attr.data-panel-mode]': 'hostAttrs.resolvedPanelMode()',
     '[attr.aria-label]': 'announcements.resolvedAriaLabel()',
     '[attr.aria-labelledby]': 'ariaLabelledBy()',
     '[class.cngx-tabs]': 'true',
@@ -139,6 +142,15 @@ export class CngxTabGroup implements CngxTabPanelHost {
    * `[data-icon-layout]`. Orthogonal to skin and orientation.
    */
   readonly iconLayout = input<CngxTabIconLayout | undefined>(undefined);
+  /**
+   * Panel render strategy. Cascade `input ?? config ?? 'eager'`,
+   * reflected onto `[data-panel-mode]`. `'eager'` (default) renders every
+   * panel's content up front (byte-identical to before this input
+   * existed); `'lazy'` keep-alives content after first activation;
+   * `'lazy-destroy'` renders only the active panel's content. The panel
+   * `<div>` always stays in the DOM regardless.
+   */
+  readonly panelMode = input<CngxTabsPanelMode | undefined>(undefined);
 
   protected readonly presenter = inject(CNGX_TAB_GROUP_HOST);
   protected readonly i18n = injectTabsI18n();
@@ -185,6 +197,7 @@ export class CngxTabGroup implements CngxTabPanelHost {
   protected readonly hostAttrs: CngxTabsHostAttrs = createTabsHostAttrs({
     skin: this.skin,
     iconLayout: this.iconLayout,
+    panelMode: this.panelMode,
     config: this.config,
   });
 
@@ -298,6 +311,44 @@ export class CngxTabGroup implements CngxTabPanelHost {
    */
   protected panelTabindex(tab: CngxTabHandle): 0 | null {
     return this.isSelected(tab) && !this.activePanelHasFocusable() ? 0 : null;
+  }
+
+  /**
+   * Keep-alive set for `panelMode='lazy'`: the ids of every tab that has
+   * ever been activated. Derived history (Pillar 1) - a `linkedSignal`
+   * accumulating onto its own previous value as `activeId` moves, NOT an
+   * `effect` that writes a set. The structural `equal` (size + membership)
+   * means re-activating an already-seen tab returns an equal set, so the
+   * reference is stable and downstream `shouldRenderContent` reads do not
+   * churn.
+   */
+  private readonly seenIds = linkedSignal<string | null, ReadonlySet<string>>({
+    source: () => this.presenter.activeId(),
+    computation: (id, prev) => {
+      const next = new Set(prev?.value ?? []);
+      if (id != null) {
+        next.add(id);
+      }
+      return next;
+    },
+    equal: (a, b) => a.size === b.size && [...a].every((x) => b.has(x)),
+  });
+
+  /**
+   * Whether a tab's panel content should be rendered now. The panel
+   * `<div>` is always in the DOM (the `aria-controls` target); only its
+   * inner content is gated. `eager` is byte-identical to the original
+   * behaviour (everything rendered, visibility toggled via `[hidden]`).
+   */
+  protected shouldRenderContent(tab: CngxTabHandle): boolean {
+    switch (this.hostAttrs.resolvedPanelMode()) {
+      case 'lazy':
+        return this.seenIds().has(tab.id);
+      case 'lazy-destroy':
+        return this.isSelected(tab);
+      default:
+        return true;
+    }
   }
 
   protected tabDescriptorId(tab: CngxTabHandle): string {

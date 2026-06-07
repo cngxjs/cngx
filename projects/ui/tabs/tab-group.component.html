@@ -101,9 +101,11 @@
       [attr.tabindex]="panelTabindex(tab)"
       [hidden]="!isSelected(tab)"
     >
-      @let contentTpl = contentTemplateFor(tab.id);
-      @if (contentTpl) {
-        <ng-container *ngTemplateOutlet="contentTpl"></ng-container>
+      @if (shouldRenderContent(tab)) {
+        @let contentTpl = contentTemplateFor(tab.id);
+        @if (contentTpl) {
+          <ng-container *ngTemplateOutlet="contentTpl"></ng-container>
+        }
       }
     </div>
   }

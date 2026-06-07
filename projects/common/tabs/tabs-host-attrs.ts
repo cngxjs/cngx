@@ -18,13 +18,7 @@ import type {
 export interface CngxTabsHostAttrsInputs {
   readonly skin: Signal<CngxTabsSkin | undefined>;
   readonly iconLayout: Signal<CngxTabIconLayout | undefined>;
-  /**
-   * Per-instance panel-mode input. Optional so the organism (which
-   * gains the `[panelMode]` input + render gating in the panel-render
-   * commit) still type-checks before it is wired; absent means the
-   * cascade falls through to `config.panelMode` then `'eager'`.
-   */
-  readonly panelMode?: Signal<CngxTabsPanelMode | undefined>;
+  readonly panelMode: Signal<CngxTabsPanelMode | undefined>;
   readonly config: CngxTabsConfig;
 }
 
@@ -65,7 +59,7 @@ export function createTabsHostAttrs(
       () => inputs.iconLayout() ?? inputs.config.iconLayout ?? 'start',
     ),
     resolvedPanelMode: computed<CngxTabsPanelMode>(
-      () => inputs.panelMode?.() ?? inputs.config.panelMode ?? 'eager',
+      () => inputs.panelMode() ?? inputs.config.panelMode ?? 'eager',
     ),
   };
 }

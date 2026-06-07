@@ -1581,3 +1581,122 @@ describe('CngxTabGroup APG panel focus (panelTabindex)', () => {
     expect(activePanel(fixture).getAttribute('tabindex')).toBeNull();
   });
 });
+
+@Component({
+  standalone: true,
+  imports: [CngxTabGroup, CngxTab, CngxTabContent],
+  template: `
+    <cngx-tab-group
+      [panelMode]="mode()"
+      [(activeIndex)]="active"
+      aria-label="Panel modes"
+    >
+      <div cngxTab [label]="'A'">
+        <ng-template cngxTabContent><span class="body-a">A body</span></ng-template>
+      </div>
+      <div cngxTab [label]="'B'">
+        <ng-template cngxTabContent><span class="body-b">B body</span></ng-template>
+      </div>
+      <div cngxTab [label]="'C'">
+        <ng-template cngxTabContent><span class="body-c">C body</span></ng-template>
+      </div>
+    </cngx-tab-group>
+  `,
+})
+class PanelModeHost {
+  readonly mode = signal<'eager' | 'lazy' | 'lazy-destroy'>('eager');
+  readonly active = signal(0);
+}
+
+describe('CngxTabGroup panelMode rendering', () => {
+  function has(fixture: { nativeElement: HTMLElement }, sel: string): boolean {
+    return fixture.nativeElement.querySelector(sel) != null;
+  }
+  function tabButtons(fixture: {
+    nativeElement: HTMLElement;
+  }): HTMLButtonElement[] {
+    return Array.from(
+      fixture.nativeElement.querySelectorAll('button[role="tab"]'),
+    ) as HTMLButtonElement[];
+  }
+
+  it('the panel <div> stays in the DOM for every tab regardless of mode (aria-controls target)', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(PanelModeHost);
+    fixture.componentInstance.mode.set('lazy-destroy');
+    fixture.detectChanges();
+    expect(
+      fixture.nativeElement.querySelectorAll('[role="tabpanel"]').length,
+    ).toBe(3);
+  });
+
+  it('eager renders every panel content up front (byte-identical to default)', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(PanelModeHost);
+    fixture.detectChanges();
+    expect(has(fixture, '.body-a')).toBe(true);
+    expect(has(fixture, '.body-b')).toBe(true);
+    expect(has(fixture, '.body-c')).toBe(true);
+  });
+
+  it('lazy renders content only after first activation and keep-alives it', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(PanelModeHost);
+    fixture.componentInstance.mode.set('lazy');
+    fixture.detectChanges();
+    // Only the initially-active panel has content.
+    expect(has(fixture, '.body-a')).toBe(true);
+    expect(has(fixture, '.body-b')).toBe(false);
+    expect(has(fixture, '.body-c')).toBe(false);
+
+    // Activate B - its content renders.
+    tabButtons(fixture)[1].click();
+    fixture.detectChanges();
+    expect(has(fixture, '.body-b')).toBe(true);
+
+    // Back to A - B's content is kept alive (keep-alive, not re-created).
+    tabButtons(fixture)[0].click();
+    fixture.detectChanges();
+    expect(has(fixture, '.body-a')).toBe(true);
+    expect(has(fixture, '.body-b')).toBe(true);
+    expect(has(fixture, '.body-c')).toBe(false);
+  });
+
+  it('lazy-destroy renders only the active panel content and destroys it on leave', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(PanelModeHost);
+    fixture.componentInstance.mode.set('lazy-destroy');
+    fixture.detectChanges();
+    expect(has(fixture, '.body-a')).toBe(true);
+    expect(has(fixture, '.body-b')).toBe(false);
+
+    tabButtons(fixture)[1].click();
+    fixture.detectChanges();
+    expect(has(fixture, '.body-b')).toBe(true);
+    // A's content is destroyed on leave.
+    expect(has(fixture, '.body-a')).toBe(false);
+  });
+
+  it('reflects panelMode onto the data-panel-mode host attribute', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(PanelModeHost);
+    fixture.detectChanges();
+    const host = fixture.nativeElement.querySelector(
+      'cngx-tab-group',
+    ) as HTMLElement;
+    expect(host.getAttribute('data-panel-mode')).toBe('eager');
+    fixture.componentInstance.mode.set('lazy');
+    fixture.detectChanges();
+    expect(host.getAttribute('data-panel-mode')).toBe('lazy');
+  });
+});
