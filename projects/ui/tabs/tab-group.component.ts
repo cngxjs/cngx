@@ -32,17 +32,21 @@ import {
   CNGX_TAB_GROUP_HOST,
   CNGX_TAB_PANEL_HOST,
   CngxTab,
+  CngxTabAddIcon,
   CngxTabBusySpinner,
+  CngxTabCloseIcon,
   CngxTabErrorBadge,
   CngxTabGroupPresenter,
   CngxTabIcon,
   CngxTabRejectionIcon,
+  createTabDismissals,
   createTabGroupAnnouncements,
   createTabGroupTemplateBindings,
   createTabsHostAttrs,
   injectTabsConfig,
   injectTabsI18n,
   type CngxTabBusySpinnerContext,
+  type CngxTabDismissals,
   type CngxTabErrorBadgeContext,
   type CngxTabGroupAnnouncements,
   type CngxTabGroupTemplateBindings,
@@ -96,7 +100,7 @@ import {
     {
       directive: CngxTabGroupPresenter,
       inputs: ['activeIndex', 'orientation', 'loop', 'commitAction', 'commitMode'],
-      outputs: ['activeIndexChange'],
+      outputs: ['activeIndexChange', 'tabClose', 'tabAdd'],
     },
     {
       directive: CngxRovingTabindex,
@@ -151,6 +155,21 @@ export class CngxTabGroup implements CngxTabPanelHost {
    * `<div>` always stays in the DOM regardless.
    */
   readonly panelMode = input<CngxTabsPanelMode | undefined>(undefined);
+  /**
+   * Whether tabs render a close affordance. Cascade
+   * `input ?? config ?? false`. A per-`CngxTab` `[closable]` override
+   * wins over this group default. When on, each closable tab gets a
+   * close button (and Delete on the focused tab closes it); the
+   * `(tabClose)` output fires with the tab id and index for the
+   * consumer to remove from its data.
+   */
+  readonly closable = input<boolean | undefined>(undefined);
+  /**
+   * Whether the group renders an add-tab button after the strip. Cascade
+   * `input ?? config ?? false`. When on, the `(tabAdd)` output fires for
+   * the consumer to append a tab to its data.
+   */
+  readonly addable = input<boolean | undefined>(undefined);
 
   protected readonly presenter = inject(CNGX_TAB_GROUP_HOST);
   protected readonly i18n = injectTabsI18n();
@@ -174,6 +193,23 @@ export class CngxTabGroup implements CngxTabPanelHost {
   private readonly rejectionIconSlot = contentChild(CngxTabRejectionIcon);
   private readonly busySpinnerSlot = contentChild(CngxTabBusySpinner);
   private readonly iconSlot = contentChild(CngxTabIcon);
+  private readonly closeIconSlot = contentChild(CngxTabCloseIcon);
+  private readonly addIconSlot = contentChild(CngxTabAddIcon);
+
+  /**
+   * Dismissable / addable affordance surface (close + add resolution,
+   * close interaction, focus restoration). Level-2 helper keeps the
+   * cascade + handlers off the organism class (LOC guard).
+   */
+  protected readonly dismiss: CngxTabDismissals = createTabDismissals({
+    host: this.presenter,
+    config: this.config,
+    i18n: this.i18n,
+    closable: this.closable,
+    addable: this.addable,
+    hostElement: this.hostElement,
+    injector: this.injector,
+  });
 
   /**
    * AT-announcement bundle from `@cngx/common/tabs/announcements/`.
@@ -276,6 +312,8 @@ export class CngxTabGroup implements CngxTabPanelHost {
     rejectionIconSlot: this.rejectionIconSlot,
     busySpinnerSlot: this.busySpinnerSlot,
     iconSlot: this.iconSlot,
+    closeIconSlot: this.closeIconSlot,
+    addIconSlot: this.addIconSlot,
     config: this.config,
   });
 
@@ -431,6 +469,7 @@ export class CngxTabGroup implements CngxTabPanelHost {
       this.presenter.select(idx);
     }
   }
+
 
   // CngxTabPanelHost contract - presenter owns clamping, disabled-skip,
   // commit-action gating.

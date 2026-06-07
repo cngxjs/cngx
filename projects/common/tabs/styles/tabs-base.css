@@ -303,6 +303,38 @@
     initial-value: oklch(0.45 0.15 25 / 0.18);
   }
 
+  /**
+   * Hit-target size of a tab's close button and the add-tab button.
+   * @group State / Dismissable
+   */
+  @property --cngx-tab-affordance-size {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 1.25rem;
+  }
+
+  /**
+   * Corner radius of the close / add affordance buttons.
+   * @group State / Dismissable
+   */
+  @property --cngx-tab-affordance-radius {
+    syntax: '*';
+    inherits: false;
+    initial-value: 50%;
+  }
+
+  /**
+   * Hover/focus fill of the close / add affordance buttons. Defaults to
+   * a translucent tint of the current text colour, so it adapts to any
+   * surface and either colour scheme without a 4-block.
+   * @group State / Dismissable
+   */
+  @property --cngx-tab-affordance-hover-bg {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: color-mix(in oklch, currentColor 14%, transparent);
+  }
+
   /*
    * Default-theme palette. The active-indicator delegates to
    * `--cngx-color-primary` so the underline tracks the brand accent
@@ -391,6 +423,67 @@
   .cngx-tabs__label {
     flex: 1 1 auto;
     min-width: 0;
+  }
+
+  /*
+   * Dismissable / addable affordances. The wrapper holds the tab button
+   * and its close button as one visual unit (role="presentation", so the
+   * tablist still sees the tab buttons). The close button is a sibling of
+   * the tab button - it cannot nest inside it (button-in-button is
+   * invalid) - and carries `tabindex="-1"`: keyboard close is the Delete
+   * shortcut on the focused tab; the visible button is the pointer / AT
+   * affordance.
+   */
+  .cngx-tabs__tab-wrapper {
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .cngx-tabs__close,
+  .cngx-tabs__add {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    box-sizing: border-box;
+    width: var(--cngx-tab-affordance-size, 1.25rem);
+    height: var(--cngx-tab-affordance-size, 1.25rem);
+    padding: 0;
+    border: 0;
+    border-radius: var(--cngx-tab-affordance-radius, 50%);
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  .cngx-tabs__close {
+    margin-inline-start: var(--cngx-tab-gap, 0.5rem);
+  }
+
+  .cngx-tabs__add {
+    margin-inline-start: var(--cngx-tab-gap, 0.5rem);
+    align-self: center;
+  }
+
+  .cngx-tabs__close:hover,
+  .cngx-tabs__add:hover {
+    background: var(
+      --cngx-tab-affordance-hover-bg,
+      color-mix(in oklch, currentColor 14%, transparent)
+    );
+  }
+
+  .cngx-tabs__close:focus-visible,
+  .cngx-tabs__add:focus-visible {
+    outline: var(--cngx-tab-focus-ring, 2px solid currentColor);
+    outline-offset: var(--cngx-tab-focus-offset, 2px);
+  }
+
+  cngx-tab-group[data-orientation='vertical'] .cngx-tabs__add {
+    margin-inline-start: 0;
+    margin-block-start: var(--cngx-tab-gap, 0.5rem);
   }
 
   .cngx-tabs__badge {

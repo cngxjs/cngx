@@ -6,6 +6,7 @@
   [attr.aria-orientation]="presenter.orientation()"
 >
   @for (tab of tabs(); track tab.id; let i = $index) {
+    <div class="cngx-tabs__tab-wrapper" role="presentation">
     <button
       type="button"
       cngxRovingItem
@@ -19,8 +20,10 @@
       [attr.aria-disabled]="tab.disabled() ? 'true' : null"
       [attr.aria-busy]="isTabBusy(tab) ? 'true' : null"
       [attr.aria-describedby]="tabDescriptorId(tab)"
+      [attr.aria-keyshortcuts]="dismiss.isTabClosable(tab) ? 'Delete' : null"
       [cngxRovingItemDisabled]="tab.disabled()"
       (click)="handleHeaderClick(tab)"
+      (keydown)="dismiss.handleTabKeydown(tab, $event)"
     >
       @let iconTpl = templates.icon();
       @if (iconTpl) {
@@ -85,8 +88,42 @@
         announcements.statusPhrase(tab)
       }}</span>
     </button>
+    @if (dismiss.isTabClosable(tab)) {
+      <button
+        type="button"
+        class="cngx-tabs__close"
+        tabindex="-1"
+        [attr.aria-label]="dismiss.closeButtonLabel(tab)"
+        (click)="dismiss.handleClose(tab, $event)"
+      >
+        @let closeIconTpl = templates.closeIcon();
+        @if (closeIconTpl) {
+          <ng-container
+            *ngTemplateOutlet="closeIconTpl; context: dismiss.closeIconContextFor(tab)"
+          ></ng-container>
+        } @else {
+          <span aria-hidden="true">{{ glyphs.closeIcon }}</span>
+        }
+      </button>
+    }
+    </div>
   }
 </div>
+@if (dismiss.resolvedAddable()) {
+  <button
+    type="button"
+    class="cngx-tabs__add"
+    [attr.aria-label]="i18n.addTab"
+    (click)="dismiss.handleAdd()"
+  >
+    @let addIconTpl = templates.addIcon();
+    @if (addIconTpl) {
+      <ng-container *ngTemplateOutlet="addIconTpl"></ng-container>
+    } @else {
+      <span aria-hidden="true">{{ glyphs.addIcon }}</span>
+    }
+  </button>
+}
 <ng-content select="cngx-tab-overflow"></ng-content>
 </div>
 

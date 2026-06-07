@@ -1759,3 +1759,134 @@ describe('CngxTabGroup panelMode=lazy x APG panel focus', () => {
     expect(panel.getAttribute('tabindex')).toBeNull();
   });
 });
+
+@Component({
+  standalone: true,
+  imports: [CngxTabGroup, CngxTab],
+  template: `
+    <cngx-tab-group
+      [closable]="closable()"
+      [addable]="addable()"
+      aria-label="Dismissable"
+      (tabClose)="closed.push($event)"
+      (tabAdd)="added = added + 1"
+    >
+      <div cngxTab [label]="'Home'" [closable]="false"></div>
+      <div cngxTab [label]="'Profile'"></div>
+      <div cngxTab [label]="'Settings'"></div>
+    </cngx-tab-group>
+  `,
+})
+class DismissableHost {
+  readonly closable = signal(true);
+  readonly addable = signal(true);
+  readonly closed: { id: string; index: number }[] = [];
+  added = 0;
+}
+
+describe('CngxTabGroup dismissable + addable', () => {
+  function closeButtons(fixture: {
+    nativeElement: HTMLElement;
+  }): HTMLButtonElement[] {
+    return Array.from(
+      fixture.nativeElement.querySelectorAll('.cngx-tabs__close'),
+    ) as HTMLButtonElement[];
+  }
+  function tabButtons(fixture: {
+    nativeElement: HTMLElement;
+  }): HTMLButtonElement[] {
+    return Array.from(
+      fixture.nativeElement.querySelectorAll('button[role="tab"]'),
+    ) as HTMLButtonElement[];
+  }
+
+  it('renders a close button per closable tab; a per-tab [closable]=false pins its tab', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(DismissableHost);
+    fixture.detectChanges();
+    // Home has [closable]="false" -> no close button; Profile + Settings do.
+    expect(closeButtons(fixture).length).toBe(2);
+    const tabs = tabButtons(fixture);
+    expect(tabs[0].getAttribute('aria-keyshortcuts')).toBeNull();
+    expect(tabs[1].getAttribute('aria-keyshortcuts')).toBe('Delete');
+  });
+
+  it('close button carries an i18n aria-label and is out of the tab order', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(DismissableHost);
+    fixture.detectChanges();
+    const btn = closeButtons(fixture)[0];
+    expect(btn.getAttribute('aria-label')).toBe('Close "Profile"');
+    expect(btn.getAttribute('tabindex')).toBe('-1');
+  });
+
+  it('clicking a close button emits tabClose with id + index', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(DismissableHost);
+    fixture.detectChanges();
+    closeButtons(fixture)[0].click();
+    fixture.detectChanges();
+    const ev = fixture.componentInstance.closed.at(-1)!;
+    expect(ev.index).toBe(1);
+    expect(typeof ev.id).toBe('string');
+  });
+
+  it('Delete on a focused closable tab emits tabClose', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(DismissableHost);
+    fixture.detectChanges();
+    const tabs = tabButtons(fixture);
+    tabs[2].dispatchEvent(new KeyboardEvent('keydown', { key: 'Delete', bubbles: true }));
+    fixture.detectChanges();
+    expect(fixture.componentInstance.closed.at(-1)?.index).toBe(2);
+  });
+
+  it('Delete on a pinned (non-closable) tab does nothing', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(DismissableHost);
+    fixture.detectChanges();
+    tabButtons(fixture)[0].dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Delete', bubbles: true }),
+    );
+    fixture.detectChanges();
+    expect(fixture.componentInstance.closed.length).toBe(0);
+  });
+
+  it('renders an add button when addable and emits tabAdd on click', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(DismissableHost);
+    fixture.detectChanges();
+    const add = fixture.nativeElement.querySelector(
+      '.cngx-tabs__add',
+    ) as HTMLButtonElement;
+    expect(add).not.toBeNull();
+    expect(add.getAttribute('aria-label')).toBe('Add tab');
+    add.click();
+    fixture.detectChanges();
+    expect(fixture.componentInstance.added).toBe(1);
+  });
+
+  it('no close / add affordances when closable + addable are off', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(DismissableHost);
+    fixture.componentInstance.closable.set(false);
+    fixture.componentInstance.addable.set(false);
+    fixture.detectChanges();
+    expect(closeButtons(fixture).length).toBe(0);
+    expect(fixture.nativeElement.querySelector('.cngx-tabs__add')).toBeNull();
+  });
+});
