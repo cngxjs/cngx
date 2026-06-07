@@ -224,10 +224,14 @@ export class CngxTabGroup implements CngxTabPanelHost {
 
     // APG tabpanel focus probe. afterRenderEffect re-runs after render
     // whenever its tracked dep (the active panel id) changes - i.e. on
-    // every tab switch. Reading the DOM is the only way to know whether
-    // the consumer-projected panel content is focusable. The boolean set
-    // is not read inside the effect, so it never re-triggers itself, and
-    // its default Object.is equality makes a stable probe a no-op.
+    // every tab switch, which is when the active panel (always rendered
+    // in every panelMode) gets its current content. Reading the DOM is
+    // the only way to know whether the consumer-projected content is
+    // focusable. The boolean set is not read inside the effect, so it
+    // never re-triggers itself, and its default Object.is equality makes
+    // a stable probe a no-op. Scope: content that mutates inside the
+    // already-active panel without a tab switch (late async content) is
+    // not re-probed - an accepted heuristic limit, not a correctness bug.
     afterRenderEffect(() => {
       // Tracked: re-probe when the active panel changes.
       this.presenter.activeId();
@@ -320,7 +324,10 @@ export class CngxTabGroup implements CngxTabPanelHost {
    * `effect` that writes a set. The structural `equal` (size + membership)
    * means re-activating an already-seen tab returns an equal set, so the
    * reference is stable and downstream `shouldRenderContent` reads do not
-   * churn.
+   * churn. Unbounded by design: `lazy` trades retention (every visited
+   * panel's content stays alive for the directive's life) for keep-alive;
+   * the set is bounded by tab count, and `lazy-destroy` is the bounded
+   * alternative when retention is unwanted.
    */
   private readonly seenIds = linkedSignal<string | null, ReadonlySet<string>>({
     source: () => this.presenter.activeId(),

@@ -1700,3 +1700,62 @@ describe('CngxTabGroup panelMode rendering', () => {
     expect(host.getAttribute('data-panel-mode')).toBe('lazy');
   });
 });
+
+@Component({
+  standalone: true,
+  imports: [CngxTabGroup, CngxTab, CngxTabContent],
+  template: `
+    <cngx-tab-group
+      panelMode="lazy"
+      [(activeIndex)]="active"
+      aria-label="Lazy focus"
+    >
+      <div cngxTab [label]="'A'">
+        <ng-template cngxTabContent><p>Plain text, no focusable.</p></ng-template>
+      </div>
+      <div cngxTab [label]="'B'">
+        <ng-template cngxTabContent>
+          <button type="button">Focusable in B</button>
+        </ng-template>
+      </div>
+    </cngx-tab-group>
+  `,
+})
+class LazyFocusHost {
+  readonly active = signal(0);
+}
+
+describe('CngxTabGroup panelMode=lazy x APG panel focus', () => {
+  function settle(fixture: { detectChanges(): void }): void {
+    fixture.detectChanges();
+    TestBed.tick();
+    fixture.detectChanges();
+    TestBed.tick();
+  }
+
+  it('re-probes focusability when a lazy panel is first activated', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(LazyFocusHost);
+    settle(fixture);
+    // Tab A active: no focusable content -> tabindex 0.
+    let panel = fixture.nativeElement.querySelector(
+      '.cngx-tabs__panel:not([hidden])',
+    ) as HTMLElement;
+    expect(panel.getAttribute('tabindex')).toBe('0');
+
+    // Activate B (first time, content renders now): it has a button,
+    // so the panel must NOT take a redundant tab stop.
+    const tabs = Array.from(
+      fixture.nativeElement.querySelectorAll('button[role="tab"]'),
+    ) as HTMLButtonElement[];
+    tabs[1].click();
+    settle(fixture);
+    panel = fixture.nativeElement.querySelector(
+      '.cngx-tabs__panel:not([hidden])',
+    ) as HTMLElement;
+    expect(panel.getAttribute('aria-labelledby')).toBe(tabs[1].id);
+    expect(panel.getAttribute('tabindex')).toBeNull();
+  });
+});
