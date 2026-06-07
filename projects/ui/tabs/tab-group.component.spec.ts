@@ -1935,3 +1935,115 @@ describe('CngxTabGroup dismissable focus restoration', () => {
     expect(document.activeElement).toBe(host);
   });
 });
+
+@Component({
+  standalone: true,
+  imports: [CngxTabGroup, CngxTab],
+  template: `
+    <cngx-tab-group aria-label="Disabled skip">
+      <div cngxTab [label]="'A'"></div>
+      <div cngxTab [label]="'B'" [disabled]="true"></div>
+      <div cngxTab [label]="'C'"></div>
+    </cngx-tab-group>
+  `,
+})
+class DisabledSkipHost {}
+
+describe('CngxTabGroup APG keyboard (automatic activation)', () => {
+  function tabButtons(fixture: { nativeElement: HTMLElement }): HTMLButtonElement[] {
+    return Array.from(
+      fixture.nativeElement.querySelectorAll('button[role="tab"]'),
+    ) as HTMLButtonElement[];
+  }
+  function press(el: HTMLElement, key: string): KeyboardEvent {
+    const ev = new KeyboardEvent('keydown', {
+      key,
+      bubbles: true,
+      cancelable: true,
+    });
+    el.dispatchEvent(ev);
+    return ev;
+  }
+  function make<T>(host: new () => T) {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(host);
+    fixture.detectChanges();
+    return fixture;
+  }
+
+  it('only the active tab is in the tab order (roving tabindex 0 / -1)', () => {
+    const fixture = make(HostCmp);
+    const tabs = tabButtons(fixture);
+    expect(tabs.map((t) => t.getAttribute('tabindex'))).toEqual(['0', '-1', '-1']);
+  });
+
+  it('ArrowRight activates the next tab, moves the tab stop, and focuses it', () => {
+    const fixture = make(HostCmp);
+    const tabs = tabButtons(fixture);
+    const ev = press(tabs[0], 'ArrowRight');
+    fixture.detectChanges();
+    expect(ev.defaultPrevented).toBe(true);
+    expect(tabs[1].getAttribute('aria-selected')).toBe('true');
+    expect(tabs[0].getAttribute('aria-selected')).toBe('false');
+    expect(tabs.map((t) => t.getAttribute('tabindex'))).toEqual(['-1', '0', '-1']);
+    expect(document.activeElement).toBe(tabs[1]);
+  });
+
+  it('ArrowLeft from the first tab wraps to the last (loop) and activates it', () => {
+    const fixture = make(HostCmp);
+    const tabs = tabButtons(fixture);
+    press(tabs[0], 'ArrowLeft');
+    fixture.detectChanges();
+    expect(tabs[2].getAttribute('aria-selected')).toBe('true');
+    expect(document.activeElement).toBe(tabs[2]);
+  });
+
+  it('End activates the last tab, Home the first', () => {
+    const fixture = make(HostCmp);
+    const tabs = tabButtons(fixture);
+    press(tabs[0], 'End');
+    fixture.detectChanges();
+    expect(tabs[2].getAttribute('aria-selected')).toBe('true');
+    press(tabs[2], 'Home');
+    fixture.detectChanges();
+    expect(tabs[0].getAttribute('aria-selected')).toBe('true');
+    expect(document.activeElement).toBe(tabs[0]);
+  });
+
+  it('clicking a tab keeps the roving tab stop in sync so Tab lands on it', () => {
+    const fixture = make(HostCmp);
+    const tabs = tabButtons(fixture);
+    tabs[2].click();
+    fixture.detectChanges();
+    // The previously-broken case: tabindex must follow selection, not a
+    // separate keyboard index.
+    expect(tabs.map((t) => t.getAttribute('tabindex'))).toEqual(['-1', '-1', '0']);
+  });
+
+  it('ArrowRight skips a disabled tab', () => {
+    const fixture = make(DisabledSkipHost);
+    const tabs = tabButtons(fixture);
+    press(tabs[0], 'ArrowRight');
+    fixture.detectChanges();
+    expect(tabs[2].getAttribute('aria-selected')).toBe('true');
+    expect(tabs[1].getAttribute('aria-selected')).toBe('false');
+  });
+
+  it('vertical orientation navigates with ArrowDown/ArrowUp and ignores Arrow Left/Right', () => {
+    const fixture = make(VerticalHost);
+    const tabs = tabButtons(fixture);
+    const horizontalNoop = press(tabs[0], 'ArrowRight');
+    fixture.detectChanges();
+    expect(horizontalNoop.defaultPrevented).toBe(false);
+    expect(tabs[0].getAttribute('aria-selected')).toBe('true');
+    press(tabs[0], 'ArrowDown');
+    fixture.detectChanges();
+    expect(tabs[1].getAttribute('aria-selected')).toBe('true');
+    expect(document.activeElement).toBe(tabs[1]);
+    press(tabs[1], 'ArrowUp');
+    fixture.detectChanges();
+    expect(tabs[0].getAttribute('aria-selected')).toBe('true');
+  });
+});

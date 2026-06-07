@@ -9,12 +9,12 @@
     <div class="cngx-tabs__tab-wrapper" role="presentation">
     <button
       type="button"
-      cngxRovingItem
       class="cngx-tabs__tab"
       [class.cngx-tab--rejected]="failedIdx === i"
       [class.cngx-tabs__tab--closable]="dismiss.isTabClosable(tab)"
       role="tab"
       [id]="tabHeaderId(tab)"
+      [attr.tabindex]="tabTabindex(tab)"
       [attr.aria-label]="announcements.tabAriaLabel(tab, i + 1)"
       [attr.aria-selected]="isSelected(tab) ? 'true' : 'false'"
       [attr.aria-controls]="tabPanelId(tab)"
@@ -22,9 +22,8 @@
       [attr.aria-busy]="isTabBusy(tab) ? 'true' : null"
       [attr.aria-describedby]="tabDescriptorId(tab)"
       [attr.aria-keyshortcuts]="dismiss.isTabClosable(tab) ? 'Delete' : null"
-      [cngxRovingItemDisabled]="tab.disabled()"
       (click)="handleHeaderClick(tab)"
-      (keydown)="dismiss.handleTabKeydown(tab, $event)"
+      (keydown)="handleTabKeydown(tab, $event)"
     >
       @let iconTpl = templates.icon();
       @if (iconTpl) {

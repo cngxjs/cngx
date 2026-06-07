@@ -22,8 +22,6 @@ import {
   CNGX_FOCUSABLE_SELECTOR,
   CngxFocusRestore,
   CngxLiveRegion,
-  CngxRovingItem,
-  CngxRovingTabindex,
 } from '@cngx/common/a11y';
 import {
   CNGX_DIRECTIVE_BY_ID_MAP_FACTORY,
@@ -42,11 +40,13 @@ import {
   createTabDismissals,
   createTabGroupAnnouncements,
   createTabGroupTemplateBindings,
+  createTabKeyboardNav,
   createTabsHostAttrs,
   injectTabsConfig,
   injectTabsI18n,
   type CngxTabBusySpinnerContext,
   type CngxTabDismissals,
+  type CngxTabKeyboardNav,
   type CngxTabErrorBadgeContext,
   type CngxTabGroupAnnouncements,
   type CngxTabGroupTemplateBindings,
@@ -62,8 +62,12 @@ import {
 
 /**
  * CNGX tab-group organism. Thin shell over {@link CngxTabGroupPresenter}
- * + `CngxRovingTabindex` + `CngxFocusRestore` via `hostDirectives`.
- * Material variant lives at `[cngxMatTabs]` in `@cngx/ui/mat-tabs`.
+ * + `CngxFocusRestore` via `hostDirectives`. The APG tablist keyboard
+ * model (automatic activation: arrow keys move focus AND select; Home/End
+ * jump to first/last; the active tab is the lone tab stop) lives in
+ * {@link createTabKeyboardNav}, deriving the roving stop from the
+ * presenter's `activeId` rather than a competing index. Material variant
+ * lives at `[cngxMatTabs]` in `@cngx/ui/mat-tabs`.
  *
  * All ARIA attrs are signal-driven - never one-shot bindings.
  * `CngxLiveRegion` is mounted as a child `<span>` rather than a
@@ -78,7 +82,7 @@ import {
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/tabs/tab-group.component.ts
  * @since 0.1.0
- * @relatedTo CngxTabOverflow, CngxTabGroupPresenter, CngxTab, CngxRovingTabindex, CngxFocusRestore
+ * @relatedTo CngxTabOverflow, CngxTabGroupPresenter, CngxTab, CngxFocusRestore
  * <example-url>http://localhost:4200/#/ui/tabs/tab-commit-action/optimistic-pessimistic-commits-with-bridge-directives</example-url>
  * <example-url>http://localhost:4200/#/ui/tabs/tab-error-aggregation/per-tab-error-badges</example-url>
  * <example-url>http://localhost:4200/#/ui/tabs/tab-group-vertical/vertical-sidebar-tabs</example-url>
@@ -93,7 +97,7 @@ import {
   exportAs: 'cngxTabGroup',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgTemplateOutlet, CngxLiveRegion, CngxRovingItem],
+  imports: [NgTemplateOutlet, CngxLiveRegion],
   styleUrls: ['../../common/tabs/styles/tabs-base.css', './tab-group.component.css'],
   encapsulation: ViewEncapsulation.None,
   hostDirectives: [
@@ -101,10 +105,6 @@ import {
       directive: CngxTabGroupPresenter,
       inputs: ['activeIndex', 'orientation', 'loop', 'commitAction', 'commitMode'],
       outputs: ['activeIndexChange', 'tabClose', 'tabAdd'],
-    },
-    {
-      directive: CngxRovingTabindex,
-      inputs: ['orientation', 'loop'],
     },
     { directive: CngxFocusRestore },
   ],
@@ -209,6 +209,18 @@ export class CngxTabGroup implements CngxTabPanelHost {
     addable: this.addable,
     hostElement: this.hostElement,
     injector: this.injector,
+  });
+
+  /**
+   * APG tablist keyboard model (automatic activation). Owns arrow / Home /
+   * End resolution, the `host.select()` activation, and focus movement;
+   * derives each tab's roving `tabindex` from the presenter's `activeId`
+   * (single source of truth). Level-2 helper keeps the keyboard logic off
+   * the organism class (LOC guard).
+   */
+  protected readonly keyboard: CngxTabKeyboardNav = createTabKeyboardNav({
+    host: this.presenter,
+    hostElement: this.hostElement,
   });
 
   /**
@@ -468,6 +480,28 @@ export class CngxTabGroup implements CngxTabPanelHost {
     if (idx >= 0) {
       this.presenter.select(idx);
     }
+  }
+
+  /**
+   * Roving `tabindex` for a tab button: `0` for the active tab, `-1` for
+   * the rest, so the tablist is a single tab stop (APG) and `Tab` lands
+   * on the active tab. Derived in {@link keyboard} from `activeId`.
+   */
+  protected tabTabindex(tab: CngxTabHandle): 0 | -1 {
+    return this.keyboard.tabTabindex(tab);
+  }
+
+  /**
+   * Single `(keydown)` entry for a tab button: APG navigation
+   * (arrows / Home / End, automatic activation) first, then Delete-to-close
+   * when navigation did not consume the event.
+   */
+  protected handleTabKeydown(tab: CngxTabHandle, event: KeyboardEvent): void {
+    this.keyboard.handleKeydown(event);
+    if (event.defaultPrevented) {
+      return;
+    }
+    this.dismiss.handleTabKeydown(tab, event);
   }
 
 
