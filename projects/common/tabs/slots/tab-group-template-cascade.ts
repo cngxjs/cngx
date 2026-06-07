@@ -2,9 +2,16 @@ import { computed, type Signal, type TemplateRef } from '@angular/core';
 
 import type { CngxTabsConfig } from '../tabs-config';
 import type {
+  CngxTabAddIcon,
+} from './tab-add-icon.directive';
+import type {
   CngxTabBusySpinner,
   CngxTabBusySpinnerContext,
 } from './tab-busy-spinner.directive';
+import type {
+  CngxTabCloseIcon,
+  CngxTabCloseIconContext,
+} from './tab-close-icon.directive';
 import type {
   CngxTabErrorBadge,
   CngxTabErrorBadgeContext,
@@ -29,6 +36,10 @@ export interface CngxTabGroupTemplateBindingsOptions {
   readonly rejectionIconSlot: Signal<CngxTabRejectionIcon | undefined>;
   readonly busySpinnerSlot: Signal<CngxTabBusySpinner | undefined>;
   readonly iconSlot: Signal<CngxTabIcon | undefined>;
+  /** Per-instance `*cngxTabCloseIcon` slot. Optional - close is opt-in. */
+  readonly closeIconSlot?: Signal<CngxTabCloseIcon | undefined>;
+  /** Per-instance `*cngxTabAddIcon` slot. Optional - add is opt-in. */
+  readonly addIconSlot?: Signal<CngxTabAddIcon | undefined>;
   readonly config: CngxTabsConfig;
 }
 
@@ -46,6 +57,8 @@ export interface CngxTabGroupTemplateBindings {
   >;
   readonly busySpinner: Signal<TemplateRef<CngxTabBusySpinnerContext> | null>;
   readonly icon: Signal<TemplateRef<CngxTabIconContext> | null>;
+  readonly closeIcon: Signal<TemplateRef<CngxTabCloseIconContext> | null>;
+  readonly addIcon: Signal<TemplateRef<void> | null>;
 }
 
 /**
@@ -88,6 +101,15 @@ export function createTabGroupTemplateBindings(
     ),
     icon: computed<TemplateRef<CngxTabIconContext> | null>(
       () => opts.iconSlot()?.templateRef ?? opts.config.templates?.icon ?? null,
+    ),
+    closeIcon: computed<TemplateRef<CngxTabCloseIconContext> | null>(
+      () =>
+        opts.closeIconSlot?.()?.templateRef ??
+        opts.config.templates?.closeIcon ??
+        null,
+    ),
+    addIcon: computed<TemplateRef<void> | null>(
+      () => opts.addIconSlot?.()?.templateRef ?? opts.config.templates?.addIcon ?? null,
     ),
   };
 }

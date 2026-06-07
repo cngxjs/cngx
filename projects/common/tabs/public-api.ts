@@ -7,6 +7,7 @@ export {
 } from './presenter.directive';
 export {
   CNGX_TAB_GROUP_HOST,
+  type CngxTabCloseEvent,
   type CngxTabGroupHost,
   type CngxTabHandle,
 } from './tab-group-host.token';
@@ -35,6 +36,10 @@ export {
   withTabsAriaLabels,
   withTabsCommitMode,
   withTabsDefaultOrientation,
+  withTabAddIconTemplate,
+  withTabCloseIconTemplate,
+  withTabsAddable,
+  withTabsClosable,
   withTabsFallbackLabels,
   withTabsIconLayout,
   withTabsPanelMode,
@@ -119,6 +124,11 @@ export {
   CngxTabIcon,
   type CngxTabIconContext,
 } from './slots/tab-icon.directive';
+export {
+  CngxTabCloseIcon,
+  type CngxTabCloseIconContext,
+} from './slots/tab-close-icon.directive';
+export { CngxTabAddIcon } from './slots/tab-add-icon.directive';
 export {
   createTabGroupTemplateBindings,
   type CngxTabGroupTemplateBindings,

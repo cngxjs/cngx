@@ -10,6 +10,7 @@ import {
 import type { CngxTabOverflowItemContext } from './overflow/tab-overflow-item.directive';
 import type { CngxTabOverflowTriggerContext } from './overflow/tab-overflow-trigger.directive';
 import type { CngxTabBusySpinnerContext } from './slots/tab-busy-spinner.directive';
+import type { CngxTabCloseIconContext } from './slots/tab-close-icon.directive';
 import type { CngxTabErrorBadgeContext } from './slots/tab-error-badge.directive';
 import type { CngxTabIconContext } from './slots/tab-icon.directive';
 import type { CngxTabRejectionIconContext } from './slots/tab-rejection-icon.directive';
@@ -58,6 +59,8 @@ export interface CngxTabsTemplates {
   readonly rejectionIcon?: TemplateRef<CngxTabRejectionIconContext>;
   readonly busySpinner?: TemplateRef<CngxTabBusySpinnerContext>;
   readonly icon?: TemplateRef<CngxTabIconContext>;
+  readonly closeIcon?: TemplateRef<CngxTabCloseIconContext>;
+  readonly addIcon?: TemplateRef<void>;
 }
 
 /**
@@ -132,6 +135,19 @@ export interface CngxTabsConfig {
    * {@link withTabsPanelMode}.
    */
   readonly panelMode?: CngxTabsPanelMode;
+  /**
+   * App-wide default for whether tabs render a close affordance.
+   * Default `false`. Per-instance `[closable]` Input wins, and a
+   * per-`CngxTab` `[closable]` override wins over both. The cascade
+   * default lives in the organism. Override via {@link withTabsClosable}.
+   */
+  readonly closable?: boolean;
+  /**
+   * App-wide default for whether the group renders an add-tab button.
+   * Default `false`. Per-instance `[addable]` Input wins. Override via
+   * {@link withTabsAddable}.
+   */
+  readonly addable?: boolean;
   readonly ariaLabels?: CngxTabsAriaLabels;
   readonly fallbackLabels?: CngxTabsFallbackLabels;
   /**
@@ -166,6 +182,8 @@ const TABS_CONFIG_DEFAULTS: Required<
     | 'skin'
     | 'iconLayout'
     | 'panelMode'
+    | 'closable'
+    | 'addable'
   >
 > & {
   ariaLabels: CngxTabsAriaLabels;
@@ -340,6 +358,27 @@ export function withTabsPanelMode(mode: CngxTabsPanelMode): CngxTabsConfigFeatur
 }
 
 /**
+ * Set the app-wide default for whether tabs render a close affordance.
+ * Default `false`. Per-instance `[closable]` Input wins; a per-`CngxTab`
+ * `[closable]` override wins over both.
+ *
+ * @category common/tabs
+ */
+export function withTabsClosable(closable: boolean): CngxTabsConfigFeature {
+  return defineTabsConfigFeature((cfg) => ({ ...cfg, closable }));
+}
+
+/**
+ * Set the app-wide default for whether the group renders an add-tab
+ * button. Default `false`. Per-instance `[addable]` Input wins.
+ *
+ * @category common/tabs
+ */
+export function withTabsAddable(addable: boolean): CngxTabsConfigFeature {
+  return defineTabsConfigFeature((cfg) => ({ ...cfg, addable }));
+}
+
+/**
  * Merge ARIA labels into the cascade. Keys not provided keep their
  * library defaults; per-instance overrides on the tab group still win.
  *
@@ -489,6 +528,34 @@ export function withTabIconTemplate(
   return defineTabsConfigFeature((cfg) => ({
     ...cfg,
     templates: { ...cfg.templates, icon: template },
+  }));
+}
+
+/**
+ * App-wide override for a tab's close-button glyph. Middle tier;
+ * per-instance `*cngxTabCloseIcon` still wins.
+ *
+ * @category common/tabs
+ */
+export function withTabCloseIconTemplate(
+  template: TemplateRef<CngxTabCloseIconContext>,
+): CngxTabsConfigFeature {
+  return defineTabsConfigFeature((cfg) => ({
+    ...cfg,
+    templates: { ...cfg.templates, closeIcon: template },
+  }));
+}
+
+/**
+ * App-wide override for the add-tab button glyph. Middle tier;
+ * per-instance `*cngxTabAddIcon` still wins.
+ *
+ * @category common/tabs
+ */
+export function withTabAddIconTemplate(template: TemplateRef<void>): CngxTabsConfigFeature {
+  return defineTabsConfigFeature((cfg) => ({
+    ...cfg,
+    templates: { ...cfg.templates, addIcon: template },
   }));
 }
 
