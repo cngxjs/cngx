@@ -96,6 +96,26 @@ describe('CngxTab', () => {
     expect(ids[0]).not.toBe(ids[1]);
   });
 
+  it('a dynamically-bound [id] reaches the registered handle (not the auto-id)', () => {
+    @Component({
+      standalone: true,
+      selector: 'bound-id-host',
+      imports: [CngxTab],
+      hostDirectives: [CngxTabGroupPresenter],
+      template: `
+        <div cngxTab [id]="dynId()" [label]="'A'"></div>
+        <div cngxTab id="static-b" [label]="'B'"></div>
+      `,
+    })
+    class BoundIdHost {
+      readonly dynId = signal('doc-1');
+    }
+    const fixture = TestBed.createComponent(BoundIdHost);
+    fixture.detectChanges();
+    const presenter = fixture.debugElement.injector.get(CngxTabGroupPresenter);
+    expect(presenter.tabs().map((t) => t.id)).toEqual(['doc-1', 'static-b']);
+  });
+
   it('throws a clear dev-mode error when no presenter is on the ancestor', () => {
     expect(() => {
       const fixture = TestBed.createComponent(OrphanTab);

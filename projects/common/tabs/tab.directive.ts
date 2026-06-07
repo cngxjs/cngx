@@ -5,6 +5,7 @@ import {
   Directive,
   inject,
   input,
+  type OnInit,
   type Signal,
 } from '@angular/core';
 
@@ -44,7 +45,7 @@ import { CNGX_TAB_GROUP_HOST } from './tab-group-host.token';
   exportAs: 'cngxTab',
   standalone: true,
 })
-export class CngxTab {
+export class CngxTab implements OnInit {
   readonly id = input<string>(nextUid('cngx-tab-'));
   readonly disabled = input<boolean>(false);
   readonly label = input<string | undefined>(undefined);
@@ -61,6 +62,7 @@ export class CngxTab {
   readonly contentTemplate = contentChild(CngxTabContent);
 
   private readonly host = inject(CNGX_TAB_GROUP_HOST, { optional: true });
+  private readonly destroyRef = inject(DestroyRef);
 
   /** `true` when the presenter's `activeId` equals this tab's id. */
   readonly selected: Signal<boolean> = computed(() => this.host?.activeId() === this.id(), {
@@ -73,15 +75,23 @@ export class CngxTab {
         'CngxTab: no enclosing CngxTabGroupPresenter found. Wrap the tab inside an element carrying [cngxTabGroup] (or place it inside <cngx-tab-group>).',
       );
     }
+  }
+
+  ngOnInit(): void {
+    // Register in ngOnInit, NOT the constructor: a dynamically-bound
+    // `[id]` (or `[label]`) signal input is not applied until the first
+    // change detection, so a constructor read would capture the default
+    // auto-id. The handle id is the stable key consumers map `(tabClose)`
+    // back to their data with, so it must reflect the bound `[id]`.
+    const host = this.host!;
     const tabId = this.id();
-    this.host.register({
+    host.register({
       id: tabId,
       label: this.label,
       disabled: this.disabled,
       errorAggregator: this.errorAggregator,
       closable: this.closable,
     });
-    const host = this.host;
-    inject(DestroyRef).onDestroy(() => host.unregister(tabId));
+    this.destroyRef.onDestroy(() => host.unregister(tabId));
   }
 }
