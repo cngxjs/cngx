@@ -3546,3 +3546,35 @@ cngx-radio-group .cngx-radio + .cngx-radio {
 .demo-stepper-chips-accent {
   --cngx-step-chips-fill-active: #2563eb;
 }
+
+// Demo-only styling for the tab-panel container-query story. The panel
+// is a `cngx-tab-panel` container (set by @cngx/ui/tabs); the grid below
+// reflows on the PANEL's own inline width, not the viewport. The
+// resizable wrapper lets the reader drag the panel narrow/wide.
+.demo-cq-resize {
+  resize: horizontal;
+  overflow: auto;
+  min-width: 240px;
+  max-width: 100%;
+  border: 1px solid var(--cngx-border, #d4d4d8);
+  border-radius: 8px;
+  padding: 8px;
+}
+
+.demo-cq-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+.demo-cq-card {
+  border: 1px solid var(--cngx-border, #d4d4d8);
+  border-radius: 6px;
+  padding: 12px;
+}
+
+@container cngx-tab-panel (min-width: 420px) {
+  .demo-cq-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
