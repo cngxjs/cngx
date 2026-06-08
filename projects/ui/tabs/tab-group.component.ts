@@ -51,6 +51,7 @@ import {
   type CngxTabGroupAnnouncements,
   type CngxTabGroupTemplateBindings,
   type CngxTabHandle,
+  type CngxTabAlign,
   type CngxTabIconContext,
   type CngxTabIconLayout,
   type CngxTabPanelHost,
@@ -119,18 +120,16 @@ import {
     '[attr.data-skin]': 'hostAttrs.resolvedSkin()',
     '[attr.data-icon-layout]': 'hostAttrs.resolvedIconLayout()',
     '[attr.data-panel-mode]': 'hostAttrs.resolvedPanelMode()',
+    '[attr.data-fitted]': "hostAttrs.resolvedFitted() ? '' : null",
+    '[attr.data-tab-align]': 'hostAttrs.resolvedTabAlign()',
     '[attr.aria-label]': 'announcements.resolvedAriaLabel()',
     '[attr.aria-labelledby]': 'ariaLabelledBy()',
     '[class.cngx-tabs]': 'true',
   },
 })
 export class CngxTabGroup implements CngxTabPanelHost {
-  readonly ariaLabel = input<string | undefined>(undefined, {
-    alias: 'aria-label',
-  });
-  readonly ariaLabelledBy = input<string | undefined>(undefined, {
-    alias: 'aria-labelledby',
-  });
+  readonly ariaLabel = input<string | undefined>(undefined, { alias: 'aria-label' });
+  readonly ariaLabelledBy = input<string | undefined>(undefined, { alias: 'aria-labelledby' });
 
   /**
    * Visual skin. Cascade `input ?? config ?? 'line'`, resolved by
@@ -155,6 +154,10 @@ export class CngxTabGroup implements CngxTabPanelHost {
    * `<div>` always stays in the DOM regardless.
    */
   readonly panelMode = input<CngxTabsPanelMode | undefined>(undefined);
+  /** Stretch tabs to fill the strip width (horizontal only); reflects `[data-fitted]`. Cascade `input ?? config ?? false`. */
+  readonly fitted = input<boolean | undefined>(undefined);
+  /** Tab-cluster alignment when not fitted (horizontal only); reflects `[data-tab-align]`. Cascade `input ?? config ?? 'start'`. */
+  readonly tabAlign = input<CngxTabAlign | undefined>(undefined);
   /**
    * Whether tabs render a close affordance. Cascade
    * `input ?? config ?? false`. A per-`CngxTab` `[closable]` override
@@ -246,6 +249,8 @@ export class CngxTabGroup implements CngxTabPanelHost {
     skin: this.skin,
     iconLayout: this.iconLayout,
     panelMode: this.panelMode,
+    fitted: this.fitted,
+    tabAlign: this.tabAlign,
     config: this.config,
   });
 

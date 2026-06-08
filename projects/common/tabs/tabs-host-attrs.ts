@@ -1,6 +1,7 @@
 import { computed, type Signal } from '@angular/core';
 
 import type {
+  CngxTabAlign,
   CngxTabIconLayout,
   CngxTabsConfig,
   CngxTabsPanelMode,
@@ -19,6 +20,8 @@ export interface CngxTabsHostAttrsInputs {
   readonly skin: Signal<CngxTabsSkin | undefined>;
   readonly iconLayout: Signal<CngxTabIconLayout | undefined>;
   readonly panelMode: Signal<CngxTabsPanelMode | undefined>;
+  readonly fitted: Signal<boolean | undefined>;
+  readonly tabAlign: Signal<CngxTabAlign | undefined>;
   readonly config: CngxTabsConfig;
 }
 
@@ -32,6 +35,8 @@ export interface CngxTabsHostAttrs {
   readonly resolvedSkin: Signal<CngxTabsSkin>;
   readonly resolvedIconLayout: Signal<CngxTabIconLayout>;
   readonly resolvedPanelMode: Signal<CngxTabsPanelMode>;
+  readonly resolvedFitted: Signal<boolean>;
+  readonly resolvedTabAlign: Signal<CngxTabAlign>;
 }
 
 /**
@@ -60,6 +65,12 @@ export function createTabsHostAttrs(
     ),
     resolvedPanelMode: computed<CngxTabsPanelMode>(
       () => inputs.panelMode() ?? inputs.config.panelMode ?? 'eager',
+    ),
+    resolvedFitted: computed<boolean>(
+      () => inputs.fitted() ?? inputs.config.fitted ?? false,
+    ),
+    resolvedTabAlign: computed<CngxTabAlign>(
+      () => inputs.tabAlign() ?? inputs.config.tabAlign ?? 'start',
     ),
   };
 }
