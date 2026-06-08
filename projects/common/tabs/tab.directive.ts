@@ -15,6 +15,7 @@ import type { CngxErrorAggregatorContract } from '@cngx/common/interactive';
 
 import { CngxTabContent } from './tab-content.directive';
 import { CngxTabLabel } from './tab-label.directive';
+import { CngxTabSubLabel } from './slots/tab-sub-label.directive';
 import { CNGX_TAB_GROUP_HOST } from './tab-group-host.token';
 
 /**
@@ -49,6 +50,13 @@ export class CngxTab implements OnInit {
   readonly id = input<string>(nextUid('cngx-tab-'));
   readonly disabled = input<boolean>(false);
   readonly label = input<string | undefined>(undefined);
+  /**
+   * Optional secondary text line under the primary label (a count, a
+   * status word, a short detail). Convenience for the common text
+   * case, parallel to `[label]`; the `*cngxTabSubLabel` slot covers
+   * richer content. Folds into the tab's accessible name.
+   */
+  readonly subLabel = input<string | undefined>(undefined);
   readonly errorAggregator = input<CngxErrorAggregatorContract | undefined>(undefined);
   /**
    * Per-tab close-affordance override. `undefined` (default) inherits
@@ -59,6 +67,7 @@ export class CngxTab implements OnInit {
   readonly closable = input<boolean | undefined>(undefined);
 
   readonly labelTemplate = contentChild(CngxTabLabel);
+  readonly subLabelTemplate = contentChild(CngxTabSubLabel);
   readonly contentTemplate = contentChild(CngxTabContent);
 
   private readonly host = inject(CNGX_TAB_GROUP_HOST, { optional: true });
@@ -88,6 +97,7 @@ export class CngxTab implements OnInit {
     host.register({
       id: tabId,
       label: this.label,
+      subLabel: this.subLabel,
       disabled: this.disabled,
       errorAggregator: this.errorAggregator,
       closable: this.closable,

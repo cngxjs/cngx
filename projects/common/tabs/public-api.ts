@@ -17,6 +17,7 @@ export {
 } from './tab-panel-host.token';
 export { CngxTab } from './tab.directive';
 export { CngxTabLabel } from './tab-label.directive';
+export { CngxTabSubLabel } from './slots/tab-sub-label.directive';
 export { CngxTabContent } from './tab-content.directive';
 export { CngxTabsFragmentSync } from './router-sync.directive';
 export {

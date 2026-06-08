@@ -9,11 +9,12 @@ import type { CngxTabHandle } from './tab-group-host.token';
 
 function handle(
   id: string,
-  opts: { label?: string; disabled?: boolean } = {},
+  opts: { label?: string; subLabel?: string; disabled?: boolean } = {},
 ): CngxTabHandle {
   return {
     id,
     label: signal(opts.label ?? id),
+    subLabel: signal(opts.subLabel),
     disabled: signal(opts.disabled ?? false),
     errorAggregator: signal(undefined),
     closable: signal(undefined),

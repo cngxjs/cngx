@@ -80,6 +80,10 @@ export function createMatTabHandle(
   // affordances are native-only by design, so the Material handle pins
   // `closable` to `undefined` (group-default, never a close button).
   const closable = signal<boolean | undefined>(undefined);
+  // Material owns its tab-button chrome (no DOM seam for a stacked
+  // second line), so the bridge pins `subLabel` to `undefined` - same
+  // native-only staging as `closable`.
+  const subLabel = signal<string | undefined>(undefined);
   // `nextUid` is process-wide monotonic, so `${id}-errors` descriptor
   // ids stay unique across coexisting `[cngxMatTabs]` instances.
   const id = idSeed();
@@ -87,6 +91,7 @@ export function createMatTabHandle(
     handle: {
       id,
       label,
+      subLabel: subLabel.asReadonly(),
       disabled,
       errorAggregator: errorAggregator.asReadonly(),
       closable: closable.asReadonly(),

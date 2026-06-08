@@ -8,11 +8,12 @@ import type { CngxTabHandle } from './tab-group-host.token';
 
 function handle(
   id: string,
-  opts: { label?: string; disabled?: boolean; closable?: boolean } = {},
+  opts: { label?: string; subLabel?: string; disabled?: boolean; closable?: boolean } = {},
 ): CngxTabHandle {
   return {
     id,
     label: signal(opts.label ?? id),
+    subLabel: signal(opts.subLabel),
     disabled: signal(opts.disabled ?? false),
     errorAggregator: signal(undefined),
     closable: signal(opts.closable),
@@ -76,6 +77,7 @@ describe('tabsEqual', () => {
       {
         id: 'a',
         label: signal('A'),
+        subLabel: signal(undefined),
         disabled: signal(false),
         errorAggregator: signal(stubAggregator(false)),
         closable: signal(undefined),
@@ -85,6 +87,7 @@ describe('tabsEqual', () => {
       {
         id: 'a',
         label: signal('A'),
+        subLabel: signal(undefined),
         disabled: signal(false),
         errorAggregator: signal(stubAggregator(true)),
         closable: signal(undefined),

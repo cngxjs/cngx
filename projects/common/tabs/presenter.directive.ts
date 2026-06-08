@@ -321,16 +321,16 @@ export class CngxTabGroupPresenter implements CngxTabGroupHost {
 
 /**
  * Structural equality for the tab registry. Compares length and
- * per-entry `id`, `disabled()`, and `label()`.
+ * per-entry `id`, `disabled()`, `label()`, `subLabel()`, and
+ * `closable()`.
  *
  * `errorAggregator` is left out on purpose. The handle is a stable
  * per-tab reference injected once, so comparing it would push the
  * memoisation burden onto consumers and break the structural-equal
  * contract.
  *
- * Reading `disabled()` and `label()` here doesn't subscribe - the
- * comparator runs synchronously inside `signal.set()`, outside any
- * tracking context.
+ * Reading the signals here doesn't subscribe - the comparator runs
+ * synchronously inside `signal.set()`, outside any tracking context.
  *
  * @internal
  */
@@ -346,6 +346,7 @@ export function tabsEqual(a: readonly CngxTabHandle[], b: readonly CngxTabHandle
       a[i].id !== b[i].id ||
       a[i].disabled() !== b[i].disabled() ||
       a[i].label() !== b[i].label() ||
+      a[i].subLabel() !== b[i].subLabel() ||
       a[i].closable() !== b[i].closable()
     ) {
       return false;

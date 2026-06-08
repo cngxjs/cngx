@@ -44,6 +44,7 @@ describe('CngxTabBusySpinner', () => {
     const tab: CngxTabHandle = {
       id: 'a',
       label: signal('A'),
+      subLabel: signal(undefined),
       disabled: signal(false),
       errorAggregator: signal(undefined),
       closable: signal(undefined),

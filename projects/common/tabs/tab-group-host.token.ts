@@ -16,6 +16,14 @@ import type { CngxErrorAggregatorContract } from '@cngx/common/interactive';
 export interface CngxTabHandle {
   readonly id: string;
   readonly label: Signal<string | undefined>;
+  /**
+   * Optional secondary label line. Rendered stacked under the primary
+   * label by the organism and folded into the tab's accessible name.
+   * `undefined` (default) renders byte-identically to a single-line
+   * tab. `[cngxMatTabs]` pins this to `undefined` - Material owns its
+   * own tab chrome.
+   */
+  readonly subLabel: Signal<string | undefined>;
   readonly disabled: Signal<boolean>;
   readonly errorAggregator: Signal<CngxErrorAggregatorContract | undefined>;
   /**
