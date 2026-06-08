@@ -472,12 +472,28 @@
     }
 
     /*
+     * In the row layouts the icon aligns to the primary label's line,
+     * not the centre of the whole text column - so a stacked sub-label
+     * grows downward while the icon stays beside the label. Single-line
+     * tabs are unaffected: one text line equals one icon-box height, so
+     * flex-start and centre coincide.
+     */
+    :scope[data-icon-layout='start'] .cngx-tabs__icon,
+    :scope[data-icon-layout='end'] .cngx-tabs__icon {
+      align-self: flex-start;
+      min-height: calc(var(--cngx-tab-label-line-height, 1.4) * 1em);
+    }
+
+    /*
      * `only` hides the label visually but keeps it in the DOM and the
      * accessibility tree (clip, not display:none) - it stays the
      * accessible-name source alongside the button's aria-label. The
-     * `*cngxTabIcon` template carries the visible affordance.
+     * sub-label clips with it: the label is its visual anchor, so a
+     * stacked second line has nothing to attach to in icon-only mode.
+     * The `*cngxTabIcon` template carries the visible affordance.
      */
-    :scope[data-icon-layout='only'] .cngx-tabs__label {
+    :scope[data-icon-layout='only'] .cngx-tabs__label,
+    :scope[data-icon-layout='only'] .cngx-tabs__sublabel {
       position: absolute;
       width: 1px;
       height: 1px;

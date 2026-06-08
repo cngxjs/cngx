@@ -335,6 +335,43 @@
     initial-value: color-mix(in oklch, currentColor 14%, transparent);
   }
 
+  /**
+   * Line height of the primary label line. Also drives the leading
+   * height the row-layout icon aligns to, so a stacked sub-label
+   * grows downward while the icon stays beside the primary label.
+   * @group Layout
+   */
+  @property --cngx-tab-label-line-height {
+    syntax: '*';
+    inherits: true;
+    initial-value: 1.4;
+  }
+
+  /**
+   * Font size of a tab's optional secondary label line. `inherits:
+   * true` so a consumer override set on the `cngx-tab-group` host
+   * cascades down to the `.cngx-tabs__sublabel` descendant - with
+   * `inherits: false` the host-level override is silently dropped.
+   * @group Layout
+   */
+  @property --cngx-tab-sublabel-font-size {
+    syntax: '*';
+    inherits: true;
+    initial-value: 0.8125rem;
+  }
+
+  /**
+   * Text color of a tab's optional secondary label line. Defaults to
+   * a translucent tint of the tab's own text colour so it reads as a
+   * muted second line on any surface and in either colour scheme.
+   * @group Surface
+   */
+  @property --cngx-tab-sublabel-color {
+    syntax: '*';
+    inherits: true;
+    initial-value: color-mix(in oklab, currentColor 65%, transparent);
+  }
+
   /*
    * Default-theme palette. The active-indicator delegates to
    * `--cngx-color-primary` so the underline tracks the brand accent
@@ -420,11 +457,38 @@
     cursor: progress;
   }
 
-  .cngx-tabs__label {
+  /*
+   * Text column - stacks the primary label and the optional
+   * sub-label as two lines. Becomes the flex-grow sibling of the
+   * icon (the label used to fill that role directly); the icon stays
+   * a flex sibling of `.cngx-tabs__tab` in every icon-layout.
+   */
+  .cngx-tabs__text {
+    display: flex;
+    flex-direction: column;
     flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .cngx-tabs__label {
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
+    line-height: var(--cngx-tab-label-line-height, 1.4);
+  }
+
+  /*
+   * Optional secondary line under the label. Absent unless a
+   * `[subLabel]` / `*cngxTabSubLabel` is supplied, so a single-line
+   * tab renders byte-identically. Pills and every other skin inherit
+   * this stack and grow vertically - no per-skin gating.
+   */
+  .cngx-tabs__sublabel {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: var(--cngx-tab-sublabel-font-size, 0.8125rem);
+    color: var(--cngx-tab-sublabel-color, color-mix(in oklab, currentColor 65%, transparent));
   }
 
   /*
