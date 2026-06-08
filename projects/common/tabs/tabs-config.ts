@@ -84,13 +84,14 @@ export type CngxTabsSkin = 'line' | 'contained' | 'segmented' | 'pill' | 'pill-o
  * Icon-layout axis for `<cngx-tab-group>`, orthogonal to both skin and
  * orientation. Positions the `*cngxTabIcon` slot relative to the tab
  * label: `'start'` (default) places the icon before the label in a row;
- * `'top'` stacks the icon above the label in a column; `'only'` hides
- * the label visually while keeping it in the DOM as the accessible name.
- * Redirected purely via the `[data-icon-layout]` host attribute.
+ * `'end'` places it after the label in a row; `'top'` stacks the icon
+ * above the label in a column; `'only'` hides the label visually while
+ * keeping it in the DOM as the accessible name. Redirected purely via
+ * the `[data-icon-layout]` host attribute.
  *
  * @category common/tabs
  */
-export type CngxTabIconLayout = 'start' | 'top' | 'only';
+export type CngxTabIconLayout = 'start' | 'end' | 'top' | 'only';
 
 /**
  * Panel render strategy for `<cngx-tab-group>`. The panel `<div>` (the

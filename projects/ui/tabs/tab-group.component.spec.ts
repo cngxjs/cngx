@@ -1289,7 +1289,7 @@ class SkinHost {
   readonly skin = signal<'line' | 'contained' | 'segmented' | 'pill' | 'pill-outline' | undefined>(
     undefined,
   );
-  readonly iconLayout = signal<'start' | 'top' | 'only' | undefined>(undefined);
+  readonly iconLayout = signal<'start' | 'end' | 'top' | 'only' | undefined>(undefined);
 }
 
 describe('CngxTabGroup skin / icon-layout host attributes', () => {
@@ -1319,6 +1319,16 @@ describe('CngxTabGroup skin / icon-layout host attributes', () => {
     const host = hostEl(fixture);
     expect(host.getAttribute('data-skin')).toBe('pill');
     expect(host.getAttribute('data-icon-layout')).toBe('top');
+  });
+
+  it('reflects iconLayout="end" onto data-icon-layout', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(SkinHost);
+    fixture.componentInstance.iconLayout.set('end');
+    fixture.detectChanges();
+    expect(hostEl(fixture).getAttribute('data-icon-layout')).toBe('end');
   });
 
   it('reacts when the input changes after first render', () => {
@@ -1381,7 +1391,7 @@ describe('CngxTabGroup skin / icon-layout host attributes', () => {
   `,
 })
 class IconHost {
-  readonly iconLayout = signal<'start' | 'top' | 'only' | undefined>(undefined);
+  readonly iconLayout = signal<'start' | 'end' | 'top' | 'only' | undefined>(undefined);
 }
 
 @Component({

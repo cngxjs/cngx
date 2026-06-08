@@ -461,6 +461,10 @@
       flex-direction: row;
     }
 
+    :scope[data-icon-layout='end'] .cngx-tabs__tab {
+      flex-direction: row-reverse;
+    }
+
     :scope[data-icon-layout='top'] .cngx-tabs__tab {
       flex-direction: column;
       align-items: center;

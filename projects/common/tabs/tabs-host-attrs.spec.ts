@@ -86,6 +86,15 @@ describe('createTabsHostAttrs', () => {
       });
       expect(attrs.resolvedIconLayout()).toBe('only');
     });
+
+    it('resolves the end layout from the input', () => {
+      const attrs = createTabsHostAttrs({
+        ...allNone(),
+        iconLayout: signal<CngxTabIconLayout | undefined>('end'),
+        config: {},
+      });
+      expect(attrs.resolvedIconLayout()).toBe('end');
+    });
   });
 
   describe('panelMode cascade (input > config > default)', () => {

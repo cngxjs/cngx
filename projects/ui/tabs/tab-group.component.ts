@@ -305,7 +305,7 @@ export class CngxTabGroup implements CngxTabPanelHost {
           console.warn(
             "[cngx-tab-group] iconLayout='only' but no *cngxTabIcon template " +
               'is provided - tabs render no icon and the label is visually ' +
-              "hidden. Provide an <ng-template cngxTabIcon> or use 'start' / 'top'.",
+              "hidden. Provide an <ng-template cngxTabIcon> or use 'start' / 'end' / 'top'.",
           );
         }
       });
