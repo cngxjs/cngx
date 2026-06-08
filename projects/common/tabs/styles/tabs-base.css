@@ -1,12 +1,12 @@
 /**
  * @overview
- * Structural CSS shared by every tab-group skin. Layout-only - no
- * colors, sizes, borders, or fonts beyond what is controlled via
- * `--cngx-tab-*` custom properties. `CngxTabGroup` (in `@cngx/ui/tabs`)
- * references this file via `styleUrls`; ng-packagr inlines it at
+ * Structural CSS shared by every tab-group skin. \
+ Layout-only - no colors, sizes, borders, or fonts beyond what is controlled via
+ * `--cngx-tab-*` custom properties. \
+ *`CngxTabGroup` (in `@cngx/ui/tabs`)references this file via `styleUrls`; ng-packagr inlines it at
  * publish time so consumers of `@cngx/ui/tabs` do not need
- * `@cngx/common/tabs` at runtime. Headless directive use
- * (`[cngxTabGroup]` on consumer-authored DOM) deliberately gets no
+ * `@cngx/common/tabs` at runtime. \
+ * Headless directive use (`[cngxTabGroup]` on consumer-authored DOM) deliberately gets no
  * styling here - consumers bring their own visual opinion. Selectors
  * are class-prefixed (`.cngx-tabs__*`) and apply globally under the
  * component's `encapsulation: None`.
@@ -15,31 +15,24 @@
  *
  * Driven by ARIA attributes set by the organism:
  *
- * - `[aria-selected="true"]` - active tab, paints the underline
- *   indicator via an inset box-shadow so layout does not shift
+ * - `[aria-selected="true"]` - active tab, paints the underline indicator via an inset box-shadow so layout does not shift
  *   between resting and active
- * - `[aria-disabled="true"]` - cursor: not-allowed, opacity dim via
- *   `--cngx-tab-disabled-opacity`
- * - `[aria-busy="true"]` - cursor: progress while a commit is pending
- * - `:focus-visible` - outline ring via `--cngx-tab-focus-ring`
- * - `.cngx-tab--rejected` - persistent failed-target signal: outline
- *   ring + one-shot background pulse (Pillar 2)
+ * - `[aria-disabled="true"]` - cursor: not-allowed, opacity dim via `--cngx-tab-disabled-opacity`
+ * - `[aria-busy="true"]` - cursor: progress while a commit is pending - `:focus-visible` - outline ring via `--cngx-tab-focus-ring`
+ * - `.cngx-tab--rejected` - persistent failed-target signal: outline ring + one-shot background pulse 
  *
  * **Orientation**
  *
- * - `[data-orientation="vertical"]` on the host - flips the strip
- *   into a left-column grid and changes scroll-snap to the Y axis
+ * - `[data-orientation="vertical"]` on the host - flips the strip into a left-column grid and changes scroll-snap to the Y axis
  *
  * **Slots**
  *
  * - `.cngx-tabs__strip-wrapper` - outer row container
  * - `.cngx-tabs__strip` - the clip box (programmatic scroll only;
- *   the `<cngx-tab-overflow>` molecule is the user access path to
- *   tabs that do not fit)
+ *   the `<cngx-tab-overflow>` molecule is the user access path to tabs that do not fit)
  * - `.cngx-tabs__tab` - one tab button
  * - `.cngx-tabs__label` - shrinkable label inside the button
- * - `.cngx-tabs__badge` - inline error badge; ships its own
- *   real-error-tone background so it does not collapse to
+ * - `.cngx-tabs__badge` - inline error badge; ships its own real-error-tone background so it does not collapse to
  *   `currentColor` (mirrors the stepper precedent)
  * - `.cngx-tabs__busy-spinner` - pending-commit spinner
  * - `.cngx-tabs__rejection-icon` - persistent `!` glyph in a circle
@@ -48,28 +41,22 @@
  *
  * **Inheritance**
  *
- * - `--cngx-tab-active-indicator-color` -> `--cngx-color-primary`
- *   (also pinned via `:root` delegation so the brand accent paints
+ * - `--cngx-tab-active-indicator-color` -> `--cngx-color-primary` (also pinned via `:root` delegation so the brand accent paints
  *   the underline in both light and dark modes without a 4-block)
- * - Strip / tab geometry tokens (`--cngx-tab-gap`,
- *   `--cngx-tab-padding`, `--cngx-tab-strip-padding`) - leaf
- * - State-tone tokens (`--cngx-tab-error-badge-color`,
+ * - Strip / tab geometry tokens (`--cngx-tab-gap`, `--cngx-tab-padding`, `--cngx-tab-strip-padding`) - leaf
+ * - State-tone tokens (`--cngx-tab-error-badge-color`, \
  *   `--cngx-tab-rejection-icon-color`, `--cngx-tab-rejected-outline`,
- *   `--cngx-tab-rejected-pulse-bg`) - leaf, all pinned at the
- *   foundation's danger tone so they read against either surface
+ *   `--cngx-tab-rejected-pulse-bg`) - leaf, all pinned at the foundation's danger tone so they read against either surface
  *
  * **Reduced motion**
  *
- * Two hooks: under `prefers-reduced-motion: reduce` the busy spinner
- * animation is force-stopped; the rejection pulse is gated behind
- * `prefers-reduced-motion: no-preference` so it never runs when the
- * user has opted out.
+ * Two hooks: under `prefers-reduced-motion: reduce` the busy spinner  is force-stopped; the rejection pulse is gated behind
+ * `prefers-reduced-motion: no-preference` so it never runs when the user has opted out.
  */
 
 @layer cngx.tokens {
   /**
-   * Gap between adjacent tab buttons and between a tab's icon / label
-   * / badge slots.
+   * Gap between adjacent tab buttons and between a tab's icon / label / badge slots.
    * @group Layout
    */
   @property --cngx-tab-gap {
@@ -139,10 +126,8 @@
   }
 
   /**
-   * Underline color of the active tab - a 2px box-shadow inset
-   * stripe along the inline-end edge of the tab button. Falls back
-   * to `--cngx-color-primary` so the brand accent paints the
-   * selection indicator without competing with text contrast.
+   * Underline color of the active tab - a 2px box-shadow inset stripe along the inline-end edge of the tab button. \
+   * Falls back to `--cngx-color-primary` so the brand accent paints the selection indicator without competing with text contrast.
    * @group State / Active
    * @see [[--cngx-color-primary]]
    */
