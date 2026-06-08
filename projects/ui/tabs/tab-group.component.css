@@ -1,31 +1,40 @@
 /**
  * @overview
- * Thematic skin for `<cngx-tab-group>`. Pairs with the structural
+ * Thematic skins for `<cngx-tab-group>`. Pairs with the structural
  * `tabs-base.css` in `@cngx/common/tabs` (which owns layout, scroll-
- * snap, sizes, base color / background, sr-only) - this file owns
- * the ink-bar indicator, hover affordance, strip border, and the
- * per-tab error badge. Tokens defined in `tabs-base.css` read with
- * bare `var(--cngx-tab-*)` (no second fallback) because the
- * structural cascade provides the default.
+ * snap, sizes, base color / background, sr-only) - this file owns the
+ * per-skin treatment, hover affordance, strip border, and the per-tab
+ * error badge. Tokens defined in `tabs-base.css` read with bare
+ * `var(--cngx-tab-*)` (no second fallback) because the structural
+ * cascade provides the default.
  *
- * **State modifiers**
+ * **Skins**
  *
- * On `.cngx-tabs__tab`:
+ * Selected by the `[skin]` input via the `[data-skin]` host attribute.
+ * Every skin renders the identical structure, slots, ARIA, and keyboard
+ * model - only the paint changes. Each value is a CSS `@scope` block.
  *
- * - `:hover:not([aria-disabled="true"])` - swaps to
- *   `--cngx-tab-hover-color`
- * - `[aria-selected="true"]` - paints `--cngx-tab-active-color` and
- *   draws the ink-bar via `border-bottom-color` (or
- *   `border-inline-end-color` in vertical orientation)
+ * - `line` (default) - a primary underline ink-bar under the active
+ *   tab; subtle strip border on the trailing edge.
+ * - `contained` - square folder tabs, the active one fused with the
+ *   panel into one box, with a primary accent bar on its leading edge.
+ *   The only skin whose scope spans the strip AND the panel.
+ * - `segmented` - the tabs share a muted track; the active tab lifts
+ *   onto a raised surface with a soft shadow.
+ * - `pill` - rounded solid fills with gaps; the active pill takes the
+ *   primary fill, resting pills tint on hover.
+ * - `pill-outline` - the same pill geometry, but the active tab reads
+ *   as a tinted, outlined chip rather than a solid fill.
  *
  * **Orientation variants**
  *
  * On the host:
  *
- * - default (horizontal) - strip border-bottom, indicator on the
- *   bottom edge of each tab
+ * - default (horizontal) - strip border-bottom, indicator / accent on
+ *   the bottom (or top) edge of each tab.
  * - `[data-orientation="vertical"]` - strip border-inline-end,
- *   indicator on the inline-end of each tab
+ *   indicator / accent on the inline edges; the segmented track and
+ *   pill column stack vertically.
  *
  * **Slots**
  *
@@ -40,13 +49,15 @@
 @layer cngx.tokens {
   /**
    * Border shorthand of the tab strip's bottom (or inline-end for
-   * vertical orientation) edge.
+   * vertical orientation) edge. `inherits: true` so a themed value
+   * assigned on the host reaches the strip (the registered token's
+   * initial-value would otherwise win over any `var()` fallback).
    * @group Surface
    */
   @property --cngx-tab-strip-border {
     syntax: '*';
-    inherits: false;
-    initial-value: 1px solid currentColor;
+    inherits: true;
+    initial-value: 1px solid oklch(0.87 0 0);
   }
 
   /**
@@ -145,7 +156,8 @@
   /**
    * Surface that the active tab fuses with under the `contained` skin
    * (the panel surface) and the active-pill fill under the `pill` skin.
-   * Chained to `--mat-sys-surface` via the per-skin `:scope` assignment.
+   * Set from `--cngx-color-surface` / `--cngx-color-primary` via the
+   * per-skin `:scope` assignment.
    * @group Skin
    */
   @property --cngx-tab-active-bg {
@@ -207,12 +219,106 @@
     inherits: true;
     initial-value: oklch(0.95 0 0);
   }
+
+  /**
+   * Muted track the tabs sit in under the `segmented` skin.
+   * @group Skin
+   */
+  @property --cngx-tab-segmented-track-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.96 0 0);
+  }
+
+  /**
+   * Resting-tab hover fill under the `segmented` skin - a faint lift off
+   * the track, kept short of the raised active surface.
+   * @group Skin
+   */
+  @property --cngx-tab-segmented-hover-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.93 0 0);
+  }
+
+  /**
+   * Drop shadow that raises the active tab off the track under the
+   * `segmented` skin.
+   * @group Skin
+   */
+  @property --cngx-tab-segmented-active-shadow {
+    syntax: '*';
+    inherits: true;
+    initial-value: 0 1px 2px oklch(0 0 0 / 0.06);
+  }
+
+  /**
+   * Accent color of the `pill-outline` skin - paints the active tab's
+   * text and border, and the resting-tab hover border.
+   * @group Skin
+   */
+  @property --cngx-tab-pill-outline-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.66 0.19 50);
+  }
+
+  /**
+   * Tinted fill behind the active tab under the `pill-outline` skin.
+   * @group Skin
+   */
+  @property --cngx-tab-pill-outline-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: color-mix(in oklch, oklch(0.66 0.19 50) 12%, transparent);
+  }
+
+  /**
+   * Corner radius of the `pill` / `pill-outline` skins - a full pill
+   * shape by default. Overridable for a softer rounded-rectangle.
+   * @group Skin
+   */
+  @property --cngx-tab-pill-radius {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 100px;
+  }
+
+  /**
+   * Color of the `contained` skin's top (inline-start for vertical)
+   * accent bar under the active tab.
+   * @group Skin
+   */
+  @property --cngx-tab-contained-accent-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.66 0.19 50);
+  }
+
+  /**
+   * Thickness of the `contained` skin's active-tab accent bar.
+   * @group Skin
+   */
+  @property --cngx-tab-contained-accent-thickness {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 3px;
+  }
 }
 
 @layer cngx.components {
   @scope (.cngx-tab-group) {
     :scope {
       font: inherit;
+      /* The line skin's underline reads as the brand accent. Assigned on
+         the host so the registered token picks up the foundation primary
+         (a var() fallback on a registered property is dead - the
+         initial-value always wins); `inherits: true` cascades it to the
+         tab buttons. The foundation token carries its own light / dark
+         value and is what the Material bridge remaps. */
+      --cngx-tab-active-indicator-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
+      /* Subtle themed strip rule rather than a heavy `currentColor` line. */
+      --cngx-tab-strip-border: 1px solid var(--cngx-color-border, oklch(0.88 0.005 250));
     }
 
     /*
@@ -230,40 +336,103 @@
 
     .cngx-tabs__strip {
       border-bottom: var(--cngx-tab-strip-border, 1px solid currentColor);
+      gap: 0;
+      padding: 0;
     }
 
     .cngx-tabs__tab {
       position: relative;
-      border-bottom: var(--cngx-tab-indicator-thickness, 2px) solid transparent;
-      margin-bottom: calc(var(--cngx-tab-indicator-thickness, 2px) * -1);
+      /* Default skin is `line`; its tab metrics double as the base every
+         other skin starts from, then overrides per scope below. */
+      --cngx-tab-padding: 0.625rem 1rem;
+      /* Brand-accent focus ring (was `currentColor`, which blended into
+         the label) - the foundation primary, same accent as everything
+         else. Inset by default so it sits inside the line / folder tab
+         instead of bleeding over the strip rule and the neighbours; the
+         segmented and pill scopes push it back outside. */
+      --cngx-tab-focus-ring: var(--cngx-tab-focus-ring-width, 2px) solid
+        var(--cngx-color-primary, oklch(0.66 0.19 50));
+      --cngx-tab-focus-offset: -2px;
+      font-size: var(--cngx-tab-font-size, 0.875rem);
+      font-weight: var(--cngx-tab-font-weight, 500);
       transition:
         color var(--cngx-tab-transition-duration, 0.15s) ease,
-        border-color var(--cngx-tab-transition-duration, 0.15s) ease;
+        background var(--cngx-tab-transition-duration, 0.15s) ease,
+        box-shadow var(--cngx-tab-transition-duration, 0.15s) ease;
     }
 
-    .cngx-tabs__tab:hover:not([aria-disabled='true']) {
+    /* Vertical line tabs sit tighter on the block axis and read left-
+       aligned in the hugged strip column. `:where()` keeps this at the
+       same specificity as the per-skin tab rules so a later skin scope
+       still wins for non-line skins. */
+    :where(:scope[data-orientation='vertical']) .cngx-tabs__tab {
+      --cngx-tab-padding: 0.5rem 1rem;
+    }
+
+    /*
+     * Line indicator via `::after` pseudo-element - grows from centre
+     * with `scaleX(0)` -> `scaleX(1)`. Positioned at the bottom edge of
+     * the tab, flush with the strip border. Non-line skins suppress this
+     * with `display: none`.
+     */
+    .cngx-tabs__tab::after {
+      content: '';
+      position: absolute;
+      inset-inline: 0;
+      bottom: 0;
+      block-size: var(--cngx-tab-indicator-thickness, 2px);
+      background: var(--cngx-tab-active-indicator-color, currentColor);
+      border-radius: var(--cngx-tab-indicator-thickness, 2px)
+        var(--cngx-tab-indicator-thickness, 2px) 0 0;
+      transform: scaleX(0);
+      transition: transform var(--cngx-tab-transition-duration, 0.15s) ease;
+    }
+
+    /* Resting tabs only - hovering the active tab must not repaint its
+       label (the active pill / outline carries its own colour, and the
+       token falls back to `currentColor`, which would drop it to the
+       inherited text colour). */
+    .cngx-tabs__tab:hover:not([aria-disabled='true']):not([aria-selected='true']) {
       color: var(--cngx-tab-hover-color, var(--cngx-tab-active-color));
     }
 
     .cngx-tabs__tab[aria-selected='true'] {
       color: var(--cngx-tab-active-color);
-      border-bottom-color: var(--cngx-tab-active-indicator-color, currentColor);
+      /* Suppress the base structural box-shadow ink-bar from tabs-base.css
+         so only the ::after pseudo-element paints the indicator. */
+      box-shadow: none;
+    }
+
+    .cngx-tabs__tab[aria-selected='true']::after {
+      transform: scaleX(1);
     }
 
     :scope[data-orientation='vertical'] .cngx-tabs__strip {
       border-bottom: 0;
       border-inline-end: var(--cngx-tab-strip-border, 1px solid currentColor);
+      padding: 0;
     }
 
-    :scope[data-orientation='vertical'] .cngx-tabs__tab {
-      border-bottom: 0;
-      margin-bottom: 0;
-      border-inline-end: var(--cngx-tab-indicator-thickness, 2px) solid transparent;
-      margin-inline-end: calc(var(--cngx-tab-indicator-thickness, 2px) * -1);
+    /* The vertical ink-bar is the horizontal underline rotated onto the
+       inline-end edge: full tab height (not an inset capsule) with the
+       rounding only on the inner edge - the start-side corners - so the
+       top and bottom read flush, matching how the horizontal bar rounds
+       only its top corners. */
+    :scope[data-orientation='vertical'] .cngx-tabs__tab::after {
+      inset-inline: auto;
+      inset-block: 0;
+      inset-inline-end: 0;
+      inline-size: var(--cngx-tab-indicator-thickness, 2px);
+      block-size: auto;
+      border-start-start-radius: var(--cngx-tab-indicator-thickness, 2px);
+      border-end-start-radius: var(--cngx-tab-indicator-thickness, 2px);
+      border-start-end-radius: 0;
+      border-end-end-radius: 0;
+      transform: scaleY(0);
     }
 
-    :scope[data-orientation='vertical'] .cngx-tabs__tab[aria-selected='true'] {
-      border-inline-end-color: var(--cngx-tab-active-indicator-color, currentColor);
+    :scope[data-orientation='vertical'] .cngx-tabs__tab[aria-selected='true']::after {
+      transform: scaleY(1);
     }
 
     .cngx-tabs__badge {
@@ -317,7 +486,9 @@
     }
 
     @media (prefers-reduced-motion: reduce) {
-      .cngx-tabs__tab {
+      .cngx-tabs__tab,
+      .cngx-tabs__tab::before,
+      .cngx-tabs__tab::after {
         transition: none !important;
       }
     }
@@ -327,38 +498,86 @@
    * Contained skin - the defining trait is fusion: the active tab and
    * the panel read as one enclosed box. This is the only skin whose
    * scope spans the strip AND the panel (line / pill stay strip-only).
-   * The mode-aware surface chain is wired on `:scope` so the registered
-   * `@property` tokens still pick up `--mat-sys-*` (a var() fallback on a
-   * registered property is dead - the initial-value always wins).
-   */
+   * The surface chain is wired on `:scope` so the registered `@property`
+   * tokens pick up a real value (a var() fallback on a registered
+   * property is dead - the initial-value always wins). Every value is a
+   * foundation token so it adapts to light / dark and the Material bridge
+   * on its own; the inactive surface is derived from surface + border so
+   * it tracks the same scheme without a second token. */
   @scope (.cngx-tab-group[data-skin='contained']) {
     :scope {
-      --cngx-tab-active-bg: var(--mat-sys-surface, var(--cngx-surface, oklch(1 0 0)));
-      --cngx-tab-inactive-bg: var(
-        --mat-sys-surface-container,
-        var(--cngx-surface-2, oklch(0.97 0 0))
+      --cngx-tab-active-bg: var(--cngx-color-surface, oklch(1 0 0));
+      --cngx-tab-inactive-bg: color-mix(
+        in oklch,
+        var(--cngx-color-surface, oklch(1 0 0)),
+        var(--cngx-color-border, oklch(0.88 0.005 250)) 25%
       );
-      --cngx-tab-surface-border-color: var(
-        --mat-sys-outline-variant,
-        var(--cngx-border, oklch(0.87 0 0))
-      );
+      --cngx-tab-surface-border-color: var(--cngx-color-border, oklch(0.88 0.005 250));
+      --cngx-tab-contained-accent-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
     }
 
+    /* Suppress line skin's ::after indicator - contained uses ::before
+       for the top accent bar. */
+    .cngx-tabs__tab::after {
+      display: none;
+    }
+
+    /*
+     * No rule under the tabs themselves: the strip carries no
+     * border-bottom. The horizontal line is the panel's top border (see
+     * `.cngx-tabs__panels` below), pulled up under the strip. The opaque
+     * tabs cover it where they sit, and the transparent strip past the
+     * last tab lets it show - so the rule appears only AFTER the tabs.
+     */
     .cngx-tabs__strip {
-      border-bottom: var(--cngx-tab-surface-border-width, 1px) solid
-        var(--cngx-tab-surface-border-color, oklch(0.87 0 0));
+      border-bottom: 0;
       gap: 0;
+      padding: 0;
+    }
+
+    /* Lift the strip above the panel so the opaque tabs win the overlap
+       and cover the panel's top border where they sit. */
+    .cngx-tabs__strip-wrapper {
+      position: relative;
+      z-index: 1;
     }
 
     .cngx-tabs__tab {
+      --cngx-tab-padding: 0.625rem 1.25rem;
       background: var(--cngx-tab-inactive-bg, oklch(0.97 0 0));
       border: var(--cngx-tab-surface-border-width, 1px) solid
         var(--cngx-tab-surface-border-color, oklch(0.87 0 0));
       border-bottom: 0;
-      border-start-start-radius: var(--cngx-tab-radius, 0.5rem);
-      border-start-end-radius: var(--cngx-tab-radius, 0.5rem);
-      /* No ink-bar in this skin - the resting border carries separation. */
+      /* Square folder tabs - the accent bar and the resting border carry
+         separation, no rounding. */
+      border-radius: 0;
       margin-bottom: 0;
+      margin-inline-end: -1px;
+    }
+
+    .cngx-tabs__tab[aria-selected='true'] {
+      font-weight: var(--cngx-tab-active-font-weight, 600);
+    }
+
+    /* Primary accent bar across the top edge of the active tab. Grows from
+       centre; covers the tab's own top border via `top: -1px`. */
+    .cngx-tabs__tab::before {
+      content: '';
+      position: absolute;
+      inset-inline: 0;
+      top: -1px;
+      height: var(--cngx-tab-contained-accent-thickness, 3px);
+      background: var(--cngx-tab-contained-accent-color, oklch(0.66 0.19 50));
+      transform: scaleX(0);
+      transition: transform var(--cngx-tab-transition-duration, 0.15s) ease;
+    }
+
+    .cngx-tabs__tab:hover:not([aria-disabled='true']):not([aria-selected='true']) {
+      background: color-mix(
+        in oklch,
+        var(--cngx-tab-inactive-bg, oklch(0.97 0 0)) 60%,
+        var(--cngx-tab-active-bg, oklch(1 0 0))
+      );
     }
 
     .cngx-tabs__tab + .cngx-tabs__tab {
@@ -366,54 +585,123 @@
     }
 
     .cngx-tabs__tab[aria-selected='true'] {
-      /* Fuse with the panel: same surface, drop the ink-bar, and pull the
-         tab down one border-width so its surface covers the strip seam.
-         The tab already has no bottom border, so suppressing the base
-         box-shadow ink-bar is all that's needed. */
+      /* Fuse with the panel: same surface, drop the ink-bar. The panel's
+         top border is pulled up under the strip and covered by this
+         opaque tab, so no negative margin is needed. */
       background: var(--cngx-tab-active-bg, oklch(1 0 0));
       color: var(--cngx-tab-active-color, currentColor);
       box-shadow: none;
-      margin-bottom: calc(var(--cngx-tab-surface-border-width, 1px) * -1);
+      margin-bottom: 0;
       position: relative;
       z-index: 1;
     }
 
+    .cngx-tabs__tab[aria-selected='true']::before {
+      transform: scaleX(1);
+    }
+
     .cngx-tabs__panels {
+      /* Full border including the top edge - this top border is the
+         horizontal rule. Pulled up one border-width so it tucks under the
+         strip's bottom; the tabs cover it, the empty strip reveals it. */
       border: var(--cngx-tab-surface-border-width, 1px) solid
         var(--cngx-tab-surface-border-color, oklch(0.87 0 0));
-      border-end-start-radius: var(--cngx-tab-radius, 0.5rem);
-      border-end-end-radius: var(--cngx-tab-radius, 0.5rem);
+      border-radius: 0;
+      margin-block-start: calc(var(--cngx-tab-surface-border-width, 1px) * -1);
       background: var(--cngx-tab-active-bg, oklch(1 0 0));
     }
   }
 
   /*
-   * Contained + vertical: the seam moves to the inline-end edge.
+   * Contained + vertical: the seam moves to the inline-end edge and the
+   * accent bar to the inline-start edge.
    */
   @scope (.cngx-tab-group[data-skin='contained'][data-orientation='vertical']) {
-    .cngx-tabs__strip {
-      border-bottom: 0;
-      border-inline-end: var(--cngx-tab-surface-border-width, 1px) solid
-        var(--cngx-tab-surface-border-color, oklch(0.87 0 0));
+    /* Collapse the strip-to-panel gutter so the active tab's inline-end
+       seam meets the panel, and stretch both columns to the row height so
+       the panel is never shorter than the tab column - otherwise a short
+       panel leaves the active tab (anywhere in the column) with nothing to
+       fuse to. `:scope[data-orientation]` (0,2,0) outranks the base
+       `align-items: start` (0,1,1). */
+    :scope[data-orientation='vertical'] {
+      --cngx-tab-vertical-gap: 0;
+      align-items: stretch;
     }
 
+    /* No full-height seam on the strip: the inline-end seam lives on each
+       inactive tab's own border (below), so the active tab can simply drop
+       its inline-end border and meet the panel flush. `:scope[data-orientation]`
+       (0,3,0) is needed to outrank the default scope's vertical strip rule
+       that adds the inline-end line. */
+    :scope[data-orientation='vertical'] .cngx-tabs__strip {
+      border-bottom: 0;
+      border-inline-end: 0;
+      padding: 0;
+    }
+
+    /*
+     * Inactive tabs keep their inline-end border - that 1px is the seam
+     * between the tab column and the panel. The active tab drops it below
+     * so its surface runs flush into the panel.
+     *
+     * `margin-bottom: -1px` is the vertical analogue of the horizontal
+     * `margin-inline-end: -1px`: each tab eats one border-width below it so
+     * the next tab's top border laps into a single shared 1px seam (tabs
+     * sit in per-tab wrappers, so a `.tab + .tab` rule never matches - the
+     * overlap rides each tab's own trailing margin). Drop the inherited
+     * horizontal trailing margin.
+     */
     .cngx-tabs__tab {
       border: var(--cngx-tab-surface-border-width, 1px) solid
         var(--cngx-tab-surface-border-color, oklch(0.87 0 0));
-      border-inline-end: 0;
-      border-start-end-radius: 0;
-      border-start-start-radius: var(--cngx-tab-radius, 0.5rem);
-      border-end-start-radius: var(--cngx-tab-radius, 0.5rem);
+      border-radius: 0;
+      margin-inline-end: 0;
+      margin-bottom: calc(var(--cngx-tab-surface-border-width, 1px) * -1);
     }
 
-    .cngx-tabs__tab + .cngx-tabs__tab {
-      margin-inline-start: 0;
-      margin-top: calc(var(--cngx-tab-surface-border-width, 1px) * -1);
+    /* Accent bar on the active tab's inline-start (leading) edge - the
+       vertical analogue of the horizontal top accent. `inset-block: 0`
+       stretches it the full tab height; `height: auto` clears the
+       horizontal rule's 3px so top/bottom drive the length. (A stray
+       `top: auto` used to re-collapse it to zero height.) */
+    .cngx-tabs__tab::before {
+      inset-inline: auto;
+      inset-inline-start: -1px;
+      inset-block: 0;
+      width: var(--cngx-tab-contained-accent-thickness, 3px);
+      height: auto;
+      transform: scaleY(0);
+    }
+
+    .cngx-tabs__tab[aria-selected='true']::before {
+      transform: scaleY(1);
     }
 
     .cngx-tabs__tab[aria-selected='true'] {
+      /* Drop the inline-end seam so the active (panel-coloured) tab runs
+         flush into the panel; keep the shared bottom seam. No negative
+         inline margin - the tab already reaches the panel edge, so it
+         stays the same width as the inactive tabs (no 1px protrusion). */
+      border-inline-end: 0;
+      margin-bottom: calc(var(--cngx-tab-surface-border-width, 1px) * -1);
+      margin-inline-end: 0;
+    }
+
+    /* The last tab has no neighbour below to lap onto; its seam margin
+       would push the bottom border one px past the clipped strip box and
+       drop it. Zero it so the fused box closes cleanly at the bottom. */
+    .cngx-tabs__tab-wrapper:last-child .cngx-tabs__tab {
       margin-bottom: 0;
-      margin-inline-end: calc(var(--cngx-tab-surface-border-width, 1px) * -1);
+    }
+
+    .cngx-tabs__panels {
+      border-block-start: var(--cngx-tab-surface-border-width, 1px) solid
+        var(--cngx-tab-surface-border-color, oklch(0.87 0 0));
+      border-inline-start: 0;
+      /* The block-start pull-up is the horizontal skin's panel-fusion
+         trick; in vertical it just lifts the panel one px above the tab
+         column. Reset it. */
+      margin-block-start: 0;
     }
   }
 
@@ -424,22 +712,39 @@
    */
   @scope (.cngx-tab-group[data-skin='pill']) {
     :scope {
-      --cngx-tab-active-bg: var(--mat-sys-primary, var(--cngx-color-primary, oklch(0.66 0.19 50)));
-      --cngx-tab-pill-active-color: var(
-        --mat-sys-on-primary,
-        var(--cngx-color-on-primary, oklch(1 0 0))
-      );
-      --cngx-tab-pill-hover-bg: var(
-        --mat-sys-surface-container,
-        var(--cngx-surface-2, oklch(0.95 0 0))
+      --cngx-tab-active-bg: var(--cngx-color-primary, oklch(0.66 0.19 50));
+      --cngx-tab-pill-active-color: var(--cngx-color-on-primary, oklch(1 0 0));
+      /* Resting pills lift onto a faint tint of the brand accent on hover,
+         not a neutral grey - keeps the row reading as one accent family. */
+      --cngx-tab-pill-hover-bg: color-mix(
+        in oklch,
+        var(--cngx-color-primary, oklch(0.66 0.19 50)) 8%,
+        transparent
       );
     }
 
+    .cngx-tabs__strip {
+      border-bottom: 0;
+      gap: var(--cngx-tab-pill-gap, 0.375rem);
+      /* Breathing room so the active pill's outset focus ring is not
+         clipped by the strip's scroll-overflow box (the segmented track
+         gets this for free from its own padding). */
+      padding: var(--cngx-tab-pill-strip-padding, 0.25rem);
+    }
+
     .cngx-tabs__tab {
+      --cngx-tab-padding: 0.4375rem 0.875rem;
+      /* Sit just outside the pill, within the strip padding above. */
+      --cngx-tab-focus-offset: 1px;
       background: transparent;
       border: 0;
-      border-radius: var(--cngx-tab-radius, 0.5rem);
+      border-radius: var(--cngx-tab-pill-radius, 100px);
       margin-bottom: 0;
+    }
+
+    /* Suppress line skin's ::after indicator. */
+    .cngx-tabs__tab::after {
+      display: none;
     }
 
     .cngx-tabs__tab:hover:not([aria-disabled='true']):not([aria-selected='true']) {
@@ -454,34 +759,240 @@
       box-shadow: none;
     }
   }
+
+  /*
+   * Pill + vertical: suppress the base orientation's ink-bar border and strip
+   * rule the same way segmented + vertical and pill-outline + vertical do.
+   */
+  @scope (.cngx-tab-group[data-skin='pill'][data-orientation='vertical']) {
+    /* Re-assert the focus-ring breathing room: the default scope's
+       vertical rule (`:scope[data-orientation] .cngx-tabs__strip`,
+       specificity 0,3,0) zeroes the strip padding, outranking the pill
+       scope's 0,1,0 padding. Match its specificity here to win it back. */
+    :scope[data-orientation='vertical'] .cngx-tabs__strip {
+      border-inline-end: 0;
+      padding: var(--cngx-tab-pill-strip-padding, 0.25rem);
+    }
+
+    :scope[data-orientation='vertical'] .cngx-tabs__tab {
+      --cngx-tab-padding: 0.4375rem 1rem;
+      border-inline-end: 0;
+      margin-inline-end: 0;
+      /* Equal-width pills read as buttons stacked in a column, so centre
+         the label rather than left-aligning it. */
+      justify-content: center;
+      text-align: center;
+    }
+  }
+
+  /*
+   * Pill-outline skin - same rounded pill geometry as `pill`, but the
+   * active tab reads as a tinted, outlined chip rather than a solid fill.
+   * Resting tabs carry a transparent border so the hover outline does not
+   * shift layout. Strip-only, like `pill`.
+   */
+  @scope (.cngx-tab-group[data-skin='pill-outline']) {
+    :scope {
+      --cngx-tab-pill-outline-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
+      --cngx-tab-pill-outline-bg: color-mix(
+        in oklch,
+        var(--cngx-tab-pill-outline-color, oklch(0.66 0.19 50)) 12%,
+        transparent
+      );
+    }
+
+    .cngx-tabs__strip {
+      border-bottom: 0;
+      gap: var(--cngx-tab-pill-gap, 0.375rem);
+      /* Room for the outset focus ring - see the `pill` skin. */
+      padding: var(--cngx-tab-pill-strip-padding, 0.25rem);
+    }
+
+    .cngx-tabs__tab {
+      --cngx-tab-padding: 0.4375rem 0.875rem;
+      /* Sit just outside the pill, within the strip padding above. */
+      --cngx-tab-focus-offset: 1px;
+      background: transparent;
+      border: var(--cngx-tab-surface-border-width, 1px) solid transparent;
+      border-radius: var(--cngx-tab-pill-radius, 100px);
+      margin-bottom: 0;
+    }
+
+    /* Suppress line skin's ::after indicator. */
+    .cngx-tabs__tab::after {
+      display: none;
+    }
+
+    .cngx-tabs__tab:hover:not([aria-disabled='true']):not([aria-selected='true']) {
+      border-color: var(--cngx-tab-surface-border-color, oklch(0.87 0 0));
+    }
+
+    .cngx-tabs__tab[aria-selected='true'] {
+      background: var(--cngx-tab-pill-outline-bg);
+      border-color: var(--cngx-tab-pill-outline-color, oklch(0.66 0.19 50));
+      color: var(--cngx-tab-pill-outline-color, oklch(0.66 0.19 50));
+      box-shadow: none;
+    }
+  }
+
+  /*
+   * Segmented skin - the tabs share a muted track; the active tab lifts
+   * onto a raised surface with a soft shadow. Strip-only. The track lives
+   * on `.cngx-tabs__strip` (the tablist), the lift on each tab.
+   */
+  @scope (.cngx-tab-group[data-skin='segmented']) {
+    :scope {
+      /* Track and hover fill derive from surface + border so they track
+         the foundation light / dark scheme (and the Material bridge) on
+         their own; the active tab lifts to the plain surface. */
+      --cngx-tab-segmented-track-bg: color-mix(
+        in oklch,
+        var(--cngx-color-surface, oklch(1 0 0)),
+        var(--cngx-color-border, oklch(0.88 0.005 250)) 25%
+      );
+      --cngx-tab-active-bg: var(--cngx-color-surface, oklch(1 0 0));
+      --cngx-tab-segmented-hover-bg: color-mix(
+        in oklch,
+        var(--cngx-color-surface, oklch(1 0 0)),
+        var(--cngx-color-border, oklch(0.88 0.005 250)) 45%
+      );
+    }
+
+    .cngx-tabs__strip {
+      background: var(--cngx-tab-segmented-track-bg, oklch(0.96 0 0));
+      border-bottom: 0;
+      border-radius: var(--cngx-tab-radius, 0.5rem);
+      gap: var(--cngx-tab-segmented-gap, 0.25rem);
+      padding: var(--cngx-tab-segmented-track-padding, 0.25rem);
+      /* The track hugs its tabs rather than stretching the full row -
+         a stretched muted bar with the tabs clustered at one end reads
+         as a layout bug. `flex-shrink: 1` is kept so the base clip box
+         (min-width: 0 + overflow) still engages when the overflow
+         molecule constrains a long strip. `align-self` keeps the track
+         from filling the row height too. */
+      flex: 0 1 auto;
+      align-self: start;
+    }
+
+    /*
+     * Horizontal layout opts for the hugged segmented track. The generic
+     * `justify-content` / wrapper-grow rules in tabs-base.css can't move a
+     * track that shrink-wraps its tabs, so re-point them here: `fitted`
+     * stretches the track to the full width (its segments then share it
+     * via the base wrapper-grow), and `tabAlign` slides the whole track
+     * with auto inline margins.
+     */
+    :scope[data-fitted]:not([data-orientation='vertical']) .cngx-tabs__strip {
+      flex: 1 1 auto;
+    }
+
+    :scope[data-tab-align='center']:not([data-orientation='vertical']) .cngx-tabs__strip {
+      margin-inline: auto;
+    }
+
+    :scope[data-tab-align='end']:not([data-orientation='vertical']) .cngx-tabs__strip {
+      margin-inline-start: auto;
+    }
+
+    .cngx-tabs__tab {
+      --cngx-tab-padding: 0.5rem 0.875rem;
+      /* Sit just outside the rounded tab, within the track padding. */
+      --cngx-tab-focus-offset: 1px;
+      background: transparent;
+      border: 0;
+      border-radius: calc(var(--cngx-tab-radius, 0.5rem) - 0.125rem);
+      margin-bottom: 0;
+    }
+
+    /* Suppress line skin's ::after indicator. */
+    .cngx-tabs__tab::after {
+      display: none;
+    }
+
+    .cngx-tabs__tab:hover:not([aria-disabled='true']):not([aria-selected='true']) {
+      background: var(--cngx-tab-segmented-hover-bg, oklch(0.93 0 0));
+    }
+
+    .cngx-tabs__tab[aria-selected='true'] {
+      background: var(--cngx-tab-active-bg, oklch(1 0 0));
+      color: var(--cngx-tab-active-color, currentColor);
+      box-shadow: var(--cngx-tab-segmented-active-shadow, 0 1px 2px oklch(0 0 0 / 0.06));
+    }
+  }
+
+  /*
+   * Segmented + vertical: the track becomes a stacked column. Drop the
+   * inline-end strip border the base orientation rule adds, stop the
+   * track from stretching the full panel height, and suppress the line
+   * skin's vertical ink-bar that the base orientation rule re-adds at a
+   * higher specificity than the skin's flat tab reset.
+   */
+  @scope (.cngx-tab-group[data-skin='segmented'][data-orientation='vertical']) {
+    /* Match the base vertical rule's specificity so the inline-end strip
+       border it adds is actually removed - a bare `.cngx-tabs__strip`
+       (0,1,0) loses to `:scope[data-orientation] .cngx-tabs__strip`
+       (0,3,0) and left a stray rule down the track's trailing edge. */
+    :scope[data-orientation='vertical'] .cngx-tabs__strip {
+      border-inline-end: 0;
+      align-self: start;
+      /* The default scope's vertical strip rule (0,3,0) zeroes padding;
+         re-assert the track padding so the active tile stays inset from
+         the track edge. */
+      padding: var(--cngx-tab-segmented-track-padding, 0.25rem);
+    }
+
+    :scope[data-orientation='vertical'] .cngx-tabs__tab {
+      --cngx-tab-padding: 0.5rem 1rem;
+      border-inline-end: 0;
+      margin-inline-end: 0;
+    }
+  }
+
+  /*
+   * Pill-outline + vertical: the base orientation rule zeroes the bottom
+   * border and forces a 2px inline-end ink-bar, which would break the
+   * uniform outline. Re-establish a full 1px border on every side and
+   * paint the active outline with the skin's accent colour. Selectors
+   * match the base orientation rule's specificity and win by source order.
+   */
+  @scope (.cngx-tab-group[data-skin='pill-outline'][data-orientation='vertical']) {
+    /* Drop the base orientation's inline-end strip rule - the outlined
+       pills carry their own edge, no column divider - and re-assert the
+       focus-ring breathing room the default scope's 0,3,0 rule zeroes. */
+    :scope[data-orientation='vertical'] .cngx-tabs__strip {
+      border-inline-end: 0;
+      padding: var(--cngx-tab-pill-strip-padding, 0.25rem);
+    }
+
+    :scope[data-orientation='vertical'] .cngx-tabs__tab {
+      --cngx-tab-padding: 0.4375rem 1rem;
+      border: var(--cngx-tab-surface-border-width, 1px) solid transparent;
+      margin-bottom: 0;
+      margin-inline-end: 0;
+      /* Equal-width outlined pills, centred label - matches `pill`. */
+      justify-content: center;
+      text-align: center;
+    }
+
+    :scope[data-orientation='vertical'] .cngx-tabs__tab[aria-selected='true'] {
+      border-color: var(--cngx-tab-pill-outline-color, oklch(0.66 0.19 50));
+    }
+  }
 }
 
 /*
- * Dark-mode surface refinement for the contained / pill skins. Kept
- * UNLAYERED and OUTSIDE every `@scope` on purpose: nesting an `@media`
- * inside `@scope` silently breaks the cascade, and an unlayered block
- * reliably wins over the in-layer `:scope` light assignments above. This
- * only matters for consumers without Material - when `--mat-sys-*` is
- * present those tokens already carry their own light/dark distinction,
- * so the literal dark fallbacks here never surface.
+ * Dark-mode refinement. Every surface / border / accent token now
+ * derives from the cngx foundation tokens (`--cngx-color-surface`,
+ * `--cngx-color-border`, `--cngx-color-primary`), which already carry
+ * their own light / dark values, so the only thing the scheme can't
+ * derive is shadow strength - a 6%-black drop reads as nothing on a
+ * dark surface, so deepen it here. Kept UNLAYERED and OUTSIDE every
+ * `@scope`: nesting an `@media` inside `@scope` silently breaks the
+ * cascade, and an unlayered block reliably wins over the in-layer
+ * `:scope` light assignment.
  */
 @media (prefers-color-scheme: dark) {
-  .cngx-tab-group[data-skin='contained'] {
-    --cngx-tab-active-bg: var(--mat-sys-surface, var(--cngx-surface, oklch(0.21 0 0)));
-    --cngx-tab-inactive-bg: var(
-      --mat-sys-surface-container,
-      var(--cngx-surface-2, oklch(0.27 0 0))
-    );
-    --cngx-tab-surface-border-color: var(
-      --mat-sys-outline-variant,
-      var(--cngx-border, oklch(0.4 0 0))
-    );
-  }
-
-  .cngx-tab-group[data-skin='pill'] {
-    --cngx-tab-pill-hover-bg: var(
-      --mat-sys-surface-container,
-      var(--cngx-surface-2, oklch(0.27 0 0))
-    );
+  .cngx-tab-group[data-skin='segmented'] {
+    --cngx-tab-segmented-active-shadow: 0 1px 3px oklch(0 0 0 / 0.3);
   }
 }

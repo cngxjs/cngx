@@ -559,8 +559,15 @@
 
   cngx-tab-group[data-orientation='vertical'] {
     display: grid;
-    grid-template-columns: minmax(8rem, max-content) 1fr;
-    gap: var(--cngx-tab-gap, 0.5rem);
+    /*
+     * Strip column hugs its content (widest tab) instead of forcing a
+     * fixed min - a stretched column left a segmented / pill track far
+     * wider than its tabs. The gap is the strip-to-panel gutter; the
+     * `contained` skin zeroes it via `--cngx-tab-vertical-gap` so the
+     * active tab fuses with the panel along the inline seam.
+     */
+    grid-template-columns: max-content 1fr;
+    gap: var(--cngx-tab-vertical-gap, 1rem);
     align-items: start;
   }
 
@@ -568,13 +575,80 @@
     flex-direction: column;
     flex-wrap: nowrap;
     overflow-x: hidden;
-    overflow-y: auto;
+    /*
+     * Clip rather than `auto` - mirrors the horizontal strip. `auto`
+     * surfaced a scrollbar over a 1px overflow (the contained skin's
+     * `margin-bottom: -1px` seam shrinks the box but not `scrollHeight`);
+     * `hidden` still scrolls programmatically for `scrollIntoView`, just
+     * without the bar, matching the "not a user-scrollable container"
+     * contract above.
+     */
+    overflow-y: hidden;
     scroll-snap-type: y proximity;
   }
 
   cngx-tab-group[data-orientation='vertical'] .cngx-tabs__tab {
     scroll-snap-align: start;
     white-space: normal;
+    /*
+     * Every tab is the width of the widest one - keeps the line ink-bar,
+     * the contained seam, and the segmented / pill fills aligned down the
+     * column. `align-items: stretch` does not equalise them here (the
+     * strip is a grid item sized to `max-content`), and a hard
+     * `inline-size: 100%` would cap the column's `max-content` and clip
+     * the widest label. `min-inline-size: 100%` stretches the narrow tabs
+     * up to the column while letting the column grow to the full label.
+     */
+    box-sizing: border-box;
+    min-inline-size: 100%;
+  }
+
+  /*
+   * Vertical tabs hug their content, so the label must not truncate - the
+   * horizontal ellipsis (overflow / min-width: 0, set on `.cngx-tabs__label`
+   * to clear the close button) would otherwise kick in as the column
+   * resolves its width and cut the widest label short.
+   */
+  cngx-tab-group[data-orientation='vertical'] .cngx-tabs__label {
+    min-inline-size: auto;
+    overflow: visible;
+    text-overflow: clip;
+  }
+
+  /*
+   * Horizontal layout opts (consumer-facing, via the `fitted` / `tabAlign`
+   * inputs reflected onto `[data-fitted]` / `[data-tab-align]`). Both are
+   * scoped to horizontal with `:not([data-orientation='vertical'])` -
+   * vertical tabs already fill their column and stack, so these no-op
+   * there.
+   *
+   * `[data-fitted]` - each tab grows to an equal share of the strip width.
+   * The growth rides the per-tab wrapper (the strip's direct flex child);
+   * the tab then fills its wrapper and centres its label.
+   */
+  cngx-tab-group[data-fitted]:not([data-orientation='vertical']) .cngx-tabs__tab-wrapper {
+    flex: 1 1 0;
+  }
+
+  cngx-tab-group[data-fitted]:not([data-orientation='vertical']) .cngx-tabs__tab {
+    inline-size: 100%;
+    /* Centre the label: it fills the widened tab via `flex: 1 1 auto`, so
+       `justify-content` alone can't centre it - `text-align` does. */
+    justify-content: center;
+    text-align: center;
+  }
+
+  /*
+   * `[data-tab-align]` - aligns the content-hugging tab cluster along the
+   * strip (ignored when fitted, where the tabs span the full width).
+   * `start` is the flex default, so only `center` / `end` need a rule.
+   */
+  cngx-tab-group[data-tab-align='center']:not([data-orientation='vertical']) .cngx-tabs__strip {
+    justify-content: center;
+  }
+
+  cngx-tab-group[data-tab-align='end']:not([data-orientation='vertical']) .cngx-tabs__strip {
+    justify-content: flex-end;
   }
 
   @media (prefers-reduced-motion: reduce) {

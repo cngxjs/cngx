@@ -1286,7 +1286,9 @@ describe('CngxTabGroup organism', () => {
   `,
 })
 class SkinHost {
-  readonly skin = signal<'line' | 'contained' | 'pill' | undefined>(undefined);
+  readonly skin = signal<'line' | 'contained' | 'segmented' | 'pill' | 'pill-outline' | undefined>(
+    undefined,
+  );
   readonly iconLayout = signal<'start' | 'top' | 'only' | undefined>(undefined);
 }
 

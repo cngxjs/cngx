@@ -3,9 +3,9 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxTabGroup: all skins side by side',
   subtitle:
-    'The same three tabs, the same bound <code>[(activeIndex)]</code>, rendered under <code>line</code>, <code>contained</code>, and <code>pill</code>. Switching a tab in any group updates all three - the skin is purely visual, the state is shared.',
+    'The same three tabs, the same bound <code>[(activeIndex)]</code>, rendered under <code>line</code>, <code>contained</code>, <code>segmented</code>, <code>pill</code>, and <code>pill-outline</code>. Switching a tab in any group updates all five - the skin is purely visual, the state is shared.',
   description:
-    'Skin axis comparison. Each group differs only by its <code>[skin]</code> input, which maps to the <code>[data-skin]</code> host attribute and selects a CSS scope. Structure, slots, ARIA, and keyboard behaviour are byte-identical across the three; only the painted indicator changes (underline ink-bar / panel-fused box / rounded fill).',
+    'Skin axis comparison. Each group differs only by its <code>[skin]</code> input, which maps to the <code>[data-skin]</code> host attribute and selects a CSS scope. Structure, slots, ARIA, and keyboard behaviour are byte-identical across all five; only the painted indicator changes (underline ink-bar / panel-fused box / raised segmented surface / rounded solid fill / outlined pill).',
   level: 'organism',
   audience: ['dev', 'design'],
   artifact: 'standalone',
@@ -17,7 +17,7 @@ export const STORY: DemoSpec = {
   ],
   imports: ['CngxTabGroup', 'CngxTab', 'CngxTabContent'],
   setup: `protected readonly active = signal(0);
-  protected readonly skins = ['line', 'contained', 'pill'] as const;`,
+  protected readonly skins = ['line', 'contained', 'segmented', 'pill', 'pill-outline'] as const;`,
   template: `  <div style="display:flex;flex-direction:column;gap:24px">
     @for (skin of skins; track skin) {
       <div style="display:flex;flex-direction:column;gap:6px">

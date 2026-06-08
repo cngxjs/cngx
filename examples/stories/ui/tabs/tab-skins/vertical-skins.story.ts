@@ -3,9 +3,9 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxTabGroup: skins in vertical orientation',
   subtitle:
-    'The three skins under <code>orientation="vertical"</code>. Skin and orientation are orthogonal axes - <code>line</code> moves its ink-bar to the inline-end edge, <code>contained</code> fuses the active tab with the panel along the side seam, and <code>pill</code> keeps its rounded fills stacked in a column.',
+    'Every skin under <code>orientation="vertical"</code>. Skin and orientation are orthogonal axes - <code>line</code> moves its ink-bar to the inline-end edge, <code>contained</code> fuses the active tab with the panel along the side seam, <code>segmented</code> stacks its track into a column, and <code>pill</code> / <code>pill-outline</code> keep their rounded fills stacked.',
   description:
-    'Skin x orientation. <code>orientation</code> is its own axis (not a skin); each skin ships the vertical treatment of its indicator. The <code>contained</code> skin is the notable one - its fusion seam follows the inline-end edge in vertical mode so the active tab still reads as one box with the panel. Same shared <code>[(activeIndex)]</code> drives all three.',
+    'Skin x orientation. <code>orientation</code> is its own axis (not a skin); each skin ships the vertical treatment of its indicator. The <code>contained</code> skin is the notable one - its fusion seam follows the inline-end edge in vertical mode so the active tab still reads as one box with the panel. Same shared <code>[(activeIndex)]</code> drives all skins.',
   level: 'organism',
   audience: ['dev', 'design'],
   artifact: 'standalone',
@@ -17,7 +17,7 @@ export const STORY: DemoSpec = {
   ],
   imports: ['CngxTabGroup', 'CngxTab', 'CngxTabContent'],
   setup: `protected readonly active = signal(0);
-  protected readonly skins = ['line', 'contained', 'pill'] as const;`,
+  protected readonly skins = ['line', 'contained', 'segmented', 'pill', 'pill-outline'] as const;`,
   template: `  <div style="display:flex;flex-direction:column;gap:24px">
     @for (skin of skins; track skin) {
       <div style="display:flex;flex-direction:column;gap:6px">

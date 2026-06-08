@@ -69,13 +69,16 @@ export interface CngxTabsTemplates {
  * `tabpanel` structure, slots, ARIA, and keyboard behaviour, and only
  * redirects CSS via the `[data-skin]` host attribute. `'line'`
  * (default) is the underline indicator; `'contained'` fuses the active
- * tab with the panel surface; `'pill'` renders rounded fills. Sized to
- * the tab use cases - not a 1:1 copy of the stepper's seven skins. The
- * Material twin (`[cngxMatTabs]`) ignores this setting.
+ * tab with the panel surface; `'segmented'` sits the tabs in a muted
+ * track and lifts the active tab onto a raised surface; `'pill'`
+ * renders rounded solid fills; `'pill-outline'` renders the same pill
+ * geometry with a tinted, outlined active state instead of a solid
+ * fill. Sized to the tab use cases - not a 1:1 copy of the stepper's
+ * seven skins. The Material twin (`[cngxMatTabs]`) ignores this setting.
  *
  * @category common/tabs
  */
-export type CngxTabsSkin = 'line' | 'contained' | 'pill';
+export type CngxTabsSkin = 'line' | 'contained' | 'segmented' | 'pill' | 'pill-outline';
 
 /**
  * Icon-layout axis for `<cngx-tab-group>`, orthogonal to both skin and
@@ -101,6 +104,17 @@ export type CngxTabIconLayout = 'start' | 'top' | 'only';
  * @category common/tabs
  */
 export type CngxTabsPanelMode = 'eager' | 'lazy' | 'lazy-destroy';
+
+/**
+ * Horizontal alignment of the tab cluster along the strip, set via the
+ * `[tabAlign]` Input and reflected onto `[data-tab-align]`. `'start'`
+ * (default), `'center'`, or `'end'`. Horizontal only - ignored under
+ * `orientation="vertical"` (tabs fill the column) and when `[fitted]`
+ * stretches them to the full width.
+ *
+ * @category common/tabs
+ */
+export type CngxTabAlign = 'start' | 'center' | 'end';
 
 /**
  * Tab-group config surface. Resolution priority: per-instance Input
@@ -135,6 +149,19 @@ export interface CngxTabsConfig {
    * {@link withTabsPanelMode}.
    */
   readonly panelMode?: CngxTabsPanelMode;
+  /**
+   * App-wide default for stretching tabs to the full strip width
+   * (horizontal only). Default `false`. Per-instance `[fitted]` Input
+   * wins; the cascade default lives in `createTabsHostAttrs`. Override
+   * via {@link withTabsFitted}.
+   */
+  readonly fitted?: boolean;
+  /**
+   * App-wide default tab-cluster alignment (horizontal only). Default
+   * `'start'`. Per-instance `[tabAlign]` Input wins; the cascade default
+   * lives in `createTabsHostAttrs`. Override via {@link withTabsAlign}.
+   */
+  readonly tabAlign?: CngxTabAlign;
   /**
    * App-wide default for whether tabs render a close affordance.
    * Default `false`. Per-instance `[closable]` Input wins, and a
@@ -182,6 +209,8 @@ const TABS_CONFIG_DEFAULTS: Required<
     | 'skin'
     | 'iconLayout'
     | 'panelMode'
+    | 'fitted'
+    | 'tabAlign'
     | 'closable'
     | 'addable'
   >
@@ -355,6 +384,28 @@ export function withTabsIconLayout(layout: CngxTabIconLayout): CngxTabsConfigFea
  */
 export function withTabsPanelMode(mode: CngxTabsPanelMode): CngxTabsConfigFeature {
   return defineTabsConfigFeature((cfg) => ({ ...cfg, panelMode: mode }));
+}
+
+/**
+ * Set the app-wide default for stretching tabs to the full strip width
+ * (horizontal only). Default `false`. Per-instance `[fitted]` Input still
+ * wins. No effect under `orientation="vertical"`.
+ *
+ * @category common/tabs
+ */
+export function withTabsFitted(fitted: boolean): CngxTabsConfigFeature {
+  return defineTabsConfigFeature((cfg) => ({ ...cfg, fitted }));
+}
+
+/**
+ * Set the app-wide default tab-cluster alignment (horizontal only).
+ * Default `'start'`. Per-instance `[tabAlign]` Input still wins. Ignored
+ * under `orientation="vertical"` and when the group is `fitted`.
+ *
+ * @category common/tabs
+ */
+export function withTabsAlign(align: CngxTabAlign): CngxTabsConfigFeature {
+  return defineTabsConfigFeature((cfg) => ({ ...cfg, tabAlign: align }));
 }
 
 /**
