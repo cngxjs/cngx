@@ -33,12 +33,24 @@
           ></ng-container>
         </span>
       }
-      <span class="cngx-tabs__label">
-        @let labelTpl = labelTemplateFor(tab.id);
-        @if (labelTpl) {
-          <ng-container *ngTemplateOutlet="labelTpl"></ng-container>
-        } @else {
-          {{ tab.label() }}
+      <span class="cngx-tabs__text">
+        <span class="cngx-tabs__label">
+          @let labelTpl = labelTemplateFor(tab.id);
+          @if (labelTpl) {
+            <ng-container *ngTemplateOutlet="labelTpl"></ng-container>
+          } @else {
+            {{ tab.label() }}
+          }
+        </span>
+        @let subLabelTpl = subLabelTemplateFor(tab.id);
+        @if (subLabelTpl || tab.subLabel()) {
+          <span class="cngx-tabs__sublabel">
+            @if (subLabelTpl) {
+              <ng-container *ngTemplateOutlet="subLabelTpl"></ng-container>
+            } @else {
+              {{ tab.subLabel() }}
+            }
+          </span>
         }
       </span>
       @if (showErrorBadge(tab)) {

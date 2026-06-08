@@ -529,6 +529,10 @@ export class CngxTabGroup implements CngxTabPanelHost {
     return this.tabDirectiveById().get(id)?.labelTemplate()?.templateRef ?? null;
   }
 
+  subLabelTemplateFor(id: string): TemplateRef<unknown> | null {
+    return this.tabDirectiveById().get(id)?.subLabelTemplate()?.templateRef ?? null;
+  }
+
   contentTemplateFor(id: string): TemplateRef<unknown> | null {
     return this.tabDirectiveById().get(id)?.contentTemplate()?.templateRef ?? null;
   }
