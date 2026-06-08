@@ -7,6 +7,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { CngxTabGroupPresenter } from './presenter.directive';
 import { CngxTab } from './tab.directive';
 import { CngxTabLabel } from './tab-label.directive';
+import { CngxTabSubLabel } from './slots/tab-sub-label.directive';
 import { CngxTabContent } from './tab-content.directive';
 
 @Component({
@@ -131,5 +132,49 @@ describe('CngxTab', () => {
     fixture.componentInstance.aDisabled.set(true);
     fixture.detectChanges();
     expect(presenter.tabs()[0].disabled()).toBe(true);
+  });
+
+  it('[subLabel] flows through to the registered handle', () => {
+    @Component({
+      standalone: true,
+      selector: 'sub-label-host',
+      imports: [CngxTab],
+      hostDirectives: [CngxTabGroupPresenter],
+      template: `<div cngxTab [label]="'A'" [subLabel]="detail()"></div>`,
+    })
+    class SubLabelHost {
+      readonly detail = signal<string | undefined>('45 saved');
+    }
+    const fixture = TestBed.createComponent(SubLabelHost);
+    fixture.detectChanges();
+    const presenter = fixture.debugElement.injector.get(CngxTabGroupPresenter);
+    expect(presenter.tabs()[0].subLabel()).toBe('45 saved');
+    fixture.componentInstance.detail.set('46 saved');
+    fixture.detectChanges();
+    expect(presenter.tabs()[0].subLabel()).toBe('46 saved');
+  });
+
+  it('subLabel defaults to undefined and discovers a projected cngxTabSubLabel slot', () => {
+    @Component({
+      standalone: true,
+      selector: 'sub-label-slot-host',
+      imports: [CngxTab, CngxTabSubLabel],
+      hostDirectives: [CngxTabGroupPresenter],
+      template: `
+        <div cngxTab [label]="'A'">
+          <ng-template cngxTabSubLabel>detail</ng-template>
+        </div>
+        <div cngxTab [label]="'B'"></div>
+      `,
+    })
+    class SubLabelSlotHost {}
+    const fixture = TestBed.createComponent(SubLabelSlotHost);
+    fixture.detectChanges();
+    const tabs = fixture.debugElement.queryAll(By.directive(CngxTab));
+    const tabA = tabs[0].injector.get(CngxTab);
+    const tabB = tabs[1].injector.get(CngxTab);
+    expect(tabA.subLabelTemplate()).toBeTruthy();
+    expect(tabB.subLabelTemplate()).toBeFalsy();
+    expect(tabB.subLabel()).toBeUndefined();
   });
 });

@@ -21,6 +21,7 @@ import {
   CngxTabIcon,
   CngxTabLabel,
   CngxTabRejectionIcon,
+  CngxTabSubLabel,
   provideCngxTabs,
   provideTabsConfig,
   provideTabsI18n,
@@ -2057,5 +2058,101 @@ describe('CngxTabGroup APG keyboard (automatic activation)', () => {
     press(tabs[1], 'ArrowUp');
     fixture.detectChanges();
     expect(tabs[0].getAttribute('aria-selected')).toBe('true');
+  });
+});
+
+@Component({
+  standalone: true,
+  imports: [CngxTabGroup, CngxTab, CngxTabSubLabel],
+  template: `
+    <cngx-tab-group [iconLayout]="iconLayout()" aria-label="Bookmarks group">
+      <div cngxTab [label]="'Bookmarks'" [subLabel]="'45'"></div>
+      <div cngxTab [label]="'Home'">
+        <ng-template cngxTabSubLabel>2 tasks</ng-template>
+      </div>
+      <div cngxTab [label]="'Plain'"></div>
+    </cngx-tab-group>
+  `,
+})
+class SubLabelHost {
+  readonly iconLayout = signal<'start' | 'only' | undefined>(undefined);
+}
+
+describe('CngxTabGroup sub-label', () => {
+  function makeFixture(): { nativeElement: HTMLElement; detectChanges(): void; componentInstance: SubLabelHost } {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+    const fixture = TestBed.createComponent(SubLabelHost);
+    fixture.detectChanges();
+    return fixture;
+  }
+
+  it('renders .cngx-tabs__sublabel only for tabs that have a sub-label (string or slot)', () => {
+    const fixture = makeFixture();
+    const subs = Array.from(
+      fixture.nativeElement.querySelectorAll('.cngx-tabs__sublabel'),
+    ) as HTMLElement[];
+    expect(subs.length).toBe(2);
+    expect(subs[0].textContent?.trim()).toBe('45');
+    expect(subs[1].textContent?.trim()).toBe('2 tasks');
+  });
+
+  it('stacks the label and sub-label inside the .cngx-tabs__text column', () => {
+    const fixture = makeFixture();
+    const firstText = fixture.nativeElement.querySelector('.cngx-tabs__text');
+    expect(firstText?.querySelector('.cngx-tabs__label')).toBeTruthy();
+    expect(firstText?.querySelector('.cngx-tabs__sublabel')).toBeTruthy();
+  });
+
+  it('folds the [subLabel] string into the button aria-label; slot/plain tabs carry only the label', () => {
+    // The string input drives the accessible name (mirroring how
+    // [label] not *cngxTabLabel feeds the aria-label); the template
+    // sub-label is visual content, so the Home tab's name is bare.
+    const fixture = makeFixture();
+    const tabs = Array.from(
+      fixture.nativeElement.querySelectorAll('button[role="tab"]'),
+    ) as HTMLButtonElement[];
+    expect(tabs[0].getAttribute('aria-label')).toBe('Tab 1 of 3: Bookmarks, 45');
+    expect(tabs[1].getAttribute('aria-label')).toBe('Tab 2 of 3: Home');
+    expect(tabs[2].getAttribute('aria-label')).toBe('Tab 3 of 3: Plain');
+  });
+
+  it('iconLayout="only" keeps the sub-label in the DOM (clip, not removal) and the source CSS clips it', () => {
+    const fixture = makeFixture();
+    fixture.componentInstance.iconLayout.set('only');
+    fixture.detectChanges();
+    const host = fixture.nativeElement.querySelector('cngx-tab-group') as HTMLElement;
+    expect(host.getAttribute('data-icon-layout')).toBe('only');
+    // Clip keeps the node in the a11y tree (same contract as the label).
+    expect(fixture.nativeElement.querySelectorAll('.cngx-tabs__sublabel').length).toBe(2);
+    // happy-dom cannot compute the external-CSS clip, so assert the rule
+    // exists in source (same approach as the container-query test).
+    const css = readFileSync(
+      `${process.cwd()}/projects/ui/tabs/tab-group.component.css`,
+      'utf8',
+    );
+    expect(css).toMatch(/\[data-icon-layout='only'\]\s+\.cngx-tabs__sublabel/);
+  });
+
+  it('registers the sub-label tokens as @property in the shared token layer (sibling-token parity)', () => {
+    // The sublabel font-size/color must carry the typed-default + docs
+    // contract every sibling tab token follows, not just raw var()
+    // fallbacks. Asserted on source (happy-dom cannot register @property).
+    const css = readFileSync(
+      `${process.cwd()}/projects/common/tabs/styles/tabs-base.css`,
+      'utf8',
+    );
+    expect(css).toMatch(/@property --cngx-tab-sublabel-font-size\s*\{/);
+    expect(css).toMatch(/@property --cngx-tab-sublabel-color\s*\{/);
+    // Both must inherit so a host-level override on `cngx-tab-group`
+    // cascades down to the `.cngx-tabs__sublabel` descendant - with
+    // `inherits: false` the override is silently dropped (the
+    // host->descendant @property trap).
+    expect(css).toMatch(
+      /@property --cngx-tab-sublabel-font-size\s*\{[^}]*inherits:\s*true/,
+    );
+    expect(css).toMatch(
+      /@property --cngx-tab-sublabel-color\s*\{[^}]*inherits:\s*true/,
+    );
   });
 });

@@ -56,6 +56,18 @@ describe('tabsEqual', () => {
     expect(tabsEqual(a, b)).toBe(false);
   });
 
+  it('returns false when one entry sub-label text differs', () => {
+    const a = [handle('a', { label: 'A', subLabel: '45' })];
+    const b = [handle('a', { label: 'A', subLabel: '46' })];
+    expect(tabsEqual(a, b)).toBe(false);
+  });
+
+  it('returns false when a sub-label is added to an otherwise identical entry', () => {
+    const a = [handle('a', { label: 'A' })];
+    const b = [handle('a', { label: 'A', subLabel: '45' })];
+    expect(tabsEqual(a, b)).toBe(false);
+  });
+
   it('returns false when one entry closable flag differs', () => {
     const a = [handle('a', { closable: false })];
     const b = [handle('a', { closable: true })];

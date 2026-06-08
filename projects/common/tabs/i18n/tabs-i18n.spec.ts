@@ -29,6 +29,7 @@ describe('CngxTabsI18n', () => {
       'Could not save changes — reverted to "Profile".',
     );
     expect(i18n.selectedTab('Settings', 2, 5)).toBe('Tab 2 of 5: Settings');
+    expect(i18n.tabLabelWithDetail('Bookmarks', '45')).toBe('Bookmarks, 45');
     expect(i18n.tabHasErrors(1)).toBe('1 error');
     expect(i18n.tabHasErrors(3)).toBe('3 errors');
     expect(i18n.moreTabsLabel(4)).toBe('4 more');
@@ -92,6 +93,23 @@ describe('CngxTabsI18n', () => {
     const i18n = TestBed.inject(CNGX_TABS_I18N);
     expect(i18n.selectedTab('Profil', 1, 4)).toBe('Aktiv: Profil (1/4)');
     expect(i18n.moreTabsLabel(3)).toBe('3 weitere');
+  });
+
+  it('provideTabsI18n can override tabLabelWithDetail with a localised fold', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideTabsI18n(
+          withTabsI18nLabels({
+            tabLabelWithDetail: (label, detail) => `${label} (${detail})`,
+          }),
+        ),
+      ],
+    });
+    const i18n = TestBed.inject(CNGX_TABS_I18N);
+    expect(i18n.tabLabelWithDetail('Bookmarks', '45')).toBe('Bookmarks (45)');
+    // Unset keys keep their English defaults.
+    expect(i18n.selectedTab('Settings', 2, 5)).toBe('Tab 2 of 5: Settings');
   });
 
   it('injectTabsI18n returns the resolved bundle in an injection context', () => {
