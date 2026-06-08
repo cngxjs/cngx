@@ -10,6 +10,14 @@ import { inject, InjectionToken, type Provider } from '@angular/core';
 export interface CngxTabsI18n {
   readonly tabsLabel: string;
   readonly selectedTab: (label: string, position: number, count: number) => string;
+  /**
+   * Folds a tab's optional secondary label into its accessible name.
+   * Receives the primary label and the sub-label detail; the result
+   * is passed to {@link selectedTab} as the label part, e.g.
+   * `Tab 2 of 5: Bookmarks, 45`. Only invoked when a sub-label is
+   * present.
+   */
+  readonly tabLabelWithDetail: (label: string, detail: string) => string;
   readonly tabHasErrors: (count: number) => string;
   readonly moreTabsLabel: (count: number) => string;
   readonly previousTab: string;
@@ -43,6 +51,7 @@ export interface CngxTabsI18n {
 const TABS_I18N_DEFAULTS: CngxTabsI18n = {
   tabsLabel: 'Tabs',
   selectedTab: (label, position, count) => `Tab ${position} of ${count}: ${label}`,
+  tabLabelWithDetail: (label, detail) => `${label}, ${detail}`,
   tabHasErrors: (count) => `${count} error${count === 1 ? '' : 's'}`,
   moreTabsLabel: (count) => `${count} more`,
   previousTab: 'Previous tab',

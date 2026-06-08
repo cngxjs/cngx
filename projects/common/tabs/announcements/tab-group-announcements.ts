@@ -181,7 +181,10 @@ export function createTabGroupAnnouncements(
 
   function tabAriaLabel(tab: CngxTabHandle, position: number): string {
     const tabs = presenter.tabs();
-    return i18n.selectedTab(tab.label() ?? '', position, tabs.length);
+    const label = tab.label() ?? '';
+    const detail = tab.subLabel();
+    const labelPart = detail ? i18n.tabLabelWithDetail(label, detail) : label;
+    return i18n.selectedTab(labelPart, position, tabs.length);
   }
 
   // Eager seed — `linkedSignal` is lazy and the success arm doesn't
