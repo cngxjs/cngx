@@ -18,7 +18,7 @@
    * @group Layout
    */
   @property --cngx-stepper-footer-gap {
-    syntax: '<length>';
+    syntax: '*';
     inherits: false;
     initial-value: 0.75rem;
   }
@@ -28,7 +28,7 @@
    * @group Layout
    */
   @property --cngx-stepper-footer-region-gap {
-    syntax: '<length>';
+    syntax: '*';
     inherits: true;
     initial-value: 0.5rem;
   }
@@ -38,7 +38,7 @@
    * @group Layout
    */
   @property --cngx-stepper-footer-margin-block-start {
-    syntax: '<length>';
+    syntax: '*';
     inherits: false;
     initial-value: 1rem;
   }
@@ -48,7 +48,7 @@
    * @group Layout
    */
   @property --cngx-stepper-footer-padding-block {
-    syntax: '<length>';
+    syntax: '*';
     inherits: false;
     initial-value: 0.75rem;
   }

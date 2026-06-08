@@ -308,7 +308,7 @@
    * @group State / Dismissable
    */
   @property --cngx-tab-affordance-size {
-    syntax: '<length>';
+    syntax: '*';
     inherits: false;
     initial-value: 1.25rem;
   }
@@ -330,7 +330,7 @@
    * @group State / Dismissable
    */
   @property --cngx-tab-affordance-hover-bg {
-    syntax: '<color>';
+    syntax: '*';
     inherits: false;
     initial-value: color-mix(in oklch, currentColor 14%, transparent);
   }

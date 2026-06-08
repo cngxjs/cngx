@@ -106,7 +106,7 @@
    * @group State / Error
    */
   @property --cngx-tab-badge-size {
-    syntax: '<length>';
+    syntax: '*';
     inherits: false;
     initial-value: 1.25rem;
   }
@@ -148,7 +148,7 @@
    * @group Skin
    */
   @property --cngx-tab-radius {
-    syntax: '<length>';
+    syntax: '*';
     inherits: true;
     initial-value: 0.5rem;
   }
