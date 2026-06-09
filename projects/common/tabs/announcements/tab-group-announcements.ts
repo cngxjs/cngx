@@ -1,7 +1,6 @@
 // Single-consumer factory — staged under family-uniformity
-// (tabs-accepted-debt §9, alongside `createTabGroupTemplateBindings`
-// and `CngxMatTabAggregatorContent`). Re-eval on second consumer or
-// sibling debt closure.
+// (`createTabGroupTemplateBindings` and `CngxMatTabAggregatorContent`).
+// Re-eval on second consumer or sibling debt closure.
 import { computed, linkedSignal, type Signal } from '@angular/core';
 
 import type { CngxTabsConfig } from '../tabs-config';
