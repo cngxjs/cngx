@@ -80,17 +80,21 @@ export class CngxTab implements OnInit {
   });
 
   /**
-   * Per-tab error fold - the tab-equivalent of the step's `state ===
-   * 'error'` arm. `true` when the direct `[error]` flag is set OR the
-   * optional aggregator reports errors. A boolean, not a status enum:
-   * tabs carry no success/completed/disabled model (Pillar 3).
+   * Per-tab error fold driving the badge + SR descriptor. `true` when
+   * the direct `[error]` flag is set OR the optional aggregator wants to
+   * reveal (`shouldShow()` = `hasError` AND scope reveal-state). The
+   * aggregator arm reads `shouldShow`, not `hasError`, so deferred-reveal
+   * validation stays silent until revealed - the direct flag has no
+   * reveal concept (the consumer sets it when it wants it shown). A
+   * boolean, not a status enum: tabs carry no success/completed/disabled
+   * model (Pillar 3).
    */
   readonly hasError: Signal<boolean> = computed(
     () => {
       const directError = this.error();
       return (
         (directError !== false && directError !== '') ||
-        (this.errorAggregator()?.hasError?.() ?? false)
+        (this.errorAggregator()?.shouldShow?.() ?? false)
       );
     },
     { equal: Object.is },

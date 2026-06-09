@@ -28,9 +28,11 @@ export interface CngxTabHandle {
   readonly errorAggregator: Signal<CngxErrorAggregatorContract | undefined>;
   /**
    * Folded per-tab error state, exposed by reference. `true` when the
-   * direct `[error]` flag is set OR the aggregator reports errors. The
-   * organism gates the error badge on this; both handle producers
-   * (`CngxTab`, `createMatTabHandle`) carry it.
+   * direct `[error]` flag is set OR the aggregator wants to reveal
+   * (`shouldShow()`, so deferred-reveal validation stays silent until
+   * revealed). The organism gates the error badge + SR descriptor on
+   * this; both handle producers (`CngxTab`, `createMatTabHandle`)
+   * carry it.
    */
   readonly hasError: Signal<boolean>;
   /**
