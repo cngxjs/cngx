@@ -22,16 +22,20 @@ test.describe('Routed tabs gated by a CanDeactivate guard', () => {
     await expect(buttons).toHaveCount(3);
     await expect(buttons.nth(0)).toHaveAttribute('aria-selected', 'true');
 
-    // Dirty the editor → the editor tab lights its [error] badge.
+    // Typing is just unsaved - NOT an error. The badge must stay off
+    // until a leave is actually blocked.
     await page.locator('#rg-draft').fill('unsaved text');
-    await expect(buttons.nth(0).locator('.cngx-tabs__badge')).toBeVisible();
+    await expect(buttons.nth(0).locator('.cngx-tabs__badge')).toHaveCount(0);
 
     // Try to leave: pessimistic guard refuses, active tab stays on the
-    // editor, the refused target shows the rejection icon.
+    // editor, and only now does the editor get flagged. The tab the user
+    // clicked stays clean - the demo clears the generic rejection marker
+    // because a leave-guard fault belongs on the source, not the target.
     await buttons.nth(1).click();
     await expect(buttons.nth(0)).toHaveAttribute('aria-selected', 'true');
     await expect(buttons.nth(1)).toHaveAttribute('aria-selected', 'false');
-    await expect(buttons.nth(1).locator('.cngx-tabs__rejection-icon')).toBeVisible();
+    await expect(buttons.nth(0).locator('.cngx-tabs__badge')).toBeVisible();
+    await expect(buttons.nth(1).locator('.cngx-tabs__rejection-icon')).toHaveCount(0);
   });
 
   test('saving clears the form so the routed switch advances and the panel swaps', async ({
