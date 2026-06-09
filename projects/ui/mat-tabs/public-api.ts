@@ -4,6 +4,8 @@
  * Material instrumentation directive for `<mat-tab-group>`.
  */
 export { CngxMatTabs } from './mat-tabs.directive';
+export { CngxMatTabNav } from './mat-tab-nav.directive';
+export { CngxMatTabLink } from './mat-tab-link.directive';
 export { CngxMatTabError } from './mat-tab-error.directive';
 export { CngxMatTabErrorFlag } from './mat-tab-error-flag.directive';
 export {
