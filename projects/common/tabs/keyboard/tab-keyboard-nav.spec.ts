@@ -39,12 +39,17 @@ function makeHost(handles: readonly CngxTabHandle[], opts: FakeHostOptions = {})
   return { host, active, select };
 }
 
+// Buttons carry `role="tab"` + `data-tab-id` matching the `handle()`
+// id sequence ('a', 'b', 'c', ...), mirroring the organism template, so
+// `focusTabAt` resolves by id rather than DOM position.
 function makeDom(count: number): { el: HTMLElement; buttons: HTMLButtonElement[] } {
   const el = document.createElement('div');
   const buttons: HTMLButtonElement[] = [];
   for (let i = 0; i < count; i++) {
     const b = document.createElement('button');
     b.className = 'cngx-tabs__tab';
+    b.setAttribute('role', 'tab');
+    b.dataset['tabId'] = String.fromCharCode(97 + i);
     el.appendChild(b);
     buttons.push(b);
   }
@@ -140,5 +145,26 @@ describe('createTabKeyboardNav', () => {
     nav.handleKeydown(ev);
     expect(select).not.toHaveBeenCalled();
     expect(ev.defaultPrevented).toBe(false);
+  });
+
+  it('focuses by tab id, not DOM position, when buttons render out of order', () => {
+    const handles = [handle('a'), handle('b'), handle('c')];
+    const { host, select } = makeHost(handles);
+    // DOM order reversed relative to `tabs()` - a positional [index]
+    // lookup would focus the wrong button; the id-keyed lookup must not.
+    const el = document.createElement('div');
+    const byId: Record<string, HTMLButtonElement> = {};
+    for (const id of ['c', 'b', 'a']) {
+      const b = document.createElement('button');
+      b.setAttribute('role', 'tab');
+      b.dataset['tabId'] = id;
+      el.appendChild(b);
+      byId[id] = b;
+    }
+    document.body.appendChild(el);
+    const nav = createTabKeyboardNav({ host, hostElement: el });
+    nav.handleKeydown(press('ArrowRight'));
+    expect(select).toHaveBeenCalledWith(1);
+    expect(document.activeElement).toBe(byId['b']);
   });
 });

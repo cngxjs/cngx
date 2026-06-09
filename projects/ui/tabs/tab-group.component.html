@@ -14,6 +14,7 @@
       [class.cngx-tabs__tab--closable]="dismiss.isTabClosable(tab)"
       role="tab"
       [id]="tabHeaderId(tab)"
+      [attr.data-tab-id]="tab.id"
       [attr.tabindex]="tabTabindex(tab)"
       [attr.aria-label]="announcements.tabAriaLabel(tab, i + 1)"
       [attr.aria-selected]="isSelected(tab) ? 'true' : 'false'"

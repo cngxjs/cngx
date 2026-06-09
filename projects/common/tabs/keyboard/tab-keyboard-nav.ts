@@ -115,15 +115,22 @@ export function createTabKeyboardNav(
     return null;
   };
 
-  // Focus the tab button at `index`. The buttons render in `tabs()`
-  // order (one `.cngx-tabs__tab` per tab; the close button is a separate
-  // `.cngx-tabs__close`), so positional lookup matches the index. The
-  // button already exists regardless of pending CD, so focus is immediate
-  // and never waits on the activation's render. Same class-coupling the
-  // dismissal helper already relies on.
+  // Focus the tab button for the tab at `index`, keyed off the stable
+  // tab id (the rendered `data-tab-id`) rather than a positional
+  // `.cngx-tabs__tab[index]` lookup - so a skin that reorders or wraps
+  // the tab buttons can't misdirect keyboard focus. `[role="tab"]` is
+  // the APG contract every skin must honour, so it survives a class
+  // rename too. The button already exists regardless of pending CD, so
+  // focus is immediate and never waits on the activation's render.
   const focusTabAt = (index: number): void => {
-    const buttons = opts.hostElement.querySelectorAll<HTMLElement>('.cngx-tabs__tab');
-    buttons[index]?.focus();
+    const id = opts.host.tabs()[index]?.id;
+    if (id == null) {
+      return;
+    }
+    const buttons = Array.from(
+      opts.hostElement.querySelectorAll<HTMLElement>('[role="tab"]'),
+    );
+    buttons.find((button) => button.getAttribute('data-tab-id') === id)?.focus();
   };
 
   return {
