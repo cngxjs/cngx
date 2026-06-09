@@ -55,6 +55,7 @@ export {
   withTabsFitted,
   withTabsIconLayout,
   withTabsPanelMode,
+  withTabsFragmentSync,
   withTabsRouterSync,
   withTabsRovingLoop,
   withTabsSkin,

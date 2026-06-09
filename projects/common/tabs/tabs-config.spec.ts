@@ -26,6 +26,7 @@ import {
   withTabsFallbackLabels,
   withTabsIconLayout,
   withTabsPanelMode,
+  withTabsFragmentSync,
   withTabsRouterSync,
   withTabsRovingLoop,
   withTabsSkin,
@@ -48,8 +49,8 @@ describe('CngxTabsConfig', () => {
     expect(cfg.defaultOrientation).toBe('horizontal');
     expect(cfg.defaultLoop).toBe(true);
     expect(cfg.defaultCommitMode).toBe('optimistic');
-    expect(cfg.routerSyncMode).toBe('fragment');
-    expect(cfg.routerSyncParam).toBe('tab');
+    expect(cfg.fragmentSyncMode).toBe('fragment');
+    expect(cfg.fragmentSyncParam).toBe('tab');
   });
 
   it('withTabsDefaultOrientation overrides the orientation default', () => {
@@ -85,7 +86,20 @@ describe('CngxTabsConfig', () => {
     expect(TestBed.inject(CNGX_TABS_CONFIG).defaultCommitMode).toBe('pessimistic');
   });
 
-  it('withTabsRouterSync overrides mode and paramName', () => {
+  it('withTabsFragmentSync overrides mode and paramName', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideTabsConfig(withTabsFragmentSync('queryParam', 'panel')),
+      ],
+    });
+    const cfg = TestBed.inject(CNGX_TABS_CONFIG);
+    expect(cfg.fragmentSyncMode).toBe('queryParam');
+    expect(cfg.fragmentSyncParam).toBe('panel');
+  });
+
+  it('withTabsRouterSync is a deprecated alias of withTabsFragmentSync', () => {
+    expect(withTabsRouterSync).toBe(withTabsFragmentSync);
     TestBed.configureTestingModule({
       providers: [
         provideZonelessChangeDetection(),
@@ -93,8 +107,8 @@ describe('CngxTabsConfig', () => {
       ],
     });
     const cfg = TestBed.inject(CNGX_TABS_CONFIG);
-    expect(cfg.routerSyncMode).toBe('queryParam');
-    expect(cfg.routerSyncParam).toBe('panel');
+    expect(cfg.fragmentSyncMode).toBe('queryParam');
+    expect(cfg.fragmentSyncParam).toBe('panel');
   });
 
   it('withTabsAriaLabels merges into the ariaLabels bag', () => {

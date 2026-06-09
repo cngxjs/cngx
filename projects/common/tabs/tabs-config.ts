@@ -128,8 +128,8 @@ export interface CngxTabsConfig {
   readonly defaultOrientation?: 'horizontal' | 'vertical';
   readonly defaultLoop?: boolean;
   readonly defaultCommitMode?: 'optimistic' | 'pessimistic';
-  readonly routerSyncMode?: 'fragment' | 'queryParam';
-  readonly routerSyncParam?: string;
+  readonly fragmentSyncMode?: 'fragment' | 'queryParam';
+  readonly fragmentSyncParam?: string;
   /**
    * App-wide default visual skin. Default `'line'`. Per-instance
    * `[skin]` Input still wins; the cascade default itself lives in
@@ -223,8 +223,8 @@ const TABS_CONFIG_DEFAULTS: Required<
   defaultOrientation: 'horizontal',
   defaultLoop: true,
   defaultCommitMode: 'optimistic',
-  routerSyncMode: 'fragment',
-  routerSyncParam: 'tab',
+  fragmentSyncMode: 'fragment',
+  fragmentSyncParam: 'tab',
   ariaLabels: {
     tabsRegion: 'Tabs',
   },
@@ -331,22 +331,36 @@ export function withTabsCommitMode(mode: 'optimistic' | 'pessimistic'): CngxTabs
 }
 
 /**
- * Configure router synchronisation for the active tab. `mode` chooses
- * the URL surface (URL fragment or query parameter); `param` names
- * the key (default `'tab'`).
+ * Configure URL fragment / query-param deep-linking for the active tab
+ * (the {@link CngxTabsFragmentSync} directive). `mode` chooses the URL
+ * surface (URL fragment or query parameter); `param` names the key
+ * (default `'tab'`).
+ *
+ * Not to be confused with `[cngxTabsRouteSync]`, the router-outlet
+ * integration - this feature configures fragment deep-linking only.
  *
  * @category common/tabs
  */
-export function withTabsRouterSync(
+export function withTabsFragmentSync(
   mode: 'fragment' | 'queryParam',
   param = 'tab',
 ): CngxTabsConfigFeature {
   return defineTabsConfigFeature((cfg) => ({
     ...cfg,
-    routerSyncMode: mode,
-    routerSyncParam: param,
+    fragmentSyncMode: mode,
+    fragmentSyncParam: param,
   }));
 }
+
+/**
+ * @deprecated Use {@link withTabsFragmentSync}. "Router sync" collided
+ * with the new `[cngxTabsRouteSync]` router-outlet directive; this
+ * feature only ever configured fragment / query-param deep-linking. The
+ * alias stays for one minor release before removal.
+ *
+ * @category common/tabs
+ */
+export const withTabsRouterSync = withTabsFragmentSync;
 
 /**
  * Select the app-wide default visual skin for `<cngx-tab-group>`.
