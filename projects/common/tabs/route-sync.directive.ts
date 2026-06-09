@@ -145,7 +145,9 @@ export class CngxTabsRouteSync implements CngxTabsCommitActionSource {
    * URL path. Anchors on position (a suffix match), not a loose
    * "appears anywhere" scan - a tab id that happens to equal an
    * unrelated parent segment cannot win. The path is taken before any
-   * query/fragment.
+   * query/fragment. If two tabs produce the same trailing segment(s)
+   * (only possible with a custom `routeFor` that collides), the first
+   * registered tab wins - the default id-based mapping never collides.
    */
   private readActiveId(router: Router): string | null {
     const path = router.url.split(/[?#]/)[0];
