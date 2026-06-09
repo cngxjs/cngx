@@ -138,6 +138,8 @@ export class CngxTab implements OnInit {
       subLabel: this.subLabel,
       disabled: this.disabled,
       errorAggregator: this.errorAggregator,
+      hasError: this.hasError,
+      errorMessage: this.errorMessage,
       closable: this.closable,
     });
     this.destroyRef.onDestroy(() => host.unregister(tabId));

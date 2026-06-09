@@ -27,6 +27,20 @@ export interface CngxTabHandle {
   readonly disabled: Signal<boolean>;
   readonly errorAggregator: Signal<CngxErrorAggregatorContract | undefined>;
   /**
+   * Folded per-tab error state, exposed by reference. `true` when the
+   * direct `[error]` flag is set OR the aggregator reports errors. The
+   * organism gates the error badge on this; both handle producers
+   * (`CngxTab`, `createMatTabHandle`) carry it.
+   */
+  readonly hasError: Signal<boolean>;
+  /**
+   * Resolved direct-error message - the `[error]` string when non-empty,
+   * else `undefined`. Rides the handle so the error badge slot can render
+   * it via `ctx.tab.errorMessage()`. `[cngxMatTabs]` pins this to
+   * `undefined` - Material owns its own tab chrome.
+   */
+  readonly errorMessage: Signal<string | undefined>;
+  /**
    * Per-tab closable override. `undefined` (default) inherits the
    * group-level `closable` resolution; `true`/`false` pin this tab's
    * close affordance regardless of the group default (e.g. a
