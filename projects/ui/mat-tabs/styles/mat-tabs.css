@@ -39,12 +39,22 @@
  * - collapses to zero layout space when the inner trigger button is
  *   hidden (= no clipped tabs) via `:has()`
  *
- * **Inheritance**
+ * **Material wiring**
  *
- * - `--cngx-mat-tab-error-color` -> `--mat-sys-error`
- * - `--cngx-mat-tab-has-errors-color` -> `--mat-sys-error`
- * - `--cngx-mat-tab-has-errors-glyph-color` -> `--mat-sys-on-error`
- * - `--cngx-mat-tabs-more-bg` -> `--mat-app-background-color`
+ * Every `--cngx-mat-tab-*` token is `@property`-registered with a literal
+ * oklch initial value, so a registered value always wins over an inline
+ * `var()` fallback - this stylesheet therefore carries no `--mat-sys-*`
+ * fallbacks of its own. The Material alignment is delivered by the
+ * `@cngx/themes/material/tabs-theme` bridge (`@include tabs.theme($theme)`),
+ * which sets the colour tokens on `.mat-mdc-tab-group`:
+ *
+ * - `--cngx-mat-tab-error-color` <- `--mat-sys-error`
+ * - `--cngx-mat-tab-has-errors-color` <- `--mat-sys-error`
+ * - `--cngx-mat-tab-has-errors-glyph-color` <- `--mat-sys-on-error`
+ * - `--cngx-mat-tabs-more-bg` <- `--mat-sys-surface`
+ *
+ * Imported standalone (no bridge), the tokens keep the literal defaults
+ * declared below.
  *
  * **Dark mode**
  *
@@ -59,8 +69,9 @@
 
 @layer cngx.tokens {
   /**
-   * Text + outline color of a rejected tab. Falls back to
-   * `--mat-sys-error`.
+   * Text + outline color of a rejected tab. Wired to `--mat-sys-error`
+   * by the `@cngx/themes/material/tabs-theme` bridge; standalone it keeps
+   * the literal default below.
    * @group State / Error
    */
   @property --cngx-mat-tab-error-color {
@@ -131,19 +142,22 @@
   }
 
   /**
-   * Background of the `has-errors` glyph disc. Falls back to
-   * `--mat-sys-error`.
+   * Background of the `has-errors` glyph disc. Wired to `--mat-sys-error`
+   * by the `@cngx/themes/material/tabs-theme` bridge; standalone it keeps
+   * the literal default below. Inherits so a host-level override reaches
+   * the `::before` glyph.
    * @group State / HasErrors
    */
   @property --cngx-mat-tab-has-errors-color {
     syntax: '<color>';
-    inherits: false;
+    inherits: true;
     initial-value: oklch(0.45 0.15 25);
   }
 
   /**
-   * Glyph color inside the `has-errors` disc. Falls back to
-   * `--mat-sys-on-error`.
+   * Glyph color inside the `has-errors` disc. Wired to `--mat-sys-on-error`
+   * by the `@cngx/themes/material/tabs-theme` bridge; standalone it keeps
+   * the literal default below.
    * @group State / HasErrors
    */
   @property --cngx-mat-tab-has-errors-glyph-color {
@@ -173,8 +187,9 @@
   }
 
   /**
-   * Background of the trailing-edge overflow wrapper. Falls back to
-   * `--mat-app-background-color`.
+   * Background of the trailing-edge overflow wrapper. Wired to
+   * `--mat-sys-surface` by the `@cngx/themes/material/tabs-theme` bridge;
+   * standalone it keeps the `:root` palette below (light + dark).
    * @group Surface
    */
   @property --cngx-mat-tabs-more-bg {
@@ -194,14 +209,15 @@
   }
 
   /*
-   * Default-theme palette pass. The `cngx-mat-tabs-more` molecule
-   * sits over the Material tab header - its background needs to
-   * match the page surface so the gradient fades into "nothing"
-   * rather than into white-on-dark. Stays under the Material-bridge
-   * namespace (no `--cngx-color-*` delegation) per the file-header
-   * contract; consumers can still override `--cngx-mat-tabs-more-bg`
-   * to point at `--mat-app-background-color` once Material's M3
-   * tokens are wired.
+   * Standalone palette pass. The `cngx-mat-tabs-more` molecule sits over
+   * the Material tab header - its background needs to match the page
+   * surface so the gradient fades into "nothing" rather than into
+   * white-on-dark. These values apply when the stylesheet is imported on
+   * its own; the `@cngx/themes/material/tabs-theme` bridge supersedes them
+   * by setting `--cngx-mat-tabs-more-bg` to `--mat-sys-surface` on the tab
+   * group, a nearer ancestor of the wrapper, so it wins by inheritance.
+   * Stays under the Material-bridge namespace (no `--cngx-color-*`
+   * delegation) per the file-header contract.
    */
   :root {
     --cngx-mat-tabs-more-bg: oklch(1 0 0);
@@ -239,7 +255,7 @@
    * a same-specificity rule loses the cascade.
    */
   .mat-mdc-tab.cngx-mat-tab--error {
-    color: var(--cngx-mat-tab-error-color, var(--mat-sys-error, oklch(0.45 0.15 25)));
+    color: var(--cngx-mat-tab-error-color, oklch(0.45 0.15 25));
     outline: var(--cngx-mat-tab-error-outline, 2px solid currentColor);
     outline-offset: var(--cngx-mat-tab-error-outline-offset, 1px);
     font-weight: var(--cngx-mat-tab-error-font-weight, 600);
@@ -285,8 +301,8 @@
     margin: 0;
     border: 0;
     border-radius: 50%;
-    background: var(--cngx-mat-tab-has-errors-color, var(--mat-sys-error, oklch(0.45 0.15 25)));
-    color: var(--cngx-mat-tab-has-errors-glyph-color, var(--mat-sys-on-error, oklch(1 0 0)));
+    background: var(--cngx-mat-tab-has-errors-color, oklch(0.45 0.15 25));
+    color: var(--cngx-mat-tab-has-errors-glyph-color, oklch(1 0 0));
     font-size: calc(var(--cngx-mat-tab-has-errors-glyph-size, 16px) * 0.75);
     font-weight: var(--cngx-mat-tab-has-errors-font-weight, 700);
     line-height: 1;
@@ -321,14 +337,8 @@
     /*
      * Drive the molecule's own component-API cascade variables.
      */
-    --cngx-tab-overflow-bg: var(
-      --cngx-mat-tabs-more-bg,
-      var(--mat-app-background-color, oklch(1 0 0))
-    );
-    --cngx-tab-overflow-button-bg: var(
-      --cngx-mat-tabs-more-bg,
-      var(--mat-app-background-color, oklch(1 0 0))
-    );
+    --cngx-tab-overflow-bg: var(--cngx-mat-tabs-more-bg, oklch(1 0 0));
+    --cngx-tab-overflow-button-bg: var(--cngx-mat-tabs-more-bg, oklch(1 0 0));
 
     box-shadow: var(--cngx-mat-tabs-more-shadow, -8px 0 8px -4px oklch(0 0 0 / 0.1));
   }

@@ -2,11 +2,18 @@
 @use 'sass:math';
 @use '@angular/material' as mat;
 
-// Material bridge for CngxTabGroup + CngxTabOverflow. Default visuals
-// ship with the components (projects/common/tabs/styles/tabs-base.css
-// and projects/ui/tabs/tab-group.component.css + tab-overflow.component.css);
-// this file aligns the colour, density, and typography tokens with
-// Material so cngx tabs feel native alongside <mat-tab-group>.
+// Material bridge for CngxTabGroup + CngxTabOverflow + the [cngxMatTabs]
+// skin. Default visuals ship with the components (projects/common/tabs/
+// styles/tabs-base.css and projects/ui/tabs/tab-group.component.css +
+// tab-overflow.component.css) and, for the Material-decorating directive,
+// projects/ui/mat-tabs/styles/mat-tabs.css. Those stylesheets carry literal
+// oklch defaults only; this file is the single place that aligns every tab
+// token with Material so cngx tabs feel native alongside <mat-tab-group>.
+//
+// Three token namespaces, one include:
+//   - --cngx-tab-*        native cngx-tab-group / cngx-tab-overflow
+//   - --cngx-mat-tab-*    [cngxMatTabs] error / has-errors skin
+//   - --cngx-mat-tabs-*   [cngxMatTabs] trailing-edge overflow wrapper
 //
 //   @use '@angular/material' as mat;
 //   @use '@cngx/themes/material/tabs-theme' as tabs;
@@ -75,6 +82,26 @@
   }
 }
 
+// Bridge for the [cngxMatTabs] skin (projects/ui/mat-tabs/styles/mat-tabs.css).
+// The skin paints real Material `.mat-mdc-tab` DOM via `--cngx-mat-tab-*`
+// tokens; those tokens are `@property`-registered with literal oklch initial
+// values, so a registered value always supersedes any inline `var()` fallback
+// inside the skin - the only way to feed them off `$theme` is to set them
+// explicitly here. All three colour tokens inherit, so setting them on the
+// `.mat-mdc-tab-group` host cascades to every tab button and its `::before`
+// glyph, and to the appended `.cngx-mat-tabs-more` overflow wrapper.
+@mixin _mat-color($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-mat-tab-error-color: var(--mat-sys-error);
+    --cngx-mat-tab-has-errors-color: var(--mat-sys-error);
+    --cngx-mat-tab-has-errors-glyph-color: var(--mat-sys-on-error);
+    --cngx-mat-tabs-more-bg: var(--mat-sys-surface);
+  } @else {
+    --cngx-mat-tab-error-color: #{mat.get-theme-color($theme, warn)};
+    --cngx-mat-tab-has-errors-color: #{mat.get-theme-color($theme, warn)};
+  }
+}
+
 @mixin theme($theme) {
   @layer cngx.components {
     :where(cngx-tab-group) {
@@ -84,6 +111,9 @@
     }
     :where(cngx-tab-overflow) {
       @include _overflow-color($theme);
+    }
+    :where(.mat-mdc-tab-group) {
+      @include _mat-color($theme);
     }
   }
 }
