@@ -417,9 +417,14 @@ export class CngxTabGroup implements CngxTabPanelHost {
     return `${tab.id}-desc`;
   }
 
-  /** `true` when a bound error-aggregator opted in to revealing errors. */
+  /**
+   * `true` when the tab is in error - the folded `hasError` (direct
+   * `[error]` flag OR the aggregator's reveal-gated `shouldShow()`), so
+   * a direct-error tab lights the badge without an aggregator while
+   * deferred-reveal aggregators stay silent until revealed.
+   */
   protected showErrorBadge(tab: CngxTabHandle): boolean {
-    return !!tab.errorAggregator()?.shouldShow();
+    return tab.hasError();
   }
 
   /**

@@ -502,6 +502,66 @@ describe('CngxTabGroup organism', () => {
       expect(span).not.toBeNull();
       expect(span.textContent?.trim()).toBe('');
     });
+
+    it('direct [error] string lights the badge + announces the message with no aggregator', () => {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      @Component({
+        standalone: true,
+        imports: [CngxTabGroup, CngxTab],
+        template: `
+          <cngx-tab-group aria-label="X">
+            <div cngxTab [label]="'A'" [error]="'Required fields missing'"></div>
+            <div cngxTab [label]="'B'"></div>
+          </cngx-tab-group>
+        `,
+      })
+      class DirectErrorHost {}
+      const fixture = TestBed.createComponent(DirectErrorHost);
+      fixture.detectChanges();
+      const tabs = Array.from(
+        fixture.nativeElement.querySelectorAll(
+          'button[role="tab"]',
+        ) as NodeListOf<HTMLButtonElement>,
+      );
+      expect(tabs[0].querySelector('.cngx-tabs__badge')).not.toBeNull();
+      expect(tabs[1].querySelector('.cngx-tabs__badge')).toBeNull();
+      const descId = tabs[0].getAttribute('aria-describedby')!;
+      const span = fixture.nativeElement.querySelector(
+        `#${descId}`,
+      ) as HTMLElement;
+      expect(span.textContent?.trim()).toBe('Required fields missing');
+    });
+
+    it('direct [error]="true" lights the badge and falls back to tabHasErrors(1)', () => {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      @Component({
+        standalone: true,
+        imports: [CngxTabGroup, CngxTab],
+        template: `
+          <cngx-tab-group aria-label="X">
+            <div cngxTab [label]="'A'" [error]="true"></div>
+          </cngx-tab-group>
+        `,
+      })
+      class BoolErrorHost {}
+      const fixture = TestBed.createComponent(BoolErrorHost);
+      fixture.detectChanges();
+      const tab = fixture.nativeElement.querySelector(
+        'button[role="tab"]',
+      ) as HTMLButtonElement;
+      expect(tab.querySelector('.cngx-tabs__badge')).not.toBeNull();
+      const descId = tab.getAttribute('aria-describedby')!;
+      const span = fixture.nativeElement.querySelector(
+        `#${descId}`,
+      ) as HTMLElement;
+      expect(span.textContent?.trim()).toBe('1 error');
+    });
   });
 
   describe('commit-action busy state + live region', () => {
