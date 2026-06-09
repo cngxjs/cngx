@@ -324,10 +324,13 @@ export class CngxTabGroupPresenter implements CngxTabGroupHost {
  * per-entry `id`, `disabled()`, `label()`, `subLabel()`, and
  * `closable()`.
  *
- * `errorAggregator` is left out on purpose. The handle is a stable
- * per-tab reference injected once, so comparing it would push the
- * memoisation burden onto consumers and break the structural-equal
- * contract.
+ * `errorAggregator`, `hasError`, and `errorMessage` are left out on
+ * purpose. The handle is a stable per-tab reference injected once, and
+ * the organism reads `tab.hasError()` / `tab.errorMessage()` reactively
+ * off that handle (not off array identity), so the badge + descriptor
+ * update on error-state changes without the registry array re-emitting.
+ * Comparing them here would push the memoisation burden onto consumers
+ * and break the structural-equal contract.
  *
  * Reading the signals here doesn't subscribe - the comparator runs
  * synchronously inside `signal.set()`, outside any tracking context.
