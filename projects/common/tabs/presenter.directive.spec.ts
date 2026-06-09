@@ -4,7 +4,8 @@ import { provideZonelessChangeDetection } from '@angular/core';
 import { Subject, of, throwError } from 'rxjs';
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import { CngxTabGroupPresenter } from './presenter.directive';
+import { CNGX_TABS_COMMIT_ACTION, type CngxTabsCommitActionSource } from './commit-action.token';
+import { CngxTabGroupPresenter, type CngxTabsCommitAction } from './presenter.directive';
 import type { CngxTabHandle } from './tab-group-host.token';
 
 function handle(
@@ -537,3 +538,103 @@ describe('CngxTabGroupPresenter', () => {
   });
 
 });
+
+describe('CngxTabGroupPresenter — CNGX_TABS_COMMIT_ACTION DI fallback', () => {
+  function fallbackFixture(
+    source: CngxTabsCommitActionSource,
+    inputs: { commitAction?: CngxTabsCommitAction | null; commitMode?: 'optimistic' | 'pessimistic' } = {},
+  ): { presenter: CngxTabGroupPresenter } {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    @Component({
+      standalone: true,
+      hostDirectives: [
+        {
+          directive: CngxTabGroupPresenter,
+          inputs: ['commitAction', 'commitMode'],
+        },
+      ],
+      providers: [{ provide: CNGX_TABS_COMMIT_ACTION, useValue: source }],
+      template: '',
+    })
+    class FallbackHost {}
+    const fixture = TestBed.createComponent(FallbackHost);
+    if (inputs.commitAction !== undefined) {
+      fixture.componentRef.setInput('commitAction', inputs.commitAction);
+    }
+    if (inputs.commitMode !== undefined) {
+      fixture.componentRef.setInput('commitMode', inputs.commitMode);
+    }
+    fixture.detectChanges();
+    const presenter = fixture.debugElement.injector.get(CngxTabGroupPresenter);
+    return { presenter };
+  }
+
+  beforeEach(() => {
+    TestBed.resetTestingModule();
+  });
+
+  it('resolves commitAction from the DI fallback when the input is null', () => {
+    const fallbackAction: CngxTabsCommitAction = () => true;
+    const { presenter } = fallbackFixture({
+      action: signal(fallbackAction),
+      mode: signal('pessimistic'),
+    });
+    expect(presenter.commitAction()).toBe(fallbackAction);
+  });
+
+  it('lets the [commitAction] input win when both input and fallback are present', () => {
+    const inputAction: CngxTabsCommitAction = () => false;
+    const fallbackAction: CngxTabsCommitAction = () => true;
+    const { presenter } = fallbackFixture(
+      { action: signal(fallbackAction), mode: signal('pessimistic') },
+      { commitAction: inputAction },
+    );
+    expect(presenter.commitAction()).toBe(inputAction);
+  });
+
+  it('lets the injected mode win over [commitMode] when the fallback action is active', () => {
+    const { presenter } = fallbackFixture(
+      { action: signal<CngxTabsCommitAction | null>(() => true), mode: signal('pessimistic') },
+      { commitMode: 'optimistic' },
+    );
+    expect(presenter.commitMode()).toBe('pessimistic');
+  });
+
+  it('falls back to the [commitMode] input when the fallback action is null', () => {
+    const { presenter } = fallbackFixture(
+      { action: signal<CngxTabsCommitAction | null>(null), mode: signal('pessimistic') },
+      { commitMode: 'optimistic' },
+    );
+    expect(presenter.commitAction()).toBeNull();
+    expect(presenter.commitMode()).toBe('optimistic');
+  });
+
+  it('drives the commit gate from the fallback action (pessimistic reject stays put)', () => {
+    const { presenter } = fallbackFixture({
+      action: signal<CngxTabsCommitAction | null>(() => false),
+      mode: signal('pessimistic'),
+    });
+    presenter.register(mkHandle('a'));
+    presenter.register(mkHandle('b'));
+    presenter.register(mkHandle('c'));
+    presenter.select(2);
+    expect(presenter.activeIndex()).toBe(0);
+    expect(presenter.lastFailedIndex()).toBe(2);
+  });
+});
+
+function mkHandle(id: string): CngxTabHandle {
+  return {
+    id,
+    label: signal(id),
+    subLabel: signal(undefined),
+    disabled: signal(false),
+    errorAggregator: signal(undefined),
+    hasError: signal(false),
+    errorMessage: signal(undefined),
+    closable: signal(undefined),
+  };
+}
