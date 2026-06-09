@@ -20,6 +20,15 @@ export { CngxTabLabel } from './tab-label.directive';
 export { CngxTabSubLabel } from './slots/tab-sub-label.directive';
 export { CngxTabContent } from './tab-content.directive';
 export { CngxTabsFragmentSync } from './router-sync.directive';
+export { CngxTabsRouteSync } from './route-sync.directive';
+export {
+  createTabRouterCommit,
+  type CngxTabRouterCommitOptions,
+} from './router-commit';
+export {
+  CNGX_TABS_COMMIT_ACTION,
+  type CngxTabsCommitActionSource,
+} from './commit-action.token';
 export {
   CNGX_TABS_CONFIG,
   injectTabsConfig,
