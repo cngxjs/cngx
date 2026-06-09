@@ -76,6 +76,18 @@ export function createMatTabHandle(
     return matTab.disabled;
   });
   const errorAggregator = signal<CngxErrorAggregatorContract | undefined>(undefined);
+  // Folded error state for the widened `CngxTabHandle` contract.
+  // Derived from the aggregator's `shouldShow()` (reveal-gated, same
+  // semantics as the badge/descriptor before this contract) - Material
+  // has no author-facing direct-flag surface yet (deferred), so this
+  // tracks `[cngxMatTabError]` exactly as before.
+  const hasError = computed<boolean>(() => errorAggregator()?.shouldShow?.() ?? false, {
+    equal: Object.is,
+  });
+  // No direct-flag author surface through Material chrome yet, so the
+  // message is pinned `undefined` - same native-only staging as
+  // `closable` / `subLabel`.
+  const errorMessage = signal<string | undefined>(undefined);
   // Material owns its own tab lifecycle - the cngx dismissable/addable
   // affordances are native-only by design, so the Material handle pins
   // `closable` to `undefined` (group-default, never a close button).
@@ -94,6 +106,8 @@ export function createMatTabHandle(
       subLabel: subLabel.asReadonly(),
       disabled,
       errorAggregator: errorAggregator.asReadonly(),
+      hasError,
+      errorMessage: errorMessage.asReadonly(),
       closable: closable.asReadonly(),
     },
     label,
