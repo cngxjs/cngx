@@ -27,6 +27,15 @@ export interface CngxTabRouterCommitOptions {
 }
 
 /**
+ * Default tab-to-route mapping: the tab id is the child segment.
+ * Shared so the factory and `[cngxTabsRouteSync]` reference one
+ * definition instead of inlining the closure twice.
+ *
+ * @internal
+ */
+export const cngxDefaultTabRoute = (handle: CngxTabHandle): unknown[] => [handle.id];
+
+/**
  * Builds a {@link CngxTabsCommitAction} that gates a tab switch through
  * `@angular/router`. The action navigates to the target tab's route and
  * resolves on the router's own outcome:
@@ -48,7 +57,7 @@ export interface CngxTabRouterCommitOptions {
  * @since 0.1.0
  */
 export function createTabRouterCommit(opts: CngxTabRouterCommitOptions): CngxTabsCommitAction {
-  const routeFor = opts.routeFor ?? ((handle: CngxTabHandle) => [handle.id]);
+  const routeFor = opts.routeFor ?? cngxDefaultTabRoute;
   return (_fromIndex, toIndex) =>
     new Observable<boolean>((subscriber) => {
       const target = opts.tabs()[toIndex];

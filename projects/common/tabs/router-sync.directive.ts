@@ -11,6 +11,7 @@ import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs/operators';
 
+import { warnTabsRouterAbsent } from './router-absent-warning';
 import { CNGX_TAB_GROUP_HOST } from './tab-group-host.token';
 
 /**
@@ -46,12 +47,7 @@ export class CngxTabsFragmentSync {
 
   constructor() {
     if (!this.router) {
-      afterNextRender(() => {
-        console.warn(
-          'CngxTabsFragmentSync: no Router available - directive is a no-op. ' +
-            'Provide @angular/router via provideRouter(...) to enable deep-linking.',
-        );
-      });
+      afterNextRender(() => warnTabsRouterAbsent('CngxTabsFragmentSync', 'deep-linking'));
       return;
     }
     const router = this.router;
