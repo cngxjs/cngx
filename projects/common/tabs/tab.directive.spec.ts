@@ -5,6 +5,7 @@ import { provideZonelessChangeDetection } from '@angular/core';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { CngxTabGroupPresenter } from './presenter.directive';
+import type { CngxTabHandle } from './tab-group-host.token';
 import { CngxTab } from './tab.directive';
 import { CngxTabLabel } from './tab-label.directive';
 import { CngxTabSubLabel } from './slots/tab-sub-label.directive';
@@ -152,6 +153,97 @@ describe('CngxTab', () => {
     fixture.componentInstance.detail.set('46 saved');
     fixture.detectChanges();
     expect(presenter.tabs()[0].subLabel()).toBe('46 saved');
+  });
+
+  describe('direct [error] input', () => {
+    @Component({
+      standalone: true,
+      selector: 'error-host',
+      imports: [CngxTab],
+      hostDirectives: [CngxTabGroupPresenter],
+      template: `<div cngxTab [label]="'A'" [error]="error()"></div>`,
+    })
+    class ErrorHost {
+      readonly error = signal<string | boolean>(false);
+    }
+
+    function setup(): {
+      fixture: ReturnType<typeof TestBed.createComponent<ErrorHost>>;
+      handle: () => CngxTabHandle;
+    } {
+      const fixture = TestBed.createComponent(ErrorHost);
+      fixture.detectChanges();
+      const presenter = fixture.debugElement.injector.get(CngxTabGroupPresenter);
+      return { fixture, handle: () => presenter.tabs()[0] };
+    }
+
+    it('defaults to no error and no message', () => {
+      const { handle } = setup();
+      expect(handle().hasError()).toBe(false);
+      expect(handle().errorMessage()).toBeUndefined();
+    });
+
+    it('[error]="true" sets hasError with no message', () => {
+      const { fixture, handle } = setup();
+      fixture.componentInstance.error.set(true);
+      fixture.detectChanges();
+      expect(handle().hasError()).toBe(true);
+      expect(handle().errorMessage()).toBeUndefined();
+    });
+
+    it("[error]=\"'msg'\" sets hasError and exposes the message", () => {
+      const { fixture, handle } = setup();
+      fixture.componentInstance.error.set('Required fields missing');
+      fixture.detectChanges();
+      expect(handle().hasError()).toBe(true);
+      expect(handle().errorMessage()).toBe('Required fields missing');
+    });
+
+    it('[error]="false" / "" clears hasError and message', () => {
+      const { fixture, handle } = setup();
+      fixture.componentInstance.error.set('Required fields missing');
+      fixture.detectChanges();
+      expect(handle().hasError()).toBe(true);
+      fixture.componentInstance.error.set('');
+      fixture.detectChanges();
+      expect(handle().hasError()).toBe(false);
+      expect(handle().errorMessage()).toBeUndefined();
+      fixture.componentInstance.error.set(false);
+      fixture.detectChanges();
+      expect(handle().hasError()).toBe(false);
+    });
+
+    it('hasError folds the aggregator independently of the direct flag', () => {
+      @Component({
+        standalone: true,
+        selector: 'agg-host',
+        imports: [CngxTab],
+        hostDirectives: [CngxTabGroupPresenter],
+        template: `<div cngxTab [label]="'A'" [errorAggregator]="agg"></div>`,
+      })
+      class AggHost {
+        readonly aggHasError = signal(false);
+        readonly agg = {
+          hasError: this.aggHasError,
+          shouldShow: this.aggHasError,
+          announcement: signal(''),
+          errorCount: signal(0),
+          errorLabels: signal([] as readonly string[]),
+          activeErrors: signal([] as readonly string[]),
+          addSource: () => {},
+          removeSource: () => {},
+        };
+      }
+      const fixture = TestBed.createComponent(AggHost);
+      fixture.detectChanges();
+      const presenter = fixture.debugElement.injector.get(CngxTabGroupPresenter);
+      const handle = presenter.tabs()[0];
+      expect(handle.hasError()).toBe(false);
+      fixture.componentInstance.aggHasError.set(true);
+      fixture.detectChanges();
+      expect(handle.hasError()).toBe(true);
+      expect(handle.errorMessage()).toBeUndefined();
+    });
   });
 
   it('subLabel defaults to undefined and discovers a projected cngxTabSubLabel slot', () => {

@@ -17,6 +17,8 @@ function handle(
     subLabel: signal(opts.subLabel),
     disabled: signal(opts.disabled ?? false),
     errorAggregator: signal(undefined),
+    hasError: signal(false),
+    errorMessage: signal(undefined),
     closable: signal(undefined),
   };
 }

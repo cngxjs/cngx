@@ -16,6 +16,8 @@ function handle(
     subLabel: signal(opts.subLabel),
     disabled: signal(opts.disabled ?? false),
     errorAggregator: signal(undefined),
+    hasError: signal(false),
+    errorMessage: signal(undefined),
     closable: signal(opts.closable),
   };
 }
@@ -92,6 +94,8 @@ describe('tabsEqual', () => {
         subLabel: signal(undefined),
         disabled: signal(false),
         errorAggregator: signal(stubAggregator(false)),
+        hasError: signal(false),
+        errorMessage: signal(undefined),
         closable: signal(undefined),
       },
     ];
@@ -102,6 +106,8 @@ describe('tabsEqual', () => {
         subLabel: signal(undefined),
         disabled: signal(false),
         errorAggregator: signal(stubAggregator(true)),
+        hasError: signal(true),
+        errorMessage: signal(undefined),
         closable: signal(undefined),
       },
     ];

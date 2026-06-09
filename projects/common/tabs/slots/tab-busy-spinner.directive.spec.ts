@@ -47,6 +47,8 @@ describe('CngxTabBusySpinner', () => {
       subLabel: signal(undefined),
       disabled: signal(false),
       errorAggregator: signal(undefined),
+      hasError: signal(false),
+      errorMessage: signal(undefined),
       closable: signal(undefined),
     };
     const ctx: CngxTabBusySpinnerContext = { tab, intendedIndex: 0 };
