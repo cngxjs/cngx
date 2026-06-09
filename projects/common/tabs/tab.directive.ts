@@ -58,6 +58,44 @@ export class CngxTab implements OnInit {
    */
   readonly subLabel = input<string | undefined>(undefined);
   readonly errorAggregator = input<CngxErrorAggregatorContract | undefined>(undefined);
+
+  /**
+   * Direct error flag for the common "this tab is invalid" case - no
+   * `errorAggregator` boilerplate required. `true` or a non-empty string
+   * drives the error state; a string doubles as the inline message
+   * (surfaced via the `*cngxTabErrorBadge` slot context). `false` / `''`
+   * clear it. The aggregator stays the rich multi-source forms path; the
+   * two channels compose (either errors). Mirrors `CngxStep.error`.
+   */
+  readonly error = input<string | boolean>(false);
+
+  /**
+   * Resolved direct-error message: the `[error]` string when non-empty,
+   * else `undefined`. Carried onto the registration handle so the error
+   * badge slot can render it. `computed` over the input - never written.
+   */
+  readonly errorMessage: Signal<string | undefined> = computed(() => {
+    const value = this.error();
+    return typeof value === 'string' && value !== '' ? value : undefined;
+  });
+
+  /**
+   * Per-tab error fold - the tab-equivalent of the step's `state ===
+   * 'error'` arm. `true` when the direct `[error]` flag is set OR the
+   * optional aggregator reports errors. A boolean, not a status enum:
+   * tabs carry no success/completed/disabled model (Pillar 3).
+   */
+  readonly hasError: Signal<boolean> = computed(
+    () => {
+      const directError = this.error();
+      return (
+        (directError !== false && directError !== '') ||
+        (this.errorAggregator()?.hasError?.() ?? false)
+      );
+    },
+    { equal: Object.is },
+  );
+
   /**
    * Per-tab close-affordance override. `undefined` (default) inherits
    * the group-level `[closable]` resolution; set `false` to pin this
