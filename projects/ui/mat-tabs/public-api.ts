@@ -5,6 +5,7 @@
  */
 export { CngxMatTabs } from './mat-tabs.directive';
 export { CngxMatTabError } from './mat-tab-error.directive';
+export { CngxMatTabErrorFlag } from './mat-tab-error-flag.directive';
 export {
   CNGX_MAT_TABS_REGISTRY_HOST,
   CngxMatTabsRegistry,
