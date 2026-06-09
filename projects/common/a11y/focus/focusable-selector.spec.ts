@@ -40,4 +40,11 @@ describe('CNGX_FOCUSABLE_SELECTOR', () => {
     expect(matches('<div tabindex="-1">x</div>')).toBe(false);
     expect(matches('<button tabindex="-1">x</button>')).toBe(true);
   });
+
+  it('rejects disabled form controls (not in the tab order)', () => {
+    expect(matches('<button disabled>x</button>')).toBe(false);
+    expect(matches('<input disabled />')).toBe(false);
+    expect(matches('<select disabled></select>')).toBe(false);
+    expect(matches('<textarea disabled></textarea>')).toBe(false);
+  });
 });
