@@ -20,6 +20,22 @@ import { CngxTab } from './tab.directive';
 })
 class RouteHost {}
 
+@Component({
+  standalone: true,
+  selector: 'nested-route-host',
+  imports: [CngxTab],
+  hostDirectives: [
+    CngxTabGroupPresenter,
+    { directive: CngxTabsRouteSync, inputs: ['routeFor'] },
+  ],
+  template: `
+    <div cngxTab id="a" [label]="'A'"></div>
+    <div cngxTab id="b" [label]="'B'"></div>
+    <div cngxTab id="c" [label]="'C'"></div>
+  `,
+})
+class NestedRouteHost {}
+
 // Drains pending microtasks so afterNextRender / effect chains settle.
 // Mirrors the fragment-sync spec - whenStable() has been observed to
 // hang under Node 20 + zoneless tests with Router in providers.
@@ -155,5 +171,76 @@ describe('CngxTabsRouteSync', () => {
     await flushMicrotasks();
 
     expect(presenter.activeIndex()).toBe(1);
+  });
+
+  it('resolves the routed commit-action via the DI fallback without a construction cycle', async () => {
+    // Pins the lazy-injector contract: the route-sync directive provides
+    // CNGX_TABS_COMMIT_ACTION via useExisting and injects the presenter as
+    // its host, so eager token injection in the presenter would be NG0200.
+    // Mounting both on one element must not throw and must resolve the
+    // routed action + pinned pessimistic mode.
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection(), provideRouter([])],
+    });
+    const router = TestBed.inject(Router);
+    vi.spyOn(router, 'navigate').mockResolvedValue(true);
+    vi.spyOn(router, 'url', 'get').mockReturnValue('/');
+
+    let fixture!: ReturnType<typeof TestBed.createComponent<RouteHost>>;
+    expect(() => {
+      fixture = TestBed.createComponent(RouteHost);
+      fixture.detectChanges();
+    }).not.toThrow();
+    await flushMicrotasks();
+    const presenter = fixture.debugElement.injector.get(CngxTabGroupPresenter);
+
+    expect(typeof presenter.commitAction()).toBe('function');
+    expect(presenter.commitMode()).toBe('pessimistic');
+  });
+
+  it('matches multi-segment routes positionally on the URL tail', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection(), provideRouter([])],
+    });
+    const router = TestBed.inject(Router);
+    vi.spyOn(router, 'navigate').mockResolvedValue(true);
+    const urlSpy = vi.spyOn(router, 'url', 'get').mockReturnValue('/');
+
+    const fixture = TestBed.createComponent(NestedRouteHost);
+    fixture.componentRef.setInput('routeFor', (h: { id: string }) => ['settings', h.id]);
+    fixture.detectChanges();
+    await flushMicrotasks();
+    const presenter = fixture.debugElement.injector.get(CngxTabGroupPresenter);
+
+    urlSpy.mockReturnValue('/settings/b');
+    emit(router, new NavigationEnd(1, '/settings/b', '/settings/b'));
+    fixture.detectChanges();
+    await flushMicrotasks();
+
+    expect(presenter.activeId()).toBe('b');
+  });
+
+  it('does not reflect when a tab id appears only as a non-trailing segment', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection(), provideRouter([])],
+    });
+    const router = TestBed.inject(Router);
+    vi.spyOn(router, 'navigate').mockResolvedValue(true);
+    const urlSpy = vi.spyOn(router, 'url', 'get').mockReturnValue('/');
+
+    const fixture = TestBed.createComponent(RouteHost);
+    fixture.detectChanges();
+    await flushMicrotasks();
+    const presenter = fixture.debugElement.injector.get(CngxTabGroupPresenter);
+    expect(presenter.activeIndex()).toBe(0);
+
+    // 'a' is a parent segment, not the active leaf - the old loose
+    // `includes` match would have wrongly reflected tab 'a'.
+    urlSpy.mockReturnValue('/a/detail');
+    emit(router, new NavigationEnd(1, '/a/detail', '/a/detail'));
+    fixture.detectChanges();
+    await flushMicrotasks();
+
+    expect(presenter.activeIndex()).toBe(0);
   });
 });

@@ -15,7 +15,8 @@ import { NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs/operators';
 
 import { CNGX_TABS_COMMIT_ACTION, type CngxTabsCommitActionSource } from './commit-action.token';
-import { createTabRouterCommit } from './router-commit';
+import { cngxDefaultTabRoute, createTabRouterCommit } from './router-commit';
+import { warnTabsRouterAbsent } from './router-absent-warning';
 import { CNGX_TAB_GROUP_HOST, type CngxTabHandle } from './tab-group-host.token';
 import type { CngxTabsCommitAction } from './presenter.directive';
 
@@ -62,7 +63,7 @@ export class CngxTabsRouteSync implements CngxTabsCommitActionSource {
    * `(handle) => [handle.id]` - the tab id is the child segment.
    * Override for real route paths.
    */
-  readonly routeFor = input<(handle: CngxTabHandle) => unknown[]>((handle) => [handle.id]);
+  readonly routeFor = input<(handle: CngxTabHandle) => unknown[]>(cngxDefaultTabRoute);
 
   private readonly host = inject(CNGX_TAB_GROUP_HOST, { host: true });
   private readonly router = inject(Router, { optional: true });
@@ -94,12 +95,7 @@ export class CngxTabsRouteSync implements CngxTabsCommitActionSource {
 
   constructor() {
     if (!this.router) {
-      afterNextRender(() => {
-        console.warn(
-          'CngxTabsRouteSync: no Router available - directive is a no-op. ' +
-            'Provide @angular/router via provideRouter(...) to enable routed tabs.',
-        );
-      });
+      afterNextRender(() => warnTabsRouterAbsent('CngxTabsRouteSync', 'routed tabs'));
       return;
     }
     const router = this.router;
@@ -144,14 +140,24 @@ export class CngxTabsRouteSync implements CngxTabsCommitActionSource {
     }
   }
 
-  /** Find the tab whose route's last segment matches the current URL. */
+  /**
+   * Find the tab whose route is the trailing segment(s) of the current
+   * URL path. Anchors on position (a suffix match), not a loose
+   * "appears anywhere" scan - a tab id that happens to equal an
+   * unrelated parent segment cannot win. The path is taken before any
+   * query/fragment.
+   */
   private readActiveId(router: Router): string | null {
-    const segments = router.url.split(/[/?#]/).filter(Boolean);
+    const path = router.url.split(/[?#]/)[0];
+    const segments = path.split('/').filter(Boolean);
     const routeFor = this.routeFor();
     for (const tab of this.host.tabs()) {
-      const route = routeFor(tab);
-      const last = route.length ? String(route[route.length - 1]) : '';
-      if (last && segments.includes(last)) {
+      const route = routeFor(tab).map((command) => String(command));
+      if (route.length === 0 || route.length > segments.length) {
+        continue;
+      }
+      const tail = segments.slice(-route.length);
+      if (tail.every((segment, i) => segment === route[i])) {
         return tab.id;
       }
     }
