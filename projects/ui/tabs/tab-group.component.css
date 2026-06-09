@@ -491,7 +491,15 @@
      * sub-label clips with it: the label is its visual anchor, so a
      * stacked second line has nothing to attach to in icon-only mode.
      * The `*cngxTabIcon` template carries the visible affordance.
+     *
+     * The `.cngx-tabs__text` wrapper clips too, not just its children:
+     * left in flow it stays a zero-width flex item, and the tab's `gap`
+     * still reserves a slot beside it - that trailing gap pushes the
+     * icon off-centre. Clipping the wrapper drops it out of flow so the
+     * icon is the sole in-flow child and centres within the symmetric
+     * padding. Clip (not display:none) keeps the label in the a11y tree.
      */
+    :scope[data-icon-layout='only'] .cngx-tabs__text,
     :scope[data-icon-layout='only'] .cngx-tabs__label,
     :scope[data-icon-layout='only'] .cngx-tabs__sublabel {
       position: absolute;
