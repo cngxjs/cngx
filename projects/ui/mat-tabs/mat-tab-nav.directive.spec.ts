@@ -10,7 +10,11 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { NavigationEnd, provideRouter, Router } from '@angular/router';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { CngxTabGroupPresenter, CngxTabsRouteSync } from '@cngx/common/tabs';
+import {
+  CNGX_TABS_COMMIT_ACTION,
+  CngxTabGroupPresenter,
+  CngxTabsRouteSync,
+} from '@cngx/common/tabs';
 import type {
   CngxErrorAggregatorContract,
   CngxErrorAggregatorSourceEntry,
@@ -86,6 +90,30 @@ class NavHostCmp {
 class DynamicNavHostCmp {
   readonly showThird = signal(true);
 }
+
+@Component({
+  standalone: true,
+  imports: [MatTabsModule, CngxMatTabNav, CngxMatTabLink],
+  // A refusing commit-action through the DI fallback drives
+  // lastFailedIndex so the rejection projector can be exercised against
+  // .mat-mdc-tab-link. Native nav usage installs no commit-action; this
+  // is the seam a consumer composing one would hit.
+  providers: [
+    {
+      provide: CNGX_TABS_COMMIT_ACTION,
+      useValue: { action: signal(() => false), mode: signal('pessimistic') },
+    },
+  ],
+  template: `
+    <nav mat-tab-nav-bar cngxMatTabNav [tabPanel]="panel" aria-label="Sections">
+      <a mat-tab-link cngxMatTabLink id="a" label="A" [active]="true">A</a>
+      <a mat-tab-link cngxMatTabLink id="b" label="B" [active]="false">B</a>
+      <a mat-tab-link cngxMatTabLink id="c" label="C" [active]="false">C</a>
+    </nav>
+    <mat-tab-nav-panel #panel>panel</mat-tab-nav-panel>
+  `,
+})
+class RejectionNavHostCmp {}
 
 @Component({
   standalone: true,
@@ -214,6 +242,30 @@ describe('CngxMatTabNav native nav-bar bridge', () => {
     fixture.detectChanges();
     await fixture.whenStable();
     expect(presenter.tabs().map((t) => t.id)).toEqual(['a']);
+  });
+
+  it('lands the rejection decoration on the matching .mat-mdc-tab-link when a commit refuses', async () => {
+    TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+    const fixture = TestBed.createComponent(RejectionNavHostCmp);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const presenter = navPresenter(fixture);
+    const links = tabLinks(fixture);
+    expect(links.length).toBe(3);
+
+    // Pessimistic refusing commit → lastFailedIndex pins on the target,
+    // and the rejection projector decorates that .mat-mdc-tab-link.
+    presenter.select(2);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(presenter.lastFailedIndex()).toBe(2);
+    expect(links[2].classList.contains('cngx-mat-tab--error')).toBe(true);
+    expect(links[2].getAttribute('aria-describedby') ?? '').toContain('c-rejected');
+    expect(links[2].querySelector('span.cngx-sr-only#c-rejected')).not.toBeNull();
+    expect(links[0].classList.contains('cngx-mat-tab--error')).toBe(false);
   });
 
   it('reflects the route-active link onto activeIndex via composed [cngxTabsRouteSync]', async () => {
