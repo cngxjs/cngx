@@ -89,7 +89,9 @@
 // inside the skin - the only way to feed them off `$theme` is to set them
 // explicitly here. All three colour tokens inherit, so setting them on the
 // `.mat-mdc-tab-group` host cascades to every tab button and its `::before`
-// glyph, and to the appended `.cngx-mat-tabs-more` overflow wrapper.
+// glyph, and to the appended `.cngx-mat-tabs-more` overflow wrapper. The
+// native `[cngxMatTabNav]` bridge hosts on `.mat-mdc-tab-nav-bar` instead,
+// so the same tokens are also set there to cascade to every `.mat-mdc-tab-link`.
 @mixin _mat-color($theme) {
   @if mat.get-theme-version($theme) == 1 {
     --cngx-mat-tab-error-color: var(--mat-sys-error);
@@ -112,7 +114,8 @@
     :where(cngx-tab-overflow) {
       @include _overflow-color($theme);
     }
-    :where(.mat-mdc-tab-group) {
+    :where(.mat-mdc-tab-group),
+    :where(.mat-mdc-tab-nav-bar) {
       @include _mat-color($theme);
     }
   }
