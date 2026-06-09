@@ -2,6 +2,7 @@ import {
   computed,
   Directive,
   inject,
+  Injector,
   input,
   model,
   output,
@@ -18,6 +19,7 @@ import {
 } from '@cngx/core/utils';
 import type { Observable } from 'rxjs';
 
+import { CNGX_TABS_COMMIT_ACTION, type CngxTabsCommitActionSource } from './commit-action.token';
 import { CNGX_TABS_COMMIT_HANDLER_FACTORY, type CngxTabsCommitHandler } from './commit-handler';
 import {
   CNGX_TAB_GROUP_HOST,
@@ -79,15 +81,63 @@ export class CngxTabGroupPresenter implements CngxTabGroupHost {
    * action's resolution decides whether the change lands. Supersede
    * semantics come from the commit-controller - a rapid second
    * `select(...)` cancels the in-flight runner.
+   *
+   * @internal Two-field alias - bind the public `[commitAction]`; read
+   * the resolved {@link commitAction} computed (input ?? DI fallback).
    */
-  readonly commitAction = input<CngxTabsCommitAction | null>(null);
+  readonly commitActionInput = input<CngxTabsCommitAction | null>(null, {
+    alias: 'commitAction',
+  });
   /**
    * Default `'optimistic'` - tab change is navigation, not a save,
    * so eager visual feedback matches the user's mental model.
    * Switch to `'pessimistic'` when the new tab must wait for the
    * action to confirm.
+   *
+   * @internal Two-field alias - bind the public `[commitMode]`; read
+   * the resolved {@link commitMode} computed (DI fallback mode wins
+   * when a routed action is active).
    */
-  readonly commitMode = input<'optimistic' | 'pessimistic'>('optimistic');
+  readonly commitModeInput = input<'optimistic' | 'pessimistic'>('optimistic', {
+    alias: 'commitMode',
+  });
+
+  private readonly injector = inject(Injector);
+  // Resolved lazily, never in a field initialiser: a sync directive
+  // (e.g. [cngxTabsRouteSync]) provides CNGX_TABS_COMMIT_ACTION via
+  // useExisting and itself injects this presenter as its host, so
+  // eager injection here would close a construction cycle (NG0200).
+  // First read happens at select()/template time - after both
+  // directives exist. The source is static per element, so memoising
+  // the resolution is safe.
+  private injectedActionSource: CngxTabsCommitActionSource | null | undefined;
+
+  private resolveInjectedAction(): CngxTabsCommitActionSource | null {
+    if (this.injectedActionSource === undefined) {
+      this.injectedActionSource = this.injector.get(CNGX_TABS_COMMIT_ACTION, null);
+    }
+    return this.injectedActionSource;
+  }
+
+  /**
+   * Resolved commit-action: the `[commitAction]` input when bound, else
+   * the {@link CNGX_TABS_COMMIT_ACTION} DI fallback (routed path), else
+   * `null`. `select()` reads this.
+   */
+  readonly commitAction = computed<CngxTabsCommitAction | null>(
+    () => this.commitActionInput() ?? this.resolveInjectedAction()?.action() ?? null,
+  );
+  /**
+   * Resolved commit mode. When the DI fallback supplies an active
+   * action its `mode` wins - the routed path pins `'pessimistic'` so a
+   * stray `[commitMode]="'optimistic'"` cannot break the
+   * route-follows-resolution invariant. Otherwise the `[commitMode]`
+   * input drives.
+   */
+  readonly commitMode = computed<'optimistic' | 'pessimistic'>(() => {
+    const source = this.resolveInjectedAction();
+    return source?.action() ? source.mode() : this.commitModeInput();
+  });
 
   /**
    * Emitted when a tab's close affordance is activated (the close
