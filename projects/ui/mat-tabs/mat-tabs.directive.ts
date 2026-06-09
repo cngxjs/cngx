@@ -33,8 +33,8 @@ import { CngxTabOverflow } from '@cngx/ui/tabs';
 import {
   createMatTabAggregatorDecoration,
   createMatTabRejectionDecoration,
-  type CngxMatTabAggregatorErrorEntry,
 } from './decorations/decoration-projectors';
+import { createAggregatedErrorTabs } from './decorations/aggregated-error-tabs';
 import { injectMatTabsConfig } from './mat-tabs-config';
 import {
   CngxMatTabAggregatorContent,
@@ -197,48 +197,10 @@ export class CngxMatTabs {
   // / liveAnnouncement - pillar-2 phrasing parity with cngx-native.
   private readonly rejectionState = createRejectionState(this.presenter, this.i18n);
 
-  // Structural equal - drops re-runs whose entry list is shape-
-  // identical so the projector doesn't churn on no-op aggregator
-  // re-emissions.
-  private readonly aggregatedErrorTabs = computed<readonly CngxMatTabAggregatorErrorEntry[]>(
-    () => {
-      const tabs = this.presenter.tabs();
-      const acc: CngxMatTabAggregatorErrorEntry[] = [];
-      for (let i = 0; i < tabs.length; i++) {
-        const handle = tabs[i];
-        const aggregator = handle.errorAggregator();
-        if (aggregator?.shouldShow()) {
-          acc.push({
-            idx: i,
-            id: handle.id,
-            announcement: aggregator.announcement(),
-            count: aggregator.errorCount(),
-            label: handle.label() ?? '',
-          });
-        }
-      }
-      return acc;
-    },
-    {
-      equal: (a, b) => {
-        if (a.length !== b.length) {
-          return false;
-        }
-        for (let i = 0; i < a.length; i++) {
-          if (
-            a[i].idx !== b[i].idx ||
-            a[i].id !== b[i].id ||
-            a[i].announcement !== b[i].announcement ||
-            a[i].count !== b[i].count ||
-            a[i].label !== b[i].label
-          ) {
-            return false;
-          }
-        }
-        return true;
-      },
-    },
-  );
+  // Shared with `[cngxMatTabNav]` - one body, two hosts (Pillar 3).
+  // Structural equal lives in the factory so the projector doesn't
+  // churn on no-op aggregator re-emissions.
+  private readonly aggregatedErrorTabs = createAggregatedErrorTabs(this.presenter);
 
   constructor() {
     const matTabsConfig = injectMatTabsConfig();
