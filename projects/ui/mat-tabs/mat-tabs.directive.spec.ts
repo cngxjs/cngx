@@ -1466,4 +1466,61 @@ describe('CngxMatTabs instrumentation directive', () => {
     expect((matEl.componentInstance as MatTabGroup).selectedIndex).toBe(0);
   });
 
+  test('axis 38: routed guard-cancel — an async pessimistic commit resolving false leaves selectedIndex AND activeIndex at origin and sets lastFailedIndex', async () => {
+    // Routed tabs gate through the same commit lifecycle: a CanDeactivate
+    // guard surfaces as createTabRouterCommit() resolving false on
+    // NavigationCancel. This generalizes the sync-reject axis (37) to the
+    // async router outcome, proving the bridge's selectedIndex sync reads
+    // the COMMITTED activeIndex (which never advances in pessimistic mode)
+    // rather than the transition intent — Material does not fight the
+    // router commit. The Material→presenter click direction is covered by
+    // axis 37; this axis drives presenter.select to keep the async
+    // pending/resolve timing deterministic (Material defers its own
+    // selectedIndexChange emission to an animation tick in zoneless).
+    // No bridge code change was needed: presenterIndex is the committed
+    // activeIndex, so the presenter→Material effect never writes while the
+    // commit holds, and a cancelled commit leaves Material untouched.
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(CommitHostCmp);
+    let resolveCommit: ((value: boolean) => void) | null = null;
+    fixture.componentInstance['mode'] = 'pessimistic';
+    fixture.componentInstance['commit'] = () =>
+      new Promise<boolean>((res) => {
+        resolveCommit = res;
+      });
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const matEl = fixture.debugElement.query(
+      (el) => el.componentInstance instanceof MatTabGroup,
+    );
+    const matTabGroup = matEl.componentInstance as MatTabGroup;
+    const presenter = matEl.injector.get(CngxTabGroupPresenter);
+    expect(matTabGroup.selectedIndex).toBe(0);
+
+    presenter.select(1);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    // Pending navigation: pessimistic holds the active index at origin,
+    // so the presenter→Material effect never advanced selectedIndex.
+    expect(presenter.commitState.status()).toBe('pending');
+    expect(presenter.activeIndex()).toBe(0);
+    expect(matTabGroup.selectedIndex).toBe(0);
+
+    // The guard blocks the leave → NavigationCancel → commit resolves false.
+    (resolveCommit as ((value: boolean) => void) | null)?.(false);
+    await fixture.whenStable();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(presenter.lastFailedIndex()).toBe(1);
+    expect(presenter.activeIndex()).toBe(0);
+    expect(matTabGroup.selectedIndex).toBe(0);
+  });
+
 });
