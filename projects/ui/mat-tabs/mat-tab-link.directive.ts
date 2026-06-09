@@ -68,11 +68,6 @@ export class CngxMatTabLink implements OnInit {
   /** Optional rich error aggregator for the link. */
   readonly errorAggregator = input<CngxErrorAggregatorContract | undefined>(undefined);
 
-  /** Whether Material currently marks this link active (route-active). */
-  get active(): boolean {
-    return this.matLink.active;
-  }
-
   private readonly errorMessage: Signal<string | undefined> = computed(() => {
     const value = this.error();
     return typeof value === 'string' && value !== '' ? value : undefined;

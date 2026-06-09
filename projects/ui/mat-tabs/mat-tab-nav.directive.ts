@@ -48,6 +48,11 @@ import { createRejectionState } from './decorations/rejection-state';
  * the live-region announcer come for free, identical to the cngx
  * organism (Pillar 2 - same communication across skins).
  *
+ * Decoration content-template slots (`*cngxMatTabRejectionContent` /
+ * `*cngxMatTabAggregatorContent`) are not forwarded on this bridge yet -
+ * the projectors render their built-in `cngx-sr-only` spans. The slot
+ * inputs that `[cngxMatTabs]` exposes are a deferred follow-up.
+ *
  * @category ui/mat-tabs
  * @docsKind primary
  * @wcag AA
