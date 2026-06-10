@@ -53,6 +53,8 @@ import { createRejectionState } from './decorations/rejection-state';
  * the projectors render their built-in `cngx-sr-only` spans. The slot
  * inputs that `[cngxMatTabs]` exposes are a deferred follow-up.
  *
+ * @playground Native router tabs with a CanDeactivate guard ./examples/router-nav/router-nav.component.ts
+ *
  * @category ui/mat-tabs
  * @docsKind primary
  * @wcag AA

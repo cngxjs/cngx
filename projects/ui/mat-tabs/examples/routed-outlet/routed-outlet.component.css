@@ -1,0 +1,63 @@
+:host {
+  display: block;
+  max-width: 640px;
+}
+
+.routed-demo__outlet {
+  padding: 16px;
+}
+
+/*
+ * cngx mat-tab decoration visuals. Shipped inline because
+ * `@cngx/ui/mat-tabs/styles/mat-tabs.css` is a build-time asset, not a
+ * component stylesheet, so the StackBlitz scaffold never loads it.
+ * Faithful subset of projects/ui/mat-tabs/styles/mat-tabs.css; the host
+ * uses ViewEncapsulation.None so these reach the Material DOM. A
+ * guard-cancelled commit pins `cngx-mat-tab--error` on the rejected tab.
+ */
+.mat-mdc-tab.cngx-mat-tab--error,
+.mat-mdc-tab-link.cngx-mat-tab--error {
+  color: var(--cngx-mat-tab-error-color, oklch(0.45 0.15 25));
+  outline: 2px solid currentColor;
+  outline-offset: 1px;
+  font-weight: 600;
+}
+
+.cngx-mat-tab--has-errors {
+  position: relative;
+}
+
+.mat-mdc-tab.cngx-mat-tab--has-errors::before,
+.mat-mdc-tab-link.cngx-mat-tab--has-errors::before {
+  content: '!';
+  position: absolute;
+  top: 4px;
+  inset-inline-end: 4px;
+  inset-inline-start: auto;
+  bottom: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--cngx-mat-tab-has-errors-color, oklch(0.45 0.15 25));
+  color: oklch(1 0 0);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.cngx-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

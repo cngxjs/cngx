@@ -76,6 +76,7 @@ import {
  * `role="group"` landmark.
  *
  * @playground Form error aggregation ./examples/form-errors/form-errors.component.ts
+ * @playground Routed tabs with a CanDeactivate guard ./examples/routed-outlet/routed-outlet.component.ts
  * @see {@link CngxMatTabs} for the Material `<mat-tab-group>` variant with `[cngxMatTabError]`.
  *
  * @category ui/tabs
