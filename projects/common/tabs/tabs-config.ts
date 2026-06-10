@@ -16,8 +16,8 @@ import type { CngxTabIconContext } from './slots/tab-icon.directive';
 import type { CngxTabRejectionIconContext } from './slots/tab-rejection-icon.directive';
 
 /**
- * Aria-label overrides for the tab-group landmark region. Library
- * defaults are English; consumers override via
+ * Aria-label overrides for the tab-group landmark region. \
+ * Library defaults are English; consumers override via
  * {@link withTabsAriaLabels}.
  *
  * Per-tab nav phrasing (`previousTab`, `nextTab`) lives in
@@ -27,6 +27,12 @@ import type { CngxTabRejectionIconContext } from './slots/tab-rejection-icon.dir
  * @category common/tabs
  */
 export interface CngxTabsAriaLabels {
+  /**
+   * Accessible name for the tab-group wrapper (`role="group"`), read by
+   * AT when focus enters the region. Default `'Tabs'`. Ignored when a
+   * per-instance `[aria-label]` / `[aria-labelledby]` is bound (those
+   * win).
+   */
   readonly tabsRegion?: string;
 }
 
@@ -38,14 +44,23 @@ export interface CngxTabsAriaLabels {
  * @category common/tabs
  */
 export interface CngxTabsFallbackLabels {
+  /**
+   * `aria-roledescription` for the tablist. Default `'tab list'` (the
+   * W3C ARIA convention) - kept distinct from the region `aria-label`
+   * so AT does not read the same word twice back-to-back.
+   */
   readonly tabRoleDescription?: string;
+  /**
+   * `aria-roledescription` for each tab panel. Default `'tab panel'`.
+   */
   readonly tabPanelRoleDescription?: string;
 }
 
 /**
  * App-wide template overrides for `<cngx-tab-group>` and
- * `<cngx-tab-overflow>` skin regions. Middle tier of the 3-stage
- * cascade - per-instance directive > this field > built-in markup.
+ * `<cngx-tab-overflow>` skin regions. \
+ * Middle tier of the 3-stage cascade -
+ * per-instance directive > this field > built-in markup. \
  * Apply via the matching `with*Template` builders. Shape mirrors
  * `CngxStepperTemplates` so consumer templates port across
  * families.
@@ -53,19 +68,27 @@ export interface CngxTabsFallbackLabels {
  * @category common/tabs
  */
 export interface CngxTabsTemplates {
+  /** Default for the overflow "More" button label (`*cngxTabOverflowTrigger`). */
   readonly overflowTrigger?: TemplateRef<CngxTabOverflowTriggerContext>;
+  /** Default for each row inside the overflow popover (`*cngxTabOverflowItem`). */
   readonly overflowItem?: TemplateRef<CngxTabOverflowItemContext>;
+  /** Default for the per-tab error badge (`*cngxTabErrorBadge`). */
   readonly errorBadge?: TemplateRef<CngxTabErrorBadgeContext>;
+  /** Default for the per-tab rejection decoration (`*cngxTabRejectionIcon`). */
   readonly rejectionIcon?: TemplateRef<CngxTabRejectionIconContext>;
+  /** Default for the commit-pending busy spinner (`*cngxTabBusySpinner`). */
   readonly busySpinner?: TemplateRef<CngxTabBusySpinnerContext>;
+  /** Default for the per-tab icon ahead of the label (`*cngxTabIcon`). */
   readonly icon?: TemplateRef<CngxTabIconContext>;
+  /** Default for a tab's close-button glyph (`*cngxTabCloseIcon`). */
   readonly closeIcon?: TemplateRef<CngxTabCloseIconContext>;
+  /** Default for the add-tab button glyph (`*cngxTabAddIcon`). */
   readonly addIcon?: TemplateRef<void>;
 }
 
 /**
- * Selectable visual skin for `<cngx-tab-group>`. The skin is a pure
- * thematic concern - every value renders the same `tablist` / `tab` /
+ * Selectable visual skin for `<cngx-tab-group>`. \
+ * The skin is a pure thematic concern - every value renders the same `tablist` / `tab` /
  * `tabpanel` structure, slots, ARIA, and keyboard behaviour, and only
  * redirects CSS via the `[data-skin]` host attribute. `'line'`
  * (default) is the underline indicator; `'contained'` fuses the active
@@ -73,7 +96,9 @@ export interface CngxTabsTemplates {
  * track and lifts the active tab onto a raised surface; `'pill'`
  * renders rounded solid fills; `'pill-outline'` renders the same pill
  * geometry with a tinted, outlined active state instead of a solid
- * fill. Sized to the tab use cases - not a 1:1 copy of the stepper's
+ * fill.
+ *
+ * Sized to the tab use cases - not a 1:1 copy of the stepper's
  * seven skins. The Material twin (`[cngxMatTabs]`) ignores this setting.
  *
  * @category common/tabs
@@ -82,11 +107,14 @@ export type CngxTabsSkin = 'line' | 'contained' | 'segmented' | 'pill' | 'pill-o
 
 /**
  * Icon-layout axis for `<cngx-tab-group>`, orthogonal to both skin and
- * orientation. Positions the `*cngxTabIcon` slot relative to the tab
+ * orientation. \
+ * Positions the `*cngxTabIcon` slot relative to the tab
  * label: `'start'` (default) places the icon before the label in a row;
  * `'end'` places it after the label in a row; `'top'` stacks the icon
  * above the label in a column; `'only'` hides the label visually while
- * keeping it in the DOM as the accessible name. Redirected purely via
+ * keeping it in the DOM as the accessible name.
+ *
+ * Redirected purely via
  * the `[data-icon-layout]` host attribute.
  *
  * @category common/tabs
@@ -94,8 +122,8 @@ export type CngxTabsSkin = 'line' | 'contained' | 'segmented' | 'pill' | 'pill-o
 export type CngxTabIconLayout = 'start' | 'end' | 'top' | 'only';
 
 /**
- * Panel render strategy for `<cngx-tab-group>`. The panel `<div>` (the
- * `aria-controls` target) always stays in the DOM; only its content is
+ * Panel render strategy for `<cngx-tab-group>`. \
+ * The panel `<div>` (the `aria-controls` target) always stays in the DOM; only its content is
  * rendered per mode. `'eager'` (default) renders every panel's content
  * up front and toggles visibility via `[hidden]` - today's behaviour,
  * byte-identical. `'lazy'` renders a panel's content the first time it
@@ -118,27 +146,62 @@ export type CngxTabsPanelMode = 'eager' | 'lazy' | 'lazy-destroy';
 export type CngxTabAlign = 'start' | 'center' | 'end';
 
 /**
- * Tab-group config surface. Resolution priority: per-instance Input
- * → `provideTabsConfigAt` (viewProviders) → `provideTabsConfig`
+ * Tab-group config surface. Resolution priority: \
+ * per-instance Input → `provideTabsConfigAt` (viewProviders) → `provideTabsConfig`
  * (root) → library default.
  *
  * @category common/tabs
  */
 export interface CngxTabsConfig {
+  /**
+   * App-wide default tablist orientation. Default `'horizontal'`
+   * (left-to-right strip with arrow-left/right navigation);
+   * `'vertical'` stacks the tabs in a column with arrow-up/down.
+   * Per-instance `[orientation]` Input still wins. Override via
+   * {@link withTabsDefaultOrientation}.
+   */
   readonly defaultOrientation?: 'horizontal' | 'vertical';
+  /**
+   * App-wide default for whether roving-tabindex navigation wraps from
+   * the last tab back to the first (and vice versa). Default `true`.
+   * Per-instance `[loop]` Input still wins. Override via
+   * {@link withTabsRovingLoop}.
+   */
   readonly defaultLoop?: boolean;
+  /**
+   * App-wide default commit mode for async tab transitions.
+   * `'optimistic'` (default) activates the target tab on action
+   * dispatch and rolls back on error; `'pessimistic'` keeps the old tab
+   * until the action resolves. Per-instance `[commitMode]` Input still
+   * wins (and `[cngxTabsRouteSync]` pins pessimistic regardless).
+   * Override via {@link withTabsCommitMode}.
+   */
   readonly defaultCommitMode?: 'optimistic' | 'pessimistic';
+  /**
+   * URL surface for {@link CngxTabsFragmentSync} deep-linking:
+   * `'fragment'` (default) writes `#tab=<id>`, `'queryParam'` writes
+   * `?tab=<id>`. Has no effect unless the directive is applied. Not the
+   * router-outlet integration (`[cngxTabsRouteSync]`). Override via
+   * {@link withTabsFragmentSync}.
+   */
   readonly fragmentSyncMode?: 'fragment' | 'queryParam';
+  /**
+   * Key name for the fragment / query-param deep-link written by
+   * {@link CngxTabsFragmentSync}. Default `'tab'` (e.g. `#tab=settings`).
+   * Override via {@link withTabsFragmentSync}.
+   */
   readonly fragmentSyncParam?: string;
   /**
-   * App-wide default visual skin. Default `'line'`. Per-instance
+   * App-wide default visual skin. \
+   * Default `'line'`. Per-instance
    * `[skin]` Input still wins; the cascade default itself lives in
    * `createTabsHostAttrs`, not here (mirrors the stepper). Override via
    * {@link withTabsSkin}.
    */
   readonly skin?: CngxTabsSkin;
   /**
-   * App-wide default icon layout. Default `'start'`. Per-instance
+   * App-wide default icon layout. \
+   * Default `'start'`. Per-instance
    * `[iconLayout]` Input still wins; the cascade default lives in
    * `createTabsHostAttrs`. Override via {@link withTabsIconLayout}.
    */
@@ -189,12 +252,11 @@ export interface CngxTabsConfig {
    * Hard ceiling (ms) on commit deferral while IO bursts keep
    * arriving - without it, sustained churn (momentum scroll,
    * continuous resize) would clear the stabilize timer forever and
-   * the More counter would freeze on a stale value, breaking
-   * Pillar 2. Default 250ms.
+   * the More counter would freeze on a stale value. Default 250ms.
    */
   readonly overflowMaxDeferMs?: number;
   /**
-   * App-wide template overrides for `<cngx-tab-overflow>` regions.
+   * App-wide template overrides for `<cngx-tab-overflow>` regions. \
    * Middle tier of the family-standard 3-stage cascade. See
    * {@link CngxTabsTemplates}.
    */
@@ -241,8 +303,8 @@ const TABS_CONFIG_DEFAULTS: Required<
 };
 
 /**
- * DI token for the resolved tabs config. `providedIn: 'root'` with
- * the library defaults; override via {@link provideTabsConfig}
+ * DI token for the resolved tabs config. \
+ * `providedIn: 'root'` with the library defaults; override via {@link provideTabsConfig}
  * (root) or {@link provideTabsConfigAt} (component scope).
  *
  * @category common/tabs
@@ -256,8 +318,8 @@ export const CNGX_TABS_CONFIG = new InjectionToken<CngxTabsConfig>('CngxTabsConf
 });
 
 /**
- * Feature signature for `with*` config builders. The hidden
- * `_target` discriminator lets {@link provideCngxTabs} dispatch
+ * Feature signature for `with*` config builders. \
+ * The hidden `_target` discriminator lets {@link provideCngxTabs} dispatch
  * config features to {@link provideTabsConfig} while i18n features
  * route to {@link provideTabsI18n}.
  *
@@ -269,7 +331,8 @@ export type CngxTabsConfigFeature = ((config: CngxTabsConfig) => CngxTabsConfig)
 
 /**
  * Internal helper that brands a config-mutator function with the
- * `_target` discriminator. Every `with*` config feature returns one
+ * `_target` discriminator. \
+ * Every `with*` config feature returns one
  * of these.
  *
  * @internal
@@ -332,8 +395,8 @@ export function withTabsCommitMode(mode: 'optimistic' | 'pessimistic'): CngxTabs
 
 /**
  * Configure URL fragment / query-param deep-linking for the active tab
- * (the {@link CngxTabsFragmentSync} directive). `mode` chooses the URL
- * surface (URL fragment or query parameter); `param` names the key
+ * (the {@link CngxTabsFragmentSync} directive). \
+ * `mode` chooses the URL surface (URL fragment or query parameter); `param` names the key
  * (default `'tab'`).
  *
  * Not to be confused with `[cngxTabsRouteSync]`, the router-outlet
@@ -363,7 +426,7 @@ export function withTabsFragmentSync(
 export const withTabsRouterSync = withTabsFragmentSync;
 
 /**
- * Select the app-wide default visual skin for `<cngx-tab-group>`.
+ * Select the app-wide default visual skin for `<cngx-tab-group>`. \
  * Default `'line'`. Per-instance `[skin]` Input still wins; this moves
  * the cascade default. Structure, slots, ARIA, and keyboard behaviour
  * are identical across skins - only the `[data-skin]` host attribute
@@ -376,8 +439,8 @@ export function withTabsSkin(skin: CngxTabsSkin): CngxTabsConfigFeature {
 }
 
 /**
- * Set the app-wide default icon layout for `<cngx-tab-group>`. Default
- * `'start'`. Per-instance `[iconLayout]` Input still wins. Orthogonal to
+ * Set the app-wide default icon layout for `<cngx-tab-group>`. \
+ * Default`'start'`. Per-instance `[iconLayout]` Input still wins. Orthogonal to
  * skin and orientation - only the `[data-icon-layout]` host attribute
  * changes.
  *
@@ -388,7 +451,7 @@ export function withTabsIconLayout(layout: CngxTabIconLayout): CngxTabsConfigFea
 }
 
 /**
- * Set the app-wide default panel render strategy for `<cngx-tab-group>`.
+ * Set the app-wide default panel render strategy for `<cngx-tab-group>`. \
  * Default `'eager'` (every panel's content rendered up front, toggled
  * via `[hidden]`). `'lazy'` keep-alives content after first activation;
  * `'lazy-destroy'` renders only the active panel's content. Per-instance
@@ -403,7 +466,8 @@ export function withTabsPanelMode(mode: CngxTabsPanelMode): CngxTabsConfigFeatur
 
 /**
  * Set the app-wide default for stretching tabs to the full strip width
- * (horizontal only). Default `false`. Per-instance `[fitted]` Input still
+ * (horizontal only). \
+ * Default `false`. Per-instance `[fitted]` Input still
  * wins. No effect under `orientation="vertical"`.
  *
  * @category common/tabs
@@ -413,7 +477,7 @@ export function withTabsFitted(fitted: boolean): CngxTabsConfigFeature {
 }
 
 /**
- * Set the app-wide default tab-cluster alignment (horizontal only).
+ * Set the app-wide default tab-cluster alignment (horizontal only). \
  * Default `'start'`. Per-instance `[tabAlign]` Input still wins. Ignored
  * under `orientation="vertical"` and when the group is `fitted`.
  *
@@ -424,7 +488,7 @@ export function withTabsAlign(align: CngxTabAlign): CngxTabsConfigFeature {
 }
 
 /**
- * Set the app-wide default for whether tabs render a close affordance.
+ * Set the app-wide default for whether tabs render a close affordance. \
  * Default `false`. Per-instance `[closable]` Input wins; a per-`CngxTab`
  * `[closable]` override wins over both.
  *
@@ -436,7 +500,8 @@ export function withTabsClosable(closable: boolean): CngxTabsConfigFeature {
 
 /**
  * Set the app-wide default for whether the group renders an add-tab
- * button. Default `false`. Per-instance `[addable]` Input wins.
+ * button. \
+ * Default `false`. Per-instance `[addable]` Input wins.
  *
  * @category common/tabs
  */
@@ -497,14 +562,16 @@ export function withTabOverflowMaxDeferMs(ms: number): CngxTabsConfigFeature {
 }
 
 /**
- * App-wide override for the More-button label. Middle tier;
+ * App-wide override for the More-button label. Middle tier; \
  * per-instance `*cngxTabOverflowTrigger` still wins.
  *
  * ```ts
- * @ViewChild('moreTrigger', { static: true, read: TemplateRef })
- * moreTrigger!: TemplateRef<CngxTabOverflowTriggerContext>;
+ * readonly moreTrigger = viewChild.required<TemplateRef<CngxTabOverflowTriggerContext>>(
+ *   'moreTrigger',
+ *   { read: TemplateRef },
+ * );
  *
- * providers: [provideTabsConfig(withTabOverflowTriggerTemplate(this.moreTrigger))]
+ * providers: [provideTabsConfig(withTabOverflowTriggerTemplate(this.moreTrigger()))]
  * ```
  *
  * @category common/tabs
@@ -519,7 +586,7 @@ export function withTabOverflowTriggerTemplate(
 }
 
 /**
- * App-wide override for each row inside the overflow popover.
+ * App-wide override for each row inside the overflow popover. \
  * Middle tier; per-instance `*cngxTabOverflowItem` still wins.
  *
  * @category common/tabs
@@ -551,7 +618,8 @@ export function withTabErrorBadgeTemplate(
 
 /**
  * App-wide override for the rejection-icon decoration. Middle
- * tier; per-instance `*cngxTabRejectionIcon` still wins. Sibling
+ * tier; \
+ * per-instance `*cngxTabRejectionIcon` still wins. Sibling
  * of {@link withStepRejectionTemplate}.
  *
  * @category common/tabs

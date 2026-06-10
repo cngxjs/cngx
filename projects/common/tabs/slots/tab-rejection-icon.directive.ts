@@ -43,8 +43,6 @@ export interface CngxTabRejectionIconContext {
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/slots/tab-rejection-icon.directive.ts
  * @since 0.1.0
  * @relatedTo CngxTabErrorBadge, CngxTabBusySpinner, CngxTab
- * <example-url>http://localhost:4200/#/ui/tabs/tab-slot-overrides/custom-busy-spinner-via-code-cngxtabbusyspinner-code</example-url>
- * <example-url>http://localhost:4200/#/ui/tabs/tab-slot-overrides/custom-error-badge-via-code-cngxtaberrorbadge-code</example-url>
  * <example-url>http://localhost:4200/#/ui/tabs/tab-slot-overrides/rejection-decoration-via-code-cngxtabrejectionicon-code</example-url>
  */
 @Directive({

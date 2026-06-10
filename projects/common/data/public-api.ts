@@ -69,4 +69,5 @@ export {
 export {
   createMaterialBidirectionalSync,
   type CngxMaterialBidirectionalSyncOptions,
+  type CngxMaterialBidirectionalSyncHandle,
 } from './material-bridge/bidirectional-sync';

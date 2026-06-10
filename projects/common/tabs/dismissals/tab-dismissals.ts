@@ -1,9 +1,4 @@
-import {
-  afterNextRender,
-  computed,
-  type Injector,
-  type Signal,
-} from '@angular/core';
+import { afterNextRender, computed, type Injector, type Signal } from '@angular/core';
 
 import type { CngxTabsI18n } from '../i18n/tabs-i18n';
 import type { CngxTabCloseIconContext } from '../slots/tab-close-icon.directive';
@@ -11,10 +6,13 @@ import type { CngxTabsConfig } from '../tabs-config';
 import type { CngxTabGroupHost, CngxTabHandle } from '../tab-group-host.token';
 
 /**
- * Inputs to {@link createTabDismissals}. The organism owns the
+ * Inputs to {@link createTabDismissals}. \
+ * The organism owns the
  * `[closable]` / `[addable]` inputs and the DOM handle; the factory runs
- * the cascade + the close/add interaction so the organism class stays
- * under the LOC guard. Sibling shape to `createTabGroupAnnouncements`.
+ * the cascade and the close/add interaction so the organism class stays
+ * under the LOC guard. \
+ *
+ * Sibling shape to `createTabGroupAnnouncements`.
  *
  * @category common/tabs
  */
@@ -29,8 +27,8 @@ export interface CngxTabDismissalsOptions {
 }
 
 /**
- * Resolved dismissable/addable surface for `<cngx-tab-group>`. The
- * organism holds this as one field and the template reads it.
+ * Resolved dismissable/addable surface for `<cngx-tab-group>`. \
+ * The organism holds this as one field and the template reads it.
  *
  * @category common/tabs
  */
@@ -54,30 +52,53 @@ export interface CngxTabDismissals {
 }
 
 /**
- * Level-2 helper resolving the dismissable/addable affordances for
- * `<cngx-tab-group>`. Keeps the close/add cascade + interaction off the
- * organism class (LOC guard). Pillar 1: each cascade is one `computed()`.
- * The actual tab removal is the consumer's (Ableitung statt Verwaltung) -
+ * Helper resolving the dismissable/addable affordances for
+ * `<cngx-tab-group>`. \
+ * Keeps the close/add cascade + interaction off the
+ * organism class (LOC guard). \
+ * Each cascade is one `computed()`.
+ * The actual tab removal is the consumer's -
  * `handleClose` only routes through the presenter's `requestClose`, which
  * moves the active index, and restores focus once the consumer's removal
  * has rendered.
  *
+ * ```ts
+ * // The organism builds it once from field-init; the template reads it.
+ * protected readonly dismiss = createTabDismissals({
+ *   host: this.host,            // CNGX_TAB_GROUP_HOST
+ *   config: this.config,        // injectTabsConfig()
+ *   i18n: this.i18n,            // injectTabsI18n()
+ *   closable: this.closable,    // input<boolean | undefined>('closable')
+ *   addable: this.addable,      // input<boolean | undefined>('addable')
+ *   hostElement: this.hostElement,
+ *   injector: this.injector,
+ * });
+ *
+ * // Per-tab close affordance, read from the header template:
+ * dismiss.isTabClosable(tab);              // per-tab override > group resolution
+ * dismiss.closeButtonLabel(tab);           // i18n accessible name for the close button
+ * dismiss.handleClose(tab, clickEvent);    // routes through presenter.requestClose, restores focus
+ * dismiss.handleTabKeydown(tab, keyEvent); // Delete on a focused closable tab closes it (APG)
+ *
+ * // Group-level add affordance:
+ * dismiss.resolvedAddable();               // input ?? config ?? false
+ * dismiss.handleAdd();                     // routes through presenter.requestAdd
+ * ```
+ *
  * @category common/tabs
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/dismissals/tab-dismissals.ts
+ * @since 0.1.0
+ * @relatedTo CngxTabGroup, CngxTabCloseIcon, CngxTabAddIcon
  */
-export function createTabDismissals(
-  opts: CngxTabDismissalsOptions,
-): CngxTabDismissals {
+export function createTabDismissals(opts: CngxTabDismissalsOptions): CngxTabDismissals {
   const resolvedClosable = computed<boolean>(
     () => opts.closable() ?? opts.config.closable ?? false,
   );
-  const resolvedAddable = computed<boolean>(
-    () => opts.addable() ?? opts.config.addable ?? false,
-  );
+  const resolvedAddable = computed<boolean>(() => opts.addable() ?? opts.config.addable ?? false);
 
   const closeIconContextCache = new WeakMap<CngxTabHandle, CngxTabCloseIconContext>();
 
-  const isTabClosable = (tab: CngxTabHandle): boolean =>
-    tab.closable() ?? resolvedClosable();
+  const isTabClosable = (tab: CngxTabHandle): boolean => tab.closable() ?? resolvedClosable();
 
   const handleClose = (tab: CngxTabHandle, event?: Event): void => {
     event?.stopPropagation();

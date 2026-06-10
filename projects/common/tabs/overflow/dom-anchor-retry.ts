@@ -49,9 +49,12 @@ export interface CngxDomAnchorRetryHandle {
 
 /**
  * Bounded retry loop for DOM-anchoring patterns - shared
- * attempt-counter + give-up + cancellation contract. Used by
+ * attempt-counter and give-up and cancellation contract. \
+ * Used by
  * `<cngx-tab-overflow>`'s rAF strip-attach loop and `[cngxMatTabs]`'s
- * `afterNextRender` header-anchor loop. Consumer-supplied scheduler
+ * `afterNextRender` header-anchor loop.
+ *
+ * Consumer-supplied scheduler
  * lets different timing primitives flow through one counter.
  *
  * ```ts
@@ -92,7 +95,8 @@ export function createDomAnchorRetry(options: CngxDomAnchorRetryOptions): CngxDo
       // Swallow + terminal stop - covers the test-runner teardown
       // race where a global (e.g. IntersectionObserver) is reset
       // between schedule and fire, before consumer DestroyRef can
-      // call cancel(). Production callback bugs still surface via
+      // call cancel().
+      // Production callback bugs still surface via
       // their own console.error before they throw here.
       stopped = true;
       return;
@@ -134,15 +138,16 @@ export type CngxDomAnchorRetryFactory = (
 ) => CngxDomAnchorRetryHandle;
 
 /**
- * DI token for the DOM-anchor retry policy. Default
- * {@link createDomAnchorRetry}. Two real consumers today -
+ * DI token for the DOM-anchor retry policy. \
+ * Default {@link createDomAnchorRetry}. Two real consumers today -
  * `<cngx-tab-overflow>`'s rAF strip-attach loop and
  * `[cngxMatTabs]`'s `afterNextRender` header-anchor loop. Override
  * via `providers` / `viewProviders` for retry-with-backoff,
- * telemetry on give-up, etc. Symmetric to
- * `CNGX_OVERFLOW_POPOVER_HIGHLIGHT_FACTORY`,
- * `CNGX_TAB_OVERFLOW_DOM_ADAPTER_FACTORY`, and
- * `CNGX_TABS_COMMIT_HANDLER_FACTORY`.
+ * telemetry on give-up, etc. \
+ * Symmetric to
+ * - `CNGX_OVERFLOW_POPOVER_HIGHLIGHT_FACTORY`,
+ * - `CNGX_TAB_OVERFLOW_DOM_ADAPTER_FACTORY`, and
+ * - `CNGX_TABS_COMMIT_HANDLER_FACTORY`.
  *
  * @category common/tabs/overflow
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/overflow/dom-anchor-retry.ts

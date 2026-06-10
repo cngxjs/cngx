@@ -64,11 +64,12 @@ export type CngxDirectiveByIdMapFactory = <T extends { id: () => string }>(
 ) => Signal<Map<string, T>>;
 
 /**
- * DI token for the per-id directive-resolution policy. Defaults to
- * {@link createDirectiveByIdMap}. Override for WeakMap resolution,
- * telemetry, or custom equality. Sibling to
- * `CNGX_DOM_ANCHOR_RETRY_FACTORY` and
- * `CNGX_ORGANISM_SCROLL_SYNC_FACTORY`.
+ * DI token for the per-id directive-resolution policy. \
+ * Defaults to {@link createDirectiveByIdMap}. Override for WeakMap resolution,
+ * telemetry, or custom equality. \
+ * Sibling to
+ * - `CNGX_DOM_ANCHOR_RETRY_FACTORY` and
+ * - `CNGX_ORGANISM_SCROLL_SYNC_FACTORY`.
  *
  * @category common/tabs/registry
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/registry/directive-by-id-map.ts

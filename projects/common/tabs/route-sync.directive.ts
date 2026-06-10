@@ -21,8 +21,8 @@ import { CNGX_TAB_GROUP_HOST, type CngxTabHandle } from './tab-group-host.token'
 import type { CngxTabsCommitAction } from './presenter.directive';
 
 /**
- * Router-outlet integration for tab groups. Opt-in via
- * `[cngxTabsRouteSync]` on the presenter element. Each tab is an
+ * Router-outlet integration for tab groups. \
+ * Opt-in via `[cngxTabsRouteSync]` on the presenter element. Each tab is an
  * Angular child route whose component renders into a `<router-outlet>`;
  * switching tabs navigates, and a `CanDeactivate` guard can gate the
  * leave.
@@ -43,6 +43,63 @@ import type { CngxTabsCommitAction } from './presenter.directive';
  * warning via `afterNextRender`, exposes a null action, and becomes a
  * no-op. Mirrors {@link CngxTabsFragmentSync}; every `activeIndex`
  * write inside an effect sits in `untracked()`.
+ *
+ * **The mental model.** It turns the tab group into the router's view
+ * switcher: the tabs choose *which child route* renders in the
+ * `<router-outlet>`, not which inline template shows. \
+ * Concretely, a Settings page with Profile / Security / Billing tabs then gets, for
+ * free: each tab its own URL (`/settings/profile`) so a refresh or a
+ * shared link stays on the tab; browser back/forward between tabs;
+ * `Billing` lazy-loading its chunk only when first opened; and `Profile`
+ * blocking the switch via a `CanDeactivate` guard while its form is
+ * dirty - all while keeping the `role="tab"` keyboard and ARIA model.
+ *
+ * **Use it when** each tab's content is a real Angular route - a lazy
+ * chunk, a resolver, or a `CanActivate` / `CanDeactivate` guard -
+ * rendered into a `<router-outlet>`, and you want browser back/forward
+ * and deep links to move between tabs while the route's own guard gates
+ * the switch (e.g. an unsaved-changes prompt on leave). \
+ * If the tabs are purely visual, use a plain `<cngx-tab-group>` with no sync directive;
+ * if you only want the active tab reflected in the URL while content
+ * stays inline, use {@link CngxTabsFragmentSync}.
+ *
+ * **What this is not.** \
+ * Not a per-tab `routerLink`: \
+ * the tabs stay `role="tab"` buttons and the directive drives `router.navigate`
+ * centrally through the commit lifecycle, so there are no anchors, no
+ * `href`, and no native open-in-new-tab / middle-click / copy-link. \
+ * For real link semantics (right-click, ctrl-click) reach for the CNGX
+ * `<cngx-tab-nav>` and `<a cngx-tab-link routerLink>` variant
+ * instead. \
+ * Not URL deep-linking either - that is {@link CngxTabsFragmentSync} (a `#tab=` fragment or `?tab=`
+ * query-param); this directive renders child route *components* into a
+ * `<router-outlet>`. \
+ * And not optimistic: the active tab moves only once
+ * the route resolves, so a `CanDeactivate` guard can cancel the switch.
+ *
+ * ```ts
+ * // Each tab is a child route; the editor guards its own exit.
+ * const ROUTES: Routes = [
+ *   { path: '', pathMatch: 'full', redirectTo: 'editor' },
+ *   { path: 'editor', component: EditorPage, canDeactivate: [unsavedChangesGuard] },
+ *   { path: 'preview', component: PreviewPage },
+ *   { path: 'settings', component: SettingsPage },
+ * ];
+ * ```
+ *
+ * ```html
+ * <!-- Tab ids match the child segments (default routeFor = (h) => [h.id]).
+ *      Switching a tab navigates; the guard gates leaving the editor;
+ *      back/forward and /account/settings deep links move the active tab. -->
+ * <cngx-tab-group cngxTabsRouteSync aria-label="Account">
+ *   <div cngxTab id="editor" label="Editor"></div>
+ *   <div cngxTab id="preview" label="Preview"></div>
+ *   <div cngxTab id="settings" label="Settings"></div>
+ * </cngx-tab-group>
+ *
+ * <!-- The active tab's routed component renders here. -->
+ * <router-outlet></router-outlet>
+ * ```
  *
  * @category common/tabs
  * @docsKind primary

@@ -4,10 +4,12 @@ import type { CngxTabHandle } from '../tab-group-host.token';
 import type { CngxTabPanelHost } from '../tab-panel-host.token';
 
 /**
- * Resolves the DOM elements `<cngx-tab-overflow>` observes. cngx-native
- * keys by `[id="${handle.id}-header"]`; the Material twin keys by
+ * Resolves the DOM elements `<cngx-tab-overflow>` observes. \
+ * cngx-native keys by `[id="${handle.id}-header"]`; the Material twin keys by
  * positional index into `.mat-mdc-tab` (handle ids never appear on
- * Material's rendered DOM). The molecule is variant-agnostic and
+ * Material's rendered DOM). \
+ *
+ * The molecule is variant-agnostic and
  * consumes whichever adapter
  * {@link CNGX_TAB_OVERFLOW_DOM_ADAPTER_FACTORY} provides.
  *
@@ -16,7 +18,8 @@ import type { CngxTabPanelHost } from '../tab-panel-host.token';
 export interface CngxTabOverflowDomAdapter {
   /**
    * Resolve the IntersectionObserver root - the scroll viewport the
-   * molecule observes. Returning `null` short-circuits the attach;
+   * molecule observes. \
+   * Returning `null` short-circuits the attach;
    * the molecule's rAF retry loop polls again next frame.
    */
   resolveStripRoot(panelHost: CngxTabPanelHost, host: HTMLElement): HTMLElement | null;
@@ -36,7 +39,7 @@ export interface CngxTabOverflowDomAdapter {
 export type CngxTabOverflowDomAdapterFactory = () => CngxTabOverflowDomAdapter;
 
 /**
- * Default adapter for the cngx-native `<cngx-tab-group>` strip:
+ * Default adapter for the cngx-native `<cngx-tab-group>` strip: \
  * walks `host.closest('.cngx-tabs__strip-wrapper')` for the IO root,
  * then `[id="${handle.id}-header"]` for each button.
  *
@@ -55,7 +58,7 @@ export function createCngxTabOverflowDefaultDomAdapter(): CngxTabOverflowDomAdap
 }
 
 /**
- * DI token for the overflow molecule's DOM-resolution strategy.
+ * DI token for the overflow molecule's DOM-resolution strategy. \
  * Override at directive `providers` or component `viewProviders` to
  * swap in a Material, custom-skin, or test-double adapter without
  * forking the molecule. Defaults to

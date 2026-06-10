@@ -5,19 +5,12 @@ import {
   type Provider,
 } from '@angular/core';
 
-import {
-  provideTabsI18n,
-  type CngxTabsI18nFeature,
-} from './i18n/tabs-i18n';
-import {
-  provideTabsConfig,
-  provideTabsConfigAt,
-  type CngxTabsConfigFeature,
-} from './tabs-config';
+import { provideTabsI18n, type CngxTabsI18nFeature } from './i18n/tabs-i18n';
+import { provideTabsConfig, provideTabsConfigAt, type CngxTabsConfigFeature } from './tabs-config';
 
 /**
- * Union of feature kinds the tabs aggregator accepts. Today: config
- * + i18n; future surfaces widen the union and dispatch via the
+ * Union of feature kinds the tabs aggregator accepts. \
+ * Today: config and i18n; future surfaces widen the union and dispatch via the
  * hidden `_target` discriminator.
  *
  * @category common/tabs
@@ -30,9 +23,7 @@ interface PartitionedFeatures {
   readonly i18n: CngxTabsI18nFeature[];
 }
 
-function partitionFeatures(
-  features: readonly CngxTabsFeature[],
-): PartitionedFeatures {
+function partitionFeatures(features: readonly CngxTabsFeature[]): PartitionedFeatures {
   const config: CngxTabsConfigFeature[] = [];
   const i18n: CngxTabsI18nFeature[] = [];
   for (const feat of features) {
@@ -60,12 +51,15 @@ function partitionFeatures(
 }
 
 /**
- * Unified aggregator for tabs configuration. Routes features by
- * `_target` to {@link provideTabsConfig} and {@link provideTabsI18n}.
- * Sibling to `provideCngxMenu` and `provideCngxSelect`; apply once in
- * the app providers array. Returns {@link EnvironmentProviders}; for
- * `viewProviders` use {@link provideCngxTabsAt} — opaque
- * `EnvironmentProviders` cannot live there.
+ * Unified aggregator for tabs configuration. \
+ * Routes features by `_target` to {@link provideTabsConfig} and {@link provideTabsI18n}. \
+ * Sibling to
+ * - `provideCngxMenu` and
+ * - `provideCngxSelect`;
+ * apply once in the app providers array. \
+ * Returns {@link EnvironmentProviders}; for
+ * - `viewProviders` use {@link provideCngxTabsAt} — opaque
+ * - `EnvironmentProviders` cannot live there.
  *
  * ```ts
  * bootstrapApplication(AppComponent, {
@@ -81,10 +75,11 @@ function partitionFeatures(
  * ```
  *
  * @category common/tabs
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/provide-cngx-tabs.ts
+ * @since 0.1.0
+ * @relatedTo CngxTabGroup, CngxTabsConfig, provideCngxTabsAt
  */
-export function provideCngxTabs(
-  ...features: readonly CngxTabsFeature[]
-): EnvironmentProviders {
+export function provideCngxTabs(...features: readonly CngxTabsFeature[]): EnvironmentProviders {
   const { config, i18n } = partitionFeatures(features);
   return makeEnvironmentProviders([
     provideTabsConfig(...config),
@@ -93,8 +88,8 @@ export function provideCngxTabs(
 }
 
 /**
- * Component-scoped twin of {@link provideCngxTabs}. Returns
- * `Provider[]` for `viewProviders`/`providers`; same dispatch
+ * Component-scoped twin of {@link provideCngxTabs}. \
+ * Returns `Provider[]` for `viewProviders`/`providers`; same dispatch
  * semantics, different scope.
  *
  * ```ts
@@ -109,10 +104,11 @@ export function provideCngxTabs(
  * ```
  *
  * @category common/tabs
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/provide-cngx-tabs.ts
+ * @since 0.1.0
+ * @relatedTo CngxTabGroup, CngxTabsConfig, provideCngxTabs
  */
-export function provideCngxTabsAt(
-  ...features: readonly CngxTabsFeature[]
-): Provider[] {
+export function provideCngxTabsAt(...features: readonly CngxTabsFeature[]): Provider[] {
   const { config, i18n } = partitionFeatures(features);
   return [
     ...provideTabsConfigAt(...config),

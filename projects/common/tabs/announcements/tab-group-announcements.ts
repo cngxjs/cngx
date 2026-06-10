@@ -96,7 +96,29 @@ export interface CngxTabGroupAnnouncements {
  * lazy by `linkedSignal` semantics, so the organism reads
  * `liveAnnouncement` once at construction to seed it.
  *
+ * **UX / a11y**
+ * - The live region is declarative, never imperative: `liveAnnouncement`
+ *   is a signal the polite region renders, empty between transitions so
+ *   AT stays silent on no-op ticks.
+ * - Direction is spoken on every change: a move carries a previous/next
+ *   prefix plus the landing tab; a rollback announces the safe-harbour tab
+ *   or a retry, so the outcome is never silent.
+ * - Accessible names carry position ("Tab 2 of 5: Settings") so AT does
+ *   not infer it from tablist enumeration.
+ * - Role descriptions stay distinct from the label: the tablist
+ *   `aria-roledescription` is separate from the region `aria-label`, so AT
+ *   never reads the same word twice.
+ * - `aria-label` and `aria-labelledby` stay mutually exclusive
+ *   (`resolvedAriaLabel` returns `null` when labelledby is bound).
+ * - The per-tab descriptor is ARIA-by-value: the `cngx-sr-only` span is
+ *   always in the DOM; `statusPhrase` only fills its content, keeping the
+ *   `aria-describedby` reference stable.
+ *
  * @category common/tabs/announcements
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/announcements/tab-group-announcements.ts
+ * @since 0.1.0
+ * @relatedTo CngxTabGroup, CngxLiveRegion, createTabKeyboardNav
  */
 export function createTabGroupAnnouncements(
   options: CngxTabGroupAnnouncementsOptions,

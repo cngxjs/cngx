@@ -18,11 +18,7 @@ import {
   type TemplateRef,
 } from '@angular/core';
 
-import {
-  CNGX_FOCUSABLE_SELECTOR,
-  CngxFocusRestore,
-  CngxLiveRegion,
-} from '@cngx/common/a11y';
+import { CNGX_FOCUSABLE_SELECTOR, CngxFocusRestore, CngxLiveRegion } from '@cngx/common/a11y';
 import {
   CNGX_DIRECTIVE_BY_ID_MAP_FACTORY,
   CNGX_ORGANISM_SCROLL_SYNC_FACTORY,
@@ -62,8 +58,9 @@ import {
 } from '@cngx/common/tabs';
 
 /**
- * CNGX tab-group organism. Thin shell over {@link CngxTabGroupPresenter}
- * + `CngxFocusRestore` via `hostDirectives`. The APG tablist keyboard
+ * CNGX tab-group organism. \
+ * Thin shell over {@link CngxTabGroupPresenter}
+ * and `CngxFocusRestore` via `hostDirectives`. The APG tablist keyboard
  * model (automatic activation: arrow keys move focus AND select; Home/End
  * jump to first/last; the active tab is the lone tab stop) lives in
  * {@link createTabKeyboardNav}, deriving the roving stop from the
@@ -76,6 +73,7 @@ import {
  * `role="group"` landmark.
  *
  * @playground Form error aggregation ./examples/form-errors/form-errors.component.ts
+ * @playground Routed tabs with a CanDeactivate guard ./examples/routed-outlet/routed-outlet.component.ts
  * @see {@link CngxMatTabs} for the Material `<mat-tab-group>` variant with `[cngxMatTabError]`.
  *
  * @category ui/tabs
@@ -86,12 +84,12 @@ import {
  * @relatedTo CngxTabOverflow, CngxTabGroupPresenter, CngxTab, CngxFocusRestore
  * <example-url>http://localhost:4200/#/ui/tabs/tab-commit-action/optimistic-pessimistic-commits-with-bridge-directives</example-url>
  * <example-url>http://localhost:4200/#/ui/tabs/tab-error-aggregation/per-tab-error-badges</example-url>
- * <example-url>http://localhost:4200/#/ui/tabs/tab-group-vertical/vertical-sidebar-tabs</example-url>
- * <example-url>http://localhost:4200/#/ui/tabs/tab-group/three-tab-navigation</example-url>
- * <example-url>http://localhost:4200/#/ui/tabs/tab-overflow/8-tabs-in-a-narrow-container</example-url>
- * <example-url>http://localhost:4200/#/ui/tabs/tab-slot-overrides/custom-busy-spinner-via-code-cngxtabbusyspinner-code</example-url>
- * <example-url>http://localhost:4200/#/ui/tabs/tab-slot-overrides/custom-error-badge-via-code-cngxtaberrorbadge-code</example-url>
- * <example-url>http://localhost:4200/#/ui/tabs/tab-slot-overrides/rejection-decoration-via-code-cngxtabrejectionicon-code</example-url>
+ * <example-url>http://localhost:4200/#/ui/tabs/tab-skins/all-skins-side-by-side</example-url>
+ * <example-url>http://localhost:4200/#/ui/tabs/tab-skins/contained</example-url>
+ * <example-url>http://localhost:4200/#/ui/tabs/tab-skins/line</example-url>
+ * <example-url>http://localhost:4200/#/ui/tabs/tab-skins/pill</example-url>
+ * <example-url>http://localhost:4200/#/ui/tabs/tab-skins/pill-vs-toggle-group</example-url>
+ * <example-url>http://localhost:4200/#/ui/tabs/tab-skins/vertical-skins</example-url>
  */
 @Component({
   selector: 'cngx-tab-group',
@@ -288,12 +286,8 @@ export class CngxTabGroup implements CngxTabPanelHost {
     afterRenderEffect(() => {
       // Tracked: re-probe when the active panel changes.
       this.presenter.activeId();
-      const panel = this.hostElement.querySelector<HTMLElement>(
-        '.cngx-tabs__panel:not([hidden])',
-      );
-      this.activePanelHasFocusable.set(
-        panel?.querySelector(CNGX_FOCUSABLE_SELECTOR) != null,
-      );
+      const panel = this.hostElement.querySelector<HTMLElement>('.cngx-tabs__panel:not([hidden])');
+      this.activePanelHasFocusable.set(panel?.querySelector(CNGX_FOCUSABLE_SELECTOR) != null);
     });
 
     if (isDevMode()) {
@@ -513,7 +507,6 @@ export class CngxTabGroup implements CngxTabPanelHost {
     }
     this.dismiss.handleTabKeydown(tab, event);
   }
-
 
   // CngxTabPanelHost contract - presenter owns clamping, disabled-skip,
   // commit-action gating.

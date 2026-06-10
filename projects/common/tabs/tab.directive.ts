@@ -19,27 +19,27 @@ import { CngxTabSubLabel } from './slots/tab-sub-label.directive';
 import { CNGX_TAB_GROUP_HOST } from './tab-group-host.token';
 
 /**
- * Single-tab atom. Registers with the enclosing presenter via
+ * Single-tab atom. \
+ * Registers with the enclosing presenter via
  * {@link CNGX_TAB_GROUP_HOST} on construction; deregisters via
- * {@link DestroyRef} on teardown. The presenter holds the atom's
+ * {@link DestroyRef} on teardown. \
+ * The presenter holds the atom's
  * input signals by reference, so input changes propagate without
- * re-registration. `labelTemplate` / `contentTemplate` are projected
+ * re-registration. \
+ * `labelTemplate` / `contentTemplate` are projected
  * by the organism - the atom carries no rendering logic.
  *
+ * ```html
+ * <div cngxTab [label]="'Settings'">
+ *   ... content templates here ...
+ * </div>
+ * ```
  * @category common/tabs
  * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/tab.directive.ts
  * @since 0.1.0
  * @relatedTo CngxTabGroupPresenter, CngxTabLabel, CngxTabContent, CngxTabErrorBadge
- * <example-url>http://localhost:4200/#/ui/tabs/tab-commit-action/optimistic-pessimistic-commits-with-bridge-directives</example-url>
- * <example-url>http://localhost:4200/#/ui/tabs/tab-error-aggregation/per-tab-error-badges</example-url>
- * <example-url>http://localhost:4200/#/ui/tabs/tab-group-vertical/vertical-sidebar-tabs</example-url>
- * <example-url>http://localhost:4200/#/ui/tabs/tab-group/three-tab-navigation</example-url>
- * <example-url>http://localhost:4200/#/ui/tabs/tab-overflow/8-tabs-in-a-narrow-container</example-url>
- * <example-url>http://localhost:4200/#/ui/tabs/tab-slot-overrides/custom-busy-spinner-via-code-cngxtabbusyspinner-code</example-url>
- * <example-url>http://localhost:4200/#/ui/tabs/tab-slot-overrides/custom-error-badge-via-code-cngxtaberrorbadge-code</example-url>
- * <example-url>http://localhost:4200/#/ui/tabs/tab-slot-overrides/rejection-decoration-via-code-cngxtabrejectionicon-code</example-url>
  */
 @Directive({
   selector: '[cngxTab]',

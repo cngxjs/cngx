@@ -1,21 +1,10 @@
 import { computed, type Signal, type TemplateRef } from '@angular/core';
 
 import type { CngxTabsConfig } from '../tabs-config';
-import type {
-  CngxTabAddIcon,
-} from './tab-add-icon.directive';
-import type {
-  CngxTabBusySpinner,
-  CngxTabBusySpinnerContext,
-} from './tab-busy-spinner.directive';
-import type {
-  CngxTabCloseIcon,
-  CngxTabCloseIconContext,
-} from './tab-close-icon.directive';
-import type {
-  CngxTabErrorBadge,
-  CngxTabErrorBadgeContext,
-} from './tab-error-badge.directive';
+import type { CngxTabAddIcon } from './tab-add-icon.directive';
+import type { CngxTabBusySpinner, CngxTabBusySpinnerContext } from './tab-busy-spinner.directive';
+import type { CngxTabCloseIcon, CngxTabCloseIconContext } from './tab-close-icon.directive';
+import type { CngxTabErrorBadge, CngxTabErrorBadgeContext } from './tab-error-badge.directive';
 import type { CngxTabIcon, CngxTabIconContext } from './tab-icon.directive';
 import type {
   CngxTabRejectionIcon,
@@ -23,11 +12,13 @@ import type {
 } from './tab-rejection-icon.directive';
 
 /**
- * Inputs to {@link createTabGroupTemplateBindings}. The organism owns
- * the `contentChild()` queries (NG8110 — must run in component
+ * Inputs to {@link createTabGroupTemplateBindings}. \
+ * The organism owns the `contentChild()` queries (NG8110 — must run in component
  * injection context) and the resolved {@link CngxTabsConfig}; the
- * factory runs the 3-stage cascade per slot key. Sibling shape to
- * `createStepperTemplateBindings`.
+ * factory runs the 3-stage cascade per slot key.
+ *
+ * Sibling shape to
+ * - `createStepperTemplateBindings`.
  *
  * @category common/tabs/slots
  */
@@ -52,9 +43,7 @@ export interface CngxTabGroupTemplateBindingsOptions {
  */
 export interface CngxTabGroupTemplateBindings {
   readonly errorBadge: Signal<TemplateRef<CngxTabErrorBadgeContext> | null>;
-  readonly rejectionIcon: Signal<
-    TemplateRef<CngxTabRejectionIconContext> | null
-  >;
+  readonly rejectionIcon: Signal<TemplateRef<CngxTabRejectionIconContext> | null>;
   readonly busySpinner: Signal<TemplateRef<CngxTabBusySpinnerContext> | null>;
   readonly icon: Signal<TemplateRef<CngxTabIconContext> | null>;
   readonly closeIcon: Signal<TemplateRef<CngxTabCloseIconContext> | null>;
@@ -80,38 +69,40 @@ export interface CngxTabGroupTemplateBindings {
  * Material owns the rendered tab-button chrome via its own MDC
  * template, leaving no DOM seam. See `tabs-accepted-debt §9`.
  *
+ * **UX / a11y**
+ * - The cascade is presentation-only; the accessibility contract is
+ *   invariant under it. Overriding a slot never strips its accessible
+ *   default (fallthrough to a built-in or the organism default).
+ * - The screen-reader channel (descriptor / `aria-busy` / live region)
+ *   lives on the organism, not the slot template, so swapping a decoration
+ *   template changes only the visual.
+ * - An unbound `icon` slot resolves to nothing, which is correct - the
+ *   icon is decorative and the label carries the accessible name.
+ *
  * @category common/tabs/slots
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/slots/tab-group-template-cascade.ts
+ * @since 0.1.0
+ * @relatedTo CngxTabGroup, CngxTabErrorBadge, CngxTabBusySpinner, CngxTabRejectionIcon
  */
 export function createTabGroupTemplateBindings(
   opts: CngxTabGroupTemplateBindingsOptions,
 ): CngxTabGroupTemplateBindings {
   return {
     errorBadge: computed<TemplateRef<CngxTabErrorBadgeContext> | null>(
-      () =>
-        opts.errorBadgeSlot()?.templateRef ??
-        opts.config.templates?.errorBadge ??
-        null,
+      () => opts.errorBadgeSlot()?.templateRef ?? opts.config.templates?.errorBadge ?? null,
     ),
     rejectionIcon: computed<TemplateRef<CngxTabRejectionIconContext> | null>(
-      () =>
-        opts.rejectionIconSlot()?.templateRef ??
-        opts.config.templates?.rejectionIcon ??
-        null,
+      () => opts.rejectionIconSlot()?.templateRef ?? opts.config.templates?.rejectionIcon ?? null,
     ),
     busySpinner: computed<TemplateRef<CngxTabBusySpinnerContext> | null>(
-      () =>
-        opts.busySpinnerSlot()?.templateRef ??
-        opts.config.templates?.busySpinner ??
-        null,
+      () => opts.busySpinnerSlot()?.templateRef ?? opts.config.templates?.busySpinner ?? null,
     ),
     icon: computed<TemplateRef<CngxTabIconContext> | null>(
       () => opts.iconSlot()?.templateRef ?? opts.config.templates?.icon ?? null,
     ),
     closeIcon: computed<TemplateRef<CngxTabCloseIconContext> | null>(
-      () =>
-        opts.closeIconSlot?.()?.templateRef ??
-        opts.config.templates?.closeIcon ??
-        null,
+      () => opts.closeIconSlot?.()?.templateRef ?? opts.config.templates?.closeIcon ?? null,
     ),
     addIcon: computed<TemplateRef<void> | null>(
       () => opts.addIconSlot?.()?.templateRef ?? opts.config.templates?.addIcon ?? null,
