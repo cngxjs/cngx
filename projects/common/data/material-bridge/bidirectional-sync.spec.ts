@@ -22,6 +22,7 @@ interface Harness {
   onMaterialSelectionSpy: ReturnType<typeof vi.fn>;
   injector: Injector;
   destroyRef: DestroyRef;
+  reconcile: () => void;
   install: (over?: Partial<CngxMaterialBidirectionalSyncOptions>) => void;
 }
 
@@ -48,8 +49,9 @@ function makeHarness(initialIndex = 0): Harness {
     onMaterialSelectionSpy,
     injector,
     destroyRef,
+    reconcile: () => undefined,
     install: (over) => {
-      createMaterialBidirectionalSync({
+      const handle = createMaterialBidirectionalSync({
         presenterIndex,
         readSelectedIndex: () => matIndex.value,
         writeSelectedIndex: writeSpy,
@@ -59,6 +61,7 @@ function makeHarness(initialIndex = 0): Harness {
         destroyRef,
         ...over,
       });
+      harness.reconcile = handle.reconcile;
     },
   };
   return harness;
@@ -153,52 +156,104 @@ describe('createMaterialBidirectionalSync', () => {
     expect(h.onMaterialSelectionSpy).not.toHaveBeenCalled();
   });
 
-  test('axis 4b: Material-eager-advance reconciliation — when the forwarding callback returns and the presenter held its index (pessimistic-mode shape), Material is force-written back', () => {
+  test('axis 4b: a held select leaves Material eager-advanced; the subscriber does NOT write back', () => {
     const h = makeHarness(0);
-    // Simulate the pessimistic-mode user-side click contract: Material
-    // advanced eagerly to 2 BEFORE the subscriber fires; the
-    // presenter holds activeIndex at origin (does NOT call
-    // onMaterialSelection's default presenterIndex.set).
+    // Pessimistic-mode click contract: Material advanced eagerly to 2
+    // BEFORE the subscriber fires; the presenter holds activeIndex at
+    // origin (does NOT advance via onMaterialSelection's default).
     const holdingHandler = vi.fn((_idx: number) => {
-      // Presenter intentionally holds — no presenterIndex.set call.
-      // (Mirrors `presenter.select(idx)` in pessimistic + bound
-      // commitAction: writes originIndexDuringCommit, calls
-      // beginTransition, but does NOT advance activeIndex.)
+      // Mirrors `presenter.select(idx)` in pessimistic + bound
+      // commitAction: opens the commit window but does NOT advance
+      // activeIndex until the action resolves.
     });
     h.install({ onMaterialSelection: holdingHandler });
     TestBed.flushEffects();
 
-    // Material's MDC click handler advances first; selectionChange
-    // emits 2 with matIndex.value already at 2 (Material-side state).
     h.matIndex.value = 2;
     h.selectionChange$.next(2);
 
-    // Forwarding callback ran; presenter held its index; reconciliation
-    // detects matIndex (2) !== presenterIndex (0) and force-writes 0.
-    expect(holdingHandler).toHaveBeenCalledTimes(1);
+    // The subscriber forwards but does NOT write Material back - writing
+    // mid-commit fights Material's async `selectedIndex`. Material stays
+    // eager-advanced; the host reconciles on commit settle (axis 4c).
     expect(holdingHandler).toHaveBeenCalledWith(2);
-    expect(h.writeSpy).toHaveBeenCalledTimes(1);
+    expect(h.writeSpy).not.toHaveBeenCalled();
+    expect(h.matIndex.value).toBe(2);
+    expect(h.presenterIndex()).toBe(0);
+  });
+
+  test('axis 4c: reconcile() snaps Material back to the held presenter index (rejected-commit shape)', () => {
+    const h = makeHarness(0);
+    const holdingHandler = vi.fn((_idx: number) => {});
+    h.install({ onMaterialSelection: holdingHandler });
+    TestBed.flushEffects();
+
+    h.matIndex.value = 2;
+    h.selectionChange$.next(2);
+    expect(h.writeSpy).not.toHaveBeenCalled();
+
+    // Host detects the rejected commit and reconciles: Material returns
+    // to the presenter's authoritative (held) index.
+    h.reconcile();
     expect(h.writeSpy).toHaveBeenCalledWith(0);
     expect(h.matIndex.value).toBe(0);
     expect(h.presenterIndex()).toBe(0);
   });
 
-  test('axis 4c: reconciliation no-op — when the forwarding callback advances the presenter (optimistic-mode shape), no force-write happens', () => {
+  test('axis 6: self-echo suppression — a reconcile write-echo is dropped by value even after the presenter advanced (async-commit ping-pong)', () => {
     const h = makeHarness(0);
-    // Default onMaterialSelectionSpy already advances presenterIndex
-    // to the forwarded value (mirrors optimistic-mode select).
+    const holding = vi.fn((_idx: number) => {});
+    h.install({ onMaterialSelection: holding });
+    TestBed.flushEffects();
+
+    // Click tab 1: Material eager-advanced; presenter holds at 0.
+    h.matIndex.value = 1;
+    h.selectionChange$.next(1);
+    expect(holding).toHaveBeenCalledTimes(1);
+
+    // Host reconciles to the held origin 0 (echo of 0 now queued).
+    h.reconcile();
+    expect(h.writeSpy).toHaveBeenCalledWith(0);
+    expect(h.matIndex.value).toBe(0);
+
+    // A later successful commit advances the presenter to 1; the mirror
+    // effect writes Material to 1 (echo of 1 queued).
+    h.presenterIndex.set(1);
+    TestBed.flushEffects();
+    expect(h.matIndex.value).toBe(1);
+
+    // The delayed echo of the reconcile write (0) now arrives. A plain
+    // equality guard (presenterIndex()=1 !== 0) would re-enter
+    // onMaterialSelection(0) and ping-pong against the navigation;
+    // value-based self-echo suppression drops it.
+    h.selectionChange$.next(0);
+    expect(holding).toHaveBeenCalledTimes(1);
+    expect(h.matIndex.value).toBe(1);
+  });
+
+  test('axis 6b: self-echo suppression — a coalesced echo prunes earlier un-echoed writes (no queue leak)', () => {
+    const h = makeHarness(0);
     h.install();
     TestBed.flushEffects();
 
-    h.matIndex.value = 2;
-    h.selectionChange$.next(2);
+    // Two presenter advances: the mirror writes 1 then 2 (echoes [1, 2]).
+    h.presenterIndex.set(1);
+    TestBed.flushEffects();
+    h.presenterIndex.set(2);
+    TestBed.flushEffects();
+    expect(h.writeSpy).toHaveBeenNthCalledWith(1, 1);
+    expect(h.writeSpy).toHaveBeenNthCalledWith(2, 2);
 
-    // Forwarding advanced the presenter to 2 → matches matIndex →
-    // reconciliation guard short-circuits; no extra writeSpy call.
-    expect(h.onMaterialSelectionSpy).toHaveBeenCalledTimes(1);
-    expect(h.writeSpy).not.toHaveBeenCalled();
-    expect(h.matIndex.value).toBe(2);
-    expect(h.presenterIndex()).toBe(2);
+    // Material coalesced the two writes and emits only the final echo (2).
+    // `indexOf` finds 2 at position 1 and prunes BOTH queued entries, so
+    // the echo is dropped and the queue does not leak.
+    h.selectionChange$.next(2);
+    expect(h.onMaterialSelectionSpy).not.toHaveBeenCalled();
+
+    // A later genuine user selection of 1 is forwarded - not mistaken for
+    // the long-gone queued echo of the earlier write.
+    h.matIndex.value = 1;
+    h.selectionChange$.next(1);
+    expect(h.onMaterialSelectionSpy).toHaveBeenCalledWith(1);
   });
 
   test('axis 5: re-entrancy guard — Material event during presenter→Material write does not double-fire', () => {

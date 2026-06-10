@@ -4,6 +4,7 @@ import {
   contentChild,
   DestroyRef,
   Directive,
+  effect,
   ElementRef,
   Injectable,
   inject,
@@ -12,6 +13,7 @@ import {
   Renderer2,
   type Signal,
   type TemplateRef,
+  untracked,
   ViewContainerRef,
   type ComponentRef,
 } from '@angular/core';
@@ -104,6 +106,7 @@ export class CngxMatTabsPanelHostAdapter implements CngxTabPanelHost {
  * and the delegators consumer templates call.
  *
  * @playground Form error aggregation ./examples/form-errors/form-errors.component.ts
+ * @playground Routed tabs with a CanDeactivate guard ./examples/routed-outlet/routed-outlet.component.ts
  *
  * @category ui/mat-tabs
  * @docsKind primary
@@ -286,7 +289,7 @@ export class CngxMatTabs {
     afterNextRender(() => anchorRetry.start());
     this.destroyRef.onDestroy(() => anchorRetry.cancel());
 
-    createMaterialBidirectionalSync({
+    const sync = createMaterialBidirectionalSync({
       presenterIndex: this.presenter.activeIndex,
       readSelectedIndex: () => this.matTabGroup.selectedIndex ?? 0,
       writeSelectedIndex: (i) => {
@@ -296,6 +299,21 @@ export class CngxMatTabs {
       onMaterialSelection: (i) => this.presenter.select(i),
       injector: this.injector,
       destroyRef: this.destroyRef,
+    });
+
+    // Routed (pessimistic) gate: a rejected switch holds `activeIndex` at
+    // origin, so the presenter to Material mirror never fires and Material
+    // stays eager-advanced on the refused tab. Snap it back when the
+    // commit settles into an error. `status()` always transitions through
+    // `pending` first, so the `error` edge is observed even when the
+    // router cancels a microtask after `navigate()`.
+    effect(() => {
+      const status = this.presenter.commitState.status();
+      untracked(() => {
+        if (status === 'error') {
+          sync.reconcile();
+        }
+      });
     });
   }
 

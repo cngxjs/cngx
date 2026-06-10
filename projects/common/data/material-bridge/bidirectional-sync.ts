@@ -14,9 +14,8 @@ import type { Observable } from 'rxjs';
  *
  * Material types never enter this surface. The caller maps Material's
  * own event/property shape to a host-agnostic `Signal<number>` /
- * `Observable<number>` / getter / setter at the directive boundary.
- * That keeps `@cngx/common/data` independent of `@angular/material`
- * (Sheriff Level-2 invariant).
+ * `Observable<number>` / getter / setter at the directive boundary. \
+ * That keeps `@cngx/common/data` independent of `@angular/material`.
  *
  * @category common/data/material-bridge
  */
@@ -67,6 +66,23 @@ export interface CngxMaterialBidirectionalSyncOptions {
 }
 
 /**
+ * Handle returned by {@link createMaterialBidirectionalSync}.
+ *
+ * @category common/data/material-bridge
+ */
+export interface CngxMaterialBidirectionalSyncHandle {
+  /**
+   * Force Material's selected index to the presenter's current index,
+   * routed through the factory's self-echo suppression so it never
+   * re-enters the Material→presenter path. Hosts call this from their
+   * commit lifecycle when a pessimistic commit settles WITHOUT advancing
+   * the presenter (a rejected switch), which leaves Material eager-
+   * advanced on the refused tab. A no-op when already in sync.
+   */
+  readonly reconcile: () => void;
+}
+
+/**
  * Single shared bidirectional-sync factory for cngx organisms /
  * directives that bridge a cngx presenter against a Material parent
  * (`<mat-tab-group>`, `<mat-stepper>`, etc.).
@@ -91,41 +107,39 @@ export interface CngxMaterialBidirectionalSyncOptions {
  *
  * Both sides clean up via `destroyRef`.
  *
- * **Pessimistic-commit gate (deliberately absent).** An earlier draft
- * carried a third option `commitState: CngxAsyncState<unknown>` that
- * gated the Material write while `commitState.isPending()`. The plan
- * (`global-material-bridge-and-architecture-hardening-plan` §54)
- * specified this gate "for the pessimistic flow." Implementation
- * showed the gate is redundant: cngx commit handlers already keep
- * `presenter.activeIndex` at the origin during pessimistic-pending,
- * so the equality guard alone suppresses the Material write.
- * Conversely, in optimistic mode the presenter advances IMMEDIATELY
- * (before the commit settles); a `pending`-keyed gate would suppress
- * that legitimate advance and break the optimistic UX. Dropping the
- * gate makes both modes work via the simple presenter→Material
- * mirror — same outcome as the gate version for pessimistic, and the
- * correct outcome for optimistic.
- *
  * **Material-eager-advance reconciliation.** Material's MDC click
- * handler advances `selectedIndex` synchronously *before* the
- * Material→presenter subscription forwards the click to
- * `onMaterialSelection`. When the presenter HOLDS its index
- * (pessimistic mode + bound `commitAction`, or any future contract
- * that refuses a select), the presenter→Material `effect()` does
- * NOT fire — `presenterIndex` did not change — so Material's
- * eager-advance is never reverted, and the visual diverges from the
- * cngx semantic state. Closes `tabs-accepted-debt §6` by force-
- * writing Material back to the presenter's value when the
- * forwarding callback returns and the values still diverge. Idempotent
- * with the regular presenter→Material effect (the read-equality guard
- * at the effect site suppresses a duplicate write when the presenter
- * later changes to the same value).
+ * handler advances `selectedIndex` *before* the Material→presenter
+ * subscription forwards the click. When the presenter HOLDS its index
+ * (pessimistic mode + bound `commitAction`), the subscriber does NOT
+ * write Material back: on a SUCCESSFUL commit the presenter later
+ * advances to the clicked target and Material is already there, so the
+ * mirror effect is a no-op (no flash); on a REJECTED commit the presenter
+ * never moves, leaving Material eager-advanced on the refused tab. The
+ * host detects the rejection through its own commit lifecycle and calls
+ * {@link CngxMaterialBidirectionalSyncHandle.reconcile} to snap Material
+ * back. Writing from inside the subscriber instead is unsafe: Material's
+ * `selectedIndex` read-back lags a programmatic write, so the mirror
+ * effect's equality guard reads a stale value and skips the corrective
+ * write, sticking the visual on the wrong tab.
+ *
+ * **Self-echo suppression (loop-safety).** Every programmatic
+ * `selectedIndex` write makes Material re-emit `selectionChange`. The
+ * factory records each value it writes and drops the matching echo
+ * (`indexOf` + splice, which also prunes earlier writes whose echo
+ * Material coalesced away) before any other processing. This is
+ * load-bearing for an ASYNC commit-action: Material emits the echo a
+ * microtask later, by which point the commit may have advanced
+ * `presenterIndex`, so an equality-only guard (`presenterIndex() ===
+ * idx`) would FAIL to drop the echo — it would re-enter the subscriber
+ * and ping-pong against the in-flight navigation (the demo freezes).
+ * Matching the echo by the value we wrote drops it regardless of where
+ * the presenter has moved.
  *
  * @category common/data/material-bridge
  */
 export function createMaterialBidirectionalSync(
   opts: CngxMaterialBidirectionalSyncOptions,
-): void {
+): CngxMaterialBidirectionalSyncHandle {
   const {
     presenterIndex,
     readSelectedIndex,
@@ -136,6 +150,22 @@ export function createMaterialBidirectionalSync(
     destroyRef,
   } = opts;
 
+  // Indices WE wrote into Material, awaiting their echo. Material
+  // re-emits `selectionChange` for every programmatic `selectedIndex`
+  // write, so each of our writes produces an echo that must NOT be
+  // treated as a user selection. Equality against `presenterIndex()`
+  // alone is insufficient: with an async commit-action the presenter may
+  // have advanced by the time the echo arrives, so the echo no longer
+  // equality-drops and would re-enter the subscriber. `indexOf` + splice
+  // drops the echo by the value we wrote (and prunes any earlier write
+  // whose echo Material coalesced away), regardless of where the
+  // presenter has since moved - the loop can never form.
+  const selfEchoes: number[] = [];
+  const writeMaterial = (idx: number): void => {
+    selfEchoes.push(idx);
+    writeSelectedIndex(idx);
+  };
+
   runInInjectionContext(injector, () => {
     effect(() => {
       const desired = presenterIndex();
@@ -143,33 +173,37 @@ export function createMaterialBidirectionalSync(
         if (readSelectedIndex() === desired) {
           return;
         }
-        writeSelectedIndex(desired);
+        writeMaterial(desired);
       });
     });
   });
 
-  selectionChange$
-    .pipe(takeUntilDestroyed(destroyRef))
-    .subscribe((idx) => {
-      if (presenterIndex() === idx) {
-        return;
-      }
-      onMaterialSelection(idx);
-      // Material-eager-advance reconciliation (tabs-accepted-debt §6).
-      // The forwarding callback above lets the presenter run its
-      // commit-action gate; in pessimistic mode the presenter holds
-      // `activeIndex` at origin instead of advancing. The
-      // presenter→Material effect only fires on signal CHANGE, so a
-      // hold-at-origin leaves Material at the user-clicked target —
-      // out of sync with the cngx semantic state. Detect the
-      // post-callback divergence and force a Material write so the
-      // visual snaps back to the presenter's authoritative index.
-      // Loop-safe: writing `selectedIndex` re-emits `selectionChange$`,
-      // but the early-return guard at the top of this subscriber
-      // (`presenterIndex() === idx`) drops the re-entrant emission.
-      const reconciled = presenterIndex();
-      if (readSelectedIndex() !== reconciled) {
-        writeSelectedIndex(reconciled);
-      }
-    });
+  selectionChange$.pipe(takeUntilDestroyed(destroyRef)).subscribe((idx) => {
+    // Drop our own write-echo (and any coalesced-away earlier write).
+    const echoAt = selfEchoes.indexOf(idx);
+    if (echoAt !== -1) {
+      selfEchoes.splice(0, echoAt + 1);
+      return;
+    }
+    if (presenterIndex() === idx) {
+      return;
+    }
+    onMaterialSelection(idx);
+    // No write-back here. Material eager-advanced to the clicked tab; in
+    // pessimistic mode the presenter HOLDS at origin, so on SUCCESS the
+    // presenter later advances to this target and Material is already
+    // there (no flash, no fight with Material's async `selectedIndex`).
+    // On REJECTION the presenter never moves, leaving Material diverged -
+    // the host detects that and calls `reconcile()` from its commit
+    // lifecycle. Writing here while the commit is in flight is unsafe:
+    // Material's `selectedIndex` read-back lags a programmatic write, so
+    // the mirror effect's equality guard reads a stale value and skips
+    // the corrective write (the visual sticks on the wrong tab).
+  });
+
+  return {
+    reconcile: () => {
+      writeMaterial(presenterIndex());
+    },
+  };
 }
