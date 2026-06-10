@@ -1,10 +1,12 @@
 import { Directive, inject, TemplateRef } from '@angular/core';
 
 /**
- * Structural slot directive marking a tab's secondary label template.
+ * Structural slot directive marking a tab's secondary label template. \
  * Discovered by `<cngx-tab-group>` via `contentChild` on each
  * `CngxTab` and rendered as a stacked second line under the primary
- * label. Per-tab content, mirroring `CngxTabLabel` - the convenience
+ * label. \
+ *
+ * Per-tab content, mirroring `CngxTabLabel` - the convenience
  * `[subLabel]` string input on `CngxTab` covers the plain-text case.
  *
  * ```html
@@ -15,7 +17,7 @@ import { Directive, inject, TemplateRef } from '@angular/core';
  * </div>
  * ```
  *
- * @category common/tabs
+ * @category common/tabs/slots
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/slots/tab-sub-label.directive.ts
  * @since 0.1.0
@@ -28,5 +30,9 @@ import { Directive, inject, TemplateRef } from '@angular/core';
   standalone: true,
 })
 export class CngxTabSubLabel {
+  /**
+   * The captured `<ng-template>`, projected by `<cngx-tab-group>` as the
+   * tab's secondary label line under the primary label.
+   */
   readonly templateRef = inject(TemplateRef<unknown>);
 }

@@ -45,8 +45,8 @@ export const cngxDefaultTabRoute = (handle: CngxTabHandle): unknown[] => [handle
  * - `NavigationError` (guard/resolver threw) → `false`
  *
  * Routed tabs reuse the presenter's commit lifecycle verbatim - the
- * router navigation is simply the async op. In pessimistic mode the
- * active tab follows the *resolved* route, so a cancelled guard keeps
+ * router navigation is simply the async op. \
+ * In pessimistic mode the active tab follows the *resolved* route, so a cancelled guard keeps
  * the old tab with zero extra gate machinery. The events subscription
  * is opened *before* `navigate(...)` so a synchronously-resolving
  * navigation cannot emit before the action is listening; the commit

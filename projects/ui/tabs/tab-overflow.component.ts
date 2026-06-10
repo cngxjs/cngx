@@ -107,6 +107,8 @@ function mapBoolEqual(a: ReadonlyMap<string, boolean>, b: ReadonlyMap<string, bo
  * @since 0.1.0
  * @relatedTo CngxTabGroup, CngxPopover, CngxActiveDescendant
  * <example-url>http://localhost:4200/#/ui/tabs/tab-overflow/8-tabs-in-a-narrow-container</example-url>
+ * <example-url>http://localhost:4200/#/ui/tabs/tab-overflow/all-skins-horizontal</example-url>
+ * <example-url>http://localhost:4200/#/ui/tabs/tab-overflow/all-skins-vertical</example-url>
  */
 @Component({
   selector: 'cngx-tab-overflow',

@@ -147,8 +147,8 @@ export interface CngxTabGroupHost {
 }
 
 /**
- * DI token for the tab presenter's contract. Presenter provides via
- * `useExisting`; `CngxTab` injects to register; the organism injects
+ * DI token for the tab presenter's contract. \
+ * Presenter provides via `useExisting`; `CngxTab` injects to register; the organism injects
  * to drive the APG tablist keyboard model (automatic activation via
  * `select()`, roving stop derived from `activeId`) through
  * `createTabKeyboardNav`.

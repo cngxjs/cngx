@@ -18,6 +18,8 @@ import { Directive, inject, TemplateRef } from '@angular/core';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/slots/tab-add-icon.directive.ts
  * @since 0.1.0
  * @relatedTo CngxTabCloseIcon, CngxTabGroup
+ * <example-url>http://localhost:4200/#/ui/tabs/tab-dismissable/dismissable-and-addable</example-url>
+ * <example-url>http://localhost:4200/#/ui/tabs/tab-group/addable-tabs</example-url>
  */
 @Directive({
   selector: 'ng-template[cngxTabAddIcon]',

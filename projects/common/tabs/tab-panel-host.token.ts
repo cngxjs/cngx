@@ -4,8 +4,8 @@ import type { CngxTabHandle } from './tab-group-host.token';
 
 /**
  * Read-mostly panel-surface contract for the overflow molecule, skin
- * sub-components, and future panel-level helpers. Narrower than
- * {@link CngxTabGroupHost} - register / unregister stay on the brain.
+ * sub-components, and future panel-level helpers. \
+ * Narrower than {@link CngxTabGroupHost} - register / unregister stay on the brain.
  *
  * The single write path is `selectById`; routing back through the
  * presenter preserves clamping, disabled-skip, and commit-action
@@ -29,8 +29,8 @@ export interface CngxTabPanelHost {
 }
 
 /**
- * DI token the organism provides via `useExisting`. The overflow
- * molecule and consumer-authored skin sub-components inject this
+ * DI token the organism provides via `useExisting`.\
+ * The overflow molecule and consumer-authored skin sub-components inject this
  * instead of the concrete component class.
  *
  * @category common/tabs

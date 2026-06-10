@@ -37,8 +37,6 @@ export interface CngxTabBusySpinnerContext {
  * @since 0.1.0
  * @relatedTo CngxTabErrorBadge, CngxTabRejectionIcon, CngxTab
  * <example-url>http://localhost:4200/#/ui/tabs/tab-slot-overrides/custom-busy-spinner-via-code-cngxtabbusyspinner-code</example-url>
- * <example-url>http://localhost:4200/#/ui/tabs/tab-slot-overrides/custom-error-badge-via-code-cngxtaberrorbadge-code</example-url>
- * <example-url>http://localhost:4200/#/ui/tabs/tab-slot-overrides/rejection-decoration-via-code-cngxtabrejectionicon-code</example-url>
  */
 @Directive({
   selector: 'ng-template[cngxTabBusySpinner]',

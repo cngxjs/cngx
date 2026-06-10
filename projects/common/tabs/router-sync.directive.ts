@@ -15,16 +15,30 @@ import { warnTabsRouterAbsent } from './router-absent-warning';
 import { CNGX_TAB_GROUP_HOST } from './tab-group-host.token';
 
 /**
- * URL deep-linking for tab groups. Bidirectional sync between
- * `activeId` and a URL fragment or query-param. Opt-in via
+ * URL deep-linking for tab groups. \
+ * Bidirectional sync between `activeId` and a URL fragment or query-param. Opt-in via
  * `[cngxTabsFragmentSync]` on the presenter element.
  *
  * - `mode = 'fragment'` (default) → `#tab=settings`
  * - `mode = 'queryParam'` with `paramName = 'tab'` → `?tab=settings`
  *
  * `Router` is optional - without it the directive logs a dev warning
- * via `afterNextRender` and becomes a no-op. Every `router.navigate`
- * and `host.selectById` inside the effects sits in `untracked()`.
+ * via `afterNextRender` and becomes a no-op. \
+ * Every `router.navigate` and `host.selectById` inside the effects sits in `untracked()`.
+ *
+ * ```html
+ * <!-- Default fragment mode: the active tab reflects to #tab=<id>, and a
+ *      deep link like /account#tab=settings selects that tab on load. -->
+ * <cngx-tab-group cngxTabsFragmentSync>
+ *   <div cngxTab id="overview" label="Overview"></div>
+ *   <div cngxTab id="settings" label="Settings"></div>
+ * </cngx-tab-group>
+ *
+ * <!-- Query-param mode with a custom name -> ?section=settings -->
+ * <cngx-tab-group cngxTabsFragmentSync mode="queryParam" paramName="section">
+ *   <!-- ...tabs... -->
+ * </cngx-tab-group>
+ * ```
  *
  * @category common/tabs
  * @docsKind primary

@@ -16,7 +16,7 @@
     "disableInternal": true,
     "disableRoutesGraph": true,
     "disableDomTree": true,
-    "disableGraph": true,
+    "disableGraph": false,
     "disableDependenciesTab": true,
     "disableDependencies": true,
     "disableProperties": true,

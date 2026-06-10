@@ -29,9 +29,9 @@ import {
 } from './tab-group-host.token';
 
 /**
- * Async-commit action shape for tab transitions. Receives origin
- * and target indices; resolves `true` to commit, `false` to refuse.
- * `Observable | Promise | sync` union mirrors the rest of the cngx
+ * Async-commit action shape for tab transitions. \
+ * Receives origin and target indices; resolves `true` to commit, `false` to refuse.
+ * `Observable | Promise | sync` union mirrors the rest of the CNGX
  * commit-action family.
  *
  * @category common/tabs
@@ -42,15 +42,15 @@ export type CngxTabsCommitAction = (
 ) => boolean | Promise<boolean> | Observable<boolean>;
 
 /**
- * Tab-group presenter - brain of every cngx tab flow. Owns the
- * active-index model, the tab registry, orientation, loop policy,
- * and the commit-controller lifecycle. Provides
- * {@link CNGX_TAB_GROUP_HOST} for atoms and {@link CNGX_STATEFUL}
+ * Tab-group presenter - brain of every CNGX tab flow. \
+ * Owns the active-index model, the tab registry, orientation, loop policy,
+ * and the commit-controller lifecycle. \
+ * Provides {@link CNGX_TAB_GROUP_HOST} for atoms and {@link CNGX_STATEFUL}
  * so `<cngx-toast-on />` / `<cngx-banner-on />` compose without
  * `[state]` wiring.
  *
- * **Layer:** `@cngx/common/tabs` (Level 2). Directive-only -
- * organisms compose via `hostDirectives`, consumers attach
+ * **Layer:** `@cngx/common/tabs`. \
+ * Directive-only - organisms compose via `hostDirectives`, consumers attach
  * `[cngxTabGroup]` directly.
  *
  * @category common/tabs
@@ -76,8 +76,8 @@ export class CngxTabGroupPresenter implements CngxTabGroupHost {
   readonly loop = input<boolean>(true);
 
   /**
-   * Async-commit action gating the transition. When non-null,
-   * `select(...)` routes through {@link CngxTabsCommitHandler}; the
+   * Async-commit action gating the transition.
+   * When non-null, `select(...)` routes through {@link CngxTabsCommitHandler}; the
    * action's resolution decides whether the change lands. Supersede
    * semantics come from the commit-controller - a rapid second
    * `select(...)` cancels the in-flight runner.

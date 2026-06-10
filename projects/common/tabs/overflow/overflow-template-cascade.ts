@@ -22,7 +22,7 @@ import type {
 } from './tab-overflow-trigger.directive';
 
 /**
- * DOM `id` for a hidden-tab option row in the overflow listbox.
+ * DOM `id` for a hidden-tab option row in the overflow listbox. \
  * Stable across CD passes so `aria-activedescendant` resolves to
  * the same `<li>`. `-overflow-option` suffix avoids collision with
  * the strip-button (`-header`) and per-tab descriptor (`-desc`).
@@ -34,8 +34,8 @@ export function tabOverflowOptionId(tab: CngxTabHandle): string {
 }
 
 /**
- * Inputs to {@link createTabOverflowTemplateBindings}. The molecule
- * runs the `contentChild()` queries (injection-context-only) and
+ * Inputs to {@link createTabOverflowTemplateBindings}. \
+ * The molecule runs the `contentChild()` queries (injection-context-only) and
  * supplies the reactive sources; the factory owns cascade
  * resolution and per-context builders.
  *
@@ -70,12 +70,13 @@ export interface CngxTabOverflowTemplateBindings {
   readonly buildItemContext: (tab: CngxTabHandle, index: number) => CngxTabOverflowItemContext;
   /**
    * `ActiveDescendantItem[]` projection of `hiddenTabs()` for
-   * `CngxActiveDescendant.items`. Each entry's `id` matches the
+   * `CngxActiveDescendant.items`. \
+   * Each entry's `id` matches the
    * row's `<li>` (see {@link tabOverflowOptionId}); `value` carries
    * the tab handle so AD's `(activated)` payload casts back without
    * a registry lookup. Structural equal guards against no-op IO
-   * cascades. Mutable array shape because
-   * `CngxActiveDescendant.items` declares the input that way; the
+   * cascades. \
+   * Mutable array shape because `CngxActiveDescendant.items` declares the input that way; the
    * array is rebuilt each computed run so callers can't mutate the
    * live source.
    */
@@ -122,9 +123,9 @@ function adItemsEqual(a: ActiveDescendantItem[], b: ActiveDescendantItem[]): boo
 
 /**
  * Wires the 3-stage template cascade for the overflow molecule's
- * two visible regions: per-instance directive >
- * `CNGX_TABS_CONFIG.templates.overflow*` > built-in markup
- * (template-outlet returns `null`).
+ * two visible regions: \
+ * per-instance directive > `CNGX_TABS_CONFIG.templates.overflow*` > built-in markup
+ * (template-outlet returns `null`). \
  *
  * Pure - no DI, no side effects, no destroy hooks. Safe to call
  * from a component's field-init block. Mirrors the select-family
@@ -149,7 +150,7 @@ export function createTabOverflowTemplateBindings(
     },
     { equal: triggerContextEqual },
   );
-  // Per-row context cache - stable context + closure-captured `pick`
+  // Per-row context cache - stable context and closure-captured `pick`
   // per `tab` so `ngTemplateOutlet` doesn't re-bind the embedded view
   // unless `index` or `disabled` actually changed. WeakMap so
   // detached handles GC. Mirrors `CngxTreeSelectPanel.nodeContext`.
@@ -195,16 +196,28 @@ export function createTabOverflowTemplateBindings(
 }
 
 /**
- * Resets the AD highlight on popover close. Keyboard-open paths
+ * Resets the AD highlight on popover close. \
+ * Keyboard-open paths
  * (ArrowDown / End / typeahead on the closed trigger) set
  * `activeIndex` via AD's own keydown listener before opening -
  * unaffected. Mouse-open leaves `activeIndex === -1` so the popover
- * renders unhighlighted. Without this reset, the next open would
+ * renders unhighlighted. \
+ * Without this reset, the next open would
  * inherit a stale index from the prior keyboard session.
  *
- * Must run in injection context.
+ * **Must run in injection context.**
+ *
+ * ### UX / a11y
+ * - Closing the popover resets the highlight, so a keyboard session never
+ *   leaves a stale `aria-activedescendant` for the next open.
+ * - Each row has a stable descendant id (`tabOverflowOptionId`), so the SR
+ *   focus reference never dangles across re-renders.
+ * - Highlight is virtual focus, not DOM focus: keyboard nav moves
+ *   `aria-activedescendant` while real focus stays on the trigger (APG
+ *   menu-button); the rows are never tab stops.
  *
  * @category common/tabs/overflow
+ * @wcag AA
  */
 export function createOverflowPopoverHighlightSync(
   popover: Signal<CngxPopover>,
@@ -231,12 +244,13 @@ export type CngxOverflowPopoverHighlightSyncFactory = (
 ) => void;
 
 /**
- * DI token for the overflow popover highlight-sync policy.
+ * DI token for the overflow popover highlight-sync policy. \
  * Default {@link createOverflowPopoverHighlightSync}. Override via
  * `providers` / `viewProviders` for last-index preservation,
- * telemetry on close, custom highlight rules. Symmetric to
- * `CNGX_TAB_OVERFLOW_DOM_ADAPTER_FACTORY` and
- * `CNGX_TABS_COMMIT_HANDLER_FACTORY`.
+ * telemetry on close, custom highlight rules. \
+ * Symmetric to
+ * - `CNGX_TAB_OVERFLOW_DOM_ADAPTER_FACTORY` and
+ * - `CNGX_TABS_COMMIT_HANDLER_FACTORY`.
  *
  * @category common/tabs/overflow
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/overflow/overflow-template-cascade.ts

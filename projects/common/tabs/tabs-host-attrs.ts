@@ -40,35 +40,29 @@ export interface CngxTabsHostAttrs {
 }
 
 /**
- * Level-2 helper resolving the host-attribute cascades for
+ * Helper resolving the host-attribute cascades for
  * `<cngx-tab-group>` (skin / iconLayout). Keeps the organism class
  * under the LOC guard while making the cascade pattern reusable. Sibling
  * shape to `createStepperHostAttrs`; the resolved-type unions differ per
  * family, so the helpers are siblings, not shared code.
  *
- * Each computed honors Pillar 1 (Ableitung statt Verwaltung):
+ * Each computed honors the cascade:
  * per-instance input wins over root config wins over library default. No
  * manual sync. The library defaults (`'line'` / `'start'`) live here,
  * not in `TABS_CONFIG_DEFAULTS` - mirroring the stepper.
  *
  * @internal
  */
-export function createTabsHostAttrs(
-  inputs: CngxTabsHostAttrsInputs,
-): CngxTabsHostAttrs {
+export function createTabsHostAttrs(inputs: CngxTabsHostAttrsInputs): CngxTabsHostAttrs {
   return {
-    resolvedSkin: computed<CngxTabsSkin>(
-      () => inputs.skin() ?? inputs.config.skin ?? 'line',
-    ),
+    resolvedSkin: computed<CngxTabsSkin>(() => inputs.skin() ?? inputs.config.skin ?? 'line'),
     resolvedIconLayout: computed<CngxTabIconLayout>(
       () => inputs.iconLayout() ?? inputs.config.iconLayout ?? 'start',
     ),
     resolvedPanelMode: computed<CngxTabsPanelMode>(
       () => inputs.panelMode() ?? inputs.config.panelMode ?? 'eager',
     ),
-    resolvedFitted: computed<boolean>(
-      () => inputs.fitted() ?? inputs.config.fitted ?? false,
-    ),
+    resolvedFitted: computed<boolean>(() => inputs.fitted() ?? inputs.config.fitted ?? false),
     resolvedTabAlign: computed<CngxTabAlign>(
       () => inputs.tabAlign() ?? inputs.config.tabAlign ?? 'start',
     ),

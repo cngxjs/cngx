@@ -6,15 +6,16 @@ import { type CngxCommitController, type CngxCommitHandle } from '@cngx/common/d
 import type { CngxTabsCommitAction } from './presenter.directive';
 
 /**
- * Adapts the shared commit-controller to the tabs action shape. The
- * presenter delegates to {@link beginTransition} when `commitAction`
+ * Adapts the shared commit-controller to the tabs action shape. \
+ * The presenter delegates to {@link beginTransition} when `commitAction`
  * is bound.
  *
  * @category common/tabs
  */
 export interface CngxTabsCommitHandler {
   /**
-   * Start a tab-transition commit. Returns synchronously - read the
+   * Start a tab-transition commit. \
+   * Returns synchronously - read the
    * controller's `state` signal for in-flight status. `onResolve`
    * fires once with `accept = true` on success or `false` on
    * rejection; skipped on supersede.
@@ -151,10 +152,11 @@ export type CngxTabsCommitHandlerFactory = (
 ) => CngxTabsCommitHandler;
 
 /**
- * DI token for the commit-handler factory. Defaults to
- * {@link createTabsCommitHandler}. Sibling to
- * `CNGX_ARRAY_COMMIT_HANDLER_FACTORY` (select) and
- * `CNGX_STEPPER_COMMIT_HANDLER_FACTORY`.
+ * DI token for the commit-handler factory. \
+ * Defaults to {@link createTabsCommitHandler}. \
+ * Sibling to
+ * - `CNGX_ARRAY_COMMIT_HANDLER_FACTORY` (select) and
+ * - `CNGX_STEPPER_COMMIT_HANDLER_FACTORY`.
  *
  * @category common/tabs
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/commit-handler.ts
