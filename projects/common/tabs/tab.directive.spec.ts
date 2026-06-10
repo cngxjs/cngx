@@ -5,8 +5,10 @@ import { provideZonelessChangeDetection } from '@angular/core';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { CngxTabGroupPresenter } from './presenter.directive';
+import type { CngxTabHandle } from './tab-group-host.token';
 import { CngxTab } from './tab.directive';
 import { CngxTabLabel } from './tab-label.directive';
+import { CngxTabSubLabel } from './slots/tab-sub-label.directive';
 import { CngxTabContent } from './tab-content.directive';
 
 @Component({
@@ -96,6 +98,26 @@ describe('CngxTab', () => {
     expect(ids[0]).not.toBe(ids[1]);
   });
 
+  it('a dynamically-bound [id] reaches the registered handle (not the auto-id)', () => {
+    @Component({
+      standalone: true,
+      selector: 'bound-id-host',
+      imports: [CngxTab],
+      hostDirectives: [CngxTabGroupPresenter],
+      template: `
+        <div cngxTab [id]="dynId()" [label]="'A'"></div>
+        <div cngxTab id="static-b" [label]="'B'"></div>
+      `,
+    })
+    class BoundIdHost {
+      readonly dynId = signal('doc-1');
+    }
+    const fixture = TestBed.createComponent(BoundIdHost);
+    fixture.detectChanges();
+    const presenter = fixture.debugElement.injector.get(CngxTabGroupPresenter);
+    expect(presenter.tabs().map((t) => t.id)).toEqual(['doc-1', 'static-b']);
+  });
+
   it('throws a clear dev-mode error when no presenter is on the ancestor', () => {
     expect(() => {
       const fixture = TestBed.createComponent(OrphanTab);
@@ -111,5 +133,140 @@ describe('CngxTab', () => {
     fixture.componentInstance.aDisabled.set(true);
     fixture.detectChanges();
     expect(presenter.tabs()[0].disabled()).toBe(true);
+  });
+
+  it('[subLabel] flows through to the registered handle', () => {
+    @Component({
+      standalone: true,
+      selector: 'sub-label-host',
+      imports: [CngxTab],
+      hostDirectives: [CngxTabGroupPresenter],
+      template: `<div cngxTab [label]="'A'" [subLabel]="detail()"></div>`,
+    })
+    class SubLabelHost {
+      readonly detail = signal<string | undefined>('45 saved');
+    }
+    const fixture = TestBed.createComponent(SubLabelHost);
+    fixture.detectChanges();
+    const presenter = fixture.debugElement.injector.get(CngxTabGroupPresenter);
+    expect(presenter.tabs()[0].subLabel()).toBe('45 saved');
+    fixture.componentInstance.detail.set('46 saved');
+    fixture.detectChanges();
+    expect(presenter.tabs()[0].subLabel()).toBe('46 saved');
+  });
+
+  describe('direct [error] input', () => {
+    @Component({
+      standalone: true,
+      selector: 'error-host',
+      imports: [CngxTab],
+      hostDirectives: [CngxTabGroupPresenter],
+      template: `<div cngxTab [label]="'A'" [error]="error()"></div>`,
+    })
+    class ErrorHost {
+      readonly error = signal<string | boolean>(false);
+    }
+
+    function setup(): {
+      fixture: ReturnType<typeof TestBed.createComponent<ErrorHost>>;
+      handle: () => CngxTabHandle;
+    } {
+      const fixture = TestBed.createComponent(ErrorHost);
+      fixture.detectChanges();
+      const presenter = fixture.debugElement.injector.get(CngxTabGroupPresenter);
+      return { fixture, handle: () => presenter.tabs()[0] };
+    }
+
+    it('defaults to no error and no message', () => {
+      const { handle } = setup();
+      expect(handle().hasError()).toBe(false);
+      expect(handle().errorMessage()).toBeUndefined();
+    });
+
+    it('[error]="true" sets hasError with no message', () => {
+      const { fixture, handle } = setup();
+      fixture.componentInstance.error.set(true);
+      fixture.detectChanges();
+      expect(handle().hasError()).toBe(true);
+      expect(handle().errorMessage()).toBeUndefined();
+    });
+
+    it("[error]=\"'msg'\" sets hasError and exposes the message", () => {
+      const { fixture, handle } = setup();
+      fixture.componentInstance.error.set('Required fields missing');
+      fixture.detectChanges();
+      expect(handle().hasError()).toBe(true);
+      expect(handle().errorMessage()).toBe('Required fields missing');
+    });
+
+    it('[error]="false" / "" clears hasError and message', () => {
+      const { fixture, handle } = setup();
+      fixture.componentInstance.error.set('Required fields missing');
+      fixture.detectChanges();
+      expect(handle().hasError()).toBe(true);
+      fixture.componentInstance.error.set('');
+      fixture.detectChanges();
+      expect(handle().hasError()).toBe(false);
+      expect(handle().errorMessage()).toBeUndefined();
+      fixture.componentInstance.error.set(false);
+      fixture.detectChanges();
+      expect(handle().hasError()).toBe(false);
+    });
+
+    it('hasError folds the aggregator independently of the direct flag', () => {
+      @Component({
+        standalone: true,
+        selector: 'agg-host',
+        imports: [CngxTab],
+        hostDirectives: [CngxTabGroupPresenter],
+        template: `<div cngxTab [label]="'A'" [errorAggregator]="agg"></div>`,
+      })
+      class AggHost {
+        readonly aggHasError = signal(false);
+        readonly agg = {
+          hasError: this.aggHasError,
+          shouldShow: this.aggHasError,
+          announcement: signal(''),
+          errorCount: signal(0),
+          errorLabels: signal([] as readonly string[]),
+          activeErrors: signal([] as readonly string[]),
+          addSource: () => {},
+          removeSource: () => {},
+        };
+      }
+      const fixture = TestBed.createComponent(AggHost);
+      fixture.detectChanges();
+      const presenter = fixture.debugElement.injector.get(CngxTabGroupPresenter);
+      const handle = presenter.tabs()[0];
+      expect(handle.hasError()).toBe(false);
+      fixture.componentInstance.aggHasError.set(true);
+      fixture.detectChanges();
+      expect(handle.hasError()).toBe(true);
+      expect(handle.errorMessage()).toBeUndefined();
+    });
+  });
+
+  it('subLabel defaults to undefined and discovers a projected cngxTabSubLabel slot', () => {
+    @Component({
+      standalone: true,
+      selector: 'sub-label-slot-host',
+      imports: [CngxTab, CngxTabSubLabel],
+      hostDirectives: [CngxTabGroupPresenter],
+      template: `
+        <div cngxTab [label]="'A'">
+          <ng-template cngxTabSubLabel>detail</ng-template>
+        </div>
+        <div cngxTab [label]="'B'"></div>
+      `,
+    })
+    class SubLabelSlotHost {}
+    const fixture = TestBed.createComponent(SubLabelSlotHost);
+    fixture.detectChanges();
+    const tabs = fixture.debugElement.queryAll(By.directive(CngxTab));
+    const tabA = tabs[0].injector.get(CngxTab);
+    const tabB = tabs[1].injector.get(CngxTab);
+    expect(tabA.subLabelTemplate()).toBeTruthy();
+    expect(tabB.subLabelTemplate()).toBeFalsy();
+    expect(tabB.subLabel()).toBeUndefined();
   });
 });

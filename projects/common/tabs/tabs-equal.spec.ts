@@ -8,13 +8,17 @@ import type { CngxTabHandle } from './tab-group-host.token';
 
 function handle(
   id: string,
-  opts: { label?: string; disabled?: boolean } = {},
+  opts: { label?: string; subLabel?: string; disabled?: boolean; closable?: boolean } = {},
 ): CngxTabHandle {
   return {
     id,
     label: signal(opts.label ?? id),
+    subLabel: signal(opts.subLabel),
     disabled: signal(opts.disabled ?? false),
     errorAggregator: signal(undefined),
+    hasError: signal(false),
+    errorMessage: signal(undefined),
+    closable: signal(opts.closable),
   };
 }
 
@@ -54,6 +58,24 @@ describe('tabsEqual', () => {
     expect(tabsEqual(a, b)).toBe(false);
   });
 
+  it('returns false when one entry sub-label text differs', () => {
+    const a = [handle('a', { label: 'A', subLabel: '45' })];
+    const b = [handle('a', { label: 'A', subLabel: '46' })];
+    expect(tabsEqual(a, b)).toBe(false);
+  });
+
+  it('returns false when a sub-label is added to an otherwise identical entry', () => {
+    const a = [handle('a', { label: 'A' })];
+    const b = [handle('a', { label: 'A', subLabel: '45' })];
+    expect(tabsEqual(a, b)).toBe(false);
+  });
+
+  it('returns false when one entry closable flag differs', () => {
+    const a = [handle('a', { closable: false })];
+    const b = [handle('a', { closable: true })];
+    expect(tabsEqual(a, b)).toBe(false);
+  });
+
   it('does NOT compare errorAggregator references — equal returns true even when aggregators differ', () => {
     const stubAggregator = (hasErrorValue: boolean): CngxErrorAggregatorContract => ({
       hasError: signal(hasErrorValue),
@@ -69,16 +91,24 @@ describe('tabsEqual', () => {
       {
         id: 'a',
         label: signal('A'),
+        subLabel: signal(undefined),
         disabled: signal(false),
         errorAggregator: signal(stubAggregator(false)),
+        hasError: signal(false),
+        errorMessage: signal(undefined),
+        closable: signal(undefined),
       },
     ];
     const b: CngxTabHandle[] = [
       {
         id: 'a',
         label: signal('A'),
+        subLabel: signal(undefined),
         disabled: signal(false),
         errorAggregator: signal(stubAggregator(true)),
+        hasError: signal(true),
+        errorMessage: signal(undefined),
+        closable: signal(undefined),
       },
     ];
     expect(tabsEqual(a, b)).toBe(true);

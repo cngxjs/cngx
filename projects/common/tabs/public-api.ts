@@ -7,6 +7,7 @@ export {
 } from './presenter.directive';
 export {
   CNGX_TAB_GROUP_HOST,
+  type CngxTabCloseEvent,
   type CngxTabGroupHost,
   type CngxTabHandle,
 } from './tab-group-host.token';
@@ -16,8 +17,18 @@ export {
 } from './tab-panel-host.token';
 export { CngxTab } from './tab.directive';
 export { CngxTabLabel } from './tab-label.directive';
+export { CngxTabSubLabel } from './slots/tab-sub-label.directive';
 export { CngxTabContent } from './tab-content.directive';
 export { CngxTabsFragmentSync } from './router-sync.directive';
+export { CngxTabsRouteSync } from './route-sync.directive';
+export {
+  createTabRouterCommit,
+  type CngxTabRouterCommitOptions,
+} from './router-commit';
+export {
+  CNGX_TABS_COMMIT_ACTION,
+  type CngxTabsCommitActionSource,
+} from './commit-action.token';
 export {
   CNGX_TABS_CONFIG,
   injectTabsConfig,
@@ -26,6 +37,7 @@ export {
   withDefaultOrientation,
   withTabBusySpinnerTemplate,
   withTabErrorBadgeTemplate,
+  withTabIconTemplate,
   withTabOverflowItemTemplate,
   withTabOverflowMaxDeferMs,
   withTabOverflowStabilizeMs,
@@ -34,15 +46,40 @@ export {
   withTabsAriaLabels,
   withTabsCommitMode,
   withTabsDefaultOrientation,
+  withTabAddIconTemplate,
+  withTabCloseIconTemplate,
+  withTabsAddable,
+  withTabsAlign,
+  withTabsClosable,
   withTabsFallbackLabels,
+  withTabsFitted,
+  withTabsIconLayout,
+  withTabsPanelMode,
+  withTabsFragmentSync,
   withTabsRouterSync,
   withTabsRovingLoop,
+  withTabsSkin,
+  type CngxTabAlign,
+  type CngxTabIconLayout,
   type CngxTabsAriaLabels,
   type CngxTabsConfig,
   type CngxTabsConfigFeature,
   type CngxTabsFallbackLabels,
+  type CngxTabsPanelMode,
+  type CngxTabsSkin,
   type CngxTabsTemplates,
 } from './tabs-config';
+// This block ships `@internal` factory helpers. They are exported
+// through `public-api.ts` so the sibling `@cngx/ui/tabs` organism can
+// consume them across the secondary-entry boundary (ng-packagr has no
+// cross-entry private surface). `disableInternal: true` hides them from
+// generated docs; the LLM-md export honours the same tag. Precedent:
+// `CNGX_TABS_GLYPHS`, `tabsEqual`.
+export {
+  createTabsHostAttrs,
+  type CngxTabsHostAttrs,
+  type CngxTabsHostAttrsInputs,
+} from './tabs-host-attrs';
 export {
   provideCngxTabs,
   provideCngxTabsAt,
@@ -97,6 +134,25 @@ export {
   CngxTabBusySpinner,
   type CngxTabBusySpinnerContext,
 } from './slots/tab-busy-spinner.directive';
+export {
+  CngxTabIcon,
+  type CngxTabIconContext,
+} from './slots/tab-icon.directive';
+export {
+  CngxTabCloseIcon,
+  type CngxTabCloseIconContext,
+} from './slots/tab-close-icon.directive';
+export { CngxTabAddIcon } from './slots/tab-add-icon.directive';
+export {
+  createTabDismissals,
+  type CngxTabDismissals,
+  type CngxTabDismissalsOptions,
+} from './dismissals/tab-dismissals';
+export {
+  createTabKeyboardNav,
+  type CngxTabKeyboardNav,
+  type CngxTabKeyboardNavOptions,
+} from './keyboard/tab-keyboard-nav';
 export {
   createTabGroupTemplateBindings,
   type CngxTabGroupTemplateBindings,

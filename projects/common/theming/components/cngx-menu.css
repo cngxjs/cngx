@@ -186,7 +186,7 @@
    * @group Layout
    */
   @property --cngx-menu-item-icon-min-width {
-    syntax: '<length>';
+    syntax: '*';
     inherits: false;
     initial-value: 1.25rem;
   }

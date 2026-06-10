@@ -1,7 +1,6 @@
 // Single-consumer factory — staged under family-uniformity
-// (tabs-accepted-debt §9, alongside `createTabGroupTemplateBindings`
-// and `CngxMatTabAggregatorContent`). Re-eval on second consumer or
-// sibling debt closure.
+// (`createTabGroupTemplateBindings` and `CngxMatTabAggregatorContent`).
+// Re-eval on second consumer or sibling debt closure.
 import { computed, linkedSignal, type Signal } from '@angular/core';
 
 import type { CngxTabsConfig } from '../tabs-config';
@@ -71,11 +70,13 @@ export interface CngxTabGroupAnnouncements {
   readonly liveAnnouncement: Signal<string>;
 
   /**
-   * SR descriptor phrase for a tab's `cngx-sr-only` span.
-   * `aggregator.announcement()` when bound + revealed; falls back
-   * to `i18n.tabHasErrors(errorCount)` on empty; empty string when
-   * nothing wants reveal. The span itself is always rendered (cngx
-   * ARIA-by-value rule); this returns its content.
+   * SR descriptor phrase for a tab's `cngx-sr-only` span. Gated on the
+   * folded `tab.hasError()` so a direct `[error]` tab announces without
+   * an aggregator. Resolution: `aggregator.announcement()` →
+   * `tab.errorMessage()` (the direct-channel message) →
+   * `i18n.tabHasErrors(errorCount)`. Empty string when the tab has no
+   * error. The span itself is always rendered (cngx ARIA-by-value
+   * rule); this returns its content.
    */
   statusPhrase(tab: CngxTabHandle): string;
 
@@ -168,20 +169,27 @@ export function createTabGroupAnnouncements(
   });
 
   function statusPhrase(tab: CngxTabHandle): string {
-    const aggregator = tab.errorAggregator();
-    if (!aggregator?.shouldShow()) {
+    if (!tab.hasError()) {
       return '';
     }
-    const announcement = aggregator.announcement();
+    const aggregator = tab.errorAggregator();
+    const announcement = aggregator?.announcement();
     if (announcement) {
       return announcement;
     }
-    return i18n.tabHasErrors(aggregator.errorCount());
+    const directMessage = tab.errorMessage();
+    if (directMessage) {
+      return directMessage;
+    }
+    return i18n.tabHasErrors(aggregator?.errorCount() ?? 1);
   }
 
   function tabAriaLabel(tab: CngxTabHandle, position: number): string {
     const tabs = presenter.tabs();
-    return i18n.selectedTab(tab.label() ?? '', position, tabs.length);
+    const label = tab.label() ?? '';
+    const detail = tab.subLabel();
+    const labelPart = detail ? i18n.tabLabelWithDetail(label, detail) : label;
+    return i18n.selectedTab(labelPart, position, tabs.length);
   }
 
   // Eager seed — `linkedSignal` is lazy and the success arm doesn't

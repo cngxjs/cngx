@@ -1,5 +1,7 @@
 import { NgTemplateOutlet } from '@angular/common';
 import {
+  afterNextRender,
+  afterRenderEffect,
   ChangeDetectionStrategy,
   Component,
   ViewEncapsulation,
@@ -9,15 +11,17 @@ import {
   inject,
   Injector,
   input,
+  isDevMode,
+  linkedSignal,
+  signal,
   type Signal,
   type TemplateRef,
 } from '@angular/core';
 
 import {
+  CNGX_FOCUSABLE_SELECTOR,
   CngxFocusRestore,
   CngxLiveRegion,
-  CngxRovingItem,
-  CngxRovingTabindex,
 } from '@cngx/common/a11y';
 import {
   CNGX_DIRECTIVE_BY_ID_MAP_FACTORY,
@@ -26,27 +30,45 @@ import {
   CNGX_TAB_GROUP_HOST,
   CNGX_TAB_PANEL_HOST,
   CngxTab,
+  CngxTabAddIcon,
   CngxTabBusySpinner,
+  CngxTabCloseIcon,
   CngxTabErrorBadge,
   CngxTabGroupPresenter,
+  CngxTabIcon,
   CngxTabRejectionIcon,
+  createTabDismissals,
   createTabGroupAnnouncements,
   createTabGroupTemplateBindings,
+  createTabKeyboardNav,
+  createTabsHostAttrs,
   injectTabsConfig,
   injectTabsI18n,
   type CngxTabBusySpinnerContext,
+  type CngxTabDismissals,
+  type CngxTabKeyboardNav,
   type CngxTabErrorBadgeContext,
   type CngxTabGroupAnnouncements,
   type CngxTabGroupTemplateBindings,
   type CngxTabHandle,
+  type CngxTabAlign,
+  type CngxTabIconContext,
+  type CngxTabIconLayout,
   type CngxTabPanelHost,
   type CngxTabRejectionIconContext,
+  type CngxTabsHostAttrs,
+  type CngxTabsPanelMode,
+  type CngxTabsSkin,
 } from '@cngx/common/tabs';
 
 /**
  * CNGX tab-group organism. Thin shell over {@link CngxTabGroupPresenter}
- * + `CngxRovingTabindex` + `CngxFocusRestore` via `hostDirectives`.
- * Material variant lives at `[cngxMatTabs]` in `@cngx/ui/mat-tabs`.
+ * + `CngxFocusRestore` via `hostDirectives`. The APG tablist keyboard
+ * model (automatic activation: arrow keys move focus AND select; Home/End
+ * jump to first/last; the active tab is the lone tab stop) lives in
+ * {@link createTabKeyboardNav}, deriving the roving stop from the
+ * presenter's `activeId` rather than a competing index. Material variant
+ * lives at `[cngxMatTabs]` in `@cngx/ui/mat-tabs`.
  *
  * All ARIA attrs are signal-driven - never one-shot bindings.
  * `CngxLiveRegion` is mounted as a child `<span>` rather than a
@@ -61,7 +83,7 @@ import {
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/tabs/tab-group.component.ts
  * @since 0.1.0
- * @relatedTo CngxTabOverflow, CngxTabGroupPresenter, CngxTab, CngxRovingTabindex, CngxFocusRestore
+ * @relatedTo CngxTabOverflow, CngxTabGroupPresenter, CngxTab, CngxFocusRestore
  * <example-url>http://localhost:4200/#/ui/tabs/tab-commit-action/optimistic-pessimistic-commits-with-bridge-directives</example-url>
  * <example-url>http://localhost:4200/#/ui/tabs/tab-error-aggregation/per-tab-error-badges</example-url>
  * <example-url>http://localhost:4200/#/ui/tabs/tab-group-vertical/vertical-sidebar-tabs</example-url>
@@ -76,18 +98,14 @@ import {
   exportAs: 'cngxTabGroup',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgTemplateOutlet, CngxLiveRegion, CngxRovingItem],
+  imports: [NgTemplateOutlet, CngxLiveRegion],
   styleUrls: ['../../common/tabs/styles/tabs-base.css', './tab-group.component.css'],
   encapsulation: ViewEncapsulation.None,
   hostDirectives: [
     {
       directive: CngxTabGroupPresenter,
       inputs: ['activeIndex', 'orientation', 'loop', 'commitAction', 'commitMode'],
-      outputs: ['activeIndexChange'],
-    },
-    {
-      directive: CngxRovingTabindex,
-      inputs: ['orientation', 'loop'],
+      outputs: ['activeIndexChange', 'tabClose', 'tabAdd'],
     },
     { directive: CngxFocusRestore },
   ],
@@ -99,23 +117,67 @@ import {
     '[attr.aria-roledescription]': 'announcements.tabsRoleDescription()',
     '[attr.aria-orientation]': 'presenter.orientation()',
     '[attr.data-orientation]': 'presenter.orientation()',
+    '[attr.data-skin]': 'hostAttrs.resolvedSkin()',
+    '[attr.data-icon-layout]': 'hostAttrs.resolvedIconLayout()',
+    '[attr.data-panel-mode]': 'hostAttrs.resolvedPanelMode()',
+    '[attr.data-fitted]': "hostAttrs.resolvedFitted() ? '' : null",
+    '[attr.data-tab-align]': 'hostAttrs.resolvedTabAlign()',
     '[attr.aria-label]': 'announcements.resolvedAriaLabel()',
     '[attr.aria-labelledby]': 'ariaLabelledBy()',
     '[class.cngx-tabs]': 'true',
   },
 })
 export class CngxTabGroup implements CngxTabPanelHost {
-  readonly ariaLabel = input<string | undefined>(undefined, {
-    alias: 'aria-label',
-  });
-  readonly ariaLabelledBy = input<string | undefined>(undefined, {
-    alias: 'aria-labelledby',
-  });
+  readonly ariaLabel = input<string | undefined>(undefined, { alias: 'aria-label' });
+  readonly ariaLabelledBy = input<string | undefined>(undefined, { alias: 'aria-labelledby' });
+
+  /**
+   * Visual skin. Cascade `input ?? config ?? 'line'`, resolved by
+   * {@link hostAttrs} and reflected onto `[data-skin]`. The skin is a
+   * pure CSS concern - structure, slots, ARIA, and keyboard behaviour
+   * are identical across all values. Public (consumer-facing input,
+   * like `ariaLabel`); the resolved value, not the raw input, is what
+   * the host binding reads.
+   */
+  readonly skin = input<CngxTabsSkin | undefined>(undefined);
+  /**
+   * Icon layout. Cascade `input ?? config ?? 'start'`, reflected onto
+   * `[data-icon-layout]`. Orthogonal to skin and orientation.
+   */
+  readonly iconLayout = input<CngxTabIconLayout | undefined>(undefined);
+  /**
+   * Panel render strategy. Cascade `input ?? config ?? 'eager'`,
+   * reflected onto `[data-panel-mode]`. `'eager'` (default) renders every
+   * panel's content up front (byte-identical to before this input
+   * existed); `'lazy'` keep-alives content after first activation;
+   * `'lazy-destroy'` renders only the active panel's content. The panel
+   * `<div>` always stays in the DOM regardless.
+   */
+  readonly panelMode = input<CngxTabsPanelMode | undefined>(undefined);
+  /** Stretch tabs to fill the strip width (horizontal only); reflects `[data-fitted]`. Cascade `input ?? config ?? false`. */
+  readonly fitted = input<boolean | undefined>(undefined);
+  /** Tab-cluster alignment when not fitted (horizontal only); reflects `[data-tab-align]`. Cascade `input ?? config ?? 'start'`. */
+  readonly tabAlign = input<CngxTabAlign | undefined>(undefined);
+  /**
+   * Whether tabs render a close affordance. Cascade
+   * `input ?? config ?? false`. A per-`CngxTab` `[closable]` override
+   * wins over this group default. When on, each closable tab gets a
+   * close button (and Delete on the focused tab closes it); the
+   * `(tabClose)` output fires with the tab id and index for the
+   * consumer to remove from its data.
+   */
+  readonly closable = input<boolean | undefined>(undefined);
+  /**
+   * Whether the group renders an add-tab button after the strip. Cascade
+   * `input ?? config ?? false`. When on, the `(tabAdd)` output fires for
+   * the consumer to append a tab to its data.
+   */
+  readonly addable = input<boolean | undefined>(undefined);
 
   protected readonly presenter = inject(CNGX_TAB_GROUP_HOST);
   protected readonly i18n = injectTabsI18n();
   protected readonly config = injectTabsConfig();
-  /** Default-glyph table for the template's fallback spans. Pillar 1. */
+  /** Default-glyph table for the template's fallback spans. */
   protected readonly glyphs = CNGX_TABS_GLYPHS;
   private readonly hostElement: HTMLElement =
     inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
@@ -133,6 +195,36 @@ export class CngxTabGroup implements CngxTabPanelHost {
   private readonly errorBadgeSlot = contentChild(CngxTabErrorBadge);
   private readonly rejectionIconSlot = contentChild(CngxTabRejectionIcon);
   private readonly busySpinnerSlot = contentChild(CngxTabBusySpinner);
+  private readonly iconSlot = contentChild(CngxTabIcon);
+  private readonly closeIconSlot = contentChild(CngxTabCloseIcon);
+  private readonly addIconSlot = contentChild(CngxTabAddIcon);
+
+  /**
+   * Dismissable / addable affordance surface (close + add resolution,
+   * close interaction, focus restoration). Level-2 helper keeps the
+   * cascade + handlers off the organism class (LOC guard).
+   */
+  protected readonly dismiss: CngxTabDismissals = createTabDismissals({
+    host: this.presenter,
+    config: this.config,
+    i18n: this.i18n,
+    closable: this.closable,
+    addable: this.addable,
+    hostElement: this.hostElement,
+    injector: this.injector,
+  });
+
+  /**
+   * APG tablist keyboard model (automatic activation). Owns arrow / Home /
+   * End resolution, the `host.select()` activation, and focus movement;
+   * derives each tab's roving `tabindex` from the presenter's `activeId`
+   * (single source of truth). Level-2 helper keeps the keyboard logic off
+   * the organism class (LOC guard).
+   */
+  protected readonly keyboard: CngxTabKeyboardNav = createTabKeyboardNav({
+    host: this.presenter,
+    hostElement: this.hostElement,
+  });
 
   /**
    * AT-announcement bundle from `@cngx/common/tabs/announcements/`.
@@ -148,6 +240,31 @@ export class CngxTabGroup implements CngxTabPanelHost {
     ariaLabelledBy: this.ariaLabelledBy,
   });
 
+  /**
+   * Resolved skin / icon-layout cascade (`input ?? config ?? default`),
+   * read by the `[data-skin]` / `[data-icon-layout]` host bindings. The
+   * Level-2 helper keeps the cascade off the organism class (LOC guard).
+   */
+  protected readonly hostAttrs: CngxTabsHostAttrs = createTabsHostAttrs({
+    skin: this.skin,
+    iconLayout: this.iconLayout,
+    panelMode: this.panelMode,
+    fitted: this.fitted,
+    tabAlign: this.tabAlign,
+    config: this.config,
+  });
+
+  /**
+   * Whether the active panel contains a natively-focusable descendant.
+   * Resolved by a post-render DOM probe (the only way to know - the
+   * panel content is consumer-projected). Drives {@link panelTabindex}:
+   * a panel with no focusable child earns one tab stop so keyboard users
+   * can still reach its content (APG tabpanel pattern); a panel that
+   * already has reachable content does not (no redundant stop). Boolean
+   * with default `Object.is`, so a stable probe never re-triggers CD.
+   */
+  private readonly activePanelHasFocusable = signal(false);
+
   constructor() {
     // Self-healing scroll loop: activeId change -> scrollIntoView ->
     // overflow IO sees new visibility -> More dropdown self-trims.
@@ -157,6 +274,42 @@ export class CngxTabGroup implements CngxTabPanelHost {
       hostElement: this.hostElement,
       injector: this.injector,
     });
+
+    // APG tabpanel focus probe. afterRenderEffect re-runs after render
+    // whenever its tracked dep (the active panel id) changes - i.e. on
+    // every tab switch, which is when the active panel (always rendered
+    // in every panelMode) gets its current content. Reading the DOM is
+    // the only way to know whether the consumer-projected content is
+    // focusable. The boolean set is not read inside the effect, so it
+    // never re-triggers itself, and its default Object.is equality makes
+    // a stable probe a no-op. Scope: content that mutates inside the
+    // already-active panel without a tab switch (late async content) is
+    // not re-probed - an accepted heuristic limit, not a correctness bug.
+    afterRenderEffect(() => {
+      // Tracked: re-probe when the active panel changes.
+      this.presenter.activeId();
+      const panel = this.hostElement.querySelector<HTMLElement>(
+        '.cngx-tabs__panel:not([hidden])',
+      );
+      this.activePanelHasFocusable.set(
+        panel?.querySelector(CNGX_FOCUSABLE_SELECTOR) != null,
+      );
+    });
+
+    if (isDevMode()) {
+      // One-shot post-mount check: icon-only hides the label, so a
+      // missing *cngxTabIcon template leaves the tab visually empty.
+      // afterNextRender runs once, off the reactive graph.
+      afterNextRender(() => {
+        if (this.hostAttrs.resolvedIconLayout() === 'only' && !this.iconSlot()) {
+          console.warn(
+            "[cngx-tab-group] iconLayout='only' but no *cngxTabIcon template " +
+              'is provided - tabs render no icon and the label is visually ' +
+              "hidden. Provide an <ng-template cngxTabIcon> or use 'start' / 'end' / 'top'.",
+          );
+        }
+      });
+    }
   }
 
   // Map<id, CngxTab> for O(1) labelTemplateFor / contentTemplateFor.
@@ -167,13 +320,17 @@ export class CngxTabGroup implements CngxTabPanelHost {
   });
 
   /**
-   * Resolved 3-stage cascade for `errorBadge`, `rejectionIcon`, `busySpinner`.
-   * `null` -> render built-in default span.
+   * Resolved 3-stage cascade for `errorBadge`, `rejectionIcon`,
+   * `busySpinner`, `icon`. `null` -> render built-in default (or, for
+   * `icon`, render nothing).
    */
   protected readonly templates: CngxTabGroupTemplateBindings = createTabGroupTemplateBindings({
     errorBadgeSlot: this.errorBadgeSlot,
     rejectionIconSlot: this.rejectionIconSlot,
     busySpinnerSlot: this.busySpinnerSlot,
+    iconSlot: this.iconSlot,
+    closeIconSlot: this.closeIconSlot,
+    addIconSlot: this.addIconSlot,
     config: this.config,
   });
 
@@ -205,13 +362,81 @@ export class CngxTabGroup implements CngxTabPanelHost {
     return `${tab.id}-panel`;
   }
 
+  /**
+   * APG tabpanel `tabindex`: `0` only when the selected panel has no
+   * focusable descendant (so its content is keyboard-reachable from the
+   * tablist), else `null` - never a redundant tab stop. Inactive panels
+   * are `null` (they are `[hidden]`).
+   */
+  protected panelTabindex(tab: CngxTabHandle): 0 | null {
+    return this.isSelected(tab) && !this.activePanelHasFocusable() ? 0 : null;
+  }
+
+  /**
+   * Keep-alive set for `panelMode='lazy'`: the ids of every tab that has
+   * ever been activated. Derived history (Pillar 1) - a `linkedSignal`
+   * accumulating onto its own previous value as `activeId` moves, NOT an
+   * `effect` that writes a set. The structural `equal` (size + membership)
+   * means re-activating an already-seen tab returns an equal set, so the
+   * reference is stable and downstream `shouldRenderContent` reads do not
+   * churn. Unbounded by design: `lazy` trades retention (every visited
+   * panel's content stays alive for the directive's life) for keep-alive;
+   * the set is bounded by tab count, and `lazy-destroy` is the bounded
+   * alternative when retention is unwanted.
+   */
+  private readonly seenIds = linkedSignal<string | null, ReadonlySet<string>>({
+    source: () => this.presenter.activeId(),
+    computation: (id, prev) => {
+      const next = new Set(prev?.value ?? []);
+      if (id != null) {
+        next.add(id);
+      }
+      return next;
+    },
+    equal: (a, b) => a.size === b.size && [...a].every((x) => b.has(x)),
+  });
+
+  /**
+   * Whether a tab's panel content should be rendered now. The panel
+   * `<div>` is always in the DOM (the `aria-controls` target); only its
+   * inner content is gated. `eager` is byte-identical to the original
+   * behaviour (everything rendered, visibility toggled via `[hidden]`).
+   */
+  protected shouldRenderContent(tab: CngxTabHandle): boolean {
+    switch (this.hostAttrs.resolvedPanelMode()) {
+      case 'lazy':
+        return this.seenIds().has(tab.id);
+      case 'lazy-destroy':
+        return this.isSelected(tab);
+      default:
+        return true;
+    }
+  }
+
   protected tabDescriptorId(tab: CngxTabHandle): string {
     return `${tab.id}-desc`;
   }
 
-  /** `true` when a bound error-aggregator opted in to revealing errors. */
+  /**
+   * `true` when the tab is in error - the folded `hasError` (direct
+   * `[error]` flag OR the aggregator's reveal-gated `shouldShow()`), so
+   * a direct-error tab lights the badge without an aggregator while
+   * deferred-reveal aggregators stay silent until revealed.
+   */
   protected showErrorBadge(tab: CngxTabHandle): boolean {
-    return !!tab.errorAggregator()?.shouldShow();
+    return tab.hasError();
+  }
+
+  /**
+   * Context for `*cngxTabIcon`. Allocates fresh per CD - `active` is
+   * reactive (selection), and `*ngTemplateOutlet` only re-evaluates
+   * `let-*` bindings when the context reference changes (`Object.is`
+   * input-diff); a `WeakMap`-cached object with a mutated `active`
+   * would leave consumer bindings stale. Same pattern as
+   * {@link busySpinnerContextFor}.
+   */
+  protected iconContextFor(tab: CngxTabHandle, index: number): CngxTabIconContext {
+    return { tab, active: this.isSelected(tab), index };
   }
 
   /**
@@ -267,6 +492,29 @@ export class CngxTabGroup implements CngxTabPanelHost {
     }
   }
 
+  /**
+   * Roving `tabindex` for a tab button: `0` for the active tab, `-1` for
+   * the rest, so the tablist is a single tab stop (APG) and `Tab` lands
+   * on the active tab. Derived in {@link keyboard} from `activeId`.
+   */
+  protected tabTabindex(tab: CngxTabHandle): 0 | -1 {
+    return this.keyboard.tabTabindex(tab);
+  }
+
+  /**
+   * Single `(keydown)` entry for a tab button: APG navigation
+   * (arrows / Home / End, automatic activation) first, then Delete-to-close
+   * when navigation did not consume the event.
+   */
+  protected handleTabKeydown(tab: CngxTabHandle, event: KeyboardEvent): void {
+    this.keyboard.handleKeydown(event);
+    if (event.defaultPrevented) {
+      return;
+    }
+    this.dismiss.handleTabKeydown(tab, event);
+  }
+
+
   // CngxTabPanelHost contract - presenter owns clamping, disabled-skip,
   // commit-action gating.
   selectById(id: string): void {
@@ -284,6 +532,10 @@ export class CngxTabGroup implements CngxTabPanelHost {
 
   labelTemplateFor(id: string): TemplateRef<unknown> | null {
     return this.tabDirectiveById().get(id)?.labelTemplate()?.templateRef ?? null;
+  }
+
+  subLabelTemplateFor(id: string): TemplateRef<unknown> | null {
+    return this.tabDirectiveById().get(id)?.subLabelTemplate()?.templateRef ?? null;
   }
 
   contentTemplateFor(id: string): TemplateRef<unknown> | null {

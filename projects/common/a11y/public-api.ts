@@ -4,7 +4,10 @@
 export { CngxAriaExpanded } from './aria/aria-expanded.directive';
 export { CngxLiveRegion } from './aria/live-region.directive';
 export { CngxAutofocus } from './focus/autofocus.directive';
-export { CngxFocusRestore } from './focus/focus-restore.directive';
+export {
+  CngxFocusRestore,
+  CNGX_FOCUSABLE_SELECTOR,
+} from './focus/focus-restore.directive';
 export { CngxFocusTrap } from './focus/focus-trap.directive';
 export { CngxFocusVisible } from './focus/focus-visible.directive';
 export { CngxRovingTabindex, CngxRovingItem } from './roving/roving-tabindex.directive';

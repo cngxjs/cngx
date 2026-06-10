@@ -2,6 +2,24 @@ import { DOCUMENT } from '@angular/common';
 import { DestroyRef, Directive, ElementRef, inject, input, signal } from '@angular/core';
 
 /**
+ * CSS selector matching natively-focusable elements: links with an
+ * `href`, the enabled form controls, and anything with an explicit
+ * non-negative `tabindex`. Form controls carry `:not(:disabled)` because
+ * a disabled control is not in the tab order - without it a descendant
+ * probe would count a disabled button as focusable and a restore target
+ * could land on an unfocusable element. Single source of truth for "is
+ * this focusable" - the element-level {@link CngxFocusRestore} predicate
+ * matches against it, and descendant probes (e.g. "does this panel
+ * contain a focusable child?") query against it. Keeping one selector
+ * stops the two uses from drifting apart.
+ *
+ * @category common/a11y
+ * @since 0.1.0
+ */
+export const CNGX_FOCUSABLE_SELECTOR =
+  'a[href], button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex="-1"])';
+
+/**
  * Stores the previously focused element and restores focus on destroy.
  *
  * Prevents focus from falling to `<body>` when dynamic content is removed
@@ -125,18 +143,13 @@ export class CngxFocusRestore {
     return null;
   }
 
-  /** Checks if an element is natively focusable (tabindex, links, form controls). */
+  /**
+   * Checks if an element is natively focusable (tabindex, links, form
+   * controls). Element-level predicate over the shared
+   * {@link CNGX_FOCUSABLE_SELECTOR}, so it never drifts from the
+   * descendant-query callers.
+   */
   private isFocusable(el: HTMLElement): boolean {
-    if (el.tabIndex >= 0) {
-      return true;
-    }
-    const tag = el.tagName.toLowerCase();
-    return (
-      (tag === 'a' && el.hasAttribute('href')) ||
-      tag === 'button' ||
-      tag === 'input' ||
-      tag === 'select' ||
-      tag === 'textarea'
-    );
+    return el.matches(CNGX_FOCUSABLE_SELECTOR);
   }
 }

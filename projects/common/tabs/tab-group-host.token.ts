@@ -16,8 +16,52 @@ import type { CngxErrorAggregatorContract } from '@cngx/common/interactive';
 export interface CngxTabHandle {
   readonly id: string;
   readonly label: Signal<string | undefined>;
+  /**
+   * Optional secondary label line. Rendered stacked under the primary
+   * label by the organism and folded into the tab's accessible name.
+   * `undefined` (default) renders byte-identically to a single-line
+   * tab. `[cngxMatTabs]` pins this to `undefined` - Material owns its
+   * own tab chrome.
+   */
+  readonly subLabel: Signal<string | undefined>;
   readonly disabled: Signal<boolean>;
   readonly errorAggregator: Signal<CngxErrorAggregatorContract | undefined>;
+  /**
+   * Folded per-tab error state, exposed by reference. `true` when the
+   * direct `[error]` flag is set OR the aggregator wants to reveal
+   * (`shouldShow()`, so deferred-reveal validation stays silent until
+   * revealed). The organism gates the error badge + SR descriptor on
+   * this; both handle producers (`CngxTab`, `createMatTabHandle`)
+   * carry it.
+   */
+  readonly hasError: Signal<boolean>;
+  /**
+   * Resolved direct-error message - the `[error]` string when non-empty,
+   * else `undefined`. Rides the handle so the error badge slot can render
+   * it via `ctx.tab.errorMessage()`. `[cngxMatTabs]` pins this to
+   * `undefined` - Material owns its own tab chrome.
+   */
+  readonly errorMessage: Signal<string | undefined>;
+  /**
+   * Per-tab closable override. `undefined` (default) inherits the
+   * group-level `closable` resolution; `true`/`false` pin this tab's
+   * close affordance regardless of the group default (e.g. a
+   * non-closable "Home" tab inside an otherwise dismissable group).
+   */
+  readonly closable: Signal<boolean | undefined>;
+}
+
+/**
+ * Payload of {@link CngxTabGroupHost.tabClose}. Carries the closed
+ * tab's id and its index at close time. The consumer removes the tab
+ * from its own data in response; the presenter has already moved the
+ * active index to the surviving neighbour.
+ *
+ * @category common/tabs
+ */
+export interface CngxTabCloseEvent {
+  readonly id: string;
+  readonly index: number;
 }
 
 /**
@@ -78,6 +122,22 @@ export interface CngxTabGroupHost {
   selectById(id: string): void;
 
   /**
+   * Request closing the tab with the given id. The presenter moves the
+   * active index onto the surviving neighbour (APG: next tab, or the
+   * previous one when closing the last tab) and emits `tabClose`; the
+   * consumer performs the actual removal from its data. No-op for an
+   * unknown id.
+   */
+  requestClose(id: string): void;
+
+  /**
+   * Request adding a new tab. Emits `tabAdd`; the consumer appends to
+   * its data. The presenter owns no tab-creation logic - tabs are
+   * derived from consumer data (Ableitung statt Verwaltung).
+   */
+  requestAdd(): void;
+
+  /**
    * Clear {@link lastFailedIndex} without unwinding
    * {@link originIndexDuringCommit} (consumers gate reads on
    * `lastFailedIndex` anyway). Call when the bound data source
@@ -89,7 +149,9 @@ export interface CngxTabGroupHost {
 /**
  * DI token for the tab presenter's contract. Presenter provides via
  * `useExisting`; `CngxTab` injects to register; the organism injects
- * to forward keyboard nav from `CngxRovingTabindex`.
+ * to drive the APG tablist keyboard model (automatic activation via
+ * `select()`, roving stop derived from `activeId`) through
+ * `createTabKeyboardNav`.
  *
  * @category common/tabs
  * @wcag AA

@@ -22,6 +22,24 @@ Two pieces give the tab strip its character:
 - **Commit lifecycle.** Activating a tab can fire an async action. In optimistic mode the tab becomes active immediately and rolls back on error; in pessimistic mode it stays inactive until success. Per-tab busy and error markers ride the same channel.
 - **Overflow.** When tabs do not fit, the overflowing ones collapse into a "more" menu. Recompute is debounced through an `IntersectionObserver` so resize storms do not thrash the layout.
 
+## Skins
+
+`[skin]` picks the visual treatment; it maps to a `[data-skin]` host attribute that selects a CSS scope. Structure, slots, ARIA, and keyboard behaviour are identical across every value - only the paint changes. Orthogonal to `[orientation]` (horizontal/vertical) and `[iconLayout]`.
+
+|Skin|Look|
+|-|-|
+|`line`|Default. Primary underline ink-bar under the active tab.|
+|`contained`|Square folder tabs; the active tab fuses with the panel into one box and carries a primary accent bar on its leading edge.|
+|`segmented`|Tabs share a muted track; the active tab lifts onto a raised surface.|
+|`pill`|Rounded solid fills; the active pill takes the primary fill.|
+|`pill-outline`|Same pill shape, but the active tab is a tinted, outlined chip.|
+
+```html
+<cngx-tab-group skin="segmented" orientation="vertical"> ... </cngx-tab-group>
+```
+
+Set an app-wide default with `withTabsSkin()` (via `provideCngxTabs`). Colours and sizes are CSS custom properties (`--cngx-tab-*`) that chain to `--mat-sys-*` when a Material theme is present.
+
 ## Companion entries
 
 - **`@cngx/common/tabs`** - the headless brain, configuration cascade, slot directives.

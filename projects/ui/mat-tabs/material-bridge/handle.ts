@@ -28,6 +28,12 @@ export interface CngxMatTabHandleSetup {
   /** Convenience mirror of `handle.disabled`. */
   readonly disabled: Signal<boolean>;
   readonly errorAggregator: WritableSignal<CngxErrorAggregatorContract | undefined>;
+  /**
+   * Direct invalid flag the `[cngxMatTabErrorFlag]` directive writes -
+   * `string | boolean`, mirroring `CngxTab.error`. Folds into the
+   * handle's `hasError` / `errorMessage` alongside the aggregator.
+   */
+  readonly directError: WritableSignal<string | boolean>;
 }
 
 /**
@@ -46,6 +52,9 @@ export interface CngxMatTabHandleSetup {
  *   `[cngxMatTabError]` writes its bound aggregator in and resets
  *   on teardown. The handle exposes `.asReadonly()` to preserve the
  *   `CngxTabHandle` contract.
+ * - `directError` - writable seeded at `false`;
+ *   `[cngxMatTabErrorFlag]` writes its `string | boolean` value in
+ *   and resets on teardown. Folds into `hasError` / `errorMessage`.
  *
  * @category ui/mat-tabs
  */
@@ -76,6 +85,33 @@ export function createMatTabHandle(
     return matTab.disabled;
   });
   const errorAggregator = signal<CngxErrorAggregatorContract | undefined>(undefined);
+  // Direct invalid flag written by `[cngxMatTabErrorFlag]` - the
+  // Material-side author surface mirroring `CngxTab.error`.
+  const directError = signal<string | boolean>(false);
+  // Folded error state for the widened `CngxTabHandle` contract. Direct
+  // flag OR the aggregator's reveal-gated `shouldShow()` (so deferred-
+  // reveal validation stays silent until revealed).
+  const hasError = computed<boolean>(
+    () => {
+      const direct = directError();
+      return (direct !== false && direct !== '') || (errorAggregator()?.shouldShow?.() ?? false);
+    },
+    { equal: Object.is },
+  );
+  // Resolved direct-error message: the flag string when non-empty, else
+  // `undefined`. The aggregator carries its own announcement separately.
+  const errorMessage = computed<string | undefined>(() => {
+    const direct = directError();
+    return typeof direct === 'string' && direct !== '' ? direct : undefined;
+  });
+  // Material owns its own tab lifecycle - the cngx dismissable/addable
+  // affordances are native-only by design, so the Material handle pins
+  // `closable` to `undefined` (group-default, never a close button).
+  const closable = signal<boolean | undefined>(undefined);
+  // Material owns its tab-button chrome (no DOM seam for a stacked
+  // second line), so the bridge pins `subLabel` to `undefined` - same
+  // native-only staging as `closable`.
+  const subLabel = signal<string | undefined>(undefined);
   // `nextUid` is process-wide monotonic, so `${id}-errors` descriptor
   // ids stay unique across coexisting `[cngxMatTabs]` instances.
   const id = idSeed();
@@ -83,12 +119,17 @@ export function createMatTabHandle(
     handle: {
       id,
       label,
+      subLabel: subLabel.asReadonly(),
       disabled,
       errorAggregator: errorAggregator.asReadonly(),
+      hasError,
+      errorMessage,
+      closable: closable.asReadonly(),
     },
     label,
     disabled,
     errorAggregator,
+    directError,
   };
 }
 

@@ -6,28 +6,52 @@
   [attr.aria-orientation]="presenter.orientation()"
 >
   @for (tab of tabs(); track tab.id; let i = $index) {
+    <div class="cngx-tabs__tab-wrapper" role="presentation">
     <button
       type="button"
-      cngxRovingItem
       class="cngx-tabs__tab"
       [class.cngx-tab--rejected]="failedIdx === i"
+      [class.cngx-tabs__tab--closable]="dismiss.isTabClosable(tab)"
       role="tab"
       [id]="tabHeaderId(tab)"
+      [attr.data-tab-id]="tab.id"
+      [attr.tabindex]="tabTabindex(tab)"
       [attr.aria-label]="announcements.tabAriaLabel(tab, i + 1)"
       [attr.aria-selected]="isSelected(tab) ? 'true' : 'false'"
       [attr.aria-controls]="tabPanelId(tab)"
       [attr.aria-disabled]="tab.disabled() ? 'true' : null"
       [attr.aria-busy]="isTabBusy(tab) ? 'true' : null"
       [attr.aria-describedby]="tabDescriptorId(tab)"
-      [cngxRovingItemDisabled]="tab.disabled()"
+      [attr.aria-keyshortcuts]="dismiss.isTabClosable(tab) ? 'Delete' : null"
       (click)="handleHeaderClick(tab)"
+      (keydown)="handleTabKeydown(tab, $event)"
     >
-      <span class="cngx-tabs__label">
-        @let labelTpl = labelTemplateFor(tab.id);
-        @if (labelTpl) {
-          <ng-container *ngTemplateOutlet="labelTpl"></ng-container>
-        } @else {
-          {{ tab.label() }}
+      @let iconTpl = templates.icon();
+      @if (iconTpl) {
+        <span class="cngx-tabs__icon" aria-hidden="true">
+          <ng-container
+            *ngTemplateOutlet="iconTpl; context: iconContextFor(tab, i)"
+          ></ng-container>
+        </span>
+      }
+      <span class="cngx-tabs__text">
+        <span class="cngx-tabs__label">
+          @let labelTpl = labelTemplateFor(tab.id);
+          @if (labelTpl) {
+            <ng-container *ngTemplateOutlet="labelTpl"></ng-container>
+          } @else {
+            {{ tab.label() }}
+          }
+        </span>
+        @let subLabelTpl = subLabelTemplateFor(tab.id);
+        @if (subLabelTpl || tab.subLabel()) {
+          <span class="cngx-tabs__sublabel">
+            @if (subLabelTpl) {
+              <ng-container *ngTemplateOutlet="subLabelTpl"></ng-container>
+            } @else {
+              {{ tab.subLabel() }}
+            }
+          </span>
         }
       </span>
       @if (showErrorBadge(tab)) {
@@ -77,8 +101,42 @@
         announcements.statusPhrase(tab)
       }}</span>
     </button>
+    @if (dismiss.isTabClosable(tab)) {
+      <button
+        type="button"
+        class="cngx-tabs__close"
+        tabindex="-1"
+        [attr.aria-label]="dismiss.closeButtonLabel(tab)"
+        (click)="dismiss.handleClose(tab, $event)"
+      >
+        @let closeIconTpl = templates.closeIcon();
+        @if (closeIconTpl) {
+          <ng-container
+            *ngTemplateOutlet="closeIconTpl; context: dismiss.closeIconContextFor(tab)"
+          ></ng-container>
+        } @else {
+          <span aria-hidden="true">{{ glyphs.closeIcon }}</span>
+        }
+      </button>
+    }
+    </div>
   }
 </div>
+@if (dismiss.resolvedAddable()) {
+  <button
+    type="button"
+    class="cngx-tabs__add"
+    [attr.aria-label]="i18n.addTab"
+    (click)="dismiss.handleAdd()"
+  >
+    @let addIconTpl = templates.addIcon();
+    @if (addIconTpl) {
+      <ng-container *ngTemplateOutlet="addIconTpl"></ng-container>
+    } @else {
+      <span aria-hidden="true">{{ glyphs.addIcon }}</span>
+    }
+  </button>
+}
 <ng-content select="cngx-tab-overflow"></ng-content>
 </div>
 
@@ -90,11 +148,14 @@
       [id]="tabPanelId(tab)"
       [attr.aria-labelledby]="tabHeaderId(tab)"
       [attr.aria-roledescription]="announcements.tabPanelRoleDescription()"
+      [attr.tabindex]="panelTabindex(tab)"
       [hidden]="!isSelected(tab)"
     >
-      @let contentTpl = contentTemplateFor(tab.id);
-      @if (contentTpl) {
-        <ng-container *ngTemplateOutlet="contentTpl"></ng-container>
+      @if (shouldRenderContent(tab)) {
+        @let contentTpl = contentTemplateFor(tab.id);
+        @if (contentTpl) {
+          <ng-container *ngTemplateOutlet="contentTpl"></ng-container>
+        }
       }
     </div>
   }

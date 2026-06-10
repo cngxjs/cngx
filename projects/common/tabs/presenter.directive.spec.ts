@@ -4,18 +4,23 @@ import { provideZonelessChangeDetection } from '@angular/core';
 import { Subject, of, throwError } from 'rxjs';
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import { CngxTabGroupPresenter } from './presenter.directive';
+import { CNGX_TABS_COMMIT_ACTION, type CngxTabsCommitActionSource } from './commit-action.token';
+import { CngxTabGroupPresenter, type CngxTabsCommitAction } from './presenter.directive';
 import type { CngxTabHandle } from './tab-group-host.token';
 
 function handle(
   id: string,
-  opts: { label?: string; disabled?: boolean } = {},
+  opts: { label?: string; subLabel?: string; disabled?: boolean } = {},
 ): CngxTabHandle {
   return {
     id,
     label: signal(opts.label ?? id),
+    subLabel: signal(opts.subLabel),
     disabled: signal(opts.disabled ?? false),
     errorAggregator: signal(undefined),
+    hasError: signal(false),
+    errorMessage: signal(undefined),
+    closable: signal(undefined),
   };
 }
 
@@ -448,4 +453,188 @@ describe('CngxTabGroupPresenter', () => {
     presenter.register(handle('b'));
     expect(presenter.tabs().map((t) => t.id)).toEqual(['a', 'b']);
   });
+
+  describe('requestClose — dismissable tabs', () => {
+    function withTabs(ids: string[]): {
+      presenter: CngxTabGroupPresenter;
+      remove: (id: string) => void;
+    } {
+      const { presenter } = setup();
+      ids.forEach((id) => presenter.register(handle(id)));
+      // Simulate the consumer removing the tab from its data in response
+      // to tabClose: the atom unregisters on teardown.
+      const remove = (id: string) => presenter.unregister(id);
+      return { presenter, remove };
+    }
+
+    it('closing the active middle tab activates the next tab', () => {
+      const { presenter, remove } = withTabs(['a', 'b', 'c']);
+      presenter.activeIndex.set(1);
+      presenter.requestClose('b');
+      remove('b');
+      expect(presenter.activeId()).toBe('c');
+    });
+
+    it('closing the active last tab activates the previous tab', () => {
+      const { presenter, remove } = withTabs(['a', 'b', 'c']);
+      presenter.activeIndex.set(2);
+      presenter.requestClose('c');
+      remove('c');
+      expect(presenter.activeId()).toBe('b');
+    });
+
+    it('closing a tab before the active one keeps the same tab active', () => {
+      const { presenter, remove } = withTabs(['a', 'b', 'c']);
+      presenter.activeIndex.set(2);
+      presenter.requestClose('a');
+      remove('a');
+      expect(presenter.activeId()).toBe('c');
+    });
+
+    it('closing a tab after the active one leaves the active tab unchanged', () => {
+      const { presenter, remove } = withTabs(['a', 'b', 'c']);
+      presenter.activeIndex.set(0);
+      presenter.requestClose('c');
+      remove('c');
+      expect(presenter.activeId()).toBe('a');
+    });
+
+    it('closing the only tab leaves no active tab', () => {
+      const { presenter, remove } = withTabs(['a']);
+      presenter.requestClose('a');
+      remove('a');
+      expect(presenter.tabs().length).toBe(0);
+      expect(presenter.activeId()).toBeNull();
+    });
+
+    it('emits tabClose with the closed id and its index', () => {
+      const { presenter } = withTabs(['a', 'b', 'c']);
+      const seen: { id: string; index: number }[] = [];
+      presenter.tabClose.subscribe((e) => seen.push(e));
+      presenter.requestClose('b');
+      expect(seen).toEqual([{ id: 'b', index: 1 }]);
+    });
+
+    it('does nothing for an unknown id', () => {
+      const { presenter } = withTabs(['a', 'b']);
+      const seen: unknown[] = [];
+      presenter.tabClose.subscribe((e) => seen.push(e));
+      presenter.activeIndex.set(1);
+      presenter.requestClose('zzz');
+      expect(seen).toEqual([]);
+      expect(presenter.activeIndex()).toBe(1);
+    });
+  });
+
+  describe('requestAdd — addable tabs', () => {
+    it('emits tabAdd', () => {
+      const { presenter } = setup();
+      let count = 0;
+      presenter.tabAdd.subscribe(() => count++);
+      presenter.requestAdd();
+      presenter.requestAdd();
+      expect(count).toBe(2);
+    });
+  });
+
 });
+
+describe('CngxTabGroupPresenter — CNGX_TABS_COMMIT_ACTION DI fallback', () => {
+  function fallbackFixture(
+    source: CngxTabsCommitActionSource,
+    inputs: { commitAction?: CngxTabsCommitAction | null; commitMode?: 'optimistic' | 'pessimistic' } = {},
+  ): { presenter: CngxTabGroupPresenter } {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    @Component({
+      standalone: true,
+      hostDirectives: [
+        {
+          directive: CngxTabGroupPresenter,
+          inputs: ['commitAction', 'commitMode'],
+        },
+      ],
+      providers: [{ provide: CNGX_TABS_COMMIT_ACTION, useValue: source }],
+      template: '',
+    })
+    class FallbackHost {}
+    const fixture = TestBed.createComponent(FallbackHost);
+    if (inputs.commitAction !== undefined) {
+      fixture.componentRef.setInput('commitAction', inputs.commitAction);
+    }
+    if (inputs.commitMode !== undefined) {
+      fixture.componentRef.setInput('commitMode', inputs.commitMode);
+    }
+    fixture.detectChanges();
+    const presenter = fixture.debugElement.injector.get(CngxTabGroupPresenter);
+    return { presenter };
+  }
+
+  beforeEach(() => {
+    TestBed.resetTestingModule();
+  });
+
+  it('resolves commitAction from the DI fallback when the input is null', () => {
+    const fallbackAction: CngxTabsCommitAction = () => true;
+    const { presenter } = fallbackFixture({
+      action: signal(fallbackAction),
+      mode: signal('pessimistic'),
+    });
+    expect(presenter.commitAction()).toBe(fallbackAction);
+  });
+
+  it('lets the [commitAction] input win when both input and fallback are present', () => {
+    const inputAction: CngxTabsCommitAction = () => false;
+    const fallbackAction: CngxTabsCommitAction = () => true;
+    const { presenter } = fallbackFixture(
+      { action: signal(fallbackAction), mode: signal('pessimistic') },
+      { commitAction: inputAction },
+    );
+    expect(presenter.commitAction()).toBe(inputAction);
+  });
+
+  it('lets the injected mode win over [commitMode] when the fallback action is active', () => {
+    const { presenter } = fallbackFixture(
+      { action: signal<CngxTabsCommitAction | null>(() => true), mode: signal('pessimistic') },
+      { commitMode: 'optimistic' },
+    );
+    expect(presenter.commitMode()).toBe('pessimistic');
+  });
+
+  it('falls back to the [commitMode] input when the fallback action is null', () => {
+    const { presenter } = fallbackFixture(
+      { action: signal<CngxTabsCommitAction | null>(null), mode: signal('pessimistic') },
+      { commitMode: 'optimistic' },
+    );
+    expect(presenter.commitAction()).toBeNull();
+    expect(presenter.commitMode()).toBe('optimistic');
+  });
+
+  it('drives the commit gate from the fallback action (pessimistic reject stays put)', () => {
+    const { presenter } = fallbackFixture({
+      action: signal<CngxTabsCommitAction | null>(() => false),
+      mode: signal('pessimistic'),
+    });
+    presenter.register(mkHandle('a'));
+    presenter.register(mkHandle('b'));
+    presenter.register(mkHandle('c'));
+    presenter.select(2);
+    expect(presenter.activeIndex()).toBe(0);
+    expect(presenter.lastFailedIndex()).toBe(2);
+  });
+});
+
+function mkHandle(id: string): CngxTabHandle {
+  return {
+    id,
+    label: signal(id),
+    subLabel: signal(undefined),
+    disabled: signal(false),
+    errorAggregator: signal(undefined),
+    hasError: signal(false),
+    errorMessage: signal(undefined),
+    closable: signal(undefined),
+  };
+}

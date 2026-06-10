@@ -6,7 +6,8 @@ import {
   signal,
 } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { describe, expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { describe, expect, it, vi } from 'vitest';
 
 import type { CngxErrorAggregatorContract } from '@cngx/common/interactive';
 
@@ -17,8 +18,10 @@ import {
   CngxTabBusySpinner,
   CngxTabContent,
   CngxTabErrorBadge,
+  CngxTabIcon,
   CngxTabLabel,
   CngxTabRejectionIcon,
+  CngxTabSubLabel,
   provideCngxTabs,
   provideTabsConfig,
   provideTabsI18n,
@@ -27,6 +30,8 @@ import {
   withTabsDefaultOrientation,
   withTabsFallbackLabels,
   withTabsI18nLabels,
+  withTabsIconLayout,
+  withTabsSkin,
   type CngxTabErrorBadgeContext,
   type CngxTabsCommitAction,
 } from '@cngx/common/tabs';
@@ -496,6 +501,66 @@ describe('CngxTabGroup organism', () => {
       ) as HTMLElement;
       expect(span).not.toBeNull();
       expect(span.textContent?.trim()).toBe('');
+    });
+
+    it('direct [error] string lights the badge + announces the message with no aggregator', () => {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      @Component({
+        standalone: true,
+        imports: [CngxTabGroup, CngxTab],
+        template: `
+          <cngx-tab-group aria-label="X">
+            <div cngxTab [label]="'A'" [error]="'Required fields missing'"></div>
+            <div cngxTab [label]="'B'"></div>
+          </cngx-tab-group>
+        `,
+      })
+      class DirectErrorHost {}
+      const fixture = TestBed.createComponent(DirectErrorHost);
+      fixture.detectChanges();
+      const tabs = Array.from(
+        fixture.nativeElement.querySelectorAll(
+          'button[role="tab"]',
+        ) as NodeListOf<HTMLButtonElement>,
+      );
+      expect(tabs[0].querySelector('.cngx-tabs__badge')).not.toBeNull();
+      expect(tabs[1].querySelector('.cngx-tabs__badge')).toBeNull();
+      const descId = tabs[0].getAttribute('aria-describedby')!;
+      const span = fixture.nativeElement.querySelector(
+        `#${descId}`,
+      ) as HTMLElement;
+      expect(span.textContent?.trim()).toBe('Required fields missing');
+    });
+
+    it('direct [error]="true" lights the badge and falls back to tabHasErrors(1)', () => {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      @Component({
+        standalone: true,
+        imports: [CngxTabGroup, CngxTab],
+        template: `
+          <cngx-tab-group aria-label="X">
+            <div cngxTab [label]="'A'" [error]="true"></div>
+          </cngx-tab-group>
+        `,
+      })
+      class BoolErrorHost {}
+      const fixture = TestBed.createComponent(BoolErrorHost);
+      fixture.detectChanges();
+      const tab = fixture.nativeElement.querySelector(
+        'button[role="tab"]',
+      ) as HTMLButtonElement;
+      expect(tab.querySelector('.cngx-tabs__badge')).not.toBeNull();
+      const descId = tab.getAttribute('aria-describedby')!;
+      const span = fixture.nativeElement.querySelector(
+        `#${descId}`,
+      ) as HTMLElement;
+      expect(span.textContent?.trim()).toBe('1 error');
     });
   });
 
@@ -1268,5 +1333,886 @@ describe('CngxTabGroup organism', () => {
       // Default spinner span suppressed.
       expect(tabs[2].querySelector('.cngx-tabs__busy-spinner')).toBeNull();
     });
+  });
+});
+
+@Component({
+  standalone: true,
+  imports: [CngxTabGroup, CngxTab],
+  template: `
+    <cngx-tab-group [skin]="skin()" [iconLayout]="iconLayout()" aria-label="Skinned">
+      <div cngxTab [label]="'A'"></div>
+      <div cngxTab [label]="'B'"></div>
+    </cngx-tab-group>
+  `,
+})
+class SkinHost {
+  readonly skin = signal<'line' | 'contained' | 'segmented' | 'pill' | 'pill-outline' | undefined>(
+    undefined,
+  );
+  readonly iconLayout = signal<'start' | 'end' | 'top' | 'only' | undefined>(undefined);
+}
+
+describe('CngxTabGroup skin / icon-layout host attributes', () => {
+  function hostEl(fixture: { nativeElement: HTMLElement }): HTMLElement {
+    return fixture.nativeElement.querySelector('cngx-tab-group') as HTMLElement;
+  }
+
+  it('defaults to data-skin="line" and data-icon-layout="start"', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(SkinHost);
+    fixture.detectChanges();
+    const host = hostEl(fixture);
+    expect(host.getAttribute('data-skin')).toBe('line');
+    expect(host.getAttribute('data-icon-layout')).toBe('start');
+  });
+
+  it('per-instance input reflects onto data-skin / data-icon-layout', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(SkinHost);
+    fixture.componentInstance.skin.set('pill');
+    fixture.componentInstance.iconLayout.set('top');
+    fixture.detectChanges();
+    const host = hostEl(fixture);
+    expect(host.getAttribute('data-skin')).toBe('pill');
+    expect(host.getAttribute('data-icon-layout')).toBe('top');
+  });
+
+  it('reflects iconLayout="end" onto data-icon-layout', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(SkinHost);
+    fixture.componentInstance.iconLayout.set('end');
+    fixture.detectChanges();
+    expect(hostEl(fixture).getAttribute('data-icon-layout')).toBe('end');
+  });
+
+  it('reacts when the input changes after first render', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(SkinHost);
+    fixture.detectChanges();
+    expect(hostEl(fixture).getAttribute('data-skin')).toBe('line');
+    fixture.componentInstance.skin.set('contained');
+    fixture.detectChanges();
+    expect(hostEl(fixture).getAttribute('data-skin')).toBe('contained');
+  });
+
+  it('config default fills in when no per-instance input is bound', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideCngxTabs(withTabsSkin('contained'), withTabsIconLayout('only')),
+      ],
+    });
+    const fixture = TestBed.createComponent(SkinHost);
+    fixture.detectChanges();
+    const host = hostEl(fixture);
+    expect(host.getAttribute('data-skin')).toBe('contained');
+    expect(host.getAttribute('data-icon-layout')).toBe('only');
+  });
+
+  it('per-instance input overrides the config default', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideCngxTabs(withTabsSkin('contained')),
+      ],
+    });
+    const fixture = TestBed.createComponent(SkinHost);
+    fixture.componentInstance.skin.set('pill');
+    fixture.detectChanges();
+    expect(hostEl(fixture).getAttribute('data-skin')).toBe('pill');
+  });
+});
+
+@Component({
+  standalone: true,
+  imports: [CngxTabGroup, CngxTab, CngxTabIcon],
+  template: `
+    <cngx-tab-group [iconLayout]="iconLayout()" aria-label="Iconned">
+      <ng-template cngxTabIcon let-tab="tab" let-active="active" let-index="index">
+        <i
+          class="demo-icon"
+          [attr.data-active]="active"
+          [attr.data-index]="index"
+          [attr.data-tab]="tab.id"
+          >icon</i
+        >
+      </ng-template>
+      <div cngxTab [label]="'A'"></div>
+      <div cngxTab [label]="'B'"></div>
+    </cngx-tab-group>
+  `,
+})
+class IconHost {
+  readonly iconLayout = signal<'start' | 'end' | 'top' | 'only' | undefined>(undefined);
+}
+
+@Component({
+  standalone: true,
+  imports: [CngxTabGroup, CngxTab],
+  template: `
+    <cngx-tab-group iconLayout="only" aria-label="No icon template">
+      <div cngxTab [label]="'A'"></div>
+    </cngx-tab-group>
+  `,
+})
+class IconOnlyWithoutTemplateHost {}
+
+describe('CngxTabGroup cngxTabIcon slot', () => {
+  it('renders the icon template once per tab, aria-hidden, before the label', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(IconHost);
+    fixture.detectChanges();
+    const firstTab = fixture.nativeElement.querySelector(
+      'button[role="tab"]',
+    ) as HTMLElement;
+    const iconWrap = firstTab.querySelector('.cngx-tabs__icon') as HTMLElement;
+    expect(iconWrap).not.toBeNull();
+    expect(iconWrap.getAttribute('aria-hidden')).toBe('true');
+    expect(iconWrap.querySelector('.demo-icon')).not.toBeNull();
+    // Icon precedes the label in DOM order.
+    const label = firstTab.querySelector('.cngx-tabs__label') as HTMLElement;
+    expect(
+      iconWrap.compareDocumentPosition(label) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
+
+  it('feeds {tab, active, index} context with active reflecting selection', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(IconHost);
+    fixture.detectChanges();
+    const tabs = fixture.nativeElement.querySelectorAll(
+      'button[role="tab"]',
+    ) as NodeListOf<HTMLElement>;
+    const firstIcon = tabs[0].querySelector('.demo-icon') as HTMLElement;
+    const secondIcon = tabs[1].querySelector('.demo-icon') as HTMLElement;
+    expect(firstIcon.getAttribute('data-active')).toBe('true');
+    expect(firstIcon.getAttribute('data-index')).toBe('0');
+    expect(secondIcon.getAttribute('data-active')).toBe('false');
+    expect(secondIcon.getAttribute('data-index')).toBe('1');
+
+    tabs[1].click();
+    fixture.detectChanges();
+    expect(
+      (tabs[0].querySelector('.demo-icon') as HTMLElement).getAttribute(
+        'data-active',
+      ),
+    ).toBe('false');
+    expect(
+      (tabs[1].querySelector('.demo-icon') as HTMLElement).getAttribute(
+        'data-active',
+      ),
+    ).toBe('true');
+  });
+
+  it('keeps the label span in the DOM under iconLayout="only" (accessible name source)', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(IconHost);
+    fixture.componentInstance.iconLayout.set('only');
+    fixture.detectChanges();
+    const firstTab = fixture.nativeElement.querySelector(
+      'button[role="tab"]',
+    ) as HTMLElement;
+    const label = firstTab.querySelector('.cngx-tabs__label') as HTMLElement;
+    expect(label).not.toBeNull();
+    expect(label.textContent).toContain('A');
+  });
+
+  it('renders no icon span when no slot and no config template is bound', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(HostCmp);
+    fixture.detectChanges();
+    const firstTab = fixture.nativeElement.querySelector(
+      'button[role="tab"]',
+    ) as HTMLElement;
+    expect(firstTab.querySelector('.cngx-tabs__icon')).toBeNull();
+  });
+
+  it('dev-warns when iconLayout="only" without an *cngxTabIcon template', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    try {
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      const fixture = TestBed.createComponent(IconOnlyWithoutTemplateHost);
+      fixture.detectChanges();
+      // Drain the afterNextRender queue (the dev check is single-shot,
+      // off the reactive graph). TestBed.tick flushes render hooks
+      // synchronously - no fake-timer / whenStable hang vector.
+      TestBed.tick();
+      expect(
+        warn.mock.calls.some((c) => String(c[0]).includes("iconLayout='only'")),
+      ).toBe(true);
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
+  it('does not dev-warn when iconLayout="only" with an *cngxTabIcon template', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    try {
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      const fixture = TestBed.createComponent(IconHost);
+      fixture.componentInstance.iconLayout.set('only');
+      fixture.detectChanges();
+      TestBed.tick();
+      expect(
+        warn.mock.calls.some((c) => String(c[0]).includes("iconLayout='only'")),
+      ).toBe(false);
+    } finally {
+      warn.mockRestore();
+    }
+  });
+});
+
+describe('CngxTabGroup tab panel container-query context', () => {
+  it('the tab panel declares a container-query context (source-CSS assert; happy-dom cannot compute container-type)', () => {
+    // Resolve from the runner cwd (repo root) - `import.meta.url` is a
+    // vite-served URL here, not a file: URL.
+    const css = readFileSync(
+      `${process.cwd()}/projects/ui/tabs/tab-group.component.css`,
+      'utf8',
+    );
+    // The rule is on `.cngx-tabs__panel` (the individual tabpanel), not
+    // the host - so `@container cngx-tab-panel` measures the panel's own
+    // width, correct under vertical orientation too.
+    expect(css).toMatch(
+      /\.cngx-tabs__panel\s*\{[^}]*container-type:\s*inline-size/,
+    );
+    expect(css).toMatch(/container-name:\s*var\(--cngx-tab-panel-container-name/);
+  });
+});
+
+@Component({
+  standalone: true,
+  imports: [CngxTabGroup, CngxTab, CngxTabContent],
+  template: `
+    <cngx-tab-group aria-label="Focusable panel content">
+      <div cngxTab [label]="'A'">
+        <ng-template cngxTabContent>
+          <button type="button">Action in panel</button>
+        </ng-template>
+      </div>
+      <div cngxTab [label]="'B'">
+        <ng-template cngxTabContent><p>No focusable content.</p></ng-template>
+      </div>
+    </cngx-tab-group>
+  `,
+})
+class FocusablePanelHost {}
+
+describe('CngxTabGroup APG panel focus (panelTabindex)', () => {
+  function activePanel(fixture: { nativeElement: HTMLElement }): HTMLElement {
+    return fixture.nativeElement.querySelector(
+      '.cngx-tabs__panel:not([hidden])',
+    ) as HTMLElement;
+  }
+
+  function settle(fixture: { detectChanges(): void }): void {
+    // afterRender probes the DOM and writes the focusable-descendant
+    // signal; the follow-up CD applies it to the [attr.tabindex] binding.
+    fixture.detectChanges();
+    TestBed.tick();
+    fixture.detectChanges();
+    TestBed.tick();
+  }
+
+  it('gives the active panel tabindex="0" when it has no focusable descendant', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(HostCmp);
+    settle(fixture);
+    expect(activePanel(fixture).getAttribute('tabindex')).toBe('0');
+  });
+
+  it('leaves the active panel tabindex unset when it has a focusable descendant', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(FocusablePanelHost);
+    settle(fixture);
+    expect(activePanel(fixture).getAttribute('tabindex')).toBeNull();
+  });
+});
+
+@Component({
+  standalone: true,
+  imports: [CngxTabGroup, CngxTab, CngxTabContent],
+  template: `
+    <cngx-tab-group
+      [panelMode]="mode()"
+      [(activeIndex)]="active"
+      aria-label="Panel modes"
+    >
+      <div cngxTab [label]="'A'">
+        <ng-template cngxTabContent><span class="body-a">A body</span></ng-template>
+      </div>
+      <div cngxTab [label]="'B'">
+        <ng-template cngxTabContent><span class="body-b">B body</span></ng-template>
+      </div>
+      <div cngxTab [label]="'C'">
+        <ng-template cngxTabContent><span class="body-c">C body</span></ng-template>
+      </div>
+    </cngx-tab-group>
+  `,
+})
+class PanelModeHost {
+  readonly mode = signal<'eager' | 'lazy' | 'lazy-destroy'>('eager');
+  readonly active = signal(0);
+}
+
+describe('CngxTabGroup panelMode rendering', () => {
+  function has(fixture: { nativeElement: HTMLElement }, sel: string): boolean {
+    return fixture.nativeElement.querySelector(sel) != null;
+  }
+  function tabButtons(fixture: {
+    nativeElement: HTMLElement;
+  }): HTMLButtonElement[] {
+    return Array.from(
+      fixture.nativeElement.querySelectorAll('button[role="tab"]'),
+    ) as HTMLButtonElement[];
+  }
+
+  it('the panel <div> stays in the DOM for every tab regardless of mode (aria-controls target)', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(PanelModeHost);
+    fixture.componentInstance.mode.set('lazy-destroy');
+    fixture.detectChanges();
+    expect(
+      fixture.nativeElement.querySelectorAll('[role="tabpanel"]').length,
+    ).toBe(3);
+  });
+
+  it('eager renders every panel content up front (byte-identical to default)', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(PanelModeHost);
+    fixture.detectChanges();
+    expect(has(fixture, '.body-a')).toBe(true);
+    expect(has(fixture, '.body-b')).toBe(true);
+    expect(has(fixture, '.body-c')).toBe(true);
+  });
+
+  it('lazy renders content only after first activation and keep-alives it', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(PanelModeHost);
+    fixture.componentInstance.mode.set('lazy');
+    fixture.detectChanges();
+    // Only the initially-active panel has content.
+    expect(has(fixture, '.body-a')).toBe(true);
+    expect(has(fixture, '.body-b')).toBe(false);
+    expect(has(fixture, '.body-c')).toBe(false);
+
+    // Activate B - its content renders.
+    tabButtons(fixture)[1].click();
+    fixture.detectChanges();
+    expect(has(fixture, '.body-b')).toBe(true);
+
+    // Back to A - B's content is kept alive (keep-alive, not re-created).
+    tabButtons(fixture)[0].click();
+    fixture.detectChanges();
+    expect(has(fixture, '.body-a')).toBe(true);
+    expect(has(fixture, '.body-b')).toBe(true);
+    expect(has(fixture, '.body-c')).toBe(false);
+  });
+
+  it('lazy-destroy renders only the active panel content and destroys it on leave', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(PanelModeHost);
+    fixture.componentInstance.mode.set('lazy-destroy');
+    fixture.detectChanges();
+    expect(has(fixture, '.body-a')).toBe(true);
+    expect(has(fixture, '.body-b')).toBe(false);
+
+    tabButtons(fixture)[1].click();
+    fixture.detectChanges();
+    expect(has(fixture, '.body-b')).toBe(true);
+    // A's content is destroyed on leave.
+    expect(has(fixture, '.body-a')).toBe(false);
+  });
+
+  it('reflects panelMode onto the data-panel-mode host attribute', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(PanelModeHost);
+    fixture.detectChanges();
+    const host = fixture.nativeElement.querySelector(
+      'cngx-tab-group',
+    ) as HTMLElement;
+    expect(host.getAttribute('data-panel-mode')).toBe('eager');
+    fixture.componentInstance.mode.set('lazy');
+    fixture.detectChanges();
+    expect(host.getAttribute('data-panel-mode')).toBe('lazy');
+  });
+});
+
+@Component({
+  standalone: true,
+  imports: [CngxTabGroup, CngxTab, CngxTabContent],
+  template: `
+    <cngx-tab-group
+      panelMode="lazy"
+      [(activeIndex)]="active"
+      aria-label="Lazy focus"
+    >
+      <div cngxTab [label]="'A'">
+        <ng-template cngxTabContent><p>Plain text, no focusable.</p></ng-template>
+      </div>
+      <div cngxTab [label]="'B'">
+        <ng-template cngxTabContent>
+          <button type="button">Focusable in B</button>
+        </ng-template>
+      </div>
+    </cngx-tab-group>
+  `,
+})
+class LazyFocusHost {
+  readonly active = signal(0);
+}
+
+describe('CngxTabGroup panelMode=lazy x APG panel focus', () => {
+  function settle(fixture: { detectChanges(): void }): void {
+    fixture.detectChanges();
+    TestBed.tick();
+    fixture.detectChanges();
+    TestBed.tick();
+  }
+
+  it('re-probes focusability when a lazy panel is first activated', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(LazyFocusHost);
+    settle(fixture);
+    // Tab A active: no focusable content -> tabindex 0.
+    let panel = fixture.nativeElement.querySelector(
+      '.cngx-tabs__panel:not([hidden])',
+    ) as HTMLElement;
+    expect(panel.getAttribute('tabindex')).toBe('0');
+
+    // Activate B (first time, content renders now): it has a button,
+    // so the panel must NOT take a redundant tab stop.
+    const tabs = Array.from(
+      fixture.nativeElement.querySelectorAll('button[role="tab"]'),
+    ) as HTMLButtonElement[];
+    tabs[1].click();
+    settle(fixture);
+    panel = fixture.nativeElement.querySelector(
+      '.cngx-tabs__panel:not([hidden])',
+    ) as HTMLElement;
+    expect(panel.getAttribute('aria-labelledby')).toBe(tabs[1].id);
+    expect(panel.getAttribute('tabindex')).toBeNull();
+  });
+});
+
+@Component({
+  standalone: true,
+  imports: [CngxTabGroup, CngxTab],
+  template: `
+    <cngx-tab-group
+      [closable]="closable()"
+      [addable]="addable()"
+      aria-label="Dismissable"
+      (tabClose)="closed.push($event)"
+      (tabAdd)="added = added + 1"
+    >
+      <div cngxTab [label]="'Home'" [closable]="false"></div>
+      <div cngxTab [label]="'Profile'"></div>
+      <div cngxTab [label]="'Settings'"></div>
+    </cngx-tab-group>
+  `,
+})
+class DismissableHost {
+  readonly closable = signal(true);
+  readonly addable = signal(true);
+  readonly closed: { id: string; index: number }[] = [];
+  added = 0;
+}
+
+describe('CngxTabGroup dismissable + addable', () => {
+  function closeButtons(fixture: {
+    nativeElement: HTMLElement;
+  }): HTMLButtonElement[] {
+    return Array.from(
+      fixture.nativeElement.querySelectorAll('.cngx-tabs__close'),
+    ) as HTMLButtonElement[];
+  }
+  function tabButtons(fixture: {
+    nativeElement: HTMLElement;
+  }): HTMLButtonElement[] {
+    return Array.from(
+      fixture.nativeElement.querySelectorAll('button[role="tab"]'),
+    ) as HTMLButtonElement[];
+  }
+
+  it('renders a close button per closable tab; a per-tab [closable]=false pins its tab', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(DismissableHost);
+    fixture.detectChanges();
+    // Home has [closable]="false" -> no close button; Profile + Settings do.
+    expect(closeButtons(fixture).length).toBe(2);
+    const tabs = tabButtons(fixture);
+    expect(tabs[0].getAttribute('aria-keyshortcuts')).toBeNull();
+    expect(tabs[1].getAttribute('aria-keyshortcuts')).toBe('Delete');
+  });
+
+  it('close button carries an i18n aria-label and is out of the tab order', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(DismissableHost);
+    fixture.detectChanges();
+    const btn = closeButtons(fixture)[0];
+    expect(btn.getAttribute('aria-label')).toBe('Close "Profile"');
+    expect(btn.getAttribute('tabindex')).toBe('-1');
+  });
+
+  it('clicking a close button emits tabClose with id + index', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(DismissableHost);
+    fixture.detectChanges();
+    closeButtons(fixture)[0].click();
+    fixture.detectChanges();
+    const ev = fixture.componentInstance.closed.at(-1)!;
+    expect(ev.index).toBe(1);
+    expect(typeof ev.id).toBe('string');
+  });
+
+  it('Delete on a focused closable tab emits tabClose', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(DismissableHost);
+    fixture.detectChanges();
+    const tabs = tabButtons(fixture);
+    tabs[2].dispatchEvent(new KeyboardEvent('keydown', { key: 'Delete', bubbles: true }));
+    fixture.detectChanges();
+    expect(fixture.componentInstance.closed.at(-1)?.index).toBe(2);
+  });
+
+  it('Delete on a pinned (non-closable) tab does nothing', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(DismissableHost);
+    fixture.detectChanges();
+    tabButtons(fixture)[0].dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Delete', bubbles: true }),
+    );
+    fixture.detectChanges();
+    expect(fixture.componentInstance.closed.length).toBe(0);
+  });
+
+  it('renders an add button when addable and emits tabAdd on click', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(DismissableHost);
+    fixture.detectChanges();
+    const add = fixture.nativeElement.querySelector(
+      '.cngx-tabs__add',
+    ) as HTMLButtonElement;
+    expect(add).not.toBeNull();
+    expect(add.getAttribute('aria-label')).toBe('Add tab');
+    add.click();
+    fixture.detectChanges();
+    expect(fixture.componentInstance.added).toBe(1);
+  });
+
+  it('no close / add affordances when closable + addable are off', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(DismissableHost);
+    fixture.componentInstance.closable.set(false);
+    fixture.componentInstance.addable.set(false);
+    fixture.detectChanges();
+    expect(closeButtons(fixture).length).toBe(0);
+    expect(fixture.nativeElement.querySelector('.cngx-tabs__add')).toBeNull();
+  });
+});
+
+@Component({
+  standalone: true,
+  imports: [CngxTabGroup, CngxTab],
+  template: `
+    <cngx-tab-group
+      [closable]="true"
+      aria-label="Closes to empty"
+      (tabClose)="onClose($event.id)"
+    >
+      @for (t of items(); track t) {
+        <div cngxTab [id]="t" [label]="t"></div>
+      }
+    </cngx-tab-group>
+  `,
+})
+class CloseToEmptyHost {
+  readonly items = signal(['only']);
+  onClose(id: string): void {
+    this.items.update((list) => list.filter((x) => x !== id));
+  }
+}
+
+describe('CngxTabGroup dismissable focus restoration', () => {
+  it('keeps focus inside the group when the last tab closes with no add button', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(CloseToEmptyHost);
+    fixture.detectChanges();
+    const host = fixture.nativeElement.querySelector(
+      'cngx-tab-group',
+    ) as HTMLElement;
+    const close = fixture.nativeElement.querySelector(
+      '.cngx-tabs__close',
+    ) as HTMLButtonElement;
+    close.click();
+    fixture.detectChanges();
+    TestBed.tick();
+    TestBed.tick();
+    expect(fixture.nativeElement.querySelectorAll('button[role="tab"]').length).toBe(0);
+    // Focus did not fall to <body>; the group holds it.
+    expect(document.activeElement).toBe(host);
+  });
+});
+
+@Component({
+  standalone: true,
+  imports: [CngxTabGroup, CngxTab],
+  template: `
+    <cngx-tab-group aria-label="Disabled skip">
+      <div cngxTab [label]="'A'"></div>
+      <div cngxTab [label]="'B'" [disabled]="true"></div>
+      <div cngxTab [label]="'C'"></div>
+    </cngx-tab-group>
+  `,
+})
+class DisabledSkipHost {}
+
+describe('CngxTabGroup APG keyboard (automatic activation)', () => {
+  function tabButtons(fixture: { nativeElement: HTMLElement }): HTMLButtonElement[] {
+    return Array.from(
+      fixture.nativeElement.querySelectorAll('button[role="tab"]'),
+    ) as HTMLButtonElement[];
+  }
+  function press(el: HTMLElement, key: string): KeyboardEvent {
+    const ev = new KeyboardEvent('keydown', {
+      key,
+      bubbles: true,
+      cancelable: true,
+    });
+    el.dispatchEvent(ev);
+    return ev;
+  }
+  function make<T>(host: new () => T) {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(host);
+    fixture.detectChanges();
+    return fixture;
+  }
+
+  it('only the active tab is in the tab order (roving tabindex 0 / -1)', () => {
+    const fixture = make(HostCmp);
+    const tabs = tabButtons(fixture);
+    expect(tabs.map((t) => t.getAttribute('tabindex'))).toEqual(['0', '-1', '-1']);
+  });
+
+  it('ArrowRight activates the next tab, moves the tab stop, and focuses it', () => {
+    const fixture = make(HostCmp);
+    const tabs = tabButtons(fixture);
+    const ev = press(tabs[0], 'ArrowRight');
+    fixture.detectChanges();
+    expect(ev.defaultPrevented).toBe(true);
+    expect(tabs[1].getAttribute('aria-selected')).toBe('true');
+    expect(tabs[0].getAttribute('aria-selected')).toBe('false');
+    expect(tabs.map((t) => t.getAttribute('tabindex'))).toEqual(['-1', '0', '-1']);
+    expect(document.activeElement).toBe(tabs[1]);
+  });
+
+  it('ArrowLeft from the first tab wraps to the last (loop) and activates it', () => {
+    const fixture = make(HostCmp);
+    const tabs = tabButtons(fixture);
+    press(tabs[0], 'ArrowLeft');
+    fixture.detectChanges();
+    expect(tabs[2].getAttribute('aria-selected')).toBe('true');
+    expect(document.activeElement).toBe(tabs[2]);
+  });
+
+  it('End activates the last tab, Home the first', () => {
+    const fixture = make(HostCmp);
+    const tabs = tabButtons(fixture);
+    press(tabs[0], 'End');
+    fixture.detectChanges();
+    expect(tabs[2].getAttribute('aria-selected')).toBe('true');
+    press(tabs[2], 'Home');
+    fixture.detectChanges();
+    expect(tabs[0].getAttribute('aria-selected')).toBe('true');
+    expect(document.activeElement).toBe(tabs[0]);
+  });
+
+  it('clicking a tab keeps the roving tab stop in sync so Tab lands on it', () => {
+    const fixture = make(HostCmp);
+    const tabs = tabButtons(fixture);
+    tabs[2].click();
+    fixture.detectChanges();
+    // The previously-broken case: tabindex must follow selection, not a
+    // separate keyboard index.
+    expect(tabs.map((t) => t.getAttribute('tabindex'))).toEqual(['-1', '-1', '0']);
+  });
+
+  it('ArrowRight skips a disabled tab', () => {
+    const fixture = make(DisabledSkipHost);
+    const tabs = tabButtons(fixture);
+    press(tabs[0], 'ArrowRight');
+    fixture.detectChanges();
+    expect(tabs[2].getAttribute('aria-selected')).toBe('true');
+    expect(tabs[1].getAttribute('aria-selected')).toBe('false');
+  });
+
+  it('vertical orientation navigates with ArrowDown/ArrowUp and ignores Arrow Left/Right', () => {
+    const fixture = make(VerticalHost);
+    const tabs = tabButtons(fixture);
+    const horizontalNoop = press(tabs[0], 'ArrowRight');
+    fixture.detectChanges();
+    expect(horizontalNoop.defaultPrevented).toBe(false);
+    expect(tabs[0].getAttribute('aria-selected')).toBe('true');
+    press(tabs[0], 'ArrowDown');
+    fixture.detectChanges();
+    expect(tabs[1].getAttribute('aria-selected')).toBe('true');
+    expect(document.activeElement).toBe(tabs[1]);
+    press(tabs[1], 'ArrowUp');
+    fixture.detectChanges();
+    expect(tabs[0].getAttribute('aria-selected')).toBe('true');
+  });
+});
+
+@Component({
+  standalone: true,
+  imports: [CngxTabGroup, CngxTab, CngxTabSubLabel],
+  template: `
+    <cngx-tab-group [iconLayout]="iconLayout()" aria-label="Bookmarks group">
+      <div cngxTab [label]="'Bookmarks'" [subLabel]="'45'"></div>
+      <div cngxTab [label]="'Home'">
+        <ng-template cngxTabSubLabel>2 tasks</ng-template>
+      </div>
+      <div cngxTab [label]="'Plain'"></div>
+    </cngx-tab-group>
+  `,
+})
+class SubLabelHost {
+  readonly iconLayout = signal<'start' | 'only' | undefined>(undefined);
+}
+
+describe('CngxTabGroup sub-label', () => {
+  function makeFixture(): { nativeElement: HTMLElement; detectChanges(): void; componentInstance: SubLabelHost } {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+    const fixture = TestBed.createComponent(SubLabelHost);
+    fixture.detectChanges();
+    return fixture;
+  }
+
+  it('renders .cngx-tabs__sublabel only for tabs that have a sub-label (string or slot)', () => {
+    const fixture = makeFixture();
+    const subs = Array.from(
+      fixture.nativeElement.querySelectorAll('.cngx-tabs__sublabel'),
+    ) as HTMLElement[];
+    expect(subs.length).toBe(2);
+    expect(subs[0].textContent?.trim()).toBe('45');
+    expect(subs[1].textContent?.trim()).toBe('2 tasks');
+  });
+
+  it('stacks the label and sub-label inside the .cngx-tabs__text column', () => {
+    const fixture = makeFixture();
+    const firstText = fixture.nativeElement.querySelector('.cngx-tabs__text');
+    expect(firstText?.querySelector('.cngx-tabs__label')).toBeTruthy();
+    expect(firstText?.querySelector('.cngx-tabs__sublabel')).toBeTruthy();
+  });
+
+  it('folds the [subLabel] string into the button aria-label; slot/plain tabs carry only the label', () => {
+    // The string input drives the accessible name (mirroring how
+    // [label] not *cngxTabLabel feeds the aria-label); the template
+    // sub-label is visual content, so the Home tab's name is bare.
+    const fixture = makeFixture();
+    const tabs = Array.from(
+      fixture.nativeElement.querySelectorAll('button[role="tab"]'),
+    ) as HTMLButtonElement[];
+    expect(tabs[0].getAttribute('aria-label')).toBe('Tab 1 of 3: Bookmarks, 45');
+    expect(tabs[1].getAttribute('aria-label')).toBe('Tab 2 of 3: Home');
+    expect(tabs[2].getAttribute('aria-label')).toBe('Tab 3 of 3: Plain');
+  });
+
+  it('iconLayout="only" keeps the sub-label in the DOM (clip, not removal) and the source CSS clips it', () => {
+    const fixture = makeFixture();
+    fixture.componentInstance.iconLayout.set('only');
+    fixture.detectChanges();
+    const host = fixture.nativeElement.querySelector('cngx-tab-group') as HTMLElement;
+    expect(host.getAttribute('data-icon-layout')).toBe('only');
+    // Clip keeps the node in the a11y tree (same contract as the label).
+    expect(fixture.nativeElement.querySelectorAll('.cngx-tabs__sublabel').length).toBe(2);
+    // happy-dom cannot compute the external-CSS clip, so assert the rule
+    // exists in source (same approach as the container-query test).
+    const css = readFileSync(
+      `${process.cwd()}/projects/ui/tabs/tab-group.component.css`,
+      'utf8',
+    );
+    expect(css).toMatch(/\[data-icon-layout='only'\]\s+\.cngx-tabs__sublabel/);
+  });
+
+  it('registers the sub-label tokens as @property in the shared token layer (sibling-token parity)', () => {
+    // The sublabel font-size/color must carry the typed-default + docs
+    // contract every sibling tab token follows, not just raw var()
+    // fallbacks. Asserted on source (happy-dom cannot register @property).
+    const css = readFileSync(
+      `${process.cwd()}/projects/common/tabs/styles/tabs-base.css`,
+      'utf8',
+    );
+    expect(css).toMatch(/@property --cngx-tab-sublabel-font-size\s*\{/);
+    expect(css).toMatch(/@property --cngx-tab-sublabel-color\s*\{/);
+    // Both must inherit so a host-level override on `cngx-tab-group`
+    // cascades down to the `.cngx-tabs__sublabel` descendant - with
+    // `inherits: false` the override is silently dropped (the
+    // host->descendant @property trap).
+    expect(css).toMatch(
+      /@property --cngx-tab-sublabel-font-size\s*\{[^}]*inherits:\s*true/,
+    );
+    expect(css).toMatch(
+      /@property --cngx-tab-sublabel-color\s*\{[^}]*inherits:\s*true/,
+    );
   });
 });

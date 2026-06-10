@@ -154,4 +154,39 @@ describe('CngxMatTabError attribute directive', () => {
     await fixture.whenStable();
     expect(presenter.tabs()[0].errorAggregator()).toBeUndefined();
   });
+
+  test('axis 4: handle.hasError() tracks the pumped aggregator; errorMessage() stays undefined', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(PlainHostCmp);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const matEl = fixture.debugElement.query(
+      (el) => el.componentInstance instanceof MatTabGroup,
+    );
+    const presenter = matEl.injector.get(CngxTabGroupPresenter);
+    const aggA = (
+      fixture.componentInstance as unknown as {
+        aggA: WritableSignal<CngxErrorAggregatorContract | undefined>;
+      }
+    ).aggA;
+
+    const errored = signal(false);
+    aggA.set(makeStubAggregator(errored));
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    // The synthesised handle derives `hasError` from the pumped
+    // aggregator slot - no author-facing direct flag through Material
+    // chrome yet, so `errorMessage` stays pinned `undefined`.
+    expect(presenter.tabs()[0].hasError()).toBe(false);
+    errored.set(true);
+    expect(presenter.tabs()[0].hasError()).toBe(true);
+    expect(presenter.tabs()[1].hasError()).toBe(false);
+    expect(presenter.tabs()[0].errorMessage()).toBeUndefined();
+  });
 });

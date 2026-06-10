@@ -1,4 +1,14 @@
-import { computed, Directive, inject, input, model, signal, type Signal } from '@angular/core';
+import {
+  computed,
+  Directive,
+  inject,
+  Injector,
+  input,
+  model,
+  output,
+  signal,
+  type Signal,
+} from '@angular/core';
 
 import { CNGX_COMMIT_CONTROLLER_FACTORY, type CngxCommitController } from '@cngx/common/data';
 import {
@@ -9,9 +19,11 @@ import {
 } from '@cngx/core/utils';
 import type { Observable } from 'rxjs';
 
+import { CNGX_TABS_COMMIT_ACTION, type CngxTabsCommitActionSource } from './commit-action.token';
 import { CNGX_TABS_COMMIT_HANDLER_FACTORY, type CngxTabsCommitHandler } from './commit-handler';
 import {
   CNGX_TAB_GROUP_HOST,
+  type CngxTabCloseEvent,
   type CngxTabGroupHost,
   type CngxTabHandle,
 } from './tab-group-host.token';
@@ -69,15 +81,76 @@ export class CngxTabGroupPresenter implements CngxTabGroupHost {
    * action's resolution decides whether the change lands. Supersede
    * semantics come from the commit-controller - a rapid second
    * `select(...)` cancels the in-flight runner.
+   *
+   * @internal Two-field alias - bind the public `[commitAction]`; read
+   * the resolved {@link commitAction} computed (input ?? DI fallback).
    */
-  readonly commitAction = input<CngxTabsCommitAction | null>(null);
+  readonly commitActionInput = input<CngxTabsCommitAction | null>(null, {
+    alias: 'commitAction',
+  });
   /**
    * Default `'optimistic'` - tab change is navigation, not a save,
    * so eager visual feedback matches the user's mental model.
    * Switch to `'pessimistic'` when the new tab must wait for the
    * action to confirm.
+   *
+   * @internal Two-field alias - bind the public `[commitMode]`; read
+   * the resolved {@link commitMode} computed (DI fallback mode wins
+   * when a routed action is active).
    */
-  readonly commitMode = input<'optimistic' | 'pessimistic'>('optimistic');
+  readonly commitModeInput = input<'optimistic' | 'pessimistic'>('optimistic', {
+    alias: 'commitMode',
+  });
+
+  private readonly injector = inject(Injector);
+  // Resolved lazily, never in a field initialiser: a sync directive
+  // (e.g. [cngxTabsRouteSync]) provides CNGX_TABS_COMMIT_ACTION via
+  // useExisting and itself injects this presenter as its host, so
+  // eager injection here would close a construction cycle (NG0200).
+  // First read happens at select()/template time - after both
+  // directives exist. The source is static per element, so memoising
+  // the resolution is safe.
+  private injectedActionSource: CngxTabsCommitActionSource | null | undefined;
+
+  private resolveInjectedAction(): CngxTabsCommitActionSource | null {
+    if (this.injectedActionSource === undefined) {
+      this.injectedActionSource = this.injector.get(CNGX_TABS_COMMIT_ACTION, null);
+    }
+    return this.injectedActionSource;
+  }
+
+  /**
+   * Resolved commit-action: the `[commitAction]` input when bound, else
+   * the {@link CNGX_TABS_COMMIT_ACTION} DI fallback (routed path), else
+   * `null`. `select()` reads this.
+   */
+  readonly commitAction = computed<CngxTabsCommitAction | null>(
+    () => this.commitActionInput() ?? this.resolveInjectedAction()?.action() ?? null,
+  );
+  /**
+   * Resolved commit mode. When the DI fallback supplies an active
+   * action its `mode` wins - the routed path pins `'pessimistic'` so a
+   * stray `[commitMode]="'optimistic'"` cannot break the
+   * route-follows-resolution invariant. Otherwise the `[commitMode]`
+   * input drives.
+   */
+  readonly commitMode = computed<'optimistic' | 'pessimistic'>(() => {
+    const source = this.resolveInjectedAction();
+    return source?.action() ? source.mode() : this.commitModeInput();
+  });
+
+  /**
+   * Emitted when a tab's close affordance is activated (the close
+   * button or Delete/Backspace on the focused tab). The presenter has
+   * already moved the active index onto the surviving neighbour; the
+   * consumer removes the tab from its own data in the handler.
+   */
+  readonly tabClose = output<CngxTabCloseEvent>();
+  /**
+   * Emitted when the add-tab affordance is activated. The consumer
+   * appends a tab to its own data; the presenter owns no creation logic.
+   */
+  readonly tabAdd = output<void>();
 
   private readonly genericFactory = inject(CNGX_COMMIT_CONTROLLER_FACTORY);
   private readonly commitController: CngxCommitController<number> = this.genericFactory<number>();
@@ -271,20 +344,46 @@ export class CngxTabGroupPresenter implements CngxTabGroupHost {
       this.select(idx);
     }
   }
+
+  requestClose(id: string): void {
+    const tabs = this.tabs();
+    const index = tabs.findIndex((h) => h.id === id);
+    if (index < 0) {
+      return;
+    }
+    const active = this.clampedIndex();
+    // Only closing a tab BEFORE the active one needs a pre-emptive
+    // index shift: the active tab moves down one slot once the consumer
+    // removes the closed tab, so decrement to keep the same tab active.
+    // Closing the active tab (or one after it) needs no write -
+    // `clampedIndex` re-derives against the shorter array and lands on
+    // the next tab (or the new last when the closed tab was last).
+    if (index < active) {
+      this.activeIndex.set(active - 1);
+    }
+    this.tabClose.emit({ id, index });
+  }
+
+  requestAdd(): void {
+    this.tabAdd.emit();
+  }
 }
 
 /**
  * Structural equality for the tab registry. Compares length and
- * per-entry `id`, `disabled()`, and `label()`.
+ * per-entry `id`, `disabled()`, `label()`, `subLabel()`, and
+ * `closable()`.
  *
- * `errorAggregator` is left out on purpose. The handle is a stable
- * per-tab reference injected once, so comparing it would push the
- * memoisation burden onto consumers and break the structural-equal
- * contract.
+ * `errorAggregator`, `hasError`, and `errorMessage` are left out on
+ * purpose. The handle is a stable per-tab reference injected once, and
+ * the organism reads `tab.hasError()` / `tab.errorMessage()` reactively
+ * off that handle (not off array identity), so the badge + descriptor
+ * update on error-state changes without the registry array re-emitting.
+ * Comparing them here would push the memoisation burden onto consumers
+ * and break the structural-equal contract.
  *
- * Reading `disabled()` and `label()` here doesn't subscribe - the
- * comparator runs synchronously inside `signal.set()`, outside any
- * tracking context.
+ * Reading the signals here doesn't subscribe - the comparator runs
+ * synchronously inside `signal.set()`, outside any tracking context.
  *
  * @internal
  */
@@ -299,7 +398,9 @@ export function tabsEqual(a: readonly CngxTabHandle[], b: readonly CngxTabHandle
     if (
       a[i].id !== b[i].id ||
       a[i].disabled() !== b[i].disabled() ||
-      a[i].label() !== b[i].label()
+      a[i].label() !== b[i].label() ||
+      a[i].subLabel() !== b[i].subLabel() ||
+      a[i].closable() !== b[i].closable()
     ) {
       return false;
     }

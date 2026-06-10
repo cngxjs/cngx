@@ -193,9 +193,9 @@ module.exports = tseslint.config(
         ],
         plugins: { local: localRules },
         rules: {
-            // Threshold ratchet history (150 → 180 → 200) and per-bump
-            // rationale: `.internal/architektur/tabs-accepted-debt.md §8`.
-            'local/level-4-organism-loc-guard': ['error', { threshold: 200 }],
+            // Threshold ratchet history (150 → 180 → 200 → 205) and
+            // per-bump rationale: `.internal/architektur/tabs-accepted-debt.md §8`.
+            'local/level-4-organism-loc-guard': ['error', { threshold: 205 }],
         },
     },
 

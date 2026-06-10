@@ -68,7 +68,7 @@
    * @group Layout
    */
   @property --cngx-tab-overflow-button-radius {
-    syntax: '<length>';
+    syntax: '*';
     inherits: false;
     initial-value: 0.25rem;
   }
@@ -119,7 +119,7 @@
    * @group Layout
    */
   @property --cngx-tab-overflow-popover-radius {
-    syntax: '<length>';
+    syntax: '*';
     inherits: false;
     initial-value: 0.25rem;
   }

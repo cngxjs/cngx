@@ -2,13 +2,21 @@ import { computed, type Signal, type TemplateRef } from '@angular/core';
 
 import type { CngxTabsConfig } from '../tabs-config';
 import type {
+  CngxTabAddIcon,
+} from './tab-add-icon.directive';
+import type {
   CngxTabBusySpinner,
   CngxTabBusySpinnerContext,
 } from './tab-busy-spinner.directive';
 import type {
+  CngxTabCloseIcon,
+  CngxTabCloseIconContext,
+} from './tab-close-icon.directive';
+import type {
   CngxTabErrorBadge,
   CngxTabErrorBadgeContext,
 } from './tab-error-badge.directive';
+import type { CngxTabIcon, CngxTabIconContext } from './tab-icon.directive';
 import type {
   CngxTabRejectionIcon,
   CngxTabRejectionIconContext,
@@ -27,6 +35,11 @@ export interface CngxTabGroupTemplateBindingsOptions {
   readonly errorBadgeSlot: Signal<CngxTabErrorBadge | undefined>;
   readonly rejectionIconSlot: Signal<CngxTabRejectionIcon | undefined>;
   readonly busySpinnerSlot: Signal<CngxTabBusySpinner | undefined>;
+  readonly iconSlot: Signal<CngxTabIcon | undefined>;
+  /** Per-instance `*cngxTabCloseIcon` slot. Optional - close is opt-in. */
+  readonly closeIconSlot?: Signal<CngxTabCloseIcon | undefined>;
+  /** Per-instance `*cngxTabAddIcon` slot. Optional - add is opt-in. */
+  readonly addIconSlot?: Signal<CngxTabAddIcon | undefined>;
   readonly config: CngxTabsConfig;
 }
 
@@ -43,14 +56,22 @@ export interface CngxTabGroupTemplateBindings {
     TemplateRef<CngxTabRejectionIconContext> | null
   >;
   readonly busySpinner: Signal<TemplateRef<CngxTabBusySpinnerContext> | null>;
+  readonly icon: Signal<TemplateRef<CngxTabIconContext> | null>;
+  readonly closeIcon: Signal<TemplateRef<CngxTabCloseIconContext> | null>;
+  readonly addIcon: Signal<TemplateRef<void> | null>;
 }
 
 /**
- * Wires the 3-stage template cascade for the three `<cngx-tab-group>`
- * skin slots:
+ * Wires the 3-stage template cascade for the `<cngx-tab-group>` skin
+ * slots (errorBadge / rejectionIcon / busySpinner / icon / closeIcon /
+ * addIcon):
  *   per-instance directive >
  *   `CNGX_TABS_CONFIG.templates.<key>` >
- *   `null` (built-in default).
+ *   `null`.
+ *
+ * `null` means the organism renders its built-in default - a default
+ * span for the state decorations, the `CNGX_TABS_GLYPHS` glyph for
+ * `closeIcon` / `addIcon`, and nothing for `icon`.
  *
  * Pure — no DI, no side effects. Safe in field-init. Sibling to
  * `createStepperTemplateBindings` and `createTabOverflowTemplateBindings`.
@@ -82,6 +103,18 @@ export function createTabGroupTemplateBindings(
         opts.busySpinnerSlot()?.templateRef ??
         opts.config.templates?.busySpinner ??
         null,
+    ),
+    icon: computed<TemplateRef<CngxTabIconContext> | null>(
+      () => opts.iconSlot()?.templateRef ?? opts.config.templates?.icon ?? null,
+    ),
+    closeIcon: computed<TemplateRef<CngxTabCloseIconContext> | null>(
+      () =>
+        opts.closeIconSlot?.()?.templateRef ??
+        opts.config.templates?.closeIcon ??
+        null,
+    ),
+    addIcon: computed<TemplateRef<void> | null>(
+      () => opts.addIconSlot?.()?.templateRef ?? opts.config.templates?.addIcon ?? null,
     ),
   };
 }

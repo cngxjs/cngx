@@ -10,10 +10,26 @@ import { inject, InjectionToken, type Provider } from '@angular/core';
 export interface CngxTabsI18n {
   readonly tabsLabel: string;
   readonly selectedTab: (label: string, position: number, count: number) => string;
+  /**
+   * Folds a tab's optional secondary label into its accessible name.
+   * Receives the primary label and the sub-label detail; the result
+   * is passed to {@link selectedTab} as the label part, e.g.
+   * `Tab 2 of 5: Bookmarks, 45`. Only invoked when a sub-label is
+   * present.
+   */
+  readonly tabLabelWithDetail: (label: string, detail: string) => string;
   readonly tabHasErrors: (count: number) => string;
   readonly moreTabsLabel: (count: number) => string;
   readonly previousTab: string;
   readonly nextTab: string;
+  /**
+   * Accessible name for a tab's close button. Receives the tab label
+   * (or a generic fallback when unlabeled) and yields the button's
+   * `aria-label`, e.g. `Close "Profile"`.
+   */
+  readonly closeTab: (label: string) => string;
+  /** Accessible name for the add-tab button. */
+  readonly addTab: string;
   /**
    * @deprecated Superseded by {@link commitRolledBackTo}. Retained as
    * the defensive fallback in `liveAnnouncement` when the origin
@@ -35,10 +51,13 @@ export interface CngxTabsI18n {
 const TABS_I18N_DEFAULTS: CngxTabsI18n = {
   tabsLabel: 'Tabs',
   selectedTab: (label, position, count) => `Tab ${position} of ${count}: ${label}`,
+  tabLabelWithDetail: (label, detail) => `${label}, ${detail}`,
   tabHasErrors: (count) => `${count} error${count === 1 ? '' : 's'}`,
   moreTabsLabel: (count) => `${count} more`,
   previousTab: 'Previous tab',
   nextTab: 'Next tab',
+  closeTab: (label) => `Close "${label}"`,
+  addTab: 'Add tab',
   commitFailedRetry: 'Tab change refused — retry?',
   commitInFlight: 'Switching tab…',
   commitRolledBackTo: (originLabel) => `Could not save changes — reverted to "${originLabel}".`,

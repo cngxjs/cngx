@@ -16,6 +16,7 @@ import {
   provideTabsConfigAt,
   withTabBusySpinnerTemplate,
   withTabErrorBadgeTemplate,
+  withTabIconTemplate,
   withTabOverflowMaxDeferMs,
   withTabOverflowStabilizeMs,
   withTabRejectionIconTemplate,
@@ -23,11 +24,16 @@ import {
   withTabsCommitMode,
   withTabsDefaultOrientation,
   withTabsFallbackLabels,
+  withTabsIconLayout,
+  withTabsPanelMode,
+  withTabsFragmentSync,
   withTabsRouterSync,
   withTabsRovingLoop,
+  withTabsSkin,
 } from './tabs-config';
 import type { CngxTabBusySpinnerContext } from './slots/tab-busy-spinner.directive';
 import type { CngxTabErrorBadgeContext } from './slots/tab-error-badge.directive';
+import type { CngxTabIconContext } from './slots/tab-icon.directive';
 import type { CngxTabRejectionIconContext } from './slots/tab-rejection-icon.directive';
 
 describe('CngxTabsConfig', () => {
@@ -43,8 +49,8 @@ describe('CngxTabsConfig', () => {
     expect(cfg.defaultOrientation).toBe('horizontal');
     expect(cfg.defaultLoop).toBe(true);
     expect(cfg.defaultCommitMode).toBe('optimistic');
-    expect(cfg.routerSyncMode).toBe('fragment');
-    expect(cfg.routerSyncParam).toBe('tab');
+    expect(cfg.fragmentSyncMode).toBe('fragment');
+    expect(cfg.fragmentSyncParam).toBe('tab');
   });
 
   it('withTabsDefaultOrientation overrides the orientation default', () => {
@@ -80,7 +86,20 @@ describe('CngxTabsConfig', () => {
     expect(TestBed.inject(CNGX_TABS_CONFIG).defaultCommitMode).toBe('pessimistic');
   });
 
-  it('withTabsRouterSync overrides mode and paramName', () => {
+  it('withTabsFragmentSync overrides mode and paramName', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideTabsConfig(withTabsFragmentSync('queryParam', 'panel')),
+      ],
+    });
+    const cfg = TestBed.inject(CNGX_TABS_CONFIG);
+    expect(cfg.fragmentSyncMode).toBe('queryParam');
+    expect(cfg.fragmentSyncParam).toBe('panel');
+  });
+
+  it('withTabsRouterSync is a deprecated alias of withTabsFragmentSync', () => {
+    expect(withTabsRouterSync).toBe(withTabsFragmentSync);
     TestBed.configureTestingModule({
       providers: [
         provideZonelessChangeDetection(),
@@ -88,8 +107,8 @@ describe('CngxTabsConfig', () => {
       ],
     });
     const cfg = TestBed.inject(CNGX_TABS_CONFIG);
-    expect(cfg.routerSyncMode).toBe('queryParam');
-    expect(cfg.routerSyncParam).toBe('panel');
+    expect(cfg.fragmentSyncMode).toBe('queryParam');
+    expect(cfg.fragmentSyncParam).toBe('panel');
   });
 
   it('withTabsAriaLabels merges into the ariaLabels bag', () => {
@@ -219,6 +238,66 @@ describe('CngxTabsConfig', () => {
     expect(cfg.overflowMaxDeferMs).toBe(400);
   });
 
+  describe('skin and icon-layout axes', () => {
+    it('library default leaves skin and iconLayout unset (cascade default lives in createTabsHostAttrs)', () => {
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      const cfg = TestBed.inject(CNGX_TABS_CONFIG);
+      expect(cfg.skin).toBeUndefined();
+      expect(cfg.iconLayout).toBeUndefined();
+    });
+
+    it('withTabsSkin overrides the skin default', () => {
+      TestBed.configureTestingModule({
+        providers: [
+          provideZonelessChangeDetection(),
+          provideTabsConfig(withTabsSkin('pill')),
+        ],
+      });
+      expect(TestBed.inject(CNGX_TABS_CONFIG).skin).toBe('pill');
+    });
+
+    it('withTabsIconLayout overrides the icon-layout default', () => {
+      TestBed.configureTestingModule({
+        providers: [
+          provideZonelessChangeDetection(),
+          provideTabsConfig(withTabsIconLayout('top')),
+        ],
+      });
+      expect(TestBed.inject(CNGX_TABS_CONFIG).iconLayout).toBe('top');
+    });
+
+    it('skin and icon-layout features compose independently', () => {
+      TestBed.configureTestingModule({
+        providers: [
+          provideZonelessChangeDetection(),
+          provideTabsConfig(withTabsSkin('contained'), withTabsIconLayout('only')),
+        ],
+      });
+      const cfg = TestBed.inject(CNGX_TABS_CONFIG);
+      expect(cfg.skin).toBe('contained');
+      expect(cfg.iconLayout).toBe('only');
+    });
+
+    it('library default leaves panelMode unset (cascade default lives in createTabsHostAttrs)', () => {
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      expect(TestBed.inject(CNGX_TABS_CONFIG).panelMode).toBeUndefined();
+    });
+
+    it('withTabsPanelMode overrides the panel-mode default', () => {
+      TestBed.configureTestingModule({
+        providers: [
+          provideZonelessChangeDetection(),
+          provideTabsConfig(withTabsPanelMode('lazy')),
+        ],
+      });
+      expect(TestBed.inject(CNGX_TABS_CONFIG).panelMode).toBe('lazy');
+    });
+  });
+
   describe('skin-slot template features', () => {
     @Component({
       standalone: true,
@@ -226,6 +305,7 @@ describe('CngxTabsConfig', () => {
         <ng-template #errorBadgeTpl />
         <ng-template #rejectionIconTpl />
         <ng-template #busySpinnerTpl />
+        <ng-template #iconTpl />
       `,
     })
     class TemplateHostComponent {
@@ -235,12 +315,15 @@ describe('CngxTabsConfig', () => {
       rejectionIconTpl!: TemplateRef<CngxTabRejectionIconContext>;
       @ViewChild('busySpinnerTpl', { static: true })
       busySpinnerTpl!: TemplateRef<CngxTabBusySpinnerContext>;
+      @ViewChild('iconTpl', { static: true })
+      iconTpl!: TemplateRef<CngxTabIconContext>;
     }
 
     function createTemplates(): {
       errorBadge: TemplateRef<CngxTabErrorBadgeContext>;
       rejectionIcon: TemplateRef<CngxTabRejectionIconContext>;
       busySpinner: TemplateRef<CngxTabBusySpinnerContext>;
+      icon: TemplateRef<CngxTabIconContext>;
     } {
       TestBed.configureTestingModule({
         providers: [provideZonelessChangeDetection()],
@@ -253,6 +336,7 @@ describe('CngxTabsConfig', () => {
         errorBadge: host.errorBadgeTpl,
         rejectionIcon: host.rejectionIconTpl,
         busySpinner: host.busySpinnerTpl,
+        icon: host.iconTpl,
       };
     }
 
@@ -264,6 +348,18 @@ describe('CngxTabsConfig', () => {
       expect(cfg.templates?.errorBadge).toBeUndefined();
       expect(cfg.templates?.rejectionIcon).toBeUndefined();
       expect(cfg.templates?.busySpinner).toBeUndefined();
+      expect(cfg.templates?.icon).toBeUndefined();
+    });
+
+    it('withTabIconTemplate writes the icon slot', () => {
+      const tpls = createTemplates();
+      TestBed.configureTestingModule({
+        providers: [
+          provideZonelessChangeDetection(),
+          provideTabsConfig(withTabIconTemplate(tpls.icon)),
+        ],
+      });
+      expect(TestBed.inject(CNGX_TABS_CONFIG).templates?.icon).toBe(tpls.icon);
     });
 
     it('withTabErrorBadgeTemplate writes the errorBadge slot', () => {

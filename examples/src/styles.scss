@@ -3435,6 +3435,90 @@ cngx-radio-group .cngx-radio + .cngx-radio {
   overflow: auto;
 }
 
+// Vertical tab-overflow demos. Each group is a fixed-width card so its
+// panel column (the grid 1fr track) resolves instead of bleeding across the
+// neighbouring group; the More trigger stacks below the tab column (the
+// strip-wrapper is a row by default).
+.demo-vtab-overflow {
+  width: 250px;
+  border: 1px dashed currentColor;
+  padding: 4px;
+
+  // The vertical group is a grid; its live-region / projection children land
+  // in phantom rows below the strip row. Zero the row-gap (the 1rem shorthand
+  // gap otherwise stacks as dead space under a short panel) while keeping the
+  // column gap as the strip-to-panel gutter.
+  cngx-tab-group[data-orientation='vertical'] {
+    row-gap: 0;
+  }
+
+  // Stack the strip and the More trigger as a column; stretch so the trigger
+  // can span the tab column for a centred label.
+  cngx-tab-group[data-orientation='vertical'] .cngx-tabs__strip-wrapper {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  // Clip the strip to roughly four tabs (real overflow, not display:none) so
+  // the molecule's self-healing scrollIntoView can scroll a tab picked from
+  // the More menu into view - it snaps to the top via the base
+  // scroll-snap-align. A tab at the bottom edge may sit partly visible at
+  // rest, the same honest-overflow look as the horizontal strip.
+  cngx-tab-group[data-orientation='vertical'] .cngx-tabs__strip {
+    max-height: 124px;
+  }
+
+  // Contained draws a border on every tab, so a partly-clipped tab reads as a
+  // broken box. Clamp to four whole tabs and force mandatory snapping so a tab
+  // always aligns flush to the top edge after a scroll - the top border stays
+  // continuous and no tab is sliced. (The 1px tab-seam overlap is the only
+  // residual, and it is invisible.)
+  cngx-tab-group[data-skin='contained'] .cngx-tabs__strip {
+    max-height: 142px;
+    scroll-snap-type: y mandatory;
+  }
+
+  cngx-tab-group[data-skin='segmented'] .cngx-tabs__strip {
+    max-height: 138px;
+  }
+
+  cngx-tab-group[data-skin='pill'] .cngx-tabs__strip {
+    max-height: 138px;
+  }
+
+  cngx-tab-group[data-skin='pill-outline'] .cngx-tabs__strip {
+    max-height: 146px;
+  }
+
+  // Lighter, smaller More trigger - it is a secondary affordance under the
+  // column, not a tab, so it sits tighter and reads a notch smaller.
+  cngx-tab-group[data-orientation='vertical'] .cngx-tab-overflow__trigger {
+    padding-block: 0.3125rem;
+    font-size: var(--cngx-tab-sublabel-font-size, 0.8125rem);
+  }
+
+  // Centre the "N more" label under the tab column - pills only; the other
+  // skins keep the trigger left-aligned with the tab labels.
+  cngx-tab-group[data-skin='pill'] .cngx-tab-overflow__trigger,
+  cngx-tab-group[data-skin='pill-outline'] .cngx-tab-overflow__trigger {
+    width: 100%;
+    justify-content: center;
+  }
+
+  // Contained skin: the More trigger picks up the same folder-tab border as
+  // the tabs (the surface tokens inherit, so the colour tracks the scheme).
+  cngx-tab-group[data-skin='contained'] .cngx-tab-overflow__trigger {
+    // Full column width so the bordered trigger lines up with the folder
+    // tabs above it; the label stays left-aligned (only pills centre).
+    width: 100%;
+    border: var(--cngx-tab-surface-border-width, 1px) solid
+      var(--cngx-tab-surface-border-color, oklch(0.87 0 0));
+    border-bottom: 0;
+    border-radius: 0;
+    background: var(--cngx-tab-inactive-bg, oklch(0.97 0 0));
+  }
+}
+
 .chip.demo-chip-toggle--active {
   background: var(--cngx-color-success-surface, #c8e6c9);
   border-color: var(--cngx-color-success-border, #66bb6a);
@@ -3545,4 +3629,36 @@ cngx-radio-group .cngx-radio + .cngx-radio {
 // the chips skin's own default active fill follows --cngx-color-primary.
 .demo-stepper-chips-accent {
   --cngx-step-chips-fill-active: #2563eb;
+}
+
+// Demo-only styling for the tab-panel container-query story. The panel
+// is a `cngx-tab-panel` container (set by @cngx/ui/tabs); the grid below
+// reflows on the PANEL's own inline width, not the viewport. The
+// resizable wrapper lets the reader drag the panel narrow/wide.
+.demo-cq-resize {
+  resize: horizontal;
+  overflow: auto;
+  min-width: 240px;
+  max-width: 100%;
+  border: 1px solid var(--cngx-border, #d4d4d8);
+  border-radius: 8px;
+  padding: 8px;
+}
+
+.demo-cq-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+.demo-cq-card {
+  border: 1px solid var(--cngx-border, #d4d4d8);
+  border-radius: 6px;
+  padding: 12px;
+}
+
+@container cngx-tab-panel (min-width: 420px) {
+  .demo-cq-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }

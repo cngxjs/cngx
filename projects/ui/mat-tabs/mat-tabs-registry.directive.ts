@@ -44,14 +44,16 @@ interface CngxMatTabsRegistryEntry {
  */
 export interface CngxMatTabsRegistryHost {
   /**
-   * Returns the per-handle `errorAggregator` slot, or `undefined`
-   * before the tab is registered. The `contentChildren(MatTab)`
-   * query lands during content-init, so a same-microtask injection
-   * from an attribute directive can race; consumers recover by
-   * tracking `presenter.tabs()` and re-attempting on the next sync
-   * tick.
+   * Returns the per-handle writable slots (`errorAggregator`,
+   * `directError`), or `undefined` before the tab is registered. The
+   * `contentChildren(MatTab)` query lands during content-init, so a
+   * same-microtask injection from an attribute directive can race;
+   * consumers recover by tracking `presenter.tabs()` and re-attempting
+   * on the next sync tick.
    */
-  getHandleSetup(matTab: MatTab): Pick<CngxMatTabHandleSetup, 'errorAggregator'> | undefined;
+  getHandleSetup(
+    matTab: MatTab,
+  ): Pick<CngxMatTabHandleSetup, 'errorAggregator' | 'directError'> | undefined;
 }
 
 /**
@@ -131,7 +133,9 @@ export class CngxMatTabsRegistry implements CngxMatTabsRegistryHost {
     });
   }
 
-  getHandleSetup(matTab: MatTab): Pick<CngxMatTabHandleSetup, 'errorAggregator'> | undefined {
+  getHandleSetup(
+    matTab: MatTab,
+  ): Pick<CngxMatTabHandleSetup, 'errorAggregator' | 'directError'> | undefined {
     return this.setupsByTab.get(matTab)?.setup;
   }
 
