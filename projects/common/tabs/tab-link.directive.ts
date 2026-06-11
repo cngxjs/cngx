@@ -2,9 +2,12 @@ import {
   computed,
   DestroyRef,
   Directive,
+  effect,
+  ElementRef,
   inject,
   input,
   type OnInit,
+  Renderer2,
   type Signal,
   signal,
 } from '@angular/core';
@@ -17,7 +20,8 @@ import { CNGX_TAB_GROUP_HOST, type CngxTabHandle } from './tab-group-host.token'
 
 /**
  * Turns a consumer `<a routerLink>` into a registered {@link CngxTabHandle}
- * inside a {@link CngxTabNav}. Native parallel of {@link CngxMatTabLink}: in a
+ * inside a {@link CngxTabNav}. \
+ * Native parallel of {@link CngxMatTabLink}: in a
  * navigation bar the link IS the tab, so this per-anchor directive is the
  * registration seam - symmetric with how `CngxTab` registers each `[cngxTab]`.
  *
@@ -25,9 +29,15 @@ import { CNGX_TAB_GROUP_HOST, type CngxTabHandle } from './tab-group-host.token'
  * `routerLink` (middle-click, open-in-new-tab and the hover URL all work),
  * gating is the link's own `CanDeactivate`, and the active marker comes from
  * the route: `[cngxTabsRouteSync]` on the nav reflects `NavigationEnd` onto the
- * presenter's `activeId`, which this link matches against its own `id`. There
- * is no `select()` call - invoking it would re-enter the commit path the
+ * presenter's `activeId`, which this link matches against its own `id`. \
+ * There is no `select()` call - invoking it would re-enter the commit path the
  * routed-nav model deliberately keeps dormant.
+ *
+ * **Error communication is reactive:** `aria-invalid` plus the
+ * `--error` skin glyph signal the state, and an injected screen-reader
+ * descriptor span (referenced by a permanent `aria-describedby`) carries the
+ * direct `[error]` message string so assistive tech reads *why* the link is
+ * invalid.
  *
  * ```html
  * <cngx-tab-nav cngxTabsRouteSync>
@@ -51,6 +61,7 @@ import { CNGX_TAB_GROUP_HOST, type CngxTabHandle } from './tab-group-host.token'
     class: 'cngx-tab-nav__link',
     '[attr.aria-current]': "selected() ? 'page' : null",
     '[attr.aria-invalid]': "hasError() ? 'true' : null",
+    '[attr.aria-describedby]': 'descriptorId()',
     '[class.cngx-tab-nav__link--active]': 'selected()',
     '[class.cngx-tab-nav__link--error]': 'hasError()',
   },
@@ -58,6 +69,8 @@ import { CNGX_TAB_GROUP_HOST, type CngxTabHandle } from './tab-group-host.token'
 export class CngxTabLink implements OnInit {
   private readonly host = inject(CNGX_TAB_GROUP_HOST, { optional: true });
   private readonly destroyRef = inject(DestroyRef);
+  private readonly renderer = inject(Renderer2);
+  private readonly hostEl = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
 
   /**
    * Handle id. Set it to the link's route segment so the nav's
@@ -96,8 +109,7 @@ export class CngxTabLink implements OnInit {
     () => {
       const direct = this.error();
       return (
-        (direct !== false && direct !== '') ||
-        (this.errorAggregator()?.shouldShow?.() ?? false)
+        (direct !== false && direct !== '') || (this.errorAggregator()?.shouldShow?.() ?? false)
       );
     },
     { equal: Object.is },
@@ -109,12 +121,31 @@ export class CngxTabLink implements OnInit {
     { equal: Object.is },
   );
 
+  /**
+   * Id of the injected SR error-message descriptor. Always referenced by the
+   * `aria-describedby` host binding (Pillar 2 - the id is permanent; the
+   * span's content and `aria-hidden` toggle, never the id itself).
+   */
+  protected readonly descriptorId: Signal<string> = computed(() => `${this.id()}-desc`);
+
+  /** The injected descriptor `<span>`, created in {@link ngOnInit}. */
+  private descriptorEl: HTMLElement | null = null;
+
   constructor() {
     if (!this.host) {
       throw new Error(
         'CngxTabLink: no enclosing CngxTabGroupPresenter found. Wrap the link inside <cngx-tab-nav> (or an element carrying [cngxTabGroup]).',
       );
     }
+    // Mirror the direct-error message into the describedby span. DOM side
+    // effect only - no signal writes. Guards until the span exists (created
+    // in ngOnInit); errorMessage / descriptorId changes re-run it after.
+    effect(() => {
+      const el = this.descriptorEl;
+      if (el) {
+        this.syncDescriptor(el);
+      }
+    });
   }
 
   ngOnInit(): void {
@@ -134,6 +165,41 @@ export class CngxTabLink implements OnInit {
       closable: signal(undefined),
     };
     host.register(handle);
-    this.destroyRef.onDestroy(() => host.unregister(handle.id));
+
+    // Inject the SR error-message descriptor as a SIBLING of the anchor: a
+    // child span would fold into the link's accessible name, so it lives
+    // beside it and is reached only via the aria-describedby id.
+    const descriptor = this.renderer.createElement('span') as HTMLElement;
+    this.renderer.addClass(descriptor, 'cngx-sr-only');
+    const parent = this.renderer.parentNode(this.hostEl) as HTMLElement | null;
+    if (parent) {
+      this.renderer.insertBefore(parent, descriptor, this.renderer.nextSibling(this.hostEl));
+    }
+    this.descriptorEl = descriptor;
+    this.syncDescriptor(descriptor);
+
+    this.destroyRef.onDestroy(() => {
+      host.unregister(handle.id);
+      if (parent) {
+        this.renderer.removeChild(parent, descriptor);
+      }
+    });
+  }
+
+  /**
+   * Write the current direct-error message into the descriptor span and
+   * toggle its `aria-hidden` so a clear link exposes no description. Keeps
+   * the span id in sync with {@link descriptorId} (read here so the effect
+   * tracks an id change too).
+   */
+  private syncDescriptor(el: HTMLElement): void {
+    this.renderer.setAttribute(el, 'id', this.descriptorId());
+    const message = this.errorMessage() ?? '';
+    this.renderer.setProperty(el, 'textContent', message);
+    if (message) {
+      this.renderer.removeAttribute(el, 'aria-hidden');
+    } else {
+      this.renderer.setAttribute(el, 'aria-hidden', 'true');
+    }
   }
 }

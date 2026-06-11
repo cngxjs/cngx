@@ -164,4 +164,62 @@ describe('CngxTabLink', () => {
       fixture.detectChanges();
     }).toThrow(/no enclosing CngxTabGroupPresenter/);
   });
+
+  describe('SR error-message descriptor', () => {
+    function descriptor(
+      fixture: ReturnType<typeof TestBed.createComponent<TabLinkHost>>,
+      id: string,
+    ): HTMLElement | null {
+      return fixture.nativeElement.querySelector(`#${id}-desc`);
+    }
+
+    it('always references a permanent descriptor id via aria-describedby', () => {
+      const { anchor } = setup();
+      expect(anchor(0).getAttribute('aria-describedby')).toBe('overview-desc');
+      expect(anchor(1).getAttribute('aria-describedby')).toBe('profile-desc');
+    });
+
+    it('injects the descriptor as a hidden sibling, not a child of the anchor', () => {
+      const { fixture, anchor } = setup();
+      const span = descriptor(fixture, 'profile');
+      expect(span).not.toBeNull();
+      expect(span!.classList.contains('cngx-sr-only')).toBe(true);
+      // Sibling, never a child - a child would fold into the link's name.
+      expect(anchor(1).contains(span)).toBe(false);
+    });
+
+    it('stays empty + aria-hidden while the link has no error', () => {
+      const { fixture } = setup();
+      const span = descriptor(fixture, 'profile')!;
+      expect(span.textContent).toBe('');
+      expect(span.getAttribute('aria-hidden')).toBe('true');
+    });
+
+    it('carries the direct [error] message and drops aria-hidden when set', () => {
+      const { fixture } = setup();
+      fixture.componentInstance.profileError.set('Required fields missing');
+      fixture.detectChanges();
+      const span = descriptor(fixture, 'profile')!;
+      expect(span.textContent).toBe('Required fields missing');
+      expect(span.getAttribute('aria-hidden')).toBeNull();
+    });
+
+    it('re-hides the descriptor when the message clears', () => {
+      const { fixture } = setup();
+      fixture.componentInstance.profileError.set('Boom');
+      fixture.detectChanges();
+      fixture.componentInstance.profileError.set(false);
+      fixture.detectChanges();
+      const span = descriptor(fixture, 'profile')!;
+      expect(span.textContent).toBe('');
+      expect(span.getAttribute('aria-hidden')).toBe('true');
+    });
+
+    it('removes the descriptor span on teardown', () => {
+      const { fixture } = setup();
+      expect(descriptor(fixture, 'profile')).not.toBeNull();
+      fixture.destroy();
+      expect(descriptor(fixture, 'profile')).toBeNull();
+    });
+  });
 });
