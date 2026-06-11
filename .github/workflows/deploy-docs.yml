@@ -61,6 +61,17 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
+      # Re-running this workflow re-runs the upload step, which would attach
+      # a second `github-pages` artifact to the same run; deploy-pages then
+      # aborts with "Multiple artifacts named github-pages were unexpectedly
+      # found". Drop any stale one first so re-runs deploy cleanly. failOnError
+      # is off because the first attempt has nothing to delete.
+      - name: Remove stale Pages artifact (so re-runs don't duplicate)
+        uses: geekyeggo/delete-artifact@v5
+        with:
+          name: github-pages
+          failOnError: false
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
