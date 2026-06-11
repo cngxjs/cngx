@@ -1,0 +1,12 @@
+:host {
+  display: block;
+  max-width: 640px;
+}
+
+/* Routed content lives in the outlet, directly under the nav bar. */
+.routed-nav-demo__outlet {
+  padding: 16px;
+  border: 1px solid var(--cngx-color-border, #d4d4d8);
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+}
