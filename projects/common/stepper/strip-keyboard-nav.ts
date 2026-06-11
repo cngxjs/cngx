@@ -34,6 +34,17 @@ export interface CngxStepperStripKeyboardNavOptions {
    * labels rather than focusable buttons. Omitted defaults to enabled.
    */
   readonly enabled?: () => boolean;
+  /**
+   * Optional orientation accessor, read at handler time. When supplied
+   * it overrides `presenter.orientation()` for the arrow-key axis: the
+   * organism passes `() => effectiveOrientation()` so a container-width
+   * auto-vertical flip (`density: 'auto'` at the minimal rung) rebinds
+   * the keys without an `effect()` or a peer-model write - a plain
+   * `computed()` read, mirroring the tabs presenter-keyboard migration.
+   * Omitted, the axis follows `presenter.orientation()` exactly as
+   * before.
+   */
+  readonly orientation?: () => 'horizontal' | 'vertical';
 }
 
 /**
@@ -75,7 +86,8 @@ export function createStepperStripKeyboardNav(
     if (!target?.classList.contains(stepClass)) {
       return;
     }
-    const isHorizontal = options.presenter.orientation() === 'horizontal';
+    const isHorizontal =
+      (options.orientation?.() ?? options.presenter.orientation()) === 'horizontal';
     const nextKey = isHorizontal ? 'ArrowRight' : 'ArrowDown';
     const prevKey = isHorizontal ? 'ArrowLeft' : 'ArrowUp';
     if (event.key === nextKey) {
