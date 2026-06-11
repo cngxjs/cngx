@@ -40,6 +40,7 @@ export function createStepperHostProxy(supplier: () => CngxStepperHost | null): 
     stepsOnly: computed(() => supplier()?.stepsOnly() ?? EMPTY_NODES),
     activeStepIndex: computed(() => supplier()?.activeStepIndex() ?? -1),
     activeStepId: computed(() => supplier()?.activeStepId() ?? null),
+    activeGroupId: computed(() => supplier()?.activeGroupId() ?? null),
     linear: computed(() => supplier()?.linear() ?? false),
     orientation: computed(() => supplier()?.orientation() ?? 'horizontal'),
     intendedStepIndex: computed(() => supplier()?.intendedStepIndex()),

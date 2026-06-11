@@ -177,6 +177,30 @@ export class CngxStepperPresenter implements CngxStepperHost {
     return this.stepsOnly()[idx]?.id ?? null;
   });
 
+  /**
+   * {@inheritDoc CngxStepperHost.activeGroupId}
+   *
+   * Single derivation over `activeStepId` + `stepTree` - the root-level
+   * group whose subtree holds the active step, or `null` for a
+   * root-level active step (e.g. a trailing `Finish`). Walked once here;
+   * `CngxStepGroup.isCollapsed`, the strip `aria-expanded` binding, and
+   * `visibleStripNodes` read this rather than re-walking the tree.
+   */
+  readonly activeGroupId: Signal<string | null> = computed(() => {
+    const activeId = this.activeStepId();
+    if (activeId === null) {
+      return null;
+    }
+    const subtreeHasActive = (node: CngxStepNode): boolean =>
+      node.id === activeId || node.children.some(subtreeHasActive);
+    for (const root of this.stepTree()) {
+      if (root.kind === 'group' && subtreeHasActive(root)) {
+        return root.id;
+      }
+    }
+    return null;
+  });
+
   readonly commitState = this.commitController.state;
 
   /**

@@ -93,6 +93,16 @@ export interface CngxStepperHost {
   readonly activeStepIndex: Signal<number>;
   readonly activeStepId: Signal<string | null>;
 
+  /**
+   * Root-level group whose subtree contains the active step, or `null`
+   * when the active step is a root-level step (e.g. a trailing
+   * `Finish`). The single focus-driven-collapse source: atoms read it
+   * via this contract, never the concrete presenter. Drives
+   * `CngxStepGroup.isCollapsed`, the strip `aria-expanded` binding, and
+   * {@link visibleStripNodes}.
+   */
+  readonly activeGroupId: Signal<string | null>;
+
   /** Step-only count - the length of {@link stepsOnly}. */
   readonly stepCount: Signal<number>;
 

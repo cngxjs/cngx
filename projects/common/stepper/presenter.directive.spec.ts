@@ -688,4 +688,36 @@ describe('CngxStepperPresenter', () => {
     // Input='horizontal' wins over config default='vertical'.
     expect(p.orientation()).toBe('horizontal');
   });
+
+  describe('activeGroupId', () => {
+    function groupedSetup(): CngxStepperPresenter {
+      const { presenter } = setup();
+      presenter.register(reg('account', 'group'));
+      presenter.register(reg('profile'), 'account');
+      presenter.register(reg('prefs'), 'account');
+      presenter.register(reg('project', 'group'));
+      presenter.register(reg('repo'), 'project');
+      presenter.register(reg('finish'));
+      return presenter;
+    }
+
+    it('resolves the root-level group whose subtree holds the active step', () => {
+      const presenter = groupedSetup();
+      // Active step-only index 0 = 'profile', nested under 'account'.
+      expect(presenter.activeGroupId()).toBe('account');
+    });
+
+    it('returns null when the active step is a root-level step', () => {
+      const presenter = groupedSetup();
+      presenter.selectById('finish');
+      expect(presenter.activeGroupId()).toBeNull();
+    });
+
+    it('updates when select() moves the active step across groups', () => {
+      const presenter = groupedSetup();
+      expect(presenter.activeGroupId()).toBe('account');
+      presenter.selectById('repo');
+      expect(presenter.activeGroupId()).toBe('project');
+    });
+  });
 });
