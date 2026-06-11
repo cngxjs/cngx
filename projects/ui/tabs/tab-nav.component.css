@@ -1,0 +1,126 @@
+/**
+ * @overview
+ * Structural + line-skin styling for `<cngx-tab-nav>`. Pairs with the
+ * shared `tabs-base.css` token vocabulary (loaded first via `styleUrls`),
+ * so a consumer theming `<cngx-tab-group>` themes the nav identically -
+ * the `--cngx-tab-*` tokens are read with `var(--token, fallback)` since
+ * the nav does not load `tab-group.component.css` where some are
+ * `@property`-registered; the fallback carries the default.
+ *
+ * The links are consumer-authored `<a cngxTabLink>` anchors; this file
+ * styles the `.cngx-tab-nav__link` class the atom puts on each one.
+ * `--active` mirrors `aria-current="page"`, `--error` mirrors
+ * `aria-invalid`. Only the `line` treatment ships (the resolved-skin
+ * default); `[data-skin]` is still reflected for consumer CSS.
+ */
+@layer cngx.components {
+  @scope (.cngx-tab-nav) {
+    :scope {
+      display: flex;
+      align-items: stretch;
+      gap: var(--cngx-tab-gap, 0);
+      border-bottom: var(
+        --cngx-tab-strip-border,
+        1px solid var(--cngx-color-border, oklch(0.88 0.005 250))
+      );
+      /* The line indicator reads as the brand accent (see tab-group). */
+      --cngx-tab-active-indicator-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
+    }
+
+    :scope[data-orientation='vertical'] {
+      flex-direction: column;
+      border-bottom: 0;
+      border-inline-end: var(
+        --cngx-tab-strip-border,
+        1px solid var(--cngx-color-border, oklch(0.88 0.005 250))
+      );
+    }
+
+    .cngx-tab-nav__link {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: var(--cngx-tab-affordance-gap, 0.375rem);
+      padding: var(--cngx-tab-padding, 0.625rem 1rem);
+      color: var(--cngx-tab-color, inherit);
+      font: inherit;
+      font-size: var(--cngx-tab-font-size, 0.875rem);
+      font-weight: var(--cngx-tab-font-weight, 500);
+      text-decoration: none;
+      cursor: pointer;
+      transition: color var(--cngx-tab-transition-duration, 0.15s) ease;
+    }
+
+    /* Line indicator on the trailing edge, grown from scaleX(0) when active. */
+    .cngx-tab-nav__link::after {
+      content: '';
+      position: absolute;
+      inset-inline: 0;
+      bottom: 0;
+      block-size: var(--cngx-tab-indicator-thickness, 2px);
+      background: var(--cngx-tab-active-indicator-color, currentColor);
+      border-radius: var(--cngx-tab-indicator-thickness, 2px)
+        var(--cngx-tab-indicator-thickness, 2px) 0 0;
+      transform: scaleX(0);
+      transition: transform var(--cngx-tab-transition-duration, 0.15s) ease;
+    }
+
+    .cngx-tab-nav__link:hover:not(.cngx-tab-nav__link--active) {
+      color: var(--cngx-tab-hover-color, var(--cngx-tab-active-color, currentColor));
+    }
+
+    .cngx-tab-nav__link:focus-visible {
+      outline: var(
+        --cngx-tab-focus-ring,
+        2px solid var(--cngx-color-primary, oklch(0.66 0.19 50))
+      );
+      outline-offset: var(--cngx-tab-focus-offset, -2px);
+    }
+
+    .cngx-tab-nav__link--active {
+      color: var(--cngx-tab-active-color, currentColor);
+    }
+
+    .cngx-tab-nav__link--active::after {
+      transform: scaleX(1);
+    }
+
+    /* Vertical: the indicator rides the inline-end edge. */
+    :scope[data-orientation='vertical'] .cngx-tab-nav__link::after {
+      inset-inline: auto;
+      inset-block: 0;
+      inset-inline-end: 0;
+      inline-size: var(--cngx-tab-indicator-thickness, 2px);
+      block-size: auto;
+      transform: scaleY(0);
+    }
+
+    :scope[data-orientation='vertical'] .cngx-tab-nav__link--active::after {
+      transform: scaleY(1);
+    }
+
+    /* Error link: danger-tinted label plus a leading glyph gated on the
+       class - the aria-invalid visual partner. */
+    .cngx-tab-nav__link--error {
+      color: var(--cngx-tab-error-badge-color, oklch(0.55 0.2 27));
+    }
+
+    .cngx-tab-nav__link--error::before {
+      content: var(--cngx-tab-rejection-icon-text, '!');
+      font-size: var(--cngx-tab-rejection-icon-font-size, 0.75em);
+      font-weight: 700;
+      color: var(--cngx-tab-error-badge-color, oklch(0.55 0.2 27));
+    }
+  }
+}
+
+/*
+ * Reduced-motion: drop the indicator crossfade. Kept UNLAYERED and outside
+ * the @scope - nesting @media inside @scope silently breaks the cascade.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .cngx-tab-nav__link,
+  .cngx-tab-nav__link::after {
+    transition: none !important;
+  }
+}
