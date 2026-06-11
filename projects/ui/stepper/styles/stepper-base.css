@@ -369,6 +369,19 @@
     min-width: 0;
   }
 
+  /* Space-driven density ladder (density: 'auto'), keyed off the
+     container-width resolver via [data-density]. 'full' is the default
+     (no rule). 'compact' ellipsis-truncates each label to a max width;
+     the 'minimal' rung drops non-active labels to .cngx-sr-only in the
+     template (kept in the a11y tree, visually gone) and stacks the strip
+     vertically via the effectiveOrientation flip. */
+  cngx-stepper[data-density='compact'] .cngx-stepper__label {
+    max-width: var(--cngx-stepper-label-max, 8ch);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
   .cngx-stepper__panels {
     display: block;
   }

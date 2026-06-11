@@ -1,7 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
   CngxStep,
@@ -13,6 +13,7 @@ import {
   withStepperAriaLabels,
   withStepperFallbackLabels,
   CngxStepError,
+  withStepperDensity,
   withStepperGroupCollapse,
   withStepperHeaderNavigation,
   withStepperI18nLabels,
@@ -312,6 +313,99 @@ describe('CngxStepper organism', () => {
         expect(h.classList.contains('cngx-stepper__group-header--collapsed')).toBe(false);
         expect(h.getAttribute('aria-expanded')).toBeNull();
       });
+    });
+  });
+
+  describe('space-driven density (density: auto)', () => {
+    let lastResizeCb: ResizeObserverCallback | null = null;
+    class TestResizeObserver {
+      constructor(cb: ResizeObserverCallback) {
+        lastResizeCb = cb;
+      }
+      observe(): void {}
+      unobserve(): void {}
+      disconnect(): void {}
+    }
+    function emitWidth(width: number): void {
+      lastResizeCb?.([{ contentRect: { width } } as ResizeObserverEntry], {} as ResizeObserver);
+    }
+
+    beforeEach(() => {
+      lastResizeCb = null;
+      vi.stubGlobal('ResizeObserver', TestResizeObserver);
+    });
+
+    afterEach(() => {
+      vi.unstubAllGlobals();
+    });
+
+    function autoFixture() {
+      TestBed.configureTestingModule({
+        providers: [
+          provideZonelessChangeDetection(),
+          provideStepperConfig(withStepperDensity('auto')),
+        ],
+      });
+      const fixture = TestBed.createComponent(HostCmp); // 3 flat steps A/B/C
+      fixture.detectChanges();
+      return fixture;
+    }
+
+    it('degrades [data-density] full -> compact -> minimal on container width', () => {
+      const fixture = autoFixture();
+      const host = fixture.nativeElement.querySelector('cngx-stepper') as HTMLElement;
+      expect(host.getAttribute('data-density')).toBe('full'); // width 0 before first measure
+      emitWidth(3 * 130); // 130 px/step -> full
+      fixture.detectChanges();
+      expect(host.getAttribute('data-density')).toBe('full');
+      emitWidth(3 * 100); // 100 px/step -> compact
+      fixture.detectChanges();
+      expect(host.getAttribute('data-density')).toBe('compact');
+      emitWidth(3 * 40); // 40 px/step -> minimal
+      fixture.detectChanges();
+      expect(host.getAttribute('data-density')).toBe('minimal');
+    });
+
+    it('flips aria-orientation + data-orientation to vertical at the minimal rung', () => {
+      const fixture = autoFixture();
+      const host = fixture.nativeElement.querySelector('cngx-stepper') as HTMLElement;
+      emitWidth(3 * 40);
+      fixture.detectChanges();
+      expect(host.getAttribute('data-density')).toBe('minimal');
+      expect(host.getAttribute('aria-orientation')).toBe('vertical');
+      expect(host.getAttribute('data-orientation')).toBe('vertical');
+    });
+
+    it('arrow-key axis follows the vertical flip at minimal (presenter spy)', () => {
+      const fixture = autoFixture();
+      const stepper = fixture.debugElement.children[0].componentInstance as CngxStepper;
+      const selectNext = vi.spyOn(stepper.presenter, 'selectNext');
+      const selectPrevious = vi.spyOn(stepper.presenter, 'selectPrevious');
+      emitWidth(3 * 40);
+      fixture.detectChanges();
+      const button = fixture.nativeElement.querySelector('button.cngx-stepper__step') as HTMLElement;
+      button.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+      expect(selectNext).toHaveBeenCalledTimes(1);
+      button.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true }));
+      expect(selectPrevious).toHaveBeenCalledTimes(1);
+      // Horizontal keys are inert while the effective axis is vertical.
+      button.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+      button.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));
+      expect(selectNext).toHaveBeenCalledTimes(1);
+      expect(selectPrevious).toHaveBeenCalledTimes(1);
+    });
+
+    it("'comfortable' (default) keeps data-density full at any width", () => {
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      const fixture = TestBed.createComponent(HostCmp);
+      fixture.detectChanges();
+      const host = fixture.nativeElement.querySelector('cngx-stepper') as HTMLElement;
+      emitWidth(3 * 10);
+      fixture.detectChanges();
+      expect(host.getAttribute('data-density')).toBe('full');
+      expect(host.getAttribute('aria-orientation')).toBe('horizontal');
     });
   });
 

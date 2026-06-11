@@ -25,7 +25,9 @@ import { CngxSwipe } from '@cngx/common/interactive';
 import {
   CNGX_STEP_PANEL_HOST,
   createStepperDisplayMode,
+  createStripDensity,
   CngxStep,
+  STEPPER_DEFAULT_DENSITY_BREAKPOINTS,
   STEPPER_DEFAULT_MOBILE_BREAKPOINT,
   CngxStepBadge,
   CngxStepBusySpinner,
@@ -128,8 +130,9 @@ import { coerceBooleanProperty } from '@cngx/core/utils';
     class: 'cngx-stepper',
     role: 'group',
     '[attr.aria-roledescription]': 'stepperRoleDescription()',
-    '[attr.aria-orientation]': 'presenter.orientation()',
-    '[attr.data-orientation]': 'presenter.orientation()',
+    '[attr.aria-orientation]': 'effectiveOrientation()',
+    '[attr.data-orientation]': 'effectiveOrientation()',
+    '[attr.data-density]': 'stripDensity()',
     '[attr.data-skin]': 'hostAttrs.resolvedSkin()',
     '[attr.data-connectors]': "hostAttrs.resolvedConnectors() ? 'true' : null",
     '[attr.data-mobile-indicator-position]': 'hostAttrs.resolvedMobileIndicatorPosition()',
@@ -212,6 +215,37 @@ export class CngxStepper implements CngxStepPanelHost {
     this.config.mobileBreakpoint ?? STEPPER_DEFAULT_MOBILE_BREAKPOINT,
     () => this.config.mobileCollapse,
     inject(DestroyRef),
+  );
+
+  /**
+   * Space-driven density rung for the classic strip, measured off the
+   * host element's own width via {@link createStripDensity}. `'full'`
+   * under the `'comfortable'` default. Drives `[data-density]` (the CSS
+   * label-degradation ladder) and the auto-vertical flip below.
+   */
+  protected readonly stripDensity = createStripDensity({
+    element: this.hostElement,
+    stepCount: () => this.presenter.stepCount(),
+    density: () => this.config.density,
+    breakpoints: () => this.config.densityBreakpoints ?? STEPPER_DEFAULT_DENSITY_BREAKPOINTS,
+    destroyRef: inject(DestroyRef),
+  });
+
+  /**
+   * The single rendered-orientation source: the configured
+   * `presenter.orientation()` normally, flipped to `'vertical'` only
+   * when `density: 'auto'` has degraded the strip to its `'minimal'`
+   * rung (stacked indicators read better than a cramped row at the
+   * narrowest width). Consumed by the host ARIA/`data-orientation`
+   * bindings AND the keyboard-nav accessor, so the attribute, the
+   * visual axis, and the arrow keys can never disagree. The presenter's
+   * own `orientation()` stays the container-width-agnostic configured
+   * value (Level-2).
+   */
+  protected readonly effectiveOrientation = computed<'horizontal' | 'vertical'>(() =>
+    this.config.density === 'auto' && this.stripDensity() === 'minimal'
+      ? 'vertical'
+      : this.presenter.orientation(),
   );
 
   constructor() {
@@ -467,6 +501,9 @@ export class CngxStepper implements CngxStepPanelHost {
     hostElement: this.hostElement,
     flatStepCount: () => this.flatSteps().length,
     stepButtonIdFor: (id) => `${id}-header`,
+    // Read at handler time - the density auto-vertical flip rebinds the
+    // arrow-key axis through this accessor, never a peer-model write.
+    orientation: () => this.effectiveOrientation(),
     // Off in 'none' mode (inert labels) and while a commit is in flight,
     // so arrow-key navigation locks with the headers + footer during an
     // async transition.
