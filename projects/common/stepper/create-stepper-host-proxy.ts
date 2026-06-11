@@ -38,6 +38,7 @@ export function createStepperHostProxy(supplier: () => CngxStepperHost | null): 
     stepTree: computed(() => supplier()?.stepTree() ?? EMPTY_NODES),
     flatSteps: computed(() => supplier()?.flatSteps() ?? EMPTY_NODES),
     stepsOnly: computed(() => supplier()?.stepsOnly() ?? EMPTY_NODES),
+    visibleStripNodes: computed(() => supplier()?.visibleStripNodes() ?? EMPTY_NODES),
     activeStepIndex: computed(() => supplier()?.activeStepIndex() ?? -1),
     activeStepId: computed(() => supplier()?.activeStepId() ?? null),
     activeGroupId: computed(() => supplier()?.activeGroupId() ?? null),

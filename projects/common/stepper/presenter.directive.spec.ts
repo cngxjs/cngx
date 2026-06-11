@@ -8,7 +8,12 @@ import { Subject, of, throwError } from 'rxjs';
 import { CngxStep, CngxStepGroup } from '@cngx/common/stepper';
 
 import { CngxStepperPresenter } from './presenter.directive';
-import { provideStepperConfig, withStepperDefaultOrientation, withStepperLinear } from './stepper-config';
+import {
+  provideStepperConfig,
+  withStepperDefaultOrientation,
+  withStepperGroupCollapse,
+  withStepperLinear,
+} from './stepper-config';
 import type { CngxStepRegistration, CngxStepStatus } from './stepper-host.token';
 
 async function flushMicrotasks(rounds = 5): Promise<void> {
@@ -718,6 +723,74 @@ describe('CngxStepperPresenter', () => {
       expect(presenter.activeGroupId()).toBe('account');
       presenter.selectById('repo');
       expect(presenter.activeGroupId()).toBe('project');
+    });
+  });
+
+  describe('visibleStripNodes', () => {
+    function collapseSetup(): CngxStepperPresenter {
+      TestBed.configureTestingModule({
+        providers: [
+          provideZonelessChangeDetection(),
+          provideStepperConfig(withStepperGroupCollapse('expand-active')),
+        ],
+      });
+      const fixture = TestBed.createComponent(HostCmp);
+      fixture.detectChanges();
+      const presenter = fixture.debugElement.injector.get(CngxStepperPresenter);
+      presenter.register(reg('account', 'group'));
+      presenter.register(reg('profile'), 'account');
+      presenter.register(reg('prefs'), 'account');
+      presenter.register(reg('project', 'group'));
+      presenter.register(reg('repo'), 'project');
+      presenter.register(reg('finish'));
+      return presenter;
+    }
+
+    it('returns the full flat projection (same reference) under the off baseline', () => {
+      const { presenter } = setup();
+      presenter.register(reg('account', 'group'));
+      presenter.register(reg('profile'), 'account');
+      presenter.register(reg('finish'));
+      expect(presenter.visibleStripNodes()).toBe(presenter.flatSteps());
+    });
+
+    it('drops non-active group children to the header node under expand-active', () => {
+      const presenter = collapseSetup();
+      // Active step-only index 0 = 'profile' under 'account'.
+      expect(presenter.visibleStripNodes().map((n) => n.id)).toEqual([
+        'account',
+        'profile',
+        'prefs',
+        'project',
+        'finish',
+      ]);
+    });
+
+    it('expands the newly-active group and collapses the prior one', () => {
+      const presenter = collapseSetup();
+      presenter.selectById('repo');
+      expect(presenter.visibleStripNodes().map((n) => n.id)).toEqual([
+        'account',
+        'project',
+        'repo',
+        'finish',
+      ]);
+    });
+
+    it('preserves the canonical flatIndex on retained step nodes', () => {
+      const presenter = collapseSetup();
+      const finish = presenter.visibleStripNodes().find((n) => n.id === 'finish')!;
+      // 'finish' is step-only index 4 (profile, prefs, repo, pipeline?, finish);
+      // here: profile=0, prefs=1, repo=2, finish=3 - flatIndex is canonical,
+      // not the post-collapse strip position.
+      expect(finish.flatIndex).toBe(presenter.stepsOnly().findIndex((n) => n.id === 'finish'));
+    });
+
+    it('re-emits referential-identically on a shape-stable change (equal fn)', () => {
+      const presenter = collapseSetup();
+      const first = presenter.visibleStripNodes();
+      // Re-reading without any structural change returns the cached array.
+      expect(presenter.visibleStripNodes()).toBe(first);
     });
   });
 });

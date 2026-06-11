@@ -300,6 +300,23 @@ export class CngxStepper implements CngxStepPanelHost {
   );
 
   /**
+   * Reactive `aria-expanded` for a rendered strip group header. `null`
+   * (attribute absent) under the `'off'` baseline so a non-collapsible
+   * group carries no disclosure semantics; `'true'`/`'false'` track the
+   * collapse state under `'expand-active'`. Pillar 2 - reads the
+   * presenter's `activeGroupId`, never a one-shot write.
+   */
+  protected groupAriaExpanded(node: CngxStepNode): 'true' | 'false' | null {
+    if (node.kind !== 'group' || this.config.groupCollapse !== 'expand-active') {
+      return null;
+    }
+    if (node.children.length === 0) {
+      return null;
+    }
+    return this.presenter.activeGroupId() === node.id ? 'true' : 'false';
+  }
+
+  /**
    * `aria-label` cascade: input → `ariaLabels.stepperRegion` → `i18n.stepperLabel`.
    * Pillar 2.
    */
@@ -320,6 +337,16 @@ export class CngxStepper implements CngxStepPanelHost {
   readonly activeStepIndex: Signal<number> = this.presenter.activeStepIndex;
   readonly activeStepId: Signal<string | null> = this.presenter.activeStepId;
   protected readonly stepsOnly: Signal<readonly CngxStepNode[]> = this.presenter.stepsOnly;
+
+  /**
+   * Strip projection honouring the focus-driven group-collapse policy.
+   * Drives the classic strip `@for`; collapsed groups contribute their
+   * header node alone. Sourced from the presenter, never re-derived here
+   * (host-token contract). Panels still render every step via
+   * {@link stepsOnly}, so collapsed steps keep their panel ids in the DOM.
+   */
+  protected readonly visibleStripNodes: Signal<readonly CngxStepNode[]> =
+    this.presenter.visibleStripNodes;
 
   /**
    * Position in the step-only flat projection. Group nodes carry `-1`;

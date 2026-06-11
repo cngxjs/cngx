@@ -121,12 +121,14 @@
     class="cngx-stepper__strip"
     [attr.role]="resolvedHeaderNavigation() === 'none' ? 'list' : 'presentation'"
   >
-    @for (node of flatSteps(); track node.id) {
+    @for (node of visibleStripNodes(); track node.id) {
       @if (node.kind === 'group') {
         <div
           class="cngx-stepper__group-header"
           role="group"
           [attr.aria-roledescription]="groupRoleDescription()"
+          [attr.aria-expanded]="groupAriaExpanded(node)"
+          [class.cngx-stepper__group-header--collapsed]="groupAriaExpanded(node) === 'false'"
           [attr.data-step-depth]="node.depth"
           [attr.data-state]="node.state()"
           [attr.aria-disabled]="node.disabled() ? 'true' : null"

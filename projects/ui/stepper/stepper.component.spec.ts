@@ -13,6 +13,7 @@ import {
   withStepperAriaLabels,
   withStepperFallbackLabels,
   CngxStepError,
+  withStepperGroupCollapse,
   withStepperHeaderNavigation,
   withStepperI18nLabels,
   withStepperMobileSwipe,
@@ -48,6 +49,25 @@ class HostCmp {}
   `,
 })
 class HierarchicalHost {}
+
+@Component({
+  standalone: true,
+  imports: [CngxStepper, CngxStep, CngxStepGroup],
+  template: `
+    <cngx-stepper aria-label="Collapse">
+      <div cngxStepGroup label="Account">
+        <div cngxStep label="A"></div>
+        <div cngxStep label="B"></div>
+      </div>
+      <div cngxStepGroup label="Project">
+        <div cngxStep label="C"></div>
+        <div cngxStep label="D"></div>
+      </div>
+      <div cngxStep label="Finish"></div>
+    </cngx-stepper>
+  `,
+})
+class CollapseHost {}
 
 describe('CngxStepper organism', () => {
   it('host carries role="group" + aria-roledescription="stepper" + data-orientation', () => {
@@ -231,6 +251,62 @@ describe('CngxStepper organism', () => {
       'button.cngx-stepper__step',
     ) as NodeListOf<HTMLButtonElement>;
     expect(buttons.length).toBe(3);
+  });
+
+  describe('focus-driven group collapse', () => {
+    function collapseFixture() {
+      TestBed.configureTestingModule({
+        providers: [
+          provideZonelessChangeDetection(),
+          provideStepperConfig(withStepperGroupCollapse('expand-active')),
+        ],
+      });
+      const fixture = TestBed.createComponent(CollapseHost);
+      fixture.detectChanges();
+      return fixture;
+    }
+
+    it('renders one header per group with reactive aria-expanded; non-active group collapses', () => {
+      const fixture = collapseFixture();
+      const headers = Array.from(
+        fixture.nativeElement.querySelectorAll('.cngx-stepper__group-header'),
+      ) as HTMLElement[];
+      expect(headers.length).toBe(2);
+      const [account, project] = headers;
+      // Active step index 0 = 'A' under 'Account' -> Account expanded.
+      expect(account.getAttribute('aria-expanded')).toBe('true');
+      expect(project.getAttribute('aria-expanded')).toBe('false');
+      expect(project.classList.contains('cngx-stepper__group-header--collapsed')).toBe(true);
+    });
+
+    it('drops collapsed child step buttons from the strip but keeps every panel in the DOM', () => {
+      const fixture = collapseFixture();
+      const labels = (
+        Array.from(fixture.nativeElement.querySelectorAll('button.cngx-stepper__step')) as HTMLElement[]
+      ).map((b) => b.querySelector('.cngx-stepper__label')?.textContent?.trim());
+      // Account (active) keeps A, B; Project (collapsed) drops C, D; Finish kept.
+      expect(labels).toEqual(['A', 'B', 'Finish']);
+      // All 5 step panels stay rendered (ids preserved); 4 hidden, active visible.
+      const panels = Array.from(
+        fixture.nativeElement.querySelectorAll('.cngx-stepper__panel'),
+      ) as HTMLElement[];
+      expect(panels.length).toBe(5);
+      expect(panels.filter((p) => p.hidden).length).toBe(4);
+    });
+
+    it('off baseline renders the full strip with no aria-expanded on group headers', () => {
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      const fixture = TestBed.createComponent(CollapseHost);
+      fixture.detectChanges();
+      const buttons = fixture.nativeElement.querySelectorAll('button.cngx-stepper__step');
+      expect(buttons.length).toBe(5);
+      const headers = Array.from(
+        fixture.nativeElement.querySelectorAll('.cngx-stepper__group-header'),
+      ) as HTMLElement[];
+      headers.forEach((h) => expect(h.getAttribute('aria-expanded')).toBeNull());
+    });
   });
 
   it('non-active panels are hidden via [hidden]', () => {

@@ -201,6 +201,53 @@ export class CngxStepperPresenter implements CngxStepperHost {
     return null;
   });
 
+  /**
+   * {@inheritDoc CngxStepperHost.visibleStripNodes}
+   *
+   * Flat strip projection honouring the focus-driven group-collapse
+   * policy. Under `'off'` it returns `flatSteps()` verbatim (same
+   * reference, so the `equal` short-circuits). Under `'expand-active'`
+   * every non-active root-level group's subtree is dropped, leaving the
+   * group header node alone - the active group and all root-level steps
+   * stay. Each retained node keeps its canonical `flatIndex` from
+   * `flatSteps`, so per-step state/announcement lookups are unaffected.
+   * Returns a fresh array, so it MUST carry `{ equal: flatStepsEqual }`
+   * or every re-emit cascades the strip `@for`.
+   */
+  readonly visibleStripNodes: Signal<readonly CngxStepNode[]> = computed(
+    () => {
+      const flat = this.flatSteps();
+      if (this.config.groupCollapse !== 'expand-active') {
+        return flat;
+      }
+      const activeGroup = this.activeGroupId();
+      const collapsedRootIds = new Set(
+        this.stepTree()
+          .filter((n) => n.kind === 'group' && n.children.length > 0 && n.id !== activeGroup)
+          .map((n) => n.id),
+      );
+      if (collapsedRootIds.size === 0) {
+        return flat;
+      }
+      const byId = new Map(flat.map((n) => [n.id, n] as const));
+      const rootAncestorId = (node: CngxStepNode): string => {
+        let cur = node;
+        while (cur.parentId !== null) {
+          const parent = byId.get(cur.parentId);
+          if (!parent) {
+            break;
+          }
+          cur = parent;
+        }
+        return cur.id;
+      };
+      return flat.filter(
+        (node) => collapsedRootIds.has(node.id) || !collapsedRootIds.has(rootAncestorId(node)),
+      );
+    },
+    { equal: flatStepsEqual },
+  );
+
   readonly commitState = this.commitController.state;
 
   /**

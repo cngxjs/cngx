@@ -1851,6 +1851,23 @@
   }
 }
 
+/* Focus-driven group collapse (groupCollapse: 'expand-active'). A
+   collapsed non-active group renders its header alone; the de-emphasis
+   reads as "this branch is folded". The opacity transition animates the
+   fold only when motion is allowed - unlayered with a direct selector
+   so it stays outside @scope (consistent cascade ordering across
+   engines). All values flow through --cngx-stepper-* custom properties. */
+.cngx-stepper__group-header--collapsed {
+  opacity: var(--cngx-stepper-collapsed-group-opacity, 0.65);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .cngx-stepper__group-header {
+    transition: opacity var(--cngx-stepper-collapse-duration, 160ms)
+      var(--cngx-stepper-collapse-easing, ease);
+  }
+}
+
 /* Dark-mode tone-mapping for the pill-segment skin. Two entry points
    mirror the cngx color-scheme cascade in
    projects/core/theming/system-tokens.css:436-465 - explicit opt-in
