@@ -100,6 +100,19 @@ export type CngxStepperMobileCollapse = 'text' | 'dots' | 'off';
 export type CngxStepperHeaderNavigation = 'none' | 'visited';
 
 /**
+ * Focus-driven group-collapse policy for grouped `<cngx-stepper>` flows.
+ * `'expand-active'` collapses every non-active `cngxStepGroup` branch to
+ * its header node and expands only the group holding the active step;
+ * `'off'` (default) keeps every group's children rendered in the strip -
+ * the browser-native baseline. Orthogonal to the `mobileCollapse` axis;
+ * the two never edit each other. The Material twin (`[cngxMatStepper]`)
+ * ignores this setting.
+ *
+ * @category common/stepper
+ */
+export type CngxStepperGroupCollapse = 'expand-active' | 'off';
+
+/**
  * Where the mobile auto-collapse indicator (text caption or dot row)
  * sits relative to the active step's panel content under narrow
  * viewports. `'top'` (default) keeps the indicator above the panel;
@@ -142,6 +155,14 @@ export interface CngxStepperConfig {
    * Per-instance `[headerNavigation]` Input still wins.
    */
   readonly headerNavigation?: CngxStepperHeaderNavigation;
+  /**
+   * Focus-driven group-collapse policy. `'expand-active'` collapses
+   * non-active `cngxStepGroup` branches to their header node and expands
+   * only the active group; `'off'` (default) keeps the full strip.
+   * Orthogonal to `mobileCollapse`. Apply app-wide via
+   * {@link withStepperGroupCollapse}.
+   */
+  readonly groupCollapse?: CngxStepperGroupCollapse;
   /**
    * Opt-in connector rail between adjacent step indicators on the
    * classic skin. Off by default. The rule is double-scoped on
@@ -192,6 +213,7 @@ const STEPPER_CONFIG_DEFAULTS: Required<
   routerSyncParam: 'step',
   skin: 'classic',
   headerNavigation: 'visited',
+  groupCollapse: 'off',
   connectors: false,
   mobileCollapse: 'text',
   mobileBreakpoint: STEPPER_DEFAULT_MOBILE_BREAKPOINT,
@@ -401,6 +423,22 @@ export function withStepperHeaderNavigation(
   mode: CngxStepperHeaderNavigation,
 ): CngxStepperConfigFeature {
   return defineStepperConfigFeature((cfg) => ({ ...cfg, headerNavigation: mode }));
+}
+
+/**
+ * Set the app-wide focus-driven group-collapse policy for grouped
+ * `<cngx-stepper>` flows. `'expand-active'` collapses every non-active
+ * `cngxStepGroup` branch to its header node and expands only the group
+ * holding the active step; `'off'` (library default) keeps the full
+ * strip. Orthogonal to the `mobileCollapse` axis. The Material twin
+ * ignores this setting.
+ *
+ * @category common/stepper
+ */
+export function withStepperGroupCollapse(
+  mode: CngxStepperGroupCollapse,
+): CngxStepperConfigFeature {
+  return defineStepperConfigFeature((cfg) => ({ ...cfg, groupCollapse: mode }));
 }
 
 /**

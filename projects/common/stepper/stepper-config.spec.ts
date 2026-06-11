@@ -12,6 +12,7 @@ import {
   withStepperAriaLabels,
   withStepperCommitMode,
   withStepperFallbackLabels,
+  withStepperGroupCollapse,
   withStepperLinear,
   withStepperMobileBreakpoint,
   withStepperMobileCollapse,
@@ -253,6 +254,31 @@ describe('CngxStepperConfig', () => {
 
     it('carries the _target=config discriminator', () => {
       expect(withStepperMobileSwipe(false)._target).toBe('config');
+    });
+  });
+
+  describe('withStepperGroupCollapse', () => {
+    it('library default resolves to "off" (browser-native baseline)', () => {
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      const cfg = TestBed.inject(CNGX_STEPPER_CONFIG);
+      expect(cfg.groupCollapse).toBe('off');
+    });
+
+    it('provideStepperConfig(withStepperGroupCollapse) overrides the default', () => {
+      TestBed.configureTestingModule({
+        providers: [
+          provideZonelessChangeDetection(),
+          provideStepperConfig(withStepperGroupCollapse('expand-active')),
+        ],
+      });
+      const cfg = TestBed.inject(CNGX_STEPPER_CONFIG);
+      expect(cfg.groupCollapse).toBe('expand-active');
+    });
+
+    it('carries the _target=config discriminator', () => {
+      expect(withStepperGroupCollapse('expand-active')._target).toBe('config');
     });
   });
 
