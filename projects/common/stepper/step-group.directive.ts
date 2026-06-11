@@ -32,9 +32,6 @@ import {
   exportAs: 'cngxStepGroup',
   standalone: true,
   providers: [{ provide: CNGX_STEP_GROUP_HOST, useExisting: CngxStepGroup }],
-  host: {
-    '[attr.aria-expanded]': 'ariaExpanded()',
-  },
 })
 export class CngxStepGroup implements CngxStepGroupHost {
   readonly id = input<string>(nextUid('cngx-step-group'));
@@ -75,6 +72,12 @@ export class CngxStepGroup implements CngxStepGroupHost {
    * hold the active step, and it has at least one child. Pure
    * `computed()` over the host's `activeGroupId` + the resolved policy -
    * never toggled in an event handler (Pillar 1).
+   *
+   * Consumer-readable via `exportAs: 'cngxStepGroup'` (e.g.
+   * `#g="cngxStepGroup"` then `g.isCollapsed()`). The rendered strip
+   * group header owns the reactive `aria-expanded` disclosure attribute
+   * (`<cngx-stepper>` `groupAriaExpanded`); the projected `[cngxStepGroup]`
+   * host element is not rendered in the strip, so it carries no ARIA.
    */
   readonly isCollapsed: Signal<boolean> = computed(() => {
     if (this.config.groupCollapse !== 'expand-active') {
@@ -84,19 +87,6 @@ export class CngxStepGroup implements CngxStepGroupHost {
       return false;
     }
     return this.stepperHost?.activeGroupId() !== this.id();
-  });
-
-  /**
-   * Reactive `aria-expanded` for the group disclosure. `null` (attribute
-   * absent) under the `'off'` baseline so a non-collapsible group carries
-   * no disclosure semantics; `'true'`/`'false'` track collapse state under
-   * `'expand-active'`. Pillar 2 - lives in the computed() graph.
-   */
-  protected readonly ariaExpanded: Signal<'true' | 'false' | null> = computed(() => {
-    if (this.config.groupCollapse !== 'expand-active') {
-      return null;
-    }
-    return this.isCollapsed() ? 'false' : 'true';
   });
 
   constructor() {
