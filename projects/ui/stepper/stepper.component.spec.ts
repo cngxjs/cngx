@@ -395,6 +395,31 @@ describe('CngxStepper organism', () => {
       expect(selectPrevious).toHaveBeenCalledTimes(1);
     });
 
+    it('at minimal, the active step keeps its visible label; others go sr-only', () => {
+      const fixture = autoFixture();
+      emitWidth(3 * 40);
+      fixture.detectChanges();
+      const labels = Array.from(
+        fixture.nativeElement.querySelectorAll('button.cngx-stepper__step .cngx-stepper__label'),
+      ) as HTMLElement[];
+      expect(labels.length).toBe(3);
+      // Active step-only index 0 keeps its label; the rest are sr-only
+      // (indicators-only visually, accessible name retained in the a11y tree).
+      expect(labels[0].classList.contains('cngx-sr-only')).toBe(false);
+      expect(labels[1].classList.contains('cngx-sr-only')).toBe(true);
+      expect(labels[2].classList.contains('cngx-sr-only')).toBe(true);
+    });
+
+    it('at full / compact every label stays visible (no sr-only)', () => {
+      const fixture = autoFixture();
+      emitWidth(3 * 100); // compact
+      fixture.detectChanges();
+      const labels = Array.from(
+        fixture.nativeElement.querySelectorAll('button.cngx-stepper__step .cngx-stepper__label'),
+      ) as HTMLElement[];
+      expect(labels.every((l) => !l.classList.contains('cngx-sr-only'))).toBe(true);
+    });
+
     it("'comfortable' (default) keeps data-density full at any width", () => {
       TestBed.configureTestingModule({
         providers: [provideZonelessChangeDetection()],

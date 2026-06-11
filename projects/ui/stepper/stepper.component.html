@@ -268,7 +268,10 @@
       </span>
     }
   </span>
-  <span class="cngx-stepper__label">
+  <span
+    class="cngx-stepper__label"
+    [class.cngx-sr-only]="stripDensity() === 'minimal' && !slotContext.isActive(node)"
+  >
     @let labelTpl = labelTemplateFor(node.id);
     @if (labelTpl) {
       <ng-container
