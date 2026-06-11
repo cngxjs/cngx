@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CngxTabGroupPresenter } from './presenter.directive';
 import { CngxTabsRouteSync } from './route-sync.directive';
 import { CngxTab } from './tab.directive';
+import { CngxTabLink } from './tab-link.directive';
 
 @Component({
   standalone: true,
@@ -35,6 +36,21 @@ class RouteHost {}
   `,
 })
 class NestedRouteHost {}
+
+// The native nav-link host: tabs register via CngxTabLink, the links
+// navigate natively (no select() caller), and route-sync only reflects.
+@Component({
+  standalone: true,
+  selector: 'nav-link-route-host',
+  imports: [CngxTabLink],
+  hostDirectives: [CngxTabGroupPresenter, CngxTabsRouteSync],
+  template: `
+    <a cngxTabLink id="a" [label]="'A'"></a>
+    <a cngxTabLink id="b" [label]="'B'"></a>
+    <a cngxTabLink id="c" [label]="'C'"></a>
+  `,
+})
+class NavLinkRouteHost {}
 
 // Drains pending microtasks so afterNextRender / effect chains settle.
 // Mirrors the fragment-sync spec - whenStable() has been observed to
@@ -242,5 +258,37 @@ describe('CngxTabsRouteSync', () => {
     await flushMicrotasks();
 
     expect(presenter.activeIndex()).toBe(0);
+  });
+
+  it('stays purely reflective on the nav-link path: NavigationEnd writes activeIndex, the commit-action never fires', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection(), provideRouter([])],
+    });
+    const router = TestBed.inject(Router);
+    const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+    const urlSpy = vi.spyOn(router, 'url', 'get').mockReturnValue('/');
+
+    const fixture = TestBed.createComponent(NavLinkRouteHost);
+    fixture.detectChanges();
+    await flushMicrotasks();
+    const presenter = fixture.debugElement.injector.get(CngxTabGroupPresenter);
+
+    // Route-sync still pins the routed action + pessimistic mode on the
+    // host, but the nav path never calls select(), so the commit lifecycle
+    // lies dormant - the link's own routerLink runs CanDeactivate natively.
+    expect(presenter.commitState.status()).toBe('idle');
+    expect(presenter.activeIndex()).toBe(0);
+
+    // A link navigates natively; route-sync only mirrors the landed URL.
+    urlSpy.mockReturnValue('/b');
+    emit(router, new NavigationEnd(1, '/b', '/b'));
+    fixture.detectChanges();
+    await flushMicrotasks();
+
+    expect(presenter.activeId()).toBe('b');
+    expect(presenter.activeIndex()).toBe(1);
+    // Reflective only: no re-navigation, no commit transition was opened.
+    expect(navigateSpy).not.toHaveBeenCalled();
+    expect(presenter.commitState.status()).toBe('idle');
   });
 });
