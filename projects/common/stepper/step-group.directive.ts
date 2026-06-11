@@ -3,6 +3,7 @@ import { computed, DestroyRef, Directive, inject, input, signal, type Signal } f
 import { nextUid } from '@cngx/core/utils';
 
 import { CNGX_STEP_GROUP_HOST, type CngxStepGroupHost } from './step-group-host.token';
+import { injectStepperConfig } from './stepper-config';
 import {
   CNGX_STEPPER_HOST,
   type CngxStepRegistration,
@@ -31,11 +32,16 @@ import {
   exportAs: 'cngxStepGroup',
   standalone: true,
   providers: [{ provide: CNGX_STEP_GROUP_HOST, useExisting: CngxStepGroup }],
+  host: {
+    '[attr.aria-expanded]': 'ariaExpanded()',
+  },
 })
 export class CngxStepGroup implements CngxStepGroupHost {
   readonly id = input<string>(nextUid('cngx-step-group'));
   readonly disabled = input<boolean>(false);
   readonly label = input<string>('');
+
+  private readonly config = injectStepperConfig();
 
   // Local child registry - only feeds `aggregatedStatus` below.
   // The presenter owns the canonical tree.
@@ -62,6 +68,36 @@ export class CngxStepGroup implements CngxStepGroupHost {
   );
 
   private readonly stepperHost = inject(CNGX_STEPPER_HOST, { optional: true });
+
+  /**
+   * `true` when this group's children are collapsed to the header node:
+   * the focus-driven policy is `'expand-active'`, this group does not
+   * hold the active step, and it has at least one child. Pure
+   * `computed()` over the host's `activeGroupId` + the resolved policy -
+   * never toggled in an event handler (Pillar 1).
+   */
+  readonly isCollapsed: Signal<boolean> = computed(() => {
+    if (this.config.groupCollapse !== 'expand-active') {
+      return false;
+    }
+    if (this.childRegistry().length === 0) {
+      return false;
+    }
+    return this.stepperHost?.activeGroupId() !== this.id();
+  });
+
+  /**
+   * Reactive `aria-expanded` for the group disclosure. `null` (attribute
+   * absent) under the `'off'` baseline so a non-collapsible group carries
+   * no disclosure semantics; `'true'`/`'false'` track collapse state under
+   * `'expand-active'`. Pillar 2 - lives in the computed() graph.
+   */
+  protected readonly ariaExpanded: Signal<'true' | 'false' | null> = computed(() => {
+    if (this.config.groupCollapse !== 'expand-active') {
+      return null;
+    }
+    return this.isCollapsed() ? 'false' : 'true';
+  });
 
   constructor() {
     if (!this.stepperHost) {
