@@ -113,6 +113,31 @@ export type CngxStepperHeaderNavigation = 'none' | 'visited';
 export type CngxStepperGroupCollapse = 'expand-active' | 'off';
 
 /**
+ * Space-driven density policy for the classic `<cngx-stepper>` strip.
+ * `'auto'` degrades the strip on its own container width
+ * (full labels -> ellipsis-truncated -> indicators-only with the active
+ * label kept); `'comfortable'` (default) keeps full labels at every
+ * width. Orthogonal to `mobileCollapse` and `groupCollapse`; the
+ * Material twin ignores this setting.
+ *
+ * @category common/stepper
+ */
+export type CngxStepperDensity = 'comfortable' | 'auto';
+
+/**
+ * Per-step px thresholds the `density: 'auto'` ladder reacts to.
+ * `compact` is the minimum px per step that keeps full labels; below
+ * `minimal` px per step the strip drops to indicators-only. `compact`
+ * must exceed `minimal`.
+ *
+ * @category common/stepper
+ */
+export interface CngxStepperDensityBreakpoints {
+  readonly compact: number;
+  readonly minimal: number;
+}
+
+/**
  * Where the mobile auto-collapse indicator (text caption or dot row)
  * sits relative to the active step's panel content under narrow
  * viewports. `'top'` (default) keeps the indicator above the panel;
@@ -133,6 +158,19 @@ export type CngxStepperMobileIndicatorPosition = 'top' | 'bottom';
  * @category common/stepper
  */
 export const STEPPER_DEFAULT_MOBILE_BREAKPOINT = '(max-width: 480px)';
+
+/**
+ * Default per-step px thresholds for the `density: 'auto'` ladder. The
+ * literal lives on a single exported const so the runtime resolver, the
+ * config default, and any JSDoc cross-references stay in lockstep.
+ * Consumers override via {@link withStepperDensity}'s second argument.
+ *
+ * @category common/stepper
+ */
+export const STEPPER_DEFAULT_DENSITY_BREAKPOINTS: CngxStepperDensityBreakpoints = {
+  compact: 120,
+  minimal: 64,
+};
 
 /**
  * Stepper config surface. Resolution priority: per-instance Input
@@ -163,6 +201,19 @@ export interface CngxStepperConfig {
    * {@link withStepperGroupCollapse}.
    */
   readonly groupCollapse?: CngxStepperGroupCollapse;
+  /**
+   * Space-driven density policy for the classic strip. `'auto'`
+   * degrades labels on the strip's own container width; `'comfortable'`
+   * (default) keeps full labels. Orthogonal to `mobileCollapse`. Apply
+   * app-wide via {@link withStepperDensity}.
+   */
+  readonly density?: CngxStepperDensity;
+  /**
+   * Per-step px thresholds for the `density: 'auto'` ladder. Default
+   * {@link STEPPER_DEFAULT_DENSITY_BREAKPOINTS}. Override via
+   * {@link withStepperDensity}'s second argument.
+   */
+  readonly densityBreakpoints?: CngxStepperDensityBreakpoints;
   /**
    * Opt-in connector rail between adjacent step indicators on the
    * classic skin. Off by default. The rule is double-scoped on
@@ -214,6 +265,8 @@ const STEPPER_CONFIG_DEFAULTS: Required<
   skin: 'classic',
   headerNavigation: 'visited',
   groupCollapse: 'off',
+  density: 'comfortable',
+  densityBreakpoints: STEPPER_DEFAULT_DENSITY_BREAKPOINTS,
   connectors: false,
   mobileCollapse: 'text',
   mobileBreakpoint: STEPPER_DEFAULT_MOBILE_BREAKPOINT,
@@ -439,6 +492,28 @@ export function withStepperGroupCollapse(
   mode: CngxStepperGroupCollapse,
 ): CngxStepperConfigFeature {
   return defineStepperConfigFeature((cfg) => ({ ...cfg, groupCollapse: mode }));
+}
+
+/**
+ * Set the app-wide space-driven density policy for the classic
+ * `<cngx-stepper>` strip. `'auto'` degrades labels on the strip's own
+ * container width (full -> compact -> minimal); `'comfortable'`
+ * (library default) keeps full labels at every width. The optional
+ * second argument overrides the per-step px thresholds (default
+ * {@link STEPPER_DEFAULT_DENSITY_BREAKPOINTS}). Orthogonal to the
+ * `mobileCollapse` axis; the Material twin ignores this setting.
+ *
+ * @category common/stepper
+ */
+export function withStepperDensity(
+  mode: CngxStepperDensity,
+  breakpoints?: CngxStepperDensityBreakpoints,
+): CngxStepperConfigFeature {
+  return defineStepperConfigFeature((cfg) => ({
+    ...cfg,
+    density: mode,
+    ...(breakpoints ? { densityBreakpoints: breakpoints } : {}),
+  }));
 }
 
 /**
