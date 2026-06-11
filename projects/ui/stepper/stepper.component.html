@@ -123,13 +123,11 @@
   >
     @for (node of visibleStripNodes(); track node.id) {
       @if (node.kind === 'group') {
-        @let groupExpanded = groupAriaExpanded(node);
         <div
           class="cngx-stepper__group-header"
           role="group"
           [attr.aria-roledescription]="groupRoleDescription()"
-          [attr.aria-expanded]="groupExpanded"
-          [class.cngx-stepper__group-header--collapsed]="groupExpanded === 'false'"
+          [class.cngx-stepper__group-header--collapsed]="isGroupCollapsed(node)"
           [attr.data-step-depth]="node.depth"
           [attr.data-state]="node.state()"
           [attr.aria-disabled]="node.disabled() ? 'true' : null"

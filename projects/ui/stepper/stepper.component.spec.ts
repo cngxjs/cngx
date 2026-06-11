@@ -266,7 +266,7 @@ describe('CngxStepper organism', () => {
       return fixture;
     }
 
-    it('renders one header per group with reactive aria-expanded; non-active group collapses', () => {
+    it('folds the non-active group header visually without an aria-expanded disclosure', () => {
       const fixture = collapseFixture();
       const headers = Array.from(
         fixture.nativeElement.querySelectorAll('.cngx-stepper__group-header'),
@@ -274,9 +274,12 @@ describe('CngxStepper organism', () => {
       expect(headers.length).toBe(2);
       const [account, project] = headers;
       // Active step index 0 = 'A' under 'Account' -> Account expanded.
-      expect(account.getAttribute('aria-expanded')).toBe('true');
-      expect(project.getAttribute('aria-expanded')).toBe('false');
+      expect(account.classList.contains('cngx-stepper__group-header--collapsed')).toBe(false);
       expect(project.classList.contains('cngx-stepper__group-header--collapsed')).toBe(true);
+      // aria-expanded is unsupported on role="group" and the fold is not a
+      // user-operable disclosure - no aria-expanded on either header.
+      expect(account.getAttribute('aria-expanded')).toBeNull();
+      expect(project.getAttribute('aria-expanded')).toBeNull();
     });
 
     it('drops collapsed child step buttons from the strip but keeps every panel in the DOM', () => {
@@ -294,7 +297,7 @@ describe('CngxStepper organism', () => {
       expect(panels.filter((p) => p.hidden).length).toBe(4);
     });
 
-    it('off baseline renders the full strip with no aria-expanded on group headers', () => {
+    it('off baseline renders the full strip with no group header folded', () => {
       TestBed.configureTestingModule({
         providers: [provideZonelessChangeDetection()],
       });
@@ -305,7 +308,10 @@ describe('CngxStepper organism', () => {
       const headers = Array.from(
         fixture.nativeElement.querySelectorAll('.cngx-stepper__group-header'),
       ) as HTMLElement[];
-      headers.forEach((h) => expect(h.getAttribute('aria-expanded')).toBeNull());
+      headers.forEach((h) => {
+        expect(h.classList.contains('cngx-stepper__group-header--collapsed')).toBe(false);
+        expect(h.getAttribute('aria-expanded')).toBeNull();
+      });
     });
   });
 

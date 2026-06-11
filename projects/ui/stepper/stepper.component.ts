@@ -300,25 +300,30 @@ export class CngxStepper implements CngxStepPanelHost {
   );
 
   /**
-   * Reactive `aria-expanded` for a rendered strip group header. `null`
-   * (attribute absent) under the `'off'` baseline so a non-collapsible
-   * group carries no disclosure semantics; `'true'`/`'false'` track the
-   * collapse state under `'expand-active'`. Pillar 2 - reads the
-   * presenter's `activeGroupId`, never a one-shot write.
+   * `true` when a rendered strip group header is folded under the
+   * focus-driven policy: `groupCollapse === 'expand-active'`, the group
+   * has children, and it does not hold the active step. Drives the
+   * `--collapsed` visual de-emphasis. Reads `activeGroupId` reactively,
+   * never a one-shot write.
+   *
+   * The fold is a density optimisation, not a user-operable disclosure:
+   * collapse is focus-driven (no toggle control) and collapsed steps
+   * stay sequentially reachable via footer navigation, so the header
+   * carries no `aria-expanded` - an unsupported pairing on `role="group"`
+   * (ARIA 1.2) that would also imply a false disclosure affordance.
    */
-  protected groupAriaExpanded(node: CngxStepNode): 'true' | 'false' | null {
+  protected isGroupCollapsed(node: CngxStepNode): boolean {
     if (node.kind !== 'group' || this.config.groupCollapse !== 'expand-active') {
-      return null;
+      return false;
     }
     if (node.children.length === 0) {
-      return null;
+      return false;
     }
-    return this.presenter.activeGroupId() === node.id ? 'true' : 'false';
+    return this.presenter.activeGroupId() !== node.id;
   }
 
   /**
    * `aria-label` cascade: input → `ariaLabels.stepperRegion` → `i18n.stepperLabel`.
-   * Pillar 2.
    */
   protected readonly resolvedAriaLabel = computed<string | null>(() => {
     if (this.ariaLabelledBy()) {
@@ -389,7 +394,7 @@ export class CngxStepper implements CngxStepPanelHost {
     ),
   );
 
-  /** Commit-in-flight flag - drives the host `aria-busy` binding. Pillar 2. */
+  /** Commit-in-flight flag - drives the host `aria-busy` binding.*/
   protected readonly isCommitting = computed<boolean>(
     () => this.presenter.commitState.status() === 'pending',
   );
