@@ -1941,13 +1941,6 @@
   background: var(--cngx-step-pending-color, var(--cngx-step-active-color, currentColor));
 }
 
-/* Label-only skins hide the disc indicator (linear-minimal, path-chevron,
-   chips, breadcrumb), so at the minimal density rung a hidden label would
-   leave an empty shape with nothing to read. For these skins the collapsed
-   label truncates to a small ellipsis'd stub instead of disappearing - it
-   degrades but is never empty. Skins that keep a numbered indicator
-   (classic, stripe-status-rich, pill-segment) still hide the label and
-   fall back to the number. Unlayered so it beats the layered base rule. */
 /* Density-auto: every skin's label must be shrinkable so it truncates to
    fit instead of forcing the strip wider. Some skins (path-chevron,
    pill-segment) pin the label to flex:0 0 auto for their full-size
@@ -1959,9 +1952,10 @@
 }
 
 /* Hard no-scrollbar guarantee under density 'auto': the strip clips
-   instead of scrolling. Labels shrink first (above), so in practice
-   nothing is cut - this is the belt-and-suspenders against sub-pixel and
-   skin-geometry rounding that would otherwise surface a scrollbar. */
+   instead of scrolling. Labels shrink first (the cqi budget owns their
+   max-width), so in practice nothing is cut - this is the
+   belt-and-suspenders against sub-pixel and skin-geometry rounding that
+   would otherwise surface a scrollbar. */
 .cngx-stepper[data-density-auto] .cngx-stepper__strip {
   overflow-x: clip;
   /* density keeps the strip on one row - a skin that wraps (chips) would
@@ -1969,77 +1963,42 @@
   flex-wrap: nowrap;
 }
 
-/* Minimal rung design: the active step keeps its full label, every other
-   step collapses to just its number. Label-only / decorative skins
-   (linear-minimal, path-chevron, chips, breadcrumb) hide the disc
-   indicator by default, so re-show it at minimal on every skin -
-   otherwise a collapsed step (label hidden via --collapsed) would be
-   empty. The active step shows its number + label; the rest are number
-   only and naturally narrower. */
-.cngx-stepper[data-density='minimal'] .cngx-stepper__indicator {
+/* Inverse-cqi number reveal for the label-only skins that hide the disc
+   at full width (chips, path-chevron). The label is the whole content
+   there, so the indicator is a pure collapse artifact: it grows
+   continuously from 0 to its normal diameter as the label budget drops
+   below the reveal floor, surfacing the number exactly as the label
+   collapses - no display toggle, no discrete pop. While the budget sits
+   comfortably above the floor the inline-size resolves to 0 (invisible,
+   zero space), matching the full-width design; on the active step the
+   budget is large by construction, so its number stays hidden and the
+   label reads label-only. Reads the inherited --cngx-step-label-budget
+   set on the step (base stylesheet). Unlayered so it beats the
+   @layer cngx.skins `display: none`.
+
+   path-chevron excludes the success state: completed tiles surface the
+   inherited check at every width ("done" stays explicit against the green
+   tile), so that disc must not shrink to 0. */
+.cngx-stepper[data-density-auto][data-skin='chips'] .cngx-stepper__indicator,
+.cngx-stepper[data-density-auto][data-skin='path-chevron']
+  .cngx-stepper__indicator:not([data-state='success']) {
   display: inline-flex;
+  overflow: hidden;
+  inline-size: clamp(
+    0px,
+    calc(var(--cngx-step-label-budget-floor, 2.5rem) - var(--cngx-step-label-budget, 0px)),
+    var(--cngx-step-indicator-size, 1.75rem)
+  );
 }
 
-/* Non-active steps shrink to a compact number at the minimal rung so the
-   active labelled step stands out as the anchor. The step's internal
-   indicator->label gap is zeroed because the label is collapsed - the
-   reserved gap would otherwise leave dead space after the number. */
-.cngx-stepper[data-density='minimal'] .cngx-stepper__step:not([aria-current='step']) {
-  flex: 0 1 auto;
-  gap: 0;
-}
-
-/* And the strip itself goes gapless at minimal so the number-only steps
-   cluster tight instead of floating apart. Tunable. */
-.cngx-stepper[data-density='minimal'] .cngx-stepper__strip {
-  gap: var(--cngx-stepper-minimal-strip-gap, 0);
-}
-
-/* chips are discrete pills, not a connected rail - keep an inter-chip gap
-   at minimal so they don't fuse together (only the internal
-   indicator->label gap is zeroed). */
-.cngx-stepper[data-skin='chips'][data-density='minimal'] .cngx-stepper__strip {
-  gap: var(--cngx-stepper-minimal-chip-gap, 0.375rem);
-}
-
-/* breadcrumb's "›" separator sits in the strip gap, so keep that gap at
-   minimal - zeroing it collapses the breathing room around the chevron. */
-.cngx-stepper[data-skin='breadcrumb'][data-density='minimal'] .cngx-stepper__strip {
-  gap: var(--cngx-step-breadcrumb-gap, 0.5rem);
-}
-
-/* path-chevron + pill-segment + chips minimal: the tile shape already
-   carries sequence + active state, so the active tile drops its
-   (redundant) number and sizes to exactly its label, while the non-active
-   tiles collapse to a compact numbered tile (the strip gap is zeroed for
-   every skin at minimal above). */
-.cngx-stepper[data-skin='path-chevron'][data-density='minimal'] .cngx-stepper__step,
-.cngx-stepper[data-skin='pill-segment'][data-density='minimal'] .cngx-stepper__step,
-.cngx-stepper[data-skin='chips'][data-density='minimal'] .cngx-stepper__step {
-  flex: 0 0 auto;
-}
-
-.cngx-stepper[data-skin='path-chevron'][data-density='minimal']
-  .cngx-stepper__step[aria-current='step']
-  .cngx-stepper__indicator,
-.cngx-stepper[data-skin='pill-segment'][data-density='minimal']
-  .cngx-stepper__step[aria-current='step']
-  .cngx-stepper__indicator,
-.cngx-stepper[data-skin='chips'][data-density='minimal']
-  .cngx-stepper__step[aria-current='step']
-  .cngx-stepper__indicator {
-  display: none;
-}
-
-/* breadcrumb minimal: no numbers at all - the ">" separators carry the
-   sequence, so non-active labels just truncate to a stub instead of
-   collapsing to a number. Keep the indicator hidden (overriding the
-   force-show above) and truncate the collapsed labels. */
-.cngx-stepper[data-skin='breadcrumb'][data-density='minimal'] .cngx-stepper__indicator {
-  display: none;
-}
-
-.cngx-stepper[data-skin='breadcrumb'] .cngx-stepper__label--collapsed {
-  max-width: var(--cngx-stepper-label-collapsed-min, 4ch);
-  opacity: 1;
+/* breadcrumb has no number fallback - the "›" separators carry sequence -
+   so its non-active labels truncate to a small readable floor instead of
+   collapsing to nothing, and the disc stays hidden (no reveal rule). The
+   active step's budget is large (base active rule), so max() keeps its
+   full label. Unlayered so the floor beats the base budget cap. */
+.cngx-stepper[data-density-auto][data-skin='breadcrumb'] .cngx-stepper__label {
+  max-width: max(
+    var(--cngx-step-breadcrumb-label-floor, 4ch),
+    var(--cngx-step-label-budget, 0px)
+  );
 }
