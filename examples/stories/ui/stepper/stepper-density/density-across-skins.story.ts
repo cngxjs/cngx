@@ -3,9 +3,9 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxStepper: density across skins',
   subtitle:
-    'The same <code>density: \'auto\'</code> ladder on every skin. Pick a skin and drag the frame edge: each one degrades full -> compact -> minimal on its own container width, with no horizontal scrollbar.',
+    'The same continuous <code>density: \'auto\'</code> model on every skin. Pick a skin and drag the frame edge: each label shrinks with its distance from the active step, the furthest collapse first, and the active label stays readable - with no horizontal scrollbar.',
   description:
-    'Density is orthogonal to the visual skin - it lives on the shared strip structure (<code>.cngx-stepper__label</code> / <code>__step</code>), so the full -> compact -> minimal ladder applies identically to classic, linear-minimal, stripe-status-rich, path-chevron, pill-segment, chips and breadcrumb. Switch the skin and resize: labels shrink and ellipsis-truncate in flow, then drop to indicators-only with the active label kept - the strip never grows a horizontal scrollbar on any skin. <code>[skin]</code> is a per-instance input; the density config comes from <code>provideStepperConfigAt(withStepperDensity(\'auto\'))</code>.',
+    'Density is orthogonal to the visual skin - it lives on the shared strip structure (<code>.cngx-stepper__label</code> / <code>__step</code>), so the continuous distance-weighted label budget applies identically to classic, linear-minimal, stripe-status-rich, path-chevron, pill-segment, chips and breadcrumb. Switch the skin and resize: labels shrink and ellipsis-truncate in flow, the step furthest from the active one collapsing first, while the active label is kept as the anchor - the strip never grows a horizontal scrollbar on any skin. Each skin keeps its own treatment: skins with a numbered disc (classic, stripe-status-rich, pill-segment) keep it visible; label-only skins reveal the number continuously as the label collapses (chips, path-chevron) or truncate to a small readable stub instead (breadcrumb). <code>[skin]</code> is a per-instance input; the density config comes from <code>provideStepperConfigAt(withStepperDensity(\'auto\'))</code>.',
   level: 'organism',
   audience: ['dev', 'design'],
   artifact: 'standalone',
