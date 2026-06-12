@@ -457,7 +457,7 @@
      (thematic) is the final no-scrollbar guarantee. */
   cngx-stepper[data-density-auto] .cngx-stepper__step {
     min-width: var(--cngx-step-collapsed-min, 3.25rem);
-    flex-shrink: calc(1 + var(--cngx-step-distance, 0) * var(--cngx-step-shrink-weight, 8));
+    flex-shrink: calc(1 + var(--cngx-step-distance, 0) * var(--cngx-step-shrink-weight, 20));
   }
 
   /* The active step shrinks at a far lower priority than its neighbours

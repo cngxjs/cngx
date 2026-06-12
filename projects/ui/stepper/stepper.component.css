@@ -886,19 +886,12 @@
   }
 
   /*
-   * Classic + [connectors]: solid completed/upcoming rail between
-   * adjacent step indicators. Per-segment color cascades from the
-   * PRECEDING step's `[data-state]` via the adjacent-sibling combinator,
-   * so completed/upcoming distinction stays 100% CSS (Pillar 1).
-   * Double-scoped on `[data-skin='classic']` so the four other skins
-   * are mechanically untouched.
-   */
-  /*
    * Classic + [connectors] = the canonical wizard look: disc on top, label
    * stacked below, full-width rail between adjacent disc centers. Equal-flex
-   * slots make disc-to-disc distance predictable; the rail recolors completed
-   * segments via the preceding step's [data-state='success']. Pillar 1.
-   * Double-scoped on [data-skin='classic'] so the four other skins are
+   * slots make disc-to-disc distance predictable. Per-segment color cascades
+   * from the PRECEDING step's `[data-state]` via the adjacent-sibling
+   * combinator, so completed/upcoming distinction stays 100% CSS (Pillar 1).
+   * Double-scoped on `[data-skin='classic']` so the four other skins are
    * mechanically untouched.
    */
   @scope (.cngx-stepper[data-skin='classic'][data-connectors='true']) {
