@@ -82,15 +82,16 @@ bootstrapApplication(AppComponent, {
 });
 ```
 
-Under `'auto'` labels keep their full width as long as the strip has room; they only give way when it would otherwise overflow. Each step's shrink priority grows with its distance from the active step, so the furthest labels truncate first and the nearest stay readable longest. The active step shrinks last and keeps a readable label. Because nothing is capped below the available width, space freed by a collapsed label is reused rather than left empty, and the strip clips instead of growing a horizontal scrollbar. Collapsed labels stay in the accessibility tree (clipped, never removed), so every step button keeps its accessible name. Each skin keeps its own treatment: skins with a numbered disc keep it visible as the label collapses; equal-tile skins (`path-chevron`, `pill-segment`) keep equal tiles; label-only skins with no number (`chips`, `breadcrumb`, `path-chevron`) truncate to a small readable stub.
+Under `'auto'` labels keep their full width as long as the strip has room; they only give way when it would otherwise overflow. Each step's shrink priority grows with its distance from the active step, so the furthest labels truncate first and the nearest stay readable longest. The active step has the lowest priority of all, so its label stays fully readable while the strip has room and only yields once its neighbours have collapsed to number-only. Because nothing is capped below the available width, space freed by a collapsed label is reused rather than left empty, and the strip clips instead of growing a horizontal scrollbar. Collapsed labels stay in the accessibility tree (clipped, never removed), so every step button keeps its accessible name. Each skin keeps its own treatment: skins with a numbered disc keep it visible as the label collapses; equal-tile skins (`path-chevron`, `pill-segment`) keep equal tiles; label-only skins with no number (`chips`, `breadcrumb`, `path-chevron`) truncate to a small readable stub.
 
 Tune the model with custom properties:
 
 | Property | Default | Effect |
 |-|-|-|
-| `--cngx-step-shrink-weight` | `8` | How strongly distance from the active step raises a step's shrink priority. Larger collapses far steps sooner. |
-| `--cngx-step-collapsed-min` | `3.25rem` | Minimum step width - the floor a collapsing step shrinks to, wide enough to keep its indicator. |
+| `--cngx-step-shrink-weight` | `20` | How strongly distance from the active step raises a non-active step's shrink priority. Larger keeps the active label full longer at the neighbours' expense. |
+| `--cngx-step-active-label-max` | `60cqi` | Maximum active-label width (container units), so a long active label cannot squeeze the sequence out and the strip reflow on navigation stays bounded. |
 | `--cngx-step-active-label-min` | `4rem` | Guaranteed minimum label width for the active step. |
+| `--cngx-step-collapsed-min` | `3.25rem` | Minimum step width - the floor a collapsing step shrinks to, wide enough to keep its indicator. |
 | `--cngx-step-collapsed-label-min` | `2ch` | Minimum label stub for non-active steps on label-only skins. |
 
 ## Progress-Bar Stepper

@@ -317,14 +317,15 @@
 
   /**
    * Multiplier turning per-step distance into flex-shrink priority under
-   * `density: 'auto'`. Larger values make far steps collapse sooner
-   * relative to near ones.
+   * `density: 'auto'`. The active step shrinks at priority 1, every other
+   * step at `1 + distance * weight`, so a high weight makes neighbours
+   * collapse to number-only before the active label gives any ground.
    * @group Layout / Density
    */
   @property --cngx-step-shrink-weight {
     syntax: '<number>';
     inherits: false;
-    initial-value: 8;
+    initial-value: 20;
   }
 
   /**
@@ -360,6 +361,19 @@
     syntax: '*';
     inherits: false;
     initial-value: 4rem;
+  }
+
+  /**
+   * Maximum width of the active label, in container-query units, so a very
+   * long active label cannot eat the whole strip and squeeze the sequence
+   * out. It also bounds how far the strip reflows when navigating between
+   * steps. `60cqi` leaves at least 40% for the surrounding steps.
+   * @group Layout / Density
+   */
+  @property --cngx-step-active-label-max {
+    syntax: '*';
+    inherits: false;
+    initial-value: 60cqi;
   }
 }
 
@@ -446,14 +460,19 @@
     flex-shrink: calc(1 + var(--cngx-step-distance, 0) * var(--cngx-step-shrink-weight, 8));
   }
 
-  /* The active step shrinks last (lowest priority) so its label stays
-     readable longest, and never below its own floor. */
+  /* The active step shrinks at a far lower priority than its neighbours
+     (0.25, vs neighbours' 1 + distance * weight), so while any neighbour
+     still has label to give the active keeps its full label; it only
+     yields once every neighbour has collapsed to number-only. Floored for
+     readability, capped (max-width, cqi) so a very long active label
+     cannot squeeze the sequence out. */
   cngx-stepper[data-density-auto] .cngx-stepper__step[aria-current='step'] {
-    flex-shrink: 3;
+    flex-shrink: 0.25;
   }
 
   cngx-stepper[data-density-auto] .cngx-stepper__step[aria-current='step'] .cngx-stepper__label {
     min-width: var(--cngx-step-active-label-min, 4rem);
+    max-width: var(--cngx-step-active-label-max, 60cqi);
   }
 
   /* Label clips + ellipsis in flow and never exceeds its (shrinking) step
