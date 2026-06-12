@@ -398,6 +398,29 @@
     white-space: nowrap;
   }
 
+  /* Smooth the minimal-rung label collapse/expand so stepping between
+     steps (only the active label shows) eases instead of jumping. The
+     label animates its width via max-width (0 <-> a generous anchor) and
+     fades; the flex row reflows per frame so neighbours glide along. The
+     collapsed label stays in the a11y tree (clipped, not display:none),
+     so each step button keeps its accessible name. */
+  cngx-stepper[data-density='minimal'] .cngx-stepper__label {
+    max-width: var(--cngx-stepper-label-grow, 16rem);
+  }
+
+  cngx-stepper[data-density='minimal'] .cngx-stepper__label--collapsed {
+    max-width: 0;
+    opacity: 0;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    cngx-stepper[data-density-auto] .cngx-stepper__label {
+      transition:
+        max-width var(--cngx-stepper-density-transition, 240ms) ease,
+        opacity var(--cngx-stepper-density-transition, 240ms) ease;
+    }
+  }
+
   .cngx-stepper__panels {
     display: block;
   }

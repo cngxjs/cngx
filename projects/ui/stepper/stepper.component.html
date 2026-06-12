@@ -270,7 +270,7 @@
   </span>
   <span
     class="cngx-stepper__label"
-    [class.cngx-sr-only]="stripDensity() === 'minimal' && !slotContext.isActive(node)"
+    [class.cngx-stepper__label--collapsed]="stripDensity() === 'minimal' && !slotContext.isActive(node)"
   >
     @let labelTpl = labelTemplateFor(node.id);
     @if (labelTpl) {
