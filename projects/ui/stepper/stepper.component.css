@@ -1982,3 +1982,21 @@
 .cngx-stepper[data-density='minimal'] .cngx-stepper__step:not([aria-current='step']) {
   flex: 0 1 auto;
 }
+
+/* path-chevron minimal: the arrow already carries sequence + active
+   state, so the active tile drops its (redundant) number and sizes to
+   exactly its label, while the non-active tiles collapse to a compact
+   numbered chevron and sit flush against each other (gap 0). */
+.cngx-stepper[data-skin='path-chevron'][data-density='minimal'] .cngx-stepper__strip {
+  gap: 0;
+}
+
+.cngx-stepper[data-skin='path-chevron'][data-density='minimal'] .cngx-stepper__step {
+  flex: 0 0 auto;
+}
+
+.cngx-stepper[data-skin='path-chevron'][data-density='minimal']
+  .cngx-stepper__step[aria-current='step']
+  .cngx-stepper__indicator {
+  display: none;
+}
