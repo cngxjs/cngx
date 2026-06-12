@@ -2002,3 +2002,16 @@
     var(--cngx-step-label-budget, 0px)
   );
 }
+
+/* Soft choreography: ease the inverse-cqi indicator reveal so the number
+   slides in rather than popping as the budget crosses the floor. The
+   label max-width already eases (base stylesheet). prefers-reduced-motion
+   short-circuits both - and the base reduce block zeroes the indicator
+   transition outright. */
+@media (prefers-reduced-motion: no-preference) {
+  .cngx-stepper[data-density-auto][data-skin='chips'] .cngx-stepper__indicator,
+  .cngx-stepper[data-density-auto][data-skin='path-chevron']
+    .cngx-stepper__indicator:not([data-state='success']) {
+    transition: inline-size var(--cngx-stepper-indicator-reveal-transition, 120ms) ease;
+  }
+}
