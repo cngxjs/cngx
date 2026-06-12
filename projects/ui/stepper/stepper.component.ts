@@ -97,6 +97,10 @@ import { coerceBooleanProperty } from '@cngx/core/utils';
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-skins/path-chevron-vertical</example-url>
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-skins/pill-segment-vertical</example-url>
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-skins/chips-vertical</example-url>
+ * <example-url>http://localhost:4200/#/ui/stepper/stepper-hierarchical/expand-active-group-collapse</example-url>
+ * <example-url>http://localhost:4200/#/ui/stepper/stepper-hierarchical/group-collapse-summary-count</example-url>
+ * <example-url>http://localhost:4200/#/ui/stepper/stepper-density/flat-steps-auto-density</example-url>
+ * <example-url>http://localhost:4200/#/ui/stepper/stepper-density/density-across-skins</example-url>
  */
 @Component({
   selector: 'cngx-stepper',
