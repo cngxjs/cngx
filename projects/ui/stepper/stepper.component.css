@@ -1992,6 +1992,13 @@
   gap: var(--cngx-stepper-minimal-strip-gap, 0);
 }
 
+/* chips are discrete pills, not a connected rail - keep an inter-chip gap
+   at minimal so they don't fuse together (only the internal
+   indicator->label gap is zeroed). */
+.cngx-stepper[data-skin='chips'][data-density='minimal'] .cngx-stepper__strip {
+  gap: var(--cngx-stepper-minimal-chip-gap, 0.375rem);
+}
+
 /* path-chevron + pill-segment + chips minimal: the tile shape already
    carries sequence + active state, so the active tile drops its
    (redundant) number and sizes to exactly its label, while the non-active
