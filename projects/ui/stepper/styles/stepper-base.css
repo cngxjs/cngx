@@ -382,6 +382,22 @@
     white-space: nowrap;
   }
 
+  /* No-scrollbar guarantee for density: 'auto'. Steps may shrink below
+     their content width (min-width: 0 defeats the flex min-content
+     floor) and the label truncates in flow, so the strip always fits its
+     container instead of growing a horizontal scrollbar - whatever rung
+     the px thresholds resolve to. The rung rules above add intentional
+     steps (compact cap, minimal hide) on top of this safety net. */
+  cngx-stepper[data-density-auto] .cngx-stepper__step {
+    min-width: 0;
+  }
+
+  cngx-stepper[data-density-auto] .cngx-stepper__label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
   .cngx-stepper__panels {
     display: block;
   }

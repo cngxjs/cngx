@@ -422,7 +422,7 @@ describe('CngxStepper organism', () => {
       expect(labels.every((l) => !l.classList.contains('cngx-sr-only'))).toBe(true);
     });
 
-    it("'comfortable' (default) keeps data-density full at any width", () => {
+    it("'comfortable' (default) keeps data-density full at any width and sets no [data-density-auto]", () => {
       TestBed.configureTestingModule({
         providers: [provideZonelessChangeDetection()],
       });
@@ -433,6 +433,14 @@ describe('CngxStepper organism', () => {
       fixture.detectChanges();
       expect(host.getAttribute('data-density')).toBe('full');
       expect(host.getAttribute('aria-orientation')).toBe('horizontal');
+      // No-scrollbar shrink CSS is scoped to [data-density-auto]; off here.
+      expect(host.hasAttribute('data-density-auto')).toBe(false);
+    });
+
+    it("marks the host [data-density-auto] under density: 'auto'", () => {
+      const fixture = autoFixture();
+      const host = fixture.nativeElement.querySelector('cngx-stepper') as HTMLElement;
+      expect(host.hasAttribute('data-density-auto')).toBe(true);
     });
   });
 

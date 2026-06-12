@@ -43,6 +43,25 @@ test.describe('ui/stepper/stepper-density', () => {
     expect(await horizontalOverflow(stepper)).toBeLessThanOrEqual(1);
   });
 
+  test('never grows a horizontal scrollbar across the whole width range', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await gotoDemo(page, ROUTE);
+
+    const stepper = page.locator('cngx-stepper').first();
+    await expect(stepper).toBeVisible();
+
+    // Sweep the container width across the ladder; the strip must fit at
+    // every step (labels shrink/truncate in flow), never overflow.
+    for (let width = 340; width <= 700; width += 20) {
+      await page.addStyleTag({
+        content: `cngx-stepper { width: ${width}px !important; display: block; }`,
+      });
+      await expect
+        .poll(() => horizontalOverflow(stepper), { message: `overflow at ${width}px` })
+        .toBeLessThanOrEqual(1);
+    }
+  });
+
   test('the active step keeps its visible label at the minimal rung', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 900 });
     await gotoDemo(page, ROUTE);

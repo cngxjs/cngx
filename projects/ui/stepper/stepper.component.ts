@@ -133,6 +133,7 @@ import { coerceBooleanProperty } from '@cngx/core/utils';
     '[attr.aria-orientation]': 'presenter.orientation()',
     '[attr.data-orientation]': 'presenter.orientation()',
     '[attr.data-density]': 'stripDensity()',
+    '[attr.data-density-auto]': "isDensityAuto() ? '' : null",
     '[attr.data-skin]': 'hostAttrs.resolvedSkin()',
     '[attr.data-connectors]': "hostAttrs.resolvedConnectors() ? 'true' : null",
     '[attr.data-mobile-indicator-position]': 'hostAttrs.resolvedMobileIndicatorPosition()',
@@ -230,6 +231,15 @@ export class CngxStepper implements CngxStepPanelHost {
     breakpoints: () => this.config.densityBreakpoints ?? STEPPER_DEFAULT_DENSITY_BREAKPOINTS,
     destroyRef: inject(DestroyRef),
   });
+
+  /**
+   * `true` when `density: 'auto'` is active. Drives `[data-density-auto]`,
+   * which makes the strip absorb a too-narrow container by shrinking +
+   * ellipsis-truncating labels in flow rather than growing a horizontal
+   * scrollbar - so no rung ever overflows, independent of how the px
+   * thresholds resolve.
+   */
+  protected readonly isDensityAuto = computed<boolean>(() => this.config.density === 'auto');
 
   constructor() {
     // Scroll active step into view via the swappable scroll-sync factory.
