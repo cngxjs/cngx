@@ -82,16 +82,16 @@ bootstrapApplication(AppComponent, {
 });
 ```
 
-Under `'auto'` each label gets a budget in container-query inline units: its share of the strip (`100cqi / step-count`) minus a fixed indicator allowance minus a penalty proportional to its distance from the active step. The step furthest from the active one sheds its label first and the nearest stay readable longest; the active step always keeps a readable label. The budget floors at zero and the strip clips, so labels truncate in flow and the strip never grows a horizontal scrollbar. Collapsed labels stay in the accessibility tree (clipped, never removed), so every step button keeps its accessible name. Each skin keeps its own treatment: skins with a numbered disc keep it visible, label-only skins reveal the number continuously as the label collapses (`chips`, `path-chevron`) or truncate to a small readable stub instead (`breadcrumb`). `prefers-reduced-motion` short-circuits the easing.
+Under `'auto'` labels keep their full width as long as the strip has room; they only give way when it would otherwise overflow. Each step's shrink priority grows with its distance from the active step, so the furthest labels truncate first and the nearest stay readable longest. The active step shrinks last and keeps a readable label. Because nothing is capped below the available width, space freed by a collapsed label is reused rather than left empty, and the strip clips instead of growing a horizontal scrollbar. Collapsed labels stay in the accessibility tree (clipped, never removed), so every step button keeps its accessible name. Each skin keeps its own treatment: skins with a numbered disc keep it visible as the label collapses; equal-tile skins (`path-chevron`, `pill-segment`) keep equal tiles; label-only skins with no number (`chips`, `breadcrumb`, `path-chevron`) truncate to a small readable stub.
 
 Tune the model with custom properties:
 
 | Property | Default | Effect |
 |-|-|-|
-| `--cngx-step-distance-penalty` | `2.5rem` | Label budget shed per unit of distance from the active step. Larger collapses far steps sooner. |
-| `--cngx-step-indicator-allowance` | `3.2rem` | Inline space reserved per step for the indicator, paddings and gap. |
-| `--cngx-step-active-label-min` | `6rem` | Guaranteed minimum label width for the active step. |
-| `--cngx-step-label-budget-floor` | `2.5rem` | Budget below which label-only skins reveal the number indicator. |
+| `--cngx-step-shrink-weight` | `8` | How strongly distance from the active step raises a step's shrink priority. Larger collapses far steps sooner. |
+| `--cngx-step-collapsed-min` | `3.25rem` | Minimum step width - the floor a collapsing step shrinks to, wide enough to keep its indicator. |
+| `--cngx-step-active-label-min` | `4rem` | Guaranteed minimum label width for the active step. |
+| `--cngx-step-collapsed-label-min` | `2ch` | Minimum label stub for non-active steps on label-only skins. |
 
 ## Progress-Bar Stepper
 

@@ -488,20 +488,6 @@ describe('CngxStepper organism', () => {
       expect(host.hasAttribute('data-density-auto')).toBe(true);
     });
 
-    it("publishes --cngx-step-count = step count under density: 'auto'", () => {
-      const fixture = autoFixture(); // 3 flat steps
-      const host = fixture.nativeElement.querySelector('cngx-stepper') as HTMLElement;
-      expect(host.style.getPropertyValue('--cngx-step-count')).toBe('3');
-    });
-
-    it("omits --cngx-step-count under the 'comfortable' default", () => {
-      TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
-      const fixture = TestBed.createComponent(HostCmp);
-      fixture.detectChanges();
-      const host = fixture.nativeElement.querySelector('cngx-stepper') as HTMLElement;
-      expect(host.style.getPropertyValue('--cngx-step-count')).toBe('');
-    });
-
     it("publishes per-step --cngx-step-distance = abs(index - active) under 'auto'", () => {
       const fixture = autoFixture(); // active defaults to step 0
       const steps = Array.from(

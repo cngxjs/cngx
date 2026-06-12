@@ -139,9 +139,6 @@ import { coerceBooleanProperty } from '@cngx/core/utils';
     '[attr.data-orientation]': 'presenter.orientation()',
     '[attr.data-density]': 'stripDensity()',
     '[attr.data-density-auto]': "isDensityAuto() ? '' : null",
-    // Step count as data (not a layout read) - feeds the continuous cqi
-    // label budget. Only under 'auto' so 'comfortable' output is identical.
-    '[style.--cngx-step-count]': 'isDensityAuto() ? presenter.stepCount() : null',
     '[attr.data-skin]': 'hostAttrs.resolvedSkin()',
     '[attr.data-connectors]': "hostAttrs.resolvedConnectors() ? 'true' : null",
     '[attr.data-mobile-indicator-position]': 'hostAttrs.resolvedMobileIndicatorPosition()',

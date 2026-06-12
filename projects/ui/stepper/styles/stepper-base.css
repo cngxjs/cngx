@@ -303,22 +303,10 @@
   }
 
   /**
-   * Number of steps in the strip. Published as data by the host under
-   * `density: 'auto'` only - drives the continuous per-step label budget.
-   * Inherits so strip descendants (step / label / indicator) can read it.
-   * @group Layout / Density
-   */
-  @property --cngx-step-count {
-    syntax: '<number>';
-    inherits: true;
-    initial-value: 1;
-  }
-
-  /**
    * Distance of a step from the active one (`abs(index - active)`).
-   * Published per-step as data under `density: 'auto'`; the furthest
-   * steps shed label budget first. Set and consumed on the step element,
-   * so it does not need to inherit.
+   * Published per-step as data under `density: 'auto'`; it raises the
+   * step's shrink priority so the furthest steps give up their label
+   * first. Set and consumed on the step element, so it does not inherit.
    * @group Layout / Density
    */
   @property --cngx-step-distance {
@@ -328,26 +316,39 @@
   }
 
   /**
-   * Inline space reserved per step for the indicator, paddings and gap,
-   * subtracted from each step's share of the strip before the label
-   * budget is computed.
+   * Multiplier turning per-step distance into flex-shrink priority under
+   * `density: 'auto'`. Larger values make far steps collapse sooner
+   * relative to near ones.
    * @group Layout / Density
    */
-  @property --cngx-step-indicator-allowance {
-    syntax: '*';
+  @property --cngx-step-shrink-weight {
+    syntax: '<number>';
     inherits: false;
-    initial-value: 3.2rem;
+    initial-value: 8;
   }
 
   /**
-   * Label budget shed per unit of distance from the active step. Larger
-   * values collapse far steps sooner.
+   * Minimum width of a step under `density: 'auto'` - the floor a
+   * collapsing step shrinks to, kept wide enough to hold the indicator so
+   * a number-bearing step never clips its disc.
    * @group Layout / Density
    */
-  @property --cngx-step-distance-penalty {
+  @property --cngx-step-collapsed-min {
     syntax: '*';
     inherits: false;
-    initial-value: 2.5rem;
+    initial-value: 3.25rem;
+  }
+
+  /**
+   * Minimum label width for non-active steps on label-only skins (no
+   * number fallback) under `density: 'auto'`, so a collapsing label keeps
+   * a readable stub instead of vanishing.
+   * @group Layout / Density
+   */
+  @property --cngx-step-collapsed-label-min {
+    syntax: '*';
+    inherits: false;
+    initial-value: 2ch;
   }
 
   /**
@@ -358,19 +359,7 @@
   @property --cngx-step-active-label-min {
     syntax: '*';
     inherits: false;
-    initial-value: 6rem;
-  }
-
-  /**
-   * Label-budget threshold below which the number indicator is revealed
-   * (inverse-cqi) on label-only skins. The indicator grows from 0 to its
-   * full size as the budget drops below this floor.
-   * @group Layout / Density
-   */
-  @property --cngx-step-label-budget-floor {
-    syntax: '*';
-    inherits: false;
-    initial-value: 2.5rem;
+    initial-value: 4rem;
   }
 }
 
@@ -440,61 +429,42 @@
     min-width: 0;
   }
 
-  /* Continuous label budget (density: 'auto'). Each step claims its share
-     of the strip - 100cqi / step-count - minus a fixed indicator
-     allowance minus a per-step distance penalty, so the step furthest
-     from the active one sheds its label first and the nearest stay
-     readable longest. Computed on the step, where the per-step
-     --cngx-step-distance is set (registered inherits:false, consumed in
-     the same rule); the result cascades as an unregistered custom
-     property to the label (max-width) and to the indicator (inverse
-     reveal, thematic stylesheet) children - no cross-scope recompute, no
-     measurement, no feedback loop. max(0px, ...) together with the
-     strip's overflow:clip (thematic) guarantee no horizontal scrollbar at
-     any width. */
+  /* Continuous density (density: 'auto') by distance-weighted shrink.
+     Steps lay out at their natural width and only give up label space when
+     the strip would otherwise overflow; the shrink priority grows with
+     each step's distance from the active one, so the furthest labels
+     truncate first and the nearest stay readable longest. Because nothing
+     is capped below the available width, full labels show whenever they
+     fit - no space is truncated away while the strip still has room (the
+     old per-step budget left dead space beside collapsed labels). The step
+     floors at --cngx-step-collapsed-min so a collapsing step never clips
+     its indicator; once neighbours hit that floor the remaining deficit
+     pushes the active label down to its own floor. overflow:clip
+     (thematic) is the final no-scrollbar guarantee. */
   cngx-stepper[data-density-auto] .cngx-stepper__step {
-    min-width: 0;
-    --cngx-step-label-budget: max(
-      0px,
-      calc(
-        100cqi / var(--cngx-step-count, 1) - var(--cngx-step-indicator-allowance, 3.2rem) -
-          var(--cngx-step-distance, 0) * var(--cngx-step-distance-penalty, 2.5rem)
-      )
-    );
+    min-width: var(--cngx-step-collapsed-min, 3.25rem);
+    flex-shrink: calc(1 + var(--cngx-step-distance, 0) * var(--cngx-step-shrink-weight, 8));
   }
 
-  /* The active step always keeps a readable label: its budget floors at
-     --cngx-step-active-label-min and otherwise claims whatever the strip
-     has left after every other step's indicator allowance. max-width is a
-     cap, so flex + clip keep it bounded. A wide budget also keeps the
-     active step's number indicator hidden under the inverse reveal (budget
-     stays far above the floor), so label-only skins read label-only. */
+  /* The active step shrinks last (lowest priority) so its label stays
+     readable longest, and never below its own floor. */
   cngx-stepper[data-density-auto] .cngx-stepper__step[aria-current='step'] {
-    --cngx-step-label-budget: max(
-      var(--cngx-step-active-label-min, 6rem),
-      calc(100cqi - (var(--cngx-step-count, 1) - 1) * var(--cngx-step-indicator-allowance, 3.2rem))
-    );
+    flex-shrink: 3;
   }
 
-  /* Label consumes the budget: clip + ellipsis in flow so it truncates
-     instead of forcing the strip wider. The label stays rendered (never
-     display:none) so the step button keeps its accessible name even when
-     the budget collapses to 0. */
+  cngx-stepper[data-density-auto] .cngx-stepper__step[aria-current='step'] .cngx-stepper__label {
+    min-width: var(--cngx-step-active-label-min, 4rem);
+  }
+
+  /* Label clips + ellipsis in flow and never exceeds its (shrinking) step
+     box (max-width:100%). It stays rendered (never display:none) so the
+     step button keeps its accessible name even when truncated to nothing. */
   cngx-stepper[data-density-auto] .cngx-stepper__label {
-    max-width: var(--cngx-step-label-budget, none);
+    max-width: 100%;
+    min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-  }
-
-  /* Symmetric max-width easing: open and close animate identically, so
-     the flex row conserves total width frame-by-frame and trailing steps
-     never snap when navigating (the old instant-close asymmetry is gone).
-     Reduced-motion short-circuits it. */
-  @media (prefers-reduced-motion: no-preference) {
-    cngx-stepper[data-density-auto] .cngx-stepper__label {
-      transition: max-width var(--cngx-stepper-density-transition, 240ms) ease;
-    }
   }
 
   .cngx-stepper__panels {
