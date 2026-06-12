@@ -70,6 +70,29 @@ Per-instance override:
 
 Under 480px viewports the classic strip auto-collapses to `<cngx-text-stepper>` (default) or `<cngx-dot-stepper>`. Configure via `withStepperMobileCollapse('text' | 'dots' | 'off')`.
 
+## Density
+
+`density` controls how the horizontal strip reacts to a narrow container. It defaults to `'comfortable'` (full labels, unchanged); `'auto'` arms a continuous, container-query-driven label budget.
+
+```ts
+import { provideStepperConfig, withStepperDensity } from '@cngx/common/stepper';
+
+bootstrapApplication(AppComponent, {
+  providers: [provideStepperConfig(withStepperDensity('auto'))],
+});
+```
+
+Under `'auto'` each label gets a budget in container-query inline units: its share of the strip (`100cqi / step-count`) minus a fixed indicator allowance minus a penalty proportional to its distance from the active step. The step furthest from the active one sheds its label first and the nearest stay readable longest; the active step always keeps a readable label. The budget floors at zero and the strip clips, so labels truncate in flow and the strip never grows a horizontal scrollbar. Collapsed labels stay in the accessibility tree (clipped, never removed), so every step button keeps its accessible name. Each skin keeps its own treatment: skins with a numbered disc keep it visible, label-only skins reveal the number continuously as the label collapses (`chips`, `path-chevron`) or truncate to a small readable stub instead (`breadcrumb`). `prefers-reduced-motion` short-circuits the easing.
+
+Tune the model with custom properties:
+
+| Property | Default | Effect |
+|-|-|-|
+| `--cngx-step-distance-penalty` | `2.5rem` | Label budget shed per unit of distance from the active step. Larger collapses far steps sooner. |
+| `--cngx-step-indicator-allowance` | `3.2rem` | Inline space reserved per step for the indicator, paddings and gap. |
+| `--cngx-step-active-label-min` | `6rem` | Guaranteed minimum label width for the active step. |
+| `--cngx-step-label-budget-floor` | `2.5rem` | Budget below which label-only skins reveal the number indicator. |
+
 ## Progress-Bar Stepper
 
 `CngxProgressBarStepper` renders the active step ratio as a determinate `<cngx-progress>` bar. Thin Level-4 organism composing `CngxStepperPresenter` via `hostDirectives` plus the embedded `CngxProgress` primitive - no reinvented `<div role="progressbar">`. Material consumers inherit Material progress palette automatically via `@cngx/themes/material/feedback-theme`.
