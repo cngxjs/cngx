@@ -1,3 +1,5 @@
+import { afterNextRender, type Injector } from '@angular/core';
+
 import type { CngxStepperHost } from './stepper-host.token';
 
 /**
@@ -45,6 +47,15 @@ export interface CngxStepperStripKeyboardNavOptions {
    * before.
    */
   readonly orientation?: () => 'horizontal' | 'vertical';
+  /**
+   * Injector used to defer the post-move focus to `afterNextRender`.
+   * Required when the strip can re-render its node set on navigation
+   * (focus-driven group collapse: crossing a group boundary removes the
+   * old button and adds the target's), so the focus lands after the new
+   * DOM exists. Omitted, focus falls back to a `queueMicrotask` defer -
+   * correct for a static strip where every button is always present.
+   */
+  readonly injector?: Injector;
 }
 
 /**
@@ -65,13 +76,24 @@ export function createStepperStripKeyboardNav(
   options: CngxStepperStripKeyboardNavOptions,
 ): (event: KeyboardEvent) => void {
   const stepClass = options.stepClassName ?? 'cngx-stepper__step';
+  const scheduleFocus = (focus: () => void): void => {
+    // After the next render when an injector is supplied (the strip may
+    // re-render its node set on a group-boundary crossing); a microtask
+    // otherwise. Either way the focus runs after the active-step signal
+    // has settled, so the target button exists.
+    if (options.injector) {
+      afterNextRender(focus, { injector: options.injector });
+    } else {
+      queueMicrotask(focus);
+    }
+  };
   const focusActive = (): void => {
     const activeId = options.presenter.activeStepId();
     if (!activeId) {
       return;
     }
     const buttonId = options.stepButtonIdFor(activeId);
-    queueMicrotask(() => {
+    scheduleFocus(() => {
       const el = options.hostElement.querySelector(`[id="${buttonId}"]`);
       if (el instanceof HTMLElement) {
         el.focus();

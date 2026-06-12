@@ -501,6 +501,10 @@ export class CngxStepper implements CngxStepPanelHost {
     hostElement: this.hostElement,
     flatStepCount: () => this.flatSteps().length,
     stepButtonIdFor: (id) => `${id}-header`,
+    // Defers the post-move focus to afterNextRender so arrow-key
+    // navigation across a collapsed group boundary lands on the target
+    // button after the strip re-renders its node set.
+    injector: this.injector,
     // Read at handler time - the density auto-vertical flip rebinds the
     // arrow-key axis through this accessor, never a peer-model write.
     orientation: () => this.effectiveOrientation(),
