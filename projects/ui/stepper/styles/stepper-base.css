@@ -301,6 +301,77 @@
     inherits: false;
     initial-value: 700;
   }
+
+  /**
+   * Number of steps in the strip. Published as data by the host under
+   * `density: 'auto'` only - drives the continuous per-step label budget.
+   * Inherits so strip descendants (step / label / indicator) can read it.
+   * @group Layout / Density
+   */
+  @property --cngx-step-count {
+    syntax: '<number>';
+    inherits: true;
+    initial-value: 1;
+  }
+
+  /**
+   * Distance of a step from the active one (`abs(index - active)`).
+   * Published per-step as data under `density: 'auto'`; the furthest
+   * steps shed label budget first. Set and consumed on the step element,
+   * so it does not need to inherit.
+   * @group Layout / Density
+   */
+  @property --cngx-step-distance {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 0;
+  }
+
+  /**
+   * Inline space reserved per step for the indicator, paddings and gap,
+   * subtracted from each step's share of the strip before the label
+   * budget is computed.
+   * @group Layout / Density
+   */
+  @property --cngx-step-indicator-allowance {
+    syntax: '*';
+    inherits: false;
+    initial-value: 3.2rem;
+  }
+
+  /**
+   * Label budget shed per unit of distance from the active step. Larger
+   * values collapse far steps sooner.
+   * @group Layout / Density
+   */
+  @property --cngx-step-distance-penalty {
+    syntax: '*';
+    inherits: false;
+    initial-value: 2.5rem;
+  }
+
+  /**
+   * Guaranteed minimum label width for the active step, regardless of
+   * step count or container width, so the active label stays readable.
+   * @group Layout / Density
+   */
+  @property --cngx-step-active-label-min {
+    syntax: '*';
+    inherits: false;
+    initial-value: 6rem;
+  }
+
+  /**
+   * Label-budget threshold below which the number indicator is revealed
+   * (inverse-cqi) on label-only skins. The indicator grows from 0 to its
+   * full size as the budget drops below this floor.
+   * @group Layout / Density
+   */
+  @property --cngx-step-label-budget-floor {
+    syntax: '*';
+    inherits: false;
+    initial-value: 2.5rem;
+  }
 }
 
 @layer cngx.components {
