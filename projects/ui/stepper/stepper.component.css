@@ -1940,3 +1940,29 @@
 .cngx-stepper__group-summary--status[data-state='pending'] {
   background: var(--cngx-step-pending-color, var(--cngx-step-active-color, currentColor));
 }
+
+/* Label-only skins hide the disc indicator (linear-minimal, path-chevron,
+   chips, breadcrumb), so at the minimal density rung a hidden label would
+   leave an empty shape with nothing to read. For these skins the collapsed
+   label truncates to a small ellipsis'd stub instead of disappearing - it
+   degrades but is never empty. Skins that keep a numbered indicator
+   (classic, stripe-status-rich, pill-segment) still hide the label and
+   fall back to the number. Unlayered so it beats the layered base rule. */
+.cngx-stepper[data-skin='linear-minimal'] .cngx-stepper__label--collapsed,
+.cngx-stepper[data-skin='chips'] .cngx-stepper__label--collapsed,
+.cngx-stepper[data-skin='breadcrumb'] .cngx-stepper__label--collapsed,
+.cngx-stepper[data-skin='pill-segment'] .cngx-stepper__label--collapsed {
+  max-width: var(--cngx-stepper-label-collapsed-min, 4ch);
+  opacity: 1;
+}
+
+/* path-chevron's arrow shapes are too wide for a 2-3 char truncated stub
+   to read well, so at the minimal rung it falls back to the step number
+   instead - the skin hides the disc indicator by default, re-shown here
+   with a transparent background so it sits cleanly inside the chevron. */
+.cngx-stepper[data-skin='path-chevron'][data-density='minimal'] .cngx-stepper__indicator {
+  display: inline-flex;
+  background: transparent;
+  width: auto;
+  min-width: 1.5em;
+}
