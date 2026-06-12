@@ -1999,6 +1999,12 @@
   gap: var(--cngx-stepper-minimal-chip-gap, 0.375rem);
 }
 
+/* breadcrumb's "›" separator sits in the strip gap, so keep that gap at
+   minimal - zeroing it collapses the breathing room around the chevron. */
+.cngx-stepper[data-skin='breadcrumb'][data-density='minimal'] .cngx-stepper__strip {
+  gap: var(--cngx-step-breadcrumb-gap, 0.5rem);
+}
+
 /* path-chevron + pill-segment + chips minimal: the tile shape already
    carries sequence + active state, so the active tile drops its
    (redundant) number and sizes to exactly its label, while the non-active
