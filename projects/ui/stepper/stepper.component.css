@@ -1983,18 +1983,19 @@
   flex: 0 1 auto;
 }
 
-/* path-chevron + pill-segment minimal: the tile shape already carries
-   sequence + active state, so the active tile drops its (redundant)
-   number and sizes to exactly its label, while the non-active tiles
-   collapse to a compact numbered tile and sit flush against each other
-   (gap 0). */
+/* path-chevron + pill-segment + chips minimal: the tile shape already
+   carries sequence + active state, so the active tile drops its
+   (redundant) number and sizes to exactly its label, while the non-active
+   tiles collapse to a compact numbered tile and sit flush against each
+   other (gap 0). */
 .cngx-stepper[data-skin='path-chevron'][data-density='minimal'] .cngx-stepper__strip,
 .cngx-stepper[data-skin='pill-segment'][data-density='minimal'] .cngx-stepper__strip {
   gap: 0;
 }
 
 .cngx-stepper[data-skin='path-chevron'][data-density='minimal'] .cngx-stepper__step,
-.cngx-stepper[data-skin='pill-segment'][data-density='minimal'] .cngx-stepper__step {
+.cngx-stepper[data-skin='pill-segment'][data-density='minimal'] .cngx-stepper__step,
+.cngx-stepper[data-skin='chips'][data-density='minimal'] .cngx-stepper__step {
   flex: 0 0 auto;
 }
 
@@ -2003,6 +2004,22 @@
   .cngx-stepper__indicator,
 .cngx-stepper[data-skin='pill-segment'][data-density='minimal']
   .cngx-stepper__step[aria-current='step']
+  .cngx-stepper__indicator,
+.cngx-stepper[data-skin='chips'][data-density='minimal']
+  .cngx-stepper__step[aria-current='step']
   .cngx-stepper__indicator {
   display: none;
+}
+
+/* breadcrumb minimal: no numbers at all - the ">" separators carry the
+   sequence, so non-active labels just truncate to a stub instead of
+   collapsing to a number. Keep the indicator hidden (overriding the
+   force-show above) and truncate the collapsed labels. */
+.cngx-stepper[data-skin='breadcrumb'][data-density='minimal'] .cngx-stepper__indicator {
+  display: none;
+}
+
+.cngx-stepper[data-skin='breadcrumb'] .cngx-stepper__label--collapsed {
+  max-width: var(--cngx-stepper-label-collapsed-min, 4ch);
+  opacity: 1;
 }
