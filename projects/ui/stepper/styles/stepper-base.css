@@ -367,7 +367,9 @@
    * Maximum width of the active label, in container-query units, so a very
    * long active label cannot eat the whole strip and squeeze the sequence
    * out. It also bounds how far the strip reflows when navigating between
-   * steps. `60cqi` leaves at least 40% for the surrounding steps.
+   * steps. `cqi` is 1% of the stepper container, so `60cqi` caps the
+   * active label at 60% of the strip width; the remaining ~40% (minus the
+   * active step's own indicator + padding) is left for the other steps.
    * @group Layout / Density
    */
   @property --cngx-step-active-label-max {
