@@ -164,6 +164,7 @@
           class="cngx-stepper__step cngx-stepper__step--static"
           role="listitem"
           [class.cngx-stepper__step--rejected]="slotContext.showRejection(node)"
+          [style.--cngx-step-distance]="isDensityAuto() ? stepDistanceOf(node) : null"
           [id]="stepHeaderId(node)"
           [attr.data-step-depth]="node.depth"
           [attr.data-state]="node.state()"
@@ -180,6 +181,7 @@
           cngxRovingItem
           class="cngx-stepper__step"
           [class.cngx-stepper__step--rejected]="slotContext.showRejection(node)"
+          [style.--cngx-step-distance]="isDensityAuto() ? stepDistanceOf(node) : null"
           [id]="stepHeaderId(node)"
           [attr.tabindex]="slotContext.isActive(node) ? '0' : '-1'"
           [attr.data-step-depth]="node.depth"
@@ -280,10 +282,7 @@
       </span>
     }
   </span>
-  <span
-    class="cngx-stepper__label"
-    [class.cngx-stepper__label--collapsed]="stripDensity() === 'minimal' && !slotContext.isActive(node)"
-  >
+  <span class="cngx-stepper__label">
     @let labelTpl = labelTemplateFor(node.id);
     @if (labelTpl) {
       <ng-container

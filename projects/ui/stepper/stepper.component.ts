@@ -139,6 +139,9 @@ import { coerceBooleanProperty } from '@cngx/core/utils';
     '[attr.data-orientation]': 'presenter.orientation()',
     '[attr.data-density]': 'stripDensity()',
     '[attr.data-density-auto]': "isDensityAuto() ? '' : null",
+    // Step count as data (not a layout read) - feeds the continuous cqi
+    // label budget. Only under 'auto' so 'comfortable' output is identical.
+    '[style.--cngx-step-count]': 'isDensityAuto() ? presenter.stepCount() : null',
     '[attr.data-skin]': 'hostAttrs.resolvedSkin()',
     '[attr.data-connectors]': "hostAttrs.resolvedConnectors() ? 'true' : null",
     '[attr.data-mobile-indicator-position]': 'hostAttrs.resolvedMobileIndicatorPosition()',
@@ -402,6 +405,16 @@ export class CngxStepper implements CngxStepPanelHost {
    */
   protected stepIndexOf(node: CngxStepNode): number {
     return node.flatIndex;
+  }
+
+  /**
+   * Distance of a step from the active one, published per-step as
+   * `--cngx-step-distance` under `density: 'auto'`. Drives the
+   * distance-weighted label budget so the step furthest from the active
+   * one collapses first. Pure derived data - no layout read.
+   */
+  protected stepDistanceOf(node: CngxStepNode): number {
+    return Math.abs(this.stepIndexOf(node) - this.activeStepIndex());
   }
 
   /** Per-step predicates + slot-context builders (Level-2 factory). */
