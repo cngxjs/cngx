@@ -1978,21 +1978,25 @@
 }
 
 /* Non-active steps shrink to a compact number at the minimal rung so the
-   active labelled step stands out as the anchor. */
+   active labelled step stands out as the anchor. The step's internal
+   indicator->label gap is zeroed because the label is collapsed - the
+   reserved gap would otherwise leave dead space after the number. */
 .cngx-stepper[data-density='minimal'] .cngx-stepper__step:not([aria-current='step']) {
   flex: 0 1 auto;
+  gap: 0;
+}
+
+/* And the strip itself goes gapless at minimal so the number-only steps
+   cluster tight instead of floating apart. Tunable. */
+.cngx-stepper[data-density='minimal'] .cngx-stepper__strip {
+  gap: var(--cngx-stepper-minimal-strip-gap, 0);
 }
 
 /* path-chevron + pill-segment + chips minimal: the tile shape already
    carries sequence + active state, so the active tile drops its
    (redundant) number and sizes to exactly its label, while the non-active
-   tiles collapse to a compact numbered tile and sit flush against each
-   other (gap 0). */
-.cngx-stepper[data-skin='path-chevron'][data-density='minimal'] .cngx-stepper__strip,
-.cngx-stepper[data-skin='pill-segment'][data-density='minimal'] .cngx-stepper__strip {
-  gap: 0;
-}
-
+   tiles collapse to a compact numbered tile (the strip gap is zeroed for
+   every skin at minimal above). */
 .cngx-stepper[data-skin='path-chevron'][data-density='minimal'] .cngx-stepper__step,
 .cngx-stepper[data-skin='pill-segment'][data-density='minimal'] .cngx-stepper__step,
 .cngx-stepper[data-skin='chips'][data-density='minimal'] .cngx-stepper__step {
