@@ -486,6 +486,11 @@
     white-space: nowrap;
   }
 
+  /* The relayout animation on active-step change lives in the thematic
+     stylesheet (unlayered), so it can win over the per-skin step
+     `transition` declarations and fold their colour fades into one
+     combined transition - see stepper.component.css. */
+
   .cngx-stepper__panels {
     display: block;
   }

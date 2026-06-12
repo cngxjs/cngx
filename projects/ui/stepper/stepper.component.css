@@ -1975,15 +1975,24 @@
   white-space: nowrap;
 }
 
-/* path-chevron and pill-segment are equal-width tile skins (flex: 1 1 0) -
-   that is their identity, so they keep equal tiles under density instead
-   of the distance-weighted step shrink; the label fills its tile and
-   truncates to fit. The base step rules would otherwise override their
-   flex, so re-assert it here. */
+/* path-chevron and pill-segment are fill-the-width tile skins (flex: 1 1 0
+   in their scope). Keep them filling the strip when there is room (grow),
+   but switch flex-basis to auto and apply the same distance-weighted
+   shrink + active protection as the variable skins, so they truncate
+   progressively (furthest-from-active first, active kept) instead of all
+   tiles shrinking equally. Their scope flex shorthand sits in
+   @layer cngx.skins, so these unlayered longhands win. */
 .cngx-stepper[data-density-auto][data-skin='path-chevron'] .cngx-stepper__step,
 .cngx-stepper[data-density-auto][data-skin='pill-segment'] .cngx-stepper__step {
-  flex: 1 1 0;
-  min-width: 0;
+  flex-grow: 1;
+  flex-basis: auto;
+  flex-shrink: calc(1 + var(--cngx-step-distance, 0) * var(--cngx-step-shrink-weight, 20));
+  min-width: var(--cngx-step-collapsed-min, 3.25rem);
+}
+
+.cngx-stepper[data-density-auto][data-skin='path-chevron'] .cngx-stepper__step[aria-current='step'],
+.cngx-stepper[data-density-auto][data-skin='pill-segment'] .cngx-stepper__step[aria-current='step'] {
+  flex-shrink: 0.25;
 }
 
 .cngx-stepper[data-density-auto][data-skin='path-chevron'] .cngx-stepper__label,
@@ -2005,4 +2014,28 @@
    text pills still fit a narrow strip without clipping the last one. */
 .cngx-stepper[data-density-auto][data-skin='chips'] .cngx-stepper__step {
   padding-inline: var(--cngx-step-chips-density-padding-inline, 0.45rem);
+}
+
+/* Animate the relayout when the active step changes. On navigation only
+   the per-step distance and the active/non-active shrink priority change;
+   transitioning the registered --cngx-step-distance and flex-shrink
+   interpolates the calc-driven step widths frame by frame, so labels grow
+   and collapse smoothly instead of jumping. This is unlayered and lists
+   the per-skin appearance transitions (background-color / color /
+   box-shadow) too, because a `transition` is single-valued: the skin
+   scopes (path-chevron / pill-segment / chips / breadcrumb) each set their
+   own step transition in @layer cngx.skins, which would otherwise replace
+   this one and drop the width animation. Folding them together keeps both
+   the colour fades and the width animation on every skin. Resize never
+   fires it (distance is constant while dragging); reduced-motion
+   short-circuits it (handled by the base reduce block). */
+@media (prefers-reduced-motion: no-preference) {
+  .cngx-stepper[data-density-auto] .cngx-stepper__step {
+    transition:
+      --cngx-step-distance var(--cngx-stepper-density-transition, 240ms) ease,
+      flex-shrink var(--cngx-stepper-density-transition, 240ms) ease,
+      background-color 120ms ease,
+      color 120ms ease,
+      box-shadow 120ms ease;
+  }
 }
