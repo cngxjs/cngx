@@ -487,6 +487,62 @@ describe('CngxStepper organism', () => {
       const host = fixture.nativeElement.querySelector('cngx-stepper') as HTMLElement;
       expect(host.hasAttribute('data-density-auto')).toBe(true);
     });
+
+    it("publishes --cngx-step-count = step count under density: 'auto'", () => {
+      const fixture = autoFixture(); // 3 flat steps
+      const host = fixture.nativeElement.querySelector('cngx-stepper') as HTMLElement;
+      expect(host.style.getPropertyValue('--cngx-step-count')).toBe('3');
+    });
+
+    it("omits --cngx-step-count under the 'comfortable' default", () => {
+      TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+      const fixture = TestBed.createComponent(HostCmp);
+      fixture.detectChanges();
+      const host = fixture.nativeElement.querySelector('cngx-stepper') as HTMLElement;
+      expect(host.style.getPropertyValue('--cngx-step-count')).toBe('');
+    });
+
+    it("publishes per-step --cngx-step-distance = abs(index - active) under 'auto'", () => {
+      const fixture = autoFixture(); // active defaults to step 0
+      const steps = Array.from(
+        fixture.nativeElement.querySelectorAll('button.cngx-stepper__step'),
+      ) as HTMLElement[];
+      expect(steps.map((s) => s.style.getPropertyValue('--cngx-step-distance'))).toEqual([
+        '0',
+        '1',
+        '2',
+      ]);
+    });
+
+    it('re-centres --cngx-step-distance after navigation', () => {
+      @Component({
+        standalone: true,
+        imports: [CngxStepper, CngxStep],
+        template: `
+          <cngx-stepper [(activeStepIndex)]="active" aria-label="Nav">
+            <div cngxStep label="A"></div>
+            <div cngxStep label="B"></div>
+            <div cngxStep label="C"></div>
+          </cngx-stepper>
+        `,
+      })
+      class NavHost {
+        readonly active = signal(0);
+      }
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection(), provideStepperConfig(withStepperDensity('auto'))],
+      });
+      const fixture = TestBed.createComponent(NavHost);
+      fixture.detectChanges();
+      const distances = (): string[] =>
+        (Array.from(
+          fixture.nativeElement.querySelectorAll('button.cngx-stepper__step'),
+        ) as HTMLElement[]).map((s) => s.style.getPropertyValue('--cngx-step-distance'));
+      expect(distances()).toEqual(['0', '1', '2']);
+      fixture.componentInstance.active.set(1);
+      fixture.detectChanges();
+      expect(distances()).toEqual(['1', '0', '1']);
+    });
   });
 
   it('non-active panels are hidden via [hidden]', () => {
