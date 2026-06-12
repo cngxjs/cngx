@@ -420,12 +420,13 @@
         opacity var(--cngx-stepper-density-transition, 240ms) ease;
     }
 
-    /* The collapsing (closing) label exits in half the time of the
-       expanding one - CSS picks the transition of the target state, so
-       the --collapsed state shortens the duration. The outgoing step
-       gets out of the way first instead of both easing in lockstep. */
+    /* The collapsing (closing) label exits instantly - CSS picks the
+       transition of the target state, so the --collapsed state zeroes
+       the duration. The outgoing step is gone at once and only the new
+       label eases in, instead of both animating in lockstep. Tunable
+       via --cngx-stepper-density-transition-close. */
     cngx-stepper[data-density-auto] .cngx-stepper__label--collapsed {
-      transition-duration: calc(var(--cngx-stepper-density-transition, 240ms) / 2);
+      transition-duration: var(--cngx-stepper-density-transition-close, 0s);
     }
   }
 
