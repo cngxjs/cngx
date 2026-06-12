@@ -1964,6 +1964,9 @@
    skin-geometry rounding that would otherwise surface a scrollbar. */
 .cngx-stepper[data-density-auto] .cngx-stepper__strip {
   overflow-x: clip;
+  /* density keeps the strip on one row - a skin that wraps (chips) would
+     otherwise push a long label onto a new line instead of truncating it. */
+  flex-wrap: nowrap;
 }
 
 /* Minimal rung design: the active step keeps its full label, every other
