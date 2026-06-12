@@ -1948,21 +1948,37 @@
    degrades but is never empty. Skins that keep a numbered indicator
    (classic, stripe-status-rich, pill-segment) still hide the label and
    fall back to the number. Unlayered so it beats the layered base rule. */
-.cngx-stepper[data-skin='linear-minimal'] .cngx-stepper__label--collapsed,
-.cngx-stepper[data-skin='chips'] .cngx-stepper__label--collapsed,
-.cngx-stepper[data-skin='breadcrumb'] .cngx-stepper__label--collapsed,
-.cngx-stepper[data-skin='pill-segment'] .cngx-stepper__label--collapsed {
-  max-width: var(--cngx-stepper-label-collapsed-min, 4ch);
-  opacity: 1;
+/* Density-auto: every skin's label must be shrinkable so it truncates to
+   fit instead of forcing the strip wider. Some skins (path-chevron,
+   pill-segment) pin the label to flex:0 0 auto for their full-size
+   layout, which is exactly what makes them overflow + clip under density;
+   under density 'auto' it has to give. */
+.cngx-stepper[data-density-auto] .cngx-stepper__label {
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
-/* path-chevron's arrow shapes are too wide for a 2-3 char truncated stub
-   to read well, so at the minimal rung it falls back to the step number
-   instead - the skin hides the disc indicator by default, re-shown here
-   with a transparent background so it sits cleanly inside the chevron. */
-.cngx-stepper[data-skin='path-chevron'][data-density='minimal'] .cngx-stepper__indicator {
+/* Hard no-scrollbar guarantee under density 'auto': the strip clips
+   instead of scrolling. Labels shrink first (above), so in practice
+   nothing is cut - this is the belt-and-suspenders against sub-pixel and
+   skin-geometry rounding that would otherwise surface a scrollbar. */
+.cngx-stepper[data-density-auto] .cngx-stepper__strip {
+  overflow-x: clip;
+}
+
+/* Minimal rung design: the active step keeps its full label, every other
+   step collapses to just its number. Label-only / decorative skins
+   (linear-minimal, path-chevron, chips, breadcrumb) hide the disc
+   indicator by default, so re-show it at minimal on every skin -
+   otherwise a collapsed step (label hidden via --collapsed) would be
+   empty. The active step shows its number + label; the rest are number
+   only and naturally narrower. */
+.cngx-stepper[data-density='minimal'] .cngx-stepper__indicator {
   display: inline-flex;
-  background: transparent;
-  width: auto;
-  min-width: 1.5em;
+}
+
+/* Non-active steps shrink to a compact number at the minimal rung so the
+   active labelled step stands out as the anchor. */
+.cngx-stepper[data-density='minimal'] .cngx-stepper__step:not([aria-current='step']) {
+  flex: 0 1 auto;
 }
