@@ -5,7 +5,7 @@ export const STORY: DemoSpec = {
   subtitle:
     'A flat stepper with <code>density: \'auto\'</code> degrades on its own container width - full labels, then ellipsis-truncated, then indicators-only with the active label kept. Drag the frame\'s right edge: the strip adapts instead of growing a horizontal scrollbar.',
   description:
-    'When a flat strip runs out of room the wrong answer is a horizontal scrollbar. <code>density: \'auto\'</code> measures the strip container (not the viewport) via <code>ResizeObserver</code> and crosses two per-step px thresholds: at or above <code>compact</code> px per step it keeps full labels, above <code>minimal</code> it ellipsis-truncates them, and below that it drops to indicators-only and stacks vertically. The thresholds are sized so the chosen rung always fits, so no rung overflows. At the minimal rung the active step keeps its label as the on-screen anchor while position and progress survive for assistive tech. Tune the thresholds per wizard via <code>withStepperDensity(\'auto\', { compact, minimal })</code>; this 6-step strip shows the whole ladder between roughly 360 and 1000px.',
+    'When a flat strip runs out of room the wrong answer is a horizontal scrollbar. <code>density: \'auto\'</code> measures the strip container (not the viewport) via <code>ResizeObserver</code> and crosses two per-step px thresholds: at or above <code>compact</code> px per step it keeps full labels, above <code>minimal</code> it ellipsis-truncates them, and below that it drops to an indicators-only row. The orientation never changes - a horizontal stepper stays horizontal at every rung; only the labels degrade. The thresholds are sized so the chosen rung always fits, so no rung overflows. At the minimal rung the active step keeps its label as the on-screen anchor while position and progress survive for assistive tech. Tune the thresholds per wizard via <code>withStepperDensity(\'auto\', { compact, minimal })</code> against the step count and label length; this 4-step strip shows the whole ladder between roughly 360 and 640px.',
   level: 'organism',
   audience: ['dev', 'design'],
   artifact: 'standalone',
@@ -17,17 +17,17 @@ export const STORY: DemoSpec = {
   ],
   imports: ['CngxStepper', 'CngxStep', 'CngxStepContent'],
   viewProviders: [
-    "provideStepperConfigAt(withStepperDensity('auto', { compact: 165, minimal: 135 }))",
+    "provideStepperConfigAt(withStepperDensity('auto', { compact: 145, minimal: 120 }))",
   ],
   setup: `protected readonly active = signal(0);
-  protected readonly steps = ['Repository', 'Dependencies', 'Validation', 'Packaging', 'Deployment', 'Monitoring'];`,
+  protected readonly steps = ['Repository', 'Validation', 'Packaging', 'Deployment'];`,
   setupChrome: `  protected handleNext(): void {
     this.active.update((i) => Math.min(i + 1, this.steps.length - 1));
   }
   protected handlePrev(): void {
     this.active.update((i) => Math.max(i - 1, 0));
   }`,
-  template: `  <div style="resize: horizontal; overflow: hidden; min-width: 360px; max-width: 100%; width: 880px;">
+  template: `  <div style="resize: horizontal; overflow: hidden; min-width: 320px; max-width: 100%; width: 520px;">
     <cngx-stepper [(activeStepIndex)]="active" aria-label="Release pipeline">
       @for (label of steps; track label) {
         <div cngxStep [label]="label">

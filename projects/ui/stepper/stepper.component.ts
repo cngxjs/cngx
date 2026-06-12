@@ -130,8 +130,8 @@ import { coerceBooleanProperty } from '@cngx/core/utils';
     class: 'cngx-stepper',
     role: 'group',
     '[attr.aria-roledescription]': 'stepperRoleDescription()',
-    '[attr.aria-orientation]': 'effectiveOrientation()',
-    '[attr.data-orientation]': 'effectiveOrientation()',
+    '[attr.aria-orientation]': 'presenter.orientation()',
+    '[attr.data-orientation]': 'presenter.orientation()',
     '[attr.data-density]': 'stripDensity()',
     '[attr.data-skin]': 'hostAttrs.resolvedSkin()',
     '[attr.data-connectors]': "hostAttrs.resolvedConnectors() ? 'true' : null",
@@ -230,23 +230,6 @@ export class CngxStepper implements CngxStepPanelHost {
     breakpoints: () => this.config.densityBreakpoints ?? STEPPER_DEFAULT_DENSITY_BREAKPOINTS,
     destroyRef: inject(DestroyRef),
   });
-
-  /**
-   * The single rendered-orientation source: the configured
-   * `presenter.orientation()` normally, flipped to `'vertical'` only
-   * when `density: 'auto'` has degraded the strip to its `'minimal'`
-   * rung (stacked indicators read better than a cramped row at the
-   * narrowest width). Consumed by the host ARIA/`data-orientation`
-   * bindings AND the keyboard-nav accessor, so the attribute, the
-   * visual axis, and the arrow keys can never disagree. The presenter's
-   * own `orientation()` stays the container-width-agnostic configured
-   * value (Level-2).
-   */
-  protected readonly effectiveOrientation = computed<'horizontal' | 'vertical'>(() =>
-    this.config.density === 'auto' && this.stripDensity() === 'minimal'
-      ? 'vertical'
-      : this.presenter.orientation(),
-  );
 
   constructor() {
     // Scroll active step into view via the swappable scroll-sync factory.
@@ -505,9 +488,6 @@ export class CngxStepper implements CngxStepPanelHost {
     // navigation across a collapsed group boundary lands on the target
     // button after the strip re-renders its node set.
     injector: this.injector,
-    // Read at handler time - the density auto-vertical flip rebinds the
-    // arrow-key axis through this accessor, never a peer-model write.
-    orientation: () => this.effectiveOrientation(),
     // Off in 'none' mode (inert labels) and while a commit is in flight,
     // so arrow-key navigation locks with the headers + footer during an
     // async transition.

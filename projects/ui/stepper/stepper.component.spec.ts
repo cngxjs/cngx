@@ -366,17 +366,19 @@ describe('CngxStepper organism', () => {
       expect(host.getAttribute('data-density')).toBe('minimal');
     });
 
-    it('flips aria-orientation + data-orientation to vertical at the minimal rung', () => {
+    it('keeps the configured horizontal orientation at the minimal rung (no auto-vertical flip)', () => {
       const fixture = autoFixture();
       const host = fixture.nativeElement.querySelector('cngx-stepper') as HTMLElement;
       emitWidth(3 * 40);
       fixture.detectChanges();
       expect(host.getAttribute('data-density')).toBe('minimal');
-      expect(host.getAttribute('aria-orientation')).toBe('vertical');
-      expect(host.getAttribute('data-orientation')).toBe('vertical');
+      // A horizontal stepper stays horizontal - minimal degrades to an
+      // indicators-only row, it does not stack vertically.
+      expect(host.getAttribute('aria-orientation')).toBe('horizontal');
+      expect(host.getAttribute('data-orientation')).toBe('horizontal');
     });
 
-    it('arrow-key axis follows the vertical flip at minimal (presenter spy)', () => {
+    it('arrow-key axis stays horizontal at minimal (presenter spy)', () => {
       const fixture = autoFixture();
       const stepper = fixture.debugElement.children[0].componentInstance as CngxStepper;
       const selectNext = vi.spyOn(stepper.presenter, 'selectNext');
@@ -384,13 +386,13 @@ describe('CngxStepper organism', () => {
       emitWidth(3 * 40);
       fixture.detectChanges();
       const button = fixture.nativeElement.querySelector('button.cngx-stepper__step') as HTMLElement;
-      button.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
-      expect(selectNext).toHaveBeenCalledTimes(1);
-      button.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true }));
-      expect(selectPrevious).toHaveBeenCalledTimes(1);
-      // Horizontal keys are inert while the effective axis is vertical.
       button.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+      expect(selectNext).toHaveBeenCalledTimes(1);
       button.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));
+      expect(selectPrevious).toHaveBeenCalledTimes(1);
+      // Vertical keys are inert on a horizontal strip, at every rung.
+      button.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+      button.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true }));
       expect(selectNext).toHaveBeenCalledTimes(1);
       expect(selectPrevious).toHaveBeenCalledTimes(1);
     });
