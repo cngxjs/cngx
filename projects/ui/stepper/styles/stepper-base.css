@@ -370,17 +370,13 @@
   }
 
   /* Space-driven density ladder (density: 'auto'), keyed off the
-     container-width resolver via [data-density]. 'full' is the default
-     (no rule). 'compact' ellipsis-truncates each label to a max width;
-     the 'minimal' rung drops non-active labels to .cngx-sr-only in the
-     template (kept in the a11y tree, visually gone) and stacks the strip
-     vertically via the effectiveOrientation flip. */
-  cngx-stepper[data-density='compact'] .cngx-stepper__label {
-    max-width: var(--cngx-stepper-label-max, 8ch);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
+     container-width resolver via [data-density]. Labels shrink to fit
+     (see the data-density-auto label rule in the thematic stylesheet),
+     so 'full' and 'compact' show labels as full as the width allows and
+     only ellipsis-truncate when the strip actually runs out of room - no
+     hard character cap. The 'minimal' rung hides non-active labels and
+     surfaces the number instead (decorative skins keep a truncated stub
+     or drop the number, per the thematic stylesheet). */
 
   /* No-scrollbar guarantee for density: 'auto'. Steps may shrink below
      their content width (min-width: 0 defeats the flex min-content
