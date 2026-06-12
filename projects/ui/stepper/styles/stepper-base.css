@@ -440,60 +440,60 @@
     min-width: 0;
   }
 
-  /* Space-driven density ladder (density: 'auto'), keyed off the
-     container-width resolver via [data-density]. Labels shrink to fit
-     (see the data-density-auto label rule in the thematic stylesheet),
-     so 'full' and 'compact' show labels as full as the width allows and
-     only ellipsis-truncate when the strip actually runs out of room - no
-     hard character cap. The 'minimal' rung hides non-active labels and
-     surfaces the number instead (decorative skins keep a truncated stub
-     or drop the number, per the thematic stylesheet). */
-
-  /* No-scrollbar guarantee for density: 'auto'. Steps may shrink below
-     their content width (min-width: 0 defeats the flex min-content
-     floor) and the label truncates in flow, so the strip always fits its
-     container instead of growing a horizontal scrollbar - whatever rung
-     the px thresholds resolve to. The rung rules above add intentional
-     steps (compact cap, minimal hide) on top of this safety net. */
+  /* Continuous label budget (density: 'auto'). Each step claims its share
+     of the strip - 100cqi / step-count - minus a fixed indicator
+     allowance minus a per-step distance penalty, so the step furthest
+     from the active one sheds its label first and the nearest stay
+     readable longest. Computed on the step, where the per-step
+     --cngx-step-distance is set (registered inherits:false, consumed in
+     the same rule); the result cascades as an unregistered custom
+     property to the label (max-width) and to the indicator (inverse
+     reveal, thematic stylesheet) children - no cross-scope recompute, no
+     measurement, no feedback loop. max(0px, ...) together with the
+     strip's overflow:clip (thematic) guarantee no horizontal scrollbar at
+     any width. */
   cngx-stepper[data-density-auto] .cngx-stepper__step {
     min-width: 0;
+    --cngx-step-label-budget: max(
+      0px,
+      calc(
+        100cqi / var(--cngx-step-count, 1) - var(--cngx-step-indicator-allowance, 3.2rem) -
+          var(--cngx-step-distance, 0) * var(--cngx-step-distance-penalty, 2.5rem)
+      )
+    );
   }
 
+  /* The active step always keeps a readable label: its budget floors at
+     --cngx-step-active-label-min and otherwise claims whatever the strip
+     has left after every other step's indicator allowance. max-width is a
+     cap, so flex + clip keep it bounded. A wide budget also keeps the
+     active step's number indicator hidden under the inverse reveal (budget
+     stays far above the floor), so label-only skins read label-only. */
+  cngx-stepper[data-density-auto] .cngx-stepper__step[aria-current='step'] {
+    --cngx-step-label-budget: max(
+      var(--cngx-step-active-label-min, 6rem),
+      calc(100cqi - (var(--cngx-step-count, 1) - 1) * var(--cngx-step-indicator-allowance, 3.2rem))
+    );
+  }
+
+  /* Label consumes the budget: clip + ellipsis in flow so it truncates
+     instead of forcing the strip wider. The label stays rendered (never
+     display:none) so the step button keeps its accessible name even when
+     the budget collapses to 0. */
   cngx-stepper[data-density-auto] .cngx-stepper__label {
+    max-width: var(--cngx-step-label-budget, none);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
 
-  /* Smooth the minimal-rung label collapse/expand so stepping between
-     steps (only the active label shows) eases instead of jumping. The
-     label animates its width via max-width (0 <-> a generous anchor) and
-     fades; the flex row reflows per frame so neighbours glide along. The
-     collapsed label stays in the a11y tree (clipped, not display:none),
-     so each step button keeps its accessible name. */
-  cngx-stepper[data-density='minimal'] .cngx-stepper__label {
-    max-width: var(--cngx-stepper-label-grow, 16rem);
-  }
-
-  cngx-stepper[data-density='minimal'] .cngx-stepper__label--collapsed {
-    max-width: 0;
-    opacity: 0;
-  }
-
+  /* Symmetric max-width easing: open and close animate identically, so
+     the flex row conserves total width frame-by-frame and trailing steps
+     never snap when navigating (the old instant-close asymmetry is gone).
+     Reduced-motion short-circuits it. */
   @media (prefers-reduced-motion: no-preference) {
     cngx-stepper[data-density-auto] .cngx-stepper__label {
-      transition:
-        max-width var(--cngx-stepper-density-transition, 240ms) ease,
-        opacity var(--cngx-stepper-density-transition, 240ms) ease;
-    }
-
-    /* The collapsing (closing) label exits instantly - CSS picks the
-       transition of the target state, so the --collapsed state zeroes
-       the duration. The outgoing step is gone at once and only the new
-       label eases in, instead of both animating in lockstep. Tunable
-       via --cngx-stepper-density-transition-close. */
-    cngx-stepper[data-density-auto] .cngx-stepper__label--collapsed {
-      transition-duration: var(--cngx-stepper-density-transition-close, 0s);
+      transition: max-width var(--cngx-stepper-density-transition, 240ms) ease;
     }
   }
 
