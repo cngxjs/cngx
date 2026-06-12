@@ -139,6 +139,18 @@
               context: slotContext.groupHeaderContextFor(node)
             "
           ></ng-container>
+          @if (groupSummary.text(node); as summary) {
+            <span class="cngx-stepper__group-summary" [attr.data-state]="node.state()" aria-hidden="true">{{ summary }}</span>
+          } @else if (groupSummary.showStatus(node)) {
+            <span
+              class="cngx-stepper__group-summary cngx-stepper__group-summary--status"
+              [attr.data-state]="node.state()"
+              aria-hidden="true"
+            ></span>
+          }
+          @if (groupSummary.srText(node); as srSummary) {
+            <span class="cngx-sr-only">{{ srSummary }}</span>
+          }
           <span class="cngx-sr-only" [id]="stepDescriptorId(node)">{{ announcement.groupStatusPhrase(node) }}</span>
         </div>
       } @else if (resolvedHeaderNavigation() === 'none') {

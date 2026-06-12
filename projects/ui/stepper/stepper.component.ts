@@ -25,6 +25,7 @@ import { CngxSwipe } from '@cngx/common/interactive';
 import {
   CNGX_STEP_PANEL_HOST,
   createStepperDisplayMode,
+  createStepperGroupSummary,
   createStripDensity,
   CngxStep,
   STEPPER_DEFAULT_DENSITY_BREAKPOINTS,
@@ -348,6 +349,17 @@ export class CngxStepper implements CngxStepPanelHost {
     }
     return this.presenter.activeGroupId() !== node.id;
   }
+
+  /**
+   * Collapsed-group summary view (`groupCollapseSummary`). Level-2 factory
+   * keeps the count/progress/status derivation out of the organism; the
+   * template reads `groupSummary.text(node)` / `.showStatus(node)` /
+   * `.srText(node)` on collapsed group headers.
+   */
+  protected readonly groupSummary = createStepperGroupSummary({
+    summaryMode: () => this.config.groupCollapseSummary,
+    isCollapsed: (node) => this.isGroupCollapsed(node),
+  });
 
   /**
    * `aria-label` cascade: input → `ariaLabels.stepperRegion` → `i18n.stepperLabel`.

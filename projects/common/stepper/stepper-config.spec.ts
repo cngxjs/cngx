@@ -15,6 +15,7 @@ import {
   withStepperCommitMode,
   withStepperFallbackLabels,
   withStepperGroupCollapse,
+  withStepperGroupCollapseSummary,
   withStepperLinear,
   withStepperMobileBreakpoint,
   withStepperMobileCollapse,
@@ -281,6 +282,28 @@ describe('CngxStepperConfig', () => {
 
     it('carries the _target=config discriminator', () => {
       expect(withStepperGroupCollapse('expand-active')._target).toBe('config');
+    });
+  });
+
+  describe('withStepperGroupCollapseSummary', () => {
+    it("library default resolves to 'progress'", () => {
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      const cfg = TestBed.inject(CNGX_STEPPER_CONFIG);
+      expect(cfg.groupCollapseSummary).toBe('progress');
+    });
+
+    it('overrides the default and carries the _target=config discriminator', () => {
+      TestBed.configureTestingModule({
+        providers: [
+          provideZonelessChangeDetection(),
+          provideStepperConfig(withStepperGroupCollapseSummary('status')),
+        ],
+      });
+      const cfg = TestBed.inject(CNGX_STEPPER_CONFIG);
+      expect(cfg.groupCollapseSummary).toBe('status');
+      expect(withStepperGroupCollapseSummary('count')._target).toBe('config');
     });
   });
 

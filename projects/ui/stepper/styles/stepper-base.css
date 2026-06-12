@@ -461,6 +461,34 @@
     font-weight: var(--cngx-step-group-font-weight, 600);
   }
 
+  /* Collapsed-group summary badge (groupCollapseSummary). 'progress' /
+     'count' render a text pill; '--status' renders a state-coloured dot
+     (colours live in the thematic stepper.component.css). */
+  .cngx-stepper__group-summary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    margin-inline-start: var(--cngx-step-gap, 0.5rem);
+    padding: var(--cngx-stepper-group-summary-padding, 0 0.4em);
+    min-width: var(--cngx-stepper-group-summary-size, 1.3em);
+    height: var(--cngx-stepper-group-summary-size, 1.3em);
+    border-radius: var(--cngx-stepper-group-summary-radius, 999px);
+    font-size: var(--cngx-stepper-group-summary-font-size, 0.75em);
+    font-weight: var(--cngx-stepper-group-summary-font-weight, 600);
+    line-height: 1;
+    background: var(--cngx-stepper-group-summary-bg, color-mix(in srgb, currentColor 12%, transparent));
+    color: var(--cngx-stepper-group-summary-color, inherit);
+  }
+
+  .cngx-stepper__group-summary--status {
+    min-width: 0;
+    width: var(--cngx-stepper-group-summary-dot-size, 0.6em);
+    height: var(--cngx-stepper-group-summary-dot-size, 0.6em);
+    padding: 0;
+    background: var(--cngx-stepper-group-summary-dot-color, currentColor);
+  }
+
   .cngx-stepper__badge {
     display: inline-flex;
     align-items: center;

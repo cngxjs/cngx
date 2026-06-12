@@ -113,6 +113,17 @@ export type CngxStepperHeaderNavigation = 'none' | 'visited';
 export type CngxStepperGroupCollapse = 'expand-active' | 'off';
 
 /**
+ * What a collapsed `cngxStepGroup` header shows next to its label under
+ * `groupCollapse: 'expand-active'`. `'progress'` (default) shows
+ * completed/total steps; `'count'` shows the step count; `'status'`
+ * shows a status dot coloured by the group's rolled-up state; `'off'`
+ * shows the bare label. Only ever rendered on a collapsed group header.
+ *
+ * @category common/stepper
+ */
+export type CngxStepperGroupSummary = 'progress' | 'count' | 'status' | 'off';
+
+/**
  * Space-driven density policy for the classic `<cngx-stepper>` strip.
  * `'auto'` degrades the strip on its own container width
  * (full labels -> ellipsis-truncated -> indicators-only with the active
@@ -202,6 +213,13 @@ export interface CngxStepperConfig {
    */
   readonly groupCollapse?: CngxStepperGroupCollapse;
   /**
+   * What a collapsed `cngxStepGroup` header shows beside its label.
+   * Default `'progress'` (completed/total). Only applies when
+   * `groupCollapse` is `'expand-active'`. Set via
+   * {@link withStepperGroupCollapseSummary}.
+   */
+  readonly groupCollapseSummary?: CngxStepperGroupSummary;
+  /**
    * Space-driven density policy for the classic strip. `'auto'`
    * degrades labels on the strip's own container width; `'comfortable'`
    * (default) keeps full labels. Orthogonal to `mobileCollapse`. Apply
@@ -265,6 +283,7 @@ const STEPPER_CONFIG_DEFAULTS: Required<
   skin: 'classic',
   headerNavigation: 'visited',
   groupCollapse: 'off',
+  groupCollapseSummary: 'progress',
   density: 'comfortable',
   densityBreakpoints: STEPPER_DEFAULT_DENSITY_BREAKPOINTS,
   connectors: false,
@@ -492,6 +511,21 @@ export function withStepperGroupCollapse(
   mode: CngxStepperGroupCollapse,
 ): CngxStepperConfigFeature {
   return defineStepperConfigFeature((cfg) => ({ ...cfg, groupCollapse: mode }));
+}
+
+/**
+ * Choose what a collapsed `cngxStepGroup` header shows beside its label
+ * under `groupCollapse: 'expand-active'`. `'progress'` (library default)
+ * shows completed/total steps; `'count'` the step count; `'status'` a
+ * status dot coloured by the group's rolled-up state; `'off'` the bare
+ * label. No effect unless `groupCollapse` is `'expand-active'`.
+ *
+ * @category common/stepper
+ */
+export function withStepperGroupCollapseSummary(
+  mode: CngxStepperGroupSummary,
+): CngxStepperConfigFeature {
+  return defineStepperConfigFeature((cfg) => ({ ...cfg, groupCollapseSummary: mode }));
 }
 
 /**

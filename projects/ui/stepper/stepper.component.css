@@ -1924,3 +1924,19 @@
     color: oklch(0.98 0 0);
   }
 }
+
+/* Collapsed-group status-summary dot colours, keyed on the group's
+   rolled-up state. Unlayered + direct selector so they beat the layered
+   structural default deterministically (same rationale as the
+   reduced-motion / dark-mode blocks above). */
+.cngx-stepper__group-summary--status[data-state='success'] {
+  background: var(--cngx-step-completed-color, var(--cngx-color-success, oklch(0.55 0.13 150)));
+}
+
+.cngx-stepper__group-summary--status[data-state='error'] {
+  background: var(--cngx-step-errored-color, var(--cngx-color-danger, oklch(0.55 0.18 25)));
+}
+
+.cngx-stepper__group-summary--status[data-state='pending'] {
+  background: var(--cngx-step-pending-color, var(--cngx-step-active-color, currentColor));
+}

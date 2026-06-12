@@ -15,6 +15,7 @@ import {
   CngxStepError,
   withStepperDensity,
   withStepperGroupCollapse,
+  withStepperGroupCollapseSummary,
   withStepperHeaderNavigation,
   withStepperI18nLabels,
   withStepperMobileSwipe,
@@ -313,6 +314,55 @@ describe('CngxStepper organism', () => {
         expect(h.classList.contains('cngx-stepper__group-header--collapsed')).toBe(false);
         expect(h.getAttribute('aria-expanded')).toBeNull();
       });
+    });
+
+    function summaryFixture(...features: ReturnType<typeof withStepperGroupCollapse>[]) {
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection(), provideStepperConfig(...features)],
+      });
+      const fixture = TestBed.createComponent(CollapseHost);
+      fixture.detectChanges();
+      return fixture;
+    }
+
+    it("default 'progress' summary shows completed/total on the collapsed group only", () => {
+      // Account active+expanded, Project collapsed (2 steps, 0 done).
+      const fixture = summaryFixture(withStepperGroupCollapse('expand-active'));
+      const summaries = fixture.nativeElement.querySelectorAll('.cngx-stepper__group-summary');
+      expect(summaries.length).toBe(1);
+      expect((summaries[0] as HTMLElement).textContent?.trim()).toBe('0/2');
+    });
+
+    it("'count' summary shows the step count", () => {
+      const fixture = summaryFixture(
+        withStepperGroupCollapse('expand-active'),
+        withStepperGroupCollapseSummary('count'),
+      );
+      const summary = fixture.nativeElement.querySelector(
+        '.cngx-stepper__group-summary',
+      ) as HTMLElement;
+      expect(summary.textContent?.trim()).toBe('2');
+    });
+
+    it("'status' summary renders a state-coloured dot", () => {
+      const fixture = summaryFixture(
+        withStepperGroupCollapse('expand-active'),
+        withStepperGroupCollapseSummary('status'),
+      );
+      const dot = fixture.nativeElement.querySelector(
+        '.cngx-stepper__group-summary--status',
+      ) as HTMLElement;
+      expect(dot).not.toBeNull();
+      expect(dot.getAttribute('data-state')).toBeTruthy();
+      expect(dot.textContent?.trim()).toBe('');
+    });
+
+    it("'off' summary renders nothing on the collapsed group", () => {
+      const fixture = summaryFixture(
+        withStepperGroupCollapse('expand-active'),
+        withStepperGroupCollapseSummary('off'),
+      );
+      expect(fixture.nativeElement.querySelector('.cngx-stepper__group-summary')).toBeNull();
     });
   });
 
