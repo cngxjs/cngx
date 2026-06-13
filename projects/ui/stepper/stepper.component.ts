@@ -26,6 +26,8 @@ import {
   CNGX_STEP_PANEL_HOST,
   createStepperDisplayMode,
   createStepperGroupSummary,
+  createStepperGroupNavigation,
+  createStepperStripEnterGate,
   createStripDensity,
   CngxStep,
   STEPPER_DEFAULT_DENSITY_BREAKPOINTS,
@@ -246,6 +248,9 @@ export class CngxStepper implements CngxStepPanelHost {
    */
   protected readonly isDensityAuto = computed<boolean>(() => this.config.density === 'auto');
 
+  /** Arms strip enter-motion after first paint - silences the intro flash. */
+  protected readonly stripEnterArmed = createStepperStripEnterGate(this.injector);
+
   constructor() {
     // Scroll active step into view via the swappable scroll-sync factory.
     inject(CNGX_ORGANISM_SCROLL_SYNC_FACTORY)({
@@ -338,11 +343,15 @@ export class CngxStepper implements CngxStepPanelHost {
    * `--collapsed` visual de-emphasis. Reads `activeGroupId` reactively,
    * never a one-shot write.
    *
-   * The fold is a density optimisation, not a user-operable disclosure:
-   * collapse is focus-driven (no toggle control) and collapsed steps
-   * stay sequentially reachable via footer navigation, so the header
-   * carries no `aria-expanded` - an unsupported pairing on `role="group"`
+   * The fold is a density optimisation, not a disclosure widget:
+   * collapse is focus-driven (no toggle control), so the header carries
+   * no `aria-expanded` - an unsupported pairing on `role="group"`
    * (ARIA 1.2) that would also imply a false disclosure affordance.
+   * A collapsed header does offer a pointer shortcut into the group (see
+   * {@link handleGroupHeaderClick}), but that selects the group's first
+   * step rather than expanding it in place, so it stays navigation, not
+   * disclosure. Keyboard users reach the same steps via the documented
+   * arrow-key contract, which already steps into a collapsed group.
    */
   protected isGroupCollapsed(node: CngxStepNode): boolean {
     if (node.kind !== 'group' || this.config.groupCollapse !== 'expand-active') {
@@ -363,6 +372,17 @@ export class CngxStepper implements CngxStepPanelHost {
   protected readonly groupSummary = createStepperGroupSummary({
     summaryMode: () => this.config.groupCollapseSummary,
     isCollapsed: (node) => this.isGroupCollapsed(node),
+  });
+
+  /**
+   * Collapsed-group pointer-navigation view. `isNavigable` drives the
+   * `--navigable` cursor cue; `select` is the header click handler that
+   * enters the branch at its first reachable step. Level-2 factory.
+   */
+  protected readonly groupNavigation = createStepperGroupNavigation({
+    presenter: this.presenter,
+    isCollapsed: (node) => this.isGroupCollapsed(node),
+    navigationEnabled: () => this.resolvedHeaderNavigation() !== 'none',
   });
 
   /**
@@ -397,21 +417,14 @@ export class CngxStepper implements CngxStepPanelHost {
     this.presenter.visibleStripNodes;
 
   /**
-   * Position in the step-only flat projection. Group nodes carry `-1`;
-   * callers must guard on `kind === 'step'`.
-   */
-  protected stepIndexOf(node: CngxStepNode): number {
-    return node.flatIndex;
-  }
-
-  /**
    * Distance of a step from the active one, published per-step as
    * `--cngx-step-distance` under `density: 'auto'`. Drives the
    * distance-weighted label budget so the step furthest from the active
-   * one collapses first. Pure derived data - no layout read.
+   * one collapses first. `flatIndex` is `-1` for group nodes, but only
+   * step nodes carry the binding. Pure derived data - no layout read.
    */
   protected stepDistanceOf(node: CngxStepNode): number {
-    return Math.abs(this.stepIndexOf(node) - this.activeStepIndex());
+    return Math.abs(node.flatIndex - this.activeStepIndex());
   }
 
   /** Per-step predicates + slot-context builders (Level-2 factory). */
@@ -483,7 +496,7 @@ export class CngxStepper implements CngxStepPanelHost {
     if (node.kind !== 'step' || !this.isHeaderReachable(node)) {
       return;
     }
-    this.presenter.select(this.stepIndexOf(node));
+    this.presenter.select(node.flatIndex);
   }
 
   /**

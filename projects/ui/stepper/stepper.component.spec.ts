@@ -364,6 +364,44 @@ describe('CngxStepper organism', () => {
       );
       expect(fixture.nativeElement.querySelector('.cngx-stepper__group-summary')).toBeNull();
     });
+
+    it('marks only the collapsed group header navigable, never the expanded one', () => {
+      const fixture = collapseFixture();
+      const [account, project] = Array.from(
+        fixture.nativeElement.querySelectorAll('.cngx-stepper__group-header'),
+      ) as HTMLElement[];
+      // Account is the active (expanded) group; Project is folded.
+      expect(account.classList.contains('cngx-stepper__group-header--navigable')).toBe(false);
+      expect(project.classList.contains('cngx-stepper__group-header--navigable')).toBe(true);
+    });
+
+    it("clicking a collapsed group header enters the group at its first step, not the trailing root step", () => {
+      const fixture = collapseFixture();
+      const project = Array.from(
+        fixture.nativeElement.querySelectorAll('.cngx-stepper__group-header'),
+      )[1] as HTMLElement;
+      project.click();
+      fixture.detectChanges();
+      // First step of Project is 'C' (flat index 2), not Finish (index 4).
+      const labels = (
+        Array.from(fixture.nativeElement.querySelectorAll('button.cngx-stepper__step')) as HTMLElement[]
+      ).map((b) => b.querySelector('.cngx-stepper__label')?.textContent?.trim());
+      // Project now active+expanded (C active, D shown); Account folds.
+      expect(labels).toEqual(['C', 'D', 'Finish']);
+      const active = fixture.nativeElement.querySelector('[aria-current="step"]') as HTMLElement;
+      expect(active.querySelector('.cngx-stepper__label')?.textContent?.trim()).toBe('C');
+    });
+
+    it('clicking the expanded (active) group header is a no-op', () => {
+      const fixture = collapseFixture();
+      const account = fixture.nativeElement.querySelector(
+        '.cngx-stepper__group-header',
+      ) as HTMLElement;
+      account.click();
+      fixture.detectChanges();
+      const active = fixture.nativeElement.querySelector('[aria-current="step"]') as HTMLElement;
+      expect(active.querySelector('.cngx-stepper__label')?.textContent?.trim()).toBe('A');
+    });
   });
 
   describe('space-driven density (density: auto)', () => {
