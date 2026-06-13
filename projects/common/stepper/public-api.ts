@@ -169,8 +169,6 @@ export {
   type CngxStepperGroupNavigationOptions,
 } from './group-navigation';
 
-export { createStepperStripEnterGate } from './strip-enter-gate';
-
 // The following three blocks ship `@internal` factory helpers. They are
 // exported through `public-api.ts` so the sibling `@cngx/ui/stepper`
 // organism can consume them across the secondary-entry boundary

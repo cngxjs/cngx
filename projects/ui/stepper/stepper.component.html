@@ -182,8 +182,6 @@
           type="button"
           cngxRovingItem
           class="cngx-stepper__step"
-          [animate.enter]="stripEnterArmed() ? 'cngx-stepper__step--enter' : ''"
-          animate.leave="cngx-stepper__step--leave"
           [class.cngx-stepper__step--rejected]="slotContext.showRejection(node)"
           [style.--cngx-step-distance]="isDensityAuto() ? stepDistanceOf(node) : null"
           [id]="stepHeaderId(node)"

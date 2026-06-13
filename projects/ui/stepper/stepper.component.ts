@@ -27,7 +27,6 @@ import {
   createStepperDisplayMode,
   createStepperGroupSummary,
   createStepperGroupNavigation,
-  createStepperStripEnterGate,
   createStripDensity,
   CngxStep,
   STEPPER_DEFAULT_DENSITY_BREAKPOINTS,
@@ -247,9 +246,6 @@ export class CngxStepper implements CngxStepPanelHost {
    * thresholds resolve.
    */
   protected readonly isDensityAuto = computed<boolean>(() => this.config.density === 'auto');
-
-  /** Arms strip enter-motion after first paint - silences the intro flash. */
-  protected readonly stripEnterArmed = createStepperStripEnterGate(this.injector);
 
   constructor() {
     // Scroll active step into view via the swappable scroll-sync factory.

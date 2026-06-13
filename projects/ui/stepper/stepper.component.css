@@ -1879,60 +1879,6 @@
   cursor: pointer;
 }
 
-/* Enter/leave of strip steps as a collapsed group expands or folds
-   (Angular `animate.enter` / `animate.leave`, no @angular/animations).
-   A fade plus a horizontal max-inline-size grow so neighbours reflow into
-   place rather than the step popping in. `min-inline-size: 0` + `overflow:
-   hidden` let the flex item collapse below its content during the grow;
-   the class is dropped once the animation settles, so the resting step
-   keeps its natural width. Authored inside the no-preference query so
-   reduced-motion gets neither animation - `animate.leave` then removes the
-   node instantly (no animation to await). Durations/easing reuse the same
-   --cngx-stepper-collapse-* tokens as the header opacity transition. */
-@media (prefers-reduced-motion: no-preference) {
-  .cngx-stepper__step--enter,
-  .cngx-stepper__step--leave {
-    min-inline-size: 0;
-    overflow: hidden;
-  }
-
-  .cngx-stepper__step--enter {
-    animation: cngx-stepper-step-enter var(--cngx-stepper-collapse-duration, 160ms)
-      var(--cngx-stepper-collapse-easing, ease);
-  }
-
-  .cngx-stepper__step--leave {
-    animation: cngx-stepper-step-leave var(--cngx-stepper-collapse-duration, 160ms)
-      var(--cngx-stepper-collapse-easing, ease);
-  }
-}
-
-@keyframes cngx-stepper-step-enter {
-  from {
-    opacity: 0;
-    max-inline-size: 0;
-    transform: translateX(-0.5rem);
-  }
-  to {
-    opacity: 1;
-    max-inline-size: var(--cngx-stepper-step-grow-size, 16rem);
-    transform: none;
-  }
-}
-
-@keyframes cngx-stepper-step-leave {
-  from {
-    opacity: 1;
-    max-inline-size: var(--cngx-stepper-step-grow-size, 16rem);
-    transform: none;
-  }
-  to {
-    opacity: 0;
-    max-inline-size: 0;
-    transform: translateX(-0.5rem);
-  }
-}
-
 @media (prefers-reduced-motion: no-preference) {
   .cngx-stepper__group-header {
     transition: opacity var(--cngx-stepper-collapse-duration, 160ms)
