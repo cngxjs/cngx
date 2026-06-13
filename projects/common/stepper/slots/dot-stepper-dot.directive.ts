@@ -55,7 +55,6 @@ export interface CngxDotStepperDotContext {
  * @since 0.1.0
  * @relatedTo CngxStepIndicator, CngxStepBadge, CngxStepBusySpinner, CngxStepRejection
  * <example-url>http://localhost:4200/#/ui/stepper/dot-stepper/icon-dots-via-code-cngxdotstepperdot-code</example-url>
- * <example-url>http://localhost:4200/#/ui/stepper/dot-stepper/mobile-carousel</example-url>
  */
 @Directive({
   selector: 'ng-template[cngxDotStepperDot]',
