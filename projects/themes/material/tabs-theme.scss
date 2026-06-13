@@ -10,8 +10,14 @@
 // oklch defaults only; this file is the single place that aligns every tab
 // token with Material so cngx tabs feel native alongside <mat-tab-group>.
 //
-// Three token namespaces, one include:
-//   - --cngx-tab-*        native cngx-tab-group / cngx-tab-overflow
+// Token namespaces, one include:
+//   - --cngx-color-*      cngx foundation knobs the tab skins read through
+//                         per-skin `:scope` rules (indicator, focus, the
+//                         contained / segmented / pill surfaces). Routed to
+//                         Material so a `:where()` host override actually
+//                         lands - see the note on `color()`.
+//   - --cngx-tab-*        native cngx-tab-group / cngx-tab-nav leaf tokens
+//   - --cngx-tab-overflow-* the "More" popover, painted as a Material menu
 //   - --cngx-mat-tab-*    [cngxMatTabs] error / has-errors skin
 //   - --cngx-mat-tabs-*   [cngxMatTabs] trailing-edge overflow wrapper
 //
@@ -21,23 +27,46 @@
 
 @mixin color($theme) {
   @if mat.get-theme-version($theme) == 1 {
+    // The tab CSS derives the active indicator, focus ring, strip border,
+    // and the contained / segmented / pill surfaces from the cngx
+    // foundation tokens (`--cngx-color-primary` / `-surface` / `-border`)
+    // through per-skin `:scope` blocks - class-specificity rules in the
+    // same `@layer cngx.components` as this bridge. A `:where()` override
+    // of the leaf `--cngx-tab-*` knobs loses to those `:scope` rules, so
+    // route the Material palette through the foundation knobs the
+    // components actually read. One assignment themes every skin and
+    // tracks light / dark, since `--mat-sys-*` already carries both.
+    --cngx-color-primary: var(--mat-sys-primary);
+    --cngx-color-on-primary: var(--mat-sys-on-primary);
+    --cngx-color-surface: var(--mat-sys-surface);
+    --cngx-color-border: var(--mat-sys-outline-variant);
+
+    // Leaf tokens the components read directly (no `:scope` reroute), so a
+    // host-level `:where()` assignment reaches them.
     --cngx-tab-active-color: var(--mat-sys-primary);
-    --cngx-tab-active-indicator-color: var(--mat-sys-primary);
     --cngx-tab-hover-color: var(--mat-sys-on-surface);
     --cngx-tab-color: var(--mat-sys-on-surface-variant);
-    --cngx-tab-strip-border: var(--mat-sys-outline-variant);
     --cngx-tab-busy-spinner-color: var(--mat-sys-primary);
 
+    // Error badge + rejection disc paint the error role; the glyph paints
+    // on-error. The two background knobs are `inherits: true` (tabs-base)
+    // so a host-set value reaches the descendant badge / disc.
     --cngx-tab-error-badge-color: var(--mat-sys-error);
     --cngx-tab-error-badge-text-color: var(--mat-sys-on-error);
-    --cngx-tab-rejection-icon-color: var(--mat-sys-on-error);
-    --cngx-tab-rejection-icon-bg: var(--mat-sys-error);
+    --cngx-tab-rejection-icon-color: var(--mat-sys-error);
     --cngx-tab-rejection-icon-text: var(--mat-sys-on-error);
   } @else {
+    --cngx-color-primary: #{mat.get-theme-color($theme, primary)};
+    --cngx-color-surface: #{mat.get-theme-color($theme, background, card)};
+    --cngx-color-border: #{rgba(mat.get-theme-color($theme, foreground, divider), 0.12)};
+
     --cngx-tab-active-color: #{mat.get-theme-color($theme, primary)};
-    --cngx-tab-active-indicator-color: #{mat.get-theme-color($theme, primary)};
+    --cngx-tab-busy-spinner-color: #{mat.get-theme-color($theme, primary)};
+
     --cngx-tab-error-badge-color: #{mat.get-theme-color($theme, warn)};
-    --cngx-tab-rejection-icon-bg: #{mat.get-theme-color($theme, warn)};
+    --cngx-tab-error-badge-text-color: oklch(1 0 0);
+    --cngx-tab-rejection-icon-color: #{mat.get-theme-color($theme, warn)};
+    --cngx-tab-rejection-icon-text: oklch(1 0 0);
   }
 }
 
@@ -62,23 +91,55 @@
   --cngx-tab-gap: #{map.get($gaps, $scale)};
 }
 
-@mixin _overflow-color($theme) {
+// "More" overflow popover -> Material `mat-menu`. The overflow surface is a
+// bare `[popover]` element (`.cngx-tab-overflow__panel`). Its
+// `--cngx-tab-overflow-popover-*` / `--cngx-tab-overflow-item-*` tokens are
+// the theming interface, but the component does not yet apply the panel
+// tokens to the live element, so the bridge both sets the Material values on
+// those tokens and wires them onto the real panel here. Set + consumed on the
+// same element, so the tokens' `inherits: false` registration is satisfied.
+// A `surface-container` card on the level-2 elevation, extra-small corner
+// radius, on-surface text, 8px block padding - reads as a mat-menu.
+@mixin _overflow-panel($theme) {
   @if mat.get-theme-version($theme) == 1 {
-    --cngx-tab-overflow-bg: var(--mat-sys-surface);
-    --cngx-tab-overflow-button-bg: var(--mat-sys-surface);
     --cngx-tab-overflow-popover-bg: var(--mat-sys-surface-container);
-    --cngx-tab-overflow-popover-border: 1px solid var(--mat-sys-outline-variant);
-    --cngx-tab-overflow-item-hover-bg: color-mix(
-      in srgb,
-      var(--mat-sys-on-surface) 8%,
-      transparent
-    );
-    --cngx-tab-overflow-item-active-bg: color-mix(
-      in srgb,
-      var(--mat-sys-primary) 12%,
-      transparent
-    );
+    --cngx-tab-overflow-popover-border: 0;
+    --cngx-tab-overflow-popover-radius: var(--mat-sys-corner-extra-small, 4px);
+    --cngx-tab-overflow-popover-padding: 0.5rem 0;
+    color: var(--mat-sys-on-surface);
+    box-shadow: var(--mat-sys-level2, 0 2px 6px rgb(0 0 0 / 0.2));
+  } @else {
+    --cngx-tab-overflow-popover-bg: #{mat.get-theme-color($theme, background, card)};
+    --cngx-tab-overflow-popover-border: 0;
+    --cngx-tab-overflow-popover-radius: 4px;
+    --cngx-tab-overflow-popover-padding: 0.5rem 0;
+    color: #{rgba(mat.get-theme-color($theme, foreground, text), 0.87)};
+    box-shadow: 0 2px 6px rgb(0 0 0 / 0.2);
+  }
+
+  background: var(--cngx-tab-overflow-popover-bg);
+  border: var(--cngx-tab-overflow-popover-border);
+  border-radius: var(--cngx-tab-overflow-popover-radius);
+  padding: var(--cngx-tab-overflow-popover-padding);
+  min-width: var(--cngx-tab-overflow-popover-min-width, 12rem);
+  max-height: var(--cngx-tab-overflow-popover-max-height, 16rem);
+  overflow: auto;
+}
+
+// Menu rows. The hover / active state layers and the row padding flow through
+// the existing `--cngx-tab-overflow-item-*` tokens, set on the row element so
+// the component's own `:hover` / `--active` rules pick them up (the tokens are
+// `inherits: false`, so they must land on the consuming element).
+@mixin _overflow-item($theme) {
+  --cngx-tab-overflow-item-padding: 0.5rem 1rem;
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-tab-overflow-item-hover-bg: color-mix(in srgb, var(--mat-sys-on-surface) 8%, transparent);
+    --cngx-tab-overflow-item-active-bg: color-mix(in srgb, var(--mat-sys-on-surface) 12%, transparent);
     --cngx-tab-overflow-item-active-outline: 2px solid var(--mat-sys-primary);
+  } @else {
+    --cngx-tab-overflow-item-hover-bg: color-mix(in srgb, currentColor 8%, transparent);
+    --cngx-tab-overflow-item-active-bg: color-mix(in srgb, currentColor 12%, transparent);
+    --cngx-tab-overflow-item-active-outline: 2px solid #{mat.get-theme-color($theme, primary)};
   }
 }
 
@@ -106,13 +167,22 @@
 
 @mixin theme($theme) {
   @layer cngx.components {
-    :where(cngx-tab-group) {
+    // `cngx-tab-nav` reads the same `--cngx-tab-*` / foundation knobs as
+    // `cngx-tab-group` (color, active-color, hover, strip border via
+    // `--cngx-color-border`, indicator via `--cngx-color-primary`,
+    // padding, gap) - emit the same block on both hosts so the routed
+    // tab nav themes identically to the panelled group.
+    :where(cngx-tab-group),
+    :where(cngx-tab-nav) {
       @include color($theme);
       @include typography($theme);
       @include density($theme);
     }
-    :where(cngx-tab-overflow) {
-      @include _overflow-color($theme);
+    :where(.cngx-tab-overflow__panel) {
+      @include _overflow-panel($theme);
+    }
+    :where(.cngx-tab-overflow__item) {
+      @include _overflow-item($theme);
     }
     :where(.mat-mdc-tab-group),
     :where(.mat-mdc-tab-nav-bar) {
