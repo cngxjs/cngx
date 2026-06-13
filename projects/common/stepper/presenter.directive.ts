@@ -29,7 +29,6 @@ import {
   type CngxStepperHost,
   type CngxStepNode,
   type CngxStepRegistration,
-  type CngxStepStatus,
 } from './stepper-host.token';
 import { flatStepsEqual, flattenStepTree, stepTreeEqual } from './step-tree.util';
 
@@ -180,7 +179,7 @@ export class CngxStepperPresenter implements CngxStepperHost {
   /**
    * {@inheritDoc CngxStepperHost.activeGroupId}
    *
-   * Single derivation over `activeStepId` + `stepTree` - the root-level
+   * Single derivation over `activeStepId` and `stepTree` - the root-level
    * group whose subtree holds the active step, or `null` for a
    * root-level active step (e.g. a trailing `Finish`). Walked once here;
    * `CngxStepGroup.isCollapsed`, the strip `aria-expanded` binding, and
@@ -534,4 +533,4 @@ export class CngxStepperPresenter implements CngxStepperHost {
   }
 }
 
-export type { CngxStepStatus };
+export { type CngxStepStatus } from './stepper-host.token';
