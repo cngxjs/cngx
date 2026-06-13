@@ -128,6 +128,7 @@
           role="group"
           [attr.aria-roledescription]="groupRoleDescription()"
           [class.cngx-stepper__group-header--collapsed]="isGroupCollapsed(node)"
+          [class.cngx-stepper__group-header--active]="groupNavigation.isActive(node)"
           [class.cngx-stepper__group-header--navigable]="groupNavigation.isNavigable(node)"
           [attr.data-step-depth]="node.depth"
           [attr.data-state]="node.state()"

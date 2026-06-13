@@ -35,6 +35,16 @@
 
     --cngx-step-busy-spinner-color: var(--mat-sys-primary);
 
+    // Group-header chip. Resting groups read as quiet outline tags
+    // (outline-variant border, faint surface tint, muted label); the
+    // group owning the active step lifts to a primary-tinted chip.
+    --cngx-stepper-group-chip-border: var(--mat-sys-outline-variant);
+    --cngx-stepper-group-chip-bg: color-mix(in srgb, var(--mat-sys-on-surface) 6%, transparent);
+    --cngx-stepper-group-chip-color: var(--mat-sys-on-surface-variant);
+    --cngx-stepper-group-chip-active-border: var(--mat-sys-primary);
+    --cngx-stepper-group-chip-active-bg: color-mix(in srgb, var(--mat-sys-primary) 14%, transparent);
+    --cngx-stepper-group-chip-active-color: var(--mat-sys-primary);
+
     --cngx-step-error-badge-color: var(--mat-sys-error);
     --cngx-step-error-badge-text-color: var(--mat-sys-on-error);
 
@@ -97,6 +107,16 @@
     --cngx-step-pending-color: #{mat.get-theme-color($theme, primary)};
     --cngx-step-indicator-active-color: oklch(1 0 0);
     --cngx-step-busy-spinner-color: #{mat.get-theme-color($theme, primary)};
+
+    // Group-header chip (resting tones keep their currentColor mixes).
+    --cngx-stepper-group-chip-active-border: #{mat.get-theme-color($theme, primary)};
+    --cngx-stepper-group-chip-active-bg: color-mix(
+      in srgb,
+      #{mat.get-theme-color($theme, primary)} 14%,
+      transparent
+    );
+    --cngx-stepper-group-chip-active-color: #{mat.get-theme-color($theme, primary)};
+
     --cngx-step-error-badge-color: #{mat.get-theme-color($theme, warn)};
     --cngx-step-rejection-outline-color: #{mat.get-theme-color($theme, accent)};
     --cngx-step-rejection-icon-bg: #{mat.get-theme-color($theme, accent)};

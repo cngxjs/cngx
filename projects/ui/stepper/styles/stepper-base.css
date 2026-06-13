@@ -159,7 +159,7 @@
   @property --cngx-step-group-indent {
     syntax: '*';
     inherits: false;
-    initial-value: 1.5rem;
+    initial-value: 0.5rem;
   }
 
   /**
@@ -377,6 +377,59 @@
     inherits: false;
     initial-value: 60cqi;
   }
+
+  /**
+   * Padding shorthand of a group-header chip. `inherits: true` so a value
+   * set on `cngx-stepper` reaches the chip in the strip.
+   * @group Group chip
+   */
+  @property --cngx-stepper-group-chip-padding {
+    syntax: '*';
+    inherits: true;
+    initial-value: 0.125rem 0.5rem;
+  }
+
+  /**
+   * Border width of a group-header chip.
+   * @group Group chip
+   */
+  @property --cngx-stepper-group-chip-border-width {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 1px;
+  }
+
+  /**
+   * Corner radius of a group-header chip (pill by default).
+   * @group Group chip
+   */
+  @property --cngx-stepper-group-chip-radius {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 999px;
+  }
+
+  /**
+   * Font-size of a group-header chip - smaller than the step labels so it
+   * reads as a tag, not a peer step.
+   * @group Group chip
+   */
+  @property --cngx-stepper-group-chip-font-size {
+    syntax: '*';
+    inherits: true;
+    initial-value: 0.8125em;
+  }
+
+  /**
+   * Line-height of a group-header chip; drives the chip's height together
+   * with the padding.
+   * @group Group chip
+   */
+  @property --cngx-stepper-group-chip-line-height {
+    syntax: '<number>';
+    inherits: true;
+    initial-value: 1.25;
+  }
 }
 
 @layer cngx.components {
@@ -517,11 +570,30 @@
     display: none;
   }
 
+  /* The group header is a chip, not floating bold text - it gives a branch
+     a section identity distinct from the numbered step labels beside it,
+     and it wraps the label together with the collapsed-group summary badge
+     (0/2) so progress reads as part of the same pill. Shape + resting tone
+     live here (structural); the active-branch accent is thematic and lives
+     in stepper.component.css. Tokens fall back to currentColor mixes so the
+     chip themes with the strip; the smaller font-size reads it as a tag
+     rather than a peer of the step labels. */
   .cngx-stepper__group-header {
     display: inline-flex;
     align-items: center;
-    padding: var(--cngx-step-padding, 0.5rem 0.75rem);
+    /* The strip is `align-items: stretch`, which would pull this chip up
+       to the full step-button height (a tall lozenge). Centre it on its
+       own content instead so the chip stays a slim tag in the row. */
+    align-self: center;
+    padding: var(--cngx-stepper-group-chip-padding, 0.125rem 0.5rem);
+    border: var(--cngx-stepper-group-chip-border-width, 1px) solid
+      var(--cngx-stepper-group-chip-border, color-mix(in srgb, currentColor 22%, transparent));
+    border-radius: var(--cngx-stepper-group-chip-radius, 999px);
+    background: var(--cngx-stepper-group-chip-bg, color-mix(in srgb, currentColor 6%, transparent));
+    color: var(--cngx-stepper-group-chip-color, inherit);
     font-weight: var(--cngx-step-group-font-weight, 600);
+    font-size: var(--cngx-stepper-group-chip-font-size, 0.8125em);
+    line-height: var(--cngx-stepper-group-chip-line-height, 1.25);
   }
 
   /* Collapsed-group summary badge (groupCollapseSummary). 'progress' /
@@ -540,7 +612,10 @@
     font-size: var(--cngx-stepper-group-summary-font-size, 0.75em);
     font-weight: var(--cngx-stepper-group-summary-font-weight, 600);
     line-height: 1;
-    background: var(--cngx-stepper-group-summary-bg, color-mix(in srgb, currentColor 12%, transparent));
+    background: var(
+      --cngx-stepper-group-summary-bg,
+      color-mix(in srgb, currentColor 12%, transparent)
+    );
     color: var(--cngx-stepper-group-summary-color, inherit);
   }
 

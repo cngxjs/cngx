@@ -219,6 +219,75 @@
     inherits: true;
     initial-value: currentColor;
   }
+
+  /**
+   * Border color of a resting group-header chip. Defaults to a faint
+   * currentColor outline so the chip themes with the strip; the Material
+   * bridge maps it to `--mat-sys-outline-variant`.
+   * @group Group chip
+   */
+  @property --cngx-stepper-group-chip-border {
+    syntax: '*';
+    inherits: true;
+    initial-value: color-mix(in srgb, currentColor 22%, transparent);
+  }
+
+  /**
+   * Background of a resting group-header chip.
+   * @group Group chip
+   */
+  @property --cngx-stepper-group-chip-bg {
+    syntax: '*';
+    inherits: true;
+    initial-value: color-mix(in srgb, currentColor 6%, transparent);
+  }
+
+  /**
+   * Label color of a resting group-header chip. Tracks the inherited
+   * text color by default.
+   * @group Group chip
+   */
+  @property --cngx-stepper-group-chip-color {
+    syntax: '*';
+    inherits: true;
+    initial-value: currentColor;
+  }
+
+  /**
+   * Border color of the active-branch chip (the group owning the current
+   * step). No `initial-value`: the universal syntax keeps the property
+   * guaranteed-invalid until set, so the CSS `var()` fallback chain to
+   * `--cngx-color-primary` survives - the same knob that colours the
+   * active step. The Material bridge maps it to `--mat-sys-primary`.
+   * @group Group chip
+   * @default var(--cngx-color-primary)
+   */
+  @property --cngx-stepper-group-chip-active-border {
+    syntax: '*';
+    inherits: true;
+  }
+
+  /**
+   * Background of the active-branch chip. See
+   * {@link --cngx-stepper-group-chip-active-border} for why no
+   * `initial-value` is declared.
+   * @group Group chip
+   * @default color-mix(in srgb, var(--cngx-color-primary) 14%, transparent)
+   */
+  @property --cngx-stepper-group-chip-active-bg {
+    syntax: '*';
+    inherits: true;
+  }
+
+  /**
+   * Label color of the active-branch chip.
+   * @group Group chip
+   * @default var(--cngx-color-primary)
+   */
+  @property --cngx-stepper-group-chip-active-color {
+    syntax: '*';
+    inherits: true;
+  }
 }
 
 @layer cngx.components {
@@ -1879,10 +1948,31 @@
   cursor: pointer;
 }
 
+/* Active-branch chip: the group that owns the current step. An accent
+   tint + border lifts it above the resting outline chips (shape in
+   stepper-base.css), so "the branch I am in" reads at a glance whether
+   or not the other groups are collapsed. Colours flow through the chip
+   tokens, falling back to --cngx-color-primary like the rest of the
+   active-step theming. Unlayered direct selector to match the collapsed/
+   navigable rules above (consistent cascade ordering across engines). */
+.cngx-stepper__group-header--active {
+  border-color: var(--cngx-stepper-group-chip-active-border, var(--cngx-color-primary, oklch(0.55 0.18 264)));
+  background: var(
+    --cngx-stepper-group-chip-active-bg,
+    color-mix(in srgb, var(--cngx-color-primary, oklch(0.55 0.18 264)) 14%, transparent)
+  );
+  color: var(--cngx-stepper-group-chip-active-color, var(--cngx-color-primary, oklch(0.55 0.18 264)));
+}
+
 @media (prefers-reduced-motion: no-preference) {
   .cngx-stepper__group-header {
-    transition: opacity var(--cngx-stepper-collapse-duration, 160ms)
-      var(--cngx-stepper-collapse-easing, ease);
+    transition:
+      opacity var(--cngx-stepper-collapse-duration, 160ms) var(--cngx-stepper-collapse-easing, ease),
+      background-color var(--cngx-stepper-collapse-duration, 160ms)
+        var(--cngx-stepper-collapse-easing, ease),
+      border-color var(--cngx-stepper-collapse-duration, 160ms)
+        var(--cngx-stepper-collapse-easing, ease),
+      color var(--cngx-stepper-collapse-duration, 160ms) var(--cngx-stepper-collapse-easing, ease);
   }
 }
 

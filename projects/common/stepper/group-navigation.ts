@@ -24,6 +24,13 @@ export interface CngxStepperGroupNavigationView {
    * header, a navigation-off header, or a group with no reachable step.
    */
   select(node: CngxStepNode): void;
+  /**
+   * `true` when the group owns the active step (`activeGroupId`). Drives
+   * the active-branch chip treatment on the header, independent of
+   * `groupCollapse`, so the branch in focus reads distinctly even when
+   * every group stays expanded.
+   */
+  isActive(node: CngxStepNode): boolean;
 }
 
 /**
@@ -37,7 +44,10 @@ export interface CngxStepperGroupNavigationOptions {
    * live `flatIndex`), the reachability predicate (`canNavigateTo`), the
    * commit-in-flight gate (`busy`), and the selection method (`select`).
    */
-  readonly presenter: Pick<CngxStepperHost, 'flatSteps' | 'canNavigateTo' | 'busy' | 'select'>;
+  readonly presenter: Pick<
+    CngxStepperHost,
+    'flatSteps' | 'canNavigateTo' | 'busy' | 'select' | 'activeGroupId'
+  >;
   /** Whether a given group node is currently folded. */
   readonly isCollapsed: (node: CngxStepNode) => boolean;
   /** `false` when `headerNavigation: 'none'` keeps every header inert. */
@@ -99,5 +109,8 @@ export function createStepperGroupNavigation(
     presenter.select(firstNavigableStepIndex(node));
   };
 
-  return { isNavigable, select };
+  const isActive = (node: CngxStepNode): boolean =>
+    node.kind === 'group' && presenter.activeGroupId() === node.id;
+
+  return { isNavigable, select, isActive };
 }
