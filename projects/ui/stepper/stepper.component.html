@@ -121,16 +121,20 @@
     class="cngx-stepper__strip"
     [attr.role]="resolvedHeaderNavigation() === 'none' ? 'list' : 'presentation'"
   >
-    @for (node of flatSteps(); track node.id) {
+    @for (node of visibleStripNodes(); track node.id) {
       @if (node.kind === 'group') {
         <div
           class="cngx-stepper__group-header"
           role="group"
           [attr.aria-roledescription]="groupRoleDescription()"
+          [class.cngx-stepper__group-header--collapsed]="isGroupCollapsed(node)"
+          [class.cngx-stepper__group-header--active]="groupNavigation.isActive(node)"
+          [class.cngx-stepper__group-header--navigable]="groupNavigation.isNavigable(node)"
           [attr.data-step-depth]="node.depth"
           [attr.data-state]="node.state()"
           [attr.aria-disabled]="node.disabled() ? 'true' : null"
           [attr.aria-describedby]="stepDescriptorId(node)"
+          (click)="groupNavigation.select(node)"
         >
           <ng-container
             *ngTemplateOutlet="
@@ -138,6 +142,18 @@
               context: slotContext.groupHeaderContextFor(node)
             "
           ></ng-container>
+          @if (groupSummary.text(node); as summary) {
+            <span class="cngx-stepper__group-summary" [attr.data-state]="node.state()" aria-hidden="true">{{ summary }}</span>
+          } @else if (groupSummary.showStatus(node)) {
+            <span
+              class="cngx-stepper__group-summary cngx-stepper__group-summary--status"
+              [attr.data-state]="node.state()"
+              aria-hidden="true"
+            ></span>
+          }
+          @if (groupSummary.srText(node); as srSummary) {
+            <span class="cngx-sr-only">{{ srSummary }}</span>
+          }
           <span class="cngx-sr-only" [id]="stepDescriptorId(node)">{{ announcement.groupStatusPhrase(node) }}</span>
         </div>
       } @else if (resolvedHeaderNavigation() === 'none') {
@@ -151,6 +167,7 @@
           class="cngx-stepper__step cngx-stepper__step--static"
           role="listitem"
           [class.cngx-stepper__step--rejected]="slotContext.showRejection(node)"
+          [style.--cngx-step-distance]="isDensityAuto() ? stepDistanceOf(node) : null"
           [id]="stepHeaderId(node)"
           [attr.data-step-depth]="node.depth"
           [attr.data-state]="node.state()"
@@ -167,6 +184,7 @@
           cngxRovingItem
           class="cngx-stepper__step"
           [class.cngx-stepper__step--rejected]="slotContext.showRejection(node)"
+          [style.--cngx-step-distance]="isDensityAuto() ? stepDistanceOf(node) : null"
           [id]="stepHeaderId(node)"
           [attr.tabindex]="slotContext.isActive(node) ? '0' : '-1'"
           [attr.data-step-depth]="node.depth"

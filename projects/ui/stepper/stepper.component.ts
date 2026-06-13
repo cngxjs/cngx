@@ -25,7 +25,11 @@ import { CngxSwipe } from '@cngx/common/interactive';
 import {
   CNGX_STEP_PANEL_HOST,
   createStepperDisplayMode,
+  createStepperGroupSummary,
+  createStepperGroupNavigation,
+  createStripDensity,
   CngxStep,
+  STEPPER_DEFAULT_DENSITY_BREAKPOINTS,
   STEPPER_DEFAULT_MOBILE_BREAKPOINT,
   CngxStepBadge,
   CngxStepBusySpinner,
@@ -77,6 +81,7 @@ import { coerceBooleanProperty } from '@cngx/core/utils';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/stepper/stepper.component.ts
  * @since 0.1.0
  * @relatedTo CngxStepperPresenter, CngxStep, CngxRovingTabindex, CngxFocusRestore, CngxLiveRegion
+ * @playground Material theme coverage across all skins ./examples/material-theme-coverage/skins-coverage.component.ts
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-horizontal/three-step-wizard</example-url>
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-vertical/vertical-sidebar-layout</example-url>
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-linear/linear-gating-with-completion-checkboxes</example-url>
@@ -94,6 +99,9 @@ import { coerceBooleanProperty } from '@cngx/core/utils';
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-skins/path-chevron-vertical</example-url>
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-skins/pill-segment-vertical</example-url>
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-skins/chips-vertical</example-url>
+ * <example-url>http://localhost:4200/#/ui/stepper/stepper-density/flat-steps-auto-density</example-url>
+ * <example-url>http://localhost:4200/#/ui/stepper/stepper-density/density-across-skins</example-url>
+ * <example-url>http://localhost:4200/#/ui/stepper/stepper-density/distance-weighted-collapse</example-url>
  */
 @Component({
   selector: 'cngx-stepper',
@@ -130,6 +138,8 @@ import { coerceBooleanProperty } from '@cngx/core/utils';
     '[attr.aria-roledescription]': 'stepperRoleDescription()',
     '[attr.aria-orientation]': 'presenter.orientation()',
     '[attr.data-orientation]': 'presenter.orientation()',
+    '[attr.data-density]': 'stripDensity()',
+    '[attr.data-density-auto]': "isDensityAuto() ? '' : null",
     '[attr.data-skin]': 'hostAttrs.resolvedSkin()',
     '[attr.data-connectors]': "hostAttrs.resolvedConnectors() ? 'true' : null",
     '[attr.data-mobile-indicator-position]': 'hostAttrs.resolvedMobileIndicatorPosition()',
@@ -213,6 +223,29 @@ export class CngxStepper implements CngxStepPanelHost {
     () => this.config.mobileCollapse,
     inject(DestroyRef),
   );
+
+  /**
+   * Space-driven density rung for the classic strip, measured off the
+   * host element's own width via {@link createStripDensity}. `'full'`
+   * under the `'comfortable'` default. Drives `[data-density]` (the CSS
+   * label-degradation ladder) and the auto-vertical flip below.
+   */
+  protected readonly stripDensity = createStripDensity({
+    element: this.hostElement,
+    stepCount: () => this.presenter.stepCount(),
+    density: () => this.config.density,
+    breakpoints: () => this.config.densityBreakpoints ?? STEPPER_DEFAULT_DENSITY_BREAKPOINTS,
+    destroyRef: inject(DestroyRef),
+  });
+
+  /**
+   * `true` when `density: 'auto'` is active. Drives `[data-density-auto]`,
+   * which makes the strip absorb a too-narrow container by shrinking +
+   * ellipsis-truncating labels in flow rather than growing a horizontal
+   * scrollbar - so no rung ever overflows, independent of how the px
+   * thresholds resolve.
+   */
+  protected readonly isDensityAuto = computed<boolean>(() => this.config.density === 'auto');
 
   constructor() {
     // Scroll active step into view via the swappable scroll-sync factory.
@@ -300,8 +333,56 @@ export class CngxStepper implements CngxStepPanelHost {
   );
 
   /**
+   * `true` when a rendered strip group header is folded under the
+   * focus-driven policy: `groupCollapse === 'expand-active'`, the group
+   * has children, and it does not hold the active step. Drives the
+   * `--collapsed` visual de-emphasis. Reads `activeGroupId` reactively,
+   * never a one-shot write.
+   *
+   * The fold is a density optimisation, not a disclosure widget:
+   * collapse is focus-driven (no toggle control), so the header carries
+   * no `aria-expanded` - an unsupported pairing on `role="group"`
+   * (ARIA 1.2) that would also imply a false disclosure affordance.
+   * A collapsed header does offer a pointer shortcut into the group (see
+   * {@link handleGroupHeaderClick}), but that selects the group's first
+   * step rather than expanding it in place, so it stays navigation, not
+   * disclosure. Keyboard users reach the same steps via the documented
+   * arrow-key contract, which already steps into a collapsed group.
+   */
+  protected isGroupCollapsed(node: CngxStepNode): boolean {
+    if (node.kind !== 'group' || this.config.groupCollapse !== 'expand-active') {
+      return false;
+    }
+    if (node.children.length === 0) {
+      return false;
+    }
+    return this.presenter.activeGroupId() !== node.id;
+  }
+
+  /**
+   * Collapsed-group summary view (`groupCollapseSummary`). Level-2 factory
+   * keeps the count/progress/status derivation out of the organism; the
+   * template reads `groupSummary.text(node)` / `.showStatus(node)` /
+   * `.srText(node)` on collapsed group headers.
+   */
+  protected readonly groupSummary = createStepperGroupSummary({
+    summaryMode: () => this.config.groupCollapseSummary,
+    isCollapsed: (node) => this.isGroupCollapsed(node),
+  });
+
+  /**
+   * Collapsed-group pointer-navigation view. `isNavigable` drives the
+   * `--navigable` cursor cue; `select` is the header click handler that
+   * enters the branch at its first reachable step. Level-2 factory.
+   */
+  protected readonly groupNavigation = createStepperGroupNavigation({
+    presenter: this.presenter,
+    isCollapsed: (node) => this.isGroupCollapsed(node),
+    navigationEnabled: () => this.resolvedHeaderNavigation() !== 'none',
+  });
+
+  /**
    * `aria-label` cascade: input → `ariaLabels.stepperRegion` → `i18n.stepperLabel`.
-   * Pillar 2.
    */
   protected readonly resolvedAriaLabel = computed<string | null>(() => {
     if (this.ariaLabelledBy()) {
@@ -322,11 +403,24 @@ export class CngxStepper implements CngxStepPanelHost {
   protected readonly stepsOnly: Signal<readonly CngxStepNode[]> = this.presenter.stepsOnly;
 
   /**
-   * Position in the step-only flat projection. Group nodes carry `-1`;
-   * callers must guard on `kind === 'step'`.
+   * Strip projection honouring the focus-driven group-collapse policy.
+   * Drives the classic strip `@for`; collapsed groups contribute their
+   * header node alone. Sourced from the presenter, never re-derived here
+   * (host-token contract). Panels still render every step via
+   * {@link stepsOnly}, so collapsed steps keep their panel ids in the DOM.
    */
-  protected stepIndexOf(node: CngxStepNode): number {
-    return node.flatIndex;
+  protected readonly visibleStripNodes: Signal<readonly CngxStepNode[]> =
+    this.presenter.visibleStripNodes;
+
+  /**
+   * Distance of a step from the active one, published per-step as
+   * `--cngx-step-distance` under `density: 'auto'`. Drives the
+   * distance-weighted label budget so the step furthest from the active
+   * one collapses first. `flatIndex` is `-1` for group nodes, but only
+   * step nodes carry the binding. Pure derived data - no layout read.
+   */
+  protected stepDistanceOf(node: CngxStepNode): number {
+    return Math.abs(node.flatIndex - this.activeStepIndex());
   }
 
   /** Per-step predicates + slot-context builders (Level-2 factory). */
@@ -362,7 +456,7 @@ export class CngxStepper implements CngxStepPanelHost {
     ),
   );
 
-  /** Commit-in-flight flag - drives the host `aria-busy` binding. Pillar 2. */
+  /** Commit-in-flight flag - drives the host `aria-busy` binding.*/
   protected readonly isCommitting = computed<boolean>(
     () => this.presenter.commitState.status() === 'pending',
   );
@@ -398,7 +492,7 @@ export class CngxStepper implements CngxStepPanelHost {
     if (node.kind !== 'step' || !this.isHeaderReachable(node)) {
       return;
     }
-    this.presenter.select(this.stepIndexOf(node));
+    this.presenter.select(node.flatIndex);
   }
 
   /**
@@ -435,6 +529,10 @@ export class CngxStepper implements CngxStepPanelHost {
     hostElement: this.hostElement,
     flatStepCount: () => this.flatSteps().length,
     stepButtonIdFor: (id) => `${id}-header`,
+    // Defers the post-move focus to afterNextRender so arrow-key
+    // navigation across a collapsed group boundary lands on the target
+    // button after the strip re-renders its node set.
+    injector: this.injector,
     // Off in 'none' mode (inert labels) and while a commit is in flight,
     // so arrow-key navigation locks with the headers + footer during an
     // async transition.

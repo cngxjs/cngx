@@ -3631,6 +3631,13 @@ cngx-radio-group .cngx-radio + .cngx-radio {
   --cngx-step-chips-fill-active: #2563eb;
 }
 
+// Demo-only counter chip in the custom-step-label story. Static demo
+// styling; keeps the inline template free of thematic padding/size.
+.demo-step-count-chip {
+  padding: var(--demo-step-count-chip-pad, 0 6px);
+  font-size: var(--demo-step-count-chip-size, 0.7em);
+}
+
 // Demo-only styling for the tab-panel container-query story. The panel
 // is a `cngx-tab-panel` container (set by @cngx/ui/tabs); the grid below
 // reflows on the PANEL's own inline width, not the viewport. The

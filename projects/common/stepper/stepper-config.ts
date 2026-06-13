@@ -100,6 +100,55 @@ export type CngxStepperMobileCollapse = 'text' | 'dots' | 'off';
 export type CngxStepperHeaderNavigation = 'none' | 'visited';
 
 /**
+ * Focus-driven group-collapse policy for grouped `<cngx-stepper>` flows.
+ * `'expand-active'` collapses every non-active `cngxStepGroup` branch to
+ * its header node and expands only the group holding the active step;
+ * `'off'` (default) keeps every group's children rendered in the strip -
+ * the browser-native baseline. Orthogonal to the `mobileCollapse` axis;
+ * the two never edit each other. The Material twin (`[cngxMatStepper]`)
+ * ignores this setting.
+ *
+ * @category common/stepper
+ */
+export type CngxStepperGroupCollapse = 'expand-active' | 'off';
+
+/**
+ * What a collapsed `cngxStepGroup` header shows next to its label under
+ * `groupCollapse: 'expand-active'`. `'progress'` (default) shows
+ * completed/total steps; `'count'` shows the step count; `'status'`
+ * shows a status dot coloured by the group's rolled-up state; `'off'`
+ * shows the bare label. Only ever rendered on a collapsed group header.
+ *
+ * @category common/stepper
+ */
+export type CngxStepperGroupSummary = 'progress' | 'count' | 'status' | 'off';
+
+/**
+ * Space-driven density policy for the classic `<cngx-stepper>` strip.
+ * `'auto'` degrades the strip on its own container width
+ * (full labels -> ellipsis-truncated -> indicators-only with the active
+ * label kept); `'comfortable'` (default) keeps full labels at every
+ * width. Orthogonal to `mobileCollapse` and `groupCollapse`; the
+ * Material twin ignores this setting.
+ *
+ * @category common/stepper
+ */
+export type CngxStepperDensity = 'comfortable' | 'auto';
+
+/**
+ * Per-step px thresholds the `density: 'auto'` ladder reacts to.
+ * `compact` is the minimum px per step that keeps full labels; below
+ * `minimal` px per step the strip drops to indicators-only. `compact`
+ * must exceed `minimal`.
+ *
+ * @category common/stepper
+ */
+export interface CngxStepperDensityBreakpoints {
+  readonly compact: number;
+  readonly minimal: number;
+}
+
+/**
  * Where the mobile auto-collapse indicator (text caption or dot row)
  * sits relative to the active step's panel content under narrow
  * viewports. `'top'` (default) keeps the indicator above the panel;
@@ -122,6 +171,19 @@ export type CngxStepperMobileIndicatorPosition = 'top' | 'bottom';
 export const STEPPER_DEFAULT_MOBILE_BREAKPOINT = '(max-width: 480px)';
 
 /**
+ * Default per-step px thresholds for the `density: 'auto'` ladder. The
+ * literal lives on a single exported const so the runtime resolver, the
+ * config default, and any JSDoc cross-references stay in lockstep.
+ * Consumers override via {@link withStepperDensity}'s second argument.
+ *
+ * @category common/stepper
+ */
+export const STEPPER_DEFAULT_DENSITY_BREAKPOINTS: CngxStepperDensityBreakpoints = {
+  compact: 120,
+  minimal: 64,
+};
+
+/**
  * Stepper config surface. Resolution priority: per-instance Input
  * > `provideStepperConfigAt` (viewProviders) > `provideStepperConfig`
  * (root) > library default. Canonical cngx config shape.
@@ -142,6 +204,34 @@ export interface CngxStepperConfig {
    * Per-instance `[headerNavigation]` Input still wins.
    */
   readonly headerNavigation?: CngxStepperHeaderNavigation;
+  /**
+   * Focus-driven group-collapse policy. `'expand-active'` collapses
+   * non-active `cngxStepGroup` branches to their header node and expands
+   * only the active group; `'off'` (default) keeps the full strip.
+   * Orthogonal to `mobileCollapse`. Apply app-wide via
+   * {@link withStepperGroupCollapse}.
+   */
+  readonly groupCollapse?: CngxStepperGroupCollapse;
+  /**
+   * What a collapsed `cngxStepGroup` header shows beside its label.
+   * Default `'progress'` (completed/total). Only applies when
+   * `groupCollapse` is `'expand-active'`. Set via
+   * {@link withStepperGroupCollapseSummary}.
+   */
+  readonly groupCollapseSummary?: CngxStepperGroupSummary;
+  /**
+   * Space-driven density policy for the classic strip. `'auto'`
+   * degrades labels on the strip's own container width; `'comfortable'`
+   * (default) keeps full labels. Orthogonal to `mobileCollapse`. Apply
+   * app-wide via {@link withStepperDensity}.
+   */
+  readonly density?: CngxStepperDensity;
+  /**
+   * Per-step px thresholds for the `density: 'auto'` ladder. Default
+   * {@link STEPPER_DEFAULT_DENSITY_BREAKPOINTS}. Override via
+   * {@link withStepperDensity}'s second argument.
+   */
+  readonly densityBreakpoints?: CngxStepperDensityBreakpoints;
   /**
    * Opt-in connector rail between adjacent step indicators on the
    * classic skin. Off by default. The rule is double-scoped on
@@ -192,6 +282,10 @@ const STEPPER_CONFIG_DEFAULTS: Required<
   routerSyncParam: 'step',
   skin: 'classic',
   headerNavigation: 'visited',
+  groupCollapse: 'off',
+  groupCollapseSummary: 'progress',
+  density: 'comfortable',
+  densityBreakpoints: STEPPER_DEFAULT_DENSITY_BREAKPOINTS,
   connectors: false,
   mobileCollapse: 'text',
   mobileBreakpoint: STEPPER_DEFAULT_MOBILE_BREAKPOINT,
@@ -401,6 +495,59 @@ export function withStepperHeaderNavigation(
   mode: CngxStepperHeaderNavigation,
 ): CngxStepperConfigFeature {
   return defineStepperConfigFeature((cfg) => ({ ...cfg, headerNavigation: mode }));
+}
+
+/**
+ * Set the app-wide focus-driven group-collapse policy for grouped
+ * `<cngx-stepper>` flows. `'expand-active'` collapses every non-active
+ * `cngxStepGroup` branch to its header node and expands only the group
+ * holding the active step; `'off'` (library default) keeps the full
+ * strip. Orthogonal to the `mobileCollapse` axis. The Material twin
+ * ignores this setting.
+ *
+ * @category common/stepper
+ */
+export function withStepperGroupCollapse(
+  mode: CngxStepperGroupCollapse,
+): CngxStepperConfigFeature {
+  return defineStepperConfigFeature((cfg) => ({ ...cfg, groupCollapse: mode }));
+}
+
+/**
+ * Choose what a collapsed `cngxStepGroup` header shows beside its label
+ * under `groupCollapse: 'expand-active'`. `'progress'` (library default)
+ * shows completed/total steps; `'count'` the step count; `'status'` a
+ * status dot coloured by the group's rolled-up state; `'off'` the bare
+ * label. No effect unless `groupCollapse` is `'expand-active'`.
+ *
+ * @category common/stepper
+ */
+export function withStepperGroupCollapseSummary(
+  mode: CngxStepperGroupSummary,
+): CngxStepperConfigFeature {
+  return defineStepperConfigFeature((cfg) => ({ ...cfg, groupCollapseSummary: mode }));
+}
+
+/**
+ * Set the app-wide space-driven density policy for the classic
+ * `<cngx-stepper>` strip. `'auto'` degrades labels on the strip's own
+ * container width (full -> compact -> minimal); `'comfortable'`
+ * (library default) keeps full labels at every width. The optional
+ * second argument overrides the per-step px thresholds (default
+ * {@link STEPPER_DEFAULT_DENSITY_BREAKPOINTS}). Orthogonal to the
+ * `mobileCollapse` axis; the Material twin ignores this setting.
+ *
+ * @category common/stepper
+ */
+export function withStepperDensity(
+  mode: CngxStepperDensity,
+  breakpoints?: CngxStepperDensityBreakpoints,
+): CngxStepperConfigFeature {
+  return defineStepperConfigFeature((cfg) => ({
+    ...cfg,
+    density: mode,
+    ...(breakpoints ? { densityBreakpoints: breakpoints } : {}),
+  }));
 }
 
 /**

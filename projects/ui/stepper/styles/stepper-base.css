@@ -159,7 +159,7 @@
   @property --cngx-step-group-indent {
     syntax: '*';
     inherits: false;
-    initial-value: 1.5rem;
+    initial-value: 0.5rem;
   }
 
   /**
@@ -301,6 +301,135 @@
     inherits: false;
     initial-value: 700;
   }
+
+  /**
+   * Distance of a step from the active one (`abs(index - active)`).
+   * Published per-step as data under `density: 'auto'`; it raises the
+   * step's shrink priority so the furthest steps give up their label
+   * first. Set and consumed on the step element, so it does not inherit.
+   * @group Layout / Density
+   */
+  @property --cngx-step-distance {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 0;
+  }
+
+  /**
+   * Multiplier turning per-step distance into flex-shrink priority under
+   * `density: 'auto'`. The active step shrinks at priority 1, every other
+   * step at `1 + distance * weight`, so a high weight makes neighbours
+   * collapse to number-only before the active label gives any ground.
+   * @group Layout / Density
+   */
+  @property --cngx-step-shrink-weight {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 20;
+  }
+
+  /**
+   * Minimum width of a step under `density: 'auto'` - the floor a
+   * collapsing step shrinks to, kept wide enough to hold the indicator so
+   * a number-bearing step never clips its disc.
+   * @group Layout / Density
+   */
+  @property --cngx-step-collapsed-min {
+    syntax: '*';
+    inherits: false;
+    initial-value: 3.25rem;
+  }
+
+  /**
+   * Minimum label width for non-active steps on label-only skins (no
+   * number fallback) under `density: 'auto'`, so a collapsing label keeps
+   * a readable stub instead of vanishing.
+   * @group Layout / Density
+   */
+  @property --cngx-step-collapsed-label-min {
+    syntax: '*';
+    inherits: false;
+    initial-value: 2ch;
+  }
+
+  /**
+   * Guaranteed minimum label width for the active step, regardless of
+   * step count or container width, so the active label stays readable.
+   * @group Layout / Density
+   */
+  @property --cngx-step-active-label-min {
+    syntax: '*';
+    inherits: false;
+    initial-value: 4rem;
+  }
+
+  /**
+   * Maximum width of the active label, in container-query units, so a very
+   * long active label cannot eat the whole strip and squeeze the sequence
+   * out. It also bounds how far the strip reflows when navigating between
+   * steps. `cqi` is 1% of the stepper container, so `60cqi` caps the
+   * active label at 60% of the strip width; the remaining ~40% (minus the
+   * active step's own indicator + padding) is left for the other steps.
+   * @group Layout / Density
+   */
+  @property --cngx-step-active-label-max {
+    syntax: '*';
+    inherits: false;
+    initial-value: 60cqi;
+  }
+
+  /**
+   * Padding shorthand of a group-header chip. `inherits: true` so a value
+   * set on `cngx-stepper` reaches the chip in the strip.
+   * @group Group chip
+   */
+  @property --cngx-stepper-group-chip-padding {
+    syntax: '*';
+    inherits: true;
+    initial-value: 0.125rem 0.5rem;
+  }
+
+  /**
+   * Border width of a group-header chip.
+   * @group Group chip
+   */
+  @property --cngx-stepper-group-chip-border-width {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 1px;
+  }
+
+  /**
+   * Corner radius of a group-header chip (pill by default).
+   * @group Group chip
+   */
+  @property --cngx-stepper-group-chip-radius {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 999px;
+  }
+
+  /**
+   * Font-size of a group-header chip - smaller than the step labels so it
+   * reads as a tag, not a peer step.
+   * @group Group chip
+   */
+  @property --cngx-stepper-group-chip-font-size {
+    syntax: '*';
+    inherits: true;
+    initial-value: 0.8125em;
+  }
+
+  /**
+   * Line-height of a group-header chip; drives the chip's height together
+   * with the padding.
+   * @group Group chip
+   */
+  @property --cngx-stepper-group-chip-line-height {
+    syntax: '<number>';
+    inherits: true;
+    initial-value: 1.25;
+  }
 }
 
 @layer cngx.components {
@@ -369,6 +498,54 @@
     min-width: 0;
   }
 
+  /* Continuous density (density: 'auto') by distance-weighted shrink.
+     Steps lay out at their natural width and only give up label space when
+     the strip would otherwise overflow; the shrink priority grows with
+     each step's distance from the active one, so the furthest labels
+     truncate first and the nearest stay readable longest. Because nothing
+     is capped below the available width, full labels show whenever they
+     fit - no space is truncated away while the strip still has room (the
+     old per-step budget left dead space beside collapsed labels). The step
+     floors at --cngx-step-collapsed-min so a collapsing step never clips
+     its indicator; once neighbours hit that floor the remaining deficit
+     pushes the active label down to its own floor. overflow:clip
+     (thematic) is the final no-scrollbar guarantee. */
+  cngx-stepper[data-density-auto] .cngx-stepper__step {
+    min-width: var(--cngx-step-collapsed-min, 3.25rem);
+    flex-shrink: calc(1 + var(--cngx-step-distance, 0) * var(--cngx-step-shrink-weight, 20));
+  }
+
+  /* The active step shrinks at a far lower priority than its neighbours
+     (0.25, vs neighbours' 1 + distance * weight), so while any neighbour
+     still has label to give the active keeps its full label; it only
+     yields once every neighbour has collapsed to number-only. Floored for
+     readability, capped (max-width, cqi) so a very long active label
+     cannot squeeze the sequence out. */
+  cngx-stepper[data-density-auto] .cngx-stepper__step[aria-current='step'] {
+    flex-shrink: 0.25;
+  }
+
+  cngx-stepper[data-density-auto] .cngx-stepper__step[aria-current='step'] .cngx-stepper__label {
+    min-width: var(--cngx-step-active-label-min, 4rem);
+    max-width: var(--cngx-step-active-label-max, 60cqi);
+  }
+
+  /* Label clips + ellipsis in flow and never exceeds its (shrinking) step
+     box (max-width:100%). It stays rendered (never display:none) so the
+     step button keeps its accessible name even when truncated to nothing. */
+  cngx-stepper[data-density-auto] .cngx-stepper__label {
+    max-width: 100%;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* The relayout animation on active-step change lives in the thematic
+     stylesheet (unlayered), so it can win over the per-skin step
+     `transition` declarations and fold their colour fades into one
+     combined transition - see stepper.component.css. */
+
   .cngx-stepper__panels {
     display: block;
   }
@@ -393,11 +570,61 @@
     display: none;
   }
 
+  /* The group header is a chip, not floating bold text - it gives a branch
+     a section identity distinct from the numbered step labels beside it,
+     and it wraps the label together with the collapsed-group summary badge
+     (0/2) so progress reads as part of the same pill. Shape + resting tone
+     live here (structural); the active-branch accent is thematic and lives
+     in stepper.component.css. Tokens fall back to currentColor mixes so the
+     chip themes with the strip; the smaller font-size reads it as a tag
+     rather than a peer of the step labels. */
   .cngx-stepper__group-header {
     display: inline-flex;
     align-items: center;
-    padding: var(--cngx-step-padding, 0.5rem 0.75rem);
+    /* The strip is `align-items: stretch`, which would pull this chip up
+       to the full step-button height (a tall lozenge). Centre it on its
+       own content instead so the chip stays a slim tag in the row. */
+    align-self: center;
+    padding: var(--cngx-stepper-group-chip-padding, 0.125rem 0.5rem);
+    border: var(--cngx-stepper-group-chip-border-width, 1px) solid
+      var(--cngx-stepper-group-chip-border, color-mix(in srgb, currentColor 22%, transparent));
+    border-radius: var(--cngx-stepper-group-chip-radius, 999px);
+    background: var(--cngx-stepper-group-chip-bg, color-mix(in srgb, currentColor 6%, transparent));
+    color: var(--cngx-stepper-group-chip-color, inherit);
     font-weight: var(--cngx-step-group-font-weight, 600);
+    font-size: var(--cngx-stepper-group-chip-font-size, 0.8125em);
+    line-height: var(--cngx-stepper-group-chip-line-height, 1.25);
+  }
+
+  /* Collapsed-group summary badge (groupCollapseSummary). 'progress' /
+     'count' render a text pill; '--status' renders a state-coloured dot
+     (colours live in the thematic stepper.component.css). */
+  .cngx-stepper__group-summary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    margin-inline-start: var(--cngx-step-gap, 0.5rem);
+    padding: var(--cngx-stepper-group-summary-padding, 0 0.4em);
+    min-width: var(--cngx-stepper-group-summary-size, 1.3em);
+    height: var(--cngx-stepper-group-summary-size, 1.3em);
+    border-radius: var(--cngx-stepper-group-summary-radius, 999px);
+    font-size: var(--cngx-stepper-group-summary-font-size, 0.75em);
+    font-weight: var(--cngx-stepper-group-summary-font-weight, 600);
+    line-height: 1;
+    background: var(
+      --cngx-stepper-group-summary-bg,
+      color-mix(in srgb, currentColor 12%, transparent)
+    );
+    color: var(--cngx-stepper-group-summary-color, inherit);
+  }
+
+  .cngx-stepper__group-summary--status {
+    min-width: 0;
+    width: var(--cngx-stepper-group-summary-dot-size, 0.6em);
+    height: var(--cngx-stepper-group-summary-dot-size, 0.6em);
+    padding: 0;
+    background: var(--cngx-stepper-group-summary-dot-color, currentColor);
   }
 
   .cngx-stepper__badge {

@@ -39,7 +39,7 @@ export { appConfig } from './app.config';
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   imports: [MatTabsModule, CngxMatTabs, CngxTabsRouteSync, RouterOutlet],
-  styleUrls: ['./routed-outlet.component.css'],
+  styleUrl: './routed-outlet.component.scss',
   template: `
     <p style="opacity: 0.8; font-size: 0.875rem">
       A <code>&lt;mat-tab-group cngxMatTabs cngxTabsRouteSync&gt;</code> over a

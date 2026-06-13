@@ -15,7 +15,10 @@
 @mixin color($theme) {
   @if mat.get-theme-version($theme) == 1 {
     --cngx-step-active-color: var(--mat-sys-primary);
-    --cngx-step-completed-color: var(--mat-sys-primary);
+    // "Done" stays a semantic success green, not the primary hue - Material
+    // M3 has no success role, so chain through the cngx success token (which
+    // system-bridge deliberately leaves green) with a green fallback.
+    --cngx-step-completed-color: var(--cngx-color-success, oklch(0.6 0.15 145));
     --cngx-step-errored-color: var(--mat-sys-error);
     --cngx-step-pending-color: var(--mat-sys-primary);
 
@@ -31,6 +34,16 @@
     );
 
     --cngx-step-busy-spinner-color: var(--mat-sys-primary);
+
+    // Group-header chip. Resting groups read as quiet outline tags
+    // (outline-variant border, faint surface tint, muted label); the
+    // group owning the active step lifts to a primary-tinted chip.
+    --cngx-stepper-group-chip-border: var(--mat-sys-outline-variant);
+    --cngx-stepper-group-chip-bg: color-mix(in srgb, var(--mat-sys-on-surface) 6%, transparent);
+    --cngx-stepper-group-chip-color: var(--mat-sys-on-surface-variant);
+    --cngx-stepper-group-chip-active-border: var(--mat-sys-primary);
+    --cngx-stepper-group-chip-active-bg: color-mix(in srgb, var(--mat-sys-primary) 14%, transparent);
+    --cngx-stepper-group-chip-active-color: var(--mat-sys-primary);
 
     --cngx-step-error-badge-color: var(--mat-sys-error);
     --cngx-step-error-badge-text-color: var(--mat-sys-on-error);
@@ -49,17 +62,13 @@
       transparent
     );
     --cngx-step-status-pill-bg-in-progress: var(--mat-sys-primary);
-    --cngx-step-status-pill-bg-done: var(--mat-sys-tertiary);
+    --cngx-step-status-pill-bg-done: var(--cngx-color-success, oklch(0.6 0.15 145));
     --cngx-step-status-pill-bg-errored: var(--mat-sys-error);
     --cngx-step-status-pill-color: var(--mat-sys-on-primary);
 
     // Skin: path-chevron
     --cngx-step-chevron-tile-active: var(--mat-sys-primary);
-    --cngx-step-chevron-tile-completed: color-mix(
-      in srgb,
-      var(--mat-sys-tertiary) 80%,
-      transparent
-    );
+    --cngx-step-chevron-tile-completed: var(--cngx-color-success, oklch(0.6 0.15 145));
     --cngx-step-chevron-tile-errored: var(--mat-sys-error);
     --cngx-step-chevron-tile-upcoming-bg: color-mix(
       in srgb,
@@ -68,38 +77,46 @@
     );
     --cngx-step-chevron-tile-color: var(--mat-sys-on-primary);
 
-    // Skin: pill-segment
+    // Skin: pill-segment. Active card fills primary; the completed segment
+    // keeps NO fill (flat) - its green check disc carries "done", so the
+    // bridge leaves --cngx-step-pill-segment-fill-completed unset. On the
+    // filled card the label flips to on-primary and the indicator disc
+    // becomes an on-primary surface with the primary glyph so the circle
+    // stays visible against the fill.
     --cngx-step-pill-segment-fill-active: var(--mat-sys-primary);
-    --cngx-step-pill-segment-fill-completed: color-mix(
-      in srgb,
-      var(--mat-sys-primary) 60%,
-      transparent
-    );
+    --cngx-step-pill-segment-color-active: var(--mat-sys-on-primary);
+    --cngx-step-pill-segment-indicator-active-bg: var(--mat-sys-on-primary);
+    --cngx-step-pill-segment-indicator-active-color: var(--mat-sys-primary);
 
     // Skin: chips
     --cngx-step-chips-fill-active: var(--mat-sys-primary);
     --cngx-step-chips-color-active: var(--mat-sys-on-primary);
-    --cngx-step-chips-bg-completed: color-mix(in srgb, var(--mat-sys-tertiary) 12%, transparent);
-    --cngx-step-chips-color-completed: var(--mat-sys-tertiary);
-
-    // Skin: breadcrumb
-    --cngx-step-breadcrumb-check-color: var(--mat-sys-tertiary);
-
-    // Variant: CngxDotStepper
-    --cngx-dot-step-active-fill: var(--mat-sys-primary);
-    --cngx-dot-step-completed-fill: color-mix(
+    --cngx-step-chips-bg-completed: color-mix(
       in srgb,
-      var(--mat-sys-primary) 60%,
+      var(--cngx-color-success, oklch(0.6 0.15 145)) 14%,
       transparent
     );
-    --cngx-dot-step-upcoming-bg: var(--mat-sys-surface-variant);
+    --cngx-step-chips-color-completed: var(--cngx-color-success, oklch(0.6 0.15 145));
+
+    // Skin: breadcrumb
+    --cngx-step-breadcrumb-check-color: var(--cngx-color-success, oklch(0.6 0.15 145));
   } @else {
     --cngx-step-active-color: #{mat.get-theme-color($theme, primary)};
-    --cngx-step-completed-color: #{mat.get-theme-color($theme, primary)};
+    --cngx-step-completed-color: var(--cngx-color-success, oklch(0.6 0.15 145));
     --cngx-step-errored-color: #{mat.get-theme-color($theme, warn)};
     --cngx-step-pending-color: #{mat.get-theme-color($theme, primary)};
     --cngx-step-indicator-active-color: oklch(1 0 0);
     --cngx-step-busy-spinner-color: #{mat.get-theme-color($theme, primary)};
+
+    // Group-header chip (resting tones keep their currentColor mixes).
+    --cngx-stepper-group-chip-active-border: #{mat.get-theme-color($theme, primary)};
+    --cngx-stepper-group-chip-active-bg: color-mix(
+      in srgb,
+      #{mat.get-theme-color($theme, primary)} 14%,
+      transparent
+    );
+    --cngx-stepper-group-chip-active-color: #{mat.get-theme-color($theme, primary)};
+
     --cngx-step-error-badge-color: #{mat.get-theme-color($theme, warn)};
     --cngx-step-rejection-outline-color: #{mat.get-theme-color($theme, accent)};
     --cngx-step-rejection-icon-bg: #{mat.get-theme-color($theme, accent)};
@@ -110,50 +127,64 @@
     // Skin: stripe-status-rich
     --cngx-step-status-pill-bg-upcoming: color-mix(in srgb, currentColor 8%, transparent);
     --cngx-step-status-pill-bg-in-progress: #{mat.get-theme-color($theme, primary)};
-    --cngx-step-status-pill-bg-done: #{mat.get-theme-color($theme, accent)};
+    --cngx-step-status-pill-bg-done: var(--cngx-color-success, oklch(0.6 0.15 145));
     --cngx-step-status-pill-bg-errored: #{mat.get-theme-color($theme, warn)};
     --cngx-step-status-pill-color: oklch(1 0 0);
 
     // Skin: path-chevron
     --cngx-step-chevron-tile-active: #{mat.get-theme-color($theme, primary)};
-    --cngx-step-chevron-tile-completed: color-mix(
-      in srgb,
-      #{mat.get-theme-color($theme, accent)} 80%,
-      transparent
-    );
+    --cngx-step-chevron-tile-completed: var(--cngx-color-success, oklch(0.6 0.15 145));
     --cngx-step-chevron-tile-errored: #{mat.get-theme-color($theme, warn)};
     --cngx-step-chevron-tile-upcoming-bg: color-mix(in srgb, currentColor 25%, transparent);
     --cngx-step-chevron-tile-color: oklch(1 0 0);
 
-    // Skin: pill-segment
+    // Skin: pill-segment (active filled; completed stays flat, green disc only)
     --cngx-step-pill-segment-fill-active: #{mat.get-theme-color($theme, primary)};
-    --cngx-step-pill-segment-fill-completed: color-mix(
-      in srgb,
-      #{mat.get-theme-color($theme, primary)} 60%,
-      transparent
-    );
+    --cngx-step-pill-segment-color-active: oklch(1 0 0);
+    --cngx-step-pill-segment-indicator-active-bg: oklch(1 0 0);
+    --cngx-step-pill-segment-indicator-active-color: #{mat.get-theme-color($theme, primary)};
 
     // Skin: chips
     --cngx-step-chips-fill-active: #{mat.get-theme-color($theme, primary)};
     --cngx-step-chips-color-active: oklch(1 0 0);
     --cngx-step-chips-bg-completed: color-mix(
       in srgb,
-      #{mat.get-theme-color($theme, accent)} 12%,
+      var(--cngx-color-success, oklch(0.6 0.15 145)) 14%,
       transparent
     );
-    --cngx-step-chips-color-completed: #{mat.get-theme-color($theme, accent)};
+    --cngx-step-chips-color-completed: var(--cngx-color-success, oklch(0.6 0.15 145));
 
     // Skin: breadcrumb
-    --cngx-step-breadcrumb-check-color: #{mat.get-theme-color($theme, accent)};
+    --cngx-step-breadcrumb-check-color: var(--cngx-color-success, oklch(0.6 0.15 145));
+  }
+}
 
-    // Variant: CngxDotStepper
+// Variant bridge for CngxDotStepper. The dot stepper is its own host
+// element (`<cngx-dot-stepper>`), not a skin of `<cngx-stepper>`, so its
+// `--cngx-dot-step-*` tokens must be set on that element - emitting them
+// under `:where(cngx-stepper)` would never reach the dots.
+@mixin dot-color($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-dot-step-active-fill: var(--mat-sys-primary);
+    --cngx-dot-step-completed-fill: var(--cngx-color-success, oklch(0.6 0.15 145));
+    --cngx-dot-step-upcoming-bg: var(--mat-sys-surface-variant);
+  } @else {
     --cngx-dot-step-active-fill: #{mat.get-theme-color($theme, primary)};
-    --cngx-dot-step-completed-fill: color-mix(
-      in srgb,
-      #{mat.get-theme-color($theme, primary)} 60%,
-      transparent
-    );
+    --cngx-dot-step-completed-fill: var(--cngx-color-success, oklch(0.6 0.15 145));
     --cngx-dot-step-upcoming-bg: color-mix(in srgb, currentColor 25%, transparent);
+  }
+}
+
+// Variant bridge for CngxProgressBarStepper. Like the dot stepper it is its
+// own host element (`<cngx-progress-bar-stepper>`). The variant re-aims its
+// embedded `<cngx-progress>` fill onto `--cngx-color-primary` (see
+// progress-bar-stepper.component.css), so routing the Material primary
+// through that knob colours the bar without touching the primitive.
+@mixin progress-color($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-color-primary: var(--mat-sys-primary);
+  } @else {
+    --cngx-color-primary: #{mat.get-theme-color($theme, primary)};
   }
 }
 
@@ -220,6 +251,12 @@
       @include color($theme);
       @include typography($theme);
       @include density($theme);
+    }
+    :where(cngx-dot-stepper) {
+      @include dot-color($theme);
+    }
+    :where(cngx-progress-bar-stepper) {
+      @include progress-color($theme);
     }
     :where(cngx-stepper-footer) {
       @include footer-color($theme);

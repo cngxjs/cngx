@@ -55,6 +55,7 @@ $theme: mat.define-theme((
 
 .cngx-stepper-test {
   @include stepper.color($theme);
+  @include stepper.dot-color($theme);
 }
 `;
   }
@@ -76,6 +77,7 @@ $theme: mat.m2-define-light-theme((
 
 .cngx-stepper-test {
   @include stepper.color($theme);
+  @include stepper.dot-color($theme);
 }
 `;
 }

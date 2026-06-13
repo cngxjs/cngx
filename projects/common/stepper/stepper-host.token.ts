@@ -90,8 +90,34 @@ export interface CngxStepperHost {
    * @category common/stepper
    */
   readonly stepsOnly: Signal<readonly CngxStepNode[]>;
+
+  /**
+   * Flat strip projection under the focus-driven group-collapse policy:
+   * identical to {@link flatSteps} when `groupCollapse` is `'off'`, and
+   * with every non-active root-level group's children dropped (header
+   * node alone) under `'expand-active'`. The strip `@for` reads this;
+   * `stepsOnly` stays the single counting / announcement source.
+   *
+   * **Contract:** variant and skin organisms drive the strip off this
+   * projection, never re-derive it. Structural-equal via `flatStepsEqual`
+   * (each retained node keeps its `flatSteps` `flatIndex`), so a
+   * shape-stable re-emit short-circuits the strip render.
+   *
+   * @category common/stepper
+   */
+  readonly visibleStripNodes: Signal<readonly CngxStepNode[]>;
   readonly activeStepIndex: Signal<number>;
   readonly activeStepId: Signal<string | null>;
+
+  /**
+   * Root-level group whose subtree contains the active step, or `null`
+   * when the active step is a root-level step (e.g. a trailing
+   * `Finish`). The single focus-driven-collapse source: atoms read it
+   * via this contract, never the concrete presenter. Drives
+   * `CngxStepGroup.isCollapsed`, the strip `aria-expanded` binding, and
+   * {@link visibleStripNodes}.
+   */
+  readonly activeGroupId: Signal<string | null>;
 
   /** Step-only count - the length of {@link stepsOnly}. */
   readonly stepCount: Signal<number>;

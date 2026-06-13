@@ -10,6 +10,9 @@ export const STORY: DemoSpec = {
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
   focus: ['visual-variants', 'a11y-pattern', 'composition'],
+  references: [
+    { label: 'WAI-ARIA 1.2 - aria-current', href: 'https://www.w3.org/TR/wai-aria-1.2/#aria-current' },
+  ],
   apiComponents: ['CngxStepper', 'CngxStep', 'CngxStepContent'],
   moduleImports: [
     "import { CngxStep, CngxStepContent, provideStepperI18n, withStepperI18nLabels } from '@cngx/common/stepper';",

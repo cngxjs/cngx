@@ -29,7 +29,6 @@ import {
   type CngxStepperHost,
   type CngxStepNode,
   type CngxStepRegistration,
-  type CngxStepStatus,
 } from './stepper-host.token';
 import { flatStepsEqual, flattenStepTree, stepTreeEqual } from './step-tree.util';
 
@@ -176,6 +175,77 @@ export class CngxStepperPresenter implements CngxStepperHost {
     const idx = this.clampedIndex();
     return this.stepsOnly()[idx]?.id ?? null;
   });
+
+  /**
+   * {@inheritDoc CngxStepperHost.activeGroupId}
+   *
+   * Single derivation over `activeStepId` and `stepTree` - the root-level
+   * group whose subtree holds the active step, or `null` for a
+   * root-level active step (e.g. a trailing `Finish`). Walked once here;
+   * `CngxStepGroup.isCollapsed`, the strip `aria-expanded` binding, and
+   * `visibleStripNodes` read this rather than re-walking the tree.
+   */
+  readonly activeGroupId: Signal<string | null> = computed(() => {
+    const activeId = this.activeStepId();
+    if (activeId === null) {
+      return null;
+    }
+    const subtreeHasActive = (node: CngxStepNode): boolean =>
+      node.id === activeId || node.children.some(subtreeHasActive);
+    for (const root of this.stepTree()) {
+      if (root.kind === 'group' && subtreeHasActive(root)) {
+        return root.id;
+      }
+    }
+    return null;
+  });
+
+  /**
+   * {@inheritDoc CngxStepperHost.visibleStripNodes}
+   *
+   * Flat strip projection honouring the focus-driven group-collapse
+   * policy. Under `'off'` it returns `flatSteps()` verbatim (same
+   * reference, so the `equal` short-circuits). Under `'expand-active'`
+   * every non-active root-level group's subtree is dropped, leaving the
+   * group header node alone - the active group and all root-level steps
+   * stay. Each retained node keeps its canonical `flatIndex` from
+   * `flatSteps`, so per-step state/announcement lookups are unaffected.
+   * Returns a fresh array, so it MUST carry `{ equal: flatStepsEqual }`
+   * or every re-emit cascades the strip `@for`.
+   */
+  readonly visibleStripNodes: Signal<readonly CngxStepNode[]> = computed(
+    () => {
+      const flat = this.flatSteps();
+      if (this.config.groupCollapse !== 'expand-active') {
+        return flat;
+      }
+      const activeGroup = this.activeGroupId();
+      const collapsedRootIds = new Set(
+        this.stepTree()
+          .filter((n) => n.kind === 'group' && n.children.length > 0 && n.id !== activeGroup)
+          .map((n) => n.id),
+      );
+      if (collapsedRootIds.size === 0) {
+        return flat;
+      }
+      const byId = new Map(flat.map((n) => [n.id, n] as const));
+      const rootAncestorId = (node: CngxStepNode): string => {
+        let cur = node;
+        while (cur.parentId !== null) {
+          const parent = byId.get(cur.parentId);
+          if (!parent) {
+            break;
+          }
+          cur = parent;
+        }
+        return cur.id;
+      };
+      return flat.filter(
+        (node) => collapsedRootIds.has(node.id) || !collapsedRootIds.has(rootAncestorId(node)),
+      );
+    },
+    { equal: flatStepsEqual },
+  );
 
   readonly commitState = this.commitController.state;
 
@@ -463,4 +533,4 @@ export class CngxStepperPresenter implements CngxStepperHost {
   }
 }
 
-export type { CngxStepStatus };
+export { type CngxStepStatus } from './stepper-host.token';

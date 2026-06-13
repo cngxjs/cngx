@@ -1,7 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
   CngxStep,
@@ -13,6 +13,9 @@ import {
   withStepperAriaLabels,
   withStepperFallbackLabels,
   CngxStepError,
+  withStepperDensity,
+  withStepperGroupCollapse,
+  withStepperGroupCollapseSummary,
   withStepperHeaderNavigation,
   withStepperI18nLabels,
   withStepperMobileSwipe,
@@ -48,6 +51,25 @@ class HostCmp {}
   `,
 })
 class HierarchicalHost {}
+
+@Component({
+  standalone: true,
+  imports: [CngxStepper, CngxStep, CngxStepGroup],
+  template: `
+    <cngx-stepper aria-label="Collapse">
+      <div cngxStepGroup label="Account">
+        <div cngxStep label="A"></div>
+        <div cngxStep label="B"></div>
+      </div>
+      <div cngxStepGroup label="Project">
+        <div cngxStep label="C"></div>
+        <div cngxStep label="D"></div>
+      </div>
+      <div cngxStep label="Finish"></div>
+    </cngx-stepper>
+  `,
+})
+class CollapseHost {}
 
 describe('CngxStepper organism', () => {
   it('host carries role="group" + aria-roledescription="stepper" + data-orientation', () => {
@@ -231,6 +253,320 @@ describe('CngxStepper organism', () => {
       'button.cngx-stepper__step',
     ) as NodeListOf<HTMLButtonElement>;
     expect(buttons.length).toBe(3);
+  });
+
+  describe('focus-driven group collapse', () => {
+    function collapseFixture() {
+      TestBed.configureTestingModule({
+        providers: [
+          provideZonelessChangeDetection(),
+          provideStepperConfig(withStepperGroupCollapse('expand-active')),
+        ],
+      });
+      const fixture = TestBed.createComponent(CollapseHost);
+      fixture.detectChanges();
+      return fixture;
+    }
+
+    it('folds the non-active group header visually without an aria-expanded disclosure', () => {
+      const fixture = collapseFixture();
+      const headers = Array.from(
+        fixture.nativeElement.querySelectorAll('.cngx-stepper__group-header'),
+      ) as HTMLElement[];
+      expect(headers.length).toBe(2);
+      const [account, project] = headers;
+      // Active step index 0 = 'A' under 'Account' -> Account expanded.
+      expect(account.classList.contains('cngx-stepper__group-header--collapsed')).toBe(false);
+      expect(project.classList.contains('cngx-stepper__group-header--collapsed')).toBe(true);
+      // aria-expanded is unsupported on role="group" and the fold is not a
+      // user-operable disclosure - no aria-expanded on either header.
+      expect(account.getAttribute('aria-expanded')).toBeNull();
+      expect(project.getAttribute('aria-expanded')).toBeNull();
+    });
+
+    it('drops collapsed child step buttons from the strip but keeps every panel in the DOM', () => {
+      const fixture = collapseFixture();
+      const labels = (
+        Array.from(fixture.nativeElement.querySelectorAll('button.cngx-stepper__step')) as HTMLElement[]
+      ).map((b) => b.querySelector('.cngx-stepper__label')?.textContent?.trim());
+      // Account (active) keeps A, B; Project (collapsed) drops C, D; Finish kept.
+      expect(labels).toEqual(['A', 'B', 'Finish']);
+      // All 5 step panels stay rendered (ids preserved); 4 hidden, active visible.
+      const panels = Array.from(
+        fixture.nativeElement.querySelectorAll('.cngx-stepper__panel'),
+      ) as HTMLElement[];
+      expect(panels.length).toBe(5);
+      expect(panels.filter((p) => p.hidden).length).toBe(4);
+    });
+
+    it('off baseline renders the full strip with no group header folded', () => {
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      const fixture = TestBed.createComponent(CollapseHost);
+      fixture.detectChanges();
+      const buttons = fixture.nativeElement.querySelectorAll('button.cngx-stepper__step');
+      expect(buttons.length).toBe(5);
+      const headers = Array.from(
+        fixture.nativeElement.querySelectorAll('.cngx-stepper__group-header'),
+      ) as HTMLElement[];
+      headers.forEach((h) => {
+        expect(h.classList.contains('cngx-stepper__group-header--collapsed')).toBe(false);
+        expect(h.getAttribute('aria-expanded')).toBeNull();
+      });
+    });
+
+    function summaryFixture(...features: ReturnType<typeof withStepperGroupCollapse>[]) {
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection(), provideStepperConfig(...features)],
+      });
+      const fixture = TestBed.createComponent(CollapseHost);
+      fixture.detectChanges();
+      return fixture;
+    }
+
+    it("default 'progress' summary shows completed/total on the collapsed group only", () => {
+      // Account active+expanded, Project collapsed (2 steps, 0 done).
+      const fixture = summaryFixture(withStepperGroupCollapse('expand-active'));
+      const summaries = fixture.nativeElement.querySelectorAll('.cngx-stepper__group-summary');
+      expect(summaries.length).toBe(1);
+      expect((summaries[0] as HTMLElement).textContent?.trim()).toBe('0/2');
+    });
+
+    it("'count' summary shows the step count", () => {
+      const fixture = summaryFixture(
+        withStepperGroupCollapse('expand-active'),
+        withStepperGroupCollapseSummary('count'),
+      );
+      const summary = fixture.nativeElement.querySelector(
+        '.cngx-stepper__group-summary',
+      ) as HTMLElement;
+      expect(summary.textContent?.trim()).toBe('2');
+    });
+
+    it("'status' summary renders a state-coloured dot", () => {
+      const fixture = summaryFixture(
+        withStepperGroupCollapse('expand-active'),
+        withStepperGroupCollapseSummary('status'),
+      );
+      const dot = fixture.nativeElement.querySelector(
+        '.cngx-stepper__group-summary--status',
+      ) as HTMLElement;
+      expect(dot).not.toBeNull();
+      expect(dot.getAttribute('data-state')).toBeTruthy();
+      expect(dot.textContent?.trim()).toBe('');
+    });
+
+    it("'off' summary renders nothing on the collapsed group", () => {
+      const fixture = summaryFixture(
+        withStepperGroupCollapse('expand-active'),
+        withStepperGroupCollapseSummary('off'),
+      );
+      expect(fixture.nativeElement.querySelector('.cngx-stepper__group-summary')).toBeNull();
+    });
+
+    it('marks only the collapsed group header navigable, never the expanded one', () => {
+      const fixture = collapseFixture();
+      const [account, project] = Array.from(
+        fixture.nativeElement.querySelectorAll('.cngx-stepper__group-header'),
+      ) as HTMLElement[];
+      // Account is the active (expanded) group; Project is folded.
+      expect(account.classList.contains('cngx-stepper__group-header--navigable')).toBe(false);
+      expect(project.classList.contains('cngx-stepper__group-header--navigable')).toBe(true);
+    });
+
+    it("clicking a collapsed group header enters the group at its first step, not the trailing root step", () => {
+      const fixture = collapseFixture();
+      const project = Array.from(
+        fixture.nativeElement.querySelectorAll('.cngx-stepper__group-header'),
+      )[1] as HTMLElement;
+      project.click();
+      fixture.detectChanges();
+      // First step of Project is 'C' (flat index 2), not Finish (index 4).
+      const labels = (
+        Array.from(fixture.nativeElement.querySelectorAll('button.cngx-stepper__step')) as HTMLElement[]
+      ).map((b) => b.querySelector('.cngx-stepper__label')?.textContent?.trim());
+      // Project now active+expanded (C active, D shown); Account folds.
+      expect(labels).toEqual(['C', 'D', 'Finish']);
+      const active = fixture.nativeElement.querySelector('[aria-current="step"]') as HTMLElement;
+      expect(active.querySelector('.cngx-stepper__label')?.textContent?.trim()).toBe('C');
+    });
+
+    it('clicking the expanded (active) group header is a no-op', () => {
+      const fixture = collapseFixture();
+      const account = fixture.nativeElement.querySelector(
+        '.cngx-stepper__group-header',
+      ) as HTMLElement;
+      account.click();
+      fixture.detectChanges();
+      const active = fixture.nativeElement.querySelector('[aria-current="step"]') as HTMLElement;
+      expect(active.querySelector('.cngx-stepper__label')?.textContent?.trim()).toBe('A');
+    });
+  });
+
+  describe('space-driven density (density: auto)', () => {
+    let lastResizeCb: ResizeObserverCallback | null = null;
+    class TestResizeObserver {
+      constructor(cb: ResizeObserverCallback) {
+        lastResizeCb = cb;
+      }
+      observe(): void {}
+      unobserve(): void {}
+      disconnect(): void {}
+    }
+    function emitWidth(width: number): void {
+      lastResizeCb?.([{ contentRect: { width } } as ResizeObserverEntry], {} as ResizeObserver);
+    }
+
+    beforeEach(() => {
+      lastResizeCb = null;
+      vi.stubGlobal('ResizeObserver', TestResizeObserver);
+    });
+
+    afterEach(() => {
+      vi.unstubAllGlobals();
+    });
+
+    function autoFixture() {
+      TestBed.configureTestingModule({
+        providers: [
+          provideZonelessChangeDetection(),
+          provideStepperConfig(withStepperDensity('auto')),
+        ],
+      });
+      const fixture = TestBed.createComponent(HostCmp); // 3 flat steps A/B/C
+      fixture.detectChanges();
+      return fixture;
+    }
+
+    it('degrades [data-density] full -> compact -> minimal on container width', () => {
+      const fixture = autoFixture();
+      const host = fixture.nativeElement.querySelector('cngx-stepper') as HTMLElement;
+      expect(host.getAttribute('data-density')).toBe('full'); // width 0 before first measure
+      emitWidth(3 * 130); // 130 px/step -> full
+      fixture.detectChanges();
+      expect(host.getAttribute('data-density')).toBe('full');
+      emitWidth(3 * 100); // 100 px/step -> compact
+      fixture.detectChanges();
+      expect(host.getAttribute('data-density')).toBe('compact');
+      emitWidth(3 * 40); // 40 px/step -> minimal
+      fixture.detectChanges();
+      expect(host.getAttribute('data-density')).toBe('minimal');
+    });
+
+    it('keeps the configured horizontal orientation at the minimal rung (no auto-vertical flip)', () => {
+      const fixture = autoFixture();
+      const host = fixture.nativeElement.querySelector('cngx-stepper') as HTMLElement;
+      emitWidth(3 * 40);
+      fixture.detectChanges();
+      expect(host.getAttribute('data-density')).toBe('minimal');
+      // A horizontal stepper stays horizontal - minimal degrades to an
+      // indicators-only row, it does not stack vertically.
+      expect(host.getAttribute('aria-orientation')).toBe('horizontal');
+      expect(host.getAttribute('data-orientation')).toBe('horizontal');
+    });
+
+    it('arrow-key axis stays horizontal at minimal (presenter spy)', () => {
+      const fixture = autoFixture();
+      const stepper = fixture.debugElement.children[0].componentInstance as CngxStepper;
+      const selectNext = vi.spyOn(stepper.presenter, 'selectNext');
+      const selectPrevious = vi.spyOn(stepper.presenter, 'selectPrevious');
+      emitWidth(3 * 40);
+      fixture.detectChanges();
+      const button = fixture.nativeElement.querySelector('button.cngx-stepper__step') as HTMLElement;
+      button.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+      expect(selectNext).toHaveBeenCalledTimes(1);
+      button.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));
+      expect(selectPrevious).toHaveBeenCalledTimes(1);
+      // Vertical keys are inert on a horizontal strip, at every rung.
+      button.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+      button.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true }));
+      expect(selectNext).toHaveBeenCalledTimes(1);
+      expect(selectPrevious).toHaveBeenCalledTimes(1);
+    });
+
+    it('never emits the --collapsed label modifier under continuous density (any width)', () => {
+      const fixture = autoFixture();
+      // The continuous cqi budget owns label width now - the discrete
+      // --collapsed modifier is gone. Labels stay rendered (in the a11y
+      // tree, clipped by max-width), never display:none, at every width.
+      for (const w of [3 * 130, 3 * 100, 3 * 40]) {
+        emitWidth(w);
+        fixture.detectChanges();
+      }
+      const labels = Array.from(
+        fixture.nativeElement.querySelectorAll('button.cngx-stepper__step .cngx-stepper__label'),
+      ) as HTMLElement[];
+      expect(labels.length).toBe(3);
+      expect(labels.every((l) => !l.classList.contains('cngx-stepper__label--collapsed'))).toBe(
+        true,
+      );
+      // Each label keeps its text (accessible name retained on the button).
+      expect(labels.every((l) => (l.textContent ?? '').trim().length > 0)).toBe(true);
+    });
+
+    it("'comfortable' (default) keeps data-density full at any width and sets no [data-density-auto]", () => {
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      const fixture = TestBed.createComponent(HostCmp);
+      fixture.detectChanges();
+      const host = fixture.nativeElement.querySelector('cngx-stepper') as HTMLElement;
+      emitWidth(3 * 10);
+      fixture.detectChanges();
+      expect(host.getAttribute('data-density')).toBe('full');
+      expect(host.getAttribute('aria-orientation')).toBe('horizontal');
+      // No-scrollbar shrink CSS is scoped to [data-density-auto]; off here.
+      expect(host.hasAttribute('data-density-auto')).toBe(false);
+    });
+
+    it("marks the host [data-density-auto] under density: 'auto'", () => {
+      const fixture = autoFixture();
+      const host = fixture.nativeElement.querySelector('cngx-stepper') as HTMLElement;
+      expect(host.hasAttribute('data-density-auto')).toBe(true);
+    });
+
+    it("publishes per-step --cngx-step-distance = abs(index - active) under 'auto'", () => {
+      const fixture = autoFixture(); // active defaults to step 0
+      const steps = Array.from(
+        fixture.nativeElement.querySelectorAll('button.cngx-stepper__step'),
+      ) as HTMLElement[];
+      expect(steps.map((s) => s.style.getPropertyValue('--cngx-step-distance'))).toEqual([
+        '0',
+        '1',
+        '2',
+      ]);
+    });
+
+    it('re-centres --cngx-step-distance after navigation', () => {
+      @Component({
+        standalone: true,
+        imports: [CngxStepper, CngxStep],
+        template: `
+          <cngx-stepper [(activeStepIndex)]="active" aria-label="Nav">
+            <div cngxStep label="A"></div>
+            <div cngxStep label="B"></div>
+            <div cngxStep label="C"></div>
+          </cngx-stepper>
+        `,
+      })
+      class NavHost {
+        readonly active = signal(0);
+      }
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection(), provideStepperConfig(withStepperDensity('auto'))],
+      });
+      const fixture = TestBed.createComponent(NavHost);
+      fixture.detectChanges();
+      const distances = (): string[] =>
+        (Array.from(
+          fixture.nativeElement.querySelectorAll('button.cngx-stepper__step'),
+        ) as HTMLElement[]).map((s) => s.style.getPropertyValue('--cngx-step-distance'));
+      expect(distances()).toEqual(['0', '1', '2']);
+      fixture.componentInstance.active.set(1);
+      fixture.detectChanges();
+      expect(distances()).toEqual(['1', '0', '1']);
+    });
   });
 
   it('non-active panels are hidden via [hidden]', () => {

@@ -3,13 +3,16 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxStepper: stripe-status-rich skin',
   subtitle:
-    'Numbered disc + status pill under each step. Pill text flows from <code>CngxStepperI18n.statusLabels</code>; this demo overrides the four pill labels to German via <code>provideStepperI18nAt(withStepperI18nLabels(...))</code> in <code>viewProviders</code>.',
+    'Numbered disc + status pill under each step. Pill text flows from <code>CngxStepperI18n.statusLabels</code>; this demo overrides the four pill labels to German via <code>provideStepperI18n(withStepperI18nLabels(...))</code> in <code>viewProviders</code>.',
   description:
     'The stripe-status-rich skin paints each step with its label, the classic numbered indicator, and a decorative status pill keyed to the step state (upcoming / in progress / done / errored). The pill text is purely decorative - the actual status surfaces to assistive tech through <code>aria-current="step"</code> and <code>data-state</code> on the indicator, both unchanged from the classic skin. Consumers override pill labels per locale via <code>withStepperI18nLabels({ statusLabels: { done: "Erledigt", ... } })</code>; partial overrides keep un-overridden labels in English.',
   level: 'organism',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
   focus: ['visual-variants', 'a11y-pattern', 'composition'],
+  references: [
+    { label: 'WAI-ARIA 1.2 - aria-current', href: 'https://www.w3.org/TR/wai-aria-1.2/#aria-current' },
+  ],
   apiComponents: ['CngxStepper', 'CngxStep', 'CngxStepContent'],
   moduleImports: [
     "import { CngxStep, CngxStepContent, provideStepperI18n, withStepperI18nLabels } from '@cngx/common/stepper';",

@@ -56,7 +56,6 @@ import { CngxSwipe } from '@cngx/common/interactive';
  * @since 0.1.0
  * @relatedTo CngxStepperPresenter, CngxProgressBarStepper, CngxTextStepper
  * <example-url>http://localhost:4200/#/ui/stepper/dot-stepper/mobile-carousel</example-url>
- * <example-url>http://localhost:4200/#/ui/stepper/dot-stepper/icon-dots-via-code-cngxdotstepperdot-code</example-url>
  */
 @Component({
   selector: 'cngx-dot-stepper',

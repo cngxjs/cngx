@@ -59,7 +59,7 @@ export { appConfig } from './app.config';
     CngxMatTabLink,
     CngxTabsRouteSync,
   ],
-  styleUrls: ['./router-nav.component.css'],
+  styleUrl: './router-nav.component.scss',
   template: `
     <p style="opacity: 0.8; font-size: 0.875rem">
       A <code>&lt;nav mat-tab-nav-bar cngxMatTabNav cngxTabsRouteSync&gt;</code>

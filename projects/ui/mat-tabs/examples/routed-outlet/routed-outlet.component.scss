@@ -1,3 +1,39 @@
+@use '@angular/material' as mat;
+
+// The playground scaffold only injects a Material theme + fonts when
+// compodocx's Material auto-detect fires; the cngx-instrumented
+// `<mat-tab-group>` still needs the palette, so this example builds the
+// theme itself. `ViewEncapsulation.None` makes these `html` / `.mat-mdc-*`
+// rules global. CSS `@import`s must follow `@use` and lead the emitted
+// output, so they sit here at the top.
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap');
+
+html {
+  color-scheme: light;
+
+  // A real M3 theme via SCSS, not a prebuilt `.css`. The Material tabs and
+  // the cngx decorations below read the `--mat-sys-*` tokens this emits.
+  @include mat.theme(
+    (
+      color: (
+        theme-type: light,
+        primary: mat.$azure-palette,
+        tertiary: mat.$blue-palette,
+      ),
+      typography: Roboto,
+      density: 0,
+    )
+  );
+
+  background: var(--mat-sys-background);
+  color: var(--mat-sys-on-background);
+  font: var(--mat-sys-body-medium);
+
+  // Chain the cngx mat-tab decoration colours to Material's error token.
+  --cngx-mat-tab-error-color: var(--mat-sys-error);
+  --cngx-mat-tab-has-errors-color: var(--mat-sys-error);
+}
+
 :host {
   display: block;
   max-width: 640px;
@@ -42,7 +78,7 @@
   height: 16px;
   border-radius: 50%;
   background: var(--cngx-mat-tab-has-errors-color, oklch(0.45 0.15 25));
-  color: oklch(1 0 0);
+  color: var(--mat-sys-on-error, oklch(1 0 0));
   font-size: 12px;
   font-weight: 700;
   line-height: 1;

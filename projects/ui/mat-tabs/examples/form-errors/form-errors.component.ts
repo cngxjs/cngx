@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import {
   FormControl,
@@ -29,7 +29,9 @@ import { CngxMatTabError, CngxMatTabs } from '@cngx/ui/mat-tabs';
   selector: 'app-root',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   imports: [MatTabsModule, ReactiveFormsModule, CngxMatTabs, CngxMatTabError],
+  styleUrl: './form-errors.component.scss',
   template: `
     <p style="margin: 0 0 12px; opacity: 0.8; font-size: 0.875rem">
       Vanilla <code>&lt;mat-tab-group&gt;</code> + <code>cngxMatTabs</code>.

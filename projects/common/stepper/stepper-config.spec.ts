@@ -8,10 +8,14 @@ import {
   injectStepperConfig,
   provideStepperConfig,
   provideStepperConfigAt,
+  STEPPER_DEFAULT_DENSITY_BREAKPOINTS,
   withStepperDefaultOrientation,
+  withStepperDensity,
   withStepperAriaLabels,
   withStepperCommitMode,
   withStepperFallbackLabels,
+  withStepperGroupCollapse,
+  withStepperGroupCollapseSummary,
   withStepperLinear,
   withStepperMobileBreakpoint,
   withStepperMobileCollapse,
@@ -253,6 +257,94 @@ describe('CngxStepperConfig', () => {
 
     it('carries the _target=config discriminator', () => {
       expect(withStepperMobileSwipe(false)._target).toBe('config');
+    });
+  });
+
+  describe('withStepperGroupCollapse', () => {
+    it('library default resolves to "off" (browser-native baseline)', () => {
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      const cfg = TestBed.inject(CNGX_STEPPER_CONFIG);
+      expect(cfg.groupCollapse).toBe('off');
+    });
+
+    it('provideStepperConfig(withStepperGroupCollapse) overrides the default', () => {
+      TestBed.configureTestingModule({
+        providers: [
+          provideZonelessChangeDetection(),
+          provideStepperConfig(withStepperGroupCollapse('expand-active')),
+        ],
+      });
+      const cfg = TestBed.inject(CNGX_STEPPER_CONFIG);
+      expect(cfg.groupCollapse).toBe('expand-active');
+    });
+
+    it('carries the _target=config discriminator', () => {
+      expect(withStepperGroupCollapse('expand-active')._target).toBe('config');
+    });
+  });
+
+  describe('withStepperGroupCollapseSummary', () => {
+    it("library default resolves to 'progress'", () => {
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      const cfg = TestBed.inject(CNGX_STEPPER_CONFIG);
+      expect(cfg.groupCollapseSummary).toBe('progress');
+    });
+
+    it('overrides the default and carries the _target=config discriminator', () => {
+      TestBed.configureTestingModule({
+        providers: [
+          provideZonelessChangeDetection(),
+          provideStepperConfig(withStepperGroupCollapseSummary('status')),
+        ],
+      });
+      const cfg = TestBed.inject(CNGX_STEPPER_CONFIG);
+      expect(cfg.groupCollapseSummary).toBe('status');
+      expect(withStepperGroupCollapseSummary('count')._target).toBe('config');
+    });
+  });
+
+  describe('withStepperDensity', () => {
+    it("library default resolves to 'comfortable' + default breakpoints", () => {
+      // Runtime guard for the Required<Omit<...>> build-trap: fails if a
+      // future edit adds density/densityBreakpoints to CngxStepperConfig
+      // but omits the STEPPER_CONFIG_DEFAULTS entry.
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      const cfg = TestBed.inject(CNGX_STEPPER_CONFIG);
+      expect(cfg.density).toBe('comfortable');
+      expect(cfg.densityBreakpoints).toEqual(STEPPER_DEFAULT_DENSITY_BREAKPOINTS);
+    });
+
+    it("provideStepperConfig(withStepperDensity('auto')) overrides density, keeps default breakpoints", () => {
+      TestBed.configureTestingModule({
+        providers: [
+          provideZonelessChangeDetection(),
+          provideStepperConfig(withStepperDensity('auto')),
+        ],
+      });
+      const cfg = TestBed.inject(CNGX_STEPPER_CONFIG);
+      expect(cfg.density).toBe('auto');
+      expect(cfg.densityBreakpoints).toEqual(STEPPER_DEFAULT_DENSITY_BREAKPOINTS);
+    });
+
+    it('the second argument overrides the per-step breakpoints', () => {
+      TestBed.configureTestingModule({
+        providers: [
+          provideZonelessChangeDetection(),
+          provideStepperConfig(withStepperDensity('auto', { compact: 200, minimal: 100 })),
+        ],
+      });
+      const cfg = TestBed.inject(CNGX_STEPPER_CONFIG);
+      expect(cfg.densityBreakpoints).toEqual({ compact: 200, minimal: 100 });
+    });
+
+    it('carries the _target=config discriminator', () => {
+      expect(withStepperDensity('auto')._target).toBe('config');
     });
   });
 

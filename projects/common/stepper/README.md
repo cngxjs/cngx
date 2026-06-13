@@ -148,16 +148,3 @@ A step carries an error through two independent channels:
 - **Commit / async** - a `commitAction` that rejects sets `lastFailedIndex`; the rolled-back step decorates via `*cngxStepRejection` and announces through the `CngxToastOn` / `CngxBannerOn` bridges.
 
 The two never collide: validation owns `*cngxStepError`, commit owns `*cngxStepRejection`. The `[error]` input replaces the old `<fieldset cngxErrorAggregator><input cngxErrorSource>` boilerplate for the common "this step is invalid" case; the aggregator stays the power path. See `@cngx/ui/stepper` for the per-skin text-surface table.
-
-## Architecture notes
-
-- **Pillar 1** (`Ableitung statt Verwaltung`): every derived value is a `computed()`; the only writable slot is the active-step model + a registry `WritableSignal<readonly CngxStepRegistration[]>` mutated only by `register`/`unregister`.
-- **Pillar 2** (`Kommunikation als First-Class`): host contracts (`CNGX_STEPPER_HOST` / `CNGX_STEP_PANEL_HOST`) expose ARIA-relevant state as `Signal<T>` so organisms can wire reactive `aria-current` / `aria-busy` / `aria-describedby` from day one.
-- **Pillar 3** (`Komposition statt Konfiguration`): step content is content-projected (`<cngxStep>` atoms), not configured via an options array. Organisms compose the presenter via `hostDirectives` rather than extending it.
-- **Memory hygiene**: every atom registers a `DestroyRef.onDestroy` unregister hook; the router-sync directive uses `takeUntilDestroyed` for its `NavigationEnd` stream.
-
-## See also
-
-- `@cngx/ui/stepper` - `<cngx-stepper>` CNGX-standard organism
-- `@cngx/ui/mat-stepper` - `<cngx-mat-stepper>` Material-twin organism
-- `.internal/architektur/stepper-accepted-debt.md` - tracked architectural debt (single §1: native `<mat-step>` adoption is structurally impossible via Angular content projection)

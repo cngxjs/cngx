@@ -92,7 +92,11 @@ export {
   type CngxStepperAriaLabels,
   type CngxStepperConfig,
   type CngxStepperConfigFeature,
+  type CngxStepperDensity,
+  type CngxStepperDensityBreakpoints,
   type CngxStepperFallbackLabels,
+  type CngxStepperGroupCollapse,
+  type CngxStepperGroupSummary,
   type CngxStepperHeaderNavigation,
   type CngxStepperMobileCollapse,
   type CngxStepperMobileIndicatorPosition,
@@ -101,12 +105,16 @@ export {
   injectStepperConfig,
   provideStepperConfig,
   provideStepperConfigAt,
+  STEPPER_DEFAULT_DENSITY_BREAKPOINTS,
   STEPPER_DEFAULT_MOBILE_BREAKPOINT,
   withStepperDefaultOrientation,
+  withStepperDensity,
   withStepperAriaLabels,
   withStepperCommitMode,
   withStepperConnectors,
   withStepperFallbackLabels,
+  withStepperGroupCollapse,
+  withStepperGroupCollapseSummary,
   withStepperHeaderNavigation,
   withStepperLinear,
   withStepperMobileBreakpoint,
@@ -142,6 +150,24 @@ export {
   createMobileViewportSignal,
   createStepperDisplayMode,
 } from './mobile-viewport';
+
+export {
+  createStripDensity,
+  type CngxStripDensity,
+  type CngxStripDensityOptions,
+} from './strip-density';
+
+export {
+  createStepperGroupSummary,
+  type CngxStepperGroupSummaryView,
+  type CngxStepperGroupSummaryOptions,
+} from './group-summary';
+
+export {
+  createStepperGroupNavigation,
+  type CngxStepperGroupNavigationView,
+  type CngxStepperGroupNavigationOptions,
+} from './group-navigation';
 
 // The following three blocks ship `@internal` factory helpers. They are
 // exported through `public-api.ts` so the sibling `@cngx/ui/stepper`

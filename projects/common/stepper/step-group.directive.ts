@@ -3,6 +3,7 @@ import { computed, DestroyRef, Directive, inject, input, signal, type Signal } f
 import { nextUid } from '@cngx/core/utils';
 
 import { CNGX_STEP_GROUP_HOST, type CngxStepGroupHost } from './step-group-host.token';
+import { injectStepperConfig } from './stepper-config';
 import {
   CNGX_STEPPER_HOST,
   type CngxStepRegistration,
@@ -25,6 +26,8 @@ import {
  * @since 0.1.0
  * @relatedTo CngxStep, CngxStepperPresenter, CngxStepGroupHeader
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-hierarchical/group-nested-steps-trailing-root-step</example-url>
+ * <example-url>http://localhost:4200/#/ui/stepper/stepper-hierarchical/expand-active-group-collapse</example-url>
+ * <example-url>http://localhost:4200/#/ui/stepper/stepper-hierarchical/group-collapse-summary-count</example-url>
  */
 @Directive({
   selector: '[cngxStepGroup]',
@@ -36,6 +39,8 @@ export class CngxStepGroup implements CngxStepGroupHost {
   readonly id = input<string>(nextUid('cngx-step-group'));
   readonly disabled = input<boolean>(false);
   readonly label = input<string>('');
+
+  private readonly config = injectStepperConfig();
 
   // Local child registry - only feeds `aggregatedStatus` below.
   // The presenter owns the canonical tree.
@@ -62,6 +67,29 @@ export class CngxStepGroup implements CngxStepGroupHost {
   );
 
   private readonly stepperHost = inject(CNGX_STEPPER_HOST, { optional: true });
+
+  /**
+   * `true` when this group's children are collapsed to the header node:
+   * the focus-driven policy is `'expand-active'`, this group does not
+   * hold the active step, and it has at least one child. Pure
+   * `computed()` over the host's `activeGroupId` + the resolved policy -
+   * never toggled in an event handler (Pillar 1).
+   *
+   * Consumer-readable via `exportAs: 'cngxStepGroup'` (e.g.
+   * `#g="cngxStepGroup"` then `g.isCollapsed()`). The rendered strip
+   * group header owns the reactive `aria-expanded` disclosure attribute
+   * (`<cngx-stepper>` `groupAriaExpanded`); the projected `[cngxStepGroup]`
+   * host element is not rendered in the strip, so it carries no ARIA.
+   */
+  readonly isCollapsed: Signal<boolean> = computed(() => {
+    if (this.config.groupCollapse !== 'expand-active') {
+      return false;
+    }
+    if (this.childRegistry().length === 0) {
+      return false;
+    }
+    return this.stepperHost?.activeGroupId() !== this.id();
+  });
 
   constructor() {
     if (!this.stepperHost) {

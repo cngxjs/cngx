@@ -1,7 +1,7 @@
 {
   "name": "@cngx/themes",
   "version": "0.0.0-PLACEHOLDER",
-  "description": "Single-import default theme + example brand theme for the CNGX Angular component library.",
+  "description": "Single-import default theme and example brand theme for the CNGX Angular component library.",
   "keywords": [
     "cngx",
     "angular",
