@@ -32,7 +32,7 @@ export const STORY: DemoSpec = {
         <span aria-hidden="true">&#128276;</span>
         Notifications
         @if (notificationCount() > 0) {
-          <span class="chip" style="padding:0 6px;font-size:0.7em">{{ notificationCount() }}</span>
+          <span class="chip demo-step-count-chip">{{ notificationCount() }}</span>
         }
       </ng-template>
       <ng-template cngxStepContent>

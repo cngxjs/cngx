@@ -9,7 +9,7 @@ export const STORY: DemoSpec = {
   artifact: 'standalone',
   focus: ['composition', 'a11y-pattern', 'behavior', 'error-handling'],
   references: [
-    { label: 'WAI-ARIA APG - Step indicator pattern', href: 'https://www.w3.org/WAI/ARIA/apg/patterns/' },
+    { label: 'WAI-ARIA 1.2 - aria-current', href: 'https://www.w3.org/TR/wai-aria-1.2/#aria-current' },
   ],
   apiComponents: ['CngxDotStepper', 'CngxStep', 'CngxSwipe'],
   moduleImports: [
