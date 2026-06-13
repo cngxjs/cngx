@@ -80,6 +80,7 @@ import { coerceBooleanProperty } from '@cngx/core/utils';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/stepper/stepper.component.ts
  * @since 0.1.0
  * @relatedTo CngxStepperPresenter, CngxStep, CngxRovingTabindex, CngxFocusRestore, CngxLiveRegion
+ * @playground Material theme coverage across all skins ./examples/material-theme-coverage/skins-coverage.component.ts
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-horizontal/three-step-wizard</example-url>
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-vertical/vertical-sidebar-layout</example-url>
  * <example-url>http://localhost:4200/#/ui/stepper/stepper-linear/linear-gating-with-completion-checkboxes</example-url>

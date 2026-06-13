@@ -1,0 +1,58 @@
+/* Material's own prebuilt M3 theme defines the --mat-sys-* system tokens. */
+@import '@angular/material/prebuilt-themes/azure-blue.css';
+
+/*
+ * Material bridge for the indicator-only stepper variants. Ported verbatim
+ * from the version-1 (M3) branch of @cngx/themes/material/stepper-theme.scss
+ * - keep the two in sync. The --cngx-dot-step-* tokens carry the dot
+ * variant; the base --cngx-step-* tokens cover the progress-bar caption.
+ */
+@layer cngx.components {
+  :where(cngx-stepper) {
+    --cngx-step-active-color: var(--mat-sys-primary);
+    --cngx-step-completed-color: var(--mat-sys-primary);
+    --cngx-step-errored-color: var(--mat-sys-error);
+    --cngx-step-pending-color: var(--mat-sys-primary);
+
+    --cngx-step-indicator-bg: var(--mat-sys-surface-container);
+    --cngx-step-indicator-color: var(--mat-sys-on-surface);
+    --cngx-step-indicator-active-color: var(--mat-sys-on-primary);
+
+    --cngx-step-busy-spinner-color: var(--mat-sys-primary);
+
+    /* Variant: CngxDotStepper */
+    --cngx-dot-step-active-fill: var(--mat-sys-primary);
+    --cngx-dot-step-completed-fill: color-mix(in srgb, var(--mat-sys-primary) 60%, transparent);
+    --cngx-dot-step-upcoming-bg: var(--mat-sys-surface-variant);
+
+    /* Typography */
+    --cngx-step-indicator-font-size: var(--mat-sys-label-large-size);
+    --cngx-step-indicator-font-weight: var(--mat-sys-label-large-weight);
+  }
+}
+
+.coverage {
+  display: grid;
+  gap: 24px;
+  max-width: 720px;
+  padding: 16px;
+}
+
+.coverage section {
+  display: grid;
+  gap: 8px;
+}
+
+.coverage h3 {
+  margin: 0;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  opacity: 0.6;
+}
+
+.coverage__toolbar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}

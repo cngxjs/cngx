@@ -37,6 +37,7 @@ import { CngxProgress } from '@cngx/ui/feedback';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/stepper/progress-bar-stepper.component.ts
  * @since 0.1.0
  * @relatedTo CngxStepperPresenter, CngxProgress, CngxDotStepper, CngxTextStepper
+ * @playground Material theme coverage across variants ./examples/material-theme-coverage/variants-coverage.component.ts
  * <example-url>http://localhost:4200/#/ui/stepper/progress-bar/onboarding-flow</example-url>
  */
 @Component({

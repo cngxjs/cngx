@@ -1,0 +1,114 @@
+import { ChangeDetectionStrategy, Component, ViewEncapsulation, signal } from '@angular/core';
+
+import { CngxStep } from '@cngx/common/stepper';
+import { CngxStepper } from '@cngx/ui/stepper';
+
+/**
+ * Every `CngxStepper` skin rendered against a Material 3 palette.
+ *
+ * The example's stylesheet imports Material's own prebuilt theme for the
+ * `--mat-sys-*` system tokens, then applies the cngx stepper bridge - the
+ * M3 token mapping from `@cngx/themes/material/stepper-theme` - as static
+ * CSS:
+ *
+ * ```css
+ * @import '@angular/material/prebuilt-themes/azure-blue.css';
+ *
+ * @layer cngx.components {
+ *   :where(cngx-stepper) {
+ *     --cngx-step-active-color: var(--mat-sys-primary);
+ *     // ...every other --cngx-step-* mapped onto --mat-sys-*
+ *   }
+ * }
+ * ```
+ *
+ * So each skin inherits primary / error / surface / tertiary colours from
+ * the Material palette with no per-skin overrides. `ViewEncapsulation.None`
+ * lets the imported theme and the `:where(cngx-stepper)` rule reach the
+ * steppers. (In an app you would `@use` the bridge mixin instead; the
+ * playground inlines the result so it needs no Sass build.)
+ */
+@Component({
+  selector: 'app-root',
+  standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
+  imports: [CngxStepper, CngxStep],
+  styleUrl: './skins-coverage.component.css',
+  template: `
+    <div class="coverage">
+      <section>
+        <h3>classic</h3>
+        <cngx-stepper [(activeStepIndex)]="active" aria-label="Classic skin">
+          <div cngxStep label="Customer" [completed]="active() > 0"></div>
+          <div cngxStep label="Payment" [completed]="active() > 1"></div>
+          <div cngxStep label="Review"></div>
+        </cngx-stepper>
+      </section>
+      <section>
+        <h3>linear-minimal</h3>
+        <cngx-stepper [(activeStepIndex)]="active" skin="linear-minimal" aria-label="Linear minimal">
+          <div cngxStep label="Customer" [completed]="active() > 0"></div>
+          <div cngxStep label="Payment" [completed]="active() > 1"></div>
+          <div cngxStep label="Review"></div>
+        </cngx-stepper>
+      </section>
+      <section>
+        <h3>stripe-status-rich</h3>
+        <cngx-stepper [(activeStepIndex)]="active" skin="stripe-status-rich" aria-label="Stripe status rich">
+          <div cngxStep label="Customer" [completed]="active() > 0"></div>
+          <div cngxStep label="Payment" [completed]="active() > 1"></div>
+          <div cngxStep label="Review"></div>
+        </cngx-stepper>
+      </section>
+      <section>
+        <h3>path-chevron</h3>
+        <cngx-stepper [(activeStepIndex)]="active" skin="path-chevron" aria-label="Path chevron">
+          <div cngxStep label="Customer" [completed]="active() > 0"></div>
+          <div cngxStep label="Payment" [completed]="active() > 1"></div>
+          <div cngxStep label="Review"></div>
+        </cngx-stepper>
+      </section>
+      <section>
+        <h3>pill-segment</h3>
+        <cngx-stepper [(activeStepIndex)]="active" skin="pill-segment" aria-label="Pill segment">
+          <div cngxStep label="Customer" [completed]="active() > 0"></div>
+          <div cngxStep label="Payment" [completed]="active() > 1"></div>
+          <div cngxStep label="Review"></div>
+        </cngx-stepper>
+      </section>
+      <section>
+        <h3>chips</h3>
+        <cngx-stepper [(activeStepIndex)]="active" skin="chips" aria-label="Chips">
+          <div cngxStep label="Customer" [completed]="active() > 0"></div>
+          <div cngxStep label="Payment" [completed]="active() > 1"></div>
+          <div cngxStep label="Review"></div>
+        </cngx-stepper>
+      </section>
+      <section>
+        <h3>breadcrumb</h3>
+        <cngx-stepper [(activeStepIndex)]="active" skin="breadcrumb" aria-label="Breadcrumb">
+          <div cngxStep label="Customer" [completed]="active() > 0"></div>
+          <div cngxStep label="Payment" [completed]="active() > 1"></div>
+          <div cngxStep label="Review"></div>
+        </cngx-stepper>
+      </section>
+      <div class="coverage__toolbar">
+        <button type="button" (click)="prev()">Previous</button>
+        <button type="button" (click)="next()">Next</button>
+        <span>Active step: {{ active() }}</span>
+      </div>
+    </div>
+  `,
+})
+export class SkinsCoverageExample {
+  protected readonly active = signal(1);
+
+  protected next(): void {
+    this.active.update((i) => Math.min(i + 1, 2));
+  }
+
+  protected prev(): void {
+    this.active.update((i) => Math.max(i - 1, 0));
+  }
+}
