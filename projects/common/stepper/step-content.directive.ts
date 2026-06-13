@@ -19,7 +19,7 @@ import type { CngxStepContentContext } from './step-panel-host.token';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/stepper/step-content.directive.ts
  * @since 0.1.0
  * @relatedTo CngxStep, CngxStepLabel
- * <example-url>http://localhost:4200/#/ui/stepper/stepper-horizontal/three-step-wizard</example-url>
+ * <example-url>http://localhost:4200/#/ui/stepper/stepper-step-content/typed-lazy-panels</example-url>
  */
 @Directive({
   selector: 'ng-template[cngxStepContent]',

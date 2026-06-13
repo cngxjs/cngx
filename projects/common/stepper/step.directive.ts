@@ -32,7 +32,7 @@ import { CNGX_STEPPER_HOST, type CngxStepStatus } from './stepper-host.token';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/stepper/step.directive.ts
  * @since 0.1.0
  * @relatedTo CngxStepGroup, CngxStepperPresenter, CngxStepLabel, CngxStepContent
- * <example-url>http://localhost:4200/#/ui/stepper/stepper-horizontal/three-step-wizard</example-url>
+ * <example-url>http://localhost:4200/#/ui/stepper/stepper-step-content/typed-lazy-panels</example-url>
  */
 @Directive({
   selector: '[cngxStep]',
