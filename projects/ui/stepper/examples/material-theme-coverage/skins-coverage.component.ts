@@ -6,27 +6,26 @@ import { CngxStepper } from '@cngx/ui/stepper';
 /**
  * Every `CngxStepper` skin rendered against a Material 3 palette.
  *
- * The example's stylesheet imports Material's own prebuilt theme for the
- * `--mat-sys-*` system tokens, then applies the cngx stepper bridge - the
- * M3 token mapping from `@cngx/themes/material/stepper-theme` - as static
- * CSS:
+ * The example's stylesheet builds a real M3 theme in SCSS: `mat.theme`
+ * emits the `--mat-sys-*` system tokens, then the published
+ * `@cngx/themes/material/stepper-theme` bridge maps every `--cngx-step-*`
+ * onto its Material counterpart:
  *
- * ```css
- * @import '@angular/material/prebuilt-themes/azure-blue.css';
+ * ```scss
+ * @use '@angular/material' as mat;
+ * @use '@cngx/themes/material/stepper-theme' as stepper;
  *
- * @layer cngx.components {
- *   :where(cngx-stepper) {
- *     --cngx-step-active-color: var(--mat-sys-primary);
- *     // ...every other --cngx-step-* mapped onto --mat-sys-*
- *   }
+ * $theme: mat.define-theme((color: (theme-type: light, primary: mat.$azure-palette)));
+ * html {
+ *   @include mat.theme($theme);
+ *   @include stepper.theme($theme);
  * }
  * ```
  *
  * So each skin inherits primary / error / surface / tertiary colours from
- * the Material palette with no per-skin overrides. `ViewEncapsulation.None`
- * lets the imported theme and the `:where(cngx-stepper)` rule reach the
- * steppers. (In an app you would `@use` the bridge mixin instead; the
- * playground inlines the result so it needs no Sass build.)
+ * the Material palette with no per-skin overrides and no hand-copied tokens.
+ * `ViewEncapsulation.None` lets the global `html` theme and the
+ * `:where(cngx-stepper)` bridge rules reach the steppers.
  */
 @Component({
   selector: 'app-root',
@@ -34,7 +33,7 @@ import { CngxStepper } from '@cngx/ui/stepper';
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   imports: [CngxStepper, CngxStep],
-  styleUrl: './skins-coverage.component.css',
+  styleUrl: './skins-coverage.component.scss',
   template: `
     <div class="coverage">
       <section>

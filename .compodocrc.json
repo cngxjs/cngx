@@ -73,6 +73,7 @@
         "@cngx/forms": "0.1.0-rc.1",
         "@cngx/ui": "0.1.0-rc.1",
         "@cngx/data-display": "0.1.0-rc.1",
+        "@cngx/themes": "0.1.0-rc.1",
         "@angular/material": "^21.2.2"
     }
 }

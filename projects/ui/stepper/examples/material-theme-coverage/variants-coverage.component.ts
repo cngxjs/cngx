@@ -10,9 +10,10 @@ import { CngxDotStepper, CngxProgressBarStepper, CngxTextStepper } from '@cngx/u
  * honour the Material bridge: the progress bar inherits palette through
  * `CngxProgress`, the dot variant picks up the `--cngx-dot-step-*`
  * overrides, and the text variant follows the surrounding typography. The
- * stylesheet imports Material's prebuilt theme for the `--mat-sys-*`
- * tokens and applies the stepper bridge mapping as static CSS (the inlined
- * result of `@cngx/themes/material/stepper-theme`).
+ * stylesheet builds a real M3 theme in SCSS - `mat.theme` emits the
+ * `--mat-sys-*` tokens and the published `@cngx/themes/material/stepper-theme`
+ * bridge mixin maps the `--cngx-step-*` / `--cngx-dot-step-*` tokens onto
+ * them, so nothing is hand-copied.
  */
 @Component({
   selector: 'app-root',
@@ -20,7 +21,7 @@ import { CngxDotStepper, CngxProgressBarStepper, CngxTextStepper } from '@cngx/u
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   imports: [CngxProgressBarStepper, CngxDotStepper, CngxTextStepper, CngxStep],
-  styleUrl: './variants-coverage.component.css',
+  styleUrl: './variants-coverage.component.scss',
   template: `
     <div class="coverage">
       <section>
