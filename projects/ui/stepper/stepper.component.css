@@ -75,7 +75,7 @@
    */
   @property --cngx-step-indicator-bg {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: color-mix(in srgb, currentColor 10%, transparent);
   }
 
@@ -126,7 +126,7 @@
    */
   @property --cngx-step-indicator-disabled-bg {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: color-mix(in srgb, currentColor 5%, transparent);
   }
 
@@ -138,7 +138,7 @@
    */
   @property --cngx-step-completed-color {
     syntax: '<color>';
-    inherits: false;
+    inherits: true;
     initial-value: oklch(0.5 0.15 145);
   }
 
@@ -150,7 +150,7 @@
    */
   @property --cngx-step-errored-color {
     syntax: '<color>';
-    inherits: false;
+    inherits: true;
     initial-value: oklch(0.45 0.15 25);
   }
 
@@ -196,7 +196,7 @@
    */
   @property --cngx-step-hover-bg {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: color-mix(in srgb, currentColor 8%, transparent);
   }
 
@@ -385,7 +385,7 @@
    */
   @property --cngx-step-status-pill-bg-upcoming {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: color-mix(in srgb, currentColor 6%, transparent);
   }
 
@@ -396,7 +396,7 @@
    */
   @property --cngx-step-status-pill-bg-in-progress {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: oklch(0.66 0.19 50);
   }
 
@@ -406,7 +406,7 @@
    */
   @property --cngx-step-status-pill-bg-done {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: oklch(0.5 0.15 145);
   }
 
@@ -416,7 +416,7 @@
    */
   @property --cngx-step-status-pill-bg-errored {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: oklch(0.45 0.15 25);
   }
 
@@ -438,7 +438,7 @@
    */
   @property --cngx-step-chevron-tile-active {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: oklch(0.66 0.19 50);
   }
 
@@ -448,7 +448,7 @@
    */
   @property --cngx-step-chevron-tile-completed {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: color-mix(in srgb, oklch(0.5 0.15 145) 80%, transparent);
   }
 
@@ -458,7 +458,7 @@
    */
   @property --cngx-step-chevron-tile-errored {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: oklch(0.45 0.15 25);
   }
 
@@ -470,7 +470,7 @@
    */
   @property --cngx-step-chevron-tile-upcoming-bg {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: color-mix(in srgb, currentColor 12%, transparent);
   }
 
@@ -1351,8 +1351,25 @@
        disc rides on top of the white surface. */
     .cngx-stepper__step[aria-current='step'] {
       background: var(--cngx-step-pill-segment-fill-active);
-      color: currentColor;
+      color: var(--cngx-step-pill-segment-color-active, currentColor);
       box-shadow: var(--cngx-step-pill-segment-card-shadow);
+    }
+
+    /* When the active card is filled (e.g. the Material bridge fills it with
+       primary), the default accent disc would vanish against the card. The
+       indicator-active-bg/-color tokens let a theme flip the disc to an
+       on-fill surface with the fill-coloured glyph so the circle stays
+       visible. Unset (default white-card skin) they fall back to the
+       accent-filled disc. */
+    .cngx-stepper__step[aria-current='step'] .cngx-stepper__indicator {
+      background: var(
+        --cngx-step-pill-segment-indicator-active-bg,
+        var(--cngx-step-active-color, var(--cngx-step-active-fill))
+      );
+      color: var(
+        --cngx-step-pill-segment-indicator-active-color,
+        var(--cngx-step-indicator-active-color, oklch(1 0 0))
+      );
     }
 
     /* Completed segment stays flat - the green check disc carries the
@@ -1878,9 +1895,20 @@
    landing on a dark enough shade. */
 :where(:root[data-color-scheme='dark'], :root.dark) .cngx-stepper[data-skin='pill-segment'] {
   --cngx-step-pill-segment-rail-bg: oklch(0.24 0.005 240);
-  --cngx-step-pill-segment-fill-active: oklch(0.4 0.008 240);
   --cngx-step-indicator-active-color: oklch(0.98 0 0);
   --cngx-step-pill-segment-card-shadow: 0 1px 2px color-mix(in srgb, oklch(0 0 0) 55%, transparent);
+}
+
+/* Active-card fill is a TOKEN default (in @layer cngx.tokens), not an
+   unlayered hard-set, so a Material/consumer bridge in @layer
+   cngx.components can still recolour the active segment in dark mode -
+   matching how the light default (the @property initial) is overridable.
+   The dark grey only applies when no bridge sets the fill. */
+@layer cngx.tokens {
+  :where(:root[data-color-scheme='dark'], :root.dark)
+    .cngx-stepper[data-skin='pill-segment'] {
+    --cngx-step-pill-segment-fill-active: oklch(0.4 0.008 240);
+  }
 }
 
 :where(:root[data-color-scheme='dark'], :root.dark)
@@ -1899,10 +1927,16 @@
   :where(:root:not([data-color-scheme='light']):not(.light))
     .cngx-stepper[data-skin='pill-segment'] {
     --cngx-step-pill-segment-rail-bg: oklch(0.24 0.005 240);
-    --cngx-step-pill-segment-fill-active: oklch(0.4 0.008 240);
     --cngx-step-indicator-active-color: oklch(0.98 0 0);
     --cngx-step-pill-segment-card-shadow: 0 1px 2px
       color-mix(in srgb, oklch(0 0 0) 55%, transparent);
+  }
+
+  @layer cngx.tokens {
+    :where(:root:not([data-color-scheme='light']):not(.light))
+      .cngx-stepper[data-skin='pill-segment'] {
+      --cngx-step-pill-segment-fill-active: oklch(0.4 0.008 240);
+    }
   }
 
   :where(:root:not([data-color-scheme='light']):not(.light))
