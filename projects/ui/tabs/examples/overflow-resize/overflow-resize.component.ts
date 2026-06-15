@@ -54,8 +54,15 @@ export class OverflowResizeExample {
   ];
 
   constructor() {
-    // The StackBlitz scaffold ships a bare `<body>`; apply Material's app
-    // background + typography classes so the demo paints on the M3 surface.
-    inject(DOCUMENT).body.classList.add('mat-typography', 'mat-app-background');
+    const doc = inject(DOCUMENT);
+    doc.body.classList.add('mat-typography', 'mat-app-background');
+    // The StackBlitz scaffold only wires the Roboto <link> when Material
+    // auto-detect fires (a <mat-*> selector), which a cngx-only template never
+    // triggers - so load it at runtime. A <link> is robust where a CSS @import
+    // in a component stylesheet can land below other rules and be ignored.
+    const font = doc.createElement('link');
+    font.rel = 'stylesheet';
+    font.href = 'https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap';
+    doc.head.appendChild(font);
   }
 }

@@ -2,8 +2,10 @@
 // Explicit `.scss` extension required: @cngx/themes exposes the bridges via
 // the `./material/*` exports map (extensionless target).
 @use '@cngx/themes/material/tabs-theme.scss' as tabs;
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap');
 
+// Roboto is loaded by the component at runtime via a <head> <link> (a CSS
+// @import here can be re-ordered below other rules and ignored); the theme
+// just names the family so the --mat-sys-* typography tokens use it.
 $theme: mat.define-theme(
   (
     color: (

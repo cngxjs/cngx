@@ -8,9 +8,9 @@
 // The playground scaffold only injects a Material theme when compodocx's
 // Material auto-detect fires, and `<cngx-tab-group>` is not on that selector
 // list - so this example builds the theme itself. The host component uses
-// `ViewEncapsulation.None`, so these `html` / `body` rules are global. CSS
-// `@import`s must follow `@use` and lead the emitted output, so they sit here.
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap');
+// `ViewEncapsulation.None`, so these `html` / `body` rules are global. Roboto
+// is loaded by the component at runtime via a <head> <link> (a CSS @import
+// here can be re-ordered below other rules and ignored).
 
 // A real M3 theme built in SCSS, not a prebuilt `.css`. `mat.theme` emits
 // the `--mat-sys-*` system tokens; the same `$theme` drives the cngx bridge.

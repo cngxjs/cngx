@@ -98,7 +98,15 @@ export class SkinsCoverageExample {
   protected readonly overflowActive = signal(0);
 
   constructor() {
-    inject(DOCUMENT).body.classList.add('mat-typography', 'mat-app-background');
+    const doc = inject(DOCUMENT);
+    doc.body.classList.add('mat-typography', 'mat-app-background');
+    // Roboto via a runtime <link> - the StackBlitz scaffold only wires the
+    // font when Material auto-detect fires, which a cngx-only template never
+    // triggers. A <link> beats a CSS @import that can land below other rules.
+    const font = doc.createElement('link');
+    font.rel = 'stylesheet';
+    font.href = 'https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap';
+    doc.head.appendChild(font);
   }
 
   protected readonly skins = [
