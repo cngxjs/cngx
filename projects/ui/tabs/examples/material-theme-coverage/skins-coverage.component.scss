@@ -1,0 +1,73 @@
+@use '@angular/material' as mat;
+// Explicit `.scss` extension required: @cngx/themes exposes the bridges via
+// the `./material/*` exports map (extensionless target), so a bare
+// `@use '@cngx/themes/material/tabs-theme'` resolves to an extensionless
+// path the Sass package importer cannot find.
+@use '@cngx/themes/material/tabs-theme.scss' as tabs;
+
+// The playground scaffold only injects a Material theme when compodocx's
+// Material auto-detect fires, and `<cngx-tab-group>` is not on that selector
+// list - so this example builds the theme itself. The host component uses
+// `ViewEncapsulation.None`, so these `html` / `body` rules are global. CSS
+// `@import`s must follow `@use` and lead the emitted output, so they sit here.
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap');
+
+// A real M3 theme built in SCSS, not a prebuilt `.css`. `mat.theme` emits
+// the `--mat-sys-*` system tokens; the same `$theme` drives the cngx bridge.
+$theme: mat.define-theme(
+  (
+    color: (
+      theme-type: light,
+      primary: mat.$azure-palette,
+      tertiary: mat.$blue-palette,
+    ),
+    typography: (
+      plain-family: Roboto,
+    ),
+    density: (
+      scale: 0,
+    ),
+  )
+);
+
+html {
+  color-scheme: light;
+
+  @include mat.theme($theme);
+
+  // cngx Material bridge: routes the active indicator / label, surfaces and
+  // error tones onto the Material palette, and paints the "More" overflow
+  // popover as a mat-menu. This is the published
+  // `@cngx/themes/material/tabs-theme` mixin - no hand-kept token copy.
+  @include tabs.theme($theme);
+
+  background: var(--mat-sys-background);
+  color: var(--mat-sys-on-background);
+  font: var(--mat-sys-body-medium);
+}
+
+.coverage {
+  display: grid;
+  gap: 24px;
+  max-width: 720px;
+  padding: 16px;
+}
+
+.coverage section {
+  display: grid;
+  gap: 8px;
+}
+
+.coverage h3 {
+  margin: 0;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  opacity: 0.6;
+}
+
+// Constrain the overflow group so the trailing tabs clip and surface in the
+// "More" popover.
+.coverage__narrow {
+  max-width: 360px;
+}

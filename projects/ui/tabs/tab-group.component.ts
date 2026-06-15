@@ -72,6 +72,7 @@ import {
  * host directive: its `role="status"` would clobber the wrapper's
  * `role="group"` landmark.
  *
+ * @playground Material theme coverage across all skins ./examples/material-theme-coverage/skins-coverage.component.ts
  * @playground Form error aggregation ./examples/form-errors/form-errors.component.ts
  * @playground Routed tabs with a CanDeactivate guard ./examples/routed-outlet/routed-outlet.component.ts
  * @see {@link CngxMatTabs} for the Material `<mat-tab-group>` variant with `[cngxMatTabError]`.
