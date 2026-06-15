@@ -1,38 +1,32 @@
 @use '@angular/material' as mat;
-// Explicit `.scss` extension required: @cngx/themes exposes the bridges via
-// the `./material/*` exports map (extensionless target), so a bare
-// `@use '@cngx/themes/material/stepper-theme'` resolves to an extensionless
-// path the Sass package importer cannot find.
 @use '@cngx/themes/material/stepper-theme.scss' as stepper;
 
-// The playground scaffold only injects a Material theme when compodocx's
-// Material auto-detect fires, and `<cngx-stepper>` is not on that selector
-// list - so this example builds the theme itself. The host component uses
-// `ViewEncapsulation.None`, so these `html` / `body` rules are global. Roboto
-// is loaded by the component at runtime via a <head> <link> (a CSS @import
-// here can be re-ordered below other rules and ignored).
-
-// A real M3 theme built in SCSS, not a prebuilt `.css`. `mat.theme` emits
-// the `--mat-sys-*` system tokens; the same `$theme` drives the cngx bridge.
-// `mat.define-theme` feeds the cngx bridge mixins (theme version / density /
-// color helpers); the modern `mat.theme((...))` map API (in `html` below)
-// emits the full `--mat-sys-*` set, crucially including the Roboto typography
-// tokens that the `define-theme` + `mat.theme($theme)` path never emitted.
 $palette: (
   theme-type: light,
   primary: mat.$azure-palette,
   tertiary: mat.$blue-palette,
 );
-$theme: mat.define-theme((color: $palette, density: (scale: 0)));
+$theme: mat.define-theme(
+  (
+    color: $palette,
+    density: (
+      scale: 0,
+    ),
+  )
+);
 
 html {
   color-scheme: light;
 
-  @include mat.theme((color: $palette, typography: Roboto, density: 0));
+  @include mat.theme(
+    (
+      color: $palette,
+      typography: Roboto,
+      density: 0,
+    )
+  );
 
-  // cngx Material bridge: maps every `--cngx-step-*` onto a `--mat-sys-*`
-  // token, so each skin inherits the Material palette. This is the published
-  // `@cngx/themes/material/stepper-theme` mixin - no hand-kept token copy.
+  // CNGX Material bridge
   @include stepper.theme($theme);
 
   background: var(--mat-sys-background);
@@ -40,8 +34,6 @@ html {
   font: var(--mat-sys-body-medium);
 }
 
-// Material body classes are added at runtime by the component; `mat.theme`
-// ships the `--mat-sys-*` tokens but not these class rules, so emit them here.
 .mat-app-background {
   background-color: var(--mat-sys-background);
   color: var(--mat-sys-on-background);

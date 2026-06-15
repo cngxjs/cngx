@@ -1,22 +1,29 @@
 @use '@angular/material' as mat;
 @use '@cngx/themes/material/tabs-theme.scss' as tabs;
 
-// Roboto is loaded by the component at runtime via a <head> <link>; the theme
-// just names the family so the --mat-sys-* typography tokens use it.
-// `mat.define-theme` feeds the cngx bridge mixins (theme version / density /
-// color helpers); the modern `mat.theme((...))` map API (in `html` below)
-// emits the full `--mat-sys-*` set, crucially including the Roboto typography
-// tokens that the `define-theme` + `mat.theme($theme)` path never emitted.
 $palette: (
   theme-type: light,
   primary: mat.$azure-palette,
   tertiary: mat.$blue-palette,
 );
-$theme: mat.define-theme((color: $palette, density: (scale: 0)));
+$theme: mat.define-theme(
+  (
+    color: $palette,
+    density: (
+      scale: 0,
+    ),
+  )
+);
 
 html {
   color-scheme: light;
-  @include mat.theme((color: $palette, typography: Roboto, density: 0));
+  @include mat.theme(
+    (
+      color: $palette,
+      typography: Roboto,
+      density: 0,
+    )
+  );
   @include tabs.theme($theme);
 }
 

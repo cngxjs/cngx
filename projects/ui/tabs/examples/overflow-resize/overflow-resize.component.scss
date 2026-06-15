@@ -1,32 +1,33 @@
 @use '@angular/material' as mat;
-// Explicit `.scss` extension required: @cngx/themes exposes the bridges via
-// the `./material/*` exports map (extensionless target).
 @use '@cngx/themes/material/tabs-theme.scss' as tabs;
 
-// Roboto is loaded by the component at runtime via a <head> <link> (a CSS
-// @import here can be re-ordered below other rules and ignored); the theme
-// just names the family so the --mat-sys-* typography tokens use it.
-// `mat.define-theme` feeds the cngx bridge mixins (theme version / density /
-// color helpers); the modern `mat.theme((...))` map API (in `html` below)
-// emits the full `--mat-sys-*` set, crucially including the Roboto typography
-// tokens that the `define-theme` + `mat.theme($theme)` path never emitted.
 $palette: (
   theme-type: light,
   primary: mat.$azure-palette,
   tertiary: mat.$blue-palette,
 );
-$theme: mat.define-theme((color: $palette, density: (scale: 0)));
+$theme: mat.define-theme(
+  (
+    color: $palette,
+    density: (
+      scale: 0,
+    ),
+  )
+);
 
 html {
   color-scheme: light;
-  @include mat.theme((color: $palette, typography: Roboto, density: 0));
-  // cngx Material bridge - themes the tabs and paints the "More" popover as a
-  // mat-menu. Published `@cngx/themes/material/tabs-theme` mixin.
+  @include mat.theme(
+    (
+      color: $palette,
+      typography: Roboto,
+      density: 0,
+    )
+  );
+  // CNGX Material bridge
   @include tabs.theme($theme);
 }
 
-// Material body classes are added at runtime by the component; `mat.theme`
-// ships the `--mat-sys-*` tokens but not these class rules, so emit them here.
 .mat-app-background {
   background-color: var(--mat-sys-background);
   color: var(--mat-sys-on-background);
