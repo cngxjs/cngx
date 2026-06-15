@@ -1,5 +1,4 @@
-import { DOCUMENT } from '@angular/common';
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation, signal } from '@angular/core';
 
 import { CngxTab, CngxTabContent } from '@cngx/common/tabs';
 import { CngxTabGroup, CngxTabOverflow } from '@cngx/ui/tabs';
@@ -96,18 +95,6 @@ import { CngxTabGroup, CngxTabOverflow } from '@cngx/ui/tabs';
 export class SkinsCoverageExample {
   protected readonly active = signal(0);
   protected readonly overflowActive = signal(0);
-
-  constructor() {
-    const doc = inject(DOCUMENT);
-    doc.body.classList.add('mat-typography', 'mat-app-background');
-    // Roboto via a runtime <link> - the StackBlitz scaffold only wires the
-    // font when Material auto-detect fires, which a cngx-only template never
-    // triggers. A <link> beats a CSS @import that can land below other rules.
-    const font = doc.createElement('link');
-    font.rel = 'stylesheet';
-    font.href = 'https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap';
-    doc.head.appendChild(font);
-  }
 
   protected readonly skins = [
     { id: 'line', label: 'Line skin' },
