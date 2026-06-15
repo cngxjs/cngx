@@ -106,7 +106,6 @@ export class CngxMatTabsPanelHostAdapter implements CngxTabPanelHost {
  * and the delegators consumer templates call.
  *
  * @playground Form error aggregation ./examples/form-errors/form-errors.component.ts
- * @playground Routed tabs with a CanDeactivate guard ./examples/routed-outlet/routed-outlet.component.ts
  *
  * @category ui/mat-tabs
  * @docsKind primary
