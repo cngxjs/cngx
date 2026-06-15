@@ -16,26 +16,21 @@
 // the `--mat-sys-*` system tokens; the same `$theme` drives the cngx bridge.
 // The bridge's `--cngx-dot-step-*` tokens carry the dot variant; the base
 // `--cngx-step-*` tokens cover the progress-bar caption.
-$theme: mat.define-theme(
-  (
-    color: (
-      theme-type: light,
-      primary: mat.$azure-palette,
-      tertiary: mat.$blue-palette,
-    ),
-    typography: (
-      plain-family: Roboto,
-    ),
-    density: (
-      scale: 0,
-    ),
-  )
+// `mat.define-theme` feeds the cngx bridge mixins (theme version / density /
+// color helpers); the modern `mat.theme((...))` map API (in `html` below)
+// emits the full `--mat-sys-*` set, crucially including the Roboto typography
+// tokens that the `define-theme` + `mat.theme($theme)` path never emitted.
+$palette: (
+  theme-type: light,
+  primary: mat.$azure-palette,
+  tertiary: mat.$blue-palette,
 );
+$theme: mat.define-theme((color: $palette, density: (scale: 0)));
 
 html {
   color-scheme: light;
 
-  @include mat.theme($theme);
+  @include mat.theme((color: $palette, typography: Roboto, density: 0));
 
   // The published `@cngx/themes/material/stepper-theme` mixin - no hand-kept
   // token copy.
