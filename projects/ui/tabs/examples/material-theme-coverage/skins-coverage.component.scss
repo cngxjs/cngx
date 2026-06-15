@@ -46,6 +46,16 @@ html {
   font: var(--mat-sys-body-medium);
 }
 
+// Material body classes are added at runtime by the component; `mat.theme`
+// ships the `--mat-sys-*` tokens but not these class rules, so emit them here.
+.mat-app-background {
+  background-color: var(--mat-sys-background);
+  color: var(--mat-sys-on-background);
+}
+.mat-typography {
+  font: var(--mat-sys-body-medium);
+}
+
 .coverage {
   display: grid;
   gap: 24px;

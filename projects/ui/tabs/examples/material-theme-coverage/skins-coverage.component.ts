@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, signal } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation, inject, signal } from '@angular/core';
 
 import { CngxTab, CngxTabContent } from '@cngx/common/tabs';
 import { CngxTabGroup, CngxTabOverflow } from '@cngx/ui/tabs';
@@ -95,6 +96,10 @@ import { CngxTabGroup, CngxTabOverflow } from '@cngx/ui/tabs';
 export class SkinsCoverageExample {
   protected readonly active = signal(0);
   protected readonly overflowActive = signal(0);
+
+  constructor() {
+    inject(DOCUMENT).body.classList.add('mat-typography', 'mat-app-background');
+  }
 
   protected readonly skins = [
     { id: 'line', label: 'Line skin' },

@@ -1,0 +1,61 @@
+@use '@angular/material' as mat;
+// Explicit `.scss` extension required: @cngx/themes exposes the bridges via
+// the `./material/*` exports map (extensionless target).
+@use '@cngx/themes/material/tabs-theme.scss' as tabs;
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap');
+
+$theme: mat.define-theme(
+  (
+    color: (
+      theme-type: light,
+      primary: mat.$azure-palette,
+      tertiary: mat.$blue-palette,
+    ),
+    typography: (
+      plain-family: Roboto,
+    ),
+    density: (
+      scale: 0,
+    ),
+  )
+);
+
+html {
+  color-scheme: light;
+  @include mat.theme($theme);
+  // cngx Material bridge - themes the tabs and paints the "More" popover as a
+  // mat-menu. Published `@cngx/themes/material/tabs-theme` mixin.
+  @include tabs.theme($theme);
+}
+
+// Material body classes are added at runtime by the component; `mat.theme`
+// ships the `--mat-sys-*` tokens but not these class rules, so emit them here.
+.mat-app-background {
+  background-color: var(--mat-sys-background);
+  color: var(--mat-sys-on-background);
+}
+.mat-typography {
+  font: var(--mat-sys-body-medium);
+}
+
+body {
+  margin: 0;
+  padding: 16px;
+}
+
+.hint {
+  margin: 0 0 12px;
+  opacity: 0.7;
+  font-size: 0.875rem;
+}
+
+.frame {
+  resize: horizontal;
+  overflow: auto;
+  inline-size: 420px;
+  min-inline-size: 220px;
+  max-inline-size: 760px;
+  padding: 8px;
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: var(--mat-sys-corner-small, 8px);
+}
