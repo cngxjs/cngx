@@ -9,9 +9,8 @@
 // Material auto-detect fires, and the cngx stepper variants are not on that
 // selector list - so this example builds the theme itself. The host component
 // uses `ViewEncapsulation.None`, so these `html` / `body` rules are global.
-// CSS `@import`s must follow `@use` and lead the emitted output, so they sit
-// here.
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap');
+// Roboto is loaded by the component at runtime via a <head> <link> (a CSS
+// @import here can be re-ordered below other rules and ignored).
 
 // A real M3 theme built in SCSS, not a prebuilt `.css`. `mat.theme` emits
 // the `--mat-sys-*` system tokens; the same `$theme` drives the cngx bridge.
@@ -44,6 +43,16 @@ html {
 
   background: var(--mat-sys-background);
   color: var(--mat-sys-on-background);
+  font: var(--mat-sys-body-medium);
+}
+
+// Material body classes are added at runtime by the component; `mat.theme`
+// ships the `--mat-sys-*` tokens but not these class rules, so emit them here.
+.mat-app-background {
+  background-color: var(--mat-sys-background);
+  color: var(--mat-sys-on-background);
+}
+.mat-typography {
   font: var(--mat-sys-body-medium);
 }
 
