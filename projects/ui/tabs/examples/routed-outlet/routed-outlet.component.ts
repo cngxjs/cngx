@@ -1,7 +1,9 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { ChangeDetectionStrategy, Component, inject, viewChild } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { NavigationCancel, Router, RouterOutlet } from '@angular/router';
+import { filter } from 'rxjs/operators';
 
-import { CngxTab, CngxTabsRouteSync } from '@cngx/common/tabs';
+import { CngxTab, type CngxTabGroupPresenter, CngxTabsRouteSync } from '@cngx/common/tabs';
 import { CngxTabGroup } from '@cngx/ui/tabs';
 
 import { DemoFormState } from './demo-routes';
@@ -20,12 +22,15 @@ export { appConfig } from './app.config';
  *
  * - **CanDeactivate gating.** The `profile` route guards its own exit.
  *   Check "I have unsaved changes", then click another tab: the guard
- *   refuses, the navigation is cancelled, the active tab stays on
- *   Profile, and the rejection decoration (the cross icon + an SR
- *   announcement) lights up - all for free from the commit lifecycle.
- * - **Direct `[error]` marker.** The Profile tab binds `[error]` to the
- *   shared unsaved signal, so the error badge shows *proactively* while
- *   changes are pending, before any switch is attempted.
+ *   refuses, the navigation is cancelled, and the active tab stays on
+ *   Profile.
+ * - **The fault shows on the source, not the target.** A blocked *leave*
+ *   is the Profile tab's problem, so the Profile tab binds `[error]` to the
+ *   shared unsaved signal and shows the badge proactively. cngx also pins
+ *   its generic rejection marker on the tab you *tried* to reach (the
+ *   cancelled-navigation target) - the wrong tab for a leave guard - so
+ *   this demo clears it on `NavigationCancel`. The clicked tab stays clean;
+ *   only Profile signals.
  * - **External navigation.** Browser back/forward and direct URL edits
  *   reflect into the active tab without re-navigating.
  *
@@ -60,10 +65,10 @@ export { appConfig } from './app.config';
       <p style="opacity: 0.8; font-size: 0.875rem">
         A <code>&lt;cngx-tab-group cngxTabsRouteSync&gt;</code> over a
         <code>&lt;router-outlet&gt;</code>. The Profile route guards its
-        exit while "unsaved changes" is on.
+        exit while "unsaved changes" is on - only the Profile tab signals.
       </p>
 
-      <cngx-tab-group cngxTabsRouteSync aria-label="Routed account tabs">
+      <cngx-tab-group #tg="cngxTabGroup" cngxTabsRouteSync aria-label="Routed account tabs">
         <div cngxTab id="overview" label="Overview"></div>
         <div
           cngxTab
@@ -82,4 +87,20 @@ export { appConfig } from './app.config';
 })
 export class RoutedOutletExample {
   protected readonly state = inject(DemoFormState);
+  private readonly router = inject(Router);
+  private readonly group = viewChild<CngxTabGroupPresenter>('tg');
+
+  constructor() {
+    // A refused *leave* belongs to the Profile tab (its `[error]`), not to
+    // the tab the user clicked. cngx pins its generic rejection marker on
+    // the cancelled-navigation target; clear it after the presenter sets it
+    // (queueMicrotask defers past the presenter's own NavigationCancel
+    // handler) so the clicked tab never lights up red.
+    this.router.events
+      .pipe(
+        filter((event): event is NavigationCancel => event instanceof NavigationCancel),
+        takeUntilDestroyed(),
+      )
+      .subscribe(() => queueMicrotask(() => this.group()?.clearLastFailed()));
+  }
 }
