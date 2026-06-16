@@ -72,6 +72,10 @@ import {
  * host directive: its `role="status"` would clobber the wrapper's
  * `role="group"` landmark.
  *
+ * @playground Material theme coverage across all skins ./examples/material-theme-coverage/skins-coverage.component.ts
+ * @playground Overflow "More" menu under resize ./examples/overflow-resize/overflow-resize.component.ts
+ * @playground Async commit-action (optimistic / pessimistic) ./examples/async-commit/async-commit.component.ts
+ * @playground Dismissable + addable tabs ./examples/dynamic-tabs/dynamic-tabs.component.ts
  * @playground Form error aggregation ./examples/form-errors/form-errors.component.ts
  * @playground Routed tabs with a CanDeactivate guard ./examples/routed-outlet/routed-outlet.component.ts
  * @see {@link CngxMatTabs} for the Material `<mat-tab-group>` variant with `[cngxMatTabError]`.

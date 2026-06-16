@@ -43,8 +43,9 @@ export class OverviewPage {}
     </label>
     <p style="opacity: 0.75; margin-bottom: 0">
       While this is checked, the <code>CanDeactivate</code> guard refuses
-      to leave - the tab switch is cancelled, the active tab stays, and
-      the rejection decoration fires.
+      to leave - the tab switch is cancelled and the active tab stays on
+      Profile. Only Profile signals the fault (its error badge); the tab
+      you clicked stays clean.
     </p>
   `,
 })

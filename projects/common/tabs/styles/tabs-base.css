@@ -178,12 +178,17 @@
   }
 
   /**
-   * Background color of the inline error badge.
+   * Background color of the inline error badge. `inherits: true` so a
+   * themed value set on the `cngx-tab-group` / `cngx-tab-nav` host (the
+   * Material bridge sets it there) reaches the descendant badge - with
+   * `inherits: false` the host value never cascades down and the badge
+   * keeps its initial tone. The default theme is unchanged: the initial
+   * value inherits identically when nothing sets the token above.
    * @group State / Error
    */
   @property --cngx-tab-error-badge-color {
     syntax: '<color>';
-    inherits: false;
+    inherits: true;
     initial-value: oklch(0.45 0.15 25);
   }
 
@@ -219,12 +224,15 @@
   }
 
   /**
-   * Background color of the rejection icon disc.
+   * Background color of the rejection icon disc. `inherits: true` so the
+   * themed disc tone set on the host (the Material bridge) reaches the
+   * descendant `.cngx-tabs__rejection-icon` - mirrors
+   * `--cngx-tab-error-badge-color`. Default theme unchanged.
    * @group State / Rejected
    */
   @property --cngx-tab-rejection-icon-color {
     syntax: '<color>';
-    inherits: false;
+    inherits: true;
     initial-value: oklch(0.45 0.15 25);
   }
 

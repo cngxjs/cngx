@@ -1,5 +1,5 @@
 @use '@angular/material' as mat;
-@use '@cngx/themes/material/stepper-theme.scss' as stepper;
+@use '@cngx/themes/material/tabs-theme.scss' as tabs;
 
 $palette: (
   theme-type: light,
@@ -27,7 +27,7 @@ html {
   );
 
   // CNGX Material bridge
-  @include stepper.theme($theme);
+  @include tabs.theme($theme);
 
   background: var(--mat-sys-background);
   color: var(--mat-sys-on-background);
@@ -62,8 +62,6 @@ html {
   opacity: 0.6;
 }
 
-.coverage__toolbar {
-  display: flex;
-  gap: 8px;
-  align-items: center;
+.coverage__narrow {
+  max-width: 360px;
 }

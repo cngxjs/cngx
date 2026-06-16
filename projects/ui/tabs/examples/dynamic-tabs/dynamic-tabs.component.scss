@@ -1,0 +1,47 @@
+@use '@angular/material' as mat;
+@use '@cngx/themes/material/tabs-theme.scss' as tabs;
+
+$palette: (
+  theme-type: light,
+  primary: mat.$azure-palette,
+  tertiary: mat.$blue-palette,
+);
+$theme: mat.define-theme(
+  (
+    color: $palette,
+    density: (
+      scale: 0,
+    ),
+  )
+);
+
+html {
+  color-scheme: light;
+  @include mat.theme(
+    (
+      color: $palette,
+      typography: Roboto,
+      density: 0,
+    )
+  );
+  @include tabs.theme($theme);
+}
+
+.mat-app-background {
+  background-color: var(--mat-sys-background);
+  color: var(--mat-sys-on-background);
+}
+.mat-typography {
+  font: var(--mat-sys-body-medium);
+}
+
+body {
+  margin: 0;
+  padding: 16px;
+}
+
+.status {
+  margin-top: 12px;
+  opacity: 0.7;
+  font-size: 0.875rem;
+}

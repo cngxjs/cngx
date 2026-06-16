@@ -134,7 +134,7 @@ export interface CngxActionSelectChange<T = unknown> {
  * Pessimistic commit only: panel stays open while pending, `isPending`
  * flips on the slot context, error surfaces in the commit-error
  * banner. True optimistic create requires a consumer-supplied
- * `tempValueFactory` - see `action-select-master-plan.md` §3 Commit 5.
+ * `tempValueFactory`.
  *
  * Dismiss-guard: Escape and click-outside are intercepted while
  * `actionDirty()` is `true` (consumer flips it via `setDirty(true)`);
