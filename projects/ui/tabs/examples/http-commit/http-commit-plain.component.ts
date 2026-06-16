@@ -1,9 +1,11 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, type HttpErrorResponse } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, ViewEncapsulation, inject, signal } from '@angular/core';
-import { map } from 'rxjs/operators';
+import { throwError } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 
 import { CngxTab, CngxTabContent, type CngxTabsCommitAction } from '@cngx/common/tabs';
 import { CngxTabGroup } from '@cngx/ui/tabs';
+import { CngxToastOn, CngxToastOutlet } from '@cngx/ui/feedback';
 
 import { type Section } from './backend';
 
@@ -24,7 +26,7 @@ export { appConfig } from './app.config';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  imports: [CngxTabGroup, CngxTab, CngxTabContent],
+  imports: [CngxTabGroup, CngxTab, CngxTabContent, CngxToastOn, CngxToastOutlet],
   styleUrl: './http-commit-plain.component.scss',
   template: `
     @if (sections().length) {
@@ -33,6 +35,9 @@ export { appConfig } from './app.config';
         [commitAction]="commit"
         commitMode="pessimistic"
         aria-label="Workspace sections"
+        cngxToastOn
+        toastError="Could not switch section"
+        [toastErrorDetail]="true"
       >
         @for (section of sections(); track section.id) {
           <div cngxTab [label]="section.label">
@@ -43,6 +48,8 @@ export { appConfig } from './app.config';
     } @else {
       <p class="loading">Loading sections from /api/sections…</p>
     }
+
+    <cngx-toast-outlet />
   `,
 })
 export class HttpCommitPlainExample {
@@ -56,6 +63,11 @@ export class HttpCommitPlainExample {
 
   protected readonly commit: CngxTabsCommitAction = (_from, to) => {
     const target = this.sections()[to];
-    return this.http.put(`/api/sections/${target.id}/activate`, {}).pipe(map(() => true));
+    return this.http.put(`/api/sections/${target.id}/activate`, {}).pipe(
+      map(() => true),
+      catchError((err: HttpErrorResponse) =>
+        throwError(() => new Error(err.error?.message ?? 'The server refused the switch.')),
+      ),
+    );
   };
 }
