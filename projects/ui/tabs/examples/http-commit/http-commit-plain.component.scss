@@ -1,0 +1,20 @@
+// cngx default theme: NO Material bridge, no @use. The cngx tab components ship
+// their own default styling (the `--cngx-tab-*` / `--cngx-color-*` token
+// initials), so this example only needs page layout - it shows the tabs fully
+// styled without Material.
+html {
+  color-scheme: light;
+}
+
+body {
+  margin: 0;
+  padding: 16px;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  color: #1f2937;
+  background: #ffffff;
+}
+
+.loading {
+  opacity: 0.6;
+  font-style: italic;
+}

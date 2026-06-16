@@ -76,6 +76,8 @@ import {
  * @playground Overflow "More" menu under resize ./examples/overflow-resize/overflow-resize.component.ts
  * @playground Async commit-action (optimistic / pessimistic) ./examples/async-commit/async-commit.component.ts
  * @playground Dismissable + addable tabs ./examples/dynamic-tabs/dynamic-tabs.component.ts
+ * @playground Data-driven tabs via HTTP (Material) ./examples/http-commit/http-commit-material.component.ts
+ * @playground Data-driven tabs via HTTP (default theme) ./examples/http-commit/http-commit-plain.component.ts
  * @playground Form error aggregation ./examples/form-errors/form-errors.component.ts
  * @playground Routed tabs with a CanDeactivate guard ./examples/routed-outlet/routed-outlet.component.ts
  * @see {@link CngxMatTabs} for the Material `<mat-tab-group>` variant with `[cngxMatTabError]`.
