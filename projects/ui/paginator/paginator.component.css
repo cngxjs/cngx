@@ -1,6 +1,7 @@
 /**
  * @overview
- * Thematic tokens + the `numbered` skin for `CngxPaginator`. Structural layout
+ * Thematic tokens + the `numbered`, `pill`, `segmented`, and `minimal` skins
+ * for `CngxPaginator`. Structural layout
  * lives in `paginator-base.css` (`@cngx/common/data`); this file only paints.
  * Every token is registered with `inherits: true` so a value set on the host
  * (skin block, density, consumer override) cascades to the descendant buttons -
@@ -129,6 +130,28 @@
     initial-value: 0.45;
   }
 
+  /**
+   * Muted track the page row sits in under the `segmented` skin. Derived from
+   * surface + border so it tracks the foundation light / dark scheme.
+   * @group Skin
+   */
+  @property --cngx-paginator-track-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.96 0 0);
+  }
+
+  /**
+   * Drop shadow that raises the active page off the track under the
+   * `segmented` skin.
+   * @group Skin
+   */
+  @property --cngx-paginator-active-shadow {
+    syntax: '*';
+    inherits: true;
+    initial-value: 0 1px 2px oklch(0 0 0 / 0.06);
+  }
+
   /*
    * Cross-skin default palette. The active fill and the focus ring delegate to
    * the foundation primary, which already carries its own light/dark values -
@@ -153,6 +176,84 @@
       );
     }
   }
+
+  /*
+   * Pill skin: full-radius cells with gaps; the current page takes the primary
+   * fill, resting cells tint on hover. Pure token reassignment - no element
+   * rules - because the base geometry already reads these tokens.
+   */
+  @scope (.cngx-paginator[data-skin='pill']) {
+    :scope {
+      --cngx-paginator-gap: 0.375rem;
+      --cngx-paginator-button-radius: 100px;
+      --cngx-paginator-current-bg: var(--cngx-color-primary, oklch(0.66 0.19 50));
+      --cngx-paginator-current-color: var(--cngx-color-on-primary, oklch(1 0 0));
+      --cngx-paginator-current-border-color: transparent;
+      --cngx-paginator-button-hover-bg: color-mix(
+        in oklch,
+        var(--cngx-color-primary, oklch(0.66 0.19 50)) 8%,
+        transparent
+      );
+    }
+  }
+
+  /*
+   * Segmented skin: the numbered row shares a muted track; the current page
+   * lifts onto the surface with a soft shadow. Nav buttons sit outside the
+   * track. Track + lift derive from foundation surface / border so they adapt
+   * to light / dark on their own.
+   */
+  @scope (.cngx-paginator[data-skin='segmented']) {
+    :scope {
+      --cngx-paginator-button-radius: 0.375rem;
+      --cngx-paginator-track-bg: color-mix(
+        in oklch,
+        var(--cngx-color-surface, oklch(1 0 0)),
+        var(--cngx-color-border, oklch(0.88 0.005 250)) 25%
+      );
+      --cngx-paginator-current-bg: var(--cngx-color-surface, oklch(1 0 0));
+      --cngx-paginator-current-color: currentColor;
+      --cngx-paginator-current-border-color: transparent;
+      --cngx-paginator-button-hover-bg: color-mix(
+        in oklch,
+        var(--cngx-color-surface, oklch(1 0 0)),
+        var(--cngx-color-border, oklch(0.88 0.005 250)) 45%
+      );
+    }
+
+    .cngx-paginator__pages {
+      background: var(--cngx-paginator-track-bg, oklch(0.96 0 0));
+      border-radius: var(--cngx-paginator-button-radius, 0.375rem);
+      padding: var(--cngx-paginator-segmented-track-padding, 0.25rem);
+    }
+
+    .cngx-paginator__page[aria-current='page'] {
+      box-shadow: var(--cngx-paginator-active-shadow, 0 1px 2px oklch(0 0 0 / 0.06));
+    }
+  }
+
+  /*
+   * Minimal skin: text-first, no button chrome. The current page reads as
+   * accent-coloured underlined text; hover underlines. Hit targets stay (base
+   * button-size) so touch + keyboard are unaffected.
+   */
+  @scope (.cngx-paginator[data-skin='minimal']) {
+    :scope {
+      --cngx-paginator-gap: 0.125rem;
+      --cngx-paginator-button-bg: transparent;
+      --cngx-paginator-button-hover-bg: transparent;
+      --cngx-paginator-button-border-color: transparent;
+      --cngx-paginator-current-bg: transparent;
+      --cngx-paginator-current-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
+      --cngx-paginator-current-border-color: transparent;
+    }
+
+    .cngx-paginator__button:hover:not([aria-disabled='true']),
+    .cngx-paginator__page[aria-current='page'] {
+      text-decoration: underline;
+      text-underline-offset: 0.25em;
+    }
+  }
 }
 
 /*
@@ -169,5 +270,14 @@
       var(--cngx-color-primary, oklch(0.72 0.18 50)) 24%,
       transparent
     );
+  }
+
+  /*
+   * The segmented track + lift derive from foundation surface / border, which
+   * already shift for dark; only the shadow can't be derived - a 6%-black drop
+   * reads as nothing on a dark surface, so deepen it here.
+   */
+  .cngx-paginator[data-skin='segmented'] {
+    --cngx-paginator-active-shadow: 0 1px 3px oklch(0 0 0 / 0.3);
   }
 }
