@@ -257,13 +257,49 @@
   }
 
   /**
-   * Outline shorthand of the rejected tab.
+   * Background wash of a rejected tab - a soft danger tint that settles in
+   * after the pulse, so the failed target stays legible without a harsh box.
+   * Static by default so it reads against either surface; the Material bridge
+   * remaps it onto the error role.
+   * @group State / Rejected
+   */
+  @property --cngx-tab-rejected-bg {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: oklch(0.45 0.15 25 / 0.1);
+  }
+
+  /**
+   * Corner radius of the rejected-tab wash, so the tint reads as a soft
+   * highlight rather than a hard block.
+   * @group State / Rejected
+   */
+  @property --cngx-tab-rejected-radius {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 0.375rem;
+  }
+
+  /**
+   * Thickness of the rejected tab's bottom accent bar - echoes the active
+   * indicator's language in the danger tone instead of a full outline ring.
+   * @group State / Rejected
+   */
+  @property --cngx-tab-rejected-accent-width {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 2px;
+  }
+
+  /**
+   * Outline shorthand of the rejected tab. `none` by default - the wash plus
+   * the bottom accent carry the signal; set this to restore a full ring.
    * @group State / Rejected
    */
   @property --cngx-tab-rejected-outline {
     syntax: '*';
     inherits: false;
-    initial-value: 2px solid oklch(0.45 0.15 25);
+    initial-value: none;
   }
 
   /**
@@ -737,10 +773,12 @@
   }
 
   .cngx-tabs__tab.cngx-tab--rejected {
-    outline: var(
-      --cngx-tab-rejected-outline,
-      2px solid var(--cngx-tab-rejection-icon-color, oklch(0.45 0.15 25))
-    );
+    background: var(--cngx-tab-rejected-bg, oklch(0.45 0.15 25 / 0.1));
+    border-radius: var(--cngx-tab-rejected-radius, 0.375rem)
+      var(--cngx-tab-rejected-radius, 0.375rem) 0 0;
+    box-shadow: inset 0 calc(-1 * var(--cngx-tab-rejected-accent-width, 2px)) 0 0
+      var(--cngx-tab-rejection-icon-color, oklch(0.45 0.15 25));
+    outline: var(--cngx-tab-rejected-outline, none);
     outline-offset: var(--cngx-tab-rejected-outline-offset, 1px);
   }
 
@@ -768,6 +806,6 @@
     background: var(--cngx-tab-rejected-pulse-bg, oklch(0.45 0.15 25 / 0.18));
   }
   100% {
-    background: var(--cngx-tab-bg, transparent);
+    background: var(--cngx-tab-rejected-bg, oklch(0.45 0.15 25 / 0.1));
   }
 }

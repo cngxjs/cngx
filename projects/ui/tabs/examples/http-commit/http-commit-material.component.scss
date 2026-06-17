@@ -1,0 +1,38 @@
+@use '@angular/material' as mat;
+@use '@cngx/themes/material/tabs-theme.scss' as tabs;
+
+$palette: (
+  theme-type: light,
+  primary: mat.$azure-palette,
+  tertiary: mat.$blue-palette,
+);
+$theme: mat.define-theme((color: $palette, density: (scale: 0)));
+
+html {
+  color-scheme: light;
+  @include mat.theme((color: $palette, typography: Roboto, density: 0));
+  @include tabs.theme($theme);
+  background: var(--mat-sys-background);
+  color: var(--mat-sys-on-background);
+  font: var(--mat-sys-body-medium);
+}
+
+// compodocx wires the body classes from the theme-bridge `@use`; emit the rules
+// so they paint (mat.theme ships the tokens, not these class rules).
+.mat-app-background {
+  background-color: var(--mat-sys-background);
+  color: var(--mat-sys-on-background);
+}
+.mat-typography {
+  font: var(--mat-sys-body-medium);
+}
+
+body {
+  margin: 0;
+  padding: 16px;
+}
+
+.loading {
+  opacity: 0.6;
+  font-style: italic;
+}

@@ -55,6 +55,8 @@
     --cngx-tab-error-badge-text-color: var(--mat-sys-on-error);
     --cngx-tab-rejection-icon-color: var(--mat-sys-error);
     --cngx-tab-rejection-icon-text: var(--mat-sys-on-error);
+    // Soft error-tinted wash behind the rejected tab, on the error role.
+    --cngx-tab-rejected-bg: color-mix(in oklab, var(--mat-sys-error) 12%, transparent);
   } @else {
     --cngx-color-primary: #{mat.get-theme-color($theme, primary)};
     --cngx-color-surface: #{mat.get-theme-color($theme, background, card)};
@@ -67,6 +69,7 @@
     --cngx-tab-error-badge-text-color: oklch(1 0 0);
     --cngx-tab-rejection-icon-color: #{mat.get-theme-color($theme, warn)};
     --cngx-tab-rejection-icon-text: oklch(1 0 0);
+    --cngx-tab-rejected-bg: #{rgba(mat.get-theme-color($theme, warn), 0.12)};
   }
 }
 
