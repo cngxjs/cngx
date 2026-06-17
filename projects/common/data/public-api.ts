@@ -17,17 +17,10 @@ export {
   type CngxSmartDataSourceOptions,
 } from './data-source/smart-data-source';
 
-export {
-  createManualState,
-  type ManualAsyncState,
-  createAsyncState,
-  type MutableAsyncState,
-  injectAsyncState,
-  type ReactiveAsyncState,
-  type InjectAsyncStateOptions,
-  resolveAsyncView,
-  type AsyncView,
-} from './async-state';
+// Re-export the curated async-state sub-barrel wholesale so additions there
+// (e.g. fromResource / fromHttpResource / tapAsyncState) cannot silently drop
+// out of `@cngx/common/data`.
+export * from './async-state';
 
 export { CngxAsync, type CngxAsyncContext } from './async/async.directive';
 

@@ -86,6 +86,7 @@ export {
   flattenSelectOptions,
   filterSelectOptions,
   mergeLocalItems,
+  isOptionDisabled,
 } from './shared/option.model';
 
 export {
@@ -351,5 +352,6 @@ export {
   createDefaultFlatNavStrategy,
   type CngxFlatNavAction,
   type CngxFlatNavContext,
+  type CngxFlatNavListboxItem,
   type CngxFlatNavStrategy,
 } from './shared/flat-nav-strategy';
