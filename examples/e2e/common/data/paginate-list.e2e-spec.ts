@@ -2,7 +2,8 @@ import { expect, test } from '@playwright/test';
 import { gotoDemo } from '../../_helpers';
 
 // Story: CngxPaginate drives any list-like consumer via `pg.range()`.
-// CngxMatPaginator provides the Material paginator UI.
+// The CngxMatPaginatorWrapper component and the [cngxMatPaginator] bridge
+// (CngxMatPaginator) provide the Material paginator UI.
 
 test.describe('common/data/paginate-list', () => {
   test('paginated-list: page size 5 means first page shows 5 items, status reads "1–5 of N"', async ({
@@ -10,7 +11,7 @@ test.describe('common/data/paginate-list', () => {
   }) => {
     await gotoDemo(page, 'common/data/paginate-list/paginated-list-cngxpaginate-cngxmatpaginator');
 
-    const items = page.locator('ul li');
+    const items = page.locator('.demo-list-flush li');
     await expect(items).toHaveCount(5);
 
     const status = page.locator('.status-badge').filter({ hasText: /of \d+ people/ });
@@ -25,7 +26,7 @@ test.describe('common/data/paginate-list', () => {
 
   test('uncontrolled-mode: code-block story renders without error', async ({ page }) => {
     await gotoDemo(page, 'common/data/paginate-list/uncontrolled-mode-zero-class-boilerplate');
-    await expect(page.locator('pre.code-block')).toBeVisible();
+    await expect(page.locator('details.cngx-ex-code').first()).toBeVisible();
   });
 
   test('instrumentation-bridge: [cngxMatPaginator] drives the sibling list; next advances the page', async ({
