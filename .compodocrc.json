@@ -67,13 +67,13 @@
         }
     ],
     "playgroundDependencies": {
-        "@cngx/utils": "0.1.0-rc.1",
-        "@cngx/core": "0.1.0-rc.1",
-        "@cngx/common": "0.1.0-rc.1",
-        "@cngx/forms": "0.1.0-rc.1",
-        "@cngx/ui": "0.1.0-rc.1",
-        "@cngx/data-display": "0.1.0-rc.1",
-        "@cngx/themes": "0.1.0-rc.1",
+        "@cngx/utils": "0.1.0-rc.2",
+        "@cngx/core": "0.1.0-rc.2",
+        "@cngx/common": "0.1.0-rc.2",
+        "@cngx/forms": "0.1.0-rc.2",
+        "@cngx/ui": "0.1.0-rc.2",
+        "@cngx/data-display": "0.1.0-rc.2",
+        "@cngx/themes": "0.1.0-rc.2",
         "@angular/material": "^21.2.2"
     }
 }
