@@ -80,7 +80,8 @@
     outline-offset: var(--cngx-paginator-focus-offset, 2px);
   }
 
-  .cngx-paginator__button[aria-disabled='true'] {
+  .cngx-paginator__button[aria-disabled='true'],
+  .cngx-paginator__button:disabled {
     cursor: not-allowed;
     opacity: var(--cngx-paginator-disabled-opacity, 0.45);
   }

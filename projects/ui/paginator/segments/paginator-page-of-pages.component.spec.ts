@@ -3,7 +3,8 @@ import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { describe, expect, test } from 'vitest';
 
-import { CngxPaginate } from '@cngx/common/data';
+import { CngxPaginate, createManualState } from '@cngx/common/data';
+import type { CngxAsyncState } from '@cngx/core/utils';
 
 import { CngxPaginator } from '../paginator.component';
 import { CngxPaginatorPageOfPages } from './paginator-page-of-pages.component';
@@ -12,13 +13,14 @@ import { CngxPaginatorPageOfPages } from './paginator-page-of-pages.component';
   standalone: true,
   imports: [CngxPaginator, CngxPaginatorPageOfPages],
   template: `
-    <cngx-paginator [total]="total()">
+    <cngx-paginator [total]="total()" [state]="state()">
       <cngx-pgn-page-of-pages />
     </cngx-paginator>
   `,
 })
 class HostCmp {
   readonly total = signal(100); // 10 pages of 10
+  readonly state = signal<CngxAsyncState<unknown> | undefined>(undefined);
 }
 
 const providers = [provideZonelessChangeDetection()];
@@ -97,5 +99,20 @@ describe('CngxPaginatorPageOfPages', () => {
     await settle(fixture);
     const selected = options(fixture).filter((o) => o.getAttribute('aria-selected') === 'true');
     expect(selected.map((o) => o.textContent?.trim())).toEqual(['3']);
+  });
+
+  test('disables the trigger and does not navigate while busy', async () => {
+    const { fixture, host, paginate } = await setup();
+    const busy = createManualState<unknown>();
+    busy.set('loading');
+    host.state.set(busy);
+    await settle(fixture);
+
+    expect(trigger(fixture).disabled).toBe(true);
+    options(fixture)
+      .find((o) => o.textContent?.trim() === '4')
+      ?.click();
+    await settle(fixture);
+    expect(paginate.pageIndex()).toBe(0);
   });
 });

@@ -105,15 +105,17 @@ describe('CngxPaginatorPageSize', () => {
     expect(paginate.pageIndex()).toBe(0);
   });
 
-  test('does not change the size while the bound state is busy', async () => {
+  test('disables the trigger and does not change the size while busy', async () => {
     const { fixture, host, paginate } = await setup();
     const busy = createManualState<unknown>();
     busy.set('loading');
     host.state.set(busy);
     await settle(fixture);
 
+    // Native disabled gates both pointer and keyboard open, so the panel is
+    // unreachable while busy; the brain also no-ops the write as a backstop.
+    expect(trigger(fixture).disabled).toBe(true);
     await pick(fixture, '50');
-
     expect(paginate.pageSize()).toBe(10);
   });
 });

@@ -39,7 +39,7 @@ import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
       [haspopup]="'listbox'"
       [popover]="pop"
       [attr.aria-label]="config.ariaLabels.goToPage"
-      [attr.aria-disabled]="host.isBusy() ? 'true' : null"
+      [disabled]="host.isBusy()"
       (click)="pop.toggle()"
     >
       <span class="cngx-paginator__select-label">{{ host.pageIndex() + 1 }} / {{ host.totalPages() }}</span>
