@@ -87,6 +87,7 @@ describe('CngxPaginatorPages', () => {
     const more = fixture.nativeElement.querySelectorAll('.cngx-paginator__more');
     expect(more).toHaveLength(1);
     expect(more[0].getAttribute('aria-label')).toBe('More pages');
+    expect(more[0].textContent?.trim()).toBe('…');
   });
 
   test('no ellipsis when every page fits', async () => {

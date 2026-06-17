@@ -11,6 +11,7 @@ import { CngxMenu, CngxMenuItem, CngxMenuTrigger } from '@cngx/common/interactiv
 import { CngxPopover } from '@cngx/common/popover';
 
 import { injectPaginatorConfig } from '../paginator-config';
+import { CNGX_PAGINATOR_GLYPHS } from '../paginator-glyphs';
 import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
 import { pageWindow, pageWindowEqual, type PageWindow } from './page-model';
 
@@ -55,7 +56,7 @@ import { pageWindow, pageWindowEqual, type PageWindow } from './page-model';
             [attr.aria-label]="config.ariaLabels.morePages"
             (click)="morePopover.toggle()"
           >
-            …
+            {{ glyphs.more }}
           </button>
           <div cngxPopover #morePopover="cngxPopover">
             <ul
@@ -79,6 +80,7 @@ import { pageWindow, pageWindowEqual, type PageWindow } from './page-model';
 export class CngxPaginatorPages {
   protected readonly host = inject(CNGX_PAGINATOR_HOST);
   protected readonly config = injectPaginatorConfig();
+  protected readonly glyphs = CNGX_PAGINATOR_GLYPHS;
 
   /**
    * The rendered page window. Structural `equal` keeps the reference stable
