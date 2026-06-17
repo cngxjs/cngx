@@ -120,6 +120,12 @@ describe('CngxPaginator', () => {
     await settle(fixture);
     expect(paginatorEl.getAttribute('data-skin')).toBe('segmented');
     expect(paginatorEl.getAttribute('data-density')).toBe('comfortable');
+
+    for (const skin of ['rail', 'bar'] as const) {
+      host.skin.set(skin);
+      await settle(fixture);
+      expect(paginatorEl.getAttribute('data-skin')).toBe(skin);
+    }
   });
 
   test('aria-label input overrides the config default', async () => {
