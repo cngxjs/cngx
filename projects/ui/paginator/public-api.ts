@@ -1,5 +1,3 @@
-// Public API surface for `@cngx/ui/paginator`.
-
 export {
   CngxPaginator,
   type CngxPaginatorSkin,
