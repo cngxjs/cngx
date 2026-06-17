@@ -159,6 +159,16 @@
   }
 
   /**
+   * Thickness of the `numbered` skin's active-page underline bar.
+   * @group Skin
+   */
+  @property --cngx-paginator-indicator-thickness {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 2px;
+  }
+
+  /**
    * Colour of the hairline rail the page row rides under the `rail` skin.
    * @group Skin
    */
@@ -273,15 +283,35 @@
 }
 
 @layer cngx.components {
-  /* Numbered skin: subtle resting cells, a primary-filled current page. */
+  /*
+   * Numbered skin: subtle resting cells; the current page reads as accent text
+   * with a hairline underline bar (a tab-style indicator), not a solid fill.
+   */
   @scope (.cngx-paginator[data-skin='numbered']) {
     :scope {
-      --cngx-paginator-current-color: oklch(1 0 0);
+      --cngx-paginator-current-bg: transparent;
+      --cngx-paginator-current-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
+      --cngx-paginator-current-border-color: transparent;
       --cngx-paginator-button-hover-bg: color-mix(
         in oklch,
         var(--cngx-color-primary, oklch(0.66 0.19 50)) 12%,
         transparent
       );
+    }
+
+    .cngx-paginator__page {
+      position: relative;
+    }
+
+    /* Hairline underline bar centred under the active numeral. */
+    .cngx-paginator__page[aria-current='page']::after {
+      content: '';
+      position: absolute;
+      inset-inline: 22%;
+      bottom: 0.1875rem;
+      block-size: var(--cngx-paginator-indicator-thickness, 2px);
+      background: var(--cngx-color-primary, oklch(0.66 0.19 50));
+      border-radius: var(--cngx-paginator-indicator-thickness, 2px);
     }
   }
 
