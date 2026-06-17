@@ -21,6 +21,7 @@
     "stepper/**/*.spec.ts",
     "mat-stepper/**/*.spec.ts",
     "mat-tabs/**/*.spec.ts",
-    "tabs/**/*.spec.ts"
+    "tabs/**/*.spec.ts",
+    "paginator/**/*.spec.ts"
   ]
 }

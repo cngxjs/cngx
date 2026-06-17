@@ -1,0 +1,173 @@
+/**
+ * @overview
+ * Thematic tokens + the `numbered` skin for `CngxPaginator`. Structural layout
+ * lives in `paginator-base.css` (`@cngx/common/data`); this file only paints.
+ * Every token is registered with `inherits: true` so a value set on the host
+ * (skin block, density, consumer override) cascades to the descendant buttons -
+ * `inherits: false` would strand the descendant on the initial value.
+ */
+
+@layer cngx.tokens {
+  /**
+   * Gap between adjacent cells.
+   * @group Layout
+   */
+  @property --cngx-paginator-gap {
+    syntax: '*';
+    inherits: true;
+    initial-value: 0.25rem;
+  }
+
+  /**
+   * Hit-target size (min-width and height) of every paginator button.
+   * @group Layout
+   */
+  @property --cngx-paginator-button-size {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 2.25rem;
+  }
+
+  /**
+   * Corner radius of a paginator button.
+   * @group Layout
+   */
+  @property --cngx-paginator-button-radius {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 0.375rem;
+  }
+
+  /**
+   * Resting button text colour.
+   * @group Surface
+   */
+  @property --cngx-paginator-button-color {
+    syntax: '*';
+    inherits: true;
+    initial-value: currentColor;
+  }
+
+  /**
+   * Resting button background.
+   * @group Surface
+   */
+  @property --cngx-paginator-button-bg {
+    syntax: '*';
+    inherits: true;
+    initial-value: transparent;
+  }
+
+  /**
+   * Hover background of a button.
+   * @group Surface
+   */
+  @property --cngx-paginator-button-hover-bg {
+    syntax: '*';
+    inherits: true;
+    initial-value: color-mix(in oklch, currentColor 10%, transparent);
+  }
+
+  /**
+   * Border colour of a resting button.
+   * @group Surface
+   */
+  @property --cngx-paginator-button-border-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: transparent;
+  }
+
+  /**
+   * Background of the active page button. Delegates to `--cngx-color-primary`.
+   * @group State / Active
+   * @see [[--cngx-color-primary]]
+   */
+  @property --cngx-paginator-current-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.66 0.19 50);
+  }
+
+  /**
+   * Text colour of the active page button (reads against the primary fill).
+   * @group State / Active
+   */
+  @property --cngx-paginator-current-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(1 0 0);
+  }
+
+  /**
+   * Border colour of the active page button.
+   * @group State / Active
+   */
+  @property --cngx-paginator-current-border-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: transparent;
+  }
+
+  /**
+   * Focus-ring outline shorthand.
+   * @group State / Focus
+   */
+  @property --cngx-paginator-focus-ring {
+    syntax: '*';
+    inherits: true;
+    initial-value: 2px solid currentColor;
+  }
+
+  /**
+   * Opacity multiplier applied to a disabled (bound or busy) button.
+   * @group State / Disabled
+   */
+  @property --cngx-paginator-disabled-opacity {
+    syntax: '<number>';
+    inherits: true;
+    initial-value: 0.45;
+  }
+
+  /*
+   * Cross-skin default palette. The active fill and the focus ring delegate to
+   * the foundation primary, which already carries its own light/dark values -
+   * so no colour-scheme block is needed for them.
+   */
+  :root {
+    --cngx-paginator-current-bg: var(--cngx-color-primary, oklch(0.66 0.19 50));
+    --cngx-paginator-current-border-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
+    --cngx-paginator-focus-ring: 2px solid var(--cngx-color-primary, oklch(0.66 0.19 50));
+  }
+}
+
+@layer cngx.components {
+  /* Numbered skin: subtle resting cells, a primary-filled current page. */
+  @scope (.cngx-paginator[data-skin='numbered']) {
+    :scope {
+      --cngx-paginator-current-color: oklch(1 0 0);
+      --cngx-paginator-button-hover-bg: color-mix(
+        in oklch,
+        var(--cngx-color-primary, oklch(0.66 0.19 50)) 12%,
+        transparent
+      );
+    }
+  }
+}
+
+/*
+ * Dark-mode refinement. Unlayered, outside @scope, with the full skin selector
+ * repeated - an @media nested inside @scope does not beat the :scope rule
+ * deterministically across engines (feedback_media_inside_scope_cascade). The
+ * foundation primary already shifts for dark; this only strengthens the hover
+ * tint so it stays legible on a dark surface.
+ */
+@media (prefers-color-scheme: dark) {
+  .cngx-paginator[data-skin='numbered'] {
+    --cngx-paginator-button-hover-bg: color-mix(
+      in oklch,
+      var(--cngx-color-primary, oklch(0.72 0.18 50)) 24%,
+      transparent
+    );
+  }
+}

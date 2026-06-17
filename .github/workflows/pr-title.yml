@@ -60,6 +60,7 @@ jobs:
             ui/layout
             ui/overlay
             ui/mat-paginator
+            ui/paginator
             ui/empty-state
             ui/feedback
             ui/stepper

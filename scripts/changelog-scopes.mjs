@@ -36,6 +36,7 @@ export const LIBRARY_SCOPES = [
   'ui/layout',
   'ui/overlay',
   'ui/mat-paginator',
+  'ui/paginator',
   'ui/empty-state',
   'ui/feedback',
   'ui/stepper',

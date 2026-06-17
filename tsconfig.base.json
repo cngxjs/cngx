@@ -52,6 +52,7 @@
       "@cngx/ui/mat-stepper": ["projects/ui/mat-stepper/public-api.ts"],
       "@cngx/ui/mat-tabs": ["projects/ui/mat-tabs/public-api.ts"],
       "@cngx/ui/tabs": ["projects/ui/tabs/public-api.ts"],
+      "@cngx/ui/paginator": ["projects/ui/paginator/public-api.ts"],
       "@cngx/ui/action-button": ["projects/ui/action-button/public-api.ts"],
       "@cngx/ui/skeleton": ["projects/ui/skeleton/public-api.ts"],
       "@cngx/ui/speak": ["projects/ui/speak/public-api.ts"],
