@@ -7,9 +7,9 @@
  *   @cngx/ui/empty-state
  *   @cngx/ui/feedback
  *   @cngx/ui/layout
+ *   @cngx/ui/mat-paginator
  *   @cngx/ui/mat-stepper
  *   @cngx/ui/mat-tabs
- *   @cngx/ui/material
  *   @cngx/ui/overlay
  *   @cngx/ui/sidenav
  *   @cngx/ui/skeleton

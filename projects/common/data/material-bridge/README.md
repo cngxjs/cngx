@@ -66,4 +66,4 @@ There is no `commitState` gate. Pessimistic-commit handlers hold `presenter.acti
 
 - [API on compodocx](https://cngxjs.github.io/cngx/) for `CngxMaterialBidirectionalSyncOptions`.
 - cngx data primitives: `../README.md` (`CngxAsyncState`, `createCommitController`, presenter contracts).
-- `@cngx/ui/material` and the per-component Material bridges under `@cngx/themes/material/` for actual Material-aware consumers.
+- `@cngx/ui/mat-paginator` and the per-component Material bridges under `@cngx/themes/material/` for actual Material-aware consumers.

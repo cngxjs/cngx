@@ -172,12 +172,14 @@ Because the presenter provides `CNGX_STATEFUL`, transition bridges compose as si
 |**Logic Source**|Divergent / forked|**Unified (same presenter as the headless twin)**|
 |**Maintenance**|Brittle (breaks on Material HTML changes)|**Robust (relies on Material public API)**|
 
-Both shapes ship side by side:
+Both shapes ship side by side across every instrumented Material organism:
 
-- `<cngx-mat-stepper>` for fresh markup.
-- `[cngxMatStepper]` for adoption.
+- Stepper: `<cngx-mat-stepper>` for fresh markup, `[cngxMatStepper]` for adoption.
+- Tabs: `<cngx-mat-tabs>` for fresh markup, `[cngxMatTabs]` for adoption.
+- Paginator: `CngxMatPaginatorWrapper` (`<cngx-mat-paginator>`) for fresh markup,
+  `CngxMatPaginator` (`[cngxMatPaginator]`) for adoption.
 
-They share the presenter, so a migration from one to the other is mechanical.
+They share the brain, so a migration from one shape to the other is mechanical.
 
 ---
 
