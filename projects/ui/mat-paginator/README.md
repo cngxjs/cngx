@@ -1,88 +1,84 @@
-# CngxMatPaginatorWrapper
+# @cngx/ui/mat-paginator
 
-Material paginator wrapper connecting to a CngxPaginate directive via explicit `[cngxPaginateRef]` input.
+Material paginator instrumentation. Two shapes ship side by side, both backed by
+the signal-native `CngxPaginate` brain:
 
-## Import
+- `CngxMatPaginator` - the `[cngxMatPaginator]` bridge for **in-place adoption** of
+  a `<mat-paginator>` you already own.
+- `CngxMatPaginatorWrapper` - the deprecated `<cngx-mat-paginator>` component that
+  renders **fresh markup** bound to an external `CngxPaginate` ref.
 
-```typescript
-import { CngxMatPaginatorWrapper } from '@cngx/ui/mat-paginator';
-```
+## Bridge: in-place adoption (`CngxMatPaginator`)
 
-## Quick Start
+Add one attribute to an existing `<mat-paginator>`; the signal-native brain takes
+over its state with no DOM rewrite. The bridge composes `CngxPaginate` via
+`hostDirectives`, so the consumer does not import or place the brain separately - a
+sibling list reads `range()` off the exported reference.
 
 ```typescript
 import { Component, signal } from '@angular/core';
-import { MatTableModule } from '@angular/material/table';
-import { CngxPaginate } from '@cngx/common/data';
-import { CngxMatPaginatorWrapper } from '@cngx/ui/mat-paginator';
+import { MatPaginatorModule } from '@angular/material/paginator';
+import { CngxMatPaginator } from '@cngx/ui/mat-paginator';
 
 @Component({
   selector: 'app-example',
+  imports: [MatPaginatorModule, CngxMatPaginator],
   template: `
-    <div cngxPaginate #pg="cngxPaginate" [total]="items.length">
-      <table mat-table [dataSource]="paginatedItems()">
-        <!-- table columns -->
-      </table>
-    </div>
-    <cngx-mat-paginator [cngxPaginateRef]="pg" />
+    <ul>
+      @for (item of items().slice(ref.paginate.range()[0], ref.paginate.range()[1]); track item.id) {
+        <li>{{ item.label }}</li>
+      }
+    </ul>
+    <mat-paginator
+      cngxMatPaginator
+      #ref="cngxMatPaginator"
+      [total]="items().length"
+      [pageSizeOptions]="[5, 10, 25]"
+    ></mat-paginator>
   `,
-  imports: [MatTableModule, CngxMatPaginatorWrapper],
 })
 export class ExampleComponent {
-  readonly items = [];
-
-  readonly paginatedItems = computed(() => {
-    const pg = inject(CngxPaginate);
-    return this.items.slice(pg.pageIndex() * pg.pageSize(), (pg.pageIndex() + 1) * pg.pageSize());
-  });
+  readonly items = signal([/* ... */]);
 }
 ```
 
-## Overview
+- Bidirectional sync of `length` / `pageIndex` / `pageSize` / `disabled` against the
+  brain's `computed()` graph, plus the `(page)` event forwarded back into the brain.
+- `disabled` tracks `CngxPaginate.isBusy()`; navigation no-ops while a bound `[state]`
+  is busy.
+- `pageSizeOptions` is a bridge-owned input (a Material-render concern).
+- `[total]`, `[cngxPageIndex]`, `[cngxPageSize]`, and `[state]` are forwarded to the
+  composed brain.
 
-`CngxMatPaginatorWrapper` is a Material Design paginator component that wraps the Material `mat-paginator` element and wires it to a `CngxPaginate` directive. It provides:
+## Wrapper: fresh markup (`CngxMatPaginatorWrapper`, deprecated)
 
-- **Type-safe integration** - Explicit `[cngxPaginateRef]` input (no ancestor injection)
-- **Automatic state sync** - Page index, page size, and total count are automatically synchronized
-- **Page size selector** - Customizable page size options via `[pageSizeOptions]`
-- **Disabled state** - Paginator disables when `CngxPaginate.isBusy()` is true
+Prefer the bridge. The wrapper renders its own `<mat-paginator>` and connects to a
+`CngxPaginate` directive via an explicit `[cngxPaginateRef]` input - no ancestor
+injection. It is kept for existing fresh-markup consumers and is scheduled for
+removal.
 
-The component requires an explicit reference to the `CngxPaginate` directive instance - no hidden ancestor injection, no implicit wiring.
+```typescript
+import { CngxMatPaginatorWrapper } from '@cngx/ui/mat-paginator';
+
+// <div cngxPaginate #pg="cngxPaginate" [total]="items.length"> ... </div>
+// <cngx-mat-paginator [cngxPaginateRef]="pg" />
+```
 
 ## Accessibility
 
-`CngxMatPaginatorWrapper` delegates accessibility to Material's `mat-paginator` component. The Material paginator is fully accessible with:
+Both shapes delegate accessibility to Material's `mat-paginator`: labelled
+navigation and page-size controls, keyboard navigation, and a disabled state that
+is announced when `isBusy()` is true. The bridge writes `disabled` reactively, so
+the rendered controls reflect busy state on every change.
 
-- **ARIA labels** - Paginator navigation and page size controls are properly labeled
-- **Keyboard navigation** - Tab order and keyboard shortcuts for page navigation
-- **Disabled state** - When `isBusy()` is true, controls are disabled and announced to screen readers
+## Material theming
 
-## Composition
-
-`CngxMatPaginatorWrapper` composes:
-
-- **Material paginator** - `mat-paginator` component from `@angular/material/paginator`
-- **CngxPaginate directive** - Manages pagination state (page index, page size, total)
-- **Event handling** - Subscribes to Material paginator's `page` event and updates directive state
-
-## How It Works
-
-1. **Setup** - Consumer applies `cngxPaginate` on a container element and assigns a template reference
-2. **Data binding** - Consumer passes `[total]="items.length"` to the directive
-3. **Component wire-up** - `CngxMatPaginatorWrapper` binds to the directive via `[cngxPaginateRef]`
-4. **State sync** - Component reads `ref.pageIndex()`, `ref.pageSize()`, `ref.total()` and binds to Material's `mat-paginator`
-5. **User interaction** - When user changes page or page size, Material's `page` event fires
-6. **State update** - `CngxMatPaginatorWrapper.handlePage()` calls `ref.setPageSize()` and `ref.setPage()` to update directive state
-7. **Data refresh** - Consumer reactively filters/slices data based on directive signals
-
-## Material Theming
-
-`CngxMatPaginatorWrapper` uses the standard Material `mat-paginator` component, which inherits theming from your Material theme automatically. No additional theme configuration needed - include the Material theme in your global stylesheet.
+Both shapes use the standard Material `mat-paginator`, which inherits theming from
+your Material theme automatically. No additional configuration is needed - include
+the Material theme in your global stylesheet.
 
 ```scss
 @use '@angular/material' as mat;
-
-$theme: mat.define-theme((...));
 
 html {
   @include mat.all-component-themes($theme);
