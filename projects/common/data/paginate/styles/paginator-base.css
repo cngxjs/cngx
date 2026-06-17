@@ -1,0 +1,111 @@
+/**
+ * @overview
+ * Structural CSS shared by every paginator skin. \
+ * Layout-only - no colours, sizes, or borders beyond what is controlled via
+ * `--cngx-paginator-*` custom properties. \
+ * `CngxPaginator` (in `@cngx/ui/paginator`) references this file via
+ * `styleUrls`; ng-packagr inlines it at publish time, so consumers of
+ * `@cngx/ui/paginator` do not need `@cngx/common/data` at runtime. Selectors
+ * are class-prefixed (`.cngx-paginator__*`) and apply globally under the
+ * component's `encapsulation: None`.
+ *
+ * **State modifiers** (driven by ARIA the organism sets)
+ *
+ * - `[aria-current="page"]` - the active page button
+ * - `[aria-disabled="true"]` - dimmed, `cursor: not-allowed` (bound nav buttons / busy)
+ * - `:focus-visible` - focus ring via `--cngx-paginator-focus-ring`
+ *
+ * **Density** - `[data-density="compact" | "comfortable"]` on the host shifts
+ * the button hit-target and gap tokens; the default needs no rule.
+ *
+ * **Slots**
+ *
+ * - `.cngx-paginator` - the flex row host
+ * - `.cngx-paginator__segment` - one projected segment wrapper
+ * - `.cngx-paginator__pages` - the roving page-number row
+ * - `.cngx-paginator__button` - any clickable cell (nav, page, ellipsis)
+ * - `.cngx-paginator__page` / `__nav` / `__more` - the three button kinds
+ */
+
+@layer cngx.components {
+  .cngx-paginator {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--cngx-paginator-gap, 0.25rem);
+  }
+
+  .cngx-paginator__segment {
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .cngx-paginator__pages {
+    display: inline-flex;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--cngx-paginator-gap, 0.25rem);
+  }
+
+  .cngx-paginator__button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    min-width: var(--cngx-paginator-button-size, 2.25rem);
+    height: var(--cngx-paginator-button-size, 2.25rem);
+    padding: var(--cngx-paginator-button-padding, 0 0.5rem);
+    border: var(--cngx-paginator-button-border-width, 1px) solid
+      var(--cngx-paginator-button-border-color, transparent);
+    border-radius: var(--cngx-paginator-button-radius, 0.375rem);
+    background: var(--cngx-paginator-button-bg, transparent);
+    color: var(--cngx-paginator-button-color, currentColor);
+    font: inherit;
+    line-height: 1;
+    cursor: pointer;
+    user-select: none;
+    transition: background var(--cngx-paginator-transition, 150ms ease);
+  }
+
+  .cngx-paginator__button:hover {
+    background: var(
+      --cngx-paginator-button-hover-bg,
+      color-mix(in oklch, currentColor 10%, transparent)
+    );
+  }
+
+  .cngx-paginator__button:focus-visible {
+    outline: var(--cngx-paginator-focus-ring, 2px solid currentColor);
+    outline-offset: var(--cngx-paginator-focus-offset, 2px);
+  }
+
+  .cngx-paginator__button[aria-disabled='true'] {
+    cursor: not-allowed;
+    opacity: var(--cngx-paginator-disabled-opacity, 0.45);
+  }
+
+  .cngx-paginator__page[aria-current='page'] {
+    background: var(--cngx-paginator-current-bg, color-mix(in oklch, currentColor 12%, transparent));
+    color: var(--cngx-paginator-current-color, currentColor);
+    border-color: var(--cngx-paginator-current-border-color, transparent);
+    font-weight: 600;
+  }
+
+  /* Density axis - shifts the hit-target and gap tokens on the host. */
+  .cngx-paginator[data-density='compact'] {
+    --cngx-paginator-button-size: 1.875rem;
+    --cngx-paginator-gap: 0.125rem;
+  }
+
+  .cngx-paginator[data-density='comfortable'] {
+    --cngx-paginator-button-size: 2.75rem;
+    --cngx-paginator-gap: 0.5rem;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cngx-paginator__button {
+      transition: none;
+    }
+  }
+}

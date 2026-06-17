@@ -67,6 +67,7 @@ export type CngxPaginatorDensity = 'compact' | 'default' | 'comfortable';
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   templateUrl: './paginator.component.html',
+  styleUrls: ['../../common/data/paginate/styles/paginator-base.css', './paginator.component.css'],
   hostDirectives: [
     {
       directive: CngxPaginate,
