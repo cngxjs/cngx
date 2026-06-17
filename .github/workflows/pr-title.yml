@@ -59,7 +59,7 @@ jobs:
             ui
             ui/layout
             ui/overlay
-            ui/material
+            ui/mat-paginator
             ui/empty-state
             ui/feedback
             ui/stepper

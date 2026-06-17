@@ -22,10 +22,10 @@ import { type CngxPaginate } from '@cngx/common/data';
  * <cngx-mat-paginator [cngxPaginateRef]="pg" />
  * ```
  *
- * @category ui/material
+ * @category ui/mat-paginator
  * @docsKind primary
  * @wcag AA
- * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/material/mat-paginator.ts
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/mat-paginator/mat-paginator.ts
  * @since 0.1.0
  * @relatedTo CngxPaginate, CngxDataSource
  * <example-url>http://localhost:4200/#/common/data/data-source/datasource-cngxpaginate-manual-pipeline</example-url>

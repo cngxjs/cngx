@@ -45,7 +45,7 @@
       "@cngx/ui": ["projects/ui/public-api.ts"],
       "@cngx/ui/layout": ["projects/ui/layout/public-api.ts"],
       "@cngx/ui/overlay": ["projects/ui/overlay/public-api.ts"],
-      "@cngx/ui/material": ["projects/ui/material/public-api.ts"],
+      "@cngx/ui/mat-paginator": ["projects/ui/mat-paginator/public-api.ts"],
       "@cngx/ui/empty-state": ["projects/ui/empty-state/public-api.ts"],
       "@cngx/ui/feedback": ["projects/ui/feedback/public-api.ts"],
       "@cngx/ui/stepper": ["projects/ui/stepper/public-api.ts"],

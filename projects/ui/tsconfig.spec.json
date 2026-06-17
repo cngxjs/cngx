@@ -17,7 +17,7 @@
     "overlay/**/*.spec.ts",
     "empty-state/**/*.spec.ts",
     "feedback/**/*.spec.ts",
-    "material/**/*.spec.ts",
+    "mat-paginator/**/*.spec.ts",
     "stepper/**/*.spec.ts",
     "mat-stepper/**/*.spec.ts",
     "mat-tabs/**/*.spec.ts",

@@ -5,7 +5,7 @@ Material paginator wrapper connecting to a CngxPaginate directive via explicit `
 ## Import
 
 ```typescript
-import { CngxMatPaginator } from '@cngx/ui/material';
+import { CngxMatPaginator } from '@cngx/ui/mat-paginator';
 ```
 
 ## Quick Start
@@ -14,7 +14,7 @@ import { CngxMatPaginator } from '@cngx/ui/material';
 import { Component, signal } from '@angular/core';
 import { MatTableModule } from '@angular/material/table';
 import { CngxPaginate } from '@cngx/common/data';
-import { CngxMatPaginator } from '@cngx/ui/material';
+import { CngxMatPaginator } from '@cngx/ui/mat-paginator';
 
 @Component({
   selector: 'app-example',

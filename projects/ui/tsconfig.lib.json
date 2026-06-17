@@ -29,6 +29,6 @@
       "@cngx/ui/speak": ["dist/ui/types/cngx-ui-speak.d.ts"]
     }
   },
-  "include": ["*.ts", "action-button/**/*.ts", "sidenav/**/*.ts", "skeleton/**/*.ts", "speak/**/*.ts", "layout/**/*.ts", "overlay/**/*.ts", "material/**/*.ts", "empty-state/**/*.ts", "feedback/**/*.ts", "stepper/**/*.ts", "mat-stepper/**/*.ts", "mat-tabs/**/*.ts", "tabs/**/*.ts"],
+  "include": ["*.ts", "action-button/**/*.ts", "sidenav/**/*.ts", "skeleton/**/*.ts", "speak/**/*.ts", "layout/**/*.ts", "overlay/**/*.ts", "mat-paginator/**/*.ts", "empty-state/**/*.ts", "feedback/**/*.ts", "stepper/**/*.ts", "mat-stepper/**/*.ts", "mat-tabs/**/*.ts", "tabs/**/*.ts"],
   "exclude": ["**/*.spec.ts", "**/examples/**"]
 }
