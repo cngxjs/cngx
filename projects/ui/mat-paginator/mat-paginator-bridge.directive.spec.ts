@@ -164,7 +164,7 @@ describe('CngxMatPaginator (bridge)', () => {
     expect(select).not.toBeNull();
   });
 
-  test('(g) controlled cngxPageSize wins over a Material (page) size change', async () => {
+  test('(g) controlled cngxPageSize wins, but pageSizeChange still fires so the consumer can sync', async () => {
     TestBed.configureTestingModule({ providers });
     const { fixture, matPaginator, paginate, host } = await setup();
 
@@ -172,8 +172,15 @@ describe('CngxMatPaginator (bridge)', () => {
     await settle(fixture);
     expect(paginate.pageSize()).toBe(25);
 
+    let emitted: number | undefined;
+    paginate.pageSizeChange.subscribe((v) => (emitted = v));
     matPaginator.page.emit({ previousPageIndex: 0, pageIndex: 0, pageSize: 5, length: 100 });
+
+    // pageSize() holds the controlled value until the consumer's (pageSizeChange)
+    // handler writes the new size back to [cngxPageSize] - the emit is that sync
+    // signal, not a stale event. Suppressing it would break controlled binding.
     expect(paginate.pageSize()).toBe(25);
+    expect(emitted).toBe(5);
   });
 
   test('(h) page-size selector paints the active size even when options exclude it', async () => {
@@ -187,5 +194,19 @@ describe('CngxMatPaginator (bridge)', () => {
     const matSelect = matSelectEl.componentInstance as MatSelect;
     expect(matSelect.value).toBe(10);
     expect(matSelect.empty).toBe(false);
+  });
+
+  test('(i) aria-busy on the host reflects the brain busy state', async () => {
+    TestBed.configureTestingModule({ providers });
+    const { fixture, host } = await setup();
+
+    const hostEl = fixture.nativeElement.querySelector('mat-paginator');
+    expect(hostEl?.getAttribute('aria-busy')).toBe('false');
+
+    const busy = createManualState<unknown>();
+    busy.set('loading');
+    host.state.set(busy);
+    await settle(fixture);
+    expect(hostEl?.getAttribute('aria-busy')).toBe('true');
   });
 });

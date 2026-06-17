@@ -44,6 +44,11 @@ import { CngxPaginate } from '@cngx/common/data';
   selector: '[cngxMatPaginator]',
   exportAs: 'cngxMatPaginator',
   standalone: true,
+  host: {
+    // MatPaginator disables its nav buttons on busy but says nothing about why;
+    // aria-busy on the host communicates the updating state to AT, reactively.
+    '[attr.aria-busy]': 'paginate.isBusy()',
+  },
   hostDirectives: [
     {
       directive: CngxPaginate,
