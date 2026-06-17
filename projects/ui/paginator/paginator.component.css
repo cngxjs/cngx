@@ -1,10 +1,17 @@
 /**
  * @overview
- * Thematic tokens + the `numbered` skin for `CngxPaginator`. Structural layout
+ * Thematic tokens + the `numbered`, `pill`, `segmented`, `minimal`, `rail`,
+ * and `bar` skins for `CngxPaginator`. Structural layout
  * lives in `paginator-base.css` (`@cngx/common/data`); this file only paints.
  * Every token is registered with `inherits: true` so a value set on the host
  * (skin block, density, consumer override) cascades to the descendant buttons -
  * `inherits: false` would strand the descendant on the initial value.
+ *
+ * Cross-skin layers (orthogonal to `[data-skin]`): hover / press scale + focus
+ * halo + a busy-driven page-row fade (all reduced-motion-gated), a coarse-
+ * pointer hit-target bump, a `@container` collapse of the first/last
+ * conveniences on narrow widths, and an RTL chevron mirror. Density
+ * (compact / comfortable) is owned by `paginator-base.css`.
  */
 
 @layer cngx.tokens {
@@ -129,6 +136,138 @@
     initial-value: 0.45;
   }
 
+  /**
+   * Muted track the page row sits in under the `segmented` skin. Derived from
+   * surface + border so it tracks the foundation light / dark scheme.
+   * @group Skin
+   */
+  @property --cngx-paginator-track-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.96 0 0);
+  }
+
+  /**
+   * Drop shadow that raises the active page off the track under the
+   * `segmented` skin.
+   * @group Skin
+   */
+  @property --cngx-paginator-active-shadow {
+    syntax: '*';
+    inherits: true;
+    initial-value: 0 1px 2px oklch(0 0 0 / 0.06);
+  }
+
+  /**
+   * Thickness of the `numbered` skin's active-page underline bar.
+   * @group Skin
+   */
+  @property --cngx-paginator-indicator-thickness {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 2px;
+  }
+
+  /**
+   * Colour of the hairline rail the page row rides under the `rail` skin.
+   * @group Skin
+   */
+  @property --cngx-paginator-rail-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.88 0.005 250);
+  }
+
+  /**
+   * Thickness of the `rail` skin's rail and its active-page position marker.
+   * @group Skin
+   */
+  @property --cngx-paginator-rail-thickness {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 2px;
+  }
+
+  /**
+   * Border + divider colour of the enclosed `bar` skin.
+   * @group Skin
+   */
+  @property --cngx-paginator-bar-border-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.88 0.005 250);
+  }
+
+  /**
+   * Corner radius of the enclosed `bar` skin's outer box.
+   * @group Skin
+   */
+  @property --cngx-paginator-bar-radius {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 0.375rem;
+  }
+
+  /**
+   * Scale a button grows to on hover. Flattened to `1` under reduced motion.
+   * @group Motion
+   */
+  @property --cngx-paginator-hover-scale {
+    syntax: '<number>';
+    inherits: true;
+    initial-value: 1.05;
+  }
+
+  /**
+   * Scale a button grows to while pressed. Flattened to `1` under reduced motion.
+   * @group Motion
+   */
+  @property --cngx-paginator-press-scale {
+    syntax: '<number>';
+    inherits: true;
+    initial-value: 1.1;
+  }
+
+  /**
+   * Duration of the hover / press / focus transitions.
+   * @group Motion
+   */
+  @property --cngx-paginator-motion-duration {
+    syntax: '<time>';
+    inherits: true;
+    initial-value: 200ms;
+  }
+
+  /**
+   * Duration of the page-row crossfade while the host reports busy.
+   * @group Motion
+   */
+  @property --cngx-paginator-fade-duration {
+    syntax: '<time>';
+    inherits: true;
+    initial-value: 250ms;
+  }
+
+  /**
+   * Opacity the page row fades to while the host reports busy.
+   * @group State / Busy
+   */
+  @property --cngx-paginator-busy-opacity {
+    syntax: '<number>';
+    inherits: true;
+    initial-value: 0.6;
+  }
+
+  /**
+   * Soft halo painted behind the focus-visible outline.
+   * @group State / Focus
+   */
+  @property --cngx-paginator-focus-halo {
+    syntax: '*';
+    inherits: true;
+    initial-value: 0 0 0 4px color-mix(in oklch, currentColor 25%, transparent);
+  }
+
   /*
    * Cross-skin default palette. The active fill and the focus ring delegate to
    * the foundation primary, which already carries its own light/dark values -
@@ -138,20 +277,298 @@
     --cngx-paginator-current-bg: var(--cngx-color-primary, oklch(0.66 0.19 50));
     --cngx-paginator-current-border-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
     --cngx-paginator-focus-ring: 2px solid var(--cngx-color-primary, oklch(0.66 0.19 50));
+    --cngx-paginator-focus-halo: 0 0 0 4px
+      color-mix(in oklch, var(--cngx-color-primary, oklch(0.66 0.19 50)) 25%, transparent);
   }
 }
 
 @layer cngx.components {
-  /* Numbered skin: subtle resting cells, a primary-filled current page. */
+  /*
+   * Numbered skin: subtle resting cells; the current page reads as accent text
+   * with a hairline underline bar (a tab-style indicator), not a solid fill.
+   */
   @scope (.cngx-paginator[data-skin='numbered']) {
     :scope {
-      --cngx-paginator-current-color: oklch(1 0 0);
+      --cngx-paginator-current-bg: transparent;
+      --cngx-paginator-current-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
+      --cngx-paginator-current-border-color: transparent;
       --cngx-paginator-button-hover-bg: color-mix(
         in oklch,
         var(--cngx-color-primary, oklch(0.66 0.19 50)) 12%,
         transparent
       );
     }
+
+    .cngx-paginator__page {
+      position: relative;
+    }
+
+    /* Hairline underline bar centred under the active numeral. */
+    .cngx-paginator__page[aria-current='page']::after {
+      content: '';
+      position: absolute;
+      inset-inline: 22%;
+      bottom: 0.1875rem;
+      block-size: var(--cngx-paginator-indicator-thickness, 2px);
+      background: var(--cngx-color-primary, oklch(0.66 0.19 50));
+      border-radius: var(--cngx-paginator-indicator-thickness, 2px);
+    }
+  }
+
+  /*
+   * Pill skin: full-radius cells with gaps; the current page takes the primary
+   * fill, resting cells tint on hover. Pure token reassignment - no element
+   * rules - because the base geometry already reads these tokens.
+   */
+  @scope (.cngx-paginator[data-skin='pill']) {
+    :scope {
+      --cngx-paginator-gap: 0.375rem;
+      --cngx-paginator-button-radius: 100px;
+      --cngx-paginator-current-bg: var(--cngx-color-primary, oklch(0.66 0.19 50));
+      --cngx-paginator-current-color: var(--cngx-color-on-primary, oklch(1 0 0));
+      --cngx-paginator-current-border-color: transparent;
+      --cngx-paginator-button-hover-bg: color-mix(
+        in oklch,
+        var(--cngx-color-primary, oklch(0.66 0.19 50)) 8%,
+        transparent
+      );
+    }
+  }
+
+  /*
+   * Segmented skin: the numbered row shares a muted track; the current page
+   * lifts onto the surface with a soft shadow. Nav buttons sit outside the
+   * track. Track + lift derive from foundation surface / border so they adapt
+   * to light / dark on their own.
+   */
+  @scope (.cngx-paginator[data-skin='segmented']) {
+    :scope {
+      --cngx-paginator-button-radius: 0.375rem;
+      --cngx-paginator-track-bg: color-mix(
+        in oklch,
+        var(--cngx-color-surface, oklch(1 0 0)),
+        var(--cngx-color-border, oklch(0.88 0.005 250)) 25%
+      );
+      --cngx-paginator-current-bg: var(--cngx-color-surface, oklch(1 0 0));
+      --cngx-paginator-current-color: currentColor;
+      --cngx-paginator-current-border-color: transparent;
+      --cngx-paginator-button-hover-bg: color-mix(
+        in oklch,
+        var(--cngx-color-surface, oklch(1 0 0)),
+        var(--cngx-color-border, oklch(0.88 0.005 250)) 45%
+      );
+    }
+
+    .cngx-paginator__pages {
+      background: var(--cngx-paginator-track-bg, oklch(0.96 0 0));
+      border-radius: var(--cngx-paginator-button-radius, 0.375rem);
+      padding: var(--cngx-paginator-segmented-track-padding, 0.25rem);
+    }
+
+    .cngx-paginator__page[aria-current='page'] {
+      box-shadow: var(--cngx-paginator-active-shadow, 0 1px 2px oklch(0 0 0 / 0.06));
+    }
+  }
+
+  /*
+   * Minimal skin: text-first, no button chrome. The current page reads as
+   * accent-coloured underlined text; hover underlines. Hit targets stay (base
+   * button-size) so touch + keyboard are unaffected.
+   */
+  @scope (.cngx-paginator[data-skin='minimal']) {
+    :scope {
+      --cngx-paginator-gap: 0.125rem;
+      --cngx-paginator-button-bg: transparent;
+      --cngx-paginator-button-hover-bg: transparent;
+      --cngx-paginator-button-border-color: transparent;
+      --cngx-paginator-current-bg: transparent;
+      --cngx-paginator-current-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
+      --cngx-paginator-current-border-color: transparent;
+    }
+
+    .cngx-paginator__button:hover:not([aria-disabled='true']),
+    .cngx-paginator__page[aria-current='page'] {
+      text-decoration: underline;
+      text-underline-offset: 0.25em;
+    }
+  }
+
+  /*
+   * Rail skin: the page row rides a hairline rail; the current page marks its
+   * position with a primary bar on the same baseline - a progress-style
+   * read-out. Paginator-native (no tab equivalent). Squared cells so the bars
+   * read as one continuous track.
+   */
+  @scope (.cngx-paginator[data-skin='rail']) {
+    :scope {
+      --cngx-paginator-button-radius: 0;
+      --cngx-paginator-current-bg: transparent;
+      --cngx-paginator-current-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
+      --cngx-paginator-current-border-color: transparent;
+      --cngx-paginator-button-hover-bg: color-mix(in oklch, currentColor 6%, transparent);
+    }
+
+    .cngx-paginator__pages {
+      position: relative;
+    }
+
+    /* The full-width hairline rail under the row. */
+    .cngx-paginator__pages::after {
+      content: '';
+      position: absolute;
+      inset-inline: 0;
+      bottom: 0;
+      block-size: var(--cngx-paginator-rail-thickness, 2px);
+      background: var(--cngx-paginator-rail-color, oklch(0.88 0.005 250));
+      border-radius: var(--cngx-paginator-rail-thickness, 2px);
+    }
+
+    .cngx-paginator__page {
+      position: relative;
+    }
+
+    /* The active page's primary position marker, riding above the rail. */
+    .cngx-paginator__page[aria-current='page']::after {
+      content: '';
+      position: absolute;
+      inset-inline: 0;
+      bottom: 0;
+      block-size: var(--cngx-paginator-rail-thickness, 2px);
+      background: var(--cngx-color-primary, oklch(0.66 0.19 50));
+      border-radius: var(--cngx-paginator-rail-thickness, 2px);
+      z-index: 1;
+    }
+  }
+
+  /*
+   * Bar skin: the whole paginator reads as one enclosed toolbar, cells divided
+   * by hairlines, the current page primary-filled. `overflow: clip` with a clip
+   * margin rounds the outer corners without clipping the inner buttons' focus
+   * rings.
+   */
+  @scope (.cngx-paginator[data-skin='bar']) {
+    :scope {
+      --cngx-paginator-gap: 0;
+      --cngx-paginator-button-radius: 0;
+      --cngx-paginator-current-bg: var(--cngx-color-primary, oklch(0.66 0.19 50));
+      --cngx-paginator-current-color: var(--cngx-color-on-primary, oklch(1 0 0));
+      --cngx-paginator-current-border-color: transparent;
+      --cngx-paginator-button-hover-bg: color-mix(in oklch, currentColor 8%, transparent);
+      width: max-content;
+      max-width: 100%;
+      border: 1px solid var(--cngx-paginator-bar-border-color, oklch(0.88 0.005 250));
+      border-radius: var(--cngx-paginator-bar-radius, 0.375rem);
+      overflow: clip;
+      overflow-clip-margin: var(--cngx-paginator-bar-clip-margin, 0.5rem);
+    }
+
+    .cngx-paginator__pages {
+      gap: 0;
+    }
+
+    /* Hairline divider before every cell; the leading edges are dropped below. */
+    .cngx-paginator__button {
+      border-inline-start: 1px solid var(--cngx-paginator-bar-border-color, oklch(0.88 0.005 250));
+    }
+
+    .cngx-paginator__segment:first-child .cngx-paginator__button,
+    .cngx-paginator__pages .cngx-paginator__button:first-child {
+      border-inline-start: 0;
+    }
+  }
+
+  /*
+   * Motion + responsive - orthogonal to skin, so it lives in the default scope
+   * and composes with every `[data-skin]`. Density (compact / comfortable) is
+   * owned by the structural base file; only the genuinely-new layers land here.
+   */
+  @scope (.cngx-paginator) {
+    /* Augment the base background-only transition with transform + box-shadow
+       so hover/press scale and the focus halo animate too. */
+    .cngx-paginator__button {
+      transition:
+        background var(--cngx-paginator-motion-duration, 200ms) ease,
+        transform var(--cngx-paginator-motion-duration, 200ms) ease,
+        box-shadow var(--cngx-paginator-motion-duration, 200ms) ease;
+    }
+
+    .cngx-paginator__button:hover:not([aria-disabled='true']) {
+      transform: scale(var(--cngx-paginator-hover-scale, 1.05));
+    }
+
+    .cngx-paginator__button:active:not([aria-disabled='true']) {
+      transform: scale(var(--cngx-paginator-press-scale, 1.1));
+    }
+
+    /* Soft halo behind the base outline ring - the ring carries the contrast,
+       the halo the depth. */
+    .cngx-paginator__button:focus-visible {
+      box-shadow: var(
+        --cngx-paginator-focus-halo,
+        0 0 0 4px color-mix(in oklch, currentColor 25%, transparent)
+      );
+    }
+
+    /* Content fade: the page row dims while the host reports busy (aria-busy is
+       owned by the shell, Phase A). No layout shift - opacity only. */
+    .cngx-paginator__pages {
+      transition: opacity var(--cngx-paginator-fade-duration, 250ms) ease;
+    }
+
+    :scope[aria-busy='true'] .cngx-paginator__pages {
+      opacity: var(--cngx-paginator-busy-opacity, 0.6);
+    }
+
+    /* Reduced motion: flatten the scale tokens and drop every transition added
+       here. Nested in @scope follows the tabs precedent; the cascade hazard is
+       specific to prefers-color-scheme, not reduced-motion. */
+    @media (prefers-reduced-motion: reduce) {
+      :scope {
+        --cngx-paginator-hover-scale: 1;
+        --cngx-paginator-press-scale: 1;
+      }
+
+      .cngx-paginator__button,
+      .cngx-paginator__pages {
+        transition: none;
+      }
+    }
+  }
+
+  /*
+   * Container collapse: below a narrow inline size the first/last conveniences
+   * drop out (prev/next + the page row still reach every page). The `bar` skin
+   * is excluded - its `width: max-content` enclosure conflicts with inline-size
+   * containment, which would zero its content width. Data segments (range /
+   * page-size) get their own collapse alongside those segments.
+   */
+  .cngx-paginator:not([data-skin='bar']) {
+    container-type: inline-size;
+    container-name: cngx-paginator;
+  }
+
+  @container cngx-paginator (max-width: 24rem) {
+    cngx-pgn-first,
+    cngx-pgn-last {
+      display: none;
+    }
+  }
+
+  /* Coarse pointer (touch): bump the hit target into the comfortable range. */
+  @media (pointer: coarse) {
+    .cngx-paginator {
+      --cngx-paginator-button-size: 2.75rem;
+    }
+  }
+
+  /*
+   * RTL: mirror the directional nav chevrons. Outside @scope because `[dir]`
+   * sits on an ancestor, above the scope root. A static flip, not motion - so
+   * it is intentionally NOT gated by reduced-motion. Everything else is RTL-safe
+   * already via logical properties in the base + skin layers.
+   */
+  [dir='rtl'] .cngx-paginator__nav .cngx-icon {
+    transform: scaleX(-1);
   }
 }
 
@@ -169,5 +586,14 @@
       var(--cngx-color-primary, oklch(0.72 0.18 50)) 24%,
       transparent
     );
+  }
+
+  /*
+   * The segmented track + lift derive from foundation surface / border, which
+   * already shift for dark; only the shadow can't be derived - a 6%-black drop
+   * reads as nothing on a dark surface, so deepen it here.
+   */
+  .cngx-paginator[data-skin='segmented'] {
+    --cngx-paginator-active-shadow: 0 1px 3px oklch(0 0 0 / 0.3);
   }
 }

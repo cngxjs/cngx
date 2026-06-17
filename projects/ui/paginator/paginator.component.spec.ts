@@ -12,7 +12,11 @@ import { describe, expect, test } from 'vitest';
 import { CngxPaginate, createManualState } from '@cngx/common/data';
 import type { CngxAsyncState } from '@cngx/core/utils';
 
-import { CngxPaginator } from './paginator.component';
+import {
+  CngxPaginator,
+  type CngxPaginatorDensity,
+  type CngxPaginatorSkin,
+} from './paginator.component';
 import { CNGX_PAGINATOR_HOST, type CngxPaginatorHost } from './paginator-host.token';
 
 /** Probe that a projected segment resolves the host token (regular `providers`). */
@@ -33,6 +37,8 @@ class ProbeHost {
       [pageSize]="size()"
       (pageSizeChange)="onSize($event)"
       [aria-label]="ariaLabel()"
+      [skin]="skin()"
+      [density]="density()"
     >
       <span probeHost></span>
     </cngx-paginator>
@@ -44,6 +50,8 @@ class HostCmp {
   readonly index = signal<number | undefined>(undefined);
   readonly size = signal<number | undefined>(undefined);
   readonly ariaLabel = signal<string | undefined>(undefined);
+  readonly skin = signal<CngxPaginatorSkin>('numbered');
+  readonly density = signal<CngxPaginatorDensity>('default');
 
   readonly indexEmits: number[] = [];
   readonly sizeEmits: number[] = [];
@@ -97,6 +105,27 @@ describe('CngxPaginator', () => {
     expect(paginatorEl.getAttribute('aria-label')).toBe('Pagination');
     expect(paginatorEl.getAttribute('data-skin')).toBe('numbered');
     expect(paginatorEl.getAttribute('data-density')).toBe('default');
+  });
+
+  test('[skin] and [density] reflect onto [data-skin] / [data-density]', async () => {
+    const { fixture, host, paginatorEl } = await setup();
+    host.skin.set('pill');
+    host.density.set('compact');
+    await settle(fixture);
+    expect(paginatorEl.getAttribute('data-skin')).toBe('pill');
+    expect(paginatorEl.getAttribute('data-density')).toBe('compact');
+
+    host.skin.set('segmented');
+    host.density.set('comfortable');
+    await settle(fixture);
+    expect(paginatorEl.getAttribute('data-skin')).toBe('segmented');
+    expect(paginatorEl.getAttribute('data-density')).toBe('comfortable');
+
+    for (const skin of ['rail', 'bar'] as const) {
+      host.skin.set(skin);
+      await settle(fixture);
+      expect(paginatorEl.getAttribute('data-skin')).toBe(skin);
+    }
   });
 
   test('aria-label input overrides the config default', async () => {
