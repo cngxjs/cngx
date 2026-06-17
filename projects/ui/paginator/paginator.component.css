@@ -6,6 +6,12 @@
  * Every token is registered with `inherits: true` so a value set on the host
  * (skin block, density, consumer override) cascades to the descendant buttons -
  * `inherits: false` would strand the descendant on the initial value.
+ *
+ * Cross-skin layers (orthogonal to `[data-skin]`): hover / press scale + focus
+ * halo + a busy-driven page-row fade (all reduced-motion-gated), a coarse-
+ * pointer hit-target bump, a `@container` collapse of the first/last
+ * conveniences on narrow widths, and an RTL chevron mirror. Density
+ * (compact / comfortable) is owned by `paginator-base.css`.
  */
 
 @layer cngx.tokens {
@@ -192,6 +198,66 @@
     initial-value: 0.375rem;
   }
 
+  /**
+   * Scale a button grows to on hover. Flattened to `1` under reduced motion.
+   * @group Motion
+   */
+  @property --cngx-paginator-hover-scale {
+    syntax: '<number>';
+    inherits: true;
+    initial-value: 1.05;
+  }
+
+  /**
+   * Scale a button grows to while pressed. Flattened to `1` under reduced motion.
+   * @group Motion
+   */
+  @property --cngx-paginator-press-scale {
+    syntax: '<number>';
+    inherits: true;
+    initial-value: 1.1;
+  }
+
+  /**
+   * Duration of the hover / press / focus transitions.
+   * @group Motion
+   */
+  @property --cngx-paginator-motion-duration {
+    syntax: '<time>';
+    inherits: true;
+    initial-value: 200ms;
+  }
+
+  /**
+   * Duration of the page-row crossfade while the host reports busy.
+   * @group Motion
+   */
+  @property --cngx-paginator-fade-duration {
+    syntax: '<time>';
+    inherits: true;
+    initial-value: 250ms;
+  }
+
+  /**
+   * Opacity the page row fades to while the host reports busy.
+   * @group State / Busy
+   */
+  @property --cngx-paginator-busy-opacity {
+    syntax: '<number>';
+    inherits: true;
+    initial-value: 0.6;
+  }
+
+  /**
+   * Soft halo painted behind the focus-visible outline.
+   * @group State / Focus
+   */
+  @property --cngx-paginator-focus-halo {
+    syntax: '*';
+    inherits: true;
+    initial-value: 0 0 0 4px color-mix(in oklch, currentColor 25%, transparent);
+  }
+
   /*
    * Cross-skin default palette. The active fill and the focus ring delegate to
    * the foundation primary, which already carries its own light/dark values -
@@ -201,6 +267,8 @@
     --cngx-paginator-current-bg: var(--cngx-color-primary, oklch(0.66 0.19 50));
     --cngx-paginator-current-border-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
     --cngx-paginator-focus-ring: 2px solid var(--cngx-color-primary, oklch(0.66 0.19 50));
+    --cngx-paginator-focus-halo: 0 0 0 4px
+      color-mix(in oklch, var(--cngx-color-primary, oklch(0.66 0.19 50)) 25%, transparent);
   }
 }
 
@@ -377,6 +445,100 @@
     .cngx-paginator__pages .cngx-paginator__button:first-child {
       border-inline-start: 0;
     }
+  }
+
+  /*
+   * Motion + responsive - orthogonal to skin, so it lives in the default scope
+   * and composes with every `[data-skin]`. Density (compact / comfortable) is
+   * owned by the structural base file; only the genuinely-new layers land here.
+   */
+  @scope (.cngx-paginator) {
+    /* Augment the base background-only transition with transform + box-shadow
+       so hover/press scale and the focus halo animate too. */
+    .cngx-paginator__button {
+      transition:
+        background var(--cngx-paginator-motion-duration, 200ms) ease,
+        transform var(--cngx-paginator-motion-duration, 200ms) ease,
+        box-shadow var(--cngx-paginator-motion-duration, 200ms) ease;
+    }
+
+    .cngx-paginator__button:hover:not([aria-disabled='true']) {
+      transform: scale(var(--cngx-paginator-hover-scale, 1.05));
+    }
+
+    .cngx-paginator__button:active:not([aria-disabled='true']) {
+      transform: scale(var(--cngx-paginator-press-scale, 1.1));
+    }
+
+    /* Soft halo behind the base outline ring - the ring carries the contrast,
+       the halo the depth. */
+    .cngx-paginator__button:focus-visible {
+      box-shadow: var(
+        --cngx-paginator-focus-halo,
+        0 0 0 4px color-mix(in oklch, currentColor 25%, transparent)
+      );
+    }
+
+    /* Content fade: the page row dims while the host reports busy (aria-busy is
+       owned by the shell, Phase A). No layout shift - opacity only. */
+    .cngx-paginator__pages {
+      transition: opacity var(--cngx-paginator-fade-duration, 250ms) ease;
+    }
+
+    :scope[aria-busy='true'] .cngx-paginator__pages {
+      opacity: var(--cngx-paginator-busy-opacity, 0.6);
+    }
+
+    /* Reduced motion: flatten the scale tokens and drop every transition added
+       here. Nested in @scope follows the tabs precedent; the cascade hazard is
+       specific to prefers-color-scheme, not reduced-motion. */
+    @media (prefers-reduced-motion: reduce) {
+      :scope {
+        --cngx-paginator-hover-scale: 1;
+        --cngx-paginator-press-scale: 1;
+      }
+
+      .cngx-paginator__button,
+      .cngx-paginator__pages {
+        transition: none;
+      }
+    }
+  }
+
+  /*
+   * Container collapse: below a narrow inline size the first/last conveniences
+   * drop out (prev/next + the page row still reach every page). The `bar` skin
+   * is excluded - its `width: max-content` enclosure conflicts with inline-size
+   * containment, which would zero its content width. Data segments (range /
+   * page-size) get their own collapse alongside those segments.
+   */
+  .cngx-paginator:not([data-skin='bar']) {
+    container-type: inline-size;
+    container-name: cngx-paginator;
+  }
+
+  @container cngx-paginator (max-width: 24rem) {
+    cngx-pgn-first,
+    cngx-pgn-last {
+      display: none;
+    }
+  }
+
+  /* Coarse pointer (touch): bump the hit target into the comfortable range. */
+  @media (pointer: coarse) {
+    .cngx-paginator {
+      --cngx-paginator-button-size: 2.75rem;
+    }
+  }
+
+  /*
+   * RTL: mirror the directional nav chevrons. Outside @scope because `[dir]`
+   * sits on an ancestor, above the scope root. A static flip, not motion - so
+   * it is intentionally NOT gated by reduced-motion. Everything else is RTL-safe
+   * already via logical properties in the base + skin layers.
+   */
+  [dir='rtl'] .cngx-paginator__nav .cngx-icon {
+    transform: scaleX(-1);
   }
 }
 
