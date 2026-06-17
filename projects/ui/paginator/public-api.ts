@@ -11,6 +11,8 @@ export {
   CngxPaginatorLast,
 } from './segments/paginator-nav.component';
 export { CngxPaginatorPages } from './segments/paginator-pages.component';
+export { CngxPaginatorRange } from './segments/paginator-range.component';
+export { CngxPaginatorGoto } from './segments/paginator-goto.component';
 export {
   CNGX_PAGINATOR_CONFIG,
   CNGX_PAGINATOR_DEFAULTS,
