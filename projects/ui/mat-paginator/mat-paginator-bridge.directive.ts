@@ -61,7 +61,7 @@ export class CngxMatPaginatorBridge {
   readonly paginate = inject(CngxPaginate);
 
   /** Options for the page-size selector. A Material-render concern, owned here. */
-  protected readonly pageSizeOptions = input<number[]>([5, 10, 25]);
+  readonly pageSizeOptions = input<number[]>([5, 10, 25]);
 
   constructor() {
     effect(() => {
