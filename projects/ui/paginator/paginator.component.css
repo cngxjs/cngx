@@ -268,6 +268,47 @@
     initial-value: 0 0 0 4px color-mix(in oklch, currentColor 25%, transparent);
   }
 
+  /**
+   * Diameter of a resting (full-size) dot in the `dots` indicator.
+   * @group Skin
+   */
+  @property --cngx-paginator-dot-size {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 0.5rem;
+  }
+
+  /**
+   * Gap between adjacent dots.
+   * @group Skin
+   */
+  @property --cngx-paginator-dot-gap {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 0.5rem;
+  }
+
+  /**
+   * Fill of an inactive dot.
+   * @group Skin
+   */
+  @property --cngx-paginator-dot-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.7 0 0 / 0.35);
+  }
+
+  /**
+   * Fill of the active dot. Delegates to `--cngx-color-primary`.
+   * @group Skin
+   * @see [[--cngx-color-primary]]
+   */
+  @property --cngx-paginator-dot-current-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.66 0.19 50);
+  }
+
   /*
    * Cross-skin default palette. The active fill and the focus ring delegate to
    * the foundation primary, which already carries its own light/dark values -
@@ -279,6 +320,7 @@
     --cngx-paginator-focus-ring: 2px solid var(--cngx-color-primary, oklch(0.66 0.19 50));
     --cngx-paginator-focus-halo: 0 0 0 4px
       color-mix(in oklch, var(--cngx-color-primary, oklch(0.66 0.19 50)) 25%, transparent);
+    --cngx-paginator-dot-current-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
   }
 }
 
@@ -474,6 +516,23 @@
     .cngx-paginator__segment:first-child .cngx-paginator__button,
     .cngx-paginator__pages .cngx-paginator__button:first-child {
       border-inline-start: 0;
+    }
+  }
+
+  /*
+   * Dots skin: the compact iOS-style indicator. Nav chevrons flank a row of
+   * dots; the active dot takes the primary fill, inactive dots a muted tint
+   * that adapts to light / dark. Roomier gap than the default so the dots
+   * breathe. The edge-shrink tiers + circle geometry are structural (base CSS);
+   * this block only paints + spaces.
+   */
+  @scope (.cngx-paginator[data-skin='dots']) {
+    :scope {
+      --cngx-paginator-gap: 0.5rem;
+      --cngx-paginator-dot-gap: 0.625rem;
+      --cngx-paginator-dot-size: 0.5625rem;
+      --cngx-paginator-dot-color: color-mix(in oklch, currentColor 30%, transparent);
+      --cngx-paginator-dot-current-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
     }
   }
 

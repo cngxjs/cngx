@@ -178,8 +178,58 @@
     --cngx-paginator-gap: 0.5rem;
   }
 
+  /* Dots indicator - a row of circular page markers (cngx-pgn-dots). */
+  .cngx-paginator__dots {
+    display: inline-flex;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--cngx-paginator-dot-gap, 0.5rem);
+  }
+
+  .cngx-paginator__dot {
+    box-sizing: border-box;
+    width: var(--cngx-paginator-dot-size, 0.5rem);
+    height: var(--cngx-paginator-dot-size, 0.5rem);
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: var(--cngx-paginator-dot-color, color-mix(in oklch, currentColor 35%, transparent));
+    cursor: pointer;
+    transition:
+      transform var(--cngx-paginator-transition, 150ms ease),
+      background var(--cngx-paginator-transition, 150ms ease);
+  }
+
+  /* Edge-shrink tiers (the transform is the resting size, not an animation). */
+  .cngx-paginator__dot[data-size='medium'] {
+    transform: scale(var(--cngx-paginator-dot-medium-scale, 0.7));
+  }
+
+  .cngx-paginator__dot[data-size='small'] {
+    transform: scale(var(--cngx-paginator-dot-small-scale, 0.45));
+  }
+
+  .cngx-paginator__dot--current {
+    background: var(
+      --cngx-paginator-dot-current-color,
+      var(--cngx-color-primary, oklch(0.66 0.19 50))
+    );
+    transform: scale(var(--cngx-paginator-dot-current-scale, 1.15));
+  }
+
+  .cngx-paginator__dot:focus-visible {
+    outline: var(--cngx-paginator-focus-ring, 2px solid currentColor);
+    outline-offset: var(--cngx-paginator-focus-offset, 2px);
+  }
+
+  .cngx-paginator__dot[aria-disabled='true'] {
+    cursor: not-allowed;
+    opacity: var(--cngx-paginator-disabled-opacity, 0.45);
+  }
+
   @media (prefers-reduced-motion: reduce) {
-    .cngx-paginator__button {
+    .cngx-paginator__button,
+    .cngx-paginator__dot {
       transition: none;
     }
   }
