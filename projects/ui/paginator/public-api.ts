@@ -1,4 +1,18 @@
 // Public API surface for `@cngx/ui/paginator`.
-// Populated by the phase-A commits: the shell organism, the host token,
-// the config cascade, and the projected segment parts.
-export {};
+
+export {
+  CngxPaginator,
+  type CngxPaginatorSkin,
+  type CngxPaginatorDensity,
+} from './paginator.component';
+export { CNGX_PAGINATOR_HOST, type CngxPaginatorHost } from './paginator-host.token';
+export {
+  CNGX_PAGINATOR_CONFIG,
+  CNGX_PAGINATOR_DEFAULTS,
+  type CngxPaginatorConfig,
+  type CngxPaginatorAriaLabels,
+  type CngxPaginatorConfigFeature,
+  provideCngxPaginatorConfig,
+  withPaginatorAriaLabels,
+  injectPaginatorConfig,
+} from './paginator-config';
