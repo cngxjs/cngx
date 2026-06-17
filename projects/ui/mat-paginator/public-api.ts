@@ -5,3 +5,4 @@
  * (fresh markup) and the `[cngxMatPaginator]` bridge (in-place adoption).
  */
 export { CngxMatPaginator } from './mat-paginator';
+export { CngxMatPaginatorBridge } from './mat-paginator-bridge.directive';
