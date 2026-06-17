@@ -11,6 +11,7 @@ import { CngxIcon } from '@cngx/common/display';
 import { CngxRipple } from '@cngx/common/interactive';
 
 import { injectPaginatorConfig, type CngxPaginatorAriaLabels } from '../paginator-config';
+import { CNGX_PAGINATOR_GLYPHS } from '../paginator-glyphs';
 import { CNGX_PAGINATOR_HOST, type CngxPaginatorHost } from '../paginator-host.token';
 
 /** Config keys the four nav segments label their button with. */
@@ -85,7 +86,7 @@ const NAV_TEMPLATE = `
   host: { class: 'cngx-paginator__segment' },
 })
 export class CngxPaginatorFirst {
-  protected readonly glyph = '«';
+  protected readonly glyph = CNGX_PAGINATOR_GLYPHS.first;
   protected readonly core = createPaginatorNavCore({
     atBound: (host) => host.isFirst(),
     action: (host) => host.first(),
@@ -105,7 +106,7 @@ export class CngxPaginatorFirst {
   host: { class: 'cngx-paginator__segment' },
 })
 export class CngxPaginatorPrev {
-  protected readonly glyph = '‹';
+  protected readonly glyph = CNGX_PAGINATOR_GLYPHS.previous;
   protected readonly core = createPaginatorNavCore({
     atBound: (host) => host.isFirst(),
     action: (host) => host.previous(),
@@ -125,7 +126,7 @@ export class CngxPaginatorPrev {
   host: { class: 'cngx-paginator__segment' },
 })
 export class CngxPaginatorNext {
-  protected readonly glyph = '›';
+  protected readonly glyph = CNGX_PAGINATOR_GLYPHS.next;
   protected readonly core = createPaginatorNavCore({
     atBound: (host) => host.isLast(),
     action: (host) => host.next(),
@@ -145,7 +146,7 @@ export class CngxPaginatorNext {
   host: { class: 'cngx-paginator__segment' },
 })
 export class CngxPaginatorLast {
-  protected readonly glyph = '»';
+  protected readonly glyph = CNGX_PAGINATOR_GLYPHS.last;
   protected readonly core = createPaginatorNavCore({
     atBound: (host) => host.isLast(),
     action: (host) => host.last(),

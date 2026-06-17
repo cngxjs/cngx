@@ -81,6 +81,14 @@ describe('paginator nav segments', () => {
     expect(button(fixture, 'cngx-pgn-last').getAttribute('aria-label')).toBe('Last page');
   });
 
+  test('each button renders its chevron glyph from the central glyph const', async () => {
+    const { fixture } = await setup();
+    expect(button(fixture, 'cngx-pgn-first').textContent?.trim()).toBe('«');
+    expect(button(fixture, 'cngx-pgn-prev').textContent?.trim()).toBe('‹');
+    expect(button(fixture, 'cngx-pgn-next').textContent?.trim()).toBe('›');
+    expect(button(fixture, 'cngx-pgn-last').textContent?.trim()).toBe('»');
+  });
+
   test('first/prev are disabled on the first page, next/last are not', async () => {
     const { fixture } = await setup();
     expect(button(fixture, 'cngx-pgn-first').getAttribute('aria-disabled')).toBe('true');
