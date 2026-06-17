@@ -34,7 +34,7 @@ test.describe('common/data/paginate-list', () => {
     await gotoDemo(page, 'common/data/paginate-list/instrumentation-bridge-cngxmatpaginator');
 
     // Default page size is 10, so the first page shows 10 of the 16 items.
-    const items = page.locator('ul li');
+    const items = page.locator('.demo-list-flush li');
     await expect(items).toHaveCount(10);
 
     const status = page.locator('.status-badge').filter({ hasText: /of \d+ people/ });
