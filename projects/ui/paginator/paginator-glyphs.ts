@@ -18,4 +18,6 @@ export const CNGX_PAGINATOR_GLYPHS = {
   last: '»',
   /** Ellipsis trigger that opens the hidden-pages overflow menu. */
   more: '…',
+  /** Dropdown caret on the page-size / page-of-pages select triggers. */
+  caret: '▾',
 } as const;

@@ -119,6 +119,53 @@
     outline-offset: var(--cngx-paginator-focus-offset, 2px);
   }
 
+  /* Page-size / page-of-pages select trigger - a button with a value + caret. */
+  .cngx-paginator__select {
+    gap: var(--cngx-paginator-select-gap, 0.25rem);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .cngx-paginator__select-caret {
+    display: inline-flex;
+    font-size: var(--cngx-paginator-caret-size, 0.75em);
+    line-height: 1;
+  }
+
+  /* The listbox panel inside the popover. */
+  .cngx-paginator__select-panel {
+    margin: 0;
+    padding: var(--cngx-paginator-panel-padding, 0.25rem);
+    list-style: none;
+    border: var(--cngx-paginator-button-border-width, 1px) solid
+      var(--cngx-paginator-panel-border-color, color-mix(in oklch, currentColor 20%, transparent));
+    border-radius: var(--cngx-paginator-panel-radius, 0.5rem);
+    background: var(--cngx-paginator-panel-bg, Canvas);
+    color: var(--cngx-paginator-panel-color, currentColor);
+    box-shadow: var(--cngx-paginator-panel-shadow, 0 4px 12px rgb(0 0 0 / 0.15));
+  }
+
+  .cngx-paginator__option {
+    display: flex;
+    align-items: center;
+    min-height: var(--cngx-paginator-option-size, 2rem);
+    padding: var(--cngx-paginator-option-padding, 0 0.75rem);
+    border-radius: var(--cngx-paginator-option-radius, 0.25rem);
+    cursor: pointer;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .cngx-paginator__option.cngx-option--highlighted {
+    background: var(
+      --cngx-paginator-option-hover-bg,
+      color-mix(in oklch, currentColor 10%, transparent)
+    );
+  }
+
+  .cngx-paginator__option.cngx-option--selected {
+    background: var(--cngx-paginator-option-selected-bg, color-mix(in oklch, currentColor 14%, transparent));
+    font-weight: 600;
+  }
+
   /* Density axis - shifts the hit-target and gap tokens on the host. */
   .cngx-paginator[data-density='compact'] {
     --cngx-paginator-button-size: 1.875rem;
