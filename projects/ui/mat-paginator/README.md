@@ -1,11 +1,11 @@
-# CngxMatPaginator
+# CngxMatPaginatorWrapper
 
 Material paginator wrapper connecting to a CngxPaginate directive via explicit `[cngxPaginateRef]` input.
 
 ## Import
 
 ```typescript
-import { CngxMatPaginator } from '@cngx/ui/mat-paginator';
+import { CngxMatPaginatorWrapper } from '@cngx/ui/mat-paginator';
 ```
 
 ## Quick Start
@@ -14,7 +14,7 @@ import { CngxMatPaginator } from '@cngx/ui/mat-paginator';
 import { Component, signal } from '@angular/core';
 import { MatTableModule } from '@angular/material/table';
 import { CngxPaginate } from '@cngx/common/data';
-import { CngxMatPaginator } from '@cngx/ui/mat-paginator';
+import { CngxMatPaginatorWrapper } from '@cngx/ui/mat-paginator';
 
 @Component({
   selector: 'app-example',
@@ -26,7 +26,7 @@ import { CngxMatPaginator } from '@cngx/ui/mat-paginator';
     </div>
     <cngx-mat-paginator [cngxPaginateRef]="pg" />
   `,
-  imports: [MatTableModule, CngxMatPaginator],
+  imports: [MatTableModule, CngxMatPaginatorWrapper],
 })
 export class ExampleComponent {
   readonly items = [];
@@ -40,7 +40,7 @@ export class ExampleComponent {
 
 ## Overview
 
-`CngxMatPaginator` is a Material Design paginator component that wraps the Material `mat-paginator` element and wires it to a `CngxPaginate` directive. It provides:
+`CngxMatPaginatorWrapper` is a Material Design paginator component that wraps the Material `mat-paginator` element and wires it to a `CngxPaginate` directive. It provides:
 
 - **Type-safe integration** - Explicit `[cngxPaginateRef]` input (no ancestor injection)
 - **Automatic state sync** - Page index, page size, and total count are automatically synchronized
@@ -51,7 +51,7 @@ The component requires an explicit reference to the `CngxPaginate` directive ins
 
 ## Accessibility
 
-`CngxMatPaginator` delegates accessibility to Material's `mat-paginator` component. The Material paginator is fully accessible with:
+`CngxMatPaginatorWrapper` delegates accessibility to Material's `mat-paginator` component. The Material paginator is fully accessible with:
 
 - **ARIA labels** - Paginator navigation and page size controls are properly labeled
 - **Keyboard navigation** - Tab order and keyboard shortcuts for page navigation
@@ -59,7 +59,7 @@ The component requires an explicit reference to the `CngxPaginate` directive ins
 
 ## Composition
 
-`CngxMatPaginator` composes:
+`CngxMatPaginatorWrapper` composes:
 
 - **Material paginator** - `mat-paginator` component from `@angular/material/paginator`
 - **CngxPaginate directive** - Manages pagination state (page index, page size, total)
@@ -69,15 +69,15 @@ The component requires an explicit reference to the `CngxPaginate` directive ins
 
 1. **Setup** - Consumer applies `cngxPaginate` on a container element and assigns a template reference
 2. **Data binding** - Consumer passes `[total]="items.length"` to the directive
-3. **Component wire-up** - `CngxMatPaginator` binds to the directive via `[cngxPaginateRef]`
+3. **Component wire-up** - `CngxMatPaginatorWrapper` binds to the directive via `[cngxPaginateRef]`
 4. **State sync** - Component reads `ref.pageIndex()`, `ref.pageSize()`, `ref.total()` and binds to Material's `mat-paginator`
 5. **User interaction** - When user changes page or page size, Material's `page` event fires
-6. **State update** - `CngxMatPaginator.handlePage()` calls `ref.setPageSize()` and `ref.setPage()` to update directive state
+6. **State update** - `CngxMatPaginatorWrapper.handlePage()` calls `ref.setPageSize()` and `ref.setPage()` to update directive state
 7. **Data refresh** - Consumer reactively filters/slices data based on directive signals
 
 ## Material Theming
 
-`CngxMatPaginator` uses the standard Material `mat-paginator` component, which inherits theming from your Material theme automatically. No additional theme configuration needed - include the Material theme in your global stylesheet.
+`CngxMatPaginatorWrapper` uses the standard Material `mat-paginator` component, which inherits theming from your Material theme automatically. No additional theme configuration needed - include the Material theme in your global stylesheet.
 
 ```scss
 @use '@angular/material' as mat;

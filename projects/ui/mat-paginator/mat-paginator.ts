@@ -6,6 +6,10 @@ import { type CngxPaginate } from '@cngx/common/data';
  * Material paginator wrapper that connects to a {@link CngxPaginate} directive
  * via an explicit `[cngxPaginateRef]` input - no ancestor injection.
  *
+ * @deprecated Prefer the {@link CngxMatPaginator} bridge (`[cngxMatPaginator]`)
+ * for in-place adoption of an existing `<mat-paginator>`. This fresh-markup
+ * wrapper is scheduled for removal.
+ *
  * ```html
  * <div cngxPaginate #pg="cngxPaginate" [total]="items.length">
  *   <!-- table / list -->
@@ -27,7 +31,7 @@ import { type CngxPaginate } from '@cngx/common/data';
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/mat-paginator/mat-paginator.ts
  * @since 0.1.0
- * @relatedTo CngxPaginate, CngxDataSource
+ * @relatedTo CngxMatPaginator, CngxPaginate, CngxDataSource
  * <example-url>http://localhost:4200/#/common/data/data-source/datasource-cngxpaginate-manual-pipeline</example-url>
  * <example-url>http://localhost:4200/#/common/data/data-source/signal-observable-bridge</example-url>
  * <example-url>http://localhost:4200/#/common/data/paginate-list/paginated-list-cngxpaginate-cngxmatpaginator</example-url>
@@ -49,7 +53,7 @@ import { type CngxPaginate } from '@cngx/common/data';
     />
   `,
 })
-export class CngxMatPaginator {
+export class CngxMatPaginatorWrapper {
   /** The `CngxPaginate` directive instance to connect to. */
   readonly cngxPaginateRef = input.required<CngxPaginate>({ alias: 'cngxPaginateRef' });
   /** Options for the page-size selector. */

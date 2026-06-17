@@ -8,7 +8,7 @@ import { CngxPaginate } from '@cngx/common/data';
  * `cngxMatPaginator` to an existing `<mat-paginator>` and the signal-native
  * {@link CngxPaginate} brain takes over its state with no DOM rewrite.
  *
- * Peer of the {@link CngxMatPaginator} wrapper. The wrapper renders fresh
+ * Peer of the {@link CngxMatPaginatorWrapper} component. The wrapper renders fresh
  * `<mat-paginator>` markup bound to a brain handed in via `[cngxPaginateRef]`;
  * this bridge adopts markup the consumer already owns. Both ship side by side,
  * mirroring `[cngxMatStepper]` / `[cngxMatTabs]`.
@@ -38,7 +38,7 @@ import { CngxPaginate } from '@cngx/common/data';
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/mat-paginator/mat-paginator-bridge.directive.ts
  * @since 0.1.0
- * @relatedTo CngxMatPaginator, CngxPaginate, CngxMatStepper
+ * @relatedTo CngxMatPaginatorWrapper, CngxPaginate, CngxMatStepper
  */
 @Directive({
   selector: '[cngxMatPaginator]',
@@ -52,7 +52,7 @@ import { CngxPaginate } from '@cngx/common/data';
     },
   ],
 })
-export class CngxMatPaginatorBridge {
+export class CngxMatPaginator {
   private readonly matPaginator = inject(MatPaginator, { self: true });
   /**
    * The composed {@link CngxPaginate} brain. Public so a sibling list or table
@@ -88,7 +88,7 @@ export class CngxMatPaginatorBridge {
     this.matPaginator.page.pipe(takeUntilDestroyed()).subscribe((event: PageEvent) => {
       // setPageSize(..., false) suppresses the implicit page reset so the
       // explicit setPage below lands the index mat-paginator already computed -
-      // same order as the CngxMatPaginator wrapper. No property setter emits
+      // same order as the CngxMatPaginatorWrapper component. No property setter emits
       // `page`, so these brain writes never re-enter through this subscription;
       // the path is loop-free without an echo guard.
       this.paginate.setPageSize(event.pageSize, false);

@@ -7,11 +7,11 @@ import { describe, expect, test } from 'vitest';
 import { CngxPaginate, createManualState } from '@cngx/common/data';
 import type { CngxAsyncState } from '@cngx/core/utils';
 
-import { CngxMatPaginatorBridge } from './mat-paginator-bridge.directive';
+import { CngxMatPaginator } from './mat-paginator-bridge.directive';
 
 @Component({
   standalone: true,
-  imports: [MatPaginatorModule, CngxMatPaginatorBridge],
+  imports: [MatPaginatorModule, CngxMatPaginator],
   template: `
     <mat-paginator
       cngxMatPaginator
@@ -69,7 +69,7 @@ async function settle(fixture: Plumbing['fixture']): Promise<void> {
   await fixture.whenStable();
 }
 
-describe('CngxMatPaginatorBridge', () => {
+describe('CngxMatPaginator (bridge)', () => {
   test('(a) brain index/size/total write through to the rendered paginator', async () => {
     TestBed.configureTestingModule({ providers });
     const { fixture, matPaginator, paginate } = await setup();

@@ -1,20 +1,20 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxPaginate: Paginated list with CngxMatPaginator',
-  subtitle: '<code>CngxPaginate</code> works with any list, not just tables. Put <code>[cngxPaginate]</code> on any wrapper element, bind <code>[total]</code> to the full item count, and slice the array with <code>pg.range()</code> in the <code>@for</code> loop. <code>CngxMatPaginator</code> provides the Material paginator UI via <code>[cngxPaginateRef]</code>.',
+  title: 'CngxPaginate: Paginated list with CngxMatPaginatorWrapper',
+  subtitle: '<code>CngxPaginate</code> works with any list, not just tables. Put <code>[cngxPaginate]</code> on any wrapper element, bind <code>[total]</code> to the full item count, and slice the array with <code>pg.range()</code> in the <code>@for</code> loop. <code>CngxMatPaginatorWrapper</code> provides the Material paginator UI via <code>[cngxPaginateRef]</code>.',
   level: 'atom',
   audience: ['dev'],
   artifact: 'building-block',
   focus: ['behavior', 'integration'],
   apiComponents: [
     'CngxPaginate',
-    'CngxMatPaginator',
+    'CngxMatPaginatorWrapper',
   ],
   moduleImports: [
     'import { PEOPLE, type Person } from \'../../../../fixtures\';',
   ],
-  imports: ['CngxPaginate', 'CngxMatPaginator'],
+  imports: ['CngxPaginate', 'CngxMatPaginatorWrapper'],
   setup: `protected readonly items = signal<Person[]>([
     ...PEOPLE,
     ...PEOPLE.map((p: Person) => ({ ...p, name: p.name + ' Jr.' })),

@@ -9,12 +9,12 @@ export const STORY: DemoSpec = {
   focus: ['integration', 'async-state'],
   apiComponents: [
     'CngxPaginate',
-    'CngxMatPaginator',
+    'CngxMatPaginatorWrapper',
   ],
   moduleImports: [
     'import { PEOPLE, type Person } from \'../../../../fixtures\';',
   ],
-  imports: ['CngxPaginate', 'CngxMatPaginator'],
+  imports: ['CngxPaginate', 'CngxMatPaginatorWrapper'],
   setup: `protected readonly pageIndex = signal(0);
   protected readonly pageSize  = signal(3);
   protected readonly paginated = computed((): Person[] =>
