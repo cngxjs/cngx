@@ -29,6 +29,7 @@
 
 @layer cngx.components {
   .cngx-paginator {
+    position: relative;
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -36,9 +37,35 @@
     gap: var(--cngx-paginator-gap, 0.25rem);
   }
 
+  /*
+   * Indeterminate loading bar - a hairline overlay on the top edge, out of the
+   * flex flow so it never reflows the segments. Only mounted while the bound
+   * async state is busy.
+   */
+  .cngx-paginator__progress {
+    position: absolute;
+    inset-inline: 0;
+    inset-block-start: 0;
+    block-size: var(--cngx-paginator-progress-thickness, 2px);
+  }
+
   .cngx-paginator__segment {
     display: inline-flex;
     align-items: center;
+  }
+
+  /* Visually-hidden live region - always in the DOM, content reactive. */
+  .cngx-paginator__sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
   }
 
   .cngx-paginator__pages {

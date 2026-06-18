@@ -1,0 +1,68 @@
+import { inject, linkedSignal, type Signal } from '@angular/core';
+
+import { injectPaginatorConfig } from './paginator-config';
+import { CNGX_PAGINATOR_HOST } from './paginator-host.token';
+
+/**
+ * Reactive announcement source for the paginator live region.
+ *
+ * @category ui/paginator
+ */
+export interface CngxPaginatorAnnouncer {
+  /**
+   * The current message to render inside the `cngxLiveRegion` span. Changes
+   * (and only changes) are spoken by assistive technology.
+   */
+  readonly message: Signal<string>;
+}
+
+/** What the announcer is reacting to, sampled together so transitions are atomic. */
+interface AnnouncerSource {
+  readonly page: number;
+  readonly totalPages: number;
+  readonly busy: boolean;
+}
+
+/**
+ * Builds the paginator live-region message as a single derived signal - no
+ * class logic baked into the shell, so the skin still ejects cleanly. The
+ * message is a `linkedSignal` over `[pageIndex, totalPages, isBusy]` from
+ * {@link CNGX_PAGINATOR_HOST}: it speaks "Page N of M" on every effective-page
+ * change (navigation OR a `total`-shrink clamp, so the clamp is never silent),
+ * "Loading" while busy, and "Updated" on the first settle after busy. Phrasing
+ * comes from {@link injectPaginatorConfig}.
+ *
+ * The previous source value (held by `linkedSignal`) is what distinguishes a
+ * settle from a steady state, so there is no signal write in an `effect` and no
+ * imperative `previous` tracking. Identical consecutive messages dedupe through
+ * the signal's value equality, so the live region never re-announces a no-op.
+ *
+ * Must run in an injection context (call as a field initialiser on the shell).
+ *
+ * @category ui/paginator
+ */
+export function createPaginatorAnnouncer(): CngxPaginatorAnnouncer {
+  const host = inject(CNGX_PAGINATOR_HOST);
+  const config = injectPaginatorConfig();
+
+  const message = linkedSignal<AnnouncerSource, string>({
+    source: () => ({
+      page: host.pageIndex(),
+      totalPages: host.totalPages(),
+      busy: host.isBusy(),
+    }),
+    computation: (current, previous) => {
+      const { announcements } = config;
+      if (current.busy) {
+        return announcements.loading;
+      }
+      // Just left a busy state: announce the settle once, before page phrasing.
+      if (previous?.source.busy) {
+        return announcements.updated;
+      }
+      return announcements.pageChange(current.page + 1, current.totalPages);
+    },
+  });
+
+  return { message };
+}

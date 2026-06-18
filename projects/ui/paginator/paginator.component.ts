@@ -10,8 +10,11 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 
+import { CngxLiveRegion } from '@cngx/common/a11y';
 import { CngxPaginate } from '@cngx/common/data';
+import { CngxProgress } from '@cngx/ui/feedback';
 
+import { createPaginatorAnnouncer } from './paginator-announcer';
 import { injectPaginatorConfig } from './paginator-config';
 import { CNGX_PAGINATOR_HOST } from './paginator-host.token';
 
@@ -66,6 +69,7 @@ export type CngxPaginatorDensity = 'compact' | 'default' | 'comfortable';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
+  imports: [CngxProgress, CngxLiveRegion],
   templateUrl: './paginator.component.html',
   styleUrls: ['../../common/data/paginate/styles/paginator-base.css', './paginator.component.css'],
   hostDirectives: [
@@ -98,8 +102,11 @@ export class CngxPaginator {
   readonly pageSizeChange = output<number>();
 
   protected readonly paginate = inject(CngxPaginate);
-  private readonly config = injectPaginatorConfig();
+  protected readonly config = injectPaginatorConfig();
   private readonly destroyRef = inject(DestroyRef);
+
+  /** Live-region message source - mounted onto the `cngxLiveRegion` span in the template. */
+  protected readonly announcer = createPaginatorAnnouncer();
 
   protected readonly resolvedAriaLabel = computed(
     () => this.ariaLabel() ?? this.config.ariaLabels.label,
