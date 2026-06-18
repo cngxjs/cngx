@@ -2,7 +2,10 @@ import {
   inject,
   InjectionToken,
   makeEnvironmentProviders,
+  Optional,
+  SkipSelf,
   type EnvironmentProviders,
+  type Provider,
 } from '@angular/core';
 
 /**
@@ -34,13 +37,32 @@ export interface CngxPaginatorAriaLabels {
 }
 
 /**
- * Resolved paginator configuration. Currently a single `ariaLabels`
- * sub-tree; further sub-trees follow the same merge shape if added.
+ * Live-region announcement phrasing. The paginator announces the effective page
+ * on every change (navigation or a `total`-shrink clamp, so the clamp is never
+ * silent) and the async busy / settle transitions. Library defaults are
+ * English; consumers localise via {@link withPaginatorAnnouncements}.
+ *
+ * @category ui/paginator
+ */
+export interface CngxPaginatorAnnouncements {
+  /** Announced on every page change, given the 1-based page and total pages. */
+  readonly pageChange: (page: number, totalPages: number) => string;
+  /** Announced when the bound async state becomes busy. */
+  readonly loading: string;
+  /** Announced when the bound async state settles after being busy. */
+  readonly updated: string;
+}
+
+/**
+ * Resolved paginator configuration. Two sub-trees - accessible-name strings
+ * and live-region announcement phrasing - each merged independently by the
+ * reducer in {@link provideCngxPaginatorConfig}.
  *
  * @category ui/paginator
  */
 export interface CngxPaginatorConfig {
   readonly ariaLabels: CngxPaginatorAriaLabels;
+  readonly announcements: CngxPaginatorAnnouncements;
 }
 
 /** Library defaults - English. Override via {@link provideCngxPaginatorConfig}. */
@@ -55,6 +77,11 @@ export const CNGX_PAGINATOR_DEFAULTS: CngxPaginatorConfig = {
     morePages: 'More pages',
     itemsPerPage: 'Items per page',
     goToPage: 'Go to page',
+  },
+  announcements: {
+    pageChange: (page, totalPages) => `Page ${page} of ${totalPages}`,
+    loading: 'Loading',
+    updated: 'Updated',
   },
 };
 
@@ -73,13 +100,29 @@ export const CNGX_PAGINATOR_CONFIG = new InjectionToken<CngxPaginatorConfig>('Cn
 /**
  * A single configuration override produced by a `with*` feature factory.
  * The reducer in {@link provideCngxPaginatorConfig} matches on `kind` and
- * merges `payload` into the matching sub-tree.
+ * shallow-merges `payload` into the matching sub-tree.
  *
  * @category ui/paginator
  */
-export interface CngxPaginatorConfigFeature {
-  readonly kind: 'ariaLabels';
-  readonly payload: Partial<CngxPaginatorAriaLabels>;
+export type CngxPaginatorConfigFeature =
+  | { readonly kind: 'ariaLabels'; readonly payload: Partial<CngxPaginatorAriaLabels> }
+  | { readonly kind: 'announcements'; readonly payload: Partial<CngxPaginatorAnnouncements> };
+
+/** Reduce a feature list onto a base config, merging each sub-tree in isolation. */
+function applyFeatures(
+  base: CngxPaginatorConfig,
+  features: readonly CngxPaginatorConfigFeature[],
+): CngxPaginatorConfig {
+  let ariaLabels = base.ariaLabels;
+  let announcements = base.announcements;
+  for (const feature of features) {
+    if (feature.kind === 'ariaLabels') {
+      ariaLabels = { ...ariaLabels, ...feature.payload };
+    } else {
+      announcements = { ...announcements, ...feature.payload };
+    }
+  }
+  return { ariaLabels, announcements };
 }
 
 /**
@@ -101,6 +144,27 @@ export function withPaginatorAriaLabels(
 }
 
 /**
+ * Override any subset of the paginator live-region announcement phrasing.
+ *
+ * ```ts
+ * provideCngxPaginatorConfig(
+ *   withPaginatorAnnouncements({
+ *     pageChange: (page, total) => `Seite ${page} von ${total}`,
+ *     loading: 'Wird geladen',
+ *     updated: 'Aktualisiert',
+ *   }),
+ * );
+ * ```
+ *
+ * @category ui/paginator
+ */
+export function withPaginatorAnnouncements(
+  payload: Partial<CngxPaginatorAnnouncements>,
+): CngxPaginatorConfigFeature {
+  return { kind: 'announcements', payload };
+}
+
+/**
  * Application-root configuration cascade for the paginator. Pass any
  * combination of `with*` features in `bootstrapApplication`'s providers.
  * Supplied features deep-merge with the library defaults, so consumers only
@@ -116,13 +180,30 @@ export function provideCngxPaginatorConfig(
   if (features.length === 0) {
     return makeEnvironmentProviders([]);
   }
-  let ariaLabels = { ...CNGX_PAGINATOR_DEFAULTS.ariaLabels };
-  for (const feature of features) {
-    ariaLabels = { ...ariaLabels, ...feature.payload };
-  }
   return makeEnvironmentProviders([
-    { provide: CNGX_PAGINATOR_CONFIG, useValue: { ariaLabels } },
+    { provide: CNGX_PAGINATOR_CONFIG, useValue: applyFeatures(CNGX_PAGINATOR_DEFAULTS, features) },
   ]);
+}
+
+/**
+ * Component-scoped paginator configuration override. Pass into a component's
+ * or directive's `viewProviders`; features merge on top of the parent config
+ * (an enclosing scope or the application root), so a region can re-phrase its
+ * announcements or labels without disturbing the rest of the app.
+ *
+ * @category ui/paginator
+ */
+export function provideCngxPaginatorConfigAt(
+  ...features: CngxPaginatorConfigFeature[]
+): Provider[] {
+  return [
+    {
+      provide: CNGX_PAGINATOR_CONFIG,
+      useFactory: (parent: CngxPaginatorConfig | null) =>
+        applyFeatures(parent ?? CNGX_PAGINATOR_DEFAULTS, features),
+      deps: [[new SkipSelf(), new Optional(), CNGX_PAGINATOR_CONFIG]],
+    },
+  ];
 }
 
 /**

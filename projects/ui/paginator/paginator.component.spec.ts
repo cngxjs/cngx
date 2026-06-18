@@ -234,4 +234,34 @@ describe('CngxPaginator', () => {
     await settle(fixture);
     expect(paginatorEl.querySelector('cngx-progress')).toBeNull();
   });
+
+  test('the live region announces page changes, the clamp, and async transitions', async () => {
+    const { fixture, host, paginate, paginatorEl } = await setup();
+    const live = paginatorEl.querySelector('[aria-live]');
+    expect(live).not.toBeNull();
+    expect(live?.getAttribute('role')).toBe('status');
+    // Initial content is the current page (not spoken until the first mutation).
+    expect(live?.textContent?.trim()).toBe('Page 1 of 10');
+
+    paginate.setPage(2);
+    await settle(fixture);
+    expect(live?.textContent?.trim()).toBe('Page 3 of 10');
+
+    // total 100 -> 20 clamps the effective page 2 -> 1; the announcement follows
+    // the effective page, so the clamp is not silent.
+    host.total.set(20);
+    await settle(fixture);
+    expect(paginate.pageIndex()).toBe(1);
+    expect(live?.textContent?.trim()).toBe('Page 2 of 2');
+
+    const busy = createManualState<unknown>();
+    busy.set('loading');
+    host.state.set(busy);
+    await settle(fixture);
+    expect(live?.textContent?.trim()).toBe('Loading');
+
+    busy.set('success');
+    await settle(fixture);
+    expect(live?.textContent?.trim()).toBe('Updated');
+  });
 });

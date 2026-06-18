@@ -21,8 +21,15 @@ export {
   CNGX_PAGINATOR_DEFAULTS,
   type CngxPaginatorConfig,
   type CngxPaginatorAriaLabels,
+  type CngxPaginatorAnnouncements,
   type CngxPaginatorConfigFeature,
   provideCngxPaginatorConfig,
+  provideCngxPaginatorConfigAt,
   withPaginatorAriaLabels,
+  withPaginatorAnnouncements,
   injectPaginatorConfig,
 } from './paginator-config';
+export {
+  createPaginatorAnnouncer,
+  type CngxPaginatorAnnouncer,
+} from './paginator-announcer';
