@@ -85,10 +85,13 @@ export class CngxPaginate {
    * `[start, end]` indices for `Array.slice()` - always in-bounds.
    * Consumer: `items.slice(range()[0], range()[1])`.
    */
-  readonly range = computed<[number, number]>(() => {
-    const start = this.pageIndex() * this.pageSize();
-    return [start, start + this.pageSize()];
-  });
+  readonly range = computed<[number, number]>(
+    () => {
+      const start = this.pageIndex() * this.pageSize();
+      return [start, start + this.pageSize()];
+    },
+    { equal: (a, b) => a[0] === b[0] && a[1] === b[1] },
+  );
 
   /**
    * `[0, end]` cumulative slice indices for append-don't-replace (load-more)
