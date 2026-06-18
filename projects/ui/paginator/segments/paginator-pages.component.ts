@@ -3,6 +3,7 @@ import {
   Component,
   computed,
   inject,
+  input,
   linkedSignal,
   ViewEncapsulation,
 } from '@angular/core';
@@ -14,7 +15,8 @@ import { CngxPopover } from '@cngx/common/popover';
 import { injectPaginatorConfig } from '../paginator-config';
 import { CNGX_PAGINATOR_GLYPHS } from '../paginator-glyphs';
 import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
-import { pageWindow, pageWindowEqual, type PageWindow } from './page-model';
+import { pageWindowEqual, type PageWindow } from './page-model';
+import { CNGX_PAGINATOR_PAGE_WINDOW_FACTORY } from './paginator-page-window.token';
 
 /**
  * The numbered page row. One tab stop via `CngxRovingTabindex` (arrows / Home /
@@ -83,13 +85,27 @@ export class CngxPaginatorPages {
   protected readonly config = injectPaginatorConfig();
   protected readonly glyphs = CNGX_PAGINATOR_GLYPHS;
 
+  /** Pages flanking the current page on each side. Defaults to the v1 window. */
+  readonly siblingCount = input<number>(1);
+  /** Pages pinned at each end. Defaults to the v1 window. */
+  readonly boundaryCount = input<number>(1);
+
+  /** The page-window computation, swappable enterprise-wide via the DI token. */
+  private readonly pageWindowFn = inject(CNGX_PAGINATOR_PAGE_WINDOW_FACTORY)();
+
   /**
    * The rendered page window. Structural `equal` keeps the reference stable
    * across recomputes that yield an identical window, so the `@for` does not
    * churn (signal-equality rule).
    */
   protected readonly model = computed<PageWindow>(
-    () => pageWindow(this.host.pageIndex(), this.host.totalPages()),
+    () =>
+      this.pageWindowFn(
+        this.host.pageIndex(),
+        this.host.totalPages(),
+        this.siblingCount(),
+        this.boundaryCount(),
+      ),
     { equal: pageWindowEqual },
   );
 

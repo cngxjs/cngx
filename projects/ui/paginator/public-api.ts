@@ -11,6 +11,13 @@ export {
   CngxPaginatorLast,
 } from './segments/paginator-nav.component';
 export { CngxPaginatorPages } from './segments/paginator-pages.component';
+export {
+  CNGX_PAGINATOR_PAGE_WINDOW_FACTORY,
+  createPaginatorPageWindow,
+  type CngxPaginatorPageWindowFactory,
+  type CngxPaginatorPageWindowFn,
+} from './segments/paginator-page-window.token';
+export { type PageWindow, type PageItem } from './segments/page-model';
 export { CngxPaginatorRange } from './segments/paginator-range.component';
 export { CngxPaginatorGoto } from './segments/paginator-goto.component';
 export { CngxPaginatorPageSize } from './segments/paginator-page-size.component';
