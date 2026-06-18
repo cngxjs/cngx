@@ -1,12 +1,20 @@
-import { ChangeDetectionStrategy, Component, computed, inject, ViewEncapsulation } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  ViewEncapsulation,
+} from '@angular/core';
 
+import { injectPaginatorConfig } from '../paginator-config';
 import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
 
 /**
  * Range-readout segment: renders `start-end of total` for the current page.
  * Pure derivation from the host `range()`/`total()` signals - no local state,
- * no writes (Pillar 1). Tabular figures keep the numerals from reflowing as
- * the page changes.
+ * no writes. The text (including the `of` connector) comes from the
+ * config range formatter, so it localises with the rest of the cascade. Tabular
+ * figures keep the numerals from reflowing as the page changes.
  *
  * @category ui/paginator
  */
@@ -16,13 +24,12 @@ import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  template: `<span class="cngx-paginator__range"
-    >{{ start() }}-{{ end() }} of {{ host.total() }}</span
-  >`,
+  template: `<span class="cngx-paginator__range">{{ text() }}</span>`,
   host: { class: 'cngx-paginator__segment' },
 })
 export class CngxPaginatorRange {
   protected readonly host = inject(CNGX_PAGINATOR_HOST);
+  private readonly config = injectPaginatorConfig();
 
   /** 1-based index of the first item on the current page (0 when empty). */
   protected readonly start = computed<number>(() =>
@@ -36,5 +43,10 @@ export class CngxPaginatorRange {
    */
   protected readonly end = computed<number>(() =>
     Math.min(this.host.range()[1], this.host.total()),
+  );
+
+  /** Formatted readout from the config range formatter (EN default `start-end of total`). */
+  protected readonly text = computed<string>(() =>
+    this.config.formats.range(this.start(), this.end(), this.host.total()),
   );
 }

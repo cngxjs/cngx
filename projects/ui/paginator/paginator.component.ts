@@ -14,7 +14,7 @@ import { CngxLiveRegion } from '@cngx/common/a11y';
 import { CngxPaginate } from '@cngx/common/data';
 import { CngxProgress } from '@cngx/ui/feedback';
 
-import { createPaginatorAnnouncer } from './paginator-announcer';
+import { CNGX_PAGINATOR_ANNOUNCER_FACTORY } from './paginator-announcer';
 import { injectPaginatorConfig } from './paginator-config';
 import { CNGX_PAGINATOR_HOST } from './paginator-host.token';
 
@@ -105,8 +105,12 @@ export class CngxPaginator {
   protected readonly config = injectPaginatorConfig();
   private readonly destroyRef = inject(DestroyRef);
 
-  /** Live-region message source - mounted onto the `cngxLiveRegion` span in the template. */
-  protected readonly announcer = createPaginatorAnnouncer();
+  /**
+   * Live-region message source - mounted onto the `cngxLiveRegion` span in the
+   * template. Built through the swap token so a consumer can wrap the
+   * busy / settle / page-change derivation without forking the shell.
+   */
+  protected readonly announcer = inject(CNGX_PAGINATOR_ANNOUNCER_FACTORY)();
 
   protected readonly resolvedAriaLabel = computed(
     () => this.ariaLabel() ?? this.config.ariaLabels.label,

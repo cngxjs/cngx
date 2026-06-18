@@ -34,6 +34,22 @@ export interface CngxPaginatorAriaLabels {
   readonly itemsPerPage: string;
   /** Go-to-page input. */
   readonly goToPage: string;
+  /** Page-of-pages selector (the `current / total` jump dropdown). */
+  readonly pageOfPages: string;
+}
+
+/**
+ * Display-text formatters for the data-readout segments. Library defaults are
+ * English; consumers localise via {@link withPaginatorRangeFormat}.
+ *
+ * @category ui/paginator
+ */
+export interface CngxPaginatorFormats {
+  /**
+   * Range-readout text, given the 1-based first item, last item, and total.
+   * The `cngx-pgn-range` segment renders the returned string verbatim.
+   */
+  readonly range: (start: number, end: number, total: number) => string;
 }
 
 /**
@@ -54,15 +70,16 @@ export interface CngxPaginatorAnnouncements {
 }
 
 /**
- * Resolved paginator configuration. Two sub-trees - accessible-name strings
- * and live-region announcement phrasing - each merged independently by the
- * reducer in {@link provideCngxPaginatorConfig}.
+ * Resolved paginator configuration. Three sub-trees - accessible-name strings,
+ * live-region announcement phrasing, and data-readout formatters - each merged
+ * independently by the reducer in {@link provideCngxPaginatorConfig}.
  *
  * @category ui/paginator
  */
 export interface CngxPaginatorConfig {
   readonly ariaLabels: CngxPaginatorAriaLabels;
   readonly announcements: CngxPaginatorAnnouncements;
+  readonly formats: CngxPaginatorFormats;
 }
 
 /** Library defaults - English. Override via {@link provideCngxPaginatorConfig}. */
@@ -77,11 +94,15 @@ export const CNGX_PAGINATOR_DEFAULTS: CngxPaginatorConfig = {
     morePages: 'More pages',
     itemsPerPage: 'Items per page',
     goToPage: 'Go to page',
+    pageOfPages: 'Select page',
   },
   announcements: {
     pageChange: (page, totalPages) => `Page ${page} of ${totalPages}`,
     loading: 'Loading',
     updated: 'Updated',
+  },
+  formats: {
+    range: (start, end, total) => `${start}-${end} of ${total}`,
   },
 };
 
@@ -106,7 +127,8 @@ export const CNGX_PAGINATOR_CONFIG = new InjectionToken<CngxPaginatorConfig>('Cn
  */
 export type CngxPaginatorConfigFeature =
   | { readonly kind: 'ariaLabels'; readonly payload: Partial<CngxPaginatorAriaLabels> }
-  | { readonly kind: 'announcements'; readonly payload: Partial<CngxPaginatorAnnouncements> };
+  | { readonly kind: 'announcements'; readonly payload: Partial<CngxPaginatorAnnouncements> }
+  | { readonly kind: 'formats'; readonly payload: Partial<CngxPaginatorFormats> };
 
 /** Reduce a feature list onto a base config, merging each sub-tree in isolation. */
 function applyFeatures(
@@ -115,14 +137,17 @@ function applyFeatures(
 ): CngxPaginatorConfig {
   let ariaLabels = base.ariaLabels;
   let announcements = base.announcements;
+  let formats = base.formats;
   for (const feature of features) {
     if (feature.kind === 'ariaLabels') {
       ariaLabels = { ...ariaLabels, ...feature.payload };
-    } else {
+    } else if (feature.kind === 'announcements') {
       announcements = { ...announcements, ...feature.payload };
+    } else {
+      formats = { ...formats, ...feature.payload };
     }
   }
-  return { ariaLabels, announcements };
+  return { ariaLabels, announcements, formats };
 }
 
 /**
@@ -162,6 +187,24 @@ export function withPaginatorAnnouncements(
   payload: Partial<CngxPaginatorAnnouncements>,
 ): CngxPaginatorConfigFeature {
   return { kind: 'announcements', payload };
+}
+
+/**
+ * Override the range-readout format. The `cngx-pgn-range` segment renders the
+ * returned string verbatim, so this also localises the `of` connector.
+ *
+ * ```ts
+ * provideCngxPaginatorConfig(
+ *   withPaginatorRangeFormat((start, end, total) => `${start}-${end} von ${total}`),
+ * );
+ * ```
+ *
+ * @category ui/paginator
+ */
+export function withPaginatorRangeFormat(
+  range: CngxPaginatorFormats['range'],
+): CngxPaginatorConfigFeature {
+  return { kind: 'formats', payload: { range } };
 }
 
 /**

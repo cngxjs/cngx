@@ -1,4 +1,4 @@
-import { inject, linkedSignal, type Signal } from '@angular/core';
+import { computed, inject, InjectionToken, linkedSignal, type Signal } from '@angular/core';
 
 import { injectPaginatorConfig } from './paginator-config';
 import { CNGX_PAGINATOR_HOST } from './paginator-host.token';
@@ -45,12 +45,21 @@ export function createPaginatorAnnouncer(): CngxPaginatorAnnouncer {
   const host = inject(CNGX_PAGINATOR_HOST);
   const config = injectPaginatorConfig();
 
-  const message = linkedSignal<AnnouncerSource, string>({
-    source: () => ({
+  // Sample the three drivers together so a transition is atomic. The field-wise
+  // `equal` keeps the source reference stable across a recompute that yields an
+  // identical tuple, so the linkedSignal computation never re-runs on a no-op
+  // (equality rule: an object-returning computed carries an explicit equal).
+  const source = computed<AnnouncerSource>(
+    () => ({
       page: host.pageIndex(),
       totalPages: host.totalPages(),
       busy: host.isBusy(),
     }),
+    { equal: (a, b) => a.page === b.page && a.totalPages === b.totalPages && a.busy === b.busy },
+  );
+
+  const message = linkedSignal<AnnouncerSource, string>({
+    source,
     computation: (current, previous) => {
       const { announcements } = config;
       if (current.busy) {
@@ -66,3 +75,24 @@ export function createPaginatorAnnouncer(): CngxPaginatorAnnouncer {
 
   return { message };
 }
+
+/** The shape an override must match to swap the announcer derivation. */
+export type CngxPaginatorAnnouncerFactory = () => CngxPaginatorAnnouncer;
+
+/**
+ * Swap token for the live-region announcer derivation. The default resolves to
+ * {@link createPaginatorAnnouncer}; the shell builds its announcer via
+ * `inject(CNGX_PAGINATOR_ANNOUNCER_FACTORY)()` rather than calling the factory
+ * directly. Override it to wrap the busy / settle / page-change derivation - a
+ * telemetry tap, politeness escalation, or custom phrasing branch - without
+ * forking the shell (mirrors `CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY` in the
+ * select family). The override runs in the shell's injection context, so it can
+ * still `inject(CNGX_PAGINATOR_HOST)` / {@link injectPaginatorConfig}.
+ *
+ * @category ui/paginator
+ */
+export const CNGX_PAGINATOR_ANNOUNCER_FACTORY =
+  new InjectionToken<CngxPaginatorAnnouncerFactory>('CngxPaginatorAnnouncerFactory', {
+    providedIn: 'root',
+    factory: () => createPaginatorAnnouncer,
+  });

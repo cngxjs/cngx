@@ -20,4 +20,93 @@ You want a paginator that:
 If you already render a Material `<mat-paginator>`, reach for `[cngxMatPaginator]`
 in `@cngx/ui/mat-paginator` instead. The `CngxPaginate` brain is shared.
 
-> Full API, skins, and segment reference land with the stories in the docs pass.
+## Usage
+
+The shell exposes only `total`, `[(pageIndex)]`, `[(pageSize)]`, `[state]`,
+`skin`, and `density`. Everything else is a projected segment in DOM order. The
+brain owns no data: bind `[total]`, read the active page back through the two-way
+bindings, and slice your own array.
+
+```html
+<cngx-paginator skin="numbered" [total]="items().length" [(pageIndex)]="pageIndex">
+  <cngx-pgn-prev />
+  <cngx-pgn-pages />
+  <cngx-pgn-next />
+  <cngx-pgn-range />
+</cngx-paginator>
+```
+
+```ts
+protected readonly pageIndex = signal(0);
+protected readonly pageSize = signal(10);
+protected readonly pageItems = computed(() => {
+  const start = this.pageIndex() * this.pageSize();
+  return this.items().slice(start, start + this.pageSize());
+});
+```
+
+## Segments
+
+Each part injects `CNGX_PAGINATOR_HOST` and self-wires; drop in only what the
+context needs.
+
+|Segment|Selector|Role|
+|-|-|-|
+|First / last|`cngx-pgn-first` / `cngx-pgn-last`|Jump to the boundaries; `aria-disabled` at the bound|
+|Previous / next|`cngx-pgn-prev` / `cngx-pgn-next`|Step one page; `aria-disabled` at the bound|
+|Pages|`cngx-pgn-pages`|Roving numbered row with ellipsis overflow menu, `aria-current` on the active page|
+|Range|`cngx-pgn-range`|`start-end of total` readout (format from config)|
+|Page size|`cngx-pgn-page-size`|`CngxListbox` select; `[options]` is data; resets to the first page|
+|Page of pages|`cngx-pgn-page-of-pages`|`current / total` jump dropdown|
+|Go to|`cngx-pgn-goto`|Native number input; Enter or blur navigates|
+|Dots|`cngx-pgn-dots`|One dot per page (organism-internal), for the `dots` skin|
+
+## Skins
+
+`numbered`, `minimal`, `pill`, `segmented`, `rail`, `dots`, `bar`. Set via
+`[skin]` -> `[data-skin]`. Skin is paint-only: DOM, ARIA, and keyboard behaviour
+are identical across all seven. `density` (`compact` / `default` / `comfortable`)
+is orthogonal.
+
+## Async
+
+`CngxPaginator` is an async-state consumer. Bind `[state]` and, while busy, it
+gates navigation, renders an indeterminate `cngx-progress` bar, flips
+`aria-busy`, and announces the transition.
+
+```html
+<cngx-paginator [total]="total()" [state]="loading">…</cngx-paginator>
+```
+
+## Configuration
+
+All accessible-name strings, announcement phrasing, and the range format cascade
+through `CNGX_PAGINATOR_CONFIG` (English defaults). Override at the app root with
+`provideCngxPaginatorConfig(...)`, or per region with
+`provideCngxPaginatorConfigAt(...)` in `viewProviders`.
+
+```ts
+provideCngxPaginatorConfig(
+  withPaginatorAriaLabels({ next: 'Nächste Seite', pageOfPages: 'Seite wählen' }),
+  withPaginatorAnnouncements({ pageChange: (p, t) => `Seite ${p} von ${t}` }),
+  withPaginatorRangeFormat((start, end, total) => `${start}-${end} von ${total}`),
+);
+```
+
+`withPaginatorRangeFormat` localises the `cngx-pgn-range` text (including the
+`of` connector); `ariaLabels.pageOfPages` is the dedicated label for the
+page-of-pages selector.
+
+The live-region announcer is swappable. `CNGX_PAGINATOR_ANNOUNCER_FACTORY`
+defaults to `createPaginatorAnnouncer`; override it to wrap the busy / settle /
+page-change derivation (telemetry tap, politeness escalation, custom branching)
+without forking the shell. It mirrors the select family's
+`CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY`.
+
+## Accessibility
+
+`role="navigation"` landmark with a configurable `aria-label`; a single
+roving tab stop on the page row (arrows / Home / End); `aria-current="page"` on
+the active page; a single computed `aria-busy` owner; live-region page-change,
+clamp, and async announcements. A `total`-shrink clamp is never silent - the
+clamped page is both emitted back to the consumer and announced.
