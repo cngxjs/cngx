@@ -4,8 +4,9 @@ import {
   inject,
   provideZonelessChangeDetection,
   signal,
+  TemplateRef,
 } from '@angular/core';
-import { TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { describe, expect, test } from 'vitest';
 
@@ -17,7 +18,13 @@ import {
   type CngxPaginatorDensity,
   type CngxPaginatorSkin,
 } from './paginator.component';
+import {
+  CNGX_PAGINATOR_CONFIG,
+  provideCngxPaginatorConfig,
+  withPaginatorTemplates,
+} from './paginator-config';
 import { CNGX_PAGINATOR_HOST, type CngxPaginatorHost } from './paginator-host.token';
+import { CngxPaginatorLoading } from './paginator-loading.directive';
 
 /** Probe that a projected segment resolves the host token (regular `providers`). */
 @Directive({ selector: '[probeHost]', standalone: true })
@@ -76,7 +83,7 @@ interface Plumbing {
   paginatorEl: HTMLElement;
 }
 
-async function settle(fixture: Plumbing['fixture']): Promise<void> {
+async function settle(fixture: ComponentFixture<unknown>): Promise<void> {
   fixture.detectChanges();
   await fixture.whenStable();
   fixture.detectChanges();
@@ -280,5 +287,55 @@ describe('CngxPaginator', () => {
     await settle(fixture);
     expect(paginate.totalPages()).toBe(10);
     expect(live?.textContent?.trim()).toBe('Page 3 of 10');
+  });
+});
+
+@Component({
+  standalone: true,
+  imports: [CngxPaginator, CngxPaginatorLoading],
+  template: `
+    <cngx-paginator [total]="100" [state]="state()">
+      <div *cngxPaginatorLoading data-test="custom-loading">Custom indicator</div>
+    </cngx-paginator>
+  `,
+})
+class SlotHostCmp {
+  readonly state = signal<CngxAsyncState<unknown> | undefined>(undefined);
+}
+
+describe('CngxPaginator — loading slot', () => {
+  test('a *cngxPaginatorLoading override renders the consumer template instead of the default bar', async () => {
+    TestBed.configureTestingModule({ providers });
+    const fixture = TestBed.createComponent(SlotHostCmp);
+    await settle(fixture);
+    const paginatorEl = fixture.debugElement.query(By.directive(CngxPaginator))
+      .nativeElement as HTMLElement;
+
+    // Idle: neither the default bar nor the consumer slot renders.
+    expect(paginatorEl.querySelector('cngx-progress')).toBeNull();
+    expect(paginatorEl.querySelector('[data-test="custom-loading"]')).toBeNull();
+
+    const busy = createManualState<unknown>();
+    busy.set('loading');
+    fixture.componentInstance.state.set(busy);
+    await settle(fixture);
+
+    // Busy: the consumer template renders, the built-in bar is suppressed.
+    expect(paginatorEl.querySelector('[data-test="custom-loading"]')).not.toBeNull();
+    expect(paginatorEl.querySelector('cngx-progress')).toBeNull();
+
+    busy.set('success');
+    await settle(fixture);
+    // Settled: the consumer template is gone again.
+    expect(paginatorEl.querySelector('[data-test="custom-loading"]')).toBeNull();
+    expect(paginatorEl.querySelector('cngx-progress')).toBeNull();
+  });
+
+  test('withPaginatorTemplates feeds the loading slot through the config cascade', () => {
+    const loading = {} as TemplateRef<unknown>;
+    TestBed.configureTestingModule({
+      providers: [...providers, provideCngxPaginatorConfig(withPaginatorTemplates({ loading }))],
+    });
+    expect(TestBed.inject(CNGX_PAGINATOR_CONFIG).templates?.loading).toBe(loading);
   });
 });

@@ -1,10 +1,14 @@
 @if (paginate.isBusy()) {
-  <cngx-progress
-    class="cngx-paginator__progress"
-    variant="linear"
-    [state]="paginate.state()"
-    [label]="config.announcements.loading"
-  />
+  @if (loadingTemplate(); as tpl) {
+    <ng-container [ngTemplateOutlet]="tpl" />
+  } @else {
+    <cngx-progress
+      class="cngx-paginator__progress"
+      variant="linear"
+      [state]="paginate.state()"
+      [label]="config.announcements.loading"
+    />
+  }
 }
 
 <ng-content />

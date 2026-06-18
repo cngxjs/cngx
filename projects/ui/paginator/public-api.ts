@@ -4,6 +4,7 @@ export {
   type CngxPaginatorDensity,
 } from './paginator.component';
 export { CNGX_PAGINATOR_HOST, type CngxPaginatorHost } from './paginator-host.token';
+export { CngxPaginatorLoading } from './paginator-loading.directive';
 export {
   CngxPaginatorFirst,
   CngxPaginatorPrev,
@@ -30,12 +31,14 @@ export {
   type CngxPaginatorAriaLabels,
   type CngxPaginatorAnnouncements,
   type CngxPaginatorFormats,
+  type CngxPaginatorTemplates,
   type CngxPaginatorConfigFeature,
   provideCngxPaginatorConfig,
   provideCngxPaginatorConfigAt,
   withPaginatorAriaLabels,
   withPaginatorAnnouncements,
   withPaginatorRangeFormat,
+  withPaginatorTemplates,
   injectPaginatorConfig,
 } from './paginator-config';
 export {
