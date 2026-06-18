@@ -1,4 +1,4 @@
-import { inject, InjectionToken, linkedSignal, type Signal } from '@angular/core';
+import { computed, inject, InjectionToken, linkedSignal, type Signal } from '@angular/core';
 
 import { injectPaginatorConfig } from './paginator-config';
 import { CNGX_PAGINATOR_HOST } from './paginator-host.token';
@@ -45,12 +45,21 @@ export function createPaginatorAnnouncer(): CngxPaginatorAnnouncer {
   const host = inject(CNGX_PAGINATOR_HOST);
   const config = injectPaginatorConfig();
 
-  const message = linkedSignal<AnnouncerSource, string>({
-    source: () => ({
+  // Sample the three drivers together so a transition is atomic. The field-wise
+  // `equal` keeps the source reference stable across a recompute that yields an
+  // identical tuple, so the linkedSignal computation never re-runs on a no-op
+  // (equality rule: an object-returning computed carries an explicit equal).
+  const source = computed<AnnouncerSource>(
+    () => ({
       page: host.pageIndex(),
       totalPages: host.totalPages(),
       busy: host.isBusy(),
     }),
+    { equal: (a, b) => a.page === b.page && a.totalPages === b.totalPages && a.busy === b.busy },
+  );
+
+  const message = linkedSignal<AnnouncerSource, string>({
+    source,
     computation: (current, previous) => {
       const { announcements } = config;
       if (current.busy) {

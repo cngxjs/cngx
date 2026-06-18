@@ -264,4 +264,21 @@ describe('CngxPaginator', () => {
     await settle(fixture);
     expect(live?.textContent?.trim()).toBe('Updated');
   });
+
+  test('the live region does not re-announce when the source tuple is unchanged', async () => {
+    const { fixture, host, paginate, paginatorEl } = await setup();
+    const live = paginatorEl.querySelector('[aria-live]');
+
+    paginate.setPage(2);
+    await settle(fixture);
+    expect(live?.textContent?.trim()).toBe('Page 3 of 10');
+
+    // total 100 -> 99 keeps totalPages at 10 and the page at 3, so the
+    // announcer source tuple {page,totalPages,busy} is identical and the
+    // message must not churn (source equal fn dedupes the recompute).
+    host.total.set(99);
+    await settle(fixture);
+    expect(paginate.totalPages()).toBe(10);
+    expect(live?.textContent?.trim()).toBe('Page 3 of 10');
+  });
 });
