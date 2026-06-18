@@ -50,6 +50,25 @@ describe('CngxPaginate', () => {
     expect(dir.range()).toEqual([20, 30]);
   });
 
+  it('cumulativeRange is [0, pageSize] on page 0', () => {
+    const dir = getDir();
+    expect(dir.cumulativeRange()).toEqual([0, 10]);
+  });
+
+  it('cumulativeRange grows by pageSize per next()', () => {
+    const dir = getDir(100);
+    dir.next();
+    expect(dir.cumulativeRange()).toEqual([0, 20]);
+    dir.next();
+    expect(dir.cumulativeRange()).toEqual([0, 30]);
+  });
+
+  it('cumulativeRange tracks pageSize changes', () => {
+    const dir = getDir(100);
+    dir.setPageSize(25);
+    expect(dir.cumulativeRange()).toEqual([0, 25]);
+  });
+
   it('totalPages rounds up correctly', () => {
     const dir = getDir(25);
     expect(dir.totalPages()).toBe(3); // ceil(25/10)

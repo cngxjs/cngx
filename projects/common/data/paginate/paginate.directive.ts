@@ -90,6 +90,19 @@ export class CngxPaginate {
     return [start, start + this.pageSize()];
   });
 
+  /**
+   * `[0, end]` cumulative slice indices for append-don't-replace (load-more)
+   * consumers: every page already stepped through, sliced from the top. `end`
+   * is `(pageIndex + 1) * pageSize` - the count revealed so far, uncapped (a
+   * partial final page is clamped by the consumer against `total`).
+   * Pure derivation of `pageIndex` / `pageSize`; the explicit tuple `equal`
+   * stops a fresh-array identity from cascading downstream.
+   */
+  readonly cumulativeRange = computed<[number, number]>(
+    () => [0, (this.pageIndex() + 1) * this.pageSize()],
+    { equal: (a, b) => a[0] === b[0] && a[1] === b[1] },
+  );
+
   /** Emitted when the page index changes. */
   readonly pageChange = output<number>();
   /** Emitted when the page size changes. */
