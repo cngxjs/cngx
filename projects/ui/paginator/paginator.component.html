@@ -1,1 +1,5 @@
+@if (paginate.isBusy()) {
+  <cngx-progress class="cngx-paginator__progress" variant="linear" [state]="paginate.state()" />
+}
+
 <ng-content />

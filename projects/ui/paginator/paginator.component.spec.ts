@@ -213,4 +213,25 @@ describe('CngxPaginator', () => {
     expect(paginate.pageIndex()).toBe(0);
     expect(host.indexEmits).toEqual([]);
   });
+
+  test('renders an indeterminate cngx-progress only while [state] is busy', async () => {
+    const { fixture, host, paginatorEl } = await setup();
+    expect(paginatorEl.querySelector('cngx-progress')).toBeNull();
+
+    const busy = createManualState<unknown>();
+    busy.set('loading');
+    host.state.set(busy);
+    await settle(fixture);
+
+    const progress = paginatorEl.querySelector('cngx-progress');
+    expect(progress).not.toBeNull();
+    expect(progress?.getAttribute('role')).toBe('progressbar');
+    // Indeterminate: no value attributes (AT uses their absence to tell modes apart).
+    expect(progress?.getAttribute('aria-valuenow')).toBeNull();
+    expect(progress?.classList.contains('cngx-progress--indeterminate')).toBe(true);
+
+    busy.set('success');
+    await settle(fixture);
+    expect(paginatorEl.querySelector('cngx-progress')).toBeNull();
+  });
 });

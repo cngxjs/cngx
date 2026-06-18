@@ -29,11 +29,24 @@
 
 @layer cngx.components {
   .cngx-paginator {
+    position: relative;
     display: flex;
     flex-direction: row;
     align-items: center;
     flex-wrap: wrap;
     gap: var(--cngx-paginator-gap, 0.25rem);
+  }
+
+  /*
+   * Indeterminate loading bar - a hairline overlay on the top edge, out of the
+   * flex flow so it never reflows the segments. Only mounted while the bound
+   * async state is busy.
+   */
+  .cngx-paginator__progress {
+    position: absolute;
+    inset-inline: 0;
+    inset-block-start: 0;
+    block-size: var(--cngx-paginator-progress-thickness, 2px);
   }
 
   .cngx-paginator__segment {

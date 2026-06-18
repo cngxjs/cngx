@@ -11,6 +11,7 @@ import {
 } from '@angular/core';
 
 import { CngxPaginate } from '@cngx/common/data';
+import { CngxProgress } from '@cngx/ui/feedback';
 
 import { injectPaginatorConfig } from './paginator-config';
 import { CNGX_PAGINATOR_HOST } from './paginator-host.token';
@@ -66,6 +67,7 @@ export type CngxPaginatorDensity = 'compact' | 'default' | 'comfortable';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
+  imports: [CngxProgress],
   templateUrl: './paginator.component.html',
   styleUrls: ['../../common/data/paginate/styles/paginator-base.css', './paginator.component.css'],
   hostDirectives: [
