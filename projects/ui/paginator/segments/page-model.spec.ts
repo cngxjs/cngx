@@ -58,6 +58,24 @@ describe('pageWindow', () => {
   test('degenerate total still yields page 1', () => {
     expect(shape(pageWindow(0, 0).pages)).toEqual(['1']);
   });
+
+  test('the 1 / 1 defaults are byte-identical to the explicit v1 window', () => {
+    for (let current = 0; current < 20; current++) {
+      expect(pageWindow(current, 20)).toEqual(pageWindow(current, 20, 1, 1));
+    }
+  });
+
+  test('siblingCount widens the window around the current page', () => {
+    const { pages, gaps } = pageWindow(4, 10, 2, 1);
+    expect(shape(pages)).toEqual(['1', '2', '3', '4', '5', '6', '7', '…(8,9)', '10']);
+    expect(gaps).toBe(1);
+  });
+
+  test('boundaryCount of 0 drops the pinned first and last pages', () => {
+    const { pages, gaps } = pageWindow(4, 10, 1, 0);
+    expect(shape(pages)).toEqual(['…(1,2,3)', '4', '5', '6', '…(7,8,9,10)']);
+    expect(gaps).toBe(2);
+  });
 });
 
 describe('pageWindowEqual', () => {

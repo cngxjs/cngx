@@ -23,13 +23,17 @@ function range(start: number, end: number): number[] {
  * A run of more than one hidden page collapses into a `gap` carrying the hidden
  * 0-based indices (the ellipsis menu's options); a single hidden page renders
  * as a plain page button instead of a gap. Derived from the MUI `usePagination`
- * range algorithm, 0-based. One sibling each side and one pinned boundary at
- * each end - fixed truncation, no configuration surface (the segment is the
- * single consumer and never needed a knob).
+ * range algorithm, 0-based. `siblingCount` is how many pages flank `current` on
+ * each side; `boundaryCount` is how many pages are pinned at each end. Both
+ * default to `1`, reproducing the v1 window byte-for-byte; the `cngx-pgn-pages`
+ * inputs and {@link CNGX_PAGINATOR_PAGE_WINDOW_FACTORY} feed non-default values.
  */
-export function pageWindow(current: number, total: number): PageWindow {
-  const siblingCount = 1;
-  const boundaryCount = 1;
+export function pageWindow(
+  current: number,
+  total: number,
+  siblingCount = 1,
+  boundaryCount = 1,
+): PageWindow {
   const count = Math.max(1, total);
   const page = Math.min(Math.max(current, 0), count - 1) + 1; // 1-based, clamped
 
