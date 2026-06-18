@@ -2,9 +2,9 @@ import { expect, test } from '@playwright/test';
 import { gotoDemo } from '../_helpers';
 
 // Story: CngxPaginator — declarative, skinnable pagination organism.
-// The page row is a single roving tab stop (arrows / Home / End move focus
-// within the row; Enter activates the focused page). Binding [state] gates
-// navigation while busy.
+// The page row is a single roving tab stop anchored on the active page
+// (arrows / Home / End move focus within the row; Enter activates the focused
+// page). Binding [state] gates navigation while busy.
 
 test.describe('ui/paginator', () => {
   test('numbered: roving keyboard moves focus and Enter activates the page', async ({ page }) => {
@@ -13,15 +13,18 @@ test.describe('ui/paginator', () => {
     const nav = page.getByRole('navigation', { name: 'Pagination' });
     await expect(nav).toBeVisible();
 
-    // The story starts on page 3 (pageIndex 2).
-    await expect(nav.locator('[aria-current="page"]')).toHaveText('3');
+    // The story starts on page 3 (pageIndex 2). The row's single tab stop is
+    // the active page, so Tab lands on it rather than the first button.
+    const current = nav.locator('[aria-current="page"]');
+    await expect(current).toHaveText('3');
+    await expect(current).toHaveAttribute('tabindex', '0');
 
-    // The row's roving anchor is the first page button. From there ArrowRight
-    // moves focus one button over and Enter activates it.
-    await nav.getByRole('button', { name: 'Page 1', exact: true }).focus();
+    // From the active page, ArrowRight moves focus one button over and Enter
+    // activates it.
+    await current.focus();
     await page.keyboard.press('ArrowRight');
     await page.keyboard.press('Enter');
-    await expect(nav.locator('[aria-current="page"]')).toHaveText('2');
+    await expect(nav.locator('[aria-current="page"]')).toHaveText('4');
 
     // Home returns focus to the first button; Enter activates page 1.
     await page.keyboard.press('Home');

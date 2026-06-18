@@ -3,6 +3,7 @@ import {
   Component,
   computed,
   inject,
+  linkedSignal,
   ViewEncapsulation,
 } from '@angular/core';
 
@@ -31,7 +32,7 @@ import { pageWindow, pageWindowEqual, type PageWindow } from './page-model';
   encapsulation: ViewEncapsulation.None,
   imports: [CngxRovingTabindex, CngxRovingItem, CngxMenu, CngxMenuItem, CngxMenuTrigger, CngxPopover],
   template: `
-    <div class="cngx-paginator__pages" cngxRovingTabindex>
+    <div class="cngx-paginator__pages" cngxRovingTabindex [(activeIndex)]="rovingIndex">
       @for (item of model().pages; track $index) {
         @if (item.kind === 'page') {
           <button
@@ -91,6 +92,25 @@ export class CngxPaginatorPages {
     () => pageWindow(this.host.pageIndex(), this.host.totalPages()),
     { equal: pageWindowEqual },
   );
+
+  /** Position of the active page within the rendered window (gaps counted). */
+  private readonly activeWindowIndex = computed<number>(() => {
+    const current = this.host.pageIndex();
+    const idx = this.model().pages.findIndex(
+      (item) => item.kind === 'page' && item.index === current,
+    );
+    return idx === -1 ? 0 : idx;
+  });
+
+  /**
+   * Roving focus cursor for the page row. A `linkedSignal` so the row's single
+   * tab stop tracks the active page (Tab lands on `aria-current`) yet still
+   * moves freely under the arrow keys between selections: arrow navigation
+   * writes the cursor locally, and it re-syncs to the active page whenever the
+   * page changes by any path (click / prev / next / Enter). Focus is not
+   * selection - the user arrows to a page and Enter commits it.
+   */
+  protected readonly rovingIndex = linkedSignal<number>(() => this.activeWindowIndex());
 
   protected isCurrent(index: number): boolean {
     return index === this.host.pageIndex();
