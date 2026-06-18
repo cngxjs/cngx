@@ -127,6 +127,25 @@
     white-space: nowrap;
   }
 
+  /*
+   * Load-more trigger - a label plus a shown/total count readout. Wider than a
+   * nav cell, so the inline-flex grows past the button-size floor; the gap
+   * separates the two spans.
+   */
+  .cngx-paginator__load-more {
+    gap: var(--cngx-paginator-load-more-gap, 0.5rem);
+    white-space: nowrap;
+  }
+
+  /* Count figures are dimmed and tabular so they read as secondary and do not reflow. */
+  .cngx-paginator__load-more-count {
+    font-variant-numeric: tabular-nums;
+    color: var(
+      --cngx-paginator-load-more-count-color,
+      color-mix(in oklch, currentColor 60%, transparent)
+    );
+  }
+
   /* Go-to-page number input. */
   .cngx-paginator__goto-input {
     box-sizing: border-box;
