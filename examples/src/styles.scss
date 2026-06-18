@@ -2338,6 +2338,30 @@ button.chip.demo-chip--copied {
   color: var(--cngx-color-text-muted, var(--cngx-ex-muted, #6b7280));
 }
 
+// CngxPaginatorInfinite (paginator-modes) demo helpers. The infinite segment
+// points its sentinel at this bounded frame via [root], so scrolling the box -
+// not the page - auto-loads the next batch. Each revealed page is marked with a
+// divider that pins to the frame top: the "addressable page boundary" of an
+// otherwise endless feel.
+.demo-pgn-infinite-frame {
+  max-height: 320px;
+  overflow-y: auto;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e0e0e0));
+  border-radius: var(--cngx-radius-md, 8px);
+}
+.demo-page-divider {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 6px 12px;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted, #6b7280));
+  background: var(--cngx-color-surface, var(--cngx-ex-surface, #fff));
+  border-bottom: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e0e0e0));
+}
+
 // CngxIntersectionObserver demo helpers. Two spacer panels frame the
 // observed sentinel inside a scroll container; the sentinel flips its
 // background through cngx primary tokens when it crosses into the viewport.
