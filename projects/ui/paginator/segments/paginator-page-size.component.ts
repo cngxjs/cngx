@@ -16,8 +16,8 @@ import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
 /**
  * Items-per-page segment. A `CngxListbox` dropdown (never a native `<select>`,
  * never the forms select family - keeps `@cngx/ui/paginator` free of a
- * `@cngx/forms` dependency). `[options]` is data, not a feature toggle
- * (Pillar 3). Picking a size routes through `host.setPageSize`, which resets to
+ * `@cngx/forms` dependency). `[options]` is data, not a feature toggle.
+ * Picking a size routes through `host.setPageSize`, which resets to
  * page 0 (brain semantics). The selected size is derived from `host.pageSize()`,
  * so the panel selection and the trigger label never drift (Pillar 1).
  *
