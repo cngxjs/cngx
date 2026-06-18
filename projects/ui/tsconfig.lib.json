@@ -15,6 +15,7 @@
       "@cngx/common": ["dist/common/types/cngx-common.d.ts"],
       "@cngx/common/interactive": ["dist/common/types/cngx-common-interactive.d.ts"],
       "@cngx/common/data": ["dist/common/types/cngx-common-data.d.ts"],
+      "@cngx/common/layout": ["dist/common/types/cngx-common-layout.d.ts"],
       "@cngx/common/card": ["dist/common/types/cngx-common-card.d.ts"],
       "@cngx/common/display": ["dist/common/types/cngx-common-display.d.ts"],
       "@cngx/common/a11y": ["dist/common/types/cngx-common-a11y.d.ts"],

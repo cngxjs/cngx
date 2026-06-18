@@ -273,10 +273,53 @@
     opacity: var(--cngx-paginator-disabled-opacity, 0.45);
   }
 
+  /*
+   * Infinite-scroll sentinel - a centred bottom-of-list affordance the
+   * IntersectionObserver watches. The consumer owns the scroll viewport and any
+   * page-boundary dividers; this is only the trigger row plus its busy / end text.
+   */
+  .cngx-paginator__infinite {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--cngx-paginator-infinite-gap, 0.5rem);
+    padding: var(--cngx-paginator-infinite-padding, 0.9rem);
+    color: var(
+      --cngx-paginator-infinite-color,
+      color-mix(in oklch, currentColor 60%, transparent)
+    );
+  }
+
+  .cngx-paginator__infinite-status,
+  .cngx-paginator__infinite-end {
+    font-size: var(--cngx-paginator-infinite-font-size, 0.8125rem);
+  }
+
+  /* Determinate-feel spinner; colours track the primary token, sized via vars. */
+  .cngx-paginator__infinite-spinner {
+    inline-size: var(--cngx-paginator-infinite-spinner-size, 1rem);
+    block-size: var(--cngx-paginator-infinite-spinner-size, 1rem);
+    border-radius: 50%;
+    border: var(--cngx-paginator-infinite-spinner-width, 2px) solid
+      color-mix(in oklch, var(--cngx-color-primary, oklch(0.66 0.19 50)) 30%, transparent);
+    border-block-start-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
+    animation: cngx-paginator-spin var(--cngx-paginator-infinite-spinner-duration, 0.7s) linear
+      infinite;
+  }
+
+  @keyframes cngx-paginator-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .cngx-paginator__button,
     .cngx-paginator__dot {
       transition: none;
+    }
+    .cngx-paginator__infinite-spinner {
+      animation: none;
     }
   }
 }
