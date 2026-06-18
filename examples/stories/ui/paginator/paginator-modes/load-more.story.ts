@@ -5,7 +5,7 @@ export const STORY: DemoSpec = {
   subtitle:
     'Append-style pagination over the same brain. <code>cngx-pgn-load-more</code> steps <code>pageIndex</code> forward; the host slices from the top through the current page, so each click reveals the next batch instead of replacing the page.',
   description:
-    'The segment is a trigger plus a shown/total readout - it holds no accumulation state. The host derives the cumulative slice from <code>[(pageIndex)]</code> / <code>[(pageSize)]</code> (the brain also exposes <code>cumulativeRange()</code> for the same math). The button disables on the last page.',
+    'The segment is a trigger plus a shown/total readout - it holds no accumulation state. The host derives the cumulative slice from <code>[(pageIndex)]</code> / <code>[(pageSize)]</code> (the brain also exposes <code>cumulativeRange()</code> for the same math). On the last page the button disables and its label switches to the all-loaded state, so assistive tech never hears a "Load more" action on a dead control.',
   level: 'organism',
   audience: ['dev'],
   artifact: 'standalone',

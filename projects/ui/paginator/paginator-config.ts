@@ -37,8 +37,14 @@ export interface CngxPaginatorAriaLabels {
   readonly goToPage: string;
   /** Page-of-pages selector (the `current / total` jump dropdown). */
   readonly pageOfPages: string;
-  /** Load-more trigger (the append-don't-replace "reveal next page" button). */
+  /** Load-more trigger while pages remain (the append-style "reveal next page" button). */
   readonly loadMore: string;
+  /**
+   * Load-more trigger once every page is revealed, given the total item count.
+   * Replaces the actionable `loadMore` name on the exhausted (last-page) button
+   * so AT does not announce a "Load more" action on a disabled control.
+   */
+  readonly allLoaded: (total: number) => string;
 }
 
 /**
@@ -114,6 +120,7 @@ export const CNGX_PAGINATOR_DEFAULTS: CngxPaginatorConfig = {
     goToPage: 'Go to page',
     pageOfPages: 'Select page',
     loadMore: 'Load more',
+    allLoaded: (total) => `All ${total} loaded`,
   },
   announcements: {
     pageChange: (page, totalPages) => `Page ${page} of ${totalPages}`,

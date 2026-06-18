@@ -74,15 +74,21 @@ describe('CngxPaginatorLoadMore', () => {
     expect(button(fixture).textContent?.replace(/\s+/g, ' ').trim()).toBe('Load more 20 / 100');
   });
 
-  test('clamps the shown count to total on a partial final page', async () => {
+  test('on the last page swaps to the all-loaded label and hides the count', async () => {
     const { fixture, host, paginate } = await setup();
     host.total.set(25); // 3 pages of 10
     await settle(fixture);
 
     paginate.next();
-    paginate.next(); // page index 2 -> cumulative end 30, clamped to 25
+    paginate.next(); // page index 2 -> last page, every item revealed
     await settle(fixture);
-    expect(button(fixture).textContent?.replace(/\s+/g, ' ').trim()).toBe('Load more 25 / 25');
+
+    const btn = button(fixture);
+    expect(btn.getAttribute('aria-label')).toBe('All 25 loaded');
+    expect(btn.textContent?.replace(/\s+/g, ' ').trim()).toBe('All 25 loaded');
+    expect(
+      fixture.debugElement.query(By.css('cngx-pgn-load-more .cngx-paginator__load-more-count')),
+    ).toBeNull();
   });
 
   test('clicking advances one page through host.next()', async () => {
