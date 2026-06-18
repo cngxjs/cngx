@@ -37,6 +37,8 @@ export interface CngxPaginatorAriaLabels {
   readonly goToPage: string;
   /** Page-of-pages selector (the `current / total` jump dropdown). */
   readonly pageOfPages: string;
+  /** Load-more trigger (the append-don't-replace "reveal next page" button). */
+  readonly loadMore: string;
 }
 
 /**
@@ -111,6 +113,7 @@ export const CNGX_PAGINATOR_DEFAULTS: CngxPaginatorConfig = {
     itemsPerPage: 'Items per page',
     goToPage: 'Go to page',
     pageOfPages: 'Select page',
+    loadMore: 'Load more',
   },
   announcements: {
     pageChange: (page, totalPages) => `Page ${page} of ${totalPages}`,
