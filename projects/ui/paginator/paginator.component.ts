@@ -1,12 +1,15 @@
+import { NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  contentChild,
   DestroyRef,
   effect,
   inject,
   input,
   output,
+  TemplateRef,
   ViewEncapsulation,
 } from '@angular/core';
 
@@ -17,6 +20,7 @@ import { CngxProgress } from '@cngx/ui/feedback';
 import { CNGX_PAGINATOR_ANNOUNCER_FACTORY } from './paginator-announcer';
 import { injectPaginatorConfig } from './paginator-config';
 import { CNGX_PAGINATOR_HOST } from './paginator-host.token';
+import { CngxPaginatorLoading } from './paginator-loading.directive';
 
 /** Visual skin. Paint-only - structure, ARIA, and keyboard behaviour are identical across values. */
 export type CngxPaginatorSkin =
@@ -69,7 +73,7 @@ export type CngxPaginatorDensity = 'compact' | 'default' | 'comfortable';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  imports: [CngxProgress, CngxLiveRegion],
+  imports: [CngxProgress, CngxLiveRegion, NgTemplateOutlet],
   templateUrl: './paginator.component.html',
   styleUrls: ['../../common/data/paginate/styles/paginator-base.css', './paginator.component.css'],
   hostDirectives: [
@@ -114,6 +118,15 @@ export class CngxPaginator {
 
   protected readonly resolvedAriaLabel = computed(
     () => this.ariaLabel() ?? this.config.ariaLabels.label,
+  );
+
+  // Loading-slot cascade: instance *cngxPaginatorLoading -> config default ->
+  // built-in <cngx-progress>. Direct contentChild field initialiser (AOT
+  // NG8110 rejects it from a helper). Returns existing TemplateRef references
+  // or null - reference-stable, so no explicit equal fn is needed.
+  protected readonly loadingSlot = contentChild(CngxPaginatorLoading, { read: TemplateRef });
+  protected readonly loadingTemplate = computed(
+    () => this.loadingSlot() ?? this.config.templates?.loading ?? null,
   );
 
   // Shared last-emitted guards across the nav (subscription) and clamp (effect)

@@ -6,6 +6,7 @@ import {
   SkipSelf,
   type EnvironmentProviders,
   type Provider,
+  type TemplateRef,
 } from '@angular/core';
 
 /**
@@ -70,9 +71,23 @@ export interface CngxPaginatorAnnouncements {
 }
 
 /**
- * Resolved paginator configuration. Three sub-trees - accessible-name strings,
- * live-region announcement phrasing, and data-readout formatters - each merged
- * independently by the reducer in {@link provideCngxPaginatorConfig}.
+ * Application-wide template-slot defaults. The instance `*cngxPaginatorLoading`
+ * slot still wins over the cascade; this tier supplies a shared override when no
+ * per-instance slot is projected. Library default is unset (the built-in
+ * `CngxProgress` bar renders).
+ *
+ * @category ui/paginator
+ */
+export interface CngxPaginatorTemplates {
+  /** Busy indicator shown while the bound async state is busy. */
+  readonly loading?: TemplateRef<unknown>;
+}
+
+/**
+ * Resolved paginator configuration. Three required sub-trees - accessible-name
+ * strings, live-region announcement phrasing, and data-readout formatters -
+ * plus an optional `templates` slot tree, each merged independently by the
+ * reducer in {@link provideCngxPaginatorConfig}.
  *
  * @category ui/paginator
  */
@@ -80,6 +95,7 @@ export interface CngxPaginatorConfig {
   readonly ariaLabels: CngxPaginatorAriaLabels;
   readonly announcements: CngxPaginatorAnnouncements;
   readonly formats: CngxPaginatorFormats;
+  readonly templates?: CngxPaginatorTemplates;
 }
 
 /** Library defaults - English. Override via {@link provideCngxPaginatorConfig}. */
@@ -128,7 +144,8 @@ export const CNGX_PAGINATOR_CONFIG = new InjectionToken<CngxPaginatorConfig>('Cn
 export type CngxPaginatorConfigFeature =
   | { readonly kind: 'ariaLabels'; readonly payload: Partial<CngxPaginatorAriaLabels> }
   | { readonly kind: 'announcements'; readonly payload: Partial<CngxPaginatorAnnouncements> }
-  | { readonly kind: 'formats'; readonly payload: Partial<CngxPaginatorFormats> };
+  | { readonly kind: 'formats'; readonly payload: Partial<CngxPaginatorFormats> }
+  | { readonly kind: 'templates'; readonly payload: Partial<CngxPaginatorTemplates> };
 
 /** Reduce a feature list onto a base config, merging each sub-tree in isolation. */
 function applyFeatures(
@@ -138,16 +155,19 @@ function applyFeatures(
   let ariaLabels = base.ariaLabels;
   let announcements = base.announcements;
   let formats = base.formats;
+  let templates = base.templates;
   for (const feature of features) {
     if (feature.kind === 'ariaLabels') {
       ariaLabels = { ...ariaLabels, ...feature.payload };
     } else if (feature.kind === 'announcements') {
       announcements = { ...announcements, ...feature.payload };
-    } else {
+    } else if (feature.kind === 'formats') {
       formats = { ...formats, ...feature.payload };
+    } else {
+      templates = { ...templates, ...feature.payload };
     }
   }
-  return { ariaLabels, announcements, formats };
+  return { ariaLabels, announcements, formats, templates };
 }
 
 /**
@@ -205,6 +225,25 @@ export function withPaginatorRangeFormat(
   range: CngxPaginatorFormats['range'],
 ): CngxPaginatorConfigFeature {
   return { kind: 'formats', payload: { range } };
+}
+
+/**
+ * Supply application-wide template-slot defaults for the paginator. The
+ * per-instance `*cngxPaginatorLoading` slot still wins over this tier; it only
+ * applies where no instance slot is projected.
+ *
+ * ```ts
+ * provideCngxPaginatorConfig(
+ *   withPaginatorTemplates({ loading: myBrandedSpinnerTemplate }),
+ * );
+ * ```
+ *
+ * @category ui/paginator
+ */
+export function withPaginatorTemplates(
+  payload: Partial<CngxPaginatorTemplates>,
+): CngxPaginatorConfigFeature {
+  return { kind: 'templates', payload };
 }
 
 /**
