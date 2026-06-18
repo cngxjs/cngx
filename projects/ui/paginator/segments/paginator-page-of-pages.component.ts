@@ -38,7 +38,7 @@ import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
       [cngxPopoverTrigger]="pop"
       [haspopup]="'listbox'"
       [popover]="pop"
-      [attr.aria-label]="config.ariaLabels.goToPage"
+      [attr.aria-label]="config.ariaLabels.pageOfPages"
       [disabled]="host.isBusy()"
       (click)="pop.toggle()"
     >
@@ -50,7 +50,7 @@ import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
         cngxListbox
         class="cngx-paginator__select-panel"
         tabindex="0"
-        [label]="config.ariaLabels.goToPage"
+        [label]="config.ariaLabels.pageOfPages"
         [value]="host.pageIndex() + 1"
         (valueChange)="onSelect($event)"
         #lb="cngxListbox"

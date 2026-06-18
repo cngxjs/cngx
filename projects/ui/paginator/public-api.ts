@@ -22,14 +22,18 @@ export {
   type CngxPaginatorConfig,
   type CngxPaginatorAriaLabels,
   type CngxPaginatorAnnouncements,
+  type CngxPaginatorFormats,
   type CngxPaginatorConfigFeature,
   provideCngxPaginatorConfig,
   provideCngxPaginatorConfigAt,
   withPaginatorAriaLabels,
   withPaginatorAnnouncements,
+  withPaginatorRangeFormat,
   injectPaginatorConfig,
 } from './paginator-config';
 export {
   createPaginatorAnnouncer,
+  CNGX_PAGINATOR_ANNOUNCER_FACTORY,
   type CngxPaginatorAnnouncer,
+  type CngxPaginatorAnnouncerFactory,
 } from './paginator-announcer';

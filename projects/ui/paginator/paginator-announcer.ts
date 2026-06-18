@@ -1,4 +1,4 @@
-import { inject, linkedSignal, type Signal } from '@angular/core';
+import { inject, InjectionToken, linkedSignal, type Signal } from '@angular/core';
 
 import { injectPaginatorConfig } from './paginator-config';
 import { CNGX_PAGINATOR_HOST } from './paginator-host.token';
@@ -66,3 +66,24 @@ export function createPaginatorAnnouncer(): CngxPaginatorAnnouncer {
 
   return { message };
 }
+
+/** The shape an override must match to swap the announcer derivation. */
+export type CngxPaginatorAnnouncerFactory = () => CngxPaginatorAnnouncer;
+
+/**
+ * Swap token for the live-region announcer derivation. The default resolves to
+ * {@link createPaginatorAnnouncer}; the shell builds its announcer via
+ * `inject(CNGX_PAGINATOR_ANNOUNCER_FACTORY)()` rather than calling the factory
+ * directly. Override it to wrap the busy / settle / page-change derivation - a
+ * telemetry tap, politeness escalation, or custom phrasing branch - without
+ * forking the shell (mirrors `CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY` in the
+ * select family). The override runs in the shell's injection context, so it can
+ * still `inject(CNGX_PAGINATOR_HOST)` / {@link injectPaginatorConfig}.
+ *
+ * @category ui/paginator
+ */
+export const CNGX_PAGINATOR_ANNOUNCER_FACTORY =
+  new InjectionToken<CngxPaginatorAnnouncerFactory>('CngxPaginatorAnnouncerFactory', {
+    providedIn: 'root',
+    factory: () => createPaginatorAnnouncer,
+  });

@@ -67,7 +67,7 @@ function options(fixture: Plumbing['fixture']): HTMLElement[] {
 describe('CngxPaginatorPageOfPages', () => {
   test('the trigger shows current/total and carries the EN aria-label', async () => {
     const { fixture } = await setup();
-    expect(trigger(fixture).getAttribute('aria-label')).toBe('Go to page');
+    expect(trigger(fixture).getAttribute('aria-label')).toBe('Select page');
     expect(label(fixture)).toBe('1 / 10');
   });
 

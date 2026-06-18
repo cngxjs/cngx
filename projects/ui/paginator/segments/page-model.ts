@@ -13,13 +13,6 @@ export interface PageWindow {
   readonly gaps: number;
 }
 
-export interface PageWindowOptions {
-  /** Pages shown on each side of the current page. Default 1. */
-  readonly siblingCount?: number;
-  /** Pages pinned at each end. Default 1. */
-  readonly boundaryCount?: number;
-}
-
 function range(start: number, end: number): number[] {
   const length = end - start + 1;
   return length > 0 ? Array.from({ length }, (_, i) => start + i) : [];
@@ -30,15 +23,13 @@ function range(start: number, end: number): number[] {
  * A run of more than one hidden page collapses into a `gap` carrying the hidden
  * 0-based indices (the ellipsis menu's options); a single hidden page renders
  * as a plain page button instead of a gap. Derived from the MUI `usePagination`
- * range algorithm, 0-based.
+ * range algorithm, 0-based. One sibling each side and one pinned boundary at
+ * each end - fixed truncation, no configuration surface (the segment is the
+ * single consumer and never needed a knob).
  */
-export function pageWindow(
-  current: number,
-  total: number,
-  options: PageWindowOptions = {},
-): PageWindow {
-  const siblingCount = options.siblingCount ?? 1;
-  const boundaryCount = options.boundaryCount ?? 1;
+export function pageWindow(current: number, total: number): PageWindow {
+  const siblingCount = 1;
+  const boundaryCount = 1;
   const count = Math.max(1, total);
   const page = Math.min(Math.max(current, 0), count - 1) + 1; // 1-based, clamped
 
