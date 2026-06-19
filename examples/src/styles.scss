@@ -2361,6 +2361,11 @@ button.chip.demo-chip--copied {
   background: var(--cngx-color-surface, var(--cngx-ex-surface, #fff));
   border-bottom: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e0e0e0));
 }
+.demo-pgn-alpha-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
 
 // CngxIntersectionObserver demo helpers. Two spacer panels frame the
 // observed sentinel inside a scroll container; the sentinel flips its

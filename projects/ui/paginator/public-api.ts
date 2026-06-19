@@ -26,6 +26,7 @@ export { CngxPaginatorPageOfPages } from './segments/paginator-page-of-pages.com
 export { CngxPaginatorDots } from './segments/paginator-dots.component';
 export { CngxPaginatorLoadMore } from './segments/paginator-load-more.component';
 export { CngxPaginatorInfinite } from './segments/paginator-infinite.component';
+export { CngxPaginatorAlpha } from './segments/paginator-alpha.component';
 export {
   CNGX_PAGINATOR_CONFIG,
   CNGX_PAGINATOR_DEFAULTS,

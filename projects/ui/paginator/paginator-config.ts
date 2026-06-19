@@ -45,6 +45,16 @@ export interface CngxPaginatorAriaLabels {
    * so AT does not announce a "Load more" action on a disabled control.
    */
   readonly allLoaded: (total: number) => string;
+  /** A category/range chip, given its bucket label (e.g. `'A-C'`). */
+  readonly bucket: (label: string) => string;
+  /**
+   * A category/range chip with no matching items, given its bucket label.
+   * Names the disabled chip AND states why it is disabled, so an empty bucket
+   * is not a silent dead control.
+   */
+  readonly emptyBucket: (label: string) => string;
+  /** Accessible name for the category/range chip strip (`role="group"`). */
+  readonly bucketGroup: string;
 }
 
 /**
@@ -121,6 +131,9 @@ export const CNGX_PAGINATOR_DEFAULTS: CngxPaginatorConfig = {
     pageOfPages: 'Select page',
     loadMore: 'Load more',
     allLoaded: (total) => `All ${total} loaded`,
+    bucket: (label) => label,
+    emptyBucket: (label) => `${label}, no items`,
+    bucketGroup: 'Categories',
   },
   announcements: {
     pageChange: (page, totalPages) => `Page ${page} of ${totalPages}`,
