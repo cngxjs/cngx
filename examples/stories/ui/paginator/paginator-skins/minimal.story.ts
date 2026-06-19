@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Minimal skin',
+  title: 'CngxPaginator: Minimal',
   subtitle:
     'The <code>minimal</code> skin pares the control down to prev / next around a range readout - the text-forward idiom for dense toolbars and table footers.',
   description:

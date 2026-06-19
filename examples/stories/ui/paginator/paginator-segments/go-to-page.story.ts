@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Go-to-page + page-of-pages segments',
+  title: 'CngxPaginator: Go to page',
   subtitle:
     'Two ways to jump: <code>cngx-pgn-goto</code> is a native number input (Enter or blur navigates), and <code>cngx-pgn-page-of-pages</code> is a <code>current / total</code> dropdown. The brain clamps out-of-range entries and the field reflects the clamped page back.',
   level: 'organism',

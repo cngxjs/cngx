@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Numbered skin',
+  title: 'CngxPaginator: Numbered',
   subtitle:
     'The default <code>numbered</code> skin: first/prev, a roving page-number row with ellipsis overflow, next/last, and a range readout. <code>[skin]</code> is paint-only - the DOM, ARIA, and keyboard model are identical across every skin.',
   description:

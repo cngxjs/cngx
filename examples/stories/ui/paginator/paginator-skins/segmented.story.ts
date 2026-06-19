@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Segmented skin',
+  title: 'CngxPaginator: Segmented',
   subtitle:
     'The <code>segmented</code> skin joins the controls into a single hairline-divided segment control - the compact, enclosed idiom for app chrome.',
   level: 'organism',

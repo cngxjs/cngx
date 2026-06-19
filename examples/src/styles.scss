@@ -820,6 +820,18 @@ html.dark .cngx-ex-tag[data-dim='stability'][data-value='deprecated'] {
   outline: 2px solid var(--cngx-color-primary, var(--cngx-ex-accent, #4a8cff));
   outline-offset: 2px;
 }
+.demo-listbox-trigger--flush {
+  width: 100%;
+  min-width: 0;
+  border: none;
+}
+.demo-panel-option-list {
+  padding: 4px;
+}
+.demo-panel-footer-pgn {
+  padding: 4px 8px;
+  border-top: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e0e0e0));
+}
 .demo-listbox-search {
   width: 260px;
   padding: 6px 10px;

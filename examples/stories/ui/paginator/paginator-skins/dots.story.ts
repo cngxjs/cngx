@@ -1,13 +1,19 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Dots skin',
+  title: 'CngxPaginator: Dots',
   subtitle:
     'The <code>dots</code> skin pairs with the <code>cngx-pgn-dots</code> segment - one dot per page with an iOS-style edge-shrink for large counts. The active dot carries <code>aria-current="page"</code>; the dots render organism-internal (no new public atom).',
   level: 'organism',
   audience: ['dev', 'design'],
   artifact: 'standalone',
   focus: ['visual-variants', 'a11y-pattern'],
+  references: [
+    {
+      label: 'WAI-ARIA 1.2: aria-current (state)',
+      href: 'https://www.w3.org/TR/wai-aria-1.2/#aria-current',
+    },
+  ],
   apiComponents: ['CngxPaginator', 'CngxPaginatorDots'],
   moduleImports: ["import { CngxPaginator, CngxPaginatorDots } from '@cngx/ui/paginator';"],
   imports: ['CngxPaginator', 'CngxPaginatorDots'],

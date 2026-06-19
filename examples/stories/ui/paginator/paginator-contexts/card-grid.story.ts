@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Driving a card grid',
+  title: 'CngxPaginator: Card grid',
   subtitle:
     'The same wiring drives a responsive card grid: slice the page in a <code>computed()</code>, render the cards, and let the paginator report the page. The <code>pill</code> skin suits a content gallery.',
   level: 'organism',

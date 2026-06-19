@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Alphabetical',
+  title: 'CngxBucketPaginate: Alphabetical',
   subtitle:
     'Pagination by category instead of page number. <code>cngxBucketPaginate</code> partitions the list into letter-range buckets (A-C, D-F …) and <code>cngx-pgn-alpha</code> renders the chip strip - a sibling model to the page-index brain, not a flag on it.',
   description:
@@ -10,6 +10,10 @@ export const STORY: DemoSpec = {
   audience: ['dev', 'a11y'],
   artifact: 'standalone',
   focus: ['composition', 'a11y-pattern'],
+  references: [
+    { label: 'WAI-ARIA APG: Toolbar Pattern', href: 'https://www.w3.org/WAI/ARIA/apg/patterns/toolbar/' },
+    { label: 'WAI-ARIA APG: Button Pattern (toggle)', href: 'https://www.w3.org/WAI/ARIA/apg/patterns/button/' },
+  ],
   apiComponents: ['CngxBucketPaginate', 'CngxPaginatorAlpha'],
   moduleImports: [
     "import { CngxBucketPaginate, type CngxBucket } from '@cngx/common/data';",

@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Bar skin',
+  title: 'CngxPaginator: Bar',
   subtitle:
     'The <code>bar</code> skin is the full enclosed toolbar: page-size select, range readout, and the complete first/prev/pages/next/last nav in one bordered strip - the data-grid footer idiom.',
   description:
