@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'First / last boundary nav',
+  title: 'CngxPaginator: First and last',
   subtitle:
     'The <code>cngx-pgn-first</code> and <code>cngx-pgn-last</code> segments jump to the boundaries. At a bound the button reports <code>aria-disabled</code> but stays focusable, so a screen-reader user still hears the boundary state.',
   description:
@@ -10,6 +10,16 @@ export const STORY: DemoSpec = {
   audience: ['dev', 'a11y'],
   artifact: 'standalone',
   focus: ['behavior', 'a11y-pattern'],
+  references: [
+    {
+      label: 'WAI-ARIA APG: Focusability of disabled controls',
+      href: 'https://www.w3.org/WAI/ARIA/apg/practices/keyboard-interface/#focusabilityofdisabledcontrols',
+    },
+    {
+      label: 'WAI-ARIA 1.2: aria-disabled (state)',
+      href: 'https://www.w3.org/TR/wai-aria-1.2/#aria-disabled',
+    },
+  ],
   apiComponents: [
     'CngxPaginator',
     'CngxPaginatorFirst',

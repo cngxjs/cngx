@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Page-size + range segments',
+  title: 'CngxPaginator: Page size and range',
   subtitle:
     'Compose <code>cngx-pgn-page-size</code> and <code>cngx-pgn-range</code> into any skin. Picking a size routes through the brain and resets to the first page; the range readout stays in sync because both derive from the same brain signals.',
   description:

@@ -10,6 +10,12 @@ export {
   type CngxFilterChipContext,
 } from './filter-chips/filter-chips.component';
 export { CngxPaginate } from './paginate/paginate.directive';
+export { CngxBucketPaginate, type CngxBucket } from './paginate/bucket-paginate.directive';
+export {
+  CNGX_BUCKET_PAGINATE_HOST,
+  type CngxBucketPaginateHost,
+  type CngxBucketPaginateView,
+} from './paginate/bucket-paginate-host.token';
 export { CngxDataSource, injectDataSource } from './data-source/data-source';
 export {
   CngxSmartDataSource,

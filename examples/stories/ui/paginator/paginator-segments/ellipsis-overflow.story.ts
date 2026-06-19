@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Ellipsis overflow menu',
+  title: 'CngxPaginator: Ellipsis overflow',
   subtitle:
     'With many pages the number row truncates: a run of hidden pages collapses into an ellipsis button that opens a <code>CngxMenu</code> of the clipped pages. The overflow reuses the menu + popover stack - no bespoke overflow code.',
   description:

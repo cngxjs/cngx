@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Rail skin',
+  title: 'CngxPaginator: Rail',
   subtitle:
     'The <code>rail</code> skin is paginator-native: the controls sit on a horizontal rail with a range readout, suited to wide footers and dashboards.',
   level: 'organism',

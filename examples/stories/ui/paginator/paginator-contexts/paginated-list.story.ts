@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Driving a list',
+  title: 'CngxPaginator: Paginated list',
   subtitle:
     'The brain is content-agnostic: track <code>[(pageIndex)]</code> / <code>[(pageSize)]</code> and slice the array yourself. Here a plain <code>&lt;ul&gt;</code> shows the current page of people, with a numbered paginator footer.',
   description:

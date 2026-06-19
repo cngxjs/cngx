@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Async loading state',
+  title: 'CngxPaginator: Async loading',
   subtitle:
     'Bind <code>[state]</code> to gate navigation while data loads: the buttons report <code>aria-disabled</code>, an indeterminate <code>cngx-progress</code> bar appears, <code>aria-busy</code> flips on the landmark, and the live region announces "Loading" then "Updated".',
   description:
@@ -10,6 +10,13 @@ export const STORY: DemoSpec = {
   audience: ['dev', 'a11y'],
   artifact: 'standalone',
   focus: ['async-state', 'a11y-pattern'],
+  references: [
+    {
+      label: 'WAI-ARIA APG: Live Region Practices',
+      href: 'https://www.w3.org/WAI/ARIA/apg/practices/live-regions/',
+    },
+    { label: 'WAI-ARIA 1.2: aria-busy (state)', href: 'https://www.w3.org/TR/wai-aria-1.2/#aria-busy' },
+  ],
   apiComponents: ['CngxPaginator', 'CngxPaginatorPrev', 'CngxPaginatorPages', 'CngxPaginatorNext'],
   moduleImports: [
     "import { CngxPaginator, CngxPaginatorPrev, CngxPaginatorPages, CngxPaginatorNext } from '@cngx/ui/paginator';",

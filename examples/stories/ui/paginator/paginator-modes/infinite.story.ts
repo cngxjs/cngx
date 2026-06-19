@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Infinite',
+  title: 'CngxPaginator: Infinite',
   subtitle:
     'Scroll-to-load over the same brain. <code>cngx-pgn-infinite</code> drops a sentinel that auto-advances <code>pageIndex</code> as it enters the scroll container, so the list grows as you scroll - while each batch keeps its addressable page boundary (the sticky "Page n" divider).',
   description:

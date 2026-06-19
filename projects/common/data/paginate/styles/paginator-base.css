@@ -313,6 +313,27 @@
     }
   }
 
+  /*
+   * Alphabetical / category chip strip - a wrapping row of toggle buttons over
+   * the bucket model. Wraps so a long bucket set reflows onto multiple rows;
+   * the active chip is painted via `aria-pressed`, and empty buckets dim
+   * through the shared `:disabled` rule above.
+   */
+  .cngx-paginator__alpha {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--cngx-paginator-alpha-gap, 0.4rem);
+  }
+
+  /* Active chip - reuses the current-page tokens so selection reads identically. */
+  .cngx-paginator__alpha-chip[aria-pressed='true'] {
+    background: var(--cngx-paginator-current-bg, color-mix(in oklch, currentColor 12%, transparent));
+    color: var(--cngx-paginator-current-color, currentColor);
+    border-color: var(--cngx-paginator-current-border-color, transparent);
+    font-weight: 600;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .cngx-paginator__button,
     .cngx-paginator__dot {

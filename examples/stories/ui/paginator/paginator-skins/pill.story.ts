@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Pill skin',
+  title: 'CngxPaginator: Pill',
   subtitle:
     'The <code>pill</code> skin renders rounded page buttons with a filled current page - the marketing-site / blog idiom. Identical roving keyboard and ellipsis overflow as every other skin.',
   level: 'organism',

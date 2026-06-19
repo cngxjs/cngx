@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Select-panel footer',
+  title: 'CngxPaginator: Select panel footer',
   subtitle:
     'A long option set paged inside a select-style panel: the option list shows one page, and a compact <code>minimal</code> paginator sits in the panel footer. The same brain that paginates a table paginates a dropdown.',
   description:
@@ -26,13 +26,12 @@ export const STORY: DemoSpec = {
     return this.options().slice(start, start + this.pageSize());
   });`,
   template: `  <div class="demo-listbox-surface">
-    <ul class="demo-list-flush" aria-label="Options" style="padding:4px">
+    <ul class="demo-list-flush demo-panel-option-list" aria-label="Options">
       @for (opt of pageOptions(); track opt) {
         <li>
           <button
             type="button"
-            class="demo-listbox-trigger"
-            style="width:100%;border:none"
+            class="demo-listbox-trigger demo-listbox-trigger--flush"
             [attr.aria-pressed]="selected() === opt"
             (click)="selected.set(opt)"
           >{{ opt }}</button>
@@ -41,11 +40,11 @@ export const STORY: DemoSpec = {
     </ul>
     <cngx-paginator
       skin="minimal"
+      class="demo-panel-footer-pgn"
       aria-label="Option pages"
       [total]="options().length"
       [(pageIndex)]="pageIndex"
       [(pageSize)]="pageSize"
-      style="border-top:1px solid var(--cngx-color-border, #e0e0e0);padding:4px 8px"
     >
       <cngx-pgn-prev />
       <cngx-pgn-range />

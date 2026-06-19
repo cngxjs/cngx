@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Load more',
+  title: 'CngxPaginator: Load more',
   subtitle:
     'Append-style pagination over the same brain. <code>cngx-pgn-load-more</code> steps <code>pageIndex</code> forward; the host slices from the top through the current page, so each click reveals the next batch instead of replacing the page.',
   description:
