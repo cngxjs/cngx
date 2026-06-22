@@ -112,6 +112,25 @@ describe('CngxPaginatorPages', () => {
     expect(fixture.nativeElement.querySelectorAll('.cngx-paginator__more')).toHaveLength(0);
     expect(pageButtons(fixture)).toHaveLength(5);
   });
+
+  test('the ellipsis panel is the grid overflow panel, not the listbox panel', async () => {
+    // 10 pages, current 0 -> a trailing gap renders the ellipsis menu (content is
+    // inline in the popover, queryable without opening - jsdom lacks showPopover).
+    const { fixture, paginate } = await setup();
+    const root = fixture.nativeElement as HTMLElement;
+
+    const panel = root.querySelector('.cngx-paginator__overflow-panel');
+    expect(panel).not.toBeNull();
+    // Decoupled from the listbox-select look.
+    expect(root.querySelector('.cngx-paginator__select-panel')).toBeNull();
+
+    // Keyboard model intact: activating a hidden-page item jumps through the brain.
+    const item = panel?.querySelector<HTMLElement>('.cngx-paginator__option');
+    expect(item).not.toBeNull();
+    item?.click();
+    await settle(fixture);
+    expect(paginate.pageIndex()).toBeGreaterThan(0);
+  });
 });
 
 describe('CngxPaginatorPages — configurable truncation', () => {

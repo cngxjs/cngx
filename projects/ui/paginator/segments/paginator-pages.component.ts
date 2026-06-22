@@ -77,7 +77,7 @@ import { CNGX_PAGINATOR_PAGE_WINDOW_FACTORY } from './paginator-page-window.toke
               cngxMenu
               #moreMenu="cngxMenu"
               tabindex="0"
-              class="cngx-paginator__select-panel"
+              class="cngx-paginator__overflow-panel"
               [label]="config.ariaLabels.morePages"
               (itemActivated)="onMenuActivate($event)"
             >
