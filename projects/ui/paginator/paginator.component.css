@@ -292,7 +292,7 @@
   @property --cngx-paginator-focus-halo {
     syntax: '*';
     inherits: true;
-    initial-value: 0 0 0 4px color-mix(in oklch, currentColor 25%, transparent);
+    initial-value: 0 0 0 4px color-mix(in oklch, currentColor 18%, transparent);
   }
 
   /**
@@ -458,7 +458,7 @@
     --cngx-paginator-current-border-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
     --cngx-paginator-focus-ring: 2px solid var(--cngx-color-primary, oklch(0.66 0.19 50));
     --cngx-paginator-focus-halo: 0 0 0 4px
-      color-mix(in oklch, var(--cngx-color-primary, oklch(0.66 0.19 50)) 25%, transparent);
+      color-mix(in oklch, var(--cngx-color-primary, oklch(0.66 0.19 50)) 18%, transparent);
     --cngx-paginator-dot-current-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
   }
 }
@@ -707,7 +707,7 @@
     .cngx-paginator__button:focus-visible {
       box-shadow: var(
         --cngx-paginator-focus-halo,
-        0 0 0 4px color-mix(in oklch, currentColor 25%, transparent)
+        0 0 0 4px color-mix(in oklch, currentColor 18%, transparent)
       );
     }
 
