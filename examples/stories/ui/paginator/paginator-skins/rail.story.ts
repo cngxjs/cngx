@@ -18,7 +18,7 @@ export const STORY: DemoSpec = {
     'CngxPaginatorNext',
   ],
   moduleImports: [
-    "import { CngxPaginator, CngxPaginatorPrev, CngxPaginatorRail, CngxPaginatorStatus, CngxPaginatorNext } from '@cngx/ui/paginator';",
+    "import { CngxPaginator, CngxPaginatorPrev, CngxPaginatorRail, CngxPaginatorStatus, CngxPaginatorNext, provideCngxPaginatorConfigAt, withPaginatorPageStatusFormat } from '@cngx/ui/paginator';",
   ],
   imports: [
     'CngxPaginator',
@@ -26,6 +26,9 @@ export const STORY: DemoSpec = {
     'CngxPaginatorRail',
     'CngxPaginatorStatus',
     'CngxPaginatorNext',
+  ],
+  viewProviders: [
+    'provideCngxPaginatorConfigAt(withPaginatorPageStatusFormat((page, totalPages) => `${page} / ${totalPages}`))',
   ],
   setup: `protected readonly pageIndex = signal(5);`,
   template: `  <cngx-paginator skin="rail" [total]="200" [(pageIndex)]="pageIndex">

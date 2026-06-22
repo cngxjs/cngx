@@ -28,7 +28,9 @@ export const STORY: DemoSpec = {
   setup: `protected readonly pageIndex = signal(0);`,
   template: `  <cngx-paginator skin="numbered" [total]="300" [(pageIndex)]="pageIndex">
     <cngx-pgn-prev />
+    <span class="cngx-paginator__segment" aria-hidden="true">Go to</span>
     <cngx-pgn-goto />
+    <span class="cngx-paginator__segment" aria-hidden="true">Page</span>
     <cngx-pgn-page-of-pages />
     <cngx-pgn-next />
   </cngx-paginator>`,
