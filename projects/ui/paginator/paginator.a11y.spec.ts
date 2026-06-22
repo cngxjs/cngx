@@ -75,7 +75,11 @@ function pageButtons(el: HTMLElement): HTMLButtonElement[] {
 }
 
 function navButton(el: HTMLElement, label: string): HTMLButtonElement {
-  const btn = el.querySelector<HTMLButtonElement>(`.cngx-paginator__nav[aria-label="${label}"]`);
+  // The nav button's accessible name is its (visually-hidden) label span text,
+  // not an aria-label attribute.
+  const btn = Array.from(el.querySelectorAll<HTMLButtonElement>('.cngx-paginator__nav')).find(
+    (b) => b.querySelector('.cngx-paginator__nav-label')?.textContent?.trim() === label,
+  );
   if (!btn) {
     throw new Error(`nav button "${label}" not found`);
   }

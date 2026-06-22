@@ -636,10 +636,50 @@
       --cngx-paginator-current-border-color: transparent;
     }
 
-    .cngx-paginator__button:hover:not([aria-disabled='true']),
+    /* Pages composition: the current page reads as accent underlined text. */
+    .cngx-paginator__page:hover:not([aria-disabled='true']),
     .cngx-paginator__page[aria-current='page'] {
       text-decoration: underline;
       text-underline-offset: 0.25em;
+    }
+
+    /*
+     * Prev / status / next composition: the nav buttons become bordered,
+     * labelled controls - the chevron plus the revealed text label - flanking a
+     * centred "Page n of m" status. The next / last labels read after the
+     * chevron, so their flex order is reversed ("Next ›").
+     */
+    .cngx-paginator__nav {
+      gap: var(--cngx-paginator-minimal-nav-gap, 0.4rem);
+      padding-inline: var(--cngx-paginator-minimal-nav-padding, 0.85rem);
+      border-color: var(--cngx-color-border, oklch(0.88 0.005 250));
+    }
+
+    cngx-pgn-next .cngx-paginator__nav,
+    cngx-pgn-last .cngx-paginator__nav {
+      flex-direction: row-reverse;
+    }
+
+    .cngx-paginator__nav .cngx-paginator__nav-label {
+      position: static;
+      width: auto;
+      height: auto;
+      margin: 0;
+      clip: auto;
+      clip-path: none;
+      overflow: visible;
+      white-space: nowrap;
+      font-weight: 500;
+    }
+
+    .cngx-paginator__nav:hover:not([aria-disabled='true']) {
+      border-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
+      color: var(--cngx-color-primary, oklch(0.66 0.19 50));
+    }
+
+    .cngx-paginator__status {
+      min-inline-size: var(--cngx-paginator-status-min-size, 5.5rem);
+      text-align: center;
     }
   }
 
