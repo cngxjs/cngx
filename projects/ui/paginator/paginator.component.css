@@ -29,6 +29,30 @@
   }
 
   /**
+   * Gap between adjacent segment rows on the host. Split from
+   * `--cngx-paginator-gap` (the inter-page gap) so the projected segments breathe
+   * while the page numerals stay tight.
+   * @group Layout
+   */
+  @property --cngx-paginator-row-gap {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 0.75rem;
+  }
+
+  /**
+   * Host font size. Cascades to every numeral and label; density shifts it.
+   * The font stack stays an unregistered custom property - no `@property`
+   * syntax token describes a font-family list.
+   * @group Layout
+   */
+  @property --cngx-paginator-font-size {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 0.875rem;
+  }
+
+  /**
    * Hit-target size (min-width and height) of every paginator button.
    * @group Layout
    */
