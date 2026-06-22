@@ -484,15 +484,31 @@
       position: relative;
     }
 
-    /* Hairline underline bar centred under the active numeral. */
-    .cngx-paginator__page[aria-current='page']::after {
+    /*
+     * Tab-style underline under every numeral: rests collapsed (scaleX(0)),
+     * slides to full width on the active page, partial-reveals on hover. The
+     * transform transition rides --cngx-paginator-motion-duration, which the
+     * reduced-motion flatten in the default scope drops to a hard cut.
+     */
+    .cngx-paginator__page::after {
       content: '';
       position: absolute;
-      inset-inline: 22%;
-      bottom: 0.1875rem;
+      inset-inline: var(--cngx-paginator-indicator-inset, 18%);
+      inset-block-end: var(--cngx-paginator-indicator-offset, 4px);
       block-size: var(--cngx-paginator-indicator-thickness, 2px);
+      border-radius: var(--cngx-paginator-indicator-thickness, 2px)
+        var(--cngx-paginator-indicator-thickness, 2px) 0 0;
       background: var(--cngx-color-primary, oklch(0.66 0.19 50));
-      border-radius: var(--cngx-paginator-indicator-thickness, 2px);
+      transform: scaleX(0);
+      transition: transform var(--cngx-paginator-motion-duration, 200ms) ease;
+    }
+
+    .cngx-paginator__page:hover:not([aria-current='page'])::after {
+      transform: scaleX(var(--cngx-paginator-indicator-hover-scale, 0.5));
+    }
+
+    .cngx-paginator__page[aria-current='page']::after {
+      transform: scaleX(1);
     }
   }
 
@@ -731,7 +747,8 @@
       }
 
       .cngx-paginator__button,
-      .cngx-paginator__pages {
+      .cngx-paginator__pages,
+      .cngx-paginator__page::after {
         transition: none;
       }
     }
