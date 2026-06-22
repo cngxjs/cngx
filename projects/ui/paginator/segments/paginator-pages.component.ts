@@ -10,7 +10,7 @@ import {
 
 import { CngxRovingItem, CngxRovingTabindex } from '@cngx/common/a11y';
 import { CngxMenu, CngxMenuItem, CngxMenuTrigger } from '@cngx/common/interactive';
-import { CngxPopover } from '@cngx/common/popover';
+import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
 
 import { injectPaginatorConfig } from '../paginator-config';
 import { CNGX_PAGINATOR_GLYPHS } from '../paginator-glyphs';
@@ -43,7 +43,15 @@ import { CNGX_PAGINATOR_PAGE_WINDOW_FACTORY } from './paginator-page-window.toke
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  imports: [CngxRovingTabindex, CngxRovingItem, CngxMenu, CngxMenuItem, CngxMenuTrigger, CngxPopover],
+  imports: [
+    CngxRovingTabindex,
+    CngxRovingItem,
+    CngxMenu,
+    CngxMenuItem,
+    CngxMenuTrigger,
+    CngxPopover,
+    CngxPopoverTrigger,
+  ],
   template: `
     <div class="cngx-paginator__pages" cngxRovingTabindex [(activeIndex)]="rovingIndex">
       @for (item of model().pages; track $index) {
@@ -66,6 +74,7 @@ import { CNGX_PAGINATOR_PAGE_WINDOW_FACTORY } from './paginator-page-window.toke
             cngxRovingItem
             class="cngx-paginator__button cngx-paginator__more"
             [cngxMenuTrigger]="moreMenu"
+            [cngxPopoverTrigger]="morePopover"
             [popover]="morePopover"
             [attr.aria-label]="config.ariaLabels.morePages"
             (click)="morePopover.toggle()"
