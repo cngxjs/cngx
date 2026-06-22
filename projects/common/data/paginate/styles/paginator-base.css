@@ -34,7 +34,16 @@
     flex-direction: row;
     align-items: center;
     flex-wrap: wrap;
-    gap: var(--cngx-paginator-gap, 0.25rem);
+    gap: var(--cngx-paginator-row-gap, 0.75rem);
+    font-family: var(
+      --cngx-paginator-font-family,
+      system-ui,
+      -apple-system,
+      'Segoe UI',
+      Roboto,
+      sans-serif
+    );
+    font-size: var(--cngx-paginator-font-size, 0.875rem);
   }
 
   /*
@@ -225,15 +234,17 @@
     font-weight: 600;
   }
 
-  /* Density axis - shifts the hit-target and gap tokens on the host. */
+  /* Density axis - shifts the hit-target, gap, and font tokens on the host. */
   .cngx-paginator[data-density='compact'] {
-    --cngx-paginator-button-size: 1.875rem;
+    --cngx-paginator-button-size: 1.75rem;
     --cngx-paginator-gap: 0.125rem;
+    font-size: var(--cngx-paginator-font-size-compact, 0.8125rem);
   }
 
   .cngx-paginator[data-density='comfortable'] {
     --cngx-paginator-button-size: 2.75rem;
     --cngx-paginator-gap: 0.5rem;
+    font-size: var(--cngx-paginator-font-size-comfortable, 0.95rem);
   }
 
   /* Dots indicator - a row of circular page markers (cngx-pgn-dots). */
