@@ -25,6 +25,17 @@ import { CNGX_PAGINATOR_PAGE_WINDOW_FACTORY } from './paginator-page-window.toke
  * (reused, no new overflow code) of the hidden pages.
  *
  * @category ui/paginator
+ * <example-url>http://localhost:4200/#/ui/paginator/paginator-behaviors/reset-on-filter</example-url>
+ * <example-url>http://localhost:4200/#/ui/paginator/paginator-contexts/card-grid</example-url>
+ * <example-url>http://localhost:4200/#/ui/paginator/paginator-contexts/paginated-list</example-url>
+ * <example-url>http://localhost:4200/#/ui/paginator/paginator-segments/async-loading</example-url>
+ * <example-url>http://localhost:4200/#/ui/paginator/paginator-segments/ellipsis-overflow</example-url>
+ * <example-url>http://localhost:4200/#/ui/paginator/paginator-segments/first-and-last</example-url>
+ * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/bar</example-url>
+ * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/numbered</example-url>
+ * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/pill</example-url>
+ * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/rail</example-url>
+ * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/segmented</example-url>
  */
 @Component({
   selector: 'cngx-pgn-pages',

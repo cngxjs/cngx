@@ -76,6 +76,7 @@ function dotsEqual(a: readonly Dot[], b: readonly Dot[]): boolean {
  * abstraction avoided - extract only when a second consumer appears).
  *
  * @category ui/paginator
+ * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/dots</example-url>
  */
 @Component({
   selector: 'cngx-pgn-dots',

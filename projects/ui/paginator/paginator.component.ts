@@ -66,6 +66,25 @@ export type CngxPaginatorDensity = 'compact' | 'default' | 'comfortable';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/paginator.component.ts
  * @since 0.1.0
  * @relatedTo CngxPaginate, CngxMatPaginator
+ * <example-url>http://localhost:4200/#/ui/paginator/paginator-behaviors/reset-on-filter</example-url>
+ * <example-url>http://localhost:4200/#/ui/paginator/paginator-behaviors/url-synced-paging</example-url>
+ * <example-url>http://localhost:4200/#/ui/paginator/paginator-contexts/card-grid</example-url>
+ * <example-url>http://localhost:4200/#/ui/paginator/paginator-contexts/paginated-list</example-url>
+ * <example-url>http://localhost:4200/#/ui/paginator/paginator-contexts/select-panel-footer</example-url>
+ * <example-url>http://localhost:4200/#/ui/paginator/paginator-modes/infinite</example-url>
+ * <example-url>http://localhost:4200/#/ui/paginator/paginator-modes/load-more</example-url>
+ * <example-url>http://localhost:4200/#/ui/paginator/paginator-segments/async-loading</example-url>
+ * <example-url>http://localhost:4200/#/ui/paginator/paginator-segments/ellipsis-overflow</example-url>
+ * <example-url>http://localhost:4200/#/ui/paginator/paginator-segments/first-and-last</example-url>
+ * <example-url>http://localhost:4200/#/ui/paginator/paginator-segments/go-to-page</example-url>
+ * <example-url>http://localhost:4200/#/ui/paginator/paginator-segments/page-size-and-range</example-url>
+ * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/bar</example-url>
+ * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/dots</example-url>
+ * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/minimal</example-url>
+ * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/numbered</example-url>
+ * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/pill</example-url>
+ * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/rail</example-url>
+ * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/segmented</example-url>
  */
 @Component({
   selector: 'cngx-paginator',

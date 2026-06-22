@@ -10,6 +10,7 @@ import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
  * Accessible name from config (EN default, Pillar 2).
  *
  * @category ui/paginator
+ * <example-url>http://localhost:4200/#/ui/paginator/paginator-segments/go-to-page</example-url>
  */
 @Component({
   selector: 'cngx-pgn-goto',
