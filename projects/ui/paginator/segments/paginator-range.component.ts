@@ -33,7 +33,7 @@ import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  template: `<span class="cngx-paginator__range">{{ text() }}</span>`,
+  template: `<span class="cngx-paginator__range" [innerHTML]="text()"></span>`,
   host: { class: 'cngx-paginator__segment' },
 })
 export class CngxPaginatorRange {

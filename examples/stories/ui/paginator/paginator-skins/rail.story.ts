@@ -28,7 +28,7 @@ export const STORY: DemoSpec = {
     'CngxPaginatorNext',
   ],
   viewProviders: [
-    'provideCngxPaginatorConfigAt(withPaginatorPageStatusFormat((page, totalPages) => `${page} / ${totalPages}`))',
+    'provideCngxPaginatorConfigAt(withPaginatorPageStatusFormat((page, totalPages) => `<b>${page}</b> / ${totalPages}`))',
   ],
   setup: `protected readonly pageIndex = signal(5);`,
   template: `  <cngx-paginator skin="rail" [total]="200" [(pageIndex)]="pageIndex">

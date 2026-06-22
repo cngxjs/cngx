@@ -72,13 +72,16 @@ export interface CngxPaginatorAriaLabels {
 export interface CngxPaginatorFormats {
   /**
    * Range-readout text, given the 1-based first item, last item, and total.
-   * The `cngx-pgn-range` segment renders the returned string verbatim.
+   * The `cngx-pgn-range` segment renders the returned string as sanitised HTML,
+   * so inline emphasis (e.g. `<b>` around the current range) is honoured; the
+   * default bolds the range. Angular's sanitiser strips anything unsafe.
    */
   readonly range: (start: number, end: number, total: number) => string;
   /**
    * Page-status text, given the 1-based current page and total page count.
-   * The `cngx-pgn-status` segment renders the returned string verbatim (it is
-   * the visible twin of the `announcements.pageChange` live-region phrasing).
+   * The `cngx-pgn-status` segment renders the returned string as sanitised HTML
+   * (the default bolds the page); it is the visible twin of the
+   * `announcements.pageChange` live-region phrasing, which stays plain text.
    */
   readonly pageStatus: (page: number, totalPages: number) => string;
 }
@@ -154,8 +157,11 @@ export const CNGX_PAGINATOR_DEFAULTS: CngxPaginatorConfig = {
     updated: 'Updated',
   },
   formats: {
-    range: (start, end, total) => `${start}-${end} of ${total}`,
-    pageStatus: (page, totalPages) => `Page ${page} of ${totalPages}`,
+    // The readout segments render the formatter output as sanitised HTML, so the
+    // current value (the page, or the item range) is emphasised with `<b>`;
+    // Angular's sanitiser keeps `<b>` and strips anything dangerous.
+    range: (start, end, total) => `<b>${start}-${end}</b> of ${total}`,
+    pageStatus: (page, totalPages) => `Page <b>${page}</b> of ${totalPages}`,
   },
 };
 

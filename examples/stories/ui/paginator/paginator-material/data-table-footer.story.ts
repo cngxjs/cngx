@@ -32,7 +32,7 @@ export const STORY: DemoSpec = {
     'CngxPaginatorLast',
   ],
   viewProviders: [
-    'provideCngxPaginatorConfigAt(withPaginatorRangeFormat((start, end, total) => `${start}-${end} of ${total} items`))',
+    'provideCngxPaginatorConfigAt(withPaginatorRangeFormat((start, end, total) => `<b>${start}-${end}</b> of ${total} items`))',
   ],
   setup: `protected readonly pageIndex = signal(1);
   protected readonly pageSize = signal(10);

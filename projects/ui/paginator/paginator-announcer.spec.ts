@@ -81,7 +81,9 @@ describe('CNGX_PAGINATOR_ANNOUNCER_FACTORY', () => {
 
 describe('paginator config: range format + pageOfPages keys', () => {
   test('EN defaults carry the new keys', () => {
-    expect(CNGX_PAGINATOR_DEFAULTS.formats.range(1, 10, 95)).toBe('1-10 of 95');
+    // The default emphasises the current range with `<b>` (rendered as
+    // sanitised HTML by cngx-pgn-range; its textContent stays "1-10 of 95").
+    expect(CNGX_PAGINATOR_DEFAULTS.formats.range(1, 10, 95)).toBe('<b>1-10</b> of 95');
     expect(CNGX_PAGINATOR_DEFAULTS.ariaLabels.pageOfPages).toBe('Select page');
     // Distinct from the go-to-page label it used to borrow.
     expect(CNGX_PAGINATOR_DEFAULTS.ariaLabels.pageOfPages).not.toBe(

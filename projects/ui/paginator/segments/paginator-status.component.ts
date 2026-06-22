@@ -28,7 +28,7 @@ import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  template: `<span class="cngx-paginator__status">{{ text() }}</span>`,
+  template: `<span class="cngx-paginator__status" [innerHTML]="text()"></span>`,
   host: { class: 'cngx-paginator__segment' },
 })
 export class CngxPaginatorStatus {

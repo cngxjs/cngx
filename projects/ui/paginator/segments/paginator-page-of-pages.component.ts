@@ -43,7 +43,9 @@ import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
       [disabled]="host.isBusy()"
       (click)="pop.toggle()"
     >
-      <span class="cngx-paginator__select-label">{{ host.pageIndex() + 1 }} / {{ host.totalPages() }}</span>
+      <span class="cngx-paginator__select-label"
+        ><b>{{ host.pageIndex() + 1 }}</b> / {{ host.totalPages() }}</span
+      >
       <span class="cngx-paginator__select-caret" aria-hidden="true">{{ glyphs.caret }}</span>
     </button>
     <div cngxPopover #pop="cngxPopover">

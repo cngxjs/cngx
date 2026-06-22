@@ -28,7 +28,7 @@ export const STORY: DemoSpec = {
     'CngxPaginatorNext',
   ],
   viewProviders: [
-    'provideCngxPaginatorConfigAt(withPaginatorPageStatusFormat((page, totalPages) => `${String(page).padStart(2, "0")} /${totalPages}`), withPaginatorRangeFormat((start, end, total) => `${start}-${end} of ${total} items`))',
+    'provideCngxPaginatorConfigAt(withPaginatorPageStatusFormat((page, totalPages) => `<b>${String(page).padStart(2, "0")}</b> /${totalPages}`), withPaginatorRangeFormat((start, end, total) => `<b>${start}-${end}</b> of ${total} items`))',
   ],
   setup: `protected readonly framePage = signal(3);
   protected readonly rangePage = signal(2);`,
