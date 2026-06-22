@@ -9,7 +9,7 @@ import {
 } from '@angular/core';
 
 import { CngxRovingItem, CngxRovingTabindex } from '@cngx/common/a11y';
-import { CngxMenu, CngxMenuItem, CngxMenuTrigger } from '@cngx/common/interactive';
+import { CngxListbox, CngxListboxTrigger, CngxOption } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
 
 import { injectPaginatorConfig } from '../paginator-config';
@@ -21,8 +21,9 @@ import { CNGX_PAGINATOR_PAGE_WINDOW_FACTORY } from './paginator-page-window.toke
 /**
  * The numbered page row. One tab stop via `CngxRovingTabindex` (arrows / Home /
  * End move the active page button); the current page carries `aria-current`.
- * A truncation run collapses into an ellipsis button that opens a `CngxMenu`
- * (reused, no new overflow code) of the hidden pages.
+ * A truncation run collapses into an ellipsis button that opens a `CngxListbox`
+ * grid of the hidden pages (same select-and-jump model as `cngx-pgn-page-of-pages`,
+ * so focus moves into the panel on open).
  *
  * @category ui/paginator
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-behaviors/reset-on-filter</example-url>
@@ -46,9 +47,9 @@ import { CNGX_PAGINATOR_PAGE_WINDOW_FACTORY } from './paginator-page-window.toke
   imports: [
     CngxRovingTabindex,
     CngxRovingItem,
-    CngxMenu,
-    CngxMenuItem,
-    CngxMenuTrigger,
+    CngxListbox,
+    CngxListboxTrigger,
+    CngxOption,
     CngxPopover,
     CngxPopoverTrigger,
   ],
@@ -73,25 +74,28 @@ import { CNGX_PAGINATOR_PAGE_WINDOW_FACTORY } from './paginator-page-window.toke
             type="button"
             cngxRovingItem
             class="cngx-paginator__button cngx-paginator__more"
-            [cngxMenuTrigger]="moreMenu"
+            [cngxListboxTrigger]="moreList"
             [cngxPopoverTrigger]="morePopover"
+            [haspopup]="'listbox'"
             [popover]="morePopover"
             [attr.aria-label]="config.ariaLabels.morePages"
-            (click)="morePopover.toggle()"
+            (click)="openOverflow(morePopover, moreUl)"
           >
             {{ glyphs.more }}
           </button>
           <div cngxPopover #morePopover="cngxPopover">
             <ul
-              cngxMenu
-              #moreMenu="cngxMenu"
+              cngxListbox
+              #moreList="cngxListbox"
+              #moreUl
               tabindex="0"
               class="cngx-paginator__overflow-panel"
               [label]="config.ariaLabels.morePages"
-              (itemActivated)="onMenuActivate($event)"
+              [value]="null"
+              (valueChange)="onSelectOverflow($event)"
             >
               @for (hidden of item.hidden; track hidden) {
-                <li cngxMenuItem class="cngx-paginator__option" [value]="hidden">{{ hidden + 1 }}</li>
+                <li cngxOption class="cngx-paginator__option" [value]="hidden">{{ hidden + 1 }}</li>
               }
             </ul>
           </div>
@@ -157,7 +161,20 @@ export class CngxPaginatorPages {
     this.host.setPage(index);
   }
 
-  protected onMenuActivate(value: unknown): void {
+  /**
+   * Open the overflow popover and move focus into the listbox panel, so a
+   * keyboard user lands in the grid (the trigger is a roving page-row item, so
+   * the listbox trigger's own focus-move does not fire). `Enter`/`Space` on the
+   * button dispatch a native click, so this covers mouse and keyboard alike.
+   */
+  protected openOverflow(popover: { toggle(): void; isVisible(): boolean }, panel: HTMLElement): void {
+    popover.toggle();
+    if (popover.isVisible()) {
+      queueMicrotask(() => panel.focus());
+    }
+  }
+
+  protected onSelectOverflow(value: number | null | undefined): void {
     if (typeof value === 'number') {
       this.host.setPage(value);
     }
