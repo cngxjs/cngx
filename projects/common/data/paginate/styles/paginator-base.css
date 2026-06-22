@@ -34,7 +34,16 @@
     flex-direction: row;
     align-items: center;
     flex-wrap: wrap;
-    gap: var(--cngx-paginator-gap, 0.25rem);
+    gap: var(--cngx-paginator-row-gap, 0.75rem);
+    font-family: var(
+      --cngx-paginator-font-family,
+      system-ui,
+      -apple-system,
+      'Segoe UI',
+      Roboto,
+      sans-serif
+    );
+    font-size: var(--cngx-paginator-font-size, 0.875rem);
   }
 
   /*
@@ -52,6 +61,24 @@
   .cngx-paginator__segment {
     display: inline-flex;
     align-items: center;
+  }
+
+  /*
+   * Nav button text label - the button's accessible name, visually hidden by
+   * default so icon-only skins show just the chevron. Skins that want a labelled
+   * control (minimal) un-hide it via the rules in their own scope.
+   */
+  .cngx-paginator__nav-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
   }
 
   /* Visually-hidden live region - always in the DOM, content reactive. */
@@ -131,6 +158,16 @@
   }
 
   /*
+   * Page-status readout (the responsive collapse target). Same muted, tabular,
+   * no-wrap treatment as the range readout so "Page n of m" reads as secondary.
+   */
+  .cngx-paginator__status {
+    font-variant-numeric: tabular-nums;
+    color: var(--cngx-paginator-range-color, currentColor);
+    white-space: nowrap;
+  }
+
+  /*
    * Load-more trigger - a label plus a shown/total count readout. Wider than a
    * nav cell, so the inline-flex grows past the button-size floor; the gap
    * separates the two spans.
@@ -177,8 +214,9 @@
 
   .cngx-paginator__select-caret {
     display: inline-flex;
-    font-size: var(--cngx-paginator-caret-size, 0.75em);
+    font-size: var(--cngx-paginator-caret-size, 1em);
     line-height: 1;
+    opacity: var(--cngx-paginator-caret-opacity, 0.55);
   }
 
   /* The listbox panel inside the popover. */
@@ -205,6 +243,63 @@
   }
 
   /*
+   * Ellipsis overflow panel - shares the popover surface tokens with
+   * `__select-panel` (so one Material-bridge assignment themes both), but lays
+   * the hidden page numbers out as a compact grid instead of a tall column. The
+   * column count and cell size are tokens so a consumer can widen the grid.
+   */
+  .cngx-paginator__overflow-panel {
+    margin: 0;
+    padding: var(--cngx-paginator-panel-padding, 0.25rem);
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(
+      var(--cngx-paginator-overflow-columns, 5),
+      var(--cngx-paginator-overflow-cell-size, 2rem)
+    );
+    gap: var(--cngx-paginator-overflow-gap, 0.15rem);
+    border: var(--cngx-paginator-button-border-width, 1px) solid
+      var(--cngx-paginator-panel-border-color, color-mix(in oklch, currentColor 20%, transparent));
+    border-radius: var(--cngx-paginator-panel-radius, 0.5rem);
+    background: var(--cngx-paginator-panel-bg, Canvas);
+    color: var(--cngx-paginator-panel-color, currentColor);
+    box-shadow: var(--cngx-paginator-panel-shadow, 0 4px 12px rgb(0 0 0 / 0.15));
+  }
+
+  /* Overflow rows render as centred square grid cells, not full-width list rows. */
+  .cngx-paginator__overflow-panel .cngx-paginator__option {
+    justify-content: center;
+    min-block-size: var(--cngx-paginator-overflow-cell-size, 2rem);
+    padding: var(--cngx-paginator-overflow-cell-padding, 0);
+  }
+
+  /*
+   * The grid panel is the roving focus host (tabindex=0); the visible focus
+   * indicator is the highlighted cell (`.cngx-menu-item--highlighted`), so the
+   * container's own UA outline is suppressed - otherwise it frames the whole
+   * popover.
+   */
+  .cngx-paginator__overflow-panel:focus,
+  .cngx-paginator__overflow-panel:focus-visible {
+    outline: none;
+  }
+
+  /*
+   * The bare `[cngxPopover]` wrapper hosting a paginator panel inherits the
+   * native `[popover]` UA chrome (a medium black border + padding + opaque
+   * background). The projected panel (`__select-panel` / `__overflow-panel`)
+   * carries its own surface, so neutralise the wrapper - otherwise the UA border
+   * frames the whole popover.
+   */
+  [popover]:has(> .cngx-paginator__select-panel),
+  [popover]:has(> .cngx-paginator__overflow-panel) {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+  }
+
+  /*
    * Keyboard highlight - shared by the listbox segments (items-per-page /
    * page-of-pages, `.cngx-option--highlighted`) and the ellipsis overflow menu
    * (`.cngx-menu-item--highlighted`), so every popover row reads identically.
@@ -220,20 +315,23 @@
   .cngx-paginator__option.cngx-option--selected {
     background: var(
       --cngx-paginator-option-selected-bg,
-      color-mix(in oklch, currentColor 14%, transparent)
+      color-mix(in oklch, var(--cngx-color-primary, oklch(0.66 0.19 50)) 14%, transparent)
     );
+    color: var(--cngx-paginator-option-selected-color, var(--cngx-color-primary, oklch(0.66 0.19 50)));
     font-weight: 600;
   }
 
-  /* Density axis - shifts the hit-target and gap tokens on the host. */
+  /* Density axis - shifts the hit-target, gap, and font tokens on the host. */
   .cngx-paginator[data-density='compact'] {
-    --cngx-paginator-button-size: 1.875rem;
+    --cngx-paginator-button-size: 1.75rem;
     --cngx-paginator-gap: 0.125rem;
+    font-size: var(--cngx-paginator-font-size-compact, 0.8125rem);
   }
 
   .cngx-paginator[data-density='comfortable'] {
     --cngx-paginator-button-size: 2.75rem;
     --cngx-paginator-gap: 0.5rem;
+    font-size: var(--cngx-paginator-font-size-comfortable, 0.95rem);
   }
 
   /* Dots indicator - a row of circular page markers (cngx-pgn-dots). */
@@ -286,6 +384,55 @@
   }
 
   /*
+   * Progress rail wrapper (cngx-pgn-rail) - a relatively-positioned flex shell
+   * that stretches a composed `cngx-progress` to full width (the track + fill +
+   * `role="progressbar"` come from that atom, not redrawn here) and overlays a
+   * position knob. The knob is the only genuinely new part: a decorative dot
+   * riding the fill edge, positioned by an inline `inset-inline-start.%` from the
+   * segment and reduced-motion-gated in the skin layer.
+   */
+  .cngx-paginator__rail {
+    position: relative;
+    display: flex;
+    align-items: center;
+    flex: 1 1 auto;
+    min-inline-size: var(--cngx-paginator-rail-min-size, 6rem);
+  }
+
+  .cngx-paginator__rail cngx-progress {
+    flex: 1 1 auto;
+    --cngx-progress-height: var(--cngx-paginator-rail-height, 0.375rem);
+    /*
+     * CngxProgress fills with `currentColor` by default - in the paginator that
+     * is the text colour, so the rail would read as a black bar. Route the fill
+     * to the primary and the track to the border role.
+     */
+    --cngx-progress-color: var(
+      --cngx-paginator-rail-fill,
+      var(--cngx-color-primary, oklch(0.66 0.19 50))
+    );
+    --cngx-progress-track-color: var(
+      --cngx-paginator-rail-track,
+      var(--cngx-color-border, oklch(0.9 0.005 250))
+    );
+  }
+
+  .cngx-paginator__rail-knob {
+    position: absolute;
+    inset-block-start: 50%;
+    inset-inline-start: 0;
+    inline-size: var(--cngx-paginator-rail-knob-size, 0.875rem);
+    block-size: var(--cngx-paginator-rail-knob-size, 0.875rem);
+    border-radius: 50%;
+    background: var(--cngx-paginator-rail-knob-bg, oklch(1 0 0));
+    border: var(--cngx-paginator-rail-knob-border-width, 2px) solid
+      var(--cngx-paginator-rail-knob-border-color, oklch(0.66 0.19 50));
+    transform: translate(-50%, -50%);
+    transition: inset-inline-start var(--cngx-paginator-motion-duration, 200ms)
+      cubic-bezier(0.3, 0.7, 0, 1);
+  }
+
+  /*
    * Infinite-scroll sentinel - a centred bottom-of-list affordance the
    * IntersectionObserver watches. The consumer owns the scroll viewport and any
    * page-boundary dividers; this is only the trigger row plus its busy / end text.
@@ -335,14 +482,40 @@
     gap: var(--cngx-paginator-alpha-gap, 0.4rem);
   }
 
-  /* Active chip - reuses the current-page tokens so selection reads identically. */
-  .cngx-paginator__alpha-chip[aria-pressed='true'] {
-    background: var(
-      --cngx-paginator-current-bg,
-      color-mix(in oklch, currentColor 12%, transparent)
+  /*
+   * Resting chip chrome - a bordered surface pill so each bucket reads as a
+   * discrete toggle (without it the transparent button base collapses the
+   * labels into run-together text). The active (`aria-pressed`) chip reuses the
+   * current-page tokens below; the empty-bucket chip dims via the shared
+   * `:disabled` rule above.
+   */
+  .cngx-paginator__alpha-chip {
+    border-color: var(
+      --cngx-paginator-alpha-chip-border-color,
+      var(--cngx-color-border, oklch(0.88 0.005 250))
     );
-    color: var(--cngx-paginator-current-color, currentColor);
-    border-color: var(--cngx-paginator-current-border-color, transparent);
+    background: var(--cngx-paginator-alpha-chip-bg, var(--cngx-color-surface, oklch(1 0 0)));
+    font-weight: 500;
+  }
+
+  .cngx-paginator__alpha-chip:hover:not([aria-pressed='true']):not(:disabled) {
+    border-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
+    color: var(--cngx-color-primary, oklch(0.66 0.19 50));
+  }
+
+  /*
+   * Active chip - reuses the current-page tokens so selection reads identically
+   * inside the shell. Standalone (no shell, so the component.css `:root` token
+   * routing is absent), the fallbacks chain straight to the foundation primary,
+   * so the active bucket still reads as a filled primary chip.
+   */
+  .cngx-paginator__alpha-chip[aria-pressed='true'] {
+    background: var(--cngx-paginator-current-bg, var(--cngx-color-primary, oklch(0.66 0.19 50)));
+    color: var(--cngx-paginator-current-color, var(--cngx-color-on-primary, oklch(1 0 0)));
+    border-color: var(
+      --cngx-paginator-current-border-color,
+      var(--cngx-color-primary, oklch(0.66 0.19 50))
+    );
     font-weight: 600;
   }
 

@@ -1,5 +1,6 @@
 import { NgTemplateOutlet } from '@angular/common';
 import {
+  booleanAttribute,
   ChangeDetectionStrategy,
   Component,
   computed,
@@ -109,6 +110,7 @@ export type CngxPaginatorDensity = 'compact' | 'default' | 'comfortable';
     '[attr.aria-busy]': 'paginate.isBusy()',
     '[attr.data-skin]': 'skin()',
     '[attr.data-density]': 'density()',
+    '[attr.data-responsive]': "responsive() ? '' : null",
   },
 })
 export class CngxPaginator {
@@ -118,6 +120,13 @@ export class CngxPaginator {
   readonly skin = input<CngxPaginatorSkin>('numbered');
   /** Density preset; reflected onto `[data-density]`. */
   readonly density = input<CngxPaginatorDensity>('default');
+  /**
+   * Opt into the responsive collapse; reflected onto `[data-responsive]`. When
+   * set, a `@container` rule swaps the projected `cngx-pgn-pages` number row for
+   * a `cngx-pgn-status` "Page n of m" readout once the paginator's own container
+   * narrows past the collapse breakpoint. Compose both segments for it to apply.
+   */
+  readonly responsive = input(false, { transform: booleanAttribute });
 
   /**
    * Reset key. When its value changes (after the initial render) the paginator

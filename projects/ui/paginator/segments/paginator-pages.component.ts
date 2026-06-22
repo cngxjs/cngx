@@ -9,8 +9,8 @@ import {
 } from '@angular/core';
 
 import { CngxRovingItem, CngxRovingTabindex } from '@cngx/common/a11y';
-import { CngxMenu, CngxMenuItem, CngxMenuTrigger } from '@cngx/common/interactive';
-import { CngxPopover } from '@cngx/common/popover';
+import { CngxListbox, CngxListboxTrigger, CngxOption } from '@cngx/common/interactive';
+import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
 
 import { injectPaginatorConfig } from '../paginator-config';
 import { CNGX_PAGINATOR_GLYPHS } from '../paginator-glyphs';
@@ -21,8 +21,9 @@ import { CNGX_PAGINATOR_PAGE_WINDOW_FACTORY } from './paginator-page-window.toke
 /**
  * The numbered page row. One tab stop via `CngxRovingTabindex` (arrows / Home /
  * End move the active page button); the current page carries `aria-current`.
- * A truncation run collapses into an ellipsis button that opens a `CngxMenu`
- * (reused, no new overflow code) of the hidden pages.
+ * A truncation run collapses into an ellipsis button that opens a `CngxListbox`
+ * grid of the hidden pages (same select-and-jump model as `cngx-pgn-page-of-pages`,
+ * so focus moves into the panel on open).
  *
  * @category ui/paginator
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-behaviors/reset-on-filter</example-url>
@@ -43,7 +44,15 @@ import { CNGX_PAGINATOR_PAGE_WINDOW_FACTORY } from './paginator-page-window.toke
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  imports: [CngxRovingTabindex, CngxRovingItem, CngxMenu, CngxMenuItem, CngxMenuTrigger, CngxPopover],
+  imports: [
+    CngxRovingTabindex,
+    CngxRovingItem,
+    CngxListbox,
+    CngxListboxTrigger,
+    CngxOption,
+    CngxPopover,
+    CngxPopoverTrigger,
+  ],
   template: `
     <div class="cngx-paginator__pages" cngxRovingTabindex [(activeIndex)]="rovingIndex">
       @for (item of model().pages; track $index) {
@@ -64,25 +73,30 @@ import { CNGX_PAGINATOR_PAGE_WINDOW_FACTORY } from './paginator-page-window.toke
           <button
             type="button"
             cngxRovingItem
+            #moreBtn
             class="cngx-paginator__button cngx-paginator__more"
-            [cngxMenuTrigger]="moreMenu"
+            [cngxListboxTrigger]="moreList"
+            [cngxPopoverTrigger]="morePopover"
+            [haspopup]="'listbox'"
             [popover]="morePopover"
             [attr.aria-label]="config.ariaLabels.morePages"
-            (click)="morePopover.toggle()"
+            (click)="openOverflow(morePopover, moreUl)"
           >
             {{ glyphs.more }}
           </button>
-          <div cngxPopover #morePopover="cngxPopover">
+          <div cngxPopover #morePopover="cngxPopover" (toggle)="onOverflowToggle($event, moreBtn)">
             <ul
-              cngxMenu
-              #moreMenu="cngxMenu"
+              cngxListbox
+              #moreList="cngxListbox"
+              #moreUl
               tabindex="0"
-              class="cngx-paginator__select-panel"
+              class="cngx-paginator__overflow-panel"
               [label]="config.ariaLabels.morePages"
-              (itemActivated)="onMenuActivate($event)"
+              [value]="null"
+              (valueChange)="onSelectOverflow($event)"
             >
               @for (hidden of item.hidden; track hidden) {
-                <li cngxMenuItem class="cngx-paginator__option" [value]="hidden">{{ hidden + 1 }}</li>
+                <li cngxOption class="cngx-paginator__option" [value]="hidden">{{ hidden + 1 }}</li>
               }
             </ul>
           </div>
@@ -148,7 +162,32 @@ export class CngxPaginatorPages {
     this.host.setPage(index);
   }
 
-  protected onMenuActivate(value: unknown): void {
+  /**
+   * Open the overflow popover and move focus into the listbox panel, so a
+   * keyboard user lands in the grid (the trigger is a roving page-row item, so
+   * the listbox trigger's own focus-move does not fire). `Enter`/`Space` on the
+   * button dispatch a native click, so this covers mouse and keyboard alike.
+   */
+  protected openOverflow(popover: { toggle(): void; isVisible(): boolean }, panel: HTMLElement): void {
+    popover.toggle();
+    if (popover.isVisible()) {
+      queueMicrotask(() => panel.focus());
+    }
+  }
+
+  /**
+   * Restore focus to the ellipsis trigger when the panel closes (Escape /
+   * outside click), so a keyboard user is not dropped to the page body. If a
+   * selection re-rendered the window away, the trigger is gone and the guard
+   * skips it.
+   */
+  protected onOverflowToggle(event: Event, trigger: HTMLElement): void {
+    if ((event as ToggleEvent).newState === 'closed' && trigger.isConnected) {
+      trigger.focus();
+    }
+  }
+
+  protected onSelectOverflow(value: number | null | undefined): void {
     if (typeof value === 'number') {
       this.host.setPage(value);
     }

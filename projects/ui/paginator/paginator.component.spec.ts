@@ -46,6 +46,7 @@ class ProbeHost {
       [aria-label]="ariaLabel()"
       [skin]="skin()"
       [density]="density()"
+      [responsive]="responsive()"
     >
       <span probeHost></span>
     </cngx-paginator>
@@ -59,6 +60,7 @@ class HostCmp {
   readonly ariaLabel = signal<string | undefined>(undefined);
   readonly skin = signal<CngxPaginatorSkin>('numbered');
   readonly density = signal<CngxPaginatorDensity>('default');
+  readonly responsive = signal(false);
 
   readonly indexEmits: number[] = [];
   readonly sizeEmits: number[] = [];
@@ -133,6 +135,19 @@ describe('CngxPaginator', () => {
       await settle(fixture);
       expect(paginatorEl.getAttribute('data-skin')).toBe(skin);
     }
+  });
+
+  test('[responsive] reflects onto [data-responsive]', async () => {
+    const { fixture, host, paginatorEl } = await setup();
+    expect(paginatorEl.getAttribute('data-responsive')).toBeNull();
+
+    host.responsive.set(true);
+    await settle(fixture);
+    expect(paginatorEl.getAttribute('data-responsive')).toBe('');
+
+    host.responsive.set(false);
+    await settle(fixture);
+    expect(paginatorEl.getAttribute('data-responsive')).toBeNull();
   });
 
   test('aria-label input overrides the config default', async () => {
@@ -302,6 +317,70 @@ describe('CngxPaginator', () => {
 class SlotHostCmp {
   readonly state = signal<CngxAsyncState<unknown> | undefined>(undefined);
 }
+
+/**
+ * The paginator skin styles live inside `@layer cngx.tokens` / `@layer
+ * cngx.components` and `@scope` blocks, which this runner's `getComputedStyle`
+ * (jsdom) does not resolve - so the cascade cannot be read off the live element
+ * here. These assertions instead verify the compiled declarations the build
+ * injects: the exact values the prototype pass locks - host font `0.875rem`
+ * (`0.8125rem` compact), and the host row gap `0.75rem` split from the
+ * `0.25rem` inter-page gap.
+ */
+describe('CngxPaginator — host typography', () => {
+  function paginatorCss(): string {
+    return Array.from(document.querySelectorAll('style'))
+      .map((s) => s.textContent ?? '')
+      .filter((t) => t.includes('cngx-paginator'))
+      .join('\n');
+  }
+
+  test('registers the font-size + row-gap tokens with the prototype defaults', async () => {
+    await setup();
+    const css = paginatorCss();
+    expect(css).toMatch(/--cngx-paginator-font-size\s*\{[^}]*initial-value:\s*0\.875rem/);
+    expect(css).toMatch(/--cngx-paginator-row-gap\s*\{[^}]*initial-value:\s*0\.75rem/);
+  });
+
+  test('host sets the system font + font-size and reads the row gap; the page row keeps the inter-page gap', async () => {
+    await setup();
+    const css = paginatorCss();
+    expect(css).toMatch(/\.cngx-paginator\s*\{[^}]*font-family:[^}]*system-ui/);
+    expect(css).toMatch(
+      /\.cngx-paginator\s*\{[^}]*font-size:\s*var\(--cngx-paginator-font-size,\s*0\.875rem\)/,
+    );
+    // Host gap reads the row-gap token (0.75rem), not the page gap.
+    expect(css).toMatch(
+      /\.cngx-paginator\s*\{[^}]*gap:\s*var\(--cngx-paginator-row-gap,\s*0\.75rem\)/,
+    );
+    // The page row keeps the tight inter-page gap (0.25rem).
+    expect(css).toMatch(
+      /\.cngx-paginator__pages\s*\{[^}]*gap:\s*var\(--cngx-paginator-gap,\s*0\.25rem\)/,
+    );
+  });
+
+  test('compact density shifts the font to 0.8125rem and shrinks the hit target to 1.75rem', async () => {
+    await setup();
+    const css = paginatorCss();
+    expect(css).toMatch(
+      /\[data-density=['"]?compact['"]?\][^{]*\{[^}]*--cngx-paginator-button-size:\s*1\.75rem/,
+    );
+    expect(css).toMatch(
+      /\[data-density=['"]?compact['"]?\][^{]*\{[^}]*font-size:\s*var\(--cngx-paginator-font-size-compact,\s*0\.8125rem\)/,
+    );
+    expect(css).toMatch(
+      /\[data-density=['"]?comfortable['"]?\][^{]*\{[^}]*font-size:\s*var\(--cngx-paginator-font-size-comfortable,\s*0\.95rem\)/,
+    );
+  });
+
+  // Guards the default radius so a later token-default override does not silently
+  // regress it back below the prototype's 0.5rem.
+  test('registers the default button radius at the prototype 0.5rem', async () => {
+    await setup();
+    const css = paginatorCss();
+    expect(css).toMatch(/--cngx-paginator-button-radius\s*\{[^}]*initial-value:\s*0\.5rem/);
+  });
+});
 
 describe('CngxPaginator — loading slot', () => {
   test('a *cngxPaginatorLoading override renders the consumer template instead of the default bar', async () => {

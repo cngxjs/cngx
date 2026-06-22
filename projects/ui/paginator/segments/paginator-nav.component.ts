@@ -62,11 +62,11 @@ const NAV_TEMPLATE = `
     type="button"
     class="cngx-paginator__button cngx-paginator__nav"
     cngxRipple
-    [attr.aria-label]="core.ariaLabel()"
     [attr.aria-disabled]="core.disabled()"
     (click)="core.activate()"
   >
     <cngx-icon aria-hidden="true">{{ glyph }}</cngx-icon>
+    <span class="cngx-paginator__nav-label">{{ core.ariaLabel() }}</span>
   </button>
 `;
 

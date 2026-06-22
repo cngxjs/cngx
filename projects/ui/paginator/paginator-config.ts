@@ -55,6 +55,12 @@ export interface CngxPaginatorAriaLabels {
   readonly emptyBucket: (label: string) => string;
   /** Accessible name for the category/range chip strip (`role="group"`). */
   readonly bucketGroup: string;
+  /**
+   * Accessible name for the `rail` skin's progress rail. Becomes the composed
+   * `cngx-progress` `[label]`, so AT reads "Page position" with the progressbar
+   * value the atom exposes.
+   */
+  readonly railPosition: string;
 }
 
 /**
@@ -66,9 +72,18 @@ export interface CngxPaginatorAriaLabels {
 export interface CngxPaginatorFormats {
   /**
    * Range-readout text, given the 1-based first item, last item, and total.
-   * The `cngx-pgn-range` segment renders the returned string verbatim.
+   * The `cngx-pgn-range` segment renders the returned string as sanitised HTML,
+   * so inline emphasis (e.g. `<b>` around the current range) is honoured; the
+   * default bolds the range. Angular's sanitiser strips anything unsafe.
    */
   readonly range: (start: number, end: number, total: number) => string;
+  /**
+   * Page-status text, given the 1-based current page and total page count.
+   * The `cngx-pgn-status` segment renders the returned string as sanitised HTML
+   * (the default bolds the page); it is the visible twin of the
+   * `announcements.pageChange` live-region phrasing, which stays plain text.
+   */
+  readonly pageStatus: (page: number, totalPages: number) => string;
 }
 
 /**
@@ -134,6 +149,7 @@ export const CNGX_PAGINATOR_DEFAULTS: CngxPaginatorConfig = {
     bucket: (label) => label,
     emptyBucket: (label) => `${label}, no items`,
     bucketGroup: 'Categories',
+    railPosition: 'Page position',
   },
   announcements: {
     pageChange: (page, totalPages) => `Page ${page} of ${totalPages}`,
@@ -141,7 +157,11 @@ export const CNGX_PAGINATOR_DEFAULTS: CngxPaginatorConfig = {
     updated: 'Updated',
   },
   formats: {
-    range: (start, end, total) => `${start}-${end} of ${total}`,
+    // The readout segments render the formatter output as sanitised HTML, so the
+    // current value (the page, or the item range) is emphasised with `<b>`;
+    // Angular's sanitiser keeps `<b>` and strips anything dangerous.
+    range: (start, end, total) => `<b>${start}-${end}</b> of ${total}`,
+    pageStatus: (page, totalPages) => `Page <b>${page}</b> of ${totalPages}`,
   },
 };
 
@@ -248,6 +268,25 @@ export function withPaginatorRangeFormat(
   range: CngxPaginatorFormats['range'],
 ): CngxPaginatorConfigFeature {
   return { kind: 'formats', payload: { range } };
+}
+
+/**
+ * Override the page-status format. The `cngx-pgn-status` segment renders the
+ * returned string verbatim, so this localises the "Page n of m" readout that
+ * the responsive collapse reveals.
+ *
+ * ```ts
+ * provideCngxPaginatorConfig(
+ *   withPaginatorPageStatusFormat((page, totalPages) => `Seite ${page} von ${totalPages}`),
+ * );
+ * ```
+ *
+ * @category ui/paginator
+ */
+export function withPaginatorPageStatusFormat(
+  pageStatus: CngxPaginatorFormats['pageStatus'],
+): CngxPaginatorConfigFeature {
+  return { kind: 'formats', payload: { pageStatus } };
 }
 
 /**

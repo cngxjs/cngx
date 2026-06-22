@@ -72,21 +72,37 @@ function button(fixture: Plumbing['fixture'], selector: string): HTMLButtonEleme
   return fixture.debugElement.query(By.css(`${selector} button`)).nativeElement as HTMLButtonElement;
 }
 
+function navLabel(fixture: Plumbing['fixture'], selector: string): string | undefined {
+  return fixture.debugElement
+    .query(By.css(`${selector} .cngx-paginator__nav-label`))
+    ?.nativeElement.textContent?.trim();
+}
+
+function glyph(fixture: Plumbing['fixture'], selector: string): string | undefined {
+  return fixture.debugElement
+    .query(By.css(`${selector} cngx-icon`))
+    ?.nativeElement.textContent?.trim();
+}
+
 describe('paginator nav segments', () => {
-  test('label each button from the EN config defaults', async () => {
+  test('name each button from the EN config defaults via the (visually-hidden) label', async () => {
     const { fixture } = await setup();
-    expect(button(fixture, 'cngx-pgn-first').getAttribute('aria-label')).toBe('First page');
-    expect(button(fixture, 'cngx-pgn-prev').getAttribute('aria-label')).toBe('Previous page');
-    expect(button(fixture, 'cngx-pgn-next').getAttribute('aria-label')).toBe('Next page');
-    expect(button(fixture, 'cngx-pgn-last').getAttribute('aria-label')).toBe('Last page');
+    // The accessible name comes from the label span text (icon is aria-hidden),
+    // so it survives the minimal skin un-hiding the label as visible text.
+    expect(navLabel(fixture, 'cngx-pgn-first')).toBe('First page');
+    expect(navLabel(fixture, 'cngx-pgn-prev')).toBe('Previous page');
+    expect(navLabel(fixture, 'cngx-pgn-next')).toBe('Next page');
+    expect(navLabel(fixture, 'cngx-pgn-last')).toBe('Last page');
+    // No aria-label attribute - the name is the label text, not an override.
+    expect(button(fixture, 'cngx-pgn-first').getAttribute('aria-label')).toBeNull();
   });
 
   test('each button renders its chevron glyph from the central glyph const', async () => {
     const { fixture } = await setup();
-    expect(button(fixture, 'cngx-pgn-first').textContent?.trim()).toBe('«');
-    expect(button(fixture, 'cngx-pgn-prev').textContent?.trim()).toBe('‹');
-    expect(button(fixture, 'cngx-pgn-next').textContent?.trim()).toBe('›');
-    expect(button(fixture, 'cngx-pgn-last').textContent?.trim()).toBe('»');
+    expect(glyph(fixture, 'cngx-pgn-first')).toBe('«');
+    expect(glyph(fixture, 'cngx-pgn-prev')).toBe('‹');
+    expect(glyph(fixture, 'cngx-pgn-next')).toBe('›');
+    expect(glyph(fixture, 'cngx-pgn-last')).toBe('»');
   });
 
   test('first/prev are disabled on the first page, next/last are not', async () => {
