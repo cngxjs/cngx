@@ -778,7 +778,10 @@ readonly dataSource = injectSmartDataSource(this.residents);
     </table>
   }
 
-  <cngx-mat-paginator [cngxPaginateRef]="pg" />
+  <mat-paginator
+    [length]="pg.total()" [pageIndex]="pg.pageIndex()" [pageSize]="pg.pageSize()"
+    (page)="pg.setPageSize($event.pageSize, false); pg.setPage($event.pageIndex)"
+  ></mat-paginator>
 </div>
 ```
 
@@ -814,12 +817,16 @@ The paginator accepts `[state]` and blocks navigation while busy:
 <div cngxPaginate #pg="cngxPaginate"
   [total]="dataSource.filteredCount()" [state]="residents">
   <!-- table -->
-  <cngx-mat-paginator [cngxPaginateRef]="pg" />
+  <mat-paginator
+    [length]="pg.total()" [pageIndex]="pg.pageIndex()" [pageSize]="pg.pageSize()"
+    [disabled]="pg.isBusy()"
+    (page)="pg.setPageSize($event.pageSize, false); pg.setPage($event.pageIndex)"
+  ></mat-paginator>
 </div>
 ```
 
 - `setPage()`, `next()`, `previous()`, `setPageSize()` are no-ops while `isBusy`
-- `CngxMatPaginator` auto-disables via `[disabled]="ref().isBusy()"`
+- bind `[disabled]="pg.isBusy()"` so the rendered controls reflect busy state
 - No manual disabled management needed
 
 

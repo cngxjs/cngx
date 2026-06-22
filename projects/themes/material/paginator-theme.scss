@@ -1,0 +1,134 @@
+@use 'sass:map';
+@use 'sass:math';
+@use '@angular/material' as mat;
+
+// Material bridge for CngxPaginator (all seven skins) and its projected segment
+// parts and the ellipsis overflow popover. Default visuals ship with the
+// component (projects/common/data/paginate/styles/paginator-base.css for the
+// structural base + segments, and projects/ui/paginator/paginator.component.css
+// for the skin paint + theming @property registrations). Those stylesheets
+// carry literal oklch defaults only; this file is the single place that aligns
+// every paginator token with Material so cngx pagination feels native next to
+// <mat-paginator>.
+//
+// Token namespaces, one include:
+//   - --cngx-color-*       cngx foundation knobs the skins read through per-skin
+//                          `:scope` rules (current fill, hover wash, the
+//                          segmented track, the bar enclosure). Routed to
+//                          Material so the `:scope` blocks resolve a Material
+//                          value; `--cngx-color-on-primary` is set here because
+//                          the system bridge omits it.
+//   - --cngx-paginator-*   leaf segment + popover knobs read directly (range
+//                          readout, items-per-page / page-of-pages / overflow
+//                          popover surface, go-to input, load-more count,
+//                          infinite-scroll sentinel, dots).
+//
+//   @use '@angular/material' as mat;
+//   @use '@cngx/themes/material/paginator-theme' as paginator;
+//   html { @include paginator.theme($theme); }
+
+@mixin color($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    // The skin CSS derives the current fill, focus ring, hover wash, segmented
+    // track, rail marker, and bar enclosure from the cngx foundation tokens
+    // through per-skin `:scope` blocks - class-specificity rules in the same
+    // `@layer cngx.components` as this bridge. A `:where()` override of the
+    // leaf `--cngx-paginator-*` knobs loses to those `:scope` rules, so route
+    // the Material palette through the foundation knobs the skins actually
+    // read. One assignment themes every skin and tracks light / dark, since
+    // `--mat-sys-*` already carries both. `on-primary` is set here because the
+    // system bridge does not map it, and the pill / bar current label reads
+    // against the primary fill.
+    --cngx-color-primary: var(--mat-sys-primary);
+    --cngx-color-on-primary: var(--mat-sys-on-primary);
+    --cngx-color-surface: var(--mat-sys-surface);
+    --cngx-color-border: var(--mat-sys-outline-variant);
+
+    // Leaf segment tokens read directly (no `:scope` reroute), so a host-level
+    // `:where()` assignment reaches them.
+    --cngx-paginator-range-color: var(--mat-sys-on-surface-variant);
+    --cngx-paginator-goto-border-color: var(--mat-sys-outline);
+    --cngx-paginator-load-more-count-color: var(--mat-sys-on-surface-variant);
+    --cngx-paginator-infinite-color: var(--mat-sys-on-surface-variant);
+
+    // Dots: inactive markers read as the muted outline role; the active dot
+    // tracks the routed primary through its own foundation reference.
+    --cngx-paginator-dot-color: var(--mat-sys-outline-variant);
+
+    // Items-per-page / page-of-pages / ellipsis-overflow popover, painted as a
+    // mat-menu surface: a surface-container card on the level-2 elevation,
+    // extra-small corner radius, on-surface text, with the row hover / selected
+    // state layers on the on-surface role.
+    --cngx-paginator-panel-bg: var(--mat-sys-surface-container);
+    --cngx-paginator-panel-color: var(--mat-sys-on-surface);
+    --cngx-paginator-panel-border-color: var(--mat-sys-outline-variant);
+    --cngx-paginator-panel-radius: var(--mat-sys-corner-extra-small, 4px);
+    --cngx-paginator-panel-shadow: var(--mat-sys-level2, 0 2px 6px rgb(0 0 0 / 0.2));
+    --cngx-paginator-option-hover-bg: color-mix(in srgb, var(--mat-sys-on-surface) 8%, transparent);
+    --cngx-paginator-option-selected-bg: color-mix(
+      in srgb,
+      var(--mat-sys-on-surface) 12%,
+      transparent
+    );
+  } @else {
+    $primary: mat.get-theme-color($theme, primary);
+    $surface: mat.get-theme-color($theme, background, card);
+    $text: mat.get-theme-color($theme, foreground, text);
+    $divider: mat.get-theme-color($theme, foreground, divider);
+
+    --cngx-color-primary: #{$primary};
+    --cngx-color-on-primary: oklch(1 0 0);
+    --cngx-color-surface: #{$surface};
+    --cngx-color-border: #{rgba($divider, 0.12)};
+
+    --cngx-paginator-range-color: #{rgba($text, 0.7)};
+    --cngx-paginator-goto-border-color: #{rgba($divider, 0.42)};
+    --cngx-paginator-load-more-count-color: #{rgba($text, 0.6)};
+    --cngx-paginator-infinite-color: #{rgba($text, 0.6)};
+    --cngx-paginator-dot-color: #{rgba($text, 0.35)};
+
+    --cngx-paginator-panel-bg: #{$surface};
+    --cngx-paginator-panel-color: #{rgba($text, 0.87)};
+    --cngx-paginator-panel-border-color: #{rgba($divider, 0.42)};
+    --cngx-paginator-panel-radius: 4px;
+    --cngx-paginator-panel-shadow: 0 2px 6px rgb(0 0 0 / 0.2);
+    --cngx-paginator-option-hover-bg: #{rgba($text, 0.08)};
+    --cngx-paginator-option-selected-bg: #{rgba($primary, 0.12)};
+  }
+}
+
+@mixin density($theme) {
+  $scale: mat.get-theme-density($theme);
+  $scale: math.max(-4, math.min(0, $scale));
+
+  // Map Material's density scale onto the single hit-target token the whole
+  // paginator sizes off. Scale 0 lands on Material's 40px control height;
+  // -4 tightens toward the cngx compact preset. The gap follows so the row
+  // proportions hold across densities.
+  $sizes: (
+    0: 2.5rem,
+    -1: 2.25rem,
+    -2: 2rem,
+    -3: 1.875rem,
+    -4: 1.75rem,
+  );
+  $gaps: (
+    0: 0.25rem,
+    -1: 0.25rem,
+    -2: 0.2rem,
+    -3: 0.15rem,
+    -4: 0.125rem,
+  );
+
+  --cngx-paginator-button-size: #{map.get($sizes, $scale)};
+  --cngx-paginator-gap: #{map.get($gaps, $scale)};
+}
+
+@mixin theme($theme) {
+  @layer cngx.components {
+    :where(cngx-paginator) {
+      @include color($theme);
+      @include density($theme);
+    }
+  }
+}

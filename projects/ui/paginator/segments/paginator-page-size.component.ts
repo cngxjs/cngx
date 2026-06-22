@@ -22,6 +22,9 @@ import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
  * so the panel selection and the trigger label never drift (Pillar 1).
  *
  * @category ui/paginator
+ * <example-url>http://localhost:4200/#/ui/paginator/paginator-behaviors/url-synced-paging</example-url>
+ * <example-url>http://localhost:4200/#/ui/paginator/paginator-segments/page-size-and-range</example-url>
+ * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/bar</example-url>
  */
 @Component({
   selector: 'cngx-pgn-page-size',

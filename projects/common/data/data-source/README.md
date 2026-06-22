@@ -157,11 +157,13 @@ Use this to show skeleton rows during load, error overlay on failure, loading ba
   [empty]="dataSource.isEmpty()"
 />
 
-<cngx-mat-paginator
+<mat-paginator
   [pageSizeOptions]="[10, 25, 50]"
   [length]="dataSource.filteredCount()"
-  [cngxPaginateRef]="paginate"
-/>
+  [pageIndex]="paginate.pageIndex()"
+  [pageSize]="paginate.pageSize()"
+  (page)="paginate.setPageSize($event.pageSize, false); paginate.setPage($event.pageIndex)"
+></mat-paginator>
 ```
 
 ## Search - Special Handling

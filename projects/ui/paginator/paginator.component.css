@@ -4,8 +4,11 @@
  * and `bar` skins for `CngxPaginator`. Structural layout
  * lives in `paginator-base.css` (`@cngx/common/data`); this file only paints.
  * Every token is registered with `inherits: true` so a value set on the host
- * (skin block, density, consumer override) cascades to the descendant buttons -
- * `inherits: false` would strand the descendant on the initial value.
+ * (skin block, density, consumer override) cascades to the descendant buttons
+ * and the popover rows - `inherits: false` would strand the descendant on the
+ * initial value. The `Popover` group themes the panel shared by the
+ * items-per-page / page-of-pages listbox segments and the ellipsis overflow
+ * menu.
  *
  * Cross-skin layers (orthogonal to `[data-skin]`): hover / press scale + focus
  * halo + a busy-driven page-row fade (all reduced-motion-gated), a coarse-
@@ -309,6 +312,118 @@
     initial-value: oklch(0.66 0.19 50);
   }
 
+  /**
+   * Surface of the popover panel shared by the items-per-page / page-of-pages
+   * listbox segments and the ellipsis overflow menu.
+   * @group Popover
+   */
+  @property --cngx-paginator-panel-bg {
+    syntax: '*';
+    inherits: true;
+    initial-value: Canvas;
+  }
+
+  /**
+   * Text colour inside the popover panel.
+   * @group Popover
+   */
+  @property --cngx-paginator-panel-color {
+    syntax: '*';
+    inherits: true;
+    initial-value: currentColor;
+  }
+
+  /**
+   * Border colour of the popover panel.
+   * @group Popover
+   */
+  @property --cngx-paginator-panel-border-color {
+    syntax: '*';
+    inherits: true;
+    initial-value: color-mix(in oklch, currentColor 20%, transparent);
+  }
+
+  /**
+   * Corner radius of the popover panel.
+   * @group Popover
+   */
+  @property --cngx-paginator-panel-radius {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 0.5rem;
+  }
+
+  /**
+   * Inner padding of the popover panel.
+   * @group Popover
+   */
+  @property --cngx-paginator-panel-padding {
+    syntax: '*';
+    inherits: true;
+    initial-value: 0.25rem;
+  }
+
+  /**
+   * Drop shadow lifting the popover panel off the page.
+   * @group Popover
+   */
+  @property --cngx-paginator-panel-shadow {
+    syntax: '*';
+    inherits: true;
+    initial-value: 0 4px 12px rgb(0 0 0 / 0.15);
+  }
+
+  /**
+   * Minimum height of a popover row (page-size option / hidden-page item).
+   * @group Popover
+   */
+  @property --cngx-paginator-option-size {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 2rem;
+  }
+
+  /**
+   * Inner padding of a popover row.
+   * @group Popover
+   */
+  @property --cngx-paginator-option-padding {
+    syntax: '*';
+    inherits: true;
+    initial-value: 0 0.75rem;
+  }
+
+  /**
+   * Corner radius of a popover row.
+   * @group Popover
+   */
+  @property --cngx-paginator-option-radius {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 0.25rem;
+  }
+
+  /**
+   * Background of a hovered / keyboard-highlighted popover row. Shared by the
+   * listbox segments and the ellipsis overflow menu.
+   * @group Popover
+   */
+  @property --cngx-paginator-option-hover-bg {
+    syntax: '*';
+    inherits: true;
+    initial-value: color-mix(in oklch, currentColor 10%, transparent);
+  }
+
+  /**
+   * Background of the selected page-size row in the items-per-page panel.
+   * @group Popover
+   */
+  @property --cngx-paginator-option-selected-bg {
+    syntax: '*';
+    inherits: true;
+    initial-value: color-mix(in oklch, currentColor 14%, transparent);
+  }
+
   /*
    * Cross-skin default palette. The active fill and the focus ring delegate to
    * the foundation primary, which already carries its own light/dark values -
@@ -595,15 +710,23 @@
   }
 
   /*
-   * Container collapse: below a narrow inline size the first/last conveniences
-   * drop out (prev/next + the page row still reach every page). The `bar` skin
-   * is excluded - its `width: max-content` enclosure conflicts with inline-size
-   * containment, which would zero its content width. Data segments (range /
-   * page-size) get their own collapse alongside those segments.
+   * Container collapse: two graduated tiers shed the convenience segments as the
+   * paginator's own inline size narrows, never the segments that reach every
+   * page. The go-to-page input drops first (prev / next / the page row still
+   * navigate), then the first / last double-chevrons. Tiered so a moderately
+   * narrow toolbar keeps first/last while a phone-width one collapses to the
+   * essentials. The `bar` skin is excluded - its `width: max-content` enclosure
+   * conflicts with inline-size containment, which would zero its content width.
    */
   .cngx-paginator:not([data-skin='bar']) {
     container-type: inline-size;
     container-name: cngx-paginator;
+  }
+
+  @container cngx-paginator (max-width: 30rem) {
+    cngx-pgn-goto {
+      display: none;
+    }
   }
 
   @container cngx-paginator (max-width: 24rem) {

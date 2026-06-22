@@ -8,17 +8,25 @@ ready to drop into an application without additional template work.
 
 ### CngxMatPaginator
 
-Material paginator wrapper that connects to `CngxPaginate` (headless,
-`@cngx/common`) via `[cngxPaginateRef]`.
+`[cngxMatPaginator]` bridge that adopts an existing `<mat-paginator>` in place -
+the signal-native `CngxPaginate` brain (headless, `@cngx/common`) takes over its
+state with no DOM rewrite.
 
 ```html
-<div cngxPaginate #pg="cngxPaginate" [total]="items().length">
-  <!-- table / list -->
-</div>
-<cngx-mat-paginator [cngxPaginateRef]="pg" [pageSizeOptions]="[5, 10, 25]" />
+<mat-paginator
+  cngxMatPaginator
+  #pg="cngxMatPaginator"
+  [total]="items().length"
+  [pageSizeOptions]="[5, 10, 25]"
+></mat-paginator>
+<ul>
+  @for (item of items().slice(pg.paginate.range()[0], pg.paginate.range()[1]); track item.id) {
+    <li>{{ item.label }}</li>
+  }
+</ul>
 ```
 
-**Inputs:** `cngxPaginateRef` (required, CngxPaginate instance), `pageSizeOptions` (number[])
+**Inputs:** `total`, `cngxPageIndex`, `cngxPageSize`, `state` (forwarded to the composed brain), `pageSizeOptions` (number[])
 
 ### CngxSpeakButton
 

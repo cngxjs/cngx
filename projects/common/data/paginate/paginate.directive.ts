@@ -17,8 +17,10 @@ import type { CngxAsyncState } from '@cngx/core/utils';
  *   @for (item of items.slice(pg.range()[0], pg.range()[1]); track item.id) { ... }
  * </div>
  *
- * // With CngxMatPaginator:
- * <cngx-mat-paginator [cngxPaginateRef]="pg" />
+ * // Drive any UI off the brain - e.g. a Material paginator wired by hand:
+ * <mat-paginator
+ *   [length]="pg.total()" [pageIndex]="pg.pageIndex()" [pageSize]="pg.pageSize()"
+ *   (page)="pg.setPageSize($event.pageSize, false); pg.setPage($event.pageIndex)" />
  *
  * @category common/data/paginate
  * @docsKind primary
@@ -28,11 +30,10 @@ import type { CngxAsyncState } from '@cngx/core/utils';
  * @relatedTo CngxSort, CngxFilter, CngxSmartDataSource
  *
  * <example-url>http://localhost:4200/#/common/data/data-source/datasource-cngxpaginate-manual-pipeline</example-url>
- * <example-url>http://localhost:4200/#/common/data/data-source/signal-observable-bridge</example-url>
+ * <example-url>http://localhost:4200/#/common/data/paginate-list/bridge-announce-page-changes</example-url>
+ * <example-url>http://localhost:4200/#/common/data/paginate-list/instrumentation-bridge-cngxmatpaginator</example-url>
  * <example-url>http://localhost:4200/#/common/data/paginate-list/paginated-list-cngxpaginate-cngxmatpaginator</example-url>
  * <example-url>http://localhost:4200/#/common/data/paginate-list/uncontrolled-mode-zero-class-boilerplate</example-url>
- * <example-url>http://localhost:4200/#/common/data/smart-data-source/auto-wired</example-url>
- * <example-url>http://localhost:4200/#/common/data/smart-data-source/how-it-works-hostdirectives-inject</example-url>
  * <example-url>http://localhost:4200/#/common/data/smart-data-source/smartdatasource-cngxpaginate-hostdirective</example-url>
  */
 @Directive({

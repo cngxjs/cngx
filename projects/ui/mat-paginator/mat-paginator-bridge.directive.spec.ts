@@ -20,6 +20,8 @@ import { CngxMatPaginator } from './mat-paginator-bridge.directive';
       [cngxPageIndex]="controlledIndex()"
       [cngxPageSize]="controlledSize()"
       [pageSizeOptions]="options()"
+      [resetOn]="resetKey()"
+      [announce]="announce()"
     />
   `,
 })
@@ -29,6 +31,8 @@ class HostCmp {
   readonly controlledIndex = signal<number | undefined>(undefined);
   readonly controlledSize = signal<number | undefined>(undefined);
   readonly options = signal<number[]>([5, 10, 25]);
+  readonly resetKey = signal<string | undefined>(undefined);
+  readonly announce = signal(false);
 }
 
 interface Plumbing {
@@ -208,5 +212,40 @@ describe('CngxMatPaginator (bridge)', () => {
     host.state.set(busy);
     await settle(fixture);
     expect(hostEl?.getAttribute('aria-busy')).toBe('true');
+  });
+
+  test('(j) [resetOn] jumps to the first page when the key changes, not on mount', async () => {
+    TestBed.configureTestingModule({ providers });
+    const { fixture, paginate, host } = await setup();
+
+    paginate.setPage(3);
+    await settle(fixture);
+    expect(paginate.pageIndex()).toBe(3);
+
+    // Mount already ran the reset effect once with the initial key - the page
+    // must still be where navigation left it.
+    expect(paginate.pageIndex()).toBe(3);
+
+    host.resetKey.set('filtered');
+    await settle(fixture);
+    expect(paginate.pageIndex()).toBe(0);
+  });
+
+  test('(k) [announce] mounts a polite live region tracking the page + range', async () => {
+    TestBed.configureTestingModule({ providers });
+    const { fixture, paginate, host } = await setup();
+
+    host.announce.set(true);
+    await settle(fixture);
+
+    const live = fixture.nativeElement.querySelector('.cngx-mat-paginator-live') as HTMLElement | null;
+    expect(live).toBeTruthy();
+    expect(live?.textContent).toContain('Page 1 of 10');
+    expect(live?.textContent).toContain('items 1 to 10 of 100');
+
+    paginate.setPage(1);
+    await settle(fixture);
+    expect(live?.textContent).toContain('Page 2 of 10');
+    expect(live?.textContent).toContain('items 11 to 20 of 100');
   });
 });

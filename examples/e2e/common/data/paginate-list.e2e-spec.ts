@@ -2,8 +2,8 @@ import { expect, test } from '@playwright/test';
 import { gotoDemo } from '../../_helpers';
 
 // Story: CngxPaginate drives any list-like consumer via `pg.range()`.
-// The CngxMatPaginatorWrapper component and the [cngxMatPaginator] bridge
-// (CngxMatPaginator) provide the Material paginator UI.
+// The [cngxMatPaginator] bridge (CngxMatPaginator) provides the Material
+// paginator UI by adopting a <mat-paginator> in place.
 
 test.describe('common/data/paginate-list', () => {
   test('paginated-list: page size 5 means first page shows 5 items, status reads "1–5 of N"', async ({
