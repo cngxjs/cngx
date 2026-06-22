@@ -73,6 +73,7 @@ import { CNGX_PAGINATOR_PAGE_WINDOW_FACTORY } from './paginator-page-window.toke
           <button
             type="button"
             cngxRovingItem
+            #moreBtn
             class="cngx-paginator__button cngx-paginator__more"
             [cngxListboxTrigger]="moreList"
             [cngxPopoverTrigger]="morePopover"
@@ -83,7 +84,7 @@ import { CNGX_PAGINATOR_PAGE_WINDOW_FACTORY } from './paginator-page-window.toke
           >
             {{ glyphs.more }}
           </button>
-          <div cngxPopover #morePopover="cngxPopover">
+          <div cngxPopover #morePopover="cngxPopover" (toggle)="onOverflowToggle($event, moreBtn)">
             <ul
               cngxListbox
               #moreList="cngxListbox"
@@ -171,6 +172,18 @@ export class CngxPaginatorPages {
     popover.toggle();
     if (popover.isVisible()) {
       queueMicrotask(() => panel.focus());
+    }
+  }
+
+  /**
+   * Restore focus to the ellipsis trigger when the panel closes (Escape /
+   * outside click), so a keyboard user is not dropped to the page body. If a
+   * selection re-rendered the window away, the trigger is gone and the guard
+   * skips it.
+   */
+  protected onOverflowToggle(event: Event, trigger: HTMLElement): void {
+    if ((event as ToggleEvent).newState === 'closed' && trigger.isConnected) {
+      trigger.focus();
     }
   }
 
