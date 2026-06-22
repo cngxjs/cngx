@@ -73,9 +73,10 @@
     --cngx-paginator-option-hover-bg: color-mix(in srgb, var(--mat-sys-on-surface) 8%, transparent);
     --cngx-paginator-option-selected-bg: color-mix(
       in srgb,
-      var(--mat-sys-on-surface) 12%,
+      var(--mat-sys-primary) 14%,
       transparent
     );
+    --cngx-paginator-option-selected-color: var(--mat-sys-primary);
   } @else {
     $primary: mat.get-theme-color($theme, primary);
     $surface: mat.get-theme-color($theme, background, card);
@@ -102,7 +103,8 @@
     --cngx-paginator-panel-radius: 4px;
     --cngx-paginator-panel-shadow: 0 2px 6px rgb(0 0 0 / 0.2);
     --cngx-paginator-option-hover-bg: #{rgba($text, 0.08)};
-    --cngx-paginator-option-selected-bg: #{rgba($primary, 0.12)};
+    --cngx-paginator-option-selected-bg: #{rgba($primary, 0.14)};
+    --cngx-paginator-option-selected-color: #{$primary};
   }
 }
 

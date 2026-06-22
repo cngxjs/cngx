@@ -480,7 +480,17 @@
   @property --cngx-paginator-option-selected-bg {
     syntax: '*';
     inherits: true;
-    initial-value: color-mix(in oklch, currentColor 14%, transparent);
+    initial-value: color-mix(in oklch, var(--cngx-color-primary, oklch(0.66 0.19 50)) 14%, transparent);
+  }
+
+  /**
+   * Text colour of the selected page-size row (reads as accent against the tint).
+   * @group Popover
+   */
+  @property --cngx-paginator-option-selected-color {
+    syntax: '*';
+    inherits: true;
+    initial-value: var(--cngx-color-primary, oklch(0.66 0.19 50));
   }
 
   /**
@@ -716,7 +726,11 @@
       --cngx-paginator-current-bg: var(--cngx-color-primary, oklch(0.66 0.19 50));
       --cngx-paginator-current-color: var(--cngx-color-on-primary, oklch(1 0 0));
       --cngx-paginator-current-border-color: transparent;
-      --cngx-paginator-button-hover-bg: color-mix(in oklch, currentColor 8%, transparent);
+      --cngx-paginator-button-hover-bg: color-mix(
+        in oklch,
+        var(--cngx-color-primary, oklch(0.66 0.19 50)) 10%,
+        transparent
+      );
       width: max-content;
       max-width: 100%;
       border: 1px solid var(--cngx-paginator-bar-border-color, oklch(0.88 0.005 250));
@@ -743,15 +757,24 @@
       border-inline-start: 0;
     }
 
-    /* The control inside a cell fills it - drop its own inline padding so it does
-       not double up with the cell padding. */
+    /* The control inside a cell fills it - the cell owns the inline padding. */
     .cngx-paginator__segment > .cngx-paginator__button {
-      padding-inline: 0.25rem;
+      padding-inline: 0;
     }
 
-    /* The page row is its own button sub-grid: no outer cell padding, dividers
-       run between the page buttons instead. */
-    :scope > cngx-pgn-pages {
+    /* Nav cells are compact squares - the chevron centres on its hit target, so
+       they take no cell padding (it would only stretch them). The page row is
+       likewise its own button sub-grid with dividers between the page buttons.
+       `:is()` lifts the specificity above the `.cngx-paginator__segment` cell
+       rule so the override actually lands. */
+    :scope
+      > .cngx-paginator__segment:is(
+        cngx-pgn-first,
+        cngx-pgn-prev,
+        cngx-pgn-next,
+        cngx-pgn-last,
+        cngx-pgn-pages
+      ) {
       padding-inline: 0;
     }
 
@@ -803,11 +826,11 @@
     }
 
     .cngx-paginator__button:hover:not([aria-disabled='true']) {
-      transform: scale(var(--cngx-paginator-hover-scale, 1.05));
+      transform: scale(var(--cngx-paginator-hover-scale, 1));
     }
 
     .cngx-paginator__button:active:not([aria-disabled='true']) {
-      transform: scale(var(--cngx-paginator-press-scale, 1.1));
+      transform: scale(var(--cngx-paginator-press-scale, 1));
     }
 
     /* Soft halo behind the base outline ring - the ring carries the contrast,

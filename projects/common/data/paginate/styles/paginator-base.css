@@ -214,8 +214,9 @@
 
   .cngx-paginator__select-caret {
     display: inline-flex;
-    font-size: var(--cngx-paginator-caret-size, 0.75em);
+    font-size: var(--cngx-paginator-caret-size, 1em);
     line-height: 1;
+    opacity: var(--cngx-paginator-caret-opacity, 0.55);
   }
 
   /* The listbox panel inside the popover. */
@@ -314,8 +315,9 @@
   .cngx-paginator__option.cngx-option--selected {
     background: var(
       --cngx-paginator-option-selected-bg,
-      color-mix(in oklch, currentColor 14%, transparent)
+      color-mix(in oklch, var(--cngx-color-primary, oklch(0.66 0.19 50)) 14%, transparent)
     );
+    color: var(--cngx-paginator-option-selected-color, var(--cngx-color-primary, oklch(0.66 0.19 50)));
     font-weight: 600;
   }
 
