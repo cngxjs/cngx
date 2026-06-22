@@ -63,6 +63,24 @@
     align-items: center;
   }
 
+  /*
+   * Nav button text label - the button's accessible name, visually hidden by
+   * default so icon-only skins show just the chevron. Skins that want a labelled
+   * control (minimal) un-hide it via the rules in their own scope.
+   */
+  .cngx-paginator__nav-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
+
   /* Visually-hidden live region - always in the DOM, content reactive. */
   .cngx-paginator__sr {
     position: absolute;
