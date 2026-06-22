@@ -159,12 +159,9 @@ the responsive collapse are likewise device- and context-driven, not separate be
 
 ## Mobile and responsive
 
-- Keep the control stable across breakpoints; the active page must never get hidden by a
-  layout rearrangement.
-- Let a long page row truncate into the ellipsis menu rather than wrapping into an unreadable
-  grid of numbers.
-- On coarse pointers, prefer the compact skins and let the hit-targets grow; do not ship a
-  desktop-dense row to a phone.
+- Keep the control stable across breakpoints; the active page must never get hidden by a layout rearrangement.
+- Let a long page row truncate into the ellipsis menu rather than wrapping into an unreadable grid of numbers.
+- On coarse pointers, prefer the compact skins and let the hit-targets grow; do not ship a desktop-dense row to a phone.
 
 ## Quick checklist
 
@@ -175,5 +172,4 @@ the responsive collapse are likewise device- and context-driven, not separate be
 - Is the current page (and any boundary or busy state) communicated without relying on colour?
 - Does a long row truncate into a reachable ellipsis menu instead of overflowing?
 - Does resetting the page size return to the first page?
-- Is pagination really the right pattern here, or does the user actually want load-more,
-  infinite scroll (forward-only), or a stepper (an ordered task)?
+- Is pagination really the right pattern here, or does the user actually want load-more, infinite scroll (forward-only), or a stepper (an ordered task)?

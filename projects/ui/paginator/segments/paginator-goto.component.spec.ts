@@ -102,6 +102,15 @@ describe('CngxPaginatorGoto', () => {
     expect(input.value).toBe('3');
   });
 
+  test('live keystroke (input) navigates to the typed page through the brain', async () => {
+    const { fixture, paginate } = await setup();
+    const input = gotoInput(fixture);
+    input.value = '4';
+    input.dispatchEvent(new InputEvent('input'));
+    await settle(fixture);
+    expect(paginate.pageIndex()).toBe(3);
+  });
+
   test('does not navigate while the bound state is busy', async () => {
     const { fixture, host, paginate } = await setup();
     paginate.setPage(2);
@@ -115,6 +124,25 @@ describe('CngxPaginatorGoto', () => {
     const input = gotoInput(fixture);
     input.value = '7';
     input.dispatchEvent(new Event('blur'));
+    await settle(fixture);
+    expect(paginate.pageIndex()).toBe(2);
+  });
+
+  test('live keystroke navigation is also a no-op while the bound state is busy', async () => {
+    const { fixture, host, paginate } = await setup();
+    paginate.setPage(2);
+    await settle(fixture);
+
+    const busy = createManualState<unknown>();
+    busy.set('loading');
+    host.state.set(busy);
+    await settle(fixture);
+
+    // The (input) live-nav path delegates to the brain, which no-ops while busy
+    // (the same guarantee the blur path relies on).
+    const input = gotoInput(fixture);
+    input.value = '7';
+    input.dispatchEvent(new InputEvent('input'));
     await settle(fixture);
     expect(paginate.pageIndex()).toBe(2);
   });
