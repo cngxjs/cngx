@@ -55,6 +55,12 @@ export interface CngxPaginatorAriaLabels {
   readonly emptyBucket: (label: string) => string;
   /** Accessible name for the category/range chip strip (`role="group"`). */
   readonly bucketGroup: string;
+  /**
+   * Accessible name for the `rail` skin's progress rail. Becomes the composed
+   * `cngx-progress` `[label]`, so AT reads "Page position" with the progressbar
+   * value the atom exposes.
+   */
+  readonly railPosition: string;
 }
 
 /**
@@ -140,6 +146,7 @@ export const CNGX_PAGINATOR_DEFAULTS: CngxPaginatorConfig = {
     bucket: (label) => label,
     emptyBucket: (label) => `${label}, no items`,
     bucketGroup: 'Categories',
+    railPosition: 'Page position',
   },
   announcements: {
     pageChange: (page, totalPages) => `Page ${page} of ${totalPages}`,
