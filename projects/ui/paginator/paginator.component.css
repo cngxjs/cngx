@@ -268,23 +268,26 @@
   }
 
   /**
-   * Scale a button grows to on hover. Flattened to `1` under reduced motion.
+   * Scale a button grows to on hover. Defaults to `1` (no grow) - the resting
+   * hover is the background tint; opt into a grow by raising this. Flattened to
+   * `1` under reduced motion.
    * @group Motion
    */
   @property --cngx-paginator-hover-scale {
     syntax: '<number>';
     inherits: true;
-    initial-value: 1.05;
+    initial-value: 1;
   }
 
   /**
-   * Scale a button grows to while pressed. Flattened to `1` under reduced motion.
+   * Scale a button grows to while pressed. Defaults to `1` (no pop); opt in by
+   * raising this. Flattened to `1` under reduced motion.
    * @group Motion
    */
   @property --cngx-paginator-press-scale {
     syntax: '<number>';
     inherits: true;
-    initial-value: 1.1;
+    initial-value: 1;
   }
 
   /**
@@ -643,24 +646,30 @@
       text-underline-offset: 0.25em;
     }
 
+    .cngx-paginator__status {
+      min-inline-size: var(--cngx-paginator-status-min-size, 5.5rem);
+      text-align: center;
+    }
+
     /*
-     * Prev / status / next composition: the nav buttons become bordered,
-     * labelled controls - the chevron plus the revealed text label - flanking a
-     * centred "Page n of m" status. The next / last labels read after the
-     * chevron, so their flex order is reversed ("Next ›").
+     * Opt-in labelled nav (`[data-nav-labels]` on the host): the nav buttons
+     * become bordered, labelled controls - the chevron plus the revealed text
+     * label - flanking the status. The next / last labels read after the chevron,
+     * so their flex order is reversed ("Next ›"). Without the flag the minimal
+     * skin keeps its text-forward, icon-only nav.
      */
-    .cngx-paginator__nav {
+    :scope[data-nav-labels] .cngx-paginator__nav {
       gap: var(--cngx-paginator-minimal-nav-gap, 0.4rem);
       padding-inline: var(--cngx-paginator-minimal-nav-padding, 0.85rem);
       border-color: var(--cngx-color-border, oklch(0.88 0.005 250));
     }
 
-    cngx-pgn-next .cngx-paginator__nav,
-    cngx-pgn-last .cngx-paginator__nav {
+    :scope[data-nav-labels] cngx-pgn-next .cngx-paginator__nav,
+    :scope[data-nav-labels] cngx-pgn-last .cngx-paginator__nav {
       flex-direction: row-reverse;
     }
 
-    .cngx-paginator__nav .cngx-paginator__nav-label {
+    :scope[data-nav-labels] .cngx-paginator__nav .cngx-paginator__nav-label {
       position: static;
       width: auto;
       height: auto;
@@ -672,14 +681,9 @@
       font-weight: 500;
     }
 
-    .cngx-paginator__nav:hover:not([aria-disabled='true']) {
+    :scope[data-nav-labels] .cngx-paginator__nav:hover:not([aria-disabled='true']) {
       border-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
       color: var(--cngx-color-primary, oklch(0.66 0.19 50));
-    }
-
-    .cngx-paginator__status {
-      min-inline-size: var(--cngx-paginator-status-min-size, 5.5rem);
-      text-align: center;
     }
   }
 
@@ -721,16 +725,45 @@
       overflow-clip-margin: var(--cngx-paginator-bar-clip-margin, 0.5rem);
     }
 
+    /*
+     * Each projected segment is a divided cell: the control or readout sits in a
+     * padded box, divided from the previous cell by a hairline (the leading edge
+     * is dropped). This mirrors the prototype's `:scope > *` cell model, so the
+     * readout spans (range / status) get the same padding + divider as the
+     * button cells - not just the buttons.
+     */
+    :scope > .cngx-paginator__segment {
+      align-self: stretch;
+      align-items: center;
+      padding-inline: var(--cngx-paginator-bar-cell-padding, 0.85rem);
+      border-inline-start: 1px solid var(--cngx-paginator-bar-border-color, oklch(0.88 0.005 250));
+    }
+
+    :scope > .cngx-paginator__segment:first-child {
+      border-inline-start: 0;
+    }
+
+    /* The control inside a cell fills it - drop its own inline padding so it does
+       not double up with the cell padding. */
+    .cngx-paginator__segment > .cngx-paginator__button {
+      padding-inline: 0.25rem;
+    }
+
+    /* The page row is its own button sub-grid: no outer cell padding, dividers
+       run between the page buttons instead. */
+    :scope > cngx-pgn-pages {
+      padding-inline: 0;
+    }
+
     .cngx-paginator__pages {
       gap: 0;
     }
 
-    /* Hairline divider before every cell; the leading edges are dropped below. */
-    .cngx-paginator__button {
+    .cngx-paginator__pages .cngx-paginator__button {
       border-inline-start: 1px solid var(--cngx-paginator-bar-border-color, oklch(0.88 0.005 250));
+      padding-inline: var(--cngx-paginator-button-padding, 0 0.5rem);
     }
 
-    .cngx-paginator__segment:first-child .cngx-paginator__button,
     .cngx-paginator__pages .cngx-paginator__button:first-child {
       border-inline-start: 0;
     }

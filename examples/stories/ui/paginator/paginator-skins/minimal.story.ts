@@ -19,7 +19,7 @@ export const STORY: DemoSpec = {
     "provideCngxPaginatorConfigAt(withPaginatorAriaLabels({ previous: 'Prev', next: 'Next' }))",
   ],
   setup: `protected readonly pageIndex = signal(2);`,
-  template: `  <cngx-paginator skin="minimal" [total]="100" [(pageIndex)]="pageIndex">
+  template: `  <cngx-paginator skin="minimal" data-nav-labels [total]="100" [(pageIndex)]="pageIndex">
     <cngx-pgn-prev />
     <cngx-pgn-status />
     <cngx-pgn-next />
