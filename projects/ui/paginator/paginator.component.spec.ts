@@ -357,6 +357,14 @@ describe('CngxPaginator — host typography', () => {
       /\[data-density=['"]?comfortable['"]?\][^{]*\{[^}]*font-size:\s*var\(--cngx-paginator-font-size-comfortable,\s*0\.95rem\)/,
     );
   });
+
+  // Guards the default radius so a later token-default override does not silently
+  // regress it back below the prototype's 0.5rem.
+  test('registers the default button radius at the prototype 0.5rem', async () => {
+    await setup();
+    const css = paginatorCss();
+    expect(css).toMatch(/--cngx-paginator-button-radius\s*\{[^}]*initial-value:\s*0\.5rem/);
+  });
 });
 
 describe('CngxPaginator — loading slot', () => {
