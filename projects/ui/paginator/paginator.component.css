@@ -512,8 +512,6 @@
     --cngx-paginator-focus-halo: 0 0 0 4px
       color-mix(in oklch, var(--cngx-color-primary, oklch(0.66 0.19 50)) 18%, transparent);
     --cngx-paginator-dot-current-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
-    --cngx-paginator-rail-knob-bg: var(--cngx-color-surface, oklch(1 0 0));
-    --cngx-paginator-rail-knob-border-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
   }
 }
 
@@ -646,50 +644,17 @@
   }
 
   /*
-   * Rail skin: the page row rides a hairline rail; the current page marks its
-   * position with a primary bar on the same baseline - a progress-style
-   * read-out. Paginator-native (no tab equivalent). Squared cells so the bars
-   * read as one continuous track.
+   * Rail skin: the row composes `cngx-pgn-rail` (a `CngxProgress` track + fill
+   * with an overlaid position knob) flanked by prev / status / next - a real
+   * progress read-out, not an underline under a number row. The skin's only
+   * concern is the row gap; the track + fill paint through the composed
+   * `CngxProgress`, and the knob colours are leaf tokens the Material bridge
+   * maps directly (their literal `@property` defaults already read as
+   * surface / primary).
    */
   @scope (.cngx-paginator[data-skin='rail']) {
     :scope {
       --cngx-paginator-row-gap: 0.9rem;
-      --cngx-paginator-button-radius: 0;
-      --cngx-paginator-current-bg: transparent;
-      --cngx-paginator-current-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
-      --cngx-paginator-current-border-color: transparent;
-      --cngx-paginator-button-hover-bg: color-mix(in oklch, currentColor 6%, transparent);
-    }
-
-    .cngx-paginator__pages {
-      position: relative;
-    }
-
-    /* The full-width hairline rail under the row. */
-    .cngx-paginator__pages::after {
-      content: '';
-      position: absolute;
-      inset-inline: 0;
-      bottom: 0;
-      block-size: var(--cngx-paginator-rail-thickness, 2px);
-      background: var(--cngx-paginator-rail-color, oklch(0.88 0.005 250));
-      border-radius: var(--cngx-paginator-rail-thickness, 2px);
-    }
-
-    .cngx-paginator__page {
-      position: relative;
-    }
-
-    /* The active page's primary position marker, riding above the rail. */
-    .cngx-paginator__page[aria-current='page']::after {
-      content: '';
-      position: absolute;
-      inset-inline: 0;
-      bottom: 0;
-      block-size: var(--cngx-paginator-rail-thickness, 2px);
-      background: var(--cngx-color-primary, oklch(0.66 0.19 50));
-      border-radius: var(--cngx-paginator-rail-thickness, 2px);
-      z-index: 1;
     }
   }
 
