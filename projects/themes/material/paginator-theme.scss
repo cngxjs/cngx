@@ -55,6 +55,12 @@
     // tracks the routed primary through its own foundation reference.
     --cngx-paginator-dot-color: var(--mat-sys-outline-variant);
 
+    // Rail knob: a surface-filled dot with a primary ring. The track + fill are
+    // the composed CngxProgress, themed through the feedback bridge - only these
+    // two leaves are the paginator's to map.
+    --cngx-paginator-rail-knob-bg: var(--mat-sys-surface);
+    --cngx-paginator-rail-knob-border-color: var(--mat-sys-primary);
+
     // Items-per-page / page-of-pages / ellipsis-overflow popover, painted as a
     // mat-menu surface: a surface-container card on the level-2 elevation,
     // extra-small corner radius, on-surface text, with the row hover / selected
@@ -86,6 +92,9 @@
     --cngx-paginator-load-more-count-color: #{rgba($text, 0.6)};
     --cngx-paginator-infinite-color: #{rgba($text, 0.6)};
     --cngx-paginator-dot-color: #{rgba($text, 0.35)};
+
+    --cngx-paginator-rail-knob-bg: #{$surface};
+    --cngx-paginator-rail-knob-border-color: #{$primary};
 
     --cngx-paginator-panel-bg: #{$surface};
     --cngx-paginator-panel-color: #{rgba($text, 0.87)};
