@@ -338,6 +338,42 @@
   }
 
   /*
+   * Progress rail wrapper (cngx-pgn-rail) - a relatively-positioned flex shell
+   * that stretches a composed `cngx-progress` to full width (the track + fill +
+   * `role="progressbar"` come from that atom, not redrawn here) and overlays a
+   * position knob. The knob is the only genuinely new part: a decorative dot
+   * riding the fill edge, positioned by an inline `inset-inline-start.%` from the
+   * segment and reduced-motion-gated in the skin layer.
+   */
+  .cngx-paginator__rail {
+    position: relative;
+    display: flex;
+    align-items: center;
+    flex: 1 1 auto;
+    min-inline-size: var(--cngx-paginator-rail-min-size, 6rem);
+  }
+
+  .cngx-paginator__rail cngx-progress {
+    flex: 1 1 auto;
+    --cngx-progress-height: var(--cngx-paginator-rail-height, 0.375rem);
+  }
+
+  .cngx-paginator__rail-knob {
+    position: absolute;
+    inset-block-start: 50%;
+    inset-inline-start: 0;
+    inline-size: var(--cngx-paginator-rail-knob-size, 0.875rem);
+    block-size: var(--cngx-paginator-rail-knob-size, 0.875rem);
+    border-radius: 50%;
+    background: var(--cngx-paginator-rail-knob-bg, oklch(1 0 0));
+    border: var(--cngx-paginator-rail-knob-border-width, 2px) solid
+      var(--cngx-paginator-rail-knob-border-color, oklch(0.66 0.19 50));
+    transform: translate(-50%, -50%);
+    transition: inset-inline-start var(--cngx-paginator-motion-duration, 200ms)
+      cubic-bezier(0.3, 0.7, 0, 1);
+  }
+
+  /*
    * Infinite-scroll sentinel - a centred bottom-of-list affordance the
    * IntersectionObserver watches. The consumer owns the scroll viewport and any
    * page-boundary dividers; this is only the trigger row plus its busy / end text.

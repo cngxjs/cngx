@@ -216,6 +216,38 @@
   }
 
   /**
+   * Diameter of the `rail` skin's position knob (the dot riding the fill edge).
+   * @group Skin
+   */
+  @property --cngx-paginator-rail-knob-size {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 0.875rem;
+  }
+
+  /**
+   * Fill of the `rail` skin's position knob. Defaults to the foundation surface.
+   * @group Skin
+   * @see [[--cngx-color-surface]]
+   */
+  @property --cngx-paginator-rail-knob-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(1 0 0);
+  }
+
+  /**
+   * Ring colour of the `rail` skin's position knob. Defaults to the primary.
+   * @group Skin
+   * @see [[--cngx-color-primary]]
+   */
+  @property --cngx-paginator-rail-knob-border-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.66 0.19 50);
+  }
+
+  /**
    * Border + divider colour of the enclosed `bar` skin.
    * @group Skin
    */
@@ -480,6 +512,8 @@
     --cngx-paginator-focus-halo: 0 0 0 4px
       color-mix(in oklch, var(--cngx-color-primary, oklch(0.66 0.19 50)) 18%, transparent);
     --cngx-paginator-dot-current-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
+    --cngx-paginator-rail-knob-bg: var(--cngx-color-surface, oklch(1 0 0));
+    --cngx-paginator-rail-knob-border-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
   }
 }
 
@@ -768,7 +802,8 @@
 
       .cngx-paginator__button,
       .cngx-paginator__pages,
-      .cngx-paginator__page::after {
+      .cngx-paginator__page::after,
+      .cngx-paginator__rail-knob {
         transition: none;
       }
     }
