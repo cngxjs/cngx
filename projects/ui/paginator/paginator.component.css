@@ -733,6 +733,9 @@
       );
       width: max-content;
       max-width: 100%;
+      /* The cells fill this height (their controls have no intrinsic height in
+         the bar), so the enclosure must set the hit-target floor itself. */
+      min-block-size: var(--cngx-paginator-button-size, 2.25rem);
       border: 1px solid var(--cngx-paginator-bar-border-color, oklch(0.88 0.005 250));
       border-radius: var(--cngx-paginator-bar-radius, 0.375rem);
       overflow: clip;
@@ -740,16 +743,15 @@
     }
 
     /*
-     * Each projected segment is a divided cell: the control or readout sits in a
-     * padded box, divided from the previous cell by a hairline (the leading edge
-     * is dropped). This mirrors the prototype's `:scope > *` cell model, so the
-     * readout spans (range / status) get the same padding + divider as the
-     * button cells - not just the buttons.
+     * Each projected segment is a divided cell that stretches to the full bar
+     * height (the leading divider is dropped). Interactive controls FILL their
+     * cell and carry the inline padding, so a hover / active / current
+     * background reaches the dividers and the glyph / numeral centres edge to
+     * edge; static readouts are padded directly instead.
      */
     :scope > .cngx-paginator__segment {
       align-self: stretch;
-      align-items: center;
-      padding-inline: var(--cngx-paginator-bar-cell-padding, 0.85rem);
+      align-items: stretch;
       border-inline-start: 1px solid var(--cngx-paginator-bar-border-color, oklch(0.88 0.005 250));
     }
 
@@ -757,34 +759,52 @@
       border-inline-start: 0;
     }
 
-    /* The control inside a cell fills it - the cell owns the inline padding. */
+    /* Interactive controls fill the cell + own the padding (squared off). */
     .cngx-paginator__segment > .cngx-paginator__button {
+      align-self: stretch;
+      block-size: auto;
+      border-radius: 0;
+      padding-inline: var(--cngx-paginator-bar-cell-padding, 0.85rem);
+    }
+
+    /* Nav cells stay compact squares - the chevron centres with no extra
+       padding. `:is()` lifts specificity above the control rule above. */
+    .cngx-paginator__segment:is(cngx-pgn-first, cngx-pgn-prev, cngx-pgn-next, cngx-pgn-last)
+      > .cngx-paginator__button {
       padding-inline: 0;
     }
 
-    /* Nav cells are compact squares - the chevron centres on its hit target, so
-       they take no cell padding (it would only stretch them). The page row is
-       likewise its own button sub-grid with dividers between the page buttons.
-       `:is()` lifts the specificity above the `.cngx-paginator__segment` cell
-       rule so the override actually lands. */
-    :scope
-      > .cngx-paginator__segment:is(
-        cngx-pgn-first,
-        cngx-pgn-prev,
-        cngx-pgn-next,
-        cngx-pgn-last,
-        cngx-pgn-pages
-      ) {
-      padding-inline: 0;
+    /* Static readouts (no background): padded, vertically-centred cells. Kept as
+       inline text (not flex) so the whitespace inside the formatter output - e.g.
+       between the bold range and " of N" - is preserved. */
+    .cngx-paginator__range,
+    .cngx-paginator__status {
+      align-self: center;
+      padding-inline: var(--cngx-paginator-bar-cell-padding, 0.85rem);
     }
 
+    /* A bare label span used directly as a segment (e.g. "Items per page:"). */
+    :scope > span.cngx-paginator__segment {
+      align-items: center;
+      padding-inline: var(--cngx-paginator-bar-cell-padding, 0.85rem);
+    }
+
+    /* The page row is a button sub-grid: per-button dividers, each button fills
+       the bar height so the active fill centres edge to edge. */
     .cngx-paginator__pages {
       gap: 0;
+      align-self: stretch;
     }
 
     .cngx-paginator__pages .cngx-paginator__button {
+      align-self: stretch;
+      block-size: auto;
+      border-radius: 0;
       border-inline-start: 1px solid var(--cngx-paginator-bar-border-color, oklch(0.88 0.005 250));
-      padding-inline: var(--cngx-paginator-button-padding, 0 0.5rem);
+      /* Symmetric inline padding so the numeral / ellipsis centres - the
+         `--cngx-paginator-button-padding` token is a `padding` shorthand
+         (`0 0.5rem`), which would read asymmetric on `padding-inline`. */
+      padding-inline: var(--cngx-paginator-bar-page-padding, 0.5rem);
     }
 
     .cngx-paginator__pages .cngx-paginator__button:first-child {
