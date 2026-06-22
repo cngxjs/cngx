@@ -558,6 +558,7 @@
    */
   @scope (.cngx-paginator[data-skin='minimal']) {
     :scope {
+      --cngx-paginator-row-gap: 0.5rem;
       --cngx-paginator-gap: 0.125rem;
       --cngx-paginator-button-bg: transparent;
       --cngx-paginator-button-hover-bg: transparent;
@@ -582,6 +583,7 @@
    */
   @scope (.cngx-paginator[data-skin='rail']) {
     :scope {
+      --cngx-paginator-row-gap: 0.9rem;
       --cngx-paginator-button-radius: 0;
       --cngx-paginator-current-bg: transparent;
       --cngx-paginator-current-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
@@ -629,6 +631,7 @@
    */
   @scope (.cngx-paginator[data-skin='bar']) {
     :scope {
+      --cngx-paginator-row-gap: 0;
       --cngx-paginator-gap: 0;
       --cngx-paginator-button-radius: 0;
       --cngx-paginator-current-bg: var(--cngx-color-primary, oklch(0.66 0.19 50));
@@ -667,6 +670,7 @@
    */
   @scope (.cngx-paginator[data-skin='dots']) {
     :scope {
+      --cngx-paginator-row-gap: 0.9rem;
       --cngx-paginator-gap: 0.5rem;
       --cngx-paginator-dot-gap: 0.625rem;
       --cngx-paginator-dot-size: 0.5625rem;
