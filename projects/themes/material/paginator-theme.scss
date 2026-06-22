@@ -77,6 +77,16 @@
       transparent
     );
     --cngx-paginator-option-selected-color: var(--mat-sys-primary);
+
+    // Enclosed `bar` skin: the outer box + the hairline cell dividers read as
+    // the outline-variant role. Not derived in a `:scope`, so the leaf maps here.
+    --cngx-paginator-bar-border-color: var(--mat-sys-outline-variant);
+    // Default button corner (numbered / dots ride this; other skins override in
+    // their own `:scope`).
+    --cngx-paginator-button-radius: var(--mat-sys-corner-small, 0.5rem);
+    // Lift shadow under the `segmented` active page - the Material level-1 card
+    // elevation.
+    --cngx-paginator-active-shadow: var(--mat-sys-level1, 0 1px 2px rgb(0 0 0 / 0.12));
   } @else {
     $primary: mat.get-theme-color($theme, primary);
     $surface: mat.get-theme-color($theme, background, card);
@@ -105,7 +115,30 @@
     --cngx-paginator-option-hover-bg: #{rgba($text, 0.08)};
     --cngx-paginator-option-selected-bg: #{rgba($primary, 0.14)};
     --cngx-paginator-option-selected-color: #{$primary};
+
+    --cngx-paginator-bar-border-color: #{rgba($divider, 0.42)};
+    --cngx-paginator-button-radius: 4px;
+    --cngx-paginator-active-shadow: 0 1px 2px rgb(0 0 0 / 0.2);
   }
+}
+
+@mixin typography($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    // Read the Material body type so the paginator numerals sit on the same
+    // scale + family (Roboto) as a `<mat-paginator>`. Density still shifts the
+    // size through the cngx tiers; this only sets the base family + size.
+    --cngx-paginator-font-family: var(
+      --mat-sys-body-medium-font,
+      system-ui,
+      -apple-system,
+      'Segoe UI',
+      Roboto,
+      sans-serif
+    );
+    --cngx-paginator-font-size: var(--mat-sys-body-medium-size, 0.875rem);
+  }
+  // M2 exposes no first-class type-scale system vars worth bridging (same call
+  // the metric / card bridges make); the cngx system-font default stands.
 }
 
 @mixin density($theme) {
@@ -139,6 +172,7 @@
   @layer cngx.components {
     :where(cngx-paginator) {
       @include color($theme);
+      @include typography($theme);
       @include density($theme);
     }
   }
