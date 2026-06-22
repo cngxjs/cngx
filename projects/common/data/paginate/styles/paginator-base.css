@@ -449,14 +449,40 @@
     gap: var(--cngx-paginator-alpha-gap, 0.4rem);
   }
 
-  /* Active chip - reuses the current-page tokens so selection reads identically. */
-  .cngx-paginator__alpha-chip[aria-pressed='true'] {
-    background: var(
-      --cngx-paginator-current-bg,
-      color-mix(in oklch, currentColor 12%, transparent)
+  /*
+   * Resting chip chrome - a bordered surface pill so each bucket reads as a
+   * discrete toggle (without it the transparent button base collapses the
+   * labels into run-together text). The active (`aria-pressed`) chip reuses the
+   * current-page tokens below; the empty-bucket chip dims via the shared
+   * `:disabled` rule above.
+   */
+  .cngx-paginator__alpha-chip {
+    border-color: var(
+      --cngx-paginator-alpha-chip-border-color,
+      var(--cngx-color-border, oklch(0.88 0.005 250))
     );
-    color: var(--cngx-paginator-current-color, currentColor);
-    border-color: var(--cngx-paginator-current-border-color, transparent);
+    background: var(--cngx-paginator-alpha-chip-bg, var(--cngx-color-surface, oklch(1 0 0)));
+    font-weight: 500;
+  }
+
+  .cngx-paginator__alpha-chip:hover:not([aria-pressed='true']):not(:disabled) {
+    border-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
+    color: var(--cngx-color-primary, oklch(0.66 0.19 50));
+  }
+
+  /*
+   * Active chip - reuses the current-page tokens so selection reads identically
+   * inside the shell. Standalone (no shell, so the component.css `:root` token
+   * routing is absent), the fallbacks chain straight to the foundation primary,
+   * so the active bucket still reads as a filled primary chip.
+   */
+  .cngx-paginator__alpha-chip[aria-pressed='true'] {
+    background: var(--cngx-paginator-current-bg, var(--cngx-color-primary, oklch(0.66 0.19 50)));
+    color: var(--cngx-paginator-current-color, var(--cngx-color-on-primary, oklch(1 0 0)));
+    border-color: var(
+      --cngx-paginator-current-border-color,
+      var(--cngx-color-primary, oklch(0.66 0.19 50))
+    );
     font-weight: 600;
   }
 

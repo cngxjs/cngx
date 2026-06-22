@@ -64,6 +64,11 @@ import { injectPaginatorConfig } from '../paginator-config';
       }
     </div>
   `,
+  // The bucket strip is a standalone sibling of the page-index brain - it is
+  // used WITHOUT the `cngx-paginator` shell, so it must ship the structural base
+  // (chip chrome, roving button geometry) itself rather than relying on the
+  // shell to inline it.
+  styleUrls: ['../../../common/data/paginate/styles/paginator-base.css'],
   host: { class: 'cngx-paginator__segment' },
 })
 export class CngxPaginatorAlpha {
