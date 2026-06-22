@@ -10,6 +10,8 @@ export {
   type CngxFilterChipContext,
 } from './filter-chips/filter-chips.component';
 export { CngxPaginate } from './paginate/paginate.directive';
+export { CngxPaginateResetOn, connectPaginateResetOn } from './paginate/paginate-reset.directive';
+export { CngxPaginateRouting } from './paginate/paginate-routing.directive';
 export { CngxBucketPaginate, type CngxBucket } from './paginate/bucket-paginate.directive';
 export {
   CNGX_BUCKET_PAGINATE_HOST,
