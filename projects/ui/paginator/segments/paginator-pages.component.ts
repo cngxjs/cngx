@@ -66,11 +66,12 @@ import { CNGX_PAGINATOR_PAGE_WINDOW_FACTORY } from './paginator-page-window.toke
               cngxMenu
               #moreMenu="cngxMenu"
               tabindex="0"
+              class="cngx-paginator__select-panel"
               [label]="config.ariaLabels.morePages"
               (itemActivated)="onMenuActivate($event)"
             >
               @for (hidden of item.hidden; track hidden) {
-                <li cngxMenuItem [value]="hidden">{{ hidden + 1 }}</li>
+                <li cngxMenuItem class="cngx-paginator__option" [value]="hidden">{{ hidden + 1 }}</li>
               }
             </ul>
           </div>

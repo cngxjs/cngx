@@ -47,6 +47,7 @@
 @use './interactive-controls-theme' as controls;
 @use './metric-theme' as metric;
 @use './option-theme' as option;
+@use './paginator-theme' as paginator;
 @use './popover-panel-theme' as popover-panel;
 @use './ripple-theme' as ripple;
 @use './select-theme' as select;
@@ -87,6 +88,7 @@
   @include icon.theme($theme);
   @include metric.theme($theme);
   @include option.theme($theme);
+  @include paginator.theme($theme);
   @include popover-panel.theme($theme);
   @include ripple.theme($theme);
   @include select.theme($theme);

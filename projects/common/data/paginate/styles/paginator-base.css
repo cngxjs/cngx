@@ -201,7 +201,13 @@
     font-variant-numeric: tabular-nums;
   }
 
-  .cngx-paginator__option.cngx-option--highlighted {
+  /*
+   * Keyboard highlight - shared by the listbox segments (items-per-page /
+   * page-of-pages, `.cngx-option--highlighted`) and the ellipsis overflow menu
+   * (`.cngx-menu-item--highlighted`), so every popover row reads identically.
+   */
+  .cngx-paginator__option.cngx-option--highlighted,
+  .cngx-paginator__option.cngx-menu-item--highlighted {
     background: var(
       --cngx-paginator-option-hover-bg,
       color-mix(in oklch, currentColor 10%, transparent)
