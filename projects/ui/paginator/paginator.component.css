@@ -196,8 +196,13 @@
   }
 
   /**
-   * Colour of the hairline rail the page row rides under the `rail` skin.
+   * Colour of the hairline rail the page row rode under the old `rail` skin.
    * @group Skin
+   * @deprecated Superseded by the composed-progress rail. The `rail` skin now
+   * renders `cngx-pgn-rail` (a `CngxProgress` track + fill plus an overlaid
+   * knob), so this token has no reader; theme the track/fill through the
+   * `CngxProgress` bridge and the knob via `--cngx-paginator-rail-knob-*`. Kept
+   * registered for back-compat; slated for removal at the next breaking bump.
    */
   @property --cngx-paginator-rail-color {
     syntax: '<color>';
@@ -206,8 +211,12 @@
   }
 
   /**
-   * Thickness of the `rail` skin's rail and its active-page position marker.
+   * Thickness of the old `rail` skin's underline + position marker.
    * @group Skin
+   * @deprecated Superseded by the composed-progress rail (see
+   * [[--cngx-paginator-rail-color]]); the rail height is the `CngxProgress`
+   * track height (`--cngx-paginator-rail-height`). No reader; kept for
+   * back-compat, slated for removal at the next breaking bump.
    */
   @property --cngx-paginator-rail-thickness {
     syntax: '<length>';
