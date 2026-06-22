@@ -51,7 +51,7 @@ import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
     <div cngxPopover #pop="cngxPopover">
       <ul
         cngxListbox
-        class="cngx-paginator__select-panel"
+        class="cngx-paginator__overflow-panel"
         tabindex="0"
         [label]="config.ariaLabels.pageOfPages"
         [value]="host.pageIndex() + 1"
