@@ -448,6 +448,26 @@
     initial-value: color-mix(in oklch, currentColor 14%, transparent);
   }
 
+  /**
+   * Column count of the ellipsis overflow grid panel.
+   * @group Popover
+   */
+  @property --cngx-paginator-overflow-columns {
+    syntax: '<integer>';
+    inherits: true;
+    initial-value: 5;
+  }
+
+  /**
+   * Cell size (column width + row min-height) of the ellipsis overflow grid.
+   * @group Popover
+   */
+  @property --cngx-paginator-overflow-cell-size {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 2rem;
+  }
+
   /*
    * Cross-skin default palette. The active fill and the focus ring delegate to
    * the foundation primary, which already carries its own light/dark values -

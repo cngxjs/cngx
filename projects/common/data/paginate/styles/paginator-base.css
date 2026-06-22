@@ -214,6 +214,37 @@
   }
 
   /*
+   * Ellipsis overflow panel - shares the popover surface tokens with
+   * `__select-panel` (so one Material-bridge assignment themes both), but lays
+   * the hidden page numbers out as a compact grid instead of a tall column. The
+   * column count and cell size are tokens so a consumer can widen the grid.
+   */
+  .cngx-paginator__overflow-panel {
+    margin: 0;
+    padding: var(--cngx-paginator-panel-padding, 0.25rem);
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(
+      var(--cngx-paginator-overflow-columns, 5),
+      var(--cngx-paginator-overflow-cell-size, 2rem)
+    );
+    gap: var(--cngx-paginator-overflow-gap, 0.15rem);
+    border: var(--cngx-paginator-button-border-width, 1px) solid
+      var(--cngx-paginator-panel-border-color, color-mix(in oklch, currentColor 20%, transparent));
+    border-radius: var(--cngx-paginator-panel-radius, 0.5rem);
+    background: var(--cngx-paginator-panel-bg, Canvas);
+    color: var(--cngx-paginator-panel-color, currentColor);
+    box-shadow: var(--cngx-paginator-panel-shadow, 0 4px 12px rgb(0 0 0 / 0.15));
+  }
+
+  /* Overflow rows render as centred square grid cells, not full-width list rows. */
+  .cngx-paginator__overflow-panel .cngx-paginator__option {
+    justify-content: center;
+    min-block-size: var(--cngx-paginator-overflow-cell-size, 2rem);
+    padding: var(--cngx-paginator-overflow-cell-padding, 0);
+  }
+
+  /*
    * Keyboard highlight - shared by the listbox segments (items-per-page /
    * page-of-pages, `.cngx-option--highlighted`) and the ellipsis overflow menu
    * (`.cngx-menu-item--highlighted`), so every popover row reads identically.
