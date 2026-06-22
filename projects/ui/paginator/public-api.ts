@@ -24,6 +24,7 @@ export { CngxPaginatorGoto } from './segments/paginator-goto.component';
 export { CngxPaginatorPageSize } from './segments/paginator-page-size.component';
 export { CngxPaginatorPageOfPages } from './segments/paginator-page-of-pages.component';
 export { CngxPaginatorDots } from './segments/paginator-dots.component';
+export { CngxPaginatorStatus } from './segments/paginator-status.component';
 export { CngxPaginatorLoadMore } from './segments/paginator-load-more.component';
 export { CngxPaginatorInfinite } from './segments/paginator-infinite.component';
 export { CngxPaginatorAlpha } from './segments/paginator-alpha.component';
@@ -41,6 +42,7 @@ export {
   withPaginatorAriaLabels,
   withPaginatorAnnouncements,
   withPaginatorRangeFormat,
+  withPaginatorPageStatusFormat,
   withPaginatorTemplates,
   injectPaginatorConfig,
 } from './paginator-config';

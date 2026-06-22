@@ -140,6 +140,16 @@
   }
 
   /*
+   * Page-status readout (the responsive collapse target). Same muted, tabular,
+   * no-wrap treatment as the range readout so "Page n of m" reads as secondary.
+   */
+  .cngx-paginator__status {
+    font-variant-numeric: tabular-nums;
+    color: var(--cngx-paginator-range-color, currentColor);
+    white-space: nowrap;
+  }
+
+  /*
    * Load-more trigger - a label plus a shown/total count readout. Wider than a
    * nav cell, so the inline-flex grows past the button-size floor; the gap
    * separates the two spans.

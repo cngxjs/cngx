@@ -69,6 +69,12 @@ export interface CngxPaginatorFormats {
    * The `cngx-pgn-range` segment renders the returned string verbatim.
    */
   readonly range: (start: number, end: number, total: number) => string;
+  /**
+   * Page-status text, given the 1-based current page and total page count.
+   * The `cngx-pgn-status` segment renders the returned string verbatim (it is
+   * the visible twin of the `announcements.pageChange` live-region phrasing).
+   */
+  readonly pageStatus: (page: number, totalPages: number) => string;
 }
 
 /**
@@ -142,6 +148,7 @@ export const CNGX_PAGINATOR_DEFAULTS: CngxPaginatorConfig = {
   },
   formats: {
     range: (start, end, total) => `${start}-${end} of ${total}`,
+    pageStatus: (page, totalPages) => `Page ${page} of ${totalPages}`,
   },
 };
 
@@ -248,6 +255,25 @@ export function withPaginatorRangeFormat(
   range: CngxPaginatorFormats['range'],
 ): CngxPaginatorConfigFeature {
   return { kind: 'formats', payload: { range } };
+}
+
+/**
+ * Override the page-status format. The `cngx-pgn-status` segment renders the
+ * returned string verbatim, so this localises the "Page n of m" readout that
+ * the responsive collapse reveals.
+ *
+ * ```ts
+ * provideCngxPaginatorConfig(
+ *   withPaginatorPageStatusFormat((page, totalPages) => `Seite ${page} von ${totalPages}`),
+ * );
+ * ```
+ *
+ * @category ui/paginator
+ */
+export function withPaginatorPageStatusFormat(
+  pageStatus: CngxPaginatorFormats['pageStatus'],
+): CngxPaginatorConfigFeature {
+  return { kind: 'formats', payload: { pageStatus } };
 }
 
 /**
