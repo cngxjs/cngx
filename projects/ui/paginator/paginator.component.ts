@@ -14,7 +14,7 @@ import {
 } from '@angular/core';
 
 import { CngxLiveRegion } from '@cngx/common/a11y';
-import { CngxPaginate } from '@cngx/common/data';
+import { CngxPaginate, connectPaginateResetOn } from '@cngx/common/data';
 import { CngxProgress } from '@cngx/ui/feedback';
 
 import { CNGX_PAGINATOR_ANNOUNCER_FACTORY } from './paginator-announcer';
@@ -100,6 +100,16 @@ export class CngxPaginator {
   /** Density preset; reflected onto `[data-density]`. */
   readonly density = input<CngxPaginatorDensity>('default');
 
+  /**
+   * Reset key. When its value changes (after the initial render) the paginator
+   * jumps to the first page - bind the sort / filter / search value a result set
+   * depends on so a narrowed result never strands the user on a now-empty page.
+   * Bind a primitive or a `computed`; an inline array / object literal
+   * recomputes every change-detection pass and would reset on each. Shares the
+   * `connectPaginateResetOn` implementation with `[cngxPaginateResetOn]`.
+   */
+  readonly resetOn = input<unknown>(undefined);
+
   /** Emits the effective page index on every change - navigation or `total`-shrink clamp. */
   readonly pageIndexChange = output<number>();
   /** Emits the effective page size on every change. */
@@ -136,6 +146,10 @@ export class CngxPaginator {
   private lastEmittedSize = this.paginate.pageSize();
 
   constructor() {
+    // Reset-on-change, shared verbatim with the bridge input and the generic
+    // [cngxPaginateResetOn] directive.
+    connectPaginateResetOn(this.paginate, this.resetOn);
+
     // Nav path. Forward the brain's nav-only outputs: in controlled mode a
     // setPage leaves the effective pageIndex() pinned to the input, so this
     // event is the only thing that reports the navigation. Forwarded (not

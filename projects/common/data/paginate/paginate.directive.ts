@@ -17,8 +17,10 @@ import type { CngxAsyncState } from '@cngx/core/utils';
  *   @for (item of items.slice(pg.range()[0], pg.range()[1]); track item.id) { ... }
  * </div>
  *
- * // With CngxMatPaginator:
- * <cngx-mat-paginator [cngxPaginateRef]="pg" />
+ * // Drive any UI off the brain - e.g. a Material paginator wired by hand:
+ * <mat-paginator
+ *   [length]="pg.total()" [pageIndex]="pg.pageIndex()" [pageSize]="pg.pageSize()"
+ *   (page)="pg.setPageSize($event.pageSize, false); pg.setPage($event.pageIndex)" />
  *
  * @category common/data/paginate
  * @docsKind primary

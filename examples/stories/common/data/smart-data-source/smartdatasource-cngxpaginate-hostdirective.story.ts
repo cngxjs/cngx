@@ -39,8 +39,6 @@ class MyTableComponent &#123;
 
 // Parent template:
 // &lt;my-table [total]="myFilteredCount()"&gt;
-//   &lt;div cngxPaginate #pg="cngxPaginate"&gt;
-//     &lt;cngx-mat-paginator [cngxPaginateRef]="pg" /&gt;
-//   &lt;/div&gt;
+//   &lt;mat-paginator cngxMatPaginator [total]="myFilteredCount()"&gt;&lt;/mat-paginator&gt;
 // &lt;/my-table&gt;</code></pre>`,
 };

@@ -263,7 +263,10 @@ Both scrolling and clicking a page number work together. The data source is appe
     <div cngxPaginate #pg="cngxPaginate"
          [total]="recycler.ariaSetSize()"
          [cngxPageSize]="pageSize">
-      <cngx-mat-paginator [cngxPaginateRef]="pg" />
+      <mat-paginator
+        [length]="pg.total()" [pageIndex]="pg.pageIndex()" [pageSize]="pg.pageSize()"
+        (page)="pg.setPageSize($event.pageSize, false); pg.setPage($event.pageIndex)"
+      ></mat-paginator>
     </div>
 
     <p>{{ recycler.firstVisible() + 1 }}–{{ recycler.lastVisible() + 1 }} of {{ recycler.ariaSetSize() }}</p>

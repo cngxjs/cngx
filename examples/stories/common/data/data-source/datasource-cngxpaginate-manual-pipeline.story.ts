@@ -2,19 +2,20 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
   title: 'CngxPaginate + manual DataSource pipeline',
-  subtitle: 'Pagination slots naturally into the manual pipeline. Pass a <code>computed()</code> that includes the slice to <code>injectDataSource()</code>. <code>CngxPaginate</code> is placed in the template via a template ref (<code>#pg</code>). Controlled mode wires the component\'s <code>pageIndex</code> / <code>pageSize</code> signals to the directive; <code>(pageChange)</code> / <code>(pageSizeChange)</code> keep them in sync.',
+  subtitle: 'Pagination slots naturally into the manual pipeline. Pass a <code>computed()</code> that includes the slice to <code>injectDataSource()</code>. The <code>[cngxMatPaginator]</code> bridge runs in controlled mode: it wires the component\'s <code>pageIndex</code> / <code>pageSize</code> signals to the composed brain, and <code>(pageChange)</code> / <code>(pageSizeChange)</code> keep them in sync.',
   level: 'molecule',
   audience: ['dev'],
   artifact: 'building-block',
   focus: ['integration', 'async-state'],
   apiComponents: [
     'CngxPaginate',
-    'CngxMatPaginatorWrapper',
+    'CngxMatPaginator',
   ],
   moduleImports: [
+    'import { MatPaginatorModule } from \'@angular/material/paginator\';',
     'import { PEOPLE, type Person } from \'../../../../fixtures\';',
   ],
-  imports: ['CngxPaginate', 'CngxMatPaginatorWrapper'],
+  imports: ['CngxMatPaginator', 'MatPaginatorModule'],
   setup: `protected readonly pageIndex = signal(0);
   protected readonly pageSize  = signal(3);
   protected readonly paginated = computed((): Person[] =>
@@ -47,17 +48,18 @@ export const STORY: DemoSpec = {
     </table>
   </div>
 
-  <!-- CngxPaginate in controlled mode -->
-  <div cngxPaginate #pg="cngxPaginate"
+  <!-- CngxMatPaginator bridge in controlled mode -->
+  <mat-paginator
+    cngxMatPaginator
+    #pg="cngxMatPaginator"
     [cngxPageIndex]="pageIndex()"
     [cngxPageSize]="pageSize()"
     [total]="totalPeople"
+    [pageSizeOptions]="[3, 5, 8]"
     (pageChange)="setPage($event)"
     (pageSizeChange)="setPageSize($event)"
-    style="display:contents">
-  </div>
-  <cngx-mat-paginator [cngxPaginateRef]="pg" [pageSizeOptions]="[3, 5, 8]" />`,
+  ></mat-paginator>`,
   templateChrome: `<div class="status-row">
-    <span class="status-badge">page {{ pageIndex() + 1 }} of {{ pg.totalPages() }}</span>
+    <span class="status-badge">page {{ pageIndex() + 1 }} of {{ pg.paginate.totalPages() }}</span>
   </div>`,
 };
