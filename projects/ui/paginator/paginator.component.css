@@ -801,6 +801,28 @@
     }
   }
 
+  /*
+   * Responsive collapse: a [data-responsive] paginator swaps its number row for
+   * the "Page n of m" status readout once its own container narrows past the
+   * breakpoint - the same control, density-shifting to the device. The status
+   * segment is hidden by default (so composing it without [responsive] still
+   * renders it) and revealed at the breakpoint; the number row does the reverse.
+   * Scoped to [data-responsive] so a non-responsive paginator is untouched. The
+   * breakpoint stays a literal - @container conditions cannot resolve var().
+   */
+  .cngx-paginator[data-responsive] cngx-pgn-status {
+    display: none;
+  }
+
+  @container cngx-paginator (max-width: 24rem) {
+    .cngx-paginator[data-responsive] cngx-pgn-pages {
+      display: none;
+    }
+    .cngx-paginator[data-responsive] cngx-pgn-status {
+      display: inline-flex;
+    }
+  }
+
   /* Coarse pointer (touch): bump the hit target into the comfortable range. */
   @media (pointer: coarse) {
     .cngx-paginator {

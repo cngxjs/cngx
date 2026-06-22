@@ -46,6 +46,7 @@ class ProbeHost {
       [aria-label]="ariaLabel()"
       [skin]="skin()"
       [density]="density()"
+      [responsive]="responsive()"
     >
       <span probeHost></span>
     </cngx-paginator>
@@ -59,6 +60,7 @@ class HostCmp {
   readonly ariaLabel = signal<string | undefined>(undefined);
   readonly skin = signal<CngxPaginatorSkin>('numbered');
   readonly density = signal<CngxPaginatorDensity>('default');
+  readonly responsive = signal(false);
 
   readonly indexEmits: number[] = [];
   readonly sizeEmits: number[] = [];
@@ -133,6 +135,19 @@ describe('CngxPaginator', () => {
       await settle(fixture);
       expect(paginatorEl.getAttribute('data-skin')).toBe(skin);
     }
+  });
+
+  test('[responsive] reflects onto [data-responsive]', async () => {
+    const { fixture, host, paginatorEl } = await setup();
+    expect(paginatorEl.getAttribute('data-responsive')).toBeNull();
+
+    host.responsive.set(true);
+    await settle(fixture);
+    expect(paginatorEl.getAttribute('data-responsive')).toBe('');
+
+    host.responsive.set(false);
+    await settle(fixture);
+    expect(paginatorEl.getAttribute('data-responsive')).toBeNull();
   });
 
   test('aria-label input overrides the config default', async () => {
