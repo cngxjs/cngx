@@ -255,6 +255,32 @@
   }
 
   /*
+   * The grid panel is the roving focus host (tabindex=0); the visible focus
+   * indicator is the highlighted cell (`.cngx-menu-item--highlighted`), so the
+   * container's own UA outline is suppressed - otherwise it frames the whole
+   * popover.
+   */
+  .cngx-paginator__overflow-panel:focus,
+  .cngx-paginator__overflow-panel:focus-visible {
+    outline: none;
+  }
+
+  /*
+   * The bare `[cngxPopover]` wrapper hosting a paginator panel inherits the
+   * native `[popover]` UA chrome (a medium black border + padding + opaque
+   * background). The projected panel (`__select-panel` / `__overflow-panel`)
+   * carries its own surface, so neutralise the wrapper - otherwise the UA border
+   * frames the whole popover.
+   */
+  [popover]:has(> .cngx-paginator__select-panel),
+  [popover]:has(> .cngx-paginator__overflow-panel) {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+  }
+
+  /*
    * Keyboard highlight - shared by the listbox segments (items-per-page /
    * page-of-pages, `.cngx-option--highlighted`) and the ellipsis overflow menu
    * (`.cngx-menu-item--highlighted`), so every popover row reads identically.
