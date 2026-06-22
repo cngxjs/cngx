@@ -1,12 +1,8 @@
 # @cngx/ui/mat-paginator
 
-Material paginator instrumentation. Two shapes ship side by side, both backed by
-the signal-native `CngxPaginate` brain:
-
-- `CngxMatPaginator` - the `[cngxMatPaginator]` bridge for **in-place adoption** of
-  a `<mat-paginator>` you already own.
-- `CngxMatPaginatorWrapper` - the deprecated `<cngx-mat-paginator>` component that
-  renders **fresh markup** bound to an external `CngxPaginate` ref.
+Material paginator instrumentation, backed by the signal-native `CngxPaginate`
+brain: `CngxMatPaginator` - the `[cngxMatPaginator]` bridge for **in-place
+adoption** of a `<mat-paginator>` you already own.
 
 ## Bridge: in-place adoption (`CngxMatPaginator`)
 
@@ -50,30 +46,83 @@ export class ExampleComponent {
 - `[total]`, `[cngxPageIndex]`, `[cngxPageSize]`, and `[state]` are forwarded to the
   composed brain.
 
-## Wrapper: fresh markup (`CngxMatPaginatorWrapper`, deprecated)
+For fresh markup over a brain you place yourself, use `<cngx-paginator>` from
+`@cngx/ui/paginator` (skinnable, segment-composed) or place `CngxPaginate`
+directly and render your own controls.
 
-Prefer the bridge. The wrapper renders its own `<mat-paginator>` and connects to a
-`CngxPaginate` directive via an explicit `[cngxPaginateRef]` input - no ancestor
-injection. It is kept for existing fresh-markup consumers and is scheduled for
-removal.
+## Beyond a plain `<mat-paginator>`
+
+The bridge adds three behaviours Material's paginator has no answer for.
+
+### `[resetOn]` - reset to the first page on upstream change
+
+Bind the sort / filter / search value the result set depends on. When it changes
+(after the initial render) the paginator jumps to page 0, so a narrowed result
+never strands the user on a now-empty page. The mounting value is captured
+without resetting, and an already-first paginator stays put.
+
+```html
+<mat-paginator cngxMatPaginator [total]="filtered().length" [resetOn]="search()"></mat-paginator>
+```
+
+Bind a primitive or a `computed`. An inline array / object literal recomputes
+every change-detection pass and would reset on each.
+
+### `[announce]` - speak page changes to assistive tech
+
+`<mat-paginator>` only relabels its own range text, which a screen reader does not
+announce. With `[announce]` the bridge mounts a visually-hidden `aria-live`
+region and speaks the new page plus visible range after every change. Localise
+the wording via `[announceLabel]`.
+
+```html
+<mat-paginator cngxMatPaginator [total]="items().length" announce></mat-paginator>
+```
 
 ```typescript
-import { CngxMatPaginatorWrapper } from '@cngx/ui/mat-paginator';
+import type { CngxMatPaginatorAnnounceContext } from '@cngx/ui/mat-paginator';
 
-// <div cngxPaginate #pg="cngxPaginate" [total]="items.length"> ... </div>
-// <cngx-mat-paginator [cngxPaginateRef]="pg" />
+protected readonly label = (c: CngxMatPaginatorAnnounceContext) =>
+  `Seite ${c.page} von ${c.totalPages}, Einträge ${c.start} bis ${c.end} von ${c.total}`;
 ```
+
+```html
+<mat-paginator cngxMatPaginator [total]="items().length" announce [announceLabel]="label"></mat-paginator>
+```
+
+### `[cngxPaginateRouting]` - deep-linkable, back-button-safe URLs
+
+The generic routing directive from `@cngx/common/data` persists the page / size
+in the URL query string, so a paginated view survives reload, back, and forward.
+Drop it on the same `<mat-paginator>`; it reads the brain off the shared element
+injector. Re-exported from this entry for discoverability.
+
+```html
+<mat-paginator cngxMatPaginator cngxPaginateRouting [total]="items().length"></mat-paginator>
+```
+
+The page is written 1-based (`?page=2`); the brain stays 0-based. Two paginators
+on one route need distinct names via `[cngxPaginatePageParam]` /
+`[cngxPaginateSizeParam]`. Requires `@angular/router` (`provideRouter`); without
+it the directive is an inert no-op.
+
+`[resetOn]` and `[cngxPaginateRouting]` are not Material-specific - they work on
+the `<cngx-paginator>` shell and a bare `cngxPaginate` host too. See
+`@cngx/common/data` for the brain-level `CngxPaginateResetOn` /
+`CngxPaginateRouting` directives.
 
 ## Accessibility
 
-Both shapes delegate accessibility to Material's `mat-paginator`: labelled
+The bridge delegates accessibility to Material's `mat-paginator`: labelled
 navigation and page-size controls, keyboard navigation, and a disabled state that
-is announced when `isBusy()` is true. The bridge writes `disabled` reactively, so
-the rendered controls reflect busy state on every change.
+is announced when `isBusy()` is true. `disabled` is written reactively, so the
+rendered controls reflect busy state on every change. `aria-busy` on the host
+communicates the updating state. Opt into `[announce]` for spoken page-change
+feedback (see above) - the one thing Material's paginator does not provide.
 
 ## Material theming
 
-Both shapes use the standard Material `mat-paginator`, which inherits theming from
+The bridge uses the standard Material `mat-paginator`, which inherits theming from
 your Material theme automatically. No additional configuration is needed - include
 the Material theme in your global stylesheet.
 

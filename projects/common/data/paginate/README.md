@@ -107,6 +107,42 @@ readonly dataSource = injectSmartDataSource(this.items);
 // paginate.range() automatically applied
 ```
 
+## Reset on upstream change
+
+`CngxPaginateResetOn` (`[cngxPaginateResetOn]`) jumps the host to the first page
+whenever a bound key changes - bind the sort / filter / search value the result
+set depends on, so a narrowed result never strands the user on a now-empty page.
+The mounting value is captured without resetting; an already-first paginator
+stays put.
+
+```html
+<table cngxPaginate [cngxPaginateResetOn]="filter()"><!-- ... --></table>
+```
+
+Bind a primitive or a `computed`. An inline array / object literal recomputes
+every change-detection pass and would reset on each. For an organism that drives
+the reset from its own input rather than the template, call
+`connectPaginateResetOn(paginate, keyFn)` in an injection context - the shared
+implementation behind this directive, the `CngxPaginator` shell's `resetOn`
+input, and the `CngxMatPaginator` bridge's `resetOn` input.
+
+## Deep-linkable pagination (URL sync)
+
+`CngxPaginateRouting` (`[cngxPaginateRouting]`) persists the page / size in the
+URL query string, so a paginated view survives reload, back, and forward - which
+a bare paginator cannot. It needs only the brain and `@angular/router`, so it
+works on a `cngxPaginate` host, the `<cngx-paginator>` shell, or a
+`[cngxMatPaginator]`-bridged `<mat-paginator>`.
+
+```html
+<cngx-paginator cngxPaginateRouting [total]="items().length"></cngx-paginator>
+```
+
+The page is written 1-based (`?page=2`); the brain stays 0-based. Two paginators
+on one route need distinct names via `[cngxPaginatePageParam]` /
+`[cngxPaginateSizeParam]`. Without `provideRouter(...)` the directive is an inert
+no-op (a dev-mode warning is logged).
+
 ## With Async State
 
 Bind async state to disable page navigation while loading:
@@ -123,7 +159,11 @@ readonly paginate = inject(CngxPaginate);
   <table [dataSource]="dataSource"><!-- table --></table>
 </div>
 
-<cngx-mat-paginator [cngxPaginateRef]="paginate" />
+<mat-paginator
+  [length]="paginate.total()" [pageIndex]="paginate.pageIndex()" [pageSize]="paginate.pageSize()"
+  [disabled]="paginate.isBusy()"
+  (page)="paginate.setPageSize($event.pageSize, false); paginate.setPage($event.pageIndex)"
+></mat-paginator>
 // Buttons disabled while residents.isBusy() = true
 ```
 
@@ -216,7 +256,7 @@ export class ResidentsTableComponent {
 
 ## Accessibility
 
-`CngxPaginate` does not manage ARIA attributes directly. The paginator component (e.g. `<cngx-mat-paginator>`) or consuming code handles:
+`CngxPaginate` does not manage ARIA attributes directly. The paginator UI (e.g. `<cngx-paginator>`, a `[cngxMatPaginator]`-bridged `<mat-paginator>`) or consuming code handles:
 
 - `aria-label` on navigation buttons
 - `aria-current="page"` on current page indicator

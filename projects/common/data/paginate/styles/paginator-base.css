@@ -1,7 +1,7 @@
 /**
  * @overview
  * Structural CSS shared by every paginator skin. \
- * Layout-only - no colours, sizes, or borders beyond what is controlled via
+ * Layout-only - no colors, sizes, or borders beyond what is controlled via
  * `--cngx-paginator-*` custom properties. \
  * `CngxPaginator` (in `@cngx/ui/paginator`) references this file via
  * `styleUrls`; ng-packagr inlines it at publish time, so consumers of
@@ -114,7 +114,10 @@
   }
 
   .cngx-paginator__page[aria-current='page'] {
-    background: var(--cngx-paginator-current-bg, color-mix(in oklch, currentColor 12%, transparent));
+    background: var(
+      --cngx-paginator-current-bg,
+      color-mix(in oklch, currentColor 12%, transparent)
+    );
     color: var(--cngx-paginator-current-color, currentColor);
     border-color: var(--cngx-paginator-current-border-color, transparent);
     font-weight: 600;
@@ -215,7 +218,10 @@
   }
 
   .cngx-paginator__option.cngx-option--selected {
-    background: var(--cngx-paginator-option-selected-bg, color-mix(in oklch, currentColor 14%, transparent));
+    background: var(
+      --cngx-paginator-option-selected-bg,
+      color-mix(in oklch, currentColor 14%, transparent)
+    );
     font-weight: 600;
   }
 
@@ -290,10 +296,7 @@
     justify-content: center;
     gap: var(--cngx-paginator-infinite-gap, 0.5rem);
     padding: var(--cngx-paginator-infinite-padding, 0.9rem);
-    color: var(
-      --cngx-paginator-infinite-color,
-      color-mix(in oklch, currentColor 60%, transparent)
-    );
+    color: var(--cngx-paginator-infinite-color, color-mix(in oklch, currentColor 60%, transparent));
   }
 
   .cngx-paginator__infinite-status,
@@ -334,7 +337,10 @@
 
   /* Active chip - reuses the current-page tokens so selection reads identically. */
   .cngx-paginator__alpha-chip[aria-pressed='true'] {
-    background: var(--cngx-paginator-current-bg, color-mix(in oklch, currentColor 12%, transparent));
+    background: var(
+      --cngx-paginator-current-bg,
+      color-mix(in oklch, currentColor 12%, transparent)
+    );
     color: var(--cngx-paginator-current-color, currentColor);
     border-color: var(--cngx-paginator-current-border-color, transparent);
     font-weight: 600;

@@ -23,9 +23,9 @@ in `@cngx/ui/mat-paginator` instead. The `CngxPaginate` brain is shared.
 ## Usage
 
 The shell exposes only `total`, `[(pageIndex)]`, `[(pageSize)]`, `[state]`,
-`skin`, and `density`. Everything else is a projected segment in DOM order. The
-brain owns no data: bind `[total]`, read the active page back through the two-way
-bindings, and slice your own array.
+`skin`, `density`, and `resetOn`. Everything else is a projected segment in DOM
+order. The brain owns no data: bind `[total]`, read the active page back through
+the two-way bindings, and slice your own array.
 
 ```html
 <cngx-paginator skin="numbered" [total]="items().length" [(pageIndex)]="pageIndex">
@@ -67,6 +67,25 @@ context needs.
 `[skin]` -> `[data-skin]`. Skin is paint-only: DOM, ARIA, and keyboard behaviour
 are identical across all seven. `density` (`compact` / `default` / `comfortable`)
 is orthogonal.
+
+## Reset and deep-linking
+
+`[resetOn]` jumps to the first page whenever its bound value changes - bind the
+sort / filter / search value the result set depends on so a narrowed result never
+strands the user on a now-empty page. Mounting does not reset; bind a primitive
+or a `computed`, never an inline literal.
+
+```html
+<cngx-paginator [total]="filtered().length" [resetOn]="search()">…</cngx-paginator>
+```
+
+For deep-linkable, back-button-safe URLs add the brain-level
+`[cngxPaginateRouting]` directive (from `@cngx/common/data`) on the same host - it
+persists the page / size in the query string and needs `@angular/router`.
+
+```html
+<cngx-paginator cngxPaginateRouting [total]="items().length">…</cngx-paginator>
+```
 
 ## Async
 
