@@ -11,7 +11,7 @@ import type { CngxAsyncState } from '@cngx/core/utils';
  *
  * Consumer connects this to a list or table via `range()` - nothing is injected
  * automatically.
- *
+ * ```
  * // Headless: read range() from a template ref
  * <div cngxPaginate #pg="cngxPaginate" [total]="items.length">
  *   @for (item of items.slice(pg.range()[0], pg.range()[1]); track item.id) { ... }
@@ -21,7 +21,7 @@ import type { CngxAsyncState } from '@cngx/core/utils';
  * <mat-paginator
  *   [length]="pg.total()" [pageIndex]="pg.pageIndex()" [pageSize]="pg.pageSize()"
  *   (page)="pg.setPageSize($event.pageSize, false); pg.setPage($event.pageIndex)" />
- *
+ * ```
  * @category common/data/paginate
  * @docsKind primary
  * @wcag AA
@@ -30,8 +30,6 @@ import type { CngxAsyncState } from '@cngx/core/utils';
  * @relatedTo CngxSort, CngxFilter, CngxSmartDataSource
  *
  * <example-url>http://localhost:4200/#/common/data/data-source/datasource-cngxpaginate-manual-pipeline</example-url>
- * <example-url>http://localhost:4200/#/common/data/paginate-list/bridge-announce-page-changes</example-url>
- * <example-url>http://localhost:4200/#/common/data/paginate-list/instrumentation-bridge-cngxmatpaginator</example-url>
  * <example-url>http://localhost:4200/#/common/data/paginate-list/paginated-list-cngxpaginate-cngxmatpaginator</example-url>
  * <example-url>http://localhost:4200/#/common/data/paginate-list/uncontrolled-mode-zero-class-boilerplate</example-url>
  * <example-url>http://localhost:4200/#/common/data/smart-data-source/smartdatasource-cngxpaginate-hostdirective</example-url>
