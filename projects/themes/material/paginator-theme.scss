@@ -67,9 +67,18 @@
     // state layers on the on-surface role.
     --cngx-paginator-panel-bg: var(--mat-sys-surface-container);
     --cngx-paginator-panel-color: var(--mat-sys-on-surface);
-    --cngx-paginator-panel-border-color: var(--mat-sys-outline-variant);
+    // mat-menu / mat-select overlays are elevation-only - no outline. A visible
+    // border reads as a flat bordered box rather than a lifted surface, so null
+    // it and let the shadow carry the separation.
+    --cngx-paginator-panel-border-color: transparent;
     --cngx-paginator-panel-radius: var(--mat-sys-corner-extra-small, 4px);
-    --cngx-paginator-panel-shadow: var(--mat-sys-level2, 0 2px 6px rgb(0 0 0 / 0.2));
+    // The canonical MDC elevation-2 shadow that `.mat-mdc-menu-panel` and
+    // `.mat-mdc-select-panel` both paint (measured, identical). The `--mat-sys-level*`
+    // tokens don't carry this exact value - level1 is too flat, level2 too heavy -
+    // so match the overlay literally so the popover sits at the same depth as a
+    // real mat-paginator items-per-page panel.
+    --cngx-paginator-panel-shadow: 0 3px 1px -2px rgb(0 0 0 / 0.2), 0 2px 2px 0 rgb(0 0 0 / 0.14),
+      0 1px 5px 0 rgb(0 0 0 / 0.12);
     --cngx-paginator-option-hover-bg: color-mix(in srgb, var(--mat-sys-on-surface) 8%, transparent);
     --cngx-paginator-option-selected-bg: color-mix(
       in srgb,
