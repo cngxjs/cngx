@@ -71,6 +71,9 @@ export type CngxPaginatorDensity = 'compact' | 'default' | 'comfortable';
  * @playground Data-table footer (Material) ./examples/data-table/data-table.component.ts
  * @playground Live filter with reset-to-first-page ./examples/filter-reset/filter-reset.component.ts
  * @playground Card grid with go-to and responsive collapse ./examples/card-grid/card-grid.component.ts
+ * @playground Alphabetical bucket paging ./examples/alpha-mode/alpha-mode.component.ts
+ * @playground Load-more (append) paging ./examples/load-more-mode/load-more-mode.component.ts
+ * @playground Infinite scroll paging ./examples/infinite-mode/infinite-mode.component.ts
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-behaviors/reset-on-filter</example-url>
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-behaviors/url-synced-paging</example-url>
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-contexts/card-grid</example-url>
