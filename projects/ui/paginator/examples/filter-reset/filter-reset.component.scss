@@ -1,0 +1,66 @@
+:root {
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  color: #1f2933;
+}
+
+.panel {
+  max-width: 600px;
+  margin: 32px auto;
+  display: grid;
+  gap: 16px;
+}
+
+.field {
+  display: grid;
+  gap: 4px;
+}
+
+.field__label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #52606d;
+}
+
+.field__input {
+  padding: 8px 12px;
+  font: inherit;
+  border: 1px solid #cbd2d9;
+  border-radius: 8px;
+}
+
+.field__input:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 1px;
+  border-color: #3b82f6;
+}
+
+.status {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #52606d;
+}
+
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.list__item {
+  padding: 8px 12px;
+  background: #f5f7fa;
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+
+.empty {
+  margin: 0;
+  padding: 16px;
+  text-align: center;
+  color: #7b8794;
+  background: #f5f7fa;
+  border-radius: 8px;
+}

@@ -1,0 +1,69 @@
+@use '@angular/material' as mat;
+@use '@cngx/themes/material/paginator-theme.scss' as paginator;
+
+$palette: (
+  theme-type: light,
+  primary: mat.$azure-palette,
+  tertiary: mat.$blue-palette,
+);
+$theme: mat.define-theme((color: $palette, density: (scale: 0)));
+
+html {
+  color-scheme: light;
+  @include mat.theme((color: $palette, typography: Roboto, density: 0));
+  @include paginator.theme($theme);
+
+  background: var(--mat-sys-surface);
+  color: var(--mat-sys-on-surface);
+  font: var(--mat-sys-body-medium);
+}
+
+.table-card {
+  max-width: 640px;
+  margin: 24px auto;
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: var(--mat-sys-corner-medium, 12px);
+  overflow: hidden;
+  background: var(--mat-sys-surface);
+}
+
+.grid {
+  width: 100%;
+  border-collapse: collapse;
+  font: var(--mat-sys-body-medium);
+}
+
+.grid th,
+.grid td {
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
+}
+
+.grid th {
+  font: var(--mat-sys-title-small);
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.grid .num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.grid tbody tr:hover {
+  background: color-mix(in srgb, var(--mat-sys-on-surface) 4%, transparent);
+}
+
+.grid-footer {
+  padding: 8px 12px;
+  /* The card already frames the table; drop the bar skin's own enclosure +
+     cell dividers so the footer reads as a flat strip (a real mat-paginator
+     footer has neither) instead of a border inside a border. */
+  --cngx-paginator-bar-border-color: transparent;
+  --cngx-paginator-bar-radius: 0;
+}
+
+.grid-footer__label {
+  color: var(--mat-sys-on-surface-variant);
+  font: var(--mat-sys-body-small);
+}

@@ -68,6 +68,9 @@ export type CngxPaginatorDensity = 'compact' | 'default' | 'comfortable';
  * @since 0.1.0
  * @relatedTo CngxPaginate, CngxMatPaginator
  * @playground Material theme coverage across all skins ./examples/material-theme-coverage/skins-coverage.component.ts
+ * @playground Data-table footer (Material) ./examples/data-table/data-table.component.ts
+ * @playground Live filter with reset-to-first-page ./examples/filter-reset/filter-reset.component.ts
+ * @playground Card grid with go-to and responsive collapse ./examples/card-grid/card-grid.component.ts
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-behaviors/reset-on-filter</example-url>
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-behaviors/url-synced-paging</example-url>
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-contexts/card-grid</example-url>
