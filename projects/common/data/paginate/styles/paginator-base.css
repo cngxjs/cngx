@@ -287,15 +287,20 @@
   /*
    * The bare `[cngxPopover]` wrapper hosting a paginator panel inherits the
    * native `[popover]` UA chrome (a medium black border + padding + opaque
-   * background). The projected panel (`__select-panel` / `__overflow-panel`)
-   * carries its own surface, so neutralise the wrapper - otherwise the UA border
-   * frames the whole popover.
+   * background, plus `overflow: auto`). The projected panel
+   * (`__select-panel` / `__overflow-panel`) carries its own surface, so
+   * neutralise the wrapper - otherwise the UA border frames the whole popover.
+   * `overflow: visible` is the load-bearing one: the wrapper sizes to the panel
+   * (`fit-content`), so the UA `overflow: auto` clips the panel's elevation
+   * box-shadow entirely (it paints outside the panel border-box) and the popover
+   * reads as a flat, shadowless box.
    */
   [popover]:has(> .cngx-paginator__select-panel),
   [popover]:has(> .cngx-paginator__overflow-panel) {
     margin: 0;
     padding: 0;
     border: 0;
+    overflow: visible;
     background: none;
   }
 
