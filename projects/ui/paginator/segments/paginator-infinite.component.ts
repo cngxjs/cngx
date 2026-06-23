@@ -42,6 +42,7 @@ import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
  * passthrough config - the segment still owns no observer code and no state.
  *
  * @category ui/paginator
+ * <example-url>http://localhost:4200/#/ui/paginator/paginator-parts/infinite/sentinel</example-url>
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-modes/infinite</example-url>
  */
 @Component({

@@ -29,6 +29,7 @@ import { injectPaginatorConfig } from '../paginator-config';
  * activation commits via `select()`.
  *
  * @category ui/paginator
+ * <example-url>http://localhost:4200/#/ui/paginator/paginator-parts/alpha/strip</example-url>
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-modes/alphabetical</example-url>
  */
 @Component({

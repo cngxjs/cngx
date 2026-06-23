@@ -26,6 +26,7 @@ import { CNGX_PAGINATOR_PAGE_WINDOW_FACTORY } from './paginator-page-window.toke
  * so focus moves into the panel on open).
  *
  * @category ui/paginator
+ * <example-url>http://localhost:4200/#/ui/paginator/paginator-parts/pages/number-row</example-url>
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-behaviors/reset-on-filter</example-url>
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-contexts/card-grid</example-url>
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-contexts/paginated-list</example-url>

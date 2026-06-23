@@ -20,6 +20,7 @@ import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
  * changes.
  *
  * @category ui/paginator
+ * <example-url>http://localhost:4200/#/ui/paginator/paginator-parts/status/readout</example-url>
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-behaviors/responsive-collapse</example-url>
  */
 @Component({

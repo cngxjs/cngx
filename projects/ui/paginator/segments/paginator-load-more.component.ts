@@ -24,6 +24,7 @@ import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
  * by the shell live region.
  *
  * @category ui/paginator
+ * <example-url>http://localhost:4200/#/ui/paginator/paginator-parts/load-more/button</example-url>
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-modes/load-more</example-url>
  */
 @Component({

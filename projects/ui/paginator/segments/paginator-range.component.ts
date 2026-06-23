@@ -17,6 +17,7 @@ import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
  * figures keep the numerals from reflowing as the page changes.
  *
  * @category ui/paginator
+ * <example-url>http://localhost:4200/#/ui/paginator/paginator-parts/range/readout</example-url>
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-behaviors/reset-on-filter</example-url>
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-behaviors/url-synced-paging</example-url>
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-contexts/paginated-list</example-url>

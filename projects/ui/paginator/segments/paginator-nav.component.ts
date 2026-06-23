@@ -75,6 +75,7 @@ const NAV_TEMPLATE = `
 // stays factored in createPaginatorNavCore and the markup in NAV_TEMPLATE.
 
 /** First-page segment. Disabled on the first page; calls `host.first()`.
+ * <example-url>http://localhost:4200/#/ui/paginator/paginator-parts/first/chevron</example-url>
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-segments/first-and-last</example-url>
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/bar</example-url>
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/numbered</example-url>
@@ -100,6 +101,7 @@ export class CngxPaginatorFirst {
 }
 
 /** Previous-page segment. Disabled on the first page; calls `host.previous()`.
+ * <example-url>http://localhost:4200/#/ui/paginator/paginator-parts/prev/chevron</example-url>
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-behaviors/reset-on-filter</example-url>
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-behaviors/url-synced-paging</example-url>
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-contexts/card-grid</example-url>
@@ -137,6 +139,7 @@ export class CngxPaginatorPrev {
 }
 
 /** Next-page segment. Disabled on the last page; calls `host.next()`.
+ * <example-url>http://localhost:4200/#/ui/paginator/paginator-parts/next/chevron</example-url>
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-behaviors/reset-on-filter</example-url>
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-behaviors/url-synced-paging</example-url>
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-contexts/card-grid</example-url>
@@ -174,6 +177,7 @@ export class CngxPaginatorNext {
 }
 
 /** Last-page segment. Disabled on the last page; calls `host.last()`.
+ * <example-url>http://localhost:4200/#/ui/paginator/paginator-parts/last/chevron</example-url>
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-segments/first-and-last</example-url>
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/bar</example-url>
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/numbered</example-url>
