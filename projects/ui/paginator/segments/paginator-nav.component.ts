@@ -76,7 +76,6 @@ const NAV_TEMPLATE = `
 
 /** First-page segment. Disabled on the first page; calls `host.first()`.
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-parts/first/chevron</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-segments/first-and-last</example-url>
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/bar</example-url>
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/numbered</example-url>
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/pill</example-url>
@@ -107,11 +106,6 @@ export class CngxPaginatorFirst {
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-contexts/card-grid</example-url>
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-contexts/paginated-list</example-url>
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-contexts/select-panel-footer</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-segments/async-loading</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-segments/ellipsis-overflow</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-segments/first-and-last</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-segments/go-to-page</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-segments/page-size-and-range</example-url>
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/bar</example-url>
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/minimal</example-url>
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/numbered</example-url>
@@ -145,11 +139,6 @@ export class CngxPaginatorPrev {
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-contexts/card-grid</example-url>
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-contexts/paginated-list</example-url>
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-contexts/select-panel-footer</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-segments/async-loading</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-segments/ellipsis-overflow</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-segments/first-and-last</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-segments/go-to-page</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-segments/page-size-and-range</example-url>
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/bar</example-url>
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/minimal</example-url>
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/numbered</example-url>
@@ -178,7 +167,6 @@ export class CngxPaginatorNext {
 
 /** Last-page segment. Disabled on the last page; calls `host.last()`.
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-parts/last/chevron</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-segments/first-and-last</example-url>
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/bar</example-url>
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/numbered</example-url>
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/pill</example-url>

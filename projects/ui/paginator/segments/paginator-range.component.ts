@@ -22,7 +22,6 @@ import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-behaviors/url-synced-paging</example-url>
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-contexts/paginated-list</example-url>
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-contexts/select-panel-footer</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-segments/page-size-and-range</example-url>
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/bar</example-url>
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/minimal</example-url>
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/numbered</example-url>

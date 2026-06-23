@@ -30,9 +30,6 @@ import { CNGX_PAGINATOR_PAGE_WINDOW_FACTORY } from './paginator-page-window.toke
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-behaviors/reset-on-filter</example-url>
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-contexts/card-grid</example-url>
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-contexts/paginated-list</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-segments/async-loading</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-segments/ellipsis-overflow</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-segments/first-and-last</example-url>
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/bar</example-url>
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/numbered</example-url>
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/pill</example-url>
