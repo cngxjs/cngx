@@ -81,20 +81,6 @@ export type CngxPaginatorDensity = 'compact' | 'default' | 'comfortable';
  * @playground Skin: rail ./examples/skin-rail/rail.component.ts
  * @playground Skin: dots ./examples/skin-dots/dots.component.ts
  * @playground Skin: bar ./examples/skin-bar/bar.component.ts
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-behaviors/reset-on-filter</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-behaviors/url-synced-paging</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-contexts/card-grid</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-contexts/paginated-list</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-contexts/select-panel-footer</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-modes/infinite</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-modes/load-more</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/bar</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/dots</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/minimal</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/numbered</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/pill</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/rail</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/segmented</example-url>
  */
 @Component({
   selector: 'cngx-paginator',
