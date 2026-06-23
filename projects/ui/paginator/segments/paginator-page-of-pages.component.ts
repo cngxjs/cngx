@@ -48,7 +48,7 @@ import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
       >
       <span class="cngx-paginator__select-caret" aria-hidden="true">{{ glyphs.caret }}</span>
     </button>
-    <div cngxPopover #pop="cngxPopover">
+    <div cngxPopover #pop="cngxPopover" [closeOnOutsideClick]="true">
       <ul
         cngxListbox
         class="cngx-paginator__overflow-panel"

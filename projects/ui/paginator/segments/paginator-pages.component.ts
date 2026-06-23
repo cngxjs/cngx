@@ -84,7 +84,12 @@ import { CNGX_PAGINATOR_PAGE_WINDOW_FACTORY } from './paginator-page-window.toke
           >
             {{ glyphs.more }}
           </button>
-          <div cngxPopover #morePopover="cngxPopover" (toggle)="onOverflowToggle($event, moreBtn)">
+          <div
+            cngxPopover
+            #morePopover="cngxPopover"
+            [closeOnOutsideClick]="true"
+            (toggle)="onOverflowToggle($event, moreBtn)"
+          >
             <ul
               cngxListbox
               #moreList="cngxListbox"
