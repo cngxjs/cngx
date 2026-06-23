@@ -67,6 +67,7 @@ export type CngxPaginatorDensity = 'compact' | 'default' | 'comfortable';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/paginator.component.ts
  * @since 0.1.0
  * @relatedTo CngxPaginate, CngxMatPaginator
+ * @playground Material theme coverage across all skins ./examples/material-theme-coverage/skins-coverage.component.ts
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-behaviors/reset-on-filter</example-url>
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-behaviors/url-synced-paging</example-url>
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-contexts/card-grid</example-url>
