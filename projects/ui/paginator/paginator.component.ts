@@ -74,6 +74,13 @@ export type CngxPaginatorDensity = 'compact' | 'default' | 'comfortable';
  * @playground Alphabetical bucket paging ./examples/alpha-mode/alpha-mode.component.ts
  * @playground Load-more (append) paging ./examples/load-more-mode/load-more-mode.component.ts
  * @playground Infinite scroll paging ./examples/infinite-mode/infinite-mode.component.ts
+ * @playground Skin: numbered ./examples/skin-numbered/numbered.component.ts
+ * @playground Skin: minimal ./examples/skin-minimal/minimal.component.ts
+ * @playground Skin: pill ./examples/skin-pill/pill.component.ts
+ * @playground Skin: segmented ./examples/skin-segmented/segmented.component.ts
+ * @playground Skin: rail ./examples/skin-rail/rail.component.ts
+ * @playground Skin: dots ./examples/skin-dots/dots.component.ts
+ * @playground Skin: bar ./examples/skin-bar/bar.component.ts
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-behaviors/reset-on-filter</example-url>
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-behaviors/url-synced-paging</example-url>
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-contexts/card-grid</example-url>
@@ -81,11 +88,6 @@ export type CngxPaginatorDensity = 'compact' | 'default' | 'comfortable';
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-contexts/select-panel-footer</example-url>
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-modes/infinite</example-url>
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-modes/load-more</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-segments/async-loading</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-segments/ellipsis-overflow</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-segments/first-and-last</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-segments/go-to-page</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-segments/page-size-and-range</example-url>
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/bar</example-url>
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/dots</example-url>
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/minimal</example-url>
