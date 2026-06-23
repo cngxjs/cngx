@@ -4,13 +4,15 @@ import type { CngxAsyncState } from '@cngx/core/utils';
 /**
  * Atom directive that tracks pagination state (current page index and page size).
  *
- * Supports both **uncontrolled** (internal state) and **controlled** modes.
+ * Supports both **uncontrolled** (internal state) and **controlled** modes. \
  * In controlled mode the `cngxPageIndex` / `cngxPageSize` inputs take precedence
- * over internal state - pair with `pageChange` / `pageSizeChange` to keep them
+ * over internal state - pair with \
+ * `pageChange` / `pageSizeChange` to keep them
  * in sync.
  *
  * Consumer connects this to a list or table via `range()` - nothing is injected
  * automatically.
+ *
  * ```
  * // Headless: read range() from a template ref
  * <div cngxPaginate #pg="cngxPaginate" [total]="items.length">
