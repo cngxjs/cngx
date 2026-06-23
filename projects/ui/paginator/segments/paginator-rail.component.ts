@@ -22,8 +22,10 @@ import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
  * no local state, no writes.
  *
  * @category ui/paginator
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/segments/paginator-rail.component.ts
+ * @since 0.1.0
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-parts/rail/rail</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/rail</example-url>
  */
 @Component({
   selector: 'cngx-pgn-rail',

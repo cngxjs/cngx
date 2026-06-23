@@ -24,8 +24,8 @@ const MAX_DOTS = 7;
  * Compute the windowed dot sequence around `current` for `total` pages. Small
  * counts render every dot full-size; large counts render a `MAX_DOTS` window
  * that slides to keep `current` centred, with the two dots nearest a truncated
- * edge rendered medium then small (iOS page-control edge-shrink). Pure, internal
- * to this segment - dots stay organism-internal, no shared atom.
+ * edge rendered medium then small (iOS page-control edge-shrink). \
+ * Pure, internal to this segment - dots stay organism-internal, no shared atom.
  */
 function dotWindow(current: number, total: number): Dot[] {
   const count = Math.max(0, total);
@@ -76,6 +76,9 @@ function dotsEqual(a: readonly Dot[], b: readonly Dot[]): boolean {
  * abstraction avoided - extract only when a second consumer appears).
  *
  * @category ui/paginator
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/segments/paginator-dots.component.ts
+ * @since 0.1.0
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-parts/dots/dots</example-url>
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/dots</example-url>
  */

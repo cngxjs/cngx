@@ -10,6 +10,8 @@ import { pageWindow, type PageWindow } from './page-model';
  * consumer's sibling / boundary intent.
  *
  * @category ui/paginator
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/segments/paginator-page-window.token.ts
+ * @since 0.1.0
  */
 export type CngxPaginatorPageWindowFn = (
   current: number,
@@ -29,6 +31,8 @@ export type CngxPaginatorPageWindowFactory = () => CngxPaginatorPageWindowFn;
  * directly, mirroring {@link createPaginatorAnnouncer}.
  *
  * @category ui/paginator
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/segments/paginator-page-window.token.ts
+ * @since 0.1.0
  */
 export const createPaginatorPageWindow: CngxPaginatorPageWindowFactory = () => pageWindow;
 
@@ -41,6 +45,8 @@ export const createPaginatorPageWindow: CngxPaginatorPageWindowFactory = () => p
  * on `cngx-pgn-pages` instead. Mirrors {@link CNGX_PAGINATOR_ANNOUNCER_FACTORY}.
  *
  * @category ui/paginator
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/segments/paginator-page-window.token.ts
+ * @since 0.1.0
  */
 export const CNGX_PAGINATOR_PAGE_WINDOW_FACTORY =
   new InjectionToken<CngxPaginatorPageWindowFactory>('CngxPaginatorPageWindowFactory', {

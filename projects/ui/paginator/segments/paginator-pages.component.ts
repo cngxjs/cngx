@@ -26,10 +26,10 @@ import { CNGX_PAGINATOR_PAGE_WINDOW_FACTORY } from './paginator-page-window.toke
  * so focus moves into the panel on open).
  *
  * @category ui/paginator
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/segments/paginator-pages.component.ts
+ * @since 0.1.0
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-parts/pages/number-row</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-behaviors/reset-on-filter</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-contexts/card-grid</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-contexts/paginated-list</example-url>
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/bar</example-url>
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/numbered</example-url>
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/pill</example-url>
@@ -171,7 +171,10 @@ export class CngxPaginatorPages {
    * the listbox trigger's own focus-move does not fire). `Enter`/`Space` on the
    * button dispatch a native click, so this covers mouse and keyboard alike.
    */
-  protected openOverflow(popover: { toggle(): void; isVisible(): boolean }, panel: HTMLElement): void {
+  protected openOverflow(
+    popover: { toggle(): void; isVisible(): boolean },
+    panel: HTMLElement,
+  ): void {
     popover.toggle();
     if (popover.isVisible()) {
       queueMicrotask(() => panel.focus());

@@ -74,12 +74,15 @@ const NAV_TEMPLATE = `
 // spreads), so the shared parts are duplicated inline; the behavioural glue
 // stays factored in createPaginatorNavCore and the markup in NAV_TEMPLATE.
 
-/** First-page segment. Disabled on the first page; calls `host.first()`.
+/**
+ * First-page segment. Disabled on the first page; calls `host.first()`.
+ *
+ * @category ui/paginator
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/segments/paginator-nav.component.ts
+ * @since 0.1.0
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-parts/first/chevron</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/bar</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/numbered</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/pill</example-url>
-*/
+ */
 @Component({
   selector: 'cngx-pgn-first',
   exportAs: 'cngxPgnFirst',
@@ -99,20 +102,15 @@ export class CngxPaginatorFirst {
   });
 }
 
-/** Previous-page segment. Disabled on the first page; calls `host.previous()`.
+/**
+ * Previous-page segment. Disabled on the first page; calls `host.previous()`.
+ *
+ * @category ui/paginator
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/segments/paginator-nav.component.ts
+ * @since 0.1.0
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-parts/prev/chevron</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-behaviors/reset-on-filter</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-behaviors/url-synced-paging</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-contexts/card-grid</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-contexts/paginated-list</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-contexts/select-panel-footer</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/bar</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/minimal</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/numbered</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/pill</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/rail</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/segmented</example-url>
-*/
+ */
 @Component({
   selector: 'cngx-pgn-prev',
   exportAs: 'cngxPgnPrev',
@@ -132,20 +130,15 @@ export class CngxPaginatorPrev {
   });
 }
 
-/** Next-page segment. Disabled on the last page; calls `host.next()`.
+/**
+ * Next-page segment. Disabled on the last page; calls `host.next()`.
+ *
+ * @category ui/paginator
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/segments/paginator-nav.component.ts
+ * @since 0.1.0
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-parts/next/chevron</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-behaviors/reset-on-filter</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-behaviors/url-synced-paging</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-contexts/card-grid</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-contexts/paginated-list</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-contexts/select-panel-footer</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/bar</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/minimal</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/numbered</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/pill</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/rail</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/segmented</example-url>
-*/
+ */
 @Component({
   selector: 'cngx-pgn-next',
   exportAs: 'cngxPgnNext',
@@ -165,12 +158,15 @@ export class CngxPaginatorNext {
   });
 }
 
-/** Last-page segment. Disabled on the last page; calls `host.last()`.
+/**
+ * Last-page segment. Disabled on the last page; calls `host.last()`.
+ *
+ * @category ui/paginator
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/segments/paginator-nav.component.ts
+ * @since 0.1.0
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-parts/last/chevron</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/bar</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/numbered</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/pill</example-url>
-*/
+ */
 @Component({
   selector: 'cngx-pgn-last',
   exportAs: 'cngxPgnLast',

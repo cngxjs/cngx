@@ -14,24 +14,27 @@ import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
 
 /**
  * Infinite-scroll segment: a bottom-of-list sentinel that auto-advances the
- * page as it scrolls into view, composing `CngxInfiniteScroll`. The in-template
- * sentinel binds the directive's `[enabled]` / `[loading]` inputs and its
+ * page as it scrolls into view, composing `CngxInfiniteScroll`. \
+ * The in-template sentinel binds the directive's `[enabled]` / `[loading]` inputs and its
  * `(loadMore)` output directly to the `CNGX_PAGINATOR_HOST` signals, so the
  * directive's built-in debounce, busy-gate, enabled-disable, and auto-disconnect
  * own the auto-advance double-fire guard - this segment adds no
- * `IntersectionObserver` code of its own. The directive sits on the sentinel
- * element (not as a `hostDirective`) precisely so its `[enabled]` / `[loading]`
+ * `IntersectionObserver` code of its own.
+ *
+ * The directive sits on the sentinel element (not as a `hostDirective`) precisely so its `[enabled]` / `[loading]`
  * inputs can bind to the host-token signals; a static `hostDirectives`
  * declaration could not express that wiring.
  *
  * Like `cngx-pgn-load-more`, this stays a thin trigger atom: it injects
  * `CNGX_PAGINATOR_HOST`, holds no accumulation state, and renders no async view
- * of its own. The consumer slices its own array from the brain's
+ * of its own. \
+ * The consumer slices its own array from the brain's
  * `cumulativeRange()`; the busy / error / end experience belongs to the consumer
  * or to a composing container, keeping the segment reusable unchanged.
  *
  * Exhausted state: once `host.isLast()` the sentinel disables (`enabled` is
- * `false`, so the observer disconnects). It swaps its busy affordance for the
+ * `false`, so the observer disconnects). \
+ * It swaps its busy affordance for the
  * `allLoaded` end label only after the final load settles (`!host.isBusy()`),
  * so it never claims "all loaded" while the last batch is still arriving, and
  * the tail is never a silent or stale spinner.
@@ -42,6 +45,9 @@ import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
  * passthrough config - the segment still owns no observer code and no state.
  *
  * @category ui/paginator
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/segments/paginator-infinite.component.ts
+ * @since 0.1.0
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-parts/infinite/sentinel</example-url>
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-modes/infinite</example-url>
  */
