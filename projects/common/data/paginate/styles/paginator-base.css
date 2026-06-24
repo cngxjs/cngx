@@ -56,6 +56,16 @@
     inset-inline: 0;
     inset-block-start: 0;
     block-size: var(--cngx-paginator-progress-thickness, 2px);
+    /* Theme the composed busy bar to the paginator's primary, same as the rail
+       and the infinite spinner. Without this the bar inherits CngxProgress's
+       `currentColor` default and reads as a harsh black hairline in an unthemed
+       context; routing through `--cngx-color-primary` makes it track the
+       foundation token, the Material bridge (`--mat-sys-primary`), and any
+       custom brand theme. */
+    --cngx-progress-color: var(
+      --cngx-paginator-progress-color,
+      var(--cngx-color-primary, oklch(0.66 0.19 50))
+    );
   }
 
   .cngx-paginator__segment {

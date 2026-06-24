@@ -5,8 +5,9 @@ import { pageWindow, type PageWindow } from './page-model';
 /**
  * The page-window computation `cngx-pgn-pages` calls per recompute: given the
  * current 0-based page, the total page count, and the per-instance
- * `siblingCount` / `boundaryCount`, return the rendered {@link PageWindow}. An
- * override implements a different truncation algorithm while still honouring the
+ * `siblingCount` / `boundaryCount`, return the rendered {@link PageWindow}.
+ *
+ * An override implements a different truncation algorithm while still honouring the
  * consumer's sibling / boundary intent.
  *
  * @category ui/paginator
