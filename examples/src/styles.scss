@@ -3718,3 +3718,23 @@ cngx-radio-group .cngx-radio + .cngx-radio {
   font-weight: 700;
   color: var(--cngx-color-primary);
 }
+
+.tree-node-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  cursor: pointer;
+}
+
+.tree-node-twisty {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  padding: 0;
+}
+
+.tree-node-label {
+  flex: 1 1 auto;
+}
