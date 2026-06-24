@@ -4,13 +4,16 @@ import { injectPaginatorConfig } from '../paginator-config';
 import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
 
 /**
- * Go-to-page segment: a native `<input type="number">`. Typing (or the spinner)
- * navigates live via `input`; Enter / blur additionally clamp and re-sync the
+ * Go-to-page segment: a native `<input type="number">`. \
+ * Typing (or the spinner) navigates live via `input`; Enter / blur additionally clamp and re-sync the
  * field. The brain clamps out-of-range values, so the field reflects the clamped
  * page back. Accessible name from config (EN default, Pillar 2).
  *
  * @category ui/paginator
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-segments/go-to-page</example-url>
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/segments/paginator-goto.component.ts
+ * @since 0.1.0
+ * <example-url>http://localhost:4200/#/ui/paginator/paginator-parts/goto/input</example-url>
  */
 @Component({
   selector: 'cngx-pgn-goto',

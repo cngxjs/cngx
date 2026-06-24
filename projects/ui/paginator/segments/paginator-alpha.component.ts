@@ -13,22 +13,28 @@ import { injectPaginatorConfig } from '../paginator-config';
 
 /**
  * Alphabetical / category chips: a `role="group"` toggle strip over the
- * {@link CngxBucketPaginate} range model. One `<button>` per bucket; the active
+ * {@link CngxBucketPaginate} range model. \
+ * One `<button>` per bucket; the active
  * bucket carries `aria-pressed`, an empty bucket is `disabled`. The model is
  * injected through `CNGX_BUCKET_PAGINATE_HOST`, never the concrete directive
  * class, so the strip stays decompose-ready.
  *
  * Every chip's pressed / disabled / name state is a `computed()` read of the
- * host signals - nothing is synced. An empty chip is not a silent dead control:
+ * host signals - nothing is synced. An empty chip is not a silent dead control: \
  * its accessible name comes from `ariaLabels.emptyBucket(label)`, which states
  * the bucket has no items, so AT hears the reason the chip is disabled.
  *
  * Keyboard navigation reuses `CngxRovingTabindex` / `CngxRovingItem` (no new
- * keyboard code, matching `cngx-pgn-pages`): arrows move the focus cursor and
+ * keyboard code, matching `cngx-pgn-pages`): \
+ * arrows move the focus cursor and
  * skip disabled chips, the single tab stop tracks the active bucket, and
  * activation commits via `select()`.
  *
  * @category ui/paginator
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/segments/paginator-alpha.component.ts
+ * @since 0.1.0
+ * <example-url>http://localhost:4200/#/ui/paginator/paginator-parts/alpha/strip</example-url>
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-modes/alphabetical</example-url>
  */
 @Component({

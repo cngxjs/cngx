@@ -1,4 +1,12 @@
-import { DestroyRef, Directive, effect, inject, input, type OnInit, untracked } from '@angular/core';
+import {
+  DestroyRef,
+  Directive,
+  effect,
+  inject,
+  input,
+  type OnInit,
+  untracked,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 
@@ -17,7 +25,7 @@ import { CngxPaginate } from './paginate.directive';
  * ```
  *
  * Two paginators on one route must take distinct param names via
- * `[cngxPaginatePageParam]` / `[cngxPaginateSizeParam]` to avoid a collision.
+ * `[cngxPaginatePageParam]` / `[cngxPaginateSizeParam]` to avoid a collision. \
  * Requires `@angular/router` (`provideRouter`); without it the directive is an
  * inert no-op (a dev-mode warning is logged). Framework-agnostic of any UI - it
  * needs only the brain and the router.

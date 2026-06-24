@@ -17,15 +17,10 @@ import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
  * figures keep the numerals from reflowing as the page changes.
  *
  * @category ui/paginator
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-behaviors/reset-on-filter</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-behaviors/url-synced-paging</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-contexts/paginated-list</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-contexts/select-panel-footer</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-segments/page-size-and-range</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/bar</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/minimal</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/numbered</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/rail</example-url>
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/segments/paginator-range.component.ts
+ * @since 0.1.0
+ * <example-url>http://localhost:4200/#/ui/paginator/paginator-parts/range/readout</example-url>
  */
 @Component({
   selector: 'cngx-pgn-range',

@@ -87,6 +87,30 @@ function installGlobalEscapeListener(doc: Document): void {
   });
 }
 
+/** @internal Tracks which Documents already have the global outside-click listener. */
+const outsideClickListenerDocs = new WeakSet<Document>();
+/** @internal */
+function installGlobalOutsideClickListener(doc: Document): void {
+  if (outsideClickListenerDocs.has(doc)) {
+    return;
+  }
+  outsideClickListenerDocs.add(doc);
+  // Capture phase so the dismiss decision runs before in-popover handlers can
+  // stopPropagation. Snapshot the set: hide() mutates `openPopovers` mid-loop.
+  doc.addEventListener(
+    'pointerdown',
+    (e: PointerEvent) => {
+      if (openPopovers.size === 0) {
+        return;
+      }
+      for (const popover of [...openPopovers]) {
+        popover.closeIfOutsidePointerDown(e.target);
+      }
+    },
+    true,
+  );
+}
+
 /** @internal Tracks which Documents have already warned about missing Popover API. */
 const popoverApiWarnedDocs = new WeakSet<Document>();
 /** @internal */
@@ -257,6 +281,15 @@ export class CngxPopover {
 
   /** Whether Escape key dismisses the popover. */
   readonly closeOnEscape = input(true);
+
+  /**
+   * Whether a `pointerdown` outside both the popover and its anchor (trigger)
+   * dismisses it - menu / listbox light-dismiss. Opt-in (default `false`) so
+   * existing manual-mode popovers keep full control; the anchor is excluded so
+   * a click on the trigger toggles via the trigger's own handler instead of
+   * being closed here and immediately reopened.
+   */
+  readonly closeOnOutsideClick = input(false);
 
   /** Native popover mode. `'manual'` for full control, `'auto'` for browser light dismiss. */
   readonly mode = input<PopoverMode>('manual');
@@ -429,6 +462,7 @@ export class CngxPopover {
     this.stateSignal.set('opening');
     this.elRef.nativeElement.showPopover();
     installGlobalEscapeListener(this.doc);
+    installGlobalOutsideClickListener(this.doc);
     this.applyFloatingPosition();
     requestAnimationFrame(() => {
       if (this.stateSignal() === 'opening') {
@@ -465,6 +499,24 @@ export class CngxPopover {
     if (e.newState === 'closed' && this.stateSignal() !== 'closed') {
       this.stateSignal.set('closed');
     }
+  }
+
+  /**
+   * @internal Called by the global outside-click listener for every open
+   * popover. Hides this one when it opted into `closeOnOutsideClick` and the
+   * pointerdown landed outside both its panel and its anchor (trigger).
+   */
+  closeIfOutsidePointerDown(target: EventTarget | null): void {
+    if (!this.closeOnOutsideClick()) {
+      return;
+    }
+    const node = target as Node | null;
+    const panel = this.popoverElement;
+    const anchor = this.anchorElement();
+    if (panel.contains(node) || anchor?.contains(node)) {
+      return;
+    }
+    this.hide();
   }
 
   /**

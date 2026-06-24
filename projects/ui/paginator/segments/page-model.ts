@@ -2,12 +2,24 @@
 // API - the segment is the only consumer. 0-based throughout (matching the
 // brain's `pageIndex`); the rendered display number is `index + 1`.
 
-/** One slot in the rendered page row: a page button or a truncation gap. */
+/**
+ * One slot in the rendered page row: a page button or a truncation gap.
+ *
+ * @category ui/paginator
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/segments/page-model.ts
+ * @since 0.1.0
+ */
 export type PageItem =
   | { readonly kind: 'page'; readonly index: number }
   | { readonly kind: 'gap'; readonly hidden: readonly number[] };
 
-/** The rendered sequence plus the gap count (a cheap structural fingerprint). */
+/**
+ * The rendered sequence plus the gap count (a cheap structural fingerprint).
+ *
+ * @category ui/paginator
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/segments/page-model.ts
+ * @since 0.1.0
+ */
 export interface PageWindow {
   readonly pages: readonly PageItem[];
   readonly gaps: number;
@@ -19,10 +31,12 @@ function range(start: number, end: number): number[] {
 }
 
 /**
- * Compute the windowed page sequence around `current` for `total` pages.
+ * Compute the windowed page sequence around `current` for `total` pages. \
  * A run of more than one hidden page collapses into a `gap` carrying the hidden
  * 0-based indices (the ellipsis menu's options); a single hidden page renders
- * as a plain page button instead of a gap. Derived from the MUI `usePagination`
+ * as a plain page button instead of a gap.
+ *
+ * Derived from the MUI `usePagination`
  * range algorithm, 0-based. `siblingCount` is how many pages flank `current` on
  * each side; `boundaryCount` is how many pages are pinned at each end. Both
  * default to `1`, reproducing the v1 window byte-for-byte; the `cngx-pgn-pages`

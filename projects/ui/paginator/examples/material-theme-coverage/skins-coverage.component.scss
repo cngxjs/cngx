@@ -1,0 +1,74 @@
+@use '@angular/material' as mat;
+@use '@cngx/themes/material/paginator-theme.scss' as paginator;
+@use '@cngx/themes/material/ripple-theme.scss' as ripple;
+
+$palette: (
+  theme-type: light,
+  primary: mat.$azure-palette,
+  tertiary: mat.$blue-palette,
+);
+$theme: mat.define-theme(
+  (
+    color: $palette,
+    density: (
+      scale: 0,
+    ),
+  )
+);
+
+html {
+  color-scheme: light;
+
+  @include mat.theme(
+    (
+      color: $palette,
+      typography: Roboto,
+      density: 0,
+    )
+  );
+
+  // CNGX Material bridge
+  @include paginator.theme($theme);
+  @include ripple.theme($theme);
+
+  background: var(--mat-sys-background);
+  color: var(--mat-sys-on-background);
+  font: var(--mat-sys-body-medium);
+}
+
+.mat-app-background {
+  background-color: var(--mat-sys-background);
+  color: var(--mat-sys-on-background);
+}
+.mat-typography {
+  font: var(--mat-sys-body-medium);
+}
+
+.coverage {
+  display: grid;
+  gap: 24px;
+  max-width: 760px;
+  padding: 16px;
+}
+
+.coverage section {
+  display: grid;
+  gap: 8px;
+}
+
+.coverage h3 {
+  margin: 0;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  opacity: 0.6;
+}
+
+.coverage__toolbar {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  padding-top: 8px;
+  border-top: 1px solid var(--mat-sys-outline-variant);
+  font: var(--mat-sys-label-large);
+}

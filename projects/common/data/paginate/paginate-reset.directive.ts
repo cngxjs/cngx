@@ -34,8 +34,8 @@ export function connectPaginateResetOn(paginate: CngxPaginate, key: () => unknow
 
 /**
  * Resets a `cngxPaginate` host to the first page whenever the bound key
- * changes - the composable form of {@link connectPaginateResetOn}. Drop it on
- * the same element as `cngxPaginate` (or a `CngxPaginator` / `CngxMatPaginator`,
+ * changes - the composable form of {@link connectPaginateResetOn}. \
+ * Drop it on the same element as `cngxPaginate` (or a `CngxPaginator` / `CngxMatPaginator`,
  * which provide the brain), and bind the sort / filter / search value a result
  * set depends on, so a narrowed result never strands the user on a now-empty
  * page.
@@ -46,9 +46,11 @@ export function connectPaginateResetOn(paginate: CngxPaginate, key: () => unknow
  * ```html
  * <table cngxPaginate [cngxPaginateResetOn]="filter()"><!-- ... --></table>
  * ```
+ * <example-url>http://localhost:4200/#/ui/paginator/paginator-behaviors/reset-on-filter</example-url>
  *
  * @category common/data/paginate
  * @docsKind primary
+ * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/data/paginate/paginate-reset.directive.ts
  * @since 0.1.0
  * @relatedTo CngxPaginate, CngxPaginator, CngxMatPaginator

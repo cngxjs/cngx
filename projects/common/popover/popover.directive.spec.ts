@@ -71,6 +71,18 @@ class AutoModeHost {
 
 @Component({
   template: `
+    <button type="button">trigger</button>
+    <div cngxPopover #pop="cngxPopover" [closeOnOutsideClick]="enabled()">Dismissible</div>
+  `,
+  imports: [CngxPopover],
+})
+class OutsideClickHost {
+  readonly enabled = signal(true);
+  readonly popover = viewChild.required(CngxPopover);
+}
+
+@Component({
+  template: `
     <div cngxPopover #pop="cngxPopover" [positionTryFallbacks]="fallbacks()">Fallback host</div>
   `,
   imports: [CngxPopover],
@@ -179,6 +191,53 @@ describe('CngxPopover', () => {
       document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
       fixture.detectChanges();
       expect(host.popover().state()).toBe(stateBefore);
+    });
+  });
+
+  describe('closeOnOutsideClick', () => {
+    function outsideClickSetup() {
+      const { fixture, popoverEl } = setup(OutsideClickHost);
+      const host = fixture.componentInstance as OutsideClickHost;
+      const trigger = fixture.nativeElement.querySelector('button') as HTMLElement;
+      // The trigger directive wires this in real use; set it directly here so
+      // the anchor-exclusion path is exercised without a CngxPopoverTrigger.
+      host.popover().anchorElement.set(trigger);
+      return { fixture, host, popoverEl, trigger };
+    }
+
+    it('hides on pointerdown outside both popover and anchor when enabled', () => {
+      const { fixture, host } = outsideClickSetup();
+      host.popover().show();
+      document.body.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+      fixture.detectChanges();
+      expect(host.popover().state()).toBe('closed');
+    });
+
+    it('stays open on pointerdown inside the popover', () => {
+      const { fixture, host, popoverEl } = outsideClickSetup();
+      host.popover().show();
+      popoverEl.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+      fixture.detectChanges();
+      expect(host.popover().state()).not.toBe('closed');
+    });
+
+    it('stays open on pointerdown on the anchor (trigger toggles instead)', () => {
+      const { fixture, host, trigger } = outsideClickSetup();
+      host.popover().show();
+      trigger.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+      fixture.detectChanges();
+      expect(host.popover().state()).not.toBe('closed');
+    });
+
+    it('does not hide on outside pointerdown when disabled (default)', () => {
+      const { fixture, host } = outsideClickSetup();
+      host.enabled.set(false);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      host.popover().show();
+      document.body.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+      fixture.detectChanges();
+      expect(host.popover().state()).not.toBe('closed');
     });
   });
 

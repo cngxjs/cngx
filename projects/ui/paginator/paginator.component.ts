@@ -37,27 +37,26 @@ export type CngxPaginatorSkin =
 export type CngxPaginatorDensity = 'compact' | 'default' | 'comfortable';
 
 /**
- * Declarative, skinnable pagination organism. A thin shell over the
- * `CngxPaginate` brain (applied as a `hostDirective`), assembled by the
- * consumer from projected segment parts in DOM order - no `show*` config
- * inputs. `skin` / `density` are single paint attributes reflected onto
- * `[data-skin]` / `[data-density]`.
+ * Declarative, skinnable pagination organism. \
+ * A thin shell over the `CngxPaginate` brain (applied as a `hostDirective`), assembled by the
+ * consumer from projected segment parts in DOM order - no `show*` config inputs.
+ * `skin` / `density` are single paint attributes reflected onto `[data-skin]` / `[data-density]`.  \
  *
- * Two-way `[(pageIndex)]` / `[(pageSize)]`: the brain's controlled inputs are
- * aliased through `hostDirectives` (`cngxPageIndex` -> `pageIndex`,
- * `cngxPageSize` -> `pageSize`); the shell owns the matching
- * `pageIndexChange` / `pageSizeChange` outputs and is their single emitter,
- * guarded by the shared `lastEmitted*` fields. Two paths feed each output once:
+ * Two-way `[(pageIndex)]` / `[(pageSize)]`:  \
+ * the brain's controlled inputs are aliased through `hostDirectives` (`cngxPageIndex` -> `pageIndex`, `cngxPageSize` -> `pageSize`);  \
+ * the shell owns the matching `pageIndexChange` / `pageSizeChange` outputs and is their single emitter,
+ * guarded by the shared `lastEmitted*` fields.  \
+ * Two paths feed each output once:
  * (1) a subscription forwards the brain's nav-only `pageChange` /
  * `pageSizeChange` - the only signal that captures a controlled-mode `setPage`,
  * because the brain's `pageIndex()` stays pinned to the input until the
- * consumer feeds it back; (2) an `effect()` reads the effective
- * `pageIndex()` / `pageSize()` and covers a `total`-shrink clamp the nav-only
- * output misses. The brain output is forwarded, NOT aliased through
- * `hostDirectives`: a raw alias would bypass the shared guard and double-emit
- * on uncontrolled navigation. The guard makes every distinct value emit exactly
- * once across both paths and both modes, so the clamp echoes back to controlled
- * consumers (and, from Phase E, is announced) without a double-fire.
+ * consumer feeds it back;  \
+ * (2) an `effect()` reads the effective `pageIndex()` / `pageSize()` and covers a `total`-shrink clamp the nav-only
+ * output misses.  \
+ * The brain output is forwarded, NOT aliased through
+ * `hostDirectives`:  \
+ * a raw alias would bypass the shared guard and double-emit
+ * on uncontrolled navigation.
  *
  * All ARIA attributes are signal-driven. `aria-busy` has a single owner here.
  *
@@ -67,25 +66,20 @@ export type CngxPaginatorDensity = 'compact' | 'default' | 'comfortable';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/paginator.component.ts
  * @since 0.1.0
  * @relatedTo CngxPaginate, CngxMatPaginator
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-behaviors/reset-on-filter</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-behaviors/url-synced-paging</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-contexts/card-grid</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-contexts/paginated-list</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-contexts/select-panel-footer</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-modes/infinite</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-modes/load-more</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-segments/async-loading</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-segments/ellipsis-overflow</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-segments/first-and-last</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-segments/go-to-page</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-segments/page-size-and-range</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/bar</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/dots</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/minimal</example-url>
+ * @playground Material theme coverage across all skins ./examples/material-theme-coverage/skins-coverage.component.ts
+ * @playground Data-table footer (Material) ./examples/data-table/data-table.component.ts
+ * @playground Live filter with reset-to-first-page ./examples/filter-reset/filter-reset.component.ts
+ * @playground Card grid with go-to and responsive collapse ./examples/card-grid/card-grid.component.ts
+ * @playground Alphabetical bucket paging ./examples/alpha-mode/alpha-mode.component.ts
+ * @playground Load-more (append) paging ./examples/load-more-mode/load-more-mode.component.ts
+ * @playground Infinite scroll paging ./examples/infinite-mode/infinite-mode.component.ts
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/numbered</example-url>
+ * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/minimal</example-url>
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/pill</example-url>
- * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/rail</example-url>
  * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/segmented</example-url>
+ * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/rail</example-url>
+ * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/dots</example-url>
+ * <example-url>http://localhost:4200/#/ui/paginator/paginator-skins/bar</example-url>
  */
 @Component({
   selector: 'cngx-paginator',
