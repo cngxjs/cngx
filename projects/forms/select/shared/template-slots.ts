@@ -875,7 +875,7 @@ export class CngxSelectInputSuffix {
  *   <ng-template cngxSelectAction let-term let-commit="commit"
  *                let-pending="isPending">
  *     <button (click)="commit()" [disabled]="pending || !term">
- *       + „{{ term }}" anlegen
+ *       + Create "{{ term }}"
  *     </button>
  *   </ng-template>
  * </cngx-action-select>
