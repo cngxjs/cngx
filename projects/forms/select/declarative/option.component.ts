@@ -20,8 +20,8 @@ import { CngxOption } from '@cngx/common/interactive';
  *         [popover]="pop" (click)="pop.toggle()">Choose…</button>
  * <div cngxPopover #pop="cngxPopover" placement="bottom">
  *   <div cngxListbox #lb="cngxListbox" [label]="'Color'" [(value)]="color">
- *     <cngx-option [value]="'red'">Rot</cngx-option>
- *     <cngx-option [value]="'green'">Grün</cngx-option>
+ *     <cngx-option [value]="'red'">Red</cngx-option>
+ *     <cngx-option [value]="'green'">Green</cngx-option>
  *   </div>
  * </div>
  * ```

@@ -13,14 +13,14 @@ import { CngxOptionGroup } from '@cngx/common/interactive';
  * ```html
  * <div cngxListbox #lb="cngxListbox" [label]="'Color'" [(value)]="color">
  *   <cngx-optgroup label="Warm">
- *     <cngx-option [value]="'red'">Rot</cngx-option>
+ *     <cngx-option [value]="'red'">Red</cngx-option>
  *     <cngx-option [value]="'orange'">Orange</cngx-option>
  *   </cngx-optgroup>
  *
  *   <cngx-select-divider />
  *
  *   <cngx-optgroup label="Cold">
- *     <cngx-option [value]="'blue'">Blau</cngx-option>
+ *     <cngx-option [value]="'blue'">Blue</cngx-option>
  *   </cngx-optgroup>
  * </div>
  * ```
