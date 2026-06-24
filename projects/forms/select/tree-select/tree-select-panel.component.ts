@@ -10,18 +10,12 @@ import {
   type ElementRef,
 } from '@angular/core';
 import { CngxActiveDescendant } from '@cngx/common/a11y';
-import {
-  CngxHierarchicalNav,
-  createTreeAdItems,
-} from '@cngx/common/interactive';
+import { CngxHierarchicalNav, createTreeAdItems } from '@cngx/common/interactive';
 import { CngxCheckboxIndicator } from '@cngx/common/display';
 import type { FlatTreeNode } from '@cngx/utils';
 
 import { CngxSelectPanelShell } from '../shared/panel-shell/panel-shell.component';
-import {
-  CNGX_SELECT_PANEL_VIEW_HOST,
-  type CngxSelectPanelViewHost,
-} from '../shared/panel-host';
+import { CNGX_SELECT_PANEL_VIEW_HOST, type CngxSelectPanelViewHost } from '../shared/panel-host';
 import {
   CNGX_TREE_SELECT_PANEL_HOST,
   type CngxTreeSelectPanelHost,
@@ -84,9 +78,7 @@ import type { CngxTreeSelectNodeContext } from './tree-select.model';
       >
         @for (node of host.treeController.visibleNodes(); track node.id) {
           @if (host.nodeTpl(); as slot) {
-            <ng-container
-              *ngTemplateOutlet="slot; context: nodeContext(node)"
-            />
+            <ng-container *ngTemplateOutlet="slot; context: nodeContext(node)" />
           } @else {
             <div
               role="treeitem"
@@ -95,9 +87,7 @@ import type { CngxTreeSelectNodeContext } from './tree-select.model';
               [attr.aria-posinset]="node.posinset"
               [attr.aria-setsize]="node.setsize"
               [attr.aria-expanded]="
-                node.hasChildren
-                  ? host.treeController.isExpanded(node.id)()
-                  : null
+                node.hasChildren ? host.treeController.isExpanded(node.id)() : null
               "
               [attr.aria-selected]="host.isSelected(node.value)"
               [attr.aria-disabled]="node.disabled ? 'true' : null"
@@ -112,9 +102,7 @@ import type { CngxTreeSelectNodeContext } from './tree-select.model';
                   class="cngx-tree-select__twisty"
                   [class.cngx-tree-select__twisty--open]="isOpen"
                   tabindex="-1"
-                  [attr.aria-label]="
-                    isOpen ? host.twistyCollapseLabel() : host.twistyExpandLabel()
-                  "
+                  [attr.aria-label]="isOpen ? host.twistyCollapseLabel() : host.twistyExpandLabel()"
                   (click)="toggleExpand($event, node)"
                 >
                   @if (isOpen) {
@@ -138,7 +126,7 @@ import type { CngxTreeSelectNodeContext } from './tree-select.model';
               }
               <!-- Tree-select hard-codes checkbox-indicator;
                    'radio' / 'checkmark' from selectionIndicatorVariant
-                   are flat-panel-only. select-family-accepted-debt §7. -->
+                   are flat-panel-only. Note: select-family-accepted-debt. -->
               <cngx-checkbox-indicator
                 [checked]="host.isSelected(node.value)"
                 [indeterminate]="host.isIndeterminate(node.value)"
@@ -156,9 +144,7 @@ import type { CngxTreeSelectNodeContext } from './tree-select.model';
   encapsulation: ViewEncapsulation.None,
 })
 export class CngxTreeSelectPanel<T = unknown> {
-  protected readonly host = inject(
-    CNGX_TREE_SELECT_PANEL_HOST,
-  ) as CngxTreeSelectPanelHost<T>;
+  protected readonly host = inject(CNGX_TREE_SELECT_PANEL_HOST) as CngxTreeSelectPanelHost<T>;
 
   /**
    * Narrow view-host slot for reading `actionFocusTrapEnabled` and
@@ -167,9 +153,7 @@ export class CngxTreeSelectPanel<T = unknown> {
    *
    * @internal
    */
-  protected readonly viewHost = inject(
-    CNGX_SELECT_PANEL_VIEW_HOST,
-  ) as CngxSelectPanelViewHost<T>;
+  protected readonly viewHost = inject(CNGX_SELECT_PANEL_VIEW_HOST) as CngxSelectPanelViewHost<T>;
 
   private readonly treeContainer = viewChild<ElementRef<HTMLElement>>('treeContainer');
 
@@ -271,9 +255,10 @@ export class CngxTreeSelectPanel<T = unknown> {
   private getHandleSelect(node: FlatTreeNode<T>): () => void {
     // Cache only when `node.value` is an object — WeakMap contract.
     // Primitive-valued callbacks are recreated per call; cheap.
-    const key = (typeof node.value === 'object' && node.value !== null)
-      ? (node.value as unknown as object)
-      : null;
+    const key =
+      typeof node.value === 'object' && node.value !== null
+        ? (node.value as unknown as object)
+        : null;
     if (key) {
       let cached = this.selectByValue.get(key);
       if (!cached) {

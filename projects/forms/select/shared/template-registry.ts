@@ -1,6 +1,6 @@
 import { InjectionToken, signal, type Signal, type TemplateRef } from '@angular/core';
 
-import { resolveTemplate } from './resolve-template';
+import { injectResolvedTemplate } from './resolve-template';
 import type {
   CngxSelectAction,
   CngxSelectActionContext,
@@ -91,7 +91,7 @@ export interface CngxSelectTemplateRegistry<T = unknown> {
 
 /**
  * Resolves the shared template slots through the 3-stage cascade.
- * Injection context required (`resolveTemplate` reads
+ * Injection context required (`injectResolvedTemplate` reads
  * `CNGX_SELECT_CONFIG`).
  *
  * ```ts
@@ -126,25 +126,25 @@ export function createTemplateRegistry<T = unknown>(
   queries: CngxSelectTemplateRegistryQueries<T>,
 ): CngxSelectTemplateRegistry<T> {
   return {
-    check: resolveTemplate(queries.check, 'check'),
-    caret: resolveTemplate(queries.caret, 'caret'),
-    optgroup: resolveTemplate(queries.optgroup, 'optgroup'),
-    placeholder: resolveTemplate(queries.placeholder, 'placeholder'),
-    empty: resolveTemplate(queries.empty, 'empty'),
-    loading: resolveTemplate(queries.loading, 'loading'),
-    optionLabel: resolveTemplate(queries.optionLabel, 'optionLabel'),
-    error: resolveTemplate(queries.error, 'error'),
-    retryButton: resolveTemplate(queries.retryButton, 'retryButton'),
-    loadingGlyph: resolveTemplate(
+    check: injectResolvedTemplate(queries.check, 'check'),
+    caret: injectResolvedTemplate(queries.caret, 'caret'),
+    optgroup: injectResolvedTemplate(queries.optgroup, 'optgroup'),
+    placeholder: injectResolvedTemplate(queries.placeholder, 'placeholder'),
+    empty: injectResolvedTemplate(queries.empty, 'empty'),
+    loading: injectResolvedTemplate(queries.loading, 'loading'),
+    optionLabel: injectResolvedTemplate(queries.optionLabel, 'optionLabel'),
+    error: injectResolvedTemplate(queries.error, 'error'),
+    retryButton: injectResolvedTemplate(queries.retryButton, 'retryButton'),
+    loadingGlyph: injectResolvedTemplate(
       queries.loadingGlyph ?? NO_LOADING_GLYPH_DIRECTIVE,
       'loadingGlyph',
     ),
-    refreshing: resolveTemplate(queries.refreshing, 'refreshing'),
-    commitError: resolveTemplate(queries.commitError, 'commitError'),
-    clearButton: resolveTemplate(queries.clearButton, 'clearButton'),
-    optionPending: resolveTemplate(queries.optionPending, 'optionPending'),
-    optionError: resolveTemplate(queries.optionError, 'optionError'),
-    action: resolveTemplate(queries.action ?? NO_ACTION_DIRECTIVE, 'action'),
+    refreshing: injectResolvedTemplate(queries.refreshing, 'refreshing'),
+    commitError: injectResolvedTemplate(queries.commitError, 'commitError'),
+    clearButton: injectResolvedTemplate(queries.clearButton, 'clearButton'),
+    optionPending: injectResolvedTemplate(queries.optionPending, 'optionPending'),
+    optionError: injectResolvedTemplate(queries.optionError, 'optionError'),
+    action: injectResolvedTemplate(queries.action ?? NO_ACTION_DIRECTIVE, 'action'),
   };
 }
 

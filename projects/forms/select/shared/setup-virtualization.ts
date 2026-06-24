@@ -6,7 +6,7 @@ import type { CngxPopover } from '@cngx/common/popover';
 import { createAutoPanelRenderer } from './auto-virtualize';
 import type { CngxSelectVirtualizationConfig } from './config';
 import { CNGX_PANEL_RENDERER_FACTORY, type PanelRenderer } from './panel-renderer';
-import type { CngxSelectCompareFn, CngxSelectCore } from './select-core';
+import type { CngxSelectCore } from './select-core';
 
 /**
  * Virtualisation wire-up for variants rendering through `CngxSelectPanel`.
@@ -65,4 +65,4 @@ export function setupVirtualization<T, TCommit>(opts: {
   return { panelRenderer, virtualItemCount };
 }
 
-export type { CngxSelectCompareFn };
+export { type CngxSelectCompareFn } from './select-core';

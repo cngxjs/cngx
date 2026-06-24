@@ -46,12 +46,6 @@ import { type CngxTreeSelectNodeContext } from './tree-select.model';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/tree-select/tree-select-node.directive.ts
  * @since 0.1.0
  * @relatedTo CngxTreeSelect, CngxTreeSelectChip, CngxTreeSelectTriggerLabel
- * <example-url>http://localhost:4200/tree-select/10-000-nodes-perf-smoke</example-url>
- * <example-url>http://localhost:4200/tree-select/basic-single-level-toggle</example-url>
- * <example-url>http://localhost:4200/tree-select/cascade-children-parent-toggle-selects-the-whole-subtree</example-url>
- * <example-url>http://localhost:4200/tree-select/commit-action-optimistic-pessimistic-rollback</example-url>
- * <example-url>http://localhost:4200/tree-select/custom-cngxtreeselectnode-template</example-url>
- * <example-url>http://localhost:4200/tree-select/indeterminate-propagation-pre-seeded-partial-selection</example-url>
  */
 @Directive({
   selector: 'ng-template[cngxTreeSelectNode]',
