@@ -2,7 +2,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
   title: 'CngxSelect: optgroups',
-  subtitle: 'Grouped options: pass an array mixing <code>CngxSelectOption</code> and <code>CngxSelectOptionGroup</code>.',
+  subtitle: 'Grouped options: pass an array mixing <code>CngxSelectOption</code> and <code>CngxSelectOptgroup</code>.',
   level: 'organism',
   audience: ['dev', 'design'],
   artifact: 'standalone',
@@ -17,12 +17,12 @@ export const STORY: DemoSpec = {
   imports: ['CngxSelect'],
   setup: `protected readonly priorities: CngxSelectOptionsInput<string> = [
     { label: 'Normal', children: [
-      { value: 'low', label: 'Niedrig' },
-      { value: 'medium', label: 'Mittel' },
+      { value: 'low', label: 'Low' },
+      { value: 'medium', label: 'Medium' },
     ]},
-    { label: 'Kritisch', children: [
-      { value: 'high', label: 'Hoch' },
-      { value: 'urgent', label: 'Dringend' },
+    { label: 'Critical', children: [
+      { value: 'high', label: 'High' },
+      { value: 'urgent', label: 'Urgent' },
     ]},
   ];
   protected readonly groupedValue = signal<string | undefined>(undefined);`,

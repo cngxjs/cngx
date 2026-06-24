@@ -16,18 +16,7 @@ export const STORY: DemoSpec = {
     'import { delay, of, throwError } from \'rxjs\';',
   ],
   imports: ['CngxCombobox'],
-  setup: `protected readonly commitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
-  protected readonly commitShouldFail = signal(false);
-  protected readonly commitLog = signal<string[]>([]);
-  protected readonly commitAction: CngxSelectCommitAction<string> = (intended) => {
-    const ts = new Date().toLocaleTimeString();
-    this.commitLog.update(l => [...l, ts + ' → commit(' + String(intended) + ')']);
-    if (this.commitShouldFail()) {
-      return throwError(() => new Error('Server offline')).pipe(delay(800));
-    }
-    return of(intended).pipe(delay(800));
-  };
-  protected readonly tagOptions: CngxSelectOptionDef<string>[] = [
+  setup: `protected readonly tagOptions: CngxSelectOptionDef<string>[] = [
     { value: 'angular', label: 'Angular' },
     { value: 'signals', label: 'Signals' },
     { value: 'rxjs', label: 'RxJS' },

@@ -35,7 +35,7 @@ export const STORY: DemoSpec = {
     return of(intended).pipe(delay(800));
   };`,
   template: `  <cngx-select
-    [label]="'Farbe (commit)'"
+    [label]="'Color (commit)'"
     [options]="colors"
     [commitAction]="commitAction"
     [commitMode]="commitMode()"

@@ -18,12 +18,12 @@ export const STORY: DemoSpec = {
   imports: ['CngxSelect', 'CngxSelectOptgroupTemplate'],
   setup: `protected readonly priorities: CngxSelectOptionsInput<string> = [
     { label: 'Normal', children: [
-      { value: 'low', label: 'Niedrig' },
-      { value: 'medium', label: 'Mittel' },
+      { value: 'low', label: 'Low' },
+      { value: 'medium', label: 'Medium' },
     ]},
-    { label: 'Kritisch', children: [
-      { value: 'high', label: 'Hoch' },
-      { value: 'urgent', label: 'Dringend' },
+    { label: 'Critical', children: [
+      { value: 'high', label: 'High' },
+      { value: 'urgent', label: 'Urgent' },
     ]},
   ];
   protected readonly groupedValue = signal<string | undefined>(undefined);`,

@@ -30,8 +30,7 @@ export const STORY: DemoSpec = {
   protected readonly typeaheadAsyncState: ManualAsyncState<CngxSelectOptionsInput<{ id: number; name: string }>> =
     createManualState<CngxSelectOptionsInput<{ id: number; name: string }>>();
   protected readonly typeaheadAsyncValue = signal<{ id: number; name: string } | undefined>(undefined);`,
-  setupChrome: `protected readonly loading = signal(true);
-  protected typeaheadAsyncSetLoading(): void { this.typeaheadAsyncState.set('loading'); }
+  setupChrome: `protected typeaheadAsyncSetLoading(): void { this.typeaheadAsyncState.set('loading'); }
   protected typeaheadAsyncSetSuccess(): void { this.typeaheadAsyncState.setSuccess(this.typeaheadUsers); }
   protected typeaheadAsyncSetError(): void { this.typeaheadAsyncState.setError(new Error('Network offline')); }`,
   template: `  <cngx-typeahead

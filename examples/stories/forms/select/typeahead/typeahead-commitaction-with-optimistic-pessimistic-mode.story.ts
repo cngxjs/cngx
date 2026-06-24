@@ -16,18 +16,7 @@ export const STORY: DemoSpec = {
     'import { delay, of, throwError } from \'rxjs\';',
   ],
   imports: ['CngxTypeahead'],
-  setup: `protected readonly commitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
-  protected readonly commitShouldFail = signal(false);
-  protected readonly commitLog = signal<string[]>([]);
-  protected readonly commitAction: CngxSelectCommitAction<string> = (intended) => {
-    const ts = new Date().toLocaleTimeString();
-    this.commitLog.update(l => [...l, ts + ' → commit(' + String(intended) + ')']);
-    if (this.commitShouldFail()) {
-      return throwError(() => new Error('Server offline')).pipe(delay(800));
-    }
-    return of(intended).pipe(delay(800));
-  };
-  protected readonly typeaheadUsers: CngxSelectOptionDef<{ id: number; name: string }>[] = [
+  setup: `protected readonly typeaheadUsers: CngxSelectOptionDef<{ id: number; name: string }>[] = [
     { value: { id: 1, name: 'Alice Meier' },  label: 'Alice Meier' },
     { value: { id: 2, name: 'Bob Schmidt' },  label: 'Bob Schmidt' },
     { value: { id: 3, name: 'Charlotte Fischer' }, label: 'Charlotte Fischer' },

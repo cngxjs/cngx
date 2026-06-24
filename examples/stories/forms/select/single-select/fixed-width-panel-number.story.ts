@@ -13,7 +13,6 @@ export const STORY: DemoSpec = {
   ],
   moduleImports: [
     'import { CngxSelect, type CngxSelectOptionDef } from \'@cngx/forms/select\';',
-    'import { of } from \'rxjs\';',
   ],
   imports: ['CngxSelect'],
   setup: `protected readonly colors: CngxSelectOptionDef<string>[] = [
