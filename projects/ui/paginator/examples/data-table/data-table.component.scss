@@ -1,5 +1,6 @@
 @use '@angular/material' as mat;
 @use '@cngx/themes/material/paginator-theme.scss' as paginator;
+@use '@cngx/themes/material/ripple-theme.scss' as ripple;
 
 $palette: (
   theme-type: light,
@@ -12,6 +13,7 @@ html {
   color-scheme: light;
   @include mat.theme((color: $palette, typography: Roboto, density: 0));
   @include paginator.theme($theme);
+  @include ripple.theme($theme);
 
   background: var(--mat-sys-surface);
   color: var(--mat-sys-on-surface);
