@@ -57,6 +57,22 @@ function sizes(fixture: Plumbing['fixture']): (string | null)[] {
   return dots(fixture).map((d) => d.getAttribute('data-size'));
 }
 
+/** Leftmost visible page index, read off the track translate var. */
+function trackShift(fixture: Plumbing['fixture']): number {
+  const track = (fixture.nativeElement as HTMLElement).querySelector<HTMLElement>(
+    '.cngx-paginator__dots-track',
+  );
+  return Number(track?.style.getPropertyValue('--cngx-paginator-dots-shift') || 0);
+}
+
+/** Sizes of the 7 dots inside the clipped viewport window (the rest glide off-screen). */
+function windowSizes(fixture: Plumbing['fixture']): (string | null)[] {
+  const start = trackShift(fixture);
+  return dots(fixture)
+    .slice(start, start + 7)
+    .map((d) => d.getAttribute('data-size'));
+}
+
 describe('CngxPaginatorDots', () => {
   test('renders one full-size dot per page when every page fits', async () => {
     const { fixture } = await setup();
@@ -83,13 +99,17 @@ describe('CngxPaginatorDots', () => {
     expect(paginate.pageIndex()).toBe(3);
   });
 
-  test('caps at 7 dots and shrinks the truncated trailing edge', async () => {
+  test('renders every page and shrinks the truncated trailing edge of the window', async () => {
     const { fixture, host } = await setup();
     host.total.set(200); // 20 pages, page 0
     await settle(fixture);
-    expect(dots(fixture)).toHaveLength(7);
-    // page 0: only the trailing edge is truncated.
-    expect(sizes(fixture)).toEqual(['full', 'full', 'full', 'full', 'full', 'medium', 'small']);
+    // Every page is rendered into the gliding track; the viewport clips to 7.
+    expect(dots(fixture)).toHaveLength(20);
+    expect(trackShift(fixture)).toBe(0);
+    // page 0: only the trailing edge of the visible window is truncated.
+    expect(windowSizes(fixture)).toEqual(['full', 'full', 'full', 'full', 'full', 'medium', 'small']);
+    // pages scrolled out of the window sit small behind the clip.
+    expect(sizes(fixture).slice(7)).toEqual(Array(13).fill('small'));
   });
 
   test('shrinks both edges when the window is interior', async () => {
@@ -98,7 +118,9 @@ describe('CngxPaginatorDots', () => {
     await settle(fixture);
     paginate.setPage(10);
     await settle(fixture);
-    expect(sizes(fixture)).toEqual(['small', 'medium', 'full', 'full', 'full', 'medium', 'small']);
+    // current centred -> window is pages 7..13, both edges truncated.
+    expect(trackShift(fixture)).toBe(7);
+    expect(windowSizes(fixture)).toEqual(['small', 'medium', 'full', 'full', 'full', 'medium', 'small']);
     const current = dots(fixture).find((d) => d.getAttribute('aria-current') === 'page');
     expect(current?.getAttribute('aria-label')).toBe('Page 11');
     expect(current?.getAttribute('data-size')).toBe('full');

@@ -350,11 +350,42 @@
   }
 
   /* Dots indicator - a row of circular page markers (cngx-pgn-dots). */
+  /*
+   * Dots viewport. For small counts it just lays the dots out inline. Once the
+   * page count exceeds the visible window (`--windowed`) it clips to exactly
+   * `VISIBLE` dot slots horizontally and lets the inner track translate, so
+   * navigating glides the strip (active dot stays centred) instead of
+   * reshuffling the DOM. `overflow-y: visible` keeps the scaled current dot and
+   * focus rings from being clipped vertically.
+   */
   .cngx-paginator__dots {
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .cngx-paginator__dots--windowed {
+    overflow-x: clip;
+    overflow-y: visible;
+    max-width: calc(
+      7 * var(--cngx-paginator-dot-size, 0.5rem) + 6 * var(--cngx-paginator-dot-gap, 0.5rem)
+    );
+  }
+
+  /* The sliding row. `--cngx-paginator-dots-shift` is the leftmost visible page
+     index; the translate pulls that slot to the viewport start, and the
+     transition turns each navigation into a glide. */
+  .cngx-paginator__dots-track {
     display: inline-flex;
     flex-direction: row;
     align-items: center;
     gap: var(--cngx-paginator-dot-gap, 0.5rem);
+    transform: translateX(
+      calc(
+        var(--cngx-paginator-dots-shift, 0) * -1 *
+          (var(--cngx-paginator-dot-size, 0.5rem) + var(--cngx-paginator-dot-gap, 0.5rem))
+      )
+    );
+    transition: transform var(--cngx-paginator-motion-duration, 200ms) ease;
   }
 
   .cngx-paginator__dot {
@@ -536,7 +567,8 @@
 
   @media (prefers-reduced-motion: reduce) {
     .cngx-paginator__button,
-    .cngx-paginator__dot {
+    .cngx-paginator__dot,
+    .cngx-paginator__dots-track {
       transition: none;
     }
     .cngx-paginator__infinite-spinner {
