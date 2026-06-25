@@ -68,6 +68,7 @@
     // fill stays cngx-distinct.
     --cngx-select-option-highlight-bg: color-mix(in srgb, var(--mat-sys-on-surface) 8%, transparent);
     --cngx-select-check-color: var(--mat-sys-primary);
+    --cngx-select-placeholder-color: var(--mat-sys-on-surface-variant);
     --cngx-select-error-color: var(--mat-sys-error);
     --cngx-select-option-error-color: var(--mat-sys-error);
 
@@ -111,7 +112,6 @@
       var(--mat-sys-primary) 12%,
       transparent
     );
-    --cngx-tree-select-placeholder-color: var(--mat-sys-on-surface-variant);
   } @else {
     --cngx-select-panel-bg: #{mat.get-theme-color($theme, background, card)};
     --cngx-select-panel-color: #{mat.get-theme-color($theme, foreground, text)};

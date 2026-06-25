@@ -163,9 +163,9 @@
       cursor: text;
     }
 
-    .cngx-typeahead__trigger:focus-within {
+    .cngx-typeahead__trigger:has(:focus-visible) {
       outline: 2px solid var(--cngx-color-primary, oklch(0.66 0.19 50));
-      outline-offset: 2px;
+      outline-offset: var(--cngx-select-focus-offset, 2px);
     }
 
     /* `role="combobox"` lives on `.cngx-typeahead__input` (a direct child of
@@ -177,7 +177,7 @@
     }
     .cngx-typeahead__trigger:has(> [role='combobox'][aria-invalid='true']):focus-within {
       outline: 2px solid var(--cngx-select-trigger-invalid-outline-color, oklch(0.6 0.18 25));
-      outline-offset: 2px;
+      outline-offset: var(--cngx-select-focus-offset, 2px);
       box-shadow: var(--cngx-select-trigger-invalid-glow, 0 0 0 3px oklch(0.6 0.18 25 / 0.2));
     }
 
@@ -190,6 +190,11 @@
       font: inherit;
       color: inherit;
       padding: 0;
+    }
+
+    .cngx-typeahead__input::placeholder {
+      color: var(--cngx-select-placeholder-color, oklch(0 0 0 / 0.5));
+      opacity: 1;
     }
 
     .cngx-typeahead__input:disabled {

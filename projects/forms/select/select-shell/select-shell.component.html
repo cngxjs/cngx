@@ -32,7 +32,11 @@
     @if (triggerLabelTpl(); as labelTpl) {
       <ng-container *ngTemplateOutlet="labelTpl; context: triggerLabelContext()" />
     } @else {
-      <span class="cngx-select-shell__label">{{ triggerText() }}</span>
+      <span
+        class="cngx-select-shell__label"
+        [class.cngx-select-shell__label--placeholder]="isEmpty()"
+        >{{ triggerText() }}</span
+      >
     }
     @if (clearable() && !empty() && !disabled()) {
       @if (tpl.clearButton(); as clearTpl) {

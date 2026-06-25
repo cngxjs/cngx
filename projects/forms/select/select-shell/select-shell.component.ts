@@ -690,6 +690,9 @@ export class CngxSelectShell<T = unknown>
   });
 
   /** @internal */
+  protected readonly isEmpty = computed<boolean>(() => this.selectedOption() == null);
+
+  /** @internal */
   protected readonly triggerText = computed<string>(() => {
     const fallback = this.placeholder() || this.labelInput();
     return this.selectedOption()?.label ?? fallback;

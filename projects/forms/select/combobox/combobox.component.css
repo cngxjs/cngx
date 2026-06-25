@@ -18,7 +18,8 @@
  *   danger border + box-shadow glow at focus time (paints on the visible
  *   wrapper without a TS-side rebind since `role="combobox"` lives on
  *   the input)
- * - `.cngx-combobox__input::placeholder` - opacity-tuned placeholder
+ * - `.cngx-combobox__input::placeholder` - muted placeholder via the
+ *   shared `--cngx-select-placeholder-color` token
  * - `:hover` on `.cngx-combobox__clear-all` - opacity 1
  * - `:focus-visible` on the clear-all button - 2px primary outline
  *
@@ -146,16 +147,6 @@
   }
 
   /**
-   * Outline offset of the focus ring.
-   * @group State / Focus
-   */
-  @property --cngx-combobox-focus-offset {
-    syntax: '<length>';
-    inherits: false;
-    initial-value: 2px;
-  }
-
-  /**
    * Opacity multiplier applied when the trigger is disabled.
    * @group State / Disabled
    */
@@ -185,16 +176,6 @@
     syntax: '*';
     inherits: false;
     initial-value: 4rem;
-  }
-
-  /**
-   * Opacity of the input placeholder text.
-   * @group State / Placeholder
-   */
-  @property --cngx-combobox-placeholder-opacity {
-    syntax: '<number>';
-    inherits: false;
-    initial-value: 0.7;
   }
 
   /**
@@ -248,12 +229,12 @@
       flex-wrap: nowrap;
     }
 
-    .cngx-combobox__trigger:focus-within {
+    .cngx-combobox__trigger:has(:focus-visible) {
       outline: var(
         --cngx-combobox-focus-outline,
         var(--cngx-select-focus-outline, 2px solid var(--cngx-color-primary, oklch(0.66 0.19 50)))
       );
-      outline-offset: var(--cngx-combobox-focus-offset, var(--cngx-select-focus-offset, 2px));
+      outline-offset: var(--cngx-select-focus-offset, 2px);
     }
 
     .cngx-combobox__trigger[aria-disabled='true'] {
@@ -270,7 +251,7 @@
     }
     .cngx-combobox__trigger:has(> [role='combobox'][aria-invalid='true']):focus-within {
       outline: 2px solid var(--cngx-select-trigger-invalid-outline-color, oklch(0.6 0.18 25));
-      outline-offset: var(--cngx-combobox-focus-offset, var(--cngx-select-focus-offset, 2px));
+      outline-offset: var(--cngx-select-focus-offset, 2px);
       box-shadow: var(--cngx-select-trigger-invalid-glow, 0 0 0 3px oklch(0.6 0.18 25 / 0.2));
     }
 
@@ -294,8 +275,8 @@
     }
 
     .cngx-combobox__input::placeholder {
-      opacity: var(--cngx-combobox-placeholder-opacity, 0.7);
-      color: inherit;
+      color: var(--cngx-select-placeholder-color, oklch(0 0 0 / 0.5));
+      opacity: 1;
     }
 
     /* Slot wrapper for *cngxComboboxTriggerLabel - keeps text summary

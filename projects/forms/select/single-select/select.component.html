@@ -34,7 +34,7 @@
     (blur)="handleBlur()"
     (keydown)="handleTriggerKeydown($event)"
   >
-    <span class="cngx-select__label">
+    <span class="cngx-select__label" [class.cngx-select__label--placeholder]="isEmpty()">
       @if (triggerLabelTpl(); as triggerTpl) {
         @if (!isEmpty()) {
           <ng-container *ngTemplateOutlet="triggerTpl; context: triggerLabelContext()" />

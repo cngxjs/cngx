@@ -234,6 +234,10 @@
       gap: 0.375rem;
     }
 
+    .cngx-select__label--placeholder {
+      color: var(--cngx-select-placeholder-color, oklch(0 0 0 / 0.5));
+    }
+
     .cngx-select__caret {
       flex: 0 0 auto;
       opacity: 0.7;
