@@ -218,6 +218,9 @@
   --cngx-reorderable-multi-select-min-height: #{map.get($trig-min-heights, $scale)};
   --cngx-reorderable-multi-select-padding: #{map.get($trig-paddings, $scale)};
   --cngx-reorderable-multi-select-radius: #{$trig-radius};
+
+  --cngx-tree-select-trigger-height: #{map.get($trig-min-heights, $scale)};
+  --cngx-tree-select-trigger-radius: #{$trig-radius};
 }
 
 @mixin theme($theme) {
