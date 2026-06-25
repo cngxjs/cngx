@@ -220,7 +220,12 @@
   --cngx-reorderable-multi-select-radius: #{$trig-radius};
 
   --cngx-tree-select-trigger-height: #{map.get($trig-min-heights, $scale)};
+  --cngx-tree-select-trigger-padding: #{map.get($trig-paddings, $scale)};
   --cngx-tree-select-trigger-radius: #{$trig-radius};
+
+  --cngx-select-shell-min-height: #{map.get($trig-min-heights, $scale)};
+  --cngx-select-shell-padding: #{map.get($trig-paddings, $scale)};
+  --cngx-select-shell-radius: #{$trig-radius};
 }
 
 @mixin theme($theme) {
