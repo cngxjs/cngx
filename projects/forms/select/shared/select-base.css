@@ -305,7 +305,7 @@
   @property --cngx-select-caret-size {
     syntax: '*';
     inherits: false;
-    initial-value: 1em;
+    initial-value: 1.25em;
   }
 
   /**

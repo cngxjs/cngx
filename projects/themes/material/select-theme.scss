@@ -165,11 +165,23 @@
   // Tree-select panel owns its own body padding token; zero it too so the tree
   // rows sit flush like the flat option list.
   --cngx-tree-select-tree-padding: 0;
+  // Tree node rows track the flat option-row metrics so the tree body reads
+  // like the rest of the family: same density-scaled row height and the same
+  // 16px horizontal rhythm as --cngx-select-option-padding.
+  --cngx-tree-select-node-height: #{map.get($opt-min-heights, $scale)};
+  --cngx-tree-select-base-indent: 16px;
+  --cngx-tree-select-node-padding-end: 16px;
+  // Material option rows sit edge-to-edge (option-radius 0, panel padding 0);
+  // match the tree node rows so the body reads identically under the bridge.
+  --cngx-tree-select-node-radius: 0;
   // Material's tree expand toggle reads as a ~24px chevron; the cngx default
   // 1.25rem button with a 0.75rem glyph is too small next to mat-tree. Bump the
   // button and glyph so the twisty matches the option row's visual weight.
   --cngx-tree-select-twisty-size: 1.5rem;
   --cngx-tree-select-twisty-font-size: 1.125rem;
+  // Trigger caret: the default text glyph is too light next to Material's
+  // chunkier indicator; bump it so the dropdown chevron reads at full weight.
+  --cngx-select-caret-size: 1.5rem;
 
   // Trigger metrics - Material 3 outlined-input scale (56 / 52 / 48 / 44 / 40).
   // Every Select-family variant exposes its own min-height / padding /
