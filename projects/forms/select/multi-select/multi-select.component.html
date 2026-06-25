@@ -1,0 +1,159 @@
+<div
+  class="cngx-multi-select__root"
+  cngxClickOutside
+  [enabled]="panelOpen()"
+  (clickOutside)="handleClickOutside()"
+>
+  <!--
+    role="combobox" on a <div>, not <button>: chip × buttons,
+    clear-all, and chip-close slots would be invalid nested buttons.
+    WAI-ARIA 1.2 multi-value combobox pattern.
+  -->
+  @let aria = triggerAria();
+  <div
+    #triggerBtn
+    class="cngx-multi-select__trigger"
+    role="combobox"
+    [cngxPopoverTrigger]="pop"
+    [haspopup]="'listbox'"
+    [cngxListboxTrigger]="lb"
+    [popover]="pop"
+    [closeOnSelect]="false"
+    [attr.tabindex]="effectiveTabIndex()"
+    [attr.aria-label]="aria.label"
+    [attr.aria-labelledby]="aria.labelledBy"
+    [attr.aria-describedby]="aria.describedBy"
+    [attr.aria-errormessage]="aria.errorMessage"
+    [attr.aria-expanded]="aria.expanded"
+    [attr.aria-disabled]="aria.disabled"
+    [attr.aria-invalid]="aria.invalid"
+    [attr.aria-required]="aria.required"
+    [attr.aria-busy]="aria.busy"
+    (click)="handleTriggerClick()"
+    (focus)="handleFocus()"
+    (blur)="handleBlur()"
+    (keydown)="handleTriggerKeydown($event)"
+  >
+    <span class="cngx-select__chip-list" [attr.data-overflow]="chipOverflow()">
+      @if (isEmpty()) {
+        @if (tpl.placeholder(); as phTpl) {
+          <ng-container
+            *ngTemplateOutlet="
+              phTpl;
+              context: { $implicit: placeholder(), placeholder: placeholder() }
+            "
+          />
+        } @else {
+          <span class="cngx-multi-select__placeholder">
+            {{ placeholder() || label() }}
+          </span>
+        }
+      } @else if (triggerLabelTpl(); as triggerTpl) {
+        <ng-container
+          *ngTemplateOutlet="
+            triggerTpl;
+            context: {
+              $implicit: selectedOptions(),
+              selected: selectedOptions(),
+              values: values(),
+              count: selectedOptions().length,
+            }
+          "
+        />
+      } @else {
+        @for (opt of visibleSelected(); track opt.value) {
+          @if (chipTpl(); as chipT) {
+            <ng-container
+              *ngTemplateOutlet="
+                chipT;
+                context: {
+                  $implicit: opt,
+                  option: opt,
+                  remove: chipRemoveFor(opt),
+                }
+              "
+            />
+          } @else {
+            <cngx-chip
+              [removable]="!disabled()"
+              [removeAriaLabel]="chipRemoveAriaLabel() + ': ' + opt.label"
+              (remove)="handleChipRemoveClick($event, opt)"
+            >
+              {{ opt.label }}
+            </cngx-chip>
+          }
+        }
+        @if (overflowBadgeCount() > 0) {
+          <span class="cngx-select__chip-overflow-badge" aria-hidden="true">
+            +{{ overflowBadgeCount() }}
+          </span>
+        }
+      }
+    </span>
+    @if (clearable() && !isEmpty() && !disabled()) {
+      @if (tpl.clearButton(); as clearBtnTpl) {
+        <span class="cngx-multi-select__clear-slot" (click)="$event.stopPropagation()">
+          <ng-container
+            *ngTemplateOutlet="
+              clearBtnTpl;
+              context: {
+                $implicit: clearAllCallback,
+                clear: clearAllCallback,
+                disabled: disabled(),
+              }
+            "
+          />
+        </span>
+      } @else {
+        <button
+          type="button"
+          class="cngx-multi-select__clear-all"
+          [attr.aria-label]="clearButtonAriaLabel()"
+          (click)="handleClearAllClick($event)"
+        >
+          @if (clearGlyph(); as glyph) {
+            <ng-container *ngTemplateOutlet="glyph" />
+          } @else {
+            <span aria-hidden="true">✕</span>
+          }
+        </button>
+      }
+    }
+    @if (resolvedShowCaret()) {
+      @if (tpl.caret(); as caretT) {
+        <ng-container
+          *ngTemplateOutlet="caretT; context: { $implicit: panelOpen(), open: panelOpen() }"
+        />
+      } @else if (caretGlyph(); as glyph) {
+        <span aria-hidden="true" class="cngx-multi-select__caret">
+          <ng-container *ngTemplateOutlet="glyph" />
+        </span>
+      } @else {
+        <span aria-hidden="true" class="cngx-multi-select__caret">&#9662;</span>
+      }
+    }
+  </div>
+  <div
+    cngxPopover
+    #pop="cngxPopover"
+    [placement]="popoverPlacement()"
+    class="cngx-select__panel"
+    [class]="panelClassList()"
+    [style.--cngx-select-panel-min-width]="panelWidthCss()"
+  >
+    <div
+      cngxListbox
+      #lb="cngxListbox"
+      [label]="resolvedListboxLabel()"
+      [multiple]="true"
+      [compareWith]="listboxCompareWith()"
+      [externalActivation]="externalActivation()"
+      [explicitOptions]="panelRef.options()"
+      [items]="panelRef.items()"
+      [virtualCount]="virtualItemCount()"
+      [(selectedValues)]="values"
+    >
+      <cngx-select-panel #panelRef="cngxSelectPanel" />
+    </div>
+  </div>
+</div>

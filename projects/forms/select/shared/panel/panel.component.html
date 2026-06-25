@@ -1,0 +1,117 @@
+<cngx-select-panel-shell
+  [actionFocusTrapEnabled]="host.actionFocusTrapEnabled?.() ?? false"
+  [actionPosition]="host.actionPosition?.() ?? 'bottom'"
+>
+  @if (virtualizer(); as v) {
+    <div aria-hidden="true" [style.height.px]="v.offsetBefore()"></div>
+  }
+  @for (item of renderItems(); track $index) {
+    @if (host.isGroup(item)) {
+      <div class="cngx-select__group" role="group" [attr.aria-label]="item.label">
+        @if (host.tpl.optgroup(); as tpl) {
+          <ng-container *ngTemplateOutlet="tpl; context: { $implicit: item, group: item }" />
+        } @else {
+          <div class="cngx-select__group-header" aria-hidden="true">{{ item.label }}</div>
+        }
+        @for (opt of item.children; track opt.value) {
+          <ng-container *ngTemplateOutlet="optionRow; context: { $implicit: opt, groupDisabled: !!item.disabled, virtualIndex: null }" />
+        }
+      </div>
+    } @else {
+      <ng-container
+        *ngTemplateOutlet="optionRow; context: {
+          $implicit: item,
+          groupDisabled: false,
+          virtualIndex: virtualizer() ? virtualizer()!.startIndex() + $index : null
+        }"
+      />
+    }
+  }
+  @if (virtualizer(); as v) {
+    <div aria-hidden="true" [style.height.px]="v.offsetAfter()"></div>
+  }
+</cngx-select-panel-shell>
+
+<!--
+  Option-row template — shared by grouped and flat items. Single
+  source of truth for selection class, pending class, check
+  indicator, label template, and commit-status glyph.
+-->
+<ng-template #optionRow let-opt let-groupDisabled="groupDisabled" let-virtualIndex="virtualIndex">
+  <div
+    cngxOption
+    [value]="opt.value"
+    [disabled]="!!opt.disabled || groupDisabled"
+    class="cngx-select__option"
+    [class.cngx-select__option--selected]="host.isSelected(opt)"
+    [class.cngx-select__option--pending]="host.isCommittingOption(opt)"
+    [attr.data-cngx-recycle-index]="virtualIndex"
+    [attr.aria-setsize]="virtualIndex !== null ? virtualizer()?.setsize() : null"
+    [attr.aria-posinset]="virtualIndex !== null ? virtualIndex + 1 : null"
+  >
+    @if (host.resolvedShowSelectionIndicator() && host.resolvedSelectionIndicatorPosition() === 'before') {
+      @if (host.tpl.check(); as tpl) {
+        <ng-container *ngTemplateOutlet="tpl; context: checkContextFor(opt, 'before')" />
+      } @else {
+        <ng-container *ngTemplateOutlet="defaultIndicator; context: { $implicit: opt }" />
+      }
+    }
+    @if (host.tpl.optionLabel(); as tpl) {
+      <ng-container *ngTemplateOutlet="tpl; context: { $implicit: opt, option: opt, selected: host.isSelected(opt), highlighted: isHighlighted(opt) }" />
+    } @else {
+      {{ opt.label }}
+    }
+    @if (host.resolvedShowSelectionIndicator() && host.resolvedSelectionIndicatorPosition() === 'after') {
+      @if (host.tpl.check(); as tpl) {
+        <ng-container *ngTemplateOutlet="tpl; context: checkContextFor(opt, 'after')" />
+      } @else {
+        <ng-container *ngTemplateOutlet="defaultIndicator; context: { $implicit: opt }" />
+      }
+    }
+    @if (host.isCommittingOption(opt)) {
+      @if (host.tpl.optionPending(); as tpl) {
+        <ng-container *ngTemplateOutlet="tpl; context: { $implicit: opt, option: opt }" />
+      } @else {
+        <span aria-hidden="true" class="cngx-select__option-spinner"></span>
+      }
+    } @else if (host.commitErrorDisplay() === 'inline' && host.showCommitError() && host.isSelected(opt)) {
+      @if (host.tpl.optionError(); as tpl) {
+        <ng-container *ngTemplateOutlet="tpl; context: { $implicit: opt, option: opt, error: host.commitErrorValue() }" />
+      } @else {
+        <span aria-hidden="true" class="cngx-select__option-error">!</span>
+      }
+    }
+  </div>
+</ng-template>
+
+<!--
+  Default indicator body — shared by 'before' and 'after' position
+  blocks. *cngxSelectCheck overrides win; this template renders
+  only when no slot directive is projected.
+-->
+<ng-template #defaultIndicator let-opt>
+  @switch (host.resolvedSelectionIndicatorVariant()) {
+    @case ('radio') {
+      <cngx-radio-indicator
+        class="cngx-select__check"
+        [checked]="host.isSelected(opt)"
+      />
+    }
+    @case ('checkmark') {
+      <cngx-checkbox-indicator
+        class="cngx-select__check"
+        variant="checkmark"
+        [checked]="host.isSelected(opt)"
+        [indeterminate]="host.isIndeterminate(opt)"
+      />
+    }
+    @default {
+      <cngx-checkbox-indicator
+        class="cngx-select__check"
+        variant="checkbox"
+        [checked]="host.isSelected(opt)"
+        [indeterminate]="host.isIndeterminate(opt)"
+      />
+    }
+  }
+</ng-template>

@@ -176,202 +176,7 @@ export interface CngxReorderableMultiSelectChange<T = unknown> {
     '[id]': 'resolvedId()',
     '[attr.aria-readonly]': 'ariaReadonly()',
   },
-  template: `
-    <div
-      class="cngx-reorderable-multi-select__root"
-      cngxClickOutside
-      [enabled]="panelOpen()"
-      (clickOutside)="handleClickOutside()"
-    >
-      @let aria = triggerAria();
-      <div
-        #triggerBtn
-        class="cngx-reorderable-multi-select__trigger"
-        role="combobox"
-        [cngxPopoverTrigger]="pop"
-        [haspopup]="'listbox'"
-        [cngxListboxTrigger]="lb"
-        [popover]="pop"
-        [closeOnSelect]="false"
-        [attr.tabindex]="effectiveTabIndex()"
-        [attr.aria-label]="aria.label"
-        [attr.aria-labelledby]="aria.labelledBy"
-        [attr.aria-describedby]="aria.describedBy"
-        [attr.aria-errormessage]="aria.errorMessage"
-        [attr.aria-expanded]="aria.expanded"
-        [attr.aria-disabled]="aria.disabled"
-        [attr.aria-invalid]="aria.invalid"
-        [attr.aria-required]="aria.required"
-        [attr.aria-busy]="aria.busy"
-        (click)="handleTriggerClick()"
-        (focus)="handleFocus()"
-        (blur)="handleBlur()"
-        (keydown)="handleTriggerKeydown($event)"
-      >
-        <!--
-          Chip strip. cngxReorder receives the read-only values()
-          Signal -- directive wants a Signal reference, not the array.
-          Roving tabindex inlined (handleStripKeydown + activeChipIndex)
-          to avoid double-firing with CngxReorder's modifier-gated
-          handler on the same host.
-        -->
-        <span
-          class="cngx-select__chip-list"
-          [class.cngx-select__chip-list--reordering]="reorderDir.dragging()"
-          [attr.data-overflow]="effectiveChipOverflow()"
-          role="group"
-          [attr.aria-label]="reorderAriaLabel()"
-          [attr.aria-disabled]="reorderDisabled() ? 'true' : null"
-          [cngxReorder]="valuesSignal"
-          [disabled]="reorderDisabled()"
-          [keyboardModifier]="reorderKeyboardModifier()"
-          handleSelector="[data-reorder-index]"
-          ignoreSelector="button, a, input, [contenteditable], [cngxChipClose]"
-          #reorderDir="cngxReorder"
-          (reordered)="handleReorder($event)"
-          (keydown)="handleStripKeydown($event)"
-        >
-          @if (isEmpty()) {
-            @if (tpl.placeholder(); as phTpl) {
-              <ng-container
-                *ngTemplateOutlet="
-                  phTpl;
-                  context: { $implicit: placeholder(), placeholder: placeholder() }
-                "
-              />
-            } @else {
-              <span class="cngx-reorderable-multi-select__placeholder">
-                {{ placeholder() || label() }}
-              </span>
-            }
-          } @else if (triggerLabelTpl(); as triggerTpl) {
-            <ng-container
-              *ngTemplateOutlet="
-                triggerTpl;
-                context: {
-                  $implicit: selectedOptions(),
-                  selected: selectedOptions(),
-                  values: values(),
-                  count: selectedOptions().length,
-                }
-              "
-            />
-          } @else {
-            @for (opt of selectedOptions(); track opt.value; let i = $index) {
-              <span
-                class="cngx-select__chip-wrap"
-                [class.cngx-select__chip--dragging]="reorderDir.dragFromIndex() === i"
-                [class.cngx-select__chip--drag-over]="
-                  reorderDir.dragOverIndex() === i && reorderDir.dragFromIndex() !== i
-                "
-                [attr.data-reorder-index]="i"
-                [attr.tabindex]="i === activeChipIndex() ? 0 : -1"
-                (focus)="handleChipFocus(i)"
-                (click)="$event.stopPropagation()"
-              >
-                <span class="cngx-select__chip-handle" aria-hidden="true">
-                  @if (chipDragHandleTpl(); as handleT) {
-                    <ng-container *ngTemplateOutlet="handleT" />
-                  } @else {
-                    {{ defaultDragHandleGlyph }}
-                  }
-                </span>
-                @if (chipTpl(); as chipT) {
-                  <ng-container
-                    *ngTemplateOutlet="
-                      chipT;
-                      context: {
-                        $implicit: opt,
-                        option: opt,
-                        remove: chipRemoveFor(opt),
-                        index: i,
-                      }
-                    "
-                  />
-                } @else {
-                  <cngx-chip
-                    [removable]="!disabled()"
-                    [removeAriaLabel]="chipRemoveAriaLabel() + ': ' + opt.label"
-                    (remove)="handleChipRemoveClick($event, opt)"
-                  >
-                    {{ opt.label }}
-                  </cngx-chip>
-                }
-              </span>
-            }
-          }
-        </span>
-        @if (clearable() && !isEmpty() && !disabled()) {
-          @if (tpl.clearButton(); as clearBtnTpl) {
-            <span
-              class="cngx-reorderable-multi-select__clear-slot"
-              (click)="$event.stopPropagation()"
-            >
-              <ng-container
-                *ngTemplateOutlet="
-                  clearBtnTpl;
-                  context: {
-                    $implicit: clearAllCallback,
-                    clear: clearAllCallback,
-                    disabled: disabled(),
-                  }
-                "
-              />
-            </span>
-          } @else {
-            <button
-              type="button"
-              class="cngx-reorderable-multi-select__clear-all"
-              [attr.aria-label]="clearButtonAriaLabel()"
-              (click)="handleClearAllClick($event)"
-            >
-              @if (clearGlyph(); as glyph) {
-                <ng-container *ngTemplateOutlet="glyph" />
-              } @else {
-                <span aria-hidden="true">✕</span>
-              }
-            </button>
-          }
-        }
-        @if (resolvedShowCaret()) {
-          @if (tpl.caret(); as caretT) {
-            <ng-container
-              *ngTemplateOutlet="caretT; context: { $implicit: panelOpen(), open: panelOpen() }"
-            />
-          } @else if (caretGlyph(); as glyph) {
-            <span aria-hidden="true" class="cngx-reorderable-multi-select__caret">
-              <ng-container *ngTemplateOutlet="glyph" />
-            </span>
-          } @else {
-            <span aria-hidden="true" class="cngx-reorderable-multi-select__caret">&#9662;</span>
-          }
-        }
-      </div>
-      <div
-        cngxPopover
-        #pop="cngxPopover"
-        [placement]="popoverPlacement()"
-        class="cngx-select__panel"
-        [class]="panelClassList()"
-        [style.--cngx-select-panel-min-width]="panelWidthCss()"
-      >
-        <div
-          cngxListbox
-          #lb="cngxListbox"
-          [label]="resolvedListboxLabel()"
-          [multiple]="true"
-          [compareWith]="listboxCompareWith()"
-          [externalActivation]="externalActivation()"
-          [explicitOptions]="panelRef.options()"
-          [items]="panelRef.items()"
-          [virtualCount]="virtualItemCount()"
-          [(selectedValues)]="values"
-        >
-          <cngx-select-panel #panelRef="cngxSelectPanel" />
-        </div>
-      </div>
-    </div>
-  `,
+  templateUrl: './reorderable-multi-select.component.html',
   styleUrls: ['../shared/select-base.css', './reorderable-multi-select.component.css'],
   encapsulation: ViewEncapsulation.None,
 })
@@ -584,9 +389,12 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   private readonly actionBridge = inject(CNGX_ACTION_HOST_BRIDGE_FACTORY)({
     close: () => this.close(),
   });
-  /** @internal */ readonly actionDirty = this.actionBridge.dirty;
-  /** @internal */ readonly actionCallbacks = this.actionBridge.callbacks;
-  /** @internal */ readonly actionFocusTrapEnabled = this.actionBridge.shouldTrapFocus;
+  /** @internal */
+  readonly actionDirty = this.actionBridge.dirty;
+  /** @internal */
+  readonly actionCallbacks = this.actionBridge.callbacks;
+  /** @internal */
+  readonly actionFocusTrapEnabled = this.actionBridge.shouldTrapFocus;
 
   private readonly core = createSelectCore<T, T[]>(
     {
@@ -640,30 +448,50 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
     this.localItemsBuffer.clear();
   }
 
-  /** @internal */ protected readonly effectiveOptions = this.core.effectiveOptions;
-  /** @internal */ protected readonly flatOptions = this.core.flatOptions;
-  /** @internal */ protected readonly activeView = this.core.activeView;
-  /** @internal */ protected readonly showRefreshIndicator = this.core.showRefreshIndicator;
-  /** @internal */ protected readonly showInlineError = this.core.showInlineError;
-  /** @internal */ protected readonly skeletonIndices = this.core.skeletonIndices;
-  /** @internal */ protected readonly panelClassList = this.core.panelClassList;
-  /** @internal */ protected readonly panelWidthCss = this.core.panelWidthCss;
-  /** @internal */ readonly fallbackLabels = this.core.fallbackLabels;
-  /** @internal */ readonly ariaLabels = this.core.ariaLabels;
-  /** @internal */ protected readonly resolvedId = this.core.resolvedId;
-  /** @internal */ protected readonly resolvedListboxLabel = this.core.resolvedListboxLabel;
-  /** @internal */ protected readonly resolvedShowSelectionIndicator =
-    this.core.resolvedShowSelectionIndicator;
-  /** @internal */ protected readonly resolvedSelectionIndicatorVariant =
+  /** @internal */
+  protected readonly effectiveOptions = this.core.effectiveOptions;
+  /** @internal */
+  protected readonly flatOptions = this.core.flatOptions;
+  /** @internal */
+  protected readonly activeView = this.core.activeView;
+  /** @internal */
+  protected readonly showRefreshIndicator = this.core.showRefreshIndicator;
+  /** @internal */
+  protected readonly showInlineError = this.core.showInlineError;
+  /** @internal */
+  protected readonly skeletonIndices = this.core.skeletonIndices;
+  /** @internal */
+  protected readonly panelClassList = this.core.panelClassList;
+  /** @internal */
+  protected readonly panelWidthCss = this.core.panelWidthCss;
+  /** @internal */
+  readonly fallbackLabels = this.core.fallbackLabels;
+  /** @internal */
+  readonly ariaLabels = this.core.ariaLabels;
+  /** @internal */
+  protected readonly resolvedId = this.core.resolvedId;
+  /** @internal */
+  protected readonly resolvedListboxLabel = this.core.resolvedListboxLabel;
+  /** @internal */
+  protected readonly resolvedShowSelectionIndicator = this.core.resolvedShowSelectionIndicator;
+  /** @internal */
+  protected readonly resolvedSelectionIndicatorVariant =
     this.core.resolvedSelectionIndicatorVariant;
-  /** @internal */ protected readonly resolvedSelectionIndicatorPosition =
+  /** @internal */
+  protected readonly resolvedSelectionIndicatorPosition =
     this.core.resolvedSelectionIndicatorPosition;
-  /** @internal */ protected readonly resolvedShowCaret = this.core.resolvedShowCaret;
-  /** @internal */ protected readonly triggerAria = this.core.triggerAria;
-  /** @internal */ protected readonly ariaReadonly = this.core.ariaReadonly;
-  /** @internal */ protected readonly effectiveTabIndex = this.core.effectiveTabIndex;
-  /** @internal */ protected readonly externalActivation = this.core.externalActivation;
-  /** @internal */ protected readonly showCommitError = this.core.showCommitError;
+  /** @internal */
+  protected readonly resolvedShowCaret = this.core.resolvedShowCaret;
+  /** @internal */
+  protected readonly triggerAria = this.core.triggerAria;
+  /** @internal */
+  protected readonly ariaReadonly = this.core.ariaReadonly;
+  /** @internal */
+  protected readonly effectiveTabIndex = this.core.effectiveTabIndex;
+  /** @internal */
+  protected readonly externalActivation = this.core.externalActivation;
+  /** @internal */
+  protected readonly showCommitError = this.core.showCommitError;
 
   readonly disabled = this.core.disabled;
   readonly id = computed<string>(() => this.core.resolvedId() ?? '');
