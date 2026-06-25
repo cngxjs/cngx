@@ -63,7 +63,10 @@
     --cngx-tree-select-clear-color: var(--mat-sys-on-surface-variant);
     --cngx-tree-select-node-color: var(--mat-sys-on-surface);
 
-    --cngx-select-option-highlight-bg: color-mix(in srgb, var(--mat-sys-primary) 12%, transparent);
+    // Keyboard-active / hover row uses Material's neutral state layer
+    // (on-surface 8%), matching mat-select's grey active row - the selected
+    // fill stays cngx-distinct.
+    --cngx-select-option-highlight-bg: color-mix(in srgb, var(--mat-sys-on-surface) 8%, transparent);
     --cngx-select-check-color: var(--mat-sys-primary);
     --cngx-select-error-color: var(--mat-sys-error);
     --cngx-select-option-error-color: var(--mat-sys-error);
@@ -94,6 +97,12 @@
 
     // Shell focus ring
     --cngx-select-shell-focus-ring: var(--mat-sys-primary);
+    // Material outlined inputs thicken the border on focus with no offset gap;
+    // drop the cngx 2px ring offset so the focus ring sits on the border. This
+    // is the base token every variant trigger falls back to
+    // (--cngx-<variant>-focus-offset -> --cngx-select-focus-offset), so zeroing
+    // it here flattens the trigger outline and the inner chip/retry rings alike.
+    --cngx-select-focus-offset: 0px;
 
     // Tree-select node states
     --cngx-tree-select-node-hover-bg: color-mix(in srgb, var(--mat-sys-on-surface) 6%, transparent);
@@ -148,9 +157,11 @@
   --cngx-select-option-padding: #{map.get($opt-paddings, $scale)};
   --cngx-select-option-min-height: #{map.get($opt-min-heights, $scale)};
   --cngx-select-option-radius: 0;
-  // Material 3 Menu vertical padding: 8px top + 8px bottom, no horizontal
-  // inset so options sit edge-to-edge.
-  --cngx-select-panel-padding: 8px 0;
+  // Options sit edge-to-edge with no outer panel inset (the highlight reaches
+  // the panel border on all sides). The listbox container inside the panel
+  // also drops its default 4px inset so nothing offsets the option rows.
+  --cngx-select-panel-padding: 0;
+  --cngx-listbox-padding: 0;
 
   // Trigger metrics - Material 3 outlined-input scale (56 / 52 / 48 / 44 / 40).
   // Every Select-family variant exposes its own min-height / padding /
