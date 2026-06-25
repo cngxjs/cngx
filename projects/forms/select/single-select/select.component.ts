@@ -119,18 +119,13 @@ export interface CngxSelectChange<T = unknown> {
  * @since 0.1.0
  * @relatedTo CngxMultiSelect, CngxCombobox, CngxTypeahead, CngxTreeSelect, CngxSelectShell
  * @playground Commit action ./examples/commit-action/commit-action-example.component.ts
- * <example-url>http://localhost:4200/#/forms/select/single-select/async-state-consumer</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/autofocus-on-mount</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/clearable</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/commit-action-async-write</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/commiterrordisplay-variants-banner-inline-none</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/fixed-width-panel-number</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/keyboard-pageup-pagedown-on-a-long-list</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/loading-empty-templates</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/loading-variants</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/optgroups</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/reactive-forms-adaptformcontrol</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/refreshing-variants</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/rich-option-rendering</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/selection-indicator-variant-radio</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/signal-forms-required</example-url>
