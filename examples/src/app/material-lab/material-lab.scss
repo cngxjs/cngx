@@ -44,9 +44,16 @@ html {
     )
   );
 
-  // Real Material widgets (mat-select / mat-form-field / mat-chip) need their
-  // component themes; the cngx bridges theme the cngx widget alongside.
-  @include mat.all-component-themes($theme);
+  // Real Material widgets need their component themes; the cngx bridges theme
+  // the cngx widget alongside. Include only the components the harness actually
+  // renders (select / form-field / chips / autocomplete / input) instead of
+  // mat.all-component-themes, which emits ~71kB and blows the examples app
+  // anyComponentStyle budget.
+  @include mat.select-theme($theme);
+  @include mat.form-field-theme($theme);
+  @include mat.chips-theme($theme);
+  @include mat.autocomplete-theme($theme);
+  @include mat.input-theme($theme);
 
   @include cngx-system.theme($theme);
   @include select.theme($theme);
