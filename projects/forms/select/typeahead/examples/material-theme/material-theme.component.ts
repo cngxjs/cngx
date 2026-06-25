@@ -28,6 +28,7 @@ import { CngxTypeahead, type CngxSelectOptionDef } from '@cngx/forms/select';
         [options]="colors"
         [(value)]="value"
         [displayWith]="displayWith"
+        [selectionIndicatorPosition]="'after'"
         placeholder="Type to filter…"
       />
       <p class="demo__readout">Selected: {{ value() ?? '—' }}</p>

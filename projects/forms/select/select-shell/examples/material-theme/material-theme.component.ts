@@ -26,6 +26,7 @@ import { CngxSelectShell, CngxSelectOption } from '@cngx/forms/select';
       <cngx-select-shell
         [label]="'Favorite color'"
         [(value)]="value"
+        [selectionIndicatorPosition]="'after'"
         placeholder="Pick a color…"
       >
         <cngx-option [value]="'red'">Red</cngx-option>

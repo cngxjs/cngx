@@ -28,6 +28,7 @@ import { CngxSelect, type CngxSelectOptionDef } from '@cngx/forms/select';
         [options]="colors"
         [(value)]="value"
         [clearable]="true"
+        [selectionIndicatorPosition]="'after'"
         placeholder="Pick a color…"
       />
       <p class="demo__readout">Selected: {{ value() ?? '—' }}</p>
