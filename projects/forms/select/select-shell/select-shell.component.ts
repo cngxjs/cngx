@@ -201,7 +201,7 @@ export class CngxSelectShell<T = unknown>
   private readonly announcer = inject(CngxSelectAnnouncer);
   private readonly config = resolveSelectConfig();
 
-  readonly labelInput = input<string>('', { alias: 'label' });
+  readonly label = input<string>('');
   readonly placeholder = input<string>('');
   readonly disabledInput = input<boolean>(false, { alias: 'disabled' });
   readonly requiredInput = input<boolean>(false, { alias: 'required' });
@@ -482,7 +482,7 @@ export class CngxSelectShell<T = unknown>
    */
   private readonly core = createSelectCore<T, T>(
     {
-      label: this.labelInput,
+      label: this.label,
       ariaLabel: this.ariaLabel,
       ariaLabelledBy: this.ariaLabelledBy,
       placeholder: this.placeholder,
@@ -694,7 +694,7 @@ export class CngxSelectShell<T = unknown>
 
   /** @internal */
   protected readonly triggerText = computed<string>(() => {
-    const fallback = this.placeholder() || this.labelInput();
+    const fallback = this.placeholder() || this.label();
     return this.selectedOption()?.label ?? fallback;
   });
 
