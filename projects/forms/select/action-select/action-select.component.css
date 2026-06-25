@@ -100,16 +100,6 @@
     initial-value: oklch(1 0 0);
   }
 
-  /**
-   * Opacity multiplier applied when the input is disabled.
-   * @group State / Disabled
-   */
-  @property --cngx-action-select-disabled-opacity {
-    syntax: '<number>';
-    inherits: false;
-    initial-value: 0.6;
-  }
-
 
   /* Delegating tokens - trigger border + bg track the foundation
    * chain so a dark-mode swap on `--cngx-color-border` /
@@ -172,7 +162,7 @@
 
     .cngx-action-select__input:disabled {
       cursor: not-allowed;
-      opacity: var(--cngx-action-select-disabled-opacity, 0.6);
+      opacity: var(--cngx-select-disabled-opacity, 0.5);
     }
 
     .cngx-action-select__clear,

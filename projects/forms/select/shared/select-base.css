@@ -309,6 +309,17 @@
   }
 
   /**
+   * Opacity multiplier applied when the trigger is disabled. Shared
+   * family-wide so every variant dims its disabled trigger identically.
+   * @group State / Disabled
+   */
+  @property --cngx-select-disabled-opacity {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 0.5;
+  }
+
+  /**
    * Vertical gap between skeleton placeholder rows.
    * @group State / Loading
    */

@@ -150,16 +150,6 @@
     initial-value: 2px;
   }
 
-  /**
-   * Opacity multiplier applied when the trigger is disabled.
-   * @group State / Disabled
-   */
-  @property --cngx-select-disabled-opacity {
-    syntax: '<number>';
-    inherits: false;
-    initial-value: 0.5;
-  }
-
   /* Delegating tokens - trigger border + focus-ring track the
    * foundation chain so a dark-mode swap on `--cngx-color-border` /
    * `--cngx-color-primary` cascades through the trigger host.
