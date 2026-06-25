@@ -162,6 +162,14 @@
   // also drops its default 4px inset so nothing offsets the option rows.
   --cngx-select-panel-padding: 0;
   --cngx-listbox-padding: 0;
+  // Tree-select panel owns its own body padding token; zero it too so the tree
+  // rows sit flush like the flat option list.
+  --cngx-tree-select-tree-padding: 0;
+  // Material's tree expand toggle reads as a ~24px chevron; the cngx default
+  // 1.25rem button with a 0.75rem glyph is too small next to mat-tree. Bump the
+  // button and glyph so the twisty matches the option row's visual weight.
+  --cngx-tree-select-twisty-size: 1.5rem;
+  --cngx-tree-select-twisty-font-size: 1.125rem;
 
   // Trigger metrics - Material 3 outlined-input scale (56 / 52 / 48 / 44 / 40).
   // Every Select-family variant exposes its own min-height / padding /
