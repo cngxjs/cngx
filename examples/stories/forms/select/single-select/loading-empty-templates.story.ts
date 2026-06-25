@@ -27,7 +27,7 @@ export const STORY: DemoSpec = {
     [options]="loadingOptions"
     [(value)]="loadingValue"
     [loading]="loading()"
-    placeholder="Nichts geladen…"
+    placeholder="Nothing loaded…"
   >
     <ng-template cngxSelectEmpty>
       <span style="opacity:.7">No entries - adjust filters.</span>

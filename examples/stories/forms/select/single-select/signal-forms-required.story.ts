@@ -32,8 +32,8 @@ export const STORY: DemoSpec = {
     submit(this.singleForm, async () => []);
   }`,
   template: `  <cngx-form-field [field]="singleForm.color">
-    <label cngxLabel>Lieblingsfarbe</label>
-    <cngx-select [label]="'Lieblingsfarbe'" [options]="colors" placeholder="Pick a color…" />
+    <label cngxLabel>Favorite color</label>
+    <cngx-select [label]="'Favorite color'" [options]="colors" placeholder="Pick a color…" />
     <cngx-field-errors />
   </cngx-form-field>`,
   templateChrome: `<div class="event-grid" style="margin-top:12px">

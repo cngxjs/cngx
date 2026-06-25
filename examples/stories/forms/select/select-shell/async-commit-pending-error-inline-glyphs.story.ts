@@ -34,7 +34,7 @@ export const STORY: DemoSpec = {
     this.commitErrors.update((l) => [...l.slice(-4), new Date().toLocaleTimeString() + ' → ' + msg]);
   }`,
   template: `  <cngx-select-shell
-    [label]="'Farbe (committable)'"
+    [label]="'Color (committable)'"
     [commitAction]="commitAction"
     [commitMode]="commitMode()"
     [clearable]="true"

@@ -33,13 +33,7 @@ export const STORY: DemoSpec = {
   />
 
   <ng-template #customGrip>
-    <span style="
-      display:inline-block;
-      font-size:.875rem;
-      letter-spacing:.1em;
-      font-weight:700;
-      color:var(--cngx-color-primary);
-    ">&equiv;</span>
+    <span class="demo-grip-glyph">&equiv;</span>
   </ng-template>`,
   templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row">

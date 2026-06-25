@@ -70,10 +70,7 @@ export function createTypeaheadController<T>(
     buffer.set('');
   };
 
-  const matchFromIndex = (
-    char: string,
-    currentIndex: number,
-  ): CngxSelectOptionDef<T> | null => {
+  const matchFromIndex = (char: string, currentIndex: number): CngxSelectOptionDef<T> | null => {
     if (options.disabled()) {
       return null;
     }

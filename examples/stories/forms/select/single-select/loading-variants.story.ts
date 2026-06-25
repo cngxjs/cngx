@@ -13,7 +13,6 @@ export const STORY: DemoSpec = {
   ],
   moduleImports: [
     'import { CngxSelect, type CngxSelectOptionDef, type CngxSelectOptionsInput } from \'@cngx/forms/select\';',
-    'import { of } from \'rxjs\';',
     'import { createManualState } from \'@cngx/common/data\';',
   ],
   imports: ['CngxSelect'],

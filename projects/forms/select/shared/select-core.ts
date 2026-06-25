@@ -541,7 +541,7 @@ export function createSelectCore<T, TCommit>(
   )<TCommit>();
   const commitState = commitController.state;
   const isCommitting = commitController.isCommitting;
-  // Pillar 2: `aria-invalid` projects both form-field validation and a
+  // `aria-invalid` projects both form-field validation and a
   // failed commit. The trigger surface CSS keys off this single attribute
   // so the closed-panel error case stays visible to sighted users without
   // duplicating the predicate in every variant.

@@ -5,6 +5,7 @@
  * `CngxMultiSelect`, `CngxCombobox`, `CngxTypeahead`, `CngxTreeSelect`,
  * `CngxReorderableMultiSelect`, `CngxActionSelect`,
  * `CngxActionMultiSelect`, `CngxSelectShell`, and the panel components).
+
  * All variants run `encapsulation: None` so the rules below are global;
  * the `.cngx-select__*` BEM-style class prefix is the namespace.
  *
@@ -67,7 +68,9 @@
  *
  * Tokens are registered top-level in `@layer cngx.tokens` via `@property`
  * so any consumer (`cngx.theme` layer, `app` layer) can override without
- * learning the type. Panel surface, every primary-tinted glyph, and
+ * learning the type. 
+ *
+ * Panel surface, every primary-tinted glyph, and
  * every danger-toned error surface delegate to the foundation so a
  * dark-mode swap cascades through the floating panel even when anchor
  * positioning detaches it from the trigger's DOM context:

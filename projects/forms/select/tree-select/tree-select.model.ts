@@ -1,11 +1,11 @@
-import { type CngxTreeNode, type FlatTreeNode } from '@cngx/utils';
+import { type FlatTreeNode } from '@cngx/utils';
 
 /**
  * Re-export of `@cngx/utils`'s `CngxTreeNode<T>` so `CngxTreeSelect`
  * consumers import everything from a single secondary-entry. Shape
  * unchanged: `value` / `label?` / `disabled?` / `children?`.
  */
-export type { CngxTreeNode, FlatTreeNode };
+export type { FlatTreeNode };
 
 /**
  * Action reported on `CngxTreeSelectChange.action`. Split out for
@@ -87,3 +87,5 @@ export interface CngxTreeSelectNodeContext<T = unknown> {
   /** Run the select-path for this node (respects cascade / commit). */
   readonly handleSelect: () => void;
 }
+
+export { type CngxTreeNode } from '@cngx/utils';

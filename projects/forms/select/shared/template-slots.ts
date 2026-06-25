@@ -230,34 +230,6 @@ export interface CngxComboboxChipContext<T = unknown> {
  *   </ng-template>
  * </cngx-select>
  * ```
- * <example-url>http://localhost:4200/#/forms/select/single-select/assemble-it-yourself-atoms-element-components</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/async-state-consumer</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/autofocus-on-mount</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/clearable</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/commit-action-async-write</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/commiterrordisplay-variants-banner-inline-none</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/fixed-width-panel-number</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/keyboard-pageup-pagedown-on-a-long-list</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/loading-empty-templates</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/loading-variants</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/optgroups</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/reactive-forms-adaptformcontrol</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/refreshing-variants</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/rich-option-rendering</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/selection-indicator-variant-radio</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/signal-forms-required</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectcommiterror</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectloading</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectloadingglyph</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectoptgroup</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectplaceholder</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectrefreshing</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectretrybutton</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-overrides-cngxselectoptionpending-cngxselectoptionerror</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/standalone</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-caret</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-check</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-rich-trigger-label</example-url>
  *
  * @category forms/select/templates
  * @wcag AA
@@ -276,34 +248,14 @@ export class CngxSelectCheck<T = unknown> {
 
 /**
  * `*cngxSelectCaret` slot - overrides the trigger caret.
- * <example-url>http://localhost:4200/#/forms/select/single-select/assemble-it-yourself-atoms-element-components</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/async-state-consumer</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/autofocus-on-mount</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/clearable</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/commit-action-async-write</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/commiterrordisplay-variants-banner-inline-none</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/fixed-width-panel-number</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/keyboard-pageup-pagedown-on-a-long-list</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/loading-empty-templates</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/loading-variants</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/optgroups</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/reactive-forms-adaptformcontrol</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/refreshing-variants</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/rich-option-rendering</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/selection-indicator-variant-radio</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/signal-forms-required</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectcommiterror</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectloading</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectloadingglyph</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectoptgroup</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectplaceholder</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectrefreshing</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectretrybutton</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-overrides-cngxselectoptionpending-cngxselectoptionerror</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/standalone</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-caret</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-check</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-rich-trigger-label</example-url>
+ *
+ * ```html
+ * <cngx-select [options]="colors">
+ *   <ng-template cngxSelectCaret let-open="open">
+ *     <my-icon [name]="open ? 'chevron-up' : 'chevron-down'" />
+ *   </ng-template>
+ * </cngx-select>
+ * ```
  *
  * @category forms/select/templates
  * @wcag AA
@@ -322,34 +274,14 @@ export class CngxSelectCaret {
 
 /**
  * `*cngxSelectOptgroup` slot - overrides the optgroup header.
- * <example-url>http://localhost:4200/#/forms/select/single-select/assemble-it-yourself-atoms-element-components</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/async-state-consumer</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/autofocus-on-mount</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/clearable</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/commit-action-async-write</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/commiterrordisplay-variants-banner-inline-none</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/fixed-width-panel-number</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/keyboard-pageup-pagedown-on-a-long-list</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/loading-empty-templates</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/loading-variants</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/optgroups</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/reactive-forms-adaptformcontrol</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/refreshing-variants</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/rich-option-rendering</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/selection-indicator-variant-radio</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/signal-forms-required</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectcommiterror</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectloading</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectloadingglyph</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectoptgroup</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectplaceholder</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectrefreshing</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectretrybutton</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-overrides-cngxselectoptionpending-cngxselectoptionerror</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/standalone</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-caret</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-check</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-rich-trigger-label</example-url>
+ *
+ * ```html
+ * <cngx-select [options]="grouped">
+ *   <ng-template cngxSelectOptgroup let-group>
+ *     <strong>{{ group.label }}</strong>
+ *   </ng-template>
+ * </cngx-select>
+ * ```
  *
  * @category forms/select/templates
  * @wcag AA
@@ -368,34 +300,14 @@ export class CngxSelectOptgroupTemplate<T = unknown> {
 
 /**
  * `*cngxSelectPlaceholder` slot - overrides the trigger placeholder.
- * <example-url>http://localhost:4200/#/forms/select/single-select/assemble-it-yourself-atoms-element-components</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/async-state-consumer</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/autofocus-on-mount</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/clearable</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/commit-action-async-write</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/commiterrordisplay-variants-banner-inline-none</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/fixed-width-panel-number</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/keyboard-pageup-pagedown-on-a-long-list</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/loading-empty-templates</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/loading-variants</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/optgroups</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/reactive-forms-adaptformcontrol</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/refreshing-variants</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/rich-option-rendering</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/selection-indicator-variant-radio</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/signal-forms-required</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectcommiterror</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectloading</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectloadingglyph</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectoptgroup</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectplaceholder</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectrefreshing</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectretrybutton</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-overrides-cngxselectoptionpending-cngxselectoptionerror</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/standalone</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-caret</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-check</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-rich-trigger-label</example-url>
+ *
+ * ```html
+ * <cngx-select [options]="colors" placeholder="Pick a color…">
+ *   <ng-template cngxSelectPlaceholder let-placeholder>
+ *     <span class="muted">{{ placeholder }}</span>
+ *   </ng-template>
+ * </cngx-select>
+ * ```
  *
  * @category forms/select/templates
  * @wcag AA
@@ -414,34 +326,14 @@ export class CngxSelectPlaceholder {
 
 /**
  * `*cngxSelectEmpty` slot.
- * <example-url>http://localhost:4200/#/forms/select/single-select/assemble-it-yourself-atoms-element-components</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/async-state-consumer</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/autofocus-on-mount</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/clearable</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/commit-action-async-write</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/commiterrordisplay-variants-banner-inline-none</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/fixed-width-panel-number</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/keyboard-pageup-pagedown-on-a-long-list</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/loading-empty-templates</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/loading-variants</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/optgroups</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/reactive-forms-adaptformcontrol</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/refreshing-variants</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/rich-option-rendering</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/selection-indicator-variant-radio</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/signal-forms-required</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectcommiterror</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectloading</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectloadingglyph</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectoptgroup</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectplaceholder</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectrefreshing</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectretrybutton</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-overrides-cngxselectoptionpending-cngxselectoptionerror</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/standalone</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-caret</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-check</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-rich-trigger-label</example-url>
+ *
+ * ```html
+ * <cngx-select [options]="colors">
+ *   <ng-template cngxSelectEmpty let-term="searchTerm">
+ *     No matches for "{{ term }}"
+ *   </ng-template>
+ * </cngx-select>
+ * ```
  *
  * @category forms/select/templates
  * @wcag AA
@@ -460,34 +352,14 @@ export class CngxSelectEmpty {
 
 /**
  * `*cngxSelectLoading` slot.
- * <example-url>http://localhost:4200/#/forms/select/single-select/assemble-it-yourself-atoms-element-components</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/async-state-consumer</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/autofocus-on-mount</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/clearable</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/commit-action-async-write</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/commiterrordisplay-variants-banner-inline-none</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/fixed-width-panel-number</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/keyboard-pageup-pagedown-on-a-long-list</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/loading-empty-templates</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/loading-variants</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/optgroups</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/reactive-forms-adaptformcontrol</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/refreshing-variants</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/rich-option-rendering</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/selection-indicator-variant-radio</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/signal-forms-required</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectcommiterror</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectloading</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectloadingglyph</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectoptgroup</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectplaceholder</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectrefreshing</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectretrybutton</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-overrides-cngxselectoptionpending-cngxselectoptionerror</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/standalone</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-caret</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-check</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-rich-trigger-label</example-url>
+ *
+ * ```html
+ * <cngx-select [state]="colorsState">
+ *   <ng-template cngxSelectLoading>
+ *     <my-spinner /> Loading…
+ *   </ng-template>
+ * </cngx-select>
+ * ```
  *
  * @category forms/select/templates
  * @wcag AA
@@ -506,34 +378,14 @@ export class CngxSelectLoading {
 
 /**
  * `*cngxSelectTriggerLabel` slot.
- * <example-url>http://localhost:4200/#/forms/select/single-select/assemble-it-yourself-atoms-element-components</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/async-state-consumer</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/autofocus-on-mount</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/clearable</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/commit-action-async-write</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/commiterrordisplay-variants-banner-inline-none</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/fixed-width-panel-number</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/keyboard-pageup-pagedown-on-a-long-list</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/loading-empty-templates</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/loading-variants</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/optgroups</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/reactive-forms-adaptformcontrol</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/refreshing-variants</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/rich-option-rendering</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/selection-indicator-variant-radio</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/signal-forms-required</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectcommiterror</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectloading</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectloadingglyph</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectoptgroup</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectplaceholder</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectrefreshing</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectretrybutton</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-overrides-cngxselectoptionpending-cngxselectoptionerror</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/standalone</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-caret</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-check</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-rich-trigger-label</example-url>
+ *
+ * ```html
+ * <cngx-select [options]="colors">
+ *   <ng-template cngxSelectTriggerLabel let-selected="selected">
+ *     @if (selected) { {{ selected.label }} } @else { Choose… }
+ *   </ng-template>
+ * </cngx-select>
+ * ```
  *
  * @category forms/select/templates
  * @wcag AA
@@ -552,39 +404,14 @@ export class CngxSelectTriggerLabel<T = unknown> {
 
 /**
  * `*cngxSelectOptionLabel` slot.
- * <example-url>http://localhost:4200/#/forms/select/single-select/assemble-it-yourself-atoms-element-components</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/async-state-consumer</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/autofocus-on-mount</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/clearable</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/commit-action-async-write</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/commiterrordisplay-variants-banner-inline-none</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/fixed-width-panel-number</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/keyboard-pageup-pagedown-on-a-long-list</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/loading-empty-templates</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/loading-variants</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/optgroups</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/reactive-forms-adaptformcontrol</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/refreshing-variants</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/rich-option-rendering</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/selection-indicator-variant-radio</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/signal-forms-required</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectcommiterror</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectloading</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectloadingglyph</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectoptgroup</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectplaceholder</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectrefreshing</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectretrybutton</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-overrides-cngxselectoptionpending-cngxselectoptionerror</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/standalone</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-caret</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-check</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-rich-trigger-label</example-url>
- * <example-url>http://localhost:4200/#/forms/select/typeahead/typeahead-async-state-load-error-retry</example-url>
- * <example-url>http://localhost:4200/#/forms/select/typeahead/typeahead-bound-to-a-typed-form-field</example-url>
- * <example-url>http://localhost:4200/#/forms/select/typeahead/typeahead-cngxselectoptionlabel-slot-override</example-url>
- * <example-url>http://localhost:4200/#/forms/select/typeahead/typeahead-commitaction-with-optimistic-pessimistic-mode</example-url>
- * <example-url>http://localhost:4200/#/forms/select/typeahead/typeahead-single-value-async-autocomplete</example-url>
+ *
+ * ```html
+ * <cngx-select [options]="colors">
+ *   <ng-template cngxSelectOptionLabel let-option>
+ *     <my-swatch [color]="option.value" /> {{ option.label }}
+ *   </ng-template>
+ * </cngx-select>
+ * ```
  *
  * @category forms/select/templates
  * @wcag AA
@@ -639,34 +466,6 @@ export class CngxSelectError {
  *   </ng-template>
  * </cngx-select>
  * ```
- * <example-url>http://localhost:4200/#/forms/select/single-select/assemble-it-yourself-atoms-element-components</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/async-state-consumer</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/autofocus-on-mount</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/clearable</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/commit-action-async-write</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/commiterrordisplay-variants-banner-inline-none</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/fixed-width-panel-number</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/keyboard-pageup-pagedown-on-a-long-list</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/loading-empty-templates</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/loading-variants</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/optgroups</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/reactive-forms-adaptformcontrol</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/refreshing-variants</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/rich-option-rendering</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/selection-indicator-variant-radio</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/signal-forms-required</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectcommiterror</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectloading</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectloadingglyph</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectoptgroup</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectplaceholder</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectrefreshing</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectretrybutton</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-overrides-cngxselectoptionpending-cngxselectoptionerror</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/standalone</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-caret</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-check</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-rich-trigger-label</example-url>
  *
  * @category forms/select/templates
  * @wcag AA
@@ -694,34 +493,6 @@ export class CngxSelectRetryButton {
  *   </ng-template>
  * </cngx-select>
  * ```
- * <example-url>http://localhost:4200/#/forms/select/single-select/assemble-it-yourself-atoms-element-components</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/async-state-consumer</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/autofocus-on-mount</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/clearable</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/commit-action-async-write</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/commiterrordisplay-variants-banner-inline-none</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/fixed-width-panel-number</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/keyboard-pageup-pagedown-on-a-long-list</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/loading-empty-templates</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/loading-variants</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/optgroups</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/reactive-forms-adaptformcontrol</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/refreshing-variants</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/rich-option-rendering</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/selection-indicator-variant-radio</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/signal-forms-required</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectcommiterror</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectloading</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectloadingglyph</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectoptgroup</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectplaceholder</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectrefreshing</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectretrybutton</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-overrides-cngxselectoptionpending-cngxselectoptionerror</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/standalone</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-caret</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-check</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-rich-trigger-label</example-url>
  *
  * @category forms/select/templates
  * @wcag AA
@@ -740,34 +511,14 @@ export class CngxSelectLoadingGlyph {
 
 /**
  * `*cngxSelectRefreshing` slot - top-bar overlay during refresh.
- * <example-url>http://localhost:4200/#/forms/select/single-select/assemble-it-yourself-atoms-element-components</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/async-state-consumer</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/autofocus-on-mount</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/clearable</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/commit-action-async-write</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/commiterrordisplay-variants-banner-inline-none</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/fixed-width-panel-number</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/keyboard-pageup-pagedown-on-a-long-list</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/loading-empty-templates</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/loading-variants</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/optgroups</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/reactive-forms-adaptformcontrol</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/refreshing-variants</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/rich-option-rendering</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/selection-indicator-variant-radio</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/signal-forms-required</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectcommiterror</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectloading</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectloadingglyph</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectoptgroup</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectplaceholder</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectrefreshing</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectretrybutton</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-overrides-cngxselectoptionpending-cngxselectoptionerror</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/standalone</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-caret</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-check</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-rich-trigger-label</example-url>
+ *
+ * ```html
+ * <cngx-select [state]="colorsState">
+ *   <ng-template cngxSelectRefreshing let-count="previousCount">
+ *     Refreshing {{ count }} items…
+ *   </ng-template>
+ * </cngx-select>
+ * ```
  *
  * @category forms/select/templates
  * @wcag AA
@@ -789,41 +540,13 @@ export class CngxSelectRefreshing {
  * same intended value.
  *
  * ```html
- * <cngx-select [commitAction]="saveColor" [(value)]="color">
+ * <cngx-select ...>
  *   <ng-template cngxSelectCommitError let-error let-option="option" let-retry="retry">
  *     <p>Save failed: {{ error?.message }}</p>
  *     <button (click)="retry()">Try again</button>
  *   </ng-template>
  * </cngx-select>
  * ```
- * <example-url>http://localhost:4200/#/forms/select/single-select/assemble-it-yourself-atoms-element-components</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/async-state-consumer</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/autofocus-on-mount</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/clearable</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/commit-action-async-write</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/commiterrordisplay-variants-banner-inline-none</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/fixed-width-panel-number</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/keyboard-pageup-pagedown-on-a-long-list</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/loading-empty-templates</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/loading-variants</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/optgroups</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/reactive-forms-adaptformcontrol</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/refreshing-variants</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/rich-option-rendering</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/selection-indicator-variant-radio</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/signal-forms-required</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectcommiterror</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectloading</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectloadingglyph</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectoptgroup</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectplaceholder</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectrefreshing</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectretrybutton</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-overrides-cngxselectoptionpending-cngxselectoptionerror</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/standalone</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-caret</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-check</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-rich-trigger-label</example-url>
  *
  * @category forms/select/templates
  * @wcag AA
@@ -844,23 +567,12 @@ export class CngxSelectCommitError<T = unknown> {
  * `*cngxMultiSelectChip` slot. `remove` routes through the commit flow.
  *
  * ```html
- * <cngx-multi-select [options]="tags" [(values)]="picked">
+ * <cngx-multi-select ...>
  *   <ng-template cngxMultiSelectChip let-opt let-remove="remove">
  *     <my-tag [color]="opt.meta?.color" (close)="remove()">{{ opt.label }}</my-tag>
  *   </ng-template>
  * </cngx-multi-select>
  * ```
- * <example-url>http://localhost:4200/#/forms/select/multi-select/multi-async-options-via-state</example-url>
- * <example-url>http://localhost:4200/#/forms/select/multi-select/multi-basic</example-url>
- * <example-url>http://localhost:4200/#/forms/select/multi-select/multi-clearable</example-url>
- * <example-url>http://localhost:4200/#/forms/select/multi-select/multi-custom-cngxmultiselectchip-template</example-url>
- * <example-url>http://localhost:4200/#/forms/select/multi-select/multi-per-toggle-commitaction</example-url>
- * <example-url>http://localhost:4200/#/forms/select/multi-select/multi-text-summary-via-cngxmultiselecttriggerlabel</example-url>
- * <example-url>http://localhost:4200/#/forms/select/reorderable-multi-select/basic-drag-chips-via-mouse-touch</example-url>
- * <example-url>http://localhost:4200/#/forms/select/reorderable-multi-select/commit-action-optimistic-pessimistic-with-supersede</example-url>
- * <example-url>http://localhost:4200/#/forms/select/reorderable-multi-select/keyboard-reorder-alt-arrow-home-end</example-url>
- * <example-url>http://localhost:4200/#/forms/select/reorderable-multi-select/optional-drag-handle-glyph</example-url>
- * <example-url>http://localhost:4200/#/forms/select/reorderable-multi-select/pre-seeded-values-reorder-log</example-url>
  *
  * @category forms/select/templates
  * @wcag AA
@@ -883,7 +595,7 @@ export class CngxMultiSelectChip<T = unknown> {
  * span stays `aria-hidden="true"` (AT reads `[reorderAriaLabel]` instead).
  *
  * ```html
- * <cngx-reorderable-multi-select [options]="tags" [(values)]="picked">
+ * <cngx-reorderable-multi-select ...>
  *   <ng-template cngxMultiSelectChipHandle>
  *     <svg viewBox="0 0 8 12" width="8" height="12">…dots…</svg>
  *   </ng-template>
@@ -910,24 +622,13 @@ export class CngxMultiSelectChipHandle {
  * Mutually exclusive with `*cngxMultiSelectChip`.
  *
  * ```html
- * <cngx-multi-select [options]="tags" [(values)]="picked">
+ * <cngx-multi-select ...>
  *   <ng-template cngxMultiSelectTriggerLabel let-count="count">
  *     @if (count === 0) { Pick topics }
  *     @else { {{ count }} topics selected }
  *   </ng-template>
  * </cngx-multi-select>
  * ```
- * <example-url>http://localhost:4200/#/forms/select/multi-select/multi-async-options-via-state</example-url>
- * <example-url>http://localhost:4200/#/forms/select/multi-select/multi-basic</example-url>
- * <example-url>http://localhost:4200/#/forms/select/multi-select/multi-clearable</example-url>
- * <example-url>http://localhost:4200/#/forms/select/multi-select/multi-custom-cngxmultiselectchip-template</example-url>
- * <example-url>http://localhost:4200/#/forms/select/multi-select/multi-per-toggle-commitaction</example-url>
- * <example-url>http://localhost:4200/#/forms/select/multi-select/multi-text-summary-via-cngxmultiselecttriggerlabel</example-url>
- * <example-url>http://localhost:4200/#/forms/select/reorderable-multi-select/basic-drag-chips-via-mouse-touch</example-url>
- * <example-url>http://localhost:4200/#/forms/select/reorderable-multi-select/commit-action-optimistic-pessimistic-with-supersede</example-url>
- * <example-url>http://localhost:4200/#/forms/select/reorderable-multi-select/keyboard-reorder-alt-arrow-home-end</example-url>
- * <example-url>http://localhost:4200/#/forms/select/reorderable-multi-select/optional-drag-handle-glyph</example-url>
- * <example-url>http://localhost:4200/#/forms/select/reorderable-multi-select/pre-seeded-values-reorder-log</example-url>
  *
  * @category forms/select/templates
  * @wcag AA
@@ -949,40 +650,12 @@ export class CngxMultiSelectTriggerLabel<T = unknown> {
  * the element and invokes `clear()`.
  *
  * ```html
- * <cngx-multi-select [clearable]="true" [(values)]="picked">
+ * <cngx-multi-select ...>
  *   <ng-template cngxSelectClearButton let-clear let-disabled="disabled">
  *     <my-icon-button icon="trash" [disabled]="disabled" (action)="clear()" />
  *   </ng-template>
  * </cngx-multi-select>
  * ```
- * <example-url>http://localhost:4200/#/forms/select/single-select/assemble-it-yourself-atoms-element-components</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/async-state-consumer</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/autofocus-on-mount</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/clearable</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/commit-action-async-write</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/commiterrordisplay-variants-banner-inline-none</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/fixed-width-panel-number</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/keyboard-pageup-pagedown-on-a-long-list</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/loading-empty-templates</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/loading-variants</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/optgroups</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/reactive-forms-adaptformcontrol</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/refreshing-variants</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/rich-option-rendering</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/selection-indicator-variant-radio</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/signal-forms-required</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectcommiterror</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectloading</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectloadingglyph</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectoptgroup</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectplaceholder</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectrefreshing</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectretrybutton</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-overrides-cngxselectoptionpending-cngxselectoptionerror</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/standalone</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-caret</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-check</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-rich-trigger-label</example-url>
  *
  * @category forms/select/templates
  * @wcag AA
@@ -1004,40 +677,12 @@ export class CngxSelectClearButton {
  * `.cngx-select__option-spinner`.
  *
  * ```html
- * <cngx-multi-select [commitAction]="saveTag" [(values)]="tags">
+ * <cngx-multi-select ...>
  *   <ng-template cngxSelectOptionPending let-opt>
- *     <my-inline-spinner [label]="opt.label + ' wird gespeichert'" />
+ *     <my-inline-spinner [label]="opt.label + ' saving'" />
  *   </ng-template>
  * </cngx-multi-select>
  * ```
- * <example-url>http://localhost:4200/#/forms/select/single-select/assemble-it-yourself-atoms-element-components</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/async-state-consumer</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/autofocus-on-mount</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/clearable</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/commit-action-async-write</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/commiterrordisplay-variants-banner-inline-none</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/fixed-width-panel-number</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/keyboard-pageup-pagedown-on-a-long-list</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/loading-empty-templates</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/loading-variants</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/optgroups</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/reactive-forms-adaptformcontrol</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/refreshing-variants</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/rich-option-rendering</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/selection-indicator-variant-radio</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/signal-forms-required</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectcommiterror</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectloading</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectloadingglyph</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectoptgroup</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectplaceholder</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectrefreshing</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectretrybutton</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-overrides-cngxselectoptionpending-cngxselectoptionerror</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/standalone</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-caret</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-check</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-rich-trigger-label</example-url>
  *
  * @category forms/select/templates
  * @wcag AA
@@ -1059,40 +704,12 @@ export class CngxSelectOptionPending<T = unknown> {
  * `commitErrorDisplay === 'inline'`.
  *
  * ```html
- * <cngx-select [commitAction]="saveColor" commitErrorDisplay="inline">
+ * <cngx-select ...>
  *   <ng-template cngxSelectOptionError let-opt let-error="error">
  *     <my-icon name="alert" [tooltip]="error.message" />
  *   </ng-template>
  * </cngx-select>
  * ```
- * <example-url>http://localhost:4200/#/forms/select/single-select/assemble-it-yourself-atoms-element-components</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/async-state-consumer</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/autofocus-on-mount</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/clearable</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/commit-action-async-write</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/commiterrordisplay-variants-banner-inline-none</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/fixed-width-panel-number</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/keyboard-pageup-pagedown-on-a-long-list</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/loading-empty-templates</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/loading-variants</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/optgroups</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/reactive-forms-adaptformcontrol</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/refreshing-variants</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/rich-option-rendering</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/selection-indicator-variant-radio</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/signal-forms-required</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectcommiterror</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectloading</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectloadingglyph</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectoptgroup</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectplaceholder</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectrefreshing</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectretrybutton</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-overrides-cngxselectoptionpending-cngxselectoptionerror</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/standalone</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-caret</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-check</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-rich-trigger-label</example-url>
  *
  * @category forms/select/templates
  * @wcag AA
@@ -1114,18 +731,12 @@ export class CngxSelectOptionError<T = unknown> {
  * search input stays in place.
  *
  * ```html
- * <cngx-combobox [options]="tags" [(values)]="picked">
+ * <cngx-combobox ...>
  *   <ng-template cngxComboboxTriggerLabel let-count="count">
  *     @if (count > 0) { <span class="count-badge">{{ count }}</span> }
  *   </ng-template>
  * </cngx-combobox>
  * ```
- * <example-url>http://localhost:4200/#/forms/select/combobox/combobox-async-via-state-skipinitial-searchtermchange</example-url>
- * <example-url>http://localhost:4200/#/forms/select/combobox/combobox-basic-tag-picker-with-typeahead-filter</example-url>
- * <example-url>http://localhost:4200/#/forms/select/combobox/combobox-clearable-custom-cngxselectclearbutton</example-url>
- * <example-url>http://localhost:4200/#/forms/select/combobox/combobox-per-toggle-commitaction</example-url>
- * <example-url>http://localhost:4200/#/forms/select/combobox/combobox-text-summary-via-cngxcomboboxtriggerlabel</example-url>
- * <example-url>http://localhost:4200/#/forms/select/combobox/slot-override-cngxcomboboxchip</example-url>
  *
  * @category forms/select/templates
  * @wcag AA
@@ -1147,18 +758,12 @@ export class CngxComboboxTriggerLabel<T = unknown> {
  * template can target either variant unchanged.
  *
  * ```html
- * <cngx-combobox [options]="tags" [(values)]="picked">
+ * <cngx-combobox ...>
  *   <ng-template cngxComboboxChip let-opt let-remove="remove">
  *     <my-tag [color]="opt.meta?.color" (close)="remove()">{{ opt.label }}</my-tag>
  *   </ng-template>
  * </cngx-combobox>
  * ```
- * <example-url>http://localhost:4200/#/forms/select/combobox/combobox-async-via-state-skipinitial-searchtermchange</example-url>
- * <example-url>http://localhost:4200/#/forms/select/combobox/combobox-basic-tag-picker-with-typeahead-filter</example-url>
- * <example-url>http://localhost:4200/#/forms/select/combobox/combobox-clearable-custom-cngxselectclearbutton</example-url>
- * <example-url>http://localhost:4200/#/forms/select/combobox/combobox-per-toggle-commitaction</example-url>
- * <example-url>http://localhost:4200/#/forms/select/combobox/combobox-text-summary-via-cngxcomboboxtriggerlabel</example-url>
- * <example-url>http://localhost:4200/#/forms/select/combobox/slot-override-cngxcomboboxchip</example-url>
  *
  * @category forms/select/templates
  * @wcag AA
@@ -1177,7 +782,7 @@ export class CngxComboboxChip<T = unknown> {
 
 /**
  * Inline action-slot context for `*cngxSelectAction`. `commit()`
- * defaults `draft` to `{ label: searchTerm }`. `setDirty`+`dirty`
+ * defaults `draft` to `{ label: searchTerm }`. `setDirty` and `dirty`
  * drive the dismiss-guard. `isPending`/`error`/`hasError` mirror the
  * commit controller. `value` is type-erased - single forwards
  * `value()`, multi forwards `values()`.
@@ -1211,9 +816,9 @@ export interface CngxSelectInputSlotContext {
  * `CngxTypeahead` / `CngxCombobox` only.
  *
  * ```html
- * <cngx-typeahead [options]="users">
+ * <cngx-typeahead ...>
  *   <ng-template cngxSelectInputPrefix let-focused="focused">
- *     <svg class="lupe" [class.active]="focused" />
+ *     <svg class="magnifier" [class.active]="focused" />
  *   </ng-template>
  * </cngx-typeahead>
  * ```
@@ -1237,6 +842,14 @@ export class CngxSelectInputPrefix {
  * `*cngxSelectInputSuffix` slot - projected after the trigger `<input>`,
  * before clear/caret. Same context as {@link CngxSelectInputPrefix}.
  *
+ * ```html
+ * <cngx-typeahead [options]="colors">
+ *   <ng-template cngxSelectInputSuffix let-focused="focused">
+ *     <kbd [class.active]="focused">⏎</kbd>
+ *   </ng-template>
+ * </cngx-typeahead>
+ * ```
+ *
  * @category forms/select/templates
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
@@ -1258,26 +871,15 @@ export class CngxSelectInputSuffix {
  * the consumer template renders verbatim.
  *
  * ```html
- * <cngx-action-select [options]="tags" [(value)]="current"
- *                     [quickCreateAction]="createTag">
+ * <cngx-action-select ...>
  *   <ng-template cngxSelectAction let-term let-commit="commit"
  *                let-pending="isPending">
  *     <button (click)="commit()" [disabled]="pending || !term">
- *       + „{{ term }}" anlegen
+ *       + Create "{{ term }}"
  *     </button>
  *   </ng-template>
  * </cngx-action-select>
  * ```
- * <example-url>http://localhost:4200/#/forms/select/action-multi-select/async-error-rollback-observation</example-url>
- * <example-url>http://localhost:4200/#/forms/select/action-multi-select/basic-create-appends-panel-stays-open</example-url>
- * <example-url>http://localhost:4200/#/forms/select/action-multi-select/closeoncreate-true-confirm-to-create-ux</example-url>
- * <example-url>http://localhost:4200/#/forms/select/action-multi-select/dirty-guard-in-panel-mini-form</example-url>
- * <example-url>http://localhost:4200/#/forms/select/action-multi-select/pre-seeded-change-event-log</example-url>
- * <example-url>http://localhost:4200/#/forms/select/action-select/async-error-rollback-observation</example-url>
- * <example-url>http://localhost:4200/#/forms/select/action-select/basic-sync-quick-create</example-url>
- * <example-url>http://localhost:4200/#/forms/select/action-select/custom-action-template-split-actions</example-url>
- * <example-url>http://localhost:4200/#/forms/select/action-select/dirty-guard-escape-cancel-click-outside-blocked</example-url>
- * <example-url>http://localhost:4200/#/forms/select/action-select/pre-seeded-created-output-log</example-url>
  *
  * @category forms/select/templates
  * @wcag AA

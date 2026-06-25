@@ -18,10 +18,10 @@ export const STORY: DemoSpec = {
   ],
   imports: ['CngxTypeahead', 'CngxFormField'],
   setup: `protected readonly typeaheadColorOptions: CngxSelectOptionDef<string>[] = [
-    { value: 'red', label: 'Rot' },
+    { value: 'red', label: 'Red' },
     { value: 'green', label: 'Green' },
-    { value: 'blue', label: 'Blau' },
-    { value: 'yellow', label: 'Gelb' },
+    { value: 'blue', label: 'Blue' },
+    { value: 'yellow', label: 'Yellow' },
     { value: 'orange', label: 'Orange' },
   ];
   protected readonly typeaheadColorModel = signal<string>('');
@@ -31,7 +31,7 @@ export const STORY: DemoSpec = {
       [label]="'Color'"
       [options]="typeaheadColorOptions"
       [clearable]="true"
-      placeholder="Farbe eingeben…"
+      placeholder="Enter a color…"
     />
   </cngx-form-field>`,
   templateChrome: `<div class="event-grid" style="margin-top:12px">

@@ -114,7 +114,7 @@ export interface CngxTypeaheadChange<T = unknown> {
    * snapshot, the commit-controller rollback target, and the pre-clear
    * value.
    */
-  readonly previousValue?: T | undefined;
+  readonly previousValue: T | undefined;
   readonly option: CngxSelectOptionDef<T> | null;
 }
 

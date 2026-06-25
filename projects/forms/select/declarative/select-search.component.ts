@@ -30,6 +30,7 @@ import { CNGX_SELECT_SHELL_SEARCH_HOST } from './select-search-host';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/declarative/select-search.component.ts
  * @since 0.1.0
  * @relatedTo CngxSelectShell, CngxSelectOption, CngxSelectOptgroup
+ * <example-url>http://localhost:4200/#/forms/select/declarative/search</example-url>
  */
 @Component({
   selector: 'cngx-select-search',

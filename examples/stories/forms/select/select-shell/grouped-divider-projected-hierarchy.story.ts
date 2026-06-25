@@ -21,13 +21,13 @@ export const STORY: DemoSpec = {
   setup: `protected readonly groupedValue = signal<string | undefined>(undefined);`,
   template: `  <cngx-select-shell [label]="'Priority'" [(value)]="groupedValue" placeholder="Priority…">
     <cngx-optgroup label="Normal">
-      <cngx-option [value]="'low'">Niedrig</cngx-option>
-      <cngx-option [value]="'medium'">Mittel</cngx-option>
+      <cngx-option [value]="'low'">Low</cngx-option>
+      <cngx-option [value]="'medium'">Medium</cngx-option>
     </cngx-optgroup>
     <cngx-select-divider />
-    <cngx-optgroup label="Eskalation">
-      <cngx-option [value]="'high'">Hoch</cngx-option>
-      <cngx-option [value]="'critical'">Kritisch</cngx-option>
+    <cngx-optgroup label="Escalation">
+      <cngx-option [value]="'high'">High</cngx-option>
+      <cngx-option [value]="'critical'">Critical</cngx-option>
     </cngx-optgroup>
   </cngx-select-shell>`,
   templateChrome: `<div class="event-grid" style="margin-top:12px">

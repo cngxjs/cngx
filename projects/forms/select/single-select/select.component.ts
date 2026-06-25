@@ -102,7 +102,7 @@ export interface CngxSelectChange<T = unknown> {
    * emission (success + error) and on direct activation / clear paths;
    * `undefined` only when the previous state was empty.
    */
-  readonly previousValue?: T | undefined;
+  readonly previousValue: T | undefined;
   readonly option: CngxSelectOptionDef<T> | null;
 }
 
@@ -119,7 +119,6 @@ export interface CngxSelectChange<T = unknown> {
  * @since 0.1.0
  * @relatedTo CngxMultiSelect, CngxCombobox, CngxTypeahead, CngxTreeSelect, CngxSelectShell
  * @playground Commit action ./examples/commit-action/commit-action-example.component.ts
- * <example-url>http://localhost:4200/#/forms/select/single-select/assemble-it-yourself-atoms-element-components</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/async-state-consumer</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/autofocus-on-mount</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/clearable</example-url>
@@ -135,18 +134,8 @@ export interface CngxSelectChange<T = unknown> {
  * <example-url>http://localhost:4200/#/forms/select/single-select/rich-option-rendering</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/selection-indicator-variant-radio</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/signal-forms-required</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectcommiterror</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectloading</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectloadingglyph</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectoptgroup</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectplaceholder</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectrefreshing</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-override-cngxselectretrybutton</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/slot-overrides-cngxselectoptionpending-cngxselectoptionerror</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/standalone</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-caret</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-custom-check</example-url>
- * <example-url>http://localhost:4200/#/forms/select/single-select/template-override-rich-trigger-label</example-url>
+
  */
 @Component({
   selector: 'cngx-select',
