@@ -133,11 +133,9 @@ export interface CngxTypeaheadChange<T = unknown> {
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/typeahead/typeahead.component.ts
  * @since 0.1.0
  * @relatedTo CngxCombobox, CngxSelect, CngxMultiSelect
- * <example-url>http://localhost:4200/#/forms/select/typeahead/typeahead-async-state-load-error-retry</example-url>
+ * @playground Material theme ./examples/material-theme/material-theme.component.ts
  * <example-url>http://localhost:4200/#/forms/select/typeahead/typeahead-bound-to-a-typed-form-field</example-url>
  * <example-url>http://localhost:4200/#/forms/select/typeahead/typeahead-cngxselectoptionlabel-slot-override</example-url>
- * <example-url>http://localhost:4200/#/forms/select/typeahead/typeahead-commitaction-with-optimistic-pessimistic-mode</example-url>
- * <example-url>http://localhost:4200/#/forms/select/typeahead/typeahead-single-value-async-autocomplete</example-url>
  */
 @Component({
   selector: 'cngx-typeahead',

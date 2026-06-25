@@ -146,11 +146,9 @@ export interface CngxActionSelectChange<T = unknown> {
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/action-select/action-select.component.ts
  * @since 0.1.0
  * @relatedTo CngxSelect, CngxActionMultiSelect, CngxCombobox, CngxSelectAction
- * <example-url>http://localhost:4200/#/forms/select/action-select/async-error-rollback-observation</example-url>
+ * @playground Material theme ./examples/material-theme/material-theme.component.ts
  * <example-url>http://localhost:4200/#/forms/select/action-select/basic-sync-quick-create</example-url>
  * <example-url>http://localhost:4200/#/forms/select/action-select/custom-action-template-split-actions</example-url>
- * <example-url>http://localhost:4200/#/forms/select/action-select/dirty-guard-escape-cancel-click-outside-blocked</example-url>
- * <example-url>http://localhost:4200/#/forms/select/action-select/pre-seeded-created-output-log</example-url>
  */
 @Component({
   selector: 'cngx-action-select',

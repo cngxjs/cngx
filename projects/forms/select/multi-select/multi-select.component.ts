@@ -120,11 +120,10 @@ export interface CngxMultiSelectChange<T = unknown> {
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/multi-select/multi-select.component.ts
  * @since 0.1.0
  * @relatedTo CngxSelect, CngxCombobox, CngxReorderableMultiSelect, CngxTreeSelect, CngxMultiSelectChip
- * <example-url>http://localhost:4200/#/forms/select/multi-select/multi-async-options-via-state</example-url>
+ * @playground Material theme ./examples/material-theme/material-theme.component.ts
  * <example-url>http://localhost:4200/#/forms/select/multi-select/multi-basic</example-url>
  * <example-url>http://localhost:4200/#/forms/select/multi-select/multi-clearable</example-url>
  * <example-url>http://localhost:4200/#/forms/select/multi-select/multi-custom-cngxmultiselectchip-template</example-url>
- * <example-url>http://localhost:4200/#/forms/select/multi-select/multi-per-toggle-commitaction</example-url>
  * <example-url>http://localhost:4200/#/forms/select/multi-select/multi-text-summary-via-cngxmultiselecttriggerlabel</example-url>
  */
 @Component({

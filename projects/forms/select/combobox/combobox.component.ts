@@ -138,10 +138,9 @@ export interface CngxComboboxChange<T = unknown> {
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/combobox/combobox.component.ts
  * @since 0.1.0
  * @relatedTo CngxMultiSelect, CngxTypeahead, CngxSelect, CngxTreeSelect, CngxComboboxChip
- * <example-url>http://localhost:4200/#/forms/select/combobox/combobox-async-via-state-skipinitial-searchtermchange</example-url>
+ * @playground Material theme ./examples/material-theme/material-theme.component.ts
  * <example-url>http://localhost:4200/#/forms/select/combobox/combobox-basic-tag-picker-with-typeahead-filter</example-url>
  * <example-url>http://localhost:4200/#/forms/select/combobox/combobox-clearable-custom-cngxselectclearbutton</example-url>
- * <example-url>http://localhost:4200/#/forms/select/combobox/combobox-per-toggle-commitaction</example-url>
  * <example-url>http://localhost:4200/#/forms/select/combobox/combobox-text-summary-via-cngxcomboboxtriggerlabel</example-url>
  */
 @Component({

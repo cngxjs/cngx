@@ -145,12 +145,10 @@ export interface CngxTreeSelectChange<T = unknown> {
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/tree-select/tree-select.component.ts
  * @since 0.1.0
  * @relatedTo CngxMultiSelect, CngxSelect, CngxReorderableMultiSelect, CngxTreeSelectNode, CngxTreeSelectChip
- * <example-url>http://localhost:4200/#/forms/select/tree-select/10-000-nodes-perf-smoke</example-url>
+ * @playground Material theme ./examples/material-theme/material-theme.component.ts
  * <example-url>http://localhost:4200/#/forms/select/tree-select/basic-single-level-toggle</example-url>
  * <example-url>http://localhost:4200/#/forms/select/tree-select/cascade-children-parent-toggle-selects-the-whole-subtree</example-url>
- * <example-url>http://localhost:4200/#/forms/select/tree-select/commit-action-optimistic-pessimistic-rollback</example-url>
  * <example-url>http://localhost:4200/#/forms/select/tree-select/custom-cngxtreeselectnode-template</example-url>
- * <example-url>http://localhost:4200/#/forms/select/tree-select/indeterminate-propagation-pre-seeded-partial-selection</example-url>
  */
 @Component({
   selector: 'cngx-tree-select',

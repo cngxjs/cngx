@@ -150,11 +150,8 @@ export interface CngxActionMultiSelectChange<T = unknown> {
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/action-multi-select/action-multi-select.component.ts
  * @since 0.1.0
  * @relatedTo CngxMultiSelect, CngxActionSelect, CngxCombobox, CngxSelectAction
- * <example-url>http://localhost:4200/#/forms/select/action-multi-select/async-error-rollback-observation</example-url>
- * <example-url>http://localhost:4200/#/forms/select/action-multi-select/basic-create-appends-panel-stays-open</example-url>
- * <example-url>http://localhost:4200/#/forms/select/action-multi-select/closeoncreate-true-confirm-to-create-ux</example-url>
- * <example-url>http://localhost:4200/#/forms/select/action-multi-select/dirty-guard-in-panel-mini-form</example-url>
- * <example-url>http://localhost:4200/#/forms/select/action-multi-select/pre-seeded-change-event-log</example-url>
+ * @playground Material theme ./examples/material-theme/material-theme.component.ts
+ * <example-url>http://localhost:4200/#/forms/select/action-multi-select/basic</example-url>
  */
 @Component({
   selector: 'cngx-action-multi-select',

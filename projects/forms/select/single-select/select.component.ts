@@ -118,6 +118,7 @@ export interface CngxSelectChange<T = unknown> {
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/single-select/select.component.ts
  * @since 0.1.0
  * @relatedTo CngxMultiSelect, CngxCombobox, CngxTypeahead, CngxTreeSelect, CngxSelectShell
+ * @playground Material theme ./examples/material-theme/material-theme.component.ts
  * @playground Commit action ./examples/commit-action/commit-action-example.component.ts
  * <example-url>http://localhost:4200/#/forms/select/single-select/autofocus-on-mount</example-url>
  * <example-url>http://localhost:4200/#/forms/select/single-select/clearable</example-url>

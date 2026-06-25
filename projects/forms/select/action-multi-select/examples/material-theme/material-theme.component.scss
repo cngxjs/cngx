@@ -1,0 +1,48 @@
+@use '@angular/material' as mat;
+@use '@cngx/themes/material/select-theme.scss' as select;
+
+$palette: (
+  theme-type: light,
+  primary: mat.$azure-palette,
+  tertiary: mat.$blue-palette,
+);
+$theme: mat.define-theme(
+  (
+    color: $palette,
+    density: (
+      scale: 0,
+    ),
+  )
+);
+
+html {
+  color-scheme: light;
+
+  @include mat.theme(
+    (
+      color: $palette,
+      typography: Roboto,
+      density: 0,
+    )
+  );
+
+  // CNGX Material bridge — routes --cngx-select-* onto --mat-sys-*.
+  @include select.theme($theme);
+
+  background: var(--mat-sys-background);
+  color: var(--mat-sys-on-background);
+  font: var(--mat-sys-body-medium);
+}
+
+.demo {
+  display: grid;
+  gap: 12px;
+  max-width: 360px;
+  padding: 16px;
+}
+
+.demo__readout {
+  margin: 0;
+  font-size: 0.875rem;
+  opacity: 0.7;
+}
