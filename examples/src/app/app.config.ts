@@ -17,7 +17,18 @@ export const appConfig: ApplicationConfig = {
     // Hash routing - GitHub Pages serves a single index.html and cannot rewrite
     // deep paths to it. With withHashLocation() every route resolves client-side
     // off the `#` fragment, no 404 fallback trick required.
-    provideRouter(routes, withHashLocation()),
+    provideRouter(
+      [
+        // Local Material-bridge fidelity harness (hand-authored; survives the
+        // generated app.routes.ts overwrite). Not part of the demo catalogue.
+        {
+          path: 'material-lab',
+          loadComponent: () => import('./material-lab/material-lab').then((m) => m.MaterialLab),
+        },
+        ...routes,
+      ],
+      withHashLocation(),
+    ),
     // CngxAlerter / CngxBanner / CngxToaster are not providedIn: 'root';
     // root-level access requires opting in via with*() feature functions.
     provideFeedback(withAlerts(), withBanners(), withToasts()),

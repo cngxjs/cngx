@@ -1,0 +1,75 @@
+@use '@angular/material' as mat;
+// Working-tree bridges (relative, not the published package) so the harness
+// reflects the current bridge source.
+@use '../../../../projects/themes/material/system-bridge.scss' as cngx-system;
+@use '../../../../projects/themes/material/select-theme.scss' as select;
+@use '../../../../projects/themes/material/option-theme.scss' as option;
+@use '../../../../projects/themes/material/interactive-controls-theme.scss' as controls;
+@use '../../../../projects/themes/material/chip-theme.scss' as chip;
+@use '../../../../projects/themes/material/popover-panel-theme.scss' as popover;
+
+$palette: (
+  theme-type: light,
+  primary: mat.$azure-palette,
+  tertiary: mat.$blue-palette,
+);
+$theme: mat.define-theme(
+  (
+    color: $palette,
+    density: (
+      scale: 0,
+    ),
+  )
+);
+
+// The examples app pins `:root { font-size: 14px }`, but Material (and the
+// real StackBlitz playground) assume a 16px root. Restore 16px here so rem-based
+// cngx sizes are measured on the same basis as Material — otherwise every cngx
+// rem renders at 0.875x and looks falsely "too small".
+:root {
+  font-size: 16px;
+  // examples app pins system-ui at :root (higher specificity than html); the
+  // playground has no such rule, so restore Roboto here for a faithful compare.
+  font-family: Roboto, sans-serif;
+}
+
+html {
+  color-scheme: light;
+
+  @include mat.theme(
+    (
+      color: $palette,
+      typography: Roboto,
+      density: 0,
+    )
+  );
+
+  // Real Material widgets (mat-select / mat-form-field / mat-chip) need their
+  // component themes; the cngx bridges theme the cngx widget alongside.
+  @include mat.all-component-themes($theme);
+
+  @include cngx-system.theme($theme);
+  @include select.theme($theme);
+  @include option.theme($theme);
+  @include controls.theme($theme);
+  @include chip.theme($theme);
+  @include popover.theme($theme);
+}
+
+.lab {
+  display: flex;
+  gap: 48px;
+  align-items: flex-start;
+  padding: 32px;
+}
+
+.lab section {
+  display: grid;
+  gap: 12px;
+  min-width: 280px;
+}
+
+.lab h3 {
+  margin: 0;
+  font: var(--mat-sys-title-small);
+}
