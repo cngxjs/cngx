@@ -146,11 +146,9 @@ export interface CngxActionSelectChange<T = unknown> {
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/action-select/action-select.component.ts
  * @since 0.1.0
  * @relatedTo CngxSelect, CngxActionMultiSelect, CngxCombobox, CngxSelectAction
- * <example-url>http://localhost:4200/#/forms/select/action-select/async-error-rollback-observation</example-url>
+ * @playground Material theme ./examples/material-theme/material-theme.component.ts
  * <example-url>http://localhost:4200/#/forms/select/action-select/basic-sync-quick-create</example-url>
  * <example-url>http://localhost:4200/#/forms/select/action-select/custom-action-template-split-actions</example-url>
- * <example-url>http://localhost:4200/#/forms/select/action-select/dirty-guard-escape-cancel-click-outside-blocked</example-url>
- * <example-url>http://localhost:4200/#/forms/select/action-select/pre-seeded-created-output-log</example-url>
  */
 @Component({
   selector: 'cngx-action-select',
@@ -184,125 +182,7 @@ export interface CngxActionSelectChange<T = unknown> {
     '[id]': 'resolvedId()',
     '[attr.aria-readonly]': 'ariaReadonly()',
   },
-  template: `
-    @let aria = triggerAria();
-    <div
-      class="cngx-action-select__root"
-      cngxClickOutside
-      [enabled]="panelOpen()"
-      (clickOutside)="handleClickOutside()"
-    >
-      <div class="cngx-action-select__trigger" (click)="handleWrapperClick()">
-        @if (inputPrefixTpl(); as prefixTpl) {
-          <span class="cngx-action-select__prefix" (click)="$event.stopPropagation()">
-            <ng-container *ngTemplateOutlet="prefixTpl; context: inputSlotContext()" />
-          </span>
-        }
-        <input
-          #searchInput="cngxListboxSearch"
-          #inputEl
-          cngxListboxSearch
-          type="text"
-          class="cngx-action-select__input"
-          role="combobox"
-          autocomplete="off"
-          autocapitalize="off"
-          autocorrect="off"
-          spellcheck="false"
-          [attr.inputmode]="inputMode()"
-          [attr.enterkeyhint]="enterKeyHint()"
-          [matchFn]="effectiveMatchFn()"
-          [debounceMs]="searchDebounceMs()"
-          [cngxPopoverTrigger]="pop"
-          [haspopup]="'listbox'"
-          [cngxListboxTrigger]="lb"
-          [popover]="pop"
-          [closeOnSelect]="true"
-          [disabled]="disabled()"
-          [placeholder]="placeholder()"
-          [attr.id]="resolvedId() || null"
-          [attr.tabindex]="effectiveTabIndex()"
-          [attr.aria-expanded]="aria.expanded"
-          [attr.aria-controls]="pop.id()"
-          [attr.aria-autocomplete]="'list'"
-          [attr.aria-activedescendant]="activeId()"
-          [attr.aria-describedby]="aria.describedBy"
-          [attr.aria-errormessage]="aria.errorMessage"
-          [attr.aria-invalid]="aria.invalid"
-          [attr.aria-required]="aria.required"
-          [attr.aria-busy]="aria.busy"
-          (focus)="handleFocus()"
-          (blur)="handleBlur($event)"
-          (keydown.enter)="handleTriggerEnter($event)"
-          (keydown)="handleInputKeydown($event)"
-        />
-        @if (inputSuffixTpl(); as suffixTpl) {
-          <span class="cngx-action-select__suffix" (click)="$event.stopPropagation()">
-            <ng-container *ngTemplateOutlet="suffixTpl; context: inputSlotContext()" />
-          </span>
-        }
-        @if (clearable() && value() !== undefined && !disabled()) {
-          @if (tpl.clearButton(); as clearBtnTpl) {
-            <span class="cngx-action-select__clear-slot" (click)="$event.stopPropagation()">
-              <ng-container
-                *ngTemplateOutlet="
-                  clearBtnTpl;
-                  context: { $implicit: clearCallback, clear: clearCallback, disabled: disabled() }
-                "
-              />
-            </span>
-          } @else {
-            <button
-              type="button"
-              class="cngx-action-select__clear"
-              [attr.aria-label]="clearButtonAriaLabel()"
-              (click)="handleClearClick($event)"
-            >
-              @if (clearGlyph(); as glyph) {
-                <ng-container *ngTemplateOutlet="glyph" />
-              } @else {
-                <span aria-hidden="true">✕</span>
-              }
-            </button>
-          }
-        }
-        @if (resolvedShowCaret()) {
-          @if (tpl.caret(); as caretT) {
-            <ng-container
-              *ngTemplateOutlet="caretT; context: { $implicit: panelOpen(), open: panelOpen() }"
-            />
-          } @else if (caretGlyph(); as glyph) {
-            <span aria-hidden="true" class="cngx-action-select__caret">
-              <ng-container *ngTemplateOutlet="glyph" />
-            </span>
-          } @else {
-            <span aria-hidden="true" class="cngx-action-select__caret">&#9662;</span>
-          }
-        }
-      </div>
-      <div
-        cngxPopover
-        #pop="cngxPopover"
-        [placement]="popoverPlacement()"
-        class="cngx-select__panel"
-        [class]="panelClassList()"
-        [style.--cngx-select-panel-min-width]="panelWidthCss()"
-      >
-        <div
-          cngxListbox
-          #lb="cngxListbox"
-          [label]="resolvedListboxLabel()"
-          [compareWith]="listboxCompareWith()"
-          [externalActivation]="externalActivation()"
-          [explicitOptions]="panelRef.options()"
-          [items]="panelRef.items()"
-          [virtualCount]="virtualItemCount()"
-        >
-          <cngx-select-panel #panelRef="cngxSelectPanel" />
-        </div>
-      </div>
-    </div>
-  `,
+  templateUrl: './action-select.component.html',
   styleUrls: ['../shared/select-base.css', './action-select.component.css'],
   encapsulation: ViewEncapsulation.None,
 })

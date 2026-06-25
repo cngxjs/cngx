@@ -142,15 +142,13 @@ export interface CngxSelectShellChange<T = unknown> {
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/select-shell/select-shell.component.ts
  * @since 0.1.0
  * @relatedTo CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectSearch
- * <example-url>http://localhost:4200/#/forms/select/select-shell/async-commit-pending-error-inline-glyphs</example-url>
+ * @playground Material theme ./examples/material-theme/material-theme.component.ts
  * <example-url>http://localhost:4200/#/forms/select/select-shell/basic-flat-declarative-options</example-url>
  * <example-url>http://localhost:4200/#/forms/select/select-shell/custom-glyphs-clearglyph-caretglyph</example-url>
- * <example-url>http://localhost:4200/#/forms/select/select-shell/empty-state-loading-flag</example-url>
  * <example-url>http://localhost:4200/#/forms/select/select-shell/grouped-divider-projected-hierarchy</example-url>
  * <example-url>http://localhost:4200/#/forms/select/select-shell/inside-cngx-form-field-reactive-forms</example-url>
  * <example-url>http://localhost:4200/#/forms/select/select-shell/rich-content-option-plain-text-trigger</example-url>
  * <example-url>http://localhost:4200/#/forms/select/select-shell/search-declarative-cngx-select-search</example-url>
- * <example-url>http://localhost:4200/#/forms/select/select-shell/showcase-every-feature-combined</example-url>
  */
 @Component({
   selector: 'cngx-select-shell',
@@ -187,102 +185,7 @@ export interface CngxSelectShellChange<T = unknown> {
     '[id]': 'resolvedId()',
     '[attr.aria-readonly]': 'ariaReadonly()',
   },
-  template: `
-    <div
-      class="cngx-select-shell__root"
-      cngxClickOutside
-      [enabled]="panelOpen()"
-      (clickOutside)="handleClickOutside()"
-    >
-      @let aria = triggerAria();
-      <div
-        #triggerBtn
-        class="cngx-select-shell__trigger"
-        role="combobox"
-        [cngxPopoverTrigger]="pop"
-        [haspopup]="'listbox'"
-        [cngxListboxTrigger]="lb"
-        [popover]="pop"
-        [closeOnSelect]="true"
-        [attr.tabindex]="effectiveTabIndex()"
-        [attr.aria-label]="aria.label"
-        [attr.aria-labelledby]="aria.labelledBy"
-        [attr.aria-describedby]="aria.describedBy"
-        [attr.aria-errormessage]="aria.errorMessage"
-        [attr.aria-expanded]="aria.expanded"
-        [attr.aria-disabled]="aria.disabled"
-        [attr.aria-invalid]="aria.invalid"
-        [attr.aria-required]="aria.required"
-        [attr.aria-busy]="aria.busy"
-        (click)="handleTriggerClick()"
-        (focus)="handleFocus()"
-        (blur)="handleBlur()"
-        (keydown)="handleTriggerKeydown($event)"
-      >
-        @if (triggerLabelTpl(); as labelTpl) {
-          <ng-container *ngTemplateOutlet="labelTpl; context: triggerLabelContext()" />
-        } @else {
-          <span class="cngx-select-shell__label">{{ triggerText() }}</span>
-        }
-        @if (clearable() && !empty() && !disabled()) {
-          @if (tpl.clearButton(); as clearTpl) {
-            <ng-container *ngTemplateOutlet="clearTpl; context: clearButtonContext()" />
-          } @else {
-            <button
-              type="button"
-              class="cngx-select-shell__clear"
-              [attr.aria-label]="clearButtonAriaLabel()"
-              (click)="handleClearClick($event)"
-            >
-              @if (clearGlyph(); as glyph) {
-                <ng-container *ngTemplateOutlet="glyph" />
-              } @else {
-                <span aria-hidden="true">&#10005;</span>
-              }
-            </button>
-          }
-        }
-        @if (resolvedShowCaret()) {
-          @if (tpl.caret(); as caretTpl) {
-            <span aria-hidden="true" class="cngx-select-shell__caret">
-              <ng-container *ngTemplateOutlet="caretTpl; context: caretContext()" />
-            </span>
-          } @else if (caretGlyph(); as glyph) {
-            <span aria-hidden="true" class="cngx-select-shell__caret">
-              <ng-container *ngTemplateOutlet="glyph" />
-            </span>
-          } @else {
-            <span aria-hidden="true" class="cngx-select-shell__caret">&#9662;</span>
-          }
-        }
-      </div>
-      <div
-        cngxPopover
-        #pop="cngxPopover"
-        [placement]="popoverPlacement()"
-        class="cngx-select__panel"
-        [class]="panelClassList()"
-        [style.--cngx-select-panel-min-width]="panelWidthCss()"
-      >
-        <ng-content select="cngx-select-search" />
-        <div
-          cngxListbox
-          #lb="cngxListbox"
-          [label]="resolvedListboxLabel()"
-          [compareWith]="listboxCompareWith()"
-          [externalActivation]="externalActivation()"
-          [explicitOptions]="visibleProjectedOptions()"
-          [items]="adItems()"
-          [virtualCount]="virtualItemCount()"
-          [(value)]="value"
-        >
-          <cngx-select-panel-shell>
-            <ng-content />
-          </cngx-select-panel-shell>
-        </div>
-      </div>
-    </div>
-  `,
+  templateUrl: './select-shell.component.html',
   styleUrls: ['../shared/select-base.css', './select-shell.component.css'],
   encapsulation: ViewEncapsulation.None,
 })
@@ -785,6 +688,9 @@ export class CngxSelectShell<T = unknown>
     const eq = this.compareWith();
     return this.flatOptions().find((o) => eq(o.value, v)) ?? null;
   });
+
+  /** @internal */
+  protected readonly isEmpty = computed<boolean>(() => this.selectedOption() == null);
 
   /** @internal */
   protected readonly triggerText = computed<string>(() => {

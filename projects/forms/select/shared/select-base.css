@@ -263,6 +263,16 @@
   }
 
   /**
+   * Color of the placeholder text shown when no value is selected.
+   * @group Surface
+   */
+  @property --cngx-select-placeholder-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0 0 0 / 0.5);
+  }
+
+  /**
    * Vertical gap between skeleton placeholder rows.
    * @group State / Loading
    */
@@ -1126,7 +1136,7 @@
 
   .cngx-select__chip-wrap:focus-visible {
     outline: 2px solid var(--cngx-color-primary, oklch(0.66 0.19 50));
-    outline-offset: 2px;
+    outline-offset: var(--cngx-select-focus-offset, 2px);
   }
 
   /*
@@ -1259,7 +1269,7 @@
   }
   .cngx-select__error-retry:focus-visible {
     outline: 2px solid var(--cngx-color-primary, oklch(0.66 0.19 50));
-    outline-offset: 2px;
+    outline-offset: var(--cngx-select-focus-offset, 2px);
   }
   .cngx-select__commit-error {
     display: flex;
@@ -1355,4 +1365,22 @@
     transform: scale(1);
     opacity: 1;
   }
+}
+
+/* Dark-mode swap for the shared placeholder color - the alpha-on-black
+ * default dissolves on a dark page, so flip it to alpha-on-white. Kept at
+ * the top level (not nested in @scope or @layer) so the @media cascade
+ * survives. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-color-scheme='light']):not(.light) {
+    --cngx-select-placeholder-color: oklch(1 0 0 / 0.5);
+  }
+}
+[data-color-scheme='dark'],
+.dark {
+  --cngx-select-placeholder-color: oklch(1 0 0 / 0.5);
+}
+[data-color-scheme='light'],
+.light {
+  --cngx-select-placeholder-color: oklch(0 0 0 / 0.5);
 }

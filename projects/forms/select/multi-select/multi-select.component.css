@@ -140,16 +140,6 @@
   }
 
   /**
-   * Outline offset of the focus ring.
-   * @group State / Focus
-   */
-  @property --cngx-multi-select-focus-offset {
-    syntax: '<length>';
-    inherits: false;
-    initial-value: 2px;
-  }
-
-  /**
    * Opacity multiplier applied when the trigger is disabled.
    * @group State / Disabled
    */
@@ -157,16 +147,6 @@
     syntax: '<number>';
     inherits: false;
     initial-value: 0.5;
-  }
-
-  /**
-   * Opacity of the placeholder text shown when no chips are selected.
-   * @group State / Placeholder
-   */
-  @property --cngx-multi-select-placeholder-opacity {
-    syntax: '<number>';
-    inherits: false;
-    initial-value: 0.7;
   }
 
   /**
@@ -228,7 +208,7 @@
         --cngx-multi-select-focus-outline,
         var(--cngx-select-focus-outline, 2px solid var(--cngx-color-primary, oklch(0.66 0.19 50)))
       );
-      outline-offset: var(--cngx-multi-select-focus-offset, var(--cngx-select-focus-offset, 2px));
+      outline-offset: var(--cngx-select-focus-offset, 2px);
     }
     .cngx-multi-select__trigger[aria-disabled='true'] {
       opacity: var(--cngx-multi-select-disabled-opacity, var(--cngx-select-disabled-opacity, 0.5));
@@ -241,7 +221,7 @@
     }
     .cngx-multi-select__trigger[aria-invalid='true']:focus-within {
       outline: 2px solid var(--cngx-select-trigger-invalid-outline-color, oklch(0.6 0.18 25));
-      outline-offset: var(--cngx-multi-select-focus-offset, var(--cngx-select-focus-offset, 2px));
+      outline-offset: var(--cngx-select-focus-offset, 2px);
       box-shadow: var(--cngx-select-trigger-invalid-glow, 0 0 0 3px oklch(0.6 0.18 25 / 0.2));
     }
 
@@ -249,7 +229,7 @@
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
-      opacity: var(--cngx-multi-select-placeholder-opacity, 0.7);
+      color: var(--cngx-select-placeholder-color, oklch(0 0 0 / 0.5));
     }
 
     .cngx-multi-select__clear-all {

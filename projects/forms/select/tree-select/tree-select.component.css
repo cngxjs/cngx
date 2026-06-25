@@ -20,7 +20,8 @@
  * - `.cngx-tree-select__root` - relative-positioned wrapper
  * - `.cngx-tree-select__trigger` - the bordered row
  * - `.cngx-tree-select__placeholder` - placeholder text shown when no
- *   values are selected (alpha-tinted, swaps on dark)
+ *   values are selected (color via the shared
+ *   `--cngx-select-placeholder-color` token, which swaps on dark)
  * - `.cngx-tree-select__clear-all` - reset-all button
  * - `.cngx-tree-select__caret` - panel-state glyph, pushed inline-end
  *
@@ -32,17 +33,10 @@
  * - `--cngx-tree-select-trigger-border` -> `--cngx-color-border`
  * - `--cngx-tree-select-focus-ring` -> `--cngx-color-primary` (mixed
  *   to 80% via `color-mix()` for a softer halo)
+ * - `--cngx-select-placeholder-color` -> shared family token, dark-mode
+ *   handled centrally in `shared/select-base.css`
  * - invalid surfaces fall back to `--cngx-select-trigger-invalid-*` ->
  *   `--cngx-color-danger`
- *
- * **Dark mode**
- *
- * Three hooks swap the alpha-on-black placeholder colour to
- * alpha-on-white so it reads on a dark page:
- *
- * - `prefers-color-scheme: dark`
- * - `[data-color-scheme="dark"]`
- * - `.dark` class
  *
  * **Pair with**
  *
@@ -147,16 +141,6 @@
   }
 
   /**
-   * Color of the placeholder text shown when no values are selected.
-   * @group State / Placeholder
-   */
-  @property --cngx-tree-select-placeholder-color {
-    syntax: '<color>';
-    inherits: true;
-    initial-value: oklch(0 0 0 / 0.5);
-  }
-
-  /**
    * Hit-target diameter of the clear-all button.
    * @group State / Clear
    */
@@ -195,22 +179,6 @@
     --cngx-tree-select-trigger-border: 1px solid var(--cngx-color-border);
     --cngx-tree-select-focus-ring: 2px solid
       color-mix(in oklch, var(--cngx-color-primary) 80%, transparent);
-  }
-
-  /* Dark-mode component-local swap - the alpha-on-black placeholder
-   * dissolves on dark, so the dark blocks flip it to alpha-on-white. */
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-color-scheme='light']):not(.light) {
-      --cngx-tree-select-placeholder-color: oklch(1 0 0 / 0.5);
-    }
-  }
-  [data-color-scheme='dark'],
-  .dark {
-    --cngx-tree-select-placeholder-color: oklch(1 0 0 / 0.5);
-  }
-  [data-color-scheme='light'],
-  .light {
-    --cngx-tree-select-placeholder-color: oklch(0 0 0 / 0.5);
   }
 }
 
@@ -266,7 +234,7 @@
     }
 
     .cngx-tree-select__placeholder {
-      color: var(--cngx-tree-select-placeholder-color, oklch(0 0 0 / 0.5));
+      color: var(--cngx-select-placeholder-color, oklch(0 0 0 / 0.5));
     }
 
     .cngx-tree-select__clear-all {

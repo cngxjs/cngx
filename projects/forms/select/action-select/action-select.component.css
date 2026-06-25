@@ -158,9 +158,9 @@
       cursor: text;
     }
 
-    .cngx-action-select__trigger:focus-within {
+    .cngx-action-select__trigger:has(:focus-visible) {
       outline: 2px solid var(--cngx-color-primary, oklch(0.66 0.19 50));
-      outline-offset: 2px;
+      outline-offset: var(--cngx-select-focus-offset, 2px);
     }
 
     .cngx-action-select__input {
@@ -172,6 +172,11 @@
       font: inherit;
       color: inherit;
       padding: 0;
+    }
+
+    .cngx-action-select__input::placeholder {
+      color: var(--cngx-select-placeholder-color, oklch(0 0 0 / 0.5));
+      opacity: 1;
     }
 
     .cngx-action-select__input:disabled {

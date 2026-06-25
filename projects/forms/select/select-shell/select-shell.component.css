@@ -132,16 +132,6 @@
   }
 
   /**
-   * Outline offset of the focus ring.
-   * @group State / Focus
-   */
-  @property --cngx-select-shell-focus-offset {
-    syntax: '<length>';
-    inherits: false;
-    initial-value: 2px;
-  }
-
-  /**
    * Focus-ring color used on the clear button's focus state.
    * @group State / Focus
    */
@@ -238,7 +228,7 @@
         --cngx-select-shell-focus-outline,
         var(--cngx-select-focus-outline, 2px solid var(--cngx-color-primary, oklch(0.66 0.19 50)))
       );
-      outline-offset: var(--cngx-select-shell-focus-offset, var(--cngx-select-focus-offset, 2px));
+      outline-offset: var(--cngx-select-focus-offset, 2px);
     }
 
     .cngx-select-shell__trigger[aria-disabled='true'] {
@@ -254,6 +244,10 @@
       display: inline-flex;
       align-items: center;
       gap: var(--cngx-select-shell-label-gap, 0.375rem);
+    }
+
+    .cngx-select-shell__label--placeholder {
+      color: var(--cngx-select-placeholder-color, oklch(0 0 0 / 0.5));
     }
 
     .cngx-select-shell__caret {
