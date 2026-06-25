@@ -150,26 +150,6 @@
     initial-value: 1.25rem;
   }
 
-  /**
-   * Color of the clear-all button glyph.
-   * @group State / Clear
-   */
-  @property --cngx-tree-select-clear-color {
-    syntax: '*';
-    inherits: true;
-    initial-value: currentColor;
-  }
-
-  /**
-   * Color of the caret glyph.
-   * @group Surface
-   */
-  @property --cngx-tree-select-caret-color {
-    syntax: '*';
-    inherits: true;
-    initial-value: currentColor;
-  }
-
   /* Delegating tokens - trigger border + focus-ring track the
    * foundation chain. The border shorthand pins the structural part
    * (1px solid) and inherits the color via the delegating
@@ -246,14 +226,15 @@
       padding: 0;
       border: none;
       background: transparent;
-      color: var(--cngx-tree-select-clear-color, inherit);
+      color: var(--cngx-select-clear-color, inherit);
       cursor: pointer;
     }
 
     .cngx-tree-select__caret {
       display: inline-flex;
       align-items: center;
-      color: var(--cngx-tree-select-caret-color, inherit);
+      color: var(--cngx-select-caret-color, inherit);
+      font-size: var(--cngx-select-caret-size, 1em);
       margin-inline-start: auto;
     }
   }

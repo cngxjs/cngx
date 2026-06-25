@@ -115,15 +115,6 @@
     initial-value: 0.6;
   }
 
-  /**
-   * Color of the clear button and caret glyphs.
-   * @group Surface
-   */
-  @property --cngx-typeahead-action-color {
-    syntax: '*';
-    inherits: true;
-    initial-value: currentColor;
-  }
 
   /* Delegating tokens - trigger border + bg track the foundation
    * chain so a dark-mode swap on `--cngx-color-border` /
@@ -208,9 +199,14 @@
       background: transparent;
       border: 0;
       cursor: pointer;
-      color: var(--cngx-typeahead-action-color, currentColor);
       padding: 0 0.25rem;
-      font-size: 0.9em;
+      font-size: var(--cngx-select-caret-size, 1em);
+    }
+    .cngx-typeahead__clear {
+      color: var(--cngx-select-clear-color, currentColor);
+    }
+    .cngx-typeahead__caret {
+      color: var(--cngx-select-caret-color, currentColor);
     }
 
     .cngx-typeahead__clear:focus-visible {
