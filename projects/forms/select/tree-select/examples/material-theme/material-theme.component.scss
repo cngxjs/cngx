@@ -1,5 +1,16 @@
 @use '@angular/material' as mat;
+// Standard selective bridge pattern: the system bridge maps the cngx system
+// tokens (`--cngx-color-*`, including the focus-ring primary the trigger
+// outline reads) onto `--mat-sys-*`, then each component bridge the select
+// renders is included explicitly. Same shape as the paginator example, just
+// more bridges because a select is composite (trigger + panel + option rows +
+// selection indicators + chips).
+@use '@cngx/themes/material/system-bridge.scss' as cngx-system;
 @use '@cngx/themes/material/select-theme.scss' as select;
+@use '@cngx/themes/material/option-theme.scss' as option;
+@use '@cngx/themes/material/interactive-controls-theme.scss' as controls;
+@use '@cngx/themes/material/chip-theme.scss' as chip;
+@use '@cngx/themes/material/popover-panel-theme.scss' as popover;
 
 $palette: (
   theme-type: light,
@@ -26,13 +37,23 @@ html {
     )
   );
 
-  // CNGX Material bridge — routes --cngx-select-* onto --mat-sys-*.
+  // System tokens first so every component bridge resolves its var() fallbacks
+  // against the Material-aligned layer.
+  @include cngx-system.theme($theme);
   @include select.theme($theme);
+  @include option.theme($theme);
+  @include controls.theme($theme);
+  @include chip.theme($theme);
+  @include popover.theme($theme);
 
   background: var(--mat-sys-background);
   color: var(--mat-sys-on-background);
   font: var(--mat-sys-body-medium);
 }
+
+// Roboto + Material-Icons + the `mat-app-background mat-typography` body classes
+// are injected into the playground index.html by the engine's Material shell
+// (`playgroundMaterialShell: true` in .compodocrc), not loaded here.
 
 .demo {
   display: grid;
