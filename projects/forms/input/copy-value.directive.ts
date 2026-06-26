@@ -8,7 +8,8 @@ import {
   signal,
   type Signal,
 } from '@angular/core';
-import { CNGX_INPUT_CONFIG } from './input-config';
+import { CngxLiveAnnouncer } from '@cngx/common/a11y';
+import { CNGX_INPUT_CONFIG, DEFAULT_INPUT_ARIA_LABELS } from './input-config';
 
 /**
  * Clipboard copy behavior for input fields, tokens, API keys.
@@ -33,8 +34,6 @@ import { CNGX_INPUT_CONFIG } from './input-config';
  * @since 0.1.0
  * @relatedTo CngxInput, CngxInputClear, CngxPasswordToggle
  * <example-url>http://localhost:4200/#/forms/input/utilities/copy-to-clipboard</example-url>
- * <example-url>http://localhost:4200/#/forms/input/utilities/input-clear</example-url>
- * <example-url>http://localhost:4200/#/forms/input/utilities/input-format</example-url>
  */
 @Directive({
   selector: '[cngxCopyValue]',
@@ -47,6 +46,7 @@ import { CNGX_INPUT_CONFIG } from './input-config';
 export class CngxCopyValue {
   private readonly destroyRef = inject(DestroyRef);
   private readonly config = inject(CNGX_INPUT_CONFIG);
+  private readonly announcer = inject(CngxLiveAnnouncer);
 
   /** The value to copy. Falls back to `source` element's value if not provided. */
   readonly value = input<string | undefined>(undefined, { alias: 'cngxCopyValue' });
@@ -96,6 +96,9 @@ export class CngxCopyValue {
       }
 
       this.copiedState.set(true);
+      this.announcer.announce(
+        this.config.ariaLabels?.copySuccess ?? DEFAULT_INPUT_ARIA_LABELS.copySuccess,
+      );
       this.didCopy.emit(text);
 
       if (this.resetTimer != null) {

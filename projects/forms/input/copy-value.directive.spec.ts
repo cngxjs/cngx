@@ -1,8 +1,9 @@
 import { Component, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { CngxLiveAnnouncer } from '@cngx/common/a11y';
 import { CngxCopyValue } from './copy-value.directive';
-import { provideInputConfig, withCopyResetDelay } from './input-config';
+import { provideInputConfig, withCopyResetDelay, withInputAriaLabels } from './input-config';
 
 @Component({
   template: `<button [cngxCopyValue]="'test-value'" #cp="cngxCopyValue">Copy</button>`,
@@ -63,6 +64,28 @@ describe('CngxCopyValue', () => {
       vi.advanceTimersByTime(1000);
       fixture.detectChanges();
       expect(directive.copied()).toBe(false);
+    });
+  });
+
+  describe('copy success announcement', () => {
+    it('announces "Copied" on a successful copy', async () => {
+      const announcer = TestBed.inject(CngxLiveAnnouncer);
+      const announce = vi.spyOn(announcer, 'announce').mockImplementation(() => {});
+      const { directive } = setup();
+      await directive.copy();
+      expect(announce).toHaveBeenCalledTimes(1);
+      expect(announce).toHaveBeenCalledWith('Copied');
+    });
+
+    it('announces the configured success string', async () => {
+      TestBed.configureTestingModule({
+        providers: [provideInputConfig(withInputAriaLabels({ copySuccess: 'Kopiert' }))],
+      });
+      const announcer = TestBed.inject(CngxLiveAnnouncer);
+      const announce = vi.spyOn(announcer, 'announce').mockImplementation(() => {});
+      const { directive } = setup();
+      await directive.copy();
+      expect(announce).toHaveBeenCalledWith('Kopiert');
     });
   });
 
