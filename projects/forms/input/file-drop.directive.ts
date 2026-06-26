@@ -39,9 +39,10 @@ function fileKey(file: File): string {
  * files against `accept` and `maxSize`, and provides a `browse()` method
  * for programmatic file picker access.
  *
- * The host element is itself the activation control (click / Enter / Space
- * open the file picker), so it carries `role="button"` - do not nest
- * interactive controls inside it.
+ * The host element is itself the activation control: click, Enter, or Space
+ * open the file picker, so it always carries `role="button"`. This affordance
+ * is unconditional by design - there is no passive drop-only mode, and you
+ * must not nest interactive controls inside the zone.
  *
  * ```html
  * <div cngxFileDrop [accept]="['image/*']" [maxSize]="5_000_000"
@@ -49,7 +50,7 @@ function fileKey(file: File): string {
  *   @if (drop.dragging()) {
  *     <p>Drop files here</p>
  *   } @else {
- *     <p>Drag files here, or press Enter to browse</p>
+ *     <p>Drag files here, or click / press Enter to browse</p>
  *   }
  * </div>
  * ```
