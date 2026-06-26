@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   inject,
   input,
   ViewEncapsulation,
@@ -59,7 +60,7 @@ import { CNGX_PAGINATOR_HOST } from '../paginator-host.token';
         (valueChange)="onSelect($event)"
         #lb="cngxListbox"
       >
-        @for (option of options(); track option) {
+        @for (option of resolvedOptions(); track option) {
           <li cngxOption class="cngx-paginator__option" [value]="option">{{ option }}</li>
         }
       </ul>
@@ -72,8 +73,23 @@ export class CngxPaginatorPageSize {
   protected readonly config = injectPaginatorConfig();
   protected readonly glyphs = CNGX_PAGINATOR_GLYPHS;
 
-  /** Selectable page sizes. Pure data - the segment is content-agnostic. */
+  /**
+   * Selectable page sizes. Pure data - the segment is content-agnostic. Leave
+   * unbound (or empty) to fall back to the cascade default
+   * (`CNGX_PAGINATOR_CONFIG.pageSizeOptions`, set app-wide via
+   * `withPaginatorPageSizeOptions`); a non-empty binding wins over it.
+   */
   readonly options = input<readonly number[]>([]);
+
+  /**
+   * The sizes actually rendered: the per-instance `[options]` when non-empty,
+   * otherwise the config cascade default. A pure derivation - no synced state
+   * (Pillar 1).
+   */
+  protected readonly resolvedOptions = computed(() => {
+    const instance = this.options();
+    return instance.length > 0 ? instance : this.config.pageSizeOptions;
+  });
 
   protected onSelect(value: number | undefined): void {
     if (typeof value === 'number') {
