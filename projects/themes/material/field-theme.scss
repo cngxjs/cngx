@@ -50,11 +50,36 @@
   }
 }
 
+// CngxFormErrors renders the form-level error summary as a sibling of the
+// cngx-form-field blocks, not a descendant, so the cngx-form-field scope below
+// never reaches it. These tokens (plus the shared --cngx-field-error-color the
+// per-item glyph reads) need their own scope.
+@mixin form-errors-color($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-form-errors-color: var(--mat-sys-error);
+    --cngx-field-error-color: var(--mat-sys-error);
+  } @else {
+    --cngx-form-errors-color: #{mat.get-theme-color($theme, warn)};
+    --cngx-field-error-color: #{mat.get-theme-color($theme, warn)};
+  }
+}
+
+@mixin form-errors-typography($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-form-errors-font-size: var(--mat-sys-body-small-size, 0.875rem);
+  }
+}
+
 @mixin theme($theme) {
   @layer cngx.components {
     :where(cngx-form-field) {
       @include color($theme);
       @include typography($theme);
+    }
+
+    :where(cngx-form-errors) {
+      @include form-errors-color($theme);
+      @include form-errors-typography($theme);
     }
   }
 }
