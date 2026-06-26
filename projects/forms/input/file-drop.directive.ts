@@ -24,6 +24,11 @@ export interface FileRejection {
   readonly reason: 'type' | 'size';
 }
 
+/** Identity key for dedup across drops. */
+function fileKey(file: File): string {
+  return `${file.name}|${file.size}|${file.lastModified}`;
+}
+
 /**
  * Headless drag-and-drop file behavior on any element.
  *
@@ -224,15 +229,35 @@ export class CngxFileDrop {
       }
     }
 
-    this.filesState.set(valid);
-    this.rejectedState.set(rejected);
+    // Multi-mode accumulates across drops; single mode replaces.
+    const accumulate = this.multiple();
+    const nextFiles = accumulate ? this.mergeUnique(this.filesState(), valid, fileKey) : valid;
+    const nextRejected = accumulate
+      ? this.mergeUnique(this.rejectedState(), rejected, (r) => fileKey(r.file))
+      : rejected;
+
+    this.filesState.set(nextFiles);
+    this.rejectedState.set(nextRejected);
 
     if (valid.length > 0) {
-      this.filesChange.emit(valid);
+      this.filesChange.emit(nextFiles);
     }
     if (rejected.length > 0) {
-      this.rejectedChange.emit(rejected);
+      this.rejectedChange.emit(nextRejected);
     }
+  }
+
+  private mergeUnique<T>(existing: readonly T[], incoming: readonly T[], keyOf: (item: T) => string): T[] {
+    const seen = new Set(existing.map(keyOf));
+    const merged = [...existing];
+    for (const item of incoming) {
+      const key = keyOf(item);
+      if (!seen.has(key)) {
+        seen.add(key);
+        merged.push(item);
+      }
+    }
+    return merged;
   }
 
   private matchesAccept(file: File): boolean {

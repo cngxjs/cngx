@@ -60,6 +60,10 @@ function createKeydown(key: string): KeyboardEvent {
   return new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true });
 }
 
+function file(name: string, content = 'x', lastModified = 1): File {
+  return new File([content], name, { lastModified });
+}
+
 describe('CngxFileDrop', () => {
   it('should be created', () => {
     const { directive } = setup();
@@ -165,5 +169,42 @@ describe('CngxFileDrop', () => {
     const browse = vi.spyOn(directive, 'browse').mockImplementation(() => {});
     el.dispatchEvent(createKeydown(' '));
     expect(browse).toHaveBeenCalledOnce();
+  });
+
+  it('accumulates files across drops in multiple mode', () => {
+    const { el, directive } = setup({ multiple: true });
+    el.dispatchEvent(createDropEvent([file('a.txt')]));
+    el.dispatchEvent(createDropEvent([file('b.txt')]));
+    expect(directive.files().map((f) => f.name)).toEqual(['a.txt', 'b.txt']);
+  });
+
+  it('dedups identical files across drops in multiple mode', () => {
+    const { el, directive } = setup({ multiple: true });
+    el.dispatchEvent(createDropEvent([file('a.txt')]));
+    el.dispatchEvent(createDropEvent([file('a.txt')]));
+    expect(directive.files().map((f) => f.name)).toEqual(['a.txt']);
+  });
+
+  it('replaces the selection on each drop in single mode', () => {
+    const { el, directive } = setup({ multiple: false });
+    el.dispatchEvent(createDropEvent([file('a.txt')]));
+    el.dispatchEvent(createDropEvent([file('b.txt')]));
+    expect(directive.files().map((f) => f.name)).toEqual(['b.txt']);
+  });
+
+  it('accumulates and dedups rejections in multiple mode', () => {
+    const { el, directive } = setup({ multiple: true, accept: ['.png'] });
+    el.dispatchEvent(createDropEvent([file('a.txt')]));
+    el.dispatchEvent(createDropEvent([file('a.txt')]));
+    expect(directive.rejected().map((r) => r.file.name)).toEqual(['a.txt']);
+  });
+
+  it('emits the full accumulated selection on each drop in multiple mode', () => {
+    const { el, directive } = setup({ multiple: true });
+    const emitted: string[][] = [];
+    directive.filesChange.subscribe((files) => emitted.push(files.map((f) => f.name)));
+    el.dispatchEvent(createDropEvent([file('a.txt')]));
+    el.dispatchEvent(createDropEvent([file('b.txt')]));
+    expect(emitted).toEqual([['a.txt'], ['a.txt', 'b.txt']]);
   });
 });
