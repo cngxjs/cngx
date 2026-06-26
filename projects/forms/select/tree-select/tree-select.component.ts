@@ -57,7 +57,7 @@ import {
   type CngxSelectCommitErrorDisplay,
   type CngxSelectCommitMode,
 } from '../shared/commit-action.types';
-import { sameArrayContents } from '../shared/compare';
+import { sameArrayContents } from '../shared/internal/compare';
 import { createFieldSync } from '../shared/field-sync';
 import {
   CNGX_SELECT_PANEL_VIEW_HOST,
@@ -67,7 +67,7 @@ import {
 import { CNGX_SELECT_COMMIT_CONTROLLER_FACTORY } from '../shared/commit-controller.token';
 import { CNGX_DISMISS_HANDLER_FACTORY } from '../shared/dismiss-handler';
 import { CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY } from '../shared/panel-lifecycle-emitter';
-import { resolveSelectConfig } from '../shared/resolve-config';
+import { resolveSelectConfig } from '../shared/internal/resolve-config';
 import { CNGX_TEMPLATE_REGISTRY_FACTORY } from '../shared/template-registry';
 import {
   CngxSelectCaret,
@@ -87,7 +87,7 @@ import {
   type CngxSelectCommitErrorContext,
   type CngxSelectErrorContext,
 } from '../shared/template-slots';
-import { cngxSelectDefaultCompare, type CngxSelectCompareFn } from '../shared/select-core';
+import { cngxSelectDefaultCompare, type CngxSelectCompareFn } from '../shared/internal/select-core';
 import { CngxTreeSelectChip } from './tree-select-chip.directive';
 import { CngxTreeSelectNode } from './tree-select-node.directive';
 import { CngxTreeSelectTriggerLabel } from './tree-select-trigger-label.directive';

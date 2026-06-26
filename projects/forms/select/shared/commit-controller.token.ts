@@ -7,7 +7,7 @@ import {
   type CngxCommitController as CngxGenericCommitController,
 } from '@cngx/common/data';
 
-import { runCommitAction } from './commit-action.runtime';
+import { runCommitAction } from './internal/commit-action.runtime';
 import type { CngxSelectCommitAction } from './commit-action.types';
 
 // Re-export lifted handler-side types so consumers that imported them

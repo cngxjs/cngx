@@ -2,10 +2,10 @@ import { InjectionToken, type Signal, type WritableSignal } from '@angular/core'
 
 import type { AsyncStatus } from '@cngx/core/utils';
 
-import { sameArrayContents } from './compare';
+import { sameArrayContents } from './internal/compare';
 import type { CngxSelectCommitAction, CngxSelectCommitMode } from './commit-action.types';
 import type { CngxSelectOptionDef } from './option.model';
-import type { CngxSelectCompareFn, CngxSelectCore } from './select-core';
+import type { CngxSelectCompareFn, CngxSelectCore } from './internal/select-core';
 
 /**
  * Configuration for {@link createArrayCommitHandler}.

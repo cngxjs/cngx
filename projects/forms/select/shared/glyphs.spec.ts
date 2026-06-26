@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { CNGX_SELECT_GLYPHS, type CngxSelectGlyphKey } from './glyphs';
+import { CNGX_SELECT_GLYPHS, type CngxSelectGlyphKey } from './internal/glyphs';
 
 describe('CNGX_SELECT_GLYPHS', () => {
   it('exposes the five expected glyph keys', () => {

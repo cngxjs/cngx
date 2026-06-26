@@ -4,8 +4,8 @@ import type { CngxListbox } from '@cngx/common/interactive';
 import type { CngxPopover } from '@cngx/common/popover';
 
 import { createAutoPanelRenderer } from './auto-virtualize';
-import type { CngxSelectVirtualizationConfig } from './config';
-import { CNGX_PANEL_RENDERER_FACTORY, type PanelRenderer } from './panel-renderer';
+import type { CngxSelectVirtualizationConfig } from '../config';
+import { CNGX_PANEL_RENDERER_FACTORY, type PanelRenderer } from '../panel-renderer';
 import type { CngxSelectCore } from './select-core';
 
 /**

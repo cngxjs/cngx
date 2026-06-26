@@ -7,7 +7,7 @@ import {
   type TypeaheadController,
 } from './typeahead-controller';
 import type { CngxSelectOptionDef } from './option.model';
-import { cngxSelectDefaultCompare } from './select-core';
+import { cngxSelectDefaultCompare } from './internal/select-core';
 
 // ── Helpers ────────────────────────────────────────────────────────────
 

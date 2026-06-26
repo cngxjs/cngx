@@ -51,14 +51,14 @@ import {
 } from '../shared/config';
 import { type CngxSelectOptionDef, type CngxSelectOptionsInput } from '../shared/option.model';
 import { CNGX_DISMISS_HANDLER_FACTORY } from '../shared/dismiss-handler';
-import { resolveSelectConfig } from '../shared/resolve-config';
-import { setupVirtualization } from '../shared/setup-virtualization';
+import { resolveSelectConfig } from '../shared/internal/resolve-config';
+import { setupVirtualization } from '../shared/internal/setup-virtualization';
 import {
   CNGX_SCALAR_COMMIT_HANDLER_FACTORY,
   type ScalarCommitHandler,
 } from '../shared/scalar-commit-handler';
 import { CNGX_TEMPLATE_REGISTRY_FACTORY } from '../shared/template-registry';
-import { resolveTemplate } from '../shared/resolve-template';
+import { resolveTemplate } from '../shared/internal/resolve-template';
 import {
   CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY,
   type CngxCommitErrorAnnouncePolicy,
@@ -69,7 +69,7 @@ import {
   cngxSelectDefaultCompare,
   createSelectCore,
   type CngxSelectCompareFn,
-} from '../shared/select-core';
+} from '../shared/internal/select-core';
 import {
   CngxSelectCaret,
   CngxSelectCheck,

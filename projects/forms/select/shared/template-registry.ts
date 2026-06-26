@@ -1,6 +1,6 @@
 import { InjectionToken, signal, type Signal, type TemplateRef } from '@angular/core';
 
-import { injectResolvedTemplate } from './resolve-template';
+import { injectResolvedTemplate } from './internal/resolve-template';
 import type {
   CngxSelectAction,
   CngxSelectActionContext,

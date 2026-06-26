@@ -2,7 +2,7 @@ import { InjectionToken, type Signal, type WritableSignal } from '@angular/core'
 
 import type { CngxSelectCommitAction, CngxSelectCommitMode } from './commit-action.types';
 import type { CngxSelectOptionDef } from './option.model';
-import type { CngxSelectCompareFn } from './select-core';
+import type { CngxSelectCompareFn } from './internal/select-core';
 
 /**
  * Minimum shape the chip-removal factory needs - just `.value`. Concrete

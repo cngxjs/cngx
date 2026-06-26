@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 
-import { resolveSelectConfig } from '../shared/resolve-config';
+import { resolveSelectConfig } from '../shared/internal/resolve-config';
 
 import { CNGX_SELECT_SHELL_SEARCH_HOST } from './select-search-host';
 

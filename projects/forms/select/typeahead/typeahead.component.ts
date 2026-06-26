@@ -60,9 +60,9 @@ import {
   type CngxSelectOptionsInput,
 } from '../shared/option.model';
 import { CNGX_DISMISS_HANDLER_FACTORY } from '../shared/dismiss-handler';
-import { resolveSelectConfig } from '../shared/resolve-config';
-import { handlePageJumpKey } from '../shared/page-jump-handler';
-import { setupVirtualization } from '../shared/setup-virtualization';
+import { resolveSelectConfig } from '../shared/internal/resolve-config';
+import { handlePageJumpKey } from '../shared/internal/page-jump-handler';
+import { setupVirtualization } from '../shared/internal/setup-virtualization';
 import { CNGX_SEARCH_EFFECTS_FACTORY } from '../shared/search-effects';
 import {
   CNGX_SCALAR_COMMIT_HANDLER_FACTORY,
@@ -80,7 +80,7 @@ import {
   cngxSelectDefaultCompare,
   createSelectCore,
   type CngxSelectCompareFn,
-} from '../shared/select-core';
+} from '../shared/internal/select-core';
 import {
   CngxSelectCaret,
   CngxSelectCheck,

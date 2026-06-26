@@ -3,14 +3,14 @@ import { type ElementRef, type Signal, computed } from '@angular/core';
 import { injectRecycler } from '@cngx/common/data';
 import type { CngxPopover } from '@cngx/common/popover';
 
-import type { CngxSelectOptionDef } from './option.model';
+import type { CngxSelectOptionDef } from '../option.model';
 import {
   createIdentityPanelRenderer,
   type PanelRenderer,
   type PanelRendererInput,
-} from './panel-renderer';
-import { createRecyclerPanelRendererFactory } from './recycler-panel-renderer';
-import type { CngxSelectVirtualizationConfig } from './config';
+} from '../panel-renderer';
+import { createRecyclerPanelRendererFactory } from '../recycler-panel-renderer';
+import type { CngxSelectVirtualizationConfig } from '../config';
 
 /**
  * Resolves the variant's {@link PanelRenderer} from the

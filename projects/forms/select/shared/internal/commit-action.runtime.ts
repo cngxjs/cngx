@@ -1,6 +1,6 @@
 import { isObservable, type Observable } from 'rxjs';
 
-import type { CngxSelectCommitAction } from './commit-action.types';
+import type { CngxSelectCommitAction } from '../commit-action.types';
 
 /**
  * Cancel marks the commit superseded. Observable subscriptions tear down;

@@ -9,7 +9,7 @@ import type {
   CngxSelectCommitMode,
 } from './commit-action.types';
 import type { CngxSelectOptionDef } from './option.model';
-import type { CngxSelectCompareFn, CngxSelectCore } from './select-core';
+import type { CngxSelectCompareFn, CngxSelectCore } from './internal/select-core';
 
 type T = string;
 
