@@ -1,12 +1,4 @@
-import {
-  Component,
-  computed,
-  DestroyRef,
-  inject,
-  signal,
-  viewChild,
-  type Signal,
-} from '@angular/core';
+import { Component, DestroyRef, inject, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { FormControl } from '@angular/forms';
@@ -18,9 +10,9 @@ import {
   CngxFormFieldPresenter,
   CNGX_FORM_FIELD_CONTROL,
   type CngxFieldAccessor,
-  type CngxFieldRef,
 } from '@cngx/forms/field';
 import { createMockField, type MockFieldRef } from '@cngx/forms/field/testing';
+import { CngxSelect } from '@cngx/forms/select';
 
 import { CngxFilterBuilder } from './filter-builder.component';
 import { CngxFilterBuilderFormFieldControl } from './filter-builder-form-field-control.directive';
@@ -61,55 +53,32 @@ class SignalFormsHost {
   readonly builder = viewChild.required(CngxFilterBuilder);
 }
 
-/**
- * Stub `CngxFormFieldPresenter`. Provides only the surface
- * `CngxFilterBuilderPresenter` reads (`disabled`, `touched`, `describedBy`,
- * `required`, `invalid`) plus a `fieldState` whose `value` is a non-writable
- * `Signal` so the select-family field-sync writeback short-circuits — see
- * `projects/forms/select/shared/field-sync.ts`. Lets the spec exercise
- * `errorState()` against a non-empty tree without triggering the inner
- * `<cngx-select>` value-bleed when an outer `<cngx-form-field>` is in scope.
- */
-class StubFormFieldPresenter {
-  readonly disabledSignal = signal(false);
-  readonly touchedSignal = signal(false);
-  readonly disabled = this.disabledSignal.asReadonly();
-  readonly touched = this.touchedSignal.asReadonly();
-  readonly required = signal(false).asReadonly();
-  readonly invalid = signal(false).asReadonly();
-  readonly describedBy = signal('cngx-stub-hint cngx-stub-error').asReadonly();
-  readonly errorId = signal('cngx-stub-error').asReadonly();
-  readonly labelId = signal('cngx-stub-label').asReadonly();
-  readonly inputId = signal('cngx-stub-input').asReadonly();
-  readonly pending = signal(false).asReadonly();
-  readonly readonly = signal(false).asReadonly();
-  readonly hidden = signal(false).asReadonly();
-  readonly errors = signal([]).asReadonly();
-  readonly errorSummary = signal([]).asReadonly();
-  readonly showError = signal(false).asReadonly();
-
-  readonly fieldState: Signal<CngxFieldRef> = computed(() => ({
-    name: signal('stub').asReadonly(),
-    value: signal(null).asReadonly() as unknown as Signal<unknown>,
-    errors: signal([]).asReadonly(),
-    touched: this.touchedSignal.asReadonly(),
-    dirty: signal(false).asReadonly(),
-    invalid: signal(false).asReadonly(),
-    valid: signal(true).asReadonly(),
-    required: signal(false).asReadonly(),
-    disabled: this.disabledSignal.asReadonly(),
-    pending: signal(false).asReadonly(),
-    hidden: signal(false).asReadonly(),
-    readonly: signal(false).asReadonly(),
-    disabledReasons: signal([]).asReadonly(),
-    pattern: signal([]).asReadonly(),
-    errorSummary: signal([]).asReadonly(),
-    submitting: signal(false).asReadonly(),
-    markAsTouched: () => this.touchedSignal.set(true),
-    markAsDirty: () => undefined,
-    focusBoundControl: () => undefined,
-    reset: () => undefined,
-  } as unknown as CngxFieldRef));
+// Incomplete expression (operator/value missing) inside a real Signal-Forms
+// form-field. Used to exercise errorState() and the #98 no-value-bleed
+// regression without the previous non-writable-presenter stub: the
+// CNGX_SELECT_DISABLE_FIELD_SYNC provider on the form-field-control directive
+// now keeps the inner selects from receiving the FilterGroup.
+@Component({
+  template: `
+    <cngx-form-field [field]="field">
+      <cngx-filter-builder
+        cngxFilterBuilderFormFieldControl
+        [fields]="fields"
+        [(value)]="value"
+      />
+    </cngx-form-field>
+  `,
+  imports: [CngxFormField, CngxFilterBuilder, CngxFilterBuilderFormFieldControl],
+})
+class PopulatedSignalFormsHost {
+  readonly fields = FIELDS;
+  readonly _tree: FilterGroup = createFilterGroup('and', [
+    createFilterExpression('name', 'eq', undefined),
+  ]);
+  value: FilterGroup = this._tree;
+  readonly _mock = createMockField<FilterGroup>({ name: 'filter', value: this._tree });
+  readonly field: CngxFieldAccessor<FilterGroup> = this._mock.accessor;
+  readonly ref: MockFieldRef<FilterGroup> = this._mock.ref;
 }
 
 @Component({
@@ -205,23 +174,27 @@ describe('CngxFilterBuilder — form-field bridge', () => {
     expect(presenter.focused()).toBe(false);
   });
 
+  it('does not write the FilterGroup into inner selects when wrapped in a form-field (#98)', () => {
+    TestBed.configureTestingModule({ imports: [PopulatedSignalFormsHost] });
+    const fixture = TestBed.createComponent(PopulatedSignalFormsHost);
+    // The bleed manifested during change detection as the inner field-select's
+    // valueChange firing with the FilterGroup object; rendering must not throw.
+    expect(() => {
+      fixture.detectChanges();
+      TestBed.flushEffects();
+    }).not.toThrow();
+
+    const fieldSelect = fixture.debugElement
+      .query(By.css('.cngx-filter-builder__field-select'))
+      .injector.get(CngxSelect);
+    // Stays the scalar field key, not the whole FilterGroup tree.
+    expect(fieldSelect.value()).toBe('name');
+    expect(fieldSelect.value()).not.toBe(fixture.componentInstance.value);
+  });
+
   it('errorState() AND-gates incomplete expressions with the form-field touched flag', () => {
-    const stub = new StubFormFieldPresenter();
-    TestBed.configureTestingModule({
-      providers: [{ provide: CngxFormFieldPresenter, useValue: stub }],
-    });
-    @Component({
-      template: `<div cngxFilterBuilderPresenter [fields]="fields" [(value)]="value"></div>`,
-      imports: [CngxFilterBuilderPresenter],
-    })
-    class PresenterOnlyHost {
-      readonly fields = FIELDS;
-      value: FilterGroup = createFilterGroup('and', [
-        createFilterExpression('name', 'eq', undefined),
-      ]);
-    }
-    TestBed.configureTestingModule({ imports: [PresenterOnlyHost] });
-    const fixture = TestBed.createComponent(PresenterOnlyHost);
+    TestBed.configureTestingModule({ imports: [PopulatedSignalFormsHost] });
+    const fixture = TestBed.createComponent(PopulatedSignalFormsHost);
     fixture.detectChanges();
     TestBed.flushEffects();
 
@@ -230,7 +203,7 @@ describe('CngxFilterBuilder — form-field bridge', () => {
       .injector.get(CngxFilterBuilderPresenter);
 
     expect(presenter.errorState()).toBe(false);
-    stub.touchedSignal.set(true);
+    fixture.componentInstance.ref.touched.set(true);
     fixture.detectChanges();
     TestBed.flushEffects();
     expect(presenter.errorState()).toBe(true);
