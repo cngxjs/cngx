@@ -26,4 +26,5 @@ export {
   withNumericDefaults,
   withCopyResetDelay,
   withFileMaxSize,
+  withFileMaxFiles,
 } from './input-config';

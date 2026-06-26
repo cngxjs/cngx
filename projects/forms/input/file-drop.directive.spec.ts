@@ -3,7 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { vi } from 'vitest';
 import type { CngxAsyncState } from '@cngx/core/utils';
 import { CngxFileDrop } from './file-drop.directive';
-import { provideInputConfig, withFileMaxSize } from './input-config';
+import { provideInputConfig, withFileMaxFiles, withFileMaxSize } from './input-config';
 
 @Component({
   template: `<div
@@ -11,6 +11,7 @@ import { provideInputConfig, withFileMaxSize } from './input-config';
     [accept]="accept"
     [maxSize]="maxSize"
     [multiple]="multiple"
+    [maxFiles]="maxFiles"
     [ariaLabel]="ariaLabel"
     [state]="state"
     #drop="cngxFileDrop"
@@ -21,6 +22,7 @@ class Host {
   accept: string[] = [];
   maxSize: number | undefined = undefined;
   multiple = false;
+  maxFiles: number | undefined = undefined;
   ariaLabel = 'File drop zone';
   state: CngxAsyncState<unknown> | undefined = undefined;
   readonly drop = viewChild.required(CngxFileDrop);
@@ -206,5 +208,41 @@ describe('CngxFileDrop', () => {
     el.dispatchEvent(createDropEvent([file('a.txt')]));
     el.dispatchEvent(createDropEvent([file('b.txt')]));
     expect(emitted).toEqual([['a.txt'], ['a.txt', 'b.txt']]);
+  });
+
+  it('rejects files past maxFiles with reason count', () => {
+    const { el, directive } = setup({ multiple: true, maxFiles: 2 });
+    el.dispatchEvent(createDropEvent([file('a.txt'), file('b.txt'), file('c.txt')]));
+    expect(directive.files().map((f) => f.name)).toEqual(['a.txt', 'b.txt']);
+    expect(directive.rejected()).toEqual([
+      expect.objectContaining({ reason: 'count' }),
+    ]);
+    expect(directive.rejected()[0].file.name).toBe('c.txt');
+  });
+
+  it('caps the count across accumulating drops', () => {
+    const { el, directive } = setup({ multiple: true, maxFiles: 2 });
+    el.dispatchEvent(createDropEvent([file('a.txt')]));
+    el.dispatchEvent(createDropEvent([file('b.txt'), file('c.txt')]));
+    expect(directive.files().map((f) => f.name)).toEqual(['a.txt', 'b.txt']);
+    expect(directive.rejected().map((r) => r.reason)).toEqual(['count']);
+  });
+
+  it('does not let a duplicate consume a maxFiles slot', () => {
+    const { el, directive } = setup({ multiple: true, maxFiles: 2 });
+    el.dispatchEvent(createDropEvent([file('a.txt')]));
+    el.dispatchEvent(createDropEvent([file('a.txt'), file('b.txt')]));
+    expect(directive.files().map((f) => f.name)).toEqual(['a.txt', 'b.txt']);
+    expect(directive.rejected()).toEqual([]);
+  });
+
+  it('honours fileMaxFiles from global config when no [maxFiles] binding is set', () => {
+    TestBed.configureTestingModule({
+      providers: [provideInputConfig(withFileMaxFiles(1))],
+    });
+    const { el, directive } = setup({ multiple: true });
+    el.dispatchEvent(createDropEvent([file('a.txt'), file('b.txt')]));
+    expect(directive.files().map((f) => f.name)).toEqual(['a.txt']);
+    expect(directive.rejected().map((r) => r.reason)).toEqual(['count']);
   });
 });

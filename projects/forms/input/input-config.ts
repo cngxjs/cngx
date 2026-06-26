@@ -33,6 +33,8 @@ export interface InputConfig {
   readonly copyResetDelay?: number;
   /** Default `maxSize` for `CngxFileDrop` in bytes. */
   readonly fileMaxSize?: number;
+  /** Default `maxFiles` for `CngxFileDrop`. */
+  readonly fileMaxFiles?: number;
   /**
    * Consumer overrides for the built-in ARIA label strings. Unset keys fall
    * back to {@link DEFAULT_INPUT_ARIA_LABELS}.
@@ -245,6 +247,15 @@ export function withCopyResetDelay(ms: number): InputConfigFeature {
  */
 export function withFileMaxSize(bytes: number): InputConfigFeature {
   return (config) => ({ ...config, fileMaxSize: bytes });
+}
+
+/**
+ * Set the default `maxFiles` for `CngxFileDrop`.
+ *
+ * @category forms/input
+ */
+export function withFileMaxFiles(count: number): InputConfigFeature {
+  return (config) => ({ ...config, fileMaxFiles: count });
 }
 
 /**

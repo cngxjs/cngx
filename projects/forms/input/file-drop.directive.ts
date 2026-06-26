@@ -20,8 +20,11 @@ import { CNGX_INPUT_CONFIG } from './input-config';
 export interface FileRejection {
   /** The rejected file. */
   readonly file: File;
-  /** Why the file was rejected: MIME type mismatch (`'type'`) or exceeds `maxSize` (`'size'`). */
-  readonly reason: 'type' | 'size';
+  /**
+   * Why the file was rejected: MIME type mismatch (`'type'`), exceeds `maxSize`
+   * (`'size'`), or over the `maxFiles` count cap (`'count'`).
+   */
+  readonly reason: 'type' | 'size' | 'count';
 }
 
 /** Identity key for dedup across drops. */
@@ -91,6 +94,11 @@ export class CngxFileDrop {
 
   /** Allow multiple files. */
   readonly multiple = input<boolean>(false);
+
+  /** Maximum number of accepted files. `undefined` = no limit. Falls back to global config. */
+  readonly maxFiles = input<number | undefined>(undefined);
+
+  private readonly resolvedMaxFiles = computed(() => this.maxFiles() ?? this.config.fileMaxFiles);
 
   /** `aria-label` for the drop zone. Library default is English. */
   readonly ariaLabel = input<string>('File drop zone');
@@ -231,18 +239,32 @@ export class CngxFileDrop {
 
     // Multi-mode accumulates across drops; single mode replaces.
     const accumulate = this.multiple();
-    const nextFiles = accumulate ? this.mergeUnique(this.filesState(), valid, fileKey) : valid;
-    const nextRejected = accumulate
-      ? this.mergeUnique(this.rejectedState(), rejected, (r) => fileKey(r.file))
-      : rejected;
+    const retainedFiles = accumulate ? this.filesState() : [];
+    const retainedRejected = accumulate ? this.rejectedState() : [];
+
+    // Drop files already retained, then cap the rest at maxFiles ('count' overflow).
+    const seen = new Set(retainedFiles.map(fileKey));
+    const fresh = valid.filter((file) => !seen.has(fileKey(file)));
+
+    const cap = this.resolvedMaxFiles();
+    const room = cap == null ? fresh.length : Math.max(0, cap - retainedFiles.length);
+    const accepted = fresh.slice(0, room);
+    const overflow: FileRejection[] = fresh.slice(room).map((file) => ({ file, reason: 'count' }));
+
+    const nextFiles = [...retainedFiles, ...accepted];
+    const nextRejected = this.mergeUnique(
+      retainedRejected,
+      [...rejected, ...overflow],
+      (r) => fileKey(r.file),
+    );
 
     this.filesState.set(nextFiles);
     this.rejectedState.set(nextRejected);
 
-    if (valid.length > 0) {
+    if (accepted.length > 0) {
       this.filesChange.emit(nextFiles);
     }
-    if (rejected.length > 0) {
+    if (rejected.length + overflow.length > 0) {
       this.rejectedChange.emit(nextRejected);
     }
   }
