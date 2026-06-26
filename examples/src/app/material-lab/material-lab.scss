@@ -7,6 +7,7 @@
 @use '../../../../projects/themes/material/interactive-controls-theme.scss' as controls;
 @use '../../../../projects/themes/material/chip-theme.scss' as chip;
 @use '../../../../projects/themes/material/popover-panel-theme.scss' as popover;
+@use '../../../../projects/themes/material/field-theme.scss' as field;
 
 $palette: (
   theme-type: light,
@@ -61,11 +62,13 @@ html {
   @include controls.theme($theme);
   @include chip.theme($theme);
   @include popover.theme($theme);
+  @include field.theme($theme);
 }
 
 .lab {
   display: flex;
-  gap: 48px;
+  flex-wrap: wrap;
+  gap: 48px 32px;
   align-items: flex-start;
   padding: 32px;
 }
@@ -73,10 +76,50 @@ html {
 .lab section {
   display: grid;
   gap: 12px;
-  min-width: 280px;
+  align-content: start;
+  width: 280px;
 }
 
 .lab h3 {
   margin: 0;
   font: var(--mat-sys-title-small);
+}
+
+// cngxInput has no default box in the harness; give the probes a consistent
+// width and a visible border so the field bridge's border/focus/error tokens
+// are observable next to the Material outline.
+.lab input.probe-cngx,
+.lab textarea.probe-cngx {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--cngx-field-input-border-color, oklch(0.7 0 0));
+  border-radius: 4px;
+  font: inherit;
+  box-sizing: border-box;
+}
+
+.lab input.probe-cngx:focus,
+.lab textarea.probe-cngx:focus {
+  outline: none;
+  border-color: var(--cngx-field-input-focus-border-color, oklch(0.55 0.2 250));
+}
+
+.lab .cngx-field--error input.probe-cngx {
+  border-color: var(--cngx-field-input-error-border-color, var(--cngx-field-error-color));
+}
+
+.lab .cngx-field--disabled input.probe-cngx,
+.lab .cngx-field--disabled textarea.probe-cngx {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.lab-inline-btn {
+  justify-self: start;
+  padding: 4px 10px;
+  font: var(--mat-sys-label-medium);
+  border: 1px solid var(--mat-sys-outline);
+  border-radius: 4px;
+  background: transparent;
+  cursor: pointer;
 }

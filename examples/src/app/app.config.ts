@@ -2,6 +2,11 @@ import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/
 import { provideRouter, TitleStrategy, withHashLocation } from '@angular/router';
 import { provideDialog } from '@cngx/common/dialog';
 import {
+  provideFormField,
+  withErrorMessages,
+  withRequiredMarker,
+} from '@cngx/forms/field';
+import {
   provideFeedback,
   withAlerts,
   withBanners,
@@ -24,6 +29,18 @@ export const appConfig: ApplicationConfig = {
         {
           path: 'material-lab',
           loadComponent: () => import('./material-lab/material-lab').then((m) => m.MaterialLab),
+          // The harness renders cngx-form-field with required markers and
+          // field-level error messages; both need an app-scoped config the
+          // examples app does not otherwise provide.
+          providers: [
+            provideFormField(
+              withRequiredMarker(),
+              withErrorMessages({
+                required: () => 'This field is required',
+                email: () => 'Enter a valid email address',
+              }),
+            ),
+          ],
         },
         ...routes,
       ],
