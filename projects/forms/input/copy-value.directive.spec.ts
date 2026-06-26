@@ -80,8 +80,8 @@ describe('CngxCopyValue', () => {
       TestBed.flushEffects();
       expect(directive.copied()).toBe(true);
 
-      // Under the old literal 2000 default the flag would already be false here;
-      // the config fallback keeps it true until t=5000.
+      // Still true at t=2000 discriminates the resolved delay from the old 2000
+      // literal; a regression to the literal default would flip it false here.
       vi.advanceTimersByTime(2000);
       fixture.detectChanges();
       expect(directive.copied()).toBe(true);
