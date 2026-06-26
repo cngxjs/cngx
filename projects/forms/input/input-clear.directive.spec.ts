@@ -1,6 +1,7 @@
 import { Component, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { CngxInputClear } from './input-clear.directive';
+import { provideInputConfig, withInputAriaLabels } from './input-config';
 
 @Component({
   template: `
@@ -32,6 +33,14 @@ describe('CngxInputClear', () => {
   it('should set aria-label to Clear', () => {
     const { button } = setup();
     expect(button.getAttribute('aria-label')).toBe('Clear');
+  });
+
+  it('reads aria-label from withInputAriaLabels override', () => {
+    TestBed.configureTestingModule({
+      providers: [provideInputConfig(withInputAriaLabels({ clear: 'Leeren' }))],
+    });
+    const { button } = setup();
+    expect(button.getAttribute('aria-label')).toBe('Leeren');
   });
 
   it('should clear the input value on click', () => {
