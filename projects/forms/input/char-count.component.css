@@ -81,22 +81,6 @@
   :root {
     --cngx-field-char-count-over-color: var(--cngx-color-danger);
   }
-
-  /* Dark-mode swap — neutral muted gray lifts so the counter keeps
-   * its secondary-information weight on the dark surface. */
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-color-scheme='light']):not(.light) {
-      --cngx-field-char-count-color: oklch(0.7 0 0);
-    }
-  }
-  [data-color-scheme='dark'],
-  .dark {
-    --cngx-field-char-count-color: oklch(0.7 0 0);
-  }
-  [data-color-scheme='light'],
-  .light {
-    --cngx-field-char-count-color: oklch(0.45 0 0);
-  }
 }
 
 @layer cngx.components {
@@ -114,4 +98,23 @@
       );
     }
   }
+}
+
+/* Dark-mode swap, unlayered with direct :root-level selectors so a consumer's
+ * unlayered override still wins. A layered swap would lose to any unlayered
+ * consumer rule by cascade origin (feedback: media-inside-scope cascade). The
+ * muted resting gray lifts so the counter keeps its secondary-information
+ * weight on the dark surface. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-color-scheme='light']):not(.light) {
+    --cngx-field-char-count-color: oklch(0.7 0 0);
+  }
+}
+[data-color-scheme='dark'],
+.dark {
+  --cngx-field-char-count-color: oklch(0.7 0 0);
+}
+[data-color-scheme='light'],
+.light {
+  --cngx-field-char-count-color: oklch(0.45 0 0);
 }
