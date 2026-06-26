@@ -271,12 +271,15 @@ Shared `focused` signal slot. Variants own their own focus reactions (open-on-fo
 ### `field-sync.ts`
 
 Bidirectional `componentValue ↔ field.value()` sync via two `effect()`s, both directions guarded by `valueEquals` to suppress redundant writes.
-No-op without a `CngxFormFieldPresenter` in scope (standalone use case).
+No-op without a `CngxFormFieldPresenter` in scope (standalone use case), or when `CNGX_SELECT_DISABLE_FIELD_SYNC` resolves truthy in the subtree.
+
+Provide `CNGX_SELECT_DISABLE_FIELD_SYNC` (truthy) on a composite that is itself the form-field control - e.g. `CngxFilterBuilderFormFieldControl` - so its descendant selects stop writing the composite's object value into their own scalar `value`. The form-field bridge (disabled / focused / errorState) stays intact; only value-sync is suppressed.
 
 | Symbol | Purpose |
 |-|-|
 | `createFieldSync<V>`  | Default factory |
 | `FieldSyncOptions<V>` | Input shape     |
+| `CNGX_SELECT_DISABLE_FIELD_SYNC` | Subtree opt-out token (suppresses value-sync, keeps the bridge) |
 
 ### `ad-activation-dispatcher.ts`
 

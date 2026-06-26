@@ -516,7 +516,7 @@ protected readonly rfField = adaptFormControl(
 
 Then bind the resulting `Field<T>` to `<cngx-form-field [field]="rfField">` exactly as for native Signal Forms.
 
-`createFieldSync` (in `shared/field-sync.ts`) is the shared bridge - two `effect()`s install bidirectional `componentValue ↔ field.value()` sync, both directions guarded by `valueEquals` to suppress redundant writes.
+`createFieldSync` (in `shared/field-sync.ts`) is the shared bridge - two `effect()`s install bidirectional `componentValue ↔ field.value()` sync, both directions guarded by `valueEquals` to suppress redundant writes. A subtree can opt out of value-sync (while keeping the disabled / focused / errorState bridge) by providing `CNGX_SELECT_DISABLE_FIELD_SYNC` truthy - used by composites like `CngxFilterBuilderFormFieldControl` that are themselves the form-field control, so their inner selects never sync the composite's object value.
 
 ---
 
