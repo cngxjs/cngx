@@ -60,6 +60,8 @@ export interface InputAriaLabels {
   readonly otpComplete: string;
   /** Live-region announcement when `CngxCopyValue` copies successfully. Default: `'Copied'` */
   readonly copySuccess: string;
+  /** Assertive live-region announcement when `CngxCopyValue` fails to copy. Default: `'Copy failed'` */
+  readonly copyError: string;
 }
 
 /**
@@ -74,6 +76,7 @@ export const DEFAULT_INPUT_ARIA_LABELS: InputAriaLabels = {
   otpSlot: (index, length) => `Digit ${index + 1} of ${length}`,
   otpComplete: 'Code complete',
   copySuccess: 'Copied',
+  copyError: 'Copy failed',
 };
 
 /**

@@ -115,7 +115,12 @@ export class CngxCopyValue {
       }, this.resolvedResetDelay());
       this.resetTimer = handle;
     } catch {
-      // Clipboard write failed (permission denied, etc.) - drop silently.
+      // Clipboard write failed (permission denied, etc.). Announce assertively
+      // so the failure is not a silent state change (Pillar 2).
+      this.announcer.announce(
+        this.config.ariaLabels?.copyError ?? DEFAULT_INPUT_ARIA_LABELS.copyError,
+        'assertive',
+      );
     }
   }
 

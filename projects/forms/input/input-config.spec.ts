@@ -47,6 +47,7 @@ describe('withInputAriaLabels', () => {
     expect(DEFAULT_INPUT_ARIA_LABELS.otpGroup).toBe('One-time code');
     expect(DEFAULT_INPUT_ARIA_LABELS.otpComplete).toBe('Code complete');
     expect(DEFAULT_INPUT_ARIA_LABELS.copySuccess).toBe('Copied');
+    expect(DEFAULT_INPUT_ARIA_LABELS.copyError).toBe('Copy failed');
     expect(DEFAULT_INPUT_ARIA_LABELS.otpSlot(0, 6)).toBe('Digit 1 of 6');
     expect(DEFAULT_INPUT_ARIA_LABELS.otpSlot(5, 6)).toBe('Digit 6 of 6');
   });

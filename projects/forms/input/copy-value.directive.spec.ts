@@ -87,6 +87,28 @@ describe('CngxCopyValue', () => {
       await directive.copy();
       expect(announce).toHaveBeenCalledWith('Kopiert');
     });
+
+    it('announces failure assertively when the clipboard write rejects', async () => {
+      const original = Object.getOwnPropertyDescriptor(navigator, 'clipboard');
+      Object.defineProperty(navigator, 'clipboard', {
+        value: { writeText: () => Promise.reject(new Error('denied')) },
+        configurable: true,
+      });
+      try {
+        const announcer = TestBed.inject(CngxLiveAnnouncer);
+        const announce = vi.spyOn(announcer, 'announce').mockImplementation(() => {});
+        const { directive } = setup();
+        await directive.copy();
+        expect(announce).toHaveBeenCalledWith('Copy failed', 'assertive');
+        expect(directive.copied()).toBe(false);
+      } finally {
+        if (original) {
+          Object.defineProperty(navigator, 'clipboard', original);
+        } else {
+          Reflect.deleteProperty(navigator, 'clipboard');
+        }
+      }
+    });
   });
 
   describe('config fallback (withCopyResetDelay)', () => {
