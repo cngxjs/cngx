@@ -4,7 +4,7 @@ import { By } from '@angular/platform-browser';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { CngxFormField } from './form-field.component';
 import { CngxFormFieldPresenter } from './form-field-presenter';
-import { CngxLabel } from './label.directive';
+import { CngxLabel } from './label.component';
 import { CngxInput } from '@cngx/forms/input';
 import { CngxHint } from './hint.directive';
 import { CngxError } from './error.directive';

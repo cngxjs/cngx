@@ -341,11 +341,13 @@ html {
 | `--cngx-field-label-color` | `--mat-sys-on-surface` | Label text |
 | `--cngx-field-label-font-size` | `0.875rem` | Label size |
 | `--cngx-field-label-weight` | `500` | Label weight |
-| `--cngx-field-label-required-color` | `--mat-sys-error` | Required marker |
+| `--cngx-field-required-color` | `--mat-sys-error` | Required marker |
 | `--cngx-field-hint-color` | `--mat-sys-on-surface-variant` | Hint text |
 | `--cngx-field-hint-font-size` | `0.75rem` | Hint size |
 | `--cngx-field-error-color` | `--mat-sys-error` | Error text |
 | `--cngx-field-error-font-size` | `0.75rem` | Error size |
+| `--cngx-form-errors-color` | `--mat-sys-error` | Form-error summary text |
+| `--cngx-form-errors-font-size` | `0.875rem` | Form-error summary size |
 | `--cngx-field-pending-color` | `--mat-sys-primary` | Pending indicator |
 | `--cngx-field-disabled-opacity` | `0.38` | Disabled state |
 | `--cngx-field-input-border-color` | `--mat-sys-outline` | Input border |

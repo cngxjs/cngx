@@ -3,7 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { CngxFormField } from './form-field.component';
-import { CngxLabel } from './label.directive';
+import { CngxLabel } from './label.component';
 import { CngxRequired } from './required.component';
 import { createMockField, type MockFieldRef } from './testing/mock-field';
 import type { CngxFieldAccessor } from './models';

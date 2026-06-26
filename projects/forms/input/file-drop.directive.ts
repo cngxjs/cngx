@@ -10,6 +10,7 @@ import {
   type Signal,
 } from '@angular/core';
 import type { CngxAsyncState } from '@cngx/core/utils';
+import { CNGX_INPUT_CONFIG } from './input-config';
 
 /**
  * Describes a file that was rejected during drop/browse validation.
@@ -69,12 +70,15 @@ export interface FileRejection {
 export class CngxFileDrop {
   private readonly el = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly config = inject(CNGX_INPUT_CONFIG);
 
   /** Accepted MIME types (e.g. `'image/*'`, `'.pdf'`). Empty = all. */
   readonly accept = input<string[]>([]);
 
-  /** Maximum file size in bytes. `undefined` = no limit. */
+  /** Maximum file size in bytes. `undefined` = no limit. Falls back to global config. */
   readonly maxSize = input<number | undefined>(undefined);
+
+  private readonly resolvedMaxSize = computed(() => this.maxSize() ?? this.config.fileMaxSize);
 
   /** Allow multiple files. */
   readonly multiple = input<boolean>(false);
@@ -234,7 +238,7 @@ export class CngxFileDrop {
   }
 
   private matchesSize(file: File): boolean {
-    const max = this.maxSize();
+    const max = this.resolvedMaxSize();
     return max == null || file.size <= max;
   }
 

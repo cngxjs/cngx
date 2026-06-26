@@ -1,4 +1,15 @@
-import { DestroyRef, Directive, inject, input, output, signal, type Signal } from '@angular/core';
+import {
+  computed,
+  DestroyRef,
+  Directive,
+  inject,
+  input,
+  output,
+  signal,
+  type Signal,
+} from '@angular/core';
+import { CngxLiveAnnouncer } from '@cngx/common/a11y';
+import { CNGX_INPUT_CONFIG, DEFAULT_INPUT_ARIA_LABELS } from './input-config';
 
 /**
  * Clipboard copy behavior for input fields, tokens, API keys.
@@ -23,8 +34,6 @@ import { DestroyRef, Directive, inject, input, output, signal, type Signal } fro
  * @since 0.1.0
  * @relatedTo CngxInput, CngxInputClear, CngxPasswordToggle
  * <example-url>http://localhost:4200/#/forms/input/utilities/copy-to-clipboard</example-url>
- * <example-url>http://localhost:4200/#/forms/input/utilities/input-clear</example-url>
- * <example-url>http://localhost:4200/#/forms/input/utilities/input-format</example-url>
  */
 @Directive({
   selector: '[cngxCopyValue]',
@@ -36,6 +45,8 @@ import { DestroyRef, Directive, inject, input, output, signal, type Signal } fro
 })
 export class CngxCopyValue {
   private readonly destroyRef = inject(DestroyRef);
+  private readonly config = inject(CNGX_INPUT_CONFIG);
+  private readonly announcer = inject(CngxLiveAnnouncer);
 
   /** The value to copy. Falls back to `source` element's value if not provided. */
   readonly value = input<string | undefined>(undefined, { alias: 'cngxCopyValue' });
@@ -43,8 +54,12 @@ export class CngxCopyValue {
   /** Reference to the source element (fallback when `value` input not set). */
   readonly source = input<HTMLInputElement | HTMLTextAreaElement | undefined>(undefined);
 
-  /** Duration in ms to keep `copied` true after a successful copy. */
-  readonly resetDelay = input<number>(2000);
+  /** Duration in ms to keep `copied` true after a successful copy. Falls back to global config. */
+  readonly resetDelay = input<number | undefined>(undefined);
+
+  private readonly resolvedResetDelay = computed(
+    () => this.resetDelay() ?? this.config.copyResetDelay ?? 2000,
+  );
 
   private readonly copiedState = signal(false);
   private resetTimer: ReturnType<typeof setTimeout> | null = null;
@@ -81,6 +96,9 @@ export class CngxCopyValue {
       }
 
       this.copiedState.set(true);
+      this.announcer.announce(
+        this.config.ariaLabels?.copySuccess ?? DEFAULT_INPUT_ARIA_LABELS.copySuccess,
+      );
       this.didCopy.emit(text);
 
       if (this.resetTimer != null) {
@@ -94,10 +112,15 @@ export class CngxCopyValue {
           this.copiedState.set(false);
           this.resetTimer = null;
         }
-      }, this.resetDelay());
+      }, this.resolvedResetDelay());
       this.resetTimer = handle;
     } catch {
-      // Clipboard write failed (permission denied, etc.) - drop silently.
+      // Clipboard write failed (permission denied, etc.). Announce assertively
+      // so the failure is not a silent state change (Pillar 2).
+      this.announcer.announce(
+        this.config.ariaLabels?.copyError ?? DEFAULT_INPUT_ARIA_LABELS.copyError,
+        'assertive',
+      );
     }
   }
 

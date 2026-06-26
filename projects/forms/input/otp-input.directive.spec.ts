@@ -1,6 +1,8 @@
 import { Component, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { CngxLiveAnnouncer } from '@cngx/common/a11y';
 import { CngxOtpInput, CngxOtpSlot } from './otp-input.directive';
+import { provideInputConfig, withInputAriaLabels } from './input-config';
 
 @Component({
   template: `
@@ -57,6 +59,61 @@ describe('CngxOtpInput', () => {
   it('should expose indices signal', () => {
     const { directive } = setup();
     expect(directive.indices()).toEqual([0, 1, 2, 3]);
+  });
+
+  it('should label each slot with its position', () => {
+    const { inputs } = setup();
+    expect(inputs[0].getAttribute('aria-label')).toBe('Digit 1 of 4');
+    expect(inputs[3].getAttribute('aria-label')).toBe('Digit 4 of 4');
+  });
+
+  it('should expose the container as a labelled role=group', () => {
+    const { fixture } = setup();
+    const group = fixture.nativeElement.querySelector('[cngxOtpInput]') as HTMLElement;
+    expect(group.getAttribute('role')).toBe('group');
+    expect(group.getAttribute('aria-label')).toBe('One-time code');
+  });
+
+  it('should announce completion once when the last slot fills', () => {
+    const announcer = TestBed.inject(CngxLiveAnnouncer);
+    const announce = vi.spyOn(announcer, 'announce').mockImplementation(() => {});
+    const { directive } = setup();
+    directive.handleSlotInput(0, '1');
+    directive.handleSlotInput(1, '2');
+    directive.handleSlotInput(2, '3');
+    expect(announce).not.toHaveBeenCalled();
+    directive.handleSlotInput(3, '4');
+    expect(announce).toHaveBeenCalledTimes(1);
+    expect(announce).toHaveBeenCalledWith('Code complete');
+  });
+
+  it('should not re-announce when editing a digit of an already-complete code', () => {
+    const announcer = TestBed.inject(CngxLiveAnnouncer);
+    const announce = vi.spyOn(announcer, 'announce').mockImplementation(() => {});
+    const { directive } = setup();
+    directive.handleSlotInput(0, '1');
+    directive.handleSlotInput(1, '2');
+    directive.handleSlotInput(2, '3');
+    directive.handleSlotInput(3, '4');
+    expect(announce).toHaveBeenCalledTimes(1);
+
+    // Edit a digit while already full: completed still emits, announce must not.
+    directive.handleSlotInput(0, '9');
+    expect(announce).toHaveBeenCalledTimes(1);
+  });
+
+  it('should announce the configured completion string', () => {
+    TestBed.configureTestingModule({
+      providers: [provideInputConfig(withInputAriaLabels({ otpComplete: 'Fertig' }))],
+    });
+    const announcer = TestBed.inject(CngxLiveAnnouncer);
+    const announce = vi.spyOn(announcer, 'announce').mockImplementation(() => {});
+    const { directive } = setup();
+    directive.handleSlotInput(0, '1');
+    directive.handleSlotInput(1, '2');
+    directive.handleSlotInput(2, '3');
+    directive.handleSlotInput(3, '4');
+    expect(announce).toHaveBeenCalledWith('Fertig');
   });
 
   it('should clear all inputs', () => {

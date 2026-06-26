@@ -1,6 +1,16 @@
-import { DestroyRef, Directive, inject, input, output, signal, type Signal } from '@angular/core';
+import {
+  computed,
+  DestroyRef,
+  Directive,
+  inject,
+  input,
+  output,
+  signal,
+  type Signal,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { fromEvent } from 'rxjs';
+import { CNGX_INPUT_CONFIG, DEFAULT_INPUT_ARIA_LABELS } from './input-config';
 
 /**
  * Headless clear behavior for an input or textarea.
@@ -21,9 +31,7 @@ import { fromEvent } from 'rxjs';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/input/input-clear.directive.ts
  * @since 0.1.0
  * @relatedTo CngxInput, CngxCopyValue, CngxPasswordToggle
- * <example-url>http://localhost:4200/#/forms/input/utilities/copy-to-clipboard</example-url>
  * <example-url>http://localhost:4200/#/forms/input/utilities/input-clear</example-url>
- * <example-url>http://localhost:4200/#/forms/input/utilities/input-format</example-url>
  */
 @Directive({
   selector: '[cngxInputClear]',
@@ -31,11 +39,17 @@ import { fromEvent } from 'rxjs';
   exportAs: 'cngxInputClear',
   host: {
     '(click)': 'clear()',
-    '[attr.aria-label]': '"Clear"',
+    '[attr.aria-label]': 'ariaLabel()',
   },
 })
 export class CngxInputClear {
   private readonly destroyRef = inject(DestroyRef);
+  private readonly config = inject(CNGX_INPUT_CONFIG);
+
+  /** Accessible label for the clear control. Config-driven, EN default. */
+  protected readonly ariaLabel = computed(
+    () => this.config.ariaLabels?.clear ?? DEFAULT_INPUT_ARIA_LABELS.clear,
+  );
 
   /** Reference to the input or textarea element to clear. */
   readonly target = input.required<HTMLInputElement | HTMLTextAreaElement>({

@@ -12,11 +12,24 @@ import { type ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { CNGX_CONTROL_VALUE, type CngxControlValue } from '@cngx/common/interactive';
 
 /**
- * Single `ControlValueAccessor` for every value-bearing cngx form atom.
- * Talks to the host through `CNGX_CONTROL_VALUE`, so atoms stay
- * Forms-agnostic and this is the only place in cngx that implements CVA.
+ * Lets cngx's value-bearing form atoms take part in Angular Reactive Forms exactly like
+ * a native `<input>`: put `[formControl]` / `[formControlName]` on the atom and its value
+ * flows into `form.value`, with validation, `disabled` and `touched` wired for free.
+ * Without it a `cngx-toggle` or `cngx-multi-chip-group` would be inert to reactive forms.
  *
- * - Selector matches both element and attribute forms of every atom.
+ * This is the single `ControlValueAccessor` in cngx - it auto-applies by selector (you
+ * never reference `cngxFormBridge` yourself) and talks to the host through
+ * `CNGX_CONTROL_VALUE`, keeping the atoms themselves Forms-agnostic.
+ *
+ * Covers, in both element and attribute form: `cngx-toggle`, `cngx-checkbox`,
+ * `cngx-radio-group`, `cngx-checkbox-group`, `cngx-button-toggle-group`,
+ * `cngx-button-multi-toggle-group`, `cngx-chip-group`, `cngx-multi-chip-group`, and
+ * `[cngxChipInteraction]` (attribute only). Signal Forms (`[field]`) and the Level-3
+ * select controls bypass this entirely - they provide `CNGX_FORM_FIELD_CONTROL`
+ * directly. To bridge a bare self-contained external/Material CVA control into a cngx
+ * field, see `CngxBindField`.
+ *
+ * Behaviour:
  * - All four CVA hooks wrap their bodies in `untracked()`. Load-bearing on
  *   `registerOnChange`: the effect reads `control.value()` then invokes
  *   `fn(value)` outside the dependency graph, so any signal `fn` touches
@@ -28,12 +41,16 @@ import { CNGX_CONTROL_VALUE, type CngxControlValue } from '@cngx/common/interact
  *   `Object.is` so the RF→atom→RF round-trip never re-emits.
  *
  * ```html
+ * <!-- No bridge directive to add: it auto-attaches via selector to each atom below. -->
  * <form [formGroup]="form">
- *   <cngx-toggle [formControlName]="'notifications'" />
- *   <cngx-multi-chip-group [formControlName]="'tags'">
- *     <cngx-chip cngxChipInGroup *ngFor="let t of pool" [value]="t">{{ t }}</cngx-chip>
+ *   <cngx-toggle formControlName="notifications" />
+ *   <cngx-multi-chip-group formControlName="tags">
+ *     @for (t of pool; track t) {
+ *       <cngx-chip cngxChipInGroup [value]="t">{{ t }}</cngx-chip>
+ *     }
  *   </cngx-multi-chip-group>
  * </form>
+ * <!-- form.value is now { notifications: boolean; tags: string[] } -->
  * ```
  *
  * @category forms/controls

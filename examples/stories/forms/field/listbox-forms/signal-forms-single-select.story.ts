@@ -2,7 +2,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
   title: 'CngxListboxFieldBridge: signal forms single select',
-  subtitle: 'Two-way binding via <code>[(value)]="singleForm.color().value"</code>. Required validation shown when touched.',
+  subtitle: '<code>cngxListboxFieldBridge</code> syncs the listbox selection into the bound field automatically - no explicit value binding on the listbox. Required validation shows once the field is touched.',
   level: 'molecule',
   audience: ['dev', 'a11y'],
   artifact: 'building-block',

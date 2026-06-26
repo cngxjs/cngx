@@ -27,10 +27,12 @@ import { CngxFormFieldPresenter } from './form-field-presenter';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/form-field.component.ts
  * @since 0.1.0
  * @relatedTo CngxFormFieldPresenter, CngxLabel, CngxHint, CngxFieldErrors, CngxBindField
- * <example-url>http://localhost:4200/#/forms/field/form-primitives/coming-in-a-follow-up</example-url>
+ * @playground Basic input ./examples/basic-input/basic-input.component.ts
+ * @playground Validation states ./examples/validation-states/validation-states.component.ts
+ * @playground Form-error summary ./examples/form-error-summary/form-error-summary.component.ts
+ * @playground Input add-ons ./examples/input-addons/input-addons.component.ts
  * <example-url>http://localhost:4200/#/forms/field/form-primitives/reactive-forms-same-atom-just-bind-formcontrol</example-url>
  * <example-url>http://localhost:4200/#/forms/field/form-primitives/signal-forms-drop-the-atom-into-cngx-form-field</example-url>
- * <example-url>http://localhost:4200/#/forms/field/listbox-forms/material-mat-select-via-cngxbindfield</example-url>
  * <example-url>http://localhost:4200/#/forms/field/listbox-forms/reactive-forms-adapted-via-adaptformcontrol</example-url>
  * <example-url>http://localhost:4200/#/forms/field/listbox-forms/signal-forms-multi-select-min-2</example-url>
  * <example-url>http://localhost:4200/#/forms/field/listbox-forms/signal-forms-single-select</example-url>

@@ -48,6 +48,7 @@ import { CngxOption } from './option.directive';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/listbox/listbox.directive.ts
  * @since 0.1.0
  * @relatedTo CngxListboxSearch, CngxListboxTrigger, CngxOption, CngxOptionGroup, CngxActiveDescendant
+ * @playground Two synced listboxes ./examples/synced-listboxes/synced-listboxes.component.ts
  * <example-url>http://localhost:4200/#/common/interactive/listbox/search/command-palette</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/listbox/trigger/select-dropdown</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/listbox/base/multi-select</example-url>

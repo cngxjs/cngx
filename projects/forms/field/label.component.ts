@@ -43,7 +43,7 @@ import { CNGX_FORM_FIELD_CONFIG } from './form-field.token';
  * @category forms/field
  * @docsKind primary
  * @wcag AA
- * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/label.directive.ts
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/label.component.ts
  * @since 0.1.0
  * @relatedTo CngxFormField, CngxRequired, CngxHint, CngxFieldErrors
  * <example-url>http://localhost:4200/#/forms/field/label/basic</example-url>
@@ -59,7 +59,7 @@ import { CNGX_FORM_FIELD_CONFIG } from './form-field.token';
     @if (markerVisible()) {
       <span class="cngx-label__required" aria-hidden="true">{{ markerText() }}</span>
     }`,
-  styleUrls: ['./label.directive.css'],
+  styleUrls: ['./label.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   exportAs: 'cngxLabel',

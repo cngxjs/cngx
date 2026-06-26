@@ -73,6 +73,22 @@ controls all layout and styling.
 
 `cngx-label--required`, `cngx-label--error`, `cngx-label--disabled`
 
+## Style delivery
+
+Style delivery in this folder follows the artifact's CSS substance, not its
+decorator type:
+
+- Token-bearing skins ship an external stylesheet via `styleUrl`. These carry
+  `--cngx-*` custom properties, state-class rules, and layout: `CngxFormErrors`,
+  `CngxRequired`, `CngxLabel`.
+- Pure `:host { display: contents }` hosts inline their one rule via `styles:`.
+  These render no box of their own and have nothing to theme: `CngxFieldErrors`,
+  `CngxFormField`.
+
+The split is intentional. A host that only declares `display: contents` does not
+earn a sibling `.css` file; a skin that delegates tokens does. Keep new field
+components on the same rule.
+
 ## Usage
 
 ```typescript

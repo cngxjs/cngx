@@ -2,10 +2,27 @@ import { computed, Directive, effect, input, inject } from '@angular/core';
 import { type AbstractControl, FormGroupDirective } from '@angular/forms';
 
 /**
- * Structural helper directive that exposes a typed FormControl from the
- * parent FormGroup by control name, removing the need for explicit casts.
+ * Structural helper that resolves a strongly-typed `AbstractControl<T>` from the
+ * enclosing `FormGroup` by name, so reactive-forms templates and host directives
+ * read a control without an `as FormControl<T>` cast at every access.
  *
- * Usage: `<input [formControlName]="'email'" [cngxTypedControl]="'email'" />`
+ * Must live inside a `[formGroup]` - it injects `FormGroupDirective` non-optionally,
+ * so outside one Angular throws `NullInjectorError`. As a fail-fast guard it also
+ * throws when no control matches the given name in the parent group.
+ *
+ * Read the resolved control through the `control` signal, via the `exportAs` ref or
+ * by injecting the directive. In a template ref the generic stays `unknown`; pass
+ * `T` explicitly when injecting in TypeScript to get the narrowed control.
+ *
+
+ * ```html
+ * <form [formGroup]="form">
+ *   <input formControlName="email" cngxTypedControl="email" #email="cngxTypedControl" />
+ *   @if (email.control?.hasError('required')) {
+ *     <span>Email is required</span>
+ *   }
+ * </form>
+ * ```
  *
  * @category forms/controls
  * @docsKind primary
