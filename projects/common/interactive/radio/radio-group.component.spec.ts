@@ -124,30 +124,69 @@ describe('CngxRadioGroup + CngxRadio', () => {
     expect(rovingItems[2].disabled()).toBe(true);
   });
 
-  it('arrow keydown raises pendingArrowSelect; focused leaf consumes it and selects', () => {
-    const { fixture, host, group, groupEl, radios } = setup();
+  it('a navigation keydown selects the newly-focused leaf through the roving hook', () => {
+    const { fixture, host, groupEl, radios } = setup();
     groupEl.dispatchEvent(
       new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true }),
     );
-    expect(group.consumePendingArrowSelect('b')).toBe(true);
     fixture.detectChanges();
     expect(host.v()).toBe('b');
     expect(radios[1].el.getAttribute('aria-checked')).toBe('true');
   });
 
-  it('Tab-into-group does NOT auto-select (no preceding arrow keydown)', () => {
+  it('Tab-into-group does NOT auto-select (no preceding navigation key)', () => {
     const { group, host } = setup();
     expect(group.consumePendingArrowSelect('a')).toBe(false);
     expect(host.v()).toBeUndefined();
   });
 
-  it('consumePendingArrowSelect clears the flag so subsequent unrelated focus does not re-select', () => {
-    const { groupEl, group } = setup();
-    groupEl.dispatchEvent(
-      new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true, cancelable: true }),
-    );
-    expect(group.consumePendingArrowSelect('a')).toBe(true);
-    expect(group.consumePendingArrowSelect('b')).toBe(false);
+  it('first ArrowDown from a freshly-focused group selects leaf N for every press (#135)', () => {
+    const { fixture, host, groupEl, radios } = setup();
+    // Real chain (no manual consume): roving raises its navigation hook before
+    // moving focus, so the first press is no longer dropped. Needs a connected
+    // element for .focus() to fire.
+    document.body.appendChild(fixture.nativeElement);
+    try {
+      radios[0].el.focus();
+      expect(host.v()).toBeUndefined();
+
+      const arrowDown = () =>
+        groupEl.dispatchEvent(
+          new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true }),
+        );
+
+      arrowDown();
+      fixture.detectChanges();
+      expect(host.v()).toBe('b');
+      expect(radios[1].el.getAttribute('aria-checked')).toBe('true');
+
+      arrowDown();
+      fixture.detectChanges();
+      expect(host.v()).toBe('c');
+      expect(radios[2].el.getAttribute('aria-checked')).toBe('true');
+    } finally {
+      fixture.nativeElement.remove();
+    }
+  });
+
+  it('the navigation hook is one-shot: a non-navigation focus after an arrow does not re-select', () => {
+    const { fixture, host, groupEl, radios } = setup();
+    document.body.appendChild(fixture.nativeElement);
+    try {
+      // ArrowDown selects 'b' through the real chain and consumes the hook.
+      groupEl.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true }),
+      );
+      fixture.detectChanges();
+      expect(host.v()).toBe('b');
+
+      // A programmatic focus (no preceding navigation key) must not re-select.
+      radios[0].el.focus();
+      fixture.detectChanges();
+      expect(host.v()).toBe('b');
+    } finally {
+      fixture.nativeElement.remove();
+    }
   });
 
   it('toggles aria-required reactively from the required model', () => {

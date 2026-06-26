@@ -40,13 +40,14 @@ import {
  * `CNGX_BUTTON_MULTI_TOGGLE_GROUP` (`{ optional: true }` on both)
  * and chooses its ARIA pattern at injection time, not at runtime.
  *
- * Auto-select wiring follows the same Pillar-§6 contract as
- * `CngxRadioGroup`: a transient `pendingArrowSelect` plain-field flag
- * is raised on host `(keydown)` for any roving-relevant key
- * (Arrow*, Home, End); each focused leaf consumes the flag in its
- * `(focus)` handler via `consumePendingArrowSelect()`. The signal
- * write happens inside a DOM event handler - never inside an
- * `effect()`.
+ * Auto-select wiring follows the same contract as `CngxRadioGroup`:
+ * the host `CngxRovingTabindex` raises its navigation-key intent before
+ * it moves focus; each focused leaf consumes that intent in its
+ * `(focus)` handler via `consumePendingArrowSelect()`, which reads
+ * `roving.consumeNavigationKey()`. Reading an already-set fact (instead
+ * of a group-owned `(keydown)` flag) closes the one-press-behind race
+ * (#135). The value write happens inside a DOM event handler - never
+ * inside an `effect()`.
  *
  * ```html
  * <cngx-button-toggle-group label="Layout" [(value)]="view">
@@ -66,9 +67,6 @@ import {
  * <example-url>http://localhost:4200/#/common/interactive/button-toggle/group/basic-view-switcher</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/button-toggle/group/disabled-group-cascade-vs-per-toggle</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/button-toggle/group/vertical-orientation</example-url>
- * <example-url>http://localhost:4200/#/forms/field/form-primitives/coming-in-a-follow-up</example-url>
- * <example-url>http://localhost:4200/#/forms/field/form-primitives/reactive-forms-same-atom-just-bind-formcontrol</example-url>
- * <example-url>http://localhost:4200/#/forms/field/form-primitives/signal-forms-drop-the-atom-into-cngx-form-field</example-url>
  */
 @Component({
   selector: 'cngx-button-toggle-group, [cngxButtonToggleGroup]',
@@ -93,7 +91,6 @@ import {
     '[attr.aria-orientation]': 'orientation()',
     '[attr.aria-busy]': 'ariaBusy() ? "true" : null',
     '[class.cngx-button-toggle-group--horizontal]': 'orientation() === "horizontal"',
-    '(keydown)': 'handleKeydown($event)',
     '(focusin)': 'handleFocusIn()',
     '(focusout)': 'handleFocusOut()',
   },
@@ -134,29 +131,17 @@ export class CngxButtonToggleGroup<T = unknown>
 
   protected readonly ariaBusy = computed(() => this.state()?.status() === 'loading');
 
-  private pendingArrowSelect = false;
+  private readonly roving = inject(CngxRovingTabindex, { host: true });
 
   consumePendingArrowSelect(value: T): boolean {
-    if (!this.pendingArrowSelect) {
+    if (!this.roving.consumeNavigationKey()) {
       return false;
     }
-    this.pendingArrowSelect = false;
     if (this.disabled()) {
       return false;
     }
     this.value.set(value);
     return true;
-  }
-
-  protected handleKeydown(event: Event): void {
-    const key = (event as KeyboardEvent).key;
-    this.pendingArrowSelect =
-      key === 'ArrowUp' ||
-      key === 'ArrowDown' ||
-      key === 'ArrowLeft' ||
-      key === 'ArrowRight' ||
-      key === 'Home' ||
-      key === 'End';
   }
 
   readonly id = signal(nextUid('cngx-button-toggle-group-')).asReadonly();

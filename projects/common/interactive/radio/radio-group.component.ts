@@ -45,16 +45,17 @@ import {
  * **Auto-select wiring (no signal-write-in-effect).** Per the
  * pillar §6 hard rule, the group does NOT subscribe to
  * `CngxRovingTabindex.activeIndex` via an effect that writes
- * `value`. Instead, the group listens to its own host `keydown` and
- * raises a transient `pendingArrowSelect` flag when an arrow / Home
- * / End is pressed. The roving directive moves focus on the same
- * keydown; the newly-focused leaf's `(focus)` handler calls
- * `group.consumePendingArrowSelect(this.value())`. The flag-set
- * (plain field write) and value-set (signal write inside a DOM
- * event handler, not an effect) are both legal under the pillar
- * rules. Tab-into-group fires focus without a preceding arrow
- * keydown, so the flag stays false and no auto-select happens -
- * Tab leaves the consumer's `value` untouched.
+ * `value`. Instead, the host `CngxRovingTabindex` raises its
+ * navigation-key intent before it moves focus; the newly-focused
+ * leaf's `(focus)` handler calls
+ * `group.consumePendingArrowSelect(this.value())`, which reads
+ * `roving.consumeNavigationKey()` and writes `value` (a signal write
+ * inside a DOM event handler, not an effect - legal under the pillar
+ * rules). Reading an already-set fact instead of a group-owned
+ * `(keydown)` flag closes the one-press-behind race (#135).
+ * Tab-into-group fires focus without a preceding navigation key, so
+ * the hook reads false and no auto-select happens - Tab leaves the
+ * consumer's `value` untouched.
  *
  * ```html
  * <cngx-radio-group [(value)]="payment" name="payment-method">
@@ -75,9 +76,6 @@ import {
  * <example-url>http://localhost:4200/#/common/interactive/radio/custom-dot-glyph</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/radio/disabled-group-cascades-per-radio-overrides</example-url>
  * <example-url>http://localhost:4200/#/common/interactive/radio/orientation-horizontal</example-url>
- * <example-url>http://localhost:4200/#/forms/field/form-primitives/coming-in-a-follow-up</example-url>
- * <example-url>http://localhost:4200/#/forms/field/form-primitives/reactive-forms-same-atom-just-bind-formcontrol</example-url>
- * <example-url>http://localhost:4200/#/forms/field/form-primitives/signal-forms-drop-the-atom-into-cngx-form-field</example-url>
  */
 @Component({
   selector: 'cngx-radio-group, [cngxRadioGroup]',
@@ -97,7 +95,6 @@ import {
     '[attr.aria-orientation]': 'orientation()',
     '[attr.aria-busy]': 'ariaBusy() ? "true" : null',
     '[class.cngx-radio-group--horizontal]': 'orientation() === "horizontal"',
-    '(keydown)': 'handleKeydown($event)',
     '(focusin)': 'handleFocusIn()',
     '(focusout)': 'handleFocusOut()',
   },
@@ -144,7 +141,7 @@ export class CngxRadioGroup<T = unknown>
   readonly name = computed(() => this.nameInput() ?? this.fallbackName);
 
   private readonly registry = new Map<string, CngxRadioRegistration<T>>();
-  private pendingArrowSelect = false;
+  private readonly roving = inject(CngxRovingTabindex, { host: true });
 
   readonly id = signal(nextUid('cngx-radio-group-')).asReadonly();
 
@@ -171,7 +168,7 @@ export class CngxRadioGroup<T = unknown>
        direction only, never the keyboard axis. Force the host
        roving directive to `'both'` so a vertical group still
        responds to ArrowLeft / ArrowRight and vice versa. */
-    inject(CngxRovingTabindex).orientation.set('both');
+    this.roving.orientation.set('both');
   }
 
   register(radio: CngxRadioRegistration<T>): void {
@@ -183,26 +180,14 @@ export class CngxRadioGroup<T = unknown>
   }
 
   consumePendingArrowSelect(value: T): boolean {
-    if (!this.pendingArrowSelect) {
+    if (!this.roving.consumeNavigationKey()) {
       return false;
     }
-    this.pendingArrowSelect = false;
     if (this.disabled()) {
       return false;
     }
     this.value.set(value);
     return true;
-  }
-
-  protected handleKeydown(event: Event): void {
-    const key = (event as KeyboardEvent).key;
-    this.pendingArrowSelect =
-      key === 'ArrowUp' ||
-      key === 'ArrowDown' ||
-      key === 'ArrowLeft' ||
-      key === 'ArrowRight' ||
-      key === 'Home' ||
-      key === 'End';
   }
 
   protected handleFocusIn(): void {
