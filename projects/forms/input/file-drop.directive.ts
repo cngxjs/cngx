@@ -64,7 +64,6 @@ export interface FileRejection {
     '[class.cngx-file-drop--has-files]': 'files().length > 0',
     '[class.cngx-file-drop--uploading]': 'uploading()',
     '[attr.aria-busy]': 'uploading() || null',
-    '[attr.aria-dropeffect]': '"copy"',
   },
 })
 export class CngxFileDrop {

@@ -54,9 +54,9 @@ describe('CngxFileDrop', () => {
     expect(directive.dragging()).toBe(false);
   });
 
-  it('should set aria-dropeffect', () => {
+  it('should not set the deprecated aria-dropeffect attribute', () => {
     const { el } = setup();
-    expect(el.getAttribute('aria-dropeffect')).toBe('copy');
+    expect(el.hasAttribute('aria-dropeffect')).toBe(false);
   });
 
   it('should set dragging on dragenter', () => {
