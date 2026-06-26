@@ -26,10 +26,10 @@ import type { CngxFormFieldControl } from './models';
  *
  * ```html
  * <cngx-form-field [field]="f.color">
- *   <label cngxLabel>Farbe</label>
+ *   <label cngxLabel>Color</label>
  *   <mat-select cngxBindField [control]="f.color">
- *     <mat-option value="red">Rot</mat-option>
- *     <mat-option value="green">Grün</mat-option>
+ *     <mat-option value="red">Red</mat-option>
+ *     <mat-option value="green">Green</mat-option>
  *   </mat-select>
  *   <cngx-field-errors />
  * </cngx-form-field>
@@ -50,6 +50,7 @@ import type { CngxFormFieldControl } from './models';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/bind-field.directive.ts
  * @since 0.1.0
  * @relatedTo CngxFormField, CngxListboxFieldBridge, CngxFormBridge, adaptFormControl
+ * @playground Material select via cngxBindField ./examples/material-bind-field/material-bind-field.component.ts
  * <example-url>http://localhost:4200/#/forms/field/listbox-forms/material-mat-select-via-cngxbindfield</example-url>
  * <example-url>http://localhost:4200/#/forms/field/listbox-forms/reactive-forms-adapted-via-adaptformcontrol</example-url>
  * <example-url>http://localhost:4200/#/forms/field/listbox-forms/signal-forms-multi-select-min-2</example-url>

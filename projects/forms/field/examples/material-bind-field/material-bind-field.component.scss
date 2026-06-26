@@ -1,0 +1,91 @@
+@use '@angular/material' as mat;
+// Real mat-select needs Material's own select theme; the cngx system + field
+// bridges route the cngx-rendered bits (cngx-field-errors) onto --mat-sys-*
+// so the validation message matches the Material error tone.
+@use '@cngx/themes/material/system-bridge.scss' as cngx-system;
+@use '@cngx/themes/material/field-theme.scss' as field;
+
+$palette: (
+  theme-type: light,
+  primary: mat.$azure-palette,
+  tertiary: mat.$blue-palette,
+);
+$theme: mat.define-theme(
+  (
+    color: $palette,
+    density: (
+      scale: 0,
+    ),
+  )
+);
+
+html {
+  color-scheme: light;
+
+  @include mat.theme(
+    (
+      color: $palette,
+      typography: Roboto,
+      density: 0,
+    )
+  );
+
+  @include mat.select-theme($theme);
+
+  @include cngx-system.theme($theme);
+  @include field.theme($theme);
+
+  background: var(--mat-sys-background);
+  color: var(--mat-sys-on-background);
+  font: var(--mat-sys-body-medium);
+}
+
+.demo {
+  display: grid;
+  gap: 16px;
+  max-width: 420px;
+  padding: 16px;
+}
+
+.demo .lead {
+  margin: 0;
+  font: var(--mat-sys-body-small);
+  opacity: 0.75;
+}
+
+.demo .lead code {
+  font-family: ui-monospace, monospace;
+}
+
+.demo .block {
+  display: grid;
+  gap: 8px;
+}
+
+// Bare mat-select has no mat-form-field box; give the trigger a visible field
+// frame so it reads as a control.
+.demo .size-select {
+  min-width: 220px;
+  padding: 8px 10px;
+  border: 1px solid var(--mat-sys-outline);
+  border-radius: 4px;
+}
+
+.demo .state {
+  margin: 4px 0 0;
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 3px 16px;
+  font: 12px/1.5 ui-monospace, monospace;
+}
+
+.demo .state dt {
+  margin: 0;
+  opacity: 0.6;
+}
+
+.demo .state dd {
+  margin: 0;
+  font-weight: 600;
+  color: var(--mat-sys-primary);
+}
