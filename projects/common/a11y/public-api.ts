@@ -3,6 +3,7 @@
  */
 export { CngxAriaExpanded } from './aria/aria-expanded.directive';
 export { CngxLiveRegion } from './aria/live-region.directive';
+export { CngxLiveAnnouncer } from './aria/live-announcer';
 export { CngxAutofocus } from './focus/autofocus.directive';
 export {
   CngxFocusRestore,
