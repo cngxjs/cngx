@@ -1,5 +1,7 @@
-import { Component, viewChild } from '@angular/core';
+import { Component, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { vi } from 'vitest';
+import type { CngxAsyncState } from '@cngx/core/utils';
 import { CngxFileDrop } from './file-drop.directive';
 import { provideInputConfig, withFileMaxSize } from './input-config';
 
@@ -9,6 +11,8 @@ import { provideInputConfig, withFileMaxSize } from './input-config';
     [accept]="accept"
     [maxSize]="maxSize"
     [multiple]="multiple"
+    [ariaLabel]="ariaLabel"
+    [state]="state"
     #drop="cngxFileDrop"
   ></div>`,
   imports: [CngxFileDrop],
@@ -17,7 +21,17 @@ class Host {
   accept: string[] = [];
   maxSize: number | undefined = undefined;
   multiple = false;
+  ariaLabel = 'File drop zone';
+  state: CngxAsyncState<unknown> | undefined = undefined;
   readonly drop = viewChild.required(CngxFileDrop);
+}
+
+function busyState(): CngxAsyncState<unknown> {
+  return {
+    isBusy: signal(true),
+    progress: signal(undefined),
+    error: signal(undefined),
+  } as unknown as CngxAsyncState<unknown>;
 }
 
 function setup(overrides: Partial<Host> = {}) {
@@ -40,6 +54,10 @@ function createDropEvent(files: File[]): DragEvent {
   const event = new Event('drop', { bubbles: true, cancelable: true }) as DragEvent;
   Object.defineProperty(event, 'dataTransfer', { value: { files } });
   return event;
+}
+
+function createKeydown(key: string): KeyboardEvent {
+  return new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true });
 }
 
 describe('CngxFileDrop', () => {
@@ -108,5 +126,44 @@ describe('CngxFileDrop', () => {
 
     expect(directive.files()).toEqual([]);
     expect(directive.rejected().map((r) => r.reason)).toEqual(['size']);
+  });
+
+  it('exposes a button role for keyboard operability', () => {
+    const { el } = setup();
+    expect(el.getAttribute('role')).toBe('button');
+  });
+
+  it('is in the tab order while idle', () => {
+    const { el } = setup();
+    expect(el.getAttribute('tabindex')).toBe('0');
+  });
+
+  it('leaves the tab order while uploading', () => {
+    const { el } = setup({ state: busyState() });
+    expect(el.getAttribute('tabindex')).toBe('-1');
+  });
+
+  it('uses the English default aria-label', () => {
+    const { el } = setup();
+    expect(el.getAttribute('aria-label')).toBe('File drop zone');
+  });
+
+  it('honours a consumer-supplied ariaLabel', () => {
+    const { el } = setup({ ariaLabel: 'Dateien ablegen' });
+    expect(el.getAttribute('aria-label')).toBe('Dateien ablegen');
+  });
+
+  it('opens the picker on Enter', () => {
+    const { el, directive } = setup();
+    const browse = vi.spyOn(directive, 'browse').mockImplementation(() => {});
+    el.dispatchEvent(createKeydown('Enter'));
+    expect(browse).toHaveBeenCalledOnce();
+  });
+
+  it('opens the picker on Space', () => {
+    const { el, directive } = setup();
+    const browse = vi.spyOn(directive, 'browse').mockImplementation(() => {});
+    el.dispatchEvent(createKeydown(' '));
+    expect(browse).toHaveBeenCalledOnce();
   });
 });

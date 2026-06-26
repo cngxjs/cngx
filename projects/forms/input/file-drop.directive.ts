@@ -56,14 +56,19 @@ export interface FileRejection {
   exportAs: 'cngxFileDrop',
   host: {
     class: 'cngx-file-drop',
+    role: 'button',
     '(dragenter)': 'handleDragEnter($event)',
     '(dragover)': 'handleDragOver($event)',
     '(dragleave)': 'handleDragLeave($event)',
     '(drop)': 'handleDrop($event)',
+    '(keydown.enter)': 'handleActivate($event)',
+    '(keydown.space)': 'handleActivate($event)',
     '[class.cngx-file-drop--dragging]': 'dragging()',
     '[class.cngx-file-drop--has-files]': 'files().length > 0',
     '[class.cngx-file-drop--uploading]': 'uploading()',
     '[attr.aria-busy]': 'uploading() || null',
+    '[attr.aria-label]': 'ariaLabel()',
+    '[attr.tabindex]': 'tabIndex()',
   },
 })
 export class CngxFileDrop {
@@ -82,6 +87,9 @@ export class CngxFileDrop {
   /** Allow multiple files. */
   readonly multiple = input<boolean>(false);
 
+  /** `aria-label` for the drop zone. Library default is English. */
+  readonly ariaLabel = input<string>('File drop zone');
+
   /**
    * Bind an upload async state - shows busy/error/progress during upload.
    * When set, `uploading` derives from `state.isBusy()` and `uploadProgress`
@@ -97,6 +105,9 @@ export class CngxFileDrop {
 
   /** Upload error, or `undefined`. */
   readonly uploadError = computed(() => this.state()?.error());
+
+  /** Keyboard focusability: focusable while idle, removed from tab order while uploading. */
+  protected readonly tabIndex = computed(() => (this.uploading() ? -1 : 0));
 
   private readonly draggingState = signal(false);
   private readonly filesState = signal<File[]>([]);
@@ -144,6 +155,12 @@ export class CngxFileDrop {
     if (this.fileInput) {
       this.fileInput.value = '';
     }
+  }
+
+  /** @internal Keyboard activation: Enter/Space opens the native file picker. */
+  protected handleActivate(event: Event): void {
+    event.preventDefault();
+    this.browse();
   }
 
   /** @internal */
