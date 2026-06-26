@@ -44,6 +44,7 @@ export {
   withPaginatorAnnouncements,
   withPaginatorRangeFormat,
   withPaginatorPageStatusFormat,
+  withPaginatorPageSizeOptions,
   withPaginatorTemplates,
   injectPaginatorConfig,
 } from './paginator-config';
