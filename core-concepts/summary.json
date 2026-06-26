@@ -32,6 +32,10 @@
         "file": "instrumentation-pattern.md"
     },
     {
+        "title": "Forms & Inputs",
+        "file": "forms-and-inputs.md"
+    },
+    {
         "title": "Forms Integration",
         "file": "forms-integration.md"
     }
