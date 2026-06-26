@@ -87,6 +87,21 @@ describe('CngxOtpInput', () => {
     expect(announce).toHaveBeenCalledWith('Code complete');
   });
 
+  it('should not re-announce when editing a digit of an already-complete code', () => {
+    const announcer = TestBed.inject(CngxLiveAnnouncer);
+    const announce = vi.spyOn(announcer, 'announce').mockImplementation(() => {});
+    const { directive } = setup();
+    directive.handleSlotInput(0, '1');
+    directive.handleSlotInput(1, '2');
+    directive.handleSlotInput(2, '3');
+    directive.handleSlotInput(3, '4');
+    expect(announce).toHaveBeenCalledTimes(1);
+
+    // Edit a digit while already full: completed still emits, announce must not.
+    directive.handleSlotInput(0, '9');
+    expect(announce).toHaveBeenCalledTimes(1);
+  });
+
   it('should announce the configured completion string', () => {
     TestBed.configureTestingModule({
       providers: [provideInputConfig(withInputAriaLabels({ otpComplete: 'Fertig' }))],

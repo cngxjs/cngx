@@ -218,9 +218,14 @@ export class CngxOtpInput {
       this.focusAt(index + 1);
     }
 
+    const wasComplete = prev.length === len && prev.every((v) => v.length > 0);
     if (vals.length === len && vals.every((v) => v.length > 0)) {
       this.completed.emit(vals.join(''));
-      this.announceComplete();
+      // Announce only on the not-complete -> complete edge; editing a digit of
+      // an already-full code must not re-announce an unchanged state (Pillar 2).
+      if (!wasComplete) {
+        this.announceComplete();
+      }
     }
   }
 
@@ -252,9 +257,12 @@ export class CngxOtpInput {
     const nextEmpty = vals.findIndex((v, i) => i >= startIndex && !v);
     this.focusAt(nextEmpty >= 0 ? nextEmpty : Math.min(startIndex + text.length, len - 1));
 
+    const wasComplete = prev.length === len && prev.every((v) => v.length > 0);
     if (vals.every((v) => v.length > 0)) {
       this.completed.emit(vals.join(''));
-      this.announceComplete();
+      if (!wasComplete) {
+        this.announceComplete();
+      }
     }
   }
 
