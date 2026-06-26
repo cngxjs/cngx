@@ -127,8 +127,9 @@ export interface CngxPaginatorTemplates {
 /**
  * Resolved paginator configuration. Three required sub-trees - accessible-name
  * strings, live-region announcement phrasing, and data-readout formatters -
- * plus an optional `templates` slot tree, each merged independently by the
- * reducer in {@link provideCngxPaginatorConfig}.
+ * plus a flat `pageSizeOptions` list and an optional `templates` slot tree,
+ * each merged independently by the reducer in
+ * {@link provideCngxPaginatorConfig}.
  *
  * @category ui/paginator
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/paginator-config.ts
@@ -138,6 +139,14 @@ export interface CngxPaginatorConfig {
   readonly ariaLabels: CngxPaginatorAriaLabels;
   readonly announcements: CngxPaginatorAnnouncements;
   readonly formats: CngxPaginatorFormats;
+  /**
+   * Default items-per-page choices the `cngx-pgn-page-size` dropdown renders
+   * when no per-instance `[options]` is bound. The instance input still wins
+   * when it is non-empty; this is the cascade fallback so the segment needs no
+   * boilerplate. Replaced wholesale (not merged) by
+   * {@link withPaginatorPageSizeOptions} - a size list is one atomic value.
+   */
+  readonly pageSizeOptions: readonly number[];
   readonly templates?: CngxPaginatorTemplates;
 }
 
@@ -173,6 +182,9 @@ export const CNGX_PAGINATOR_DEFAULTS: CngxPaginatorConfig = {
     range: (start, end, total) => `<b>${start}-${end}</b> of ${total}`,
     pageStatus: (page, totalPages) => `Page <b>${page}</b> of ${totalPages}`,
   },
+  // Includes the brain's default pageSize (10) so the trigger value is always a
+  // member of the panel; a common data-table ladder, locale-neutral.
+  pageSizeOptions: [10, 25, 50, 100],
 };
 
 /**
@@ -192,7 +204,8 @@ export const CNGX_PAGINATOR_CONFIG = new InjectionToken<CngxPaginatorConfig>('Cn
 /**
  * A single configuration override produced by a `with*` feature factory.
  * The reducer in {@link provideCngxPaginatorConfig} matches on `kind` and
- * shallow-merges `payload` into the matching sub-tree.
+ * shallow-merges `payload` into the matching sub-tree - except
+ * `pageSizeOptions`, whose payload replaces the list wholesale.
  *
  * @category ui/paginator
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/paginator-config.ts
@@ -202,6 +215,7 @@ export type CngxPaginatorConfigFeature =
   | { readonly kind: 'ariaLabels'; readonly payload: Partial<CngxPaginatorAriaLabels> }
   | { readonly kind: 'announcements'; readonly payload: Partial<CngxPaginatorAnnouncements> }
   | { readonly kind: 'formats'; readonly payload: Partial<CngxPaginatorFormats> }
+  | { readonly kind: 'pageSizeOptions'; readonly payload: readonly number[] }
   | { readonly kind: 'templates'; readonly payload: Partial<CngxPaginatorTemplates> };
 
 /** Reduce a feature list onto a base config, merging each sub-tree in isolation. */
@@ -212,6 +226,7 @@ function applyFeatures(
   let ariaLabels = base.ariaLabels;
   let announcements = base.announcements;
   let formats = base.formats;
+  let pageSizeOptions = base.pageSizeOptions;
   let templates = base.templates;
   for (const feature of features) {
     if (feature.kind === 'ariaLabels') {
@@ -220,11 +235,14 @@ function applyFeatures(
       announcements = { ...announcements, ...feature.payload };
     } else if (feature.kind === 'formats') {
       formats = { ...formats, ...feature.payload };
+    } else if (feature.kind === 'pageSizeOptions') {
+      // A size list is one atomic value - replace, do not merge.
+      pageSizeOptions = feature.payload;
     } else {
       templates = { ...templates, ...feature.payload };
     }
   }
-  return { ariaLabels, announcements, formats, templates };
+  return { ariaLabels, announcements, formats, pageSizeOptions, templates };
 }
 
 /**
@@ -309,6 +327,28 @@ export function withPaginatorPageStatusFormat(
   pageStatus: CngxPaginatorFormats['pageStatus'],
 ): CngxPaginatorConfigFeature {
   return { kind: 'formats', payload: { pageStatus } };
+}
+
+/**
+ * Supply the default items-per-page choices for the `cngx-pgn-page-size`
+ * dropdown app-wide. The segment renders these when no per-instance `[options]`
+ * is bound; a non-empty `[options]` input still wins. The list replaces the
+ * library default wholesale - it is one atomic value, not a merged sub-tree.
+ *
+ * ```ts
+ * provideCngxPaginatorConfig(
+ *   withPaginatorPageSizeOptions([12, 24, 48]),
+ * );
+ * ```
+ *
+ * @category ui/paginator
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/paginator-config.ts
+ * @since 0.1.0
+ */
+export function withPaginatorPageSizeOptions(
+  payload: readonly number[],
+): CngxPaginatorConfigFeature {
+  return { kind: 'pageSizeOptions', payload };
 }
 
 /**

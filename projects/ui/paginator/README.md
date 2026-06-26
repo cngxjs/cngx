@@ -56,7 +56,7 @@ context needs.
 |Previous / next|`cngx-pgn-prev` / `cngx-pgn-next`|Step one page; `aria-disabled` at the bound|
 |Pages|`cngx-pgn-pages`|Roving numbered row with ellipsis overflow menu, `aria-current` on the active page|
 |Range|`cngx-pgn-range`|`start-end of total` readout (format from config)|
-|Page size|`cngx-pgn-page-size`|`CngxListbox` select; `[options]` is data; resets to the first page|
+|Page size|`cngx-pgn-page-size`|`CngxListbox` select; `[options]` is data (falls back to the `withPaginatorPageSizeOptions` cascade default); resets to the first page|
 |Page of pages|`cngx-pgn-page-of-pages`|`current / total` jump dropdown|
 |Go to|`cngx-pgn-goto`|Native number input; Enter or blur navigates|
 |Dots|`cngx-pgn-dots`|One dot per page (organism-internal), for the `dots` skin|
@@ -99,22 +99,25 @@ gates navigation, renders an indeterminate `cngx-progress` bar, flips
 
 ## Configuration
 
-All accessible-name strings, announcement phrasing, and the range format cascade
-through `CNGX_PAGINATOR_CONFIG` (English defaults). Override at the app root with
-`provideCngxPaginatorConfig(...)`, or per region with
-`provideCngxPaginatorConfigAt(...)` in `viewProviders`.
+All accessible-name strings, announcement phrasing, the range format, and the
+default page-size choices cascade through `CNGX_PAGINATOR_CONFIG` (English
+defaults). Override at the app root with `provideCngxPaginatorConfig(...)`, or
+per region with `provideCngxPaginatorConfigAt(...)` in `viewProviders`.
 
 ```ts
 provideCngxPaginatorConfig(
   withPaginatorAriaLabels({ next: 'Nächste Seite', pageOfPages: 'Seite wählen' }),
   withPaginatorAnnouncements({ pageChange: (p, t) => `Seite ${p} von ${t}` }),
   withPaginatorRangeFormat((start, end, total) => `${start}-${end} von ${total}`),
+  withPaginatorPageSizeOptions([12, 24, 48]),
 );
 ```
 
 `withPaginatorRangeFormat` localises the `cngx-pgn-range` text (including the
 `of` connector); `ariaLabels.pageOfPages` is the dedicated label for the
-page-of-pages selector.
+page-of-pages selector. `withPaginatorPageSizeOptions` sets the default
+`cngx-pgn-page-size` choices, so the dropdown needs no per-instance `[options]`;
+a non-empty `[options]` binding still wins over the cascade default.
 
 The live-region announcer is swappable. `CNGX_PAGINATOR_ANNOUNCER_FACTORY`
 defaults to `createPaginatorAnnouncer`; override it to wrap the busy / settle /

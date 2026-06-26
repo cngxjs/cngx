@@ -1,11 +1,12 @@
 import { Component, provideZonelessChangeDetection, signal } from '@angular/core';
-import { TestBed } from '@angular/core/testing';
+import { type ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { describe, expect, test } from 'vitest';
 
 import { CngxPaginate, createManualState } from '@cngx/common/data';
 import type { CngxAsyncState } from '@cngx/core/utils';
 
+import { provideCngxPaginatorConfig, withPaginatorPageSizeOptions } from '../paginator-config';
 import { CngxPaginator } from '../paginator.component';
 import { CngxPaginatorPageSize } from './paginator-page-size.component';
 
@@ -32,7 +33,7 @@ interface Plumbing {
   paginate: CngxPaginate;
 }
 
-async function settle(fixture: Plumbing['fixture']): Promise<void> {
+async function settle(fixture: ComponentFixture<unknown>): Promise<void> {
   fixture.detectChanges();
   await fixture.whenStable();
   fixture.detectChanges();
@@ -49,17 +50,17 @@ async function setup(): Promise<Plumbing> {
   return { fixture, host: fixture.componentInstance, paginate };
 }
 
-function trigger(fixture: Plumbing['fixture']): HTMLButtonElement {
+function trigger(fixture: ComponentFixture<unknown>): HTMLButtonElement {
   return fixture.debugElement.query(By.css('.cngx-paginator__select'))
     .nativeElement as HTMLButtonElement;
 }
 
-function options(fixture: Plumbing['fixture']): HTMLElement[] {
+function options(fixture: ComponentFixture<unknown>): HTMLElement[] {
   const root = fixture.nativeElement as HTMLElement;
   return Array.from(root.querySelectorAll<HTMLElement>('.cngx-paginator__option'));
 }
 
-async function pick(fixture: Plumbing['fixture'], size: string): Promise<void> {
+async function pick(fixture: ComponentFixture<unknown>, size: string): Promise<void> {
   // Drive the option activation directly; the popover open/close belongs to
   // CngxPopover (and jsdom has no native showPopover). What this segment owns
   // is the activation -> host wiring.
@@ -117,5 +118,47 @@ describe('CngxPaginatorPageSize', () => {
     expect(trigger(fixture).disabled).toBe(true);
     await pick(fixture, '50');
     expect(paginate.pageSize()).toBe(10);
+  });
+});
+
+@Component({
+  standalone: true,
+  imports: [CngxPaginator, CngxPaginatorPageSize],
+  template: `
+    <cngx-paginator [total]="100">
+      <cngx-pgn-page-size />
+    </cngx-paginator>
+  `,
+})
+class NoOptionsHostCmp {}
+
+@Component({
+  standalone: true,
+  imports: [CngxPaginator, CngxPaginatorPageSize],
+  template: `
+    <cngx-paginator [total]="100">
+      <cngx-pgn-page-size [options]="[5]" />
+    </cngx-paginator>
+  `,
+})
+class InputWinsHostCmp {}
+
+describe('CngxPaginatorPageSize config-cascade fallback', () => {
+  test('with no [options], the dropdown renders the configured cascade default', async () => {
+    TestBed.configureTestingModule({
+      providers: [...providers, provideCngxPaginatorConfig(withPaginatorPageSizeOptions([15, 30]))],
+    });
+    const fixture = TestBed.createComponent(NoOptionsHostCmp);
+    await settle(fixture);
+    expect(options(fixture).map((o) => o.textContent?.trim())).toEqual(['15', '30']);
+  });
+
+  test('a non-empty [options] input still wins over the config default', async () => {
+    TestBed.configureTestingModule({
+      providers: [...providers, provideCngxPaginatorConfig(withPaginatorPageSizeOptions([15, 30]))],
+    });
+    const fixture = TestBed.createComponent(InputWinsHostCmp);
+    await settle(fixture);
+    expect(options(fixture).map((o) => o.textContent?.trim())).toEqual(['5']);
   });
 });
