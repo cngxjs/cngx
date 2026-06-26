@@ -1,6 +1,7 @@
 import { Component, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { CngxFileDrop } from './file-drop.directive';
+import { provideInputConfig, withFileMaxSize } from './input-config';
 
 @Component({
   template: `<div
@@ -32,6 +33,12 @@ function setup(overrides: Partial<Host> = {}) {
 function createDragEvent(type: string): DragEvent {
   const event = new Event(type, { bubbles: true, cancelable: true }) as DragEvent;
   Object.defineProperty(event, 'dataTransfer', { value: { files: [] } });
+  return event;
+}
+
+function createDropEvent(files: File[]): DragEvent {
+  const event = new Event('drop', { bubbles: true, cancelable: true }) as DragEvent;
+  Object.defineProperty(event, 'dataTransfer', { value: { files } });
   return event;
 }
 
@@ -88,5 +95,18 @@ describe('CngxFileDrop', () => {
   it('should expose browse() method', () => {
     const { directive } = setup();
     expect(typeof directive.browse).toBe('function');
+  });
+
+  it('honours fileMaxSize from global config when no [maxSize] binding is set', () => {
+    TestBed.configureTestingModule({
+      providers: [provideInputConfig(withFileMaxSize(1000))],
+    });
+    const { el, directive } = setup();
+
+    const bigFile = new File([new ArrayBuffer(1500)], 'big.bin');
+    el.dispatchEvent(createDropEvent([bigFile]));
+
+    expect(directive.files()).toEqual([]);
+    expect(directive.rejected().map((r) => r.reason)).toEqual(['size']);
   });
 });

@@ -1,4 +1,14 @@
-import { DestroyRef, Directive, inject, input, output, signal, type Signal } from '@angular/core';
+import {
+  computed,
+  DestroyRef,
+  Directive,
+  inject,
+  input,
+  output,
+  signal,
+  type Signal,
+} from '@angular/core';
+import { CNGX_INPUT_CONFIG } from './input-config';
 
 /**
  * Clipboard copy behavior for input fields, tokens, API keys.
@@ -36,6 +46,7 @@ import { DestroyRef, Directive, inject, input, output, signal, type Signal } fro
 })
 export class CngxCopyValue {
   private readonly destroyRef = inject(DestroyRef);
+  private readonly config = inject(CNGX_INPUT_CONFIG);
 
   /** The value to copy. Falls back to `source` element's value if not provided. */
   readonly value = input<string | undefined>(undefined, { alias: 'cngxCopyValue' });
@@ -43,8 +54,12 @@ export class CngxCopyValue {
   /** Reference to the source element (fallback when `value` input not set). */
   readonly source = input<HTMLInputElement | HTMLTextAreaElement | undefined>(undefined);
 
-  /** Duration in ms to keep `copied` true after a successful copy. */
-  readonly resetDelay = input<number>(2000);
+  /** Duration in ms to keep `copied` true after a successful copy. Falls back to global config. */
+  readonly resetDelay = input<number | undefined>(undefined);
+
+  private readonly resolvedResetDelay = computed(
+    () => this.resetDelay() ?? this.config.copyResetDelay ?? 2000,
+  );
 
   private readonly copiedState = signal(false);
   private resetTimer: ReturnType<typeof setTimeout> | null = null;
@@ -94,7 +109,7 @@ export class CngxCopyValue {
           this.copiedState.set(false);
           this.resetTimer = null;
         }
-      }, this.resetDelay());
+      }, this.resolvedResetDelay());
       this.resetTimer = handle;
     } catch {
       // Clipboard write failed (permission denied, etc.) - drop silently.

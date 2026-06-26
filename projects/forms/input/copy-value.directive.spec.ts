@@ -2,6 +2,7 @@ import { Component, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CngxCopyValue } from './copy-value.directive';
+import { provideInputConfig, withCopyResetDelay } from './input-config';
 
 @Component({
   template: `<button [cngxCopyValue]="'test-value'" #cp="cngxCopyValue">Copy</button>`,
@@ -60,6 +61,32 @@ describe('CngxCopyValue', () => {
 
       // Second reset fires at T=2500 (500ms after second copy + 2000ms delay).
       vi.advanceTimersByTime(1000);
+      fixture.detectChanges();
+      expect(directive.copied()).toBe(false);
+    });
+  });
+
+  describe('config fallback (withCopyResetDelay)', () => {
+    beforeEach(() => vi.useFakeTimers());
+    afterEach(() => vi.useRealTimers());
+
+    it('honours copyResetDelay from global config when no [resetDelay] binding is set', async () => {
+      TestBed.configureTestingModule({
+        providers: [provideInputConfig(withCopyResetDelay(5000))],
+      });
+      const { directive, fixture } = setup();
+
+      await directive.copy();
+      TestBed.flushEffects();
+      expect(directive.copied()).toBe(true);
+
+      // Under the old literal 2000 default the flag would already be false here;
+      // the config fallback keeps it true until t=5000.
+      vi.advanceTimersByTime(2000);
+      fixture.detectChanges();
+      expect(directive.copied()).toBe(true);
+
+      vi.advanceTimersByTime(3000);
       fixture.detectChanges();
       expect(directive.copied()).toBe(false);
     });
