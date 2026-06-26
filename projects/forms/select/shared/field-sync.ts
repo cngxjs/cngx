@@ -1,6 +1,20 @@
-import { effect, inject, untracked, type WritableSignal } from '@angular/core';
+import { effect, inject, InjectionToken, untracked, type WritableSignal } from '@angular/core';
 
 import { CngxFormFieldPresenter, type CngxFieldRef } from '@cngx/forms/field';
+
+/**
+ * Provide truthy in a subtree to suppress {@link createFieldSync} for every
+ * descendant select. The form-field bridge (disabled / focused / errorState)
+ * stays intact — only the bidirectional value-sync is opted out. Use when a
+ * composite control (e.g. `cngx-filter-builder`) is the form-field's control
+ * and its inner pickers must not write the composite's object value into
+ * their own scalar `value` model.
+ *
+ * @category forms/select/state
+ */
+export const CNGX_SELECT_DISABLE_FIELD_SYNC = new InjectionToken<boolean>(
+  'CNGX_SELECT_DISABLE_FIELD_SYNC',
+);
 
 /**
  * Options for {@link createFieldSync}. Generic in `V` so the same factory
@@ -39,6 +53,9 @@ export interface FieldSyncOptions<V> {
 export function createFieldSync<V>(options: FieldSyncOptions<V>): void {
   const presenter = inject(CngxFormFieldPresenter, { optional: true });
   if (!presenter) {
+    return;
+  }
+  if (inject(CNGX_SELECT_DISABLE_FIELD_SYNC, { optional: true })) {
     return;
   }
   const toField = options.toFieldValue ?? ((v: V) => v as unknown);

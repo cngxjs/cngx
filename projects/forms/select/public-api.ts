@@ -231,7 +231,11 @@ export {
   createCommitController,
 } from './shared/commit-controller.token';
 
-export { createFieldSync, type FieldSyncOptions } from './shared/field-sync';
+export {
+  createFieldSync,
+  CNGX_SELECT_DISABLE_FIELD_SYNC,
+  type FieldSyncOptions,
+} from './shared/field-sync';
 
 export {
   createADActivationDispatcher,
