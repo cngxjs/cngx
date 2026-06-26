@@ -33,7 +33,48 @@ export interface InputConfig {
   readonly copyResetDelay?: number;
   /** Default `maxSize` for `CngxFileDrop` in bytes. */
   readonly fileMaxSize?: number;
+  /**
+   * Consumer overrides for the built-in ARIA label strings. Unset keys fall
+   * back to {@link DEFAULT_INPUT_ARIA_LABELS}.
+   */
+  readonly ariaLabels?: Partial<InputAriaLabels>;
 }
+
+/**
+ * Consumer-overridable ARIA label strings for `@cngx/forms/input` directives.
+ *
+ * Library defaults are English ({@link DEFAULT_INPUT_ARIA_LABELS}); supply a
+ * partial override via {@link withInputAriaLabels} at the application or
+ * component level. Mirrors the select family's `withAriaLabels` idiom.
+ *
+ * @category forms/input
+ */
+export interface InputAriaLabels {
+  /** `aria-label` for the `CngxInputClear` button. Default: `'Clear'` */
+  readonly clear: string;
+  /** Group name for the `CngxOtpInput` host (`role="group"`). Default: `'One-time code'` */
+  readonly otpGroup: string;
+  /** Per-slot `aria-label` factory for `CngxOtpSlot`. Default: `` `Digit ${index + 1} of ${length}` `` */
+  readonly otpSlot: (index: number, length: number) => string;
+  /** Live-region announcement when the OTP is fully entered. Default: `'Code complete'` */
+  readonly otpComplete: string;
+  /** Live-region announcement when `CngxCopyValue` copies successfully. Default: `'Copied'` */
+  readonly copySuccess: string;
+}
+
+/**
+ * English default ARIA labels for `@cngx/forms/input`. Directives read a key
+ * as `config.ariaLabels?.<key> ?? DEFAULT_INPUT_ARIA_LABELS.<key>`.
+ *
+ * @category forms/input
+ */
+export const DEFAULT_INPUT_ARIA_LABELS: InputAriaLabels = {
+  clear: 'Clear',
+  otpGroup: 'One-time code',
+  otpSlot: (index, length) => `Digit ${index + 1} of ${length}`,
+  otpComplete: 'Code complete',
+  copySuccess: 'Copied',
+};
 
 /**
  * Empty default - every directive falls back to its own default.
@@ -201,4 +242,26 @@ export function withCopyResetDelay(ms: number): InputConfigFeature {
  */
 export function withFileMaxSize(bytes: number): InputConfigFeature {
   return (config) => ({ ...config, fileMaxSize: bytes });
+}
+
+/**
+ * Override built-in ARIA label strings for the input directives.
+ *
+ * Mirrors the select family's `withAriaLabels`; unset keys fall back to
+ * {@link DEFAULT_INPUT_ARIA_LABELS}. Library defaults are English - German
+ * (or any other locale) is consumer-supplied here.
+ *
+ * ```typescript
+ * provideInputConfig(
+ *   withInputAriaLabels({ clear: 'Leeren', copySuccess: 'Kopiert' }),
+ * );
+ * ```
+ *
+ * @category forms/input
+ */
+export function withInputAriaLabels(labels: Partial<InputAriaLabels>): InputConfigFeature {
+  return (config) => ({
+    ...config,
+    ariaLabels: { ...config.ariaLabels, ...labels },
+  });
 }
