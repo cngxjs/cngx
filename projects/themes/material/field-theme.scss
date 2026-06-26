@@ -12,7 +12,7 @@
 @mixin color($theme) {
   @if mat.get-theme-version($theme) == 1 {
     --cngx-field-label-color: var(--mat-sys-on-surface);
-    --cngx-field-label-required-color: var(--mat-sys-error);
+    --cngx-field-required-color: var(--mat-sys-error);
     --cngx-field-hint-color: var(--mat-sys-on-surface-variant);
     --cngx-field-error-color: var(--mat-sys-error);
     --cngx-field-focus-color: var(--mat-sys-primary);
@@ -24,7 +24,7 @@
     --cngx-field-success-color: var(--mat-sys-primary);
   } @else {
     --cngx-field-label-color: #{rgba(mat.get-theme-color($theme, foreground, text), 0.87)};
-    --cngx-field-label-required-color: #{mat.get-theme-color($theme, warn)};
+    --cngx-field-required-color: #{mat.get-theme-color($theme, warn)};
     --cngx-field-hint-color: #{rgba(mat.get-theme-color($theme, foreground, text), 0.54)};
     --cngx-field-error-color: #{mat.get-theme-color($theme, warn)};
     --cngx-field-focus-color: #{mat.get-theme-color($theme, primary)};

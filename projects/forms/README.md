@@ -341,7 +341,7 @@ html {
 | `--cngx-field-label-color` | `--mat-sys-on-surface` | Label text |
 | `--cngx-field-label-font-size` | `0.875rem` | Label size |
 | `--cngx-field-label-weight` | `500` | Label weight |
-| `--cngx-field-label-required-color` | `--mat-sys-error` | Required marker |
+| `--cngx-field-required-color` | `--mat-sys-error` | Required marker |
 | `--cngx-field-hint-color` | `--mat-sys-on-surface-variant` | Hint text |
 | `--cngx-field-hint-font-size` | `0.75rem` | Hint size |
 | `--cngx-field-error-color` | `--mat-sys-error` | Error text |
