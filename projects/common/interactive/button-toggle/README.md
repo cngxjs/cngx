@@ -65,7 +65,7 @@ Both groups compose `CngxRovingTabindex` as a host directive with `orientation` 
 | Space, Enter | select focused leaf | toggle focused leaf |
 | Tab | enter / leave group | enter / leave group |
 
-Single-select auto-select-on-arrow follows the radiogroup pattern via a transient `pendingArrowSelect` flag raised on host `(keydown)` and consumed in the leaf's `(focus)` handler. The signal write happens inside the DOM event handler, never inside an `effect()`.
+Single-select auto-select-on-arrow follows the radiogroup pattern via the host `CngxRovingTabindex`: the roving directive raises its navigation-key intent before it moves focus, and each leaf reads `roving.consumeNavigationKey()` in its `(focus)` handler. Reading an already-set fact (rather than a group-owned `(keydown)` flag) means the first arrow press selects the focused leaf instead of being dropped. The value write happens inside the DOM event handler, never inside an `effect()`.
 
 Group state is communicated structurally: `aria-disabled`, `aria-required`, `aria-invalid`, `aria-orientation`, `aria-busy`, and `aria-errormessage` are all `computed()` from inputs and the optional field-host / error-aggregator wiring. `aria-busy` is true while the optional `state` input reports `loading`.
 

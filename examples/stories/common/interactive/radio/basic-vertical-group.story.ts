@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxRadioGroup: Basic vertical group',
   subtitle: 'Tab into the group lands on the active radio (or the first one if none is selected). <strong>ArrowDown</strong>/<strong>ArrowRight</strong> move focus AND select the next radio; <strong>ArrowUp</strong>/<strong>ArrowLeft</strong> the previous. <strong>Space</strong>/<strong>Enter</strong> select the focused radio (idempotent).',
-  description: 'Default vertical radio group with the auto-select-on-arrow keyboard model. Tab enters the group; subsequent Arrow / Home / End move focus AND commit the value via a transient pendingArrowSelect flag the next focus event consumes. The plain Tab-into-group path skips the flag, so refocusing the group never silently overwrites the consumer-bound value.',
+  description: 'Default vertical radio group with the auto-select-on-arrow keyboard model. Tab enters the group; subsequent Arrow / Home / End move focus AND commit the value - the first arrow press already selects the newly-focused radio. The plain Tab-into-group path does not auto-select, so refocusing the group never silently overwrites the consumer-bound value.',
   level: 'molecule',
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
