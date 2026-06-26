@@ -1,7 +1,7 @@
 export { CngxFormFieldPresenter } from './form-field-presenter';
 export { CngxFormField } from './form-field.component';
 export { CngxFieldErrors, type CngxFieldErrorContext } from './field-errors.component';
-export { CngxLabel } from './label.directive';
+export { CngxLabel } from './label.component';
 export { CngxHint } from './hint.directive';
 export { CngxError } from './error.directive';
 export { CngxRequired, type CngxRequiredContext } from './required.component';
