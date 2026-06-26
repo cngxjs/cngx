@@ -10,7 +10,7 @@ import {
   type Signal,
 } from '@angular/core';
 import type { CngxAsyncState } from '@cngx/core/utils';
-import { CNGX_INPUT_CONFIG } from './input-config';
+import { CNGX_INPUT_CONFIG, DEFAULT_INPUT_ARIA_LABELS } from './input-config';
 
 /**
  * Describes a file that was rejected during drop/browse validation.
@@ -39,13 +39,17 @@ function fileKey(file: File): string {
  * files against `accept` and `maxSize`, and provides a `browse()` method
  * for programmatic file picker access.
  *
+ * The host element is itself the activation control (click / Enter / Space
+ * open the file picker), so it carries `role="button"` - do not nest
+ * interactive controls inside it.
+ *
  * ```html
  * <div cngxFileDrop [accept]="['image/*']" [maxSize]="5_000_000"
  *      #drop="cngxFileDrop" (filesChange)="upload($event)">
  *   @if (drop.dragging()) {
  *     <p>Drop files here</p>
  *   } @else {
- *     <p>Drag files or <button (click)="drop.browse()">browse</button></p>
+ *     <p>Drag files here, or press Enter to browse</p>
  *   }
  * </div>
  * ```
@@ -69,13 +73,15 @@ function fileKey(file: File): string {
     '(dragover)': 'handleDragOver($event)',
     '(dragleave)': 'handleDragLeave($event)',
     '(drop)': 'handleDrop($event)',
+    '(click)': 'handleActivate($event)',
     '(keydown.enter)': 'handleActivate($event)',
     '(keydown.space)': 'handleActivate($event)',
     '[class.cngx-file-drop--dragging]': 'dragging()',
     '[class.cngx-file-drop--has-files]': 'files().length > 0',
     '[class.cngx-file-drop--uploading]': 'uploading()',
     '[attr.aria-busy]': 'uploading() || null',
-    '[attr.aria-label]': 'ariaLabel()',
+    '[attr.aria-disabled]': 'uploading() || null',
+    '[attr.aria-label]': 'resolvedAriaLabel()',
     '[attr.tabindex]': 'tabIndex()',
   },
 })
@@ -100,8 +106,15 @@ export class CngxFileDrop {
 
   private readonly resolvedMaxFiles = computed(() => this.maxFiles() ?? this.config.fileMaxFiles);
 
-  /** `aria-label` for the drop zone. Library default is English. */
-  readonly ariaLabel = input<string>('File drop zone');
+  /**
+   * `aria-label` for the drop zone. Falls back to the global config
+   * (`ariaLabels.fileDropZone`), then the English default.
+   */
+  readonly ariaLabel = input<string | undefined>(undefined);
+
+  protected readonly resolvedAriaLabel = computed(
+    () => this.ariaLabel() ?? this.config.ariaLabels?.fileDropZone ?? DEFAULT_INPUT_ARIA_LABELS.fileDropZone,
+  );
 
   /**
    * Bind an upload async state - shows busy/error/progress during upload.

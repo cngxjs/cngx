@@ -3,7 +3,12 @@ import { TestBed } from '@angular/core/testing';
 import { vi } from 'vitest';
 import type { CngxAsyncState } from '@cngx/core/utils';
 import { CngxFileDrop } from './file-drop.directive';
-import { provideInputConfig, withFileMaxFiles, withFileMaxSize } from './input-config';
+import {
+  provideInputConfig,
+  withFileMaxFiles,
+  withFileMaxSize,
+  withInputAriaLabels,
+} from './input-config';
 
 @Component({
   template: `<div
@@ -23,7 +28,7 @@ class Host {
   maxSize: number | undefined = undefined;
   multiple = false;
   maxFiles: number | undefined = undefined;
-  ariaLabel = 'File drop zone';
+  ariaLabel: string | undefined = undefined;
   state: CngxAsyncState<unknown> | undefined = undefined;
   readonly drop = viewChild.required(CngxFileDrop);
 }
@@ -157,6 +162,29 @@ describe('CngxFileDrop', () => {
   it('honours a consumer-supplied ariaLabel', () => {
     const { el } = setup({ ariaLabel: 'Dateien ablegen' });
     expect(el.getAttribute('aria-label')).toBe('Dateien ablegen');
+  });
+
+  it('falls back to fileDropZone from the global aria-label config', () => {
+    TestBed.configureTestingModule({
+      providers: [provideInputConfig(withInputAriaLabels({ fileDropZone: 'Dateien hier ablegen' }))],
+    });
+    const { el } = setup();
+    expect(el.getAttribute('aria-label')).toBe('Dateien hier ablegen');
+  });
+
+  it('marks aria-disabled while uploading and clears it while idle', () => {
+    const idle = setup();
+    expect(idle.el.hasAttribute('aria-disabled')).toBe(false);
+
+    const busy = setup({ state: busyState() });
+    expect(busy.el.getAttribute('aria-disabled')).toBe('true');
+  });
+
+  it('opens the picker on click', () => {
+    const { el, directive } = setup();
+    const browse = vi.spyOn(directive, 'browse').mockImplementation(() => {});
+    el.click();
+    expect(browse).toHaveBeenCalledOnce();
   });
 
   it('opens the picker on Enter', () => {

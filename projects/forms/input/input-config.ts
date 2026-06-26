@@ -64,6 +64,8 @@ export interface InputAriaLabels {
   readonly copySuccess: string;
   /** Assertive live-region announcement when `CngxCopyValue` fails to copy. Default: `'Copy failed'` */
   readonly copyError: string;
+  /** `aria-label` for the `CngxFileDrop` zone. Default: `'File drop zone'` */
+  readonly fileDropZone: string;
 }
 
 /**
@@ -79,6 +81,7 @@ export const DEFAULT_INPUT_ARIA_LABELS: InputAriaLabels = {
   otpComplete: 'Code complete',
   copySuccess: 'Copied',
   copyError: 'Copy failed',
+  fileDropZone: 'File drop zone',
 };
 
 /**
