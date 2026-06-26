@@ -34,6 +34,7 @@
           [attr.aria-disabled]="node.disabled ? 'true' : null"
           [style.--cngx-tree-depth]="node.depth"
           class="cngx-tree-select__node"
+          [class.cngx-tree-select__node--active]="ad.activeId() === node.id"
           (click)="!node.disabled && host.handleSelect(node)"
         >
           @if (node.hasChildren) {

@@ -237,7 +237,7 @@
       appearance: none;
       border: 0;
       background: transparent;
-      color: inherit;
+      color: var(--cngx-select-clear-color, inherit);
       cursor: pointer;
       padding: 0 0.25rem;
       font: inherit;
@@ -253,6 +253,8 @@
 
     .cngx-multi-select__caret {
       flex: 0 0 auto;
+      color: var(--cngx-select-caret-color, inherit);
+      font-size: var(--cngx-select-caret-size, 1em);
       opacity: 0.7;
     }
   }

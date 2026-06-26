@@ -61,6 +61,17 @@
   }
 
   /**
+   * Minimum block size of the trigger. Shared family default so the shell
+   * trigger matches the other variants instead of sizing to content.
+   * @group Layout
+   */
+  @property --cngx-select-shell-min-height {
+    syntax: '*';
+    inherits: false;
+    initial-value: 2.25rem;
+  }
+
+  /**
    * Gap between the label, caret, and clear button.
    * @group Layout
    */
@@ -208,6 +219,7 @@
       align-items: center;
       gap: var(--cngx-select-shell-gap, var(--cngx-select-gap, 0.5rem));
       width: 100%;
+      min-height: var(--cngx-select-shell-min-height, var(--cngx-select-min-height, 2.25rem));
       padding: var(--cngx-select-shell-padding, var(--cngx-select-padding, 0.5rem 0.75rem));
       border: var(
         --cngx-select-shell-border,
@@ -252,6 +264,8 @@
 
     .cngx-select-shell__caret {
       flex: 0 0 auto;
+      color: var(--cngx-select-caret-color, inherit);
+      font-size: var(--cngx-select-caret-size, 1em);
       opacity: var(--cngx-select-shell-caret-opacity, 0.7);
     }
 
@@ -260,7 +274,7 @@
       appearance: none;
       border: 0;
       background: transparent;
-      color: inherit;
+      color: var(--cngx-select-clear-color, inherit);
       cursor: pointer;
       padding: 0 0.25rem;
       font: inherit;

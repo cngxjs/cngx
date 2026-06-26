@@ -61,7 +61,7 @@
   @property --cngx-typeahead-min-height {
     syntax: '*';
     inherits: false;
-    initial-value: 2.5rem;
+    initial-value: 2.25rem;
   }
 
   /**
@@ -91,7 +91,7 @@
   @property --cngx-typeahead-radius {
     syntax: '*';
     inherits: false;
-    initial-value: 0.375rem;
+    initial-value: 0.25rem;
   }
 
   /**
@@ -105,25 +105,6 @@
     initial-value: oklch(1 0 0);
   }
 
-  /**
-   * Opacity multiplier applied when the input is disabled.
-   * @group State / Disabled
-   */
-  @property --cngx-typeahead-disabled-opacity {
-    syntax: '<number>';
-    inherits: false;
-    initial-value: 0.6;
-  }
-
-  /**
-   * Color of the clear button and caret glyphs.
-   * @group Surface
-   */
-  @property --cngx-typeahead-action-color {
-    syntax: '*';
-    inherits: true;
-    initial-value: currentColor;
-  }
 
   /* Delegating tokens - trigger border + bg track the foundation
    * chain so a dark-mode swap on `--cngx-color-border` /
@@ -152,13 +133,13 @@
       align-items: center;
       gap: var(--cngx-typeahead-gap, 0.5rem);
       width: 100%;
-      min-height: var(--cngx-typeahead-min-height, 2.5rem);
+      min-height: var(--cngx-typeahead-min-height, 2.25rem);
       padding: var(--cngx-typeahead-padding, 0 0.75rem);
       border: var(
         --cngx-typeahead-border,
         1px solid var(--cngx-color-border, oklch(0.85 0.01 250))
       );
-      border-radius: var(--cngx-typeahead-radius, 0.375rem);
+      border-radius: var(--cngx-typeahead-radius, 0.25rem);
       background: var(--cngx-typeahead-bg, var(--cngx-color-surface, oklch(1 0 0)));
       cursor: text;
     }
@@ -199,7 +180,7 @@
 
     .cngx-typeahead__input:disabled {
       cursor: not-allowed;
-      opacity: var(--cngx-typeahead-disabled-opacity, 0.6);
+      opacity: var(--cngx-select-disabled-opacity, 0.5);
     }
 
     .cngx-typeahead__clear,
@@ -208,9 +189,14 @@
       background: transparent;
       border: 0;
       cursor: pointer;
-      color: var(--cngx-typeahead-action-color, currentColor);
       padding: 0 0.25rem;
-      font-size: 0.9em;
+      font-size: var(--cngx-select-caret-size, 1em);
+    }
+    .cngx-typeahead__clear {
+      color: var(--cngx-select-clear-color, currentColor);
+    }
+    .cngx-typeahead__caret {
+      color: var(--cngx-select-caret-color, currentColor);
     }
 
     .cngx-typeahead__clear:focus-visible {

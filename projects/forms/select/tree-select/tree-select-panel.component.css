@@ -66,7 +66,7 @@
   @property --cngx-tree-select-tree-padding {
     syntax: '*';
     inherits: false;
-    initial-value: 0.25rem 0;
+    initial-value: 0.25rem;
   }
 
   /**
@@ -87,6 +87,18 @@
     syntax: '*';
     inherits: false;
     initial-value: 2rem;
+  }
+
+  /**
+   * Corner radius of each node row - mirrors the flat option radius so the
+   * hover / selected / active fill reads as an inset pill inside the
+   * container padding, like the rest of the family.
+   * @group Layout
+   */
+  @property --cngx-tree-select-node-radius {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.125rem;
   }
 
   /**
@@ -148,7 +160,7 @@
   @property --cngx-tree-select-node-hover-bg {
     syntax: '<color>';
     inherits: true;
-    initial-value: oklch(0 0 0 / 0.04);
+    initial-value: oklch(0.66 0.19 50 / 0.1);
   }
 
   /**
@@ -160,7 +172,7 @@
   @property --cngx-tree-select-node-selected-bg {
     syntax: '<color>';
     inherits: true;
-    initial-value: oklch(0 0 0 / 0.08);
+    initial-value: oklch(0.66 0.19 50 / 0.22);
   }
 
   /**
@@ -209,19 +221,19 @@
    * alpha than the hover to keep the visual rank. */
   @media (prefers-color-scheme: dark) {
     :root:not([data-color-scheme='light']):not(.light) {
-      --cngx-tree-select-node-hover-bg: oklch(1 0 0 / 0.06);
-      --cngx-tree-select-node-selected-bg: oklch(1 0 0 / 0.12);
+      --cngx-tree-select-node-hover-bg: oklch(0.72 0.18 50 / 0.16);
+      --cngx-tree-select-node-selected-bg: oklch(0.72 0.18 50 / 0.32);
     }
   }
   [data-color-scheme='dark'],
   .dark {
-    --cngx-tree-select-node-hover-bg: oklch(1 0 0 / 0.06);
-    --cngx-tree-select-node-selected-bg: oklch(1 0 0 / 0.12);
+    --cngx-tree-select-node-hover-bg: oklch(0.72 0.18 50 / 0.16);
+    --cngx-tree-select-node-selected-bg: oklch(0.72 0.18 50 / 0.32);
   }
   [data-color-scheme='light'],
   .light {
-    --cngx-tree-select-node-hover-bg: oklch(0 0 0 / 0.04);
-    --cngx-tree-select-node-selected-bg: oklch(0 0 0 / 0.08);
+    --cngx-tree-select-node-hover-bg: oklch(0.66 0.19 50 / 0.1);
+    --cngx-tree-select-node-selected-bg: oklch(0.66 0.19 50 / 0.22);
   }
 }
 
@@ -233,7 +245,7 @@
 
     .cngx-tree-select__tree {
       outline: none;
-      padding: var(--cngx-tree-select-tree-padding, 0.25rem 0);
+      padding: var(--cngx-tree-select-tree-padding, 0.25rem);
     }
 
     .cngx-tree-select__node {
@@ -248,16 +260,30 @@
       padding-inline-end: var(--cngx-tree-select-node-padding-end, 0.75rem);
       cursor: pointer;
       user-select: none;
+      border-radius: var(--cngx-tree-select-node-radius, 0.125rem);
       color: var(--cngx-tree-select-node-color, inherit);
       background: var(--cngx-tree-select-node-bg, transparent);
     }
 
-    .cngx-tree-select__node:hover {
-      background: var(--cngx-tree-select-node-hover-bg, oklch(0 0 0 / 0.04));
+    /* Selected is the persistent dark fill (the resting "chosen" state). */
+    .cngx-tree-select__node[aria-selected='true'] {
+      background: var(--cngx-tree-select-node-selected-bg, oklch(0.66 0.19 50 / 0.22));
     }
 
-    .cngx-tree-select__node[aria-selected='true'] {
-      background: var(--cngx-tree-select-node-selected-bg, oklch(0 0 0 / 0.08));
+    /* Hover and keyboard-active (active-descendant) are transient "pointing at
+     * this row" states and intentionally win over the persistent selected fill,
+     * so moving onto a selected node shows the lighter cursor tone rather than
+     * staying dark. Both sit after the selected rule; --active is doubled
+     * (.node.node--active) to clear the [aria-selected] attribute selector's
+     * specificity. The active state reuses the flat option-list highlight token
+     * so the tree highlights identically to the rest of the family and themes
+     * through the same Material bridge mapping. */
+    .cngx-tree-select__node:hover {
+      background: var(--cngx-tree-select-node-hover-bg, oklch(0.66 0.19 50 / 0.1));
+    }
+
+    .cngx-tree-select__node.cngx-tree-select__node--active {
+      background: var(--cngx-select-option-highlight-bg, oklch(0.66 0.19 50 / 0.1));
     }
 
     .cngx-tree-select__node[aria-disabled='true'] {

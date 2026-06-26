@@ -273,6 +273,53 @@
   }
 
   /**
+   * Color of the dropdown caret glyph shared across every variant.
+   * Muted by default to mirror the placeholder token; the Material
+   * bridge maps it to `--mat-sys-on-surface-variant`. `inherits: true`
+   * so a trigger-level override reaches the glyph element.
+   * @group Surface
+   */
+  @property --cngx-select-caret-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0 0 0 / 0.5);
+  }
+
+  /**
+   * Color of the clear-button glyph shared across every variant. Tracks
+   * the same muted default as the caret so both trigger affordances read
+   * uniformly. `inherits: true` so a trigger-level override reaches the
+   * glyph element.
+   * @group Surface
+   */
+  @property --cngx-select-clear-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0 0 0 / 0.5);
+  }
+
+  /**
+   * Font-size of the dropdown caret glyph shared across every variant.
+   * @group Layout
+   */
+  @property --cngx-select-caret-size {
+    syntax: '*';
+    inherits: false;
+    initial-value: 1.25em;
+  }
+
+  /**
+   * Opacity multiplier applied when the trigger is disabled. Shared
+   * family-wide so every variant dims its disabled trigger identically.
+   * @group State / Disabled
+   */
+  @property --cngx-select-disabled-opacity {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 0.5;
+  }
+
+  /**
    * Vertical gap between skeleton placeholder rows.
    * @group State / Loading
    */
@@ -1367,20 +1414,26 @@
   }
 }
 
-/* Dark-mode swap for the shared placeholder color - the alpha-on-black
- * default dissolves on a dark page, so flip it to alpha-on-white. Kept at
- * the top level (not nested in @scope or @layer) so the @media cascade
- * survives. */
+/* Dark-mode swap for the shared placeholder, caret, and clear colors -
+ * the alpha-on-black defaults dissolve on a dark page, so flip them to
+ * alpha-on-white. Kept at the top level (not nested in @scope or @layer)
+ * so the @media cascade survives. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-color-scheme='light']):not(.light) {
     --cngx-select-placeholder-color: oklch(1 0 0 / 0.5);
+    --cngx-select-caret-color: oklch(1 0 0 / 0.5);
+    --cngx-select-clear-color: oklch(1 0 0 / 0.5);
   }
 }
 [data-color-scheme='dark'],
 .dark {
   --cngx-select-placeholder-color: oklch(1 0 0 / 0.5);
+  --cngx-select-caret-color: oklch(1 0 0 / 0.5);
+  --cngx-select-clear-color: oklch(1 0 0 / 0.5);
 }
 [data-color-scheme='light'],
 .light {
   --cngx-select-placeholder-color: oklch(0 0 0 / 0.5);
+  --cngx-select-caret-color: oklch(0 0 0 / 0.5);
+  --cngx-select-clear-color: oklch(0 0 0 / 0.5);
 }
