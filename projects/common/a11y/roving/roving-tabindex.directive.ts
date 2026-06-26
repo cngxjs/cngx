@@ -149,6 +149,14 @@ export class CngxRovingTabindex {
   private readonly pendingFocusState = signal<number | null>(null);
 
   /**
+   * Set true just before a navigation key (arrow / Home / End) moves focus to a
+   * new item, cleared by {@link consumeNavigationKey}. Transient handshake, not
+   * reactive state: consumer groups read it synchronously from the
+   * newly-focused leaf's `(focus)` handler.
+   */
+  private navigationKeyInFlight = false;
+
+  /**
    * Index of the item that should receive focus but is not currently in the DOM.
    * Non-null when virtual navigation targets an out-of-range item.
    * Used by `connectRecyclerToRoving()` to scroll the item into view and focus it.
@@ -195,6 +203,20 @@ export class CngxRovingTabindex {
   }
 
   /**
+   * Whether the last focus move was driven by a navigation key, consuming the
+   * flag so it reads `true` exactly once. Consumer groups (radio,
+   * button-toggle) call this from the newly-focused leaf's `(focus)` handler to
+   * decide whether to auto-select. The flag is set before `.focus()`, so it is
+   * already `true` when focus lands - this closes the one-press-behind race
+   * that a group's own `(keydown)` binding suffered (#135).
+   */
+  consumeNavigationKey(): boolean {
+    const inFlight = this.navigationKeyInFlight;
+    this.navigationKeyInFlight = false;
+    return inFlight;
+  }
+
+  /**
    * Handles arrow-key, Home, and End navigation within the group.
    * Prevents default scrolling on arrow keys.
    *
@@ -238,6 +260,10 @@ export class CngxRovingTabindex {
     if (nextIndex !== null && nextIndex !== currentActive) {
       event.preventDefault();
       this.activeIndex.set(nextIndex);
+      // Expose the navigation intent before focus moves, so the newly-focused
+      // leaf's (focus) handler reads an already-set fact instead of racing the
+      // group's own late (keydown) binding (#135).
+      this.navigationKeyInFlight = true;
       if (isVirtual) {
         this.focusVirtualItem(nextIndex);
       } else {

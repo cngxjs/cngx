@@ -1,5 +1,6 @@
 import { Directive, ElementRef, inject } from '@angular/core';
 import { CNGX_FORM_FIELD_CONTROL } from '@cngx/forms/field';
+import { CNGX_SELECT_DISABLE_FIELD_SYNC } from '@cngx/forms/select';
 
 import { CngxFilterBuilderPresenter } from './filter-builder-presenter.directive';
 
@@ -33,7 +34,12 @@ import { CngxFilterBuilderPresenter } from './filter-builder-presenter.directive
 @Directive({
   selector: '[cngxFilterBuilderFormFieldControl]',
   standalone: true,
-  providers: [{ provide: CNGX_FORM_FIELD_CONTROL, useExisting: CngxFilterBuilderPresenter }],
+  providers: [
+    { provide: CNGX_FORM_FIELD_CONTROL, useExisting: CngxFilterBuilderPresenter },
+    // The builder is the form-field's control; its descendant <cngx-select>s
+    // must not sync the FilterGroup object into their own scalar value (#98).
+    { provide: CNGX_SELECT_DISABLE_FIELD_SYNC, useValue: true },
+  ],
   host: {
     '(focusin)': 'handleFocusIn()',
     '(focusout)': 'handleFocusOut($event)',

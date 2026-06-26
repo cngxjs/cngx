@@ -84,21 +84,49 @@ describe('CngxButtonToggleGroup + CngxButtonToggle (single mode)', () => {
     expect(host.v()).toBe('list');
   });
 
-  it('arrow keydown raises pendingArrowSelect; focused leaf consumes it (W3C APG auto-select)', () => {
-    const { fixture, host, group, groupEl, toggles } = setup();
+  it('a navigation keydown selects the newly-focused leaf through the roving hook (W3C APG auto-select)', () => {
+    const { fixture, host, groupEl, toggles } = setup();
     groupEl.dispatchEvent(
       new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true, cancelable: true }),
     );
-    expect(group.consumePendingArrowSelect('list')).toBe(true);
     fixture.detectChanges();
     expect(host.v()).toBe('list');
     expect(toggles[1].el.getAttribute('aria-checked')).toBe('true');
   });
 
-  it('Tab-into-group does NOT auto-select (no preceding arrow keydown)', () => {
+  it('Tab-into-group does NOT auto-select (no preceding navigation key)', () => {
     const { group, host } = setup();
     expect(group.consumePendingArrowSelect('grid')).toBe(false);
     expect(host.v()).toBeUndefined();
+  });
+
+  it('first ArrowRight from a freshly-focused group selects leaf N for every press (#135)', () => {
+    const { fixture, host, groupEl, toggles } = setup();
+    // Real chain (no manual consume): roving moves focus and raises its
+    // navigation hook BEFORE the leaf (focus) handler runs, so the first press
+    // is no longer dropped. Needs a connected element for .focus() to fire.
+    document.body.appendChild(fixture.nativeElement);
+    try {
+      toggles[0].el.focus();
+      expect(host.v()).toBeUndefined();
+
+      const arrowRight = () =>
+        groupEl.dispatchEvent(
+          new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true, cancelable: true }),
+        );
+
+      arrowRight();
+      fixture.detectChanges();
+      expect(host.v()).toBe('list');
+      expect(toggles[1].el.getAttribute('aria-checked')).toBe('true');
+
+      arrowRight();
+      fixture.detectChanges();
+      expect(host.v()).toBe('table');
+      expect(toggles[2].el.getAttribute('aria-checked')).toBe('true');
+    } finally {
+      fixture.nativeElement.remove();
+    }
   });
 
   it('group disabled cascades to toggleDisabled and blocks click + ARIA', () => {

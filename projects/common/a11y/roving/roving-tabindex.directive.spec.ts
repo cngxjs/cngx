@@ -138,6 +138,29 @@ describe('CngxRovingTabindex', () => {
     fixture.detectChanges();
     expect(tabindex(buttons[0])).toBe('0');
   });
+
+  describe('consumeNavigationKey() (#135)', () => {
+    it('reads true after a navigation key moved focus, then resets to false', () => {
+      const { container, dir } = setup();
+      container.triggerEventHandler('keydown', new KeyboardEvent('keydown', { key: 'ArrowRight' }));
+      expect(dir.consumeNavigationKey()).toBe(true);
+      expect(dir.consumeNavigationKey()).toBe(false);
+    });
+
+    it('stays false when no navigation key has fired', () => {
+      const { dir } = setup();
+      expect(dir.consumeNavigationKey()).toBe(false);
+    });
+
+    it('stays false when a navigation key did not move the active index', () => {
+      // ArrowLeft at index 0 with loop=false: nextIndex === current, no focus move.
+      const { container, dir, fixture } = setup();
+      fixture.componentInstance.loop.set(false);
+      fixture.detectChanges();
+      container.triggerEventHandler('keydown', new KeyboardEvent('keydown', { key: 'ArrowLeft' }));
+      expect(dir.consumeNavigationKey()).toBe(false);
+    });
+  });
 });
 
 @Component({

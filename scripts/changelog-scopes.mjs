@@ -30,6 +30,7 @@ export const LIBRARY_SCOPES = [
   'forms/field',
   'forms/input',
   'forms/select',
+  'forms/filter-builder',
   'data-display',
   'data-display/treetable',
   'ui',

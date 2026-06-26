@@ -6,7 +6,7 @@ import { CngxFormField } from '@cngx/forms/field';
 import { createMockField, type MockFieldRef } from '@cngx/forms/field/testing';
 import type { CngxFieldAccessor, CngxFieldRef } from '@cngx/forms/field';
 
-import { createFieldSync, type FieldSyncOptions } from './field-sync';
+import { CNGX_SELECT_DISABLE_FIELD_SYNC, createFieldSync, type FieldSyncOptions } from './field-sync';
 import { sameArrayContents } from './compare';
 import type { CngxSelectCompareFn } from './select-core';
 
@@ -88,6 +88,24 @@ class ArrayHost {
   readonly ref: MockFieldRef<string[]> = this._mock.ref;
 }
 
+// ── Host that disables value-sync for its subtree (#98) ────────────────
+
+@Component({
+  selector: 'disabled-host',
+  template: `
+    <cngx-form-field [field]="field">
+      <scalar-probe />
+    </cngx-form-field>
+  `,
+  imports: [CngxFormField, ScalarProbe],
+  providers: [{ provide: CNGX_SELECT_DISABLE_FIELD_SYNC, useValue: true }],
+})
+class DisabledHost {
+  readonly _mock = createMockField<string>({ name: 'color', value: 'red' });
+  readonly field: CngxFieldAccessor<string> = this._mock.accessor;
+  readonly ref: MockFieldRef<string> = this._mock.ref;
+}
+
 // ── Tests ──────────────────────────────────────────────────────────────
 
 describe('createFieldSync', () => {
@@ -100,6 +118,31 @@ describe('createFieldSync', () => {
       // Any mutations still work — the factory simply didn't install effects.
       fixture.componentInstance.value.set('local-only');
       expect(fixture.componentInstance.value()).toBe('local-only');
+    });
+  });
+
+  describe('CNGX_SELECT_DISABLE_FIELD_SYNC (#98)', () => {
+    it('suppresses both directions even with a presenter present', () => {
+      TestBed.configureTestingModule({ imports: [DisabledHost] });
+      const fixture = TestBed.createComponent(DisabledHost);
+      flush(fixture);
+      const probe = fixture.debugElement.query(
+        (de) => de.componentInstance instanceof ScalarProbe,
+      ).componentInstance as ScalarProbe<string>;
+      const ref = fixture.componentInstance.ref;
+
+      // Field → component: the field's 'red' is NOT written into the probe.
+      expect(probe.value()).toBeUndefined();
+
+      // External field mutation does not flow in.
+      ref.value.set('green');
+      flush(fixture);
+      expect(probe.value()).toBeUndefined();
+
+      // Component → field: a local write does not flow back to the field.
+      probe.value.set('blue');
+      flush(fixture);
+      expect(ref.value()).toBe('green');
     });
   });
 
