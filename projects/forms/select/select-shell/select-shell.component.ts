@@ -67,7 +67,7 @@ import { type CngxSelectOptionDef, type CngxSelectOptionsInput } from '../shared
 import { CNGX_PROJECTED_OPTION_MODEL_FACTORY } from '../shared/projected-option-model';
 import { CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY } from '../shared/panel-lifecycle-emitter';
 import { CNGX_SELECT_PANEL_HOST, CNGX_SELECT_PANEL_VIEW_HOST } from '../shared/panel-host';
-import { CngxSelectPanelShell } from '../shared/panel-shell/panel-shell.component';
+import { CngxSelectPanelShell } from '../shared/internal/panel-shell/panel-shell.component';
 import {
   CNGX_SELECT_SHELL_SEARCH_HOST,
   type CngxSelectShellSearchHost,

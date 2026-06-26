@@ -9,15 +9,15 @@ import {
 import { TestBed } from '@angular/core/testing';
 import { type AsyncView } from '@cngx/common/data';
 import { describe, expect, it, vi } from 'vitest';
-import type { CngxSelectCommitErrorDisplay } from '../commit-action.types';
-import type { CngxSelectLoadingVariant, CngxSelectRefreshingVariant } from '../config';
+import type { CngxSelectCommitErrorDisplay } from '../../commit-action.types';
+import type { CngxSelectLoadingVariant, CngxSelectRefreshingVariant } from '../../config';
 import {
   CNGX_SELECT_PANEL_HOST,
   CNGX_SELECT_PANEL_VIEW_HOST,
   type CngxSelectActionCallbacks,
   type CngxSelectPanelHost,
-} from '../panel-host';
-import { CngxSelectAction } from '../template-slots';
+} from '../../panel-host';
+import { CngxSelectAction } from '../../template-slots';
 import { CngxSelectPanelShell } from './panel-shell.component';
 
 /**

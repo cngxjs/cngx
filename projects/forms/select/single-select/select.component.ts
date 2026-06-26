@@ -21,7 +21,7 @@ import { CNGX_STATEFUL, type CngxAsyncState, type AsyncStatus } from '@cngx/core
 import { CngxClickOutside, CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger, type PopoverPlacement } from '@cngx/common/popover';
 
-import { CngxSelectPanel } from '../shared/panel/panel.component';
+import { CngxSelectPanel } from '../shared/internal/panel/panel.component';
 
 import {
   CNGX_FORM_FIELD_CONTROL,

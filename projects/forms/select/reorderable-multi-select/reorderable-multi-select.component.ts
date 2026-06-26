@@ -32,7 +32,7 @@ import {
 } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger, type PopoverPlacement } from '@cngx/common/popover';
 
-import { CngxSelectPanel } from '../shared/panel/panel.component';
+import { CngxSelectPanel } from '../shared/internal/panel/panel.component';
 
 import {
   CNGX_FORM_FIELD_CONTROL,

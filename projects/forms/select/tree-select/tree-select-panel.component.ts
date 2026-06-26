@@ -14,7 +14,7 @@ import { CngxHierarchicalNav, createTreeAdItems } from '@cngx/common/interactive
 import { CngxCheckboxIndicator } from '@cngx/common/display';
 import type { FlatTreeNode } from '@cngx/utils';
 
-import { CngxSelectPanelShell } from '../shared/panel-shell/panel-shell.component';
+import { CngxSelectPanelShell } from '../shared/internal/panel-shell/panel-shell.component';
 import { CNGX_SELECT_PANEL_VIEW_HOST, type CngxSelectPanelViewHost } from '../shared/panel-host';
 import {
   CNGX_TREE_SELECT_PANEL_HOST,

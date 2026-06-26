@@ -13,13 +13,13 @@ import {
   CNGX_SELECT_PANEL_VIEW_HOST,
   type CngxSelectActionCallbacks,
   type CngxSelectPanelViewHost,
-} from '../panel-host';
+} from '../../panel-host';
 import type {
   CngxSelectActionContext,
   CngxSelectEmptyContext,
   CngxSelectLoadingContext,
   CngxSelectRefreshingContext,
-} from '../template-slots';
+} from '../../template-slots';
 
 /** `*cngxSelectAction` position. `'none'` suppresses. @internal */
 export type CngxSelectPanelActionPosition = 'top' | 'bottom' | 'both' | 'none';
