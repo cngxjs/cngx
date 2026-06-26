@@ -8,7 +8,7 @@ import {
   withAriaLabels,
   withPanelWidth,
 } from './config';
-import { resolveSelectConfig } from './resolve-config';
+import { resolveSelectConfig } from './internal/resolve-config';
 import type { CngxMultiSelectChipContext } from './template-slots';
 import type { CngxSelectOptionDef } from './option.model';
 

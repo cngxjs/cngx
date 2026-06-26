@@ -1,7 +1,7 @@
 import { inject } from '@angular/core';
 
 import { CngxSelectAnnouncer } from './announcer';
-import { resolveSelectConfig } from './resolve-config';
+import { resolveSelectConfig } from './internal/resolve-config';
 
 /**
  * Effective select config for the current injector, merged with library

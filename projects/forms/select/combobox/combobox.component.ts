@@ -30,7 +30,7 @@ import {
 } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger, type PopoverPlacement } from '@cngx/common/popover';
 
-import { CngxSelectPanel } from '../shared/panel/panel.component';
+import { CngxSelectPanel } from '../shared/internal/panel/panel.component';
 
 import {
   CNGX_FORM_FIELD_CONTROL,
@@ -44,7 +44,7 @@ import {
   type CngxChipRemovalHandler,
 } from '../shared/chip-removal-handler';
 import { createArrayCommitHandler, type ArrayCommitHandler } from '../shared/array-commit-handler';
-import { sameArrayContents } from '../shared/compare';
+import { sameArrayContents } from '../shared/internal/compare';
 import { CNGX_ACTION_HOST_BRIDGE_FACTORY } from '../shared/action-host-bridge';
 import { createFieldSync } from '../shared/field-sync';
 import { CNGX_LOCAL_ITEMS_BUFFER_FACTORY } from '../shared/local-items-buffer';
@@ -67,9 +67,9 @@ import {
   type CngxSelectOptionsInput,
 } from '../shared/option.model';
 import { CNGX_DISMISS_HANDLER_FACTORY } from '../shared/dismiss-handler';
-import { resolveSelectConfig } from '../shared/resolve-config';
-import { handlePageJumpKey } from '../shared/page-jump-handler';
-import { setupVirtualization } from '../shared/setup-virtualization';
+import { resolveSelectConfig } from '../shared/internal/resolve-config';
+import { handlePageJumpKey } from '../shared/internal/page-jump-handler';
+import { setupVirtualization } from '../shared/internal/setup-virtualization';
 import { CNGX_SEARCH_EFFECTS_FACTORY } from '../shared/search-effects';
 import { CNGX_TEMPLATE_REGISTRY_FACTORY } from '../shared/template-registry';
 import { CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY } from '../shared/panel-lifecycle-emitter';
@@ -78,7 +78,7 @@ import {
   cngxSelectDefaultCompare,
   createSelectCore,
   type CngxSelectCompareFn,
-} from '../shared/select-core';
+} from '../shared/internal/select-core';
 import {
   CngxComboboxChip,
   type CngxComboboxChipContext,

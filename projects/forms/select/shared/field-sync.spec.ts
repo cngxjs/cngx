@@ -7,8 +7,8 @@ import { createMockField, type MockFieldRef } from '@cngx/forms/field/testing';
 import type { CngxFieldAccessor, CngxFieldRef } from '@cngx/forms/field';
 
 import { CNGX_SELECT_DISABLE_FIELD_SYNC, createFieldSync, type FieldSyncOptions } from './field-sync';
-import { sameArrayContents } from './compare';
-import type { CngxSelectCompareFn } from './select-core';
+import { sameArrayContents } from './internal/compare';
+import type { CngxSelectCompareFn } from './internal/select-core';
 
 function flush(fixture: { detectChanges: () => void }): void {
   TestBed.flushEffects();

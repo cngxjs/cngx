@@ -1,7 +1,7 @@
 import { InjectionToken, signal, type Signal } from '@angular/core';
 
 import type { CngxSelectOptionDef } from './option.model';
-import type { CngxSelectCompareFn } from './select-core';
+import type { CngxSelectCompareFn } from './internal/select-core';
 
 /**
  * Append-only buffer for locally-patched options. `mergeLocalItems`

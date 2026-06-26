@@ -1,7 +1,7 @@
 import { InjectionToken } from '@angular/core';
 
 import { isOptionDisabled, type CngxSelectOptionDef } from './option.model';
-import type { CngxSelectCompareFn } from './select-core';
+import type { CngxSelectCompareFn } from './internal/select-core';
 import { resolvePageJumpTarget, type TypeaheadController } from './typeahead-controller';
 
 /**

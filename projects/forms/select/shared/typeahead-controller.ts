@@ -1,7 +1,7 @@
 import { signal, type Signal } from '@angular/core';
 
 import type { CngxSelectOptionDef } from './option.model';
-import type { CngxSelectCompareFn } from './select-core';
+import type { CngxSelectCompareFn } from './internal/select-core';
 
 /**
  * Configuration for {@link createTypeaheadController}.

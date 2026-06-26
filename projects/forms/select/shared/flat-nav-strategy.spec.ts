@@ -8,7 +8,7 @@ import {
   type CngxFlatNavStrategy,
 } from './flat-nav-strategy';
 import type { CngxSelectOptionDef } from './option.model';
-import { cngxSelectDefaultCompare } from './select-core';
+import { cngxSelectDefaultCompare } from './internal/select-core';
 import {
   createTypeaheadController,
   type TypeaheadController,

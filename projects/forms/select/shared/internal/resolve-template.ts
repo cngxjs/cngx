@@ -5,7 +5,7 @@ import {
   type TemplateRef,
 } from '@angular/core';
 
-import { CNGX_SELECT_CONFIG, type CngxSelectConfig } from './config';
+import { CNGX_SELECT_CONFIG, type CngxSelectConfig } from '../config';
 
 /**
  * Directive shape for {@link injectResolvedTemplate}. Every `*cngxSelect*`

@@ -5,7 +5,7 @@ import type { CngxPopover } from '@cngx/common/popover';
 
 import type { CngxSelectCommitAction } from './commit-action.types';
 import type { CngxSelectOptionDef } from './option.model';
-import type { CngxSelectCore } from './select-core';
+import type { CngxSelectCore } from './internal/select-core';
 
 /**
  * Dependencies and callbacks for {@link createADActivationDispatcher}.

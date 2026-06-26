@@ -67,12 +67,12 @@ import { type CngxSelectOptionDef, type CngxSelectOptionsInput } from '../shared
 import { CNGX_PROJECTED_OPTION_MODEL_FACTORY } from '../shared/projected-option-model';
 import { CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY } from '../shared/panel-lifecycle-emitter';
 import { CNGX_SELECT_PANEL_HOST, CNGX_SELECT_PANEL_VIEW_HOST } from '../shared/panel-host';
-import { CngxSelectPanelShell } from '../shared/panel-shell/panel-shell.component';
+import { CngxSelectPanelShell } from '../shared/internal/panel-shell/panel-shell.component';
 import {
   CNGX_SELECT_SHELL_SEARCH_HOST,
   type CngxSelectShellSearchHost,
 } from '../declarative/select-search-host';
-import { resolveSelectConfig } from '../shared/resolve-config';
+import { resolveSelectConfig } from '../shared/internal/resolve-config';
 import {
   CNGX_SCALAR_COMMIT_HANDLER_FACTORY,
   type ScalarCommitHandler,
@@ -82,8 +82,8 @@ import {
   cngxSelectDefaultCompare,
   createSelectCore,
   type CngxSelectCompareFn,
-} from '../shared/select-core';
-import { setupVirtualization } from '../shared/setup-virtualization';
+} from '../shared/internal/select-core';
+import { setupVirtualization } from '../shared/internal/setup-virtualization';
 import { createTypeaheadController } from '../shared/typeahead-controller';
 import { CNGX_TEMPLATE_REGISTRY_FACTORY } from '../shared/template-registry';
 import {

@@ -4,7 +4,7 @@ import {
   CNGX_SELECT_CONFIG,
   CNGX_SELECT_DEFAULTS,
   type CngxSelectConfig,
-} from './config';
+} from '../config';
 
 /**
  * Effective {@link CngxSelectConfig} for the current injector, merged

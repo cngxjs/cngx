@@ -32,7 +32,7 @@ import {
 } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger, type PopoverPlacement } from '@cngx/common/popover';
 
-import { CngxSelectPanel } from '../shared/panel/panel.component';
+import { CngxSelectPanel } from '../shared/internal/panel/panel.component';
 
 import {
   CNGX_FORM_FIELD_CONTROL,
@@ -46,13 +46,13 @@ import {
   CNGX_CHIP_REMOVAL_HANDLER_FACTORY,
   type CngxChipRemovalHandler,
 } from '../shared/chip-removal-handler';
-import { sameArrayContents } from '../shared/compare';
+import { sameArrayContents } from '../shared/internal/compare';
 import { CNGX_ACTION_HOST_BRIDGE_FACTORY } from '../shared/action-host-bridge';
 import { createFieldSync } from '../shared/field-sync';
 import { CNGX_LOCAL_ITEMS_BUFFER_FACTORY } from '../shared/local-items-buffer';
 import { createTypeaheadController } from '../shared/typeahead-controller';
 import { CNGX_FLAT_NAV_STRATEGY } from '../shared/flat-nav-strategy';
-import { CNGX_SELECT_GLYPHS } from '../shared/glyphs';
+import { CNGX_SELECT_GLYPHS } from '../shared/internal/glyphs';
 import { CNGX_SELECT_PANEL_HOST, CNGX_SELECT_PANEL_VIEW_HOST } from '../shared/panel-host';
 import type {
   CngxSelectCommitAction,
@@ -70,8 +70,8 @@ import { type CngxSelectOptionDef, type CngxSelectOptionsInput } from '../shared
 import { CNGX_REORDER_COMMIT_HANDLER_FACTORY } from '../shared/reorder-commit-handler';
 import { resolveReorderableSelectConfig } from '../shared/reorderable-select-config';
 import { CNGX_DISMISS_HANDLER_FACTORY } from '../shared/dismiss-handler';
-import { resolveSelectConfig } from '../shared/resolve-config';
-import { setupVirtualization } from '../shared/setup-virtualization';
+import { resolveSelectConfig } from '../shared/internal/resolve-config';
+import { setupVirtualization } from '../shared/internal/setup-virtualization';
 import { CNGX_TEMPLATE_REGISTRY_FACTORY } from '../shared/template-registry';
 import { CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY } from '../shared/panel-lifecycle-emitter';
 import { CNGX_TRIGGER_FOCUS_FACTORY } from '../shared/trigger-focus';
@@ -79,7 +79,7 @@ import {
   cngxSelectDefaultCompare,
   createSelectCore,
   type CngxSelectCompareFn,
-} from '../shared/select-core';
+} from '../shared/internal/select-core';
 import {
   CngxMultiSelectChip,
   CngxMultiSelectChipHandle,

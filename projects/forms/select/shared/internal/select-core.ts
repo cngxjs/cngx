@@ -17,17 +17,17 @@ import { resolveAsyncView, type AsyncView } from '@cngx/common/data';
 
 import { CngxFormFieldPresenter, type CngxFormFieldControl } from '@cngx/forms/field';
 
-import { CngxSelectAnnouncer } from './announcer';
+import { CngxSelectAnnouncer } from '../announcer';
 import {
   CNGX_SELECT_COMMIT_CONTROLLER_FACTORY,
   type CngxCommitController,
-} from './commit-controller.token';
-import type { CngxSelectCommitAction, CngxSelectCommitErrorDisplay } from './commit-action.types';
+} from '../commit-controller.token';
+import type { CngxSelectCommitAction, CngxSelectCommitErrorDisplay } from '../commit-action.types';
 import {
   type CngxSelectAnnouncerConfig,
   type CngxSelectAriaLabels,
   type CngxSelectFallbackLabels,
-} from './config';
+} from '../config';
 import {
   flattenSelectOptions,
   isCngxSelectOptionGroupDef,
@@ -35,9 +35,9 @@ import {
   type CngxSelectOptionDef,
   type CngxSelectOptionGroupDef,
   type CngxSelectOptionsInput,
-} from './option.model';
+} from '../option.model';
 import { resolveSelectConfig } from './resolve-config';
-import type { CngxSelectCommitErrorContext, CngxSelectErrorContext } from './template-slots';
+import type { CngxSelectCommitErrorContext, CngxSelectErrorContext } from '../template-slots';
 
 /**
  * Value-to-option equality. Default `Object.is`; override via `[compareWith]`.

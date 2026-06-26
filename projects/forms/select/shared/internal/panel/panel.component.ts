@@ -12,14 +12,14 @@ import { CngxCheckboxIndicator, CngxRadioIndicator } from '@cngx/common/display'
 import { CngxOption } from '@cngx/common/interactive';
 
 import { CngxSelectPanelShell } from '../panel-shell/panel-shell.component';
-import { CNGX_SELECT_PANEL_HOST, type CngxSelectPanelHost } from '../panel-host';
-import type { CngxSelectOptionDef, CngxSelectOptionGroupDef } from '../option.model';
-import type { CngxSelectCheckContext } from '../template-slots';
+import { CNGX_SELECT_PANEL_HOST, type CngxSelectPanelHost } from '../../panel-host';
+import type { CngxSelectOptionDef, CngxSelectOptionGroupDef } from '../../option.model';
+import type { CngxSelectCheckContext } from '../../template-slots';
 import {
   CNGX_PANEL_RENDERER_FACTORY,
   type PanelRenderer,
-} from '../panel-renderer';
-import { isCngxSelectOptionGroupDef } from '../option.model';
+} from '../../panel-renderer';
+import { isCngxSelectOptionGroupDef } from '../../option.model';
 
 /**
  * Panel body for the flat (non-tree) select family. Renders the
@@ -51,7 +51,7 @@ import { isCngxSelectOptionGroupDef } from '../option.model';
     class: 'cngx-select-panel-host',
   },
   templateUrl: './panel.component.html',
-  styleUrls: ['../select-base.css', './panel.component.css'],
+  styleUrls: ['../../select-base.css', './panel.component.css'],
   encapsulation: ViewEncapsulation.None,
 })
 export class CngxSelectPanel<T = unknown> {

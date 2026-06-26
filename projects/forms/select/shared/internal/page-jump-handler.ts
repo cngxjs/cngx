@@ -1,8 +1,8 @@
 import type { CngxListbox } from '@cngx/common/interactive';
 import type { CngxPopover } from '@cngx/common/popover';
 
-import { isOptionDisabled } from './option.model';
-import { resolvePageJumpTarget } from './typeahead-controller';
+import { isOptionDisabled } from '../option.model';
+import { resolvePageJumpTarget } from '../typeahead-controller';
 
 /**
  * PageUp/PageDown handler for flat-panel select variants. Opens the
