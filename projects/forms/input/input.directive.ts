@@ -16,7 +16,7 @@ import {
  * Works standalone (without `cngx-form-field`) as a no-op - no crash.
  *
  * ```html
- * <input cngxInput placeholder="max@example.com" />
+ * <input cngxInput />
  * ```
  *
  * @category forms/input

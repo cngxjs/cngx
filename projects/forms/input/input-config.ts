@@ -93,18 +93,20 @@ const DEFAULT_INPUT_CONFIG: InputConfig = {};
  * @category forms/input
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/input/input-config.ts
  * @since 0.1.0
+ * @relatedTo provideInputConfig, withInputAriaLabels, withNumericDefaults, withMaskPlaceholder, withMaskGuide, withCustomTokens, withPhonePatterns, withIbanPatterns, withZipPatterns, withDateFormats, withCopyResetDelay, withFileMaxSize
  */
 export const CNGX_INPUT_CONFIG = new InjectionToken<InputConfig>('CNGX_INPUT_CONFIG', {
   providedIn: 'root',
   factory: () => DEFAULT_INPUT_CONFIG,
 });
 
+export type InputConfigFeature = (config: InputConfig) => InputConfig;
+
 /**
  * A feature function that contributes to the input config.
  *
  * @category forms/input
  */
-export type InputConfigFeature = (config: InputConfig) => InputConfig;
 
 /**
  * Provides global configuration for `@cngx/forms/input` directives.
@@ -123,6 +125,24 @@ export type InputConfigFeature = (config: InputConfig) => InputConfig;
  * };
  * ```
  *
+ * Returns a plain `Provider`, so it works app-wide in
+ * `ApplicationConfig.providers` or scoped to a subtree via a component's
+ * `viewProviders`. The nearest `provideInputConfig` wins for a subtree by
+ * token resolution - it replaces an ancestor config, it does not deep-merge.
+ *
+ * Compose with the feature functions:
+ * @see {@link withPhonePatterns}
+ * @see {@link withIbanPatterns}
+ * @see {@link withZipPatterns}
+ * @see {@link withDateFormats}
+ * @see {@link withMaskPlaceholder}
+ * @see {@link withMaskGuide}
+ * @see {@link withCustomTokens}
+ * @see {@link withNumericDefaults}
+ * @see {@link withCopyResetDelay}
+ * @see {@link withFileMaxSize}
+ * @see {@link withInputAriaLabels}
+ *
  * @category forms/input
  */
 export function provideInputConfig(...features: InputConfigFeature[]): Provider {
@@ -134,8 +154,23 @@ export function provideInputConfig(...features: InputConfigFeature[]): Provider 
 }
 
 /**
- * Add or override phone mask patterns by region code.
+ * Adds or overrides phone mask patterns keyed by region code. \
+ * Reach for it when a `cngxInputMask="phone"` / `"phone:<REGION>"` needs a
+ * region the library does not ship, or to override one it does.
  *
+ * - Built-in regions: US, DE, CH, AT, FR, UK, IT, ES, JP, BR.
+ * - Consumer entries merge per key onto the built-ins and win on collision.
+ * - Resolved as `{ ...PHONE_PATTERNS, ...config.phonePatterns }[region]`,
+ *   falling back to US when the region is absent.
+ * - Region comes from `phone:<REGION>` or `LOCALE_ID`.
+ * - Pattern tokens: `0` = required digit, literals pass through.
+ *
+ * ```typescript
+ * provideInputConfig(withPhonePatterns({ LI: '+000 000 00 00' }));
+ * // <input cngxInputMask="phone:LI" />
+ * ```
+ *
+ * @see {@link provideInputConfig}
  * @category forms/input
  */
 export function withPhonePatterns(patterns: Record<string, string>): InputConfigFeature {
@@ -146,8 +181,22 @@ export function withPhonePatterns(patterns: Record<string, string>): InputConfig
 }
 
 /**
- * Add or override IBAN mask patterns by country code.
+ * Adds or overrides IBAN mask patterns keyed by country code.
  *
+ * - Built-in countries: CH, DE, AT, FR, IT, ES, NL, GB.
+ * - Patterns encode length and 4-char grouping with tokens (`A` = required
+ *   letter, `0` = required digit).
+ * - Read as `{ ...IBAN_PATTERNS, ...config.ibanPatterns }[region]`; an unknown
+ *   region falls back to `AA00 0000 0000 0000 0000 00`.
+ * - Consumer entries merge per key and win on collision.
+ * - Region comes from `iban:<REGION>` or `LOCALE_ID`.
+ *
+ * ```typescript
+ * provideInputConfig(withIbanPatterns({ BE: 'AA00 0000 0000 0000' }));
+ * // <input cngxInputMask="iban:BE" />
+ * ```
+ *
+ * @see {@link provideInputConfig}
  * @category forms/input
  */
 export function withIbanPatterns(patterns: Record<string, string>): InputConfigFeature {
@@ -158,8 +207,22 @@ export function withIbanPatterns(patterns: Record<string, string>): InputConfigF
 }
 
 /**
- * Add or override ZIP mask patterns by country code.
+ * Adds or overrides postal-code mask patterns keyed by country code.
  *
+ * - Built-in countries: US, DE, CH, AT, FR, UK, JP.
+ * - A `|` in a pattern declares alternates picked by input length (the UK
+ *   entry: `A0A 0AA|AA0 0AA|...`).
+ * - Read as `{ ...ZIP_PATTERNS, ...config.zipPatterns }[region]`; an unknown
+ *   region falls back to `00000`.
+ * - Consumer entries merge per key and win on collision.
+ * - Region comes from `zip:<REGION>` or `LOCALE_ID`.
+ *
+ * ```typescript
+ * provideInputConfig(withZipPatterns({ NL: '0000 AA' }));
+ * // <input cngxInputMask="zip:NL" />
+ * ```
+ *
+ * @see {@link provideInputConfig}
  * @category forms/input
  */
 export function withZipPatterns(patterns: Record<string, string>): InputConfigFeature {
@@ -170,8 +233,24 @@ export function withZipPatterns(patterns: Record<string, string>): InputConfigFe
 }
 
 /**
- * Add or override date format patterns by language code.
+ * Adds or overrides date mask patterns keyed by language code (the `de` in
+ * `de-CH`).
  *
+ * - Built-ins cover the DD/MM/YYYY, MM/DD/YYYY, and YYYY/MM/DD orders per
+ *   language.
+ * - Read by the `date`, `datetime`, and `time` presets as
+ *   `{ ...DATE_FORMATS, ...config.dateFormats }[lang]`, falling back to `en`;
+ *   `lang` is the prefix of `LOCALE_ID`.
+ * - Tokens: `0` = required digit, separators are literals.
+ * - Does not feed `date:short` - that uses a separate built-in table.
+ * - Consumer entries merge per key and win on collision.
+ *
+ * ```typescript
+ * provideInputConfig(withDateFormats({ sv: '0000-00-00' }));
+ * // LOCALE_ID 'sv-SE' + <input cngxInputMask="date" />
+ * ```
+ *
+ * @see {@link provideInputConfig}
  * @category forms/input
  */
 export function withDateFormats(formats: Record<string, string>): InputConfigFeature {
@@ -182,8 +261,20 @@ export function withDateFormats(formats: Record<string, string>): InputConfigFea
 }
 
 /**
- * Set the default mask placeholder character.
+ * Sets the global placeholder character `CngxInputMask` shows for unfilled
+ * slots in guide mode. Library default is `'_'`.
  *
+ * - Resolution order: `[placeholder]` input, then `config.maskPlaceholder`,
+ *   then `'_'`.
+ * - Sets the app-wide baseline for every masked input that does not bind its
+ *   own `[placeholder]`.
+ * - Also fills the `aria-placeholder` the mask exposes.
+ *
+ * ```typescript
+ * provideInputConfig(withMaskPlaceholder('·')); // middle dot
+ * ```
+ *
+ * @see {@link provideInputConfig}
  * @category forms/input
  */
 export function withMaskPlaceholder(char: string): InputConfigFeature {
@@ -191,8 +282,18 @@ export function withMaskPlaceholder(char: string): InputConfigFeature {
 }
 
 /**
- * Set the default mask guide mode.
+ * Sets the global guide mode for `CngxInputMask`. Library default is `true`.
  *
+ * - `true`: placeholder characters fill unfilled slots and the cursor snaps to
+ *   the next empty slot on focus.
+ * - `false`: a bare mask showing only typed characters and their literals.
+ * - Resolution order: `[guide]` input, then `config.maskGuide`, then `true`.
+ *
+ * ```typescript
+ * provideInputConfig(withMaskGuide(false));
+ * ```
+ *
+ * @see {@link provideInputConfig}
  * @category forms/input
  */
 export function withMaskGuide(guide: boolean): InputConfigFeature {
@@ -200,8 +301,23 @@ export function withMaskGuide(guide: boolean): InputConfigFeature {
 }
 
 /**
- * Register global custom mask tokens.
+ * Registers mask tokens globally, beyond the built-in `0` `9` `A` `a` `*`.
  *
+ * - Each token maps one mask character to a `pattern` regex, an `optional`
+ *   flag, and an optional per-char `transform`.
+ * - Use it when a pattern needs a character class the built-ins lack (hex
+ *   digit, restricted letter set) across the app rather than per input.
+ * - Merged as `{ ...config.customTokens, ...input.customTokens }`, so a
+ *   per-input `[customTokens]` entry overrides the global one of the same key.
+ *
+ * ```typescript
+ * provideInputConfig(withCustomTokens({
+ *   H: { pattern: /[0-9a-fA-F]/, transform: (c) => c.toUpperCase() },
+ * }));
+ * // <input cngxInputMask="#HHHHHH" />
+ * ```
+ *
+ * @see {@link provideInputConfig}
  * @category forms/input
  */
 export function withCustomTokens(tokens: MaskTokenMap): InputConfigFeature {
@@ -212,8 +328,20 @@ export function withCustomTokens(tokens: MaskTokenMap): InputConfigFeature {
 }
 
 /**
- * Set defaults for `CngxNumericInput`.
+ * Sets app-wide defaults for `CngxNumericInput`.
  *
+ * - `locale` overrides `LOCALE_ID` for numeric inputs only.
+ * - `decimals` and `step` set formatting (`step` default `1`).
+ * - Each key applies only when supplied; a partial override leaves the rest at
+ *   the directive's defaults.
+ * - Per-input bindings still win over these.
+ * - Maps to the `numericLocale` / `numericDecimals` / `numericStep` keys.
+ *
+ * ```typescript
+ * provideInputConfig(withNumericDefaults({ decimals: 2, locale: 'de-CH' }));
+ * ```
+ *
+ * @see {@link provideInputConfig}
  * @category forms/input
  */
 export function withNumericDefaults(defaults: {
@@ -230,8 +358,18 @@ export function withNumericDefaults(defaults: {
 }
 
 /**
- * Set the default `resetDelay` for `CngxCopyValue`.
+ * Sets the global delay in milliseconds before `CngxCopyValue` reverts its
+ * copied state - the window where the button reads as copied before snapping
+ * back to idle. Library default is `2000`.
  *
+ * - A per-input binding overrides it.
+ * - Maps to the `copyResetDelay` config key.
+ *
+ * ```typescript
+ * provideInputConfig(withCopyResetDelay(3000));
+ * ```
+ *
+ * @see {@link provideInputConfig}
  * @category forms/input
  */
 export function withCopyResetDelay(ms: number): InputConfigFeature {
@@ -239,8 +377,18 @@ export function withCopyResetDelay(ms: number): InputConfigFeature {
 }
 
 /**
- * Set the default `maxSize` for `CngxFileDrop`.
+ * Sets the global maximum accepted file size in bytes for `CngxFileDrop`.
  *
+ * - No library default; unset means the directive enforces no size cap.
+ * - Value is raw bytes, not KB/MB.
+ * - A per-input binding overrides it.
+ * - Maps to the `fileMaxSize` config key.
+ *
+ * ```typescript
+ * provideInputConfig(withFileMaxSize(5 * 1024 * 1024)); // 5 MiB
+ * ```
+ *
+ * @see {@link provideInputConfig}
  * @category forms/input
  */
 export function withFileMaxSize(bytes: number): InputConfigFeature {
@@ -248,11 +396,16 @@ export function withFileMaxSize(bytes: number): InputConfigFeature {
 }
 
 /**
- * Override built-in ARIA label strings for the input directives.
+ * Overrides the built-in ARIA label strings the input directives announce.
  *
- * Mirrors the select family's `withAriaLabels`; unset keys fall back to
- * {@link DEFAULT_INPUT_ARIA_LABELS}. Library defaults are English - German
- * (or any other locale) is consumer-supplied here.
+ * - Unset keys fall back to `DEFAULT_INPUT_ARIA_LABELS` per key, so a partial
+ *   override is safe.
+ * - Library defaults are English; German (or any locale) is consumer-supplied
+ *   here. Mirrors the select family's `withAriaLabels`.
+ * - `clear` -> `CngxInputClear` button label.
+ * - `copySuccess` / `copyError` -> `CngxCopyValue` live-region announcements.
+ * - `otpGroup` / `otpSlot(index, length)` / `otpComplete` -> `CngxOtpInput`
+ *   group, per-slot labels, and completion announcement.
  *
  * ```typescript
  * provideInputConfig(
@@ -260,6 +413,7 @@ export function withFileMaxSize(bytes: number): InputConfigFeature {
  * );
  * ```
  *
+ * @see {@link provideInputConfig}
  * @category forms/input
  */
 export function withInputAriaLabels(labels: Partial<InputAriaLabels>): InputConfigFeature {

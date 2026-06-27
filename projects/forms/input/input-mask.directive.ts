@@ -401,7 +401,7 @@ export type MaskTokenMap = Record<string, MaskTokenDef>;
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/input/input-mask.directive.ts
  * @since 0.1.0
- * @relatedTo CngxInput, CngxInputFormat, CngxNumericInput
+ * @relatedTo CngxInput, CngxInputFormat, CngxNumericInput, withMaskPlaceholder, withMaskGuide, withCustomTokens
  * <example-url>http://localhost:4200/#/forms/input/mask/custom-pattern</example-url>
  * <example-url>http://localhost:4200/#/forms/input/mask/custom-tokens-and-transform</example-url>
  * <example-url>http://localhost:4200/#/forms/input/mask/locale-presets</example-url>
