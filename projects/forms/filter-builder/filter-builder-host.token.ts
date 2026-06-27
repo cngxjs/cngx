@@ -13,9 +13,8 @@ import type { FilterMutationEvent } from './filter-builder-state';
  * Narrow contract the recursive context atoms ({@link import('./filter-builder-group.directive').CngxFilterGroup} and
  * {@link import('./filter-builder-expression.directive').CngxFilterExpression}) and the atomic-decompose eject path
  * need from the presenter. Decouples them from the concrete
- * `CngxFilterBuilderPresenter` class so the schematic can eject the
- * brain independently of the skin per `reference_atomic_decompose`
- * rule 4 (DI Abstraction).
+ * `CngxFilterBuilderPresenter` class so the decompose schematic can eject
+ * the brain independently of the skin (DI abstraction).
  *
  * @internal The token has no library default; the presenter directive
  * provides itself via `useExisting: CngxFilterBuilderPresenter`.
@@ -40,7 +39,7 @@ export interface CngxFilterBuilderHost<TValue = unknown> {
   /**
    * Resolve a node at `path` against the current `tree()`. Reads `tree()`
    * internally, so callers inside a reactive context (component template,
-   * `computed()`, `effect()`) auto-track tree mutations — no explicit
+   * `computed()`, `effect()`) auto-track tree mutations - no explicit
    * `tree()` read needed. The method shape is non-Signal so call-sites
    * read naturally as `host.getNodeAtPath(path)` rather than
    * `host.getNodeAtPath(path)()`.
@@ -49,7 +48,7 @@ export interface CngxFilterBuilderHost<TValue = unknown> {
 
   /**
    * Resolve a field definition by key against the current `fieldMap()`.
-   * Same reactive-auto-track contract as {@link getNodeAtPath} — reads
+   * Same reactive-auto-track contract as {@link getNodeAtPath} - reads
    * the underlying signal internally.
    */
   getFieldDef(fieldKey: string): FilterFieldDef<TValue> | undefined;

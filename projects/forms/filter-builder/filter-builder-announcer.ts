@@ -104,12 +104,28 @@ export function createFilterBuilderAnnouncer<TValue>(
 }
 
 /**
- * DI token for the announcer factory. Default resolves to `createFilterBuilderAnnouncer`.
+ * Factory that builds the live-region announcer for `<cngx-filter-builder>` -
+ * a `Signal<string>` the component binds into its `aria-live` region,
+ * re-derived from each `lastMutation` event through the
+ * `CngxFilterBuilderI18n.announcement` formatters.
+ *
+ * Default: `createFilterBuilderAnnouncer`. Swap it to localise messages, route
+ * them to telemetry, or stub them in tests, at root or component scope:
+ *
+ * ```ts
+ * providers: [
+ *   { provide: CNGX_FILTER_BUILDER_ANNOUNCER_FACTORY, useValue: myAnnouncer },
+ * ]
+ * ```
+ *
+ * For message text only, override `withFilterBuilderI18n({ announcement })` -
+ * that keeps the default derivation and swaps just the strings.
  *
  * @category forms/filter-builder/state
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder-announcer.ts
  * @since 0.1.0
+ * @relatedTo createFilterBuilderAnnouncer, CngxFilterBuilderAnnouncer, withFilterBuilderI18n, CngxFilterBuilderPresenter
  */
 export const CNGX_FILTER_BUILDER_ANNOUNCER_FACTORY =
   new InjectionToken<CngxFilterBuilderAnnouncerFactory>('CngxFilterBuilderAnnouncerFactory', {

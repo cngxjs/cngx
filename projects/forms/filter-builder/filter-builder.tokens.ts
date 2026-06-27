@@ -24,18 +24,27 @@ function buildDefaultEditors(): ReadonlyMap<string, CngxFilterEditor> {
 }
 
 /**
- * Dedicated DI token for the editor registry. The single override surface
- * - consumers swap one or more editors by providing
- * `{ provide: CNGX_FILTER_EDITORS, useValue: <map> }` at the
- * environment, route, or component level.
+ * Registry mapping each editor type to the component (or native sentinel)
+ * that renders an expression's value. The single override surface for value
+ * editors - swap one or more by providing a new map:
  *
- * Default factory builds a fresh map covering the four builtin entries.
- * `provideFilterBuilderConfig` does NOT participate in editor resolution;
- * the editor registry is intentionally orthogonal to the config cascade.
+ * ```ts
+ * providers: [
+ *   { provide: CNGX_FILTER_EDITORS, useValue: new Map([...builtins, ['color', MyColorEditor]]) },
+ * ]
+ * ```
+ *
+ * Provide at environment, route, or component level. The default factory
+ * builds a fresh map covering the four builtin entries (`string` / `number` /
+ * `date` / `boolean` -> native sentinels).
+ *
+ * Orthogonal to the config cascade: `provideFilterBuilderConfig` does NOT
+ * touch editor resolution - editors live on this token alone.
  *
  * @category forms/filter-builder/config
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder.tokens.ts
  * @since 0.1.0
+ * @relatedTo injectFilterEditors, CngxFilterEditorComponent, CNGX_FILTER_BUILDER_CONFIG
  */
 export const CNGX_FILTER_EDITORS = new InjectionToken<ReadonlyMap<string, CngxFilterEditor>>(
   'CngxFilterEditors',

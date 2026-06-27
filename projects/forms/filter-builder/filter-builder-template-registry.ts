@@ -124,11 +124,30 @@ export function createFilterBuilderTemplateRegistry(
 }
 
 /**
- * DI token for the template-registry factory. Default resolves to `createFilterBuilderTemplateRegistry`.
+ * Factory that resolves the slot-template registry for `<cngx-filter-builder>`.
+ * For each of the nine slots it runs the three-stage cascade and returns the
+ * resolved `TemplateRef` set the recursive body renders:
+ *
+ * - the consumer's `contentChild` slot template
+ * - else `CNGX_FILTER_BUILDER_CONFIG.templates.<key>`
+ * - else the built-in default
+ *
+ * Default: `createFilterBuilderTemplateRegistry`. Swap the whole resolution
+ * strategy by providing your own factory at root or component scope:
+ *
+ * ```ts
+ * providers: [
+ *   { provide: CNGX_FILTER_BUILDER_TEMPLATE_REGISTRY_FACTORY, useValue: myFactory },
+ * ]
+ * ```
+ *
+ * The `<cngx-filter-builder>` component is the canonical caller, through
+ * `injectFilterBuilderTemplateRegistry(queries)`.
  *
  * @category forms/filter-builder/slots
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder-template-registry.ts
  * @since 0.1.0
+ * @relatedTo CngxFilterBuilder, CNGX_FILTER_BUILDER_CONFIG, withTemplates, CngxFilterBuilderValueEditor
  */
 export const CNGX_FILTER_BUILDER_TEMPLATE_REGISTRY_FACTORY = new InjectionToken<CngxFilterBuilderTemplateRegistryFactory>(
   'CngxFilterBuilderTemplateRegistryFactory',

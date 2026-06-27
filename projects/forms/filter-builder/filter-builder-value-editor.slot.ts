@@ -21,11 +21,21 @@ export interface CngxFilterBuilderValueEditorContext<TValue> {
 }
 
 /**
- * Per-row value-editor slot. Closes the slot-cascade symmetry the audit
- * flagged on the value-editor surface (debt §13). When present, the
- * row prefers this template over the native / component-outlet branches;
- * the cascade falls back to `CONFIG.templates.valueEditor` and finally
- * to the default editor branches when neither is provided.
+ * Per-row value-editor slot - overrides just the value cell of an expression
+ * row; the field and operator pickers stay. Context: `value`, `fieldDef`,
+ * `setValue()`, `expression` (the full node, for editors that switch on the
+ * operator, e.g. a range editor on `'between'`).
+ *
+ * ```html
+ * <ng-template cngxFilterBuilderValueEditor let-value="value" let-setValue="setValue">
+ *   <my-date-input [value]="value" (valueChange)="setValue($event)" />
+ * </ng-template>
+ * ```
+ *
+ * For a whole-row override use `cngxFilterBuilderExpressionTemplate`; to swap
+ * the editor by field type instead, register on `CNGX_FILTER_EDITORS`. When
+ * present this template wins over `CONFIG.templates.valueEditor` and the default
+ * editor branches.
  *
  * @category forms/filter-builder/slots
  * @docsKind primary

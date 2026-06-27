@@ -13,11 +13,11 @@ const EMPTY_FILTERS: readonly FilterNode[] = Object.freeze([]) as readonly Filte
  * recursive template body. Injects the host through
  * `CNGX_FILTER_BUILDER_HOST` (not the concrete presenter class) so the
  * decompose schematic can eject the recursive body independently of the
- * brain per `reference_atomic_decompose` rule 4.
+ * brain.
  *
- * Every object/array signal carries an explicit `equal` fn per
- * `reference_signal_architecture` §1; the empty-filters fallback uses a
- * shared frozen array so null reads do not allocate.
+ * Every object/array signal carries an explicit `equal` fn; the
+ * empty-filters fallback uses a shared frozen array so null reads do not
+ * allocate.
  *
  * @category forms/filter-builder
  * @docsKind primary

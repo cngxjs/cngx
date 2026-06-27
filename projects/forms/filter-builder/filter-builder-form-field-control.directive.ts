@@ -37,7 +37,7 @@ import { CngxFilterBuilderPresenter } from './filter-builder-presenter.directive
   providers: [
     { provide: CNGX_FORM_FIELD_CONTROL, useExisting: CngxFilterBuilderPresenter },
     // The builder is the form-field's control; its descendant <cngx-select>s
-    // must not sync the FilterGroup object into their own scalar value (#98).
+    // must not sync the FilterGroup object into their own scalar value.
     { provide: CNGX_SELECT_DISABLE_FIELD_SYNC, useValue: true },
   ],
   host: {

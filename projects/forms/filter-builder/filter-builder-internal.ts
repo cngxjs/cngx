@@ -7,11 +7,11 @@
 /**
  * Reference-identity equality predicate. Used as the `equal` fn on object
  * and array `computed` signals whose producers already preserve identity
- * across re-evaluations — see `getNodeAtPath` / `appendAtPath` /
+ * across re-evaluations - see `getNodeAtPath` / `appendAtPath` /
  * `updateAtPath` / `removeAtPath` in `filter-builder.utils.ts`, which
  * return the same reference when no descendant changed.
  *
- * Explicit `equal` fn on every object/array computed is required by
- * `reference_signal_architecture` §1 to prevent downstream cascades.
+ * Explicit `equal` fn on every object/array computed prevents downstream
+ * cascades.
  */
 export const referenceEqual = <T>(a: T, b: T): boolean => a === b;

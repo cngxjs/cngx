@@ -9,12 +9,12 @@ import type {
 } from './filter-builder.types';
 
 /**
- * Slot-directive bundle for `<cngx-filter-builder>` (Phase 5). Each
- * directive is a `<ng-template>`-only marker; the component locates them
+ * Slot-directive bundle for `<cngx-filter-builder>`.
+ *
+ *  Each directive is a `<ng-template>`-only marker; the component locates them
  * via `contentChild` and falls through to
  * `CNGX_FILTER_BUILDER_CONFIG.templates.<key>` and finally to the default
- * rendering when neither is present (three-stage cascade,
- * `architecture-summary.md` slot system).
+ * rendering when neither is present (three-stage cascade).
  *
  * Each context interface is the snapshot value passed at render time -
  * not signals. The component re-stamps slot outlets on every relevant
@@ -118,7 +118,18 @@ export interface CngxFilterBuilderNegationToggleContext {
 }
 
 /**
- * Marker directive for the empty-state slot template.
+ * Empty-state slot. Replaces the "no filters yet" placeholder shown when the
+ * root group has no children. Context: `addFilter()`, `addGroup()`.
+ *
+ * ```html
+ * <cngx-filter-builder [fields]="fields" [(value)]="value">
+ *   <ng-template cngxFilterBuilderEmpty let-addFilter="addFilter">
+ *     <button type="button" (click)="addFilter()">Add your first filter</button>
+ *   </ng-template>
+ * </cngx-filter-builder>
+ * ```
+ *
+ * Wins over `CNGX_FILTER_BUILDER_CONFIG.templates.empty` and the built-in default.
  *
  * @category forms/filter-builder/slots
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder-slots.ts
@@ -142,7 +153,19 @@ export class CngxFilterBuilderEmpty {
 }
 
 /**
- * Marker directive for a full expression-row override template.
+ * Full expression-row override. Replaces the entire field / operator / value /
+ * remove row for every leaf expression. Context: `expression`, `fieldDef`,
+ * `availableOperators`, `value`, `setField()`, `setOperator()`, `setValue()`,
+ * `remove()`.
+ *
+ * ```html
+ * <ng-template cngxFilterBuilderExpressionTemplate let-e="expression" let-setValue="setValue">
+ *   <my-row [expr]="e" (valueChange)="setValue($event)" />
+ * </ng-template>
+ * ```
+ *
+ * To override only the value cell, use `cngxFilterBuilderValueEditor`. Wins over
+ * `CNGX_FILTER_BUILDER_CONFIG.templates.expressionTemplate` and the default row.
  *
  * @category forms/filter-builder/slots
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder-slots.ts
@@ -167,7 +190,18 @@ export class CngxFilterBuilderExpressionTemplate {
 }
 
 /**
- * Marker directive for a full group-shell override template.
+ * Full group-shell override. Replaces the wrapper around a group (logic toggle,
+ * negation, add / remove controls) while the builder still renders the nested
+ * rows inside. Context: `group`, `logic`, `isRoot`, `setLogic()`,
+ * `toggleNegated()`, `addFilter()`, `addGroup()`, `remove()`.
+ *
+ * ```html
+ * <ng-template cngxFilterBuilderGroupTemplate let-logic="logic" let-setLogic="setLogic">
+ *   <my-group-shell [logic]="logic" (logicChange)="setLogic($event)" />
+ * </ng-template>
+ * ```
+ *
+ * Wins over `CNGX_FILTER_BUILDER_CONFIG.templates.groupTemplate` and the default shell.
  *
  * @category forms/filter-builder/slots
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder-slots.ts
@@ -191,7 +225,16 @@ export class CngxFilterBuilderGroupTemplate {
 }
 
 /**
- * Marker directive for the add-filter button slot.
+ * Add-filter button slot. Replaces the default "add filter" control in every
+ * group header. Context: `add()`, `label`, `disabled`.
+ *
+ * ```html
+ * <ng-template cngxFilterBuilderAddFilterButton let-add="add" let-label="label">
+ *   <button type="button" (click)="add()">{{ label }}</button>
+ * </ng-template>
+ * ```
+ *
+ * Wins over `CNGX_FILTER_BUILDER_CONFIG.templates.addFilterButton` and the default button.
  *
  * @category forms/filter-builder/slots
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder-slots.ts
@@ -215,7 +258,17 @@ export class CngxFilterBuilderAddFilterButton {
 }
 
 /**
- * Marker directive for the add-group button slot.
+ * Add-group button slot. Replaces the default "add nested group" control in
+ * every group header. Context: `add()`, `label`, `disabled` (set at the max
+ * nesting depth).
+ *
+ * ```html
+ * <ng-template cngxFilterBuilderAddGroupButton let-add="add" let-disabled="disabled">
+ *   <button type="button" [disabled]="disabled" (click)="add()">Add group</button>
+ * </ng-template>
+ * ```
+ *
+ * Wins over `CNGX_FILTER_BUILDER_CONFIG.templates.addGroupButton` and the default button.
  *
  * @category forms/filter-builder/slots
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder-slots.ts
@@ -239,7 +292,16 @@ export class CngxFilterBuilderAddGroupButton {
 }
 
 /**
- * Marker directive for the remove-button slot.
+ * Remove-button slot, shared by expression rows and group headers. Replaces
+ * the default delete control. Context: `remove()`, `label`.
+ *
+ * ```html
+ * <ng-template cngxFilterBuilderRemoveButton let-remove="remove" let-label="label">
+ *   <button type="button" [attr.aria-label]="label" (click)="remove()">x</button>
+ * </ng-template>
+ * ```
+ *
+ * Wins over `CNGX_FILTER_BUILDER_CONFIG.templates.removeButton` and the default button.
  *
  * @category forms/filter-builder/slots
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder-slots.ts
@@ -263,7 +325,18 @@ export class CngxFilterBuilderRemoveButton {
 }
 
 /**
- * Marker directive for the logic-toggle (AND/OR/XOR) slot.
+ * Logic-toggle slot - the AND / OR / XOR picker on each group. Replaces the
+ * default toggle. Context: `logic`, `options` (the configured `logicOptions`),
+ * `setLogic()`.
+ *
+ * ```html
+ * <ng-template cngxFilterBuilderLogicToggle let-logic="logic" let-options="options" let-setLogic="setLogic">
+ *   <my-segmented [value]="logic" [options]="options" (valueChange)="setLogic($event)" />
+ * </ng-template>
+ * ```
+ *
+ * Restrict the choices with `withLogicOptions(...)`. Wins over
+ * `CNGX_FILTER_BUILDER_CONFIG.templates.logicToggle` and the default toggle.
  *
  * @category forms/filter-builder/slots
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder-slots.ts
@@ -287,7 +360,17 @@ export class CngxFilterBuilderLogicToggle {
 }
 
 /**
- * Marker directive for the negation-toggle slot. Only rendered when negation is enabled.
+ * Negation-toggle slot - the per-group NOT switch. Only rendered when negation
+ * is enabled via `withNegation(true)`. Replaces the default toggle. Context:
+ * `negated`, `toggle()`, `label`.
+ *
+ * ```html
+ * <ng-template cngxFilterBuilderNegationToggle let-negated="negated" let-toggle="toggle">
+ *   <button type="button" [class.active]="negated" (click)="toggle()">NOT</button>
+ * </ng-template>
+ * ```
+ *
+ * Wins over `CNGX_FILTER_BUILDER_CONFIG.templates.negationToggle` and the default toggle.
  *
  * @category forms/filter-builder/slots
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder-slots.ts
