@@ -21,11 +21,11 @@ import type { CngxFieldRef, CngxFormFieldControl } from './models';
  *
  * ```html
  * <cngx-form-field [field]="form.color">
- *   <label cngxLabel>Farbe</label>
- *   <div cngxListbox cngxListboxFieldBridge [label]="'Farbe'" tabindex="0">
- *     <div cngxOption value="red">Rot</div>
- *     <div cngxOption value="green">Grün</div>
- *     <div cngxOption value="blue">Blau</div>
+ *   <label cngxLabel>Color</label>
+ *   <div cngxListbox cngxListboxFieldBridge [label]="'Color'" tabindex="0">
+ *     <div cngxOption value="red">Red</div>
+ *     <div cngxOption value="green">Green</div>
+ *     <div cngxOption value="blue">Blue</div>
  *   </div>
  *   <cngx-field-errors />
  * </cngx-form-field>
@@ -42,7 +42,6 @@ import type { CngxFieldRef, CngxFormFieldControl } from './models';
  * @since 0.1.0
  * @relatedTo CngxBindField, CngxFormField, CngxListbox, adaptFormControl
  * @playground Single and multi via cngxListboxFieldBridge ./examples/listbox-bridge/listbox-bridge.component.ts
- * <example-url>http://localhost:4200/#/forms/field/listbox-forms/material-mat-select-via-cngxbindfield</example-url>
  * <example-url>http://localhost:4200/#/forms/field/listbox-forms/reactive-forms-adapted-via-adaptformcontrol</example-url>
  * <example-url>http://localhost:4200/#/forms/field/listbox-forms/signal-forms-multi-select-min-2</example-url>
  * <example-url>http://localhost:4200/#/forms/field/listbox-forms/signal-forms-single-select</example-url>

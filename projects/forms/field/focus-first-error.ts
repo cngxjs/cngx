@@ -30,7 +30,7 @@ export function focusFirstError(tree: FieldTree<unknown>): boolean {
 
   for (const error of errors) {
     const fieldState = error.fieldTree();
-    // Skip group-level validators — they have no bound control. A leaf has
+    // Skip group-level validators - they have no bound control. A leaf has
     // at least one entry in formFieldBindings when [formField] is used.
     const bindings = fieldState.formFieldBindings?.();
     if (bindings && bindings.length > 0) {

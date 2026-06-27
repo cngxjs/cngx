@@ -47,7 +47,7 @@ import { CngxFormFieldPresenter } from './form-field-presenter';
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/required.component.ts
  * @since 0.1.0
- * @relatedTo CngxLabel, CngxFormField
+ * @relatedTo CngxLabel, CngxFormField, withRequiredMarker
  * <example-url>http://localhost:4200/#/forms/field/required/basic</example-url>
  * <example-url>http://localhost:4200/#/forms/field/required/custom-template</example-url>
  * <example-url>http://localhost:4200/#/forms/field/required/auto-hide-on-non-required</example-url>

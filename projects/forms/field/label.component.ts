@@ -45,7 +45,7 @@ import { CNGX_FORM_FIELD_CONFIG } from './form-field.token';
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/label.component.ts
  * @since 0.1.0
- * @relatedTo CngxFormField, CngxRequired, CngxHint, CngxFieldErrors
+ * @relatedTo CngxFormField, CngxRequired, CngxHint, withRequiredMarker
  * <example-url>http://localhost:4200/#/forms/field/label/basic</example-url>
  * <example-url>http://localhost:4200/#/forms/field/label/required-marker</example-url>
  * <example-url>http://localhost:4200/#/forms/field/label/error-and-disabled-classes</example-url>

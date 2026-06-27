@@ -42,7 +42,7 @@ import { CNGX_ERROR_MESSAGES } from './form-field.token';
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/field-errors.component.ts
  * @since 0.1.0
- * @relatedTo CngxError, CngxFormErrors, CngxFormField, CNGX_ERROR_MESSAGES
+ * @relatedTo CngxError, CngxFormErrors, CngxFormField, CNGX_ERROR_MESSAGES, withErrorMessages
  * <example-url>http://localhost:4200/#/forms/field/field-errors/basic</example-url>
  * <example-url>http://localhost:4200/#/forms/field/field-errors/multiple-validators</example-url>
  * <example-url>http://localhost:4200/#/forms/field/field-errors/custom-error-template</example-url>

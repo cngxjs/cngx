@@ -15,7 +15,7 @@ import { CngxFormFieldPresenter } from './form-field-presenter';
  * ```html
  * <cngx-form-field [field]="fields.email">
  *   <label cngxLabel>E-Mail</label>
- *   <input cngxInput placeholder="max@example.com" />
+ *   <input cngxInput />
  *   <span cngxHint>Business address</span>
  *   <cngx-field-errors />
  * </cngx-form-field>
@@ -26,7 +26,7 @@ import { CngxFormFieldPresenter } from './form-field-presenter';
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/form-field.component.ts
  * @since 0.1.0
- * @relatedTo CngxFormFieldPresenter, CngxLabel, CngxHint, CngxFieldErrors, CngxBindField
+ * @relatedTo CngxFormFieldPresenter, CngxLabel, CngxHint, CngxError, CngxFieldErrors, CngxBindField, CngxErrorScopeFieldBridge
  * @playground Basic input ./examples/basic-input/basic-input.component.ts
  * @playground Validation states ./examples/validation-states/validation-states.component.ts
  * @playground Form-error summary ./examples/form-error-summary/form-error-summary.component.ts

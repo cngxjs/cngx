@@ -39,11 +39,10 @@ function buildHint(
  * on `CngxFormField` - not used directly in templates.
  *
  * @category forms/field
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/form-field-presenter.ts
  * @since 0.1.0
- * @relatedTo CngxFormField, CngxBindField, CngxListboxFieldBridge, CngxFieldErrors
+ * @relatedTo CngxFormField, CngxBindField, CngxListboxFieldBridge, CngxFieldErrors, CngxErrorScopeFieldBridge, withErrorStrategy, withConstraintHints
  */
 @Directive({
   selector: '[cngxFormFieldPresenter]',
@@ -135,8 +134,8 @@ export class CngxFormFieldPresenter implements CngxFormFieldHostContract {
    * callback runs inside `untracked()` so any ambient signal reads in
    * consumer code (locale flags, tenant settings, test mocks) cannot
    * widen the presenter's dependency graph beyond the declared four.
-   * Flat-graph invariant per `reference_signal_architecture` §3; verified
-   * by the cascade-witness spec in `form-field-presenter.spec.ts`.
+   * Flat-graph invariant, verified by the cascade-witness spec in
+   * `form-field-presenter.spec.ts`.
    */
   readonly showError = computed(() => {
     if (!this.invalid()) {
