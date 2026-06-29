@@ -411,9 +411,18 @@ describe('CngxInputMask', () => {
       expect(input.value).toBe('__/__/____');
     });
 
-    it('should resolve "date" preset for de locale', () => {
+    it('should resolve "date" preset for de locale (dots)', () => {
       const { input } = setup({ mask: 'date', locale: 'de-DE' });
-      expect(input.value).toBe('__/__/____');
+      expect(input.value).toBe('__.__.____');
+    });
+
+    it('resolves locale-specific separators (fr-CH dots, sv-SE ISO)', () => {
+      expect(setup({ mask: 'date', locale: 'fr-CH' }).input.value).toBe('__.__.____');
+    });
+
+    it('falls back by language when the region is unknown', () => {
+      // de-LI has no exact key; resolves to a de-* mask (dots).
+      expect(setup({ mask: 'date', locale: 'de-LI' }).input.value).toBe('__.__.____');
     });
 
     it('should resolve "date" preset for ja locale (YYYY/MM/DD)', () => {

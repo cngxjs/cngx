@@ -286,21 +286,22 @@ export function withZipPatterns(patterns: Record<string, string>): InputConfigFe
 }
 
 /**
- * Adds or overrides date mask patterns keyed by language code (the `de` in
- * `de-CH`).
+ * Adds or overrides date mask patterns keyed by BCP-47 locale (e.g. `de-CH`).
  *
- * - Built-ins cover the DD/MM/YYYY, MM/DD/YYYY, and YYYY/MM/DD orders per
- *   language.
- * - Read by the `date`, `datetime`, and `time` presets as
- *   `{ ...DATE_FORMATS, ...config.dateFormats }[lang]`, falling back to `en`;
- *   `lang` is the prefix of `LOCALE_ID`.
+ * - Built-ins ship per-locale separators (de-* dots, fr-CH dots, sv-SE/lt-LT/
+ *   en-CA ISO, en-US/en-GB slashes, ...) for the `date` and `datetime` presets.
+ * - Resolution for `date`/`datetime`: exact locale (case-insensitive), then a
+ *   bare language key (so a language-keyed override like `{ sv: '...' }` still
+ *   applies), then any same-language locale, then `en-US`.
+ * - Masks capture separators and group count only, NOT field order: `en-US`
+ *   (MM/DD) and `en-GB` (DD/MM) share `00/00/0000`.
  * - Tokens: `0` = required digit, separators are literals.
  * - Does not feed `date:short` - that uses a separate built-in table.
  * - Consumer entries merge per key and win on collision.
  *
  * ```typescript
- * provideInputConfig(withDateFormats({ sv: '0000-00-00' }));
- * // LOCALE_ID 'sv-SE' + <input cngxInputMask="date" />
+ * provideInputConfig(withDateFormats({ 'en-NZ': '00/00/0000' }));
+ * // LOCALE_ID 'en-NZ' + <input cngxInputMask="date" />
  * ```
  *
  * @see {@link provideInputConfig}
