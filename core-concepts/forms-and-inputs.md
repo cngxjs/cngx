@@ -143,13 +143,43 @@ Every CNGX control with a value exposes a two-way `value`. Used outside a form, 
 |OTP|`cngxOtpInput` / `cngxOtpSlot`|a one-time-code entry with per-digit boxes|
 |File drop|`cngxFileDrop`|a drag-and-drop file zone|
 
-These compose. A masked, clearable phone field is just three directives on one input - no special "phone field" component exists or needs to:
+These compose. A masked, clearable phone field is just three directives on one input - no special "phone field" component is needed for the simple case:
 
 ```html
 <input cngxInput cngxInputMask="phone" cngxInputClear [control]="form.phone" />
 ```
 
 Mask patterns, numeric defaults, and similar knobs are set app-wide through `provideInputConfig(withPhonePatterns(...), withNumericDefaults(...), ...)` rather than repeated on every field.
+
+### Mask presets are lazy
+
+`cngxInputMask` ships built-in tables for `phone`, `date`, `iban`, and `zip` covering many regions (ISO 3166-1 / BCP-47 keyed). Those tables are **code-split and loaded on demand** - a date-only app never downloads the phone table. Until a table arrives, a generic fallback mask shows for a moment. For an **offline / PWA** app that must have every pattern cached before going offline, load them eagerly at startup:
+
+```ts
+bootstrapApplication(App, {
+  providers: [provideEagerMaskPresets()],          // all tables
+  // or provideEagerMaskPresets('phone', 'date')   // only these
+});
+```
+
+### Composed controls: rating and intl phone
+
+Two `@cngx/forms/input` controls are organisms rather than enhancer directives - they compose smaller pieces into one field control and drop into `cngx-form-field` like any other:
+
+- **`<cngx-rating>`** - a star/heart value control. Arrow-key navigable (it reuses the roving-tabindex keyboard engine), `[(value)]` is a number, and the star glyph is a slot (`*cngxRatingItem`) so you bring your own icon.
+- **`<cngx-phone-input>`** - an international phone field that pairs a country picker with the region-aware mask. Picking a country re-targets the mask and pre-fills the dial code; override the list with `[countries]`, or set an app-wide default region with `provideInputConfig(withPhoneDefaultRegion('AT'))`.
+
+```html
+<cngx-form-field [field]="form.score">
+  <label cngxLabel>Rate us</label>
+  <cngx-rating [max]="5" />
+</cngx-form-field>
+
+<cngx-form-field [field]="form.phone">
+  <label cngxLabel>Phone</label>
+  <cngx-phone-input />
+</cngx-form-field>
+```
 
 ---
 
