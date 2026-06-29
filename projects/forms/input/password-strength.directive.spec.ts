@@ -81,6 +81,20 @@ describe('CngxPasswordStrength', () => {
       expect(announce).toHaveBeenCalledWith('Password strength: strong');
     });
 
+    it('announces only on a label edge, not on every debounce-settle', () => {
+      vi.useFakeTimers();
+      const announcer = TestBed.inject(CngxLiveAnnouncer);
+      const announce = vi.spyOn(announcer, 'announce').mockImplementation(() => {});
+      const { input } = setup();
+      type(input, 'Abcdef1!Ghijkl2?');
+      vi.advanceTimersByTime(400);
+      expect(announce).toHaveBeenCalledTimes(1);
+      // Keep typing within the same tier, then pause again: no repeat announce.
+      type(input, 'Abcdef1!Ghijkl2?XYZ');
+      vi.advanceTimersByTime(400);
+      expect(announce).toHaveBeenCalledTimes(1);
+    });
+
     it('does not announce while the field is empty', () => {
       vi.useFakeTimers();
       const announcer = TestBed.inject(CngxLiveAnnouncer);

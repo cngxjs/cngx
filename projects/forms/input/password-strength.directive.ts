@@ -82,6 +82,7 @@ export class CngxPasswordStrength {
 
   constructor() {
     let timer: ReturnType<typeof setTimeout> | null = null;
+    let lastAnnounced: PasswordStrengthLabel | null = null;
 
     effect(() => {
       const label = this.label();
@@ -92,15 +93,23 @@ export class CngxPasswordStrength {
           timer = null;
         }
         if (!hasValue) {
-          // Never announce the empty field; only debounce real strength changes.
+          // Never announce the empty field; reset so retyping re-announces the
+          // first tier.
+          lastAnnounced = null;
           return;
         }
         timer = setTimeout(() => {
+          timer = null;
+          if (label === lastAnnounced) {
+            // Same tier as the last announcement: a pause within one tier must
+            // not repeat it. Announce only on a label edge.
+            return;
+          }
+          lastAnnounced = label;
           const template =
             this.config.ariaLabels?.passwordStrength ??
             DEFAULT_INPUT_ARIA_LABELS.passwordStrength;
           this.announcer.announce(template(label));
-          timer = null;
         }, ANNOUNCE_DEBOUNCE_MS);
       });
     });
