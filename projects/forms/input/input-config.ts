@@ -70,6 +70,8 @@ export interface InputAriaLabels {
   readonly capsLockOn: string;
   /** Polite live-region template announced by `CngxPasswordStrength` when the strength label changes. Default: `` `Password strength: ${label}` `` */
   readonly passwordStrength: (label: string) => string;
+  /** Assertive live-region announcement when `CngxInputFilter` rejects a disallowed character. Default: `'Character not allowed'` */
+  readonly inputRejected: string;
 }
 
 /**
@@ -88,6 +90,7 @@ export const DEFAULT_INPUT_ARIA_LABELS: InputAriaLabels = {
   fileDropZone: 'File drop zone',
   capsLockOn: 'Caps Lock is on',
   passwordStrength: (label) => `Password strength: ${label}`,
+  inputRejected: 'Character not allowed',
 };
 
 /**
