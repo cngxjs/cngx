@@ -86,7 +86,21 @@ export const DEFAULT_INPUT_ARIA_LABELS: InputAriaLabels = {
 const DEFAULT_INPUT_CONFIG: InputConfig = {};
 
 /**
- * Injection token for `@cngx/forms/input` global configuration.
+ * DI token holding the resolved `InputConfig` for the `@cngx/forms/input`
+ * directive family. Every input directive injects it to read app- or
+ * subtree-level defaults, falling back to its own per-directive default for any
+ * key left unset.
+ *
+ * Do not bind it directly. Configure it through `provideInputConfig(...features)`
+ * composed from the `with*` features; a raw `{ provide: CNGX_INPUT_CONFIG,
+ * useValue }` bypasses the per-key merge those features encode.
+ *
+ * - `providedIn: 'root'` with an empty-config factory, so it resolves without a
+ *   provider and each directive keeps its built-in default.
+ * - Consumed by `CngxInputMask`, `CngxNumericInput`, `CngxCopyValue`,
+ *   `CngxFileDrop`, `CngxInputClear`, and `CngxOtpInput`.
+ * - Token resolution is nearest-wins: a config in a component's `viewProviders`
+ *   replaces an ancestor's for that subtree, it does not deep-merge.
  *
  * @see {@link provideInputConfig}
  *
