@@ -34,28 +34,47 @@ export interface CngxFormFieldRevealContract {
 }
 
 /**
- * Injection token resolving to the active reveal trigger for the surrounding
- * `CngxFormField`. Optional - when no provider exists the presenter falls
- * back to the default `touched OR strategy(...)` gate without scope-driven
- * reveal semantics.
+ * Resolves to the active error-reveal trigger for the surrounding
+ * `CngxFormField` - the `showErrors` flag the presenter ORs into its error
+ * gate, so a form can reveal every field's errors at once (typically on a
+ * failed submit) rather than waiting for each to be touched.
+ *
+ * Producers:
+ *
+ * - `CngxErrorScopeFieldBridge` (default) - bridges the nearest `CngxErrorScope`.
+ * - router-, interceptor-, or test-driven triggers - supply their own
+ *   `CngxFormFieldRevealContract` instead.
+ *
+ * Optional. With no provider the presenter falls back to the
+ * `touched OR strategy(...)` gate and the reveal channel is simply absent.
  *
  * @category forms/field
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/form-field.token.ts
  * @since 0.1.0
+ * @relatedTo CngxErrorScopeFieldBridge, CngxFormFieldPresenter, CngxFormFieldRevealContract, CngxErrorScope
  */
 export const CNGX_FORM_FIELD_REVEAL = new InjectionToken<CngxFormFieldRevealContract>(
   'CngxFormFieldReveal',
 );
 
 /**
- * Injection token for the application-wide error message map.
- * `CngxFieldErrors` uses this to auto-render validation messages.
+ * Maps each validation error `kind` to the function that renders its message.
+ * `CngxFieldErrors` and `CngxFormErrors` resolve their text against it.
+ *
+ * An unmapped `kind` falls back, in order:
+ *
+ * - the error's own `message`
+ * - the raw `kind` string
+ *
+ * Populated by `withErrorMessages(...)` through `provideFormField`, or by the
+ * `provideErrorMessages(...)` shortcut. The default factory returns an empty
+ * map, so without a provider every error renders by its fallback string.
  *
  * ```ts
  * providers: [provideFormField(withErrorMessages({
  *   required: () => 'Required.',
- *   minLength: (e) => `Min ${(e as any).minLength} chars.`,
+ *   minLength: (e) => `Min ${(e as { minLength: number }).minLength} chars.`,
  * }))]
  * ```
  *
@@ -63,6 +82,7 @@ export const CNGX_FORM_FIELD_REVEAL = new InjectionToken<CngxFormFieldRevealCont
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/form-field.token.ts
  * @since 0.1.0
+ * @relatedTo withErrorMessages, provideErrorMessages, CngxFieldErrors, CngxFormErrors
  */
 export const CNGX_ERROR_MESSAGES = new InjectionToken<ErrorMessageMap>('CngxErrorMessages', {
   factory: () => ({}),
@@ -162,19 +182,44 @@ export interface FormFieldFeature {
 }
 
 /**
- * Injection token for the application-wide {@link FormFieldConfig}.
+ * Holds the merged `FormFieldConfig` every `CngxFormField` in scope reads for
+ * its defaults. Each slice comes from one `with*` feature:
+ *
+ * - error messages - `withErrorMessages`
+ * - constraint-hint formatters - `withConstraintHints`
+ * - required marker - `withRequiredMarker`
+ * - autocomplete map - `withAutocompleteMappings`
+ * - spellcheck-off set - `withNoSpellcheck`
+ * - error-visibility strategy - `withErrorStrategy`
+ *
+ * Populated by `provideFormField(...)`. The default factory returns an empty
+ * config, so without a provider every feature stays off and the presenter uses
+ * its built-in behaviour (error gate `touched OR reveal`, no hints, no marker).
+ *
+ * Inject this only to read the resolved config - configure through
+ * `provideFormField` and the `with*` features, never by providing the token
+ * directly.
  *
  * @category forms/field
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/form-field.token.ts
  * @since 0.1.0
+ * @relatedTo provideFormField, FormFieldConfig, CngxFormFieldPresenter
  */
 export const CNGX_FORM_FIELD_CONFIG = new InjectionToken<FormFieldConfig>('CngxFormFieldConfig', {
   factory: () => ({}),
 });
 
 /**
- * Registers application-wide defaults for all cngx form field instances.
- * Accepts `withXxx()` feature functions for composable configuration.
+ * Registers application-wide defaults for every `CngxFormField` in scope.
+ * Each `with*` feature contributes one slice of `FormFieldConfig`; features
+ * apply left to right, so a later feature overrides an earlier one on the
+ * same key.
+ *
+ * Returns `EnvironmentProviders`, so it sits at an environment injector -
+ * `bootstrapApplication`'s `providers`, or a lazy route's `providers`. It
+ * cannot be placed on a component. Resolution is nearest-wins and replace,
+ * not merge: a route-level `provideFormField` shadows the root one for that
+ * subtree rather than deep-merging into it.
  *
  * ```ts
  * bootstrapApplication(AppComponent, {
@@ -188,6 +233,7 @@ export const CNGX_FORM_FIELD_CONFIG = new InjectionToken<FormFieldConfig>('CngxF
  * ```
  *
  * @category forms/field
+ * @relatedTo withErrorMessages, withErrorStrategy, withConstraintHints, withRequiredMarker, withAutocompleteMappings, withNoSpellcheck, provideErrorMessages, CNGX_FORM_FIELD_CONFIG
  */
 export function provideFormField(...features: FormFieldFeature[]): EnvironmentProviders {
   let config: FormFieldConfig = {};
@@ -207,22 +253,42 @@ export function provideFormField(...features: FormFieldFeature[]): EnvironmentPr
 }
 
 /**
- * Convenience function to provide error messages without using `provideFormField`.
+ * Binds only the validation message map, for apps that need no other form-field
+ * config. Equivalent to `provideFormField(withErrorMessages(messages))`, but
+ * provides `CNGX_ERROR_MESSAGES` directly without the config wrapper.
+ *
+ * Returns `EnvironmentProviders` - same placement as `provideFormField`: an
+ * environment injector (app bootstrap or a route's `providers`), never a
+ * component.
  *
  * ```ts
  * providers: [provideErrorMessages({ required: () => 'Required.' })]
  * ```
  *
  * @category forms/field
+ * @relatedTo provideFormField, withErrorMessages, CNGX_ERROR_MESSAGES
  */
 export function provideErrorMessages(messages: ErrorMessageMap): EnvironmentProviders {
   return makeEnvironmentProviders([{ provide: CNGX_ERROR_MESSAGES, useValue: messages }]);
 }
 
 /**
- * Enable auto-generated constraint hints (e.g. "8–64 characters") for all form fields.
+ * Register the application-wide validation error message map. Each entry maps an
+ * error `kind` to a function that renders its display string; `CngxFieldErrors`
+ * and `CngxFormErrors` resolve messages against it.
+ *
+ * Merges into any messages already on the config, so later features add to or
+ * override earlier ones by `kind`.
+ *
+ * ```ts
+ * provideFormField(withErrorMessages({
+ *   required: () => 'Required.',
+ *   minLength: (e) => `Min ${(e as { minLength: number }).minLength} chars.`,
+ * }))
+ * ```
  *
  * @category forms/field
+ * @relatedTo provideFormField, provideErrorMessages, CNGX_ERROR_MESSAGES
  */
 export function withErrorMessages(messages: ErrorMessageMap): FormFieldFeature {
   return { _apply: (c) => ({ ...c, errorMessages: { ...c.errorMessages, ...messages } }) };
@@ -249,6 +315,7 @@ export function withErrorMessages(messages: ErrorMessageMap): FormFieldFeature {
  * ```
  *
  * @category forms/field
+ * @relatedTo provideFormField, CngxFormFieldPresenter
  */
 export function withErrorStrategy(strategy: ErrorStrategyName | ErrorStrategyFn): FormFieldFeature {
   const fn: ErrorStrategyFn =
@@ -278,6 +345,7 @@ export function withErrorStrategy(strategy: ErrorStrategyName | ErrorStrategyFn)
  * ```
  *
  * @category forms/field
+ * @relatedTo provideFormField, CngxFormFieldPresenter
  */
 export function withConstraintHints(
   formatters?: Partial<ConstraintHintFormatters>,
@@ -363,6 +431,7 @@ export const DEFAULT_HINT_FORMATTERS: ConstraintHintFormatters = {
  * ```
  *
  * @category forms/field
+ * @relatedTo provideFormField, CngxLabel, CngxRequired
  */
 export function withRequiredMarker(marker = '*'): FormFieldFeature {
   return { _apply: (c) => ({ ...c, requiredMarker: marker }) };
@@ -425,6 +494,7 @@ export const DEFAULT_NO_SPELLCHECK_FIELDS: ReadonlySet<string> = new Set([
  * ```
  *
  * @category forms/field
+ * @relatedTo provideFormField, withNoSpellcheck
  */
 export function withAutocompleteMappings(mappings: Record<string, string>): FormFieldFeature {
   return {
@@ -448,6 +518,7 @@ export function withAutocompleteMappings(mappings: Record<string, string>): Form
  * ```
  *
  * @category forms/field
+ * @relatedTo provideFormField, withAutocompleteMappings
  */
 export function withNoSpellcheck(fields: string[]): FormFieldFeature {
   return {

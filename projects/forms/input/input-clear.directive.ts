@@ -30,7 +30,7 @@ import { CNGX_INPUT_CONFIG, DEFAULT_INPUT_ARIA_LABELS } from './input-config';
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/input/input-clear.directive.ts
  * @since 0.1.0
- * @relatedTo CngxInput, CngxCopyValue, CngxPasswordToggle
+ * @relatedTo CngxInput, CngxCopyValue, CngxPasswordToggle, withInputAriaLabels
  * <example-url>http://localhost:4200/#/forms/input/utilities/input-clear</example-url>
  */
 @Directive({

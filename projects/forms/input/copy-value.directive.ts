@@ -32,7 +32,7 @@ import { CNGX_INPUT_CONFIG, DEFAULT_INPUT_ARIA_LABELS } from './input-config';
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/input/copy-value.directive.ts
  * @since 0.1.0
- * @relatedTo CngxInput, CngxInputClear, CngxPasswordToggle
+ * @relatedTo CngxInput, CngxInputClear, CngxPasswordToggle, withCopyResetDelay, withInputAriaLabels
  * <example-url>http://localhost:4200/#/forms/input/utilities/copy-to-clipboard</example-url>
  */
 @Directive({

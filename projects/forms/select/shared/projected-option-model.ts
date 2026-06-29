@@ -212,13 +212,15 @@ export type CngxProjectedOptionModelFactory = <T>(
 ) => ProjectedOptionModel<T>;
 
 /**
- * Factory token. Default {@link createProjectedOptionModel}. Override
- * for custom value extraction, async labels, or fold-in of custom
- * group sub-types.
+ * Factory for the projected-option model - folds projected `<cngx-option>` /
+ * `<cngx-optgroup>` content into the normalized option tree the panel renders.
+ * Default `createProjectedOptionModel`. Override for custom value extraction,
+ * async labels, or fold-in of custom group sub-types.
  *
  * @category forms/select/state
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/projected-option-model.ts
  * @since 0.1.0
+ * @relatedTo CngxSelectShell, CngxSelectOption, CngxSelectOptgroup
  */
 export const CNGX_PROJECTED_OPTION_MODEL_FACTORY =
   new InjectionToken<CngxProjectedOptionModelFactory>('CngxProjectedOptionModelFactory', {

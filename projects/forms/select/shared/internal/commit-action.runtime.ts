@@ -52,7 +52,7 @@ export function runCommitAction<T>(
 
   if (isObservable(result)) {
     const sub = result.subscribe({
-      // First emission only — tear down so a hot source can't
+      // First emission only - tear down so a hot source can't
       // double-write the value signal.
       next: (value: T | undefined) => {
         safeSuccess(value);

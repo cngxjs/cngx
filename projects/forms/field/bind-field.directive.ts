@@ -52,9 +52,6 @@ import type { CngxFormFieldControl } from './models';
  * @relatedTo CngxFormField, CngxListboxFieldBridge, CngxFormBridge, adaptFormControl
  * @playground Material select via cngxBindField ./examples/material-bind-field/material-bind-field.component.ts
  * <example-url>http://localhost:4200/#/forms/field/listbox-forms/material-mat-select-via-cngxbindfield</example-url>
- * <example-url>http://localhost:4200/#/forms/field/listbox-forms/reactive-forms-adapted-via-adaptformcontrol</example-url>
- * <example-url>http://localhost:4200/#/forms/field/listbox-forms/signal-forms-multi-select-min-2</example-url>
- * <example-url>http://localhost:4200/#/forms/field/listbox-forms/signal-forms-single-select</example-url>
  */
 @Directive({
   selector: '[cngxBindField]',

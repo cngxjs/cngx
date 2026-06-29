@@ -5,7 +5,7 @@ import { resolveSelectConfig } from './internal/resolve-config';
 
 /**
  * Effective select config for the current injector, merged with library
- * defaults. Always fully populated — never `null`. Injection context required.
+ * defaults. Always fully populated - never `null`. Injection context required.
  *
  * ```ts
  * import { injectSelectConfig } from '@cngx/forms/select';

@@ -176,7 +176,7 @@ const DEFAULT_I18N: CngxFilterBuilderI18n = Object.freeze({
   }) as CngxFilterBuilderAnnouncementFormatters,
 }) as CngxFilterBuilderI18n;
 
-/** @internal Library defaults. English per `feedback_en_default_locale`. */
+/** @internal Library defaults; English. */
 export const CNGX_FILTER_BUILDER_DEFAULTS: CngxFilterBuilderConfig = Object.freeze({
   templates: Object.freeze({}),
   i18n: DEFAULT_I18N,
@@ -188,11 +188,33 @@ export const CNGX_FILTER_BUILDER_DEFAULTS: CngxFilterBuilderConfig = Object.free
 }) as CngxFilterBuilderConfig;
 
 /**
- * DI token carrying the resolved `CngxFilterBuilderConfig`. Default factory returns `CNGX_FILTER_BUILDER_DEFAULTS`.
+ * Resolved `CngxFilterBuilderConfig` every `<cngx-filter-builder>` in scope
+ * reads for its defaults. Each slice comes from one `with*` feature:
+ *
+ * - templates - `withTemplates`
+ * - i18n bundle - `withFilterBuilderI18n`
+ * - max nesting depth - `withMaxNestingDepth` (default 8)
+ * - operator lists per editor type - `withDefaultOperators`
+ * - logic options (the and/or/xor picker) - `withLogicOptions` (default `['and', 'or']`)
+ * - negation toggle - `withNegation` (default off)
+ * - skeleton row count - `withSkeletonCount` (default 3)
+ *
+ * Provide it through one of two entry points, never the token directly:
+ *
+ * - `provideFilterBuilderConfig(...)` returns `EnvironmentProviders` - for an
+ *   environment injector (app bootstrap or a lazy route).
+ * - `provideFilterBuilderConfigAt(...)` returns `Provider[]` - for a component's
+ *   `providers` / `viewProviders`.
+ *
+ * Resolution is nearest-wins and replace, not merge: a nested provider shadows
+ * the ancestor config for its subtree rather than deep-merging into it. The
+ * default factory returns `CNGX_FILTER_BUILDER_DEFAULTS`. Editors are separate -
+ * swap them via `CNGX_FILTER_EDITORS`, not here.
  *
  * @category forms/filter-builder/config
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder.config.ts
  * @since 0.1.0
+ * @relatedTo provideFilterBuilderConfig, provideFilterBuilderConfigAt, withTemplates, withFilterBuilderI18n, withMaxNestingDepth, withDefaultOperators, withLogicOptions, withNegation, withSkeletonCount, CNGX_FILTER_EDITORS
  */
 export const CNGX_FILTER_BUILDER_CONFIG = new InjectionToken<CngxFilterBuilderConfig>(
   'CngxFilterBuilderConfig',

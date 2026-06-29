@@ -11,14 +11,14 @@ import {
 } from './action-select-config';
 
 describe('provideActionSelectConfig', () => {
-  it('falls back to library defaults (focusTrapBehavior: dirty, ariaLabel: Inline-Aktion) when nothing is provided', () => {
+  it('falls back to library defaults (focusTrapBehavior: dirty, ariaLabel: Inline action) when nothing is provided', () => {
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({});
     const resolved = TestBed.runInInjectionContext(() =>
       resolveActionSelectConfig(),
     );
     expect(resolved.focusTrapBehavior).toBe('dirty');
-    expect(resolved.ariaLabel).toBe('Inline-Aktion');
+    expect(resolved.ariaLabel).toBe('Inline action');
   });
 
   it('merges withFocusTrapBehavior + withActionAriaLabel app-wide', () => {
@@ -51,6 +51,6 @@ describe('provideActionSelectConfig', () => {
     );
     expect(resolved.focusTrapBehavior).toBe('never');
     // Unspecified keys still fall back to library defaults.
-    expect(resolved.ariaLabel).toBe('Inline-Aktion');
+    expect(resolved.ariaLabel).toBe('Inline action');
   });
 });

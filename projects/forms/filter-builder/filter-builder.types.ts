@@ -1,5 +1,5 @@
 /**
- * @cngx/forms/filter-builder — data model.
+ * @cngx/forms/filter-builder - data model.
  *
  * Recursive discriminated-union tree describing a user-built filter
  * predicate. The root is always a `FilterGroup`; leaves are
@@ -7,7 +7,7 @@
  *
  * Three logic operators ship: `and`, `or`, `xor`. The orthogonal
  * `negated: boolean` modifier on every group is the **sole** negation
- * surface — `nand` and `nor` are intentionally NOT supported as logic
+ * surface - `nand` and `nor` are intentionally NOT supported as logic
  * operators because they would create 4-way overlap with
  * `negated: true + 'and' / 'or'` (same denotation, different syntax) and
  * force every consumer to canonicalise. The `FilterLogic` union
@@ -17,20 +17,20 @@
  *
  * `xor` semantic: exactly-one-true across the group's direct children
  * (n >= 2). For n < 2 the group always evaluates to `false`. `xor` is
- * NOT associative across nested groups — to express XOR over more than
+ * NOT associative across nested groups - to express XOR over more than
  * the direct-child count, nest a sub-group of the desired arity.
  */
 
 /**
- * Boolean combinator for a `FilterGroup`'s direct children. `nand`/`nor` are intentionally absent — use `negated` for inversion.
+ * Boolean combinator for a `FilterGroup`'s direct children. `nand`/`nor` are intentionally absent - use `negated` for inversion.
  *
  * @category forms/filter-builder/config
  */
 export type FilterLogic = 'and' | 'or' | 'xor';
 
 /**
- * Editor-type discriminator. Used as the key into `CNGX_FILTER_EDITORS`
- * (introduced in Phase 3). The library ships defaults for the four
+ * Editor-type discriminator. Used as the key into `CNGX_FILTER_EDITORS`.
+ * The library ships defaults for the four
  * builtin keys (`'string'`, `'number'`, `'date'`, `'boolean'`);
  * consumers add custom editor types freely.
  *
@@ -39,7 +39,7 @@ export type FilterLogic = 'and' | 'or' | 'xor';
 export type FilterEditorType = string;
 
 /**
- * Consumer-supplied field descriptor — one entry per filterable column.
+ * Consumer-supplied field descriptor - one entry per filterable column.
  *
  * @category forms/filter-builder/config
  */
@@ -52,7 +52,7 @@ export interface FilterFieldDef<TValue = unknown> {
 }
 
 /**
- * Leaf node — binds one field to one operator and one value.
+ * Leaf node - binds one field to one operator and one value.
  *
  * @category forms/filter-builder/config
  */
@@ -73,7 +73,7 @@ export interface FilterExpression<TValue = unknown> {
 }
 
 /**
- * Branch node — combines child nodes under one `logic` operator with an optional `negated` flag.
+ * Branch node - combines child nodes under one `logic` operator with an optional `negated` flag.
  *
  * @category forms/filter-builder/config
  */
@@ -90,7 +90,7 @@ export interface FilterGroup {
 }
 
 /**
- * Discriminated union — every node in the tree is either a group or an expression.
+ * Discriminated union - every node in the tree is either a group or an expression.
  *
  * @category forms/filter-builder/config
  */

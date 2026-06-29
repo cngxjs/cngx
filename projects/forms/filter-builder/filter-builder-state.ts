@@ -23,8 +23,7 @@ import { EMPTY_ROOT } from './filter-builder.helpers';
  * exposes path-keyed mutators, and emits a structural `lastMutation`
  * event slot the presenter watches to drive announcements. No
  * `inject()` calls - the factory is testable without `TestBed` and
- * decompose-safe per `reference_atomic_decompose` rule 4 (DI
- * Abstraction).
+ * decompose-safe (DI abstraction).
  *
  * Two-way binding contract - pass the presenter's
  * `model<FilterGroup>()` as `source`. Mutators write through it, so
@@ -134,9 +133,24 @@ function fieldMapEqual<TValue>(
 }
 
 /**
- * Default state factory - see the file-header block for the full contract.
+ * Default factory behind `CNGX_FILTER_BUILDER_STATE_FACTORY`. Wraps one writable
+ * `FilterGroup` signal as the canonical tree and returns the
+ * `CngxFilterBuilderState` the presenter drives:
+ *
+ * - read-only `tree` / `fieldMap` / `isEmpty` signals
+ * - path-keyed mutators (`addExpression`, `setLogic`, `removeNode`, `clear`, ...)
+ * - the `lastMutation` event the announcer formats into live-region text
+ *
+ * Two-way binding: pass the presenter's `model<FilterGroup>()` as `source`, so
+ * every mutator write emits through the consumer's `[(value)]`. Uncontrolled
+ * callers omit `source` and the factory creates its own signal from
+ * `initial ?? EMPTY_ROOT`.
+ *
+ * Plain TS, no `inject()` - testable without `TestBed`. Override the token to
+ * wrap this (logging, undo) rather than reimplementing the mutators.
  *
  * @category forms/filter-builder/state
+ * @relatedTo CNGX_FILTER_BUILDER_STATE_FACTORY, CngxFilterBuilderState, CngxFilterBuilderStateOptions, CngxFilterBuilderPresenter
  */
 export function createFilterBuilderState<TValue = unknown>(
   opts: CngxFilterBuilderStateOptions<TValue>,
@@ -343,15 +357,24 @@ export type CngxFilterBuilderStateFactory = <TValue = unknown>(
 ) => CngxFilterBuilderState<TValue>;
 
 /**
- * DI token for the state-machine factory. Resolves to {@link createFilterBuilderState}
- * by default; consumers swap implementations via
- * `providers: [{ provide: CNGX_FILTER_BUILDER_STATE_FACTORY, useValue: myWrapper }]`.
+ * Factory that builds the state machine behind one `<cngx-filter-builder>` -
+ * the writable tree signal, the derived `tree` / `fieldMap` / `isEmpty` reads,
+ * the path-keyed mutators, and the `lastMutation` event the presenter watches
+ * to drive announcements.
  *
- * Pillar 3 parity with the select family.
+ * Default: `createFilterBuilderState`. Swap the implementation (wrap mutations
+ * with logging, undo, telemetry) at root or component scope:
+ *
+ * ```ts
+ * providers: [
+ *   { provide: CNGX_FILTER_BUILDER_STATE_FACTORY, useValue: myStateWrapper },
+ * ]
+ * ```
  *
  * @category forms/filter-builder/state
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder-state.ts
  * @since 0.1.0
+ * @relatedTo CngxFilterBuilderPresenter, CngxFilterBuilder, CngxFilterBuilderState
  */
 export const CNGX_FILTER_BUILDER_STATE_FACTORY = new InjectionToken<CngxFilterBuilderStateFactory>(
   'CngxFilterBuilderStateFactory',

@@ -67,7 +67,7 @@ export interface ArrayCommitHandler<T> {
  * optimistic rollback on error, live-region "removed" announce. Consumer
  * owns change-event payloads via the finalize callbacks.
  *
- * Scalar twin rejected - see select-family-accepted-debt §6.
+ * No scalar twin: this handler is array-only by design.
  *
  * @category forms/select/commit
  */
@@ -168,14 +168,16 @@ export type CngxArrayCommitHandlerFactory = <T>(
 ) => ArrayCommitHandler<T>;
 
 /**
- * Factory token for {@link ArrayCommitHandler}. Default
- * {@link createArrayCommitHandler}. One layer above
- * `CNGX_SELECT_COMMIT_CONTROLLER_FACTORY` - controls value reconciliation
- * and finalize orchestration on top of the state machine.
+ * Factory for the array commit handler - value reconciliation and finalize
+ * orchestration for multi-value selects, one layer above
+ * `CNGX_SELECT_COMMIT_CONTROLLER_FACTORY` on top of the state machine. Default
+ * `createArrayCommitHandler`. Override to change how optimistic adds / removes
+ * reconcile against an async commit result.
  *
  * @category forms/select/commit
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/array-commit-handler.ts
  * @since 0.1.0
+ * @relatedTo CngxMultiSelect, CNGX_SELECT_COMMIT_CONTROLLER_FACTORY, CNGX_CHIP_REMOVAL_HANDLER_FACTORY
  */
 export const CNGX_ARRAY_COMMIT_HANDLER_FACTORY = new InjectionToken<CngxArrayCommitHandlerFactory>(
   'CngxArrayCommitHandlerFactory',

@@ -120,6 +120,7 @@ export type CngxSelectCommitControllerFactory = <T>() => CngxCommitController<T>
  * @category forms/select/commit
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/commit-controller.token.ts
  * @since 0.1.0
+ * @relatedTo createCommitController, CNGX_SCALAR_COMMIT_HANDLER_FACTORY, CNGX_ARRAY_COMMIT_HANDLER_FACTORY, CNGX_REORDER_COMMIT_HANDLER_FACTORY
  */
 export const CNGX_SELECT_COMMIT_CONTROLLER_FACTORY =
   new InjectionToken<CngxSelectCommitControllerFactory>(

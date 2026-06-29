@@ -3,7 +3,7 @@ import { CNGX_ERROR_SCOPE } from '@cngx/common/interactive';
 import { CNGX_FORM_FIELD_REVEAL, type CngxFormFieldRevealContract } from './form-field.token';
 
 /**
- * Bridges an ambient {@link `@cngx/common/interactive`#CngxErrorScope} into
+ * Bridges an ambient `CngxErrorScope` (from `@cngx/common/interactive`) into
  * the Forms-local {@link CNGX_FORM_FIELD_REVEAL} contract.
  *
  * Wired into {@link CngxFormField} as a `hostDirective` so every form-field
@@ -19,7 +19,7 @@ import { CNGX_FORM_FIELD_REVEAL, type CngxFormFieldRevealContract } from './form
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/error-scope-field-bridge.directive.ts
  * @since 0.1.0
- * @relatedTo CngxFormField, CngxFormFieldPresenter, CNGX_FORM_FIELD_REVEAL
+ * @relatedTo CngxFormField, CngxFormFieldPresenter, CngxErrorScope, CNGX_FORM_FIELD_REVEAL
  */
 @Directive({
   selector: '[cngxErrorScopeFieldBridge]',

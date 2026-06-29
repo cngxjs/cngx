@@ -344,7 +344,7 @@ export type MaskTokenMap = Record<string, MaskTokenDef>;
  * Supports custom patterns, locale-aware presets, multiple patterns (separated by `|`),
  * prefix/suffix, custom tokens, and character transforms.
  *
- * ## Mask tokens
+ * ### Mask tokens
  *
  * | Token | Description | Regex |
  * |-|-|-|
@@ -355,7 +355,7 @@ export type MaskTokenMap = Record<string, MaskTokenDef>;
  * | `*` | Required alphanumeric | `[a-zA-Z0-9]` |
  * | `\\` | Escape next char as literal | - |
  *
- * ## Built-in presets
+ * ### Built-in presets
  *
  * Pass a preset name instead of a pattern. Region suffix optional (defaults to `LOCALE_ID`).
  *
@@ -373,7 +373,7 @@ export type MaskTokenMap = Record<string, MaskTokenDef>;
  * | `ip` / `ipv4` | `cngxInputMask="ip"` | `099.099.099.099` |
  * | `mac` | `cngxInputMask="mac"` | `AA:AA:AA:AA:AA:AA` |
  *
- * ## Multiple patterns
+ * ### Multiple patterns
  *
  * Separate patterns with `|` - the directive selects the best match based on input length:
  * ```html
@@ -401,7 +401,7 @@ export type MaskTokenMap = Record<string, MaskTokenDef>;
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/input/input-mask.directive.ts
  * @since 0.1.0
- * @relatedTo CngxInput, CngxInputFormat, CngxNumericInput
+ * @relatedTo CngxInput, CngxInputFormat, CngxNumericInput, withMaskPlaceholder, withMaskGuide, withCustomTokens
  * <example-url>http://localhost:4200/#/forms/input/mask/custom-pattern</example-url>
  * <example-url>http://localhost:4200/#/forms/input/mask/custom-tokens-and-transform</example-url>
  * <example-url>http://localhost:4200/#/forms/input/mask/locale-presets</example-url>
@@ -590,13 +590,12 @@ export class CngxInputMask {
       el.dispatchEvent(new Event('input', { bubbles: true }));
     });
 
-    // Documented Pillar-1 exception: writes a signal inside an effect.
+    // Writes a signal inside an effect.
     // Cannot be expressed as linkedSignal because `value` must remain a
     // model<string>() so Signal Forms' [control] directive can bind against
     // it (FormValueControl<T> requires a writable signal output). The
-    // mask-change auto-clear is part of the published contract
-    // (input-mask.directive.spec.ts: "should reset rawValue when mask
-    // changes"). prevMask skips the initial run so external initial values
+    // mask-change auto-clear is part of the published contract.
+    // prevMask skips the initial run so external initial values
     // survive, and untracked() keeps `value` out of the dep graph so the
     // effect cannot subscribe to its own write.
     effect(() => {

@@ -61,7 +61,7 @@ export interface CngxActionSelectConfig {
  */
 export const CNGX_ACTION_SELECT_DEFAULTS: Required<CngxActionSelectConfig> = {
   focusTrapBehavior: 'dirty',
-  ariaLabel: 'Inline-Aktion',
+  ariaLabel: 'Inline action',
   closeOnCreate: null,
   actionPosition: 'bottom',
   liveInputFallback: true,
@@ -69,12 +69,25 @@ export const CNGX_ACTION_SELECT_DEFAULTS: Required<CngxActionSelectConfig> = {
 };
 
 /**
- * Token carrying the resolved {@link CngxActionSelectConfig}.
+ * Resolved configuration for the action-select composites - the inline
+ * create-action workflow shared by `CngxActionSelect` and
+ * `CngxActionMultiSelect`. Holds the focus-trap behaviour, action-button
+ * position, popover placement, ARIA label, and create / close timing.
+ *
+ * Provide it through one of two entry points, never the token directly:
+ *
+ * - `provideActionSelectConfig(...)` returns `EnvironmentProviders` - app bootstrap or a route.
+ * - `provideActionSelectConfigAt(...)` returns `Provider[]` - a component's `providers` / `viewProviders`.
+ *
+ * Compose from the `with*` features (`withActionAriaLabel`, `withActionPosition`,
+ * `withActionPopoverPlacement`). Resolution is nearest-wins: a nested provider
+ * replaces an ancestor config for its subtree, it does not deep-merge.
  *
  * @category forms/select/config
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/action-select-config.ts
  * @since 0.1.0
+ * @relatedTo provideActionSelectConfig, provideActionSelectConfigAt, withActionAriaLabel, withActionPosition, withActionPopoverPlacement, CngxActionSelect, CngxActionMultiSelect
  */
 export const CNGX_ACTION_SELECT_CONFIG = new InjectionToken<CngxActionSelectConfig>(
   'CngxActionSelectConfig',

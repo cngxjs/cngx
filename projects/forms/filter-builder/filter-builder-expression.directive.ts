@@ -13,17 +13,16 @@ const EMPTY_OPERATORS: readonly string[] = Object.freeze([]) as readonly string[
  * the recursive template body. Injects the host through
  * `CNGX_FILTER_BUILDER_HOST` (not the concrete presenter class) so the
  * decompose schematic can eject the recursive body independently of the
- * brain per `reference_atomic_decompose` rule 4.
+ * brain.
  *
  * `availableOperators` resolves from the field def's own `operators`
  * list when present, else from `CNGX_FILTER_BUILDER_CONFIG.defaultOperators`
  * keyed by the field's `editorType` - consumers swap defaults at app or
  * view scope via `withDefaultOperators({...})`.
  *
- * Every object/array signal carries an explicit `equal` fn per
- * `reference_signal_architecture` §1; empty-operator and missing-node
- * fallbacks resolve to shared frozen singletons so no-op reads never
- * allocate.
+ * Every object/array signal carries an explicit `equal` fn; empty-operator
+ * and missing-node fallbacks resolve to shared frozen singletons so no-op
+ * reads never allocate.
  *
  * @category forms/filter-builder
  * @docsKind primary

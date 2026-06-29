@@ -2,7 +2,7 @@ import type { Signal } from '@angular/core';
 import type { ValidationError } from '@angular/forms/signals';
 
 /**
- * Re-export — the canonical contract now lives at `@cngx/core/tokens` so
+ * Re-export - the canonical contract now lives at `@cngx/core/tokens` so
  * Level-2 atoms can implement and provide it without crossing the
  * Sheriff-enforced layer boundary. Public-API consumers keep their
  * existing `import { CngxFormFieldControl } from '@cngx/forms/field'`
@@ -48,7 +48,7 @@ export interface CngxFieldRef<T = unknown> {
 }
 
 /**
- * A callable that returns a `CngxFieldRef` — matches the shape of Angular Signal Forms' `Field<T>`.
+ * A callable that returns a `CngxFieldRef` - matches the shape of Angular Signal Forms' `Field<T>`.
  *
  * ```ts
  * // Signal Forms field is already a callable:

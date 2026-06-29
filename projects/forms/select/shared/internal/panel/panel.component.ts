@@ -36,7 +36,7 @@ import { isCngxSelectOptionGroupDef } from '../../option.model';
  * avoided.
  *
  * Template signals are pre-resolved: every `host.xxxTpl()` is a
- * `TemplateRef | null` — the 3-stage cascade runs in the select
+ * `TemplateRef | null` - the 3-stage cascade runs in the select
  * component, the panel just renders.
  *
  * @internal
@@ -70,7 +70,7 @@ export class CngxSelectPanel<T = unknown> {
    * the token via `providers` / `viewProviders` for a contiguous
    * scroll-window slice.
    *
-   * Grouped options bypass the renderer and render in full — windowing
+   * Grouped options bypass the renderer and render in full - windowing
    * across group boundaries is ambiguous and grouped lists tend to be
    * small. Flat options run through the renderer.
    *
@@ -139,7 +139,7 @@ export class CngxSelectPanel<T = unknown> {
   /**
    * `true` when `opt` is the AD-highlighted row. Derived from the
    * host's `activeId` and locally-rendered `CngxOption` view-children
-   * — keeps the panel independent of the listbox directive.
+   * - keeps the panel independent of the listbox directive.
    *
    * Read by the `optionLabel` context so consumers projecting
    * `*cngxSelectOptionLabel` can render a highlight-reactive style.
@@ -158,7 +158,7 @@ export class CngxSelectPanel<T = unknown> {
 
   /**
    * Builds the `*cngxSelectCheck` context for an option row. Radio
-   * rows omit `indeterminate` because radio is exclusive — consumers
+   * rows omit `indeterminate` because radio is exclusive - consumers
    * narrow on `variant` to read it safely.
    */
   protected checkContextFor(

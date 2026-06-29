@@ -11,7 +11,7 @@ import type { CngxSelectCompareFn } from './internal/select-core';
 export interface TypeaheadControllerOptions<T> {
   /** Flat candidate list in listbox order. */
   readonly options: Signal<readonly CngxSelectOptionDef<T>[]>;
-  /** Reserved — current matcher uses `label.startsWith` only. */
+  /** Reserved - current matcher uses `label.startsWith` only. */
   readonly compareWith: Signal<CngxSelectCompareFn<T>>;
   /** Buffer-reset window. Maps to `typeaheadDebounceInterval`. */
   readonly debounceMs: Signal<number>;
@@ -34,7 +34,7 @@ export interface TypeaheadController<T> {
    * Buffer auto-clears after `debounceMs`.
    */
   matchFromIndex(char: string, currentIndex: number): CngxSelectOptionDef<T> | null;
-  /** Idempotent — clears buffer + pending timer. */
+  /** Idempotent - clears buffer + pending timer. */
   clearBuffer(): void;
   readonly buffer: Signal<string>;
 }

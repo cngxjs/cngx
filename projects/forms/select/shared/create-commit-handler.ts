@@ -208,14 +208,16 @@ export type CngxCreateCommitHandlerFactory = <T, Prev = unknown>(
 ) => CreateCommitHandler<T, Prev>;
 
 /**
- * DI token for {@link CreateCommitHandler}. Default
- * {@link createCreateCommitHandler}. Override via `providers` /
- * `viewProviders` for retry-with-backoff, offline queues, audit
- * logging, or telemetry.
+ * Factory for the create-commit handler - the async create-action workflow on
+ * `CngxActionSelect` / `CngxActionMultiSelect` that turns user input into a new
+ * option. Default `createCreateCommitHandler`. Override via `providers` /
+ * `viewProviders` for retry-with-backoff, offline queues, audit logging, or
+ * telemetry.
  *
  * @category forms/select/commit
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/create-commit-handler.ts
  * @since 0.1.0
+ * @relatedTo CngxActionSelect, CngxActionMultiSelect, CNGX_SELECT_COMMIT_CONTROLLER_FACTORY
  */
 export const CNGX_CREATE_COMMIT_HANDLER_FACTORY =
   new InjectionToken<CngxCreateCommitHandlerFactory>('CngxCreateCommitHandlerFactory', {

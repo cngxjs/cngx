@@ -17,7 +17,7 @@ import { CngxFormFieldPresenter } from './form-field-presenter';
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/hint.directive.ts
  * @since 0.1.0
- * @relatedTo CngxFormField, CngxLabel, CngxError, CngxFieldErrors
+ * @relatedTo CngxFormField, CngxLabel
  */
 @Directive({
   selector: '[cngxHint]',

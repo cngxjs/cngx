@@ -6,13 +6,13 @@ import { InjectionToken, type Signal } from '@angular/core';
  *
  * Implementations expose five reactive surfaces the host reads on every
  * change-detection cycle plus an optional imperative `focus` method. The
- * contract is value-shape-agnostic — both scalar (boolean / string /
+ * contract is value-shape-agnostic - both scalar (boolean / string /
  * undefined) and array-shaped controls satisfy it because every field is
  * a `Signal<...>` (no value-type leakage into the contract).
  *
  * **Layer note.** Lives in `@cngx/core/tokens` (Level 1) so Level-2 atoms
  * in `@cngx/common/*` can provide the token without importing from the
- * Level-3 `@cngx/forms/field` library — Sheriff-clean by construction.
+ * Level-3 `@cngx/forms/field` library - Sheriff-clean by construction.
  * `@cngx/forms/field` re-exports both this interface and the matching
  * token for back-compatibility with the public-API surface forms
  * consumers already depend on.
@@ -47,6 +47,7 @@ export interface CngxFormFieldControl {
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/core/tokens/form-field-control.token.ts
  * @since 0.1.0
+ * @relatedTo CngxFormFieldControl, CNGX_FORM_FIELD_HOST, CngxFormField, CngxBindField, CngxListboxFieldBridge
  */
 export const CNGX_FORM_FIELD_CONTROL = new InjectionToken<CngxFormFieldControl>(
   'CngxFormFieldControl',

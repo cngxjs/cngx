@@ -5,12 +5,12 @@ import { InjectionToken, type Signal } from '@angular/core';
  * `CngxFormFieldPresenter`) exposes to the bound control.
  *
  * Two pieces:
- * - `showError: Signal<boolean>` — the resolved "should errors be visible
+ * - `showError: Signal<boolean>` - the resolved "should errors be visible
  *   right now" flag. Combines `invalid()` with the configured visibility
  *   gate (`touched`, `dirty`, `submitted`, custom strategy, ambient
  *   reveal-scope). The control reads this to decide whether to paint its
  *   own error skin (`aria-invalid`, `.cngx-...--error`).
- * - `markAsTouched(): void` — invoked by the control on focus-out so the
+ * - `markAsTouched(): void` - invoked by the control on focus-out so the
  *   surrounding field's "touched" state advances without the control
  *   importing the concrete presenter or field-state shape.
  *
@@ -55,6 +55,7 @@ export interface CngxFormFieldHostContract {
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/core/tokens/form-field-host.token.ts
  * @since 0.1.0
+ * @relatedTo CngxFormFieldHostContract, CNGX_FORM_FIELD_CONTROL, CngxFormFieldPresenter, CngxFormField
  */
 export const CNGX_FORM_FIELD_HOST = new InjectionToken<CngxFormFieldHostContract>(
   'CngxFormFieldHost',

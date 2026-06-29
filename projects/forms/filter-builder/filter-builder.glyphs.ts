@@ -1,8 +1,8 @@
 /**
- * @internal Default glyph set used by the filter-builder component (Phase 5).
- * Lives in a module-local const, never exported from `public-api.ts` — per
- * `feedback_internal_glyph_const`, consumers override via slot directives
- * or per-input glyph bindings, not by re-importing the default symbols.
+ * @internal Default glyph set used by the filter-builder component.
+ * Lives in a module-local const, never exported from `public-api.ts`;
+ * consumers override via slot directives or per-input glyph bindings, not
+ * by re-importing the default symbols.
  */
 export const CNGX_FILTER_BUILDER_GLYPHS = {
   remove: '✕',

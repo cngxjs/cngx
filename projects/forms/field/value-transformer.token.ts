@@ -9,7 +9,7 @@ import { InjectionToken } from '@angular/core';
  *
  * Orthogonal to `CNGX_FORM_FIELD_CONTROL`: that token declares "I am the
  * focusable element"; this token declares "I translate this element's value
- * channel". The same directive may provide both — they are independent
+ * channel". The same directive may provide both - they are independent
  * contracts.
  *
  * @category forms/field
@@ -22,13 +22,24 @@ export interface CngxValueTransformer<T> {
 }
 
 /**
- * Injection token for a `CngxValueTransformer`. Optional — directives that
- * intercept the value channel of a focusable element provide this token; the
- * surrounding form-field reads it to route writes through the transformer.
+ * Resolves to the `CngxValueTransformer` a control publishes for translating
+ * between its typed value and its DOM display string:
+ *
+ * - `format(raw)` - on value-from-outside writes (field, `setValue`, `value.set`)
+ * - `parse(display)` - on user-input and blur reads
+ *
+ * Provided on the control's own host by the directives that intercept its
+ * value channel: `CngxInputMask`, `CngxInputFormat`, `CngxNumericInput`. A host
+ * that needs the typed-to-display mapping resolves it here.
+ *
+ * Optional and orthogonal to `CNGX_FORM_FIELD_CONTROL`: that token declares
+ * "I am the focusable element", this one "I translate its value channel" - one
+ * directive may provide both.
  *
  * @category forms/field
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/value-transformer.token.ts
  * @since 0.1.0
+ * @relatedTo CngxValueTransformer, CNGX_FORM_FIELD_CONTROL, CngxInputMask, CngxInputFormat, CngxNumericInput
  */
 export const CNGX_VALUE_TRANSFORMER = new InjectionToken<CngxValueTransformer<unknown>>(
   'CngxValueTransformer',

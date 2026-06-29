@@ -83,11 +83,14 @@ export function createSearchEffects(opts: SearchEffectsOptions): void {
 export type CngxSearchEffectsFactory = (opts: SearchEffectsOptions) => void;
 
 /**
- * Factory token. Default {@link createSearchEffects}.
+ * Factory for the search effects that wire a debounced search term to panel
+ * auto-open and the `searchTermChange` forward. Default `createSearchEffects`.
+ * Override to change the auto-open gating or term-forwarding for filter variants.
  *
  * @category forms/select/controllers
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/search-effects.ts
  * @since 0.1.0
+ * @relatedTo CngxCombobox, CngxTypeahead, withTypeaheadDebounce
  */
 export const CNGX_SEARCH_EFFECTS_FACTORY =
   new InjectionToken<CngxSearchEffectsFactory>('CngxSearchEffectsFactory', {

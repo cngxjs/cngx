@@ -187,13 +187,14 @@ export type CngxChipRemovalHandlerFactory = <
 ) => CngxChipRemovalHandler<Item>;
 
 /**
- * Factory token for {@link CngxChipRemovalHandler}. Default
- * {@link createChipRemovalHandler}. Override to wrap with telemetry,
- * confirm-before-remove, or offline-queue semantics.
+ * Factory for the chip-removal handler - the per-chip remove path on
+ * multi-value selects. Default `createChipRemovalHandler`. Override to wrap with
+ * telemetry, confirm-before-remove, or offline-queue semantics.
  *
  * @category forms/select/commit
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/chip-removal-handler.ts
  * @since 0.1.0
+ * @relatedTo CngxMultiSelect, CngxMultiSelectChip, CNGX_ARRAY_COMMIT_HANDLER_FACTORY
  */
 export const CNGX_CHIP_REMOVAL_HANDLER_FACTORY = new InjectionToken<CngxChipRemovalHandlerFactory>(
   'CngxChipRemovalHandlerFactory',

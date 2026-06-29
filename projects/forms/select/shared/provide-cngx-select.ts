@@ -54,7 +54,7 @@ function bucket(
         break;
       default:
         // Back-compat for `{ config: {...} }` features built without a
-        // `with*` helper — route to `provideSelectConfig`.
+        // `with*` helper - route to `provideSelectConfig`.
         select.push(feature as CngxSelectConfigFeature);
     }
   }

@@ -63,13 +63,15 @@ export type CngxPanelLifecycleEmitterFactory = (
 ) => void;
 
 /**
- * Factory token. Default {@link createPanelLifecycleEmitter}. Override
- * for telemetry, analytics, or custom focus-restore strategy.
+ * Factory for the panel lifecycle emitter - runs open / close side effects and
+ * restores focus to the trigger on close. Default `createPanelLifecycleEmitter`.
+ * Override for telemetry, analytics, or a custom focus-restore strategy.
  *
  * @category forms/select/panel
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/panel-lifecycle-emitter.ts
  * @since 0.1.0
+ * @relatedTo CngxSelect, withRestoreFocus
  */
 export const CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY =
   new InjectionToken<CngxPanelLifecycleEmitterFactory>(
