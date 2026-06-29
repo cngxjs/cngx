@@ -78,6 +78,10 @@ export interface InputAriaLabels {
   readonly passwordStrength: (label: string) => string;
   /** Assertive live-region announcement when `CngxInputFilter` rejects a disallowed character. Default: `'Character not allowed'` */
   readonly inputRejected: string;
+  /** Polite live-region announcement when `CngxSensitiveValue` reveals the value. Default: `'Value revealed'` */
+  readonly sensitiveReveal: string;
+  /** Polite live-region announcement when `CngxSensitiveValue` hides the value. Default: `'Value hidden'` */
+  readonly sensitiveHide: string;
 }
 
 /**
@@ -97,6 +101,8 @@ export const DEFAULT_INPUT_ARIA_LABELS: InputAriaLabels = {
   capsLockOn: 'Caps Lock is on',
   passwordStrength: (label) => `Password strength: ${label}`,
   inputRejected: 'Character not allowed',
+  sensitiveReveal: 'Value revealed',
+  sensitiveHide: 'Value hidden',
 };
 
 /**
