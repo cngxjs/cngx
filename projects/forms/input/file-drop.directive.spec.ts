@@ -1,7 +1,14 @@
-import { Component, viewChild } from '@angular/core';
+import { Component, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { vi } from 'vitest';
+import type { CngxAsyncState } from '@cngx/core/utils';
 import { CngxFileDrop } from './file-drop.directive';
-import { provideInputConfig, withFileMaxSize } from './input-config';
+import {
+  provideInputConfig,
+  withFileMaxFiles,
+  withFileMaxSize,
+  withInputAriaLabels,
+} from './input-config';
 
 @Component({
   template: `<div
@@ -9,6 +16,9 @@ import { provideInputConfig, withFileMaxSize } from './input-config';
     [accept]="accept"
     [maxSize]="maxSize"
     [multiple]="multiple"
+    [maxFiles]="maxFiles"
+    [ariaLabel]="ariaLabel"
+    [state]="state"
     #drop="cngxFileDrop"
   ></div>`,
   imports: [CngxFileDrop],
@@ -17,7 +27,18 @@ class Host {
   accept: string[] = [];
   maxSize: number | undefined = undefined;
   multiple = false;
+  maxFiles: number | undefined = undefined;
+  ariaLabel: string | undefined = undefined;
+  state: CngxAsyncState<unknown> | undefined = undefined;
   readonly drop = viewChild.required(CngxFileDrop);
+}
+
+function busyState(): CngxAsyncState<unknown> {
+  return {
+    isBusy: signal(true),
+    progress: signal(undefined),
+    error: signal(undefined),
+  } as unknown as CngxAsyncState<unknown>;
 }
 
 function setup(overrides: Partial<Host> = {}) {
@@ -42,6 +63,14 @@ function createDropEvent(files: File[]): DragEvent {
   return event;
 }
 
+function createKeydown(key: string): KeyboardEvent {
+  return new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true });
+}
+
+function file(name: string, content = 'x', lastModified = 1): File {
+  return new File([content], name, { lastModified });
+}
+
 describe('CngxFileDrop', () => {
   it('should be created', () => {
     const { directive } = setup();
@@ -54,9 +83,9 @@ describe('CngxFileDrop', () => {
     expect(directive.dragging()).toBe(false);
   });
 
-  it('should set aria-dropeffect', () => {
+  it('should not set the deprecated aria-dropeffect attribute', () => {
     const { el } = setup();
-    expect(el.getAttribute('aria-dropeffect')).toBe('copy');
+    expect(el.hasAttribute('aria-dropeffect')).toBe(false);
   });
 
   it('should set dragging on dragenter', () => {
@@ -108,5 +137,140 @@ describe('CngxFileDrop', () => {
 
     expect(directive.files()).toEqual([]);
     expect(directive.rejected().map((r) => r.reason)).toEqual(['size']);
+  });
+
+  it('exposes a button role for keyboard operability', () => {
+    const { el } = setup();
+    expect(el.getAttribute('role')).toBe('button');
+  });
+
+  it('is in the tab order while idle', () => {
+    const { el } = setup();
+    expect(el.getAttribute('tabindex')).toBe('0');
+  });
+
+  it('leaves the tab order while uploading', () => {
+    const { el } = setup({ state: busyState() });
+    expect(el.getAttribute('tabindex')).toBe('-1');
+  });
+
+  it('uses the English default aria-label', () => {
+    const { el } = setup();
+    expect(el.getAttribute('aria-label')).toBe('File drop zone');
+  });
+
+  it('honours a consumer-supplied ariaLabel', () => {
+    const { el } = setup({ ariaLabel: 'Dateien ablegen' });
+    expect(el.getAttribute('aria-label')).toBe('Dateien ablegen');
+  });
+
+  it('falls back to fileDropZone from the global aria-label config', () => {
+    TestBed.configureTestingModule({
+      providers: [provideInputConfig(withInputAriaLabels({ fileDropZone: 'Dateien hier ablegen' }))],
+    });
+    const { el } = setup();
+    expect(el.getAttribute('aria-label')).toBe('Dateien hier ablegen');
+  });
+
+  it('marks aria-disabled while uploading and clears it while idle', () => {
+    const idle = setup();
+    expect(idle.el.hasAttribute('aria-disabled')).toBe(false);
+
+    const busy = setup({ state: busyState() });
+    expect(busy.el.getAttribute('aria-disabled')).toBe('true');
+  });
+
+  it('opens the picker on click', () => {
+    const { el, directive } = setup();
+    const browse = vi.spyOn(directive, 'browse').mockImplementation(() => {});
+    el.click();
+    expect(browse).toHaveBeenCalledOnce();
+  });
+
+  it('opens the picker on Enter', () => {
+    const { el, directive } = setup();
+    const browse = vi.spyOn(directive, 'browse').mockImplementation(() => {});
+    el.dispatchEvent(createKeydown('Enter'));
+    expect(browse).toHaveBeenCalledOnce();
+  });
+
+  it('opens the picker on Space', () => {
+    const { el, directive } = setup();
+    const browse = vi.spyOn(directive, 'browse').mockImplementation(() => {});
+    el.dispatchEvent(createKeydown(' '));
+    expect(browse).toHaveBeenCalledOnce();
+  });
+
+  it('accumulates files across drops in multiple mode', () => {
+    const { el, directive } = setup({ multiple: true });
+    el.dispatchEvent(createDropEvent([file('a.txt')]));
+    el.dispatchEvent(createDropEvent([file('b.txt')]));
+    expect(directive.files().map((f) => f.name)).toEqual(['a.txt', 'b.txt']);
+  });
+
+  it('dedups identical files across drops in multiple mode', () => {
+    const { el, directive } = setup({ multiple: true });
+    el.dispatchEvent(createDropEvent([file('a.txt')]));
+    el.dispatchEvent(createDropEvent([file('a.txt')]));
+    expect(directive.files().map((f) => f.name)).toEqual(['a.txt']);
+  });
+
+  it('replaces the selection on each drop in single mode', () => {
+    const { el, directive } = setup({ multiple: false });
+    el.dispatchEvent(createDropEvent([file('a.txt')]));
+    el.dispatchEvent(createDropEvent([file('b.txt')]));
+    expect(directive.files().map((f) => f.name)).toEqual(['b.txt']);
+  });
+
+  it('accumulates and dedups rejections in multiple mode', () => {
+    const { el, directive } = setup({ multiple: true, accept: ['.png'] });
+    el.dispatchEvent(createDropEvent([file('a.txt')]));
+    el.dispatchEvent(createDropEvent([file('a.txt')]));
+    expect(directive.rejected().map((r) => r.file.name)).toEqual(['a.txt']);
+  });
+
+  it('emits the full accumulated selection on each drop in multiple mode', () => {
+    const { el, directive } = setup({ multiple: true });
+    const emitted: string[][] = [];
+    directive.filesChange.subscribe((files) => emitted.push(files.map((f) => f.name)));
+    el.dispatchEvent(createDropEvent([file('a.txt')]));
+    el.dispatchEvent(createDropEvent([file('b.txt')]));
+    expect(emitted).toEqual([['a.txt'], ['a.txt', 'b.txt']]);
+  });
+
+  it('rejects files past maxFiles with reason count', () => {
+    const { el, directive } = setup({ multiple: true, maxFiles: 2 });
+    el.dispatchEvent(createDropEvent([file('a.txt'), file('b.txt'), file('c.txt')]));
+    expect(directive.files().map((f) => f.name)).toEqual(['a.txt', 'b.txt']);
+    expect(directive.rejected()).toEqual([
+      expect.objectContaining({ reason: 'count' }),
+    ]);
+    expect(directive.rejected()[0].file.name).toBe('c.txt');
+  });
+
+  it('caps the count across accumulating drops', () => {
+    const { el, directive } = setup({ multiple: true, maxFiles: 2 });
+    el.dispatchEvent(createDropEvent([file('a.txt')]));
+    el.dispatchEvent(createDropEvent([file('b.txt'), file('c.txt')]));
+    expect(directive.files().map((f) => f.name)).toEqual(['a.txt', 'b.txt']);
+    expect(directive.rejected().map((r) => r.reason)).toEqual(['count']);
+  });
+
+  it('does not let a duplicate consume a maxFiles slot', () => {
+    const { el, directive } = setup({ multiple: true, maxFiles: 2 });
+    el.dispatchEvent(createDropEvent([file('a.txt')]));
+    el.dispatchEvent(createDropEvent([file('a.txt'), file('b.txt')]));
+    expect(directive.files().map((f) => f.name)).toEqual(['a.txt', 'b.txt']);
+    expect(directive.rejected()).toEqual([]);
+  });
+
+  it('honours fileMaxFiles from global config when no [maxFiles] binding is set', () => {
+    TestBed.configureTestingModule({
+      providers: [provideInputConfig(withFileMaxFiles(1))],
+    });
+    const { el, directive } = setup({ multiple: true });
+    el.dispatchEvent(createDropEvent([file('a.txt'), file('b.txt')]));
+    expect(directive.files().map((f) => f.name)).toEqual(['a.txt']);
+    expect(directive.rejected().map((r) => r.reason)).toEqual(['count']);
   });
 });

@@ -10,7 +10,7 @@ import {
   type Signal,
 } from '@angular/core';
 import type { CngxAsyncState } from '@cngx/core/utils';
-import { CNGX_INPUT_CONFIG } from './input-config';
+import { CNGX_INPUT_CONFIG, DEFAULT_INPUT_ARIA_LABELS } from './input-config';
 
 /**
  * Describes a file that was rejected during drop/browse validation.
@@ -20,8 +20,16 @@ import { CNGX_INPUT_CONFIG } from './input-config';
 export interface FileRejection {
   /** The rejected file. */
   readonly file: File;
-  /** Why the file was rejected: MIME type mismatch (`'type'`) or exceeds `maxSize` (`'size'`). */
-  readonly reason: 'type' | 'size';
+  /**
+   * Why the file was rejected: MIME type mismatch (`'type'`), exceeds `maxSize`
+   * (`'size'`), or over the `maxFiles` count cap (`'count'`).
+   */
+  readonly reason: 'type' | 'size' | 'count';
+}
+
+/** Identity key for dedup across drops. */
+function fileKey(file: File): string {
+  return `${file.name}|${file.size}|${file.lastModified}`;
 }
 
 /**
@@ -31,13 +39,18 @@ export interface FileRejection {
  * files against `accept` and `maxSize`, and provides a `browse()` method
  * for programmatic file picker access.
  *
+ * The host element is itself the activation control: click, Enter, or Space
+ * open the file picker, so it always carries `role="button"`. This affordance
+ * is unconditional by design - there is no passive drop-only mode, and you
+ * must not nest interactive controls inside the zone.
+ *
  * ```html
  * <div cngxFileDrop [accept]="['image/*']" [maxSize]="5_000_000"
  *      #drop="cngxFileDrop" (filesChange)="upload($event)">
  *   @if (drop.dragging()) {
  *     <p>Drop files here</p>
  *   } @else {
- *     <p>Drag files or <button (click)="drop.browse()">browse</button></p>
+ *     <p>Drag files here, or click / press Enter to browse</p>
  *   }
  * </div>
  * ```
@@ -56,15 +69,21 @@ export interface FileRejection {
   exportAs: 'cngxFileDrop',
   host: {
     class: 'cngx-file-drop',
+    role: 'button',
     '(dragenter)': 'handleDragEnter($event)',
     '(dragover)': 'handleDragOver($event)',
     '(dragleave)': 'handleDragLeave($event)',
     '(drop)': 'handleDrop($event)',
+    '(click)': 'handleActivate($event)',
+    '(keydown.enter)': 'handleActivate($event)',
+    '(keydown.space)': 'handleActivate($event)',
     '[class.cngx-file-drop--dragging]': 'dragging()',
     '[class.cngx-file-drop--has-files]': 'files().length > 0',
     '[class.cngx-file-drop--uploading]': 'uploading()',
     '[attr.aria-busy]': 'uploading() || null',
-    '[attr.aria-dropeffect]': '"copy"',
+    '[attr.aria-disabled]': 'uploading() || null',
+    '[attr.aria-label]': 'resolvedAriaLabel()',
+    '[attr.tabindex]': 'tabIndex()',
   },
 })
 export class CngxFileDrop {
@@ -83,6 +102,21 @@ export class CngxFileDrop {
   /** Allow multiple files. */
   readonly multiple = input<boolean>(false);
 
+  /** Maximum number of accepted files. `undefined` = no limit. Falls back to global config. */
+  readonly maxFiles = input<number | undefined>(undefined);
+
+  private readonly resolvedMaxFiles = computed(() => this.maxFiles() ?? this.config.fileMaxFiles);
+
+  /**
+   * `aria-label` for the drop zone. Falls back to the global config
+   * (`ariaLabels.fileDropZone`), then the English default.
+   */
+  readonly ariaLabel = input<string | undefined>(undefined);
+
+  protected readonly resolvedAriaLabel = computed(
+    () => this.ariaLabel() ?? this.config.ariaLabels?.fileDropZone ?? DEFAULT_INPUT_ARIA_LABELS.fileDropZone,
+  );
+
   /**
    * Bind an upload async state - shows busy/error/progress during upload.
    * When set, `uploading` derives from `state.isBusy()` and `uploadProgress`
@@ -98,6 +132,9 @@ export class CngxFileDrop {
 
   /** Upload error, or `undefined`. */
   readonly uploadError = computed(() => this.state()?.error());
+
+  /** Keyboard focusability: focusable while idle, removed from tab order while uploading. */
+  protected readonly tabIndex = computed(() => (this.uploading() ? -1 : 0));
 
   private readonly draggingState = signal(false);
   private readonly filesState = signal<File[]>([]);
@@ -145,6 +182,12 @@ export class CngxFileDrop {
     if (this.fileInput) {
       this.fileInput.value = '';
     }
+  }
+
+  /** @internal Keyboard activation: Enter/Space opens the native file picker. */
+  protected handleActivate(event: Event): void {
+    event.preventDefault();
+    this.browse();
   }
 
   /** @internal */
@@ -208,15 +251,49 @@ export class CngxFileDrop {
       }
     }
 
-    this.filesState.set(valid);
-    this.rejectedState.set(rejected);
+    // Multi-mode accumulates across drops; single mode replaces.
+    const accumulate = this.multiple();
+    const retainedFiles = accumulate ? this.filesState() : [];
+    const retainedRejected = accumulate ? this.rejectedState() : [];
 
-    if (valid.length > 0) {
-      this.filesChange.emit(valid);
+    // Drop files already retained, then cap the rest at maxFiles ('count' overflow).
+    const seen = new Set(retainedFiles.map(fileKey));
+    const fresh = valid.filter((file) => !seen.has(fileKey(file)));
+
+    const cap = this.resolvedMaxFiles();
+    const room = cap == null ? fresh.length : Math.max(0, cap - retainedFiles.length);
+    const accepted = fresh.slice(0, room);
+    const overflow: FileRejection[] = fresh.slice(room).map((file) => ({ file, reason: 'count' }));
+
+    const nextFiles = [...retainedFiles, ...accepted];
+    const nextRejected = this.mergeUnique(
+      retainedRejected,
+      [...rejected, ...overflow],
+      (r) => fileKey(r.file),
+    );
+
+    this.filesState.set(nextFiles);
+    this.rejectedState.set(nextRejected);
+
+    if (accepted.length > 0) {
+      this.filesChange.emit(nextFiles);
     }
-    if (rejected.length > 0) {
-      this.rejectedChange.emit(rejected);
+    if (rejected.length + overflow.length > 0) {
+      this.rejectedChange.emit(nextRejected);
     }
+  }
+
+  private mergeUnique<T>(existing: readonly T[], incoming: readonly T[], keyOf: (item: T) => string): T[] {
+    const seen = new Set(existing.map(keyOf));
+    const merged = [...existing];
+    for (const item of incoming) {
+      const key = keyOf(item);
+      if (!seen.has(key)) {
+        seen.add(key);
+        merged.push(item);
+      }
+    }
+    return merged;
   }
 
   private matchesAccept(file: File): boolean {
