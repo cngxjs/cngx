@@ -181,7 +181,9 @@ export type InputConfigFeature = (config: InputConfig) => InputConfig;
  * @see {@link withNumericDefaults}
  * @see {@link withCopyResetDelay}
  * @see {@link withFileMaxSize}
+ * @see {@link withFileMaxFiles}
  * @see {@link withInputAriaLabels}
+ * @see {@link withCurrency}
  *
  * @category forms/input
  */
@@ -455,6 +457,10 @@ export function withFileMaxFiles(count: number): InputConfigFeature {
  * - `copySuccess` / `copyError` -> `CngxCopyValue` live-region announcements.
  * - `otpGroup` / `otpSlot(index, length)` / `otpComplete` -> `CngxOtpInput`
  *   group, per-slot labels, and completion announcement.
+ * - `capsLockOn` -> `CngxCapsLock` assertive warning.
+ * - `passwordStrength(label)` -> `CngxPasswordStrength` polite announcement.
+ * - `inputRejected` -> `CngxInputFilter` assertive rejection.
+ * - `sensitiveReveal` / `sensitiveHide` -> `CngxSensitiveValue` reveal/hide announcements.
  *
  * ```typescript
  * provideInputConfig(
