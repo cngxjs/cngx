@@ -48,6 +48,7 @@
 @use './metric-theme' as metric;
 @use './option-theme' as option;
 @use './paginator-theme' as paginator;
+@use './password-strength-meter-theme' as password-strength-meter;
 @use './popover-panel-theme' as popover-panel;
 @use './ripple-theme' as ripple;
 @use './select-theme' as select;
@@ -89,6 +90,7 @@
   @include metric.theme($theme);
   @include option.theme($theme);
   @include paginator.theme($theme);
+  @include password-strength-meter.theme($theme);
   @include popover-panel.theme($theme);
   @include ripple.theme($theme);
   @include select.theme($theme);
