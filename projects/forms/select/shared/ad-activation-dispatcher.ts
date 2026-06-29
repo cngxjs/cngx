@@ -34,9 +34,9 @@ export interface ADActivationDispatcherOptions<T, V> {
 
 /**
  * Wires `listbox.ad.activated` into the variant's commit / non-commit
- * callbacks. Single `effect(onCleanup)` — subscribes on ref resolve,
+ * callbacks. Single `effect(onCleanup)` - subscribes on ref resolve,
  * unsubscribes on teardown. Payload runs inside `untracked`; activations
- * for unknown values are dropped. Value-shape agnostic — rollback
+ * for unknown values are dropped. Value-shape agnostic - rollback
  * ownership stays in the consumer.
  *
  * @category forms/select/controllers

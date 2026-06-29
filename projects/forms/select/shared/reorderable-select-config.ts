@@ -44,12 +44,25 @@ export const CNGX_REORDERABLE_SELECT_DEFAULTS: Required<
 };
 
 /**
- * Token carrying the resolved {@link CngxReorderableSelectConfig}.
+ * Resolved configuration for `CngxReorderableMultiSelect` - the keyboard
+ * reorder modifier, drag-handle template, selection-strip freeze-on-commit,
+ * and ARIA label.
+ *
+ * Provide it through one of two entry points, never the token directly:
+ *
+ * - `provideReorderableSelectConfig(...)` returns `EnvironmentProviders` - app bootstrap or a route.
+ * - `provideReorderableSelectConfigAt(...)` returns `Provider[]` - a component's `providers` / `viewProviders`.
+ *
+ * Compose from the `with*` features (`withReorderKeyboardModifier`,
+ * `withReorderAriaLabel`, `withDefaultDragHandle`, `withReorderStripFreeze`).
+ * Resolution is nearest-wins: a nested provider replaces an ancestor config for
+ * its subtree, it does not deep-merge.
  *
  * @category forms/select/reorderable-multi-select
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/reorderable-select-config.ts
  * @since 0.1.0
+ * @relatedTo provideReorderableSelectConfig, provideReorderableSelectConfigAt, withReorderKeyboardModifier, withReorderAriaLabel, withDefaultDragHandle, withReorderStripFreeze, CngxReorderableMultiSelect
  */
 export const CNGX_REORDERABLE_SELECT_CONFIG = new InjectionToken<CngxReorderableSelectConfig>(
   'CngxReorderableSelectConfig',

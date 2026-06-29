@@ -55,14 +55,14 @@ export function createRecyclerPanelRendererFactory(
         const start = recycler.start();
         const end = recycler.end();
         if (start === 0 && end >= all.length) {
-          // Window covers full list — return verbatim so upstream
+          // Window covers full list - return verbatim so upstream
           // identity-based equal stays stable.
           return all;
         }
         return all.slice(start, Math.min(end, all.length));
       },
       {
-        // Structural equal — length + per-entry identity. Prevents @for
+        // Structural equal - length + per-entry identity. Prevents @for
         // track-by thrash when the window doesn't move.
         equal: (a, b) => {
           if (a === b) {

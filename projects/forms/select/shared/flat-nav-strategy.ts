@@ -122,13 +122,14 @@ export function createDefaultFlatNavStrategy(
 
 /**
  * Flat-variant keyboard-nav strategy token. Default
- * {@link createDefaultFlatNavStrategy}. Override for fuzzy typeahead,
- * custom page-step, or group-aware jumps.
+ * `createDefaultFlatNavStrategy`. Override for fuzzy typeahead, custom
+ * page-step, or group-aware jumps.
  *
  * @category forms/select/controllers
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/flat-nav-strategy.ts
  * @since 0.1.0
+ * @relatedTo CngxSelect, CngxCombobox, CngxTypeahead
  */
 export const CNGX_FLAT_NAV_STRATEGY = new InjectionToken<CngxFlatNavStrategy>(
   'CngxFlatNavStrategy',

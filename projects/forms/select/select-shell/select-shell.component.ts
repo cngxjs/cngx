@@ -708,7 +708,7 @@ export class CngxSelectShell<T = unknown>
   protected readonly isCommittingOption = this.core.panelHostAdapter.isCommittingOption;
 
   // Satisfies the CNGX_SELECT_PANEL_HOST contract; the panel-shell overlay
-  // is deferred (plan Phase 10) so nothing in the current template reads it.
+  // is deferred so nothing in the current template reads it.
   protected readonly unfilteredCount = computed(() => this.core.unfilteredFlatOptions().length);
   protected readonly previousLoadedCount = computed(() => this.flatOptions().length);
 

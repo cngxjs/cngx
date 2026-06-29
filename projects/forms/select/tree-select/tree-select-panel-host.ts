@@ -43,7 +43,7 @@ export interface CngxTreeSelectPanelHost<T = unknown> {
   /** Whether the value is partially selected via cascade descendants. */
   isIndeterminate(value: T): boolean;
   /**
-   * Select-path dispatch — click, Enter/Space via AD, or
+   * Select-path dispatch - click, Enter/Space via AD, or
    * `handleSelect()` from a consumer template. Routes through
    * cascade + commit.
    */

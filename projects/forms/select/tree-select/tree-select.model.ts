@@ -11,10 +11,10 @@ export type { FlatTreeNode };
  * Action reported on `CngxTreeSelectChange.action`. Split out for
  * `switch`-style narrowing without importing the change interface.
  *
- *   - `'toggle'` — single node flipped.
- *   - `'cascade-toggle'` — parent toggle propagated to all descendants
+ *   - `'toggle'` - single node flipped.
+ *   - `'cascade-toggle'` - parent toggle propagated to all descendants
  *     atomically (requires `[cascadeChildren]="true"`).
- *   - `'clear'` — full selection cleared.
+ *   - `'clear'` - full selection cleared.
  *
  * @category forms/select/tree-select
  */
@@ -43,7 +43,7 @@ export interface CngxTreeSelectChipContext<T = unknown> {
   readonly option: CngxTreeSelectedItem<T>;
   /**
    * Commit-aware removal. Always single-deselect, even with
-   * `[cascadeChildren]="true"` — chip × represents one explicit value.
+   * `[cascadeChildren]="true"` - chip × represents one explicit value.
    */
   readonly remove: () => void;
 }
@@ -68,7 +68,7 @@ export interface CngxTreeSelectTriggerLabelContext<T = unknown> {
  * without re-querying.
  *
  * `toggleExpand` / `handleSelect` are closed callbacks bound to the
- * surrounding component — wire into `(click)` on a custom twisty
+ * surrounding component - wire into `(click)` on a custom twisty
  * button or row body.
  *
  * @category forms/select/tree-select

@@ -38,8 +38,7 @@ export interface CngxCommitErrorAnnounceDeps {
 /**
  * Builds the scalar-commit error-announce callback from a policy signal.
  *
- * Popover-close timing stays inline per variant - see
- * `select-family-accepted-debt §2`.
+ * Popover-close timing stays inline per variant.
  *
  * ```ts
  * // CngxSelect (verbose, assertive)
@@ -96,14 +95,15 @@ export type CngxCommitErrorAnnouncerFactory = (
 ) => (err: unknown) => void;
 
 /**
- * Factory token for the scalar-commit error-announce path. Default
- * {@link createCommitErrorAnnouncer}. Override for telemetry, locale,
- * or test doubles.
+ * Factory for the scalar-commit error-announce path - turns a failed commit
+ * into a live-region message. Default `createCommitErrorAnnouncer`. Override
+ * for telemetry, locale, or test doubles.
  *
  * @category forms/select/commit
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/commit-error-announcer.ts
  * @since 0.1.0
+ * @relatedTo CngxSelect, CNGX_SCALAR_COMMIT_HANDLER_FACTORY
  */
 export const CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY =
   new InjectionToken<CngxCommitErrorAnnouncerFactory>('CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY', {

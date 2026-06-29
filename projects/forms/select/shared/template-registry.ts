@@ -158,12 +158,21 @@ export type CngxTemplateRegistryFactory = <T = unknown>(
 ) => CngxSelectTemplateRegistry<T>;
 
 /**
- * Factory token for the template-slot cascade. Default
- * {@link createTemplateRegistry}.
+ * Factory that resolves the select family's slot-template registry. For each
+ * slot it runs the cascade and returns the `TemplateRef` set the trigger and
+ * panel render:
+ *
+ * - the consumer's projected slot template (`*cngxSelect...`)
+ * - else `CNGX_SELECT_CONFIG.templates.<slot>`
+ * - else the built-in default
+ *
+ * Default: `createTemplateRegistry`. Swap the whole resolution strategy by
+ * providing your own factory at root or component scope.
  *
  * @category forms/select/templates
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-registry.ts
  * @since 0.1.0
+ * @relatedTo CNGX_SELECT_CONFIG, provideSelectConfig
  */
 export const CNGX_TEMPLATE_REGISTRY_FACTORY = new InjectionToken<CngxTemplateRegistryFactory>(
   'CNGX_TEMPLATE_REGISTRY_FACTORY',

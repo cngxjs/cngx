@@ -53,7 +53,7 @@ export function describeCommitControllerCascade(variantName: string): void {
       const ctrl = factory<unknown>();
       // The wrapper unwraps the generic and re-wires its signal
       // accessors. Verify the wrapper still produces a usable
-      // controller — the override is invisible at select call-sites
+      // controller - the override is invisible at select call-sites
       // by design.
       expect(typeof ctrl.begin).toBe('function');
       expect(ctrl.state.status()).toBe('idle');

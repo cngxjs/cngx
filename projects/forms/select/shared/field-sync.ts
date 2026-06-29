@@ -5,7 +5,7 @@ import { CngxFormFieldPresenter, type CngxFieldRef } from '@cngx/forms/field';
 /**
  * Provide truthy in a subtree to suppress {@link createFieldSync} for every
  * descendant select. The form-field bridge (disabled / focused / errorState)
- * stays intact — only the bidirectional value-sync is opted out. Use when a
+ * stays intact - only the bidirectional value-sync is opted out. Use when a
  * composite control (e.g. `cngx-filter-builder`) is the form-field's control
  * and its inner pickers must not write the composite's object value into
  * their own scalar `value` model.

@@ -92,7 +92,7 @@ export class CngxTreeSelectPanel<T = unknown> {
 
   /**
    * Visible-nodes projected into AD item shape via `createTreeAdItems`
-   * — keeps the controller a11y-agnostic. Recomputed when
+   * - keeps the controller a11y-agnostic. Recomputed when
    * `visibleNodes` emits.
    */
   protected readonly adItems = createTreeAdItems(this.host.treeController);
@@ -106,7 +106,7 @@ export class CngxTreeSelectPanel<T = unknown> {
    *   - Context identity: `nodeContext(node)` returns the SAME object
    *     when reactive flags and the `FlatTreeNode` ref haven't
    *     changed. `ngTemplateOutlet` compares by reference and rebinds
-   *     on change — caching prevents outlet thrash every CD cycle.
+   *     on change - caching prevents outlet thrash every CD cycle.
    *
    * Entries live for the panel's lifetime (one popover open).
    */
@@ -170,7 +170,7 @@ export class CngxTreeSelectPanel<T = unknown> {
   }
 
   private getHandleSelect(node: FlatTreeNode<T>): () => void {
-    // Cache only when `node.value` is an object — WeakMap contract.
+    // Cache only when `node.value` is an object - WeakMap contract.
     // Primitive-valued callbacks are recreated per call; cheap.
     const key =
       typeof node.value === 'object' && node.value !== null

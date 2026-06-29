@@ -66,12 +66,15 @@ export function createDismissHandler(opts: DismissHandlerOptions): DismissHandle
 export type CngxDismissHandlerFactory = (opts: DismissHandlerOptions) => DismissHandler;
 
 /**
- * Factory token for {@link DismissHandler}. Default
- * {@link createDismissHandler}.
+ * Factory for the `DismissHandler` that decides when an open panel closes
+ * (outside click, Escape, blur, select). Default `createDismissHandler`.
+ * Override to customise the dismiss triggers beyond what `withDismissOn`
+ * configures.
  *
  * @category forms/select/controllers
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/dismiss-handler.ts
  * @since 0.1.0
+ * @relatedTo CngxSelect, withDismissOn
  */
 export const CNGX_DISMISS_HANDLER_FACTORY = new InjectionToken<CngxDismissHandlerFactory>(
   'CngxDismissHandlerFactory',

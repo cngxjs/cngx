@@ -412,11 +412,27 @@ export const CNGX_SELECT_DEFAULTS: Required<
 };
 
 /**
- * Resolved {@link CngxSelectConfig} token.
+ * Resolved configuration shared by every select-family composite - panel
+ * presentation, loading / refreshing variants, chip overflow, virtualization,
+ * keyboard open / dismiss triggers, selection-indicator style, and the ARIA /
+ * fallback labels. Composed from the `with*` features (`withPanelWidth`,
+ * `withVirtualization`, `withSelectionIndicator`, `withAriaLabels`, ...).
  *
+ * Provide it through one of two entry points, never the token directly:
+ *
+ * - `provideSelectConfig(...)` returns `EnvironmentProviders` - app bootstrap or a route.
+ * - `provideSelectConfigAt(...)` returns `Provider[]` - a component's `providers` / `viewProviders`.
+ *
+ * Resolution is nearest-wins: a nested provider replaces an ancestor config for
+ * its subtree, it does not deep-merge. The action-select and reorderable
+ * composites layer their own `CNGX_ACTION_SELECT_CONFIG` /
+ * `CNGX_REORDERABLE_SELECT_CONFIG` on top of this base.
+ *
+ * @category forms/select/config
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/config.ts
  * @since 0.1.0
+ * @relatedTo provideSelectConfig, provideSelectConfigAt, CngxSelectConfig, CNGX_ACTION_SELECT_CONFIG, CNGX_REORDERABLE_SELECT_CONFIG
  */
 export const CNGX_SELECT_CONFIG = new InjectionToken<CngxSelectConfig>('CngxSelectConfig');
 

@@ -1,6 +1,6 @@
 /**
  * Data-driven option for the Select family. Pass an array to `[options]`.
- * Element-driven composition uses `<cngx-option>` (`CngxSelectOption`) —
+ * Element-driven composition uses `<cngx-option>` (`CngxSelectOption`) -
  * pick one mode per instance.
  *
  * @category forms/select/state
@@ -9,7 +9,7 @@ export interface CngxSelectOptionDef<T = unknown> {
   readonly value: T;
   readonly label: string;
   readonly disabled?: boolean;
-  /** Forwarded to label templates — icons, badges, category metadata. */
+  /** Forwarded to label templates - icons, badges, category metadata. */
   readonly meta?: unknown;
 }
 
@@ -117,7 +117,7 @@ export function filterSelectOptions<T>(
 /**
  * Folds a local-items buffer onto server-provided options, deduped by
  * value via `compareWith`. Group shape preserved; locals appended flat
- * after groups. Server wins on collision — locals matching a provided
+ * after groups. Server wins on collision - locals matching a provided
  * value drop silently.
  *
  * Identity-stable when `localItems` is empty (returns `provided`).
@@ -150,8 +150,8 @@ export function mergeLocalItems<T>(
 
 /**
  * Disabled-check across both option shapes:
- * - `CngxSelectOptionDef.disabled` — plain `boolean` (data-driven)
- * - `CngxOption.disabled` — `InputSignal<boolean>` (element-driven, callable)
+ * - `CngxSelectOptionDef.disabled` - plain `boolean` (data-driven)
+ * - `CngxOption.disabled` - `InputSignal<boolean>` (element-driven, callable)
  *
  * Direct `.disabled` access would treat every signal as truthy (TS2774).
  */

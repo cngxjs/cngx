@@ -110,7 +110,7 @@ export class CngxSelectPanelShell<T = unknown> {
       };
     },
     {
-      // Structural equal — `bridge.callbacks` pins identity to
+      // Structural equal - `bridge.callbacks` pins identity to
       // isPending, so 5 reactive fields + searchTerm + dirty cover
       // every semantic change. Suppresses per-keystroke outlet rebinds.
       equal: (a, b) =>

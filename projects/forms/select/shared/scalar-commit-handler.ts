@@ -181,12 +181,16 @@ export type CngxScalarCommitHandlerFactory = <T>(
 ) => ScalarCommitHandler<T>;
 
 /**
- * Factory token for {@link ScalarCommitHandler}. Default
- * {@link createScalarCommitHandler}.
+ * Factory for the scalar commit handler - value reconciliation and finalize
+ * orchestration for single-value selects, the scalar twin of
+ * `CNGX_ARRAY_COMMIT_HANDLER_FACTORY`. Default `createScalarCommitHandler`.
+ * Override to change how an optimistic selection reconciles against an async
+ * commit result.
  *
  * @category forms/select/commit
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/scalar-commit-handler.ts
  * @since 0.1.0
+ * @relatedTo CngxSelect, CNGX_SELECT_COMMIT_CONTROLLER_FACTORY, CNGX_ARRAY_COMMIT_HANDLER_FACTORY
  */
 export const CNGX_SCALAR_COMMIT_HANDLER_FACTORY =
   new InjectionToken<CngxScalarCommitHandlerFactory>('CngxScalarCommitHandlerFactory', {

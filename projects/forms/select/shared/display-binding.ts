@@ -115,12 +115,14 @@ export function createDisplayBinding<T>(opts: DisplayBindingOptions<T>): Display
 export type CngxDisplayBindingFactory = <T>(opts: DisplayBindingOptions<T>) => DisplayBinding<T>;
 
 /**
- * Factory token for {@link DisplayBinding}. Default
- * {@link createDisplayBinding}.
+ * Factory for the `DisplayBinding` that turns a select's current value into the
+ * trigger's display text. Default `createDisplayBinding`. Override to change how
+ * selected values render in the closed trigger.
  *
  * @category forms/select/state
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/display-binding.ts
  * @since 0.1.0
+ * @relatedTo CngxSelect, CngxSelectTriggerLabel
  */
 export const CNGX_DISPLAY_BINDING_FACTORY = new InjectionToken<CngxDisplayBindingFactory>(
   'CngxDisplayBindingFactory',

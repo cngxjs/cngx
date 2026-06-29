@@ -165,14 +165,15 @@ export type CngxReorderCommitHandlerFactory = <T>(
 ) => ReorderCommitHandler<T>;
 
 /**
- * DI token for {@link ReorderCommitHandler}. Default
- * {@link createReorderCommitHandler}. Override via `providers` /
- * `viewProviders` for retry-with-backoff, offline queues, audit
+ * Factory for the reorder-commit handler - persists `CngxReorderableMultiSelect`
+ * drag and keyboard reorders. Default `createReorderCommitHandler`. Override via
+ * `providers` / `viewProviders` for retry-with-backoff, offline queues, audit
  * logging, or telemetry.
  *
  * @category forms/select/reorderable-multi-select
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/reorder-commit-handler.ts
  * @since 0.1.0
+ * @relatedTo CngxReorderableMultiSelect, CNGX_SELECT_COMMIT_CONTROLLER_FACTORY
  */
 export const CNGX_REORDER_COMMIT_HANDLER_FACTORY =
   new InjectionToken<CngxReorderCommitHandlerFactory>('CngxReorderCommitHandlerFactory', {

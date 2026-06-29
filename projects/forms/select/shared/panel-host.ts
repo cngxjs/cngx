@@ -23,7 +23,7 @@ export interface CngxSelectActionCallbacks {
   readonly commit: (draft?: { label: string }) => void;
   readonly isPending: boolean;
   readonly setDirty: (value: boolean) => void;
-  /** Distinct from `close` — runs variant abandon logic before dirty flips. */
+  /** Distinct from `close` - runs variant abandon logic before dirty flips. */
   readonly cancel: () => void;
   /** Re-dispatches the last commit through the same controller. */
   readonly retry: () => void;
@@ -62,12 +62,12 @@ export interface CngxSelectPanelShellTemplates<T = unknown> {
   readonly retryButton: Signal<TemplateRef<CngxSelectRetryButtonContext> | null>;
   /** Inner body of spinner/bar/dots indicators. Skeleton stays HTML-driven. */
   readonly loadingGlyph: Signal<TemplateRef<void> | null>;
-  /** `*cngxSelectAction` slot. Cross-variant — flat, tree, and action panels all read it. */
+  /** `*cngxSelectAction` slot. Cross-variant - flat, tree, and action panels all read it. */
   readonly action: Signal<TemplateRef<CngxSelectActionContext> | null>;
 }
 
 /**
- * Narrow contract consumed by `CngxSelectPanelShell` — async view,
+ * Narrow contract consumed by `CngxSelectPanelShell` - async view,
  * shell-rendered slots, retry callback. `CngxTreeSelect` provides only
  * this surface; flat variants provide this plus the full
  * {@link CngxSelectPanelHost}.
@@ -116,7 +116,7 @@ export interface CngxSelectPanelViewHost<T = unknown> {
   readonly actionPosition?: Signal<'top' | 'bottom' | 'both' | 'none'>;
   /**
    * Action-workflow commit-error. Distinct from `commitErrorContext`
-   * (toggle/clear commits) — both surfaces co-exist.
+   * (toggle/clear commits) - both surfaces co-exist.
    */
   readonly actionError?: Signal<unknown>;
   /** Current primary value, type-erased. Forwarded into action context. */
@@ -143,7 +143,7 @@ export const CNGX_SELECT_PANEL_VIEW_HOST = new InjectionToken<CngxSelectPanelVie
  */
 export interface CngxSelectPanelHost<T = unknown> extends CngxSelectPanelViewHost<T> {
   /**
-   * Pre-built renderer reused by the panel — avoids duplicate state
+   * Pre-built renderer reused by the panel - avoids duplicate state
    * and lets the host wire AD-virtualisation hooks against the same
    * instance.
    *
