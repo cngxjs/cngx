@@ -1,11 +1,11 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxInputMask: national Austrian phone',
+  title: 'CngxInputMask: national Austrian mobile',
   subtitle:
-    'A purely national number (leading <code>0</code>, no <code>+43</code>) using a custom <code>|</code> multi-pattern - landline below, mobile above the length threshold.',
+    'A national mobile number (leading <code>0</code>, no <code>+43</code>) - the mobile NDC is a regular 3-digit <code>06xx</code>, so a fixed <code>0000 0000000</code> mask groups it correctly.',
   description:
-    'When you do not want the international country code, skip the phone preset and mask the national format directly.',
+    'Landline is deliberately not masked here: Austrian area codes vary in length (Vienna 01, Graz 0316, up to 5-digit in small municipalities), so a fixed mask cannot place the grouping - that needs phone metadata (libphonenumber), not a pattern.',
   level: 'atom',
   audience: ['dev'],
   artifact: 'building-block',
@@ -16,14 +16,14 @@ export const STORY: DemoSpec = {
   template: `
   <div class="demo-form">
     <div class="demo-field">
-      <label class="demo-label" for="at-phone">Austrian phone (national)</label>
+      <label class="demo-label" for="at-mobile">Austrian mobile (national)</label>
       <input
-        id="at-phone"
-        cngxInputMask="00 00000000|0000 0000000"
+        id="at-mobile"
+        cngxInputMask="0000 0000000"
         #atMask="cngxInputMask"
         class="demo-input"
       />
-      <span class="demo-hint">e.g. 01 2345678 (Vienna) or 0664 1234567 (mobile) - leading 0, no +43</span>
+      <span class="demo-hint">e.g. 0664 1234567 - leading 0, no +43</span>
     </div>
   </div>`,
   templateChrome: `<div class="status-row">
