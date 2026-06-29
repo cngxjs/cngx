@@ -161,6 +161,24 @@ describe('CngxRating', () => {
     expect(announce).toHaveBeenCalledWith('Rated 4/5');
   });
 
+  it('labels each radio through the ratingItem cascade', () => {
+    const { buttons } = setup();
+    expect(buttons()[2].getAttribute('aria-label')).toBe('3 of 5');
+  });
+
+  it('routes the per-star label through a config override', () => {
+    const { buttons } = setup(() => {
+      TestBed.configureTestingModule({
+        providers: [
+          provideInputConfig(
+            withInputAriaLabels({ ratingItem: (s, m) => `Star ${s} of ${m}` }),
+          ),
+        ],
+      });
+    });
+    expect(buttons()[2].getAttribute('aria-label')).toBe('Star 3 of 5');
+  });
+
   it('syncs the value bidirectionally inside cngx-form-field', () => {
     const { accessor, ref } = createMockField<number>({ name: 'score', value: 0 });
 
@@ -229,6 +247,48 @@ describe('CngxRating', () => {
       expect(describedBy).toContain(reason.id);
       expect(reason.textContent).toContain('Rating locked until sign-in');
       expect(reason.getAttribute('aria-hidden')).toBeNull();
+    });
+
+    it('derives disabled from a disabled form field', () => {
+      const { accessor } = createMockField<number>({
+        name: 'score',
+        value: 0,
+        disabled: true,
+      });
+
+      @Component({
+        template: `
+          <cngx-form-field [field]="field">
+            <cngx-rating [(value)]="value" />
+          </cngx-form-field>
+        `,
+        imports: [CngxFormField, CngxRating],
+      })
+      class FieldHost {
+        readonly rating = viewChild.required(CngxRating);
+        readonly field = accessor;
+        value = 0;
+      }
+
+      const fixture = TestBed.createComponent(FieldHost);
+      document.body.appendChild(fixture.nativeElement);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      const rating = fixture.componentInstance.rating();
+      expect(rating.disabled()).toBe(true);
+
+      const group = fixture.nativeElement.querySelector('cngx-rating') as HTMLElement;
+      expect(group.getAttribute('aria-disabled')).toBe('true');
+
+      const buttons = Array.from(
+        (fixture.nativeElement as HTMLElement).querySelectorAll<HTMLButtonElement>(
+          '.cngx-rating__item',
+        ),
+      );
+      buttons[2].click();
+      fixture.detectChanges();
+      expect(rating.value()).toBe(0);
     });
   });
 

@@ -4,17 +4,21 @@ import { Directive } from '@angular/core';
  * Typed context exposed to a `*cngxRatingItem` glyph template.
  *
  * - `index` - zero-based position of the star in the strip.
+ * - `step` - the numeric value this star commits when chosen.
  * - `filled` - `true` when the rating value reaches or exceeds this star
  *   (cumulative fill, not exact-match).
  * - `half` - `true` only when `[allowHalf]` is on and the value sits exactly
  *   half a step below this star.
+ * - `disabled` - the effective disabled state of the control.
  *
  * @category forms/input
  */
 export interface CngxRatingItemContext {
   readonly index: number;
+  readonly step: number;
   readonly filled: boolean;
   readonly half: boolean;
+  readonly disabled: boolean;
 }
 
 /**

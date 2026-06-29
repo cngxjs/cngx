@@ -84,6 +84,8 @@ export interface InputAriaLabels {
   readonly sensitiveHide: string;
   /** Live-region announcement factory for `CngxRating` on a committed value. Default: `` (value, max) => `${value} of ${max}` `` */
   readonly ratingValue: (value: number, max: number) => string;
+  /** Per-star `aria-label` factory for each `CngxRating` radio. Default: `` (step, max) => `${step} of ${max}` `` */
+  readonly ratingItem: (step: number, max: number) => string;
 }
 
 /**
@@ -106,6 +108,7 @@ export const DEFAULT_INPUT_ARIA_LABELS: InputAriaLabels = {
   sensitiveReveal: 'Value revealed',
   sensitiveHide: 'Value hidden',
   ratingValue: (value, max) => `${value} of ${max}`,
+  ratingItem: (step, max) => `${step} of ${max}`,
 };
 
 /**
@@ -465,6 +468,7 @@ export function withFileMaxFiles(count: number): InputConfigFeature {
  * - `inputRejected` -> `CngxInputFilter` assertive rejection.
  * - `sensitiveReveal` / `sensitiveHide` -> `CngxSensitiveValue` reveal/hide announcements.
  * - `ratingValue(value, max)` -> `CngxRating` polite committed-value announcement.
+ * - `ratingItem(step, max)` -> `CngxRating` per-star radio `aria-label`.
  *
  * ```typescript
  * provideInputConfig(

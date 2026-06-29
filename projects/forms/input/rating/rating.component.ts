@@ -4,14 +4,12 @@ import {
   Component,
   computed,
   contentChild,
-  effect,
   ElementRef,
   inject,
   input,
   model,
   signal,
   TemplateRef,
-  untracked,
   viewChild,
 } from '@angular/core';
 import { CngxLiveAnnouncer, CngxRovingItem, CngxRovingTabindex } from '@cngx/common/a11y';
@@ -19,6 +17,7 @@ import { nextUid } from '@cngx/core/utils';
 import {
   CngxFormFieldPresenter,
   CNGX_FORM_FIELD_CONTROL,
+  createFieldSync,
   type CngxFormFieldControl,
 } from '@cngx/forms/field';
 import { CNGX_INPUT_CONFIG, DEFAULT_INPUT_ARIA_LABELS } from '../input-config';
@@ -104,7 +103,7 @@ const CNGX_RATING_GLYPHS = {
           @if (itemTemplate(); as tpl) {
             <ng-container
               [ngTemplateOutlet]="tpl"
-              [ngTemplateOutletContext]="itemContext(step, i)"
+              [ngTemplateOutletContext]="itemContexts()[i]"
             />
           } @else {
             <span aria-hidden="true">{{ value() >= step ? glyphs.full : glyphs.empty }}</span>
@@ -131,8 +130,12 @@ export class CngxRating implements CngxFormFieldControl {
   /** When `true`, the strip offers half-star steps (`0.5`, `1`, `1.5`, ...). */
   readonly allowHalf = input<boolean>(false);
 
-  /** Disables every star - selection no-ops and arrow navigation skips them. */
-  readonly disabled = model<boolean>(false);
+  /**
+   * Consumer disable knob. The effective {@link disabled} also folds in the
+   * surrounding field's disabled state, so a disabled Signal-Forms field
+   * disables the strip without an explicit binding.
+   */
+  readonly disabledInput = model<boolean>(false, { alias: 'disabled' });
 
   /**
    * Accessible label used when the control is standalone (no `cngx-form-field`).
@@ -165,6 +168,14 @@ export class CngxRating implements CngxFormFieldControl {
   readonly id = computed(() => this.presenter?.inputId() ?? this.fallbackId);
   readonly empty = computed(() => this.value() === 0);
   readonly errorState = computed(() => this.presenter?.showError() ?? false);
+
+  /**
+   * Effective disabled: the consumer knob OR the surrounding field's disabled
+   * state. Derived, never managed - a disabled field disables the strip and
+   * its arrow-skip / `aria-disabled` without a manual binding (mirrors
+   * `CngxInput`).
+   */
+  readonly disabled = computed(() => this.disabledInput() || (this.presenter?.disabled() ?? false));
 
   /**
    * The selectable steps. A pure function of `max`/`allowHalf` carrying an
@@ -201,61 +212,50 @@ export class CngxRating implements CngxFormFieldControl {
     return fieldIds ? `${fieldIds} ${this.reasonId}` : this.reasonId;
   });
 
+  /**
+   * Per-star slot contexts, memoised so `ngTemplateOutletContext` only re-binds
+   * when a star's reactive state actually changes - not on every CD.
+   */
+  protected readonly itemContexts = computed<CngxRatingItemContext[]>(
+    () => {
+      const value = this.value();
+      const half = this.allowHalf();
+      const disabled = this.disabled();
+      return this.steps().map((step, index) => ({
+        index,
+        step,
+        filled: value >= step,
+        half: half && value === step - 0.5,
+        disabled,
+      }));
+    },
+    {
+      equal: (a, b) =>
+        a.length === b.length &&
+        a.every(
+          (c, i) =>
+            c.step === b[i].step &&
+            c.filled === b[i].filled &&
+            c.half === b[i].half &&
+            c.disabled === b[i].disabled,
+        ),
+    },
+  );
+
   constructor() {
-    // Bidirectional Field <-> value() sync, mirroring the select family's
-    // createFieldSync: two effects with untracked reads on the opposite branch
-    // and a numeric equality guard as the cycle break. Both the field and the
-    // value model are writable sources of truth, so this is coordination, not a
-    // single computed. No-op when there is no surrounding form field.
-    if (this.presenter) {
-      const presenter = this.presenter;
-      effect(() => {
-        const fieldRef = presenter.fieldState();
-        const next = this.coerceFromField(fieldRef.value());
-        untracked(() => {
-          if (this.value() !== next) {
-            this.value.set(next);
-          }
-        });
-      });
-
-      effect(() => {
-        const next = this.value();
-        untracked(() => {
-          const fieldRef = presenter.fieldState();
-          if (this.coerceFromField(fieldRef.value()) === next) {
-            return;
-          }
-          const signalLike = fieldRef.value as unknown;
-          if (
-            typeof signalLike === 'function' &&
-            'set' in signalLike &&
-            typeof (signalLike as { set: unknown }).set === 'function'
-          ) {
-            (signalLike as { set: (v: unknown) => void }).set(next);
-          }
-        });
-      });
-    }
+    // Bidirectional Field <-> value() value sync. The canonical field bridge
+    // lives in @cngx/forms/field; numeric shape, Object.is as the cycle guard.
+    createFieldSync<number>({
+      componentValue: this.value,
+      valueEquals: Object.is,
+      coerceFromField: (v) => (typeof v === 'number' ? v : 0),
+    });
   }
 
-  /** @internal Coerces an unknown field value into the numeric rating shape. */
-  private coerceFromField(fieldValue: unknown): number {
-    return typeof fieldValue === 'number' ? fieldValue : 0;
-  }
-
-  /** @internal */
+  /** @internal Per-star radio `aria-label`, routed through the config cascade. */
   protected itemLabel(step: number): string {
-    return `${step}`;
-  }
-
-  /** @internal */
-  protected itemContext(step: number, index: number): CngxRatingItemContext {
-    return {
-      index,
-      filled: this.value() >= step,
-      half: this.allowHalf() && this.value() === step - 0.5,
-    };
+    const factory = this.config.ariaLabels?.ratingItem ?? DEFAULT_INPUT_ARIA_LABELS.ratingItem;
+    return factory(step, this.max());
   }
 
   /** @internal Click selection. */
