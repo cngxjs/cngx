@@ -1,0 +1,18 @@
+:host {
+  display: inline-flex;
+  align-items: stretch;
+  gap: var(--cngx-phone-input-gap, 0.5rem);
+}
+
+.cngx-phone-input__country {
+  flex: 0 0 auto;
+}
+
+.cngx-phone-input__number {
+  flex: 1 1 auto;
+  min-width: var(--cngx-phone-input-number-min-width, 12ch);
+}
+
+:host(.cngx-phone-input--disabled) {
+  opacity: var(--cngx-phone-input-disabled-opacity, 0.5);
+}
