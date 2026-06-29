@@ -10,6 +10,7 @@ export { CngxAffixRow } from './affix-row.directive';
 export { CngxRequired, type CngxRequiredContext } from './required.component';
 export { focusFirstError } from './focus-first-error';
 export { adaptFormControl } from './form-control-adapter';
+export { createFieldSync, type FieldSyncOptions } from './field-sync';
 export { CngxListboxFieldBridge } from './listbox-field-bridge.directive';
 export { CngxBindField } from './bind-field.directive';
 export {
