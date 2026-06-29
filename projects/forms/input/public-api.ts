@@ -19,6 +19,7 @@ export {
 } from './password-strength.factory';
 export { CngxPasswordStrength } from './password-strength.directive';
 export { CngxInputFilter, type InputFilterPattern } from './input-filter.directive';
+export { CngxTrim } from './trim.directive';
 export {
   CNGX_INPUT_CONFIG,
   type InputConfig,
