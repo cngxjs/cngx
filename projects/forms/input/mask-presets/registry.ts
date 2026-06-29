@@ -1,4 +1,4 @@
-import { signal } from '@angular/core';
+import { type EnvironmentProviders, provideAppInitializer, signal } from '@angular/core';
 
 /**
  * Built-in mask-preset table keys. `date` covers both the long and short date
@@ -88,16 +88,40 @@ export function ensureMaskPreset(key: MaskPresetKey): Promise<void> {
   return load;
 }
 
+const ALL_PRESET_KEYS: readonly MaskPresetKey[] = ['phone', 'date', 'iban', 'zip'];
+
 /**
  * Eagerly loads every built-in preset table. Mainly a test/preload seam - the
  * directive loads tables on demand.
  * @internal
  */
 export function loadAllMaskPresets(): Promise<void> {
-  return Promise.all([
-    ensureMaskPreset('phone'),
-    ensureMaskPreset('date'),
-    ensureMaskPreset('iban'),
-    ensureMaskPreset('zip'),
-  ]).then(() => undefined);
+  return Promise.all(ALL_PRESET_KEYS.map(ensureMaskPreset)).then(() => undefined);
+}
+
+/**
+ * Eagerly loads the lazily code-split mask preset tables at application start,
+ * instead of on first use. Reach for it when the on-demand `import()` is a
+ * problem - chiefly **offline / PWA** apps that must have every mask pattern
+ * cached before connectivity drops, or to avoid the one-frame generic-fallback
+ * mask on first focus.
+ *
+ * Pass specific keys to warm only the tables you ship; omit them to load all
+ * four. For strict offline-first apps, also list the emitted `mask-presets-*`
+ * chunks in your service-worker precache so the eager fetch is cached.
+ *
+ * ```typescript
+ * bootstrapApplication(App, {
+ *   providers: [provideEagerMaskPresets()],            // all tables
+ * });
+ * // or: provideEagerMaskPresets('phone', 'date')      // only these
+ * ```
+ *
+ * @category forms/input
+ * @since 0.1.0
+ * @relatedTo CngxInputMask, provideInputConfig
+ */
+export function provideEagerMaskPresets(...keys: MaskPresetKey[]): EnvironmentProviders {
+  const targets = keys.length ? keys : ALL_PRESET_KEYS;
+  return provideAppInitializer(() => Promise.all(targets.map(ensureMaskPreset)));
 }
