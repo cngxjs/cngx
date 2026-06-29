@@ -57,6 +57,18 @@ describe('CngxPhoneInput', () => {
     expect(phone.value()).toBe('49');
   });
 
+  it('forces the mask alternate via lineType', () => {
+    const { fixture, phone, mask } = setup();
+    phone.country.set(germany);
+    phone.lineType.set('mobile');
+    fixture.detectChanges();
+    expect(mask.mask()).toBe('phone:DE:mobile');
+
+    phone.lineType.set('landline');
+    fixture.detectChanges();
+    expect(mask.mask()).toBe('phone:DE:landline');
+  });
+
   it('re-targets the mask region when the country changes', () => {
     const { fixture, phone, mask } = setup();
     phone.country.set(germany);

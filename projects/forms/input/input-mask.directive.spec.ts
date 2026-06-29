@@ -498,6 +498,16 @@ describe('CngxInputMask', () => {
       expect(directive.currentPattern()).toBe('+00 000 00000000');
     });
 
+    it('forces the mobile alternate with phone:DE:mobile (no length threshold)', () => {
+      const { directive } = setup({ mask: 'phone:DE:mobile' });
+      expect(directive.currentPattern()).toBe('+00 000 00000000');
+    });
+
+    it('forces the landline alternate with phone:DE:landline', () => {
+      const { directive } = setup({ mask: 'phone:DE:landline' });
+      expect(directive.currentPattern()).toBe('+00 00 00000000');
+    });
+
     it('alternates IT by length too', () => {
       const { directive, fixture } = setup({ mask: 'phone:IT' });
       directive.setValue('39061234567'); // 11 digits -> landline

@@ -228,6 +228,8 @@ function resolvePreset(
   const name = parts[0].toLowerCase();
   const regionHint = parts[1]?.toUpperCase();
   const region = regionHint ?? localeToRegion(locale);
+  // Optional `phone:<region>:<mobile|landline>` segment forces one alternate.
+  const lineType = parts[2]?.toLowerCase();
 
   const phones = { ...tables.phone, ...config?.phonePatterns };
   const ibans = { ...tables.iban, ...config?.ibanPatterns };
@@ -252,8 +254,17 @@ function resolvePreset(
       return {
         patterns: [`${resolveDateFormat(locale, dates, PRESET_FALLBACKS.date)} 00:00`],
       };
-    case 'phone':
-      return { patterns: [phones[region] ?? PRESET_FALLBACKS.phone] };
+    case 'phone': {
+      const raw = phones[region] ?? PRESET_FALLBACKS.phone;
+      const alts = raw.split('|');
+      if (lineType === 'mobile' && alts.length > 1) {
+        return { patterns: [alts[alts.length - 1]] };
+      }
+      if (lineType === 'landline') {
+        return { patterns: [alts[0]] };
+      }
+      return { patterns: [raw] };
+    }
     case 'creditcard':
       return { patterns: ['0000 000000 00000|0000 0000 0000 0000'] };
     case 'iban':

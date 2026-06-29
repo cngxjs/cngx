@@ -126,6 +126,13 @@ export class CngxPhoneInput implements CngxFormFieldControl {
   /** Overrides the picker's country list. */
   readonly countries = input<readonly Country[]>(CNGX_PHONE_COUNTRIES);
 
+  /**
+   * Which mask alternate to use. `'auto'` (default) picks landline vs mobile by
+   * length; `'mobile'`/`'landline'` force that grouping immediately, with no
+   * length threshold to cross. Two-way bindable for a manual switch.
+   */
+  readonly lineType = model<'auto' | 'landline' | 'mobile'>('auto');
+
   /** Consumer disable knob; the effective {@link disabled} also folds in the field. */
   readonly disabledInput = input<boolean>(false, { alias: 'disabled' });
 
@@ -157,7 +164,10 @@ export class CngxPhoneInput implements CngxFormFieldControl {
     () => this.country()?.region ?? CNGX_PHONE_COUNTRIES[0].region,
   );
   /** @internal */
-  protected readonly maskExpr = computed(() => `phone:${this.region()}`);
+  protected readonly maskExpr = computed(() => {
+    const lt = this.lineType();
+    return lt === 'auto' ? `phone:${this.region()}` : `phone:${this.region()}:${lt}`;
+  });
 
   /** @internal Country options for the inner select, keyed by the country ref. */
   protected readonly selectOptions = computed<CngxSelectOptionDef<Country>[]>(
