@@ -168,8 +168,24 @@ export class CngxNumericInput {
   private readonly resolvedLocale = computed(
     () => this.locale() ?? this.config.numericLocale ?? this.localeId,
   );
+  private readonly resolvedCurrency = computed(() => this.config.numericCurrency);
+  /** A configured currency's standard fraction-digit count (USD 2, JPY 0). */
+  private readonly currencyDecimals = computed(() => {
+    const currency = this.resolvedCurrency();
+    if (!currency) {
+      return undefined;
+    }
+    try {
+      return new Intl.NumberFormat(this.resolvedLocale(), {
+        style: 'currency',
+        currency,
+      }).resolvedOptions().maximumFractionDigits;
+    } catch {
+      return undefined;
+    }
+  });
   private readonly resolvedDecimals = computed(
-    () => this.decimals() ?? this.config.numericDecimals,
+    () => this.decimals() ?? this.config.numericDecimals ?? this.currencyDecimals(),
   );
   private readonly resolvedStep = computed(() => this.step() ?? this.config.numericStep ?? 1);
 
@@ -415,6 +431,21 @@ export class CngxNumericInput {
 
   private format(value: number): string {
     const locale = this.resolvedLocale();
+    const currency = this.resolvedCurrency();
+    if (currency) {
+      try {
+        // Currency grouping + fraction digits, but the symbol is stripped: it
+        // renders through a CngxPrefix/CngxSuffix affix, never inside the value.
+        return new Intl.NumberFormat(locale, { style: 'currency', currency })
+          .formatToParts(value)
+          .filter((part) => part.type !== 'currency')
+          .map((part) => part.value)
+          .join('')
+          .trim();
+      } catch {
+        // Unknown currency code: fall through to plain decimal formatting.
+      }
+    }
     const dec = this.resolvedDecimals();
     const options: Intl.NumberFormatOptions = {};
     if (dec != null) {

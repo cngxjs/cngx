@@ -29,6 +29,12 @@ export interface InputConfig {
   readonly numericDecimals?: number;
   /** Default step for `CngxNumericInput`. Default: `1` */
   readonly numericStep?: number;
+  /**
+   * ISO 4217 currency code for `CngxNumericInput` formatting (grouping +
+   * standard fraction digits). The symbol is never baked into the value -
+   * render it through a `CngxPrefix`/`CngxSuffix` affix. Set via `withCurrency`.
+   */
+  readonly numericCurrency?: string;
   /** Default `resetDelay` for `CngxCopyValue` in ms. Default: `2000` */
   readonly copyResetDelay?: number;
   /** Default `maxSize` for `CngxFileDrop` in bytes. */

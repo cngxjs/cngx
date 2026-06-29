@@ -20,6 +20,7 @@ export {
 export { CngxPasswordStrength } from './password-strength.directive';
 export { CngxInputFilter, type InputFilterPattern } from './input-filter.directive';
 export { CngxTrim } from './trim.directive';
+export { withCurrency, type CurrencyOptions } from './currency.feature';
 export {
   CNGX_INPUT_CONFIG,
   type InputConfig,
