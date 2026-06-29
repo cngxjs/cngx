@@ -43,6 +43,20 @@ afterEach(() => {
 });
 
 describe('CngxPhoneInput', () => {
+  it('pre-fills the dial code on select and re-seeds it on country change', async () => {
+    const { fixture, phone } = setup(); // initial country US (+1)
+    await Promise.resolve();
+    fixture.detectChanges();
+    expect(phone.value()).toBe('1');
+
+    phone.country.set(germany); // +49
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    await Promise.resolve();
+    fixture.detectChanges();
+    expect(phone.value()).toBe('49');
+  });
+
   it('re-targets the mask region when the country changes', () => {
     const { fixture, phone, mask } = setup();
     phone.country.set(germany);

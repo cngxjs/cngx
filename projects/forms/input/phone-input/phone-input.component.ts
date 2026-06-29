@@ -3,11 +3,13 @@ import {
   Component,
   computed,
   Directive,
+  effect,
   ElementRef,
   inject,
   input,
   model,
   signal,
+  untracked,
 } from '@angular/core';
 import { nextUid } from '@cngx/core/utils';
 import {
@@ -47,9 +49,10 @@ class CngxPhoneInputDetach {}
  * (a null `CngxFormFieldPresenter` in the inner element's `providers`, via
  * `CngxPhoneInputDetach`) so only this component wires the field ARIA and value.
  *
- * The country list is consumer-overridable through `[countries]`; switching
- * country clears the entered number (the mask's documented auto-clear on
- * pattern change).
+ * The country list is consumer-overridable through `[countries]`. Selecting a
+ * country pre-fills its dial code (e.g. `+49`); switching country clears the
+ * entered national number (the mask's documented auto-clear on pattern change)
+ * and re-seeds the new dial code.
  *
  * ```html
  * <cngx-form-field [field]="f.phone">
@@ -210,6 +213,22 @@ export class CngxPhoneInput implements CngxFormFieldControl {
       componentValue: this.value,
       valueEquals: Object.is,
       coerceFromField: (v) => (typeof v === 'string' ? v : ''),
+    });
+
+    // Pre-fill the dial code when a country is selected. CngxInputMask clears
+    // its value on region change, so the seed is deferred past that clear with
+    // queueMicrotask; it only seeds an empty field, never clobbering a typed or
+    // field-restored number. The dial-code digits land in the mask's `+NN`
+    // country-code slots (slot count matches the dial-code length per region).
+    effect(() => {
+      const dialDigits = this.country().dialCode.replace(/\D/g, '');
+      untracked(() => {
+        queueMicrotask(() => {
+          if (this.value() === '') {
+            this.value.set(dialDigits);
+          }
+        });
+      });
     });
   }
 
