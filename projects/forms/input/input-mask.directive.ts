@@ -191,20 +191,27 @@ const DATE_SHORT_FORMATS: Record<string, string> = {
 };
 
 /**
- * Phone patterns by country/region code.
+ * Phone patterns by country/region code. A `|` declares length alternates
+ * (landline first, mobile second) that `selectPattern` picks by digit count -
+ * AT/DE/IT/HR have a national-number length that genuinely varies between
+ * landline and mobile, so both masks ship. Fixed-length plans (US/CH/SI/PL/...)
+ * keep a single pattern; an alternate of equal length would never switch.
  * @internal
  */
 const PHONE_PATTERNS: Record<string, string> = {
   US: '(000) 000-0000',
-  DE: '+00 000 00000000',
+  DE: '+00 00 00000000|+00 000 00000000',
   CH: '+00 00 000 00 00',
-  AT: '+00 0 000 0000',
+  AT: '+00 0 0000000|+00 000 0000000',
   FR: '+00 0 00 00 00 00',
   UK: '+00 0000 000000',
-  IT: '+00 000 000 0000',
+  IT: '+00 00 0000000|+00 000 000 0000',
   ES: '+00 000 000 000',
   JP: '+00 00-0000-0000',
   BR: '+00 (00) 00000-0000',
+  SI: '+000 00 000 000',
+  HR: '+000 0 0000 000|+000 00 000 0000',
+  PL: '+00 000 000 000',
 };
 
 /**
