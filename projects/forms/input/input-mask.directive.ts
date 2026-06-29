@@ -777,7 +777,6 @@ export class CngxInputMask {
   }
 
   /** @internal */
-  /** @internal */
   protected focusedViaClick = false;
 
   protected handleFocus(): void {

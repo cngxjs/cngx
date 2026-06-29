@@ -188,12 +188,13 @@ export class CngxPhoneInput implements CngxFormFieldControl {
     return fieldIds ? `${fieldIds} ${this.reasonId}` : this.reasonId;
   });
   /** @internal Per-instance label, else the config cascade, else the EN default. */
-  protected readonly resolvedCountryLabel = computed(
-    () =>
-      this.countryAriaLabel() ||
-      this.config.ariaLabels?.phoneCountry ||
-      DEFAULT_INPUT_ARIA_LABELS.phoneCountry,
-  );
+  protected readonly resolvedCountryLabel = computed(() => {
+    const explicit = this.countryAriaLabel();
+    if (explicit !== '') {
+      return explicit;
+    }
+    return this.config.ariaLabels?.phoneCountry ?? DEFAULT_INPUT_ARIA_LABELS.phoneCountry;
+  });
 
   constructor() {
     // App-wide default region (overridden by a per-instance [country] binding).

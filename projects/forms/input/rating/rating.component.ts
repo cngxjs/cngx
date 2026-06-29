@@ -135,7 +135,7 @@ export class CngxRating implements CngxFormFieldControl {
    * surrounding field's disabled state, so a disabled Signal-Forms field
    * disables the strip without an explicit binding.
    */
-  readonly disabledInput = model<boolean>(false, { alias: 'disabled' });
+  readonly disabledInput = input<boolean>(false, { alias: 'disabled' });
 
   /**
    * Accessible label used when the control is standalone (no `cngx-form-field`).
