@@ -29,6 +29,12 @@ export interface InputConfig {
   readonly numericDecimals?: number;
   /** Default step for `CngxNumericInput`. Default: `1` */
   readonly numericStep?: number;
+  /**
+   * ISO 4217 currency code for `CngxNumericInput` formatting (grouping +
+   * standard fraction digits). The symbol is never baked into the value -
+   * render it through a `CngxPrefix`/`CngxSuffix` affix. Set via `withCurrency`.
+   */
+  readonly numericCurrency?: string;
   /** Default `resetDelay` for `CngxCopyValue` in ms. Default: `2000` */
   readonly copyResetDelay?: number;
   /** Default `maxSize` for `CngxFileDrop` in bytes. */
@@ -66,6 +72,16 @@ export interface InputAriaLabels {
   readonly copyError: string;
   /** `aria-label` for the `CngxFileDrop` zone. Default: `'File drop zone'` */
   readonly fileDropZone: string;
+  /** Assertive live-region warning announced when `CngxCapsLock` detects Caps Lock active. Default: `'Caps Lock is on'` */
+  readonly capsLockOn: string;
+  /** Polite live-region template announced by `CngxPasswordStrength` when the strength label changes. Default: `` `Password strength: ${label}` `` */
+  readonly passwordStrength: (label: string) => string;
+  /** Assertive live-region announcement when `CngxInputFilter` rejects a disallowed character. Default: `'Character not allowed'` */
+  readonly inputRejected: string;
+  /** Polite live-region announcement when `CngxSensitiveValue` reveals the value. Default: `'Value revealed'` */
+  readonly sensitiveReveal: string;
+  /** Polite live-region announcement when `CngxSensitiveValue` hides the value. Default: `'Value hidden'` */
+  readonly sensitiveHide: string;
 }
 
 /**
@@ -82,6 +98,11 @@ export const DEFAULT_INPUT_ARIA_LABELS: InputAriaLabels = {
   copySuccess: 'Copied',
   copyError: 'Copy failed',
   fileDropZone: 'File drop zone',
+  capsLockOn: 'Caps Lock is on',
+  passwordStrength: (label) => `Password strength: ${label}`,
+  inputRejected: 'Character not allowed',
+  sensitiveReveal: 'Value revealed',
+  sensitiveHide: 'Value hidden',
 };
 
 /**
@@ -103,7 +124,8 @@ const DEFAULT_INPUT_CONFIG: InputConfig = {};
  * - `providedIn: 'root'` with an empty-config factory, so it resolves without a
  *   provider and each directive keeps its built-in default.
  * - Consumed by `CngxInputMask`, `CngxNumericInput`, `CngxCopyValue`,
- *   `CngxFileDrop`, `CngxInputClear`, and `CngxOtpInput`.
+ *   `CngxFileDrop`, `CngxInputClear`, `CngxOtpInput`, `CngxCapsLock`,
+ *   `CngxPasswordStrength`, `CngxInputFilter`, and `CngxSensitiveValue`.
  * - Token resolution is nearest-wins: a config in a component's `viewProviders`
  *   replaces an ancestor's for that subtree, it does not deep-merge.
  *
@@ -112,20 +134,19 @@ const DEFAULT_INPUT_CONFIG: InputConfig = {};
  * @category forms/input
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/input/input-config.ts
  * @since 0.1.0
- * @relatedTo provideInputConfig, withInputAriaLabels, withNumericDefaults, withMaskPlaceholder, withMaskGuide, withCustomTokens, withPhonePatterns, withIbanPatterns, withZipPatterns, withDateFormats, withCopyResetDelay, withFileMaxSize
+ * @relatedTo provideInputConfig, withInputAriaLabels, withNumericDefaults, withMaskPlaceholder, withMaskGuide, withCustomTokens, withPhonePatterns, withIbanPatterns, withZipPatterns, withDateFormats, withCopyResetDelay, withFileMaxSize, withFileMaxFiles, withCurrency
  */
 export const CNGX_INPUT_CONFIG = new InjectionToken<InputConfig>('CNGX_INPUT_CONFIG', {
   providedIn: 'root',
   factory: () => DEFAULT_INPUT_CONFIG,
 });
 
-export type InputConfigFeature = (config: InputConfig) => InputConfig;
-
 /**
  * A feature function that contributes to the input config.
  *
  * @category forms/input
  */
+export type InputConfigFeature = (config: InputConfig) => InputConfig;
 
 /**
  * Provides global configuration for `@cngx/forms/input` directives.
@@ -160,7 +181,9 @@ export type InputConfigFeature = (config: InputConfig) => InputConfig;
  * @see {@link withNumericDefaults}
  * @see {@link withCopyResetDelay}
  * @see {@link withFileMaxSize}
+ * @see {@link withFileMaxFiles}
  * @see {@link withInputAriaLabels}
+ * @see {@link withCurrency}
  *
  * @category forms/input
  */
@@ -434,6 +457,10 @@ export function withFileMaxFiles(count: number): InputConfigFeature {
  * - `copySuccess` / `copyError` -> `CngxCopyValue` live-region announcements.
  * - `otpGroup` / `otpSlot(index, length)` / `otpComplete` -> `CngxOtpInput`
  *   group, per-slot labels, and completion announcement.
+ * - `capsLockOn` -> `CngxCapsLock` assertive warning.
+ * - `passwordStrength(label)` -> `CngxPasswordStrength` polite announcement.
+ * - `inputRejected` -> `CngxInputFilter` assertive rejection.
+ * - `sensitiveReveal` / `sensitiveHide` -> `CngxSensitiveValue` reveal/hide announcements.
  *
  * ```typescript
  * provideInputConfig(

@@ -17,6 +17,23 @@ import { CNGX_VALUE_TRANSFORMER, type CngxValueTransformer } from '@cngx/forms/f
 import { CNGX_INPUT_CONFIG } from './input-config';
 
 /**
+ * `Intl.NumberFormatPart` types that make up the number itself - everything
+ * else (currency symbol, percent sign, symbol-adjacent literal whitespace) is
+ * dropped when rebuilding a symbol-less currency display.
+ * @internal
+ */
+const NUMERIC_PART_TYPES: ReadonlySet<string> = new Set([
+  'integer',
+  'group',
+  'decimal',
+  'fraction',
+  'minusSign',
+  'plusSign',
+  'nan',
+  'infinity',
+]);
+
+/**
  * Detect decimal and group separators from Intl.
  * @internal
  */
@@ -168,8 +185,24 @@ export class CngxNumericInput {
   private readonly resolvedLocale = computed(
     () => this.locale() ?? this.config.numericLocale ?? this.localeId,
   );
+  private readonly resolvedCurrency = computed(() => this.config.numericCurrency);
+  /** A configured currency's standard fraction-digit count (USD 2, JPY 0). */
+  private readonly currencyDecimals = computed(() => {
+    const currency = this.resolvedCurrency();
+    if (!currency) {
+      return undefined;
+    }
+    try {
+      return new Intl.NumberFormat(this.resolvedLocale(), {
+        style: 'currency',
+        currency,
+      }).resolvedOptions().maximumFractionDigits;
+    } catch {
+      return undefined;
+    }
+  });
   private readonly resolvedDecimals = computed(
-    () => this.decimals() ?? this.config.numericDecimals,
+    () => this.decimals() ?? this.config.numericDecimals ?? this.currencyDecimals(),
   );
   private readonly resolvedStep = computed(() => this.step() ?? this.config.numericStep ?? 1);
 
@@ -178,7 +211,9 @@ export class CngxNumericInput {
 
   private readonly focusedState = signal(false);
 
-  private readonly separators = computed(() => detectSeparators(this.resolvedLocale()));
+  private readonly separators = computed(() => detectSeparators(this.resolvedLocale()), {
+    equal: (a, b) => a.decimal === b.decimal && a.group === b.group,
+  });
 
   /**
    * @deprecated Read `value` directly. Kept one release for migration.
@@ -421,6 +456,26 @@ export class CngxNumericInput {
       options.minimumFractionDigits = dec;
       options.maximumFractionDigits = dec;
     }
+
+    const currency = this.resolvedCurrency();
+    if (currency) {
+      try {
+        // Currency grouping + fraction digits, but the symbol is stripped: it
+        // renders through a CngxPrefix/CngxSuffix affix, never inside the value.
+        // `dec` (an explicit [decimals] wins over the currency's standard digits,
+        // matching resolvedDecimals precedence); reconstructing from the numeric
+        // part types drops the symbol and any symbol-adjacent literal in any
+        // locale, with no trailing-space trimming needed.
+        return new Intl.NumberFormat(locale, { ...options, style: 'currency', currency })
+          .formatToParts(value)
+          .filter((part) => NUMERIC_PART_TYPES.has(part.type))
+          .map((part) => part.value)
+          .join('');
+      } catch {
+        // Unknown currency code: fall through to plain decimal formatting.
+      }
+    }
+
     return new Intl.NumberFormat(locale, options).format(value);
   }
 

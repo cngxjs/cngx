@@ -21,6 +21,7 @@ export {
 export { CngxChip } from './chip/chip.component';
 export { CngxCheckboxIndicator } from './checkbox-indicator/checkbox-indicator.component';
 export { CngxRadioIndicator } from './radio-indicator/radio-indicator.component';
+export { CngxPasswordStrengthMeter } from './password-strength-meter/password-strength-meter.component';
 export {
   CngxTag,
   type CngxTagVariant,

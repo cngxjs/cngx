@@ -4,6 +4,9 @@ export { CngxFieldErrors, type CngxFieldErrorContext } from './field-errors.comp
 export { CngxLabel } from './label.component';
 export { CngxHint } from './hint.directive';
 export { CngxError } from './error.directive';
+export { CngxPrefix } from './prefix.directive';
+export { CngxSuffix } from './suffix.directive';
+export { CngxAffixRow } from './affix-row.directive';
 export { CngxRequired, type CngxRequiredContext } from './required.component';
 export { focusFirstError } from './focus-first-error';
 export { adaptFormControl } from './form-control-adapter';
