@@ -206,10 +206,12 @@ export function provideInputConfig(...features: InputConfigFeature[]): Provider 
  * Reach for it when a `cngxInputMask="phone"` / `"phone:<REGION>"` needs a
  * region the library does not ship, or to override one it does.
  *
- * - Built-in regions: US, DE, CH, AT, FR, UK, IT, ES, JP, BR, SI, HR, PL.
- * - DE/AT/IT/JP/BR/HR ship `|`-separated landline+mobile alternates picked by
- *   length; the rest are single fixed-length patterns (landline and mobile
- *   share one national-number length there).
+ * - Built-in regions: ~45 ISO 3166-1 alpha-2 keys across Europe, the Americas,
+ *   East Asia, and Oceania (`UK` kept as a back-compat alias of `GB`).
+ * - Regions whose landline and mobile national-number lengths differ ship
+ *   `|`-separated landline+mobile alternates picked by length; uniform-length
+ *   plans ship a single pattern. Masks are coarse approximations, not
+ *   validators - reach for `libphonenumber-js` when you need real validation.
  * - Consumer entries merge per key onto the built-ins and win on collision.
  * - Resolved as `{ ...PHONE_PATTERNS, ...config.phonePatterns }[region]`,
  *   falling back to US when the region is absent.

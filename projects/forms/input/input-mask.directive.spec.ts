@@ -428,7 +428,7 @@ describe('CngxInputMask', () => {
 
     it('should resolve "phone:US" preset', () => {
       const { input } = setup({ mask: 'phone:US' });
-      expect(input.value).toBe('(___) ___-____');
+      expect(input.value).toBe('+_ ___ ___ ____');
     });
 
     it('should resolve "phone" from locale (DE landline alternate at rest)', () => {
@@ -489,27 +489,17 @@ describe('CngxInputMask', () => {
       expect(directive.currentPattern()).toBe('+00 00 0000000');
       directive.setValue('393331234567'); // 12 digits -> mobile
       flush(fixture);
-      expect(directive.currentPattern()).toBe('+00 000 000 0000');
-    });
-
-    it('alternates JP landline vs mobile by length', () => {
-      const { directive, fixture } = setup({ mask: 'phone:JP' });
-      directive.setValue('81312345678'); // 11 digits -> landline
-      flush(fixture);
-      expect(directive.currentPattern()).toBe('+00 0-0000-0000');
-      directive.setValue('819012345678'); // 12 digits -> mobile
-      flush(fixture);
-      expect(directive.currentPattern()).toBe('+00 00-0000-0000');
+      expect(directive.currentPattern()).toBe('+00 000 0000000');
     });
 
     it('alternates BR landline vs mobile by length', () => {
       const { directive, fixture } = setup({ mask: 'phone:BR' });
       directive.setValue('551133334444'); // 12 digits -> landline
       flush(fixture);
-      expect(directive.currentPattern()).toBe('+00 (00) 0000-0000');
+      expect(directive.currentPattern()).toBe('+00 00 0000 0000');
       directive.setValue('5511999998888'); // 13 digits -> mobile
       flush(fixture);
-      expect(directive.currentPattern()).toBe('+00 (00) 00000-0000');
+      expect(directive.currentPattern()).toBe('+00 00 0 0000 0000');
     });
 
     it('lets withPhonePatterns pin a single pattern and win over the alternates', () => {
@@ -523,15 +513,15 @@ describe('CngxInputMask', () => {
       expect(directive.currentPattern()).toBe('+00 000 00000000');
     });
 
-    it('leaves fixed-length countries on a single pattern', () => {
+    it('keeps uniform-length regions on a single pattern', () => {
       const { directive, fixture } = setup({ mask: 'phone:US' });
-      directive.setValue('1234567890');
+      directive.setValue('11234567890');
       flush(fixture);
-      expect(directive.currentPattern()).toBe('(000) 000-0000');
+      expect(directive.currentPattern()).toBe('+0 000 000 0000');
     });
 
     it('ships a Slovenia pattern', () => {
-      expect(setup({ mask: 'phone:SI' }).input.value).toBe('+___ __ ___ ___');
+      expect(setup({ mask: 'phone:SI' }).input.value).toBe('+___ _ ___ __ __');
     });
 
     it('ships a Poland pattern', () => {
@@ -540,6 +530,10 @@ describe('CngxInputMask', () => {
 
     it('ships a Croatia pattern that alternates by length (landline at rest)', () => {
       expect(setup({ mask: 'phone:HR' }).input.value).toBe('+___ _ ____ ___');
+    });
+
+    it('keeps UK as a back-compat alias of GB', () => {
+      expect(setup({ mask: 'phone:UK' }).input.value).toBe('+__ ____ ______');
     });
   });
 
