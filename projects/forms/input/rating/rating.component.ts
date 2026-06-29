@@ -95,7 +95,7 @@ const CNGX_RATING_GLYPHS = {
           [attr.aria-checked]="value() === step"
           [attr.aria-posinset]="i + 1"
           [attr.aria-setsize]="steps().length"
-          [attr.aria-label]="itemLabel(step)"
+          [attr.aria-label]="itemLabels()[i]"
           [attr.aria-disabled]="disabled() ? 'true' : null"
           (click)="select(step)"
           (focus)="onItemFocus(step)"
@@ -242,6 +242,19 @@ export class CngxRating implements CngxFormFieldControl {
     },
   );
 
+  /**
+   * Per-star radio `aria-label`s, routed through the config cascade and
+   * memoised so the binding does not re-run the factory per star every CD.
+   */
+  protected readonly itemLabels = computed<string[]>(
+    () => {
+      const factory = this.config.ariaLabels?.ratingItem ?? DEFAULT_INPUT_ARIA_LABELS.ratingItem;
+      const max = this.max();
+      return this.steps().map((step) => factory(step, max));
+    },
+    { equal: (a, b) => a.length === b.length && a.every((v, i) => v === b[i]) },
+  );
+
   constructor() {
     // Bidirectional Field <-> value() value sync. The canonical field bridge
     // lives in @cngx/forms/field; numeric shape, Object.is as the cycle guard.
@@ -250,12 +263,6 @@ export class CngxRating implements CngxFormFieldControl {
       valueEquals: Object.is,
       coerceFromField: (v) => (typeof v === 'number' ? v : 0),
     });
-  }
-
-  /** @internal Per-star radio `aria-label`, routed through the config cascade. */
-  protected itemLabel(step: number): string {
-    const factory = this.config.ariaLabels?.ratingItem ?? DEFAULT_INPUT_ARIA_LABELS.ratingItem;
-    return factory(step, this.max());
   }
 
   /** @internal Click selection. */
