@@ -1,4 +1,4 @@
-import { computed, Directive, inject, input, type Signal } from '@angular/core';
+import { Directive, inject, input } from '@angular/core';
 import { CngxLiveAnnouncer } from '@cngx/common/a11y';
 import { CNGX_INPUT_CONFIG, DEFAULT_INPUT_ARIA_LABELS } from './input-config';
 
@@ -11,15 +11,21 @@ import { CNGX_INPUT_CONFIG, DEFAULT_INPUT_ARIA_LABELS } from './input-config';
  */
 export type InputFilterPattern = 'digits' | 'alpha' | 'alphanumeric' | RegExp;
 
+// Module-scope, non-global literals so a multi-char paste does not allocate a
+// fresh RegExp per character in the `beforeinput` hot path. Non-global `test`
+// ignores `lastIndex`, so sharing one instance across calls is safe.
+const ALPHA = /[a-z]/i;
+const ALPHANUMERIC = /[a-z0-9]/i;
+
 function charMatcher(pattern: InputFilterPattern): (char: string) => boolean {
   if (pattern === 'digits') {
     return (c) => c >= '0' && c <= '9';
   }
   if (pattern === 'alpha') {
-    return (c) => /[a-z]/i.test(c);
+    return (c) => ALPHA.test(c);
   }
   if (pattern === 'alphanumeric') {
-    return (c) => /[a-z0-9]/i.test(c);
+    return (c) => ALPHANUMERIC.test(c);
   }
   return (c) => {
     pattern.lastIndex = 0;
@@ -65,27 +71,45 @@ export class CngxInputFilter {
   /** The allowed-character pattern: a preset name or a single-char `RegExp`. */
   readonly pattern = input.required<InputFilterPattern>({ alias: 'cngxInputFilter' });
 
-  private readonly matcher: Signal<(char: string) => boolean> = computed(() =>
-    charMatcher(this.pattern()),
-  );
+  private cachedPattern: InputFilterPattern | null = null;
+  private cachedMatcher: (char: string) => boolean = () => false;
+  private lastWasRejection = false;
+
+  // Plain pattern-keyed memo, not a computed: the matcher has no reactive
+  // consumer (it is read imperatively in the event handler), so a signal would
+  // add graph nodes without buying anything.
+  private matcherFor(pattern: InputFilterPattern): (char: string) => boolean {
+    if (pattern !== this.cachedPattern) {
+      this.cachedPattern = pattern;
+      this.cachedMatcher = charMatcher(pattern);
+    }
+    return this.cachedMatcher;
+  }
 
   /** @internal - cancel a disallowed insertion and announce the rejection. */
   protected handleBeforeInput(event: Event): void {
     const data = (event as InputEvent).data;
     if (data == null || data === '') {
       // Deletions, navigation, and non-text insertions carry no `data`.
+      this.lastWasRejection = false;
       return;
     }
-    const matcher = this.matcher();
+    const matcher = this.matcherFor(this.pattern());
     for (const char of data) {
       if (!matcher(char)) {
         event.preventDefault();
-        this.announcer.announce(
-          this.config.ariaLabels?.inputRejected ?? DEFAULT_INPUT_ARIA_LABELS.inputRejected,
-          'assertive',
-        );
+        if (!this.lastWasRejection) {
+          // Announce once per run of rejections; a held disallowed key must not
+          // spam the assertive live region. An accepted insertion resets it.
+          this.announcer.announce(
+            this.config.ariaLabels?.inputRejected ?? DEFAULT_INPUT_ARIA_LABELS.inputRejected,
+            'assertive',
+          );
+          this.lastWasRejection = true;
+        }
         return;
       }
     }
+    this.lastWasRejection = false;
   }
 }

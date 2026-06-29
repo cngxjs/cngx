@@ -88,6 +88,18 @@ describe('CngxInputFilter', () => {
     expect(beforeInput(input, 'a').defaultPrevented).toBe(false);
   });
 
+  it('announces a held disallowed key once until an allowed insertion resets it', () => {
+    const announce = spyAnnouncer();
+    const { input } = setup('digits');
+    beforeInput(input, 'a');
+    beforeInput(input, 'a');
+    beforeInput(input, 'a');
+    expect(announce).toHaveBeenCalledTimes(1);
+    beforeInput(input, '5'); // allowed -> resets the de-dup latch
+    beforeInput(input, 'a');
+    expect(announce).toHaveBeenCalledTimes(2);
+  });
+
   it('announces the configured rejection string', () => {
     TestBed.configureTestingModule({
       providers: [provideInputConfig(withInputAriaLabels({ inputRejected: 'Nicht erlaubt' }))],
