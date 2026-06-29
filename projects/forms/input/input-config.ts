@@ -66,6 +66,8 @@ export interface InputAriaLabels {
   readonly copyError: string;
   /** `aria-label` for the `CngxFileDrop` zone. Default: `'File drop zone'` */
   readonly fileDropZone: string;
+  /** Assertive live-region warning announced when `CngxCapsLock` detects Caps Lock active. Default: `'Caps Lock is on'` */
+  readonly capsLockOn: string;
 }
 
 /**
@@ -82,6 +84,7 @@ export const DEFAULT_INPUT_ARIA_LABELS: InputAriaLabels = {
   copySuccess: 'Copied',
   copyError: 'Copy failed',
   fileDropZone: 'File drop zone',
+  capsLockOn: 'Caps Lock is on',
 };
 
 /**

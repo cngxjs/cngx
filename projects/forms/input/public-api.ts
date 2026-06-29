@@ -9,6 +9,7 @@ export { CngxCopyValue } from './copy-value.directive';
 export { CngxOtpInput, CngxOtpSlot } from './otp-input.directive';
 export { CngxInputFormat, type FormatFn, type ParseFn } from './input-format.directive';
 export { CngxFileDrop, type FileRejection } from './file-drop.directive';
+export { CngxCapsLock } from './caps-lock.directive';
 export {
   CNGX_INPUT_CONFIG,
   type InputConfig,
