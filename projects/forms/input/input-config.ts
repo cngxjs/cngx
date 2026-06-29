@@ -207,8 +207,9 @@ export function provideInputConfig(...features: InputConfigFeature[]): Provider 
  * region the library does not ship, or to override one it does.
  *
  * - Built-in regions: US, DE, CH, AT, FR, UK, IT, ES, JP, BR, SI, HR, PL.
- * - AT/DE/IT/HR ship `|`-separated landline+mobile alternates picked by length;
- *   the rest are single fixed-length patterns.
+ * - DE/AT/IT/JP/BR/HR ship `|`-separated landline+mobile alternates picked by
+ *   length; the rest are single fixed-length patterns (landline and mobile
+ *   share one national-number length there).
  * - Consumer entries merge per key onto the built-ins and win on collision.
  * - Resolved as `{ ...PHONE_PATTERNS, ...config.phonePatterns }[region]`,
  *   falling back to US when the region is absent.

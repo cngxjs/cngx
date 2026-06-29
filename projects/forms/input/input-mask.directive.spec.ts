@@ -492,6 +492,26 @@ describe('CngxInputMask', () => {
       expect(directive.currentPattern()).toBe('+00 000 000 0000');
     });
 
+    it('alternates JP landline vs mobile by length', () => {
+      const { directive, fixture } = setup({ mask: 'phone:JP' });
+      directive.setValue('81312345678'); // 11 digits -> landline
+      flush(fixture);
+      expect(directive.currentPattern()).toBe('+00 0-0000-0000');
+      directive.setValue('819012345678'); // 12 digits -> mobile
+      flush(fixture);
+      expect(directive.currentPattern()).toBe('+00 00-0000-0000');
+    });
+
+    it('alternates BR landline vs mobile by length', () => {
+      const { directive, fixture } = setup({ mask: 'phone:BR' });
+      directive.setValue('551133334444'); // 12 digits -> landline
+      flush(fixture);
+      expect(directive.currentPattern()).toBe('+00 (00) 0000-0000');
+      directive.setValue('5511999998888'); // 13 digits -> mobile
+      flush(fixture);
+      expect(directive.currentPattern()).toBe('+00 (00) 00000-0000');
+    });
+
     it('lets withPhonePatterns pin a single pattern and win over the alternates', () => {
       TestBed.configureTestingModule({
         providers: [provideInputConfig(withPhonePatterns({ DE: '+00 000 00000000' }))],

@@ -191,27 +191,33 @@ const DATE_SHORT_FORMATS: Record<string, string> = {
 };
 
 /**
- * Phone patterns by country/region code. A `|` declares length alternates
- * (landline first, mobile second) that `selectPattern` picks by digit count -
- * AT/DE/IT/HR have a national-number length that genuinely varies between
- * landline and mobile, so both masks ship. Fixed-length plans (US/CH/SI/PL/...)
- * keep a single pattern; an alternate of equal length would never switch.
+ * Phone patterns by country/region code, grouped by leading country code.
+ *
+ * A `|` declares length alternates (landline first, mobile second) that
+ * `selectPattern` picks by digit count. The two forms ship only where the
+ * national significant number (NSN) length genuinely differs between landline
+ * and mobile - DE, AT, IT, JP, BR, HR. Where landline and mobile share one NSN
+ * length (US/CH/FR/UK/ES/SI/PL), a single pattern masks both correctly; a
+ * second same-length alternate would be dead since `selectPattern` switches on
+ * slot count alone.
  * @internal
  */
 const PHONE_PATTERNS: Record<string, string> = {
-  US: '(000) 000-0000',
-  DE: '+00 00 00000000|+00 000 00000000',
-  CH: '+00 00 000 00 00',
-  AT: '+00 0 0000000|+00 000 0000000',
-  FR: '+00 0 00 00 00 00',
-  UK: '+00 0000 000000',
-  IT: '+00 00 0000000|+00 000 000 0000',
-  ES: '+00 000 000 000',
-  JP: '+00 00-0000-0000',
-  BR: '+00 (00) 00000-0000',
-  SI: '+000 00 000 000',
-  HR: '+000 0 0000 000|+000 00 000 0000',
-  PL: '+00 000 000 000',
+  // Uniform NSN length (one pattern serves landline + mobile)
+  US: '(000) 000-0000', // NANP, 10-digit national
+  CH: '+00 00 000 00 00', // +41, 9 NSN
+  FR: '+00 0 00 00 00 00', // +33, 9 NSN
+  UK: '+00 0000 000000', // +44, 10 NSN
+  ES: '+00 000 000 000', // +34, 9 NSN
+  SI: '+000 00 000 000', // +386, 8 NSN
+  PL: '+00 000 000 000', // +48, 9 NSN
+  // Landline | mobile alternates (NSN length differs)
+  DE: '+00 00 00000000|+00 000 00000000', // +49, landline ~10 | mobile 11
+  AT: '+00 0 0000000|+00 000 0000000', // +43, landline ~8 | mobile 10
+  IT: '+00 00 0000000|+00 000 000 0000', // +39, landline ~9 | mobile 10
+  JP: '+00 0-0000-0000|+00 00-0000-0000', // +81, landline 9 | mobile 10
+  BR: '+00 (00) 0000-0000|+00 (00) 00000-0000', // +55, landline 10 | mobile 11
+  HR: '+000 0 0000 000|+000 00 000 0000', // +385, landline 8 | mobile 9
 };
 
 /**
