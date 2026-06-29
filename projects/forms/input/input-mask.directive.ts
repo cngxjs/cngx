@@ -14,6 +14,12 @@ import {
 import { CNGX_FORM_FIELD_HOST } from '@cngx/core/tokens';
 import { CNGX_VALUE_TRANSFORMER, type CngxValueTransformer } from '@cngx/forms/field';
 import { CNGX_INPUT_CONFIG, type InputConfig } from './input-config';
+import {
+  ensureMaskPreset,
+  maskPresetKey,
+  maskPresetTables,
+  type MaskPresetTables,
+} from './mask-presets/registry';
 
 /** @internal */
 interface MaskToken {
@@ -162,127 +168,24 @@ function firstEmptySlot(tokens: MaskToken[], masked: string, placeholder: string
   return tokens.length;
 }
 
+
 /**
- * Date format masks per locale (BCP-47 keys).
- *
- * `0` is a digit slot. These masks capture STRUCTURE only (separators, group
- * count), NOT field order (DD/MM vs MM/DD): en-US (MM/DD/YYYY) and en-GB
- * (DD/MM/YYYY) look identical here (`00/00/0000`) though the first two groups
- * swap meaning. Source: CLDR common usage; verify against
- * `Intl.DateTimeFormat(locale).formatToParts()` for legal/form documents,
- * since some countries deviate officially from everyday usage.
+ * Inline fallback masks used while a lazily-loaded preset table is still in
+ * flight (and as the final default when no region matches).
  * @internal
  */
-const DATE_FORMATS: Record<string, string> = {
-  'de-DE': '00.00.0000',
-  'de-AT': '00.00.0000',
-  'de-CH': '00.00.0000',
-  'fr-FR': '00/00/0000',
-  'fr-BE': '00/00/0000',
-  'fr-CH': '00.00.0000', // Switzerland: dots in French too
-  'fr-CA': '0000-00-00', // Canada (fr): ISO, not slash
-  'es-ES': '00/00/0000',
-  'es-MX': '00/00/0000',
-  'es-AR': '00/00/0000',
-  'it-IT': '00/00/0000',
-  'it-CH': '00.00.0000', // Switzerland: dots like all CH locales
-  'pt-PT': '00/00/0000',
-  'pt-BR': '00/00/0000',
-  'nl-NL': '00-00-0000', // NL: hyphen
-  'nl-BE': '00/00/0000', // BE: slash, not hyphen like nl-NL
-  'ru-RU': '00.00.0000',
-  'ja-JP': '0000/00/00',
-  'zh-CN': '0000-00-00', // Mainland China: ISO with hyphen
-  'zh-TW': '0000/00/00',
-  'zh-HK': '00/00/0000', // HK = DD/MM/YYYY (British influence), NOT year-first
-  'ko-KR': '0000.00.00',
-  'en-US': '00/00/0000', // MM/DD/YYYY
-  'en-GB': '00/00/0000', // DD/MM/YYYY - same mask, different order
-  'en-AU': '00/00/0000',
-  'en-CA': '0000-00-00', // ISO
-  'en-IE': '00/00/0000',
-  'pl-PL': '00.00.0000',
-  'cs-CZ': '00.00.0000',
-  'sk-SK': '00.00.0000',
-  'hu-HU': '0000.00.00', // year-first + dots
-  'ro-RO': '00.00.0000',
-  'bg-BG': '00.00.0000',
-  'el-GR': '00/00/0000',
-  'sv-SE': '0000-00-00', // Sweden: ISO 8601 in everyday use
-  'nb-NO': '00.00.0000',
-  'da-DK': '00-00-0000', // Denmark: hyphen
-  'fi-FI': '00.00.0000',
-  'hr-HR': '00.00.0000',
-  'sr-RS': '00.00.0000',
-  'sl-SI': '00.00.0000',
-  'uk-UA': '00.00.0000',
-  'lt-LT': '0000-00-00', // Lithuania: ISO
-  'lv-LV': '00.00.0000',
-  'et-EE': '00.00.0000',
-  'is-IS': '00.00.0000',
-  'mt-MT': '00/00/0000',
-  'ga-IE': '00/00/0000',
-  'lb-LU': '00.00.0000',
-  'tr-TR': '00.00.0000',
-};
-
-const DATE_SHORT_FORMATS: Record<string, string> = {
-  'de-DE': '00.00.00',
-  'de-AT': '00.00.00',
-  'de-CH': '00.00.00',
-  'fr-FR': '00/00/00',
-  'fr-BE': '00/00/00',
-  'fr-CH': '00.00.00',
-  'fr-CA': '00-00-00',
-  'es-ES': '00/00/00',
-  'es-MX': '00/00/00',
-  'es-AR': '00/00/00',
-  'it-IT': '00/00/00',
-  'it-CH': '00.00.00',
-  'pt-PT': '00/00/00',
-  'pt-BR': '00/00/00',
-  'nl-NL': '00-00-00',
-  'nl-BE': '00/00/00',
-  'ru-RU': '00.00.00',
-  'ja-JP': '00/00/00',
-  'zh-CN': '00-00-00',
-  'zh-TW': '00/00/00',
-  'zh-HK': '00/00/00',
-  'ko-KR': '00.00.00',
-  'en-US': '00/00/00',
-  'en-GB': '00/00/00',
-  'en-AU': '00/00/00',
-  'en-CA': '00-00-00',
-  'en-IE': '00/00/00',
-  'pl-PL': '00.00.00',
-  'cs-CZ': '00.00.00',
-  'sk-SK': '00.00.00',
-  'hu-HU': '00.00.00',
-  'ro-RO': '00.00.00',
-  'bg-BG': '00.00.00',
-  'el-GR': '00/00/00',
-  'sv-SE': '00-00-00',
-  'nb-NO': '00.00.00',
-  'da-DK': '00-00-00',
-  'fi-FI': '00.00.00',
-  'hr-HR': '00.00.00',
-  'sr-RS': '00.00.00',
-  'sl-SI': '00.00.00',
-  'uk-UA': '00.00.00',
-  'lt-LT': '00-00-00',
-  'lv-LV': '00.00.00',
-  'et-EE': '00.00.00',
-  'is-IS': '00.00.00',
-  'mt-MT': '00/00/00',
-  'ga-IE': '00/00/00',
-  'lb-LU': '00.00.00',
-  'tr-TR': '00.00.00',
-};
+const PRESET_FALLBACKS = {
+  phone: '+000000000000',
+  date: '00/00/0000',
+  dateShort: '00/00/00',
+  iban: 'AA00 0000 0000 0000 0000 00',
+  zip: '00000',
+} as const;
 
 /**
  * Resolves a date mask for a locale: exact BCP-47 key first (case-insensitive),
  * then a bare language key (back-compat with language-keyed `withDateFormats`
- * config), then any same-language locale, then `en-US`.
+ * config), then any same-language locale, then the provided fallback pattern.
  * @internal
  */
 function resolveDateFormat(
@@ -305,115 +208,20 @@ function resolveDateFormat(
       return table[key];
     }
   }
-  return table[fallback];
+  return fallback;
 }
 
 /**
- * Telephone format masks per region (ISO 3166-1 alpha-2 keys).
- *
- * Format: `<cc-mask> <landline-mask>|<cc-mask> <mobile-mask>`; `0` is a digit
- * slot, every other char is a literal. `selectPattern` picks the alternate by
- * digit count, so a `|` only switches where landline and mobile differ in
- * length; equal-length plans ship a single pattern (the grouping is fixed,
- * not length-derived).
- *
- * IMPORTANT - more so than with date formats: phone numbers are NOT
- * fixed-length in most countries. Area-code lengths vary (DE: 2-5 digits), so
- * the total length floats. These masks are coarse approximations / the common
- * cases, not validation. For real validation use a library like
- * `libphonenumber-js` (ITU/Google metadata); this table is at best a UI
- * placeholder/hint, never a validator.
- *
- * `UK` is kept as a back-compat alias of `GB`.
+ * Resolves a preset name to its mask patterns. Built-in region tables arrive
+ * lazily via {@link maskPresetTables}; until a table loads, the inline
+ * {@link PRESET_FALLBACKS} stand in. Consumer overrides (`config.*Patterns`)
+ * are synchronous and always merged on top.
  * @internal
  */
-const PHONE_PATTERNS: Record<string, string> = {
-  // DACH
-  DE: '+00 00 00000000|+00 000 00000000', // +49, landline area 2-5 digits (approx) | mobile 3-digit prefix (15x/16x/17x) + 7-8
-  AT: '+00 0 0000000|+00 000 0000000', // +43, mobile prefix usually 3-digit (6xx)
-  CH: '+00 00 000 00 00', // +41, landline and mobile same length (9 digits); only the prefix differs
-  // Western Europe
-  FR: '+00 0 00 00 00 00', // +33, leading 0 dropped internationally; prefix 1-5 landline, 6-7 mobile, same structure
-  BE: '+00 00 000 000|+00 000 00 00 00', // +32, landline 8-digit (region), mobile 9-digit (4xx)
-  NL: '+00 00 0000000|+00 0 00000000', // +31, mobile prefix 6 then 8 digits
-  LU: '+000 000 000|+000 000 000 000', // +352, landline very variable (6-9 digits, approx), mobile usually 9-digit (6xx)
-  IE: '+000 0 0000000|+000 00 0000000', // +353, mobile prefix 8x, landline area length varies
-  GB: '+00 0000 000000', // +44, leading 0 dropped internationally; mobile 7xxx, landline area length varies (approx)
-  UK: '+00 0000 000000', // back-compat alias of GB
-  MT: '+000 0000 0000', // +356, no area codes, landline and mobile same length
-  // Southern Europe
-  ES: '+00 000 00 00 00', // +34, landline and mobile both 9-digit, only the prefix differs (6/7 mobile)
-  IT: '+00 00 0000000|+00 000 0000000', // +39, leading 0 stays on landline internationally (+39 06...), not on mobile
-  PT: '+000 000 000 000', // +351, landline and mobile both 9-digit (mobile prefix 9x)
-  GR: '+00 00 0000 0000|+00 000 0000000', // +30, both variants 10-digit
-  // Northern Europe
-  SE: '+00 00 000 00 00', // +46, area length varies, approx
-  NO: '+00 000 00 000', // +47, no area codes, both 8-digit
-  DK: '+00 00 00 00 00', // +45, no area codes, both 8-digit
-  FI: '+000 00 0000000', // +358, lengths vary more than the other Nordics, approx
-  IS: '+000 000 0000', // +354, no area codes, 7-digit
-  // Central Europe
-  PL: '+00 000 000 000', // +48, landline and mobile both 9-digit
-  CZ: '+000 000 000 000', // +420, both 9-digit
-  SK: '+000 000 000 000', // +421, both 9-digit
-  HU: '+00 0 000 0000|+00 00 000 0000', // +36, mobile prefix 2-digit (20/30/70), landline area 1-2 digit
-  // Eastern Europe / Balkans
-  RO: '+00 000 000 000', // +40, both 9-digit
-  BG: '+000 0 000 0000|+000 00 000 0000', // +359, lengths vary, approx
-  HR: '+000 0 0000 000|+000 00 000 0000', // +385, mobile 8-9 digit after prefix, approx
-  RS: '+000 00 0000000', // +381, lengths vary a lot
-  SI: '+000 0 000 00 00|+000 00 000 000', // +386, both usually 8-digit
-  UA: '+000 00 000 0000', // +380, both 9-digit
-  LT: '+000 0 00 00 00|+000 000 00000', // +370, both usually 8-digit
-  LV: '+000 00 000 000', // +371, both 8-digit, no area codes
-  EE: '+000 000 0000|+000 0000 0000', // +372, landline 7-digit, mobile 7-8 digit, approx
-  RU: '+0 000 000 00 00', // +7, both 10-digit, mobile prefix 9xx
-  TR: '+00 000 000 00 00', // +90, both 10-digit, mobile prefix 5xx
-  // North America (NANP)
-  US: '+0 000 000 0000', // +1, NANP: landline and mobile share structure, no technical distinction
-  CA: '+0 000 000 0000', // +1, NANP like US
-  // Latin America
-  MX: '+00 00 0000 0000|+00 0 00 0000 0000', // +52, mobile historically adds a "1" after the country code, approx
-  AR: '+00 00 0000 0000|+00 0 0 00 0000 0000', // +54, mobile inserts a "9" after the country code (+54 9 11 ...)
-  BR: '+00 00 0000 0000|+00 00 0 0000 0000', // +55, mobile gained a leading "9" (9-digit instead of 8)
-  // East Asia
-  JP: '+00 00 0000 0000', // +81, leading 0 dropped internationally; mobile prefix 70/80/90, landline area length varies
-  CN: '+00 000 0000 0000', // +86, mobile always 11-digit; landline area length varies, approx
-  TW: '+000 0 0000 0000|+000 000 000 000', // +886, mobile 9-digit (9xx), landline area length varies
-  HK: '+000 0000 0000', // +852, no area codes, landline and mobile both 8-digit
-  KR: '+00 00 0000 0000', // +82, leading 0 dropped internationally; mobile prefix 10, landline area length varies
-  // Oceania
-  AU: '+00 0 0000 0000|+00 000 000 000', // +61, leading 0 dropped internationally; mobile 4xx, landline area 1-digit (2/3/7/8)
-};
-
-/**
- * IBAN lengths and groupings by country.
- * @internal
- */
-const IBAN_PATTERNS: Record<string, string> = {
-  CH: 'AA00 0000 0000 0000 0000 0',
-  DE: 'AA00 0000 0000 0000 0000 00',
-  AT: 'AA00 0000 0000 0000 0000',
-  FR: 'AA00 0000 0000 0000 0000 000',
-  IT: 'AA00 A000 0000 0000 0000 0000 000',
-  ES: 'AA00 0000 0000 0000 0000 0000',
-  NL: 'AA00 AAAA 0000 0000 00',
-  GB: 'AA00 AAAA 0000 0000 00',
-};
-
-const ZIP_PATTERNS: Record<string, string> = {
-  US: '00000',
-  DE: '00000',
-  CH: '0000',
-  AT: '0000',
-  FR: '00000',
-  UK: 'A0A 0AA|AA0 0AA|AA00 0AA|A0 0AA|A00 0AA',
-  JP: '000-0000',
-};
-
 function resolvePreset(
   maskInput: string,
   locale: string,
+  tables: MaskPresetTables,
   config?: InputConfig,
 ): { patterns: string[]; prefix?: string; suffix?: string } | null {
   const parts = maskInput.split(':');
@@ -421,29 +229,35 @@ function resolvePreset(
   const regionHint = parts[1]?.toUpperCase();
   const region = regionHint ?? localeToRegion(locale);
 
-  const phones = { ...PHONE_PATTERNS, ...config?.phonePatterns };
-  const ibans = { ...IBAN_PATTERNS, ...config?.ibanPatterns };
-  const zips = { ...ZIP_PATTERNS, ...config?.zipPatterns };
-  const dates = { ...DATE_FORMATS, ...config?.dateFormats };
+  const phones = { ...tables.phone, ...config?.phonePatterns };
+  const ibans = { ...tables.iban, ...config?.ibanPatterns };
+  const zips = { ...tables.zip, ...config?.zipPatterns };
+  const dates = { ...tables.date, ...config?.dateFormats };
 
   switch (name) {
     case 'date':
-      return { patterns: [resolveDateFormat(locale, dates, 'en-US')] };
+      return { patterns: [resolveDateFormat(locale, dates, PRESET_FALLBACKS.date)] };
     case 'date:short':
-      return { patterns: [resolveDateFormat(locale, DATE_SHORT_FORMATS, 'en-US')] };
+      return {
+        patterns: [
+          resolveDateFormat(locale, tables.dateShort ?? {}, PRESET_FALLBACKS.dateShort),
+        ],
+      };
     case 'time':
     case 'time:24':
       return { patterns: ['00:00'] };
     case 'time:12':
       return { patterns: ['00:00 AA'] };
     case 'datetime':
-      return { patterns: [`${resolveDateFormat(locale, dates, 'en-US')} 00:00`] };
+      return {
+        patterns: [`${resolveDateFormat(locale, dates, PRESET_FALLBACKS.date)} 00:00`],
+      };
     case 'phone':
-      return { patterns: [phones[region] ?? phones['US']] };
+      return { patterns: [phones[region] ?? PRESET_FALLBACKS.phone] };
     case 'creditcard':
       return { patterns: ['0000 000000 00000|0000 0000 0000 0000'] };
     case 'iban':
-      return { patterns: [ibans[region] ?? 'AA00 0000 0000 0000 0000 00'] };
+      return { patterns: [ibans[region] ?? PRESET_FALLBACKS.iban] };
     case 'zip':
       return resolveZip(region, zips);
     case 'ip':
@@ -677,10 +491,14 @@ export class CngxInputMask {
     },
   );
 
+  /** Preset table this mask needs (null for table-less / custom patterns). */
+  private readonly presetKey = computed(() => maskPresetKey(this.mask()));
+
   /** Resolved patterns (handles presets, config overrides, and `|` splitting). */
   private readonly resolvedPatterns = computed(() => {
     const maskVal = this.mask();
-    const preset = resolvePreset(maskVal, this.locale, this.config);
+    // Reading the signal makes this recompute when a lazily-imported table lands.
+    const preset = resolvePreset(maskVal, this.locale, maskPresetTables(), this.config);
     if (preset) {
       return preset.patterns.flatMap((p) => p.split('|'));
     }
@@ -749,6 +567,16 @@ export class CngxInputMask {
   private prevMask: string | undefined;
 
   constructor() {
+    // Lazily import the preset table the current mask needs. Side effect, so it
+    // lives in an effect (not the resolvedPatterns computed); the import's
+    // signal write lands back in maskPresetTables and recomputes the mask.
+    effect(() => {
+      const key = this.presetKey();
+      if (key) {
+        untracked(() => void ensureMaskPreset(key));
+      }
+    });
+
     // Sync masked value to DOM; the input event notifies co-located CngxInput / matInput.
     //
     // No re-entry guard here (unlike CngxInputFormat's lastEffectWrite): the

@@ -3,9 +3,10 @@ import { TestBed } from '@angular/core/testing';
 import { LOCALE_ID } from '@angular/core';
 import { CNGX_FORM_FIELD_HOST, type CngxFormFieldHostContract } from '@cngx/core/tokens';
 import { CNGX_VALUE_TRANSFORMER, type CngxValueTransformer } from '@cngx/forms/field';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { CngxInputMask, type MaskTokenMap } from './input-mask.directive';
 import { provideInputConfig, withPhonePatterns } from './input-config';
+import { loadAllMaskPresets } from './mask-presets/registry';
 
 // ── Test host ───────────────────────────────────────────────────────
 
@@ -126,6 +127,12 @@ function flush(fixture: ReturnType<typeof TestBed.createComponent>): void {
 // ── Tests ───────────────────────────────────────────────────────────
 
 describe('CngxInputMask', () => {
+  // Preset tables load lazily via dynamic import; prime them so preset
+  // assertions resolve synchronously.
+  beforeAll(async () => {
+    await loadAllMaskPresets();
+  });
+
   // ── Basic mask behavior ─────────────────────────────────────────────
 
   describe('initial state', () => {
