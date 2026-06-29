@@ -17,6 +17,23 @@ import { CNGX_VALUE_TRANSFORMER, type CngxValueTransformer } from '@cngx/forms/f
 import { CNGX_INPUT_CONFIG } from './input-config';
 
 /**
+ * `Intl.NumberFormatPart` types that make up the number itself - everything
+ * else (currency symbol, percent sign, symbol-adjacent literal whitespace) is
+ * dropped when rebuilding a symbol-less currency display.
+ * @internal
+ */
+const NUMERIC_PART_TYPES: ReadonlySet<string> = new Set([
+  'integer',
+  'group',
+  'decimal',
+  'fraction',
+  'minusSign',
+  'plusSign',
+  'nan',
+  'infinity',
+]);
+
+/**
  * Detect decimal and group separators from Intl.
  * @internal
  */
@@ -431,27 +448,32 @@ export class CngxNumericInput {
 
   private format(value: number): string {
     const locale = this.resolvedLocale();
-    const currency = this.resolvedCurrency();
-    if (currency) {
-      try {
-        // Currency grouping + fraction digits, but the symbol is stripped: it
-        // renders through a CngxPrefix/CngxSuffix affix, never inside the value.
-        return new Intl.NumberFormat(locale, { style: 'currency', currency })
-          .formatToParts(value)
-          .filter((part) => part.type !== 'currency')
-          .map((part) => part.value)
-          .join('')
-          .trim();
-      } catch {
-        // Unknown currency code: fall through to plain decimal formatting.
-      }
-    }
     const dec = this.resolvedDecimals();
     const options: Intl.NumberFormatOptions = {};
     if (dec != null) {
       options.minimumFractionDigits = dec;
       options.maximumFractionDigits = dec;
     }
+
+    const currency = this.resolvedCurrency();
+    if (currency) {
+      try {
+        // Currency grouping + fraction digits, but the symbol is stripped: it
+        // renders through a CngxPrefix/CngxSuffix affix, never inside the value.
+        // `dec` (an explicit [decimals] wins over the currency's standard digits,
+        // matching resolvedDecimals precedence); reconstructing from the numeric
+        // part types drops the symbol and any symbol-adjacent literal in any
+        // locale, with no trailing-space trimming needed.
+        return new Intl.NumberFormat(locale, { ...options, style: 'currency', currency })
+          .formatToParts(value)
+          .filter((part) => NUMERIC_PART_TYPES.has(part.type))
+          .map((part) => part.value)
+          .join('');
+      } catch {
+        // Unknown currency code: fall through to plain decimal formatting.
+      }
+    }
+
     return new Intl.NumberFormat(locale, options).format(value);
   }
 
