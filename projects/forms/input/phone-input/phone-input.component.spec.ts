@@ -4,6 +4,11 @@ import { By } from '@angular/platform-browser';
 import { CngxFormField } from '@cngx/forms/field';
 import { createMockField } from '@cngx/forms/field/testing';
 import { CngxInputMask } from '../input-mask.directive';
+import {
+  provideInputConfig,
+  withInputAriaLabels,
+  withPhoneDefaultRegion,
+} from '../input-config';
 import { CngxPhoneInput } from './phone-input.component';
 import { CNGX_PHONE_COUNTRIES } from './countries';
 
@@ -137,5 +142,54 @@ describe('CngxPhoneInput', () => {
     TestBed.flushEffects();
 
     expect(fixture.componentInstance.phone().disabled()).toBe(true);
+  });
+
+  it('marks aria-disabled and exposes a disabled reason', () => {
+    @Component({
+      template: `<cngx-phone-input [disabled]="true" disabledReason="Locked until sign-in" />`,
+      imports: [CngxPhoneInput],
+    })
+    class DisabledHost {}
+
+    const fixture = TestBed.createComponent(DisabledHost);
+    document.body.appendChild(fixture.nativeElement);
+    fixture.detectChanges();
+
+    const group = fixture.nativeElement.querySelector('cngx-phone-input') as HTMLElement;
+    expect(group.getAttribute('aria-disabled')).toBe('true');
+
+    const reason = fixture.nativeElement.querySelector(
+      '.cngx-phone-input__disabled-reason',
+    ) as HTMLElement;
+    const input = fixture.nativeElement.querySelector(
+      '.cngx-phone-input__number',
+    ) as HTMLElement;
+    expect(input.getAttribute('aria-describedby')).toContain(reason.id);
+    expect(reason.textContent).toContain('Locked until sign-in');
+    expect(reason.getAttribute('aria-hidden')).toBeNull();
+  });
+
+  it('routes the country label through the config cascade', () => {
+    TestBed.configureTestingModule({
+      providers: [provideInputConfig(withInputAriaLabels({ phoneCountry: 'Land' }))],
+    });
+    const { fixture } = setup();
+    const select = fixture.nativeElement.querySelector('cngx-select') as HTMLElement;
+    expect(select.getAttribute('aria-label')).toBe('Land');
+  });
+
+  it('applies the configured default region when no country is bound', () => {
+    TestBed.configureTestingModule({
+      providers: [provideInputConfig(withPhoneDefaultRegion('DE'))],
+    });
+
+    @Component({ template: `<cngx-phone-input />`, imports: [CngxPhoneInput] })
+    class BareHost {
+      readonly phone = viewChild.required(CngxPhoneInput);
+    }
+
+    const fixture = TestBed.createComponent(BareHost);
+    fixture.detectChanges();
+    expect(fixture.componentInstance.phone().country().region).toBe('DE');
   });
 });

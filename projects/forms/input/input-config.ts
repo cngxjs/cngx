@@ -41,6 +41,8 @@ export interface InputConfig {
   readonly fileMaxSize?: number;
   /** Default `maxFiles` for `CngxFileDrop`. */
   readonly fileMaxFiles?: number;
+  /** Default selected region (ISO key) for `CngxPhoneInput`. Set via `withPhoneDefaultRegion`. */
+  readonly phoneDefaultRegion?: string;
   /**
    * Consumer overrides for the built-in ARIA label strings. Unset keys fall
    * back to {@link DEFAULT_INPUT_ARIA_LABELS}.
@@ -86,6 +88,8 @@ export interface InputAriaLabels {
   readonly ratingValue: (value: number, max: number) => string;
   /** Per-star `aria-label` factory for each `CngxRating` radio. Default: `` (step, max) => `${step} of ${max}` `` */
   readonly ratingItem: (step: number, max: number) => string;
+  /** `aria-label` for the `CngxPhoneInput` country picker. Default: `'Country'` */
+  readonly phoneCountry: string;
 }
 
 /**
@@ -109,6 +113,7 @@ export const DEFAULT_INPUT_ARIA_LABELS: InputAriaLabels = {
   sensitiveHide: 'Value hidden',
   ratingValue: (value, max) => `${value} of ${max}`,
   ratingItem: (step, max) => `${step} of ${max}`,
+  phoneCountry: 'Country',
 };
 
 /**
@@ -140,7 +145,7 @@ const DEFAULT_INPUT_CONFIG: InputConfig = {};
  * @category forms/input
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/input/input-config.ts
  * @since 0.1.0
- * @relatedTo provideInputConfig, withInputAriaLabels, withNumericDefaults, withMaskPlaceholder, withMaskGuide, withCustomTokens, withPhonePatterns, withIbanPatterns, withZipPatterns, withDateFormats, withCopyResetDelay, withFileMaxSize, withFileMaxFiles, withCurrency
+ * @relatedTo provideInputConfig, withInputAriaLabels, withNumericDefaults, withMaskPlaceholder, withMaskGuide, withCustomTokens, withPhonePatterns, withIbanPatterns, withZipPatterns, withDateFormats, withCopyResetDelay, withFileMaxSize, withFileMaxFiles, withCurrency, withPhoneDefaultRegion
  */
 export const CNGX_INPUT_CONFIG = new InjectionToken<InputConfig>('CNGX_INPUT_CONFIG', {
   providedIn: 'root',
@@ -463,6 +468,25 @@ export function withFileMaxFiles(count: number): InputConfigFeature {
 }
 
 /**
+ * Sets the app-wide default selected region (ISO key, e.g. `'AT'`) for
+ * `CngxPhoneInput`, instead of the first country in the list.
+ *
+ * - The region must match a `CngxPhoneInput` country `region`; an unknown
+ *   region is ignored (the first country stays selected).
+ * - A per-instance `[country]` binding overrides it.
+ *
+ * ```typescript
+ * provideInputConfig(withPhoneDefaultRegion('AT'));
+ * ```
+ *
+ * @see {@link provideInputConfig}
+ * @category forms/input
+ */
+export function withPhoneDefaultRegion(region: string): InputConfigFeature {
+  return (config) => ({ ...config, phoneDefaultRegion: region });
+}
+
+/**
  * Overrides the built-in ARIA label strings the input directives announce.
  *
  * - Unset keys fall back to `DEFAULT_INPUT_ARIA_LABELS` per key, so a partial
@@ -479,6 +503,7 @@ export function withFileMaxFiles(count: number): InputConfigFeature {
  * - `sensitiveReveal` / `sensitiveHide` -> `CngxSensitiveValue` reveal/hide announcements.
  * - `ratingValue(value, max)` -> `CngxRating` polite committed-value announcement.
  * - `ratingItem(step, max)` -> `CngxRating` per-star radio `aria-label`.
+ * - `phoneCountry` -> `CngxPhoneInput` country-picker `aria-label`.
  *
  * ```typescript
  * provideInputConfig(

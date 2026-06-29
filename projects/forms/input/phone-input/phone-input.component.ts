@@ -18,6 +18,7 @@ import {
 } from '@cngx/forms/field';
 import { CngxSelect, type CngxSelectOptionDef } from '@cngx/forms/select';
 import { CngxInputMask } from '../input-mask.directive';
+import { CNGX_INPUT_CONFIG, DEFAULT_INPUT_ARIA_LABELS } from '../input-config';
 import { CNGX_PHONE_COUNTRIES, type Country } from './countries';
 
 /**
@@ -42,9 +43,9 @@ class CngxPhoneInputDetach {}
  * (`phone:<region>`): the selected country drives the mask region through a
  * `computed()`, so picking a country re-targets the mask with zero manual sync.
  * It provides {@link CNGX_FORM_FIELD_CONTROL} and is the single form-field
- * control - the inner select and input are shielded from the surrounding
- * `cngx-form-field` (via a null `CngxFormFieldPresenter` in `viewProviders`) so
- * only this component wires the field ARIA and value.
+ * control - the inner select is shielded from the surrounding `cngx-form-field`
+ * (a null `CngxFormFieldPresenter` in the inner element's `providers`, via
+ * `CngxPhoneInputDetach`) so only this component wires the field ARIA and value.
  *
  * The country list is consumer-overridable through `[countries]`; switching
  * country clears the entered number (the mask's documented auto-clear on
@@ -76,6 +77,7 @@ class CngxPhoneInputDetach {}
     role: 'group',
     '[attr.aria-labelledby]': 'labelledBy()',
     '[attr.aria-label]': 'ariaLabelAttr()',
+    '[attr.aria-disabled]': 'ariaDisabled()',
     '[class.cngx-phone-input--disabled]': 'disabled()',
     '[class.cngx-phone-input--focused]': 'focused()',
     '(focusin)': 'focusedState.set(true)',
@@ -88,7 +90,7 @@ class CngxPhoneInputDetach {}
       [(value)]="country"
       [options]="selectOptions()"
       [disabled]="disabled()"
-      [attr.aria-label]="countryAriaLabel()"
+      [attr.aria-label]="resolvedCountryLabel()"
     />
     <input
       class="cngx-phone-input__number"
@@ -102,6 +104,12 @@ class CngxPhoneInputDetach {}
       [attr.aria-required]="ariaRequired()"
       [attr.aria-describedby]="describedBy()"
     />
+    <span
+      class="cngx-phone-input__disabled-reason"
+      [id]="reasonId"
+      [attr.aria-hidden]="disabled() ? null : 'true'"
+      >{{ disabledReason() }}</span
+    >
   `,
   styleUrl: './phone-input.component.css',
 })
@@ -116,18 +124,27 @@ export class CngxPhoneInput implements CngxFormFieldControl {
   readonly countries = input<readonly Country[]>(CNGX_PHONE_COUNTRIES);
 
   /** Consumer disable knob; the effective {@link disabled} also folds in the field. */
-  readonly disabledInput = model<boolean>(false, { alias: 'disabled' });
+  readonly disabledInput = input<boolean>(false, { alias: 'disabled' });
 
-  /** Accessible label for the country picker. EN default; consumer-overridable. */
-  readonly countryAriaLabel = input<string>('Country');
+  /**
+   * Accessible label for the country picker. Per-instance override; otherwise
+   * resolves through `CNGX_INPUT_CONFIG.ariaLabels.phoneCountry` (EN `'Country'`).
+   */
+  readonly countryAriaLabel = input<string>('');
+
+  /** Reason announced via `aria-describedby` while the control is disabled. */
+  readonly disabledReason = input<string>('');
 
   /** Accessible label used when standalone (no `cngx-form-field`). */
   readonly ariaLabel = input<string>('');
 
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly presenter = inject(CngxFormFieldPresenter, { optional: true });
+  private readonly config = inject(CNGX_INPUT_CONFIG);
 
   private readonly fallbackId = nextUid('cngx-phone-input-');
+  /** @internal Stable id for the always-present disabled-reason span. */
+  protected readonly reasonId = nextUid('cngx-phone-input-reason-');
   /** @internal Host-binding-accessed; written from `(focusin)`/`(focusout)`. */
   protected readonly focusedState = signal(false);
   readonly focused = this.focusedState.asReadonly();
@@ -164,9 +181,30 @@ export class CngxPhoneInput implements CngxFormFieldControl {
   /** @internal */
   protected readonly ariaRequired = computed(() => (this.presenter?.required() ? true : null));
   /** @internal */
-  protected readonly describedBy = computed(() => this.presenter?.describedBy() ?? null);
+  protected readonly ariaDisabled = computed(() => (this.disabled() ? true : null));
+  /** @internal IDs always present; the span itself toggles `aria-hidden`. */
+  protected readonly describedBy = computed(() => {
+    const fieldIds = this.presenter?.describedBy();
+    return fieldIds ? `${fieldIds} ${this.reasonId}` : this.reasonId;
+  });
+  /** @internal Per-instance label, else the config cascade, else the EN default. */
+  protected readonly resolvedCountryLabel = computed(
+    () =>
+      this.countryAriaLabel() ||
+      this.config.ariaLabels?.phoneCountry ||
+      DEFAULT_INPUT_ARIA_LABELS.phoneCountry,
+  );
 
   constructor() {
+    // App-wide default region (overridden by a per-instance [country] binding).
+    const region = this.config.phoneDefaultRegion;
+    if (region) {
+      const match = CNGX_PHONE_COUNTRIES.find((c) => c.region === region);
+      if (match) {
+        this.country.set(match);
+      }
+    }
+
     createFieldSync<string>({
       componentValue: this.value,
       valueEquals: Object.is,
