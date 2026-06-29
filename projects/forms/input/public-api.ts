@@ -11,6 +11,11 @@ export { CngxRating } from './rating/rating.component';
 export { CngxRatingItem, type CngxRatingItemContext } from './rating/rating-item.directive';
 export { CngxPhoneInput } from './phone-input/phone-input.component';
 export { type Country } from './phone-input/countries';
+export {
+  CNGX_PHONE_METADATA,
+  type CngxPhoneMetadata,
+  providePhoneMetadata,
+} from './phone-metadata';
 export { provideEagerMaskPresets, type MaskPresetKey } from './mask-presets/registry';
 export { CngxInputFormat, type FormatFn, type ParseFn } from './input-format.directive';
 export { CngxFileDrop, type FileRejection } from './file-drop.directive';
