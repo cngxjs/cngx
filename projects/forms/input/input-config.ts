@@ -124,7 +124,8 @@ const DEFAULT_INPUT_CONFIG: InputConfig = {};
  * - `providedIn: 'root'` with an empty-config factory, so it resolves without a
  *   provider and each directive keeps its built-in default.
  * - Consumed by `CngxInputMask`, `CngxNumericInput`, `CngxCopyValue`,
- *   `CngxFileDrop`, `CngxInputClear`, and `CngxOtpInput`.
+ *   `CngxFileDrop`, `CngxInputClear`, `CngxOtpInput`, `CngxCapsLock`,
+ *   `CngxPasswordStrength`, `CngxInputFilter`, and `CngxSensitiveValue`.
  * - Token resolution is nearest-wins: a config in a component's `viewProviders`
  *   replaces an ancestor's for that subtree, it does not deep-merge.
  *
@@ -133,20 +134,19 @@ const DEFAULT_INPUT_CONFIG: InputConfig = {};
  * @category forms/input
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/input/input-config.ts
  * @since 0.1.0
- * @relatedTo provideInputConfig, withInputAriaLabels, withNumericDefaults, withMaskPlaceholder, withMaskGuide, withCustomTokens, withPhonePatterns, withIbanPatterns, withZipPatterns, withDateFormats, withCopyResetDelay, withFileMaxSize
+ * @relatedTo provideInputConfig, withInputAriaLabels, withNumericDefaults, withMaskPlaceholder, withMaskGuide, withCustomTokens, withPhonePatterns, withIbanPatterns, withZipPatterns, withDateFormats, withCopyResetDelay, withFileMaxSize, withFileMaxFiles, withCurrency
  */
 export const CNGX_INPUT_CONFIG = new InjectionToken<InputConfig>('CNGX_INPUT_CONFIG', {
   providedIn: 'root',
   factory: () => DEFAULT_INPUT_CONFIG,
 });
 
-export type InputConfigFeature = (config: InputConfig) => InputConfig;
-
 /**
  * A feature function that contributes to the input config.
  *
  * @category forms/input
  */
+export type InputConfigFeature = (config: InputConfig) => InputConfig;
 
 /**
  * Provides global configuration for `@cngx/forms/input` directives.
