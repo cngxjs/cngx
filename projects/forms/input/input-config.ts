@@ -236,11 +236,13 @@ export function withPhonePatterns(patterns: Record<string, string>): InputConfig
 /**
  * Adds or overrides IBAN mask patterns keyed by country code.
  *
- * - Built-in countries: CH, DE, AT, FR, IT, ES, NL, GB.
+ * - Built-in: ~30 IBAN-using countries (Europe + parts of the Middle East),
+ *   keyed by ISO 3166-1 alpha-2.
  * - Patterns encode length and 4-char grouping with tokens (`A` = required
  *   letter, `0` = required digit).
- * - Read as `{ ...IBAN_PATTERNS, ...config.ibanPatterns }[region]`; an unknown
- *   region falls back to `AA00 0000 0000 0000 0000 00`.
+ * - Resolved against the lazily-loaded built-in table merged with
+ *   `config.ibanPatterns`; an unknown region falls back to
+ *   `AA00 0000 0000 0000 0000 00`.
  * - Consumer entries merge per key and win on collision.
  * - Region comes from `iban:<REGION>` or `LOCALE_ID`.
  *
@@ -262,11 +264,13 @@ export function withIbanPatterns(patterns: Record<string, string>): InputConfigF
 /**
  * Adds or overrides postal-code mask patterns keyed by country code.
  *
- * - Built-in countries: US, DE, CH, AT, FR, UK, JP.
- * - A `|` in a pattern declares alternates picked by input length (the UK
+ * - Built-in: ~50 countries keyed by ISO 3166-1 alpha-2 (`GB`, with `UK` kept
+ *   as an alias). Countries with no postal-code system (HK, AE, ...) are
+ *   intentionally absent.
+ * - A `|` in a pattern declares alternates picked by input length (the GB
  *   entry: `A0A 0AA|AA0 0AA|...`).
- * - Read as `{ ...ZIP_PATTERNS, ...config.zipPatterns }[region]`; an unknown
- *   region falls back to `00000`.
+ * - Resolved against the lazily-loaded built-in table merged with
+ *   `config.zipPatterns`; an unknown region falls back to `00000`.
  * - Consumer entries merge per key and win on collision.
  * - Region comes from `zip:<REGION>` or `LOCALE_ID`.
  *

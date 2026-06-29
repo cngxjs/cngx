@@ -553,6 +553,28 @@ describe('CngxInputMask', () => {
     });
   });
 
+  // ── IBAN / ZIP presets ──────────────────────────────────────────────
+
+  describe('iban and zip presets', () => {
+    it('resolves the corrected 27-char FR IBAN', () => {
+      const { directive } = setup({ mask: 'iban:FR' });
+      expect(directive.currentPattern()).toBe('AA00 0000 0000 0000 0000 0000 000');
+    });
+
+    it('resolves a Dutch postal code', () => {
+      expect(setup({ mask: 'zip:NL' }).input.value).toBe('____ __');
+    });
+
+    it('ships GB postal-code length alternates', () => {
+      // Shortest alternate is active while empty.
+      expect(setup({ mask: 'zip:GB' }).directive.currentPattern()).toBe('A0 0AA');
+    });
+
+    it('keeps zip:UK as a back-compat alias of zip:GB', () => {
+      expect(setup({ mask: 'zip:UK' }).directive.currentPattern()).toBe('A0 0AA');
+    });
+  });
+
   // ── Multi-pattern ───────────────────────────────────────────────────
 
   describe('multi-pattern', () => {
