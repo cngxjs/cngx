@@ -11,6 +11,13 @@ export { CngxInputFormat, type FormatFn, type ParseFn } from './input-format.dir
 export { CngxFileDrop, type FileRejection } from './file-drop.directive';
 export { CngxCapsLock } from './caps-lock.directive';
 export {
+  CNGX_PASSWORD_STRENGTH_FACTORY,
+  createPasswordStrength,
+  type CngxPasswordStrengthFactory,
+  type PasswordStrengthResult,
+  type PasswordStrengthLabel,
+} from './password-strength.factory';
+export {
   CNGX_INPUT_CONFIG,
   type InputConfig,
   type InputConfigFeature,
