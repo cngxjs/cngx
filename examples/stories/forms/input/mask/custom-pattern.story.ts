@@ -17,14 +17,12 @@ export const STORY: DemoSpec = {
   imports: ['CngxInputMask'],
   template: `  <div class="demo-form">
     <div class="demo-field">
-      <label class="demo-label">Swiss IBAN</label>
-      <input cngxInputMask="AA00 0000 0000 0000 0000 0" #ibanMask="cngxInputMask" class="demo-input" />
-      
+      <label class="demo-label" for="iban-ch">Swiss IBAN</label>
+      <input id="iban-ch" cngxInputMask="AA00 0000 0000 0000 0000 0" #ibanMask="cngxInputMask" class="demo-input" />
     </div>
     <div class="demo-field">
-      <label class="demo-label">License Plate (with prefix)</label>
-      <input cngxInputMask="AA 000 000" prefix="CH-" #plateMask="cngxInputMask" class="demo-input" />
-      
+      <label class="demo-label" for="plate-ch">License Plate (with prefix)</label>
+      <input id="plate-ch" cngxInputMask="AA 000 000" prefix="CH-" #plateMask="cngxInputMask" class="demo-input" />
     </div>
   </div>`,
   templateChrome: `<div class="status-row">
