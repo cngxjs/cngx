@@ -17,6 +17,7 @@ export {
   type PasswordStrengthResult,
   type PasswordStrengthLabel,
 } from './password-strength.factory';
+export { CngxPasswordStrength } from './password-strength.directive';
 export {
   CNGX_INPUT_CONFIG,
   type InputConfig,

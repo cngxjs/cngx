@@ -68,6 +68,8 @@ export interface InputAriaLabels {
   readonly fileDropZone: string;
   /** Assertive live-region warning announced when `CngxCapsLock` detects Caps Lock active. Default: `'Caps Lock is on'` */
   readonly capsLockOn: string;
+  /** Polite live-region template announced by `CngxPasswordStrength` when the strength label changes. Default: `` `Password strength: ${label}` `` */
+  readonly passwordStrength: (label: string) => string;
 }
 
 /**
@@ -85,6 +87,7 @@ export const DEFAULT_INPUT_ARIA_LABELS: InputAriaLabels = {
   copyError: 'Copy failed',
   fileDropZone: 'File drop zone',
   capsLockOn: 'Caps Lock is on',
+  passwordStrength: (label) => `Password strength: ${label}`,
 };
 
 /**
