@@ -14,16 +14,17 @@ export const STORY: DemoSpec = {
     "import { CngxPasswordStrengthMeter } from '@cngx/common/display';",
   ],
   imports: ['CngxInput', 'CngxPasswordStrength', 'CngxPasswordStrengthMeter'],
-  template: `  <label for="strength-pw" class="demo-label">Password</label>
-  <input
-    id="strength-pw"
-    cngxInput
-    cngxPasswordStrength
-    #pw="cngxPasswordStrength"
-    type="password"
-    placeholder="Type to see strength"
-    style="width:100%;max-inline-size:24rem"
-  />
-  <cngx-password-strength-meter [score]="pw.score()" style="display:flex;max-inline-size:24rem" />
-  <p class="demo-strength-label">Strength: {{ pw.label() }}</p>`,
+  template: `  <div class="demo-field" style="max-inline-size:24rem">
+    <label for="strength-pw" class="demo-label">Password</label>
+    <input
+      id="strength-pw"
+      cngxInput
+      cngxPasswordStrength
+      #pw="cngxPasswordStrength"
+      type="password"
+      placeholder="Type to see strength"
+    />
+    <cngx-password-strength-meter [score]="pw.score()" />
+    <p style="margin:0">Strength: <strong>{{ pw.label() }}</strong></p>
+  </div>`,
 };
