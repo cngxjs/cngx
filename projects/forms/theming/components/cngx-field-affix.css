@@ -1,0 +1,47 @@
+/**
+ * @overview
+ * Track B structural CSS for the form-field affix row. The host carries
+ * `.cngx-field-affix-row` (the `CngxAffixRow` directive) and lays its
+ * `CngxPrefix` / control / `CngxSuffix` children on one baseline-aligned line:
+ * the control grows to fill, the affixes hug their content. The inter-item gap
+ * is the `--cngx-field-affix-gap` custom property. Purely structural - no
+ * colour - so it carries no Material dependency; a consumer or bridge tints the
+ * affixes through their own `--cngx-field-*` properties.
+ */
+
+@layer cngx.tokens {
+  /**
+   * Gap between the prefix, control, and suffix in an affix row.
+   * @group Layout
+   */
+  @property --cngx-field-affix-gap {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 0.5rem;
+  }
+}
+
+@layer cngx.components {
+  @scope (.cngx-field-affix-row) {
+    :scope {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--cngx-field-affix-gap, 0.5rem);
+      inline-size: 100%;
+    }
+
+    /* The editable control grows; min-inline-size:0 lets it shrink past its
+       intrinsic size so long values do not overflow the row. */
+    :scope > :where(input, textarea) {
+      flex: 1 1 auto;
+      min-inline-size: 0;
+    }
+
+    .cngx-field-prefix,
+    .cngx-field-suffix {
+      flex: 0 0 auto;
+      display: inline-flex;
+      align-items: center;
+    }
+  }
+}

@@ -12,7 +12,7 @@ import { booleanAttribute, Directive, input } from '@angular/core';
  * contributes the `cngx-field-suffix` styling-hook class only.
  *
  * ```html
- * <span class="row">
+ * <span cngxAffixRow>
  *   <input cngxInput cngxNumericInput [field]="f.weight" />
  *   <span cngxSuffix>kg</span>
  * </span>
@@ -23,7 +23,7 @@ import { booleanAttribute, Directive, input } from '@angular/core';
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/suffix.directive.ts
  * @since 0.2.0
- * @relatedTo CngxPrefix, CngxFormField, CngxInput, withCurrency
+ * @relatedTo CngxPrefix, CngxAffixRow, CngxFormField, CngxInput, withCurrency
  * <example-url>http://localhost:4200/#/forms/field/affix/currency-and-unit</example-url>
  */
 @Directive({

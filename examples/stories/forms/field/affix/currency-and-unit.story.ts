@@ -8,18 +8,18 @@ export const STORY: DemoSpec = {
   audience: ['dev', 'a11y'],
   artifact: 'standalone',
   focus: ['composition', 'a11y-pattern'],
-  apiComponents: ['CngxPrefix', 'CngxSuffix', 'CngxNumericInput'],
+  apiComponents: ['CngxPrefix', 'CngxSuffix', 'CngxAffixRow', 'CngxNumericInput'],
   moduleImports: [
     "import { CngxNumericInput, provideInputConfig, withCurrency } from '@cngx/forms/input';",
-    "import { CngxPrefix, CngxSuffix } from '@cngx/forms/field';",
+    "import { CngxPrefix, CngxSuffix, CngxAffixRow } from '@cngx/forms/field';",
   ],
-  imports: ['CngxNumericInput', 'CngxPrefix', 'CngxSuffix'],
+  imports: ['CngxNumericInput', 'CngxPrefix', 'CngxSuffix', 'CngxAffixRow'],
   viewProviders: ["provideInputConfig(withCurrency({ code: 'CHF', locale: 'de-CH' }))"],
   template: `  <div class="demo-field" style="max-inline-size:24rem">
     <label class="demo-label" for="affix-price">Monthly price</label>
-    <span style="display:inline-flex;align-items:center;gap:0.5rem">
+    <span cngxAffixRow>
       <span cngxPrefix>CHF</span>
-      <input id="affix-price" cngxNumericInput #num="cngxNumericInput" class="demo-input" style="flex:1 1 0" />
+      <input id="affix-price" cngxNumericInput #num="cngxNumericInput" class="demo-input" />
       <span cngxSuffix>/ month</span>
     </span>
   </div>`,

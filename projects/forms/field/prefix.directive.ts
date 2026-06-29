@@ -16,7 +16,7 @@ import { booleanAttribute, Directive, input } from '@angular/core';
  * a styling hook, not a layout opinion.
  *
  * ```html
- * <span class="row">
+ * <span cngxAffixRow>
  *   <span cngxPrefix>$</span>
  *   <input cngxInput cngxNumericInput [field]="f.amount" />
  * </span>
@@ -27,7 +27,7 @@ import { booleanAttribute, Directive, input } from '@angular/core';
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/prefix.directive.ts
  * @since 0.2.0
- * @relatedTo CngxSuffix, CngxFormField, CngxInput, withCurrency
+ * @relatedTo CngxSuffix, CngxAffixRow, CngxFormField, CngxInput, withCurrency
  * <example-url>http://localhost:4200/#/forms/field/affix/currency-and-unit</example-url>
  */
 @Directive({
