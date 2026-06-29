@@ -211,7 +211,9 @@ export class CngxNumericInput {
 
   private readonly focusedState = signal(false);
 
-  private readonly separators = computed(() => detectSeparators(this.resolvedLocale()));
+  private readonly separators = computed(() => detectSeparators(this.resolvedLocale()), {
+    equal: (a, b) => a.decimal === b.decimal && a.group === b.group,
+  });
 
   /**
    * @deprecated Read `value` directly. Kept one release for migration.
