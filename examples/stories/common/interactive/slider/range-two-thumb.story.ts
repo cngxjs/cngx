@@ -3,15 +3,15 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxRangeSlider: Two-thumb range',
   subtitle:
-    'Two <code>[cngxSliderThumb]</code> children share one <code>[cngxRangeSlider]</code>; the thumbs cannot cross because each is clamped to the other.',
+    'The finished <code>&lt;cngx-range-slider&gt;</code>: two thumbs with an orange fill band between them; they cannot cross.',
   description:
-    'The range slider owns a <code>model&lt;[number, number]&gt;</code> tuple and provides <code>CNGX_SLIDER_RANGE</code>. Each thumb is its own focusable <code>role="slider"</code> with independent keyboard and ARIA, bounded by the sibling value - clamp math, not an effect.',
+    'Bind <code>[(value)]</code> to a <code>[number, number]</code> tuple. The component renders the track, the fill band, and both draggable handles, and clamps each thumb to the other so they never pass. <code>showValue</code> floats the current min/max above the thumbs.',
   level: 'molecule',
   audience: ['dev', 'a11y'],
-  artifact: 'building-block',
+  artifact: 'standalone',
   focus: ['behavior', 'a11y-pattern'],
-  apiComponents: ['CngxRangeSlider', 'CngxSliderThumb'],
-  imports: ['CngxRangeSlider', 'CngxSliderThumb'],
+  apiComponents: ['CngxRangeSlider'],
+  imports: ['CngxRangeSlider'],
   references: [
     {
       label: 'WAI-ARIA APG: Slider (Multi-Thumb) pattern',
@@ -19,21 +19,17 @@ export const STORY: DemoSpec = {
     },
   ],
   setup: `protected readonly price = signal<[number, number]>([200, 800]);`,
-  template: `  <div style="max-width:320px">
+  template: `  <div style="max-width:320px;padding-top:24px">
     <label id="price-label" style="display:block;margin-bottom:12px;font-weight:600">Price range</label>
-    <div
-      cngxRangeSlider
-      class="cngx-slider"
-      role="group"
+    <cngx-range-slider
       aria-labelledby="price-label"
       [(value)]="price"
       [min]="0"
       [max]="1000"
-      [step]="10">
-      <span class="cngx-slider__track"></span>
-      <span cngxSliderThumb="start" aria-label="Minimum price"></span>
-      <span cngxSliderThumb="end" aria-label="Maximum price"></span>
-    </div>
+      [step]="10"
+      startLabel="Minimum price"
+      endLabel="Maximum price"
+      showValue />
   </div>`,
   templateChrome: `<div class="event-grid" style="margin-top:16px">
     <div class="event-row"><span class="event-label">min</span><span class="event-value">{{ price()[0] }}</span></div>

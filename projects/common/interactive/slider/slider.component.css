@@ -1,0 +1,72 @@
+/* Track-A skin for <cngx-slider>. Scoped to the element so it never collides
+ * with the headless [cngxSliderTrack] Track-B rules. Reads the same
+ * --cngx-slider-* tokens (registered in @cngx/themes/cngx.css). The brain sets
+ * --cngx-slider-fraction on this host; fill / thumb / value inherit it. */
+cngx-slider {
+  position: relative;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  inline-size: 100%;
+  min-block-size: var(--cngx-slider-thumb-size, 16px);
+  cursor: pointer;
+  touch-action: none;
+}
+
+cngx-slider[aria-disabled='true'] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+cngx-slider .cngx-slider__track {
+  position: relative;
+  flex: 1 1 auto;
+  block-size: var(--cngx-slider-track-size, 4px);
+  border-radius: 999px;
+  background: var(--cngx-slider-track-color, oklch(0.88 0.005 250));
+}
+
+cngx-slider .cngx-slider__fill {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  inline-size: calc(var(--cngx-slider-fraction, 0) * 100%);
+  border-radius: inherit;
+  background: var(--cngx-slider-fill-color, oklch(0.66 0.19 50));
+}
+
+cngx-slider .cngx-slider__thumb {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: calc(var(--cngx-slider-fraction, 0) * 100%);
+  inline-size: var(--cngx-slider-thumb-size, 16px);
+  block-size: var(--cngx-slider-thumb-size, 16px);
+  border-radius: 50%;
+  background: var(--cngx-slider-thumb-color, oklch(1 0 0));
+  border: 2px solid var(--cngx-slider-thumb-border-color, oklch(0.66 0.19 50));
+  translate: -50% -50%;
+  pointer-events: none;
+}
+
+/* Value label floats above the thumb so it never shrinks the track (which
+ * would misalign the brain's pointer-to-fraction math). */
+cngx-slider .cngx-slider__value {
+  position: absolute;
+  inset-block-end: calc(100% + 0.25rem);
+  inset-inline-start: calc(var(--cngx-slider-fraction, 0) * 100%);
+  translate: -50% 0;
+  font-size: var(--cngx-font-size-sm, 0.8125rem);
+  font-variant-numeric: tabular-nums;
+  color: var(--cngx-color-text, oklch(0.2 0.01 250));
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+cngx-slider:focus-visible {
+  outline: none;
+}
+
+cngx-slider:focus-visible .cngx-slider__thumb {
+  outline: 2px solid var(--cngx-slider-focus-ring-color, oklch(0.66 0.19 50));
+  outline-offset: 2px;
+}

@@ -53,7 +53,7 @@ function createThumbValue(
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/slider/slider-thumb.directive.ts
  * @since 0.1.0
- * @relatedTo CngxRangeSlider, CngxSlider, createSliderCore
+ * @relatedTo CngxRangeSlider, CngxRangeSliderTrack, createSliderCore
  */
 @Directive({
   selector: '[cngxSliderThumb]',

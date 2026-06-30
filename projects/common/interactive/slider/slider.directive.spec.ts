@@ -3,11 +3,11 @@ import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { describe, expect, it } from 'vitest';
 
-import { CngxSlider } from './slider.directive';
+import { CngxSliderTrack } from './slider.directive';
 
 @Component({
   template: `<div
-    cngxSlider
+    cngxSliderTrack
     [(value)]="v"
     [min]="min()"
     [max]="max()"
@@ -15,7 +15,7 @@ import { CngxSlider } from './slider.directive';
     [disabled]="off()"
     [valueText]="fmt()"
   ></div>`,
-  imports: [CngxSlider],
+  imports: [CngxSliderTrack],
 })
 class Host {
   v = signal(50);
@@ -29,7 +29,7 @@ class Host {
 function setup() {
   const fixture = TestBed.createComponent(Host);
   fixture.detectChanges();
-  const de = fixture.debugElement.query(By.directive(CngxSlider));
+  const de = fixture.debugElement.query(By.directive(CngxSliderTrack));
   return { fixture, host: fixture.componentInstance, el: de.nativeElement as HTMLElement };
 }
 
@@ -39,7 +39,7 @@ function press(el: HTMLElement, key: string): KeyboardEvent {
   return event;
 }
 
-describe('CngxSlider', () => {
+describe('CngxSliderTrack', () => {
   it('exposes role=slider and reflects min/max/now in the value ARIA surface', () => {
     const { el } = setup();
     expect(el.getAttribute('role')).toBe('slider');

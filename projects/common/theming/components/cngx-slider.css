@@ -1,17 +1,18 @@
 /**
  * @overview
- * Default skin for the `cngxSlider` / `cngxRangeSlider` directives. Both are
- * headless: the directive paints `role="slider"`, the ARIA value surface, and
- * publishes the thumb position as the inherited custom property
- * `--cngx-slider-fraction` (0..1). This stylesheet turns that fraction into a
- * track, a fill, and a draggable thumb. Without it the host renders as a bare
- * focusable box.
+ * Default skin for the headless `cngxSliderTrack` / `cngxRangeSliderTrack`
+ * directives. (The finished `<cngx-slider>` / `<cngx-range-slider>` components
+ * ship their own Track-A styles.) The directive paints `role="slider"`, the
+ * ARIA value surface, and publishes the thumb position as the inherited custom
+ * property `--cngx-slider-fraction` (0..1). This stylesheet turns that fraction
+ * into a track, a fill, and a draggable thumb. Without it the host renders as a
+ * bare focusable box.
  *
  * Markup the default skin expects (BEM classes are opt-in - bring your own and
  * read `--cngx-slider-fraction` yourself for a custom skin):
  *
  * ```html
- *   <div cngxSlider class="cngx-slider" [(value)]="v">
+ *   <div cngxSliderTrack class="cngx-slider" [(value)]="v">
  *     <span class="cngx-slider__track"><span class="cngx-slider__fill"></span></span>
  *     <span class="cngx-slider__thumb"></span>
  *   </div>
@@ -108,7 +109,7 @@
 }
 
 @layer cngx.components {
-  :is([cngxSlider], [cngxRangeSlider]) {
+  :is([cngxSliderTrack], [cngxRangeSliderTrack]) {
     position: relative;
     display: inline-flex;
     align-items: center;
@@ -118,12 +119,12 @@
     cursor: pointer;
   }
 
-  :is([cngxSlider], [cngxRangeSlider])[aria-disabled='true'] {
+  :is([cngxSliderTrack], [cngxRangeSliderTrack])[aria-disabled='true'] {
     opacity: 0.5;
     cursor: not-allowed;
   }
 
-  :is([cngxSlider], [cngxRangeSlider]) .cngx-slider__track {
+  :is([cngxSliderTrack], [cngxRangeSliderTrack]) .cngx-slider__track {
     position: relative;
     flex: 1 1 auto;
     block-size: var(--cngx-slider-track-size, 4px);
@@ -133,7 +134,7 @@
 
   /* Single-thumb fill: track start to the thumb. The host carries the
    * fraction, so the fill spans `fraction * 100%`. */
-  :is([cngxSlider]) .cngx-slider__fill {
+  :is([cngxSliderTrack]) .cngx-slider__fill {
     position: absolute;
     inset-block: 0;
     inset-inline-start: 0;
@@ -145,7 +146,7 @@
   /* Range fill: the band between the two thumbs. The range host publishes
    * `--cngx-slider-start-fraction` / `--cngx-slider-end-fraction`, so a single
    * gradient on the track paints track-fill-track with no extra element. */
-  [cngxRangeSlider] .cngx-slider__track {
+  [cngxRangeSliderTrack] .cngx-slider__track {
     background: linear-gradient(
       to right,
       var(--cngx-slider-track-color, oklch(0.88 0.005 250)) 0,
@@ -161,7 +162,7 @@
   }
 
   /* Single-thumb handle: positioned from the host fraction. */
-  :is([cngxSlider]) .cngx-slider__thumb {
+  :is([cngxSliderTrack]) .cngx-slider__thumb {
     position: absolute;
     inset-block-start: 50%;
     inset-inline-start: calc(var(--cngx-slider-fraction, 0) * 100%);
@@ -190,10 +191,10 @@
 
   /* Focus ring on the focusable element: the single-slider host's thumb,
    * or each range thumb. >= 3:1 contrast via the primary token. */
-  [cngxSlider]:focus-visible {
+  [cngxSliderTrack]:focus-visible {
     outline: none;
   }
-  [cngxSlider]:focus-visible .cngx-slider__thumb,
+  [cngxSliderTrack]:focus-visible .cngx-slider__thumb,
   [cngxSliderThumb]:focus-visible {
     outline: 2px solid var(--cngx-slider-focus-ring-color, oklch(0.66 0.19 50));
     outline-offset: 2px;

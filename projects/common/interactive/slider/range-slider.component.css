@@ -1,0 +1,76 @@
+/* Track-A skin for <cngx-range-slider>. Scoped to the element so it never
+ * collides with the headless [cngxRangeSliderTrack] Track-B rules. The brain
+ * publishes --cngx-slider-start-fraction / --cngx-slider-end-fraction on this
+ * host; the track gradient paints the fill band and each thumb carries its own
+ * --cngx-slider-fraction. */
+cngx-range-slider {
+  position: relative;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  inline-size: 100%;
+  min-block-size: var(--cngx-slider-thumb-size, 16px);
+  cursor: pointer;
+  touch-action: none;
+}
+
+cngx-range-slider[aria-disabled='true'] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+cngx-range-slider .cngx-slider__track {
+  position: relative;
+  flex: 1 1 auto;
+  block-size: var(--cngx-slider-track-size, 4px);
+  border-radius: 999px;
+  background: linear-gradient(
+    to right,
+    var(--cngx-slider-track-color, oklch(0.88 0.005 250)) 0,
+    var(--cngx-slider-track-color, oklch(0.88 0.005 250))
+      calc(var(--cngx-slider-start-fraction, 0) * 100%),
+    var(--cngx-slider-fill-color, oklch(0.66 0.19 50))
+      calc(var(--cngx-slider-start-fraction, 0) * 100%),
+    var(--cngx-slider-fill-color, oklch(0.66 0.19 50))
+      calc(var(--cngx-slider-end-fraction, 1) * 100%),
+    var(--cngx-slider-track-color, oklch(0.88 0.005 250))
+      calc(var(--cngx-slider-end-fraction, 1) * 100%)
+  );
+}
+
+cngx-range-slider [cngxSliderThumb] {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: calc(var(--cngx-slider-fraction, 0) * 100%);
+  inline-size: var(--cngx-slider-thumb-size, 16px);
+  block-size: var(--cngx-slider-thumb-size, 16px);
+  border-radius: 50%;
+  background: var(--cngx-slider-thumb-color, oklch(1 0 0));
+  border: 2px solid var(--cngx-slider-thumb-border-color, oklch(0.66 0.19 50));
+  translate: -50% -50%;
+  cursor: grab;
+}
+
+cngx-range-slider [cngxSliderThumb]:focus-visible {
+  outline: 2px solid var(--cngx-slider-focus-ring-color, oklch(0.66 0.19 50));
+  outline-offset: 2px;
+}
+
+cngx-range-slider .cngx-slider__value {
+  position: absolute;
+  inset-block-end: calc(100% + 0.25rem);
+  translate: -50% 0;
+  font-size: var(--cngx-font-size-sm, 0.8125rem);
+  font-variant-numeric: tabular-nums;
+  color: var(--cngx-color-text, oklch(0.2 0.01 250));
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+cngx-range-slider .cngx-slider__value--start {
+  inset-inline-start: calc(var(--cngx-slider-start-fraction, 0) * 100%);
+}
+
+cngx-range-slider .cngx-slider__value--end {
+  inset-inline-start: calc(var(--cngx-slider-end-fraction, 1) * 100%);
+}

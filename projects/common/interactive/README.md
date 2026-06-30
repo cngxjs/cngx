@@ -206,36 +206,44 @@ readonly [updateName, nameState] = optimistic(
 
 ## CngxSlider / CngxRangeSlider
 
-Headless `role="slider"` directives with full APG keyboard (Arrow / Page / Home / End)
-and pointer-drag. The value is a `model()`, so it binds two-way and works with Angular
-Signal Forms' `[control]` directive without any forms import. The directive publishes the
-thumb position as the inherited `--cngx-slider-fraction` custom property (0..1); the skin
-reads it to place the fill and thumb. Default styling ships as Track-B CSS in
-`@cngx/themes/cngx.css`.
+Finished slider components - the 90% API. Drop in `<cngx-slider>`, bind `[(value)]`, done:
+the component renders the track, fill, and thumb and wires full APG keyboard (Arrow / Page /
+Home / End) and pointer-drag. The value is a `model<number>()`, so it binds two-way and
+works with Signal Forms via `[control]`; the `cngx-form-field` integration is `CngxSliderField`
+in `@cngx/forms`. `showValue` floats the formatted value above the thumb.
 
 ```html
-<label id="vol-label">Volume</label>
-<div cngxSlider class="cngx-slider" aria-labelledby="vol-label" [(value)]="volume" [min]="0" [max]="100">
+<label id="vol">Volume</label>
+<cngx-slider aria-labelledby="vol" [(value)]="volume" [min]="0" [max]="100" [step]="5" showValue />
+```
+
+`<cngx-range-slider>` is the two-thumb range over a `model<[number, number]>()` tuple. It
+paints the orange fill band between the thumbs and clamps each to the other so they never
+cross.
+
+```html
+<cngx-range-slider aria-label="Price" [(value)]="price" [min]="0" [max]="1000" [step]="10" showValue />
+```
+
+### Headless directives (bring your own skin)
+
+When the default skin is not what you want, the headless `[cngxSliderTrack]` /
+`[cngxRangeSliderTrack]` directives give you the same `role="slider"` brain on your own
+element. They publish `--cngx-slider-fraction` (and, for range,
+`--cngx-slider-start/end-fraction`) so your markup positions the thumb and fill; default
+Track-B styling for the BEM skin ships in `@cngx/themes/cngx.css`.
+
+```html
+<div cngxSliderTrack class="cngx-slider" aria-label="Level" [(value)]="level" [min]="0" [max]="100">
   <span class="cngx-slider__track"><span class="cngx-slider__fill"></span></span>
   <span class="cngx-slider__thumb"></span>
 </div>
 ```
 
-Use `CngxRangeSlider` for a two-thumb range. It owns a `model<[number, number]>()` tuple
-and provides `CNGX_SLIDER_RANGE`; each `[cngxSliderThumb]="'start' | 'end'"` child is an
-independent focusable slider, clamped to its sibling so the thumbs can never cross.
-
-```html
-<div cngxRangeSlider role="group" aria-label="Price range" [(value)]="price" [min]="0" [max]="1000">
-  <span class="cngx-slider__track"></span>
-  <span cngxSliderThumb="start" aria-label="Minimum"></span>
-  <span cngxSliderThumb="end" aria-label="Maximum"></span>
-</div>
-```
-
-`createSliderCore()` is the shared pure factory both directives instantiate - hand it the
-value/min/max/step signals and it returns the clamped value, the track fraction, the
-`aria-valuetext` string, and the keyboard/pointer write helpers.
+For a headless range, host two `[cngxSliderThumb]="'start' | 'end'"` children inside
+`[cngxRangeSliderTrack]`. `createSliderCore()` is the shared pure factory under all of them -
+hand it the value/min/max/step signals and it returns the clamped value, track fraction,
+`aria-valuetext`, and the keyboard/pointer write helpers.
 
 ## CngxAccordion / CngxAccordionPanel
 

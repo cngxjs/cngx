@@ -1,14 +1,14 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxSlider: Keyboard and steps',
+  title: 'CngxSlider: Keyboard, steps, and value label',
   subtitle:
-    'A stepped slider with a custom <code>aria-valuetext</code> formatter. Focus it, then use Arrow, Page, Home, and End.',
+    'A stepped <code>&lt;cngx-slider&gt;</code> with <code>[valueText]</code> and <code>showValue</code> - the formatted percent shows above the thumb and is announced to screen readers.',
   description:
-    'Arrow keys move by one <code>step</code>; Page keys jump by the larger of one step and a tenth of the range; Home / End snap to the bounds. <code>[valueText]</code> formats <code>aria-valuetext</code> so screen readers announce "60 percent" instead of "60".',
-  level: 'atom',
+    'Arrow keys move by one <code>step</code>; Page keys jump a tenth of the range; Home / End snap to the bounds. <code>[valueText]</code> feeds both the visible <code>showValue</code> label and <code>aria-valuetext</code>, so sighted and screen-reader users hear "60 percent" alike.',
+  level: 'molecule',
   audience: ['a11y', 'dev'],
-  artifact: 'building-block',
+  artifact: 'standalone',
   focus: ['a11y-pattern', 'behavior'],
   apiComponents: ['CngxSlider'],
   imports: ['CngxSlider'],
@@ -23,23 +23,15 @@ export const STORY: DemoSpec = {
   templateChromeBefore: `<p style="margin:0 0 16px;color:var(--cngx-color-text-muted,#666)">
     Tab to the slider, then press Arrow keys (step 5), Page keys (jump 10), or Home / End.
   </p>`,
-  template: `  <div style="max-width:320px">
+  template: `  <div style="max-width:320px;padding-top:24px">
     <label id="bright-label" style="display:block;margin-bottom:12px;font-weight:600">Brightness</label>
-    <div
-      cngxSlider
-      class="cngx-slider"
+    <cngx-slider
       aria-labelledby="bright-label"
       [(value)]="brightness"
       [min]="0"
       [max]="100"
       [step]="5"
-      [valueText]="asPercent">
-      <span class="cngx-slider__track"><span class="cngx-slider__fill"></span></span>
-      <span class="cngx-slider__thumb"></span>
-    </div>
-  </div>`,
-  templateChrome: `<div class="status-row" style="margin-top:16px">
-    <span class="event-label">value</span>
-    <span class="event-value">{{ brightness() }}</span>
+      [valueText]="asPercent"
+      showValue />
   </div>`,
 };

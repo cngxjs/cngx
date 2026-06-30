@@ -3,15 +3,15 @@ import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { describe, expect, it } from 'vitest';
 
-import { CngxRangeSlider } from './range-slider.directive';
+import { CngxRangeSliderTrack } from './range-slider.directive';
 import { CngxSliderThumb } from './slider-thumb.directive';
 
 @Component({
-  template: `<div cngxRangeSlider [(value)]="v" [min]="0" [max]="100" [step]="1">
+  template: `<div cngxRangeSliderTrack [(value)]="v" [min]="0" [max]="100" [step]="1">
     <span cngxSliderThumb="start"></span>
     <span cngxSliderThumb="end"></span>
   </div>`,
-  imports: [CngxRangeSlider, CngxSliderThumb],
+  imports: [CngxRangeSliderTrack, CngxSliderThumb],
 })
 class Host {
   v = signal<[number, number]>([20, 80]);
@@ -30,7 +30,7 @@ function press(el: HTMLElement, key: string): void {
   el.dispatchEvent(new KeyboardEvent('keydown', { key, cancelable: true }));
 }
 
-describe('CngxRangeSlider + CngxSliderThumb', () => {
+describe('CngxRangeSliderTrack + CngxSliderThumb', () => {
   it('renders two role=slider thumbs reflecting each tuple end', () => {
     const { start, end } = setup();
     expect(start.getAttribute('role')).toBe('slider');
@@ -76,7 +76,7 @@ describe('CngxRangeSlider + CngxSliderThumb', () => {
 
   it('drags a thumb using the shared track geometry, not the thumb element', () => {
     const { fixture, host, start } = setup();
-    const rangeEl = fixture.debugElement.query(By.directive(CngxRangeSlider))
+    const rangeEl = fixture.debugElement.query(By.directive(CngxRangeSliderTrack))
       .nativeElement as HTMLElement;
     rangeEl.getBoundingClientRect = () =>
       ({ left: 0, top: 0, width: 200, height: 10, right: 200, bottom: 10 }) as DOMRect;

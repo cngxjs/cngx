@@ -3,12 +3,12 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxSlider: Single-thumb basic',
   subtitle:
-    'A headless <code>[cngxSlider]</code> with the default skin: drag the thumb or use the arrow keys; <code>aria-valuenow</code> tracks the value.',
+    'The finished <code>&lt;cngx-slider&gt;</code> component: bind <code>[(value)]</code> and it renders the track, fill, and thumb for you.',
   description:
-    'The directive owns <code>role="slider"</code> and the full value ARIA surface; it publishes the thumb position as the inherited <code>--cngx-slider-fraction</code> custom property, which the track / fill / thumb read. The value is a <code>model&lt;number&gt;</code>, so it binds two-way with <code>[(value)]</code>.',
-  level: 'atom',
+    'No skin markup to write - the component renders track / fill / thumb and wires the full APG keyboard and pointer-drag through its <code>CngxSliderTrack</code> brain. The value is a <code>model&lt;number&gt;</code>, so it binds two-way and works with Signal Forms via <code>[control]</code>.',
+  level: 'molecule',
   audience: ['dev', 'a11y'],
-  artifact: 'building-block',
+  artifact: 'standalone',
   focus: ['behavior', 'a11y-pattern'],
   apiComponents: ['CngxSlider'],
   imports: ['CngxSlider'],
@@ -17,24 +17,11 @@ export const STORY: DemoSpec = {
       label: 'WAI-ARIA APG: Slider pattern',
       href: 'https://www.w3.org/WAI/ARIA/apg/patterns/slider/',
     },
-    {
-      label: 'WCAG 2.1 SC 4.1.2 Name, Role, Value',
-      href: 'https://www.w3.org/WAI/WCAG21/Understanding/name-role-value.html',
-    },
   ],
   setup: `protected readonly volume = signal(40);`,
   template: `  <div style="max-width:320px">
     <label id="vol-label" style="display:block;margin-bottom:12px;font-weight:600">Volume</label>
-    <div
-      cngxSlider
-      class="cngx-slider"
-      aria-labelledby="vol-label"
-      [(value)]="volume"
-      [min]="0"
-      [max]="100">
-      <span class="cngx-slider__track"><span class="cngx-slider__fill"></span></span>
-      <span class="cngx-slider__thumb"></span>
-    </div>
+    <cngx-slider aria-labelledby="vol-label" [(value)]="volume" [min]="0" [max]="100" />
   </div>`,
   templateChrome: `<div class="status-row" style="margin-top:16px">
     <span class="event-label">value</span>

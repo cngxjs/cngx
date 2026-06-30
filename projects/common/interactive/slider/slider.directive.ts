@@ -3,13 +3,16 @@ import { computed, Directive, ElementRef, inject, input, model, signal } from '@
 import { createSliderCore } from './slider-core';
 
 /**
- * Headless single-thumb slider. Put `cngxSlider` on the track element and the
- * directive turns it into an APG-conformant `role="slider"`: full keyboard
- * (Arrow / Page / Home / End), pointer-drag with capture, and the whole ARIA
- * value surface (`aria-valuemin/max/now/valuetext/orientation`) computed from
- * `value` and `min` and `max` and `step`. The value is a `model<number>()`, so
- * Angular Signal Forms binds it two-way via `[control]` with no forms import -
- * the dedicated `cngx-form-field` bridge is a `@cngx/forms` follow-up.
+ * Headless single-thumb slider brain. Put `cngxSliderTrack` on your own track
+ * element and the directive turns it into an APG-conformant `role="slider"`:
+ * full keyboard (Arrow / Page / Home / End), pointer-drag with capture, and the
+ * whole ARIA value surface (`aria-valuemin/max/now/valuetext/orientation`)
+ * computed from `value`/`min`/`max`/`step`. The value is a `model<number>()`,
+ * so Angular Signal Forms binds it two-way via `[control]` with no forms import.
+ *
+ * Most consumers want the finished {@link CngxSlider} component (`<cngx-slider>`)
+ * which renders the track / fill / thumb for you and uses this directive as its
+ * brain. Reach for `cngxSliderTrack` only when you want to own the skin markup.
  *
  * Positioning is left to the skin: the directive publishes the thumb position
  * as the inherited custom property `--cngx-slider-fraction` (0..1), which the
@@ -18,24 +21,23 @@ import { createSliderCore } from './slider-core';
  *
  * ```html
  * <label id="vol-label">Volume</label>
- * <div cngxSlider aria-labelledby="vol-label" [(value)]="volume" [min]="0" [max]="11">
+ * <div cngxSliderTrack aria-labelledby="vol-label" [(value)]="volume" [min]="0" [max]="11">
  *   <span class="cngx-slider__track"><span class="cngx-slider__fill"></span></span>
  *   <span class="cngx-slider__thumb"></span>
  * </div>
  * ```
  *
- * Reach for {@link CngxRangeSlider} when you need two thumbs (a min/max range).
+ * Reach for {@link CngxRangeSliderTrack} when you need two thumbs (a min/max range).
  *
  * @category common/interactive/slider
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/slider/slider.directive.ts
  * @since 0.1.0
- * @relatedTo CngxRangeSlider, CngxSliderThumb, createSliderCore
+ * @relatedTo CngxSlider, CngxRangeSliderTrack, CngxSliderThumb, createSliderCore
  */
 @Directive({
-  selector: '[cngxSlider]',
-  exportAs: 'cngxSlider',
+  selector: '[cngxSliderTrack]',
+  exportAs: 'cngxSliderTrack',
   standalone: true,
   host: {
     role: 'slider',
@@ -55,7 +57,7 @@ import { createSliderCore } from './slider-core';
     '(pointercancel)': 'handlePointerUp($event)',
   },
 })
-export class CngxSlider {
+export class CngxSliderTrack {
   /** Two-way value. The only state the keyboard / pointer handlers write. */
   readonly value = model<number>(0);
   /** Track lower bound (`aria-valuemin`). */
@@ -90,6 +92,13 @@ export class CngxSlider {
       return format ? format(v) : String(v);
     },
   });
+
+  /** Thumb position along the track in `[0, 1]`. For a skin to read. */
+  readonly fraction = this.core.fraction;
+  /** Snapped + clamped value (`aria-valuenow`). For a skin to read. */
+  readonly currentValue = this.core.clampedValue;
+  /** Formatted display string (`aria-valuetext`). For a visible value label. */
+  readonly displayValue = this.core.ariaValueText;
 
   private readonly pageStep = computed(() => {
     const explicit = this.largeStep();

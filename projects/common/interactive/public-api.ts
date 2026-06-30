@@ -40,8 +40,10 @@ export {
   type CngxSliderCore,
   type CngxSliderCoreOptions,
 } from './slider/slider-core';
-export { CngxSlider } from './slider/slider.directive';
-export { CngxRangeSlider } from './slider/range-slider.directive';
+export { CngxSlider } from './slider/slider.component';
+export { CngxRangeSlider } from './slider/range-slider.component';
+export { CngxSliderTrack } from './slider/slider.directive';
+export { CngxRangeSliderTrack } from './slider/range-slider.directive';
 export { CngxSliderThumb } from './slider/slider-thumb.directive';
 export {
   CNGX_SLIDER_RANGE,

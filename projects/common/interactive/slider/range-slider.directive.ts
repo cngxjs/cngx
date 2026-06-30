@@ -8,20 +8,21 @@ import {
 } from './range-slider.token';
 
 /**
- * Headless dual-thumb (range) slider. Put `cngxRangeSlider` on the track
- * container and host two {@link CngxSliderThumb} children (`start` / `end`);
- * the value is a `model<[number, number]>()` tuple this directive owns. It
- * provides {@link CNGX_SLIDER_RANGE} so each thumb reads the shared config,
- * learns its sibling-clamped bounds, and commits its end. The thumbs cannot
- * cross because {@link boundsFor} narrows each thumb's range to the other
- * thumb's current value - clamp math, not an effect (Pillar 1).
+ * Headless dual-thumb (range) slider brain. Put `cngxRangeSliderTrack` on your
+ * own track container and host two {@link CngxSliderThumb} children
+ * (`start` / `end`); the value is a `model<[number, number]>()` tuple this
+ * directive owns. It provides {@link CNGX_SLIDER_RANGE} so each thumb reads the
+ * shared config, learns its sibling-clamped bounds, and commits its end. The
+ * thumbs cannot cross because {@link boundsFor} narrows each thumb's range to
+ * the other thumb's current value - clamp math, not an effect (Pillar 1).
  *
- * A single thumb cannot be derived from one host element, so the focusable
- * thumbs are explicit sub-directives the consumer's skin marks up; this is
- * {@link CngxSlider} split by arity (Pillar 3), not a `[range]` flag.
+ * Most consumers want the finished {@link CngxRangeSlider} component
+ * (`<cngx-range-slider>`) which renders the track, fill band, and both thumbs
+ * and uses this directive as its brain. Reach for `cngxRangeSliderTrack` only
+ * when you want to own the skin markup.
  *
  * ```html
- * <div cngxRangeSlider role="group" aria-label="Price range" [(value)]="price" [min]="0" [max]="1000">
+ * <div cngxRangeSliderTrack role="group" aria-label="Price range" [(value)]="price" [min]="0" [max]="1000">
  *   <span class="cngx-slider__track"></span>
  *   <span cngxSliderThumb="start" aria-label="Minimum"></span>
  *   <span cngxSliderThumb="end" aria-label="Maximum"></span>
@@ -29,17 +30,16 @@ import {
  * ```
  *
  * @category common/interactive/slider
- * @docsKind primary
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/slider/range-slider.directive.ts
  * @since 0.1.0
- * @relatedTo CngxSlider, CngxSliderThumb, createSliderCore
+ * @relatedTo CngxRangeSlider, CngxSliderThumb, createSliderCore
  */
 @Directive({
-  selector: '[cngxRangeSlider]',
-  exportAs: 'cngxRangeSlider',
+  selector: '[cngxRangeSliderTrack]',
+  exportAs: 'cngxRangeSliderTrack',
   standalone: true,
-  providers: [{ provide: CNGX_SLIDER_RANGE, useExisting: CngxRangeSlider }],
+  providers: [{ provide: CNGX_SLIDER_RANGE, useExisting: CngxRangeSliderTrack }],
   host: {
     role: 'group',
     '[attr.aria-disabled]': 'disabled() || null',
@@ -48,7 +48,7 @@ import {
     '[style.--cngx-slider-end-fraction]': 'endFraction()',
   },
 })
-export class CngxRangeSlider implements CngxSliderRangeHost {
+export class CngxRangeSliderTrack implements CngxSliderRangeHost {
   /** Two-way `[start, end]` tuple - the single source of truth for both thumbs. */
   readonly value = model<[number, number]>([0, 100]);
   /** Track lower bound. */
@@ -80,8 +80,8 @@ export class CngxRangeSlider implements CngxSliderRangeHost {
 
   // Track fractions of each thumb, published as CSS vars so the skin can paint
   // a fill between them. Derived from the tuple - never synced (Pillar 1).
-  protected readonly startFraction = computed(() => this.fractionOf(this.value()[0]));
-  protected readonly endFraction = computed(() => this.fractionOf(this.value()[1]));
+  readonly startFraction = computed(() => this.fractionOf(this.value()[0]));
+  readonly endFraction = computed(() => this.fractionOf(this.value()[1]));
 
   private fractionOf(value: number): number {
     const span = this.max() - this.min();
