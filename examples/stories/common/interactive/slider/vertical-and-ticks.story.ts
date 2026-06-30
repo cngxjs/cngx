@@ -20,8 +20,8 @@ export const STORY: DemoSpec = {
   ],
   setup: `protected readonly gain = signal(60);
   protected readonly level = signal(40);`,
-  template: `  <div style="display:flex;gap:48px;align-items:flex-start">
-    <div style="display:flex;flex-direction:column;gap:12px;align-items:center">
+  template: `  <div style="display:flex;gap:72px;align-items:flex-start;padding:16px 8px 40px">
+    <div style="display:flex;flex-direction:column;gap:16px;align-items:center;padding:0 3.75rem">
       <label id="gain-label" style="font-weight:600">Gain</label>
       <cngx-slider
         aria-labelledby="gain-label"
@@ -34,8 +34,8 @@ export const STORY: DemoSpec = {
         showTicks
         showTickLabels />
     </div>
-    <div style="flex:1;max-width:280px">
-      <label id="level-label" style="display:block;margin-bottom:12px;font-weight:600">Level (ticked)</label>
+    <div style="flex:1;max-width:280px;padding-block:8px 28px">
+      <label id="level-label" style="display:block;margin-bottom:16px;font-weight:600">Level (ticked)</label>
       <cngx-slider
         aria-labelledby="level-label"
         [(value)]="level"
