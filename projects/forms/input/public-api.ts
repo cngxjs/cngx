@@ -7,6 +7,19 @@ export { CngxAutosize } from './autosize.directive';
 export { CngxInputClear } from './input-clear.directive';
 export { CngxCopyValue } from './copy-value.directive';
 export { CngxOtpInput, CngxOtpSlot } from './otp-input.directive';
+export { CngxRating } from './rating/rating.component';
+export { CngxRatingItem, type CngxRatingItemContext } from './rating/rating-item.directive';
+export { CngxPhoneInput } from './phone-input/phone-input.component';
+export { type Country } from './phone-input/countries';
+export {
+  CNGX_PHONE_METADATA,
+  type CngxPhoneMetadata,
+  providePhoneMetadata,
+  createPrefixPhoneMetadata,
+  type PhonePrefixMatcher,
+  type PhonePrefixMap,
+} from './phone-metadata';
+export { provideEagerMaskPresets, type MaskPresetKey } from './mask-presets/registry';
 export { CngxInputFormat, type FormatFn, type ParseFn } from './input-format.directive';
 export { CngxFileDrop, type FileRejection } from './file-drop.directive';
 export { CngxCapsLock } from './caps-lock.directive';

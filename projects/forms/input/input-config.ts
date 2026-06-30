@@ -41,6 +41,8 @@ export interface InputConfig {
   readonly fileMaxSize?: number;
   /** Default `maxFiles` for `CngxFileDrop`. */
   readonly fileMaxFiles?: number;
+  /** Default selected region (ISO key) for `CngxPhoneInput`. Set via `withPhoneDefaultRegion`. */
+  readonly phoneDefaultRegion?: string;
   /**
    * Consumer overrides for the built-in ARIA label strings. Unset keys fall
    * back to {@link DEFAULT_INPUT_ARIA_LABELS}.
@@ -82,6 +84,12 @@ export interface InputAriaLabels {
   readonly sensitiveReveal: string;
   /** Polite live-region announcement when `CngxSensitiveValue` hides the value. Default: `'Value hidden'` */
   readonly sensitiveHide: string;
+  /** Live-region announcement factory for `CngxRating` on a committed value. Default: `` (value, max) => `${value} of ${max}` `` */
+  readonly ratingValue: (value: number, max: number) => string;
+  /** Per-star `aria-label` factory for each `CngxRating` radio. Default: `` (step, max) => `${step} of ${max}` `` */
+  readonly ratingItem: (step: number, max: number) => string;
+  /** `aria-label` for the `CngxPhoneInput` country picker. Default: `'Country'` */
+  readonly phoneCountry: string;
 }
 
 /**
@@ -103,6 +111,9 @@ export const DEFAULT_INPUT_ARIA_LABELS: InputAriaLabels = {
   inputRejected: 'Character not allowed',
   sensitiveReveal: 'Value revealed',
   sensitiveHide: 'Value hidden',
+  ratingValue: (value, max) => `${value} of ${max}`,
+  ratingItem: (step, max) => `${step} of ${max}`,
+  phoneCountry: 'Country',
 };
 
 /**
@@ -134,7 +145,7 @@ const DEFAULT_INPUT_CONFIG: InputConfig = {};
  * @category forms/input
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/input/input-config.ts
  * @since 0.1.0
- * @relatedTo provideInputConfig, withInputAriaLabels, withNumericDefaults, withMaskPlaceholder, withMaskGuide, withCustomTokens, withPhonePatterns, withIbanPatterns, withZipPatterns, withDateFormats, withCopyResetDelay, withFileMaxSize, withFileMaxFiles, withCurrency
+ * @relatedTo provideInputConfig, withInputAriaLabels, withNumericDefaults, withMaskPlaceholder, withMaskGuide, withCustomTokens, withPhonePatterns, withIbanPatterns, withZipPatterns, withDateFormats, withCopyResetDelay, withFileMaxSize, withFileMaxFiles, withCurrency, withPhoneDefaultRegion
  */
 export const CNGX_INPUT_CONFIG = new InjectionToken<InputConfig>('CNGX_INPUT_CONFIG', {
   providedIn: 'root',
@@ -200,7 +211,12 @@ export function provideInputConfig(...features: InputConfigFeature[]): Provider 
  * Reach for it when a `cngxInputMask="phone"` / `"phone:<REGION>"` needs a
  * region the library does not ship, or to override one it does.
  *
- * - Built-in regions: US, DE, CH, AT, FR, UK, IT, ES, JP, BR.
+ * - Built-in regions: ~45 ISO 3166-1 alpha-2 keys across Europe, the Americas,
+ *   East Asia, and Oceania (`UK` kept as a back-compat alias of `GB`).
+ * - Regions whose landline and mobile national-number lengths differ ship
+ *   `|`-separated landline+mobile alternates picked by length; uniform-length
+ *   plans ship a single pattern. Masks are coarse approximations, not
+ *   validators - reach for `libphonenumber-js` when you need real validation.
  * - Consumer entries merge per key onto the built-ins and win on collision.
  * - Resolved as `{ ...PHONE_PATTERNS, ...config.phonePatterns }[region]`,
  *   falling back to US when the region is absent.
@@ -225,11 +241,13 @@ export function withPhonePatterns(patterns: Record<string, string>): InputConfig
 /**
  * Adds or overrides IBAN mask patterns keyed by country code.
  *
- * - Built-in countries: CH, DE, AT, FR, IT, ES, NL, GB.
+ * - Built-in: ~30 IBAN-using countries (Europe + parts of the Middle East),
+ *   keyed by ISO 3166-1 alpha-2.
  * - Patterns encode length and 4-char grouping with tokens (`A` = required
  *   letter, `0` = required digit).
- * - Read as `{ ...IBAN_PATTERNS, ...config.ibanPatterns }[region]`; an unknown
- *   region falls back to `AA00 0000 0000 0000 0000 00`.
+ * - Resolved against the lazily-loaded built-in table merged with
+ *   `config.ibanPatterns`; an unknown region falls back to
+ *   `AA00 0000 0000 0000 0000 00`.
  * - Consumer entries merge per key and win on collision.
  * - Region comes from `iban:<REGION>` or `LOCALE_ID`.
  *
@@ -251,11 +269,13 @@ export function withIbanPatterns(patterns: Record<string, string>): InputConfigF
 /**
  * Adds or overrides postal-code mask patterns keyed by country code.
  *
- * - Built-in countries: US, DE, CH, AT, FR, UK, JP.
- * - A `|` in a pattern declares alternates picked by input length (the UK
+ * - Built-in: ~50 countries keyed by ISO 3166-1 alpha-2 (`GB`, with `UK` kept
+ *   as an alias). Countries with no postal-code system (HK, AE, ...) are
+ *   intentionally absent.
+ * - A `|` in a pattern declares alternates picked by input length (the GB
  *   entry: `A0A 0AA|AA0 0AA|...`).
- * - Read as `{ ...ZIP_PATTERNS, ...config.zipPatterns }[region]`; an unknown
- *   region falls back to `00000`.
+ * - Resolved against the lazily-loaded built-in table merged with
+ *   `config.zipPatterns`; an unknown region falls back to `00000`.
  * - Consumer entries merge per key and win on collision.
  * - Region comes from `zip:<REGION>` or `LOCALE_ID`.
  *
@@ -275,21 +295,22 @@ export function withZipPatterns(patterns: Record<string, string>): InputConfigFe
 }
 
 /**
- * Adds or overrides date mask patterns keyed by language code (the `de` in
- * `de-CH`).
+ * Adds or overrides date mask patterns keyed by BCP-47 locale (e.g. `de-CH`).
  *
- * - Built-ins cover the DD/MM/YYYY, MM/DD/YYYY, and YYYY/MM/DD orders per
- *   language.
- * - Read by the `date`, `datetime`, and `time` presets as
- *   `{ ...DATE_FORMATS, ...config.dateFormats }[lang]`, falling back to `en`;
- *   `lang` is the prefix of `LOCALE_ID`.
+ * - Built-ins ship per-locale separators (de-* dots, fr-CH dots, sv-SE/lt-LT/
+ *   en-CA ISO, en-US/en-GB slashes, ...) for the `date` and `datetime` presets.
+ * - Resolution for `date`/`datetime`: exact locale (case-insensitive), then a
+ *   bare language key (so a language-keyed override like `{ sv: '...' }` still
+ *   applies), then any same-language locale, then `en-US`.
+ * - Masks capture separators and group count only, NOT field order: `en-US`
+ *   (MM/DD) and `en-GB` (DD/MM) share `00/00/0000`.
  * - Tokens: `0` = required digit, separators are literals.
  * - Does not feed `date:short` - that uses a separate built-in table.
  * - Consumer entries merge per key and win on collision.
  *
  * ```typescript
- * provideInputConfig(withDateFormats({ sv: '0000-00-00' }));
- * // LOCALE_ID 'sv-SE' + <input cngxInputMask="date" />
+ * provideInputConfig(withDateFormats({ 'en-NZ': '00/00/0000' }));
+ * // LOCALE_ID 'en-NZ' + <input cngxInputMask="date" />
  * ```
  *
  * @see {@link provideInputConfig}
@@ -447,6 +468,25 @@ export function withFileMaxFiles(count: number): InputConfigFeature {
 }
 
 /**
+ * Sets the app-wide default selected region (ISO key, e.g. `'AT'`) for
+ * `CngxPhoneInput`, instead of the first country in the list.
+ *
+ * - The region must match a `CngxPhoneInput` country `region`; an unknown
+ *   region is ignored (the first country stays selected).
+ * - A per-instance `[country]` binding overrides it.
+ *
+ * ```typescript
+ * provideInputConfig(withPhoneDefaultRegion('AT'));
+ * ```
+ *
+ * @see {@link provideInputConfig}
+ * @category forms/input
+ */
+export function withPhoneDefaultRegion(region: string): InputConfigFeature {
+  return (config) => ({ ...config, phoneDefaultRegion: region });
+}
+
+/**
  * Overrides the built-in ARIA label strings the input directives announce.
  *
  * - Unset keys fall back to `DEFAULT_INPUT_ARIA_LABELS` per key, so a partial
@@ -461,6 +501,9 @@ export function withFileMaxFiles(count: number): InputConfigFeature {
  * - `passwordStrength(label)` -> `CngxPasswordStrength` polite announcement.
  * - `inputRejected` -> `CngxInputFilter` assertive rejection.
  * - `sensitiveReveal` / `sensitiveHide` -> `CngxSensitiveValue` reveal/hide announcements.
+ * - `ratingValue(value, max)` -> `CngxRating` polite committed-value announcement.
+ * - `ratingItem(step, max)` -> `CngxRating` per-star radio `aria-label`.
+ * - `phoneCountry` -> `CngxPhoneInput` country-picker `aria-label`.
  *
  * ```typescript
  * provideInputConfig(

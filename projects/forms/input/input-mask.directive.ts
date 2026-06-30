@@ -14,6 +14,12 @@ import {
 import { CNGX_FORM_FIELD_HOST } from '@cngx/core/tokens';
 import { CNGX_VALUE_TRANSFORMER, type CngxValueTransformer } from '@cngx/forms/field';
 import { CNGX_INPUT_CONFIG, type InputConfig } from './input-config';
+import {
+  ensureMaskPreset,
+  maskPresetKey,
+  maskPresetTables,
+  type MaskPresetTables,
+} from './mask-presets/registry';
 
 /** @internal */
 interface MaskToken {
@@ -162,110 +168,107 @@ function firstEmptySlot(tokens: MaskToken[], masked: string, placeholder: string
   return tokens.length;
 }
 
-/**
- * Date format order per locale prefix.
- * @internal
- */
-const DATE_FORMATS: Record<string, string> = {
-  // DD/MM/YYYY locales
-  de: '00/00/0000',
-  fr: '00/00/0000',
-  es: '00/00/0000',
-  it: '00/00/0000',
-  pt: '00/00/0000',
-  nl: '00-00-0000',
-  ru: '00.00.0000',
-  ja: '0000/00/00', // YYYY/MM/DD
-  zh: '0000/00/00',
-  ko: '0000.00.00',
-  // MM/DD/YYYY locales
-  en: '00/00/0000',
-};
-
-const DATE_SHORT_FORMATS: Record<string, string> = {
-  de: '00/00/00',
-  fr: '00/00/00',
-  en: '00/00/00',
-  ja: '00/00/00',
-  zh: '00/00/00',
-};
 
 /**
- * Phone patterns by country/region code.
+ * Inline fallback masks used while a lazily-loaded preset table is still in
+ * flight (and as the final default when no region matches).
  * @internal
  */
-const PHONE_PATTERNS: Record<string, string> = {
-  US: '(000) 000-0000',
-  DE: '+00 000 00000000',
-  CH: '+00 00 000 00 00',
-  AT: '+00 0 000 0000',
-  FR: '+00 0 00 00 00 00',
-  UK: '+00 0000 000000',
-  IT: '+00 000 000 0000',
-  ES: '+00 000 000 000',
-  JP: '+00 00-0000-0000',
-  BR: '+00 (00) 00000-0000',
-};
+const PRESET_FALLBACKS = {
+  phone: '+000000000000',
+  date: '00/00/0000',
+  dateShort: '00/00/00',
+  iban: 'AA00 0000 0000 0000 0000 00',
+  zip: '00000',
+} as const;
 
 /**
- * IBAN lengths and groupings by country.
+ * Resolves a date mask for a locale: exact BCP-47 key first (case-insensitive),
+ * then a bare language key (back-compat with language-keyed `withDateFormats`
+ * config), then any same-language locale, then the provided fallback pattern.
  * @internal
  */
-const IBAN_PATTERNS: Record<string, string> = {
-  CH: 'AA00 0000 0000 0000 0000 0',
-  DE: 'AA00 0000 0000 0000 0000 00',
-  AT: 'AA00 0000 0000 0000 0000',
-  FR: 'AA00 0000 0000 0000 0000 000',
-  IT: 'AA00 A000 0000 0000 0000 0000 000',
-  ES: 'AA00 0000 0000 0000 0000 0000',
-  NL: 'AA00 AAAA 0000 0000 00',
-  GB: 'AA00 AAAA 0000 0000 00',
-};
+function resolveDateFormat(
+  locale: string,
+  table: Record<string, string>,
+  fallback: string,
+): string {
+  const lc = locale.toLowerCase();
+  const lang = lc.split('-')[0];
+  for (const key of Object.keys(table)) {
+    if (key.toLowerCase() === lc) {
+      return table[key];
+    }
+  }
+  if (table[lang]) {
+    return table[lang];
+  }
+  for (const key of Object.keys(table)) {
+    if (key.toLowerCase().startsWith(`${lang}-`)) {
+      return table[key];
+    }
+  }
+  return fallback;
+}
 
-const ZIP_PATTERNS: Record<string, string> = {
-  US: '00000',
-  DE: '00000',
-  CH: '0000',
-  AT: '0000',
-  FR: '00000',
-  UK: 'A0A 0AA|AA0 0AA|AA00 0AA|A0 0AA|A00 0AA',
-  JP: '000-0000',
-};
-
+/**
+ * Resolves a preset name to its mask patterns. Built-in region tables arrive
+ * lazily via {@link maskPresetTables}; until a table loads, the inline
+ * {@link PRESET_FALLBACKS} stand in. Consumer overrides (`config.*Patterns`)
+ * are synchronous and always merged on top.
+ * @internal
+ */
 function resolvePreset(
   maskInput: string,
   locale: string,
+  tables: MaskPresetTables,
   config?: InputConfig,
 ): { patterns: string[]; prefix?: string; suffix?: string } | null {
   const parts = maskInput.split(':');
   const name = parts[0].toLowerCase();
   const regionHint = parts[1]?.toUpperCase();
-  const lang = locale.split('-')[0].toLowerCase();
   const region = regionHint ?? localeToRegion(locale);
+  // Optional `phone:<region>:<mobile|landline>` segment forces one alternate.
+  const lineType = parts[2]?.toLowerCase();
 
-  const phones = { ...PHONE_PATTERNS, ...config?.phonePatterns };
-  const ibans = { ...IBAN_PATTERNS, ...config?.ibanPatterns };
-  const zips = { ...ZIP_PATTERNS, ...config?.zipPatterns };
-  const dates = { ...DATE_FORMATS, ...config?.dateFormats };
+  const phones = { ...tables.phone, ...config?.phonePatterns };
+  const ibans = { ...tables.iban, ...config?.ibanPatterns };
+  const zips = { ...tables.zip, ...config?.zipPatterns };
+  const dates = { ...tables.date, ...config?.dateFormats };
 
   switch (name) {
     case 'date':
-      return { patterns: [dates[lang] ?? dates['en']] };
+      return { patterns: [resolveDateFormat(locale, dates, PRESET_FALLBACKS.date)] };
     case 'date:short':
-      return { patterns: [DATE_SHORT_FORMATS[lang] ?? DATE_SHORT_FORMATS['en']] };
+      return {
+        patterns: [
+          resolveDateFormat(locale, tables.dateShort ?? {}, PRESET_FALLBACKS.dateShort),
+        ],
+      };
     case 'time':
     case 'time:24':
       return { patterns: ['00:00'] };
     case 'time:12':
       return { patterns: ['00:00 AA'] };
     case 'datetime':
-      return { patterns: [(dates[lang] ?? dates['en']) + ' 00:00'] };
-    case 'phone':
-      return { patterns: [phones[region] ?? phones['US']] };
+      return {
+        patterns: [`${resolveDateFormat(locale, dates, PRESET_FALLBACKS.date)} 00:00`],
+      };
+    case 'phone': {
+      const raw = phones[region] ?? PRESET_FALLBACKS.phone;
+      const alts = raw.split('|');
+      if (lineType === 'mobile' && alts.length > 1) {
+        return { patterns: [alts[alts.length - 1]] };
+      }
+      if (lineType === 'landline') {
+        return { patterns: [alts[0]] };
+      }
+      return { patterns: [raw] };
+    }
     case 'creditcard':
       return { patterns: ['0000 000000 00000|0000 0000 0000 0000'] };
     case 'iban':
-      return { patterns: [ibans[region] ?? 'AA00 0000 0000 0000 0000 00'] };
+      return { patterns: [ibans[region] ?? PRESET_FALLBACKS.iban] };
     case 'zip':
       return resolveZip(region, zips);
     case 'ip':
@@ -402,6 +405,8 @@ export type MaskTokenMap = Record<string, MaskTokenDef>;
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/input/input-mask.directive.ts
  * @since 0.1.0
  * @relatedTo CngxInput, CngxInputFormat, CngxNumericInput, withMaskPlaceholder, withMaskGuide, withCustomTokens
+ * @playground All presets ./examples/all-presets/all-presets-example.component.ts
+ * @playground Build your own pattern ./examples/pattern-builder/pattern-builder-example.component.ts
  * <example-url>http://localhost:4200/#/forms/input/mask/custom-pattern</example-url>
  * <example-url>http://localhost:4200/#/forms/input/mask/custom-tokens-and-transform</example-url>
  * <example-url>http://localhost:4200/#/forms/input/mask/locale-presets</example-url>
@@ -464,6 +469,14 @@ export class CngxInputMask {
   /** Whether to clear the input when focus is lost and the mask is incomplete. */
   readonly clearOnBlur = input<boolean>(false);
 
+  /**
+   * Force the Nth `|`-alternate, bypassing the length-based pick. Clamped to
+   * the available range; `null` (default) restores length-based selection.
+   * Changing it never clears `value` - the auto-clear watches `mask()`, which
+   * this leaves untouched.
+   */
+  readonly forceAlternate = input<number | null>(null);
+
   // Resolved config: input > global config > default.
 
   private readonly resolvedPlaceholder = computed(
@@ -499,23 +512,47 @@ export class CngxInputMask {
     },
   );
 
-  /** Resolved patterns (handles presets, config overrides, and `|` splitting). */
-  private readonly resolvedPatterns = computed(() => {
-    const maskVal = this.mask();
-    const preset = resolvePreset(maskVal, this.locale, this.config);
-    if (preset) {
-      return preset.patterns.flatMap((p) => p.split('|'));
-    }
-    return maskVal.split('|');
-  });
+  /** Preset table this mask needs (null for table-less / custom patterns). */
+  private readonly presetKey = computed(() => maskPresetKey(this.mask()));
 
-  /** Active pattern selected based on current raw length. */
-  private readonly activePattern = computed(() =>
-    selectPattern(this.resolvedPatterns(), this.value().length, this.resolvedCustomTokens()),
+  /** Resolved patterns (handles presets, config overrides, and `|` splitting). */
+  private readonly resolvedPatterns = computed(
+    () => {
+      const maskVal = this.mask();
+      // Reading the signal makes this recompute when a lazily-imported table lands.
+      const preset = resolvePreset(maskVal, this.locale, maskPresetTables(), this.config);
+      if (preset) {
+        return preset.patterns.flatMap((p) => p.split('|'));
+      }
+      return maskVal.split('|');
+    },
+    { equal: (a, b) => a.length === b.length && a.every((p, i) => p === b[i]) },
   );
 
-  private readonly tokens = computed(() =>
-    parseMask(this.activePattern(), this.resolvedCustomTokens()),
+  /** Active pattern: a forced alternate when set, else length-based selection. */
+  private readonly activePattern = computed(() => {
+    const patterns = this.resolvedPatterns();
+    const forced = this.forceAlternate();
+    if (forced != null) {
+      const index = Math.min(Math.max(forced, 0), patterns.length - 1);
+      return patterns[index];
+    }
+    return selectPattern(patterns, this.value().length, this.resolvedCustomTokens());
+  });
+
+  private readonly tokens = computed(
+    () => parseMask(this.activePattern(), this.resolvedCustomTokens()),
+    {
+      equal: (a, b) =>
+        a.length === b.length &&
+        a.every(
+          (t, i) =>
+            t.kind === b[i].kind &&
+            t.test === b[i].test &&
+            t.char === b[i].char &&
+            t.optional === b[i].optional,
+        ),
+    },
   );
 
   /** Primary value channel — raw unmasked value (digits/letters only, no literals unless `includeLiterals`). */
@@ -570,7 +607,23 @@ export class CngxInputMask {
 
   private prevMask: string | undefined;
 
+  // Logical caret as a raw-value index (grouping-independent). The edit
+  // handlers keep it in step; the mirror effect restores from it after a
+  // reactive regroup so the cursor tracks the same digit across an alternate
+  // change instead of snapping to the end.
+  private caretRawIndex = 0;
+
   constructor() {
+    // Lazily import the preset table the current mask needs. Side effect, so it
+    // lives in an effect (not the resolvedPatterns computed); the import's
+    // signal write lands back in maskPresetTables and recomputes the mask.
+    effect(() => {
+      const key = this.presetKey();
+      if (key) {
+        untracked(() => void ensureMaskPreset(key));
+      }
+    });
+
     // Sync masked value to DOM; the input event notifies co-located CngxInput / matInput.
     //
     // No re-entry guard here (unlike CngxInputFormat's lastEffectWrite): the
@@ -586,7 +639,17 @@ export class CngxInputMask {
       if (el.value === masked) {
         return;
       }
+      // Restore the caret only when the user is mid-edit (the field is focused
+      // and the edit handlers already set the eager el.value, so this run is a
+      // reactive regroup, not the typing write). Assigning el.value drops the
+      // caret to the end; map the logical raw index through the new tokens to
+      // keep the cursor on the same digit after the alternate change.
+      const restoreCaret = el.ownerDocument.activeElement === el;
       el.value = masked;
+      if (restoreCaret) {
+        const pos = this.cursorFromRawIndex(this.caretRawIndex, this.tokens()) + this.prefix().length;
+        el.setSelectionRange(pos, pos);
+      }
       el.dispatchEvent(new Event('input', { bubbles: true }));
     });
 
@@ -771,7 +834,6 @@ export class CngxInputMask {
   }
 
   /** @internal */
-  /** @internal */
   protected focusedViaClick = false;
 
   protected handleFocus(): void {
@@ -891,6 +953,7 @@ export class CngxInputMask {
     el.value = newMasked;
 
     const newCursorRawIdx = rawBefore + filtered.length;
+    this.caretRawIndex = newCursorRawIdx;
     const newTokens = this.tokens();
     const cursorPos = this.cursorFromRawIndex(newCursorRawIdx, newTokens);
     el.setSelectionRange(cursorPos + prefixLen, cursorPos + prefixLen);
@@ -904,6 +967,7 @@ export class CngxInputMask {
       this.deleteRange(selStart, selEnd, tokens);
       this.syncDom(el);
       const cursorPos = this.adjustCursorAfterDelete(selStart, tokens);
+      this.caretRawIndex = this.rawIndexFromCursor(cursorPos, tokens);
       el.setSelectionRange(cursorPos + prefixLen, cursorPos + prefixLen);
       return;
     }
@@ -926,6 +990,7 @@ export class CngxInputMask {
     this.syncDom(el);
 
     const cursorPos = this.adjustCursorAfterDelete(target, tokens);
+    this.caretRawIndex = this.rawIndexFromCursor(cursorPos, tokens);
     el.setSelectionRange(cursorPos + prefixLen, cursorPos + prefixLen);
   }
 
@@ -937,6 +1002,7 @@ export class CngxInputMask {
       this.deleteRange(selStart, selEnd, tokens);
       this.syncDom(el);
       const cursorPos = this.adjustCursorAfterDelete(selStart, tokens);
+      this.caretRawIndex = this.rawIndexFromCursor(cursorPos, tokens);
       el.setSelectionRange(cursorPos + prefixLen, cursorPos + prefixLen);
       return;
     }
@@ -954,6 +1020,7 @@ export class CngxInputMask {
     this.updateRaw(raw.slice(0, rawIdx) + raw.slice(rawIdx + 1));
     this.syncDom(el);
 
+    this.caretRawIndex = this.rawIndexFromCursor(selStart, tokens);
     el.setSelectionRange(selStart + prefixLen, selStart + prefixLen);
   }
 

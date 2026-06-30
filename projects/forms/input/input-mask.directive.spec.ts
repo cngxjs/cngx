@@ -3,8 +3,10 @@ import { TestBed } from '@angular/core/testing';
 import { LOCALE_ID } from '@angular/core';
 import { CNGX_FORM_FIELD_HOST, type CngxFormFieldHostContract } from '@cngx/core/tokens';
 import { CNGX_VALUE_TRANSFORMER, type CngxValueTransformer } from '@cngx/forms/field';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { CngxInputMask, type MaskTokenMap } from './input-mask.directive';
+import { provideInputConfig, withPhonePatterns } from './input-config';
+import { loadAllMaskPresets } from './mask-presets/registry';
 
 // ── Test host ───────────────────────────────────────────────────────
 
@@ -18,6 +20,7 @@ import { CngxInputMask, type MaskTokenMap } from './input-mask.directive';
     [suffix]="suffix()"
     [transform]="transform()"
     [customTokens]="customTokens()"
+    [forceAlternate]="forceAlternate()"
   />`,
   imports: [CngxInputMask],
 })
@@ -30,6 +33,7 @@ class Host {
   readonly suffix = signal('');
   readonly transform = signal<((ch: string) => string) | undefined>(undefined);
   readonly customTokens = signal<MaskTokenMap | undefined>(undefined);
+  readonly forceAlternate = signal<number | null>(null);
   readonly directive = viewChild.required(CngxInputMask);
 }
 
@@ -43,6 +47,7 @@ function setup(
     suffix?: string;
     transform?: (ch: string) => string;
     customTokens?: MaskTokenMap;
+    forceAlternate?: number | null;
     locale?: string;
     host?: CngxFormFieldHostContract;
   } = {},
@@ -66,6 +71,7 @@ function setup(
   if (overrides.suffix != null) host.suffix.set(overrides.suffix);
   if (overrides.transform != null) host.transform.set(overrides.transform);
   if (overrides.customTokens != null) host.customTokens.set(overrides.customTokens);
+  if (overrides.forceAlternate !== undefined) host.forceAlternate.set(overrides.forceAlternate);
   fixture.detectChanges();
   TestBed.flushEffects();
 
@@ -125,6 +131,12 @@ function flush(fixture: ReturnType<typeof TestBed.createComponent>): void {
 // ── Tests ───────────────────────────────────────────────────────────
 
 describe('CngxInputMask', () => {
+  // Preset tables load lazily via dynamic import; prime them so preset
+  // assertions resolve synchronously.
+  beforeAll(async () => {
+    await loadAllMaskPresets();
+  });
+
   // ── Basic mask behavior ─────────────────────────────────────────────
 
   describe('initial state', () => {
@@ -410,9 +422,18 @@ describe('CngxInputMask', () => {
       expect(input.value).toBe('__/__/____');
     });
 
-    it('should resolve "date" preset for de locale', () => {
+    it('should resolve "date" preset for de locale (dots)', () => {
       const { input } = setup({ mask: 'date', locale: 'de-DE' });
-      expect(input.value).toBe('__/__/____');
+      expect(input.value).toBe('__.__.____');
+    });
+
+    it('resolves locale-specific separators (fr-CH dots, sv-SE ISO)', () => {
+      expect(setup({ mask: 'date', locale: 'fr-CH' }).input.value).toBe('__.__.____');
+    });
+
+    it('falls back by language when the region is unknown', () => {
+      // de-LI has no exact key; resolves to a de-* mask (dots).
+      expect(setup({ mask: 'date', locale: 'de-LI' }).input.value).toBe('__.__.____');
     });
 
     it('should resolve "date" preset for ja locale (YYYY/MM/DD)', () => {
@@ -427,12 +448,14 @@ describe('CngxInputMask', () => {
 
     it('should resolve "phone:US" preset', () => {
       const { input } = setup({ mask: 'phone:US' });
-      expect(input.value).toBe('(___) ___-____');
+      expect(input.value).toBe('+_ ___ ___ ____');
     });
 
-    it('should resolve "phone" from locale', () => {
+    it('should resolve "phone" from locale (DE landline alternate at rest)', () => {
       const { input } = setup({ mask: 'phone', locale: 'de-DE' });
-      expect(input.value).toBe('+__ ___ ________');
+      // DE now ships landline|mobile alternates; the shorter landline pattern
+      // is active while the field is empty.
+      expect(input.value).toBe('+__ __ ________');
     });
 
     it('should resolve "creditcard" preset (16-digit pattern)', () => {
@@ -459,6 +482,175 @@ describe('CngxInputMask', () => {
       const { input, directive, fixture } = setup({ mask: 'iban:CH' });
       typeSequence(input, 'CH93', directive, fixture);
       expect(directive.rawValue()).toBe('CH93');
+    });
+  });
+
+  // ── Phone length-alternation ────────────────────────────────────────
+
+  describe('phone length-alternation', () => {
+    it('picks the DE landline alternate for a landline-length number', () => {
+      const { directive, fixture } = setup({ mask: 'phone:DE' });
+      directive.setValue('491234567890'); // 12 digits
+      flush(fixture);
+      expect(directive.currentPattern()).toBe('+00 00 00000000');
+    });
+
+    it('picks the DE mobile alternate for a mobile-length number', () => {
+      const { directive, fixture } = setup({ mask: 'phone:DE' });
+      directive.setValue('4915112345678'); // 13 digits
+      flush(fixture);
+      expect(directive.currentPattern()).toBe('+00 000 00000000');
+    });
+
+    it('forces the mobile alternate with phone:DE:mobile (no length threshold)', () => {
+      const { directive } = setup({ mask: 'phone:DE:mobile' });
+      expect(directive.currentPattern()).toBe('+00 000 00000000');
+    });
+
+    it('forces the landline alternate with phone:DE:landline', () => {
+      const { directive } = setup({ mask: 'phone:DE:landline' });
+      expect(directive.currentPattern()).toBe('+00 00 00000000');
+    });
+
+    it('alternates IT by length too', () => {
+      const { directive, fixture } = setup({ mask: 'phone:IT' });
+      directive.setValue('39061234567'); // 11 digits -> landline
+      flush(fixture);
+      expect(directive.currentPattern()).toBe('+00 00 0000000');
+      directive.setValue('393331234567'); // 12 digits -> mobile
+      flush(fixture);
+      expect(directive.currentPattern()).toBe('+00 000 0000000');
+    });
+
+    it('alternates BR landline vs mobile by length', () => {
+      const { directive, fixture } = setup({ mask: 'phone:BR' });
+      directive.setValue('551133334444'); // 12 digits -> landline
+      flush(fixture);
+      expect(directive.currentPattern()).toBe('+00 00 0000 0000');
+      directive.setValue('5511999998888'); // 13 digits -> mobile
+      flush(fixture);
+      expect(directive.currentPattern()).toBe('+00 00 0 0000 0000');
+    });
+
+    it('lets withPhonePatterns pin a single pattern and win over the alternates', () => {
+      TestBed.configureTestingModule({
+        providers: [provideInputConfig(withPhonePatterns({ DE: '+00 000 00000000' }))],
+      });
+      const { directive, fixture } = setup({ mask: 'phone:DE' });
+      directive.setValue('491234567890'); // 12 digits
+      flush(fixture);
+      // Override replaces the alternates, so even a short number keeps the pinned pattern.
+      expect(directive.currentPattern()).toBe('+00 000 00000000');
+    });
+
+    it('keeps uniform-length regions on a single pattern', () => {
+      const { directive, fixture } = setup({ mask: 'phone:US' });
+      directive.setValue('11234567890');
+      flush(fixture);
+      expect(directive.currentPattern()).toBe('+0 000 000 0000');
+    });
+
+    it('ships a Slovenia pattern', () => {
+      expect(setup({ mask: 'phone:SI' }).input.value).toBe('+___ _ ___ __ __');
+    });
+
+    it('ships a Poland pattern', () => {
+      expect(setup({ mask: 'phone:PL' }).input.value).toBe('+__ ___ ___ ___');
+    });
+
+    it('ships a Croatia pattern that alternates by length (landline at rest)', () => {
+      expect(setup({ mask: 'phone:HR' }).input.value).toBe('+___ _ ____ ___');
+    });
+
+    it('keeps UK as a back-compat alias of GB', () => {
+      expect(setup({ mask: 'phone:UK' }).input.value).toBe('+__ ____ ______');
+    });
+  });
+
+  // ── Forced alternate ────────────────────────────────────────────────
+
+  describe('forceAlternate', () => {
+    it('forces the Nth alternate and regroups the same raw value', () => {
+      const { directive, fixture } = setup({ mask: 'phone:DE', forceAlternate: 1 });
+      directive.setValue('491234567890'); // landline-length, but mobile is forced
+      flush(fixture);
+      expect(directive.currentPattern()).toBe('+00 000 00000000'); // mobile alternate
+      expect(directive.value()).toBe('491234567890'); // digits preserved
+    });
+
+    it('does not clear value when forceAlternate changes (only mask() clears)', () => {
+      const { directive, fixture } = setup({ mask: 'phone:DE' });
+      directive.setValue('491234567890');
+      flush(fixture);
+      expect(directive.value()).toBe('491234567890');
+
+      fixture.componentInstance.forceAlternate.set(1);
+      flush(fixture);
+      // The auto-clear watches mask(); a forceAlternate flip rides the
+      // no-clear selectPattern path, so the typed number survives.
+      expect(directive.value()).toBe('491234567890');
+      expect(directive.currentPattern()).toBe('+00 000 00000000');
+    });
+
+    it('clamps an out-of-range index to the last alternate', () => {
+      const { directive } = setup({ mask: 'phone:DE', forceAlternate: 99 });
+      expect(directive.currentPattern()).toBe('+00 000 00000000'); // last (mobile)
+    });
+
+    it('keeps the caret on the typed digits when a regroup rewrites the field', () => {
+      const { input, directive, fixture } = setup({ mask: 'phone:DE' });
+      // Caret restoration only runs for the focused, mid-edit element.
+      document.body.appendChild(fixture.nativeElement);
+      input.focus();
+      typeSequence(input, '4915', directive, fixture); // 4 digits -> landline grouping
+
+      // Flip to the mobile alternate while focused, as the metadata strategy
+      // does mid-number; this regroups and rewrites el.value.
+      fixture.componentInstance.forceAlternate.set(1);
+      flush(fixture);
+
+      expect(directive.currentPattern()).toBe('+00 000 00000000');
+      // The cursor tracks the entered digits (first empty slot), not the end.
+      expect(input.selectionStart).toBe(input.value.indexOf('_'));
+      expect(input.selectionStart).toBeLessThan(input.value.length);
+      fixture.nativeElement.remove();
+    });
+
+    it('restores length-based selection when reset to null', () => {
+      const { directive, fixture } = setup({ mask: 'phone:DE' });
+      directive.setValue('491234567890'); // 12 digits -> length-based landline
+      flush(fixture);
+      expect(directive.currentPattern()).toBe('+00 00 00000000');
+
+      fixture.componentInstance.forceAlternate.set(1);
+      flush(fixture);
+      expect(directive.currentPattern()).toBe('+00 000 00000000'); // forced mobile
+
+      fixture.componentInstance.forceAlternate.set(null);
+      flush(fixture);
+      expect(directive.currentPattern()).toBe('+00 00 00000000'); // back to length-based
+    });
+  });
+
+  // ── IBAN / ZIP presets ──────────────────────────────────────────────
+
+  describe('iban and zip presets', () => {
+    it('resolves the corrected 27-char FR IBAN', () => {
+      const { directive } = setup({ mask: 'iban:FR' });
+      expect(directive.currentPattern()).toBe('AA00 0000 0000 0000 0000 0000 000');
+    });
+
+    it('resolves a Dutch postal code', () => {
+      expect(setup({ mask: 'zip:NL' }).input.value).toBe('____ __');
+    });
+
+    it('ships GB postal-code length alternates', () => {
+      // Shortest alternate is active while empty.
+      expect(setup({ mask: 'zip:GB' }).directive.currentPattern()).toBe('A0 0AA');
+    });
+
+    it('keeps zip:UK as a back-compat alias of zip:GB', () => {
+      expect(setup({ mask: 'zip:UK' }).directive.currentPattern()).toBe('A0 0AA');
     });
   });
 
