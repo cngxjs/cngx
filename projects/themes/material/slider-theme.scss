@@ -1,0 +1,38 @@
+@use '@angular/material' as mat;
+
+// Material bridge for CngxSlider / CngxRangeSlider (and the headless
+// [cngxSliderTrack] / [cngxRangeSliderTrack] directives). The track follows the
+// outline-variant tone, the fill and handle follow primary, so a cngx slider
+// next to <mat-slider> reads the same.
+//
+//   @use '@cngx/themes/material/slider-theme' as slider;
+//   html { @include slider.theme($theme); }
+
+@mixin color($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-slider-track-color: var(--mat-sys-outline-variant);
+    --cngx-slider-fill-color: var(--mat-sys-primary);
+    --cngx-slider-thumb-color: var(--mat-sys-primary);
+    --cngx-slider-thumb-border-color: var(--mat-sys-primary);
+    --cngx-slider-focus-ring-color: var(--mat-sys-primary);
+  } @else {
+    --cngx-slider-track-color: #{mat.get-theme-color($theme, foreground, divider)};
+    --cngx-slider-fill-color: #{mat.get-theme-color($theme, primary)};
+    --cngx-slider-thumb-color: #{mat.get-theme-color($theme, primary)};
+    --cngx-slider-thumb-border-color: #{mat.get-theme-color($theme, primary)};
+    --cngx-slider-focus-ring-color: #{mat.get-theme-color($theme, primary)};
+  }
+}
+
+@mixin theme($theme) {
+  @layer cngx.components {
+    :where(
+        cngx-slider,
+        cngx-range-slider,
+        [cngxSliderTrack],
+        [cngxRangeSliderTrack]
+      ) {
+      @include color($theme);
+    }
+  }
+}

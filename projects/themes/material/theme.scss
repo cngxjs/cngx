@@ -54,6 +54,7 @@
 @use './select-theme' as select;
 @use './sidenav-theme' as sidenav;
 @use './skeleton-theme' as skeleton;
+@use './slider-theme' as slider;
 @use './speak-button-theme' as speak;
 @use './stepper-theme' as stepper;
 @use './tabs-theme' as tabs;
@@ -96,6 +97,7 @@
   @include select.theme($theme);
   @include sidenav.theme($theme);
   @include skeleton.theme($theme);
+  @include slider.theme($theme);
   @include speak.theme($theme);
   @include stepper.theme($theme);
   @include tabs.theme($theme);
