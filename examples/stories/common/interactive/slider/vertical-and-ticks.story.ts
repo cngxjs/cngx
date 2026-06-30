@@ -31,7 +31,8 @@ export const STORY: DemoSpec = {
         [max]="100"
         [step]="10"
         showValue
-        showTicks />
+        showTicks
+        showTickLabels />
     </div>
     <div style="flex:1;max-width:280px">
       <label id="level-label" style="display:block;margin-bottom:12px;font-weight:600">Level (ticked)</label>
@@ -41,7 +42,8 @@ export const STORY: DemoSpec = {
         [min]="0"
         [max]="100"
         [step]="10"
-        showTicks />
+        showTicks
+        showTickLabels />
     </div>
   </div>`,
 };

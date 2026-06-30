@@ -69,10 +69,52 @@ cngx-range-slider [cngxSliderThumb] {
   cursor: grab;
 }
 
+/* Soft halo on any focus (pointer or keyboard) marks the active thumb. */
+cngx-range-slider [cngxSliderThumb]:focus {
+  outline: none;
+  box-shadow: 0 0 0 var(--cngx-slider-focus-halo-size, 6px)
+    color-mix(in oklch, var(--cngx-slider-focus-ring-color, oklch(0.66 0.19 50)) 25%, transparent);
+}
+
+/* Strong outline ring on keyboard focus only. */
 cngx-range-slider [cngxSliderThumb]:focus-visible {
   outline: var(--cngx-slider-focus-ring-width, 2px) solid
     var(--cngx-slider-focus-ring-color, oklch(0.66 0.19 50));
   outline-offset: 2px;
+}
+
+/* Tick value labels under the track. */
+cngx-range-slider .cngx-slider__ticks {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-start: calc(100% + 0.35rem);
+  block-size: 1em;
+  pointer-events: none;
+}
+
+cngx-range-slider .cngx-slider__tick-label {
+  position: absolute;
+  inset-inline-start: calc(var(--cngx-slider-tick-fraction, 0) * 100%);
+  translate: -50% 0;
+  font-size: var(--cngx-slider-tick-font-size, 0.6875rem);
+  font-variant-numeric: tabular-nums;
+  color: var(--cngx-slider-tick-label-color, var(--cngx-color-text-muted, oklch(0.55 0.01 250)));
+  white-space: nowrap;
+}
+
+cngx-range-slider[aria-orientation='vertical'] .cngx-slider__ticks {
+  inset-inline: auto;
+  inset-block: 0;
+  inset-inline-start: calc(100% + 0.35rem);
+  block-size: auto;
+}
+
+cngx-range-slider[aria-orientation='vertical'] .cngx-slider__tick-label {
+  inset-inline-start: 0;
+  inset-block-start: calc(100% - var(--cngx-slider-tick-fraction, 0) * 100%);
+  min-inline-size: 2.5ch;
+  text-align: end;
+  translate: 0 -50%;
 }
 
 /* One combined label centred between the thumbs - never two overlapping labels. */

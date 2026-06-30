@@ -9,8 +9,10 @@ import {
   type TemplateRef,
   ViewEncapsulation,
 } from '@angular/core';
+import { arrayEqual } from '@cngx/utils';
 
 import { CngxSliderTrack } from './slider.directive';
+import { sliderTickValues } from './slider-ticks';
 
 /**
  * Finished single-thumb slider. The 90% API: drop it in, bind `[(value)]`, done -
@@ -65,6 +67,15 @@ import { CngxSliderTrack } from './slider.directive';
         <ng-container *ngTemplateOutlet="glyph" />
       }
     </span>
+    @if (tickValues().length) {
+      <span class="cngx-slider__ticks" aria-hidden="true">
+        @for (tick of tickValues(); track tick) {
+          <span class="cngx-slider__tick-label" [style.--cngx-slider-tick-fraction]="tickFraction(tick)">
+            {{ tick }}
+          </span>
+        }
+      </span>
+    }
     @if (showValue()) {
       <span class="cngx-slider__value" aria-hidden="true">{{ brain.displayValue() }}</span>
     }
@@ -75,6 +86,8 @@ export class CngxSlider {
   readonly showValue = input(false, { transform: booleanAttribute });
   /** Paint a tick mark every `step` along the track. */
   readonly showTicks = input(false, { transform: booleanAttribute });
+  /** Render a numeric label at every step stop (independent of `showTicks`). */
+  readonly showTickLabels = input(false, { transform: booleanAttribute });
   /** Optional content projected into the thumb (an icon, a dot, a custom handle). */
   readonly thumbGlyph = input<TemplateRef<void> | null>(null);
 
@@ -93,4 +106,19 @@ export class CngxSlider {
     }
     return `${(step / span) * 100}%`;
   });
+
+  /** Numeric tick stops rendered as labels under the track (empty when off / too dense). */
+  protected readonly tickValues = computed<number[]>(
+    () =>
+      this.showTickLabels()
+        ? sliderTickValues(this.brain.min(), this.brain.max(), this.brain.step())
+        : [],
+    { equal: arrayEqual },
+  );
+
+  /** Track fraction `[0, 1]` of a tick value, for positioning its label. */
+  protected tickFraction(value: number): number {
+    const span = this.brain.max() - this.brain.min();
+    return span > 0 ? (value - this.brain.min()) / span : 0;
+  }
 }

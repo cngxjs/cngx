@@ -82,14 +82,57 @@ cngx-slider .cngx-slider__value {
   white-space: nowrap;
 }
 
-cngx-slider:focus-visible {
+/* Tick value labels under the track (one per step stop). */
+cngx-slider .cngx-slider__ticks {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-start: calc(100% + 0.35rem);
+  block-size: 1em;
+  pointer-events: none;
+}
+
+cngx-slider .cngx-slider__tick-label {
+  position: absolute;
+  inset-inline-start: calc(var(--cngx-slider-tick-fraction, 0) * 100%);
+  translate: -50% 0;
+  font-size: var(--cngx-slider-tick-font-size, 0.6875rem);
+  font-variant-numeric: tabular-nums;
+  color: var(--cngx-slider-tick-label-color, var(--cngx-color-text-muted, oklch(0.55 0.01 250)));
+  white-space: nowrap;
+}
+
+cngx-slider:focus {
   outline: none;
 }
 
+/* Soft halo on ANY focus (pointer or keyboard) so the active handle reads as
+ * "now controllable". */
+cngx-slider:focus .cngx-slider__thumb {
+  box-shadow: 0 0 0 var(--cngx-slider-focus-halo-size, 6px)
+    color-mix(in oklch, var(--cngx-slider-focus-ring-color, oklch(0.66 0.19 50)) 25%, transparent);
+}
+
+/* Strong outline ring on keyboard focus only (the a11y indicator). */
 cngx-slider:focus-visible .cngx-slider__thumb {
   outline: var(--cngx-slider-focus-ring-width, 2px) solid
     var(--cngx-slider-focus-ring-color, oklch(0.66 0.19 50));
   outline-offset: 2px;
+}
+
+/* Vertical: labels run down the right of the track. */
+cngx-slider[aria-orientation='vertical'] .cngx-slider__ticks {
+  inset-inline: auto;
+  inset-block: 0;
+  inset-inline-start: calc(100% + 0.35rem);
+  block-size: auto;
+}
+
+cngx-slider[aria-orientation='vertical'] .cngx-slider__tick-label {
+  inset-inline-start: 0;
+  inset-block-start: calc(100% - var(--cngx-slider-tick-fraction, 0) * 100%);
+  min-inline-size: 2.5ch;
+  text-align: end;
+  translate: 0 -50%;
 }
 
 /* Vertical orientation: column layout with an explicit length; fill + thumb
@@ -132,9 +175,12 @@ cngx-slider[aria-orientation='vertical'] .cngx-slider__thumb {
   translate: -50% 50%;
 }
 
+/* Value bubble sits to the LEFT of a vertical track so it never collides with
+ * the tick labels (which run down the right). */
 cngx-slider[aria-orientation='vertical'] .cngx-slider__value {
   inset-block-end: auto;
   inset-block-start: calc(100% - var(--cngx-slider-fraction, 0) * 100%);
-  inset-inline-start: calc(100% + 0.5rem);
+  inset-inline-start: auto;
+  inset-inline-end: calc(100% + 0.5rem);
   translate: 0 -50%;
 }

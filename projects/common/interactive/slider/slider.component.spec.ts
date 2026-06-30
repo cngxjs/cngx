@@ -69,6 +69,7 @@ describe('CngxSlider showTicks + thumbGlyph + vertical', () => {
         [max]="100"
         [step]="5"
         [showTicks]="ticks()"
+        [showTickLabels]="labels()"
         [orientation]="orient()"
         [thumbGlyph]="glyph"
       />
@@ -78,6 +79,7 @@ describe('CngxSlider showTicks + thumbGlyph + vertical', () => {
   class Host {
     v = signal(40);
     ticks = signal(false);
+    labels = signal(false);
     orient = signal<'horizontal' | 'vertical'>('horizontal');
   }
 
@@ -101,6 +103,23 @@ describe('CngxSlider showTicks + thumbGlyph + vertical', () => {
     expect(el.classList.contains('cngx-slider--ticks')).toBe(true);
     // step 5 over span 100 -> 5% interval.
     expect(el.style.getPropertyValue('--cngx-slider-tick-interval')).toBe('5%');
+  });
+
+  it('renders a numeric label per tick only when showTickLabels is on', () => {
+    const { fixture, host, el } = setup();
+    host.ticks.set(true);
+    fixture.detectChanges();
+    // Marks without labels: showTicks alone renders no numbers.
+    expect(el.querySelectorAll('.cngx-slider__tick-label').length).toBe(0);
+    host.labels.set(true);
+    fixture.detectChanges();
+    const labels = Array.from(el.querySelectorAll('.cngx-slider__tick-label')).map((l) =>
+      l.textContent?.trim(),
+    );
+    // step 5 over 0..100 -> 21 stops, 0 / 5 / ... / 100.
+    expect(labels.length).toBe(21);
+    expect(labels[0]).toBe('0');
+    expect(labels.at(-1)).toBe('100');
   });
 
   it('reflects orientation on the host for the vertical skin', () => {
