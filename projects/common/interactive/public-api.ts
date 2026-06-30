@@ -52,6 +52,13 @@ export {
 export { CngxAccordion } from './accordion/accordion.directive';
 export { CngxAccordionPanel } from './accordion/accordion-panel.directive';
 export { CNGX_ACCORDION, type CngxAccordionHost } from './accordion/accordion.token';
+export {
+  CngxBreadcrumb,
+  CNGX_BREADCRUMB,
+  type CngxBreadcrumbHost,
+} from './breadcrumb/breadcrumb.directive';
+export { CngxBreadcrumbItem } from './breadcrumb/breadcrumb-item.directive';
+export { CngxBreadcrumbSeparator } from './breadcrumb/breadcrumb-separator.directive';
 export { CngxToggle } from './toggle/toggle.component';
 export { CngxCheckbox } from './checkbox/checkbox.component';
 export { CngxCheckboxGroup } from './checkbox-group/checkbox-group.component';

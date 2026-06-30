@@ -1,0 +1,90 @@
+/**
+ * @overview
+ * Default skin for the `cngxBreadcrumb` family. The directives are headless:
+ * the coordinator names the landmark and computes which crumbs collapse, each
+ * item derives `aria-current`, separators are `aria-hidden`. This stylesheet
+ * lays the trail out as an inline list and styles the links, the terminal
+ * crumb, and the separators. Without it the trail renders as a plain stacked
+ * list.
+ *
+ * Markup the default skin expects:
+ *
+ * ```html
+ *   <nav cngxBreadcrumb class="cngx-breadcrumb">
+ *     <ol>
+ *       <li><a cngxBreadcrumbItem href="/">Home</a></li>
+ *       <li cngxBreadcrumbSeparator>/</li>
+ *       <li><span cngxBreadcrumbItem>Current</span></li>
+ *     </ol>
+ *   </nav>
+ * ```
+ *
+ * **Inheritance**
+ *
+ * - link colour -> `--cngx-color-primary`
+ * - terminal crumb -> `--cngx-color-text`
+ * - separator -> `--cngx-color-text-muted`
+ */
+
+@layer cngx.tokens {
+  /**
+   * Gap between crumbs and separators.
+   * @group Trail
+   */
+  @property --cngx-breadcrumb-gap {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 0.5rem;
+  }
+
+  /**
+   * Separator colour.
+   * @group Separator
+   * @see [[--cngx-color-text-muted]]
+   */
+  @property --cngx-breadcrumb-separator-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.6 0.01 250);
+  }
+}
+
+@layer cngx.components {
+  [cngxBreadcrumb] > ol {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--cngx-breadcrumb-gap, 0.5rem);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  [cngxBreadcrumb] li {
+    display: inline-flex;
+    align-items: center;
+  }
+
+  [cngxBreadcrumbItem] {
+    color: var(--cngx-color-primary, oklch(0.66 0.19 50));
+    text-decoration: none;
+    font-size: var(--cngx-font-size-sm, 0.8125rem);
+  }
+
+  [cngxBreadcrumbItem]:hover {
+    text-decoration: underline;
+  }
+
+  /* Terminal crumb: not a link target, reads as the current location. */
+  [cngxBreadcrumbItem][aria-current='page'] {
+    color: var(--cngx-color-text, oklch(0.2 0.01 250));
+    font-weight: 600;
+    text-decoration: none;
+    cursor: default;
+  }
+
+  [cngxBreadcrumbSeparator] {
+    color: var(--cngx-breadcrumb-separator-color, oklch(0.6 0.01 250));
+    user-select: none;
+  }
+}

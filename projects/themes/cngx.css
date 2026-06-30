@@ -18,7 +18,8 @@
  * - `cngx.utilities` - `.cngx-sr-only`
  * - `cngx.components` - externalised directive CSS (`CngxAccordion`,
  *   `CngxAsync`, `CngxBackdrop`, `CngxBadge`, `CngxBottomSheet`,
- *   `CngxButtonToggle`, `CngxDialog`, `CngxDivider`, `CngxListbox`,
+ *   `CngxBreadcrumb`, `CngxButtonToggle`, `CngxDialog`, `CngxDivider`,
+ *   `CngxListbox`,
  *   `CngxMenu`, `CngxRipple`, `CngxSlider`, `CngxTooltip`,
  *   `CngxFileDrop`)
  * - `cngx.theme` - reserved for consumer overrides
@@ -82,6 +83,7 @@
 @import '../common/theming/components/cngx-backdrop.css';
 @import '../common/theming/components/cngx-badge.css';
 @import '../common/theming/components/cngx-bottom-sheet.css';
+@import '../common/theming/components/cngx-breadcrumb.css';
 @import '../common/theming/components/cngx-button-toggle.css';
 @import '../common/theming/components/cngx-dialog.css';
 @import '../common/theming/components/cngx-divider.css';
