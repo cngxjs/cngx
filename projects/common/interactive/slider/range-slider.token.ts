@@ -43,6 +43,12 @@ export interface CngxSliderRangeHost {
   boundsFor(position: CngxSliderThumbPosition): CngxSliderThumbBounds;
   /** Write one end of the tuple (the thumb's core has already snapped + clamped). */
   commit(position: CngxSliderThumbPosition, value: number): void;
+  /**
+   * Map a pointer position to a `0..1` fraction along the shared track, using
+   * the range host's own geometry. A thumb cannot measure this itself - its
+   * element is the tiny handle, not the full track - so the host owns the math.
+   */
+  fractionFromPointer(clientX: number, clientY: number): number;
 }
 
 /**

@@ -142,6 +142,24 @@
     background: var(--cngx-slider-fill-color, oklch(0.66 0.19 50));
   }
 
+  /* Range fill: the band between the two thumbs. The range host publishes
+   * `--cngx-slider-start-fraction` / `--cngx-slider-end-fraction`, so a single
+   * gradient on the track paints track-fill-track with no extra element. */
+  [cngxRangeSlider] .cngx-slider__track {
+    background: linear-gradient(
+      to right,
+      var(--cngx-slider-track-color, oklch(0.88 0.005 250)) 0,
+      var(--cngx-slider-track-color, oklch(0.88 0.005 250))
+        calc(var(--cngx-slider-start-fraction, 0) * 100%),
+      var(--cngx-slider-fill-color, oklch(0.66 0.19 50))
+        calc(var(--cngx-slider-start-fraction, 0) * 100%),
+      var(--cngx-slider-fill-color, oklch(0.66 0.19 50))
+        calc(var(--cngx-slider-end-fraction, 1) * 100%),
+      var(--cngx-slider-track-color, oklch(0.88 0.005 250))
+        calc(var(--cngx-slider-end-fraction, 1) * 100%)
+    );
+  }
+
   /* Single-thumb handle: positioned from the host fraction. */
   :is([cngxSlider]) .cngx-slider__thumb {
     position: absolute;

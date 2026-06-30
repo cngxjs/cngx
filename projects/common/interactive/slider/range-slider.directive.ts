@@ -1,4 +1,4 @@
-import { computed, Directive, input, model } from '@angular/core';
+import { computed, Directive, ElementRef, inject, input, model } from '@angular/core';
 
 import {
   CNGX_SLIDER_RANGE,
@@ -44,6 +44,8 @@ import {
     role: 'group',
     '[attr.aria-disabled]': 'disabled() || null',
     '[attr.aria-orientation]': 'orientation()',
+    '[style.--cngx-slider-start-fraction]': 'startFraction()',
+    '[style.--cngx-slider-end-fraction]': 'endFraction()',
   },
 })
 export class CngxRangeSlider implements CngxSliderRangeHost {
@@ -74,6 +76,21 @@ export class CngxRangeSlider implements CngxSliderRangeHost {
     max: this.max,
   };
 
+  private readonly el = inject(ElementRef<HTMLElement>).nativeElement as HTMLElement;
+
+  // Track fractions of each thumb, published as CSS vars so the skin can paint
+  // a fill between them. Derived from the tuple - never synced (Pillar 1).
+  protected readonly startFraction = computed(() => this.fractionOf(this.value()[0]));
+  protected readonly endFraction = computed(() => this.fractionOf(this.value()[1]));
+
+  private fractionOf(value: number): number {
+    const span = this.max() - this.min();
+    if (span <= 0) {
+      return 0;
+    }
+    return Math.min(1, Math.max(0, (value - this.min()) / span));
+  }
+
   boundsFor(position: CngxSliderThumbPosition): CngxSliderThumbBounds {
     return position === 'start' ? this.startBounds : this.endBounds;
   }
@@ -87,5 +104,18 @@ export class CngxRangeSlider implements CngxSliderRangeHost {
     } else if (value !== end) {
       this.value.set([start, value]);
     }
+  }
+
+  fractionFromPointer(clientX: number, clientY: number): number {
+    const rect = this.el.getBoundingClientRect();
+    const fraction =
+      this.orientation() === 'vertical'
+        ? rect.height > 0
+          ? (rect.bottom - clientY) / rect.height
+          : 0
+        : rect.width > 0
+          ? (clientX - rect.left) / rect.width
+          : 0;
+    return Math.min(1, Math.max(0, fraction));
   }
 }

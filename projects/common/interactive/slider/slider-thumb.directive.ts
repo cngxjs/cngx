@@ -176,15 +176,8 @@ export class CngxSliderThumb {
   }
 
   private updateFromPointer(event: PointerEvent): void {
-    const rect = this.el.getBoundingClientRect();
-    const fraction =
-      this.range.orientation() === 'vertical'
-        ? rect.height > 0
-          ? (rect.bottom - event.clientY) / rect.height
-          : 0
-        : rect.width > 0
-          ? (event.clientX - rect.left) / rect.width
-          : 0;
-    this.core.setFromFraction(fraction);
+    // Measure against the shared track (the range host owns the geometry), not
+    // this thumb's own tiny handle element.
+    this.core.setFromFraction(this.range.fractionFromPointer(event.clientX, event.clientY));
   }
 }

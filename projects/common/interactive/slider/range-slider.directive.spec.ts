@@ -74,6 +74,21 @@ describe('CngxRangeSlider + CngxSliderThumb', () => {
     expect(host.v()).toEqual([20, 20]);
   });
 
+  it('drags a thumb using the shared track geometry, not the thumb element', () => {
+    const { fixture, host, start } = setup();
+    const rangeEl = fixture.debugElement.query(By.directive(CngxRangeSlider))
+      .nativeElement as HTMLElement;
+    rangeEl.getBoundingClientRect = () =>
+      ({ left: 0, top: 0, width: 200, height: 10, right: 200, bottom: 10 }) as DOMRect;
+    start.setPointerCapture = () => undefined;
+    start.dispatchEvent(
+      new PointerEvent('pointerdown', { clientX: 60, clientY: 5, pointerId: 1, cancelable: true }),
+    );
+    fixture.detectChanges();
+    // 60 / 200 = 0.3 -> 30 on a 0..100 track, snapped to step 1.
+    expect(host.v()[0]).toBe(30);
+  });
+
   it('keeps the sibling bound reactive after a move', () => {
     const { fixture, host, start, end } = setup();
     press(start, 'ArrowRight');
