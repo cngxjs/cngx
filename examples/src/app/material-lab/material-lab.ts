@@ -6,7 +6,9 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatInputModule } from '@angular/material/input';
+import { MatSliderModule } from '@angular/material/slider';
 
+import { CngxSlider, CngxRangeSlider } from '@cngx/common/interactive';
 import {
   CngxSelect,
   CngxMultiSelect,
@@ -78,6 +80,9 @@ interface FieldModel {
     MatChipsModule,
     MatAutocompleteModule,
     MatInputModule,
+    MatSliderModule,
+    CngxSlider,
+    CngxRangeSlider,
     CngxSelect,
     CngxMultiSelect,
     CngxCombobox,
@@ -169,6 +174,39 @@ interface FieldModel {
             <mat-chip>{{ labelOf(v) }}</mat-chip>
           }
         </mat-chip-set>
+      </section>
+
+      <section>
+        <h3>slider (single)</h3>
+        <cngx-slider
+          class="probe-cngx"
+          aria-label="Volume"
+          [(value)]="sliderValue"
+          [min]="0"
+          [max]="100"
+          [step]="5"
+        />
+
+        <mat-slider min="0" max="100" step="5" class="probe-mat">
+          <input matSliderThumb [(ngModel)]="matSliderValue" aria-label="Volume" />
+        </mat-slider>
+      </section>
+
+      <section>
+        <h3>slider (range)</h3>
+        <cngx-range-slider
+          class="probe-cngx"
+          aria-label="Price range"
+          [(value)]="rangeValue"
+          [min]="0"
+          [max]="1000"
+          [step]="10"
+        />
+
+        <mat-slider min="0" max="1000" step="10" class="probe-mat">
+          <input matSliderStartThumb [(ngModel)]="matRangeStart" aria-label="Minimum" />
+          <input matSliderEndThumb [(ngModel)]="matRangeEnd" aria-label="Maximum" />
+        </mat-slider>
       </section>
 
       <section>
@@ -533,6 +571,8 @@ export class MaterialLab {
   // One distinct signal per cngx probe; no shared mutable state across variants.
   protected readonly simpleValue = signal<string | undefined>(undefined);
   protected readonly singleValue = signal<string | undefined>(undefined);
+  protected readonly sliderValue = signal<number>(40);
+  protected readonly rangeValue = signal<[number, number]>([200, 800]);
   protected readonly multiValues = signal<string[]>(['red', 'green']);
   protected readonly typeaheadValue = signal<string | undefined>(undefined);
   protected readonly comboboxValues = signal<string[]>([]);
@@ -571,6 +611,9 @@ export class MaterialLab {
   // Material counterpart state (plain bindings; no shared identity with cngx probes).
   protected matSimpleValue: string | undefined = undefined;
   protected matSingleValue: string | undefined = undefined;
+  protected matSliderValue = 40;
+  protected matRangeStart = 200;
+  protected matRangeEnd = 800;
   protected matMultiValues: string[] = ['red', 'green'];
   protected matTypeaheadText = '';
   protected matComboboxValues: string[] = [];
