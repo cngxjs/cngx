@@ -1,5 +1,6 @@
 import { computed, Directive, ElementRef, inject, input, model } from '@angular/core';
 
+import { pointerFraction } from './slider-interaction';
 import {
   CNGX_SLIDER_RANGE,
   type CngxSliderRangeHost,
@@ -112,15 +113,6 @@ export class CngxRangeSliderTrack implements CngxSliderRangeHost {
   }
 
   fractionFromPointer(clientX: number, clientY: number): number {
-    const rect = this.el.getBoundingClientRect();
-    const fraction =
-      this.orientation() === 'vertical'
-        ? rect.height > 0
-          ? (rect.bottom - clientY) / rect.height
-          : 0
-        : rect.width > 0
-          ? (clientX - rect.left) / rect.width
-          : 0;
-    return Math.min(1, Math.max(0, fraction));
+    return pointerFraction(this.el, this.orientation(), clientX, clientY);
   }
 }

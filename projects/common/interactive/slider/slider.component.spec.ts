@@ -70,7 +70,9 @@ describe('CngxSlider showTicks + thumbGlyph + vertical', () => {
         [step]="5"
         [showTicks]="ticks()"
         [showTickLabels]="labels()"
+        [showValueBubble]="bubble()"
         [orientation]="orient()"
+        [valueText]="fmt()"
         [thumbGlyph]="glyph"
       />
     `,
@@ -80,7 +82,9 @@ describe('CngxSlider showTicks + thumbGlyph + vertical', () => {
     v = signal(40);
     ticks = signal(false);
     labels = signal(false);
+    bubble = signal(false);
     orient = signal<'horizontal' | 'vertical'>('horizontal');
+    fmt = signal<((value: number) => string) | undefined>(undefined);
   }
 
   function setup() {
@@ -120,6 +124,26 @@ describe('CngxSlider showTicks + thumbGlyph + vertical', () => {
     expect(labels.length).toBe(21);
     expect(labels[0]).toBe('0');
     expect(labels.at(-1)).toBe('100');
+  });
+
+  it('formats tick labels through valueText', () => {
+    const { fixture, host, el } = setup();
+    host.labels.set(true);
+    host.fmt.set((value) => `${value}%`);
+    fixture.detectChanges();
+    const labels = Array.from(el.querySelectorAll('.cngx-slider__tick-label')).map((l) =>
+      l.textContent?.trim(),
+    );
+    expect(labels[0]).toBe('0%');
+    expect(labels.at(-1)).toBe('100%');
+  });
+
+  it('renders the value bubble only when showValueBubble is set', () => {
+    const { fixture, host, el } = setup();
+    expect(el.querySelector('.cngx-slider__bubble')).toBeNull();
+    host.bubble.set(true);
+    fixture.detectChanges();
+    expect(el.querySelector('.cngx-slider__bubble')?.textContent?.trim()).toBe('40');
   });
 
   it('reflects orientation on the host for the vertical skin', () => {

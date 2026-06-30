@@ -3,16 +3,14 @@ import {
   booleanAttribute,
   ChangeDetectionStrategy,
   Component,
-  computed,
   inject,
   input,
   type TemplateRef,
   ViewEncapsulation,
 } from '@angular/core';
-import { arrayEqual } from '@cngx/utils';
 
 import { CngxSliderTrack } from './slider.directive';
-import { sliderTickValues } from './slider-ticks';
+import { createSliderTicks } from './slider-ticks';
 
 /**
  * Finished single-thumb slider. The 90% API: drop it in, bind `[(value)]`, done -
@@ -22,15 +20,17 @@ import { sliderTickValues } from './slider-ticks';
  * Signal Forms via `[control]`; the `cngx-form-field` integration lives in
  * `@cngx/forms` ({@link CngxSliderFieldBridge}).
  *
- * `showValue` floats the formatted value above the thumb; `showTicks` paints a
- * step tick every `step` along the track; `thumbGlyph` projects your own content
- * into the handle. `orientation="vertical"` rotates the whole skin. Reach for
- * the headless {@link CngxSliderTrack} directive only when you need to own the
- * skin markup; use {@link CngxRangeSlider} for a two-thumb range.
+ * Value display: `showValue` floats the formatted value permanently above the
+ * thumb; `showValueBubble` shows it as a bubble only while the slider is focused
+ * or dragged (Material-style). `showTicks` paints a step mark; `showTickLabels`
+ * adds numeric labels (formatted through `valueText`); `thumbGlyph` projects your
+ * own handle content; `orientation="vertical"` rotates the skin. Reach for the
+ * headless {@link CngxSliderTrack} directive only when you need to own the skin;
+ * use {@link CngxRangeSlider} for a two-thumb range.
  *
  * ```html
  * <label id="vol">Volume</label>
- * <cngx-slider aria-labelledby="vol" [(value)]="volume" [min]="0" [max]="100" [step]="5" showValue />
+ * <cngx-slider aria-labelledby="vol" [(value)]="volume" [min]="0" [max]="100" [step]="5" showValueBubble />
  * ```
  *
  * @category common/interactive/slider
@@ -58,7 +58,8 @@ import { sliderTickValues } from './slider-ticks';
   host: {
     class: 'cngx-slider',
     '[class.cngx-slider--ticks]': 'showTicks()',
-    '[style.--cngx-slider-tick-interval]': 'tickInterval()',
+    '[class.cngx-slider--bubble]': 'showValueBubble()',
+    '[style.--cngx-slider-tick-interval]': 'ticks.interval()',
   },
   template: `
     <span class="cngx-slider__track"><span class="cngx-slider__fill"></span></span>
@@ -67,11 +68,11 @@ import { sliderTickValues } from './slider-ticks';
         <ng-container *ngTemplateOutlet="glyph" />
       }
     </span>
-    @if (tickValues().length) {
+    @if (ticks.values().length) {
       <span class="cngx-slider__ticks" aria-hidden="true">
-        @for (tick of tickValues(); track tick) {
-          <span class="cngx-slider__tick-label" [style.--cngx-slider-tick-fraction]="tickFraction(tick)">
-            {{ tick }}
+        @for (tick of ticks.values(); track tick) {
+          <span class="cngx-slider__tick-label" [style.--cngx-slider-tick-fraction]="ticks.fractionOf(tick)">
+            {{ format(tick) }}
           </span>
         }
       </span>
@@ -79,11 +80,16 @@ import { sliderTickValues } from './slider-ticks';
     @if (showValue()) {
       <span class="cngx-slider__value" aria-hidden="true">{{ brain.displayValue() }}</span>
     }
+    @if (showValueBubble()) {
+      <span class="cngx-slider__bubble" aria-hidden="true">{{ brain.displayValue() }}</span>
+    }
   `,
 })
 export class CngxSlider {
-  /** Render the formatted current value beside the thumb (visual only; SR uses `aria-valuetext`). */
+  /** Float the formatted current value permanently above the thumb (visual only). */
   readonly showValue = input(false, { transform: booleanAttribute });
+  /** Show the formatted value as a bubble only while focused / dragged (visual only). */
+  readonly showValueBubble = input(false, { transform: booleanAttribute });
   /** Paint a tick mark every `step` along the track. */
   readonly showTicks = input(false, { transform: booleanAttribute });
   /** Render a numeric label at every step stop (independent of `showTicks`). */
@@ -94,31 +100,18 @@ export class CngxSlider {
   /** The brain host directive - exposes the derived value/fraction the skin reads. */
   protected readonly brain = inject(CngxSliderTrack);
 
-  /** Tick spacing as a track percentage, or `null` when ticks are off / not computable. */
-  protected readonly tickInterval = computed<string | null>(() => {
-    if (!this.showTicks()) {
-      return null;
-    }
-    const span = this.brain.max() - this.brain.min();
-    const step = this.brain.step();
-    if (span <= 0 || step <= 0) {
-      return null;
-    }
-    return `${(step / span) * 100}%`;
+  /** Tick marks + labels derivation (shared factory). */
+  protected readonly ticks = createSliderTicks({
+    min: this.brain.min,
+    max: this.brain.max,
+    step: this.brain.step,
+    marks: this.showTicks,
+    labels: this.showTickLabels,
   });
 
-  /** Numeric tick stops rendered as labels under the track (empty when off / too dense). */
-  protected readonly tickValues = computed<number[]>(
-    () =>
-      this.showTickLabels()
-        ? sliderTickValues(this.brain.min(), this.brain.max(), this.brain.step())
-        : [],
-    { equal: arrayEqual },
-  );
-
-  /** Track fraction `[0, 1]` of a tick value, for positioning its label. */
-  protected tickFraction(value: number): number {
-    const span = this.brain.max() - this.brain.min();
-    return span > 0 ? (value - this.brain.min()) / span : 0;
+  /** Format a value through the bound `valueText` (so tick labels match the thumb). */
+  protected format(value: number): string {
+    const formatter = this.brain.valueText();
+    return formatter ? formatter(value) : String(value);
   }
 }

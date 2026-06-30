@@ -1,6 +1,7 @@
 import { computed, Directive, ElementRef, inject, input, model } from '@angular/core';
 
 import { createSliderCore } from './slider-core';
+import { createSliderInteraction, pointerFraction } from './slider-interaction';
 
 /**
  * Headless single-thumb slider brain. Put `cngxSliderTrack` on your own track
@@ -50,11 +51,11 @@ import { createSliderCore } from './slider-core';
     '[attr.tabindex]': 'disabled() ? -1 : 0',
     '[style.touch-action]': "'none'",
     '[style.--cngx-slider-fraction]': 'core.fraction()',
-    '(keydown)': 'handleKeydown($event)',
-    '(pointerdown)': 'handlePointerDown($event)',
-    '(pointermove)': 'handlePointerMove($event)',
-    '(pointerup)': 'handlePointerUp($event)',
-    '(pointercancel)': 'handlePointerUp($event)',
+    '(keydown)': 'interaction.handleKeydown($event)',
+    '(pointerdown)': 'interaction.handlePointerDown($event)',
+    '(pointermove)': 'interaction.handlePointerMove($event)',
+    '(pointerup)': 'interaction.handlePointerUp($event)',
+    '(pointercancel)': 'interaction.handlePointerUp($event)',
   },
 })
 export class CngxSliderTrack {
@@ -79,7 +80,6 @@ export class CngxSliderTrack {
   readonly valueText = input<((value: number) => string) | undefined>(undefined);
 
   private readonly el = inject(ElementRef<HTMLElement>).nativeElement as HTMLElement;
-  private dragging = false;
 
   /** Shared value/step/aria derivation. */
   protected readonly core = createSliderCore({
@@ -109,83 +109,12 @@ export class CngxSliderTrack {
     return Math.max(grid, (this.max() - this.min()) / 10);
   });
 
-  protected handleKeydown(event: KeyboardEvent): void {
-    if (this.disabled()) {
-      return;
-    }
-    const big = this.pageStep();
-    switch (event.key) {
-      case 'ArrowRight':
-      case 'ArrowUp':
-        this.core.stepBy(1);
-        break;
-      case 'ArrowLeft':
-      case 'ArrowDown':
-        this.core.stepBy(-1);
-        break;
-      case 'PageUp':
-        this.core.setValue(this.core.clampedValue() + big);
-        break;
-      case 'PageDown':
-        this.core.setValue(this.core.clampedValue() - big);
-        break;
-      case 'Home':
-        this.core.stepToMin();
-        break;
-      case 'End':
-        this.core.stepToMax();
-        break;
-      default:
-        return;
-    }
-    event.preventDefault();
-  }
-
-  protected handlePointerDown(event: PointerEvent): void {
-    if (this.disabled()) {
-      return;
-    }
-    try {
-      this.el.setPointerCapture(event.pointerId);
-    } catch {
-      // setPointerCapture throws on an invalid pointerId (synthetic events
-      // in some test envs) - the drag still works without capture.
-    }
-    this.dragging = true;
-    this.el.focus();
-    this.updateFromPointer(event);
-    event.preventDefault();
-  }
-
-  protected handlePointerMove(event: PointerEvent): void {
-    if (!this.dragging) {
-      return;
-    }
-    this.updateFromPointer(event);
-  }
-
-  protected handlePointerUp(event: PointerEvent): void {
-    if (!this.dragging) {
-      return;
-    }
-    this.dragging = false;
-    try {
-      this.el.releasePointerCapture(event.pointerId);
-    } catch {
-      // Already released by the browser (e.g. on pointercancel) - ignore.
-    }
-  }
-
-  private updateFromPointer(event: PointerEvent): void {
-    const rect = this.el.getBoundingClientRect();
-    const fraction =
-      this.orientation() === 'vertical'
-        ? rect.height > 0
-          ? (rect.bottom - event.clientY) / rect.height
-          : 0
-        : rect.width > 0
-          ? (event.clientX - rect.left) / rect.width
-          : 0;
-    this.core.setFromFraction(fraction);
-  }
+  /** Shared keyboard + pointer-drag handlers (same factory the range thumb uses). */
+  protected readonly interaction = createSliderInteraction({
+    core: this.core,
+    el: this.el,
+    disabled: () => this.disabled(),
+    pageStep: () => this.pageStep(),
+    fractionFromPointer: (x, y) => pointerFraction(this.el, this.orientation(), x, y),
+  });
 }

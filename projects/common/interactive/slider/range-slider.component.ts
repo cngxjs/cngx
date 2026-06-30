@@ -10,11 +10,9 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 
-import { arrayEqual } from '@cngx/utils';
-
 import { CngxRangeSliderTrack } from './range-slider.directive';
 import { CngxSliderThumb } from './slider-thumb.directive';
-import { sliderTickValues } from './slider-ticks';
+import { createSliderTicks } from './slider-ticks';
 
 /**
  * Finished two-thumb (range) slider. Drop it in, bind `[(value)]` to a
@@ -58,7 +56,8 @@ import { sliderTickValues } from './slider-ticks';
   host: {
     class: 'cngx-slider cngx-range-slider',
     '[class.cngx-slider--ticks]': 'showTicks()',
-    '[style.--cngx-slider-tick-interval]': 'tickInterval()',
+    '[class.cngx-slider--bubble]': 'showValueBubble()',
+    '[style.--cngx-slider-tick-interval]': 'ticks.interval()',
   },
   template: `
     <span class="cngx-slider__track"></span>
@@ -72,18 +71,19 @@ import { sliderTickValues } from './slider-ticks';
         <ng-container *ngTemplateOutlet="glyph" />
       }
     </span>
-    @if (tickValues().length) {
+    @if (ticks.values().length) {
       <span class="cngx-slider__ticks" aria-hidden="true">
-        @for (tick of tickValues(); track tick) {
-          <span class="cngx-slider__tick-label" [style.--cngx-slider-tick-fraction]="tickFraction(tick)">
-            {{ tick }}
+        @for (tick of ticks.values(); track tick) {
+          <span class="cngx-slider__tick-label" [style.--cngx-slider-tick-fraction]="ticks.fractionOf(tick)">
+            {{ format(tick) }}
           </span>
         }
       </span>
     }
-    @if (showValue()) {
+    @if (showValue() || showValueBubble()) {
       <span
         class="cngx-slider__value cngx-slider__value--range"
+        [class.cngx-slider__bubble]="showValueBubble()"
         aria-hidden="true"
         [style.--cngx-slider-mid-fraction]="midFraction()"
       >
@@ -99,6 +99,8 @@ export class CngxRangeSlider {
   readonly endLabel = input<string>('Maximum');
   /** Render the formatted `start - end` values centred between the thumbs (visual only). */
   readonly showValue = input(false, { transform: booleanAttribute });
+  /** Show the combined `start - end` value as a bubble only while focused / dragged. */
+  readonly showValueBubble = input(false, { transform: booleanAttribute });
   /** Paint a tick mark every `step` along the track. */
   readonly showTicks = input(false, { transform: booleanAttribute });
   /** Render a numeric label at every step stop (independent of `showTicks`). */
@@ -114,33 +116,14 @@ export class CngxRangeSlider {
     () => (this.brain.startFraction() + this.brain.endFraction()) / 2,
   );
 
-  /** Tick spacing as a track percentage, or `null` when ticks are off / not computable. */
-  protected readonly tickInterval = computed<string | null>(() => {
-    if (!this.showTicks()) {
-      return null;
-    }
-    const span = this.brain.max() - this.brain.min();
-    const step = this.brain.step();
-    if (span <= 0 || step <= 0) {
-      return null;
-    }
-    return `${(step / span) * 100}%`;
+  /** Tick marks + labels derivation (shared factory). */
+  protected readonly ticks = createSliderTicks({
+    min: this.brain.min,
+    max: this.brain.max,
+    step: this.brain.step,
+    marks: this.showTicks,
+    labels: this.showTickLabels,
   });
-
-  /** Numeric tick stops rendered as labels under the track (empty when off / too dense). */
-  protected readonly tickValues = computed<number[]>(
-    () =>
-      this.showTickLabels()
-        ? sliderTickValues(this.brain.min(), this.brain.max(), this.brain.step())
-        : [],
-    { equal: arrayEqual },
-  );
-
-  /** Track fraction `[0, 1]` of a tick value, for positioning its label. */
-  protected tickFraction(value: number): number {
-    const span = this.brain.max() - this.brain.min();
-    return span > 0 ? (value - this.brain.min()) / span : 0;
-  }
 
   protected format(value: number): string {
     const formatter = this.brain.valueText();

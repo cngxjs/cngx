@@ -72,7 +72,7 @@ cngx-slider.cngx-slider--ticks .cngx-slider__track::before {
  * would misalign the brain's pointer-to-fraction math). */
 cngx-slider .cngx-slider__value {
   position: absolute;
-  inset-block-end: calc(100% + 0.25rem);
+  inset-block-end: calc(100% + var(--cngx-slider-value-gap, 0.25rem));
   inset-inline-start: calc(var(--cngx-slider-fraction, 0) * 100%);
   translate: -50% 0;
   font-size: var(--cngx-font-size-sm, 0.8125rem);
@@ -80,6 +80,30 @@ cngx-slider .cngx-slider__value {
   color: var(--cngx-color-text, oklch(0.2 0.01 250));
   pointer-events: none;
   white-space: nowrap;
+}
+
+/* Discrete value bubble: a primary pill above the thumb, shown only while the
+ * slider is focused or being dragged (Material-style). */
+cngx-slider .cngx-slider__bubble {
+  position: absolute;
+  inset-block-end: calc(100% + var(--cngx-slider-bubble-gap, 0.5rem));
+  inset-inline-start: calc(var(--cngx-slider-fraction, 0) * 100%);
+  translate: -50% 0;
+  padding: var(--cngx-slider-bubble-padding, 0.125rem 0.4rem);
+  border-radius: var(--cngx-radius-sm, 0.25rem);
+  background: var(--cngx-slider-bubble-bg, var(--cngx-color-primary, oklch(0.66 0.19 50)));
+  color: var(--cngx-slider-bubble-color, var(--cngx-color-on-primary, oklch(0.99 0.01 250)));
+  font-size: var(--cngx-font-size-sm, 0.8125rem);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.12s ease;
+}
+
+cngx-slider:focus .cngx-slider__bubble,
+cngx-slider:active .cngx-slider__bubble {
+  opacity: 1;
 }
 
 /* Tick value labels under the track (one per step stop). */

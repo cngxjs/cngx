@@ -9,6 +9,7 @@ import {
 } from '@angular/core';
 
 import { createSliderCore } from './slider-core';
+import { createSliderInteraction } from './slider-interaction';
 import {
   CNGX_SLIDER_RANGE,
   type CngxSliderRangeHost,
@@ -70,11 +71,11 @@ function createThumbValue(
     '[attr.tabindex]': 'range.disabled() ? -1 : 0',
     '[style.touch-action]': "'none'",
     '[style.--cngx-slider-fraction]': 'core.fraction()',
-    '(keydown)': 'handleKeydown($event)',
-    '(pointerdown)': 'handlePointerDown($event)',
-    '(pointermove)': 'handlePointerMove($event)',
-    '(pointerup)': 'handlePointerUp($event)',
-    '(pointercancel)': 'handlePointerUp($event)',
+    '(keydown)': 'interaction.handleKeydown($event)',
+    '(pointerdown)': 'interaction.handlePointerDown($event)',
+    '(pointermove)': 'interaction.handlePointerMove($event)',
+    '(pointerup)': 'interaction.handlePointerUp($event)',
+    '(pointercancel)': 'interaction.handlePointerUp($event)',
   },
 })
 export class CngxSliderThumb {
@@ -83,7 +84,6 @@ export class CngxSliderThumb {
 
   protected readonly range = inject(CNGX_SLIDER_RANGE);
   private readonly el = inject(ElementRef<HTMLElement>).nativeElement as HTMLElement;
-  private dragging = false;
 
   /** Sibling-clamped bounds for this thumb, selected reactively by position. */
   protected readonly bounds = computed(() => this.range.boundsFor(this.position()));
@@ -113,75 +113,14 @@ export class CngxSliderThumb {
     return Math.max(grid, (this.range.max() - this.range.min()) / 10);
   });
 
-  protected handleKeydown(event: KeyboardEvent): void {
-    if (this.range.disabled()) {
-      return;
-    }
-    const big = this.pageStep();
-    switch (event.key) {
-      case 'ArrowRight':
-      case 'ArrowUp':
-        this.core.stepBy(1);
-        break;
-      case 'ArrowLeft':
-      case 'ArrowDown':
-        this.core.stepBy(-1);
-        break;
-      case 'PageUp':
-        this.core.setValue(this.core.clampedValue() + big);
-        break;
-      case 'PageDown':
-        this.core.setValue(this.core.clampedValue() - big);
-        break;
-      case 'Home':
-        this.core.stepToMin();
-        break;
-      case 'End':
-        this.core.stepToMax();
-        break;
-      default:
-        return;
-    }
-    event.preventDefault();
-  }
-
-  protected handlePointerDown(event: PointerEvent): void {
-    if (this.range.disabled()) {
-      return;
-    }
-    try {
-      this.el.setPointerCapture(event.pointerId);
-    } catch {
-      // setPointerCapture throws on an invalid pointerId - drag still works.
-    }
-    this.dragging = true;
-    this.el.focus();
-    this.updateFromPointer(event);
-    event.preventDefault();
-  }
-
-  protected handlePointerMove(event: PointerEvent): void {
-    if (!this.dragging) {
-      return;
-    }
-    this.updateFromPointer(event);
-  }
-
-  protected handlePointerUp(event: PointerEvent): void {
-    if (!this.dragging) {
-      return;
-    }
-    this.dragging = false;
-    try {
-      this.el.releasePointerCapture(event.pointerId);
-    } catch {
-      // Already released by the browser (e.g. on pointercancel) - ignore.
-    }
-  }
-
-  private updateFromPointer(event: PointerEvent): void {
-    // Measure against the shared track (the range host owns the geometry), not
-    // this thumb's own tiny handle element.
-    this.core.setFromFraction(this.range.fractionFromPointer(event.clientX, event.clientY));
-  }
+  // Shared keyboard + pointer-drag handlers. The pointer math measures against
+  // the shared track (the range host owns the geometry), not this thumb's own
+  // tiny handle element.
+  protected readonly interaction = createSliderInteraction({
+    core: this.core,
+    el: this.el,
+    disabled: () => this.range.disabled(),
+    pageStep: () => this.pageStep(),
+    fractionFromPointer: (x, y) => this.range.fractionFromPointer(x, y),
+  });
 }

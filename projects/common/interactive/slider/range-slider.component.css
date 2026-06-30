@@ -114,7 +114,7 @@ cngx-range-slider[aria-orientation='vertical'] .cngx-slider__tick-label {
 /* One combined label centred between the thumbs - never two overlapping labels. */
 cngx-range-slider .cngx-slider__value--range {
   position: absolute;
-  inset-block-end: calc(100% + 0.25rem);
+  inset-block-end: calc(100% + var(--cngx-slider-value-gap, 0.25rem));
   inset-inline-start: calc(var(--cngx-slider-mid-fraction, 0.5) * 100%);
   translate: -50% 0;
   font-size: var(--cngx-font-size-sm, 0.8125rem);
@@ -122,6 +122,22 @@ cngx-range-slider .cngx-slider__value--range {
   color: var(--cngx-color-text, oklch(0.2 0.01 250));
   pointer-events: none;
   white-space: nowrap;
+}
+
+/* Bubble variant: a primary pill shown only while a thumb is focused / dragged. */
+cngx-range-slider .cngx-slider__value--range.cngx-slider__bubble {
+  inset-block-end: calc(100% + var(--cngx-slider-bubble-gap, 0.5rem));
+  padding: var(--cngx-slider-bubble-padding, 0.125rem 0.4rem);
+  border-radius: var(--cngx-radius-sm, 0.25rem);
+  background: var(--cngx-slider-bubble-bg, var(--cngx-color-primary, oklch(0.66 0.19 50)));
+  color: var(--cngx-slider-bubble-color, var(--cngx-color-on-primary, oklch(0.99 0.01 250)));
+  opacity: 0;
+  transition: opacity 0.12s ease;
+}
+
+cngx-range-slider:focus-within .cngx-slider__bubble,
+cngx-range-slider:active .cngx-slider__bubble {
+  opacity: 1;
 }
 
 /* Vertical orientation: column layout, bottom-anchored fill band + thumbs. */
