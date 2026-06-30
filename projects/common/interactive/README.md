@@ -237,6 +237,28 @@ independent focusable slider, clamped to its sibling so the thumbs can never cro
 value/min/max/step signals and it returns the clamped value, the track fraction, the
 `aria-valuetext` string, and the keyboard/pointer write helpers.
 
+## CngxAccordion / CngxAccordionPanel
+
+A coordinating accordion over the existing expansion and roving atoms. `CngxAccordion`
+owns one open-set signal and arbitrates single- vs multi-open (`[multi]`); each
+`CngxAccordionPanel` header is a button that toggles its `panelId` and derives
+`aria-expanded` from that one signal - no panel-owned state, no sibling syncing. The
+container pins `CngxRovingTabindex` to the vertical axis for arrow-key header navigation,
+so the header buttons must be direct children of the `cngxAccordion` element. Default
+chrome ships as Track-B CSS in `@cngx/themes/cngx.css`.
+
+```html
+<div cngxAccordion #acc="cngxAccordion" [multi]="false">
+  <button cngxAccordionPanel panelId="a" controls="region-a">Section A</button>
+  <div role="region" id="region-a" [hidden]="!acc.isOpen('a')">…</div>
+  <button cngxAccordionPanel panelId="b" controls="region-b">Section B</button>
+  <div role="region" id="region-b" [hidden]="!acc.isOpen('b')">…</div>
+</div>
+```
+
+`aria-multiselectable` reflects `[multi]`; `CNGX_ACCORDION` is the token panels inject to
+reach the coordinator.
+
 ## Other Exports
 
 `CngxClickOutside`, `CngxDisclosure`, `CngxNavLink`, `CngxNavLabel`, `CngxNavBadge`,
