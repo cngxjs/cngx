@@ -118,13 +118,16 @@ cngx-slider[aria-orientation='vertical'] .cngx-slider__ticks {
   inset-inline: auto;
   inset-block: 0;
   inset-inline-start: calc(100% + 0.35rem);
+  inline-size: 3ch;
   block-size: auto;
 }
 
+/* Anchor each label by its RIGHT edge so the column right-aligns (e.g. "100"
+ * and "0" share the same right edge). */
 cngx-slider[aria-orientation='vertical'] .cngx-slider__tick-label {
-  inset-inline-start: 0;
+  inset-inline-start: auto;
+  inset-inline-end: 0;
   inset-block-start: calc(100% - var(--cngx-slider-tick-fraction, 0) * 100%);
-  min-inline-size: 2.5ch;
   text-align: end;
   translate: 0 -50%;
 }
