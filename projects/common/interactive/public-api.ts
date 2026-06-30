@@ -35,6 +35,20 @@ export {
   CNGX_CONTROL_VALUE,
   type CngxControlValue,
 } from './control-value/control-value.token';
+export {
+  createSliderCore,
+  type CngxSliderCore,
+  type CngxSliderCoreOptions,
+} from './slider/slider-core';
+export { CngxSlider } from './slider/slider.directive';
+export { CngxRangeSlider } from './slider/range-slider.directive';
+export { CngxSliderThumb } from './slider/slider-thumb.directive';
+export {
+  CNGX_SLIDER_RANGE,
+  type CngxSliderRangeHost,
+  type CngxSliderThumbBounds,
+  type CngxSliderThumbPosition,
+} from './slider/range-slider.token';
 export { CngxToggle } from './toggle/toggle.component';
 export { CngxCheckbox } from './checkbox/checkbox.component';
 export { CngxCheckboxGroup } from './checkbox-group/checkbox-group.component';

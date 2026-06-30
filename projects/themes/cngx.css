@@ -19,7 +19,8 @@
  * - `cngx.components` - externalised directive CSS (`CngxAsync`,
  *   `CngxBackdrop`, `CngxBadge`, `CngxBottomSheet`,
  *   `CngxButtonToggle`, `CngxDialog`, `CngxDivider`, `CngxListbox`,
- *   `CngxMenu`, `CngxRipple`, `CngxTooltip`, `CngxFileDrop`)
+ *   `CngxMenu`, `CngxRipple`, `CngxSlider`, `CngxTooltip`,
+ *   `CngxFileDrop`)
  * - `cngx.theme` - reserved for consumer overrides
  * - `app` - reserved for consumer selectors
  *
@@ -86,6 +87,7 @@
 @import '../common/theming/components/cngx-listbox.css';
 @import '../common/theming/components/cngx-menu.css';
 @import '../common/theming/components/cngx-ripple.css';
+@import '../common/theming/components/cngx-slider.css';
 @import '../common/theming/components/cngx-tooltip.css';
 @import '../forms/theming/components/cngx-file-drop.css';
 @import '../forms/theming/components/cngx-field-affix.css';

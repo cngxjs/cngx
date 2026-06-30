@@ -1,0 +1,183 @@
+/**
+ * @overview
+ * Default skin for the `cngxSlider` / `cngxRangeSlider` directives. Both are
+ * headless: the directive paints `role="slider"`, the ARIA value surface, and
+ * publishes the thumb position as the inherited custom property
+ * `--cngx-slider-fraction` (0..1). This stylesheet turns that fraction into a
+ * track, a fill, and a draggable thumb. Without it the host renders as a bare
+ * focusable box.
+ *
+ * Markup the default skin expects (BEM classes are opt-in - bring your own and
+ * read `--cngx-slider-fraction` yourself for a custom skin):
+ *
+ * ```html
+ *   <div cngxSlider class="cngx-slider" [(value)]="v">
+ *     <span class="cngx-slider__track"><span class="cngx-slider__fill"></span></span>
+ *     <span class="cngx-slider__thumb"></span>
+ *   </div>
+ * ```
+ *
+ * `--cngx-slider-fraction` is intentionally NOT registered as an `@property`:
+ * it is a runtime position the directive sets on the host (single) or on each
+ * thumb element (range), and it must inherit to the fill / thumb descendants.
+ * Only the themeable tokens below are registered.
+ *
+ * **Inheritance**
+ *
+ * - track / fill colour -> `--cngx-color-border` / `--cngx-color-primary`
+ * - thumb fill -> `--cngx-color-surface`, border -> `--cngx-color-primary`
+ * - focus ring -> `--cngx-color-primary` (contrast >= 3:1 against the surface)
+ */
+
+@layer cngx.tokens {
+  /**
+   * Thickness of the slider track (and fill).
+   * @group Track
+   */
+  @property --cngx-slider-track-size {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 4px;
+  }
+
+  /**
+   * Colour of the unfilled portion of the track.
+   * @group Track
+   * @see [[--cngx-color-border]]
+   */
+  @property --cngx-slider-track-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.88 0.005 250);
+  }
+
+  /**
+   * Colour of the filled portion from the track start to the thumb.
+   * @group Track
+   * @see [[--cngx-color-primary]]
+   */
+  @property --cngx-slider-fill-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.66 0.19 50);
+  }
+
+  /**
+   * Diameter of the thumb.
+   * @group Thumb
+   */
+  @property --cngx-slider-thumb-size {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 16px;
+  }
+
+  /**
+   * Thumb fill.
+   * @group Thumb
+   * @see [[--cngx-color-surface]]
+   */
+  @property --cngx-slider-thumb-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(1 0 0);
+  }
+
+  /**
+   * Thumb border colour.
+   * @group Thumb
+   * @see [[--cngx-color-primary]]
+   */
+  @property --cngx-slider-thumb-border-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.66 0.19 50);
+  }
+
+  /**
+   * Focus-ring colour for the focused thumb. Primary by default so the
+   * ring clears the 3:1 contrast bar against the surface.
+   * @group State / Focus
+   * @see [[--cngx-color-primary]]
+   */
+  @property --cngx-slider-focus-ring-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.66 0.19 50);
+  }
+}
+
+@layer cngx.components {
+  :is([cngxSlider], [cngxRangeSlider]) {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    box-sizing: border-box;
+    inline-size: 100%;
+    min-block-size: var(--cngx-slider-thumb-size, 16px);
+    cursor: pointer;
+  }
+
+  :is([cngxSlider], [cngxRangeSlider])[aria-disabled='true'] {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  :is([cngxSlider], [cngxRangeSlider]) .cngx-slider__track {
+    position: relative;
+    flex: 1 1 auto;
+    block-size: var(--cngx-slider-track-size, 4px);
+    border-radius: 999px;
+    background: var(--cngx-slider-track-color, oklch(0.88 0.005 250));
+  }
+
+  /* Single-thumb fill: track start to the thumb. The host carries the
+   * fraction, so the fill spans `fraction * 100%`. */
+  :is([cngxSlider]) .cngx-slider__fill {
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: 0;
+    inline-size: calc(var(--cngx-slider-fraction, 0) * 100%);
+    border-radius: inherit;
+    background: var(--cngx-slider-fill-color, oklch(0.66 0.19 50));
+  }
+
+  /* Single-thumb handle: positioned from the host fraction. */
+  :is([cngxSlider]) .cngx-slider__thumb {
+    position: absolute;
+    inset-block-start: 50%;
+    inset-inline-start: calc(var(--cngx-slider-fraction, 0) * 100%);
+    inline-size: var(--cngx-slider-thumb-size, 16px);
+    block-size: var(--cngx-slider-thumb-size, 16px);
+    border-radius: 50%;
+    background: var(--cngx-slider-thumb-color, oklch(1 0 0));
+    border: 2px solid var(--cngx-slider-thumb-border-color, oklch(0.66 0.19 50));
+    translate: -50% -50%;
+  }
+
+  /* Range thumbs ARE the `[cngxSliderThumb]` elements - each carries its
+   * own fraction, so it positions itself directly. */
+  [cngxSliderThumb] {
+    position: absolute;
+    inset-block-start: 50%;
+    inset-inline-start: calc(var(--cngx-slider-fraction, 0) * 100%);
+    inline-size: var(--cngx-slider-thumb-size, 16px);
+    block-size: var(--cngx-slider-thumb-size, 16px);
+    border-radius: 50%;
+    background: var(--cngx-slider-thumb-color, oklch(1 0 0));
+    border: 2px solid var(--cngx-slider-thumb-border-color, oklch(0.66 0.19 50));
+    translate: -50% -50%;
+    cursor: grab;
+  }
+
+  /* Focus ring on the focusable element: the single-slider host's thumb,
+   * or each range thumb. >= 3:1 contrast via the primary token. */
+  [cngxSlider]:focus-visible {
+    outline: none;
+  }
+  [cngxSlider]:focus-visible .cngx-slider__thumb,
+  [cngxSliderThumb]:focus-visible {
+    outline: 2px solid var(--cngx-slider-focus-ring-color, oklch(0.66 0.19 50));
+    outline-offset: 2px;
+  }
+}
