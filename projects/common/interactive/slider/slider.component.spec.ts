@@ -70,6 +70,7 @@ describe('CngxSlider showTicks + thumbGlyph + vertical', () => {
         [step]="5"
         [showTicks]="ticks()"
         [showTickLabels]="labels()"
+        [showValue]="plainValue()"
         [showValueBubble]="bubble()"
         [orientation]="orient()"
         [valueText]="fmt()"
@@ -82,6 +83,7 @@ describe('CngxSlider showTicks + thumbGlyph + vertical', () => {
     v = signal(40);
     ticks = signal(false);
     labels = signal(false);
+    plainValue = signal(false);
     bubble = signal(false);
     orient = signal<'horizontal' | 'vertical'>('horizontal');
     fmt = signal<((value: number) => string) | undefined>(undefined);
@@ -144,6 +146,15 @@ describe('CngxSlider showTicks + thumbGlyph + vertical', () => {
     host.bubble.set(true);
     fixture.detectChanges();
     expect(el.querySelector('.cngx-slider__bubble')?.textContent?.trim()).toBe('40');
+  });
+
+  it('does not stack two pills when showValue + showValueBubble are both set (bubble wins)', () => {
+    const { fixture, host, el } = setup();
+    host.plainValue.set(true);
+    host.bubble.set(true);
+    fixture.detectChanges();
+    expect(el.querySelector('.cngx-slider__value:not(.cngx-slider__bubble)')).toBeNull();
+    expect(el.querySelectorAll('.cngx-slider__bubble').length).toBe(1);
   });
 
   it('reflects orientation on the host for the vertical skin', () => {

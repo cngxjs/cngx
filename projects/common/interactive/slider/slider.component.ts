@@ -77,7 +77,7 @@ import { createSliderTicks } from './slider-ticks';
         }
       </span>
     }
-    @if (showValue()) {
+    @if (showValue() && !showValueBubble()) {
       <span class="cngx-slider__value" aria-hidden="true">{{ brain.displayValue() }}</span>
     }
     @if (showValueBubble()) {
