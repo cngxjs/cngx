@@ -105,6 +105,10 @@ export class CngxSliderThumb {
   });
 
   private readonly pageStep = computed(() => {
+    const explicit = this.range.largeStep();
+    if (explicit && explicit > 0) {
+      return explicit;
+    }
     const grid = this.range.step() > 0 ? this.range.step() : 1;
     return Math.max(grid, (this.range.max() - this.range.min()) / 10);
   });

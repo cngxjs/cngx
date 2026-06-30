@@ -31,6 +31,8 @@ export interface CngxSliderRangeHost {
   readonly max: Signal<number>;
   /** Step granularity shared by both thumbs. */
   readonly step: Signal<number>;
+  /** Page-key jump size shared by both thumbs (absolute). Undefined = derive from range. */
+  readonly largeStep: Signal<number | undefined>;
   /** Whether the whole range slider is disabled. */
   readonly disabled: Signal<boolean>;
   /** Track axis shared by both thumbs. */

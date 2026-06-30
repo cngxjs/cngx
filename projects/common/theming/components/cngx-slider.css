@@ -106,6 +106,37 @@
     inherits: true;
     initial-value: oklch(0.66 0.19 50);
   }
+
+  /**
+   * Thumb border stroke width.
+   * @group Thumb
+   */
+  @property --cngx-slider-thumb-border-width {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 2px;
+  }
+
+  /**
+   * Focus-ring stroke width.
+   * @group State / Focus
+   */
+  @property --cngx-slider-focus-ring-width {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 2px;
+  }
+
+  /**
+   * Length of a vertical slider (a vertical track has no intrinsic extent).
+   * Ignored in the default horizontal orientation.
+   * @group Track
+   */
+  @property --cngx-slider-length {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 9rem;
+  }
 }
 
 @layer cngx.components {
@@ -170,7 +201,8 @@
     block-size: var(--cngx-slider-thumb-size, 16px);
     border-radius: 50%;
     background: var(--cngx-slider-thumb-color, oklch(1 0 0));
-    border: 2px solid var(--cngx-slider-thumb-border-color, oklch(0.66 0.19 50));
+    border: var(--cngx-slider-thumb-border-width, 2px) solid
+      var(--cngx-slider-thumb-border-color, oklch(0.66 0.19 50));
     translate: -50% -50%;
   }
 
@@ -184,7 +216,8 @@
     block-size: var(--cngx-slider-thumb-size, 16px);
     border-radius: 50%;
     background: var(--cngx-slider-thumb-color, oklch(1 0 0));
-    border: 2px solid var(--cngx-slider-thumb-border-color, oklch(0.66 0.19 50));
+    border: var(--cngx-slider-thumb-border-width, 2px) solid
+      var(--cngx-slider-thumb-border-color, oklch(0.66 0.19 50));
     translate: -50% -50%;
     cursor: grab;
   }
@@ -196,7 +229,56 @@
   }
   [cngxSliderTrack]:focus-visible .cngx-slider__thumb,
   [cngxSliderThumb]:focus-visible {
-    outline: 2px solid var(--cngx-slider-focus-ring-color, oklch(0.66 0.19 50));
+    outline: var(--cngx-slider-focus-ring-width, 2px) solid
+      var(--cngx-slider-focus-ring-color, oklch(0.66 0.19 50));
     outline-offset: 2px;
+  }
+
+  /* Vertical orientation: the brain emits aria-orientation="vertical" and its
+   * pointer math measures bottom-up, so the skin anchors the fill + thumb to the
+   * track's lower edge. The host needs an explicit length (no intrinsic height). */
+  :is([cngxSliderTrack], [cngxRangeSliderTrack])[aria-orientation='vertical'] {
+    flex-direction: column;
+    inline-size: max-content;
+    min-inline-size: var(--cngx-slider-thumb-size, 16px);
+    block-size: var(--cngx-slider-length, 9rem);
+    min-block-size: 0;
+  }
+
+  :is([cngxSliderTrack], [cngxRangeSliderTrack])[aria-orientation='vertical']
+    .cngx-slider__track {
+    flex: 1 1 auto;
+    inline-size: var(--cngx-slider-track-size, 4px);
+    block-size: auto;
+  }
+
+  [cngxSliderTrack][aria-orientation='vertical'] .cngx-slider__fill {
+    inset-inline: 0;
+    inset-block: auto 0;
+    inline-size: 100%;
+    block-size: calc(var(--cngx-slider-fraction, 0) * 100%);
+  }
+
+  [cngxRangeSliderTrack][aria-orientation='vertical'] .cngx-slider__track {
+    background: linear-gradient(
+      to top,
+      var(--cngx-slider-track-color, oklch(0.88 0.005 250)) 0,
+      var(--cngx-slider-track-color, oklch(0.88 0.005 250))
+        calc(var(--cngx-slider-start-fraction, 0) * 100%),
+      var(--cngx-slider-fill-color, oklch(0.66 0.19 50))
+        calc(var(--cngx-slider-start-fraction, 0) * 100%),
+      var(--cngx-slider-fill-color, oklch(0.66 0.19 50))
+        calc(var(--cngx-slider-end-fraction, 1) * 100%),
+      var(--cngx-slider-track-color, oklch(0.88 0.005 250))
+        calc(var(--cngx-slider-end-fraction, 1) * 100%)
+    );
+  }
+
+  [cngxSliderTrack][aria-orientation='vertical'] .cngx-slider__thumb,
+  [cngxRangeSliderTrack][aria-orientation='vertical'] [cngxSliderThumb] {
+    inset-inline-start: 50%;
+    inset-block-start: auto;
+    inset-block-end: calc(var(--cngx-slider-fraction, 0) * 100%);
+    translate: -50% 50%;
   }
 }

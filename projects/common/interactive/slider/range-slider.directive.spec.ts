@@ -89,6 +89,27 @@ describe('CngxRangeSliderTrack + CngxSliderThumb', () => {
     expect(host.v()[0]).toBe(30);
   });
 
+  it('honours largeStep for PageUp/PageDown on a thumb', () => {
+    @Component({
+      template: `<div cngxRangeSliderTrack [(value)]="v" [min]="0" [max]="1000" [step]="10" [largeStep]="100">
+        <span cngxSliderThumb="start"></span>
+        <span cngxSliderThumb="end"></span>
+      </div>`,
+      imports: [CngxRangeSliderTrack, CngxSliderThumb],
+    })
+    class LargeStepHost {
+      v = signal<[number, number]>([200, 800]);
+    }
+    const fixture = TestBed.createComponent(LargeStepHost);
+    fixture.detectChanges();
+    const start = fixture.debugElement
+      .queryAll(By.directive(CngxSliderThumb))[0]
+      .nativeElement as HTMLElement;
+    start.dispatchEvent(new KeyboardEvent('keydown', { key: 'PageUp', cancelable: true }));
+    fixture.detectChanges();
+    expect(fixture.componentInstance.v()[0]).toBe(300);
+  });
+
   it('keeps the sibling bound reactive after a move', () => {
     const { fixture, host, start, end } = setup();
     press(start, 'ArrowRight');

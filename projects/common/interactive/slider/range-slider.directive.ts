@@ -57,6 +57,11 @@ export class CngxRangeSliderTrack implements CngxSliderRangeHost {
   readonly max = input<number>(100);
   /** Step granularity shared by both thumbs. */
   readonly step = input<number>(1);
+  /**
+   * Page-key jump size for both thumbs (absolute, not a step multiple).
+   * Defaults to the larger of one step and a tenth of the range.
+   */
+  readonly largeStep = input<number | undefined>(undefined);
   /** Whether the range slider is disabled. */
   readonly disabled = input<boolean>(false);
   /** Track axis shared by both thumbs. */

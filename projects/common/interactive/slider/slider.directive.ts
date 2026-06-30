@@ -1,4 +1,4 @@
-import { computed, Directive, ElementRef, inject, input, model, signal } from '@angular/core';
+import { computed, Directive, ElementRef, inject, input, model } from '@angular/core';
 
 import { createSliderCore } from './slider-core';
 
@@ -79,7 +79,7 @@ export class CngxSliderTrack {
   readonly valueText = input<((value: number) => string) | undefined>(undefined);
 
   private readonly el = inject(ElementRef<HTMLElement>).nativeElement as HTMLElement;
-  private readonly dragging = signal(false);
+  private dragging = false;
 
   /** Shared value/step/aria derivation. */
   protected readonly core = createSliderCore({
@@ -151,24 +151,24 @@ export class CngxSliderTrack {
       // setPointerCapture throws on an invalid pointerId (synthetic events
       // in some test envs) - the drag still works without capture.
     }
-    this.dragging.set(true);
+    this.dragging = true;
     this.el.focus();
     this.updateFromPointer(event);
     event.preventDefault();
   }
 
   protected handlePointerMove(event: PointerEvent): void {
-    if (!this.dragging()) {
+    if (!this.dragging) {
       return;
     }
     this.updateFromPointer(event);
   }
 
   protected handlePointerUp(event: PointerEvent): void {
-    if (!this.dragging()) {
+    if (!this.dragging) {
       return;
     }
-    this.dragging.set(false);
+    this.dragging = false;
     try {
       this.el.releasePointerCapture(event.pointerId);
     } catch {

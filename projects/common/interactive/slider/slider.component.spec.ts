@@ -59,6 +59,59 @@ describe('CngxSlider component', () => {
   });
 });
 
+describe('CngxSlider showTicks + thumbGlyph + vertical', () => {
+  @Component({
+    template: `
+      <ng-template #glyph><span data-test="glyph">x</span></ng-template>
+      <cngx-slider
+        [(value)]="v"
+        [min]="0"
+        [max]="100"
+        [step]="5"
+        [showTicks]="ticks()"
+        [orientation]="orient()"
+        [thumbGlyph]="glyph"
+      />
+    `,
+    imports: [CngxSlider],
+  })
+  class Host {
+    v = signal(40);
+    ticks = signal(false);
+    orient = signal<'horizontal' | 'vertical'>('horizontal');
+  }
+
+  function setup() {
+    const fixture = TestBed.createComponent(Host);
+    fixture.detectChanges();
+    const el = fixture.debugElement.query(By.directive(CngxSlider)).nativeElement as HTMLElement;
+    return { fixture, host: fixture.componentInstance, el };
+  }
+
+  it('projects thumbGlyph into the thumb', () => {
+    const { el } = setup();
+    expect(el.querySelector('.cngx-slider__thumb [data-test="glyph"]')?.textContent).toBe('x');
+  });
+
+  it('sets the tick-interval var + class only when showTicks is on', () => {
+    const { fixture, host, el } = setup();
+    expect(el.classList.contains('cngx-slider--ticks')).toBe(false);
+    host.ticks.set(true);
+    fixture.detectChanges();
+    expect(el.classList.contains('cngx-slider--ticks')).toBe(true);
+    // step 5 over span 100 -> 5% interval.
+    expect(el.style.getPropertyValue('--cngx-slider-tick-interval')).toBe('5%');
+  });
+
+  it('reflects orientation on the host for the vertical skin', () => {
+    const { fixture, host, el } = setup();
+    expect(el.getAttribute('aria-orientation')).toBe('horizontal');
+    host.orient.set('vertical');
+    fixture.detectChanges();
+    expect(el.getAttribute('aria-orientation')).toBe('vertical');
+  });
+});
+
 describe('CngxRangeSlider component', () => {
   @Component({
     template: `<cngx-range-slider aria-label="Price" [(value)]="v" [min]="0" [max]="1000" [step]="10" />`,
