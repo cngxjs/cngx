@@ -204,6 +204,39 @@ readonly [updateName, nameState] = optimistic(
 - No `DestroyRef` cleanup - the subscription is unmanaged. If the component is
   destroyed mid-flight, the subscription completes silently.
 
+## CngxSlider / CngxRangeSlider
+
+Headless `role="slider"` directives with full APG keyboard (Arrow / Page / Home / End)
+and pointer-drag. The value is a `model()`, so it binds two-way and works with Angular
+Signal Forms' `[control]` directive without any forms import. The directive publishes the
+thumb position as the inherited `--cngx-slider-fraction` custom property (0..1); the skin
+reads it to place the fill and thumb. Default styling ships as Track-B CSS in
+`@cngx/themes/cngx.css`.
+
+```html
+<label id="vol-label">Volume</label>
+<div cngxSlider class="cngx-slider" aria-labelledby="vol-label" [(value)]="volume" [min]="0" [max]="100">
+  <span class="cngx-slider__track"><span class="cngx-slider__fill"></span></span>
+  <span class="cngx-slider__thumb"></span>
+</div>
+```
+
+Use `CngxRangeSlider` for a two-thumb range. It owns a `model<[number, number]>()` tuple
+and provides `CNGX_SLIDER_RANGE`; each `[cngxSliderThumb]="'start' | 'end'"` child is an
+independent focusable slider, clamped to its sibling so the thumbs can never cross.
+
+```html
+<div cngxRangeSlider role="group" aria-label="Price range" [(value)]="price" [min]="0" [max]="1000">
+  <span class="cngx-slider__track"></span>
+  <span cngxSliderThumb="start" aria-label="Minimum"></span>
+  <span cngxSliderThumb="end" aria-label="Maximum"></span>
+</div>
+```
+
+`createSliderCore()` is the shared pure factory both directives instantiate - hand it the
+value/min/max/step signals and it returns the clamped value, the track fraction, the
+`aria-valuetext` string, and the keyboard/pointer write helpers.
+
 ## Other Exports
 
 `CngxClickOutside`, `CngxDisclosure`, `CngxNavLink`, `CngxNavLabel`, `CngxNavBadge`,
