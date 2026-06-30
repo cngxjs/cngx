@@ -514,15 +514,18 @@ export class CngxInputMask {
   private readonly presetKey = computed(() => maskPresetKey(this.mask()));
 
   /** Resolved patterns (handles presets, config overrides, and `|` splitting). */
-  private readonly resolvedPatterns = computed(() => {
-    const maskVal = this.mask();
-    // Reading the signal makes this recompute when a lazily-imported table lands.
-    const preset = resolvePreset(maskVal, this.locale, maskPresetTables(), this.config);
-    if (preset) {
-      return preset.patterns.flatMap((p) => p.split('|'));
-    }
-    return maskVal.split('|');
-  });
+  private readonly resolvedPatterns = computed(
+    () => {
+      const maskVal = this.mask();
+      // Reading the signal makes this recompute when a lazily-imported table lands.
+      const preset = resolvePreset(maskVal, this.locale, maskPresetTables(), this.config);
+      if (preset) {
+        return preset.patterns.flatMap((p) => p.split('|'));
+      }
+      return maskVal.split('|');
+    },
+    { equal: (a, b) => a.length === b.length && a.every((p, i) => p === b[i]) },
+  );
 
   /** Active pattern: a forced alternate when set, else length-based selection. */
   private readonly activePattern = computed(() => {
@@ -535,8 +538,19 @@ export class CngxInputMask {
     return selectPattern(patterns, this.value().length, this.resolvedCustomTokens());
   });
 
-  private readonly tokens = computed(() =>
-    parseMask(this.activePattern(), this.resolvedCustomTokens()),
+  private readonly tokens = computed(
+    () => parseMask(this.activePattern(), this.resolvedCustomTokens()),
+    {
+      equal: (a, b) =>
+        a.length === b.length &&
+        a.every(
+          (t, i) =>
+            t.kind === b[i].kind &&
+            t.test === b[i].test &&
+            t.char === b[i].char &&
+            t.optional === b[i].optional,
+        ),
+    },
   );
 
   /** Primary value channel — raw unmasked value (digits/letters only, no literals unless `includeLiterals`). */
