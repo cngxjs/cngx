@@ -597,6 +597,25 @@ describe('CngxInputMask', () => {
       expect(directive.currentPattern()).toBe('+00 000 00000000'); // last (mobile)
     });
 
+    it('keeps the caret on the typed digits when a regroup rewrites the field', () => {
+      const { input, directive, fixture } = setup({ mask: 'phone:DE' });
+      // Caret restoration only runs for the focused, mid-edit element.
+      document.body.appendChild(fixture.nativeElement);
+      input.focus();
+      typeSequence(input, '4915', directive, fixture); // 4 digits -> landline grouping
+
+      // Flip to the mobile alternate while focused, as the metadata strategy
+      // does mid-number; this regroups and rewrites el.value.
+      fixture.componentInstance.forceAlternate.set(1);
+      flush(fixture);
+
+      expect(directive.currentPattern()).toBe('+00 000 00000000');
+      // The cursor tracks the entered digits (first empty slot), not the end.
+      expect(input.selectionStart).toBe(input.value.indexOf('_'));
+      expect(input.selectionStart).toBeLessThan(input.value.length);
+      fixture.nativeElement.remove();
+    });
+
     it('restores length-based selection when reset to null', () => {
       const { directive, fixture } = setup({ mask: 'phone:DE' });
       directive.setValue('491234567890'); // 12 digits -> length-based landline

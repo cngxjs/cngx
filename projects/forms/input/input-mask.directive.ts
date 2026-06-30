@@ -591,6 +591,12 @@ export class CngxInputMask {
 
   private prevMask: string | undefined;
 
+  // Logical caret as a raw-value index (grouping-independent). The edit
+  // handlers keep it in step; the mirror effect restores from it after a
+  // reactive regroup so the cursor tracks the same digit across an alternate
+  // change instead of snapping to the end.
+  private caretRawIndex = 0;
+
   constructor() {
     // Lazily import the preset table the current mask needs. Side effect, so it
     // lives in an effect (not the resolvedPatterns computed); the import's
@@ -617,7 +623,17 @@ export class CngxInputMask {
       if (el.value === masked) {
         return;
       }
+      // Restore the caret only when the user is mid-edit (the field is focused
+      // and the edit handlers already set the eager el.value, so this run is a
+      // reactive regroup, not the typing write). Assigning el.value drops the
+      // caret to the end; map the logical raw index through the new tokens to
+      // keep the cursor on the same digit after the alternate change.
+      const restoreCaret = el.ownerDocument.activeElement === el;
       el.value = masked;
+      if (restoreCaret) {
+        const pos = this.cursorFromRawIndex(this.caretRawIndex, this.tokens()) + this.prefix().length;
+        el.setSelectionRange(pos, pos);
+      }
       el.dispatchEvent(new Event('input', { bubbles: true }));
     });
 
@@ -921,6 +937,7 @@ export class CngxInputMask {
     el.value = newMasked;
 
     const newCursorRawIdx = rawBefore + filtered.length;
+    this.caretRawIndex = newCursorRawIdx;
     const newTokens = this.tokens();
     const cursorPos = this.cursorFromRawIndex(newCursorRawIdx, newTokens);
     el.setSelectionRange(cursorPos + prefixLen, cursorPos + prefixLen);
@@ -934,6 +951,7 @@ export class CngxInputMask {
       this.deleteRange(selStart, selEnd, tokens);
       this.syncDom(el);
       const cursorPos = this.adjustCursorAfterDelete(selStart, tokens);
+      this.caretRawIndex = this.rawIndexFromCursor(cursorPos, tokens);
       el.setSelectionRange(cursorPos + prefixLen, cursorPos + prefixLen);
       return;
     }
@@ -956,6 +974,7 @@ export class CngxInputMask {
     this.syncDom(el);
 
     const cursorPos = this.adjustCursorAfterDelete(target, tokens);
+    this.caretRawIndex = this.rawIndexFromCursor(cursorPos, tokens);
     el.setSelectionRange(cursorPos + prefixLen, cursorPos + prefixLen);
   }
 
@@ -967,6 +986,7 @@ export class CngxInputMask {
       this.deleteRange(selStart, selEnd, tokens);
       this.syncDom(el);
       const cursorPos = this.adjustCursorAfterDelete(selStart, tokens);
+      this.caretRawIndex = this.rawIndexFromCursor(cursorPos, tokens);
       el.setSelectionRange(cursorPos + prefixLen, cursorPos + prefixLen);
       return;
     }
@@ -984,6 +1004,7 @@ export class CngxInputMask {
     this.updateRaw(raw.slice(0, rawIdx) + raw.slice(rawIdx + 1));
     this.syncDom(el);
 
+    this.caretRawIndex = this.rawIndexFromCursor(selStart, tokens);
     el.setSelectionRange(selStart + prefixLen, selStart + prefixLen);
   }
 
