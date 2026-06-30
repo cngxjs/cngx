@@ -21,6 +21,7 @@ import {
 import { CngxSelect, type CngxSelectOptionDef } from '@cngx/forms/select';
 import { CngxInputMask } from '../input-mask.directive';
 import { CNGX_INPUT_CONFIG, DEFAULT_INPUT_ARIA_LABELS } from '../input-config';
+import { CNGX_PHONE_METADATA } from '../phone-metadata';
 import { CNGX_PHONE_COUNTRIES, type Country } from './countries';
 
 /**
@@ -99,6 +100,7 @@ class CngxPhoneInputDetach {}
       class="cngx-phone-input__number"
       type="tel"
       [cngxInputMask]="maskExpr()"
+      [forceAlternate]="forcedAlternate()"
       [(value)]="value"
       [id]="id()"
       [disabled]="disabled()"
@@ -151,6 +153,7 @@ export class CngxPhoneInput implements CngxFormFieldControl {
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly presenter = inject(CngxFormFieldPresenter, { optional: true });
   private readonly config = inject(CNGX_INPUT_CONFIG);
+  private readonly metadata = inject(CNGX_PHONE_METADATA);
 
   private readonly fallbackId = nextUid('cngx-phone-input-');
   /** @internal Stable id for the always-present disabled-reason span. */
@@ -163,10 +166,49 @@ export class CngxPhoneInput implements CngxFormFieldControl {
   protected readonly region = computed(
     () => this.country()?.region ?? CNGX_PHONE_COUNTRIES[0].region,
   );
+
+  // value() is dial-code-prefixed (the prefill seeds the country code digits),
+  // so it is not the national subscriber number. Strip the dial code before
+  // handing it to the metadata strategy, which contracts on national digits.
+  private readonly nationalDigits = computed(() => {
+    const cc = this.country().dialCode.replace(/\D/g, '');
+    const v = this.value();
+    return v.startsWith(cc) ? v.slice(cc.length) : v;
+  });
+
+  /** @internal Strategy-resolved line type for the current region + national digits. */
+  private readonly metaLineType = computed(() =>
+    this.metadata.lineType(this.region(), this.nationalDigits()),
+  );
+
+  // The mask string stays `phone:<region>` in every mode. Line type rides the
+  // separate [forceAlternate] input instead, because CngxInputMask auto-clears
+  // its value whenever mask() changes - encoding the type in the string wiped
+  // the digits the strategy reads. forceAlternate leaves mask() untouched.
   /** @internal */
-  protected readonly maskExpr = computed(() => {
+  protected readonly maskExpr = computed(() => `phone:${this.region()}`);
+
+  // PHONE_PATTERNS order each region as `<landline>|<mobile>`, so landline is
+  // alternate 0 and mobile is alternate 1. Explicit lineType wins; in 'auto'
+  // the strategy verdict drives it and 'unknown' (null) keeps the length-based
+  // default the bare mask already provides.
+  /** @internal */
+  protected readonly forcedAlternate = computed<number | null>(() => {
     const lt = this.lineType();
-    return lt === 'auto' ? `phone:${this.region()}` : `phone:${this.region()}:${lt}`;
+    if (lt === 'landline') {
+      return 0;
+    }
+    if (lt === 'mobile') {
+      return 1;
+    }
+    const meta = this.metaLineType();
+    if (meta === 'mobile') {
+      return 1;
+    }
+    if (meta === 'fixedLine') {
+      return 0;
+    }
+    return null;
   });
 
   /** @internal Country options for the inner select, keyed by the country ref. */

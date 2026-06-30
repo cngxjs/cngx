@@ -9,8 +9,14 @@ import {
   withInputAriaLabels,
   withPhoneDefaultRegion,
 } from '../input-config';
+import { providePhoneMetadata, type CngxPhoneMetadata } from '../phone-metadata';
+import { loadAllMaskPresets } from '../mask-presets/registry';
 import { CngxPhoneInput } from './phone-input.component';
 import { CNGX_PHONE_COUNTRIES } from './countries';
+
+const mobileAdapter: CngxPhoneMetadata = {
+  lineType: (_region, national) => (/^1[567]/.test(national) ? 'mobile' : 'unknown'),
+};
 
 @Component({
   template: `<cngx-phone-input [(value)]="value" [(country)]="country" [disabled]="disabled" />`,
@@ -43,6 +49,12 @@ afterEach(() => {
 });
 
 describe('CngxPhoneInput', () => {
+  // Phone preset tables load lazily via dynamic import; prime them so the
+  // forced-alternate currentPattern() assertions resolve synchronously.
+  beforeAll(async () => {
+    await loadAllMaskPresets();
+  });
+
   it('pre-fills the dial code on select and re-seeds it on country change', async () => {
     const { fixture, phone } = setup(); // initial country US (+1)
     await Promise.resolve();
@@ -57,16 +69,83 @@ describe('CngxPhoneInput', () => {
     expect(phone.value()).toBe('49');
   });
 
-  it('forces the mask alternate via lineType', () => {
+  it('forces the mask alternate via lineType without clearing the number', () => {
     const { fixture, phone, mask } = setup();
+    // Settle the country switch first; that region change is the one legitimate
+    // mask()-string change that clears. The lineType flips below must not.
     phone.country.set(germany);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    phone.value.set('49301234567');
+    fixture.detectChanges();
+
     phone.lineType.set('mobile');
     fixture.detectChanges();
-    expect(mask.mask()).toBe('phone:DE:mobile');
+    expect(mask.mask()).toBe('phone:DE'); // mask string stays constant
+    expect(mask.forceAlternate()).toBe(1); // mobile alternate
+    expect(mask.currentPattern()).toBe('+00 000 00000000');
+    expect(phone.value()).toBe('49301234567'); // not cleared
 
     phone.lineType.set('landline');
     fixture.detectChanges();
-    expect(mask.mask()).toBe('phone:DE:landline');
+    expect(mask.forceAlternate()).toBe(0); // landline alternate
+    expect(mask.currentPattern()).toBe('+00 00 00000000');
+    expect(phone.value()).toBe('49301234567'); // still not cleared
+  });
+
+  it('switches to the mobile alternate from the prefix via the strategy, digits preserved', () => {
+    TestBed.configureTestingModule({ providers: [providePhoneMetadata(mobileAdapter)] });
+    const { fixture, phone, mask } = setup();
+    phone.country.set(germany); // +49
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    phone.value.set('49151'); // national 151 -> mobile, no length threshold
+    fixture.detectChanges();
+    expect(mask.mask()).toBe('phone:DE'); // string unchanged - no auto-clear
+    expect(mask.forceAlternate()).toBe(1); // strategy forced the mobile alternate
+    expect(mask.currentPattern()).toBe('+00 000 00000000');
+    expect(phone.value()).toBe('49151'); // typed digits preserved
+  });
+
+  it('keeps the length-based pick under the default metadata strategy', () => {
+    const { fixture, phone, mask } = setup();
+    phone.country.set(germany);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    phone.value.set('49151');
+    fixture.detectChanges();
+    expect(mask.mask()).toBe('phone:DE');
+    expect(mask.forceAlternate()).toBeNull(); // 'unknown' -> no force -> length-based
+  });
+
+  it('lets an explicit lineType override the metadata strategy', () => {
+    TestBed.configureTestingModule({ providers: [providePhoneMetadata(mobileAdapter)] });
+    const { fixture, phone, mask } = setup();
+    phone.country.set(germany);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    phone.value.set('49151'); // the strategy would resolve mobile
+    phone.lineType.set('landline'); // explicit wins
+    fixture.detectChanges();
+    expect(mask.mask()).toBe('phone:DE');
+    expect(mask.forceAlternate()).toBe(0); // landline, overriding the strategy
+    expect(mask.currentPattern()).toBe('+00 00 00000000');
+  });
+
+  it('passes national subscriber digits (dial code stripped) to the strategy', () => {
+    const calls: Array<[string, string]> = [];
+    const spyAdapter: CngxPhoneMetadata = {
+      lineType: (region, national) => {
+        calls.push([region, national]);
+        return 'unknown';
+      },
+    };
+    TestBed.configureTestingModule({ providers: [providePhoneMetadata(spyAdapter)] });
+    const { fixture, phone } = setup();
+    phone.country.set(germany); // +49
+    phone.value.set('4915123');
+    fixture.detectChanges();
+    expect(calls).toContainEqual(['DE', '15123']);
   });
 
   it('re-targets the mask region when the country changes', () => {
