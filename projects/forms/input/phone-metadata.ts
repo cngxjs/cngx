@@ -69,3 +69,105 @@ export const CNGX_PHONE_METADATA = new InjectionToken<CngxPhoneMetadata>('CNGX_P
 export function providePhoneMetadata(adapter: CngxPhoneMetadata): Provider {
   return { provide: CNGX_PHONE_METADATA, useValue: adapter };
 }
+
+/**
+ * A single national-prefix rule: a literal prefix matched with `startsWith`
+ * (`'0664'` minus the trunk `0` is `'664'`), or a `RegExp` matched against the
+ * start of the national digits (`/^1[567]/`). Only start-anchored matches count
+ * as a prefix; a `RegExp` that matches mid-number is ignored.
+ *
+ * @category forms/input
+ */
+export type PhonePrefixMatcher = string | RegExp;
+
+/**
+ * Per-region map of the national-number prefixes that identify each line type.
+ * This carries the consumer's own numbering data only - cngx ships none, in line
+ * with {@link CngxPhoneMetadata} keeping numbering metadata out of the library.
+ *
+ * @category forms/input
+ */
+export type PhonePrefixMap = Readonly<
+  Record<string, Readonly<Partial<Record<'mobile' | 'fixedLine', readonly PhonePrefixMatcher[]>>>>
+>;
+
+/**
+ * Builds a {@link CngxPhoneMetadata} adapter from a region keyed prefix map,
+ * so a consumer declares the prefixes that matter instead of hand-writing the
+ * region branch and the matching closure.
+ *
+ * The adapter resolves the line type by longest matching prefix: the matcher
+ * with the most matched leading digits wins, so a specific `'0820'` fixed-line
+ * rule beats a broader `'08'` mobile rule. Ties resolve to `mobile` (it is the
+ * decisive case `auto` mask alternation cares about). An unknown region or no
+ * matching prefix returns `'unknown'`, keeping the length-based fallback.
+ *
+ * It still ships no numbering data - the caller supplies every prefix - so it is
+ * sugar over an inline adapter, not a replacement for a real metadata library
+ * like `libphonenumber-js`.
+ *
+ * ```typescript
+ * providePhoneMetadata(
+ *   createPrefixPhoneMetadata({
+ *     DE: { mobile: [/^1[567]/] },
+ *     AT: { mobile: ['650', '660', '664', '676', '699'] },
+ *   }),
+ * );
+ * ```
+ *
+ * @category forms/input
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/input/phone-metadata.ts
+ * @since 0.2.0
+ * @relatedTo CngxPhoneMetadata, providePhoneMetadata
+ */
+export function createPrefixPhoneMetadata(prefixes: PhonePrefixMap): CngxPhoneMetadata {
+  const compiled = new Map<string, readonly CompiledMatcher[]>();
+  for (const region of Object.keys(prefixes)) {
+    const entry = prefixes[region];
+    const matchers: CompiledMatcher[] = [];
+    for (const type of ['mobile', 'fixedLine'] as const) {
+      for (const matcher of entry[type] ?? []) {
+        matchers.push({ type, matchedLength: compileMatcher(matcher) });
+      }
+    }
+    compiled.set(region, matchers);
+  }
+
+  return {
+    lineType(region, nationalDigits) {
+      const matchers = compiled.get(region);
+      if (!matchers) {
+        return 'unknown';
+      }
+      let bestLength = -1;
+      let bestType: 'mobile' | 'fixedLine' | 'unknown' = 'unknown';
+      for (const { type, matchedLength } of matchers) {
+        const length = matchedLength(nationalDigits);
+        if (length > bestLength) {
+          bestLength = length;
+          bestType = type;
+        }
+      }
+      return bestType;
+    },
+  };
+}
+
+interface CompiledMatcher {
+  readonly type: 'mobile' | 'fixedLine';
+  /** Returns the matched leading-digit count, or `-1` when the prefix misses. */
+  readonly matchedLength: (nationalDigits: string) => number;
+}
+
+function compileMatcher(matcher: PhonePrefixMatcher): (nationalDigits: string) => number {
+  if (typeof matcher === 'string') {
+    return (national) => (national.startsWith(matcher) ? matcher.length : -1);
+  }
+  // Drop the global flag: exec on a /g RegExp is stateful across calls and the
+  // adapter reuses each matcher for every lookup.
+  const re = matcher.global ? new RegExp(matcher.source, matcher.flags.replace('g', '')) : matcher;
+  return (national) => {
+    const match = re.exec(national);
+    return match?.index === 0 ? match[0].length : -1;
+  };
+}

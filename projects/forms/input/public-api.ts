@@ -15,6 +15,9 @@ export {
   CNGX_PHONE_METADATA,
   type CngxPhoneMetadata,
   providePhoneMetadata,
+  createPrefixPhoneMetadata,
+  type PhonePrefixMatcher,
+  type PhonePrefixMap,
 } from './phone-metadata';
 export { provideEagerMaskPresets, type MaskPresetKey } from './mask-presets/registry';
 export { CngxInputFormat, type FormatFn, type ParseFn } from './input-format.directive';
