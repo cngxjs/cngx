@@ -20,6 +20,7 @@ import { loadAllMaskPresets } from './mask-presets/registry';
     [suffix]="suffix()"
     [transform]="transform()"
     [customTokens]="customTokens()"
+    [forceAlternate]="forceAlternate()"
   />`,
   imports: [CngxInputMask],
 })
@@ -32,6 +33,7 @@ class Host {
   readonly suffix = signal('');
   readonly transform = signal<((ch: string) => string) | undefined>(undefined);
   readonly customTokens = signal<MaskTokenMap | undefined>(undefined);
+  readonly forceAlternate = signal<number | null>(null);
   readonly directive = viewChild.required(CngxInputMask);
 }
 
@@ -45,6 +47,7 @@ function setup(
     suffix?: string;
     transform?: (ch: string) => string;
     customTokens?: MaskTokenMap;
+    forceAlternate?: number | null;
     locale?: string;
     host?: CngxFormFieldHostContract;
   } = {},
@@ -68,6 +71,7 @@ function setup(
   if (overrides.suffix != null) host.suffix.set(overrides.suffix);
   if (overrides.transform != null) host.transform.set(overrides.transform);
   if (overrides.customTokens != null) host.customTokens.set(overrides.customTokens);
+  if (overrides.forceAlternate !== undefined) host.forceAlternate.set(overrides.forceAlternate);
   fixture.detectChanges();
   TestBed.flushEffects();
 
@@ -560,6 +564,52 @@ describe('CngxInputMask', () => {
 
     it('keeps UK as a back-compat alias of GB', () => {
       expect(setup({ mask: 'phone:UK' }).input.value).toBe('+__ ____ ______');
+    });
+  });
+
+  // ── Forced alternate ────────────────────────────────────────────────
+
+  describe('forceAlternate', () => {
+    it('forces the Nth alternate and regroups the same raw value', () => {
+      const { directive, fixture } = setup({ mask: 'phone:DE', forceAlternate: 1 });
+      directive.setValue('491234567890'); // landline-length, but mobile is forced
+      flush(fixture);
+      expect(directive.currentPattern()).toBe('+00 000 00000000'); // mobile alternate
+      expect(directive.value()).toBe('491234567890'); // digits preserved
+    });
+
+    it('does not clear value when forceAlternate changes (only mask() clears)', () => {
+      const { directive, fixture } = setup({ mask: 'phone:DE' });
+      directive.setValue('491234567890');
+      flush(fixture);
+      expect(directive.value()).toBe('491234567890');
+
+      fixture.componentInstance.forceAlternate.set(1);
+      flush(fixture);
+      // The auto-clear watches mask(); a forceAlternate flip rides the
+      // no-clear selectPattern path, so the typed number survives.
+      expect(directive.value()).toBe('491234567890');
+      expect(directive.currentPattern()).toBe('+00 000 00000000');
+    });
+
+    it('clamps an out-of-range index to the last alternate', () => {
+      const { directive } = setup({ mask: 'phone:DE', forceAlternate: 99 });
+      expect(directive.currentPattern()).toBe('+00 000 00000000'); // last (mobile)
+    });
+
+    it('restores length-based selection when reset to null', () => {
+      const { directive, fixture } = setup({ mask: 'phone:DE' });
+      directive.setValue('491234567890'); // 12 digits -> length-based landline
+      flush(fixture);
+      expect(directive.currentPattern()).toBe('+00 00 00000000');
+
+      fixture.componentInstance.forceAlternate.set(1);
+      flush(fixture);
+      expect(directive.currentPattern()).toBe('+00 000 00000000'); // forced mobile
+
+      fixture.componentInstance.forceAlternate.set(null);
+      flush(fixture);
+      expect(directive.currentPattern()).toBe('+00 00 00000000'); // back to length-based
     });
   });
 

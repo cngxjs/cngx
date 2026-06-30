@@ -467,6 +467,14 @@ export class CngxInputMask {
   /** Whether to clear the input when focus is lost and the mask is incomplete. */
   readonly clearOnBlur = input<boolean>(false);
 
+  /**
+   * Force the Nth `|`-alternate, bypassing the length-based pick. Clamped to
+   * the available range; `null` (default) restores length-based selection.
+   * Changing it never clears `value` - the auto-clear watches `mask()`, which
+   * this leaves untouched.
+   */
+  readonly forceAlternate = input<number | null>(null);
+
   // Resolved config: input > global config > default.
 
   private readonly resolvedPlaceholder = computed(
@@ -516,10 +524,16 @@ export class CngxInputMask {
     return maskVal.split('|');
   });
 
-  /** Active pattern selected based on current raw length. */
-  private readonly activePattern = computed(() =>
-    selectPattern(this.resolvedPatterns(), this.value().length, this.resolvedCustomTokens()),
-  );
+  /** Active pattern: a forced alternate when set, else length-based selection. */
+  private readonly activePattern = computed(() => {
+    const patterns = this.resolvedPatterns();
+    const forced = this.forceAlternate();
+    if (forced != null) {
+      const index = Math.min(Math.max(forced, 0), patterns.length - 1);
+      return patterns[index];
+    }
+    return selectPattern(patterns, this.value().length, this.resolvedCustomTokens());
+  });
 
   private readonly tokens = computed(() =>
     parseMask(this.activePattern(), this.resolvedCustomTokens()),
