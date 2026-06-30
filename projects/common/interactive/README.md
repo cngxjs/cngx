@@ -259,6 +259,28 @@ chrome ships as Track-B CSS in `@cngx/themes/cngx.css`.
 `aria-multiselectable` reflects `[multi]`; `CNGX_ACCORDION` is the token panels inject to
 reach the coordinator.
 
+## CngxBreadcrumb / CngxBreadcrumbItem / CngxBreadcrumbSeparator
+
+A linear breadcrumb over a `<nav>` landmark. `CngxBreadcrumb` names the landmark and, when
+the trail exceeds `[maxVisible]`, derives which middle crumbs collapse (keeping the first
+and the last `maxVisible - 1`) and exposes them via `collapsedItems()` / `hasCollapsed()`.
+`CngxBreadcrumbItem` marks the terminal crumb `aria-current="page"` from its position;
+`CngxBreadcrumbSeparator` marks glyphs `aria-hidden`. Default chrome ships as Track-B CSS
+in `@cngx/themes/cngx.css`.
+
+```html
+<nav cngxBreadcrumb [maxVisible]="4" #bc="cngxBreadcrumb">
+  <ol>
+    <li><a cngxBreadcrumbItem href="/">Home</a></li>
+    <li cngxBreadcrumbSeparator>/</li>
+    <li><span cngxBreadcrumbItem>Current page</span></li>
+  </ol>
+</nav>
+```
+
+Render the collapsed crumbs in an ellipsis `CngxMenu` (drive it from `bc.hasCollapsed()`),
+and truncate long labels with `CngxTruncate`.
+
 ## Other Exports
 
 `CngxClickOutside`, `CngxDisclosure`, `CngxNavLink`, `CngxNavLabel`, `CngxNavBadge`,
