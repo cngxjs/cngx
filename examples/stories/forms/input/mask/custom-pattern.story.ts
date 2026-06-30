@@ -26,10 +26,10 @@ export const STORY: DemoSpec = {
     </div>
   </div>`,
   templateChrome: `<div class="status-row">
-        <span class="status-badge">Raw: {{ ibanMask.rawValue() }}</span>
+        <span class="status-badge">Raw: {{ ibanMask.value() }}</span>
       </div>
 <div class="status-row">
         <span class="status-badge">Display: {{ plateMask.maskedValue() }}</span>
-        <span class="status-badge">Raw: {{ plateMask.rawValue() }}</span>
+        <span class="status-badge">Raw: {{ plateMask.value() }}</span>
       </div>`,
 };

@@ -28,6 +28,6 @@ export const STORY: DemoSpec = {
   </div>`,
   templateChrome: `<div class="status-row">
         <span class="status-badge">Display: {{ atMask.maskedValue() }}</span>
-        <span class="status-badge">Raw: {{ atMask.rawValue() }}</span>
+        <span class="status-badge">Raw: {{ atMask.value() }}</span>
       </div>`,
 };
