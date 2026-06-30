@@ -21,6 +21,9 @@
     --cngx-slider-focus-ring-color: var(--mat-sys-primary);
     --cngx-slider-tick-color: var(--mat-sys-on-surface-variant);
     --cngx-slider-tick-label-color: var(--mat-sys-on-surface-variant);
+    // Value bubble = the M3 discrete value indicator: primary fill, on-primary text.
+    --cngx-slider-bubble-bg: var(--mat-sys-primary);
+    --cngx-slider-bubble-color: var(--mat-sys-on-primary);
   } @else {
     $primary: mat.get-theme-color($theme, primary);
     --cngx-slider-track-color: #{mat.get-theme-color($theme, foreground, divider)};
@@ -31,6 +34,8 @@
     --cngx-slider-focus-ring-color: #{$primary};
     --cngx-slider-tick-color: #{mat.get-theme-color($theme, foreground, divider)};
     --cngx-slider-tick-label-color: #{mat.get-theme-color($theme, foreground, secondary-text)};
+    --cngx-slider-bubble-bg: #{$primary};
+    --cngx-slider-bubble-color: #{mat.get-theme-color($theme, primary, default-contrast)};
   }
 }
 
