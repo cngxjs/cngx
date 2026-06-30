@@ -33,7 +33,7 @@ export interface CngxSliderCoreOptions {
 }
 
 /**
- * Derived view + write surface produced by {@link createSliderCore}. All
+ * Derived view and write surface produced by {@link createSliderCore}. All
  * read members are `computed()` from the option signals; all mutation goes
  * through the four imperative helpers, which snap-to-step and clamp before
  * writing. The directive binds `clampedValue` to `aria-valuenow`, `fraction`
@@ -58,7 +58,7 @@ export interface CngxSliderCore {
   readonly atMin: Signal<boolean>;
   /** True when the clamped value sits on the effective upper bound. */
   readonly atMax: Signal<boolean>;
-  /** Snap + clamp `next`, then write it (no-op when unchanged). */
+  /** Snap and clamp `next`, then write it (no-op when unchanged). */
   setValue(next: number): void;
   /** Map a `[0, 1]` track fraction to a value, then {@link setValue} it. */
   setFromFraction(fraction: number): void;

@@ -7,7 +7,7 @@ import { createSliderCore } from './slider-core';
  * directive turns it into an APG-conformant `role="slider"`: full keyboard
  * (Arrow / Page / Home / End), pointer-drag with capture, and the whole ARIA
  * value surface (`aria-valuemin/max/now/valuetext/orientation`) computed from
- * `value` + `min` + `max` + `step`. The value is a `model<number>()`, so
+ * `value` and `min` and `max` and `step`. The value is a `model<number>()`, so
  * Angular Signal Forms binds it two-way via `[control]` with no forms import -
  * the dedicated `cngx-form-field` bridge is a `@cngx/forms` follow-up.
  *
@@ -69,7 +69,7 @@ export class CngxSlider {
    * larger of one step and a tenth of the range.
    */
   readonly largeStep = input<number | undefined>(undefined);
-  /** Whether the slider is disabled (blocks keyboard + pointer, `tabindex=-1`). */
+  /** Whether the slider is disabled (blocks keyboard and pointer, `tabindex=-1`). */
   readonly disabled = input<boolean>(false);
   /** Track axis. Drives `aria-orientation` and the pointer-to-fraction math. */
   readonly orientation = input<'horizontal' | 'vertical'>('horizontal');
