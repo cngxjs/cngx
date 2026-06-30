@@ -24,6 +24,10 @@ export interface CngxPhoneMetadata {
    * Resolves the line type for `nationalDigits` in `region`. Return `'unknown'`
    * when the prefix is not yet decisive so the caller keeps its length-based
    * fallback.
+   *
+   * Must be a pure function of its two arguments: `CngxPhoneInput` reads it
+   * inside a `computed()`, so any internal state or side effect would taint
+   * that derivation and is unsupported.
    */
   lineType(region: string, nationalDigits: string): 'mobile' | 'fixedLine' | 'unknown';
 }
