@@ -1,9 +1,11 @@
 @use '@angular/material' as mat;
+@use 'sass:math';
 
 // Material bridge for CngxSlider / CngxRangeSlider (and the headless
-// [cngxSliderTrack] / [cngxRangeSliderTrack] directives). The track follows the
-// outline-variant tone, the fill and handle follow primary, so a cngx slider
-// next to <mat-slider> reads the same.
+// [cngxSliderTrack] / [cngxRangeSliderTrack] directives). Maps the slider's
+// color AND geometry tokens onto Material so a cngx slider reads like
+// <mat-slider>: M3 solid primary handle, outline-variant track, density-driven
+// handle size.
 //
 //   @use '@cngx/themes/material/slider-theme' as slider;
 //   html { @include slider.theme($theme); }
@@ -12,27 +14,40 @@
   @if mat.get-theme-version($theme) == 1 {
     --cngx-slider-track-color: var(--mat-sys-outline-variant);
     --cngx-slider-fill-color: var(--mat-sys-primary);
+    // M3 handle is a solid primary disc (no contrasting border).
     --cngx-slider-thumb-color: var(--mat-sys-primary);
     --cngx-slider-thumb-border-color: var(--mat-sys-primary);
+    --cngx-slider-thumb-border-width: 0;
     --cngx-slider-focus-ring-color: var(--mat-sys-primary);
+    --cngx-slider-tick-color: var(--mat-sys-on-surface-variant);
+    --cngx-slider-tick-label-color: var(--mat-sys-on-surface-variant);
   } @else {
+    $primary: mat.get-theme-color($theme, primary);
     --cngx-slider-track-color: #{mat.get-theme-color($theme, foreground, divider)};
-    --cngx-slider-fill-color: #{mat.get-theme-color($theme, primary)};
-    --cngx-slider-thumb-color: #{mat.get-theme-color($theme, primary)};
-    --cngx-slider-thumb-border-color: #{mat.get-theme-color($theme, primary)};
-    --cngx-slider-focus-ring-color: #{mat.get-theme-color($theme, primary)};
+    --cngx-slider-fill-color: #{$primary};
+    --cngx-slider-thumb-color: #{$primary};
+    --cngx-slider-thumb-border-color: #{$primary};
+    --cngx-slider-thumb-border-width: 0;
+    --cngx-slider-focus-ring-color: #{$primary};
+    --cngx-slider-tick-color: #{mat.get-theme-color($theme, foreground, divider)};
+    --cngx-slider-tick-label-color: #{mat.get-theme-color($theme, foreground, secondary-text)};
   }
+}
+
+@mixin density($theme) {
+  // M3 slider: 20px handle, 4px track at density 0. The handle shrinks 2px per
+  // density step (clamped) so a denser theme yields a smaller slider too.
+  $scale: mat.get-theme-density($theme);
+  $thumb: math.max(12px, 20px + $scale * 2px);
+  --cngx-slider-thumb-size: #{$thumb};
+  --cngx-slider-track-size: 4px;
 }
 
 @mixin theme($theme) {
   @layer cngx.components {
-    :where(
-        cngx-slider,
-        cngx-range-slider,
-        [cngxSliderTrack],
-        [cngxRangeSliderTrack]
-      ) {
+    :where(cngx-slider, cngx-range-slider, [cngxSliderTrack], [cngxRangeSliderTrack]) {
       @include color($theme);
+      @include density($theme);
     }
   }
 }
