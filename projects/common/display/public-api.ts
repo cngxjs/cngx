@@ -13,6 +13,7 @@ export {
 } from './segmented-progress/segmented-progress.component';
 export { CngxDivider } from './divider/divider.directive';
 export { CngxAvatar } from './avatar/avatar.component';
+export { CngxAvatarGroup } from './avatar-group/avatar-group.component';
 export {
   CngxBadge,
   type CngxBadgeColor,
