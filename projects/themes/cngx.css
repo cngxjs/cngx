@@ -16,8 +16,8 @@
  *   defaults for every system token
  * - `cngx.base` - bare-element atoms: button, input, kbd, dl, hr
  * - `cngx.utilities` - `.cngx-sr-only`
- * - `cngx.components` - externalised directive CSS (`CngxAsync`,
- *   `CngxBackdrop`, `CngxBadge`, `CngxBottomSheet`,
+ * - `cngx.components` - externalised directive CSS (`CngxAccordion`,
+ *   `CngxAsync`, `CngxBackdrop`, `CngxBadge`, `CngxBottomSheet`,
  *   `CngxButtonToggle`, `CngxDialog`, `CngxDivider`, `CngxListbox`,
  *   `CngxMenu`, `CngxRipple`, `CngxSlider`, `CngxTooltip`,
  *   `CngxFileDrop`)
@@ -77,6 +77,7 @@
 @import '../core/theming/reset.css';
 @import '../core/theming/base.css';
 @import '../core/theming/utilities.css';
+@import '../common/theming/components/cngx-accordion.css';
 @import '../common/theming/components/cngx-async.css';
 @import '../common/theming/components/cngx-backdrop.css';
 @import '../common/theming/components/cngx-badge.css';

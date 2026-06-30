@@ -49,6 +49,9 @@ export {
   type CngxSliderThumbBounds,
   type CngxSliderThumbPosition,
 } from './slider/range-slider.token';
+export { CngxAccordion } from './accordion/accordion.directive';
+export { CngxAccordionPanel } from './accordion/accordion-panel.directive';
+export { CNGX_ACCORDION, type CngxAccordionHost } from './accordion/accordion.token';
 export { CngxToggle } from './toggle/toggle.component';
 export { CngxCheckbox } from './checkbox/checkbox.component';
 export { CngxCheckboxGroup } from './checkbox-group/checkbox-group.component';

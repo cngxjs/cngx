@@ -1,0 +1,121 @@
+/**
+ * @overview
+ * Default skin for the `cngxAccordion` / `cngxAccordionPanel` directives. The
+ * directives are headless: the coordinator owns the open-set and arrow-key
+ * roving, each header mirrors `aria-expanded` and `aria-controls`. This
+ * stylesheet gives the header buttons their chrome, a twisty that rotates when
+ * the panel opens, and the region its padding. Without it the accordion renders
+ * as bare stacked buttons.
+ *
+ * Markup the default skin expects (header buttons are direct children of the
+ * `cngxAccordion` element so the roving host can find them):
+ *
+ * ```html
+ *   <div cngxAccordion class="cngx-accordion" #acc="cngxAccordion">
+ *     <button cngxAccordionPanel class="cngx-accordion__header" panelId="a" controls="r-a">
+ *       Section A
+ *     </button>
+ *     <div role="region" id="r-a" class="cngx-accordion__region" [hidden]="!acc.isOpen('a')">…</div>
+ *   </div>
+ * ```
+ *
+ * **Inheritance**
+ *
+ * - header text / surface -> `--cngx-color-text` / `--cngx-color-surface`
+ * - hover tint -> `--cngx-color-primary` (low alpha)
+ * - dividers -> `--cngx-color-border`
+ * - focus ring -> `--cngx-color-primary` (contrast >= 3:1)
+ */
+
+@layer cngx.tokens {
+  /**
+   * Header button padding.
+   * @group Header
+   */
+  @property --cngx-accordion-header-padding {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.75rem 1rem;
+  }
+
+  /**
+   * Region (content) padding.
+   * @group Region
+   */
+  @property --cngx-accordion-region-padding {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.75rem 1rem;
+  }
+
+  /**
+   * Divider colour between rows.
+   * @group Header
+   * @see [[--cngx-color-border]]
+   */
+  @property --cngx-accordion-border-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.88 0.005 250);
+  }
+}
+
+@layer cngx.components {
+  [cngxAccordion] {
+    display: block;
+    border: 1px solid var(--cngx-accordion-border-color, oklch(0.88 0.005 250));
+    border-radius: var(--cngx-radius-md, 0.375rem);
+    overflow: hidden;
+  }
+
+  [cngxAccordionPanel] {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    inline-size: 100%;
+    padding: var(--cngx-accordion-header-padding, 0.75rem 1rem);
+    border: 0;
+    border-block-end: 1px solid var(--cngx-accordion-border-color, oklch(0.88 0.005 250));
+    background: var(--cngx-color-surface, oklch(1 0 0));
+    color: var(--cngx-color-text, oklch(0.2 0.01 250));
+    font: inherit;
+    text-align: start;
+    cursor: pointer;
+  }
+
+  [cngxAccordionPanel]:hover {
+    background: color-mix(
+      in oklch,
+      var(--cngx-color-primary, oklch(0.66 0.19 50)) 6%,
+      var(--cngx-color-surface, oklch(1 0 0))
+    );
+  }
+
+  [cngxAccordionPanel]:focus-visible {
+    outline: 2px solid var(--cngx-color-primary, oklch(0.66 0.19 50));
+    outline-offset: -2px;
+  }
+
+  /* Twisty: a CSS-drawn chevron after the label that rotates when the panel
+   * opens. Consumers projecting their own icon can hide it via the token. */
+  [cngxAccordionPanel]::after {
+    content: '';
+    flex: 0 0 auto;
+    inline-size: 0.5rem;
+    block-size: 0.5rem;
+    border-inline-end: 2px solid currentcolor;
+    border-block-end: 2px solid currentcolor;
+    rotate: 45deg;
+    transition: rotate 0.15s ease;
+  }
+
+  [cngxAccordionPanel][aria-expanded='true']::after {
+    rotate: 225deg;
+  }
+
+  .cngx-accordion__region {
+    padding: var(--cngx-accordion-region-padding, 0.75rem 1rem);
+    border-block-end: 1px solid var(--cngx-accordion-border-color, oklch(0.88 0.005 250));
+  }
+}
