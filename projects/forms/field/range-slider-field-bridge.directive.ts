@@ -1,49 +1,42 @@
 import { computed, Directive, effect, inject, signal, untracked } from '@angular/core';
 
-import { CngxSliderTrack } from '@cngx/common/interactive';
+import { CngxRangeSliderTrack } from '@cngx/common/interactive';
 
 import { CngxFormFieldPresenter } from './form-field-presenter';
 import { CNGX_FORM_FIELD_CONTROL } from './form-field.token';
 import type { CngxFieldRef, CngxFormFieldControl } from './models';
 
 /**
- * Bridges a `<cngx-slider>` (or a bare `[cngxSliderTrack]`) into a
+ * Bridges a `<cngx-range-slider>` (or a bare `[cngxRangeSliderTrack]`) into a
  * `<cngx-form-field>`.
  *
- * Same-element on the slider host. Provides `CNGX_FORM_FIELD_CONTROL` so the
- * form-field presenter discovers the slider, two-way-syncs the bound `Field<T>`
- * value with the slider's `value` model, and projects ARIA attributes from the
- * presenter onto the host.
- *
- * The slider atom stays completely Forms-agnostic - this directive is the only
- * place that imports from `@cngx/forms/field` / `@angular/forms`.
+ * Same-element on the range-slider host. Provides `CNGX_FORM_FIELD_CONTROL` so
+ * the presenter discovers the slider, two-way-syncs the bound `Field<[number,
+ * number]>` value with the slider's tuple `value` model, and projects ARIA from
+ * the presenter onto the host. The slider atom stays Forms-agnostic - this
+ * directive is the only place that imports from `@cngx/forms/field`.
  *
  * ### Usage
  *
  * ```html
- * <cngx-form-field [field]="form.volume">
- *   <label cngxLabel>Volume</label>
- *   <cngx-slider cngxSliderFieldBridge [min]="0" [max]="100" [step]="5" showValue />
- *   <cngx-field-errors />
+ * <cngx-form-field [field]="form.priceRange">
+ *   <label cngxLabel>Price range</label>
+ *   <cngx-range-slider cngxRangeSliderFieldBridge [min]="0" [max]="1000" [step]="10" />
  * </cngx-form-field>
  * ```
- *
- * For Reactive Forms, wrap the `FormControl` in `adaptFormControl(...)` and pass
- * the returned accessor to `[field]` - the bridge doesn't care about the source.
  *
  * @category forms/field
  * @docsKind primary
  * @wcag AA
- * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/slider-field-bridge.directive.ts
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/range-slider-field-bridge.directive.ts
  * @since 0.1.0
- * @relatedTo CngxBindField, CngxFormField, CngxSlider, CngxListboxFieldBridge, adaptFormControl
- * <example-url>http://localhost:4200/#/forms/field/slider-forms/signal-forms-slider</example-url>
+ * @relatedTo CngxSliderFieldBridge, CngxFormField, CngxRangeSlider, adaptFormControl
  */
 @Directive({
-  selector: '[cngxSliderFieldBridge]',
-  exportAs: 'cngxSliderFieldBridge',
+  selector: '[cngxRangeSliderFieldBridge]',
+  exportAs: 'cngxRangeSliderFieldBridge',
   standalone: true,
-  providers: [{ provide: CNGX_FORM_FIELD_CONTROL, useExisting: CngxSliderFieldBridge }],
+  providers: [{ provide: CNGX_FORM_FIELD_CONTROL, useExisting: CngxRangeSliderFieldBridge }],
   host: {
     '[id]': 'id()',
     '[attr.aria-describedby]': 'describedBy()',
@@ -57,8 +50,8 @@ import type { CngxFieldRef, CngxFormFieldControl } from './models';
     '(focusout)': 'handleBlur()',
   },
 })
-export class CngxSliderFieldBridge implements CngxFormFieldControl {
-  private readonly slider = inject(CngxSliderTrack, { self: true, host: true });
+export class CngxRangeSliderFieldBridge implements CngxFormFieldControl {
+  private readonly slider = inject(CngxRangeSliderTrack, { self: true, host: true });
   private readonly presenter = inject(CngxFormFieldPresenter, { optional: true });
 
   readonly id = computed<string>(() => this.presenter?.inputId() ?? '');
@@ -66,7 +59,7 @@ export class CngxSliderFieldBridge implements CngxFormFieldControl {
   private readonly focusedState = signal(false);
   readonly focused = this.focusedState.asReadonly();
 
-  // A numeric slider always carries a value, so it is never "empty".
+  // A range slider always carries a tuple, so it is never "empty".
   readonly empty = computed<boolean>(() => false);
 
   readonly disabled = computed<boolean>(() => this.presenter?.disabled() ?? false);
@@ -91,25 +84,24 @@ export class CngxSliderFieldBridge implements CngxFormFieldControl {
   protected readonly ariaReadonly = computed(() => (this.presenter?.readonly() ? true : null));
 
   constructor() {
-    // Field -> Slider. Equality-guarded so the inverse sync's write does not bounce.
+    // Field -> Slider. Tuple equality so the inverse sync's write does not bounce.
     effect(() => {
       const presenter = this.presenter;
       if (!presenter) {
         return;
       }
       const fieldValue = presenter.fieldState().value();
-      const next = typeof fieldValue === 'number' ? fieldValue : Number(fieldValue);
-      if (!Number.isFinite(next)) {
+      const next = toTuple(fieldValue);
+      if (!next) {
         return;
       }
       const current = untracked(() => this.slider.value());
-      if (!Object.is(current, next)) {
+      if (!tupleEq(current, next)) {
         this.slider.value.set(next);
       }
     });
 
-    // Slider -> Field. `value` is a `WritableSignal` at runtime; `CngxFieldRef`
-    // hides writability for API stability - narrow via writeFieldValue.
+    // Slider -> Field.
     effect(() => {
       const presenter = this.presenter;
       if (!presenter) {
@@ -117,11 +109,11 @@ export class CngxSliderFieldBridge implements CngxFormFieldControl {
       }
       const fieldRef = presenter.fieldState();
       const sliderValue = this.slider.value();
-      const current: unknown = untracked(() => fieldRef.value());
-      if (Object.is(current, sliderValue)) {
+      const current = untracked(() => fieldRef.value());
+      if (Array.isArray(current) && tupleEq(current as readonly number[], sliderValue)) {
         return;
       }
-      writeFieldValue(fieldRef, sliderValue);
+      writeFieldValue(fieldRef, [...sliderValue]);
     });
   }
 
@@ -137,9 +129,25 @@ export class CngxSliderFieldBridge implements CngxFormFieldControl {
   }
 }
 
+/** @internal Coerce a field value to a numeric `[start, end]` tuple, or null. */
+function toTuple(value: unknown): [number, number] | null {
+  if (!Array.isArray(value) || value.length !== 2) {
+    return null;
+  }
+  const [start, end] = value as [unknown, unknown];
+  if (typeof start !== 'number' || typeof end !== 'number') {
+    return null;
+  }
+  return [start, end];
+}
+
+/** @internal */
+function tupleEq(a: readonly number[], b: readonly number[]): boolean {
+  return a.length === b.length && a.every((v, i) => Object.is(v, b[i]));
+}
+
 /**
  * Writes `value` into `fieldRef.value` when it exposes a `WritableSignal`.
- * Capability-checked branch instead of widening the public type.
  * @internal
  */
 function writeFieldValue(fieldRef: CngxFieldRef, value: unknown): void {

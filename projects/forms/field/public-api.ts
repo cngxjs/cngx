@@ -13,6 +13,7 @@ export { adaptFormControl } from './form-control-adapter';
 export { createFieldSync, type FieldSyncOptions } from './field-sync';
 export { CngxListboxFieldBridge } from './listbox-field-bridge.directive';
 export { CngxSliderFieldBridge } from './slider-field-bridge.directive';
+export { CngxRangeSliderFieldBridge } from './range-slider-field-bridge.directive';
 export { CngxBindField } from './bind-field.directive';
 export {
   CngxFormErrors,
