@@ -31,6 +31,15 @@
  */
 
 @layer cngx.tokens {
+  /* Colour tokens (track / fill / thumb / thumb-border / focus-ring / tick) are
+   * intentionally NOT registered as `@property`: a registered custom property
+   * always resolves to its initial-value, which would shadow the dark-aware
+   * foundation fallback (`var(--cngx-slider-*-color, var(--cngx-color-*, …))`)
+   * and freeze the slider in light mode. Leaving them unregistered lets the
+   * fallback chain reach `--cngx-color-border` / `--cngx-color-primary` /
+   * `--cngx-color-surface`, which adapt to colour-scheme. Only geometry tokens
+   * (dark-mode-agnostic) are registered below. */
+
   /**
    * Thickness of the slider track (and fill).
    * @group Track
@@ -42,28 +51,6 @@
   }
 
   /**
-   * Colour of the unfilled portion of the track.
-   * @group Track
-   * @see [[--cngx-color-border]]
-   */
-  @property --cngx-slider-track-color {
-    syntax: '<color>';
-    inherits: true;
-    initial-value: oklch(0.88 0.005 250);
-  }
-
-  /**
-   * Colour of the filled portion from the track start to the thumb.
-   * @group Track
-   * @see [[--cngx-color-primary]]
-   */
-  @property --cngx-slider-fill-color {
-    syntax: '<color>';
-    inherits: true;
-    initial-value: oklch(0.66 0.19 50);
-  }
-
-  /**
    * Diameter of the thumb.
    * @group Thumb
    */
@@ -71,40 +58,6 @@
     syntax: '<length>';
     inherits: true;
     initial-value: 16px;
-  }
-
-  /**
-   * Thumb fill.
-   * @group Thumb
-   * @see [[--cngx-color-surface]]
-   */
-  @property --cngx-slider-thumb-color {
-    syntax: '<color>';
-    inherits: true;
-    initial-value: oklch(1 0 0);
-  }
-
-  /**
-   * Thumb border colour.
-   * @group Thumb
-   * @see [[--cngx-color-primary]]
-   */
-  @property --cngx-slider-thumb-border-color {
-    syntax: '<color>';
-    inherits: true;
-    initial-value: oklch(0.66 0.19 50);
-  }
-
-  /**
-   * Focus-ring colour for the focused thumb. Primary by default so the
-   * ring clears the 3:1 contrast bar against the surface.
-   * @group State / Focus
-   * @see [[--cngx-color-primary]]
-   */
-  @property --cngx-slider-focus-ring-color {
-    syntax: '<color>';
-    inherits: true;
-    initial-value: oklch(0.66 0.19 50);
   }
 
   /**
@@ -160,7 +113,7 @@
     flex: 1 1 auto;
     block-size: var(--cngx-slider-track-size, 4px);
     border-radius: 999px;
-    background: var(--cngx-slider-track-color, oklch(0.88 0.005 250));
+    background: var(--cngx-slider-track-color, var(--cngx-color-border, oklch(0.88 0.005 250)));
   }
 
   /* Single-thumb fill: track start to the thumb. The host carries the
@@ -171,7 +124,7 @@
     inset-inline-start: 0;
     inline-size: calc(var(--cngx-slider-fraction, 0) * 100%);
     border-radius: inherit;
-    background: var(--cngx-slider-fill-color, oklch(0.66 0.19 50));
+    background: var(--cngx-slider-fill-color, var(--cngx-color-primary, oklch(0.66 0.19 50)));
   }
 
   /* Range fill: the band between the two thumbs. The range host publishes
@@ -180,14 +133,14 @@
   [cngxRangeSliderTrack] .cngx-slider__track {
     background: linear-gradient(
       to right,
-      var(--cngx-slider-track-color, oklch(0.88 0.005 250)) 0,
-      var(--cngx-slider-track-color, oklch(0.88 0.005 250))
+      var(--cngx-slider-track-color, var(--cngx-color-border, oklch(0.88 0.005 250))) 0,
+      var(--cngx-slider-track-color, var(--cngx-color-border, oklch(0.88 0.005 250)))
         calc(var(--cngx-slider-start-fraction, 0) * 100%),
-      var(--cngx-slider-fill-color, oklch(0.66 0.19 50))
+      var(--cngx-slider-fill-color, var(--cngx-color-primary, oklch(0.66 0.19 50)))
         calc(var(--cngx-slider-start-fraction, 0) * 100%),
-      var(--cngx-slider-fill-color, oklch(0.66 0.19 50))
+      var(--cngx-slider-fill-color, var(--cngx-color-primary, oklch(0.66 0.19 50)))
         calc(var(--cngx-slider-end-fraction, 1) * 100%),
-      var(--cngx-slider-track-color, oklch(0.88 0.005 250))
+      var(--cngx-slider-track-color, var(--cngx-color-border, oklch(0.88 0.005 250)))
         calc(var(--cngx-slider-end-fraction, 1) * 100%)
     );
   }
@@ -200,9 +153,9 @@
     inline-size: var(--cngx-slider-thumb-size, 16px);
     block-size: var(--cngx-slider-thumb-size, 16px);
     border-radius: 50%;
-    background: var(--cngx-slider-thumb-color, oklch(1 0 0));
+    background: var(--cngx-slider-thumb-color, var(--cngx-color-surface, oklch(1 0 0)));
     border: var(--cngx-slider-thumb-border-width, 2px) solid
-      var(--cngx-slider-thumb-border-color, oklch(0.66 0.19 50));
+      var(--cngx-slider-thumb-border-color, var(--cngx-color-primary, oklch(0.66 0.19 50)));
     translate: -50% -50%;
   }
 
@@ -215,9 +168,9 @@
     inline-size: var(--cngx-slider-thumb-size, 16px);
     block-size: var(--cngx-slider-thumb-size, 16px);
     border-radius: 50%;
-    background: var(--cngx-slider-thumb-color, oklch(1 0 0));
+    background: var(--cngx-slider-thumb-color, var(--cngx-color-surface, oklch(1 0 0)));
     border: var(--cngx-slider-thumb-border-width, 2px) solid
-      var(--cngx-slider-thumb-border-color, oklch(0.66 0.19 50));
+      var(--cngx-slider-thumb-border-color, var(--cngx-color-primary, oklch(0.66 0.19 50)));
     translate: -50% -50%;
     cursor: grab;
   }
@@ -230,7 +183,7 @@
   [cngxSliderTrack]:focus-visible .cngx-slider__thumb,
   [cngxSliderThumb]:focus-visible {
     outline: var(--cngx-slider-focus-ring-width, 2px) solid
-      var(--cngx-slider-focus-ring-color, oklch(0.66 0.19 50));
+      var(--cngx-slider-focus-ring-color, var(--cngx-color-primary, oklch(0.66 0.19 50)));
     outline-offset: 2px;
   }
 
@@ -262,14 +215,14 @@
   [cngxRangeSliderTrack][aria-orientation='vertical'] .cngx-slider__track {
     background: linear-gradient(
       to top,
-      var(--cngx-slider-track-color, oklch(0.88 0.005 250)) 0,
-      var(--cngx-slider-track-color, oklch(0.88 0.005 250))
+      var(--cngx-slider-track-color, var(--cngx-color-border, oklch(0.88 0.005 250))) 0,
+      var(--cngx-slider-track-color, var(--cngx-color-border, oklch(0.88 0.005 250)))
         calc(var(--cngx-slider-start-fraction, 0) * 100%),
-      var(--cngx-slider-fill-color, oklch(0.66 0.19 50))
+      var(--cngx-slider-fill-color, var(--cngx-color-primary, oklch(0.66 0.19 50)))
         calc(var(--cngx-slider-start-fraction, 0) * 100%),
-      var(--cngx-slider-fill-color, oklch(0.66 0.19 50))
+      var(--cngx-slider-fill-color, var(--cngx-color-primary, oklch(0.66 0.19 50)))
         calc(var(--cngx-slider-end-fraction, 1) * 100%),
-      var(--cngx-slider-track-color, oklch(0.88 0.005 250))
+      var(--cngx-slider-track-color, var(--cngx-color-border, oklch(0.88 0.005 250)))
         calc(var(--cngx-slider-end-fraction, 1) * 100%)
     );
   }

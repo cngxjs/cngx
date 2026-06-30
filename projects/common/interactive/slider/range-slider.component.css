@@ -26,14 +26,14 @@ cngx-range-slider .cngx-slider__track {
   border-radius: 999px;
   background: linear-gradient(
     to right,
-    var(--cngx-slider-track-color, oklch(0.88 0.005 250)) 0,
-    var(--cngx-slider-track-color, oklch(0.88 0.005 250))
+    var(--cngx-slider-track-color, var(--cngx-color-border, oklch(0.88 0.005 250))) 0,
+    var(--cngx-slider-track-color, var(--cngx-color-border, oklch(0.88 0.005 250)))
       calc(var(--cngx-slider-start-fraction, 0) * 100%),
-    var(--cngx-slider-fill-color, oklch(0.66 0.19 50))
+    var(--cngx-slider-fill-color, var(--cngx-color-primary, oklch(0.66 0.19 50)))
       calc(var(--cngx-slider-start-fraction, 0) * 100%),
-    var(--cngx-slider-fill-color, oklch(0.66 0.19 50))
+    var(--cngx-slider-fill-color, var(--cngx-color-primary, oklch(0.66 0.19 50)))
       calc(var(--cngx-slider-end-fraction, 1) * 100%),
-    var(--cngx-slider-track-color, oklch(0.88 0.005 250))
+    var(--cngx-slider-track-color, var(--cngx-color-border, oklch(0.88 0.005 250)))
       calc(var(--cngx-slider-end-fraction, 1) * 100%)
   );
 }
@@ -46,8 +46,8 @@ cngx-range-slider.cngx-slider--ticks .cngx-slider__track::before {
   border-radius: inherit;
   background-image: repeating-linear-gradient(
     to right,
-    var(--cngx-slider-tick-color, oklch(0.7 0.01 250)) 0,
-    var(--cngx-slider-tick-color, oklch(0.7 0.01 250)) var(--cngx-slider-tick-width, 1px),
+    var(--cngx-slider-tick-color, var(--cngx-color-border, oklch(0.7 0.01 250))) 0,
+    var(--cngx-slider-tick-color, var(--cngx-color-border, oklch(0.7 0.01 250))) var(--cngx-slider-tick-width, 1px),
     transparent var(--cngx-slider-tick-width, 1px),
     transparent var(--cngx-slider-tick-interval, 10%)
   );
@@ -62,9 +62,9 @@ cngx-range-slider [cngxSliderThumb] {
   inline-size: var(--cngx-slider-thumb-size, 16px);
   block-size: var(--cngx-slider-thumb-size, 16px);
   border-radius: 50%;
-  background: var(--cngx-slider-thumb-color, oklch(1 0 0));
+  background: var(--cngx-slider-thumb-color, var(--cngx-color-surface, oklch(1 0 0)));
   border: var(--cngx-slider-thumb-border-width, 2px) solid
-    var(--cngx-slider-thumb-border-color, oklch(0.66 0.19 50));
+    var(--cngx-slider-thumb-border-color, var(--cngx-color-primary, oklch(0.66 0.19 50)));
   translate: -50% -50%;
   cursor: grab;
 }
@@ -72,7 +72,7 @@ cngx-range-slider [cngxSliderThumb] {
 /* Crisp outline ring on keyboard focus, matching the cngx convention. */
 cngx-range-slider [cngxSliderThumb]:focus-visible {
   outline: var(--cngx-slider-focus-ring-width, 2px) solid
-    var(--cngx-slider-focus-ring-color, oklch(0.66 0.19 50));
+    var(--cngx-slider-focus-ring-color, var(--cngx-color-primary, oklch(0.66 0.19 50)));
   outline-offset: 2px;
 }
 
@@ -139,14 +139,14 @@ cngx-range-slider[aria-orientation='vertical'] .cngx-slider__track {
   block-size: auto;
   background: linear-gradient(
     to top,
-    var(--cngx-slider-track-color, oklch(0.88 0.005 250)) 0,
-    var(--cngx-slider-track-color, oklch(0.88 0.005 250))
+    var(--cngx-slider-track-color, var(--cngx-color-border, oklch(0.88 0.005 250))) 0,
+    var(--cngx-slider-track-color, var(--cngx-color-border, oklch(0.88 0.005 250)))
       calc(var(--cngx-slider-start-fraction, 0) * 100%),
-    var(--cngx-slider-fill-color, oklch(0.66 0.19 50))
+    var(--cngx-slider-fill-color, var(--cngx-color-primary, oklch(0.66 0.19 50)))
       calc(var(--cngx-slider-start-fraction, 0) * 100%),
-    var(--cngx-slider-fill-color, oklch(0.66 0.19 50))
+    var(--cngx-slider-fill-color, var(--cngx-color-primary, oklch(0.66 0.19 50)))
       calc(var(--cngx-slider-end-fraction, 1) * 100%),
-    var(--cngx-slider-track-color, oklch(0.88 0.005 250))
+    var(--cngx-slider-track-color, var(--cngx-color-border, oklch(0.88 0.005 250)))
       calc(var(--cngx-slider-end-fraction, 1) * 100%)
   );
 }
@@ -154,8 +154,8 @@ cngx-range-slider[aria-orientation='vertical'] .cngx-slider__track {
 cngx-range-slider[aria-orientation='vertical'].cngx-slider--ticks .cngx-slider__track::before {
   background-image: repeating-linear-gradient(
     to top,
-    var(--cngx-slider-tick-color, oklch(0.7 0.01 250)) 0,
-    var(--cngx-slider-tick-color, oklch(0.7 0.01 250)) var(--cngx-slider-tick-width, 1px),
+    var(--cngx-slider-tick-color, var(--cngx-color-border, oklch(0.7 0.01 250))) 0,
+    var(--cngx-slider-tick-color, var(--cngx-color-border, oklch(0.7 0.01 250))) var(--cngx-slider-tick-width, 1px),
     transparent var(--cngx-slider-tick-width, 1px),
     transparent var(--cngx-slider-tick-interval, 10%)
   );
