@@ -13,11 +13,11 @@ export const STORY: DemoSpec = {
   framework: 'signal-forms',
   apiComponents: ['CngxRating', 'CngxRatingItem'],
   moduleImports: [
-    "import { form, schema, required, FormField } from '@angular/forms/signals';",
+    "import { form, schema, required } from '@angular/forms/signals';",
     "import { CngxFormField, CngxLabel, CngxHint } from '@cngx/forms/field';",
     "import { CngxRating, CngxRatingItem } from '@cngx/forms/input';",
   ],
-  imports: ['CngxFormField', 'CngxLabel', 'CngxHint', 'CngxRating', 'CngxRatingItem', 'FormField'],
+  imports: ['CngxFormField', 'CngxLabel', 'CngxHint', 'CngxRating', 'CngxRatingItem'],
   setup: `private readonly ratingModel = signal({ score: 0 });
   private readonly ratingSchema = schema<{ score: number }>((root) => {
     required(root.score);
