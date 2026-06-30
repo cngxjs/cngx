@@ -224,13 +224,8 @@
 
   /* Focus ring on the focusable element: the single-slider host's thumb,
    * or each range thumb. >= 3:1 contrast via the primary token. */
-  [cngxSliderTrack]:focus {
+  [cngxSliderTrack]:focus-visible {
     outline: none;
-  }
-  [cngxSliderTrack]:focus .cngx-slider__thumb,
-  [cngxSliderThumb]:focus {
-    box-shadow: 0 0 0 var(--cngx-slider-focus-halo-size, 6px)
-      color-mix(in oklch, var(--cngx-slider-focus-ring-color, oklch(0.66 0.19 50)) 25%, transparent);
   }
   [cngxSliderTrack]:focus-visible .cngx-slider__thumb,
   [cngxSliderThumb]:focus-visible {

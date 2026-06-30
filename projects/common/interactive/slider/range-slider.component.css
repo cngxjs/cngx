@@ -69,14 +69,7 @@ cngx-range-slider [cngxSliderThumb] {
   cursor: grab;
 }
 
-/* Soft halo on any focus (pointer or keyboard) marks the active thumb. */
-cngx-range-slider [cngxSliderThumb]:focus {
-  outline: none;
-  box-shadow: 0 0 0 var(--cngx-slider-focus-halo-size, 6px)
-    color-mix(in oklch, var(--cngx-slider-focus-ring-color, oklch(0.66 0.19 50)) 25%, transparent);
-}
-
-/* Strong outline ring on keyboard focus only. */
+/* Crisp outline ring on keyboard focus, matching the cngx convention. */
 cngx-range-slider [cngxSliderThumb]:focus-visible {
   outline: var(--cngx-slider-focus-ring-width, 2px) solid
     var(--cngx-slider-focus-ring-color, oklch(0.66 0.19 50));

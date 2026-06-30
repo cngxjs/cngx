@@ -101,18 +101,12 @@ cngx-slider .cngx-slider__tick-label {
   white-space: nowrap;
 }
 
-cngx-slider:focus {
+cngx-slider:focus-visible {
   outline: none;
 }
 
-/* Soft halo on ANY focus (pointer or keyboard) so the active handle reads as
- * "now controllable". */
-cngx-slider:focus .cngx-slider__thumb {
-  box-shadow: 0 0 0 var(--cngx-slider-focus-halo-size, 6px)
-    color-mix(in oklch, var(--cngx-slider-focus-ring-color, oklch(0.66 0.19 50)) 25%, transparent);
-}
-
-/* Strong outline ring on keyboard focus only (the a11y indicator). */
+/* Crisp outline ring on keyboard focus, matching the cngx convention
+ * (toggle / checkbox / radio). */
 cngx-slider:focus-visible .cngx-slider__thumb {
   outline: var(--cngx-slider-focus-ring-width, 2px) solid
     var(--cngx-slider-focus-ring-color, oklch(0.66 0.19 50));
