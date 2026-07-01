@@ -66,7 +66,7 @@ export const STORY: DemoSpec = {
       }
     </ol>
   </nav>
-  <div cngxPopover #ovPop="cngxPopover">
+  <div cngxPopover class="breadcrumb-overflow-menu" #ovPop="cngxPopover">
     <ul cngxMenu [label]="'Collapsed breadcrumbs'" tabindex="0" #ovMenu="cngxMenu">
       @for (item of bc.collapsedItems(); track item) {
         @let itemLabel = item.resolvedLabel();
