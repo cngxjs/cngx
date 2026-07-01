@@ -177,6 +177,26 @@ describe('CngxBreadcrumbBar', () => {
     expect(items[firstCrumb].querySelector('a')?.textContent?.trim()).toBe('Home');
   });
 
+  it('lists the collapsed labels in the overflow menu and updates them reactively', () => {
+    const { fixture, host, barEl } = setup();
+    host.maxVisible.set(2);
+    fixture.detectChanges();
+
+    const rows = (): (string | undefined)[] =>
+      Array.from(barEl.querySelectorAll<HTMLElement>('.cngx-breadcrumb__overflow-item')).map((li) =>
+        li.textContent?.trim(),
+      );
+    expect(rows()).toEqual(['Catalog', 'Books']);
+
+    // The bar binds [cngxBreadcrumbItemLabel], so the overflow row reads the
+    // reactive label input; renaming a collapsed crumb updates the menu without
+    // reopening it (no one-shot textContent read). Reuse the unchanged crumb
+    // identities so the trail's track-by-identity only recreates the renamed one.
+    host.items.set([TRAIL[0], { label: 'Katalog', href: '/catalog' }, TRAIL[2], TRAIL[3]]);
+    fixture.detectChanges();
+    expect(rows()).toEqual(['Katalog', 'Books']);
+  });
+
   it('a provided CNGX_BREADCRUMB_ITEMS_SOURCE wins over the [items] input', () => {
     const fixture = TestBed.createComponent(SeamHost);
     fixture.detectChanges();

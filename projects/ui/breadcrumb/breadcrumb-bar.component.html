@@ -6,6 +6,7 @@
           cngxBreadcrumbItem
           #crumbRef="cngxBreadcrumbItem"
           class="cngx-breadcrumb__link"
+          [cngxBreadcrumbItemLabel]="crumb.label"
           [attr.href]="last ? null : (crumb.href ?? null)"
           >{{ crumb.label }}</a
         >
