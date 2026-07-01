@@ -38,7 +38,10 @@
   }
 
   /**
-   * Separator colour.
+   * Separator colour. Delegated at `:root` to the dark-aware foundation token
+   * `--cngx-color-text-muted` so the separator mutes in step with the link and
+   * terminal colours; the literal `initial-value` is only the last-resort
+   * fallback (CSS forbids a `var()` in `@property` `initial-value`).
    * @group Separator
    * @see [[--cngx-color-text-muted]]
    */
@@ -46,6 +49,12 @@
     syntax: '<color>';
     inherits: true;
     initial-value: oklch(0.6 0.01 250);
+  }
+
+  /* Chain the separator to the foundation muted-text token so the dark-mode
+     cascade reaches it like the link and terminal colours below. */
+  :root {
+    --cngx-breadcrumb-separator-color: var(--cngx-color-text-muted, oklch(0.6 0.01 250));
   }
 }
 
