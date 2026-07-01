@@ -1,4 +1,4 @@
-import { computed, Directive, inject, input, type OnDestroy, type OnInit } from '@angular/core';
+import { computed, Directive, inject, input } from '@angular/core';
 import { CngxRovingItem } from '@cngx/common/a11y';
 
 import { CNGX_ACCORDION } from './accordion.token';
@@ -32,7 +32,7 @@ import { CNGX_ACCORDION } from './accordion.token';
     '(click)': 'toggle()',
   },
 })
-export class CngxAccordionPanel implements OnInit, OnDestroy {
+export class CngxAccordionPanel {
   /** Stable id identifying this panel within its accordion. */
   readonly panelId = input.required<string>();
   /** `id` of the region this header controls, bound to `aria-controls`. */
@@ -42,14 +42,6 @@ export class CngxAccordionPanel implements OnInit, OnDestroy {
 
   /** `aria-expanded`, derived from the coordinator's open-set. */
   protected readonly expanded = computed(() => this.accordion.isOpen(this.panelId()));
-
-  ngOnInit(): void {
-    this.accordion.registerPanel(this.panelId());
-  }
-
-  ngOnDestroy(): void {
-    this.accordion.unregisterPanel(this.panelId());
-  }
 
   protected toggle(): void {
     this.accordion.toggle(this.panelId());

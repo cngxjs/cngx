@@ -51,7 +51,6 @@ export class CngxAccordion implements CngxAccordionHost {
   // Single source of truth for which panels are open. `setEqual` guards the
   // collection return so an identical set never re-fires downstream computeds.
   private readonly openIds = signal<ReadonlySet<string>>(new Set(), { equal: setEqual });
-  private readonly registered = signal<ReadonlySet<string>>(new Set(), { equal: setEqual });
 
   constructor() {
     // Accordion headers navigate vertically; the roving host defaults to the
@@ -74,24 +73,5 @@ export class CngxAccordion implements CngxAccordionHost {
       next.add(panelId);
     }
     this.openIds.set(next);
-  }
-
-  registerPanel(panelId: string): void {
-    this.registered.update((current) => {
-      const next = new Set(current);
-      next.add(panelId);
-      return next;
-    });
-  }
-
-  unregisterPanel(panelId: string): void {
-    this.registered.update((current) => {
-      if (!current.has(panelId)) {
-        return current;
-      }
-      const next = new Set(current);
-      next.delete(panelId);
-      return next;
-    });
   }
 }

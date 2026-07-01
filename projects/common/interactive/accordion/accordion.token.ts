@@ -19,10 +19,6 @@ export interface CngxAccordionHost {
   isOpen(panelId: string): boolean;
   /** Toggle the panel; in single mode this closes every sibling first. */
   toggle(panelId: string): void;
-  /** Announce a panel to the coordinator (membership tracking). */
-  registerPanel(panelId: string): void;
-  /** Withdraw a panel from the coordinator on destroy. */
-  unregisterPanel(panelId: string): void;
 }
 
 /**
