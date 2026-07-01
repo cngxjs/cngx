@@ -1,0 +1,28 @@
+@if (breadcrumb.hasCollapsed()) {
+  <button
+    type="button"
+    class="cngx-breadcrumb__overflow-trigger"
+    [cngxMenuTrigger]="menu"
+    [popover]="panel.popover"
+    [attr.aria-label]="triggerLabel()"
+    (click)="panel.popover.toggle()"
+  >
+    <ng-content>&hellip;</ng-content>
+  </button>
+
+  <cngx-popover-panel #panel role="group" placement="bottom-start">
+    <ul cngxMenu #menu="cngxMenu" [label]="menuLabel()" class="cngx-breadcrumb__overflow-menu">
+      @for (crumb of breadcrumb.collapsedItems(); track crumb; let i = $index) {
+        <li cngxMenuItem class="cngx-breadcrumb__overflow-item">
+          @if (itemTemplate(); as tpl) {
+            <ng-container
+              *ngTemplateOutlet="tpl; context: { $implicit: crumb, crumb: crumb, index: i }"
+            />
+          } @else {
+            {{ crumb.resolvedLabel() }}
+          }
+        </li>
+      }
+    </ul>
+  </cngx-popover-panel>
+}
