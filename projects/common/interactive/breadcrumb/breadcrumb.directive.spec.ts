@@ -87,6 +87,40 @@ describe('CngxBreadcrumb', () => {
     expect(els[4].hasAttribute('hidden')).toBe(false);
   });
 
+  it('resolvedLabel falls back to the projected crumb text', () => {
+    const { fixture } = setup();
+    const dirs = fixture.debugElement
+      .queryAll(By.directive(CngxBreadcrumbItem))
+      .map((de) => de.injector.get(CngxBreadcrumbItem));
+    expect(dirs.map((d) => d.resolvedLabel())).toEqual([
+      'Home',
+      'Library',
+      'Authors',
+      'Tolkien',
+      'The Hobbit',
+    ]);
+  });
+
+  it('resolvedLabel prefers the explicit cngxBreadcrumbItemLabel input', () => {
+    @Component({
+      template: `<nav cngxBreadcrumb>
+        <ol>
+          <li><a cngxBreadcrumbItem cngxBreadcrumbItemLabel="Home page" href="#">Home</a></li>
+        </ol>
+      </nav>`,
+      imports: [CngxBreadcrumb, CngxBreadcrumbItem],
+    })
+    class LabelHost {}
+
+    const fixture = TestBed.createComponent(LabelHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const dir = fixture.debugElement
+      .query(By.directive(CngxBreadcrumbItem))
+      .injector.get(CngxBreadcrumbItem);
+    expect(dir.resolvedLabel()).toBe('Home page');
+  });
+
   it('exposes the collapsed crumbs in DOM order for the overflow menu', () => {
     const { fixture, host } = setup();
     host.max.set(3);

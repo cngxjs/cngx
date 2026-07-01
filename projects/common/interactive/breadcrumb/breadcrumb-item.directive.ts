@@ -1,4 +1,4 @@
-import { computed, Directive, inject } from '@angular/core';
+import { computed, Directive, ElementRef, inject, input } from '@angular/core';
 
 import { CNGX_BREADCRUMB } from './breadcrumb.token';
 
@@ -26,9 +26,33 @@ import { CNGX_BREADCRUMB } from './breadcrumb.token';
 })
 export class CngxBreadcrumbItem {
   private readonly breadcrumb = inject(CNGX_BREADCRUMB);
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
+
+  /**
+   * Explicit accessible label for the overflow menu, when the crumb's rendered
+   * text is not the right string to list (e.g. an icon-only crumb). Reactive:
+   * bind it when the crumb text is dynamic.
+   */
+  readonly label = input<string>('', { alias: 'cngxBreadcrumbItemLabel' });
 
   /** Whether this is the terminal crumb (the current page). */
   protected readonly terminal = computed(() => this.breadcrumb.isTerminal(this));
   /** Whether this crumb is collapsed into the overflow menu. */
   protected readonly collapsed = computed(() => this.breadcrumb.isCollapsed(this));
+
+  /**
+   * Readable label for the collapsed-crumb list. Prefers the explicit
+   * {@link label} input; otherwise falls back to the projected text.
+   *
+   * The fallback is a **one-shot DOM read at call time**, not reactive - it
+   * reflects the text present when called. For crumbs whose text changes at
+   * runtime, bind `[cngxBreadcrumbItemLabel]` so the reactive path is used.
+   */
+  resolvedLabel(): string {
+    const explicit = this.label();
+    if (explicit) {
+      return explicit;
+    }
+    return this.host.nativeElement.textContent?.trim() ?? '';
+  }
 }
