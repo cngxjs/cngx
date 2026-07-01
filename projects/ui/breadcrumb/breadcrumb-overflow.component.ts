@@ -48,6 +48,7 @@ import { CngxBreadcrumbOverflowItem } from './breadcrumb-overflow-item.directive
   encapsulation: ViewEncapsulation.None,
   imports: [NgTemplateOutlet, CngxMenu, CngxMenuItem, CngxMenuTrigger, CngxPopoverPanel],
   templateUrl: './breadcrumb-overflow.component.html',
+  styleUrl: './breadcrumb-overflow.component.css',
 })
 export class CngxBreadcrumbOverflow {
   /** Collapse-set contract, provided by the surrounding `cngxBreadcrumb`. */
