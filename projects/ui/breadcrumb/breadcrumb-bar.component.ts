@@ -60,7 +60,7 @@ export class CngxBreadcrumbBar {
    * signal's reference, never a fresh literal, so no `equal` fn is needed and
    * no downstream cascade fires.
    */
-  readonly items = computed<readonly CngxBreadcrumbCrumb[]>(
+  protected readonly items = computed<readonly CngxBreadcrumbCrumb[]>(
     () => this.itemsSource?.crumbs() ?? this.itemsInput(),
   );
 

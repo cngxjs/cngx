@@ -121,6 +121,20 @@ describe('CngxBreadcrumbBar', () => {
     expect(links().at(-1)?.hasAttribute('hidden')).toBe(false);
   });
 
+  it('tracks crumbs by identity so a reordered trail re-marks the terminal', () => {
+    const { fixture, host, links } = setup();
+    expect(links().at(-1)?.textContent?.trim()).toBe('The Hobbit');
+
+    host.items.set([...TRAIL].reverse());
+    fixture.detectChanges();
+
+    const anchors = links();
+    expect(anchors[0].textContent?.trim()).toBe('The Hobbit');
+    expect(anchors.at(-1)?.textContent?.trim()).toBe('Home');
+    expect(anchors.at(-1)?.getAttribute('aria-current')).toBe('page');
+    expect(anchors[0].getAttribute('aria-current')).toBeNull();
+  });
+
   it('reflects the variant input as a host class', () => {
     const { fixture, host, barEl } = setup();
     expect(barEl.classList.contains('cngx-breadcrumb')).toBe(true);
