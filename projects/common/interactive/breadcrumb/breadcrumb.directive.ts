@@ -1,10 +1,9 @@
-import { computed, contentChildren, Directive, input } from '@angular/core';
+import { computed, contentChildren, Directive, inject, input } from '@angular/core';
 import { arrayEqual, setEqual } from '@cngx/utils';
 
 import { CngxBreadcrumbItem } from './breadcrumb-item.directive';
+import { CNGX_BREADCRUMB_COLLAPSE_STRATEGY } from './breadcrumb-collapse.token';
 import { CNGX_BREADCRUMB, type CngxBreadcrumbHost } from './breadcrumb.token';
-
-const NO_COLLAPSE: ReadonlySet<number> = new Set();
 
 /**
  * Linear breadcrumb navigation. Put `cngxBreadcrumb` on the `<nav>`; it names
@@ -49,24 +48,24 @@ export class CngxBreadcrumb implements CngxBreadcrumbHost {
   /** Maximum crumbs to show before the middle collapses. Unset = never collapse. */
   readonly maxVisible = input<number | undefined>(undefined);
 
+  /** Swappable collapse rule; defaults to keep-first + last (max - 1). */
+  private readonly collapse = inject(CNGX_BREADCRUMB_COLLAPSE_STRATEGY);
+
   /** Projected crumbs in DOM order (items may be nested in `<ol>`/`<li>`). */
   private readonly items = contentChildren(CngxBreadcrumbItem, { descendants: true });
 
+  // Item -> index lookup for isTerminal/isCollapsed (O(1), was O(n) indexOf).
+  // No `equal`: its sole dependency is items(), so it recomputes only when the
+  // item set changes, at which point a fresh WeakMap is the correct downstream
+  // signal - a WeakMap keyed by directive instances has no structural equality.
+  private readonly indexByItem = computed(() => {
+    const map = new WeakMap<CngxBreadcrumbItem, number>();
+    this.items().forEach((item, index) => map.set(item, index));
+    return map;
+  });
+
   private readonly collapsedIndices = computed<ReadonlySet<number>>(
-    () => {
-      const max = this.maxVisible();
-      const total = this.items().length;
-      if (!max || max < 1 || total <= max) {
-        return NO_COLLAPSE;
-      }
-      // Keep the first crumb and the last (max - 1); collapse the middle.
-      const keepTail = max - 1;
-      const collapsed = new Set<number>();
-      for (let i = 1; i < total - keepTail; i++) {
-        collapsed.add(i);
-      }
-      return collapsed;
-    },
+    () => this.collapse(this.items().length, this.maxVisible() ?? 0),
     { equal: setEqual },
   );
 
@@ -80,12 +79,12 @@ export class CngxBreadcrumb implements CngxBreadcrumbHost {
   readonly hasCollapsed = computed(() => this.collapsedIndices().size > 0);
 
   isTerminal(item: CngxBreadcrumbItem): boolean {
-    const list = this.items();
-    return list.length > 0 && list.at(-1) === item;
+    const index = this.indexByItem().get(item);
+    return index !== undefined && index === this.items().length - 1;
   }
 
   isCollapsed(item: CngxBreadcrumbItem): boolean {
-    const index = this.items().indexOf(item);
-    return index >= 0 && this.collapsedIndices().has(index);
+    const index = this.indexByItem().get(item);
+    return index !== undefined && this.collapsedIndices().has(index);
   }
 }

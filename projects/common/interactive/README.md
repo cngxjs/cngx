@@ -290,6 +290,21 @@ in `@cngx/themes/cngx.css`.
 Render the collapsed crumbs in an ellipsis `CngxMenu` (drive it from `bc.hasCollapsed()`),
 and truncate long labels with `CngxTruncate`.
 
+The collapse rule is a swappable DI factory. `createBreadcrumbCollapse()` is the default
+(keep the first crumb + the last `maxVisible - 1`); override
+`CNGX_BREADCRUMB_COLLAPSE_STRATEGY` in `providers` (app-wide) or `viewProviders` (per `<nav>`)
+to change which indices fold - width-aware, keep-first-N, mobile parent-only - without
+forking. The strategy is a pure `(total, maxVisible) => ReadonlySet<number>`.
+
+```ts
+@Component({
+  viewProviders: [{
+    provide: CNGX_BREADCRUMB_COLLAPSE_STRATEGY,
+    useValue: (total, maxVisible) => keepFirstTwoAndLastTwo(total, maxVisible),
+  }],
+})
+```
+
 ## Other Exports
 
 `CngxClickOutside`, `CngxDisclosure`, `CngxNavLink`, `CngxNavLabel`, `CngxNavBadge`,
