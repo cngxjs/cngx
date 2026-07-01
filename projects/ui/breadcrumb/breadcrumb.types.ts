@@ -13,6 +13,11 @@ export interface CngxBreadcrumbCrumb {
   label: string;
   /** Target for a plain-link crumb. Omit on the terminal crumb. */
   href?: string;
-  /** In-app route for a router-driven crumb. Omit on the terminal crumb. */
+  /**
+   * In-app route for a router-driven crumb. Reserved for the router-driven
+   * mode; the base `[items]` trail renders `href` only and does not navigate
+   * on `routerLink` (the bar stays free of `@angular/router`). Omit on the
+   * terminal crumb.
+   */
   routerLink?: unknown;
 }
