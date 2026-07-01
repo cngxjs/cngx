@@ -38,22 +38,17 @@ export const STORY: DemoSpec = {
     { label: 'Fantasy', href: '#' },
     { label: 'Tolkien', href: '#' },
     { label: 'The Hobbit', href: '' },
-  ];
-  protected readonly collapsedCrumbs = this.crumbs.slice(1, this.crumbs.length - (this.maxVisible - 1));
-  protected isCollapsedIndex(index: number): boolean {
-    return index >= 1 && index < this.crumbs.length - (this.maxVisible - 1);
-  }`,
+  ];`,
   template: `  <nav cngxBreadcrumb class="cngx-breadcrumb" [maxVisible]="maxVisible" #bc="cngxBreadcrumb">
     <ol>
-      @for (crumb of crumbs; track crumb.label; let i = $index; let first = $first; let last = $last) {
-        @if (!first && !isCollapsedIndex(i)) {
-          <li cngxBreadcrumbSeparator>/</li>
-        }
-        <li [hidden]="isCollapsedIndex(i)">
-          <a cngxBreadcrumbItem [attr.href]="last ? null : crumb.href">{{ crumb.label }}</a>
+      @for (crumb of crumbs; track crumb.label; let first = $first; let last = $last) {
+        <li [style.display]="bc.isCollapsed(crumbRef) ? 'none' : null">
+          <a cngxBreadcrumbItem #crumbRef="cngxBreadcrumbItem" [attr.href]="last ? null : crumb.href">{{ crumb.label }}</a>
         </li>
+        @if (!last) {
+          <li cngxBreadcrumbSeparator [style.display]="bc.isCollapsed(crumbRef) ? 'none' : null">/</li>
+        }
         @if (first && bc.hasCollapsed()) {
-          <li cngxBreadcrumbSeparator>/</li>
           <li>
             <button
               type="button"
@@ -66,14 +61,16 @@ export const STORY: DemoSpec = {
               &hellip;
             </button>
           </li>
+          <li cngxBreadcrumbSeparator>/</li>
         }
       }
     </ol>
   </nav>
   <div cngxPopover #ovPop="cngxPopover">
     <ul cngxMenu [label]="'Collapsed breadcrumbs'" tabindex="0" #ovMenu="cngxMenu">
-      @for (crumb of collapsedCrumbs; track crumb.label) {
-        <li cngxMenuItem [value]="crumb.label">{{ crumb.label }}</li>
+      @for (item of bc.collapsedItems(); track item) {
+        @let itemLabel = item.resolvedLabel();
+        <li cngxMenuItem [value]="itemLabel">{{ itemLabel }}</li>
       }
     </ul>
   </div>`,
