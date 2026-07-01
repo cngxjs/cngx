@@ -53,10 +53,10 @@ export const STORY: DemoSpec = {
   template: `  <nav
     cngxBreadcrumb
     cngxResizeObserver
-    class="cngx-breadcrumb"
+    class="cngx-breadcrumb demo-breadcrumb-resizable"
     [maxVisible]="maxVisible()"
     #bc="cngxBreadcrumb"
-    style="resize: horizontal; overflow: auto; min-width: 200px; max-width: 100%; padding: 0.75rem; border: 1px dashed var(--cngx-border, #cbd5e1); border-radius: var(--cngx-radius, 0.375rem);">
+    style="resize: horizontal; overflow: auto; min-width: 200px; max-width: 100%; padding: 0.75rem;">
     <ol>
       @for (crumb of crumbs; track crumb.label; let first = $first; let last = $last) {
         <li [style.display]="bc.isCollapsed(crumbRef) ? 'none' : null">
