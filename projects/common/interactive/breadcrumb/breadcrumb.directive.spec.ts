@@ -56,6 +56,24 @@ describe('CngxBreadcrumb', () => {
     expect(container.injector.get(CNGX_BREADCRUMB)).toBe(bc);
   });
 
+  it('exposes the collapse set on the CNGX_BREADCRUMB contract for a decoupled overflow', () => {
+    const { fixture, host, container } = setup();
+    const contract = container.injector.get(CNGX_BREADCRUMB);
+    expect(contract.hasCollapsed()).toBe(false);
+    expect(contract.collapsedItems()).toEqual([]);
+
+    host.max.set(3);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+
+    expect(contract.hasCollapsed()).toBe(true);
+    expect(contract.collapsedItems().map((item) => item.resolvedLabel())).toEqual([
+      'Library',
+      'Authors',
+    ]);
+  });
+
   it('names the landmark and hides separators from assistive tech', () => {
     const { container, fixture } = setup();
     expect(container.nativeElement.getAttribute('aria-label')).toBe('Breadcrumb');
