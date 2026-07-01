@@ -58,6 +58,11 @@ export { CngxBreadcrumb } from './breadcrumb/breadcrumb.directive';
 export { CNGX_BREADCRUMB, type CngxBreadcrumbHost } from './breadcrumb/breadcrumb.token';
 export { CngxBreadcrumbItem } from './breadcrumb/breadcrumb-item.directive';
 export { CngxBreadcrumbSeparator } from './breadcrumb/breadcrumb-separator.directive';
+export {
+  createBreadcrumbCollapse,
+  type CngxBreadcrumbCollapseStrategy,
+} from './breadcrumb/breadcrumb-collapse';
+export { CNGX_BREADCRUMB_COLLAPSE_STRATEGY } from './breadcrumb/breadcrumb-collapse.token';
 export { CngxToggle } from './toggle/toggle.component';
 export { CngxCheckbox } from './checkbox/checkbox.component';
 export { CngxCheckboxGroup } from './checkbox-group/checkbox-group.component';
