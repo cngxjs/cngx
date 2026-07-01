@@ -2672,18 +2672,6 @@ pre.code-block code {
   background: var(--cngx-ex-surface-alt, transparent);
 }
 
-// Dropdown chrome for the breadcrumb overflow menu's bare `[cngxPopover]`.
-// Colours chain to the dark-aware foundation tokens so the surface tracks the
-// scheme; the popover element carries this, the trigger wiring stays untouched.
-.breadcrumb-overflow-menu {
-  background: var(--cngx-color-surface, oklch(1 0 0));
-  color: var(--cngx-color-text, oklch(0.2 0.01 250));
-  border: 1px solid var(--cngx-color-border, oklch(0.89 0 0));
-  border-radius: var(--cngx-radius-md, 0.75rem);
-  box-shadow: var(--cngx-shadow-lg, 0 8px 24px oklch(0 0 0 / 0.12));
-  padding: 0.25rem;
-}
-
 // Placement-matrix preview tile - one per `PopoverPlacement` value.
 // Renders a small labelled chip so the auto-open matrix proves the
 // `position-area` mapping table without leaking colours from the host
