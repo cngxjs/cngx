@@ -31,6 +31,7 @@
 @use './backdrop-theme' as backdrop;
 @use './badge-theme' as badge;
 @use './bottom-sheet-theme' as bottom-sheet;
+@use './breadcrumb-theme' as breadcrumb;
 @use './card-theme' as card;
 @use './chart-theme' as chart;
 @use './chip-theme' as chip;
@@ -74,6 +75,7 @@
   @include backdrop.theme($theme);
   @include badge.theme($theme);
   @include bottom-sheet.theme($theme);
+  @include breadcrumb.theme($theme);
   @include card.theme($theme);
   @include chart.theme($theme);
   @include chip.theme($theme);
