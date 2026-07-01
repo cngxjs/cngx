@@ -1,6 +1,6 @@
 import { computed, Directive, inject } from '@angular/core';
 
-import { CNGX_BREADCRUMB } from './breadcrumb.directive';
+import { CNGX_BREADCRUMB } from './breadcrumb.token';
 
 /**
  * A single crumb. Put `cngxBreadcrumbItem` on the crumb's `<a>` (or `<span>`

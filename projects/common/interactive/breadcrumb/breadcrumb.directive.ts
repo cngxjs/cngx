@@ -1,29 +1,8 @@
-import { computed, contentChildren, Directive, InjectionToken, input } from '@angular/core';
+import { computed, contentChildren, Directive, input } from '@angular/core';
 import { arrayEqual, setEqual } from '@cngx/utils';
 
-// Value import (used by the `contentChildren` query). The breadcrumb <-> item
-// modules form a cycle, but the class and token are only touched at runtime
-// (query init / inject), never at module-eval, so the live bindings resolve.
 import { CngxBreadcrumbItem } from './breadcrumb-item.directive';
-
-/** Contract a {@link CngxBreadcrumb} provides to its items via DI. */
-export interface CngxBreadcrumbHost {
-  /** Whether this item is the terminal crumb (gets `aria-current="page"`). */
-  isTerminal(item: CngxBreadcrumbItem): boolean;
-  /** Whether this item is collapsed into the overflow menu (hidden in the trail). */
-  isCollapsed(item: CngxBreadcrumbItem): boolean;
-}
-
-/**
- * DI token for the {@link CngxBreadcrumbHost} contract. {@link CngxBreadcrumb}
- * provides it via `useExisting`; each {@link CngxBreadcrumbItem} injects it.
- *
- * @category common/interactive/breadcrumb
- * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/breadcrumb/breadcrumb.directive.ts
- * @since 0.1.0
- * @relatedTo CngxBreadcrumb, CngxBreadcrumbItem
- */
-export const CNGX_BREADCRUMB = new InjectionToken<CngxBreadcrumbHost>('CNGX_BREADCRUMB');
+import { CNGX_BREADCRUMB, type CngxBreadcrumbHost } from './breadcrumb.token';
 
 const NO_COLLAPSE: ReadonlySet<number> = new Set();
 

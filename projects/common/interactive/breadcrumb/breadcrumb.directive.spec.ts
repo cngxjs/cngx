@@ -6,6 +6,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { CngxBreadcrumb } from './breadcrumb.directive';
 import { CngxBreadcrumbItem } from './breadcrumb-item.directive';
 import { CngxBreadcrumbSeparator } from './breadcrumb-separator.directive';
+import { CNGX_BREADCRUMB } from './breadcrumb.token';
 
 @Component({
   template: `<nav cngxBreadcrumb [maxVisible]="max()" #bc="cngxBreadcrumb">
@@ -47,6 +48,11 @@ describe('CngxBreadcrumb', () => {
     const els = items();
     expect(els.at(-1)?.getAttribute('aria-current')).toBe('page');
     expect(els.slice(0, -1).every((el) => el.getAttribute('aria-current') === null)).toBe(true);
+  });
+
+  it('provides CNGX_BREADCRUMB resolving to the coordinator instance', () => {
+    const { container, bc } = setup();
+    expect(container.injector.get(CNGX_BREADCRUMB)).toBe(bc);
   });
 
   it('names the landmark and hides separators from assistive tech', () => {
