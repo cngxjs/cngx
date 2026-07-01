@@ -1,8 +1,9 @@
 /**
  * @module @cngx/ui/breadcrumb
  */
-
-// CngxBreadcrumbBar and its token seam land with the component in the next
-// commit of this phase; this file scaffolds the secondary entry so ng-packagr
-// discovers it.
-export {};
+export { CngxBreadcrumbBar } from './breadcrumb-bar.component';
+export type { CngxBreadcrumbCrumb } from './breadcrumb.types';
+export {
+  CNGX_BREADCRUMB_ITEMS_SOURCE,
+  type CngxBreadcrumbItemsSource,
+} from './breadcrumb-items-source.token';

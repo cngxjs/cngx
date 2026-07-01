@@ -1,0 +1,35 @@
+.cngx-breadcrumb {
+  display: block;
+  font: inherit;
+}
+
+.cngx-breadcrumb__list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--cngx-breadcrumb-gap, 0.5rem);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cngx-breadcrumb__crumb {
+  display: inline-flex;
+  align-items: center;
+}
+
+.cngx-breadcrumb__link {
+  color: var(--cngx-breadcrumb-link-color, inherit);
+  text-decoration: var(--cngx-breadcrumb-link-decoration, underline);
+}
+
+.cngx-breadcrumb__link[aria-current='page'] {
+  color: var(--cngx-breadcrumb-current-color, inherit);
+  font-weight: var(--cngx-breadcrumb-current-weight, 600);
+  text-decoration: none;
+}
+
+.cngx-breadcrumb__separator {
+  color: var(--cngx-breadcrumb-separator-color, inherit);
+  user-select: none;
+}
