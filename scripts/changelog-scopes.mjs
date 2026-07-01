@@ -44,6 +44,7 @@ export const LIBRARY_SCOPES = [
   'ui/mat-stepper',
   'ui/tabs',
   'ui/mat-tabs',
+  'ui/breadcrumb',
   'ui/sidenav',
   'ui/skeleton',
   'ui/speak',
