@@ -272,7 +272,8 @@ reach the coordinator.
 A linear breadcrumb over a `<nav>` landmark. `CngxBreadcrumb` names the landmark and, when
 the trail exceeds `[maxVisible]`, derives which middle crumbs collapse (keeping the first
 and the last `maxVisible - 1`) and exposes them via `collapsedItems()` / `hasCollapsed()`.
-`CngxBreadcrumbItem` marks the terminal crumb `aria-current="page"` from its position;
+`CngxBreadcrumbItem` marks the terminal crumb `aria-current="page"` from its position - the
+terminal crumb may be a `<span>` or an `<a [attr.href]="null">`, both derive it identically;
 `CngxBreadcrumbSeparator` marks glyphs `aria-hidden`. Default chrome ships as Track-B CSS
 in `@cngx/themes/cngx.css`.
 

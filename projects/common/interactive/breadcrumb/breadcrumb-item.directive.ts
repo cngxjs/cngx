@@ -3,11 +3,11 @@ import { computed, Directive, ElementRef, inject, input } from '@angular/core';
 import { CNGX_BREADCRUMB } from './breadcrumb.token';
 
 /**
- * A single crumb. Put `cngxBreadcrumbItem` on the crumb's `<a>` (or `<span>`
- * for the terminal page). The directive derives `aria-current="page"` for the
- * terminal crumb purely from its position in the trail - no manual flag - and
- * hides itself with `[hidden]` when the coordinator collapses it into the
- * overflow menu.
+ * A single crumb. Put `cngxBreadcrumbItem` on the crumb element. Intermediate
+ * crumbs are links (`<a href>`); the terminal crumb may be either a `<span>` or
+ * an `<a [attr.href]="null">` - both derive `aria-current="page"` purely from
+ * position in the trail (no manual flag). The item hides itself with `[hidden]`
+ * when the coordinator collapses it into the overflow menu.
  *
  * @category common/interactive/breadcrumb
  * @wcag AA
