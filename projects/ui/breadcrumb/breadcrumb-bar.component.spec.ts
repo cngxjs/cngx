@@ -52,9 +52,23 @@ class SeamHost {
   readonly items = signal<readonly CngxBreadcrumbCrumb[]>(TRAIL);
 }
 
+/** jsdom ships no native Popover API; the rendered overflow panel needs it stubbed. */
+function stubPopoverApi(): void {
+  for (const name of ['showPopover', 'hidePopover'] as const) {
+    if (!(name in HTMLElement.prototype)) {
+      Object.defineProperty(HTMLElement.prototype, name, {
+        configurable: true,
+        writable: true,
+        value: function () {},
+      });
+    }
+  }
+}
+
 describe('CngxBreadcrumbBar', () => {
   beforeEach(() => {
     TestBed.resetTestingModule();
+    stubPopoverApi();
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],
     });
@@ -144,6 +158,23 @@ describe('CngxBreadcrumbBar', () => {
     fixture.detectChanges();
     expect(barEl.classList.contains('cngx-breadcrumb--pill')).toBe(true);
     expect(barEl.classList.contains('cngx-breadcrumb')).toBe(true);
+  });
+
+  it('renders the overflow after the first crumb only when the trail collapses', () => {
+    const { fixture, host, barEl, navEl } = setup();
+    expect(barEl.querySelector('cngx-breadcrumb-overflow')).toBeNull();
+
+    host.maxVisible.set(2);
+    fixture.detectChanges();
+
+    const overflow = navEl.querySelector('cngx-breadcrumb-overflow');
+    expect(overflow).toBeTruthy();
+    // The overflow slots in right after the first crumb's list item.
+    const items = Array.from(navEl.querySelectorAll<HTMLElement>('.cngx-breadcrumb__list > li'));
+    const firstCrumb = items.findIndex((li) => li.querySelector('a.cngx-breadcrumb__link'));
+    const overflowIdx = items.findIndex((li) => li.querySelector('cngx-breadcrumb-overflow'));
+    expect(overflowIdx).toBeGreaterThan(firstCrumb);
+    expect(items[firstCrumb].querySelector('a')?.textContent?.trim()).toBe('Home');
   });
 
   it('a provided CNGX_BREADCRUMB_ITEMS_SOURCE wins over the [items] input', () => {

@@ -1,6 +1,6 @@
 <nav cngxBreadcrumb [maxVisible]="maxVisible()" [label]="label()" #bc="cngxBreadcrumb">
   <ol class="cngx-breadcrumb__list">
-    @for (crumb of items(); track crumb; let last = $last) {
+    @for (crumb of items(); track crumb; let last = $last; let first = $first) {
       <li class="cngx-breadcrumb__crumb" [style.display]="bc.isCollapsed(crumbRef) ? 'none' : null">
         <a
           cngxBreadcrumbItem
@@ -18,6 +18,12 @@
         >
           /
         </li>
+      }
+      @if (first && bc.hasCollapsed()) {
+        <li class="cngx-breadcrumb__overflow">
+          <cngx-breadcrumb-overflow />
+        </li>
+        <li cngxBreadcrumbSeparator class="cngx-breadcrumb__separator">/</li>
       }
     }
   </ol>
