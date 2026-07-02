@@ -1,0 +1,17 @@
+:host {
+  display: block;
+  max-width: 640px;
+}
+
+.switcher {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.outlet {
+  margin-top: 1rem;
+  padding: 16px;
+  border: 1px solid var(--cngx-color-border, #d4d4d8);
+  border-radius: 8px;
+}
