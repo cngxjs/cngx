@@ -19,10 +19,14 @@ import type { CngxBreadcrumbCrumb } from './breadcrumb.types';
 /**
  * Positional shape equality for two crumb trails. The router source maps a
  * fresh crumb literal per navigation, so reference equality (`Object.is`)
- * would treat every `NavigationEnd` as a change; comparing `label`/`href`/
- * `routerLink` lets a same-shape navigation keep the previous signal
- * reference and stops it cascading the bar (reference_signal_architecture
- * Equality Rule).
+ * would treat every `NavigationEnd` as a change; comparing `label`/`href`
+ * lets a same-shape navigation keep the previous signal reference and stops
+ * it cascading the bar (reference_signal_architecture Equality Rule).
+ *
+ * `routerLink` is intentionally not compared - the router source never emits
+ * it this cycle (see {@link CngxBreadcrumbCrumb.routerLink}), and comparing a
+ * would-be fresh array by reference would defeat the dedup. When SPA-link
+ * emission lands, its equality is defined alongside it.
  */
 function crumbsEqual(
   a: readonly CngxBreadcrumbCrumb[],
@@ -35,9 +39,7 @@ function crumbsEqual(
     return false;
   }
   for (let i = 0; i < a.length; i++) {
-    const x = a[i];
-    const y = b[i];
-    if (x.label !== y.label || x.href !== y.href || x.routerLink !== y.routerLink) {
+    if (a[i].label !== b[i].label || a[i].href !== b[i].href) {
       return false;
     }
   }

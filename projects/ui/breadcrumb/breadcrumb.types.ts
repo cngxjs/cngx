@@ -1,7 +1,6 @@
 /**
  * One crumb in a {@link CngxBreadcrumbBar} trail. `href` renders a plain-link
- * crumb; `routerLink` carries an in-app route (consumed by the router-driven
- * mode). The terminal crumb needs neither - it is derived from position and
+ * crumb. The terminal crumb needs no target - it is derived from position and
  * rendered as the current page.
  *
  * @category ui/breadcrumb
@@ -14,10 +13,11 @@ export interface CngxBreadcrumbCrumb {
   /** Target for a plain-link crumb. Omit on the terminal crumb. */
   href?: string;
   /**
-   * In-app route for a router-driven crumb. Reserved for the router-driven
-   * mode; the base `[items]` trail renders `href` only and does not navigate
-   * on `routerLink` (the bar stays free of `@angular/router`). Omit on the
-   * terminal crumb.
+   * Reserved for in-app (SPA) navigation. Not yet wired this cycle: neither the
+   * router-sync source nor the bundled bar template emits or binds it (the bar
+   * stays free of `@angular/router`, so it renders `href` only). Present so a
+   * consumer supplying their own source + template can carry a route; built-in
+   * SPA-link support is a later release. Omit on the terminal crumb.
    */
   routerLink?: unknown;
 }
