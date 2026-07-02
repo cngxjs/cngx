@@ -127,6 +127,10 @@ describe('CngxBreadcrumbOverflow', () => {
     expect(trigger.getAttribute('aria-label')).toBe('Show collapsed breadcrumbs');
     expect(trigger.getAttribute('aria-haspopup')).toBe('menu');
     expect(trigger.getAttribute('aria-expanded')).toBe('false');
+    // The trigger composes CngxPopoverTrigger, which wires aria-controls to the
+    // popover id and sets the CSS anchor-name; without it the panel is unanchored.
+    // aria-controls was absent before that directive was added - assert it is present.
+    expect(trigger.getAttribute('aria-controls')).toBeTruthy();
     expect(labels(root)).toEqual(['Catalog', 'Books']);
   });
 

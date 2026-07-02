@@ -3,6 +3,8 @@
     type="button"
     class="cngx-breadcrumb__overflow-trigger"
     [cngxMenuTrigger]="menu"
+    [cngxPopoverTrigger]="panel.popover"
+    [haspopup]="'menu'"
     [popover]="panel.popover"
     [attr.aria-label]="triggerLabel()"
     (click)="panel.popover.toggle()"

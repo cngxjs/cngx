@@ -11,7 +11,7 @@ import {
 } from '@angular/core';
 
 import { CNGX_BREADCRUMB, CngxMenu, CngxMenuItem, CngxMenuTrigger } from '@cngx/common/interactive';
-import { CngxPopoverPanel } from '@cngx/common/popover';
+import { CngxPopoverPanel, CngxPopoverTrigger } from '@cngx/common/popover';
 
 import {
   CngxBreadcrumbOverflowItem,
@@ -50,7 +50,14 @@ import {
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  imports: [NgTemplateOutlet, CngxMenu, CngxMenuItem, CngxMenuTrigger, CngxPopoverPanel],
+  imports: [
+    NgTemplateOutlet,
+    CngxMenu,
+    CngxMenuItem,
+    CngxMenuTrigger,
+    CngxPopoverPanel,
+    CngxPopoverTrigger,
+  ],
   templateUrl: './breadcrumb-overflow.component.html',
   styleUrl: './breadcrumb-overflow.component.css',
 })
