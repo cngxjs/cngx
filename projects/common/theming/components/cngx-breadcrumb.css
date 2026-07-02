@@ -69,7 +69,12 @@
     list-style: none;
   }
 
-  [cngxBreadcrumb] li {
+  /* Scope to the trail's own row items (direct `> ol > li`). A bare
+     `[cngxBreadcrumb] li` also matches the nested `<li>` rows inside a
+     composed dropdown (overflow menu, siblings list) whose popover panel is
+     DOM-nested in a trail `<li>`, forcing those rows inline-flex and laying a
+     vertical dropdown out horizontally. */
+  [cngxBreadcrumb] > ol > li {
     display: inline-flex;
     align-items: center;
   }
