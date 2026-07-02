@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxBreadcrumbSiblings: lateral navigation',
+  title: 'CngxBreadcrumbSiblings: static siblings',
   subtitle:
     'Attach <code>&lt;cngx-breadcrumb-siblings&gt;</code> to a crumb to offer the sibling pages at that level. The chevron is a disclosure over a <code>CngxPopoverPanel</code> holding a list of native <code>&lt;a href&gt;</code> anchors - open it and Tab through the alternatives.',
   description:
