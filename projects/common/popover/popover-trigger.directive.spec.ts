@@ -46,6 +46,18 @@ class MenuTriggerHost {
 
 @Component({
   template: `
+    <button [cngxPopoverTrigger]="pop" haspopup="none" id="trigger">Disclose</button>
+    <div cngxPopover #pop="cngxPopover">Link list</div>
+  `,
+  imports: [CngxPopover, CngxPopoverTrigger],
+})
+class NoneHaspopupHost {
+  readonly popover = viewChild.required(CngxPopover);
+  readonly trigger = viewChild.required(CngxPopoverTrigger);
+}
+
+@Component({
+  template: `
     <button [cngxPopoverTrigger]="pop" [restoreFocus]="true" id="trigger">Open</button>
     <div cngxPopover #pop="cngxPopover">Restorable</div>
   `,
@@ -117,6 +129,19 @@ describe('CngxPopoverTrigger', () => {
       host.popover().haspopup.set('dialog');
       fixture.detectChanges();
       expect(triggerEl.getAttribute('aria-haspopup')).toBe('menu');
+    });
+
+    it('should emit no aria-haspopup when configured with none', () => {
+      const { triggerEl } = setup(NoneHaspopupHost);
+      expect(triggerEl.hasAttribute('aria-haspopup')).toBe(false);
+    });
+
+    it('should let none cancel the popover haspopup hint', () => {
+      const { fixture, triggerEl } = setup(NoneHaspopupHost);
+      const host = fixture.componentInstance as NoneHaspopupHost;
+      host.popover().haspopup.set('dialog');
+      fixture.detectChanges();
+      expect(triggerEl.hasAttribute('aria-haspopup')).toBe(false);
     });
   });
 
