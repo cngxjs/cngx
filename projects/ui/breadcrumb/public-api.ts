@@ -22,3 +22,4 @@ export {
   type CngxBreadcrumbSiblingsSource,
 } from './breadcrumb-siblings-source.token';
 export { CngxBreadcrumbRouterSync } from './breadcrumb-router-sync.directive';
+export { CngxBreadcrumbSiblingsRouterSync } from './breadcrumb-siblings-router-sync.directive';
