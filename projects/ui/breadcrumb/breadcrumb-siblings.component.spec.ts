@@ -183,6 +183,12 @@ describe('CngxBreadcrumbSiblings', () => {
     );
     expect(rows).toEqual(['R: Munich', 'R: Berlin', 'R: Hamburg']);
     expect(rowLabels(root)).toEqual(['R: Munich', 'R: Berlin', 'R: Hamburg']);
+    // The projected row template must not be swept into the trigger's
+    // ng-content: the default chevron glyph survives the slot override.
+    const trigger = root.querySelector(
+      'button.cngx-breadcrumb__siblings-trigger',
+    ) as HTMLButtonElement;
+    expect(trigger.textContent?.trim()).toBe('▾');
   });
 
   it('a provided source wins over the [siblings] input (controlled wins)', () => {

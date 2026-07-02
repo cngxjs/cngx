@@ -162,5 +162,9 @@ describe('CngxBreadcrumbOverflow', () => {
     );
     expect(rows).toEqual(['R: Catalog', 'R: Books']);
     expect(labels(root)).toEqual(['R: Catalog', 'R: Books']);
+    // The projected row template must not be swept into the trigger's
+    // ng-content: the default ellipsis glyph survives the slot override.
+    const trigger = root.querySelector('button.cngx-breadcrumb__overflow-trigger') as HTMLButtonElement;
+    expect(trigger.textContent?.trim()).toBe('…');
   });
 });

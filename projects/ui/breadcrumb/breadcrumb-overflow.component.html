@@ -7,7 +7,7 @@
     [attr.aria-label]="triggerLabel()"
     (click)="panel.popover.toggle()"
   >
-    <ng-content>&hellip;</ng-content>
+    <ng-content select=":not([cngxBreadcrumbOverflowItem])">&hellip;</ng-content>
   </button>
 
   <cngx-popover-panel #panel role="group" placement="bottom-start">
