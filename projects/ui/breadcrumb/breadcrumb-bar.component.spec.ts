@@ -227,10 +227,12 @@ describe('CngxBreadcrumbBar', () => {
     // Default trail: no crumb carries siblings.
     expect(barEl.querySelector('button.cngx-breadcrumb__siblings-trigger')).toBeNull();
 
-    // An empty array self-hides too - no @if length gate, the dropdown owns the empty case.
+    // An empty array renders nothing and does not even instantiate the dropdown -
+    // the length gate skips it, so no trigger and no host element appear.
     host.items.set([TRAIL[0], { ...TRAIL[1], siblings: [] }, TRAIL[2], TRAIL[3]]);
     fixture.detectChanges();
     expect(barEl.querySelector('button.cngx-breadcrumb__siblings-trigger')).toBeNull();
+    expect(barEl.querySelector('cngx-breadcrumb-siblings')).toBeNull();
   });
 
   it('marks the current sibling aria-current="page"', () => {

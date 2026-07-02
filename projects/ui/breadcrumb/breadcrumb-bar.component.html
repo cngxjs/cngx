@@ -15,7 +15,9 @@
             *ngTemplateOutlet="tpl; context: { $implicit: crumb, crumb: crumb, index: $index }"
           />
         } @else if (crumb.siblings; as sibs) {
-          <cngx-breadcrumb-siblings [siblings]="sibs" />
+          @if (sibs.length) {
+            <cngx-breadcrumb-siblings [siblings]="sibs" />
+          }
         }
       </li>
       @if (!last) {
