@@ -3,6 +3,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, input, ViewEncaps
 import { CngxBreadcrumb, CngxBreadcrumbItem, CngxBreadcrumbSeparator } from '@cngx/common/interactive';
 
 import { CngxBreadcrumbOverflow } from './breadcrumb-overflow.component';
+import { CngxBreadcrumbSiblings } from './breadcrumb-siblings.component';
 import { CNGX_BREADCRUMB_ITEMS_SOURCE } from './breadcrumb-items-source.token';
 import type { CngxBreadcrumbCrumb } from './breadcrumb.types';
 
@@ -36,7 +37,13 @@ import type { CngxBreadcrumbCrumb } from './breadcrumb.types';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  imports: [CngxBreadcrumb, CngxBreadcrumbItem, CngxBreadcrumbSeparator, CngxBreadcrumbOverflow],
+  imports: [
+    CngxBreadcrumb,
+    CngxBreadcrumbItem,
+    CngxBreadcrumbSeparator,
+    CngxBreadcrumbOverflow,
+    CngxBreadcrumbSiblings,
+  ],
   templateUrl: './breadcrumb-bar.component.html',
   styleUrl: './breadcrumb-bar.component.css',
   host: {

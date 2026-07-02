@@ -5,13 +5,19 @@ import { beforeEach, describe, expect, it } from 'vitest';
 
 import { CngxBreadcrumbBar } from './breadcrumb-bar.component';
 import { CNGX_BREADCRUMB_ITEMS_SOURCE } from './breadcrumb-items-source.token';
-import type { CngxBreadcrumbCrumb } from './breadcrumb.types';
+import type { CngxBreadcrumbCrumb, CngxBreadcrumbSibling } from './breadcrumb.types';
 
 const TRAIL: readonly CngxBreadcrumbCrumb[] = [
   { label: 'Home', href: '/' },
   { label: 'Catalog', href: '/catalog' },
   { label: 'Books', href: '/catalog/books' },
   { label: 'The Hobbit' },
+];
+
+const CITY_SIBLINGS: readonly CngxBreadcrumbSibling[] = [
+  { label: 'Berlin', current: true },
+  { label: 'Munich', href: '/catalog/munich' },
+  { label: 'Hamburg', href: '/catalog/hamburg' },
 ];
 
 @Component({
@@ -196,6 +202,58 @@ describe('CngxBreadcrumbBar', () => {
     host.items.set([TRAIL[0], { label: 'Katalog', href: '/catalog' }, TRAIL[2], TRAIL[3]]);
     fixture.detectChanges();
     expect(rows()).toEqual(['Katalog', 'Books']);
+  });
+
+  it('auto-renders a siblings dropdown inside the crumb that carries siblings', () => {
+    const { fixture, host, barEl } = setup();
+    expect(barEl.querySelector('button.cngx-breadcrumb__siblings-trigger')).toBeNull();
+
+    host.items.set([TRAIL[0], { ...TRAIL[1], siblings: CITY_SIBLINGS }, TRAIL[2], TRAIL[3]]);
+    fixture.detectChanges();
+
+    const trigger = barEl.querySelector<HTMLButtonElement>('button.cngx-breadcrumb__siblings-trigger');
+    expect(trigger).toBeTruthy();
+    // The dropdown lives inside the owning crumb's <li>, next to its link.
+    const owningLi = trigger?.closest('li.cngx-breadcrumb__crumb');
+    expect(owningLi?.querySelector('a.cngx-breadcrumb__link')?.textContent?.trim()).toBe('Catalog');
+  });
+
+  it('renders no trigger for a crumb without siblings or with an empty array', () => {
+    const { fixture, host, barEl } = setup();
+    // Default trail: no crumb carries siblings.
+    expect(barEl.querySelector('button.cngx-breadcrumb__siblings-trigger')).toBeNull();
+
+    // An empty array self-hides too - no @if length gate, the dropdown owns the empty case.
+    host.items.set([TRAIL[0], { ...TRAIL[1], siblings: [] }, TRAIL[2], TRAIL[3]]);
+    fixture.detectChanges();
+    expect(barEl.querySelector('button.cngx-breadcrumb__siblings-trigger')).toBeNull();
+  });
+
+  it('marks the current sibling aria-current="page"', () => {
+    const { fixture, host, barEl } = setup();
+    host.items.set([TRAIL[0], { ...TRAIL[1], siblings: CITY_SIBLINGS }, TRAIL[2], TRAIL[3]]);
+    fixture.detectChanges();
+
+    const rows = Array.from(
+      barEl.querySelectorAll<HTMLElement>('li.cngx-breadcrumb__siblings-item'),
+    );
+    const current = rows.filter((li) => li.getAttribute('aria-current') === 'page');
+    expect(current.length).toBe(1);
+    expect(current[0].textContent?.trim()).toBe('Berlin');
+  });
+
+  it('hides a collapsed crumb\'s siblings with the crumb (display:none on the <li>, not removal)', () => {
+    const { fixture, host, barEl } = setup();
+    // Siblings on a middle crumb (Catalog) that collapses at maxVisible=2.
+    host.items.set([TRAIL[0], { ...TRAIL[1], siblings: CITY_SIBLINGS }, TRAIL[2], TRAIL[3]]);
+    host.maxVisible.set(2);
+    fixture.detectChanges();
+
+    const trigger = barEl.querySelector<HTMLButtonElement>('button.cngx-breadcrumb__siblings-trigger');
+    // Collapse is display:none on the ancestor <li>, never DOM removal.
+    expect(trigger).toBeTruthy();
+    const owningLi = trigger?.closest<HTMLElement>('li.cngx-breadcrumb__crumb');
+    expect(owningLi?.style.display).toBe('none');
   });
 
   it('a provided CNGX_BREADCRUMB_ITEMS_SOURCE wins over the [items] input', () => {

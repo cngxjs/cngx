@@ -20,6 +20,15 @@ export interface CngxBreadcrumbCrumb {
    * SPA-link support is a later release. Omit on the terminal crumb.
    */
   routerLink?: unknown;
+  /**
+   * Static lateral-navigation alternatives for this crumb. When present and
+   * non-empty, {@link CngxBreadcrumbBar} auto-renders a
+   * {@link CngxBreadcrumbSiblings} dropdown for the crumb - no consumer wiring.
+   * Static data only; router-driven siblings compose through the
+   * `*cngxBreadcrumbItemAccessory` slot instead (the bar stays free of
+   * `@angular/router`). An empty array renders nothing (the dropdown self-hides).
+   */
+  siblings?: readonly CngxBreadcrumbSibling[];
 }
 
 /**
