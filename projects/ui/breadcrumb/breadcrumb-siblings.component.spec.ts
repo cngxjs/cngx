@@ -78,13 +78,13 @@ describe('CngxBreadcrumbSiblings', () => {
     stubPopoverApi();
   });
 
-  function menuLabels(root: HTMLElement): string[] {
-    return Array.from(root.querySelectorAll<HTMLElement>('[role="menuitem"]')).map(
+  function rowLabels(root: HTMLElement): string[] {
+    return Array.from(root.querySelectorAll<HTMLElement>('.cngx-breadcrumb__siblings-item')).map(
       (li) => li.textContent?.trim() ?? '',
     );
   }
 
-  it('renders the chevron trigger and lists the sibling labels', () => {
+  it('renders the chevron trigger over a labelled navigation list', () => {
     TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
     const fixture = TestBed.createComponent(SibHost);
     fixture.detectChanges();
@@ -97,9 +97,51 @@ describe('CngxBreadcrumbSiblings', () => {
 
     expect(trigger).toBeTruthy();
     expect(trigger.getAttribute('aria-label')).toBe('Show sibling pages');
-    expect(trigger.getAttribute('aria-haspopup')).toBe('menu');
+    // Disclosure over a link list: the generic haspopup override wins over the
+    // panel's `'dialog'` default; no `'menu'`.
+    expect(trigger.getAttribute('aria-haspopup')).toBe('true');
     expect(trigger.getAttribute('aria-expanded')).toBe('false');
-    expect(menuLabels(root)).toEqual(['Munich', 'Berlin', 'Hamburg']);
+
+    const list = root.querySelector('.cngx-breadcrumb__siblings-menu') as HTMLElement;
+    expect(list.getAttribute('role')).toBe('list');
+    expect(list.getAttribute('aria-label')).toBe('Sibling pages');
+
+    expect(rowLabels(root)).toEqual(['Munich', 'Berlin', 'Hamburg']);
+    // The command-menu chrome is gone: no leaf roles nested in the list.
+    expect(root.querySelector('[role="menuitem"]')).toBeNull();
+  });
+
+  it('reflects panel visibility on the trigger aria-expanded after toggle', () => {
+    TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+    const fixture = TestBed.createComponent(SibHost);
+    fixture.detectChanges();
+
+    const root = fixture.debugElement.query(By.css('cngx-breadcrumb-siblings'))
+      .nativeElement as HTMLElement;
+    const trigger = root.querySelector(
+      'button.cngx-breadcrumb__siblings-trigger',
+    ) as HTMLButtonElement;
+
+    expect(trigger.getAttribute('aria-expanded')).toBe('false');
+    trigger.click();
+    fixture.detectChanges();
+    expect(trigger.getAttribute('aria-expanded')).toBe('true');
+  });
+
+  it('renders non-current siblings as focusable anchors', () => {
+    TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+    const fixture = TestBed.createComponent(SibHost);
+    fixture.detectChanges();
+
+    const root = fixture.debugElement.query(By.css('cngx-breadcrumb-siblings'))
+      .nativeElement as HTMLElement;
+    const rows = Array.from(root.querySelectorAll<HTMLElement>('.cngx-breadcrumb__siblings-item'));
+
+    const munich = rows.find((li) => li.textContent?.trim() === 'Munich');
+    const link = munich?.querySelector('a');
+    expect(link).toBeInstanceOf(HTMLAnchorElement);
+    expect(link?.getAttribute('href')).toBe('/eu/munich');
+    expect(munich?.getAttribute('aria-current')).toBeNull();
   });
 
   it('marks the current sibling with aria-current="page" and renders no link', () => {
@@ -114,10 +156,6 @@ describe('CngxBreadcrumbSiblings', () => {
 
     expect(current?.textContent?.trim()).toBe('Berlin');
     expect(current?.querySelector('a')).toBeNull();
-    // Non-current siblings with an href render a link.
-    const munich = rows.find((li) => li.textContent?.trim() === 'Munich');
-    expect(munich?.querySelector('a')?.getAttribute('href')).toBe('/eu/munich');
-    expect(munich?.getAttribute('aria-current')).toBeNull();
   });
 
   it('renders nothing when there are no siblings', () => {
@@ -143,7 +181,7 @@ describe('CngxBreadcrumbSiblings', () => {
       el.textContent?.trim(),
     );
     expect(rows).toEqual(['R: Munich', 'R: Berlin', 'R: Hamburg']);
-    expect(menuLabels(root)).toEqual(['R: Munich', 'R: Berlin', 'R: Hamburg']);
+    expect(rowLabels(root)).toEqual(['R: Munich', 'R: Berlin', 'R: Hamburg']);
   });
 
   it('a provided source wins over the [siblings] input (controlled wins)', () => {
@@ -164,6 +202,6 @@ describe('CngxBreadcrumbSiblings', () => {
 
     const root = fixture.debugElement.query(By.css('cngx-breadcrumb-siblings'))
       .nativeElement as HTMLElement;
-    expect(menuLabels(root)).toEqual(['Alpha', 'Beta']);
+    expect(rowLabels(root)).toEqual(['Alpha', 'Beta']);
   });
 });
