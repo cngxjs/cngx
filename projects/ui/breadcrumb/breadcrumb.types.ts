@@ -21,3 +21,29 @@ export interface CngxBreadcrumbCrumb {
    */
   routerLink?: unknown;
 }
+
+/**
+ * One sibling in a {@link CngxBreadcrumbSiblings} dropdown - an alternative
+ * page at the same trail level. `href` renders a navigable row; the active
+ * level is marked `current`, which renders as `aria-current="page"` and drops
+ * the link.
+ *
+ * @category ui/breadcrumb
+ * @since 0.1.0
+ * @relatedTo CngxBreadcrumbSiblings
+ */
+export interface CngxBreadcrumbSibling {
+  /** Visible, and accessible, sibling text. */
+  label: string;
+  /** Target for a navigable sibling. Omit (or set `current`) on the active level. */
+  href?: string;
+  /** Marks the sibling representing the current level - rendered as `aria-current="page"`, no link. */
+  current?: boolean;
+  /**
+   * Reserved for in-app (SPA) navigation. Not yet wired this cycle: siblings
+   * render `href` only (the same `@angular/router`-freedom decision as the bar).
+   * Present so a consumer supplying their own template can carry a route;
+   * built-in SPA-link support is a later release.
+   */
+  routerLink?: unknown;
+}
