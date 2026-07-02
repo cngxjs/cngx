@@ -3,6 +3,7 @@
  */
 export { CngxBreadcrumbBar } from './breadcrumb-bar.component';
 export { CngxBreadcrumbOverflow } from './breadcrumb-overflow.component';
+export { CngxBreadcrumbSiblings } from './breadcrumb-siblings.component';
 export {
   CngxBreadcrumbOverflowItem,
   type CngxBreadcrumbOverflowItemContext,

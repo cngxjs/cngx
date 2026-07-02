@@ -1,0 +1,83 @@
+import { NgTemplateOutlet } from '@angular/common';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  contentChild,
+  inject,
+  input,
+  TemplateRef,
+  ViewEncapsulation,
+} from '@angular/core';
+
+import { CngxMenu, CngxMenuItem, CngxMenuTrigger } from '@cngx/common/interactive';
+import { CngxPopoverPanel } from '@cngx/common/popover';
+
+import { CngxBreadcrumbSiblingItem } from './breadcrumb-sibling-item.directive';
+import { CNGX_BREADCRUMB_SIBLINGS_SOURCE } from './breadcrumb-siblings-source.token';
+import type { CngxBreadcrumbSibling } from './breadcrumb.types';
+
+/**
+ * Per-crumb lateral-navigation dropdown for a hand-composed breadcrumb trail.
+ * Where {@link CngxBreadcrumbOverflow} lists the *collapsed ancestors* of the
+ * current trail, this lists the *siblings at one level* - the alternatives a
+ * user can jump sideways to (`Home > Region EU > Berlin` offering `Munich`,
+ * `Hamburg`). It composes the exact overflow chrome: a single
+ * {@link CngxMenuTrigger}-owned chevron, a {@link CngxPopoverPanel} surface, a
+ * {@link CngxMenu} of rows, and self-hides when there are no siblings.
+ *
+ * It owns its own sibling data and never injects the collapse coordinator, so it
+ * drops in anywhere a crumb needs a sideways picker. Rows come from the static
+ * `[siblings]` input, or - opt-in - from a `CNGX_BREADCRUMB_SIBLINGS_SOURCE`
+ * provider (the router-sync directive); the controlled source wins over the
+ * input via a `computed` (Pillar 1: no effect writes). The active level carries
+ * `aria-current="page"` and renders no link.
+ *
+ * ```html
+ * <nav cngxBreadcrumb>
+ *   <a cngxBreadcrumbItem href="/">Home</a>
+ *   <a cngxBreadcrumbItem href="/eu">Region EU</a>
+ *   <cngx-breadcrumb-siblings [siblings]="cities" />
+ * </nav>
+ * ```
+ *
+ * @category ui/breadcrumb
+ * @docsKind primary
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/breadcrumb/breadcrumb-siblings.component.ts
+ * @since 0.1.0
+ * @relatedTo CngxBreadcrumbSiblingItem, CngxBreadcrumbBar, CngxPopoverPanel, CngxMenu, CngxMenuTrigger
+ */
+@Component({
+  selector: 'cngx-breadcrumb-siblings',
+  exportAs: 'cngxBreadcrumbSiblings',
+  standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
+  imports: [NgTemplateOutlet, CngxMenu, CngxMenuItem, CngxMenuTrigger, CngxPopoverPanel],
+  templateUrl: './breadcrumb-siblings.component.html',
+  styleUrl: './breadcrumb-siblings.component.css',
+})
+export class CngxBreadcrumbSiblings {
+  /** Static sibling rows. Superseded by a provided `CNGX_BREADCRUMB_SIBLINGS_SOURCE`. */
+  readonly siblingsInput = input<readonly CngxBreadcrumbSibling[]>([], { alias: 'siblings' });
+
+  /** Accessible name of the chevron trigger. EN default. */
+  readonly triggerLabel = input('Show sibling pages');
+  /** Accessible name of the siblings menu. EN default. */
+  readonly menuLabel = input('Sibling pages');
+
+  /** Opt-in controlled source (router-sync directive) - wins over `[siblings]`. */
+  private readonly source = inject(CNGX_BREADCRUMB_SIBLINGS_SOURCE, { optional: true });
+
+  /** Rows the dropdown renders: controlled source wins, else the static input. Pass-through, no `equal` needed. */
+  protected readonly items = computed<readonly CngxBreadcrumbSibling[]>(
+    () => this.source?.siblings() ?? this.siblingsInput(),
+  );
+
+  /** Drives the self-hide: no trigger, no panel when there are no siblings. */
+  protected readonly hasSiblings = computed(() => this.items().length > 0);
+
+  /** Per-row template overriding the default sibling row, when projected. */
+  protected readonly itemTemplate = contentChild(CngxBreadcrumbSiblingItem, { read: TemplateRef });
+}
