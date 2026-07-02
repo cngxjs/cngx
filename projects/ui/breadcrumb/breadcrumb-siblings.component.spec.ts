@@ -97,9 +97,10 @@ describe('CngxBreadcrumbSiblings', () => {
 
     expect(trigger).toBeTruthy();
     expect(trigger.getAttribute('aria-label')).toBe('Show sibling pages');
-    // Disclosure over a link list: the generic haspopup override wins over the
-    // panel's `'dialog'` default; no `'menu'`.
-    expect(trigger.getAttribute('aria-haspopup')).toBe('true');
+    // Disclosure over a link list: aria-expanded alone describes the trigger.
+    // No aria-haspopup - a menu/dialog widget type would misdescribe the
+    // anchors (haspopup='none' cancels the panel's 'dialog' default).
+    expect(trigger.getAttribute('aria-haspopup')).toBeNull();
     expect(trigger.getAttribute('aria-expanded')).toBe('false');
 
     const list = root.querySelector('.cngx-breadcrumb__siblings-menu') as HTMLElement;
