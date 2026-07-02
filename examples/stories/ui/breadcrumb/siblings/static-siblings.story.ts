@@ -1,31 +1,21 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxBreadcrumbSiblings: static siblings',
+  title: 'CngxBreadcrumbBar: per-crumb siblings from the model',
   subtitle:
-    'Attach <code>&lt;cngx-breadcrumb-siblings&gt;</code> to a crumb to offer the sibling pages at that level. The chevron is a disclosure over a <code>CngxPopoverPanel</code> holding a list of native <code>&lt;a href&gt;</code> anchors - open it and Tab through the alternatives.',
+    'Give a crumb a <code>siblings</code> array and <code>&lt;cngx-breadcrumb [items]&gt;</code> auto-renders the lateral-navigation dropdown for it - no headless trail, no <code>&lt;cngx-breadcrumb-siblings&gt;</code> in your template. The consumer imports only <code>CngxBreadcrumbBar</code>; the organism composes the disclosure.',
   description:
-    'Siblings are lateral navigation, so the surface is a disclosure of real links, not a command menu: keyboard activation, screen-reader link roles, and middle-click come from the native anchors for free. The active level (<code>current: true</code>) renders as text with <code>aria-current="page"</code> and no link. Rows derive from the static <code>[siblings]</code> input through a <code>computed()</code> (Pillar 1); the component self-hides when the list is empty.',
+    'The dropdown is a disclosure over real links: keyboard activation, screen-reader link roles, and middle-click come from the native anchors. The active level (<code>current: true</code>) renders as text with <code>aria-current="page"</code> and no link. The bar reads <code>crumb.siblings</code> and renders the dropdown inside that crumb through a <code>computed()</code> (Pillar 1); an empty or absent array renders nothing (the dropdown self-hides). Static data only - router-driven siblings compose through the <code>*cngxBreadcrumbItemAccessory</code> slot instead, so the bar stays free of <code>@angular/router</code>.',
   level: 'organism',
   audience: ['dev', 'a11y'],
   artifact: 'standalone',
-  focus: ['behavior', 'composition', 'a11y-pattern'],
-  apiComponents: [
-    'CngxBreadcrumbSiblings',
-    'CngxBreadcrumb',
-    'CngxBreadcrumbItem',
-    'CngxBreadcrumbSeparator',
-  ],
+  focus: ['composition', 'a11y-pattern', 'behavior'],
+  apiComponents: ['CngxBreadcrumbBar', 'CngxBreadcrumbSiblings'],
   moduleImports: [
-    "import { CngxBreadcrumb, CngxBreadcrumbItem, CngxBreadcrumbSeparator } from '@cngx/common/interactive';",
-    "import { CngxBreadcrumbSiblings } from '@cngx/ui/breadcrumb';",
+    "import { CngxBreadcrumbBar } from '@cngx/ui/breadcrumb';",
+    "import type { CngxBreadcrumbCrumb } from '@cngx/ui/breadcrumb';",
   ],
-  imports: [
-    'CngxBreadcrumb',
-    'CngxBreadcrumbItem',
-    'CngxBreadcrumbSeparator',
-    'CngxBreadcrumbSiblings',
-  ],
+  imports: ['CngxBreadcrumbBar'],
   references: [
     {
       label: 'WAI-ARIA APG: Breadcrumb pattern',
@@ -40,21 +30,17 @@ export const STORY: DemoSpec = {
       href: 'https://www.w3.org/TR/wai-aria-1.2/#aria-current',
     },
   ],
-  setup: `protected readonly cities = [
-    { label: 'Munich', href: '#/eu/munich' },
-    { label: 'Berlin', current: true },
-    { label: 'Hamburg', href: '#/eu/hamburg' },
+  setup: `protected readonly crumbs: readonly CngxBreadcrumbCrumb[] = [
+    { label: 'Home', href: '#/' },
+    { label: 'Region EU', href: '#/eu' },
+    {
+      label: 'Berlin',
+      siblings: [
+        { label: 'Munich', href: '#/eu/munich' },
+        { label: 'Berlin', current: true },
+        { label: 'Hamburg', href: '#/eu/hamburg' },
+      ],
+    },
   ];`,
-  template: `  <nav cngxBreadcrumb class="cngx-breadcrumb">
-    <ol>
-      <li><a cngxBreadcrumbItem href="#/">Home</a></li>
-      <li cngxBreadcrumbSeparator>/</li>
-      <li><a cngxBreadcrumbItem href="#/eu">Region EU</a></li>
-      <li cngxBreadcrumbSeparator>/</li>
-      <li>
-        <a cngxBreadcrumbItem>Berlin</a>
-        <cngx-breadcrumb-siblings [siblings]="cities" />
-      </li>
-    </ol>
-  </nav>`,
+  template: `  <cngx-breadcrumb [items]="crumbs" label="Breadcrumb" />`,
 };
