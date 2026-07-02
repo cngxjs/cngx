@@ -135,7 +135,7 @@ describe('CngxBreadcrumbBar', () => {
     expect(links().at(-1)?.hasAttribute('hidden')).toBe(false);
   });
 
-  it('tracks crumbs by identity so a reordered trail re-marks the terminal', () => {
+  it('tracks crumbs by stable key (href|label) so a reordered trail re-marks the terminal', () => {
     const { fixture, host, links } = setup();
     expect(links().at(-1)?.textContent?.trim()).toBe('The Hobbit');
 
@@ -190,8 +190,9 @@ describe('CngxBreadcrumbBar', () => {
 
     // The bar binds [cngxBreadcrumbItemLabel], so the overflow row reads the
     // reactive label input; renaming a collapsed crumb updates the menu without
-    // reopening it (no one-shot textContent read). Reuse the unchanged crumb
-    // identities so the trail's track-by-identity only recreates the renamed one.
+    // reopening it (no one-shot textContent read). Keeping the href '/catalog'
+    // keeps the track key stable, so the trail reuses the same node and the
+    // label binding updates in place.
     host.items.set([TRAIL[0], { label: 'Katalog', href: '/catalog' }, TRAIL[2], TRAIL[3]]);
     fixture.detectChanges();
     expect(rows()).toEqual(['Katalog', 'Books']);

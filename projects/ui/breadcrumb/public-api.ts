@@ -12,3 +12,4 @@ export {
   CNGX_BREADCRUMB_ITEMS_SOURCE,
   type CngxBreadcrumbItemsSource,
 } from './breadcrumb-items-source.token';
+export { CngxBreadcrumbRouterSync } from './breadcrumb-router-sync.directive';
