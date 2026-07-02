@@ -1,4 +1,4 @@
-import { Component, provideZonelessChangeDetection } from '@angular/core';
+import { Component, provideZonelessChangeDetection, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { NavigationEnd, provideRouter, Router, RouterOutlet } from '@angular/router';
@@ -36,6 +36,19 @@ class RouterHost {
   template: `<cngx-breadcrumb cngxRouterSync />`,
 })
 class NoRouterHost {}
+
+@Component({
+  standalone: true,
+  selector: 'router-key-host',
+  imports: [CngxBreadcrumbBar, CngxBreadcrumbRouterSync, RouterOutlet],
+  template: `
+    <cngx-breadcrumb cngxRouterSync [dataKey]="key()" />
+    <router-outlet />
+  `,
+})
+class RouterKeyHost {
+  readonly key = signal('crumb');
+}
 
 // Drains pending microtasks so the router's NavigationEnd propagates through
 // toSignal before assertions. whenStable() has been observed to hang under
@@ -171,6 +184,38 @@ describe('CngxBreadcrumbRouterSync', () => {
       .query(By.directive(CngxBreadcrumbRouterSync))
       .injector.get(CngxBreadcrumbRouterSync);
     expect(directive.crumbs().map((c) => c.href)).toEqual(['/docs']);
+  });
+
+  it('reads the trail from a custom dataKey and reacts to a runtime dataKey change', async () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideRouter([
+          { path: 'x', component: Blank, data: { crumb: 'Custom', breadcrumb: 'Default' } },
+        ]),
+      ],
+    });
+    const router = TestBed.inject(Router);
+    const fixture = TestBed.createComponent(RouterKeyHost);
+    fixture.detectChanges();
+    await flushMicrotasks();
+
+    await router.navigateByUrl('/x');
+    fixture.detectChanges();
+    await flushMicrotasks();
+    fixture.detectChanges();
+
+    const barEl = fixture.debugElement.query(By.css('cngx-breadcrumb'))
+      .nativeElement as HTMLElement;
+    // Route carries both keys; the configured dataKey='crumb' wins over 'breadcrumb'.
+    expect(labels(barEl)).toEqual(['Custom']);
+
+    // A runtime dataKey change re-derives the trail (computed over dataKey).
+    fixture.componentInstance.key.set('breadcrumb');
+    fixture.detectChanges();
+    await flushMicrotasks();
+    fixture.detectChanges();
+    expect(labels(barEl)).toEqual(['Default']);
   });
 
   it('is a graceful no-op (empty source) when Router is not provided', () => {
