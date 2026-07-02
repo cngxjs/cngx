@@ -1,9 +1,13 @@
 import { Component, provideZonelessChangeDetection, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { provideRouter, Router, RouterOutlet } from '@angular/router';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { CngxBreadcrumbBar } from './breadcrumb-bar.component';
+import { CngxBreadcrumbItemAccessory } from './breadcrumb-item-accessory.directive';
+import { CngxBreadcrumbSiblings } from './breadcrumb-siblings.component';
+import { CngxBreadcrumbSiblingsRouterSync } from './breadcrumb-siblings-router-sync.directive';
 import { CNGX_BREADCRUMB_ITEMS_SOURCE } from './breadcrumb-items-source.token';
 import type { CngxBreadcrumbCrumb, CngxBreadcrumbSibling } from './breadcrumb.types';
 
@@ -264,5 +268,138 @@ describe('CngxBreadcrumbBar', () => {
       barEl.querySelectorAll<HTMLAnchorElement>('a.cngx-breadcrumb__link'),
     ).map((a) => a.textContent?.trim());
     expect(labels).toEqual(['Router', 'Derived']);
+  });
+
+  it('projects the accessory slot once per crumb with the { crumb, index } context', () => {
+    const fixture = TestBed.createComponent(AccessoryHost);
+    fixture.detectChanges();
+    const barEl = fixture.debugElement.query(By.css('cngx-breadcrumb')).nativeElement as HTMLElement;
+
+    const markers = Array.from(barEl.querySelectorAll<HTMLElement>('.acc-marker'));
+    expect(markers.length).toBe(TRAIL.length);
+    expect(markers.map((m) => m.dataset['label'])).toEqual([
+      'Home',
+      'Catalog',
+      'Books',
+      'The Hobbit',
+    ]);
+    expect(markers.map((m) => m.dataset['index'])).toEqual(['0', '1', '2', '3']);
+  });
+
+  it('lets the accessory slot win over a crumb\'s declarative siblings', () => {
+    const fixture = TestBed.createComponent(AccessoryHost);
+    fixture.componentInstance.items.set([
+      TRAIL[0],
+      { ...TRAIL[1], siblings: CITY_SIBLINGS },
+      TRAIL[2],
+      TRAIL[3],
+    ]);
+    fixture.detectChanges();
+    const barEl = fixture.debugElement.query(By.css('cngx-breadcrumb')).nativeElement as HTMLElement;
+
+    // Slot present: the declarative auto-render is suppressed for every crumb.
+    expect(barEl.querySelector('button.cngx-breadcrumb__siblings-trigger')).toBeNull();
+    expect(barEl.querySelectorAll('.acc-marker').length).toBe(TRAIL.length);
+  });
+});
+
+@Component({
+  standalone: true,
+  selector: 'accessory-host',
+  imports: [CngxBreadcrumbBar, CngxBreadcrumbItemAccessory],
+  template: `
+    <cngx-breadcrumb [items]="items()">
+      <ng-template cngxBreadcrumbItemAccessory let-crumb let-index="index">
+        <span class="acc-marker" [attr.data-label]="crumb.label" [attr.data-index]="index"></span>
+      </ng-template>
+    </cngx-breadcrumb>
+  `,
+})
+class AccessoryHost {
+  readonly items = signal<readonly CngxBreadcrumbCrumb[]>(TRAIL);
+}
+
+@Component({ standalone: true, template: '' })
+class Blank {}
+
+@Component({ standalone: true, imports: [RouterOutlet], template: '<router-outlet />' })
+class RouteShell {}
+
+@Component({
+  standalone: true,
+  selector: 'accessory-router-host',
+  imports: [
+    CngxBreadcrumbBar,
+    CngxBreadcrumbItemAccessory,
+    CngxBreadcrumbSiblings,
+    CngxBreadcrumbSiblingsRouterSync,
+    RouterOutlet,
+  ],
+  template: `
+    <cngx-breadcrumb [items]="items()">
+      <ng-template cngxBreadcrumbItemAccessory>
+        <cngx-breadcrumb-siblings cngxRouterSync [depth]="1" />
+      </ng-template>
+    </cngx-breadcrumb>
+    <router-outlet />
+  `,
+})
+class AccessoryRouterHost {
+  readonly items = signal<readonly CngxBreadcrumbCrumb[]>(TRAIL);
+}
+
+// whenStable() hangs under Node 20 + zoneless with Router in providers, so drain
+// microtasks by hand to let NavigationEnd propagate through toSignal.
+async function flushMicrotasks(rounds = 5): Promise<void> {
+  for (let i = 0; i < rounds; i++) {
+    await Promise.resolve();
+  }
+}
+
+describe('CngxBreadcrumbBar accessory slot - router-driven source', () => {
+  beforeEach(() => {
+    TestBed.resetTestingModule();
+    stubPopoverApi();
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideRouter([
+          {
+            path: 'eu',
+            component: RouteShell,
+            data: { breadcrumb: 'Region EU' },
+            children: [
+              { path: 'munich', component: Blank, data: { breadcrumb: 'Munich' } },
+              { path: 'berlin', component: Blank, data: { breadcrumb: 'Berlin' } },
+              { path: 'hamburg', component: Blank, data: { breadcrumb: 'Hamburg' } },
+            ],
+          },
+        ]),
+      ],
+    });
+  });
+
+  afterEach(() => {
+    TestBed.resetTestingModule();
+  });
+
+  it('carries a router-driven siblings dropdown that provides its own source', async () => {
+    const router = TestBed.inject(Router);
+    const fixture = TestBed.createComponent(AccessoryRouterHost);
+    fixture.detectChanges();
+    await flushMicrotasks();
+
+    await router.navigateByUrl('/eu/berlin');
+    fixture.detectChanges();
+    await flushMicrotasks();
+    fixture.detectChanges();
+
+    const barEl = fixture.debugElement.query(By.css('cngx-breadcrumb')).nativeElement as HTMLElement;
+    // The router source populated the level siblings, so the dropdown self-shows.
+    expect(barEl.querySelector('button.cngx-breadcrumb__siblings-trigger')).toBeTruthy();
+    const current = Array.from(
+      barEl.querySelectorAll<HTMLElement>('.cngx-breadcrumb__siblings-item'),
+    ).find((li) => li.getAttribute('aria-current') === 'page');
+    expect(current?.textContent?.trim()).toBe('Berlin');
   });
 });

@@ -1,7 +1,18 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input, ViewEncapsulation } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  contentChild,
+  inject,
+  input,
+  TemplateRef,
+  ViewEncapsulation,
+} from '@angular/core';
 
 import { CngxBreadcrumb, CngxBreadcrumbItem, CngxBreadcrumbSeparator } from '@cngx/common/interactive';
 
+import { CngxBreadcrumbItemAccessory } from './breadcrumb-item-accessory.directive';
 import { CngxBreadcrumbOverflow } from './breadcrumb-overflow.component';
 import { CngxBreadcrumbSiblings } from './breadcrumb-siblings.component';
 import { CNGX_BREADCRUMB_ITEMS_SOURCE } from './breadcrumb-items-source.token';
@@ -38,6 +49,7 @@ import type { CngxBreadcrumbCrumb } from './breadcrumb.types';
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   imports: [
+    NgTemplateOutlet,
     CngxBreadcrumb,
     CngxBreadcrumbItem,
     CngxBreadcrumbSeparator,
@@ -61,6 +73,14 @@ export class CngxBreadcrumbBar {
   readonly variant = input<string | undefined>(undefined);
 
   private readonly itemsSource = inject(CNGX_BREADCRUMB_ITEMS_SOURCE, { optional: true });
+
+  /**
+   * Projected per-crumb accessory template. When present it wins over the
+   * declarative `crumb.siblings` auto-render for every crumb (one predictable
+   * owner of the accessory area). The `contentChild` is already a
+   * `Signal<TemplateRef | undefined>` - bound directly, no pass-through `computed`.
+   */
+  protected readonly accessory = contentChild(CngxBreadcrumbItemAccessory, { read: TemplateRef });
 
   /**
    * The rendered trail. A provided source wins over the `[items]` input

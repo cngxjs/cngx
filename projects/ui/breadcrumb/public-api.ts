@@ -12,6 +12,10 @@ export {
   CngxBreadcrumbSiblingItem,
   type CngxBreadcrumbSiblingItemContext,
 } from './breadcrumb-sibling-item.directive';
+export {
+  CngxBreadcrumbItemAccessory,
+  type CngxBreadcrumbItemAccessoryContext,
+} from './breadcrumb-item-accessory.directive';
 export type { CngxBreadcrumbCrumb, CngxBreadcrumbSibling } from './breadcrumb.types';
 export {
   CNGX_BREADCRUMB_ITEMS_SOURCE,

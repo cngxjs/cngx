@@ -10,7 +10,11 @@
           [attr.href]="last ? null : (crumb.href ?? null)"
           >{{ crumb.label }}</a
         >
-        @if (crumb.siblings; as sibs) {
+        @if (accessory(); as tpl) {
+          <ng-container
+            *ngTemplateOutlet="tpl; context: { $implicit: crumb, crumb: crumb, index: $index }"
+          />
+        } @else if (crumb.siblings; as sibs) {
           <cngx-breadcrumb-siblings [siblings]="sibs" />
         }
       </li>
