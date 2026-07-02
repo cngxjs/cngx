@@ -10,8 +10,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 
-import { CngxMenu, CngxMenuItem, CngxMenuTrigger } from '@cngx/common/interactive';
-import { CngxPopoverPanel } from '@cngx/common/popover';
+import { CngxPopoverPanel, CngxPopoverTrigger } from '@cngx/common/popover';
 
 import { CngxBreadcrumbSiblingItem } from './breadcrumb-sibling-item.directive';
 import { CNGX_BREADCRUMB_SIBLINGS_SOURCE } from './breadcrumb-siblings-source.token';
@@ -22,9 +21,12 @@ import type { CngxBreadcrumbSibling } from './breadcrumb.types';
  * Where {@link CngxBreadcrumbOverflow} lists the *collapsed ancestors* of the
  * current trail, this lists the *siblings at one level* - the alternatives a
  * user can jump sideways to (`Home > Region EU > Berlin` offering `Munich`,
- * `Hamburg`). It composes the exact overflow chrome: a single
- * {@link CngxMenuTrigger}-owned chevron, a {@link CngxPopoverPanel} surface, a
- * {@link CngxMenu} of rows, and self-hides when there are no siblings.
+ * `Hamburg`). It is a disclosure over lateral navigation: a
+ * {@link CngxPopoverTrigger}-owned chevron reveals a {@link CngxPopoverPanel}
+ * surface holding a `role="list"` of native `<a href>` anchors, and it
+ * self-hides when there are no siblings. Native link semantics give keyboard
+ * activation, screen-reader link roles, and middle-click for free - a command
+ * menu would intercept activation and never navigate.
  *
  * It owns its own sibling data and never injects the collapse coordinator, so it
  * drops in anywhere a crumb needs a sideways picker. Rows come from the static
@@ -46,7 +48,7 @@ import type { CngxBreadcrumbSibling } from './breadcrumb.types';
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/breadcrumb/breadcrumb-siblings.component.ts
  * @since 0.1.0
- * @relatedTo CngxBreadcrumbSiblingItem, CngxBreadcrumbBar, CngxPopoverPanel, CngxMenu, CngxMenuTrigger
+ * @relatedTo CngxBreadcrumbSiblingItem, CngxBreadcrumbBar, CngxPopoverPanel, CngxPopoverTrigger
  */
 @Component({
   selector: 'cngx-breadcrumb-siblings',
@@ -54,7 +56,7 @@ import type { CngxBreadcrumbSibling } from './breadcrumb.types';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  imports: [NgTemplateOutlet, CngxMenu, CngxMenuItem, CngxMenuTrigger, CngxPopoverPanel],
+  imports: [NgTemplateOutlet, CngxPopoverPanel, CngxPopoverTrigger],
   templateUrl: './breadcrumb-siblings.component.html',
   styleUrl: './breadcrumb-siblings.component.css',
 })
@@ -64,7 +66,7 @@ export class CngxBreadcrumbSiblings {
 
   /** Accessible name of the chevron trigger. EN default. */
   readonly triggerLabel = input('Show sibling pages');
-  /** Accessible name of the siblings menu. EN default. */
+  /** Accessible name of the sibling list (kept as `menuLabel` for overflow symmetry). EN default. */
   readonly menuLabel = input('Sibling pages');
 
   /** Opt-in controlled source (router-sync directive) - wins over `[siblings]`. */

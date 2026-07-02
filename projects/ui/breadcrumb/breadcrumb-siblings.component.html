@@ -2,19 +2,19 @@
   <button
     type="button"
     class="cngx-breadcrumb__siblings-trigger"
-    [cngxMenuTrigger]="menu"
-    [popover]="panel.popover"
+    [cngxPopoverTrigger]="panel.popover"
+    [haspopup]="'true'"
+    [restoreFocus]="true"
     [attr.aria-label]="triggerLabel()"
     (click)="panel.popover.toggle()"
   >
     <ng-content>&#9662;</ng-content>
   </button>
 
-  <cngx-popover-panel #panel role="group" placement="bottom-start">
-    <ul cngxMenu #menu="cngxMenu" [label]="menuLabel()" class="cngx-breadcrumb__siblings-menu">
+  <cngx-popover-panel #panel mode="auto" placement="bottom-start">
+    <ul class="cngx-breadcrumb__siblings-menu" role="list" [attr.aria-label]="menuLabel()">
       @for (sib of items(); track sib; let i = $index) {
         <li
-          cngxMenuItem
           class="cngx-breadcrumb__siblings-item"
           [attr.aria-current]="sib.current ? 'page' : null"
         >
