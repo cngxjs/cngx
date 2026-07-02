@@ -7,6 +7,10 @@ export {
   CngxBreadcrumbOverflowItem,
   type CngxBreadcrumbOverflowItemContext,
 } from './breadcrumb-overflow-item.directive';
+export {
+  CngxBreadcrumbSiblingItem,
+  type CngxBreadcrumbSiblingItemContext,
+} from './breadcrumb-sibling-item.directive';
 export type { CngxBreadcrumbCrumb, CngxBreadcrumbSibling } from './breadcrumb.types';
 export {
   CNGX_BREADCRUMB_ITEMS_SOURCE,
