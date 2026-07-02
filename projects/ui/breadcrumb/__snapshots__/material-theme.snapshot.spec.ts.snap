@@ -11,6 +11,9 @@ exports[`Material breadcrumb-theme bridge baseline > v0 light: resolved --cngx-*
   "--cngx-breadcrumb-overflow-trigger-color": "rgba(0, 0, 0, 0.6)",
   "--cngx-breadcrumb-pill-bg": "white",
   "--cngx-breadcrumb-separator-color": "rgba(0, 0, 0, 0.6)",
+  "--cngx-breadcrumb-siblings-item-hover-bg": "color-mix(in srgb, currentColor 8%, transparent)",
+  "--cngx-breadcrumb-siblings-link-color": "#3f51b5",
+  "--cngx-breadcrumb-siblings-trigger-color": "rgba(0, 0, 0, 0.6)",
 }
 `;
 
@@ -25,6 +28,9 @@ exports[`Material breadcrumb-theme bridge baseline > v1 dark: resolved --cngx-* 
   "--cngx-breadcrumb-overflow-trigger-color": "var(--mat-sys-on-surface-variant)",
   "--cngx-breadcrumb-pill-bg": "var(--mat-sys-surface-container)",
   "--cngx-breadcrumb-separator-color": "var(--mat-sys-on-surface-variant)",
+  "--cngx-breadcrumb-siblings-item-hover-bg": "color-mix(in srgb, var(--mat-sys-on-surface) 8%, transparent)",
+  "--cngx-breadcrumb-siblings-link-color": "var(--mat-sys-primary)",
+  "--cngx-breadcrumb-siblings-trigger-color": "var(--mat-sys-on-surface-variant)",
 }
 `;
 
@@ -39,5 +45,8 @@ exports[`Material breadcrumb-theme bridge baseline > v1 light: resolved --cngx-*
   "--cngx-breadcrumb-overflow-trigger-color": "var(--mat-sys-on-surface-variant)",
   "--cngx-breadcrumb-pill-bg": "var(--mat-sys-surface-container)",
   "--cngx-breadcrumb-separator-color": "var(--mat-sys-on-surface-variant)",
+  "--cngx-breadcrumb-siblings-item-hover-bg": "color-mix(in srgb, var(--mat-sys-on-surface) 8%, transparent)",
+  "--cngx-breadcrumb-siblings-link-color": "var(--mat-sys-primary)",
+  "--cngx-breadcrumb-siblings-trigger-color": "var(--mat-sys-on-surface-variant)",
 }
 `;
