@@ -2,6 +2,7 @@ import { NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   contentChild,
   inject,
   input,
@@ -12,7 +13,10 @@ import {
 import { CNGX_BREADCRUMB, CngxMenu, CngxMenuItem, CngxMenuTrigger } from '@cngx/common/interactive';
 import { CngxPopoverPanel } from '@cngx/common/popover';
 
-import { CngxBreadcrumbOverflowItem } from './breadcrumb-overflow-item.directive';
+import {
+  CngxBreadcrumbOverflowItem,
+  type CngxBreadcrumbOverflowItemContext,
+} from './breadcrumb-overflow-item.directive';
 
 /**
  * Drop-in overflow menu for {@link CngxBreadcrumbBar}. Presents the crumbs the
@@ -59,6 +63,23 @@ export class CngxBreadcrumbOverflow {
   /** Accessible name of the collapsed-crumb menu. EN default. */
   readonly menuLabel = input('Collapsed breadcrumbs');
 
-  /** Per-row template overriding the default label row, when projected. */
-  protected readonly itemTemplate = contentChild(CngxBreadcrumbOverflowItem, { read: TemplateRef });
+  /**
+   * Per-row template forwarded by {@link CngxBreadcrumbBar}. Lets the bar pass a
+   * consumer-projected `*cngxBreadcrumbOverflowItem` into this composed overflow,
+   * which it cannot reach as `contentChild`. Wins over the directly-projected
+   * slot (controlled/uncontrolled: input first, query fallback).
+   */
+  readonly itemTemplateInput = input<
+    TemplateRef<CngxBreadcrumbOverflowItemContext> | undefined
+  >(undefined, { alias: 'itemTemplate' });
+
+  /** Per-row template projected directly into this component (headless drop-in use). */
+  private readonly itemTemplateQuery = contentChild(CngxBreadcrumbOverflowItem, {
+    read: TemplateRef,
+  });
+
+  /** Resolved row template: a bar-forwarded input wins, else the directly-projected slot. */
+  protected readonly itemTemplate = computed(
+    () => this.itemTemplateInput() ?? this.itemTemplateQuery(),
+  );
 }

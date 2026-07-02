@@ -73,6 +73,32 @@ class OvHost {}
 })
 class OvSlotHost {}
 
+@Component({
+  standalone: true,
+  selector: 'ov-input-host',
+  imports: [CngxBreadcrumbOverflow],
+  template: `
+    <ng-template #tpl let-crumb><span class="input-row">I: {{ crumb.resolvedLabel() }}</span></ng-template>
+    <cngx-breadcrumb-overflow [itemTemplate]="tpl" />
+  `,
+})
+class OvInputHost {}
+
+@Component({
+  standalone: true,
+  selector: 'ov-both-host',
+  imports: [CngxBreadcrumbOverflow, CngxBreadcrumbOverflowItem],
+  template: `
+    <ng-template #tpl let-crumb><span class="input-row">I: {{ crumb.resolvedLabel() }}</span></ng-template>
+    <cngx-breadcrumb-overflow [itemTemplate]="tpl">
+      <ng-template cngxBreadcrumbOverflowItem let-crumb>
+        <span class="custom-row">R: {{ crumb.resolvedLabel() }}</span>
+      </ng-template>
+    </cngx-breadcrumb-overflow>
+  `,
+})
+class OvBothHost {}
+
 describe('CngxBreadcrumbOverflow', () => {
   beforeEach(() => {
     TestBed.resetTestingModule();
@@ -166,5 +192,33 @@ describe('CngxBreadcrumbOverflow', () => {
     // ng-content: the default ellipsis glyph survives the slot override.
     const trigger = root.querySelector('button.cngx-breadcrumb__overflow-trigger') as HTMLButtonElement;
     expect(trigger.textContent?.trim()).toBe('…');
+  });
+
+  it('renders a forwarded [itemTemplate] input (the bar-tier pass-through)', () => {
+    const { host } = makeHost(['Catalog', 'Books']);
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection(), { provide: CNGX_BREADCRUMB, useValue: host }],
+    });
+    const fixture = TestBed.createComponent(OvInputHost);
+    fixture.detectChanges();
+
+    const root = fixture.debugElement.query(By.css('cngx-breadcrumb-overflow'))
+      .nativeElement as HTMLElement;
+    expect(labels(root)).toEqual(['I: Catalog', 'I: Books']);
+  });
+
+  it('prefers the [itemTemplate] input over a directly-projected slot', () => {
+    const { host } = makeHost(['Catalog', 'Books']);
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection(), { provide: CNGX_BREADCRUMB, useValue: host }],
+    });
+    const fixture = TestBed.createComponent(OvBothHost);
+    fixture.detectChanges();
+
+    const root = fixture.debugElement.query(By.css('cngx-breadcrumb-overflow'))
+      .nativeElement as HTMLElement;
+    // Input wins: the forwarded template renders, the projected slot is suppressed.
+    expect(labels(root)).toEqual(['I: Catalog', 'I: Books']);
+    expect(root.querySelector('.custom-row')).toBeNull();
   });
 });

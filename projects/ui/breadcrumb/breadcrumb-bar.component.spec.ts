@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { CngxBreadcrumbBar } from './breadcrumb-bar.component';
 import { CngxBreadcrumbItemAccessory } from './breadcrumb-item-accessory.directive';
+import { CngxBreadcrumbOverflowItem } from './breadcrumb-overflow-item.directive';
 import { CngxBreadcrumbSiblings } from './breadcrumb-siblings.component';
 import { CngxBreadcrumbSiblingsRouterSync } from './breadcrumb-siblings-router-sync.directive';
 import { CNGX_BREADCRUMB_ITEMS_SOURCE } from './breadcrumb-items-source.token';
@@ -303,7 +304,35 @@ describe('CngxBreadcrumbBar', () => {
     expect(barEl.querySelector('button.cngx-breadcrumb__siblings-trigger')).toBeNull();
     expect(barEl.querySelectorAll('.acc-marker').length).toBe(TRAIL.length);
   });
+
+  it('forwards a projected *cngxBreadcrumbOverflowItem into the composed overflow', () => {
+    const fixture = TestBed.createComponent(OverflowRowHost);
+    fixture.detectChanges();
+    const barEl = fixture.debugElement.query(By.css('cngx-breadcrumb')).nativeElement as HTMLElement;
+
+    // TRAIL = Home / Catalog / Books / The Hobbit; maxVisible=2 collapses the middle two.
+    const rows = Array.from(barEl.querySelectorAll<HTMLElement>('.ov-custom')).map((el) =>
+      el.textContent?.trim(),
+    );
+    expect(rows).toEqual(['Catalog', 'Books']);
+  });
 });
+
+@Component({
+  standalone: true,
+  selector: 'overflow-row-host',
+  imports: [CngxBreadcrumbBar, CngxBreadcrumbOverflowItem],
+  template: `
+    <cngx-breadcrumb [items]="items()" [maxVisible]="2">
+      <ng-template cngxBreadcrumbOverflowItem let-crumb>
+        <span class="ov-custom">{{ crumb.resolvedLabel() }}</span>
+      </ng-template>
+    </cngx-breadcrumb>
+  `,
+})
+class OverflowRowHost {
+  readonly items = signal<readonly CngxBreadcrumbCrumb[]>(TRAIL);
+}
 
 @Component({
   standalone: true,

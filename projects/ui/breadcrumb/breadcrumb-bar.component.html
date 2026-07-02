@@ -31,7 +31,7 @@
       }
       @if (first && bc.hasCollapsed()) {
         <li class="cngx-breadcrumb__overflow">
-          <cngx-breadcrumb-overflow />
+          <cngx-breadcrumb-overflow [itemTemplate]="overflowRow()" />
         </li>
         <li cngxBreadcrumbSeparator class="cngx-breadcrumb__separator">/</li>
       }

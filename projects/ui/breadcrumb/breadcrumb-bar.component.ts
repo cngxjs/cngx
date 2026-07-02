@@ -14,6 +14,7 @@ import { CngxBreadcrumb, CngxBreadcrumbItem, CngxBreadcrumbSeparator } from '@cn
 
 import { CngxBreadcrumbItemAccessory } from './breadcrumb-item-accessory.directive';
 import { CngxBreadcrumbOverflow } from './breadcrumb-overflow.component';
+import { CngxBreadcrumbOverflowItem } from './breadcrumb-overflow-item.directive';
 import { CngxBreadcrumbSiblings } from './breadcrumb-siblings.component';
 import { CNGX_BREADCRUMB_ITEMS_SOURCE } from './breadcrumb-items-source.token';
 import type { CngxBreadcrumbCrumb } from './breadcrumb.types';
@@ -81,6 +82,14 @@ export class CngxBreadcrumbBar {
    * `Signal<TemplateRef | undefined>` - bound directly, no pass-through `computed`.
    */
   protected readonly accessory = contentChild(CngxBreadcrumbItemAccessory, { read: TemplateRef });
+
+  /**
+   * Projected overflow-row template, forwarded to the composed
+   * {@link CngxBreadcrumbOverflow} (which the consumer cannot reach as
+   * `contentChild` through the bar). Lets a consumer customize the collapsed-crumb
+   * rows without hand-composing the headless trail.
+   */
+  protected readonly overflowRow = contentChild(CngxBreadcrumbOverflowItem, { read: TemplateRef });
 
   /**
    * The rendered trail. A provided source wins over the `[items]` input
