@@ -10,8 +10,9 @@ import type { CngxBreadcrumbSibling } from './breadcrumb.types';
  * the controlled/uncontrolled pattern (Pillar 1: no effect writes, no directive
  * writing another component's `input()`).
  *
- * The router-sync directive is the reference consumer; any producer that can
- * expose a `Signal<readonly CngxBreadcrumbSibling[]>` may provide it.
+ * A producer such as the planned router-sync directive will provide this via
+ * `useExisting`; any producer exposing a `Signal<readonly CngxBreadcrumbSibling[]>`
+ * may provide it.
  */
 export interface CngxBreadcrumbSiblingsSource {
   /** The siblings the dropdown renders when this source is provided. */
