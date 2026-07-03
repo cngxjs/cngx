@@ -1,4 +1,4 @@
-import { signal } from '@angular/core';
+import { computed, signal } from '@angular/core';
 import { describe, expect, it } from 'vitest';
 import { createControlledSource } from './controlled-source';
 
@@ -64,5 +64,47 @@ describe('createControlledSource', () => {
 
     expect(Object.is(first, second)).toBe(true);
     expect(first).toBe(value);
+  });
+
+  it('does not propagate to a downstream consumer while the source is unchanged', () => {
+    const priority = signal<{ n: number } | undefined>({ n: 1 });
+    const fallback = signal({ n: 0 });
+    const source = createControlledSource(priority, fallback);
+
+    let recomputes = 0;
+    const downstream = computed(() => {
+      recomputes++;
+      return source();
+    });
+
+    expect(downstream().n).toBe(1);
+    expect(recomputes).toBe(1);
+
+    // repeated reads with no source change must not recompute (pass-through, no cascade)
+    downstream();
+    downstream();
+    expect(recomputes).toBe(1);
+
+    // a genuine change propagates exactly once
+    priority.set({ n: 2 });
+    expect(downstream().n).toBe(2);
+    expect(recomputes).toBe(2);
+  });
+
+  it('supports a fallback that itself yields undefined (the overflow TemplateRef shape)', () => {
+    type Slot = { readonly id: string };
+    const priority = signal<Slot | undefined>(undefined); // a forwarded input, unbound
+    const fallback = signal<Slot | undefined>(undefined); // a projected query, unmatched
+    const source = createControlledSource<Slot | undefined>(priority, fallback);
+
+    expect(source()).toBeUndefined();
+
+    const projected: Slot = { id: 'projected' };
+    fallback.set(projected);
+    expect(source()).toBe(projected);
+
+    const forwarded: Slot = { id: 'forwarded' };
+    priority.set(forwarded);
+    expect(source()).toBe(forwarded);
   });
 });
