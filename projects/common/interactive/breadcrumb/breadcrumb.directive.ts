@@ -31,7 +31,7 @@ import { CNGX_BREADCRUMB, type CngxBreadcrumbHost } from './breadcrumb.token';
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/breadcrumb/breadcrumb.directive.ts
  * @since 0.1.0
- * @relatedTo CngxBreadcrumbItem, CngxBreadcrumbSeparator, CngxMenu, CngxTruncate
+ * @relatedTo CngxBreadcrumbItem, CngxBreadcrumbSeparator, CngxBreadcrumbBar
  */
 @Directive({
   selector: '[cngxBreadcrumb]',
