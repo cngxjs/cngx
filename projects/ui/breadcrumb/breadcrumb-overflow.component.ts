@@ -43,6 +43,7 @@ import {
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/breadcrumb/breadcrumb-overflow.component.ts
  * @since 0.1.0
  * @relatedTo CngxBreadcrumbBar, CngxBreadcrumbOverflowItem, CngxPopoverPanel, CngxPopoverTrigger, CngxMenu, CngxMenuTrigger
+ * <example-url>http://localhost:4200/#/ui/breadcrumb/overflow/collapsed-menu</example-url>
  */
 @Component({
   selector: 'cngx-breadcrumb-overflow',

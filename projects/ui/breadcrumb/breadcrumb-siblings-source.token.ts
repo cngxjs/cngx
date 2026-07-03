@@ -25,6 +25,7 @@ export interface CngxBreadcrumbSiblingsSource {
  * `[siblings]` input.
  *
  * @category ui/breadcrumb
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/breadcrumb/breadcrumb-siblings-source.token.ts
  * @since 0.1.0
  * @relatedTo CngxBreadcrumbSiblings, CngxBreadcrumbSiblingsSource
  */

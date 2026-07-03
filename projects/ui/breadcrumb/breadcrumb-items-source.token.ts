@@ -24,6 +24,7 @@ export interface CngxBreadcrumbItemsSource {
  * `[items]` input.
  *
  * @category ui/breadcrumb
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/breadcrumb/breadcrumb-items-source.token.ts
  * @since 0.1.0
  * @relatedTo CngxBreadcrumbBar, CngxBreadcrumbItemsSource
  */

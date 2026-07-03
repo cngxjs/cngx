@@ -37,6 +37,7 @@ export interface CngxBreadcrumbOverflowItemContext {
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/breadcrumb/breadcrumb-overflow-item.directive.ts
  * @since 0.1.0
  * @relatedTo CngxBreadcrumbOverflow, CngxBreadcrumbBar
+ * <example-url>http://localhost:4200/#/ui/breadcrumb/overflow/custom-overflow-row</example-url>
  */
 @Directive({
   selector: 'ng-template[cngxBreadcrumbOverflowItem]',

@@ -49,6 +49,7 @@ import type { CngxBreadcrumbSibling } from './breadcrumb.types';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/breadcrumb/breadcrumb-siblings.component.ts
  * @since 0.1.0
  * @relatedTo CngxBreadcrumbSiblingItem, CngxBreadcrumbSiblingsRouterSync, CngxBreadcrumbSiblingsSource, CngxBreadcrumbBar, CngxPopoverPanel, CngxPopoverTrigger
+ * <example-url>http://localhost:4200/#/ui/breadcrumb/siblings/static-siblings</example-url>
  */
 @Component({
   selector: 'cngx-breadcrumb-siblings',

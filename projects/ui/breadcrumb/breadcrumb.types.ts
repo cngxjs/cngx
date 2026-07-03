@@ -4,6 +4,7 @@
  * rendered as the current page.
  *
  * @category ui/breadcrumb
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/breadcrumb/breadcrumb.types.ts
  * @since 0.1.0
  * @relatedTo CngxBreadcrumbBar
  */
@@ -38,6 +39,7 @@ export interface CngxBreadcrumbCrumb {
  * the link.
  *
  * @category ui/breadcrumb
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/breadcrumb/breadcrumb.types.ts
  * @since 0.1.0
  * @relatedTo CngxBreadcrumbSiblings
  */

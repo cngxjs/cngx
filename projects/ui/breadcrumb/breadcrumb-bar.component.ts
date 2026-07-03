@@ -42,6 +42,7 @@ import type { CngxBreadcrumbCrumb } from './breadcrumb.types';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/breadcrumb/breadcrumb-bar.component.ts
  * @since 0.1.0
  * @relatedTo CngxBreadcrumb, CngxBreadcrumbItem, CngxBreadcrumbSeparator, CngxBreadcrumbOverflow, CngxBreadcrumbSiblings, CngxBreadcrumbItemAccessory, CngxBreadcrumbOverflowItem, CngxBreadcrumbRouterSync
+ * <example-url>http://localhost:4200/#/ui/breadcrumb/basic/explicit-items</example-url>
  */
 @Component({
   selector: 'cngx-breadcrumb',
