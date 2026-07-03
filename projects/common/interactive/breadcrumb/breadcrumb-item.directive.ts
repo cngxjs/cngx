@@ -14,6 +14,7 @@ import { CNGX_BREADCRUMB } from './breadcrumb.token';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/breadcrumb/breadcrumb-item.directive.ts
  * @since 0.1.0
  * @relatedTo CngxBreadcrumb, CngxBreadcrumbSeparator
+ * <example-url>http://localhost:4200/#/common/interactive/breadcrumb/basic-trail</example-url>
  */
 @Directive({
   selector: '[cngxBreadcrumbItem]',

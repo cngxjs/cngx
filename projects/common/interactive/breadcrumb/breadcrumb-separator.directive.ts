@@ -11,6 +11,7 @@ import { Directive } from '@angular/core';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/breadcrumb/breadcrumb-separator.directive.ts
  * @since 0.1.0
  * @relatedTo CngxBreadcrumb, CngxBreadcrumbItem
+ * <example-url>http://localhost:4200/#/common/interactive/breadcrumb/custom-separator</example-url>
  */
 @Directive({
   selector: '[cngxBreadcrumbSeparator]',
