@@ -23,10 +23,9 @@ import type { CngxBreadcrumbCrumb } from './breadcrumb.types';
  * lets a same-shape navigation keep the previous signal reference and stops
  * it cascading the bar (reference_signal_architecture Equality Rule).
  *
- * `routerLink` is intentionally not compared - the router source never emits
- * it this cycle (see {@link CngxBreadcrumbCrumb.routerLink}), and comparing a
- * would-be fresh array by reference would defeat the dedup. When SPA-link
- * emission lands, its equality is defined alongside it.
+ * The router source emits `href` only, so `label`/`href` fully describe a
+ * crumb's identity here. When SPA-link emission lands, its equality is defined
+ * alongside it.
  */
 function crumbsEqual(
   a: readonly CngxBreadcrumbCrumb[],

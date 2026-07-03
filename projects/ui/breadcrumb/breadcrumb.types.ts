@@ -14,14 +14,6 @@ export interface CngxBreadcrumbCrumb {
   /** Target for a plain-link crumb. Omit on the terminal crumb. */
   href?: string;
   /**
-   * Reserved for in-app (SPA) navigation. Not yet wired this cycle: neither the
-   * router-sync source nor the bundled bar template emits or binds it (the bar
-   * stays free of `@angular/router`, so it renders `href` only). Present so a
-   * consumer supplying their own source + template can carry a route; built-in
-   * SPA-link support is a later release. Omit on the terminal crumb.
-   */
-  routerLink?: unknown;
-  /**
    * Static lateral-navigation alternatives for this crumb. When present and
    * non-empty, {@link CngxBreadcrumbBar} auto-renders a
    * {@link CngxBreadcrumbSiblings} dropdown for the crumb - no consumer wiring.
@@ -50,11 +42,4 @@ export interface CngxBreadcrumbSibling {
   href?: string;
   /** Marks the sibling representing the current level - rendered as `aria-current="page"`, no link. */
   current?: boolean;
-  /**
-   * Reserved for in-app (SPA) navigation. Not yet wired this cycle: siblings
-   * render `href` only (the same `@angular/router`-freedom decision as the bar).
-   * Present so a consumer supplying their own template can carry a route;
-   * built-in SPA-link support is a later release.
-   */
-  routerLink?: unknown;
 }
