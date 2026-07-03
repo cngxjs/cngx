@@ -11,6 +11,7 @@ import {
 } from '@angular/core';
 
 import { CngxBreadcrumb, CngxBreadcrumbItem, CngxBreadcrumbSeparator } from '@cngx/common/interactive';
+import { createControlledSource } from '@cngx/core/utils';
 
 import { CngxBreadcrumbItemAccessory } from './breadcrumb-item-accessory.directive';
 import { CngxBreadcrumbOverflow } from './breadcrumb-overflow.component';
@@ -92,15 +93,8 @@ export class CngxBreadcrumbBar {
    */
   protected readonly overflowRow = contentChild(CngxBreadcrumbOverflowItem, { read: TemplateRef });
 
-  /**
-   * The rendered trail. A provided source wins over the `[items]` input
-   * (controlled/uncontrolled pattern). Pass-through - it returns the underlying
-   * signal's reference, never a fresh literal, so no `equal` fn is needed and
-   * no downstream cascade fires.
-   */
-  protected readonly items = computed<readonly CngxBreadcrumbCrumb[]>(
-    () => this.itemsSource?.crumbs() ?? this.itemsInput(),
-  );
+  /** The rendered trail: a provided source wins over the `[items]` input (controlled/uncontrolled). */
+  protected readonly items = createControlledSource(this.itemsSource?.crumbs, this.itemsInput);
 
   protected readonly hostClass = computed(() => {
     const variant = this.variant();

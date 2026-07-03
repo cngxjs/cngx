@@ -2,7 +2,6 @@ import { NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
-  computed,
   contentChild,
   inject,
   input,
@@ -12,6 +11,7 @@ import {
 
 import { CNGX_BREADCRUMB, CngxMenu, CngxMenuItem, CngxMenuTrigger } from '@cngx/common/interactive';
 import { CngxPopoverPanel, CngxPopoverTrigger } from '@cngx/common/popover';
+import { createControlledSource } from '@cngx/core/utils';
 
 import {
   CngxBreadcrumbOverflowItem,
@@ -87,7 +87,8 @@ export class CngxBreadcrumbOverflow {
   });
 
   /** Resolved row template: a bar-forwarded input wins, else the directly-projected slot. */
-  protected readonly itemTemplate = computed(
-    () => this.itemTemplateInput() ?? this.itemTemplateQuery(),
+  protected readonly itemTemplate = createControlledSource(
+    this.itemTemplateInput,
+    this.itemTemplateQuery,
   );
 }

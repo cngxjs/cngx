@@ -11,6 +11,7 @@ import {
 } from '@angular/core';
 
 import { CngxPopoverPanel, CngxPopoverTrigger } from '@cngx/common/popover';
+import { createControlledSource } from '@cngx/core/utils';
 
 import { CngxBreadcrumbSiblingItem } from './breadcrumb-sibling-item.directive';
 import { CNGX_BREADCRUMB_SIBLINGS_SOURCE } from './breadcrumb-siblings-source.token';
@@ -73,10 +74,8 @@ export class CngxBreadcrumbSiblings {
   /** Opt-in controlled source (router-sync directive) - wins over `[siblings]`. */
   private readonly source = inject(CNGX_BREADCRUMB_SIBLINGS_SOURCE, { optional: true });
 
-  /** Rows the dropdown renders: controlled source wins, else the static input. Pass-through, no `equal` needed. */
-  protected readonly items = computed<readonly CngxBreadcrumbSibling[]>(
-    () => this.source?.siblings() ?? this.siblingsInput(),
-  );
+  /** Rows the dropdown renders: controlled source wins, else the static input. */
+  protected readonly items = createControlledSource(this.source?.siblings, this.siblingsInput);
 
   /** Drives the self-hide: no trigger, no panel when there are no siblings. */
   protected readonly hasSiblings = computed(() => this.items().length > 0);
