@@ -42,7 +42,7 @@ import {
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/breadcrumb/breadcrumb-overflow.component.ts
  * @since 0.1.0
- * @relatedTo CngxBreadcrumbBar, CngxPopoverPanel, CngxMenu, CngxMenuTrigger
+ * @relatedTo CngxBreadcrumbBar, CngxBreadcrumbOverflowItem, CngxPopoverPanel, CngxPopoverTrigger, CngxMenu, CngxMenuTrigger
  */
 @Component({
   selector: 'cngx-breadcrumb-overflow',
