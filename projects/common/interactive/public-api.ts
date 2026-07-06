@@ -54,6 +54,13 @@ export {
 export { CngxAccordion } from './accordion/accordion.directive';
 export { CngxAccordionPanel } from './accordion/accordion-panel.directive';
 export { CNGX_ACCORDION, type CngxAccordionHost } from './accordion/accordion.token';
+export {
+  createAccordionKeyboardNav,
+  type CngxAccordionHeaderHandle,
+  type CngxAccordionKeyboardNav,
+  type CngxAccordionKeyboardNavHost,
+  type CngxAccordionKeyboardNavOptions,
+} from './accordion/accordion-keyboard-nav';
 export { CngxBreadcrumb } from './breadcrumb/breadcrumb.directive';
 export { CNGX_BREADCRUMB, type CngxBreadcrumbHost } from './breadcrumb/breadcrumb.token';
 export { CngxBreadcrumbItem } from './breadcrumb/breadcrumb-item.directive';
