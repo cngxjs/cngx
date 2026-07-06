@@ -15,6 +15,12 @@ export const STORY: DemoSpec = {
     "import { provideAccordionConfigAt, withAccordionLabels } from '@cngx/ui/accordion';",
   ],
   imports: ['CngxAccordionGroup', 'CngxAccordionItem', 'CngxAccordionItemTitle'],
+  references: [
+    {
+      label: 'WAI-ARIA APG: Accordion pattern',
+      href: 'https://www.w3.org/WAI/ARIA/apg/patterns/accordion/',
+    },
+  ],
   viewProviders: [
     "provideAccordionConfigAt(withAccordionLabels({ disabledReason: 'This section unlocks once your profile is complete.' }))",
   ],

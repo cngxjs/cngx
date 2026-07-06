@@ -12,6 +12,12 @@ export const STORY: DemoSpec = {
   focus: ['behavior', 'integration'],
   apiComponents: ['CngxAccordionGroup', 'CngxAccordionItem'],
   imports: ['CngxAccordionGroup', 'CngxAccordionItem', 'CngxAccordionItemTitle'],
+  references: [
+    {
+      label: 'WAI-ARIA APG: Accordion pattern',
+      href: 'https://www.w3.org/WAI/ARIA/apg/patterns/accordion/',
+    },
+  ],
   setup: `protected readonly openIds = signal<ReadonlySet<string>>(new Set(['billing']));`,
   setupChrome: `protected openSection(id: string): void {
     this.openIds.set(new Set([id]));
