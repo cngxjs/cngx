@@ -1,0 +1,7 @@
+.cngx-accordion-group {
+  display: block;
+  border-block-start: var(
+    --cngx-accordion-divider,
+    1px solid var(--cngx-accordion-border-color, #d1d5db)
+  );
+}
