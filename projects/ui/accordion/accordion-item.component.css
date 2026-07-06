@@ -35,8 +35,24 @@
   cursor: not-allowed;
 }
 
-.cngx-accordion-item__chevron {
+/* The header carries `cngxAccordionPanel`, so the headless Track-B skin
+   (@cngx/themes cngx.css) paints its own ::after twisty on it. This organism
+   ships its own chevron slot, so suppress the inherited one - else the button
+   renders two chevrons and space-between pushes ours off-centre. */
+.cngx-accordion-item__header::after {
+  display: none;
+}
+
+.cngx-accordion-item__chevron-slot {
+  display: inline-flex;
   flex: none;
+  align-items: center;
+}
+
+.cngx-accordion-item__chevron {
+  /* Must be a block box: an inline element ignores inline-size/block-size and
+     transform, which would collapse the bordered square into a 2px sliver. */
+  display: block;
   inline-size: var(--cngx-accordion-chevron-size, 0.6em);
   block-size: var(--cngx-accordion-chevron-size, 0.6em);
   border-inline-end: var(--cngx-accordion-chevron-stroke, 2px solid currentColor);
