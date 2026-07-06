@@ -16,6 +16,7 @@ import { CNGX_ACCORDION, CngxAccordionPanel } from '@cngx/common/interactive';
 import { CNGX_ACCORDION_GROUP } from './accordion-group.token';
 import { CngxAccordionItemContent } from './accordion-item-content.directive';
 import { CngxAccordionItemIcon } from './accordion-item-icon.directive';
+import { injectAccordionConfig } from './config/inject-accordion-config';
 
 /**
  * Accordion item organism. Renders the APG-correct trio a headless consumer
@@ -52,6 +53,10 @@ import { CngxAccordionItemIcon } from './accordion-item-icon.directive';
   },
 })
 export class CngxAccordionItem {
+  // Config cascade source. Declared first so the disabledReason input default
+  // below can read the resolved value (field initialisers run top-to-bottom).
+  private readonly config = injectAccordionConfig();
+
   /**
    * Disabled item: the header reports `tabindex="-1"` + `aria-disabled="true"`,
    * is skipped by roving, and its click never expands. The reason text is
@@ -59,11 +64,13 @@ export class CngxAccordionItem {
    */
   readonly disabled = input<boolean>(false);
   /**
-   * Reason announced to assistive tech when the item is disabled, bound
-   * through the always-present `aria-describedby` reason element. English
-   * default; consumers override for locale or a specific explanation.
+   * Reason announced to assistive tech when the item is disabled, bound through
+   * the always-present `aria-describedby` reason element. Resolves
+   * `input ?? CNGX_ACCORDION_CONFIG.disabledReason ?? EN default`: an unbound
+   * input falls back to the app-wide config (English out of the box, overridden
+   * via `withAccordionLabels`).
    */
-  readonly disabledReason = input<string>('This section is currently unavailable.');
+  readonly disabledReason = input<string>(this.config.disabledReason);
 
   private readonly accordion = inject(CNGX_ACCORDION);
   protected readonly group = inject(CNGX_ACCORDION_GROUP);
