@@ -10,17 +10,31 @@ import { CngxAccordionPanel } from './accordion-panel.directive';
 @Component({
   template: `<div cngxAccordion [multi]="multi()" #acc="cngxAccordion">
     <button cngxAccordionPanel panelId="a" controls="r-a">A</button>
-    <button cngxAccordionPanel panelId="b" controls="r-b">B</button>
+    <button cngxAccordionPanel panelId="b" controls="r-b" [disabled]="bDisabled()">B</button>
     <button cngxAccordionPanel panelId="c" controls="r-c">C</button>
   </div>`,
   imports: [CngxAccordion, CngxAccordionPanel],
 })
 class Host {
   readonly multi = signal(false);
+  readonly bDisabled = signal(false);
 }
 
+@Component({
+  template: `<div cngxAccordion></div>`,
+  imports: [CngxAccordion],
+})
+class BareHost {}
+
 describe('CngxAccordion', () => {
-  beforeEach(() => TestBed.configureTestingModule({ imports: [Host] }));
+  beforeEach(() => TestBed.configureTestingModule({ imports: [Host, BareHost] }));
+
+  function setupBare() {
+    const fixture = TestBed.createComponent(BareHost);
+    fixture.detectChanges();
+    const accordion = fixture.debugElement.query(By.directive(CngxAccordion)).injector.get(CngxAccordion);
+    return { fixture, accordion };
+  }
 
   function setup() {
     const fixture = TestBed.createComponent(Host);
@@ -32,6 +46,14 @@ describe('CngxAccordion', () => {
       .queryAll(By.directive(CngxAccordionPanel))
       .map((de) => de.nativeElement as HTMLElement);
     return { fixture, host: fixture.componentInstance, container, buttons };
+  }
+
+  function tabindex(el: HTMLElement): string {
+    return el.getAttribute('tabindex') ?? '';
+  }
+
+  function keydown(el: HTMLElement, key: string): void {
+    el.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }));
   }
 
   it('wires aria-controls and starts collapsed', () => {
@@ -81,8 +103,7 @@ describe('CngxAccordion', () => {
   });
 
   it('derives the roving stop preserve-then-default over the header registry', () => {
-    const { container } = setup();
-    const accordion = container.injector.get(CngxAccordion);
+    const { accordion } = setupBare();
 
     const makeHandle = (id: string, disabled = false): CngxAccordionHeaderHandle => ({
       id,
@@ -110,8 +131,7 @@ describe('CngxAccordion', () => {
   });
 
   it('defaults the roving stop past a disabled first header', () => {
-    const { container } = setup();
-    const accordion = container.injector.get(CngxAccordion);
+    const { accordion } = setupBare();
     accordion.registerHeader({
       id: 'a',
       element: document.createElement('button'),
@@ -123,5 +143,54 @@ describe('CngxAccordion', () => {
       disabled: signal(false),
     });
     expect(accordion.rovingActiveId()).toBe('b');
+  });
+
+  it('starts with only the first header a tab stop', () => {
+    const { buttons } = setup();
+    expect(tabindex(buttons[0])).toBe('0');
+    expect(tabindex(buttons[1])).toBe('-1');
+    expect(tabindex(buttons[2])).toBe('-1');
+  });
+
+  it('ArrowDown on a header button roves focus and the tab stop to the sibling', () => {
+    const { fixture, buttons } = setup();
+    buttons[0].focus();
+
+    keydown(buttons[0], 'ArrowDown');
+    fixture.detectChanges();
+    expect(document.activeElement).toBe(buttons[1]);
+    expect(tabindex(buttons[0])).toBe('-1');
+    expect(tabindex(buttons[1])).toBe('0');
+
+    keydown(buttons[1], 'ArrowUp');
+    fixture.detectChanges();
+    expect(document.activeElement).toBe(buttons[0]);
+    expect(tabindex(buttons[0])).toBe('0');
+  });
+
+  it('skips a disabled header during ArrowDown and marks it aria-disabled + non-stop', () => {
+    const { fixture, host, buttons } = setup();
+    host.bDisabled.set(true);
+    fixture.detectChanges();
+
+    expect(buttons[1].getAttribute('aria-disabled')).toBe('true');
+    expect(tabindex(buttons[1])).toBe('-1');
+
+    buttons[0].focus();
+    keydown(buttons[0], 'ArrowDown');
+    fixture.detectChanges();
+    // 'b' is disabled -> ArrowDown lands on 'c'.
+    expect(document.activeElement).toBe(buttons[2]);
+    expect(tabindex(buttons[2])).toBe('0');
+  });
+
+  it('does not toggle a disabled header on click', () => {
+    const { fixture, host, buttons } = setup();
+    host.bDisabled.set(true);
+    fixture.detectChanges();
+
+    buttons[1].click();
+    fixture.detectChanges();
+    expect(buttons[1].getAttribute('aria-expanded')).toBe('false');
   });
 });
