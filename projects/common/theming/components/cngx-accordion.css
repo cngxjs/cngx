@@ -58,6 +58,19 @@
     inherits: true;
     initial-value: oklch(0.88 0.005 250);
   }
+
+  /**
+   * Display of the CSS twisty. `block` shows it, `none` hides it. A skin that
+   * ships its own chevron (e.g. the @cngx/ui accordion organism) sets this to
+   * `none` on the header instead of a blanket `::after` reset. `inherits: true`
+   * so a value set on the header button reaches the `::after` pseudo.
+   * @group Header
+   */
+  @property --cngx-accordion-twisty-display {
+    syntax: '*';
+    inherits: true;
+    initial-value: block;
+  }
 }
 
 @layer cngx.components {
@@ -98,9 +111,11 @@
   }
 
   /* Twisty: a CSS-drawn chevron after the label that rotates when the panel
-   * opens. Consumers projecting their own icon can hide it via the token. */
+   * opens. A skin projecting its own icon hides it via
+   * `--cngx-accordion-twisty-display: none` on the header. */
   [cngxAccordionPanel]::after {
     content: '';
+    display: var(--cngx-accordion-twisty-display, block);
     flex: 0 0 auto;
     inline-size: 0.5rem;
     block-size: 0.5rem;

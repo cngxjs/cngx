@@ -11,6 +11,12 @@
 }
 
 .cngx-accordion-item__header {
+  /* The header carries `cngxAccordionPanel`, so the headless Track-B skin
+     (@cngx/themes cngx.css) would paint its own ::after twisty here. This
+     organism ships its own chevron slot, so hide the inherited one through the
+     token the Track-B skin exposes for exactly this - not a blanket ::after
+     reset. */
+  --cngx-accordion-twisty-display: none;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -33,14 +39,6 @@
 .cngx-accordion-item__header[aria-disabled='true'] {
   color: var(--cngx-accordion-header-disabled-color, #9ca3af);
   cursor: not-allowed;
-}
-
-/* The header carries `cngxAccordionPanel`, so the headless Track-B skin
-   (@cngx/themes cngx.css) paints its own ::after twisty on it. This organism
-   ships its own chevron slot, so suppress the inherited one - else the button
-   renders two chevrons and space-between pushes ours off-centre. */
-.cngx-accordion-item__header::after {
-  display: none;
 }
 
 .cngx-accordion-item__chevron-slot {
