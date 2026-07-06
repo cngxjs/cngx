@@ -1,4 +1,10 @@
-import { Component, type EnvironmentProviders, type Provider, type Type } from '@angular/core';
+import {
+  Component,
+  inject,
+  type EnvironmentProviders,
+  type Provider,
+  type Type,
+} from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { describe, expect, it } from 'vitest';
@@ -6,6 +12,7 @@ import { describe, expect, it } from 'vitest';
 import { CngxAccordionGroup } from '../accordion-group.component';
 import { CngxAccordionItem } from '../accordion-item.component';
 import { CngxAccordionItemTitle } from '../accordion-item-title.directive';
+import { CNGX_ACCORDION_CONFIG } from './accordion.config.defaults';
 import { withAccordionLabels, withDefaultHeadingLevel } from './features';
 import { provideAccordionConfig, provideAccordionConfigAt } from './provide-accordion-config';
 
@@ -101,5 +108,32 @@ describe('accordion config cascade', () => {
       provideAccordionConfig(withDefaultHeadingLevel(9)),
     ]);
     expect(group.headingLevel()).toBe(6);
+  });
+
+  it('empty provideAccordionConfig preserves the default reference (no allocation)', () => {
+    TestBed.configureTestingModule({});
+    const base = TestBed.inject(CNGX_ACCORDION_CONFIG);
+    TestBed.resetTestingModule();
+
+    TestBed.configureTestingModule({ providers: [provideAccordionConfig()] });
+    // Empty features short-circuit: the root default reference flows through
+    // untouched rather than a fresh (identical-content) allocation.
+    expect(TestBed.inject(CNGX_ACCORDION_CONFIG)).toBe(base);
+  });
+
+  it('empty provideAccordionConfigAt passes the parent reference through unchanged', () => {
+    @Component({
+      selector: 'passthrough-host',
+      template: '',
+      viewProviders: [provideAccordionConfigAt()],
+    })
+    class PassthroughHost {
+      readonly config = inject(CNGX_ACCORDION_CONFIG);
+    }
+
+    TestBed.configureTestingModule({ imports: [PassthroughHost] });
+    const base = TestBed.inject(CNGX_ACCORDION_CONFIG);
+    const fixture = TestBed.createComponent(PassthroughHost);
+    expect(fixture.componentInstance.config).toBe(base);
   });
 });
