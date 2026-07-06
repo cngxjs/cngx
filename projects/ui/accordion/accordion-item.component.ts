@@ -1,9 +1,12 @@
+import { NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  contentChild,
   inject,
   input,
+  linkedSignal,
   ViewEncapsulation,
 } from '@angular/core';
 
@@ -11,6 +14,8 @@ import { nextUid } from '@cngx/core/utils';
 import { CNGX_ACCORDION, CngxAccordionPanel } from '@cngx/common/interactive';
 
 import { CNGX_ACCORDION_GROUP } from './accordion-group.token';
+import { CngxAccordionItemContent } from './accordion-item-content.directive';
+import { CngxAccordionItemIcon } from './accordion-item-icon.directive';
 
 /**
  * Accordion item organism. Renders the APG-correct trio a headless consumer
@@ -38,7 +43,7 @@ import { CNGX_ACCORDION_GROUP } from './accordion-group.token';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  imports: [CngxAccordionPanel],
+  imports: [CngxAccordionPanel, NgTemplateOutlet],
   templateUrl: './accordion-item.component.html',
   styleUrl: './accordion-item.component.css',
   host: {
@@ -68,6 +73,22 @@ export class CngxAccordionItem {
   protected readonly headerId = nextUid('cngx-accordion-header-');
   protected readonly reasonId = nextUid('cngx-accordion-reason-');
 
+  /** Lazy region-body slot; absent means the body projects eagerly through the default slot. */
+  protected readonly contentSlot = contentChild(CngxAccordionItemContent);
+  /** Chevron override slot; absent means the CSS chevron default renders. */
+  protected readonly iconSlot = contentChild(CngxAccordionItemIcon);
+
   /** Whether this item's region is open, derived from the coordinator's open-set. */
   protected readonly expanded = computed(() => this.accordion.isOpen(this.panelId));
+
+  /**
+   * Keep-alive latch for lazy content: `false` until the region first opens,
+   * then `true` forever. Derived history (Pillar 1) - a `linkedSignal`
+   * accumulating onto its own previous value, never an effect that writes a
+   * signal. Boolean, so `Object.is` keeps a stable reference once latched.
+   */
+  protected readonly hasOpened = linkedSignal<boolean, boolean>({
+    source: this.expanded,
+    computation: (open, prev) => open || (prev?.value ?? false),
+  });
 }

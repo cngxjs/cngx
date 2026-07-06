@@ -5,6 +5,9 @@ import { beforeEach, describe, expect, it } from 'vitest';
 
 import { CngxAccordionGroup } from './accordion-group.component';
 import { CngxAccordionItem } from './accordion-item.component';
+import { CngxAccordionItemContent } from './accordion-item-content.directive';
+import { CngxAccordionItemIcon } from './accordion-item-icon.directive';
+import { CngxAccordionItemTitle } from './accordion-item-title.directive';
 
 @Component({
   template: `<cngx-accordion-group [headingLevel]="level()">
@@ -14,12 +17,34 @@ import { CngxAccordionItem } from './accordion-item.component';
     >
     <cngx-accordion-item><span cngxAccordionItemTitle>C</span>Body C</cngx-accordion-item>
   </cngx-accordion-group>`,
-  imports: [CngxAccordionGroup, CngxAccordionItem],
+  imports: [CngxAccordionGroup, CngxAccordionItem, CngxAccordionItemTitle],
 })
 class Host {
   readonly level = signal<number>(3);
   readonly bDisabled = signal(false);
 }
+
+@Component({
+  template: `<cngx-accordion-group>
+    <cngx-accordion-item>
+      <span cngxAccordionItemTitle>Report</span>
+      <ng-template cngxAccordionItemIcon let-expanded>
+        <span class="custom-icon">{{ expanded }}</span>
+      </ng-template>
+      <ng-template cngxAccordionItemContent>
+        <span class="lazy-body">loaded</span>
+      </ng-template>
+    </cngx-accordion-item>
+  </cngx-accordion-group>`,
+  imports: [
+    CngxAccordionGroup,
+    CngxAccordionItem,
+    CngxAccordionItemTitle,
+    CngxAccordionItemContent,
+    CngxAccordionItemIcon,
+  ],
+})
+class SlotHost {}
 
 describe('CngxAccordionItem', () => {
   beforeEach(() => TestBed.configureTestingModule({ imports: [Host] }));
@@ -97,5 +122,31 @@ describe('CngxAccordionItem', () => {
     expect(reason).not.toBeNull();
     expect(reason?.getAttribute('aria-hidden')).toBe('true');
     expect(reason?.textContent?.trim()).toBe('');
+  });
+
+  it('instantiates *cngxAccordionItemContent only after first open', () => {
+    const fixture = TestBed.createComponent(SlotHost);
+    fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+    const header = root.querySelector<HTMLButtonElement>('button.cngx-accordion-item__header')!;
+
+    expect(root.querySelector('.lazy-body')).toBeNull();
+
+    header.click();
+    fixture.detectChanges();
+    expect(root.querySelector('.lazy-body')?.textContent).toBe('loaded');
+  });
+
+  it('renders *cngxAccordionItemIcon in place of the CSS chevron with expanded context', () => {
+    const fixture = TestBed.createComponent(SlotHost);
+    fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+
+    expect(root.querySelector('.cngx-accordion-item__chevron')).toBeNull();
+    expect(root.querySelector('.custom-icon')?.textContent).toBe('false');
+
+    root.querySelector<HTMLButtonElement>('button.cngx-accordion-item__header')!.click();
+    fixture.detectChanges();
+    expect(root.querySelector('.custom-icon')?.textContent).toBe('true');
   });
 });

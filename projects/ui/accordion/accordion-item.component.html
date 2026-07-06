@@ -12,7 +12,16 @@
     <span class="cngx-accordion-item__title">
       <ng-content select="[cngxAccordionItemTitle]" />
     </span>
-    <span class="cngx-accordion-item__chevron" aria-hidden="true"></span>
+    <span class="cngx-accordion-item__chevron-slot" aria-hidden="true">
+      @if (iconSlot(); as icon) {
+        <ng-container
+          [ngTemplateOutlet]="icon.templateRef"
+          [ngTemplateOutletContext]="{ $implicit: expanded() }"
+        />
+      } @else {
+        <span class="cngx-accordion-item__chevron"></span>
+      }
+    </span>
   </button>
 </div>
 
@@ -29,5 +38,11 @@
   [attr.aria-labelledby]="headerId"
   [hidden]="!expanded()"
 >
-  <ng-content />
+  @if (contentSlot(); as content) {
+    @if (hasOpened()) {
+      <ng-container [ngTemplateOutlet]="content.templateRef" />
+    }
+  } @else {
+    <ng-content />
+  }
 </div>
