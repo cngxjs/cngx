@@ -4,6 +4,7 @@ import { By } from '@angular/platform-browser';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { CngxAccordion } from './accordion.directive';
+import type { CngxAccordionHeaderHandle } from './accordion-keyboard-nav';
 import { CngxAccordionPanel } from './accordion-panel.directive';
 
 @Component({
@@ -31,10 +32,6 @@ describe('CngxAccordion', () => {
       .queryAll(By.directive(CngxAccordionPanel))
       .map((de) => de.nativeElement as HTMLElement);
     return { fixture, host: fixture.componentInstance, container, buttons };
-  }
-
-  function tabindex(el: HTMLElement): string {
-    return el.getAttribute('tabindex') ?? '';
   }
 
   it('wires aria-controls and starts collapsed', () => {
@@ -75,27 +72,56 @@ describe('CngxAccordion', () => {
     expect(buttons[1].getAttribute('aria-expanded')).toBe('true');
   });
 
-  it('reflects aria-multiselectable from the multi input', () => {
+  it('carries no aria-multiselectable (inert on a bare container role)', () => {
     const { fixture, host, container } = setup();
     expect(container.nativeElement.getAttribute('aria-multiselectable')).toBeNull();
     host.multi.set(true);
     fixture.detectChanges();
-    expect(container.nativeElement.getAttribute('aria-multiselectable')).toBe('true');
+    expect(container.nativeElement.getAttribute('aria-multiselectable')).toBeNull();
   });
 
-  it('roves header focus vertically with ArrowDown / ArrowUp', () => {
-    const { fixture, container, buttons } = setup();
-    expect(tabindex(buttons[0])).toBe('0');
+  it('derives the roving stop preserve-then-default over the header registry', () => {
+    const { container } = setup();
+    const accordion = container.injector.get(CngxAccordion);
 
-    container.triggerEventHandler('keydown', new KeyboardEvent('keydown', { key: 'ArrowDown' }));
-    TestBed.flushEffects();
-    fixture.detectChanges();
-    expect(tabindex(buttons[0])).toBe('-1');
-    expect(tabindex(buttons[1])).toBe('0');
+    const makeHandle = (id: string, disabled = false): CngxAccordionHeaderHandle => ({
+      id,
+      element: document.createElement('button'),
+      disabled: signal(disabled),
+    });
+    const a = makeHandle('a');
+    const b = makeHandle('b');
 
-    container.triggerEventHandler('keydown', new KeyboardEvent('keydown', { key: 'ArrowUp' }));
-    TestBed.flushEffects();
-    fixture.detectChanges();
-    expect(tabindex(buttons[0])).toBe('0');
+    accordion.registerHeader(a);
+    accordion.registerHeader(b);
+    // First enabled header is the default stop.
+    expect(accordion.rovingActiveId()).toBe('a');
+    expect(accordion.nav.headerTabindex(a)).toBe(0);
+    expect(accordion.nav.headerTabindex(b)).toBe(-1);
+
+    // Keyboard movement records the stop; an unrelated registration preserves it.
+    accordion.setRovingActive('b');
+    accordion.registerHeader(makeHandle('c'));
+    expect(accordion.rovingActiveId()).toBe('b');
+
+    // Removing the active header falls back to the first enabled one.
+    accordion.unregisterHeader(b);
+    expect(accordion.rovingActiveId()).toBe('a');
+  });
+
+  it('defaults the roving stop past a disabled first header', () => {
+    const { container } = setup();
+    const accordion = container.injector.get(CngxAccordion);
+    accordion.registerHeader({
+      id: 'a',
+      element: document.createElement('button'),
+      disabled: signal(true),
+    });
+    accordion.registerHeader({
+      id: 'b',
+      element: document.createElement('button'),
+      disabled: signal(false),
+    });
+    expect(accordion.rovingActiveId()).toBe('b');
   });
 });
