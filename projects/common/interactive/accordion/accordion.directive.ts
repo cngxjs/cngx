@@ -153,5 +153,6 @@ function headersEqual(
   if (a.length !== b.length) {
     return false;
   }
-  return a.every((handle) => b.includes(handle));
+  const seen = new Set(b);
+  return a.every((handle) => seen.has(handle));
 }
