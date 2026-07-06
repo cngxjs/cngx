@@ -9,25 +9,26 @@ import {
 import { CNGX_ACCORDION, type CngxAccordionHost } from './accordion.token';
 
 /**
- * Coordinating directive for an accordion: it packages the
- * `CngxExpandable + CngxRovingTabindex + aria-expanded` pattern that consumers
- * otherwise hand-wire. Put `cngxAccordion` on the container; each header
- * carries {@link CngxAccordionPanel}. The container owns the single source of
- * truth - one `openIds` set signal - and arbitrates single- vs multi-open. No
+ * Coordinating directive for an accordion. Put `cngxAccordion` on the
+ * container; each header carries {@link CngxAccordionPanel}. The container owns
+ * two single sources of truth - one `openIds` set signal (expansion) and one
+ * header registry (`rovingActiveId`) - and arbitrates single- vs multi-open. No
  * panel owns mutable expansion state and no effect syncs siblings: every
- * panel's `aria-expanded` derives from this one signal (Pillar 1).
+ * panel's `aria-expanded` derives from the open-set signal (Pillar 1).
  *
- * Header arrow-key navigation comes from the `CngxRovingTabindex` host
- * directive (pinned to the vertical axis). Because it discovers items via
- * non-descendant `contentChildren`, the `cngxAccordionPanel` header buttons
- * must be direct children of the `cngxAccordion` element.
+ * Header arrow-key navigation runs through {@link createAccordionKeyboardNav}
+ * over a header registry rather than `contentChildren` roving. Panels register
+ * their header handle on init, so navigation survives a skin that renders each
+ * header inside its own component view - the reason {@link CngxAccordionPanel}
+ * self-wires `tabindex`/`keydown` instead of relying on a container-level
+ * roving directive.
  *
  * ```html
  * <div cngxAccordion #acc="cngxAccordion" [multi]="false">
- *   <button cngxAccordionPanel panelId="a" controls="region-a">Section A</button>
- *   <div role="region" id="region-a" [hidden]="!acc.isOpen('a')">…</div>
- *   <button cngxAccordionPanel panelId="b" controls="region-b">Section B</button>
- *   <div role="region" id="region-b" [hidden]="!acc.isOpen('b')">…</div>
+ *   <button cngxAccordionPanel id="head-a" panelId="a" controls="region-a">Section A</button>
+ *   <div role="region" id="region-a" aria-labelledby="head-a" [hidden]="!acc.isOpen('a')">…</div>
+ *   <button cngxAccordionPanel id="head-b" panelId="b" controls="region-b">Section B</button>
+ *   <div role="region" id="region-b" aria-labelledby="head-b" [hidden]="!acc.isOpen('b')">…</div>
  * </div>
  * ```
  *
@@ -36,7 +37,7 @@ import { CNGX_ACCORDION, type CngxAccordionHost } from './accordion.token';
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/accordion/accordion.directive.ts
  * @since 0.1.0
- * @relatedTo CngxAccordionPanel, CngxExpandable, CngxRovingTabindex
+ * @relatedTo CngxAccordionPanel, createAccordionKeyboardNav
  */
 @Directive({
   selector: '[cngxAccordion]',
