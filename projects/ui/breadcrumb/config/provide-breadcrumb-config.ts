@@ -20,6 +20,7 @@ import {
  * areas.
  *
  * @category ui/breadcrumb
+ * @since 0.1.0
  */
 export type CngxBreadcrumbConfigFeature =
   | {
@@ -62,7 +63,9 @@ function reduceFeatures(
  * Two-level deep merge: top-level keys (`ariaLabels` / `router`) are
  * spread-merged so the partial fills in missing keys without nuking unrelated
  * config sub-trees. Inner objects are flat (one level), so a single spread per
- * key suffices.
+ * key suffices. Invariant: a config key nested more than one level deep would
+ * shallow-merge silently here - if the config ever grows a nested sub-tree, add
+ * a dedicated spread for it rather than relying on this pass.
  *
  * @internal
  */
@@ -102,6 +105,7 @@ function mergeConfig(
  * ```
  *
  * @category ui/breadcrumb
+ * @since 0.1.0
  */
 export function provideBreadcrumbConfig(
   ...features: CngxBreadcrumbConfigFeature[]
@@ -145,6 +149,7 @@ export function provideBreadcrumbConfig(
  * ```
  *
  * @category ui/breadcrumb
+ * @since 0.1.0
  */
 export function provideBreadcrumbConfigAt(
   ...features: CngxBreadcrumbConfigFeature[]

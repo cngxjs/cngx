@@ -14,6 +14,7 @@ import type { CngxBreadcrumbConfigFeature } from './provide-breadcrumb-config';
  * ```
  *
  * @category ui/breadcrumb
+ * @since 0.1.0
  */
 export function withBreadcrumbAriaLabels(
   payload: NonNullable<CngxBreadcrumbConfig['ariaLabels']>,
@@ -31,6 +32,7 @@ export function withBreadcrumbAriaLabels(
  * ```
  *
  * @category ui/breadcrumb
+ * @since 0.1.0
  */
 export function withBreadcrumbDataKey(dataKey: string): CngxBreadcrumbConfigFeature {
   return { kind: 'router', payload: { dataKey } };

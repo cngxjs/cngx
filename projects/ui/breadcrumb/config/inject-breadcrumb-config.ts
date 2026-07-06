@@ -19,6 +19,7 @@ import { CNGX_BREADCRUMB_CONFIG } from './breadcrumb.config.defaults';
  * ```
  *
  * @category ui/breadcrumb
+ * @since 0.1.0
  */
 export function injectBreadcrumbConfig(): CngxBreadcrumbConfig {
   return inject(CNGX_BREADCRUMB_CONFIG);
