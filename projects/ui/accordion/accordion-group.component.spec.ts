@@ -9,12 +9,17 @@ import { CngxAccordionGroup } from './accordion-group.component';
 import { CNGX_ACCORDION_GROUP } from './accordion-group.token';
 
 @Component({
-  template: `<cngx-accordion-group [multi]="multi()" [headingLevel]="level()"></cngx-accordion-group>`,
+  template: `<cngx-accordion-group
+    [multi]="multi()"
+    [headingLevel]="level()"
+    [(openIds)]="open"
+  ></cngx-accordion-group>`,
   imports: [CngxAccordionGroup],
 })
 class Host {
   readonly multi = signal(false);
   readonly level = signal<number | string>(3);
+  readonly open = signal<ReadonlySet<string>>(new Set());
 }
 
 describe('CngxAccordionGroup', () => {
@@ -71,5 +76,19 @@ describe('CngxAccordionGroup', () => {
     host.multi.set(true);
     fixture.detectChanges();
     expect(accordion.multi()).toBe(true);
+  });
+
+  it('forwards a seeded [openIds] into the hosted brain', () => {
+    const { fixture, host, accordion } = setup();
+    host.open.set(new Set(['a']));
+    fixture.detectChanges();
+    expect(accordion.isOpen('a')).toBe(true);
+  });
+
+  it('round-trips (openIdsChange) back to the host on toggle', () => {
+    const { fixture, host, accordion } = setup();
+    accordion.toggle('a');
+    fixture.detectChanges();
+    expect([...host.open()]).toEqual(['a']);
   });
 });

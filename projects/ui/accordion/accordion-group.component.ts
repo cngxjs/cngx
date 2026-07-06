@@ -13,7 +13,8 @@ import { CNGX_ACCORDION_GROUP, type CngxAccordionGroupContext } from './accordio
 /**
  * Accordion organism shell. Hosts the headless {@link CngxAccordion} brain via
  * `hostDirectives` - so `CNGX_ACCORDION` and the registration keyboard-nav come
- * with it - forwards `[multi]`, and adds `[headingLevel]`. Projects its
+ * with it - forwards `[multi]` and the controlled `[(openIds)]` model, and adds
+ * `[headingLevel]`. Projects its
  * `CngxAccordionItem` children through a single `<ng-content />`; the group
  * owns no rendering beyond providing {@link CNGX_ACCORDION_GROUP} so items read
  * the shared heading level.
@@ -41,7 +42,9 @@ import { CNGX_ACCORDION_GROUP, type CngxAccordionGroupContext } from './accordio
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   styleUrl: './accordion-group.component.css',
-  hostDirectives: [{ directive: CngxAccordion, inputs: ['multi'] }],
+  hostDirectives: [
+    { directive: CngxAccordion, inputs: ['multi', 'openIds'], outputs: ['openIdsChange'] },
+  ],
   providers: [{ provide: CNGX_ACCORDION_GROUP, useExisting: CngxAccordionGroup }],
   template: '<ng-content />',
   host: {
