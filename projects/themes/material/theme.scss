@@ -25,6 +25,7 @@
 //   @include action-btn.theme($theme);
 
 @use './system-bridge' as cngx-system;
+@use './accordion-theme' as accordion;
 @use './action-button-theme' as action-button;
 @use './async-container-theme' as async-container;
 @use './avatar-theme' as avatar;
@@ -69,6 +70,7 @@
   // var() fallbacks against the Material-aligned system layer.
   @include cngx-system.theme($theme);
 
+  @include accordion.theme($theme);
   @include action-button.theme($theme);
   @include async-container.theme($theme);
   @include avatar.theme($theme);
