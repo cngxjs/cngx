@@ -1,0 +1,45 @@
+/**
+ * One crumb in a {@link CngxBreadcrumbBar} trail. `href` renders a plain-link
+ * crumb. The terminal crumb needs no target - it is derived from position and
+ * rendered as the current page.
+ *
+ * @category ui/breadcrumb
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/breadcrumb/breadcrumb.types.ts
+ * @since 0.1.0
+ * @relatedTo CngxBreadcrumbBar
+ */
+export interface CngxBreadcrumbCrumb {
+  /** Visible, and accessible, crumb text. */
+  label: string;
+  /** Target for a plain-link crumb. Omit on the terminal crumb. */
+  href?: string;
+  /**
+   * Static lateral-navigation alternatives for this crumb. When present and
+   * non-empty, {@link CngxBreadcrumbBar} auto-renders a
+   * {@link CngxBreadcrumbSiblings} dropdown for the crumb - no consumer wiring.
+   * Static data only; router-driven siblings compose through the
+   * `*cngxBreadcrumbItemAccessory` slot instead (the bar stays free of
+   * `@angular/router`). An empty array renders nothing (the dropdown self-hides).
+   */
+  siblings?: readonly CngxBreadcrumbSibling[];
+}
+
+/**
+ * One sibling in a {@link CngxBreadcrumbSiblings} dropdown - an alternative
+ * page at the same trail level. `href` renders a navigable row; the active
+ * level is marked `current`, which renders as `aria-current="page"` and drops
+ * the link.
+ *
+ * @category ui/breadcrumb
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/breadcrumb/breadcrumb.types.ts
+ * @since 0.1.0
+ * @relatedTo CngxBreadcrumbSiblings
+ */
+export interface CngxBreadcrumbSibling {
+  /** Visible, and accessible, sibling text. */
+  label: string;
+  /** Target for a navigable sibling. Omit (or set `current`) on the active level. */
+  href?: string;
+  /** Marks the sibling representing the current level - rendered as `aria-current="page"`, no link. */
+  current?: boolean;
+}

@@ -35,6 +35,41 @@ export {
   CNGX_CONTROL_VALUE,
   type CngxControlValue,
 } from './control-value/control-value.token';
+export {
+  createSliderCore,
+  type CngxSliderCore,
+  type CngxSliderCoreOptions,
+} from './slider/slider-core';
+export { CngxSlider } from './slider/slider.component';
+export { CngxRangeSlider } from './slider/range-slider.component';
+export { CngxSliderTrack } from './slider/slider.directive';
+export { CngxRangeSliderTrack } from './slider/range-slider.directive';
+export { CngxSliderThumb } from './slider/slider-thumb.directive';
+export {
+  CNGX_SLIDER_RANGE,
+  type CngxSliderRangeHost,
+  type CngxSliderThumbBounds,
+  type CngxSliderThumbPosition,
+} from './slider/range-slider.token';
+export { CngxAccordion } from './accordion/accordion.directive';
+export { CngxAccordionPanel } from './accordion/accordion-panel.directive';
+export { CNGX_ACCORDION, type CngxAccordionHost } from './accordion/accordion.token';
+export {
+  createAccordionKeyboardNav,
+  type CngxAccordionHeaderHandle,
+  type CngxAccordionKeyboardNav,
+  type CngxAccordionKeyboardNavHost,
+  type CngxAccordionKeyboardNavOptions,
+} from './accordion/accordion-keyboard-nav';
+export { CngxBreadcrumb } from './breadcrumb/breadcrumb.directive';
+export { CNGX_BREADCRUMB, type CngxBreadcrumbHost } from './breadcrumb/breadcrumb.token';
+export { CngxBreadcrumbItem } from './breadcrumb/breadcrumb-item.directive';
+export { CngxBreadcrumbSeparator } from './breadcrumb/breadcrumb-separator.directive';
+export {
+  createBreadcrumbCollapse,
+  type CngxBreadcrumbCollapseStrategy,
+} from './breadcrumb/breadcrumb-collapse';
+export { CNGX_BREADCRUMB_COLLAPSE_STRATEGY } from './breadcrumb/breadcrumb-collapse.token';
 export { CngxToggle } from './toggle/toggle.component';
 export { CngxCheckbox } from './checkbox/checkbox.component';
 export { CngxCheckboxGroup } from './checkbox-group/checkbox-group.component';

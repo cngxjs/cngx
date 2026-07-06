@@ -6,7 +6,15 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatInputModule } from '@angular/material/input';
+import { MatSliderModule } from '@angular/material/slider';
+import { MatExpansionModule } from '@angular/material/expansion';
 
+import { CngxSlider, CngxRangeSlider } from '@cngx/common/interactive';
+import {
+  CngxAccordionGroup,
+  CngxAccordionItem,
+  CngxAccordionItemTitle,
+} from '@cngx/ui/accordion';
 import {
   CngxSelect,
   CngxMultiSelect,
@@ -78,6 +86,13 @@ interface FieldModel {
     MatChipsModule,
     MatAutocompleteModule,
     MatInputModule,
+    MatSliderModule,
+    MatExpansionModule,
+    CngxSlider,
+    CngxRangeSlider,
+    CngxAccordionGroup,
+    CngxAccordionItem,
+    CngxAccordionItemTitle,
     CngxSelect,
     CngxMultiSelect,
     CngxCombobox,
@@ -169,6 +184,78 @@ interface FieldModel {
             <mat-chip>{{ labelOf(v) }}</mat-chip>
           }
         </mat-chip-set>
+      </section>
+
+      <section>
+        <h3>slider (single)</h3>
+        <cngx-slider
+          class="probe-cngx"
+          aria-label="Volume"
+          [(value)]="sliderValue"
+          [min]="0"
+          [max]="100"
+          [step]="5"
+        />
+
+        <mat-slider min="0" max="100" step="5" class="probe-mat">
+          <input matSliderThumb [(ngModel)]="matSliderValue" aria-label="Volume" />
+        </mat-slider>
+      </section>
+
+      <section>
+        <h3>slider (range)</h3>
+        <cngx-range-slider
+          class="probe-cngx"
+          aria-label="Price range"
+          [(value)]="rangeValue"
+          [min]="0"
+          [max]="1000"
+          [step]="10"
+        />
+
+        <mat-slider min="0" max="1000" step="10" class="probe-mat">
+          <input matSliderStartThumb [(ngModel)]="matRangeStart" aria-label="Minimum" />
+          <input matSliderEndThumb [(ngModel)]="matRangeEnd" aria-label="Maximum" />
+        </mat-slider>
+      </section>
+
+      <section>
+        <h3>accordion</h3>
+        <cngx-accordion-group class="probe-cngx" [headingLevel]="3">
+          <cngx-accordion-item>
+            <span cngxAccordionItemTitle>Shipping</span>
+            Free shipping on orders over $50.
+          </cngx-accordion-item>
+          <cngx-accordion-item>
+            <span cngxAccordionItemTitle>Returns</span>
+            Returns accepted within 30 days of delivery.
+          </cngx-accordion-item>
+          <cngx-accordion-item [disabled]="true">
+            <span cngxAccordionItemTitle>Warranty</span>
+            Two-year limited warranty.
+          </cngx-accordion-item>
+        </cngx-accordion-group>
+
+        <mat-accordion class="probe-mat">
+          <mat-expansion-panel>
+            <mat-expansion-panel-header>
+              <mat-panel-title>Shipping</mat-panel-title>
+            </mat-expansion-panel-header>
+            Free shipping on orders over $50.
+          </mat-expansion-panel>
+          <mat-expansion-panel>
+            <mat-expansion-panel-header>
+              <mat-panel-title>Returns</mat-panel-title>
+            </mat-expansion-panel-header>
+            Returns accepted within 30 days of delivery.
+          </mat-expansion-panel>
+          <mat-expansion-panel disabled>
+            <mat-expansion-panel-header>
+              <mat-panel-title>Warranty</mat-panel-title>
+            </mat-expansion-panel-header>
+            Two-year limited warranty.
+          </mat-expansion-panel>
+        </mat-accordion>
       </section>
 
       <section>
@@ -533,6 +620,8 @@ export class MaterialLab {
   // One distinct signal per cngx probe; no shared mutable state across variants.
   protected readonly simpleValue = signal<string | undefined>(undefined);
   protected readonly singleValue = signal<string | undefined>(undefined);
+  protected readonly sliderValue = signal<number>(40);
+  protected readonly rangeValue = signal<[number, number]>([200, 800]);
   protected readonly multiValues = signal<string[]>(['red', 'green']);
   protected readonly typeaheadValue = signal<string | undefined>(undefined);
   protected readonly comboboxValues = signal<string[]>([]);
@@ -571,6 +660,9 @@ export class MaterialLab {
   // Material counterpart state (plain bindings; no shared identity with cngx probes).
   protected matSimpleValue: string | undefined = undefined;
   protected matSingleValue: string | undefined = undefined;
+  protected matSliderValue = 40;
+  protected matRangeStart = 200;
+  protected matRangeEnd = 800;
   protected matMultiValues: string[] = ['red', 'green'];
   protected matTypeaheadText = '';
   protected matComboboxValues: string[] = [];

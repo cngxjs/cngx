@@ -8,6 +8,8 @@
 @use '../../../../projects/themes/material/chip-theme.scss' as chip;
 @use '../../../../projects/themes/material/popover-panel-theme.scss' as popover;
 @use '../../../../projects/themes/material/field-theme.scss' as field;
+@use '../../../../projects/themes/material/slider-theme.scss' as slider;
+@use '../../../../projects/themes/material/accordion-theme.scss' as accordion;
 
 $palette: (
   theme-type: light,
@@ -55,6 +57,8 @@ html {
   @include mat.chips-theme($theme);
   @include mat.autocomplete-theme($theme);
   @include mat.input-theme($theme);
+  @include mat.slider-theme($theme);
+  @include mat.expansion-theme($theme);
 
   @include cngx-system.theme($theme);
   @include select.theme($theme);
@@ -63,6 +67,8 @@ html {
   @include chip.theme($theme);
   @include popover.theme($theme);
   @include field.theme($theme);
+  @include slider.theme($theme);
+  @include accordion.theme($theme);
 }
 
 .lab {

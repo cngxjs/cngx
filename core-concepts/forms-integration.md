@@ -55,6 +55,26 @@ The value-channel contract a control provides when it translates between a typed
 
 ---
 
+## Bridges
+
+The contracts above describe what a control *is*. A bridge is the wiring that lets a control - or a whole form system - that doesn't natively speak CNGX participate anyway. They live in `@cngx/forms/field` and fall into four kinds along two axes: *which boundary they cross*, and *which channel they carry*.
+
+|Bridge|Kind|Carries|Crosses the boundary of|
+|-|-|-|-|
+|`adaptFormControl`|Form-system adapter|Field shape only: wraps a Reactive-Forms `AbstractControl` into the `Field<T>` shape `[field]` expects (value, errors, touched, dirty, required, validity).|A Reactive-Forms source that predates Signal Forms.|
+|`cngxBindField`|Host ARIA bridge|ARIA only: the form-field's `id`, `aria-*`, and `focus`/`blur` plumbing, projected onto a foreign host. Value stays with the host's own CVA.|A foreign host with its own value channel - native `<input>`, Material, third-party CVA widget.|
+|`CngxListboxFieldBridge`, `CngxSliderFieldBridge`, ...|Control bridge|ARIA *and* value: provides `CNGX_FORM_FIELD_CONTROL` and two-way-syncs the bound `Field<T>` with the control's own `value` model.|A CNGX composite that exposes a `value` model but no CVA.|
+|`CngxErrorScopeFieldBridge`|Scope bridge|Error-gate visibility: maps an ambient `CngxErrorScope` onto the form-field's reveal contract. Auto-wired as a `hostDirective`, no consumer markup.|An ambient error scope from `@cngx/common/interactive`.|
+
+Two things to read off this:
+
+- **Whether a bridge owns the value channel is the key distinction.** `cngxBindField` deliberately does *not* - the foreign host already has a CVA, so `[control]`/`[formControl]` drives the value and the bridge carries only ARIA. The control bridges *do* own it: a `CngxListbox` or `CngxSlider` exposes a `value = model<T>()` but no CVA, so the bridge two-way-syncs that model with the field. That value sync is the whole reason these are dedicated directives rather than another `cngxBindField`.
+- **The atom stays Forms-agnostic.** A control bridge is the *only* file that imports from `@cngx/forms/field` / `@angular/forms`; the slider and listbox atoms in `@cngx/common/interactive` never learn that forms exist. New composite controls get their own bridge as they need one - the slider bridge is the most recent, and the list is open.
+
+Bridges are the cost of meeting a consumer (or an atom) where it already is, not a tax on the default path: a control that provides `CNGX_FORM_FIELD_CONTROL` directly needs none for ARIA, and a feature on Signal Forms needs none for field shape.
+
+---
+
 ## Signal Forms (the default)
 
 `@angular/forms/signals` ships a signal-native form model:

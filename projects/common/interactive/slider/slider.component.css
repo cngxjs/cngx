@@ -1,0 +1,207 @@
+/* Track-A skin for <cngx-slider>. Scoped to the element so it never collides
+ * with the headless [cngxSliderTrack] Track-B rules. Reads the same
+ * --cngx-slider-* tokens (registered in @cngx/themes/cngx.css). The brain sets
+ * --cngx-slider-fraction on this host; fill / thumb / value inherit it. */
+cngx-slider {
+  position: relative;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  inline-size: 100%;
+  min-block-size: var(--cngx-slider-thumb-size, 16px);
+  cursor: pointer;
+  touch-action: none;
+}
+
+cngx-slider[aria-disabled='true'] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+cngx-slider .cngx-slider__track {
+  position: relative;
+  flex: 1 1 auto;
+  block-size: var(--cngx-slider-track-size, 4px);
+  border-radius: 999px;
+  background: var(--cngx-slider-track-color, var(--cngx-color-border, oklch(0.88 0.005 250)));
+}
+
+cngx-slider .cngx-slider__fill {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  inline-size: calc(var(--cngx-slider-fraction, 0) * 100%);
+  border-radius: inherit;
+  background: var(--cngx-slider-fill-color, var(--cngx-color-primary, oklch(0.66 0.19 50)));
+}
+
+cngx-slider .cngx-slider__thumb {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  inset-block-start: 50%;
+  inset-inline-start: calc(var(--cngx-slider-fraction, 0) * 100%);
+  inline-size: var(--cngx-slider-thumb-size, 16px);
+  block-size: var(--cngx-slider-thumb-size, 16px);
+  border-radius: 50%;
+  background: var(--cngx-slider-thumb-color, var(--cngx-color-surface, oklch(1 0 0)));
+  border: var(--cngx-slider-thumb-border-width, 2px) solid
+    var(--cngx-slider-thumb-border-color, var(--cngx-color-primary, oklch(0.66 0.19 50)));
+  translate: -50% -50%;
+  pointer-events: none;
+}
+
+/* Tick marks: a step grid painted under the fill via a repeating gradient. The
+ * component sets --cngx-slider-tick-interval (a track percentage) when showTicks
+ * is on. */
+cngx-slider.cngx-slider--ticks .cngx-slider__track::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-image: repeating-linear-gradient(
+    to right,
+    var(--cngx-slider-tick-color, var(--cngx-color-border, oklch(0.7 0.01 250))) 0,
+    var(--cngx-slider-tick-color, var(--cngx-color-border, oklch(0.7 0.01 250))) var(--cngx-slider-tick-width, 1px),
+    transparent var(--cngx-slider-tick-width, 1px),
+    transparent var(--cngx-slider-tick-interval, 10%)
+  );
+}
+
+/* Value label floats above the thumb so it never shrinks the track (which
+ * would misalign the brain's pointer-to-fraction math). */
+cngx-slider .cngx-slider__value {
+  position: absolute;
+  inset-block-end: calc(100% + var(--cngx-slider-value-gap, 0.25rem));
+  inset-inline-start: calc(var(--cngx-slider-fraction, 0) * 100%);
+  translate: -50% 0;
+  font-size: var(--cngx-font-size-sm, 0.8125rem);
+  font-variant-numeric: tabular-nums;
+  color: var(--cngx-color-text, oklch(0.2 0.01 250));
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+/* Discrete value bubble: a primary pill above the thumb, shown only while the
+ * slider is focused or being dragged (Material-style). */
+cngx-slider .cngx-slider__bubble {
+  position: absolute;
+  inset-block-end: calc(100% + var(--cngx-slider-bubble-gap, 0.5rem));
+  inset-inline-start: calc(var(--cngx-slider-fraction, 0) * 100%);
+  translate: -50% 0;
+  padding: var(--cngx-slider-bubble-padding, 0.125rem 0.4rem);
+  border-radius: var(--cngx-radius-sm, 0.25rem);
+  background: var(--cngx-slider-bubble-bg, var(--cngx-color-primary, oklch(0.66 0.19 50)));
+  color: var(--cngx-slider-bubble-color, var(--cngx-color-on-primary, oklch(0.99 0.01 250)));
+  font-size: var(--cngx-font-size-sm, 0.8125rem);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.12s ease;
+}
+
+cngx-slider:focus .cngx-slider__bubble,
+cngx-slider:active .cngx-slider__bubble {
+  opacity: 1;
+}
+
+/* Tick value labels under the track (one per step stop). */
+cngx-slider .cngx-slider__ticks {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-start: calc(100% + 0.35rem);
+  block-size: 1em;
+  pointer-events: none;
+}
+
+cngx-slider .cngx-slider__tick-label {
+  position: absolute;
+  inset-inline-start: calc(var(--cngx-slider-tick-fraction, 0) * 100%);
+  translate: -50% 0;
+  font-size: var(--cngx-slider-tick-font-size, 0.6875rem);
+  font-variant-numeric: tabular-nums;
+  color: var(--cngx-slider-tick-label-color, var(--cngx-color-text-muted, oklch(0.55 0.01 250)));
+  white-space: nowrap;
+}
+
+cngx-slider:focus-visible {
+  outline: none;
+}
+
+/* Crisp outline ring on keyboard focus, matching the cngx convention
+ * (toggle / checkbox / radio). */
+cngx-slider:focus-visible .cngx-slider__thumb {
+  outline: var(--cngx-slider-focus-ring-width, 2px) solid
+    var(--cngx-slider-focus-ring-color, var(--cngx-color-primary, oklch(0.66 0.19 50)));
+  outline-offset: 2px;
+}
+
+/* Vertical: labels run down the right of the track. */
+cngx-slider[aria-orientation='vertical'] .cngx-slider__ticks {
+  inset-inline: auto;
+  inset-block: 0;
+  inset-inline-start: calc(100% + 0.35rem);
+  inline-size: 3ch;
+  block-size: auto;
+}
+
+/* Anchor each label by its RIGHT edge so the column right-aligns (e.g. "100"
+ * and "0" share the same right edge). */
+cngx-slider[aria-orientation='vertical'] .cngx-slider__tick-label {
+  inset-inline-start: auto;
+  inset-inline-end: 0;
+  inset-block-start: calc(100% - var(--cngx-slider-tick-fraction, 0) * 100%);
+  text-align: end;
+  translate: 0 -50%;
+}
+
+/* Vertical orientation: column layout with an explicit length; fill + thumb
+ * anchor to the bottom edge to match the brain's bottom-up pointer math. */
+cngx-slider[aria-orientation='vertical'] {
+  flex-direction: column;
+  inline-size: max-content;
+  min-inline-size: var(--cngx-slider-thumb-size, 16px);
+  block-size: var(--cngx-slider-length, 9rem);
+  min-block-size: 0;
+}
+
+cngx-slider[aria-orientation='vertical'] .cngx-slider__track {
+  flex: 1 1 auto;
+  inline-size: var(--cngx-slider-track-size, 4px);
+  block-size: auto;
+}
+
+cngx-slider[aria-orientation='vertical'] .cngx-slider__fill {
+  inset-inline: 0;
+  inset-block: auto 0;
+  inline-size: 100%;
+  block-size: calc(var(--cngx-slider-fraction, 0) * 100%);
+}
+
+cngx-slider[aria-orientation='vertical'].cngx-slider--ticks .cngx-slider__track::before {
+  background-image: repeating-linear-gradient(
+    to top,
+    var(--cngx-slider-tick-color, var(--cngx-color-border, oklch(0.7 0.01 250))) 0,
+    var(--cngx-slider-tick-color, var(--cngx-color-border, oklch(0.7 0.01 250))) var(--cngx-slider-tick-width, 1px),
+    transparent var(--cngx-slider-tick-width, 1px),
+    transparent var(--cngx-slider-tick-interval, 10%)
+  );
+}
+
+cngx-slider[aria-orientation='vertical'] .cngx-slider__thumb {
+  inset-inline-start: 50%;
+  inset-block-start: auto;
+  inset-block-end: calc(var(--cngx-slider-fraction, 0) * 100%);
+  translate: -50% 50%;
+}
+
+/* Value bubble sits to the LEFT of a vertical track so it never collides with
+ * the tick labels (which run down the right). */
+cngx-slider[aria-orientation='vertical'] .cngx-slider__value {
+  inset-block-end: auto;
+  inset-block-start: calc(100% - var(--cngx-slider-fraction, 0) * 100%);
+  inset-inline-start: auto;
+  inset-inline-end: calc(100% + 0.5rem);
+  translate: 0 -50%;
+}

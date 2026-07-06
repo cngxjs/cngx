@@ -1,0 +1,39 @@
+/* Structural reset for the per-crumb sibling dropdown. Track A (@Component ->
+   styleUrl). The popover surface chrome (background, elevation, radius) stays
+   owned by CngxPopoverPanel; this file only tames the chevron trigger, the menu
+   list, and the rows so the siblings read as a picker, not a raw bulleted <ul>.
+   Thematic values flow through --cngx-* custom properties with fallbacks. */
+
+.cngx-breadcrumb__siblings-trigger {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--cngx-breadcrumb-siblings-trigger-padding, 0 0.25rem);
+  border: 0;
+  background: none;
+  font: inherit;
+  line-height: 1;
+  color: var(--cngx-breadcrumb-siblings-trigger-color, inherit);
+  cursor: pointer;
+}
+
+.cngx-breadcrumb__siblings-menu {
+  margin: 0;
+  padding: var(--cngx-breadcrumb-siblings-menu-padding, 0.25rem 0);
+  list-style: none;
+  min-width: var(--cngx-breadcrumb-siblings-menu-min-width, 10rem);
+}
+
+.cngx-breadcrumb__siblings-item {
+  padding: var(--cngx-breadcrumb-siblings-item-padding, 0.375rem 0.75rem);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.cngx-breadcrumb__siblings-item:hover {
+  background: var(--cngx-breadcrumb-siblings-item-hover-bg, color-mix(in srgb, currentColor 8%, transparent));
+}
+
+.cngx-breadcrumb__siblings-link {
+  color: var(--cngx-breadcrumb-siblings-link-color, inherit);
+  text-decoration: var(--cngx-breadcrumb-siblings-link-decoration, none);
+}

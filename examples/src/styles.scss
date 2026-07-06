@@ -3738,3 +3738,11 @@ cngx-radio-group .cngx-radio + .cngx-radio {
 .tree-node-label {
   flex: 1 1 auto;
 }
+
+// Demo-only resizable frame for the responsive breadcrumb story. The resize
+// affordance (resize/overflow/padding) stays inline as layout; the border
+// chrome is thematic and lives here so no colour literal leaks into the story.
+.demo-breadcrumb-resizable {
+  border: 1px dashed var(--cngx-color-border, var(--cngx-ex-border, #cbd5e1));
+  border-radius: var(--cngx-radius-sm, 4px);
+}

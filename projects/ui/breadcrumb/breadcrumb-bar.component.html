@@ -1,0 +1,40 @@
+<nav cngxBreadcrumb [maxVisible]="maxVisible()" [label]="label()" #bc="cngxBreadcrumb">
+  <ol class="cngx-breadcrumb__list">
+    @for (crumb of items(); track crumb.href ?? crumb.label; let last = $last; let first = $first) {
+      <li class="cngx-breadcrumb__crumb" [style.display]="bc.isCollapsed(crumbRef) ? 'none' : null">
+        <a
+          cngxBreadcrumbItem
+          #crumbRef="cngxBreadcrumbItem"
+          class="cngx-breadcrumb__link"
+          [cngxBreadcrumbItemLabel]="crumb.label"
+          [attr.href]="last ? null : (crumb.href ?? null)"
+          >{{ crumb.label }}</a
+        >
+        @if (accessory(); as tpl) {
+          <ng-container
+            *ngTemplateOutlet="tpl; context: { $implicit: crumb, crumb: crumb, index: $index }"
+          />
+        } @else if (crumb.siblings; as sibs) {
+          @if (sibs.length) {
+            <cngx-breadcrumb-siblings [siblings]="sibs" />
+          }
+        }
+      </li>
+      @if (!last) {
+        <li
+          cngxBreadcrumbSeparator
+          class="cngx-breadcrumb__separator"
+          [style.display]="bc.isCollapsed(crumbRef) ? 'none' : null"
+        >
+          /
+        </li>
+      }
+      @if (first && bc.hasCollapsed()) {
+        <li class="cngx-breadcrumb__overflow">
+          <cngx-breadcrumb-overflow [itemTemplate]="overflowRow()" />
+        </li>
+        <li cngxBreadcrumbSeparator class="cngx-breadcrumb__separator">/</li>
+      }
+    }
+  </ol>
+</nav>

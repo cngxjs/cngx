@@ -204,6 +204,107 @@ readonly [updateName, nameState] = optimistic(
 - No `DestroyRef` cleanup - the subscription is unmanaged. If the component is
   destroyed mid-flight, the subscription completes silently.
 
+## CngxSlider / CngxRangeSlider
+
+Finished slider components - the 90% API. Drop in `<cngx-slider>`, bind `[(value)]`, done:
+the component renders the track, fill, and thumb and wires full APG keyboard (Arrow / Page /
+Home / End) and pointer-drag. The value is a `model<number>()`, so it binds two-way and
+works with Signal Forms via `[control]`; the `cngx-form-field` integration is `CngxSliderField`
+in `@cngx/forms`. `showValue` floats the formatted value above the thumb.
+
+```html
+<label id="vol">Volume</label>
+<cngx-slider aria-labelledby="vol" [(value)]="volume" [min]="0" [max]="100" [step]="5" showValue />
+```
+
+`<cngx-range-slider>` is the two-thumb range over a `model<[number, number]>()` tuple. It
+paints the orange fill band between the thumbs and clamps each to the other so they never
+cross.
+
+```html
+<cngx-range-slider aria-label="Price" [(value)]="price" [min]="0" [max]="1000" [step]="10" showValue />
+```
+
+### Headless directives (bring your own skin)
+
+When the default skin is not what you want, the headless `[cngxSliderTrack]` /
+`[cngxRangeSliderTrack]` directives give you the same `role="slider"` brain on your own
+element. They publish `--cngx-slider-fraction` (and, for range,
+`--cngx-slider-start/end-fraction`) so your markup positions the thumb and fill; default
+Track-B styling for the BEM skin ships in `@cngx/themes/cngx.css`.
+
+```html
+<div cngxSliderTrack class="cngx-slider" aria-label="Level" [(value)]="level" [min]="0" [max]="100">
+  <span class="cngx-slider__track"><span class="cngx-slider__fill"></span></span>
+  <span class="cngx-slider__thumb"></span>
+</div>
+```
+
+For a headless range, host two `[cngxSliderThumb]="'start' | 'end'"` children inside
+`[cngxRangeSliderTrack]`. `createSliderCore()` is the shared pure factory under all of them -
+hand it the value/min/max/step signals and it returns the clamped value, track fraction,
+`aria-valuetext`, and the keyboard/pointer write helpers.
+
+## CngxAccordion / CngxAccordionPanel
+
+A coordinating accordion over the existing expansion and roving atoms. `CngxAccordion`
+owns one open-set signal and arbitrates single- vs multi-open (`[multi]`); each
+`CngxAccordionPanel` header is a button that toggles its `panelId` and derives
+`aria-expanded` from that one signal - no panel-owned state, no sibling syncing. The
+container pins `CngxRovingTabindex` to the vertical axis for arrow-key header navigation,
+so the header buttons must be direct children of the `cngxAccordion` element. Default
+chrome ships as Track-B CSS in `@cngx/themes/cngx.css`.
+
+```html
+<div cngxAccordion #acc="cngxAccordion" [multi]="false">
+  <button cngxAccordionPanel panelId="a" controls="region-a">Section A</button>
+  <div role="region" id="region-a" [hidden]="!acc.isOpen('a')">…</div>
+  <button cngxAccordionPanel panelId="b" controls="region-b">Section B</button>
+  <div role="region" id="region-b" [hidden]="!acc.isOpen('b')">…</div>
+</div>
+```
+
+`aria-multiselectable` reflects `[multi]`; `CNGX_ACCORDION` is the token panels inject to
+reach the coordinator.
+
+## CngxBreadcrumb / CngxBreadcrumbItem / CngxBreadcrumbSeparator
+
+A linear breadcrumb over a `<nav>` landmark. `CngxBreadcrumb` names the landmark and, when
+the trail exceeds `[maxVisible]`, derives which middle crumbs collapse (keeping the first
+and the last `maxVisible - 1`) and exposes them via `collapsedItems()` / `hasCollapsed()`.
+`CngxBreadcrumbItem` marks the terminal crumb `aria-current="page"` from its position - the
+terminal crumb may be a `<span>` or an `<a [attr.href]="null">`, both derive it identically;
+`CngxBreadcrumbSeparator` marks glyphs `aria-hidden`. Default chrome ships as Track-B CSS
+in `@cngx/themes/cngx.css`.
+
+```html
+<nav cngxBreadcrumb [maxVisible]="4" #bc="cngxBreadcrumb">
+  <ol>
+    <li><a cngxBreadcrumbItem href="/">Home</a></li>
+    <li cngxBreadcrumbSeparator>/</li>
+    <li><span cngxBreadcrumbItem>Current page</span></li>
+  </ol>
+</nav>
+```
+
+Render the collapsed crumbs in an ellipsis `CngxMenu` (drive it from `bc.hasCollapsed()`),
+and truncate long labels with `CngxTruncate`.
+
+The collapse rule is a swappable DI factory. `createBreadcrumbCollapse()` is the default
+(keep the first crumb + the last `maxVisible - 1`); override
+`CNGX_BREADCRUMB_COLLAPSE_STRATEGY` in `providers` (app-wide) or `viewProviders` (per `<nav>`)
+to change which indices fold - width-aware, keep-first-N, mobile parent-only - without
+forking. The strategy is a pure `(total, maxVisible) => ReadonlySet<number>`.
+
+```ts
+@Component({
+  viewProviders: [{
+    provide: CNGX_BREADCRUMB_COLLAPSE_STRATEGY,
+    useValue: (total, maxVisible) => keepFirstTwoAndLastTwo(total, maxVisible),
+  }],
+})
+```
+
 ## Other Exports
 
 `CngxClickOutside`, `CngxDisclosure`, `CngxNavLink`, `CngxNavLabel`, `CngxNavBadge`,

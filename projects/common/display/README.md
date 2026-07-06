@@ -7,6 +7,7 @@ Display-only atoms. Icons, avatars, badges, chips, tags, indicators, dividers - 
 You need a primitive visual piece that other components compose:
 
 - An avatar that gracefully degrades from photo URL → initials → fallback.
+- A stacked `CngxAvatarGroup` that overlaps avatars and collapses the extras past `[max]` into a `+N` overflow pill, with an `aria-label` summarising the hidden count.
 - A chip the user can remove (used internally by multi-select, combobox, tag-input, filter-chips - and available to you for the same purpose).
 - A tag pill that conveys status, category, or count - non-removable, theme-aware.
 - A checkbox or radio glyph for a custom row design where you want the cngx look but own the selection logic yourself.

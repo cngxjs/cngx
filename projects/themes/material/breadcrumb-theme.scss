@@ -1,0 +1,106 @@
+@use 'sass:map';
+@use 'sass:math';
+@use '@angular/material' as mat;
+
+// Material bridge for CngxBreadcrumbBar + CngxBreadcrumbOverflow +
+// CngxBreadcrumbSiblings. Default visuals ship with the components
+// (projects/ui/breadcrumb/breadcrumb-bar.component.css +
+// breadcrumb-overflow.component.css + breadcrumb-siblings.component.css), which
+// carry `inherit` / literal defaults only. This file is the single place that
+// aligns every breadcrumb token with Material so a cngx breadcrumb reads
+// native alongside Material navigation. The collapsed-crumb menu and the
+// sibling list both sit inside a CngxPopoverPanel surface themed by
+// popover-panel-theme.scss, so the chrome (background, elevation, radius) is
+// not re-declared here - only the leaf link / current / separator colours, the
+// two variant chips, and the overflow / siblings trigger + row-hover knobs.
+//
+// Token namespaces, one include:
+//   - --cngx-breadcrumb-*          the bar: link, current, separator, gap,
+//                                  and the contained / pill variant chips
+//   - --cngx-breadcrumb-overflow-* the ellipsis trigger + collapsed-crumb rows
+//   - --cngx-breadcrumb-siblings-* the sibling chevron trigger + row hover +
+//                                  the sibling anchor colour
+//
+//   @use '@angular/material' as mat;
+//   @use '@cngx/themes/material/breadcrumb-theme' as breadcrumb;
+//   html { @include breadcrumb.theme($theme); }
+
+@mixin color($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    // --mat-sys-* already carries light and dark, so one assignment tracks
+    // both theme types without a separate prefers-color-scheme block.
+    --cngx-breadcrumb-link-color: var(--mat-sys-primary);
+    --cngx-breadcrumb-current-color: var(--mat-sys-on-surface);
+    --cngx-breadcrumb-separator-color: var(--mat-sys-on-surface-variant);
+
+    // The contained / pill skins paint a surface-container chip on the
+    // outline; both variant classes read these same knobs.
+    --cngx-breadcrumb-contained-bg: var(--mat-sys-surface-container);
+    --cngx-breadcrumb-contained-border-color: var(--mat-sys-outline-variant);
+    --cngx-breadcrumb-pill-bg: var(--mat-sys-surface-container);
+  } @else {
+    --cngx-breadcrumb-link-color: #{mat.get-theme-color($theme, primary)};
+    --cngx-breadcrumb-current-color: #{mat.get-theme-color($theme, foreground, text)};
+    --cngx-breadcrumb-separator-color: #{rgba(mat.get-theme-color($theme, foreground, text), 0.6)};
+
+    --cngx-breadcrumb-contained-bg: #{mat.get-theme-color($theme, background, card)};
+    --cngx-breadcrumb-contained-border-color: #{rgba(mat.get-theme-color($theme, foreground, divider), 0.12)};
+    --cngx-breadcrumb-pill-bg: #{mat.get-theme-color($theme, background, card)};
+  }
+}
+
+@mixin density($theme) {
+  $scale: mat.get-theme-density($theme);
+  $scale: math.max(-4, math.min(0, $scale));
+
+  $gaps: (0: 0.5rem, -1: 0.4rem, -2: 0.3rem, -3: 0.25rem, -4: 0.2rem);
+
+  --cngx-breadcrumb-gap: #{map.get($gaps, $scale)};
+}
+
+// Overflow trigger + collapsed-crumb rows. The menu lives inside a
+// CngxPopoverPanel (themed by popover-panel-theme.scss), so only the trigger
+// glyph colour and the row hover wash are set here; they inherit from the
+// `cngx-breadcrumb-overflow` host down to the trigger and every row.
+@mixin _overflow($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-breadcrumb-overflow-trigger-color: var(--mat-sys-on-surface-variant);
+    --cngx-breadcrumb-overflow-item-hover-bg: color-mix(in srgb, var(--mat-sys-on-surface) 8%, transparent);
+  } @else {
+    --cngx-breadcrumb-overflow-trigger-color: #{rgba(mat.get-theme-color($theme, foreground, text), 0.6)};
+    --cngx-breadcrumb-overflow-item-hover-bg: color-mix(in srgb, currentColor 8%, transparent);
+  }
+}
+
+// Sibling chevron trigger + sibling rows. Like the overflow, the list lives
+// inside a CngxPopoverPanel (themed by popover-panel-theme.scss), so only the
+// trigger glyph colour, the row hover wash, and the sibling anchor colour are
+// set here; they inherit from the `cngx-breadcrumb-siblings` host down to the
+// trigger and every row. The active-level row renders as inherited text (no
+// link), so it needs no dedicated token.
+@mixin _siblings($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-breadcrumb-siblings-trigger-color: var(--mat-sys-on-surface-variant);
+    --cngx-breadcrumb-siblings-item-hover-bg: color-mix(in srgb, var(--mat-sys-on-surface) 8%, transparent);
+    --cngx-breadcrumb-siblings-link-color: var(--mat-sys-primary);
+  } @else {
+    --cngx-breadcrumb-siblings-trigger-color: #{rgba(mat.get-theme-color($theme, foreground, text), 0.6)};
+    --cngx-breadcrumb-siblings-item-hover-bg: color-mix(in srgb, currentColor 8%, transparent);
+    --cngx-breadcrumb-siblings-link-color: #{mat.get-theme-color($theme, primary)};
+  }
+}
+
+@mixin theme($theme) {
+  @layer cngx.components {
+    :where(cngx-breadcrumb) {
+      @include color($theme);
+      @include density($theme);
+    }
+    :where(cngx-breadcrumb-overflow) {
+      @include _overflow($theme);
+    }
+    :where(cngx-breadcrumb-siblings) {
+      @include _siblings($theme);
+    }
+  }
+}

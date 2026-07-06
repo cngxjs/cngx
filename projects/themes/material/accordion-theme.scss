@@ -1,0 +1,56 @@
+@use 'sass:map';
+@use 'sass:math';
+@use '@angular/material' as mat;
+
+// Material bridge for CngxAccordionGroup + CngxAccordionItem. Default visuals
+// ship with the components (projects/ui/accordion/accordion-group.component.css
+// + accordion-item.component.css), which carry literal fallback defaults only.
+// This file is the single place that aligns every accordion token with Material
+// so a cngx accordion reads native alongside <mat-expansion-panel>. The tokens
+// are plain inheriting custom properties, so setting them on the
+// `cngx-accordion-group` host cascades to every `cngx-accordion-item` inside it.
+//
+// Token namespace, one include:
+//   - --cngx-accordion-*  the group + item divider, the header (text, disabled
+//                         text, focus ring), the region, and the chevron spacing
+//
+//   @use '@angular/material' as mat;
+//   @use '@cngx/themes/material/accordion-theme' as accordion;
+//   html { @include accordion.theme($theme); }
+
+@mixin color($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    // --mat-sys-* already carries light and dark, so one assignment tracks both
+    // theme types without a separate prefers-color-scheme block.
+    --cngx-accordion-border-color: var(--mat-sys-outline-variant);
+    --cngx-accordion-header-color: var(--mat-sys-on-surface);
+    --cngx-accordion-header-disabled-color: var(--mat-sys-on-surface-variant);
+    --cngx-accordion-focus-color: var(--mat-sys-primary);
+  } @else {
+    --cngx-accordion-border-color: #{rgba(mat.get-theme-color($theme, foreground, divider), 0.12)};
+    --cngx-accordion-header-color: #{mat.get-theme-color($theme, foreground, text)};
+    --cngx-accordion-header-disabled-color: #{rgba(mat.get-theme-color($theme, foreground, text), 0.38)};
+    --cngx-accordion-focus-color: #{mat.get-theme-color($theme, primary)};
+  }
+}
+
+@mixin density($theme) {
+  $scale: mat.get-theme-density($theme);
+  $scale: math.max(-4, math.min(0, $scale));
+
+  $paddings: (0: 0.75rem 1rem, -1: 0.6rem 0.85rem, -2: 0.5rem 0.7rem, -3: 0.4rem 0.6rem, -4: 0.3rem 0.5rem);
+  $gaps: (0: 0.5rem, -1: 0.4rem, -2: 0.3rem, -3: 0.25rem, -4: 0.2rem);
+
+  --cngx-accordion-header-padding: #{map.get($paddings, $scale)};
+  --cngx-accordion-region-padding: #{map.get($paddings, $scale)};
+  --cngx-accordion-header-gap: #{map.get($gaps, $scale)};
+}
+
+@mixin theme($theme) {
+  @layer cngx.components {
+    :where(cngx-accordion-group) {
+      @include color($theme);
+      @include density($theme);
+    }
+  }
+}

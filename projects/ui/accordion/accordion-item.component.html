@@ -1,0 +1,48 @@
+<div role="heading" [attr.aria-level]="group.headingLevel()" class="cngx-accordion-item__heading">
+  <button
+    type="button"
+    cngxAccordionPanel
+    class="cngx-accordion-item__header"
+    [panelId]="panelId()"
+    [controls]="regionId"
+    [disabled]="disabled()"
+    [id]="headerId"
+    [attr.aria-describedby]="reasonId"
+  >
+    <span class="cngx-accordion-item__title">
+      <ng-content select="[cngxAccordionItemTitle]" />
+    </span>
+    <span class="cngx-accordion-item__chevron-slot" aria-hidden="true">
+      @if (iconTemplate(); as icon) {
+        <ng-container
+          [ngTemplateOutlet]="icon"
+          [ngTemplateOutletContext]="{ $implicit: expanded() }"
+        />
+      } @else {
+        <span class="cngx-accordion-item__chevron"></span>
+      }
+    </span>
+  </button>
+</div>
+
+<span [id]="reasonId" class="cngx-visually-hidden" [attr.aria-hidden]="!disabled()">
+  @if (disabled()) {
+    {{ disabledReason() }}
+  }
+</span>
+
+<div
+  role="region"
+  class="cngx-accordion-item__region"
+  [id]="regionId"
+  [attr.aria-labelledby]="headerId"
+  [hidden]="!expanded()"
+>
+  @if (contentSlot(); as content) {
+    @if (hasOpened()) {
+      <ng-container [ngTemplateOutlet]="content.templateRef" />
+    }
+  } @else {
+    <ng-content />
+  }
+</div>

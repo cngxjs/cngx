@@ -1,0 +1,64 @@
+.cngx-avatar-group {
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Ring around each avatar + the pill so the overlap reads as separated
+ * stacked discs against the page background. */
+.cngx-avatar-group > .cngx-avatar,
+.cngx-avatar-group__overflow {
+  border: var(--cngx-avatar-group-ring-width, 2px) solid
+    var(--cngx-avatar-group-ring-color, var(--cngx-color-surface, oklch(1 0 0)));
+}
+
+/* Stacking overlap: every disc after the first slides under its predecessor. */
+.cngx-avatar-group > .cngx-avatar:not(:first-child),
+.cngx-avatar-group__overflow {
+  margin-inline-start: var(--cngx-avatar-group-overlap, -0.5rem);
+}
+
+.cngx-avatar-group__overflow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  inline-size: var(--cngx-avatar-group-pill-size, 2.5rem);
+  block-size: var(--cngx-avatar-group-pill-size, 2.5rem);
+  border-radius: 50%;
+  background: var(--cngx-avatar-group-pill-bg, var(--cngx-color-muted, oklch(0.92 0.005 250)));
+  color: var(--cngx-avatar-group-pill-color, var(--cngx-color-text, oklch(0.2 0.01 250)));
+  font-size: var(--cngx-avatar-group-pill-font-size, 0.8125rem);
+  font-weight: 600;
+  line-height: 1;
+}
+
+.cngx-avatar-group--square .cngx-avatar-group__overflow {
+  border-radius: var(--cngx-radius-md, 0.375rem);
+}
+
+/* Size presets mirror CngxAvatar so the pill and overlap track the avatars. */
+.cngx-avatar-group--xs {
+  --cngx-avatar-group-pill-size: 1.5rem;
+  --cngx-avatar-group-overlap: -0.375rem;
+  --cngx-avatar-group-pill-font-size: 0.625rem;
+}
+.cngx-avatar-group--sm {
+  --cngx-avatar-group-pill-size: 2rem;
+  --cngx-avatar-group-overlap: -0.5rem;
+  --cngx-avatar-group-pill-font-size: 0.75rem;
+}
+.cngx-avatar-group--md {
+  --cngx-avatar-group-pill-size: 2.5rem;
+  --cngx-avatar-group-overlap: -0.625rem;
+  --cngx-avatar-group-pill-font-size: 0.8125rem;
+}
+.cngx-avatar-group--lg {
+  --cngx-avatar-group-pill-size: 3rem;
+  --cngx-avatar-group-overlap: -0.75rem;
+  --cngx-avatar-group-pill-font-size: 0.875rem;
+}
+.cngx-avatar-group--xl {
+  --cngx-avatar-group-pill-size: 4rem;
+  --cngx-avatar-group-overlap: -1rem;
+  --cngx-avatar-group-pill-font-size: 1rem;
+}

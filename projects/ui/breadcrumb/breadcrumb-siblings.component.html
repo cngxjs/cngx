@@ -1,0 +1,36 @@
+@if (hasSiblings()) {
+  <button
+    type="button"
+    class="cngx-breadcrumb__siblings-trigger"
+    [cngxPopoverTrigger]="panel.popover"
+    [haspopup]="'none'"
+    [restoreFocus]="true"
+    [attr.aria-label]="triggerLabel()"
+    (click)="panel.popover.toggle()"
+  >
+    <ng-content select=":not([cngxBreadcrumbSiblingItem])">&#9662;</ng-content>
+  </button>
+
+  <cngx-popover-panel #panel mode="auto" placement="bottom-start">
+    <ul class="cngx-breadcrumb__siblings-menu" role="list" [attr.aria-label]="menuLabel()">
+      @for (sib of items(); track sib; let i = $index) {
+        <li
+          class="cngx-breadcrumb__siblings-item"
+          [attr.aria-current]="sib.current ? 'page' : null"
+        >
+          @if (itemTemplate(); as tpl) {
+            <ng-container
+              *ngTemplateOutlet="tpl; context: { $implicit: sib, sibling: sib, index: i }"
+            />
+          } @else {
+            @if (sib.href && !sib.current) {
+              <a class="cngx-breadcrumb__siblings-link" [attr.href]="sib.href">{{ sib.label }}</a>
+            } @else {
+              {{ sib.label }}
+            }
+          }
+        </li>
+      }
+    </ul>
+  </cngx-popover-panel>
+}

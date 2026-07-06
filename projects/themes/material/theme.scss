@@ -25,12 +25,14 @@
 //   @include action-btn.theme($theme);
 
 @use './system-bridge' as cngx-system;
+@use './accordion-theme' as accordion;
 @use './action-button-theme' as action-button;
 @use './async-container-theme' as async-container;
 @use './avatar-theme' as avatar;
 @use './backdrop-theme' as backdrop;
 @use './badge-theme' as badge;
 @use './bottom-sheet-theme' as bottom-sheet;
+@use './breadcrumb-theme' as breadcrumb;
 @use './card-theme' as card;
 @use './chart-theme' as chart;
 @use './chip-theme' as chip;
@@ -54,6 +56,7 @@
 @use './select-theme' as select;
 @use './sidenav-theme' as sidenav;
 @use './skeleton-theme' as skeleton;
+@use './slider-theme' as slider;
 @use './speak-button-theme' as speak;
 @use './stepper-theme' as stepper;
 @use './tabs-theme' as tabs;
@@ -67,12 +70,14 @@
   // var() fallbacks against the Material-aligned system layer.
   @include cngx-system.theme($theme);
 
+  @include accordion.theme($theme);
   @include action-button.theme($theme);
   @include async-container.theme($theme);
   @include avatar.theme($theme);
   @include backdrop.theme($theme);
   @include badge.theme($theme);
   @include bottom-sheet.theme($theme);
+  @include breadcrumb.theme($theme);
   @include card.theme($theme);
   @include chart.theme($theme);
   @include chip.theme($theme);
@@ -96,6 +101,7 @@
   @include select.theme($theme);
   @include sidenav.theme($theme);
   @include skeleton.theme($theme);
+  @include slider.theme($theme);
   @include speak.theme($theme);
   @include stepper.theme($theme);
   @include tabs.theme($theme);

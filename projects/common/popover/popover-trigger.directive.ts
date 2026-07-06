@@ -62,8 +62,14 @@ export class CngxPopoverTrigger {
    * `CngxPopoverPanel`). Final fallback when neither is set is `'true'`.
    * Accepts the W3C-spec values for supported popup-container roles:
    * `'dialog'`, `'listbox'`, `'menu'`, `'tree'`, or `'true'`.
+   *
+   * Pass `'none'` to emit no `aria-haspopup` at all - correct for a
+   * disclosure whose popup is not one of the recognised widget types
+   * (e.g. a list of links), where `aria-expanded` alone describes the
+   * trigger. `'none'` wins over the composer hint, so it also cancels a
+   * `CngxPopoverPanel`'s `'dialog'` default.
    */
-  readonly haspopupInput = input<PopoverHaspopup | undefined>(undefined, {
+  readonly haspopupInput = input<PopoverHaspopup | 'none' | undefined>(undefined, {
     alias: 'haspopup',
   });
 
@@ -80,11 +86,13 @@ export class CngxPopoverTrigger {
    * Resolved `aria-haspopup`. Consumer override (`haspopup` on the
    * trigger element) wins; otherwise the popover's `haspopup` signal
    * (set by composers like `CngxPopoverPanel`) decides; final fallback
-   * is `'true'`.
+   * is `'true'`. The `'none'` sentinel resolves to `null` so the host
+   * binding drops the attribute entirely.
    */
-  protected readonly haspopup = computed(
-    () => this.haspopupInput() ?? this.popoverRef().haspopup() ?? 'true',
-  );
+  protected readonly haspopup = computed<PopoverHaspopup | null>(() => {
+    const resolved = this.haspopupInput() ?? this.popoverRef().haspopup() ?? 'true';
+    return resolved === 'none' ? null : resolved;
+  });
 
   protected readonly cssAnchorName = computed(() =>
     SUPPORTS_ANCHOR ? `--cngx-pop-${this.popoverRef().id()}` : null,
