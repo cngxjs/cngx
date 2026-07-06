@@ -46,6 +46,17 @@ class Host {
 })
 class SlotHost {}
 
+@Component({
+  template: `<cngx-accordion-group [(openIds)]="open">
+    <cngx-accordion-item panelId="alpha"><span cngxAccordionItemTitle>A</span>Body A</cngx-accordion-item>
+    <cngx-accordion-item panelId="beta"><span cngxAccordionItemTitle>B</span>Body B</cngx-accordion-item>
+  </cngx-accordion-group>`,
+  imports: [CngxAccordionGroup, CngxAccordionItem, CngxAccordionItemTitle],
+})
+class NamedHost {
+  readonly open = signal<ReadonlySet<string>>(new Set(['beta']));
+}
+
 describe('CngxAccordionItem', () => {
   beforeEach(() => TestBed.configureTestingModule({ imports: [Host] }));
 
@@ -148,5 +159,23 @@ describe('CngxAccordionItem', () => {
     root.querySelector<HTMLButtonElement>('button.cngx-accordion-item__header')!.click();
     fixture.detectChanges();
     expect(root.querySelector('.custom-icon')?.textContent).toBe('true');
+  });
+
+  it('addresses a consumer-set panelId through the group open-set model', () => {
+    const fixture = TestBed.createComponent(NamedHost);
+    fixture.detectChanges();
+    const headers = fixture.debugElement
+      .queryAll(By.css('button.cngx-accordion-item__header'))
+      .map((de) => de.nativeElement as HTMLButtonElement);
+
+    // Seeded `beta` open -> the named second panel renders expanded on load.
+    expect(headers[0].getAttribute('aria-expanded')).toBe('false');
+    expect(headers[1].getAttribute('aria-expanded')).toBe('true');
+
+    // Consumer drives expansion declaratively by the same stable id.
+    fixture.componentInstance.open.set(new Set(['alpha']));
+    fixture.detectChanges();
+    expect(headers[0].getAttribute('aria-expanded')).toBe('true');
+    expect(headers[1].getAttribute('aria-expanded')).toBe('false');
   });
 });

@@ -71,11 +71,17 @@ export class CngxAccordionItem {
    * via `withAccordionLabels`).
    */
   readonly disabledReason = input<string>(this.config.disabledReason);
+  /**
+   * Stable id this item registers under in the coordinator's open-set. Defaults
+   * to a generated id; bind `[panelId]` to a stable consumer value to address
+   * the panel through the group's `[(openIds)]` model - seed it open on load or
+   * drive expansion from router/SSR state. Mirrors `CngxTab.id` / `CngxStep.id`.
+   */
+  readonly panelId = input<string>(nextUid('cngx-accordion-panel-'));
 
   private readonly accordion = inject(CNGX_ACCORDION);
   protected readonly group = inject(CNGX_ACCORDION_GROUP);
 
-  protected readonly panelId = nextUid('cngx-accordion-panel-');
   protected readonly regionId = nextUid('cngx-accordion-region-');
   protected readonly headerId = nextUid('cngx-accordion-header-');
   protected readonly reasonId = nextUid('cngx-accordion-reason-');
@@ -86,7 +92,7 @@ export class CngxAccordionItem {
   protected readonly iconSlot = contentChild(CngxAccordionItemIcon);
 
   /** Whether this item's region is open, derived from the coordinator's open-set. */
-  protected readonly expanded = computed(() => this.accordion.isOpen(this.panelId));
+  protected readonly expanded = computed(() => this.accordion.isOpen(this.panelId()));
 
   /**
    * Keep-alive latch for lazy content: `false` until the region first opens,
