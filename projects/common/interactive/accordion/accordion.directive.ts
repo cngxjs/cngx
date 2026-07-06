@@ -116,7 +116,11 @@ export class CngxAccordion implements CngxAccordionHost {
   }
 
   toggle(panelId: string): void {
-    const open = this.openIds();
+    // Read the clamped set, not the raw model, so the mutate base matches what
+    // isOpen() reports: clicking a panel the clamp has hidden opens it rather
+    // than acting on a stale raw-set membership. Identical to the raw model in
+    // every valid case (clamp == model when multi, or the set holds <= 1 id).
+    const open = this.effectiveOpenIds();
     // Single mode collapses every sibling by seeding an empty set; multi mode
     // preserves the others. Either way the coordinator is the only writer.
     const next = new Set<string>(this.multi() ? open : []);

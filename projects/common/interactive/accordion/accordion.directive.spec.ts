@@ -217,6 +217,22 @@ describe('CngxAccordion', () => {
     expect(buttons[2].getAttribute('aria-expanded')).toBe('true');
   });
 
+  it('opens the clicked panel after an invalid single-mode seed, not the clamped one', () => {
+    const { fixture, host, buttons } = setup();
+    host.open.set(new Set(['a', 'c']));
+    fixture.detectChanges();
+    // Clamp shows only 'c'; 'a' reads closed.
+    expect(buttons[0].getAttribute('aria-expanded')).toBe('false');
+
+    // Clicking the visually-closed 'a' must open it (toggle reads the clamp, not
+    // the raw seed - else it would act on stale raw membership and collapse 'c').
+    buttons[0].click();
+    fixture.detectChanges();
+    expect(buttons[0].getAttribute('aria-expanded')).toBe('true');
+    expect(buttons[2].getAttribute('aria-expanded')).toBe('false');
+    expect([...host.open()]).toEqual(['a']);
+  });
+
   it('two-way writes the model back to the host on toggle', () => {
     const { fixture, host, buttons } = setup();
     buttons[0].click();
