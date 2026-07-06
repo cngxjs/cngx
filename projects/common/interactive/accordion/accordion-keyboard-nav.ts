@@ -64,14 +64,13 @@ export interface CngxAccordionKeyboardNavHost {
 
 /**
  * Inputs to {@link createAccordionKeyboardNav}. The coordinator owns the
- * registry and the roving source; `hostElement` is the accordion container,
- * used only to keep focus movement scoped to this accordion's headers.
+ * registry and the roving source; focus scoping needs no container reference
+ * because each handle carries its own `element`.
  *
  * @category common/interactive/accordion
  */
 export interface CngxAccordionKeyboardNavOptions {
   readonly host: CngxAccordionKeyboardNavHost;
-  readonly hostElement: HTMLElement;
 }
 
 /**

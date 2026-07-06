@@ -1,4 +1,4 @@
-import { Directive, ElementRef, inject, input, linkedSignal, signal } from '@angular/core';
+import { Directive, input, linkedSignal, signal } from '@angular/core';
 import { setEqual } from '@cngx/utils';
 
 import {
@@ -76,12 +76,7 @@ export class CngxAccordion implements CngxAccordionHost {
         : (headers.find((h) => !h.disabled())?.id ?? null),
   });
 
-  private readonly hostElement = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
-
-  readonly nav: CngxAccordionKeyboardNav = createAccordionKeyboardNav({
-    host: this,
-    hostElement: this.hostElement,
-  });
+  readonly nav: CngxAccordionKeyboardNav = createAccordionKeyboardNav({ host: this });
 
   registerHeader(handle: CngxAccordionHeaderHandle): void {
     this.headersState.update((headers) =>
@@ -119,8 +114,11 @@ export class CngxAccordion implements CngxAccordionHost {
  * Order-independent identity-set equality for the header registry. Two arrays
  * are equal when they hold the same handle references, regardless of
  * registration order. Handles are stable per panel (carrying `disabled` by
- * signal reference), so a disabled toggle never changes the set - the roving
- * derivation only re-runs when a header actually joins or leaves.
+ * signal reference), so this comparator only suppresses re-fires from a
+ * re-register of the same set; it does not gate the roving derivation on
+ * disabled state - `rovingActiveId` reads each handle's `disabled()` directly,
+ * so a disabled flip still re-runs it (which is what keeps the tab stop off a
+ * newly-disabled header).
  */
 function headersEqual(
   a: readonly CngxAccordionHeaderHandle[],

@@ -39,7 +39,7 @@ describe('createAccordionKeyboardNav', () => {
       rovingActiveId: rovingActiveId.asReadonly(),
       setRovingActive: (id) => rovingActiveId.set(id),
     };
-    const nav = createAccordionKeyboardNav({ host, hostElement: container });
+    const nav = createAccordionKeyboardNav({ host });
     return { host, nav, rovingActiveId };
   }
 
