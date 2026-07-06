@@ -1,3 +1,4 @@
+import type { CngxAccordionConfig } from './accordion.config';
 import type { CngxAccordionConfigFeature } from './provide-accordion-config';
 
 /**
@@ -32,4 +33,24 @@ export function withAccordionLabels(payload: { disabledReason: string }): CngxAc
  */
 export function withDefaultHeadingLevel(headingLevel: number): CngxAccordionConfigFeature {
   return { kind: 'headingLevel', payload: { headingLevel } };
+}
+
+/**
+ * Set app-wide slot templates - the config tier of the slot cascade. Only the
+ * chevron (`icon`) carries a config tier: hand one `TemplateRef` here (query it
+ * once in the app root) and every accordion item renders it unless a per-item
+ * `*cngxAccordionItemIcon` overrides it. `$implicit` in the template is the
+ * item's expanded state.
+ *
+ * ```ts
+ * provideAccordionConfig(withAccordionTemplates({ icon: myChevronTpl }));
+ * ```
+ *
+ * @category ui/accordion
+ * @since 0.1.0
+ */
+export function withAccordionTemplates(
+  payload: NonNullable<CngxAccordionConfig['templates']>,
+): CngxAccordionConfigFeature {
+  return { kind: 'templates', payload };
 }

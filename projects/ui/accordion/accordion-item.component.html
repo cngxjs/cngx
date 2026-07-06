@@ -13,9 +13,9 @@
       <ng-content select="[cngxAccordionItemTitle]" />
     </span>
     <span class="cngx-accordion-item__chevron-slot" aria-hidden="true">
-      @if (iconSlot(); as icon) {
+      @if (iconTemplate(); as icon) {
         <ng-container
-          [ngTemplateOutlet]="icon.templateRef"
+          [ngTemplateOutlet]="icon"
           [ngTemplateOutletContext]="{ $implicit: expanded() }"
         />
       } @else {

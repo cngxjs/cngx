@@ -3,6 +3,7 @@ import {
   inject,
   type EnvironmentProviders,
   type Provider,
+  type TemplateRef,
   type Type,
 } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
@@ -11,10 +12,13 @@ import { describe, expect, it } from 'vitest';
 
 import { CngxAccordionGroup } from '../accordion-group.component';
 import { CngxAccordionItem } from '../accordion-item.component';
+import type { CngxAccordionItemIconContext } from '../accordion-item-icon.directive';
 import { CngxAccordionItemTitle } from '../accordion-item-title.directive';
 import { CNGX_ACCORDION_CONFIG } from './accordion.config.defaults';
-import { withAccordionLabels, withDefaultHeadingLevel } from './features';
+import { withAccordionLabels, withAccordionTemplates, withDefaultHeadingLevel } from './features';
 import { provideAccordionConfig, provideAccordionConfigAt } from './provide-accordion-config';
+
+const fakeIconTemplate = () => ({}) as unknown as TemplateRef<CngxAccordionItemIconContext>;
 
 const IMPORTS = [CngxAccordionGroup, CngxAccordionItem, CngxAccordionItemTitle];
 
@@ -119,6 +123,35 @@ describe('accordion config cascade', () => {
     // Empty features short-circuit: the root default reference flows through
     // untouched rather than a fresh (identical-content) allocation.
     expect(TestBed.inject(CNGX_ACCORDION_CONFIG)).toBe(base);
+  });
+
+  it('flows an app-wide chevron template through withAccordionTemplates', () => {
+    const icon = fakeIconTemplate();
+    TestBed.configureTestingModule({
+      providers: [provideAccordionConfig(withAccordionTemplates({ icon }))],
+    });
+    expect(TestBed.inject(CNGX_ACCORDION_CONFIG).templates?.icon).toBe(icon);
+  });
+
+  it('lets provideAccordionConfigAt override the root chevron template', () => {
+    const rootIcon = fakeIconTemplate();
+    const scopedIcon = fakeIconTemplate();
+
+    @Component({
+      selector: 'scoped-template-host',
+      template: '',
+      viewProviders: [provideAccordionConfigAt(withAccordionTemplates({ icon: scopedIcon }))],
+    })
+    class ScopedTemplateHost {
+      readonly config = inject(CNGX_ACCORDION_CONFIG);
+    }
+
+    TestBed.configureTestingModule({
+      imports: [ScopedTemplateHost],
+      providers: [provideAccordionConfig(withAccordionTemplates({ icon: rootIcon }))],
+    });
+    const fixture = TestBed.createComponent(ScopedTemplateHost);
+    expect(fixture.componentInstance.config.templates?.icon).toBe(scopedIcon);
   });
 
   it('empty provideAccordionConfigAt passes the parent reference through unchanged', () => {

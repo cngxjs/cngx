@@ -21,18 +21,23 @@ import { CNGX_ACCORDION_CONFIG, CNGX_ACCORDION_DEFAULTS } from './accordion.conf
  */
 export type CngxAccordionConfigFeature =
   | { readonly kind: 'labels'; readonly payload: { readonly disabledReason: string } }
-  | { readonly kind: 'headingLevel'; readonly payload: { readonly headingLevel: number } };
+  | { readonly kind: 'headingLevel'; readonly payload: { readonly headingLevel: number } }
+  | { readonly kind: 'templates'; readonly payload: NonNullable<CngxAccordionConfig['templates']> };
 
 /**
  * Reduces a list of feature objects into a partial config - last write wins per
- * key. The config is flat (two scalar keys), so a shallow assign suffices.
+ * key. `templates` is spread-merged so partial template overrides compose.
  *
  * @internal
  */
 function reduceFeatures(
   features: readonly CngxAccordionConfigFeature[],
 ): Partial<CngxAccordionConfig> {
-  const out: { disabledReason?: string; headingLevel?: number } = {};
+  const out: {
+    disabledReason?: string;
+    headingLevel?: number;
+    templates?: NonNullable<CngxAccordionConfig['templates']>;
+  } = {};
   for (const f of features) {
     switch (f.kind) {
       case 'labels':
@@ -41,9 +46,30 @@ function reduceFeatures(
       case 'headingLevel':
         out.headingLevel = f.payload.headingLevel;
         break;
+      case 'templates':
+        out.templates = { ...out.templates, ...f.payload };
+        break;
     }
   }
   return out;
+}
+
+/**
+ * Merges a partial config onto a base. Scalars take the partial when present;
+ * `templates` is a one-level spread so a partial that sets only some template
+ * keys keeps the base's other keys.
+ *
+ * @internal
+ */
+function mergeConfig(
+  base: CngxAccordionConfig,
+  partial: Partial<CngxAccordionConfig>,
+): CngxAccordionConfig {
+  return {
+    disabledReason: partial.disabledReason ?? base.disabledReason,
+    headingLevel: partial.headingLevel ?? base.headingLevel,
+    templates: { ...base.templates, ...partial.templates },
+  };
 }
 
 /**
@@ -88,7 +114,7 @@ export function provideAccordionConfig(
   return makeEnvironmentProviders([
     {
       provide: CNGX_ACCORDION_CONFIG,
-      useValue: { ...CNGX_ACCORDION_DEFAULTS, ...partial },
+      useValue: mergeConfig(CNGX_ACCORDION_DEFAULTS, partial),
     },
   ]);
 }
@@ -132,7 +158,7 @@ export function provideAccordionConfigAt(
       provide: CNGX_ACCORDION_CONFIG,
       useFactory: () => {
         const parent = inject(CNGX_ACCORDION_CONFIG, { skipSelf: true });
-        return { ...parent, ...partial };
+        return mergeConfig(parent, partial);
       },
     },
   ];

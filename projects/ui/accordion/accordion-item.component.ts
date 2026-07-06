@@ -90,6 +90,14 @@ export class CngxAccordionItem {
   protected readonly contentSlot = contentChild(CngxAccordionItemContent);
   /** Chevron override slot; absent means the CSS chevron default renders. */
   protected readonly iconSlot = contentChild(CngxAccordionItemIcon);
+  /**
+   * Resolved chevron template through the three-stage slot cascade: per-instance
+   * `*cngxAccordionItemIcon` -> app-wide `CNGX_ACCORDION_CONFIG.templates.icon`
+   * -> `null` (the CSS chevron default renders).
+   */
+  protected readonly iconTemplate = computed(
+    () => this.iconSlot()?.templateRef ?? this.config.templates?.icon ?? null,
+  );
 
   /** Whether this item's region is open, derived from the coordinator's open-set. */
   protected readonly expanded = computed(() => this.accordion.isOpen(this.panelId()));
