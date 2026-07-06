@@ -5,6 +5,7 @@ import {
   ElementRef,
   inject,
   input,
+  signal,
   type OnInit,
 } from '@angular/core';
 
@@ -62,7 +63,9 @@ export class CngxAccordionPanel implements OnInit {
   private readonly element = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
   private readonly destroyRef = inject(DestroyRef);
 
-  private handle: CngxAccordionHeaderHandle | null = null;
+  // Set once in ngOnInit. A signal (not a plain field) so the tabindex computed
+  // tracks it reactively instead of relying on write-before-first-read ordering.
+  private readonly handle = signal<CngxAccordionHeaderHandle | null>(null);
 
   /** `aria-expanded`, derived from the coordinator's open-set. */
   protected readonly expanded = computed(() => this.accordion.isOpen(this.panelId()));
@@ -71,9 +74,10 @@ export class CngxAccordionPanel implements OnInit {
    * Roving `tabindex` for this header, derived from the coordinator's single
    * `rovingActiveId` source (Pillar 1). `-1` until the handle registers.
    */
-  protected readonly tabindex = computed(() =>
-    this.handle ? this.accordion.nav.headerTabindex(this.handle) : -1,
-  );
+  protected readonly tabindex = computed(() => {
+    const handle = this.handle();
+    return handle ? this.accordion.nav.headerTabindex(handle) : -1;
+  });
 
   ngOnInit(): void {
     // Register in ngOnInit, not the constructor: the bound `[panelId]` input is
@@ -84,7 +88,7 @@ export class CngxAccordionPanel implements OnInit {
       element: this.element,
       disabled: this.disabled,
     };
-    this.handle = handle;
+    this.handle.set(handle);
     this.accordion.registerHeader(handle);
     this.destroyRef.onDestroy(() => this.accordion.unregisterHeader(handle));
   }
