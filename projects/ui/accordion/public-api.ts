@@ -1,4 +1,4 @@
 /**
  * @module @cngx/ui/accordion
  */
-export {};
+export { CngxAccordionItem } from './accordion-item.component';
