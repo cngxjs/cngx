@@ -15,6 +15,7 @@ import { createControlledSource } from '@cngx/core/utils';
 
 import { CngxBreadcrumbSiblingItem } from './breadcrumb-sibling-item.directive';
 import { CNGX_BREADCRUMB_SIBLINGS_SOURCE } from './breadcrumb-siblings-source.token';
+import { injectBreadcrumbConfig } from './config/inject-breadcrumb-config';
 import type { CngxBreadcrumbSibling } from './breadcrumb.types';
 
 /**
@@ -66,10 +67,12 @@ export class CngxBreadcrumbSiblings {
   /** Static sibling rows. Superseded by a provided `CNGX_BREADCRUMB_SIBLINGS_SOURCE`. */
   readonly siblingsInput = input<readonly CngxBreadcrumbSibling[]>([], { alias: 'siblings' });
 
-  /** Accessible name of the chevron trigger. EN default. */
-  readonly triggerLabel = input('Show sibling pages');
-  /** Accessible name of the sibling list (kept as `menuLabel` for overflow symmetry). EN default. */
-  readonly menuLabel = input('Sibling pages');
+  private readonly cfg = injectBreadcrumbConfig();
+
+  /** Accessible name of the chevron trigger. Falls back through the config cascade to the EN default. */
+  readonly triggerLabel = input(this.cfg.ariaLabels?.siblingsTrigger ?? 'Show sibling pages');
+  /** Accessible name of the sibling list (kept as `menuLabel` for overflow symmetry). Falls back through the config cascade to the EN default. */
+  readonly menuLabel = input(this.cfg.ariaLabels?.siblingsMenu ?? 'Sibling pages');
 
   /** Opt-in controlled source (router-sync directive) - wins over `[siblings]`. */
   private readonly source = inject(CNGX_BREADCRUMB_SIBLINGS_SOURCE, { optional: true });

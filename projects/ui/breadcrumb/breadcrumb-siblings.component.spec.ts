@@ -9,6 +9,8 @@ import {
   CNGX_BREADCRUMB_SIBLINGS_SOURCE,
   type CngxBreadcrumbSiblingsSource,
 } from './breadcrumb-siblings-source.token';
+import { withBreadcrumbAriaLabels } from './config/features';
+import { provideBreadcrumbConfig } from './config/provide-breadcrumb-config';
 import type { CngxBreadcrumbSibling } from './breadcrumb.types';
 
 /**
@@ -210,5 +212,72 @@ describe('CngxBreadcrumbSiblings', () => {
     const root = fixture.debugElement.query(By.css('cngx-breadcrumb-siblings'))
       .nativeElement as HTMLElement;
     expect(rowLabels(root)).toEqual(['Alpha', 'Beta']);
+  });
+});
+
+@Component({
+  standalone: true,
+  selector: 'sib-cascade-host',
+  imports: [CngxBreadcrumbSiblings],
+  template: `<cngx-breadcrumb-siblings [siblings]="siblings" />`,
+})
+class SibCascadeHost {
+  readonly siblings = CITIES;
+}
+
+@Component({
+  standalone: true,
+  selector: 'sib-cascade-override-host',
+  imports: [CngxBreadcrumbSiblings],
+  template: `<cngx-breadcrumb-siblings [siblings]="siblings" triggerLabel="Explicit trigger" />`,
+})
+class SibCascadeOverrideHost {
+  readonly siblings = CITIES;
+}
+
+describe('CngxBreadcrumbSiblings config cascade', () => {
+  beforeEach(() => {
+    TestBed.resetTestingModule();
+    stubPopoverApi();
+  });
+
+  it('reads the trigger and list labels from the config cascade', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideBreadcrumbConfig(
+          withBreadcrumbAriaLabels({ siblingsTrigger: 'Jump sideways', siblingsMenu: 'Nearby pages' }),
+        ),
+      ],
+    });
+    const fixture = TestBed.createComponent(SibCascadeHost);
+    fixture.detectChanges();
+
+    const root = fixture.debugElement.query(By.css('cngx-breadcrumb-siblings'))
+      .nativeElement as HTMLElement;
+    const trigger = root.querySelector(
+      'button.cngx-breadcrumb__siblings-trigger',
+    ) as HTMLButtonElement;
+    expect(trigger.getAttribute('aria-label')).toBe('Jump sideways');
+    const list = root.querySelector('.cngx-breadcrumb__siblings-menu') as HTMLElement;
+    expect(list.getAttribute('aria-label')).toBe('Nearby pages');
+  });
+
+  it('lets an explicit [triggerLabel] win over the config cascade', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideBreadcrumbConfig(withBreadcrumbAriaLabels({ siblingsTrigger: 'From config' })),
+      ],
+    });
+    const fixture = TestBed.createComponent(SibCascadeOverrideHost);
+    fixture.detectChanges();
+
+    const root = fixture.debugElement.query(By.css('cngx-breadcrumb-siblings'))
+      .nativeElement as HTMLElement;
+    const trigger = root.querySelector(
+      'button.cngx-breadcrumb__siblings-trigger',
+    ) as HTMLButtonElement;
+    expect(trigger.getAttribute('aria-label')).toBe('Explicit trigger');
   });
 });

@@ -6,6 +6,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CngxBreadcrumbBar } from './breadcrumb-bar.component';
 import { CngxBreadcrumbRouterSync } from './breadcrumb-router-sync.directive';
+import { withBreadcrumbDataKey } from './config/features';
+import { provideBreadcrumbConfig } from './config/provide-breadcrumb-config';
 import type { CngxBreadcrumbCrumb } from './breadcrumb.types';
 
 @Component({ standalone: true, template: '' })
@@ -215,6 +217,58 @@ describe('CngxBreadcrumbRouterSync', () => {
     fixture.detectChanges();
     await flushMicrotasks();
     fixture.detectChanges();
+    expect(labels(barEl)).toEqual(['Default']);
+  });
+
+  it('reads the trail from the dataKey set by the config cascade', async () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideBreadcrumbConfig(withBreadcrumbDataKey('crumb')),
+        provideRouter([
+          { path: 'x', component: Blank, data: { crumb: 'Custom', breadcrumb: 'Default' } },
+        ]),
+      ],
+    });
+    const router = TestBed.inject(Router);
+    // RouterHost binds no [dataKey], so the directive default resolves through
+    // the cascade to 'crumb'.
+    const fixture = TestBed.createComponent(RouterHost);
+    fixture.detectChanges();
+    await flushMicrotasks();
+
+    await router.navigateByUrl('/x');
+    fixture.detectChanges();
+    await flushMicrotasks();
+    fixture.detectChanges();
+
+    const barEl = fixture.debugElement.query(By.css('cngx-breadcrumb')).nativeElement as HTMLElement;
+    expect(labels(barEl)).toEqual(['Custom']);
+  });
+
+  it('lets an explicit [dataKey] win over the config cascade', async () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideBreadcrumbConfig(withBreadcrumbDataKey('crumb')),
+        provideRouter([
+          { path: 'x', component: Blank, data: { crumb: 'Custom', breadcrumb: 'Default' } },
+        ]),
+      ],
+    });
+    const router = TestBed.inject(Router);
+    const fixture = TestBed.createComponent(RouterKeyHost);
+    // Instance binding is 'breadcrumb', overriding the cascade's 'crumb'.
+    fixture.componentInstance.key.set('breadcrumb');
+    fixture.detectChanges();
+    await flushMicrotasks();
+
+    await router.navigateByUrl('/x');
+    fixture.detectChanges();
+    await flushMicrotasks();
+    fixture.detectChanges();
+
+    const barEl = fixture.debugElement.query(By.css('cngx-breadcrumb')).nativeElement as HTMLElement;
     expect(labels(barEl)).toEqual(['Default']);
   });
 

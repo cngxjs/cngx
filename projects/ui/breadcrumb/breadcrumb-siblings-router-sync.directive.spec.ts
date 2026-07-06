@@ -1,4 +1,4 @@
-import { Component, provideZonelessChangeDetection } from '@angular/core';
+import { Component, provideZonelessChangeDetection, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { NavigationEnd, provideRouter, Router, RouterOutlet } from '@angular/router';
@@ -6,6 +6,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CngxBreadcrumbSiblings } from './breadcrumb-siblings.component';
 import { CngxBreadcrumbSiblingsRouterSync } from './breadcrumb-siblings-router-sync.directive';
+import { withBreadcrumbDataKey } from './config/features';
+import { provideBreadcrumbConfig } from './config/provide-breadcrumb-config';
 import type { CngxBreadcrumbSibling } from './breadcrumb.types';
 
 @Component({ standalone: true, template: '' })
@@ -61,6 +63,19 @@ class SibRouterHost {
   template: `<cngx-breadcrumb-siblings cngxRouterSync [depth]="1" />`,
 })
 class SibNoRouterHost {}
+
+@Component({
+  standalone: true,
+  selector: 'sib-router-key-host',
+  imports: [CngxBreadcrumbSiblings, CngxBreadcrumbSiblingsRouterSync, RouterOutlet],
+  template: `
+    <cngx-breadcrumb-siblings cngxRouterSync [depth]="1" [dataKey]="key()" />
+    <router-outlet />
+  `,
+})
+class SibRouterKeyHost {
+  readonly key = signal('breadcrumb');
+}
 
 describe('CngxBreadcrumbSiblingsRouterSync', () => {
   beforeEach(() => {
@@ -182,6 +197,76 @@ describe('CngxBreadcrumbSiblingsRouterSync', () => {
     const second = directive.siblings();
     expect(second).not.toBe(first);
     expect(second.find((s) => s.current)?.label).toBe('Hamburg');
+  });
+
+  it('reads the sibling labels from the dataKey set by the config cascade', async () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideBreadcrumbConfig(withBreadcrumbDataKey('nav')),
+        provideRouter([
+          {
+            path: 'eu',
+            component: Shell,
+            data: { nav: 'Region EU', breadcrumb: 'Region EU' },
+            children: [
+              { path: 'munich', component: Blank, data: { nav: 'Munich', breadcrumb: 'München' } },
+              { path: 'berlin', component: Blank, data: { nav: 'Berlin', breadcrumb: 'Berlin' } },
+            ],
+          },
+        ]),
+      ],
+    });
+    const router = TestBed.inject(Router);
+    // SibRouterHost binds no [dataKey], so the directive default resolves
+    // through the cascade to 'nav'.
+    const fixture = TestBed.createComponent(SibRouterHost);
+    fixture.detectChanges();
+    await flushMicrotasks();
+
+    await router.navigateByUrl('/eu/berlin');
+    fixture.detectChanges();
+    await flushMicrotasks();
+    fixture.detectChanges();
+
+    const root = fixture.debugElement.query(By.css('cngx-breadcrumb-siblings'))
+      .nativeElement as HTMLElement;
+    expect(rowLabels(root)).toEqual(['Munich', 'Berlin']);
+  });
+
+  it('lets an explicit [dataKey] win over the config cascade', async () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideBreadcrumbConfig(withBreadcrumbDataKey('nav')),
+        provideRouter([
+          {
+            path: 'eu',
+            component: Shell,
+            data: { nav: 'Region EU', breadcrumb: 'Region EU' },
+            children: [
+              { path: 'munich', component: Blank, data: { nav: 'Munich', breadcrumb: 'München' } },
+              { path: 'berlin', component: Blank, data: { nav: 'Berlin', breadcrumb: 'Berlin' } },
+            ],
+          },
+        ]),
+      ],
+    });
+    const router = TestBed.inject(Router);
+    const fixture = TestBed.createComponent(SibRouterKeyHost);
+    // Instance binding is 'breadcrumb', overriding the cascade's 'nav'.
+    fixture.componentInstance.key.set('breadcrumb');
+    fixture.detectChanges();
+    await flushMicrotasks();
+
+    await router.navigateByUrl('/eu/berlin');
+    fixture.detectChanges();
+    await flushMicrotasks();
+    fixture.detectChanges();
+
+    const root = fixture.debugElement.query(By.css('cngx-breadcrumb-siblings'))
+      .nativeElement as HTMLElement;
+    expect(rowLabels(root)).toEqual(['München', 'Berlin']);
   });
 
   it('is a graceful no-op (empty source) when Router is not provided', () => {

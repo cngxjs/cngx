@@ -7,6 +7,8 @@ import { CNGX_BREADCRUMB, type CngxBreadcrumbHost, type CngxBreadcrumbItem } fro
 
 import { CngxBreadcrumbOverflow } from './breadcrumb-overflow.component';
 import { CngxBreadcrumbOverflowItem } from './breadcrumb-overflow-item.directive';
+import { withBreadcrumbAriaLabels } from './config/features';
+import { provideBreadcrumbConfig } from './config/provide-breadcrumb-config';
 
 /**
  * jsdom ships no `HTMLElement.showPopover` / `.hidePopover`; `CngxPopover`
@@ -224,5 +226,68 @@ describe('CngxBreadcrumbOverflow', () => {
     // Input wins: the forwarded template renders, the projected slot is suppressed.
     expect(labels(root)).toEqual(['I: Catalog', 'I: Books']);
     expect(root.querySelector('.custom-row')).toBeNull();
+  });
+});
+
+@Component({
+  standalone: true,
+  selector: 'ov-cascade-host',
+  imports: [CngxBreadcrumbOverflow],
+  template: `<cngx-breadcrumb-overflow />`,
+})
+class OvCascadeHost {}
+
+@Component({
+  standalone: true,
+  selector: 'ov-cascade-override-host',
+  imports: [CngxBreadcrumbOverflow],
+  template: `<cngx-breadcrumb-overflow triggerLabel="Explicit trigger" />`,
+})
+class OvCascadeOverrideHost {}
+
+describe('CngxBreadcrumbOverflow config cascade', () => {
+  beforeEach(() => {
+    TestBed.resetTestingModule();
+    stubPopoverApi();
+  });
+
+  it('reads the overflow trigger and menu labels from the config cascade', () => {
+    const { host } = makeHost(['Catalog', 'Books']);
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        { provide: CNGX_BREADCRUMB, useValue: host },
+        provideBreadcrumbConfig(
+          withBreadcrumbAriaLabels({ overflowTrigger: 'More crumbs', overflowMenu: 'Older crumbs' }),
+        ),
+      ],
+    });
+    const fixture = TestBed.createComponent(OvCascadeHost);
+    fixture.detectChanges();
+
+    const root = fixture.debugElement.query(By.css('cngx-breadcrumb-overflow'))
+      .nativeElement as HTMLElement;
+    const trigger = root.querySelector('button.cngx-breadcrumb__overflow-trigger') as HTMLButtonElement;
+    expect(trigger.getAttribute('aria-label')).toBe('More crumbs');
+    const menu = root.querySelector('.cngx-breadcrumb__overflow-menu') as HTMLElement;
+    expect(menu.getAttribute('aria-label')).toBe('Older crumbs');
+  });
+
+  it('lets an explicit [triggerLabel] win over the config cascade', () => {
+    const { host } = makeHost(['Catalog', 'Books']);
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        { provide: CNGX_BREADCRUMB, useValue: host },
+        provideBreadcrumbConfig(withBreadcrumbAriaLabels({ overflowTrigger: 'From config' })),
+      ],
+    });
+    const fixture = TestBed.createComponent(OvCascadeOverrideHost);
+    fixture.detectChanges();
+
+    const root = fixture.debugElement.query(By.css('cngx-breadcrumb-overflow'))
+      .nativeElement as HTMLElement;
+    const trigger = root.querySelector('button.cngx-breadcrumb__overflow-trigger') as HTMLButtonElement;
+    expect(trigger.getAttribute('aria-label')).toBe('Explicit trigger');
   });
 });

@@ -14,6 +14,7 @@ import { filter } from 'rxjs/operators';
 
 import { CNGX_BREADCRUMB_SIBLINGS_SOURCE } from './breadcrumb-siblings-source.token';
 import type { CngxBreadcrumbSiblingsSource } from './breadcrumb-siblings-source.token';
+import { injectBreadcrumbConfig } from './config/inject-breadcrumb-config';
 import type { CngxBreadcrumbSibling } from './breadcrumb.types';
 
 /**
@@ -92,6 +93,7 @@ function siblingsEqual(
 })
 export class CngxBreadcrumbSiblingsRouterSync implements CngxBreadcrumbSiblingsSource {
   private readonly router = inject(Router, { optional: true });
+  private readonly cfg = injectBreadcrumbConfig();
 
   /**
    * Index into the activated route chain (root's first real child is `0`)
@@ -102,10 +104,11 @@ export class CngxBreadcrumbSiblingsRouterSync implements CngxBreadcrumbSiblingsS
   readonly depth = input<number>(0);
 
   /**
-   * Route `data` key the sibling labels are read from. Defaults to
-   * `'breadcrumb'`; override to read a different key.
+   * Route `data` key the sibling labels are read from. Falls back through the
+   * config cascade to `'breadcrumb'`; override per-instance to read a different
+   * key.
    */
-  readonly dataKey = input<string>('breadcrumb');
+  readonly dataKey = input<string>(this.cfg.router?.dataKey ?? 'breadcrumb');
 
   /** The router-derived siblings. Wins over the component's `[siblings]` input. */
   readonly siblings: Signal<readonly CngxBreadcrumbSibling[]>;

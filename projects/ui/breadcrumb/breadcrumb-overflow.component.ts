@@ -17,6 +17,7 @@ import {
   CngxBreadcrumbOverflowItem,
   type CngxBreadcrumbOverflowItemContext,
 } from './breadcrumb-overflow-item.directive';
+import { injectBreadcrumbConfig } from './config/inject-breadcrumb-config';
 
 /**
  * Drop-in overflow menu for {@link CngxBreadcrumbBar}. Presents the crumbs the
@@ -66,10 +67,12 @@ export class CngxBreadcrumbOverflow {
   /** Collapse-set contract, provided by the surrounding `cngxBreadcrumb`. */
   protected readonly breadcrumb = inject(CNGX_BREADCRUMB);
 
-  /** Accessible name of the ellipsis trigger. EN default. */
-  readonly triggerLabel = input('Show collapsed breadcrumbs');
-  /** Accessible name of the collapsed-crumb menu. EN default. */
-  readonly menuLabel = input('Collapsed breadcrumbs');
+  private readonly cfg = injectBreadcrumbConfig();
+
+  /** Accessible name of the ellipsis trigger. Falls back through the config cascade to the EN default. */
+  readonly triggerLabel = input(this.cfg.ariaLabels?.overflowTrigger ?? 'Show collapsed breadcrumbs');
+  /** Accessible name of the collapsed-crumb menu. Falls back through the config cascade to the EN default. */
+  readonly menuLabel = input(this.cfg.ariaLabels?.overflowMenu ?? 'Collapsed breadcrumbs');
 
   /**
    * Per-row template forwarded by {@link CngxBreadcrumbBar}. Lets the bar pass a

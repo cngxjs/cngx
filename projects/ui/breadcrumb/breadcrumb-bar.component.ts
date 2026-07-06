@@ -18,6 +18,7 @@ import { CngxBreadcrumbOverflow } from './breadcrumb-overflow.component';
 import { CngxBreadcrumbOverflowItem } from './breadcrumb-overflow-item.directive';
 import { CngxBreadcrumbSiblings } from './breadcrumb-siblings.component';
 import { CNGX_BREADCRUMB_ITEMS_SOURCE } from './breadcrumb-items-source.token';
+import { injectBreadcrumbConfig } from './config/inject-breadcrumb-config';
 import type { CngxBreadcrumbCrumb } from './breadcrumb.types';
 
 /**
@@ -70,8 +71,11 @@ export class CngxBreadcrumbBar {
   readonly itemsInput = input<readonly CngxBreadcrumbCrumb[]>([], { alias: 'items' });
   /** Maximum crumbs to show before the middle collapses. Unset = never collapse. */
   readonly maxVisible = input<number | undefined>(undefined);
-  /** Accessible name of the `nav` landmark. EN default. */
-  readonly label = input<string>('Breadcrumb');
+
+  private readonly cfg = injectBreadcrumbConfig();
+
+  /** Accessible name of the `nav` landmark. Falls back through the config cascade to the EN default. */
+  readonly label = input<string>(this.cfg.ariaLabels?.bar ?? 'Breadcrumb');
   /** Visual skin, mapped to a `cngx-breadcrumb--{variant}` host class. */
   readonly variant = input<string | undefined>(undefined);
 

@@ -10,6 +10,8 @@ import { CngxBreadcrumbOverflowItem } from './breadcrumb-overflow-item.directive
 import { CngxBreadcrumbSiblings } from './breadcrumb-siblings.component';
 import { CngxBreadcrumbSiblingsRouterSync } from './breadcrumb-siblings-router-sync.directive';
 import { CNGX_BREADCRUMB_ITEMS_SOURCE } from './breadcrumb-items-source.token';
+import { withBreadcrumbAriaLabels } from './config/features';
+import { provideBreadcrumbConfig } from './config/provide-breadcrumb-config';
 import type { CngxBreadcrumbCrumb, CngxBreadcrumbSibling } from './breadcrumb.types';
 
 const TRAIL: readonly CngxBreadcrumbCrumb[] = [
@@ -432,5 +434,52 @@ describe('CngxBreadcrumbBar accessory slot - router-driven source', () => {
       barEl.querySelectorAll<HTMLElement>('.cngx-breadcrumb__siblings-item'),
     ).find((li) => li.getAttribute('aria-current') === 'page');
     expect(current?.textContent?.trim()).toBe('Berlin');
+  });
+});
+
+@Component({
+  standalone: true,
+  selector: 'bar-cascade-host',
+  imports: [CngxBreadcrumbBar],
+  template: `<cngx-breadcrumb [items]="items()" />`,
+})
+class BarCascadeHost {
+  readonly items = signal<readonly CngxBreadcrumbCrumb[]>(TRAIL);
+}
+
+@Component({
+  standalone: true,
+  selector: 'bar-cascade-override-host',
+  imports: [CngxBreadcrumbBar],
+  template: `<cngx-breadcrumb [items]="items()" label="Explicit trail" />`,
+})
+class BarCascadeOverrideHost {
+  readonly items = signal<readonly CngxBreadcrumbCrumb[]>(TRAIL);
+}
+
+describe('CngxBreadcrumbBar config cascade', () => {
+  beforeEach(() => {
+    TestBed.resetTestingModule();
+    stubPopoverApi();
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideBreadcrumbConfig(withBreadcrumbAriaLabels({ bar: 'Navigation trail' })),
+      ],
+    });
+  });
+
+  it('names the nav landmark from the config cascade when no [label] is bound', () => {
+    const fixture = TestBed.createComponent(BarCascadeHost);
+    fixture.detectChanges();
+    const nav = (fixture.nativeElement as HTMLElement).querySelector('nav') as HTMLElement;
+    expect(nav.getAttribute('aria-label')).toBe('Navigation trail');
+  });
+
+  it('lets an explicit [label] win over the config cascade', () => {
+    const fixture = TestBed.createComponent(BarCascadeOverrideHost);
+    fixture.detectChanges();
+    const nav = (fixture.nativeElement as HTMLElement).querySelector('nav') as HTMLElement;
+    expect(nav.getAttribute('aria-label')).toBe('Explicit trail');
   });
 });

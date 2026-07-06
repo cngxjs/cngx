@@ -14,6 +14,7 @@ import { filter } from 'rxjs/operators';
 
 import { CNGX_BREADCRUMB_ITEMS_SOURCE } from './breadcrumb-items-source.token';
 import type { CngxBreadcrumbItemsSource } from './breadcrumb-items-source.token';
+import { injectBreadcrumbConfig } from './config/inject-breadcrumb-config';
 import type { CngxBreadcrumbCrumb } from './breadcrumb.types';
 
 /**
@@ -90,12 +91,14 @@ function crumbsEqual(
 })
 export class CngxBreadcrumbRouterSync implements CngxBreadcrumbItemsSource {
   private readonly router = inject(Router, { optional: true });
+  private readonly cfg = injectBreadcrumbConfig();
 
   /**
-   * Route `data` key the trail is read from. Defaults to `'breadcrumb'`;
-   * override to read a different key (mirrors the sibling's `paramName`).
+   * Route `data` key the trail is read from. Falls back through the config
+   * cascade to `'breadcrumb'`; override per-instance to read a different key
+   * (mirrors the sibling's `paramName`).
    */
-  readonly dataKey = input<string>('breadcrumb');
+  readonly dataKey = input<string>(this.cfg.router?.dataKey ?? 'breadcrumb');
 
   /** The router-derived trail. Wins over the bar's `[items]` input. */
   readonly crumbs: Signal<readonly CngxBreadcrumbCrumb[]>;
