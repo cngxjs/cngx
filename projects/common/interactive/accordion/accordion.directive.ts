@@ -1,4 +1,4 @@
-import { Directive, input, linkedSignal, signal } from '@angular/core';
+import { computed, Directive, input, linkedSignal, model, signal } from '@angular/core';
 import { setEqual } from '@cngx/utils';
 
 import {
@@ -49,9 +49,28 @@ export class CngxAccordion implements CngxAccordionHost {
   /** Whether more than one panel may stay open at once. */
   readonly multi = input<boolean>(false);
 
-  // Single source of truth for which panels are open. `setEqual` guards the
-  // collection return so an identical set never re-fires downstream computeds.
-  private readonly openIds = signal<ReadonlySet<string>>(new Set(), { equal: setEqual });
+  /**
+   * Controlled set of open panel ids - the accordion's primary value, exposed
+   * as a `model` so a consumer can seed initially-open panels or drive
+   * expansion declaratively (router / SSR). `model()` takes no `equal`, so the
+   * equality discipline lives on {@link effectiveOpenIds} below - the derived
+   * set every panel reads. `toggle()` is the only writer on interaction; the
+   * consumer may also write it. No effect syncs it (Pillar 1).
+   */
+  readonly openIds = model<ReadonlySet<string>>(new Set());
+
+  // Single-open arbitration is a derivation, never an effect: a consumer-seeded
+  // multi-id set is clamped to the last id when `!multi()`, projecting an
+  // invalid single-mode seed valid without writing it back (controlled-wins).
+  // `setEqual` guards the collection so an identical open-set never re-fires the
+  // panels' `aria-expanded` computeds (Pillar 1 equality discipline).
+  private readonly effectiveOpenIds = computed<ReadonlySet<string>>(
+    () => {
+      const ids = this.openIds();
+      return this.multi() || ids.size <= 1 ? ids : new Set([...ids].slice(-1));
+    },
+    { equal: setEqual },
+  );
 
   // Header registry, keyed by handle identity. `headersEqual` is an
   // order-independent identity-set compare so a re-register of the same
@@ -93,7 +112,7 @@ export class CngxAccordion implements CngxAccordionHost {
   }
 
   isOpen(panelId: string): boolean {
-    return this.openIds().has(panelId);
+    return this.effectiveOpenIds().has(panelId);
   }
 
   toggle(panelId: string): void {

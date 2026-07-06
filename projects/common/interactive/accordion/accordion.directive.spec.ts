@@ -8,7 +8,7 @@ import type { CngxAccordionHeaderHandle } from './accordion-keyboard-nav';
 import { CngxAccordionPanel } from './accordion-panel.directive';
 
 @Component({
-  template: `<div cngxAccordion [multi]="multi()" #acc="cngxAccordion">
+  template: `<div cngxAccordion [multi]="multi()" [(openIds)]="open" #acc="cngxAccordion">
     <button cngxAccordionPanel panelId="a" controls="r-a">A</button>
     <button cngxAccordionPanel panelId="b" controls="r-b" [disabled]="bDisabled()">B</button>
     <button cngxAccordionPanel panelId="c" controls="r-c">C</button>
@@ -18,6 +18,7 @@ import { CngxAccordionPanel } from './accordion-panel.directive';
 class Host {
   readonly multi = signal(false);
   readonly bDisabled = signal(false);
+  readonly open = signal<ReadonlySet<string>>(new Set());
 }
 
 @Component({
@@ -42,10 +43,11 @@ describe('CngxAccordion', () => {
     TestBed.flushEffects();
     fixture.detectChanges();
     const container = fixture.debugElement.query(By.directive(CngxAccordion));
+    const accordion = container.injector.get(CngxAccordion);
     const buttons = fixture.debugElement
       .queryAll(By.directive(CngxAccordionPanel))
       .map((de) => de.nativeElement as HTMLElement);
-    return { fixture, host: fixture.componentInstance, container, buttons };
+    return { fixture, host: fixture.componentInstance, container, accordion, buttons };
   }
 
   function tabindex(el: HTMLElement): string {
@@ -192,5 +194,48 @@ describe('CngxAccordion', () => {
     buttons[1].click();
     fixture.detectChanges();
     expect(buttons[1].getAttribute('aria-expanded')).toBe('false');
+  });
+
+  it('seeds initially-open panels from the controlled openIds model', () => {
+    const { fixture, host, buttons } = setup();
+    host.multi.set(true);
+    host.open.set(new Set(['a', 'c']));
+    fixture.detectChanges();
+
+    expect(buttons[0].getAttribute('aria-expanded')).toBe('true');
+    expect(buttons[1].getAttribute('aria-expanded')).toBe('false');
+    expect(buttons[2].getAttribute('aria-expanded')).toBe('true');
+  });
+
+  it('clamps a multi-id seed to one open panel in single-open mode', () => {
+    const { fixture, host, buttons } = setup();
+    host.open.set(new Set(['a', 'c']));
+    fixture.detectChanges();
+
+    // Single mode projects the last seeded id valid without writing back.
+    expect(buttons[0].getAttribute('aria-expanded')).toBe('false');
+    expect(buttons[2].getAttribute('aria-expanded')).toBe('true');
+  });
+
+  it('two-way writes the model back to the host on toggle', () => {
+    const { fixture, host, buttons } = setup();
+    buttons[0].click();
+    fixture.detectChanges();
+    expect([...host.open()]).toEqual(['a']);
+
+    buttons[0].click();
+    fixture.detectChanges();
+    expect(host.open().size).toBe(0);
+  });
+
+  it('clamps a single-mode seed via a derivation without writing back the model', () => {
+    const { accordion } = setupBare();
+    accordion.openIds.set(new Set(['a', 'b']));
+
+    // Single mode (multi defaults false): isOpen projects only the last id...
+    expect(accordion.isOpen('a')).toBe(false);
+    expect(accordion.isOpen('b')).toBe(true);
+    // ...while the consumer's set is left untouched (controlled-wins, no write-back).
+    expect([...accordion.openIds()]).toEqual(['a', 'b']);
   });
 });
