@@ -1,0 +1,43 @@
+/**
+ * @overview
+ * Categorized skin preset for the `@cngx/ui/accordion` organism. Opt in with
+ * `class="cngx-accordion-skin-categorized"` on `cngx-accordion-group`. Each
+ * item becomes a bordered surface card, the group stacks them with a gap, a
+ * category tag leads the row (project it into `cngxAccordionItemLeading`), and
+ * the title turns primary on open. A knowledge-base / docs look.
+ *
+ * Token-driven: the card surface rides the `--cngx-accordion-item-*` hooks and
+ * the group `--cngx-accordion-group-*` hooks; the hover tint is set through
+ * `--cngx-accordion-header-bg` (a layered rule cannot override the component's
+ * unlayered `background`, but it can set the token the component reads). No
+ * gradients; every value a `var(--cngx-*, fallback)`.
+ */
+@layer cngx.components {
+  .cngx-accordion-skin-categorized {
+    --cngx-accordion-group-display: flex;
+    --cngx-accordion-group-gap: var(--cngx-space-sm, 0.75rem);
+    --cngx-accordion-group-border-block-start: none;
+    --cngx-accordion-item-bg: var(--cngx-color-surface, #fff);
+    --cngx-accordion-item-border: 1px solid var(--cngx-color-border, #d1d5db);
+    --cngx-accordion-item-radius: var(--cngx-radius-md, 0.375rem);
+    --cngx-accordion-item-overflow: hidden;
+    --cngx-accordion-divider: none;
+    --cngx-accordion-header-padding: var(--cngx-space-md, 1rem) var(--cngx-space-lg, 1.25rem);
+    --cngx-accordion-region-padding: 0 var(--cngx-space-lg, 1.25rem) var(--cngx-space-lg, 1.25rem);
+  }
+
+  /* Hover tint set via the token so it survives the layer/specificity order. */
+  .cngx-accordion-skin-categorized .cngx-accordion-item__header:hover {
+    --cngx-accordion-header-bg: color-mix(
+      in oklab,
+      var(--cngx-color-primary, #1d4ed8) 5%,
+      transparent
+    );
+  }
+
+  .cngx-accordion-skin-categorized
+    .cngx-accordion-item[data-expanded]
+    .cngx-accordion-item__title {
+    color: var(--cngx-color-primary, #1d4ed8);
+  }
+}

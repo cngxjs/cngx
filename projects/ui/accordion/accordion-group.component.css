@@ -1,7 +1,18 @@
 .cngx-accordion-group {
-  display: block;
+  /* Layout + surface hooks a skin preset drives from a cascade layer: card
+     skins set display:flex + a gap to space item-cards; a framed skin
+     (Plus-Minus, Bands) sets a full border + radius. The flat default stays
+     `block` with a top divider, no gap, no box (fallbacks preserve the base
+     rendering). */
+  display: var(--cngx-accordion-group-display, block);
+  flex-direction: var(--cngx-accordion-group-direction, column);
+  gap: var(--cngx-accordion-group-gap, 0);
+  background: var(--cngx-accordion-group-bg, transparent);
+  border: var(--cngx-accordion-group-border, 0 solid transparent);
+  border-radius: var(--cngx-accordion-group-radius, 0);
+  overflow: var(--cngx-accordion-group-overflow, visible);
   border-block-start: var(
-    --cngx-accordion-divider,
-    1px solid var(--cngx-accordion-border-color, #d1d5db)
+    --cngx-accordion-group-border-block-start,
+    var(--cngx-accordion-divider, 1px solid var(--cngx-accordion-border-color, #d1d5db))
   );
 }

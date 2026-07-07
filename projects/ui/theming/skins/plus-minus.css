@@ -1,0 +1,53 @@
+/**
+ * @overview
+ * Plus-Minus skin preset for the `@cngx/ui/accordion` organism. Opt in with
+ * `class="cngx-accordion-skin-plus-minus"` on `cngx-accordion-group`. The group
+ * is one framed surface, items divided within, and the chevron becomes a
+ * boxed plus that morphs to a minus on open (driven by the
+ * `--cngx-accordion-marker: plus-minus` token the component already understands
+ * via its style-container-query - no new DOM). An enterprise-calm settings look.
+ *
+ * The box fills primary on open. Token-driven throughout; the chevron box
+ * background is additive (the component never sets it), and the box colour flip
+ * rides `currentColor`. No gradients; every value a `var(--cngx-*, fallback)`.
+ */
+@layer cngx.components {
+  .cngx-accordion-skin-plus-minus {
+    --cngx-accordion-marker: plus-minus;
+    --cngx-accordion-marker-size: 1.75rem;
+    --cngx-accordion-group-bg: var(--cngx-color-surface, #fff);
+    --cngx-accordion-group-border: 1px solid var(--cngx-color-border, #d1d5db);
+    --cngx-accordion-group-radius: var(--cngx-radius-lg, 0.5rem);
+    --cngx-accordion-group-overflow: hidden;
+    --cngx-accordion-group-border-block-start: none;
+    --cngx-accordion-header-padding: var(--cngx-space-lg, 1.25rem);
+    --cngx-accordion-region-padding: 0 var(--cngx-space-lg, 1.25rem) var(--cngx-space-lg, 1.25rem);
+  }
+
+  /* Boxed marker: additive background + radius on the chevron the component
+     paints as bare bars in plus-minus mode. */
+  .cngx-accordion-skin-plus-minus .cngx-accordion-item__chevron {
+    background: var(
+      --cngx-accordion-pm-box-bg,
+      color-mix(in oklab, var(--cngx-color-text, #111827) 5%, transparent)
+    );
+    border-radius: var(--cngx-radius-sm, 0.25rem);
+    color: var(--cngx-color-text-muted, #6b7280);
+    transition:
+      background var(--cngx-accordion-chevron-transition, 150ms ease),
+      color var(--cngx-accordion-chevron-transition, 150ms ease);
+  }
+
+  .cngx-accordion-skin-plus-minus
+    .cngx-accordion-item[data-expanded]
+    .cngx-accordion-item__chevron {
+    background: var(--cngx-color-primary, #1d4ed8);
+    color: #fff;
+  }
+
+  .cngx-accordion-skin-plus-minus
+    .cngx-accordion-item[data-expanded]
+    .cngx-accordion-item__title {
+    color: var(--cngx-color-primary, #1d4ed8);
+  }
+}

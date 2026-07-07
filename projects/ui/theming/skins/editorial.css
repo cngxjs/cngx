@@ -1,0 +1,47 @@
+/**
+ * @overview
+ * Editorial skin preset for the `@cngx/ui/accordion` organism. Opt in with
+ * `class="cngx-accordion-skin-editorial"` on `cngx-accordion-group`. A mono
+ * index number leads each row (decorative, the leading wrapper is
+ * `aria-hidden`), the title turns primary on open, and rows are split by
+ * hairlines - no surfaces, no cards.
+ *
+ * The lab's gradient index and gradient title are re-mapped to solid
+ * `--cngx-color-primary` (no gradient functions). Every value is a
+ * `var(--cngx-*, fallback)`; the skin drives the organism through its custom
+ * properties and adds only decorative rules the component never sets, so no
+ * layered rule fights the component's unlayered structure.
+ */
+@layer cngx.components {
+  .cngx-accordion-skin-editorial {
+    --cngx-accordion-heading-align: flex-start;
+    --cngx-accordion-heading-gap: var(--cngx-space-lg, 1.25rem);
+    --cngx-accordion-header-padding: var(--cngx-space-lg, 1.25rem) 0;
+    --cngx-accordion-region-padding: 0 0 var(--cngx-space-xl, 2rem);
+  }
+
+  .cngx-accordion-skin-editorial .cngx-accordion-item__leading {
+    padding-block-start: 0.15em;
+    min-inline-size: 2.6ch;
+    font-family: var(--cngx-accordion-editorial-index-font, ui-monospace, monospace);
+    font-size: var(--cngx-font-size-lg, 1.125rem);
+    font-weight: 700;
+    color: var(--cngx-color-text-muted, #6b7280);
+    line-height: 1;
+    transition: color var(--cngx-accordion-chevron-transition, 150ms ease);
+  }
+
+  .cngx-accordion-skin-editorial .cngx-accordion-item__title {
+    font-size: var(--cngx-font-size-lg, 1.125rem);
+  }
+
+  /* Index and title light up in the primary colour on open / hover. */
+  .cngx-accordion-skin-editorial
+    .cngx-accordion-item[data-expanded]
+    .cngx-accordion-item__leading,
+  .cngx-accordion-skin-editorial
+    .cngx-accordion-item__header:hover
+    .cngx-accordion-item__title {
+    color: var(--cngx-color-primary, #1d4ed8);
+  }
+}

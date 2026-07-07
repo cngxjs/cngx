@@ -1,5 +1,12 @@
 .cngx-accordion-item {
   display: block;
+  /* Surface hooks a card skin (Categorized, Bento, Bands) drives from a layer:
+     the flat default keeps a transparent surface, no box border, square corners,
+     and only a bottom divider. */
+  background: var(--cngx-accordion-item-bg, transparent);
+  border: var(--cngx-accordion-item-border, 0 solid transparent);
+  border-radius: var(--cngx-accordion-item-radius, 0);
+  overflow: var(--cngx-accordion-item-overflow, visible);
   border-block-end: var(
     --cngx-accordion-divider,
     1px solid var(--cngx-accordion-border-color, #d1d5db)
@@ -9,7 +16,7 @@
 .cngx-accordion-item__heading {
   margin: 0;
   display: flex;
-  align-items: center;
+  align-items: var(--cngx-accordion-heading-align, center);
   gap: var(--cngx-accordion-heading-gap, 0.5rem);
 }
 
