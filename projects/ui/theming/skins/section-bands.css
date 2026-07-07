@@ -1,0 +1,51 @@
+/**
+ * @overview
+ * Section-Bands skin preset for the `@cngx/ui/accordion` organism. Opt in with
+ * `class="cngx-accordion-skin-section-bands"` on `cngx-accordion-group`. Each
+ * header is an inverted full-width band (a classic desktop GroupBox), items are
+ * framed surfaces stacked with a gap, and a status chip rides the band via the
+ * meta slot (`cngxAccordionItemMeta`).
+ *
+ * The inversion rides `--cngx-accordion-header-bg` / `-header-color`, so the
+ * band survives the layer/specificity order; the marker (currentColor) and
+ * title inherit the light-on-dark colour. No gradients; every value a
+ * `var(--cngx-*, fallback)`.
+ */
+@layer cngx.components {
+  .cngx-accordion-skin-section-bands {
+    --cngx-accordion-group-display: flex;
+    --cngx-accordion-group-gap: var(--cngx-space-sm, 0.75rem);
+    --cngx-accordion-group-border-block-start: none;
+    --cngx-accordion-item-border: 1px solid var(--cngx-color-border, #d1d5db);
+    --cngx-accordion-item-radius: var(--cngx-radius-sm, 0.25rem);
+    --cngx-accordion-item-overflow: hidden;
+    --cngx-accordion-divider: none;
+    --cngx-accordion-header-padding: 0.65rem var(--cngx-space-md, 1rem);
+    --cngx-accordion-header-bg: var(--cngx-color-text, #111827);
+    --cngx-accordion-header-color: var(--cngx-color-surface, #fff);
+    --cngx-accordion-subtitle-color: color-mix(
+      in oklab,
+      var(--cngx-color-surface, #fff) 62%,
+      var(--cngx-color-text, #111827)
+    );
+    --cngx-accordion-region-padding: var(--cngx-space-md, 1rem);
+  }
+
+  .cngx-accordion-skin-section-bands .cngx-accordion-item__header:hover {
+    --cngx-accordion-header-bg: color-mix(
+      in oklab,
+      var(--cngx-color-text, #111827) 86%,
+      var(--cngx-color-surface, #fff)
+    );
+  }
+
+  /* Status chip in the band via the meta slot. */
+  .cngx-accordion-skin-section-bands .cngx-accordion-item__meta {
+    font-family: var(--cngx-accordion-bands-chip-font, ui-monospace, monospace);
+    font-size: var(--cngx-font-size-sm, 0.8125rem);
+    color: color-mix(in oklab, var(--cngx-color-surface, #fff) 78%, var(--cngx-color-text, #111827));
+    border: 1px solid color-mix(in oklab, var(--cngx-color-surface, #fff) 28%, transparent);
+    border-radius: var(--cngx-radius-pill, 999px);
+    padding: 0.08rem 0.5rem;
+  }
+}
