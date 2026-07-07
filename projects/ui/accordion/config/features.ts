@@ -44,14 +44,18 @@ export function withDefaultHeadingLevel(headingLevel: number): CngxAccordionConf
 }
 
 /**
- * Set app-wide slot templates - the config tier of the slot cascade. Only the
- * chevron (`icon`) carries a config tier: hand one `TemplateRef` here (query it
- * once in the app root) and every accordion item renders it unless a per-item
- * `*cngxAccordionItemIcon` overrides it. `$implicit` in the template is the
- * item's expanded state.
+ * Set app-wide slot templates - the config tier of the slot cascade
+ * (`*cngxAccordionItemXxx` per-instance -> this -> CSS default). Three slots
+ * carry a config tier: `icon` (chevron; `$implicit` is the item's expanded
+ * state), `busySpinner` (loading/refreshing visual), and `error` (error
+ * affordance). Hand a `TemplateRef` per key here and every item renders it
+ * unless a per-instance slot overrides it. Partial payloads compose - repeated
+ * calls merge per key.
  *
  * ```ts
- * provideAccordionConfig(withAccordionTemplates({ icon: myChevronTpl }));
+ * provideAccordionConfig(
+ *   withAccordionTemplates({ icon: myChevronTpl, busySpinner: mySpinnerTpl }),
+ * );
  * ```
  *
  * @category ui/accordion
@@ -61,41 +65,4 @@ export function withAccordionTemplates(
   payload: NonNullable<CngxAccordionConfig['templates']>,
 ): CngxAccordionConfigFeature {
   return { kind: 'templates', payload };
-}
-
-/**
- * Set the app-wide busy visual - the config tier of the busy-slot cascade
- * (`*cngxAccordionItemBusy` per-instance -> this -> CSS skeleton default). Every
- * item whose `[state]` is loading or refreshing renders it unless a per-item
- * slot overrides it. A design system sets one spinner for every accordion here.
- *
- * ```ts
- * provideAccordionConfig(withAccordionBusySpinnerTemplate(mySpinnerTpl));
- * ```
- *
- * @category ui/accordion
- * @since 0.1.0
- */
-export function withAccordionBusySpinnerTemplate(
-  busySpinner: NonNullable<CngxAccordionConfig['templates']>['busySpinner'],
-): CngxAccordionConfigFeature {
-  return { kind: 'templates', payload: { busySpinner } };
-}
-
-/**
- * Set the app-wide error affordance - the config tier of the error-slot cascade
- * (`*cngxAccordionItemError` per-instance -> this -> CSS error default). Every
- * item whose `[state]` is error renders it unless a per-item slot overrides it.
- *
- * ```ts
- * provideAccordionConfig(withAccordionErrorTemplate(myErrorTpl));
- * ```
- *
- * @category ui/accordion
- * @since 0.1.0
- */
-export function withAccordionErrorTemplate(
-  error: NonNullable<CngxAccordionConfig['templates']>['error'],
-): CngxAccordionConfigFeature {
-  return { kind: 'templates', payload: { error } };
 }

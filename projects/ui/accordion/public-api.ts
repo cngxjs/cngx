@@ -29,7 +29,5 @@ export {
   withAccordionLabels,
   withDefaultHeadingLevel,
   withAccordionTemplates,
-  withAccordionBusySpinnerTemplate,
-  withAccordionErrorTemplate,
 } from './config/features';
 export { injectAccordionConfig } from './config/inject-accordion-config';

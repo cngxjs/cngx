@@ -16,8 +16,6 @@ import type { CngxAccordionItemIconContext } from '../accordion-item-icon.direct
 import { CngxAccordionItemTitle } from '../accordion-item-title.directive';
 import { CNGX_ACCORDION_CONFIG } from './accordion.config.defaults';
 import {
-  withAccordionBusySpinnerTemplate,
-  withAccordionErrorTemplate,
   withAccordionLabels,
   withAccordionTemplates,
   withDefaultHeadingLevel,
@@ -150,23 +148,18 @@ describe('accordion config cascade', () => {
     expect(TestBed.inject(CNGX_ACCORDION_CONFIG).templates?.icon).toBe(icon);
   });
 
-  it('flows an app-wide busy spinner template through withAccordionBusySpinnerTemplate', () => {
+  it('flows busySpinner and error tiers through withAccordionTemplates', () => {
     const busySpinner = fakeTemplate();
-    TestBed.configureTestingModule({
-      providers: [provideAccordionConfig(withAccordionBusySpinnerTemplate(busySpinner))],
-    });
-    expect(TestBed.inject(CNGX_ACCORDION_CONFIG).templates?.busySpinner).toBe(busySpinner);
-  });
-
-  it('flows an app-wide error template through withAccordionErrorTemplate', () => {
     const error = fakeTemplate();
     TestBed.configureTestingModule({
-      providers: [provideAccordionConfig(withAccordionErrorTemplate(error))],
+      providers: [provideAccordionConfig(withAccordionTemplates({ busySpinner, error }))],
     });
-    expect(TestBed.inject(CNGX_ACCORDION_CONFIG).templates?.error).toBe(error);
+    const templates = TestBed.inject(CNGX_ACCORDION_CONFIG).templates;
+    expect(templates?.busySpinner).toBe(busySpinner);
+    expect(templates?.error).toBe(error);
   });
 
-  it('composes icon, busySpinner and error tiers without clobbering', () => {
+  it('composes icon, busySpinner and error tiers across calls without clobbering', () => {
     const icon = fakeIconTemplate();
     const busySpinner = fakeTemplate();
     const error = fakeTemplate();
@@ -174,8 +167,8 @@ describe('accordion config cascade', () => {
       providers: [
         provideAccordionConfig(
           withAccordionTemplates({ icon }),
-          withAccordionBusySpinnerTemplate(busySpinner),
-          withAccordionErrorTemplate(error),
+          withAccordionTemplates({ busySpinner }),
+          withAccordionTemplates({ error }),
         ),
       ],
     });
