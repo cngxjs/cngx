@@ -36,14 +36,18 @@ export interface CngxAccordionConfig {
   readonly headingLevel: number;
   /**
    * App-wide slot templates - the third tier of the slot cascade
-   * (`*cngxAccordionItemIcon` per-instance -> this -> CSS default). Only the
-   * chevron carries a config tier: a design system sets one chevron for every
-   * accordion here rather than repeating the template on each item. Title and
-   * body are per-item content with no meaningful app-wide default, so they get
-   * no config tier.
+   * (`*cngxAccordionItemXxx` per-instance -> this -> CSS default). Only slots
+   * with a plausible app-wide default carry a config tier: the chevron, the busy
+   * spinner, and the error affordance all have a design-system default; title
+   * and body are per-item content with no meaningful app-wide default, so they
+   * get no config tier.
    */
   readonly templates?: {
     /** App-wide chevron override; `$implicit` is the item's expanded state. */
     readonly icon?: TemplateRef<CngxAccordionItemIconContext> | null;
+    /** App-wide busy visual, rendered while an item's `[state]` is loading/refreshing. */
+    readonly busySpinner?: TemplateRef<unknown> | null;
+    /** App-wide error affordance, rendered while an item's `[state]` is error. */
+    readonly error?: TemplateRef<unknown> | null;
   };
 }

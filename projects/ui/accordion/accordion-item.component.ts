@@ -130,10 +130,22 @@ export class CngxAccordionItem {
   protected readonly iconTemplate = computed(
     () => this.iconSlot()?.templateRef ?? this.config.templates?.icon ?? null,
   );
-  /** Resolved busy template: per-instance slot -> CSS skeleton default. */
-  protected readonly busyTemplate = computed(() => this.busySlot()?.templateRef ?? null);
-  /** Resolved error template: per-instance slot -> CSS error affordance default. */
-  protected readonly errorTemplate = computed(() => this.errorSlot()?.templateRef ?? null);
+  /**
+   * Resolved busy template through the three-stage slot cascade: per-instance
+   * `*cngxAccordionItemBusy` -> `CNGX_ACCORDION_CONFIG.templates.busySpinner` ->
+   * `null` (the CSS skeleton default renders).
+   */
+  protected readonly busyTemplate = computed(
+    () => this.busySlot()?.templateRef ?? this.config.templates?.busySpinner ?? null,
+  );
+  /**
+   * Resolved error template through the three-stage slot cascade: per-instance
+   * `*cngxAccordionItemError` -> `CNGX_ACCORDION_CONFIG.templates.error` ->
+   * `null` (the CSS error affordance default renders).
+   */
+  protected readonly errorTemplate = computed(
+    () => this.errorSlot()?.templateRef ?? this.config.templates?.error ?? null,
+  );
 
   /**
    * Panel async status, normalised to an {@link AsyncStatus} from either the raw

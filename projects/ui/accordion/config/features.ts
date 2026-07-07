@@ -54,3 +54,40 @@ export function withAccordionTemplates(
 ): CngxAccordionConfigFeature {
   return { kind: 'templates', payload };
 }
+
+/**
+ * Set the app-wide busy visual - the config tier of the busy-slot cascade
+ * (`*cngxAccordionItemBusy` per-instance -> this -> CSS skeleton default). Every
+ * item whose `[state]` is loading or refreshing renders it unless a per-item
+ * slot overrides it. A design system sets one spinner for every accordion here.
+ *
+ * ```ts
+ * provideAccordionConfig(withAccordionBusySpinnerTemplate(mySpinnerTpl));
+ * ```
+ *
+ * @category ui/accordion
+ * @since 0.1.0
+ */
+export function withAccordionBusySpinnerTemplate(
+  busySpinner: NonNullable<CngxAccordionConfig['templates']>['busySpinner'],
+): CngxAccordionConfigFeature {
+  return { kind: 'templates', payload: { busySpinner } };
+}
+
+/**
+ * Set the app-wide error affordance - the config tier of the error-slot cascade
+ * (`*cngxAccordionItemError` per-instance -> this -> CSS error default). Every
+ * item whose `[state]` is error renders it unless a per-item slot overrides it.
+ *
+ * ```ts
+ * provideAccordionConfig(withAccordionErrorTemplate(myErrorTpl));
+ * ```
+ *
+ * @category ui/accordion
+ * @since 0.1.0
+ */
+export function withAccordionErrorTemplate(
+  error: NonNullable<CngxAccordionConfig['templates']>['error'],
+): CngxAccordionConfigFeature {
+  return { kind: 'templates', payload: { error } };
+}

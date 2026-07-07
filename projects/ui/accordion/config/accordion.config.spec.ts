@@ -15,10 +15,17 @@ import { CngxAccordionItem } from '../accordion-item.component';
 import type { CngxAccordionItemIconContext } from '../accordion-item-icon.directive';
 import { CngxAccordionItemTitle } from '../accordion-item-title.directive';
 import { CNGX_ACCORDION_CONFIG } from './accordion.config.defaults';
-import { withAccordionLabels, withAccordionTemplates, withDefaultHeadingLevel } from './features';
+import {
+  withAccordionBusySpinnerTemplate,
+  withAccordionErrorTemplate,
+  withAccordionLabels,
+  withAccordionTemplates,
+  withDefaultHeadingLevel,
+} from './features';
 import { provideAccordionConfig, provideAccordionConfigAt } from './provide-accordion-config';
 
 const fakeIconTemplate = () => ({}) as unknown as TemplateRef<CngxAccordionItemIconContext>;
+const fakeTemplate = () => ({}) as unknown as TemplateRef<unknown>;
 
 const IMPORTS = [CngxAccordionGroup, CngxAccordionItem, CngxAccordionItemTitle];
 
@@ -131,6 +138,41 @@ describe('accordion config cascade', () => {
       providers: [provideAccordionConfig(withAccordionTemplates({ icon }))],
     });
     expect(TestBed.inject(CNGX_ACCORDION_CONFIG).templates?.icon).toBe(icon);
+  });
+
+  it('flows an app-wide busy spinner template through withAccordionBusySpinnerTemplate', () => {
+    const busySpinner = fakeTemplate();
+    TestBed.configureTestingModule({
+      providers: [provideAccordionConfig(withAccordionBusySpinnerTemplate(busySpinner))],
+    });
+    expect(TestBed.inject(CNGX_ACCORDION_CONFIG).templates?.busySpinner).toBe(busySpinner);
+  });
+
+  it('flows an app-wide error template through withAccordionErrorTemplate', () => {
+    const error = fakeTemplate();
+    TestBed.configureTestingModule({
+      providers: [provideAccordionConfig(withAccordionErrorTemplate(error))],
+    });
+    expect(TestBed.inject(CNGX_ACCORDION_CONFIG).templates?.error).toBe(error);
+  });
+
+  it('composes icon, busySpinner and error tiers without clobbering', () => {
+    const icon = fakeIconTemplate();
+    const busySpinner = fakeTemplate();
+    const error = fakeTemplate();
+    TestBed.configureTestingModule({
+      providers: [
+        provideAccordionConfig(
+          withAccordionTemplates({ icon }),
+          withAccordionBusySpinnerTemplate(busySpinner),
+          withAccordionErrorTemplate(error),
+        ),
+      ],
+    });
+    const templates = TestBed.inject(CNGX_ACCORDION_CONFIG).templates;
+    expect(templates?.icon).toBe(icon);
+    expect(templates?.busySpinner).toBe(busySpinner);
+    expect(templates?.error).toBe(error);
   });
 
   it('lets provideAccordionConfigAt override the root chevron template', () => {

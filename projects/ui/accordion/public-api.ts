@@ -25,5 +25,11 @@ export {
   provideAccordionConfigAt,
   type CngxAccordionConfigFeature,
 } from './config/provide-accordion-config';
-export { withAccordionLabels, withDefaultHeadingLevel, withAccordionTemplates } from './config/features';
+export {
+  withAccordionLabels,
+  withDefaultHeadingLevel,
+  withAccordionTemplates,
+  withAccordionBusySpinnerTemplate,
+  withAccordionErrorTemplate,
+} from './config/features';
 export { injectAccordionConfig } from './config/inject-accordion-config';
