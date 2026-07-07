@@ -70,4 +70,9 @@ describe('CngxTime', () => {
     const { timeEl } = make(new Date(Date.now() + 5 * 60 * 1000), { mode: 'relative' });
     expect(timeEl.textContent?.trim()).toBe('in 5 minutes');
   });
+
+  it('formats a distant past instant in relative mode (years bucket)', () => {
+    const { timeEl } = make(new Date(Date.now() - 3 * 365 * 24 * 60 * 60 * 1000), { mode: 'relative' });
+    expect(timeEl.textContent?.trim()).toBe('3 years ago');
+  });
 });

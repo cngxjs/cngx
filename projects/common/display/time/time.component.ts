@@ -8,7 +8,11 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 
-/** Largest-first unit ladder for the relative formatter. */
+/**
+ * Unit ladder for the relative formatter, smallest first. Each `amount` is the
+ * count of that unit in the next-larger one; anything past `months` falls
+ * through to the `years` return.
+ */
 const RELATIVE_DIVISIONS: readonly { readonly amount: number; readonly unit: Intl.RelativeTimeFormatUnit }[] = [
   { amount: 60, unit: 'seconds' },
   { amount: 60, unit: 'minutes' },
@@ -16,7 +20,6 @@ const RELATIVE_DIVISIONS: readonly { readonly amount: number; readonly unit: Int
   { amount: 7, unit: 'days' },
   { amount: 4.34524, unit: 'weeks' },
   { amount: 12, unit: 'months' },
-  { amount: Number.POSITIVE_INFINITY, unit: 'years' },
 ];
 
 /**
