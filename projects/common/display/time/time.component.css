@@ -1,0 +1,12 @@
+.cngx-time {
+  display: inline;
+  font-family: var(--cngx-time-font, inherit);
+  font-size: var(--cngx-time-size, inherit);
+  font-variant-numeric: var(--cngx-time-numeric, tabular-nums);
+  color: var(--cngx-time-color, inherit);
+}
+
+.cngx-time time {
+  font: inherit;
+  color: inherit;
+}
