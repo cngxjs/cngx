@@ -7,6 +7,9 @@ import { CngxAccordionGroup } from './accordion-group.component';
 import { CngxAccordionItem } from './accordion-item.component';
 import { CngxAccordionItemContent } from './accordion-item-content.directive';
 import { CngxAccordionItemIcon } from './accordion-item-icon.directive';
+import { CngxAccordionItemLeading } from './accordion-item-leading.directive';
+import { CngxAccordionItemMeta } from './accordion-item-meta.directive';
+import { CngxAccordionItemSubtitle } from './accordion-item-subtitle.directive';
 import { CngxAccordionItemTitle } from './accordion-item-title.directive';
 
 @Component({
@@ -57,6 +60,27 @@ class NamedHost {
   readonly open = signal<ReadonlySet<string>>(new Set(['beta']));
 }
 
+@Component({
+  template: `<cngx-accordion-group>
+    <cngx-accordion-item>
+      <span cngxAccordionItemLeading class="lead">01</span>
+      <span cngxAccordionItemTitle>Billing</span>
+      <span cngxAccordionItemSubtitle class="sub">Invoices</span>
+      <span cngxAccordionItemMeta><a href="#" class="meta-link">edit</a></span>
+      Body
+    </cngx-accordion-item>
+  </cngx-accordion-group>`,
+  imports: [
+    CngxAccordionGroup,
+    CngxAccordionItem,
+    CngxAccordionItemTitle,
+    CngxAccordionItemSubtitle,
+    CngxAccordionItemLeading,
+    CngxAccordionItemMeta,
+  ],
+})
+class SlotsHost {}
+
 describe('CngxAccordionItem', () => {
   beforeEach(() => TestBed.configureTestingModule({ imports: [Host] }));
 
@@ -75,13 +99,30 @@ describe('CngxAccordionItem', () => {
     el.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }));
   }
 
-  it('names each region back at its own header via aria-labelledby', () => {
-    const { headers, regions } = setup();
+  // The button's aria-describedby is `${subtitleId} ${reasonId}`; the reason is
+  // the visually-hidden element among the referenced ids.
+  function describedReason(root: HTMLElement, button: HTMLElement): HTMLElement | undefined {
+    return (button.getAttribute('aria-describedby') ?? '')
+      .split(/\s+/)
+      .map((id) => root.querySelector<HTMLElement>(`#${id}`))
+      .find((el): el is HTMLElement => el?.classList.contains('cngx-visually-hidden') ?? false);
+  }
+
+  it('pins each region and its header button name to the title element only', () => {
+    const { headers, regions, root } = setup();
     expect(regions).toHaveLength(3);
     regions.forEach((region, i) => {
       expect(region.getAttribute('role')).toBe('region');
-      expect(region.getAttribute('aria-labelledby')).toBe(headers[i].id);
-      expect(headers[i].id).toBeTruthy();
+      // Button names itself at the title element (not its own subtree), so a
+      // subtitle inside the button never leaks into the accessible name.
+      const titleId = headers[i].getAttribute('aria-labelledby');
+      expect(titleId).toBeTruthy();
+      // Region points at the SAME title element, not at the button: naming the
+      // button would fold in title+subtitle since accname does not re-follow the
+      // button's own aria-labelledby.
+      expect(region.getAttribute('aria-labelledby')).toBe(titleId);
+      const titleEl = root.querySelector<HTMLElement>(`#${titleId}`);
+      expect(titleEl?.textContent?.trim()).toBe(['A', 'B', 'C'][i]);
     });
   });
 
@@ -114,9 +155,9 @@ describe('CngxAccordionItem', () => {
     fixture.detectChanges();
 
     expect(headers[1].getAttribute('aria-disabled')).toBe('true');
-    const reasonId = headers[1].getAttribute('aria-describedby');
-    expect(reasonId).toBeTruthy();
-    const reason = root.querySelector<HTMLElement>(`#${reasonId}`);
+    // aria-describedby now carries `${subtitleId} ${reasonId}`; pick the reason
+    // element (the visually-hidden one) out of the id list.
+    const reason = describedReason(root, headers[1]);
     expect(reason?.textContent?.trim()).toBeTruthy();
     expect(reason?.getAttribute('aria-hidden')).toBe('false');
 
@@ -126,11 +167,10 @@ describe('CngxAccordionItem', () => {
     expect(document.activeElement).toBe(headers[2]);
   });
 
-  it('keeps the aria-describedby IDREF present but hidden when enabled', () => {
+  it('keeps the aria-describedby reason IDREF present but hidden when enabled', () => {
     const { headers, root } = setup();
-    const reasonId = headers[1].getAttribute('aria-describedby');
-    const reason = root.querySelector<HTMLElement>(`#${reasonId}`);
-    expect(reason).not.toBeNull();
+    const reason = describedReason(root, headers[1]);
+    expect(reason).toBeTruthy();
     expect(reason?.getAttribute('aria-hidden')).toBe('true');
     expect(reason?.textContent?.trim()).toBe('');
   });
@@ -177,5 +217,85 @@ describe('CngxAccordionItem', () => {
     fixture.detectChanges();
     expect(headers[0].getAttribute('aria-expanded')).toBe('true');
     expect(headers[1].getAttribute('aria-expanded')).toBe('false');
+  });
+
+  it('exposes the title, subtitle, leading and meta slots on the header', () => {
+    const fixture = TestBed.createComponent(SlotsHost);
+    fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+
+    expect(root.querySelector('.cngx-accordion-item__title')?.textContent?.trim()).toBe('Billing');
+    expect(root.querySelector('.sub')?.textContent?.trim()).toBe('Invoices');
+    expect(root.querySelector('.lead')?.textContent?.trim()).toBe('01');
+    expect(root.querySelector('.meta-link')?.textContent?.trim()).toBe('edit');
+  });
+
+  it('pins the header/region name to the title, excluding subtitle, leading and meta', () => {
+    const fixture = TestBed.createComponent(SlotsHost);
+    fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+    const button = root.querySelector<HTMLButtonElement>('button.cngx-accordion-item__header')!;
+    const region = root.querySelector<HTMLElement>('[role="region"]')!;
+
+    const titleId = button.getAttribute('aria-labelledby');
+    expect(titleId).toBeTruthy();
+    const titleEl = root.querySelector<HTMLElement>(`#${titleId}`)!;
+    // The name resolves to the title text only - not "Billing Invoices".
+    expect(titleEl.textContent?.trim()).toBe('Billing');
+    expect(region.getAttribute('aria-labelledby')).toBe(titleId);
+  });
+
+  it('announces the subtitle through aria-describedby without leaking it into the name', () => {
+    const fixture = TestBed.createComponent(SlotsHost);
+    fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+    const button = root.querySelector<HTMLButtonElement>('button.cngx-accordion-item__header')!;
+    const subtitleWrapper = root.querySelector<HTMLElement>('.cngx-accordion-item__subtitle')!;
+
+    // The subtitle wrapper id is referenced by aria-describedby (announced),
+    // and the bound subtitle is visible (not aria-hidden).
+    const ids = (button.getAttribute('aria-describedby') ?? '').split(/\s+/);
+    expect(ids).toContain(subtitleWrapper.id);
+    expect(subtitleWrapper.getAttribute('aria-hidden')).toBeNull();
+    // Subtitle lives inside the button (described), title-only name still holds.
+    expect(button.contains(subtitleWrapper)).toBe(true);
+  });
+
+  it('hides the subtitle IDREF wrapper when no subtitle is projected', () => {
+    const { headers, root } = setup();
+    const button = headers[0];
+    const ids = (button.getAttribute('aria-describedby') ?? '').split(/\s+/);
+    const subtitleWrapper = ids
+      .map((id) => root.querySelector<HTMLElement>(`#${id}`))
+      .find((el) => el?.classList.contains('cngx-accordion-item__subtitle'));
+    // IDREF stays in the DOM (always-present describedby), but is aria-hidden
+    // and empty when unbound.
+    expect(subtitleWrapper).toBeTruthy();
+    expect(subtitleWrapper?.getAttribute('aria-hidden')).toBe('true');
+    expect(subtitleWrapper?.textContent?.trim()).toBe('');
+  });
+
+  it('renders leading aria-hidden and meta as real content, both button siblings', () => {
+    const fixture = TestBed.createComponent(SlotsHost);
+    fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+    const heading = root.querySelector<HTMLElement>('[role="heading"]')!;
+    const button = root.querySelector<HTMLButtonElement>('button.cngx-accordion-item__header')!;
+    const leadingWrapper = root.querySelector<HTMLElement>('.cngx-accordion-item__leading')!;
+    const metaWrapper = root.querySelector<HTMLElement>('.cngx-accordion-item__meta')!;
+
+    // Siblings of the button (parent is the heading row), never children.
+    expect(leadingWrapper.parentElement).toBe(heading);
+    expect(metaWrapper.parentElement).toBe(heading);
+    expect(button.contains(leadingWrapper)).toBe(false);
+    expect(button.contains(metaWrapper)).toBe(false);
+
+    // Leading is decorative; meta is real content.
+    expect(leadingWrapper.getAttribute('aria-hidden')).toBe('true');
+    expect(metaWrapper.getAttribute('aria-hidden')).toBeNull();
+
+    // Interactive meta (a link) sits OUTSIDE the button -> valid HTML.
+    const metaLink = root.querySelector<HTMLAnchorElement>('.meta-link')!;
+    expect(button.contains(metaLink)).toBe(false);
   });
 });

@@ -16,6 +16,7 @@ import { CNGX_ACCORDION, CngxAccordionPanel } from '@cngx/common/interactive';
 import { CNGX_ACCORDION_GROUP } from './accordion-group.token';
 import { CngxAccordionItemContent } from './accordion-item-content.directive';
 import { CngxAccordionItemIcon } from './accordion-item-icon.directive';
+import { CngxAccordionItemSubtitle } from './accordion-item-subtitle.directive';
 import { injectAccordionConfig } from './config/inject-accordion-config';
 
 /**
@@ -84,10 +85,26 @@ export class CngxAccordionItem {
 
   protected readonly regionId = nextUid('cngx-accordion-region-');
   protected readonly headerId = nextUid('cngx-accordion-header-');
+  protected readonly titleId = nextUid('cngx-accordion-title-');
+  protected readonly subtitleId = nextUid('cngx-accordion-subtitle-');
   protected readonly reasonId = nextUid('cngx-accordion-reason-');
+  /**
+   * The button's `aria-describedby`: subtitle first (an informative secondary
+   * line the title-only name-pin would otherwise hide from AT), then the
+   * disabled-reason element. Both IDREFs are always present in the DOM - the
+   * subtitle span toggles `aria-hidden` by presence, the reason span toggles by
+   * `disabled()`. Constant string: the ids never change, so no `computed()`.
+   */
+  protected readonly describedBy = `${this.subtitleId} ${this.reasonId}`;
 
   /** Lazy region-body slot; absent means the body projects eagerly through the default slot. */
   protected readonly contentSlot = contentChild(CngxAccordionItemContent);
+  /**
+   * Subtitle presence, so the always-present subtitle IDREF wrapper toggles its
+   * `aria-hidden` by projection: hidden (empty) when unbound, announced through
+   * `aria-describedby` when a subtitle is projected.
+   */
+  protected readonly subtitleSlot = contentChild(CngxAccordionItemSubtitle);
   /** Chevron override slot; absent means the CSS chevron default renders. */
   protected readonly iconSlot = contentChild(CngxAccordionItemIcon);
   /**

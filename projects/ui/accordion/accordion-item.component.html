@@ -1,4 +1,7 @@
 <div role="heading" [attr.aria-level]="group.headingLevel()" class="cngx-accordion-item__heading">
+  <span class="cngx-accordion-item__leading" aria-hidden="true">
+    <ng-content select="[cngxAccordionItemLeading]" />
+  </span>
   <button
     type="button"
     cngxAccordionPanel
@@ -7,10 +10,20 @@
     [controls]="regionId"
     [disabled]="disabled()"
     [id]="headerId"
-    [attr.aria-describedby]="reasonId"
+    [attr.aria-labelledby]="titleId"
+    [attr.aria-describedby]="describedBy"
   >
-    <span class="cngx-accordion-item__title">
-      <ng-content select="[cngxAccordionItemTitle]" />
+    <span class="cngx-accordion-item__text">
+      <span class="cngx-accordion-item__title" [id]="titleId">
+        <ng-content select="[cngxAccordionItemTitle]" />
+      </span>
+      <span
+        class="cngx-accordion-item__subtitle"
+        [id]="subtitleId"
+        [attr.aria-hidden]="subtitleSlot() ? null : 'true'"
+      >
+        <ng-content select="[cngxAccordionItemSubtitle]" />
+      </span>
     </span>
     <span class="cngx-accordion-item__chevron-slot" aria-hidden="true">
       @if (iconTemplate(); as icon) {
@@ -23,6 +36,9 @@
       }
     </span>
   </button>
+  <span class="cngx-accordion-item__meta">
+    <ng-content select="[cngxAccordionItemMeta]" />
+  </span>
 </div>
 
 <span [id]="reasonId" class="cngx-visually-hidden" [attr.aria-hidden]="!disabled()">
@@ -35,7 +51,7 @@
   role="region"
   class="cngx-accordion-item__region"
   [id]="regionId"
-  [attr.aria-labelledby]="headerId"
+  [attr.aria-labelledby]="titleId"
   [hidden]="!expanded()"
 >
   @if (contentSlot(); as content) {

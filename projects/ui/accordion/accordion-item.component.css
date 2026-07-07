@@ -8,6 +8,24 @@
 
 .cngx-accordion-item__heading {
   margin: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--cngx-accordion-heading-gap, 0.5rem);
+}
+
+/* Leading and meta are siblings of the button, not children, so interactive
+   meta (a link, a remove-button) stays valid HTML. Empty slots collapse via
+   :empty so an item with neither renders exactly as before (no stray gap). */
+.cngx-accordion-item__leading,
+.cngx-accordion-item__meta {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+}
+
+.cngx-accordion-item__leading:empty,
+.cngx-accordion-item__meta:empty {
+  display: none;
 }
 
 .cngx-accordion-item__header {
@@ -21,7 +39,10 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--cngx-accordion-header-gap, 0.5rem);
-  inline-size: 100%;
+  /* Grows to fill the heading row between the leading and meta cells; min-0
+     lets a long title truncate instead of shoving meta off the edge. */
+  flex: 1 1 auto;
+  min-inline-size: 0;
   padding: var(--cngx-accordion-header-padding, 0.75rem 1rem);
   border: 0;
   background: var(--cngx-accordion-header-bg, transparent);
@@ -39,6 +60,25 @@
 .cngx-accordion-item__header[aria-disabled='true'] {
   color: var(--cngx-accordion-header-disabled-color, #9ca3af);
   cursor: not-allowed;
+}
+
+.cngx-accordion-item__text {
+  display: flex;
+  flex-direction: column;
+  min-inline-size: 0;
+  gap: var(--cngx-accordion-title-gap, 0.125rem);
+}
+
+.cngx-accordion-item__subtitle {
+  font-size: var(--cngx-accordion-subtitle-size, 0.875em);
+  font-weight: var(--cngx-accordion-subtitle-weight, 400);
+  color: var(--cngx-accordion-subtitle-color, #6b7280);
+}
+
+/* An unbound subtitle projects nothing; collapse it so the text column keeps
+   its single-line height and the title gap does not open. */
+.cngx-accordion-item__subtitle:empty {
+  display: none;
 }
 
 .cngx-accordion-item__chevron-slot {
