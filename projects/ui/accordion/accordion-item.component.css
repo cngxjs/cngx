@@ -103,6 +103,53 @@
   transform: rotate(225deg);
 }
 
+/* Marker variants driven by the --cngx-accordion-marker token, not a mode input
+   (Pillar 3). Token unset keeps the CSS chevron above; a skin scope class sets
+   the token and a style container query re-paints the same chevron box, so no
+   new DOM and no new input. */
+@container style(--cngx-accordion-marker: none) {
+  .cngx-accordion-item__chevron {
+    display: none;
+  }
+}
+
+@container style(--cngx-accordion-marker: plus-minus) {
+  .cngx-accordion-item__chevron {
+    /* Drop the corner-border chevron; the plus is two centred pseudo bars. */
+    inline-size: var(--cngx-accordion-marker-size, 0.75em);
+    block-size: var(--cngx-accordion-marker-size, 0.75em);
+    border: 0;
+    transform: none;
+    position: relative;
+  }
+
+  .cngx-accordion-item__chevron::before,
+  .cngx-accordion-item__chevron::after {
+    content: '';
+    position: absolute;
+    inset-block-start: 50%;
+    inset-inline-start: 50%;
+    inline-size: 100%;
+    block-size: var(--cngx-accordion-marker-stroke, 2px);
+    background: currentColor;
+    transform: translate(-50%, -50%);
+  }
+
+  .cngx-accordion-item__chevron::after {
+    transform: translate(-50%, -50%) rotate(90deg);
+    transition: opacity var(--cngx-accordion-chevron-transition, 150ms ease);
+  }
+
+  /* The vertical bar collapses on open: plus morphs to minus. */
+  .cngx-accordion-item[data-expanded] .cngx-accordion-item__chevron {
+    transform: none;
+  }
+
+  .cngx-accordion-item[data-expanded] .cngx-accordion-item__chevron::after {
+    opacity: 0;
+  }
+}
+
 .cngx-accordion-item__region {
   padding: var(--cngx-accordion-region-padding, 0.75rem 1rem);
 }
