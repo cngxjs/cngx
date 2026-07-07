@@ -181,6 +181,16 @@ export class CngxAccordionItem {
   protected readonly expanded = computed(() => this.accordion.isOpen(this.panelId()));
 
   /**
+   * Region visibility. Hidden while collapsed, EXCEPT in the error state: an
+   * errored item un-hides its region so the `role="alert"` mounts into the live
+   * a11y tree and is announced even when the item was never opened (Pillar 2 -
+   * an error is never silenced by a collapsed panel).
+   */
+  protected readonly regionHidden = computed(
+    () => !this.expanded() && this.status() !== 'error',
+  );
+
+  /**
    * Keep-alive latch for lazy content: `false` until the region first opens,
    * then `true` forever. Derived history (Pillar 1) - a `linkedSignal`
    * accumulating onto its own previous value, never an effect that writes a

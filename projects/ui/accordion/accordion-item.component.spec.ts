@@ -423,6 +423,25 @@ describe('CngxAccordionItem', () => {
     expect(alert?.textContent?.trim()).toBe('This section could not be loaded.');
   });
 
+  it('un-hides the region for a collapsed errored item so the alert stays announced', () => {
+    const fixture = TestBed.createComponent(ErrorDefaultHost);
+    fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+    const button = root.querySelector<HTMLButtonElement>('button.cngx-accordion-item__header')!;
+    const region = root.querySelector<HTMLElement>('[role="region"]')!;
+    // Never opened, yet the error un-hides the region so role="alert" is live.
+    expect(button.getAttribute('aria-expanded')).toBe('false');
+    expect(region.hasAttribute('hidden')).toBe(false);
+    expect(region.querySelector('[role="alert"]')?.textContent?.trim()).toBe(
+      'This section could not be loaded.',
+    );
+  });
+
+  it('keeps the region hidden for a collapsed item with no error', () => {
+    const { regions } = setup();
+    regions.forEach((region) => expect(region.hasAttribute('hidden')).toBe(true));
+  });
+
   it('lets a per-instance [errorMessage] win over the default in the alert', () => {
     const fixture = TestBed.createComponent(ErrorMessageHost);
     fixture.detectChanges();

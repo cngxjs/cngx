@@ -53,7 +53,7 @@
   [id]="regionId"
   [attr.aria-labelledby]="titleId"
   [attr.aria-busy]="busy() ? 'true' : null"
-  [hidden]="!expanded()"
+  [hidden]="regionHidden()"
 >
   @switch (status()) {
     @case ('error') {
